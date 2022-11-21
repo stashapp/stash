@@ -68,14 +68,14 @@ func (r *updateRecord) setNullInt(destField string, v models.OptionalInt) {
 // 	}
 // }
 
-// func (r *updateRecord) setFloat64(destField string, v models.OptionalFloat64) {
-// 	if v.Set {
-// 		if v.Null {
-// 			panic("null value not allowed in optional float64")
-// 		}
-// 		r.set(destField, v.Value)
-// 	}
-// }
+func (r *updateRecord) setFloat64(destField string, v models.OptionalFloat64) {
+	if v.Set {
+		if v.Null {
+			panic("null value not allowed in optional float64")
+		}
+		r.set(destField, v.Value)
+	}
+}
 
 // func (r *updateRecord) setNullFloat64(destField string, v models.OptionalFloat64) {
 // 	if v.Set {

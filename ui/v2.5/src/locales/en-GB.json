@@ -127,6 +127,7 @@
   "birth_year": "Birth Year",
   "birthdate": "Birthdate",
   "bitrate": "Bit Rate",
+  "between_and": "and",
   "captions": "Captions",
   "career_length": "Career Length",
   "component_tagger": {
@@ -435,6 +436,11 @@
         "heading": "Custom CSS",
         "option_label": "Custom CSS enabled"
       },
+      "custom_javascript": {
+        "description": "Page must be reloaded for changes to take effect.",
+        "heading": "Custom Javascript",
+        "option_label": "Custom Javascript enabled"
+      },
       "custom_locales": {
         "description": "Override individual locale strings. See https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json for the master list. Page must be reloaded for changes to take effect.",
         "heading": "Custom localisation",
@@ -525,6 +531,10 @@
         "description": "Show or hide different types of content on the navigation bar",
         "heading": "Menu Items"
       },
+      "minimum_play_percent": {
+        "description": "The percentage of time in which a scene must be played before its play count is incremented.",
+        "heading": "Minumum Play Percent"
+      },
       "show_tag_card_on_hover": {
         "description": "Show tag card when hovering tag badges",
         "heading": "Tag card tooltips"
@@ -555,6 +565,7 @@
       "scene_player": {
         "heading": "Scene Player",
         "options": {
+          "always_start_from_beginning": "Always start video from beginning",
           "auto_start_video": "Auto-start video",
           "auto_start_video_on_play_selected": {
             "description": "Auto-start scene videos when playing from queue, or playing selected or random from Scenes page",
@@ -564,7 +575,8 @@
             "description": "Play next scene in queue when video finishes",
             "heading": "Continue playlist by default"
           },
-          "show_scrubber": "Show Scrubber"
+          "show_scrubber": "Show Scrubber",
+          "track_activity": "Track Activity"
         }
       },
       "scene_wall": {
@@ -604,6 +616,7 @@
     }
   },
   "configuration": "Configuration",
+  "resume_time": "Resume Time",
   "countables": {
     "files": "{count, plural, one {File} other {Files}}",
     "galleries": "{count, plural, one {Gallery} other {Galleries}}",
@@ -851,6 +864,7 @@
   "interactive": "Interactive",
   "interactive_speed": "Interactive speed",
   "isMissing": "Is Missing",
+  "last_played_at": "Last Played At",
   "library": "Library",
   "loading": {
     "generic": "Loading…"
@@ -868,6 +882,8 @@
       "age": "{age} {years_old}",
       "age_context": "{age} {years_old} in this scene"
     },
+    "play_count": "Play Count",
+    "play_duration": "Play Duration",
     "phash": "PHash",
     "stream": "Stream",
     "video_codec": "Video Codec"
@@ -1056,6 +1072,7 @@
     "submit_update": "Already exists in {endpoint_name}"
   },
   "statistics": "Statistics",
+  "stash_id_endpoint": "Stash ID Endpoint",
   "stats": {
     "image_size": "Images size",
     "scenes_duration": "Scenes duration",
@@ -1101,6 +1118,8 @@
   "url": "URL",
   "videos": "Videos",
   "view_all": "View All",
+  "play_count": "Play Count",
+  "play_duration": "Play Duration",
   "weight": "Weight",
   "weight_kg": "Weight (kg)",
   "years_old": "years old",

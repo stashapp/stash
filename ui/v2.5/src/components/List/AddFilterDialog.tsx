@@ -22,6 +22,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import {
   criterionIsHierarchicalLabelValue,
   criterionIsNumberValue,
+  criterionIsStashIDValue,
   criterionIsDateValue,
   criterionIsTimestampValue,
   CriterionType,
@@ -36,6 +37,8 @@ import { DateFilter } from "./Filters/DateFilter";
 import { TimestampFilter } from "./Filters/TimestampFilter";
 import { CountryCriterion } from "src/models/list-filter/criteria/country";
 import { CountrySelect } from "../Shared";
+import { StashIDCriterion } from "src/models/list-filter/criteria/stash-ids";
+import { StashIDFilter } from "./Filters/StashIDFilter";
 import { ConfigurationContext } from "src/hooks/Config";
 import { RatingCriterion } from "../../models/list-filter/criteria/rating";
 import { RatingFilter } from "./Filters/RatingFilter";
@@ -134,6 +137,16 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
     }
 
     function renderSelect() {
+      // always show stashID filter
+      if (criterion instanceof StashIDCriterion) {
+        return (
+          <StashIDFilter
+            criterion={criterion}
+            onValueChanged={onValueChanged}
+          />
+        );
+      }
+
       // Hide the value select if the modifier is "IsNull" or "NotNull"
       if (
         criterion.modifier === CriterionModifier.IsNull ||
@@ -162,6 +175,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
         options &&
         !criterionIsHierarchicalLabelValue(criterion.value) &&
         !criterionIsNumberValue(criterion.value) &&
+        !criterionIsStashIDValue(criterion.value) &&
         !criterionIsDateValue(criterion.value) &&
         !criterionIsTimestampValue(criterion.value) &&
         !Array.isArray(criterion.value)
@@ -202,11 +216,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
       }
       if (criterion instanceof RatingCriterion) {
         return (
-          <RatingFilter
-            criterion={criterion}
-            onValueChanged={onValueChanged}
-            configuration={config}
-          />
+          <RatingFilter criterion={criterion} onValueChanged={onValueChanged} />
         );
       }
       if (
@@ -293,12 +303,32 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
     );
   }
 
+  function isValid() {
+    if (criterion.criterionOption.type === "none") {
+      return false;
+    }
+
+    if (criterion instanceof RatingCriterion) {
+      switch (criterion.modifier) {
+        case CriterionModifier.Equals:
+        case CriterionModifier.NotEquals:
+        case CriterionModifier.LessThan:
+          return !!criterion.value.value;
+        case CriterionModifier.Between:
+        case CriterionModifier.NotBetween:
+          return criterion.value.value < (criterion.value.value2 ?? 0);
+      }
+    }
+
+    return true;
+  }
+
   const title = !editingCriterion
     ? intl.formatMessage({ id: "search_filter.add_filter" })
     : intl.formatMessage({ id: "search_filter.update_filter" });
   return (
     <>
-      <Modal show onHide={() => onCancel()}>
+      <Modal show onHide={() => onCancel()} className="add-filter-dialog">
         <Modal.Header>{title}</Modal.Header>
         <Modal.Body>
           <div className="dialog-content">
@@ -308,10 +338,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button
-            onClick={onAddFilter}
-            disabled={criterion.criterionOption.type === "none"}
-          >
+          <Button onClick={onAddFilter} disabled={!isValid()}>
             {title}
           </Button>
         </Modal.Footer>

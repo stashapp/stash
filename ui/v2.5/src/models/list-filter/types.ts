@@ -33,6 +33,11 @@ export interface IPHashDuplicationValue {
   distance?: number; // currently not implemented
 }
 
+export interface IStashIDValue {
+  endpoint: string;
+  stashID: string;
+}
+
 export interface IDateValue {
   value: string;
   value2: string | undefined;
@@ -55,6 +60,13 @@ export function criterionIsNumberValue(
   value: any
 ): value is INumberValue {
   return typeof value === "object" && "value" in value && "value2" in value;
+}
+
+export function criterionIsStashIDValue(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  value: any
+): value is IStashIDValue {
+  return typeof value === "object" && "endpoint" in value && "stashID" in value;
 }
 
 export function criterionIsDateValue(
@@ -134,6 +146,9 @@ export type CriterionType =
   | "interactive"
   | "interactive_speed"
   | "captions"
+  | "resume_time"
+  | "play_count"
+  | "play_duration"
   | "name"
   | "details"
   | "title"
@@ -151,6 +166,7 @@ export type CriterionType =
   | "duplicated"
   | "ignore_auto_tag"
   | "file_count"
+  | "stash_id_endpoint"
   | "date"
   | "created_at"
   | "updated_at"

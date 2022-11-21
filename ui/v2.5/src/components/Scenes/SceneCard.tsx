@@ -388,6 +388,8 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       title={objectTitle(props.scene)}
       linkClassName="scene-card-link"
       thumbnailSectionClassName="video-section"
+      resumeTime={props.scene.resume_time ?? undefined}
+      duration={file?.duration ?? undefined}
       interactiveHeatmap={
         props.scene.interactive_speed
           ? props.scene.paths.interactive_heatmap ?? undefined

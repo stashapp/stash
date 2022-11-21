@@ -50,6 +50,7 @@ import { DuplicatedCriterion, PhashCriterionOption } from "./phash";
 import { CaptionCriterion } from "./captions";
 import { RatingCriterion } from "./rating";
 import { CountryCriterion } from "./country";
+import { StashIDCriterion } from "./stash-ids";
 import * as GQL from "src/core/generated-graphql";
 import { IUIConfig } from "src/core/config";
 import { defaultRatingSystemOptions } from "src/utils/rating";
@@ -86,6 +87,7 @@ export function makeCriteria(
     case "performer_age":
     case "tag_count":
     case "file_count":
+    case "play_count":
       return new NumberCriterion(
         new MandatoryNumberCriterionOption(type, type)
       );
@@ -101,7 +103,9 @@ export function makeCriteria(
       return new ResolutionCriterion();
     case "average_resolution":
       return new AverageResolutionCriterion();
+    case "resume_time":
     case "duration":
+    case "play_duration":
       return new DurationCriterion(new NumberCriterionOption(type, type));
     case "favorite":
       return new FavoriteCriterion();
@@ -169,6 +173,10 @@ export function makeCriteria(
       return new NumberCriterion(
         new NumberCriterionOption("height", "height_cm", type)
       );
+    // stash_id is deprecated
+    case "stash_id":
+    case "stash_id_endpoint":
+      return new StashIDCriterion();
     case "ethnicity":
     case "hair_color":
     case "eye_color":
@@ -179,7 +187,6 @@ export function makeCriteria(
     case "piercings":
     case "aliases":
     case "url":
-    case "stash_id":
     case "details":
     case "title":
     case "director":

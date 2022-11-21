@@ -16,6 +16,12 @@ export const Migrate: React.FC = () => {
 
   const intl = useIntl();
 
+  // if database path includes path separators, then this is passed through
+  // to the migration path. Extract the base name of the database file.
+  const databasePath = systemStatus
+    ? systemStatus?.systemStatus.databasePath?.split(/[\\/]/).pop()
+    : "";
+
   // make suffix based on current time
   const now = new Date()
     .toISOString()
@@ -24,7 +30,7 @@ export const Migrate: React.FC = () => {
     .replace(/:/g, "")
     .replace(/\..*/, "");
   const defaultBackupPath = systemStatus
-    ? `${systemStatus.systemStatus.databasePath}.${systemStatus.systemStatus.databaseSchema}.${now}`
+    ? `${databasePath}.${systemStatus.systemStatus.databaseSchema}.${now}`
     : "";
 
   const discordLink = (

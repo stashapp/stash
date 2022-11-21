@@ -17,6 +17,7 @@ export interface IRatingStarsProps {
   onSetRating?: (value?: number) => void;
   disabled?: boolean;
   precision: RatingStarPrecision;
+  valueRequired?: boolean;
 }
 
 export const RatingStars: React.FC<IRatingStarsProps> = (
@@ -62,7 +63,15 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
     ) {
       const f = newToggleFraction();
       if (!f) {
-        newRating = undefined;
+        if (props.valueRequired) {
+          if (fraction) {
+            newRating = stars + 1;
+          } else {
+            newRating = stars;
+          }
+        } else {
+          newRating = undefined;
+        }
       } else if (fraction) {
         // we're toggling from an existing fraction so use the stars value
         newRating = stars + f;
@@ -143,10 +152,17 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
 
     if (hoverRating) {
       if (hoverRating === stars && precision === 1) {
+        if (props.valueRequired) {
+          return { rating: r, fraction: 0 };
+        }
+
         // unsetting
         return undefined;
       }
       if (hoverRating === stars + 1 && fraction && fraction === precision) {
+        if (props.valueRequired) {
+          return { rating: r, fraction: 0 };
+        }
         // unsetting
         return undefined;
       }

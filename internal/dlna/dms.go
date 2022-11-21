@@ -439,7 +439,7 @@ func (me *Server) serveIcon(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var scene *models.Scene
-	err := txn.WithTxn(r.Context(), me.txnManager, func(ctx context.Context) error {
+	err := txn.WithReadTxn(r.Context(), me.txnManager, func(ctx context.Context) error {
 		idInt, err := strconv.Atoi(sceneId)
 		if err != nil {
 			return nil
@@ -579,7 +579,7 @@ func (me *Server) initMux(mux *http.ServeMux) {
 	mux.HandleFunc(resPath, func(w http.ResponseWriter, r *http.Request) {
 		sceneId := r.URL.Query().Get("scene")
 		var scene *models.Scene
-		err := txn.WithTxn(r.Context(), me.txnManager, func(ctx context.Context) error {
+		err := txn.WithReadTxn(r.Context(), me.txnManager, func(ctx context.Context) error {
 			sceneIdInt, err := strconv.Atoi(sceneId)
 			if err != nil {
 				return nil

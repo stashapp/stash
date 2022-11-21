@@ -583,12 +583,12 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 	query.handleCriterion(ctx, stringCriterionHandler(filter.HairColor, tableName+".hair_color"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.URL, tableName+".url"))
 	query.handleCriterion(ctx, intCriterionHandler(filter.Weight, tableName+".weight", nil))
-	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
-		if filter.StashID != nil {
-			performersStashIDsTableMgr.join(f, "performer_stash_ids", "performers.id")
-			stringCriterionHandler(filter.StashID, "performer_stash_ids.stash_id")(ctx, f)
-		}
-	}))
+	query.handleCriterion(ctx, &stashIDCriterionHandler{
+		c:                 filter.StashIDEndpoint,
+		stashIDRepository: qb.stashIDRepository(),
+		stashIDTableAs:    "performer_stash_ids",
+		parentIDCol:       "performers.id",
+	})
 
 	query.handleCriterion(ctx, performerAliasCriterionHandler(qb, filter.Aliases))
 
@@ -896,6 +896,16 @@ func (qb *PerformerStore) UpdateImage(ctx context.Context, performerID int, imag
 
 func (qb *PerformerStore) DestroyImage(ctx context.Context, performerID int) error {
 	return qb.imageRepository().destroy(ctx, []int{performerID})
+}
+
+func (qb *PerformerStore) stashIDRepository() *stashIDRepository {
+	return &stashIDRepository{
+		repository{
+			tx:        qb.tx,
+			tableName: "performer_stash_ids",
+			idColumn:  performerIDColumn,
+		},
+	}
 }
 
 func (qb *PerformerStore) GetAliases(ctx context.Context, performerID int) ([]string, error) {

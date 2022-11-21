@@ -109,7 +109,7 @@ func (j *cleanJob) execute(ctx context.Context) error {
 		folderCount int
 	)
 
-	if err := txn.WithTxn(ctx, j.Repository, func(ctx context.Context) error {
+	if err := txn.WithReadTxn(ctx, j.Repository, func(ctx context.Context) error {
 		var err error
 		fileCount, err = j.Repository.CountAllInPaths(ctx, j.options.Paths)
 		if err != nil {
@@ -169,7 +169,7 @@ func (j *cleanJob) assessFiles(ctx context.Context, toDelete *deleteSet) error {
 	progress := j.progress
 
 	more := true
-	if err := txn.WithTxn(ctx, j.Repository, func(ctx context.Context) error {
+	if err := txn.WithReadTxn(ctx, j.Repository, func(ctx context.Context) error {
 		for more {
 			if job.IsCancelled(ctx) {
 				return nil
@@ -253,7 +253,7 @@ func (j *cleanJob) assessFolders(ctx context.Context, toDelete *deleteSet) error
 	progress := j.progress
 
 	more := true
-	if err := txn.WithTxn(ctx, j.Repository, func(ctx context.Context) error {
+	if err := txn.WithReadTxn(ctx, j.Repository, func(ctx context.Context) error {
 		for more {
 			if job.IsCancelled(ctx) {
 				return nil

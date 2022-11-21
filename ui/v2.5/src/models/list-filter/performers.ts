@@ -11,6 +11,7 @@ import {
 import { FavoriteCriterionOption } from "./criteria/favorite";
 import { GenderCriterionOption } from "./criteria/gender";
 import { PerformerIsMissingCriterionOption } from "./criteria/is-missing";
+import { StashIDCriterionOption } from "./criteria/stash-ids";
 import { StudiosCriterionOption } from "./criteria/studios";
 import { TagsCriterionOption } from "./criteria/tags";
 import { ListFilterOptions } from "./filter-options";
@@ -68,7 +69,6 @@ const stringCriteria: CriterionType[] = [
   "tattoos",
   "piercings",
   "aliases",
-  "stash_id",
 ];
 
 const criterionOptions = [
@@ -77,6 +77,7 @@ const criterionOptions = [
   PerformerIsMissingCriterionOption,
   TagsCriterionOption,
   StudiosCriterionOption,
+  StashIDCriterionOption,
   createStringCriterionOption("url"),
   new NullNumberCriterionOption("rating", "rating100"),
   createMandatoryNumberCriterionOption("tag_count"),

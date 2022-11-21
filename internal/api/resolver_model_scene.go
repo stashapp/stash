@@ -206,7 +206,7 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePat
 }
 
 func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) (ret []*models.SceneMarker, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.SceneMarker.FindBySceneID(ctx, obj.ID)
 		return err
 	}); err != nil {
@@ -225,7 +225,7 @@ func (r *sceneResolver) Captions(ctx context.Context, obj *models.Scene) (ret []
 		return nil, nil
 	}
 
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.File.GetCaptions(ctx, primaryFile.Base().ID)
 		return err
 	}); err != nil {
@@ -237,7 +237,7 @@ func (r *sceneResolver) Captions(ctx context.Context, obj *models.Scene) (ret []
 
 func (r *sceneResolver) Galleries(ctx context.Context, obj *models.Scene) (ret []*models.Gallery, err error) {
 	if !obj.GalleryIDs.Loaded() {
-		if err := r.withTxn(ctx, func(ctx context.Context) error {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 			return obj.LoadGalleryIDs(ctx, r.repository.Scene)
 		}); err != nil {
 			return nil, err
@@ -259,7 +259,7 @@ func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (ret *mod
 
 func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*SceneMovie, err error) {
 	if !obj.Movies.Loaded() {
-		if err := r.withTxn(ctx, func(ctx context.Context) error {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 			qb := r.repository.Scene
 
 			return obj.LoadMovies(ctx, qb)
@@ -290,7 +290,7 @@ func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*S
 
 func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) (ret []*models.Tag, err error) {
 	if !obj.TagIDs.Loaded() {
-		if err := r.withTxn(ctx, func(ctx context.Context) error {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 			return obj.LoadTagIDs(ctx, r.repository.Scene)
 		}); err != nil {
 			return nil, err
@@ -304,7 +304,7 @@ func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) (ret []*mod
 
 func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) (ret []*models.Performer, err error) {
 	if !obj.PerformerIDs.Loaded() {
-		if err := r.withTxn(ctx, func(ctx context.Context) error {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 			return obj.LoadPerformerIDs(ctx, r.repository.Scene)
 		}); err != nil {
 			return nil, err
@@ -327,7 +327,7 @@ func stashIDsSliceToPtrSlice(v []models.StashID) []*models.StashID {
 }
 
 func (r *sceneResolver) StashIds(ctx context.Context, obj *models.Scene) (ret []*models.StashID, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		return obj.LoadStashIDs(ctx, r.repository.Scene)
 	}); err != nil {
 		return nil, err

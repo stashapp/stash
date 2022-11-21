@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -60,12 +61,16 @@ type sceneRow struct {
 	URL      zero.String       `db:"url"`
 	Date     models.SQLiteDate `db:"date"`
 	// expressed as 1-100
-	Rating    null.Int               `db:"rating"`
-	Organized bool                   `db:"organized"`
-	OCounter  int                    `db:"o_counter"`
-	StudioID  null.Int               `db:"studio_id,omitempty"`
-	CreatedAt models.SQLiteTimestamp `db:"created_at"`
-	UpdatedAt models.SQLiteTimestamp `db:"updated_at"`
+	Rating       null.Int                   `db:"rating"`
+	Organized    bool                       `db:"organized"`
+	OCounter     int                        `db:"o_counter"`
+	StudioID     null.Int                   `db:"studio_id,omitempty"`
+	CreatedAt    models.SQLiteTimestamp     `db:"created_at"`
+	UpdatedAt    models.SQLiteTimestamp     `db:"updated_at"`
+	LastPlayedAt models.NullSQLiteTimestamp `db:"last_played_at"`
+	ResumeTime   float64                    `db:"resume_time"`
+	PlayDuration float64                    `db:"play_duration"`
+	PlayCount    int                        `db:"play_count"`
 }
 
 func (r *sceneRow) fromScene(o models.Scene) {
@@ -84,6 +89,15 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.StudioID = intFromPtr(o.StudioID)
 	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
+	if o.LastPlayedAt != nil {
+		r.LastPlayedAt = models.NullSQLiteTimestamp{
+			Timestamp: *o.LastPlayedAt,
+			Valid:     true,
+		}
+	}
+	r.ResumeTime = o.ResumeTime
+	r.PlayDuration = o.PlayDuration
+	r.PlayCount = o.PlayCount
 }
 
 type sceneQueryRow struct {
@@ -115,10 +129,18 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 
 		CreatedAt: r.CreatedAt.Timestamp,
 		UpdatedAt: r.UpdatedAt.Timestamp,
+
+		ResumeTime:   r.ResumeTime,
+		PlayDuration: r.PlayDuration,
+		PlayCount:    r.PlayCount,
 	}
 
 	if r.PrimaryFileFolderPath.Valid && r.PrimaryFileBasename.Valid {
 		ret.Path = filepath.Join(r.PrimaryFileFolderPath.String, r.PrimaryFileBasename.String)
+	}
+
+	if r.LastPlayedAt.Valid {
+		ret.LastPlayedAt = &r.LastPlayedAt.Timestamp
 	}
 
 	return ret
@@ -141,6 +163,10 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setNullInt("studio_id", o.StudioID)
 	r.setSQLiteTimestamp("created_at", o.CreatedAt)
 	r.setSQLiteTimestamp("updated_at", o.UpdatedAt)
+	r.setSQLiteTimestamp("last_played_at", o.LastPlayedAt)
+	r.setFloat64("resume_time", o.ResumeTime)
+	r.setFloat64("play_duration", o.PlayDuration)
+	r.setInt("play_count", o.PlayCount)
 }
 
 type SceneStore struct {
@@ -851,7 +877,7 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.OCounter, "scenes.o_counter", nil))
 	query.handleCriterion(ctx, boolCriterionHandler(sceneFilter.Organized, "scenes.organized", nil))
 
-	query.handleCriterion(ctx, durationCriterionHandler(sceneFilter.Duration, "video_files.duration", qb.addVideoFilesTable))
+	query.handleCriterion(ctx, floatIntCriterionHandler(sceneFilter.Duration, "video_files.duration", qb.addVideoFilesTable))
 	query.handleCriterion(ctx, resolutionCriterionHandler(sceneFilter.Resolution, "video_files.height", "video_files.width", qb.addVideoFilesTable))
 
 	query.handleCriterion(ctx, hasMarkersCriterionHandler(sceneFilter.HasMarkers))
@@ -864,11 +890,21 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 			stringCriterionHandler(sceneFilter.StashID, "scene_stash_ids.stash_id")(ctx, f)
 		}
 	}))
+	query.handleCriterion(ctx, &stashIDCriterionHandler{
+		c:                 sceneFilter.StashIDEndpoint,
+		stashIDRepository: qb.stashIDRepository(),
+		stashIDTableAs:    "scene_stash_ids",
+		parentIDCol:       "scenes.id",
+	})
 
 	query.handleCriterion(ctx, boolCriterionHandler(sceneFilter.Interactive, "video_files.interactive", qb.addVideoFilesTable))
 	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.InteractiveSpeed, "video_files.interactive_speed", qb.addVideoFilesTable))
 
 	query.handleCriterion(ctx, sceneCaptionCriterionHandler(qb, sceneFilter.Captions))
+
+	query.handleCriterion(ctx, floatIntCriterionHandler(sceneFilter.ResumeTime, "scenes.resume_time", nil))
+	query.handleCriterion(ctx, floatIntCriterionHandler(sceneFilter.PlayDuration, "scenes.play_duration", nil))
+	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.PlayCount, "scenes.play_count", nil))
 
 	query.handleCriterion(ctx, sceneTagsCriterionHandler(qb, sceneFilter.Tags))
 	query.handleCriterion(ctx, sceneTagCountCriterionHandler(qb, sceneFilter.TagCount))
@@ -1064,7 +1100,7 @@ func scenePhashDuplicatedCriterionHandler(duplicatedFilter *models.PHashDuplicat
 	}
 }
 
-func durationCriterionHandler(durationFilter *models.IntCriterionInput, column string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+func floatIntCriterionHandler(durationFilter *models.IntCriterionInput, column string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if durationFilter != nil {
 			if addJoinFn != nil {
@@ -1411,6 +1447,9 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		addFileTable()
 		addFolderTable()
 		query.sortAndPagination += " ORDER BY scenes.title COLLATE NATURAL_CS " + direction + ", folders.path " + direction + ", files.basename COLLATE NATURAL_CS " + direction
+	case "play_count":
+		// handle here since getSort has special handling for _count suffix
+		query.sortAndPagination += " ORDER BY scenes.play_count " + direction
 	default:
 		query.sortAndPagination += getSort(sort, direction, "scenes")
 	}
@@ -1425,6 +1464,62 @@ func (qb *SceneStore) imageRepository() *imageRepository {
 		},
 		imageColumn: "cover",
 	}
+}
+
+func (qb *SceneStore) getPlayCount(ctx context.Context, id int) (int, error) {
+	q := dialect.From(qb.tableMgr.table).Select("play_count").Where(goqu.Ex{"id": id})
+
+	const single = true
+	var ret int
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		if err := rows.Scan(&ret); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (qb *SceneStore) SaveActivity(ctx context.Context, id int, resumeTime *float64, playDuration *float64) (bool, error) {
+	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
+		return false, err
+	}
+
+	record := goqu.Record{}
+
+	if resumeTime != nil {
+		record["resume_time"] = resumeTime
+	}
+
+	if playDuration != nil {
+		record["play_duration"] = goqu.L("play_duration + ?", playDuration)
+	}
+
+	if len(record) > 0 {
+		if err := qb.tableMgr.updateByID(ctx, id, record); err != nil {
+			return false, err
+		}
+	}
+
+	return true, nil
+}
+
+func (qb *SceneStore) IncrementWatchCount(ctx context.Context, id int) (int, error) {
+	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
+		return 0, err
+	}
+
+	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
+		"play_count":     goqu.L("play_count + 1"),
+		"last_played_at": time.Now(),
+	}); err != nil {
+		return 0, err
+	}
+
+	return qb.getPlayCount(ctx, id)
 }
 
 func (qb *SceneStore) GetCover(ctx context.Context, sceneID int) ([]byte, error) {

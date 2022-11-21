@@ -26,6 +26,7 @@ import {
 } from "./criteria/phash";
 import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
 import { CaptionsCriterionOption } from "./criteria/captions";
+import { StashIDCriterionOption } from "./criteria/stash-ids";
 
 const defaultSortBy = "date";
 const sortByOptions = [
@@ -37,6 +38,10 @@ const sortByOptions = [
   "duration",
   "framerate",
   "bitrate",
+  "last_played_at",
+  "resume_time",
+  "play_duration",
+  "play_count",
   "movie_scene_number",
   "interactive",
   "interactive_speed",
@@ -70,6 +75,9 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("o_counter"),
   ResolutionCriterionOption,
   createMandatoryNumberCriterionOption("duration"),
+  createMandatoryNumberCriterionOption("resume_time"),
+  createMandatoryNumberCriterionOption("play_duration"),
+  createMandatoryNumberCriterionOption("play_count"),
   HasMarkersCriterionOption,
   SceneIsMissingCriterionOption,
   TagsCriterionOption,
@@ -82,7 +90,7 @@ const criterionOptions = [
   StudiosCriterionOption,
   MoviesCriterionOption,
   createStringCriterionOption("url"),
-  createStringCriterionOption("stash_id"),
+  StashIDCriterionOption,
   InteractiveCriterionOption,
   CaptionsCriterionOption,
   createMandatoryNumberCriterionOption("interactive_speed"),

@@ -530,6 +530,10 @@ func exportScene(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 
 		newSceneJSON.Galleries = gallery.GetRefs(galleries)
 
+		newSceneJSON.ResumeTime = s.ResumeTime
+		newSceneJSON.PlayCount = s.PlayCount
+		newSceneJSON.PlayDuration = s.PlayDuration
+
 		performers, err := performerReader.FindBySceneID(ctx, s.ID)
 		if err != nil {
 			logger.Errorf("[scenes] <%s> error getting scene performer names: %s", sceneHash, err.Error())
