@@ -201,9 +201,9 @@ type SceneUpdateInput struct {
 	// This should be a URL or a base64 encoded data URL
 	CoverImage    *string   `json:"cover_image"`
 	StashIds      []StashID `json:"stash_ids"`
-	ResumeTime    float64   `json:"resume_time"`
-	PlayDuration  float64   `json:"play_duration"`
-	PlayCount     int       `json:"play_count"`
+	ResumeTime    *float64  `json:"resume_time"`
+	PlayDuration  *float64  `json:"play_duration"`
+	PlayCount     *int      `json:"play_count"`
 	PrimaryFileID *string   `json:"primary_file_id"`
 }
 

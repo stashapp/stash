@@ -174,6 +174,8 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 	updatedScene.Date = translator.optionalDate(input.Date, "date")
 	updatedScene.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
 	updatedScene.OCounter = translator.optionalInt(input.OCounter, "o_counter")
+	updatedScene.PlayCount = translator.optionalInt(input.PlayCount, "play_count")
+	updatedScene.PlayDuration = translator.optionalFloat64(input.PlayDuration, "play_duration")
 	var err error
 	updatedScene.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {
