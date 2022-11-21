@@ -7,7 +7,8 @@
       "esnext",
       "esnext.intl",
       "es2017.intl",
-      "es2018.intl"
+      "es2018.intl",
+      "WebWorker"
     ],
     "skipLibCheck": true,
     "esModuleInterop": true,
