@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -121,7 +120,7 @@ func (g Generator) generateBytes(lockCtx *fsutil.LockContext, p Paths, pattern s
 	}
 
 	defer os.Remove(tmpFn)
-	return ioutil.ReadFile(tmpFn)
+	return os.ReadFile(tmpFn)
 }
 
 // generate runs ffmpeg with the given args and waits for it to finish.

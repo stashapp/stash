@@ -137,20 +137,6 @@ func (_m *MovieReaderWriter) Destroy(ctx context.Context, id int) error {
 	return r0
 }
 
-// DestroyImages provides a mock function with given fields: ctx, movieID
-func (_m *MovieReaderWriter) DestroyImages(ctx context.Context, movieID int) error {
-	ret := _m.Called(ctx, movieID)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
-		r0 = rf(ctx, movieID)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // Find provides a mock function with given fields: ctx, id
 func (_m *MovieReaderWriter) Find(ctx context.Context, id int) (*models.Movie, error) {
 	ret := _m.Called(ctx, id)
@@ -388,6 +374,34 @@ func (_m *MovieReaderWriter) Update(ctx context.Context, updatedMovie models.Mov
 	return r0, r1
 }
 
+// UpdateBackImage provides a mock function with given fields: ctx, movieID, backImage
+func (_m *MovieReaderWriter) UpdateBackImage(ctx context.Context, movieID int, backImage []byte) error {
+	ret := _m.Called(ctx, movieID, backImage)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, []byte) error); ok {
+		r0 = rf(ctx, movieID, backImage)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdateFrontImage provides a mock function with given fields: ctx, movieID, frontImage
+func (_m *MovieReaderWriter) UpdateFrontImage(ctx context.Context, movieID int, frontImage []byte) error {
+	ret := _m.Called(ctx, movieID, frontImage)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, []byte) error); ok {
+		r0 = rf(ctx, movieID, frontImage)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // UpdateFull provides a mock function with given fields: ctx, updatedMovie
 func (_m *MovieReaderWriter) UpdateFull(ctx context.Context, updatedMovie models.Movie) (*models.Movie, error) {
 	ret := _m.Called(ctx, updatedMovie)
@@ -409,18 +423,4 @@ func (_m *MovieReaderWriter) UpdateFull(ctx context.Context, updatedMovie models
 	}
 
 	return r0, r1
-}
-
-// UpdateImages provides a mock function with given fields: ctx, movieID, frontImage, backImage
-func (_m *MovieReaderWriter) UpdateImages(ctx context.Context, movieID int, frontImage []byte, backImage []byte) error {
-	ret := _m.Called(ctx, movieID, frontImage, backImage)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int, []byte, []byte) error); ok {
-		r0 = rf(ctx, movieID, frontImage, backImage)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
 }

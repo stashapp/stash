@@ -3,6 +3,7 @@ package migrations
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/hash/md5"
@@ -25,54 +26,115 @@ func post45(ctx context.Context, db *sqlx.DB) error {
 	}
 
 	if err := m.migrateImagesTable(ctx, migrateImagesTableOptions{
-		joinTable:    "tags_image",
-		joinIDCol:    "tag_id",
-		joinImageCol: "image",
-		destTable:    "tags",
-		destCol:      "image_blob",
+		joinTable: "tags_image",
+		joinIDCol: "tag_id",
+		destTable: "tags",
+		cols: []migrateImageToBlobOptions{
+			{
+				joinImageCol: "image",
+				destCol:      "image_blob",
+			},
+		},
 	}); err != nil {
 		return err
 	}
 
 	if err := m.migrateImagesTable(ctx, migrateImagesTableOptions{
-		joinTable:    "studios_image",
-		joinIDCol:    "studio_id",
-		joinImageCol: "image",
-		destTable:    "studios",
-		destCol:      "image_blob",
+		joinTable: "studios_image",
+		joinIDCol: "studio_id",
+		destTable: "studios",
+		cols: []migrateImageToBlobOptions{
+			{
+				joinImageCol: "image",
+				destCol:      "image_blob",
+			},
+		},
 	}); err != nil {
 		return err
 	}
 
 	if err := m.migrateImagesTable(ctx, migrateImagesTableOptions{
-		joinTable:    "performers_image",
-		joinIDCol:    "performer_id",
-		joinImageCol: "image",
-		destTable:    "performers",
-		destCol:      "image_blob",
+		joinTable: "performers_image",
+		joinIDCol: "performer_id",
+		destTable: "performers",
+		cols: []migrateImageToBlobOptions{
+			{
+				joinImageCol: "image",
+				destCol:      "image_blob",
+			},
+		},
 	}); err != nil {
 		return err
 	}
 
 	if err := m.migrateImagesTable(ctx, migrateImagesTableOptions{
-		joinTable:    "scenes_cover",
-		joinIDCol:    "scene_id",
-		joinImageCol: "cover",
-		destTable:    "scenes",
-		destCol:      "cover_blob",
+		joinTable: "scenes_cover",
+		joinIDCol: "scene_id",
+		destTable: "scenes",
+		cols: []migrateImageToBlobOptions{
+			{
+				joinImageCol: "cover",
+				destCol:      "cover_blob",
+			},
+		},
 	}); err != nil {
 		return err
+	}
+
+	// if err := m.migrateImagesTable(ctx, migrateImagesTableOptions{
+	// 	joinTable: "movies_images",
+	// 	joinIDCol: "movie_id",
+	// 	destTable: "movies",
+	// 	cols: []migrateImageToBlobOptions{
+	// 		{
+	// 			joinImageCol: "front_image",
+	// 			destCol:      "front_image_blob",
+	// 		},
+	// 		{
+	// 			joinImageCol: "back_image",
+	// 			destCol:      "back_image_blob",
+	// 		},
+	// 	},
+	// }); err != nil {
+	// 	return err
+	// }
+
+	tablesToDrop := []string{
+		"tags_image",
+		"studios_image",
+		"performers_image",
+		"scenes_cover",
+		// "movies_images",
+	}
+
+	for _, table := range tablesToDrop {
+		if err := m.dropTable(ctx, table); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-type migrateImagesTableOptions struct {
-	joinTable    string
-	joinIDCol    string
+type migrateImageToBlobOptions struct {
 	joinImageCol string
-	destTable    string
 	destCol      string
+}
+
+type migrateImagesTableOptions struct {
+	joinTable string
+	joinIDCol string
+	destTable string
+	cols      []migrateImageToBlobOptions
+}
+
+func (o migrateImagesTableOptions) selectColumns() string {
+	var cols []string
+	for _, c := range o.cols {
+		cols = append(cols, "`"+c.joinImageCol+"`")
+	}
+
+	return strings.Join(cols, ", ")
 }
 
 func (m *schema45Migrator) migrateImagesTable(ctx context.Context, options migrateImagesTableOptions) error {
@@ -89,11 +151,7 @@ func (m *schema45Migrator) migrateImagesTable(ctx context.Context, options migra
 		gotSome := false
 
 		if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
-			query := utils.StrFormat("SELECT `{joinTable}`.`{joinIDCol}`, `{joinTable}`.`{joinImageCol}` FROM `{joinTable}`", utils.StrFormatMap{
-				"joinTable":    options.joinTable,
-				"joinIDCol":    options.joinIDCol,
-				"joinImageCol": options.joinImageCol,
-			})
+			query := fmt.Sprintf("SELECT %s FROM `%s`", options.selectColumns(), options.joinTable)
 
 			query += fmt.Sprintf(" LIMIT %d", limit)
 
@@ -105,9 +163,15 @@ func (m *schema45Migrator) migrateImagesTable(ctx context.Context, options migra
 
 			for rows.Next() {
 				var id int
-				var data []byte
 
-				err := rows.Scan(&id, &data)
+				result := make([]interface{}, len(options.cols)+1)
+				result[0] = &id
+				for i := range options.cols {
+					v := []byte{}
+					result[i+1] = &v
+				}
+
+				err := rows.Scan(result...)
 				if err != nil {
 					return err
 				}
@@ -115,19 +179,18 @@ func (m *schema45Migrator) migrateImagesTable(ctx context.Context, options migra
 				gotSome = true
 				count++
 
-				// calculate checksum and insert into blobs table
-				checksum := md5.FromBytes(data)
-
-				if _, err := m.db.Exec("INSERT INTO `blobs` (`checksum`, `blob`) VALUES (?, ?)", checksum, data); err != nil {
-					return err
+				for i, col := range options.cols {
+					if err := m.insertImage(result[i+1].([]byte), id, options.destTable, col.destCol); err != nil {
+						return err
+					}
 				}
 
-				// set the tag image checksum
-				updateSQL := utils.StrFormat("UPDATE `{destTable}` SET `{destCol}` = ? WHERE `id` = ?", utils.StrFormatMap{
-					"destTable": options.destTable,
-					"destCol":   options.destCol,
+				// delete the row from the join table so we don't process it again
+				deleteSQL := utils.StrFormat("DELETE FROM `{joinTable}` WHERE `{joinIDCol}` = ?", utils.StrFormatMap{
+					"joinTable": options.joinTable,
+					"joinIDCol": options.joinIDCol,
 				})
-				if _, err := m.db.Exec(updateSQL, checksum, id); err != nil {
+				if _, err := m.db.Exec(deleteSQL, id); err != nil {
 					return err
 				}
 			}
@@ -146,10 +209,33 @@ func (m *schema45Migrator) migrateImagesTable(ctx context.Context, options migra
 		}
 	}
 
+	return nil
+}
+
+func (m *schema45Migrator) insertImage(data []byte, id int, destTable string, destCol string) error {
+	// calculate checksum and insert into blobs table
+	checksum := md5.FromBytes(data)
+
+	if _, err := m.db.Exec("INSERT INTO `blobs` (`checksum`, `blob`) VALUES (?, ?)", checksum, data); err != nil {
+		return err
+	}
+
+	// set the tag image checksum
+	updateSQL := utils.StrFormat("UPDATE `{destTable}` SET `{destCol}` = ? WHERE `id` = ?", utils.StrFormatMap{
+		"destTable": destTable,
+		"destCol":   destCol,
+	})
+	if _, err := m.db.Exec(updateSQL, checksum, id); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *schema45Migrator) dropTable(ctx context.Context, table string) error {
 	if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
-		// drop the tags_image table
-		logger.Debugf("Dropping %s", options.joinTable)
-		_, err := m.db.Exec(fmt.Sprintf("DROP TABLE `%s`", options.joinTable))
+		logger.Debugf("Dropping %s", table)
+		_, err := m.db.Exec(fmt.Sprintf("DROP TABLE `%s`", table))
 		return err
 	}); err != nil {
 		return err

@@ -570,7 +570,7 @@ func populateDB() error {
 
 		// TODO - link folders to zip files
 
-		if err := createMovies(ctx, sqlite.MovieReaderWriter, moviesNameCase, moviesNameNoCase); err != nil {
+		if err := createMovies(ctx, db.Movie, moviesNameCase, moviesNameNoCase); err != nil {
 			return fmt.Errorf("error creating movies: %s", err.Error())
 		}
 
@@ -606,7 +606,7 @@ func populateDB() error {
 			return fmt.Errorf("error creating saved filters: %s", err.Error())
 		}
 
-		if err := linkMovieStudios(ctx, sqlite.MovieReaderWriter); err != nil {
+		if err := linkMovieStudios(ctx, db.Movie); err != nil {
 			return fmt.Errorf("error linking movie studios: %s", err.Error())
 		}
 

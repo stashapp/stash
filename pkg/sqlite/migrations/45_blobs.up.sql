@@ -8,6 +8,10 @@ ALTER TABLE `studios` ADD COLUMN `image_blob` varchar(255) REFERENCES `blobs`(`c
 ALTER TABLE `performers` ADD COLUMN `image_blob` varchar(255) REFERENCES `blobs`(`checksum`);
 ALTER TABLE `scenes` ADD COLUMN `cover_blob` varchar(255) REFERENCES `blobs`(`checksum`);
 
+ALTER TABLE `movies` ADD COLUMN `front_image_blob` varchar(255) REFERENCES `blobs`(`checksum`);
+ALTER TABLE `movies` ADD COLUMN `back_image_blob` varchar(255) REFERENCES `blobs`(`checksum`);
+
+
 -- ALTER TABLE `scenes` ADD COLUMN `cover_checksum` blob REFERENCES `blobs`(`checksum`);
 
 -- TODO: migrate scenes_cover to cover_checksum - post-migrate

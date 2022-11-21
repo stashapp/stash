@@ -50,8 +50,8 @@ type MovieWriter interface {
 	Update(ctx context.Context, updatedMovie MoviePartial) (*Movie, error)
 	UpdateFull(ctx context.Context, updatedMovie Movie) (*Movie, error)
 	Destroy(ctx context.Context, id int) error
-	UpdateImages(ctx context.Context, movieID int, frontImage []byte, backImage []byte) error
-	DestroyImages(ctx context.Context, movieID int) error
+	UpdateFrontImage(ctx context.Context, movieID int, frontImage []byte) error
+	UpdateBackImage(ctx context.Context, movieID int, backImage []byte) error
 }
 
 type MovieReaderWriter interface {
