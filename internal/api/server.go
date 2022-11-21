@@ -400,12 +400,15 @@ func SecurityHeadersMiddleware(next http.Handler) http.Handler {
 		// The graphql playground pulls its frontend from a cdn
 		connectableOrigins += " https://cdn.jsdelivr.net "
 
+		// Used for chromecast
+		connectableOrigins += "https://www.gstatic.com "
+
 		if !c.IsNewSystem() && c.GetHandyKey() != "" {
 			connectableOrigins += " https://www.handyfeeling.com"
 		}
 		connectableOrigins += "; "
 
-		cspDirectives := "default-src data: 'self' 'unsafe-inline';" + connectableOrigins + "img-src data: *; script-src 'self' https://cdn.jsdelivr.net https://www.gstatic.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src-elem 'self' https://cdn.jsdelivr.net 'unsafe-inline'; media-src 'self' blob:; child-src 'none'; object-src 'none'; form-action 'self'"
+		cspDirectives := "default-src data: 'self' 'unsafe-inline';" + connectableOrigins + "img-src data: *; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline' 'unsafe-eval'; style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src-elem 'self' https://cdn.jsdelivr.net 'unsafe-inline'; media-src 'self' blob:; child-src 'none'; object-src 'none'; form-action 'self'"
 
 		w.Header().Set("Referrer-Policy", "same-origin")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
