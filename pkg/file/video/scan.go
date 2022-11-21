@@ -49,7 +49,7 @@ func (d *Decorator) Decorate(ctx context.Context, fs file.FS, f file.File) (file
 		AudioCodec:  videoFile.AudioCodec,
 		Width:       videoFile.Width,
 		Height:      videoFile.Height,
-		Duration:    videoFile.Duration,
+		Duration:    videoFile.FileDuration,
 		FrameRate:   videoFile.FrameRate,
 		BitRate:     videoFile.Bitrate,
 		Interactive: interactive,
