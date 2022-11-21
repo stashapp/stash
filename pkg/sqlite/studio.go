@@ -13,10 +13,14 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
-const studioTable = "studios"
-const studioIDColumn = "studio_id"
-const studioAliasesTable = "studio_aliases"
-const studioAliasColumn = "alias"
+const (
+	studioTable        = "studios"
+	studioIDColumn     = "studio_id"
+	studioAliasesTable = "studio_aliases"
+	studioAliasColumn  = "alias"
+
+	studioImageBlobColumn = "image_blob"
+)
 
 type studioQueryBuilder struct {
 	repository
@@ -32,7 +36,6 @@ func NewStudioReaderWriter(blobStore *BlobStore) *studioQueryBuilder {
 		blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: studioTable,
-			joinCol:   "image_blob",
 		},
 	}
 }
@@ -439,6 +442,22 @@ func (qb *studioQueryBuilder) queryStudios(ctx context.Context, query string, ar
 	}
 
 	return []*models.Studio(ret), nil
+}
+
+func (qb *studioQueryBuilder) GetImage(ctx context.Context, studioID int) ([]byte, error) {
+	return qb.blobJoinQueryBuilder.GetImage(ctx, studioID, studioImageBlobColumn)
+}
+
+func (qb *studioQueryBuilder) HasImage(ctx context.Context, studioID int) (bool, error) {
+	return qb.blobJoinQueryBuilder.HasImage(ctx, studioID, studioImageBlobColumn)
+}
+
+func (qb *studioQueryBuilder) UpdateImage(ctx context.Context, studioID int, image []byte) error {
+	return qb.blobJoinQueryBuilder.UpdateImage(ctx, studioID, studioImageBlobColumn, image)
+}
+
+func (qb *studioQueryBuilder) DestroyImage(ctx context.Context, studioID int) error {
+	return qb.blobJoinQueryBuilder.DestroyImage(ctx, studioID, studioImageBlobColumn)
 }
 
 func (qb *studioQueryBuilder) stashIDRepository() *stashIDRepository {

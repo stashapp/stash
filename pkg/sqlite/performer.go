@@ -23,7 +23,8 @@ const (
 	performersAliasesTable = "performer_aliases"
 	performerAliasColumn   = "alias"
 	performersTagsTable    = "performers_tags"
-	performersImageTable   = "performers_image" // performer cover image
+
+	performerImageBlobColumn = "image_blob"
 )
 
 type performerRow struct {
@@ -176,7 +177,6 @@ func NewPerformerStore(blobStore *BlobStore) *PerformerStore {
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: performerTable,
-			joinCol:   "image_blob",
 		},
 		tableMgr: performerTableMgr,
 	}
@@ -922,6 +922,18 @@ func (qb *PerformerStore) tagsRepository() *joinRepository {
 
 func (qb *PerformerStore) GetTagIDs(ctx context.Context, id int) ([]int, error) {
 	return qb.tagsRepository().getIDs(ctx, id)
+}
+
+func (qb *PerformerStore) GetImage(ctx context.Context, performerID int) ([]byte, error) {
+	return qb.blobJoinQueryBuilder.GetImage(ctx, performerID, performerImageBlobColumn)
+}
+
+func (qb *PerformerStore) UpdateImage(ctx context.Context, performerID int, image []byte) error {
+	return qb.blobJoinQueryBuilder.UpdateImage(ctx, performerID, performerImageBlobColumn, image)
+}
+
+func (qb *PerformerStore) DestroyImage(ctx context.Context, performerID int) error {
+	return qb.blobJoinQueryBuilder.DestroyImage(ctx, performerID, performerImageBlobColumn)
 }
 
 func (qb *PerformerStore) stashIDRepository() *stashIDRepository {

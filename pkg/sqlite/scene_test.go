@@ -4107,7 +4107,7 @@ func TestSceneUpdateSceneCover(t *testing.T) {
 		}
 
 		// ensure image null
-		storedImage, err = qb.GetImage(ctx, sceneID)
+		storedImage, err = qb.GetCover(ctx, sceneID)
 		if err != nil {
 			return fmt.Errorf("Error getting image: %s", err.Error())
 		}

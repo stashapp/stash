@@ -287,42 +287,41 @@ type blobJoinQueryBuilder struct {
 	blobStore *BlobStore
 
 	joinTable string
-	joinCol   string
 }
 
-func (qb *blobJoinQueryBuilder) GetImage(ctx context.Context, id int) ([]byte, error) {
+func (qb *blobJoinQueryBuilder) GetImage(ctx context.Context, id int, blobCol string) ([]byte, error) {
 	sqlQuery := utils.StrFormat(`
 SELECT blobs.checksum, blobs.blob FROM {joinTable} INNER JOIN blobs ON {joinTable}.{joinCol} = blobs.checksum
 WHERE {joinTable}.id = ?
 `, utils.StrFormatMap{
 		"joinTable": qb.joinTable,
-		"joinCol":   qb.joinCol,
+		"joinCol":   blobCol,
 	})
 
 	ret, _, err := qb.blobStore.readSQL(ctx, sqlQuery, id)
 	return ret, err
 }
 
-func (qb *blobJoinQueryBuilder) UpdateImage(ctx context.Context, id int, image []byte) error {
+func (qb *blobJoinQueryBuilder) UpdateImage(ctx context.Context, id int, blobCol string, image []byte) error {
 	if len(image) == 0 {
-		return qb.DestroyImage(ctx, id)
+		return qb.DestroyImage(ctx, id, blobCol)
 	}
 	checksum, err := qb.blobStore.Write(ctx, image)
 	if err != nil {
 		return err
 	}
 
-	sqlQuery := fmt.Sprintf("UPDATE %s SET %s = ? WHERE id = ?", qb.joinTable, qb.joinCol)
+	sqlQuery := fmt.Sprintf("UPDATE %s SET %s = ? WHERE id = ?", qb.joinTable, blobCol)
 	_, err = qb.tx.Exec(ctx, sqlQuery, checksum, id)
 	return err
 }
 
-func (qb *blobJoinQueryBuilder) DestroyImage(ctx context.Context, id int) error {
+func (qb *blobJoinQueryBuilder) DestroyImage(ctx context.Context, id int, blobCol string) error {
 	sqlQuery := utils.StrFormat(`
 SELECT {joinTable}.{joinCol} FROM {joinTable} WHERE {joinTable}.id = ?
 `, utils.StrFormatMap{
 		"joinTable": qb.joinTable,
-		"joinCol":   qb.joinCol,
+		"joinCol":   blobCol,
 	})
 
 	var checksum null.String
@@ -336,7 +335,7 @@ SELECT {joinTable}.{joinCol} FROM {joinTable} WHERE {joinTable}.id = ?
 		return nil
 	}
 
-	updateQuery := fmt.Sprintf("UPDATE %s SET %s = NULL WHERE id = ?", qb.joinTable, qb.joinCol)
+	updateQuery := fmt.Sprintf("UPDATE %s SET %s = NULL WHERE id = ?", qb.joinTable, blobCol)
 	if _, err = qb.tx.Exec(ctx, updateQuery, id); err != nil {
 		return err
 	}
@@ -344,10 +343,10 @@ SELECT {joinTable}.{joinCol} FROM {joinTable} WHERE {joinTable}.id = ?
 	return qb.blobStore.Delete(ctx, checksum.String)
 }
 
-func (qb *blobJoinQueryBuilder) HasImage(ctx context.Context, id int) (bool, error) {
+func (qb *blobJoinQueryBuilder) HasImage(ctx context.Context, id int, blobCol string) (bool, error) {
 	stmt := utils.StrFormat("SELECT COUNT(*) as count FROM (SELECT {joinCol} FROM {joinTable} WHERE id = ? AND {joinCol} IS NOT NULL LIMIT 1)", utils.StrFormatMap{
 		"joinTable": qb.joinTable,
-		"joinCol":   qb.joinCol,
+		"joinCol":   blobCol,
 	})
 
 	c, err := qb.runCountQuery(ctx, stmt, []interface{}{id})

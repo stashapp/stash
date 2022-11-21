@@ -31,6 +31,8 @@ const (
 	scenesTagsTable       = "scenes_tags"
 	scenesGalleriesTable  = "scenes_galleries"
 	moviesScenesTable     = "movies_scenes"
+
+	sceneCoverBlobColumn = "cover_blob"
 )
 
 var findExactDuplicateQuery = `
@@ -192,7 +194,6 @@ func NewSceneStore(fileStore *FileStore, blobStore *BlobStore) *SceneStore {
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: sceneTable,
-			joinCol:   "cover_blob",
 		},
 
 		tableMgr:        sceneTableMgr,
@@ -363,7 +364,7 @@ func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) e
 
 func (qb *SceneStore) Destroy(ctx context.Context, id int) error {
 	// must handle image checksums manually
-	if err := qb.DestroyImage(ctx, id); err != nil {
+	if err := qb.DestroyCover(ctx, id); err != nil {
 		return err
 	}
 
@@ -1535,19 +1536,19 @@ func (qb *SceneStore) IncrementWatchCount(ctx context.Context, id int) (int, err
 }
 
 func (qb *SceneStore) GetCover(ctx context.Context, sceneID int) ([]byte, error) {
-	return qb.GetImage(ctx, sceneID)
+	return qb.GetImage(ctx, sceneID, sceneCoverBlobColumn)
 }
 
 func (qb *SceneStore) HasCover(ctx context.Context, sceneID int) (bool, error) {
-	return qb.HasImage(ctx, sceneID)
+	return qb.HasImage(ctx, sceneID, sceneCoverBlobColumn)
 }
 
 func (qb *SceneStore) UpdateCover(ctx context.Context, sceneID int, image []byte) error {
-	return qb.UpdateImage(ctx, sceneID, image)
+	return qb.UpdateImage(ctx, sceneID, sceneCoverBlobColumn, image)
 }
 
 func (qb *SceneStore) DestroyCover(ctx context.Context, sceneID int) error {
-	return qb.DestroyImage(ctx, sceneID)
+	return qb.DestroyImage(ctx, sceneID, sceneCoverBlobColumn)
 }
 
 func (qb *SceneStore) AssignFiles(ctx context.Context, sceneID int, fileIDs []file.ID) error {

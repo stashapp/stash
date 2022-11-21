@@ -13,10 +13,14 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
-const tagTable = "tags"
-const tagIDColumn = "tag_id"
-const tagAliasesTable = "tag_aliases"
-const tagAliasColumn = "alias"
+const (
+	tagTable        = "tags"
+	tagIDColumn     = "tag_id"
+	tagAliasesTable = "tag_aliases"
+	tagAliasColumn  = "alias"
+
+	tagImageBlobColumn = "image_blob"
+)
 
 type tagQueryBuilder struct {
 	repository
@@ -32,7 +36,6 @@ func NewTagReaderWriter(blobStore *BlobStore) *tagQueryBuilder {
 		blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: tagTable,
-			joinCol:   "image_blob",
 		},
 	}
 }
@@ -639,6 +642,18 @@ func (qb *tagQueryBuilder) queryTags(ctx context.Context, query string, args []i
 	}
 
 	return []*models.Tag(ret), nil
+}
+
+func (qb *tagQueryBuilder) GetImage(ctx context.Context, tagID int) ([]byte, error) {
+	return qb.blobJoinQueryBuilder.GetImage(ctx, tagID, tagImageBlobColumn)
+}
+
+func (qb *tagQueryBuilder) UpdateImage(ctx context.Context, tagID int, image []byte) error {
+	return qb.blobJoinQueryBuilder.UpdateImage(ctx, tagID, tagImageBlobColumn, image)
+}
+
+func (qb *tagQueryBuilder) DestroyImage(ctx context.Context, tagID int) error {
+	return qb.blobJoinQueryBuilder.DestroyImage(ctx, tagID, tagImageBlobColumn)
 }
 
 func (qb *tagQueryBuilder) aliasRepository() *stringRepository {
