@@ -507,10 +507,6 @@
         "description": "Handy connection key to use for interactive scenes. Setting this key will allow Stash to share your current scene information with handyfeeling.com",
         "heading": "Handy Connection Key"
       },
-      "ignore_interval": {
-        "description": "The percentage of time in which a scene must be played before activity is tracked.",
-        "heading": "Ignore Interval"
-      },
       "image_lightbox": {
         "heading": "Image Lightbox"
       },
@@ -534,6 +530,10 @@
       "menu_items": {
         "description": "Show or hide different types of content on the navigation bar",
         "heading": "Menu Items"
+      },
+      "minimum_play_percent": {
+        "description": "The percentage of time in which a scene must be played before its play count is incremented.",
+        "heading": "Minumum Play Percent"
       },
       "show_tag_card_on_hover": {
         "description": "Show tag card when hovering tag badges",

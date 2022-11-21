@@ -261,10 +261,10 @@ export const SettingsInterfacePanel: React.FC = () => {
         />
         <ModalSetting<number>
           id="ignore-interval"
-          headingID="config.ui.ignore_interval.heading"
-          subHeadingID="config.ui.ignore_interval.description"
-          value={ui.ignoreInterval ?? 0}
-          onChange={(v) => saveUI({ ignoreInterval: v })}
+          headingID="config.ui.minimum_play_percent.heading"
+          subHeadingID="config.ui.minimum_play_percent.description"
+          value={ui.minimumPlayPercent ?? 0}
+          onChange={(v) => saveUI({ minimumPlayPercent: v })}
           disabled={!ui.trackActivity}
           renderField={(value, setValue) => (
             <PercentInput

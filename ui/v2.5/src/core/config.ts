@@ -41,8 +41,9 @@ export interface IUIConfig {
   alwaysStartFromBeginning?: boolean;
   // if true enable activity tracking
   trackActivity?: boolean;
-  // the percentage of time which a scene must be played before activity is tracked
-  ignoreInterval?: number;
+  // the minimum percentage of scene duration which a scene must be played
+  // before the play count is incremented
+  minimumPlayPercent?: number;
 
   lastNoteSeen?: number;
 }

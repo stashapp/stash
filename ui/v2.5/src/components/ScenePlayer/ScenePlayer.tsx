@@ -190,7 +190,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const auto = useRef(false);
   const interactiveReady = useRef(false);
 
-  const ignoreInterval = uiConfig?.ignoreInterval ?? 0;
+  const minimumPlayPercent = uiConfig?.minimumPlayPercent ?? 0;
   const trackActivity = uiConfig?.trackActivity ?? false;
 
   const file = useMemo(
@@ -584,12 +584,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     const activity = player.trackActivity();
     activity.saveActivity = saveActivity;
     activity.incrementPlayCount = incrementPlayCount;
-    activity.ignoreInterval = ignoreInterval;
+    activity.minimumPlayPercent = minimumPlayPercent;
     activity.setEnabled(trackActivity);
   }, [
     scene,
     trackActivity,
-    ignoreInterval,
+    minimumPlayPercent,
     sceneIncrementPlayCount,
     sceneSaveActivity,
   ]);

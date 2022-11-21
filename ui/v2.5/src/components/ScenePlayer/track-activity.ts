@@ -6,7 +6,7 @@ const sendInterval = 10; // send every 10 seconds
 class TrackActivityPlugin extends videojs.getPlugin("plugin") {
   totalPlayDuration = 0;
   currentPlayDuration = 0;
-  ignoreInterval = 0;
+  minimumPlayPercent = 0;
   incrementPlayCount: () => Promise<void> = () => {
     return Promise.resolve();
   };
@@ -96,7 +96,10 @@ class TrackActivityPlugin extends videojs.getPlugin("plugin") {
       const percentCompleted = (100 / videoDuration) * resumeTime;
       const percentPlayed = (100 / videoDuration) * this.totalPlayDuration;
 
-      if (!this.playCountIncremented && percentPlayed >= this.ignoreInterval) {
+      if (
+        !this.playCountIncremented &&
+        percentPlayed >= this.minimumPlayPercent
+      ) {
         this.incrementPlayCount();
         this.playCountIncremented = true;
       }
