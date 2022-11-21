@@ -74,7 +74,7 @@
     "thehandy": "^1.0.3",
     "universal-cookie": "^4.0.4",
     "video.js": "^7.20.3",
-    "videojs-mobile-ui": "^0.7.0",
+    "videojs-mobile-ui": "^0.8.0",
     "videojs-seek-buttons": "^3.0.1",
     "videojs-vtt.js": "^0.15.4",
     "vite": "^2.9.13",

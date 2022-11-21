@@ -289,18 +289,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         },
         skipButtons: {},
         trackActivity: {},
-        mobileUi: {
-          fullscreen: {
-            enterOnRotate: true,
-            exitOnRotate: true,
-            lockOnRotate: true,
-          },
-          touchControls: {
-            seekSeconds: 10,
-            tapTimeout: 500,
-            disableOnEnd: false,
-          },
-        },
       },
     };
 
@@ -451,6 +439,22 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     // always stop the interactive client on initialisation
     interactiveClient.pause();
     interactiveReady.current = false;
+
+    const isLandscape = file.height && file.width && file.width > file.height;
+    const mobileUiOptions = {
+      fullscreen: {
+        enterOnRotate: true,
+        exitOnRotate: true,
+        lockOnRotate: true,
+        lockToLandscapeOnEnter: isLandscape,
+      },
+      touchControls: {
+        seekSeconds: 10,
+        tapTimeout: 500,
+        disableOnEnd: false,
+      },
+    };
+    player.mobileUi(mobileUiOptions);
 
     const { duration } = file;
     const sourceSelector = player.sourceSelector();
