@@ -309,12 +309,6 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
           value={props.scene.url}
           truncate
         />
-        <URLField
-          id="media_info.downloaded_from"
-          url={props.scene.url}
-          value={props.scene.url}
-          truncate
-        />
         {renderStashIDs()}
         <TextField
           id="media_info.play_count"
