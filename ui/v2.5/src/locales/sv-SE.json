@@ -350,7 +350,7 @@
       "auto_tagging": "Automatisk taggning",
       "backing_up_database": "Säkerhetskopierar databas",
       "backup_and_download": "Säkerhetskopierar databasen och laddar ner den resulterande filen.",
-      "backup_database": "Säkerhetskopierar databasen i databasens mapp med filnamnsformatet {filename_format}",
+      "backup_database": "Säkerhetskopierar databasen i backup-mappen med filnamnsformatet {filename_format}",
       "cleanup_desc": "Kollar efter saknade filer och raderar dem från databasen. Detta är en destruktiv handling.",
       "data_management": "Datahantering",
       "defaults_set": "Standard har valts och kommer användas när {action} trycks på Jobbsidan.",
@@ -437,7 +437,7 @@
         "option_label": "Använd anpassad CSS"
       },
       "custom_locales": {
-        "description": "Ändra individuella lokala strängar.\nSe https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json för kompletta listan. Sidan måste laddas om för att ändringar ska ske.",
+        "description": "Ändra individuella lokala strängar. Se https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json för kompletta listan. Sidan måste laddas om för att ändringar ska ske.",
         "heading": "Egen översättning",
         "option_label": "Aktiverat egen översättning"
       },
@@ -807,6 +807,7 @@
   },
   "hasMarkers": "Har markörer",
   "height": "Längd",
+  "height_cm": "Längd (cm)",
   "help": "Hjälp",
   "ignore_auto_tag": "Ignorera Autotagg",
   "image": "Bild",
@@ -918,6 +919,7 @@
   "scene": "Scen",
   "sceneTagger": "Scentaggaren",
   "sceneTags": "Scentaggar",
+  "scene_code": "Studiokod",
   "scene_count": "Antal scener",
   "scene_id": "Scenens ID",
   "scenes": "Scener",
@@ -1064,6 +1066,7 @@
   "videos": "Videor",
   "view_all": "Visa Allt",
   "weight": "Vikt",
+  "weight_kg": "Vikt (kg)",
   "years_old": "år gammal",
   "zip_file_count": "Antal Zip-filer"
 }
