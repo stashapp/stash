@@ -226,11 +226,9 @@ func movieIsMissingCriterionHandler(qb *movieQueryBuilder, isMissing *string) cr
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
 			case "front_image":
-				f.addLeftJoin("movies_images", "", "movies_images.movie_id = movies.id")
-				f.addWhere("movies_images.front_image IS NULL")
+				f.addWhere("movies.front_image_blob IS NULL")
 			case "back_image":
-				f.addLeftJoin("movies_images", "", "movies_images.movie_id = movies.id")
-				f.addWhere("movies_images.back_image IS NULL")
+				f.addWhere("movies.back_image_blob IS NULL")
 			case "scenes":
 				f.addLeftJoin("movies_scenes", "", "movies_scenes.movie_id = movies.id")
 				f.addWhere("movies_scenes.scene_id IS NULL")

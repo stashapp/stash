@@ -75,6 +75,77 @@ func TestMovieFindByNames(t *testing.T) {
 	})
 }
 
+func moviesToIDs(i []*models.Movie) []int {
+	ret := make([]int, len(i))
+	for i, v := range i {
+		ret[i] = v.ID
+	}
+
+	return ret
+}
+
+func TestMovieQuery(t *testing.T) {
+	var (
+		frontImage = "front_image"
+		backImage  = "back_image"
+	)
+
+	tests := []struct {
+		name        string
+		findFilter  *models.FindFilterType
+		filter      *models.MovieFilterType
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"is missing front image",
+			nil,
+			&models.MovieFilterType{
+				IsMissing: &frontImage,
+			},
+			// just ensure that it doesn't error
+			nil,
+			nil,
+			false,
+		},
+		{
+			"is missing back image",
+			nil,
+			&models.MovieFilterType{
+				IsMissing: &backImage,
+			},
+			// just ensure that it doesn't error
+			nil,
+			nil,
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			results, _, err := db.Movie.Query(ctx, tt.filter, tt.findFilter)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("MovieQueryBuilder.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			ids := moviesToIDs(results)
+			include := indexesToIDs(performerIDs, tt.includeIdxs)
+			exclude := indexesToIDs(performerIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
+}
+
 func TestMovieQueryStudio(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		mqb := db.Movie
