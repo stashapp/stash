@@ -181,6 +181,21 @@ func Start() error {
 
 		http.ServeFile(w, r, fn)
 	})
+	r.HandleFunc("/javascript", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/javascript")
+		if !c.GetJavascriptEnabled() {
+			return
+		}
+
+		// search for custom.js in current directory, then $HOME/.stash
+		fn := c.GetJavascriptPath()
+		exists, _ := fsutil.FileExists(fn)
+		if !exists {
+			return
+		}
+
+		http.ServeFile(w, r, fn)
+	})
 	r.HandleFunc("/customlocales", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		if c.GetCustomLocalesEnabled() {
@@ -216,18 +231,9 @@ func Start() error {
 	// Serve static folders
 	customServedFolders := c.GetCustomServedFolders()
 	if customServedFolders != nil {
-		r.HandleFunc("/custom/*", func(w http.ResponseWriter, r *http.Request) {
-			r.URL.Path = strings.Replace(r.URL.Path, "/custom", "", 1)
-
-			// map the path to the applicable filesystem location
-			var dir string
-			r.URL.Path, dir = customServedFolders.GetFilesystemLocation(r.URL.Path)
-			if dir != "" {
-				http.FileServer(http.Dir(dir)).ServeHTTP(w, r)
-			} else {
-				http.NotFound(w, r)
-			}
-		})
+		r.Mount("/custom", customRoutes{
+			servedFolders: customServedFolders,
+		}.Routes())
 	}
 
 	customUILocation := c.GetCustomUILocation()

@@ -1,0 +1,62 @@
+.rating-stars {
+  display: inline-flex;
+  vertical-align: middle;
+
+  button {
+    font-size: inherit;
+    margin-right: 1px;
+    padding: 0;
+    position: relative;
+
+    &:hover {
+      background-color: inherit;
+    }
+
+    &:disabled {
+      background-color: inherit;
+      opacity: inherit;
+    }
+
+    &.star-fill-0 .filled-star {
+      width: 0;
+    }
+
+    &.star-fill-25 .filled-star {
+      width: 35%;
+    }
+
+    &.star-fill-50 .filled-star {
+      width: 50%;
+    }
+
+    &.star-fill-75 .filled-star {
+      width: 65%;
+    }
+
+    &.star-fill-100 .filled-star {
+      width: 100%;
+    }
+
+    .filled-star {
+      overflow: hidden;
+      position: absolute;
+    }
+  }
+
+  .unsetting {
+    color: gold;
+  }
+
+  .setting {
+    color: gold;
+  }
+
+  .set {
+    color: gold;
+  }
+}
+
+.rating-number.disabled {
+  align-items: center;
+  display: inline-flex;
+}

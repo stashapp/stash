@@ -40,7 +40,7 @@ func (t *GeneratePreviewTask) Start(ctx context.Context) {
 
 	videoChecksum := t.Scene.GetHash(t.fileNamingAlgorithm)
 
-	if err := t.generateVideo(videoChecksum, videoFile.Duration); err != nil {
+	if err := t.generateVideo(videoChecksum, videoFile.VideoStreamDuration); err != nil {
 		logger.Errorf("error generating preview: %v", err)
 		logErrorOutput(err)
 		return
@@ -73,6 +73,10 @@ func (t GeneratePreviewTask) generateWebp(videoChecksum string) error {
 }
 
 func (t GeneratePreviewTask) required() bool {
+	if t.Scene.Path == "" {
+		return false
+	}
+
 	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
 	videoExists := t.doesVideoPreviewExist(sceneHash)
 	imageExists := !t.ImagePreview || t.doesImagePreviewExist(sceneHash)

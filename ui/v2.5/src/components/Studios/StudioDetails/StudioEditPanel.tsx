@@ -6,7 +6,7 @@ import Mousetrap from "mousetrap";
 import { Icon, StudioSelect, DetailsEditNavbar } from "src/components/Shared";
 import { Button, Form, Col, Row } from "react-bootstrap";
 import { FormUtils, ImageUtils, getStashIDs } from "src/utils";
-import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { StringListInput } from "../../Shared/StringListInput";
@@ -42,7 +42,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     url: yup.string().optional().nullable(),
     details: yup.string().optional().nullable(),
     image: yup.string().optional().nullable(),
-    rating: yup.number().optional().nullable(),
+    rating100: yup.number().optional().nullable(),
     parent_id: yup.string().optional().nullable(),
     stash_ids: yup.mixed<GQL.StashIdInput>().optional().nullable(),
     aliases: yup
@@ -64,7 +64,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     url: studio.url ?? "",
     details: studio.details ?? "",
     image: undefined,
-    rating: studio.rating ?? null,
+    rating100: studio.rating100 ?? null,
     parent_id: studio.parent_studio?.id,
     stash_ids: studio.stash_ids ?? undefined,
     aliases: studio.aliases,
@@ -80,7 +80,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
   });
 
   function setRating(v: number) {
-    formik.setFieldValue("rating", v);
+    formik.setFieldValue("rating100", v);
   }
 
   function onImageLoad(imageData: string) {
@@ -111,11 +111,11 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
       }
 
       Mousetrap.bind("0", () => setRating(NaN));
-      Mousetrap.bind("1", () => setRating(1));
-      Mousetrap.bind("2", () => setRating(2));
-      Mousetrap.bind("3", () => setRating(3));
-      Mousetrap.bind("4", () => setRating(4));
-      Mousetrap.bind("5", () => setRating(5));
+      Mousetrap.bind("1", () => setRating(20));
+      Mousetrap.bind("2", () => setRating(40));
+      Mousetrap.bind("3", () => setRating(60));
+      Mousetrap.bind("4", () => setRating(80));
+      Mousetrap.bind("5", () => setRating(100));
 
       setTimeout(() => {
         Mousetrap.unbind("0");
@@ -295,10 +295,10 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
             title: intl.formatMessage({ id: "rating" }),
           })}
           <Col xs={9}>
-            <RatingStars
-              value={formik.values.rating ?? undefined}
+            <RatingSystem
+              value={formik.values.rating100 ?? undefined}
               onSetRating={(value) =>
-                formik.setFieldValue("rating", value ?? null)
+                formik.setFieldValue("rating100", value ?? null)
               }
             />
           </Col>

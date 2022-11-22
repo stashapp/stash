@@ -54,7 +54,7 @@ func loadImageRelationships(ctx context.Context, expected models.Image, actual *
 func Test_imageQueryBuilder_Create(t *testing.T) {
 	var (
 		title     = "title"
-		rating    = 3
+		rating    = 60
 		ocounter  = 5
 		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -208,7 +208,7 @@ func makeImageFileWithID(i int) *file.ImageFile {
 func Test_imageQueryBuilder_Update(t *testing.T) {
 	var (
 		title     = "title"
-		rating    = 3
+		rating    = 60
 		ocounter  = 5
 		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -382,7 +382,7 @@ func clearImagePartial() models.ImagePartial {
 func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 	var (
 		title     = "title"
-		rating    = 3
+		rating    = 60
 		ocounter  = 5
 		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -929,18 +929,15 @@ func Test_imageQueryBuilder_Destroy(t *testing.T) {
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
-			withRollbackTxn(func(ctx context.Context) error {
-				if err := qb.Destroy(ctx, tt.id); (err != nil) != tt.wantErr {
-					t.Errorf("imageQueryBuilder.Destroy() error = %v, wantErr %v", err, tt.wantErr)
-				}
+			if err := qb.Destroy(ctx, tt.id); (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.Destroy() error = %v, wantErr %v", err, tt.wantErr)
+			}
 
-				// ensure cannot be found
-				i, err := qb.Find(ctx, tt.id)
+			// ensure cannot be found
+			i, err := qb.Find(ctx, tt.id)
 
-				assert.NotNil(err)
-				assert.Nil(i)
-				return nil
-			})
+			assert.NotNil(err)
+			assert.Nil(i)
 		})
 	}
 }
@@ -1595,7 +1592,7 @@ func TestImageQueryPathAndRating(t *testing.T) {
 			Modifier: models.CriterionModifierEquals,
 		},
 		And: &models.ImageFilterType{
-			Rating: &models.IntCriterionInput{
+			Rating100: &models.IntCriterionInput{
 				Value:    int(imageRating.Int64),
 				Modifier: models.CriterionModifierEquals,
 			},
@@ -1607,7 +1604,10 @@ func TestImageQueryPathAndRating(t *testing.T) {
 
 		images := queryImages(ctx, t, sqb, &imageFilter, nil)
 
-		assert.Len(t, images, 1)
+		if !assert.Len(t, images, 1) {
+			return nil
+		}
+
 		assert.Equal(t, imagePath, images[0].Path)
 		assert.Equal(t, int(imageRating.Int64), *images[0].Rating)
 
@@ -1633,7 +1633,7 @@ func TestImageQueryPathNotRating(t *testing.T) {
 	imageFilter := models.ImageFilterType{
 		Path: &pathCriterion,
 		Not: &models.ImageFilterType{
-			Rating: &ratingCriterion,
+			Rating100: &ratingCriterion,
 		},
 	}
 
@@ -1688,36 +1688,84 @@ func TestImageIllegalQuery(t *testing.T) {
 	})
 }
 
-func TestImageQueryRating(t *testing.T) {
+func TestImageQueryLegacyRating(t *testing.T) {
 	const rating = 3
 	ratingCriterion := models.IntCriterionInput{
 		Value:    rating,
 		Modifier: models.CriterionModifierEquals,
 	}
 
-	verifyImagesRating(t, ratingCriterion)
+	verifyImagesLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyImagesRating(t, ratingCriterion)
+	verifyImagesLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyImagesRating(t, ratingCriterion)
+	verifyImagesLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierLessThan
-	verifyImagesRating(t, ratingCriterion)
+	verifyImagesLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierIsNull
-	verifyImagesRating(t, ratingCriterion)
+	verifyImagesLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierNotNull
-	verifyImagesRating(t, ratingCriterion)
+	verifyImagesLegacyRating(t, ratingCriterion)
 }
 
-func verifyImagesRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
+func verifyImagesLegacyRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
 		sqb := db.Image
 		imageFilter := models.ImageFilterType{
 			Rating: &ratingCriterion,
+		}
+
+		images, _, err := queryImagesWithCount(ctx, sqb, &imageFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
+
+		// convert criterion value to the 100 value
+		ratingCriterion.Value = models.Rating5To100(ratingCriterion.Value)
+
+		for _, image := range images {
+			verifyIntPtr(t, image.Rating, ratingCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestImageQueryRating100(t *testing.T) {
+	const rating = 60
+	ratingCriterion := models.IntCriterionInput{
+		Value:    rating,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyImagesRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyImagesRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyImagesRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierLessThan
+	verifyImagesRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierIsNull
+	verifyImagesRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierNotNull
+	verifyImagesRating100(t, ratingCriterion)
+}
+
+func verifyImagesRating100(t *testing.T, ratingCriterion models.IntCriterionInput) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Image
+		imageFilter := models.ImageFilterType{
+			Rating100: &ratingCriterion,
 		}
 
 		images, _, err := queryImagesWithCount(ctx, sqb, &imageFilter, nil)

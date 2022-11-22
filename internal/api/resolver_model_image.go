@@ -132,7 +132,7 @@ func (r *imageResolver) Paths(ctx context.Context, obj *models.Image) (*ImagePat
 
 func (r *imageResolver) Galleries(ctx context.Context, obj *models.Image) (ret []*models.Gallery, err error) {
 	if !obj.GalleryIDs.Loaded() {
-		if err := r.withTxn(ctx, func(ctx context.Context) error {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 			return obj.LoadGalleryIDs(ctx, r.repository.Image)
 		}); err != nil {
 			return nil, err
@@ -142,6 +142,18 @@ func (r *imageResolver) Galleries(ctx context.Context, obj *models.Image) (ret [
 	var errs []error
 	ret, errs = loaders.From(ctx).GalleryByID.LoadAll(obj.GalleryIDs.List())
 	return ret, firstError(errs)
+}
+
+func (r *imageResolver) Rating(ctx context.Context, obj *models.Image) (*int, error) {
+	if obj.Rating != nil {
+		rating := models.Rating100To5(*obj.Rating)
+		return &rating, nil
+	}
+	return nil, nil
+}
+
+func (r *imageResolver) Rating100(ctx context.Context, obj *models.Image) (*int, error) {
+	return obj.Rating, nil
 }
 
 func (r *imageResolver) Studio(ctx context.Context, obj *models.Image) (ret *models.Studio, err error) {
@@ -154,7 +166,7 @@ func (r *imageResolver) Studio(ctx context.Context, obj *models.Image) (ret *mod
 
 func (r *imageResolver) Tags(ctx context.Context, obj *models.Image) (ret []*models.Tag, err error) {
 	if !obj.TagIDs.Loaded() {
-		if err := r.withTxn(ctx, func(ctx context.Context) error {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 			return obj.LoadTagIDs(ctx, r.repository.Image)
 		}); err != nil {
 			return nil, err
@@ -168,7 +180,7 @@ func (r *imageResolver) Tags(ctx context.Context, obj *models.Image) (ret []*mod
 
 func (r *imageResolver) Performers(ctx context.Context, obj *models.Image) (ret []*models.Performer, err error) {
 	if !obj.PerformerIDs.Loaded() {
-		if err := r.withTxn(ctx, func(ctx context.Context) error {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 			return obj.LoadPerformerIDs(ctx, r.repository.Image)
 		}); err != nil {
 			return nil, err

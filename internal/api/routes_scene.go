@@ -65,6 +65,7 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/screenshot", rs.Screenshot)
 		r.Get("/preview", rs.Preview)
 		r.Get("/webp", rs.Webp)
+		r.Get("/vtt/chapter", rs.ChapterVtt)
 		r.Get("/funscript", rs.Funscript)
 		r.Get("/interactive_heatmap", rs.InteractiveHeatmap)
 		r.Get("/caption", rs.CaptionLang)
@@ -257,6 +258,80 @@ func (rs sceneRoutes) Webp(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, filepath)
 }
 
+func (rs sceneRoutes) getChapterVttTitle(ctx context.Context, marker *models.SceneMarker) (*string, error) {
+	if marker.Title != "" {
+		return &marker.Title, nil
+	}
+
+	var title string
+	if err := txn.WithReadTxn(ctx, rs.txnManager, func(ctx context.Context) error {
+		qb := rs.tagFinder
+		primaryTag, err := qb.Find(ctx, marker.PrimaryTagID)
+		if err != nil {
+			return err
+		}
+
+		title = primaryTag.Name
+
+		tags, err := qb.FindBySceneMarkerID(ctx, marker.ID)
+		if err != nil {
+			return err
+		}
+
+		for _, t := range tags {
+			title += ", " + t.Name
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return &title, nil
+}
+
+func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
+	scene := r.Context().Value(sceneKey).(*models.Scene)
+	var sceneMarkers []*models.SceneMarker
+	readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		var err error
+		sceneMarkers, err = rs.sceneMarkerFinder.FindBySceneID(ctx, scene.ID)
+		return err
+	})
+	if errors.Is(readTxnErr, context.Canceled) {
+		return
+	}
+	if readTxnErr != nil {
+		logger.Warnf("read transaction error on fetch scene markers: %v", readTxnErr)
+		http.Error(w, readTxnErr.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	vttLines := []string{"WEBVTT", ""}
+	for i, marker := range sceneMarkers {
+		vttLines = append(vttLines, strconv.Itoa(i+1))
+		time := utils.GetVTTTime(marker.Seconds)
+		vttLines = append(vttLines, time+" --> "+time)
+
+		vttTitle, err := rs.getChapterVttTitle(r.Context(), marker)
+		if errors.Is(err, context.Canceled) {
+			return
+		}
+		if err != nil {
+			logger.Warnf("read transaction error on fetch scene marker title: %v", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		vttLines = append(vttLines, *vttTitle)
+		vttLines = append(vttLines, "")
+	}
+	vtt := strings.Join(vttLines, "\n")
+
+	w.Header().Set("Content-Type", "text/vtt")
+	_, _ = w.Write([]byte(vtt))
+}
+
 func (rs sceneRoutes) Funscript(w http.ResponseWriter, r *http.Request) {
 	s := r.Context().Value(sceneKey).(*models.Scene)
 	funscript := video.GetFunscriptPath(s.Path)
@@ -274,7 +349,7 @@ func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang strin
 	s := r.Context().Value(sceneKey).(*models.Scene)
 
 	var captions []*models.VideoCaption
-	readTxnErr := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+	readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 		var err error
 		primaryFile := s.Files.Primary()
 		if primaryFile == nil {
@@ -348,7 +423,7 @@ func (rs sceneRoutes) SceneMarkerStream(w http.ResponseWriter, r *http.Request) 
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
 	var sceneMarker *models.SceneMarker
-	readTxnErr := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+	readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 		var err error
 		sceneMarker, err = rs.sceneMarkerFinder.Find(ctx, sceneMarkerID)
 		return err
@@ -375,7 +450,7 @@ func (rs sceneRoutes) SceneMarkerPreview(w http.ResponseWriter, r *http.Request)
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
 	var sceneMarker *models.SceneMarker
-	readTxnErr := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+	readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 		var err error
 		sceneMarker, err = rs.sceneMarkerFinder.Find(ctx, sceneMarkerID)
 		return err
@@ -412,7 +487,7 @@ func (rs sceneRoutes) SceneMarkerScreenshot(w http.ResponseWriter, r *http.Reque
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
 	var sceneMarker *models.SceneMarker
-	readTxnErr := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+	readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 		var err error
 		sceneMarker, err = rs.sceneMarkerFinder.Find(ctx, sceneMarkerID)
 		return err
@@ -453,7 +528,7 @@ func (rs sceneRoutes) SceneCtx(next http.Handler) http.Handler {
 		sceneID, _ := strconv.Atoi(sceneIdentifierQueryParam)
 
 		var scene *models.Scene
-		_ = txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		_ = txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 			qb := rs.sceneFinder
 			if sceneID == 0 {
 				var scenes []*models.Scene

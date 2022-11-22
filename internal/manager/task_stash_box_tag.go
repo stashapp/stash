@@ -50,7 +50,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 
 	if t.refresh {
 		var performerID string
-		txnErr := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
+		txnErr := txn.WithReadTxn(ctx, instance.Repository, func(ctx context.Context) error {
 			stashids, _ := instance.Repository.Performer.GetStashIDs(ctx, t.performer.ID)
 			for _, id := range stashids {
 				if id.Endpoint == t.box.Endpoint {

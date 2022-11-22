@@ -543,6 +543,43 @@ func boolCriterionHandler(c *bool, column string, addJoinFn func(f *filterBuilde
 	}
 }
 
+func rating5CriterionHandler(c *models.IntCriterionInput, column string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if c != nil {
+			// make a copy so we can adjust it
+			cc := *c
+			if cc.Value != 0 {
+				cc.Value = models.Rating5To100(cc.Value)
+			}
+			if cc.Value2 != nil {
+				val := models.Rating5To100(*cc.Value2)
+				cc.Value2 = &val
+			}
+
+			clause, args := getIntCriterionWhereClause(column, cc)
+			f.addWhere(clause, args...)
+		}
+	}
+}
+
+func dateCriterionHandler(c *models.DateCriterionInput, column string) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if c != nil {
+			clause, args := getDateCriterionWhereClause(column, *c)
+			f.addWhere(clause, args...)
+		}
+	}
+}
+
+func timestampCriterionHandler(c *models.TimestampCriterionInput, column string) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if c != nil {
+			clause, args := getTimestampCriterionWhereClause(column, *c)
+			f.addWhere(clause, args...)
+		}
+	}
+}
+
 // handle for MultiCriterion where there is a join table between the new
 // objects
 type joinedMultiCriterionHandlerBuilder struct {
@@ -904,4 +941,40 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(criterion *mode
 			addHierarchicalConditionClauses(f, criterion, joinAlias, "root_id")
 		}
 	}
+}
+
+type stashIDCriterionHandler struct {
+	c                 *models.StashIDCriterionInput
+	stashIDRepository *stashIDRepository
+	stashIDTableAs    string
+	parentIDCol       string
+}
+
+func (h *stashIDCriterionHandler) handle(ctx context.Context, f *filterBuilder) {
+	if h.c == nil {
+		return
+	}
+
+	stashIDRepo := h.stashIDRepository
+	t := stashIDRepo.tableName
+	if h.stashIDTableAs != "" {
+		t = h.stashIDTableAs
+	}
+
+	joinClause := fmt.Sprintf("%s.%s = %s", t, stashIDRepo.idColumn, h.parentIDCol)
+	if h.c.Endpoint != nil && *h.c.Endpoint != "" {
+		joinClause += fmt.Sprintf(" AND %s.endpoint = '%s'", t, *h.c.Endpoint)
+	}
+
+	f.addLeftJoin(stashIDRepo.tableName, h.stashIDTableAs, joinClause)
+
+	v := ""
+	if h.c.StashID != nil {
+		v = *h.c.StashID
+	}
+
+	stringCriterionHandler(&models.StringCriterionInput{
+		Value:    v,
+		Modifier: h.c.Modifier,
+	}, t+".stash_id")(ctx, f)
 }

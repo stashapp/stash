@@ -6,6 +6,7 @@ type ImageFilterType struct {
 	And   *ImageFilterType      `json:"AND"`
 	Or    *ImageFilterType      `json:"OR"`
 	Not   *ImageFilterType      `json:"NOT"`
+	ID    *IntCriterionInput    `json:"id"`
 	Title *StringCriterionInput `json:"title"`
 	// Filter by file checksum
 	Checksum *StringCriterionInput `json:"checksum"`
@@ -13,8 +14,10 @@ type ImageFilterType struct {
 	Path *StringCriterionInput `json:"path"`
 	// Filter by file count
 	FileCount *IntCriterionInput `json:"file_count"`
-	// Filter by rating
+	// Filter by rating expressed as 1-5
 	Rating *IntCriterionInput `json:"rating"`
+	// Filter by rating expressed as 1-100
+	Rating100 *IntCriterionInput `json:"rating100"`
 	// Filter by organized
 	Organized *bool `json:"organized"`
 	// Filter by o-counter
@@ -39,6 +42,10 @@ type ImageFilterType struct {
 	PerformerFavorite *bool `json:"performer_favorite"`
 	// Filter to only include images with these galleries
 	Galleries *MultiCriterionInput `json:"galleries"`
+	// Filter by created at
+	CreatedAt *TimestampCriterionInput `json:"created_at"`
+	// Filter by updated at
+	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
 }
 
 type ImageDestroyInput struct {

@@ -44,8 +44,8 @@ func (t *GeneratePhashTask) Start(ctx context.Context) {
 		})
 
 		return qb.Update(ctx, t.File)
-	}); err != nil {
-		logger.Error(err.Error())
+	}); err != nil && ctx.Err() == nil {
+		logger.Errorf("Error setting phash: %v", err)
 	}
 }
 

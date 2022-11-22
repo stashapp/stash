@@ -16,6 +16,7 @@ type Queryer interface {
 
 type IDFinder interface {
 	Find(ctx context.Context, id int) (*models.Scene, error)
+	FindMany(ctx context.Context, ids []int) ([]*models.Scene, error)
 }
 
 // QueryOptions returns a SceneQueryOptions populated with the provided filters.

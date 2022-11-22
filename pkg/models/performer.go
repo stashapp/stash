@@ -111,8 +111,12 @@ type PerformerFilterType struct {
 	GalleryCount *IntCriterionInput `json:"gallery_count"`
 	// Filter by StashID
 	StashID *StringCriterionInput `json:"stash_id"`
-	// Filter by rating
+	// Filter by StashID Endpoint
+	StashIDEndpoint *StashIDCriterionInput `json:"stash_id_endpoint"`
+	// Filter by rating expressed as 1-5
 	Rating *IntCriterionInput `json:"rating"`
+	// Filter by rating expressed as 1-100
+	Rating100 *IntCriterionInput `json:"rating100"`
 	// Filter by url
 	URL *StringCriterionInput `json:"url"`
 	// Filter by hair color
@@ -125,6 +129,14 @@ type PerformerFilterType struct {
 	Studios *HierarchicalMultiCriterionInput `json:"studios"`
 	// Filter by autotag ignore value
 	IgnoreAutoTag *bool `json:"ignore_auto_tag"`
+	// Filter by birthdate
+	Birthdate *DateCriterionInput `json:"birth_date"`
+	// Filter by death date
+	DeathDate *DateCriterionInput `json:"death_date"`
+	// Filter by created at
+	CreatedAt *TimestampCriterionInput `json:"created_at"`
+	// Filter by updated at
+	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
 }
 
 type PerformerFinder interface {

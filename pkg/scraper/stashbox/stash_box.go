@@ -131,7 +131,7 @@ func (c Client) FindStashBoxSceneByFingerprints(ctx context.Context, sceneID int
 func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, ids []int) ([][]*scraper.ScrapedScene, error) {
 	var fingerprints [][]*graphql.FingerprintQueryInput
 
-	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
+	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
 		qb := c.repository.Scene
 
 		for _, sceneID := range ids {
@@ -189,13 +189,22 @@ func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, ids []int)
 }
 
 func (c Client) findStashBoxScenesByFingerprints(ctx context.Context, scenes [][]*graphql.FingerprintQueryInput) ([][]*scraper.ScrapedScene, error) {
-	var ret [][]*scraper.ScrapedScene
-	for i := 0; i < len(scenes); i += 40 {
-		end := i + 40
-		if end > len(scenes) {
-			end = len(scenes)
+	var results [][]*scraper.ScrapedScene
+
+	// filter out nils
+	var validScenes [][]*graphql.FingerprintQueryInput
+	for _, s := range scenes {
+		if len(s) > 0 {
+			validScenes = append(validScenes, s)
 		}
-		scenes, err := c.client.FindScenesBySceneFingerprints(ctx, scenes[i:end])
+	}
+
+	for i := 0; i < len(validScenes); i += 40 {
+		end := i + 40
+		if end > len(validScenes) {
+			end = len(validScenes)
+		}
+		scenes, err := c.client.FindScenesBySceneFingerprints(ctx, validScenes[i:end])
 
 		if err != nil {
 			return nil, err
@@ -210,11 +219,22 @@ func (c Client) findStashBoxScenesByFingerprints(ctx context.Context, scenes [][
 				}
 				sceneResults = append(sceneResults, ss)
 			}
-			ret = append(ret, sceneResults)
+			results = append(results, sceneResults)
 		}
 	}
 
-	return ret, nil
+	// repopulate the results to be the same order as the input
+	ret := make([][]*scraper.ScrapedScene, len(scenes))
+	upTo := 0
+
+	for i, v := range scenes {
+		if len(v) > 0 {
+			ret[i] = results[upTo]
+			upTo++
+		}
+	}
+
+	return results, nil
 }
 
 func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []string, endpoint string) (bool, error) {
@@ -225,7 +245,7 @@ func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []strin
 
 	var fingerprints []graphql.FingerprintSubmission
 
-	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
+	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
 		qb := c.repository.Scene
 
 		for _, sceneID := range ids {
@@ -366,7 +386,7 @@ func (c Client) FindStashBoxPerformersByNames(ctx context.Context, performerIDs 
 
 	var performers []*models.Performer
 
-	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
+	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
 		qb := c.repository.Performer
 
 		for _, performerID := range ids {
@@ -400,7 +420,7 @@ func (c Client) FindStashBoxPerformersByPerformerNames(ctx context.Context, perf
 
 	var performers []*models.Performer
 
-	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
+	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
 		qb := c.repository.Performer
 
 		for _, performerID := range ids {
@@ -685,7 +705,7 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 		ss.Image = getFirstImage(ctx, c.getHTTPClient(), s.Images)
 	}
 
-	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
+	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
 		pqb := c.repository.Performer
 		tqb := c.repository.Tag
 

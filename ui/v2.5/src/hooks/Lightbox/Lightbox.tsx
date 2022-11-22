@@ -18,13 +18,12 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { LightboxImage } from "./LightboxImage";
 import { ConfigurationContext } from "../Config";
 import { Link } from "react-router-dom";
-import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButton";
 import {
-  useImageUpdate,
   mutateImageIncrementO,
   mutateImageDecrementO,
   mutateImageResetO,
+  useImageUpdate,
 } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { useInterfaceLocalForage } from "../LocalForage";
@@ -42,6 +41,7 @@ import {
   faSearchMinus,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
@@ -584,7 +584,7 @@ export const LightboxComponent: React.FC<IProps> = ({
         variables: {
           input: {
             id: currentImage.id,
-            rating: v,
+            rating100: v,
           },
         },
       });
@@ -793,8 +793,8 @@ export const LightboxComponent: React.FC<IProps> = ({
                   value={currentImage?.o_counter ?? 0}
                 />
               </div>
-              <RatingStars
-                value={currentImage?.rating ?? undefined}
+              <RatingSystem
+                value={currentImage?.rating100 ?? undefined}
                 onSetRating={(v) => {
                   setRating(v ?? null);
                 }}

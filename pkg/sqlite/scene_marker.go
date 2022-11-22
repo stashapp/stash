@@ -131,6 +131,11 @@ func (qb *sceneMarkerQueryBuilder) makeFilter(ctx context.Context, sceneMarkerFi
 	query.handleCriterion(ctx, sceneMarkerTagsCriterionHandler(qb, sceneMarkerFilter.Tags))
 	query.handleCriterion(ctx, sceneMarkerSceneTagsCriterionHandler(qb, sceneMarkerFilter.SceneTags))
 	query.handleCriterion(ctx, sceneMarkerPerformersCriterionHandler(qb, sceneMarkerFilter.Performers))
+	query.handleCriterion(ctx, timestampCriterionHandler(sceneMarkerFilter.CreatedAt, "scene_markers.created_at"))
+	query.handleCriterion(ctx, timestampCriterionHandler(sceneMarkerFilter.UpdatedAt, "scene_markers.updated_at"))
+	query.handleCriterion(ctx, dateCriterionHandler(sceneMarkerFilter.SceneDate, "scenes.date"))
+	query.handleCriterion(ctx, timestampCriterionHandler(sceneMarkerFilter.SceneCreatedAt, "scenes.created_at"))
+	query.handleCriterion(ctx, timestampCriterionHandler(sceneMarkerFilter.SceneUpdatedAt, "scenes.updated_at"))
 
 	return query
 }

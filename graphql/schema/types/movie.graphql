@@ -6,7 +6,10 @@ type Movie {
   """Duration in seconds"""
   duration: Int
   date: String
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   studio: Studio
   director: String
   synopsis: String
@@ -26,7 +29,10 @@ input MovieCreateInput {
   """Duration in seconds"""
   duration: Int
   date: String
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   studio_id: ID
   director: String
   synopsis: String
@@ -43,7 +49,10 @@ input MovieUpdateInput {
   aliases: String
   duration: Int
   date: String
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   studio_id: ID
   director: String
   synopsis: String
@@ -57,7 +66,10 @@ input MovieUpdateInput {
 input BulkMovieUpdateInput {
   clientMutationId: String
   ids: [ID!]
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   studio_id: ID
   director: String
 }

@@ -49,6 +49,14 @@ func (r *movieResolver) Date(ctx context.Context, obj *models.Movie) (*string, e
 
 func (r *movieResolver) Rating(ctx context.Context, obj *models.Movie) (*int, error) {
 	if obj.Rating.Valid {
+		rating := models.Rating100To5(int(obj.Rating.Int64))
+		return &rating, nil
+	}
+	return nil, nil
+}
+
+func (r *movieResolver) Rating100(ctx context.Context, obj *models.Movie) (*int, error) {
+	if obj.Rating.Valid {
 		rating := int(obj.Rating.Int64)
 		return &rating, nil
 	}
@@ -86,7 +94,7 @@ func (r *movieResolver) FrontImagePath(ctx context.Context, obj *models.Movie) (
 func (r *movieResolver) BackImagePath(ctx context.Context, obj *models.Movie) (*string, error) {
 	// don't return any thing if there is no back image
 	var img []byte
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var err error
 		img, err = r.repository.Movie.GetBackImage(ctx, obj.ID)
 		if err != nil {
@@ -109,7 +117,7 @@ func (r *movieResolver) BackImagePath(ctx context.Context, obj *models.Movie) (*
 
 func (r *movieResolver) SceneCount(ctx context.Context, obj *models.Movie) (ret *int, err error) {
 	var res int
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		res, err = r.repository.Scene.CountByMovieID(ctx, obj.ID)
 		return err
 	}); err != nil {
@@ -120,7 +128,7 @@ func (r *movieResolver) SceneCount(ctx context.Context, obj *models.Movie) (ret 
 }
 
 func (r *movieResolver) Scenes(ctx context.Context, obj *models.Movie) (ret []*models.Scene, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var err error
 		ret, err = r.repository.Scene.FindByMovieID(ctx, obj.ID)
 		return err

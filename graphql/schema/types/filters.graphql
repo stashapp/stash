@@ -39,6 +39,14 @@ input PHashDuplicationCriterionInput {
   distance: Int
 }
 
+input StashIDCriterionInput {
+  """If present, this value is treated as a predicate.
+  That is, it will filter based on stash_ids with the matching endpoint"""
+  endpoint: String
+  stash_id: String
+  modifier: CriterionModifier!
+}
+
 input PerformerFilterType {
   AND: PerformerFilterType
   OR: PerformerFilterType
@@ -90,9 +98,13 @@ input PerformerFilterType {
   """Filter by gallery count"""
   gallery_count: IntCriterionInput
   """Filter by StashID"""
-  stash_id: StringCriterionInput
+  stash_id: StringCriterionInput @deprecated(reason: "Use stash_id_endpoint instead") 
+  """Filter by StashID"""
+  stash_id_endpoint: StashIDCriterionInput
   """Filter by rating"""
-  rating: IntCriterionInput
+  rating: IntCriterionInput @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: IntCriterionInput
   """Filter by url"""
   url: StringCriterionInput
   """Filter by hair color"""
@@ -105,6 +117,14 @@ input PerformerFilterType {
   studios: HierarchicalMultiCriterionInput
   """Filter by autotag ignore value"""
   ignore_auto_tag: Boolean
+  """Filter by birthdate"""
+  birthdate: DateCriterionInput
+  """Filter by death date"""
+  death_date: DateCriterionInput
+  """Filter by creation time"""
+  created_at: TimestampCriterionInput
+  """Filter by last update time"""
+  updated_at: TimestampCriterionInput
 }
 
 input SceneMarkerFilterType {
@@ -116,6 +136,16 @@ input SceneMarkerFilterType {
   scene_tags: HierarchicalMultiCriterionInput
   """Filter to only include scene markers with these performers"""
   performers: MultiCriterionInput
+  """Filter by creation time"""
+  created_at: TimestampCriterionInput
+  """Filter by last update time"""
+  updated_at: TimestampCriterionInput
+  """Filter by scene date"""
+  scene_date: DateCriterionInput
+  """Filter by cscene reation time"""
+  scene_created_at: TimestampCriterionInput
+  """Filter by lscene ast update time"""
+  scene_updated_at: TimestampCriterionInput
 }
 
 input SceneFilterType {
@@ -123,6 +153,7 @@ input SceneFilterType {
   OR: SceneFilterType
   NOT: SceneFilterType
 
+  id: IntCriterionInput
   title: StringCriterionInput
   code: StringCriterionInput
   details: StringCriterionInput
@@ -139,7 +170,9 @@ input SceneFilterType {
   """Filter by file count"""
   file_count: IntCriterionInput
   """Filter by rating"""
-  rating: IntCriterionInput
+  rating: IntCriterionInput @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: IntCriterionInput
   """Filter by organized"""
   organized: Boolean
   """Filter by o-counter"""
@@ -173,7 +206,9 @@ input SceneFilterType {
   """Filter by performer count"""
   performer_count: IntCriterionInput
   """Filter by StashID"""
-  stash_id: StringCriterionInput
+  stash_id: StringCriterionInput @deprecated(reason: "Use stash_id_endpoint instead") 
+  """Filter by StashID"""
+  stash_id_endpoint: StashIDCriterionInput
   """Filter by url"""
   url: StringCriterionInput
   """Filter by interactive"""
@@ -182,6 +217,18 @@ input SceneFilterType {
   interactive_speed: IntCriterionInput
   """Filter by captions"""
   captions: StringCriterionInput
+  """Filter by resume time"""
+  resume_time: IntCriterionInput
+  """Filter by play count"""
+  play_count: IntCriterionInput
+  """Filter by play duration (in seconds)"""
+  play_duration: IntCriterionInput
+  """Filter by date"""
+  date: DateCriterionInput
+  """Filter by creation time"""
+  created_at: TimestampCriterionInput
+  """Filter by last update time"""
+  updated_at: TimestampCriterionInput
 }
 
 input MovieFilterType {
@@ -193,7 +240,9 @@ input MovieFilterType {
   """Filter by duration (in seconds)"""
   duration: IntCriterionInput
   """Filter by rating"""
-  rating: IntCriterionInput
+  rating: IntCriterionInput @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: IntCriterionInput
   """Filter to only include movies with this studio"""
   studios: HierarchicalMultiCriterionInput
   """Filter to only include movies missing this property"""
@@ -202,6 +251,12 @@ input MovieFilterType {
   url: StringCriterionInput
   """Filter to only include movies where performer appears in a scene"""
   performers: MultiCriterionInput
+  """Filter by date"""
+  date: DateCriterionInput
+  """Filter by creation time"""
+  created_at: TimestampCriterionInput
+  """Filter by last update time"""
+  updated_at: TimestampCriterionInput
 }
 
 input StudioFilterType {
@@ -214,11 +269,15 @@ input StudioFilterType {
   """Filter to only include studios with this parent studio"""
   parents: MultiCriterionInput
   """Filter by StashID"""
-  stash_id: StringCriterionInput
+  stash_id: StringCriterionInput @deprecated(reason: "Use stash_id_endpoint instead") 
+  """Filter by StashID"""
+  stash_id_endpoint: StashIDCriterionInput
   """Filter to only include studios missing this property"""
   is_missing: String
   """Filter by rating"""
-  rating: IntCriterionInput
+  rating: IntCriterionInput @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: IntCriterionInput
   """Filter by scene count"""
   scene_count: IntCriterionInput
   """Filter by image count"""
@@ -231,6 +290,10 @@ input StudioFilterType {
   aliases: StringCriterionInput
   """Filter by autotag ignore value"""
   ignore_auto_tag: Boolean
+  """Filter by creation time"""
+  created_at: TimestampCriterionInput
+  """Filter by last update time"""
+  updated_at: TimestampCriterionInput
 }
 
 input GalleryFilterType {
@@ -238,6 +301,7 @@ input GalleryFilterType {
   OR: GalleryFilterType
   NOT: GalleryFilterType
 
+  id: IntCriterionInput
   title: StringCriterionInput
   details: StringCriterionInput
 
@@ -252,7 +316,9 @@ input GalleryFilterType {
   """Filter to include/exclude galleries that were created from zip"""
   is_zip: Boolean
   """Filter by rating"""
-  rating: IntCriterionInput
+  rating: IntCriterionInput @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: IntCriterionInput
   """Filter by organized"""
   organized: Boolean
   """Filter by average image resolution"""
@@ -277,6 +343,12 @@ input GalleryFilterType {
   image_count: IntCriterionInput
   """Filter by url"""
   url: StringCriterionInput
+  """Filter by date"""
+  date: DateCriterionInput
+  """Filter by creation time"""
+  created_at: TimestampCriterionInput
+  """Filter by last update time"""
+  updated_at: TimestampCriterionInput
 }
 
 input TagFilterType {
@@ -325,6 +397,12 @@ input TagFilterType {
 
   """Filter by autotag ignore value"""
   ignore_auto_tag: Boolean
+
+  """Filter by creation time"""
+  created_at: TimestampCriterionInput
+
+  """Filter by last update time"""
+  updated_at: TimestampCriterionInput
 }
 
 input ImageFilterType {
@@ -334,6 +412,8 @@ input ImageFilterType {
 
   title: StringCriterionInput
 
+  """ Filter by image id"""
+  id: IntCriterionInput
   """Filter by file checksum"""
   checksum: StringCriterionInput
   """Filter by path"""
@@ -341,7 +421,9 @@ input ImageFilterType {
   """Filter by file count"""
   file_count: IntCriterionInput
   """Filter by rating"""
-  rating: IntCriterionInput
+  rating: IntCriterionInput @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: IntCriterionInput
   """Filter by organized"""
   organized: Boolean
   """Filter by o-counter"""
@@ -366,6 +448,10 @@ input ImageFilterType {
   performer_favorite: Boolean
   """Filter to only include images with these galleries"""
   galleries: MultiCriterionInput
+  """Filter by creation time"""
+  created_at: TimestampCriterionInput
+  """Filter by last update time"""
+  updated_at: TimestampCriterionInput
 }
 
 enum CriterionModifier {
@@ -420,6 +506,18 @@ input HierarchicalMultiCriterionInput {
   value: [ID!]
   modifier: CriterionModifier!
   depth: Int
+}
+
+input DateCriterionInput {
+  value: String!
+  value2: String
+  modifier: CriterionModifier!
+}
+
+input TimestampCriterionInput {
+  value: String!
+  value2: String
+  modifier: CriterionModifier!
 }
 
 enum FilterMode {

@@ -29,13 +29,17 @@ export class ScrapeResult<T> {
   public scraped: boolean = false;
   public useNewValue: boolean = false;
 
-  public constructor(originalValue?: T | null, newValue?: T | null) {
+  public constructor(
+    originalValue?: T | null,
+    newValue?: T | null,
+    useNewValue?: boolean
+  ) {
     this.originalValue = originalValue ?? undefined;
     this.newValue = newValue ?? undefined;
 
     const valuesEqual = isEqual(originalValue, newValue);
-    this.useNewValue = !!this.newValue && !valuesEqual;
-    this.scraped = this.useNewValue;
+    this.useNewValue = useNewValue ?? (!!this.newValue && !valuesEqual);
+    this.scraped = !!this.newValue && !valuesEqual;
   }
 
   public setOriginalValue(value?: T) {
@@ -63,7 +67,12 @@ export class ScrapeResult<T> {
   }
 }
 
-interface IHasName {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function hasScrapedValues(values: ScrapeResult<any>[]) {
+  return values.some((r) => r.scraped);
+}
+
+export interface IHasName {
   name: string | undefined;
 }
 
@@ -347,6 +356,8 @@ export const ScrapedImageRow: React.FC<IScrapedImageRowProps> = (props) => {
 
 interface IScrapeDialogProps {
   title: string;
+  existingLabel?: string;
+  scrapedLabel?: string;
   renderScrapeRows: () => JSX.Element;
   onClose: (apply?: boolean) => void;
 }
@@ -379,10 +390,14 @@ export const ScrapeDialog: React.FC<IScrapeDialogProps> = (
             <Col lg={{ span: 9, offset: 3 }}>
               <Row>
                 <Form.Label column xs="6">
-                  <FormattedMessage id="dialogs.scrape_results_existing" />
+                  {props.existingLabel ?? (
+                    <FormattedMessage id="dialogs.scrape_results_existing" />
+                  )}
                 </Form.Label>
                 <Form.Label column xs="6">
-                  <FormattedMessage id="dialogs.scrape_results_scraped" />
+                  {props.scrapedLabel ?? (
+                    <FormattedMessage id="dialogs.scrape_results_scraped" />
+                  )}
                 </Form.Label>
               </Row>
             </Col>
