@@ -35,7 +35,7 @@ export default defineConfig({
       srcDir: 'src',
       filename: 'serviceWorker.ts',
       injectManifest: {
-        globIgnores: ['assets/**/*.gz'],
+        globIgnores: ['assets/**/*.gz', 'index.html'],
         globPatterns: ['assets/**'],
       },
       manifest: {

@@ -1,7 +1,7 @@
-import { clientsClaim } from "workbox-core";
+import { cacheNames, clientsClaim } from "workbox-core";
 import { registerRoute, Route } from "workbox-routing";
 import { NetworkOnly, StrategyHandler } from "workbox-strategies";
-import { ExpirationPlugin } from "workbox-expiration";
+import { ExpirationPlugin, CacheExpiration } from "workbox-expiration";
 import type { ManifestEntry } from "workbox-build";
 import { precacheAndRoute, cleanupOutdatedCaches } from "workbox-precaching";
 import { Strategy } from "workbox-strategies";
@@ -54,19 +54,40 @@ const cacheNetworkRaceExpiration = (
   });
 };
 
+const cleanAllCaches = () => {
+  self.addEventListener("activate", async (event) => {
+    // Keep the caches that Workbox uses internally.
+    const cachesToKeep = [
+      cacheNames.precache,
+      cacheNames.runtime,
+      cacheNames.googleAnalytics,
+    ];
+    const allCaches = await caches.keys();
+    const cachesToCleanup = allCaches.filter(
+      (cache) => !cachesToKeep.includes(cache)
+    );
+    for (const cacheToCleanup of cachesToCleanup) {
+      caches.delete(cacheToCleanup);
+      const cacheExpiration = new CacheExpiration(cacheToCleanup);
+      cacheExpiration.delete();
+    }
+  });
+};
+
 // Give TypeScript the correct global.
 declare let self: ServiceWorkerGlobalScope;
 
 const manifest = self.__WB_MANIFEST as Array<ManifestEntry>;
 
 cleanupOutdatedCaches();
+cleanAllCaches();
 precacheAndRoute(manifest);
 
 // handle gzipped files using runtime cache
 registerRoute(
   new Route(({ request, sameOrigin }) => {
     return sameOrigin && new RegExp(".(js|json|css|svg|md)$").test(request.url);
-  }, new CacheNetworkRace())
+  }, cacheNetworkRaceExpiration("gzipped-assets", 100, 30))
 );
 
 // scene screenshots
