@@ -81,30 +81,30 @@ func post45(ctx context.Context, db *sqlx.DB) error {
 		return err
 	}
 
-	// if err := m.migrateImagesTable(ctx, migrateImagesTableOptions{
-	// 	joinTable: "movies_images",
-	// 	joinIDCol: "movie_id",
-	// 	destTable: "movies",
-	// 	cols: []migrateImageToBlobOptions{
-	// 		{
-	// 			joinImageCol: "front_image",
-	// 			destCol:      "front_image_blob",
-	// 		},
-	// 		{
-	// 			joinImageCol: "back_image",
-	// 			destCol:      "back_image_blob",
-	// 		},
-	// 	},
-	// }); err != nil {
-	// 	return err
-	// }
+	if err := m.migrateImagesTable(ctx, migrateImagesTableOptions{
+		joinTable: "movies_images",
+		joinIDCol: "movie_id",
+		destTable: "movies",
+		cols: []migrateImageToBlobOptions{
+			{
+				joinImageCol: "front_image",
+				destCol:      "front_image_blob",
+			},
+			{
+				joinImageCol: "back_image",
+				destCol:      "back_image_blob",
+			},
+		},
+	}); err != nil {
+		return err
+	}
 
 	tablesToDrop := []string{
 		"tags_image",
 		"studios_image",
 		"performers_image",
 		"scenes_cover",
-		// "movies_images",
+		"movies_images",
 	}
 
 	for _, table := range tablesToDrop {
@@ -151,7 +151,7 @@ func (m *schema45Migrator) migrateImagesTable(ctx context.Context, options migra
 		gotSome := false
 
 		if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
-			query := fmt.Sprintf("SELECT %s FROM `%s`", options.selectColumns(), options.joinTable)
+			query := fmt.Sprintf("SELECT %s, %s FROM `%s`", options.joinIDCol, options.selectColumns(), options.joinTable)
 
 			query += fmt.Sprintf(" LIMIT %d", limit)
 
@@ -180,7 +180,8 @@ func (m *schema45Migrator) migrateImagesTable(ctx context.Context, options migra
 				count++
 
 				for i, col := range options.cols {
-					if err := m.insertImage(result[i+1].([]byte), id, options.destTable, col.destCol); err != nil {
+					image := result[i+1].(*[]byte)
+					if err := m.insertImage(*image, id, options.destTable, col.destCol); err != nil {
 						return err
 					}
 				}
