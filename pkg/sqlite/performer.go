@@ -450,16 +450,19 @@ func (qb *PerformerStore) QueryForAutoTag(ctx context.Context, words []string) (
 	// TODO - Query needs to be changed to support queries of this type, and
 	// this method should be removed
 	table := qb.table()
-	sq := dialect.From(table).Select(table.Col(idColumn)).LeftJoin(
-		performersAliasesJoinTable,
-		goqu.On(performersAliasesJoinTable.Col(performerIDColumn).Eq(table.Col(idColumn))),
-	)
+	sq := dialect.From(table).Select(table.Col(idColumn))
+	// TODO - disabled alias matching until we get finer control over it
+	// .LeftJoin(
+	// 	performersAliasesJoinTable,
+	// 	goqu.On(performersAliasesJoinTable.Col(performerIDColumn).Eq(table.Col(idColumn))),
+	// )
 
 	var whereClauses []exp.Expression
 
 	for _, w := range words {
 		whereClauses = append(whereClauses, table.Col("name").Like(w+"%"))
-		whereClauses = append(whereClauses, performersAliasesJoinTable.Col("alias").Like(w+"%"))
+		// TODO - see above
+		// whereClauses = append(whereClauses, performersAliasesJoinTable.Col("alias").Like(w+"%"))
 	}
 
 	sq = sq.Where(

@@ -174,18 +174,20 @@ func PathToPerformers(ctx context.Context, path string, reader PerformerAutoTagQ
 			matches = true
 		}
 
-		if !matches {
-			if err := p.LoadAliases(ctx, reader); err != nil {
-				return nil, err
-			}
+		// TODO - disabled alias matching until we can get finer
+		// control over the matching
+		// if !matches {
+		// 	if err := p.LoadAliases(ctx, reader); err != nil {
+		// 		return nil, err
+		// 	}
 
-			for _, alias := range p.Aliases.List() {
-				if nameMatchesPath(alias, path) != -1 {
-					matches = true
-					break
-				}
-			}
-		}
+		// 	for _, alias := range p.Aliases.List() {
+		// 		if nameMatchesPath(alias, path) != -1 {
+		// 			matches = true
+		// 			break
+		// 		}
+		// 	}
+		// }
 
 		if matches {
 			ret = append(ret, p)
