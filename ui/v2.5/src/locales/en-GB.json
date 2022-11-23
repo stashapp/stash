@@ -778,8 +778,6 @@
     "search_accuracy_label": "Search Accuracy",
     "title": "Duplicate Scenes"
   },
-  "duplicated_file_count": "Duplicated Files Count",
-  "duplicated_file_count_msg": "{value} Duplicated Files",
   "duplicated_phash": "Duplicated (phash)",
   "duration": "Duration",
   "effect_filters": {
@@ -815,6 +813,7 @@
   "file_info": "File Info",
   "file_mod_time": "File Modification Time",
   "files": "files",
+  "files_amount": "{value} files",
   "filesize": "File Size",
   "filter": "Filter",
   "filter_name": "Filter name",

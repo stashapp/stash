@@ -294,12 +294,12 @@ export const SceneDuplicateChecker: React.FC = () => {
     );
   }
 
-  function maybeRenderDuplicatedFilesCount(scene: GQL.SlimSceneDataFragment) {
+  function maybeRenderFileCount(scene: GQL.SlimSceneDataFragment) {
     if (scene.files.length <= 1) return;
 
     const popoverContent = (
       <FormattedMessage
-        id="duplicated_file_count_msg"
+        id="files_amount"
         values={{ value: intl.formatNumber(scene.files.length ?? 0) }}
       />
     );
@@ -346,7 +346,7 @@ export const SceneDuplicateChecker: React.FC = () => {
             {maybeRenderSceneMarkerPopoverButton(scene)}
             {maybeRenderOCounter(scene)}
             {maybeRenderGallery(scene)}
-            {maybeRenderDuplicatedFilesCount(scene)}
+            {maybeRenderFileCount(scene)}
             {maybeRenderOrganized(scene)}
           </ButtonGroup>
         </>
