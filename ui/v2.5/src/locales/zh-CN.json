@@ -124,6 +124,7 @@
   "also_known_as": "又称作",
   "ascending": "升序",
   "average_resolution": "平均分辨率",
+  "between_and": "以及",
   "birth_year": "出生年份",
   "birthdate": "出生日期",
   "bitrate": "比特率",
@@ -530,6 +531,10 @@
         "description": "在导航栏上显示或隐藏不同类型的内容",
         "heading": "菜单列表"
       },
+      "minimum_play_percent": {
+        "description": "在播放量增加前短片必须要播放的百分比。",
+        "heading": "最少播放百分比"
+      },
       "performers": {
         "options": {
           "image_location": {
@@ -556,6 +561,7 @@
       "scene_player": {
         "heading": "短片播放器",
         "options": {
+          "always_start_from_beginning": "视频一定从头开始播放",
           "auto_start_video": "自动播放",
           "auto_start_video_on_play_selected": {
             "description": "从视频序列，或从短片页面播放选择或随机视频时自动开始放视频",
@@ -565,7 +571,8 @@
             "description": "当视频结束时播放下一短片",
             "heading": "默认继续播放清单"
           },
-          "show_scrubber": "显示预览轴"
+          "show_scrubber": "显示预览轴",
+          "track_activity": "监测播放动作"
         }
       },
       "scene_wall": {
@@ -701,6 +708,10 @@
       "source": "源"
     },
     "overwrite_filter_confirm": "确定要覆盖现有的已保存查询 {entityName} 吗？",
+    "reassign_entity_title": "{count, plural, one {Reassign {singularEntity}} 其它 {Reassign {pluralEntity}}}",
+    "reassign_files": {
+      "destination": "重新指定至"
+    },
     "scene_gen": {
       "force_transcodes": "强制生成转码文件",
       "force_transcodes_tooltip": "默认情况下，转码文件只会在浏览器不支持的情况下生成。如果开启此选项，即使浏览器支持该视频，也会生成转码文件。",
@@ -801,6 +812,7 @@
   "file_info": "文件信息",
   "file_mod_time": "文件修改时间",
   "files": "文件",
+  "files_amount": "{value} 个文件",
   "filesize": "文件大小",
   "filter": "过滤",
   "filter_name": "过滤器名称",
@@ -851,6 +863,7 @@
   "interactive": "互动",
   "interactive_speed": "互动速度",
   "isMissing": "缺失",
+  "last_played_at": "最后播放在",
   "library": "收藏库",
   "loading": {
     "generic": "加载中…"
@@ -869,6 +882,8 @@
       "age_context": "短片里面 {age} {years_old}"
     },
     "phash": "感知码PHash",
+    "play_count": "播放量",
+    "play_duration": "播放长度",
     "stream": "视频流地址",
     "video_codec": "视频编码"
   },
@@ -939,6 +954,8 @@
   },
   "performers": "演员",
   "piercings": "穿洞",
+  "play_count": "播放量",
+  "play_duration": "播放长度",
   "primary_file": "主要文件",
   "queue": "序列",
   "random": "随机",
@@ -951,8 +968,12 @@
   "scene": "短片",
   "sceneTagger": "短片标记器",
   "sceneTags": "短片标记",
+  "scene_code": "工作室代码",
   "scene_count": "短片数量",
+  "scene_created_at": "短片建立在",
+  "scene_date": "短片日期",
   "scene_id": "短片ID",
+  "scene_updated_at": "短片修改在",
   "scenes": "短片",
   "scenes_updated_at": "短片更新时间",
   "search_filter": {
@@ -1044,6 +1065,7 @@
     "welcome_to_stash": "欢迎使用Stash"
   },
   "stash_id": "Stash 号",
+  "stash_id_endpoint": "Stash 号的终端",
   "stash_ids": "Stash号",
   "stashbox": {
     "go_review_draft": "去 {endpoint_name} 检阅草稿。",
@@ -1079,7 +1101,9 @@
     "default_filter_set": "默认过滤器",
     "delete_past_tense": "已经删除 {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "正在生成截图…",
+    "merged_scenes": "拼合的短片",
     "merged_tags": "已经合并标签",
+    "reassign_past_tense": "文件重新指定了",
     "removed_entity": "已移除 {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "rescanning_entity": "正在重新扫描 {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "已经保存 {entity}",
