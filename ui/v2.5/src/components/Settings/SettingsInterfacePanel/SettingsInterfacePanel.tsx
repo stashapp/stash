@@ -124,24 +124,31 @@ export const SettingsInterfacePanel: React.FC = () => {
           value={iface.language ?? undefined}
           onChange={(v) => saveInterface({ language: v })}
         >
+          <option value="bn-BD">বাংলা (বাংলাদেশ) (Preview)</option>
+          <option value="cs-CZ">Čeština (Preview)</option>
           <option value="da-DK">Dansk (Danmark)</option>
           <option value="de-DE">Deutsch (Deutschland)</option>
           <option value="en-GB">English (United Kingdom)</option>
           <option value="en-US">English (United States)</option>
-          <option value="es-ES">Español (España)</option>
+          <option value="et-EE">Eesti</option>
+          <option value="fa-IR">فارسی (ایران) (Preview)</option>
           <option value="fi-FI">Suomi</option>
           <option value="fr-FR">Français (France)</option>
           <option value="hr-HR">Hrvatski (Preview)</option>
+          <option value="hu-HU">Magyar (Preview)</option>
           <option value="it-IT">Italiano</option>
           <option value="ja-JP">日本語 (日本)</option>
           <option value="ko-KR">한국어 (대한민국)</option>
           <option value="nl-NL">Nederlands (Nederland)</option>
           <option value="pl-PL">Polski</option>
           <option value="pt-BR">Português (Brasil)</option>
-          <option value="ru-RU">Русский (Россия) (Preview)</option>
+          <option value="ro-RO">Română (Preview)</option>
+          <option value="ru-RU">Русский (Россия)</option>
+          <option value="es-ES">Español (España)</option>
           <option value="sv-SE">Svenska</option>
           <option value="tr-TR">Türkçe (Türkiye)</option>
-          <option value="uk-UA">Ukrainian</option>
+          <option value="th-TH">ภาษาไทย (Preview)</option>
+          <option value="uk-UA">Ukrainian (Preview)</option>
           <option value="zh-TW">繁體中文 (台灣)</option>
           <option value="zh-CN">简体中文 (中国)</option>
         </SelectSetting>

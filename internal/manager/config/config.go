@@ -466,7 +466,15 @@ func (i *Instance) getStringMapString(key string) map[string]string {
 	i.RLock()
 	defer i.RUnlock()
 
-	return i.viper(key).GetStringMapString(key)
+	ret := i.viper(key).GetStringMapString(key)
+
+	// GetStringMapString returns an empty map regardless of whether the
+	// key exists or not.
+	if len(ret) == 0 {
+		return nil
+	}
+
+	return ret
 }
 
 type StashConfig struct {
