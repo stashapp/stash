@@ -48,7 +48,13 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
         const marker = this.markers[i];
         const markerDiv = this.markerDivs[i];
 
-        markerDiv.style.left = `${(marker.time / duration) * 100}%`;
+        if (duration) {
+          // marker is 6px wide - adjust by 3px to align to center not left side
+          markerDiv.style.left = `calc(${
+            (marker.time / duration) * 100
+          }% - 3px)`;
+          markerDiv.style.visibility = "visible";
+        }
         if (seekBar) seekBar.appendChild(markerDiv);
       }
     });
@@ -58,6 +64,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     if (!this.markerTooltip) return;
 
     this.markerTooltip.innerText = title;
+    this.markerTooltip.style.right = `${-this.markerTooltip.clientWidth / 2}px`;
     this.markerTooltip.style.visibility = "visible";
 
     // hide default tooltip
@@ -76,7 +83,11 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     markerDiv.className = "vjs-marker";
 
     const duration = this.player.duration();
-    markerDiv.style.position = `${(marker.time / duration) * 100}%`;
+    if (duration) {
+      // marker is 6px wide - adjust by 3px to align to center not left side
+      markerDiv.style.left = `calc(${(marker.time / duration) * 100}% - 3px)`;
+      markerDiv.style.visibility = "visible";
+    }
 
     // bind click event to seek to marker time
     markerDiv.addEventListener("click", () =>
@@ -122,7 +133,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
   }
 
   clearMarkers() {
-    this.removeMarkers(this.markers);
+    this.removeMarkers([...this.markers]);
   }
 }
 
