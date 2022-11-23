@@ -7,6 +7,7 @@ fragment VideoFileData on VideoFile {
   id
   path
   size
+  mod_time
   duration
   video_codec
   audio_codec
@@ -24,6 +25,7 @@ fragment ImageFileData on ImageFile {
   id
   path
   size
+  mod_time
   width
   height
   fingerprints {
@@ -36,6 +38,7 @@ fragment GalleryFileData on GalleryFile {
   id
   path
   size
+  mod_time
   fingerprints {
     type
     value

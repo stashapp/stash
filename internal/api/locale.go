@@ -26,6 +26,14 @@ var matcher = language.NewMatcher([]language.Tag{
 	language.MustParse("da-DK"),
 	language.MustParse("pl-PL"),
 	language.MustParse("ko-KR"),
+	language.MustParse("cs-CZ"),
+	language.MustParse("bn-BD"),
+	language.MustParse("et-EE"),
+	language.MustParse("fa-IR"),
+	language.MustParse("hu-HU"),
+	language.MustParse("ro-RO"),
+	language.MustParse("th-TH"),
+	language.MustParse("uk-UA"),
 })
 
 // newCollator parses a locale into a collator

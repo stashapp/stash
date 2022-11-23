@@ -637,7 +637,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       ...formik.values,
       gender: stringToGender(formik.values.gender),
       image: formik.values.image ?? performer.image_path,
-      weight: Number(formik.values.weight),
     };
 
     return (
