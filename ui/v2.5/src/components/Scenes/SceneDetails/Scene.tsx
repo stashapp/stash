@@ -58,6 +58,7 @@ const DeleteScenesDialog = lazy(() => import("../DeleteScenesDialog"));
 const GenerateDialog = lazy(() => import("../../Dialogs/GenerateDialog"));
 const SceneVideoFilterPanel = lazy(() => import("./SceneVideoFilterPanel"));
 import { objectPath, objectTitle } from "src/core/files";
+import { Counter } from "src/components/Shared";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -367,6 +368,9 @@ const ScenePage: React.FC<IProps> = ({
           <Nav.Item>
             <Nav.Link eventKey="scene-file-info-panel">
               <FormattedMessage id="file_info" />
+              {scene.files.length > 1 && (
+                <Counter count={scene.files.length ?? 0} />
+              )}
             </Nav.Link>
           </Nav.Item>
           <Nav.Item>
