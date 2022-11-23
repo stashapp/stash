@@ -121,6 +121,7 @@
   "also_known_as": "Znany/a również jako",
   "ascending": "Rosnąco",
   "average_resolution": "Średnia rozdzielczość",
+  "between_and": "i",
   "birth_year": "Rok urodzenia",
   "birthdate": "Data urodzenia",
   "bitrate": "Szybkość transmisji",
@@ -436,6 +437,11 @@
         "heading": "Własny CSS",
         "option_label": "Włączony własny CSS"
       },
+      "custom_javascript": {
+        "description": "Strona musi zostać ponownie załadowana, aby zmiany zaczęły obowiązywać.",
+        "heading": "Własny Javascript",
+        "option_label": "Własny Javascript włączony"
+      },
       "custom_locales": {
         "description": "Nadpisywanie poszczególnych ciągów lokalnie. Zobacz https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json, aby uzyskać główną listę. Aby zmiany weszły w życie, strona musi zostać ponownie załadowana.",
         "heading": "Niestandardowa lokalizacja",
@@ -461,7 +467,24 @@
           "description": "Usunięcie możliwości tworzenia nowych obiektów z poziomu listy rozwijanej",
           "heading": "Wyłącz tworzenie za pomocą rozwijanej listy"
         },
-        "heading": "Edytowanie"
+        "heading": "Edytowanie",
+        "rating_system": {
+          "star_precision": {
+            "label": "Precyzja oceniania gwiazdkami",
+            "options": {
+              "full": "Cała",
+              "half": "Pół",
+              "quarter": "Ćwierć"
+            }
+          },
+          "type": {
+            "label": "Rodzaj systemu oceny",
+            "options": {
+              "decimal": "Liczby",
+              "stars": "Gwiazdki"
+            }
+          }
+        }
       },
       "funscript_offset": {
         "description": "Przesunięcie czasowe w milisekundach dla odtwarzania skryptów interaktywnych.",
@@ -505,6 +528,10 @@
         "description": "Pokaż lub ukryj różne typy zawartości na pasku nawigacyjnym",
         "heading": "Pozycje menu"
       },
+      "minimum_play_percent": {
+        "description": "Procent czasu, w którym scena musi zostać odtworzona, zanim jej licznik zostanie zwiększony.",
+        "heading": "Minimalny czas odtwarzania w procentach"
+      },
       "performers": {
         "options": {
           "image_location": {
@@ -531,6 +558,7 @@
       "scene_player": {
         "heading": "Odtwarzacz scen",
         "options": {
+          "always_start_from_beginning": "Zawsze odtwarzaj film od początku",
           "auto_start_video": "Automatyczne odtwarzanie wideo",
           "auto_start_video_on_play_selected": {
             "description": "Automatyczne odtwarzaj wideo z kolejki albo z wybranych lub losowych scen ze strony Sceny",
@@ -540,7 +568,8 @@
             "description": "Odtwarzaj następną scenę w kolejce po zakończeniu odtwarzania bieżącej",
             "heading": "Domyślnie kontynuuj odtwarzanie playlisty"
           },
-          "show_scrubber": "Pokaż Scrubber"
+          "show_scrubber": "Pokaż Scrubber",
+          "track_activity": "Śledzenie aktywności"
         }
       },
       "scene_wall": {
@@ -630,6 +659,7 @@
   "developmentVersion": "Wersja deweloperska",
   "dialogs": {
     "aliases_must_be_unique": "aliasy muszą być unikatowe",
+    "create_new_entity": "Dodaj {entity}",
     "delete_alert": "Następujące elementy {count, plural, one {{singularEntity}} other {{pluralEntity}}} zostaną trwale usunięte:",
     "delete_confirm": "Czy na pewno chcesz usunąć {entityName}?",
     "delete_entity_desc": "{count, plural, one {Czy na pewno chcesz usunąć {singularEntity}? Jeśli plik nie zostanie usunięty, {singularEntity} zostanie ponownie dodane podczas skanowania.} other {Czy na pewno chcesz usunąć {pluralEntity}? Jeśli te pliki nie zostaną usunięte, {pluralEntity} zostaną ponownie dodane podczas skanowania.}}",
@@ -664,6 +694,9 @@
         "pan_y": "Przesunięcie Y",
         "zoom": "Powiększenie"
       }
+    },
+    "merge": {
+      "source": "Źródło"
     },
     "merge_tags": {
       "destination": "Cel",
@@ -820,6 +853,7 @@
   "interactive": "Interaktywny",
   "interactive_speed": "Prędkość interaktywna",
   "isMissing": "Brakuje",
+  "last_played_at": "Ostatnio odtwarzano",
   "library": "Biblioteka",
   "loading": {
     "generic": "Ładowanie…"
@@ -838,6 +872,8 @@
       "age_context": "{age} {years_old} w tej scenie"
     },
     "phash": "PHash",
+    "play_count": "Liczba odtworzeń",
+    "play_duration": "Czas odtwarzania",
     "stream": "Stream",
     "video_codec": "Kodek wideo"
   },
@@ -908,6 +944,8 @@
   },
   "performers": "Aktorzy",
   "piercings": "Kolczyki",
+  "play_count": "Liczba odtworzeń",
+  "play_duration": "Czas odtwarzania",
   "primary_file": "Główny plik",
   "queue": "Kolejka",
   "random": "Losowo",
@@ -921,7 +959,10 @@
   "sceneTags": "Tagi sceny",
   "scene_code": "Kod studia",
   "scene_count": "Liczba scen",
+  "scene_created_at": "Scena utworzona",
+  "scene_date": "Data sceny",
   "scene_id": "ID sceny",
+  "scene_updated_at": "Scena zaktualizowana",
   "scenes": "Sceny",
   "scenes_updated_at": "Scena aktualizowana",
   "search_filter": {
