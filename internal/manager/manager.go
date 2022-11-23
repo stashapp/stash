@@ -103,6 +103,8 @@ type SetupInput struct {
 	GeneratedLocation string `json:"generatedLocation"`
 	// Empty to indicate default
 	CacheLocation string `json:"cacheLocation"`
+	// Empty to indicate database storage for blobs
+	BlobsLocation string `json:"blobsLocation"`
 }
 
 type Manager struct {
@@ -503,11 +505,7 @@ func (s *Manager) PostInit(ctx context.Context) error {
 		logger.Errorf("Error reading plugin configs: %s", err.Error())
 	}
 
-	s.Database.SetBlobStoreOptions(sqlite.BlobStoreOptions{
-		UseFilesystem: true,
-		UseDatabase:   true,
-		Path:          s.Paths.Blobs,
-	})
+	s.SetBlobStoreOptions()
 
 	s.ScraperCache = instance.initScraperCache()
 	writeStashIcon()
@@ -549,6 +547,17 @@ func (s *Manager) PostInit(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (s *Manager) SetBlobStoreOptions() {
+	storageType := s.Config.GetBlobsStorage()
+	blobsPath := s.Config.GetBlobsPath()
+
+	s.Database.SetBlobStoreOptions(sqlite.BlobStoreOptions{
+		UseFilesystem: storageType == config.BlobStorageTypeFilesystem,
+		UseDatabase:   storageType == config.BlobStorageTypeDatabase,
+		Path:          blobsPath,
+	})
 }
 
 func writeStashIcon() {
@@ -691,6 +700,22 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 		}
 
 		s.Config.Set(config.Cache, input.CacheLocation)
+	}
+
+	// if blobs path was provided then use filesystem based blob storage
+	if input.BlobsLocation != "" {
+		if !c.HasOverride(config.BlobsPath) {
+			if exists, _ := fsutil.DirExists(input.BlobsLocation); !exists {
+				if err := os.Mkdir(input.BlobsLocation, 0755); err != nil {
+					return fmt.Errorf("error creating blobs directory: %v", err)
+				}
+			}
+		}
+
+		s.Config.Set(config.BlobsPath, input.BlobsLocation)
+		s.Config.Set(config.BlobsStorage, config.BlobStorageTypeFilesystem)
+	} else {
+		s.Config.Set(config.BlobsStorage, config.BlobStorageTypeDatabase)
 	}
 
 	// set the configuration

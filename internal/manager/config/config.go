@@ -38,6 +38,8 @@ const (
 	Password            = "password"
 	MaxSessionAge       = "max_session_age"
 
+	BlobsStorage = "blobs_storage"
+
 	DefaultMaxSessionAge = 60 * 60 * 1 // 1 hours
 
 	Database = "database"
@@ -554,6 +556,18 @@ func (i *Instance) GetGeneratedPath() string {
 
 func (i *Instance) GetBlobsPath() string {
 	return i.getString(BlobsPath)
+}
+
+func (i *Instance) GetBlobsStorage() BlobsStorageType {
+	ret := BlobsStorageType(i.getString(BlobsStorage))
+
+	if !ret.IsValid() {
+		// default to database storage
+		// for legacy systems this is probably the safer option
+		ret = BlobStorageTypeDatabase
+	}
+
+	return ret
 }
 
 func (i *Instance) GetMetadataPath() string {
@@ -1460,6 +1474,12 @@ func (i *Instance) Validate() error {
 	if len(missingFields) > 0 {
 		return MissingConfigError{
 			missingFields: missingFields,
+		}
+	}
+
+	if i.GetBlobsStorage() == BlobStorageTypeFilesystem && i.viper(BlobsPath).GetString(BlobsPath) == "" {
+		return MissingConfigError{
+			missingFields: []string{BlobsPath},
 		}
 	}
 

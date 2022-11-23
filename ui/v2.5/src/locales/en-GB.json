@@ -131,6 +131,10 @@
   "birthdate": "Birthdate",
   "bitrate": "Bit Rate",
   "between_and": "and",
+  "blobs_storage_type": {
+    "database": "Database",
+    "filesystem": "Filesystem"
+  },
   "captions": "Captions",
   "career_length": "Career Length",
   "chapters": "Chapters",
@@ -258,6 +262,14 @@
         "description": "Directory location for SQLite database file backups",
         "heading": "Backup Directory Path"
       },
+      "blobs_storage": {
+        "heading": "Binary data storage type",
+        "description": "Where to store binary data such as scene covers, performer, studio and tag images. WARNING: changing this requires migrating existing data."
+      },
+      "blobs_path": {
+        "heading": "Binary data filesystem path",
+        "description": "Where in the filesystem to store binary data. WARNING: changing this requires migrating existing data."
+      },
       "cache_location": "Directory location of the cache. Required if streaming using HLS (such as on Apple devices) or DASH.",
       "cache_path_head": "Cache Path",
       "calculate_md5_and_ohash_desc": "Calculate MD5 checksum in addition to oshash. Enabling will cause initial scans to be slower. File naming hash must be set to oshash to disable MD5 calculation.",
@@ -270,6 +282,7 @@
       "create_galleries_from_folders_label": "Create galleries from folders containing images",
       "gallery_cover_regex_desc": "Regexp used to identify an image as gallery cover",
       "gallery_cover_regex_label": "Gallery cover pattern",
+      "database": "Database",
       "db_path_head": "Database Path",
       "directory_locations_to_your_content": "Directory locations to your content",
       "excluded_image_gallery_patterns_desc": "Regexps of image and gallery files/paths to exclude from Scan and add to Clean",
@@ -1049,9 +1062,11 @@
   "setup": {
     "confirm": {
       "almost_ready": "We're almost ready to complete the configuration. Please confirm the following settings. You can click back to change anything incorrect. If everything looks good, click Confirm to create your system.",
+      "blobs_directory": "Binary data directory",      
       "cache_directory": "Cache directory",
       "configuration_file_location": "Configuration file location:",
       "database_file_path": "Database file path",
+      "default_blobs_location": "<use database>",
       "default_cache_location": "<path containing configuration file>/cache",
       "default_db_location": "<path containing configuration file>/stash-go.sqlite",
       "default_generated_content_location": "<path containing configuration file>/generated",
@@ -1091,6 +1106,7 @@
       "description": "Next up, we need to determine where to find your porn collection, and where to store the Stash database, generated files and cache files. These settings can be changed later if needed.",
       "path_to_cache_directory_empty_for_default": "path to cache directory (empty for default)",
       "path_to_generated_directory_empty_for_default": "path to generated directory (empty for default)",
+      "path_to_blobs_directory_empty_for_database": "path to blobs directory (empty to use database)",
       "set_up_your_paths": "Set up your paths",
       "stash_alert": "No library paths have been selected. No media will be able to be scanned into Stash. Are you sure?",
       "where_can_stash_store_cache_files": "Where can Stash store cache files?",
@@ -1098,6 +1114,9 @@
       "where_can_stash_store_its_database": "Where can Stash store its database?",
       "where_can_stash_store_its_database_description": "Stash uses an SQLite database to store your porn metadata. By default, this will be created as <code>stash-go.sqlite</code> in the directory containing your config file. If you want to change this, please enter an absolute or relative (to the current working directory) filename.",
       "where_can_stash_store_its_database_warning": "WARNING: storing the database on a different system to where Stash is run from (e.g. storing the database on a NAS while running the Stash server on another computer) is <strong>unsupported</strong>! SQLite is not intended for use across a network, and attempting to do so can very easily cause your entire database to become corrupted.",
+      "where_can_stash_store_blobs": "Where can Stash store database binary data?",
+      "where_can_stash_store_blobs_description": "Stash can store binary data such as scene covers, performer, studio and tag images either in the database or in the filesystem. By default, it will store this data in the filesystem in the subdirectory <code>blobs</code>. If you want to change this, please enter an absolute or relative (to the current working directory) path. Stash will create this directory if it does not already exist.",
+      "where_can_stash_store_blobs_description_addendum": "Alternatively, if you want to store this data in the database, you can leave this field blank. <strong>Note:</strong> This will increase the size of your database file, and will increase database migration times.",
       "where_can_stash_store_its_generated_content": "Where can Stash store its generated content?",
       "where_can_stash_store_its_generated_content_description": "In order to provide thumbnails, previews and sprites, Stash generates images and videos. This also includes transcodes for unsupported file formats. By default, Stash will create a <code>generated</code> directory within the directory containing your config file. If you want to change where this generated media will be stored, please enter an absolute or relative (to the current working directory) path. Stash will create this directory if it does not already exist.",
       "where_is_your_porn_located": "Where is your porn located?",

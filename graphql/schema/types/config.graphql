@@ -8,6 +8,8 @@ input SetupInput {
   generatedLocation: String!
   """Empty to indicate default"""
   cacheLocation: String!
+  """Empty to indicate database storage for blobs"""
+  blobsLocation: String!
 }
 
 enum StreamingResolutionEnum {
@@ -34,6 +36,13 @@ enum HashAlgorithm {
   "oshash", OSHASH
 }
 
+enum BlobsStorageType {
+  # blobs are stored in the database
+  "Database", DATABASE
+  # blobs are stored in the filesystem under the configured blobs directory
+  "Filesystem", FILESYSTEM
+}
+
 input ConfigGeneralInput {
   """Array of file paths to content"""
   stashes: [StashConfigInput!]
@@ -49,6 +58,10 @@ input ConfigGeneralInput {
   scrapersPath: String
   """Path to cache"""
   cachePath: String
+  """Path to blobs - required for filesystem blob storage"""
+  blobsPath: String
+  """Where to store blobs"""
+  blobsStorage: BlobsStorageType
   """Whether to calculate MD5 checksums for scene video files"""
   calculateMD5: Boolean
   """Hash algorithm to use for generated file naming"""
@@ -154,6 +167,10 @@ type ConfigGeneralResult {
   scrapersPath: String!
   """Path to cache"""
   cachePath: String!
+  """Path to blobs - required for filesystem blob storage"""
+  blobsPath: String!
+  """Where to store blobs"""
+  blobsStorage: BlobsStorageType!
   """Whether to calculate MD5 checksums for scene video files"""
   calculateMD5: Boolean!
   """Hash algorithm to use for generated file naming"""

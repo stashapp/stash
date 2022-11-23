@@ -50,6 +50,10 @@ func (s *FilesystemStore) checksumToPath(checksum string) string {
 }
 
 func (s *FilesystemStore) Write(ctx context.Context, checksum string, data []byte) error {
+	if s.path == "" {
+		return fmt.Errorf("no path set")
+	}
+
 	fn := s.checksumToPath(checksum)
 
 	// create the directory if it doesn't exist
@@ -72,6 +76,10 @@ func (s *FilesystemStore) Write(ctx context.Context, checksum string, data []byt
 }
 
 func (s *FilesystemStore) Read(ctx context.Context, checksum string) ([]byte, error) {
+	if s.path == "" {
+		return nil, fmt.Errorf("no path set")
+	}
+
 	fn := s.checksumToPath(checksum)
 	f, err := s.fs.Open(fn)
 	if err != nil {
@@ -84,6 +92,10 @@ func (s *FilesystemStore) Read(ctx context.Context, checksum string) ([]byte, er
 }
 
 func (s *FilesystemStore) Delete(ctx context.Context, checksum string) error {
+	if s.path == "" {
+		return fmt.Errorf("no path set")
+	}
+
 	s.deleter.RegisterHooks(ctx)
 
 	fn := s.checksumToPath(checksum)

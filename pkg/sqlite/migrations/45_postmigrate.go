@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/sqlite"
@@ -14,6 +15,7 @@ import (
 
 type schema45Migrator struct {
 	migrator
+	hasBlobs bool
 }
 
 func post45(ctx context.Context, db *sqlx.DB) error {
@@ -113,6 +115,10 @@ func post45(ctx context.Context, db *sqlx.DB) error {
 		}
 	}
 
+	if err := m.migrateConfig(ctx); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -162,6 +168,8 @@ func (m *schema45Migrator) migrateImagesTable(ctx context.Context, options migra
 			defer rows.Close()
 
 			for rows.Next() {
+				m.hasBlobs = true
+
 				var id int
 
 				result := make([]interface{}, len(options.cols)+1)
@@ -181,8 +189,11 @@ func (m *schema45Migrator) migrateImagesTable(ctx context.Context, options migra
 
 				for i, col := range options.cols {
 					image := result[i+1].(*[]byte)
-					if err := m.insertImage(*image, id, options.destTable, col.destCol); err != nil {
-						return err
+
+					if len(*image) > 0 {
+						if err := m.insertImage(*image, id, options.destTable, col.destCol); err != nil {
+							return err
+						}
 					}
 				}
 
@@ -240,6 +251,30 @@ func (m *schema45Migrator) dropTable(ctx context.Context, table string) error {
 		return err
 	}); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *schema45Migrator) migrateConfig(ctx context.Context) error {
+	c := config.GetInstance()
+
+	if c.GetBlobsStorage().IsValid() {
+		logger.Infof("Blobs storage already set, not overwriting")
+		return nil
+	}
+
+	// if we have blobs in the database, then default to database storage
+	// otherwise default to filesystem storage
+	defaultStorage := config.BlobStorageTypeFilesystem
+	if m.hasBlobs || c.GetBlobsPath() == "" {
+		defaultStorage = config.BlobStorageTypeDatabase
+	}
+
+	logger.Infof("Setting blobs storage to %s", defaultStorage.String())
+	c.Set(config.BlobsStorage, defaultStorage)
+	if err := c.Write(); err != nil {
+		logger.Errorf("Error while writing configuration file: %s", err.Error())
 	}
 
 	return nil

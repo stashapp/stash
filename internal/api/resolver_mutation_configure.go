@@ -134,6 +134,28 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		refreshStreamManager = true
 	}
 
+	refreshBlobStorage := false
+	existingBlobsPath := c.GetBlobsPath()
+	if input.BlobsPath != nil && existingBlobsPath != *input.BlobsPath {
+		if err := validateDir(config.BlobsPath, *input.BlobsPath, true); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+
+		c.Set(config.BlobsPath, input.BlobsPath)
+		refreshBlobStorage = true
+	}
+
+	if input.BlobsStorage != nil && *input.BlobsStorage != c.GetBlobsStorage() {
+		if *input.BlobsStorage == config.BlobStorageTypeFilesystem && c.GetBlobsPath() == "" {
+			return makeConfigGeneralResult(), fmt.Errorf("blobs path must be set when using filesystem storage")
+		}
+
+		// TODO - migrate between systems
+		c.Set(config.BlobsStorage, input.BlobsStorage)
+
+		refreshBlobStorage = true
+	}
+
 	if input.VideoFileNamingAlgorithm != nil && *input.VideoFileNamingAlgorithm != c.GetVideoFileNamingAlgorithm() {
 		calculateMD5 := c.IsCalculateMD5()
 		if input.CalculateMd5 != nil {
@@ -335,6 +357,9 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	}
 	if refreshStreamManager {
 		manager.GetInstance().RefreshStreamManager()
+	}
+	if refreshBlobStorage {
+		manager.GetInstance().SetBlobStoreOptions()
 	}
 
 	return makeConfigGeneralResult(), nil
