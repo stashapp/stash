@@ -67,6 +67,7 @@
     "play_selected": "播放已选择的",
     "preview": "预览",
     "previous_action": "回去",
+    "reassign": "重新分配",
     "refresh": "刷新",
     "reload_plugins": "重新加载插件",
     "reload_scrapers": "重新加载网页挖掘器",
@@ -99,10 +100,12 @@
     "show": "展示",
     "show_configuration": "显示设定",
     "skip": "跳过",
+    "split": "分割",
     "stop": "停止",
     "submit": "提交",
     "submit_stash_box": "提交给 Stash-Box",
     "submit_update": "提交更新",
+    "swap": "交换",
     "tasks": {
       "clean_confirm_message": "确定要清除吗？ 这将删除系统中不存在的所有短片和图库的数据库信息和已经生成的内容。",
       "dry_mode_selected": "已经选择了模拟删除模式。不会实际删除文件，只会写下记录。",
@@ -436,6 +439,11 @@
         "heading": "自定义样式",
         "option_label": "自定义样式已启用"
       },
+      "custom_javascript": {
+        "description": "必须重新加载页面才能生效。",
+        "heading": "自定义 JavaScript",
+        "option_label": "自定义 JavaScript 已启用"
+      },
       "custom_locales": {
         "description": "强制使用个别特定用语。看 https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json 作为主要参考列表。页面必须更新以看到更改效果。",
         "heading": "自定义本地设定",
@@ -461,7 +469,24 @@
           "description": "禁止下拉的选择器建立新的对象",
           "heading": "禁止下拉菜单建立"
         },
-        "heading": "编辑"
+        "heading": "编辑",
+        "rating_system": {
+          "star_precision": {
+            "label": "评分星的精度",
+            "options": {
+              "full": "完整",
+              "half": "一半",
+              "quarter": "四分之一"
+            }
+          },
+          "type": {
+            "label": "评分系统类型",
+            "options": {
+              "decimal": "十进制",
+              "stars": "星"
+            }
+          }
+        }
       },
       "funscript_offset": {
         "description": "交互式脚本播放的时间偏移量（以毫秒为单位）。",
@@ -630,6 +655,7 @@
   "developmentVersion": "开发版本",
   "dialogs": {
     "aliases_must_be_unique": "别名必须是唯一的",
+    "create_new_entity": "创建新的 {entity}",
     "delete_alert": "以下 {count, plural, one {{singularEntity}} other {{pluralEntity}}} 会被永久删除:",
     "delete_confirm": "确定要删除 {entityName} 吗?",
     "delete_entity_desc": "{count, plural, one {确定要删除{singularEntity}吗? 除非同时删除文件, 否则下次扫描时{singularEntity}会重新被添加到数据库中。} other {确定要删除{pluralEntity}吗? 除非同时删除文件, 否则下次扫描时{pluralEntity}会重新被添加到数据库中。}}",
@@ -664,6 +690,11 @@
         "pan_y": "垂直卷动",
         "zoom": "放大"
       }
+    },
+    "merge": {
+      "destination": "目标",
+      "empty_results": "目标字段值将不变。",
+      "source": "源"
     },
     "merge_tags": {
       "destination": "目标",
@@ -916,6 +947,7 @@
   "recently_released_objects": "最近发行的 {objects}",
   "release_notes": "更新历史",
   "resolution": "分辨率",
+  "resume_time": "恢复时间",
   "scene": "短片",
   "sceneTagger": "短片标记器",
   "sceneTags": "短片标记",
