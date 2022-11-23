@@ -812,6 +812,7 @@
   "file_info": "Informazioni File",
   "file_mod_time": "Tempo Modifica del File",
   "files": "file",
+  "files_amount": "{value} file",
   "filesize": "Dimensione File",
   "filter": "Filtro",
   "filter_name": "Nome Filtro",
