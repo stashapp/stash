@@ -144,24 +144,9 @@ func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) (ret 
 
 func (r *galleryResolver) Cover(ctx context.Context, obj *models.Gallery) (ret *models.Image, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		// doing this via Query is really slow, so stick with FindByGalleryID
-		imgs, err := r.repository.Image.FindByGalleryID(ctx, obj.ID)
-		if err != nil {
-			return err
-		}
-
-		if len(imgs) > 0 {
-			ret = imgs[0]
-		}
-
-		for _, img := range imgs {
-			if image.IsCover(img) {
-				ret = img
-				break
-			}
-		}
-
-		return nil
+		// find cover.jpg first
+		ret, err = image.FindGalleryCover(ctx, r.repository.Image, obj.ID)
+		return err
 	}); err != nil {
 		return nil, err
 	}
