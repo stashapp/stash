@@ -9,7 +9,12 @@ import {
   useFindGallery,
   useGalleryUpdate,
 } from "src/core/StashService";
-import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
+import {
+  ErrorMessage,
+  LoadingIndicator,
+  Icon,
+  Counter,
+} from "src/components/Shared";
 import Mousetrap from "mousetrap";
 import { useToast } from "src/hooks";
 import { OrganizedButton } from "src/components/Scenes/SceneDetails/OrganizedButton";
@@ -174,6 +179,9 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
               <Nav.Item>
                 <Nav.Link eventKey="gallery-file-info-panel">
                   <FormattedMessage id="file_info" />
+                  {gallery.files.length > 1 && (
+                    <Counter count={gallery.files.length ?? 0} />
+                  )}
                 </Nav.Link>
               </Nav.Item>
             ) : undefined}
