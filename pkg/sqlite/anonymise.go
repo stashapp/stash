@@ -13,6 +13,7 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -54,9 +55,8 @@ func (db *Anonymiser) Anonymise(ctx context.Context) error {
 		func() error { return db.anonymiseStudios(ctx) },
 		func() error { return db.anonymiseTags(ctx) },
 		func() error { return db.anonymiseMovies(ctx) },
+		func() error { db.optimise(); return nil },
 	})
-
-	// anonymise fingerprints
 }
 
 func (db *Anonymiser) truncateTable(tableName string) error {
@@ -75,6 +75,7 @@ func (db *Anonymiser) deleteBlobs() error {
 }
 
 func (db *Anonymiser) anonymiseFolders(ctx context.Context) error {
+	logger.Infof("Anonymising folders")
 	return txn.WithTxn(ctx, db, func(ctx context.Context) error {
 		return db.anonymiseFoldersRecurse(ctx, 0, "")
 	})
@@ -118,6 +119,7 @@ func (db *Anonymiser) anonymiseFoldersRecurse(ctx context.Context, parentFolderI
 }
 
 func (db *Anonymiser) anonymiseFiles(ctx context.Context) error {
+	logger.Infof("Anonymising files")
 	return txn.WithTxn(ctx, db, func(ctx context.Context) error {
 		table := fileTableMgr.table
 		stmt := dialect.Update(table).Set(goqu.Record{"basename": goqu.Cast(table.Col(idColumn), "VARCHAR")})
@@ -131,6 +133,7 @@ func (db *Anonymiser) anonymiseFiles(ctx context.Context) error {
 }
 
 func (db *Anonymiser) anonymiseFingerprints(ctx context.Context) error {
+	logger.Infof("Anonymising fingerprints")
 	table := fingerprintTableMgr.table
 	lastID := 0
 	lastType := ""
@@ -183,6 +186,7 @@ func (db *Anonymiser) anonymiseFingerprints(ctx context.Context) error {
 }
 
 func (db *Anonymiser) anonymiseScenes(ctx context.Context) error {
+	logger.Infof("Anonymising scenes")
 	table := sceneTableMgr.table
 	lastID := 0
 	total := 0
@@ -265,6 +269,7 @@ func (db *Anonymiser) anonymiseScenes(ctx context.Context) error {
 }
 
 func (db *Anonymiser) anonymiseImages(ctx context.Context) error {
+	logger.Infof("Anonymising images")
 	table := imageTableMgr.table
 	lastID := 0
 	total := 0
@@ -319,6 +324,7 @@ func (db *Anonymiser) anonymiseImages(ctx context.Context) error {
 }
 
 func (db *Anonymiser) anonymiseGalleries(ctx context.Context) error {
+	logger.Infof("Anonymising galleries")
 	table := galleryTableMgr.table
 	lastID := 0
 	total := 0
@@ -377,6 +383,7 @@ func (db *Anonymiser) anonymiseGalleries(ctx context.Context) error {
 }
 
 func (db *Anonymiser) anonymisePerformers(ctx context.Context) error {
+	logger.Infof("Anonymising performers")
 	table := performerTableMgr.table
 	lastID := 0
 	total := 0
@@ -459,6 +466,7 @@ func (db *Anonymiser) anonymisePerformers(ctx context.Context) error {
 }
 
 func (db *Anonymiser) anonymiseStudios(ctx context.Context) error {
+	logger.Infof("Anonymising studios")
 	table := studioTableMgr.table
 	lastID := 0
 	total := 0
@@ -523,6 +531,7 @@ func (db *Anonymiser) anonymiseStudios(ctx context.Context) error {
 }
 
 func (db *Anonymiser) anonymiseTags(ctx context.Context) error {
+	logger.Infof("Anonymising tags")
 	table := tagTableMgr.table
 	lastID := 0
 	total := 0
@@ -583,6 +592,7 @@ func (db *Anonymiser) anonymiseTags(ctx context.Context) error {
 }
 
 func (db *Anonymiser) anonymiseMovies(ctx context.Context) error {
+	logger.Infof("Anonymising movies")
 	table := movieTableMgr.table
 	lastID := 0
 	total := 0

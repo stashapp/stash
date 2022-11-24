@@ -265,6 +265,16 @@ func (db *Database) Backup(backupPath string) error {
 	return nil
 }
 
+func (db *Database) Anonymise(outPath string) error {
+	anon, err := NewAnonymiser(db, outPath)
+
+	if err != nil {
+		return err
+	}
+
+	return anon.Anonymise(context.Background())
+}
+
 func (db *Database) RestoreFromBackup(backupPath string) error {
 	logger.Infof("Restoring backup database %s into %s", backupPath, db.dbPath)
 	return os.Rename(backupPath, db.dbPath)
@@ -285,6 +295,16 @@ func (db *Database) DatabasePath() string {
 
 func (db *Database) DatabaseBackupPath(backupDirectoryPath string) string {
 	fn := fmt.Sprintf("%s.%d.%s", filepath.Base(db.dbPath), db.schemaVersion, time.Now().Format("20060102_150405"))
+
+	if backupDirectoryPath != "" {
+		return filepath.Join(backupDirectoryPath, fn)
+	}
+
+	return fn
+}
+
+func (db *Database) AnonymousDatabasePath(backupDirectoryPath string) string {
+	fn := fmt.Sprintf("%s.anonymous.%d.%s", filepath.Base(db.dbPath), db.schemaVersion, time.Now().Format("20060102_150405"))
 
 	if backupDirectoryPath != "" {
 		return filepath.Join(backupDirectoryPath, fn)
@@ -383,8 +403,14 @@ func (db *Database) RunMigrations() error {
 	}
 
 	// optimize database after migration
+	db.optimise()
+
+	return nil
+}
+
+func (db *Database) optimise() {
 	logger.Info("Optimizing database")
-	_, err = db.db.Exec("ANALYZE")
+	_, err := db.db.Exec("ANALYZE")
 	if err != nil {
 		logger.Warnf("error while performing post-migration optimization: %v", err)
 	}
@@ -392,8 +418,6 @@ func (db *Database) RunMigrations() error {
 	if err != nil {
 		logger.Warnf("error while performing post-migration vacuum: %v", err)
 	}
-
-	return nil
 }
 
 func (db *Database) runCustomMigrations(ctx context.Context, fns []customMigrationFunc) error {

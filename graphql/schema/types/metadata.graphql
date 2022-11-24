@@ -263,6 +263,10 @@ input BackupDatabaseInput {
   download: Boolean
 }
 
+input AnonymiseDatabaseInput {
+  download: Boolean
+}
+
 enum SystemStatusEnum {
   SETUP
   NEEDS_MIGRATION
