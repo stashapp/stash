@@ -2,10 +2,14 @@ package image
 
 import (
 	"context"
-	"path/filepath"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
+)
+
+const (
+	coverFilename             = "cover.jpg"
+	coverFilenameSearchString = "%" + coverFilename
 )
 
 type Queryer interface {
@@ -134,7 +138,8 @@ func findGalleryCover(ctx context.Context, r Queryer, galleryID int, useCoverJpg
 
 	if useCoverJpg {
 		imageFilter.Path = &models.StringCriterionInput{
-			Value: string(filepath.Separator) + "cover.jpg",
+			Value:    coverFilenameSearchString,
+			Modifier: models.CriterionModifierEquals,
 		}
 	}
 
