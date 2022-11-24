@@ -441,12 +441,12 @@
         "option_label": "Activer le CSS personnalisé"
       },
       "custom_javascript": {
-        "description": "La page doit être rechargée pour que les changements prennent effet.",
+        "description": "La page doit être actualisée pour que les changements prennent effet.",
         "heading": "Javascript personnalisé",
         "option_label": "Activer le Javascript personnalisé"
       },
       "custom_locales": {
-        "description": "Remplacer individuellement des chaines linguistiques. Voir https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/fr-FR.json pour la liste principale. La page doit être rechargée pour que les changements prennent effet.",
+        "description": "Remplacer individuellement des chaines linguistiques. Voir https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/fr-FR.json pour la liste principale. La page doit être actualisée pour que les changements prennent effet.",
         "heading": "Traduction personnalisée",
         "option_label": "Activer la traduction personnalisée"
       },
@@ -883,7 +883,7 @@
     },
     "phash": "Empreinte",
     "play_count": "Compteur de lecture",
-    "play_duration": "Durée de lecture",
+    "play_duration": "Temps de lecture",
     "stream": "Flux",
     "video_codec": "Codec vidéo"
   },
@@ -955,7 +955,7 @@
   "performers": "Performeurs",
   "piercings": "Perçages",
   "play_count": "Compteur de lecture",
-  "play_duration": "Durée de lecture",
+  "play_duration": "Temps de lecture",
   "primary_file": "Fichier principal",
   "queue": "Liste de lecture",
   "random": "Aléatoire",
