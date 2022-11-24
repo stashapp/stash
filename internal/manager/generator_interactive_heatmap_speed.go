@@ -11,16 +11,18 @@ import (
 	"sort"
 
 	"github.com/lucasb-eyer/go-colorful"
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 type InteractiveHeatmapSpeedGenerator struct {
-	InteractiveSpeed int
-	Funscript        Script
-	FunscriptPath    string
-	HeatmapPath      string
-	Width            int
-	Height           int
-	NumSegments      int
+	sceneDurationMilli int64
+	InteractiveSpeed   int
+	Funscript          Script
+	FunscriptPath      string
+	HeatmapPath        string
+	Width              int
+	Height             int
+	NumSegments        int
 }
 
 type Script struct {
@@ -52,13 +54,14 @@ type GradientTable []struct {
 	Pos float64
 }
 
-func NewInteractiveHeatmapSpeedGenerator(funscriptPath string, heatmapPath string) *InteractiveHeatmapSpeedGenerator {
+func NewInteractiveHeatmapSpeedGenerator(funscriptPath string, heatmapPath string, sceneDuration float64) *InteractiveHeatmapSpeedGenerator {
 	return &InteractiveHeatmapSpeedGenerator{
-		FunscriptPath: funscriptPath,
-		HeatmapPath:   heatmapPath,
-		Width:         320,
-		Height:        15,
-		NumSegments:   150,
+		sceneDurationMilli: int64(sceneDuration * 1000),
+		FunscriptPath:      funscriptPath,
+		HeatmapPath:        heatmapPath,
+		Width:              320,
+		Height:             15,
+		NumSegments:        150,
 	}
 }
 
@@ -67,6 +70,10 @@ func (g *InteractiveHeatmapSpeedGenerator) Generate() error {
 
 	if err != nil {
 		return err
+	}
+
+	if len(funscript.Actions) == 0 {
+		return fmt.Errorf("no valid actions in funscript")
 	}
 
 	g.Funscript = funscript
@@ -102,14 +109,20 @@ func (g *InteractiveHeatmapSpeedGenerator) LoadFunscriptData(path string) (Scrip
 	sort.SliceStable(funscript.Actions, func(i, j int) bool { return funscript.Actions[i].At < funscript.Actions[j].At })
 
 	// trim actions with negative timestamps to avoid index range errors when generating heatmap
-
-	isValid := func(x int64) bool { return x >= 0 }
+	// #3181 - also trim actions that occur after the scene duration
+	loggedBadTimestamp := false
+	isValid := func(x int64) bool {
+		return x >= 0 && x < g.sceneDurationMilli
+	}
 
 	i := 0
 	for _, x := range funscript.Actions {
 		if isValid(x.At) {
 			funscript.Actions[i] = x
 			i++
+		} else if !loggedBadTimestamp {
+			loggedBadTimestamp = true
+			logger.Warnf("Invalid timestamp %d in %s: subsequent invalid timestamps will not be logged", x.At, path)
 		}
 	}
 
@@ -215,6 +228,10 @@ func (funscript Script) getGradientTable(numSegments int) GradientTable {
 
 	for _, a := range funscript.Actions {
 		segment := int(float64(a.At) / float64(maxts+1) * float64(numSegments))
+		// #3181 - sanity check. Clamp segment to numSegments-1
+		if segment >= numSegments {
+			segment = numSegments - 1
+		}
 		segments[segment].count++
 		segments[segment].intensity += int(a.Intensity)
 	}
