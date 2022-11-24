@@ -123,6 +123,7 @@ func (r *galleryResolver) FileModTime(ctx context.Context, obj *models.Gallery) 
 	return nil, nil
 }
 
+// Images is deprecated, slow and shouldn't be used
 func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) (ret []*models.Image, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var err error
