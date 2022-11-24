@@ -67,6 +67,7 @@
     "play_selected": "選択したものを再生",
     "preview": "プレビュー",
     "previous_action": "戻る",
+    "reassign": "入れ替える",
     "refresh": "更新",
     "reload_plugins": "プラグインを再読み込み",
     "reload_scrapers": "スクレイパーを再読み込み",
