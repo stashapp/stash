@@ -17,6 +17,11 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+const (
+	letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	hex     = "0123456789abcdef"
+)
+
 type Anonymiser struct {
 	*Database
 }
@@ -41,17 +46,17 @@ func (db *Anonymiser) Anonymise(ctx context.Context) error {
 		func() error { return db.deleteBlobs() },
 		func() error { return db.anonymiseFolders(ctx) },
 		func() error { return db.anonymiseFiles(ctx) },
+		func() error { return db.anonymiseFingerprints(ctx) },
 		func() error { return db.anonymiseScenes(ctx) },
+		func() error { return db.anonymiseImages(ctx) },
+		func() error { return db.anonymiseGalleries(ctx) },
+		func() error { return db.anonymisePerformers(ctx) },
+		func() error { return db.anonymiseStudios(ctx) },
+		func() error { return db.anonymiseTags(ctx) },
+		func() error { return db.anonymiseMovies(ctx) },
 	})
 
 	// anonymise fingerprints
-	// anonymise scenes
-	// anonymise images
-	// anonymise galleries
-	// anonymise performers
-	// anonymise studios
-	// anonymise tags
-	// anonymise movies
 }
 
 func (db *Anonymiser) truncateTable(tableName string) error {
@@ -125,6 +130,58 @@ func (db *Anonymiser) anonymiseFiles(ctx context.Context) error {
 	})
 }
 
+func (db *Anonymiser) anonymiseFingerprints(ctx context.Context) error {
+	table := fingerprintTableMgr.table
+	lastID := 0
+	lastType := ""
+	total := 0
+
+	for gotSome := true; gotSome; {
+		if err := txn.WithTxn(ctx, db, func(ctx context.Context) error {
+			query := dialect.From(table).Select(
+				table.Col(fileIDColumn),
+				table.Col("type"),
+				table.Col("fingerprint"),
+			).Where(goqu.L("(file_id, type)").Gt(goqu.L("(?, ?)", lastID, lastType))).Limit(1000)
+
+			gotSome = false
+
+			const single = false
+			return queryFunc(ctx, query, single, func(rows *sqlx.Rows) error {
+				var (
+					id          int
+					typ         string
+					fingerprint string
+				)
+
+				gotSome = true
+				total++
+
+				if err := rows.Scan(
+					&id,
+					&typ,
+					&fingerprint,
+				); err != nil {
+					return err
+				}
+
+				if err := db.anonymiseFingerprint(ctx, table, "fingerprint", fingerprint); err != nil {
+					return err
+				}
+
+				lastID = id
+				lastType = typ
+
+				return nil
+			})
+		}); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (db *Anonymiser) anonymiseScenes(ctx context.Context) error {
 	table := sceneTableMgr.table
 	lastID := 0
@@ -137,6 +194,141 @@ func (db *Anonymiser) anonymiseScenes(ctx context.Context) error {
 				table.Col("title"),
 				table.Col("details"),
 				table.Col("url"),
+				table.Col("code"),
+				table.Col("director"),
+			).Where(table.Col(idColumn).Gt(lastID)).Limit(1000)
+
+			gotSome = false
+
+			const single = false
+			return queryFunc(ctx, query, single, func(rows *sqlx.Rows) error {
+				var (
+					id       int
+					title    sql.NullString
+					details  sql.NullString
+					url      sql.NullString
+					code     sql.NullString
+					director sql.NullString
+				)
+
+				gotSome = true
+				total++
+
+				if err := rows.Scan(
+					&id,
+					&title,
+					&details,
+					&url,
+					&code,
+					&director,
+				); err != nil {
+					return err
+				}
+
+				lastID = id
+
+				set := goqu.Record{}
+
+				// if title set set new title
+				db.obfuscateNullString(set, "title", title)
+				db.obfuscateNullString(set, "details", details)
+				db.obfuscateNullString(set, "url", url)
+
+				if len(set) > 0 {
+					stmt := dialect.Update(table).Set(set).Where(table.Col(idColumn).Eq(id))
+
+					if _, err := exec(ctx, stmt); err != nil {
+						return fmt.Errorf("anonymising %s: %w", table.GetTable(), err)
+					}
+				}
+
+				if code.Valid {
+					if err := db.anonymiseText(ctx, table, "code", code.String); err != nil {
+						return err
+					}
+				}
+
+				if director.Valid {
+					if err := db.anonymiseText(ctx, table, "director", director.String); err != nil {
+						return err
+					}
+				}
+
+				return nil
+			})
+		}); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (db *Anonymiser) anonymiseImages(ctx context.Context) error {
+	table := imageTableMgr.table
+	lastID := 0
+	total := 0
+
+	for gotSome := true; gotSome; {
+		if err := txn.WithTxn(ctx, db, func(ctx context.Context) error {
+			query := dialect.From(table).Select(
+				table.Col(idColumn),
+				table.Col("title"),
+			).Where(table.Col(idColumn).Gt(lastID)).Limit(1000)
+
+			gotSome = false
+
+			const single = false
+			return queryFunc(ctx, query, single, func(rows *sqlx.Rows) error {
+				var (
+					id    int
+					title sql.NullString
+				)
+
+				gotSome = true
+				total++
+
+				if err := rows.Scan(
+					&id,
+					&title,
+				); err != nil {
+					return err
+				}
+
+				lastID = id
+
+				set := goqu.Record{}
+				db.obfuscateNullString(set, "title", title)
+
+				if len(set) > 0 {
+					stmt := dialect.Update(table).Set(set).Where(table.Col(idColumn).Eq(id))
+
+					if _, err := exec(ctx, stmt); err != nil {
+						return fmt.Errorf("anonymising %s: %w", table.GetTable(), err)
+					}
+				}
+
+				return nil
+			})
+		}); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (db *Anonymiser) anonymiseGalleries(ctx context.Context) error {
+	table := galleryTableMgr.table
+	lastID := 0
+	total := 0
+
+	for gotSome := true; gotSome; {
+		if err := txn.WithTxn(ctx, db, func(ctx context.Context) error {
+			query := dialect.From(table).Select(
+				table.Col(idColumn),
+				table.Col("title"),
+				table.Col("details"),
 			).Where(table.Col(idColumn).Gt(lastID)).Limit(1000)
 
 			gotSome = false
@@ -145,30 +337,33 @@ func (db *Anonymiser) anonymiseScenes(ctx context.Context) error {
 			return queryFunc(ctx, query, single, func(rows *sqlx.Rows) error {
 				var (
 					id      int
-					title   sql.NullInt64
-					details sql.NullInt64
-					url     sql.NullInt64
+					title   sql.NullString
+					details sql.NullString
 				)
 
 				gotSome = true
 				total++
 
-				if err := rows.Scan(&id, &title, &details, &url); err != nil {
+				if err := rows.Scan(
+					&id,
+					&title,
+					&details,
+				); err != nil {
 					return err
 				}
 
 				lastID = id
 
-				// if title set set new title
+				set := goqu.Record{}
+				db.obfuscateNullString(set, "title", title)
+				db.obfuscateNullString(set, "details", details)
 
-				stmt := dialect.Update(table).Set(goqu.Record{
-					"title":   db.obfuscateString(title),
-					"details": db.obfuscateString(details),
-					"url":     db.obfuscateString(url),
-				}).Where(table.Col(idColumn).Eq(id))
+				if len(set) > 0 {
+					stmt := dialect.Update(table).Set(set).Where(table.Col(idColumn).Eq(id))
 
-				if _, err := exec(ctx, stmt); err != nil {
-					return fmt.Errorf("anonymising %s: %w", table.GetTable(), err)
+					if _, err := exec(ctx, stmt); err != nil {
+						return fmt.Errorf("anonymising %s: %w", table.GetTable(), err)
+					}
 				}
 
 				return nil
@@ -178,53 +373,79 @@ func (db *Anonymiser) anonymiseScenes(ctx context.Context) error {
 		}
 	}
 
-	// anonymise distinct code and director
-	if err := utils.Do([]func() error{
-		func() error { return db.anonymiseText(ctx, table, "code") },
-		func() error { return db.anonymiseText(ctx, table, "director") },
-	}); err != nil {
-		return err
-	}
-
 	return nil
 }
 
-func (db *Anonymiser) anonymiseText(ctx context.Context, table exp.IdentifierExpression, column string) error {
+func (db *Anonymiser) anonymisePerformers(ctx context.Context) error {
+	table := performerTableMgr.table
 	lastID := 0
 	total := 0
 
 	for gotSome := true; gotSome; {
 		if err := txn.WithTxn(ctx, db, func(ctx context.Context) error {
-			gotSome = false
+			query := dialect.From(table).Select(
+				table.Col(idColumn),
+				table.Col("name"),
+				table.Col("aliases"),
+				table.Col("details"),
+				table.Col("url"),
+				table.Col("twitter"),
+				table.Col("instagram"),
+				table.Col("tattoos"),
+				table.Col("piercings"),
+			).Where(table.Col(idColumn).Gt(lastID)).Limit(1000)
 
-			query := dialect.From(column).Select(
-				goqu.ROW_NUMBER(),
-				goqu.DISTINCT(column),
-			).Where(goqu.ROW_NUMBER().Gt(lastID)).Limit(1000)
+			gotSome = false
 
 			const single = false
 			return queryFunc(ctx, query, single, func(rows *sqlx.Rows) error {
 				var (
-					rowNumber int
-					value     string
+					id        int
+					name      sql.NullString
+					aliases   sql.NullString
+					details   sql.NullString
+					url       sql.NullString
+					twitter   sql.NullString
+					instagram sql.NullString
+					tattoos   sql.NullString
+					piercings sql.NullString
 				)
 
 				gotSome = true
 				total++
 
-				if err := rows.Scan(&rowNumber, &value); err != nil {
+				if err := rows.Scan(
+					&id,
+					&name,
+					&aliases,
+					&details,
+					&url,
+					&twitter,
+					&instagram,
+					&tattoos,
+					&piercings,
+				); err != nil {
 					return err
 				}
 
-				lastID = rowNumber
+				lastID = id
 
 				set := goqu.Record{}
-				set[column] = db.obfuscateString(value)
+				db.obfuscateNullString(set, "name", name)
+				db.obfuscateNullString(set, "aliases", aliases)
+				db.obfuscateNullString(set, "details", details)
+				db.obfuscateNullString(set, "url", url)
+				db.obfuscateNullString(set, "twitter", twitter)
+				db.obfuscateNullString(set, "instagram", instagram)
+				db.obfuscateNullString(set, "tattoos", tattoos)
+				db.obfuscateNullString(set, "piercings", piercings)
 
-				stmt := dialect.Update(table).Set(set).Where(table.Col(column).Eq(value))
+				if len(set) > 0 {
+					stmt := dialect.Update(table).Set(set).Where(table.Col(idColumn).Eq(id))
 
-				if _, err := exec(ctx, stmt); err != nil {
-					return fmt.Errorf("anonymising %s: %w", column, err)
+					if _, err := exec(ctx, stmt); err != nil {
+						return fmt.Errorf("anonymising %s: %w", table.GetTable(), err)
+					}
 				}
 
 				return nil
@@ -237,19 +458,244 @@ func (db *Anonymiser) anonymiseText(ctx context.Context, table exp.IdentifierExp
 	return nil
 }
 
-func (db *Anonymiser) obfuscateString(in string) string {
-	letters := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+func (db *Anonymiser) anonymiseStudios(ctx context.Context) error {
+	table := studioTableMgr.table
+	lastID := 0
+	total := 0
+
+	for gotSome := true; gotSome; {
+		if err := txn.WithTxn(ctx, db, func(ctx context.Context) error {
+			query := dialect.From(table).Select(
+				table.Col(idColumn),
+				table.Col("name"),
+				table.Col("url"),
+				table.Col("details"),
+			).Where(table.Col(idColumn).Gt(lastID)).Limit(1000)
+
+			gotSome = false
+
+			const single = false
+			return queryFunc(ctx, query, single, func(rows *sqlx.Rows) error {
+				var (
+					id      int
+					name    sql.NullString
+					url     sql.NullString
+					details sql.NullString
+				)
+
+				gotSome = true
+				total++
+
+				if err := rows.Scan(
+					&id,
+					&name,
+					&url,
+					&details,
+				); err != nil {
+					return err
+				}
+
+				lastID = id
+
+				set := goqu.Record{}
+				db.obfuscateNullString(set, "name", name)
+				db.obfuscateNullString(set, "url", url)
+				db.obfuscateNullString(set, "details", details)
+
+				if len(set) > 0 {
+					stmt := dialect.Update(table).Set(set).Where(table.Col(idColumn).Eq(id))
+
+					if _, err := exec(ctx, stmt); err != nil {
+						return fmt.Errorf("anonymising %s: %w", table.GetTable(), err)
+					}
+				}
+
+				// TODO - anonymise studio aliases
+
+				return nil
+			})
+		}); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (db *Anonymiser) anonymiseTags(ctx context.Context) error {
+	table := tagTableMgr.table
+	lastID := 0
+	total := 0
+
+	for gotSome := true; gotSome; {
+		if err := txn.WithTxn(ctx, db, func(ctx context.Context) error {
+			query := dialect.From(table).Select(
+				table.Col(idColumn),
+				table.Col("name"),
+				table.Col("description"),
+			).Where(table.Col(idColumn).Gt(lastID)).Limit(1000)
+
+			gotSome = false
+
+			const single = false
+			return queryFunc(ctx, query, single, func(rows *sqlx.Rows) error {
+				var (
+					id          int
+					name        sql.NullString
+					description sql.NullString
+				)
+
+				gotSome = true
+				total++
+
+				if err := rows.Scan(
+					&id,
+					&name,
+					&description,
+				); err != nil {
+					return err
+				}
+
+				lastID = id
+
+				set := goqu.Record{}
+				db.obfuscateNullString(set, "name", name)
+				db.obfuscateNullString(set, "description", description)
+
+				if len(set) > 0 {
+					stmt := dialect.Update(table).Set(set).Where(table.Col(idColumn).Eq(id))
+
+					if _, err := exec(ctx, stmt); err != nil {
+						return fmt.Errorf("anonymising %s: %w", table.GetTable(), err)
+					}
+				}
+
+				// TODO - anonymise tag aliases
+
+				return nil
+			})
+		}); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (db *Anonymiser) anonymiseMovies(ctx context.Context) error {
+	table := movieTableMgr.table
+	lastID := 0
+	total := 0
+
+	for gotSome := true; gotSome; {
+		if err := txn.WithTxn(ctx, db, func(ctx context.Context) error {
+			query := dialect.From(table).Select(
+				table.Col(idColumn),
+				table.Col("name"),
+				table.Col("aliases"),
+				table.Col("synopsis"),
+				table.Col("url"),
+				table.Col("director"),
+			).Where(table.Col(idColumn).Gt(lastID)).Limit(1000)
+
+			gotSome = false
+
+			const single = false
+			return queryFunc(ctx, query, single, func(rows *sqlx.Rows) error {
+				var (
+					id       int
+					name     sql.NullString
+					aliases  sql.NullString
+					synopsis sql.NullString
+					url      sql.NullString
+					director sql.NullString
+				)
+
+				gotSome = true
+				total++
+
+				if err := rows.Scan(
+					&id,
+					&name,
+					&aliases,
+					&synopsis,
+					&url,
+					&director,
+				); err != nil {
+					return err
+				}
+
+				lastID = id
+
+				set := goqu.Record{}
+				db.obfuscateNullString(set, "name", name)
+				db.obfuscateNullString(set, "aliases", aliases)
+				db.obfuscateNullString(set, "synopsis", synopsis)
+				db.obfuscateNullString(set, "url", url)
+				db.obfuscateNullString(set, "director", director)
+
+				if len(set) > 0 {
+					stmt := dialect.Update(table).Set(set).Where(table.Col(idColumn).Eq(id))
+
+					if _, err := exec(ctx, stmt); err != nil {
+						return fmt.Errorf("anonymising %s: %w", table.GetTable(), err)
+					}
+				}
+
+				return nil
+			})
+		}); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (db *Anonymiser) anonymiseText(ctx context.Context, table exp.IdentifierExpression, column string, value string) error {
+	set := goqu.Record{}
+	set[column] = db.obfuscateString(value, letters)
+
+	stmt := dialect.Update(table).Set(set).Where(table.Col(column).Eq(value))
+
+	if _, err := exec(ctx, stmt); err != nil {
+		return fmt.Errorf("anonymising %s: %w", column, err)
+	}
+
+	return nil
+}
+
+func (db *Anonymiser) anonymiseFingerprint(ctx context.Context, table exp.IdentifierExpression, column string, value string) error {
+	set := goqu.Record{}
+	set[column] = db.obfuscateString(value, hex)
+
+	stmt := dialect.Update(table).Set(set).Where(table.Col(column).Eq(value))
+
+	if _, err := exec(ctx, stmt); err != nil {
+		return fmt.Errorf("anonymising %s: %w", column, err)
+	}
+
+	return nil
+}
+
+func (db *Anonymiser) obfuscateNullString(out goqu.Record, column string, in sql.NullString) {
+	if in.Valid {
+		out[column] = db.obfuscateString(in.String, letters)
+	}
+}
+
+func (db *Anonymiser) obfuscateString(in string, dict string) string {
 	out := strings.Builder{}
 	for _, c := range in {
 		if unicode.IsSpace(c) {
 			out.WriteRune(c)
 		} else {
-			num, err := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
+			num, err := rand.Int(rand.Reader, big.NewInt(int64(len(dict))))
 			if err != nil {
 				panic("error generating random number")
 			}
 
-			out.WriteByte(letters[num.Int64()])
+			out.WriteByte(dict[num.Int64()])
 		}
 	}
 

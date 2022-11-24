@@ -19,7 +19,7 @@ func TestAnonymiser_Anonymise(t *testing.T) {
 	}
 
 	f.Close()
-	// defer os.Remove(f.Name())
+	defer os.Remove(f.Name())
 
 	// use existing database
 	anonymiser, err := sqlite.NewAnonymiser(db, f.Name())
