@@ -138,6 +138,7 @@ func (db *Anonymiser) anonymiseFingerprints(ctx context.Context) error {
 	lastID := 0
 	lastType := ""
 	total := 0
+	const logEvery = 10000
 
 	for gotSome := true; gotSome; {
 		if err := txn.WithTxn(ctx, db, func(ctx context.Context) error {
@@ -157,9 +158,6 @@ func (db *Anonymiser) anonymiseFingerprints(ctx context.Context) error {
 					fingerprint string
 				)
 
-				gotSome = true
-				total++
-
 				if err := rows.Scan(
 					&id,
 					&typ,
@@ -174,6 +172,13 @@ func (db *Anonymiser) anonymiseFingerprints(ctx context.Context) error {
 
 				lastID = id
 				lastType = typ
+
+				gotSome = true
+				total++
+
+				if total%logEvery == 0 {
+					logger.Infof("Anonymised %d fingerprints", total)
+				}
 
 				return nil
 			})
@@ -190,6 +195,7 @@ func (db *Anonymiser) anonymiseScenes(ctx context.Context) error {
 	table := sceneTableMgr.table
 	lastID := 0
 	total := 0
+	const logEvery = 10000
 
 	for gotSome := true; gotSome; {
 		if err := txn.WithTxn(ctx, db, func(ctx context.Context) error {
@@ -215,9 +221,6 @@ func (db *Anonymiser) anonymiseScenes(ctx context.Context) error {
 					director sql.NullString
 				)
 
-				gotSome = true
-				total++
-
 				if err := rows.Scan(
 					&id,
 					&title,
@@ -228,8 +231,6 @@ func (db *Anonymiser) anonymiseScenes(ctx context.Context) error {
 				); err != nil {
 					return err
 				}
-
-				lastID = id
 
 				set := goqu.Record{}
 
@@ -258,6 +259,14 @@ func (db *Anonymiser) anonymiseScenes(ctx context.Context) error {
 					}
 				}
 
+				lastID = id
+				gotSome = true
+				total++
+
+				if total%logEvery == 0 {
+					logger.Infof("Anonymised %d scenes", total)
+				}
+
 				return nil
 			})
 		}); err != nil {
@@ -273,6 +282,7 @@ func (db *Anonymiser) anonymiseImages(ctx context.Context) error {
 	table := imageTableMgr.table
 	lastID := 0
 	total := 0
+	const logEvery = 10000
 
 	for gotSome := true; gotSome; {
 		if err := txn.WithTxn(ctx, db, func(ctx context.Context) error {
@@ -290,17 +300,12 @@ func (db *Anonymiser) anonymiseImages(ctx context.Context) error {
 					title sql.NullString
 				)
 
-				gotSome = true
-				total++
-
 				if err := rows.Scan(
 					&id,
 					&title,
 				); err != nil {
 					return err
 				}
-
-				lastID = id
 
 				set := goqu.Record{}
 				db.obfuscateNullString(set, "title", title)
@@ -311,6 +316,14 @@ func (db *Anonymiser) anonymiseImages(ctx context.Context) error {
 					if _, err := exec(ctx, stmt); err != nil {
 						return fmt.Errorf("anonymising %s: %w", table.GetTable(), err)
 					}
+				}
+
+				lastID = id
+				gotSome = true
+				total++
+
+				if total%logEvery == 0 {
+					logger.Infof("Anonymised %d images", total)
 				}
 
 				return nil
@@ -328,6 +341,7 @@ func (db *Anonymiser) anonymiseGalleries(ctx context.Context) error {
 	table := galleryTableMgr.table
 	lastID := 0
 	total := 0
+	const logEvery = 10000
 
 	for gotSome := true; gotSome; {
 		if err := txn.WithTxn(ctx, db, func(ctx context.Context) error {
@@ -347,9 +361,6 @@ func (db *Anonymiser) anonymiseGalleries(ctx context.Context) error {
 					details sql.NullString
 				)
 
-				gotSome = true
-				total++
-
 				if err := rows.Scan(
 					&id,
 					&title,
@@ -357,8 +368,6 @@ func (db *Anonymiser) anonymiseGalleries(ctx context.Context) error {
 				); err != nil {
 					return err
 				}
-
-				lastID = id
 
 				set := goqu.Record{}
 				db.obfuscateNullString(set, "title", title)
@@ -370,6 +379,14 @@ func (db *Anonymiser) anonymiseGalleries(ctx context.Context) error {
 					if _, err := exec(ctx, stmt); err != nil {
 						return fmt.Errorf("anonymising %s: %w", table.GetTable(), err)
 					}
+				}
+
+				lastID = id
+				gotSome = true
+				total++
+
+				if total%logEvery == 0 {
+					logger.Infof("Anonymised %d galleries", total)
 				}
 
 				return nil
@@ -387,6 +404,7 @@ func (db *Anonymiser) anonymisePerformers(ctx context.Context) error {
 	table := performerTableMgr.table
 	lastID := 0
 	total := 0
+	const logEvery = 10000
 
 	for gotSome := true; gotSome; {
 		if err := txn.WithTxn(ctx, db, func(ctx context.Context) error {
@@ -418,9 +436,6 @@ func (db *Anonymiser) anonymisePerformers(ctx context.Context) error {
 					piercings sql.NullString
 				)
 
-				gotSome = true
-				total++
-
 				if err := rows.Scan(
 					&id,
 					&name,
@@ -434,8 +449,6 @@ func (db *Anonymiser) anonymisePerformers(ctx context.Context) error {
 				); err != nil {
 					return err
 				}
-
-				lastID = id
 
 				set := goqu.Record{}
 				db.obfuscateNullString(set, "name", name)
@@ -455,6 +468,14 @@ func (db *Anonymiser) anonymisePerformers(ctx context.Context) error {
 					}
 				}
 
+				lastID = id
+				gotSome = true
+				total++
+
+				if total%logEvery == 0 {
+					logger.Infof("Anonymised %d galleries", total)
+				}
+
 				return nil
 			})
 		}); err != nil {
@@ -470,6 +491,7 @@ func (db *Anonymiser) anonymiseStudios(ctx context.Context) error {
 	table := studioTableMgr.table
 	lastID := 0
 	total := 0
+	const logEvery = 10000
 
 	for gotSome := true; gotSome; {
 		if err := txn.WithTxn(ctx, db, func(ctx context.Context) error {
@@ -491,9 +513,6 @@ func (db *Anonymiser) anonymiseStudios(ctx context.Context) error {
 					details sql.NullString
 				)
 
-				gotSome = true
-				total++
-
 				if err := rows.Scan(
 					&id,
 					&name,
@@ -502,8 +521,6 @@ func (db *Anonymiser) anonymiseStudios(ctx context.Context) error {
 				); err != nil {
 					return err
 				}
-
-				lastID = id
 
 				set := goqu.Record{}
 				db.obfuscateNullString(set, "name", name)
@@ -518,7 +535,15 @@ func (db *Anonymiser) anonymiseStudios(ctx context.Context) error {
 					}
 				}
 
+				lastID = id
+				gotSome = true
+				total++
+
 				// TODO - anonymise studio aliases
+
+				if total%logEvery == 0 {
+					logger.Infof("Anonymised %d studios", total)
+				}
 
 				return nil
 			})
@@ -535,6 +560,7 @@ func (db *Anonymiser) anonymiseTags(ctx context.Context) error {
 	table := tagTableMgr.table
 	lastID := 0
 	total := 0
+	const logEvery = 10000
 
 	for gotSome := true; gotSome; {
 		if err := txn.WithTxn(ctx, db, func(ctx context.Context) error {
@@ -554,9 +580,6 @@ func (db *Anonymiser) anonymiseTags(ctx context.Context) error {
 					description sql.NullString
 				)
 
-				gotSome = true
-				total++
-
 				if err := rows.Scan(
 					&id,
 					&name,
@@ -564,8 +587,6 @@ func (db *Anonymiser) anonymiseTags(ctx context.Context) error {
 				); err != nil {
 					return err
 				}
-
-				lastID = id
 
 				set := goqu.Record{}
 				db.obfuscateNullString(set, "name", name)
@@ -580,6 +601,14 @@ func (db *Anonymiser) anonymiseTags(ctx context.Context) error {
 				}
 
 				// TODO - anonymise tag aliases
+
+				lastID = id
+				gotSome = true
+				total++
+
+				if total%logEvery == 0 {
+					logger.Infof("Anonymised %d tags", total)
+				}
 
 				return nil
 			})
@@ -596,6 +625,7 @@ func (db *Anonymiser) anonymiseMovies(ctx context.Context) error {
 	table := movieTableMgr.table
 	lastID := 0
 	total := 0
+	const logEvery = 10000
 
 	for gotSome := true; gotSome; {
 		if err := txn.WithTxn(ctx, db, func(ctx context.Context) error {
@@ -621,9 +651,6 @@ func (db *Anonymiser) anonymiseMovies(ctx context.Context) error {
 					director sql.NullString
 				)
 
-				gotSome = true
-				total++
-
 				if err := rows.Scan(
 					&id,
 					&name,
@@ -634,8 +661,6 @@ func (db *Anonymiser) anonymiseMovies(ctx context.Context) error {
 				); err != nil {
 					return err
 				}
-
-				lastID = id
 
 				set := goqu.Record{}
 				db.obfuscateNullString(set, "name", name)
@@ -650,6 +675,14 @@ func (db *Anonymiser) anonymiseMovies(ctx context.Context) error {
 					if _, err := exec(ctx, stmt); err != nil {
 						return fmt.Errorf("anonymising %s: %w", table.GetTable(), err)
 					}
+				}
+
+				lastID = id
+				gotSome = true
+				total++
+
+				if total%logEvery == 0 {
+					logger.Infof("Anonymised %d movies", total)
 				}
 
 				return nil
