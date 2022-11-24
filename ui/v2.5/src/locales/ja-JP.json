@@ -100,6 +100,7 @@
     "show": "表示",
     "show_configuration": "設定を表示",
     "skip": "スキップ",
+    "split": "分割",
     "stop": "停止",
     "submit": "送信",
     "submit_stash_box": "Stash-Boxに送信",
@@ -122,6 +123,7 @@
   "also_known_as": "A.K.A",
   "ascending": "昇順",
   "average_resolution": "平均的な解像度",
+  "between_and": "と",
   "birth_year": "誕生年",
   "birthdate": "誕生日",
   "bitrate": "ビットレート",
@@ -437,6 +439,10 @@
         "heading": "カスタムCSS",
         "option_label": "カスタムCSSを有効にする"
       },
+      "custom_javascript": {
+        "heading": "カスタムJavascript",
+        "option_label": "カスタムJavascriptを有効化する"
+      },
       "custom_locales": {
         "description": "個別の言語文字列を上書きします。マスターとなっているリストについては、https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json をご確認ください。変更を反映するには、ページを再読み込みする必要があります。",
         "heading": "カスタム翻訳",
@@ -462,7 +468,23 @@
           "description": "ドロップダウンセレクターからの新規オブジェクトの生成を禁止する",
           "heading": "ドロップダウンの生成を無効にする"
         },
-        "heading": "編集中"
+        "heading": "編集中",
+        "rating_system": {
+          "star_precision": {
+            "label": "評価の精度",
+            "options": {
+              "full": "全て",
+              "half": "半分",
+              "quarter": "4分の1"
+            }
+          },
+          "type": {
+            "options": {
+              "decimal": "数値",
+              "stars": "星"
+            }
+          }
+        }
       },
       "funscript_offset": {
         "description": "インタラクティブスクリプトの実行までのオフセットをミリ秒で指定できます。",
@@ -532,6 +554,7 @@
       "scene_player": {
         "heading": "シーンプレーヤー",
         "options": {
+          "always_start_from_beginning": "毎回最初から動画をスタートさせる",
           "auto_start_video": "動画を自動再生",
           "auto_start_video_on_play_selected": {
             "description": "キュー、選択されたものからの再生またはシーンページからのランダム再生時に動画を自動再生します",
@@ -808,6 +831,7 @@
   },
   "hasMarkers": "マーカーあり？",
   "height": "身長",
+  "height_cm": "身長(cm)",
   "help": "ヘルプ",
   "ignore_auto_tag": "自動タグを無視する",
   "image": "画像",
@@ -820,6 +844,7 @@
   "interactive": "インタラクティブ",
   "interactive_speed": "インタラクティブ速度",
   "isMissing": "見つからない？",
+  "last_played_at": "前回再生した日時",
   "library": "ライブラリー",
   "loading": {
     "generic": "読み込み中…"
@@ -1047,6 +1072,7 @@
     "default_filter_set": "デフォルトのフィルターセット",
     "delete_past_tense": "{count, plural, one {{singularEntity}} other {{pluralEntity}}}を削除しました",
     "generating_screenshot": "スクリーンショットを生成中…",
+    "merged_scenes": "マージされたシーン",
     "merged_tags": "マージされたタグ",
     "removed_entity": "{count, plural, one {{singularEntity}}と、その他{{pluralEntity}}}を削除しました",
     "rescanning_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}}を再スキャン中…",
@@ -1065,6 +1091,7 @@
   "videos": "動画",
   "view_all": "全て表示",
   "weight": "幅",
+  "weight_kg": "体重(kg)",
   "years_old": "歳",
   "zip_file_count": "zipファイルカウント"
 }
