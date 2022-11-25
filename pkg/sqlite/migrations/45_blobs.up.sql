@@ -11,7 +11,9 @@ ALTER TABLE `scenes` ADD COLUMN `cover_blob` varchar(255) REFERENCES `blobs`(`ch
 ALTER TABLE `movies` ADD COLUMN `front_image_blob` varchar(255) REFERENCES `blobs`(`checksum`);
 ALTER TABLE `movies` ADD COLUMN `back_image_blob` varchar(255) REFERENCES `blobs`(`checksum`);
 
-
--- ALTER TABLE `scenes` ADD COLUMN `cover_checksum` blob REFERENCES `blobs`(`checksum`);
-
--- TODO: migrate scenes_cover to cover_checksum - post-migrate
+-- performed in the post-migration
+-- DROP TABLE `tags_image`;
+-- DROP TABLE `studios_image`;
+-- DROP TABLE `performers_image`;
+-- DROP TABLE `scenes_cover`;
+-- DROP TABLE `movies_images`;
