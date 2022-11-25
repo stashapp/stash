@@ -552,6 +552,72 @@ func (db *Anonymiser) anonymiseStudios(ctx context.Context) error {
 		}
 	}
 
+	if err := db.anonymiseAliases(ctx, goqu.T(studioAliasesTable), "studio_id"); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *Anonymiser) anonymiseAliases(ctx context.Context, table exp.IdentifierExpression, idColumn string) error {
+	lastID := 0
+	lastAlias := ""
+	total := 0
+	const logEvery = 10000
+
+	for gotSome := true; gotSome; {
+		if err := txn.WithTxn(ctx, db, func(ctx context.Context) error {
+			query := dialect.From(table).Select(
+				table.Col(idColumn),
+				table.Col("alias"),
+			).Where(goqu.L("(" + idColumn + ", alias)").Gt(goqu.L("(?, ?)", lastID, lastAlias))).Limit(1000)
+
+			gotSome = false
+
+			const single = false
+			return queryFunc(ctx, query, single, func(rows *sqlx.Rows) error {
+				var (
+					id    int
+					alias sql.NullString
+				)
+
+				if err := rows.Scan(
+					&id,
+					&alias,
+				); err != nil {
+					return err
+				}
+
+				set := goqu.Record{}
+				db.obfuscateNullString(set, "alias", alias)
+
+				if len(set) > 0 {
+					stmt := dialect.Update(table).Set(set).Where(
+						table.Col(idColumn).Eq(id),
+						table.Col("alias").Eq(alias),
+					)
+
+					if _, err := exec(ctx, stmt); err != nil {
+						return fmt.Errorf("anonymising %s: %w", table.GetTable(), err)
+					}
+				}
+
+				lastID = id
+				lastAlias = alias.String
+				gotSome = true
+				total++
+
+				if total%logEvery == 0 {
+					logger.Infof("Anonymised %d %s aliases", total, table.GetTable())
+				}
+
+				return nil
+			})
+		}); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -600,8 +666,6 @@ func (db *Anonymiser) anonymiseTags(ctx context.Context) error {
 					}
 				}
 
-				// TODO - anonymise tag aliases
-
 				lastID = id
 				gotSome = true
 				total++
@@ -615,6 +679,10 @@ func (db *Anonymiser) anonymiseTags(ctx context.Context) error {
 		}); err != nil {
 			return err
 		}
+	}
+
+	if err := db.anonymiseAliases(ctx, goqu.T(tagAliasesTable), "tag_id"); err != nil {
+		return err
 	}
 
 	return nil

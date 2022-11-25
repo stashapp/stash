@@ -33,7 +33,7 @@ func TestAnonymiser_Anonymise(t *testing.T) {
 		return
 	}
 
-	t.Errorf("Anonymised database written to %s", f.Name())
+	t.Logf("Anonymised database written to %s", f.Name())
 
 	// TODO - ensure anonymous
 }
