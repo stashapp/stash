@@ -424,6 +424,7 @@
       "generate_previews_during_scan_tooltip": "Generate animated WebP previews, only required if Preview Type is set to Animated Image.",
       "generate_sprites_during_scan": "Generate scrubber sprites",
       "generate_thumbnails_during_scan": "Generate thumbnails for images",
+      "generate_video_covers_during_scan": "Generate scene covers",
       "generate_video_previews_during_scan": "Generate previews",
       "generate_video_previews_during_scan_tooltip": "Generate video previews which play when hovering over a scene",
       "generated_content": "Generated Content",
@@ -783,6 +784,7 @@
       "destination": "Reassign to"
     },
     "scene_gen": {
+      "covers": "Scene covers",
       "force_transcodes": "Force Transcode generation",
       "force_transcodes_tooltip": "By default, transcodes are only generated when the video file is not supported in the browser. When enabled, transcodes will be generated even when the video file appears to be supported in the browser.",
       "image_previews": "Animated Image Previews",
