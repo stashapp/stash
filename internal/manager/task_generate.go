@@ -13,28 +13,28 @@ import (
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/scene/generate"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type GenerateMetadataInput struct {
-	Sprites             *bool                        `json:"sprites"`
-	Previews            *bool                        `json:"previews"`
-	ImagePreviews       *bool                        `json:"imagePreviews"`
+	Covers              bool                         `json:"covers"`
+	Sprites             bool                         `json:"sprites"`
+	Previews            bool                         `json:"previews"`
+	ImagePreviews       bool                         `json:"imagePreviews"`
 	PreviewOptions      *GeneratePreviewOptionsInput `json:"previewOptions"`
-	Markers             *bool                        `json:"markers"`
-	MarkerImagePreviews *bool                        `json:"markerImagePreviews"`
-	MarkerScreenshots   *bool                        `json:"markerScreenshots"`
-	Transcodes          *bool                        `json:"transcodes"`
+	Markers             bool                         `json:"markers"`
+	MarkerImagePreviews bool                         `json:"markerImagePreviews"`
+	MarkerScreenshots   bool                         `json:"markerScreenshots"`
+	Transcodes          bool                         `json:"transcodes"`
 	// Generate transcodes even if not required
-	ForceTranscodes           *bool `json:"forceTranscodes"`
-	Phashes                   *bool `json:"phashes"`
-	InteractiveHeatmapsSpeeds *bool `json:"interactiveHeatmapsSpeeds"`
+	ForceTranscodes           bool `json:"forceTranscodes"`
+	Phashes                   bool `json:"phashes"`
+	InteractiveHeatmapsSpeeds bool `json:"interactiveHeatmapsSpeeds"`
 	// scene ids to generate for
 	SceneIDs []string `json:"sceneIDs"`
 	// marker ids to generate for
 	MarkerIDs []string `json:"markerIDs"`
 	// overwrite existing media
-	Overwrite *bool `json:"overwrite"`
+	Overwrite bool `json:"overwrite"`
 }
 
 type GeneratePreviewOptionsInput struct {
@@ -61,6 +61,7 @@ type GenerateJob struct {
 }
 
 type totalsGenerate struct {
+	covers                   int64
 	sprites                  int64
 	previews                 int64
 	imagePreviews            int64
@@ -77,9 +78,7 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 	var err error
 	var markers []*models.SceneMarker
 
-	if j.input.Overwrite != nil {
-		j.overwrite = *j.input.Overwrite
-	}
+	j.overwrite = j.input.Overwrite
 	j.fileNamingAlgo = config.GetInstance().GetVideoFileNamingAlgorithm()
 
 	config := config.GetInstance()
@@ -143,7 +142,7 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 			return
 		}
 
-		logger.Infof("Generating %d sprites %d previews %d image previews %d markers %d transcodes %d phashes %d heatmaps & speeds", totals.sprites, totals.previews, totals.imagePreviews, totals.markers, totals.transcodes, totals.phashes, totals.interactiveHeatmapSpeeds)
+		logger.Infof("Generating %d covers %d sprites %d previews %d image previews %d markers %d transcodes %d phashes %d heatmaps & speeds", totals.covers, totals.sprites, totals.previews, totals.imagePreviews, totals.markers, totals.transcodes, totals.phashes, totals.interactiveHeatmapSpeeds)
 
 		progress.SetTotal(int(totals.tasks))
 	}()
@@ -266,7 +265,20 @@ func getGeneratePreviewOptions(optionsInput GeneratePreviewOptionsInput) generat
 }
 
 func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator, scene *models.Scene, queue chan<- Task, totals *totalsGenerate) {
-	if utils.IsTrue(j.input.Sprites) {
+	if j.input.Covers {
+		task := &GenerateCoverTask{
+			txnManager: j.txnManager,
+			Scene:      *scene,
+		}
+
+		if j.overwrite || task.required(ctx) {
+			totals.covers++
+			totals.tasks++
+			queue <- task
+		}
+	}
+
+	if j.input.Sprites {
 		task := &GenerateSpriteTask{
 			Scene:               *scene,
 			Overwrite:           j.overwrite,
@@ -286,10 +298,10 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 	}
 	options := getGeneratePreviewOptions(*generatePreviewOptions)
 
-	if utils.IsTrue(j.input.Previews) {
+	if j.input.Previews {
 		task := &GeneratePreviewTask{
 			Scene:               *scene,
-			ImagePreview:        utils.IsTrue(j.input.ImagePreviews),
+			ImagePreview:        j.input.ImagePreviews,
 			Options:             options,
 			Overwrite:           j.overwrite,
 			fileNamingAlgorithm: j.fileNamingAlgo,
@@ -303,7 +315,7 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 				addTask = true
 			}
 
-			if utils.IsTrue(j.input.ImagePreviews) && (j.overwrite || !task.doesImagePreviewExist()) {
+			if j.input.ImagePreviews && (j.overwrite || !task.doesImagePreviewExist()) {
 				totals.imagePreviews++
 				addTask = true
 			}
@@ -315,14 +327,14 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 		}
 	}
 
-	if utils.IsTrue(j.input.Markers) {
+	if j.input.Markers {
 		task := &GenerateMarkersTask{
 			TxnManager:          j.txnManager,
 			Scene:               scene,
 			Overwrite:           j.overwrite,
 			fileNamingAlgorithm: j.fileNamingAlgo,
-			ImagePreview:        utils.IsTrue(j.input.MarkerImagePreviews),
-			Screenshot:          utils.IsTrue(j.input.MarkerScreenshots),
+			ImagePreview:        j.input.MarkerImagePreviews,
+			Screenshot:          j.input.MarkerScreenshots,
 
 			generator: g,
 		}
@@ -336,8 +348,8 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 		}
 	}
 
-	if utils.IsTrue(j.input.Transcodes) {
-		forceTranscode := utils.IsTrue(j.input.ForceTranscodes)
+	if j.input.Transcodes {
+		forceTranscode := j.input.ForceTranscodes
 		task := &GenerateTranscodeTask{
 			Scene:               *scene,
 			Overwrite:           j.overwrite,
@@ -352,7 +364,7 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 		}
 	}
 
-	if utils.IsTrue(j.input.Phashes) {
+	if j.input.Phashes {
 		// generate for all files in scene
 		for _, f := range scene.Files.List() {
 			task := &GeneratePhashTask{
@@ -371,7 +383,7 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 		}
 	}
 
-	if utils.IsTrue(j.input.InteractiveHeatmapsSpeeds) {
+	if j.input.InteractiveHeatmapsSpeeds {
 		task := &GenerateInteractiveHeatmapSpeedTask{
 			Scene:               *scene,
 			Overwrite:           j.overwrite,

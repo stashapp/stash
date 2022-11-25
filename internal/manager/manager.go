@@ -26,15 +26,12 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/scene/generate"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/sqlite"
-	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 	"github.com/stashapp/stash/ui"
 
@@ -291,55 +288,6 @@ func imageFileFilter(ctx context.Context, f file.File) bool {
 
 func galleryFileFilter(ctx context.Context, f file.File) bool {
 	return isZip(f.Base().Basename)
-}
-
-type coverGenerator struct {
-	txnManager   txn.Manager
-	coverUpdater scene.CoverUpdater
-}
-
-func (g *coverGenerator) GenerateCover(ctx context.Context, scene *models.Scene, f *file.VideoFile) error {
-	gg := generate.Generator{
-		Encoder:      instance.FFMPEG,
-		FFMpegConfig: instance.Config,
-		LockManager:  instance.ReadLockManager,
-		ScenePaths:   instance.Paths.Scene,
-	}
-
-	hasCover := false
-	if err := txn.WithReadTxn(ctx, g.txnManager, func(ctx context.Context) error {
-		qb := g.coverUpdater
-		var err error
-		hasCover, err = qb.HasCover(ctx, scene.ID)
-		return err
-	}); err != nil {
-		return err
-	}
-
-	// nothing to do
-	if hasCover {
-		return nil
-	}
-
-	coverImageData, err := gg.Screenshot(ctx, f.Path, f.Width, f.Duration, generate.ScreenshotOptions{})
-	if err != nil {
-		return err
-	}
-
-	if err := txn.WithTxn(ctx, g.txnManager, func(ctx context.Context) error {
-		qb := g.coverUpdater
-
-		// update the scene cover table
-		if err := qb.UpdateCover(ctx, scene.ID, coverImageData); err != nil {
-			return fmt.Errorf("error setting screenshot: %v", err)
-		}
-
-		return nil
-	}); err != nil {
-		logger.Error(err.Error())
-	}
-
-	return nil
 }
 
 func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {

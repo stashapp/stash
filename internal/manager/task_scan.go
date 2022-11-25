@@ -349,10 +349,6 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 				CreatorUpdater: db.Scene,
 				PluginCache:    pluginCache,
 				CaptionUpdater: db.File,
-				CoverGenerator: &coverGenerator{
-					txnManager:   db,
-					coverUpdater: db.Scene,
-				},
 				ScanGenerator: &sceneGenerators{
 					input:     options,
 					taskQueue: taskQueue,
@@ -486,6 +482,18 @@ func (g *sceneGenerators) Generate(ctx context.Context, s *models.Scene, f *file
 		} else {
 			g.taskQueue.Add(fmt.Sprintf("Generating preview for %s", path), previewsFn)
 		}
+	}
+
+	if t.ScanGenerateCovers {
+		progress.AddTotal(1)
+		g.taskQueue.Add(fmt.Sprintf("Generating cover for %s", path), func(ctx context.Context) {
+			taskCover := GenerateCoverTask{
+				Scene:      *s,
+				txnManager: instance.Repository,
+			}
+			taskCover.Start(ctx)
+			progress.Increment()
+		})
 	}
 
 	return nil

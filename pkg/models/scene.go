@@ -176,6 +176,7 @@ type SceneReader interface {
 	All(ctx context.Context) ([]*Scene, error)
 	Query(ctx context.Context, options SceneQueryOptions) (*SceneQueryResult, error)
 	GetCover(ctx context.Context, sceneID int) ([]byte, error)
+	HasCover(ctx context.Context, sceneID int) (bool, error)
 }
 
 type SceneWriter interface {

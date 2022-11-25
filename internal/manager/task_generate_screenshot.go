@@ -9,14 +9,25 @@ import (
 	"github.com/stashapp/stash/pkg/scene/generate"
 )
 
-type GenerateScreenshotTask struct {
+type GenerateCoverTask struct {
 	Scene        models.Scene
 	ScreenshotAt *float64
 	txnManager   Repository
+	Overwrite    bool
 }
 
-func (t *GenerateScreenshotTask) Start(ctx context.Context) {
+func (t *GenerateCoverTask) GetDescription() string {
+	return fmt.Sprintf("Generating cover for %s", t.Scene.GetTitle())
+}
+
+func (t *GenerateCoverTask) Start(ctx context.Context) {
 	scenePath := t.Scene.Path
+
+	if err := t.txnManager.WithReadTxn(ctx, func(ctx context.Context) error {
+		return t.Scene.LoadPrimaryFile(ctx, t.txnManager.File)
+	}); err != nil {
+		logger.Error(err)
+	}
 
 	videoFile := t.Scene.Files.Primary()
 	if videoFile == nil {
@@ -71,4 +82,20 @@ func (t *GenerateScreenshotTask) Start(ctx context.Context) {
 	}); err != nil && ctx.Err() == nil {
 		logger.Error(err.Error())
 	}
+}
+
+// required returns true if the sprite needs to be generated
+func (t GenerateCoverTask) required(ctx context.Context) bool {
+	if t.Overwrite {
+		return true
+	}
+
+	// if the scene has a cover, then we don't need to generate it
+	hasCover, err := t.txnManager.Scene.HasCover(ctx, t.Scene.ID)
+	if err != nil {
+		logger.Errorf("Error getting cover: %v", err)
+		return false
+	}
+
+	return !hasCover
 }
