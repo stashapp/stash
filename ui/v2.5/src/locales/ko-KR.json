@@ -472,7 +472,11 @@
         },
         "heading": "수정하기",
         "rating_system": {
+          "star_precision": {
+            "label": "평점별 정확도"
+          },
           "type": {
+            "label": "평정 시스템 종류",
             "options": {
               "decimal": "소수점",
               "stars": "별"
