@@ -148,7 +148,7 @@ type TranscodeStreamOptions struct {
 
 func (o TranscodeStreamOptions) getStreamArgs() Args {
 	var args Args
-	args = append(args, "-hide_banner")
+	args = append(args, "-hide_banner", "-hwaccel", "auto")
 	args = args.LogLevel(LogLevelError)
 
 	if o.StartTime != 0 {
