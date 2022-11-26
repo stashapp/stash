@@ -10,11 +10,11 @@ export interface IScraperSource {
 
 export const sceneFields = [
   "title",
+  "code",
   "date",
+  "director",
   "details",
   "url",
-  "code",
-  "director",
   "studio",
   "performers",
   "tags",
