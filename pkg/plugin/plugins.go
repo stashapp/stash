@@ -31,6 +31,12 @@ type Plugin struct {
 	Version     *string       `json:"version"`
 	Tasks       []*PluginTask `json:"tasks"`
 	Hooks       []*PluginHook `json:"hooks"`
+
+	// Javascript files that will be injected into the stash UI.
+	UIJavascript []string `yaml:"uiJavascript"`
+
+	// CSS files that will be injected into the stash UI.
+	UICSS []string `yaml:"uiCSS"`
 }
 
 type ServerConfig interface {

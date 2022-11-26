@@ -56,6 +56,12 @@ type Config struct {
 
 	// The hooks configurations for hooks registered by this plugin.
 	Hooks []*HookConfig `yaml:"hooks"`
+
+	// Javascript files that will be injected into the stash UI.
+	UIJavascript []string `yaml:"uiJavascript"`
+
+	// CSS files that will be injected into the stash UI.
+	UICSS []string `yaml:"uiCSS"`
 }
 
 func (c Config) getPluginTasks(includePlugin bool) []*PluginTask {
@@ -114,13 +120,15 @@ func (c Config) getName() string {
 
 func (c Config) toPlugin() *Plugin {
 	return &Plugin{
-		ID:          c.id,
-		Name:        c.getName(),
-		Description: c.Description,
-		URL:         c.URL,
-		Version:     c.Version,
-		Tasks:       c.getPluginTasks(false),
-		Hooks:       c.getPluginHooks(false),
+		ID:           c.id,
+		Name:         c.getName(),
+		Description:  c.Description,
+		URL:          c.URL,
+		Version:      c.Version,
+		Tasks:        c.getPluginTasks(false),
+		Hooks:        c.getPluginHooks(false),
+		UIJavascript: c.getUIJavascriptFiles(),
+		UICSS:        c.getUICSSFiles(),
 	}
 }
 
@@ -173,6 +181,24 @@ func (c Config) getExecCommand(task *OperationConfig) []string {
 		}
 
 		ret[i] = strings.ReplaceAll(arg, "{pluginDir}", dir)
+	}
+
+	return ret
+}
+
+func (c Config) getUICSSFiles() []string {
+	ret := make([]string, len(c.UICSS))
+	for i, v := range c.UICSS {
+		ret[i] = filepath.Join(c.getConfigPath(), v)
+	}
+
+	return ret
+}
+
+func (c Config) getUIJavascriptFiles() []string {
+	ret := make([]string, len(c.UIJavascript))
+	for i, v := range c.UIJavascript {
+		ret[i] = filepath.Join(c.getConfigPath(), v)
 	}
 
 	return ret
