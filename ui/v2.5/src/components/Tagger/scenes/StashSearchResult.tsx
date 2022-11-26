@@ -714,7 +714,6 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           {maybeRenderCoverImage()}
           <div className="d-flex flex-column justify-content-center scene-metadata">
             {renderTitle()}
-            {maybeRenderStudioCode()}
 
             {!isActive && (
               <>
@@ -723,8 +722,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
               </>
             )}
 
+            {maybeRenderStudioCode()}
             {maybeRenderDateField()}
-            {maybeRenderDirector()}
             {getDurationStatus(scene, stashSceneFile?.duration)}
             {getFingerprintStatus(scene, stashScene)}
           </div>
@@ -732,6 +731,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         {isActive && (
           <div className="d-flex flex-column">
             {maybeRenderStashBoxID()}
+            {maybeRenderDirector()}
             {maybeRenderURL()}
             {maybeRenderDetails()}
           </div>
