@@ -37,10 +37,14 @@ const (
 	// before we restart the transcode process
 	maxSegmentRestartGap = 15
 
-	// time to after segement generation delay before serving
+	// number of segments ahead of the start segment the steam must
+	// be before we consider cleaning up the transcode process
+	minSegmentTranscode = 5
+
+	// time to after segment generation delay before serving
 	segmentCreationDelay = 1 * time.Second
 
-	maxIdleTime     = 30 * time.Second
+	maxIdleTime     = 60 * time.Second
 	monitorInterval = 2 * time.Second
 
 	// Cancel timeout for ffmpeg so there are no corrupted segments
@@ -287,7 +291,8 @@ func (sm *StreamManager) StreamTS(src string, hash string, segment int, resoluti
 			return sm.streamTSFunc(hash+resolution, segment)
 		} else {
 			logger.Debugf("restarting transcode since last transcoded segment %d is close to requested segment %d", lastTranscodedSegment, segment)
-			transcodeStartSegment = sm.lastTranscodedSegment(hash+resolution) + 1
+			// reencode last segment to ensure it lines up with the previous segment
+			transcodeStartSegment = lastTranscodedSegment
 		}
 	}
 
@@ -352,7 +357,7 @@ func (sm *StreamManager) getTranscodeArgs(probeResult *VideoFile, outputPath str
 		"-r", "30",
 		"-g", "60",
 		"-x264-params", "no-scenecut=1",
-		"-force_key_frames", "0",
+		"-force_key_frames", fmt.Sprintf("expr:gte(t,n_forced*%d)", 1),
 		"-vf", "scale="+scale)
 
 	args = append(args,
@@ -443,7 +448,7 @@ func (sm *StreamManager) stopTranscode(hashResolution string) {
 			_ = p.cmd.Process.Signal(os.Interrupt)
 			select {
 			case <-p.context.Done():
-				logger.Trace("ffmpeg process exited cleanly")
+				logger.Debug("ffmpeg process exited cleanly")
 				break
 			case <-time.After(cancelTimeout):
 				logger.Warn("ffmpeg process exited uncleanly")
@@ -535,7 +540,7 @@ func (sm *StreamManager) removeStaleFiles() {
 
 			// prevent stoppping the stream if we just scrubbed to it
 			if sm.runningTranscodes[hashResolution] != nil &&
-				sm.runningTranscodes[hashResolution].startSegment != stream.segment &&
+				sm.runningTranscodes[hashResolution].startSegment+minSegmentTranscode < stream.segment &&
 				stream.segment+maxSegmentStopGap < lastGenerated {
 				logger.Debugf("stopping transcode for hashResolution %q as last generated segment %d is too far ahead of current segment %d", hashResolution, lastGenerated, stream.segment)
 				sm.stopTranscode(hashResolution)
