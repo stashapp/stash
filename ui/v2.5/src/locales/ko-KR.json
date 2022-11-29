@@ -67,6 +67,7 @@
     "play_selected": "선택된 영상 재생",
     "preview": "미리보기",
     "previous_action": "뒤로",
+    "reassign": "재할당",
     "refresh": "새로고침",
     "reload_plugins": "플러그인 새로고침",
     "reload_scrapers": "스크레이퍼 다시 불러오기",
@@ -99,10 +100,12 @@
     "show": "보여주기",
     "show_configuration": "설정 보여주기",
     "skip": "건너뛰기",
+    "split": "나누기",
     "stop": "정지",
     "submit": "제출",
     "submit_stash_box": "Stash-Box에 제출하기",
     "submit_update": "업데이트 제출하기",
+    "swap": "바꾸기",
     "tasks": {
       "clean_confirm_message": "정말로 데이터베이스 정리를 하시겠습니까? 파일 시스템에 존재하지 않는 파일의 데이터베이스 정보와 컨텐츠가 삭제될 것입니다.",
       "dry_mode_selected": "삭제하지 않기 모드가 선택되었습니다. 삭제를 진행하지 않고, 로깅만 할 것입니다.",
@@ -121,6 +124,7 @@
   "also_known_as": "별명",
   "ascending": "오름차순",
   "average_resolution": "평균 해상도",
+  "between_and": "그리고",
   "birth_year": "태어난 년도",
   "birthdate": "생년월일",
   "bitrate": "비트레이트",
@@ -436,6 +440,11 @@
         "heading": "커스텀 CSS",
         "option_label": "커스텀 CSS 활성화"
       },
+      "custom_javascript": {
+        "description": "변화된 사항을 확인하려면 페이지를 새로고침해야 합니다.",
+        "heading": "커스텀 JavaScript",
+        "option_label": "커스텀 JavaScript 활성화"
+      },
       "custom_locales": {
         "description": "커스텀 번역으로 기존 번역을 대신합니다. https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json 에서 단어 리스트를 확인하세요. 페이지를 새로고침해야 변동사항이 적용됩니다.",
         "heading": "커스텀 번역",
@@ -461,7 +470,19 @@
           "description": "dropdown selector에서 새로운 오브젝트를 추가하지 않습니다",
           "heading": "Dropdown 생성 비활성화"
         },
-        "heading": "수정하기"
+        "heading": "수정하기",
+        "rating_system": {
+          "star_precision": {
+            "label": "평점별 정확도"
+          },
+          "type": {
+            "label": "평정 시스템 종류",
+            "options": {
+              "decimal": "소수점",
+              "stars": "별"
+            }
+          }
+        }
       },
       "funscript_offset": {
         "description": "대화형 스크립트 재생의 시간 오프셋(밀리초)입니다.",
@@ -633,7 +654,7 @@
     "delete_alert": "다음 {count, plural, one {{singularEntity}} other {{pluralEntity}}}이(가) 영구 삭제될 것입니다:",
     "delete_confirm": "정말 {entityName}을 삭제하시겠습니까?",
     "delete_entity_desc": "{정말로 {count, plural, one {singularEntity} other {pluralEntity}}을(를) 삭제하시겠습니까? 원본 파일 또한 삭제하지 않으면 스캔을 할 때 {count, plural, one {singularEntity} other {pluralEntity}}이(가) 다시 추가될 것입니다.}",
-    "delete_entity_simple_desc": "정말 이 {singularEntity}을(를) 삭제하시겠습니까?",
+    "delete_entity_simple_desc": "{count, plural, one {정말 이 {singularEntity}을(를) 삭제하시겠습니까?} other {정말 이 {pluralEntity}을(를) 삭제하시겠습니까?}}",
     "delete_entity_title": "{count, plural, one {{singularEntity} 삭제} other {{pluralEntity} 삭제}}",
     "delete_galleries_extra": "…그리고 다른 어떤 갤러리에도 없는 이미지 파일들까지.",
     "delete_gallery_files": "갤러리 폴더/zip 파일 및 다른 어떤 갤러리에도 존재하지 않는 이미지를 삭제합니다.",
@@ -670,6 +691,7 @@
       "source": "다른 태그로 합쳐질 태그"
     },
     "overwrite_filter_confirm": "정말 원래 저장되어 있었던 쿼리 {entityName}을 덮어쓰시겠습니까?",
+    "reassign_entity_title": "{count, plural, one {{singularEntity} 재할당} other {{pluralEntity} 재할당}}",
     "scene_gen": {
       "force_transcodes": "강제 트랜스코드 생성",
       "force_transcodes_tooltip": "기본적으로 트랜스코드는 비디오 파일이 브라우저에서 지원되지 않는 경우에만 생성됩니다. 이 옵션을 선택하면 비디오 파일이 브라우저에서 지원되는 것으로 보이는 경우에도 트랜스코드가 생성됩니다.",
@@ -770,6 +792,7 @@
   "file_info": "파일 정보",
   "file_mod_time": "파일 변경 시간",
   "files": "파일",
+  "files_amount": "{value} 파일",
   "filesize": "파일 크기",
   "filter": "필터",
   "filter_name": "필터 이름",
@@ -807,6 +830,7 @@
   },
   "hasMarkers": "마커 유무",
   "height": "키",
+  "height_cm": "키 (cm)",
   "help": "도움말",
   "ignore_auto_tag": "자동 태깅 무시하기",
   "image": "이미지",
@@ -819,6 +843,7 @@
   "interactive": "인터렉티브",
   "interactive_speed": "인터랙티브 속도",
   "isMissing": "데이터 누락됨",
+  "last_played_at": "마지막으로 재생",
   "library": "라이브러리",
   "loading": {
     "generic": "로드 중…"
@@ -837,6 +862,8 @@
       "age_context": "작품에서 {age} {years_old}"
     },
     "phash": "PHash",
+    "play_count": "재생 횟수",
+    "play_duration": "재생 길이",
     "stream": "스트림",
     "video_codec": "비디오 코덱"
   },
@@ -907,6 +934,8 @@
   },
   "performers": "배우",
   "piercings": "피어싱",
+  "play_count": "재생 횟수",
+  "play_duration": "재생 길이",
   "primary_file": "대표 파일",
   "queue": "대기열",
   "random": "랜덤",
@@ -1064,6 +1093,7 @@
   "videos": "비디오",
   "view_all": "모두 보기",
   "weight": "몸무게",
+  "weight_kg": "무게 (kg)",
   "years_old": "살",
   "zip_file_count": "zip 파일 개수"
 }

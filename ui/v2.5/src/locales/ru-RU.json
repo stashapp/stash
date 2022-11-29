@@ -67,6 +67,7 @@
     "play_selected": "Воспроизвести выбранные файлы",
     "preview": "Предпросмотр",
     "previous_action": "Назад",
+    "reassign": "Переназначить",
     "refresh": "Обновить",
     "reload_plugins": "Перезагрузить плагины",
     "reload_scrapers": "Перезагрузить скрейперы",
@@ -99,10 +100,12 @@
     "show": "Показать",
     "show_configuration": "Показать конфигурацию",
     "skip": "Пропустить",
+    "split": "Разделить",
     "stop": "Остановить",
     "submit": "Отправить",
     "submit_stash_box": "Отправить в Stash-Box",
     "submit_update": "Отправить изменение",
+    "swap": "Заменить",
     "tasks": {
       "clean_confirm_message": "Вы уверены что хотите провести очистку? Это удалит информацию из базы данных, вместе с созданным содержимым о всех сценах и галереях, которые больше не находятся в файловой системе.",
       "dry_mode_selected": "Выбран режим симуляции. Фактического удаления не будет, только запись в журнал.",
@@ -121,6 +124,7 @@
   "also_known_as": "Также известна/-ен как",
   "ascending": "По возрастанию",
   "average_resolution": "Среднее разрешение",
+  "between_and": "и",
   "birth_year": "Год рождения",
   "birthdate": "Дата рождения",
   "bitrate": "Битрейт",
@@ -153,7 +157,7 @@
     "noun_query": "Запрос",
     "results": {
       "duration_off": "Продолжительность отличается не менее чем на {number} сек",
-      "duration_unknown": "Длительность неизвестна",
+      "duration_unknown": "Продолжительность неизвестна",
       "fp_found": "{fpCount, plural, =0 {Новых совпадений не найдено} other {# новых совпадений найдено}}",
       "fp_matches": "Продолжительность совпадает",
       "fp_matches_multi": "Продолжительность совпадает с {matchCount}/{durationsLength} отпечатками файла(-ов)",
@@ -436,6 +440,11 @@
         "heading": "Пользовательский CSS",
         "option_label": "Пользовательский CSS включен"
       },
+      "custom_javascript": {
+        "description": "Страница должна быть перезагружена для применений изменений.",
+        "heading": "Пользовательский Javascript",
+        "option_label": "Пользовательский Javascript включен"
+      },
       "custom_locales": {
         "description": "Замена отдельных строк локализации. Смотрите https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json для основного списка. Чтобы изменения вступили в силу, необходимо перезагрузить страницу.",
         "heading": "Пользовательская локализация",
@@ -461,7 +470,24 @@
           "description": "Убрать возможность создавать новые объекты из выпадающих селекторов",
           "heading": "Отключить создание из раскрывающегося списка"
         },
-        "heading": "Редактирование"
+        "heading": "Редактирование",
+        "rating_system": {
+          "star_precision": {
+            "label": "Точность системы оценок",
+            "options": {
+              "full": "Полный",
+              "half": "Половина",
+              "quarter": "Четверть"
+            }
+          },
+          "type": {
+            "label": "Тип рейтинговой системы",
+            "options": {
+              "decimal": "Десятичный",
+              "stars": "Звезды"
+            }
+          }
+        }
       },
       "funscript_offset": {
         "description": "Смещение времени в миллисекундах для воспроизведения интерактивных скриптов.",
@@ -499,11 +525,15 @@
       },
       "max_loop_duration": {
         "description": "Максимальная продолжительность сцены, при которой проигрыватель сцен будет зацикливать видео - 0 для отключения",
-        "heading": "Максимальное время цикла/повтора"
+        "heading": "Максимальная продолжительность повторяющегося сегмента"
       },
       "menu_items": {
         "description": "Показать или скрыть различные типы контента на панели навигации",
         "heading": "Пункты меню"
+      },
+      "minimum_play_percent": {
+        "description": "Процентная часть сцены, после которой счетчик воспроизведения будет увеличен.",
+        "heading": "Минимальный процент проигрывания"
       },
       "performers": {
         "options": {
@@ -531,6 +561,7 @@
       "scene_player": {
         "heading": "Проигрыватель видео",
         "options": {
+          "always_start_from_beginning": "Всегда начинать воспроизведение видео сначало",
           "auto_start_video": "Автозапуск видео",
           "auto_start_video_on_play_selected": {
             "description": "Автоматически запускать видео из очереди или при воспроизведении выбранных или случайных видео со страницы \"Сцены\"",
@@ -540,7 +571,8 @@
             "description": "Запускать следующую сцену в очереди после окончания видео",
             "heading": "Продолжить плейлист по умолчанию"
           },
-          "show_scrubber": "Показывать полосу перемотки видео с превью (Show Scrubber)"
+          "show_scrubber": "Показывать полосу перемотки видео с превью (Show Scrubber)",
+          "track_activity": "Отслеживать активность"
         }
       },
       "scene_wall": {
@@ -630,6 +662,7 @@
   "developmentVersion": "Версия разработки",
   "dialogs": {
     "aliases_must_be_unique": "псевдонимы должны быть уникальными",
+    "create_new_entity": "Создать новую запись в {entity}",
     "delete_alert": "Следующие {count, plural, one {{singularEntity}} other {{pluralEntity}}} будут удалены безвозвратно:",
     "delete_confirm": "Вы уверены что хотите удалить {entityName}?",
     "delete_entity_desc": "{count, plural, one {Вы уверены, что хотите удалить этот {singularEntity}? Если файл также не будет удален, этот {singularEntity} будет повторно добавлен при сканировании.} other {Вы уверены, что хотите удалить эти {pluralEntity}? Если файлы также не будут удалены, эти {pluralEntity} будут повторно добавлены при выполнении сканирования.}}",
@@ -665,11 +698,20 @@
         "zoom": "Увеличить"
       }
     },
+    "merge": {
+      "destination": "Цель",
+      "empty_results": "Значения в полях целевого файла останутся без изменений.",
+      "source": "Источник"
+    },
     "merge_tags": {
       "destination": "Назначение",
       "source": "Источник"
     },
     "overwrite_filter_confirm": "Вы уверены, что хотите перезаписать существующий сохраненный запрос {entityName}?",
+    "reassign_entity_title": "{count, plural, one {Переназначить {singularEntity}} other {Переназначить {pluralEntity}}}",
+    "reassign_files": {
+      "destination": "Переназначить на"
+    },
     "scene_gen": {
       "force_transcodes": "Принудительно создавать перекодированные файлы",
       "force_transcodes_tooltip": "По умолчанию перекодированные файлы генерируется только в том случае, если видеофайл не поддерживается браузером. Если этот параметр включен, перекодирование будет генерироваться, даже если видеофайл поддерживается браузером.",
@@ -770,6 +812,7 @@
   "file_info": "Информация о файле",
   "file_mod_time": "Время модификации файла",
   "files": "файлы",
+  "files_amount": "{value} файлов",
   "filesize": "Размер файла",
   "filter": "Фильтр",
   "filter_name": "Название фильтра",
@@ -820,6 +863,7 @@
   "interactive": "Интерактивно",
   "interactive_speed": "Интерактивная скорость",
   "isMissing": "Отсутствует",
+  "last_played_at": "Воспроизводился в последний раз",
   "library": "Библиотека",
   "loading": {
     "generic": "Загрузка…"
@@ -838,6 +882,8 @@
       "age_context": "{age} {years_old} в этой сцене"
     },
     "phash": "PHash значение",
+    "play_count": "Счетчик воспроизведений",
+    "play_duration": "Продолжительность",
     "stream": "Стрим",
     "video_codec": "Видео кодек"
   },
@@ -908,6 +954,8 @@
   },
   "performers": "Исполнители",
   "piercings": "Пирсинг",
+  "play_count": "Счетчик воспроизведений",
+  "play_duration": "Продолжительность воспроизведения",
   "primary_file": "Первичный файл",
   "queue": "Очередь",
   "random": "Случайный",
@@ -916,12 +964,16 @@
   "recently_released_objects": "Недавно выпущенные {objects}",
   "release_notes": "Информация о сборке",
   "resolution": "Разрешение",
+  "resume_time": "Таймкод воспроизведения",
   "scene": "Сцена",
   "sceneTagger": "Пометка сцен тэгами",
   "sceneTags": "Тэги сцен",
   "scene_code": "Идентификатор сцены",
   "scene_count": "Количество сцен",
+  "scene_created_at": "Сцена создана",
+  "scene_date": "Дата сцены",
   "scene_id": "ID сцены",
+  "scene_updated_at": "Сцена обновлена",
   "scenes": "Сцены",
   "scenes_updated_at": "Сцена обновлена в",
   "search_filter": {
@@ -1013,6 +1065,7 @@
     "welcome_to_stash": "Добро пожаловать в Stash"
   },
   "stash_id": "Stash ID",
+  "stash_id_endpoint": "Конечная точка Stash ID",
   "stash_ids": "Stash ID-ы",
   "stashbox": {
     "go_review_draft": "Перейдите к {endpoint_name}, чтобы просмотреть черновик.",
@@ -1048,7 +1101,9 @@
     "default_filter_set": "Стандартный набор фильтров",
     "delete_past_tense": "Удален {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Создание скриншота…",
+    "merged_scenes": "Объединенные сцены",
     "merged_tags": "Объединенные тэги",
+    "reassign_past_tense": "Файл переназначен",
     "removed_entity": "Удален {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "rescanning_entity": "Повторное сканирование {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "Сохранено {entity}",

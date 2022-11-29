@@ -67,6 +67,7 @@
     "play_selected": "Lire la sélection",
     "preview": "Aperçu",
     "previous_action": "Précédent",
+    "reassign": "Réaffecter",
     "refresh": "Rafraichir",
     "reload_plugins": "Recharger les plugins",
     "reload_scrapers": "Recharger les extracteurs de contenu",
@@ -99,10 +100,12 @@
     "show": "Montrer",
     "show_configuration": "Afficher la configuration",
     "skip": "Passer",
+    "split": "Diviser",
     "stop": "Stop",
     "submit": "Soumettre",
     "submit_stash_box": "Soumettre à Stash-Box",
     "submit_update": "Soumettre une mise à jour",
+    "swap": "Permuter",
     "tasks": {
       "clean_confirm_message": "Êtes-vous sûr de vouloir nettoyer ? Cette opération supprimera les informations de la base de données et le contenu généré pour toutes les scènes et galeries qui ne se trouvent plus dans le système de fichiers.",
       "dry_mode_selected": "Essais à blanc. Aucune suppression réelle n'aura lieu, seulement une journalisation.",
@@ -121,6 +124,7 @@
   "also_known_as": "Également connu comme",
   "ascending": "Ascendant",
   "average_resolution": "Résolution moyenne",
+  "between_and": "et",
   "birth_year": "Année de naissance",
   "birthdate": "Date de naissance",
   "bitrate": "Débit",
@@ -436,8 +440,13 @@
         "heading": "CSS personnalisé",
         "option_label": "Activer le CSS personnalisé"
       },
+      "custom_javascript": {
+        "description": "La page doit être actualisée pour que les changements prennent effet.",
+        "heading": "Javascript personnalisé",
+        "option_label": "Activer le Javascript personnalisé"
+      },
       "custom_locales": {
-        "description": "Remplacer individuellement des chaines linguistiques. Voir https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/fr-FR.json pour la liste principale. La page doit être rechargée pour que les changements prennent effet.",
+        "description": "Remplacer individuellement des chaines linguistiques. Voir https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/fr-FR.json pour la liste principale. La page doit être actualisée pour que les changements prennent effet.",
         "heading": "Traduction personnalisée",
         "option_label": "Activer la traduction personnalisée"
       },
@@ -461,7 +470,24 @@
           "description": "Supprimer la possibilité de créer de nouveaux objets à partir des sélecteurs de liste déroulante",
           "heading": "Désactiver la création depuis la liste déroulante"
         },
-        "heading": "Édition"
+        "heading": "Édition",
+        "rating_system": {
+          "star_precision": {
+            "label": "Précision de la notation",
+            "options": {
+              "full": "Complète",
+              "half": "Moitié",
+              "quarter": "Quart"
+            }
+          },
+          "type": {
+            "label": "Mode de notation",
+            "options": {
+              "decimal": "Décimal",
+              "stars": "Étoiles"
+            }
+          }
+        }
       },
       "funscript_offset": {
         "description": "Décalage temporel en millisecondes pour la lecture des scripts interactifs.",
@@ -505,6 +531,10 @@
         "description": "Afficher ou masquer différents types de contenus dans la barre de navigation",
         "heading": "Éléments de la barre de navigation"
       },
+      "minimum_play_percent": {
+        "description": "Pourcentage de temps pendant lequel une scène doit être jouée avant que son compteur de lecture ne soit incrémenté.",
+        "heading": "Pourcentage de lecture minimum"
+      },
       "performers": {
         "options": {
           "image_location": {
@@ -531,6 +561,7 @@
       "scene_player": {
         "heading": "Lecteur de scènes",
         "options": {
+          "always_start_from_beginning": "Toujours démarrer la vidéo depuis le début",
           "auto_start_video": "Démarrer automatiquement la vidéo",
           "auto_start_video_on_play_selected": {
             "description": "Démarrage automatique des scènes vidéo lorsqu'elles sont lues à partir de la file d'attente, d'une sélection ou aléatoires à partir de la page Scènes",
@@ -540,7 +571,8 @@
             "description": "Lire la scène suivante de la file d'attente lorsque une vidéo se termine",
             "heading": "Continuer la liste de lecture par défaut"
           },
-          "show_scrubber": "Montrer la barre de progression"
+          "show_scrubber": "Montrer la barre de progression",
+          "track_activity": "Suivre l'activité"
         }
       },
       "scene_wall": {
@@ -630,6 +662,7 @@
   "developmentVersion": "Version de développement",
   "dialogs": {
     "aliases_must_be_unique": "Les alias doivent être uniques",
+    "create_new_entity": "Créer un nouveau {entity}",
     "delete_alert": "{count, plural, one {Le {singularEntity} suivant sera supprimé} other {Les {pluralEntity} suivants seront supprimés}} définitivement :",
     "delete_confirm": "Êtes-vous sûr de vouloir supprimer {entityName} ?",
     "delete_entity_desc": "{count, plural, one {Êtes-vous sûr de vouloir supprimer cette {singularEntity} ? Si le fichier n'est pas également supprimé, cette {singularEntity} sera ajoutée à nouveau lors de la prochaine analyse.} other {Êtes-vous sûr de vouloir supprimer ces {pluralEntity} ? Si les fichiers ne sont pas également supprimés, ces {pluralEntity} seront ajoutées à nouveau lors de la prochaine analyse.}}",
@@ -665,11 +698,20 @@
         "zoom": "Zoom"
       }
     },
+    "merge": {
+      "destination": "Destination",
+      "empty_results": "Les valeurs des champs de destination seront inchangées.",
+      "source": "Source"
+    },
     "merge_tags": {
       "destination": "Destination",
       "source": "Source"
     },
     "overwrite_filter_confirm": "Êtes-vous sûr de vouloir remplacer la requête sauvegardée existante {entityName} ?",
+    "reassign_entity_title": "{count, plural, one {Réaffecté {singularEntity}} other {Réaffectés {pluralEntity}}}",
+    "reassign_files": {
+      "destination": "Réaffecter à"
+    },
     "scene_gen": {
       "force_transcodes": "Forcer la génération du transcodage",
       "force_transcodes_tooltip": "Par défaut, les transcodes ne sont générés que lorsque le fichier vidéo n'est pas pris en charge par le navigateur. Activé, les transcodes seront générés même si le fichier vidéo semble être pris en charge par le navigateur.",
@@ -770,6 +812,7 @@
   "file_info": "Infos fichier",
   "file_mod_time": "Date de modification du fichier",
   "files": "fichiers",
+  "files_amount": "{value} fichiers",
   "filesize": "Poids du fichier",
   "filter": "Filtre",
   "filter_name": "Nom du filtre",
@@ -820,6 +863,7 @@
   "interactive": "Interactif",
   "interactive_speed": "Vitesse interactive",
   "isMissing": "Est manquant",
+  "last_played_at": "Dernière lecture le",
   "library": "Bibliothèque",
   "loading": {
     "generic": "Chargement…"
@@ -838,6 +882,8 @@
       "age_context": "{age} {years_old} dans cette scène"
     },
     "phash": "Empreinte",
+    "play_count": "Compteur de lecture",
+    "play_duration": "Temps de lecture",
     "stream": "Flux",
     "video_codec": "Codec vidéo"
   },
@@ -908,6 +954,8 @@
   },
   "performers": "Performeurs",
   "piercings": "Perçages",
+  "play_count": "Compteur de lecture",
+  "play_duration": "Temps de lecture",
   "primary_file": "Fichier principal",
   "queue": "Liste de lecture",
   "random": "Aléatoire",
@@ -916,12 +964,16 @@
   "recently_released_objects": "{objects} récemment ajoutées",
   "release_notes": "Notes de publication",
   "resolution": "Résolution",
+  "resume_time": "Reprendre le temps",
   "scene": "Scène",
   "sceneTagger": "Étiqueteuse de scènes",
   "sceneTags": "Étiquettes de scène",
-  "scene_code": "Code du studio",
+  "scene_code": "Code studio",
   "scene_count": "Nombre de scènes",
+  "scene_created_at": "Scène créée le",
+  "scene_date": "Date de la scène",
   "scene_id": "ID de scène",
+  "scene_updated_at": "Scène mise à jour le",
   "scenes": "Scènes",
   "scenes_updated_at": "Scène actualisée le",
   "search_filter": {
@@ -1013,6 +1065,7 @@
     "welcome_to_stash": "Bienvenue sur Stash"
   },
   "stash_id": "ID Stash",
+  "stash_id_endpoint": "Point de terminaison Stash ID",
   "stash_ids": "ID Stash",
   "stashbox": {
     "go_review_draft": "Allez sur {endpoint_name} pour examiner l'ébauche.",
@@ -1048,7 +1101,9 @@
     "default_filter_set": "Filtre par défaut défini",
     "delete_past_tense": "{count, plural, one {{singularEntity} supprimé} other {{pluralEntity} supprimés}}",
     "generating_screenshot": "Génération de la capture d'écran…",
+    "merged_scenes": "Scènes fusionnées",
     "merged_tags": "Étiquettes fusionnées",
+    "reassign_past_tense": "Fichier réaffecté",
     "removed_entity": "{count, plural, one {{singularEntity} retiré} other {{pluralEntity} retirés}}",
     "rescanning_entity": "Réanalyse de {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "{entity} sauvegardé·e",
