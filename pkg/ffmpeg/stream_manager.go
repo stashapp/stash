@@ -35,7 +35,8 @@ const (
 
 	// number of segments ahead of the currently streaming segment
 	// before we restart the transcode process
-	maxSegmentRestartGap = 15
+	// videojs buffers 60 seconds so stay 5 segments ahead of videojs
+	maxSegmentRestartGap = int((60 / hlsSegmentLength)) + 5
 
 	// number of segments ahead of the start segment the steam must
 	// be before we consider cleaning up the transcode process
