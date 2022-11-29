@@ -1627,11 +1627,11 @@ func sortByPath(scenes [][]*models.Scene) {
 		firstPathJ := getFirstSortedPath(scenes[j])
 		return firstPathI < firstPathJ
 	}
-	sort.Slice(scenes, lessFunc)
+	sort.SliceStable(scenes, lessFunc)
 }
 
 func getFirstSortedPath(scenes []*models.Scene) string {
-	paths := make([]string, len(scenes))
+	paths := make([]string, 0)
 	for _, scene := range scenes {
 		paths = append(paths, scene.Path)
 	}
