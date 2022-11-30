@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -11,13 +12,14 @@ import (
 type Gallery struct {
 	ID int `json:"id"`
 
-	Title     string `json:"title"`
-	URL       string `json:"url"`
-	Date      *Date  `json:"date"`
-	Details   string `json:"details"`
-	Rating    *int   `json:"rating"`
-	Organized bool   `json:"organized"`
-	StudioID  *int   `json:"studio_id"`
+	Title   string `json:"title"`
+	URL     string `json:"url"`
+	Date    *Date  `json:"date"`
+	Details string `json:"details"`
+	// Rating expressed in 1-100 scale
+	Rating    *int `json:"rating"`
+	Organized bool `json:"organized"`
+	StudioID  *int `json:"studio_id"`
 
 	// transient - not persisted
 	Files RelatedFiles
@@ -34,6 +36,12 @@ type Gallery struct {
 	SceneIDs     RelatedIDs `json:"scene_ids"`
 	TagIDs       RelatedIDs `json:"tag_ids"`
 	PerformerIDs RelatedIDs `json:"performer_ids"`
+}
+
+// IsUserCreated returns true if the gallery was created by the user.
+// This is determined by whether the gallery has a primary file or folder.
+func (g *Gallery) IsUserCreated() bool {
+	return g.PrimaryFileID == nil && g.FolderID == nil
 }
 
 func (g *Gallery) LoadFiles(ctx context.Context, l FileLoader) error {
@@ -97,10 +105,11 @@ type GalleryPartial struct {
 	// Path        OptionalString
 	// Checksum    OptionalString
 	// Zip         OptionalBool
-	Title     OptionalString
-	URL       OptionalString
-	Date      OptionalDate
-	Details   OptionalString
+	Title   OptionalString
+	URL     OptionalString
+	Date    OptionalDate
+	Details OptionalString
+	// Rating expressed in 1-100 scale
 	Rating    OptionalInt
 	Organized OptionalBool
 	StudioID  OptionalInt
@@ -128,7 +137,7 @@ func (g Gallery) GetTitle() string {
 		return g.Title
 	}
 
-	return g.Path
+	return filepath.Base(g.Path)
 }
 
 // DisplayName returns a display name for the scene for logging purposes.

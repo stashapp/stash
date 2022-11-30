@@ -67,6 +67,10 @@ func (r *Repository) WithTxn(ctx context.Context, fn txn.TxnFunc) error {
 	return txn.WithTxn(ctx, r, fn)
 }
 
+func (r *Repository) WithReadTxn(ctx context.Context, fn txn.TxnFunc) error {
+	return txn.WithReadTxn(ctx, r, fn)
+}
+
 func (r *Repository) WithDB(ctx context.Context, fn txn.TxnFunc) error {
 	return txn.WithDatabase(ctx, r, fn)
 }
@@ -92,6 +96,9 @@ func sqliteRepository(d *sqlite.Database) Repository {
 }
 
 type SceneService interface {
+	Create(ctx context.Context, input *models.Scene, fileIDs []file.ID, coverImage []byte) (*models.Scene, error)
+	AssignFile(ctx context.Context, sceneID int, fileID file.ID) error
+	Merge(ctx context.Context, sourceIDs []int, destinationID int, values models.ScenePartial) error
 	Destroy(ctx context.Context, scene *models.Scene, fileDeleter *scene.FileDeleter, deleteGenerated, deleteFile bool) error
 }
 

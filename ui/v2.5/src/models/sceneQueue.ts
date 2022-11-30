@@ -1,5 +1,4 @@
-import queryString from "query-string";
-import { RouteComponentProps } from "react-router-dom";
+import queryString, { ParsedQuery } from "query-string";
 import { FilterMode, Scene } from "src/core/generated-graphql";
 import { ListFilterModel } from "./list-filter/filter";
 import { SceneListFilterOptions } from "./list-filter/scenes";
@@ -77,49 +76,45 @@ export class SceneQueue {
     return "";
   }
 
-  public static fromQueryParameters(params: string) {
+  public static fromQueryParameters(params: ParsedQuery<string>) {
     const ret = new SceneQueue();
-    const parsed = queryString.parse(params, { decode: false });
     const translated = {
-      sortby: parsed.qsort,
-      sortdir: parsed.qsortd,
-      q: parsed.qfq,
-      p: parsed.qfp,
-      c: parsed.qfc,
+      sortby: params.qsort,
+      sortdir: params.qsortd,
+      q: params.qfq,
+      p: params.qfp,
+      c: params.qfc,
     };
 
-    if (parsed.qfp) {
+    if (params.qfp) {
       const decoded = ListFilterModel.decodeQueryParameters(translated);
       const query = new ListFilterModel(
         FilterMode.Scenes,
+        undefined,
         SceneListFilterOptions.defaultSortBy
       );
       query.configureFromQueryParameters(decoded);
       ret.query = query;
-    } else if (parsed.qs) {
+    } else if (params.qs) {
       // must be scene list
-      ret.sceneIDs = Array.isArray(parsed.qs)
-        ? parsed.qs.map((v) => Number(v))
-        : [Number(parsed.qs)];
+      ret.sceneIDs = Array.isArray(params.qs)
+        ? params.qs.map((v) => Number(v))
+        : [Number(params.qs)];
     }
 
     return ret;
   }
 
-  public playScene(
-    history: RouteComponentProps["history"],
-    sceneID: string,
-    options?: IPlaySceneOptions
-  ) {
-    history.replace(this.makeLink(sceneID, options));
-  }
-
-  public makeLink(sceneID: string, options?: IPlaySceneOptions) {
-    const params = [
-      this.makeQueryParameters(options?.sceneIndex, options?.newPage),
-      options?.autoPlay ? "autoplay=true" : "",
-      options?.continue ? "continue=true" : "",
-    ].filter((param) => !!param);
+  public makeLink(sceneID: string, options: IPlaySceneOptions) {
+    let params = [
+      this.makeQueryParameters(options.sceneIndex, options.newPage),
+    ];
+    if (options.autoPlay !== undefined) {
+      params.push("autoplay=" + options.autoPlay);
+    }
+    if (options.continue !== undefined) {
+      params.push("continue=" + options.continue);
+    }
     return `/scenes/${sceneID}${params.length ? "?" + params.join("&") : ""}`;
   }
 }

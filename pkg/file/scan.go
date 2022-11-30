@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -84,7 +85,6 @@ type scanJob struct {
 
 	startTime      time.Time
 	fileQueue      chan scanFile
-	dbQueue        chan func(ctx context.Context) error
 	retryList      []scanFile
 	retrying       bool
 	folderPathToID sync.Map
@@ -129,9 +129,8 @@ func (s *Scanner) Scan(ctx context.Context, handlers []Handler, options ScanOpti
 
 type scanFile struct {
 	*BaseFile
-	fs      FS
-	info    fs.FileInfo
-	zipFile *scanFile
+	fs   FS
+	info fs.FileInfo
 }
 
 func (s *scanJob) withTxn(ctx context.Context, fn func(ctx context.Context) error) error {
@@ -148,9 +147,11 @@ func (s *scanJob) execute(ctx context.Context) {
 	s.startTime = time.Now()
 
 	s.fileQueue = make(chan scanFile, scanQueueSize)
-	s.dbQueue = make(chan func(ctx context.Context) error, scanQueueSize)
+	var wg sync.WaitGroup
+	wg.Add(1)
 
 	go func() {
+		defer wg.Done()
 		if err := s.queueFiles(ctx, paths); err != nil {
 			if errors.Is(err, context.Canceled) {
 				return
@@ -162,6 +163,8 @@ func (s *scanJob) execute(ctx context.Context) {
 
 		logger.Infof("Finished adding files to queue. %d files queued", s.count)
 	}()
+
+	defer wg.Wait()
 
 	if err := s.processQueue(ctx); err != nil {
 		if errors.Is(err, context.Canceled) {
@@ -211,6 +214,19 @@ func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 			return fmt.Errorf("reading info for %q: %w", path, err)
 		}
 
+		var size int64
+
+		// #2196/#3042 - replace size with target size if file is a symlink
+		if info.Mode()&os.ModeSymlink == os.ModeSymlink {
+			targetInfo, err := f.Stat(path)
+			if err != nil {
+				return fmt.Errorf("reading info for symlink %q: %w", path, err)
+			}
+			size = targetInfo.Size()
+		} else {
+			size = info.Size()
+		}
+
 		if !s.acceptEntry(ctx, path, info) {
 			if info.IsDir() {
 				return fs.SkipDir
@@ -226,13 +242,19 @@ func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 				},
 				Path:     path,
 				Basename: filepath.Base(path),
-				Size:     info.Size(),
+				Size:     size,
 			},
 			fs:   f,
 			info: info,
-			// there is no guarantee that the zip file has been scanned
-			// so we can't just plug in the id.
-			zipFile: zipFile,
+		}
+
+		if zipFile != nil {
+			zipFileID, err := s.getZipFileID(ctx, zipFile)
+			if err != nil {
+				return err
+			}
+			ff.ZipFileID = zipFileID
+			ff.ZipFile = zipFile
 		}
 
 		if info.IsDir() {
@@ -310,37 +332,49 @@ func (s *scanJob) processQueue(ctx context.Context) error {
 
 	wg := sizedwaitgroup.New(parallelTasks)
 
-	for f := range s.fileQueue {
-		if err := ctx.Err(); err != nil {
-			return err
+	if err := func() error {
+		defer wg.Wait()
+
+		for f := range s.fileQueue {
+			if err := ctx.Err(); err != nil {
+				return err
+			}
+
+			wg.Add()
+			ff := f
+			go func() {
+				defer wg.Done()
+				s.processQueueItem(ctx, ff)
+			}()
 		}
 
-		wg.Add()
-		ff := f
-		go func() {
-			defer wg.Done()
-			s.processQueueItem(ctx, ff)
-		}()
+		return nil
+	}(); err != nil {
+		return err
 	}
 
-	wg.Wait()
 	s.retrying = true
-	for _, f := range s.retryList {
-		if err := ctx.Err(); err != nil {
-			return err
+
+	if err := func() error {
+		defer wg.Wait()
+
+		for _, f := range s.retryList {
+			if err := ctx.Err(); err != nil {
+				return err
+			}
+
+			wg.Add()
+			ff := f
+			go func() {
+				defer wg.Done()
+				s.processQueueItem(ctx, ff)
+			}()
 		}
 
-		wg.Add()
-		ff := f
-		go func() {
-			defer wg.Done()
-			s.processQueueItem(ctx, ff)
-		}()
+		return nil
+	}(); err != nil {
+		return err
 	}
-
-	wg.Wait()
-
-	close(s.dbQueue)
 
 	return nil
 }
@@ -348,7 +382,7 @@ func (s *scanJob) processQueue(ctx context.Context) error {
 func (s *scanJob) incrementProgress(f scanFile) {
 	// don't increment for files inside zip files since these aren't
 	// counted during the initial walking
-	if s.ProgressReports != nil && f.zipFile == nil {
+	if s.ProgressReports != nil && f.ZipFile == nil {
 		s.ProgressReports.Increment()
 	}
 }
@@ -453,21 +487,10 @@ func (s *scanJob) onNewFolder(ctx context.Context, file scanFile) (*Folder, erro
 	now := time.Now()
 
 	toCreate := &Folder{
-		DirEntry: DirEntry{
-			ModTime: file.ModTime,
-		},
+		DirEntry:  file.DirEntry,
 		Path:      file.Path,
 		CreatedAt: now,
 		UpdatedAt: now,
-	}
-
-	zipFileID, err := s.getZipFileID(ctx, file.zipFile)
-	if err != nil {
-		return nil, err
-	}
-
-	if zipFileID != nil {
-		toCreate.ZipFileID = zipFileID
 	}
 
 	dir := filepath.Dir(file.Path)
@@ -601,15 +624,6 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
 
 	baseFile.ParentFolderID = *parentFolderID
 
-	zipFileID, err := s.getZipFileID(ctx, f.zipFile)
-	if err != nil {
-		return nil, err
-	}
-
-	if zipFileID != nil {
-		baseFile.ZipFileID = zipFileID
-	}
-
 	const useExisting = false
 	fp, err := s.calculateFingerprints(f.fs, baseFile, path, useExisting)
 	if err != nil {
@@ -741,14 +755,22 @@ func (s *scanJob) handleRename(ctx context.Context, f File, fp []Fingerprint) (F
 
 	for _, other := range others {
 		// if file does not exist, then update it to the new path
-		// TODO - handle #1426 scenario
 		fs, err := s.getFileFS(other.Base())
 		if err != nil {
-			return nil, fmt.Errorf("getting FS for %q: %w", other.Base().Path, err)
+			missing = append(missing, other)
+			continue
 		}
 
 		if _, err := fs.Lstat(other.Base().Path); err != nil {
 			missing = append(missing, other)
+		} else if strings.EqualFold(f.Base().Path, other.Base().Path) {
+			// #1426 - if file exists but is a case-insensitive match for the
+			// original filename, and the filesystem is case-insensitive
+			// then treat it as a move
+			if caseSensitive, _ := fs.IsPathCaseSensitive(other.Base().Path); !caseSensitive {
+				// treat as a move
+				missing = append(missing, other)
+			}
 		}
 	}
 

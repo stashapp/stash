@@ -169,7 +169,7 @@ func PathToPerformers(ctx context.Context, path string, reader PerformerAutoTagQ
 	var ret []*models.Performer
 	for _, p := range performers {
 		// TODO - commenting out alias handling until both sides work correctly
-		if nameMatchesPath(p.Name.String, path) != -1 { // || nameMatchesPath(p.Aliases.String, path) {
+		if nameMatchesPath(p.Name, path) != -1 { // || nameMatchesPath(p.Aliases.String, path) {
 			ret = append(ret, p)
 		}
 	}
@@ -278,7 +278,7 @@ func PathToTags(ctx context.Context, path string, reader TagAutoTagQueryer, cach
 	return ret, nil
 }
 
-func PathToScenes(ctx context.Context, name string, paths []string, sceneReader scene.Queryer) ([]*models.Scene, error) {
+func PathToScenesFn(ctx context.Context, name string, paths []string, sceneReader scene.Queryer, fn func(ctx context.Context, scene *models.Scene) error) error {
 	regex := getPathQueryRegex(name)
 	organized := false
 	filter := models.SceneFilterType{
@@ -291,31 +291,53 @@ func PathToScenes(ctx context.Context, name string, paths []string, sceneReader 
 
 	filter.And = scene.PathsFilter(paths)
 
-	pp := models.PerPageAll
-	scenes, err := scene.Query(ctx, sceneReader, &filter, &models.FindFilterType{
-		PerPage: &pp,
-	})
+	// do in batches
+	pp := 1000
+	sort := "id"
+	sortDir := models.SortDirectionEnumAsc
+	lastID := 0
 
-	if err != nil {
-		return nil, fmt.Errorf("error querying scenes with regex '%s': %s", regex, err.Error())
-	}
-
-	var ret []*models.Scene
-
-	// paths may have unicode characters
-	const useUnicode = true
-
-	r := nameToRegexp(name, useUnicode)
-	for _, p := range scenes {
-		if regexpMatchesPath(r, p.Path) != -1 {
-			ret = append(ret, p)
+	for {
+		if lastID != 0 {
+			filter.ID = &models.IntCriterionInput{
+				Value:    lastID,
+				Modifier: models.CriterionModifierGreaterThan,
+			}
 		}
+
+		scenes, err := scene.Query(ctx, sceneReader, &filter, &models.FindFilterType{
+			PerPage:   &pp,
+			Sort:      &sort,
+			Direction: &sortDir,
+		})
+
+		if err != nil {
+			return fmt.Errorf("error querying scenes with regex '%s': %s", regex, err.Error())
+		}
+
+		// paths may have unicode characters
+		const useUnicode = true
+
+		r := nameToRegexp(name, useUnicode)
+		for _, p := range scenes {
+			if regexpMatchesPath(r, p.Path) != -1 {
+				if err := fn(ctx, p); err != nil {
+					return fmt.Errorf("processing scene %s: %w", p.GetTitle(), err)
+				}
+			}
+		}
+
+		if len(scenes) < pp {
+			break
+		}
+
+		lastID = scenes[len(scenes)-1].ID
 	}
 
-	return ret, nil
+	return nil
 }
 
-func PathToImages(ctx context.Context, name string, paths []string, imageReader image.Queryer) ([]*models.Image, error) {
+func PathToImagesFn(ctx context.Context, name string, paths []string, imageReader image.Queryer, fn func(ctx context.Context, scene *models.Image) error) error {
 	regex := getPathQueryRegex(name)
 	organized := false
 	filter := models.ImageFilterType{
@@ -328,31 +350,53 @@ func PathToImages(ctx context.Context, name string, paths []string, imageReader 
 
 	filter.And = image.PathsFilter(paths)
 
-	pp := models.PerPageAll
-	images, err := image.Query(ctx, imageReader, &filter, &models.FindFilterType{
-		PerPage: &pp,
-	})
+	// do in batches
+	pp := 1000
+	sort := "id"
+	sortDir := models.SortDirectionEnumAsc
+	lastID := 0
 
-	if err != nil {
-		return nil, fmt.Errorf("error querying images with regex '%s': %s", regex, err.Error())
-	}
-
-	var ret []*models.Image
-
-	// paths may have unicode characters
-	const useUnicode = true
-
-	r := nameToRegexp(name, useUnicode)
-	for _, p := range images {
-		if regexpMatchesPath(r, p.Path) != -1 {
-			ret = append(ret, p)
+	for {
+		if lastID != 0 {
+			filter.ID = &models.IntCriterionInput{
+				Value:    lastID,
+				Modifier: models.CriterionModifierGreaterThan,
+			}
 		}
+
+		images, err := image.Query(ctx, imageReader, &filter, &models.FindFilterType{
+			PerPage:   &pp,
+			Sort:      &sort,
+			Direction: &sortDir,
+		})
+
+		if err != nil {
+			return fmt.Errorf("error querying images with regex '%s': %s", regex, err.Error())
+		}
+
+		// paths may have unicode characters
+		const useUnicode = true
+
+		r := nameToRegexp(name, useUnicode)
+		for _, p := range images {
+			if regexpMatchesPath(r, p.Path) != -1 {
+				if err := fn(ctx, p); err != nil {
+					return fmt.Errorf("processing image %s: %w", p.GetTitle(), err)
+				}
+			}
+		}
+
+		if len(images) < pp {
+			break
+		}
+
+		lastID = images[len(images)-1].ID
 	}
 
-	return ret, nil
+	return nil
 }
 
-func PathToGalleries(ctx context.Context, name string, paths []string, galleryReader gallery.Queryer) ([]*models.Gallery, error) {
+func PathToGalleriesFn(ctx context.Context, name string, paths []string, galleryReader gallery.Queryer, fn func(ctx context.Context, scene *models.Gallery) error) error {
 	regex := getPathQueryRegex(name)
 	organized := false
 	filter := models.GalleryFilterType{
@@ -365,27 +409,49 @@ func PathToGalleries(ctx context.Context, name string, paths []string, galleryRe
 
 	filter.And = gallery.PathsFilter(paths)
 
-	pp := models.PerPageAll
-	gallerys, _, err := galleryReader.Query(ctx, &filter, &models.FindFilterType{
-		PerPage: &pp,
-	})
+	// do in batches
+	pp := 1000
+	sort := "id"
+	sortDir := models.SortDirectionEnumAsc
+	lastID := 0
 
-	if err != nil {
-		return nil, fmt.Errorf("error querying gallerys with regex '%s': %s", regex, err.Error())
-	}
-
-	var ret []*models.Gallery
-
-	// paths may have unicode characters
-	const useUnicode = true
-
-	r := nameToRegexp(name, useUnicode)
-	for _, p := range gallerys {
-		path := p.Path
-		if path != "" && regexpMatchesPath(r, path) != -1 {
-			ret = append(ret, p)
+	for {
+		if lastID != 0 {
+			filter.ID = &models.IntCriterionInput{
+				Value:    lastID,
+				Modifier: models.CriterionModifierGreaterThan,
+			}
 		}
+
+		galleries, _, err := galleryReader.Query(ctx, &filter, &models.FindFilterType{
+			PerPage:   &pp,
+			Sort:      &sort,
+			Direction: &sortDir,
+		})
+
+		if err != nil {
+			return fmt.Errorf("error querying galleries with regex '%s': %s", regex, err.Error())
+		}
+
+		// paths may have unicode characters
+		const useUnicode = true
+
+		r := nameToRegexp(name, useUnicode)
+		for _, p := range galleries {
+			path := p.Path
+			if path != "" && regexpMatchesPath(r, path) != -1 {
+				if err := fn(ctx, p); err != nil {
+					return fmt.Errorf("processing gallery %s: %w", p.GetTitle(), err)
+				}
+			}
+		}
+
+		if len(galleries) < pp {
+			break
+		}
+
+		lastID = galleries[len(galleries)-1].ID
 	}
 
-	return ret, nil
+	return nil
 }

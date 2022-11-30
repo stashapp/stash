@@ -68,7 +68,13 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 		d := models.NewDate(*input.Date)
 		newGallery.Date = &d
 	}
-	newGallery.Rating = input.Rating
+
+	if input.Rating100 != nil {
+		newGallery.Rating = input.Rating100
+	} else if input.Rating != nil {
+		rating := models.Rating5To100(*input.Rating)
+		newGallery.Rating = &rating
+	}
 
 	if input.StudioID != nil {
 		studioID, _ := strconv.Atoi(*input.StudioID)
@@ -177,8 +183,8 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 
 	if input.Title != nil {
 		// ensure title is not empty
-		if *input.Title == "" {
-			return nil, errors.New("title must not be empty")
+		if *input.Title == "" && originalGallery.IsUserCreated() {
+			return nil, errors.New("title must not be empty for user-created galleries")
 		}
 
 		updatedGallery.Title = models.NewOptionalString(*input.Title)
@@ -187,7 +193,7 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 	updatedGallery.Details = translator.optionalString(input.Details, "details")
 	updatedGallery.URL = translator.optionalString(input.URL, "url")
 	updatedGallery.Date = translator.optionalDate(input.Date, "date")
-	updatedGallery.Rating = translator.optionalInt(input.Rating, "rating")
+	updatedGallery.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
 	updatedGallery.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
@@ -262,8 +268,7 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 	updatedGallery.Details = translator.optionalString(input.Details, "details")
 	updatedGallery.URL = translator.optionalString(input.URL, "url")
 	updatedGallery.Date = translator.optionalDate(input.Date, "date")
-	updatedGallery.Rating = translator.optionalInt(input.Rating, "rating")
-
+	updatedGallery.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
 	var err error
 	updatedGallery.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {

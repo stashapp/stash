@@ -13,11 +13,14 @@ type PHashDuplicationCriterionInput struct {
 }
 
 type SceneFilterType struct {
-	And     *SceneFilterType      `json:"AND"`
-	Or      *SceneFilterType      `json:"OR"`
-	Not     *SceneFilterType      `json:"NOT"`
-	Title   *StringCriterionInput `json:"title"`
-	Details *StringCriterionInput `json:"details"`
+	And      *SceneFilterType      `json:"AND"`
+	Or       *SceneFilterType      `json:"OR"`
+	Not      *SceneFilterType      `json:"NOT"`
+	ID       *IntCriterionInput    `json:"id"`
+	Title    *StringCriterionInput `json:"title"`
+	Code     *StringCriterionInput `json:"code"`
+	Details  *StringCriterionInput `json:"details"`
+	Director *StringCriterionInput `json:"director"`
 	// Filter by file oshash
 	Oshash *StringCriterionInput `json:"oshash"`
 	// Filter by file checksum
@@ -28,8 +31,10 @@ type SceneFilterType struct {
 	Path *StringCriterionInput `json:"path"`
 	// Filter by file count
 	FileCount *IntCriterionInput `json:"file_count"`
-	// Filter by rating
+	// Filter by rating expressed as 1-5
 	Rating *IntCriterionInput `json:"rating"`
+	// Filter by rating expressed as 1-100
+	Rating100 *IntCriterionInput `json:"rating100"`
 	// Filter by organized
 	Organized *bool `json:"organized"`
 	// Filter by o-counter
@@ -64,14 +69,28 @@ type SceneFilterType struct {
 	PerformerCount *IntCriterionInput `json:"performer_count"`
 	// Filter by StashID
 	StashID *StringCriterionInput `json:"stash_id"`
+	// Filter by StashID Endpoint
+	StashIDEndpoint *StashIDCriterionInput `json:"stash_id_endpoint"`
 	// Filter by url
 	URL *StringCriterionInput `json:"url"`
 	// Filter by interactive
 	Interactive *bool `json:"interactive"`
 	// Filter by InteractiveSpeed
 	InteractiveSpeed *IntCriterionInput `json:"interactive_speed"`
-
+	// Filter by captions
 	Captions *StringCriterionInput `json:"captions"`
+	// Filter by resume time
+	ResumeTime *IntCriterionInput `json:"resume_time"`
+	// Filter by play count
+	PlayCount *IntCriterionInput `json:"play_count"`
+	// Filter by play duration (in seconds)
+	PlayDuration *IntCriterionInput `json:"play_duration"`
+	// Filter by date
+	Date *DateCriterionInput `json:"date"`
+	// Filter by created at
+	CreatedAt *TimestampCriterionInput `json:"created_at"`
+	// Filter by updated at
+	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
 }
 
 type SceneQueryOptions struct {
@@ -166,6 +185,8 @@ type SceneWriter interface {
 	IncrementOCounter(ctx context.Context, id int) (int, error)
 	DecrementOCounter(ctx context.Context, id int) (int, error)
 	ResetOCounter(ctx context.Context, id int) (int, error)
+	SaveActivity(ctx context.Context, id int, resumeTime *float64, playDuration *float64) (bool, error)
+	IncrementWatchCount(ctx context.Context, id int) (int, error)
 	Destroy(ctx context.Context, id int) error
 	UpdateCover(ctx context.Context, sceneID int, cover []byte) error
 	DestroyCover(ctx context.Context, sceneID int) error

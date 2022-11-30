@@ -54,6 +54,7 @@
     "import": "Importera…",
     "import_from_file": "Importera från fil",
     "logout": "Logga ut",
+    "make_primary": "Gör primär",
     "merge": "Slå samman",
     "merge_from": "Slå samman från",
     "merge_into": "Slå samman till",
@@ -189,6 +190,7 @@
     },
     "categories": {
       "about": "Om",
+      "changelog": "Ändringslogg",
       "interface": "Gränssnitt",
       "logs": "Loggar",
       "metadata_providers": "Metadataleverantörer",
@@ -242,6 +244,10 @@
         "stash-box_integration": "Integration med Stash-box",
         "username": "Användarnamn",
         "username_desc": "Användarnamn till Stash. Lämna tom för att inaktivera användarautentisering"
+      },
+      "backup_directory_path": {
+        "description": "Filsökväg för SQLite-databas backupfil",
+        "heading": "Backup filsökväg"
       },
       "cache_location": "Mappsökväg till cache",
       "cache_path_head": "Cache-sökväg",
@@ -344,7 +350,7 @@
       "auto_tagging": "Automatisk taggning",
       "backing_up_database": "Säkerhetskopierar databas",
       "backup_and_download": "Säkerhetskopierar databasen och laddar ner den resulterande filen.",
-      "backup_database": "Säkerhetskopierar databasen i databasens mapp med filnamnsformatet {filename_format}",
+      "backup_database": "Säkerhetskopierar databasen i backup-mappen med filnamnsformatet {filename_format}",
       "cleanup_desc": "Kollar efter saknade filer och raderar dem från databasen. Detta är en destruktiv handling.",
       "data_management": "Datahantering",
       "defaults_set": "Standard har valts och kommer användas när {action} trycks på Jobbsidan.",
@@ -420,11 +426,20 @@
       "scene_tools": "Scenverktyg"
     },
     "ui": {
+      "abbreviate_counters": {
+        "description": "Förkorta siffror i kort- och detaljvyn, t.ex. \"1831\" kommer formateras \"1.8k\".",
+        "heading": "Förkorta siffror"
+      },
       "basic_settings": "Grundinställningar",
       "custom_css": {
         "description": "Sidan måste laddas om för att ändringar ska ta effekt.",
         "heading": "Anpassad CSS",
         "option_label": "Använd anpassad CSS"
+      },
+      "custom_locales": {
+        "description": "Ändra individuella lokala strängar. Se https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json för kompletta listan. Sidan måste laddas om för att ändringar ska ske.",
+        "heading": "Egen översättning",
+        "option_label": "Aktiverat egen översättning"
       },
       "delete_options": {
         "description": "Standardalternativ vid radering av bilder, gallerier och scener.",
@@ -518,7 +533,7 @@
         "options": {
           "auto_start_video": "Starta videouppspelning automatiskt",
           "auto_start_video_on_play_selected": {
-            "description": "Autostarta uppspelning när valda eller slumpade spelas från Scener-sidan",
+            "description": "Autostarta uppspelning från kön, valda eller slumpade från Scener-sidan",
             "heading": "Autostarta video när valda spelas"
           },
           "continue_playlist_default": {
@@ -539,9 +554,31 @@
         "description": "Antal gånger att försöka bläddra innan flytt till nästa/tidigare objekt. Används bara för Pan Y-läget.",
         "heading": "Bläddringsförsök innan flytt"
       },
+      "show_tag_card_on_hover": {
+        "description": "Visa taggkortet när pekaren är på taggmärken",
+        "heading": "Taggkort"
+      },
       "slideshow_delay": {
         "description": "Bildspel är tillgängligt för gallerier i väggvisningsläge",
         "heading": "Bildspelsfördröjning (sekunder)"
+      },
+      "studio_panel": {
+        "heading": "Studiovy",
+        "options": {
+          "show_child_studio_content": {
+            "description": "Visa också innehåll från underordnade studior i studiovyn",
+            "heading": "Visa underordnade studiors innehåll"
+          }
+        }
+      },
+      "tag_panel": {
+        "heading": "Taggvy",
+        "options": {
+          "show_child_tagged_content": {
+            "description": "Visa också innehåll från underordnade taggar i taggvyn",
+            "heading": "Visa underordande taggars innehåll"
+          }
+        }
       },
       "title": "Användargränssnitt"
     }
@@ -587,6 +624,7 @@
   "death_date": "Dödsdatum",
   "death_year": "Dödsår",
   "descending": "Fallande",
+  "description": "Beskrivning",
   "detail": "Beskrivning",
   "details": "Beskrivningar",
   "developmentVersion": "Utvecklingsversion",
@@ -595,12 +633,14 @@
     "delete_alert": "De följande {count, plural, one {{singularEntity}} andra {{pluralEntity}}} kommer raderas permanent:",
     "delete_confirm": "Är du säker på att du vill radera {entityName}?",
     "delete_entity_desc": "{count, plural, one {Är du säker att du vill radera detta {singularEntity}? Sålänge filen inte också raderas, kommer {singularEntity} att läggas till igen vid nästa skanning.} other {Är du säker att du vill radera dessa {pluralEntity}? Sålänge filen inte också raderas, kommer dessa {pluralEntity} att läggas till igen vid nästa skanning.}}",
+    "delete_entity_simple_desc": "{count,plural,one {Är du säker att du vill radera denna {singularEntity}?} other {Är du säker att du vill radera dessa {pluralEntity}?}}",
     "delete_entity_title": "{count, plural, one {Radera {singularEntity}} other {Radera {pluralEntity}}}",
     "delete_galleries_extra": "... och alla bildfiler som inte är kopplade till något annat galleri.",
     "delete_gallery_files": "Radera gallerimapp/zip-fil och alla bilder som inte är kopplade till något annat galleri.",
     "delete_object_desc": "Är du säker på att du vill radera {count, plural, one {denna {singularEntity}} other {dessa {pluralEntity}}}?",
     "delete_object_overflow": "…och {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Radera {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "dont_show_until_updated": "Visa inte tills nästa uppdatering",
     "edit_entity_title": "Redigera {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Inkludera relaterade objekt i exporten",
     "export_title": "Exportera",
@@ -726,6 +766,7 @@
   "false": "Falsk",
   "favourite": "Favorit",
   "file": "fil",
+  "file_count": "Filantal",
   "file_info": "Filinfo",
   "file_mod_time": "Filens Modifikationstid",
   "files": "filer",
@@ -733,6 +774,7 @@
   "filter": "Filter",
   "filter_name": "Filternamn",
   "filters": "Filter",
+  "folder": "Mapp",
   "framerate": "Bildhastighet",
   "frames_per_second": "{value} bilder per sekund",
   "front_page": {
@@ -765,6 +807,7 @@
   },
   "hasMarkers": "Har markörer",
   "height": "Längd",
+  "height_cm": "Längd (cm)",
   "help": "Hjälp",
   "ignore_auto_tag": "Ignorera Autotagg",
   "image": "Bild",
@@ -865,15 +908,18 @@
   },
   "performers": "Stjärnor",
   "piercings": "Piercingar",
+  "primary_file": "Primär fil",
   "queue": "Kö",
   "random": "Slumpad",
   "rating": "Betyg",
   "recently_added_objects": "Nyligen Tillagda {objects}",
   "recently_released_objects": "Nyligen Släppta {objects}",
+  "release_notes": "Versionsfakta",
   "resolution": "Upplösning",
   "scene": "Scen",
   "sceneTagger": "Scentaggaren",
   "sceneTags": "Scentaggar",
+  "scene_code": "Studiokod",
   "scene_count": "Antal scener",
   "scene_id": "Scenens ID",
   "scenes": "Scener",
@@ -919,9 +965,10 @@
       "migration_failed_error": "Följande fel stöttes på under migrationen av databasen:",
       "migration_failed_help": "Vänligen gör alla nödvändiga korrektioner och testa igen. Annars, skapa en buggrapport på {githubLink} eller sök hjälp på {githubLink}.",
       "migration_irreversible_warning": "Processen för schemamigration är ej omvändbar. När migrationen har skett kommer din databas inte längre vara kompatibel med tidigare versioner av Stash.",
+      "migration_notes": "Migrationsfakta",
       "migration_required": "Migration krävs",
       "perform_schema_migration": "Genomför schemamigration",
-      "schema_too_old": "Din nuvarande databas använder schemaversion <strong>{databaseSchema}</strong> och behöver migreras till version <strong>{appSchema}</strong>. Denna version av Stash kommer inte fungera utan en databasmigration."
+      "schema_too_old": "Din nuvarande databas använder schemaversion <strong>{databaseSchema}</strong> och behöver migreras till version <strong>{appSchema}</strong>. Denna version av Stash kommer inte fungera utan en databasmigration. Om du inte vill migrera kommer du behöva nedgradera till en version som matcher din databasschema."
     },
     "paths": {
       "database_filename_empty_for_default": "databasfilnamn (blank för standard)",
@@ -1019,5 +1066,7 @@
   "videos": "Videor",
   "view_all": "Visa Allt",
   "weight": "Vikt",
-  "years_old": "år gammal"
+  "weight_kg": "Vikt (kg)",
+  "years_old": "år gammal",
+  "zip_file_count": "Antal Zip-filer"
 }

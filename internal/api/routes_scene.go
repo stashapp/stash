@@ -264,7 +264,7 @@ func (rs sceneRoutes) getChapterVttTitle(ctx context.Context, marker *models.Sce
 	}
 
 	var title string
-	if err := txn.WithTxn(ctx, rs.txnManager, func(ctx context.Context) error {
+	if err := txn.WithReadTxn(ctx, rs.txnManager, func(ctx context.Context) error {
 		qb := rs.tagFinder
 		primaryTag, err := qb.Find(ctx, marker.PrimaryTagID)
 		if err != nil {
@@ -293,7 +293,7 @@ func (rs sceneRoutes) getChapterVttTitle(ctx context.Context, marker *models.Sce
 func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	var sceneMarkers []*models.SceneMarker
-	readTxnErr := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+	readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 		var err error
 		sceneMarkers, err = rs.sceneMarkerFinder.FindBySceneID(ctx, scene.ID)
 		return err
@@ -349,7 +349,7 @@ func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang strin
 	s := r.Context().Value(sceneKey).(*models.Scene)
 
 	var captions []*models.VideoCaption
-	readTxnErr := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+	readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 		var err error
 		primaryFile := s.Files.Primary()
 		if primaryFile == nil {
@@ -377,14 +377,14 @@ func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang strin
 		sub, err := video.ReadSubs(caption.Path(s.Path))
 		if err != nil {
 			logger.Warnf("error while reading subs: %v", err)
-			http.Error(w, readTxnErr.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		var b bytes.Buffer
 		err = sub.WriteToWebVTT(&b)
 		if err != nil {
-			http.Error(w, readTxnErr.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -423,7 +423,7 @@ func (rs sceneRoutes) SceneMarkerStream(w http.ResponseWriter, r *http.Request) 
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
 	var sceneMarker *models.SceneMarker
-	readTxnErr := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+	readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 		var err error
 		sceneMarker, err = rs.sceneMarkerFinder.Find(ctx, sceneMarkerID)
 		return err
@@ -450,7 +450,7 @@ func (rs sceneRoutes) SceneMarkerPreview(w http.ResponseWriter, r *http.Request)
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
 	var sceneMarker *models.SceneMarker
-	readTxnErr := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+	readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 		var err error
 		sceneMarker, err = rs.sceneMarkerFinder.Find(ctx, sceneMarkerID)
 		return err
@@ -487,7 +487,7 @@ func (rs sceneRoutes) SceneMarkerScreenshot(w http.ResponseWriter, r *http.Reque
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
 	var sceneMarker *models.SceneMarker
-	readTxnErr := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+	readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 		var err error
 		sceneMarker, err = rs.sceneMarkerFinder.Find(ctx, sceneMarkerID)
 		return err
@@ -528,7 +528,7 @@ func (rs sceneRoutes) SceneCtx(next http.Handler) http.Handler {
 		sceneID, _ := strconv.Atoi(sceneIdentifierQueryParam)
 
 		var scene *models.Scene
-		_ = txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		_ = txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 			qb := rs.sceneFinder
 			if sceneID == 0 {
 				var scenes []*models.Scene

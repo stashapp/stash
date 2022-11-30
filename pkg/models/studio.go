@@ -12,10 +12,14 @@ type StudioFilterType struct {
 	Parents *MultiCriterionInput `json:"parents"`
 	// Filter by StashID
 	StashID *StringCriterionInput `json:"stash_id"`
+	// Filter by StashID Endpoint
+	StashIDEndpoint *StashIDCriterionInput `json:"stash_id_endpoint"`
 	// Filter to only include studios missing this property
 	IsMissing *string `json:"is_missing"`
-	// Filter by rating
+	// Filter by rating expressed as 1-5
 	Rating *IntCriterionInput `json:"rating"`
+	// Filter by rating expressed as 1-100
+	Rating100 *IntCriterionInput `json:"rating100"`
 	// Filter by scene count
 	SceneCount *IntCriterionInput `json:"scene_count"`
 	// Filter by image count
@@ -28,6 +32,10 @@ type StudioFilterType struct {
 	Aliases *StringCriterionInput `json:"aliases"`
 	// Filter by autotag ignore value
 	IgnoreAutoTag *bool `json:"ignore_auto_tag"`
+	// Filter by created at
+	CreatedAt *TimestampCriterionInput `json:"created_at"`
+	// Filter by updated at
+	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
 }
 
 type StudioFinder interface {

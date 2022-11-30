@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useContext, useMemo } from "react";
 import { useIntl } from "react-intl";
 import {
   FrontPageContent,
@@ -7,6 +7,7 @@ import {
 } from "src/core/config";
 import * as GQL from "src/core/generated-graphql";
 import { useFindSavedFilter } from "src/core/StashService";
+import { ConfigurationContext } from "src/hooks/Config";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { GalleryRecommendationRow } from "../Galleries/GalleryRecommendationRow";
 import { ImageRecommendationRow } from "../Images/ImageRecommendationRow";
@@ -98,6 +99,7 @@ interface ISavedFilterResults {
 const SavedFilterResults: React.FC<ISavedFilterResults> = ({
   savedFilterID,
 }) => {
+  const { configuration: config } = useContext(ConfigurationContext);
   const { loading, data } = useFindSavedFilter(savedFilterID.toString());
 
   const filter = useMemo(() => {
@@ -105,12 +107,12 @@ const SavedFilterResults: React.FC<ISavedFilterResults> = ({
 
     const { mode, filter: filterJSON } = data.findSavedFilter;
 
-    const ret = new ListFilterModel(mode);
+    const ret = new ListFilterModel(mode, config);
     ret.currentPage = 1;
     ret.configureFromJSON(filterJSON);
     ret.randomSeed = -1;
     return ret;
-  }, [data?.findSavedFilter]);
+  }, [data?.findSavedFilter, config]);
 
   if (loading || !data?.findSavedFilter || !filter) {
     return <></>;
@@ -128,18 +130,19 @@ interface ICustomFilterProps {
 const CustomFilterResults: React.FC<ICustomFilterProps> = ({
   customFilter,
 }) => {
+  const { configuration: config } = useContext(ConfigurationContext);
   const intl = useIntl();
 
   const filter = useMemo(() => {
     const itemsPerPage = 25;
-    const ret = new ListFilterModel(customFilter.mode);
+    const ret = new ListFilterModel(customFilter.mode, config);
     ret.sortBy = customFilter.sortBy;
     ret.sortDirection = customFilter.direction;
     ret.itemsPerPage = itemsPerPage;
     ret.currentPage = 1;
     ret.randomSeed = -1;
     return ret;
-  }, [customFilter]);
+  }, [customFilter, config]);
 
   const header = customFilter.message
     ? intl.formatMessage(
@@ -164,6 +167,10 @@ interface IProps {
 export const Control: React.FC<IProps> = ({ content }) => {
   switch (content.__typename) {
     case "SavedFilter":
+      if (!(content as ISavedFilterRow).savedFilterId) {
+        return <div>Error: missing savedFilterId</div>;
+      }
+
       return (
         <SavedFilterResults
           savedFilterID={(content as ISavedFilterRow).savedFilterId.toString()}

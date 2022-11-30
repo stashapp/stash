@@ -154,6 +154,7 @@ type Finder interface {
 
 // Getter provides methods to find Files.
 type Getter interface {
+	Finder
 	FindByPath(ctx context.Context, path string) (File, error)
 	FindByFingerprint(ctx context.Context, fp Fingerprint) ([]File, error)
 	FindByZipFileID(ctx context.Context, zipFileID ID) ([]File, error)
@@ -190,6 +191,8 @@ type Store interface {
 	Creator
 	Updater
 	Destroyer
+
+	IsPrimary(ctx context.Context, fileID ID) (bool, error)
 }
 
 // Decorator wraps the Decorate method to add additional functionality while scanning files.

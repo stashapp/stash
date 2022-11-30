@@ -5,7 +5,7 @@ fragment MovieData on Movie {
   aliases
   duration
   date
-  rating
+  rating100
   director
 
   studio {

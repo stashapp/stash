@@ -2,8 +2,8 @@ package manager
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/stashapp/stash/pkg/hash/md5"
@@ -31,7 +31,7 @@ func (t *StashBoxPerformerTagTask) Description() string {
 	if t.name != nil {
 		name = *t.name
 	} else if t.performer != nil {
-		name = t.performer.Name.String
+		name = t.performer.Name
 	}
 
 	return fmt.Sprintf("Tagging performer %s from stash-box", name)
@@ -50,7 +50,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 
 	if t.refresh {
 		var performerID string
-		txnErr := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
+		txnErr := txn.WithReadTxn(ctx, instance.Repository, func(ctx context.Context) error {
 			stashids, _ := instance.Repository.Performer.GetStashIDs(ctx, t.performer.ID)
 			for _, id := range stashids {
 				if id.Endpoint == t.box.Endpoint {
@@ -70,7 +70,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 		if t.name != nil {
 			name = *t.name
 		} else {
-			name = t.performer.Name.String
+			name = t.performer.Name
 		}
 		performer, err = client.FindStashBoxPerformerByName(ctx, name)
 	}
@@ -86,84 +86,73 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 	}
 
 	if performer != nil {
-		updatedTime := time.Now()
-
 		if t.performer != nil {
-			partial := models.PerformerPartial{
-				ID:        t.performer.ID,
-				UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
-			}
+			partial := models.NewPerformerPartial()
 
 			if performer.Aliases != nil && !excluded["aliases"] {
-				value := getNullString(performer.Aliases)
-				partial.Aliases = &value
+				partial.Aliases = models.NewOptionalString(*performer.Aliases)
 			}
 			if performer.Birthdate != nil && *performer.Birthdate != "" && !excluded["birthdate"] {
 				value := getDate(performer.Birthdate)
-				partial.Birthdate = &value
+				partial.Birthdate = models.NewOptionalDate(*value)
 			}
 			if performer.CareerLength != nil && !excluded["career_length"] {
-				value := getNullString(performer.CareerLength)
-				partial.CareerLength = &value
+				partial.CareerLength = models.NewOptionalString(*performer.CareerLength)
 			}
 			if performer.Country != nil && !excluded["country"] {
-				value := getNullString(performer.Country)
-				partial.Country = &value
+				partial.Country = models.NewOptionalString(*performer.Country)
 			}
 			if performer.Ethnicity != nil && !excluded["ethnicity"] {
-				value := getNullString(performer.Ethnicity)
-				partial.Ethnicity = &value
+				partial.Ethnicity = models.NewOptionalString(*performer.Ethnicity)
 			}
 			if performer.EyeColor != nil && !excluded["eye_color"] {
-				value := getNullString(performer.EyeColor)
-				partial.EyeColor = &value
+				partial.EyeColor = models.NewOptionalString(*performer.EyeColor)
 			}
 			if performer.FakeTits != nil && !excluded["fake_tits"] {
-				value := getNullString(performer.FakeTits)
-				partial.FakeTits = &value
+				partial.FakeTits = models.NewOptionalString(*performer.FakeTits)
 			}
 			if performer.Gender != nil && !excluded["gender"] {
-				value := getNullString(performer.Gender)
-				partial.Gender = &value
+				partial.Gender = models.NewOptionalString(*performer.Gender)
 			}
 			if performer.Height != nil && !excluded["height"] {
-				value := getNullString(performer.Height)
-				partial.Height = &value
+				h, err := strconv.Atoi(*performer.Height)
+				if err == nil {
+					partial.Height = models.NewOptionalInt(h)
+				}
+			}
+			if performer.Weight != nil && !excluded["weight"] {
+				w, err := strconv.Atoi(*performer.Weight)
+				if err == nil {
+					partial.Weight = models.NewOptionalInt(w)
+				}
 			}
 			if performer.Instagram != nil && !excluded["instagram"] {
-				value := getNullString(performer.Instagram)
-				partial.Instagram = &value
+				partial.Instagram = models.NewOptionalString(*performer.Instagram)
 			}
 			if performer.Measurements != nil && !excluded["measurements"] {
-				value := getNullString(performer.Measurements)
-				partial.Measurements = &value
+				partial.Measurements = models.NewOptionalString(*performer.Measurements)
 			}
 			if excluded["name"] && performer.Name != nil {
-				value := sql.NullString{String: *performer.Name, Valid: true}
-				partial.Name = &value
+				partial.Name = models.NewOptionalString(*performer.Name)
 				checksum := md5.FromString(*performer.Name)
-				partial.Checksum = &checksum
+				partial.Checksum = models.NewOptionalString(checksum)
 			}
 			if performer.Piercings != nil && !excluded["piercings"] {
-				value := getNullString(performer.Piercings)
-				partial.Piercings = &value
+				partial.Piercings = models.NewOptionalString(*performer.Piercings)
 			}
 			if performer.Tattoos != nil && !excluded["tattoos"] {
-				value := getNullString(performer.Tattoos)
-				partial.Tattoos = &value
+				partial.Tattoos = models.NewOptionalString(*performer.Tattoos)
 			}
 			if performer.Twitter != nil && !excluded["twitter"] {
-				value := getNullString(performer.Twitter)
-				partial.Twitter = &value
+				partial.Twitter = models.NewOptionalString(*performer.Twitter)
 			}
 			if performer.URL != nil && !excluded["url"] {
-				value := getNullString(performer.URL)
-				partial.URL = &value
+				partial.URL = models.NewOptionalString(*performer.URL)
 			}
 
 			txnErr := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
 				r := instance.Repository
-				_, err := r.Performer.Update(ctx, partial)
+				_, err := r.Performer.UpdatePartial(ctx, t.performer.ID, partial)
 
 				if !t.refresh {
 					err = r.Performer.UpdateStashIDs(ctx, t.performer.ID, []models.StashID{
@@ -203,35 +192,35 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 		} else if t.name != nil && performer.Name != nil {
 			currentTime := time.Now()
 			newPerformer := models.Performer{
-				Aliases:      getNullString(performer.Aliases),
+				Aliases:      getString(performer.Aliases),
 				Birthdate:    getDate(performer.Birthdate),
-				CareerLength: getNullString(performer.CareerLength),
+				CareerLength: getString(performer.CareerLength),
 				Checksum:     md5.FromString(*performer.Name),
-				Country:      getNullString(performer.Country),
-				CreatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
-				Ethnicity:    getNullString(performer.Ethnicity),
-				EyeColor:     getNullString(performer.EyeColor),
-				FakeTits:     getNullString(performer.FakeTits),
-				Favorite:     sql.NullBool{Bool: false, Valid: true},
-				Gender:       getNullString(performer.Gender),
-				Height:       getNullString(performer.Height),
-				Instagram:    getNullString(performer.Instagram),
-				Measurements: getNullString(performer.Measurements),
-				Name:         sql.NullString{String: *performer.Name, Valid: true},
-				Piercings:    getNullString(performer.Piercings),
-				Tattoos:      getNullString(performer.Tattoos),
-				Twitter:      getNullString(performer.Twitter),
-				URL:          getNullString(performer.URL),
-				UpdatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
+				Country:      getString(performer.Country),
+				CreatedAt:    currentTime,
+				Ethnicity:    getString(performer.Ethnicity),
+				EyeColor:     getString(performer.EyeColor),
+				FakeTits:     getString(performer.FakeTits),
+				Gender:       models.GenderEnum(getString(performer.Gender)),
+				Height:       getIntPtr(performer.Height),
+				Weight:       getIntPtr(performer.Weight),
+				Instagram:    getString(performer.Instagram),
+				Measurements: getString(performer.Measurements),
+				Name:         *performer.Name,
+				Piercings:    getString(performer.Piercings),
+				Tattoos:      getString(performer.Tattoos),
+				Twitter:      getString(performer.Twitter),
+				URL:          getString(performer.URL),
+				UpdatedAt:    currentTime,
 			}
 			err := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
 				r := instance.Repository
-				createdPerformer, err := r.Performer.Create(ctx, newPerformer)
+				err := r.Performer.Create(ctx, &newPerformer)
 				if err != nil {
 					return err
 				}
 
-				err = r.Performer.UpdateStashIDs(ctx, createdPerformer.ID, []models.StashID{
+				err = r.Performer.UpdateStashIDs(ctx, newPerformer.ID, []models.StashID{
 					{
 						Endpoint: t.box.Endpoint,
 						StashID:  *performer.RemoteSiteID,
@@ -246,7 +235,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 					if imageErr != nil {
 						return imageErr
 					}
-					err = r.Performer.UpdateImage(ctx, createdPerformer.ID, image)
+					err = r.Performer.UpdateImage(ctx, newPerformer.ID, image)
 				}
 				return err
 			})
@@ -261,24 +250,38 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 		if t.name != nil {
 			name = *t.name
 		} else if t.performer != nil {
-			name = t.performer.Name.String
+			name = t.performer.Name
 		}
 		logger.Infof("No match found for %s", name)
 	}
 }
 
-func getDate(val *string) models.SQLiteDate {
+func getDate(val *string) *models.Date {
 	if val == nil {
-		return models.SQLiteDate{Valid: false}
+		return nil
+	}
+
+	ret := models.NewDate(*val)
+	return &ret
+}
+
+func getString(val *string) string {
+	if val == nil {
+		return ""
 	} else {
-		return models.SQLiteDate{String: *val, Valid: true}
+		return *val
 	}
 }
 
-func getNullString(val *string) sql.NullString {
+func getIntPtr(val *string) *int {
 	if val == nil {
-		return sql.NullString{Valid: false}
+		return nil
 	} else {
-		return sql.NullString{String: *val, Valid: true}
+		v, err := strconv.Atoi(*val)
+		if err != nil {
+			return nil
+		}
+
+		return &v
 	}
 }

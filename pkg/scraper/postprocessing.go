@@ -47,7 +47,7 @@ func (c Cache) postScrape(ctx context.Context, content ScrapedContent) (ScrapedC
 }
 
 func (c Cache) postScrapePerformer(ctx context.Context, p models.ScrapedPerformer) (ScrapedContent, error) {
-	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
+	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
 		tqb := c.repository.TagFinder
 
 		tags, err := postProcessTags(ctx, tqb, p.Tags)
@@ -66,12 +66,14 @@ func (c Cache) postScrapePerformer(ctx context.Context, p models.ScrapedPerforme
 		logger.Warnf("Could not set image using URL %s: %s", *p.Image, err.Error())
 	}
 
+	p.Country = resolveCountryName(p.Country)
+
 	return p, nil
 }
 
 func (c Cache) postScrapeMovie(ctx context.Context, m models.ScrapedMovie) (ScrapedContent, error) {
 	if m.Studio != nil {
-		if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
+		if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
 			return match.ScrapedStudio(ctx, c.repository.StudioFinder, m.Studio, nil)
 		}); err != nil {
 			return nil, err
@@ -98,11 +100,13 @@ func (c Cache) postScrapeScenePerformer(ctx context.Context, p models.ScrapedPer
 	}
 	p.Tags = tags
 
+	p.Country = resolveCountryName(p.Country)
+
 	return nil
 }
 
 func (c Cache) postScrapeScene(ctx context.Context, scene ScrapedScene) (ScrapedContent, error) {
-	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
+	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
 		pqb := c.repository.PerformerFinder
 		mqb := c.repository.MovieFinder
 		tqb := c.repository.TagFinder
@@ -156,7 +160,7 @@ func (c Cache) postScrapeScene(ctx context.Context, scene ScrapedScene) (Scraped
 }
 
 func (c Cache) postScrapeGallery(ctx context.Context, g ScrapedGallery) (ScrapedContent, error) {
-	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
+	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
 		pqb := c.repository.PerformerFinder
 		tqb := c.repository.TagFinder
 		sqb := c.repository.StudioFinder

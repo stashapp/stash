@@ -17,6 +17,7 @@
 @import "src/components/Setup/styles.scss";
 @import "src/components/Studios/styles.scss";
 @import "src/components/Shared/styles.scss";
+@import "src/components/Shared/Rating/styles.scss";
 @import "src/components/Tags/styles.scss";
 @import "src/components/Wall/styles.scss";
 @import "src/components/Tagger/styles.scss";
@@ -25,8 +26,6 @@
 @import "src/components/Dialogs/IdentifyDialog/styles.scss";
 @import "src/components/Dialogs/styles.scss";
 @import "../node_modules/flag-icon-css/css/flag-icon.min.css";
-@import "video.js/dist/video-js.css";
-@import "videojs-seek-buttons/dist/videojs-seek-buttons.css";
 
 /* stylelint-disable */
 #root {
@@ -406,6 +405,90 @@ div.dropdown-menu {
   margin: 0 10px;
 }
 
+.rating-100-20 {
+  background: #f00;
+}
+
+.rating-100-19 {
+  background: #ff2409;
+}
+
+.rating-100-18 {
+  background: #ff4812;
+}
+
+.rating-100-17 {
+  background: #ff6a07;
+}
+
+.rating-100-16 {
+  background: #ff8000;
+}
+
+.rating-100-15 {
+  background: #fa8804;
+}
+
+.rating-100-14 {
+  background: #f39409;
+}
+
+.rating-100-13 {
+  background: #eca00e;
+}
+
+.rating-100-12 {
+  background: #e7a811;
+}
+
+.rating-100-11 {
+  background: #dfb617;
+}
+
+.rating-100-10 {
+  background: #d2ca20;
+}
+
+.rating-100-9 {
+  background: #cbb526;
+}
+
+.rating-100-8 {
+  background: #c39f2b;
+}
+
+.rating-100-7 {
+  background: #bd8e2f;
+}
+
+.rating-100-6 {
+  background: #b47435;
+}
+
+.rating-100-5 {
+  background: #af7944;
+}
+
+.rating-100-4 {
+  background: #a7805b;
+}
+
+.rating-100-3 {
+  background: #a48363;
+}
+
+.rating-100-2 {
+  background: #9e8974;
+}
+
+.rating-100-1 {
+  background: #9b8c7d;
+}
+
+.rating-100-0 {
+  background: #939393;
+}
+
 .rating-5 {
   background: #ff2f39;
 }
@@ -429,9 +512,9 @@ div.dropdown-menu {
 .rating-banner {
   color: #fff;
   display: block;
-  font-size: 0.86rem;
-  font-weight: 400;
-  left: -46px;
+  font-size: 1rem;
+  font-weight: bold;
+  left: -48px;
   letter-spacing: 1px;
   line-height: 1.6rem;
   padding: 6px 45px;

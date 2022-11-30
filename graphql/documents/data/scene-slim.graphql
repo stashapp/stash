@@ -1,14 +1,19 @@
 fragment SlimSceneData on Scene {
   id
   title
+  code
   details
+  director
   url
   date
-  rating
+  rating100
   o_counter
   organized
   interactive
   interactive_speed
+  resume_time
+  play_duration
+  play_count
 
   files {
     ...VideoFileData
@@ -20,7 +25,6 @@ fragment SlimSceneData on Scene {
     stream
     webp
     vtt
-    chapters_vtt
     sprite
     funscript
     interactive_heatmap

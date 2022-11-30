@@ -39,12 +39,12 @@ func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageO
 	chunkCount := rows * cols
 
 	// For files with small duration / low frame count  try to seek using frame number intead of seconds
-	if videoFile.Duration < 5 || (0 < videoFile.FrameCount && videoFile.FrameCount <= int64(chunkCount)) { // some files can have FrameCount == 0, only use SlowSeek  if duration < 5
-		if videoFile.Duration <= 0 {
-			s := fmt.Sprintf("video %s: duration(%.3f)/frame count(%d) invalid, skipping sprite creation", videoFile.Path, videoFile.Duration, videoFile.FrameCount)
+	if videoFile.VideoStreamDuration < 5 || (0 < videoFile.FrameCount && videoFile.FrameCount <= int64(chunkCount)) { // some files can have FrameCount == 0, only use SlowSeek  if duration < 5
+		if videoFile.VideoStreamDuration <= 0 {
+			s := fmt.Sprintf("video %s: duration(%.3f)/frame count(%d) invalid, skipping sprite creation", videoFile.Path, videoFile.VideoStreamDuration, videoFile.FrameCount)
 			return nil, errors.New(s)
 		}
-		logger.Warnf("[generator] video %s too short (%.3fs, %d frames), using frame seeking", videoFile.Path, videoFile.Duration, videoFile.FrameCount)
+		logger.Warnf("[generator] video %s too short (%.3fs, %d frames), using frame seeking", videoFile.Path, videoFile.VideoStreamDuration, videoFile.FrameCount)
 		slowSeek = true
 		// do an actual frame count of the file ( number of frames = read frames)
 		ffprobe := GetInstance().FFProbe
@@ -102,7 +102,7 @@ func (g *SpriteGenerator) generateSpriteImage() error {
 	if !g.SlowSeek {
 		logger.Infof("[generator] generating sprite image for %s", g.Info.VideoFile.Path)
 		// generate `ChunkCount` thumbnails
-		stepSize := g.Info.VideoFile.Duration / float64(g.Info.ChunkCount)
+		stepSize := g.Info.VideoFile.VideoStreamDuration / float64(g.Info.ChunkCount)
 
 		for i := 0; i < g.Info.ChunkCount; i++ {
 			time := float64(i) * stepSize

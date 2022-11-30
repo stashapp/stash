@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
 type SceneQueryPerformerUpdater interface {
@@ -33,14 +34,14 @@ func getPerformerTagger(p *models.Performer, cache *match.Cache) tagger {
 	return tagger{
 		ID:    p.ID,
 		Type:  "performer",
-		Name:  p.Name.String,
+		Name:  p.Name,
 		cache: cache,
 	}
 }
 
 // PerformerScenes searches for scenes whose path matches the provided performer name and tags the scene with the performer.
-func PerformerScenes(ctx context.Context, p *models.Performer, paths []string, rw SceneQueryPerformerUpdater, cache *match.Cache) error {
-	t := getPerformerTagger(p, cache)
+func (tagger *Tagger) PerformerScenes(ctx context.Context, p *models.Performer, paths []string, rw SceneQueryPerformerUpdater) error {
+	t := getPerformerTagger(p, tagger.Cache)
 
 	return t.tagScenes(ctx, paths, rw, func(o *models.Scene) (bool, error) {
 		if err := o.LoadPerformerIDs(ctx, rw); err != nil {
@@ -52,7 +53,9 @@ func PerformerScenes(ctx context.Context, p *models.Performer, paths []string, r
 			return false, nil
 		}
 
-		if err := scene.AddPerformer(ctx, rw, o, p.ID); err != nil {
+		if err := txn.WithTxn(ctx, tagger.TxnManager, func(ctx context.Context) error {
+			return scene.AddPerformer(ctx, rw, o, p.ID)
+		}); err != nil {
 			return false, err
 		}
 
@@ -61,8 +64,8 @@ func PerformerScenes(ctx context.Context, p *models.Performer, paths []string, r
 }
 
 // PerformerImages searches for images whose path matches the provided performer name and tags the image with the performer.
-func PerformerImages(ctx context.Context, p *models.Performer, paths []string, rw ImageQueryPerformerUpdater, cache *match.Cache) error {
-	t := getPerformerTagger(p, cache)
+func (tagger *Tagger) PerformerImages(ctx context.Context, p *models.Performer, paths []string, rw ImageQueryPerformerUpdater) error {
+	t := getPerformerTagger(p, tagger.Cache)
 
 	return t.tagImages(ctx, paths, rw, func(o *models.Image) (bool, error) {
 		if err := o.LoadPerformerIDs(ctx, rw); err != nil {
@@ -74,7 +77,9 @@ func PerformerImages(ctx context.Context, p *models.Performer, paths []string, r
 			return false, nil
 		}
 
-		if err := image.AddPerformer(ctx, rw, o, p.ID); err != nil {
+		if err := txn.WithTxn(ctx, tagger.TxnManager, func(ctx context.Context) error {
+			return image.AddPerformer(ctx, rw, o, p.ID)
+		}); err != nil {
 			return false, err
 		}
 
@@ -83,8 +88,8 @@ func PerformerImages(ctx context.Context, p *models.Performer, paths []string, r
 }
 
 // PerformerGalleries searches for galleries whose path matches the provided performer name and tags the gallery with the performer.
-func PerformerGalleries(ctx context.Context, p *models.Performer, paths []string, rw GalleryQueryPerformerUpdater, cache *match.Cache) error {
-	t := getPerformerTagger(p, cache)
+func (tagger *Tagger) PerformerGalleries(ctx context.Context, p *models.Performer, paths []string, rw GalleryQueryPerformerUpdater) error {
+	t := getPerformerTagger(p, tagger.Cache)
 
 	return t.tagGalleries(ctx, paths, rw, func(o *models.Gallery) (bool, error) {
 		if err := o.LoadPerformerIDs(ctx, rw); err != nil {
@@ -96,7 +101,9 @@ func PerformerGalleries(ctx context.Context, p *models.Performer, paths []string
 			return false, nil
 		}
 
-		if err := gallery.AddPerformer(ctx, rw, o, p.ID); err != nil {
+		if err := txn.WithTxn(ctx, tagger.TxnManager, func(ctx context.Context) error {
+			return gallery.AddPerformer(ctx, rw, o, p.ID)
+		}); err != nil {
 			return false, err
 		}
 

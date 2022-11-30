@@ -552,7 +552,7 @@ func populateDB() error {
 			return fmt.Errorf("error creating movies: %s", err.Error())
 		}
 
-		if err := createPerformers(ctx, sqlite.PerformerReaderWriter, performersNameCase, performersNameNoCase); err != nil {
+		if err := createPerformers(ctx, performersNameCase, performersNameNoCase); err != nil {
 			return fmt.Errorf("error creating performers: %s", err.Error())
 		}
 
@@ -584,7 +584,7 @@ func populateDB() error {
 			return fmt.Errorf("error creating saved filters: %s", err.Error())
 		}
 
-		if err := linkPerformerTags(ctx, sqlite.PerformerReaderWriter); err != nil {
+		if err := linkPerformerTags(ctx); err != nil {
 			return fmt.Errorf("error linking performer tags: %s", err.Error())
 		}
 
@@ -823,7 +823,7 @@ func getSceneTitle(index int) string {
 
 func getRating(index int) sql.NullInt64 {
 	rating := index % 6
-	return sql.NullInt64{Int64: int64(rating), Valid: rating > 0}
+	return sql.NullInt64{Int64: int64(rating * 20), Valid: rating > 0}
 }
 
 func getIntPtr(r sql.NullInt64) *int {
@@ -944,6 +944,35 @@ func makeSceneFile(i int) *file.VideoFile {
 	}
 }
 
+func getScenePlayCount(index int) int {
+	return index % 5
+}
+
+func getScenePlayDuration(index int) float64 {
+	if index%5 == 0 {
+		return 0
+	}
+
+	return float64(index%5) * 123.4
+}
+
+func getSceneResumeTime(index int) float64 {
+	if index%5 == 0 {
+		return 0
+	}
+
+	return float64(index%5) * 1.2
+}
+
+func getSceneLastPlayed(index int) *time.Time {
+	if index%5 == 0 {
+		return nil
+	}
+
+	t := time.Date(2020, 1, index%5, 1, 2, 3, 0, time.UTC)
+	return &t
+}
+
 func makeScene(i int) *models.Scene {
 	title := getSceneTitle(i)
 	details := getSceneStringValue(i, "Details")
@@ -967,11 +996,13 @@ func makeScene(i int) *models.Scene {
 		}
 	}
 
+	rating := getRating(i)
+
 	return &models.Scene{
 		Title:        title,
 		Details:      details,
 		URL:          getSceneEmptyString(i, urlField),
-		Rating:       getIntPtr(getRating(i)),
+		Rating:       getIntPtr(rating),
 		OCounter:     getOCounter(i),
 		Date:         getObjectDateObject(i),
 		StudioID:     studioID,
@@ -982,6 +1013,10 @@ func makeScene(i int) *models.Scene {
 		StashIDs: models.NewRelatedStashIDs([]models.StashID{
 			sceneStashID(i),
 		}),
+		PlayCount:    getScenePlayCount(i),
+		PlayDuration: getScenePlayDuration(i),
+		LastPlayedAt: getSceneLastPlayed(i),
+		ResumeTime:   getSceneResumeTime(i),
 	}
 }
 
@@ -1226,8 +1261,10 @@ func getPerformerStringValue(index int, field string) string {
 	return getPrefixedStringValue("performer", index, field)
 }
 
-func getPerformerNullStringValue(index int, field string) sql.NullString {
-	return getPrefixedNullStringValue("performer", index, field)
+func getPerformerNullStringValue(index int, field string) string {
+	ret := getPrefixedNullStringValue("performer", index, field)
+
+	return ret.String
 }
 
 func getPerformerBoolValue(index int) bool {
@@ -1235,24 +1272,29 @@ func getPerformerBoolValue(index int) bool {
 	return index == 1
 }
 
-func getPerformerBirthdate(index int) string {
+func getPerformerBirthdate(index int) *models.Date {
 	const minAge = 18
 	birthdate := time.Now()
 	birthdate = birthdate.AddDate(-minAge-index, -1, -1)
-	return birthdate.Format("2006-01-02")
+
+	ret := models.Date{
+		Time: birthdate,
+	}
+	return &ret
 }
 
-func getPerformerDeathDate(index int) models.SQLiteDate {
+func getPerformerDeathDate(index int) *models.Date {
 	if index != 5 {
-		return models.SQLiteDate{}
+		return nil
 	}
 
 	deathDate := time.Now()
 	deathDate = deathDate.AddDate(-index+1, -1, -1)
-	return models.SQLiteDate{
-		String: deathDate.Format("2006-01-02"),
-		Valid:  true,
+
+	ret := models.Date{
+		Time: deathDate,
 	}
+	return &ret
 }
 
 func getPerformerCareerLength(index int) *string {
@@ -1268,8 +1310,17 @@ func getIgnoreAutoTag(index int) bool {
 	return index%5 == 0
 }
 
+func performerStashID(i int) models.StashID {
+	return models.StashID{
+		StashID:  getPerformerStringValue(i, "stashid"),
+		Endpoint: getPerformerStringValue(i, "endpoint"),
+	}
+}
+
 // createPerformers creates n performers with plain Name and o performers with camel cased NaMe included
-func createPerformers(ctx context.Context, pqb models.PerformerReaderWriter, n int, o int) error {
+func createPerformers(ctx context.Context, n int, o int) error {
+	pqb := db.Performer
+
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
 
@@ -1285,34 +1336,39 @@ func createPerformers(ctx context.Context, pqb models.PerformerReaderWriter, n i
 		// performers [ i ] and [ n + o - i - 1  ] should have similar names with only the Name!=NaMe part different
 
 		performer := models.Performer{
-			Name:     sql.NullString{String: getPerformerStringValue(index, name), Valid: true},
-			Checksum: getPerformerStringValue(i, checksumField),
-			URL:      getPerformerNullStringValue(i, urlField),
-			Favorite: sql.NullBool{Bool: getPerformerBoolValue(i), Valid: true},
-			Birthdate: models.SQLiteDate{
-				String: getPerformerBirthdate(i),
-				Valid:  true,
-			},
+			Name:          getPerformerStringValue(index, name),
+			Checksum:      getPerformerStringValue(i, checksumField),
+			URL:           getPerformerNullStringValue(i, urlField),
+			Favorite:      getPerformerBoolValue(i),
+			Birthdate:     getPerformerBirthdate(i),
 			DeathDate:     getPerformerDeathDate(i),
-			Details:       sql.NullString{String: getPerformerStringValue(i, "Details"), Valid: true},
-			Ethnicity:     sql.NullString{String: getPerformerStringValue(i, "Ethnicity"), Valid: true},
-			Rating:        getRating(i),
+			Details:       getPerformerStringValue(i, "Details"),
+			Ethnicity:     getPerformerStringValue(i, "Ethnicity"),
+			Rating:        getIntPtr(getRating(i)),
 			IgnoreAutoTag: getIgnoreAutoTag(i),
 		}
 
 		careerLength := getPerformerCareerLength(i)
 		if careerLength != nil {
-			performer.CareerLength = models.NullString(*careerLength)
+			performer.CareerLength = *careerLength
 		}
 
-		created, err := pqb.Create(ctx, performer)
+		err := pqb.Create(ctx, &performer)
 
 		if err != nil {
 			return fmt.Errorf("Error creating performer %v+: %s", performer, err.Error())
 		}
 
-		performerIDs = append(performerIDs, created.ID)
-		performerNames = append(performerNames, created.Name.String)
+		if (index+1)%5 != 0 {
+			if err := pqb.UpdateStashIDs(ctx, performer.ID, []models.StashID{
+				performerStashID(i),
+			}); err != nil {
+				return fmt.Errorf("setting performer stash ids: %w", err)
+			}
+		}
+
+		performerIDs = append(performerIDs, performer.ID)
+		performerNames = append(performerNames, performer.Name)
 	}
 
 	return nil
@@ -1382,7 +1438,7 @@ func getTagChildCount(id int) int {
 	return 0
 }
 
-//createTags creates n tags with plain Name and o tags with camel cased NaMe included
+// createTags creates n tags with plain Name and o tags with camel cased NaMe included
 func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) error {
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
@@ -1581,7 +1637,8 @@ func doLinks(links [][2]int, fn func(idx1, idx2 int) error) error {
 	return nil
 }
 
-func linkPerformerTags(ctx context.Context, qb models.PerformerReaderWriter) error {
+func linkPerformerTags(ctx context.Context) error {
+	qb := db.Performer
 	return doLinks(performerTagLinks, func(performerIndex, tagIndex int) error {
 		performerID := performerIDs[performerIndex]
 		tagID := tagIDs[tagIndex]

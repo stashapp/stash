@@ -12,15 +12,18 @@ import (
 
 // Scene stores the metadata for a single video scene.
 type Scene struct {
-	ID        int    `json:"id"`
-	Title     string `json:"title"`
-	Details   string `json:"details"`
-	URL       string `json:"url"`
-	Date      *Date  `json:"date"`
-	Rating    *int   `json:"rating"`
-	Organized bool   `json:"organized"`
-	OCounter  int    `json:"o_counter"`
-	StudioID  *int   `json:"studio_id"`
+	ID       int    `json:"id"`
+	Title    string `json:"title"`
+	Code     string `json:"code"`
+	Details  string `json:"details"`
+	Director string `json:"director"`
+	URL      string `json:"url"`
+	Date     *Date  `json:"date"`
+	// Rating expressed in 1-100 scale
+	Rating    *int `json:"rating"`
+	Organized bool `json:"organized"`
+	OCounter  int  `json:"o_counter"`
+	StudioID  *int `json:"studio_id"`
 
 	// transient - not persisted
 	Files         RelatedVideoFiles
@@ -34,6 +37,11 @@ type Scene struct {
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+
+	LastPlayedAt *time.Time `json:"last_played_at"`
+	ResumeTime   float64    `json:"resume_time"`
+	PlayDuration float64    `json:"play_duration"`
+	PlayCount    int        `json:"play_count"`
 
 	GalleryIDs   RelatedIDs      `json:"gallery_ids"`
 	TagIDs       RelatedIDs      `json:"tag_ids"`
@@ -132,16 +140,23 @@ func (s *Scene) LoadRelationships(ctx context.Context, l SceneReader) error {
 // ScenePartial represents part of a Scene object. It is used to update
 // the database entry.
 type ScenePartial struct {
-	Title     OptionalString
-	Details   OptionalString
-	URL       OptionalString
-	Date      OptionalDate
-	Rating    OptionalInt
-	Organized OptionalBool
-	OCounter  OptionalInt
-	StudioID  OptionalInt
-	CreatedAt OptionalTime
-	UpdatedAt OptionalTime
+	Title    OptionalString
+	Code     OptionalString
+	Details  OptionalString
+	Director OptionalString
+	URL      OptionalString
+	Date     OptionalDate
+	// Rating expressed in 1-100 scale
+	Rating       OptionalInt
+	Organized    OptionalBool
+	OCounter     OptionalInt
+	StudioID     OptionalInt
+	CreatedAt    OptionalTime
+	UpdatedAt    OptionalTime
+	ResumeTime   OptionalFloat64
+	PlayDuration OptionalFloat64
+	PlayCount    OptionalInt
+	LastPlayedAt OptionalTime
 
 	GalleryIDs    *UpdateIDs
 	TagIDs        *UpdateIDs
@@ -164,22 +179,31 @@ type SceneMovieInput struct {
 }
 
 type SceneUpdateInput struct {
-	ClientMutationID *string            `json:"clientMutationId"`
-	ID               string             `json:"id"`
-	Title            *string            `json:"title"`
-	Details          *string            `json:"details"`
-	URL              *string            `json:"url"`
-	Date             *string            `json:"date"`
-	Rating           *int               `json:"rating"`
-	Organized        *bool              `json:"organized"`
-	StudioID         *string            `json:"studio_id"`
-	GalleryIds       []string           `json:"gallery_ids"`
-	PerformerIds     []string           `json:"performer_ids"`
-	Movies           []*SceneMovieInput `json:"movies"`
-	TagIds           []string           `json:"tag_ids"`
+	ClientMutationID *string `json:"clientMutationId"`
+	ID               string  `json:"id"`
+	Title            *string `json:"title"`
+	Code             *string `json:"code"`
+	Details          *string `json:"details"`
+	Director         *string `json:"director"`
+	URL              *string `json:"url"`
+	Date             *string `json:"date"`
+	// Rating expressed in 1-5 scale
+	Rating *int `json:"rating"`
+	// Rating expressed in 1-100 scale
+	Rating100    *int               `json:"rating100"`
+	OCounter     *int               `json:"o_counter"`
+	Organized    *bool              `json:"organized"`
+	StudioID     *string            `json:"studio_id"`
+	GalleryIds   []string           `json:"gallery_ids"`
+	PerformerIds []string           `json:"performer_ids"`
+	Movies       []*SceneMovieInput `json:"movies"`
+	TagIds       []string           `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL
 	CoverImage    *string   `json:"cover_image"`
 	StashIds      []StashID `json:"stash_ids"`
+	ResumeTime    *float64  `json:"resume_time"`
+	PlayDuration  *float64  `json:"play_duration"`
+	PlayCount     *int      `json:"play_count"`
 	PrimaryFileID *string   `json:"primary_file_id"`
 }
 
@@ -197,13 +221,15 @@ func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 		stashIDs = s.StashIDs.StashIDs
 	}
 
-	return SceneUpdateInput{
+	ret := SceneUpdateInput{
 		ID:           strconv.Itoa(id),
 		Title:        s.Title.Ptr(),
+		Code:         s.Code.Ptr(),
 		Details:      s.Details.Ptr(),
+		Director:     s.Director.Ptr(),
 		URL:          s.URL.Ptr(),
 		Date:         dateStr,
-		Rating:       s.Rating.Ptr(),
+		Rating100:    s.Rating.Ptr(),
 		Organized:    s.Organized.Ptr(),
 		StudioID:     s.StudioID.StringPtr(),
 		GalleryIds:   s.GalleryIDs.IDStrings(),
@@ -212,6 +238,14 @@ func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 		TagIds:       s.TagIDs.IDStrings(),
 		StashIds:     stashIDs,
 	}
+
+	if s.Rating.Set && !s.Rating.Null {
+		// convert to 1-100 scale
+		rating := Rating100To5(s.Rating.Value)
+		ret.Rating = &rating
+	}
+
+	return ret
 }
 
 // GetTitle returns the title of the scene. If the Title field is empty,

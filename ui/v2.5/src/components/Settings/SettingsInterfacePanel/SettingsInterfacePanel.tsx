@@ -1,7 +1,11 @@
 import React from "react";
 import { Button, Form } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
-import { DurationInput, LoadingIndicator } from "src/components/Shared";
+import {
+  DurationInput,
+  PercentInput,
+  LoadingIndicator,
+} from "src/components/Shared";
 import { CheckboxGroup } from "./CheckboxGroup";
 import { SettingSection } from "../SettingSection";
 import {
@@ -24,6 +28,15 @@ import {
   connectionStateLabel,
   InteractiveContext,
 } from "src/hooks/Interactive/context";
+import {
+  defaultRatingStarPrecision,
+  defaultRatingSystemOptions,
+  defaultRatingSystemType,
+  RatingStarPrecision,
+  ratingStarPrecisionIntlMap,
+  ratingSystemIntlMap,
+  RatingSystemType,
+} from "src/utils/rating";
 
 const allMenuItems = [
   { id: "scenes", headingID: "scenes" },
@@ -80,6 +93,24 @@ export const SettingsInterfacePanel: React.FC = () => {
     });
   }
 
+  function saveRatingSystemType(t: RatingSystemType) {
+    saveUI({
+      ratingSystemOptions: {
+        ...ui.ratingSystemOptions,
+        type: t,
+      },
+    });
+  }
+
+  function saveRatingSystemStarPrecision(p: RatingStarPrecision) {
+    saveUI({
+      ratingSystemOptions: {
+        ...(ui.ratingSystemOptions ?? defaultRatingSystemOptions),
+        starPrecision: p,
+      },
+    });
+  }
+
   if (error) return <h1>{error.message}</h1>;
   if (loading) return <LoadingIndicator />;
 
@@ -93,23 +124,31 @@ export const SettingsInterfacePanel: React.FC = () => {
           value={iface.language ?? undefined}
           onChange={(v) => saveInterface({ language: v })}
         >
+          <option value="bn-BD">বাংলা (বাংলাদেশ) (Preview)</option>
+          <option value="cs-CZ">Čeština (Preview)</option>
           <option value="da-DK">Dansk (Danmark)</option>
           <option value="de-DE">Deutsch (Deutschland)</option>
           <option value="en-GB">English (United Kingdom)</option>
           <option value="en-US">English (United States)</option>
-          <option value="es-ES">Español (España)</option>
+          <option value="et-EE">Eesti</option>
+          <option value="fa-IR">فارسی (ایران) (Preview)</option>
           <option value="fi-FI">Suomi</option>
           <option value="fr-FR">Français (France)</option>
           <option value="hr-HR">Hrvatski (Preview)</option>
+          <option value="hu-HU">Magyar (Preview)</option>
           <option value="it-IT">Italiano</option>
           <option value="ja-JP">日本語 (日本)</option>
           <option value="ko-KR">한국어 (대한민국)</option>
           <option value="nl-NL">Nederlands (Nederland)</option>
           <option value="pl-PL">Polski</option>
           <option value="pt-BR">Português (Brasil)</option>
-          <option value="ru-RU">Русский (Россия) (Preview)</option>
+          <option value="ro-RO">Română (Preview)</option>
+          <option value="ru-RU">Русский (Россия)</option>
+          <option value="es-ES">Español (España)</option>
           <option value="sv-SE">Svenska</option>
           <option value="tr-TR">Türkçe (Türkiye)</option>
+          <option value="th-TH">ภาษาไทย (Preview)</option>
+          <option value="uk-UA">Ukrainian (Preview)</option>
           <option value="zh-TW">繁體中文 (台灣)</option>
           <option value="zh-CN">简体中文 (中国)</option>
         </SelectSetting>
@@ -214,6 +253,41 @@ export const SettingsInterfacePanel: React.FC = () => {
           headingID="config.ui.scene_player.options.show_scrubber"
           checked={iface.showScrubber ?? undefined}
           onChange={(v) => saveInterface({ showScrubber: v })}
+        />
+        <BooleanSetting
+          id="always-start-from-beginning"
+          headingID="config.ui.scene_player.options.always_start_from_beginning"
+          checked={ui.alwaysStartFromBeginning ?? undefined}
+          onChange={(v) => saveUI({ alwaysStartFromBeginning: v })}
+        />
+        <BooleanSetting
+          id="track-activity"
+          headingID="config.ui.scene_player.options.track_activity"
+          checked={ui.trackActivity ?? undefined}
+          onChange={(v) => saveUI({ trackActivity: v })}
+        />
+        <ModalSetting<number>
+          id="ignore-interval"
+          headingID="config.ui.minimum_play_percent.heading"
+          subHeadingID="config.ui.minimum_play_percent.description"
+          value={ui.minimumPlayPercent ?? 0}
+          onChange={(v) => saveUI({ minimumPlayPercent: v })}
+          disabled={!ui.trackActivity}
+          renderField={(value, setValue) => (
+            <PercentInput
+              numericValue={value}
+              onValueChange={(interval) => setValue(interval ?? 0)}
+            />
+          )}
+          renderValue={(v) => {
+            return <span>{v}%</span>;
+          }}
+        />
+        <NumberSetting
+          headingID="config.ui.slideshow_delay.heading"
+          subHeadingID="config.ui.slideshow_delay.description"
+          value={iface.imageLightbox?.slideshowDelay ?? undefined}
+          onChange={(v) => saveLightboxSettings({ slideshowDelay: v })}
         />
         <BooleanSetting
           id="auto-start-video"
@@ -414,6 +488,42 @@ export const SettingsInterfacePanel: React.FC = () => {
             }
           />
         </div>
+        <SelectSetting
+          id="rating_system"
+          headingID="config.ui.editing.rating_system.type.label"
+          value={ui.ratingSystemOptions?.type ?? defaultRatingSystemType}
+          onChange={(v) => saveRatingSystemType(v as RatingSystemType)}
+        >
+          {Array.from(ratingSystemIntlMap.entries()).map((v) => (
+            <option key={v[0]} value={v[0]}>
+              {intl.formatMessage({
+                id: v[1],
+              })}
+            </option>
+          ))}
+        </SelectSetting>
+        {(ui.ratingSystemOptions?.type ?? defaultRatingSystemType) ===
+          RatingSystemType.Stars && (
+          <SelectSetting
+            id="rating_system_star_precision"
+            headingID="config.ui.editing.rating_system.star_precision.label"
+            value={
+              ui.ratingSystemOptions?.starPrecision ??
+              defaultRatingStarPrecision
+            }
+            onChange={(v) =>
+              saveRatingSystemStarPrecision(v as RatingStarPrecision)
+            }
+          >
+            {Array.from(ratingStarPrecisionIntlMap.entries()).map((v) => (
+              <option key={v[0]} value={v[0]}>
+                {intl.formatMessage({
+                  id: v[1],
+                })}
+              </option>
+            ))}
+          </SelectSetting>
+        )}
       </SettingSection>
 
       <SettingSection headingID="config.ui.custom_css.heading">
@@ -430,6 +540,36 @@ export const SettingsInterfacePanel: React.FC = () => {
           subHeadingID="config.ui.custom_css.description"
           value={iface.css ?? undefined}
           onChange={(v) => saveInterface({ css: v })}
+          renderField={(value, setValue) => (
+            <Form.Control
+              as="textarea"
+              value={value}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                setValue(e.currentTarget.value)
+              }
+              rows={16}
+              className="text-input code"
+            />
+          )}
+          renderValue={() => {
+            return <></>;
+          }}
+        />
+      </SettingSection>
+      <SettingSection headingID="config.ui.custom_javascript.heading">
+        <BooleanSetting
+          id="custom-javascript-enabled"
+          headingID="config.ui.custom_javascript.option_label"
+          checked={iface.javascriptEnabled ?? undefined}
+          onChange={(v) => saveInterface({ javascriptEnabled: v })}
+        />
+
+        <ModalSetting<string>
+          id="custom-javascript"
+          headingID="config.ui.custom_javascript.heading"
+          subHeadingID="config.ui.custom_javascript.description"
+          value={iface.javascript ?? undefined}
+          onChange={(v) => saveInterface({ javascript: v })}
           renderField={(value, setValue) => (
             <Form.Control
               as="textarea"

@@ -23,6 +23,13 @@ func (o *OptionalString) Ptr() *string {
 	return &v
 }
 
+// Merge sets the OptionalString if it is not already set, the destination value is empty and the source value is not empty.
+func (o *OptionalString) Merge(destVal string, srcVal string) {
+	if destVal == "" && srcVal != "" && !o.Set {
+		*o = NewOptionalString(srcVal)
+	}
+}
+
 // NewOptionalString returns a new OptionalString with the given value.
 func NewOptionalString(v string) OptionalString {
 	return OptionalString{v, false, true}
@@ -56,6 +63,13 @@ func (o *OptionalInt) Ptr() *int {
 
 	v := o.Value
 	return &v
+}
+
+// MergePtr sets the OptionalInt if it is not already set, the destination value is nil and the source value is not nil.
+func (o *OptionalInt) MergePtr(destVal *int, srcVal *int) {
+	if destVal == nil && srcVal != nil && !o.Set {
+		*o = NewOptionalInt(*srcVal)
+	}
 }
 
 // NewOptionalInt returns a new OptionalInt with the given value.
@@ -138,6 +152,13 @@ func (o *OptionalBool) Ptr() *bool {
 	return &v
 }
 
+// Merge sets the OptionalBool to true if it is not already set, the destination value is false and the source value is true.
+func (o *OptionalBool) Merge(destVal bool, srcVal bool) {
+	if !destVal && srcVal && !o.Set {
+		*o = NewOptionalBool(true)
+	}
+}
+
 // NewOptionalBool returns a new OptionalBool with the given value.
 func NewOptionalBool(v bool) OptionalBool {
 	return OptionalBool{v, false, true}
@@ -178,6 +199,18 @@ func NewOptionalFloat64(v float64) OptionalFloat64 {
 	return OptionalFloat64{v, false, true}
 }
 
+// NewOptionalFloat64 returns a new OptionalFloat64 with the given value.
+func NewOptionalFloat64Ptr(v *float64) OptionalFloat64 {
+	if v == nil {
+		return OptionalFloat64{
+			Null: true,
+			Set:  true,
+		}
+	}
+
+	return OptionalFloat64{*v, false, true}
+}
+
 // OptionalDate represents an optional date argument that may be null. See OptionalString.
 type OptionalDate struct {
 	Value Date
@@ -198,6 +231,13 @@ func (o *OptionalDate) Ptr() *Date {
 // NewOptionalDate returns a new OptionalDate with the given value.
 func NewOptionalDate(v Date) OptionalDate {
 	return OptionalDate{v, false, true}
+}
+
+// Merge sets the OptionalDate if it is not already set, the destination value is nil and the source value is nil.
+func (o *OptionalDate) MergePtr(destVal *Date, srcVal *Date) {
+	if destVal == nil && srcVal != nil && !o.Set {
+		*o = NewOptionalDate(*srcVal)
+	}
 }
 
 // NewOptionalBoolPtr returns a new OptionalDate with the given value.

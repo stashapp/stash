@@ -1,3 +1,7 @@
+@import "video.js/dist/video-js.css";
+@import "videojs-mobile-ui/dist/videojs-mobile-ui.css";
+@import "videojs-seek-buttons/dist/videojs-seek-buttons.css";
+
 $scrubberHeight: 120px;
 $menuHeight: 4rem;
 $sceneTabWidth: 450px;
@@ -12,28 +16,22 @@ $sceneTabWidth: 450px;
     height: 100vh;
   }
 
-  .video-js {
-    height: 56.25vw;
-    overflow: hidden;
-    width: 100%;
-
-    @media (min-width: 1200px) {
-      height: 100%;
-    }
-  }
-
   &.portrait .video-js {
     height: 177.78vw;
+  }
+}
+
+.video-js {
+  height: 56.25vw;
+  overflow: hidden;
+  width: 100%;
+
+  @media (min-width: 1200px) {
+    height: 100%;
   }
 
   .vjs-button {
     outline: none;
-  }
-
-  .vjs-vtt-thumbnail-display {
-    // default opacity to 0, it gets set to 1 when moused-over.
-    // prevents the border from showing up when initially loaded
-    opacity: 0;
   }
 
   .vjs-big-button-group {
@@ -44,6 +42,7 @@ $sceneTabWidth: 450px;
     position: absolute;
     top: calc(50% - 40px);
     width: 100%;
+    z-index: 1;
 
     .vjs-button {
       font-size: 4em;
@@ -57,8 +56,183 @@ $sceneTabWidth: 450px;
     }
   }
 
+  .vjs-touch-overlay .vjs-play-control {
+    z-index: 1;
+  }
+
+  .vjs-control-bar {
+    background: none;
+
+    /* Scales control size */
+    font-size: 15px;
+
+    &::before {
+      background: linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.4) 0%,
+        rgba(0, 0, 0, 0) 100%
+      );
+      bottom: 0;
+      content: "";
+      height: 10rem;
+      pointer-events: none;
+      position: absolute;
+      width: 100%;
+    }
+  }
+
+  .vjs-time-control {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    min-width: 0;
+    padding: 0 4px;
+    pointer-events: none;
+
+    .vjs-control-text {
+      display: none;
+    }
+  }
+
+  .vjs-duration {
+    margin-right: auto;
+  }
+
+  .vjs-remaining-time {
+    display: none;
+  }
+
+  .vjs-progress-control {
+    bottom: 2.5em;
+    height: 3em;
+    position: absolute;
+    width: 100%;
+
+    .vjs-progress-holder {
+      margin: 0 1rem;
+    }
+  }
+
+  /* stylelint-disable declaration-no-important */
+  .vjs-play-progress .vjs-time-tooltip {
+    display: none !important;
+  }
+  /* stylelint-enable declaration-no-important */
+
+  .vjs-volume-control {
+    z-index: 1;
+  }
+
+  /* stylelint-disable declaration-no-important */
+  .vjs-slider {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  /* stylelint-enable declaration-no-important */
+
+  .vjs-vtt-thumbnail-display {
+    border: 2px solid white;
+    border-radius: 2px;
+    bottom: 6em;
+    box-shadow: 0 0 7px rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    transition: opacity 0.2s;
+  }
+
+  .vjs-big-play-button,
+  .vjs-big-play-button:hover,
+  .vjs-big-play-button:focus,
+  &:hover .vjs-big-play-button {
+    background: none;
+    border: none;
+    font-size: 10em;
+  }
+
+  .vjs-skip-button {
+    &::before {
+      font-size: 1.8em;
+      line-height: 1.67;
+    }
+  }
+
+  &.vjs-skip-buttons {
+    .vjs-icon-next-item,
+    .vjs-icon-previous-item {
+      display: none;
+    }
+
+    &-prev .vjs-icon-previous-item,
+    &-next .vjs-icon-next-item {
+      display: inline-block;
+    }
+  }
+
+  .vjs-source-selector {
+    .vjs-menu li {
+      font-size: 0.8em;
+    }
+
+    .vjs-button > .vjs-icon-placeholder::before {
+      content: "\f110";
+      font-family: VideoJS;
+    }
+  }
+
+  .vjs-marker {
+    background-color: rgba(33, 33, 33, 0.8);
+    bottom: 0;
+    height: 100%;
+    left: 0;
+    opacity: 1;
+    position: absolute;
+    transition: opacity 0.2s ease;
+    visibility: hidden;
+    width: 6px;
+    z-index: 100;
+
+    &:hover {
+      cursor: pointer;
+      transform: scale(1.3, 1.3);
+    }
+  }
+
+  .vjs-marker-tooltip {
+    background-color: #fff;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 0.3em;
+    color: #000;
+    float: right;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.6em;
+    padding: 6px 8px 8px 8px;
+    pointer-events: none;
+    position: absolute;
+    top: -3.4em;
+    visibility: hidden;
+    white-space: nowrap;
+    z-index: 1;
+  }
+
+  .vjs-text-track-settings select {
+    background: #fff;
+  }
+
+  .vjs-seek-button.skip-back span.vjs-icon-placeholder::before {
+    -ms-transform: none;
+    -webkit-transform: none;
+    transform: none;
+  }
+
+  .vjs-seek-button.skip-forward span.vjs-icon-placeholder::before {
+    -ms-transform: scale(-1, 1);
+    -webkit-transform: scale(-1, 1);
+    transform: scale(-1, 1);
+  }
+
   @media (pointer: coarse) {
-    .vjs-touch-enabled {
+    &.vjs-touch-enabled {
       &.vjs-has-started .vjs-big-button-group {
         display: flex;
         opacity: 1;
@@ -81,9 +255,8 @@ $sceneTabWidth: 450px;
         content: "\f103";
       }
 
-      // hide the regular play/pause button on touch screens
-      .vjs-play-control {
-        display: none;
+      .vjs-vtt-thumbnail-display {
+        bottom: 2.8em;
       }
 
       // hide the regular seek buttons on touch screens
@@ -96,8 +269,17 @@ $sceneTabWidth: 450px;
   // make controls a little more compact on smaller screens
   @media (max-width: 576px) {
     .vjs-control-bar {
-      .vjs-control:not(.vjs-progress-control) {
+      .vjs-control {
         width: 2.5em;
+      }
+
+      .vjs-progress-control {
+        height: 2em;
+        width: 100%;
+      }
+
+      .vjs-playback-rate {
+        width: 3em;
       }
 
       .vjs-button > .vjs-icon-placeholder::before,
@@ -107,9 +289,27 @@ $sceneTabWidth: 450px;
       }
     }
 
+    .vjs-menu-button-popup .vjs-menu {
+      width: 8em;
+
+      .vjs-menu-content {
+        max-height: 10em;
+      }
+    }
+
+    .vjs-playback-rate .vjs-playback-rate-value {
+      font-size: 1em;
+      line-height: 2.97;
+    }
+
+    .vjs-source-selector {
+      .vjs-menu li {
+        font-size: 10px;
+      }
+    }
+
     .vjs-time-control {
       font-size: 12px;
-      line-height: 4em;
     }
 
     .vjs-big-button-group .vjs-button {
@@ -120,83 +320,6 @@ $sceneTabWidth: 450px;
     .vjs-current-time {
       margin-left: 1em;
     }
-
-    .vjs-vtt-thumbnail-display {
-      bottom: 40px;
-    }
-  }
-}
-
-.video-js {
-  .vjs-control-bar {
-    background: none;
-
-    /* Scales control size */
-    font-size: 15px;
-
-    &::before {
-      background: linear-gradient(
-        0deg,
-        rgba(0, 0, 0, 0.4) 0%,
-        rgba(0, 0, 0, 0) 100%
-      );
-      bottom: 0;
-      content: "";
-      height: 10rem;
-      position: absolute;
-      width: 100%;
-    }
-  }
-
-  .vjs-time-control {
-    display: block;
-    min-width: 0;
-    padding: 0 4px;
-    pointer-events: none;
-
-    .vjs-control-text {
-      display: none;
-    }
-  }
-
-  .vjs-duration {
-    margin-right: auto;
-  }
-
-  .vjs-remaining-time {
-    display: none;
-  }
-
-  .vjs-progress-control {
-    bottom: 3rem;
-    margin-left: 1%;
-    position: absolute;
-    width: 98%;
-  }
-
-  .vjs-volume-control {
-    z-index: 1;
-  }
-
-  .vjs-vtt-thumbnail-display {
-    border: 2px solid white;
-    border-radius: 2px;
-    bottom: 90px;
-    position: absolute;
-  }
-
-  .vjs-big-play-button,
-  .vjs-big-play-button:hover,
-  .vjs-big-play-button:focus,
-  &:hover .vjs-big-play-button {
-    background: none;
-    border: none;
-    font-size: 10em;
-  }
-
-  .vjs-progress-control .vjs-play-progress .vjs-time-tooltip,
-  .vjs-progress-control:hover .vjs-play-progress .vjs-time-tooltip {
-    visibility: hidden;
   }
 }
 
@@ -211,6 +334,146 @@ $sceneTabWidth: 450px;
   padding-right: 15px;
 }
 
+.scrubber-wrapper {
+  display: flex;
+  flex-shrink: 0;
+  margin: 5px 0;
+  overflow: hidden;
+  position: relative;
+}
+
+#scrubber-back {
+  float: left;
+}
+
+#scrubber-forward {
+  float: right;
+}
+
+.scrubber-button {
+  background-color: transparent;
+  border: 1px solid #555;
+  color: $link-color;
+  cursor: pointer;
+  font-size: 1.3rem;
+  font-weight: 800;
+  height: 100%;
+  line-height: $scrubberHeight;
+  padding: 0;
+  text-align: center;
+  width: 1.3rem;
+}
+
+.scrubber-content {
+  cursor: pointer;
+  display: inline-block;
+  flex-grow: 1;
+  height: $scrubberHeight;
+  margin: 0 7px;
+  overflow: hidden;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+  -webkit-user-select: none;
+  user-select: none;
+
+  &.dragging {
+    cursor: grabbing;
+  }
+}
+
+#scrubber-position-indicator {
+  background-color: #ccc;
+  height: 20px;
+  left: -100%;
+  position: absolute;
+  width: 100%;
+  z-index: 0;
+}
+
+#scrubber-current-position {
+  background-color: #fff;
+  height: 30px;
+  left: 50%;
+  position: absolute;
+  width: 2px;
+  z-index: 1;
+}
+
+.scrubber-viewport {
+  height: 100%;
+  overflow: hidden;
+  position: static;
+}
+
+.scrubber-slider {
+  height: 100%;
+  left: 0;
+  position: absolute;
+  width: 100%;
+}
+
+.scrubber-tags {
+  height: 20px;
+  margin-bottom: 10px;
+  position: relative;
+
+  &-background {
+    background-color: #555;
+    height: 20px;
+    left: 0;
+    position: absolute;
+    right: 0;
+  }
+}
+
+.scrubber-tag {
+  background-color: #000;
+  cursor: pointer;
+  font-size: 10px;
+  height: 20px;
+  padding: 0 10px;
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+
+  &:hover {
+    background-color: #444;
+    z-index: 1;
+  }
+
+  &:hover::after {
+    border-top: solid 5px #444;
+    z-index: 1;
+  }
+
+  &::after {
+    border-left: solid 5px transparent;
+    border-right: solid 5px transparent;
+    border-top: solid 5px #000;
+    bottom: -5px;
+    content: "";
+    left: 50%;
+    margin-left: -5px;
+    position: absolute;
+  }
+}
+
+.scrubber-item {
+  color: white;
+  display: flex;
+  font-size: 10px;
+  margin: 0 auto;
+  position: absolute;
+  text-align: center;
+  text-shadow: 1px 1px black;
+
+  &-time {
+    align-self: flex-end;
+    display: inline-block;
+    width: 100%;
+  }
+}
+
 @media (max-width: 1199px) {
   .scene-tabs {
     padding-right: 15px;
@@ -219,6 +482,11 @@ $sceneTabWidth: 450px;
   .scene-player-container {
     padding-left: 0;
     padding-right: 0;
+  }
+
+  .scrubber-wrapper {
+    margin-left: 5px;
+    margin-right: 5px;
   }
 }
 @media (min-width: 1200px) {
@@ -275,241 +543,4 @@ $sceneTabWidth: 450px;
       max-width: calc(100% - 15px);
     }
   }
-}
-
-.scrubber-wrapper {
-  flex-shrink: 0;
-  margin: 5px 0;
-  overflow: hidden;
-  position: relative;
-}
-
-.hide-scrubber .scrubber-wrapper {
-  display: none;
-}
-
-/* hide scrubber when height is < 450px or width < 576 */
-@media (max-height: 449px), (max-width: 575px) {
-  .scrubber-wrapper {
-    display: none;
-  }
-}
-
-#scrubber-back {
-  float: left;
-}
-
-#scrubber-forward {
-  float: right;
-}
-
-.scrubber-button {
-  background-color: transparent;
-  border: 1px solid #555;
-  color: $link-color;
-  cursor: pointer;
-  font-size: 20px;
-  font-weight: 800;
-  height: 100%;
-  line-height: $scrubberHeight;
-  padding: 0;
-  text-align: center;
-  width: 1.5%;
-}
-
-.scrubber-content {
-  cursor: grab;
-  display: inline-block;
-  height: $scrubberHeight;
-  margin: 0 0.5%;
-  overflow: hidden;
-  -webkit-overflow-scrolling: touch;
-  position: relative;
-  -webkit-user-select: none;
-  user-select: none;
-  width: 96%;
-
-  &.dragging {
-    cursor: grabbing;
-  }
-}
-
-#scrubber-position-indicator {
-  background-color: #ccc;
-  height: 20px;
-  left: -100%;
-  position: absolute;
-  width: 100%;
-  z-index: 0;
-}
-
-#scrubber-current-position {
-  background-color: #fff;
-  height: 30px;
-  left: 50%;
-  position: absolute;
-  width: 2px;
-  z-index: 1;
-}
-
-.scrubber-viewport {
-  height: 100%;
-  overflow: hidden;
-  position: static;
-}
-
-.scrubber-slider {
-  height: 100%;
-  left: 0;
-  position: absolute;
-  transition: 333ms ease-out;
-  width: 100%;
-}
-
-.scrubber-tags {
-  height: 20px;
-  margin-bottom: 10px;
-  position: relative;
-
-  &-background {
-    background-color: #555;
-    height: 20px;
-    left: 0;
-    position: absolute;
-    right: 0;
-  }
-}
-
-.scrubber-tag {
-  background-color: #000;
-  cursor: pointer;
-  font-size: 10px;
-  padding: 0 10px;
-  position: absolute;
-  white-space: nowrap;
-
-  &:hover {
-    background-color: #444;
-    z-index: 1;
-  }
-
-  &::after {
-    border-left: solid 5px transparent;
-    border-right: solid 5px transparent;
-    border-top: solid 5px #000;
-    bottom: -5px;
-    content: "";
-    left: 50%;
-    margin-left: -5px;
-    position: absolute;
-  }
-}
-
-.scrubber-item {
-  color: white;
-  cursor: pointer;
-  display: flex;
-  font-size: 10px;
-  margin-right: 10px;
-  position: absolute;
-  text-align: center;
-  text-shadow: 1px 1px black;
-
-  &-time {
-    align-self: flex-end;
-    display: inline-block;
-    width: 100%;
-  }
-}
-
-.vjs-skip-button {
-  &::before {
-    font-size: 1.8em;
-    line-height: 1.67;
-  }
-}
-
-.vjs-skip-buttons {
-  .vjs-icon-next-item,
-  .vjs-icon-previous-item {
-    display: none;
-  }
-
-  &-prev .vjs-icon-previous-item,
-  &-next .vjs-icon-next-item {
-    display: inline-block;
-  }
-}
-
-.vjs-source-selector {
-  .vjs-menu li {
-    font-size: 12px;
-  }
-
-  .vjs-button > .vjs-icon-placeholder::before {
-    content: "\f110";
-    font-family: VideoJS;
-  }
-}
-
-.vjs-marker {
-  background-color: rgba(33, 33, 33, 0.8);
-  bottom: 0;
-  height: 100%;
-  left: 0;
-  opacity: 1;
-  position: absolute;
-  -webkit-transition: opacity 0.2s ease;
-  -moz-transition: opacity 0.2s ease;
-  transition: opacity 0.2s ease;
-  width: 6px;
-  z-index: 100;
-
-  &:hover {
-    cursor: pointer;
-    -webkit-transform: scale(1.3, 1.3);
-    -moz-transform: scale(1.3, 1.3);
-    -o-transform: scale(1.3, 1.3);
-    -ms-transform: scale(1.3, 1.3);
-    transform: scale(1.3, 1.3);
-  }
-}
-
-.vjs-marker-tooltip {
-  border-radius: 0.3em;
-  color: white;
-  display: block;
-  float: right;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 10px;
-  height: 50px;
-  padding: 6px 8px 8px 8px;
-  pointer-events: none;
-  position: absolute;
-  right: -80px;
-  top: -5.4em;
-  width: 160px;
-  z-index: 1;
-}
-
-.vjs-text-track-settings select {
-  background: #fff;
-}
-
-.VideoPlayer
-  .video-js
-  .vjs-seek-button.skip-back
-  span.vjs-icon-placeholder::before {
-  -ms-transform: none;
-  -webkit-transform: none;
-  transform: none;
-}
-
-.VideoPlayer
-  .video-js
-  .vjs-seek-button.skip-forward
-  span.vjs-icon-placeholder::before {
-  -ms-transform: scale(-1, 1);
-  -webkit-transform: scale(-1, 1);
-  transform: scale(-1, 1);
 }

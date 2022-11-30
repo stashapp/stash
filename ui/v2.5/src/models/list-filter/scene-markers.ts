@@ -2,6 +2,10 @@ import { PerformersCriterionOption } from "./criteria/performers";
 import { SceneTagsCriterionOption, TagsCriterionOption } from "./criteria/tags";
 import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
+import {
+  createDateCriterionOption,
+  createMandatoryTimestampCriterionOption,
+} from "./criteria/criterion";
 
 const defaultSortBy = "title";
 const sortByOptions = [
@@ -16,6 +20,11 @@ const criterionOptions = [
   TagsCriterionOption,
   SceneTagsCriterionOption,
   PerformersCriterionOption,
+  createMandatoryTimestampCriterionOption("created_at"),
+  createMandatoryTimestampCriterionOption("updated_at"),
+  createDateCriterionOption("scene_date"),
+  createMandatoryTimestampCriterionOption("scene_created_at"),
+  createMandatoryTimestampCriterionOption("scene_updated_at"),
 ];
 
 export const SceneMarkerListFilterOptions = new ListFilterOptions(

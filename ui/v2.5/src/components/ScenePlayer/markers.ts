@@ -1,107 +1,153 @@
 import videojs, { VideoJsPlayer } from "video.js";
 
-const markers = function (this: VideoJsPlayer) {
-  const player = this;
+interface IMarker {
+  title: string;
+  time: number;
+}
 
-  function getPosition(marker: VTTCue) {
-    return (marker.startTime / player.duration()) * 100;
-  }
+interface IMarkersOptions {
+  markers?: IMarker[];
+}
 
-  function createMarkerToolTip() {
-    const tooltip = videojs.dom.createEl("div") as HTMLElement;
-    tooltip.className = "vjs-marker-tooltip";
+class MarkersPlugin extends videojs.getPlugin("plugin") {
+  private markers: IMarker[] = [];
+  private markerDivs: HTMLDivElement[] = [];
+  private markerTooltip: HTMLElement | null = null;
+  private defaultTooltip: HTMLElement | null = null;
 
-    return tooltip;
-  }
+  constructor(player: VideoJsPlayer, options?: IMarkersOptions) {
+    super(player);
 
-  function removeMarkerToolTip() {
-    const div = player
-      .el()
-      .querySelector(".vjs-progress-holder .vjs-marker-tooltip");
-    if (div) div.remove();
-  }
-
-  function createMarkerDiv(marker: VTTCue) {
-    const markerDiv = videojs.dom.createEl(
-      "div",
-      {},
-      {
-        "data-marker-time": marker.startTime,
-      }
-    ) as HTMLElement;
-
-    markerDiv.className = "vjs-marker";
-    markerDiv.style.left = getPosition(marker) + "%";
-
-    // bind click event to seek to marker time
-    markerDiv.addEventListener("click", function () {
-      const time = this.getAttribute("data-marker-time");
-      player.currentTime(Number(time));
-    });
-
-    // show tooltip on hover
-    markerDiv.addEventListener("mouseenter", function () {
-      // create and show tooltip
-      const tooltip = createMarkerToolTip();
-      tooltip.innerText = marker.text;
+    player.ready(() => {
+      // create marker tooltip
+      const tooltip = videojs.dom.createEl("div") as HTMLElement;
+      tooltip.className = "vjs-marker-tooltip";
+      tooltip.style.visibility = "hidden";
 
       const parent = player
         .el()
         .querySelector(".vjs-progress-holder .vjs-mouse-display");
+      if (parent) parent.appendChild(tooltip);
+      this.markerTooltip = tooltip;
 
-      parent?.appendChild(tooltip);
-
-      // hide default tooltip
-      const defaultTooltip = parent?.querySelector(
-        ".vjs-time-tooltip"
-      ) as HTMLElement;
-      defaultTooltip.style.visibility = "hidden";
-    });
-
-    markerDiv.addEventListener("mouseout", function () {
-      removeMarkerToolTip();
-
-      // show default tooltip
-      const defaultTooltip = player
+      // save default tooltip
+      this.defaultTooltip = player
         .el()
-        .querySelector(
+        .querySelector<HTMLElement>(
           ".vjs-progress-holder .vjs-mouse-display .vjs-time-tooltip"
-        ) as HTMLElement;
-      if (defaultTooltip) defaultTooltip.style.visibility = "visible";
+        );
+
+      options?.markers?.forEach(this.addMarker, this);
     });
 
-    return markerDiv;
-  }
+    player.on("loadedmetadata", () => {
+      const seekBar = player.el().querySelector(".vjs-progress-holder");
+      const duration = this.player.duration();
 
-  function removeMarkerDivs() {
-    const divs = player
-      .el()
-      .querySelectorAll(".vjs-progress-holder .vjs-marker");
-    divs.forEach((div) => {
-      div.remove();
-    });
-  }
+      for (let i = 0; i < this.markers.length; i++) {
+        const marker = this.markers[i];
+        const markerDiv = this.markerDivs[i];
 
-  this.on("loadedmetadata", function () {
-    removeMarkerDivs();
-    removeMarkerToolTip();
-
-    const textTracks = player.remoteTextTracks();
-    const seekBar = player.el().querySelector(".vjs-progress-holder");
-
-    if (seekBar && textTracks.length > 0) {
-      const vttTrack = textTracks[0];
-      if (!vttTrack || !vttTrack.cues) return;
-      for (let i = 0; i < vttTrack.cues.length; i++) {
-        const cue = vttTrack.cues[i];
-        const markerDiv = createMarkerDiv(cue as VTTCue);
-        seekBar.appendChild(markerDiv);
+        if (duration) {
+          // marker is 6px wide - adjust by 3px to align to center not left side
+          markerDiv.style.left = `calc(${
+            (marker.time / duration) * 100
+          }% - 3px)`;
+          markerDiv.style.visibility = "visible";
+        }
+        if (seekBar) seekBar.appendChild(markerDiv);
       }
+    });
+  }
+
+  private showMarkerTooltip(title: string) {
+    if (!this.markerTooltip) return;
+
+    this.markerTooltip.innerText = title;
+    this.markerTooltip.style.right = `${-this.markerTooltip.clientWidth / 2}px`;
+    this.markerTooltip.style.visibility = "visible";
+
+    // hide default tooltip
+    if (this.defaultTooltip) this.defaultTooltip.style.visibility = "hidden";
+  }
+
+  private hideMarkerTooltip() {
+    if (this.markerTooltip) this.markerTooltip.style.visibility = "hidden";
+
+    // show default tooltip
+    if (this.defaultTooltip) this.defaultTooltip.style.visibility = "visible";
+  }
+
+  addMarker(marker: IMarker) {
+    const markerDiv = videojs.dom.createEl("div") as HTMLDivElement;
+    markerDiv.className = "vjs-marker";
+
+    const duration = this.player.duration();
+    if (duration) {
+      // marker is 6px wide - adjust by 3px to align to center not left side
+      markerDiv.style.left = `calc(${(marker.time / duration) * 100}% - 3px)`;
+      markerDiv.style.visibility = "visible";
     }
-  });
-};
+
+    // bind click event to seek to marker time
+    markerDiv.addEventListener("click", () =>
+      this.player.currentTime(marker.time)
+    );
+
+    // show/hide tooltip on hover
+    markerDiv.addEventListener("mouseenter", () => {
+      this.showMarkerTooltip(marker.title);
+      markerDiv.toggleAttribute("marker-tooltip-shown", true);
+    });
+    markerDiv.addEventListener("mouseout", () => {
+      this.hideMarkerTooltip();
+      markerDiv.toggleAttribute("marker-tooltip-shown", false);
+    });
+
+    const seekBar = this.player.el().querySelector(".vjs-progress-holder");
+    if (seekBar) seekBar.appendChild(markerDiv);
+
+    this.markers.push(marker);
+    this.markerDivs.push(markerDiv);
+  }
+
+  addMarkers(markers: IMarker[]) {
+    markers.forEach(this.addMarker, this);
+  }
+
+  removeMarker(marker: IMarker) {
+    const i = this.markers.indexOf(marker);
+    if (i === -1) return;
+
+    this.markers.splice(i, 1);
+
+    const div = this.markerDivs.splice(i, 1)[0];
+    if (div.hasAttribute("marker-tooltip-shown")) {
+      this.hideMarkerTooltip();
+    }
+    div.remove();
+  }
+
+  removeMarkers(markers: IMarker[]) {
+    markers.forEach(this.removeMarker, this);
+  }
+
+  clearMarkers() {
+    this.removeMarkers([...this.markers]);
+  }
+}
 
 // Register the plugin with video.js.
-videojs.registerPlugin("markers", markers);
+videojs.registerPlugin("markers", MarkersPlugin);
 
-export default markers;
+/* eslint-disable @typescript-eslint/naming-convention */
+declare module "video.js" {
+  interface VideoJsPlayer {
+    markers: () => MarkersPlugin;
+  }
+  interface VideoJsPlayerPluginOptions {
+    markers?: IMarkersOptions;
+  }
+}
+
+export default MarkersPlugin;

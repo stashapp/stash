@@ -109,7 +109,7 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 			Overwrite:   j.overwrite,
 		}
 
-		if err := j.txnManager.WithTxn(ctx, func(ctx context.Context) error {
+		if err := j.txnManager.WithReadTxn(ctx, func(ctx context.Context) error {
 			qb := j.txnManager.Scene
 			if len(j.input.SceneIDs) == 0 && len(j.input.MarkerIDs) == 0 {
 				totals = j.queueTasks(ctx, g, queue)
@@ -137,7 +137,7 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 			}
 
 			return nil
-		}); err != nil {
+		}); err != nil && ctx.Err() == nil {
 			logger.Error(err.Error())
 			return
 		}
@@ -295,21 +295,23 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 			generator:           g,
 		}
 
-		sceneHash := scene.GetHash(task.fileNamingAlgorithm)
-		addTask := false
-		if j.overwrite || !task.doesVideoPreviewExist(sceneHash) {
-			totals.previews++
-			addTask = true
-		}
+		if task.required() {
+			sceneHash := scene.GetHash(task.fileNamingAlgorithm)
+			addTask := false
+			if j.overwrite || !task.doesVideoPreviewExist(sceneHash) {
+				totals.previews++
+				addTask = true
+			}
 
-		if utils.IsTrue(j.input.ImagePreviews) && (j.overwrite || !task.doesImagePreviewExist(sceneHash)) {
-			totals.imagePreviews++
-			addTask = true
-		}
+			if utils.IsTrue(j.input.ImagePreviews) && (j.overwrite || !task.doesImagePreviewExist(sceneHash)) {
+				totals.imagePreviews++
+				addTask = true
+			}
 
-		if addTask {
-			totals.tasks++
-			queue <- task
+			if addTask {
+				totals.tasks++
+				queue <- task
+			}
 		}
 	}
 

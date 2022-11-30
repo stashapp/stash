@@ -72,19 +72,25 @@ func loadSceneRelationships(ctx context.Context, expected models.Scene, actual *
 
 func Test_sceneQueryBuilder_Create(t *testing.T) {
 	var (
-		title       = "title"
-		details     = "details"
-		url         = "url"
-		rating      = 3
-		ocounter    = 5
-		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		sceneIndex  = 123
-		sceneIndex2 = 234
-		endpoint1   = "endpoint1"
-		endpoint2   = "endpoint2"
-		stashID1    = "stashid1"
-		stashID2    = "stashid2"
+		title        = "title"
+		code         = "1337"
+		details      = "details"
+		director     = "director"
+		url          = "url"
+		rating       = 60
+		ocounter     = 5
+		lastPlayedAt = time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC)
+		resumeTime   = 10.0
+		playCount    = 3
+		playDuration = 34.0
+		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		sceneIndex   = 123
+		sceneIndex2  = 234
+		endpoint1    = "endpoint1"
+		endpoint2    = "endpoint2"
+		stashID1     = "stashid1"
+		stashID2     = "stashid2"
 
 		date = models.NewDate("2003-02-01")
 
@@ -100,7 +106,9 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 			"full",
 			models.Scene{
 				Title:        title,
+				Code:         code,
 				Details:      details,
+				Director:     director,
 				URL:          url,
 				Date:         &date,
 				Rating:       &rating,
@@ -132,6 +140,10 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 						Endpoint: endpoint2,
 					},
 				}),
+				LastPlayedAt: &lastPlayedAt,
+				ResumeTime:   float64(resumeTime),
+				PlayCount:    playCount,
+				PlayDuration: playDuration,
 			},
 			false,
 		},
@@ -139,7 +151,9 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 			"with file",
 			models.Scene{
 				Title:     title,
+				Code:      code,
 				Details:   details,
+				Director:  director,
 				URL:       url,
 				Date:      &date,
 				Rating:    &rating,
@@ -174,6 +188,10 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 						Endpoint: endpoint2,
 					},
 				}),
+				LastPlayedAt: &lastPlayedAt,
+				ResumeTime:   resumeTime,
+				PlayCount:    playCount,
+				PlayDuration: playDuration,
 			},
 			false,
 		},
@@ -293,19 +311,25 @@ func makeSceneFileWithID(i int) *file.VideoFile {
 
 func Test_sceneQueryBuilder_Update(t *testing.T) {
 	var (
-		title       = "title"
-		details     = "details"
-		url         = "url"
-		rating      = 3
-		ocounter    = 5
-		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		sceneIndex  = 123
-		sceneIndex2 = 234
-		endpoint1   = "endpoint1"
-		endpoint2   = "endpoint2"
-		stashID1    = "stashid1"
-		stashID2    = "stashid2"
+		title        = "title"
+		code         = "1337"
+		details      = "details"
+		director     = "director"
+		url          = "url"
+		rating       = 60
+		ocounter     = 5
+		lastPlayedAt = time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC)
+		resumeTime   = 10.0
+		playCount    = 3
+		playDuration = 34.0
+		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		sceneIndex   = 123
+		sceneIndex2  = 234
+		endpoint1    = "endpoint1"
+		endpoint2    = "endpoint2"
+		stashID1     = "stashid1"
+		stashID2     = "stashid2"
 
 		date = models.NewDate("2003-02-01")
 	)
@@ -320,7 +344,9 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 			&models.Scene{
 				ID:           sceneIDs[sceneIdxWithGallery],
 				Title:        title,
+				Code:         code,
 				Details:      details,
+				Director:     director,
 				URL:          url,
 				Date:         &date,
 				Rating:       &rating,
@@ -352,6 +378,10 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 						Endpoint: endpoint2,
 					},
 				}),
+				LastPlayedAt: &lastPlayedAt,
+				ResumeTime:   resumeTime,
+				PlayCount:    playCount,
+				PlayDuration: playDuration,
 			},
 			false,
 		},
@@ -481,7 +511,9 @@ func clearScenePartial() models.ScenePartial {
 	// leave mandatory fields
 	return models.ScenePartial{
 		Title:        models.OptionalString{Set: true, Null: true},
+		Code:         models.OptionalString{Set: true, Null: true},
 		Details:      models.OptionalString{Set: true, Null: true},
+		Director:     models.OptionalString{Set: true, Null: true},
 		URL:          models.OptionalString{Set: true, Null: true},
 		Date:         models.OptionalDate{Set: true, Null: true},
 		Rating:       models.OptionalInt{Set: true, Null: true},
@@ -495,19 +527,25 @@ func clearScenePartial() models.ScenePartial {
 
 func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 	var (
-		title       = "title"
-		details     = "details"
-		url         = "url"
-		rating      = 3
-		ocounter    = 5
-		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		sceneIndex  = 123
-		sceneIndex2 = 234
-		endpoint1   = "endpoint1"
-		endpoint2   = "endpoint2"
-		stashID1    = "stashid1"
-		stashID2    = "stashid2"
+		title        = "title"
+		code         = "1337"
+		details      = "details"
+		director     = "director"
+		url          = "url"
+		rating       = 60
+		ocounter     = 5
+		lastPlayedAt = time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC)
+		resumeTime   = 10.0
+		playCount    = 3
+		playDuration = 34.0
+		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		sceneIndex   = 123
+		sceneIndex2  = 234
+		endpoint1    = "endpoint1"
+		endpoint2    = "endpoint2"
+		stashID1     = "stashid1"
+		stashID2     = "stashid2"
 
 		date = models.NewDate("2003-02-01")
 	)
@@ -524,7 +562,9 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 			sceneIDs[sceneIdxWithSpacedName],
 			models.ScenePartial{
 				Title:     models.NewOptionalString(title),
+				Code:      models.NewOptionalString(code),
 				Details:   models.NewOptionalString(details),
+				Director:  models.NewOptionalString(director),
 				URL:       models.NewOptionalString(url),
 				Date:      models.NewOptionalDate(date),
 				Rating:    models.NewOptionalInt(rating),
@@ -571,6 +611,10 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 					},
 					Mode: models.RelationshipUpdateModeSet,
 				},
+				LastPlayedAt: models.NewOptionalTime(lastPlayedAt),
+				ResumeTime:   models.NewOptionalFloat64(resumeTime),
+				PlayCount:    models.NewOptionalInt(playCount),
+				PlayDuration: models.NewOptionalFloat64(playDuration),
 			},
 			models.Scene{
 				ID: sceneIDs[sceneIdxWithSpacedName],
@@ -578,7 +622,9 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 					makeSceneFile(sceneIdxWithSpacedName),
 				}),
 				Title:        title,
+				Code:         code,
 				Details:      details,
+				Director:     director,
 				URL:          url,
 				Date:         &date,
 				Rating:       &rating,
@@ -610,6 +656,10 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 						Endpoint: endpoint2,
 					},
 				}),
+				LastPlayedAt: &lastPlayedAt,
+				ResumeTime:   resumeTime,
+				PlayCount:    playCount,
+				PlayDuration: playDuration,
 			},
 			false,
 		},
@@ -1380,18 +1430,15 @@ func Test_sceneQueryBuilder_Destroy(t *testing.T) {
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
-			withRollbackTxn(func(ctx context.Context) error {
-				if err := qb.Destroy(ctx, tt.id); (err != nil) != tt.wantErr {
-					t.Errorf("sceneQueryBuilder.Destroy() error = %v, wantErr %v", err, tt.wantErr)
-				}
+			if err := qb.Destroy(ctx, tt.id); (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.Destroy() error = %v, wantErr %v", err, tt.wantErr)
+			}
 
-				// ensure cannot be found
-				i, err := qb.Find(ctx, tt.id)
+			// ensure cannot be found
+			i, err := qb.Find(ctx, tt.id)
 
-				assert.NotNil(err)
-				assert.Nil(i)
-				return nil
-			})
+			assert.NotNil(err)
+			assert.Nil(i)
 		})
 	}
 }
@@ -1459,26 +1506,23 @@ func Test_sceneQueryBuilder_Find(t *testing.T) {
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
-			withTxn(func(ctx context.Context) error {
-				got, err := qb.Find(ctx, tt.id)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("sceneQueryBuilder.Find() error = %v, wantErr %v", err, tt.wantErr)
-					return nil
+			got, err := qb.Find(ctx, tt.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.Find() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if got != nil {
+				// load relationships
+				if err := loadSceneRelationships(ctx, *tt.want, got); err != nil {
+					t.Errorf("loadSceneRelationships() error = %v", err)
+					return
 				}
 
-				if got != nil {
-					// load relationships
-					if err := loadSceneRelationships(ctx, *tt.want, got); err != nil {
-						t.Errorf("loadSceneRelationships() error = %v", err)
-						return nil
-					}
+				clearSceneFileIDs(got)
+			}
 
-					clearSceneFileIDs(got)
-				}
-
-				assert.Equal(tt.want, got)
-				return nil
-			})
+			assert.Equal(tt.want, got)
 		})
 	}
 }
@@ -1602,23 +1646,19 @@ func Test_sceneQueryBuilder_FindByChecksum(t *testing.T) {
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
-			withTxn(func(ctx context.Context) error {
-				assert := assert.New(t)
-				got, err := qb.FindByChecksum(ctx, tt.checksum)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("sceneQueryBuilder.FindByChecksum() error = %v, wantErr %v", err, tt.wantErr)
-					return nil
-				}
+			assert := assert.New(t)
+			got, err := qb.FindByChecksum(ctx, tt.checksum)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.FindByChecksum() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
-				if err := postFindScenes(ctx, tt.want, got); err != nil {
-					t.Errorf("loadSceneRelationships() error = %v", err)
-					return nil
-				}
+			if err := postFindScenes(ctx, tt.want, got); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
+				return
+			}
 
-				assert.Equal(tt.want, got)
-
-				return nil
-			})
+			assert.Equal(tt.want, got)
 		})
 	}
 }
@@ -1676,23 +1716,20 @@ func Test_sceneQueryBuilder_FindByOSHash(t *testing.T) {
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
-			withTxn(func(ctx context.Context) error {
-				got, err := qb.FindByOSHash(ctx, tt.oshash)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("sceneQueryBuilder.FindByOSHash() error = %v, wantErr %v", err, tt.wantErr)
-					return nil
-				}
+			got, err := qb.FindByOSHash(ctx, tt.oshash)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.FindByOSHash() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
-				if err := postFindScenes(ctx, tt.want, got); err != nil {
-					t.Errorf("loadSceneRelationships() error = %v", err)
-					return nil
-				}
+			if err := postFindScenes(ctx, tt.want, got); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
+				return
+			}
 
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("sceneQueryBuilder.FindByOSHash() = %v, want %v", got, tt.want)
-				}
-				return nil
-			})
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("sceneQueryBuilder.FindByOSHash() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
@@ -1750,23 +1787,19 @@ func Test_sceneQueryBuilder_FindByPath(t *testing.T) {
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
-			withTxn(func(ctx context.Context) error {
-				assert := assert.New(t)
-				got, err := qb.FindByPath(ctx, tt.path)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("sceneQueryBuilder.FindByPath() error = %v, wantErr %v", err, tt.wantErr)
-					return nil
-				}
+			assert := assert.New(t)
+			got, err := qb.FindByPath(ctx, tt.path)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.FindByPath() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
-				if err := postFindScenes(ctx, tt.want, got); err != nil {
-					t.Errorf("loadSceneRelationships() error = %v", err)
-					return nil
-				}
+			if err := postFindScenes(ctx, tt.want, got); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
+				return
+			}
 
-				assert.Equal(tt.want, got)
-
-				return nil
-			})
+			assert.Equal(tt.want, got)
 		})
 	}
 }
@@ -2073,6 +2106,143 @@ func sceneQueryQ(ctx context.Context, t *testing.T, sqb models.SceneReader, q st
 	assert.Len(t, scenes, totalScenes)
 }
 
+func TestSceneQuery(t *testing.T) {
+	var (
+		endpoint = sceneStashID(sceneIdxWithGallery).Endpoint
+		stashID  = sceneStashID(sceneIdxWithGallery).StashID
+	)
+
+	tests := []struct {
+		name        string
+		findFilter  *models.FindFilterType
+		filter      *models.SceneFilterType
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"specific resume time",
+			nil,
+			&models.SceneFilterType{
+				ResumeTime: &models.IntCriterionInput{
+					Modifier: models.CriterionModifierEquals,
+					Value:    int(getSceneResumeTime(sceneIdxWithGallery)),
+				},
+			},
+			[]int{sceneIdxWithGallery},
+			[]int{sceneIdxWithMovie},
+			false,
+		},
+		{
+			"specific play duration",
+			nil,
+			&models.SceneFilterType{
+				PlayDuration: &models.IntCriterionInput{
+					Modifier: models.CriterionModifierEquals,
+					Value:    int(getScenePlayDuration(sceneIdxWithGallery)),
+				},
+			},
+			[]int{sceneIdxWithGallery},
+			[]int{sceneIdxWithMovie},
+			false,
+		},
+		{
+			"specific play count",
+			nil,
+			&models.SceneFilterType{
+				PlayCount: &models.IntCriterionInput{
+					Modifier: models.CriterionModifierEquals,
+					Value:    getScenePlayCount(sceneIdxWithGallery),
+				},
+			},
+			[]int{sceneIdxWithGallery},
+			[]int{sceneIdxWithMovie},
+			false,
+		},
+		{
+			"stash id with endpoint",
+			nil,
+			&models.SceneFilterType{
+				StashIDEndpoint: &models.StashIDCriterionInput{
+					Endpoint: &endpoint,
+					StashID:  &stashID,
+					Modifier: models.CriterionModifierEquals,
+				},
+			},
+			[]int{sceneIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"exclude stash id with endpoint",
+			nil,
+			&models.SceneFilterType{
+				StashIDEndpoint: &models.StashIDCriterionInput{
+					Endpoint: &endpoint,
+					StashID:  &stashID,
+					Modifier: models.CriterionModifierNotEquals,
+				},
+			},
+			nil,
+			[]int{sceneIdxWithGallery},
+			false,
+		},
+		{
+			"null stash id with endpoint",
+			nil,
+			&models.SceneFilterType{
+				StashIDEndpoint: &models.StashIDCriterionInput{
+					Endpoint: &endpoint,
+					Modifier: models.CriterionModifierIsNull,
+				},
+			},
+			nil,
+			[]int{sceneIdxWithGallery},
+			false,
+		},
+		{
+			"not null stash id with endpoint",
+			nil,
+			&models.SceneFilterType{
+				StashIDEndpoint: &models.StashIDCriterionInput{
+					Endpoint: &endpoint,
+					Modifier: models.CriterionModifierNotNull,
+				},
+			},
+			[]int{sceneIdxWithGallery},
+			nil,
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			results, err := db.Scene.Query(ctx, models.SceneQueryOptions{
+				SceneFilter: tt.filter,
+				QueryOptions: models.QueryOptions{
+					FindFilter: tt.findFilter,
+				},
+			})
+			if (err != nil) != tt.wantErr {
+				t.Errorf("PerformerStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			include := indexesToIDs(performerIDs, tt.includeIdxs)
+			exclude := indexesToIDs(performerIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(results.IDs, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(results.IDs, e)
+			}
+		})
+	}
+}
+
 func TestSceneQueryPath(t *testing.T) {
 	const (
 		sceneIdx      = 1
@@ -2098,42 +2268,6 @@ func TestSceneQueryPath(t *testing.T) {
 			[]int{otherSceneIdx},
 		},
 		{
-			"equals folder name",
-			models.StringCriterionInput{
-				Value:    folder,
-				Modifier: models.CriterionModifierEquals,
-			},
-			[]int{sceneIdx},
-			nil,
-		},
-		{
-			"equals folder name trailing slash",
-			models.StringCriterionInput{
-				Value:    folder + string(filepath.Separator),
-				Modifier: models.CriterionModifierEquals,
-			},
-			[]int{sceneIdx},
-			nil,
-		},
-		{
-			"equals base name",
-			models.StringCriterionInput{
-				Value:    basename,
-				Modifier: models.CriterionModifierEquals,
-			},
-			[]int{sceneIdx},
-			nil,
-		},
-		{
-			"equals base name leading slash",
-			models.StringCriterionInput{
-				Value:    string(filepath.Separator) + basename,
-				Modifier: models.CriterionModifierEquals,
-			},
-			[]int{sceneIdx},
-			nil,
-		},
-		{
 			"equals full path wildcard",
 			models.StringCriterionInput{
 				Value:    filepath.Join(folder, "scene_0001_%"),
@@ -2149,24 +2283,6 @@ func TestSceneQueryPath(t *testing.T) {
 				Modifier: models.CriterionModifierNotEquals,
 			},
 			[]int{otherSceneIdx},
-			[]int{sceneIdx},
-		},
-		{
-			"not equals folder name",
-			models.StringCriterionInput{
-				Value:    folder,
-				Modifier: models.CriterionModifierNotEquals,
-			},
-			nil,
-			[]int{sceneIdx},
-		},
-		{
-			"not equals basename",
-			models.StringCriterionInput{
-				Value:    basename,
-				Modifier: models.CriterionModifierNotEquals,
-			},
-			nil,
 			[]int{sceneIdx},
 		},
 		{
@@ -2331,7 +2447,7 @@ func TestSceneQueryPathAndRating(t *testing.T) {
 			Modifier: models.CriterionModifierEquals,
 		},
 		And: &models.SceneFilterType{
-			Rating: &models.IntCriterionInput{
+			Rating100: &models.IntCriterionInput{
 				Value:    sceneRating,
 				Modifier: models.CriterionModifierEquals,
 			},
@@ -2371,7 +2487,7 @@ func TestSceneQueryPathNotRating(t *testing.T) {
 	sceneFilter := models.SceneFilterType{
 		Path: &pathCriterion,
 		Not: &models.SceneFilterType{
-			Rating: &ratingCriterion,
+			Rating100: &ratingCriterion,
 		},
 	}
 
@@ -2558,29 +2674,74 @@ func TestSceneQueryRating(t *testing.T) {
 		Modifier: models.CriterionModifierEquals,
 	}
 
-	verifyScenesRating(t, ratingCriterion)
+	verifyScenesLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyScenesRating(t, ratingCriterion)
+	verifyScenesLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyScenesRating(t, ratingCriterion)
+	verifyScenesLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierLessThan
-	verifyScenesRating(t, ratingCriterion)
+	verifyScenesLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierIsNull
-	verifyScenesRating(t, ratingCriterion)
+	verifyScenesLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierNotNull
-	verifyScenesRating(t, ratingCriterion)
+	verifyScenesLegacyRating(t, ratingCriterion)
 }
 
-func verifyScenesRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
+func verifyScenesLegacyRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
 		sqb := db.Scene
 		sceneFilter := models.SceneFilterType{
 			Rating: &ratingCriterion,
+		}
+
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
+
+		// convert criterion value to the 100 value
+		ratingCriterion.Value = models.Rating5To100(ratingCriterion.Value)
+
+		for _, scene := range scenes {
+			verifyIntPtr(t, scene.Rating, ratingCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestSceneQueryRating100(t *testing.T) {
+	const rating = 60
+	ratingCriterion := models.IntCriterionInput{
+		Value:    rating,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyScenesRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyScenesRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyScenesRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierLessThan
+	verifyScenesRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierIsNull
+	verifyScenesRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierNotNull
+	verifyScenesRating100(t, ratingCriterion)
+}
+
+func verifyScenesRating100(t *testing.T, ratingCriterion models.IntCriterionInput) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
+		sceneFilter := models.SceneFilterType{
+			Rating100: &ratingCriterion,
 		}
 
 		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
@@ -3607,6 +3768,34 @@ func TestSceneQuerySorting(t *testing.T) {
 			-1,
 			-1,
 		},
+		{
+			"play_count",
+			"play_count",
+			models.SortDirectionEnumDesc,
+			sceneIDs[sceneIdx1WithPerformer],
+			-1,
+		},
+		{
+			"last_played_at",
+			"last_played_at",
+			models.SortDirectionEnumDesc,
+			sceneIDs[sceneIdx1WithPerformer],
+			-1,
+		},
+		{
+			"resume_time",
+			"resume_time",
+			models.SortDirectionEnumDesc,
+			sceneIDs[sceneIdx1WithPerformer],
+			-1,
+		},
+		{
+			"play_duration",
+			"play_duration",
+			models.SortDirectionEnumDesc,
+			sceneIDs[sceneIdx1WithPerformer],
+			-1,
+		},
 	}
 
 	qb := db.Scene
@@ -4111,6 +4300,197 @@ func TestSceneStore_FindDuplicates(t *testing.T) {
 
 		return nil
 	})
+}
+
+func TestSceneStore_AssignFiles(t *testing.T) {
+	tests := []struct {
+		name    string
+		sceneID int
+		fileID  file.ID
+		wantErr bool
+	}{
+		{
+			"valid",
+			sceneIDs[sceneIdx1WithPerformer],
+			sceneFileIDs[sceneIdx1WithStudio],
+			false,
+		},
+		{
+			"invalid file id",
+			sceneIDs[sceneIdx1WithPerformer],
+			invalidFileID,
+			true,
+		},
+		{
+			"invalid scene id",
+			invalidID,
+			sceneFileIDs[sceneIdx1WithStudio],
+			true,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			withRollbackTxn(func(ctx context.Context) error {
+				if err := qb.AssignFiles(ctx, tt.sceneID, []file.ID{tt.fileID}); (err != nil) != tt.wantErr {
+					t.Errorf("SceneStore.AssignFiles() error = %v, wantErr %v", err, tt.wantErr)
+				}
+
+				return nil
+			})
+		})
+	}
+}
+
+func TestSceneStore_IncrementWatchCount(t *testing.T) {
+	tests := []struct {
+		name          string
+		sceneID       int
+		expectedCount int
+		wantErr       bool
+	}{
+		{
+			"valid",
+			sceneIDs[sceneIdx1WithPerformer],
+			getScenePlayCount(sceneIdx1WithPerformer) + 1,
+			false,
+		},
+		{
+			"invalid scene id",
+			invalidID,
+			0,
+			true,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			withRollbackTxn(func(ctx context.Context) error {
+				newVal, err := qb.IncrementWatchCount(ctx, tt.sceneID)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("SceneStore.IncrementWatchCount() error = %v, wantErr %v", err, tt.wantErr)
+				}
+
+				if err != nil {
+					return nil
+				}
+
+				assert := assert.New(t)
+				assert.Equal(tt.expectedCount, newVal)
+
+				// find the scene and check the count
+				scene, err := qb.Find(ctx, tt.sceneID)
+				if err != nil {
+					t.Errorf("SceneStore.Find() error = %v", err)
+				}
+
+				assert.Equal(tt.expectedCount, scene.PlayCount)
+				assert.True(scene.LastPlayedAt.After(time.Now().Add(-1 * time.Minute)))
+
+				return nil
+			})
+		})
+	}
+}
+
+func TestSceneStore_SaveActivity(t *testing.T) {
+	var (
+		resumeTime   = 111.2
+		playDuration = 98.7
+	)
+
+	tests := []struct {
+		name         string
+		sceneIdx     int
+		resumeTime   *float64
+		playDuration *float64
+		wantErr      bool
+	}{
+		{
+			"both",
+			sceneIdx1WithPerformer,
+			&resumeTime,
+			&playDuration,
+			false,
+		},
+		{
+			"resumeTime only",
+			sceneIdx1WithPerformer,
+			&resumeTime,
+			nil,
+			false,
+		},
+		{
+			"playDuration only",
+			sceneIdx1WithPerformer,
+			nil,
+			&playDuration,
+			false,
+		},
+		{
+			"none",
+			sceneIdx1WithPerformer,
+			nil,
+			nil,
+			false,
+		},
+		{
+			"invalid scene id",
+			-1,
+			&resumeTime,
+			&playDuration,
+			true,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			withRollbackTxn(func(ctx context.Context) error {
+				id := -1
+				if tt.sceneIdx != -1 {
+					id = sceneIDs[tt.sceneIdx]
+				}
+
+				_, err := qb.SaveActivity(ctx, id, tt.resumeTime, tt.playDuration)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("SceneStore.SaveActivity() error = %v, wantErr %v", err, tt.wantErr)
+				}
+
+				if err != nil {
+					return nil
+				}
+
+				assert := assert.New(t)
+
+				// find the scene and check the values
+				scene, err := qb.Find(ctx, id)
+				if err != nil {
+					t.Errorf("SceneStore.Find() error = %v", err)
+				}
+
+				expectedResumeTime := getSceneResumeTime(tt.sceneIdx)
+				expectedPlayDuration := getScenePlayDuration(tt.sceneIdx)
+
+				if tt.resumeTime != nil {
+					expectedResumeTime = *tt.resumeTime
+				}
+				if tt.playDuration != nil {
+					expectedPlayDuration += *tt.playDuration
+				}
+
+				assert.Equal(expectedResumeTime, scene.ResumeTime)
+				assert.Equal(expectedPlayDuration, scene.PlayDuration)
+
+				return nil
+			})
+		})
+	}
 }
 
 // TODO Count

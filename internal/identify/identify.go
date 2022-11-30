@@ -280,6 +280,16 @@ func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOp
 			partial.URL = models.NewOptionalString(*scraped.URL)
 		}
 	}
+	if scraped.Director != nil && (scene.Director != *scraped.Director) {
+		if shouldSetSingleValueField(fieldOptions["director"], scene.Director != "") {
+			partial.Director = models.NewOptionalString(*scraped.Director)
+		}
+	}
+	if scraped.Code != nil && (scene.Code != *scraped.Code) {
+		if shouldSetSingleValueField(fieldOptions["code"], scene.Code != "") {
+			partial.Code = models.NewOptionalString(*scraped.Code)
+		}
+	}
 
 	if setOrganized && !scene.Organized {
 		// just reuse the boolean since we know it's true

@@ -6,7 +6,7 @@ fragment GalleryData on Gallery {
   date
   url
   details
-  rating
+  rating100
   organized
 
   files {
@@ -16,9 +16,6 @@ fragment GalleryData on Gallery {
     ...FolderData
   }
 
-  images {
-    ...SlimImageData
-  }
   cover {
     ...SlimImageData
   }

@@ -1,8 +1,15 @@
 import React, { useMemo, useState } from "react";
 import { Accordion, Button, Card } from "react-bootstrap";
-import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
+import {
+  FormattedMessage,
+  FormattedNumber,
+  FormattedTime,
+  useIntl,
+} from "react-intl";
+import { useHistory } from "react-router-dom";
 import { TruncatedText } from "src/components/Shared";
 import DeleteFilesDialog from "src/components/Shared/DeleteFilesDialog";
+import ReassignFilesDialog from "src/components/Shared/ReassignFilesDialog";
 import * as GQL from "src/core/generated-graphql";
 import { mutateSceneSetPrimaryFile } from "src/core/StashService";
 import { useToast } from "src/hooks";
@@ -10,11 +17,13 @@ import { NavUtils, TextUtils, getStashboxBase } from "src/utils";
 import { TextField, URLField } from "src/utils/field";
 
 interface IFileInfoPanelProps {
+  sceneID: string;
   file: GQL.VideoFileDataFragment;
   primary?: boolean;
   ofMany?: boolean;
   onSetPrimaryFile?: () => void;
   onDeleteFile?: () => void;
+  onReassign?: () => void;
   loading?: boolean;
 }
 
@@ -22,6 +31,7 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
   props: IFileInfoPanelProps
 ) => {
   const intl = useIntl();
+  const history = useHistory();
 
   function renderFileSize() {
     const { size, unit } = TextUtils.fileSize(props.file.size);
@@ -46,6 +56,12 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
   const oshash = props.file.fingerprints.find((f) => f.type === "oshash");
   const phash = props.file.fingerprints.find((f) => f.type === "phash");
   const checksum = props.file.fingerprints.find((f) => f.type === "md5");
+
+  function onSplit() {
+    history.push(
+      `/scenes/new?from_scene_id=${props.sceneID}&file_id=${props.file.id}`
+    );
+  }
 
   return (
     <div>
@@ -76,6 +92,13 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
           truncate
         />
         {renderFileSize()}
+        <TextField id="file_mod_time">
+          <FormattedTime
+            dateStyle="medium"
+            timeStyle="medium"
+            value={props.file.mod_time ?? 0}
+          />
+        </TextField>
         <TextField
           id="duration"
           value={TextUtils.secondsToTimestamp(props.file.duration ?? 0)}
@@ -123,6 +146,16 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
             <FormattedMessage id="actions.make_primary" />
           </Button>
           <Button
+            className="edit-button"
+            disabled={props.loading}
+            onClick={props.onReassign}
+          >
+            <FormattedMessage id="actions.reassign" />
+          </Button>
+          <Button className="edit-button" onClick={onSplit}>
+            <FormattedMessage id="actions.split" />
+          </Button>
+          <Button
             variant="danger"
             disabled={props.loading}
             onClick={props.onDeleteFile}
@@ -148,6 +181,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
   const [deletingFile, setDeletingFile] = useState<
     GQL.VideoFileDataFragment | undefined
   >();
+  const [reassigningFile, setReassigningFile] = useState<
+    GQL.VideoFileDataFragment | undefined
+  >();
 
   function renderStashIDs() {
     if (!props.scene.stash_ids.length) {
@@ -158,7 +194,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       <>
         <dt>StashIDs</dt>
         <dd>
-          <ul>
+          <dl>
             {props.scene.stash_ids.map((stashID) => {
               const base = getStashboxBase(stashID.endpoint);
               const link = base ? (
@@ -173,12 +209,12 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
                 stashID.stash_id
               );
               return (
-                <li key={stashID.stash_id} className="row no-gutters">
+                <dd key={stashID.stash_id} className="row no-gutters">
                   {link}
-                </li>
+                </dd>
               );
             })}
-          </ul>
+          </dl>
         </dd>
       </>
     );
@@ -213,7 +249,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     }
 
     if (props.scene.files.length === 1) {
-      return <FileInfoPanel file={props.scene.files[0]} />;
+      return (
+        <FileInfoPanel sceneID={props.scene.id} file={props.scene.files[0]} />
+      );
     }
 
     async function onSetPrimaryFile(fileID: string) {
@@ -235,6 +273,12 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
             selected={[deletingFile]}
           />
         )}
+        {reassigningFile && (
+          <ReassignFilesDialog
+            onClose={() => setReassigningFile(undefined)}
+            selected={reassigningFile}
+          />
+        )}
         {props.scene.files.map((file, index) => (
           <Card key={file.id} className="scene-file-card">
             <Accordion.Toggle as={Card.Header} eventKey={file.id}>
@@ -243,11 +287,13 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
             <Accordion.Collapse eventKey={file.id}>
               <Card.Body>
                 <FileInfoPanel
+                  sceneID={props.scene.id}
                   file={file}
                   primary={index === 0}
                   ofMany
                   onSetPrimaryFile={() => onSetPrimaryFile(file.id)}
                   onDeleteFile={() => setDeletingFile(file)}
+                  onReassign={() => setReassigningFile(file)}
                   loading={loading}
                 />
               </Card.Body>
@@ -256,7 +302,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
         ))}
       </Accordion>
     );
-  }, [props.scene, loading, Toast, deletingFile]);
+  }, [props.scene, loading, Toast, deletingFile, reassigningFile]);
 
   return (
     <>
@@ -276,6 +322,16 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
           truncate
         />
         {renderStashIDs()}
+        <TextField
+          id="media_info.play_count"
+          value={(props.scene.play_count ?? 0).toString()}
+          truncate
+        />
+        <TextField
+          id="media_info.play_duration"
+          value={TextUtils.secondsToTimestamp(props.scene.play_duration ?? 0)}
+          truncate
+        />
       </dl>
 
       {filesPanel}

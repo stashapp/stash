@@ -8,7 +8,7 @@ import { StudioSelect, Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { FormUtils } from "src/utils";
 import MultiSet from "../Shared/MultiSet";
-import { RatingStars } from "./SceneDetails/RatingStars";
+import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
   getAggregateInputIDs,
   getAggregateInputValue,
@@ -30,7 +30,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
 ) => {
   const intl = useIntl();
   const Toast = useToast();
-  const [rating, setRating] = useState<number>();
+  const [rating100, setRating] = useState<number>();
   const [studioId, setStudioId] = useState<string>();
   const [
     performerMode,
@@ -71,7 +71,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
       }),
     };
 
-    sceneInput.rating = getAggregateInputValue(rating, aggregateRating);
+    sceneInput.rating100 = getAggregateInputValue(rating100, aggregateRating);
     sceneInput.studio_id = getAggregateInputValue(studioId, aggregateStudioId);
 
     sceneInput.performer_ids = getAggregateInputIDs(
@@ -121,7 +121,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     let first = true;
 
     state.forEach((scene: GQL.SlimSceneDataFragment) => {
-      const sceneRating = scene.rating;
+      const sceneRating = scene.rating100;
       const sceneStudioID = scene?.studio?.id;
       const scenePerformerIDs = (scene.performers ?? [])
         .map((p) => p.id)
@@ -271,14 +271,13 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
               title: intl.formatMessage({ id: "rating" }),
             })}
             <Col xs={9}>
-              <RatingStars
-                value={rating}
+              <RatingSystem
+                value={rating100}
                 onSetRating={(value) => setRating(value)}
                 disabled={isUpdating}
               />
             </Col>
           </Form.Group>
-
           <Form.Group controlId="studio" as={Row}>
             {FormUtils.renderLabel({
               title: intl.formatMessage({ id: "studio" }),

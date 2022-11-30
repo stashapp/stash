@@ -30,7 +30,7 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 	funscriptPath := video.GetFunscriptPath(t.Scene.Path)
 	heatmapPath := instance.Paths.Scene.GetInteractiveHeatmapPath(videoChecksum)
 
-	generator := NewInteractiveHeatmapSpeedGenerator(funscriptPath, heatmapPath)
+	generator := NewInteractiveHeatmapSpeedGenerator(funscriptPath, heatmapPath, t.Scene.Files.Primary().Duration)
 
 	err := generator.Generate()
 
@@ -46,10 +46,9 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 		primaryFile.InteractiveSpeed = &median
 		qb := t.TxnManager.File
 		return qb.Update(ctx, primaryFile)
-	}); err != nil {
+	}); err != nil && ctx.Err() == nil {
 		logger.Error(err.Error())
 	}
-
 }
 
 func (t *GenerateInteractiveHeatmapSpeedTask) shouldGenerate() bool {
@@ -58,7 +57,7 @@ func (t *GenerateInteractiveHeatmapSpeedTask) shouldGenerate() bool {
 		return false
 	}
 	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
-	return !t.doesHeatmapExist(sceneHash) || t.Overwrite
+	return !t.doesHeatmapExist(sceneHash) || primaryFile.InteractiveSpeed == nil || t.Overwrite
 }
 
 func (t *GenerateInteractiveHeatmapSpeedTask) doesHeatmapExist(sceneChecksum string) bool {

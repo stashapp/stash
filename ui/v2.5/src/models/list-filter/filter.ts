@@ -1,6 +1,7 @@
 import queryString, { ParsedQuery } from "query-string";
 import clone from "lodash-es/clone";
 import {
+  ConfigDataFragment,
   FilterMode,
   FindFilterType,
   SortDirectionEnum,
@@ -30,6 +31,7 @@ const DEFAULT_PARAMS = {
 // TODO: handle customCriteria
 export class ListFilterModel {
   public mode: FilterMode;
+  private config: ConfigDataFragment | undefined;
   public searchTerm?: string;
   public currentPage = DEFAULT_PARAMS.currentPage;
   public itemsPerPage = DEFAULT_PARAMS.itemsPerPage;
@@ -43,11 +45,13 @@ export class ListFilterModel {
 
   public constructor(
     mode: FilterMode,
+    config: ConfigDataFragment | undefined,
     defaultSort?: string,
     defaultDisplayMode?: DisplayMode,
     defaultZoomIndex?: number
   ) {
     this.mode = mode;
+    this.config = config;
     this.sortBy = defaultSort;
     if (defaultDisplayMode !== undefined) this.displayMode = defaultDisplayMode;
     if (defaultZoomIndex !== undefined) {
@@ -57,7 +61,7 @@ export class ListFilterModel {
   }
 
   public clone() {
-    return Object.assign(new ListFilterModel(this.mode), this);
+    return Object.assign(new ListFilterModel(this.mode, this.config), this);
   }
 
   // Does not decode any URL-encoding in parameters
@@ -78,12 +82,12 @@ export class ListFilterModel {
         }
       }
     }
-    if (params.sortdir !== undefined) {
-      this.sortDirection =
-        params.sortdir === "desc"
-          ? SortDirectionEnum.Desc
-          : SortDirectionEnum.Asc;
-    }
+    // #3193 - sortdir undefined means asc
+    this.sortDirection =
+      params.sortdir === "desc"
+        ? SortDirectionEnum.Desc
+        : SortDirectionEnum.Asc;
+
     if (params.disp !== undefined) {
       this.displayMode = Number.parseInt(params.disp, 10);
     }
@@ -104,7 +108,7 @@ export class ListFilterModel {
       params.c.forEach((jsonString) => {
         try {
           const encodedCriterion = JSON.parse(jsonString);
-          const criterion = makeCriteria(encodedCriterion.type);
+          const criterion = makeCriteria(this.config, encodedCriterion.type);
           // it's possible that we have unsupported criteria. Just skip if so.
           if (criterion) {
             if (encodedCriterion.value !== undefined) {
@@ -145,16 +149,67 @@ export class ListFilterModel {
         jsonParameters = [params.c!];
       }
       params.c = jsonParameters.map((jsonString) => {
-        let decodedJson = jsonString;
-        // replace () back to {}
-        decodedJson = decodedJson.replaceAll("(", "{");
-        decodedJson = decodedJson.replaceAll(")", "}");
-        // decode all other characters
-        decodedJson = decodeURIComponent(decodedJson);
-        return decodedJson;
+        const decoding = true;
+        return ListFilterModel.translateSpecialCharacters(
+          decodeURIComponent(jsonString),
+          decoding
+        );
       });
     }
     return params;
+  }
+
+  private static translateSpecialCharacters(input: string, decoding: boolean) {
+    let inString = false;
+    let escape = false;
+    return [...input]
+      .map((c) => {
+        if (escape) {
+          // this character has been escaped, skip
+          escape = false;
+          return c;
+        }
+
+        switch (c) {
+          case "\\":
+            // escape the next character if in a string
+            if (inString) {
+              escape = true;
+            }
+            break;
+          case '"':
+            // unescaped quote, toggle inString
+            inString = !inString;
+            break;
+          case "(":
+            // decode only: restore ( to { if not in a string
+            if (decoding && !inString) {
+              return "{";
+            }
+            break;
+          case ")":
+            // decode only: restore ) to } if not in a string
+            if (decoding && !inString) {
+              return "}";
+            }
+            break;
+          case "{":
+            // encode only: replace { with ( if not in a string
+            if (!decoding && !inString) {
+              return "(";
+            }
+            break;
+          case "}":
+            // encode only: replace } with ) if not in a string
+            if (!decoding && !inString) {
+              return ")";
+            }
+            break;
+        }
+
+        return c;
+      })
+      .join("");
   }
 
   public configureFromQueryString(query: string) {
@@ -192,15 +247,15 @@ export class ListFilterModel {
   // Returns query parameters with necessary parts encoded
   public getQueryParameters(): IQueryParameters {
     const encodedCriteria: string[] = this.criteria.map((criterion) => {
-      let str = criterion.toJSON();
+      const decoding = false;
+      let str = ListFilterModel.translateSpecialCharacters(
+        criterion.toJSON(),
+        decoding
+      );
+
       // URL-encode other characters
       str = encodeURI(str);
-      // force URL-encode existing ()
-      str = str.replaceAll("(", "%28");
-      str = str.replaceAll(")", "%29");
-      // replace JSON '{'(%7B) '}'(%7D) with explicitly unreserved ()
-      str = str.replaceAll("%7B", "(");
-      str = str.replaceAll("%7D", ")");
+
       // only the reserved characters ?#&;=+ need to be URL-encoded
       // as they have special meaning in query strings
       str = str.replaceAll("?", encodeURIComponent("?"));
@@ -209,6 +264,7 @@ export class ListFilterModel {
       str = str.replaceAll(";", encodeURIComponent(";"));
       str = str.replaceAll("=", encodeURIComponent("="));
       str = str.replaceAll("+", encodeURIComponent("+"));
+
       return str;
     });
 

@@ -5,11 +5,16 @@ import {
   DurationCriterion,
   NumberCriterionOption,
   MandatoryStringCriterionOption,
+  NullNumberCriterionOption,
   MandatoryNumberCriterionOption,
   StringCriterionOption,
   ILabeledIdCriterion,
   BooleanCriterion,
   BooleanCriterionOption,
+  DateCriterion,
+  DateCriterionOption,
+  TimestampCriterion,
+  MandatoryTimestampCriterionOption,
 } from "./criterion";
 import { OrganizedCriterion } from "./organized";
 import { FavoriteCriterion, PerformerFavoriteCriterion } from "./favorite";
@@ -41,11 +46,19 @@ import { MoviesCriterionOption } from "./movies";
 import { GalleriesCriterion } from "./galleries";
 import { CriterionType } from "../types";
 import { InteractiveCriterion } from "./interactive";
-import { RatingCriterionOption } from "./rating";
 import { DuplicatedCriterion, PhashCriterionOption } from "./phash";
 import { CaptionCriterion } from "./captions";
+import { RatingCriterion } from "./rating";
+import { CountryCriterion } from "./country";
+import { StashIDCriterion } from "./stash-ids";
+import * as GQL from "src/core/generated-graphql";
+import { IUIConfig } from "src/core/config";
+import { defaultRatingSystemOptions } from "src/utils/rating";
 
-export function makeCriteria(type: CriterionType = "none") {
+export function makeCriteria(
+  config: GQL.ConfigDataFragment | undefined,
+  type: CriterionType = "none"
+) {
   switch (type) {
     case "none":
       return new NoneCriterion();
@@ -62,8 +75,6 @@ export function makeCriteria(type: CriterionType = "none") {
       return new StringCriterion(
         new MandatoryStringCriterionOption("media_info.hash", type, type)
       );
-    case "rating":
-      return new NumberCriterion(RatingCriterionOption);
     case "organized":
       return new OrganizedCriterion();
     case "o_counter":
@@ -76,14 +87,25 @@ export function makeCriteria(type: CriterionType = "none") {
     case "performer_age":
     case "tag_count":
     case "file_count":
+    case "play_count":
       return new NumberCriterion(
         new MandatoryNumberCriterionOption(type, type)
+      );
+    case "rating":
+      return new NumberCriterion(new NullNumberCriterionOption(type, type));
+    case "rating100":
+      return new RatingCriterion(
+        new NullNumberCriterionOption("rating", type),
+        (config?.ui as IUIConfig)?.ratingSystemOptions ??
+          defaultRatingSystemOptions
       );
     case "resolution":
       return new ResolutionCriterion();
     case "average_resolution":
       return new AverageResolutionCriterion();
+    case "resume_time":
     case "duration":
+    case "play_duration":
       return new DurationCriterion(new NumberCriterionOption(type, type));
     case "favorite":
       return new FavoriteCriterion();
@@ -144,11 +166,20 @@ export function makeCriteria(type: CriterionType = "none") {
       return new StringCriterion(PhashCriterionOption);
     case "duplicated":
       return new DuplicatedCriterion();
-    case "ethnicity":
     case "country":
+      return new CountryCriterion();
+    case "height":
+    case "height_cm":
+      return new NumberCriterion(
+        new NumberCriterionOption("height", "height_cm", type)
+      );
+    // stash_id is deprecated
+    case "stash_id":
+    case "stash_id_endpoint":
+      return new StashIDCriterion();
+    case "ethnicity":
     case "hair_color":
     case "eye_color":
-    case "height":
     case "measurements":
     case "fake_tits":
     case "career_length":
@@ -156,12 +187,14 @@ export function makeCriteria(type: CriterionType = "none") {
     case "piercings":
     case "aliases":
     case "url":
-    case "stash_id":
     case "details":
     case "title":
     case "director":
     case "synopsis":
+    case "description":
       return new StringCriterion(new StringCriterionOption(type, type));
+    case "scene_code":
+      return new StringCriterion(new StringCriterionOption(type, type, "code"));
     case "interactive":
       return new InteractiveCriterion();
     case "captions":
@@ -184,5 +217,17 @@ export function makeCriteria(type: CriterionType = "none") {
       );
     case "ignore_auto_tag":
       return new BooleanCriterion(new BooleanCriterionOption(type, type));
+    case "date":
+    case "birthdate":
+    case "death_date":
+    case "scene_date":
+      return new DateCriterion(new DateCriterionOption(type, type));
+    case "created_at":
+    case "updated_at":
+    case "scene_created_at":
+    case "scene_updated_at":
+      return new TimestampCriterion(
+        new MandatoryTimestampCriterionOption(type, type)
+      );
   }
 }

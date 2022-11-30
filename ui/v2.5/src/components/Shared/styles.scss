@@ -59,12 +59,15 @@
   }
 }
 
-.duration-input {
-  .duration-control {
+.duration-input,
+.percent-input {
+  .duration-control,
+  .percent-control {
     min-width: 3rem;
   }
 
-  .duration-button {
+  .duration-button,
+  .percent-button {
     border-bottom-left-radius: 0;
     border-top-left-radius: 0;
     line-height: 10px;
@@ -165,6 +168,20 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
   a .card-section-title {
     color: $text-color;
     text-decoration: none;
+  }
+
+  .progress-bar {
+    background-color: #73859f80;
+    bottom: 5px;
+    display: block;
+    height: 5px;
+    position: absolute;
+    width: 100%;
+  }
+
+  .progress-indicator {
+    background-color: #137cbd;
+    height: 5px;
   }
 
   .card-check {
@@ -297,4 +314,12 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
   &.unset button {
     visibility: hidden;
   }
+}
+
+.CountrySelect {
+  /* stylelint-disable */
+  .react-select__control:hover {
+    border: none;
+  }
+  /* stylelint-enable */
 }

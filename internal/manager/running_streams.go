@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/internal/static"
@@ -46,7 +47,21 @@ func (c *StreamRequestContext) Cancel() {
 			if err != nil {
 				logger.Warnf("unable to write end of stream: %v", err)
 			}
-			_ = bw.Flush()
+
+			// flush the buffer, but don't wait indefinitely
+			timeout := make(chan struct{}, 1)
+			go func() {
+				_ = bw.Flush()
+				close(timeout)
+			}()
+
+			const waitTime = time.Second
+
+			select {
+			case <-timeout:
+			case <-time.After(waitTime):
+				logger.Warnf("unable to flush buffer - closing connection")
+			}
 		}
 
 		conn.Close()
@@ -91,17 +106,19 @@ func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWrit
 func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter, r *http.Request) {
 	const defaultSceneImage = "scene/scene.svg"
 
-	filepath := GetInstance().Paths.Scene.GetScreenshotPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
+	if scene.Path != "" {
+		filepath := GetInstance().Paths.Scene.GetScreenshotPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
 
-	// fall back to the scene image blob if the file isn't present
-	screenshotExists, _ := fsutil.FileExists(filepath)
-	if screenshotExists {
-		http.ServeFile(w, r, filepath)
-		return
+		// fall back to the scene image blob if the file isn't present
+		screenshotExists, _ := fsutil.FileExists(filepath)
+		if screenshotExists {
+			http.ServeFile(w, r, filepath)
+			return
+		}
 	}
 
 	var cover []byte
-	readTxnErr := txn.WithTxn(r.Context(), s.TxnManager, func(ctx context.Context) error {
+	readTxnErr := txn.WithReadTxn(r.Context(), s.TxnManager, func(ctx context.Context) error {
 		cover, _ = s.SceneCoverGetter.GetCover(ctx, scene.ID)
 		return nil
 	})

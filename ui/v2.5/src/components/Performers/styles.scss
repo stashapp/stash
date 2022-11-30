@@ -41,6 +41,10 @@
         }
       }
     }
+
+    .rating-number .form-control {
+      width: inherit;
+    }
   }
 
   .alias {
@@ -145,4 +149,28 @@
 
 .fa-transgender-alt {
   color: #c8a2c8;
+}
+
+.performer-height {
+  .height-imperial {
+    &::before {
+      content: " (";
+    }
+
+    &::after {
+      content: ")";
+    }
+  }
+}
+
+.performer-weight {
+  .weight-imperial {
+    &::before {
+      content: " (";
+    }
+
+    &::after {
+      content: ")";
+    }
+  }
 }

@@ -240,6 +240,10 @@ textarea.scene-description {
 .scene-card.card {
   overflow: hidden;
   padding: 0;
+
+  &.fileless {
+    background-color: darken($card-bg, 5%);
+  }
 }
 
 .scene-cover {
@@ -475,37 +479,6 @@ input[type="range"].blue-slider {
   }
 }
 
-.rating-stars {
-  display: inline-block;
-
-  button {
-    font-size: inherit;
-    margin-right: 1px;
-    padding: 0;
-
-    &:hover {
-      background-color: inherit;
-    }
-
-    &:disabled {
-      background-color: inherit;
-      opacity: inherit;
-    }
-  }
-
-  .unsetting {
-    color: gold;
-  }
-
-  .setting {
-    color: gold;
-  }
-
-  .set {
-    color: gold;
-  }
-}
-
 #scene-edit-details {
   .rating-stars {
     font-size: 1.3em;
@@ -657,4 +630,8 @@ input[type="range"].blue-slider {
     margin: 0;
     padding: 0.5rem;
   }
+}
+
+.scrape-dialog .rating-number.disabled {
+  padding-left: 0.5em;
 }

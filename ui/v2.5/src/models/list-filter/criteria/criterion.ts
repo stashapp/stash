@@ -1,4 +1,5 @@
 /* eslint-disable consistent-return */
+/* eslint @typescript-eslint/no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
 
 import { IntlShape } from "react-intl";
 import {
@@ -7,6 +8,8 @@ import {
   IntCriterionInput,
   MultiCriterionInput,
   PHashDuplicationCriterionInput,
+  DateCriterionInput,
+  TimestampCriterionInput,
 } from "src/core/generated-graphql";
 import DurationUtils from "src/utils/duration";
 import {
@@ -16,6 +19,9 @@ import {
   ILabeledValue,
   INumberValue,
   IOptionType,
+  IStashIDValue,
+  IDateValue,
+  ITimestampValue,
 } from "../types";
 
 export type Option = string | number | IOptionType;
@@ -23,7 +29,10 @@ export type CriterionValue =
   | string
   | ILabeledId[]
   | IHierarchicalLabelValue
-  | INumberValue;
+  | INumberValue
+  | IStashIDValue
+  | IDateValue
+  | ITimestampValue;
 
 const modifierMessageIDs = {
   [CriterionModifier.Equals]: "criterion_modifier.equals",
@@ -61,7 +70,7 @@ export abstract class Criterion<V extends CriterionValue> {
     this._value = newValue;
   }
 
-  public abstract getLabelValue(): string;
+  public abstract getLabelValue(intl: IntlShape): string;
 
   constructor(type: CriterionOption, value: V) {
     this.criterionOption = type;
@@ -85,7 +94,7 @@ export abstract class Criterion<V extends CriterionValue> {
       this.modifier !== CriterionModifier.IsNull &&
       this.modifier !== CriterionModifier.NotNull
     ) {
-      valueString = this.getLabelValue();
+      valueString = this.getLabelValue(intl);
     }
 
     return intl.formatMessage(
@@ -215,7 +224,7 @@ export class StringCriterion extends Criterion<string> {
     super(type, "");
   }
 
-  public getLabelValue() {
+  public getLabelValue(_intl: IntlShape) {
     return this.value;
   }
 }
@@ -317,8 +326,34 @@ export class NumberCriterionOption extends CriterionOption {
   }
 }
 
+export class NullNumberCriterionOption extends CriterionOption {
+  constructor(messageID: string, value: CriterionType, parameterName?: string) {
+    super({
+      messageID,
+      type: value,
+      parameterName,
+      modifierOptions: [
+        CriterionModifier.Equals,
+        CriterionModifier.NotEquals,
+        CriterionModifier.GreaterThan,
+        CriterionModifier.LessThan,
+        CriterionModifier.Between,
+        CriterionModifier.NotBetween,
+        CriterionModifier.IsNull,
+        CriterionModifier.NotNull,
+      ],
+      defaultModifier: CriterionModifier.Equals,
+      inputType: "number",
+    });
+  }
+}
+
 export function createNumberCriterionOption(value: CriterionType) {
   return new NumberCriterionOption(value, value, value);
+}
+
+export function createNullNumberCriterionOption(value: CriterionType) {
+  return new NullNumberCriterionOption(value, value, value);
 }
 
 export class NumberCriterion extends Criterion<INumberValue> {
@@ -345,7 +380,7 @@ export class NumberCriterion extends Criterion<INumberValue> {
     };
   }
 
-  public getLabelValue() {
+  public getLabelValue(_intl: IntlShape) {
     const { value, value2 } = this.value;
     if (
       this.modifier === CriterionModifier.Between ||
@@ -393,7 +428,7 @@ export class ILabeledIdCriterionOption extends CriterionOption {
 }
 
 export class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
-  public getLabelValue(): string {
+  public getLabelValue(_intl: IntlShape): string {
     return this.value.map((v) => v.label).join(", ");
   }
 
@@ -418,7 +453,7 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
     };
   }
 
-  public getLabelValue(): string {
+  public getLabelValue(_intl: IntlShape): string {
     const labels = (this.value.items ?? []).map((v) => v.label).join(", ");
 
     if (this.value.depth === 0) {
@@ -478,7 +513,7 @@ export class DurationCriterion extends Criterion<INumberValue> {
     };
   }
 
-  public getLabelValue() {
+  public getLabelValue(_intl: IntlShape) {
     return this.modifier === CriterionModifier.Between ||
       this.modifier === CriterionModifier.NotBetween
       ? `${DurationUtils.secondsToString(
@@ -499,4 +534,163 @@ export class PhashDuplicateCriterion extends StringCriterion {
       duplicated: this.value === "true",
     };
   }
+}
+
+export class DateCriterionOption extends CriterionOption {
+  constructor(
+    messageID: string,
+    value: CriterionType,
+    parameterName?: string,
+    options?: Option[]
+  ) {
+    super({
+      messageID,
+      type: value,
+      parameterName,
+      modifierOptions: [
+        CriterionModifier.Equals,
+        CriterionModifier.NotEquals,
+        CriterionModifier.GreaterThan,
+        CriterionModifier.LessThan,
+        CriterionModifier.IsNull,
+        CriterionModifier.NotNull,
+        CriterionModifier.Between,
+        CriterionModifier.NotBetween,
+      ],
+      defaultModifier: CriterionModifier.Equals,
+      options,
+      inputType: "text",
+    });
+  }
+}
+
+export function createDateCriterionOption(value: CriterionType) {
+  return new DateCriterionOption(value, value, value);
+}
+
+export class DateCriterion extends Criterion<IDateValue> {
+  public encodeValue() {
+    return {
+      value: this.value.value,
+      value2: this.value.value2,
+    };
+  }
+
+  protected toCriterionInput(): DateCriterionInput {
+    return {
+      modifier: this.modifier,
+      value: this.value.value,
+      value2: this.value.value2,
+    };
+  }
+
+  public getLabelValue() {
+    const { value } = this.value;
+    return this.modifier === CriterionModifier.Between ||
+      this.modifier === CriterionModifier.NotBetween
+      ? `${value}, ${this.value.value2}`
+      : `${value}`;
+  }
+
+  constructor(type: CriterionOption) {
+    super(type, { value: "", value2: undefined });
+  }
+}
+
+export class TimestampCriterionOption extends CriterionOption {
+  constructor(
+    messageID: string,
+    value: CriterionType,
+    parameterName?: string,
+    options?: Option[]
+  ) {
+    super({
+      messageID,
+      type: value,
+      parameterName,
+      modifierOptions: [
+        CriterionModifier.GreaterThan,
+        CriterionModifier.LessThan,
+        CriterionModifier.IsNull,
+        CriterionModifier.NotNull,
+        CriterionModifier.Between,
+        CriterionModifier.NotBetween,
+      ],
+      defaultModifier: CriterionModifier.GreaterThan,
+      options,
+      inputType: "text",
+    });
+  }
+}
+
+export function createTimestampCriterionOption(value: CriterionType) {
+  return new TimestampCriterionOption(value, value, value);
+}
+
+export class TimestampCriterion extends Criterion<ITimestampValue> {
+  public encodeValue() {
+    return {
+      value: this.value.value,
+      value2: this.value.value2,
+    };
+  }
+
+  protected toCriterionInput(): TimestampCriterionInput {
+    return {
+      modifier: this.modifier,
+      value: this.transformValueToInput(this.value.value),
+      value2: this.value.value2
+        ? this.transformValueToInput(this.value.value2)
+        : null,
+    };
+  }
+
+  public getLabelValue() {
+    const { value } = this.value;
+    return this.modifier === CriterionModifier.Between ||
+      this.modifier === CriterionModifier.NotBetween
+      ? `${value}, ${this.value.value2}`
+      : `${value}`;
+  }
+
+  private transformValueToInput(value: string): string {
+    value = value.trim();
+    if (/^\d{4}-\d{2}-\d{2}(( |T)\d{2}:\d{2})?$/.test(value)) {
+      return value.replace(" ", "T");
+    }
+
+    return "";
+  }
+
+  constructor(type: CriterionOption) {
+    super(type, { value: "", value2: undefined });
+  }
+}
+
+export class MandatoryTimestampCriterionOption extends CriterionOption {
+  constructor(
+    messageID: string,
+    value: CriterionType,
+    parameterName?: string,
+    options?: Option[]
+  ) {
+    super({
+      messageID,
+      type: value,
+      parameterName,
+      modifierOptions: [
+        CriterionModifier.GreaterThan,
+        CriterionModifier.LessThan,
+        CriterionModifier.Between,
+        CriterionModifier.NotBetween,
+      ],
+      defaultModifier: CriterionModifier.GreaterThan,
+      options,
+      inputType: "text",
+    });
+  }
+}
+
+export function createMandatoryTimestampCriterionOption(value: CriterionType) {
+  return new MandatoryTimestampCriterionOption(value, value, value);
 }

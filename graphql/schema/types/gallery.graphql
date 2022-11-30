@@ -7,7 +7,10 @@ type Gallery {
   url: String
   date: String
   details: String
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   organized: Boolean!
   created_at: Time!
   updated_at: Time!
@@ -23,7 +26,7 @@ type Gallery {
   performers: [Performer!]!
 
   """The images in the gallery"""
-  images: [Image!]! # Resolver
+  images: [Image!]! @deprecated(reason: "Use findImages")
   cover: Image
 }
 
@@ -32,7 +35,10 @@ input GalleryCreateInput {
   url: String
   date: String
   details: String
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   organized: Boolean
   scene_ids: [ID!]
   studio_id: ID
@@ -47,7 +53,10 @@ input GalleryUpdateInput {
   url: String
   date: String
   details: String
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   organized: Boolean
   scene_ids: [ID!]
   studio_id: ID
@@ -63,7 +72,10 @@ input BulkGalleryUpdateInput {
   url: String
   date: String
   details: String
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   organized: Boolean
   scene_ids: BulkUpdateIds
   studio_id: ID

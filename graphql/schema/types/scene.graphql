@@ -15,7 +15,7 @@ type ScenePathsType {
   stream: String # Resolver
   webp: String # Resolver
   vtt: String # Resolver
-  chapters_vtt: String # Resolver
+  chapters_vtt: String @deprecated
   sprite: String # Resolver
   funscript: String # Resolver
   interactive_heatmap: String # Resolver
@@ -37,10 +37,15 @@ type Scene {
   checksum: String @deprecated(reason: "Use files.fingerprints")
   oshash: String @deprecated(reason: "Use files.fingerprints")
   title: String
+  code: String
   details: String
+  director: String
   url: String
   date: String
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   organized: Boolean!
   o_counter: Int
   path: String! @deprecated(reason: "Use files.path")
@@ -51,6 +56,14 @@ type Scene {
   created_at: Time!
   updated_at: Time!
   file_mod_time: Time
+  """The last time play count was updated"""
+  last_played_at: Time
+  """The time index a scene was left at"""
+  resume_time: Float
+  """The total time a scene has spent playing"""
+  play_duration: Float
+  """The number ot times a scene has been played"""
+  play_count: Int
 
   file: SceneFileType! @deprecated(reason: "Use files")
   files: [VideoFile!]!
@@ -73,14 +86,17 @@ input SceneMovieInput {
   scene_index: Int
 }
 
-input SceneUpdateInput {
-  clientMutationId: String
-  id: ID!
+input SceneCreateInput {
   title: String
+  code: String
   details: String
+  director: String
   url: String
   date: String
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   organized: Boolean
   studio_id: ID
   gallery_ids: [ID!]
@@ -90,6 +106,42 @@ input SceneUpdateInput {
   """This should be a URL or a base64 encoded data URL"""
   cover_image: String
   stash_ids: [StashIDInput!]
+
+  """The first id will be assigned as primary. Files will be reassigned from
+  existing scenes if applicable. Files must not already be primary for another scene"""
+  file_ids: [ID!]
+}
+
+input SceneUpdateInput {
+  clientMutationId: String
+  id: ID!
+  title: String
+  code: String
+  details: String
+  director: String
+  url: String
+  date: String
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
+  o_counter: Int
+  organized: Boolean
+  studio_id: ID
+  gallery_ids: [ID!]
+  performer_ids: [ID!]
+  movies: [SceneMovieInput!]
+  tag_ids: [ID!]
+  """This should be a URL or a base64 encoded data URL"""
+  cover_image: String
+  stash_ids: [StashIDInput!]
+
+  """The time index a scene was left at"""
+  resume_time: Float
+  """The total time a scene has spent playing"""
+  play_duration: Float
+  """The number ot times a scene has been played"""
+  play_count: Int
 
   primary_file_id: ID
 }
@@ -109,10 +161,15 @@ input BulkSceneUpdateInput {
   clientMutationId: String
   ids: [ID!]
   title: String
+  code: String
   details: String
+  director: String
   url: String
   date: String
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   organized: Boolean
   studio_id: ID
   gallery_ids: BulkUpdateIds
@@ -157,10 +214,15 @@ type SceneMovieID {
 type SceneParserResult {
   scene: Scene!
   title: String
+  code: String
   details: String
+  director: String
   url: String
   date: String
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   studio_id: ID
   gallery_ids: [ID!]
   performer_ids: [ID!]
@@ -182,4 +244,18 @@ type SceneStreamEndpoint {
   url: String!
   mime_type: String
   label: String
+}
+
+input AssignSceneFileInput {
+  scene_id: ID!
+  file_id: ID!
+}
+
+input SceneMergeInput {
+  """If destination scene has no files, then the primary file of the
+  first source scene will be assigned as primary"""
+  source: [ID!]!
+  destination: ID!
+  # values defined here will override values in the destination
+  values: SceneUpdateInput
 }

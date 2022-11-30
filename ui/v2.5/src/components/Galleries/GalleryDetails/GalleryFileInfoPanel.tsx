@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Accordion, Button, Card } from "react-bootstrap";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, FormattedTime } from "react-intl";
 import { TruncatedText } from "src/components/Shared";
 import DeleteFilesDialog from "src/components/Shared/DeleteFilesDialog";
 import * as GQL from "src/core/generated-graphql";
@@ -44,6 +44,15 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
           value={`file://${path}`}
           truncate
         />
+        {props.file && (
+          <TextField id="file_mod_time">
+            <FormattedTime
+              dateStyle="medium"
+              timeStyle="medium"
+              value={props.file.mod_time ?? 0}
+            />
+          </TextField>
+        )}
       </dl>
       {props.ofMany && props.onSetPrimaryFile && !props.primary && (
         <div>

@@ -38,11 +38,12 @@ func autotagMatchPerformers(ctx context.Context, path string, performerReader ma
 		id := strconv.Itoa(pp.ID)
 
 		sp := &models.ScrapedPerformer{
-			Name:     &pp.Name.String,
+			Name:     &pp.Name,
 			StoredID: &id,
 		}
-		if pp.Gender.Valid {
-			sp.Gender = &pp.Gender.String
+		if pp.Gender.IsValid() {
+			v := pp.Gender.String()
+			sp.Gender = &v
 		}
 
 		ret = append(ret, sp)
@@ -94,8 +95,12 @@ func (s autotagScraper) viaScene(ctx context.Context, _client *http.Client, scen
 	const trimExt = false
 
 	// populate performers, studio and tags based on scene path
-	if err := txn.WithTxn(ctx, s.txnManager, func(ctx context.Context) error {
+	if err := txn.WithReadTxn(ctx, s.txnManager, func(ctx context.Context) error {
 		path := scene.Path
+		if path == "" {
+			return nil
+		}
+
 		performers, err := autotagMatchPerformers(ctx, path, s.performerReader, trimExt)
 		if err != nil {
 			return fmt.Errorf("autotag scraper viaScene: %w", err)
@@ -139,7 +144,7 @@ func (s autotagScraper) viaGallery(ctx context.Context, _client *http.Client, ga
 	var ret *ScrapedGallery
 
 	// populate performers, studio and tags based on scene path
-	if err := txn.WithTxn(ctx, s.txnManager, func(ctx context.Context) error {
+	if err := txn.WithReadTxn(ctx, s.txnManager, func(ctx context.Context) error {
 		path := gallery.Path
 		performers, err := autotagMatchPerformers(ctx, path, s.performerReader, trimExt)
 		if err != nil {

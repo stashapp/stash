@@ -12,7 +12,7 @@ import (
 
 func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *string) (*models.Scene, error) {
 	var scene *models.Scene
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 		var err error
 		if id != nil {
@@ -43,7 +43,7 @@ func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *str
 func (r *queryResolver) FindSceneByHash(ctx context.Context, input SceneHashInput) (*models.Scene, error) {
 	var scene *models.Scene
 
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 		if input.Checksum != nil {
 			scenes, err := qb.FindByChecksum(ctx, *input.Checksum)
@@ -74,7 +74,7 @@ func (r *queryResolver) FindSceneByHash(ctx context.Context, input SceneHashInpu
 }
 
 func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.SceneFilterType, sceneIDs []int, filter *models.FindFilterType) (ret *FindScenesResultType, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var scenes []*models.Scene
 		var err error
 
@@ -135,7 +135,7 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 }
 
 func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *models.FindFilterType) (ret *FindScenesResultType, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 
 		sceneFilter := &models.SceneFilterType{}
 
@@ -192,7 +192,7 @@ func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *model
 func (r *queryResolver) ParseSceneFilenames(ctx context.Context, filter *models.FindFilterType, config manager.SceneParserInput) (ret *SceneParserResultType, err error) {
 	parser := manager.NewSceneFilenameParser(filter, config)
 
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		result, count, err := parser.Parse(ctx, manager.SceneFilenameParserRepository{
 			Scene:     r.repository.Scene,
 			Performer: r.repository.Performer,
@@ -223,7 +223,7 @@ func (r *queryResolver) FindDuplicateScenes(ctx context.Context, distance *int) 
 	if distance != nil {
 		dist = *distance
 	}
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Scene.FindDuplicates(ctx, dist)
 		return err
 	}); err != nil {

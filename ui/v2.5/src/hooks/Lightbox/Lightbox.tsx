@@ -18,13 +18,12 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { LightboxImage } from "./LightboxImage";
 import { ConfigurationContext } from "../Config";
 import { Link } from "react-router-dom";
-import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButton";
 import {
-  useImageUpdate,
   mutateImageIncrementO,
   mutateImageDecrementO,
   mutateImageResetO,
+  useImageUpdate,
 } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { useInterfaceLocalForage } from "../LocalForage";
@@ -42,6 +41,7 @@ import {
   faSearchMinus,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
@@ -98,6 +98,8 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [isSwitchingPage, setIsSwitchingPage] = useState(true);
   const [isFullscreen, setFullscreen] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
+  const [imagesLoaded, setImagesLoaded] = useState(0);
+  const [navOffset, setNavOffset] = useState<React.CSSProperties | undefined>();
 
   const oldImages = useRef<ILightboxImage[]>([]);
 
@@ -191,7 +193,6 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   useEffect(() => {
     if (images !== oldImages.current && isSwitchingPage) {
-      oldImages.current = images;
       if (index === -1) setIndex(images.length - 1);
       setIsSwitchingPage(false);
     }
@@ -220,30 +221,33 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
     setResetPosition((r) => !r);
 
-    if (carouselRef.current)
-      carouselRef.current.style.left = `${index * -100}vw`;
-    if (indicatorRef.current)
-      indicatorRef.current.innerHTML = `${index + 1} / ${images.length}`;
+    oldIndex.current = index;
+  }, [index, images.length, lightboxSettings?.resetZoomOnNav]);
+
+  const getNavOffset = useCallback(() => {
+    if (images.length < 2) return;
+    if (index === undefined || index === null) return;
+
     if (navRef.current) {
       const currentThumb = navRef.current.children[index + 1];
       if (currentThumb instanceof HTMLImageElement) {
         const offset =
           -1 *
           (currentThumb.offsetLeft - document.documentElement.clientWidth / 2);
-        navRef.current.style.left = `${offset}px`;
 
-        const previouslySelected = navRef.current.getElementsByClassName(
-          CLASSNAME_NAVSELECTED
-        )?.[0];
-        if (previouslySelected)
-          previouslySelected.className = CLASSNAME_NAVIMAGE;
-
-        currentThumb.className = `${CLASSNAME_NAVIMAGE} ${CLASSNAME_NAVSELECTED}`;
+        return { left: `${offset}px` };
       }
     }
+  }, [index, images.length]);
 
-    oldIndex.current = index;
-  }, [index, images.length, lightboxSettings?.resetZoomOnNav]);
+  useEffect(() => {
+    // reset images loaded counter for new images
+    setImagesLoaded(0);
+  }, [images]);
+
+  useEffect(() => {
+    setNavOffset(getNavOffset() ?? undefined);
+  }, [getNavOffset]);
 
   useEffect(() => {
     if (displayMode !== oldDisplayMode.current) {
@@ -313,6 +317,7 @@ export const LightboxComponent: React.FC<IProps> = ({
         if (pageCallback) {
           pageCallback(-1);
           setIndex(-1);
+          oldImages.current = images;
           setIsSwitchingPage(true);
         } else setIndex(images.length - 1);
       } else setIndex((index ?? 0) - 1);
@@ -334,6 +339,7 @@ export const LightboxComponent: React.FC<IProps> = ({
         // go to preview page, or loop back if no callback is set
         if (pageCallback) {
           pageCallback(1);
+          oldImages.current = images;
           setIsSwitchingPage(true);
           setIndex(0);
         } else setIndex(0);
@@ -396,6 +402,15 @@ export const LightboxComponent: React.FC<IProps> = ({
     else document.exitFullscreen();
   }, [isFullscreen]);
 
+  function imageLoaded() {
+    setImagesLoaded((loaded) => loaded + 1);
+
+    if (imagesLoaded === images.length - 1) {
+      // all images are loaded - update the nav offset
+      setNavOffset(getNavOffset() ?? undefined);
+    }
+  }
+
   const navItems = images.map((image, i) => (
     <img
       src={image.paths.thumbnail ?? ""}
@@ -407,6 +422,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       role="presentation"
       loading="lazy"
       key={image.paths.thumbnail}
+      onLoad={imageLoaded}
     />
   ));
 
@@ -584,7 +600,7 @@ export const LightboxComponent: React.FC<IProps> = ({
         variables: {
           input: {
             id: currentImage.id,
-            rating: v,
+            rating100: v,
           },
         },
       });
@@ -763,7 +779,7 @@ export const LightboxComponent: React.FC<IProps> = ({
         )}
       </div>
       {showNavigation && !isFullscreen && images.length > 1 && (
-        <div className={CLASSNAME_NAV} ref={navRef}>
+        <div className={CLASSNAME_NAV} style={navOffset} ref={navRef}>
           <Button
             variant="link"
             onClick={() => setIndex(images.length - 1)}
@@ -793,8 +809,8 @@ export const LightboxComponent: React.FC<IProps> = ({
                   value={currentImage?.o_counter ?? 0}
                 />
               </div>
-              <RatingStars
-                value={currentImage?.rating ?? undefined}
+              <RatingSystem
+                value={currentImage?.rating100 ?? undefined}
                 onSetRating={(v) => {
                   setRating(v ?? null);
                 }}

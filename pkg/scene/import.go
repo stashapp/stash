@@ -82,7 +82,9 @@ func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 	newScene := models.Scene{
 		// Path:    i.Path,
 		Title:        sceneJSON.Title,
+		Code:         sceneJSON.Code,
 		Details:      sceneJSON.Details,
+		Director:     sceneJSON.Director,
 		URL:          sceneJSON.URL,
 		PerformerIDs: models.NewRelatedIDs([]int{}),
 		TagIDs:       models.NewRelatedIDs([]int{}),
@@ -103,6 +105,13 @@ func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 	newScene.OCounter = sceneJSON.OCounter
 	newScene.CreatedAt = sceneJSON.CreatedAt.GetTime()
 	newScene.UpdatedAt = sceneJSON.UpdatedAt.GetTime()
+	if !sceneJSON.LastPlayedAt.IsZero() {
+		t := sceneJSON.LastPlayedAt.GetTime()
+		newScene.LastPlayedAt = &t
+	}
+	newScene.ResumeTime = sceneJSON.ResumeTime
+	newScene.PlayDuration = sceneJSON.PlayDuration
+	newScene.PlayCount = sceneJSON.PlayCount
 
 	return newScene
 }
@@ -231,10 +240,10 @@ func (i *Importer) populatePerformers(ctx context.Context) error {
 
 		var pluckedNames []string
 		for _, performer := range performers {
-			if !performer.Name.Valid {
+			if performer.Name == "" {
 				continue
 			}
-			pluckedNames = append(pluckedNames, performer.Name.String)
+			pluckedNames = append(pluckedNames, performer.Name)
 		}
 
 		missingPerformers := stringslice.StrFilter(names, func(name string) bool {
@@ -271,12 +280,12 @@ func (i *Importer) createPerformers(ctx context.Context, names []string) ([]*mod
 	for _, name := range names {
 		newPerformer := *models.NewPerformer(name)
 
-		created, err := i.PerformerWriter.Create(ctx, newPerformer)
+		err := i.PerformerWriter.Create(ctx, &newPerformer)
 		if err != nil {
 			return nil, err
 		}
 
-		ret = append(ret, created)
+		ret = append(ret, &newPerformer)
 	}
 
 	return ret, nil

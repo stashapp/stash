@@ -27,8 +27,9 @@ const (
 )
 
 type imageRow struct {
-	ID        int                    `db:"id" goqu:"skipinsert"`
-	Title     zero.String            `db:"title"`
+	ID    int         `db:"id" goqu:"skipinsert"`
+	Title zero.String `db:"title"`
+	// expressed as 1-100
 	Rating    null.Int               `db:"rating"`
 	Organized bool                   `db:"organized"`
 	OCounter  int                    `db:"o_counter"`
@@ -619,6 +620,7 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 		query.not(qb.makeFilter(ctx, imageFilter.Not))
 	}
 
+	query.handleCriterion(ctx, intCriterionHandler(imageFilter.ID, "images.id", nil))
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if imageFilter.Checksum != nil {
 			qb.addImagesFilesTable(f)
@@ -631,7 +633,9 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 
 	query.handleCriterion(ctx, pathCriterionHandler(imageFilter.Path, "folders.path", "files.basename", qb.addFoldersTable))
 	query.handleCriterion(ctx, imageFileCountCriterionHandler(qb, imageFilter.FileCount))
-	query.handleCriterion(ctx, intCriterionHandler(imageFilter.Rating, "images.rating", nil))
+	query.handleCriterion(ctx, intCriterionHandler(imageFilter.Rating100, "images.rating", nil))
+	// legacy rating handler
+	query.handleCriterion(ctx, rating5CriterionHandler(imageFilter.Rating, "images.rating", nil))
 	query.handleCriterion(ctx, intCriterionHandler(imageFilter.OCounter, "images.o_counter", nil))
 	query.handleCriterion(ctx, boolCriterionHandler(imageFilter.Organized, "images.organized", nil))
 
@@ -646,6 +650,8 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 	query.handleCriterion(ctx, imageStudioCriterionHandler(qb, imageFilter.Studios))
 	query.handleCriterion(ctx, imagePerformerTagsCriterionHandler(qb, imageFilter.PerformerTags))
 	query.handleCriterion(ctx, imagePerformerFavoriteCriterionHandler(imageFilter.PerformerFavorite))
+	query.handleCriterion(ctx, timestampCriterionHandler(imageFilter.CreatedAt, "images.created_at"))
+	query.handleCriterion(ctx, timestampCriterionHandler(imageFilter.UpdatedAt, "images.updated_at"))
 
 	return query
 }
@@ -700,7 +706,8 @@ func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFi
 			},
 		)
 
-		searchColumns := []string{"images.title", "folders.path", "files.basename", "files_fingerprints.fingerprint"}
+		filepathColumn := "folders.path || '" + string(filepath.Separator) + "' || files.basename"
+		searchColumns := []string{"images.title", filepathColumn, "files_fingerprints.fingerprint"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
@@ -745,7 +752,7 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 	aggregateQuery := qb.newQuery()
 
 	if options.Count {
-		aggregateQuery.addColumn("COUNT(temp.id) as total")
+		aggregateQuery.addColumn("COUNT(DISTINCT temp.id) as total")
 	}
 
 	// TODO - this doesn't work yet

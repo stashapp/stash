@@ -41,7 +41,7 @@ func (rs studioRoutes) Image(w http.ResponseWriter, r *http.Request) {
 
 	var image []byte
 	if defaultParam != "true" {
-		readTxnErr := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 			image, _ = rs.studioFinder.GetImage(ctx, studio.ID)
 			return nil
 		})
@@ -71,7 +71,7 @@ func (rs studioRoutes) StudioCtx(next http.Handler) http.Handler {
 		}
 
 		var studio *models.Studio
-		_ = txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		_ = txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 			var err error
 			studio, err = rs.studioFinder.Find(ctx, studioID)
 			return err
