@@ -323,7 +323,7 @@
     },
     "scraping": {
       "entity_metadata": "Métadonnées {entityType}",
-      "entity_scrapers": "Extracteurs de {entityType}s",
+      "entity_scrapers": "Extracteurs de {entityType}",
       "excluded_tag_patterns_desc": "Expressions régulières de noms d'étiquettes à exclure des résultats de l'extraction",
       "excluded_tag_patterns_head": "Modèles d'étiquette excluse",
       "scraper": "Extracteur",
@@ -1020,7 +1020,7 @@
       "migration_notes": "Notes de migration",
       "migration_required": "Migration requise",
       "perform_schema_migration": "Procéder à la migration du schéma",
-      "schema_too_old": "La version du schéma de votre base de données Stash actuelle est <strong>{databaseSchema}</strong> et doit être migrée vers la version <strong>{appSchema}</strong>. Cette version de Stash ne fonctionnera pas sans migration de la base de données. Si vous souhaitez ne pas migrer, vous devrez rétrograder vers une version qui correspond au schéma de votre base de données."
+      "schema_too_old": "La version du schéma de votre base de données Stash actuelle est <strong>{databaseSchema}</strong> et doit être migrée vers la version <strong>{appSchema}</strong>. Cette version de Stash ne fonctionnera pas sans migration de la base de données. Si vous ne souhaitez pas migrer, vous devrez rétrograder vers une version qui correspond au schéma de votre base de données."
     },
     "paths": {
       "database_filename_empty_for_default": "Nom de fichier de la base de données (vide par défaut)",
