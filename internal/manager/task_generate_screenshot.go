@@ -44,10 +44,11 @@ func (t *GenerateScreenshotTask) Start(ctx context.Context) {
 	logger.Debugf("Creating screenshot for %s", scenePath)
 
 	g := generate.Generator{
-		Encoder:     instance.FFMPEG,
-		LockManager: instance.ReadLockManager,
-		ScenePaths:  instance.Paths.Scene,
-		Overwrite:   true,
+		Encoder:      instance.FFMPEG,
+		FFMpegConfig: instance.Config,
+		LockManager:  instance.ReadLockManager,
+		ScenePaths:   instance.Paths.Scene,
+		Overwrite:    true,
 	}
 
 	if err := g.Screenshot(context.TODO(), videoFile.Path, checksum, videoFile.Width, videoFile.Duration, generate.ScreenshotOptions{

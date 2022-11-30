@@ -60,6 +60,12 @@ const (
 	MaxTranscodeSize          = "max_transcode_size"
 	MaxStreamingTranscodeSize = "max_streaming_transcode_size"
 
+	// ffmpeg extra args options
+	TranscodeInputArgs      = "ffmpeg.transcode.input_args"
+	TranscodeOutputArgs     = "ffmpeg.transcode.output_args"
+	LiveTranscodeInputArgs  = "ffmpeg.live_transcode.input_args"
+	LiveTranscodeOutputArgs = "ffmpeg.live_transcode.output_args"
+
 	ParallelTasks        = "parallel_tasks"
 	parallelTasksDefault = 1
 
@@ -784,6 +790,22 @@ func (i *Instance) GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum
 	}
 
 	return models.StreamingResolutionEnum(ret)
+}
+
+func (i *Instance) GetTranscodeInputArgs() []string {
+	return i.getStringSlice(TranscodeInputArgs)
+}
+
+func (i *Instance) GetTranscodeOutputArgs() []string {
+	return i.getStringSlice(TranscodeOutputArgs)
+}
+
+func (i *Instance) GetLiveTranscodeInputArgs() []string {
+	return i.getStringSlice(LiveTranscodeInputArgs)
+}
+
+func (i *Instance) GetLiveTranscodeOutputArgs() []string {
+	return i.getStringSlice(LiveTranscodeOutputArgs)
 }
 
 // IsWriteImageThumbnails returns true if image thumbnails should be written
