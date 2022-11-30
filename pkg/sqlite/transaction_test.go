@@ -80,7 +80,7 @@ func waitForOtherThread(c chan struct{}) error {
 func TestConcurrentReadTxn(t *testing.T) {
 	var wg sync.WaitGroup
 	ctx := context.Background()
-	c := make(chan struct{}, 1)
+	c := make(chan struct{})
 
 	// first thread
 	wg.Add(2)
@@ -155,7 +155,7 @@ func TestConcurrentReadTxn(t *testing.T) {
 func TestConcurrentExclusiveAndReadTxn(t *testing.T) {
 	var wg sync.WaitGroup
 	ctx := context.Background()
-	c := make(chan struct{}, 1)
+	c := make(chan struct{})
 
 	// first thread
 	wg.Add(2)
