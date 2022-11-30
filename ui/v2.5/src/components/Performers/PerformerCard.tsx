@@ -217,9 +217,9 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
           ) : (
             ""
           )}
-          {maybeRenderPopoverButtonGroup()}
         </>
       }
+      popovers={maybeRenderPopoverButtonGroup()}
       selected={selected}
       selecting={selecting}
       onSelectedChanged={onSelectedChanged}
