@@ -30,7 +30,7 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 	funscriptPath := video.GetFunscriptPath(t.Scene.Path)
 	heatmapPath := instance.Paths.Scene.GetInteractiveHeatmapPath(videoChecksum)
 
-	generator := NewInteractiveHeatmapSpeedGenerator(funscriptPath, heatmapPath)
+	generator := NewInteractiveHeatmapSpeedGenerator(funscriptPath, heatmapPath, t.Scene.Files.Primary().Duration)
 
 	err := generator.Generate()
 

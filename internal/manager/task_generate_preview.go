@@ -40,7 +40,7 @@ func (t *GeneratePreviewTask) Start(ctx context.Context) {
 
 	videoChecksum := t.Scene.GetHash(t.fileNamingAlgorithm)
 
-	if err := t.generateVideo(videoChecksum, videoFile.Duration); err != nil {
+	if err := t.generateVideo(videoChecksum, videoFile.VideoStreamDuration); err != nil {
 		logger.Errorf("error generating preview: %v", err)
 		logErrorOutput(err)
 		return

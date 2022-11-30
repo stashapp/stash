@@ -7,12 +7,12 @@
     "allow": "Zezwól",
     "allow_temporarily": "Zezwól tymczasowo",
     "apply": "Zastosuj",
-    "auto_tag": "Automatyczne tagowanie",
+    "auto_tag": "Automatyczne oznaczanie",
     "backup": "Kopia zapasowa",
     "browse_for_image": "Przeglądaj w poszukiwaniu obrazu…",
     "cancel": "Anuluj",
-    "clean": "Czyszczenie",
-    "clear": "Wyczyść",
+    "clean": "Wyczyść",
+    "clear": "Usuń",
     "clear_back_image": "Usuń tylną okładkę",
     "clear_front_image": "Usuń przednią okładkę",
     "clear_image": "Usuń obraz",
@@ -35,31 +35,31 @@
     "download_backup": "Pobierz kopię zapasową",
     "edit": "Edytuj",
     "edit_entity": "Edytuj {entityType}",
-    "export": "Eksport…",
-    "export_all": "Wyeksportuj wszystko…",
+    "export": "Eksportuj…",
+    "export_all": "Eksportuj wszystko…",
     "find": "Znajdź",
     "finish": "Zakończ",
     "from_file": "Z pliku…",
-    "from_url": "Z adresu URL…",
+    "from_url": "Z URL…",
     "full_export": "Pełny eksport",
     "full_import": "Pełny import",
-    "generate": "Generowanie",
+    "generate": "Generuj",
     "generate_thumb_default": "Generuj domyślną miniaturkę",
     "generate_thumb_from_current": "Wygeneruj miniaturkę z bieżącego podglądu",
-    "hash_migration": "migracja hashy",
+    "hash_migration": "migracja skrótów",
     "hide": "Ukryj",
     "hide_configuration": "Ukryj konfigurację",
     "identify": "Identyfikuj",
     "ignore": "Ignoruj",
-    "import": "Importowanie…",
-    "import_from_file": "Import z pliku",
-    "logout": "Wyloguj się",
+    "import": "Importuj…",
+    "import_from_file": "Importuj z pliku",
+    "logout": "Wyloguj",
     "make_primary": "Ustaw jako główny",
-    "merge": "Połącz",
+    "merge": "Scal",
     "merge_from": "Scal z",
-    "merge_into": "Scal w",
+    "merge_into": "Scal do",
     "next_action": "Dalej",
-    "not_running": "nie uruchomiony",
+    "not_running": "nieuruchomiony",
     "open_in_external_player": "Otwórz w odtwarzaczu zewnętrznym",
     "open_random": "Otwórz losowo",
     "overwrite": "Nadpisz",
@@ -67,23 +67,24 @@
     "play_selected": "Odtwórz wybrane",
     "preview": "Podgląd",
     "previous_action": "Wstecz",
+    "reassign": "Przypisz ponownie",
     "refresh": "Odśwież",
-    "reload_plugins": "Przeładuj wtyczki",
-    "reload_scrapers": "Przeładuj scrapery",
+    "reload_plugins": "Załaduj wtyczki ponownie",
+    "reload_scrapers": "Załaduj zbieracze ponownie",
     "remove": "Usuń",
     "remove_from_gallery": "Usuń z galerii",
     "rename_gen_files": "Zmień nazwy wygenerowanych plików",
     "rescan": "Skanuj ponownie",
-    "reshuffle": "Przetasuj",
+    "reshuffle": "Wylosuj porządek",
     "running": "uruchomiony",
     "save": "Zapisz",
-    "save_delete_settings": "Te opcje są domyślnie używane przy usuwaniu",
+    "save_delete_settings": "Użyj tych opcji jako domyślnych podczas usuwania",
     "save_filter": "Zapisz filtr",
-    "scan": "Skanowanie",
-    "scrape": "Scrapowanie",
-    "scrape_query": "Zapytania scrapowania",
-    "scrape_scene_fragment": "Scrapowanie po fragmencie",
-    "scrape_with": "Scrapuj z…",
+    "scan": "Skanuj",
+    "scrape": "Zbierz",
+    "scrape_query": "Zapytanie zbierania",
+    "scrape_scene_fragment": "Zbieranie po fragmencie",
+    "scrape_with": "Zbierz za pomocą…",
     "search": "Szukaj",
     "select_all": "Zaznacz wszystko",
     "select_entity": "Wybierz {entityType}",
@@ -99,10 +100,12 @@
     "show": "Pokaż",
     "show_configuration": "Pokaż konfigurację",
     "skip": "Pomiń",
+    "split": "Rozdziel",
     "stop": "Zatrzymaj",
     "submit": "Wyślij",
     "submit_stash_box": "Wyślij do Stash-Box",
     "submit_update": "Prześlij aktualizację",
+    "swap": "Zamień",
     "tasks": {
       "clean_confirm_message": "Czy na pewno chcesz przeprowadzić oczyszczanie? Spowoduje to usunięcie informacji o bazie danych i wygenerowanej zawartości dla wszystkich scen i galerii, które nie znajdują się już w systemie plików.",
       "dry_mode_selected": "Wybrano tryb próby na sucho. Nie nastąpi faktyczne usunięcie, a jedynie zapisanie w dzienniku.",
@@ -121,6 +124,7 @@
   "also_known_as": "Znany/a również jako",
   "ascending": "Rosnąco",
   "average_resolution": "Średnia rozdzielczość",
+  "between_and": "i",
   "birth_year": "Rok urodzenia",
   "birthdate": "Data urodzenia",
   "bitrate": "Szybkość transmisji",
@@ -166,7 +170,7 @@
     },
     "verb_match_fp": "Dopasuj odciski palców",
     "verb_matched": "Dopasowane",
-    "verb_scrape_all": "Scrapuj wszystko",
+    "verb_scrape_all": "Zbierz wszystko",
     "verb_submit_fp": "Wyślij {fpCount, plural, one{# odcisk palca} other{# odciski palców}}",
     "verb_toggle_config": "{toggle} {configuration}",
     "verb_toggle_unmatched": "{toggle} niedopasowane sceny"
@@ -293,11 +297,11 @@
         "description": "Lokalizacja pliku wykonywalnego Pythona. Używane dla skryptów i wtyczek. Jeśli jest puste, python zostanie pobrany ze środowiska",
         "heading": "Ścieżka Pythona"
       },
-      "scraper_user_agent": "User Agent scrapera",
-      "scraper_user_agent_desc": "Ciąg User-Agent używany podczas scrapowania zapytań http",
+      "scraper_user_agent": "Agent użytkownika dla zbieracza",
+      "scraper_user_agent_desc": "Ciąg „User-Agent” używany podczas zapytań HTTP zbierania",
       "scrapers_path": {
-        "description": "Lokalizacja katalogu w którym znajdują się pliki konfiguracyjne scraperów",
-        "heading": "Ścieżka scraperów"
+        "description": "Położenie katalogu z plikami konfiguracyjnymi zbieracza",
+        "heading": "Ścieżka do zbieraczy"
       },
       "scraping": "Scrapowanie",
       "sqlite_location": "Lokalizacja pliku dla bazy danych SQLite (wymaga ponownego uruchomienia)",
@@ -314,16 +318,16 @@
       "log_level": "Poziom rejestrowania"
     },
     "plugins": {
-      "hooks": "Haki",
+      "hooks": "Punkty zaczepienia",
       "triggers_on": "Wyzwalacze \"w przypadku\""
     },
     "scraping": {
       "entity_metadata": "Metadane - {entityType}",
-      "entity_scrapers": "Scrapery - {entityType}",
+      "entity_scrapers": "Zbieracze – {entityType}",
       "excluded_tag_patterns_desc": "Wyrażenia regularne nazw tagów do wykluczenia z wyników scrapowania",
       "excluded_tag_patterns_head": "Wykluczone wzorce tagów",
-      "scraper": "Scraper",
-      "scrapers": "Scrapery",
+      "scraper": "Zbieracz",
+      "scrapers": "Zbieracze",
       "search_by_name": "Wyszukiwanie według nazwy",
       "supported_types": "Obsługiwane typy",
       "supported_urls": "Adresy URL"
@@ -375,7 +379,7 @@
         "and_create_missing": "i utwórz brakujące",
         "create_missing": "Utwórz brakujące",
         "default_options": "Ustawienia domyślne",
-        "description": "Automatyczne ustawianie metadanych sceny przy użyciu źródeł typu stash-box i scraper.",
+        "description": "Automatycznie ustaw metadane sceny ze źródeł stash-box i zbieraczy.",
         "explicit_set_description": "Następujące opcje będą używane, jeśli nie zostały nadpisane w opcjach specyficznych dla źródła.",
         "field": "Pole",
         "field_behaviour": "{strategy} {field}",
@@ -436,6 +440,11 @@
         "heading": "Własny CSS",
         "option_label": "Włączony własny CSS"
       },
+      "custom_javascript": {
+        "description": "Strona musi zostać ponownie załadowana, aby zmiany zaczęły obowiązywać.",
+        "heading": "Własny Javascript",
+        "option_label": "Własny Javascript włączony"
+      },
       "custom_locales": {
         "description": "Nadpisywanie poszczególnych ciągów lokalnie. Zobacz https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json, aby uzyskać główną listę. Aby zmiany weszły w życie, strona musi zostać ponownie załadowana.",
         "heading": "Niestandardowa lokalizacja",
@@ -461,7 +470,24 @@
           "description": "Usunięcie możliwości tworzenia nowych obiektów z poziomu listy rozwijanej",
           "heading": "Wyłącz tworzenie za pomocą rozwijanej listy"
         },
-        "heading": "Edytowanie"
+        "heading": "Edytowanie",
+        "rating_system": {
+          "star_precision": {
+            "label": "Precyzja oceniania gwiazdkami",
+            "options": {
+              "full": "Cała",
+              "half": "Pół",
+              "quarter": "Ćwierć"
+            }
+          },
+          "type": {
+            "label": "Rodzaj systemu oceny",
+            "options": {
+              "decimal": "Liczby",
+              "stars": "Gwiazdki"
+            }
+          }
+        }
       },
       "funscript_offset": {
         "description": "Przesunięcie czasowe w milisekundach dla odtwarzania skryptów interaktywnych.",
@@ -505,6 +531,10 @@
         "description": "Pokaż lub ukryj różne typy zawartości na pasku nawigacyjnym",
         "heading": "Pozycje menu"
       },
+      "minimum_play_percent": {
+        "description": "Procent czasu, w którym scena musi zostać odtworzona, zanim jej licznik zostanie zwiększony.",
+        "heading": "Minimalny czas odtwarzania w procentach"
+      },
       "performers": {
         "options": {
           "image_location": {
@@ -531,6 +561,7 @@
       "scene_player": {
         "heading": "Odtwarzacz scen",
         "options": {
+          "always_start_from_beginning": "Zawsze odtwarzaj film od początku",
           "auto_start_video": "Automatyczne odtwarzanie wideo",
           "auto_start_video_on_play_selected": {
             "description": "Automatyczne odtwarzaj wideo z kolejki albo z wybranych lub losowych scen ze strony Sceny",
@@ -540,7 +571,8 @@
             "description": "Odtwarzaj następną scenę w kolejce po zakończeniu odtwarzania bieżącej",
             "heading": "Domyślnie kontynuuj odtwarzanie playlisty"
           },
-          "show_scrubber": "Pokaż Scrubber"
+          "show_scrubber": "Pokaż Scrubber",
+          "track_activity": "Śledzenie aktywności"
         }
       },
       "scene_wall": {
@@ -630,6 +662,7 @@
   "developmentVersion": "Wersja deweloperska",
   "dialogs": {
     "aliases_must_be_unique": "aliasy muszą być unikatowe",
+    "create_new_entity": "Dodaj {entity}",
     "delete_alert": "Następujące elementy {count, plural, one {{singularEntity}} other {{pluralEntity}}} zostaną trwale usunięte:",
     "delete_confirm": "Czy na pewno chcesz usunąć {entityName}?",
     "delete_entity_desc": "{count, plural, one {Czy na pewno chcesz usunąć {singularEntity}? Jeśli plik nie zostanie usunięty, {singularEntity} zostanie ponownie dodane podczas skanowania.} other {Czy na pewno chcesz usunąć {pluralEntity}? Jeśli te pliki nie zostaną usunięte, {pluralEntity} zostaną ponownie dodane podczas skanowania.}}",
@@ -664,6 +697,9 @@
         "pan_y": "Przesunięcie Y",
         "zoom": "Powiększenie"
       }
+    },
+    "merge": {
+      "source": "Źródło"
     },
     "merge_tags": {
       "destination": "Cel",
@@ -706,10 +742,10 @@
       "video_previews_tooltip": "Podgląd wideo odtwarzany po najechaniu kursorem myszy na scenę"
     },
     "scenes_found": "Znaleziono {count} scen",
-    "scrape_entity_query": "{entity_type} Zapytanie scrapera",
-    "scrape_entity_title": "{entity_type} Wyniki scrapowania",
+    "scrape_entity_query": "Zapytanie zbieracza – {entity_type}",
+    "scrape_entity_title": "Wyniki zbierania {entity_type}",
     "scrape_results_existing": "Istniejący",
-    "scrape_results_scraped": "Zescrapowany",
+    "scrape_results_scraped": "Zebrany",
     "set_image_url_title": "Adres URL obrazu",
     "unsaved_changes": "Niezapisane zmiany. Czy na pewno chcesz wyjść?"
   },
@@ -770,6 +806,7 @@
   "file_info": "Info o pliku",
   "file_mod_time": "Czas modyfikacji pliku",
   "files": "pliki",
+  "files_amount": "{value} plików",
   "filesize": "Rozmiar pliku",
   "filter": "Filtr",
   "filter_name": "Nazwa filtra",
@@ -807,6 +844,7 @@
   },
   "hasMarkers": "Ma znaczniki",
   "height": "Wzrost",
+  "height_cm": "Wzrost (cm)",
   "help": "Help",
   "ignore_auto_tag": "Ignoruj automatyczne tagowanie",
   "image": "Obraz",
@@ -819,6 +857,7 @@
   "interactive": "Interaktywny",
   "interactive_speed": "Prędkość interaktywna",
   "isMissing": "Brakuje",
+  "last_played_at": "Ostatnio odtwarzano",
   "library": "Biblioteka",
   "loading": {
     "generic": "Ładowanie…"
@@ -837,6 +876,8 @@
       "age_context": "{age} {years_old} w tej scenie"
     },
     "phash": "PHash",
+    "play_count": "Liczba odtworzeń",
+    "play_duration": "Czas odtwarzania",
     "stream": "Stream",
     "video_codec": "Kodek wideo"
   },
@@ -907,6 +948,8 @@
   },
   "performers": "Aktorzy",
   "piercings": "Kolczyki",
+  "play_count": "Liczba odtworzeń",
+  "play_duration": "Czas odtwarzania",
   "primary_file": "Główny plik",
   "queue": "Kolejka",
   "random": "Losowo",
@@ -918,8 +961,12 @@
   "scene": "Scena",
   "sceneTagger": "Otagowywacz scen",
   "sceneTags": "Tagi sceny",
+  "scene_code": "Kod studia",
   "scene_count": "Liczba scen",
+  "scene_created_at": "Scena utworzona",
+  "scene_date": "Data sceny",
   "scene_id": "ID sceny",
+  "scene_updated_at": "Scena zaktualizowana",
   "scenes": "Sceny",
   "scenes_updated_at": "Scena aktualizowana",
   "search_filter": {
@@ -1046,6 +1093,7 @@
     "default_filter_set": "Domyślny zestaw filtrów",
     "delete_past_tense": "Usuń {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Generowanie zrzutu ekranu…",
+    "merged_scenes": "Połączone sceny",
     "merged_tags": "Połączone tagi",
     "removed_entity": "Usunięto {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "rescanning_entity": "Ponowne skanowanie {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
@@ -1062,8 +1110,9 @@
   "updated_at": "Zaktualizowano",
   "url": "URL",
   "videos": "Filmy wideo",
-  "view_all": "Pokaż Wszystko",
+  "view_all": "Pokaż wszystko",
   "weight": "Waga",
+  "weight_kg": "Waga (kg)",
   "years_old": "lat(a)",
   "zip_file_count": "Liczba plików zip"
 }

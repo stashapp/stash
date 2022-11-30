@@ -1,6 +1,11 @@
 import React, { useMemo, useState } from "react";
 import { Accordion, Button, Card } from "react-bootstrap";
-import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
+import {
+  FormattedMessage,
+  FormattedNumber,
+  FormattedTime,
+  useIntl,
+} from "react-intl";
 import { useHistory } from "react-router-dom";
 import { TruncatedText } from "src/components/Shared";
 import DeleteFilesDialog from "src/components/Shared/DeleteFilesDialog";
@@ -87,6 +92,13 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
           truncate
         />
         {renderFileSize()}
+        <TextField id="file_mod_time">
+          <FormattedTime
+            dateStyle="medium"
+            timeStyle="medium"
+            value={props.file.mod_time ?? 0}
+          />
+        </TextField>
         <TextField
           id="duration"
           value={TextUtils.secondsToTimestamp(props.file.duration ?? 0)}
@@ -303,12 +315,6 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
         />
         {renderFunscript()}
         {renderInteractiveSpeed()}
-        <URLField
-          id="media_info.downloaded_from"
-          url={props.scene.url}
-          value={props.scene.url}
-          truncate
-        />
         <URLField
           id="media_info.downloaded_from"
           url={props.scene.url}

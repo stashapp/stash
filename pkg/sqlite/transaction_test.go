@@ -5,8 +5,10 @@ package sqlite_test
 
 import (
 	"context"
+	"errors"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
@@ -57,10 +59,28 @@ import (
 // 	wg.Wait()
 // }
 
+func signalOtherThread(c chan struct{}) error {
+	select {
+	case c <- struct{}{}:
+		return nil
+	case <-time.After(10 * time.Second):
+		return errors.New("timed out signalling other thread")
+	}
+}
+
+func waitForOtherThread(c chan struct{}) error {
+	select {
+	case <-c:
+		return nil
+	case <-time.After(10 * time.Second):
+		return errors.New("timed out waiting for other thread")
+	}
+}
+
 func TestConcurrentReadTxn(t *testing.T) {
 	var wg sync.WaitGroup
 	ctx := context.Background()
-	c := make(chan struct{}, 1)
+	c := make(chan struct{})
 
 	// first thread
 	wg.Add(2)
@@ -76,8 +96,12 @@ func TestConcurrentReadTxn(t *testing.T) {
 			}
 
 			// wait for other thread to start
-			c <- struct{}{}
-			<-c
+			if err := signalOtherThread(c); err != nil {
+				return err
+			}
+			if err := waitForOtherThread(c); err != nil {
+				return err
+			}
 
 			if err := db.Scene.Destroy(ctx, scene.ID); err != nil {
 				return err
@@ -94,9 +118,15 @@ func TestConcurrentReadTxn(t *testing.T) {
 		defer wg.Done()
 		_ = txn.WithReadTxn(ctx, db, func(ctx context.Context) error {
 			// wait for first thread
-			<-c
+			if err := waitForOtherThread(c); err != nil {
+				t.Errorf(err.Error())
+				return err
+			}
+
 			defer func() {
-				c <- struct{}{}
+				if err := signalOtherThread(c); err != nil {
+					t.Errorf(err.Error())
+				}
 			}()
 
 			scene := &models.Scene{
@@ -105,6 +135,7 @@ func TestConcurrentReadTxn(t *testing.T) {
 
 			// expect error when we try to do this, as the other thread has already
 			// modified this table
+			// this takes time to fail, so we need to wait for it
 			if err := db.Scene.Create(ctx, scene, nil); err != nil {
 				if !db.IsLocked(err) {
 					t.Errorf("unexpected error: %v", err)
@@ -124,7 +155,7 @@ func TestConcurrentReadTxn(t *testing.T) {
 func TestConcurrentExclusiveAndReadTxn(t *testing.T) {
 	var wg sync.WaitGroup
 	ctx := context.Background()
-	c := make(chan struct{}, 1)
+	c := make(chan struct{})
 
 	// first thread
 	wg.Add(2)
@@ -140,8 +171,12 @@ func TestConcurrentExclusiveAndReadTxn(t *testing.T) {
 			}
 
 			// wait for other thread to start
-			c <- struct{}{}
-			<-c
+			if err := signalOtherThread(c); err != nil {
+				return err
+			}
+			if err := waitForOtherThread(c); err != nil {
+				return err
+			}
 
 			if err := db.Scene.Destroy(ctx, scene.ID); err != nil {
 				return err
@@ -158,9 +193,15 @@ func TestConcurrentExclusiveAndReadTxn(t *testing.T) {
 		defer wg.Done()
 		_ = txn.WithReadTxn(ctx, db, func(ctx context.Context) error {
 			// wait for first thread
-			<-c
+			if err := waitForOtherThread(c); err != nil {
+				t.Errorf(err.Error())
+				return err
+			}
+
 			defer func() {
-				c <- struct{}{}
+				if err := signalOtherThread(c); err != nil {
+					t.Errorf(err.Error())
+				}
 			}()
 
 			if _, err := db.Scene.Find(ctx, sceneIDs[sceneIdx1WithPerformer]); err != nil {

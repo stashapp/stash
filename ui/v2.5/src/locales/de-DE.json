@@ -566,7 +566,8 @@
         "heading": "Studioansicht",
         "options": {
           "show_child_studio_content": {
-            "description": "In der Studioansicht, zeige auch Inhalte von Unterstudios"
+            "description": "In der Studioansicht, zeige auch Inhalte von Unterstudios",
+            "heading": "Zeige Inhalte von Unterstudios"
           }
         }
       },
@@ -623,6 +624,7 @@
   "death_date": "Todesdatum",
   "death_year": "Todesjahr",
   "descending": "Absteigend",
+  "description": "Beschreibung",
   "detail": "Detail",
   "details": "Details",
   "developmentVersion": "Entwicklungsversion",
@@ -637,6 +639,7 @@
     "delete_object_desc": "Möchten Sie {count, plural, one {diese {singularEntity}} other {diese {pluralEntity}}} wirklich löschen?",
     "delete_object_overflow": "…und {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} löschen",
+    "dont_show_until_updated": "Bis zum nächsten Update nicht mehr anzeigen",
     "edit_entity_title": "Bearbeiten von {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Zugehörige Objekte in den Export einbeziehen",
     "export_title": "Export",
@@ -710,7 +713,7 @@
     "unsaved_changes": "Nicht gespeicherte Änderungen. Bist du sicher dass du die Seite verlassen willst?"
   },
   "dimensions": "Maße",
-  "director": "Direktor",
+  "director": "Regisseur",
   "display_mode": {
     "grid": "Gitter",
     "list": "Liste",
@@ -762,6 +765,7 @@
   "false": "Falsch",
   "favourite": "Favorit",
   "file": "Datei",
+  "file_count": "Dateianzahl",
   "file_info": "Datei",
   "file_mod_time": "Dateiänderungszeit",
   "files": "Dateien",
@@ -769,6 +773,7 @@
   "filter": "Filter",
   "filter_name": "Filtername",
   "filters": "Filter",
+  "folder": "Ordner",
   "framerate": "Bildrate",
   "frames_per_second": "{value} Bilder pro Sekunde",
   "front_page": {
@@ -901,11 +906,13 @@
   },
   "performers": "Darsteller",
   "piercings": "Piercings",
+  "primary_file": "Primäre Datei",
   "queue": "Playlist",
   "random": "Zufällig",
   "rating": "Wertung",
   "recently_added_objects": "Kürzlich hinzugefügte {objects}",
   "recently_released_objects": "Kürzlich erschienene {objects}",
+  "release_notes": "Versionshinweise",
   "resolution": "Auflösung",
   "scene": "Szene",
   "sceneTagger": "Szenen-Tagger",
@@ -955,9 +962,10 @@
       "migration_failed_error": "Der folgende Fehler ist bei der Migration der Datenbank aufgetreten:",
       "migration_failed_help": "Bitte führe nötige Korrekturen durch und probiere es erneut. Falls du nicht weißt was du falsch gemacht hast, helfen wir gerne auf {discordLink}. Solltest du dir sicher sein einen Bug gefunden zu haben, schau doch mal auf {githubLink} vorbei.",
       "migration_irreversible_warning": "Der Migrationsprozess des Datenbankschemas ist irreversibel. Nachdem sie ausgeführt wurde, ist deine Datenbank inkompatibel mit älteren Versionen von Stash.",
+      "migration_notes": "Anmerkungen zur Migration",
       "migration_required": "Migration nötig",
       "perform_schema_migration": "Führe Migration des Datenbankschemas durch",
-      "schema_too_old": "Das Schema deiner aktuellen Stash-Datenbank ist von Version <strong>{databaseSchema}</strong> und muss auf die Version <strong>{appSchema}</strong> migriert werden. Die aktuelle Version von Stash wird nicht ohne Migration der Datenbank funktionieren können."
+      "schema_too_old": "Das Schema deiner aktuellen Stash-Datenbank ist Version <strong>{databaseSchema}</strong> und muss auf Version <strong>{appSchema}</strong> migriert werden. Die aktuelle Version von Stash wird nicht ohne Migration der Datenbank funktionieren können. Wenn Sie nicht migrieren möchten, müssen Sie ein Downgrade auf eine Version durchführen, die Ihrem Datenbankschema entspricht."
     },
     "paths": {
       "database_filename_empty_for_default": "Datenbank-Dateiname (Leer für Standardwert)",
@@ -1055,5 +1063,6 @@
   "videos": "Videos",
   "view_all": "Alle ansehen",
   "weight": "Gewicht",
-  "years_old": "Jahre alt"
+  "years_old": "Jahre alt",
+  "zip_file_count": "Anzahl der Zip-Dateien"
 }

@@ -43,8 +43,8 @@ func (g *generatorInfo) calculateFrameRate(videoStream *ffmpeg.FFProbeStream) er
 
 	numberOfFrames, _ := strconv.Atoi(videoStream.NbFrames)
 
-	if numberOfFrames == 0 && isValidFloat64(framerate) && g.VideoFile.Duration > 0 { // TODO: test
-		numberOfFrames = int(framerate * g.VideoFile.Duration)
+	if numberOfFrames == 0 && isValidFloat64(framerate) && g.VideoFile.VideoStreamDuration > 0 { // TODO: test
+		numberOfFrames = int(framerate * g.VideoFile.VideoStreamDuration)
 	}
 
 	// If we are missing the frame count or frame rate then seek through the file and extract the info with regex
@@ -68,7 +68,7 @@ func (g *generatorInfo) calculateFrameRate(videoStream *ffmpeg.FFProbeStream) er
 			"number of frames or framerate is 0.  nb_frames <%s> framerate <%f> duration <%f>",
 			videoStream.NbFrames,
 			framerate,
-			g.VideoFile.Duration,
+			g.VideoFile.VideoStreamDuration,
 		)
 	}
 

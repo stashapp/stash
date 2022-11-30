@@ -54,6 +54,7 @@
     "import": "インポート…",
     "import_from_file": "ファイルからインポート",
     "logout": "ログアウト",
+    "make_primary": "メインに設定",
     "merge": "マージ",
     "merge_from": "次からマージ：",
     "merge_into": "次へマージ：",
@@ -66,6 +67,7 @@
     "play_selected": "選択したものを再生",
     "preview": "プレビュー",
     "previous_action": "戻る",
+    "reassign": "入れ替える",
     "refresh": "更新",
     "reload_plugins": "プラグインを再読み込み",
     "reload_scrapers": "スクレイパーを再読み込み",
@@ -98,6 +100,7 @@
     "show": "表示",
     "show_configuration": "設定を表示",
     "skip": "スキップ",
+    "split": "分割",
     "stop": "停止",
     "submit": "送信",
     "submit_stash_box": "Stash-Boxに送信",
@@ -120,6 +123,7 @@
   "also_known_as": "A.K.A",
   "ascending": "昇順",
   "average_resolution": "平均的な解像度",
+  "between_and": "と",
   "birth_year": "誕生年",
   "birthdate": "誕生日",
   "bitrate": "ビットレート",
@@ -244,6 +248,10 @@
         "username": "ユーザー名",
         "username_desc": "Stashにアクセスするためのユーザー名です。空白にすると、ユーザー認証を無効にします"
       },
+      "backup_directory_path": {
+        "description": "SQLiteデータベースファイルのバックアップ場所",
+        "heading": "バックアップディレクトリパス"
+      },
       "cache_location": "キャッシュのディレクトリ",
       "cache_path_head": "キャッシュのパス",
       "calculate_md5_and_ohash_desc": "oshashに加えてMD5チェックサムを計算します。有効にすると、初期スキャンが少々遅くなります。MD5計算を無効にするには、ファイル名のハッシュをoshashに設定する必要があります。",
@@ -345,7 +353,7 @@
       "auto_tagging": "自動タグ付け",
       "backing_up_database": "データベースをバックアップ",
       "backup_and_download": "データベースのバックアップを実施し、結果ファイルをダウンロードします。",
-      "backup_database": "{filename_format}形式で、データベースと同じフォルダーにデータベースをバックアップします",
+      "backup_database": "{filename_format}形式で、バックアップ先にデータベースをバックアップします",
       "cleanup_desc": "不明なファイルを確認し、データベースから削除します。この操作はもとに戻せません。",
       "data_management": "データ管理",
       "defaults_set": "デフォルトが設定されており、タスクページの{action}ボタンをクリックした際に使用されます。",
@@ -421,11 +429,24 @@
       "scene_tools": "シーンツール"
     },
     "ui": {
+      "abbreviate_counters": {
+        "description": "カードと詳細表示ページのカウンターを短縮します。有効にすると、\"1831\"という値が\"1.8K\"のように短縮して表示されます。",
+        "heading": "カウンターを短縮"
+      },
       "basic_settings": "基本設定",
       "custom_css": {
         "description": "変更を適用するにはページを更新する必要があります。",
         "heading": "カスタムCSS",
         "option_label": "カスタムCSSを有効にする"
+      },
+      "custom_javascript": {
+        "heading": "カスタムJavascript",
+        "option_label": "カスタムJavascriptを有効化する"
+      },
+      "custom_locales": {
+        "description": "個別の言語文字列を上書きします。マスターとなっているリストについては、https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json をご確認ください。変更を反映するには、ページを再読み込みする必要があります。",
+        "heading": "カスタム翻訳",
+        "option_label": "カスタム翻訳が有効です"
       },
       "delete_options": {
         "description": "画像、ギャラリー、シーンを削除するときのデフォルト設定です。",
@@ -447,7 +468,23 @@
           "description": "ドロップダウンセレクターからの新規オブジェクトの生成を禁止する",
           "heading": "ドロップダウンの生成を無効にする"
         },
-        "heading": "編集中"
+        "heading": "編集中",
+        "rating_system": {
+          "star_precision": {
+            "label": "評価の精度",
+            "options": {
+              "full": "全て",
+              "half": "半分",
+              "quarter": "4分の1"
+            }
+          },
+          "type": {
+            "options": {
+              "decimal": "数値",
+              "stars": "星"
+            }
+          }
+        }
       },
       "funscript_offset": {
         "description": "インタラクティブスクリプトの実行までのオフセットをミリ秒で指定できます。",
@@ -517,6 +554,7 @@
       "scene_player": {
         "heading": "シーンプレーヤー",
         "options": {
+          "always_start_from_beginning": "毎回最初から動画をスタートさせる",
           "auto_start_video": "動画を自動再生",
           "auto_start_video_on_play_selected": {
             "description": "キュー、選択されたものからの再生またはシーンページからのランダム再生時に動画を自動再生します",
@@ -540,9 +578,31 @@
         "description": "前後のアイテムに移動する前にスクロールを試行する回数を指定できます。Y座標のスクロールモードにのみ適用されます。",
         "heading": "遷移前のスクロール試行"
       },
+      "show_tag_card_on_hover": {
+        "description": "タグバッジにカーソルをホバーしているときにタグカードを表示する",
+        "heading": "タグカードヒント"
+      },
       "slideshow_delay": {
         "description": "ウォールビューモードの際にギャラリーのスライドショーが利用できます",
         "heading": "スライドショーの遅延時間 (秒)"
+      },
+      "studio_panel": {
+        "heading": "スタジオビュー",
+        "options": {
+          "show_child_studio_content": {
+            "description": "スタジオビューで、サブスタジオのコンテンツが表示されるようになります",
+            "heading": "サブスタジオのコンテンツを表示する"
+          }
+        }
+      },
+      "tag_panel": {
+        "heading": "タグビュー",
+        "options": {
+          "show_child_tagged_content": {
+            "description": "タグビューで、サブタグのコンテンツを表示されるようになります",
+            "heading": "サブタグのコンテンツを表示する"
+          }
+        }
       },
       "title": "ユーザーインターフェース"
     }
@@ -588,6 +648,7 @@
   "death_date": "没日",
   "death_year": "没年",
   "descending": "降順",
+  "description": "概要",
   "detail": "詳細",
   "details": "詳細",
   "developmentVersion": "開発者バージョン",
@@ -596,6 +657,7 @@
     "delete_alert": "次の{count, plural, one {{singularEntity}} other {{pluralEntity}}}は完全に削除されます:",
     "delete_confirm": "本当に{entityName}を削除してよろしいですか？",
     "delete_entity_desc": "{count, plural, one {Are you sure you want to delete this {singularEntity}? Unless the file is also deleted, this {singularEntity} will be re-added when scan is performed.} other {Are you sure you want to delete these {pluralEntity}? Unless the files are also deleted, these {pluralEntity} will be re-added when scan is performed.}}",
+    "delete_entity_simple_desc": "{count, plural, one {本当にこの{singularEntity}を削除してもよろしいですか？} other {本当にこれらの{pluralEntity}を削除してもよろしいですか？}}",
     "delete_entity_title": "{count, plural, one {Delete {singularEntity}} other {Delete {pluralEntity}}}",
     "delete_galleries_extra": "...加えて、画像ファイルが他のどのギャラリーにも属していません。",
     "delete_gallery_files": "ギャラリーフォルダー/zipファイルとギャラリーに属していない全ての画像を削除します。",
@@ -769,6 +831,7 @@
   },
   "hasMarkers": "マーカーあり？",
   "height": "身長",
+  "height_cm": "身長(cm)",
   "help": "ヘルプ",
   "ignore_auto_tag": "自動タグを無視する",
   "image": "画像",
@@ -781,6 +844,7 @@
   "interactive": "インタラクティブ",
   "interactive_speed": "インタラクティブ速度",
   "isMissing": "見つからない？",
+  "last_played_at": "前回再生した日時",
   "library": "ライブラリー",
   "loading": {
     "generic": "読み込み中…"
@@ -869,6 +933,7 @@
   },
   "performers": "出演者",
   "piercings": "ピアス",
+  "primary_file": "メインファイル",
   "queue": "キュー",
   "random": "ランダム",
   "rating": "評価",
@@ -1007,6 +1072,7 @@
     "default_filter_set": "デフォルトのフィルターセット",
     "delete_past_tense": "{count, plural, one {{singularEntity}} other {{pluralEntity}}}を削除しました",
     "generating_screenshot": "スクリーンショットを生成中…",
+    "merged_scenes": "マージされたシーン",
     "merged_tags": "マージされたタグ",
     "removed_entity": "{count, plural, one {{singularEntity}}と、その他{{pluralEntity}}}を削除しました",
     "rescanning_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}}を再スキャン中…",
@@ -1025,6 +1091,7 @@
   "videos": "動画",
   "view_all": "全て表示",
   "weight": "幅",
+  "weight_kg": "体重(kg)",
   "years_old": "歳",
   "zip_file_count": "zipファイルカウント"
 }

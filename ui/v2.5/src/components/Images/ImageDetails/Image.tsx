@@ -11,7 +11,12 @@ import {
   useImageUpdate,
   mutateMetadataScan,
 } from "src/core/StashService";
-import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
+import {
+  ErrorMessage,
+  LoadingIndicator,
+  Icon,
+  Counter,
+} from "src/components/Shared";
 import { useToast } from "src/hooks";
 import * as Mousetrap from "mousetrap";
 import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButton";
@@ -178,6 +183,9 @@ export const Image: React.FC = () => {
             <Nav.Item>
               <Nav.Link eventKey="image-file-info-panel">
                 <FormattedMessage id="file_info" />
+                {image.files.length > 1 && (
+                  <Counter count={image.files.length ?? 0} />
+                )}
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>

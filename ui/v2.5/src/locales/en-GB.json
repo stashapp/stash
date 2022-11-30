@@ -419,7 +419,7 @@
         "escape_chars": "Use \\ to escape literal characters",
         "filename": "Filename",
         "filename_pattern": "Filename Pattern",
-        "ignore_organized": "Ignore organised scenes",
+        "ignore_organized": "Ignore organized scenes",
         "ignored_words": "Ignored words",
         "matches_with": "Matches with {i}",
         "select_parser_recipe": "Select Parser Recipe",
@@ -430,6 +430,10 @@
       "scene_tools": "Scene Tools"
     },
     "ui": {
+      "abbreviate_counters": {
+        "description": "Abbreviate counters in cards and details view pages, for example \"1831\" will get formated to \"1.8K\".",
+        "heading": "Abbreviate counters"
+      },
       "basic_settings": "Basic Settings",
       "custom_css": {
         "description": "Page must be reloaded for changes to take effect.",
@@ -485,10 +489,6 @@
         },
         "heading": "Editing"
       },
-      "abbreviate_counters": {
-        "description": "Abbreviate counters in cards and details view pages, for example \"1831\" will get formated to \"1.8K\".",
-        "heading": "Abbreviate counters"
-      },
       "funscript_offset": {
         "description": "Time offset in milliseconds for interactive scripts playback.",
         "heading": "Funscript Offset (ms)"
@@ -534,10 +534,6 @@
       "minimum_play_percent": {
         "description": "The percentage of time in which a scene must be played before its play count is incremented.",
         "heading": "Minumum Play Percent"
-      },
-      "show_tag_card_on_hover": {
-        "description": "Show tag card when hovering tag badges",
-        "heading": "Tag card tooltips"
       },
       "performers": {
         "options": {
@@ -590,18 +586,13 @@
         "description": "Number of times to attempt to scroll before moving to the next/previous item. Only applies for Pan Y scroll mode.",
         "heading": "Scroll attempts before transition"
       },
+      "show_tag_card_on_hover": {
+        "description": "Show tag card when hovering tag badges",
+        "heading": "Tag card tooltips"
+      },
       "slideshow_delay": {
         "description": "Slideshow is available in galleries when in wall view mode",
         "heading": "Slideshow Delay (seconds)"
-      },
-      "tag_panel": {
-        "heading": "Tag view",
-        "options": {
-          "show_child_tagged_content": {
-            "description": "In the tag view, display content from the subtags as well",
-            "heading": "Display subtag content"
-          }
-        }
       },
       "studio_panel": {
         "heading": "Studio view",
@@ -609,6 +600,15 @@
           "show_child_studio_content": {
             "description": "In the studio view, display content from the sub-studios as well",
             "heading": "Display sub-studios content"
+          }
+        }
+      },
+      "tag_panel": {
+        "heading": "Tag view",
+        "options": {
+          "show_child_tagged_content": {
+            "description": "In the tag view, display content from the subtags as well",
+            "heading": "Display subtag content"
           }
         }
       },
@@ -674,10 +674,10 @@
     "delete_object_desc": "Are you sure you want to delete {count, plural, one {this {singularEntity}} other {these {pluralEntity}}}?",
     "delete_object_overflow": "…and {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Delete {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "dont_show_until_updated": "Don't show until next update",
     "edit_entity_title": "Edit {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Include related objects in export",
     "export_title": "Export",
-    "dont_show_until_updated": "Don't show until next update",
     "lightbox": {
       "delay": "Delay (Sec)",
       "display_mode": {
@@ -814,6 +814,7 @@
   "file_info": "File Info",
   "file_mod_time": "File Modification Time",
   "files": "files",
+  "files_amount": "{value} files",
   "filesize": "File Size",
   "filter": "Filter",
   "filter_name": "Filter name",
@@ -1101,9 +1102,9 @@
     "generating_screenshot": "Generating screenshot…",
     "merged_scenes": "Merged scenes",
     "merged_tags": "Merged tags",
-    "rescanning_entity": "Rescanning {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "reassign_past_tense": "File reassigned",
     "removed_entity": "Removed {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "rescanning_entity": "Rescanning {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "Saved {entity}",
     "started_auto_tagging": "Started auto tagging",
     "started_generating": "Started generating",
