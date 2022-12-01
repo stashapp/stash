@@ -8,7 +8,7 @@ const CLASSNAME = "TruncatedText";
 const CLASSNAME_TOOLTIP = `${CLASSNAME}-tooltip`;
 
 interface ITruncatedTextProps {
-  text?: string | null;
+  text?: JSX.Element | string | null;
   lineCount?: number;
   placement?: Placement;
   delay?: number;

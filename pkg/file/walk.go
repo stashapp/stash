@@ -125,7 +125,12 @@ func walkDir(f FS, path string, d fs.DirEntry, walkDirFn fs.WalkDirFunc) error {
 	}
 
 	for _, d1 := range dirs {
-		path1 := filepath.Join(path, d1.Name())
+		name := d1.Name()
+		// Prevent infinite loops; this can happen with certain FS implementations (e.g. ZipFS).
+		if name == "" || name == "." {
+			continue
+		}
+		path1 := filepath.Join(path, name)
 		if err := walkDir(f, path1, d1, walkDirFn); err != nil {
 			if errors.Is(err, fs.SkipDir) {
 				break

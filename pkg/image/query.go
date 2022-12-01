@@ -7,6 +7,11 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
+const (
+	coverFilename             = "cover.jpg"
+	coverFilenameSearchString = "%" + coverFilename
+)
+
 type Queryer interface {
 	Query(ctx context.Context, options models.ImageQueryOptions) (*models.ImageQueryResult, error)
 }
@@ -95,4 +100,57 @@ func FindByGalleryID(ctx context.Context, r Queryer, galleryID int, sortBy strin
 			Modifier: models.CriterionModifierIncludes,
 		},
 	}, &findFilter)
+}
+
+func FindGalleryCover(ctx context.Context, r Queryer, galleryID int) (*models.Image, error) {
+	const useCoverJpg = true
+	img, err := findGalleryCover(ctx, r, galleryID, useCoverJpg)
+	if err != nil {
+		return nil, err
+	}
+
+	if img != nil {
+		return img, nil
+	}
+
+	// return the first image in the gallery
+	return findGalleryCover(ctx, r, galleryID, !useCoverJpg)
+}
+
+func findGalleryCover(ctx context.Context, r Queryer, galleryID int, useCoverJpg bool) (*models.Image, error) {
+	// try to find cover.jpg in the gallery
+	perPage := 1
+	sortBy := "path"
+	sortDir := models.SortDirectionEnumAsc
+
+	findFilter := models.FindFilterType{
+		PerPage:   &perPage,
+		Sort:      &sortBy,
+		Direction: &sortDir,
+	}
+
+	imageFilter := &models.ImageFilterType{
+		Galleries: &models.MultiCriterionInput{
+			Value:    []string{strconv.Itoa(galleryID)},
+			Modifier: models.CriterionModifierIncludes,
+		},
+	}
+
+	if useCoverJpg {
+		imageFilter.Path = &models.StringCriterionInput{
+			Value:    coverFilenameSearchString,
+			Modifier: models.CriterionModifierEquals,
+		}
+	}
+
+	imgs, err := Query(ctx, r, imageFilter, &findFilter)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(imgs) > 0 {
+		return imgs[0], nil
+	}
+
+	return nil, nil
 }
