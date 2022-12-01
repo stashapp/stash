@@ -757,6 +757,7 @@
   },
   "dimensions": "Dimensions",
   "director": "Réalisateur",
+  "disambiguation": "Désambiguïsation",
   "display_mode": {
     "grid": "Grille",
     "list": "Liste",
