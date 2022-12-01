@@ -30,7 +30,7 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 	funscriptPath := video.GetFunscriptPath(t.Scene.Path)
 	heatmapPath := instance.Paths.Scene.GetInteractiveHeatmapPath(videoChecksum)
 
-	generator := NewInteractiveHeatmapSpeedGenerator(funscriptPath, heatmapPath)
+	generator := NewInteractiveHeatmapSpeedGenerator(funscriptPath, heatmapPath, t.Scene.Files.Primary().Duration)
 
 	err := generator.Generate()
 
@@ -46,10 +46,9 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 		primaryFile.InteractiveSpeed = &median
 		qb := t.TxnManager.File
 		return qb.Update(ctx, primaryFile)
-	}); err != nil {
+	}); err != nil && ctx.Err() == nil {
 		logger.Error(err.Error())
 	}
-
 }
 
 func (t *GenerateInteractiveHeatmapSpeedTask) shouldGenerate() bool {

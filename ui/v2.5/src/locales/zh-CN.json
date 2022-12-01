@@ -67,6 +67,7 @@
     "play_selected": "播放已选择的",
     "preview": "预览",
     "previous_action": "回去",
+    "reassign": "重新分配",
     "refresh": "刷新",
     "reload_plugins": "重新加载插件",
     "reload_scrapers": "重新加载网页挖掘器",
@@ -99,10 +100,12 @@
     "show": "展示",
     "show_configuration": "显示设定",
     "skip": "跳过",
+    "split": "分割",
     "stop": "停止",
     "submit": "提交",
     "submit_stash_box": "提交给 Stash-Box",
     "submit_update": "提交更新",
+    "swap": "交换",
     "tasks": {
       "clean_confirm_message": "确定要清除吗？ 这将删除系统中不存在的所有短片和图库的数据库信息和已经生成的内容。",
       "dry_mode_selected": "已经选择了模拟删除模式。不会实际删除文件，只会写下记录。",
@@ -121,6 +124,7 @@
   "also_known_as": "又称作",
   "ascending": "升序",
   "average_resolution": "平均分辨率",
+  "between_and": "以及",
   "birth_year": "出生年份",
   "birthdate": "出生日期",
   "bitrate": "比特率",
@@ -350,7 +354,7 @@
       "auto_tagging": "自动标签",
       "backing_up_database": "自动备份数据中",
       "backup_and_download": "备份数据库并下载其文件.",
-      "backup_database": "将数据库备份到与数据库相同的目录，文件名格式为 {filename_format}",
+      "backup_database": "将数据库备份到backups目录，文件名格式为 {filename_format}",
       "cleanup_desc": "检查缺失的文件并将它们的数据从数据库中删除。 注意，这是一个破坏性的动作。",
       "data_management": "数据管理",
       "defaults_set": "预设值已经设定好，将会在按下任务页面里的{action}按钮后生效.",
@@ -436,6 +440,11 @@
         "heading": "自定义样式",
         "option_label": "自定义样式已启用"
       },
+      "custom_javascript": {
+        "description": "必须重新加载页面才能生效。",
+        "heading": "自定义 JavaScript",
+        "option_label": "自定义 JavaScript 已启用"
+      },
       "custom_locales": {
         "description": "强制使用个别特定用语。看 https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json 作为主要参考列表。页面必须更新以看到更改效果。",
         "heading": "自定义本地设定",
@@ -461,7 +470,24 @@
           "description": "禁止下拉的选择器建立新的对象",
           "heading": "禁止下拉菜单建立"
         },
-        "heading": "编辑"
+        "heading": "编辑",
+        "rating_system": {
+          "star_precision": {
+            "label": "评分星的精度",
+            "options": {
+              "full": "完整",
+              "half": "一半",
+              "quarter": "四分之一"
+            }
+          },
+          "type": {
+            "label": "评分系统类型",
+            "options": {
+              "decimal": "十进制",
+              "stars": "星"
+            }
+          }
+        }
       },
       "funscript_offset": {
         "description": "交互式脚本播放的时间偏移量（以毫秒为单位）。",
@@ -505,6 +531,10 @@
         "description": "在导航栏上显示或隐藏不同类型的内容",
         "heading": "菜单列表"
       },
+      "minimum_play_percent": {
+        "description": "在播放量增加前短片必须要播放的百分比。",
+        "heading": "最少播放百分比"
+      },
       "performers": {
         "options": {
           "image_location": {
@@ -531,6 +561,7 @@
       "scene_player": {
         "heading": "短片播放器",
         "options": {
+          "always_start_from_beginning": "视频一定从头开始播放",
           "auto_start_video": "自动播放",
           "auto_start_video_on_play_selected": {
             "description": "从视频序列，或从短片页面播放选择或随机视频时自动开始放视频",
@@ -540,7 +571,8 @@
             "description": "当视频结束时播放下一短片",
             "heading": "默认继续播放清单"
           },
-          "show_scrubber": "显示预览轴"
+          "show_scrubber": "显示预览轴",
+          "track_activity": "监测播放动作"
         }
       },
       "scene_wall": {
@@ -630,6 +662,7 @@
   "developmentVersion": "开发版本",
   "dialogs": {
     "aliases_must_be_unique": "别名必须是唯一的",
+    "create_new_entity": "创建新的 {entity}",
     "delete_alert": "以下 {count, plural, one {{singularEntity}} other {{pluralEntity}}} 会被永久删除:",
     "delete_confirm": "确定要删除 {entityName} 吗?",
     "delete_entity_desc": "{count, plural, one {确定要删除{singularEntity}吗? 除非同时删除文件, 否则下次扫描时{singularEntity}会重新被添加到数据库中。} other {确定要删除{pluralEntity}吗? 除非同时删除文件, 否则下次扫描时{pluralEntity}会重新被添加到数据库中。}}",
@@ -665,11 +698,20 @@
         "zoom": "放大"
       }
     },
+    "merge": {
+      "destination": "目标",
+      "empty_results": "目标字段值将不变。",
+      "source": "源"
+    },
     "merge_tags": {
       "destination": "目标",
       "source": "源"
     },
     "overwrite_filter_confirm": "确定要覆盖现有的已保存查询 {entityName} 吗？",
+    "reassign_entity_title": "{count, plural, one {Reassign {singularEntity}} 其它 {Reassign {pluralEntity}}}",
+    "reassign_files": {
+      "destination": "重新指定至"
+    },
     "scene_gen": {
       "force_transcodes": "强制生成转码文件",
       "force_transcodes_tooltip": "默认情况下，转码文件只会在浏览器不支持的情况下生成。如果开启此选项，即使浏览器支持该视频，也会生成转码文件。",
@@ -770,6 +812,7 @@
   "file_info": "文件信息",
   "file_mod_time": "文件修改时间",
   "files": "文件",
+  "files_amount": "{value} 个文件",
   "filesize": "文件大小",
   "filter": "过滤",
   "filter_name": "过滤器名称",
@@ -807,6 +850,7 @@
   },
   "hasMarkers": "含有章节标记",
   "height": "身高",
+  "height_cm": "高(cm)",
   "help": "说明",
   "ignore_auto_tag": "忽略自动标签",
   "image": "图片",
@@ -819,6 +863,7 @@
   "interactive": "互动",
   "interactive_speed": "互动速度",
   "isMissing": "缺失",
+  "last_played_at": "最后播放在",
   "library": "收藏库",
   "loading": {
     "generic": "加载中…"
@@ -837,6 +882,8 @@
       "age_context": "短片里面 {age} {years_old}"
     },
     "phash": "感知码PHash",
+    "play_count": "播放量",
+    "play_duration": "播放长度",
     "stream": "视频流地址",
     "video_codec": "视频编码"
   },
@@ -907,6 +954,8 @@
   },
   "performers": "演员",
   "piercings": "穿洞",
+  "play_count": "播放量",
+  "play_duration": "播放长度",
   "primary_file": "主要文件",
   "queue": "序列",
   "random": "随机",
@@ -915,11 +964,16 @@
   "recently_released_objects": "最近发行的 {objects}",
   "release_notes": "更新历史",
   "resolution": "分辨率",
+  "resume_time": "恢复时间",
   "scene": "短片",
   "sceneTagger": "短片标记器",
   "sceneTags": "短片标记",
+  "scene_code": "工作室代码",
   "scene_count": "短片数量",
+  "scene_created_at": "短片建立在",
+  "scene_date": "短片日期",
   "scene_id": "短片ID",
+  "scene_updated_at": "短片修改在",
   "scenes": "短片",
   "scenes_updated_at": "短片更新时间",
   "search_filter": {
@@ -1011,6 +1065,7 @@
     "welcome_to_stash": "欢迎使用Stash"
   },
   "stash_id": "Stash 号",
+  "stash_id_endpoint": "Stash 号的终端",
   "stash_ids": "Stash号",
   "stashbox": {
     "go_review_draft": "去 {endpoint_name} 检阅草稿。",
@@ -1046,7 +1101,9 @@
     "default_filter_set": "默认过滤器",
     "delete_past_tense": "已经删除 {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "正在生成截图…",
+    "merged_scenes": "拼合的短片",
     "merged_tags": "已经合并标签",
+    "reassign_past_tense": "文件重新指定了",
     "removed_entity": "已移除 {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "rescanning_entity": "正在重新扫描 {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "已经保存 {entity}",
@@ -1064,6 +1121,7 @@
   "videos": "视频",
   "view_all": "查看全部",
   "weight": "体重",
+  "weight_kg": "重量(kg)",
   "years_old": "岁",
   "zip_file_count": "压缩文件数量"
 }

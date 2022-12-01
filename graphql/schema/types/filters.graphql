@@ -53,6 +53,7 @@ input PerformerFilterType {
   NOT: PerformerFilterType
 
   name: StringCriterionInput
+  disambiguation: StringCriterionInput
   details: StringCriterionInput
 
   """Filter by favorite"""
@@ -217,6 +218,12 @@ input SceneFilterType {
   interactive_speed: IntCriterionInput
   """Filter by captions"""
   captions: StringCriterionInput
+  """Filter by resume time"""
+  resume_time: IntCriterionInput
+  """Filter by play count"""
+  play_count: IntCriterionInput
+  """Filter by play duration (in seconds)"""
+  play_duration: IntCriterionInput
   """Filter by date"""
   date: DateCriterionInput
   """Filter by creation time"""

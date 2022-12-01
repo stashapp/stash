@@ -7,16 +7,20 @@ import React, {
   useState,
 } from "react";
 import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
+import "videojs-mobile-ui";
 import "videojs-seek-buttons";
-import "videojs-landscape-fullscreen";
 import "./live";
 import "./PlaylistButtons";
 import "./source-selector";
 import "./persist-volume";
 import "./markers";
 import "./vtt-thumbnails";
-import "./big-buttons";
+import "./track-activity";
 import cx from "classnames";
+import {
+  useSceneSaveActivity,
+  useSceneIncrementPlayCount,
+} from "src/core/StashService";
 
 import * as GQL from "src/core/generated-graphql";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
@@ -28,8 +32,21 @@ import {
 import { SceneInteractiveStatus } from "src/hooks/Interactive/status";
 import { languageMap } from "src/utils/caption";
 import { VIDEO_PLAYER_ID } from "./util";
+import { IUIConfig } from "src/core/config";
 
 function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
+  function seekStep(step: number) {
+    const time = player.currentTime() + step;
+    const duration = player.duration();
+    if (time < 0) {
+      player.currentTime(0);
+    } else if (time < duration) {
+      player.currentTime(time);
+    } else {
+      player.currentTime(duration);
+    }
+  }
+
   function seekPercent(percent: number) {
     const duration = player.duration();
     const time = duration * percent;
@@ -42,6 +59,21 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
     const time = currentTime + duration * percent;
     if (time > duration) return;
     player.currentTime(time);
+  }
+
+  let seekFactor = 10;
+  if (event.shiftKey) {
+    seekFactor = 5;
+  } else if (event.ctrlKey || event.altKey) {
+    seekFactor = 60;
+  }
+  switch (event.which) {
+    case 39: // right arrow
+      seekStep(seekFactor);
+      break;
+    case 37: // left arrow
+      seekStep(-seekFactor);
+      break;
   }
 
   if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
@@ -60,12 +92,6 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
     case 70: // f
       if (player.isFullscreen()) player.exitFullscreen();
       else player.requestFullscreen();
-      break;
-    case 39: // right arrow
-      player.currentTime(Math.min(player.duration(), player.currentTime() + 5));
-      break;
-    case 37: // left arrow
-      player.currentTime(Math.max(0, player.currentTime() - 5));
       break;
     case 38: // up arrow
       player.volume(player.volume() + 0.1);
@@ -156,13 +182,17 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   onPrevious,
 }) => {
   const { configuration } = useContext(ConfigurationContext);
-  const config = configuration?.interface;
+  const interfaceConfig = configuration?.interface;
+  const uiConfig = configuration?.ui as IUIConfig | undefined;
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerRef = useRef<VideoJsPlayer>();
   const sceneId = useRef<string>();
+  const [sceneSaveActivity] = useSceneSaveActivity();
+  const [sceneIncrementPlayCount] = useSceneIncrementPlayCount();
 
   const [time, setTime] = useState(0);
   const [ready, setReady] = useState(false);
+  const [sessionInitialised, setSessionInitialised] = useState(false); // tracks play session. This is reset whenever ScenePlayer page is exited
 
   const {
     interactive: interactiveClient,
@@ -180,12 +210,15 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const auto = useRef(false);
   const interactiveReady = useRef(false);
 
+  const minimumPlayPercent = uiConfig?.minimumPlayPercent ?? 0;
+  const trackActivity = uiConfig?.trackActivity ?? false;
+
   const file = useMemo(
     () => ((scene?.files.length ?? 0) > 0 ? scene?.files[0] : undefined),
     [scene]
   );
 
-  const maxLoopDuration = config?.maximumLoopDuration ?? 0;
+  const maxLoopDuration = interfaceConfig?.maximumLoopDuration ?? 0;
   const looping = useMemo(
     () =>
       !!file?.duration &&
@@ -250,12 +283,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         markers: {},
         sourceSelector: {},
         persistVolume: {},
-        bigButtons: {},
         seekButtons: {
           forward: 10,
           back: 10,
         },
         skipButtons: {},
+        trackActivity: {},
       },
     };
 
@@ -341,6 +374,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       player.off("fullscreenchange", fullscreenchange);
     };
   }, []);
+
   useEffect(() => {
     function onplay(this: VideoJsPlayer) {
       this.persistVolume().enabled = true;
@@ -390,6 +424,14 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     // don't re-initialise the player unless the scene has changed
     if (!scene || !file || scene.id === sceneId.current) return;
+
+    // if new scene was picked from playlist
+    if (playerRef.current && sceneId.current) {
+      if (trackActivity) {
+        playerRef.current.trackActivity().reset();
+      }
+    }
+
     sceneId.current = scene.id;
 
     setReady(false);
@@ -399,17 +441,20 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     interactiveReady.current = false;
 
     const isLandscape = file.height && file.width && file.width > file.height;
-
-    if (isLandscape) {
-      player.landscapeFullscreen({
-        fullscreen: {
-          enterOnRotate: true,
-          exitOnRotate: true,
-          alwaysInLandscapeMode: true,
-          iOS: false,
-        },
-      });
-    }
+    const mobileUiOptions = {
+      fullscreen: {
+        enterOnRotate: true,
+        exitOnRotate: true,
+        lockOnRotate: true,
+        lockToLandscapeOnEnter: isLandscape,
+      },
+      touchControls: {
+        seekSeconds: 10,
+        tapTimeout: 500,
+        disableOnEnd: false,
+      },
+    };
+    player.mobileUi(mobileUiOptions);
 
     const { duration } = file;
     const sourceSelector = player.sourceSelector();
@@ -429,15 +474,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         };
       })
     );
-
-    const markers = player.markers();
-    markers.clearMarkers();
-    for (const marker of scene.scene_markers) {
-      markers.addMarker({
-        title: getMarkerTitle(marker),
-        time: marker.seconds,
-      });
-    }
 
     function getDefaultLanguageCode() {
       let languageCode = window.navigator.language;
@@ -482,17 +518,26 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       }
     }
 
-    if (scene.paths.screenshot) {
-      player.poster(scene.paths.screenshot);
-    } else {
-      player.poster("");
+    auto.current =
+      autoplay ||
+      (interfaceConfig?.autostartVideo ?? false) ||
+      _initialTimestamp > 0;
+
+    const alwaysStartFromBeginning =
+      uiConfig?.alwaysStartFromBeginning ?? false;
+
+    let startPosition = _initialTimestamp;
+    if (
+      !startPosition &&
+      !(alwaysStartFromBeginning || sessionInitialised) &&
+      file.duration > scene.resume_time!
+    ) {
+      startPosition = scene.resume_time!;
     }
 
-    auto.current =
-      autoplay || (config?.autostartVideo ?? false) || _initialTimestamp > 0;
-
-    initialTimestamp.current = _initialTimestamp;
-    setTime(_initialTimestamp);
+    initialTimestamp.current = startPosition;
+    setTime(startPosition);
+    setSessionInitialised(true);
 
     player.load();
     player.focus();
@@ -510,10 +555,72 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   }, [
     file,
     scene,
+    trackActivity,
     interactiveClient,
+    sessionInitialised,
     autoplay,
-    config?.autostartVideo,
+    interfaceConfig?.autostartVideo,
+    uiConfig?.alwaysStartFromBeginning,
     _initialTimestamp,
+  ]);
+
+  useEffect(() => {
+    const player = playerRef.current;
+    if (!player || !scene) return;
+
+    const markers = player.markers();
+    markers.clearMarkers();
+    for (const marker of scene.scene_markers) {
+      markers.addMarker({
+        title: getMarkerTitle(marker),
+        time: marker.seconds,
+      });
+    }
+
+    if (scene.paths.screenshot) {
+      player.poster(scene.paths.screenshot);
+    } else {
+      player.poster("");
+    }
+  }, [scene]);
+
+  useEffect(() => {
+    const player = playerRef.current;
+    if (!player) return;
+
+    async function saveActivity(resumeTime: number, playDuration: number) {
+      if (!scene?.id) return;
+
+      await sceneSaveActivity({
+        variables: {
+          id: scene.id,
+          playDuration,
+          resume_time: resumeTime,
+        },
+      });
+    }
+
+    async function incrementPlayCount() {
+      if (!scene?.id) return;
+
+      await sceneIncrementPlayCount({
+        variables: {
+          id: scene.id,
+        },
+      });
+    }
+
+    const activity = player.trackActivity();
+    activity.saveActivity = saveActivity;
+    activity.incrementPlayCount = incrementPlayCount;
+    activity.minimumPlayPercent = minimumPlayPercent;
+    activity.setEnabled(trackActivity);
+  }, [
+    scene,
+    trackActivity,
+    minimumPlayPercent,
+    sceneIncrementPlayCount,
+    sceneSaveActivity,
   ]);
 
   useEffect(() => {

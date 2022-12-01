@@ -31,6 +31,7 @@ import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import {
   faBox,
   faExclamationTriangle,
+  faFileAlt,
   faFilm,
   faImages,
   faMapMarkerAlt,
@@ -293,6 +294,26 @@ export const SceneDuplicateChecker: React.FC = () => {
     );
   }
 
+  function maybeRenderFileCount(scene: GQL.SlimSceneDataFragment) {
+    if (scene.files.length <= 1) return;
+
+    const popoverContent = (
+      <FormattedMessage
+        id="files_amount"
+        values={{ value: intl.formatNumber(scene.files.length ?? 0) }}
+      />
+    );
+
+    return (
+      <HoverPopover placement="bottom" content={popoverContent}>
+        <Button className="minimal">
+          <Icon icon={faFileAlt} />
+          <span>{scene.files.length}</span>
+        </Button>
+      </HoverPopover>
+    );
+  }
+
   function maybeRenderOrganized(scene: GQL.SlimSceneDataFragment) {
     if (scene.organized) {
       return (
@@ -313,6 +334,7 @@ export const SceneDuplicateChecker: React.FC = () => {
       scene.scene_markers.length > 0 ||
       scene?.o_counter ||
       scene.galleries.length > 0 ||
+      scene.files.length > 1 ||
       scene.organized
     ) {
       return (
@@ -324,6 +346,7 @@ export const SceneDuplicateChecker: React.FC = () => {
             {maybeRenderSceneMarkerPopoverButton(scene)}
             {maybeRenderOCounter(scene)}
             {maybeRenderGallery(scene)}
+            {maybeRenderFileCount(scene)}
             {maybeRenderOrganized(scene)}
           </ButtonGroup>
         </>

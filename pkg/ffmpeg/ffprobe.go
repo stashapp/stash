@@ -19,15 +19,20 @@ type VideoFile struct {
 	AudioStream *FFProbeStream
 	VideoStream *FFProbeStream
 
-	Path         string
-	Title        string
-	Comment      string
-	Container    string
-	Duration     float64
-	StartTime    float64
-	Bitrate      int64
-	Size         int64
-	CreationTime time.Time
+	Path      string
+	Title     string
+	Comment   string
+	Container string
+	// FileDuration is the declared (meta-data) duration of the *file*.
+	// In most cases (sprites, previews, etc.) we actually care about the duration of the video stream specifically,
+	// because those two can differ slightly (e.g. audio stream longer than the video stream, making the whole file
+	// longer).
+	FileDuration        float64
+	VideoStreamDuration float64
+	StartTime           float64
+	Bitrate             int64
+	Size                int64
+	CreationTime        time.Time
 
 	VideoCodec   string
 	VideoBitrate int64
@@ -127,7 +132,7 @@ func parse(filePath string, probeJSON *FFProbeJSON) (*VideoFile, error) {
 
 	result.Container = probeJSON.Format.FormatName
 	duration, _ := strconv.ParseFloat(probeJSON.Format.Duration, 64)
-	result.Duration = math.Round(duration*100) / 100
+	result.FileDuration = math.Round(duration*100) / 100
 	fileStat, err := os.Stat(filePath)
 	if err != nil {
 		statErr := fmt.Errorf("error statting file <%s>: %w", filePath, err)
@@ -177,6 +182,11 @@ func parse(filePath string, probeJSON *FFProbeJSON) (*VideoFile, error) {
 		} else {
 			result.Width = videoStream.Width
 			result.Height = videoStream.Height
+		}
+		result.VideoStreamDuration, err = strconv.ParseFloat(videoStream.Duration, 64)
+		if err != nil {
+			// Revert to the historical behaviour, which is still correct in the vast majority of cases.
+			result.VideoStreamDuration = result.FileDuration
 		}
 	}
 

@@ -296,3 +296,11 @@ func (t changesetTranslator) optionalBool(value *bool, field string) models.Opti
 
 	return models.NewOptionalBoolPtr(value)
 }
+
+func (t changesetTranslator) optionalFloat64(value *float64, field string) models.OptionalFloat64 {
+	if !t.hasField(field) {
+		return models.OptionalFloat64{}
+	}
+
+	return models.NewOptionalFloat64Ptr(value)
+}

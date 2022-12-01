@@ -28,6 +28,14 @@ mutation ScenesUpdate($input : [SceneUpdateInput!]!) {
   }
 }
 
+mutation SceneSaveActivity($id: ID!, $resume_time: Float, $playDuration: Float) {
+  sceneSaveActivity(id: $id, resume_time: $resume_time, playDuration: $playDuration) 
+}
+
+mutation SceneIncrementPlayCount($id: ID!) {
+  sceneIncrementPlayCount(id: $id) 
+}
+
 mutation SceneIncrementO($id: ID!) {
   sceneIncrementO(id: $id) 
 }

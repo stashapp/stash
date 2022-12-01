@@ -4,6 +4,7 @@ export { default as Modal } from "./Modal";
 export { CollapseButton } from "./CollapseButton";
 export { DetailsEditNavbar } from "./DetailsEditNavbar";
 export { DurationInput } from "./DurationInput";
+export { PercentInput } from "./PercentInput";
 export { TagLink } from "./TagLink";
 export { HoverPopover } from "./HoverPopover";
 export { default as LoadingIndicator } from "./LoadingIndicator";

@@ -28,13 +28,24 @@ export type FrontPageContent = ISavedFilterRow | ICustomFilter;
 
 export interface IUIConfig {
   frontPageContent?: FrontPageContent[];
-  lastNoteSeen?: number;
+
   showChildTagContent?: boolean;
   showChildStudioContent?: boolean;
   showTagCardOnHover?: boolean;
+
   abbreviateCounters?: boolean;
 
   ratingSystemOptions?: RatingSystemOptions;
+
+  // if true continue scene will always play from the beginning
+  alwaysStartFromBeginning?: boolean;
+  // if true enable activity tracking
+  trackActivity?: boolean;
+  // the minimum percentage of scene duration which a scene must be played
+  // before the play count is incremented
+  minimumPlayPercent?: number;
+
+  lastNoteSeen?: number;
 }
 
 function recentlyReleased(

@@ -17,7 +17,6 @@ import (
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
 
@@ -442,10 +441,9 @@ var (
 )
 
 var (
-	performerTagLinks = [][2]int{
-		{performerIdxWithTag, tagIdxWithPerformer},
-		{performerIdxWithTwoTags, tagIdx1WithPerformer},
-		{performerIdxWithTwoTags, tagIdx2WithPerformer},
+	performerTags = linkMap{
+		performerIdxWithTag:     {tagIdxWithPerformer},
+		performerIdxWithTwoTags: {tagIdx1WithPerformer, tagIdx2WithPerformer},
 	}
 )
 
@@ -552,12 +550,12 @@ func populateDB() error {
 			return fmt.Errorf("error creating movies: %s", err.Error())
 		}
 
-		if err := createPerformers(ctx, performersNameCase, performersNameNoCase); err != nil {
-			return fmt.Errorf("error creating performers: %s", err.Error())
-		}
-
 		if err := createTags(ctx, sqlite.TagReaderWriter, tagsNameCase, tagsNameNoCase); err != nil {
 			return fmt.Errorf("error creating tags: %s", err.Error())
+		}
+
+		if err := createPerformers(ctx, performersNameCase, performersNameNoCase); err != nil {
+			return fmt.Errorf("error creating performers: %s", err.Error())
 		}
 
 		if err := createStudios(ctx, sqlite.StudioReaderWriter, studiosNameCase, studiosNameNoCase); err != nil {
@@ -582,10 +580,6 @@ func populateDB() error {
 
 		if err := createSavedFilters(ctx, sqlite.SavedFilterReaderWriter, totalSavedFilters); err != nil {
 			return fmt.Errorf("error creating saved filters: %s", err.Error())
-		}
-
-		if err := linkPerformerTags(ctx); err != nil {
-			return fmt.Errorf("error linking performer tags: %s", err.Error())
 		}
 
 		if err := linkMovieStudios(ctx, sqlite.MovieReaderWriter); err != nil {
@@ -944,6 +938,35 @@ func makeSceneFile(i int) *file.VideoFile {
 	}
 }
 
+func getScenePlayCount(index int) int {
+	return index % 5
+}
+
+func getScenePlayDuration(index int) float64 {
+	if index%5 == 0 {
+		return 0
+	}
+
+	return float64(index%5) * 123.4
+}
+
+func getSceneResumeTime(index int) float64 {
+	if index%5 == 0 {
+		return 0
+	}
+
+	return float64(index%5) * 1.2
+}
+
+func getSceneLastPlayed(index int) *time.Time {
+	if index%5 == 0 {
+		return nil
+	}
+
+	t := time.Date(2020, 1, index%5, 1, 2, 3, 0, time.UTC)
+	return &t
+}
+
 func makeScene(i int) *models.Scene {
 	title := getSceneTitle(i)
 	details := getSceneStringValue(i, "Details")
@@ -984,6 +1007,10 @@ func makeScene(i int) *models.Scene {
 		StashIDs: models.NewRelatedStashIDs([]models.StashID{
 			sceneStashID(i),
 		}),
+		PlayCount:    getScenePlayCount(i),
+		PlayDuration: getScenePlayDuration(i),
+		LastPlayedAt: getSceneLastPlayed(i),
+		ResumeTime:   getSceneResumeTime(i),
 	}
 }
 
@@ -1302,17 +1329,21 @@ func createPerformers(ctx context.Context, n int, o int) error {
 		} // so count backwards to 0 as needed
 		// performers [ i ] and [ n + o - i - 1  ] should have similar names with only the Name!=NaMe part different
 
+		tids := indexesToIDs(tagIDs, performerTags[i])
+
 		performer := models.Performer{
-			Name:          getPerformerStringValue(index, name),
-			Checksum:      getPerformerStringValue(i, checksumField),
-			URL:           getPerformerNullStringValue(i, urlField),
-			Favorite:      getPerformerBoolValue(i),
-			Birthdate:     getPerformerBirthdate(i),
-			DeathDate:     getPerformerDeathDate(i),
-			Details:       getPerformerStringValue(i, "Details"),
-			Ethnicity:     getPerformerStringValue(i, "Ethnicity"),
-			Rating:        getIntPtr(getRating(i)),
-			IgnoreAutoTag: getIgnoreAutoTag(i),
+			Name:           getPerformerStringValue(index, name),
+			Disambiguation: getPerformerStringValue(index, "disambiguation"),
+			Aliases:        models.NewRelatedStrings([]string{getPerformerStringValue(index, "alias")}),
+			URL:            getPerformerNullStringValue(i, urlField),
+			Favorite:       getPerformerBoolValue(i),
+			Birthdate:      getPerformerBirthdate(i),
+			DeathDate:      getPerformerDeathDate(i),
+			Details:        getPerformerStringValue(i, "Details"),
+			Ethnicity:      getPerformerStringValue(i, "Ethnicity"),
+			Rating:         getIntPtr(getRating(i)),
+			IgnoreAutoTag:  getIgnoreAutoTag(i),
+			TagIDs:         models.NewRelatedIDs(tids),
 		}
 
 		careerLength := getPerformerCareerLength(i)
@@ -1320,18 +1351,16 @@ func createPerformers(ctx context.Context, n int, o int) error {
 			performer.CareerLength = *careerLength
 		}
 
+		if (index+1)%5 != 0 {
+			performer.StashIDs = models.NewRelatedStashIDs([]models.StashID{
+				performerStashID(i),
+			})
+		}
+
 		err := pqb.Create(ctx, &performer)
 
 		if err != nil {
 			return fmt.Errorf("Error creating performer %v+: %s", performer, err.Error())
-		}
-
-		if (index+1)%5 != 0 {
-			if err := pqb.UpdateStashIDs(ctx, performer.ID, []models.StashID{
-				performerStashID(i),
-			}); err != nil {
-				return fmt.Errorf("setting performer stash ids: %w", err)
-			}
 		}
 
 		performerIDs = append(performerIDs, performer.ID)
@@ -1602,22 +1631,6 @@ func doLinks(links [][2]int, fn func(idx1, idx2 int) error) error {
 	}
 
 	return nil
-}
-
-func linkPerformerTags(ctx context.Context) error {
-	qb := db.Performer
-	return doLinks(performerTagLinks, func(performerIndex, tagIndex int) error {
-		performerID := performerIDs[performerIndex]
-		tagID := tagIDs[tagIndex]
-		tagIDs, err := qb.GetTagIDs(ctx, performerID)
-		if err != nil {
-			return err
-		}
-
-		tagIDs = intslice.IntAppendUnique(tagIDs, tagID)
-
-		return qb.UpdateTags(ctx, performerID, tagIDs)
-	})
 }
 
 func linkMovieStudios(ctx context.Context, mqb models.MovieWriter) error {

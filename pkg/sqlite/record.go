@@ -14,14 +14,14 @@ func (r *updateRecord) set(destField string, v interface{}) {
 	r.Record[destField] = v
 }
 
-// func (r *updateRecord) setString(destField string, v models.OptionalString) {
-// 	if v.Set {
-// 		if v.Null {
-// 			panic("null value not allowed in optional string")
-// 		}
-// 		r.set(destField, v.Value)
-// 	}
-// }
+func (r *updateRecord) setString(destField string, v models.OptionalString) {
+	if v.Set {
+		if v.Null {
+			panic("null value not allowed in optional string")
+		}
+		r.set(destField, v.Value)
+	}
+}
 
 func (r *updateRecord) setNullString(destField string, v models.OptionalString) {
 	if v.Set {
@@ -32,7 +32,7 @@ func (r *updateRecord) setNullString(destField string, v models.OptionalString) 
 func (r *updateRecord) setBool(destField string, v models.OptionalBool) {
 	if v.Set {
 		if v.Null {
-			panic("null value not allowed in optional int")
+			panic("null value not allowed in optional bool")
 		}
 		r.set(destField, v.Value)
 	}
@@ -68,14 +68,14 @@ func (r *updateRecord) setNullInt(destField string, v models.OptionalInt) {
 // 	}
 // }
 
-// func (r *updateRecord) setFloat64(destField string, v models.OptionalFloat64) {
-// 	if v.Set {
-// 		if v.Null {
-// 			panic("null value not allowed in optional float64")
-// 		}
-// 		r.set(destField, v.Value)
-// 	}
-// }
+func (r *updateRecord) setFloat64(destField string, v models.OptionalFloat64) {
+	if v.Set {
+		if v.Null {
+			panic("null value not allowed in optional float64")
+		}
+		r.set(destField, v.Value)
+	}
+}
 
 // func (r *updateRecord) setNullFloat64(destField string, v models.OptionalFloat64) {
 // 	if v.Set {

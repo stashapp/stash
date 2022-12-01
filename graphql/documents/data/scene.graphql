@@ -17,6 +17,10 @@ fragment SceneData on Scene {
   }
   created_at
   updated_at
+  resume_time
+  last_played_at
+  play_duration
+  play_count
 
   files {
     ...VideoFileData

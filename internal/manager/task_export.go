@@ -530,6 +530,10 @@ func exportScene(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 
 		newSceneJSON.Galleries = gallery.GetRefs(galleries)
 
+		newSceneJSON.ResumeTime = s.ResumeTime
+		newSceneJSON.PlayCount = s.PlayCount
+		newSceneJSON.PlayDuration = s.PlayDuration
+
 		performers, err := performerReader.FindBySceneID(ctx, s.ID)
 		if err != nil {
 			logger.Errorf("[scenes] <%s> error getting scene performer names: %s", sceneHash, err.Error())
@@ -895,13 +899,13 @@ func (t *ExportTask) exportPerformer(ctx context.Context, wg *sync.WaitGroup, jo
 		newPerformerJSON, err := performer.ToJSON(ctx, performerReader, p)
 
 		if err != nil {
-			logger.Errorf("[performers] <%s> error getting performer JSON: %s", p.Checksum, err.Error())
+			logger.Errorf("[performers] <%s> error getting performer JSON: %s", p.Name, err.Error())
 			continue
 		}
 
 		tags, err := repo.Tag.FindByPerformerID(ctx, p.ID)
 		if err != nil {
-			logger.Errorf("[performers] <%s> error getting performer tags: %s", p.Checksum, err.Error())
+			logger.Errorf("[performers] <%s> error getting performer tags: %s", p.Name, err.Error())
 			continue
 		}
 
@@ -914,7 +918,7 @@ func (t *ExportTask) exportPerformer(ctx context.Context, wg *sync.WaitGroup, jo
 		fn := newPerformerJSON.Filename()
 
 		if err := t.json.savePerformer(fn, newPerformerJSON); err != nil {
-			logger.Errorf("[performers] <%s> failed to save json: %s", p.Checksum, err.Error())
+			logger.Errorf("[performers] <%s> failed to save json: %s", p.Name, err.Error())
 		}
 	}
 }

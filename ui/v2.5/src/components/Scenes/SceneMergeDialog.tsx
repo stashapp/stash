@@ -9,7 +9,7 @@ import {
   SceneSelect,
   StringListSelect,
 } from "src/components/Shared";
-import { FormUtils, ImageUtils } from "src/utils";
+import { FormUtils, ImageUtils, TextUtils } from "src/utils";
 import { mutateSceneMerge, queryFindScenesByID } from "src/core/StashService";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useToast } from "src/hooks";
@@ -72,6 +72,13 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
   const [oCounter, setOCounter] = useState(
     new ScrapeResult<number>(dest.o_counter)
   );
+  const [playCount, setPlayCount] = useState(
+    new ScrapeResult<number>(dest.play_count)
+  );
+  const [playDuration, setPlayDuration] = useState(
+    new ScrapeResult<number>(dest.play_duration)
+  );
+
   const [studio, setStudio] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(dest.studio?.id)
   );
@@ -206,6 +213,20 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       new ScrapeResult(
         dest.o_counter ?? 0,
         all.map((s) => s.o_counter ?? 0).reduce((pv, cv) => pv + cv, 0)
+      )
+    );
+
+    setPlayCount(
+      new ScrapeResult(
+        dest.play_count ?? 0,
+        all.map((s) => s.play_count ?? 0).reduce((pv, cv) => pv + cv, 0)
+      )
+    );
+
+    setPlayDuration(
+      new ScrapeResult(
+        dest.play_duration ?? 0,
+        all.map((s) => s.play_duration ?? 0).reduce((pv, cv) => pv + cv, 0)
       )
     );
 
@@ -352,7 +373,51 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
               className="bg-secondary text-white border-secondary"
             />
           )}
-          onChange={(value) => setRating(value)}
+          onChange={(value) => setOCounter(value)}
+        />
+        <ScrapeDialogRow
+          title={intl.formatMessage({ id: "play_count" })}
+          result={playCount}
+          renderOriginalField={() => (
+            <FormControl
+              value={playCount.originalValue ?? 0}
+              readOnly
+              onChange={() => {}}
+              className="bg-secondary text-white border-secondary"
+            />
+          )}
+          renderNewField={() => (
+            <FormControl
+              value={playCount.newValue ?? 0}
+              readOnly
+              onChange={() => {}}
+              className="bg-secondary text-white border-secondary"
+            />
+          )}
+          onChange={(value) => setPlayCount(value)}
+        />
+        <ScrapeDialogRow
+          title={intl.formatMessage({ id: "play_duration" })}
+          result={playDuration}
+          renderOriginalField={() => (
+            <FormControl
+              value={TextUtils.secondsToTimestamp(
+                playDuration.originalValue ?? 0
+              )}
+              readOnly
+              onChange={() => {}}
+              className="bg-secondary text-white border-secondary"
+            />
+          )}
+          renderNewField={() => (
+            <FormControl
+              value={TextUtils.secondsToTimestamp(playDuration.newValue ?? 0)}
+              readOnly
+              onChange={() => {}}
+              className="bg-secondary text-white border-secondary"
+            />
+          )}
+          onChange={(value) => setPlayDuration(value)}
         />
         <ScrapeDialogRow
           title={intl.formatMessage({ id: "galleries" })}
@@ -434,6 +499,8 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       date: date.getNewValue(),
       rating100: rating.getNewValue(),
       o_counter: oCounter.getNewValue(),
+      play_count: playCount.getNewValue(),
+      play_duration: playDuration.getNewValue(),
       gallery_ids: galleries.getNewValue(),
       studio_id: studio.getNewValue(),
       performer_ids: performers.getNewValue(),

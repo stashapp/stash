@@ -31,6 +31,7 @@ var separatorRE = regexp.MustCompile(separatorPattern)
 type PerformerAutoTagQueryer interface {
 	Query(ctx context.Context, performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) ([]*models.Performer, int, error)
 	QueryForAutoTag(ctx context.Context, words []string) ([]*models.Performer, error)
+	models.AliasLoader
 }
 
 type StudioAutoTagQueryer interface {
@@ -169,8 +170,27 @@ func PathToPerformers(ctx context.Context, path string, reader PerformerAutoTagQ
 
 	var ret []*models.Performer
 	for _, p := range performers {
-		// TODO - commenting out alias handling until both sides work correctly
-		if nameMatchesPath(p.Name, path) != -1 { // || nameMatchesPath(p.Aliases.String, path) {
+		matches := false
+		if nameMatchesPath(p.Name, path) != -1 {
+			matches = true
+		}
+
+		// TODO - disabled alias matching until we can get finer
+		// control over the matching
+		// if !matches {
+		// 	if err := p.LoadAliases(ctx, reader); err != nil {
+		// 		return nil, err
+		// 	}
+
+		// 	for _, alias := range p.Aliases.List() {
+		// 		if nameMatchesPath(alias, path) != -1 {
+		// 			matches = true
+		// 			break
+		// 		}
+		// 	}
+		// }
+
+		if matches {
 			ret = append(ret, p)
 		}
 	}

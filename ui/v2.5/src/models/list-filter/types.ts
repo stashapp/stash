@@ -146,6 +146,9 @@ export type CriterionType =
   | "interactive"
   | "interactive_speed"
   | "captions"
+  | "resume_time"
+  | "play_count"
+  | "play_duration"
   | "name"
   | "details"
   | "title"
@@ -173,4 +176,5 @@ export type CriterionType =
   | "scene_created_at"
   | "scene_updated_at"
   | "description"
-  | "scene_code";
+  | "scene_code"
+  | "disambiguation";

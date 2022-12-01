@@ -368,7 +368,14 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
               to={`/performers/${performer.id}`}
               className={`${CLASSNAME}-header`}
             >
-              <h2>{performer.name}</h2>
+              <h2>
+                {performer.name}
+                {performer.disambiguation && (
+                  <span className="performer-disambiguation">
+                    {` (${performer.disambiguation})`}
+                  </span>
+                )}
+              </h2>
             </Link>
             {mainContent}
             <div className="sub-content text-left">{subContent}</div>
