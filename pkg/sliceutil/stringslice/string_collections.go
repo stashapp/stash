@@ -1,6 +1,9 @@
 package stringslice
 
-import "strconv"
+import (
+	"strconv"
+	"strings"
+)
 
 // https://gobyexample.com/collection-functions
 
@@ -56,6 +59,19 @@ func StrAppendUniques(vs []string, toAdd []string) []string {
 	return vs
 }
 
+// StrExclude removes all instances of any value in toExclude from the vs string
+// slice. It returns the new or unchanged string slice.
+func StrExclude(vs []string, toExclude []string) []string {
+	var ret []string
+	for _, v := range vs {
+		if !StrInclude(toExclude, v) {
+			ret = append(ret, v)
+		}
+	}
+
+	return ret
+}
+
 // StrUnique returns the vs string slice with non-unique values removed.
 func StrUnique(vs []string) []string {
 	distinctValues := make(map[string]struct{})
@@ -93,4 +109,14 @@ func StringSliceToIntSlice(ss []string) ([]int, error) {
 	}
 
 	return ret, nil
+}
+
+// FromString converts a string to a slice of strings, splitting on the sep character.
+// Unlike strings.Split, this function will also trim whitespace from the resulting strings.
+func FromString(s string, sep string) []string {
+	v := strings.Split(s, ",")
+	for i, vv := range v {
+		v[i] = strings.TrimSpace(vv)
+	}
+	return v
 }

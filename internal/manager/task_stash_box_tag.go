@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -90,7 +90,10 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 			partial := models.NewPerformerPartial()
 
 			if performer.Aliases != nil && !excluded["aliases"] {
-				partial.Aliases = models.NewOptionalString(*performer.Aliases)
+				partial.Aliases = &models.UpdateStrings{
+					Values: stringslice.FromString(*performer.Aliases, ","),
+					Mode:   models.RelationshipUpdateModeSet,
+				}
 			}
 			if performer.Birthdate != nil && *performer.Birthdate != "" && !excluded["birthdate"] {
 				value := getDate(performer.Birthdate)
@@ -134,8 +137,6 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 			}
 			if excluded["name"] && performer.Name != nil {
 				partial.Name = models.NewOptionalString(*performer.Name)
-				checksum := md5.FromString(*performer.Name)
-				partial.Checksum = models.NewOptionalString(checksum)
 			}
 			if performer.Piercings != nil && !excluded["piercings"] {
 				partial.Piercings = models.NewOptionalString(*performer.Piercings)
@@ -149,22 +150,21 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 			if performer.URL != nil && !excluded["url"] {
 				partial.URL = models.NewOptionalString(*performer.URL)
 			}
-
-			txnErr := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
-				r := instance.Repository
-				_, err := r.Performer.UpdatePartial(ctx, t.performer.ID, partial)
-
-				if !t.refresh {
-					err = r.Performer.UpdateStashIDs(ctx, t.performer.ID, []models.StashID{
+			if !t.refresh {
+				partial.StashIDs = &models.UpdateStashIDs{
+					StashIDs: []models.StashID{
 						{
 							Endpoint: t.box.Endpoint,
 							StashID:  *performer.RemoteSiteID,
 						},
-					})
-					if err != nil {
-						return err
-					}
+					},
+					Mode: models.RelationshipUpdateModeSet,
 				}
+			}
+
+			txnErr := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
+				r := instance.Repository
+				_, err := r.Performer.UpdatePartial(ctx, t.performer.ID, partial)
 
 				if len(performer.Images) > 0 && !excluded["image"] {
 					image, err := utils.ReadImageFromURL(ctx, performer.Images[0])
@@ -192,10 +192,9 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 		} else if t.name != nil && performer.Name != nil {
 			currentTime := time.Now()
 			newPerformer := models.Performer{
-				Aliases:      getString(performer.Aliases),
+				Aliases:      models.NewRelatedStrings(stringslice.FromString(*performer.Aliases, ",")),
 				Birthdate:    getDate(performer.Birthdate),
 				CareerLength: getString(performer.CareerLength),
-				Checksum:     md5.FromString(*performer.Name),
 				Country:      getString(performer.Country),
 				CreatedAt:    currentTime,
 				Ethnicity:    getString(performer.Ethnicity),
@@ -211,21 +210,18 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 				Tattoos:      getString(performer.Tattoos),
 				Twitter:      getString(performer.Twitter),
 				URL:          getString(performer.URL),
-				UpdatedAt:    currentTime,
-			}
-			err := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
-				r := instance.Repository
-				err := r.Performer.Create(ctx, &newPerformer)
-				if err != nil {
-					return err
-				}
-
-				err = r.Performer.UpdateStashIDs(ctx, newPerformer.ID, []models.StashID{
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{
 					{
 						Endpoint: t.box.Endpoint,
 						StashID:  *performer.RemoteSiteID,
 					},
-				})
+				}),
+				UpdatedAt: currentTime,
+			}
+
+			err := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
+				r := instance.Repository
+				err := r.Performer.Create(ctx, &newPerformer)
 				if err != nil {
 					return err
 				}

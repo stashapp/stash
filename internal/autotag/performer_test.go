@@ -60,8 +60,9 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 	}
 
 	performer := models.Performer{
-		ID:   performerID,
-		Name: performerName,
+		ID:      performerID,
+		Name:    performerName,
+		Aliases: models.NewRelatedStrings([]string{}),
 	}
 
 	organized := false
@@ -148,8 +149,9 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 	}
 
 	performer := models.Performer{
-		ID:   performerID,
-		Name: performerName,
+		ID:      performerID,
+		Name:    performerName,
+		Aliases: models.NewRelatedStrings([]string{}),
 	}
 
 	organized := false
@@ -237,8 +239,9 @@ func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
 	}
 
 	performer := models.Performer{
-		ID:   performerID,
-		Name: performerName,
+		ID:      performerID,
+		Name:    performerName,
+		Aliases: models.NewRelatedStrings([]string{}),
 	}
 
 	organized := false

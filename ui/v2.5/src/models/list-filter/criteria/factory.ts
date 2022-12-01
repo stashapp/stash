@@ -192,6 +192,7 @@ export function makeCriteria(
     case "director":
     case "synopsis":
     case "description":
+    case "disambiguation":
       return new StringCriterion(new StringCriterionOption(type, type));
     case "scene_code":
       return new StringCriterion(new StringCriterionOption(type, type, "code"));

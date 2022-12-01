@@ -899,13 +899,13 @@ func (t *ExportTask) exportPerformer(ctx context.Context, wg *sync.WaitGroup, jo
 		newPerformerJSON, err := performer.ToJSON(ctx, performerReader, p)
 
 		if err != nil {
-			logger.Errorf("[performers] <%s> error getting performer JSON: %s", p.Checksum, err.Error())
+			logger.Errorf("[performers] <%s> error getting performer JSON: %s", p.Name, err.Error())
 			continue
 		}
 
 		tags, err := repo.Tag.FindByPerformerID(ctx, p.ID)
 		if err != nil {
-			logger.Errorf("[performers] <%s> error getting performer tags: %s", p.Checksum, err.Error())
+			logger.Errorf("[performers] <%s> error getting performer tags: %s", p.Name, err.Error())
 			continue
 		}
 
@@ -918,7 +918,7 @@ func (t *ExportTask) exportPerformer(ctx context.Context, wg *sync.WaitGroup, jo
 		fn := newPerformerJSON.Filename()
 
 		if err := t.json.savePerformer(fn, newPerformerJSON); err != nil {
-			logger.Errorf("[performers] <%s> failed to save json: %s", p.Checksum, err.Error())
+			logger.Errorf("[performers] <%s> failed to save json: %s", p.Name, err.Error())
 		}
 	}
 }
