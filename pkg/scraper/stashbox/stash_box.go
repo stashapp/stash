@@ -43,6 +43,7 @@ type PerformerReader interface {
 	match.PerformerFinder
 	Find(ctx context.Context, id int) (*models.Performer, error)
 	FindBySceneID(ctx context.Context, sceneID int) ([]*models.Performer, error)
+	models.AliasLoader
 	models.StashIDLoader
 	GetImage(ctx context.Context, performerID int) ([]byte, error)
 }
@@ -606,15 +607,16 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 		images = append(images, image.URL)
 	}
 	sp := &models.ScrapedPerformer{
-		Name:         &p.Name,
-		Country:      p.Country,
-		Measurements: formatMeasurements(p.Measurements),
-		CareerLength: formatCareerLength(p.CareerStartYear, p.CareerEndYear),
-		Tattoos:      formatBodyModifications(p.Tattoos),
-		Piercings:    formatBodyModifications(p.Piercings),
-		Twitter:      findURL(p.Urls, "TWITTER"),
-		RemoteSiteID: &id,
-		Images:       images,
+		Name:           &p.Name,
+		Disambiguation: p.Disambiguation,
+		Country:        p.Country,
+		Measurements:   formatMeasurements(p.Measurements),
+		CareerLength:   formatCareerLength(p.CareerStartYear, p.CareerEndYear),
+		Tattoos:        formatBodyModifications(p.Tattoos),
+		Piercings:      formatBodyModifications(p.Piercings),
+		Twitter:        findURL(p.Urls, "TWITTER"),
+		RemoteSiteID:   &id,
+		Images:         images,
 		// TODO - tags not currently supported
 		// graphql schema change to accommodate this. Leave off for now.
 	}
@@ -964,6 +966,15 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 	draft := graphql.PerformerDraftInput{}
 	var image io.Reader
 	pqb := c.repository.Performer
+
+	if err := performer.LoadAliases(ctx, pqb); err != nil {
+		return nil, err
+	}
+
+	if err := performer.LoadStashIDs(ctx, pqb); err != nil {
+		return nil, err
+	}
+
 	img, _ := pqb.GetImage(ctx, performer.ID)
 	if img != nil {
 		image = bytes.NewReader(img)
@@ -972,6 +983,10 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 	if performer.Name != "" {
 		draft.Name = performer.Name
 	}
+	// stash-box does not support Disambiguation currently
+	// if performer.Disambiguation != "" {
+	// 	draft.Disambiguation = performer.Disambiguation
+	// }
 	if performer.Birthdate != nil {
 		d := performer.Birthdate.String()
 		draft.Birthdate = &d
@@ -1008,8 +1023,20 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 	if performer.Tattoos != "" {
 		draft.Tattoos = &performer.Tattoos
 	}
-	if performer.Aliases != "" {
-		draft.Aliases = &performer.Aliases
+	if len(performer.Aliases.List()) > 0 {
+		aliases := strings.Join(performer.Aliases.List(), ",")
+		draft.Aliases = &aliases
+	}
+	if performer.CareerLength != "" {
+		var career = strings.Split(performer.CareerLength, "-")
+		if i, err := strconv.Atoi(strings.TrimSpace(career[0])); err == nil {
+			draft.CareerStartYear = &i
+		}
+		if len(career) == 2 {
+			if y, err := strconv.Atoi(strings.TrimSpace(career[1])); err == nil {
+				draft.CareerEndYear = &y
+			}
+		}
 	}
 
 	var urls []string

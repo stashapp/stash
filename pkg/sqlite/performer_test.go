@@ -12,37 +12,204 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stretchr/testify/assert"
 )
 
+func loadPerformerRelationships(ctx context.Context, expected models.Performer, actual *models.Performer) error {
+	if expected.Aliases.Loaded() {
+		if err := actual.LoadAliases(ctx, db.Performer); err != nil {
+			return err
+		}
+	}
+	if expected.TagIDs.Loaded() {
+		if err := actual.LoadTagIDs(ctx, db.Performer); err != nil {
+			return err
+		}
+	}
+	if expected.StashIDs.Loaded() {
+		if err := actual.LoadStashIDs(ctx, db.Performer); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func Test_PerformerStore_Create(t *testing.T) {
+	var (
+		name           = "name"
+		disambiguation = "disambiguation"
+		gender         = models.GenderEnumFemale
+		details        = "details"
+		url            = "url"
+		twitter        = "twitter"
+		instagram      = "instagram"
+		rating         = 3
+		ethnicity      = "ethnicity"
+		country        = "country"
+		eyeColor       = "eyeColor"
+		height         = 134
+		measurements   = "measurements"
+		fakeTits       = "fakeTits"
+		careerLength   = "careerLength"
+		tattoos        = "tattoos"
+		piercings      = "piercings"
+		aliases        = []string{"alias1", "alias2"}
+		hairColor      = "hairColor"
+		weight         = 123
+		ignoreAutoTag  = true
+		favorite       = true
+		endpoint1      = "endpoint1"
+		endpoint2      = "endpoint2"
+		stashID1       = "stashid1"
+		stashID2       = "stashid2"
+		createdAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+
+		birthdate = models.NewDate("2003-02-01")
+		deathdate = models.NewDate("2023-02-01")
+	)
+
+	tests := []struct {
+		name      string
+		newObject models.Performer
+		wantErr   bool
+	}{
+		{
+			"full",
+			models.Performer{
+				Name:           name,
+				Disambiguation: disambiguation,
+				Gender:         gender,
+				URL:            url,
+				Twitter:        twitter,
+				Instagram:      instagram,
+				Birthdate:      &birthdate,
+				Ethnicity:      ethnicity,
+				Country:        country,
+				EyeColor:       eyeColor,
+				Height:         &height,
+				Measurements:   measurements,
+				FakeTits:       fakeTits,
+				CareerLength:   careerLength,
+				Tattoos:        tattoos,
+				Piercings:      piercings,
+				Favorite:       favorite,
+				Rating:         &rating,
+				Details:        details,
+				DeathDate:      &deathdate,
+				HairColor:      hairColor,
+				Weight:         &weight,
+				IgnoreAutoTag:  ignoreAutoTag,
+				TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithPerformer], tagIDs[tagIdx1WithDupName]}),
+				Aliases:        models.NewRelatedStrings(aliases),
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{
+					{
+						StashID:  stashID1,
+						Endpoint: endpoint1,
+					},
+					{
+						StashID:  stashID2,
+						Endpoint: endpoint2,
+					},
+				}),
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
+			},
+			false,
+		},
+		{
+			"invalid tag id",
+			models.Performer{
+				Name:   name,
+				TagIDs: models.NewRelatedIDs([]int{invalidID}),
+			},
+			true,
+		},
+	}
+
+	qb := db.Performer
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			p := tt.newObject
+			if err := qb.Create(ctx, &p); (err != nil) != tt.wantErr {
+				t.Errorf("PerformerStore.Create() error = %v, wantErr = %v", err, tt.wantErr)
+			}
+
+			if tt.wantErr {
+				assert.Zero(p.ID)
+				return
+			}
+
+			assert.NotZero(p.ID)
+
+			copy := tt.newObject
+			copy.ID = p.ID
+
+			// load relationships
+			if err := loadPerformerRelationships(ctx, copy, &p); err != nil {
+				t.Errorf("loadPerformerRelationships() error = %v", err)
+				return
+			}
+
+			assert.Equal(copy, p)
+
+			// ensure can find the performer
+			found, err := qb.Find(ctx, p.ID)
+			if err != nil {
+				t.Errorf("PerformerStore.Find() error = %v", err)
+			}
+
+			if !assert.NotNil(found) {
+				return
+			}
+
+			// load relationships
+			if err := loadPerformerRelationships(ctx, copy, found); err != nil {
+				t.Errorf("loadPerformerRelationships() error = %v", err)
+				return
+			}
+			assert.Equal(copy, *found)
+
+			return
+		})
+	}
+}
+
 func Test_PerformerStore_Update(t *testing.T) {
 	var (
-		name          = "name"
-		gender        = models.GenderEnumFemale
-		checksum      = "checksum"
-		details       = "details"
-		url           = "url"
-		twitter       = "twitter"
-		instagram     = "instagram"
-		rating        = 3
-		ethnicity     = "ethnicity"
-		country       = "country"
-		eyeColor      = "eyeColor"
-		height        = 134
-		measurements  = "measurements"
-		fakeTits      = "fakeTits"
-		careerLength  = "careerLength"
-		tattoos       = "tattoos"
-		piercings     = "piercings"
-		aliases       = "aliases"
-		hairColor     = "hairColor"
-		weight        = 123
-		ignoreAutoTag = true
-		favorite      = true
-		createdAt     = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt     = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		name           = "name"
+		disambiguation = "disambiguation"
+		gender         = models.GenderEnumFemale
+		details        = "details"
+		url            = "url"
+		twitter        = "twitter"
+		instagram      = "instagram"
+		rating         = 3
+		ethnicity      = "ethnicity"
+		country        = "country"
+		eyeColor       = "eyeColor"
+		height         = 134
+		measurements   = "measurements"
+		fakeTits       = "fakeTits"
+		careerLength   = "careerLength"
+		tattoos        = "tattoos"
+		piercings      = "piercings"
+		aliases        = []string{"alias1", "alias2"}
+		hairColor      = "hairColor"
+		weight         = 123
+		ignoreAutoTag  = true
+		favorite       = true
+		endpoint1      = "endpoint1"
+		endpoint2      = "endpoint2"
+		stashID1       = "stashid1"
+		stashID2       = "stashid2"
+		createdAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
 		birthdate = models.NewDate("2003-02-01")
 		deathdate = models.NewDate("2023-02-01")
@@ -56,42 +223,72 @@ func Test_PerformerStore_Update(t *testing.T) {
 		{
 			"full",
 			&models.Performer{
-				ID:            performerIDs[performerIdxWithGallery],
-				Name:          name,
-				Checksum:      checksum,
-				Gender:        gender,
-				URL:           url,
-				Twitter:       twitter,
-				Instagram:     instagram,
-				Birthdate:     &birthdate,
-				Ethnicity:     ethnicity,
-				Country:       country,
-				EyeColor:      eyeColor,
-				Height:        &height,
-				Measurements:  measurements,
-				FakeTits:      fakeTits,
-				CareerLength:  careerLength,
-				Tattoos:       tattoos,
-				Piercings:     piercings,
-				Aliases:       aliases,
-				Favorite:      favorite,
-				Rating:        &rating,
-				Details:       details,
-				DeathDate:     &deathdate,
-				HairColor:     hairColor,
-				Weight:        &weight,
-				IgnoreAutoTag: ignoreAutoTag,
-				CreatedAt:     createdAt,
-				UpdatedAt:     updatedAt,
+				ID:             performerIDs[performerIdxWithGallery],
+				Name:           name,
+				Disambiguation: disambiguation,
+				Gender:         gender,
+				URL:            url,
+				Twitter:        twitter,
+				Instagram:      instagram,
+				Birthdate:      &birthdate,
+				Ethnicity:      ethnicity,
+				Country:        country,
+				EyeColor:       eyeColor,
+				Height:         &height,
+				Measurements:   measurements,
+				FakeTits:       fakeTits,
+				CareerLength:   careerLength,
+				Tattoos:        tattoos,
+				Piercings:      piercings,
+				Favorite:       favorite,
+				Rating:         &rating,
+				Details:        details,
+				DeathDate:      &deathdate,
+				HairColor:      hairColor,
+				Weight:         &weight,
+				IgnoreAutoTag:  ignoreAutoTag,
+				Aliases:        models.NewRelatedStrings(aliases),
+				TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithPerformer], tagIDs[tagIdx1WithDupName]}),
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{
+					{
+						StashID:  stashID1,
+						Endpoint: endpoint1,
+					},
+					{
+						StashID:  stashID2,
+						Endpoint: endpoint2,
+					},
+				}),
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
 			},
 			false,
 		},
 		{
-			"clear all",
+			"clear nullables",
 			&models.Performer{
-				ID: performerIDs[performerIdxWithGallery],
+				ID:       performerIDs[performerIdxWithGallery],
+				Aliases:  models.NewRelatedStrings([]string{}),
+				TagIDs:   models.NewRelatedIDs([]int{}),
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{}),
 			},
 			false,
+		},
+		{
+			"clear tag ids",
+			&models.Performer{
+				ID:     performerIDs[sceneIdxWithTag],
+				TagIDs: models.NewRelatedIDs([]int{}),
+			},
+			false,
+		},
+		{
+			"invalid tag id",
+			&models.Performer{
+				ID:     performerIDs[sceneIdxWithGallery],
+				TagIDs: models.NewRelatedIDs([]int{invalidID}),
+			},
+			true,
 		},
 	}
 
@@ -115,37 +312,80 @@ func Test_PerformerStore_Update(t *testing.T) {
 				t.Errorf("PerformerStore.Find() error = %v", err)
 			}
 
+			// load relationships
+			if err := loadPerformerRelationships(ctx, copy, s); err != nil {
+				t.Errorf("loadPerformerRelationships() error = %v", err)
+				return
+			}
+
 			assert.Equal(copy, *s)
 		})
 	}
 }
 
+func clearPerformerPartial() models.PerformerPartial {
+	nullString := models.OptionalString{Set: true, Null: true}
+	nullDate := models.OptionalDate{Set: true, Null: true}
+	nullInt := models.OptionalInt{Set: true, Null: true}
+
+	// leave mandatory fields
+	return models.PerformerPartial{
+		Disambiguation: nullString,
+		Gender:         nullString,
+		URL:            nullString,
+		Twitter:        nullString,
+		Instagram:      nullString,
+		Birthdate:      nullDate,
+		Ethnicity:      nullString,
+		Country:        nullString,
+		EyeColor:       nullString,
+		Height:         nullInt,
+		Measurements:   nullString,
+		FakeTits:       nullString,
+		CareerLength:   nullString,
+		Tattoos:        nullString,
+		Piercings:      nullString,
+		Aliases:        &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
+		Rating:         nullInt,
+		Details:        nullString,
+		DeathDate:      nullDate,
+		HairColor:      nullString,
+		Weight:         nullInt,
+		TagIDs:         &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
+		StashIDs:       &models.UpdateStashIDs{Mode: models.RelationshipUpdateModeSet},
+	}
+}
+
 func Test_PerformerStore_UpdatePartial(t *testing.T) {
 	var (
-		name          = "name"
-		gender        = models.GenderEnumFemale
-		checksum      = "checksum"
-		details       = "details"
-		url           = "url"
-		twitter       = "twitter"
-		instagram     = "instagram"
-		rating        = 3
-		ethnicity     = "ethnicity"
-		country       = "country"
-		eyeColor      = "eyeColor"
-		height        = 143
-		measurements  = "measurements"
-		fakeTits      = "fakeTits"
-		careerLength  = "careerLength"
-		tattoos       = "tattoos"
-		piercings     = "piercings"
-		aliases       = "aliases"
-		hairColor     = "hairColor"
-		weight        = 123
-		ignoreAutoTag = true
-		favorite      = true
-		createdAt     = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt     = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		name           = "name"
+		disambiguation = "disambiguation"
+		gender         = models.GenderEnumFemale
+		details        = "details"
+		url            = "url"
+		twitter        = "twitter"
+		instagram      = "instagram"
+		rating         = 3
+		ethnicity      = "ethnicity"
+		country        = "country"
+		eyeColor       = "eyeColor"
+		height         = 143
+		measurements   = "measurements"
+		fakeTits       = "fakeTits"
+		careerLength   = "careerLength"
+		tattoos        = "tattoos"
+		piercings      = "piercings"
+		aliases        = []string{"alias1", "alias2"}
+		hairColor      = "hairColor"
+		weight         = 123
+		ignoreAutoTag  = true
+		favorite       = true
+		endpoint1      = "endpoint1"
+		endpoint2      = "endpoint2"
+		stashID1       = "stashid1"
+		stashID2       = "stashid2"
+		createdAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
 		birthdate = models.NewDate("2003-02-01")
 		deathdate = models.NewDate("2023-02-01")
@@ -162,23 +402,26 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 			"full",
 			performerIDs[performerIdxWithDupName],
 			models.PerformerPartial{
-				Name:          models.NewOptionalString(name),
-				Checksum:      models.NewOptionalString(checksum),
-				Gender:        models.NewOptionalString(gender.String()),
-				URL:           models.NewOptionalString(url),
-				Twitter:       models.NewOptionalString(twitter),
-				Instagram:     models.NewOptionalString(instagram),
-				Birthdate:     models.NewOptionalDate(birthdate),
-				Ethnicity:     models.NewOptionalString(ethnicity),
-				Country:       models.NewOptionalString(country),
-				EyeColor:      models.NewOptionalString(eyeColor),
-				Height:        models.NewOptionalInt(height),
-				Measurements:  models.NewOptionalString(measurements),
-				FakeTits:      models.NewOptionalString(fakeTits),
-				CareerLength:  models.NewOptionalString(careerLength),
-				Tattoos:       models.NewOptionalString(tattoos),
-				Piercings:     models.NewOptionalString(piercings),
-				Aliases:       models.NewOptionalString(aliases),
+				Name:           models.NewOptionalString(name),
+				Disambiguation: models.NewOptionalString(disambiguation),
+				Gender:         models.NewOptionalString(gender.String()),
+				URL:            models.NewOptionalString(url),
+				Twitter:        models.NewOptionalString(twitter),
+				Instagram:      models.NewOptionalString(instagram),
+				Birthdate:      models.NewOptionalDate(birthdate),
+				Ethnicity:      models.NewOptionalString(ethnicity),
+				Country:        models.NewOptionalString(country),
+				EyeColor:       models.NewOptionalString(eyeColor),
+				Height:         models.NewOptionalInt(height),
+				Measurements:   models.NewOptionalString(measurements),
+				FakeTits:       models.NewOptionalString(fakeTits),
+				CareerLength:   models.NewOptionalString(careerLength),
+				Tattoos:        models.NewOptionalString(tattoos),
+				Piercings:      models.NewOptionalString(piercings),
+				Aliases: &models.UpdateStrings{
+					Values: aliases,
+					Mode:   models.RelationshipUpdateModeSet,
+				},
 				Favorite:      models.NewOptionalBool(favorite),
 				Rating:        models.NewOptionalInt(rating),
 				Details:       models.NewOptionalString(details),
@@ -186,39 +429,88 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 				HairColor:     models.NewOptionalString(hairColor),
 				Weight:        models.NewOptionalInt(weight),
 				IgnoreAutoTag: models.NewOptionalBool(ignoreAutoTag),
-				CreatedAt:     models.NewOptionalTime(createdAt),
-				UpdatedAt:     models.NewOptionalTime(updatedAt),
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithPerformer], tagIDs[tagIdx1WithDupName]},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+				StashIDs: &models.UpdateStashIDs{
+					StashIDs: []models.StashID{
+						{
+							StashID:  stashID1,
+							Endpoint: endpoint1,
+						},
+						{
+							StashID:  stashID2,
+							Endpoint: endpoint2,
+						},
+					},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+				CreatedAt: models.NewOptionalTime(createdAt),
+				UpdatedAt: models.NewOptionalTime(updatedAt),
 			},
 			models.Performer{
-				ID:            performerIDs[performerIdxWithDupName],
-				Name:          name,
-				Checksum:      checksum,
-				Gender:        gender,
-				URL:           url,
-				Twitter:       twitter,
-				Instagram:     instagram,
-				Birthdate:     &birthdate,
-				Ethnicity:     ethnicity,
-				Country:       country,
-				EyeColor:      eyeColor,
-				Height:        &height,
-				Measurements:  measurements,
-				FakeTits:      fakeTits,
-				CareerLength:  careerLength,
-				Tattoos:       tattoos,
-				Piercings:     piercings,
-				Aliases:       aliases,
-				Favorite:      favorite,
-				Rating:        &rating,
-				Details:       details,
-				DeathDate:     &deathdate,
-				HairColor:     hairColor,
-				Weight:        &weight,
-				IgnoreAutoTag: ignoreAutoTag,
-				CreatedAt:     createdAt,
-				UpdatedAt:     updatedAt,
+				ID:             performerIDs[performerIdxWithDupName],
+				Name:           name,
+				Disambiguation: disambiguation,
+				Gender:         gender,
+				URL:            url,
+				Twitter:        twitter,
+				Instagram:      instagram,
+				Birthdate:      &birthdate,
+				Ethnicity:      ethnicity,
+				Country:        country,
+				EyeColor:       eyeColor,
+				Height:         &height,
+				Measurements:   measurements,
+				FakeTits:       fakeTits,
+				CareerLength:   careerLength,
+				Tattoos:        tattoos,
+				Piercings:      piercings,
+				Aliases:        models.NewRelatedStrings(aliases),
+				Favorite:       favorite,
+				Rating:         &rating,
+				Details:        details,
+				DeathDate:      &deathdate,
+				HairColor:      hairColor,
+				Weight:         &weight,
+				IgnoreAutoTag:  ignoreAutoTag,
+				TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithPerformer], tagIDs[tagIdx1WithDupName]}),
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{
+					{
+						StashID:  stashID1,
+						Endpoint: endpoint1,
+					},
+					{
+						StashID:  stashID2,
+						Endpoint: endpoint2,
+					},
+				}),
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
 			},
 			false,
+		},
+		{
+			"clear all",
+			performerIDs[performerIdxWithTwoTags],
+			clearPerformerPartial(),
+			models.Performer{
+				ID:       performerIDs[performerIdxWithTwoTags],
+				Name:     getPerformerStringValue(performerIdxWithTwoTags, "Name"),
+				Favorite: true,
+				Aliases:  models.NewRelatedStrings([]string{}),
+				TagIDs:   models.NewRelatedIDs([]int{}),
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{}),
+			},
+			false,
+		},
+		{
+			"invalid id",
+			invalidID,
+			models.PerformerPartial{},
+			models.Performer{},
+			true,
 		},
 	}
 	for _, tt := range tests {
@@ -237,11 +529,22 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 				return
 			}
 
+			if err := loadPerformerRelationships(ctx, tt.want, got); err != nil {
+				t.Errorf("loadPerformerRelationships() error = %v", err)
+				return
+			}
+
 			assert.Equal(tt.want, *got)
 
 			s, err := qb.Find(ctx, tt.id)
 			if err != nil {
 				t.Errorf("PerformerStore.Find() error = %v", err)
+			}
+
+			// load relationships
+			if err := loadPerformerRelationships(ctx, tt.want, s); err != nil {
+				t.Errorf("loadPerformerRelationships() error = %v", err)
+				return
 			}
 
 			assert.Equal(tt.want, *s)
@@ -653,6 +956,19 @@ func TestPerformerQuery(t *testing.T) {
 			nil,
 			false,
 		},
+		{
+			"alias",
+			nil,
+			&models.PerformerFilterType{
+				Aliases: &models.StringCriterionInput{
+					Value:    getPerformerStringValue(performerIdxWithGallery, "alias"),
+					Modifier: models.CriterionModifierEquals,
+				},
+			},
+			[]int{performerIdxWithGallery},
+			[]int{performerIdxWithScene},
+			false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -706,8 +1022,7 @@ func TestPerformerUpdatePerformerImage(t *testing.T) {
 		// create performer to test against
 		const name = "TestPerformerUpdatePerformerImage"
 		performer := models.Performer{
-			Name:     name,
-			Checksum: md5.FromString(name),
+			Name: name,
 		}
 		err := qb.Create(ctx, &performer)
 		if err != nil {
@@ -746,8 +1061,7 @@ func TestPerformerDestroyPerformerImage(t *testing.T) {
 		// create performer to test against
 		const name = "TestPerformerDestroyPerformerImage"
 		performer := models.Performer{
-			Name:     name,
-			Checksum: md5.FromString(name),
+			Name: name,
 		}
 		err := qb.Create(ctx, &performer)
 		if err != nil {
@@ -925,6 +1239,7 @@ func verifyPerformerQuery(t *testing.T, filter models.PerformerFilterType, verif
 }
 
 func queryPerformers(ctx context.Context, t *testing.T, performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) []*models.Performer {
+	t.Helper()
 	performers, _, err := db.Performer.Query(ctx, performerFilter, findFilter)
 	if err != nil {
 		t.Errorf("Error querying performers: %s", err.Error())
@@ -1253,23 +1568,78 @@ func TestPerformerStashIDs(t *testing.T) {
 	if err := withRollbackTxn(func(ctx context.Context) error {
 		qb := db.Performer
 
-		// create performer to test against
-		const name = "TestStashIDs"
-		performer := models.Performer{
-			Name:     name,
-			Checksum: md5.FromString(name),
+		// create scene to test against
+		const name = "TestPerformerStashIDs"
+		performer := &models.Performer{
+			Name: name,
 		}
-		err := qb.Create(ctx, &performer)
-		if err != nil {
+		if err := qb.Create(ctx, performer); err != nil {
 			return fmt.Errorf("Error creating performer: %s", err.Error())
 		}
 
-		testStashIDReaderWriter(ctx, t, qb, performer.ID)
+		if err := performer.LoadStashIDs(ctx, qb); err != nil {
+			return err
+		}
+
+		testPerformerStashIDs(ctx, t, performer)
 		return nil
 	}); err != nil {
 		t.Error(err.Error())
 	}
 }
+
+func testPerformerStashIDs(ctx context.Context, t *testing.T, s *models.Performer) {
+	// ensure no stash IDs to begin with
+	assert.Len(t, s.StashIDs.List(), 0)
+
+	// add stash ids
+	const stashIDStr = "stashID"
+	const endpoint = "endpoint"
+	stashID := models.StashID{
+		StashID:  stashIDStr,
+		Endpoint: endpoint,
+	}
+
+	qb := db.Performer
+
+	// update stash ids and ensure was updated
+	var err error
+	s, err = qb.UpdatePartial(ctx, s.ID, models.PerformerPartial{
+		StashIDs: &models.UpdateStashIDs{
+			StashIDs: []models.StashID{stashID},
+			Mode:     models.RelationshipUpdateModeSet,
+		},
+	})
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if err := s.LoadStashIDs(ctx, qb); err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	assert.Equal(t, []models.StashID{stashID}, s.StashIDs.List())
+
+	// remove stash ids and ensure was updated
+	s, err = qb.UpdatePartial(ctx, s.ID, models.PerformerPartial{
+		StashIDs: &models.UpdateStashIDs{
+			StashIDs: []models.StashID{stashID},
+			Mode:     models.RelationshipUpdateModeRemove,
+		},
+	})
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if err := s.LoadStashIDs(ctx, qb); err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	assert.Len(t, s.StashIDs.List(), 0)
+}
+
 func TestPerformerQueryLegacyRating(t *testing.T) {
 	const rating = 3
 	ratingCriterion := models.IntCriterionInput{
