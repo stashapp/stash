@@ -31,6 +31,7 @@ import {
   ImageInput,
   URLField,
 } from "src/components/Shared";
+import { RatingSystemType } from "src/utils/rating";
 import useToast from "src/hooks/Toast";
 import { ImageUtils, FormUtils, getStashIDs } from "src/utils";
 import { MovieSelect } from "src/components/Shared/Select";
@@ -110,6 +111,29 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }, [scene.galleries]);
 
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
+
+  const ratingShortcuts: { [char: string]: number } =
+    stashConfig?.ui?.ratingSystemOptions.type === RatingSystemType.Decimal
+      ? {
+          "1": 10,
+          "2": 20,
+          "3": 30,
+          "4": 40,
+          "5": 50,
+          "6": 60,
+          "7": 70,
+          "8": 80,
+          "9": 90,
+          "0": 100,
+        }
+      : {
+          "0": NaN,
+          "1": 20,
+          "2": 40,
+          "3": 60,
+          "4": 80,
+          "5": 100,
+        };
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -205,20 +229,14 @@ export const SceneEditPanel: React.FC<IProps> = ({
           document.activeElement.blur();
         }
 
-        Mousetrap.bind("0", () => setRating(NaN));
-        Mousetrap.bind("1", () => setRating(20));
-        Mousetrap.bind("2", () => setRating(40));
-        Mousetrap.bind("3", () => setRating(60));
-        Mousetrap.bind("4", () => setRating(80));
-        Mousetrap.bind("5", () => setRating(100));
+        for (const key in ratingShortcuts) {
+          Mousetrap.bind(key, () => setRating(ratingShortcuts[key]));
+        }
 
         setTimeout(() => {
-          Mousetrap.unbind("0");
-          Mousetrap.unbind("1");
-          Mousetrap.unbind("2");
-          Mousetrap.unbind("3");
-          Mousetrap.unbind("4");
-          Mousetrap.unbind("5");
+          for (const key in ratingShortcuts) {
+            Mousetrap.unbind(key);
+          }
         }, 1000);
       });
 
