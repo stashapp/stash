@@ -212,7 +212,7 @@ func (db *Database) open(disableForeignKeys bool) (*sqlx.DB, error) {
 	return conn, nil
 }
 
-func (db *Database) Reset() error {
+func (db *Database) Remove() error {
 	databasePath := db.dbPath
 	err := db.Close()
 
@@ -234,6 +234,15 @@ func (db *Database) Reset() error {
 				return errors.New("Error removing database: " + err.Error())
 			}
 		}
+	}
+
+	return nil
+}
+
+func (db *Database) Reset() error {
+	databasePath := db.dbPath
+	if err := db.Remove(); err != nil {
+		return err
 	}
 
 	if err := db.Open(databasePath); err != nil {

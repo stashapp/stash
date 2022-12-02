@@ -41,22 +41,31 @@ func NewAnonymiser(db *Database, outPath string) (*Anonymiser, error) {
 }
 
 func (db *Anonymiser) Anonymise(ctx context.Context) error {
-	defer db.Close()
+	if err := func() error {
+		defer db.Close()
 
-	return utils.Do([]func() error{
-		func() error { return db.deleteBlobs() },
-		func() error { return db.anonymiseFolders(ctx) },
-		func() error { return db.anonymiseFiles(ctx) },
-		func() error { return db.anonymiseFingerprints(ctx) },
-		func() error { return db.anonymiseScenes(ctx) },
-		func() error { return db.anonymiseImages(ctx) },
-		func() error { return db.anonymiseGalleries(ctx) },
-		func() error { return db.anonymisePerformers(ctx) },
-		func() error { return db.anonymiseStudios(ctx) },
-		func() error { return db.anonymiseTags(ctx) },
-		func() error { return db.anonymiseMovies(ctx) },
-		func() error { db.optimise(); return nil },
-	})
+		return utils.Do([]func() error{
+			func() error { return db.deleteBlobs() },
+			func() error { return db.anonymiseFolders(ctx) },
+			func() error { return db.anonymiseFiles(ctx) },
+			func() error { return db.anonymiseFingerprints(ctx) },
+			func() error { return db.anonymiseScenes(ctx) },
+			func() error { return db.anonymiseImages(ctx) },
+			func() error { return db.anonymiseGalleries(ctx) },
+			func() error { return db.anonymisePerformers(ctx) },
+			func() error { return db.anonymiseStudios(ctx) },
+			func() error { return db.anonymiseTags(ctx) },
+			func() error { return db.anonymiseMovies(ctx) },
+			func() error { db.optimise(); return nil },
+		})
+	}(); err != nil {
+		// delete the database
+		_ = db.Remove()
+
+		return err
+	}
+
+	return nil
 }
 
 func (db *Anonymiser) truncateTable(tableName string) error {

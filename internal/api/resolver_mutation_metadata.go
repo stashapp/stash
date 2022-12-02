@@ -186,6 +186,7 @@ func (r *mutationResolver) AnonymiseDatabase(ctx context.Context, input Anonymis
 
 	err := database.Anonymise(outPath)
 	if err != nil {
+		logger.Errorf("Error anonymising database: %v", err)
 		return nil, err
 	}
 
