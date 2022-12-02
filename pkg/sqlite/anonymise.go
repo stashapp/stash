@@ -420,7 +420,6 @@ func (db *Anonymiser) anonymisePerformers(ctx context.Context) error {
 			query := dialect.From(table).Select(
 				table.Col(idColumn),
 				table.Col("name"),
-				table.Col("aliases"),
 				table.Col("details"),
 				table.Col("url"),
 				table.Col("twitter"),
@@ -436,7 +435,6 @@ func (db *Anonymiser) anonymisePerformers(ctx context.Context) error {
 				var (
 					id        int
 					name      sql.NullString
-					aliases   sql.NullString
 					details   sql.NullString
 					url       sql.NullString
 					twitter   sql.NullString
@@ -448,7 +446,6 @@ func (db *Anonymiser) anonymisePerformers(ctx context.Context) error {
 				if err := rows.Scan(
 					&id,
 					&name,
-					&aliases,
 					&details,
 					&url,
 					&twitter,
@@ -461,7 +458,6 @@ func (db *Anonymiser) anonymisePerformers(ctx context.Context) error {
 
 				set := goqu.Record{}
 				db.obfuscateNullString(set, "name", name)
-				db.obfuscateNullString(set, "aliases", aliases)
 				db.obfuscateNullString(set, "details", details)
 				db.obfuscateNullString(set, "url", url)
 				db.obfuscateNullString(set, "twitter", twitter)
@@ -490,6 +486,10 @@ func (db *Anonymiser) anonymisePerformers(ctx context.Context) error {
 		}); err != nil {
 			return err
 		}
+	}
+
+	if err := db.anonymiseAliases(ctx, goqu.T(performersAliasesTable), "performer_id"); err != nil {
+		return err
 	}
 
 	return nil
