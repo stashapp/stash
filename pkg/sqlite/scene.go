@@ -1623,19 +1623,19 @@ func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int) ([][]*mo
 
 func sortByPath(scenes [][]*models.Scene) {
 	lessFunc := func(i int, j int) bool {
-		firstPathI := getFirstSortedPath(scenes[i])
-		firstPathJ := getFirstSortedPath(scenes[j])
+		firstPathI := getFirstPath(scenes[i])
+		firstPathJ := getFirstPath(scenes[j])
 		return firstPathI < firstPathJ
 	}
 	sort.SliceStable(scenes, lessFunc)
 }
 
-func getFirstSortedPath(scenes []*models.Scene) string {
-	paths := make([]string, 0)
+func getFirstPath(scenes []*models.Scene) string {
+	var firstPath string
 	for _, scene := range scenes {
-		paths = append(paths, scene.Path)
+		if firstPath == "" || scene.Path < firstPath {
+			firstPath = scene.Path
+		}
 	}
-	sort.Strings(paths)
-	firstPath := paths[0]
 	return firstPath
 }
