@@ -657,6 +657,7 @@
   "developmentVersion": "Entwicklungsversion",
   "dialogs": {
     "aliases_must_be_unique": "Aliase müssen einzigartig sein",
+    "create_new_entity": "Neues {entity} erstellen",
     "delete_alert": "Folgende {count, plural, one {{singularEntity}} other {{pluralEntity}}} werden dauerhaft gelöscht:",
     "delete_confirm": "Möchten Sie {entityName} wirklich löschen?",
     "delete_entity_desc": "{count, plural, one {Möchten Sie {singularEntity} wirklich löschen? Sofern die Datei nicht ebenfalls gelöscht wird, wird diese {singularEntity} beim Scannen wieder hinzugefügt.} other {Möchten Sie {pluralEntity} wirklich löschen? Sofern die Dateien nicht ebenfalls gelöscht werden, werden diese {pluralEntity} beim Scannen wieder hinzugefügt.}}",
@@ -876,6 +877,8 @@
       "age_context": "{age} {years_old} in dieser Szene"
     },
     "phash": "PHashwert",
+    "play_count": "Anzahl Wiedergaben",
+    "play_duration": "Abspielzeit",
     "stream": "Stream",
     "video_codec": "Video-Codec"
   },
@@ -959,7 +962,10 @@
   "sceneTagger": "Szenen-Tagger",
   "sceneTags": "Szenen-Tags",
   "scene_count": "Szenenanzahl",
+  "scene_created_at": "Szene angelegt am",
+  "scene_date": "Datum der Szene",
   "scene_id": "Szenen-ID",
+  "scene_updated_at": "Szene geändert am",
   "scenes": "Szenen",
   "scenes_updated_at": "Szene aktualisiert am",
   "search_filter": {
@@ -1086,6 +1092,7 @@
     "default_filter_set": "Standardfiltersatz",
     "delete_past_tense": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} gelöscht",
     "generating_screenshot": "Screenshot wird erstellt…",
+    "merged_scenes": "Zusammengefasste Szene",
     "merged_tags": "Zusammengeführte Tags",
     "removed_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} gelöscht",
     "rescanning_entity": "Erneutes Scannen von {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
@@ -1104,6 +1111,7 @@
   "videos": "Videos",
   "view_all": "Alle ansehen",
   "weight": "Gewicht",
+  "weight_kg": "Gewicht (kg)",
   "years_old": "Jahre alt",
   "zip_file_count": "Anzahl der Zip-Dateien"
 }
