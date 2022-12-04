@@ -1632,8 +1632,8 @@ func sortByPath(scenes [][]*models.Scene) {
 
 func getFirstPath(scenes []*models.Scene) string {
 	var firstPath string
-	for _, scene := range scenes {
-		if firstPath == "" || scene.Path < firstPath {
+	for i, scene := range scenes {
+		if i == 0 || scene.Path < firstPath {
 			firstPath = scene.Path
 		}
 	}
