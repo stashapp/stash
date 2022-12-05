@@ -1,10 +1,12 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"net/http"
 	"os"
@@ -31,6 +33,7 @@ import (
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/ui"
 )
 
@@ -166,36 +169,8 @@ func Start() error {
 	}.Routes())
 	r.Mount("/downloads", downloadsRoutes{}.Routes())
 
-	r.HandleFunc("/css", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/css")
-		if !c.GetCSSEnabled() {
-			return
-		}
-
-		// search for custom.css in current directory, then $HOME/.stash
-		fn := c.GetCSSPath()
-		exists, _ := fsutil.FileExists(fn)
-		if !exists {
-			return
-		}
-
-		http.ServeFile(w, r, fn)
-	})
-	r.HandleFunc("/javascript", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/javascript")
-		if !c.GetJavascriptEnabled() {
-			return
-		}
-
-		// search for custom.js in current directory, then $HOME/.stash
-		fn := c.GetJavascriptPath()
-		exists, _ := fsutil.FileExists(fn)
-		if !exists {
-			return
-		}
-
-		http.ServeFile(w, r, fn)
-	})
+	r.HandleFunc("/css", cssHandler(c, pluginCache))
+	r.HandleFunc("/javascript", javascriptHandler(c, pluginCache))
 	r.HandleFunc("/customlocales", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		if c.GetCustomLocalesEnabled() {
@@ -327,6 +302,93 @@ func Start() error {
 	}
 
 	return nil
+}
+
+func copyFile(w io.Writer, path string) (time.Time, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return time.Time{}, err
+	}
+	defer f.Close()
+
+	info, err := f.Stat()
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	_, err = io.Copy(w, f)
+
+	return info.ModTime(), err
+}
+
+func serveFiles(w http.ResponseWriter, r *http.Request, name string, paths []string) {
+	buffer := bytes.Buffer{}
+
+	latestModTime := time.Time{}
+
+	for _, path := range paths {
+		modTime, err := copyFile(&buffer, path)
+		if err != nil {
+			logger.Errorf("error serving file %s: %v", path, err)
+		} else {
+			if modTime.After(latestModTime) {
+				latestModTime = modTime
+			}
+			buffer.Write([]byte("\n"))
+		}
+	}
+
+	bufferReader := bytes.NewReader(buffer.Bytes())
+	http.ServeContent(w, r, name, latestModTime, bufferReader)
+}
+
+func cssHandler(c *config.Instance, pluginCache *plugin.Cache) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// concatenate with plugin css files
+		w.Header().Set("Content-Type", "text/css")
+
+		// add plugin css files first
+		var paths []string
+
+		for _, p := range pluginCache.ListPlugins() {
+			paths = append(paths, p.UI.CSS...)
+		}
+
+		if c.GetCSSEnabled() {
+			// search for custom.css in current directory, then $HOME/.stash
+			fn := c.GetCSSPath()
+			exists, _ := fsutil.FileExists(fn)
+			if exists {
+				paths = append(paths, fn)
+			}
+		}
+
+		serveFiles(w, r, "custom.css", paths)
+	}
+}
+
+func javascriptHandler(c *config.Instance, pluginCache *plugin.Cache) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/javascript")
+
+		// add plugin javascript files first
+		var paths []string
+
+		for _, p := range pluginCache.ListPlugins() {
+			paths = append(paths, p.UI.Javascript...)
+		}
+
+		if c.GetJavascriptEnabled() {
+			// search for custom.js in current directory, then $HOME/.stash
+			fn := c.GetJavascriptPath()
+			exists, _ := fsutil.FileExists(fn)
+			if exists {
+				paths = append(paths, fn)
+			}
+		}
+
+		serveFiles(w, r, "custom.js", paths)
+	}
 }
 
 func printVersion() {
