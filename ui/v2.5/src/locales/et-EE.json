@@ -757,6 +757,7 @@
   },
   "dimensions": "Dimensioonid",
   "director": "Režissöör",
+  "disambiguation": "Ühesõnastamine",
   "display_mode": {
     "grid": "Võrgustik",
     "list": "Nimekiri",
