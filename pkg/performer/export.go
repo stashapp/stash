@@ -11,34 +11,35 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type ImageStashIDGetter interface {
+type ImageAliasStashIDGetter interface {
 	GetImage(ctx context.Context, performerID int) ([]byte, error)
+	models.AliasLoader
 	models.StashIDLoader
 }
 
 // ToJSON converts a Performer object into its JSON equivalent.
-func ToJSON(ctx context.Context, reader ImageStashIDGetter, performer *models.Performer) (*jsonschema.Performer, error) {
+func ToJSON(ctx context.Context, reader ImageAliasStashIDGetter, performer *models.Performer) (*jsonschema.Performer, error) {
 	newPerformerJSON := jsonschema.Performer{
-		Name:          performer.Name,
-		Gender:        performer.Gender.String(),
-		URL:           performer.URL,
-		Ethnicity:     performer.Ethnicity,
-		Country:       performer.Country,
-		EyeColor:      performer.EyeColor,
-		Measurements:  performer.Measurements,
-		FakeTits:      performer.FakeTits,
-		CareerLength:  performer.CareerLength,
-		Tattoos:       performer.Tattoos,
-		Piercings:     performer.Piercings,
-		Aliases:       performer.Aliases,
-		Twitter:       performer.Twitter,
-		Instagram:     performer.Instagram,
-		Favorite:      performer.Favorite,
-		Details:       performer.Details,
-		HairColor:     performer.HairColor,
-		IgnoreAutoTag: performer.IgnoreAutoTag,
-		CreatedAt:     json.JSONTime{Time: performer.CreatedAt},
-		UpdatedAt:     json.JSONTime{Time: performer.UpdatedAt},
+		Name:           performer.Name,
+		Disambiguation: performer.Disambiguation,
+		Gender:         performer.Gender.String(),
+		URL:            performer.URL,
+		Ethnicity:      performer.Ethnicity,
+		Country:        performer.Country,
+		EyeColor:       performer.EyeColor,
+		Measurements:   performer.Measurements,
+		FakeTits:       performer.FakeTits,
+		CareerLength:   performer.CareerLength,
+		Tattoos:        performer.Tattoos,
+		Piercings:      performer.Piercings,
+		Twitter:        performer.Twitter,
+		Instagram:      performer.Instagram,
+		Favorite:       performer.Favorite,
+		Details:        performer.Details,
+		HairColor:      performer.HairColor,
+		IgnoreAutoTag:  performer.IgnoreAutoTag,
+		CreatedAt:      json.JSONTime{Time: performer.CreatedAt},
+		UpdatedAt:      json.JSONTime{Time: performer.UpdatedAt},
 	}
 
 	if performer.Birthdate != nil {
@@ -59,26 +60,26 @@ func ToJSON(ctx context.Context, reader ImageStashIDGetter, performer *models.Pe
 		newPerformerJSON.Weight = *performer.Weight
 	}
 
+	if err := performer.LoadAliases(ctx, reader); err != nil {
+		return nil, fmt.Errorf("loading performer aliases: %w", err)
+	}
+
+	newPerformerJSON.Aliases = performer.Aliases.List()
+
+	if err := performer.LoadStashIDs(ctx, reader); err != nil {
+		return nil, fmt.Errorf("loading performer stash ids: %w", err)
+	}
+
+	newPerformerJSON.StashIDs = performer.StashIDs.List()
+
 	image, err := reader.GetImage(ctx, performer.ID)
 	if err != nil {
-		return nil, fmt.Errorf("error getting performers image: %v", err)
+		return nil, fmt.Errorf("getting performers image: %w", err)
 	}
 
 	if len(image) > 0 {
 		newPerformerJSON.Image = utils.GetBase64StringFromData(image)
 	}
-
-	stashIDs, _ := reader.GetStashIDs(ctx, performer.ID)
-	var ret []models.StashID
-	for _, stashID := range stashIDs {
-		newJoin := models.StashID{
-			StashID:  stashID.StashID,
-			Endpoint: stashID.Endpoint,
-		}
-		ret = append(ret, newJoin)
-	}
-
-	newPerformerJSON.StashIDs = ret
 
 	return &newPerformerJSON, nil
 }

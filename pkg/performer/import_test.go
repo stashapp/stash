@@ -6,7 +6,6 @@ import (
 
 	"github.com/stretchr/testify/mock"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/mocks"
@@ -60,7 +59,6 @@ func TestImporterPreImport(t *testing.T) {
 
 	assert.Nil(t, err)
 	expectedPerformer := *createFullPerformer(0, performerName)
-	expectedPerformer.Checksum = md5.FromString(performerName)
 	assert.Equal(t, expectedPerformer, i.performer)
 }
 
@@ -87,7 +85,7 @@ func TestImporterPreImportWithTag(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingTagID, i.tags[0].ID)
+	assert.Equal(t, existingTagID, i.performer.TagIDs.List()[0])
 
 	i.Input.Tags = []string{existingTagErr}
 	err = i.PreImport(testCtx)
@@ -124,7 +122,7 @@ func TestImporterPreImportWithMissingTag(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingTagID, i.tags[0].ID)
+	assert.Equal(t, existingTagID, i.performer.TagIDs.List()[0])
 
 	tagReaderWriter.AssertExpectations(t)
 }
@@ -181,14 +179,28 @@ func TestImporterFindExistingID(t *testing.T) {
 		},
 	}
 
+	pp := 1
+	findFilter := &models.FindFilterType{
+		PerPage: &pp,
+	}
+
+	performerFilter := func(name string) *models.PerformerFilterType {
+		return &models.PerformerFilterType{
+			Name: &models.StringCriterionInput{
+				Value:    name,
+				Modifier: models.CriterionModifierEquals,
+			},
+		}
+	}
+
 	errFindByNames := errors.New("FindByNames error")
-	readerWriter.On("FindByNames", testCtx, []string{performerName}, false).Return(nil, nil).Once()
-	readerWriter.On("FindByNames", testCtx, []string{existingPerformerName}, false).Return([]*models.Performer{
+	readerWriter.On("Query", testCtx, performerFilter(performerName), findFilter).Return(nil, 0, nil).Once()
+	readerWriter.On("Query", testCtx, performerFilter(existingPerformerName), findFilter).Return([]*models.Performer{
 		{
 			ID: existingPerformerID,
 		},
-	}, nil).Once()
-	readerWriter.On("FindByNames", testCtx, []string{performerNameErr}, false).Return(nil, errFindByNames).Once()
+	}, 1, nil).Once()
+	readerWriter.On("Query", testCtx, performerFilter(performerNameErr), findFilter).Return(nil, 0, errFindByNames).Once()
 
 	id, err := i.FindExistingID(testCtx)
 	assert.Nil(t, id)
@@ -202,32 +214,6 @@ func TestImporterFindExistingID(t *testing.T) {
 	i.Input.Name = performerNameErr
 	id, err = i.FindExistingID(testCtx)
 	assert.Nil(t, id)
-	assert.NotNil(t, err)
-
-	readerWriter.AssertExpectations(t)
-}
-
-func TestImporterPostImportUpdateTags(t *testing.T) {
-	readerWriter := &mocks.PerformerReaderWriter{}
-
-	i := Importer{
-		ReaderWriter: readerWriter,
-		tags: []*models.Tag{
-			{
-				ID: existingTagID,
-			},
-		},
-	}
-
-	updateErr := errors.New("UpdateTags error")
-
-	readerWriter.On("UpdateTags", testCtx, performerID, []int{existingTagID}).Return(nil).Once()
-	readerWriter.On("UpdateTags", testCtx, errTagsID, mock.AnythingOfType("[]int")).Return(updateErr).Once()
-
-	err := i.PostImport(testCtx, performerID)
-	assert.Nil(t, err)
-
-	err = i.PostImport(testCtx, errTagsID)
 	assert.NotNil(t, err)
 
 	readerWriter.AssertExpectations(t)

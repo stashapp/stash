@@ -54,6 +54,7 @@
     "import": "Tuo…",
     "import_from_file": "Tuo tiedostosta",
     "logout": "Kirjaudu ulos",
+    "make_primary": "Tee ensisijaikseksi",
     "merge": "Yhdistä",
     "merge_from": "Yhdistä kohteesta",
     "merge_into": "Yhdistä kohteeseen",
@@ -66,6 +67,7 @@
     "play_selected": "Toista valittu",
     "preview": "Esikatselu",
     "previous_action": "Takaisin",
+    "reassign": "Määritä uudelleen",
     "refresh": "Päivitä",
     "reload_plugins": "Lataa lisäosat uudelleen",
     "reload_scrapers": "Lataa kaapija uudelleen",
@@ -98,10 +100,12 @@
     "show": "Näytä",
     "show_configuration": "Näytä Asetus",
     "skip": "Ohita",
+    "split": "Jaa osiin",
     "stop": "Pysäytä",
     "submit": "Lähetä",
     "submit_stash_box": "Lähetä Stash-Boxiin",
     "submit_update": "Lähetä päivitys",
+    "swap": "Vaihda",
     "tasks": {
       "clean_confirm_message": "Haluatko varmasti puhdistaa? Tämä poistaa tietokannan tiedot ja poistaa kaikki generoidut tukitiedostot kaikista kohtauksista ja gallerioista, eikä niitä enää ole löydettävissä levyltä.",
       "dry_mode_selected": "Kuivatila käytössä. Poistoa ei oikeasti tehdä, vain lokikirjaus.",
@@ -120,6 +124,7 @@
   "also_known_as": "Esiintyy myös nimillä",
   "ascending": "Nouseva",
   "average_resolution": "Keskimääräinen resoluutio",
+  "between_and": "ja",
   "birth_year": "Syntymävuosi",
   "birthdate": "Syntymäpäivä",
   "bitrate": "Bittinopeus",
@@ -189,6 +194,7 @@
     },
     "categories": {
       "about": "Tietoja",
+      "changelog": "Muutosloki",
       "interface": "Käyttöliittymä",
       "logs": "Lokit",
       "metadata_providers": "Metadatan tarjoajat",
@@ -241,6 +247,10 @@
         "stash-box_integration": "Stash-box integraatio",
         "username": "Käyttäjätunnus",
         "username_desc": "Käyttäjätunnus Stashiin. Jätä tyhjäksi, mikäli et halua autentikointia"
+      },
+      "backup_directory_path": {
+        "description": "SQLite -tietokannan varmuuskopiokansion sijainti",
+        "heading": "Varmuuskopiokansion polku"
       },
       "cache_location": "Välimuistin kansion sijainti",
       "cache_path_head": "Välimuistin polku",
@@ -414,6 +424,15 @@
         "heading": "Mukautettu CSS",
         "option_label": "Mukautettu CSS käytössä"
       },
+      "custom_javascript": {
+        "description": "Sivu täytyy ladata uudelleen, jotta muutokset astuvat voimaan.",
+        "heading": "Mukautettu Javascript",
+        "option_label": "Mukautettu Javascript käytössä"
+      },
+      "custom_locales": {
+        "heading": "Mukautettu lokalisointi",
+        "option_label": "Mukautettu lokalisointi käytössä"
+      },
       "delete_options": {
         "description": "Oletusasetukset kun poistetaan kuvia, gallerioita ja kohtauksia.",
         "heading": "Poistovalinnat",
@@ -434,7 +453,23 @@
           "description": "Poistaa mahdollisuuden luoda uusia kohteita alasvetovalikoista",
           "heading": "Poista luominen alasvetovalikoista"
         },
-        "heading": "Muokkaaminen"
+        "heading": "Muokkaaminen",
+        "rating_system": {
+          "star_precision": {
+            "label": "Arvostelutähtien tarkkuus",
+            "options": {
+              "full": "Kokonainen",
+              "half": "Puolikas",
+              "quarter": "Neljäsosa"
+            }
+          },
+          "type": {
+            "options": {
+              "decimal": "Desimaalit",
+              "stars": "Tähdet"
+            }
+          }
+        }
       },
       "funscript_offset": {
         "description": "Viive millisekunneissa interaktiivisille skripteille kun toistetaan."
@@ -486,6 +521,7 @@
       "scene_player": {
         "heading": "Kohtauksien soitin",
         "options": {
+          "always_start_from_beginning": "Aloita video aina alusta",
           "auto_start_video": "Aloita video automaattisesti",
           "auto_start_video_on_play_selected": {
             "description": "Aloita video automaattisesti kun kohtaus valitaan tai käytetään satunnainen kohtaus -sivua",
@@ -507,6 +543,24 @@
       "slideshow_delay": {
         "description": "Kuvaesitys käytössä gallerioissa seinätilassa",
         "heading": "Kuvaesityksen viive (sekunteina)"
+      },
+      "studio_panel": {
+        "heading": "Studionäkymä",
+        "options": {
+          "show_child_studio_content": {
+            "description": "Näytä alistudiot studionäkymässä",
+            "heading": "Näytä alistudioiden sisältö"
+          }
+        }
+      },
+      "tag_panel": {
+        "heading": "Tunnistenäkymä",
+        "options": {
+          "show_child_tagged_content": {
+            "description": "Näytä tunnistenäkymässä myös alitunnisteiden sisältö",
+            "heading": "Näytä alitunnisteiden sisältö"
+          }
+        }
       },
       "title": "Käyttöliittymä"
     }
@@ -552,20 +606,24 @@
   "death_date": "Kuolinpäivä",
   "death_year": "Kuolinvuosi",
   "descending": "Laskeva",
+  "description": "Kuvaus",
   "detail": "Lisätiedot",
   "details": "Lisätiedot",
   "developmentVersion": "Kehitysversio",
   "dialogs": {
     "aliases_must_be_unique": "Aliaksien pitää olla uniikkeja",
+    "create_new_entity": "Luo uus {entity}",
     "delete_alert": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} poistetaan pysyvästi:",
     "delete_confirm": "Haluatko varmasti poistaa {entityName}?",
     "delete_entity_desc": "{count, plural, one {Haluatko varmasti, että {singularEntity} poistetaan? Jos tiedostoa ei poisteta {singularEntity} lisätään uudelleen heti kun uusi skannaus suoritetaan.} other {Haluatko varmasti, että {pluralEntity} poistetaan? Jos tiedostoja ei poisteta, {pluralEntity} lisätään uudelleen heti kun uusi skannaus suoritetaan.}}",
+    "delete_entity_simple_desc": "{count, plural, one {Haluatko varmasti poistaa tämän {singularEntity}?} other {Haluatko varmasti poistaa nämä {pluralEntity}?}}",
     "delete_entity_title": "{count, plural, one {Poista {singularEntity}} other {Poista {pluralEntity}}}",
     "delete_galleries_extra": "...ja kaikki kuvatiedostot, jotka eivät kuulu mihinkään galleriaan.",
     "delete_gallery_files": "Poista gallerian kansio/zip -tiedosto ja kaikki kuvat, jotka eivät kuulu mihinkään muuhun galleriaan.",
     "delete_object_desc": "Halutatko varmasti poistaa {count, plural, one {{singularEntity}} other {{pluralEntity}}}?",
     "delete_object_overflow": "…ja {count} muuta {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Poista {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "dont_show_until_updated": "Elä näytä ennen seuraavaa päivitystä",
     "edit_entity_title": "Muokkaa {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Sisällytä liittyvät objektit vientiin",
     "export_title": "Vie",
@@ -588,6 +646,10 @@
         "pan_y": "Pan Y",
         "zoom": "Zoomaus"
       }
+    },
+    "merge": {
+      "destination": "Kohde",
+      "source": "Lähde"
     },
     "merge_tags": {
       "destination": "Kohde",
@@ -682,15 +744,23 @@
   "false": "Ei",
   "favourite": "Suosikki",
   "file": "tiedosto",
+  "file_count": "Tiedostojen määrä",
   "file_info": "Tiedoston tiedot",
   "file_mod_time": "Tiedostoa muokattu",
   "files": "tiedostoa",
+  "files_amount": "{value} tiedostoa",
   "filesize": "Tiedoston koko",
   "filter": "Suodatin",
   "filter_name": "Suodattimen nimi",
   "filters": "Suodattimet",
+  "folder": "Kansio",
   "framerate": "Kuvataajuus",
   "frames_per_second": "{value} kuvaa sekunnissa",
+  "front_page": {
+    "types": {
+      "saved_filter": "Tallennettu suodatin"
+    }
+  },
   "galleries": "Galleriat",
   "gallery": "Galleria",
   "gallery_count": "Gallerioiden määrä",
@@ -715,6 +785,7 @@
   },
   "hasMarkers": "On merkki",
   "height": "Pituus",
+  "height_cm": "Pituus (cm)",
   "help": "Apua",
   "image": "Kuva",
   "image_count": "Kuvien määrä",
@@ -726,6 +797,7 @@
   "interactive": "Interaktiivinen",
   "interactive_speed": "Interaktiivinen nopeus",
   "isMissing": "Puuttuu",
+  "last_played_at": "Viimeksi toistettu",
   "library": "Kirjasto",
   "loading": {
     "generic": "Ladataan…"
@@ -744,6 +816,8 @@
       "age_context": "{age} {years_old} tässä kohtauksessa"
     },
     "phash": "PHash",
+    "play_count": "Toistokerrat",
+    "play_duration": "Toistettu aika",
     "stream": "Suoratoisto",
     "video_codec": "Videokodekki"
   },
@@ -799,6 +873,7 @@
     "performer_selection": "Esiintyjän valinta",
     "performer_successfully_tagged": "Esiintyjälle on asetettu tunnisteet:",
     "query_all_performers_in_the_database": "Kaikki esiintyjät tietokannassa",
+    "refresh_tagged_performers": "Päivitä tunnistetut esiintyjät",
     "status_tagging_job_queued": "Tila: Tunnisteiden asettaminen laitettu jonoon",
     "status_tagging_performers": "Tila: Asetetaan esiintyjien tunnisteita",
     "untagged_performers": "Esiintyjät joille ei ole asetettu tunnisteita",
@@ -810,12 +885,18 @@
   "queue": "Jono",
   "random": "Satunnainen",
   "rating": "Arvio",
+  "recently_added_objects": "Viimeksi lisätyt {objects}",
+  "recently_released_objects": "Viimeksi julkaistut {objects}",
   "resolution": "Resoluutio",
   "scene": "Kohtaus",
   "sceneTagger": "Kohtauksien tunnistetila",
   "sceneTags": "Kohtauksen tunnisteet",
+  "scene_code": "Studiokoodi",
   "scene_count": "Kohtauksien määrä",
+  "scene_created_at": "Kohtaus luotu",
+  "scene_date": "Kohtauksen päiväys",
   "scene_id": "Kohtauksen ID",
+  "scene_updated_at": "Kohtaus päivitetty",
   "scenes": "Kohtaukset",
   "scenes_updated_at": "Kohtaus päivitetty",
   "search_filter": {
@@ -947,5 +1028,6 @@
   "videos": "Videot",
   "view_all": "Näytä kaikki",
   "weight": "Paino",
+  "weight_kg": "Paino (kg)",
   "years_old": "-vuotias"
 }

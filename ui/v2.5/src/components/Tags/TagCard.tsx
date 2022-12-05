@@ -196,9 +196,9 @@ export const TagCard: React.FC<IProps> = ({
           {maybeRenderDescription()}
           {maybeRenderParents()}
           {maybeRenderChildren()}
-          {maybeRenderPopoverButtonGroup()}
         </>
       }
+      popovers={maybeRenderPopoverButtonGroup()}
       selected={selected}
       selecting={selecting}
       onSelectedChanged={onSelectedChanged}
