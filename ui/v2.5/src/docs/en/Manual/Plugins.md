@@ -34,13 +34,14 @@ description: <optional description of the plugin>
 version: <optional version tag>
 url: <optional url>
 
-# optional list of css files to include in the UI
-uiCSS:
-  - <path to css file>
+ui:
+  # optional list of css files to include in the UI
+  css:
+    - <path to css file>
 
-# optional list of js files to include in the UI
-uiJavascript:
-  - <path to javascript file>
+  # optional list of js files to include in the UI
+  javascript:
+    - <path to javascript file>
 
 # the following are used for plugin tasks only
 exec:
