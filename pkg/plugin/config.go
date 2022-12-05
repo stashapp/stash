@@ -58,10 +58,33 @@ type Config struct {
 	Hooks []*HookConfig `yaml:"hooks"`
 
 	// Javascript files that will be injected into the stash UI.
-	UIJavascript []string `yaml:"uiJavascript"`
+	UI UIConfig `yaml:"ui"`
+}
+
+type UIConfig struct {
+	// Javascript files that will be injected into the stash UI.
+	Javascript []string `yaml:"javascript"`
 
 	// CSS files that will be injected into the stash UI.
-	UICSS []string `yaml:"uiCSS"`
+	CSS []string `yaml:"css"`
+}
+
+func (c UIConfig) getCSSFiles(parent Config) []string {
+	ret := make([]string, len(c.CSS))
+	for i, v := range c.CSS {
+		ret[i] = filepath.Join(parent.getConfigPath(), v)
+	}
+
+	return ret
+}
+
+func (c UIConfig) getJavascriptFiles(parent Config) []string {
+	ret := make([]string, len(c.Javascript))
+	for i, v := range c.Javascript {
+		ret[i] = filepath.Join(parent.getConfigPath(), v)
+	}
+
+	return ret
 }
 
 func (c Config) getPluginTasks(includePlugin bool) []*PluginTask {
@@ -120,15 +143,17 @@ func (c Config) getName() string {
 
 func (c Config) toPlugin() *Plugin {
 	return &Plugin{
-		ID:           c.id,
-		Name:         c.getName(),
-		Description:  c.Description,
-		URL:          c.URL,
-		Version:      c.Version,
-		Tasks:        c.getPluginTasks(false),
-		Hooks:        c.getPluginHooks(false),
-		UIJavascript: c.getUIJavascriptFiles(),
-		UICSS:        c.getUICSSFiles(),
+		ID:          c.id,
+		Name:        c.getName(),
+		Description: c.Description,
+		URL:         c.URL,
+		Version:     c.Version,
+		Tasks:       c.getPluginTasks(false),
+		Hooks:       c.getPluginHooks(false),
+		UI: PluginUI{
+			Javascript: c.UI.getJavascriptFiles(c),
+			CSS:        c.UI.getCSSFiles(c),
+		},
 	}
 }
 
@@ -181,24 +206,6 @@ func (c Config) getExecCommand(task *OperationConfig) []string {
 		}
 
 		ret[i] = strings.ReplaceAll(arg, "{pluginDir}", dir)
-	}
-
-	return ret
-}
-
-func (c Config) getUICSSFiles() []string {
-	ret := make([]string, len(c.UICSS))
-	for i, v := range c.UICSS {
-		ret[i] = filepath.Join(c.getConfigPath(), v)
-	}
-
-	return ret
-}
-
-func (c Config) getUIJavascriptFiles() []string {
-	ret := make([]string, len(c.UIJavascript))
-	for i, v := range c.UIJavascript {
-		ret[i] = filepath.Join(c.getConfigPath(), v)
 	}
 
 	return ret
