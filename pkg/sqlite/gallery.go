@@ -1109,7 +1109,7 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 	case "title":
 		addFileTable()
 		addFolderTable()
-		query.sortAndPagination += " ORDER BY galleries.title COLLATE NATURAL_CS " + direction + ", folders.path " + direction + ", file_folder.path " + direction + ", files.basename COLLATE NATURAL_CS " + direction
+		query.sortAndPagination += " ORDER BY COALESCE(galleries.title, folders.path, files.basename) COLLATE NATURAL_CS " + direction + ", file_folder.path " + direction
 	default:
 		query.sortAndPagination += getSort(sort, direction, "galleries")
 	}
