@@ -102,11 +102,11 @@ func (r *updateRecord) setSQLiteDate(destField string, v models.OptionalDate) {
 	if v.Set {
 		if v.Null {
 			r.set(destField, models.SQLiteDate{})
+		} else {
+			r.set(destField, models.SQLiteDate{
+				String: v.Value.String(),
+				Valid:  true,
+			})
 		}
-
-		r.set(destField, models.SQLiteDate{
-			String: v.Value.String(),
-			Valid:  true,
-		})
 	}
 }
