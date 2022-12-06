@@ -21,6 +21,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/scene/generate"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
 type scanner interface {
@@ -111,9 +112,11 @@ type sceneFinder interface {
 // handlerRequiredFilter returns true if a File's handler needs to be executed despite the file not being updated.
 type handlerRequiredFilter struct {
 	extensionConfig
-	SceneFinder   sceneFinder
-	ImageFinder   fileCounter
-	GalleryFinder galleryFinder
+	txnManager     txn.Manager
+	SceneFinder    sceneFinder
+	ImageFinder    fileCounter
+	GalleryFinder  galleryFinder
+	CaptionUpdater video.CaptionUpdater
 
 	FolderCache *lru.LRU
 
@@ -126,9 +129,11 @@ func newHandlerRequiredFilter(c *config.Instance) *handlerRequiredFilter {
 
 	return &handlerRequiredFilter{
 		extensionConfig:          newExtensionConfig(c),
+		txnManager:               db,
 		SceneFinder:              db.Scene,
 		ImageFinder:              db.Image,
 		GalleryFinder:            db.Gallery,
+		CaptionUpdater:           db.File,
 		FolderCache:              lru.New(processes * 2),
 		videoFileNamingAlgorithm: c.GetVideoFileNamingAlgorithm(),
 	}
@@ -203,6 +208,15 @@ func (f *handlerRequiredFilter) Accept(ctx context.Context, ff file.File) bool {
 			if len(scenes) > 0 {
 				// if it is, then it needs to be re-generated
 				return true
+			}
+		}
+
+		// clean captions - scene handler handles this as well, but
+		// unchanged files aren't processed by the scene handler
+		videoFile, _ := ff.(*file.VideoFile)
+		if videoFile != nil {
+			if err := video.CleanCaptions(ctx, videoFile, f.txnManager, f.CaptionUpdater); err != nil {
+				logger.Errorf("Error cleaning captions: %v", err)
 			}
 		}
 	}
@@ -329,6 +343,7 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 			Handler: &scene.ScanHandler{
 				CreatorUpdater: db.Scene,
 				PluginCache:    pluginCache,
+				CaptionUpdater: db.File,
 				CoverGenerator: &coverGenerator{},
 				ScanGenerator: &sceneGenerators{
 					input:     options,
