@@ -757,6 +757,7 @@
   },
   "dimensions": "大小",
   "director": "导演",
+  "disambiguation": "确定",
   "display_mode": {
     "grid": "格状显示",
     "list": "列表显示",
