@@ -296,7 +296,7 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 	if isVideoFile && (s.ExcludeVideo || matchFileRegex(path, f.videoExcludeRegex)) {
 		logger.Debugf("Skipping %s as it matches video exclusion patterns", path)
 		return false
-	} else if (isImageFile || isZipFile) && s.ExcludeImage || matchFileRegex(path, f.imageExcludeRegex) {
+	} else if (isImageFile || isZipFile) && (s.ExcludeImage || matchFileRegex(path, f.imageExcludeRegex)) {
 		logger.Debugf("Skipping %s as it matches image exclusion patterns", path)
 		return false
 	}
