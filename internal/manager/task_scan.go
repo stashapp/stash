@@ -268,6 +268,7 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 	}
 
 	if !info.IsDir() && !isVideoFile && !isImageFile && !isZipFile {
+		logger.Debugf("Skipping %s as it does not match any known file extensions", path)
 		return false
 	}
 
@@ -280,6 +281,7 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 	s := getStashFromDirPath(f.stashPaths, path)
 
 	if s == nil {
+		logger.Debugf("Skipping %s as it is not in the stash library", path)
 		return false
 	}
 
@@ -287,12 +289,15 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 	// add a trailing separator so that it correctly matches against patterns like path/.*
 	pathExcludeTest := path + string(filepath.Separator)
 	if (s.ExcludeVideo || matchFileRegex(pathExcludeTest, f.videoExcludeRegex)) && (s.ExcludeImage || matchFileRegex(pathExcludeTest, f.imageExcludeRegex)) {
+		logger.Debugf("Skipping directory %s as it matches video and image exclusion patterns", path)
 		return false
 	}
 
 	if isVideoFile && (s.ExcludeVideo || matchFileRegex(path, f.videoExcludeRegex)) {
+		logger.Debugf("Skipping %s as it matches video exclusion patterns", path)
 		return false
-	} else if (isImageFile || isZipFile) && s.ExcludeImage || matchFileRegex(path, f.imageExcludeRegex) {
+	} else if (isImageFile || isZipFile) && (s.ExcludeImage || matchFileRegex(path, f.imageExcludeRegex)) {
+		logger.Debugf("Skipping %s as it matches image exclusion patterns", path)
 		return false
 	}
 
