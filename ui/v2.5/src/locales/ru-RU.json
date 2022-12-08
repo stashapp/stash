@@ -757,6 +757,7 @@
   },
   "dimensions": "Размер",
   "director": "Режиссер",
+  "disambiguation": "Многозначность",
   "display_mode": {
     "grid": "Сетка",
     "list": "Список",
