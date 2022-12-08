@@ -13,7 +13,10 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf"
+	"github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/providers/confmap"
+	"github.com/knadh/koanf/providers/file"
 
 	"github.com/stashapp/stash/internal/identify"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -183,9 +186,9 @@ const (
 	autostartVideoOnPlaySelectedDefault = true
 	ContinuePlaylistDefault             = "continue_playlist_default"
 	ShowStudioAsText                    = "show_studio_as_text"
-	CSSEnabled                          = "cssEnabled"
-	JavascriptEnabled                   = "javascriptEnabled"
-	CustomLocalesEnabled                = "customLocalesEnabled"
+	CSSEnabled                          = "cssenabled"
+	JavascriptEnabled                   = "javascriptenabled"
+	CustomLocalesEnabled                = "customlocalesenabled"
 
 	ShowScrubber        = "show_scrubber"
 	showScrubberDefault = true
@@ -238,12 +241,12 @@ const (
 	dlnaVideoSortOrderDefault = "title"
 
 	// Logging options
-	LogFile          = "logFile"
-	LogOut           = "logOut"
+	LogFile          = "logfile"
+	LogOut           = "logout"
 	defaultLogOut    = true
-	LogLevel         = "logLevel"
+	LogLevel         = "loglevel"
 	defaultLogLevel  = "Info"
-	LogAccess        = "logAccess"
+	LogAccess        = "logaccess"
 	defaultLogAccess = true
 
 	// Default settings
@@ -257,7 +260,7 @@ const (
 	deleteGeneratedDefaultDefault = true
 
 	// Desktop Integration Options
-	NoBrowser                           = "noBrowser"
+	NoBrowser                           = "nobrowser"
 	NoBrowserDefault                    = false
 	NotificationsEnabled                = "notifications_enabled"
 	NotificationsEnabledDefault         = true
@@ -299,12 +302,13 @@ func (s *StashBoxError) Error() string {
 
 type Config struct {
 	// main instance - backed by config file
-	main *viper.Viper
+	main *koanf.Koanf
 
 	// override instance - populated from flags/environment
 	// not written to config file
-	overrides *viper.Viper
+	overrides *koanf.Koanf
 
+	filePath    string
 	isNewSystem bool
 	// configUpdates  chan int
 	certFile string
@@ -322,6 +326,15 @@ func GetInstance() *Config {
 	return instance
 }
 
+func (i *Config) load(f string) error {
+	if err := i.main.Load(file.Provider(f), yaml.Parser()); err != nil {
+		return err
+	}
+
+	i.filePath = f
+	return nil
+}
+
 func (i *Config) IsNewSystem() bool {
 	return i.isNewSystem
 }
@@ -329,7 +342,7 @@ func (i *Config) IsNewSystem() bool {
 func (i *Config) SetConfigFile(fn string) {
 	i.Lock()
 	defer i.Unlock()
-	i.main.SetConfigFile(fn)
+	i.filePath = fn
 }
 
 func (i *Config) InitTLS() {
@@ -377,13 +390,28 @@ func (i *Config) Set(key string, value interface{}) {
 	// }
 	i.Lock()
 	defer i.Unlock()
-	i.main.Set(key, value)
+
+	i.set(key, value)
+}
+
+func (i *Config) set(key string, value interface{}) {
+	// assumes lock held
+	i.main.Load(confmap.Provider(map[string]interface{}{
+		key: value,
+	}, "."), nil)
 }
 
 func (i *Config) SetDefault(key string, value interface{}) {
 	i.Lock()
 	defer i.Unlock()
-	i.main.SetDefault(key, value)
+
+	i.setDefault(key, value)
+}
+
+func (i *Config) setDefault(key string, value interface{}) {
+	if !i.main.Exists(key) {
+		i.set(key, value)
+	}
 }
 
 func (i *Config) SetPassword(value string) {
@@ -398,7 +426,17 @@ func (i *Config) SetPassword(value string) {
 func (i *Config) Write() error {
 	i.Lock()
 	defer i.Unlock()
-	return i.main.WriteConfig()
+
+	return i.write()
+}
+
+func (i *Config) write() error {
+	data, err := i.main.Marshal(yaml.Parser())
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(i.filePath, data, 0644)
 }
 
 // FileEnvSet returns true if the configuration file environment parameter
@@ -411,7 +449,7 @@ func FileEnvSet() bool {
 func (i *Config) GetConfigFile() string {
 	i.RLock()
 	defer i.RUnlock()
-	return i.main.ConfigFileUsed()
+	return i.filePath
 }
 
 // GetConfigPath returns the path of the directory containing the used
@@ -429,9 +467,9 @@ func (i *Config) GetDefaultDatabaseFilePath() string {
 // viper returns the viper instance that should be used to get the provided
 // key. Returns the overrides instance if the key exists there, otherwise it
 // returns the main instance. Assumes read lock held.
-func (i *Config) viper(key string) *viper.Viper {
+func (i *Config) viper(key string) *koanf.Koanf {
 	v := i.main
-	if i.overrides.IsSet(key) {
+	if i.overrides.Exists(key) {
 		v = i.overrides
 	}
 
@@ -440,10 +478,10 @@ func (i *Config) viper(key string) *viper.Viper {
 
 // viper returns the viper instance that has the key set. Returns nil
 // if no instance has the key. Assumes read lock held.
-func (i *Config) viperWith(key string) *viper.Viper {
+func (i *Config) viperWith(key string) *koanf.Koanf {
 	v := i.viper(key)
 
-	if v.IsSet(key) {
+	if v.Exists(key) {
 		return v
 	}
 
@@ -454,7 +492,7 @@ func (i *Config) HasOverride(key string) bool {
 	i.RLock()
 	defer i.RUnlock()
 
-	return i.overrides.IsSet(key)
+	return i.overrides.Exists(key)
 }
 
 // These functions wrap the equivalent viper functions, checking the override
@@ -464,28 +502,28 @@ func (i *Config) unmarshalKey(key string, rawVal interface{}) error {
 	i.RLock()
 	defer i.RUnlock()
 
-	return i.viper(key).UnmarshalKey(key, rawVal)
+	return i.viper(key).Unmarshal(key, rawVal)
 }
 
 func (i *Config) getStringSlice(key string) []string {
 	i.RLock()
 	defer i.RUnlock()
 
-	return i.viper(key).GetStringSlice(key)
+	return i.viper(key).Strings(key)
 }
 
 func (i *Config) getString(key string) string {
 	i.RLock()
 	defer i.RUnlock()
 
-	return i.viper(key).GetString(key)
+	return i.viper(key).String(key)
 }
 
 func (i *Config) getBool(key string) bool {
 	i.RLock()
 	defer i.RUnlock()
 
-	return i.viper(key).GetBool(key)
+	return i.viper(key).Bool(key)
 }
 
 func (i *Config) getBoolDefault(key string, def bool) bool {
@@ -494,8 +532,8 @@ func (i *Config) getBoolDefault(key string, def bool) bool {
 
 	ret := def
 	v := i.viper(key)
-	if v.IsSet(key) {
-		ret = v.GetBool(key)
+	if v.Exists(key) {
+		ret = v.Bool(key)
 	}
 	return ret
 }
@@ -504,21 +542,21 @@ func (i *Config) getInt(key string) int {
 	i.RLock()
 	defer i.RUnlock()
 
-	return i.viper(key).GetInt(key)
+	return i.viper(key).Int(key)
 }
 
 func (i *Config) getFloat64(key string) float64 {
 	i.RLock()
 	defer i.RUnlock()
 
-	return i.viper(key).GetFloat64(key)
+	return i.viper(key).Float64(key)
 }
 
 func (i *Config) getStringMapString(key string) map[string]string {
 	i.RLock()
 	defer i.RUnlock()
 
-	ret := i.viper(key).GetStringMapString(key)
+	ret := i.viper(key).StringMap(key)
 
 	// GetStringMapString returns an empty map regardless of whether the
 	// key exists or not.
@@ -539,13 +577,13 @@ func (i *Config) GetStashPaths() StashConfigs {
 	var ret StashConfigs
 
 	v := i.main
-	if !v.IsSet(Stash) {
+	if !v.Exists(Stash) {
 		v = i.overrides
 	}
 
-	if err := v.UnmarshalKey(Stash, &ret); err != nil || len(ret) == 0 {
+	if err := v.Unmarshal(Stash, &ret); err != nil || len(ret) == 0 {
 		// fallback to legacy format
-		ss := v.GetStringSlice(Stash)
+		ss := v.Strings(Stash)
 		ret = nil
 		for _, path := range ss {
 			toAdd := &StashConfig{
@@ -768,7 +806,7 @@ func (i *Config) GetAllPluginConfiguration() map[string]map[string]interface{} {
 
 	ret := make(map[string]map[string]interface{})
 
-	sub := i.viper(PluginsSetting).GetStringMap(PluginsSetting)
+	sub := i.viper(PluginsSetting).Cut(PluginsSetting).Raw()
 	if sub == nil {
 		return ret
 	}
@@ -777,7 +815,7 @@ func (i *Config) GetAllPluginConfiguration() map[string]map[string]interface{} {
 		// HACK: viper changes map keys to case insensitive values, so the workaround is to
 		// convert map keys to snake case for storage
 		name := fromSnakeCase(plugin)
-		ret[name] = fromSnakeCaseMap(i.viper(PluginsSetting).GetStringMap(PluginsSettingPrefix + plugin))
+		ret[name] = fromSnakeCaseMap(i.viper(PluginsSetting).Cut(PluginsSettingPrefix + plugin).Raw())
 	}
 
 	return ret
@@ -791,11 +829,13 @@ func (i *Config) GetPluginConfiguration(pluginID string) map[string]interface{} 
 
 	// HACK: viper changes map keys to case insensitive values, so the workaround is to
 	// convert map keys to snake case for storage
-	v := i.viper(key).GetStringMap(key)
+	v := i.viper(key).Cut(key).Raw()
 
 	return fromSnakeCaseMap(v)
 }
 
+// SetPluginConfiguration sets the configuration for a plugin.
+// It will overwrite any existing configuration.
 func (i *Config) SetPluginConfiguration(pluginID string, v map[string]interface{}) {
 	i.Lock()
 	defer i.Unlock()
@@ -806,7 +846,7 @@ func (i *Config) SetPluginConfiguration(pluginID string, v map[string]interface{
 
 	// HACK: viper changes map keys to case insensitive values, so the workaround is to
 	// convert map keys to snake case for storage
-	i.viper(key).Set(key, toSnakeCaseMap(v))
+	i.set(key, toSnakeCaseMap(v))
 }
 
 func (i *Config) GetDisabledPlugins() []string {
@@ -1047,8 +1087,8 @@ func (i *Config) GetMaxSessionAge() int {
 
 	ret := DefaultMaxSessionAge
 	v := i.viper(MaxSessionAge)
-	if v.IsSet(MaxSessionAge) {
-		ret = v.GetInt(MaxSessionAge)
+	if v.Exists(MaxSessionAge) {
+		ret = v.Int(MaxSessionAge)
 	}
 
 	return ret
@@ -1073,8 +1113,8 @@ func (i *Config) GetMenuItems() []string {
 	i.RLock()
 	defer i.RUnlock()
 	v := i.viper(MenuItems)
-	if v.IsSet(MenuItems) {
-		return v.GetStringSlice(MenuItems)
+	if v.Exists(MenuItems) {
+		return v.Strings(MenuItems)
 	}
 	return defaultMenuItems
 }
@@ -1089,8 +1129,8 @@ func (i *Config) GetWallShowTitle() bool {
 
 	ret := defaultWallShowTitle
 	v := i.viper(WallShowTitle)
-	if v.IsSet(WallShowTitle) {
-		ret = v.GetBool(WallShowTitle)
+	if v.Exists(WallShowTitle) {
+		ret = v.Bool(WallShowTitle)
 	}
 	return ret
 }
@@ -1105,8 +1145,8 @@ func (i *Config) GetWallPlayback() string {
 
 	ret := defaultWallPlayback
 	v := i.viper(WallPlayback)
-	if v.IsSet(WallPlayback) {
-		ret = v.GetString(WallPlayback)
+	if v.Exists(WallPlayback) {
+		ret = v.String(WallPlayback)
 	}
 
 	return ret
@@ -1141,13 +1181,13 @@ func (i *Config) getSlideshowDelay() int {
 
 	ret := defaultImageLightboxSlideshowDelay
 	v := i.viper(ImageLightboxSlideshowDelay)
-	if v.IsSet(ImageLightboxSlideshowDelay) {
-		ret = v.GetInt(ImageLightboxSlideshowDelay)
+	if v.Exists(ImageLightboxSlideshowDelay) {
+		ret = v.Int(ImageLightboxSlideshowDelay)
 	} else {
 		// fallback to old location
 		v := i.viper(legacyImageLightboxSlideshowDelay)
-		if v.IsSet(legacyImageLightboxSlideshowDelay) {
-			ret = v.GetInt(legacyImageLightboxSlideshowDelay)
+		if v.Exists(legacyImageLightboxSlideshowDelay) {
+			ret = v.Int(legacyImageLightboxSlideshowDelay)
 		}
 	}
 
@@ -1165,23 +1205,23 @@ func (i *Config) GetImageLightboxOptions() ConfigImageLightboxResult {
 	}
 
 	if v := i.viperWith(ImageLightboxDisplayModeKey); v != nil {
-		mode := ImageLightboxDisplayMode(v.GetString(ImageLightboxDisplayModeKey))
+		mode := ImageLightboxDisplayMode(v.String(ImageLightboxDisplayModeKey))
 		ret.DisplayMode = &mode
 	}
 	if v := i.viperWith(ImageLightboxScaleUp); v != nil {
-		value := v.GetBool(ImageLightboxScaleUp)
+		value := v.Bool(ImageLightboxScaleUp)
 		ret.ScaleUp = &value
 	}
 	if v := i.viperWith(ImageLightboxResetZoomOnNav); v != nil {
-		value := v.GetBool(ImageLightboxResetZoomOnNav)
+		value := v.Bool(ImageLightboxResetZoomOnNav)
 		ret.ResetZoomOnNav = &value
 	}
 	if v := i.viperWith(ImageLightboxScrollModeKey); v != nil {
-		mode := ImageLightboxScrollMode(v.GetString(ImageLightboxScrollModeKey))
+		mode := ImageLightboxScrollMode(v.String(ImageLightboxScrollModeKey))
 		ret.ScrollMode = &mode
 	}
 	if v := i.viperWith(ImageLightboxScrollAttemptsBeforeChange); v != nil {
-		ret.ScrollAttemptsBeforeChange = v.GetInt(ImageLightboxScrollAttemptsBeforeChange)
+		ret.ScrollAttemptsBeforeChange = v.Int(ImageLightboxScrollAttemptsBeforeChange)
 	}
 
 	return ret
@@ -1202,7 +1242,7 @@ func (i *Config) GetUIConfiguration() map[string]interface{} {
 
 	// HACK: viper changes map keys to case insensitive values, so the workaround is to
 	// convert map keys to snake case for storage
-	v := i.viper(UI).GetStringMap(UI)
+	v := i.viper(UI).Cut(UI).Raw()
 
 	return fromSnakeCaseMap(v)
 }
@@ -1213,7 +1253,7 @@ func (i *Config) SetUIConfiguration(v map[string]interface{}) {
 
 	// HACK: viper changes map keys to case insensitive values, so the workaround is to
 	// convert map keys to snake case for storage
-	i.viper(UI).Set(UI, toSnakeCaseMap(v))
+	i.set(UI, toSnakeCaseMap(v))
 }
 
 func (i *Config) GetCSSPath() string {
@@ -1373,9 +1413,9 @@ func (i *Config) GetDefaultIdentifySettings() *identify.Options {
 	defer i.RUnlock()
 	v := i.viper(DefaultIdentifySettings)
 
-	if v.IsSet(DefaultIdentifySettings) {
+	if v.Exists(DefaultIdentifySettings) {
 		var ret identify.Options
-		if err := v.UnmarshalKey(DefaultIdentifySettings, &ret); err != nil {
+		if err := v.Unmarshal(DefaultIdentifySettings, &ret); err != nil {
 			return nil
 		}
 		return &ret
@@ -1392,9 +1432,9 @@ func (i *Config) GetDefaultScanSettings() *ScanMetadataOptions {
 	defer i.RUnlock()
 	v := i.viper(DefaultScanSettings)
 
-	if v.IsSet(DefaultScanSettings) {
+	if v.Exists(DefaultScanSettings) {
 		var ret ScanMetadataOptions
-		if err := v.UnmarshalKey(DefaultScanSettings, &ret); err != nil {
+		if err := v.Unmarshal(DefaultScanSettings, &ret); err != nil {
 			return nil
 		}
 		return &ret
@@ -1411,9 +1451,9 @@ func (i *Config) GetDefaultAutoTagSettings() *AutoTagMetadataOptions {
 	defer i.RUnlock()
 	v := i.viper(DefaultAutoTagSettings)
 
-	if v.IsSet(DefaultAutoTagSettings) {
+	if v.Exists(DefaultAutoTagSettings) {
 		var ret AutoTagMetadataOptions
-		if err := v.UnmarshalKey(DefaultAutoTagSettings, &ret); err != nil {
+		if err := v.Unmarshal(DefaultAutoTagSettings, &ret); err != nil {
 			return nil
 		}
 		return &ret
@@ -1430,9 +1470,9 @@ func (i *Config) GetDefaultGenerateSettings() *models.GenerateMetadataOptions {
 	defer i.RUnlock()
 	v := i.viper(DefaultGenerateSettings)
 
-	if v.IsSet(DefaultGenerateSettings) {
+	if v.Exists(DefaultGenerateSettings) {
 		var ret models.GenerateMetadataOptions
-		if err := v.UnmarshalKey(DefaultGenerateSettings, &ret); err != nil {
+		if err := v.Unmarshal(DefaultGenerateSettings, &ret); err != nil {
 			return nil
 		}
 		return &ret
@@ -1525,8 +1565,8 @@ func (i *Config) GetMaxUploadSize() int64 {
 	ret := int64(1024)
 
 	v := i.viper(MaxUploadSize)
-	if v.IsSet(MaxUploadSize) {
-		ret = v.GetInt64(MaxUploadSize)
+	if v.Exists(MaxUploadSize) {
+		ret = v.Int64(MaxUploadSize)
 	}
 	return ret << 20
 }
@@ -1626,7 +1666,7 @@ func (i *Config) Validate() error {
 	var missingFields []string
 
 	for _, p := range mandatoryPaths {
-		if !i.viper(p).IsSet(p) || i.viper(p).GetString(p) == "" {
+		if !i.viper(p).Exists(p) || i.viper(p).String(p) == "" {
 			missingFields = append(missingFields, p)
 		}
 	}
@@ -1637,7 +1677,7 @@ func (i *Config) Validate() error {
 		}
 	}
 
-	if i.GetBlobsStorage() == BlobStorageTypeFilesystem && i.viper(BlobsPath).GetString(BlobsPath) == "" {
+	if i.GetBlobsStorage() == BlobStorageTypeFilesystem && i.viper(BlobsPath).String(BlobsPath) == "" {
 		return MissingConfigError{
 			missingFields: []string{BlobsPath},
 		}
@@ -1657,52 +1697,52 @@ func (i *Config) setDefaultValues() {
 
 	// set the default host and port so that these are written to the config
 	// file
-	i.main.SetDefault(Host, hostDefault)
-	i.main.SetDefault(Port, portDefault)
+	i.setDefault(Host, hostDefault)
+	i.setDefault(Port, portDefault)
 
-	i.main.SetDefault(ParallelTasks, parallelTasksDefault)
-	i.main.SetDefault(SequentialScanning, SequentialScanningDefault)
-	i.main.SetDefault(PreviewSegmentDuration, previewSegmentDurationDefault)
-	i.main.SetDefault(PreviewSegments, previewSegmentsDefault)
-	i.main.SetDefault(PreviewExcludeStart, previewExcludeStartDefault)
-	i.main.SetDefault(PreviewExcludeEnd, previewExcludeEndDefault)
-	i.main.SetDefault(PreviewAudio, previewAudioDefault)
-	i.main.SetDefault(SoundOnPreview, false)
+	i.setDefault(ParallelTasks, parallelTasksDefault)
+	i.setDefault(SequentialScanning, SequentialScanningDefault)
+	i.setDefault(PreviewSegmentDuration, previewSegmentDurationDefault)
+	i.setDefault(PreviewSegments, previewSegmentsDefault)
+	i.setDefault(PreviewExcludeStart, previewExcludeStartDefault)
+	i.setDefault(PreviewExcludeEnd, previewExcludeEndDefault)
+	i.setDefault(PreviewAudio, previewAudioDefault)
+	i.setDefault(SoundOnPreview, false)
 
-	i.main.SetDefault(ThemeColor, DefaultThemeColor)
+	i.setDefault(ThemeColor, DefaultThemeColor)
 
-	i.main.SetDefault(WriteImageThumbnails, writeImageThumbnailsDefault)
-	i.main.SetDefault(CreateImageClipsFromVideos, createImageClipsFromVideosDefault)
+	i.setDefault(WriteImageThumbnails, writeImageThumbnailsDefault)
+	i.setDefault(CreateImageClipsFromVideos, createImageClipsFromVideosDefault)
 
-	i.main.SetDefault(Database, defaultDatabaseFilePath)
+	i.setDefault(Database, defaultDatabaseFilePath)
 
-	i.main.SetDefault(dangerousAllowPublicWithoutAuth, dangerousAllowPublicWithoutAuthDefault)
-	i.main.SetDefault(SecurityTripwireAccessedFromPublicInternet, securityTripwireAccessedFromPublicInternetDefault)
+	i.setDefault(dangerousAllowPublicWithoutAuth, dangerousAllowPublicWithoutAuthDefault)
+	i.setDefault(SecurityTripwireAccessedFromPublicInternet, securityTripwireAccessedFromPublicInternetDefault)
 
 	// Set generated to the metadata path for backwards compat
-	i.main.SetDefault(Generated, i.main.GetString(Metadata))
+	i.setDefault(Generated, i.main.String(Metadata))
 
-	i.main.SetDefault(NoBrowser, NoBrowserDefault)
-	i.main.SetDefault(NotificationsEnabled, NotificationsEnabledDefault)
-	i.main.SetDefault(ShowOneTimeMovedNotification, ShowOneTimeMovedNotificationDefault)
+	i.setDefault(NoBrowser, NoBrowserDefault)
+	i.setDefault(NotificationsEnabled, NotificationsEnabledDefault)
+	i.setDefault(ShowOneTimeMovedNotification, ShowOneTimeMovedNotificationDefault)
 
 	// Set default scrapers and plugins paths
-	i.main.SetDefault(ScrapersPath, defaultScrapersPath)
-	i.main.SetDefault(PluginsPath, defaultPluginsPath)
+	i.setDefault(ScrapersPath, defaultScrapersPath)
+	i.setDefault(PluginsPath, defaultPluginsPath)
 
 	// Set default gallery cover regex
-	i.main.SetDefault(GalleryCoverRegex, galleryCoverRegexDefault)
+	i.setDefault(GalleryCoverRegex, galleryCoverRegexDefault)
 
 	// Set NoProxy default
-	i.main.SetDefault(NoProxy, noProxyDefault)
+	i.setDefault(NoProxy, noProxyDefault)
 
 	// set default package sources
-	i.main.SetDefault(PluginPackageSources, []map[string]string{{
+	i.setDefault(PluginPackageSources, []map[string]string{{
 		"name":      sourceDefaultName,
 		"url":       pluginPackageSourcesDefault,
 		"localpath": sourceDefaultPath,
 	}})
-	i.main.SetDefault(ScraperPackageSources, []map[string]string{{
+	i.setDefault(ScraperPackageSources, []map[string]string{{
 		"name":      sourceDefaultName,
 		"url":       scraperPackageSourcesDefault,
 		"localpath": sourceDefaultPath,
@@ -1718,13 +1758,13 @@ func (i *Config) setExistingSystemDefaults() {
 	if !i.isNewSystem {
 		// Existing systems as of the introduction of auto-browser open should retain existing
 		// behavior and not start the browser automatically.
-		if !i.main.InConfig(NoBrowser) {
-			i.main.Set(NoBrowser, true)
+		if !i.main.Exists(NoBrowser) {
+			i.set(NoBrowser, true)
 		}
 
 		// Existing systems as of the introduction of the taskbar should inform users.
-		if !i.main.InConfig(ShowOneTimeMovedNotification) {
-			i.main.Set(ShowOneTimeMovedNotification, true)
+		if !i.main.Exists(ShowOneTimeMovedNotification) {
+			i.set(ShowOneTimeMovedNotification, true)
 		}
 	}
 }
