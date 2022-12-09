@@ -37,6 +37,8 @@ export interface IUIConfig {
 
   ratingSystemOptions?: RatingSystemOptions;
 
+  // if true the chromecast option will enabled
+  enableChromecast?: boolean;
   // if true continue scene will always play from the beginning
   alwaysStartFromBeginning?: boolean;
   // if true enable activity tracking

@@ -196,12 +196,14 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const started = useRef(false);
   const auto = useRef(false);
   const interactiveReady = useRef(false);
-
-  useScript(
-    "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"
-  );
   const minimumPlayPercent = uiConfig?.minimumPlayPercent ?? 0;
   const trackActivity = uiConfig?.trackActivity ?? false;
+
+  if(uiConfig?.enableChromecast) {
+    useScript(
+      "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"
+    );
+  }
 
   const file = useMemo(
     () => ((scene?.files.length ?? 0) > 0 ? scene?.files[0] : undefined),
