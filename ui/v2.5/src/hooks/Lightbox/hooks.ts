@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { LightboxContext, IState } from "./context";
 
@@ -39,27 +39,74 @@ export const useLightbox = (state: Partial<Omit<IState, "isVisible">>) => {
 
 export const useGalleryLightbox = (id: string) => {
   const { setLightboxState } = useContext(LightboxContext);
-  const [fetchGallery, { data }] = GQL.useFindGalleryLazyQuery({
-    variables: { id },
+
+  const pageSize = 40;
+  const [page, setPage] = useState(1);
+
+  const currentFilter = useMemo(() => {
+    return {
+      page,
+      per_page: pageSize,
+      sort: "path",
+    };
+  }, [page]);
+
+  const [fetchGallery, { data }] = GQL.useFindImagesLazyQuery({
+    variables: {
+      filter: currentFilter,
+      image_filter: {
+        galleries: {
+          modifier: GQL.CriterionModifier.Includes,
+          value: [id],
+        },
+      },
+    },
   });
+
+  const pages = useMemo(() => {
+    const totalCount = data?.findImages.count ?? 0;
+    return Math.ceil(totalCount / pageSize);
+  }, [data?.findImages.count]);
+
+  const handleLightBoxPage = useCallback(
+    (direction: number) => {
+      if (direction === -1) {
+        if (page === 1) {
+          setPage(pages);
+        } else {
+          setPage(page - 1);
+        }
+      } else if (direction === 1) {
+        if (page === pages) {
+          // return to the first page
+          setPage(1);
+        } else {
+          setPage(page + 1);
+        }
+      }
+    },
+    [page, pages]
+  );
 
   useEffect(() => {
     if (data)
       setLightboxState({
-        images: data.findGallery?.images ?? [],
         isLoading: false,
         isVisible: true,
+        images: data.findImages?.images ?? [],
+        pageCallback: pages > 1 ? handleLightBoxPage : undefined,
+        pageHeader: `Page ${page} / ${pages}`,
       });
-  }, [setLightboxState, data]);
+  }, [setLightboxState, data, handleLightBoxPage, page, pages]);
 
   const show = () => {
     if (data)
       setLightboxState({
         isLoading: false,
         isVisible: true,
-        images: data.findGallery?.images ?? [],
-        pageCallback: undefined,
-        pageHeader: undefined,
+        images: data.findImages?.images ?? [],
+        pageCallback: pages > 1 ? handleLightBoxPage : undefined,
+        pageHeader: `Page ${page} / ${pages}`,
       });
     else {
       setLightboxState({

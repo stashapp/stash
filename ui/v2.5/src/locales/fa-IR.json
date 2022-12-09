@@ -1,0 +1,10 @@
+{
+  "actions": {
+    "add": "افزودن",
+    "add_directory": "افزودن پوشه",
+    "add_entity": "افزودن {entityType}",
+    "add_to_entity": "اضافه‌کردن به {entityType}",
+    "allow": "اجازه دادن",
+    "allow_temporarily": "به طور موقت اجازه دهید"
+  }
+}

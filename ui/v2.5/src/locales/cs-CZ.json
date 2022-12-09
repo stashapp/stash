@@ -54,6 +54,7 @@
     "import": "Importovat…",
     "import_from_file": "Importovat ze souboru",
     "logout": "Odhlásit se",
+    "make_primary": "Natavit jako primární",
     "merge": "Sloučit",
     "merge_from": "Sloučit z",
     "merge_into": "Sloučit do",
@@ -66,6 +67,7 @@
     "play_selected": "Přehrát vybrané",
     "preview": "Náhled",
     "previous_action": "Zpět",
+    "reassign": "Přeřadit",
     "refresh": "Obnovit",
     "reload_plugins": "Znovu načíst pluginy",
     "reload_scrapers": "Znovu načíst scrapery",
@@ -98,10 +100,12 @@
     "show": "Zobrazit",
     "show_configuration": "Zobrazit konfiguraci",
     "skip": "Přeskočit",
+    "split": "Rozdělit",
     "stop": "Zastavit",
     "submit": "Publikovat",
     "submit_stash_box": "Publikovat do Stash-Box",
     "submit_update": "Publikovat aktualizaci",
+    "swap": "Prohodit",
     "tasks": {
       "clean_confirm_message": "Jste si jistý, že chcete čistit? Tato operace vymaže informace z databáze a generovaný obsah pro všechny scény a galerie, které nejsou nalezeny v souborovém systému.",
       "dry_mode_selected": "Vybrán \"Dry Mode\". Nic nebude smazáno, pouze logováno.",
@@ -120,6 +124,7 @@
   "also_known_as": "Též známá jako",
   "ascending": "Vzestupně",
   "average_resolution": "Střední rozlišení",
+  "between_and": "a",
   "birth_year": "Rok narození",
   "birthdate": "Datum narození",
   "bitrate": "Bitová rychlost",
@@ -189,6 +194,7 @@
     },
     "categories": {
       "about": "O programu",
+      "changelog": "Seznam změn",
       "interface": "Rozhraní",
       "logs": "Logy",
       "metadata_providers": "Poskytovatelé Metadat",
@@ -242,6 +248,10 @@
         "stash-box_integration": "Stash-box integrace",
         "username": "Přihlašovací jméno",
         "username_desc": "Přihlašovací jméno pro přístup do aplikace. Ponechte prázdné pro vypnutí autentizace"
+      },
+      "backup_directory_path": {
+        "description": "Adresář umístění záloh databáze SQLite",
+        "heading": "Cesta k adresáři záloh"
       },
       "cache_location": "Složka pro mezipaměť",
       "cache_path_head": "Cesta k mezipaměti",
@@ -420,11 +430,25 @@
       "scene_tools": "Nástroje scény"
     },
     "ui": {
+      "abbreviate_counters": {
+        "description": "Zkrátit počty na kartách a stránkách zobrazení podrobností, například „1831“ bude naformátováno na „1,8K“.",
+        "heading": "Zkrátit počítadla"
+      },
       "basic_settings": "Základní nastavení",
       "custom_css": {
         "description": "Stránka musí být znovu načtena, aby byly změny viditelné.",
         "heading": "Vlastní CSS",
         "option_label": "Vlastní CSS aktivováno"
+      },
+      "custom_javascript": {
+        "description": "Stránka musí být znovu načtena, aby byly viditelné změny.",
+        "heading": "Vlastní Javascript",
+        "option_label": "Vlastní Javascript povolen"
+      },
+      "custom_locales": {
+        "description": "Přepsat individuální jazykovou lokalizaci. Navštivte https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json pro zobrazení seznamu. Stránka musí být obnovena, aby byly změny viditelné.",
+        "heading": "Vlastní jazyková lokalizace",
+        "option_label": "Vlastní jazyková lokalizace povolena"
       },
       "delete_options": {
         "description": "Výchozí nastavení pro mazání obrázků, galerií a scén.",
@@ -446,7 +470,24 @@
           "description": "Zakázat funkčnost tvorby nových objektů z rozbalovacích seznamů",
           "heading": "Zakázat vytvoření z rozbalovacího seznamu"
         },
-        "heading": "Editace"
+        "heading": "Editace",
+        "rating_system": {
+          "star_precision": {
+            "label": "Přesnost hvězd hodnocení",
+            "options": {
+              "full": "Plná",
+              "half": "Poloviční",
+              "quarter": "Čtvrtinová"
+            }
+          },
+          "type": {
+            "label": "Typ hodnocení",
+            "options": {
+              "decimal": "Desetinný",
+              "stars": "Hvězdy"
+            }
+          }
+        }
       },
       "funscript_offset": {
         "description": "Offset v milisekundách pro přehrávání interaktivních skriptů.",
@@ -490,6 +531,10 @@
         "description": "Zobrazit nebo skrýt různé typy obsahu na navigační liště",
         "heading": "Menu položky"
       },
+      "minimum_play_percent": {
+        "description": "Procento času scény, po kterém bude počet přehrání zvýšen.",
+        "heading": "Minimální procento počtu přehrání"
+      },
       "performers": {
         "options": {
           "image_location": {
@@ -516,6 +561,7 @@
       "scene_player": {
         "heading": "Přehrávač scén",
         "options": {
+          "always_start_from_beginning": "Vždy spustit video od začátku",
           "auto_start_video": "Automaticky spustit video",
           "auto_start_video_on_play_selected": {
             "description": "Automaticky spustit video pokud je přehráváno vybrané nebo náhodné video ze stránky scén",
@@ -525,7 +571,8 @@
             "description": "Přehrát následující scénu na seznamu při skončení vida",
             "heading": "(Výchozí nastavení) Pokračovat v playlistu"
           },
-          "show_scrubber": "Zobrazit Scrubber"
+          "show_scrubber": "Zobrazit Scrubber",
+          "track_activity": "Sledování činností"
         }
       },
       "scene_wall": {
@@ -539,9 +586,16 @@
         "description": "Počet pokusů o posunutí před přechodem na další/předchozí položku. Platí pouze pro režim posouvání Pan Y.",
         "heading": "Počet pokusů o rolování před přechodem"
       },
+      "show_tag_card_on_hover": {
+        "description": "Zobrazit přehledku tagu při přejetí přes štítek tagu",
+        "heading": "Popisky tagových štítků"
+      },
       "slideshow_delay": {
         "description": "Slideshow je k dispozici v galeriích v režimu zobrazení stěny",
         "heading": "Zpoždění prezentace (sekundy)"
+      },
+      "studio_panel": {
+        "heading": "Pohled studií"
       },
       "title": "Uživatelské rozhraní"
     }
@@ -587,6 +641,7 @@
   "death_date": "Datum úmrtí",
   "death_year": "Rok úmrtí",
   "descending": "Sestupně",
+  "description": "Popis",
   "detail": "Detail",
   "details": "Detaily",
   "developmentVersion": "Vývojářská verze",

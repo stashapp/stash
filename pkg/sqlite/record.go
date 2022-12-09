@@ -14,14 +14,14 @@ func (r *updateRecord) set(destField string, v interface{}) {
 	r.Record[destField] = v
 }
 
-// func (r *updateRecord) setString(destField string, v models.OptionalString) {
-// 	if v.Set {
-// 		if v.Null {
-// 			panic("null value not allowed in optional string")
-// 		}
-// 		r.set(destField, v.Value)
-// 	}
-// }
+func (r *updateRecord) setString(destField string, v models.OptionalString) {
+	if v.Set {
+		if v.Null {
+			panic("null value not allowed in optional string")
+		}
+		r.set(destField, v.Value)
+	}
+}
 
 func (r *updateRecord) setNullString(destField string, v models.OptionalString) {
 	if v.Set {
@@ -32,7 +32,7 @@ func (r *updateRecord) setNullString(destField string, v models.OptionalString) 
 func (r *updateRecord) setBool(destField string, v models.OptionalBool) {
 	if v.Set {
 		if v.Null {
-			panic("null value not allowed in optional int")
+			panic("null value not allowed in optional bool")
 		}
 		r.set(destField, v.Value)
 	}
@@ -102,11 +102,11 @@ func (r *updateRecord) setSQLiteDate(destField string, v models.OptionalDate) {
 	if v.Set {
 		if v.Null {
 			r.set(destField, models.SQLiteDate{})
+		} else {
+			r.set(destField, models.SQLiteDate{
+				String: v.Value.String(),
+				Valid:  true,
+			})
 		}
-
-		r.set(destField, models.SQLiteDate{
-			String: v.Value.String(),
-			Valid:  true,
-		})
 	}
 }

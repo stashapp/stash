@@ -68,7 +68,13 @@ const typePolicies: TypePolicies = {
       },
     },
   },
-
+  Scene: {
+    fields: {
+      scene_markers: {
+        merge: false,
+      },
+    },
+  },
   Tag: {
     fields: {
       parents: {

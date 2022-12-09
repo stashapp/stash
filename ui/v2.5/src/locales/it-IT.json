@@ -67,6 +67,7 @@
     "play_selected": "Avvia selezionato",
     "preview": "Anteprima",
     "previous_action": "Precedente",
+    "reassign": "Riassegna",
     "refresh": "Aggiorna",
     "reload_plugins": "Ricarica plugin",
     "reload_scrapers": "Ricarica scraper",
@@ -99,10 +100,12 @@
     "show": "Mostra",
     "show_configuration": "Mostra Configurazione",
     "skip": "Salta",
+    "split": "Dividi",
     "stop": "Stop",
     "submit": "Invia",
     "submit_stash_box": "Invia a Stash-Box",
     "submit_update": "Invia aggiornamento",
+    "swap": "Scambia",
     "tasks": {
       "clean_confirm_message": "Sei sicuro di voler Pulire? Questa azione cancellerà informazioni e contenuto creato dal database per tutte le scene e gallerie che non si trovano più nel file system.",
       "dry_mode_selected": "Dry Mode selezionato. Nessuna cancellazione avverrà, solo log.",
@@ -121,6 +124,7 @@
   "also_known_as": "Anche conosciuto/a come",
   "ascending": "Ascendente",
   "average_resolution": "Risoluzione Media",
+  "between_and": "e",
   "birth_year": "Anno di Nascita",
   "birthdate": "Compleanno",
   "bitrate": "Bit Rate",
@@ -436,6 +440,11 @@
         "heading": "CSS Personalizzato",
         "option_label": "CSS Personalizzato Attivo"
       },
+      "custom_javascript": {
+        "description": "La pagina dev'essere ricaricata per applicare i cambiamenti.",
+        "heading": "Javascript Personalizzato",
+        "option_label": "Javascript personalizzato attivo"
+      },
       "custom_locales": {
         "description": "Sovrascrive stringhe individuali locali. Vedere https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json per la lista principale. La pagina dev'essere ricaricata per far sì che i cambiamenti abbiano effetto.",
         "heading": "Localizzazione personalizzata",
@@ -461,7 +470,24 @@
           "description": "Rimuove la possibilità di creare nuovi oggetti dai menù a tendina",
           "heading": "Disabilita crezione menù a tendina"
         },
-        "heading": "Modifiche"
+        "heading": "Modifiche",
+        "rating_system": {
+          "star_precision": {
+            "label": "Precisione Stelle Valutazione",
+            "options": {
+              "full": "Pieno",
+              "half": "Metà",
+              "quarter": "Un quarto"
+            }
+          },
+          "type": {
+            "label": "Tipo di Sistema di Valutazione",
+            "options": {
+              "decimal": "Decimale",
+              "stars": "Stelle"
+            }
+          }
+        }
       },
       "funscript_offset": {
         "description": "Offset in millisecondi per gli script interattivi.",
@@ -505,6 +531,10 @@
         "description": "Mostra o nasconde differenti tipi di contenuti nella barra navigazione",
         "heading": "Oggetti Menù"
       },
+      "minimum_play_percent": {
+        "description": "Percentuale di tempo in cui una scena dev'essere letta prima che il contatore visualizzazioni aumenti.",
+        "heading": "Minima Percentuale Lettura"
+      },
       "performers": {
         "options": {
           "image_location": {
@@ -531,6 +561,7 @@
       "scene_player": {
         "heading": "Lettore Scene",
         "options": {
+          "always_start_from_beginning": "Inizia sempre il video dall'inizio",
           "auto_start_video": "Inizia a Leggere Automaticamente il video",
           "auto_start_video_on_play_selected": {
             "description": "Avvio automatico dei video quando avviati dalla coda, quando \"Avvia selezionato\" o casuale dalla pagina Scene",
@@ -540,7 +571,8 @@
             "description": "Avvia la prossima scena in coda quando il video finisce",
             "heading": "Continua la playlist per impostazione predefinita"
           },
-          "show_scrubber": "Mostra Scrubber"
+          "show_scrubber": "Mostra Scrubber",
+          "track_activity": "Traccia l'Attività"
         }
       },
       "scene_wall": {
@@ -630,6 +662,7 @@
   "developmentVersion": "Versione Sviluppo",
   "dialogs": {
     "aliases_must_be_unique": "gli alias devono essere univoci",
+    "create_new_entity": "Crea nuovo/a {entity}",
     "delete_alert": "Il seguente/I seguenti {count, plural, one {{singularEntity}} other {{pluralEntity}}} sarà/saranno cancellati permanentemente:",
     "delete_confirm": "Sei sicuro di voler cancellare {entityName}?",
     "delete_entity_desc": "{count, plural, one {Sei sicuro di voler cancellare questo/a {singularEntity}? A meno che anche il file venga cancellato, questo/a {singularEntity} sarà riaggiunto quando la scansione verrà effettuata.} other {Sei sicuro di voler cancellare questi/e {pluralEntity}? A meno che anche i file vengano cancellati, questi/e {pluralEntity} verranno riaggiunti quando la scansione verrà effettuata.}}",
@@ -665,11 +698,20 @@
         "zoom": "Zoom"
       }
     },
+    "merge": {
+      "destination": "Destinazione",
+      "empty_results": "Il valore del campo destinazione rimarranno inalterati.",
+      "source": "Sorgente"
+    },
     "merge_tags": {
       "destination": "Destinazione",
       "source": "Origine"
     },
     "overwrite_filter_confirm": "Sei sicuro di voler sovrascrivere le esistenti query salvate {entityName}?",
+    "reassign_entity_title": "{count, plural, one {Riassegna {singularEntity}} other {Riassegna {pluralEntity}}}",
+    "reassign_files": {
+      "destination": "Riassegna a"
+    },
     "scene_gen": {
       "force_transcodes": "Forza la creazione delle Transcodifiche",
       "force_transcodes_tooltip": "Per standard, le transcodifiche vengono generate solamente quando il file video non è supportato dal browser. Quando abilitato, le transcodifiche verranno generate anche quando il file sembra essere supportato dal browser.",
@@ -770,6 +812,7 @@
   "file_info": "Informazioni File",
   "file_mod_time": "Tempo Modifica del File",
   "files": "file",
+  "files_amount": "{value} file",
   "filesize": "Dimensione File",
   "filter": "Filtro",
   "filter_name": "Nome Filtro",
@@ -807,6 +850,7 @@
   },
   "hasMarkers": "Ha Marcatori",
   "height": "Altezza",
+  "height_cm": "Altezza (cm)",
   "help": "Aiuto",
   "ignore_auto_tag": "Ignora Auto Tag",
   "image": "Immagine",
@@ -819,6 +863,7 @@
   "interactive": "Interattivo",
   "interactive_speed": "Velocità interattiva",
   "isMissing": "Manca di",
+  "last_played_at": "Ultima Visualizzazione Al",
   "library": "Libreria",
   "loading": {
     "generic": "Caricamento…"
@@ -837,6 +882,8 @@
       "age_context": "{age} {years_old} in questa scena"
     },
     "phash": "PHash",
+    "play_count": "Contatore Visualizzazioni",
+    "play_duration": "Durata Visualizzazione",
     "stream": "Flusso",
     "video_codec": "Codec Video"
   },
@@ -907,6 +954,8 @@
   },
   "performers": "Attori",
   "piercings": "Piercing",
+  "play_count": "Contatore Visualizzazioni",
+  "play_duration": "Durata Visualizzazioni",
   "primary_file": "File primario",
   "queue": "Coda",
   "random": "Casuale",
@@ -915,11 +964,16 @@
   "recently_released_objects": "{objects} Recentemente Distribuito",
   "release_notes": "Note Versione",
   "resolution": "Risoluzione",
+  "resume_time": "Tempo Continuazione",
   "scene": "Scena",
   "sceneTagger": "Tagger Scena",
   "sceneTags": "Tag Scena",
+  "scene_code": "Codice dello Studio",
   "scene_count": "Numero Scene",
+  "scene_created_at": "Scena Creata Al",
+  "scene_date": "Data della Scena",
   "scene_id": "ID Scena",
+  "scene_updated_at": "Scena Aggiornata Al",
   "scenes": "Scene",
   "scenes_updated_at": "Scena Aggiornata Al",
   "search_filter": {
@@ -1011,6 +1065,7 @@
     "welcome_to_stash": "Benvenuti su Stash"
   },
   "stash_id": "ID Stash",
+  "stash_id_endpoint": "Stash Endpoint ID",
   "stash_ids": "ID Stash",
   "stashbox": {
     "go_review_draft": "Vai al {endpoint_name} per revisionare la bozza.",
@@ -1046,7 +1101,9 @@
     "default_filter_set": "Filtro predefinito impostato",
     "delete_past_tense": "Cancellato/a {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Sto creando la schermata…",
+    "merged_scenes": "Scene unite",
     "merged_tags": "Tag unite",
+    "reassign_past_tense": "File riassegnato",
     "removed_entity": "Rimosso {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "rescanning_entity": "Riscansionando {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "Salvato/a {entity}",
@@ -1064,6 +1121,7 @@
   "videos": "Video",
   "view_all": "Vedi Tutto",
   "weight": "Peso",
+  "weight_kg": "Peso (kg)",
   "years_old": "anni",
   "zip_file_count": "Numero File Zip"
 }

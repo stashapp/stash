@@ -197,7 +197,16 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       pretitleIcon={
         <GenderIcon className="gender-icon" gender={performer.gender} />
       }
-      title={performer.name ?? ""}
+      title={
+        <div>
+          <span className="performer-name">{performer.name}</span>
+          {performer.disambiguation && (
+            <span className="performer-disambiguation">
+              {` (${performer.disambiguation})`}
+            </span>
+          )}
+        </div>
+      }
       image={
         <>
           <img
@@ -217,9 +226,9 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
           ) : (
             ""
           )}
-          {maybeRenderPopoverButtonGroup()}
         </>
       }
+      popovers={maybeRenderPopoverButtonGroup()}
       selected={selected}
       selecting={selecting}
       onSelectedChanged={onSelectedChanged}

@@ -36,3 +36,13 @@ func (m *migrator) withTxn(ctx context.Context, fn func(tx *sqlx.Tx) error) erro
 	err = fn(tx)
 	return err
 }
+
+func (m *migrator) execAll(stmts []string) error {
+	for _, stmt := range stmts {
+		if _, err := m.db.Exec(stmt); err != nil {
+			return fmt.Errorf("executing statement %s: %w", stmt, err)
+		}
+	}
+
+	return nil
+}

@@ -63,3 +63,8 @@ func (u *UpdateIDs) IDStrings() []string {
 
 	return intslice.IntSliceToStringSlice(u.IDs)
 }
+
+type UpdateStrings struct {
+	Values []string               `json:"values"`
+	Mode   RelationshipUpdateMode `json:"mode"`
+}

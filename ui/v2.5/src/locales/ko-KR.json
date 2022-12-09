@@ -54,6 +54,7 @@
     "import": "불러오기…",
     "import_from_file": "파일 불러오기",
     "logout": "로그아웃",
+    "make_primary": "첫 번째로 만들기",
     "merge": "합치기",
     "merge_from": "...에서 합치기",
     "merge_into": "...로 합치기",
@@ -66,6 +67,7 @@
     "play_selected": "선택된 영상 재생",
     "preview": "미리보기",
     "previous_action": "뒤로",
+    "reassign": "재할당",
     "refresh": "새로고침",
     "reload_plugins": "플러그인 새로고침",
     "reload_scrapers": "스크레이퍼 다시 불러오기",
@@ -98,10 +100,12 @@
     "show": "보여주기",
     "show_configuration": "설정 보여주기",
     "skip": "건너뛰기",
+    "split": "나누기",
     "stop": "정지",
     "submit": "제출",
     "submit_stash_box": "Stash-Box에 제출하기",
     "submit_update": "업데이트 제출하기",
+    "swap": "바꾸기",
     "tasks": {
       "clean_confirm_message": "정말로 데이터베이스 정리를 하시겠습니까? 파일 시스템에 존재하지 않는 파일의 데이터베이스 정보와 컨텐츠가 삭제될 것입니다.",
       "dry_mode_selected": "삭제하지 않기 모드가 선택되었습니다. 삭제를 진행하지 않고, 로깅만 할 것입니다.",
@@ -120,6 +124,7 @@
   "also_known_as": "별명",
   "ascending": "오름차순",
   "average_resolution": "평균 해상도",
+  "between_and": "그리고",
   "birth_year": "태어난 년도",
   "birthdate": "생년월일",
   "bitrate": "비트레이트",
@@ -189,6 +194,7 @@
     },
     "categories": {
       "about": "프로그램 정보",
+      "changelog": "패치노트",
       "interface": "인터페이스",
       "logs": "로그",
       "metadata_providers": "메타데이터",
@@ -242,6 +248,10 @@
         "stash-box_integration": "Stash-box 통합",
         "username": "아이디",
         "username_desc": "Stash에 접속하기 위한 아이디입니다. 로그인을 생략하려면 빈 칸으로 두십시오"
+      },
+      "backup_directory_path": {
+        "description": "SQLite 데이터베이스 백업 파일을 위한 폴더 경로",
+        "heading": "백업 폴더 경로"
       },
       "cache_location": "캐시 폴더 경로",
       "cache_path_head": "캐쉬 경로",
@@ -344,7 +354,7 @@
       "auto_tagging": "자동 태깅",
       "backing_up_database": "데이터베이스 백업 중",
       "backup_and_download": "데이터베이스를 백업하고 결과 파일을 다운로드합니다.",
-      "backup_database": "데이터베이스가 있는 폴더에 {filename_format}의 파일 이름 형식으로 데이터베이스를 백업합니다",
+      "backup_database": "백업 폴더에 {filename_format}의 파일 이름 형식으로 데이터베이스를 백업합니다",
       "cleanup_desc": "있어야 할 곳에 없는 파일이 있는지 검사한 후, 데이터베이스에서 삭제합니다. 데이터베이스의 일부 내용이 삭제될 수 있습니다.",
       "data_management": "데이터 관리",
       "defaults_set": "기본값이 설정되었습니다. '작업' 페이지의 {action} 버튼을 클릭할 때 사용됩니다.",
@@ -420,11 +430,25 @@
       "scene_tools": "영상 도구"
     },
     "ui": {
+      "abbreviate_counters": {
+        "description": "카드와 세부 페이지에서 숫자를 축약하여 나타냅니다(예시: \"1831\"이 \"1.8K\"로 표현됩니다).",
+        "heading": "숫자 축약"
+      },
       "basic_settings": "기초 설정",
       "custom_css": {
         "description": "변화된 사항을 확인하려면 페이지를 새로고침해야 합니다.",
         "heading": "커스텀 CSS",
         "option_label": "커스텀 CSS 활성화"
+      },
+      "custom_javascript": {
+        "description": "변화된 사항을 확인하려면 페이지를 새로고침해야 합니다.",
+        "heading": "커스텀 JavaScript",
+        "option_label": "커스텀 JavaScript 활성화"
+      },
+      "custom_locales": {
+        "description": "커스텀 번역으로 기존 번역을 대신합니다. https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json 에서 단어 리스트를 확인하세요. 페이지를 새로고침해야 변동사항이 적용됩니다.",
+        "heading": "커스텀 번역",
+        "option_label": "커스텀 번역 활성화"
       },
       "delete_options": {
         "description": "이미지, 갤러리, 영상을 삭제할 때의 설정 기본값입니다.",
@@ -446,7 +470,19 @@
           "description": "dropdown selector에서 새로운 오브젝트를 추가하지 않습니다",
           "heading": "Dropdown 생성 비활성화"
         },
-        "heading": "수정하기"
+        "heading": "수정하기",
+        "rating_system": {
+          "star_precision": {
+            "label": "평점별 정확도"
+          },
+          "type": {
+            "label": "평정 시스템 종류",
+            "options": {
+              "decimal": "소수점",
+              "stars": "별"
+            }
+          }
+        }
       },
       "funscript_offset": {
         "description": "대화형 스크립트 재생의 시간 오프셋(밀리초)입니다.",
@@ -518,7 +554,7 @@
         "options": {
           "auto_start_video": "비디오 자동 재생",
           "auto_start_video_on_play_selected": {
-            "description": "'영상' 페이지에서 선택하거나 랜덤 재생한 영상을 자동 시작",
+            "description": "대기열, 또는 '영상' 페이지에서 (랜덤)선택한 영상을 자동 재생",
             "heading": "선택한 항목을 재생할 때 비디오 자동 시작"
           },
           "continue_playlist_default": {
@@ -539,9 +575,31 @@
         "description": "이전/다음 항목으로 이동하기 전에 스크롤을 시도하는 횟수입니다. Y축 스크롤 허용 모드에만 적용됩니다.",
         "heading": "전환 전 스크롤 시도 횟수"
       },
+      "show_tag_card_on_hover": {
+        "description": "태그 뱃지 위에 마우스 커서를 올리면 태그 카드를 보여줍니다",
+        "heading": "태그 카드 툴팁"
+      },
       "slideshow_delay": {
         "description": "월 보기 모드일 때 갤러리에서 슬라이드 쇼를 사용할 수 있습니다",
         "heading": "슬라이드쇼 딜레이 (단위: 초)"
+      },
+      "studio_panel": {
+        "heading": "스튜디오 창",
+        "options": {
+          "show_child_studio_content": {
+            "description": "스튜디오 창에서, 하위 스튜디오의 컨텐츠도 보여줍니다",
+            "heading": "하위 스튜디오의 컨텐츠 보이기"
+          }
+        }
+      },
+      "tag_panel": {
+        "heading": "태그 창",
+        "options": {
+          "show_child_tagged_content": {
+            "description": "태그 창에서, 하위 태그들도 보여줍니다",
+            "heading": "서브태그 컨텐츠 보이기"
+          }
+        }
       },
       "title": "UI"
     }
@@ -587,6 +645,7 @@
   "death_date": "사망 날짜",
   "death_year": "사망 년도",
   "descending": "내림차순",
+  "description": "설명",
   "detail": "세부사항",
   "details": "세부사항",
   "developmentVersion": "개발 버전",
@@ -595,12 +654,14 @@
     "delete_alert": "다음 {count, plural, one {{singularEntity}} other {{pluralEntity}}}이(가) 영구 삭제될 것입니다:",
     "delete_confirm": "정말 {entityName}을 삭제하시겠습니까?",
     "delete_entity_desc": "{정말로 {count, plural, one {singularEntity} other {pluralEntity}}을(를) 삭제하시겠습니까? 원본 파일 또한 삭제하지 않으면 스캔을 할 때 {count, plural, one {singularEntity} other {pluralEntity}}이(가) 다시 추가될 것입니다.}",
+    "delete_entity_simple_desc": "{count, plural, one {정말 이 {singularEntity}을(를) 삭제하시겠습니까?} other {정말 이 {pluralEntity}을(를) 삭제하시겠습니까?}}",
     "delete_entity_title": "{count, plural, one {{singularEntity} 삭제} other {{pluralEntity} 삭제}}",
     "delete_galleries_extra": "…그리고 다른 어떤 갤러리에도 없는 이미지 파일들까지.",
     "delete_gallery_files": "갤러리 폴더/zip 파일 및 다른 어떤 갤러리에도 존재하지 않는 이미지를 삭제합니다.",
     "delete_object_desc": "정말로 {count, plural, one {this {singularEntity}} other {these {pluralEntity}}}을(를) 삭제하시겠습니까?",
     "delete_object_overflow": "...그리고 {count} 개의 {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} 삭제",
+    "dont_show_until_updated": "다음 업데이트까지 보지 않기",
     "edit_entity_title": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} 수정",
     "export_include_related_objects": "내보내기 할 때 관련된 개체를 포합합니다",
     "export_title": "내보내기",
@@ -630,6 +691,7 @@
       "source": "다른 태그로 합쳐질 태그"
     },
     "overwrite_filter_confirm": "정말 원래 저장되어 있었던 쿼리 {entityName}을 덮어쓰시겠습니까?",
+    "reassign_entity_title": "{count, plural, one {{singularEntity} 재할당} other {{pluralEntity} 재할당}}",
     "scene_gen": {
       "force_transcodes": "강제 트랜스코드 생성",
       "force_transcodes_tooltip": "기본적으로 트랜스코드는 비디오 파일이 브라우저에서 지원되지 않는 경우에만 생성됩니다. 이 옵션을 선택하면 비디오 파일이 브라우저에서 지원되는 것으로 보이는 경우에도 트랜스코드가 생성됩니다.",
@@ -695,7 +757,7 @@
     "search_accuracy_label": "검색 정밀도",
     "title": "중복된 영상"
   },
-  "duplicated_phash": "중복됨 (perceptual hash)",
+  "duplicated_phash": "중복됨 (phash)",
   "duration": "길이",
   "effect_filters": {
     "aspect": "방향",
@@ -726,18 +788,21 @@
   "false": "거짓",
   "favourite": "즐겨찾기",
   "file": "파일",
+  "file_count": "파일 개수",
   "file_info": "파일 정보",
   "file_mod_time": "파일 변경 시간",
   "files": "파일",
+  "files_amount": "{value} 파일",
   "filesize": "파일 크기",
   "filter": "필터",
   "filter_name": "필터 이름",
   "filters": "필터",
+  "folder": "폴더",
   "framerate": "프레임 레이트",
   "frames_per_second": "초당 프레임: {value}",
   "front_page": {
     "types": {
-      "premade_filter": "생성된 필터",
+      "premade_filter": "사전에 생성된 필터",
       "saved_filter": "저장된 필터"
     }
   },
@@ -765,6 +830,7 @@
   },
   "hasMarkers": "마커 유무",
   "height": "키",
+  "height_cm": "키 (cm)",
   "help": "도움말",
   "ignore_auto_tag": "자동 태깅 무시하기",
   "image": "이미지",
@@ -777,6 +843,7 @@
   "interactive": "인터렉티브",
   "interactive_speed": "인터랙티브 속도",
   "isMissing": "데이터 누락됨",
+  "last_played_at": "마지막으로 재생",
   "library": "라이브러리",
   "loading": {
     "generic": "로드 중…"
@@ -795,6 +862,8 @@
       "age_context": "작품에서 {age} {years_old}"
     },
     "phash": "PHash",
+    "play_count": "재생 횟수",
+    "play_duration": "재생 길이",
     "stream": "스트림",
     "video_codec": "비디오 코덱"
   },
@@ -821,7 +890,7 @@
   "parent_tags": "상위 태그",
   "part_of": "{parent}의 하위 태그",
   "path": "경로",
-  "perceptual_similarity": "영상 정렬에서 선택할 수 있습니다.",
+  "perceptual_similarity": "유사도 (phash)",
   "performer": "배우",
   "performerTags": "배우 태그",
   "performer_age": "배우 나이",
@@ -865,11 +934,15 @@
   },
   "performers": "배우",
   "piercings": "피어싱",
+  "play_count": "재생 횟수",
+  "play_duration": "재생 길이",
+  "primary_file": "대표 파일",
   "queue": "대기열",
   "random": "랜덤",
   "rating": "별점",
   "recently_added_objects": "최근 추가된 {objects}",
   "recently_released_objects": "최근 발매된 {objects}",
+  "release_notes": "업데이트 내역",
   "resolution": "해상도",
   "scene": "영상",
   "sceneTagger": "영상 태거",
@@ -919,9 +992,10 @@
       "migration_failed_error": "데이터베이스를 마이그레이션 하는 동안 다음 에러가 발생했습니다:",
       "migration_failed_help": "올바른 내용을 입력했는지 확인하고 수정한 뒤 다시 시도해보세요. 그렇지 않다면, {githubLink}에 버그를 제보하거나 {discordLink}에서 도움이 될 만한 정보를 찾아보세요.",
       "migration_irreversible_warning": "스키마 마이그레이션 작업은 돌이킬 수 없습니다. 마이그레이션이 진행된 이후에는, 데이터베이스가 이전 버전의 Stash와 호환되지 않을 것입니다.",
+      "migration_notes": "마이그레이션 내역",
       "migration_required": "마이그레이션 필요",
       "perform_schema_migration": "스키마 마이그레이션 실행",
-      "schema_too_old": "현재 Stash 데이터베이스의 스키마 버전은 <strong>{databaseSchema}</strong>이고, <strong>{appSchema}</strong> 버전으로 마이그레이션되어야 합니다.이 Stash 버전은 데이터베이스 마이그레이션 없이는 동작하지 않을 것입니다."
+      "schema_too_old": "현재 Stash 데이터베이스의 스키마 버전은 <strong>{databaseSchema}</strong>이고, <strong>{appSchema}</strong> 버전으로 마이그레이션되어야 합니다.이 Stash 버전은 데이터베이스 마이그레이션 없이는 동작하지 않을 것입니다. 마이그레이션을 원하지 않는다면, 데이터베이스 스키마와 일치하는 버전으로 Stash를 다운그레이드해야 합니다."
     },
     "paths": {
       "database_filename_empty_for_default": "데이터베이스 파일 이름 (빈 칸으로 두면 기본값을 사용합니다)",
@@ -995,13 +1069,14 @@
   "tattoos": "문신",
   "title": "제목",
   "toast": {
-    "added_entity": "{entity}를 추가했습니다",
+    "added_entity": "{singularEntity}을(를) 추가했습니다",
     "added_generation_job_to_queue": "생성 작업을 대기열에 추가했습니다",
     "created_entity": "{entity}를 생성했습니다",
     "default_filter_set": "기본 필터 셋",
     "delete_past_tense": "{count, plural, one {{singularEntity}} other {{pluralEntity}}}이(가) 삭제되었습니다",
     "generating_screenshot": "스크린샷을 생성하는 중…",
     "merged_tags": "병합된 태그",
+    "removed_entity": "{singularEntity}을(를) 제거했습니다",
     "rescanning_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} 다시 스캔하는 중…",
     "saved_entity": "{entity}를 저장했습니다",
     "started_auto_tagging": "자동 태깅을 시작했습니다",
@@ -1018,5 +1093,7 @@
   "videos": "비디오",
   "view_all": "모두 보기",
   "weight": "몸무게",
-  "years_old": "살"
+  "weight_kg": "무게 (kg)",
+  "years_old": "살",
+  "zip_file_count": "zip 파일 개수"
 }

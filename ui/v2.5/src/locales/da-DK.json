@@ -54,6 +54,7 @@
     "import": "Importer…",
     "import_from_file": "Importer fra fil",
     "logout": "Log ud",
+    "make_primary": "Gør til primær",
     "merge": "Fusioner",
     "merge_from": "Fusioner fra",
     "merge_into": "Fusioner til",
@@ -189,6 +190,7 @@
     },
     "categories": {
       "about": "Om",
+      "changelog": "Ændringslog",
       "interface": "Interface",
       "logs": "Logfiler",
       "metadata_providers": "Metadataudbydere",
@@ -242,6 +244,10 @@
         "stash-box_integration": "Stash-box integration",
         "username": "Brugernavn",
         "username_desc": "Brugernavn for at få adgang til Stash. Lad tom for at deaktivere brugergodkendelse"
+      },
+      "backup_directory_path": {
+        "description": "Mappelokation for SQLite database backup filer",
+        "heading": "Backup mappesti"
       },
       "cache_location": "Directory placering af cachen",
       "cache_path_head": "Cache Sti",
@@ -420,11 +426,19 @@
       "scene_tools": "Sceneværktøjer"
     },
     "ui": {
+      "abbreviate_counters": {
+        "description": "Forkort tællere i kort- og detaljebilleder, fx bliver \"1831\" forkortet til \"1.8K\"."
+      },
       "basic_settings": "Grundlæggende indstillinger",
       "custom_css": {
         "description": "Siden skal genindlæses for at ændringer kan træde i kraft.",
         "heading": "Brugerdefineret CSS",
         "option_label": "Brugerdefineret CSS aktiveret"
+      },
+      "custom_locales": {
+        "description": "Ændre individuelle lokale strenge. Se https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json for master-listen. Siden skal genindlæses for at aktivere ændringerne.",
+        "heading": "Egen oversættelse",
+        "option_label": "Egen oversættelse aktiveret"
       },
       "delete_options": {
         "description": "Standardindstillinger ved sletning af billeder, gallerier og scener.",
