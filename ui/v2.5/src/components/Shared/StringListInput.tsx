@@ -6,13 +6,13 @@ import Icon from "src/components/Shared/Icon";
 interface IStringListInputProps {
   value: string[];
   setValue: (value: string[]) => void;
-  defaultNewValue?: string;
+  placeholder?: string;
   className?: string;
   errors?: string;
 }
 
 export const StringListInput: React.FC<IStringListInputProps> = (props) => {
-  const values = props.value.concat(props.defaultNewValue || "");
+  const values = props.value.concat("");
 
   function valueChanged(idx: number, value: string) {
     const newValues = values
@@ -43,6 +43,7 @@ export const StringListInput: React.FC<IStringListInputProps> = (props) => {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   valueChanged(i, e.currentTarget.value)
                 }
+                placeholder={props.placeholder}
               />
               <InputGroup.Append>
                 <Button
