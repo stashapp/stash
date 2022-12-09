@@ -219,11 +219,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const minimumPlayPercent = uiConfig?.minimumPlayPercent ?? 0;
   const trackActivity = uiConfig?.trackActivity ?? false;
 
-  if(uiConfig?.enableChromecast) {
-    useScript(
-      "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"
-    );
-  }
+  useScript(
+    "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1",
+    uiConfig?.enableChromecast
+  );
 
   const file = useMemo(
     () => ((scene?.files.length ?? 0) > 0 ? scene?.files[0] : undefined),
@@ -239,6 +238,17 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       file.duration < maxLoopDuration,
     [file, permitLoop, maxLoopDuration]
   );
+
+  useEffect(() => {
+    sendSetTimestamp((value: number) => {
+      const player = playerRef.current;
+      if (player && value >= 0) {
+        player.play()?.then(() => {
+          player.currentTime(value);
+        });
+      }
+    });
+  }, [sendSetTimestamp]);
 
   useEffect(() => {
     if (hideScrubberOverride || fullscreen) {

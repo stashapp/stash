@@ -1,18 +1,22 @@
 import { useEffect } from "react";
 
-const useScript = (url: string) => {
+const useScript = (url: string, condition?: boolean) => {
   useEffect(() => {
     const script = document.createElement("script");
 
     script.src = url;
     script.async = true;
 
-    document.body.appendChild(script);
+    if (condition) {
+      document.body.appendChild(script);
+    }
 
     return () => {
-      document.body.removeChild(script);
+      if (condition) {
+        document.body.removeChild(script);
+      }
     };
-  }, [url]);
+  }, [url, condition]);
 };
 
 export default useScript;
