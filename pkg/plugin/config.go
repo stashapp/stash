@@ -70,6 +70,11 @@ type UIConfig struct {
 
 	// CSS files that will be injected into the stash UI.
 	CSS []string `yaml:"css"`
+
+	// Assets are files that will be served by stash at the /plugin/<pluginID>/assets/ path.
+	// This may be directories, files and/or wildcards.
+	// Paths are relative to the plugin configuration file.
+	Assets []string `yaml:"assets"`
 }
 
 func (c UIConfig) getCSSFiles(parent Config) []string {
@@ -186,8 +191,10 @@ func (c Config) toPlugin() *Plugin {
 		UI: PluginUI{
 			Javascript: c.UI.getJavascriptFiles(c),
 			CSS:        c.UI.getCSSFiles(c),
+			Assets:     c.UI.Assets,
 		},
-		Settings: c.getPluginSettings(),
+		Settings:   c.getPluginSettings(),
+		ConfigPath: c.path,
 	}
 }
 

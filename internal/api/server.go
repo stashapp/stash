@@ -150,6 +150,7 @@ func Start() error {
 	r.Mount("/movie", getMovieRoutes(repo))
 	r.Mount("/tag", getTagRoutes(repo))
 	r.Mount("/downloads", getDownloadsRoutes())
+	r.Mount("/plugin", getPluginRoutes(pluginCache))
 
 	r.HandleFunc("/css", cssHandler(c, pluginCache))
 	r.HandleFunc("/javascript", javascriptHandler(c, pluginCache))

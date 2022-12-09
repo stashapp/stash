@@ -35,6 +35,9 @@ type Plugin struct {
 	Settings    []PluginSetting `json:"settings"`
 
 	Enabled bool `json:"enabled"`
+
+	// ConfigPath is the path to the plugin's configuration file.
+	ConfigPath string `json:"-"`
 }
 
 type PluginUI struct {
@@ -43,6 +46,11 @@ type PluginUI struct {
 
 	// CSS files that will be injected into the stash UI.
 	CSS []string `json:"css"`
+
+	// Assets are files that will be served by stash at the /plugin/<pluginID>/assets/ path.
+	// This may be directories, files and/or wildcards.
+	// Paths are relative to the plugin configuration file.
+	Assets []string `json:"assets"`
 }
 
 type PluginSetting struct {
@@ -171,6 +179,17 @@ func (c Cache) ListPlugins() []*Plugin {
 	}
 
 	return ret
+}
+
+// GetPlugin returns the plugin with the given ID.
+// Returns nil if the plugin is not found.
+func (c Cache) GetPlugin(id string) *Plugin {
+	plugin := c.getPlugin(id)
+	if plugin != nil {
+		return plugin.toPlugin()
+	}
+
+	return nil
 }
 
 // ListPluginTasks returns all runnable plugin tasks in all loaded plugins.
