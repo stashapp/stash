@@ -240,17 +240,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   );
 
   useEffect(() => {
-    sendSetTimestamp((value: number) => {
-      const player = playerRef.current;
-      if (player && value >= 0) {
-        player.play()?.then(() => {
-          player.currentTime(value);
-        });
-      }
-    });
-  }, [sendSetTimestamp]);
-
-  useEffect(() => {
     if (hideScrubberOverride || fullscreen) {
       setShowScrubber(false);
       return;
