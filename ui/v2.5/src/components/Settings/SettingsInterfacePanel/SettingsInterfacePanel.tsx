@@ -250,7 +250,7 @@ export const SettingsInterfacePanel: React.FC = () => {
       <SettingSection headingID="config.ui.scene_player.heading">
         <BooleanSetting
           id="enable-chromecast"
-          headingID="Enable Chromecast"
+          headingID="config.ui.scene_player.options.enable_chromecast"
           checked={ui.enableChromecast ?? undefined}
           onChange={(v) => saveUI({ enableChromecast: v })}
         />
