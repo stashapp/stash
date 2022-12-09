@@ -956,6 +956,7 @@
   "recently_released_objects": "최근 발매된 {objects}",
   "release_notes": "업데이트 내역",
   "resolution": "해상도",
+  "resume_time": "재시작 시간",
   "scene": "영상",
   "sceneTagger": "영상 태거",
   "sceneTags": "영상 태그",
