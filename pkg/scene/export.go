@@ -41,7 +41,6 @@ func ToBasicJSON(ctx context.Context, reader CoverGetter, scene *models.Scene) (
 		Title:     scene.Title,
 		Code:      scene.Code,
 		URL:       scene.URL,
-		Date:      scene.Date.Time.String(),
 		Details:   scene.Details,
 		Director:  scene.Director,
 		CreatedAt: json.JSONTime{Time: scene.CreatedAt},
