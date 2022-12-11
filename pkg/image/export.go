@@ -24,6 +24,10 @@ func ToBasicJSON(image *models.Image) *jsonschema.Image {
 		newImageJSON.Rating = *image.Rating
 	}
 
+	if image.Date != nil {
+		newImageJSON.Date = image.Date.String()
+	}
+
 	newImageJSON.Organized = image.Organized
 	newImageJSON.OCounter = image.OCounter
 
