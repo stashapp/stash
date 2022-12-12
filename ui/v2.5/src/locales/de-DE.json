@@ -530,6 +530,10 @@
         "description": "Anzeigen oder Ausblenden verschiedener Inhaltstypen in der Navigationsleiste",
         "heading": "Menüpunkte"
       },
+      "minimum_play_percent": {
+        "description": "Der prozentuale Anteil der Zeit, in der eine Szene gespielt werden muss, bevor Abspielen gezählt wird ist erhöht worden.",
+        "heading": "Mindestabspielprozent"
+      },
       "performers": {
         "options": {
           "image_location": {
@@ -752,6 +756,7 @@
   },
   "dimensions": "Maße",
   "director": "Regisseur",
+  "disambiguation": "Begriffsklärung",
   "display_mode": {
     "grid": "Gitter",
     "list": "Liste",
@@ -949,6 +954,7 @@
   },
   "performers": "Darsteller",
   "piercings": "Piercings",
+  "play_duration": "Abspiellänge",
   "primary_file": "Primäre Datei",
   "queue": "Playlist",
   "random": "Zufällig",
@@ -1057,6 +1063,7 @@
     "welcome_to_stash": "Willkommen zu Stash"
   },
   "stash_id": "Stash-ID",
+  "stash_id_endpoint": "Stash ID Endpunkt",
   "stash_ids": "Stash IDs",
   "stashbox": {
     "go_review_draft": "Gehe zu {endpoint_name}, um Entwurf zu begutachten.",
@@ -1094,6 +1101,7 @@
     "generating_screenshot": "Screenshot wird erstellt…",
     "merged_scenes": "Zusammengefasste Szene",
     "merged_tags": "Zusammengeführte Tags",
+    "reassign_past_tense": "Datei neu zugewiesen",
     "removed_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} gelöscht",
     "rescanning_entity": "Erneutes Scannen von {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "{entity} gespeichert",
