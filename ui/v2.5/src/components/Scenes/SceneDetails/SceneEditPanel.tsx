@@ -115,6 +115,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const ratingShortcuts: { [char: string]: number } =
     stashConfig?.ui?.ratingSystemOptions.type === RatingSystemType.Decimal
       ? {
+          "`": NaN,
           "1": 10,
           "2": 20,
           "3": 30,
