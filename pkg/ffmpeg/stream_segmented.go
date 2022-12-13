@@ -20,11 +20,14 @@ import (
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+
+	"github.com/zencoder/go-dash/v3/mpd"
 )
 
 const (
 	MimeHLS    string = "application/vnd.apple.mpegurl"
 	MimeMpegTS string = "video/MP2T"
+	MimeDASH   string = "application/dash+xml"
 
 	segmentLength = 2
 
@@ -121,6 +124,67 @@ var (
 			return
 		},
 	}
+	StreamTypeDASHVideo = &StreamType{
+		Name:          "dash-v",
+		SegmentType:   SegmentTypeWEBMVideo,
+		ServeManifest: serveDASHManifest,
+		Args: func(segment int, videoFilter VideoFilter, videoOnly bool, outputDir string) (args Args) {
+			// only generate the actual init segment (init_v.webm)
+			// when generating the first segment
+			init := ".init"
+			if segment == 0 {
+				init = "init"
+			}
+			args = append(args,
+				"-c:v", "libvpx-vp9",
+				"-pix_fmt", "yuv420p",
+				"-deadline", "realtime",
+				"-cpu-used", "5",
+				"-row-mt", "1",
+				"-crf", "30",
+				"-b:v", "0",
+				"-force_key_frames", fmt.Sprintf("expr:gte(t,n_forced*%d)", segmentLength),
+			)
+			args = args.VideoFilter(videoFilter)
+			args = append(args,
+				"-copyts",
+				"-avoid_negative_ts", "disabled",
+				"-map", "0:v:0",
+				"-f", "webm_chunk",
+				"-chunk_start_index", fmt.Sprint(segment),
+				"-header", filepath.Join(outputDir, init+"_v.webm"),
+				filepath.Join(outputDir, ".%d_v.webm"),
+			)
+			return
+		},
+	}
+	StreamTypeDASHAudio = &StreamType{
+		Name:          "dash-a",
+		SegmentType:   SegmentTypeWEBMAudio,
+		ServeManifest: serveDASHManifest,
+		Args: func(segment int, videoFilter VideoFilter, videoOnly bool, outputDir string) (args Args) {
+			// only generate the actual init segment (init_a.webm)
+			// when generating the first segment
+			init := ".init"
+			if segment == 0 {
+				init = "init"
+			}
+			args = append(args,
+				"-c:a", "libopus",
+				"-b:a", "96000",
+				"-ar", "48000",
+				"-copyts",
+				"-avoid_negative_ts", "disabled",
+				"-map", "0:a:0",
+				"-f", "webm_chunk",
+				"-chunk_start_index", fmt.Sprint(segment),
+				"-audio_chunk_duration", fmt.Sprint(segmentLength*1000),
+				"-header", filepath.Join(outputDir, init+"_a.webm"),
+				filepath.Join(outputDir, ".%d_a.webm"),
+			)
+			return
+		},
+	}
 )
 
 type SegmentType struct {
@@ -143,6 +207,50 @@ var (
 				err = ErrInvalidSegment
 			}
 			return segment, err
+		},
+	}
+	SegmentTypeWEBMVideo = &SegmentType{
+		Format:   "%d_v.webm",
+		MimeType: MimeWebmVideo,
+		MakeFilename: func(segment int) string {
+			if segment == -1 {
+				return "init_v.webm"
+			} else {
+				return fmt.Sprintf("%d_v.webm", segment)
+			}
+		},
+		ParseSegment: func(str string) (int, error) {
+			if str == "init" {
+				return -1, nil
+			} else {
+				segment, err := strconv.Atoi(str)
+				if err != nil || segment < 0 {
+					err = ErrInvalidSegment
+				}
+				return segment, err
+			}
+		},
+	}
+	SegmentTypeWEBMAudio = &SegmentType{
+		Format:   "%d_a.webm",
+		MimeType: MimeWebmAudio,
+		MakeFilename: func(segment int) string {
+			if segment == -1 {
+				return "init_a.webm"
+			} else {
+				return fmt.Sprintf("%d_a.webm", segment)
+			}
+		},
+		ParseSegment: func(str string) (int, error) {
+			if str == "init" {
+				return -1, nil
+			} else {
+				segment, err := strconv.Atoi(str)
+				if err != nil || segment < 0 {
+					err = ErrInvalidSegment
+				}
+				return segment, err
+			}
 		},
 	}
 )
@@ -336,6 +444,97 @@ func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request,
 	fmt.Fprint(&buf, "#EXT-X-ENDLIST\n")
 
 	w.Header().Set("Content-Type", MimeHLS)
+	http.ServeContent(w, r, "", time.Time{}, bytes.NewReader(buf.Bytes()))
+}
+
+// serveDASHManifest serves a generated DASH manifest.
+func serveDASHManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request, vf *file.VideoFile, resolution string) {
+	if sm.cacheDir == "" {
+		logger.Error("[transcode] cannot live transcode with DASH because cache dir is unset")
+		http.Error(w, "cannot live transcode files with DASH because cache dir is unset", http.StatusServiceUnavailable)
+		return
+	}
+
+	probeResult, err := sm.ffprobe.NewVideoFile(vf.Path)
+	if err != nil {
+		logger.Warnf("[transcode] error generating DASH manifest: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var framerate string
+	var videoWidth int
+	var videoHeight int
+	videoStream := probeResult.VideoStream
+	if videoStream != nil {
+		framerate = videoStream.AvgFrameRate
+		videoWidth = videoStream.Width
+		videoHeight = videoStream.Height
+	} else {
+		// extract the framerate fraction from the file framerate
+		// framerates 0.1% below round numbers are common,
+		// attempt to infer when this is the case
+		fileFramerate := vf.FrameRate
+		rate1001, off1001 := math.Modf(fileFramerate * 1.001)
+		var numerator int
+		var denominator int
+		switch {
+		case off1001 < 0.005:
+			numerator = int(rate1001) * 1000
+			denominator = 1001
+		case off1001 > 0.995:
+			numerator = (int(rate1001) + 1) * 1000
+			denominator = 1001
+		default:
+			numerator = int(fileFramerate * 1000)
+			denominator = 1000
+		}
+		framerate = fmt.Sprintf("%d/%d", numerator, denominator)
+		videoHeight = vf.Height
+		videoWidth = vf.Width
+	}
+
+	var urlQuery string
+	maxTranscodeSize := sm.config.GetMaxStreamingTranscodeSize().GetMaxResolution()
+	if resolution != "" {
+		maxTranscodeSize = models.StreamingResolutionEnum(resolution).GetMaxResolution()
+		urlQuery = fmt.Sprintf("?resolution=%s", resolution)
+	}
+	if maxTranscodeSize != 0 {
+		videoSize := videoHeight
+		if videoWidth < videoSize {
+			videoSize = videoWidth
+		}
+
+		if maxTranscodeSize < videoSize {
+			scaleFactor := float64(maxTranscodeSize) / float64(videoSize)
+			videoWidth = int(float64(videoWidth) * scaleFactor)
+			videoHeight = int(float64(videoHeight) * scaleFactor)
+		}
+	}
+
+	mediaDuration := mpd.Duration(time.Duration(probeResult.FileDuration * float64(time.Second)))
+	m := mpd.NewMPD(mpd.DASH_PROFILE_LIVE, mediaDuration.String(), "PT4.0S")
+
+	baseUrl := r.URL.JoinPath("/")
+	baseUrl.RawQuery = ""
+	m.BaseURL = baseUrl.String()
+
+	video, _ := m.AddNewAdaptationSetVideo("video/webm", "progressive", true, 1)
+
+	_, _ = video.SetNewSegmentTemplate(2, "init_v.webm"+urlQuery, "$Number$_v.webm"+urlQuery, 0, 1)
+	_, _ = video.AddNewRepresentationVideo(200000, "vp09.00.40.08", "0", framerate, int64(videoWidth), int64(videoHeight))
+
+	if ProbeAudioCodec(vf.AudioCodec) != MissingUnsupported {
+		audio, _ := m.AddNewAdaptationSetAudio("audio/webm", true, 1, "und")
+		_, _ = audio.SetNewSegmentTemplate(2, "init_a.webm"+urlQuery, "$Number$_a.webm"+urlQuery, 0, 1)
+		_, _ = audio.AddNewRepresentationAudio(48000, 96000, "opus", "1")
+	}
+
+	var buf bytes.Buffer
+	_ = m.Write(&buf)
+
+	w.Header().Set("Content-Type", MimeDASH)
 	http.ServeContent(w, r, "", time.Time{}, bytes.NewReader(buf.Bytes()))
 }
 
