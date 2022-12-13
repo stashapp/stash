@@ -105,6 +105,7 @@
     "submit": "送信",
     "submit_stash_box": "Stash-Boxに送信",
     "submit_update": "更新を送信",
+    "swap": "入れ替える",
     "tasks": {
       "clean_confirm_message": "クリーニングを実行してもよろしいですか？この操作により、ファイルシステムで利用されていないすべてのシーンとギャラリーから生成されたコンテンツとデータベース情報が削除されます。",
       "dry_mode_selected": "ドライモードが選択されています。実際の削除は実施されず、ログ処理だけが実行されます。",
@@ -530,6 +531,10 @@
         "description": "タイプナビゲーションバー上の異なるコンテンツタイプの表示または非表示を切り替えます",
         "heading": "メニューアイテム"
       },
+      "minimum_play_percent": {
+        "description": "再生回数を増やすために再生しなければならないシーンの時間割合を指します。",
+        "heading": "最低再生割合"
+      },
       "performers": {
         "options": {
           "image_location": {
@@ -566,7 +571,8 @@
             "description": "動画の再生が終了した際にキューに入っている次の動画を再生します",
             "heading": "デフォルトでプレイリストを続行"
           },
-          "show_scrubber": "スクラバーを表示"
+          "show_scrubber": "スクラバーを表示",
+          "track_activity": "アクティビティを追跡"
         }
       },
       "scene_wall": {
@@ -692,11 +698,20 @@
         "zoom": "拡大"
       }
     },
+    "merge": {
+      "destination": "宛先",
+      "empty_results": "宛先欄の値は変更されません。",
+      "source": "ソース"
+    },
     "merge_tags": {
       "destination": "場所",
       "source": "ソース"
     },
     "overwrite_filter_confirm": "本当に保存されているクエリ「{entityName}」を上書きしてもよろしいですか？",
+    "reassign_entity_title": "{count, plural, one {{singularEntity}を再割り当て} other {{pluralEntity}を再割り当て}}",
+    "reassign_files": {
+      "destination": "次に再割り当て:"
+    },
     "scene_gen": {
       "force_transcodes": "強制的にトランスコード済みファイルを生成",
       "force_transcodes_tooltip": "初期設定では、トランスコード済みファイルはブラウザーがサポートしていない動画ファイルであった場合にのみ生成されます。有効にすると、ブラウザーがサポートする動画ファイルであった場合でもトランスコード済みファイルを生成します。",
@@ -742,6 +757,7 @@
   },
   "dimensions": "寸法",
   "director": "監督",
+  "disambiguation": "用語解説",
   "display_mode": {
     "grid": "グリッド",
     "list": "リスト",
@@ -797,6 +813,7 @@
   "file_info": "ファイル情報",
   "file_mod_time": "ファイル変更日時",
   "files": "ファイル",
+  "files_amount": "{value}ファイル",
   "filesize": "ファイルサイズ",
   "filter": "フィルター",
   "filter_name": "フィルター名",
@@ -939,6 +956,7 @@
   "performers": "出演者",
   "piercings": "ピアス",
   "play_count": "再生回数",
+  "play_duration": "再生時間",
   "primary_file": "メインファイル",
   "queue": "キュー",
   "random": "ランダム",
@@ -947,11 +965,16 @@
   "recently_released_objects": "最近リリースされた{objects}",
   "release_notes": "リリースノート",
   "resolution": "解像度",
+  "resume_time": "レジューム時間",
   "scene": "シーン",
   "sceneTagger": "シーン一括タグ付け",
   "sceneTags": "シーンタグ",
+  "scene_code": "スタジオコード",
   "scene_count": "シーン数",
+  "scene_created_at": "シーンの作成日時",
+  "scene_date": "シーンの日付",
   "scene_id": "シーンID",
+  "scene_updated_at": "シーンの更新日時",
   "scenes": "シーン",
   "scenes_updated_at": "シーンの更新日：",
   "search_filter": {
@@ -1043,6 +1066,7 @@
     "welcome_to_stash": "Stashへようこそ"
   },
   "stash_id": "Stash ID",
+  "stash_id_endpoint": "Stash IDエンドポイント",
   "stash_ids": "Stash ID",
   "stashbox": {
     "go_review_draft": "下書きを確認するには、{endpoint_name}に移動してください。",
@@ -1080,6 +1104,7 @@
     "generating_screenshot": "スクリーンショットを生成中…",
     "merged_scenes": "マージされたシーン",
     "merged_tags": "マージされたタグ",
+    "reassign_past_tense": "ファイルが再割り当てされました",
     "removed_entity": "{count, plural, one {{singularEntity}}と、その他{{pluralEntity}}}を削除しました",
     "rescanning_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}}を再スキャン中…",
     "saved_entity": "{entity}が保存されました",
