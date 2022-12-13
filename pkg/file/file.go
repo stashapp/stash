@@ -156,6 +156,7 @@ type Finder interface {
 type Getter interface {
 	Finder
 	FindByPath(ctx context.Context, path string) (File, error)
+	FindAllByPath(ctx context.Context, path string) ([]File, error)
 	FindByFingerprint(ctx context.Context, fp Fingerprint) ([]File, error)
 	FindByZipFileID(ctx context.Context, zipFileID ID) ([]File, error)
 	FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]File, error)

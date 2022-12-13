@@ -98,13 +98,22 @@ func AssociateCaptions(ctx context.Context, captionPath string, txnMgr txn.Manag
 	captionPrefix := getCaptionPrefix(captionPath)
 	if err := txn.WithTxn(ctx, txnMgr, func(ctx context.Context) error {
 		var err error
-		f, er := fqb.FindByPath(ctx, captionPrefix+"*")
+		files, er := fqb.FindAllByPath(ctx, captionPrefix+"*")
 
 		if er != nil {
 			return fmt.Errorf("searching for scene %s: %w", captionPrefix, er)
 		}
 
-		if f != nil { // found related Scene
+		for _, f := range files {
+			// found some files
+			// filter out non video files
+			switch f.(type) {
+			case *file.VideoFile:
+				break
+			default:
+				continue
+			}
+
 			fileID := f.Base().ID
 			path := f.Base().Path
 
