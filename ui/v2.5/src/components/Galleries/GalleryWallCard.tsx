@@ -5,6 +5,7 @@ import * as GQL from "src/core/generated-graphql";
 import { TruncatedText } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import { useGalleryLightbox } from "src/hooks";
+import { IChapter } from "src/hooks";
 import { galleryTitle } from "src/core/galleries";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 
@@ -19,7 +20,16 @@ interface IProps {
 
 const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
   const intl = useIntl();
-  const showLightbox = useGalleryLightbox(gallery.id);
+  function createChapters() {
+      let r = [];
+      gallery.details.split("\n").forEach(function(name, i) {
+        r.push({title: name, pageNumber: i*10} as IChapter);
+      })
+      return r;
+  };
+  const chapters = createChapters();
+
+  const showLightbox = useGalleryLightbox(gallery.id, chapters);
 
   const coverFile = gallery?.cover?.files.length
     ? gallery.cover.files[0]

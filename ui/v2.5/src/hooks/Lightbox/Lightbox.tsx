@@ -7,6 +7,8 @@ import {
   Popover,
   Form,
   Row,
+  Overlay, 
+  Popover,
 } from "react-bootstrap";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
@@ -28,7 +30,7 @@ import {
 import * as GQL from "src/core/generated-graphql";
 import { useInterfaceLocalForage } from "../LocalForage";
 import { imageLightboxDisplayModeIntlMap } from "src/core/enums";
-import { ILightboxImage } from "./types";
+import { ILightboxImage, IChapter } from "./types";
 import {
   faArrowLeft,
   faArrowRight,
@@ -40,12 +42,14 @@ import {
   faPlay,
   faSearchMinus,
   faTimes,
+  faBars,
 } from "@fortawesome/free-solid-svg-icons";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
 const CLASSNAME_LEFT_SPACER = `${CLASSNAME_HEADER}-left-spacer`;
+const CLASSNAME_CHAPTERS = `${CLASSNAME_HEADER}-chapters`;
 const CLASSNAME_INDICATOR = `${CLASSNAME_HEADER}-indicator`;
 const CLASSNAME_OPTIONS = `${CLASSNAME_HEADER}-options`;
 const CLASSNAME_OPTIONS_ICON = `${CLASSNAME_OPTIONS}-icon`;
@@ -75,6 +79,7 @@ interface IProps {
   slideshowEnabled?: boolean;
   pageHeader?: string;
   pageCallback?: (direction: number) => void;
+  chapters?: IChapter[];
   hide: () => void;
 }
 
@@ -87,6 +92,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   slideshowEnabled = false,
   pageHeader,
   pageCallback,
+  chapters = [],
   hide,
 }) => {
   const [updateImage] = useImageUpdate();
@@ -98,6 +104,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [isSwitchingPage, setIsSwitchingPage] = useState(true);
   const [isFullscreen, setFullscreen] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
+  const [showChapters, setShowChapters] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState(0);
   const [navOffset, setNavOffset] = useState<React.CSSProperties | undefined>();
 
@@ -107,6 +114,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [resetPosition, setResetPosition] = useState(false);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const chapterMenuRef = useRef<HTMLDivElement>(null);
   const overlayTarget = useRef<HTMLButtonElement | null>(null);
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const indicatorRef = useRef<HTMLDivElement | null>(null);
@@ -310,6 +318,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     (isUserAction = true) => {
       if (isSwitchingPage || index === -1) return;
 
+      setShowChapters(false);
       setMovingLeft(true);
 
       if (index === 0) {
@@ -334,6 +343,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       if (isSwitchingPage) return;
 
       setMovingLeft(false);
+      setShowChapters(false);
 
       if (index === images.length - 1) {
         // go to preview page, or loop back if no callback is set
@@ -448,6 +458,55 @@ export const LightboxComponent: React.FC<IProps> = ({
   };
 
   const currentIndex = index === null ? initialIndex : index;
+
+  function gotoPage(i) {
+     if (pageCallback) {
+       let jumppage=Math.floor(i/40);
+       if (pageHeader.startsWith("Page ")) {
+         jumppage = jumppage - (pageHeader.split(" ")[1] - 1);
+       }
+       if (jumppage !== 0) {
+         pageCallback(jumppage);
+         oldImages.current = images;
+         setIsSwitchingPage(true);
+       }
+       setIndex(i%40);
+     } else setIndex(i);
+     setShowChapters(false);
+  }
+
+  const renderChapterMenu = () => {
+    if (chapters.length <= 0) return;
+
+    const popoverContent = chapters.map(({ title, pageNumber }) => (
+      <p onClick={() => gotoPage(pageNumber)}>{title} - {pageNumber+1}</p>
+    ));
+
+    return (
+      <>
+        <div
+          className="chaptermenu"
+          onClick={() => setShowChapters(!showChapters)}
+          ref={chapterMenuRef}
+        >
+          <Button className="minimal">
+            <Icon icon={showChapters ? faTimes : faBars} />
+          </Button>
+        </div>
+        {chapterMenuRef.current && (
+          <Overlay className={CLASSNAME_CHAPTERS} show={showChapters} placement="bottom" target={chapterMenuRef.current} container={containerRef}>
+            <Popover
+              onClick={() => setShowChapters(!showChapters)}
+              id="popover"
+              className={CLASSNAME_CHAPTERS+" hover-popover-content"}
+            >
+              {popoverContent}
+            </Popover>
+          </Overlay>
+        )}
+      </>
+    );
+  }
 
   // #2451: making OptionsForm an inline component means it
   // get re-rendered each time. This makes the text
@@ -642,7 +701,9 @@ export const LightboxComponent: React.FC<IProps> = ({
       onClick={handleClose}
     >
       <div className={CLASSNAME_HEADER}>
-        <div className={CLASSNAME_LEFT_SPACER} />
+        <div className={CLASSNAME_LEFT_SPACER}>
+          {renderChapterMenu()}
+        </div>
         <div className={CLASSNAME_INDICATOR}>
           <span>{pageHeader}</span>
           {images.length > 1 ? (
