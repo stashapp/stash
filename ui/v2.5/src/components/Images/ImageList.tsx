@@ -67,6 +67,7 @@ interface IImageListImages {
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
   slideshowRunning: boolean;
   setSlideshowRunning: (running: boolean) => void;
+  chapters?: IChapter[];
 }
 
 const ImageListImages: React.FC<IImageListImages> = ({
@@ -78,21 +79,22 @@ const ImageListImages: React.FC<IImageListImages> = ({
   onSelectChange,
   slideshowRunning,
   setSlideshowRunning,
+  chapters=[],
 }) => {
   const handleLightBoxPage = useCallback(
     (direction: number) => {
-      if (direction === -1) {
+      if (direction < 0) {
         if (filter.currentPage === 1) {
           onChangePage(pageCount);
         } else {
-          onChangePage(filter.currentPage - 1);
+          onChangePage(filter.currentPage + direction);
         }
-      } else if (direction === 1) {
+      } else if (direction > 0) {
         if (filter.currentPage === pageCount) {
           // return to the first page
           onChangePage(1);
         } else {
-          onChangePage(filter.currentPage + 1);
+          onChangePage(filter.currentPage + direction);
         }
       }
     },
@@ -121,7 +123,7 @@ const ImageListImages: React.FC<IImageListImages> = ({
     handleLightBoxPage,
   ]);
 
-  const showLightbox = useLightbox(lightboxState);
+  const showLightbox = useLightbox(lightboxState, chapters);
 
   const handleImageOpen = useCallback(
     (index) => {
@@ -188,6 +190,7 @@ interface IImageList {
   persistState?: PersistanceLevel;
   persistanceKey?: string;
   extraOperations?: IListHookOperation<FindImagesQueryResult>[];
+  chapters?: IChapter[];
 }
 
 export const ImageList: React.FC<IImageList> = ({
@@ -195,6 +198,7 @@ export const ImageList: React.FC<IImageList> = ({
   persistState,
   persistanceKey,
   extraOperations,
+  chapters=[],
 }) => {
   const intl = useIntl();
   const history = useHistory();
@@ -342,6 +346,7 @@ export const ImageList: React.FC<IImageList> = ({
         selectedIds={selectedIds}
         slideshowRunning={slideshowRunning}
         setSlideshowRunning={setSlideshowRunning}
+        chapters={chapters}
       />
     );
   }

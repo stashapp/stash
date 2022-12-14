@@ -1,8 +1,9 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { LightboxContext, IState } from "./context";
+import { IChapter } from "./types";
 
-export const useLightbox = (state: Partial<Omit<IState, "isVisible">>) => {
+export const useLightbox = (state: Partial<Omit<IState, "isVisible">>, chapters: IChapter[] = []) => {
   const { setLightboxState } = useContext(LightboxContext);
 
   useEffect(() => {
@@ -30,6 +31,7 @@ export const useLightbox = (state: Partial<Omit<IState, "isVisible">>) => {
         initialIndex: index,
         isVisible: true,
         slideshowEnabled,
+        chapters: chapters ?? undefined,
       });
     },
     [setLightboxState]
@@ -37,7 +39,7 @@ export const useLightbox = (state: Partial<Omit<IState, "isVisible">>) => {
   return show;
 };
 
-export const useGalleryLightbox = (id: string) => {
+export const useGalleryLightbox = (id: string, chapters: IChapter[] = []) => {
   const { setLightboxState } = useContext(LightboxContext);
 
   const pageSize = 40;
@@ -70,18 +72,18 @@ export const useGalleryLightbox = (id: string) => {
 
   const handleLightBoxPage = useCallback(
     (direction: number) => {
-      if (direction === -1) {
+      if (direction < 0) {
         if (page === 1) {
           setPage(pages);
         } else {
-          setPage(page - 1);
+          setPage(page + direction);
         }
-      } else if (direction === 1) {
+      } else if (direction > 0) {
         if (page === pages) {
           // return to the first page
           setPage(1);
         } else {
-          setPage(page + 1);
+          setPage(page + direction);
         }
       }
     },
@@ -107,6 +109,7 @@ export const useGalleryLightbox = (id: string) => {
         images: data.findImages?.images ?? [],
         pageCallback: pages > 1 ? handleLightBoxPage : undefined,
         pageHeader: `Page ${page} / ${pages}`,
+        chapters: chapters ?? undefined,
       });
     else {
       setLightboxState({
@@ -114,6 +117,7 @@ export const useGalleryLightbox = (id: string) => {
         isVisible: true,
         pageCallback: undefined,
         pageHeader: undefined,
+        chapters: chapters ?? undefined,
       });
       fetchGallery();
     }
