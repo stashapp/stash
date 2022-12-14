@@ -65,15 +65,15 @@ jobs:
     - name: Generate
       run: docker exec -t build /bin/bash -c "make generate"
 
-    - name: Validate UI
-      # skip UI validation for pull requests if UI is unchanged
-      if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
-      run: docker exec -t build /bin/bash -c "make validate-frontend"
+#     - name: Validate UI
+#       # skip UI validation for pull requests if UI is unchanged
+#       if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
+#       run: docker exec -t build /bin/bash -c "make validate-frontend"
 
-    # Static validation happens in the linter workflow in parallel to this workflow
-    # Run Dynamic validation here, to make sure we pass all the projects integration tests
-    - name: Test Backend
-      run: docker exec -t build /bin/bash -c "make it"
+#     # Static validation happens in the linter workflow in parallel to this workflow
+#     # Run Dynamic validation here, to make sure we pass all the projects integration tests
+#     - name: Test Backend
+#       run: docker exec -t build /bin/bash -c "make it"
 
     - name: Build UI
       # skip UI build for pull requests if UI is unchanged (UI was cached)
@@ -168,7 +168,7 @@ jobs:
         gzip: false
 
     - name: Development Docker
-      if: ${{ github.repository == 'stashapp/stash' && github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+#       if: ${{ github.repository == 'stashapp/stash' && github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
       env:
         DOCKER_CLI_EXPERIMENTAL: enabled
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
