@@ -583,7 +583,7 @@ func (qb *FileStore) FindByPath(ctx context.Context, p string) (file.File, error
 	}
 
 	if len(ret) == 0 {
-		return nil, sql.ErrNoRows
+		return nil, nil
 	}
 
 	return ret[0], nil
