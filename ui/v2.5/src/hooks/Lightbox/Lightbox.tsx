@@ -473,7 +473,19 @@ export const LightboxComponent: React.FC<IProps> = ({
        setIndex(i%40);
      } else setIndex(i);
      setShowChapters(false);
-  }
+  };
+
+  function chapterHeader() {
+    let completePage = index + (pageHeader.split(" ")[1] - 1) * 40;
+    let r = "";
+    chapters.forEach(function(chapter) {
+      if (chapter.pageNumber > completePage){
+        return r;
+      };
+      r = chapter.title;
+    });
+    return r;
+  };
 
   const renderChapterMenu = () => {
     if (chapters.length <= 0) return;
@@ -506,7 +518,7 @@ export const LightboxComponent: React.FC<IProps> = ({
         )}
       </>
     );
-  }
+  };
 
   // #2451: making OptionsForm an inline component means it
   // get re-rendered each time. This makes the text
@@ -705,7 +717,7 @@ export const LightboxComponent: React.FC<IProps> = ({
           {renderChapterMenu()}
         </div>
         <div className={CLASSNAME_INDICATOR}>
-          <span>{pageHeader}</span>
+          <span>{chapterHeader()} {pageHeader}</span>
           {images.length > 1 ? (
             <b ref={indicatorRef}>{`${currentIndex + 1} / ${images.length}`}</b>
           ) : undefined}
