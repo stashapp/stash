@@ -586,6 +586,12 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 	query.handleCriterion(ctx, stringCriterionHandler(filter.HairColor, tableName+".hair_color"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.URL, tableName+".url"))
 	query.handleCriterion(ctx, intCriterionHandler(filter.Weight, tableName+".weight", nil))
+	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
+		if filter.StashID != nil {
+			qb.stashIDRepository().join(f, "performer_stash_ids", "performers.id")
+			stringCriterionHandler(filter.StashID, "performer_stash_ids.stash_id")(ctx, f)
+		}
+	}))
 	query.handleCriterion(ctx, &stashIDCriterionHandler{
 		c:                 filter.StashIDEndpoint,
 		stashIDRepository: qb.stashIDRepository(),
