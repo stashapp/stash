@@ -99,12 +99,22 @@ INSERT INTO `performers_new`
     `ignore_auto_tag`
   FROM `performers`;
 
-ALTER TABLE `performers` rename to `performers_old`;
+INSERT INTO `performer_aliases`
+  (
+    `performer_id`,
+    `alias`
+  )
+  SELECT 
+    `id`,
+    `aliases`
+  FROM `performers`
+  WHERE `performers`.`aliases` IS NOT NULL AND `performers`.`aliases` != '';
+
+DROP TABLE `performers`;
 ALTER TABLE `performers_new` rename to `performers`;
 
 
 -- these will be executed in the post-migration
--- DROP TABLE `performers_old`;
 -- CREATE UNIQUE INDEX `performers_name_disambiguation_unique` on `performers` (`name`, `disambiguation`) WHERE `disambiguation` IS NOT NULL;
 -- CREATE UNIQUE INDEX `performers_name_unique` on `performers` (`name`) WHERE `disambiguation` IS NULL;
 

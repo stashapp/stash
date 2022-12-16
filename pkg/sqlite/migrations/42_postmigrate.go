@@ -56,13 +56,13 @@ func (m *schema42Migrator) migrate(ctx context.Context) error {
 		gotSome := false
 
 		if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
-			query := "SELECT `id`, `aliases` FROM `performers_old` WHERE `aliases` IS NOT NULL AND `aliases` != ''"
+			query := "SELECT `performer_id`, `alias` FROM `performer_aliases`"
 
 			if lastID != 0 {
-				query += fmt.Sprintf(" AND `id` > %d ", lastID)
+				query += fmt.Sprintf(" WHERE `performer_id` > %d ", lastID)
 			}
 
-			query += fmt.Sprintf(" ORDER BY `id` LIMIT %d", limit)
+			query += fmt.Sprintf(" ORDER BY `performer_id` LIMIT %d", limit)
 
 			rows, err := m.db.Query(query)
 			if err != nil {
@@ -112,6 +112,16 @@ func (m *schema42Migrator) migratePerformerAliases(id int, aliases string) error
 	aliasList := strings.FieldsFunc(aliases, func(r rune) bool {
 		return strings.ContainsRune(",/", r)
 	})
+
+	if len(aliasList) < 2 {
+		// existing value is fine
+		return nil
+	}
+
+	// delete the existing row
+	if _, err := m.db.Exec("DELETE FROM `performer_aliases` WHERE `performer_id` = ?", id); err != nil {
+		return err
+	}
 
 	// trim whitespace from each alias
 	for i, alias := range aliasList {
@@ -232,7 +242,6 @@ SELECT disambiguation FROM performers WHERE name = ? ORDER BY disambiguation DES
 
 func (m *schema42Migrator) executeSchemaChanges() error {
 	return m.execAll([]string{
-		"DROP TABLE `performers_old`",
 		"CREATE UNIQUE INDEX `performers_name_disambiguation_unique` on `performers` (`name`, `disambiguation`) WHERE `disambiguation` IS NOT NULL",
 		"CREATE UNIQUE INDEX `performers_name_unique` on `performers` (`name`) WHERE `disambiguation` IS NULL",
 	})
