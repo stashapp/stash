@@ -495,7 +495,7 @@ func (s *Manager) PostInit(ctx context.Context) error {
 	if s.Config.GetProxy() != "" {
 		os.Setenv("HTTP_PROXY", s.Config.GetProxy())
 		os.Setenv("HTTPS_PROXY", s.Config.GetProxy())
-		logger.Infof("Using HTTP Proxy: %s", s.Config.GetProxy())
+		logger.Info("Using HTTP Proxy")
 	}
 
 	return nil
