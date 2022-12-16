@@ -56,7 +56,7 @@ func (m *schema42Migrator) migrate(ctx context.Context) error {
 		gotSome := false
 
 		if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
-			query := "SELECT `id`, `aliases` FROM `performers` WHERE `aliases` IS NOT NULL AND `aliases` != ''"
+			query := "SELECT `id`, `aliases` FROM `performers_old` WHERE `aliases` IS NOT NULL AND `aliases` != ''"
 
 			if lastID != 0 {
 				query += fmt.Sprintf(" AND `id` > %d ", lastID)
@@ -232,7 +232,7 @@ SELECT disambiguation FROM performers WHERE name = ? ORDER BY disambiguation DES
 
 func (m *schema42Migrator) executeSchemaChanges() error {
 	return m.execAll([]string{
-		"ALTER TABLE `performers` DROP COLUMN `aliases`",
+		"DROP TABLE `performers_old`",
 		"CREATE UNIQUE INDEX `performers_name_disambiguation_unique` on `performers` (`name`, `disambiguation`) WHERE `disambiguation` IS NOT NULL",
 		"CREATE UNIQUE INDEX `performers_name_unique` on `performers` (`name`) WHERE `disambiguation` IS NULL",
 	})
