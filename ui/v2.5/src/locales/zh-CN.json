@@ -11,7 +11,7 @@
     "backup": "备份",
     "browse_for_image": "浏览图片…",
     "cancel": "取消",
-    "clean": "清除",
+    "clean": "清理",
     "clear": "清除",
     "clear_back_image": "清除背面图片",
     "clear_front_image": "清除正面图片",
@@ -757,7 +757,7 @@
   },
   "dimensions": "大小",
   "director": "导演",
-  "disambiguation": "确定",
+  "disambiguation": "确定含义",
   "display_mode": {
     "grid": "格状显示",
     "list": "列表显示",
@@ -768,7 +768,7 @@
   "donate": "赞助",
   "dupe_check": {
     "description": "低于“精确”的准确度需要更长的时间来计算，但使用较低的准确度可能会产生误报。",
-    "found_sets": "{setCount, plural, one{# 发现的重复数据。} other {# 发现的重复数据。}}",
+    "found_sets": "{setCount, plural, one{# 个发现的重复数据。} other {# 个发现的重复数据。}}",
     "options": {
       "exact": "精确",
       "high": "高",
@@ -786,7 +786,7 @@
     "blur": "模糊",
     "brightness": "亮度",
     "contrast": "对比",
-    "gamma": "伽马",
+    "gamma": "伽马亮度",
     "green": "绿色",
     "hue": "色调",
     "name": "滤镜",
