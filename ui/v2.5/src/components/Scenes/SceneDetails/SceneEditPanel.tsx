@@ -436,7 +436,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
     const currentScene = getSceneInput(formik.values);
     if (!currentScene.cover_image) {
-      currentScene.cover_image = scene.paths!.screenshot;
+      currentScene.cover_image = scene.paths?.screenshot;
     }
 
     return (
