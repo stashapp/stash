@@ -96,6 +96,7 @@ func newClient(gc GlobalConfig) *http.Client {
 		Transport: &http.Transport{ // ignore insecure certificates
 			TLSClientConfig:     &tls.Config{InsecureSkipVerify: !gc.GetScraperCertCheck()},
 			MaxIdleConnsPerHost: maxIdleConnsPerHost,
+			Proxy:               http.ProxyFromEnvironment,
 		},
 		Timeout: scrapeGetTimeout,
 		// defaultCheckRedirect code with max changed from 10 to maxRedirects

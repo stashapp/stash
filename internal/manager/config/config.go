@@ -91,6 +91,9 @@ const (
 
 	ExternalHost = "external_host"
 
+	// http proxy url if required
+	Proxy = "proxy"
+
 	// key used to sign JWT tokens
 	JWTSignKey = "jwt_secret_key"
 
@@ -1341,6 +1344,11 @@ func (i *Instance) GetMaxUploadSize() int64 {
 		ret = v.GetInt64(MaxUploadSize)
 	}
 	return ret << 20
+}
+
+// GetProxy returns the url of a http proxy to be used for all outgoing http calls.
+func (i *Instance) GetProxy() string {
+	return i.getString(Proxy)
 }
 
 // ActivatePublicAccessTripwire sets the security_tripwire_accessed_from_public_internet
