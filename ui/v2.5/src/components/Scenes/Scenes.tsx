@@ -17,6 +17,10 @@ const Scenes: React.FC = () => {
   const title_template = `${intl.formatMessage({
     id: "scenes",
   })} ${TITLE_SUFFIX}`;
+  const marker_title_template = `${intl.formatMessage({
+    id: "markers",
+  })} ${TITLE_SUFFIX}`;
+
   return (
     <>
       <Helmet
@@ -31,7 +35,19 @@ const Scenes: React.FC = () => {
             <SceneList persistState={PersistanceLevel.ALL} {...props} />
           )}
         />
-        <Route exact path="/scenes/markers" component={SceneMarkerList} />
+        <Route
+          exact
+          path="/scenes/markers"
+          render={() => (
+            <>
+              <Helmet
+                defaultTitle={marker_title_template}
+                titleTemplate={`%s | ${marker_title_template}`}
+              />
+              <SceneMarkerList />
+            </>
+          )}
+        />
         <Route exact path="/scenes/new" component={SceneCreate} />
         <Route path="/scenes/:id" component={Scene} />
       </Switch>

@@ -2,8 +2,6 @@ import cloneDeep from "lodash-es/cloneDeep";
 import React from "react";
 import { useHistory } from "react-router-dom";
 import { useIntl } from "react-intl";
-import { Helmet } from "react-helmet";
-import { TITLE_SUFFIX } from "src/components/Shared/constants";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -90,25 +88,15 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({ filterHook }) => {
       );
     }
   }
-  const title_template = `${intl.formatMessage({
-    id: "markers",
-  })} ${TITLE_SUFFIX}`;
 
   return (
-    <>
-      <Helmet
-        defaultTitle={title_template}
-        titleTemplate={`%s | ${title_template}`}
-      />
-
-      <SceneMarkerItemList
-        filterHook={filterHook}
-        persistState={PersistanceLevel.ALL}
-        otherOperations={otherOperations}
-        addKeybinds={addKeybinds}
-        renderContent={renderContent}
-      />
-    </>
+    <SceneMarkerItemList
+      filterHook={filterHook}
+      persistState={PersistanceLevel.ALL}
+      otherOperations={otherOperations}
+      addKeybinds={addKeybinds}
+      renderContent={renderContent}
+    />
   );
 };
 
