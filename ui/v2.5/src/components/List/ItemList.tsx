@@ -151,12 +151,16 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     const [newCriterion, setNewCriterion] = useState(false);
 
     const result = useResult(filter);
-    const totalCount = useMemo(() => getCount(result), [result]);
-    const metadataByline = useMemo(
-      () => renderMetadataByline?.(result),
-      [result]
-    );
+    const [totalCount, setTotalCount] = useState(0);
+    const [metadataByline, setMetadataByline] = useState<React.ReactNode>();
     const items = useMemo(() => getItems(result), [result]);
+
+    useEffect(() => {
+      if (result.loading) return;
+
+      setTotalCount(getCount(result));
+      setMetadataByline(renderMetadataByline?.(result));
+    }, [result]);
 
     // handle case where page is more than there are pages
     useEffect(() => {
