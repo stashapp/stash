@@ -1,9 +1,8 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { LightboxContext, IState } from "./context";
-import { IChapter } from "./types";
 
-export const useLightbox = (state: Partial<Omit<IState, "isVisible">>, chapters: IChapter[] = []) => {
+export const useLightbox = (state: Partial<Omit<IState, "isVisible">>, chapters: GQL.GalleryChapterDataFragment[] = []) => {
   const { setLightboxState } = useContext(LightboxContext);
 
   useEffect(() => {
@@ -39,7 +38,7 @@ export const useLightbox = (state: Partial<Omit<IState, "isVisible">>, chapters:
   return show;
 };
 
-export const useGalleryLightbox = (id: string, chapters: IChapter[] = []) => {
+export const useGalleryLightbox = (id: string, chapters: GQL.GalleryChapterDataFragment[] = []) => {
   const { setLightboxState } = useContext(LightboxContext);
 
   const pageSize = 40;
@@ -101,11 +100,12 @@ export const useGalleryLightbox = (id: string, chapters: IChapter[] = []) => {
       });
   }, [setLightboxState, data, handleLightBoxPage, page, pages]);
 
-  const show = () => {
+  const show = (index: int = 0) => {
     if (data)
       setLightboxState({
         isLoading: false,
         isVisible: true,
+        initialIndex: index,
         images: data.findImages?.images ?? [],
         pageCallback: pages > 1 ? handleLightBoxPage : undefined,
         pageHeader: `Page ${page} / ${pages}`,
@@ -115,6 +115,7 @@ export const useGalleryLightbox = (id: string, chapters: IChapter[] = []) => {
       setLightboxState({
         isLoading: true,
         isVisible: true,
+        initialIndex: index,
         pageCallback: undefined,
         pageHeader: undefined,
         chapters: chapters ?? undefined,

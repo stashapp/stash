@@ -67,7 +67,7 @@ interface IImageListImages {
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
   slideshowRunning: boolean;
   setSlideshowRunning: (running: boolean) => void;
-  chapters?: IChapter[];
+  chapters?: GQL.GalleryChapterDataFragment[];
 }
 
 const ImageListImages: React.FC<IImageListImages> = ({
@@ -190,7 +190,7 @@ interface IImageList {
   persistState?: PersistanceLevel;
   persistanceKey?: string;
   extraOperations?: IListHookOperation<FindImagesQueryResult>[];
-  chapters?: IChapter[];
+  chapters?: GQL.GalleryChapterDataFragment[];
 }
 
 export const ImageList: React.FC<IImageList> = ({

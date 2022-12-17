@@ -44,16 +44,17 @@ func (*TxnManager) Reset() error {
 
 func NewTxnRepository() models.Repository {
 	return models.Repository{
-		TxnManager:  &TxnManager{},
-		Gallery:     &GalleryReaderWriter{},
-		Image:       &ImageReaderWriter{},
-		Movie:       &MovieReaderWriter{},
-		Performer:   &PerformerReaderWriter{},
-		Scene:       &SceneReaderWriter{},
-		SceneMarker: &SceneMarkerReaderWriter{},
-		ScrapedItem: &ScrapedItemReaderWriter{},
-		Studio:      &StudioReaderWriter{},
-		Tag:         &TagReaderWriter{},
-		SavedFilter: &SavedFilterReaderWriter{},
+		TxnManager:     &TxnManager{},
+		Gallery:        &GalleryReaderWriter{},
+		GalleryChapter: &GalleryChapterReaderWriter{},
+		Image:          &ImageReaderWriter{},
+		Movie:          &MovieReaderWriter{},
+		Performer:      &PerformerReaderWriter{},
+		Scene:          &SceneReaderWriter{},
+		SceneMarker:    &SceneMarkerReaderWriter{},
+		ScrapedItem:    &ScrapedItemReaderWriter{},
+		Studio:         &StudioReaderWriter{},
+		Tag:            &TagReaderWriter{},
+		SavedFilter:    &SavedFilterReaderWriter{},
 	}
 }

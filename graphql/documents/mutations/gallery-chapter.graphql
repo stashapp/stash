@@ -1,0 +1,31 @@
+mutation GalleryChapterCreate(
+  $title: String!,
+  $page_number: Int!,
+  $gallery_id: ID!) {
+  galleryChapterCreate(input: {
+                              title: $title,
+                              page_number: $page_number,
+                              gallery_id: $gallery_id,
+                            }) {
+    ...GalleryChapterData
+  }
+}
+
+mutation GalleryChapterUpdate(
+  $id: ID!,
+  $title: String!,
+  $page_number: Int!,
+  $gallery_id: ID!) {
+  galleryChapterUpdate(input: {
+                              id: $id,
+                              title: $title,
+                              page_number: $page_number,
+                              gallery_id: $gallery_id,
+                            }) {
+    ...GalleryChapterData
+  }
+}
+
+mutation GalleryChapterDestroy($id: ID!) {
+  galleryChapterDestroy(id: $id)
+}

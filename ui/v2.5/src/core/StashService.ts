@@ -758,6 +758,28 @@ export const mutateGallerySetPrimaryFile = (id: string, fileID: string) =>
     update: deleteCache(galleryMutationImpactedQueries),
   });
 
+const galleryChapterMutationImpactedQueries = [
+  GQL.FindGalleryDocument,
+  GQL.FindGalleriesDocument,
+];
+
+export const useGalleryChapterCreate = () =>
+  GQL.useGalleryChapterCreateMutation({
+    refetchQueries: getQueryNames([GQL.FindGalleryDocument]),
+    update: deleteCache(sceneMarkerMutationImpactedQueries),
+  });
+export const useGalleryChapterUpdate = () =>
+  GQL.useGalleryChapterUpdateMutation({
+    refetchQueries: getQueryNames([GQL.FindGalleryDocument]),
+    update: deleteCache(sceneMarkerMutationImpactedQueries),
+  });
+export const useGalleryChapterDestroy = () =>
+  GQL.useGalleryChapterDestroyMutation({
+    refetchQueries: getQueryNames([GQL.FindGalleryDocument]),
+    update: deleteCache(sceneMarkerMutationImpactedQueries),
+  });
+  
+
 export const studioMutationImpactedQueries = [
   GQL.FindStudiosDocument,
   GQL.FindSceneDocument,

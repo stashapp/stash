@@ -9,6 +9,10 @@ import (
 	"github.com/stashapp/stash/pkg/studio"
 )
 
+type ChapterFinder interface {
+        FindByGalleryID(ctx context.Context, galleryID int) ([]*models.GalleryChapter, error)
+}
+
 // ToBasicJSON converts a gallery object into its JSON object equivalent. It
 // does not convert the relationships to other objects.
 func ToBasicJSON(gallery *models.Gallery) (*jsonschema.Gallery, error) {

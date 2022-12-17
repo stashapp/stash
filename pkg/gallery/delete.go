@@ -11,6 +11,18 @@ import (
 func (s *Service) Destroy(ctx context.Context, i *models.Gallery, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) ([]*models.Image, error) {
 	var imgsDestroyed []*models.Image
 
+        mqb := s.ChapterRepository
+        chapters, err := mqb.FindByGalleryID(ctx, i.ID)
+        if err != nil {
+                return nil, err
+        }
+
+        for _, m := range chapters {
+                if err := DestroyChapter(ctx, m, mqb); err != nil {
+                        return nil, err
+                }
+        }
+
 	// if this is a zip-based gallery, delete the images as well first
 	zipImgsDestroyed, err := s.destroyZipFileImages(ctx, i, fileDeleter, deleteGenerated, deleteFile)
 	if err != nil {
@@ -37,6 +49,15 @@ func (s *Service) Destroy(ctx context.Context, i *models.Gallery, fileDeleter *i
 	}
 
 	return imgsDestroyed, nil
+}
+
+type ChapterDestroyer interface {
+        FindByGalleryID(ctx context.Context, galleryID int) ([]*models.GalleryChapter, error)
+        Destroy(ctx context.Context, id int) error
+}
+
+func DestroyChapter(ctx context.Context, galleryChapter *models.GalleryChapter, qb ChapterDestroyer) error {
+        return qb.Destroy(ctx, galleryChapter.ID)
 }
 
 func (s *Service) destroyZipFileImages(ctx context.Context, i *models.Gallery, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) ([]*models.Image, error) {

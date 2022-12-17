@@ -125,18 +125,19 @@ func (db *Database) IsLocked(err error) bool {
 
 func (db *Database) TxnRepository() models.Repository {
 	return models.Repository{
-		TxnManager:  db,
-		File:        db.File,
-		Folder:      db.Folder,
-		Gallery:     db.Gallery,
-		Image:       db.Image,
-		Movie:       MovieReaderWriter,
-		Performer:   db.Performer,
-		Scene:       db.Scene,
-		SceneMarker: SceneMarkerReaderWriter,
-		ScrapedItem: ScrapedItemReaderWriter,
-		Studio:      StudioReaderWriter,
-		Tag:         TagReaderWriter,
-		SavedFilter: SavedFilterReaderWriter,
+		TxnManager:     db,
+		File:           db.File,
+		Folder:         db.Folder,
+		Gallery:        db.Gallery,
+		GalleryChapter: GalleryChapterReaderWriter,
+		Image:          db.Image,
+		Movie:          MovieReaderWriter,
+		Performer:      db.Performer,
+		Scene:          db.Scene,
+		SceneMarker:    SceneMarkerReaderWriter,
+		ScrapedItem:    ScrapedItemReaderWriter,
+		Studio:         StudioReaderWriter,
+		Tag:            TagReaderWriter,
+		SavedFilter:    SavedFilterReaderWriter,
 	}
 }
