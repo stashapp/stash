@@ -49,18 +49,19 @@ type FolderReaderWriter interface {
 type Repository struct {
 	models.TxnManager
 
-	File        FileReaderWriter
-	Folder      FolderReaderWriter
-	Gallery     GalleryReaderWriter
-	Image       ImageReaderWriter
-	Movie       models.MovieReaderWriter
-	Performer   models.PerformerReaderWriter
-	Scene       SceneReaderWriter
-	SceneMarker models.SceneMarkerReaderWriter
-	ScrapedItem models.ScrapedItemReaderWriter
-	Studio      models.StudioReaderWriter
-	Tag         models.TagReaderWriter
-	SavedFilter models.SavedFilterReaderWriter
+	File           FileReaderWriter
+	Folder         FolderReaderWriter
+	Gallery        GalleryReaderWriter
+        GalleryChapter models.GalleryChapterReaderWriter
+	Image          ImageReaderWriter
+	Movie          models.MovieReaderWriter
+	Performer      models.PerformerReaderWriter
+	Scene          SceneReaderWriter
+	SceneMarker    models.SceneMarkerReaderWriter
+	ScrapedItem    models.ScrapedItemReaderWriter
+	Studio         models.StudioReaderWriter
+	Tag            models.TagReaderWriter
+	SavedFilter    models.SavedFilterReaderWriter
 }
 
 func (r *Repository) WithTxn(ctx context.Context, fn txn.TxnFunc) error {
@@ -80,18 +81,19 @@ func sqliteRepository(d *sqlite.Database) Repository {
 
 	return Repository{
 		TxnManager:  txnRepo,
-		File:        d.File,
-		Folder:      d.Folder,
-		Gallery:     d.Gallery,
-		Image:       d.Image,
-		Movie:       txnRepo.Movie,
-		Performer:   txnRepo.Performer,
-		Scene:       d.Scene,
-		SceneMarker: txnRepo.SceneMarker,
-		ScrapedItem: txnRepo.ScrapedItem,
-		Studio:      txnRepo.Studio,
-		Tag:         txnRepo.Tag,
-		SavedFilter: txnRepo.SavedFilter,
+		File:           d.File,
+		Folder:         d.Folder,
+		Gallery:        d.Gallery,
+                GalleryChapter: txnRepo.GalleryChapter,
+		Image:          d.Image,
+		Movie:          txnRepo.Movie,
+		Performer:      txnRepo.Performer,
+		Scene:          d.Scene,
+		SceneMarker:    txnRepo.SceneMarker,
+		ScrapedItem:    txnRepo.ScrapedItem,
+		Studio:         txnRepo.Studio,
+		Tag:            txnRepo.Tag,
+		SavedFilter:    txnRepo.SavedFilter,
 	}
 }
 

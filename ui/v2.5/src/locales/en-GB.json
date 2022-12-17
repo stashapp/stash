@@ -20,6 +20,7 @@
     "confirm": "Confirm",
     "continue": "Continue",
     "create": "Create",
+    "create_chapters": "Create Chapter",
     "create_entity": "Create {entityType}",
     "create_marker": "Create Marker",
     "created_entity": "Created {entity_type}: {entity_name}",
@@ -130,6 +131,7 @@
   "between_and": "and",
   "captions": "Captions",
   "career_length": "Career Length",
+  "chapters": "Chapters",
   "component_tagger": {
     "config": {
       "active_instance": "Active stash-box instance:",
@@ -851,6 +853,7 @@
     "uploading": "Uploading script"
   },
   "hasMarkers": "Has Markers",
+  "hasChapters": "Has Chapters",
   "height": "Height",
   "height_cm": "Height (cm)",
   "help": "Help",
@@ -900,6 +903,7 @@
   "o_counter": "O-Counter",
   "operations": "Operations",
   "organized": "Organised",
+  "page": "Page",
   "pagination": {
     "first": "First",
     "last": "Last",

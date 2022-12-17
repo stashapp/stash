@@ -12,8 +12,3 @@ export interface ILightboxImage {
   o_counter?: GQL.Maybe<number>;
   paths: IImagePaths;
 }
-
-export interface IChapter {
-  title: string;
-  pageNumber: number;
-}

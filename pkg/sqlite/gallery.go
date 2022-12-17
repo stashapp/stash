@@ -26,6 +26,7 @@ const (
 	galleriesTagsTable       = "galleries_tags"
 	galleriesImagesTable     = "galleries_images"
 	galleriesScenesTable     = "scenes_galleries"
+	galleriesChaptersTable   = "galleries_chapters"
 	galleryIDColumn          = "gallery_id"
 )
 
@@ -662,6 +663,7 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 	query.handleCriterion(ctx, galleryTagCountCriterionHandler(qb, galleryFilter.TagCount))
 	query.handleCriterion(ctx, galleryPerformersCriterionHandler(qb, galleryFilter.Performers))
 	query.handleCriterion(ctx, galleryPerformerCountCriterionHandler(qb, galleryFilter.PerformerCount))
+	query.handleCriterion(ctx, hasChaptersCriterionHandler(galleryFilter.HasChapters))
 	query.handleCriterion(ctx, galleryStudioCriterionHandler(qb, galleryFilter.Studios))
 	query.handleCriterion(ctx, galleryPerformerTagsCriterionHandler(qb, galleryFilter.PerformerTags))
 	query.handleCriterion(ctx, galleryAverageResolutionCriterionHandler(qb, galleryFilter.AverageResolution))
@@ -723,11 +725,15 @@ func (qb *GalleryStore) makeQuery(ctx context.Context, galleryFilter *models.Gal
 				as:       "gallery_folder",
 				onClause: "galleries.folder_id = gallery_folder.id",
 			},
+			join{
+				table:    galleriesChaptersTable,
+				onClause: "galleries_chapters.gallery_id = galleries.id",
+			},
 		)
 
 		// add joins for files and checksum
 		filepathColumn := "folders.path || '" + string(filepath.Separator) + "' || files.basename"
-		searchColumns := []string{"galleries.title", "gallery_folder.path", filepathColumn, "files_fingerprints.fingerprint"}
+		searchColumns := []string{"galleries.title", "gallery_folder.path", filepathColumn, "files_fingerprints.fingerprint", "galleries_chapters.title"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
@@ -939,6 +945,19 @@ func galleryImageCountCriterionHandler(qb *GalleryStore, imageCount *models.IntC
 	}
 
 	return h.handler(imageCount)
+}
+
+func hasChaptersCriterionHandler(hasChapters *string) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if hasChapters != nil {
+			f.addLeftJoin("galleries_chapters", "", "galleries_chapters.gallery_id = galleries.id")
+			if *hasChapters == "true" {
+				f.addHaving("count(galleries_chapters.gallery_id) > 0")
+			} else {
+				f.addWhere("galleries_chapters.id IS NULL")
+			}
+		}
+	}
 }
 
 func galleryStudioCriterionHandler(qb *GalleryStore, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {

@@ -1,0 +1,9 @@
+fragment GalleryChapterData on GalleryChapter {
+  id
+  title
+  page_number
+
+  gallery {
+    id
+  }
+}

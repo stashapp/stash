@@ -22,6 +22,11 @@ fragment SlimGalleryData on Gallery {
       thumbnail
     }
   }
+  gallery_chapters {
+    id
+    title
+    page_number
+  }
   studio {
     id
     name

@@ -201,11 +201,12 @@ func initialize() error {
 	}
 
 	instance.GalleryService = &gallery.Service{
-		Repository:   db.Gallery,
-		ImageFinder:  db.Image,
-		ImageService: instance.ImageService,
-		File:         db.File,
-		Folder:       db.Folder,
+		Repository:        db.Gallery,
+		ImageFinder:       db.Image,
+		ImageService:      instance.ImageService,
+		File:              db.File,
+		Folder:            db.Folder,
+		ChapterRepository: instance.Repository.GalleryChapter,
 	}
 
 	instance.JobManager = initJobManager()

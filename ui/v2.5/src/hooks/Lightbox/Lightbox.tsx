@@ -30,7 +30,7 @@ import {
 import * as GQL from "src/core/generated-graphql";
 import { useInterfaceLocalForage } from "../LocalForage";
 import { imageLightboxDisplayModeIntlMap } from "src/core/enums";
-import { ILightboxImage, IChapter } from "./types";
+import { ILightboxImage } from "./types";
 import {
   faArrowLeft,
   faArrowRight,
@@ -79,7 +79,7 @@ interface IProps {
   slideshowEnabled?: boolean;
   pageHeader?: string;
   pageCallback?: (direction: number) => void;
-  chapters?: IChapter[];
+  chapters?: GQL.GalleryChapterDataFragment[];
   hide: () => void;
 }
 
@@ -479,7 +479,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     let completePage = index + (pageHeader.split(" ")[1] - 1) * 40;
     let r = "";
     chapters.forEach(function(chapter) {
-      if (chapter.pageNumber > completePage){
+      if (chapter.page_number > completePage){
         return r;
       };
       r = chapter.title;
@@ -490,8 +490,8 @@ export const LightboxComponent: React.FC<IProps> = ({
   const renderChapterMenu = () => {
     if (chapters.length <= 0) return;
 
-    const popoverContent = chapters.map(({ title, pageNumber }) => (
-      <p onClick={() => gotoPage(pageNumber)}>{title} - {pageNumber+1}</p>
+    const popoverContent = chapters.map(({ title, page_number }) => (
+      <p onClick={() => gotoPage(page_number-1)}> {title} - {page_number}</p>
     ));
 
     return (

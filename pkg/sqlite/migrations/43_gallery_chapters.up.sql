@@ -1,0 +1,10 @@
+CREATE TABLE `galleries_chapters` (
+  `id` integer not null primary key autoincrement,
+  `title` varchar(255) not null,
+  `page_number` integer not null,
+  `gallery_id` integer,
+  `created_at` datetime not null,
+  `updated_at` datetime not null,
+  foreign key(`gallery_id`) references `galleries`(`id`)
+);
+CREATE INDEX `index_galleries_chapters_on_gallery_id` on `galleries_chapters` (`gallery_id`);

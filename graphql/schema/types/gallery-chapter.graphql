@@ -1,0 +1,26 @@
+type GalleryChapter {
+  id: ID!
+  gallery: Gallery!
+  title: String!
+  page_number: Int!
+  created_at: Time!
+  updated_at: Time!
+}
+
+input GalleryChapterCreateInput {
+  gallery_id: ID!
+  title: String!
+  page_number: Int!
+}
+
+input GalleryChapterUpdateInput {
+  id: ID!
+  gallery_id: ID!
+  title: String!
+  page_number: Int!
+}
+
+type FindGalleryChaptersResultType {
+  count: Int!
+  gallery_chapters: [GalleryChapter!]!
+}

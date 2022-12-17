@@ -5,7 +5,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { ImageList } from "src/components/Images/ImageList";
 import { mutateRemoveGalleryImages } from "src/core/StashService";
 import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
-import { useToast, IChapter } from "src/hooks";
+import { useToast } from "src/hooks";
 import { useIntl } from "react-intl";
 import { faMinus } from "@fortawesome/free-solid-svg-icons";
 import { galleryTitle } from "src/core/galleries";
@@ -19,14 +19,6 @@ export const GalleryImagesPanel: React.FC<IGalleryDetailsProps> = ({
 }) => {
   const intl = useIntl();
   const Toast = useToast();
-  function createChapters() {
-      let r = [];
-      gallery.details.split("\n").forEach(function(name, i) {
-        r.push({title: name, pageNumber: i*10} as IChapter);
-      })
-      return r;
-  };
-  const chapters = createChapters();
 
   function filterHook(filter: ListFilterModel) {
     const galleryValue = {
@@ -106,7 +98,7 @@ export const GalleryImagesPanel: React.FC<IGalleryDetailsProps> = ({
       extraOperations={otherOperations}
       persistState={PersistanceLevel.VIEW}
       persistanceKey="galleryimages"
-      chapters={chapters}
+      chapters={gallery.gallery_chapters}
     />
   );
 };

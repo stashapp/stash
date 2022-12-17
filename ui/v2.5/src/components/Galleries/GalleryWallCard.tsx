@@ -20,16 +20,7 @@ interface IProps {
 
 const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
   const intl = useIntl();
-  function createChapters() {
-      let r = [];
-      gallery.details.split("\n").forEach(function(name, i) {
-        r.push({title: name, pageNumber: i*10} as IChapter);
-      })
-      return r;
-  };
-  const chapters = createChapters();
-
-  const showLightbox = useGalleryLightbox(gallery.id, chapters);
+  const showLightbox = useGalleryLightbox(gallery.id, gallery.gallery_chapters);
 
   const coverFile = gallery?.cover?.files.length
     ? gallery.cover.files[0]
@@ -47,12 +38,16 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
       ? [...performerNames.slice(0, -2), performerNames.slice(-2).join(" & ")]
       : performerNames;
 
+  async function showLightboxStart() {
+    showLightbox(0);
+  }
+
   return (
     <>
       <section
         className={`${CLASSNAME} ${CLASSNAME}-${orientation}`}
-        onClick={showLightbox}
-        onKeyPress={showLightbox}
+        onClick={showLightboxStart}
+        onKeyPress={showLightboxStart}
         role="button"
         tabIndex={0}
       >
