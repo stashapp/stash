@@ -22,7 +22,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import useFocus from "src/utils/focus";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { FormattedMessage, useIntl } from "react-intl";
-import { PersistanceLevel } from "src/hooks/ListHook";
+import { PersistanceLevel } from "./ItemList";
 import { SavedFilterList } from "./SavedFilterList";
 import {
   faBookmark,

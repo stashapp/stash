@@ -1,23 +1,19 @@
 import React, { useCallback, useState, useMemo, MouseEvent } from "react";
-import { useIntl } from "react-intl";
+import { FormattedNumber, useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
-import {
-  FindImagesQueryResult,
-  SlimImageDataFragment,
-} from "src/core/generated-graphql";
 import * as GQL from "src/core/generated-graphql";
-import { queryFindImages } from "src/core/StashService";
+import { queryFindImages, useFindImages } from "src/core/StashService";
+import {
+  makeItemList,
+  IItemListOperation,
+  PersistanceLevel,
+  showWhenSelected,
+} from "../List/ItemList";
 import { useLightbox } from "src/hooks/Lightbox/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import {
-  IListHookOperation,
-  showWhenSelected,
-  PersistanceLevel,
-  useImagesList,
-} from "src/hooks/ListHook";
 
 import { ImageCard } from "./ImageCard";
 import { EditImagesDialog } from "./EditImagesDialog";
@@ -25,6 +21,7 @@ import { DeleteImagesDialog } from "./DeleteImagesDialog";
 import "flexbin/flexbin.css";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { objectTitle } from "src/core/files";
+import TextUtils from "src/utils/text";
 
 interface IImageWallProps {
   images: GQL.SlimImageDataFragment[];
@@ -60,7 +57,7 @@ const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
 };
 
 interface IImageListImages {
-  images: SlimImageDataFragment[];
+  images: GQL.SlimImageDataFragment[];
   filter: ListFilterModel;
   selectedIds: Set<string>;
   onChangePage: (page: number) => void;
@@ -139,7 +136,7 @@ const ImageListImages: React.FC<IImageListImages> = ({
 
   function renderImageCard(
     index: number,
-    image: SlimImageDataFragment,
+    image: GQL.SlimImageDataFragment,
     zoomIndex: number
   ) {
     return (
@@ -184,11 +181,57 @@ const ImageListImages: React.FC<IImageListImages> = ({
   return <></>;
 };
 
+const ImageItemList = makeItemList({
+  filterMode: GQL.FilterMode.Images,
+  useResult: useFindImages,
+  getItems(result: GQL.FindImagesQueryResult) {
+    return result?.data?.findImages?.images ?? [];
+  },
+  getCount(result: GQL.FindImagesQueryResult) {
+    return result?.data?.findImages?.count ?? 0;
+  },
+  renderMetadataByline(result: GQL.FindImagesQueryResult) {
+    const megapixels = result?.data?.findImages?.megapixels;
+    const size = result?.data?.findImages?.filesize;
+    const filesize = size ? TextUtils.fileSize(size) : undefined;
+
+    if (!megapixels && !size) {
+      return;
+    }
+
+    const separator = megapixels && size ? " - " : "";
+
+    return (
+      <span className="images-stats">
+        &nbsp;(
+        {megapixels ? (
+          <span className="images-megapixels">
+            <FormattedNumber value={megapixels} /> Megapixels
+          </span>
+        ) : undefined}
+        {separator}
+        {size && filesize ? (
+          <span className="images-size">
+            <FormattedNumber
+              value={filesize.size}
+              maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
+                filesize.unit
+              )}
+            />
+            {` ${TextUtils.formatFileSizeUnit(filesize.unit)}`}
+          </span>
+        ) : undefined}
+        )
+      </span>
+    );
+  },
+});
+
 interface IImageList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   persistState?: PersistanceLevel;
   persistanceKey?: string;
-  extraOperations?: IListHookOperation<FindImagesQueryResult>[];
+  extraOperations?: IItemListOperation<GQL.FindImagesQueryResult>[];
 }
 
 export const ImageList: React.FC<IImageList> = ({
@@ -203,7 +246,8 @@ export const ImageList: React.FC<IImageList> = ({
   const [isExportAll, setIsExportAll] = useState(false);
   const [slideshowRunning, setSlideshowRunning] = useState<boolean>(false);
 
-  const otherOperations = (extraOperations ?? []).concat([
+  const otherOperations = [
+    ...(extraOperations ?? []),
     {
       text: intl.formatMessage({ id: "actions.view_random" }),
       onClick: viewRandom,
@@ -217,12 +261,12 @@ export const ImageList: React.FC<IImageList> = ({
       text: intl.formatMessage({ id: "actions.export_all" }),
       onClick: onExportAll,
     },
-  ]);
+  ];
 
-  const addKeybinds = (
-    result: FindImagesQueryResult,
+  function addKeybinds(
+    result: GQL.FindImagesQueryResult,
     filter: ListFilterModel
-  ) => {
+  ) {
     Mousetrap.bind("p r", () => {
       viewRandom(result, filter);
     });
@@ -230,27 +274,14 @@ export const ImageList: React.FC<IImageList> = ({
     return () => {
       Mousetrap.unbind("p r");
     };
-  };
-
-  const { template, onSelectChange } = useImagesList({
-    zoomable: true,
-    selectable: true,
-    otherOperations,
-    renderContent,
-    renderEditDialog: renderEditImagesDialog,
-    renderDeleteDialog: renderDeleteImagesDialog,
-    filterHook,
-    addKeybinds,
-    persistState,
-    persistanceKey,
-  });
+  }
 
   async function viewRandom(
-    result: FindImagesQueryResult,
+    result: GQL.FindImagesQueryResult,
     filter: ListFilterModel
   ) {
     // query for a random image
-    if (result.data && result.data.findImages) {
+    if (result.data?.findImages) {
       const { count } = result.data.findImages;
 
       const index = Math.floor(Math.random() * count);
@@ -259,7 +290,7 @@ export const ImageList: React.FC<IImageList> = ({
       filterCopy.currentPage = index + 1;
       const singleResult = await queryFindImages(filterCopy);
       if (singleResult.data.findImages.images.length === 1) {
-        const { id } = singleResult!.data!.findImages!.images[0];
+        const { id } = singleResult.data.findImages.images[0];
         // navigate to the image player page
         history.push(`/images/${id}`);
       }
@@ -276,10 +307,17 @@ export const ImageList: React.FC<IImageList> = ({
     setIsExportDialogOpen(true);
   }
 
-  function maybeRenderImageExportDialog(selectedIds: Set<string>) {
-    if (isExportDialogOpen) {
-      return (
-        <>
+  function renderContent(
+    result: GQL.FindImagesQueryResult,
+    filter: ListFilterModel,
+    selectedIds: Set<string>,
+    onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void,
+    onChangePage: (page: number) => void,
+    pageCount: number
+  ) {
+    function maybeRenderImageExportDialog() {
+      if (isExportDialogOpen) {
+        return (
           <ExportDialog
             exportInput={{
               images: {
@@ -287,80 +325,63 @@ export const ImageList: React.FC<IImageList> = ({
                 all: isExportAll,
               },
             }}
-            onClose={() => {
-              setIsExportDialogOpen(false);
-            }}
+            onClose={() => setIsExportDialogOpen(false)}
           />
-        </>
+        );
+      }
+    }
+
+    function renderImages() {
+      if (!result.data?.findImages) return;
+
+      return (
+        <ImageListImages
+          filter={filter}
+          images={result.data.findImages.images}
+          onChangePage={onChangePage}
+          onSelectChange={onSelectChange}
+          pageCount={pageCount}
+          selectedIds={selectedIds}
+          slideshowRunning={slideshowRunning}
+          setSlideshowRunning={setSlideshowRunning}
+        />
       );
     }
+
+    return (
+      <>
+        {maybeRenderImageExportDialog()}
+        {renderImages()}
+      </>
+    );
   }
 
-  function renderEditImagesDialog(
-    selectedImages: SlimImageDataFragment[],
+  function renderEditDialog(
+    selectedImages: GQL.SlimImageDataFragment[],
     onClose: (applied: boolean) => void
   ) {
-    return (
-      <>
-        <EditImagesDialog selected={selectedImages} onClose={onClose} />
-      </>
-    );
+    return <EditImagesDialog selected={selectedImages} onClose={onClose} />;
   }
 
-  function renderDeleteImagesDialog(
-    selectedImages: SlimImageDataFragment[],
+  function renderDeleteDialog(
+    selectedImages: GQL.SlimImageDataFragment[],
     onClose: (confirmed: boolean) => void
   ) {
-    return (
-      <>
-        <DeleteImagesDialog selected={selectedImages} onClose={onClose} />
-      </>
-    );
+    return <DeleteImagesDialog selected={selectedImages} onClose={onClose} />;
   }
 
-  function selectChange(id: string, selected: boolean, shiftKey: boolean) {
-    onSelectChange(id, selected, shiftKey);
-  }
-
-  function renderImages(
-    result: FindImagesQueryResult,
-    filter: ListFilterModel,
-    selectedIds: Set<string>,
-    onChangePage: (page: number) => void,
-    pageCount: number
-  ) {
-    if (!result.data || !result.data.findImages) {
-      return;
-    }
-
-    return (
-      <ImageListImages
-        filter={filter}
-        images={result.data.findImages.images}
-        onChangePage={onChangePage}
-        onSelectChange={selectChange}
-        pageCount={pageCount}
-        selectedIds={selectedIds}
-        slideshowRunning={slideshowRunning}
-        setSlideshowRunning={setSlideshowRunning}
-      />
-    );
-  }
-
-  function renderContent(
-    result: FindImagesQueryResult,
-    filter: ListFilterModel,
-    selectedIds: Set<string>,
-    onChangePage: (page: number) => void,
-    pageCount: number
-  ) {
-    return (
-      <>
-        {maybeRenderImageExportDialog(selectedIds)}
-        {renderImages(result, filter, selectedIds, onChangePage, pageCount)}
-      </>
-    );
-  }
-
-  return template;
+  return (
+    <ImageItemList
+      zoomable
+      selectable
+      filterHook={filterHook}
+      persistState={persistState}
+      persistanceKey={persistanceKey}
+      otherOperations={otherOperations}
+      addKeybinds={addKeybinds}
+      renderContent={renderContent}
+      renderEditDialog={renderEditDialog}
+      renderDeleteDialog={renderDeleteDialog}
+    />
+  );
 };
