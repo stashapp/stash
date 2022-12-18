@@ -757,6 +757,7 @@
   },
   "dimensions": "Mått",
   "director": "Regissör",
+  "disambiguation": "Särskiljning",
   "display_mode": {
     "grid": "Rutnät",
     "list": "Lista",
