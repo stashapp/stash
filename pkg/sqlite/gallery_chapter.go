@@ -84,7 +84,6 @@ func (qb *galleryChapterQueryBuilder) FindByGalleryID(ctx context.Context, galle
 	return qb.queryGalleryChapters(ctx, query, args)
 }
 
-
 func (qb *galleryChapterQueryBuilder) queryGalleryChapters(ctx context.Context, query string, args []interface{}) ([]*models.GalleryChapter, error) {
 	var ret models.GalleryChapters
 	if err := qb.query(ctx, query, args, &ret); err != nil {

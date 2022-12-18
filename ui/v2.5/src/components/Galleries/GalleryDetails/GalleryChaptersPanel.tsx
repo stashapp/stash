@@ -3,17 +3,16 @@ import { Button } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
-import { useFindGallery } from "src/core/StashService";
 import { ChapterEntries } from "./ChapterEntry";
 import { GalleryChapterForm } from "./GalleryChapterForm";
 
 interface IGalleryChapterPanelProps {
   gallery: GQL.GalleryDataFragment;
   isVisible: boolean;
-  onClickChapter: (index: int) => void;
+  onClickChapter: (index: number) => void;
 }
 
-export const GalleryChapterPanel: React.FC<GalleryChapterPanelProps> = (
+export const GalleryChapterPanel: React.FC<IGalleryChapterPanelProps> = (
   props: IGalleryChapterPanelProps
 ) => {
   const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
@@ -38,7 +37,7 @@ export const GalleryChapterPanel: React.FC<GalleryChapterPanelProps> = (
     setEditingChapter(chapter ?? undefined);
   }
 
-  function onClickChapter(page_number: int) {
+  function onClickChapter(page_number: number) {
     props.onClickChapter(page_number);
   }
 

@@ -2,6 +2,7 @@ package gallery
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
@@ -10,7 +11,7 @@ import (
 )
 
 type ChapterFinder interface {
-        FindByGalleryID(ctx context.Context, galleryID int) ([]*models.GalleryChapter, error)
+	FindByGalleryID(ctx context.Context, galleryID int) ([]*models.GalleryChapter, error)
 }
 
 // ToBasicJSON converts a gallery object into its JSON object equivalent. It
@@ -60,6 +61,30 @@ func GetStudioName(ctx context.Context, reader studio.Finder, gallery *models.Ga
 	}
 
 	return "", nil
+}
+
+// GetGalleryChaptersJSON returns a slice of GalleryChapter JSON representation
+// objects corresponding to the provided gallery's chapters.
+func GetGalleryChaptersJSON(ctx context.Context, chapterReader ChapterFinder, gallery *models.Gallery) ([]jsonschema.GalleryChapter, error) {
+	galleryChapters, err := chapterReader.FindByGalleryID(ctx, gallery.ID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting gallery chapters: %v", err)
+	}
+
+	var results []jsonschema.GalleryChapter
+
+	for _, galleryChapter := range galleryChapters {
+		galleryChapterJSON := jsonschema.GalleryChapter{
+			Title:      galleryChapter.Title,
+			PageNumber: galleryChapter.PageNumber,
+			CreatedAt:  json.JSONTime{Time: galleryChapter.CreatedAt.Timestamp},
+			UpdatedAt:  json.JSONTime{Time: galleryChapter.UpdatedAt.Timestamp},
+		}
+
+		results = append(results, galleryChapterJSON)
+	}
+
+	return results, nil
 }
 
 func GetIDs(galleries []*models.Gallery) []int {

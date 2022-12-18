@@ -32,10 +32,10 @@ type ImageService interface {
 }
 
 type ChapterRepository interface {
-        ChapterFinder
-        ChapterDestroyer
+	ChapterFinder
+	ChapterDestroyer
 
-        Update(ctx context.Context, updatedObject models.GalleryChapter) (*models.GalleryChapter, error)
+	Update(ctx context.Context, updatedObject models.GalleryChapter) (*models.GalleryChapter, error)
 }
 
 type Service struct {

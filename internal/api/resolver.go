@@ -48,7 +48,7 @@ func (r *Resolver) Gallery() GalleryResolver {
 	return &galleryResolver{r}
 }
 func (r *Resolver) GalleryChapter() GalleryChapterResolver {
-        return &galleryChapterResolver{r}
+	return &galleryChapterResolver{r}
 }
 func (r *Resolver) Mutation() MutationResolver {
 	return &mutationResolver{r}

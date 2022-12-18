@@ -52,7 +52,7 @@ type Repository struct {
 	File           FileReaderWriter
 	Folder         FolderReaderWriter
 	Gallery        GalleryReaderWriter
-        GalleryChapter models.GalleryChapterReaderWriter
+	GalleryChapter models.GalleryChapterReaderWriter
 	Image          ImageReaderWriter
 	Movie          models.MovieReaderWriter
 	Performer      models.PerformerReaderWriter
@@ -80,11 +80,11 @@ func sqliteRepository(d *sqlite.Database) Repository {
 	txnRepo := d.TxnRepository()
 
 	return Repository{
-		TxnManager:  txnRepo,
+		TxnManager:     txnRepo,
 		File:           d.File,
 		Folder:         d.Folder,
 		Gallery:        d.Gallery,
-                GalleryChapter: txnRepo.GalleryChapter,
+		GalleryChapter: txnRepo.GalleryChapter,
 		Image:          d.Image,
 		Movie:          txnRepo.Movie,
 		Performer:      txnRepo.Performer,

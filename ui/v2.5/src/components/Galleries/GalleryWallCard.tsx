@@ -5,7 +5,6 @@ import * as GQL from "src/core/generated-graphql";
 import { TruncatedText } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import { useGalleryLightbox } from "src/hooks";
-import { IChapter } from "src/hooks";
 import { galleryTitle } from "src/core/galleries";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 

@@ -26,14 +26,15 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
   editingChapter,
   onClose,
 }) => {
-
   const [galleryChapterCreate] = useGalleryChapterCreate();
   const [galleryChapterUpdate] = useGalleryChapterUpdate();
   const [galleryChapterDestroy] = useGalleryChapterDestroy();
   const Toast = useToast();
 
   const onSubmit = (values: IFormFields) => {
-    const variables: GQL.GalleryChapterUpdateInput | GQL.GalleryChapterCreateInput = {
+    const variables:
+      | GQL.GalleryChapterUpdateInput
+      | GQL.GalleryChapterCreateInput = {
       title: values.title,
       page_number: parseInt(values.pageNumber),
       gallery_id: galleryID,
@@ -62,8 +63,9 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
     <input
       className="text-input"
       value={fieldProps.field.value}
-      onChange={(query: string) => { fieldProps.form.setFieldValue("title", query.target.value) } }
-      mandatory
+      onChange={(query: React.ChangeEvent<HTMLInputElement>) => {
+        fieldProps.form.setFieldValue("title", query.target.value);
+      }}
     />
   );
 
@@ -71,14 +73,15 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
     <input
       className="text-input"
       value={fieldProps.field.value}
-      onChange={(query: string) => { fieldProps.form.setFieldValue("pageNumber", query.target.value)} }
-      mandatory
+      onChange={(query: React.ChangeEvent<HTMLInputElement>) => {
+        fieldProps.form.setFieldValue("pageNumber", query.target.value);
+      }}
     />
   );
 
   const values: IFormFields = {
     title: editingChapter?.title ?? "",
-    pageNumber: editingChapter?.page_number ?? 1,
+    pageNumber: editingChapter?.page_number.toString() ?? "1",
   };
 
   return (
@@ -103,7 +106,7 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
             </Form.Label>
             <div className="col-sm-8 col-xl-12">
               <Field name="pageNumber">{renderPageNumberField}</Field>
-          </div>
+            </div>
           </Form.Group>
         </div>
         <div className="buttons-container row">

@@ -1,8 +1,12 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { LightboxContext, IState } from "./context";
+import { IChapter } from "./types";
 
-export const useLightbox = (state: Partial<Omit<IState, "isVisible">>, chapters: GQL.GalleryChapterDataFragment[] = []) => {
+export const useLightbox = (
+  state: Partial<Omit<IState, "isVisible">>,
+  chapters: IChapter[] = []
+) => {
   const { setLightboxState } = useContext(LightboxContext);
 
   useEffect(() => {
@@ -30,15 +34,15 @@ export const useLightbox = (state: Partial<Omit<IState, "isVisible">>, chapters:
         initialIndex: index,
         isVisible: true,
         slideshowEnabled,
-        chapters: chapters ?? undefined,
+        chapters: chapters,
       });
     },
-    [setLightboxState]
+    [setLightboxState, chapters]
   );
   return show;
 };
 
-export const useGalleryLightbox = (id: string, chapters: GQL.GalleryChapterDataFragment[] = []) => {
+export const useGalleryLightbox = (id: string, chapters: IChapter[] = []) => {
   const { setLightboxState } = useContext(LightboxContext);
 
   const pageSize = 40;
@@ -100,7 +104,11 @@ export const useGalleryLightbox = (id: string, chapters: GQL.GalleryChapterDataF
       });
   }, [setLightboxState, data, handleLightBoxPage, page, pages]);
 
-  const show = (index: int = 0) => {
+  const show = (index: number = 0) => {
+    if (index > 40) {
+      setPage(Math.floor(index / 40) + 1);
+      index = index % 40;
+    }
     if (data)
       setLightboxState({
         isLoading: false,
@@ -109,7 +117,7 @@ export const useGalleryLightbox = (id: string, chapters: GQL.GalleryChapterDataF
         images: data.findImages?.images ?? [],
         pageCallback: pages > 1 ? handleLightBoxPage : undefined,
         pageHeader: `Page ${page} / ${pages}`,
-        chapters: chapters ?? undefined,
+        chapters: chapters,
       });
     else {
       setLightboxState({
@@ -118,7 +126,7 @@ export const useGalleryLightbox = (id: string, chapters: GQL.GalleryChapterDataF
         initialIndex: index,
         pageCallback: undefined,
         pageHeader: undefined,
-        chapters: chapters ?? undefined,
+        chapters: chapters,
       });
       fetchGallery();
     }

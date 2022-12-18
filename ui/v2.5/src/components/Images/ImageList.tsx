@@ -79,7 +79,7 @@ const ImageListImages: React.FC<IImageListImages> = ({
   onSelectChange,
   slideshowRunning,
   setSlideshowRunning,
-  chapters=[],
+  chapters = [],
 }) => {
   const handleLightBoxPage = useCallback(
     (direction: number) => {
@@ -198,7 +198,7 @@ export const ImageList: React.FC<IImageList> = ({
   persistState,
   persistanceKey,
   extraOperations,
-  chapters=[],
+  chapters = [],
 }) => {
   const intl = useIntl();
   const history = useHistory();
