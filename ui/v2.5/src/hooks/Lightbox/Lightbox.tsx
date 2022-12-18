@@ -474,8 +474,11 @@ export const LightboxComponent: React.FC<IProps> = ({
   }
 
   function chapterHeader() {
-    let completePage =
-      index ?? 0 + (parseInt(pageHeader?.split(" ")[1] ?? "1") - 1) * 40;
+    let completePage = (index ?? 0) + 1;
+    if (pageHeader && pageHeader.startsWith("Page ")) {
+      completePage =
+        completePage + (parseInt(pageHeader.split(" ")[1]) - 1) * 40;
+    }
     let r = "";
     chapters.forEach(function (chapter) {
       if (chapter.page_number > completePage) {
