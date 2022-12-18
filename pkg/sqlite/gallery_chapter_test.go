@@ -7,12 +7,11 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMarkerFindByGalleryID(t *testing.T) {
+func TestChapterFindByGalleryID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		mqb := sqlite.GalleryChapterReaderWriter
 
@@ -40,17 +39,6 @@ func TestMarkerFindByGalleryID(t *testing.T) {
 	})
 }
 
-func queryChapters(ctx context.Context, t *testing.T, sqb models.GalleryChapterReader, markerFilter *models.GalleryChapterFilterType, findFilter *models.FindFilterType) []*models.GalleryChapter {
-	t.Helper()
-	result, _, err := sqb.Query(ctx, chapterFilter, findFilter)
-	if err != nil {
-		t.Errorf("Error querying chapters: %v", err)
-	}
-
-	return result
-}
-
 // TODO Update
 // TODO Destroy
 // TODO Find
-// TODO Query
