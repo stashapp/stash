@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useCallback, useState } from "react";
-import { ILightboxImage } from "./types";
+import { ILightboxImage, IChapter } from "./types";
 
 const LightboxComponent = lazy(() => import("./Lightbox"));
 
@@ -10,6 +10,7 @@ export interface IState {
   showNavigation: boolean;
   initialIndex?: number;
   pageCallback?: (direction: number) => void;
+  chapters?: IChapter[];
   pageHeader?: string;
   slideshowEnabled: boolean;
   onClose?: () => void;

@@ -7,8 +7,6 @@ import {
   Popover,
   Form,
   Row,
-  Overlay, 
-  Popover,
 } from "react-bootstrap";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
@@ -30,7 +28,7 @@ import {
 import * as GQL from "src/core/generated-graphql";
 import { useInterfaceLocalForage } from "../LocalForage";
 import { imageLightboxDisplayModeIntlMap } from "src/core/enums";
-import { ILightboxImage } from "./types";
+import { ILightboxImage, IChapter } from "./types";
 import {
   faArrowLeft,
   faArrowRight,
@@ -79,7 +77,7 @@ interface IProps {
   slideshowEnabled?: boolean;
   pageHeader?: string;
   pageCallback?: (direction: number) => void;
-  chapters?: GQL.GalleryChapterDataFragment[];
+  chapters?: IChapter[];
   hide: () => void;
 }
 
@@ -459,39 +457,43 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const currentIndex = index === null ? initialIndex : index;
 
-  function gotoPage(i) {
-     if (pageCallback) {
-       let jumppage=Math.floor(i/40);
-       if (pageHeader.startsWith("Page ")) {
-         jumppage = jumppage - (pageHeader.split(" ")[1] - 1);
-       }
-       if (jumppage !== 0) {
-         pageCallback(jumppage);
-         oldImages.current = images;
-         setIsSwitchingPage(true);
-       }
-       setIndex(i%40);
-     } else setIndex(i);
-     setShowChapters(false);
-  };
+  function gotoPage(i: number) {
+    if (pageCallback) {
+      let jumppage = Math.floor(i / 40);
+      if (pageHeader && pageHeader.startsWith("Page ")) {
+        jumppage = jumppage - (parseInt(pageHeader.split(" ")[1] ?? "1") - 1);
+      }
+      if (jumppage !== 0) {
+        pageCallback(jumppage);
+        oldImages.current = images;
+        setIsSwitchingPage(true);
+      }
+      setIndex(i % 40);
+    } else setIndex(i);
+    setShowChapters(false);
+  }
 
   function chapterHeader() {
-    let completePage = index + (pageHeader.split(" ")[1] - 1) * 40;
+    let completePage =
+      index ?? 0 + (parseInt(pageHeader?.split(" ")[1] ?? "1") - 1) * 40;
     let r = "";
-    chapters.forEach(function(chapter) {
-      if (chapter.page_number > completePage){
+    chapters.forEach(function (chapter) {
+      if (chapter.page_number > completePage) {
         return r;
-      };
+      }
       r = chapter.title;
     });
     return r;
-  };
+  }
 
   const renderChapterMenu = () => {
     if (chapters.length <= 0) return;
 
-    const popoverContent = chapters.map(({ title, page_number }) => (
-      <p onClick={() => gotoPage(page_number-1)}> {title} - {page_number}</p>
+    const popoverContent = chapters.map(({ id, title, page_number }) => (
+      <p key={id} onClick={() => gotoPage(page_number - 1)}>
+        {" "}
+        {title} - {page_number}
+      </p>
     ));
 
     return (
@@ -506,11 +508,16 @@ export const LightboxComponent: React.FC<IProps> = ({
           </Button>
         </div>
         {chapterMenuRef.current && (
-          <Overlay className={CLASSNAME_CHAPTERS} show={showChapters} placement="bottom" target={chapterMenuRef.current} container={containerRef}>
+          <Overlay
+            show={showChapters}
+            placement="bottom"
+            target={chapterMenuRef.current}
+            container={containerRef}
+          >
             <Popover
               onClick={() => setShowChapters(!showChapters)}
               id="popover"
-              className={CLASSNAME_CHAPTERS+" hover-popover-content"}
+              className={CLASSNAME_CHAPTERS + " hover-popover-content"}
             >
               {popoverContent}
             </Popover>
@@ -713,11 +720,11 @@ export const LightboxComponent: React.FC<IProps> = ({
       onClick={handleClose}
     >
       <div className={CLASSNAME_HEADER}>
-        <div className={CLASSNAME_LEFT_SPACER}>
-          {renderChapterMenu()}
-        </div>
+        <div className={CLASSNAME_LEFT_SPACER}>{renderChapterMenu()}</div>
         <div className={CLASSNAME_INDICATOR}>
-          <span>{chapterHeader()} {pageHeader}</span>
+          <span>
+            {chapterHeader()} {pageHeader}
+          </span>
           {images.length > 1 ? (
             <b ref={indicatorRef}>{`${currentIndex + 1} / ${images.length}`}</b>
           ) : undefined}

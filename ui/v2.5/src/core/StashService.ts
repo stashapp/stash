@@ -766,19 +766,18 @@ const galleryChapterMutationImpactedQueries = [
 export const useGalleryChapterCreate = () =>
   GQL.useGalleryChapterCreateMutation({
     refetchQueries: getQueryNames([GQL.FindGalleryDocument]),
-    update: deleteCache(sceneMarkerMutationImpactedQueries),
+    update: deleteCache(galleryChapterMutationImpactedQueries),
   });
 export const useGalleryChapterUpdate = () =>
   GQL.useGalleryChapterUpdateMutation({
     refetchQueries: getQueryNames([GQL.FindGalleryDocument]),
-    update: deleteCache(sceneMarkerMutationImpactedQueries),
+    update: deleteCache(galleryChapterMutationImpactedQueries),
   });
 export const useGalleryChapterDestroy = () =>
   GQL.useGalleryChapterDestroyMutation({
     refetchQueries: getQueryNames([GQL.FindGalleryDocument]),
-    update: deleteCache(sceneMarkerMutationImpactedQueries),
+    update: deleteCache(galleryChapterMutationImpactedQueries),
   });
-  
 
 export const studioMutationImpactedQueries = [
   GQL.FindStudiosDocument,

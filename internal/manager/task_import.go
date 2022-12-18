@@ -487,6 +487,7 @@ func (t *ImportTask) ImportGalleries(ctx context.Context) {
 			tagWriter := r.Tag
 			performerWriter := r.Performer
 			studioWriter := r.Studio
+			chapterWriter := r.GalleryChapter
 
 			galleryImporter := &gallery.Importer{
 				ReaderWriter:        readerWriter,
@@ -499,7 +500,25 @@ func (t *ImportTask) ImportGalleries(ctx context.Context) {
 				MissingRefBehaviour: t.MissingRefBehaviour,
 			}
 
-			return performImport(ctx, galleryImporter, t.DuplicateBehaviour)
+			if err := performImport(ctx, galleryImporter, t.DuplicateBehaviour); err != nil {
+				return err
+			}
+
+			// import the gallery chapters
+			for _, m := range galleryJSON.Chapters {
+				chapterImporter := &gallery.ChapterImporter{
+					GalleryID:           galleryImporter.ID,
+					Input:               m,
+					MissingRefBehaviour: t.MissingRefBehaviour,
+					ReaderWriter:        chapterWriter,
+				}
+
+				if err := performImport(ctx, chapterImporter, t.DuplicateBehaviour); err != nil {
+					return err
+				}
+			}
+
+			return nil
 		}); err != nil {
 			logger.Errorf("[galleries] <%s> import failed to commit: %s", fi.Name(), err.Error())
 			continue

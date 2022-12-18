@@ -16,7 +16,7 @@ import {
   Counter,
 } from "src/components/Shared";
 import Mousetrap from "mousetrap";
-import { useToast, useLightbox } from "src/hooks";
+import { useToast, useGalleryLightbox } from "src/hooks";
 import { OrganizedButton } from "src/components/Scenes/SceneDetails/OrganizedButton";
 import { GalleryEditPanel } from "./GalleryEditPanel";
 import { GalleryDetailPanel } from "./GalleryDetailPanel";
@@ -28,7 +28,6 @@ import { GalleryScenesPanel } from "./GalleryScenesPanel";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 import { galleryPath, galleryTitle } from "src/core/galleries";
 import { GalleryChapterPanel } from "./GalleryChaptersPanel";
-import { useGalleryLightbox } from "src/hooks";
 
 interface IProps {
   gallery: GQL.GalleryDataFragment;
@@ -53,7 +52,6 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
       history.replace(`/galleries/${gallery.id}${tabParam}`);
     }
   };
-
 
   const path = useMemo(() => galleryPath(gallery), [gallery]);
 
@@ -99,8 +97,8 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
     });
   }
 
-  async function onClickChapter(pagenum: int) {
-    showLightbox(pagenum-1);
+  async function onClickChapter(pagenum: number) {
+    showLightbox(pagenum - 1);
   }
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
