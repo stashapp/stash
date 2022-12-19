@@ -49,7 +49,7 @@ export const ImageIsMissingCriterionOption = new IsMissingCriterionOptionClass(
   "isMissing",
   "imageIsMissing",
   "is_missing",
-  ["title", "galleries", "studio", "performers", "tags", "date"]
+  ["title", "galleries", "studio", "performers", "tags"]
 );
 
 export const PerformerIsMissingCriterionOption = new IsMissingCriterionOptionClass(
