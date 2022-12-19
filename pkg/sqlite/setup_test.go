@@ -891,9 +891,9 @@ func getObjectDate(index int) models.SQLiteDate {
 	}
 }
 
-func getObjectDateObject(index int) *models.Date {
+func getObjectDateObject(index int, fromDB bool) *models.Date {
 	d := getObjectDate(index)
-	if !d.Valid {
+	if !d.Valid || (fromDB && (d.String == "" || d.String == "0001-01-01")) {
 		return nil
 	}
 
@@ -1004,7 +1004,7 @@ func makeScene(i int) *models.Scene {
 		URL:          getSceneEmptyString(i, urlField),
 		Rating:       getIntPtr(rating),
 		OCounter:     getOCounter(i),
-		Date:         getObjectDateObject(i),
+		Date:         getObjectDateObject(i, false),
 		StudioID:     studioID,
 		GalleryIDs:   models.NewRelatedIDs(gids),
 		PerformerIDs: models.NewRelatedIDs(pids),
@@ -1069,7 +1069,7 @@ func makeImageFile(i int) *file.ImageFile {
 	}
 }
 
-func makeImage(i int) *models.Image {
+func makeImage(i int, fromDB bool) *models.Image {
 	title := getImageStringValue(i, titleField)
 	var studioID *int
 	if _, ok := imageStudios[i]; ok {
@@ -1084,6 +1084,8 @@ func makeImage(i int) *models.Image {
 	return &models.Image{
 		Title:        title,
 		Rating:       getIntPtr(getRating(i)),
+		Date:         getObjectDateObject(i, fromDB),
+		URL:          getImageStringValue(i, urlField),
 		OCounter:     getOCounter(i),
 		StudioID:     studioID,
 		GalleryIDs:   models.NewRelatedIDs(gids),
@@ -1107,7 +1109,7 @@ func createImages(ctx context.Context, n int) error {
 		}
 		imageFileIDs = append(imageFileIDs, f.ID)
 
-		image := makeImage(i)
+		image := makeImage(i, false)
 
 		err := qb.Create(ctx, &models.ImageCreateInput{
 			Image:   image,
@@ -1168,7 +1170,7 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 		Title:        getGalleryStringValue(i, titleField),
 		URL:          getGalleryNullStringValue(i, urlField).String,
 		Rating:       getIntPtr(getRating(i)),
-		Date:         getObjectDateObject(i),
+		Date:         getObjectDateObject(i, false),
 		StudioID:     studioID,
 		PerformerIDs: models.NewRelatedIDs(pids),
 		TagIDs:       models.NewRelatedIDs(tids),
