@@ -428,6 +428,7 @@ func registerCustomDriver() {
 				funcs := map[string]interface{}{
 					"regexp":            regexFn,
 					"durationToTinyInt": durationToTinyIntFn,
+					"basename":          basenameFn,
 				}
 
 				for name, fn := range funcs {

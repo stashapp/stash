@@ -429,7 +429,7 @@ export const StringListSetting: React.FC<IStringListSetting> = (props) => {
         <StringListInput
           value={value ?? []}
           setValue={setValue}
-          defaultNewValue={props.defaultNewValue}
+          placeholder={props.defaultNewValue}
         />
       )}
       renderValue={(value) => (

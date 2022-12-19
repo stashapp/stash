@@ -2414,6 +2414,13 @@ func TestGalleryQuerySorting(t *testing.T) {
 			-1,
 			-1,
 		},
+		{
+			"title",
+			"title",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
 	}
 
 	qb := db.Gallery

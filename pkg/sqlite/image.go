@@ -1031,7 +1031,7 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 		case "title":
 			addFilesJoin()
 			addFolderJoin()
-			sortClause = " ORDER BY images.title COLLATE NATURAL_CS " + direction + ", folders.path " + direction + ", files.basename COLLATE NATURAL_CS " + direction
+			sortClause = " ORDER BY COALESCE(images.title, files.basename) COLLATE NATURAL_CS " + direction + ", folders.path " + direction
 		default:
 			sortClause = getSort(sort, direction, "images")
 		}

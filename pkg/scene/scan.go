@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
@@ -36,6 +37,7 @@ type ScanHandler struct {
 
 	CoverGenerator CoverGenerator
 	ScanGenerator  ScanGenerator
+	CaptionUpdater video.CaptionUpdater
 	PluginCache    *plugin.Cache
 
 	FileNamingAlgorithm models.HashAlgorithm
@@ -51,6 +53,9 @@ func (h *ScanHandler) validate() error {
 	}
 	if h.ScanGenerator == nil {
 		return errors.New("ScanGenerator is required")
+	}
+	if h.CaptionUpdater == nil {
+		return errors.New("CaptionUpdater is required")
 	}
 	if !h.FileNamingAlgorithm.IsValid() {
 		return errors.New("FileNamingAlgorithm is required")
@@ -70,6 +75,12 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File
 	videoFile, ok := f.(*file.VideoFile)
 	if !ok {
 		return ErrNotVideoFile
+	}
+
+	if oldFile != nil {
+		if err := video.CleanCaptions(ctx, videoFile, nil, h.CaptionUpdater); err != nil {
+			return fmt.Errorf("cleaning captions: %w", err)
+		}
 	}
 
 	// try to match the file to a scene

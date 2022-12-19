@@ -155,9 +155,9 @@ export const StudioCard: React.FC<IProps> = ({
           {maybeRenderParent(studio, hideParent)}
           {maybeRenderChildren(studio)}
           <RatingBanner rating={studio.rating100} />
-          {maybeRenderPopoverButtonGroup()}
         </div>
       }
+      popovers={maybeRenderPopoverButtonGroup()}
       selected={selected}
       selecting={selecting}
       onSelectedChanged={onSelectedChanged}
