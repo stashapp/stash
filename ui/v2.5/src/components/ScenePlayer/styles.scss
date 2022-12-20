@@ -293,6 +293,12 @@ $sceneTabWidth: 450px;
         font-size: 1.5em;
         line-height: 2;
       }
+
+      .vjs-airplay-button .vjs-icon-placeholder,
+      .vjs-chromecast-button .vjs-icon-placeholder {
+        height: 1.4em;
+        width: 1.4em;
+      }
     }
 
     .vjs-menu-button-popup .vjs-menu {
