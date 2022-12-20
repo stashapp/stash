@@ -292,7 +292,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       },
       plugins: {
         airPlay: {},
-        chromecast: {},
+        chromecast: {
+          addButtonToControlBar: false,
+        },
         vttThumbnails: {
           showTimestamp: true,
         },
