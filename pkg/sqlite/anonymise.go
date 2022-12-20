@@ -307,6 +307,7 @@ func (db *Anonymiser) anonymiseImages(ctx context.Context) error {
 			query := dialect.From(table).Select(
 				table.Col(idColumn),
 				table.Col("title"),
+				table.Col("url"),
 			).Where(table.Col(idColumn).Gt(lastID)).Limit(1000)
 
 			gotSome = false
@@ -316,17 +317,20 @@ func (db *Anonymiser) anonymiseImages(ctx context.Context) error {
 				var (
 					id    int
 					title sql.NullString
+					url   sql.NullString
 				)
 
 				if err := rows.Scan(
 					&id,
 					&title,
+					&url,
 				); err != nil {
 					return err
 				}
 
 				set := goqu.Record{}
 				db.obfuscateNullString(set, "title", title)
+				db.obfuscateNullString(set, "url", url)
 
 				if len(set) > 0 {
 					stmt := dialect.Update(table).Set(set).Where(table.Col(idColumn).Eq(id))
