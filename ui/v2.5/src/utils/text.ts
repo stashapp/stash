@@ -284,6 +284,26 @@ const sanitiseURL = (url?: string, siteURL?: URL) => {
   return `https://${url}`;
 };
 
+const domainFromURL = (urlString?: string, url?: URL) => {
+  if (url) {
+    return url.hostname;
+  } else if (urlString) {
+    var urlDomain = "";
+    try {
+      var sanitizedUrl = sanitiseURL(urlString);
+      if (sanitizedUrl) {
+        urlString = sanitizedUrl;
+      }
+      urlDomain = new URL(urlString).hostname;
+    } catch {
+      urlDomain = urlString; // We cant determine the hostname so we return the base string
+    }
+    return urlDomain;
+  } else {
+    return "";
+  }
+};
+
 const formatDate = (intl: IntlShape, date?: string, utc = true) => {
   if (!date) {
     return "";
@@ -339,6 +359,7 @@ const TextUtils = {
   bitRate,
   resolution,
   sanitiseURL,
+  domainFromURL,
   twitterURL,
   instagramURL,
   formatDate,

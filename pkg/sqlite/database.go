@@ -21,7 +21,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-var appSchemaVersion uint = 42
+var appSchemaVersion uint = 43
 
 //go:embed migrations/*.sql
 var migrationsBox embed.FS
