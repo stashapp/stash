@@ -491,7 +491,7 @@ func (db *Anonymiser) anonymisePerformers(ctx context.Context) error {
 				total++
 
 				if total%logEvery == 0 {
-					logger.Infof("Anonymised %d galleries", total)
+					logger.Infof("Anonymised %d performers", total)
 				}
 
 				return nil
