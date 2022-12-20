@@ -56,6 +56,8 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 		title     = "title"
 		rating    = 60
 		ocounter  = 5
+		url       = "url"
+		date      = models.NewDate("2003-02-01")
 		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
@@ -72,6 +74,8 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 			models.Image{
 				Title:        title,
 				Rating:       &rating,
+				Date:         &date,
+				URL:          url,
 				Organized:    true,
 				OCounter:     ocounter,
 				StudioID:     &studioIDs[studioIdxWithImage],
@@ -88,6 +92,8 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 			models.Image{
 				Title:     title,
 				Rating:    &rating,
+				Date:      &date,
+				URL:       url,
 				Organized: true,
 				OCounter:  ocounter,
 				StudioID:  &studioIDs[studioIdxWithImage],
@@ -209,6 +215,8 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 	var (
 		title     = "title"
 		rating    = 60
+		url       = "url"
+		date      = models.NewDate("2003-02-01")
 		ocounter  = 5
 		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -225,6 +233,8 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 				ID:           imageIDs[imageIdxWithGallery],
 				Title:        title,
 				Rating:       &rating,
+				URL:          url,
+				Date:         &date,
 				Organized:    true,
 				OCounter:     ocounter,
 				StudioID:     &studioIDs[studioIdxWithImage],
@@ -372,6 +382,8 @@ func clearImagePartial() models.ImagePartial {
 	return models.ImagePartial{
 		Title:        models.OptionalString{Set: true, Null: true},
 		Rating:       models.OptionalInt{Set: true, Null: true},
+		URL:          models.OptionalString{Set: true, Null: true},
+		Date:         models.OptionalDate{Set: true, Null: true},
 		StudioID:     models.OptionalInt{Set: true, Null: true},
 		GalleryIDs:   &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
 		TagIDs:       &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
@@ -383,6 +395,8 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 	var (
 		title     = "title"
 		rating    = 60
+		url       = "url"
+		date      = models.NewDate("2003-02-01")
 		ocounter  = 5
 		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -401,6 +415,8 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 			models.ImagePartial{
 				Title:     models.NewOptionalString(title),
 				Rating:    models.NewOptionalInt(rating),
+				URL:       models.NewOptionalString(url),
+				Date:      models.NewOptionalDate(date),
 				Organized: models.NewOptionalBool(true),
 				OCounter:  models.NewOptionalInt(ocounter),
 				StudioID:  models.NewOptionalInt(studioIDs[studioIdxWithImage]),
@@ -423,6 +439,8 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 				ID:        imageIDs[imageIdx1WithGallery],
 				Title:     title,
 				Rating:    &rating,
+				URL:       url,
+				Date:      &date,
 				Organized: true,
 				OCounter:  ocounter,
 				StudioID:  &studioIDs[studioIdxWithImage],
@@ -943,7 +961,8 @@ func Test_imageQueryBuilder_Destroy(t *testing.T) {
 }
 
 func makeImageWithID(index int) *models.Image {
-	ret := makeImage(index)
+	const fromDB = true
+	ret := makeImage(index, true)
 	ret.ID = imageIDs[index]
 
 	ret.Files = models.NewRelatedImageFiles([]*file.ImageFile{makeImageFile(index)})
@@ -2559,6 +2578,13 @@ func TestImageQuerySorting(t *testing.T) {
 			models.SortDirectionEnumDesc,
 			-1,
 			-1,
+		},
+		{
+			"date",
+			"date",
+			models.SortDirectionEnumDesc,
+			imageIdxWithTwoGalleries,
+			imageIdxWithGrandChildStudio,
 		},
 	}
 
