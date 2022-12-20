@@ -46,6 +46,7 @@ func (db *Anonymiser) Anonymise(ctx context.Context) error {
 
 		return utils.Do([]func() error{
 			func() error { return db.deleteBlobs() },
+			func() error { return db.deleteStashIDs() },
 			func() error { return db.anonymiseFolders(ctx) },
 			func() error { return db.anonymiseFiles(ctx) },
 			func() error { return db.anonymiseFingerprints(ctx) },
@@ -80,6 +81,14 @@ func (db *Anonymiser) deleteBlobs() error {
 		func() error { return db.truncateTable("performers_image") },
 		func() error { return db.truncateTable("studios_image") },
 		func() error { return db.truncateTable("tags_image") },
+	})
+}
+
+func (db *Anonymiser) deleteStashIDs() error {
+	return utils.Do([]func() error{
+		func() error { return db.truncateTable("scene_stash_ids") },
+		func() error { return db.truncateTable("studio_stash_ids") },
+		func() error { return db.truncateTable("performer_stash_ids") },
 	})
 }
 
