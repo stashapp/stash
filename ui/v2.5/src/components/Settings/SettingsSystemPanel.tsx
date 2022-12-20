@@ -7,6 +7,7 @@ import {
   ModalSetting,
   NumberSetting,
   SelectSetting,
+  StringListSetting,
   StringSetting,
 } from "./Inputs";
 import { SettingStateContext } from "./context";
@@ -227,6 +228,36 @@ export const SettingsConfigurationPanel: React.FC = () => {
             </option>
           ))}
         </SelectSetting>
+
+        <StringListSetting
+          id="transcode-input-args"
+          headingID="config.general.ffmpeg.transcode.input_args.heading"
+          subHeadingID="config.general.ffmpeg.transcode.input_args.desc"
+          onChange={(v) => saveGeneral({ transcodeInputArgs: v })}
+          value={general.transcodeInputArgs ?? []}
+        />
+        <StringListSetting
+          id="transcode-output-args"
+          headingID="config.general.ffmpeg.transcode.output_args.heading"
+          subHeadingID="config.general.ffmpeg.transcode.output_args.desc"
+          onChange={(v) => saveGeneral({ transcodeOutputArgs: v })}
+          value={general.transcodeOutputArgs ?? []}
+        />
+
+        <StringListSetting
+          id="live-transcode-input-args"
+          headingID="config.general.ffmpeg.live_transcode.input_args.heading"
+          subHeadingID="config.general.ffmpeg.live_transcode.input_args.desc"
+          onChange={(v) => saveGeneral({ liveTranscodeInputArgs: v })}
+          value={general.liveTranscodeInputArgs ?? []}
+        />
+        <StringListSetting
+          id="live-transcode-output-args"
+          headingID="config.general.ffmpeg.live_transcode.output_args.heading"
+          subHeadingID="config.general.ffmpeg.live_transcode.output_args.desc"
+          onChange={(v) => saveGeneral({ liveTranscodeOutputArgs: v })}
+          value={general.liveTranscodeOutputArgs ?? []}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.general.parallel_scan_head">

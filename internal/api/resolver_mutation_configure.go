@@ -280,6 +280,19 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.PythonPath, input.PythonPath)
 	}
 
+	if input.TranscodeInputArgs != nil {
+		c.Set(config.TranscodeInputArgs, input.TranscodeInputArgs)
+	}
+	if input.TranscodeOutputArgs != nil {
+		c.Set(config.TranscodeOutputArgs, input.TranscodeOutputArgs)
+	}
+	if input.LiveTranscodeInputArgs != nil {
+		c.Set(config.LiveTranscodeInputArgs, input.LiveTranscodeInputArgs)
+	}
+	if input.LiveTranscodeOutputArgs != nil {
+		c.Set(config.LiveTranscodeOutputArgs, input.LiveTranscodeOutputArgs)
+	}
+
 	if err := c.Write(); err != nil {
 		return makeConfigGeneralResult(), err
 	}
