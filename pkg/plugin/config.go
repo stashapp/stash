@@ -56,6 +56,35 @@ type Config struct {
 
 	// The hooks configurations for hooks registered by this plugin.
 	Hooks []*HookConfig `yaml:"hooks"`
+
+	// Javascript files that will be injected into the stash UI.
+	UI UIConfig `yaml:"ui"`
+}
+
+type UIConfig struct {
+	// Javascript files that will be injected into the stash UI.
+	Javascript []string `yaml:"javascript"`
+
+	// CSS files that will be injected into the stash UI.
+	CSS []string `yaml:"css"`
+}
+
+func (c UIConfig) getCSSFiles(parent Config) []string {
+	ret := make([]string, len(c.CSS))
+	for i, v := range c.CSS {
+		ret[i] = filepath.Join(parent.getConfigPath(), v)
+	}
+
+	return ret
+}
+
+func (c UIConfig) getJavascriptFiles(parent Config) []string {
+	ret := make([]string, len(c.Javascript))
+	for i, v := range c.Javascript {
+		ret[i] = filepath.Join(parent.getConfigPath(), v)
+	}
+
+	return ret
 }
 
 func (c Config) getPluginTasks(includePlugin bool) []*PluginTask {
@@ -121,6 +150,10 @@ func (c Config) toPlugin() *Plugin {
 		Version:     c.Version,
 		Tasks:       c.getPluginTasks(false),
 		Hooks:       c.getPluginHooks(false),
+		UI: PluginUI{
+			Javascript: c.UI.getJavascriptFiles(c),
+			CSS:        c.UI.getCSSFiles(c),
+		},
 	}
 }
 

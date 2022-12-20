@@ -127,7 +127,6 @@ func Test_getPerformerID(t *testing.T) {
 func Test_createMissingPerformer(t *testing.T) {
 	emptyEndpoint := ""
 	validEndpoint := "validEndpoint"
-	invalidEndpoint := "invalidEndpoint"
 	remoteSiteID := "remoteSiteID"
 	validName := "validName"
 	invalidName := "invalidName"
@@ -144,19 +143,6 @@ func Test_createMissingPerformer(t *testing.T) {
 	mockPerformerReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p *models.Performer) bool {
 		return p.Name == invalidName
 	})).Return(errors.New("error creating performer"))
-
-	mockPerformerReaderWriter.On("UpdateStashIDs", testCtx, performerID, []models.StashID{
-		{
-			Endpoint: invalidEndpoint,
-			StashID:  remoteSiteID,
-		},
-	}).Return(errors.New("error updating stash ids"))
-	mockPerformerReaderWriter.On("UpdateStashIDs", testCtx, performerID, []models.StashID{
-		{
-			Endpoint: validEndpoint,
-			StashID:  remoteSiteID,
-		},
-	}).Return(nil)
 
 	type args struct {
 		endpoint string
@@ -202,18 +188,6 @@ func Test_createMissingPerformer(t *testing.T) {
 			&performerID,
 			false,
 		},
-		{
-			"invalid stash id",
-			args{
-				invalidEndpoint,
-				&models.ScrapedPerformer{
-					Name:         &validName,
-					RemoteSiteID: &remoteSiteID,
-				},
-			},
-			nil,
-			true,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -231,7 +205,6 @@ func Test_createMissingPerformer(t *testing.T) {
 
 func Test_scrapedToPerformerInput(t *testing.T) {
 	name := "name"
-	md5 := "b068931cc450442b63f5b3d276ea4297"
 
 	var stringValues []string
 	for i := 0; i < 17; i++ {
@@ -284,7 +257,6 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 			},
 			models.Performer{
 				Name:         name,
-				Checksum:     md5,
 				Birthdate:    dateToDatePtr(models.NewDate(*nextVal())),
 				DeathDate:    dateToDatePtr(models.NewDate(*nextVal())),
 				Gender:       models.GenderEnum(*nextVal()),
@@ -299,7 +271,7 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 				CareerLength: *nextVal(),
 				Tattoos:      *nextVal(),
 				Piercings:    *nextVal(),
-				Aliases:      *nextVal(),
+				Aliases:      models.NewRelatedStrings([]string{*nextVal()}),
 				Twitter:      *nextVal(),
 				Instagram:    *nextVal(),
 			},
@@ -310,8 +282,7 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 				Name: &name,
 			},
 			models.Performer{
-				Name:     name,
-				Checksum: md5,
+				Name: name,
 			},
 		},
 	}

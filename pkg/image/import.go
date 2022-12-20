@@ -85,6 +85,13 @@ func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 	if imageJSON.Rating != 0 {
 		newImage.Rating = &imageJSON.Rating
 	}
+	if imageJSON.URL != "" {
+		newImage.URL = imageJSON.URL
+	}
+	if imageJSON.Date != "" {
+		d := models.NewDate(imageJSON.Date)
+		newImage.Date = &d
+	}
 
 	return newImage
 }

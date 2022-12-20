@@ -118,7 +118,24 @@ export const ImageFileInfoPanel: React.FC<IImageFileInfoPanelProps> = (
   }
 
   if (props.image.files.length === 1) {
-    return <FileInfoPanel file={props.image.files[0]} />;
+    return (
+      <>
+        <FileInfoPanel file={props.image.files[0]} />
+
+        {props.image.url ? (
+          <dl className="container image-file-info details-list">
+            <URLField
+              id="media_info.downloaded_from"
+              url={TextUtils.sanitiseURL(props.image.url)}
+              value={TextUtils.domainFromURL(props.image.url)}
+              truncate
+            />
+          </dl>
+        ) : (
+          ""
+        )}
+      </>
+    );
   }
 
   async function onSetPrimaryFile(fileID: string) {

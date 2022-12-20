@@ -6,13 +6,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 type PerformerCreator interface {
 	Create(ctx context.Context, newPerformer *models.Performer) error
-	UpdateStashIDs(ctx context.Context, performerID int, stashIDs []models.StashID) error
 }
 
 func getPerformerID(ctx context.Context, endpoint string, w PerformerCreator, p *models.ScrapedPerformer, createMissing bool) (*int, error) {
@@ -33,20 +32,18 @@ func getPerformerID(ctx context.Context, endpoint string, w PerformerCreator, p 
 
 func createMissingPerformer(ctx context.Context, endpoint string, w PerformerCreator, p *models.ScrapedPerformer) (*int, error) {
 	performerInput := scrapedToPerformerInput(p)
-	err := w.Create(ctx, &performerInput)
-	if err != nil {
-		return nil, fmt.Errorf("error creating performer: %w", err)
-	}
-
 	if endpoint != "" && p.RemoteSiteID != nil {
-		if err := w.UpdateStashIDs(ctx, performerInput.ID, []models.StashID{
+		performerInput.StashIDs = models.NewRelatedStashIDs([]models.StashID{
 			{
 				Endpoint: endpoint,
 				StashID:  *p.RemoteSiteID,
 			},
-		}); err != nil {
-			return nil, fmt.Errorf("error setting performer stash id: %w", err)
-		}
+		})
+	}
+
+	err := w.Create(ctx, &performerInput)
+	if err != nil {
+		return nil, fmt.Errorf("error creating performer: %w", err)
 	}
 
 	return &performerInput.ID, nil
@@ -56,7 +53,6 @@ func scrapedToPerformerInput(performer *models.ScrapedPerformer) models.Performe
 	currentTime := time.Now()
 	ret := models.Performer{
 		Name:      *performer.Name,
-		Checksum:  md5.FromString(*performer.Name),
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,
 	}
@@ -111,7 +107,7 @@ func scrapedToPerformerInput(performer *models.ScrapedPerformer) models.Performe
 		ret.Piercings = *performer.Piercings
 	}
 	if performer.Aliases != nil {
-		ret.Aliases = *performer.Aliases
+		ret.Aliases = models.NewRelatedStrings(stringslice.FromString(*performer.Aliases, ","))
 	}
 	if performer.Twitter != nil {
 		ret.Twitter = *performer.Twitter

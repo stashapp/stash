@@ -3,6 +3,7 @@ type ScrapedPerformer {
   """Set if performer matched"""
   stored_id: ID
   name: String
+  disambiguation: String
   gender: String
   url: String
   twitter: String
@@ -17,6 +18,7 @@ type ScrapedPerformer {
   career_length: String
   tattoos: String
   piercings: String
+  # aliases must be comma-delimited to be parsed correctly
   aliases: String
   tags: [ScrapedTag!]
 
@@ -34,6 +36,7 @@ input ScrapedPerformerInput {
   """Set if performer matched"""
   stored_id: ID
   name: String
+  disambiguation: String
   gender: String
   url: String
   twitter: String

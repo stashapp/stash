@@ -29,6 +29,7 @@ interface IListOperationProps {
 
 const performerFields = [
   "favorite",
+  "disambiguation",
   "url",
   "instagram",
   "twitter",
@@ -243,6 +244,9 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
             </Form.Control>
           </Form.Group>
 
+          {renderTextField("disambiguation", updateInput.disambiguation, (v) =>
+            setUpdateField({ disambiguation: v })
+          )}
           {renderTextField("birthdate", updateInput.birthdate, (v) =>
             setUpdateField({ birthdate: v })
           )}

@@ -81,6 +81,7 @@ const PerformerStashBoxModal: React.FC<IProps> = ({
               <li key={p.remote_site_id}>
                 <Button variant="link" onClick={() => onSelectPerformer(p)}>
                   {p.name}
+                  {p.disambiguation && ` (${p.disambiguation})`}
                 </Button>
               </li>
             ))}

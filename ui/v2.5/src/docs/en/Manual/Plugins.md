@@ -1,8 +1,12 @@
 # Plugins
 
-Stash supports the running tasks via plugins. Plugins can be implemented using embedded Javascript, or by calling an external binary.
+Stash supports plugins that can do the following:
+- perform custom tasks when triggered by the user from the Tasks page
+- perform custom tasks when triggered from specific events
+- add custom CSS to the UI
+- add custom JavaScript to the UI
 
-Stash also supports triggering of plugin hooks from specific stash operations.
+Plugin tasks can be implemented using embedded Javascript, or by calling an external binary.
 
 > **⚠️ Note:** Plugin support is still experimental and is likely to change.
 
@@ -20,13 +24,45 @@ Plugins provide tasks which can be run from the Tasks page.
 
 # Creating plugins
 
-See [External Plugins](/help/ExternalPlugins.md) for details for making external plugins.
+## Plugin configuration file format
 
-See [Embedded Plugins](/help/EmbeddedPlugins.md) for details for making embedded plugins.
+The basic structure of a plugin configuration file is as follows:
 
-## Plugin input
+```
+name: <plugin name>
+description: <optional description of the plugin>
+version: <optional version tag>
+url: <optional url>
 
-Plugins may accept an input from the stash server. This input is encoded according to the interface, and has the following structure (presented here in JSON format):
+ui:
+  # optional list of css files to include in the UI
+  css:
+    - <path to css file>
+
+  # optional list of js files to include in the UI
+  javascript:
+    - <path to javascript file>
+
+# the following are used for plugin tasks only
+exec:
+  - ...
+interface: [interface type]
+errLog: [one of none trace, debug, info, warning, error]
+tasks:
+  - ...
+```
+
+The `name`, `description`, `version` and `url` fields are displayed on the plugins page.
+
+The `exec`, `interface`, `errLog` and `tasks` fields are used only for plugins with tasks.
+
+See [External Plugins](/help/ExternalPlugins.md) for details for making plugins with external tasks.
+
+See [Embedded Plugins](/help/EmbeddedPlugins.md) for details for making plugins with embedded tasks.
+
+## Plugin task input
+
+Plugin tasks may accept an input from the stash server. This input is encoded according to the interface, and has the following structure (presented here in JSON format):
 ```
 {
     "server_connection": {
@@ -57,9 +93,9 @@ Plugins may accept an input from the stash server. This input is encoded accordi
 
 The `server_connection` field contains all the information needed for a plugin to access the parent stash server, if necessary.
 
-## Plugin output
+## Plugin task output
 
-Plugin output is expected in the following structure (presented here as JSON format):
+Plugin task output is expected in the following structure (presented here as JSON format):
 
 ```
 {

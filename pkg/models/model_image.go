@@ -16,10 +16,12 @@ type Image struct {
 
 	Title string `json:"title"`
 	// Rating expressed in 1-100 scale
-	Rating    *int `json:"rating"`
-	Organized bool `json:"organized"`
-	OCounter  int  `json:"o_counter"`
-	StudioID  *int `json:"studio_id"`
+	Rating    *int   `json:"rating"`
+	Organized bool   `json:"organized"`
+	OCounter  int    `json:"o_counter"`
+	StudioID  *int   `json:"studio_id"`
+	URL       string `json:"url"`
+	Date      *Date  `json:"date"`
 
 	// transient - not persisted
 	Files         RelatedImageFiles
@@ -117,6 +119,8 @@ type ImagePartial struct {
 	Title OptionalString
 	// Rating expressed in 1-100 scale
 	Rating    OptionalInt
+	URL       OptionalString
+	Date      OptionalDate
 	Organized OptionalBool
 	OCounter  OptionalInt
 	StudioID  OptionalInt

@@ -17,33 +17,36 @@ import (
 	"gopkg.in/guregu/null.v4/zero"
 )
 
-const performerTable = "performers"
-const performerIDColumn = "performer_id"
-const performersTagsTable = "performers_tags"
-const performersImageTable = "performers_image" // performer cover image
+const (
+	performerTable         = "performers"
+	performerIDColumn      = "performer_id"
+	performersAliasesTable = "performer_aliases"
+	performerAliasColumn   = "alias"
+	performersTagsTable    = "performers_tags"
+	performersImageTable   = "performers_image" // performer cover image
+)
 
 type performerRow struct {
-	ID           int                    `db:"id" goqu:"skipinsert"`
-	Checksum     string                 `db:"checksum"`
-	Name         zero.String            `db:"name"`
-	Gender       zero.String            `db:"gender"`
-	URL          zero.String            `db:"url"`
-	Twitter      zero.String            `db:"twitter"`
-	Instagram    zero.String            `db:"instagram"`
-	Birthdate    models.SQLiteDate      `db:"birthdate"`
-	Ethnicity    zero.String            `db:"ethnicity"`
-	Country      zero.String            `db:"country"`
-	EyeColor     zero.String            `db:"eye_color"`
-	Height       null.Int               `db:"height"`
-	Measurements zero.String            `db:"measurements"`
-	FakeTits     zero.String            `db:"fake_tits"`
-	CareerLength zero.String            `db:"career_length"`
-	Tattoos      zero.String            `db:"tattoos"`
-	Piercings    zero.String            `db:"piercings"`
-	Aliases      zero.String            `db:"aliases"`
-	Favorite     sql.NullBool           `db:"favorite"`
-	CreatedAt    models.SQLiteTimestamp `db:"created_at"`
-	UpdatedAt    models.SQLiteTimestamp `db:"updated_at"`
+	ID            int                    `db:"id" goqu:"skipinsert"`
+	Name          string                 `db:"name"`
+	Disambigation zero.String            `db:"disambiguation"`
+	Gender        zero.String            `db:"gender"`
+	URL           zero.String            `db:"url"`
+	Twitter       zero.String            `db:"twitter"`
+	Instagram     zero.String            `db:"instagram"`
+	Birthdate     models.SQLiteDate      `db:"birthdate"`
+	Ethnicity     zero.String            `db:"ethnicity"`
+	Country       zero.String            `db:"country"`
+	EyeColor      zero.String            `db:"eye_color"`
+	Height        null.Int               `db:"height"`
+	Measurements  zero.String            `db:"measurements"`
+	FakeTits      zero.String            `db:"fake_tits"`
+	CareerLength  zero.String            `db:"career_length"`
+	Tattoos       zero.String            `db:"tattoos"`
+	Piercings     zero.String            `db:"piercings"`
+	Favorite      sql.NullBool           `db:"favorite"`
+	CreatedAt     models.SQLiteTimestamp `db:"created_at"`
+	UpdatedAt     models.SQLiteTimestamp `db:"updated_at"`
 	// expressed as 1-100
 	Rating        null.Int          `db:"rating"`
 	Details       zero.String       `db:"details"`
@@ -55,8 +58,8 @@ type performerRow struct {
 
 func (r *performerRow) fromPerformer(o models.Performer) {
 	r.ID = o.ID
-	r.Checksum = o.Checksum
-	r.Name = zero.StringFrom(o.Name)
+	r.Name = o.Name
+	r.Disambigation = zero.StringFrom(o.Disambiguation)
 	if o.Gender.IsValid() {
 		r.Gender = zero.StringFrom(o.Gender.String())
 	}
@@ -75,7 +78,6 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	r.CareerLength = zero.StringFrom(o.CareerLength)
 	r.Tattoos = zero.StringFrom(o.Tattoos)
 	r.Piercings = zero.StringFrom(o.Piercings)
-	r.Aliases = zero.StringFrom(o.Aliases)
 	r.Favorite = sql.NullBool{Bool: o.Favorite, Valid: true}
 	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
@@ -91,27 +93,26 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 
 func (r *performerRow) resolve() *models.Performer {
 	ret := &models.Performer{
-		ID:           r.ID,
-		Checksum:     r.Checksum,
-		Name:         r.Name.String,
-		Gender:       models.GenderEnum(r.Gender.String),
-		URL:          r.URL.String,
-		Twitter:      r.Twitter.String,
-		Instagram:    r.Instagram.String,
-		Birthdate:    r.Birthdate.DatePtr(),
-		Ethnicity:    r.Ethnicity.String,
-		Country:      r.Country.String,
-		EyeColor:     r.EyeColor.String,
-		Height:       nullIntPtr(r.Height),
-		Measurements: r.Measurements.String,
-		FakeTits:     r.FakeTits.String,
-		CareerLength: r.CareerLength.String,
-		Tattoos:      r.Tattoos.String,
-		Piercings:    r.Piercings.String,
-		Aliases:      r.Aliases.String,
-		Favorite:     r.Favorite.Bool,
-		CreatedAt:    r.CreatedAt.Timestamp,
-		UpdatedAt:    r.UpdatedAt.Timestamp,
+		ID:             r.ID,
+		Name:           r.Name,
+		Disambiguation: r.Disambigation.String,
+		Gender:         models.GenderEnum(r.Gender.String),
+		URL:            r.URL.String,
+		Twitter:        r.Twitter.String,
+		Instagram:      r.Instagram.String,
+		Birthdate:      r.Birthdate.DatePtr(),
+		Ethnicity:      r.Ethnicity.String,
+		Country:        r.Country.String,
+		EyeColor:       r.EyeColor.String,
+		Height:         nullIntPtr(r.Height),
+		Measurements:   r.Measurements.String,
+		FakeTits:       r.FakeTits.String,
+		CareerLength:   r.CareerLength.String,
+		Tattoos:        r.Tattoos.String,
+		Piercings:      r.Piercings.String,
+		Favorite:       r.Favorite.Bool,
+		CreatedAt:      r.CreatedAt.Timestamp,
+		UpdatedAt:      r.UpdatedAt.Timestamp,
 		// expressed as 1-100
 		Rating:        nullIntPtr(r.Rating),
 		Details:       r.Details.String,
@@ -129,8 +130,8 @@ type performerRowRecord struct {
 }
 
 func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
-	r.setNullString("checksum", o.Checksum)
-	r.setNullString("name", o.Name)
+	r.setString("name", o.Name)
+	r.setNullString("disambiguation", o.Disambiguation)
 	r.setNullString("gender", o.Gender)
 	r.setNullString("url", o.URL)
 	r.setNullString("twitter", o.Twitter)
@@ -145,7 +146,6 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setNullString("career_length", o.CareerLength)
 	r.setNullString("tattoos", o.Tattoos)
 	r.setNullString("piercings", o.Piercings)
-	r.setNullString("aliases", o.Aliases)
 	r.setBool("favorite", o.Favorite)
 	r.setSQLiteTimestamp("created_at", o.CreatedAt)
 	r.setSQLiteTimestamp("updated_at", o.UpdatedAt)
@@ -182,6 +182,24 @@ func (qb *PerformerStore) Create(ctx context.Context, newObject *models.Performe
 		return err
 	}
 
+	if newObject.Aliases.Loaded() {
+		if err := performersAliasesTableMgr.insertJoins(ctx, id, newObject.Aliases.List()); err != nil {
+			return err
+		}
+	}
+
+	if newObject.TagIDs.Loaded() {
+		if err := performersTagsTableMgr.insertJoins(ctx, id, newObject.TagIDs.List()); err != nil {
+			return err
+		}
+	}
+
+	if newObject.StashIDs.Loaded() {
+		if err := performersStashIDsTableMgr.insertJoins(ctx, id, newObject.StashIDs.List()); err != nil {
+			return err
+		}
+	}
+
 	updated, err := qb.Find(ctx, id)
 	if err != nil {
 		return fmt.Errorf("finding after create: %w", err)
@@ -192,17 +210,34 @@ func (qb *PerformerStore) Create(ctx context.Context, newObject *models.Performe
 	return nil
 }
 
-func (qb *PerformerStore) UpdatePartial(ctx context.Context, id int, updatedObject models.PerformerPartial) (*models.Performer, error) {
+func (qb *PerformerStore) UpdatePartial(ctx context.Context, id int, partial models.PerformerPartial) (*models.Performer, error) {
 	r := performerRowRecord{
 		updateRecord{
 			Record: make(exp.Record),
 		},
 	}
 
-	r.fromPartial(updatedObject)
+	r.fromPartial(partial)
 
 	if len(r.Record) > 0 {
 		if err := qb.tableMgr.updateByID(ctx, id, r.Record); err != nil {
+			return nil, err
+		}
+	}
+
+	if partial.Aliases != nil {
+		if err := performersAliasesTableMgr.modifyJoins(ctx, id, partial.Aliases.Values, partial.Aliases.Mode); err != nil {
+			return nil, err
+		}
+	}
+
+	if partial.TagIDs != nil {
+		if err := performersTagsTableMgr.modifyJoins(ctx, id, partial.TagIDs.IDs, partial.TagIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
+	if partial.StashIDs != nil {
+		if err := performersStashIDsTableMgr.modifyJoins(ctx, id, partial.StashIDs.StashIDs, partial.StashIDs.Mode); err != nil {
 			return nil, err
 		}
 	}
@@ -216,6 +251,24 @@ func (qb *PerformerStore) Update(ctx context.Context, updatedObject *models.Perf
 
 	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
 		return err
+	}
+
+	if updatedObject.Aliases.Loaded() {
+		if err := performersAliasesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.Aliases.List()); err != nil {
+			return err
+		}
+	}
+
+	if updatedObject.TagIDs.Loaded() {
+		if err := performersTagsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.TagIDs.List()); err != nil {
+			return err
+		}
+	}
+
+	if updatedObject.StashIDs.Loaded() {
+		if err := performersStashIDsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.StashIDs.List()); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -397,14 +450,19 @@ func (qb *PerformerStore) QueryForAutoTag(ctx context.Context, words []string) (
 	// TODO - Query needs to be changed to support queries of this type, and
 	// this method should be removed
 	table := qb.table()
-	sq := dialect.From(table).Select(table.Col(idColumn)).Where()
+	sq := dialect.From(table).Select(table.Col(idColumn))
+	// TODO - disabled alias matching until we get finer control over it
+	// .LeftJoin(
+	// 	performersAliasesJoinTable,
+	// 	goqu.On(performersAliasesJoinTable.Col(performerIDColumn).Eq(table.Col(idColumn))),
+	// )
 
 	var whereClauses []exp.Expression
 
 	for _, w := range words {
 		whereClauses = append(whereClauses, table.Col("name").Like(w+"%"))
-		// TODO - commented out until alias matching works both ways
-		// whereClauses = append(whereClauses, table.Col("aliases").Like(w+"%")
+		// TODO - see above
+		// whereClauses = append(whereClauses, performersAliasesJoinTable.Col("alias").Like(w+"%"))
 	}
 
 	sq = sq.Where(
@@ -483,6 +541,7 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 
 	const tableName = performerTable
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Name, tableName+".name"))
+	query.handleCriterion(ctx, stringCriterionHandler(filter.Disambiguation, tableName+".disambiguation"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Details, tableName+".details"))
 
 	query.handleCriterion(ctx, boolCriterionHandler(filter.FilterFavorites, tableName+".favorite", nil))
@@ -540,8 +599,7 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 		parentIDCol:       "performers.id",
 	})
 
-	// TODO - need better handling of aliases
-	query.handleCriterion(ctx, stringCriterionHandler(filter.Aliases, tableName+".aliases"))
+	query.handleCriterion(ctx, performerAliasCriterionHandler(qb, filter.Aliases))
 
 	query.handleCriterion(ctx, performerTagsCriterionHandler(qb, filter.Tags))
 
@@ -571,7 +629,8 @@ func (qb *PerformerStore) Query(ctx context.Context, performerFilter *models.Per
 	distinctIDs(&query, performerTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		searchColumns := []string{"performers.name", "performers.aliases"}
+		query.join(performersAliasesTable, "", "performer_aliases.performer_id = performers.id")
+		searchColumns := []string{"performers.name", "performer_aliases.alias"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
@@ -607,7 +666,7 @@ func performerIsMissingCriterionHandler(qb *PerformerStore, isMissing *string) c
 				f.addLeftJoin(performersImageTable, "image_join", "image_join.performer_id = performers.id")
 				f.addWhere("image_join.performer_id IS NULL")
 			case "stash_id":
-				qb.stashIDRepository().join(f, "performer_stash_ids", "performers.id")
+				performersStashIDsTableMgr.join(f, "performer_stash_ids", "performers.id")
 				f.addWhere("performer_stash_ids.performer_id IS NULL")
 			default:
 				f.addWhere("(performers." + *isMissing + " IS NULL OR TRIM(performers." + *isMissing + ") = '')")
@@ -635,6 +694,18 @@ func performerAgeFilterCriterionHandler(age *models.IntCriterionInput) criterion
 			f.addWhere(clause, args...)
 		}
 	}
+}
+
+func performerAliasCriterionHandler(qb *PerformerStore, alias *models.StringCriterionInput) criterionHandlerFunc {
+	h := stringListCriterionHandlerBuilder{
+		joinTable:    performersAliasesTable,
+		stringColumn: performerAliasColumn,
+		addJoinTable: func(f *filterBuilder) {
+			performersAliasesTableMgr.join(f, "", "performers.id")
+		},
+	}
+
+	return h.handler(alias)
 }
 
 func performerTagsCriterionHandler(qb *PerformerStore, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
@@ -813,11 +884,6 @@ func (qb *PerformerStore) GetTagIDs(ctx context.Context, id int) ([]int, error) 
 	return qb.tagsRepository().getIDs(ctx, id)
 }
 
-func (qb *PerformerStore) UpdateTags(ctx context.Context, id int, tagIDs []int) error {
-	// Delete the existing joins and then create new ones
-	return qb.tagsRepository().replace(ctx, id, tagIDs)
-}
-
 func (qb *PerformerStore) imageRepository() *imageRepository {
 	return &imageRepository{
 		repository: repository{
@@ -851,12 +917,12 @@ func (qb *PerformerStore) stashIDRepository() *stashIDRepository {
 	}
 }
 
-func (qb *PerformerStore) GetStashIDs(ctx context.Context, performerID int) ([]models.StashID, error) {
-	return qb.stashIDRepository().get(ctx, performerID)
+func (qb *PerformerStore) GetAliases(ctx context.Context, performerID int) ([]string, error) {
+	return performersAliasesTableMgr.get(ctx, performerID)
 }
 
-func (qb *PerformerStore) UpdateStashIDs(ctx context.Context, performerID int, stashIDs []models.StashID) error {
-	return qb.stashIDRepository().replace(ctx, performerID, stashIDs)
+func (qb *PerformerStore) GetStashIDs(ctx context.Context, performerID int) ([]models.StashID, error) {
+	return performersStashIDsTableMgr.get(ctx, performerID)
 }
 
 func (qb *PerformerStore) FindByStashID(ctx context.Context, stashID models.StashID) ([]*models.Performer, error) {

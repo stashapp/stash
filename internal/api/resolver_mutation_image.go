@@ -104,6 +104,8 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 	updatedImage := models.NewImagePartial()
 	updatedImage.Title = translator.optionalString(input.Title, "title")
 	updatedImage.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
+	updatedImage.URL = translator.optionalString(input.URL, "url")
+	updatedImage.Date = translator.optionalDate(input.Date, "date")
 	updatedImage.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
@@ -190,6 +192,8 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 
 	updatedImage.Title = translator.optionalString(input.Title, "title")
 	updatedImage.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
+	updatedImage.URL = translator.optionalString(input.URL, "url")
+	updatedImage.Date = translator.optionalDate(input.Date, "date")
 	updatedImage.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)

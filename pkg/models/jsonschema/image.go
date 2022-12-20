@@ -13,6 +13,8 @@ type Image struct {
 	Title      string        `json:"title,omitempty"`
 	Studio     string        `json:"studio,omitempty"`
 	Rating     int           `json:"rating,omitempty"`
+	URL        string        `json:"url,omitempty"`
+	Date       string        `json:"date,omitempty"`
 	Organized  bool          `json:"organized,omitempty"`
 	OCounter   int           `json:"o_counter,omitempty"`
 	Galleries  []GalleryRef  `json:"galleries,omitempty"`
