@@ -40,6 +40,7 @@ import { releaseNotes } from "./docs/en/ReleaseNotes";
 import { getPlatformURL } from "./core/createClient";
 import { lazyComponent } from "./utils/lazyComponent";
 import { isPlatformUniquelyRenderedByApple } from "./utils/apple";
+import { PluginComponentLocation, PluginComponents } from "./plugins";
 
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")
@@ -279,6 +280,9 @@ export const App: React.FC = () => {
                         }`}
                       >
                         {renderContent()}
+                        <PluginComponents
+                          location={PluginComponentLocation.Main}
+                        />
                       </div>
                     </InteractiveProvider>
                   </ManualProvider>
