@@ -31,6 +31,8 @@ type imageRow struct {
 	Title zero.String `db:"title"`
 	// expressed as 1-100
 	Rating    null.Int               `db:"rating"`
+	URL       zero.String            `db:"url"`
+	Date      models.SQLiteDate      `db:"date"`
 	Organized bool                   `db:"organized"`
 	OCounter  int                    `db:"o_counter"`
 	StudioID  null.Int               `db:"studio_id,omitempty"`
@@ -42,6 +44,10 @@ func (r *imageRow) fromImage(i models.Image) {
 	r.ID = i.ID
 	r.Title = zero.StringFrom(i.Title)
 	r.Rating = intFromPtr(i.Rating)
+	r.URL = zero.StringFrom(i.URL)
+	if i.Date != nil {
+		_ = r.Date.Scan(i.Date.Time)
+	}
 	r.Organized = i.Organized
 	r.OCounter = i.OCounter
 	r.StudioID = intFromPtr(i.StudioID)
@@ -62,6 +68,8 @@ func (r *imageQueryRow) resolve() *models.Image {
 		ID:        r.ID,
 		Title:     r.Title.String,
 		Rating:    nullIntPtr(r.Rating),
+		URL:       r.URL.String,
+		Date:      r.Date.DatePtr(),
 		Organized: r.Organized,
 		OCounter:  r.OCounter,
 		StudioID:  nullIntPtr(r.StudioID),
@@ -87,6 +95,8 @@ type imageRowRecord struct {
 func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
 	r.setNullString("title", i.Title)
 	r.setNullInt("rating", i.Rating)
+	r.setNullString("url", i.URL)
+	r.setSQLiteDate("date", i.Date)
 	r.setBool("organized", i.Organized)
 	r.setInt("o_counter", i.OCounter)
 	r.setNullInt("studio_id", i.StudioID)
@@ -638,6 +648,8 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 	query.handleCriterion(ctx, rating5CriterionHandler(imageFilter.Rating, "images.rating", nil))
 	query.handleCriterion(ctx, intCriterionHandler(imageFilter.OCounter, "images.o_counter", nil))
 	query.handleCriterion(ctx, boolCriterionHandler(imageFilter.Organized, "images.organized", nil))
+	query.handleCriterion(ctx, dateCriterionHandler(imageFilter.Date, "images.date"))
+	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.URL, "images.url"))
 
 	query.handleCriterion(ctx, resolutionCriterionHandler(imageFilter.Resolution, "image_files.height", "image_files.width", qb.addImageFilesTable))
 	query.handleCriterion(ctx, imageIsMissingCriterionHandler(qb, imageFilter.IsMissing))

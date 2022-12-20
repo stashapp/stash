@@ -14,7 +14,7 @@ COPY --from=binary /stash /usr/bin/
 RUN apk add --no-cache --virtual .build-deps gcc python3-dev musl-dev \
     && apk add --no-cache ca-certificates python3 py3-requests py3-requests-toolbelt py3-lxml py3-pip ffmpeg vips-tools ruby \
     && pip install mechanicalsoup cloudscraper bencoder.pyx \
-    && gem install faraday
+    && gem install faraday \
     && apk del .build-deps
 ENV STASH_CONFIG_FILE=/root/.stash/config.yml
 
