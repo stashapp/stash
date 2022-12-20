@@ -8,12 +8,12 @@ const useScript = (url: string, condition?: boolean) => {
     script.async = true;
 
     if (condition) {
-      document.body.appendChild(script);
+      document.head.appendChild(script);
     }
 
     return () => {
       if (condition) {
-        document.body.removeChild(script);
+        document.head.removeChild(script);
       }
     };
   }, [url, condition]);
