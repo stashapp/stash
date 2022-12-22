@@ -9,11 +9,22 @@ import { JobTable } from "./JobTable";
 export const SettingsTasksPanel: React.FC = () => {
   const intl = useIntl();
   const [isBackupRunning, setIsBackupRunning] = useState<boolean>(false);
+  const [isAnonymiseRunning, setIsAnonymiseRunning] = useState<boolean>(false);
 
   if (isBackupRunning) {
     return (
       <LoadingIndicator
         message={intl.formatMessage({ id: "config.tasks.backing_up_database" })}
+      />
+    );
+  }
+
+  if (isAnonymiseRunning) {
+    return (
+      <LoadingIndicator
+        message={intl.formatMessage({
+          id: "config.tasks.anonymising_database",
+        })}
       />
     );
   }
@@ -28,7 +39,10 @@ export const SettingsTasksPanel: React.FC = () => {
       <div className="tasks-panel-tasks">
         <LibraryTasks />
         <hr />
-        <DataManagementTasks setIsBackupRunning={setIsBackupRunning} />
+        <DataManagementTasks
+          setIsBackupRunning={setIsBackupRunning}
+          setIsAnonymiseRunning={setIsAnonymiseRunning}
+        />
         <hr />
         <PluginTasks />
       </div>
