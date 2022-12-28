@@ -1,4 +1,4 @@
-import { Tabs, Tab, Dropdown } from "react-bootstrap";
+import { Tabs, Tab, Dropdown, Badge } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -38,6 +38,7 @@ import {
   faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { IUIConfig } from "src/core/config";
+import { contrastingTextColor } from "src/utils/display";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -130,6 +131,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
           input: getTagInput(input) as GQL.TagUpdateInput,
         },
       });
+
       if (result.data?.tagUpdate) {
         setIsEditing(false);
         const updated = result.data.tagUpdate;
@@ -276,6 +278,14 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
               renderImage()
             )}
             <h2>{tag.name}</h2>
+            <p>
+            <Badge className="tag-test" variant="secondary" style={{
+              backgroundColor: tag.color ?? "#bfccd6",
+              color: contrastingTextColor(tag.color ?? "#bfccd6")
+            }}>
+              {tag.name}
+            </Badge>
+            </p>
             <p>{tag.description}</p>
           </div>
           {!isEditing ? (

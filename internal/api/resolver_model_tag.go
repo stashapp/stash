@@ -123,3 +123,10 @@ func (r *tagResolver) CreatedAt(ctx context.Context, obj *models.Tag) (*time.Tim
 func (r *tagResolver) UpdatedAt(ctx context.Context, obj *models.Tag) (*time.Time, error) {
 	return &obj.UpdatedAt.Timestamp, nil
 }
+
+func (r *tagResolver) Color(ctx context.Context, obj *models.Tag) (*string, error) {
+	if obj.Color.Valid {
+		return &obj.Color.String, nil
+	}
+	return nil, nil
+}

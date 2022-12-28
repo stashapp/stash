@@ -23,6 +23,7 @@ fragment SlimPerformerData on Performer {
   tags {
     id
     name
+    color
   }
   stash_ids {
     endpoint

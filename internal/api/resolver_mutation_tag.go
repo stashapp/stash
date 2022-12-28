@@ -43,6 +43,10 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 		newTag.IgnoreAutoTag = *input.IgnoreAutoTag
 	}
 
+	if input.Color != nil {
+		newTag.Color = sql.NullString{String: *input.Color, Valid: true}
+	}
+
 	var imageData []byte
 	var err error
 
@@ -201,6 +205,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 		}
 
 		updatedTag.Description = translator.nullString(input.Description, "description")
+		updatedTag.Color = translator.nullString(input.Color, "color")
 
 		t, err = qb.Update(ctx, updatedTag)
 		if err != nil {

@@ -36,6 +36,7 @@ fragment SlimImageData on Image {
   tags {
     id
     name
+    color
   }
 
   performers {

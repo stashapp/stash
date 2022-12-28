@@ -3,6 +3,7 @@ fragment TagData on Tag {
   name
   description
   aliases
+  color
   ignore_auto_tag
   image_path
   scene_count

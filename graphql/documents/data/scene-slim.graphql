@@ -67,6 +67,7 @@ fragment SlimSceneData on Scene {
   tags {
     id
     name
+    color
   }
 
   performers {

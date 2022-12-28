@@ -15,6 +15,7 @@ import { galleryTitle } from "src/core/galleries";
 import * as GQL from "src/core/generated-graphql";
 import { TagPopover } from "../Tags/TagPopover";
 import { markerTitle } from "src/core/markers";
+import { contrastingTextColor } from "src/utils/display";
 
 interface IFile {
   path: string;
@@ -83,7 +84,12 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
     title = objectTitle(props.scene);
   }
   return (
-    <Badge className={cx("tag-item", props.className)} variant="secondary">
+    <Badge className={cx("tag-item", props.className)} variant="secondary" 
+      style={{
+        backgroundColor: props.tag?.color ?? "#bfccd6",
+        color: contrastingTextColor(props.tag?.color ?? "#bfccd6")
+      }}
+    >
       <TagPopover id={id}>
         <Link to={link}>{title}</Link>
       </TagPopover>

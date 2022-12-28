@@ -12,6 +12,7 @@ type Tag struct {
 	IgnoreAutoTag bool            `db:"ignore_auto_tag" json:"ignore_auto_tag"`
 	CreatedAt     SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt     SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	Color         sql.NullString  `db:"color" json:"color"`
 }
 
 type TagPartial struct {
@@ -21,6 +22,7 @@ type TagPartial struct {
 	IgnoreAutoTag *bool            `db:"ignore_auto_tag" json:"ignore_auto_tag"`
 	CreatedAt     *SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt     *SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	Color         *sql.NullString  `db:"color" json:"color"`
 }
 
 type TagPath struct {

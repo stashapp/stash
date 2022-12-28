@@ -1,0 +1,1 @@
+ALTER TABLE `tags` ADD COLUMN `color` varchar(255);

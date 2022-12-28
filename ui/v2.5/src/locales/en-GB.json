@@ -634,6 +634,7 @@
     "tags": "{count, plural, one {Tag} other {Tags}}"
   },
   "country": "Country",
+  "color" : "Colour",
   "cover_image": "Cover Image",
   "created_at": "Created At",
   "criterion": {

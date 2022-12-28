@@ -30,6 +30,7 @@ fragment SlimGalleryData on Gallery {
   tags {
     id
     name
+    color
   }
   performers {
     id

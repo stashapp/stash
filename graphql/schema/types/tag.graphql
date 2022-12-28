@@ -6,6 +6,7 @@ type Tag {
   ignore_auto_tag: Boolean!
   created_at: Time!
   updated_at: Time!
+  color: String
 
   image_path: String # Resolver
   scene_count: Int # Resolver
@@ -23,6 +24,7 @@ input TagCreateInput {
   description: String
   aliases: [String!]
   ignore_auto_tag: Boolean
+  color: String
 
   """This should be a URL or a base64 encoded data URL"""
   image: String
@@ -37,6 +39,7 @@ input TagUpdateInput {
   description: String
   aliases: [String!]
   ignore_auto_tag: Boolean
+  color: String
 
   """This should be a URL or a base64 encoded data URL"""
   image: String

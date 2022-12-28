@@ -9,6 +9,7 @@ import { useFormik } from "formik";
 import { Prompt, useHistory, useParams } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import { StringListInput } from "src/components/Shared/StringListInput";
+import { ColorResult, SketchPicker } from 'react-color';
 
 interface ITagEditPanel {
   tag?: Partial<GQL.TagDataFragment>;
@@ -59,6 +60,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
         },
         message: intl.formatMessage({ id: "dialogs.aliases_must_be_unique" }),
       }),
+    color: yup.string().optional().nullable(),
     parent_ids: yup.array(yup.string().required()).optional().nullable(),
     child_ids: yup.array(yup.string().required()).optional().nullable(),
     ignore_auto_tag: yup.boolean().optional(),
@@ -68,6 +70,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     name: tag?.name,
     description: tag?.description,
     aliases: tag?.aliases,
+    color: tag?.color ?? "#bfccd6",
     parent_ids: (tag?.parents ?? []).map((t) => t.id),
     child_ids: (tag?.children ?? []).map((t) => t.id),
     ignore_auto_tag: tag?.ignore_auto_tag ?? false,
@@ -179,6 +182,22 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
               className="text-input"
               placeholder={intl.formatMessage({ id: "description" })}
               {...formik.getFieldProps("description")}
+            />
+          </Col>
+        </Form.Group>
+
+        <Form.Group controlId="color" as={Row}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            <FormattedMessage id="color" />
+          </Form.Label>
+          <Col xs={fieldXS} xl={fieldXL}>
+          <SketchPicker
+            color={ formik.values.color }
+            onChangeComplete={(item:ColorResult) =>
+              formik.setFieldValue(
+                "color",
+                item.hex
+              )}
             />
           </Col>
         </Form.Group>
