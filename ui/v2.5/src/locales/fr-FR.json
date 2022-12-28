@@ -6,6 +6,7 @@
     "add_to_entity": "Ajouter à {entityType}",
     "allow": "Autoriser",
     "allow_temporarily": "Autoriser temporairement",
+    "anonymise": "Anonymiser",
     "apply": "Appliquer",
     "auto_tag": "Étiquetage automatique",
     "backup": "Sauvegarder",
@@ -32,10 +33,11 @@
     "delete_stashid": "Supprimer StashID",
     "disallow": "Refuser",
     "download": "Télécharger",
+    "download_anonymised": "Téléchargement anonymisé",
     "download_backup": "Télécharger une sauvegarde",
     "edit": "Éditer",
     "edit_entity": "Éditer {entityType}",
-    "export": "Exporter…",
+    "export": "Exporter",
     "export_all": "Tout exporter…",
     "find": "Rechercher",
     "finish": "Terminer",
@@ -346,6 +348,9 @@
     },
     "tasks": {
       "added_job_to_queue": "{operation_name} ajouté·e à la liste des tâches",
+      "anonymise_and_download": "Effectue une copie anonymisée de la base de données et télécharge le fichier résultant.",
+      "anonymise_database": "Effectue une copie de la base de données dans le répertoire de sauvegarde, en anonymisant toutes données sensibles. Celle-ci peut être transmise aux autres à des fins de diagnostic et de débogage. La base de données originale n'est pas modifiée. La base de données anonymisée utilise le format de nom de fichier {filename_format}.",
+      "anonymising_database": "Anonymisation de la base de données",
       "auto_tag": {
         "auto_tagging_all_paths": "Étiquetage automatique de tous les chemins",
         "auto_tagging_paths": "Étiquetage automatique des chemins suivants"
