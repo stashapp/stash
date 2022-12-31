@@ -6,6 +6,7 @@
     "add_to_entity": "Lägg till {entityType}",
     "allow": "Tillåt",
     "allow_temporarily": "Tillåt tillfälligt",
+    "anonymise": "Anonymisera",
     "apply": "Tillämpa",
     "auto_tag": "Tagga automatiskt",
     "backup": "Säkerhetskopiera",
@@ -32,10 +33,11 @@
     "delete_stashid": "Radera StashID",
     "disallow": "Tillåt ej",
     "download": "Ladda ner",
+    "download_anonymised": "Ladda ner anonymiserad",
     "download_backup": "Ladda ner säkerhetskopia",
     "edit": "Redigera",
     "edit_entity": "Redigera {entityType}",
-    "export": "Exportera…",
+    "export": "Exportera",
     "export_all": "Exportera alla…",
     "find": "Sök",
     "finish": "Slutför",
@@ -346,6 +348,9 @@
     },
     "tasks": {
       "added_job_to_queue": "Köade {operation_name}",
+      "anonymise_and_download": "Skapar en anonymiserad kopia av databasen och laddar ner kopian.",
+      "anonymise_database": "Skapar en kopia av databasen till backup-sökvägen och anonymiserar all känslig data. Denna kan sedan skickas till andra för felsökning och problemlösning. Originaldatabasen påverkas ej. Anonymiserad databas använder filnamnsformatet {filename_format}.",
+      "anonymising_database": "Anonymiserar databas",
       "auto_tag": {
         "auto_tagging_all_paths": "Autotagga alla sökvägar",
         "auto_tagging_paths": "Autotagga följande sökvägar"
