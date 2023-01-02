@@ -1,13 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
-import Select, {
-  ValueType,
-  Styles,
-  OptionProps,
+import Select, { OptionProps,
   components as reactSelectComponents,
-  GroupedOptionsType,
-  OptionsType,
-  MenuListComponentProps,
-  GroupTypeBase,
+  OnChangeValue,
+  Options,
+  StylesConfig,
+  GroupBase,
+  MenuListProps,
+  PropsValue,
+  InputActionMeta,
+  OptionsOrGroups
 } from "react-select";
 import CreatableSelect from "react-select/creatable";
 import debounce from "lodash-es/debounce";
@@ -24,12 +25,15 @@ import {
   usePerformerCreate,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
-import { SelectComponents } from "react-select/src/components";
+
 import { ConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import { TagPopover } from "../Tags/TagPopover";
+import { SelectComponents } from "react-select/dist/declarations/src/components";
+import { PublicBaseSelectProps } from "react-select/dist/declarations/src/Select";
+import { Accessors } from "react-select/dist/declarations/src/useCreatable";
 
 export type ValidTypes =
   | GQL.SlimPerformerDataFragment
@@ -65,23 +69,21 @@ interface IFilterProps {
 interface ISelectProps<T extends boolean> {
   className?: string;
   items: Option[];
-  selectedOptions?: ValueType<Option, T>;
+  selectedOptions?: PropsValue<Option> | undefined;
   creatable?: boolean;
   onCreateOption?: (value: string) => void;
   isLoading: boolean;
   isDisabled?: boolean;
-  onChange: (item: ValueType<Option, T>) => void;
+  onChange: (item: OnChangeValue<Option, T>) => void;
   initialIds?: string[];
   isMulti: T;
   isClearable?: boolean;
-  onInputChange?: (input: string) => void;
-  components?: Partial<SelectComponents<Option, T>>;
+  onInputChange?: (newValue: string, actionMeta: InputActionMeta) => void | undefined;
+  components?: Partial<SelectComponents<Option, T, GroupBase<Option>>>;
   filterOption?: (option: Option, rawInput: string) => boolean;
-  isValidNewOption?: (
-    inputValue: string,
-    value: ValueType<Option, T>,
-    options: OptionsType<Option> | GroupedOptionsType<Option>
-  ) => boolean;
+  isValidNewOption?:
+  (inputValue: string, value: Options<Option>, options: OptionsOrGroups<Option, GroupBase<Option>>, accessors: Accessors<Option>) => boolean
+
   placeholder?: string;
   showDropdown?: boolean;
   groupHeader?: string;
@@ -95,7 +97,7 @@ interface IFilterComponentProps extends IFilterProps {
   onCreate?: (name: string) => Promise<{ item: ValidTypes; message: string }>;
 }
 interface IFilterSelectProps<T extends boolean>
-  extends Omit<ISelectProps<T>, "onChange" | "items" | "onCreateOption"> {}
+  extends Omit<ISelectProps<T>, "onInputChange" | "onChange" | "items" | "onCreateOption" | "selectedOptions"> {}
 
 type TitledObject = { id: string; title: string };
 interface ITitledSelect {
@@ -106,18 +108,18 @@ interface ITitledSelect {
   disabled?: boolean;
 }
 
-const getSelectedItems = (selectedItems: ValueType<Option, boolean>) =>
+const getSelectedItems = (selectedItems: OnChangeValue<Option, boolean>) =>
   selectedItems
     ? Array.isArray(selectedItems)
       ? selectedItems
       : [selectedItems]
     : [];
 
-const getSelectedValues = (selectedItems: ValueType<Option, boolean>) =>
+const getSelectedValues = (selectedItems: OnChangeValue<Option, boolean>) =>
   getSelectedItems(selectedItems).map((item) => item.value);
 
 const LimitedSelectMenu = <T extends boolean>(
-  props: MenuListComponentProps<Option, T, GroupTypeBase<Option>>
+  props: MenuListProps<Option, T, GroupBase<Option>>
 ) => {
   const maxOptionsShown = 200;
   const [hiddenCount, setHiddenCount] = useState<number>(0);
@@ -135,7 +137,7 @@ const LimitedSelectMenu = <T extends boolean>(
             OptionProps<
               Option & { __isNew__: boolean },
               T,
-              GroupTypeBase<Option & { __isNew__: boolean }>
+              GroupBase<Option & { __isNew__: boolean }>
             >,
             ""
           >;
@@ -171,14 +173,14 @@ const SelectComponent = <T extends boolean>({
   onChange,
   className,
   items,
-  selectedOptions,
+  selectedOptions = undefined,
   isLoading,
   isDisabled = false,
   onCreateOption,
   isClearable = true,
   creatable = false,
   isMulti,
-  onInputChange,
+  onInputChange = undefined,
   filterOption,
   isValidNewOption,
   components,
@@ -190,10 +192,7 @@ const SelectComponent = <T extends boolean>({
   noOptionsMessage = type !== "tags" ? "None" : null,
 }: ISelectProps<T> & ITypeProps) => {
   const values = items.filter((item) => initialIds?.indexOf(item.value) !== -1);
-  const defaultValue = (isMulti ? values : values[0] ?? null) as ValueType<
-    Option,
-    T
-  >;
+  const defaultValue = (isMulti ? values : values[0] ?? null) as PropsValue<Option>;
 
   const options = groupHeader
     ? [
@@ -204,22 +203,26 @@ const SelectComponent = <T extends boolean>({
       ]
     : items;
 
-  const styles: Partial<Styles<Option, T>> = {
+  const styles: StylesConfig<Option, T> = {
+    input: (styles) => ({
+      ...styles,
+      color: "#f5f8fa"
+    }),
     option: (base) => ({
       ...base,
       color: "#000",
     }),
-    container: (base, props) => ({
+    container: (base, { isFocused }) => ({
       ...base,
-      zIndex: props.selectProps.isFocused ? 10 : base.zIndex,
+      zIndex: isFocused ? 10 : base.zIndex,
     }),
-    multiValueRemove: (base, props) => ({
+    multiValueRemove: (base, { isFocused }) => ({
       ...base,
-      color: props.selectProps.isFocused ? base.color : "#333333",
+      color: isFocused ? base.color : "#333333",
     }),
   };
 
-  const props = {
+  const props : Partial<PublicBaseSelectProps<Option, T, GroupBase<Option>>> = {
     options,
     value: selectedOptions,
     className,
@@ -227,12 +230,9 @@ const SelectComponent = <T extends boolean>({
     onChange,
     isMulti,
     isClearable,
-    defaultValue: defaultValue ?? undefined,
     noOptionsMessage: () => noOptionsMessage,
     placeholder: isDisabled ? "" : placeholder,
-    onInputChange,
     filterOption,
-    isValidNewOption,
     isDisabled,
     isLoading,
     styles,
@@ -252,9 +252,12 @@ const SelectComponent = <T extends boolean>({
       {...props}
       isDisabled={isLoading || isDisabled}
       onCreateOption={onCreateOption}
+      defaultValue={defaultValue ?? undefined}
+      isValidNewOption={isValidNewOption}
+      onInputChange={onInputChange ?? undefined}
     />
   ) : (
-    <Select {...props} />
+    <Select {...props} defaultValue={defaultValue ?? undefined} />
   );
 };
 
@@ -281,9 +284,9 @@ const FilterSelectComponent = <T extends boolean>(
   );
   const selectedOptions = (isMulti
     ? selected
-    : selected[0] ?? null) as ValueType<Option, T>;
+    : selected[0] ?? null) as OnChangeValue<Option, T>;
 
-  const onChange = (selectedItems: ValueType<Option, boolean>) => {
+  const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
     const selectedValues = getSelectedValues(selectedItems);
     onSelect?.(items.filter((item) => selectedValues.includes(item.id)));
   };
@@ -342,7 +345,7 @@ export const GallerySelect: React.FC<ITitledSelect> = (props) => {
     setQuery(input);
   }, 500);
 
-  const onChange = (selectedItems: ValueType<Option, boolean>) => {
+  const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
     const selected = getSelectedItems(selectedItems);
     props.onSelect(
       selected.map((s) => ({
@@ -394,7 +397,7 @@ export const SceneSelect: React.FC<ITitledSelect> = (props) => {
     setQuery(input);
   }, 500);
 
-  const onChange = (selectedItems: ValueType<Option, boolean>) => {
+  const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
     const selected = getSelectedItems(selectedItems);
     props.onSelect(
       (selected ?? []).map((s) => ({
@@ -446,7 +449,7 @@ export const ImageSelect: React.FC<ITitledSelect> = (props) => {
     setQuery(input);
   }, 500);
 
-  const onChange = (selectedItems: ValueType<Option, boolean>) => {
+  const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
     const selected = getSelectedItems(selectedItems);
     props.onSelect(
       (selected ?? []).map((s) => ({
@@ -485,7 +488,7 @@ export const MarkerTitleSuggest: React.FC<IMarkerSuggestProps> = (props) => {
   const { data, loading } = useMarkerStrings();
   const suggestions = data?.markerStrings ?? [];
 
-  const onChange = (selectedItem: ValueType<Option, false>) =>
+  const onChange = (selectedItem: OnChangeValue<Option, false>) =>
     props.onChange(selectedItem?.value ?? "");
 
   const items = suggestions.map((item) => ({
@@ -609,15 +612,16 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
 
   const isValidNewOption = (
     inputValue: string,
-    value: ValueType<Option, boolean>,
-    options: OptionsType<Option> | GroupedOptionsType<Option>
-  ) => {
+    value: Options<Option>,
+    options: OptionsOrGroups<Option, GroupBase<Option>>,
+    accessors: Accessors<Option>
+    ) =>  {
     if (!inputValue) {
       return false;
     }
 
     if (
-      (options as OptionsType<Option>).some((o: Option) => {
+      (options as Options<Option>).some((o: Option) => {
         return o.label.toLowerCase() === inputValue.toLowerCase();
       })
     ) {
@@ -752,15 +756,16 @@ export const StudioSelect: React.FC<
 
   const isValidNewOption = (
     inputValue: string,
-    value: ValueType<Option, boolean>,
-    options: OptionsType<Option> | GroupedOptionsType<Option>
+    value: Options<Option>,
+    options: OptionsOrGroups<Option, GroupBase<Option>>,
+    accessors: Accessors<Option>
   ) => {
     if (!inputValue) {
       return false;
     }
 
     if (
-      (options as OptionsType<Option>).some((o: Option) => {
+      (options as Options<Option>).some((o: Option) => {
         return o.label.toLowerCase() === inputValue.toLowerCase();
       })
     ) {
@@ -915,15 +920,16 @@ export const TagSelect: React.FC<IFilterProps & { excludeIds?: string[] }> = (
 
   const isValidNewOption = (
     inputValue: string,
-    value: ValueType<Option, boolean>,
-    options: OptionsType<Option> | GroupedOptionsType<Option>
+    value: Options<Option>,
+    options: OptionsOrGroups<Option, GroupBase<Option>>,
+    accessors: Accessors<Option>
   ) => {
     if (!inputValue) {
       return false;
     }
 
     if (
-      (options as OptionsType<Option>).some((o: Option) => {
+      (options as Options<Option>).some((o: Option) => {
         return o.label.toLowerCase() === inputValue.toLowerCase();
       })
     ) {
@@ -986,18 +992,18 @@ export const StringListSelect: React.FC<IStringListSelect> = ({
     });
   }, [value]);
 
-  const styles: Partial<Styles<Option, true>> = {
+  const styles: StylesConfig<Option, true> = {
     option: (base) => ({
       ...base,
       color: "#000",
     }),
-    container: (base, props) => ({
+    container: (base, { isFocused }) => ({
       ...base,
-      zIndex: props.selectProps.isFocused ? 10 : base.zIndex,
+      zIndex: isFocused ? 10 : base.zIndex,
     }),
-    multiValueRemove: (base, props) => ({
+    multiValueRemove: (base, { isFocused }) => ({
       ...base,
-      color: props.selectProps.isFocused ? base.color : "#333333",
+      color: isFocused ? base.color : "#333333",
     }),
   };
 
@@ -1036,18 +1042,18 @@ export const ListSelect = <T extends {}>(props: IListSelect<T>) => {
     return value.map(toOptionType);
   }, [value, toOptionType]);
 
-  const styles: Partial<Styles<{ label: string; value: string }, true>> = {
+  const styles: StylesConfig<{ label: string; value: string }, true> = {
     option: (base) => ({
       ...base,
       color: "#000",
     }),
-    container: (base, p) => ({
+    container: (base, { isFocused }) => ({
       ...base,
-      zIndex: p.selectProps.isFocused ? 10 : base.zIndex,
+      zIndex: isFocused ? 10 : base.zIndex,
     }),
-    multiValueRemove: (base, p) => ({
+    multiValueRemove: (base, { isFocused }) => ({
       ...base,
-      color: p.selectProps.isFocused ? base.color : "#333333",
+      color: isFocused ? base.color : "#333333",
     }),
   };
 
