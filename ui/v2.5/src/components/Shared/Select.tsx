@@ -34,7 +34,6 @@ import { galleryTitle } from "src/core/galleries";
 import { TagPopover } from "../Tags/TagPopover";
 import { SelectComponents } from "react-select/dist/declarations/src/components";
 import { PublicBaseSelectProps } from "react-select/dist/declarations/src/Select";
-import { Accessors } from "react-select/dist/declarations/src/useCreatable";
 
 export type ValidTypes =
   | GQL.SlimPerformerDataFragment
@@ -88,8 +87,7 @@ interface ISelectProps<T extends boolean> {
   isValidNewOption?: (
     inputValue: string,
     value: Options<Option>,
-    options: OptionsOrGroups<Option, GroupBase<Option>>,
-    accessors: Accessors<Option>
+    options: OptionsOrGroups<Option, GroupBase<Option>>
   ) => boolean;
 
   placeholder?: string;
@@ -220,7 +218,7 @@ const SelectComponent = <T extends boolean>({
       ]
     : items;
 
-  const styles: StylesConfig<Option, T> = {
+  const customStyles: StylesConfig<Option, T> = {
     input: (styles) => ({
       ...styles,
       color: "#f5f8fa",
@@ -252,7 +250,7 @@ const SelectComponent = <T extends boolean>({
     filterOption,
     isDisabled,
     isLoading,
-    styles,
+    styles: customStyles,
     closeMenuOnSelect,
     menuPortalTarget,
     components: {
@@ -630,8 +628,7 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
   const isValidNewOption = (
     inputValue: string,
     value: Options<Option>,
-    options: OptionsOrGroups<Option, GroupBase<Option>>,
-    accessors: Accessors<Option>
+    options: OptionsOrGroups<Option, GroupBase<Option>>
   ) => {
     if (!inputValue) {
       return false;
@@ -774,8 +771,7 @@ export const StudioSelect: React.FC<
   const isValidNewOption = (
     inputValue: string,
     value: Options<Option>,
-    options: OptionsOrGroups<Option, GroupBase<Option>>,
-    accessors: Accessors<Option>
+    options: OptionsOrGroups<Option, GroupBase<Option>>
   ) => {
     if (!inputValue) {
       return false;
@@ -938,8 +934,7 @@ export const TagSelect: React.FC<IFilterProps & { excludeIds?: string[] }> = (
   const isValidNewOption = (
     inputValue: string,
     value: Options<Option>,
-    options: OptionsOrGroups<Option, GroupBase<Option>>,
-    accessors: Accessors<Option>
+    options: OptionsOrGroups<Option, GroupBase<Option>>
   ) => {
     if (!inputValue) {
       return false;
