@@ -75,6 +75,14 @@ func (r *imageResolver) File(ctx context.Context, obj *models.Image) (*ImageFile
 	}, nil
 }
 
+func (r *imageResolver) Date(ctx context.Context, obj *models.Image) (*string, error) {
+	if obj.Date != nil {
+		result := obj.Date.String()
+		return &result, nil
+	}
+	return nil, nil
+}
+
 func (r *imageResolver) Files(ctx context.Context, obj *models.Image) ([]*ImageFile, error) {
 	files, err := r.getFiles(ctx, obj)
 	if err != nil {
