@@ -41,6 +41,7 @@ type GlobalConfig interface {
 	GetScraperCDPPath() string
 	GetScraperCertCheck() bool
 	GetPythonPath() string
+	GetProxy() string
 }
 
 func isCDPPathHTTP(c GlobalConfig) bool {
