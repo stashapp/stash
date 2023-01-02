@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import Select, { OptionProps,
+import Select, {
+  OptionProps,
   components as reactSelectComponents,
   OnChangeValue,
   Options,
@@ -8,7 +9,7 @@ import Select, { OptionProps,
   MenuListProps,
   PropsValue,
   InputActionMeta,
-  OptionsOrGroups
+  OptionsOrGroups,
 } from "react-select";
 import CreatableSelect from "react-select/creatable";
 import debounce from "lodash-es/debounce";
@@ -78,11 +79,18 @@ interface ISelectProps<T extends boolean> {
   initialIds?: string[];
   isMulti: T;
   isClearable?: boolean;
-  onInputChange?: (newValue: string, actionMeta: InputActionMeta) => void | undefined;
+  onInputChange?: (
+    newValue: string,
+    actionMeta: InputActionMeta
+  ) => void | undefined;
   components?: Partial<SelectComponents<Option, T, GroupBase<Option>>>;
   filterOption?: (option: Option, rawInput: string) => boolean;
-  isValidNewOption?:
-  (inputValue: string, value: Options<Option>, options: OptionsOrGroups<Option, GroupBase<Option>>, accessors: Accessors<Option>) => boolean
+  isValidNewOption?: (
+    inputValue: string,
+    value: Options<Option>,
+    options: OptionsOrGroups<Option, GroupBase<Option>>,
+    accessors: Accessors<Option>
+  ) => boolean;
 
   placeholder?: string;
   showDropdown?: boolean;
@@ -97,7 +105,14 @@ interface IFilterComponentProps extends IFilterProps {
   onCreate?: (name: string) => Promise<{ item: ValidTypes; message: string }>;
 }
 interface IFilterSelectProps<T extends boolean>
-  extends Omit<ISelectProps<T>, "onInputChange" | "onChange" | "items" | "onCreateOption" | "selectedOptions"> {}
+  extends Omit<
+    ISelectProps<T>,
+    | "onInputChange"
+    | "onChange"
+    | "items"
+    | "onCreateOption"
+    | "selectedOptions"
+  > {}
 
 type TitledObject = { id: string; title: string };
 interface ITitledSelect {
@@ -192,7 +207,9 @@ const SelectComponent = <T extends boolean>({
   noOptionsMessage = type !== "tags" ? "None" : null,
 }: ISelectProps<T> & ITypeProps) => {
   const values = items.filter((item) => initialIds?.indexOf(item.value) !== -1);
-  const defaultValue = (isMulti ? values : values[0] ?? null) as PropsValue<Option>;
+  const defaultValue = (isMulti
+    ? values
+    : values[0] ?? null) as PropsValue<Option>;
 
   const options = groupHeader
     ? [
@@ -206,7 +223,7 @@ const SelectComponent = <T extends boolean>({
   const styles: StylesConfig<Option, T> = {
     input: (styles) => ({
       ...styles,
-      color: "#f5f8fa"
+      color: "#f5f8fa",
     }),
     option: (base) => ({
       ...base,
@@ -222,7 +239,7 @@ const SelectComponent = <T extends boolean>({
     }),
   };
 
-  const props : Partial<PublicBaseSelectProps<Option, T, GroupBase<Option>>> = {
+  const props: Partial<PublicBaseSelectProps<Option, T, GroupBase<Option>>> = {
     options,
     value: selectedOptions,
     className,
@@ -615,7 +632,7 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
     value: Options<Option>,
     options: OptionsOrGroups<Option, GroupBase<Option>>,
     accessors: Accessors<Option>
-    ) =>  {
+  ) => {
     if (!inputValue) {
       return false;
     }
