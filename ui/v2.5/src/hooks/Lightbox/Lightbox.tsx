@@ -76,6 +76,7 @@ interface IProps {
   showNavigation: boolean;
   slideshowEnabled?: boolean;
   pageHeader?: string;
+  pageCount: number;
   pageCallback?: (direction: number) => void;
   chapters?: IChapter[];
   hide: () => void;
@@ -89,6 +90,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   showNavigation,
   slideshowEnabled = false,
   pageHeader,
+  pageCount,
   pageCallback,
   chapters = [],
   hide,
@@ -459,7 +461,7 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   function gotoPage(i: number) {
     if (pageCallback) {
-      let jumppage = Math.floor(i / 40);
+      let jumppage = Math.floor(i / pageCount);
       if (pageHeader && pageHeader.startsWith("Page ")) {
         jumppage = jumppage - (parseInt(pageHeader.split(" ")[1] ?? "1") - 1);
       }
@@ -468,7 +470,7 @@ export const LightboxComponent: React.FC<IProps> = ({
         oldImages.current = images;
         setIsSwitchingPage(true);
       }
-      setIndex(i % 40);
+      setIndex(i % pageCount);
     } else setIndex(i);
     setShowChapters(false);
   }
@@ -477,7 +479,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     let completePage = (index ?? 0) + 1;
     if (pageHeader && pageHeader.startsWith("Page ")) {
       completePage =
-        completePage + (parseInt(pageHeader.split(" ")[1]) - 1) * 40;
+        completePage + (parseInt(pageHeader.split(" ")[1]) - 1) * pageCount;
     }
     let r = "";
     chapters.forEach(function (chapter) {

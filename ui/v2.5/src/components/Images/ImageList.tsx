@@ -111,6 +111,7 @@ const ImageListImages: React.FC<IImageListImages> = ({
       showNavigation: false,
       pageCallback: pageCount > 1 ? handleLightBoxPage : undefined,
       pageHeader: `Page ${filter.currentPage} / ${pageCount}`,
+      pageCount: filter.itemsPerPage,
       slideshowEnabled: slideshowRunning,
       onClose: handleClose,
     };

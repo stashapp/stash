@@ -12,6 +12,7 @@ export interface IState {
   pageCallback?: (direction: number) => void;
   chapters?: IChapter[];
   pageHeader?: string;
+  pageCount?: number;
   slideshowEnabled: boolean;
   onClose?: () => void;
 }

@@ -34,6 +34,7 @@ export const useLightbox = (
         initialIndex: index,
         isVisible: true,
         slideshowEnabled,
+        pageCount: state.pageCount ?? 0,
         chapters: chapters,
       });
     },
@@ -105,9 +106,9 @@ export const useGalleryLightbox = (id: string, chapters: IChapter[] = []) => {
   }, [setLightboxState, data, handleLightBoxPage, page, pages]);
 
   const show = (index: number = 0) => {
-    if (index > 40) {
-      setPage(Math.floor(index / 40) + 1);
-      index = index % 40;
+    if (index > pageSize) {
+      setPage(Math.floor(index / pageSize) + 1);
+      index = index % pageSize;
     }
     if (data)
       setLightboxState({
@@ -117,6 +118,7 @@ export const useGalleryLightbox = (id: string, chapters: IChapter[] = []) => {
         images: data.findImages?.images ?? [],
         pageCallback: pages > 1 ? handleLightBoxPage : undefined,
         pageHeader: `Page ${page} / ${pages}`,
+        pageCount: pageSize,
         chapters: chapters,
       });
     else {
@@ -126,6 +128,7 @@ export const useGalleryLightbox = (id: string, chapters: IChapter[] = []) => {
         initialIndex: index,
         pageCallback: undefined,
         pageHeader: undefined,
+        pageCount: pageSize,
         chapters: chapters,
       });
       fetchGallery();
