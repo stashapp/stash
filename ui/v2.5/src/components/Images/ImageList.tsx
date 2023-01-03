@@ -6,6 +6,7 @@ import Mousetrap from "mousetrap";
 import {
   FindImagesQueryResult,
   SlimImageDataFragment,
+  SortDirectionEnum,
 } from "src/core/generated-graphql";
 import * as GQL from "src/core/generated-graphql";
 import { queryFindImages } from "src/core/StashService";
@@ -125,7 +126,12 @@ const ImageListImages: React.FC<IImageListImages> = ({
     handleLightBoxPage,
   ]);
 
-  const showLightbox = useLightbox(lightboxState, chapters);
+  const showLightbox = useLightbox(
+    lightboxState,
+    filter.sortBy === "path" && filter.sortDirection === SortDirectionEnum.Asc
+      ? chapters
+      : []
+  );
 
   const handleImageOpen = useCallback(
     (index) => {

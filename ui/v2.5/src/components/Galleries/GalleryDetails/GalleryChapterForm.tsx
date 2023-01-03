@@ -102,7 +102,7 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
               htmlFor="pageNumber"
               className="col-sm-4 col-md-4 col-xl-12 col-form-label text-sm-right text-xl-left"
             >
-              Page
+              Index
             </Form.Label>
             <div className="col-sm-8 col-xl-12">
               <Field name="pageNumber">{renderPageNumberField}</Field>

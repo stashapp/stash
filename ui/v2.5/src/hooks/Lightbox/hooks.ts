@@ -34,10 +34,11 @@ export const useLightbox = (
         initialIndex: index,
         isVisible: true,
         slideshowEnabled,
+        pageCount: state.pageCount,
         chapters: chapters,
       });
     },
-    [setLightboxState, chapters]
+    [setLightboxState, state.pageCount, chapters]
   );
   return show;
 };
