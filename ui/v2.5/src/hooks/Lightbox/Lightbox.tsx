@@ -76,7 +76,7 @@ interface IProps {
   showNavigation: boolean;
   slideshowEnabled?: boolean;
   pageHeader?: string;
-  pageCount: number;
+  pageCount?: number;
   pageCallback?: (direction: number) => void;
   chapters?: IChapter[];
   hide: () => void;
@@ -90,7 +90,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   showNavigation,
   slideshowEnabled = false,
   pageHeader,
-  pageCount,
+  pageCount = 0,
   pageCallback,
   chapters = [],
   hide,
