@@ -599,6 +599,15 @@
         "description": "Slideshow is available in galleries when in wall view mode",
         "heading": "Slideshow Delay (seconds)"
       },
+      "stat_panel": {
+        "heading": "Stats view",
+        "options": {
+          "blank_slate": {
+            "description": "Leave stats page blank making it ideal for custom charts",
+            "heading": "Blank Slate"
+          }
+        }
+      },
       "studio_panel": {
         "heading": "Studio view",
         "options": {

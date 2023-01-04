@@ -201,6 +201,16 @@ export const SettingsInterfacePanel: React.FC = () => {
         />
       </SettingSection>
 
+      <SettingSection headingID="config.ui.stat_panel.heading">
+        <BooleanSetting
+          id="show-child-studio-content"
+          headingID="config.ui.stat_panel.options.blank_slate.heading"
+          subHeadingID="config.ui.stat_panel.options.blank_slate.description"
+          checked={ui.blankStatsView ?? undefined}
+          onChange={(v) => saveUI({ blankStatsView: v })}
+        />
+      </SettingSection>
+
       <SettingSection headingID="config.ui.scene_wall.heading">
         <BooleanSetting
           id="wall-show-title"

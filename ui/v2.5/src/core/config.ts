@@ -29,6 +29,8 @@ export type FrontPageContent = ISavedFilterRow | ICustomFilter;
 export interface IUIConfig {
   frontPageContent?: FrontPageContent[];
 
+  blankStatsView?: boolean;
+
   showChildTagContent?: boolean;
   showChildStudioContent?: boolean;
   showTagCardOnHover?: boolean;
