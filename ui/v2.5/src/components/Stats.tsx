@@ -10,12 +10,11 @@ export const Stats: React.FC = () => {
   const { configuration } = useContext(ConfigurationContext);
   const uiConfig = configuration?.ui as IUIConfig | undefined;
   const blankStatsView = uiConfig?.blankStatsView ?? false;
+  const { data, error, loading } = useStats();
 
   if (blankStatsView) {
     return <div className="mt-5"></div>;
   } else {
-    const { data, error, loading } = useStats();
-
     if (error) return <span>{error.message}</span>;
     if (loading || !data) return <LoadingIndicator />;
 
