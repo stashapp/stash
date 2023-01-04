@@ -203,7 +203,7 @@ export const SettingsInterfacePanel: React.FC = () => {
 
       <SettingSection headingID="config.ui.stat_panel.heading">
         <BooleanSetting
-          id="blank_stats-view"
+          id="blank-stats-view"
           headingID="config.ui.stat_panel.options.blank_slate.heading"
           subHeadingID="config.ui.stat_panel.options.blank_slate.description"
           checked={ui.blankStatsView ?? undefined}
