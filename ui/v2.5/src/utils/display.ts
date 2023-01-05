@@ -1,4 +1,6 @@
-export function hexToRgb (hex:string) {
+import styles from "src/styles/globalStyles.module.scss";
+
+export function hexToRgb (hex:string | null | undefined) {
     if(hex == null) {
         return null
     }
@@ -12,12 +14,13 @@ export function hexToRgb (hex:string) {
     return null
 }
 
-export function contrastingTextColor(backgroundColorHex:string){
+export function contrastingTextColor(backgroundColorHex:string | null | undefined){
+    
     const backgroundColorRGB = hexToRgb(backgroundColorHex)
     if(backgroundColorRGB == null){
         return "black"
     }
 
-    return ((backgroundColorRGB[0]*299)+(backgroundColorRGB[1]*587)+(backgroundColorRGB[2]*114))/1000 >= 128 ? "#182026" : "#f5f8fa"
+    return ((backgroundColorRGB[0]*299)+(backgroundColorRGB[1]*587)+(backgroundColorRGB[2]*114))/1000 >= 128 ? styles.darkText : styles.textColor
 
 }

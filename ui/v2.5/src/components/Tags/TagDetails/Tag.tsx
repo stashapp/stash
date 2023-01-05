@@ -39,6 +39,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { IUIConfig } from "src/core/config";
 import { contrastingTextColor } from "src/utils/display";
+import styles from "src/styles/globalStyles.module.scss";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -279,9 +280,9 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
             )}
             <h2>{tag.name}</h2>
             <p>
-            <Badge className="tag-test" variant="secondary" style={{
-              backgroundColor: tag.color ?? "#bfccd6",
-              color: contrastingTextColor(tag.color ?? "#bfccd6")
+            <Badge className="tag-item" variant="secondary" style={{
+              backgroundColor: tag.color ?? styles.secondary,
+              color: contrastingTextColor(tag.color ?? styles.textMuted)
             }}>
               {tag.name}
             </Badge>

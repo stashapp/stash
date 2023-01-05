@@ -16,6 +16,7 @@ import * as GQL from "src/core/generated-graphql";
 import { TagPopover } from "../Tags/TagPopover";
 import { markerTitle } from "src/core/markers";
 import { contrastingTextColor } from "src/utils/display";
+import styles from "src/styles/globalStyles.module.scss";
 
 interface IFile {
   path: string;
@@ -83,11 +84,12 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
     link = `/scenes/${props.scene.id}`;
     title = objectTitle(props.scene);
   }
+
   return (
     <Badge className={cx("tag-item", props.className)} variant="secondary" 
       style={{
-        backgroundColor: props.tag?.color ?? "#bfccd6",
-        color: contrastingTextColor(props.tag?.color ?? "#bfccd6")
+        backgroundColor: props.tag?.color ?? styles.textMuted,
+        color: contrastingTextColor(props.tag?.color) ?? styles.darkText
       }}
     >
       <TagPopover id={id}>

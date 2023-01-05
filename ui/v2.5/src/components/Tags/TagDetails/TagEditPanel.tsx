@@ -10,6 +10,7 @@ import { Prompt, useHistory, useParams } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import { StringListInput } from "src/components/Shared/StringListInput";
 import { ColorResult, SketchPicker } from 'react-color';
+import styles from "src/styles/globalStyles.module.scss";
 
 interface ITagEditPanel {
   tag?: Partial<GQL.TagDataFragment>;
@@ -70,7 +71,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     name: tag?.name,
     description: tag?.description,
     aliases: tag?.aliases,
-    color: tag?.color ?? "#bfccd6",
+    color: tag?.color ?? styles.textMuted,
     parent_ids: (tag?.parents ?? []).map((t) => t.id),
     child_ids: (tag?.children ?? []).map((t) => t.id),
     ignore_auto_tag: tag?.ignore_auto_tag ?? false,
