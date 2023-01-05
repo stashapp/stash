@@ -33,7 +33,7 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
   });
   const stars = rating ? Math.floor(rating) : 0;
   // the upscaling was necesary to fix rounding issue present with tenth place precision
-  const fraction = rating ? ((rating*10) % 10)/10 : 0;
+  const fraction = rating ? ((rating * 10) % 10) / 10 : 0;
 
   const max = 5;
   const precision = getRatingPrecision(props.precision);
