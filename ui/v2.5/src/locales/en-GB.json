@@ -488,7 +488,8 @@
             "options": {
               "full": "Full",
               "half": "Half",
-              "quarter": "Quarter"
+              "quarter": "Quarter",
+              "tenth": "Tenth"
             }
           }
         },
