@@ -18,7 +18,7 @@ export function contrastingTextColor(backgroundColorHex:string | null | undefine
     
     const backgroundColorRGB = hexToRgb(backgroundColorHex)
     if(backgroundColorRGB == null){
-        return "black"
+        return styles.darkText
     }
 
     return ((backgroundColorRGB[0]*299)+(backgroundColorRGB[1]*587)+(backgroundColorRGB[2]*114))/1000 >= 128 ? styles.darkText : styles.textColor
