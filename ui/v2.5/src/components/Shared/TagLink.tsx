@@ -88,8 +88,8 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
   return (
     <Badge className={cx("tag-item", props.className)} variant="secondary" 
       style={{
-        backgroundColor: props.tag?.color ?? styles.textMuted,
-        color: contrastingTextColor(props.tag?.color) ?? styles.darkText
+        ["--tag-bg-color" as  string]: props.tag?.color ?? styles.textMuted,
+        ["--tag-text-color" as  string]: contrastingTextColor(props.tag?.color) ?? styles.darkText
       }}
     >
       <TagPopover id={id}>

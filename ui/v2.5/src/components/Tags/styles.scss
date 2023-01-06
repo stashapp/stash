@@ -81,3 +81,10 @@
   left: 0px;
   right: 0px;
 }
+
+.color-picker-button {
+  --tag-bg-color: $secondary;
+  --tag-text-color: #fff;
+  background-color: var(--tag-bg-color);
+  color: var(--tag-text-color);
+}
