@@ -343,6 +343,13 @@ export const SettingsInterfacePanel: React.FC = () => {
           checked={ui.showChildTagContent ?? undefined}
           onChange={(v) => saveUI({ showChildTagContent: v })}
         />
+        <BooleanSetting
+          id="show-child-tag_color"
+          headingID="config.ui.tag_color.options.show_child_tag_color.heading"
+          subHeadingID="config.ui.tag_color.options.show_child_tag_color.description"
+          checked={ui.showCustomTagColors ?? undefined}
+          onChange={(v) => saveUI({ showCustomTagColors: v })}
+        />
       </SettingSection>
       <SettingSection headingID="config.ui.studio_panel.heading">
         <BooleanSetting

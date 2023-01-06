@@ -17,6 +17,8 @@ import { TagPopover } from "../Tags/TagPopover";
 import { markerTitle } from "src/core/markers";
 import { contrastingTextColor } from "src/utils/display";
 import styles from "src/styles/globalStyles.module.scss";
+import { IUIConfig } from "src/core/config";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface IFile {
   path: string;
@@ -85,13 +87,18 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
     title = objectTitle(props.scene);
   }
 
+  const { configuration: config } = React.useContext(ConfigurationContext);
+
+  const showCustomTagColors =
+    (config?.ui as IUIConfig)?.showCustomTagColors ?? true;
+  
+  const customStyle = showCustomTagColors ? {
+    ["--tag-bg-color" as  string]: props.tag?.color ?? styles.textMuted,
+    ["--tag-text-color" as  string]: contrastingTextColor(props.tag?.color) ?? styles.darkText
+  } : {}
+
   return (
-    <Badge className={cx("tag-item", props.className)} variant="secondary" 
-      style={{
-        ["--tag-bg-color" as  string]: props.tag?.color ?? styles.textMuted,
-        ["--tag-text-color" as  string]: contrastingTextColor(props.tag?.color) ?? styles.darkText
-      }}
-    >
+    <Badge className={cx("tag-item", props.className)} variant="secondary" style={customStyle} >
       <TagPopover id={id}>
         <Link to={link}>{title}</Link>
       </TagPopover>

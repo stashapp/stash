@@ -12,6 +12,8 @@ import { StringListInput } from "src/components/Shared/StringListInput";
 import { ColorResult, SketchPicker } from 'react-color';
 import styles from "src/styles/globalStyles.module.scss";
 import { contrastingTextColor } from "src/utils/display";
+import { IUIConfig } from "src/core/config";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface ITagEditPanel {
   tag?: Partial<GQL.TagDataFragment>;
@@ -121,7 +123,50 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
   const isEditing = true;
 
+  const { configuration: config } = React.useContext(ConfigurationContext);
+
+  const showCustomTagColors =
+    (config?.ui as IUIConfig)?.showCustomTagColors ?? true;
+
   const [displayColorPicker, setDisplayColorPicker] = useState(false)
+
+  function maybeRenderColorEdit () {
+    return showCustomTagColors ? (
+      <Form.Group controlId="color" as={Row}>
+      <Form.Label column xs={labelXS} xl={labelXL}>
+        <FormattedMessage id="color" />
+      </Form.Label>
+      <Col xs={fieldXS} xl={fieldXL}>
+        {
+          !displayColorPicker ? (
+              <Button variant="secondary" onClick={() => setDisplayColorPicker(true)} className={"color-picker-button"} style={{
+                ["--tag-bg-color" as  string]: formik.values.color,
+                ["--tag-text-color" as  string]: contrastingTextColor(formik.values.color)
+              }} >
+                <FormattedMessage id="color_pick" />
+              </Button>
+            ) : (
+              <div className="color-picker-popover">
+                <div className="color-picker-cover" onClick={() => setDisplayColorPicker(false)}></div>
+                <SketchPicker
+                color={ formik.values.color }
+                onChangeComplete={(item:ColorResult) =>
+                  formik.setFieldValue(
+                    "color",
+                    item.hex
+                  )}
+              />
+              </div>
+            )
+        }
+      
+      </Col>
+    </Form.Group>
+    ) : (
+      <></>
+    )
+    
+  }
 
 
   // TODO: CSS class
@@ -191,36 +236,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
           </Col>
         </Form.Group>
 
-        <Form.Group controlId="color" as={Row}>
-          <Form.Label column xs={labelXS} xl={labelXL}>
-            <FormattedMessage id="color" />
-          </Form.Label>
-          <Col xs={fieldXS} xl={fieldXL}>
-            {
-              !displayColorPicker ? (
-                  <Button variant="secondary" onClick={() => setDisplayColorPicker(true)} className={"color-picker-button"} style={{
-                    ["--tag-bg-color" as  string]: formik.values.color,
-                    ["--tag-text-color" as  string]: contrastingTextColor(formik.values.color)
-                  }} >
-                    <FormattedMessage id="color_pick" />
-                  </Button>
-                ) : (
-                  <div className="color-picker-popover">
-                    <div className="color-picker-cover" onClick={() => setDisplayColorPicker(false)}></div>
-                    <SketchPicker
-                    color={ formik.values.color }
-                    onChangeComplete={(item:ColorResult) =>
-                      formik.setFieldValue(
-                        "color",
-                        item.hex
-                      )}
-                  />
-                  </div>
-                )
-            }
-          
-          </Col>
-        </Form.Group>
+        {maybeRenderColorEdit()}
 
         <Form.Group controlId="parent_tags" as={Row}>
           {FormUtils.renderLabel({

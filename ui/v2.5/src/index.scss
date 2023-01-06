@@ -352,8 +352,8 @@ div.dropdown-menu {
 }
 
 .tag-item {
-  --tag-bg-color: $text-muted;
-  --tag-text-color: $dark-text;
+  --tag-bg-color: #{$text-muted};
+  --tag-text-color: #{$dark-text};
   background-color: var(--tag-bg-color);
   color: var(--tag-text-color);
   font-size: 12px;

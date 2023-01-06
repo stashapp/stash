@@ -617,6 +617,15 @@
           }
         }
       },
+      "tag_color" : {
+        "heading": "Tag colour",
+        "options": {
+          "show_child_tag_color": {
+            "description": "Allow configuration of different colours for each tag",
+            "heading": "Custom tag colours"
+          }
+        }
+      },
       "title": "User Interface"
     }
   },
