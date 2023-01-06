@@ -42,7 +42,11 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
     if (props.image.performers.length === 0) return;
     const performers = sortPerformers(props.image.performers);
     const cards = performers.map((performer) => (
-      <PerformerCard key={performer.id} performer={performer} />
+      <PerformerCard
+        key={performer.id}
+        performer={performer}
+        ageFromDate={props.image.date ?? undefined}
+      />
     ));
 
     return (

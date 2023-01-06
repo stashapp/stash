@@ -1,4 +1,7 @@
 {
+  "actions": {
+    "customise": "Customize"
+  },
   "color" : "Color",
   "eye_color": "Eye Color",
   "favourite": "Favorite",
