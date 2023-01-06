@@ -1,9 +1,9 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import { DetailsEditNavbar, TagSelect } from "src/components/Shared";
-import { Form, Col, Row } from "react-bootstrap";
+import { Form, Col, Row, Button } from "react-bootstrap";
 import { FormUtils, ImageUtils } from "src/utils";
 import { useFormik } from "formik";
 import { Prompt, useHistory, useParams } from "react-router-dom";
@@ -11,6 +11,7 @@ import Mousetrap from "mousetrap";
 import { StringListInput } from "src/components/Shared/StringListInput";
 import { ColorResult, SketchPicker } from 'react-color';
 import styles from "src/styles/globalStyles.module.scss";
+import { contrastingTextColor } from "src/utils/display";
 
 interface ITagEditPanel {
   tag?: Partial<GQL.TagDataFragment>;
@@ -120,6 +121,9 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
   const isEditing = true;
 
+  const [displayColorPicker, setDisplayColorPicker] = useState(false)
+
+
   // TODO: CSS class
   return (
     <div>
@@ -192,14 +196,24 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
             <FormattedMessage id="color" />
           </Form.Label>
           <Col xs={fieldXS} xl={fieldXL}>
-          <SketchPicker
-            color={ formik.values.color }
-            onChangeComplete={(item:ColorResult) =>
-              formik.setFieldValue(
-                "color",
-                item.hex
-              )}
-            />
+            {
+              !displayColorPicker ? (
+                  <Button variant="secondary" onClick={() => setDisplayColorPicker(true)} style={{backgroundColor: formik.values.color, color: contrastingTextColor(formik.values.color)}} >Pick Color</Button>
+                ) : (
+                  <div className="color-picker-popover">
+                    <div className="color-picker-cover" onClick={() => setDisplayColorPicker(false)}></div>
+                    <SketchPicker
+                    color={ formik.values.color }
+                    onChangeComplete={(item:ColorResult) =>
+                      formik.setFieldValue(
+                        "color",
+                        item.hex
+                      )}
+                  />
+                  </div>
+                )
+            }
+          
           </Col>
         </Form.Group>
 

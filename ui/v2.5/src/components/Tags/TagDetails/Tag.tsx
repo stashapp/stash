@@ -20,6 +20,7 @@ import {
   Modal,
   LoadingIndicator,
   Icon,
+  TagLink,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { ConfigurationContext } from "src/hooks/Config";
@@ -280,12 +281,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
             )}
             <h2>{tag.name}</h2>
             <p>
-            <Badge className="tag-item" variant="secondary" style={{
-              backgroundColor: tag.color ?? styles.secondary,
-              color: contrastingTextColor(tag.color ?? styles.textMuted)
-            }}>
-              {tag.name}
-            </Badge>
+            <TagLink tag={tag} />
             </p>
             <p>{tag.description}</p>
           </div>

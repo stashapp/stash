@@ -68,3 +68,16 @@
     padding: 0;
   }
 }
+
+.color-picker-popover {
+  position: absolute;
+  z-index: 2;
+}
+
+.color-picker-cover {
+  position: fixed;
+  top: 0px;
+  bottom:0px;
+  left: 0px;
+  right: 0px;
+}
