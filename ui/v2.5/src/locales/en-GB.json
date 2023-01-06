@@ -635,6 +635,7 @@
   },
   "country": "Country",
   "color" : "Colour",
+  "color_pick" : "Pick Colour",
   "cover_image": "Cover Image",
   "created_at": "Created At",
   "criterion": {

@@ -198,7 +198,9 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
           <Col xs={fieldXS} xl={fieldXL}>
             {
               !displayColorPicker ? (
-                  <Button variant="secondary" onClick={() => setDisplayColorPicker(true)} style={{backgroundColor: formik.values.color, color: contrastingTextColor(formik.values.color)}} >Pick Color</Button>
+                  <Button variant="secondary" onClick={() => setDisplayColorPicker(true)} style={{backgroundColor: formik.values.color, color: contrastingTextColor(formik.values.color)}} >
+                    <FormattedMessage id="color_pick" />
+                  </Button>
                 ) : (
                   <div className="color-picker-popover">
                     <div className="color-picker-cover" onClick={() => setDisplayColorPicker(false)}></div>

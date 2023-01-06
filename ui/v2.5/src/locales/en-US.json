@@ -3,6 +3,7 @@
     "customise": "Customize"
   },
   "color" : "Color",
+  "color_pick" : "Pick Color",
   "eye_color": "Eye Color",
   "favourite": "Favorite",
   "hair_color": "Hair Color",
