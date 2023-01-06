@@ -32,7 +32,7 @@ export interface IUIConfig {
   showChildTagContent?: boolean;
   showChildStudioContent?: boolean;
   showTagCardOnHover?: boolean;
-  showCustomTagColors? : boolean;
+  showCustomTagColors?: boolean;
 
   abbreviateCounters?: boolean;
 

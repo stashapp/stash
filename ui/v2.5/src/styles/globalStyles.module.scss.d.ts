@@ -1,10 +1,10 @@
-export interface globalScss {
-  textMuted : string
-  secondary : string
-  darkText : string
-  textColor : string
+export interface IGlobalScss {
+  textMuted: string;
+  secondary: string;
+  darkText: string;
+  textColor: string;
 }
 
-export const styles: globalScss;
+export const styles: IGlobalScss;
 
 export default styles;

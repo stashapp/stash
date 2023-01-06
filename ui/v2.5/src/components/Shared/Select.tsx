@@ -207,7 +207,7 @@ const SelectComponent = <T extends boolean>({
   const styles: Partial<Styles<Option, T>> = {
     option: (base) => ({
       ...base,
-      color: "#000"
+      color: "#000",
     }),
     container: (base, props) => ({
       ...base,

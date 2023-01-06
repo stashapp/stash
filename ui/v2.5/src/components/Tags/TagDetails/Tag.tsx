@@ -1,4 +1,4 @@
-import { Tabs, Tab, Dropdown, Badge } from "react-bootstrap";
+import { Tabs, Tab, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -39,8 +39,6 @@ import {
   faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { IUIConfig } from "src/core/config";
-import { contrastingTextColor } from "src/utils/display";
-import styles from "src/styles/globalStyles.module.scss";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -281,7 +279,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
             )}
             <h2>{tag.name}</h2>
             <p>
-            <TagLink tag={tag} />
+              <TagLink tag={tag} />
             </p>
             <p>{tag.description}</p>
           </div>

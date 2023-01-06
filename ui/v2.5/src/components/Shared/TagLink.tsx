@@ -91,14 +91,21 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
 
   const showCustomTagColors =
     (config?.ui as IUIConfig)?.showCustomTagColors ?? true;
-  
-  const customStyle = showCustomTagColors ? {
-    ["--tag-bg-color" as  string]: props.tag?.color ?? styles.textMuted,
-    ["--tag-text-color" as  string]: contrastingTextColor(props.tag?.color) ?? styles.darkText
-  } : {}
+
+  const customStyle = showCustomTagColors
+    ? {
+        ["--tag-bg-color" as string]: props.tag?.color ?? styles.textMuted,
+        ["--tag-text-color" as string]:
+          contrastingTextColor(props.tag?.color) ?? styles.darkText,
+      }
+    : {};
 
   return (
-    <Badge className={cx("tag-item", props.className)} variant="secondary" style={customStyle} >
+    <Badge
+      className={cx("tag-item", props.className)}
+      variant="secondary"
+      style={customStyle}
+    >
       <TagPopover id={id}>
         <Link to={link}>{title}</Link>
       </TagPopover>
