@@ -224,11 +224,25 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
     );
   };
 
+  const maybeRenderStarRatingNumber = () => {
+    const ratingFraction = getCurrentSelectedRating();
+    if (!ratingFraction) {
+      return;
+    }
+
+    return (
+      <span className="star-rating-number">
+        {ratingFraction.rating + ratingFraction.fraction}
+      </span>
+    );
+  };
+
   return (
     <div className="rating-stars">
       {Array.from(Array(max)).map((value, index) =>
         renderRatingButton(index + 1)
       )}
+      {maybeRenderStarRatingNumber()}
     </div>
   );
 };
