@@ -63,7 +63,7 @@ For more help you can:
 ## Themes and CSS Customization
 There is a [directory of community-created themes](https://docs.stashapp.cc/docs/User-Interface-UI/Themes/) on Stash-Docs, along with instructions on how to install them.
 
-You can also change Stash interface fit your desired style with various snippets from [Custom CSS snippets](https://docs.stashapp.cc/docs/User-Interface-UI/Custom-CSS-Snippets/).
+You can also change the Stash interface to fit your desired style with various snippets from [Custom CSS snippets](https://docs.stashapp.cc/docs/User-Interface-UI/Custom-CSS-Snippets/).
 
 # For Developers
 
