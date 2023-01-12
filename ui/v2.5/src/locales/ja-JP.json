@@ -6,6 +6,7 @@
     "add_to_entity": "{entityType}に追加",
     "allow": "許可",
     "allow_temporarily": "一時的に許可",
+    "anonymise": "匿名にする",
     "apply": "適用",
     "auto_tag": "自動タグ付け",
     "backup": "バックアップ",
@@ -32,10 +33,11 @@
     "delete_stashid": "StashIDを削除",
     "disallow": "拒否",
     "download": "ダウンロード",
+    "download_anonymised": "匿名でダウンロード",
     "download_backup": "バックアップをダウンロード",
     "edit": "編集",
     "edit_entity": "{entityType}を編集",
-    "export": "エクスポート…",
+    "export": "エクスポート",
     "export_all": "全てエクスポート…",
     "find": "探す",
     "finish": "完了",
@@ -346,6 +348,9 @@
     },
     "tasks": {
       "added_job_to_queue": "{operation_name}がジョブキューに追加されました",
+      "anonymise_and_download": "データベースを匿名化し、結果をダウンロードします。",
+      "anonymise_database": "センシティブな全データを匿名化して、バックアップ先にデータベースのコピーを保存します。これは、他者にトラブルシューティングを依頼したり、デバッグ目的の際に役立ちます。オリジナルのデータベースは一切変更されません。匿名化されたデータベースには次のファイル名規則が利用されます:{filename_format}",
+      "anonymising_database": "匿名データベース",
       "auto_tag": {
         "auto_tagging_all_paths": "すべてのパスを自動タグ付け",
         "auto_tagging_paths": "次のパスを自動タグ付け："
