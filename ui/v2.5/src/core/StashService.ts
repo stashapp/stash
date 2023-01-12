@@ -1234,6 +1234,12 @@ export const mutateBackupDatabase = (input: GQL.BackupDatabaseInput) =>
     variables: { input },
   });
 
+export const mutateAnonymiseDatabase = (input: GQL.AnonymiseDatabaseInput) =>
+  client.mutate<GQL.AnonymiseDatabaseMutation>({
+    mutation: GQL.AnonymiseDatabaseDocument,
+    variables: { input },
+  });
+
 export const mutateStashBoxBatchPerformerTag = (
   input: GQL.StashBoxBatchPerformerTagInput
 ) =>

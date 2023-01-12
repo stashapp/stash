@@ -7,6 +7,7 @@ import {
   mutateBackupDatabase,
   mutateMetadataImport,
   mutateMetadataClean,
+  mutateAnonymiseDatabase,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { downloadFile } from "src/utils";
@@ -149,10 +150,12 @@ const CleanOptions: React.FC<ICleanOptions> = ({
 
 interface IDataManagementTasks {
   setIsBackupRunning: (v: boolean) => void;
+  setIsAnonymiseRunning: (v: boolean) => void;
 }
 
 export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
   setIsBackupRunning,
+  setIsAnonymiseRunning,
 }) => {
   const intl = useIntl();
   const Toast = useToast();
@@ -259,7 +262,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
       Toast.success({
         content: intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
-          { operation_name: intl.formatMessage({ id: "actions.backup" }) }
+          { operation_name: intl.formatMessage({ id: "actions.export" }) }
         ),
       });
     } catch (err) {
@@ -283,6 +286,25 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
       Toast.error(e);
     } finally {
       setIsBackupRunning(false);
+    }
+  }
+
+  async function onAnonymise(download?: boolean) {
+    try {
+      setIsAnonymiseRunning(true);
+      const ret = await mutateAnonymiseDatabase({
+        download,
+      });
+
+      // download the result
+      if (download && ret.data && ret.data.anonymiseDatabase) {
+        const link = ret.data.anonymiseDatabase;
+        downloadFile(link);
+      }
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsAnonymiseRunning(false);
     }
   }
 
@@ -361,7 +383,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
             type="submit"
             onClick={() => onExport()}
           >
-            <FormattedMessage id="actions.full_export" />
+            <FormattedMessage id="actions.full_export" />…
           </Button>
         </Setting>
 
@@ -429,6 +451,45 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
             onClick={() => onBackup(true)}
           >
             <FormattedMessage id="actions.download_backup" />
+          </Button>
+        </Setting>
+      </SettingSection>
+
+      <SettingSection headingID="actions.anonymise">
+        <Setting
+          headingID="actions.anonymise"
+          subHeading={intl.formatMessage(
+            { id: "config.tasks.anonymise_database" },
+            {
+              filename_format: (
+                <code>
+                  [origFilename].anonymous.sqlite.[schemaVersion].[YYYYMMDD_HHMMSS]
+                </code>
+              ),
+            }
+          )}
+        >
+          <Button
+            id="backup"
+            variant="secondary"
+            type="submit"
+            onClick={() => onAnonymise()}
+          >
+            <FormattedMessage id="actions.anonymise" />
+          </Button>
+        </Setting>
+
+        <Setting
+          headingID="actions.download_anonymised"
+          subHeadingID="config.tasks.anonymise_and_download"
+        >
+          <Button
+            id="anonymousDownload"
+            variant="secondary"
+            type="submit"
+            onClick={() => onAnonymise(true)}
+          >
+            <FormattedMessage id="actions.download_anonymised" />
           </Button>
         </Setting>
       </SettingSection>
