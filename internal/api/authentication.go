@@ -17,12 +17,12 @@ const loginEndPoint = "/login"
 
 const (
 	tripwireActivatedErrMsg = "Stash is exposed to the public internet without authentication, and is not serving any more content to protect your privacy. " +
-		"More information and fixes are available at https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet"
+		"More information and fixes are available at https://docs.stashapp.cc/docs/Network/Authentication-Required-When-Accessing-Stash-From-the-Internet/"
 
 	externalAccessErrMsg = "You have attempted to access Stash over the internet, and authentication is not enabled. " +
 		"This is extremely dangerous! The whole world can see your your stash page and browse your files! " +
 		"Stash is not answering any other requests to protect your privacy. " +
-		"Please read the log entry or visit https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet"
+		"Please read the log entry or visit https://docs.stashapp.cc/docs/Network/Authentication-Required-When-Accessing-Stash-From-the-Internet/"
 )
 
 func allowUnauthenticated(r *http.Request) bool {
