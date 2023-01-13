@@ -6,6 +6,7 @@
     "add_to_entity": "新增至{entityType}",
     "allow": "允許",
     "allow_temporarily": "暫時允許",
+    "anonymise": "匿名化",
     "apply": "套用",
     "auto_tag": "自動套用標籤",
     "backup": "備份",
@@ -32,10 +33,11 @@
     "delete_stashid": "刪除 StashID",
     "disallow": "不允許",
     "download": "下載",
+    "download_anonymised": "下載匿名化版本資料庫",
     "download_backup": "下載備份",
     "edit": "編輯",
     "edit_entity": "編輯{entityType}",
-    "export": "匯出…",
+    "export": "匯出",
     "export_all": "匯出所有…",
     "find": "搜尋",
     "finish": "完成",
@@ -346,6 +348,9 @@
     },
     "tasks": {
       "added_job_to_queue": "已將『{operation_name}』加入至工作排程",
+      "anonymise_and_download": "產生並下載匿名化版本的資料庫。",
+      "anonymise_database": "建立一份去除敏感資訊且匿名化的資料庫檔案至備份資料夾中。此檔案可供其他人員幫助您排除相關問題以及除錯用。您現有的資料庫當案將不會被修改。匿名化版本的資料庫檔案命名為 {filename_format}。",
+      "anonymising_database": "匿名化資料庫中",
       "auto_tag": {
         "auto_tagging_all_paths": "為所有路徑自動套用標籤中",
         "auto_tagging_paths": "為以下路徑自動套用標籤中"
@@ -757,6 +762,7 @@
   },
   "dimensions": "解析度",
   "director": "導演",
+  "disambiguation": "消歧義",
   "display_mode": {
     "grid": "格狀顯示",
     "list": "條列顯示",
