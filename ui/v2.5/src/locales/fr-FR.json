@@ -441,12 +441,12 @@
       },
       "basic_settings": "Paramètres de base",
       "custom_css": {
-        "description": "La page doit être rafraichie pour que les changements prennent effet.",
+        "description": "La page doit être rafraichie pour que les changements prennent effet. La compatibilité entre le CSS personnalisé et les futures versions de Stash n'est pas garantie.",
         "heading": "CSS personnalisé",
         "option_label": "Activer le CSS personnalisé"
       },
       "custom_javascript": {
-        "description": "La page doit être actualisée pour que les changements prennent effet.",
+        "description": "La page doit être actualisée pour que les changements prennent effet. La compatibilité entre le Javascript personnalisé et les futures versions de Stash n'est pas garantie.",
         "heading": "Javascript personnalisé",
         "option_label": "Activer le Javascript personnalisé"
       },
