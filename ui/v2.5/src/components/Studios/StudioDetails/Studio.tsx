@@ -269,7 +269,15 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           </Tab>
           <Tab
             eventKey="performers"
-            title={intl.formatMessage({ id: "performers" })}
+            title={
+              <React.Fragment>
+                {intl.formatMessage({ id: "performers" })}
+                <Counter
+                  abbreviateCounter={abbreviateCounter}
+                  count={studio.performer_count ?? 0}
+                />
+              </React.Fragment>
+            }
           >
             <StudioPerformersPanel studio={studio} />
           </Tab>
