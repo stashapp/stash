@@ -6,6 +6,7 @@
     "add_to_entity": "Dodaj do {entityType}",
     "allow": "Zezwól",
     "allow_temporarily": "Zezwól tymczasowo",
+    "anonymise": "Zanonimizuj",
     "apply": "Zastosuj",
     "auto_tag": "Automatyczne oznaczanie",
     "backup": "Kopia zapasowa",
@@ -32,10 +33,11 @@
     "delete_stashid": "Usuń StashID",
     "disallow": "Nie zezwalaj",
     "download": "Pobierz",
+    "download_anonymised": "Pobierz zanonimizowane",
     "download_backup": "Pobierz kopię zapasową",
     "edit": "Edytuj",
     "edit_entity": "Edytuj {entityType}",
-    "export": "Eksportuj…",
+    "export": "Eksportuj",
     "export_all": "Eksportuj wszystko…",
     "find": "Znajdź",
     "finish": "Zakończ",
@@ -346,6 +348,9 @@
     },
     "tasks": {
       "added_job_to_queue": "Dodano {operation_name} do kolejki zadań",
+      "anonymise_and_download": "Wykonuje zanonimizowaną kopię bazy danych i pobiera plik wynikowy.",
+      "anonymise_database": "Wykonuje kopię bazy danych do katalogu kopii zapasowych, anonimizując wszystkie wrażliwe dane. Kopia ta może być udostępniona innym osobom w celu rozwiązywania problemów i usuwania usterek. Oryginalna baza danych nie jest modyfikowana. Zanonimizowana baza danych używa formatu nazwy pliku {filename_format}.",
+      "anonymising_database": "Anonimizowanie bazy danych",
       "auto_tag": {
         "auto_tagging_all_paths": "Automatyczne tagowanie wszystkich ścieżek",
         "auto_tagging_paths": "Automatyczne tagowanie następujących ścieżek"
@@ -436,12 +441,12 @@
       },
       "basic_settings": "Ustawienia podstawowe",
       "custom_css": {
-        "description": "Strona musi zostać ponownie załadowana, aby zmiany zaczęły obowiązywać.",
+        "description": "Strona musi zostać ponownie załadowana, aby zmiany zaczęły obowiązywać. Nie ma gwarancji kompatybilności między niestandardowym CSS a przyszłymi wydaniami Stash.",
         "heading": "Własny CSS",
         "option_label": "Włączony własny CSS"
       },
       "custom_javascript": {
-        "description": "Strona musi zostać ponownie załadowana, aby zmiany zaczęły obowiązywać.",
+        "description": "Strona musi zostać ponownie załadowana, aby zmiany zaczęły obowiązywać. Nie ma gwarancji zgodności między niestandardowym Javascriptem a przyszłymi wydaniami Stash.",
         "heading": "Własny Javascript",
         "option_label": "Własny Javascript włączony"
       },
