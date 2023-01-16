@@ -441,12 +441,12 @@
       },
       "basic_settings": "Põhisätted",
       "custom_css": {
-        "description": "Muudatuste jõustumiseks tuleb leht uuesti laadida.",
+        "description": "Muudatuste jõustumiseks tuleb leht uuesti laadida. Pole garantiid, et kohandatud CSS töötab ka tuleviku Stashi uuendustes.",
         "heading": "Kohandatud CSS",
         "option_label": "Kohandatud CSS lubatud"
       },
       "custom_javascript": {
-        "description": "Pead muudatuste nägemiseks lehe uuesti laadima.",
+        "description": "Pead muudatuste nägemiseks lehe uuesti laadima. Pole garantiid, et kohandatud Javascript töötab ka tuleviku Stashi uuendustes.",
         "heading": "Kohandatud Javascript",
         "option_label": "Kohandatud Javascript lubatud"
       },
