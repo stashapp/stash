@@ -441,12 +441,12 @@
       },
       "basic_settings": "Basic Settings",
       "custom_css": {
-        "description": "Page must be reloaded for changes to take effect.",
+        "description": "Page must be reloaded for changes to take effect. There is no guarantee of compatibility between custom CSS and future releases of Stash.",
         "heading": "Custom CSS",
         "option_label": "Custom CSS enabled"
       },
       "custom_javascript": {
-        "description": "Page must be reloaded for changes to take effect.",
+        "description": "Page must be reloaded for changes to take effect. There is no guarantee of compatibility between custom Javascript and future releases of Stash.",
         "heading": "Custom Javascript",
         "option_label": "Custom Javascript enabled"
       },
