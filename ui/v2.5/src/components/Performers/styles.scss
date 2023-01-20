@@ -85,6 +85,14 @@
     width: 3rem;
   }
 
+  .not-favorite {
+    color: rgba(191, 204, 214, 0.5);
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
+    position: absolute;
+    right: 5px;
+    top: 10px;
+  }
+
   .favorite {
     color: #ff7373;
     filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
@@ -105,6 +113,7 @@
 
 .card {
   &.performer-card {
+
     padding: 0 0 1rem 0;
   }
 }
