@@ -441,12 +441,12 @@
       },
       "basic_settings": "Grundinställningar",
       "custom_css": {
-        "description": "Sidan måste laddas om för att ändringar ska ta effekt.",
+        "description": "Sidan måste laddas om för att ändringar ska ta effekt. Det finns ingen garanti att egen CSS kommer vara kompatibel med framtida versioner av Stash.",
         "heading": "Anpassad CSS",
         "option_label": "Använd anpassad CSS"
       },
       "custom_javascript": {
-        "description": "Sidan måste laddas om för att förändringarna ska ske.",
+        "description": "Sidan måste laddas om för att förändringarna ska ske. Det finns ingen garanti att egen JavaScript kommer vara kompatibel med framtida versioner av Stash.",
         "heading": "Egen Javascript",
         "option_label": "Egen Javascript aktiverad"
       },
