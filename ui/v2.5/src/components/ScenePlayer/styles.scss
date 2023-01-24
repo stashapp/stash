@@ -381,8 +381,12 @@ $sceneTabWidth: 450px;
   }
 }
 
+.scrubber-tags-background {
+  background-size: 100% 100%;
+}
+
 #scrubber-position-indicator {
-  background-color: #ccc;
+  background-color: rgba(255, 255, 255, 0.7);
   height: 20px;
   left: -100%;
   position: absolute;
