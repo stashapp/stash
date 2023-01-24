@@ -1352,11 +1352,22 @@ func (i *Instance) GetMaxUploadSize() int64 {
 
 // GetProxy returns the url of a http proxy to be used for all outgoing http calls.
 func (i *Instance) GetProxy() string {
-	return i.getString(Proxy)
+	// Validate format
+	reg := regexp.MustCompile(`^((?:socks5h?|https?):\/\/)(([\P{Cc}]+):([\P{Cc}]+)@)?(([a-zA-Z0-9][a-zA-Z0-9.-]*)(:[0-9]{1,5})?)`)
+	proxy := i.getString(Proxy)
+	if proxy != "" && reg.MatchString(proxy) {
+		logger.Info("Proxy is valid, using it")
+		return proxy
+	} else if proxy != "" {
+		logger.Error("Proxy is invalid, please review your configuration")
+		return ""
+	}
+	return ""
 }
 
 // GetProxy returns the url of a http proxy to be used for all outgoing http calls.
 func (i *Instance) GetNoProxy() string {
+	// NoProxy does not require validation, it is validated by the native Go library sufficiently
 	return i.getString(NoProxy)
 }
 

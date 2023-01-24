@@ -306,9 +306,13 @@ func proxyUsesAuth(proxyUrl string) bool {
 		return false
 	}
 	reg := regexp.MustCompile(`^(https?:\/\/)(([\P{Cc}]+):([\P{Cc}]+)@)?(([a-zA-Z0-9][a-zA-Z0-9.-]*)(:[0-9]{1,5})?)`)
-	split := reg.FindAllStringSubmatch(proxyUrl, -1)[0]
+	matches := reg.FindAllStringSubmatch(proxyUrl, -1)
+	if matches != nil {
+		split := matches[0]
+		return len(split) == 0 || (len(split) > 5 && split[3] != "")
+	}
 
-	return len(split) == 0 || (len(split) > 5 && split[3] != "")
+	return false
 }
 
 func splitProxyAuth(proxyUrl string) (string, string, string) {
@@ -316,9 +320,10 @@ func splitProxyAuth(proxyUrl string) (string, string, string) {
 		return "", "", ""
 	}
 	reg := regexp.MustCompile(`^(https?:\/\/)(([\P{Cc}]+):([\P{Cc}]+)@)?(([a-zA-Z0-9][a-zA-Z0-9.-]*)(:[0-9]{1,5})?)`)
-	split := reg.FindAllStringSubmatch(proxyUrl, -1)[0]
+	matches := reg.FindAllStringSubmatch(proxyUrl, -1)
 
-	if len(split) > 5 {
+	if matches != nil && len(matches[0]) > 5 {
+		split := matches[0]
 		return split[1] + split[5], split[3], split[4]
 	}
 
