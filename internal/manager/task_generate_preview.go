@@ -57,7 +57,7 @@ func (t *GeneratePreviewTask) Start(ctx context.Context) {
 func (t GeneratePreviewTask) generateVideo(videoChecksum string, videoDuration float64) error {
 	videoFilename := t.Scene.Path
 
-	if err := t.generator.PreviewVideo(context.TODO(), videoFilename, videoDuration, videoChecksum, t.Options, true); err != nil {
+	if err := t.generator.PreviewVideo(context.TODO(), videoFilename, videoDuration, videoChecksum, t.Options, false); err != nil {
 		logger.Warnf("[generator] failed generating scene preview, trying fallback")
 		if err := t.generator.PreviewVideo(context.TODO(), videoFilename, videoDuration, videoChecksum, t.Options, true); err != nil {
 			return err
