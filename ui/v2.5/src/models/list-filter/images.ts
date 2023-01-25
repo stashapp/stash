@@ -4,6 +4,7 @@ import {
   createStringCriterionOption,
   NullNumberCriterionOption,
   createMandatoryTimestampCriterionOption,
+  createDateCriterionOption,
 } from "./criteria/criterion";
 import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
 import { ImageIsMissingCriterionOption } from "./criteria/is-missing";
@@ -24,6 +25,7 @@ const sortByOptions = [
   "o_counter",
   "filesize",
   "file_count",
+  "date",
   ...MediaSortByOptions,
 ].map(ListFilterOptions.createSortBy);
 
@@ -44,6 +46,8 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("performer_count"),
   PerformerFavoriteCriterionOption,
   StudiosCriterionOption,
+  createStringCriterionOption("url"),
+  createDateCriterionOption("date"),
   createMandatoryNumberCriterionOption("file_count"),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),

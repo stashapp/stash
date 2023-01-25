@@ -2,6 +2,7 @@ fragment PerformerData on Performer {
   id
   checksum
   name
+  disambiguation
   url
   gender
   twitter
@@ -16,7 +17,7 @@ fragment PerformerData on Performer {
   career_length
   tattoos
   piercings
-  aliases
+  alias_list
   favorite
   ignore_auto_tag
   image_path

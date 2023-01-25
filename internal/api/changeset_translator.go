@@ -143,7 +143,7 @@ func (t changesetTranslator) optionalDate(value *string, field string) models.Op
 		return models.OptionalDate{}
 	}
 
-	if value == nil {
+	if value == nil || *value == "" {
 		return models.OptionalDate{
 			Set:  true,
 			Null: true,

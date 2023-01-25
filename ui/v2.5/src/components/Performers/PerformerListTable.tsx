@@ -64,10 +64,17 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
       </td>
       <td className="text-left">
         <Link to={`/performers/${performer.id}`}>
-          <h5>{performer.name}</h5>
+          <h5>
+            {performer.name}
+            {performer.disambiguation && (
+              <span className="performer-disambiguation">
+                {` (${performer.disambiguation})`}
+              </span>
+            )}
+          </h5>
         </Link>
       </td>
-      <td>{performer.aliases ? performer.aliases : ""}</td>
+      <td>{performer.alias_list ? performer.alias_list.join(", ") : ""}</td>
       <td>
         {performer.favorite && (
           <Button disabled className="favorite">

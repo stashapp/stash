@@ -142,21 +142,25 @@ func (j *autoTagJob) autoTagPerformers(ctx context.Context, progress *job.Progre
 					PerPage: &perPage,
 				})
 				if err != nil {
-					return fmt.Errorf("error querying performers: %v", err)
+					return fmt.Errorf("error querying performers: %w", err)
 				}
 			} else {
 				performerIdInt, err := strconv.Atoi(performerId)
 				if err != nil {
-					return fmt.Errorf("error parsing performer id %s: %s", performerId, err.Error())
+					return fmt.Errorf("parsing performer id %s: %w", performerId, err)
 				}
 
 				performer, err := performerQuery.Find(ctx, performerIdInt)
 				if err != nil {
-					return fmt.Errorf("error finding performer id %s: %s", performerId, err.Error())
+					return fmt.Errorf("finding performer id %s: %w", performerId, err)
 				}
 
 				if performer == nil {
 					return fmt.Errorf("performer with id %s not found", performerId)
+				}
+
+				if err := performer.LoadAliases(ctx, j.txnManager.Performer); err != nil {
+					return fmt.Errorf("loading aliases for performer %d: %w", performer.ID, err)
 				}
 				performers = append(performers, performer)
 			}

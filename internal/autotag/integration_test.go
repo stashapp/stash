@@ -86,8 +86,7 @@ func TestMain(m *testing.M) {
 func createPerformer(ctx context.Context, pqb models.PerformerWriter) error {
 	// create the performer
 	performer := models.Performer{
-		Checksum: testName,
-		Name:     testName,
+		Name: testName,
 	}
 
 	err := pqb.Create(ctx, &performer)
@@ -548,6 +547,9 @@ func TestParsePerformerScenes(t *testing.T) {
 
 	for _, p := range performers {
 		if err := withDB(func(ctx context.Context) error {
+			if err := p.LoadAliases(ctx, r.Performer); err != nil {
+				return err
+			}
 			return tagger.PerformerScenes(ctx, p, nil, r.Scene)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
@@ -715,6 +717,9 @@ func TestParsePerformerImages(t *testing.T) {
 
 	for _, p := range performers {
 		if err := withDB(func(ctx context.Context) error {
+			if err := p.LoadAliases(ctx, r.Performer); err != nil {
+				return err
+			}
 			return tagger.PerformerImages(ctx, p, nil, r.Image)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
@@ -884,6 +889,9 @@ func TestParsePerformerGalleries(t *testing.T) {
 
 	for _, p := range performers {
 		if err := withDB(func(ctx context.Context) error {
+			if err := p.LoadAliases(ctx, r.Performer); err != nil {
+				return err
+			}
 			return tagger.PerformerGalleries(ctx, p, nil, r.Gallery)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)

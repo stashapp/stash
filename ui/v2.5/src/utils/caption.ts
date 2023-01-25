@@ -8,6 +8,7 @@ export const languageMap = new Map<string, string>([
   ["ko", "한국인"],
   ["nl", "Holandés"],
   ["pt", "Português"],
+  ["ru", "Русский"],
   ["00", "Unknown"], // stash reserved language code
 ]);
 

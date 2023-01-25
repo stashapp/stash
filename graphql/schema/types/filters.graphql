@@ -53,6 +53,7 @@ input PerformerFilterType {
   NOT: PerformerFilterType
 
   name: StringCriterionInput
+  disambiguation: StringCriterionInput
   details: StringCriterionInput
 
   """Filter by favorite"""
@@ -424,6 +425,10 @@ input ImageFilterType {
   rating: IntCriterionInput @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: IntCriterionInput
+  """Filter by date"""
+  date: DateCriterionInput
+  """Filter by url"""
+  url: StringCriterionInput
   """Filter by organized"""
   organized: Boolean
   """Filter by o-counter"""
