@@ -390,10 +390,11 @@ func (g *sceneGenerators) Generate(ctx context.Context, s *models.Scene, f *file
 	path := f.Path
 	config := instance.Config
 	fileNamingAlgorithm := config.GetVideoFileNamingAlgorithm()
+	sequentialScanning := config.GetSequentialScanning()
 
 	if t.ScanGenerateSprites {
 		progress.AddTotal(1)
-		g.taskQueue.Add(fmt.Sprintf("Generating sprites for %s", path), func(ctx context.Context) {
+		sprite_fn := func(ctx context.Context) {
 			taskSprite := GenerateSpriteTask{
 				Scene:               *s,
 				Overwrite:           overwrite,
@@ -401,12 +402,18 @@ func (g *sceneGenerators) Generate(ctx context.Context, s *models.Scene, f *file
 			}
 			taskSprite.Start(ctx)
 			progress.Increment()
-		})
+		}
+
+		if sequentialScanning {
+			sprite_fn(ctx)
+		} else {
+			g.taskQueue.Add(fmt.Sprintf("Generating sprites for %s", path), sprite_fn)
+		}
 	}
 
 	if t.ScanGeneratePhashes {
 		progress.AddTotal(1)
-		g.taskQueue.Add(fmt.Sprintf("Generating phash for %s", path), func(ctx context.Context) {
+		phash_fn := func(ctx context.Context) {
 			taskPhash := GeneratePhashTask{
 				File:                f,
 				fileNamingAlgorithm: fileNamingAlgorithm,
@@ -416,12 +423,18 @@ func (g *sceneGenerators) Generate(ctx context.Context, s *models.Scene, f *file
 			}
 			taskPhash.Start(ctx)
 			progress.Increment()
-		})
+		}
+
+		if sequentialScanning {
+			phash_fn(ctx)
+		} else {
+			g.taskQueue.Add(fmt.Sprintf("Generating phash for %s", path), phash_fn)
+		}
 	}
 
 	if t.ScanGeneratePreviews {
 		progress.AddTotal(1)
-		g.taskQueue.Add(fmt.Sprintf("Generating preview for %s", path), func(ctx context.Context) {
+		previews_fn := func(ctx context.Context) {
 			options := getGeneratePreviewOptions(GeneratePreviewOptionsInput{})
 
 			g := &generate.Generator{
@@ -442,7 +455,13 @@ func (g *sceneGenerators) Generate(ctx context.Context, s *models.Scene, f *file
 			}
 			taskPreview.Start(ctx)
 			progress.Increment()
-		})
+		}
+
+		if sequentialScanning {
+			previews_fn(ctx)
+		} else {
+			g.taskQueue.Add(fmt.Sprintf("Generating preview for %s", path), previews_fn)
+		}
 	}
 
 	return nil

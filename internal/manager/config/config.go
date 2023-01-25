@@ -63,6 +63,9 @@ const (
 	ParallelTasks        = "parallel_tasks"
 	parallelTasksDefault = 1
 
+	SequentialScanning        = "sequential_scanning"
+	SequentialScanningDefault = false
+
 	PreviewPreset = "preview_preset"
 
 	PreviewAudio        = "preview_audio"
@@ -627,6 +630,10 @@ func (i *Instance) GetVideoFileNamingAlgorithm() models.HashAlgorithm {
 	}
 
 	return models.HashAlgorithm(ret)
+}
+
+func (i *Instance) GetSequentialScanning() bool {
+	return i.getBool(SequentialScanning)
 }
 
 func (i *Instance) GetScrapersPath() string {
@@ -1391,6 +1398,7 @@ func (i *Instance) setDefaultValues(write bool) error {
 	i.main.SetDefault(Port, portDefault)
 
 	i.main.SetDefault(ParallelTasks, parallelTasksDefault)
+	i.main.SetDefault(SequentialScanning, SequentialScanningDefault)
 	i.main.SetDefault(PreviewSegmentDuration, previewSegmentDurationDefault)
 	i.main.SetDefault(PreviewSegments, previewSegmentsDefault)
 	i.main.SetDefault(PreviewExcludeStart, previewExcludeStartDefault)
