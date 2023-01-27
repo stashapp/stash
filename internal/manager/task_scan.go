@@ -445,11 +445,12 @@ func (g *sceneGenerators) Generate(ctx context.Context, s *models.Scene, f *file
 			options := getGeneratePreviewOptions(GeneratePreviewOptionsInput{})
 
 			g := &generate.Generator{
-				Encoder:     instance.FFMPEG,
-				LockManager: instance.ReadLockManager,
-				MarkerPaths: instance.Paths.SceneMarkers,
-				ScenePaths:  instance.Paths.Scene,
-				Overwrite:   overwrite,
+				Encoder:      instance.FFMPEG,
+				FFMpegConfig: instance.Config,
+				LockManager:  instance.ReadLockManager,
+				MarkerPaths:  instance.Paths.SceneMarkers,
+				ScenePaths:   instance.Paths.Scene,
+				Overwrite:    overwrite,
 			}
 
 			taskPreview := GeneratePreviewTask{

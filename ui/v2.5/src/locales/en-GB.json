@@ -271,6 +271,28 @@
       "excluded_image_gallery_patterns_head": "Excluded Image/Gallery Patterns",
       "excluded_video_patterns_desc": "Regexps of video files/paths to exclude from Scan and add to Clean",
       "excluded_video_patterns_head": "Excluded Video Patterns",
+      "ffmpeg": {
+        "transcode": {
+          "input_args": {
+            "heading": "FFmpeg Transcode Input Args",
+            "desc": "Advanced: Additional arguments to pass to ffmpeg before the input field when generating video."
+          },
+          "output_args": {
+            "heading": "FFmpeg Transcode Output Args",
+            "desc": "Advanced: Additional arguments to pass to ffmpeg before the output field when generating video."
+          }
+        },
+        "live_transcode": {
+          "input_args": {
+            "heading": "FFmpeg LiveTranscode Input Args",
+            "desc": "Advanced: Additional arguments to pass to ffmpeg before the input field when live transcoding video."
+          },
+          "output_args": {
+            "heading": "FFmpeg Live Transcode Output Args",
+            "desc": "Advanced: Additional arguments to pass to ffmpeg before the output field when live transcoding video."
+          }
+        }
+      },
       "gallery_ext_desc": "Comma-delimited list of file extensions that will be identified as gallery zip files.",
       "gallery_ext_head": "Gallery zip Extensions",
       "generated_file_naming_hash_desc": "Use MD5 or oshash for generated file naming. Changing this requires that all scenes have the applicable MD5/oshash value populated. After changing this value, existing generated files will need to be migrated or regenerated. See Tasks page for migration.",
