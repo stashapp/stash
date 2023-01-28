@@ -265,8 +265,8 @@ func (funscript Script) getGradientTable(numSegments int) GradientTable {
 		topHalf := sortedPos[len(sortedPos)/2:]
 		bottomHalf := sortedPos[0 : len(sortedPos)/2]
 
-		var totalBottom int = 0
-		var totalTop int = 0
+		var totalBottom int
+		var totalTop int
 
 		for _, value := range bottomHalf {
 			totalBottom += value
