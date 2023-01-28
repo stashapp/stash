@@ -199,6 +199,9 @@ func (g Generator) previewVideoChunk(lockCtx *fsutil.LockContext, fn string, opt
 
 		VideoCodec: ffmpeg.VideoCodecLibX264,
 		VideoArgs:  videoArgs,
+
+		ExtraInputArgs:  g.FFMpegConfig.GetTranscodeInputArgs(),
+		ExtraOutputArgs: g.FFMpegConfig.GetTranscodeOutputArgs(),
 	}
 
 	if options.Audio {
@@ -299,6 +302,9 @@ func (g Generator) previewVideoToImage(input string) generateFn {
 
 			VideoCodec: ffmpeg.VideoCodecLibWebP,
 			VideoArgs:  videoArgs,
+
+			ExtraInputArgs:  g.FFMpegConfig.GetTranscodeInputArgs(),
+			ExtraOutputArgs: g.FFMpegConfig.GetTranscodeOutputArgs(),
 		}
 
 		args := transcoder.Transcode(input, encodeOptions)

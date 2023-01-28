@@ -7,7 +7,9 @@ import "github.com/99designs/gqlgen/graphql"
 type SceneDraftInput struct {
 	ID           *string             `json:"id,omitempty"`
 	Title        *string             `json:"title,omitempty"`
+	Code         *string             `json:"code,omitempty"`
 	Details      *string             `json:"details,omitempty"`
+	Director     *string             `json:"director,omitempty"`
 	URL          *string             `json:"url,omitempty"`
 	Date         *string             `json:"date,omitempty"`
 	Studio       *DraftEntityInput   `json:"studio,omitempty"`

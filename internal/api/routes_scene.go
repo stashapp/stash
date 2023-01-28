@@ -185,6 +185,8 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, st
 	width := f.Width
 	height := f.Height
 
+	config := config.GetInstance()
+
 	options := ffmpeg.TranscodeStreamOptions{
 		Input:     f.Path,
 		Codec:     streamFormat,
@@ -194,7 +196,9 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, st
 		VideoHeight: height,
 
 		StartTime:        ss,
-		MaxTranscodeSize: config.GetInstance().GetMaxStreamingTranscodeSize().GetMaxResolution(),
+		MaxTranscodeSize: config.GetMaxStreamingTranscodeSize().GetMaxResolution(),
+		ExtraInputArgs:   config.GetLiveTranscodeInputArgs(),
+		ExtraOutputArgs:  config.GetLiveTranscodeOutputArgs(),
 	}
 
 	if requestedSize != "" {

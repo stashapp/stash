@@ -77,6 +77,14 @@ This setting can be used to increase/decrease overall CPU utilisation in two sce
 
 Note: If this is set too high it will decrease overall performance and causes failures (out of memory).
 
+## ffmpeg arguments
+
+Additional arguments can be injected into ffmpeg when generating previews and sprites, and when live-transcoding videos. 
+
+The ffmpeg arguments configuration is split into `Input` and `Output` arguments. Input arguments are injected before the input file argument, and output arguments are injected before the output file argument.
+
+Arguments are accepted as a list of strings. Each string is a separate argument. For example, a single argument of `-foo bar` would be treated as a single argument `"-foo bar"`. The correct way to pass this argument would be to split it into two separate arguments: `"-foo", "bar"`.
+
 ## Scraping
 
 ### User Agent string
