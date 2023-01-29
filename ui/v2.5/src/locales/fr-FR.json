@@ -274,11 +274,11 @@
       "ffmpeg": {
         "live_transcode": {
           "input_args": {
-            "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ d'entrée lors du transcodage en temps réel de la vidéo.",
+            "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ d'entrée lors du transcodage vidéo en temps réel.",
             "heading": "Arguments d'entrée du transcodage FFmpeg en temps réel"
           },
           "output_args": {
-            "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ de sortie lors du transcodage en temps réel de la vidéo.",
+            "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ de sortie lors du transcodage vidéo en temps réel.",
             "heading": "Arguments de sortie du transcodage FFmpeg en temps réel"
           }
         },
