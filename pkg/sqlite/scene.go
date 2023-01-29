@@ -1446,7 +1446,7 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	case "title":
 		addFileTable()
 		addFolderTable()
-		query.sortAndPagination += " ORDER BY scenes.title COLLATE NATURAL_CS " + direction + ", folders.path " + direction + ", files.basename COLLATE NATURAL_CS " + direction
+		query.sortAndPagination += " ORDER BY COALESCE(scenes.title, files.basename) COLLATE NATURAL_CS " + direction + ", folders.path " + direction
 	case "play_count":
 		// handle here since getSort has special handling for _count suffix
 		query.sortAndPagination += " ORDER BY scenes.play_count " + direction

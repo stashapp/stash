@@ -102,11 +102,12 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 		}
 
 		g := &generate.Generator{
-			Encoder:     instance.FFMPEG,
-			LockManager: instance.ReadLockManager,
-			MarkerPaths: instance.Paths.SceneMarkers,
-			ScenePaths:  instance.Paths.Scene,
-			Overwrite:   j.overwrite,
+			Encoder:      instance.FFMPEG,
+			FFMpegConfig: instance.Config,
+			LockManager:  instance.ReadLockManager,
+			MarkerPaths:  instance.Paths.SceneMarkers,
+			ScenePaths:   instance.Paths.Scene,
+			Overwrite:    j.overwrite,
 		}
 
 		if err := j.txnManager.WithReadTxn(ctx, func(ctx context.Context) error {
@@ -296,14 +297,13 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 		}
 
 		if task.required() {
-			sceneHash := scene.GetHash(task.fileNamingAlgorithm)
 			addTask := false
-			if j.overwrite || !task.doesVideoPreviewExist(sceneHash) {
+			if j.overwrite || !task.doesVideoPreviewExist() {
 				totals.previews++
 				addTask = true
 			}
 
-			if utils.IsTrue(j.input.ImagePreviews) && (j.overwrite || !task.doesImagePreviewExist(sceneHash)) {
+			if utils.IsTrue(j.input.ImagePreviews) && (j.overwrite || !task.doesImagePreviewExist()) {
 				totals.imagePreviews++
 				addTask = true
 			}

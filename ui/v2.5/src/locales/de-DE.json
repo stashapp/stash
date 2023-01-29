@@ -67,6 +67,7 @@
     "play_selected": "Spiele ausgewählte",
     "preview": "Vorschau",
     "previous_action": "Zurück",
+    "reassign": "Neu zuordnen",
     "refresh": "Aktualisieren",
     "reload_plugins": "Plugins neu laden",
     "reload_scrapers": "Scraper neu laden",
@@ -99,10 +100,12 @@
     "show": "Anzeigen",
     "show_configuration": "Konfiguration anzeigen",
     "skip": "Überspringen",
+    "split": "Trennen",
     "stop": "Stopp",
     "submit": "Einreichen",
     "submit_stash_box": "Zu Stash-Box übermitteln",
     "submit_update": "Aktualisierung übermitteln",
+    "swap": "Tauschen",
     "tasks": {
       "clean_confirm_message": "Wollen Sie wirklich die Datenbank aufräumen? Dies wird alle Informationen und Hilfsdaten für Szenen und Galerien löschen, die nicht mehr auf dem Dateisystem vorhanden sind.",
       "dry_mode_selected": "Trockenmodus ausgewählt. Es findet keine Löschung der Daten statt, lediglich Protokollierung.",
@@ -121,6 +124,7 @@
   "also_known_as": "Auch bekannt unter",
   "ascending": "Aufsteigend",
   "average_resolution": "Durchschnittliche Auflösung",
+  "between_and": "und",
   "birth_year": "Geburtsjahr",
   "birthdate": "Geburtsdatum",
   "bitrate": "Bitrate",
@@ -436,6 +440,11 @@
         "heading": "Benutzerdefinierte CSS",
         "option_label": "Benutzerdefiniertes CSS aktiviert"
       },
+      "custom_javascript": {
+        "description": "Seite muss neu geladen werden, damit die Änderungen wirksam werden.",
+        "heading": "Benutzerdefiniertes Javascript",
+        "option_label": "Benutzerdefiniertes Javascript aktiviert"
+      },
       "custom_locales": {
         "description": "Überschreibe einzelne Locale-Strings. Siehe https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json für die Hauptliste. Die Seite muss neu geladen werden, damit die Änderungen wirksam werden.",
         "heading": "Benutzerdefinierte Lokalisierung",
@@ -461,7 +470,23 @@
           "description": "Entferne die Möglichkeit der Erstellung neuer Objekte in der Dropdown-Auswahl",
           "heading": "Entferne Dropdown Erstellung"
         },
-        "heading": "Editieren"
+        "heading": "Editieren",
+        "rating_system": {
+          "star_precision": {
+            "options": {
+              "full": "Voll",
+              "half": "Halb",
+              "quarter": "Viertel"
+            }
+          },
+          "type": {
+            "label": "Art des Bewertungssystems",
+            "options": {
+              "decimal": "Dezimal",
+              "stars": "Sterne"
+            }
+          }
+        }
       },
       "funscript_offset": {
         "description": "Zeitversatz in Millisekunden für interaktive Skriptwiedergabe.",
@@ -505,6 +530,10 @@
         "description": "Anzeigen oder Ausblenden verschiedener Inhaltstypen in der Navigationsleiste",
         "heading": "Menüpunkte"
       },
+      "minimum_play_percent": {
+        "description": "Der prozentuale Anteil der Zeit, in der eine Szene gespielt werden muss, bevor Abspielen gezählt wird ist erhöht worden.",
+        "heading": "Mindestabspielprozent"
+      },
       "performers": {
         "options": {
           "image_location": {
@@ -531,6 +560,7 @@
       "scene_player": {
         "heading": "Szenenplayer",
         "options": {
+          "always_start_from_beginning": "Video immer von Anfang an starten",
           "auto_start_video": "Video automatisch starten",
           "auto_start_video_on_play_selected": {
             "description": "Automatischer Start von Videos aus der Warteschlange oder bei einer Wiedergabe von ausgewählten oder zufälligen Videos von der Szenen-Seite",
@@ -540,7 +570,8 @@
             "description": "Nächste Szene in der Warteschlange spielen",
             "heading": "Standardmäßig die Wiedergabeliste fortsetzen"
           },
-          "show_scrubber": "Scrubber anzeigen"
+          "show_scrubber": "Scrubber anzeigen",
+          "track_activity": "Aktivität verfolgen"
         }
       },
       "scene_wall": {
@@ -630,9 +661,11 @@
   "developmentVersion": "Entwicklungsversion",
   "dialogs": {
     "aliases_must_be_unique": "Aliase müssen einzigartig sein",
+    "create_new_entity": "Neues {entity} erstellen",
     "delete_alert": "Folgende {count, plural, one {{singularEntity}} other {{pluralEntity}}} werden dauerhaft gelöscht:",
     "delete_confirm": "Möchten Sie {entityName} wirklich löschen?",
     "delete_entity_desc": "{count, plural, one {Möchten Sie {singularEntity} wirklich löschen? Sofern die Datei nicht ebenfalls gelöscht wird, wird diese {singularEntity} beim Scannen wieder hinzugefügt.} other {Möchten Sie {pluralEntity} wirklich löschen? Sofern die Dateien nicht ebenfalls gelöscht werden, werden diese {pluralEntity} beim Scannen wieder hinzugefügt.}}",
+    "delete_entity_simple_desc": "{count, plural, one {Möchten Sie {singularEntity} wirklich löschen?} other {Möchten Sie diese {pluralEntity} wirklich löschen?}}",
     "delete_entity_title": "{count, plural, one {Lösche {singularEntity}} other {Lösche {pluralEntity}}}",
     "delete_galleries_extra": "…plus allen Bilddateien, die keiner anderen Galerie angehängt sind.",
     "delete_gallery_files": "Lösche Galerieordner/zip Datei und alle Bilder, die keiner anderen Galerie angehängt sind.",
@@ -664,11 +697,20 @@
         "zoom": "Zoomen"
       }
     },
+    "merge": {
+      "destination": "Ziel",
+      "empty_results": "Die Werte der Zielfelder bleiben unverändert.",
+      "source": "Quelle"
+    },
     "merge_tags": {
       "destination": "Ziel",
       "source": "Quelle"
     },
     "overwrite_filter_confirm": "Möchten Sie die vorhandene gespeicherte Anfrage {entityName} wirklich überschreiben?",
+    "reassign_entity_title": "{count, plural, one {Weise {singularEntity} neu zu} other {Weise {pluralEntity} neu zu}}}",
+    "reassign_files": {
+      "destination": "Neu zuweisen an"
+    },
     "scene_gen": {
       "force_transcodes": "Transcode Erzeugung erzwingen",
       "force_transcodes_tooltip": "Standardmäßig werden Transkodierungen nur erzeugt, wenn die Videodatei im Browser nicht unterstützt wird. Wenn diese Option aktiviert ist, werden Transkodierungen auch dann erstellt, wenn die Videodatei vom Browser unterstützt zu werden scheint.",
@@ -714,6 +756,7 @@
   },
   "dimensions": "Maße",
   "director": "Regisseur",
+  "disambiguation": "Begriffsklärung",
   "display_mode": {
     "grid": "Gitter",
     "list": "Liste",
@@ -769,6 +812,7 @@
   "file_info": "Datei",
   "file_mod_time": "Dateiänderungszeit",
   "files": "Dateien",
+  "files_amount": "{value} Dateien",
   "filesize": "Dateigröße",
   "filter": "Filter",
   "filter_name": "Filtername",
@@ -806,6 +850,7 @@
   },
   "hasMarkers": "Hat Markierungen",
   "height": "Größe",
+  "height_cm": "Höhe (cm)",
   "help": "Hilfe",
   "ignore_auto_tag": "Auto-Tag ignorieren",
   "image": "Bild",
@@ -818,6 +863,7 @@
   "interactive": "Interaktiv",
   "interactive_speed": "Interaktive Geschwindigkeit",
   "isMissing": "Fehlt",
+  "last_played_at": "Zuletzt Abgespielt Am",
   "library": "Bibliothek",
   "loading": {
     "generic": "Wird geladen…"
@@ -836,6 +882,8 @@
       "age_context": "{age} {years_old} in dieser Szene"
     },
     "phash": "PHashwert",
+    "play_count": "Anzahl Wiedergaben",
+    "play_duration": "Abspielzeit",
     "stream": "Stream",
     "video_codec": "Video-Codec"
   },
@@ -906,6 +954,7 @@
   },
   "performers": "Darsteller",
   "piercings": "Piercings",
+  "play_duration": "Abspiellänge",
   "primary_file": "Primäre Datei",
   "queue": "Playlist",
   "random": "Zufällig",
@@ -914,11 +963,15 @@
   "recently_released_objects": "Kürzlich erschienene {objects}",
   "release_notes": "Versionshinweise",
   "resolution": "Auflösung",
+  "resume_time": "Zeit fortsetzen",
   "scene": "Szene",
   "sceneTagger": "Szenen-Tagger",
   "sceneTags": "Szenen-Tags",
   "scene_count": "Szenenanzahl",
+  "scene_created_at": "Szene angelegt am",
+  "scene_date": "Datum der Szene",
   "scene_id": "Szenen-ID",
+  "scene_updated_at": "Szene geändert am",
   "scenes": "Szenen",
   "scenes_updated_at": "Szene aktualisiert am",
   "search_filter": {
@@ -1010,6 +1063,7 @@
     "welcome_to_stash": "Willkommen zu Stash"
   },
   "stash_id": "Stash-ID",
+  "stash_id_endpoint": "Stash ID Endpunkt",
   "stash_ids": "Stash IDs",
   "stashbox": {
     "go_review_draft": "Gehe zu {endpoint_name}, um Entwurf zu begutachten.",
@@ -1045,7 +1099,9 @@
     "default_filter_set": "Standardfiltersatz",
     "delete_past_tense": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} gelöscht",
     "generating_screenshot": "Screenshot wird erstellt…",
+    "merged_scenes": "Zusammengefasste Szene",
     "merged_tags": "Zusammengeführte Tags",
+    "reassign_past_tense": "Datei neu zugewiesen",
     "removed_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} gelöscht",
     "rescanning_entity": "Erneutes Scannen von {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "{entity} gespeichert",
@@ -1063,6 +1119,7 @@
   "videos": "Videos",
   "view_all": "Alle ansehen",
   "weight": "Gewicht",
+  "weight_kg": "Gewicht (kg)",
   "years_old": "Jahre alt",
   "zip_file_count": "Anzahl der Zip-Dateien"
 }

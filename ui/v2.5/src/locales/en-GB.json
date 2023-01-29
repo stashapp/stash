@@ -6,6 +6,7 @@
     "add_to_entity": "Add to {entityType}",
     "allow": "Allow",
     "allow_temporarily": "Allow temporarily",
+    "anonymise": "Anonymise",
     "apply": "Apply",
     "auto_tag": "Auto Tag",
     "backup": "Backup",
@@ -32,10 +33,11 @@
     "delete_stashid": "Delete StashID",
     "disallow": "Disallow",
     "download": "Download",
+    "download_anonymised": "Download anonymised",
     "download_backup": "Download Backup",
     "edit": "Edit",
     "edit_entity": "Edit {entityType}",
-    "export": "Export…",
+    "export": "Export",
     "export_all": "Export all…",
     "find": "Find",
     "finish": "Finish",
@@ -269,6 +271,28 @@
       "excluded_image_gallery_patterns_head": "Excluded Image/Gallery Patterns",
       "excluded_video_patterns_desc": "Regexps of video files/paths to exclude from Scan and add to Clean",
       "excluded_video_patterns_head": "Excluded Video Patterns",
+      "ffmpeg": {
+        "transcode": {
+          "input_args": {
+            "heading": "FFmpeg Transcode Input Args",
+            "desc": "Advanced: Additional arguments to pass to ffmpeg before the input field when generating video."
+          },
+          "output_args": {
+            "heading": "FFmpeg Transcode Output Args",
+            "desc": "Advanced: Additional arguments to pass to ffmpeg before the output field when generating video."
+          }
+        },
+        "live_transcode": {
+          "input_args": {
+            "heading": "FFmpeg LiveTranscode Input Args",
+            "desc": "Advanced: Additional arguments to pass to ffmpeg before the input field when live transcoding video."
+          },
+          "output_args": {
+            "heading": "FFmpeg Live Transcode Output Args",
+            "desc": "Advanced: Additional arguments to pass to ffmpeg before the output field when live transcoding video."
+          }
+        }
+      },
       "gallery_ext_desc": "Comma-delimited list of file extensions that will be identified as gallery zip files.",
       "gallery_ext_head": "Gallery zip Extensions",
       "generated_file_naming_hash_desc": "Use MD5 or oshash for generated file naming. Changing this requires that all scenes have the applicable MD5/oshash value populated. After changing this value, existing generated files will need to be migrated or regenerated. See Tasks page for migration.",
@@ -346,6 +370,9 @@
     },
     "tasks": {
       "added_job_to_queue": "Added {operation_name} to job queue",
+      "anonymising_database": "Anonymising database",
+      "anonymise_and_download": "Makes an anonymised copy of the database and downloads the resulting file.",
+      "anonymise_database": "Makes a copy of the database to the backups directory, anonymising all sensitive data. This can then be provided to others for troubleshooting and debugging purposes. The original database is not modified. Anonymised database uses the filename format {filename_format}.",
       "auto_tag": {
         "auto_tagging_all_paths": "Auto Tagging all paths",
         "auto_tagging_paths": "Auto Tagging the following paths"
@@ -436,12 +463,12 @@
       },
       "basic_settings": "Basic Settings",
       "custom_css": {
-        "description": "Page must be reloaded for changes to take effect.",
+        "description": "Page must be reloaded for changes to take effect. There is no guarantee of compatibility between custom CSS and future releases of Stash.",
         "heading": "Custom CSS",
         "option_label": "Custom CSS enabled"
       },
       "custom_javascript": {
-        "description": "Page must be reloaded for changes to take effect.",
+        "description": "Page must be reloaded for changes to take effect. There is no guarantee of compatibility between custom Javascript and future releases of Stash.",
         "heading": "Custom Javascript",
         "option_label": "Custom Javascript enabled"
       },

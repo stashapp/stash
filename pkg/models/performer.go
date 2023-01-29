@@ -160,6 +160,7 @@ type PerformerReader interface {
 	// support the query needed
 	QueryForAutoTag(ctx context.Context, words []string) ([]*Performer, error)
 	Query(ctx context.Context, performerFilter *PerformerFilterType, findFilter *FindFilterType) ([]*Performer, int, error)
+	QueryCount(ctx context.Context, galleryFilter *PerformerFilterType, findFilter *FindFilterType) (int, error)
 	AliasLoader
 	GetImage(ctx context.Context, performerID int) ([]byte, error)
 	StashIDLoader

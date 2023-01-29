@@ -106,7 +106,9 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
           </strong>
         </div>
         {truncate ? (
-          <TruncatedText className="col-7" text={text} />
+          <div className="col-7">
+            <TruncatedText text={text} />
+          </div>
         ) : (
           <span className="col-7">{text}</span>
         )}
