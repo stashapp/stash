@@ -271,6 +271,28 @@
       "excluded_image_gallery_patterns_head": "Mönster för Bild/Galleri exklusion",
       "excluded_video_patterns_desc": "Regexps av video filer/sökväg att exkludera från Skanna och lägga till på Rensa",
       "excluded_video_patterns_head": "Exluderade video-mönster",
+      "ffmpeg": {
+        "live_transcode": {
+          "input_args": {
+            "desc": "Avancerat: Ytterligare argument att skicka till ffmpeg innan input-fältet vid live videogenerering.",
+            "heading": "FFmpeg Liveomkodning Input Argument"
+          },
+          "output_args": {
+            "desc": "Avancerat: Ytterligare argument att skicka till ffmpeg innan output-fältet vid live videogenerering.",
+            "heading": "FFmpeg Liveomkodning Output Argument"
+          }
+        },
+        "transcode": {
+          "input_args": {
+            "desc": "Avancerat: Ytterligare argument att skicka till ffmpeg innan input-fältet vid videogenerering.",
+            "heading": "FFmpeg Omkodning Input Argument"
+          },
+          "output_args": {
+            "desc": "Avancerat: Ytterligare argument att skicka till ffmpeg innan output-fältet vid videogenerering.",
+            "heading": "FFmpeg Omkodning Output Argument"
+          }
+        }
+      },
       "gallery_ext_desc": "Komma-avgränsad lista av filtillägg som kommer identifieras som galleri zip-filer.",
       "gallery_ext_head": "Galleri zip-tillägg",
       "generated_file_naming_hash_desc": "Använd MD5 eller ohash för att döpa genererade filer. Ett byte kräver att alla scener har ett värde för MD5/oshash. Efter ett byte måste existerande genererade filer migreras eller återgenereras. Se Job-sidan för migration.",
