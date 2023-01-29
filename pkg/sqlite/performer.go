@@ -617,7 +617,7 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 	return query
 }
 
-func (qb *PerformerStore) Query(ctx context.Context, performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) ([]*models.Performer, int, error) {
+func (qb *PerformerStore) makeQuery(ctx context.Context, performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) (*queryBuilder, error) {
 	if performerFilter == nil {
 		performerFilter = &models.PerformerFilterType{}
 	}
@@ -635,13 +635,23 @@ func (qb *PerformerStore) Query(ctx context.Context, performerFilter *models.Per
 	}
 
 	if err := qb.validateFilter(performerFilter); err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 	filter := qb.makeFilter(ctx, performerFilter)
 
 	query.addFilter(filter)
 
 	query.sortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
+
+	return &query, nil
+}
+
+func (qb *PerformerStore) Query(ctx context.Context, performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) ([]*models.Performer, int, error) {
+	query, err := qb.makeQuery(ctx, performerFilter, findFilter)
+	if err != nil {
+		return nil, 0, err
+	}
+
 	idsResult, countResult, err := query.executeFind(ctx)
 	if err != nil {
 		return nil, 0, err
@@ -653,6 +663,15 @@ func (qb *PerformerStore) Query(ctx context.Context, performerFilter *models.Per
 	}
 
 	return performers, countResult, nil
+}
+
+func (qb *PerformerStore) QueryCount(ctx context.Context, performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) (int, error) {
+	query, err := qb.makeQuery(ctx, performerFilter, findFilter)
+	if err != nil {
+		return 0, err
+	}
+
+	return query.executeCount(ctx)
 }
 
 func performerIsMissingCriterionHandler(qb *PerformerStore, isMissing *string) criterionHandlerFunc {

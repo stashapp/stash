@@ -19,6 +19,7 @@ fragment StudioData on Studio {
   scene_count
   image_count
   gallery_count
+  performer_count
   movie_count
   stash_ids {
     stash_id
