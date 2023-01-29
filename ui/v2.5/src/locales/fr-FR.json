@@ -271,6 +271,28 @@
       "excluded_image_gallery_patterns_head": "Modèles d'image ou galerie exclués",
       "excluded_video_patterns_desc": "Expressions régulières de fichiers vidéo ou de chemins d'accès à exclure de l'analyse et à ajouter au nettoyage",
       "excluded_video_patterns_head": "Modèles de vidéo exclués",
+      "ffmpeg": {
+        "live_transcode": {
+          "input_args": {
+            "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ d'entrée lors du transcodage en temps réel de la vidéo.",
+            "heading": "Arguments d'entrée du transcodage FFmpeg en temps réel"
+          },
+          "output_args": {
+            "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ de sortie lors du transcodage en temps réel de la vidéo.",
+            "heading": "Arguments de sortie du transcodage FFmpeg en temps réel"
+          }
+        },
+        "transcode": {
+          "input_args": {
+            "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ d'entrée lors de la génération de la vidéo.",
+            "heading": "Arguments d'entrée pour le transcodage FFmpeg"
+          },
+          "output_args": {
+            "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ de sortie lors de la génération de la vidéo.",
+            "heading": "Arguments de sortie du transcodage FFmpeg"
+          }
+        }
+      },
       "gallery_ext_desc": "Liste d'extensions de fichiers séparées par des virgules qui seront reconnues comme des archives zip de la galerie.",
       "gallery_ext_head": "Extensions zip de la galerie",
       "generated_file_naming_hash_desc": "Utilisez MD5 ou oshash pour le nommage des fichiers générés. Le modifier exige que toutes les scènes soient renseignées avec une valeur MD5/oshash appropriée. Après avoir modifié cette valeur, les fichiers générés existants devront être migrés ou régénérés. Voir la page Tâches pour la migration.",
