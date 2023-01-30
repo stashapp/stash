@@ -760,6 +760,8 @@ github.com/vektah/gqlparser/v2 v2.4.1/go.mod h1:flJWIR04IMQPGz+BXLrORkrARBxv/rty
 github.com/vektra/mockery/v2 v2.10.0 h1:MiiQWxwdq7/ET6dCXLaJzSGEN17k758H7JHS9kOdiks=
 github.com/vektra/mockery/v2 v2.10.0/go.mod h1:m/WO2UzWzqgVX3nvqpRQq70I4Z7jbSCRhdmkgtp+Ab4=
 github.com/willf/bitset v1.1.9/go.mod h1:RjeCKbqT1RxIR/KWY6phxZiaY1IyutSBfGjNPySAYV4=
+github.com/xWTF/chardet v0.0.0-20230130095620-eedb297150c7 h1:dg+xwwmT5K0/YoMpDxtxy8rhBqtaOcUMv/u+Si1KV9I=
+github.com/xWTF/chardet v0.0.0-20230130095620-eedb297150c7/go.mod h1:LZhJlr/6ri5Tqwrz7oQZrnykN4IKfV8LL5792KHRCzg=
 github.com/xanzy/go-gitlab v0.15.0/go.mod h1:8zdQa/ri1dfn8eS3Ir1SyfvOKlw7WBJ8DVThkpGiXrs=
 github.com/xdg-go/pbkdf2 v1.0.0/go.mod h1:jrpuAogTd400dnrH08LKmI/xc1MbPOebTwRqcT5RDeI=
 github.com/xdg-go/scram v1.0.2/go.mod h1:1WAq6h33pAW+iRreB34OORO2Nf7qel3VV3fjBj+hCSs=

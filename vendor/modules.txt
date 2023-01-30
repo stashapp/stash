@@ -173,6 +173,9 @@ github.com/gobwas/pool/pbytes
 ## explicit; go 1.15
 github.com/gobwas/ws
 github.com/gobwas/ws/wsutil
+# github.com/gogs/chardet v0.0.0-20211120154057-b7413eaefb8f => github.com/xWTF/chardet v0.0.0-20230130095620-eedb297150c7
+## explicit; go 1.19
+github.com/gogs/chardet
 # github.com/golang-jwt/jwt/v4 v4.0.0
 ## explicit; go 1.15
 github.com/golang-jwt/jwt/v4
@@ -506,3 +509,4 @@ gopkg.in/yaml.v2
 ## explicit
 gopkg.in/yaml.v3
 # git.apache.org/thrift.git => github.com/apache/thrift v0.0.0-20180902110319-2566ecd5d999
+# github.com/gogs/chardet => github.com/xWTF/chardet v0.0.0-20230130095620-eedb297150c7
