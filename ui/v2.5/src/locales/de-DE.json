@@ -6,6 +6,7 @@
     "add_to_entity": "Hinzufügen zu {entityType}",
     "allow": "Erlauben",
     "allow_temporarily": "Vorübergehend erlauben",
+    "anonymise": "Anonymisieren",
     "apply": "Übernehmen",
     "auto_tag": "Auto-Tag",
     "backup": "Backup",
@@ -32,10 +33,11 @@
     "delete_stashid": "StashID löschen",
     "disallow": "Nicht erlauben",
     "download": "Herunterladen",
+    "download_anonymised": "Anonymisiert herunterladen",
     "download_backup": "Lade Backup herunter",
     "edit": "Bearbeiten",
     "edit_entity": "Bearbeiten {entityType}",
-    "export": "Exportieren…",
+    "export": "Exportieren",
     "export_all": "Alle exportieren…",
     "find": "Suchen",
     "finish": "Fertig",
@@ -269,6 +271,28 @@
       "excluded_image_gallery_patterns_head": "Schema für ausgeschlossene Bilder/Galerien",
       "excluded_video_patterns_desc": "Reguläre Ausdrücke für Dateinamen/Pfade von Videos, welche von Scans ausgeschlossen werden und beim Aufräumen der Datenbank berücksichtigt werden sollen",
       "excluded_video_patterns_head": "Schema für ausgeschlossene Videos",
+      "ffmpeg": {
+        "live_transcode": {
+          "input_args": {
+            "desc": "Erweitert: Zusätzliche Parameter für die Live-Transkodierung mit ffmpeg, welche vor dem Eingabefeld übergeben werden können.",
+            "heading": "FFmpeg Live Transcode Eingangsparameter"
+          },
+          "output_args": {
+            "desc": "Erweitert: Zusätzliche Parameter für die Live-Transkodierung mit ffmpeg, welche vor dem Ausgabefeld übergeben werden können.",
+            "heading": "FFmpeg Live-Transkodierung Ausgangsparameter"
+          }
+        },
+        "transcode": {
+          "input_args": {
+            "desc": "Erweitert: Zusätzliche Parameter für die Videogenerierung mit ffmpeg, welche vor dem Eingabefeld übergeben werden können.",
+            "heading": "FFmpeg Transkodierung Eingangsparameter"
+          },
+          "output_args": {
+            "desc": "Erweitert: Zusätzliche Parameter für die Videogenerierung mit ffmpeg, welche vor dem Ausgabefeld übergeben werden können.",
+            "heading": "FFmpeg Transkodierung Ausgangsparameter"
+          }
+        }
+      },
       "gallery_ext_desc": "Durch Kommas getrennte Liste von Dateiformaten, welche als Galeriecontainer gelesen werden sollen.",
       "gallery_ext_head": "Galeriecontainer Dateiformate",
       "generated_file_naming_hash_desc": "Verwende MD5 oder oshash für die Benennung der generierten Dateien. Um dies zu ändern, müssen für alle Szenen der entsprechende MD5/oshash berechnet werden. Nachdem dieser Wert geändert wurde, müssen vorhandene generierte Dateien migriert oder neu generiert werden. Siehe Aufgabenseite für die Migration.",
@@ -346,6 +370,9 @@
     },
     "tasks": {
       "added_job_to_queue": "{operation_name} zur Auftragswarteschlange hinzugefügt",
+      "anonymise_and_download": "Erstellt eine anonymisierte Kopie der Datenbank und lädt diese im Anschluss herunter.",
+      "anonymise_database": "Erstellt eine Kopie der Datenbank in das Backup-Verzeichnis und anonymisiert alle empfindlichen Daten. Diese kann dann für zur Fehlersuche und -behebung geteilt werden. Die ursprüngliche Datenbank wird dabei nicht verändert. Die anonymisierte Datenbank verwendet das Dateiformat {filename_format}.",
+      "anonymising_database": "Anonymisiere Datenbank",
       "auto_tag": {
         "auto_tagging_all_paths": "Automatisches Taggen aller Pfade",
         "auto_tagging_paths": "Automatisches Taggen der folgenden Pfade"
@@ -436,12 +463,12 @@
       },
       "basic_settings": "Grundeinstellungen",
       "custom_css": {
-        "description": "Die Seite muss neu geladen werden, damit die Änderungen wirksam werden.",
+        "description": "Die Seite muss neu geladen werden, damit die Änderungen wirksam werden. Es gibt keine Garantie für die Kompatibilität des benutzerdefinierten CSS und zukünftigen Versionen von Stash.",
         "heading": "Benutzerdefinierte CSS",
         "option_label": "Benutzerdefiniertes CSS aktiviert"
       },
       "custom_javascript": {
-        "description": "Seite muss neu geladen werden, damit die Änderungen wirksam werden.",
+        "description": "Seite muss neu geladen werden, damit die Änderungen wirksam werden. Es gibt keine Garantie für die Kompatibilität des benutzerdefinierten Javascript und zukünftigen Versionen von Stash.",
         "heading": "Benutzerdefiniertes Javascript",
         "option_label": "Benutzerdefiniertes Javascript aktiviert"
       },
@@ -473,6 +500,7 @@
         "heading": "Editieren",
         "rating_system": {
           "star_precision": {
+            "label": "Präzision der Sternebewertung",
             "options": {
               "full": "Voll",
               "half": "Halb",
@@ -954,6 +982,7 @@
   },
   "performers": "Darsteller",
   "piercings": "Piercings",
+  "play_count": "Anzahl der Videowiedergaben",
   "play_duration": "Abspiellänge",
   "primary_file": "Primäre Datei",
   "queue": "Playlist",
@@ -967,6 +996,7 @@
   "scene": "Szene",
   "sceneTagger": "Szenen-Tagger",
   "sceneTags": "Szenen-Tags",
+  "scene_code": "Studio Code",
   "scene_count": "Szenenanzahl",
   "scene_created_at": "Szene angelegt am",
   "scene_date": "Datum der Szene",
