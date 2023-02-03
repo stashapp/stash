@@ -129,6 +129,10 @@ const (
 	// rather than use the embedded UI.
 	CustomUILocation = "custom_ui_location"
 
+	// Gallery Cover Regex
+	GalleryCoverRegex        = "gallery_cover_regex"
+	galleryCoverRegexDefault = `(poster|cover|folder|board)(\.jpg|\.jpeg|\.png)$`
+
 	// Interface options
 	MenuItems = "menu_items"
 
@@ -633,6 +637,10 @@ func (i *Instance) GetVideoFileNamingAlgorithm() models.HashAlgorithm {
 	}
 
 	return models.HashAlgorithm(ret)
+}
+
+func (i *Instance) GetGalleryCoverRegex() string {
+	return i.getString(GalleryCoverRegex)
 }
 
 func (i *Instance) GetScrapersPath() string {
@@ -1439,6 +1447,9 @@ func (i *Instance) setDefaultValues(write bool) error {
 	// Set default scrapers and plugins paths
 	i.main.SetDefault(ScrapersPath, defaultScrapersPath)
 	i.main.SetDefault(PluginsPath, defaultPluginsPath)
+
+	// Set default gallery cover regex
+	i.main.SetDefault(GalleryCoverRegex, galleryCoverRegexDefault)
 
 	if write {
 		return i.main.WriteConfig()
