@@ -129,6 +129,7 @@ These options are typically not exposed in the UI and must be changed manually i
 | `custom_ui_location` | The file system folder where the UI files will be served from, instead of using the embedded UI. Empty to disable. Stash must be restarted to take effect. |
 | `max_upload_size` | Maximum file upload size for import files. Defaults to 1GB. |
 | `theme_color` | Sets the `theme-color` property in the UI. |
+| `gallery_cover_regex` | The regex responsible for selecting images as gallery covers |
 
 ### Custom served folders
 

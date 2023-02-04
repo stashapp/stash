@@ -21,6 +21,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
+	"github.com/stashapp/stash/pkg/plugin/common/log"
 )
 
 var officialBuild string
@@ -640,6 +641,14 @@ func (i *Instance) GetVideoFileNamingAlgorithm() models.HashAlgorithm {
 }
 
 func (i *Instance) GetGalleryCoverRegex() string {
+	var regexString = i.getString(GalleryCoverRegex)
+
+	_, err := regexp.Compile(regexString)
+	if err != nil {
+		log.Warn(fmt.Sprintf("Gallery cover regex '%v' invalid, reverting to default.", regexString))
+		return galleryCoverRegexDefault
+	}
+
 	return i.getString(GalleryCoverRegex)
 }
 
