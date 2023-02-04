@@ -131,7 +131,7 @@ const (
 
 	// Gallery Cover Regex
 	GalleryCoverRegex        = "gallery_cover_regex"
-	galleryCoverRegexDefault = `(poster|cover|folder|board)(\.jpg|\.jpeg|\.png)$`
+	galleryCoverRegexDefault = `(poster|cover|folder|board)\.[^\.]+$`
 
 	// Interface options
 	MenuItems = "menu_items"
