@@ -123,6 +123,10 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		ScraperCDPPath:               &scraperCDPPath,
 		StashBoxes:                   config.GetStashBoxes(),
 		PythonPath:                   config.GetPythonPath(),
+		TranscodeInputArgs:           config.GetTranscodeInputArgs(),
+		TranscodeOutputArgs:          config.GetTranscodeOutputArgs(),
+		LiveTranscodeInputArgs:       config.GetLiveTranscodeInputArgs(),
+		LiveTranscodeOutputArgs:      config.GetLiveTranscodeOutputArgs(),
 	}
 }
 

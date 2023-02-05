@@ -60,6 +60,12 @@ const (
 	MaxTranscodeSize          = "max_transcode_size"
 	MaxStreamingTranscodeSize = "max_streaming_transcode_size"
 
+	// ffmpeg extra args options
+	TranscodeInputArgs      = "ffmpeg.transcode.input_args"
+	TranscodeOutputArgs     = "ffmpeg.transcode.output_args"
+	LiveTranscodeInputArgs  = "ffmpeg.live_transcode.input_args"
+	LiveTranscodeOutputArgs = "ffmpeg.live_transcode.output_args"
+
 	ParallelTasks        = "parallel_tasks"
 	parallelTasksDefault = 1
 
@@ -793,6 +799,22 @@ func (i *Instance) GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum
 	return models.StreamingResolutionEnum(ret)
 }
 
+func (i *Instance) GetTranscodeInputArgs() []string {
+	return i.getStringSlice(TranscodeInputArgs)
+}
+
+func (i *Instance) GetTranscodeOutputArgs() []string {
+	return i.getStringSlice(TranscodeOutputArgs)
+}
+
+func (i *Instance) GetLiveTranscodeInputArgs() []string {
+	return i.getStringSlice(LiveTranscodeInputArgs)
+}
+
+func (i *Instance) GetLiveTranscodeOutputArgs() []string {
+	return i.getStringSlice(LiveTranscodeOutputArgs)
+}
+
 // IsWriteImageThumbnails returns true if image thumbnails should be written
 // to disk after generating on the fly.
 func (i *Instance) IsWriteImageThumbnails() bool {
@@ -1272,7 +1294,7 @@ func (i *Instance) GetDefaultGenerateSettings() *models.GenerateMetadataOptions 
 }
 
 // GetDangerousAllowPublicWithoutAuth determines if the security feature is enabled.
-// See https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet
+// See https://docs.stashapp.cc/docs/Network/Authentication-Required-When-Accessing-Stash-From-the-Internet/
 func (i *Instance) GetDangerousAllowPublicWithoutAuth() bool {
 	return i.getBool(dangerousAllowPublicWithoutAuth)
 }

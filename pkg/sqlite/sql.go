@@ -197,9 +197,9 @@ func getDateWhereClause(column string, modifier models.CriterionModifier, value 
 
 	switch modifier {
 	case models.CriterionModifierIsNull:
-		return fmt.Sprintf("(%s IS NULL OR %s = '')", column, column), nil
+		return fmt.Sprintf("(%s IS NULL OR %s = '' OR %s = '0001-01-01')", column, column, column), nil
 	case models.CriterionModifierNotNull:
-		return fmt.Sprintf("(%s IS NOT NULL AND %s != '')", column, column), nil
+		return fmt.Sprintf("(%s IS NOT NULL AND %s != '' AND %s != '0001-01-01')", column, column, column), nil
 	case models.CriterionModifierEquals:
 		return fmt.Sprintf("%s = ?", column), args
 	case models.CriterionModifierNotEquals:

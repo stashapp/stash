@@ -807,8 +807,14 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 	if scene.Title != "" {
 		draft.Title = &scene.Title
 	}
+	if scene.Code != "" {
+		draft.Code = &scene.Code
+	}
 	if scene.Details != "" {
 		draft.Details = &scene.Details
+	}
+	if scene.Director != "" {
+		draft.Director = &scene.Director
 	}
 	if scene.URL != "" && len(strings.TrimSpace(scene.URL)) > 0 {
 		url := strings.TrimSpace(scene.URL)
