@@ -1378,7 +1378,7 @@ func (i *Instance) GetProxy() string {
 	reg := regexp.MustCompile(`^((?:socks5h?|https?):\/\/)(([\P{Cc}]+):([\P{Cc}]+)@)?(([a-zA-Z0-9][a-zA-Z0-9.-]*)(:[0-9]{1,5})?)`)
 	proxy := i.getString(Proxy)
 	if proxy != "" && reg.MatchString(proxy) {
-		logger.Info("Proxy is valid, using it")
+		logger.Debug("Proxy is valid, using it")
 		return proxy
 	} else if proxy != "" {
 		logger.Error("Proxy is invalid, please review your configuration")
