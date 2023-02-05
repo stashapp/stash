@@ -21,7 +21,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
-	"github.com/stashapp/stash/pkg/plugin/common/log"
 )
 
 var officialBuild string
@@ -645,11 +644,11 @@ func (i *Instance) GetGalleryCoverRegex() string {
 
 	_, err := regexp.Compile(regexString)
 	if err != nil {
-		log.Warn(fmt.Sprintf("Gallery cover regex '%v' invalid, reverting to default.", regexString))
+		logger.Warnf(fmt.Sprintf("Gallery cover regex '%v' invalid, reverting to default.", regexString))
 		return galleryCoverRegexDefault
 	}
 
-	return i.getString(GalleryCoverRegex)
+	return regexString
 }
 
 func (i *Instance) GetScrapersPath() string {
