@@ -109,8 +109,12 @@ type githubTagResponse struct {
 }
 
 func makeGithubRequest(ctx context.Context, url string, output interface{}) error {
+
+	transport := &http.Transport{Proxy: http.ProxyFromEnvironment}
+
 	client := &http.Client{
-		Timeout: 3 * time.Second,
+		Timeout:   3 * time.Second,
+		Transport: transport,
 	}
 
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
