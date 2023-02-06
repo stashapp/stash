@@ -644,7 +644,7 @@ func (i *Instance) GetGalleryCoverRegex() string {
 
 	_, err := regexp.Compile(regexString)
 	if err != nil {
-		logger.Warnf(fmt.Sprintf("Gallery cover regex '%v' invalid, reverting to default.", regexString))
+		logger.Warnf("Gallery cover regex '%v' invalid, reverting to default.", regexString)
 		return galleryCoverRegexDefault
 	}
 
