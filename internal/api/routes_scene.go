@@ -77,8 +77,8 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/scene_marker/{sceneMarkerId}/preview", rs.SceneMarkerPreview)
 		r.Get("/scene_marker/{sceneMarkerId}/screenshot", rs.SceneMarkerScreenshot)
 	})
-	r.With(rs.SceneCtx).Get("/{sceneId}_thumbs.vtt", rs.VttThumbs)
-	r.With(rs.SceneCtx).Get("/{sceneId}_sprite.jpg", rs.VttSprite)
+	r.Get("/{sceneHash}_thumbs.vtt", rs.VttThumbs)
+	r.Get("/{sceneHash}_sprite.jpg", rs.VttSprite)
 
 	return r
 }
@@ -424,16 +424,16 @@ func (rs sceneRoutes) CaptionLang(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rs sceneRoutes) VttThumbs(w http.ResponseWriter, r *http.Request) {
-	scene := r.Context().Value(sceneKey).(*models.Scene)
+	sceneHash := chi.URLParam(r, "sceneHash")
 	w.Header().Set("Content-Type", "text/vtt")
-	filepath := manager.GetInstance().Paths.Scene.GetSpriteVttFilePath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
+	filepath := manager.GetInstance().Paths.Scene.GetSpriteVttFilePath(sceneHash)
 	http.ServeFile(w, r, filepath)
 }
 
 func (rs sceneRoutes) VttSprite(w http.ResponseWriter, r *http.Request) {
-	scene := r.Context().Value(sceneKey).(*models.Scene)
+	sceneHash := chi.URLParam(r, "sceneHash")
 	w.Header().Set("Content-Type", "image/jpeg")
-	filepath := manager.GetInstance().Paths.Scene.GetSpriteImageFilePath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
+	filepath := manager.GetInstance().Paths.Scene.GetSpriteImageFilePath(sceneHash)
 	http.ServeFile(w, r, filepath)
 }
 
@@ -542,28 +542,16 @@ func (rs sceneRoutes) SceneMarkerScreenshot(w http.ResponseWriter, r *http.Reque
 
 func (rs sceneRoutes) SceneCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		sceneIdentifierQueryParam := chi.URLParam(r, "sceneId")
-		sceneID, _ := strconv.Atoi(sceneIdentifierQueryParam)
+		sceneID, err := strconv.Atoi(chi.URLParam(r, "sceneId"))
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
 
 		var scene *models.Scene
 		_ = txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 			qb := rs.sceneFinder
-			if sceneID == 0 {
-				var scenes []*models.Scene
-				// determine checksum/os by the length of the query param
-				if len(sceneIdentifierQueryParam) == 32 {
-					scenes, _ = qb.FindByChecksum(ctx, sceneIdentifierQueryParam)
-
-				} else {
-					scenes, _ = qb.FindByOSHash(ctx, sceneIdentifierQueryParam)
-				}
-
-				if len(scenes) > 0 {
-					scene = scenes[0]
-				}
-			} else {
-				scene, _ = qb.Find(ctx, sceneID)
-			}
+			scene, _ = qb.Find(ctx, sceneID)
 
 			if scene != nil {
 				if err := scene.LoadPrimaryFile(ctx, rs.fileFinder); err != nil {

@@ -43,12 +43,12 @@ func (b SceneURLBuilder) GetStreamPreviewImageURL() string {
 	return b.BaseURL + "/scene/" + b.SceneID + "/webp"
 }
 
-func (b SceneURLBuilder) GetSpriteVTTURL() string {
-	return b.BaseURL + "/scene/" + b.SceneID + "_thumbs.vtt"
+func (b SceneURLBuilder) GetSpriteVTTURL(checksum string) string {
+	return b.BaseURL + "/scene/" + checksum + "_thumbs.vtt"
 }
 
-func (b SceneURLBuilder) GetSpriteURL() string {
-	return b.BaseURL + "/scene/" + b.SceneID + "_sprite.jpg"
+func (b SceneURLBuilder) GetSpriteURL(checksum string) string {
+	return b.BaseURL + "/scene/" + checksum + "_sprite.jpg"
 }
 
 func (b SceneURLBuilder) GetScreenshotURL(updateTime time.Time) string {
