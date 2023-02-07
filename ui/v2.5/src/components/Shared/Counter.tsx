@@ -17,7 +17,7 @@ export const Counter: React.FC<IProps> = ({
   if (abbreviateCounter) {
     const formated = TextUtils.abbreviateCounter(count);
     return (
-      <Badge className="left-spacing" pill variant="secondary" data-count={intl.formatNumber(count)}>
+      <Badge className="left-spacing" pill variant="secondary" data-value={intl.formatNumber(count)}>
         <FormattedNumber
           value={formated.size}
           maximumFractionDigits={formated.digits}
@@ -27,7 +27,7 @@ export const Counter: React.FC<IProps> = ({
     );
   } else {
     return (
-      <Badge className="left-spacing" pill variant="secondary" data-count={intl.formatNumber(count)}>
+      <Badge className="left-spacing" pill variant="secondary" data-value={intl.formatNumber(count)}>
         {intl.formatNumber(count)}
       </Badge>
     );
