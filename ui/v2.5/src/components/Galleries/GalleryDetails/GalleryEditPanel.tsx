@@ -139,7 +139,7 @@ export const GalleryEditPanel: React.FC<
 
   useRatingKeybinds(
     isVisible,
-    stashConfig?.ui.ratingSystemOptions.type,
+    stashConfig?.ui?.ratingSystemOptions?.type,
     setRating
   );
 
