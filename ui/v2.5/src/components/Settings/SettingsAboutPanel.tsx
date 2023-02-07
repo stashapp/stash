@@ -112,7 +112,7 @@ export const SettingsAboutPanel: React.FC = () => {
                       rel="noopener noreferrer"
                       target="_blank"
                     >
-                      Stash-Docs
+                      Documentation
                     </a>
                   ),
                 }
