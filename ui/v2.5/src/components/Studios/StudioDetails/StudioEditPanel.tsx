@@ -11,6 +11,8 @@ import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { StringListInput } from "../../Shared/StringListInput";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import { useRatingKeybinds } from "src/hooks/keybinds";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface IStudioEditPanel {
   studio: Partial<GQL.StudioDataFragment>;
@@ -32,6 +34,8 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
   onImageEncoding,
 }) => {
   const intl = useIntl();
+
+  const { configuration } = React.useContext(ConfigurationContext);
 
   const isNew = !studio || !studio.id;
 
@@ -99,38 +103,18 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     return input;
   }
 
+  useRatingKeybinds(
+    true,
+    configuration?.ui.ratingSystemOptions.type,
+    setRating
+  );
+
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("s s", () => formik.handleSubmit());
 
-    // numeric keypresses get caught by jwplayer, so blur the element
-    // if the rating sequence is started
-    Mousetrap.bind("r", () => {
-      if (document.activeElement instanceof HTMLElement) {
-        document.activeElement.blur();
-      }
-
-      Mousetrap.bind("0", () => setRating(NaN));
-      Mousetrap.bind("1", () => setRating(20));
-      Mousetrap.bind("2", () => setRating(40));
-      Mousetrap.bind("3", () => setRating(60));
-      Mousetrap.bind("4", () => setRating(80));
-      Mousetrap.bind("5", () => setRating(100));
-
-      setTimeout(() => {
-        Mousetrap.unbind("0");
-        Mousetrap.unbind("1");
-        Mousetrap.unbind("2");
-        Mousetrap.unbind("3");
-        Mousetrap.unbind("4");
-        Mousetrap.unbind("5");
-      }, 1000);
-    });
-
     return () => {
       Mousetrap.unbind("s s");
-
-      Mousetrap.unbind("e");
     };
   });
 
