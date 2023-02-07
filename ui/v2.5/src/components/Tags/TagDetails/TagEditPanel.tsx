@@ -82,6 +82,11 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     onSubmit: doSubmit,
   });
 
+  // always dirty if creating a new tag with a name
+  if (isNew && tag?.name) {
+    formik.dirty = true;
+  }
+
   async function doSubmit(values: InputValues) {
     const id = await onSubmit(getTagInput(values));
     if (id) {
@@ -260,6 +265,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
         isEditing={isEditing}
         onToggleEdit={onCancel}
         onSave={() => formik.handleSubmit()}
+        saveDisabled={!formik.dirty}
         onImageChange={onImageChange}
         onImageChangeURL={setImage}
         onClearImage={() => {
