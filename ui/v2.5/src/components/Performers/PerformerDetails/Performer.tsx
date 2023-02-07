@@ -113,7 +113,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
 
   useRatingKeybinds(
     true,
-    configuration?.ui.ratingSystemOptions.type,
+    configuration?.ui?.ratingSystemOptions?.type,
     setRating
   );
 

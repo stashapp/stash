@@ -105,7 +105,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
 
   useRatingKeybinds(
     true,
-    configuration?.ui.ratingSystemOptions.type,
+    configuration?.ui?.ratingSystemOptions?.type,
     setRating
   );
 
