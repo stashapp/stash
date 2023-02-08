@@ -9,8 +9,8 @@ import (
 	"io/fs"
 	"path/filepath"
 
-	"github.com/gogs/chardet"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/xWTF/chardet"
 
 	"golang.org/x/net/html/charset"
 	"golang.org/x/text/transform"

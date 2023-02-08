@@ -50,7 +50,6 @@ require (
 	github.com/doug-martin/goqu/v9 v9.18.0
 	github.com/go-chi/httplog v0.2.1
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4
-	github.com/gogs/chardet v0.0.0-20211120154057-b7413eaefb8f
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/kermieisinthehouse/gosx-notifier v0.1.1
 	github.com/kermieisinthehouse/systray v1.2.4
@@ -59,6 +58,7 @@ require (
 	github.com/vearutop/statigz v1.1.6
 	github.com/vektah/dataloaden v0.3.0
 	github.com/vektah/gqlparser/v2 v2.4.1
+	github.com/xWTF/chardet v0.0.0-20230208095535-c780f2ac244e
 	gopkg.in/guregu/null.v4 v4.0.0
 )
 
@@ -108,7 +108,5 @@ require (
 )
 
 replace git.apache.org/thrift.git => github.com/apache/thrift v0.0.0-20180902110319-2566ecd5d999
-
-replace github.com/gogs/chardet => github.com/xWTF/chardet v0.0.0-20230130095620-eedb297150c7
 
 go 1.19
