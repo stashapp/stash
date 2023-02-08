@@ -96,7 +96,7 @@ type Query {
 
   """Scrapes a complete performer record based on a URL"""
   scrapePerformerURL(url: String!): ScrapedPerformer
-  """Scrapes a complete performer record based on a URL"""
+  """Scrapes a complete scene record based on a URL"""
   scrapeSceneURL(url: String!): ScrapedScene
   """Scrapes a complete gallery record based on a URL"""
   scrapeGalleryURL(url: String!): ScrapedGallery
@@ -281,6 +281,9 @@ type Mutation {
   metadataIdentify(input: IdentifyMetadataInput!): ID!
   """Migrate generated files for the current hash naming"""
   migrateHashNaming: ID!
+  
+  """Anonymise the database in a separate file. Optionally returns a link to download the database file"""
+  anonymiseDatabase(input: AnonymiseDatabaseInput!): String
 
   """Reload scrapers"""
   reloadScrapers: Boolean!

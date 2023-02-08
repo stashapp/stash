@@ -47,12 +47,18 @@ type ScenePaths interface {
 	GetTranscodePath(checksum string) string
 }
 
+type FFMpegConfig interface {
+	GetTranscodeInputArgs() []string
+	GetTranscodeOutputArgs() []string
+}
+
 type Generator struct {
-	Encoder     ffmpeg.FFMpeg
-	LockManager *fsutil.ReadLockManager
-	MarkerPaths MarkerPaths
-	ScenePaths  ScenePaths
-	Overwrite   bool
+	Encoder      ffmpeg.FFMpeg
+	FFMpegConfig FFMpegConfig
+	LockManager  *fsutil.ReadLockManager
+	MarkerPaths  MarkerPaths
+	ScenePaths   ScenePaths
+	Overwrite    bool
 }
 
 type generateFn func(lockCtx *fsutil.LockContext, tmpFn string) error

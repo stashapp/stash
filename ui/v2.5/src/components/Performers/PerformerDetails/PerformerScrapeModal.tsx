@@ -70,6 +70,7 @@ const PerformerScrapeModal: React.FC<IProps> = ({
                   onClick={() => onSelectPerformer(p, scraper)}
                 >
                   {p.name}
+                  {p.disambiguation && ` (${p.disambiguation})`}
                 </Button>
               </li>
             ))}

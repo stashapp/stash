@@ -2,6 +2,7 @@ package video
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -59,23 +60,6 @@ func IsLangInCaptions(lang string, ext string, captions []*models.VideoCaption) 
 	return false
 }
 
-// CleanCaptions removes non existent/accessible language codes from captions
-func CleanCaptions(scenePath string, captions []*models.VideoCaption) (cleanedCaptions []*models.VideoCaption, changed bool) {
-	changed = false
-	for _, caption := range captions {
-		found := false
-		f := caption.Path(scenePath)
-		if _, er := os.Stat(f); er == nil {
-			cleanedCaptions = append(cleanedCaptions, caption)
-			found = true
-		}
-		if !found {
-			changed = true
-		}
-	}
-	return
-}
-
 // getCaptionPrefix returns the prefix used to search for video files for the provided caption path
 func getCaptionPrefix(captionPath string) string {
 	basename := strings.TrimSuffix(captionPath, filepath.Ext(captionPath)) // caption filename without the extension
@@ -114,13 +98,22 @@ func AssociateCaptions(ctx context.Context, captionPath string, txnMgr txn.Manag
 	captionPrefix := getCaptionPrefix(captionPath)
 	if err := txn.WithTxn(ctx, txnMgr, func(ctx context.Context) error {
 		var err error
-		f, er := fqb.FindByPath(ctx, captionPrefix+"*")
+		files, er := fqb.FindAllByPath(ctx, captionPrefix+"*")
 
 		if er != nil {
 			return fmt.Errorf("searching for scene %s: %w", captionPrefix, er)
 		}
 
-		if f != nil { // found related Scene
+		for _, f := range files {
+			// found some files
+			// filter out non video files
+			switch f.(type) {
+			case *file.VideoFile:
+				break
+			default:
+				continue
+			}
+
 			fileID := f.Base().ID
 			path := f.Base().Path
 
@@ -147,4 +140,53 @@ func AssociateCaptions(ctx context.Context, captionPath string, txnMgr txn.Manag
 	}); err != nil {
 		logger.Error(err.Error())
 	}
+}
+
+// CleanCaptions removes non existent/accessible language codes from captions
+func CleanCaptions(ctx context.Context, f *file.VideoFile, txnMgr txn.Manager, w CaptionUpdater) error {
+	captions, err := w.GetCaptions(ctx, f.ID)
+	if err != nil {
+		return fmt.Errorf("getting captions for file %s: %w", f.Path, err)
+	}
+
+	if len(captions) == 0 {
+		return nil
+	}
+
+	filePath := f.Path
+
+	changed := false
+	var newCaptions []*models.VideoCaption
+
+	for _, caption := range captions {
+		captionPath := caption.Path(filePath)
+		_, err := os.Stat(captionPath)
+		if errors.Is(err, os.ErrNotExist) {
+			logger.Infof("Removing non existent caption %s for %s", caption.Filename, f.Path)
+			changed = true
+		} else {
+			// other errors are ignored for the purposes of cleaning
+			newCaptions = append(newCaptions, caption)
+		}
+	}
+
+	if changed {
+		fn := func(ctx context.Context) error {
+			return w.UpdateCaptions(ctx, f.ID, newCaptions)
+		}
+
+		// possible that we are already in a transaction and txnMgr is nil
+		// in that case just call the function directly
+		if txnMgr == nil {
+			err = fn(ctx)
+		} else {
+			err = txn.WithTxn(ctx, txnMgr, fn)
+		}
+
+		if err != nil {
+			return fmt.Errorf("updating captions for file %s: %w", f.Path, err)
+		}
+	}
+
+	return nil
 }

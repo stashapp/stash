@@ -108,11 +108,11 @@ export const SettingsAboutPanel: React.FC = () => {
                 {
                   url: (
                     <a
-                      href="https://github.com/stashapp/stash/wiki"
+                      href="https://docs.stashapp.cc"
                       rel="noopener noreferrer"
                       target="_blank"
                     >
-                      Wiki
+                      Documentation
                     </a>
                   ),
                 }

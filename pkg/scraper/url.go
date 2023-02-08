@@ -9,10 +9,12 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/chromedp/cdproto/cdp"
+	"github.com/chromedp/cdproto/fetch"
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
 	jsoniter "github.com/json-iterator/go"
@@ -157,6 +159,11 @@ func urlFromCDP(ctx context.Context, urlCDP string, driverOptions scraperDriverO
 				chromedp.UserDataDir(dir),
 				chromedp.ExecPath(cdpPath),
 			)
+			if globalConfig.GetProxy() != "" {
+				url, _, _ := splitProxyAuth(globalConfig.GetProxy())
+				opts = append(opts, chromedp.ProxyServer(url))
+			}
+
 			ctx, cancelAct = chromedp.NewExecAllocator(ctx, opts...)
 		}
 
@@ -172,6 +179,39 @@ func urlFromCDP(ctx context.Context, urlCDP string, driverOptions scraperDriverO
 
 	var res string
 	headers := cdpHeaders(driverOptions)
+
+	if proxyUsesAuth(globalConfig.GetProxy()) {
+		_, user, pass := splitProxyAuth(globalConfig.GetProxy())
+
+		// Based on https://github.com/chromedp/examples/blob/master/proxy/main.go
+		lctx, lcancel := context.WithCancel(ctx)
+		chromedp.ListenTarget(lctx, func(ev interface{}) {
+			switch ev := ev.(type) {
+			case *fetch.EventRequestPaused:
+				go func() {
+					_ = chromedp.Run(ctx, fetch.ContinueRequest(ev.RequestID))
+				}()
+			case *fetch.EventAuthRequired:
+				if ev.AuthChallenge.Source == fetch.AuthChallengeSourceProxy {
+					go func() {
+						_ = chromedp.Run(ctx,
+							fetch.ContinueWithAuth(ev.RequestID, &fetch.AuthChallengeResponse{
+								Response: fetch.AuthChallengeResponseResponseProvideCredentials,
+								Username: user,
+								Password: pass,
+							}),
+							// Chrome will remember the credential for the current instance,
+							// so we can disable the fetch domain once credential is provided.
+							// Please file an issue if Chrome does not work in this way.
+							fetch.Disable(),
+						)
+						// and cancel the event handler too.
+						lcancel()
+					}()
+				}
+			}
+		})
+	}
 
 	err := chromedp.Run(ctx,
 		network.Enable(),
@@ -259,4 +299,33 @@ func cdpHeaders(driverOptions scraperDriverOptions) map[string]interface{} {
 		}
 	}
 	return headers
+}
+
+func proxyUsesAuth(proxyUrl string) bool {
+	if proxyUrl == "" {
+		return false
+	}
+	reg := regexp.MustCompile(`^(https?:\/\/)(([\P{Cc}]+):([\P{Cc}]+)@)?(([a-zA-Z0-9][a-zA-Z0-9.-]*)(:[0-9]{1,5})?)`)
+	matches := reg.FindAllStringSubmatch(proxyUrl, -1)
+	if matches != nil {
+		split := matches[0]
+		return len(split) == 0 || (len(split) > 5 && split[3] != "")
+	}
+
+	return false
+}
+
+func splitProxyAuth(proxyUrl string) (string, string, string) {
+	if proxyUrl == "" {
+		return "", "", ""
+	}
+	reg := regexp.MustCompile(`^(https?:\/\/)(([\P{Cc}]+):([\P{Cc}]+)@)?(([a-zA-Z0-9][a-zA-Z0-9.-]*)(:[0-9]{1,5})?)`)
+	matches := reg.FindAllStringSubmatch(proxyUrl, -1)
+
+	if matches != nil && len(matches[0]) > 5 {
+		split := matches[0]
+		return split[1] + split[5], split[3], split[4]
+	}
+
+	return proxyUrl, "", ""
 }

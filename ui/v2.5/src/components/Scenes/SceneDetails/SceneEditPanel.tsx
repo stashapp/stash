@@ -47,6 +47,7 @@ import {
   faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { objectTitle } from "src/core/files";
+import { useRatingKeybinds } from "src/hooks/keybinds";
 
 const SceneScrapeDialog = lazy(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazy(() => import("./SceneQueryModal"));
@@ -187,6 +188,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
     );
   }
 
+  useRatingKeybinds(
+    isVisible,
+    stashConfig?.ui?.ratingSystemOptions?.type,
+    setRating
+  );
+
   useEffect(() => {
     if (isVisible) {
       Mousetrap.bind("s s", () => {
@@ -198,35 +205,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
         }
       });
 
-      // numeric keypresses get caught by jwplayer, so blur the element
-      // if the rating sequence is started
-      Mousetrap.bind("r", () => {
-        if (document.activeElement instanceof HTMLElement) {
-          document.activeElement.blur();
-        }
-
-        Mousetrap.bind("0", () => setRating(NaN));
-        Mousetrap.bind("1", () => setRating(20));
-        Mousetrap.bind("2", () => setRating(40));
-        Mousetrap.bind("3", () => setRating(60));
-        Mousetrap.bind("4", () => setRating(80));
-        Mousetrap.bind("5", () => setRating(100));
-
-        setTimeout(() => {
-          Mousetrap.unbind("0");
-          Mousetrap.unbind("1");
-          Mousetrap.unbind("2");
-          Mousetrap.unbind("3");
-          Mousetrap.unbind("4");
-          Mousetrap.unbind("5");
-        }, 1000);
-      });
-
       return () => {
         Mousetrap.unbind("s s");
         Mousetrap.unbind("d d");
-
-        Mousetrap.unbind("r");
       };
     }
   });
@@ -436,7 +417,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
     const currentScene = getSceneInput(formik.values);
     if (!currentScene.cover_image) {
-      currentScene.cover_image = scene.paths!.screenshot;
+      currentScene.cover_image = scene.paths?.screenshot;
     }
 
     return (

@@ -46,6 +46,10 @@ fragment ConfigGeneralData on ConfigGeneralResult {
     api_key
   }
   pythonPath
+  transcodeInputArgs
+  transcodeOutputArgs
+  liveTranscodeInputArgs
+  liveTranscodeOutputArgs
 }
 
 fragment ConfigInterfaceData on ConfigInterfaceResult {

@@ -93,6 +93,9 @@ export class ListFilterModel {
     }
     if (params.q) {
       this.searchTerm = params.q.trim();
+    } else {
+      // #1795 - reset search term if not provided
+      this.searchTerm = "";
     }
     this.currentPage = params.p ? Number.parseInt(params.p, 10) : 1;
     if (params.perPage) this.itemsPerPage = Number.parseInt(params.perPage, 10);

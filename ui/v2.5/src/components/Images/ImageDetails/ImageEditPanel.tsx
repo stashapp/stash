@@ -10,12 +10,15 @@ import {
   TagSelect,
   StudioSelect,
   LoadingIndicator,
+  URLField,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { FormUtils } from "src/utils";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
+import { useRatingKeybinds } from "src/hooks/keybinds";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -34,11 +37,15 @@ export const ImageEditPanel: React.FC<IProps> = ({
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
+  const { configuration } = React.useContext(ConfigurationContext);
+
   const [updateImage] = useImageUpdate();
 
   const schema = yup.object({
     title: yup.string().optional().nullable(),
     rating100: yup.number().optional().nullable(),
+    url: yup.string().optional().nullable(),
+    date: yup.string().optional().nullable(),
     studio_id: yup.string().optional().nullable(),
     performer_ids: yup.array(yup.string().required()).optional().nullable(),
     tag_ids: yup.array(yup.string().required()).optional().nullable(),
@@ -47,6 +54,8 @@ export const ImageEditPanel: React.FC<IProps> = ({
   const initialValues = {
     title: image.title ?? "",
     rating100: image.rating100 ?? null,
+    url: image?.url ?? "",
+    date: image?.date ?? "",
     studio_id: image.studio?.id,
     performer_ids: (image.performers ?? []).map((p) => p.id),
     tag_ids: (image.tags ?? []).map((t) => t.id),
@@ -64,6 +73,12 @@ export const ImageEditPanel: React.FC<IProps> = ({
     formik.setFieldValue("rating100", v);
   }
 
+  useRatingKeybinds(
+    true,
+    configuration?.ui?.ratingSystemOptions?.type,
+    setRating
+  );
+
   useEffect(() => {
     if (isVisible) {
       Mousetrap.bind("s s", () => {
@@ -73,35 +88,9 @@ export const ImageEditPanel: React.FC<IProps> = ({
         onDelete();
       });
 
-      // numeric keypresses get caught by jwplayer, so blur the element
-      // if the rating sequence is started
-      Mousetrap.bind("r", () => {
-        if (document.activeElement instanceof HTMLElement) {
-          document.activeElement.blur();
-        }
-
-        Mousetrap.bind("0", () => setRating(NaN));
-        Mousetrap.bind("1", () => setRating(20));
-        Mousetrap.bind("2", () => setRating(40));
-        Mousetrap.bind("3", () => setRating(60));
-        Mousetrap.bind("4", () => setRating(80));
-        Mousetrap.bind("5", () => setRating(100));
-
-        setTimeout(() => {
-          Mousetrap.unbind("0");
-          Mousetrap.unbind("1");
-          Mousetrap.unbind("2");
-          Mousetrap.unbind("3");
-          Mousetrap.unbind("4");
-          Mousetrap.unbind("5");
-        }, 1000);
-      });
-
       return () => {
         Mousetrap.unbind("s s");
         Mousetrap.unbind("d d");
-
-        Mousetrap.unbind("r");
       };
     }
   });
@@ -189,6 +178,28 @@ export const ImageEditPanel: React.FC<IProps> = ({
         <div className="form-container row px-3">
           <div className="col-12 col-lg-6 col-xl-12">
             {renderTextField("title", intl.formatMessage({ id: "title" }))}
+            <Form.Group controlId="url" as={Row}>
+              <Col xs={3} className="pr-0 url-label">
+                <Form.Label className="col-form-label">
+                  <FormattedMessage id="url" />
+                </Form.Label>
+              </Col>
+              <Col xs={9}>
+                <URLField
+                  {...formik.getFieldProps("url")}
+                  onScrapeClick={() => {}}
+                  urlScrapable={() => {
+                    return false;
+                  }}
+                  isInvalid={!!formik.getFieldMeta("url").error}
+                />
+              </Col>
+            </Form.Group>
+            {renderTextField(
+              "date",
+              intl.formatMessage({ id: "date" }),
+              "YYYY-MM-DD"
+            )}
             <Form.Group controlId="rating" as={Row}>
               {FormUtils.renderLabel({
                 title: intl.formatMessage({ id: "rating" }),

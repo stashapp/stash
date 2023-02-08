@@ -21,6 +21,8 @@ import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { MovieScrapeDialog } from "./MovieScrapeDialog";
+import { useRatingKeybinds } from "src/hooks/keybinds";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface IMovieEditPanel {
   movie?: Partial<GQL.MovieDataFragment>;
@@ -45,6 +47,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
 }) => {
   const intl = useIntl();
   const Toast = useToast();
+  const { configuration: stashConfig } = React.useContext(ConfigurationContext);
 
   const isNew = movie === undefined;
 
@@ -119,14 +122,14 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     formik.setFieldValue("rating100", v);
   }
 
+  useRatingKeybinds(
+    true,
+    stashConfig?.ui?.ratingSystemOptions?.type,
+    setRating
+  );
+
   // set up hotkeys
   useEffect(() => {
-    Mousetrap.bind("r 0", () => setRating(NaN));
-    Mousetrap.bind("r 1", () => setRating(20));
-    Mousetrap.bind("r 2", () => setRating(40));
-    Mousetrap.bind("r 3", () => setRating(60));
-    Mousetrap.bind("r 4", () => setRating(80));
-    Mousetrap.bind("r 5", () => setRating(100));
     // Mousetrap.bind("u", (e) => {
     //   setStudioFocus()
     //   e.preventDefault();
@@ -134,12 +137,6 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     Mousetrap.bind("s s", () => formik.handleSubmit());
 
     return () => {
-      Mousetrap.unbind("r 0");
-      Mousetrap.unbind("r 1");
-      Mousetrap.unbind("r 2");
-      Mousetrap.unbind("r 3");
-      Mousetrap.unbind("r 4");
-      Mousetrap.unbind("r 5");
       // Mousetrap.unbind("u");
       Mousetrap.unbind("s s");
     };

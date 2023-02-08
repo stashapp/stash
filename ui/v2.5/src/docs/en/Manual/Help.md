@@ -2,6 +2,6 @@
 
 Join our [Discord](https://discord.gg/2TsNFKt).
 
-The [Github wiki](https://github.com/stashapp/stash/wiki) covers some areas not covered in the in-app help.
+The [Stash-Docs](https://docs.stashapp.cc) covers some areas not covered in the in-app help.
 
-Raise a [github issue](https://github.com/stashapp/stash/issues).
+Raise a [GitHub issue](https://github.com/stashapp/stash/issues).
