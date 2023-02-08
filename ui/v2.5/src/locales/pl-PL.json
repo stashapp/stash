@@ -185,6 +185,7 @@
       "latest_version": "Najnowsza wersja",
       "latest_version_build_hash": "Hash kompilacji najnowszej wersji:",
       "new_version_notice": "[NOWA]",
+      "release_date": "Data wydania:",
       "stash_discord": "Dołącz do naszego kanału {url}",
       "stash_home": "Dom Stasha na stronie {url}",
       "stash_open_collective": "Wesprzyj nas poprzez {url}",
@@ -271,6 +272,24 @@
       "excluded_image_gallery_patterns_head": "Wykluczone wzorce obrazów/galerii",
       "excluded_video_patterns_desc": "Wyrażenia regularne plików/ścieżek wideo do wykluczenia ze skanowania i dodania do czyszczenia",
       "excluded_video_patterns_head": "Wykluczone wzorce wideo",
+      "ffmpeg": {
+        "live_transcode": {
+          "input_args": {
+            "desc": "Zaawansowane: Dodatkowe argumenty do przekazania do ffmpeg przed polem wejściowym podczas transkodowania wideo na żywo."
+          },
+          "output_args": {
+            "desc": "Zaawansowane: Dodatkowe argumenty do przekazania do ffmpeg przed polem wyjściowym podczas transkodowania wideo na żywo."
+          }
+        },
+        "transcode": {
+          "input_args": {
+            "desc": "Zaawansowane: Dodatkowe argumenty do przekazania do ffmpeg przed polem wejściowym podczas generowania wideo."
+          },
+          "output_args": {
+            "desc": "Zaawansowane: Dodatkowe argumenty do przekazania do ffmpeg przed polem wyjściowym podczas generowania wideo."
+          }
+        }
+      },
       "gallery_ext_desc": "Rozdzielona przecinkami lista rozszerzeń plików, które będą identyfikowane jako pliki galerii zip.",
       "gallery_ext_head": "Rozszerzenia galerii zip",
       "generated_file_naming_hash_desc": "Użyj MD5 lub oshash dla wygenerowanych nazw plików. Zmiana tego ustawienia wymaga, aby wszystkie sceny miały uzupełnioną odpowiednią wartość MD5/oshash. Po zmianie tej wartości, istniejące wygenerowane pliki będą musiały zostać zmigrowane lub zregenerowane. Zobacz stronę Zadania, aby uzyskać informacje na temat migracji.",
