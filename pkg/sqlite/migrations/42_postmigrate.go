@@ -212,20 +212,25 @@ SELECT id, name FROM performers WHERE performers.name like '%(%)%'`
 
 // extracts the performer name and disambiguation from the name field based on
 // the format "name (disambiguation)". The whitespace is optional.
-var performerDisRE = regexp.MustCompile(`([^(]+)\(([^)]+)\)`)
+var performerDisRE = regexp.MustCompile(`([^(]+)\(([^)]+)\)(.*)`)
 
 func (m *schema42Migrator) massagePerformerName(performerID int, name string) error {
 
 	r := performerDisRE.FindStringSubmatch(name)
-	if len(r) != 3 {
+	if len(r) != 4 {
 		// ignore corner case invalid names
 		return nil
 	}
 
 	// get the performer name and disambiguation from the capturing groups
-	// trimming any whitespace
-	newName := strings.TrimSpace(r[1])
-	newDis := strings.TrimSpace(r[2])
+	// trim the trailing whitespace (single only) from the name
+	newName := strings.TrimSuffix(r[1], " ")
+	newDis := r[2]
+
+	// if there is leftover text after the disambiguation, append it to the name
+	if r[3] != "" {
+		newName += " " + strings.TrimSpace(r[3])
+	}
 
 	logger.Infof("Separating %q into %q and disambiguation %q", name, newName, newDis)
 
