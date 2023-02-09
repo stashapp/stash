@@ -28,6 +28,10 @@ func FindHWCodecs(encoder FFMpeg, ctx context.Context) {
 		args = args.Input("color=c=red")
 		args = args.Duration(0.1)
 		args = args.VideoCodec(codec)
+		args = append(args, "-movflags")
+		args = append(args, "frag_keyframe+empty_moov")
+		args = append(args, "-pix_fmt")
+		args = append(args, "yuv420p")
 
 		args = args.Format("null")
 		args = args.Output("-")
