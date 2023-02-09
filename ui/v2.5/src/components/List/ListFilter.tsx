@@ -91,6 +91,13 @@ export const ListFilter: React.FC<IListFilterProps> = ({
     }
   }, [customPageSizeShowing, perPageFocus]);
 
+  // clear search input when filter is cleared
+  useEffect(() => {
+    if (filter.searchTerm === "") {
+      queryRef.current.value = "";
+    }
+  }, [filter.searchTerm, queryRef]);
+
   function onChangePageSize(val: string) {
     if (val === "custom") {
       // added timeout since Firefox seems to trigger the rootClose immediately
