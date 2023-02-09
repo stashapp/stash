@@ -65,6 +65,8 @@ input ConfigGeneralInput {
   previewExcludeEnd: String
   """Preset when generating preview"""
   previewPreset: PreviewPreset
+  """Transcode Hardware Acceleration"""
+  transcodeHardwareAcceleration: Boolean
   """Max generated transcode size"""
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
@@ -163,6 +165,8 @@ type ConfigGeneralResult {
   previewExcludeEnd: String!
   """Preset when generating preview"""
   previewPreset: PreviewPreset!
+  """Transcode Hardware Acceleration"""
+  transcodeHardwareAcceleration: Boolean!
   """Max generated transcode size"""
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""

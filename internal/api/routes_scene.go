@@ -118,10 +118,36 @@ func (rs sceneRoutes) StreamMKV(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rs sceneRoutes) StreamWebM(w http.ResponseWriter, r *http.Request) {
+	if config.GetInstance().GetTranscodeHardwareAcceleration() {
+		if ffmpeg.HWCodecCompatible(ffmpeg.VideoCodecVVP9) {
+			rs.streamTranscode(w, r, ffmpeg.StreamFormatVVP9)
+			return
+		} else if ffmpeg.HWCodecCompatible(ffmpeg.VideoCodecIVP9) {
+			rs.streamTranscode(w, r, ffmpeg.StreamFormatIVP9)
+			return
+		}
+	}
+
 	rs.streamTranscode(w, r, ffmpeg.StreamFormatVP9)
 }
 
 func (rs sceneRoutes) StreamMp4(w http.ResponseWriter, r *http.Request) {
+	if config.GetInstance().GetTranscodeHardwareAcceleration() {
+		if ffmpeg.HWCodecCompatible(ffmpeg.VideoCodecLibN264) {
+			rs.streamTranscode(w, r, ffmpeg.StreamFormatN264)
+			return
+		} else if ffmpeg.HWCodecCompatible(ffmpeg.VideoCodecLibI264) {
+			rs.streamTranscode(w, r, ffmpeg.StreamFormatI264)
+			return
+		} else if ffmpeg.HWCodecCompatible(ffmpeg.VideoCodecLibA264) {
+			rs.streamTranscode(w, r, ffmpeg.StreamFormatA264)
+			return
+		} else if ffmpeg.HWCodecCompatible(ffmpeg.VideoCodecLibV264) {
+			rs.streamTranscode(w, r, ffmpeg.StreamFormatV264)
+			return
+		}
+	}
+
 	rs.streamTranscode(w, r, ffmpeg.StreamFormatH264)
 }
 

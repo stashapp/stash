@@ -178,6 +178,9 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.PreviewPreset, input.PreviewPreset.String())
 	}
 
+	if input.TranscodeHardwareAcceleration != nil {
+		c.Set(config.TranscodeHardwareAcceleration, *input.TranscodeHardwareAcceleration)
+	}
 	if input.MaxTranscodeSize != nil {
 		c.Set(config.MaxTranscodeSize, input.MaxTranscodeSize.String())
 	}

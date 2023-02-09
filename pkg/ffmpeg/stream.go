@@ -65,6 +65,7 @@ var (
 		hls: true,
 	}
 
+	//libx264
 	StreamFormatH264 = StreamFormat{
 		codec:    VideoCodecLibX264,
 		format:   FormatMP4,
@@ -77,6 +78,59 @@ var (
 		},
 	}
 
+	//NVIDIA NVENC H264
+	StreamFormatN264 = StreamFormat{
+		codec:    VideoCodecLibN264,
+		format:   FormatMP4,
+		MimeType: MimeMp4,
+		extraArgs: []string{
+			"-movflags", "frag_keyframe+empty_moov",
+			"-pix_fmt", "yuv420p",
+			"-preset", "p1",
+			"-rc", "vbr",
+			"-cq", "30", //TODO: Test this
+		},
+	}
+
+	//Intel QSV H264
+	StreamFormatI264 = StreamFormat{
+		codec:    VideoCodecLibI264,
+		format:   FormatMP4,
+		MimeType: MimeMp4,
+		extraArgs: []string{
+			"-movflags", "frag_keyframe+empty_moov",
+			"-pix_fmt", "yuv420p",
+			"-preset", "veryfast",
+			"-look_ahead", "1",
+			"-global_quality", "30",
+		},
+	}
+
+	//AMD AMF H264
+	StreamFormatA264 = StreamFormat{
+		codec:    VideoCodecLibA264,
+		format:   FormatMP4,
+		MimeType: MimeMp4,
+		extraArgs: []string{
+			"-movflags", "frag_keyframe+empty_moov",
+			"-pix_fmt", "yuv420p",
+			"-quality", "speed",
+		},
+	}
+
+	//VAAPI H264
+	StreamFormatV264 = StreamFormat{
+		codec:    VideoCodecLibV264,
+		format:   FormatMP4,
+		MimeType: MimeMp4,
+		extraArgs: []string{
+			"-movflags", "frag_keyframe+empty_moov",
+			"-pix_fmt", "yuv420p",
+			"-quality", "50",
+		},
+	}
+
+	//VP9
 	StreamFormatVP9 = StreamFormat{
 		codec:    VideoCodecVP9,
 		format:   FormatWebm,
@@ -88,6 +142,30 @@ var (
 			"-crf", "30",
 			"-b:v", "0",
 			"-pix_fmt", "yuv420p",
+		},
+	}
+
+	//Intel QSV VP9
+	StreamFormatIVP9 = StreamFormat{
+		codec:    VideoCodecIVP9,
+		format:   FormatWebm,
+		MimeType: MimeWebm,
+		extraArgs: []string{
+			"-pix_fmt", "yuv420p",
+			"-preset", "veryfast",
+			"-look_ahead", "1",
+			"-global_quality", "30",
+		},
+	}
+
+	//VAAPI VP9
+	StreamFormatVVP9 = StreamFormat{
+		codec:    VideoCodecVVP9,
+		format:   FormatWebm,
+		MimeType: MimeWebm,
+		extraArgs: []string{
+			"-pix_fmt", "yuv420p",
+			"-global_quality", "30",
 		},
 	}
 

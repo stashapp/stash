@@ -430,6 +430,8 @@ func initFFMPEG(ctx context.Context) error {
 
 		instance.FFMPEG = ffmpeg.FFMpeg(ffmpegPath)
 		instance.FFProbe = ffmpeg.FFProbe(ffprobePath)
+
+		ffmpeg.FindHWCodecs(instance.FFMPEG, context.Background())
 	}
 
 	return nil
