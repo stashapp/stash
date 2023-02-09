@@ -185,6 +185,7 @@
       "latest_version": "Dernière version",
       "latest_version_build_hash": "Empreinte de construction de la dernière version :",
       "new_version_notice": "[Nouveautés]",
+      "release_date": "Date de sortie :",
       "stash_discord": "Rejoignez notre chaine {url}",
       "stash_home": "Accueil Stash sur {url}",
       "stash_open_collective": "Soutenez-nous via {url}",
