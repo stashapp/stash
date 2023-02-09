@@ -153,18 +153,23 @@ func (m *schema42Migrator) migratePerformersDisam(ctx context.Context) error {
 	logger.Info("Migrating performer disambiguation")
 
 	const (
-		limit    = 1000
+		limit    = 1
 		logEvery = 10000
 	)
 
 	count := 0
+	lastID := 0
 
 	for {
 		gotSome := false
 
 		if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
 			query := `
-SELECT id, name FROM performers WHERE performers.name like '%(%)%'`
+SELECT id, name FROM performers WHERE performers.name like '% (%)'`
+
+			if lastID != 0 {
+				query += fmt.Sprintf(" AND `id` > %d ", lastID)
+			}
 
 			query += fmt.Sprintf(" ORDER BY `id` LIMIT %d", limit)
 
@@ -186,6 +191,7 @@ SELECT id, name FROM performers WHERE performers.name like '%(%)%'`
 				}
 
 				gotSome = true
+				lastID = id
 				count++
 
 				if err := m.massagePerformerName(id, name); err != nil {
@@ -211,13 +217,13 @@ SELECT id, name FROM performers WHERE performers.name like '%(%)%'`
 }
 
 // extracts the performer name and disambiguation from the name field based on
-// the format "name (disambiguation)". The whitespace is optional.
-var performerDisRE = regexp.MustCompile(`([^(]+)\(([^)]+)\)(.*)`)
+// the format "name (disambiguation)".
+var performerDisRE = regexp.MustCompile(`^((?:[^(\s]+\s)+)\(([^)]+)\)$`)
 
 func (m *schema42Migrator) massagePerformerName(performerID int, name string) error {
 
 	r := performerDisRE.FindStringSubmatch(name)
-	if len(r) != 4 {
+	if len(r) != 3 {
 		// ignore corner case invalid names
 		return nil
 	}
@@ -226,11 +232,6 @@ func (m *schema42Migrator) massagePerformerName(performerID int, name string) er
 	// trim the trailing whitespace (single only) from the name
 	newName := strings.TrimSuffix(r[1], " ")
 	newDis := r[2]
-
-	// if there is leftover text after the disambiguation, append it to the name
-	if r[3] != "" {
-		newName += " " + strings.TrimSpace(r[3])
-	}
 
 	logger.Infof("Separating %q into %q and disambiguation %q", name, newName, newDis)
 
