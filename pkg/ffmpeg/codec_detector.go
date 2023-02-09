@@ -57,3 +57,11 @@ func HWCodecCompatible(c VideoCodec) bool {
 	}
 	return false
 }
+
+func HWCodecH264Compatible() bool {
+	return HWCodecCompatible(VideoCodecLibN264) || HWCodecCompatible(VideoCodecLibI264) || HWCodecCompatible(VideoCodecLibA264) || HWCodecCompatible(VideoCodecLibV264)
+}
+
+func HWCodecVP9Compatible() bool {
+	return HWCodecCompatible(VideoCodecVVP9) || HWCodecCompatible(VideoCodecIVP9)
+}

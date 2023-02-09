@@ -142,35 +142,60 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL *url.URL, maxStrea
 
 	var webmStreams []*SceneStreamEndpoint
 	var mp4Streams []*SceneStreamEndpoint
+	var webmHWStreams []*SceneStreamEndpoint
+	var mp4HWStreams []*SceneStreamEndpoint
 
 	webmURL := replaceSuffix(".webm")
 	mp4URL := replaceSuffix(".mp4")
 
+	webmHWURL := replaceSuffix("hw.webm")
+	mp4HWURL := replaceSuffix("hw.mp4")
+
+	hwLabel := "HW "
+
 	if includeSceneStreamPath(pf, models.StreamingResolutionEnumFourK, maxStreamingTranscodeSize) {
 		webmStreams = append(webmStreams, makeStreamEndpoint(webmURL, models.StreamingResolutionEnumFourK, mimeMp4, webmLabelFourK))
 		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4URL, models.StreamingResolutionEnumFourK, mimeMp4, mp4LabelFourK))
+		webmHWStreams = append(webmHWStreams, makeStreamEndpoint(webmHWURL, models.StreamingResolutionEnumFourK, mimeMp4, hwLabel+webmLabelFourK))
+		mp4HWStreams = append(mp4HWStreams, makeStreamEndpoint(mp4HWURL, models.StreamingResolutionEnumFourK, mimeMp4, hwLabel+mp4LabelFourK))
 	}
 
 	if includeSceneStreamPath(pf, models.StreamingResolutionEnumFullHd, maxStreamingTranscodeSize) {
 		webmStreams = append(webmStreams, makeStreamEndpoint(webmURL, models.StreamingResolutionEnumFullHd, mimeMp4, webmLabelFullHD))
 		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4URL, models.StreamingResolutionEnumFullHd, mimeMp4, mp4LabelFullHD))
+		webmHWStreams = append(webmHWStreams, makeStreamEndpoint(webmHWURL, models.StreamingResolutionEnumFullHd, mimeMp4, hwLabel+webmLabelFullHD))
+		mp4HWStreams = append(mp4HWStreams, makeStreamEndpoint(mp4HWURL, models.StreamingResolutionEnumFullHd, mimeMp4, hwLabel+mp4LabelFullHD))
 	}
 
 	if includeSceneStreamPath(pf, models.StreamingResolutionEnumStandardHd, maxStreamingTranscodeSize) {
 		webmStreams = append(webmStreams, makeStreamEndpoint(webmURL, models.StreamingResolutionEnumStandardHd, mimeMp4, webmLabelStandardHD))
 		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4URL, models.StreamingResolutionEnumStandardHd, mimeMp4, mp4LabelStandardHD))
+		webmHWStreams = append(webmHWStreams, makeStreamEndpoint(webmHWURL, models.StreamingResolutionEnumStandardHd, mimeMp4, hwLabel+webmLabelStandardHD))
+		mp4HWStreams = append(mp4HWStreams, makeStreamEndpoint(mp4HWURL, models.StreamingResolutionEnumStandardHd, mimeMp4, hwLabel+mp4LabelStandardHD))
 	}
 
 	if includeSceneStreamPath(pf, models.StreamingResolutionEnumStandard, maxStreamingTranscodeSize) {
 		webmStreams = append(webmStreams, makeStreamEndpoint(webmURL, models.StreamingResolutionEnumStandard, mimeMp4, webmLabelStandard))
 		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4URL, models.StreamingResolutionEnumStandard, mimeMp4, mp4LabelStandard))
+		webmHWStreams = append(webmHWStreams, makeStreamEndpoint(webmHWURL, models.StreamingResolutionEnumStandard, mimeMp4, hwLabel+webmLabelStandard))
+		mp4HWStreams = append(mp4HWStreams, makeStreamEndpoint(mp4HWURL, models.StreamingResolutionEnumStandard, mimeMp4, hwLabel+mp4LabelStandard))
 	}
 
 	if includeSceneStreamPath(pf, models.StreamingResolutionEnumLow, maxStreamingTranscodeSize) {
 		webmStreams = append(webmStreams, makeStreamEndpoint(webmURL, models.StreamingResolutionEnumLow, mimeMp4, webmLabelLow))
 		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4URL, models.StreamingResolutionEnumLow, mimeMp4, mp4LabelLow))
+		webmHWStreams = append(webmHWStreams, makeStreamEndpoint(webmHWURL, models.StreamingResolutionEnumLow, mimeMp4, webmLabelLow+hwLabel))
+		mp4HWStreams = append(mp4HWStreams, makeStreamEndpoint(mp4HWURL, models.StreamingResolutionEnumLow, mimeMp4, mp4LabelLow+hwLabel))
 	}
 
+	if config.GetInstance().GetTranscodeHardwareAcceleration() {
+		if ffmpeg.HWCodecVP9Compatible() {
+			ret = append(ret, webmHWStreams...)
+		}
+		if ffmpeg.HWCodecH264Compatible() {
+			ret = append(ret, mp4HWStreams...)
+		}
+	}
 	ret = append(ret, webmStreams...)
 	ret = append(ret, mp4Streams...)
 

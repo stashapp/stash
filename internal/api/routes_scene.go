@@ -61,6 +61,8 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/stream.m3u8", rs.StreamHLS)
 		r.Get("/stream.ts", rs.StreamTS)
 		r.Get("/stream.mp4", rs.StreamMp4)
+		r.Get("/streamhw.mp4", rs.StreamMp4HW)
+		r.Get("/streamhw.webm", rs.StreamWebMHW)
 
 		r.Get("/screenshot", rs.Screenshot)
 		r.Get("/preview", rs.Preview)
@@ -118,6 +120,10 @@ func (rs sceneRoutes) StreamMKV(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rs sceneRoutes) StreamWebM(w http.ResponseWriter, r *http.Request) {
+	rs.streamTranscode(w, r, ffmpeg.StreamFormatVP9)
+}
+
+func (rs sceneRoutes) StreamWebMHW(w http.ResponseWriter, r *http.Request) {
 	if config.GetInstance().GetTranscodeHardwareAcceleration() {
 		if ffmpeg.HWCodecCompatible(ffmpeg.VideoCodecVVP9) {
 			rs.streamTranscode(w, r, ffmpeg.StreamFormatVVP9)
@@ -127,11 +133,13 @@ func (rs sceneRoutes) StreamWebM(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
-	rs.streamTranscode(w, r, ffmpeg.StreamFormatVP9)
 }
 
 func (rs sceneRoutes) StreamMp4(w http.ResponseWriter, r *http.Request) {
+	rs.streamTranscode(w, r, ffmpeg.StreamFormatH264)
+}
+
+func (rs sceneRoutes) StreamMp4HW(w http.ResponseWriter, r *http.Request) {
 	if config.GetInstance().GetTranscodeHardwareAcceleration() {
 		if ffmpeg.HWCodecCompatible(ffmpeg.VideoCodecLibN264) {
 			rs.streamTranscode(w, r, ffmpeg.StreamFormatN264)
@@ -147,8 +155,6 @@ func (rs sceneRoutes) StreamMp4(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
-	rs.streamTranscode(w, r, ffmpeg.StreamFormatH264)
 }
 
 func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
