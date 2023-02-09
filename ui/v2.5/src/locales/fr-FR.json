@@ -269,9 +269,9 @@
       "db_path_head": "Chemin de la base de données",
       "directory_locations_to_your_content": "Emplacements de votre contenu",
       "excluded_image_gallery_patterns_desc": "Expression régulière de fichiers images et galeries ou de chemins d'accès à exclure de l'analyse et à ajouter au nettoyage",
-      "excluded_image_gallery_patterns_head": "Modèles d'image ou galerie exclués",
+      "excluded_image_gallery_patterns_head": "Modèles d'image ou galerie exclus",
       "excluded_video_patterns_desc": "Expressions régulières de fichiers vidéo ou de chemins d'accès à exclure de l'analyse et à ajouter au nettoyage",
-      "excluded_video_patterns_head": "Modèles de vidéo exclués",
+      "excluded_video_patterns_head": "Modèles de vidéo exclus",
       "ffmpeg": {
         "live_transcode": {
           "input_args": {
@@ -982,7 +982,7 @@
     "updating_untagged_performers_description": "Une mise à jour des performeurs non étiquetés essaiera de faire correspondre tous les performeurs qui n'ont pas de StashID et actualisera les métadonnées."
   },
   "performers": "Performeurs",
-  "piercings": "Perçages",
+  "piercings": "Piercings",
   "play_count": "Compteur de lecture",
   "play_duration": "Temps de lecture",
   "primary_file": "Fichier principal",
