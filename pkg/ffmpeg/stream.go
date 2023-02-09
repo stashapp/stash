@@ -130,6 +130,31 @@ var (
 		},
 	}
 
+	//Raspberry Pi 4, H264
+	StreamFormatR264 = StreamFormat{
+		codec:    VideoCodecLibR264,
+		format:   FormatMP4,
+		MimeType: MimeMp4,
+		extraArgs: []string{
+			"-movflags", "frag_keyframe+empty_moov",
+			"-pix_fmt", "yuv420p",
+			"-crf", "25",
+		},
+	}
+
+	//OpenMAX IL, H.264
+	StreamFormatO264 = StreamFormat{
+		codec:    VideoCodecLibO264,
+		format:   FormatMP4,
+		MimeType: MimeMp4,
+		extraArgs: []string{
+			"-movflags", "frag_keyframe+empty_moov",
+			"-pix_fmt", "yuv420p",
+			"-preset", "superfast",
+			"-crf", "25",
+		},
+	}
+
 	//VP9
 	StreamFormatVP9 = StreamFormat{
 		codec:    VideoCodecVP9,

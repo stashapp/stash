@@ -153,6 +153,12 @@ func (rs sceneRoutes) StreamMp4HW(w http.ResponseWriter, r *http.Request) {
 		} else if ffmpeg.HWCodecCompatible(ffmpeg.VideoCodecLibV264) {
 			rs.streamTranscode(w, r, ffmpeg.StreamFormatV264)
 			return
+		} else if ffmpeg.HWCodecCompatible(ffmpeg.VideoCodecLibR264) {
+			rs.streamTranscode(w, r, ffmpeg.StreamFormatR264)
+			return
+		} else if ffmpeg.HWCodecCompatible(ffmpeg.VideoCodecLibO264) {
+			rs.streamTranscode(w, r, ffmpeg.StreamFormatO264)
+			return
 		}
 	}
 }

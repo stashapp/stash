@@ -17,6 +17,8 @@ func FindHWCodecs(encoder FFMpeg, ctx context.Context) {
 		VideoCodecLibI264,
 		VideoCodecLibA264,
 		VideoCodecLibV264,
+		VideoCodecLibR264,
+		VideoCodecLibO264,
 		VideoCodecVVP9,
 		VideoCodecIVP9,
 		VideoCodecVVPX,

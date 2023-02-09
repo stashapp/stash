@@ -184,8 +184,8 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL *url.URL, maxStrea
 	if includeSceneStreamPath(pf, models.StreamingResolutionEnumLow, maxStreamingTranscodeSize) {
 		webmStreams = append(webmStreams, makeStreamEndpoint(webmURL, models.StreamingResolutionEnumLow, mimeMp4, webmLabelLow))
 		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4URL, models.StreamingResolutionEnumLow, mimeMp4, mp4LabelLow))
-		webmHWStreams = append(webmHWStreams, makeStreamEndpoint(webmHWURL, models.StreamingResolutionEnumLow, mimeMp4, webmLabelLow+hwLabel))
-		mp4HWStreams = append(mp4HWStreams, makeStreamEndpoint(mp4HWURL, models.StreamingResolutionEnumLow, mimeMp4, mp4LabelLow+hwLabel))
+		webmHWStreams = append(webmHWStreams, makeStreamEndpoint(webmHWURL, models.StreamingResolutionEnumLow, mimeMp4, hwLabel+webmLabelLow))
+		mp4HWStreams = append(mp4HWStreams, makeStreamEndpoint(mp4HWURL, models.StreamingResolutionEnumLow, mimeMp4, hwLabel+mp4LabelLow))
 	}
 
 	if config.GetInstance().GetTranscodeHardwareAcceleration() {
