@@ -6,6 +6,7 @@
     "add_to_entity": "Aggiungi a {entityType}",
     "allow": "Acconsenti",
     "allow_temporarily": "Acconsenti temporaneamente",
+    "anonymise": "Anonimizza",
     "apply": "Applica",
     "auto_tag": "Tag Automatico",
     "backup": "Backup",
@@ -32,10 +33,11 @@
     "delete_stashid": "Cancellare StashID",
     "disallow": "Non Acconsentire",
     "download": "Scarica",
+    "download_anonymised": "Scarica anonimamente",
     "download_backup": "Scarica Backup",
     "edit": "Edita",
     "edit_entity": "Modifica {entityType}",
-    "export": "Esporta…",
+    "export": "Esporta",
     "export_all": "Esporta tutto…",
     "find": "Trova",
     "finish": "Finire",
@@ -194,7 +196,7 @@
     },
     "categories": {
       "about": "Chi siamo",
-      "changelog": "Changelog",
+      "changelog": "Registro dei cambiamenti",
       "interface": "Interfaccia",
       "logs": "Log",
       "metadata_providers": "Provider dei Metadata",
@@ -346,6 +348,9 @@
     },
     "tasks": {
       "added_job_to_queue": "Aggiunto/a {operation_name} alla coda lavori",
+      "anonymise_and_download": "Crea una copia anonima del database e scarica il file creato.",
+      "anonymise_database": "Crea una copia del database nella cartella di backup, anonimizzando tutti i dati sensibili. Questo file può essere inviato ad altri come aiuto nella risoluzione dei problemi. Il database anonimizzato viene salvato in formato {filename_format}.",
+      "anonymising_database": "Anonimizzando il database",
       "auto_tag": {
         "auto_tagging_all_paths": "Taggare Automaticamente tutti i percorsi",
         "auto_tagging_paths": "Taggare Automaticamente i seguenti percorsi"
@@ -757,6 +762,7 @@
   },
   "dimensions": "Dimensioni",
   "director": "Regista",
+  "disambiguation": "Disambiguità",
   "display_mode": {
     "grid": "Griglia",
     "list": "Lista",

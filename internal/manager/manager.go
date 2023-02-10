@@ -292,9 +292,10 @@ type coverGenerator struct {
 
 func (g *coverGenerator) GenerateCover(ctx context.Context, scene *models.Scene, f *file.VideoFile) error {
 	gg := generate.Generator{
-		Encoder:     instance.FFMPEG,
-		LockManager: instance.ReadLockManager,
-		ScenePaths:  instance.Paths.Scene,
+		Encoder:      instance.FFMPEG,
+		FFMpegConfig: instance.Config,
+		LockManager:  instance.ReadLockManager,
+		ScenePaths:   instance.Paths.Scene,
 	}
 
 	return gg.Screenshot(ctx, f.Path, scene.GetHash(instance.Config.GetVideoFileNamingAlgorithm()), f.Width, f.Duration, generate.ScreenshotOptions{})
@@ -489,6 +490,14 @@ func (s *Manager) PostInit(ctx context.Context) error {
 	database := s.Database
 	if err := database.Open(s.Config.GetDatabasePath()); err != nil {
 		return err
+	}
+
+	// Set the proxy if defined in config
+	if s.Config.GetProxy() != "" {
+		os.Setenv("HTTP_PROXY", s.Config.GetProxy())
+		os.Setenv("HTTPS_PROXY", s.Config.GetProxy())
+		os.Setenv("NO_PROXY", s.Config.GetNoProxy())
+		logger.Info("Using HTTP Proxy")
 	}
 
 	return nil

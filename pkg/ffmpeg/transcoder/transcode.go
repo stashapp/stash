@@ -21,6 +21,11 @@ type TranscodeOptions struct {
 
 	// Verbosity is the logging verbosity. Defaults to LogLevelError if not set.
 	Verbosity ffmpeg.LogLevel
+
+	// arguments added before the input argument
+	ExtraInputArgs []string
+	// arguments added before the output argument
+	ExtraOutputArgs []string
 }
 
 func (o *TranscodeOptions) setDefaults() {
@@ -59,6 +64,7 @@ func Transcode(input string, options TranscodeOptions) ffmpeg.Args {
 
 	var args ffmpeg.Args
 	args = args.LogLevel(options.Verbosity).Overwrite()
+	args = append(args, options.ExtraInputArgs...)
 
 	if options.XError {
 		args = args.XError()
@@ -91,6 +97,8 @@ func Transcode(input string, options TranscodeOptions) ffmpeg.Args {
 		args = args.AudioCodec(options.AudioCodec)
 	}
 	args = args.AppendArgs(options.AudioArgs)
+
+	args = append(args, options.ExtraOutputArgs...)
 
 	args = args.Format(options.Format)
 	args = args.Output(options.OutputPath)
