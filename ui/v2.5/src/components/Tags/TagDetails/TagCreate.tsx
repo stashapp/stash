@@ -62,7 +62,7 @@ const TagCreate: React.FC = () => {
           parents: created.parents,
           children: created.children,
         });
-        return created.id;
+        history.push(`/tags/${result.data.tagCreate.id}`);
       }
     } catch (e) {
       Toast.error(e);
