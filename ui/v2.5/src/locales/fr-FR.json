@@ -150,7 +150,7 @@
       "query_mode_path_desc": "Utilise le chemin complet du fichier",
       "set_cover_desc": "Remplacer la vignette de la scène si une est trouvée.",
       "set_cover_label": "Définir la vignette de la scène",
-      "set_tag_desc": "Attache des étiquettes à la scène, en écrasant ou en fusionnant avec des étiquettes existantes.",
+      "set_tag_desc": "Attache des tags à la scène, en écrasant ou en fusionnant avec des étiquettes existantes.",
       "set_tag_label": "Définir les étiquettes",
       "show_male_desc": "Cocher si les performeurs masculins seront disponibles pour le marquage.",
       "show_male_label": "Montrer les performeurs masculins",
@@ -164,9 +164,9 @@
       "fp_matches": "La durée correspond",
       "fp_matches_multi": "La durée correspond à {matchCount}/{durationsLength} empreinte·s",
       "hash_matches": "{hash_type} est une correspondance",
-      "match_failed_already_tagged": "Scène déjà étiquetée",
+      "match_failed_already_tagged": "Scène déjà taggée",
       "match_failed_no_result": "Aucun résultat trouvé",
-      "match_success": "Scène étiquetée avec succès",
+      "match_success": "Scène taggée avec succès",
       "phash_matches": "{count} empreintes correspondantes",
       "unnamed": "Sans nom"
     },
@@ -632,10 +632,10 @@
         }
       },
       "tag_panel": {
-        "heading": "Vue étiquettes",
+        "heading": "Vue tags",
         "options": {
           "show_child_tagged_content": {
-            "description": "Dans la vue étiquettes, afficher également le contenu des étiquettes affiliées",
+            "description": "Dans la vue tags, afficher également le contenu des tags affiliés",
             "heading": "Afficher le contenu des étiquettes affiliées"
           }
         }
@@ -653,7 +653,7 @@
     "performers": "{count, plural, one {Performeur} other {Performeurs}}",
     "scenes": "{count, plural, one {Scène} other {Scènes}}",
     "studios": "{count, plural, one {Studio} other {Studios}}",
-    "tags": "{count, plural, one {Étiquette} other {Étiquettes}}"
+    "tags": "{count, plural, one {Tag} other {Tags}}"
   },
   "country": "Pays",
   "cover_image": "Vignette",
@@ -789,7 +789,7 @@
   "display_mode": {
     "grid": "Grille",
     "list": "Liste",
-    "tagger": "Étiqueteuse",
+    "tagger": "Taggeuse",
     "unknown": "Inconnu",
     "wall": "Mur"
   },
@@ -881,11 +881,11 @@
   "height": "Taille",
   "height_cm": "Taille (cm)",
   "help": "Aide",
-  "ignore_auto_tag": "Ignorer l'étiquetage automatique",
+  "ignore_auto_tag": "Ignorer le taggage automatique",
   "image": "Image",
   "image_count": "Nombre d'Images",
   "images": "Images",
-  "include_parent_tags": "Inclure les étiquettes parentes",
+  "include_parent_tags": "Inclure les tags parents",
   "include_sub_studios": "Inclure les studios affiliés",
   "include_sub_tags": "Inclure les étiquettes affiliées",
   "instagram": "Instagram",
@@ -995,8 +995,8 @@
   "resolution": "Résolution",
   "resume_time": "Reprendre le temps",
   "scene": "Scène",
-  "sceneTagger": "Étiqueteuse de scènes",
-  "sceneTags": "Étiquettes de scène",
+  "sceneTagger": "Taggeuse de scènes",
+  "sceneTags": "Tags de la scène",
   "scene_code": "Code studio",
   "scene_count": "Nombre de scènes",
   "scene_created_at": "Scène créée le",
@@ -1113,14 +1113,14 @@
   "studio": "Studio",
   "studio_depth": "Niveaux (vides pour tous)",
   "studios": "Studios",
-  "sub_tag_count": "Nombre d'étiquettes affiliées",
-  "sub_tag_of": "Étiquette affiliée de {parent}",
+  "sub_tag_count": "Nombre de sous-tag affiliées",
+  "sub_tag_of": "Sous-tag affiliée de {parent}",
   "sub_tags": "Étiquettes affiliées",
   "subsidiary_studios": "Studios affiliés",
   "synopsis": "Résumé",
-  "tag": "Étiquettes",
-  "tag_count": "Nombre d'étiquettes",
-  "tags": "Étiquettes",
+  "tag": "Tag",
+  "tag_count": "Nombre de tag",
+  "tags": "Tags",
   "tattoos": "Tatouages",
   "title": "Titre",
   "toast": {
