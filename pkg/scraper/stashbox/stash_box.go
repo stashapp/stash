@@ -235,7 +235,7 @@ func (c Client) findStashBoxScenesByFingerprints(ctx context.Context, scenes [][
 		}
 	}
 
-	return results, nil
+	return ret, nil
 }
 
 func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []string, endpoint string) (bool, error) {
