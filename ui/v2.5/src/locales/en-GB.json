@@ -265,6 +265,8 @@
       "chrome_cdp_path_desc": "File path to the Chrome executable, or a remote address (starting with http:// or https://, for example http://localhost:9222/json/version) to a Chrome instance.",
       "create_galleries_from_folders_desc": "If true, creates galleries from folders containing images.",
       "create_galleries_from_folders_label": "Create galleries from folders containing images",
+      "gallery_cover_regex_desc": "Regex used to identify images as gallery covers",
+      "gallery_cover_regex_label": "Gallery cover regex",
       "db_path_head": "Database Path",
       "directory_locations_to_your_content": "Directory locations to your content",
       "excluded_image_gallery_patterns_desc": "Regexps of image and gallery files/paths to exclude from Scan and add to Clean",

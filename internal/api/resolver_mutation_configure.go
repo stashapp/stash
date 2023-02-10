@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"regexp"
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
@@ -188,6 +189,16 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 
 	if input.WriteImageThumbnails != nil {
 		c.Set(config.WriteImageThumbnails, *input.WriteImageThumbnails)
+	}
+
+	if input.GalleryCoverRegex != nil {
+
+		_, err := regexp.Compile(*input.GalleryCoverRegex)
+		if err != nil {
+			return makeConfigGeneralResult(), fmt.Errorf("Gallery cover regex '%v' invalid, '%v'.", *input.GalleryCoverRegex, err.Error())
+		}
+
+		c.Set(config.GalleryCoverRegex, *input.GalleryCoverRegex)
 	}
 
 	if input.Username != nil {

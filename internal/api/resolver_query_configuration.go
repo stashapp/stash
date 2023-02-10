@@ -103,6 +103,7 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		MaxTranscodeSize:             &maxTranscodeSize,
 		MaxStreamingTranscodeSize:    &maxStreamingTranscodeSize,
 		WriteImageThumbnails:         config.IsWriteImageThumbnails(),
+		GalleryCoverRegex:            config.GetGalleryCoverRegex(),
 		APIKey:                       config.GetAPIKey(),
 		Username:                     config.GetUsername(),
 		Password:                     config.GetPasswordHash(),
