@@ -83,6 +83,11 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     onSubmit: (values) => onSubmit(getStudioInput(values)),
   });
 
+  // always dirty if creating a new studio with a name
+  if (isNew && studio.name) {
+    formik.dirty = true;
+  }
+
   function setRating(v: number) {
     formik.setFieldValue("rating100", v);
   }
@@ -105,7 +110,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
 
   useRatingKeybinds(
     true,
-    configuration?.ui.ratingSystemOptions.type,
+    configuration?.ui?.ratingSystemOptions?.type,
     setRating
   );
 

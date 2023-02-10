@@ -122,7 +122,11 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     formik.setFieldValue("rating100", v);
   }
 
-  useRatingKeybinds(true, stashConfig?.ui.ratingSystemOptions.type, setRating);
+  useRatingKeybinds(
+    true,
+    stashConfig?.ui?.ratingSystemOptions?.type,
+    setRating
+  );
 
   // set up hotkeys
   useEffect(() => {

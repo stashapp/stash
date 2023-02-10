@@ -120,6 +120,11 @@ export const GalleryEditPanel: React.FC<
     onSubmit: (values) => onSave(getGalleryInput(values)),
   });
 
+  // always dirty if creating a new gallery with a title
+  if (isNew && gallery?.title) {
+    formik.dirty = true;
+  }
+
   function setRating(v: number) {
     formik.setFieldValue("rating100", v);
   }
@@ -139,7 +144,7 @@ export const GalleryEditPanel: React.FC<
 
   useRatingKeybinds(
     isVisible,
-    stashConfig?.ui.ratingSystemOptions.type,
+    stashConfig?.ui?.ratingSystemOptions?.type,
     setRating
   );
 

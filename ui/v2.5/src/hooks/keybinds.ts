@@ -71,7 +71,7 @@ export function useRatingKeybinds(
         document.activeElement.blur();
       }
 
-      if (ratingSystem === RatingSystemType.Stars) {
+      if (!ratingSystem || ratingSystem === RatingSystemType.Stars) {
         return handleStarRatingKeybinds();
       } else {
         return handleDecimalKeybinds();
