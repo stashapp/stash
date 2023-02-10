@@ -5,23 +5,21 @@ import (
 	"fmt"
 )
 
-var HWCodecSupport []VideoCodec
+var HWCodecSupport []StreamFormat
 
 /*
 Tests all hardware codec's to see if they work
 */
-func FindHWCodecs(encoder FFMpeg, ctx context.Context) {
-	//TODO: Should probably do a support matrix
-	for _, codec := range []VideoCodec{
-		VideoCodecLibN264,
-		VideoCodecLibI264,
-		VideoCodecLibA264,
-		VideoCodecLibV264,
-		VideoCodecLibR264,
-		VideoCodecLibO264,
-		VideoCodecVVP9,
-		VideoCodecIVP9,
-		VideoCodecVVPX,
+func FindHWCodecs(ctx context.Context, encoder FFMpeg) {
+	for _, codec := range []StreamFormat{
+		StreamFormatN264,
+		StreamFormatI264,
+		StreamFormatA264,
+		StreamFormatV264,
+		StreamFormatR264,
+		StreamFormatO264,
+		StreamFormatVVP9,
+		StreamFormatIVP9,
 	} {
 		var args Args
 		args = append(args, "-hide_banner")
@@ -29,11 +27,11 @@ func FindHWCodecs(encoder FFMpeg, ctx context.Context) {
 		args = args.Format("lavfi")
 		args = args.Input("color=c=red")
 		args = args.Duration(0.1)
-		args = args.VideoCodec(codec)
-		args = append(args, "-movflags")
-		args = append(args, "frag_keyframe+empty_moov")
-		args = append(args, "-pix_fmt")
-		args = append(args, "yuv420p")
+
+		args = args.VideoCodec(codec.codec)
+		if len(codec.extraArgs) > 0 {
+			args = append(args, codec.extraArgs...)
+		}
 
 		args = args.Format("null")
 		args = args.Output("-")
@@ -47,23 +45,34 @@ func FindHWCodecs(encoder FFMpeg, ctx context.Context) {
 
 	fmt.Println("Supported HW codecs:")
 	for _, codec := range HWCodecSupport {
-		fmt.Println("\t", codec)
+		fmt.Println("\t", codec.codec)
 	}
 }
 
-func HWCodecCompatible(c VideoCodec) bool {
+func HWCodecH264Compatible() *StreamFormat {
 	for _, element := range HWCodecSupport {
-		if element == c {
-			return true
+		switch element.codec {
+		case VideoCodecLibN264:
+			return &element
+		case VideoCodecLibI264:
+			return &element
+		case VideoCodecLibA264:
+			return &element
+		case VideoCodecLibV264:
+			return &element
 		}
 	}
-	return false
+	return nil
 }
 
-func HWCodecH264Compatible() bool {
-	return HWCodecCompatible(VideoCodecLibN264) || HWCodecCompatible(VideoCodecLibI264) || HWCodecCompatible(VideoCodecLibA264) || HWCodecCompatible(VideoCodecLibV264)
-}
-
-func HWCodecVP9Compatible() bool {
-	return HWCodecCompatible(VideoCodecVVP9) || HWCodecCompatible(VideoCodecIVP9)
+func HWCodecVP9Compatible() *StreamFormat {
+	for _, element := range HWCodecSupport {
+		switch element.codec {
+		case VideoCodecVVP9:
+			return &element
+		case VideoCodecIVP9:
+			return &element
+		}
+	}
+	return nil
 }

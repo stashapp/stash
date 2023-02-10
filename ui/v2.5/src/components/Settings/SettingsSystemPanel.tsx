@@ -258,6 +258,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
           onChange={(v) => saveGeneral({ liveTranscodeOutputArgs: v })}
           value={general.liveTranscodeOutputArgs ?? []}
         />
+        <BooleanSetting
+          id="hardware-encoding"
+          headingID="config.general.ffmpeg.hardware_acceleration.heading"
+          subHeadingID="config.general.ffmpeg.hardware_acceleration.desc"
+          checked={general.transcodeHardwareAcceleration ?? false}
+          onChange={(v) => saveGeneral({ transcodeHardwareAcceleration: v })}
+        />
+
       </SettingSection>
 
       <SettingSection headingID="config.general.parallel_scan_head">

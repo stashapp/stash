@@ -189,10 +189,10 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL *url.URL, maxStrea
 	}
 
 	if config.GetInstance().GetTranscodeHardwareAcceleration() {
-		if ffmpeg.HWCodecVP9Compatible() {
+		if ffmpeg.HWCodecVP9Compatible() != nil {
 			ret = append(ret, webmHWStreams...)
 		}
-		if ffmpeg.HWCodecH264Compatible() {
+		if ffmpeg.HWCodecH264Compatible() != nil {
 			ret = append(ret, mp4HWStreams...)
 		}
 	}

@@ -65,7 +65,7 @@ var (
 		hls: true,
 	}
 
-	//libx264
+	// libx264
 	StreamFormatH264 = StreamFormat{
 		codec:    VideoCodecLibX264,
 		format:   FormatMP4,
@@ -78,7 +78,7 @@ var (
 		},
 	}
 
-	//NVIDIA NVENC H264
+	// NVIDIA NVENC H264
 	StreamFormatN264 = StreamFormat{
 		codec:    VideoCodecLibN264,
 		format:   FormatMP4,
@@ -92,7 +92,7 @@ var (
 		},
 	}
 
-	//Intel QSV H264
+	// Intel QSV H264
 	StreamFormatI264 = StreamFormat{
 		codec:    VideoCodecLibI264,
 		format:   FormatMP4,
@@ -106,7 +106,7 @@ var (
 		},
 	}
 
-	//AMD AMF H264
+	// AMD AMF H264
 	StreamFormatA264 = StreamFormat{
 		codec:    VideoCodecLibA264,
 		format:   FormatMP4,
@@ -118,7 +118,7 @@ var (
 		},
 	}
 
-	//VAAPI H264
+	// VAAPI H264
 	StreamFormatV264 = StreamFormat{
 		codec:    VideoCodecLibV264,
 		format:   FormatMP4,
@@ -130,7 +130,7 @@ var (
 		},
 	}
 
-	//Raspberry Pi 4, H264
+	// Raspberry Pi 4, H264
 	StreamFormatR264 = StreamFormat{
 		codec:    VideoCodecLibR264,
 		format:   FormatMP4,
@@ -142,7 +142,7 @@ var (
 		},
 	}
 
-	//OpenMAX IL, H.264
+	// OpenMAX IL, H.264
 	StreamFormatO264 = StreamFormat{
 		codec:    VideoCodecLibO264,
 		format:   FormatMP4,
@@ -155,7 +155,7 @@ var (
 		},
 	}
 
-	//VP9
+	// VP9
 	StreamFormatVP9 = StreamFormat{
 		codec:    VideoCodecVP9,
 		format:   FormatWebm,
@@ -170,7 +170,7 @@ var (
 		},
 	}
 
-	//Intel QSV VP9
+	// Intel QSV VP9
 	StreamFormatIVP9 = StreamFormat{
 		codec:    VideoCodecIVP9,
 		format:   FormatWebm,
@@ -183,7 +183,7 @@ var (
 		},
 	}
 
-	//VAAPI VP9
+	// VAAPI VP9
 	StreamFormatVVP9 = StreamFormat{
 		codec:    VideoCodecVVP9,
 		format:   FormatWebm,
