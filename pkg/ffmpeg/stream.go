@@ -88,7 +88,7 @@ var (
 			"-pix_fmt", "yuv420p",
 			"-preset", "p1",
 			"-rc", "vbr",
-			"-cq", "30", //TODO: Test this
+			"-cq", "30",
 		},
 	}
 
