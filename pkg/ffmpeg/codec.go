@@ -25,6 +25,7 @@ var (
 	VideoCodecLibN264 VideoCodec = "h264_nvenc"
 	VideoCodecLibI264 VideoCodec = "h264_qsv"
 	VideoCodecLibA264 VideoCodec = "h264_amf"
+	VideoCodecLibM264 VideoCodec = "h264_videotoolbox"
 	VideoCodecLibV264 VideoCodec = "h264_vaapi"
 	VideoCodecLibR264 VideoCodec = "h264_v4l2m2m"
 	VideoCodecLibO264 VideoCodec = "h264_omx"

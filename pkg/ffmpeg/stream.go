@@ -138,7 +138,6 @@ var (
 		extraArgs: []string{
 			"-movflags", "frag_keyframe+empty_moov",
 			"-pix_fmt", "yuv420p",
-			"-crf", "25",
 		},
 	}
 
