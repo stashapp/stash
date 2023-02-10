@@ -265,7 +265,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
           checked={general.transcodeHardwareAcceleration ?? false}
           onChange={(v) => saveGeneral({ transcodeHardwareAcceleration: v })}
         />
-
       </SettingSection>
 
       <SettingSection headingID="config.general.parallel_scan_head">
