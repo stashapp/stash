@@ -195,7 +195,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 
 		_, err := regexp.Compile(*input.GalleryCoverRegex)
 		if err != nil {
-			return makeConfigGeneralResult(), fmt.Errorf("Gallery cover regex '%v' invalid, '%v'.", *input.GalleryCoverRegex, err.Error())
+			return makeConfigGeneralResult(), fmt.Errorf("Gallery cover regex '%v' invalid, '%v'", *input.GalleryCoverRegex, err.Error())
 		}
 
 		c.Set(config.GalleryCoverRegex, *input.GalleryCoverRegex)
