@@ -68,9 +68,9 @@ func HWCodecH264Compatible() *StreamFormat {
 func HWCodecVP9Compatible() *StreamFormat {
 	for _, element := range HWCodecSupport {
 		switch element.codec {
-		case VideoCodecVVP9:
-			return &element
 		case VideoCodecIVP9:
+			return &element
+		case VideoCodecVVP9:
 			return &element
 		}
 	}
