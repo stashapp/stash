@@ -184,19 +184,22 @@ func (r *queryResolver) Version(ctx context.Context) (*Version, error) {
 	}, nil
 }
 
-// Latestversion returns the latest git shorthash commit.
-func (r *queryResolver) Latestversion(ctx context.Context) (*ShortVersion, error) {
-	ver, url, err := GetLatestVersion(ctx, true)
-	if err == nil {
-		logger.Infof("Retrieved latest hash: %s", ver)
-	} else {
-		logger.Errorf("Error while retrieving latest hash: %s", err)
+func (r *queryResolver) Latestversion(ctx context.Context) (*LatestVersion, error) {
+	latestRelease, err := GetLatestRelease(ctx)
+	if err != nil {
+		if !errors.Is(err, context.Canceled) {
+			logger.Errorf("Error while retrieving latest version: %v", err)
+		}
+		return nil, err
 	}
+	logger.Infof("Retrieved latest version: %s (%s)", latestRelease.Version, latestRelease.ShortHash)
 
-	return &ShortVersion{
-		Shorthash: ver,
-		URL:       url,
-	}, err
+	return &LatestVersion{
+		Version:     latestRelease.Version,
+		Shorthash:   latestRelease.ShortHash,
+		ReleaseDate: latestRelease.Date,
+		URL:         latestRelease.Url,
+	}, nil
 }
 
 // Get scene marker tags which show up under the video.
