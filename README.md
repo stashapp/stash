@@ -54,16 +54,16 @@ Stash is available in 25 languages (so far!) and it could be in your language to
 Check out our documentation on [Stash-Docs](https://docs.stashapp.cc) for information about the software, questions, guides, add-ons and more. 
 
 For more help you can:
-* Check the in-app documentation, in the top right corner of the app (it's also mirrored on [Stash-Docs](https://docs.stashapp.cc/docs/In-app-Manual/)
+* Check the in-app documentation, in the top right corner of the app (it's also mirrored on [Stash-Docs](https://docs.stashapp.cc/in-app-manual))
 * Join the [Discord server](https://discord.gg/2TsNFKt), where the community can offer support.
 * Start a [discussion on GitHub](https://github.com/stashapp/stash/discussions)
 
 # Customization
 
 ## Themes and CSS Customization
-There is a [directory of community-created themes](https://docs.stashapp.cc/docs/User-Interface-UI/Themes/) on Stash-Docs, along with instructions on how to install them.
+There is a [directory of community-created themes](https://docs.stashapp.cc/user-interface-ui/themes) on Stash-Docs, along with instructions on how to install them.
 
-You can also change the Stash interface to fit your desired style with various snippets from [Custom CSS snippets](https://docs.stashapp.cc/docs/User-Interface-UI/Custom-CSS-Snippets/).
+You can also change the Stash interface to fit your desired style with various snippets from [Custom CSS snippets](https://docs.stashapp.cc/user-interface-ui/custom-css-snippets).
 
 # For Developers
 
