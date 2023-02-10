@@ -140,9 +140,7 @@ export const SettingsLibraryPanel: React.FC = () => {
           headingID="config.general.gallery_cover_regex_label"
           subHeadingID="config.general.gallery_cover_regex_desc"
           value={general.galleryCoverRegex ?? ""}
-          onChange={(v) =>
-            saveGeneral({ galleryCoverRegex: v })
-          }
+          onChange={(v) => saveGeneral({ galleryCoverRegex: v })}
         />
       </SettingSection>
 
