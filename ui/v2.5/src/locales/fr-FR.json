@@ -632,10 +632,10 @@
         }
       },
       "tag_panel": {
-        "heading": "Vue étiquette",
+        "heading": "Vue étiquettes",
         "options": {
           "show_child_tagged_content": {
-            "description": "Dans la vue étiquette, afficher également le contenu des étiquettes affiliées",
+            "description": "Dans la vue étiquettes, afficher également le contenu des étiquettes affiliées",
             "heading": "Afficher le contenu des étiquettes affiliées"
           }
         }
