@@ -185,6 +185,7 @@
       "latest_version": "Senaste version",
       "latest_version_build_hash": "Senaste versionens bygghash:",
       "new_version_notice": "[Ny]",
+      "release_date": "Utgivningsdatum:",
       "stash_discord": "Gå med i vår {url}-kanal",
       "stash_home": "Stasha hemma vid {url}",
       "stash_open_collective": "Stötta oss genom {url}",
