@@ -18,8 +18,8 @@ func FindHWCodecs(ctx context.Context, encoder FFMpeg) {
 		StreamFormatV264,
 		StreamFormatR264,
 		StreamFormatO264,
-		StreamFormatVVP9,
 		StreamFormatIVP9,
+		StreamFormatVVP9,
 	} {
 		var args Args
 		args = append(args, "-hide_banner")
@@ -52,13 +52,10 @@ func FindHWCodecs(ctx context.Context, encoder FFMpeg) {
 func HWCodecH264Compatible() *StreamFormat {
 	for _, element := range HWCodecSupport {
 		switch element.codec {
-		case VideoCodecLibN264:
-			return &element
-		case VideoCodecLibI264:
-			return &element
-		case VideoCodecLibA264:
-			return &element
-		case VideoCodecLibV264:
+		case VideoCodecLibN264,
+			VideoCodecLibI264,
+			VideoCodecLibA264,
+			VideoCodecLibV264:
 			return &element
 		}
 	}
@@ -68,9 +65,8 @@ func HWCodecH264Compatible() *StreamFormat {
 func HWCodecVP9Compatible() *StreamFormat {
 	for _, element := range HWCodecSupport {
 		switch element.codec {
-		case VideoCodecIVP9:
-			return &element
-		case VideoCodecVVP9:
+		case VideoCodecIVP9,
+			VideoCodecVVP9:
 			return &element
 		}
 	}
