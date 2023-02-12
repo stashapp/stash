@@ -180,7 +180,9 @@ func (qb *movieQueryBuilder) Query(ctx context.Context, movieFilter *models.Movi
 
 	filter := qb.makeFilter(ctx, movieFilter)
 
-	query.addFilter(filter)
+	if err := query.addFilter(filter); err != nil {
+		return nil, 0, err
+	}
 
 	query.sortAndPagination = qb.getMovieSort(findFilter) + getPagination(findFilter)
 	idsResult, countResult, err := query.executeFind(ctx)

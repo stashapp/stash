@@ -990,7 +990,9 @@ func (qb *SceneStore) Query(ctx context.Context, options models.SceneQueryOption
 	}
 	filter := qb.makeFilter(ctx, sceneFilter)
 
-	query.addFilter(filter)
+	if err := query.addFilter(filter); err != nil {
+		return nil, err
+	}
 
 	qb.setSceneSort(&query, findFilter)
 	query.sortAndPagination += getPagination(findFilter)

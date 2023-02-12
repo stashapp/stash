@@ -823,7 +823,9 @@ func (qb *FileStore) Query(ctx context.Context, options models.FileQueryOptions)
 	}
 	filter := qb.makeFilter(ctx, fileFilter)
 
-	query.addFilter(filter)
+	if err := query.addFilter(filter); err != nil {
+		return nil, err
+	}
 
 	qb.setQuerySort(&query, findFilter)
 	query.sortAndPagination += getPagination(findFilter)
