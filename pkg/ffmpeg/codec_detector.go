@@ -14,12 +14,14 @@ func FindHWCodecs(ctx context.Context, encoder FFMpeg) {
 	for _, codec := range []StreamFormat{
 		StreamFormatN264,
 		StreamFormatI264,
-		StreamFormatA264,
-		StreamFormatV264,
-		StreamFormatR264,
-		StreamFormatO264,
-		StreamFormatIVP9,
-		StreamFormatVVP9,
+		/*
+			Untested:
+				StreamFormatA264,
+				StreamFormatV264,
+				StreamFormatO264,
+				StreamFormatIVP9,
+				StreamFormatVVP9,
+		*/
 	} {
 		var args Args
 		args = append(args, "-hide_banner")
@@ -53,9 +55,11 @@ func HWCodecH264Compatible() *StreamFormat {
 	for _, element := range HWCodecSupport {
 		switch element.codec {
 		case VideoCodecLibN264,
-			VideoCodecLibI264,
 			VideoCodecLibA264,
-			VideoCodecLibV264:
+			VideoCodecLibV264,
+			VideoCodecLibI264,
+			VideoCodecLibR264,
+			VideoCodecLibO264:
 			return &element
 		}
 	}

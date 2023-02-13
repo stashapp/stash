@@ -107,6 +107,7 @@ var (
 	}
 
 	// AMD AMF H264
+	// Untested
 	StreamFormatA264 = StreamFormat{
 		codec:    VideoCodecLibA264,
 		format:   FormatMP4,
@@ -119,6 +120,7 @@ var (
 	}
 
 	// VAAPI H264
+	// Untested
 	StreamFormatV264 = StreamFormat{
 		codec:    VideoCodecLibV264,
 		format:   FormatMP4,
@@ -131,17 +133,20 @@ var (
 	}
 
 	// Raspberry Pi 4, H264
+	// BUG: Flag empty_moov (and more?) emits incompatible stream
+	// Is also seemingly too slow
 	StreamFormatR264 = StreamFormat{
 		codec:    VideoCodecLibR264,
 		format:   FormatMP4,
 		MimeType: MimeMp4,
 		extraArgs: []string{
-			"-movflags", "frag_keyframe+empty_moov",
+			"-movflags", "frag_keyframe",
 			"-pix_fmt", "yuv420p",
 		},
 	}
 
 	// OpenMAX IL, H.264
+	// Untested
 	StreamFormatO264 = StreamFormat{
 		codec:    VideoCodecLibO264,
 		format:   FormatMP4,
@@ -170,6 +175,7 @@ var (
 	}
 
 	// Intel QSV VP9
+	// Untested
 	StreamFormatIVP9 = StreamFormat{
 		codec:    VideoCodecIVP9,
 		format:   FormatWebm,
@@ -183,6 +189,7 @@ var (
 	}
 
 	// VAAPI VP9
+	// Untested
 	StreamFormatVVP9 = StreamFormat{
 		codec:    VideoCodecVVP9,
 		format:   FormatWebm,

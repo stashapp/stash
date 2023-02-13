@@ -295,7 +295,7 @@
         },
         "hardware_acceleration": {
             "heading": "FFmpeg hardware encoding",
-            "desc": "Uses available hardware to encode video."
+            "desc": "Uses available hardware to encode video for live transcoding."
         }
       },
       "gallery_ext_desc": "Comma-delimited list of file extensions that will be identified as gallery zip files.",
