@@ -102,11 +102,12 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 		}
 
 		g := &generate.Generator{
-			Encoder:     instance.FFMPEG,
-			LockManager: instance.ReadLockManager,
-			MarkerPaths: instance.Paths.SceneMarkers,
-			ScenePaths:  instance.Paths.Scene,
-			Overwrite:   j.overwrite,
+			Encoder:      instance.FFMPEG,
+			FFMpegConfig: instance.Config,
+			LockManager:  instance.ReadLockManager,
+			MarkerPaths:  instance.Paths.SceneMarkers,
+			ScenePaths:   instance.Paths.Scene,
+			Overwrite:    j.overwrite,
 		}
 
 		if err := j.txnManager.WithReadTxn(ctx, func(ctx context.Context) error {

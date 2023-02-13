@@ -67,7 +67,9 @@ query Version {
 
 query LatestVersion {
   latestversion {
+    version
     shorthash
+    release_date
     url
   }
 }

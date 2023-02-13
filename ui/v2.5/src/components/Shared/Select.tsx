@@ -873,8 +873,10 @@ export const TagSelect: React.FC<IFilterProps & { excludeIds?: string[] }> = (
       };
     }
 
+    const id = optionProps.data.__isNew__ ? "" : optionProps.data.value;
+
     return (
-      <TagPopover id={optionProps.data.value}>
+      <TagPopover id={id}>
         <reactSelectComponents.Option {...thisOptionProps} />
       </TagPopover>
     );

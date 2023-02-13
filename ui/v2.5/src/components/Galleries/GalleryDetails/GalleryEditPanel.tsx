@@ -36,6 +36,8 @@ import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { GalleryScrapeDialog } from "./GalleryScrapeDialog";
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { galleryTitle } from "src/core/galleries";
+import { useRatingKeybinds } from "src/hooks/keybinds";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface IProps {
   isVisible: boolean;
@@ -64,6 +66,8 @@ export const GalleryEditPanel: React.FC<
       title: galleryTitle(s),
     }))
   );
+
+  const { configuration: stashConfig } = React.useContext(ConfigurationContext);
 
   const Scrapers = useListGalleryScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
@@ -116,6 +120,11 @@ export const GalleryEditPanel: React.FC<
     onSubmit: (values) => onSave(getGalleryInput(values)),
   });
 
+  // always dirty if creating a new gallery with a title
+  if (isNew && gallery?.title) {
+    formik.dirty = true;
+  }
+
   function setRating(v: number) {
     formik.setFieldValue("rating100", v);
   }
@@ -133,6 +142,12 @@ export const GalleryEditPanel: React.FC<
     );
   }
 
+  useRatingKeybinds(
+    isVisible,
+    stashConfig?.ui?.ratingSystemOptions?.type,
+    setRating
+  );
+
   useEffect(() => {
     if (isVisible) {
       Mousetrap.bind("s s", () => {
@@ -142,35 +157,9 @@ export const GalleryEditPanel: React.FC<
         onDelete();
       });
 
-      // numeric keypresses get caught by jwplayer, so blur the element
-      // if the rating sequence is started
-      Mousetrap.bind("r", () => {
-        if (document.activeElement instanceof HTMLElement) {
-          document.activeElement.blur();
-        }
-
-        Mousetrap.bind("0", () => setRating(NaN));
-        Mousetrap.bind("1", () => setRating(20));
-        Mousetrap.bind("2", () => setRating(40));
-        Mousetrap.bind("3", () => setRating(60));
-        Mousetrap.bind("4", () => setRating(80));
-        Mousetrap.bind("5", () => setRating(100));
-
-        setTimeout(() => {
-          Mousetrap.unbind("0");
-          Mousetrap.unbind("1");
-          Mousetrap.unbind("2");
-          Mousetrap.unbind("3");
-          Mousetrap.unbind("4");
-          Mousetrap.unbind("5");
-        }, 1000);
-      });
-
       return () => {
         Mousetrap.unbind("s s");
         Mousetrap.unbind("d d");
-
-        Mousetrap.unbind("r");
       };
     }
   });

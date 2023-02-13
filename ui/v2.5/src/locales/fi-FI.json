@@ -6,6 +6,7 @@
     "add_to_entity": "Lisää kohteeseen {entityType}",
     "allow": "Salli",
     "allow_temporarily": "Salli väliaikaisesti",
+    "anonymise": "Anonymisoi",
     "apply": "Käytä",
     "auto_tag": "Lisää tunnisteet automaattisesti",
     "backup": "Varmuuskopioi",
@@ -32,10 +33,11 @@
     "delete_stashid": "Poista StashID",
     "disallow": "Kiellä",
     "download": "Lataa",
+    "download_anonymised": "Lataa anonymisoitu",
     "download_backup": "Lataa varmuuskopio",
     "edit": "Muokkaa",
     "edit_entity": "Muokkaa {entityType}",
-    "export": "Vie…",
+    "export": "Vie",
     "export_all": "Vie kaikki…",
     "find": "Etsi",
     "finish": "Valmis",
@@ -340,6 +342,7 @@
     },
     "tasks": {
       "added_job_to_queue": "Lisättiin {operation_name} tehtäväjonoon",
+      "anonymise_and_download": "Tekee anonymisoidun kopion tietokannasta ja lataa sen.",
       "auto_tag": {
         "auto_tagging_all_paths": "Asetetaan tunnisteet automaattisesti kaikkiin polkuihin",
         "auto_tagging_paths": "Asetetaan tunnisteet automaattisesti seuraaviin polkuihin"
@@ -348,7 +351,7 @@
       "auto_tagging": "Automaattinen tunnisteiden asetus",
       "backing_up_database": "Varmuuskopioidaan tietokantaa",
       "backup_and_download": "Suorittaa tietokannan varmuuskopioinnin ja lataa luodun tiedoston.",
-      "backup_database": "Suorittaa tietokannan varmuuskopioinnin ja tallentaa {filename_format} -tiedoston samaan kansioon kuin tietokanta",
+      "backup_database": "Suorittaa tietokannan varmuuskopioinnin ja tallentaa {filename_format} -tiedoston varmuuskopiokansioon",
       "cleanup_desc": "Tarkistaa puuttuvat tiedostot ja poistaa ne tietokannasta. Tämä on tuhoava toimi.",
       "data_management": "Datan hallinta",
       "defaults_set": "Oletukset on asetettu ja niitä käytetään kun painat {action} -painiketta Tehtävät -sivulla.",
@@ -643,7 +646,7 @@
       },
       "scroll_mode": {
         "label": "Vieritystila",
-        "pan_y": "Pan Y",
+        "pan_y": "Panoroi Y",
         "zoom": "Zoomaus"
       }
     },
@@ -942,7 +945,7 @@
       "migration_irreversible_warning": "Migraatio ei ole peruutettavissa. Kun migraatio on suoritettu, tietokanta ei ole enää yhteensopiva stashin vanhempien versioiden kanssa.",
       "migration_required": "Migraatio vaaditaan",
       "perform_schema_migration": "Suorita migraatio",
-      "schema_too_old": "Tämänhetkinen stash -tietokannan muodon versio on <strong>{databaseSchema}</strong> ja se pitää muuttaa versioon <strong>{appSchema}</strong>. Tämä versio Stashista ei toimi ilman tietokannan migraatiota."
+      "schema_too_old": "Tämänhetkinen stash -tietokannan muodon versio on <strong>{databaseSchema}</strong> ja se pitää muuttaa versioon <strong>{appSchema}</strong>. Tämä versio Stashista ei toimi ilman tietokannan migraatiota. Jos et halua tehdä tätä, sinun pitää palata aikaisempaan versioon stashista."
     },
     "paths": {
       "database_filename_empty_for_default": "tietokannan tiedostonimi (oletus jos tyhjä)",
@@ -1006,7 +1009,7 @@
   "tattoos": "Tatuoinnit",
   "title": "Otsikko",
   "toast": {
-    "added_entity": "Lisätty {entity}",
+    "added_entity": "Lisätty {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "added_generation_job_to_queue": "Lisätty generointi työjonoon",
     "created_entity": "Luotiin {entity}",
     "default_filter_set": "Oletussuodattimet",
