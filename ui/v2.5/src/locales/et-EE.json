@@ -185,6 +185,7 @@
       "latest_version": "Uusim Versioon",
       "latest_version_build_hash": "Uusima Versiooni Ehituse Hash:",
       "new_version_notice": "[UUS]",
+      "release_date": "Väljalaskekuupäev:",
       "stash_discord": "Liitu meie {url}i kanaliga",
       "stash_home": "Stashi kodu {url}-is",
       "stash_open_collective": "Toeta meid läbi {url}-i",
