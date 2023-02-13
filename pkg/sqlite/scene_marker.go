@@ -158,7 +158,9 @@ func (qb *sceneMarkerQueryBuilder) Query(ctx context.Context, sceneMarkerFilter 
 
 	filter := qb.makeFilter(ctx, sceneMarkerFilter)
 
-	query.addFilter(filter)
+	if err := query.addFilter(filter); err != nil {
+		return nil, 0, err
+	}
 
 	query.sortAndPagination = qb.getSceneMarkerSort(&query, findFilter) + getPagination(findFilter)
 	idsResult, countResult, err := query.executeFind(ctx)
