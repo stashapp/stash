@@ -1,0 +1,45 @@
+# This dockerfile should be built with `make docker-build` from the stash root.
+
+# Build Frontend
+FROM ubuntu:kinetic as build
+RUN apt update
+RUN apt install -y wget build-essential golang nodejs npm
+RUN npm install --global yarn
+
+## cache node_modules separately
+COPY ./ui/v2.5/package.json ./ui/v2.5/yarn.lock /stash/ui/v2.5/
+WORKDIR /stash
+RUN yarn --cwd ui/v2.5 install --frozen-lockfile.
+COPY Makefile /stash/
+COPY ./graphql /stash/graphql/
+COPY ./ui /stash/ui/
+RUN make generate-frontend
+ARG GITHASH
+ARG STASH_VERSION
+RUN BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") make ui
+
+# Build Backend
+COPY ./go* ./*.go Makefile gqlgen.yml .gqlgenc.yml /stash/
+COPY ./scripts /stash/scripts/
+COPY ./vendor /stash/vendor/
+COPY ./pkg /stash/pkg/
+COPY ./cmd /stash/cmd
+COPY ./internal /stash/internal
+#COPY --from=frontend /stash /stash/
+RUN make generate-backend
+ARG GITHASH
+ARG STASH_VERSION
+RUN make build
+
+# Final Runnable Image
+FROM nvidia/cuda:12.0.1-runtime-ubuntu22.04
+RUN apt update
+RUN apt upgrade -y
+RUN apt install -y ca-certificates libvips-tools ffmpeg
+RUN rm -rf /var/lib/apt/lists/*
+COPY --from=build /stash/stash /usr/bin/
+ENV LANG C.UTF-8
+ENV NVIDIA_DRIVER_CAPABILITIES=video,utility
+ENV STASH_CONFIG_FILE=/root/.stash/config.yml
+EXPOSE 9999
+ENTRYPOINT ["stash"]
