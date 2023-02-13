@@ -226,7 +226,10 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
 
   const maybeRenderStarRatingNumber = () => {
     const ratingFraction = getCurrentSelectedRating();
-    if (!ratingFraction) {
+    if (
+      !ratingFraction ||
+      (ratingFraction.rating == 0 && ratingFraction.fraction == 0)
+    ) {
       return;
     }
 
