@@ -86,6 +86,7 @@ var (
 		extraArgs: []string{
 			"-movflags", "frag_keyframe+empty_moov",
 			"-preset", "p2",
+			"-pix_fmt", "yuv420p",
 			"-rc", "vbr",
 			"-cq", "15",
 		},
@@ -99,6 +100,7 @@ var (
 		extraArgs: []string{
 			"-movflags", "frag_keyframe+empty_moov",
 			"-preset", "veryfast",
+			"-pix_fmt", "yuv420p",
 			"-look_ahead", "1",
 			"-global_quality", "30",
 		},
@@ -113,6 +115,7 @@ var (
 		extraArgs: []string{
 			"-movflags", "frag_keyframe+empty_moov",
 			"-quality", "speed",
+			"-pix_fmt", "yuv420p",
 		},
 	}
 
@@ -125,6 +128,7 @@ var (
 		extraArgs: []string{
 			"-movflags", "frag_keyframe+empty_moov",
 			"-prio_speed", "1",
+			"-pix_fmt", "yuv420p",
 		},
 	}
 
@@ -137,6 +141,7 @@ var (
 		extraArgs: []string{
 			"-movflags", "frag_keyframe+empty_moov",
 			"-quality", "50",
+			"-pix_fmt", "yuv420p",
 		},
 	}
 
@@ -149,6 +154,7 @@ var (
 		MimeType: MimeMp4,
 		extraArgs: []string{
 			"-movflags", "frag_keyframe",
+			"-pix_fmt", "yuv420p",
 		},
 	}
 
@@ -162,6 +168,7 @@ var (
 			"-movflags", "frag_keyframe+empty_moov",
 			"-preset", "superfast",
 			"-crf", "25",
+			"-pix_fmt", "yuv420p",
 		},
 	}
 
@@ -190,6 +197,7 @@ var (
 			"-preset", "veryfast",
 			"-look_ahead", "1",
 			"-global_quality", "30",
+			"-pix_fmt", "yuv420p",
 		},
 	}
 
@@ -201,6 +209,7 @@ var (
 		MimeType: MimeWebm,
 		extraArgs: []string{
 			"-global_quality", "30",
+			"-pix_fmt", "yuv420p",
 		},
 	}
 

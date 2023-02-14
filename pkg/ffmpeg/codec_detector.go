@@ -174,20 +174,21 @@ func HWCodecDevice_Full(args Args, codec VideoCodec) Args {
 }
 
 //Replace video filter scaling with hardware scaling for full hardware transcoding
-//NOTICE: When using full-hw transcoding, scaling should be set before the codec
 func HWCodecFilter(args VideoFilter, codec VideoCodec) VideoFilter {
 	sargs := string(args)
 
-	switch codec {
-	case VideoCodecN264:
-		return VideoFilter(strings.Replace(sargs, "scale=", "hwupload_cuda,scale_cuda=", 1))
-	case VideoCodecV264,
-		VideoCodecVVP9:
-		return VideoFilter(strings.Replace(sargs, "scale=", "hwupload,scale_vaapi=", 1))
-		//BUG: scale_qsv is seemingly broken on windows?
-		/*case VideoCodecI264,
-		VideoCodecIVP9:
-		return VideoFilter(strings.Replace(sargs, "scale=", "hwupload,scale_qsv=", 1))*/
+	if strings.Contains(sargs, "scale=") {
+		switch codec {
+		case VideoCodecN264:
+			args = VideoFilter(strings.Replace(sargs, "scale=", "hwupload_cuda,scale_cuda=", 1)).Append("hwdownload")
+		case VideoCodecV264,
+			VideoCodecVVP9:
+			args = VideoFilter(strings.Replace(sargs, "scale=", "hwupload,scale_vaapi=", 1)).Append("hwdownload")
+			//BUG: scale_qsv is seemingly broken on windows?
+			/*case VideoCodecI264,
+			VideoCodecIVP9:
+			args = VideoFilter(strings.Replace(sargs, "scale=", "hwupload,scale_qsv=", 1)).Append("hwdownload")*/
+		}
 	}
 
 	return args
