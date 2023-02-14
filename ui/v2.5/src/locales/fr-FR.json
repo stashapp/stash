@@ -190,7 +190,7 @@
       "stash_home": "Accueil Stash sur {url}",
       "stash_open_collective": "Soutenez-nous via {url}",
       "stash_wiki": "Page {url} Stash",
-      "version": "Version"
+      "version": "Version actuelle"
     },
     "application_paths": {
       "heading": "Chemins de l'application"
