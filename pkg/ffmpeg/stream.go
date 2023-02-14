@@ -85,7 +85,7 @@ var (
 		MimeType: MimeMp4,
 		extraArgs: []string{
 			"-movflags", "frag_keyframe+empty_moov",
-			"-preset", "p3",
+			"-preset", "p2",
 			"-rc", "vbr",
 			"-cq", "15",
 		},

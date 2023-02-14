@@ -38,6 +38,12 @@ func FindHWCodecs(ctx context.Context, encoder FFMpeg) {
 			args = append(args, codec.extraArgs...)
 		}
 
+		//Test scaling
+		var videoFilter VideoFilter
+		videoFilter = videoFilter.ScaleDimensions(-2, 160)
+		videoFilter = HWCodecFilter(videoFilter, codec.codec)
+		args = args.VideoFilter(videoFilter)
+
 		args = args.Format("null")
 		args = args.Output("-")
 
