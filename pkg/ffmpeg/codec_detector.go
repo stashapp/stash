@@ -17,6 +17,7 @@ func FindHWCodecs(ctx context.Context, encoder FFMpeg) {
 		/*
 			Untested:
 				StreamFormatA264,
+				StreamFormatM264,
 				StreamFormatV264,
 				StreamFormatO264,
 				StreamFormatIVP9,
@@ -56,6 +57,7 @@ func HWCodecH264Compatible() *StreamFormat {
 		switch element.codec {
 		case VideoCodecLibN264,
 			VideoCodecLibA264,
+			VideoCodecLibM264,
 			VideoCodecLibV264,
 			VideoCodecLibI264,
 			VideoCodecLibR264,

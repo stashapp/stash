@@ -119,6 +119,19 @@ var (
 		},
 	}
 
+	// macOS H264
+	// Untested
+	StreamFormatM264 = StreamFormat{
+		codec:    VideoCodecLibM264,
+		format:   FormatMP4,
+		MimeType: MimeMp4,
+		extraArgs: []string{
+			"-movflags", "frag_keyframe+empty_moov",
+			"-pix_fmt", "yuv420p",
+			"-prio_speed", "1",
+		},
+	}
+
 	// VAAPI H264
 	// Untested
 	StreamFormatV264 = StreamFormat{
