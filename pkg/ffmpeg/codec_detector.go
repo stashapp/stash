@@ -9,7 +9,7 @@ import (
 
 var HWCodecSupport []StreamFormat
 
-//Tests all (given) hardware codec's
+// Tests all (given) hardware codec's
 func FindHWCodecs(ctx context.Context, encoder FFMpeg) {
 	for _, codec := range []StreamFormat{
 		StreamFormatN264,
@@ -38,7 +38,7 @@ func FindHWCodecs(ctx context.Context, encoder FFMpeg) {
 			args = append(args, codec.extraArgs...)
 		}
 
-		//Test scaling
+		// Test scaling
 		var videoFilter VideoFilter
 		videoFilter = videoFilter.ScaleDimensions(-2, 160)
 		videoFilter = HWCodecFilter(videoFilter, codec.codec)
@@ -60,7 +60,7 @@ func FindHWCodecs(ctx context.Context, encoder FFMpeg) {
 	}
 }
 
-//Return if given codec is hardware accelerated
+// Return if given codec is hardware accelerated
 func HWCodecDetect(codec VideoCodec) bool {
 	switch codec {
 	case VideoCodecN264,
@@ -78,7 +78,7 @@ func HWCodecDetect(codec VideoCodec) bool {
 	}
 }
 
-//Test full-hardware transcoding on an input video
+// Test full-hardware transcoding on an input video
 func HWCodecVideoSupported(ctx context.Context, encoder FFMpeg, o TranscodeStreamOptions) bool {
 	if !HWCodecDetect(o.Codec.codec) {
 		return false
@@ -92,7 +92,7 @@ func HWCodecVideoSupported(ctx context.Context, encoder FFMpeg, o TranscodeStrea
 	args = args.Input(o.Input)
 	args = args.Duration(0.1)
 
-	//Test scaling
+	// Test scaling
 	var videoFilter VideoFilter
 	videoFilter = videoFilter.ScaleDimensions(-2, 160)
 	videoFilter = HWCodecFilter(videoFilter, o.Codec.codec)
@@ -112,7 +112,7 @@ func HWCodecVideoSupported(ctx context.Context, encoder FFMpeg, o TranscodeStrea
 	return err == nil
 }
 
-//Prepend input for hardware encoding only
+// Prepend input for hardware encoding only
 func HWCodecDevice_Encode(args Args, codec VideoCodec) Args {
 	switch codec {
 	case VideoCodecN264:
@@ -127,7 +127,7 @@ func HWCodecDevice_Encode(args Args, codec VideoCodec) Args {
 	return args
 }
 
-//Prepend codec for hardware encoding only
+// Prepend codec for hardware encoding only
 func HWCodecPrepend_Encode(args Args, codec VideoCodec) Args {
 	switch codec {
 	case VideoCodecV264,
@@ -173,7 +173,7 @@ func HWCodecDevice_Full(args Args, codec VideoCodec) Args {
 	return args
 }
 
-//Replace video filter scaling with hardware scaling for full hardware transcoding
+// Replace video filter scaling with hardware scaling for full hardware transcoding
 func HWCodecFilter(args VideoFilter, codec VideoCodec) VideoFilter {
 	sargs := string(args)
 
@@ -184,7 +184,7 @@ func HWCodecFilter(args VideoFilter, codec VideoCodec) VideoFilter {
 		case VideoCodecV264,
 			VideoCodecVVP9:
 			args = VideoFilter(strings.Replace(sargs, "scale=", "hwupload,scale_vaapi=", 1)).Append("hwdownload")
-			//BUG: scale_qsv is seemingly broken on windows?
+			// BUG: scale_qsv is seemingly broken on windows?
 			/*case VideoCodecI264,
 			VideoCodecIVP9:
 			args = VideoFilter(strings.Replace(sargs, "scale=", "hwupload,scale_qsv=", 1)).Append("hwdownload")*/
@@ -194,7 +194,7 @@ func HWCodecFilter(args VideoFilter, codec VideoCodec) VideoFilter {
 	return args
 }
 
-//Return if a hardware accelerated H264 codec is available
+// Return if a hardware accelerated H264 codec is available
 func HWCodecH264Compatible() *StreamFormat {
 	for _, element := range HWCodecSupport {
 		switch element.codec {
@@ -211,7 +211,7 @@ func HWCodecH264Compatible() *StreamFormat {
 	return nil
 }
 
-//Return if a hardware accelerated VP9 codec is available
+// Return if a hardware accelerated VP9 codec is available
 func HWCodecVP9Compatible() *StreamFormat {
 	for _, element := range HWCodecSupport {
 		switch element.codec {
