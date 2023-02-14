@@ -22,16 +22,16 @@ var (
 	VideoCodecCopy    VideoCodec = "copy"
 
 	// Hardware codec's
-	VideoCodecLibN264 VideoCodec = "h264_nvenc"
-	VideoCodecLibI264 VideoCodec = "h264_qsv"
-	VideoCodecLibA264 VideoCodec = "h264_amf"
-	VideoCodecLibM264 VideoCodec = "h264_videotoolbox"
-	VideoCodecLibV264 VideoCodec = "h264_vaapi"
-	VideoCodecLibR264 VideoCodec = "h264_v4l2m2m"
-	VideoCodecLibO264 VideoCodec = "h264_omx"
-	VideoCodecIVP9    VideoCodec = "vp9_qsv"
-	VideoCodecVVP9    VideoCodec = "vp9_vaapi"
-	VideoCodecVVPX    VideoCodec = "vp8_vaapi"
+	VideoCodecN264 VideoCodec = "h264_nvenc"
+	VideoCodecI264 VideoCodec = "h264_qsv"
+	VideoCodecA264 VideoCodec = "h264_amf"
+	VideoCodecM264 VideoCodec = "h264_videotoolbox"
+	VideoCodecV264 VideoCodec = "h264_vaapi"
+	VideoCodecR264 VideoCodec = "h264_v4l2m2m"
+	VideoCodecO264 VideoCodec = "h264_omx"
+	VideoCodecIVP9 VideoCodec = "vp9_qsv"
+	VideoCodecVVP9 VideoCodec = "vp9_vaapi"
+	VideoCodecVVPX VideoCodec = "vp8_vaapi"
 )
 
 type AudioCodec string

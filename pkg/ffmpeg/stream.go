@@ -80,12 +80,11 @@ var (
 
 	// NVIDIA NVENC H264
 	StreamFormatN264 = StreamFormat{
-		codec:    VideoCodecLibN264,
+		codec:    VideoCodecN264,
 		format:   FormatMP4,
 		MimeType: MimeMp4,
 		extraArgs: []string{
 			"-movflags", "frag_keyframe+empty_moov",
-			"-pix_fmt", "yuv420p",
 			"-preset", "p3",
 			"-rc", "vbr",
 			"-cq", "15",
@@ -94,12 +93,11 @@ var (
 
 	// Intel QSV H264
 	StreamFormatI264 = StreamFormat{
-		codec:    VideoCodecLibI264,
+		codec:    VideoCodecI264,
 		format:   FormatMP4,
 		MimeType: MimeMp4,
 		extraArgs: []string{
 			"-movflags", "frag_keyframe+empty_moov",
-			"-pix_fmt", "yuv420p",
 			"-preset", "veryfast",
 			"-look_ahead", "1",
 			"-global_quality", "30",
@@ -109,12 +107,11 @@ var (
 	// AMD AMF H264
 	// Untested
 	StreamFormatA264 = StreamFormat{
-		codec:    VideoCodecLibA264,
+		codec:    VideoCodecA264,
 		format:   FormatMP4,
 		MimeType: MimeMp4,
 		extraArgs: []string{
 			"-movflags", "frag_keyframe+empty_moov",
-			"-pix_fmt", "yuv420p",
 			"-quality", "speed",
 		},
 	}
@@ -122,12 +119,11 @@ var (
 	// macOS H264
 	// Untested
 	StreamFormatM264 = StreamFormat{
-		codec:    VideoCodecLibM264,
+		codec:    VideoCodecM264,
 		format:   FormatMP4,
 		MimeType: MimeMp4,
 		extraArgs: []string{
 			"-movflags", "frag_keyframe+empty_moov",
-			"-pix_fmt", "yuv420p",
 			"-prio_speed", "1",
 		},
 	}
@@ -135,12 +131,11 @@ var (
 	// VAAPI H264
 	// Untested
 	StreamFormatV264 = StreamFormat{
-		codec:    VideoCodecLibV264,
+		codec:    VideoCodecV264,
 		format:   FormatMP4,
 		MimeType: MimeMp4,
 		extraArgs: []string{
 			"-movflags", "frag_keyframe+empty_moov",
-			"-pix_fmt", "yuv420p",
 			"-quality", "50",
 		},
 	}
@@ -149,24 +144,22 @@ var (
 	// BUG: Flag empty_moov (and more?) emits incompatible stream
 	// Is also seemingly too slow
 	StreamFormatR264 = StreamFormat{
-		codec:    VideoCodecLibR264,
+		codec:    VideoCodecR264,
 		format:   FormatMP4,
 		MimeType: MimeMp4,
 		extraArgs: []string{
 			"-movflags", "frag_keyframe",
-			"-pix_fmt", "yuv420p",
 		},
 	}
 
 	// OpenMAX IL, H.264
 	// Untested
 	StreamFormatO264 = StreamFormat{
-		codec:    VideoCodecLibO264,
+		codec:    VideoCodecO264,
 		format:   FormatMP4,
 		MimeType: MimeMp4,
 		extraArgs: []string{
 			"-movflags", "frag_keyframe+empty_moov",
-			"-pix_fmt", "yuv420p",
 			"-preset", "superfast",
 			"-crf", "25",
 		},
@@ -194,7 +187,6 @@ var (
 		format:   FormatWebm,
 		MimeType: MimeWebm,
 		extraArgs: []string{
-			"-pix_fmt", "yuv420p",
 			"-preset", "veryfast",
 			"-look_ahead", "1",
 			"-global_quality", "30",
@@ -208,7 +200,6 @@ var (
 		format:   FormatWebm,
 		MimeType: MimeWebm,
 		extraArgs: []string{
-			"-pix_fmt", "yuv420p",
 			"-global_quality", "30",
 		},
 	}
@@ -278,6 +269,7 @@ func (o TranscodeStreamOptions) getStreamArgs() Args {
 	args = append(args, "-hide_banner")
 	args = append(args, o.ExtraInputArgs...)
 	args = args.LogLevel(LogLevelError)
+	args = HWCodecDevice_Encode(args, o.Codec.codec)
 
 	if o.StartTime != 0 {
 		args = args.Seek(o.StartTime)
@@ -288,6 +280,7 @@ func (o TranscodeStreamOptions) getStreamArgs() Args {
 		args = args.Duration(hlsSegmentLength)
 	}
 
+	args = HWCodecPrepend_Encode(args, o.Codec.codec)
 	args = args.Input(o.Input)
 
 	if o.VideoOnly {
@@ -300,6 +293,7 @@ func (o TranscodeStreamOptions) getStreamArgs() Args {
 	if o.Codec.codec != VideoCodecCopy {
 		var videoFilter VideoFilter
 		videoFilter = videoFilter.ScaleMax(o.VideoWidth, o.VideoHeight, o.MaxTranscodeSize)
+		videoFilter = HWCodecFilter(videoFilter, o.Codec.codec)
 		args = args.VideoFilter(videoFilter)
 	}
 
