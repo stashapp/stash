@@ -113,9 +113,7 @@ func HWCodecDevice_Encode(args Args, codec VideoCodec) Args {
 		args = append(args, "-hwaccel_device")
 		args = append(args, "0")
 	case VideoCodecV264,
-		VideoCodecVVP9,
-		VideoCodecI264,
-		VideoCodecIVP9:
+		VideoCodecVVP9:
 		args = append(args, "-hwaccel_device")
 		args = append(args, "/dev/dri/renderD128")
 	}
@@ -180,9 +178,10 @@ func HWCodecFilter(args VideoFilter, codec VideoCodec) VideoFilter {
 	case VideoCodecV264,
 		VideoCodecVVP9:
 		return VideoFilter(strings.Replace(sargs, "scale=", "hwupload,scale_vaapi=", 1))
-	case VideoCodecI264,
+		//BUG: scale_qsv is seemingly broken on windows?
+		/*case VideoCodecI264,
 		VideoCodecIVP9:
-		return VideoFilter(strings.Replace(sargs, "scale=", "hwupload,scale_qsv=", 1))
+		return VideoFilter(strings.Replace(sargs, "scale=", "hwupload,scale_qsv=", 1))*/
 	}
 
 	return args
