@@ -287,7 +287,9 @@ func (qb *studioQueryBuilder) Query(ctx context.Context, studioFilter *models.St
 	}
 	filter := qb.makeFilter(ctx, studioFilter)
 
-	query.addFilter(filter)
+	if err := query.addFilter(filter); err != nil {
+		return nil, 0, err
+	}
 
 	query.sortAndPagination = qb.getStudioSort(findFilter) + getPagination(findFilter)
 	idsResult, countResult, err := query.executeFind(ctx)

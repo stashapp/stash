@@ -366,7 +366,9 @@ func (qb *tagQueryBuilder) Query(ctx context.Context, tagFilter *models.TagFilte
 	}
 	filter := qb.makeFilter(ctx, tagFilter)
 
-	query.addFilter(filter)
+	if err := query.addFilter(filter); err != nil {
+		return nil, 0, err
+	}
 
 	query.sortAndPagination = qb.getTagSort(&query, findFilter) + getPagination(findFilter)
 	idsResult, countResult, err := query.executeFind(ctx)
