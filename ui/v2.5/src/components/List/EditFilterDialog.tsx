@@ -196,7 +196,7 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
         as="select"
         onChange={onChangedModifierSelect}
         value={criterion.modifier}
-        className="btn-secondary"
+        className="btn-secondary modifier-selector"
       >
         {modifierOptions.map((c) => (
           <option key={c.value} value={c.value}>

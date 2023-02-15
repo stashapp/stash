@@ -139,3 +139,12 @@ input[type="range"].zoom-slider {
     width: 100%;
   }
 }
+
+.modifier-selector {
+  margin-bottom: 1rem;
+
+  // to accommodate for caret
+  padding-right: 2rem;
+
+  width: auto;
+}
