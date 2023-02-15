@@ -352,6 +352,7 @@ func (f *FFMpeg) GetTranscodeStream(ctx context.Context, options TranscodeStream
 		if len(stderrString) > 0 {
 			logger.Debugf("[stream] ffmpeg stderr: %s", stderrString)
 		}
+		cmd.Wait()
 	}()
 
 	ret := &Stream{
