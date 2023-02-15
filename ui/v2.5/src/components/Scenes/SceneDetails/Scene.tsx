@@ -24,7 +24,12 @@ import {
   queryFindScenesByID,
 } from "src/core/StashService";
 
-import Icon from "src/components/Shared/Icon";
+import {
+  ErrorMessage,
+  LoadingIndicator,
+  Icon,
+  Counter,
+} from "src/components/Shared";
 import { useToast } from "src/hooks";
 import SceneQueue, { QueuedScene } from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -58,7 +63,6 @@ const DeleteScenesDialog = lazy(() => import("../DeleteScenesDialog"));
 const GenerateDialog = lazy(() => import("../../Dialogs/GenerateDialog"));
 const SceneVideoFilterPanel = lazy(() => import("./SceneVideoFilterPanel"));
 import { objectPath, objectTitle } from "src/core/files";
-import { Counter } from "src/components/Shared";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -514,7 +518,7 @@ const SceneLoader: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
   const { configuration } = useContext(ConfigurationContext);
-  const { data, loading } = useFindScene(id ?? "");
+  const { data, loading, error } = useFindScene(id ?? "");
 
   const queryParams = useMemo(
     () => queryString.parse(location.search, { decode: false }),
@@ -728,32 +732,32 @@ const SceneLoader: React.FC = () => {
     }
   }
 
+  if (loading) return <LoadingIndicator />;
+  if (error) return <ErrorMessage error={error.message} />;
+
   const scene = data?.findScene;
+  if (!scene) return <ErrorMessage error={`No scene found with id ${id}.`} />;
 
   return (
     <div className="row">
-      {!loading && scene ? (
-        <ScenePage
-          scene={scene}
-          setTimestamp={setTimestamp}
-          queueScenes={queueScenes ?? []}
-          queueStart={queueStart}
-          onDelete={onDelete}
-          onQueueNext={onQueueNext}
-          onQueuePrevious={onQueuePrevious}
-          onQueueRandom={onQueueRandom}
-          continuePlaylist={continuePlaylist}
-          loadScene={loadScene}
-          queueHasMoreScenes={queueHasMoreScenes}
-          onQueueLessScenes={onQueueLessScenes}
-          onQueueMoreScenes={onQueueMoreScenes}
-          collapsed={collapsed}
-          setCollapsed={setCollapsed}
-          setContinuePlaylist={setContinuePlaylist}
-        />
-      ) : (
-        <div className="scene-tabs" />
-      )}
+      <ScenePage
+        scene={scene}
+        setTimestamp={setTimestamp}
+        queueScenes={queueScenes ?? []}
+        queueStart={queueStart}
+        onDelete={onDelete}
+        onQueueNext={onQueueNext}
+        onQueuePrevious={onQueuePrevious}
+        onQueueRandom={onQueueRandom}
+        continuePlaylist={continuePlaylist}
+        loadScene={loadScene}
+        queueHasMoreScenes={queueHasMoreScenes}
+        onQueueLessScenes={onQueueLessScenes}
+        onQueueMoreScenes={onQueueMoreScenes}
+        collapsed={collapsed}
+        setCollapsed={setCollapsed}
+        setContinuePlaylist={setContinuePlaylist}
+      />
       <div className={`scene-player-container ${collapsed ? "expanded" : ""}`}>
         <ScenePlayer
           key="ScenePlayer"
