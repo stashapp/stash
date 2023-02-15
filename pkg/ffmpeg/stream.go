@@ -352,7 +352,7 @@ func (f *FFMpeg) GetTranscodeStream(ctx context.Context, options TranscodeStream
 		}
 		err := cmd.Wait()
 		if err != nil {
-			logger.Debugf("[stream] ffmpeg wait error: %s", err)
+			logger.Debugf("[stream] ffmpeg wait error: %#v", err)
 		}
 	}()
 
