@@ -85,8 +85,6 @@ var (
 		MimeType: MimeMp4,
 		extraArgs: []string{
 			"-movflags", "frag_keyframe+empty_moov",
-			"-preset", "p2",
-			"-pix_fmt", "yuv420p",
 			"-rc", "vbr",
 			"-cq", "15",
 		},
@@ -99,10 +97,7 @@ var (
 		MimeType: MimeMp4,
 		extraArgs: []string{
 			"-movflags", "frag_keyframe+empty_moov",
-			"-preset", "veryfast",
-			"-pix_fmt", "yuv420p",
-			"-look_ahead", "1",
-			"-global_quality", "30",
+			"-global_quality", "25",
 		},
 	}
 
@@ -277,7 +272,7 @@ func (o TranscodeStreamOptions) getStreamArgs() Args {
 	args = append(args, "-hide_banner")
 	args = append(args, o.ExtraInputArgs...)
 	args = args.LogLevel(LogLevelError)
-	args = HWCodecDevice_Encode(args, o.Codec.codec)
+	args = HWDeviceInit(args, o.Codec.codec)
 
 	if o.StartTime != 0 {
 		args = args.Seek(o.StartTime)

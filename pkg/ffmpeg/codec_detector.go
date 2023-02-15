@@ -2,6 +2,7 @@ package ffmpeg
 
 import (
 	"context"
+	"regexp"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -11,6 +12,8 @@ var HWCodecSupport []StreamFormat
 
 // Tests all (given) hardware codec's
 func FindHWCodecs(ctx context.Context, encoder FFMpeg) {
+	HWCodecSupport = HWCodecSupport[:0]
+
 	for _, codec := range []StreamFormat{
 		StreamFormatN264,
 		StreamFormatI264,
@@ -27,7 +30,7 @@ func FindHWCodecs(ctx context.Context, encoder FFMpeg) {
 		var args Args
 		args = append(args, "-hide_banner")
 		args = args.LogLevel(LogLevelQuiet)
-		args = HWCodecDevice_Encode(args, codec.codec)
+		args = HWDeviceInit(args, codec.codec)
 		args = args.Format("lavfi")
 		args = args.Input("color=c=red")
 		args = args.Duration(0.1)
@@ -87,20 +90,20 @@ func HWCodecVideoSupported(ctx context.Context, encoder FFMpeg, o TranscodeStrea
 	args = append(args, "-hide_banner")
 	args = append(args, o.ExtraInputArgs...)
 	args = args.LogLevel(LogLevelQuiet)
-	args = HWCodecDevice_Full(args, o.Codec.codec)
+	args = HWDeviceInit_Full(args, o.Codec.codec)
 	args = args.Input(o.Input)
 	args = args.Duration(0.1)
+
+	args = args.VideoCodec(o.Codec.codec)
+	if len(o.Codec.extraArgs) > 0 {
+		args = append(args, o.Codec.extraArgs...)
+	}
 
 	// Test scaling
 	videoFilter := HWFilterInit(o.Codec.codec)
 	videoFilter = videoFilter.ScaleDimensions(-2, 160)
 	videoFilter = HWCodecFilter(videoFilter, o.Codec.codec)
 	args = args.VideoFilter(videoFilter)
-
-	args = args.VideoCodec(o.Codec.codec)
-	if len(o.Codec.extraArgs) > 0 {
-		args = append(args, o.Codec.extraArgs...)
-	}
 
 	args = args.Format("null")
 	args = args.Output("-")
@@ -112,7 +115,7 @@ func HWCodecVideoSupported(ctx context.Context, encoder FFMpeg, o TranscodeStrea
 }
 
 // Prepend input for hardware encoding only
-func HWCodecDevice_Encode(args Args, codec VideoCodec) Args {
+func HWDeviceInit(args Args, codec VideoCodec) Args {
 	switch codec {
 	case VideoCodecN264:
 		args = append(args, "-hwaccel_device")
@@ -121,6 +124,12 @@ func HWCodecDevice_Encode(args Args, codec VideoCodec) Args {
 		VideoCodecVVP9:
 		args = append(args, "-vaapi_device")
 		args = append(args, "/dev/dri/renderD128")
+	case VideoCodecI264,
+		VideoCodecIVP9:
+		args = append(args, "-init_hw_device")
+		args = append(args, "qsv=hw")
+		args = append(args, "-filter_hw_device")
+		args = append(args, "hw")
 	}
 
 	return args
@@ -134,6 +143,13 @@ func HWFilterInit(codec VideoCodec) VideoFilter {
 		VideoCodecVVP9:
 		videoFilter = videoFilter.Append("format=nv12")
 		videoFilter = videoFilter.Append("hwupload")
+	case VideoCodecN264:
+		videoFilter = videoFilter.Append("format=nv12")
+		videoFilter = videoFilter.Append("hwupload_cuda")
+	case VideoCodecI264,
+		VideoCodecIVP9:
+		videoFilter = videoFilter.Append("hwupload=extra_hw_frames=64")
+		videoFilter = videoFilter.Append("format=qsv")
 	}
 
 	return videoFilter
@@ -143,9 +159,9 @@ func HWFilterInit(codec VideoCodec) VideoFilter {
 Prepend input for full hardware transcoding
 
 Currently unused
-One strategy is to use HWCodecVideoSupported and test if its supported, and then apply this instead of the _Encode functions.
+One strategy is to use HWCodecVideoSupported and test if its supported, and then apply this instead of HWDeviceInit and HWFilterInit.
 */
-func HWCodecDevice_Full(args Args, codec VideoCodec) Args {
+func HWDeviceInit_Full(args Args, codec VideoCodec) Args {
 	switch codec {
 	case VideoCodecN264:
 		args = append(args, "-hwaccel")
@@ -166,8 +182,6 @@ func HWCodecDevice_Full(args Args, codec VideoCodec) Args {
 		VideoCodecIVP9:
 		args = append(args, "-hwaccel")
 		args = append(args, "qsv")
-		args = append(args, "-hwaccel_device")
-		args = append(args, "/dev/dri/renderD128")
 	}
 
 	return args
@@ -180,14 +194,16 @@ func HWCodecFilter(args VideoFilter, codec VideoCodec) VideoFilter {
 	if strings.Contains(sargs, "scale=") {
 		switch codec {
 		case VideoCodecN264:
-			args = VideoFilter(strings.Replace(sargs, "scale=", "hwupload_cuda,scale_cuda=", 1)).Append("hwdownload")
+			args = VideoFilter(strings.Replace(sargs, "scale=", "scale_cuda=", 1))
 		case VideoCodecV264,
 			VideoCodecVVP9:
 			args = VideoFilter(strings.Replace(sargs, "scale=", "scale_vaapi=", 1))
-			// BUG: scale_qsv is seemingly broken on windows?
-			/*case VideoCodecI264,
+		case VideoCodecI264,
 			VideoCodecIVP9:
-			args = VideoFilter(strings.Replace(sargs, "scale=", "hwupload,scale_qsv=", 1)).Append("hwdownload")*/
+			// BUG: [scale_qsv]: Size values less than -1 are not acceptable.
+			// Fix: Replace all instances of -2 with -1 in a scale operation
+			re := regexp.MustCompile(`(scale=)([\d:]*)(-2)(.*)`)
+			args = VideoFilter(re.ReplaceAllString(sargs, "scale_qsv=$2-1$4"))
 		}
 	}
 
