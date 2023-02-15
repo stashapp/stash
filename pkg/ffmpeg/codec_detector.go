@@ -203,7 +203,8 @@ func HWCodecFilter(args VideoFilter, codec VideoCodec) VideoFilter {
 			// BUG: [scale_qsv]: Size values less than -1 are not acceptable.
 			// Fix: Replace all instances of -2 with -1 in a scale operation
 			re := regexp.MustCompile(`(scale=)([\d:]*)(-2)(.*)`)
-			args = VideoFilter(re.ReplaceAllString(sargs, "scale_qsv=$2-1$4"))
+			sargs = re.ReplaceAllString(sargs, "scale=$2-1$4")
+			args = VideoFilter(strings.Replace(sargs, "scale=", "scale_qsv=", 1))
 		}
 	}
 
