@@ -128,7 +128,7 @@ var (
 	}
 
 	// VAAPI H264
-	// Untested
+	// BUG: Emits incompatible stream
 	StreamFormatV264 = StreamFormat{
 		codec:    VideoCodecV264,
 		format:   FormatMP4,
@@ -140,8 +140,7 @@ var (
 	}
 
 	// Raspberry Pi 4, H264
-	// BUG: Flag empty_moov (and more?) emits incompatible stream
-	// Is also seemingly too slow
+	// BUG: Flag empty_moov emits incompatible stream
 	StreamFormatR264 = StreamFormat{
 		codec:    VideoCodecR264,
 		format:   FormatMP4,
@@ -189,9 +188,7 @@ var (
 		MimeType: MimeWebm,
 		extraArgs: []string{
 			"-preset", "veryfast",
-			"-look_ahead", "1",
-			"-global_quality", "30",
-			"-pix_fmt", "yuv420p",
+			"-global_quality", "25",
 		},
 	}
 

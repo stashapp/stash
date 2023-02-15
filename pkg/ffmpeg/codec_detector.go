@@ -26,6 +26,11 @@ func FindHWCodecs(ctx context.Context, encoder FFMpeg) {
 				StreamFormatIVP9,
 				StreamFormatVVP9,
 		*/
+		/*
+			Buggy:
+				StreamFormatR264
+				StreamFormatV264
+		*/
 	} {
 		var args Args
 		args = append(args, "-hide_banner")
