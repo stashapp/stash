@@ -116,3 +116,26 @@ input[type="range"].zoom-slider {
 .rating-filter .and-divider {
   margin-left: 0.5em;
 }
+
+.edit-filter-dialog {
+  .dialog-content {
+    display: flex;
+  }
+
+  .criterion-list {
+    flex-basis: 30%;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    max-height: 550px;
+    overflow-y: auto;
+  }
+
+  .edit-filter-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    width: 100%;
+  }
+}

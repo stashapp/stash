@@ -70,6 +70,10 @@ export abstract class Criterion<V extends CriterionValue> {
     this._value = newValue;
   }
 
+  public isValid(): boolean {
+    return true;
+  }
+
   public abstract getLabelValue(intl: IntlShape): string;
 
   constructor(type: CriterionOption, value: V) {
@@ -227,6 +231,14 @@ export class StringCriterion extends Criterion<string> {
   public getLabelValue(_intl: IntlShape) {
     return this.value;
   }
+
+  public isValid(): boolean {
+    return (
+      this.modifier === CriterionModifier.IsNull ||
+      this.modifier === CriterionModifier.NotNull ||
+      this.value.length > 0
+    );
+  }
 }
 
 export class MandatoryStringCriterionOption extends CriterionOption {
@@ -283,6 +295,10 @@ export class BooleanCriterionOption extends CriterionOption {
 export class BooleanCriterion extends StringCriterion {
   protected toCriterionInput(): boolean {
     return this.value === "true";
+  }
+
+  public isValid() {
+    return this.value === "true" || this.value === "false";
   }
 }
 

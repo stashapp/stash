@@ -25,7 +25,7 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { getFilterOptions } from "src/models/list-filter/factory";
 import { useFindDefaultFilter } from "src/core/StashService";
 import { Pagination, PaginationIndex } from "./Pagination";
-import { AddFilterDialog } from "./AddFilterDialog";
+import { EditFilterDialog } from "src/components/List/EditFilterDialog";
 import { ListFilter } from "./ListFilter";
 import { FilterTags } from "./FilterTags";
 import { ListViewOptions } from "./ListViewOptions";
@@ -156,7 +156,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
 
     const [editingCriterion, setEditingCriterion] =
       useState<Criterion<CriterionValue>>();
-    const [newCriterion, setNewCriterion] = useState(false);
+    const [showEditFilter, setShowEditFilter] = useState(false);
 
     const result = useResult(filter);
     const [totalCount, setTotalCount] = useState(0);
@@ -193,7 +193,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
 
     // set up hotkeys
     useEffect(() => {
-      Mousetrap.bind("f", () => setNewCriterion(true));
+      Mousetrap.bind("f", () => setShowEditFilter(true));
 
       return () => {
         Mousetrap.unbind("f");
@@ -432,40 +432,6 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       updateFilter(newFilter);
     }
 
-    function onAddCriterion(
-      criterion: Criterion<CriterionValue>,
-      oldId?: string
-    ) {
-      const newFilter = cloneDeep(filter);
-
-      // Find if we are editing an existing criteria, then modify that. Or create a new one.
-      const existingIndex = newFilter.criteria.findIndex((c) => {
-        // If we modified an existing criterion, then look for the old id.
-        const id = oldId || criterion.getId();
-        return c.getId() === id;
-      });
-      if (existingIndex === -1) {
-        newFilter.criteria.push(criterion);
-      } else {
-        newFilter.criteria[existingIndex] = criterion;
-      }
-
-      // Remove duplicate modifiers
-      newFilter.criteria = newFilter.criteria.filter((obj, pos, arr) => {
-        return arr.map((mapObj) => mapObj.getId()).indexOf(obj.getId()) === pos;
-      });
-
-      newFilter.currentPage = 1;
-      updateFilter(newFilter);
-      setEditingCriterion(undefined);
-      setNewCriterion(false);
-    }
-
-    function onCancelAddCriterion() {
-      setEditingCriterion(undefined);
-      setNewCriterion(false);
-    }
-
     function onRemoveCriterion(removedCriterion: Criterion<CriterionValue>) {
       const newFilter = cloneDeep(filter);
       newFilter.criteria = newFilter.criteria.filter(
@@ -478,7 +444,16 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     function updateCriteria(c: Criterion<CriterionValue>[]) {
       const newFilter = cloneDeep(filter);
       newFilter.criteria = c.slice();
-      setNewCriterion(false);
+      setShowEditFilter(false);
+    }
+
+    function onApplyEditFilter(f: ListFilterModel) {
+      setShowEditFilter(false);
+      updateFilter(f);
+    }
+
+    function onCancelEditFilter() {
+      setShowEditFilter(false);
     }
 
     return (
@@ -488,8 +463,8 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
             onFilterUpdate={updateFilter}
             filter={filter}
             filterOptions={filterOptions}
-            openFilterDialog={() => setNewCriterion(true)}
-            filterDialogOpen={newCriterion}
+            openFilterDialog={() => setShowEditFilter(true)}
+            filterDialogOpen={showEditFilter ?? editingCriterion}
             persistState={persistState}
           />
           <ListOperationButtons
@@ -513,16 +488,14 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
           onEditCriterion={(c) => setEditingCriterion(c)}
           onRemoveCriterion={onRemoveCriterion}
         />
-        {(newCriterion || editingCriterion) && !filterDialog && (
-          <AddFilterDialog
-            filterOptions={filterOptions}
-            onAddCriterion={onAddCriterion}
-            onCancel={onCancelAddCriterion}
-            editingCriterion={editingCriterion}
-            existingCriterions={filter.criteria}
+        {showEditFilter && !filterDialog && (
+          <EditFilterDialog
+            filter={filter}
+            onApply={onApplyEditFilter}
+            onCancel={onCancelEditFilter}
           />
         )}
-        {newCriterion &&
+        {showEditFilter &&
           filterDialog &&
           filterDialog(filter.criteria, (c) => updateCriteria(c))}
         {isEditDialogOpen &&
