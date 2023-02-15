@@ -140,8 +140,7 @@ var (
 		MimeType: MimeMp4,
 		extraArgs: []string{
 			"-movflags", "frag_keyframe+empty_moov",
-			"-quality", "50",
-			"-pix_fmt", "yuv420p",
+			"-qp", "20",
 		},
 	}
 
@@ -153,7 +152,7 @@ var (
 		format:   FormatMP4,
 		MimeType: MimeMp4,
 		extraArgs: []string{
-			"-movflags", "frag_keyframe",
+			"-movflags", "frag_keyframe+empty_moov",
 			"-pix_fmt", "yuv420p",
 		},
 	}
@@ -289,7 +288,7 @@ func (o TranscodeStreamOptions) getStreamArgs() Args {
 		args = args.Duration(hlsSegmentLength)
 	}
 
-	args = HWCodecPrepend_Encode(args, o.Codec.codec)
+	videoFilter := HWFilterInit(o.Codec.codec)
 	args = args.Input(o.Input)
 
 	if o.VideoOnly {
@@ -300,11 +299,10 @@ func (o TranscodeStreamOptions) getStreamArgs() Args {
 
 	// don't set scale when copying video stream
 	if o.Codec.codec != VideoCodecCopy {
-		var videoFilter VideoFilter
 		videoFilter = videoFilter.ScaleMax(o.VideoWidth, o.VideoHeight, o.MaxTranscodeSize)
 		videoFilter = HWCodecFilter(videoFilter, o.Codec.codec)
-		args = args.VideoFilter(videoFilter)
 	}
+	args = args.VideoFilter(videoFilter)
 
 	if len(o.Codec.extraArgs) > 0 {
 		args = append(args, o.Codec.extraArgs...)
@@ -352,7 +350,10 @@ func (f *FFMpeg) GetTranscodeStream(ctx context.Context, options TranscodeStream
 		if len(stderrString) > 0 {
 			logger.Debugf("[stream] ffmpeg stderr: %s", stderrString)
 		}
-		cmd.Wait()
+		err := cmd.Wait()
+		if err != nil {
+			logger.Debugf("[stream] ffmpeg wait error: %s", err)
+		}
 	}()
 
 	ret := &Stream{
