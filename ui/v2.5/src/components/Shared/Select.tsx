@@ -887,7 +887,9 @@ export const TagSelect: React.FC<IFilterProps & { excludeIds?: string[] }> = (
       };
     }
 
-    const id = optionProps.data.__isNew__ ? "" : optionProps.data.value;
+    const id = (optionProps.data as Option & { __isNew__: boolean }).__isNew__
+      ? ""
+      : optionProps.data.value;
 
     return (
       <TagPopover id={id}>
