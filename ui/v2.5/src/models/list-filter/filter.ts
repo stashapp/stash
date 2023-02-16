@@ -98,6 +98,9 @@ export class ListFilterModel {
     }
     if (params.q !== undefined) {
       this.searchTerm = params.q;
+    } else {
+      // #1795 - reset search term if not provided
+      this.searchTerm = "";
     }
     this.currentPage = params.p ?? 1;
     if (params.z !== undefined) {

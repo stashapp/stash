@@ -66,6 +66,7 @@
     "play_selected": "Reproducir seleccionada",
     "preview": "Vista previa",
     "previous_action": "Atrás",
+    "reassign": "Reasignar",
     "refresh": "Actualizar",
     "reload_plugins": "Recargar plugins",
     "reload_scrapers": "Recargar rastreadores",
@@ -98,10 +99,12 @@
     "show": "Mostrar",
     "show_configuration": "Mostrar configuración",
     "skip": "Saltar",
+    "split": "Dividir",
     "stop": "Parar",
     "submit": "Enviar",
     "submit_stash_box": "Enviar a Stash-Box",
     "submit_update": "Enviar Actualización",
+    "swap": "Intercambia",
     "tasks": {
       "clean_confirm_message": "¿Estás seguro que quieres iniciar la limpieza? Esto eliminará la información en la base de datos, y el contenido generado para todas las escenas y galerías que ya no estén disponibles en el sistema de ficheros.",
       "dry_mode_selected": "Modo de simulación seleccionado. No se eliminará información, solo se guardarán registros de las acciones a realizar.",
@@ -120,6 +123,7 @@
   "also_known_as": "También conocida como",
   "ascending": "Ascendente",
   "average_resolution": "Resolución media",
+  "between_and": "y",
   "birth_year": "Año de nacimiento",
   "birthdate": "Cumpleaños",
   "bitrate": "Tasa de bits",
@@ -189,6 +193,7 @@
     },
     "categories": {
       "about": "Acerca de",
+      "changelog": "Registro de cambios",
       "interface": "Diseño",
       "logs": "Registros",
       "metadata_providers": "Proveedores de Metadatos",
@@ -242,6 +247,10 @@
         "stash-box_integration": "Integración Stash-box",
         "username": "Usuario",
         "username_desc": "Usuario para acceder a Stash. Dejar en blanco para deshabilitar la exigencia de identificación para acceder a la aplicación"
+      },
+      "backup_directory_path": {
+        "description": "Ubicación del directorio para copias de seguridad de archivos de bases de datos SQLite",
+        "heading": "Ruta del directorio de la copia de seguridad"
       },
       "cache_location": "Ruta relativa del directorio donde se almacenarán los ficheros de la caché",
       "cache_path_head": "Ruta relative para la caché",
@@ -420,11 +429,20 @@
       "scene_tools": "Herramientas de escenas"
     },
     "ui": {
+      "abbreviate_counters": {
+        "description": "Abrevie los contadores en las tarjetas y en las páginas de vista de detalles, por ejemplo, \"1831\" tendrá el formato \"1.8K\".",
+        "heading": "Abreviar contadores"
+      },
       "basic_settings": "Ajustes básicos",
       "custom_css": {
         "description": "La página debe ser recargada para que se lleven a cabo los cambios realizados.",
         "heading": "CSS personalizado",
         "option_label": "Habilitar CSS personalizado"
+      },
+      "custom_javascript": {
+        "description": "La página debe ser refrescada para que los cambios tomen efecto.",
+        "heading": "JavaScript personalizada",
+        "option_label": "JavaScript personalizada activada"
       },
       "delete_options": {
         "description": "Opciones por defecto al borrar escenas, imágenes y galerías.",
@@ -446,7 +464,15 @@
           "description": "Eliminar la capacidad de crear nuevos recursos desde los selectores de formulario desplegables",
           "heading": "Deshabilitar creación en menú desplegable"
         },
-        "heading": "Edición"
+        "heading": "Edición",
+        "rating_system": {
+          "type": {
+            "options": {
+              "decimal": "Decimal",
+              "stars": "Estrellas"
+            }
+          }
+        }
       },
       "funscript_offset": {
         "description": "Tiempo de compensación en milisegundos para la reproducción de scripts interactivos.",

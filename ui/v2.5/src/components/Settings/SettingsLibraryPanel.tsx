@@ -76,7 +76,7 @@ export const SettingsLibraryPanel: React.FC = () => {
                 id: "config.general.excluded_video_patterns_desc",
               })}
               <a
-                href="https://docs.stashapp.cc/docs/Beginner-Guides/Exclude-File-Configuration/"
+                href="https://docs.stashapp.cc/beginner-guides/exclude-file-configuration"
                 rel="noopener noreferrer"
                 target="_blank"
               >
@@ -98,7 +98,7 @@ export const SettingsLibraryPanel: React.FC = () => {
                 id: "config.general.excluded_image_gallery_patterns_desc",
               })}
               <a
-                href="https://docs.stashapp.cc/docs/Beginner-Guides/Exclude-File-Configuration/"
+                href="https://docs.stashapp.cc/beginner-guides/exclude-file-configuration"
                 rel="noopener noreferrer"
                 target="_blank"
               >

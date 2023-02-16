@@ -129,6 +129,8 @@ These options are typically not exposed in the UI and must be changed manually i
 | `custom_ui_location` | The file system folder where the UI files will be served from, instead of using the embedded UI. Empty to disable. Stash must be restarted to take effect. |
 | `max_upload_size` | Maximum file upload size for import files. Defaults to 1GB. |
 | `theme_color` | Sets the `theme-color` property in the UI. |
+| `proxy` | The url of a HTTP(S) proxy to be used when stash makes calls to online services Example: https://user:password@my.proxy:8080 |
+| `no_proxy` | A list of domains for which the proxy must not be used. Default is all local LAN: localhost,127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12 |
 
 ### Custom served folders
 

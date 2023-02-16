@@ -173,6 +173,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     onSubmit: (values) => onSave(values),
   });
 
+  // always dirty if creating a new performer with a name
+  if (isNew && performer.name) {
+    formik.dirty = true;
+  }
+
   function translateScrapedGender(scrapedGender?: string) {
     if (!scrapedGender) {
       return;

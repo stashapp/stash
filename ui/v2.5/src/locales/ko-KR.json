@@ -473,7 +473,12 @@
         "heading": "수정하기",
         "rating_system": {
           "star_precision": {
-            "label": "평점별 정확도"
+            "label": "평점별 정확도",
+            "options": {
+              "full": "1점",
+              "half": "0.5점",
+              "quarter": "0.25점"
+            }
           },
           "type": {
             "label": "평정 시스템 종류",
@@ -526,6 +531,10 @@
         "description": "탐색 바에 여러 종류의 컨텐츠들이 보여지게 하거나 숨깁니다",
         "heading": "메뉴 항목"
       },
+      "minimum_play_percent": {
+        "description": "재생 횟수를 증가시키기 위해 재생되어야 하는 최소 영상 시간(백분율)입니다.",
+        "heading": "최소 재생 시간(%)"
+      },
       "performers": {
         "options": {
           "image_location": {
@@ -552,6 +561,7 @@
       "scene_player": {
         "heading": "영상 플레이어",
         "options": {
+          "always_start_from_beginning": "항상 처음부터 비디오 시작하기",
           "auto_start_video": "비디오 자동 재생",
           "auto_start_video_on_play_selected": {
             "description": "대기열, 또는 '영상' 페이지에서 (랜덤)선택한 영상을 자동 재생",
@@ -561,7 +571,8 @@
             "description": "비디오가 끝나면 대기열에 있는 다음 영상을 재생합니다",
             "heading": "플레이리스트 이어보기"
           },
-          "show_scrubber": "스크러버 보이기"
+          "show_scrubber": "스크러버 보이기",
+          "track_activity": "활동 트래킹"
         }
       },
       "scene_wall": {
@@ -651,6 +662,7 @@
   "developmentVersion": "개발 버전",
   "dialogs": {
     "aliases_must_be_unique": "별칭은 유일해야 합니다",
+    "create_new_entity": "새로운 {entity} 생성",
     "delete_alert": "다음 {count, plural, one {{singularEntity}} other {{pluralEntity}}}이(가) 영구 삭제될 것입니다:",
     "delete_confirm": "정말 {entityName}을 삭제하시겠습니까?",
     "delete_entity_desc": "{정말로 {count, plural, one {singularEntity} other {pluralEntity}}을(를) 삭제하시겠습니까? 원본 파일 또한 삭제하지 않으면 스캔을 할 때 {count, plural, one {singularEntity} other {pluralEntity}}이(가) 다시 추가될 것입니다.}",
@@ -944,9 +956,11 @@
   "recently_released_objects": "최근 발매된 {objects}",
   "release_notes": "업데이트 내역",
   "resolution": "해상도",
+  "resume_time": "재시작 시간",
   "scene": "영상",
   "sceneTagger": "영상 태거",
   "sceneTags": "영상 태그",
+  "scene_code": "스튜디오 코드",
   "scene_count": "영상 개수",
   "scene_id": "영상 ID",
   "scenes": "영상",
@@ -1040,6 +1054,7 @@
     "welcome_to_stash": "Stash에 오신 것을 환영합니다"
   },
   "stash_id": "Stash ID",
+  "stash_id_endpoint": "Stash ID 엔드포인트",
   "stash_ids": "Stash IDs",
   "stashbox": {
     "go_review_draft": "초안을 검토하려면 {endpoint_name}(으)로 이동하십시오.",
@@ -1075,7 +1090,9 @@
     "default_filter_set": "기본 필터 셋",
     "delete_past_tense": "{count, plural, one {{singularEntity}} other {{pluralEntity}}}이(가) 삭제되었습니다",
     "generating_screenshot": "스크린샷을 생성하는 중…",
+    "merged_scenes": "병합된 영상",
     "merged_tags": "병합된 태그",
+    "reassign_past_tense": "재할당된 파일",
     "removed_entity": "{singularEntity}을(를) 제거했습니다",
     "rescanning_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} 다시 스캔하는 중…",
     "saved_entity": "{entity}를 저장했습니다",

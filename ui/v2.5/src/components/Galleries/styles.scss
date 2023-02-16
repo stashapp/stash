@@ -218,9 +218,17 @@ $galleryTabWidth: 450px;
       display: none;
     }
 
+    .star-fill-10 .unfilled-star,
+    .star-fill-20 .unfilled-star,
     .star-fill-25 .unfilled-star,
+    .star-fill-30 .unfilled-star,
+    .star-fill-40 .unfilled-star,
     .star-fill-50 .unfilled-star,
-    .star-fill-75 .unfilled-star {
+    .star-fill-60 .unfilled-star,
+    .star-fill-70 .unfilled-star,
+    .star-fill-75 .unfilled-star,
+    .star-fill-80 .unfilled-star,
+    .star-fill-90 .unfilled-star {
       visibility: hidden;
     }
 

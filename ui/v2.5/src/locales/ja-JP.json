@@ -6,6 +6,7 @@
     "add_to_entity": "{entityType}に追加",
     "allow": "許可",
     "allow_temporarily": "一時的に許可",
+    "anonymise": "匿名にする",
     "apply": "適用",
     "auto_tag": "自動タグ付け",
     "backup": "バックアップ",
@@ -32,10 +33,11 @@
     "delete_stashid": "StashIDを削除",
     "disallow": "拒否",
     "download": "ダウンロード",
+    "download_anonymised": "匿名でダウンロード",
     "download_backup": "バックアップをダウンロード",
     "edit": "編集",
     "edit_entity": "{entityType}を編集",
-    "export": "エクスポート…",
+    "export": "エクスポート",
     "export_all": "全てエクスポート…",
     "find": "探す",
     "finish": "完了",
@@ -105,6 +107,7 @@
     "submit": "送信",
     "submit_stash_box": "Stash-Boxに送信",
     "submit_update": "更新を送信",
+    "swap": "入れ替える",
     "tasks": {
       "clean_confirm_message": "クリーニングを実行してもよろしいですか？この操作により、ファイルシステムで利用されていないすべてのシーンとギャラリーから生成されたコンテンツとデータベース情報が削除されます。",
       "dry_mode_selected": "ドライモードが選択されています。実際の削除は実施されず、ログ処理だけが実行されます。",
@@ -345,6 +348,9 @@
     },
     "tasks": {
       "added_job_to_queue": "{operation_name}がジョブキューに追加されました",
+      "anonymise_and_download": "データベースを匿名化し、結果をダウンロードします。",
+      "anonymise_database": "センシティブな全データを匿名化して、バックアップ先にデータベースのコピーを保存します。これは、他者にトラブルシューティングを依頼したり、デバッグ目的の際に役立ちます。オリジナルのデータベースは一切変更されません。匿名化されたデータベースには次のファイル名規則が利用されます:{filename_format}",
+      "anonymising_database": "匿名データベース",
       "auto_tag": {
         "auto_tagging_all_paths": "すべてのパスを自動タグ付け",
         "auto_tagging_paths": "次のパスを自動タグ付け："
@@ -440,6 +446,7 @@
         "option_label": "カスタムCSSを有効にする"
       },
       "custom_javascript": {
+        "description": "エフェクトの変更を反映させるためにはページをリロードしてください。",
         "heading": "カスタムJavascript",
         "option_label": "カスタムJavascriptを有効化する"
       },
@@ -479,6 +486,7 @@
             }
           },
           "type": {
+            "label": "評価制度の方法",
             "options": {
               "decimal": "数値",
               "stars": "星"
@@ -528,6 +536,10 @@
         "description": "タイプナビゲーションバー上の異なるコンテンツタイプの表示または非表示を切り替えます",
         "heading": "メニューアイテム"
       },
+      "minimum_play_percent": {
+        "description": "再生回数を増やすために再生しなければならないシーンの時間割合を指します。",
+        "heading": "最低再生割合"
+      },
       "performers": {
         "options": {
           "image_location": {
@@ -564,7 +576,8 @@
             "description": "動画の再生が終了した際にキューに入っている次の動画を再生します",
             "heading": "デフォルトでプレイリストを続行"
           },
-          "show_scrubber": "スクラバーを表示"
+          "show_scrubber": "スクラバーを表示",
+          "track_activity": "アクティビティを追跡"
         }
       },
       "scene_wall": {
@@ -654,6 +667,7 @@
   "developmentVersion": "開発者バージョン",
   "dialogs": {
     "aliases_must_be_unique": "別名は一意でなければいけません",
+    "create_new_entity": "{entity}を新規作成する",
     "delete_alert": "次の{count, plural, one {{singularEntity}} other {{pluralEntity}}}は完全に削除されます:",
     "delete_confirm": "本当に{entityName}を削除してよろしいですか？",
     "delete_entity_desc": "{count, plural, one {Are you sure you want to delete this {singularEntity}? Unless the file is also deleted, this {singularEntity} will be re-added when scan is performed.} other {Are you sure you want to delete these {pluralEntity}? Unless the files are also deleted, these {pluralEntity} will be re-added when scan is performed.}}",
@@ -689,11 +703,20 @@
         "zoom": "拡大"
       }
     },
+    "merge": {
+      "destination": "宛先",
+      "empty_results": "宛先欄の値は変更されません。",
+      "source": "ソース"
+    },
     "merge_tags": {
       "destination": "場所",
       "source": "ソース"
     },
     "overwrite_filter_confirm": "本当に保存されているクエリ「{entityName}」を上書きしてもよろしいですか？",
+    "reassign_entity_title": "{count, plural, one {{singularEntity}を再割り当て} other {{pluralEntity}を再割り当て}}",
+    "reassign_files": {
+      "destination": "次に再割り当て:"
+    },
     "scene_gen": {
       "force_transcodes": "強制的にトランスコード済みファイルを生成",
       "force_transcodes_tooltip": "初期設定では、トランスコード済みファイルはブラウザーがサポートしていない動画ファイルであった場合にのみ生成されます。有効にすると、ブラウザーがサポートする動画ファイルであった場合でもトランスコード済みファイルを生成します。",
@@ -739,6 +762,7 @@
   },
   "dimensions": "寸法",
   "director": "監督",
+  "disambiguation": "用語解説",
   "display_mode": {
     "grid": "グリッド",
     "list": "リスト",
@@ -794,6 +818,7 @@
   "file_info": "ファイル情報",
   "file_mod_time": "ファイル変更日時",
   "files": "ファイル",
+  "files_amount": "{value}ファイル",
   "filesize": "ファイルサイズ",
   "filter": "フィルター",
   "filter_name": "フィルター名",
@@ -863,6 +888,8 @@
       "age_context": "{age} {years_old}(撮影当時)"
     },
     "phash": "PHash",
+    "play_count": "再生回数",
+    "play_duration": "再生時間",
     "stream": "ストリーム",
     "video_codec": "動画コーデック"
   },
@@ -933,6 +960,8 @@
   },
   "performers": "出演者",
   "piercings": "ピアス",
+  "play_count": "再生回数",
+  "play_duration": "再生時間",
   "primary_file": "メインファイル",
   "queue": "キュー",
   "random": "ランダム",
@@ -941,11 +970,16 @@
   "recently_released_objects": "最近リリースされた{objects}",
   "release_notes": "リリースノート",
   "resolution": "解像度",
+  "resume_time": "レジューム時間",
   "scene": "シーン",
   "sceneTagger": "シーン一括タグ付け",
   "sceneTags": "シーンタグ",
+  "scene_code": "スタジオコード",
   "scene_count": "シーン数",
+  "scene_created_at": "シーンの作成日時",
+  "scene_date": "シーンの日付",
   "scene_id": "シーンID",
+  "scene_updated_at": "シーンの更新日時",
   "scenes": "シーン",
   "scenes_updated_at": "シーンの更新日：",
   "search_filter": {
@@ -1037,6 +1071,7 @@
     "welcome_to_stash": "Stashへようこそ"
   },
   "stash_id": "Stash ID",
+  "stash_id_endpoint": "Stash IDエンドポイント",
   "stash_ids": "Stash ID",
   "stashbox": {
     "go_review_draft": "下書きを確認するには、{endpoint_name}に移動してください。",
@@ -1074,6 +1109,7 @@
     "generating_screenshot": "スクリーンショットを生成中…",
     "merged_scenes": "マージされたシーン",
     "merged_tags": "マージされたタグ",
+    "reassign_past_tense": "ファイルが再割り当てされました",
     "removed_entity": "{count, plural, one {{singularEntity}}と、その他{{pluralEntity}}}を削除しました",
     "rescanning_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}}を再スキャン中…",
     "saved_entity": "{entity}が保存されました",
