@@ -87,6 +87,7 @@ var (
 			"-movflags", "frag_keyframe+empty_moov",
 			"-rc", "vbr",
 			"-cq", "15",
+			"-preset", "p2",
 		},
 	}
 
@@ -98,6 +99,7 @@ var (
 		extraArgs: []string{
 			"-movflags", "frag_keyframe+empty_moov",
 			"-global_quality", "25",
+			"-preset", "fast",
 		},
 	}
 
@@ -181,14 +183,16 @@ var (
 	}
 
 	// Intel QSV VP9
-	// Untested
+	// BUG: Disabled on 8-10th gen
+	// https://github.com/intel/media-driver/issues/771
+	// Not critical, as the codec detector simply fails it
 	StreamFormatIVP9 = StreamFormat{
 		codec:    VideoCodecIVP9,
 		format:   FormatWebm,
 		MimeType: MimeWebm,
 		extraArgs: []string{
-			"-preset", "veryfast",
 			"-global_quality", "25",
+			"-preset", "fast",
 		},
 	}
 
@@ -199,8 +203,7 @@ var (
 		format:   FormatWebm,
 		MimeType: MimeWebm,
 		extraArgs: []string{
-			"-global_quality", "30",
-			"-pix_fmt", "yuv420p",
+			"-qp", "20",
 		},
 	}
 

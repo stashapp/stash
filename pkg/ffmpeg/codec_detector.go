@@ -17,15 +17,14 @@ func FindHWCodecs(ctx context.Context, encoder FFMpeg) {
 	for _, codec := range []StreamFormat{
 		StreamFormatN264,
 		StreamFormatI264,
+		StreamFormatIVP9,
 		StreamFormatV264,
-		/*
-			Untested:
-				StreamFormatA264,
-				StreamFormatM264,
-				StreamFormatO264,
-				StreamFormatIVP9,
-				StreamFormatVVP9,
-		*/
+		StreamFormatVVP9,
+		StreamFormatA264,
+		StreamFormatM264,
+		StreamFormatO264,
+		StreamFormatIVP9,
+		StreamFormatVVP9,
 		/*
 			Buggy:
 				StreamFormatR264
