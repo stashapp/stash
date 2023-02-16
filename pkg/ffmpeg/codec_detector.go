@@ -23,8 +23,6 @@ func FindHWCodecs(ctx context.Context, encoder FFMpeg) {
 		StreamFormatA264,
 		StreamFormatM264,
 		StreamFormatO264,
-		StreamFormatIVP9,
-		StreamFormatVVP9,
 		/*
 			Buggy:
 				StreamFormatR264
