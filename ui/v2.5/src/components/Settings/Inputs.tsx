@@ -1,8 +1,7 @@
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
-import React, { useState } from "react";
+import React, { PropsWithChildren, useState } from "react";
 import { Button, Collapse, Form, Modal, ModalProps } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
-import { PropsWithChildren } from "react-router/node_modules/@types/react";
 import { Icon } from "../Shared";
 import { StringListInput } from "../Shared/StringListInput";
 
@@ -154,7 +153,7 @@ export const BooleanSetting: React.FC<IBooleanSetting> = (props) => {
 };
 
 interface ISelectSetting extends ISetting {
-  value?: string | number | string[] | undefined;
+  value?: string | number | string[];
   onChange: (v: string) => void;
 }
 

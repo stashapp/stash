@@ -26,9 +26,6 @@ import V0180 from "src/docs/en/Changelog/v0180.md";
 import V0190 from "src/docs/en/Changelog/v0190.md";
 import { MarkdownPage } from "../Shared/MarkdownPage";
 
-// to avoid use of explicit any
-type Module = typeof V010;
-
 const Changelog: React.FC = () => {
   const [{ data, loading }, setOpenState] = useChangelogStorage();
 
@@ -55,7 +52,7 @@ const Changelog: React.FC = () => {
   interface IStashRelease {
     version: string;
     date?: string;
-    page: Module;
+    page: string;
     defaultOpen?: boolean;
   }
 

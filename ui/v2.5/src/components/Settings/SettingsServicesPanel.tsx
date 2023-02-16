@@ -23,9 +23,12 @@ export const SettingsServicesPanel: React.FC = () => {
   const intl = useIntl();
   const Toast = useToast();
 
-  const { dlna, loading: configLoading, error, saveDLNA } = React.useContext(
-    SettingStateContext
-  );
+  const {
+    dlna,
+    loading: configLoading,
+    error,
+    saveDLNA,
+  } = React.useContext(SettingStateContext);
 
   // undefined to hide dialog, true for enable, false for disable
   const [enableDisable, setEnableDisable] = useState<boolean | undefined>(

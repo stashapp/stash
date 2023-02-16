@@ -5,7 +5,7 @@ import { getCountries } from "src/utils";
 import CountryLabel from "./CountryLabel";
 
 interface IProps {
-  value?: string | undefined;
+  value?: string;
   onChange?: (value: string) => void;
   disabled?: boolean;
   className?: string;

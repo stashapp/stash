@@ -40,23 +40,16 @@ import { useRatingKeybinds } from "src/hooks/keybinds";
 import { ConfigurationContext } from "src/hooks/Config";
 
 interface IProps {
+  gallery: Partial<GQL.GalleryDataFragment>;
   isVisible: boolean;
   onDelete: () => void;
 }
 
-interface INewProps {
-  isNew: true;
-  gallery?: Partial<GQL.GalleryDataFragment>;
-}
-
-interface IExistingProps {
-  isNew: false;
-  gallery: GQL.GalleryDataFragment;
-}
-
-export const GalleryEditPanel: React.FC<
-  IProps & (INewProps | IExistingProps)
-> = ({ gallery, isNew, isVisible, onDelete }) => {
+export const GalleryEditPanel: React.FC<IProps> = ({
+  gallery,
+  isVisible,
+  onDelete,
+}) => {
   const intl = useIntl();
   const Toast = useToast();
   const history = useHistory();
@@ -67,15 +60,14 @@ export const GalleryEditPanel: React.FC<
     }))
   );
 
+  const isNew = gallery.id === undefined;
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
 
   const Scrapers = useListGalleryScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
 
-  const [
-    scrapedGallery,
-    setScrapedGallery,
-  ] = useState<GQL.ScrapedGallery | null>();
+  const [scrapedGallery, setScrapedGallery] =
+    useState<GQL.ScrapedGallery | null>();
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);

@@ -173,11 +173,9 @@ export const Manual: React.FC<IManualProps> = ({
     event: React.MouseEvent<HTMLDivElement, MouseEvent>
   ) {
     if (event.target instanceof HTMLAnchorElement) {
-      const href = (event.target as HTMLAnchorElement).getAttribute("href");
+      const href = event.target.getAttribute("href");
       if (href && href.startsWith("/help")) {
-        const newKey = (event.target as HTMLAnchorElement).pathname.substring(
-          "/help/".length
-        );
+        const newKey = event.target.pathname.substring("/help/".length);
         setActiveTab(newKey);
         event.preventDefault();
       }

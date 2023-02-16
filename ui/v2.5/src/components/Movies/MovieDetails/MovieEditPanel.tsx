@@ -25,7 +25,7 @@ import { useRatingKeybinds } from "src/hooks/keybinds";
 import { ConfigurationContext } from "src/hooks/Config";
 
 interface IMovieEditPanel {
-  movie?: Partial<GQL.MovieDataFragment>;
+  movie: Partial<GQL.MovieDataFragment>;
   onSubmit: (
     movie: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput>
   ) => void;
@@ -49,19 +49,15 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
   const Toast = useToast();
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
 
-  const isNew = movie === undefined;
+  const isNew = movie.id === undefined;
 
   const [isLoading, setIsLoading] = useState(false);
   const [isImageAlertOpen, setIsImageAlertOpen] = useState<boolean>(false);
 
-  const [imageClipboard, setImageClipboard] = useState<string | undefined>(
-    undefined
-  );
+  const [imageClipboard, setImageClipboard] = useState<string>();
 
   const Scrapers = useListMovieScrapers();
-  const [scrapedMovie, setScrapedMovie] = useState<
-    GQL.ScrapedMovie | undefined
-  >();
+  const [scrapedMovie, setScrapedMovie] = useState<GQL.ScrapedMovie>();
 
   const schema = yup.object({
     name: yup.string().required(),
@@ -113,10 +109,10 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     setBackImage(formik.values.back_image);
   }, [formik.values.back_image, setBackImage]);
 
-  useEffect(() => onImageEncoding(encodingImage), [
-    onImageEncoding,
-    encodingImage,
-  ]);
+  useEffect(
+    () => onImageEncoding(encodingImage),
+    [onImageEncoding, encodingImage]
+  );
 
   function setRating(v: number) {
     formik.setFieldValue("rating100", v);

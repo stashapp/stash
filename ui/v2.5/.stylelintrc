@@ -1,14 +1,16 @@
 {
-  "plugins": [
-    "stylelint-order"
-  ],
+  "plugins": ["stylelint-order"],
   "extends": "stylelint-config-prettier",
+  "customSyntax": "postcss-scss",
   "rules": {
     "indentation": null,
-    "at-rule-empty-line-before": [ "always", {
-      except: ["after-same-name", "first-nested" ],
-      ignore: ["after-comment"],
-    } ],
+    "at-rule-empty-line-before": [
+      "always",
+      {
+        "except": ["after-same-name", "first-nested"],
+        "ignore": ["after-comment"]
+      }
+    ],
     "at-rule-no-vendor-prefix": true,
     "selector-no-vendor-prefix": true,
     "block-closing-brace-newline-after": "always",
@@ -21,10 +23,13 @@
     "color-hex-case": "lower",
     "color-hex-length": "short",
     "color-no-invalid-hex": true,
-    "comment-empty-line-before": [ "always", {
-      except: ["first-nested"],
-      ignore: ["stylelint-commands"],
-    } ],
+    "comment-empty-line-before": [
+      "always",
+      {
+        "except": ["first-nested"],
+        "ignore": ["stylelint-commands"]
+      }
+    ],
     "comment-whitespace-inside": "always",
     "declaration-bang-space-after": "never",
     "declaration-bang-space-before": "always",
@@ -63,15 +68,15 @@
     "no-missing-end-of-source-newline": true,
     "number-max-precision": 3,
     "number-no-trailing-zeros": true,
-    "order/order": [
-      "custom-properties",
-      "declarations"
-    ],
+    "order/order": ["custom-properties", "declarations"],
     "order/properties-alphabetical-order": true,
-    "rule-empty-line-before": ["always-multi-line", {
-      except: ["after-single-line-comment", "first-nested" ],
-      ignore: ["after-comment"],
-    }],
+    "rule-empty-line-before": [
+      "always-multi-line",
+      {
+        "except": ["after-single-line-comment", "first-nested"],
+        "ignore": ["after-comment"]
+      }
+    ],
     "selector-max-id": 1,
     "selector-max-type": 2,
     "selector-class-pattern": "^(\\.*[A-Z]*[a-z]+)+(-[a-z0-9]+)*$",
@@ -87,5 +92,5 @@
     "time-min-milliseconds": 100,
     "value-list-comma-space-after": "always-single-line",
     "value-list-comma-space-before": "never"
-  },
+  }
 }

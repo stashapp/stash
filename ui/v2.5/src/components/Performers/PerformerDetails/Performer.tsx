@@ -32,12 +32,8 @@ import { PerformerImagesPanel } from "./PerformerImagesPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
 import { PerformerSubmitButton } from "./PerformerSubmitButton";
 import GenderIcon from "../GenderIcon";
-import {
-  faCamera,
-  faDove,
-  faHeart,
-  faLink,
-} from "@fortawesome/free-solid-svg-icons";
+import { faHeart, faLink } from "@fortawesome/free-solid-svg-icons";
+import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { IUIConfig } from "src/core/config";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 
@@ -247,7 +243,6 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <PerformerEditPanel
           performer={performer}
           isVisible={isEditing}
-          isNew={false}
           onImageChange={onImageChange}
           onImageEncoding={onImageEncoding}
           onCancelEditing={() => {
@@ -351,7 +346,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Icon icon={faDove} />
+            <Icon icon={faTwitter} />
           </a>
         </Button>
       )}
@@ -366,7 +361,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Icon icon={faCamera} />
+            <Icon icon={faInstagram} />
           </a>
         </Button>
       )}
@@ -405,7 +400,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             <h2>
               <GenderIcon
                 gender={performer.gender}
-                className="gender-icon mr-2 flag-icon"
+                className="gender-icon mr-2 fi"
               />
               <CountryFlag country={performer.country} className="mr-2" />
               <span className="performer-name">{performer.name}</span>

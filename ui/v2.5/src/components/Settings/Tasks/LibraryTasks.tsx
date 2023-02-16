@@ -81,14 +81,12 @@ export const LibraryTasks: React.FC = () => {
   });
 
   const [scanOptions, setScanOptions] = useState<GQL.ScanMetadataInput>({});
-  const [
-    autoTagOptions,
-    setAutoTagOptions,
-  ] = useState<GQL.AutoTagMetadataInput>({
-    performers: ["*"],
-    studios: ["*"],
-    tags: ["*"],
-  });
+  const [autoTagOptions, setAutoTagOptions] =
+    useState<GQL.AutoTagMetadataInput>({
+      performers: ["*"],
+      studios: ["*"],
+      tags: ["*"],
+    });
 
   function getDefaultGenerateOptions(): GQL.GenerateMetadataInput {
     return {
@@ -104,10 +102,8 @@ export const LibraryTasks: React.FC = () => {
     };
   }
 
-  const [
-    generateOptions,
-    setGenerateOptions,
-  ] = useState<GQL.GenerateMetadataInput>(getDefaultGenerateOptions());
+  const [generateOptions, setGenerateOptions] =
+    useState<GQL.GenerateMetadataInput>(getDefaultGenerateOptions());
 
   type DialogOpenState = typeof dialogOpen;
 

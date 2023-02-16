@@ -6,21 +6,17 @@ import { DetailsEditNavbar, TagSelect } from "src/components/Shared";
 import { Form, Col, Row } from "react-bootstrap";
 import { FormUtils, ImageUtils } from "src/utils";
 import { useFormik } from "formik";
-import { Prompt, useParams } from "react-router-dom";
+import { Prompt } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import { StringListInput } from "src/components/Shared/StringListInput";
 
 interface ITagEditPanel {
-  tag?: Partial<GQL.TagDataFragment>;
+  tag: Partial<GQL.TagDataFragment>;
   // returns id
   onSubmit: (tag: Partial<GQL.TagCreateInput | GQL.TagUpdateInput>) => void;
   onCancel: () => void;
   onDelete: () => void;
   setImage: (image?: string | null) => void;
-}
-
-interface ITagEditPanelParams {
-  id?: string;
 }
 
 export const TagEditPanel: React.FC<ITagEditPanel> = ({
@@ -32,10 +28,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 }) => {
   const intl = useIntl();
 
-  const params = useParams<ITagEditPanelParams>();
-  const idParam = params.id;
-
-  const isNew = idParam === undefined;
+  const isNew = tag.id === undefined;
 
   const labelXS = 3;
   const labelXL = 3;

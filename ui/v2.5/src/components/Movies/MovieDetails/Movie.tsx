@@ -51,7 +51,9 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("e", () => setIsEditing(true));
-    Mousetrap.bind("d d", () => onDelete());
+    Mousetrap.bind("d d", () => {
+      onDelete();
+    });
 
     return () => {
       Mousetrap.unbind("e");

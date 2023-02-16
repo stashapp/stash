@@ -8,7 +8,7 @@ import Gallery from "./GalleryDetails/Gallery";
 import GalleryCreate from "./GalleryDetails/GalleryCreate";
 import { GalleryList } from "./GalleryList";
 
-const Galleries = () => {
+const Galleries: React.FC = () => {
   const intl = useIntl();
 
   const title_template = `${intl.formatMessage({

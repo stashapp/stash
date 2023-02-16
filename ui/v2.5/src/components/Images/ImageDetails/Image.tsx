@@ -239,7 +239,9 @@ export const Image: React.FC = () => {
     Mousetrap.bind("a", () => setActiveTabKey("image-details-panel"));
     Mousetrap.bind("e", () => setActiveTabKey("image-edit-panel"));
     Mousetrap.bind("f", () => setActiveTabKey("image-file-info-panel"));
-    Mousetrap.bind("o", () => onIncrementClick());
+    Mousetrap.bind("o", () => {
+      onIncrementClick();
+    });
 
     return () => {
       Mousetrap.unbind("a");

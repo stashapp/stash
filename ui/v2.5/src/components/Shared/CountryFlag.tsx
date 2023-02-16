@@ -19,9 +19,7 @@ const CountryFlag: React.FC<ICountryFlag> = ({
 
   return (
     <span
-      className={`${
-        className ?? ""
-      } flag-icon flag-icon-${isoCountry.toLowerCase()}`}
+      className={`${className ?? ""} fi fi-${isoCountry.toLowerCase()}`}
       title={country}
     />
   );

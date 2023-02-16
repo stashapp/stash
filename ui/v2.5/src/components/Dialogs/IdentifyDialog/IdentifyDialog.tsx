@@ -202,9 +202,8 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
 
           if (s.options) {
             const sourceOptions = withoutTypename(s.options);
-            sourceOptions.fieldOptions = sourceOptions.fieldOptions?.map(
-              withoutTypename
-            );
+            sourceOptions.fieldOptions =
+              sourceOptions.fieldOptions?.map(withoutTypename);
             ret.options = sourceOptions;
           }
 
@@ -215,9 +214,8 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
       setSources(mappedSources);
       if (identifyDefaults.options) {
         const defaultOptions = withoutTypename(identifyDefaults.options);
-        defaultOptions.fieldOptions = defaultOptions.fieldOptions?.map(
-          withoutTypename
-        );
+        defaultOptions.fieldOptions =
+          defaultOptions.fieldOptions?.map(withoutTypename);
         setOptions(defaultOptions);
       }
     } else {

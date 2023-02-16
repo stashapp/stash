@@ -181,14 +181,10 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
       return -1;
     }
 
-    const [
-      nbPhashMatchSceneA,
-      ratioPhashMatchSceneA,
-    ] = calculatePhashComparisonScore(stashScene, sceneA);
-    const [
-      nbPhashMatchSceneB,
-      ratioPhashMatchSceneB,
-    ] = calculatePhashComparisonScore(stashScene, sceneB);
+    const [nbPhashMatchSceneA, ratioPhashMatchSceneA] =
+      calculatePhashComparisonScore(stashScene, sceneA);
+    const [nbPhashMatchSceneB, ratioPhashMatchSceneB] =
+      calculatePhashComparisonScore(stashScene, sceneB);
 
     if (nbPhashMatchSceneA != nbPhashMatchSceneB) {
       return nbPhashMatchSceneB - nbPhashMatchSceneA;

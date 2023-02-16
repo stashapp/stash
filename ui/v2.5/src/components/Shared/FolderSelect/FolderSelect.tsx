@@ -20,9 +20,8 @@ export const FolderSelect: React.FC<IProps> = ({
   defaultDirectories,
   appendButton,
 }) => {
-  const [debouncedDirectory, setDebouncedDirectory] = useState(
-    currentDirectory
-  );
+  const [debouncedDirectory, setDebouncedDirectory] =
+    useState(currentDirectory);
   const { data, error, loading } = useDirectory(debouncedDirectory);
   const intl = useIntl();
 

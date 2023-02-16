@@ -14,7 +14,7 @@ interface IShowFieldsProps {
   onShowFieldsChanged: (fields: Map<string, boolean>) => void;
 }
 
-export const ShowFields = (props: IShowFieldsProps) => {
+export const ShowFields: React.FC<IShowFieldsProps> = (props) => {
   const intl = useIntl();
   const [open, setOpen] = useState(false);
 

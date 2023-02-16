@@ -10,12 +10,10 @@ class TrackActivityPlugin extends videojs.getPlugin("plugin") {
   incrementPlayCount: () => Promise<void> = () => {
     return Promise.resolve();
   };
-  saveActivity: (
-    resumeTime: number,
-    playDuration: number
-  ) => Promise<void> = () => {
-    return Promise.resolve();
-  };
+  saveActivity: (resumeTime: number, playDuration: number) => Promise<void> =
+    () => {
+      return Promise.resolve();
+    };
 
   private enabled = false;
   private playCountIncremented = false;

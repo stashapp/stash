@@ -1,5 +1,4 @@
 import { Tab, Nav, Dropdown, Button, ButtonGroup } from "react-bootstrap";
-import queryString from "query-string";
 import React, {
   useEffect,
   useState,
@@ -144,7 +143,9 @@ const ScenePage: React.FC<IProps> = ({
     Mousetrap.bind("e", () => setActiveTabKey("scene-edit-panel"));
     Mousetrap.bind("k", () => setActiveTabKey("scene-markers-panel"));
     Mousetrap.bind("i", () => setActiveTabKey("scene-file-info-panel"));
-    Mousetrap.bind("o", () => onIncrementClick());
+    Mousetrap.bind("o", () => {
+      onIncrementClick();
+    });
     Mousetrap.bind("p n", () => onQueueNext());
     Mousetrap.bind("p p", () => onQueuePrevious());
     Mousetrap.bind("p r", () => onQueueRandom());
@@ -521,7 +522,7 @@ const SceneLoader: React.FC = () => {
   const { data, loading, error } = useFindScene(id ?? "");
 
   const queryParams = useMemo(
-    () => queryString.parse(location.search, { decode: false }),
+    () => new URLSearchParams(location.search),
     [location.search]
   );
   const sceneQueue = useMemo(
@@ -529,13 +530,13 @@ const SceneLoader: React.FC = () => {
     [queryParams]
   );
   const queryContinue = useMemo(() => {
-    let cont = queryParams.continue;
-    if (cont !== undefined) {
+    let cont = queryParams.get("continue");
+    if (cont) {
       return cont === "true";
     } else {
       return !!configuration?.interface.continuePlaylistDefault;
     }
-  }, [configuration?.interface.continuePlaylistDefault, queryParams.continue]);
+  }, [configuration?.interface.continuePlaylistDefault, queryParams]);
 
   const [queueScenes, setQueueScenes] = useState<QueuedScene[]>([]);
 
@@ -547,14 +548,13 @@ const SceneLoader: React.FC = () => {
 
   const _setTimestamp = useRef<(value: number) => void>();
   const initialTimestamp = useMemo(() => {
-    const t = Array.isArray(queryParams.t) ? queryParams.t[0] : queryParams.t;
-    return Number.parseInt(t ?? "0", 10);
+    return Number.parseInt(queryParams.get("t") ?? "0", 10);
   }, [queryParams]);
 
   const [queueTotal, setQueueTotal] = useState(0);
   const [queueStart, setQueueStart] = useState(1);
 
-  const autoplay = queryParams.autoplay === "true";
+  const autoplay = queryParams.get("autoplay") === "true";
   const currentQueueIndex = queueScenes
     ? queueScenes.findIndex((s) => s.id === id)
     : -1;

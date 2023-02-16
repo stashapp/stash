@@ -22,9 +22,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 export const Setup: React.FC = () => {
-  const { configuration, loading: configLoading } = useContext(
-    ConfigurationContext
-  );
+  const { configuration, loading: configLoading } =
+    useContext(ConfigurationContext);
 
   const [step, setStep] = useState(0);
   const [configLocation, setConfigLocation] = useState("");
