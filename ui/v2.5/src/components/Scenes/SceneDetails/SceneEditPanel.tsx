@@ -26,14 +26,16 @@ import {
   TagSelect,
   StudioSelect,
   GallerySelect,
-  Icon,
-  LoadingIndicator,
-  ImageInput,
-  URLField,
-} from "src/components/Shared";
-import useToast from "src/hooks/Toast";
-import { ImageUtils, FormUtils, getStashIDs } from "src/utils";
-import { MovieSelect } from "src/components/Shared/Select";
+  MovieSelect,
+} from "src/components/Shared/Select";
+import { Icon } from "src/components/Shared/Icon";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { ImageInput } from "src/components/Shared/ImageInput";
+import { URLField } from "src/components/Shared/URLField";
+import { useToast } from "src/hooks/Toast";
+import ImageUtils from "src/utils/image";
+import FormUtils from "src/utils/form";
+import { getStashIDs } from "src/utils/stashIds";
 import { useFormik } from "formik";
 import { Prompt, useHistory } from "react-router-dom";
 import { ConfigurationContext } from "src/hooks/Config";

@@ -20,7 +20,8 @@ import {
   useStudioUpdate,
   useTagCreate,
 } from "src/core/StashService";
-import { useLocalForage, useToast } from "src/hooks";
+import { useLocalForage } from "src/hooks/LocalForage";
+import { useToast } from "src/hooks/Toast";
 import { ConfigurationContext } from "src/hooks/Config";
 import { ITaggerSource, SCRAPER_PREFIX, STASH_BOX_PREFIX } from "./constants";
 

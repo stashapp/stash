@@ -7,16 +7,16 @@ import {
   queryScrapeMovieURL,
   useListMovieScrapers,
 } from "src/core/StashService";
-import {
-  LoadingIndicator,
-  StudioSelect,
-  DetailsEditNavbar,
-  DurationInput,
-  URLField,
-} from "src/components/Shared";
-import { useToast } from "src/hooks";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { StudioSelect } from "src/components/Shared/Select";
+import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
+import { DurationInput } from "src/components/Shared/DurationInput";
+import { URLField } from "src/components/Shared/URLField";
+import { useToast } from "src/hooks/Toast";
 import { Modal as BSModal, Form, Button, Col, Row } from "react-bootstrap";
-import { DurationUtils, FormUtils, ImageUtils } from "src/utils";
+import DurationUtils from "src/utils/duration";
+import FormUtils from "src/utils/form";
+import ImageUtils from "src/utils/image";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";

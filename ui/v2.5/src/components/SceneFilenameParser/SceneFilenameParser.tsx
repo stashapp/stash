@@ -9,8 +9,8 @@ import {
   useScenesUpdate,
 } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
-import { LoadingIndicator } from "src/components/Shared";
-import { useToast } from "src/hooks";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { useToast } from "src/hooks/Toast";
 import { Pagination } from "src/components/List/Pagination";
 import { IParserInput, ParserInput } from "./ParserInput";
 import { ParserField } from "./ParserField";

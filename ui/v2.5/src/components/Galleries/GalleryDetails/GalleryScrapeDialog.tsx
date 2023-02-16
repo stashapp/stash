@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { StudioSelect, PerformerSelect } from "src/components/Shared";
+import {
+  StudioSelect,
+  PerformerSelect,
+  TagSelect,
+} from "src/components/Shared/Select";
 import * as GQL from "src/core/generated-graphql";
-import { TagSelect } from "src/components/Shared/Select";
 import {
   ScrapeDialog,
   ScrapeDialogRow,
@@ -17,7 +20,7 @@ import {
   useTagCreate,
   makePerformerCreateInput,
 } from "src/core/StashService";
-import { useToast } from "src/hooks";
+import { useToast } from "src/hooks/Toast";
 
 function renderScrapedStudio(
   result: ScrapeResult<string>,

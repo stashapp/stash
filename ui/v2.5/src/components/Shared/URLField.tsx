@@ -1,7 +1,7 @@
 import React from "react";
 import { useIntl } from "react-intl";
 import { Button, InputGroup, Form } from "react-bootstrap";
-import Icon from "src/components/Shared/Icon";
+import { Icon } from "./Icon";
 import { FormikHandlers } from "formik";
 import { faFileDownload } from "@fortawesome/free-solid-svg-icons";
 

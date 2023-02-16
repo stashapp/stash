@@ -3,8 +3,8 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useLocation } from "react-router-dom";
 import { SceneEditPanel } from "./SceneEditPanel";
 import { useFindScene } from "src/core/StashService";
-import { ImageUtils } from "src/utils";
-import { LoadingIndicator } from "src/components/Shared";
+import ImageUtils from "src/utils/image";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 
 const SceneCreate: React.FC = () => {
   const intl = useIntl();

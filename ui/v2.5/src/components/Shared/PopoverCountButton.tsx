@@ -11,8 +11,8 @@ import { FormattedNumber, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import { IUIConfig } from "src/core/config";
 import { ConfigurationContext } from "src/hooks/Config";
-import { TextUtils } from "src/utils";
-import Icon from "./Icon";
+import TextUtils from "src/utils/text";
+import { Icon } from "./Icon";
 
 type PopoverLinkType = "scene" | "image" | "gallery" | "movie" | "performer";
 

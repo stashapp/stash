@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Form, Button, ListGroup } from "react-bootstrap";
-import { Modal, Icon } from "src/components/Shared";
+import { ModalComponent } from "src/components/Shared/Modal";
+import { Icon } from "src/components/Shared/Icon";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { IScraperSource } from "./constants";
@@ -53,7 +54,7 @@ export const SourcesEditor: React.FC<ISourceEditor> = ({
   }
 
   return (
-    <Modal
+    <ModalComponent
       dialogClassName="identify-source-editor"
       modalProps={{ animation: false, size: "lg" }}
       show
@@ -107,7 +108,7 @@ export const SourcesEditor: React.FC<ISourceEditor> = ({
           defaultOptions={defaultOptions}
         />
       </Form>
-    </Modal>
+    </ModalComponent>
   );
 };
 

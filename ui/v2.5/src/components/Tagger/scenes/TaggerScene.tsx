@@ -5,12 +5,10 @@ import { Button, Collapse, Form, InputGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 
 import { sortPerformers } from "src/core/performers";
-import {
-  Icon,
-  OperationButton,
-  TagLink,
-  TruncatedText,
-} from "src/components/Shared";
+import { Icon } from "src/components/Shared/Icon";
+import { OperationButton } from "src/components/Shared/OperationButton";
+import { TagLink } from "src/components/Shared/TagLink";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { parsePath, prepareQueryString } from "src/components/Tagger/utils";
 import { ScenePreview } from "src/components/Scenes/SceneCard";
 import { TaggerStateContext } from "../context";

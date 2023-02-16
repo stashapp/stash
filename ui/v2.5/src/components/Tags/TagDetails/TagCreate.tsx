@@ -3,9 +3,9 @@ import { useHistory, useLocation } from "react-router-dom";
 
 import * as GQL from "src/core/generated-graphql";
 import { useTagCreate } from "src/core/StashService";
-import { ImageUtils } from "src/utils";
-import { LoadingIndicator } from "src/components/Shared";
-import { useToast } from "src/hooks";
+import ImageUtils from "src/utils/image";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { useToast } from "src/hooks/Toast";
 import { tagRelationHook } from "src/core/tags";
 import { TagEditPanel } from "./TagEditPanel";
 

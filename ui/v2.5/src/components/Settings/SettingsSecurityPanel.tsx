@@ -5,8 +5,8 @@ import * as GQL from "src/core/generated-graphql";
 import { Button, Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { SettingStateContext } from "./context";
-import { LoadingIndicator } from "../Shared";
-import { useToast } from "src/hooks";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
+import { useToast } from "src/hooks/Toast";
 import { useGenerateAPIKey } from "src/core/StashService";
 
 type AuthenticationSettingsInput = Pick<

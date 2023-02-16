@@ -9,7 +9,7 @@ import {
 } from "react-bootstrap";
 import { DisplayMode } from "src/models/list-filter/types";
 import { useIntl } from "react-intl";
-import { Icon } from "../Shared";
+import { Icon } from "../Shared/Icon";
 import {
   faList,
   faSquare,

@@ -1,6 +1,6 @@
 import React from "react";
 import { Form } from "react-bootstrap";
-import { Modal } from "src/components/Shared";
+import { ModalComponent } from "../Shared/Modal";
 import { faCogs } from "@fortawesome/free-solid-svg-icons";
 import { useIntl } from "react-intl";
 import { MarkdownPage } from "../Shared/MarkdownPage";
@@ -17,7 +17,7 @@ export const ReleaseNotesDialog: React.FC<IReleaseNotesDialog> = ({
   const intl = useIntl();
 
   return (
-    <Modal
+    <ModalComponent
       show
       icon={faCogs}
       header={intl.formatMessage({ id: "release_notes" })}
@@ -31,7 +31,7 @@ export const ReleaseNotesDialog: React.FC<IReleaseNotesDialog> = ({
           <MarkdownPage page={n} key={i} />
         ))}
       </Form>
-    </Modal>
+    </ModalComponent>
   );
 };
 

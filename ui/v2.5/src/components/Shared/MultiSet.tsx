@@ -21,7 +21,7 @@ interface IMultiSetProps {
   onSetMode: (mode: GQL.BulkUpdateIdMode) => void;
 }
 
-const MultiSet: React.FC<IMultiSetProps> = (props) => {
+export const MultiSet: React.FC<IMultiSetProps> = (props) => {
   const intl = useIntl();
   const modes = [
     GQL.BulkUpdateIdMode.Set,
@@ -100,5 +100,3 @@ const MultiSet: React.FC<IMultiSetProps> = (props) => {
     </div>
   );
 };
-
-export default MultiSet;

@@ -4,9 +4,9 @@ import { useIntl } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
 import { useStudioCreate } from "src/core/StashService";
-import { ImageUtils } from "src/utils";
-import { LoadingIndicator } from "src/components/Shared";
-import { useToast } from "src/hooks";
+import ImageUtils from "src/utils/image";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { useToast } from "src/hooks/Toast";
 import { StudioEditPanel } from "./StudioEditPanel";
 
 const StudioCreate: React.FC = () => {

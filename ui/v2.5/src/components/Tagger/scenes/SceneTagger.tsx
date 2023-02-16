@@ -4,7 +4,8 @@ import { SceneQueue } from "src/models/sceneQueue";
 import { Button, Form } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { Icon, LoadingIndicator } from "src/components/Shared";
+import { Icon } from "src/components/Shared/Icon";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { OperationButton } from "src/components/Shared/OperationButton";
 import { IScrapedScene, TaggerStateContext } from "../context";
 import Config from "./Config";

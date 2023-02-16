@@ -11,7 +11,9 @@ const stringToNumber = (v?: string) => {
   return parseInt(numStr, 10);
 };
 
-export default {
+const PercentUtils = {
   numberToString,
   stringToNumber,
 };
+
+export default PercentUtils;

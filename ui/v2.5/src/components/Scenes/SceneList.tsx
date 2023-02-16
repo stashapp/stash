@@ -8,11 +8,14 @@ import {
   SlimSceneDataFragment,
 } from "src/core/generated-graphql";
 import { queryFindScenes } from "src/core/StashService";
-import { useScenesList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
-import Tagger from "src/components/Tagger";
+import {
+  showWhenSelected,
+  PersistanceLevel,
+  useScenesList,
+} from "src/hooks/ListHook";
+import { Tagger } from "../Tagger/scenes/SceneTagger";
 import { IPlaySceneOptions, SceneQueue } from "src/models/sceneQueue";
 import { WallPanel } from "../Wall/WallPanel";
 import { SceneListTable } from "./SceneListTable";

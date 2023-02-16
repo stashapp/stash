@@ -1,7 +1,7 @@
 import { faMinus } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
-import Icon from "src/components/Shared/Icon";
+import { Icon } from "./Icon";
 
 interface IStringListInputProps {
   value: string[];

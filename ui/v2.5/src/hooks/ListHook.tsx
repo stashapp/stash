@@ -33,7 +33,7 @@ import {
   FilterMode,
 } from "src/core/generated-graphql";
 import { useInterfaceLocalForage } from "src/hooks/LocalForage";
-import { LoadingIndicator } from "src/components/Shared";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { ListFilter } from "src/components/List/ListFilter";
 import { FilterTags } from "src/components/List/FilterTags";
 import { Pagination, PaginationIndex } from "src/components/List/Pagination";
@@ -60,7 +60,7 @@ import {
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
 import { AddFilterDialog } from "src/components/List/AddFilterDialog";
-import { TextUtils } from "src/utils";
+import TextUtils from "src/utils/text";
 import { FormattedNumber } from "react-intl";
 import { ConfigurationContext } from "./Config";
 

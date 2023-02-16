@@ -8,8 +8,11 @@ import {
   useAddTempDLNAIP,
   useRemoveTempDLNAIP,
 } from "src/core/StashService";
-import { useToast } from "src/hooks";
-import { DurationInput, Icon, LoadingIndicator, Modal } from "../Shared";
+import { useToast } from "src/hooks/Toast";
+import { DurationInput } from "../Shared/DurationInput";
+import { Icon } from "../Shared/Icon";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
+import { ModalComponent } from "../Shared/Modal";
 import { SettingSection } from "./SettingSection";
 import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";
 import { SettingStateContext } from "./context";
@@ -236,7 +239,7 @@ export const SettingsServicesPanel: React.FC = () => {
     const capitalised = `${text[0].toUpperCase()}${text.slice(1)}`;
 
     return (
-      <Modal
+      <ModalComponent
         show={enableDisable !== undefined}
         header={capitalised}
         icon={faClock}
@@ -269,13 +272,13 @@ export const SettingsServicesPanel: React.FC = () => {
             Duration to {text} for - in minutes.
           </Form.Text>
         </Form.Group>
-      </Modal>
+      </ModalComponent>
     );
   }
 
   function renderTempWhitelistDialog() {
     return (
-      <Modal
+      <ModalComponent
         show={tempIP !== undefined}
         header={intl.formatMessage(
           { id: "config.dlna.allow_temp_ip" },
@@ -311,7 +314,7 @@ export const SettingsServicesPanel: React.FC = () => {
             Duration to allow for - in minutes.
           </Form.Text>
         </Form.Group>
-      </Modal>
+      </ModalComponent>
     );
   }
 

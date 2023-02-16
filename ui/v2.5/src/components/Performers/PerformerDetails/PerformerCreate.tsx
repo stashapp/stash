@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { LoadingIndicator } from "src/components/Shared";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { PerformerEditPanel } from "./PerformerEditPanel";
 import { useLocation } from "react-router-dom";
 

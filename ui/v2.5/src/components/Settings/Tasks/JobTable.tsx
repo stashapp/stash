@@ -6,7 +6,7 @@ import {
   useJobsSubscribe,
 } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
-import { Icon } from "src/components/Shared";
+import { Icon } from "src/components/Shared/Icon";
 import { useIntl } from "react-intl";
 import {
   faBan,

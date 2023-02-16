@@ -2,7 +2,7 @@ import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import React, { PropsWithChildren, useState } from "react";
 import { Button, Collapse, Form, Modal, ModalProps } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
-import { Icon } from "../Shared";
+import { Icon } from "../Shared/Icon";
 import { StringListInput } from "../Shared/StringListInput";
 
 interface ISetting {

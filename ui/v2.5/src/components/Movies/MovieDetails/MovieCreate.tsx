@@ -2,8 +2,8 @@ import React, { useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { useMovieCreate } from "src/core/StashService";
 import { useHistory, useLocation } from "react-router-dom";
-import { LoadingIndicator } from "src/components/Shared";
-import { useToast } from "src/hooks";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { useToast } from "src/hooks/Toast";
 import { MovieEditPanel } from "./MovieEditPanel";
 
 const MovieCreate: React.FC = () => {

@@ -1,7 +1,11 @@
 import React, { useMemo, useState } from "react";
-import { StudioSelect, PerformerSelect } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
-import { MovieSelect, TagSelect } from "src/components/Shared/Select";
+import {
+  MovieSelect,
+  TagSelect,
+  StudioSelect,
+  PerformerSelect,
+} from "src/components/Shared/Select";
 import {
   ScrapeDialog,
   ScrapeDialogRow,
@@ -19,7 +23,7 @@ import {
   useTagCreate,
   makePerformerCreateInput,
 } from "src/core/StashService";
-import useToast from "src/hooks/Toast";
+import { useToast } from "src/hooks/Toast";
 import DurationUtils from "src/utils/duration";
 import { useIntl } from "react-intl";
 

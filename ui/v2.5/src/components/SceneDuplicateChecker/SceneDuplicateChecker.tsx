@@ -14,16 +14,14 @@ import { Link, useHistory } from "react-router-dom";
 import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
-import {
-  LoadingIndicator,
-  ErrorMessage,
-  HoverPopover,
-  Icon,
-  TagLink,
-  SweatDrops,
-} from "src/components/Shared";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
+import { ErrorMessage } from "../Shared/ErrorMessage";
+import { HoverPopover } from "../Shared/HoverPopover";
+import { Icon } from "../Shared/Icon";
+import { TagLink } from "../Shared/TagLink";
+import { SweatDrops } from "../Shared/SweatDrops";
 import { Pagination } from "src/components/List/Pagination";
-import { TextUtils } from "src/utils";
+import TextUtils from "src/utils/text";
 import { DeleteScenesDialog } from "src/components/Scenes/DeleteScenesDialog";
 import { EditScenesDialog } from "../Scenes/EditScenesDialog";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";

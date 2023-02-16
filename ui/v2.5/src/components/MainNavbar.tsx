@@ -11,8 +11,8 @@ import { LinkContainer } from "react-router-bootstrap";
 import { Link, NavLink, useLocation, useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 
-import { SessionUtils } from "src/utils";
-import Icon from "src/components/Shared/Icon";
+import SessionUtils from "src/utils/session";
+import { Icon } from "src/components/Shared/Icon";
 import { ConfigurationContext } from "src/hooks/Config";
 import { ManualStateContext } from "./Help/context";
 import { SettingsButton } from "./SettingsButton";

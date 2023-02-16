@@ -4,7 +4,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import React, { useState } from "react";
 import { Button, Collapse } from "react-bootstrap";
-import Icon from "src/components/Shared/Icon";
+import { Icon } from "./Icon";
 
 interface IProps {
   text: string;

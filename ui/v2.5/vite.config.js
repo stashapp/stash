@@ -9,6 +9,11 @@ export default defineConfig({
   build: {
     outDir: "build",
     reportCompressedSize: false,
+    rollupOptions: {
+      output: {
+        experimentalDeepDynamicChunkOptimization: true,
+      },
+    },
   },
   optimizeDeps: {
     entries: "src/index.tsx",
