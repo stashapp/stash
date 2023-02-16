@@ -2,10 +2,13 @@ import React, { MouseEvent, useMemo } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
-import { Icon, TagLink, HoverPopover, SweatDrops } from "src/components/Shared";
-import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
-import { GridCard } from "../Shared/GridCard";
-import { RatingBanner } from "../Shared/RatingBanner";
+import { Icon } from "src/components/Shared/Icon";
+import { TagLink } from "src/components/Shared/TagLink";
+import { HoverPopover } from "src/components/Shared/HoverPopover";
+import { SweatDrops } from "src/components/Shared/SweatDrops";
+import { PerformerPopoverButton } from "src/components/Shared/PerformerPopoverButton";
+import { GridCard } from "src/components/Shared/GridCard";
+import { RatingBanner } from "src/components/Shared/RatingBanner";
 import {
   faBox,
   faImages,

@@ -23,7 +23,7 @@ import {
   useStudioCreate,
   usePerformerCreate,
 } from "src/core/StashService";
-import { useToast } from "src/hooks";
+import { useToast } from "src/hooks/Toast";
 import { SelectComponents } from "react-select/dist/declarations/src/components";
 import { ConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";

@@ -13,7 +13,9 @@ import { mutateSetup, useSystemStatus } from "src/core/StashService";
 import { Link } from "react-router-dom";
 import { ConfigurationContext } from "src/hooks/Config";
 import StashConfiguration from "../Settings/StashConfiguration";
-import { Icon, LoadingIndicator, Modal } from "../Shared";
+import { Icon } from "../Shared/Icon";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
+import { ModalComponent } from "../Shared/Modal";
 import { FolderSelectDialog } from "../Shared/FolderSelect/FolderSelectDialog";
 import {
   faEllipsisH,
@@ -110,7 +112,7 @@ export const Setup: React.FC = () => {
     }
 
     return (
-      <Modal
+      <ModalComponent
         show
         icon={faExclamationTriangle}
         accept={{
@@ -126,7 +128,7 @@ export const Setup: React.FC = () => {
         <p>
           <FormattedMessage id="setup.paths.stash_alert" />
         </p>
-      </Modal>
+      </ModalComponent>
     );
   }
 

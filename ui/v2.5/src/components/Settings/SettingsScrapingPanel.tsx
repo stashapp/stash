@@ -8,9 +8,11 @@ import {
   useListSceneScrapers,
   useListGalleryScrapers,
 } from "src/core/StashService";
-import { useToast } from "src/hooks";
-import { TextUtils } from "src/utils";
-import { CollapseButton, Icon, LoadingIndicator } from "src/components/Shared";
+import { useToast } from "src/hooks/Toast";
+import TextUtils from "src/utils/text";
+import { CollapseButton } from "../Shared/CollapseButton";
+import { Icon } from "../Shared/Icon";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { ScrapeType } from "src/core/generated-graphql";
 import { SettingSection } from "./SettingSection";
 import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";

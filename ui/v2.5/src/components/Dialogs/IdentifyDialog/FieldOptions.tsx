@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Form, Button, Table } from "react-bootstrap";
-import { Icon } from "src/components/Shared";
+import { Icon } from "src/components/Shared/Icon";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedMessage, useIntl } from "react-intl";
 import {

@@ -4,12 +4,9 @@ import { FormattedMessage } from "react-intl";
 import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
-import {
-  Icon,
-  OperationButton,
-  PerformerSelect,
-  ValidTypes,
-} from "src/components/Shared";
+import { Icon } from "src/components/Shared/Icon";
+import { OperationButton } from "src/components/Shared/OperationButton";
+import { PerformerSelect, ValidTypes } from "src/components/Shared/Select";
 import { OptionalField } from "../IncludeButton";
 import { faSave } from "@fortawesome/free-solid-svg-icons";
 

@@ -25,13 +25,13 @@ import {
   TagSelect,
   SceneSelect,
   StudioSelect,
-  Icon,
-  LoadingIndicator,
-  URLField,
-} from "src/components/Shared";
-import { useToast } from "src/hooks";
+} from "src/components/Shared/Select";
+import { Icon } from "src/components/Shared/Icon";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { URLField } from "src/components/Shared/URLField";
+import { useToast } from "src/hooks/Toast";
 import { useFormik } from "formik";
-import { FormUtils } from "src/utils";
+import FormUtils from "src/utils/form";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { GalleryScrapeDialog } from "./GalleryScrapeDialog";
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";

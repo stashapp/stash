@@ -4,10 +4,11 @@ import { FormattedMessage, useIntl } from "react-intl";
 import isEqual from "lodash-es/isEqual";
 import { useBulkSceneUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
-import { StudioSelect, Modal } from "src/components/Shared";
-import { useToast } from "src/hooks";
-import { FormUtils } from "src/utils";
-import MultiSet from "../Shared/MultiSet";
+import { StudioSelect } from "../Shared/Select";
+import { ModalComponent } from "../Shared/Modal";
+import { MultiSet } from "../Shared/MultiSet";
+import { useToast } from "src/hooks/Toast";
+import FormUtils from "src/utils/form";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
   getAggregateInputIDs,
@@ -241,7 +242,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
 
   function render() {
     return (
-      <Modal
+      <ModalComponent
         show
         icon={faPencilAlt}
         header={intl.formatMessage(
@@ -322,7 +323,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
             />
           </Form.Group>
         </Form>
-      </Modal>
+      </ModalComponent>
     );
   }
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { useChangelogStorage } from "src/hooks";
+import { useChangelogStorage } from "src/hooks/LocalForage";
 import Version from "./Version";
 import V010 from "src/docs/en/Changelog/v010.md";
 import V011 from "src/docs/en/Changelog/v011.md";

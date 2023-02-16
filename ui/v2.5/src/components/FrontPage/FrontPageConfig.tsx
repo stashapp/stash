@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { FormattedMessage, IntlShape, useIntl } from "react-intl";
 import { useFindSavedFilters } from "src/core/StashService";
-import { LoadingIndicator } from "src/components/Shared";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { Button, Form, Modal } from "react-bootstrap";
 import {
   FilterMode,

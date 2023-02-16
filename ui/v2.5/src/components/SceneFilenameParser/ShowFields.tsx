@@ -7,7 +7,7 @@ import {
 import React, { useState } from "react";
 import { Button, Collapse } from "react-bootstrap";
 import { useIntl } from "react-intl";
-import { Icon } from "src/components/Shared";
+import { Icon } from "src/components/Shared/Icon";
 
 interface IShowFieldsProps {
   fields: Map<string, boolean>;

@@ -12,17 +12,16 @@ import {
   usePerformerDestroy,
   mutateMetadataAutoTag,
 } from "src/core/StashService";
-import {
-  Counter,
-  CountryFlag,
-  DetailsEditNavbar,
-  ErrorMessage,
-  Icon,
-  LoadingIndicator,
-} from "src/components/Shared";
-import { useLightbox, useToast } from "src/hooks";
+import { Counter } from "src/components/Shared/Counter";
+import { CountryFlag } from "src/components/Shared/CountryFlag";
+import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
+import { ErrorMessage } from "src/components/Shared/ErrorMessage";
+import { Icon } from "src/components/Shared/Icon";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { useLightbox } from "src/hooks/Lightbox/hooks";
+import { useToast } from "src/hooks/Toast";
 import { ConfigurationContext } from "src/hooks/Config";
-import { TextUtils } from "src/utils";
+import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";

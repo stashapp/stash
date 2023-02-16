@@ -7,18 +7,18 @@ import {
   mutateMetadataGenerate,
   useConfigureDefaults,
 } from "src/core/StashService";
-import { withoutTypename } from "src/utils";
+import { withoutTypename } from "src/utils/data";
 import { ConfigurationContext } from "src/hooks/Config";
 import { IdentifyDialog } from "../../Dialogs/IdentifyDialog/IdentifyDialog";
 import * as GQL from "src/core/generated-graphql";
 import { DirectorySelectionDialog } from "./DirectorySelectionDialog";
 import { ScanOptions } from "./ScanOptions";
-import { useToast } from "src/hooks";
+import { useToast } from "src/hooks/Toast";
 import { GenerateOptions } from "./GenerateOptions";
 import { SettingSection } from "../SettingSection";
 import { BooleanSetting, Setting, SettingGroup } from "../Inputs";
 import { ManualLink } from "src/components/Help/context";
-import { Icon } from "src/components/Shared";
+import { Icon } from "src/components/Shared/Icon";
 import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 
 interface IAutoTagOptions {

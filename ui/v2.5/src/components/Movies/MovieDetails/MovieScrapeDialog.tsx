@@ -9,10 +9,10 @@ import {
   ScrapeDialogRow,
   ScrapedTextAreaRow,
 } from "src/components/Shared/ScrapeDialog";
-import { StudioSelect } from "src/components/Shared";
-import { DurationUtils } from "src/utils";
+import { StudioSelect } from "src/components/Shared/Select";
+import DurationUtils from "src/utils/duration";
 import { useStudioCreate } from "src/core/StashService";
-import { useToast } from "src/hooks";
+import { useToast } from "src/hooks/Toast";
 
 function renderScrapedStudio(
   result: ScrapeResult<string>,

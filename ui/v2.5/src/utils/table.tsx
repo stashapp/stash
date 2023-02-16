@@ -93,7 +93,7 @@ const renderMultiSelect = (options: {
   </tr>
 );
 
-const Table = {
+const TableUtils = {
   renderEditableTextTableRow,
   renderTextArea,
   renderInputGroup,
@@ -102,4 +102,5 @@ const Table = {
   renderFilterSelect,
   renderMultiSelect,
 };
-export default Table;
+
+export default TableUtils;

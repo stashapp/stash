@@ -2,7 +2,7 @@ import React from "react";
 import { Route, Switch } from "react-router-dom";
 import { useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
-import { TITLE_SUFFIX } from "src/components/Shared";
+import { TITLE_SUFFIX } from "../Shared/constants";
 import { PersistanceLevel } from "src/hooks/ListHook";
 import Gallery from "./GalleryDetails/Gallery";
 import GalleryCreate from "./GalleryDetails/GalleryCreate";

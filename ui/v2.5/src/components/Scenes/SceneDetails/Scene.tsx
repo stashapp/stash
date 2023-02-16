@@ -23,13 +23,11 @@ import {
   queryFindScenesByID,
 } from "src/core/StashService";
 
-import {
-  ErrorMessage,
-  LoadingIndicator,
-  Icon,
-  Counter,
-} from "src/components/Shared";
-import { useToast } from "src/hooks";
+import { ErrorMessage } from "src/components/Shared/ErrorMessage";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { Icon } from "src/components/Shared/Icon";
+import { Counter } from "src/components/Shared/Counter";
+import { useToast } from "src/hooks/Toast";
 import SceneQueue, { QueuedScene } from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import Mousetrap from "mousetrap";

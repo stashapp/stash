@@ -77,12 +77,10 @@ function createHookObject(toastFunc: (toast: IToast) => void) {
   };
 }
 
-const useToasts = () => {
+export const useToast = () => {
   const setToast = useContext(ToastContext);
   const [hookObject, setHookObject] = useState(createHookObject(setToast));
   useEffect(() => setHookObject(createHookObject(setToast)), [setToast]);
 
   return hookObject;
 };
-
-export default useToasts;

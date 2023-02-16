@@ -12,7 +12,7 @@ interface ILoadingProps {
 const CLASSNAME = "LoadingIndicator";
 const CLASSNAME_MESSAGE = `${CLASSNAME}-message`;
 
-const LoadingIndicator: React.FC<ILoadingProps> = ({
+export const LoadingIndicator: React.FC<ILoadingProps> = ({
   message,
   inline = false,
   small = false,
@@ -27,5 +27,3 @@ const LoadingIndicator: React.FC<ILoadingProps> = ({
     )}
   </div>
 );
-
-export default LoadingIndicator;
