@@ -213,6 +213,15 @@ func HWCodecFilter(args VideoFilter, codec VideoCodec) VideoFilter {
 	return args
 }
 
+func HWCodecMaxRes(codec VideoCodec) (int, int) {
+	switch codec {
+	case VideoCodecN264:
+		return 4096, 4096
+	}
+
+	return 0, 0
+}
+
 // Return if a hardware accelerated H264 codec is available
 func HWCodecH264Compatible() *StreamFormat {
 	for _, element := range HWCodecSupport {

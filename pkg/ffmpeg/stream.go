@@ -183,7 +183,7 @@ var (
 	}
 
 	// Intel QSV VP9
-	// BUG: Disabled on 8-10th gen
+	// BUG: Disabled on 7-9th gen
 	// https://github.com/intel/media-driver/issues/771
 	// Not critical, as the codec detector simply fails it
 	StreamFormatIVP9 = StreamFormat{
@@ -294,7 +294,14 @@ func (o TranscodeStreamOptions) getStreamArgs() Args {
 
 	// don't set scale when copying video stream
 	if o.Codec.codec != VideoCodecCopy {
-		videoFilter = videoFilter.ScaleMax(o.VideoWidth, o.VideoHeight, o.MaxTranscodeSize)
+		maxWidth, maxHeight := HWCodecMaxRes(o.Codec.codec)
+		if maxWidth == 0 {
+			maxWidth = o.VideoWidth
+		}
+		if maxHeight == 0 {
+			maxHeight = o.VideoHeight
+		}
+		videoFilter = videoFilter.ScaleMaxLM(o.VideoWidth, o.VideoHeight, o.MaxTranscodeSize, maxWidth, maxHeight)
 		videoFilter = HWCodecFilter(videoFilter, o.Codec.codec)
 	}
 	args = args.VideoFilter(videoFilter)

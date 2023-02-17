@@ -35,11 +35,19 @@ RUN make build
 FROM nvidia/cuda:12.0.1-runtime-ubuntu22.04
 RUN apt update
 RUN apt upgrade -y
-RUN apt install -y ca-certificates libvips-tools ffmpeg
+RUN apt install -y ca-certificates libvips-tools ffmpeg wget
 RUN rm -rf /var/lib/apt/lists/*
 COPY --from=build /stash/stash /usr/bin/
+
+# NVENC Patch
+RUN mkdir -p /usr/local/bin /patched-lib
+RUN wget https://raw.githubusercontent.com/keylase/nvidia-patch/master/patch.sh -O /usr/local/bin/patch.sh
+RUN wget https://raw.githubusercontent.com/keylase/nvidia-patch/master/docker-entrypoint.sh -O /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/patch.sh /usr/local/bin/docker-entrypoint.sh /usr/bin/stash
+
 ENV LANG C.UTF-8
+ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES=video,utility
 ENV STASH_CONFIG_FILE=/root/.stash/config.yml
 EXPOSE 9999
-ENTRYPOINT ["stash"]
+ENTRYPOINT ["docker-entrypoint.sh", "stash"]

@@ -1,6 +1,8 @@
 package ffmpeg
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // VideoFilter represents video filter parameters to be passed to ffmpeg.
 type VideoFilter string
@@ -55,6 +57,34 @@ func (f VideoFilter) ScaleMax(inputWidth, inputHeight, maxSize int) VideoFilter 
 	}
 
 	return f.ScaleDimensions(maxSize, -2)
+}
+
+// ScaleMaxLM returns a VideoFilter scaling to maxSize.
+func (f VideoFilter) ScaleMaxLM(width int, height int, desiredHeight int, maxWidth int, maxHeight int) VideoFilter {
+	// check if the current resolution already satisfies the desired height or exceeds the maximum resolution
+	if height <= desiredHeight && height <= maxHeight && width <= maxWidth {
+		return f
+	}
+
+	// calculate the aspect ratio of the current resolution
+	aspectRatio := width / height
+
+	// calculate the desired width based on the desired height and the aspect ratio
+	desiredWidth := int(desiredHeight * aspectRatio)
+
+	// check which dimension to scale based on the maximum resolution
+	if desiredHeight > maxHeight || desiredWidth > maxWidth {
+		if desiredHeight-maxHeight > desiredWidth-maxWidth {
+			// scale the height down to the maximum height
+			return f.ScaleDimensions(-2, maxHeight)
+		} else {
+			// scale the width down to the maximum width
+			return f.ScaleDimensions(maxWidth, -2)
+		}
+	}
+
+	// the current resolution can be scaled to the desired height without exceeding the maximum resolution
+	return f.ScaleMax(width, height, desiredHeight)
 }
 
 // Fps returns a VideoFilter setting the frames per second.
