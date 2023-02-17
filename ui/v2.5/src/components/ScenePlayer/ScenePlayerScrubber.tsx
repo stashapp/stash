@@ -8,7 +8,7 @@ import React, {
 import { Button } from "react-bootstrap";
 import axios from "axios";
 import * as GQL from "src/core/generated-graphql";
-import { TextUtils } from "src/utils";
+import TextUtils from "src/utils/text";
 import { WebVTT } from "videojs-vtt.js";
 
 interface IScenePlayerScrubberProps {

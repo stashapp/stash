@@ -1,5 +1,6 @@
 import React from "react";
-import { Icon, LoadingIndicator } from "src/components/Shared";
+import { Icon } from "../Shared/Icon";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { StashSetting } from "./StashConfiguration";
 import { SettingSection } from "./SettingSection";
 import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";
@@ -9,14 +10,8 @@ import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 
 export const SettingsLibraryPanel: React.FC = () => {
   const intl = useIntl();
-  const {
-    general,
-    loading,
-    error,
-    saveGeneral,
-    defaults,
-    saveDefaults,
-  } = React.useContext(SettingStateContext);
+  const { general, loading, error, saveGeneral, defaults, saveDefaults } =
+    React.useContext(SettingStateContext);
 
   function commaDelimitedToList(value: string | undefined) {
     if (value) {
@@ -82,7 +77,7 @@ export const SettingsLibraryPanel: React.FC = () => {
                 id: "config.general.excluded_video_patterns_desc",
               })}
               <a
-                href="https://docs.stashapp.cc/docs/Beginner-Guides/Exclude-File-Configuration/"
+                href="https://docs.stashapp.cc/beginner-guides/exclude-file-configuration"
                 rel="noopener noreferrer"
                 target="_blank"
               >
@@ -104,7 +99,7 @@ export const SettingsLibraryPanel: React.FC = () => {
                 id: "config.general.excluded_image_gallery_patterns_desc",
               })}
               <a
-                href="https://docs.stashapp.cc/docs/Beginner-Guides/Exclude-File-Configuration/"
+                href="https://docs.stashapp.cc/beginner-guides/exclude-file-configuration"
                 rel="noopener noreferrer"
                 target="_blank"
               >

@@ -148,6 +148,18 @@ const makeStudioMoviesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   return `/movies?${filter.makeQueryParameters()}`;
 };
 
+const makeStudioPerformersUrl = (studio: Partial<GQL.StudioDataFragment>) => {
+  if (!studio.id) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Performers, undefined);
+  const criterion = new StudiosCriterion();
+  criterion.value = {
+    items: [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }],
+    depth: 0,
+  };
+  filter.criteria.push(criterion);
+  return `/performers?${filter.makeQueryParameters()}`;
+};
+
 const makeChildStudiosUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   if (!studio.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Studios, undefined);
@@ -297,7 +309,7 @@ const makeGalleryImagesUrl = (
   return `/images?${filter.makeQueryParameters()}`;
 };
 
-export default {
+const NavUtils = {
   makePerformerScenesUrl,
   makePerformerImagesUrl,
   makePerformerGalleriesUrl,
@@ -307,6 +319,7 @@ export default {
   makeStudioImagesUrl,
   makeStudioGalleriesUrl,
   makeStudioMoviesUrl,
+  makeStudioPerformersUrl,
   makeParentTagsUrl,
   makeChildTagsUrl,
   makeTagSceneMarkersUrl,
@@ -320,3 +333,5 @@ export default {
   makeChildStudiosUrl,
   makeGalleryImagesUrl,
 };
+
+export default NavUtils;

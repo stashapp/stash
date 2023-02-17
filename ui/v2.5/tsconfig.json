@@ -1,33 +1,25 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext",
-      "esnext.intl",
-      "es2017.intl",
-      "es2018.intl"
-    ],
+    "target": "es2019",
+    "lib": ["dom", "dom.iterable", "esnext"],
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "esnext",
+    "module": "es2020",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "downlevelIteration": true,
     "experimentalDecorators": true,
     "baseUrl": ".",
     "sourceMap": true,
     "allowJs": true,
     "isolatedModules": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "useDefineForClassFields": true,
+    "types": ["vite/client"]
   },
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src"]
 }

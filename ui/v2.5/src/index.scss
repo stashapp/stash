@@ -25,7 +25,7 @@
 @import "src/hooks/Interactive/interactive.scss";
 @import "src/components/Dialogs/IdentifyDialog/styles.scss";
 @import "src/components/Dialogs/styles.scss";
-@import "../node_modules/flag-icon-css/css/flag-icon.min.css";
+@import "flag-icons/css/flag-icons.min.css";
 
 /* stylelint-disable */
 #root {
@@ -276,7 +276,7 @@ div.react-select__control {
   white-space: nowrap;
 
   .react-select__single-value,
-  .react-select__input {
+  .react-select__input-container {
     color: $text-color;
   }
 

@@ -9,14 +9,16 @@ import {
   PerformerSelect,
   TagSelect,
   StudioSelect,
-  LoadingIndicator,
-  URLField,
-} from "src/components/Shared";
-import { useToast } from "src/hooks";
-import { FormUtils } from "src/utils";
+} from "src/components/Shared/Select";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { URLField } from "src/components/Shared/URLField";
+import { useToast } from "src/hooks/Toast";
+import FormUtils from "src/utils/form";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
+import { useRatingKeybinds } from "src/hooks/keybinds";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -34,6 +36,8 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
+
+  const { configuration } = React.useContext(ConfigurationContext);
 
   const [updateImage] = useImageUpdate();
 
@@ -69,6 +73,12 @@ export const ImageEditPanel: React.FC<IProps> = ({
     formik.setFieldValue("rating100", v);
   }
 
+  useRatingKeybinds(
+    true,
+    configuration?.ui?.ratingSystemOptions?.type,
+    setRating
+  );
+
   useEffect(() => {
     if (isVisible) {
       Mousetrap.bind("s s", () => {
@@ -78,35 +88,9 @@ export const ImageEditPanel: React.FC<IProps> = ({
         onDelete();
       });
 
-      // numeric keypresses get caught by jwplayer, so blur the element
-      // if the rating sequence is started
-      Mousetrap.bind("r", () => {
-        if (document.activeElement instanceof HTMLElement) {
-          document.activeElement.blur();
-        }
-
-        Mousetrap.bind("0", () => setRating(NaN));
-        Mousetrap.bind("1", () => setRating(20));
-        Mousetrap.bind("2", () => setRating(40));
-        Mousetrap.bind("3", () => setRating(60));
-        Mousetrap.bind("4", () => setRating(80));
-        Mousetrap.bind("5", () => setRating(100));
-
-        setTimeout(() => {
-          Mousetrap.unbind("0");
-          Mousetrap.unbind("1");
-          Mousetrap.unbind("2");
-          Mousetrap.unbind("3");
-          Mousetrap.unbind("4");
-          Mousetrap.unbind("5");
-        }, 1000);
-      });
-
       return () => {
         Mousetrap.unbind("s s");
         Mousetrap.unbind("d d");
-
-        Mousetrap.unbind("r");
       };
     }
   });

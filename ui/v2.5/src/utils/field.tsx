@@ -1,6 +1,6 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import { TruncatedText } from "../components/Shared";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
 
 interface ITextField {
   id?: string;

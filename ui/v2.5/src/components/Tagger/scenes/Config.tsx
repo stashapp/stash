@@ -10,7 +10,7 @@ import {
 } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { Icon } from "src/components/Shared";
+import { Icon } from "src/components/Shared/Icon";
 import { ParseMode, TagOperation } from "../constants";
 import { TaggerStateContext } from "../context";
 

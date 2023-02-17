@@ -6,12 +6,6 @@ query MarkerStrings($q: String, $sort: String) {
   }
 }
 
-query AllTags {
-  allTags {
-    ...TagData
-  }
-}
-
 query AllPerformersForFilter {
   allPerformers {
     ...SlimPerformerData
@@ -67,7 +61,9 @@ query Version {
 
 query LatestVersion {
   latestversion {
+    version
     shorthash
+    release_date
     url
   }
 }

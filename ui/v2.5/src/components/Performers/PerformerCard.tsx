@@ -2,14 +2,13 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
-import { NavUtils, TextUtils } from "src/utils";
-import {
-  GridCard,
-  CountryFlag,
-  HoverPopover,
-  Icon,
-  TagLink,
-} from "src/components/Shared";
+import NavUtils from "src/utils/navigation";
+import TextUtils from "src/utils/text";
+import { GridCard } from "../Shared/GridCard";
+import { CountryFlag } from "../Shared/CountryFlag";
+import { HoverPopover } from "../Shared/HoverPopover";
+import { Icon } from "../Shared/Icon";
+import { TagLink } from "../Shared/TagLink";
 import { Button, ButtonGroup } from "react-bootstrap";
 import {
   Criterion,

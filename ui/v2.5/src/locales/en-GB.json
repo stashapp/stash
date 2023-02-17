@@ -185,6 +185,7 @@
       "latest_version": "Latest Version",
       "latest_version_build_hash": "Latest Version Build Hash:",
       "new_version_notice": "[NEW]",
+      "release_date": "Release date:",
       "stash_discord": "Join our {url} channel",
       "stash_home": "Stash home at {url}",
       "stash_open_collective": "Support us through {url}",
@@ -271,6 +272,28 @@
       "excluded_image_gallery_patterns_head": "Excluded Image/Gallery Patterns",
       "excluded_video_patterns_desc": "Regexps of video files/paths to exclude from Scan and add to Clean",
       "excluded_video_patterns_head": "Excluded Video Patterns",
+      "ffmpeg": {
+        "transcode": {
+          "input_args": {
+            "heading": "FFmpeg Transcode Input Args",
+            "desc": "Advanced: Additional arguments to pass to ffmpeg before the input field when generating video."
+          },
+          "output_args": {
+            "heading": "FFmpeg Transcode Output Args",
+            "desc": "Advanced: Additional arguments to pass to ffmpeg before the output field when generating video."
+          }
+        },
+        "live_transcode": {
+          "input_args": {
+            "heading": "FFmpeg LiveTranscode Input Args",
+            "desc": "Advanced: Additional arguments to pass to ffmpeg before the input field when live transcoding video."
+          },
+          "output_args": {
+            "heading": "FFmpeg Live Transcode Output Args",
+            "desc": "Advanced: Additional arguments to pass to ffmpeg before the output field when live transcoding video."
+          }
+        }
+      },
       "gallery_ext_desc": "Comma-delimited list of file extensions that will be identified as gallery zip files.",
       "gallery_ext_head": "Gallery zip Extensions",
       "generated_file_naming_hash_desc": "Use MD5 or oshash for generated file naming. Changing this requires that all scenes have the applicable MD5/oshash value populated. After changing this value, existing generated files will need to be migrated or regenerated. See Tasks page for migration.",
@@ -488,7 +511,8 @@
             "options": {
               "full": "Full",
               "half": "Half",
-              "quarter": "Quarter"
+              "quarter": "Quarter",
+              "tenth": "Tenth"
             }
           }
         },
@@ -1053,7 +1077,7 @@
       "your_system_has_been_created": "Success! Your system has been created!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash tries to find its configuration file (<code>config.yml</code>) from the current working directory first, and if it does not find it there, it falls back to <code>$HOME/.stash/config.yml</code> (on Windows, this will be <code>%USERPROFILE%\\.stash\\config.yml</code>). You can also make Stash read from a specific configuration file by running it with the <code>-c <path to config file></code> or <code>--config <path to config file></code> options.",
+      "config_path_logic_explained": "Stash tries to find its configuration file (<code>config.yml</code>) from the current working directory first, and if it does not find it there, it falls back to <code>$HOME/.stash/config.yml</code> (on Windows, this will be <code>%USERPROFILE%\\.stash\\config.yml</code>). You can also make Stash read from a specific configuration file by running it with the <code>-c '<path to config file>'</code> or <code>--config '<path to config file>'</code> options.",
       "in_current_stash_directory": "In the <code>$HOME/.stash</code> directory",
       "in_the_current_working_directory": "In the current working directory",
       "next_step": "With all of that out of the way, if you're ready to proceed with setting up a new system, choose where you'd like to store your configuration file and click Next.",

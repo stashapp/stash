@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -16,7 +18,7 @@ func (r *queryResolver) FindGallery(ctx context.Context, id string) (ret *models
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Gallery.Find(ctx, idInt)
 		return err
-	}); err != nil {
+	}); err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 

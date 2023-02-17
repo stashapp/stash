@@ -834,6 +834,10 @@ func (mockGlobalConfig) GetPythonPath() string {
 	return ""
 }
 
+func (mockGlobalConfig) GetProxy() string {
+	return ""
+}
+
 func TestSubScrape(t *testing.T) {
 	retHTML := `
 	<div>

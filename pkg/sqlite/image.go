@@ -728,7 +728,9 @@ func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFi
 	}
 	filter := qb.makeFilter(ctx, imageFilter)
 
-	query.addFilter(filter)
+	if err := query.addFilter(filter); err != nil {
+		return nil, err
+	}
 
 	qb.setImageSortAndPagination(&query, findFilter)
 

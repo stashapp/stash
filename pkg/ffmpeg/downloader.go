@@ -103,7 +103,13 @@ func downloadSingle(ctx context.Context, configDirectory, url string) error {
 		return err
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	transport := &http.Transport{Proxy: http.ProxyFromEnvironment}
+
+	client := &http.Client{
+		Transport: transport,
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}

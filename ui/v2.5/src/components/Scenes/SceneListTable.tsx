@@ -4,8 +4,9 @@ import React from "react";
 import { Table, Button, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { NavUtils, TextUtils } from "src/utils";
-import { Icon } from "src/components/Shared";
+import NavUtils from "src/utils/navigation";
+import TextUtils from "src/utils/text";
+import { Icon } from "src/components/Shared/Icon";
 import { FormattedMessage } from "react-intl";
 import { objectTitle } from "src/core/files";
 
@@ -36,7 +37,10 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
   const renderMovies = (scene: GQL.SlimSceneDataFragment) =>
     scene.movies.map((sceneMovie) =>
       !sceneMovie.movie ? undefined : (
-        <Link to={NavUtils.makeMovieScenesUrl(sceneMovie.movie)}>
+        <Link
+          key={sceneMovie.movie.id}
+          to={NavUtils.makeMovieScenesUrl(sceneMovie.movie)}
+        >
           <h6>{sceneMovie.movie.name}</h6>
         </Link>
       )

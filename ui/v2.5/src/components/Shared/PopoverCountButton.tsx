@@ -3,6 +3,7 @@ import {
   faImage,
   faImages,
   faPlayCircle,
+  faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import React, { useMemo } from "react";
 import { Button } from "react-bootstrap";
@@ -10,10 +11,10 @@ import { FormattedNumber, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import { IUIConfig } from "src/core/config";
 import { ConfigurationContext } from "src/hooks/Config";
-import { TextUtils } from "src/utils";
-import Icon from "./Icon";
+import TextUtils from "src/utils/text";
+import { Icon } from "./Icon";
 
-type PopoverLinkType = "scene" | "image" | "gallery" | "movie";
+type PopoverLinkType = "scene" | "image" | "gallery" | "movie" | "performer";
 
 interface IProps {
   className?: string;
@@ -44,6 +45,8 @@ export const PopoverCountButton: React.FC<IProps> = ({
         return faImages;
       case "movie":
         return faFilm;
+      case "performer":
+        return faUser;
     }
   }
 
@@ -68,6 +71,11 @@ export const PopoverCountButton: React.FC<IProps> = ({
         return {
           one: "movie",
           other: "movies",
+        };
+      case "performer":
+        return {
+          one: "performer",
+          other: "performers",
         };
     }
   }

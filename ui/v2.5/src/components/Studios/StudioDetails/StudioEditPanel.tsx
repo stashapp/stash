@@ -3,14 +3,20 @@ import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import Mousetrap from "mousetrap";
-import { Icon, StudioSelect, DetailsEditNavbar } from "src/components/Shared";
+import { Icon } from "src/components/Shared/Icon";
+import { StudioSelect } from "src/components/Shared/Select";
+import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { Button, Form, Col, Row } from "react-bootstrap";
-import { FormUtils, ImageUtils, getStashIDs } from "src/utils";
+import FormUtils from "src/utils/form";
+import ImageUtils from "src/utils/image";
+import { getStashIDs } from "src/utils/stashIds";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { StringListInput } from "../../Shared/StringListInput";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import { useRatingKeybinds } from "src/hooks/keybinds";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface IStudioEditPanel {
   studio: Partial<GQL.StudioDataFragment>;
@@ -33,7 +39,8 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
 }) => {
   const intl = useIntl();
 
-  const isNew = !studio || !studio.id;
+  const isNew = studio.id === undefined;
+  const { configuration } = React.useContext(ConfigurationContext);
 
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, true);
 
@@ -44,7 +51,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     image: yup.string().optional().nullable(),
     rating100: yup.number().optional().nullable(),
     parent_id: yup.string().optional().nullable(),
-    stash_ids: yup.mixed<GQL.StashIdInput>().optional().nullable(),
+    stash_ids: yup.mixed<GQL.StashIdInput[]>().optional().nullable(),
     aliases: yup
       .array(yup.string().required())
       .optional()
@@ -79,6 +86,11 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     onSubmit: (values) => onSubmit(getStudioInput(values)),
   });
 
+  // always dirty if creating a new studio with a name
+  if (isNew && studio.name) {
+    formik.dirty = true;
+  }
+
   function setRating(v: number) {
     formik.setFieldValue("rating100", v);
   }
@@ -99,38 +111,18 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     return input;
   }
 
+  useRatingKeybinds(
+    true,
+    configuration?.ui?.ratingSystemOptions?.type,
+    setRating
+  );
+
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("s s", () => formik.handleSubmit());
 
-    // numeric keypresses get caught by jwplayer, so blur the element
-    // if the rating sequence is started
-    Mousetrap.bind("r", () => {
-      if (document.activeElement instanceof HTMLElement) {
-        document.activeElement.blur();
-      }
-
-      Mousetrap.bind("0", () => setRating(NaN));
-      Mousetrap.bind("1", () => setRating(20));
-      Mousetrap.bind("2", () => setRating(40));
-      Mousetrap.bind("3", () => setRating(60));
-      Mousetrap.bind("4", () => setRating(80));
-      Mousetrap.bind("5", () => setRating(100));
-
-      setTimeout(() => {
-        Mousetrap.unbind("0");
-        Mousetrap.unbind("1");
-        Mousetrap.unbind("2");
-        Mousetrap.unbind("3");
-        Mousetrap.unbind("4");
-        Mousetrap.unbind("5");
-      }, 1000);
-    });
-
     return () => {
       Mousetrap.unbind("s s");
-
-      Mousetrap.unbind("e");
     };
   });
 
@@ -141,10 +133,10 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     return () => onImageChange?.();
   }, [formik.values.image, onImageChange]);
 
-  useEffect(() => onImageEncoding?.(imageEncoding), [
-    onImageEncoding,
-    imageEncoding,
-  ]);
+  useEffect(
+    () => onImageEncoding?.(imageEncoding),
+    [onImageEncoding, imageEncoding]
+  );
 
   function onImageChangeHandler(event: React.FormEvent<HTMLInputElement>) {
     ImageUtils.onImageChange(event, onImageLoad);

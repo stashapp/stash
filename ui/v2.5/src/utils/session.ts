@@ -4,6 +4,8 @@ const isLoggedIn = () => {
   return new Cookies().get("session") !== undefined;
 };
 
-export default {
+const SessionUtils = {
   isLoggedIn,
 };
+
+export default SessionUtils;

@@ -835,7 +835,7 @@
       "your_system_has_been_created": "Sistem oluşturma başarılı!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash (<code>config.yml</code>) yapılandırma dosyasını ilk olarak mevcut dizinde bulmaya çalışır. Eğer bulamazsa, <code>$HOME/.stash/config.yml</code> dizinini (Windows işletim sistemi için <code>%USERPROFILE%\\.stash\\config.yml</code> dizini) araştırır. Öte yandan <code>-c <path to config file></code> veya <code>--config <path to config file></code> seçeneklerini kullanarak özelleştirilmiş bir yapılandırma dosyası da kullanabilirsiniz.",
+      "config_path_logic_explained": "Stash (<code>config.yml</code>) yapılandırma dosyasını ilk olarak mevcut dizinde bulmaya çalışır. Eğer bulamazsa, <code>$HOME/.stash/config.yml</code> dizinini (Windows işletim sistemi için <code>%USERPROFILE%\\.stash\\config.yml</code> dizini) araştırır. Öte yandan <code>-c '<path to config file>'</code> veya <code>--config '<path to config file>'</code> seçeneklerini kullanarak özelleştirilmiş bir yapılandırma dosyası da kullanabilirsiniz.",
       "in_current_stash_directory": "<code>$HOME/.stash</code> dizini altında",
       "in_the_current_working_directory": "Mevcut dizinde",
       "next_step": "Eğer yeni bir sistem oluşturmak için hazırsanız, yapılandırma dosyasının nereye kaydedileceğini seçin ve Sonraki düğmesine basın.",

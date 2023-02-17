@@ -5,7 +5,7 @@ import { Helmet } from "react-helmet";
 import cloneDeep from "lodash-es/cloneDeep";
 import mergeWith from "lodash-es/mergeWith";
 import { ToastProvider } from "src/hooks/Toast";
-import LightboxProvider from "src/hooks/Lightbox/context";
+import { LightboxProvider } from "src/hooks/Lightbox/context";
 import { initPolyfills } from "src/polyfills";
 
 import locales, { registerCountry } from "src/locales";
@@ -14,14 +14,15 @@ import {
   useConfigureUI,
   useSystemStatus,
 } from "src/core/StashService";
-import { flattenMessages } from "src/utils";
+import flattenMessages from "./utils/flattenMessages";
 import Mousetrap from "mousetrap";
 import MousetrapPause from "mousetrap-pause";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { MainNavbar } from "./components/MainNavbar";
 import { PageNotFound } from "./components/PageNotFound";
 import * as GQL from "./core/generated-graphql";
-import { LoadingIndicator, TITLE_SUFFIX } from "./components/Shared";
+import { TITLE_SUFFIX } from "./components/Shared/constants";
+import { LoadingIndicator } from "./components/Shared/LoadingIndicator";
 
 import { ConfigurationProvider } from "./hooks/Config";
 import { ManualProvider } from "./components/Help/context";
@@ -91,10 +92,12 @@ export const App: React.FC = () => {
       const defaultMessages = (await locales[defaultMessageLanguage]()).default;
       const mergedMessages = cloneDeep(Object.assign({}, defaultMessages));
       const chosenMessages = (await locales[messageLanguage]()).default;
-      const res = await fetch(getPlatformURL() + "customlocales");
       let customMessages = {};
       try {
-        customMessages = res.ok ? await res.json() : {};
+        const res = await fetch(getPlatformURL() + "customlocales");
+        if (res.ok) {
+          customMessages = await res.json();
+        }
       } catch (err) {
         console.log(err);
       }
