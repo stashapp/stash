@@ -51,7 +51,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     image: yup.string().optional().nullable(),
     rating100: yup.number().optional().nullable(),
     parent_id: yup.string().optional().nullable(),
-    stash_ids: yup.mixed<GQL.StashIdInput>().optional().nullable(),
+    stash_ids: yup.mixed<GQL.StashIdInput[]>().optional().nullable(),
     aliases: yup
       .array(yup.string().required())
       .optional()

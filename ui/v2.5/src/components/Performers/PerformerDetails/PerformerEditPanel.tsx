@@ -127,7 +127,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     twitter: yup.string().optional(),
     instagram: yup.string().optional(),
     tag_ids: yup.array(yup.string().required()).optional(),
-    stash_ids: yup.mixed<GQL.StashIdInput>().optional(),
+    stash_ids: yup.mixed<GQL.StashIdInput[]>().optional(),
     image: yup.string().optional().nullable(),
     details: yup.string().optional(),
     death_date: yup.string().optional(),
