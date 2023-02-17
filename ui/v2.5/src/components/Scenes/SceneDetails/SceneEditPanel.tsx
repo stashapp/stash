@@ -124,15 +124,17 @@ export const SceneEditPanel: React.FC<IProps> = ({
     studio_id: yup.string().optional().nullable(),
     performer_ids: yup.array(yup.string().required()).optional().nullable(),
     movies: yup
-      .object({
-        movie_id: yup.string().required(),
-        scene_index: yup.string().optional().nullable(),
-      })
+      .array(
+        yup.object({
+          movie_id: yup.string().required(),
+          scene_index: yup.string().optional().nullable(),
+        })
+      )
       .optional()
       .nullable(),
     tag_ids: yup.array(yup.string().required()).optional().nullable(),
     cover_image: yup.string().optional().nullable(),
-    stash_ids: yup.mixed<GQL.StashIdInput>().optional().nullable(),
+    stash_ids: yup.mixed<GQL.StashIdInput[]>().optional().nullable(),
   });
 
   const initialValues = useMemo(
