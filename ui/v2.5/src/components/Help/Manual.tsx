@@ -157,14 +157,10 @@ export const Manual: React.FC<IManualProps> = ({
     },
   ];
 
-  const [activeTab, setActiveTab] = useState(
-    defaultActiveTab ?? content[0].key
-  );
+  const [activeTab, setActiveTab] = useState<string>();
 
   useEffect(() => {
-    if (defaultActiveTab) {
-      setActiveTab(defaultActiveTab);
-    }
+    setActiveTab(defaultActiveTab);
   }, [defaultActiveTab]);
 
   // links to other manual pages are specified as "/help/page.md"
@@ -195,7 +191,7 @@ export const Manual: React.FC<IManualProps> = ({
       <Modal.Body>
         <Container className="manual-container">
           <Tab.Container
-            activeKey={activeTab}
+            activeKey={activeTab ?? content[0].key}
             onSelect={(k) => k && setActiveTab(k)}
             id="manual-tabs"
           >
