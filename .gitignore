@@ -63,10 +63,3 @@ node_modules
 /stash
 dist
 .DS_Store
-/plugins
-/scrapers
-/generated
-*.sqlite
-log
-config.yml
-icon.png
