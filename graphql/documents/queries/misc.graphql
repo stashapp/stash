@@ -6,12 +6,6 @@ query MarkerStrings($q: String, $sort: String) {
   }
 }
 
-query AllTags {
-  allTags {
-    ...TagData
-  }
-}
-
 query AllPerformersForFilter {
   allPerformers {
     ...SlimPerformerData
