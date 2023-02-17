@@ -19,9 +19,7 @@ import GenderIcon from "./GenderIcon";
 import { faHeart, faTag } from "@fortawesome/free-solid-svg-icons";
 import { RatingBanner } from "../Shared/RatingBanner";
 import cx from "classnames";
-import {
-  usePerformerUpdate
-} from "src/core/StashService";
+import { usePerformerUpdate } from "src/core/StashService";
 
 export interface IPerformerCardExtraCriteria {
   scenes: Criterion<CriterionValue>[];
@@ -66,20 +64,20 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
 
   const [updatePerformer] = usePerformerUpdate();
 
-  function maybeRenderFavoriteIcon(){
-    return(
-      <Link to='' onClick={e => e.preventDefault()}>
-      <Button
-      className={cx(
-        "minimal",
-        "mousetrap",
-        performer.favorite ? "favorite" : "not-favorite"
-      )}
-      onClick={() => onToggleFavorite!(!performer.favorite)}
-      >
-        <Icon icon={faHeart} size="2x" />
-    </Button>
-    </Link>
+  function renderFavoriteIcon() {
+    return (
+      <Link to="" onClick={(e) => e.preventDefault()}>
+        <Button
+          className={cx(
+            "minimal",
+            "mousetrap",
+            performer.favorite ? "favorite" : "not-favorite"
+          )}
+          onClick={() => onToggleFavorite!(!performer.favorite)}
+        >
+          <Icon icon={faHeart} size="2x" />
+        </Button>
+      </Link>
     );
   }
 
@@ -239,7 +237,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
             src={performer.image_path ?? ""}
           />
 
-          {maybeRenderFavoriteIcon()}
+          {renderFavoriteIcon()}
           {maybeRenderRatingBanner()}
           {maybeRenderFlag()}
         </>
@@ -257,9 +255,6 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       selected={selected}
       selecting={selecting}
       onSelectedChanged={onSelectedChanged}
-      favorite={performer.favorite}
-      onToggleFavorite={onToggleFavorite}
-
     />
   );
 };
