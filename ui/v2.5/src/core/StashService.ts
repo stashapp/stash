@@ -313,7 +313,6 @@ export const usePlugins = () => GQL.usePluginsQuery();
 export const usePluginTasks = () => GQL.usePluginTasksQuery();
 
 export const useMarkerStrings = () => GQL.useMarkerStringsQuery();
-export const useAllTags = () => GQL.useAllTagsQuery();
 export const useAllTagsForFilter = () => GQL.useAllTagsForFilterQuery();
 export const useAllPerformersForFilter = () =>
   GQL.useAllPerformersForFilterQuery();
@@ -408,7 +407,6 @@ const sceneMutationImpactedQueries = [
   GQL.FindMoviesDocument,
   GQL.FindTagDocument,
   GQL.FindTagsDocument,
-  GQL.AllTagsDocument,
 ];
 
 export const useSceneUpdate = () =>
@@ -572,7 +570,6 @@ const imageMutationImpactedQueries = [
   GQL.FindStudiosDocument,
   GQL.FindTagDocument,
   GQL.FindTagsDocument,
-  GQL.AllTagsDocument,
   GQL.FindGalleryDocument,
   GQL.FindGalleriesDocument,
 ];
@@ -706,7 +703,6 @@ const galleryMutationImpactedQueries = [
   GQL.FindStudiosDocument,
   GQL.FindTagDocument,
   GQL.FindTagsDocument,
-  GQL.AllTagsDocument,
   GQL.FindGalleryDocument,
   GQL.FindGalleriesDocument,
 ];
@@ -853,7 +849,6 @@ export const tagMutationImpactedQueries = [
   GQL.FindSceneDocument,
   GQL.FindScenesDocument,
   GQL.FindSceneMarkersDocument,
-  GQL.AllTagsDocument,
   GQL.AllTagsForFilterDocument,
   GQL.FindTagsDocument,
 ];
@@ -861,15 +856,10 @@ export const tagMutationImpactedQueries = [
 export const useTagCreate = () =>
   GQL.useTagCreateMutation({
     refetchQueries: getQueryNames([
-      GQL.AllTagsDocument,
       GQL.AllTagsForFilterDocument,
       GQL.FindTagsDocument,
     ]),
-    update: deleteCache([
-      GQL.FindTagsDocument,
-      GQL.AllTagsDocument,
-      GQL.AllTagsForFilterDocument,
-    ]),
+    update: deleteCache([GQL.AllTagsForFilterDocument, GQL.FindTagsDocument]),
   });
 export const useTagUpdate = () =>
   GQL.useTagUpdateMutation({
