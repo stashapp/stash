@@ -71,6 +71,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
           className={cx(
             "minimal",
             "mousetrap",
+            "favorite-button",
             performer.favorite ? "favorite" : "not-favorite"
           )}
           onClick={() => onToggleFavorite!(!performer.favorite)}
