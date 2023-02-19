@@ -346,3 +346,11 @@ func (qb *sceneMarkerQueryBuilder) UpdateTags(ctx context.Context, id int, tagID
 	// Delete the existing joins and then create new ones
 	return qb.tagsRepository().replace(ctx, id, tagIDs)
 }
+
+func (qb *sceneMarkerQueryBuilder) Count(ctx context.Context) (int, error) {
+	return qb.runCountQuery(ctx, qb.buildCountQuery("SELECT scene_markers.id FROM scene_markers"), nil)
+}
+
+func (qb *sceneMarkerQueryBuilder) All(ctx context.Context) ([]*models.SceneMarker, error) {
+	return qb.querySceneMarkers(ctx, selectAll("scene_markers")+qb.getSceneMarkerSort(nil, nil), nil)
+}
