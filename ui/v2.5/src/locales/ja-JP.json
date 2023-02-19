@@ -1078,7 +1078,7 @@
       "your_system_has_been_created": "成功しました！システムの構築が完了しました！"
     },
     "welcome": {
-      "config_path_logic_explained": "Stashは、まず初めに現在の作業ディレクトリに設定ファイル(<code>config.yml</code>)がないかどうか探し、存在しない場合は、<code>$HOME/.stash/config.yml</code>(Windowsは <code>%USERPROFILE%\\.stash\\config.yml</code>)にフォールバックします。<code>-c <設定ファイルへのパス></code> または <code>--config <設定ファイルへのパス></code>オプションをつけて起動させることで、特定の設定ファイルを読み込ませることもできます。",
+      "config_path_logic_explained": "Stashは、まず初めに現在の作業ディレクトリに設定ファイル(<code>config.yml</code>)がないかどうか探し、存在しない場合は、<code>$HOME/.stash/config.yml</code>(Windowsは <code>%USERPROFILE%\\.stash\\config.yml</code>)にフォールバックします。<code>-c '<設定ファイルへのパス>'</code> または <code>--config '<設定ファイルへのパス>'</code>オプションをつけて起動させることで、特定の設定ファイルを読み込ませることもできます。",
       "in_current_stash_directory": "<code>$HOME/.stash</code> ディレクトリ内",
       "in_the_current_working_directory": "現在の作業ディレクトリ内",
       "next_step": "これで、新しいシステムのセットアップを続行する準備ができました。構成ファイルを保存する場所を選択して、「次へ」をクリックしてください。",

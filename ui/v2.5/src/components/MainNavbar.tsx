@@ -11,14 +11,14 @@ import { LinkContainer } from "react-router-bootstrap";
 import { Link, NavLink, useLocation, useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 
-import { SessionUtils } from "src/utils";
-import Icon from "src/components/Shared/Icon";
+import SessionUtils from "src/utils/session";
+import { Icon } from "src/components/Shared/Icon";
 import { ConfigurationContext } from "src/hooks/Config";
 import { ManualStateContext } from "./Help/context";
 import { SettingsButton } from "./SettingsButton";
 import {
   faBars,
-  faChartBar,
+  faChartColumn,
   faFilm,
   faHeart,
   faImage,
@@ -220,10 +220,10 @@ export const MainNavbar: React.FC = () => {
 
   const pathname = location.pathname.replace(/\/$/, "");
   let newPath = newPathsList.includes(pathname) ? `${pathname}/new` : null;
-  if (newPath != null) {
+  if (newPath !== null) {
     let queryParam = new URLSearchParams(location.search).get("q");
-    if (queryParam != null) {
-      newPath += "?name=" + encodeURIComponent(queryParam);
+    if (queryParam) {
+      newPath += "?q=" + encodeURIComponent(queryParam);
     }
   }
 
@@ -296,7 +296,7 @@ export const MainNavbar: React.FC = () => {
             className="minimal d-flex align-items-center h-100"
             title={intl.formatMessage({ id: "statistics" })}
           >
-            <Icon icon={faChartBar} />
+            <Icon icon={faChartColumn} />
           </Button>
         </NavLink>
         <NavLink

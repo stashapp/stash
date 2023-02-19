@@ -3,7 +3,7 @@ import { Badge, Button, Card, Collapse, Form } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { ConfigurationContext } from "src/hooks/Config";
 
-import { TextUtils } from "src/utils";
+import TextUtils from "src/utils/text";
 import { ITaggerConfig, PERFORMER_FIELDS } from "../constants";
 import PerformerFieldSelector from "../PerformerFieldSelector";
 

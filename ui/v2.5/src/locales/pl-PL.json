@@ -1074,7 +1074,7 @@
       "your_system_has_been_created": "Sukces! Twój system został utworzony!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash próbuje najpierw znaleźć swój plik konfiguracyjny (<code>config.yml</code>) w bieżącym katalogu roboczym, a jeśli go tam nie znajdzie, wraca do <code>$HOME/.stash/config.yml</code> (w systemie Windows będzie to <code>%USERPROFILE%\\.stash\\config.yml</code>). Można również sprawić, że Stash będzie odczytywał dane z określonego pliku konfiguracyjnego, uruchamiając go z opcją opcji <code>-c <ścieżka do pliku konfiguracyjnego></code> lub <code>--config <ścieżka do pliku konfiguracyjnego></code>.",
+      "config_path_logic_explained": "Stash próbuje najpierw znaleźć swój plik konfiguracyjny (<code>config.yml</code>) w bieżącym katalogu roboczym, a jeśli go tam nie znajdzie, wraca do <code>$HOME/.stash/config.yml</code> (w systemie Windows będzie to <code>%USERPROFILE%\\.stash\\config.yml</code>). Można również sprawić, że Stash będzie odczytywał dane z określonego pliku konfiguracyjnego, uruchamiając go z opcją opcji <code>-c '<ścieżka do pliku konfiguracyjnego>'</code> lub <code>--config '<ścieżka do pliku konfiguracyjnego>'</code>.",
       "in_current_stash_directory": "W katalogu <code>$HOME/.stash</code>",
       "in_the_current_working_directory": "W bieżącym katalogu roboczym",
       "next_step": "Jeśli jesteś gotowy do skonfigurowania nowego systemu, wybierz miejsce, w którym chcesz przechowywać plik konfiguracyjny, i kliknij przycisk Dalej.",

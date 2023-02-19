@@ -1,18 +1,15 @@
-import { Form, Col, Row, Button, FormControl } from "react-bootstrap";
+import { Form, Col, Row, Button, FormControl, Modal } from "react-bootstrap";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
-import {
-  GallerySelect,
-  Icon,
-  LoadingIndicator,
-  Modal,
-  SceneSelect,
-  StringListSelect,
-} from "src/components/Shared";
-import { FormUtils, ImageUtils, TextUtils } from "src/utils";
+import { Icon } from "../Shared/Icon";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
+import { StringListSelect, GallerySelect, SceneSelect } from "../Shared/Select";
+import FormUtils from "src/utils/form";
+import ImageUtils from "src/utils/image";
+import TextUtils from "src/utils/text";
 import { mutateSceneMerge, queryFindScenesByID } from "src/core/StashService";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useToast } from "src/hooks";
+import { useToast } from "src/hooks/Toast";
 import { faExchangeAlt, faSignInAlt } from "@fortawesome/free-solid-svg-icons";
 import {
   hasScrapedValues,
@@ -133,7 +130,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       setLoading(true);
 
       const destData = await ImageUtils.imageToDataURL(dest.paths.screenshot);
-      const srcData = await ImageUtils.imageToDataURL(src.paths!.screenshot!);
+      const srcData = await ImageUtils.imageToDataURL(src.paths.screenshot!);
 
       // keep destination image by default
       const useNewValue = false;

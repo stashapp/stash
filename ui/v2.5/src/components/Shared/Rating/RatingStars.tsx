@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "react-bootstrap";
-import Icon from "src/components/Shared/Icon";
+import { Icon } from "../Icon";
 import { faStar as fasStar } from "@fortawesome/free-solid-svg-icons";
 import { faStar as farStar } from "@fortawesome/free-regular-svg-icons";
 import {
@@ -32,7 +32,8 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
     starPrecision: props.precision,
   });
   const stars = rating ? Math.floor(rating) : 0;
-  const fraction = rating ? rating % 1 : 0;
+  // the upscaling was necesary to fix rounding issue present with tenth place precision
+  const fraction = rating ? ((rating * 10) % 10) / 10 : 0;
 
   const max = 5;
   const precision = getRatingPrecision(props.precision);
@@ -223,11 +224,28 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
     );
   };
 
+  const maybeRenderStarRatingNumber = () => {
+    const ratingFraction = getCurrentSelectedRating();
+    if (
+      !ratingFraction ||
+      (ratingFraction.rating == 0 && ratingFraction.fraction == 0)
+    ) {
+      return;
+    }
+
+    return (
+      <span className="star-rating-number">
+        {ratingFraction.rating + ratingFraction.fraction}
+      </span>
+    );
+  };
+
   return (
     <div className="rating-stars">
       {Array.from(Array(max)).map((value, index) =>
         renderRatingButton(index + 1)
       )}
+      {maybeRenderStarRatingNumber()}
     </div>
   );
 };

@@ -8,11 +8,14 @@ import {
   SlimSceneDataFragment,
 } from "src/core/generated-graphql";
 import { queryFindScenes } from "src/core/StashService";
-import { useScenesList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
-import Tagger from "src/components/Tagger";
+import {
+  showWhenSelected,
+  PersistanceLevel,
+  useScenesList,
+} from "src/hooks/ListHook";
+import { Tagger } from "../Tagger/scenes/SceneTagger";
 import { IPlaySceneOptions, SceneQueue } from "src/models/sceneQueue";
 import { WallPanel } from "../Wall/WallPanel";
 import { SceneListTable } from "./SceneListTable";
@@ -43,9 +46,8 @@ export const SceneList: React.FC<ISceneList> = ({
   const history = useHistory();
   const config = React.useContext(ConfigurationContext);
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
-  const [mergeScenes, setMergeScenes] = useState<
-    { id: string; title: string }[] | undefined
-  >(undefined);
+  const [mergeScenes, setMergeScenes] =
+    useState<{ id: string; title: string }[]>();
   const [isIdentifyDialogOpen, setIsIdentifyDialogOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);

@@ -3,12 +3,9 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import cx from "classnames";
 
-import {
-  Icon,
-  OperationButton,
-  StudioSelect,
-  ValidTypes,
-} from "src/components/Shared";
+import { Icon } from "src/components/Shared/Icon";
+import { OperationButton } from "src/components/Shared/OperationButton";
+import { StudioSelect, ValidTypes } from "src/components/Shared/Select";
 import * as GQL from "src/core/generated-graphql";
 
 import { OptionalField } from "../IncludeButton";

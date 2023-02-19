@@ -1,10 +1,10 @@
 import React from "react";
 import { Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
-import { CriterionModifier } from "../../../core/generated-graphql";
-import { DurationInput } from "../../Shared";
-import { INumberValue } from "../../../models/list-filter/types";
-import { Criterion } from "../../../models/list-filter/criteria/criterion";
+import { CriterionModifier } from "src/core/generated-graphql";
+import { DurationInput } from "src/components/Shared/DurationInput";
+import { INumberValue } from "src/models/list-filter/types";
+import { Criterion } from "src/models/list-filter/criteria/criterion";
 
 interface IDurationFilterProps {
   criterion: Criterion<INumberValue>;

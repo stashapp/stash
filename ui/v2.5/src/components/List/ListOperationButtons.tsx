@@ -9,7 +9,7 @@ import {
 import Mousetrap from "mousetrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { Icon } from "../Shared";
+import { Icon } from "../Shared/Icon";
 import {
   faEllipsisH,
   faPencilAlt,

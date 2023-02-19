@@ -1,8 +1,8 @@
 import React from "react";
 import { Form } from "react-bootstrap";
-import { FilterSelect, ValidTypes } from "../../Shared";
-import { Criterion } from "../../../models/list-filter/criteria/criterion";
-import { ILabeledId } from "../../../models/list-filter/types";
+import { FilterSelect, ValidTypes } from "src/components/Shared/Select";
+import { Criterion } from "src/models/list-filter/criteria/criterion";
+import { ILabeledId } from "src/models/list-filter/types";
 
 interface ILabeledIdFilterProps {
   criterion: Criterion<ILabeledId[]>;

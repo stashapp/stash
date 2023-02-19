@@ -973,7 +973,7 @@
       "your_system_has_been_created": "Succes! Dit system er blevet oprettet!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash prøver først at finde sin konfigurationsfil (<code>config.yml</code>) fra den aktuelle arbejdsmappe, og hvis den ikke finder den der, falder den tilbage til <code>$HOME/.stash/config. yml</code> (på Windows vil dette være <code>%USERPROFILE%\\.stash\\config.yml</code>). Du kan også få Stash til at læse fra en specifik konfigurationsfil ved at køre den med <code>-c <sti til konfigurationsfil></code> eller <code>--config <sti til konfigurationsfil></code> muligheder.",
+      "config_path_logic_explained": "Stash prøver først at finde sin konfigurationsfil (<code>config.yml</code>) fra den aktuelle arbejdsmappe, og hvis den ikke finder den der, falder den tilbage til <code>$HOME/.stash/config. yml</code> (på Windows vil dette være <code>%USERPROFILE%\\.stash\\config.yml</code>). Du kan også få Stash til at læse fra en specifik konfigurationsfil ved at køre den med <code>-c '<sti til konfigurationsfil>'</code> eller <code>--config '<sti til konfigurationsfil>'</code> muligheder.",
       "in_current_stash_directory": "I mappen <code>$HOME/.stash</code>",
       "in_the_current_working_directory": "I den aktuelle arbejdsmappe",
       "next_step": "Med alt det ude af vejen, hvis du er klar til at fortsætte med at konfigurere et nyt system, skal du vælge, hvor du vil gemme din konfigurationsfil og klikke på Næste.",

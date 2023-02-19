@@ -1,6 +1,7 @@
 import React from "react";
-import { ErrorMessage, LoadingIndicator } from "../Shared";
-import { HoverPopover } from "src/components/Shared";
+import { ErrorMessage } from "../Shared/ErrorMessage";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
+import { HoverPopover } from "../Shared/HoverPopover";
 import { useFindTag } from "../../core/StashService";
 import { TagCard } from "./TagCard";
 import { ConfigurationContext } from "../../hooks/Config";
