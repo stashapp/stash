@@ -46,6 +46,9 @@ fragment SlimSceneData on Scene {
     files {
       path
     }
+    folder {
+      path
+    }
     title
   }
 
