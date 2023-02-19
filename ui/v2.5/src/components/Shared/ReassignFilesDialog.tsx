@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { Modal, SceneSelect } from "src/components/Shared";
-import { useToast } from "src/hooks";
+import { ModalComponent } from "./Modal";
+import { SceneSelect } from "./Select";
+import { useToast } from "src/hooks/Toast";
 import { useIntl } from "react-intl";
 import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { Col, Form, Row } from "react-bootstrap";
-import { FormUtils } from "src/utils";
+import FormUtils from "src/utils/form";
 import { mutateSceneAssignFile } from "src/core/StashService";
 
 interface IFile {
@@ -59,7 +60,7 @@ export const ReassignFilesDialog: React.FC<IReassignFilesDialogProps> = (
   }
 
   return (
-    <Modal
+    <ModalComponent
       show
       icon={faSignOutAlt}
       header={header}
@@ -94,8 +95,6 @@ export const ReassignFilesDialog: React.FC<IReassignFilesDialogProps> = (
           </Col>
         </Form.Group>
       </Form>
-    </Modal>
+    </ModalComponent>
   );
 };
-
-export default ReassignFilesDialog;

@@ -13,17 +13,17 @@ import {
   useTagCreate,
   queryScrapePerformerURL,
 } from "src/core/StashService";
-import {
-  Icon,
-  ImageInput,
-  LoadingIndicator,
-  CollapseButton,
-  TagSelect,
-  URLField,
-  CountrySelect,
-} from "src/components/Shared";
-import { ImageUtils, getStashIDs } from "src/utils";
-import { useToast } from "src/hooks";
+import { Icon } from "src/components/Shared/Icon";
+import { ImageInput } from "src/components/Shared/ImageInput";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { CollapseButton } from "src/components/Shared/CollapseButton";
+import { TagSelect } from "src/components/Shared/Select";
+import { CountrySelect } from "src/components/Shared/CountrySelect";
+import { URLField } from "src/components/Shared/URLField";
+import ImageUtils from "src/utils/image";
+import { getStashIDs } from "src/utils/stashIds";
+import { stashboxDisplayName } from "src/utils/stashbox";
+import { useToast } from "src/hooks/Toast";
 import { Prompt, useHistory } from "react-router-dom";
 import { useFormik } from "formik";
 import {
@@ -32,7 +32,6 @@ import {
   stringToGender,
 } from "src/utils/gender";
 import { ConfigurationContext } from "src/hooks/Config";
-import { stashboxDisplayName } from "src/utils/stashbox";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 import PerformerScrapeModal from "./PerformerScrapeModal";
 import PerformerStashBoxModal, { IStashBox } from "./PerformerStashBoxModal";
@@ -50,7 +49,6 @@ const isScraper = (
 
 interface IPerformerDetails {
   performer: Partial<GQL.PerformerDataFragment>;
-  isNew?: boolean;
   isVisible: boolean;
   onImageChange?: (image?: string | null) => void;
   onImageEncoding?: (loading?: boolean) => void;
@@ -59,7 +57,6 @@ interface IPerformerDetails {
 
 export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   performer,
-  isNew,
   isVisible,
   onImageChange,
   onImageEncoding,
@@ -68,8 +65,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const Toast = useToast();
   const history = useHistory();
 
-  // Editing state
-  const [scraper, setScraper] = useState<GQL.Scraper | IStashBox | undefined>();
+  const isNew = performer.id === undefined;
+
+  // Editing stat
+  const [scraper, setScraper] = useState<GQL.Scraper | IStashBox>();
   const [newTags, setNewTags] = useState<GQL.ScrapedTag[]>();
   const [isScraperModalOpen, setIsScraperModalOpen] = useState<boolean>(false);
 
@@ -128,7 +127,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     twitter: yup.string().optional(),
     instagram: yup.string().optional(),
     tag_ids: yup.array(yup.string().required()).optional(),
-    stash_ids: yup.mixed<GQL.StashIdInput>().optional(),
+    stash_ids: yup.mixed<GQL.StashIdInput[]>().optional(),
     image: yup.string().optional().nullable(),
     details: yup.string().optional(),
     death_date: yup.string().optional(),
@@ -447,10 +446,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return () => onImageChange?.();
   }, [formik.values.image, onImageChange]);
 
-  useEffect(() => onImageEncoding?.(imageEncoding), [
-    onImageEncoding,
-    imageEncoding,
-  ]);
+  useEffect(
+    () => onImageEncoding?.(imageEncoding),
+    [onImageEncoding, imageEncoding]
+  );
 
   useEffect(() => {
     const newQueryableScrapers = (

@@ -4,11 +4,9 @@ documents: "../../graphql/documents/**/*.graphql"
 generates:
   src/core/generated-graphql.tsx:
     plugins:
-      - add:
-          content: "/* eslint-disable */"
       - time
       - typescript
       - typescript-operations
       - typescript-react-apollo
     config:
-            withRefetchFn: true
+      withRefetchFn: true

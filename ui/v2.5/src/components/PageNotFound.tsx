@@ -1,5 +1,5 @@
-import React, { FunctionComponent } from "react";
+import React from "react";
 
-export const PageNotFound: FunctionComponent = () => {
+export const PageNotFound: React.FC = () => {
   return <h1>Page not found.</h1>;
 };

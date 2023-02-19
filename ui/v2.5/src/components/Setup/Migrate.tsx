@@ -5,7 +5,7 @@ import { getBaseURL } from "src/core/createClient";
 import * as GQL from "src/core/generated-graphql";
 import { useSystemStatus, mutateMigrate } from "src/core/StashService";
 import { migrationNotes } from "src/docs/en/MigrationNotes";
-import { LoadingIndicator } from "../Shared";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { MarkdownPage } from "../Shared/MarkdownPage";
 
 export const Migrate: React.FC = () => {

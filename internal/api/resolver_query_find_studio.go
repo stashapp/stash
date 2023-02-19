@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -17,7 +19,7 @@ func (r *queryResolver) FindStudio(ctx context.Context, id string) (ret *models.
 		var err error
 		ret, err = r.repository.Studio.Find(ctx, idInt)
 		return err
-	}); err != nil {
+	}); err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 

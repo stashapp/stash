@@ -2,9 +2,9 @@ import React from "react";
 import { useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { TruncatedText } from "src/components/Shared";
-import { TextUtils } from "src/utils";
-import { useGalleryLightbox } from "src/hooks";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
+import TextUtils from "src/utils/text";
+import { useGalleryLightbox } from "src/hooks/Lightbox/hooks";
 import { galleryTitle } from "src/core/galleries";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 

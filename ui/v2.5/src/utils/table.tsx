@@ -1,4 +1,3 @@
-import React from "react";
 import EditableTextUtils from "./editabletext";
 
 const renderEditableTextTableRow = (options: {
@@ -94,7 +93,7 @@ const renderMultiSelect = (options: {
   </tr>
 );
 
-const Table = {
+const TableUtils = {
   renderEditableTextTableRow,
   renderTextArea,
   renderInputGroup,
@@ -103,4 +102,5 @@ const Table = {
   renderFilterSelect,
   renderMultiSelect,
 };
-export default Table;
+
+export default TableUtils;

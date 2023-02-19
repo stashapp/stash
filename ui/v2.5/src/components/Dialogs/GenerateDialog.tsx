@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Form, Button } from "react-bootstrap";
 import { mutateMetadataGenerate } from "src/core/StashService";
-import { Modal, Icon } from "src/components/Shared";
-import { useToast } from "src/hooks";
+import { ModalComponent } from "../Shared/Modal";
+import { Icon } from "src/components/Shared/Icon";
+import { useToast } from "src/hooks/Toast";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedMessage, useIntl } from "react-intl";
 import { ConfigurationContext } from "src/hooks/Config";
 import { Manual } from "../Help/Manual";
-import { withoutTypename } from "src/utils";
+import { withoutTypename } from "src/utils/data";
 import { GenerateOptions } from "../Settings/Tasks/GenerateOptions";
 import { SettingSection } from "../Settings/SettingSection";
 import { faCogs, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
@@ -169,7 +170,7 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
   }
 
   return (
-    <Modal
+    <ModalComponent
       show
       modalProps={{ animation, size: "lg" }}
       icon={faCogs}
@@ -203,7 +204,7 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
           />
         </SettingSection>
       </Form>
-    </Modal>
+    </ModalComponent>
   );
 };
 

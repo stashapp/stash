@@ -339,6 +339,9 @@ func serveFiles(w http.ResponseWriter, r *http.Request, name string, paths []str
 		}
 	}
 
+	// Always revalidate with server
+	w.Header().Set("Cache-Control", "no-cache")
+
 	bufferReader := bytes.NewReader(buffer.Bytes())
 	http.ServeContent(w, r, name, latestModTime, bufferReader)
 }

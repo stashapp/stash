@@ -16,7 +16,8 @@ import {
   useMoviesList,
   PersistanceLevel,
 } from "src/hooks/ListHook";
-import { ExportDialog, DeleteEntityDialog } from "src/components/Shared";
+import { ExportDialog } from "../Shared/ExportDialog";
+import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { MovieCard } from "./MovieCard";
 import { EditMoviesDialog } from "./EditMoviesDialog";
 

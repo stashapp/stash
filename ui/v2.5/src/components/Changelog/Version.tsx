@@ -2,7 +2,7 @@ import { faAngleDown, faAngleUp } from "@fortawesome/free-solid-svg-icons";
 import React, { useState } from "react";
 import { Button, Card, Collapse } from "react-bootstrap";
 import { FormattedDate, FormattedMessage } from "react-intl";
-import { Icon } from "src/components/Shared";
+import { Icon } from "src/components/Shared/Icon";
 
 interface IVersionProps {
   version: string;

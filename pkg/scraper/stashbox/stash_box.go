@@ -728,6 +728,13 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 		ss.Image = getFirstImage(ctx, c.getHTTPClient(), s.Images)
 	}
 
+	if ss.URL == nil && len(s.Urls) > 0 {
+		// The scene in Stash-box may not have a Studio URL but it does have another URL.
+		// For example it has a www.manyvids.com URL, which is auto set as type ManyVids.
+		// This should be re-visited once Stashapp can support more than one URL.
+		ss.URL = &s.Urls[0].URL
+	}
+
 	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
 		pqb := c.repository.Performer
 		tqb := c.repository.Tag

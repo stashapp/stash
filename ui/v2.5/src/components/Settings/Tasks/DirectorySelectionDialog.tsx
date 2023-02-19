@@ -6,7 +6,8 @@ import {
 import React, { useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useIntl } from "react-intl";
-import { Icon, Modal } from "src/components/Shared";
+import { Icon } from "src/components/Shared/Icon";
+import { ModalComponent } from "src/components/Shared/Modal";
 import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
 import { ConfigurationContext } from "src/hooks/Config";
 
@@ -17,12 +18,9 @@ interface IDirectorySelectionDialogProps {
   onClose: (paths?: string[]) => void;
 }
 
-export const DirectorySelectionDialog: React.FC<IDirectorySelectionDialogProps> = ({
-  animation,
-  allowEmpty = false,
-  initialPaths = [],
-  onClose,
-}) => {
+export const DirectorySelectionDialog: React.FC<
+  IDirectorySelectionDialogProps
+> = ({ animation, allowEmpty = false, initialPaths = [], onClose }) => {
   const intl = useIntl();
   const { configuration } = React.useContext(ConfigurationContext);
 
@@ -42,7 +40,7 @@ export const DirectorySelectionDialog: React.FC<IDirectorySelectionDialogProps> 
   }
 
   return (
-    <Modal
+    <ModalComponent
       show
       modalProps={{ animation }}
       disabled={!allowEmpty && paths.length === 0}
@@ -94,6 +92,6 @@ export const DirectorySelectionDialog: React.FC<IDirectorySelectionDialogProps> 
           }
         />
       </div>
-    </Modal>
+    </ModalComponent>
   );
 };

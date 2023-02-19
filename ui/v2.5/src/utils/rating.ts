@@ -7,6 +7,7 @@ export enum RatingStarPrecision {
   Full = "full",
   Half = "half",
   Quarter = "quarter",
+  Tenth = "tenth",
 }
 
 export const defaultRatingSystemType: RatingSystemType = RatingSystemType.Stars;
@@ -37,6 +38,10 @@ export const ratingStarPrecisionIntlMap = new Map<RatingStarPrecision, string>([
     RatingStarPrecision.Quarter,
     "config.ui.editing.rating_system.star_precision.options.quarter",
   ],
+  [
+    RatingStarPrecision.Tenth,
+    "config.ui.editing.rating_system.star_precision.options.tenth",
+  ],
 ]);
 
 export type RatingSystemOptions = {
@@ -66,6 +71,8 @@ export function getRatingPrecision(precision: RatingStarPrecision) {
       return 0.5;
     case RatingStarPrecision.Quarter:
       return 0.25;
+    case RatingStarPrecision.Tenth:
+      return 0.1;
     default:
       return 1;
   }

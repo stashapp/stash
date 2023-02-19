@@ -1,13 +1,11 @@
-import React, { FunctionComponent } from "react";
+import React from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import {
-  GridCard,
-  HoverPopover,
-  Icon,
-  TagLink,
-  TruncatedText,
-} from "src/components/Shared";
+import { GridCard } from "../Shared/GridCard";
+import { HoverPopover } from "../Shared/HoverPopover";
+import { Icon } from "../Shared/Icon";
+import { TagLink } from "../Shared/TagLink";
+import { TruncatedText } from "../Shared/TruncatedText";
 import { FormattedMessage } from "react-intl";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
@@ -20,7 +18,7 @@ interface IProps {
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
-export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
+export const MovieCard: React.FC<IProps> = (props: IProps) => {
   function maybeRenderSceneNumber() {
     if (!props.sceneIndex) return;
 

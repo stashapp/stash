@@ -4,7 +4,9 @@ import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 import * as GQL from "src/core/generated-graphql";
 import { useFindStudio } from "src/core/StashService";
-import { Icon, Modal, TruncatedText } from "src/components/Shared";
+import { Icon } from "src/components/Shared/Icon";
+import { ModalComponent } from "src/components/Shared/Modal";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { TaggerStateContext } from "../context";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 import { Form } from "react-bootstrap";
@@ -187,7 +189,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
     : undefined;
 
   return (
-    <Modal
+    <ModalComponent
       show={modalVisible}
       accept={{
         text: intl.formatMessage({ id: "actions.save" }),
@@ -222,7 +224,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
         </div>
       </div>
       {maybeRenderParentStudio()}
-    </Modal>
+    </ModalComponent >
   );
 };
 

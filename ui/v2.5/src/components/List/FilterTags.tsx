@@ -5,7 +5,7 @@ import {
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
 import { useIntl } from "react-intl";
-import { Icon } from "../Shared";
+import { Icon } from "../Shared/Icon";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
 interface IFilterTagsProps {

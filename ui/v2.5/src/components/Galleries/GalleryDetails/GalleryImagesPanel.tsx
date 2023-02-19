@@ -5,7 +5,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { ImageList } from "src/components/Images/ImageList";
 import { mutateRemoveGalleryImages } from "src/core/StashService";
 import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
-import { useToast } from "src/hooks";
+import { useToast } from "src/hooks/Toast";
 import { useIntl } from "react-intl";
 import { faMinus } from "@fortawesome/free-solid-svg-icons";
 import { galleryTitle } from "src/core/galleries";

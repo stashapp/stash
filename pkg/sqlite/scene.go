@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -1706,5 +1707,26 @@ func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int) ([][]*mo
 		}
 	}
 
+	sortByPath(duplicates)
+
 	return duplicates, nil
+}
+
+func sortByPath(scenes [][]*models.Scene) {
+	lessFunc := func(i int, j int) bool {
+		firstPathI := getFirstPath(scenes[i])
+		firstPathJ := getFirstPath(scenes[j])
+		return firstPathI < firstPathJ
+	}
+	sort.SliceStable(scenes, lessFunc)
+}
+
+func getFirstPath(scenes []*models.Scene) string {
+	var firstPath string
+	for i, scene := range scenes {
+		if i == 0 || scene.Path < firstPath {
+			firstPath = scene.Path
+		}
+	}
+	return firstPath
 }
