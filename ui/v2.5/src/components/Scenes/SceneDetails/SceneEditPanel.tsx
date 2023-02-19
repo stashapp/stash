@@ -47,6 +47,7 @@ import {
   faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { objectTitle } from "src/core/files";
+import { galleryTitle } from "src/core/galleries";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 
 const SceneScrapeDialog = lazy(() => import("./SceneScrapeDialog"));
@@ -105,7 +106,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     setGalleries(
       scene.galleries?.map((g) => ({
         id: g.id,
-        title: objectTitle(g),
+        title: galleryTitle(g),
       })) ?? []
     );
   }, [scene.galleries]);
