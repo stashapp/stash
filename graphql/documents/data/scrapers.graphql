@@ -97,6 +97,14 @@ fragment ScrapedSceneStudioData on ScrapedStudio {
   stored_id
   name
   url
+  parent {
+    stored_id
+    name
+    url
+    image
+    remote_site_id
+  }
+  image
   remote_site_id
 }
 

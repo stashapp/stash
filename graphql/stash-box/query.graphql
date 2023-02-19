@@ -16,6 +16,10 @@ fragment StudioFragment on Studio {
   urls {
     ...URLFragment
   }
+  parent {
+    name
+    id
+  }
   images {
     ...ImageFragment
   }
@@ -158,6 +162,12 @@ query FindPerformerByID($id: ID!) {
 query FindSceneByID($id: ID!) {
   findScene(id: $id) {
     ...SceneFragment
+  }
+}
+
+query FindStudioByID($id: ID!) {
+  findStudio(id: $id) {
+    ...StudioFragment
   }
 }
 

@@ -31,6 +31,7 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MingW. For examp
 
 * `make pre-ui` - Installs the UI dependencies. Only needs to be run once before building the UI for the first time, or if the dependencies are updated
 * `make generate` - Generate Go and UI GraphQL files
+* `make generate-stash-box-client` - Generate Go files from a Stash-box
 * `make fmt-ui` - Formats the UI source code
 * `make ui` - Builds the frontend
 * `make build` - Builds the binary (make sure to build the UI as well... see below)

@@ -6,14 +6,27 @@ import (
 
 type ScrapedStudio struct {
 	// Set if studio matched
-	StoredID     *string `json:"stored_id"`
-	Name         string  `json:"name"`
-	URL          *string `json:"url"`
-	Image        *string `json:"image"`
-	RemoteSiteID *string `json:"remote_site_id"`
+	StoredID     *string        `json:"stored_id"`
+	Name         string         `json:"name"`
+	URL          *string        `json:"url"`
+	Parent       *ScrapedStudio `json:"parent"`
+	Image        *string        `json:"image"`
+	Images       []string       `json:"images"`
+	RemoteSiteID *string        `json:"remote_site_id"`
 }
 
 func (ScrapedStudio) IsScrapedContent() {}
+
+type ScrapedParentStudio struct {
+	StoredID     *string  `json:"stored_id"`
+	Name         string   `json:"name"`
+	URL          *string  `json:"url"`
+	Image        *string  `json:"image"`
+	Images       []string `json:"images"`
+	RemoteSiteID *string  `json:"remote_site_id"`
+}
+
+func (ScrapedParentStudio) IsScrapedContent() {}
 
 // A performer from a scraping operation...
 type ScrapedPerformer struct {

@@ -1,11 +1,13 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 import * as GQL from "src/core/generated-graphql";
+import { useFindStudio } from "src/core/StashService";
 import { Icon, Modal, TruncatedText } from "src/components/Shared";
 import { TaggerStateContext } from "../context";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
+import { Form } from "react-bootstrap";
 
 interface IStudioModalProps {
   studio: GQL.ScrapedSceneStudioDataFragment;
@@ -27,14 +29,26 @@ const StudioModal: React.FC<IStudioModalProps> = ({
   const { currentSource } = useContext(TaggerStateContext);
   const intl = useIntl();
 
+  const [createParentStudio, setCreateParentStudio] = useState<boolean>(
+    !!studio.parent
+  );
+
+  const parentStudioCreateText = () => {
+    if (studio.parent && studio.parent.stored_id) {
+      return "actions.assign_stashid_to_parent_studio";
+    }
+    return "actions.create_parent_studio";
+  };
+
   function onSave() {
     if (!studio.name) {
       throw new Error("studio name must set");
     }
 
     const studioData: GQL.StudioCreateInput = {
-      name: studio.name ?? "",
+      name: studio.name,
       url: studio.url,
+      image: studio.image,
     };
 
     // stashid handling code
@@ -46,6 +60,31 @@ const StudioModal: React.FC<IStudioModalProps> = ({
           stash_id: remoteSiteID,
         },
       ];
+    }
+
+    if (createParentStudio) {
+      if (!studio.parent?.name) {
+        throw new Error("parent studio name must set");
+      }
+
+      const parentData: GQL.StudioCreateInput = {
+        name: studio.parent?.name,
+        url: studio.parent?.url,
+        image: studio.parent?.image,
+      };
+
+      // stashid handling code
+      const remoteSiteID = studio.parent?.remote_site_id;
+      if (remoteSiteID && currentSource?.stashboxEndpoint) {
+        parentData.stash_ids = [
+          {
+            endpoint: currentSource.stashboxEndpoint,
+            stash_id: remoteSiteID,
+          },
+        ];
+      }
+
+      studioData.parent = parentData;
     }
 
     handleStudioCreate(studioData);
@@ -71,8 +110,81 @@ const StudioModal: React.FC<IStudioModalProps> = ({
       </div>
     );
 
+  function maybeRenderParentStudio() {
+    // There is no parent studio
+    if (!studio.parent) {
+      return false;
+    } else if (
+      studio.parent &&
+      studio.parent.stored_id &&
+      studio.parent.remote_site_id
+    ) {
+      // The parent studio exists, need to check if it has a Stash ID.
+      const queryResult = useFindStudio(studio.parent.stored_id);
+      if (
+        queryResult.data?.findStudio?.stash_ids?.length &&
+        queryResult.data?.findStudio?.stash_ids?.length > 0
+      ) {
+        // It already has a Stash ID, so we can skip worrying about it
+        return false;
+      }
+    }
+
+    return (
+      <div>
+        <div className="mb-4">
+          <Form.Check
+            id="create-parent"
+            checked={createParentStudio}
+            label={intl.formatMessage({
+              id: parentStudioCreateText(),
+            })}
+            onChange={() => setCreateParentStudio(!createParentStudio)}
+          />
+        </div>
+        {maybeRenderParentStudioDetails()}
+      </div>
+    );
+  }
+
+  function maybeRenderParentStudioDetails() {
+    if (!createParentStudio) {
+      return;
+    }
+
+    return (
+      <div>
+        <div className="row mb-4">
+          <img
+            className="col-12 studio-card-image"
+            src={studio.parent?.image ?? ""}
+            alt=""
+          />
+        </div>
+
+        <div className="row">
+          <div className="col-12">
+            {renderField("name", studio.parent?.name)}
+            {renderField("url", studio.parent?.url)}
+            {parent_link && (
+              <h6 className="mt-2">
+                <a href={parent_link} target="_blank" rel="noopener noreferrer">
+                  Stash-Box Source
+                  <Icon icon={faExternalLinkAlt} className="ml-2" />
+                </a>
+              </h6>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const base = currentSource?.stashboxEndpoint?.match(/https?:\/\/.*?\//)?.[0];
   const link = base ? `${base}studios/${studio.remote_site_id}` : undefined;
+  const parent_link = base
+    ? `${base}studios/${studio.parent?.remote_site_id}`
+    : undefined;
 
   return (
     <Modal
@@ -86,10 +198,19 @@ const StudioModal: React.FC<IStudioModalProps> = ({
       icon={icon}
       header={header}
     >
-      <div className="row">
+      <div className="row mb-4">
+        <img
+          className="col-12 studio-card-image"
+          src={studio.image ?? ""}
+          alt=""
+        />
+      </div>
+
+      <div className="row mb-4">
         <div className="col-12">
           {renderField("name", studio.name)}
           {renderField("url", studio.url)}
+          {renderField("parent_studio", studio.parent?.name)}
           {link && (
             <h6 className="mt-2">
               <a href={link} target="_blank" rel="noopener noreferrer">
@@ -100,14 +221,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
           )}
         </div>
       </div>
-
-      {/* TODO - add image */}
-      {/* <div className="row">
-        <strong className="col-2">Logo:</strong>
-        <span className="col-10">
-          <img src={studio?.image ?? ""} alt="" />
-        </span>
-      </div> */}
+      {maybeRenderParentStudio()}
     </Modal>
   );
 };

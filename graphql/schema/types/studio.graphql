@@ -29,6 +29,7 @@ input StudioCreateInput {
   name: String!
   url: String
   parent_id: ID
+  parent: StudioCreateInput
   """This should be a URL or a base64 encoded data URL"""
   image: String
   stash_ids: [StashIDInput!]

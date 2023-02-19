@@ -6,13 +6,13 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/studio"
-
 	"github.com/stashapp/stash/internal/manager"
+	"github.com/stashapp/stash/pkg/hash/md5"
+	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -28,6 +28,72 @@ func (r *mutationResolver) getStudio(ctx context.Context, id int) (ret *models.S
 }
 
 func (r *mutationResolver) StudioCreate(ctx context.Context, input StudioCreateInput) (*models.Studio, error) {
+	// Parent studio data is being passed in, but there is no local ID, so it needs to be created or matched first
+	if input.ParentID == nil && input.Parent != nil {
+		// If the parent studio matched an existing one, the user has chosen in the UI to link and update it
+		if err := r.withTxn(ctx, func(ctx context.Context) error {
+			st := &models.ScrapedStudio{
+				Name:         input.Parent.Name,
+				RemoteSiteID: &input.Parent.StashIds[0].StashID,
+			}
+
+			err := match.ScrapedStudio(ctx, r.repository.Studio, st, &input.Parent.StashIds[0].Endpoint)
+			if err != nil {
+				return err
+			}
+
+			// Found the local ID for the studio to link and update
+			input.ParentID = st.StoredID
+			return nil
+		}); err != nil {
+			return nil, err
+		}
+
+		if input.ParentID == nil {
+			// Create
+			s, err := r.studioCreate(ctx, *input.Parent)
+			if err != nil {
+				return nil, err
+			}
+
+			r.hookExecutor.ExecutePostHooks(ctx, s.ID, plugin.StudioCreatePost, input.Parent, nil)
+			ps, err := r.getStudio(ctx, s.ID)
+			if err != nil {
+				return nil, err
+			}
+
+			// Assign the new parent studio ID so the child studio will be linked
+			id_as_string := strconv.Itoa(ps.ID)
+			input.ParentID = &id_as_string
+		} else {
+			// Update
+			su := &StudioUpdateInput{
+				ID:       *input.ParentID,
+				Name:     &input.Parent.Name,
+				URL:      input.Parent.URL,
+				Image:    input.Parent.Image,
+				StashIds: input.Parent.StashIds,
+			}
+			s, err := r.StudioUpdate(ctx, *su)
+			if err != nil {
+				return nil, err
+			}
+
+			r.hookExecutor.ExecutePostHooks(ctx, s.ID, plugin.StudioUpdatePost, su, nil)
+		}
+	}
+
+	// Now create the main studio
+	s, err := r.studioCreate(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	r.hookExecutor.ExecutePostHooks(ctx, s.ID, plugin.StudioCreatePost, input, nil)
+	return r.getStudio(ctx, s.ID)
+}
+
+func (r *mutationResolver) studioCreate(ctx context.Context, input StudioCreateInput) (*models.Studio, error) {
 	// generate checksum from studio name rather than image
 	checksum := md5.FromString(input.Name)
 
@@ -117,9 +183,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input StudioCreateI
 	}); err != nil {
 		return nil, err
 	}
-
-	r.hookExecutor.ExecutePostHooks(ctx, s.ID, plugin.StudioCreatePost, input, nil)
-	return r.getStudio(ctx, s.ID)
+	return s, err
 }
 
 func (r *mutationResolver) StudioUpdate(ctx context.Context, input StudioUpdateInput) (*models.Studio, error) {

@@ -663,6 +663,27 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 	return sp
 }
 
+func studioFragmentToScrapedStudio(s graphql.StudioFragment) *models.ScrapedStudio {
+	images := []string{}
+	for _, image := range s.Images {
+		images = append(images, image.URL)
+	}
+
+	studioID := s.ID
+	st := &models.ScrapedStudio{
+		Name:         s.Name,
+		URL:          findURL(s.Urls, "HOME"),
+		Images:       images,
+		RemoteSiteID: &studioID,
+	}
+
+	if len(st.Images) > 0 {
+		st.Image = &st.Images[0]
+	}
+
+	return st
+}
+
 func getFirstImage(ctx context.Context, client *http.Client, images []*graphql.ImageFragment) *string {
 	ret, err := fetchImage(ctx, client, images[0].URL)
 	if err != nil {
@@ -712,16 +733,26 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 		tqb := c.repository.Tag
 
 		if s.Studio != nil {
-			studioID := s.Studio.ID
-			ss.Studio = &models.ScrapedStudio{
-				Name:         s.Studio.Name,
-				URL:          findURL(s.Studio.Urls, "HOME"),
-				RemoteSiteID: &studioID,
-			}
+			ss.Studio = studioFragmentToScrapedStudio(*s.Studio)
 
 			err := match.ScrapedStudio(ctx, c.repository.Studio, ss.Studio, &c.box.Endpoint)
 			if err != nil {
 				return err
+			}
+
+			var parent_studio *graphql.FindStudioByID
+			if s.Studio.Parent != nil {
+				parent_studio, err = c.client.FindStudioByID(ctx, s.Studio.Parent.ID)
+				if err != nil {
+					return err
+				}
+
+				ss.Studio.Parent = studioFragmentToScrapedStudio(*parent_studio.FindStudio)
+
+				err = match.ScrapedStudio(ctx, c.repository.Studio, ss.Studio.Parent, &c.box.Endpoint)
+				if err != nil {
+					return err
+				}
 			}
 		}
 

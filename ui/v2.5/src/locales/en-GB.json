@@ -8,6 +8,7 @@
     "allow_temporarily": "Allow temporarily",
     "anonymise": "Anonymise",
     "apply": "Apply",
+    "assign_stashid_to_parent_studio": "Assign Stash ID to existing parent studio and update metadata",
     "auto_tag": "Auto Tag",
     "backup": "Backup",
     "browse_for_image": "Browse for image…",
@@ -23,6 +24,7 @@
     "create": "Create",
     "create_entity": "Create {entityType}",
     "create_marker": "Create Marker",
+    "create_parent_studio": "Create parent studio",
     "created_entity": "Created {entity_type}: {entity_name}",
     "customise": "Customise",
     "delete": "Delete",
@@ -935,6 +937,7 @@
     "previous": "Previous"
   },
   "parent_of": "Parent of {children}",
+  "parent_studio": "Parent Studio",
   "parent_studios": "Parent Studios",
   "parent_tag_count": "Parent Tag Count",
   "parent_tags": "Parent Tags",

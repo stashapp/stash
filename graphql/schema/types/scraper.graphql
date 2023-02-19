@@ -48,9 +48,19 @@ type ScrapedStudio {
   stored_id: ID
   name: String!
   url: String
+  parent: ScrapedStudio
   image: String
 
   remote_site_id: String
+}
+
+type ScrapedParentStudio {
+    stored_id: ID
+    name: String!
+    url: String
+    image: String
+
+    remote_site_id: String
 }
 
 type ScrapedTag {
