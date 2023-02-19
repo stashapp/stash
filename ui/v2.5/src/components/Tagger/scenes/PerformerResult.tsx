@@ -8,7 +8,7 @@ import {
   Icon,
   OperationButton,
   PerformerSelect,
-  ValidTypes,
+  SelectObject,
 } from "src/components/Shared";
 import { OptionalField } from "../IncludeButton";
 import { faSave } from "@fortawesome/free-solid-svg-icons";
@@ -43,7 +43,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
     (stashID) => stashID.endpoint === endpoint && stashID.stash_id
   );
 
-  const handlePerformerSelect = (performers: ValidTypes[]) => {
+  const handlePerformerSelect = (performers: SelectObject[]) => {
     if (performers.length) {
       setSelectedID(performers[0].id);
     } else {

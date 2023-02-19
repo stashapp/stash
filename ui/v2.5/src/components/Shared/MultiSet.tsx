@@ -3,13 +3,7 @@ import { useIntl } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
 import { Button, ButtonGroup } from "react-bootstrap";
-import { FilterSelect } from "./Select";
-
-type ValidTypes =
-  | GQL.SlimPerformerDataFragment
-  | GQL.SlimTagDataFragment
-  | GQL.SlimStudioDataFragment
-  | GQL.SlimMovieDataFragment;
+import { FilterSelect, SelectObject } from "./Select";
 
 interface IMultiSetProps {
   type: "performers" | "studios" | "tags" | "movies";
@@ -31,7 +25,7 @@ const MultiSet: React.FunctionComponent<IMultiSetProps> = (
     GQL.BulkUpdateIdMode.Remove,
   ];
 
-  function onUpdate(items: ValidTypes[]) {
+  function onUpdate(items: SelectObject[]) {
     props.onUpdate(items.map((i) => i.id));
   }
 
