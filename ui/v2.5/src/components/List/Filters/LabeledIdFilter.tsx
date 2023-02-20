@@ -1,6 +1,6 @@
 import React from "react";
 import { Form } from "react-bootstrap";
-import { FilterSelect, ValidTypes } from "src/components/Shared/Select";
+import { FilterSelect, SelectObject } from "src/components/Shared/Select";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { ILabeledId } from "src/models/list-filter/types";
 
@@ -26,11 +26,11 @@ export const LabeledIdFilter: React.FC<ILabeledIdFilterProps> = ({
   )
     return null;
 
-  function onSelectionChanged(items: ValidTypes[]) {
+  function onSelectionChanged(items: SelectObject[]) {
     onValueChanged(
       items.map((i) => ({
         id: i.id,
-        label: i.name!,
+        label: i.name ?? i.title ?? "",
       }))
     );
   }

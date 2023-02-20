@@ -31,11 +31,11 @@ import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import { TagPopover } from "../Tags/TagPopover";
 
-export type ValidTypes =
-  | GQL.SlimPerformerDataFragment
-  | GQL.SlimTagDataFragment
-  | GQL.SlimStudioDataFragment
-  | GQL.SlimMovieDataFragment;
+export type SelectObject = {
+  id: string;
+  name?: string | null;
+  title?: string | null;
+};
 type Option = { value: string; label: string };
 
 interface ITypeProps {
@@ -53,7 +53,7 @@ interface ITypeProps {
 interface IFilterProps {
   ids?: string[];
   initialIds?: string[];
-  onSelect?: (item: ValidTypes[]) => void;
+  onSelect?: (item: SelectObject[]) => void;
   noSelectionString?: string;
   className?: string;
   isMulti?: boolean;
@@ -90,9 +90,9 @@ interface ISelectProps<T extends boolean> {
   noOptionsMessage?: string | null;
 }
 interface IFilterComponentProps extends IFilterProps {
-  items: Array<ValidTypes>;
-  toOption?: (item: ValidTypes) => Option;
-  onCreate?: (name: string) => Promise<{ item: ValidTypes; message: string }>;
+  items: SelectObject[];
+  toOption?: (item: SelectObject) => Option;
+  onCreate?: (name: string) => Promise<{ item: SelectObject; message: string }>;
 }
 interface IFilterSelectProps<T extends boolean>
   extends Pick<
@@ -284,7 +284,7 @@ const FilterSelectComponent = <T extends boolean>(
     }
     return {
       value: i.id,
-      label: i.name ?? "",
+      label: i.name ?? i.title ?? "",
     };
   });
 
