@@ -498,6 +498,9 @@
           "description": "Remove the ability to create new objects from the dropdown selectors",
           "heading": "Disable dropdown create"
         },
+        "max_options_shown": {
+          "label": "Maximum number of items to show in select dropdowns"
+        },
         "rating_system": {
           "type": {
             "label": "Rating System Type",
