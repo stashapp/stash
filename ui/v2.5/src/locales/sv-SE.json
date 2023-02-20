@@ -505,7 +505,8 @@
             "options": {
               "full": "Hel",
               "half": "Halv",
-              "quarter": "Fjärdedel"
+              "quarter": "Fjärdedel",
+              "tenth": "Tiondel"
             }
           },
           "type": {
