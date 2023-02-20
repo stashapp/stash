@@ -98,8 +98,8 @@ var (
 		MimeType: MimeMp4,
 		extraArgs: []string{
 			"-movflags", "frag_keyframe+empty_moov",
-			"-global_quality", "25",
-			"-preset", "fast",
+			"-global_quality", "20",
+			"-preset", "faster",
 		},
 	}
 

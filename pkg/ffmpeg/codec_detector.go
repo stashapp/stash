@@ -214,8 +214,7 @@ func HWCodecFilter(args VideoFilter, codec VideoCodec) VideoFilter {
 }
 
 func HWCodecMaxRes(codec VideoCodec) (int, int) {
-	switch codec {
-	case VideoCodecN264:
+	if codec == VideoCodecN264 {
 		return 4096, 4096
 	}
 
