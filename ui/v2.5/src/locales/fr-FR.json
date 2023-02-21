@@ -505,7 +505,8 @@
             "options": {
               "full": "Complète",
               "half": "Moitié",
-              "quarter": "Quart"
+              "quarter": "Quart",
+              "tenth": "Dixième"
             }
           },
           "type": {
