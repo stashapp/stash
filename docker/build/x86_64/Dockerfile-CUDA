@@ -1,11 +1,8 @@
 # This dockerfile should be built with `make docker-build` from the stash root.
 
 # Build Frontend
-FROM ubuntu:kinetic as build
-RUN apt update
-RUN apt install -y wget build-essential golang nodejs npm
-RUN npm install --global yarn
-
+FROM node:alpine as frontend
+RUN apk add --no-cache make
 ## cache node_modules separately
 COPY ./ui/v2.5/package.json ./ui/v2.5/yarn.lock /stash/ui/v2.5/
 WORKDIR /stash
@@ -19,13 +16,16 @@ ARG STASH_VERSION
 RUN BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") make ui
 
 # Build Backend
+FROM golang:1.19-bullseye as backend
+RUN apt update && apt install -y build-essential golang
+WORKDIR /stash
 COPY ./go* ./*.go Makefile gqlgen.yml .gqlgenc.yml /stash/
 COPY ./scripts /stash/scripts/
 COPY ./vendor /stash/vendor/
 COPY ./pkg /stash/pkg/
 COPY ./cmd /stash/cmd
 COPY ./internal /stash/internal
-#COPY --from=frontend /stash /stash/
+COPY --from=frontend /stash /stash/
 RUN make generate-backend
 ARG GITHASH
 ARG STASH_VERSION
@@ -37,7 +37,7 @@ RUN apt update
 RUN apt upgrade -y
 RUN apt install -y ca-certificates libvips-tools ffmpeg wget
 RUN rm -rf /var/lib/apt/lists/*
-COPY --from=build /stash/stash /usr/bin/
+COPY --from=backend /stash/stash /usr/bin/
 
 # NVENC Patch
 RUN mkdir -p /usr/local/bin /patched-lib

@@ -61,8 +61,6 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/stream.m3u8", rs.StreamHLS)
 		r.Get("/stream.ts", rs.StreamTS)
 		r.Get("/stream.mp4", rs.StreamMp4)
-		r.Get("/streamhw.mp4", rs.StreamMp4HW)
-		r.Get("/streamhw.webm", rs.StreamWebMHW)
 
 		r.Get("/screenshot", rs.Screenshot)
 		r.Get("/preview", rs.Preview)
@@ -119,30 +117,43 @@ func (rs sceneRoutes) StreamMKV(w http.ResponseWriter, r *http.Request) {
 	rs.streamTranscode(w, r, ffmpeg.StreamFormatMKVAudio)
 }
 
+func parseQuery(identity string, r *http.Request) {
+	// start stream based on query param, if provided
+	if err := r.ParseForm(); err != nil {
+		logger.Warnf("[%s] error parsing query form: %v", identity, err)
+	}
+}
+
 func (rs sceneRoutes) StreamWebM(w http.ResponseWriter, r *http.Request) {
+	parseQuery("stream", r)
+
+	b, err := strconv.ParseBool(r.Form.Get("hwaccel"))
+	if err == nil && b {
+		if config.GetInstance().GetTranscodeHardwareAcceleration() {
+			codec := ffmpeg.HWCodecVP9Compatible()
+			if codec != nil {
+				rs.streamTranscode(w, r, *codec)
+			}
+		}
+		return
+	}
 	rs.streamTranscode(w, r, ffmpeg.StreamFormatVP9)
 }
 
-func (rs sceneRoutes) StreamWebMHW(w http.ResponseWriter, r *http.Request) {
-	if config.GetInstance().GetTranscodeHardwareAcceleration() {
-		codec := ffmpeg.HWCodecVP9Compatible()
-		if codec != nil {
-			rs.streamTranscode(w, r, *codec)
-		}
-	}
-}
-
 func (rs sceneRoutes) StreamMp4(w http.ResponseWriter, r *http.Request) {
-	rs.streamTranscode(w, r, ffmpeg.StreamFormatH264)
-}
+	parseQuery("stream", r)
 
-func (rs sceneRoutes) StreamMp4HW(w http.ResponseWriter, r *http.Request) {
-	if config.GetInstance().GetTranscodeHardwareAcceleration() {
-		codec := ffmpeg.HWCodecH264Compatible()
-		if codec != nil {
-			rs.streamTranscode(w, r, *codec)
+	b, err := strconv.ParseBool(r.Form.Get("hwaccel"))
+	if err == nil && b {
+		if config.GetInstance().GetTranscodeHardwareAcceleration() {
+			codec := ffmpeg.HWCodecH264Compatible()
+			if codec != nil {
+				rs.streamTranscode(w, r, *codec)
+			}
 		}
+		return
 	}
+	rs.streamTranscode(w, r, ffmpeg.StreamFormatH264)
 }
 
 func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
@@ -187,11 +198,6 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, st
 		return
 	}
 	logger.Debugf("Streaming as %s", streamFormat.MimeType)
-
-	// start stream based on query param, if provided
-	if err := r.ParseForm(); err != nil {
-		logger.Warnf("[stream] error parsing query form: %v", err)
-	}
 
 	startTime := r.Form.Get("start")
 	ss, _ := strconv.ParseFloat(startTime, 64)
@@ -420,9 +426,7 @@ func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang strin
 
 func (rs sceneRoutes) CaptionLang(w http.ResponseWriter, r *http.Request) {
 	// serve caption based on lang query param, if provided
-	if err := r.ParseForm(); err != nil {
-		logger.Warnf("[caption] error parsing query form: %v", err)
-	}
+	parseQuery("caption", r)
 
 	l := r.Form.Get("lang")
 	ext := r.Form.Get("type")
