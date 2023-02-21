@@ -100,6 +100,8 @@ type SceneService interface {
 	AssignFile(ctx context.Context, sceneID int, fileID file.ID) error
 	Merge(ctx context.Context, sourceIDs []int, destinationID int, values models.ScenePartial) error
 	Destroy(ctx context.Context, scene *models.Scene, fileDeleter *scene.FileDeleter, deleteGenerated, deleteFile bool) error
+
+	GetCover(ctx context.Context, scene *models.Scene) ([]byte, error)
 }
 
 type ImageService interface {
