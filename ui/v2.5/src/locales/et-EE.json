@@ -505,7 +505,8 @@
             "options": {
               "full": "Täis",
               "half": "Pool",
-              "quarter": "Neljandik"
+              "quarter": "Neljandik",
+              "tenth": "Kümme"
             }
           },
           "type": {
