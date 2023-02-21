@@ -501,7 +501,8 @@
             "options": {
               "full": "Cała",
               "half": "Pół",
-              "quarter": "Ćwierć"
+              "quarter": "Ćwierć",
+              "tenth": "Części dziesiętne"
             }
           },
           "type": {
