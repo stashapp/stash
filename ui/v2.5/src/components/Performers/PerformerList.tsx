@@ -11,12 +11,16 @@ import {
   queryFindPerformers,
   usePerformersDestroy,
 } from "src/core/StashService";
-import { usePerformersList } from "src/hooks";
-import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
+import {
+  showWhenSelected,
+  PersistanceLevel,
+  usePerformersList,
+} from "src/hooks/ListHook";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { PerformerTagger } from "src/components/Tagger";
-import { ExportDialog, DeleteEntityDialog } from "src/components/Shared";
+import { PerformerTagger } from "../Tagger/performers/PerformerTagger";
+import { ExportDialog } from "../Shared/ExportDialog";
+import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { IPerformerCardExtraCriteria, PerformerCard } from "./PerformerCard";
 import { PerformerListTable } from "./PerformerListTable";
 import { EditPerformersDialog } from "./EditPerformersDialog";

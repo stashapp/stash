@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, Modal, Spinner, ModalProps } from "react-bootstrap";
-import Icon from "src/components/Shared/Icon";
+import { Icon } from "./Icon";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { FormattedMessage } from "react-intl";
 
@@ -27,7 +27,7 @@ interface IModal {
 
 const defaultOnHide = () => {};
 
-const ModalComponent: React.FC<IModal> = ({
+export const ModalComponent: React.FC<IModal> = ({
   children,
   show,
   icon,
@@ -99,5 +99,3 @@ const ModalComponent: React.FC<IModal> = ({
     </Modal.Footer>
   </Modal>
 );
-
-export default ModalComponent;

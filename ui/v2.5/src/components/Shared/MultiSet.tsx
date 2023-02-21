@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import { useIntl } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
@@ -15,9 +15,7 @@ interface IMultiSetProps {
   onSetMode: (mode: GQL.BulkUpdateIdMode) => void;
 }
 
-const MultiSet: React.FunctionComponent<IMultiSetProps> = (
-  props: IMultiSetProps
-) => {
+export const MultiSet: React.FC<IMultiSetProps> = (props) => {
   const intl = useIntl();
   const modes = [
     GQL.BulkUpdateIdMode.Set,
@@ -96,5 +94,3 @@ const MultiSet: React.FunctionComponent<IMultiSetProps> = (
     </div>
   );
 };
-
-export default MultiSet;

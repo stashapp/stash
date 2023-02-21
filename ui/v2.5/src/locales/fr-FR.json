@@ -1055,7 +1055,7 @@
       "your_system_has_been_created": "Bravo ! Votre système a été créé !"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash essaie d'abord de trouver son fichier de configuration (<code>config.yml</code>) dans le répertoire de travail courant, et s'il ne le trouve pas, il se reporte sur <code>$HOME/.stash/config. yml</code> (sous Windows, ce sera <code>%USERPROFILE%\\.stash\\config.yml</code>). Vous pouvez également faire en sorte que Stash lise un fichier de configuration spécifique en le lançant avec les options <code>-c <path to config file></code> ou <code>--config <path to config file></code>.",
+      "config_path_logic_explained": "Stash essaie d'abord de trouver son fichier de configuration (<code>config.yml</code>) dans le répertoire de travail courant, et s'il ne le trouve pas, il se reporte sur <code>$HOME/.stash/config. yml</code> (sous Windows, ce sera <code>%USERPROFILE%\\.stash\\config.yml</code>). Vous pouvez également faire en sorte que Stash lise un fichier de configuration spécifique en le lançant avec les options <code>-c '<path to config file>'</code> ou <code>--config '<path to config file>'</code>.",
       "in_current_stash_directory": "Dans le répertoire <code>$HOME/.stash</code>",
       "in_the_current_working_directory": "Dans le répertoire de travail courant",
       "next_step": "Une fois que tout est réglé, si vous êtes prêt à procéder à la configuration d'un nouveau système, choisissez l'emplacement où vous souhaitez stocker votre fichier de configuration et cliquez sur Suivant.",

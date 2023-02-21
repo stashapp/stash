@@ -3,10 +3,11 @@ import { Button, Card, Form, InputGroup, ProgressBar } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
-import { useLocalForage } from "src/hooks";
+import { useLocalForage } from "src/hooks/LocalForage";
 
 import * as GQL from "src/core/generated-graphql";
-import { LoadingIndicator, Modal } from "src/components/Shared";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { ModalComponent } from "src/components/Shared/Modal";
 import {
   stashBoxPerformerQuery,
   useJobsSubscribe,
@@ -387,7 +388,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
 
   return (
     <Card>
-      <Modal
+      <ModalComponent
         show={showBatchUpdate}
         icon={faTags}
         header={intl.formatMessage({
@@ -476,8 +477,8 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
             }}
           />
         </b>
-      </Modal>
-      <Modal
+      </ModalComponent>
+      <ModalComponent
         show={showBatchAdd}
         icon={faStar}
         header={intl.formatMessage({
@@ -508,7 +509,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
         <Form.Text>
           <FormattedMessage id="performer_tagger.any_names_entered_will_be_queried" />
         </Form.Text>
-      </Modal>
+      </ModalComponent>
       <div className="ml-auto mb-3">
         <Button onClick={() => setShowBatchAdd(true)}>
           <FormattedMessage id="performer_tagger.batch_add_performers" />

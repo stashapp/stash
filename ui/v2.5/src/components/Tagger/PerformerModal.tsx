@@ -4,12 +4,10 @@ import { FormattedMessage, useIntl } from "react-intl";
 import cx from "classnames";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
-import {
-  LoadingIndicator,
-  Icon,
-  Modal,
-  TruncatedText,
-} from "src/components/Shared";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
+import { Icon } from "../Shared/Icon";
+import { ModalComponent } from "../Shared/Modal";
+import { TruncatedText } from "../Shared/TruncatedText";
 import * as GQL from "src/core/generated-graphql";
 import { stringToGender } from "src/utils/gender";
 import { getCountryByISO } from "src/utils/country";
@@ -189,7 +187,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
   }
 
   return (
-    <Modal
+    <ModalComponent
       show={modalVisible}
       accept={{
         text: intl.formatMessage({ id: "actions.save" }),
@@ -287,7 +285,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
           </div>
         )}
       </div>
-    </Modal>
+    </ModalComponent>
   );
 };
 

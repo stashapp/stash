@@ -21,16 +21,48 @@
       width: 0;
     }
 
+    &.star-fill-10 .filled-star {
+      width: 10%;
+    }
+
+    &.star-fill-20 .filled-star {
+      width: 20%;
+    }
+
     &.star-fill-25 .filled-star {
       width: 35%;
+    }
+
+    &.star-fill-30 .filled-star {
+      width: 30%;
+    }
+
+    &.star-fill-40 .filled-star {
+      width: 40%;
     }
 
     &.star-fill-50 .filled-star {
       width: 50%;
     }
 
+    &.star-fill-60 .filled-star {
+      width: 60%;
+    }
+
     &.star-fill-75 .filled-star {
       width: 65%;
+    }
+
+    &.star-fill-70 .filled-star {
+      width: 70%;
+    }
+
+    &.star-fill-80 .filled-star {
+      width: 80%;
+    }
+
+    &.star-fill-90 .filled-star {
+      width: 90%;
     }
 
     &.star-fill-100 .filled-star {
@@ -54,6 +86,11 @@
   .set {
     color: gold;
   }
+}
+
+.star-rating-number {
+  font-size: 1rem;
+  margin: auto 0.5rem;
 }
 
 .rating-number.disabled {

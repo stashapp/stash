@@ -1,10 +1,9 @@
 import React from "react";
-import queryString from "query-string";
 import { Tab, Nav, Row, Col } from "react-bootstrap";
 import { useHistory, useLocation } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
-import { TITLE_SUFFIX } from "src/components/Shared";
+import { TITLE_SUFFIX } from "src/components/Shared/constants";
 import { SettingsAboutPanel } from "./SettingsAboutPanel";
 import { SettingsConfigurationPanel } from "./SettingsSystemPanel";
 import { SettingsInterfacePanel } from "./SettingsInterfacePanel/SettingsInterfacePanel";
@@ -23,7 +22,7 @@ export const Settings: React.FC = () => {
   const intl = useIntl();
   const location = useLocation();
   const history = useHistory();
-  const defaultTab = queryString.parse(location.search).tab ?? "tasks";
+  const defaultTab = new URLSearchParams(location.search).get("tab") ?? "tasks";
 
   const onSelect = (val: string) => history.push(`?tab=${val}`);
 

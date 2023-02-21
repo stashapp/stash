@@ -4,12 +4,9 @@ import { FormattedMessage } from "react-intl";
 import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
-import {
-  Icon,
-  OperationButton,
-  PerformerSelect,
-  SelectObject,
-} from "src/components/Shared";
+import { Icon } from "src/components/Shared/Icon";
+import { OperationButton } from "src/components/Shared/OperationButton";
+import { PerformerSelect, SelectObject } from "src/components/Shared/Select";
 import { OptionalField } from "../IncludeButton";
 import { faSave } from "@fortawesome/free-solid-svg-icons";
 
@@ -30,13 +27,11 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
   onLink,
   endpoint,
 }) => {
-  const {
-    data: performerData,
-    loading: stashLoading,
-  } = GQL.useFindPerformerQuery({
-    variables: { id: performer.stored_id ?? "" },
-    skip: !performer.stored_id,
-  });
+  const { data: performerData, loading: stashLoading } =
+    GQL.useFindPerformerQuery({
+      variables: { id: performer.stored_id ?? "" },
+      skip: !performer.stored_id,
+    });
 
   const matchedPerformer = performerData?.findPerformer;
   const matchedStashID = matchedPerformer?.stash_ids.some(

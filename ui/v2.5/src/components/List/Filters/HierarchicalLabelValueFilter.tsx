@@ -10,10 +10,9 @@ interface IHierarchicalLabelValueFilterProps {
   onValueChanged: (value: IHierarchicalLabelValue) => void;
 }
 
-export const HierarchicalLabelValueFilter: React.FC<IHierarchicalLabelValueFilterProps> = ({
-  criterion,
-  onValueChanged,
-}) => {
+export const HierarchicalLabelValueFilter: React.FC<
+  IHierarchicalLabelValueFilterProps
+> = ({ criterion, onValueChanged }) => {
   const intl = useIntl();
 
   if (

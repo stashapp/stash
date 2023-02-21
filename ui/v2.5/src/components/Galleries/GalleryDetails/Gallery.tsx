@@ -9,14 +9,12 @@ import {
   useFindGallery,
   useGalleryUpdate,
 } from "src/core/StashService";
-import {
-  ErrorMessage,
-  LoadingIndicator,
-  Icon,
-  Counter,
-} from "src/components/Shared";
+import { ErrorMessage } from "src/components/Shared/ErrorMessage";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { Icon } from "src/components/Shared/Icon";
+import { Counter } from "src/components/Shared/Counter";
 import Mousetrap from "mousetrap";
-import { useToast } from "src/hooks";
+import { useToast } from "src/hooks/Toast";
 import { OrganizedButton } from "src/components/Scenes/SceneDetails/OrganizedButton";
 import { GalleryEditPanel } from "./GalleryEditPanel";
 import { GalleryDetailPanel } from "./GalleryDetailPanel";
@@ -214,7 +212,6 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
           <Tab.Pane eventKey="gallery-edit-panel">
             <GalleryEditPanel
               isVisible={activeTabKey === "gallery-edit-panel"}
-              isNew={false}
               gallery={gallery}
               onDelete={() => setIsDeleteAlertOpen(true)}
             />

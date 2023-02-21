@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Form, Button, Table } from "react-bootstrap";
-import { Icon } from "src/components/Shared";
+import { Icon } from "src/components/Shared/Icon";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedMessage, useIntl } from "react-intl";
 import {
@@ -261,9 +261,8 @@ export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
   allowSetDefault = true,
   defaultOptions,
 }) => {
-  const [localFieldOptions, setLocalFieldOptions] = useState<
-    GQL.IdentifyFieldOptions[]
-  >();
+  const [localFieldOptions, setLocalFieldOptions] =
+    useState<GQL.IdentifyFieldOptions[]>();
   const [editField, setEditField] = useState<string | undefined>();
 
   useEffect(() => {

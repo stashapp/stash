@@ -12,17 +12,16 @@ import {
   usePerformerDestroy,
   mutateMetadataAutoTag,
 } from "src/core/StashService";
-import {
-  Counter,
-  CountryFlag,
-  DetailsEditNavbar,
-  ErrorMessage,
-  Icon,
-  LoadingIndicator,
-} from "src/components/Shared";
-import { useLightbox, useToast } from "src/hooks";
+import { Counter } from "src/components/Shared/Counter";
+import { CountryFlag } from "src/components/Shared/CountryFlag";
+import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
+import { ErrorMessage } from "src/components/Shared/ErrorMessage";
+import { Icon } from "src/components/Shared/Icon";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { useLightbox } from "src/hooks/Lightbox/hooks";
+import { useToast } from "src/hooks/Toast";
 import { ConfigurationContext } from "src/hooks/Config";
-import { TextUtils } from "src/utils";
+import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
@@ -32,12 +31,8 @@ import { PerformerImagesPanel } from "./PerformerImagesPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
 import { PerformerSubmitButton } from "./PerformerSubmitButton";
 import GenderIcon from "../GenderIcon";
-import {
-  faCamera,
-  faDove,
-  faHeart,
-  faLink,
-} from "@fortawesome/free-solid-svg-icons";
+import { faHeart, faLink } from "@fortawesome/free-solid-svg-icons";
+import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { IUIConfig } from "src/core/config";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 
@@ -247,7 +242,6 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <PerformerEditPanel
           performer={performer}
           isVisible={isEditing}
-          isNew={false}
           onImageChange={onImageChange}
           onImageEncoding={onImageEncoding}
           onCancelEditing={() => {
@@ -351,7 +345,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Icon icon={faDove} />
+            <Icon icon={faTwitter} />
           </a>
         </Button>
       )}
@@ -366,7 +360,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Icon icon={faCamera} />
+            <Icon icon={faInstagram} />
           </a>
         </Button>
       )}
@@ -405,7 +399,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             <h2>
               <GenderIcon
                 gender={performer.gender}
-                className="gender-icon mr-2 flag-icon"
+                className="gender-icon mr-2 fi"
               />
               <CountryFlag country={performer.country} className="mr-2" />
               <span className="performer-name">{performer.name}</span>

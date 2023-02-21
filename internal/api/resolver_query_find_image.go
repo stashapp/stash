@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"strconv"
 
 	"github.com/99designs/gqlgen/graphql"
@@ -23,7 +25,7 @@ func (r *queryResolver) FindImage(ctx context.Context, id *string, checksum *str
 			}
 
 			image, err = qb.Find(ctx, idInt)
-			if err != nil {
+			if err != nil && !errors.Is(err, sql.ErrNoRows) {
 				return err
 			}
 		} else if checksum != nil {
