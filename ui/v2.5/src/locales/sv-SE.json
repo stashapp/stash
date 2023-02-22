@@ -294,6 +294,8 @@
           }
         }
       },
+      "gallery_cover_regex_desc": "Regexp som används för att identifiera en bild som galleriomslag",
+      "gallery_cover_regex_label": "Galleriomslagsmönster",
       "gallery_ext_desc": "Komma-avgränsad lista av filtillägg som kommer identifieras som galleri zip-filer.",
       "gallery_ext_head": "Galleri zip-tillägg",
       "generated_file_naming_hash_desc": "Använd MD5 eller ohash för att döpa genererade filer. Ett byte kräver att alla scener har ett värde för MD5/oshash. Efter ett byte måste existerande genererade filer migreras eller återgenereras. Se Job-sidan för migration.",
@@ -464,19 +466,19 @@
       },
       "basic_settings": "Grundinställningar",
       "custom_css": {
-        "description": "Sidan måste laddas om för att ändringar ska ta effekt. Det finns ingen garanti att egen CSS kommer vara kompatibel med framtida versioner av Stash.",
+        "description": "Sidan måste laddas om för att ändringar ska ta effekt. Det finns ingen garanti att anpassad CSS kommer vara kompatibel med framtida versioner av Stash.",
         "heading": "Anpassad CSS",
         "option_label": "Använd anpassad CSS"
       },
       "custom_javascript": {
-        "description": "Sidan måste laddas om för att förändringarna ska ske. Det finns ingen garanti att egen JavaScript kommer vara kompatibel med framtida versioner av Stash.",
-        "heading": "Egen Javascript",
-        "option_label": "Egen Javascript aktiverad"
+        "description": "Sidan måste laddas om för att ändringar ska ta effekt. Det finns ingen garanti att anpassad Javascript kommer vara kompatibel med framtida versioner av Stash.",
+        "heading": "Anpassad Javascript",
+        "option_label": "Använd anpassad Javascript"
       },
       "custom_locales": {
         "description": "Ändra individuella lokala strängar. Se https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json för kompletta listan. Sidan måste laddas om för att ändringar ska ske.",
-        "heading": "Egen översättning",
-        "option_label": "Aktiverat egen översättning"
+        "heading": "Anpassad översättning",
+        "option_label": "Använd anpassad översättning"
       },
       "delete_options": {
         "description": "Standardalternativ vid radering av bilder, gallerier och scener.",
@@ -605,7 +607,7 @@
         }
       },
       "scene_wall": {
-        "heading": "Scen / Markör Vägg",
+        "heading": "Scen / Markörvägg",
         "options": {
           "display_title": "Visa titel och taggar",
           "toggle_sound": "Aktivera ljud"
