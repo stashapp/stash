@@ -1,7 +1,8 @@
 import React, { useRef, useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { TextUtils, NavUtils } from "src/utils";
+import TextUtils from "src/utils/text";
+import NavUtils from "src/utils/navigation";
 import cx from "classnames";
 import { SceneQueue } from "src/models/sceneQueue";
 import { ConfigurationContext } from "src/hooks/Config";

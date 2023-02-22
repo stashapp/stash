@@ -1,25 +1,23 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 import { useIntl } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
 import { useStudioCreate } from "src/core/StashService";
-import { ImageUtils } from "src/utils";
-import { LoadingIndicator } from "src/components/Shared";
-import { useToast } from "src/hooks";
+import ImageUtils from "src/utils/image";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { useToast } from "src/hooks/Toast";
 import { StudioEditPanel } from "./StudioEditPanel";
 
 const StudioCreate: React.FC = () => {
   const history = useHistory();
+  const location = useLocation();
   const Toast = useToast();
 
-  function useQuery() {
-    const { search } = useLocation();
-    return React.useMemo(() => new URLSearchParams(search), [search]);
-  }
-
-  const query = useQuery();
-  const nameQuery = query.get("name");
+  const query = useMemo(() => new URLSearchParams(location.search), [location]);
+  const studio = {
+    name: query.get("q") ?? undefined,
+  };
 
   const intl = useIntl();
 
@@ -74,7 +72,7 @@ const StudioCreate: React.FC = () => {
           )}
         </div>
         <StudioEditPanel
-          studio={{ name: nameQuery ?? "" }}
+          studio={studio}
           onSubmit={onSave}
           onImageChange={setImage}
           onCancel={() => history.push("/studios")}

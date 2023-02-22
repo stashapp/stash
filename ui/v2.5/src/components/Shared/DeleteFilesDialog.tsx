@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { mutateDeleteFiles } from "src/core/StashService";
-import { Modal } from "src/components/Shared";
-import { useToast } from "src/hooks";
+import { ModalComponent } from "./Modal";
+import { useToast } from "src/hooks/Toast";
 import { FormattedMessage, useIntl } from "react-intl";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 
@@ -88,7 +88,7 @@ export const DeleteFilesDialog: React.FC<IDeleteSceneDialogProps> = (
   }
 
   return (
-    <Modal
+    <ModalComponent
       show
       icon={faTrashAlt}
       header={header}
@@ -106,8 +106,6 @@ export const DeleteFilesDialog: React.FC<IDeleteSceneDialogProps> = (
     >
       <p>{message}</p>
       {renderDeleteFileAlert()}
-    </Modal>
+    </ModalComponent>
   );
 };
-
-export default DeleteFilesDialog;

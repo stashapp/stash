@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
-import { useLightbox } from "src/hooks";
-import { LoadingIndicator } from "src/components/Shared";
+import { useLightbox } from "src/hooks/Lightbox/hooks";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import "flexbin/flexbin.css";
 import {
   CriterionModifier,

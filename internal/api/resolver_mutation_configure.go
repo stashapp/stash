@@ -238,10 +238,22 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	}
 
 	if input.Excludes != nil {
+		for _, r := range input.Excludes {
+			_, err := regexp.Compile(r)
+			if err != nil {
+				return makeConfigGeneralResult(), fmt.Errorf("video exclusion pattern '%v' invalid: %w", r, err)
+			}
+		}
 		c.Set(config.Exclude, input.Excludes)
 	}
 
 	if input.ImageExcludes != nil {
+		for _, r := range input.ImageExcludes {
+			_, err := regexp.Compile(r)
+			if err != nil {
+				return makeConfigGeneralResult(), fmt.Errorf("image/gallery exclusion pattern '%v' invalid: %w", r, err)
+			}
+		}
 		c.Set(config.ImageExclude, input.ImageExcludes)
 	}
 
@@ -475,6 +487,12 @@ func (r *mutationResolver) ConfigureScraping(ctx context.Context, input ConfigSc
 	}
 
 	if input.ExcludeTagPatterns != nil {
+		for _, r := range input.ExcludeTagPatterns {
+			_, err := regexp.Compile(r)
+			if err != nil {
+				return makeConfigScrapingResult(), fmt.Errorf("tag exclusion pattern '%v' invalid: %w", r, err)
+			}
+		}
 		c.Set(config.ScraperExcludeTagPatterns, input.ExcludeTagPatterns)
 	}
 

@@ -1,5 +1,6 @@
 import React from "react";
-import { Icon, LoadingIndicator } from "src/components/Shared";
+import { Icon } from "../Shared/Icon";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { StashSetting } from "./StashConfiguration";
 import { SettingSection } from "./SettingSection";
 import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";
@@ -9,14 +10,8 @@ import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 
 export const SettingsLibraryPanel: React.FC = () => {
   const intl = useIntl();
-  const {
-    general,
-    loading,
-    error,
-    saveGeneral,
-    defaults,
-    saveDefaults,
-  } = React.useContext(SettingStateContext);
+  const { general, loading, error, saveGeneral, defaults, saveDefaults } =
+    React.useContext(SettingStateContext);
 
   function commaDelimitedToList(value: string | undefined) {
     if (value) {

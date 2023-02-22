@@ -1,6 +1,6 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { LoadingIndicator } from "src/components/Shared";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { SettingSection } from "./SettingSection";
 import {
   BooleanSetting,
@@ -17,9 +17,8 @@ import {
 } from "./GeneratePreviewOptions";
 
 export const SettingsConfigurationPanel: React.FC = () => {
-  const { general, loading, error, saveGeneral } = React.useContext(
-    SettingStateContext
-  );
+  const { general, loading, error, saveGeneral } =
+    React.useContext(SettingStateContext);
 
   const transcodeQualities = [
     GQL.StreamingResolutionEnum.Low,

@@ -4,7 +4,7 @@ import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
 import { TagLink } from "src/components/Shared/TagLink";
-import TruncatedText from "src/components/Shared/TruncatedText";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";

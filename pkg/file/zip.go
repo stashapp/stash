@@ -2,11 +2,18 @@ package file
 
 import (
 	"archive/zip"
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
 	"io/fs"
 	"path/filepath"
+
+	"github.com/stashapp/stash/pkg/logger"
+	"github.com/xWTF/chardet"
+
+	"golang.org/x/net/html/charset"
+	"golang.org/x/text/transform"
 )
 
 var (
@@ -38,6 +45,42 @@ func newZipFS(fs FS, path string, info fs.FileInfo) (*ZipFS, error) {
 	if err != nil {
 		reader.Close()
 		return nil, err
+	}
+
+	// Concat all Name and Comment for better detection result
+	var buffer bytes.Buffer
+	for _, f := range zipReader.File {
+		buffer.WriteString(f.Name)
+		buffer.WriteString(f.Comment)
+	}
+	buffer.WriteString(zipReader.Comment)
+
+	// Detect encoding
+	d, err := chardet.NewTextDetector().DetectBest(buffer.Bytes())
+	if err != nil {
+		reader.Close()
+		return nil, fmt.Errorf("unable to detect decoding: %w", err)
+	}
+
+	// If the charset is not UTF8, decode'em
+	if d.Charset != "UTF-8" {
+		logger.Debugf("Detected non-utf8 zip charset %s (%s): %s", d.Charset, d.Language, path)
+
+		e, _ := charset.Lookup(d.Charset)
+		if e == nil {
+			reader.Close()
+			return nil, fmt.Errorf("failed to lookup charset %s, language %s", d.Charset, d.Language)
+		}
+
+		decoder := e.NewDecoder()
+		for _, f := range zipReader.File {
+			f.Name, _, err = transform.String(decoder, f.Name)
+			if err != nil {
+				reader.Close()
+				return nil, fmt.Errorf("failed to decode %v: %w", []byte(f.Name), err)
+			}
+			// Comments are not decoded cuz stash doesn't use that
+		}
 	}
 
 	return &ZipFS{

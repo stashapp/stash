@@ -7,12 +7,16 @@ import {
   FindStudiosQueryResult,
   SlimStudioDataFragment,
 } from "src/core/generated-graphql";
-import { useStudiosList } from "src/hooks";
-import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
+import {
+  showWhenSelected,
+  PersistanceLevel,
+  useStudiosList,
+} from "src/hooks/ListHook";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { queryFindStudios, useStudiosDestroy } from "src/core/StashService";
-import { ExportDialog, DeleteEntityDialog } from "src/components/Shared";
+import { ExportDialog } from "../Shared/ExportDialog";
+import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { StudioCard } from "./StudioCard";
 
 interface IStudioList {
