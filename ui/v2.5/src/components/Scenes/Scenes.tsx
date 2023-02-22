@@ -2,7 +2,7 @@ import React, { lazy } from "react";
 import { Route, Switch } from "react-router-dom";
 import { useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
-import { TITLE_SUFFIX } from "src/components/Shared";
+import { TITLE_SUFFIX } from "src/components/Shared/constants";
 import { PersistanceLevel } from "src/hooks/ListHook";
 
 const SceneList = lazy(() => import("./SceneList"));

@@ -29,7 +29,7 @@ interface ILocalForage<T> {
 const Loading: Record<string, boolean> = {};
 const Cache: Record<string, {}> = {};
 
-export function useLocalForage<T>(
+export function useLocalForage<T extends {}>(
   key: string,
   defaultValue: T = {} as T
 ): [ILocalForage<T>, Dispatch<SetStateAction<T>>] {

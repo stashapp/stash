@@ -8,8 +8,11 @@ import {
   FindGalleriesQueryResult,
   SlimGalleryDataFragment,
 } from "src/core/generated-graphql";
-import { useGalleriesList } from "src/hooks";
-import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
+import {
+  showWhenSelected,
+  PersistanceLevel,
+  useGalleriesList,
+} from "src/hooks/ListHook";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { queryFindGalleries } from "src/core/StashService";

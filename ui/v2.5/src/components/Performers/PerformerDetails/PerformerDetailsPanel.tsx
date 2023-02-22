@@ -1,8 +1,10 @@
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { TagLink } from "src/components/Shared";
+import { TagLink } from "src/components/Shared/TagLink";
 import * as GQL from "src/core/generated-graphql";
-import { TextUtils, getStashboxBase, getCountryByISO } from "src/utils";
+import TextUtils from "src/utils/text";
+import { getStashboxBase } from "src/utils/stashbox";
+import { getCountryByISO } from "src/utils/country";
 import { TextField, URLField } from "src/utils/field";
 import { cmToImperial, kgToLbs } from "src/utils/units";
 

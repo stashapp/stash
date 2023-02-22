@@ -11,13 +11,11 @@ import {
   useImageUpdate,
   mutateMetadataScan,
 } from "src/core/StashService";
-import {
-  ErrorMessage,
-  LoadingIndicator,
-  Icon,
-  Counter,
-} from "src/components/Shared";
-import { useToast } from "src/hooks";
+import { ErrorMessage } from "src/components/Shared/ErrorMessage";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { Icon } from "src/components/Shared/Icon";
+import { Counter } from "src/components/Shared/Counter";
+import { useToast } from "src/hooks/Toast";
 import * as Mousetrap from "mousetrap";
 import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButton";
 import { OrganizedButton } from "src/components/Scenes/SceneDetails/OrganizedButton";
@@ -239,7 +237,9 @@ export const Image: React.FC = () => {
     Mousetrap.bind("a", () => setActiveTabKey("image-details-panel"));
     Mousetrap.bind("e", () => setActiveTabKey("image-edit-panel"));
     Mousetrap.bind("f", () => setActiveTabKey("image-file-info-panel"));
-    Mousetrap.bind("o", () => onIncrementClick());
+    Mousetrap.bind("o", () => {
+      onIncrementClick();
+    });
 
     return () => {
       Mousetrap.unbind("a");
