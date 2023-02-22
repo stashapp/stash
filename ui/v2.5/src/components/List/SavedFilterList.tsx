@@ -162,7 +162,10 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
 
   function filterClicked(f: SavedFilterDataFragment) {
     const newFilter = filter.clone();
+
     newFilter.currentPage = 1;
+    // #1795 - reset search term if not present in saved filter
+    newFilter.searchTerm = "";
     newFilter.configureFromJSON(f.filter);
     // #1507 - reset random seed when loaded
     newFilter.randomSeed = -1;

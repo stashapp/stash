@@ -93,8 +93,9 @@ export const ListFilter: React.FC<IListFilterProps> = ({
 
   // clear search input when filter is cleared
   useEffect(() => {
-    if (filter.searchTerm === "") {
+    if (!filter.searchTerm) {
       queryRef.current.value = "";
+      setQueryClearShowing(false);
     }
   }, [filter.searchTerm, queryRef]);
 
