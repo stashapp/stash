@@ -5,7 +5,6 @@ import (
 	"context"
 	"image"
 	"image/jpeg"
-	"io/ioutil"
 	"os"
 
 	"github.com/stashapp/stash/pkg/file"
@@ -96,7 +95,7 @@ func (s *Service) GetCover(ctx context.Context, scene *models.Scene) ([]byte, er
 		// fall back to the scene image blob if the file isn't present
 		screenshotExists, _ := fsutil.FileExists(filepath)
 		if screenshotExists {
-			return ioutil.ReadFile(filepath)
+			return os.ReadFile(filepath)
 		}
 	}
 
