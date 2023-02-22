@@ -2,27 +2,23 @@ import React, { useEffect } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
-import { DetailsEditNavbar, TagSelect } from "src/components/Shared";
+import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
+import { TagSelect } from "src/components/Shared/Select";
 import { Form, Col, Row } from "react-bootstrap";
-import { FormUtils, ImageUtils } from "src/utils";
+import FormUtils from "src/utils/form";
+import ImageUtils from "src/utils/image";
 import { useFormik } from "formik";
-import { Prompt, useHistory, useParams } from "react-router-dom";
+import { Prompt } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import { StringListInput } from "src/components/Shared/StringListInput";
 
 interface ITagEditPanel {
-  tag?: Partial<GQL.TagDataFragment>;
+  tag: Partial<GQL.TagDataFragment>;
   // returns id
-  onSubmit: (
-    tag: Partial<GQL.TagCreateInput | GQL.TagUpdateInput>
-  ) => Promise<string | undefined>;
+  onSubmit: (tag: Partial<GQL.TagCreateInput | GQL.TagUpdateInput>) => void;
   onCancel: () => void;
   onDelete: () => void;
   setImage: (image?: string | null) => void;
-}
-
-interface ITagEditPanelParams {
-  id?: string;
 }
 
 export const TagEditPanel: React.FC<ITagEditPanel> = ({
@@ -33,12 +29,8 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
   setImage,
 }) => {
   const intl = useIntl();
-  const history = useHistory();
 
-  const params = useParams<ITagEditPanelParams>();
-  const idParam = params.id;
-
-  const isNew = idParam === undefined;
+  const isNew = tag.id === undefined;
 
   const labelXS = 3;
   const labelXL = 3;
@@ -79,15 +71,12 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     initialValues,
     validationSchema: schema,
     enableReinitialize: true,
-    onSubmit: doSubmit,
+    onSubmit: (values) => onSubmit(getTagInput(values)),
   });
 
-  async function doSubmit(values: InputValues) {
-    const id = await onSubmit(getTagInput(values));
-    if (id) {
-      formik.resetForm({ values });
-      history.push(`/tags/${id}`);
-    }
+  // always dirty if creating a new tag with a name
+  if (isNew && tag?.name) {
+    formik.dirty = true;
   }
 
   // set up hotkeys
@@ -130,8 +119,8 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
       <Prompt
         when={formik.dirty}
-        message={(location) => {
-          if (!isNew && location.pathname.startsWith(`/tags/${tag?.id}`)) {
+        message={(location, action) => {
+          if (action === "PUSH" && location.pathname.startsWith(`/tags/`)) {
             return true;
           }
           return intl.formatMessage({ id: "dialogs.unsaved_changes" });
@@ -260,6 +249,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
         isEditing={isEditing}
         onToggleEdit={onCancel}
         onSave={() => formik.handleSubmit()}
+        saveDisabled={!formik.dirty}
         onImageChange={onImageChange}
         onImageChangeURL={setImage}
         onClearImage={() => {

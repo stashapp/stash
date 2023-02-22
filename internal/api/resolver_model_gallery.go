@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/api/loaders"
+	"github.com/stashapp/stash/internal/manager/config"
 
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/image"
@@ -145,8 +146,8 @@ func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) (ret 
 
 func (r *galleryResolver) Cover(ctx context.Context, obj *models.Gallery) (ret *models.Image, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		// find cover.jpg first
-		ret, err = image.FindGalleryCover(ctx, r.repository.Image, obj.ID)
+		// Find cover image first
+		ret, err = image.FindGalleryCover(ctx, r.repository.Image, obj.ID, config.GetInstance().GetGalleryCoverRegex())
 		return err
 	}); err != nil {
 		return nil, err

@@ -84,8 +84,10 @@
 
 | Keyboard sequence | Action |
 |-------------------|--------|
-| `r {1-5}` | Set rating |
-| `r 0` | Unset rating |
+| `r {1-5}` | Set rating (stars) |
+| `r 0` | Unset rating (stars) |
+| `r {0-9} {0-9}` | Set rating (decimal - `00` for `10.0`) |
+| ``r ` `` | Unset rating (decimal) |
 | `s s` | Save Scene |
 | `d d` | Delete Scene |
 | `Ctrl + v` | Paste Scene cover |
@@ -110,8 +112,10 @@
 | `e` | Edit Movie |
 | `s s` | Save Movie |
 | `d d` | Delete Movie |
-| `r {1-5}` | Set rating (in edit mode) |
-| `r 0` | Unset rating (in edit mode) |
+| `r {1-5}` | [Edit mode] Set rating (stars) |
+| `r 0` | [Edit mode] Unset rating (stars) |
+| `r {0-9} {0-9}` | [Edit mode] Set rating (decimal - `r 0 0` for `10.0`) |
+| ``r ` `` | [Edit mode] Unset rating (decimal) |
 | `Ctrl + v` | Paste Movie image |
 
 [//]: # "Commented until implementation is dealt with"

@@ -1,7 +1,6 @@
 import clone from "lodash-es/clone";
 import cloneDeep from "lodash-es/cloneDeep";
 import isEqual from "lodash-es/isEqual";
-import queryString from "query-string";
 import React, {
   useCallback,
   useRef,
@@ -34,7 +33,7 @@ import {
   FilterMode,
 } from "src/core/generated-graphql";
 import { useInterfaceLocalForage } from "src/hooks/LocalForage";
-import { LoadingIndicator } from "src/components/Shared";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { ListFilter } from "src/components/List/ListFilter";
 import { FilterTags } from "src/components/List/FilterTags";
 import { Pagination, PaginationIndex } from "src/components/List/Pagination";
@@ -61,7 +60,7 @@ import {
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
 import { AddFilterDialog } from "src/components/List/AddFilterDialog";
-import { TextUtils } from "src/utils";
+import TextUtils from "src/utils/text";
 import { FormattedNumber } from "react-intl";
 import { ConfigurationContext } from "./Config";
 
@@ -204,9 +203,8 @@ const useRenderList = <
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastClickedId, setLastClickedId] = useState<string>();
 
-  const [editingCriterion, setEditingCriterion] = useState<
-    Criterion<CriterionValue>
-  >();
+  const [editingCriterion, setEditingCriterion] =
+    useState<Criterion<CriterionValue>>();
   const [newCriterion, setNewCriterion] = useState(false);
 
   const result = useData(filter);
@@ -617,18 +615,18 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
         if (!prevState.queryConfig) {
           prevState.queryConfig = {};
         }
+
+        const oldFilter = prevState.queryConfig[persistanceKey]?.filter ?? "";
+        const newFilter = new URLSearchParams(oldFilter);
+        newFilter.set("disp", String(updatedFilter.displayMode));
+
         return {
           ...prevState,
           queryConfig: {
             ...prevState.queryConfig,
             [persistanceKey]: {
               ...prevState.queryConfig[persistanceKey],
-              filter: queryString.stringify({
-                ...queryString.parse(
-                  prevState.queryConfig[persistanceKey]?.filter ?? ""
-                ),
-                disp: updatedFilter.displayMode,
-              }),
+              filter: newFilter.toString(),
             },
           },
         };
@@ -637,10 +635,8 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     [persistanceKey, setInterfaceState]
   );
 
-  const {
-    data: defaultFilter,
-    loading: defaultFilterLoading,
-  } = useFindDefaultFilter(options.filterMode);
+  const { data: defaultFilter, loading: defaultFilterLoading } =
+    useFindDefaultFilter(options.filterMode);
 
   const updateQueryParams = useCallback(
     (newFilter: ListFilterModel) => {
@@ -692,10 +688,9 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
       const storedQuery = interfaceState.data?.queryConfig?.[persistanceKey];
       if (options.persistState === PersistanceLevel.VIEW && storedQuery) {
-        const storedFilter = queryString.parse(storedQuery.filter);
-        if (storedFilter.disp !== undefined) {
-          const displayMode = Number.parseInt(storedFilter.disp as string, 10);
-          newFilter.displayMode = displayMode;
+        const displayMode = new URLSearchParams(storedQuery.filter).get("disp");
+        if (displayMode) {
+          newFilter.displayMode = Number.parseInt(displayMode, 10);
         }
       }
     }

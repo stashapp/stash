@@ -17,9 +17,9 @@ import {
   Overlay,
 } from "react-bootstrap";
 
-import { Icon } from "src/components/Shared";
+import { Icon } from "../Shared/Icon";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { useFocus } from "src/utils";
+import useFocus from "src/utils/focus";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { FormattedMessage, useIntl } from "react-intl";
 import { PersistanceLevel } from "src/hooks/ListHook";
@@ -90,6 +90,13 @@ export const ListFilter: React.FC<IListFilterProps> = ({
       perPageFocus();
     }
   }, [customPageSizeShowing, perPageFocus]);
+
+  // clear search input when filter is cleared
+  useEffect(() => {
+    if (filter.searchTerm === "") {
+      queryRef.current.value = "";
+    }
+  }, [filter.searchTerm, queryRef]);
 
   function onChangePageSize(val: string) {
     if (val === "custom") {

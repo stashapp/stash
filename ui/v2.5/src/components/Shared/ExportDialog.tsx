@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Form } from "react-bootstrap";
 import { mutateExportObjects } from "src/core/StashService";
-import Modal from "src/components/Shared/Modal";
-import useToast from "src/hooks/Toast";
+import { ModalComponent } from "./Modal";
+import { useToast } from "src/hooks/Toast";
 import downloadFile from "src/utils/download";
 import { ExportObjectsInput } from "src/core/generated-graphql";
 import { useIntl } from "react-intl";
@@ -46,7 +46,7 @@ export const ExportDialog: React.FC<IExportDialogProps> = (
   }
 
   return (
-    <Modal
+    <ModalComponent
       show
       icon={faCogs}
       header={intl.formatMessage({ id: "dialogs.export_title" })}
@@ -73,6 +73,6 @@ export const ExportDialog: React.FC<IExportDialogProps> = (
           />
         </Form.Group>
       </Form>
-    </Modal>
+    </ModalComponent>
   );
 };

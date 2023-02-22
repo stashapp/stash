@@ -75,9 +75,10 @@ func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageO
 		SlowSeek:        slowSeek,
 		Columns:         cols,
 		g: &generate.Generator{
-			Encoder:     instance.FFMPEG,
-			LockManager: instance.ReadLockManager,
-			ScenePaths:  instance.Paths.Scene,
+			Encoder:      instance.FFMPEG,
+			FFMpegConfig: instance.Config,
+			LockManager:  instance.ReadLockManager,
+			ScenePaths:   instance.Paths.Scene,
 		},
 	}, nil
 }

@@ -2,8 +2,8 @@ import React, { useEffect, useState, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Button, InputGroup, Form } from "react-bootstrap";
 import debounce from "lodash-es/debounce";
-import Icon from "src/components/Shared/Icon";
-import LoadingIndicator from "src/components/Shared/LoadingIndicator";
+import { Icon } from "../Icon";
+import { LoadingIndicator } from "../LoadingIndicator";
 import { useDirectory } from "src/core/StashService";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
@@ -20,9 +20,8 @@ export const FolderSelect: React.FC<IProps> = ({
   defaultDirectories,
   appendButton,
 }) => {
-  const [debouncedDirectory, setDebouncedDirectory] = useState(
-    currentDirectory
-  );
+  const [debouncedDirectory, setDebouncedDirectory] =
+    useState(currentDirectory);
   const { data, error, loading } = useDirectory(debouncedDirectory);
   const intl = useIntl();
 

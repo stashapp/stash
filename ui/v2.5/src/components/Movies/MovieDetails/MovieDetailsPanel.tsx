@@ -1,7 +1,8 @@
 import React from "react";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
-import { DurationUtils, TextUtils } from "src/utils";
+import DurationUtils from "src/utils/duration";
+import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { TextField, URLField } from "src/utils/field";
 

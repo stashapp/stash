@@ -45,7 +45,9 @@ const stringToSeconds = (v?: string) => {
   return seconds;
 };
 
-export default {
+const DurationUtils = {
   secondsToString,
   stringToSeconds,
 };
+
+export default DurationUtils;

@@ -1,11 +1,9 @@
 import v0170 from "./v0170.md";
 
-export type Module = typeof v0170;
-
 interface IReleaseNotes {
   // handle should be in the form of YYYYMMDD
   date: number;
-  content: Module;
+  content: string;
 }
 
 export const releaseNotes: IReleaseNotes[] = [

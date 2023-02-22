@@ -1,12 +1,13 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { LoadingIndicator } from "src/components/Shared";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { SettingSection } from "./SettingSection";
 import {
   BooleanSetting,
   ModalSetting,
   NumberSetting,
   SelectSetting,
+  StringListSetting,
   StringSetting,
 } from "./Inputs";
 import { SettingStateContext } from "./context";
@@ -16,9 +17,8 @@ import {
 } from "./GeneratePreviewOptions";
 
 export const SettingsConfigurationPanel: React.FC = () => {
-  const { general, loading, error, saveGeneral } = React.useContext(
-    SettingStateContext
-  );
+  const { general, loading, error, saveGeneral } =
+    React.useContext(SettingStateContext);
 
   const transcodeQualities = [
     GQL.StreamingResolutionEnum.Low,
@@ -227,6 +227,36 @@ export const SettingsConfigurationPanel: React.FC = () => {
             </option>
           ))}
         </SelectSetting>
+
+        <StringListSetting
+          id="transcode-input-args"
+          headingID="config.general.ffmpeg.transcode.input_args.heading"
+          subHeadingID="config.general.ffmpeg.transcode.input_args.desc"
+          onChange={(v) => saveGeneral({ transcodeInputArgs: v })}
+          value={general.transcodeInputArgs ?? []}
+        />
+        <StringListSetting
+          id="transcode-output-args"
+          headingID="config.general.ffmpeg.transcode.output_args.heading"
+          subHeadingID="config.general.ffmpeg.transcode.output_args.desc"
+          onChange={(v) => saveGeneral({ transcodeOutputArgs: v })}
+          value={general.transcodeOutputArgs ?? []}
+        />
+
+        <StringListSetting
+          id="live-transcode-input-args"
+          headingID="config.general.ffmpeg.live_transcode.input_args.heading"
+          subHeadingID="config.general.ffmpeg.live_transcode.input_args.desc"
+          onChange={(v) => saveGeneral({ liveTranscodeInputArgs: v })}
+          value={general.liveTranscodeInputArgs ?? []}
+        />
+        <StringListSetting
+          id="live-transcode-output-args"
+          headingID="config.general.ffmpeg.live_transcode.output_args.heading"
+          subHeadingID="config.general.ffmpeg.live_transcode.output_args.desc"
+          onChange={(v) => saveGeneral({ liveTranscodeOutputArgs: v })}
+          value={general.liveTranscodeOutputArgs ?? []}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.general.parallel_scan_head">

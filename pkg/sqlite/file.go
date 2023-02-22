@@ -575,6 +575,23 @@ func (qb *FileStore) find(ctx context.Context, id file.ID) (file.File, error) {
 
 // FindByPath returns the first file that matches the given path. Wildcard characters are supported.
 func (qb *FileStore) FindByPath(ctx context.Context, p string) (file.File, error) {
+
+	ret, err := qb.FindAllByPath(ctx, p)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ret) == 0 {
+		return nil, nil
+	}
+
+	return ret[0], nil
+}
+
+// FindAllByPath returns all the files that match the given path.
+// Wildcard characters are supported.
+func (qb *FileStore) FindAllByPath(ctx context.Context, p string) ([]file.File, error) {
 	// separate basename from path
 	basename := filepath.Base(p)
 	dirName := filepath.Dir(p)
@@ -601,7 +618,7 @@ func (qb *FileStore) FindByPath(ctx context.Context, p string) (file.File, error
 		)
 	}
 
-	ret, err := qb.get(ctx, q)
+	ret, err := qb.getMany(ctx, q)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, fmt.Errorf("getting file by path %s: %w", p, err)
 	}
@@ -806,7 +823,9 @@ func (qb *FileStore) Query(ctx context.Context, options models.FileQueryOptions)
 	}
 	filter := qb.makeFilter(ctx, fileFilter)
 
-	query.addFilter(filter)
+	if err := query.addFilter(filter); err != nil {
+		return nil, err
+	}
 
 	qb.setQuerySort(&query, findFilter)
 	query.sortAndPagination += getPagination(findFilter)

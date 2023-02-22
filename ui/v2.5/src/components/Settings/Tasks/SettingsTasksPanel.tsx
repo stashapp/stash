@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useIntl } from "react-intl";
-import { LoadingIndicator } from "src/components/Shared";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { LibraryTasks } from "./LibraryTasks";
 import { DataManagementTasks } from "./DataManagementTasks";
 import { PluginTasks } from "./PluginTasks";

@@ -36,7 +36,7 @@ import { InputFilter } from "./Filters/InputFilter";
 import { DateFilter } from "./Filters/DateFilter";
 import { TimestampFilter } from "./Filters/TimestampFilter";
 import { CountryCriterion } from "src/models/list-filter/criteria/country";
-import { CountrySelect } from "../Shared";
+import { CountrySelect } from "../Shared/CountrySelect";
 import { StashIDCriterion } from "src/models/list-filter/criteria/stash-ids";
 import { StashIDFilter } from "./Filters/StashIDFilter";
 import { ConfigurationContext } from "src/hooks/Config";

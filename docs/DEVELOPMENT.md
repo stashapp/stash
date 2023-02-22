@@ -25,7 +25,7 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MingW. For examp
 ### macOS
 
 1. If you don't have it already, install the [Homebrew package manager](https://brew.sh).
-2. Install dependencies: `brew install go git yarn gcc make`
+2. Install dependencies: `brew install go git yarn gcc make node ffmpeg`
 
 ## Commands
 

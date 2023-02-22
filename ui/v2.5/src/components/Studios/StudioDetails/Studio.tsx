@@ -12,15 +12,13 @@ import {
   useStudioDestroy,
   mutateMetadataAutoTag,
 } from "src/core/StashService";
-import { ImageUtils } from "src/utils";
-import {
-  Counter,
-  DetailsEditNavbar,
-  Modal,
-  LoadingIndicator,
-  ErrorMessage,
-} from "src/components/Shared";
-import { useToast } from "src/hooks";
+import ImageUtils from "src/utils/image";
+import { Counter } from "src/components/Shared/Counter";
+import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
+import { ModalComponent } from "src/components/Shared/Modal";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { ErrorMessage } from "src/components/Shared/ErrorMessage";
+import { useToast } from "src/hooks/Toast";
 import { ConfigurationContext } from "src/hooks/Config";
 import { StudioScenesPanel } from "./StudioScenesPanel";
 import { StudioGalleriesPanel } from "./StudioGalleriesPanel";
@@ -65,7 +63,9 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("e", () => setIsEditing(true));
-    Mousetrap.bind("d d", () => onDelete());
+    Mousetrap.bind("d d", () => {
+      onDelete();
+    });
 
     return () => {
       Mousetrap.unbind("e");
@@ -119,7 +119,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
 
   function renderDeleteAlert() {
     return (
-      <Modal
+      <ModalComponent
         show={isDeleteAlertOpen}
         icon={faTrashAlt}
         accept={{
@@ -139,7 +139,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
             }}
           />
         </p>
-      </Modal>
+      </ModalComponent>
     );
   }
 
@@ -269,7 +269,15 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           </Tab>
           <Tab
             eventKey="performers"
-            title={intl.formatMessage({ id: "performers" })}
+            title={
+              <React.Fragment>
+                {intl.formatMessage({ id: "performers" })}
+                <Counter
+                  abbreviateCounter={abbreviateCounter}
+                  count={studio.performer_count ?? 0}
+                />
+              </React.Fragment>
+            }
           >
             <StudioPerformersPanel studio={studio} />
           </Tab>

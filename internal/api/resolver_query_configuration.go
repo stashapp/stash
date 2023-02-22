@@ -103,6 +103,7 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		MaxTranscodeSize:             &maxTranscodeSize,
 		MaxStreamingTranscodeSize:    &maxStreamingTranscodeSize,
 		WriteImageThumbnails:         config.IsWriteImageThumbnails(),
+		GalleryCoverRegex:            config.GetGalleryCoverRegex(),
 		APIKey:                       config.GetAPIKey(),
 		Username:                     config.GetUsername(),
 		Password:                     config.GetPasswordHash(),
@@ -123,6 +124,10 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		ScraperCDPPath:               &scraperCDPPath,
 		StashBoxes:                   config.GetStashBoxes(),
 		PythonPath:                   config.GetPythonPath(),
+		TranscodeInputArgs:           config.GetTranscodeInputArgs(),
+		TranscodeOutputArgs:          config.GetTranscodeOutputArgs(),
+		LiveTranscodeInputArgs:       config.GetLiveTranscodeInputArgs(),
+		LiveTranscodeOutputArgs:      config.GetLiveTranscodeOutputArgs(),
 	}
 }
 

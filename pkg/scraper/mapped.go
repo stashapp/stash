@@ -822,7 +822,7 @@ func (s mappedScraper) scrapePerformers(ctx context.Context, q mappedQuery) ([]*
 	return ret, nil
 }
 
-func (s mappedScraper) processScene(ctx context.Context, q mappedQuery, r mappedResult) *ScrapedScene {
+func (s mappedScraper) processScene(ctx context.Context, q mappedQuery, r mappedResult, resultIndex int) *ScrapedScene {
 	var ret ScrapedScene
 
 	sceneScraperConfig := s.Scene
@@ -876,9 +876,10 @@ func (s mappedScraper) processScene(ctx context.Context, q mappedQuery, r mapped
 		logger.Debug(`Processing scene studio:`)
 		studioResults := sceneStudioMap.process(ctx, q, s.Common)
 
-		if len(studioResults) > 0 {
+		if len(studioResults) > 0 && resultIndex < len(studioResults) {
 			studio := &models.ScrapedStudio{}
-			studioResults[0].apply(studio)
+			// when doing a `search` scrape get the related studio
+			studioResults[resultIndex].apply(studio)
 			ret.Studio = studio
 		}
 	}
@@ -908,9 +909,9 @@ func (s mappedScraper) scrapeScenes(ctx context.Context, q mappedQuery) ([]*Scra
 
 	logger.Debug(`Processing scenes:`)
 	results := sceneMap.process(ctx, q, s.Common)
-	for _, r := range results {
+	for i, r := range results {
 		logger.Debug(`Processing scene:`)
-		ret = append(ret, s.processScene(ctx, q, r))
+		ret = append(ret, s.processScene(ctx, q, r, i))
 	}
 
 	return ret, nil
@@ -928,7 +929,7 @@ func (s mappedScraper) scrapeScene(ctx context.Context, q mappedQuery) (*Scraped
 	logger.Debug(`Processing scene:`)
 	results := sceneMap.process(ctx, q, s.Common)
 	if len(results) > 0 {
-		ret = s.processScene(ctx, q, results[0])
+		ret = s.processScene(ctx, q, results[0], 0)
 	}
 
 	return ret, nil

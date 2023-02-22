@@ -7,23 +7,25 @@ import {
   queryScrapeMovieURL,
   useListMovieScrapers,
 } from "src/core/StashService";
-import {
-  LoadingIndicator,
-  StudioSelect,
-  DetailsEditNavbar,
-  DurationInput,
-  URLField,
-} from "src/components/Shared";
-import { useToast } from "src/hooks";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { StudioSelect } from "src/components/Shared/Select";
+import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
+import { DurationInput } from "src/components/Shared/DurationInput";
+import { URLField } from "src/components/Shared/URLField";
+import { useToast } from "src/hooks/Toast";
 import { Modal as BSModal, Form, Button, Col, Row } from "react-bootstrap";
-import { DurationUtils, FormUtils, ImageUtils } from "src/utils";
+import DurationUtils from "src/utils/duration";
+import FormUtils from "src/utils/form";
+import ImageUtils from "src/utils/image";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { MovieScrapeDialog } from "./MovieScrapeDialog";
+import { useRatingKeybinds } from "src/hooks/keybinds";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface IMovieEditPanel {
-  movie?: Partial<GQL.MovieDataFragment>;
+  movie: Partial<GQL.MovieDataFragment>;
   onSubmit: (
     movie: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput>
   ) => void;
@@ -45,20 +47,17 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
 }) => {
   const intl = useIntl();
   const Toast = useToast();
+  const { configuration: stashConfig } = React.useContext(ConfigurationContext);
 
-  const isNew = movie === undefined;
+  const isNew = movie.id === undefined;
 
   const [isLoading, setIsLoading] = useState(false);
   const [isImageAlertOpen, setIsImageAlertOpen] = useState<boolean>(false);
 
-  const [imageClipboard, setImageClipboard] = useState<string | undefined>(
-    undefined
-  );
+  const [imageClipboard, setImageClipboard] = useState<string>();
 
   const Scrapers = useListMovieScrapers();
-  const [scrapedMovie, setScrapedMovie] = useState<
-    GQL.ScrapedMovie | undefined
-  >();
+  const [scrapedMovie, setScrapedMovie] = useState<GQL.ScrapedMovie>();
 
   const schema = yup.object({
     name: yup.string().required(),
@@ -110,23 +109,23 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     setBackImage(formik.values.back_image);
   }, [formik.values.back_image, setBackImage]);
 
-  useEffect(() => onImageEncoding(encodingImage), [
-    onImageEncoding,
-    encodingImage,
-  ]);
+  useEffect(
+    () => onImageEncoding(encodingImage),
+    [onImageEncoding, encodingImage]
+  );
 
   function setRating(v: number) {
     formik.setFieldValue("rating100", v);
   }
 
+  useRatingKeybinds(
+    true,
+    stashConfig?.ui?.ratingSystemOptions?.type,
+    setRating
+  );
+
   // set up hotkeys
   useEffect(() => {
-    Mousetrap.bind("r 0", () => setRating(NaN));
-    Mousetrap.bind("r 1", () => setRating(20));
-    Mousetrap.bind("r 2", () => setRating(40));
-    Mousetrap.bind("r 3", () => setRating(60));
-    Mousetrap.bind("r 4", () => setRating(80));
-    Mousetrap.bind("r 5", () => setRating(100));
     // Mousetrap.bind("u", (e) => {
     //   setStudioFocus()
     //   e.preventDefault();
@@ -134,12 +133,6 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     Mousetrap.bind("s s", () => formik.handleSubmit());
 
     return () => {
-      Mousetrap.unbind("r 0");
-      Mousetrap.unbind("r 1");
-      Mousetrap.unbind("r 2");
-      Mousetrap.unbind("r 3");
-      Mousetrap.unbind("r 4");
-      Mousetrap.unbind("r 5");
       // Mousetrap.unbind("u");
       Mousetrap.unbind("s s");
     };

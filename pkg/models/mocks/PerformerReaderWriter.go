@@ -427,6 +427,27 @@ func (_m *PerformerReaderWriter) Query(ctx context.Context, performerFilter *mod
 	return r0, r1, r2
 }
 
+// QueryCount provides a mock function with given fields: ctx, galleryFilter, findFilter
+func (_m *PerformerReaderWriter) QueryCount(ctx context.Context, galleryFilter *models.PerformerFilterType, findFilter *models.FindFilterType) (int, error) {
+	ret := _m.Called(ctx, galleryFilter, findFilter)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, *models.PerformerFilterType, *models.FindFilterType) int); ok {
+		r0 = rf(ctx, galleryFilter, findFilter)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *models.PerformerFilterType, *models.FindFilterType) error); ok {
+		r1 = rf(ctx, galleryFilter, findFilter)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // QueryForAutoTag provides a mock function with given fields: ctx, words
 func (_m *PerformerReaderWriter) QueryForAutoTag(ctx context.Context, words []string) ([]*models.Performer, error) {
 	ret := _m.Called(ctx, words)

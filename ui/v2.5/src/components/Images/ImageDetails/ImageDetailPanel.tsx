@@ -1,8 +1,9 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { TextUtils } from "src/utils";
-import { TagLink, TruncatedText } from "src/components/Shared";
+import TextUtils from "src/utils/text";
+import { TagLink } from "src/components/Shared/TagLink";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { sortPerformers } from "src/core/performers";

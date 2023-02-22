@@ -9,13 +9,11 @@ import {
   useMovieDestroy,
 } from "src/core/StashService";
 import { useParams, useHistory } from "react-router-dom";
-import {
-  DetailsEditNavbar,
-  ErrorMessage,
-  LoadingIndicator,
-  Modal,
-} from "src/components/Shared";
-import { useToast } from "src/hooks";
+import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
+import { ErrorMessage } from "src/components/Shared/ErrorMessage";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { ModalComponent } from "src/components/Shared/Modal";
+import { useToast } from "src/hooks/Toast";
 import { MovieScenesPanel } from "./MovieScenesPanel";
 import { MovieDetailsPanel } from "./MovieDetailsPanel";
 import { MovieEditPanel } from "./MovieEditPanel";
@@ -51,7 +49,9 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("e", () => setIsEditing(true));
-    Mousetrap.bind("d d", () => onDelete());
+    Mousetrap.bind("d d", () => {
+      onDelete();
+    });
 
     return () => {
       Mousetrap.unbind("e");
@@ -109,7 +109,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
 
   function renderDeleteAlert() {
     return (
-      <Modal
+      <ModalComponent
         show={isDeleteAlertOpen}
         icon={faTrashAlt}
         accept={{
@@ -129,7 +129,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
             }}
           />
         </p>
-      </Modal>
+      </ModalComponent>
     );
   }
 
