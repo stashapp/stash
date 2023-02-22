@@ -187,9 +187,9 @@
       "new_version_notice": "[Nouveautés]",
       "release_date": "Date de sortie :",
       "stash_discord": "Rejoignez notre chaine {url}",
-      "stash_home": "Accueil Stash sur {url}",
+      "stash_home": "Accueil de Stash sur {url}",
       "stash_open_collective": "Soutenez-nous via {url}",
-      "stash_wiki": "Page {url} Stash",
+      "stash_wiki": "{url} de Stash",
       "version": "Version actuelle"
     },
     "application_paths": {
