@@ -349,8 +349,9 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = ({
         &lt;
       </Button>
       <div ref={contentEl} className="scrubber-content">
+        <div className="scrubber-tags-background" />
         <div
-          className="scrubber-tags-background"
+          className="scrubber-heatmap"
           style={{
             backgroundImage: scene.paths.interactive_heatmap
               ? `url(${scene.paths.interactive_heatmap})`
