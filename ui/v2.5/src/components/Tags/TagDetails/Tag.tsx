@@ -310,6 +310,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
           <Tabs
             id="tag-tabs"
             mountOnEnter
+            unmountOnExit
             activeKey={activeTabKey}
             onSelect={setActiveTabKey}
           >
@@ -325,7 +326,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 </React.Fragment>
               }
             >
-              <TagScenesPanel tag={tag} />
+              <TagScenesPanel active={activeTabKey == "scenes"} tag={tag} />
             </Tab>
             <Tab
               eventKey="images"
@@ -339,7 +340,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 </React.Fragment>
               }
             >
-              <TagImagesPanel tag={tag} />
+              <TagImagesPanel active={activeTabKey == "images"} tag={tag} />
             </Tab>
             <Tab
               eventKey="galleries"
@@ -353,7 +354,10 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 </React.Fragment>
               }
             >
-              <TagGalleriesPanel tag={tag} />
+              <TagGalleriesPanel
+                active={activeTabKey == "galleries"}
+                tag={tag}
+              />
             </Tab>
             <Tab
               eventKey="markers"
@@ -367,7 +371,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 </React.Fragment>
               }
             >
-              <TagMarkersPanel tag={tag} />
+              <TagMarkersPanel active={activeTabKey == "markers"} tag={tag} />
             </Tab>
             <Tab
               eventKey="performers"
@@ -381,7 +385,10 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 </React.Fragment>
               }
             >
-              <TagPerformersPanel tag={tag} />
+              <TagPerformersPanel
+                active={activeTabKey == "performers"}
+                tag={tag}
+              />
             </Tab>
           </Tabs>
         </div>

@@ -11,10 +11,14 @@ import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { galleryTitle } from "src/core/galleries";
 
 interface IGalleryAddProps {
+  active: boolean;
   gallery: GQL.GalleryDataFragment;
 }
 
-export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({ gallery }) => {
+export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({
+  active,
+  gallery,
+}) => {
   const Toast = useToast();
   const intl = useIntl();
 
@@ -93,6 +97,10 @@ export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({ gallery }) => {
   ];
 
   return (
-    <ImageList filterHook={filterHook} extraOperations={otherOperations} />
+    <ImageList
+      filterHook={filterHook}
+      extraOperations={otherOperations}
+      alterQuery={active}
+    />
   );
 };

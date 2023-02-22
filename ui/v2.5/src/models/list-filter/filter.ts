@@ -54,7 +54,7 @@ export class ListFilterModel {
 
   public constructor(
     mode: FilterMode,
-    config: ConfigDataFragment | undefined,
+    config?: ConfigDataFragment,
     defaultSort?: string,
     defaultDisplayMode?: DisplayMode,
     defaultZoomIndex?: number

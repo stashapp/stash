@@ -34,11 +34,13 @@ const StudioItemList = makeItemList({
 interface IStudioList {
   fromParent?: boolean;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  alterQuery?: boolean;
 }
 
 export const StudioList: React.FC<IStudioList> = ({
   fromParent,
   filterHook,
+  alterQuery,
 }) => {
   const intl = useIntl();
   const history = useHistory();
@@ -184,6 +186,7 @@ export const StudioList: React.FC<IStudioList> = ({
       selectable
       filterHook={filterHook}
       persistState={fromParent ? PersistanceLevel.NONE : PersistanceLevel.ALL}
+      alterQuery={alterQuery}
       otherOperations={otherOperations}
       addKeybinds={addKeybinds}
       renderContent={renderContent}

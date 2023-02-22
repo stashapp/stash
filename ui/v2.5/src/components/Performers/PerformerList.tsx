@@ -37,12 +37,14 @@ const PerformerItemList = makeItemList({
 interface IPerformerList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   persistState?: PersistanceLevel;
+  alterQuery?: boolean;
   extraCriteria?: IPerformerCardExtraCriteria;
 }
 
 export const PerformerList: React.FC<IPerformerList> = ({
   filterHook,
   persistState,
+  alterQuery,
   extraCriteria,
 }) => {
   const intl = useIntl();
@@ -203,6 +205,7 @@ export const PerformerList: React.FC<IPerformerList> = ({
       selectable
       filterHook={filterHook}
       persistState={persistState}
+      alterQuery={alterQuery}
       otherOperations={otherOperations}
       addKeybinds={addKeybinds}
       renderContent={renderContent}

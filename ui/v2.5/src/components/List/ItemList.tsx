@@ -88,6 +88,7 @@ interface IItemListProps<T extends QueryResult, E extends IDataItem> {
   ) => React.ReactNode;
   zoomable?: boolean;
   selectable?: boolean;
+  alterQuery?: boolean;
   defaultZoomIndex?: number;
   otherOperations?: IItemListOperation<T>[];
   renderContent: (
@@ -118,6 +119,12 @@ const getSelectedData = <I extends IDataItem>(
   selectedIds: Set<string>
 ) => data.filter((value) => selectedIds.has(value.id));
 
+/**
+ * A factory function for ItemList components.
+ * IMPORTANT: as the component manipulates the URL query string, if there are
+ * ever multiple ItemLists rendered at once, all but one of them need to have
+ * `alterQuery` set to false to prevent conflicts.
+ */
 export function makeItemList<T extends QueryResult, E extends IDataItem>({
   filterMode,
   useResult,
@@ -522,10 +529,11 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
   const ItemList: React.FC<IItemListProps<T, E>> = (props) => {
     const {
       persistState,
-      persistanceKey: _persistanceKey,
-      defaultSort: _defaultSort,
+      persistanceKey = filterMode,
+      defaultSort = filterOptions.defaultSortBy,
       filterHook,
       defaultZoomIndex,
+      alterQuery = true,
     } = props;
 
     const history = useHistory();
@@ -533,24 +541,12 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     const [interfaceState, setInterfaceState] = useInterfaceLocalForage();
     const [filterInitialised, setFilterInitialised] = useState(false);
     const { configuration: config } = useContext(ConfigurationContext);
-    // Store initial pathname to prevent hooks from operating outside this page
-    const originalPathName = useRef(location.pathname);
-    const persistanceKey = _persistanceKey ?? filterMode;
 
-    const defaultSort = _defaultSort ?? filterOptions.defaultSortBy;
+    const lastPathname = useRef(location.pathname);
     const defaultDisplayMode = filterOptions.displayModeOptions[0];
-    const createNewFilter = useCallback(() => {
-      const filter = new ListFilterModel(
-        filterMode,
-        config,
-        defaultSort,
-        defaultDisplayMode,
-        defaultZoomIndex
-      );
-      filter.configureFromQueryString(history.location.search);
-      return filter;
-    }, [config, history, defaultSort, defaultDisplayMode, defaultZoomIndex]);
-    const [filter, setFilter] = useState<ListFilterModel>(createNewFilter);
+    const [filter, setFilter] = useState<ListFilterModel>(
+      () => new ListFilterModel(filterMode)
+    );
 
     const updateSavedFilter = useCallback(
       (updatedFilter: ListFilterModel) => {
@@ -583,10 +579,12 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
 
     const updateQueryParams = useCallback(
       (newFilter: ListFilterModel) => {
+        if (!alterQuery) return;
+
         const newParams = newFilter.makeQueryParameters();
         history.replace({ ...history.location, search: newParams });
       },
-      [history]
+      [alterQuery, history]
     );
 
     const updateFilter = useCallback(
@@ -605,11 +603,22 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       // Only run once
       if (filterInitialised) return;
 
-      let newFilter = filter.clone();
+      let newFilter = new ListFilterModel(
+        filterMode,
+        config,
+        defaultSort,
+        defaultDisplayMode,
+        defaultZoomIndex
+      );
+      let loadDefault = true;
+      if (alterQuery && location.search) {
+        loadDefault = false;
+        newFilter.configureFromQueryString(location.search);
+      }
 
       if (persistState === PersistanceLevel.ALL) {
-        // only set default filter if query params are empty
-        if (!history.location.search) {
+        // only set default filter if uninitialised
+        if (loadDefault) {
           // wait until default filter is loaded
           if (defaultFilterLoading) return;
 
@@ -647,8 +656,12 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       setFilterInitialised(true);
     }, [
       filterInitialised,
-      filter,
-      history,
+      location,
+      config,
+      defaultSort,
+      defaultDisplayMode,
+      defaultZoomIndex,
+      alterQuery,
       persistState,
       updateQueryParams,
       defaultFilter,
@@ -660,20 +673,22 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     // This hook runs on every page location change (ie navigation),
     // and updates the filter accordingly.
     useEffect(() => {
-      if (!filterInitialised) return;
+      if (!filterInitialised || !alterQuery) return;
 
-      // Only update on page the hook was mounted on
-      if (location.pathname !== originalPathName.current) {
-        return;
-      }
-
-      // Re-init filters on empty new query params
-      if (!location.search) {
-        setFilter(createNewFilter);
+      // re-init if the pathname has changed
+      if (location.pathname !== lastPathname.current) {
+        lastPathname.current = location.pathname;
         setFilterInitialised(false);
         return;
       }
 
+      // re-init to load default filter on empty new query params
+      if (!location.search) {
+        setFilterInitialised(false);
+        return;
+      }
+
+      // the query has changed, update filter if necessary
       setFilter((prevFilter) => {
         let newFilter = prevFilter.clone();
         newFilter.configureFromQueryString(location.search);
@@ -683,7 +698,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
           return prevFilter;
         }
       });
-    }, [filterInitialised, createNewFilter, location]);
+    }, [filterInitialised, alterQuery, location]);
 
     const onChangePage = useCallback(
       (page: number) => {

@@ -231,6 +231,7 @@ interface IImageList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   persistState?: PersistanceLevel;
   persistanceKey?: string;
+  alterQuery?: boolean;
   extraOperations?: IItemListOperation<GQL.FindImagesQueryResult>[];
 }
 
@@ -238,6 +239,7 @@ export const ImageList: React.FC<IImageList> = ({
   filterHook,
   persistState,
   persistanceKey,
+  alterQuery,
   extraOperations,
 }) => {
   const intl = useIntl();
@@ -377,6 +379,7 @@ export const ImageList: React.FC<IImageList> = ({
       filterHook={filterHook}
       persistState={persistState}
       persistanceKey={persistanceKey}
+      alterQuery={alterQuery}
       otherOperations={otherOperations}
       addKeybinds={addKeybinds}
       renderContent={renderContent}

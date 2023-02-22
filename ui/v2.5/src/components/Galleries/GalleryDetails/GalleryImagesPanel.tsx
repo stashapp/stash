@@ -14,10 +14,12 @@ import { faMinus } from "@fortawesome/free-solid-svg-icons";
 import { galleryTitle } from "src/core/galleries";
 
 interface IGalleryDetailsProps {
+  active: boolean;
   gallery: GQL.GalleryDataFragment;
 }
 
 export const GalleryImagesPanel: React.FC<IGalleryDetailsProps> = ({
+  active,
   gallery,
 }) => {
   const intl = useIntl();
@@ -98,6 +100,7 @@ export const GalleryImagesPanel: React.FC<IGalleryDetailsProps> = ({
   return (
     <ImageList
       filterHook={filterHook}
+      alterQuery={active}
       extraOperations={otherOperations}
       persistState={PersistanceLevel.VIEW}
       persistanceKey="galleryimages"

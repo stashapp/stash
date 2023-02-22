@@ -34,9 +34,10 @@ const MovieItemList = makeItemList({
 
 interface IMovieList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  alterQuery?: boolean;
 }
 
-export const MovieList: React.FC<IMovieList> = ({ filterHook }) => {
+export const MovieList: React.FC<IMovieList> = ({ filterHook, alterQuery }) => {
   const intl = useIntl();
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
@@ -183,6 +184,7 @@ export const MovieList: React.FC<IMovieList> = ({ filterHook }) => {
       selectable
       filterHook={filterHook}
       persistState={PersistanceLevel.ALL}
+      alterQuery={alterQuery}
       otherOperations={otherOperations}
       addKeybinds={addKeybinds}
       renderContent={renderContent}

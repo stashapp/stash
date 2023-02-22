@@ -31,6 +31,7 @@ import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 
 interface ITagList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  alterQuery?: boolean;
 }
 
 const TagItemList = makeItemList({
@@ -44,7 +45,7 @@ const TagItemList = makeItemList({
   },
 });
 
-export const TagList: React.FC<ITagList> = ({ filterHook }) => {
+export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
   const Toast = useToast();
   const [deletingTag, setDeletingTag] =
     useState<Partial<GQL.TagDataFragment> | null>(null);
@@ -365,6 +366,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
       defaultZoomIndex={0}
       filterHook={filterHook}
       persistState={PersistanceLevel.ALL}
+      alterQuery={alterQuery}
       otherOperations={otherOperations}
       addKeybinds={addKeybinds}
       renderContent={renderContent}

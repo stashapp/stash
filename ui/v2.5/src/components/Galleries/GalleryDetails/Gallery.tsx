@@ -254,10 +254,16 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
 
         <Tab.Content>
           <Tab.Pane eventKey="images">
-            <GalleryImagesPanel gallery={gallery} />
+            <GalleryImagesPanel
+              active={activeRightTabKey == "images"}
+              gallery={gallery}
+            />
           </Tab.Pane>
           <Tab.Pane eventKey="add">
-            <GalleryAddPanel gallery={gallery} />
+            <GalleryAddPanel
+              active={activeRightTabKey == "add"}
+              gallery={gallery}
+            />
           </Tab.Pane>
         </Tab.Content>
       </Tab.Container>

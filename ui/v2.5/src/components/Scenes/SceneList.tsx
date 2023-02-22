@@ -78,13 +78,15 @@ const SceneItemList = makeItemList({
 interface ISceneList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   defaultSort?: string;
-  persistState?: PersistanceLevel.ALL;
+  persistState?: PersistanceLevel;
+  alterQuery?: boolean;
 }
 
 export const SceneList: React.FC<ISceneList> = ({
   filterHook,
   defaultSort,
   persistState,
+  alterQuery,
 }) => {
   const intl = useIntl();
   const history = useHistory();
@@ -355,6 +357,7 @@ export const SceneList: React.FC<ISceneList> = ({
         selectable
         filterHook={filterHook}
         persistState={persistState}
+        alterQuery={alterQuery}
         otherOperations={otherOperations}
         addKeybinds={addKeybinds}
         defaultSort={defaultSort}

@@ -34,11 +34,13 @@ const GalleryItemList = makeItemList({
 interface IGalleryList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   persistState?: PersistanceLevel;
+  alterQuery?: boolean;
 }
 
 export const GalleryList: React.FC<IGalleryList> = ({
   filterHook,
   persistState,
+  alterQuery,
 }) => {
   const intl = useIntl();
   const history = useHistory();
@@ -228,6 +230,7 @@ export const GalleryList: React.FC<IGalleryList> = ({
       selectable
       filterHook={filterHook}
       persistState={persistState}
+      alterQuery={alterQuery}
       otherOperations={otherOperations}
       addKeybinds={addKeybinds}
       renderContent={renderContent}

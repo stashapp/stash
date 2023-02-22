@@ -27,9 +27,13 @@ const SceneMarkerItemList = makeItemList({
 
 interface ISceneMarkerList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  alterQuery?: boolean;
 }
 
-export const SceneMarkerList: React.FC<ISceneMarkerList> = ({ filterHook }) => {
+export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
+  filterHook,
+  alterQuery,
+}) => {
   const intl = useIntl();
   const history = useHistory();
 
@@ -93,6 +97,7 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({ filterHook }) => {
     <SceneMarkerItemList
       filterHook={filterHook}
       persistState={PersistanceLevel.ALL}
+      alterQuery={alterQuery}
       otherOperations={otherOperations}
       addKeybinds={addKeybinds}
       renderContent={renderContent}

@@ -5,10 +5,14 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { SceneList } from "src/components/Scenes/SceneList";
 
 interface IMovieScenesPanel {
+  active: boolean;
   movie: GQL.MovieDataFragment;
 }
 
-export const MovieScenesPanel: React.FC<IMovieScenesPanel> = ({ movie }) => {
+export const MovieScenesPanel: React.FC<IMovieScenesPanel> = ({
+  active,
+  movie,
+}) => {
   function filterHook(filter: ListFilterModel) {
     const movieValue = { id: movie.id, label: movie.name };
     // if movie is already present, then we modify it, otherwise add
@@ -43,7 +47,11 @@ export const MovieScenesPanel: React.FC<IMovieScenesPanel> = ({ movie }) => {
 
   if (movie && movie.id) {
     return (
-      <SceneList filterHook={filterHook} defaultSort="movie_scene_number" />
+      <SceneList
+        filterHook={filterHook}
+        defaultSort="movie_scene_number"
+        alterQuery={active}
+      />
     );
   }
   return <></>;
