@@ -1,4 +1,4 @@
-import { Form, Col, Row, Button, FormControl, Modal } from "react-bootstrap";
+import { Form, Col, Row, Button, FormControl } from "react-bootstrap";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "../Shared/Icon";
@@ -29,6 +29,7 @@ import {
 } from "./SceneDetails/SceneScrapeDialog";
 import { galleryTitle } from "src/core/galleries";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
+import { ModalComponent } from "../Shared/Modal";
 
 interface IStashIDsField {
   values: GQL.StashId[];
@@ -655,7 +656,7 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
   }
 
   return (
-    <Modal
+    <ModalComponent
       show={show}
       header={title}
       icon={faSignInAlt}
@@ -723,6 +724,6 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
           </Form.Group>
         </div>
       </div>
-    </Modal>
+    </ModalComponent>
   );
 };
