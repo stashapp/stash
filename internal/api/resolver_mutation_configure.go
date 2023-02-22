@@ -191,6 +191,16 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.WriteImageThumbnails, *input.WriteImageThumbnails)
 	}
 
+	if input.GalleryCoverRegex != nil {
+
+		_, err := regexp.Compile(*input.GalleryCoverRegex)
+		if err != nil {
+			return makeConfigGeneralResult(), fmt.Errorf("Gallery cover regex '%v' invalid, '%v'", *input.GalleryCoverRegex, err.Error())
+		}
+
+		c.Set(config.GalleryCoverRegex, *input.GalleryCoverRegex)
+	}
+
 	if input.Username != nil {
 		c.Set(config.Username, input.Username)
 	}
