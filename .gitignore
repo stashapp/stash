@@ -60,6 +60,15 @@ node_modules
 
 *.db
 
-/stash
 dist
 .DS_Store
+
+####
+# stash
+####
+/stash
+ui/**/package-lock.json
+ui/**/yarn.lock
+config.yml
+icon.png
+stash-go.sqlite
