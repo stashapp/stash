@@ -350,6 +350,14 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = ({
       </Button>
       <div ref={contentEl} className="scrubber-content">
         <div className="scrubber-tags-background" />
+        <div
+          className="scrubber-heatmap"
+          style={{
+            backgroundImage: scene.paths.interactive_heatmap
+              ? `url(${scene.paths.interactive_heatmap})`
+              : undefined,
+          }}
+        />
         <div ref={indicatorEl} id="scrubber-position-indicator" />
         <div id="scrubber-current-position" />
         <div className="scrubber-viewport">
