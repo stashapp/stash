@@ -268,7 +268,7 @@
       "create_galleries_from_folders_label": "Créer des galeries à partir de dossiers contenant des images",
       "db_path_head": "Chemin de la base de données",
       "directory_locations_to_your_content": "Emplacements de votre contenu",
-      "excluded_image_gallery_patterns_desc": "Expression régulière de fichiers images et galeries ou de chemins d'accès à exclure de l'analyse et à ajouter au nettoyage",
+      "excluded_image_gallery_patterns_desc": "Expressions régulières de fichiers images et galeries ou de chemins d'accès à exclure de l'analyse et à ajouter au nettoyage",
       "excluded_image_gallery_patterns_head": "Modèles d'image ou galerie exclus",
       "excluded_video_patterns_desc": "Expressions régulières de fichiers vidéo ou de chemins d'accès à exclure de l'analyse et à ajouter au nettoyage",
       "excluded_video_patterns_head": "Modèles de vidéo exclus",
@@ -294,6 +294,8 @@
           }
         }
       },
+      "gallery_cover_regex_desc": "Expression régulière utilisée pour identifier une image comme vignette de la galerie",
+      "gallery_cover_regex_label": "Modèle de vignette de la galerie",
       "gallery_ext_desc": "Liste d'extensions de fichiers séparées par des virgules qui seront reconnues comme des archives zip de la galerie.",
       "gallery_ext_head": "Extensions zip de la galerie",
       "generated_file_naming_hash_desc": "Utilisez MD5 ou oshash pour le nommage des fichiers générés. Le modifier exige que toutes les scènes soient renseignées avec une valeur MD5/oshash appropriée. Après avoir modifié cette valeur, les fichiers générés existants devront être migrés ou régénérés. Voir la page Tâches pour la migration.",
