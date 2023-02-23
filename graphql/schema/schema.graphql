@@ -144,6 +144,10 @@ type Query {
 
   # Get everything
 
+  allScenes: [Scene!]!
+  allSceneMarkers: [SceneMarker!]!
+  allImages: [Image!]!
+  allGalleries: [Gallery!]!
   allPerformers: [Performer!]!
   allStudios: [Studio!]!
   allMovies: [Movie!]!

@@ -1,14 +1,17 @@
 import React from "react";
 import { useIntl } from "react-intl";
-import { CountryFlag } from "src/components/Shared";
-import { getCountryByISO } from "src/utils";
+import { CountryFlag } from "./CountryFlag";
+import { getCountryByISO } from "src/utils/country";
 
 interface IProps {
   country: string | undefined;
   showFlag?: boolean;
 }
 
-const CountryLabel: React.FC<IProps> = ({ country, showFlag = true }) => {
+export const CountryLabel: React.FC<IProps> = ({
+  country,
+  showFlag = true,
+}) => {
   const { locale } = useIntl();
 
   // #3063 - use alpha2 values only
@@ -22,5 +25,3 @@ const CountryLabel: React.FC<IProps> = ({ country, showFlag = true }) => {
     </div>
   );
 };
-
-export default CountryLabel;

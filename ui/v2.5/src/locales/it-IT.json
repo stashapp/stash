@@ -265,6 +265,8 @@
       "chrome_cdp_path_desc": "Percorso all'eseguibile di Chrome, o indirizzo remoto (iniziando con http:// o https://, per esempio http://localhost:9222/json/version) verso un'istanza Chrome.",
       "create_galleries_from_folders_desc": "Se spuntato, crea gallerie dalle cartelle che contengono immagini.",
       "create_galleries_from_folders_label": "Crea gallerie dalle cartelle con immagini",
+      "gallery_cover_regex_desc": "Espressione regolare usata per identificare un immagine come copertina di galleria",
+      "gallery_cover_regex_label": "Schema copertina di galleria",
       "db_path_head": "Percorso del Database",
       "directory_locations_to_your_content": "Percorso della Cartella del tuo contenuto",
       "excluded_image_gallery_patterns_desc": "Espressioni Regolari di file/percorsi di immagini e gallerie per escluderle dalla Scansione e aggiungerle alla Pulizia",
@@ -1055,7 +1057,7 @@
       "your_system_has_been_created": "Successo! Il vostro sistema è stato creato!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash cerca di trovare il file di configurazione (<code>config.yml</code>) dall'attuale cartella di lavoro inizialmente e se non lo trova lì, cerca in <code>$HOME/.stash/config.yml</code> (sotto Windows, sarà <code>%USERPROFILE%\\.stash\\config.yml</code>). Potete far leggere a Stash un specifico file di configurazione lanciandolo con l'opzione <code>-c <percorso al file></code> o <code>--config <percorso al file></code>.",
+      "config_path_logic_explained": "Stash cerca di trovare il file di configurazione (<code>config.yml</code>) dall'attuale cartella di lavoro inizialmente e se non lo trova lì, cerca in <code>$HOME/.stash/config.yml</code> (sotto Windows, sarà <code>%USERPROFILE%\\.stash\\config.yml</code>). Potete far leggere a Stash un specifico file di configurazione lanciandolo con l'opzione <code>-c '<percorso al file>'</code> o <code>--config '<percorso al file>'</code>.",
       "in_current_stash_directory": "Nella cartella <code>$HOME/.stash</code>",
       "in_the_current_working_directory": "Nell'attuale cartella di lavoro",
       "next_step": "Dopo tutto questo, se siete pronti a procedere con la configurazione di un nuovo sistema, scegliete dove vorreste salvare il file di configurazione e premete Prossimo.",

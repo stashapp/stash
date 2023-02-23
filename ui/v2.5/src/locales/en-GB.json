@@ -266,6 +266,8 @@
       "chrome_cdp_path_desc": "File path to the Chrome executable, or a remote address (starting with http:// or https://, for example http://localhost:9222/json/version) to a Chrome instance.",
       "create_galleries_from_folders_desc": "If true, creates galleries from folders containing images.",
       "create_galleries_from_folders_label": "Create galleries from folders containing images",
+      "gallery_cover_regex_desc": "Regexp used to identify an image as gallery cover",
+      "gallery_cover_regex_label": "Gallery cover pattern",
       "db_path_head": "Database Path",
       "directory_locations_to_your_content": "Directory locations to your content",
       "excluded_image_gallery_patterns_desc": "Regexps of image and gallery files/paths to exclude from Scan and add to Clean",
@@ -298,6 +300,8 @@
             "desc": "Uses available hardware to encode video for live transcoding."
         }
       },
+      "funscript_heatmap_draw_range": "Include range in generated heatmaps",
+      "funscript_heatmap_draw_range_desc": "Draw range of motion on the y-axis of the generated heatmap. Existing heatmaps will need to be regenerated after changing.",
       "gallery_ext_desc": "Comma-delimited list of file extensions that will be identified as gallery zip files.",
       "gallery_ext_head": "Gallery zip Extensions",
       "generated_file_naming_hash_desc": "Use MD5 or oshash for generated file naming. Changing this requires that all scenes have the applicable MD5/oshash value populated. After changing this value, existing generated files will need to be migrated or regenerated. See Tasks page for migration.",
@@ -305,6 +309,7 @@
       "generated_files_location": "Directory location for the generated files (scene markers, scene previews, sprites, etc)",
       "generated_path_head": "Generated Path",
       "hashing": "Hashing",
+      "heatmap_generation": "Funscript Heatmap Generation",
       "image_ext_desc": "Comma-delimited list of file extensions that will be identified as images.",
       "image_ext_head": "Image Extensions",
       "include_audio_desc": "Includes audio stream when generating previews.",
@@ -515,7 +520,8 @@
             "options": {
               "full": "Full",
               "half": "Half",
-              "quarter": "Quarter"
+              "quarter": "Quarter",
+              "tenth": "Tenth"
             }
           }
         },
@@ -1080,7 +1086,7 @@
       "your_system_has_been_created": "Success! Your system has been created!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash tries to find its configuration file (<code>config.yml</code>) from the current working directory first, and if it does not find it there, it falls back to <code>$HOME/.stash/config.yml</code> (on Windows, this will be <code>%USERPROFILE%\\.stash\\config.yml</code>). You can also make Stash read from a specific configuration file by running it with the <code>-c <path to config file></code> or <code>--config <path to config file></code> options.",
+      "config_path_logic_explained": "Stash tries to find its configuration file (<code>config.yml</code>) from the current working directory first, and if it does not find it there, it falls back to <code>$HOME/.stash/config.yml</code> (on Windows, this will be <code>%USERPROFILE%\\.stash\\config.yml</code>). You can also make Stash read from a specific configuration file by running it with the <code>-c '<path to config file>'</code> or <code>--config '<path to config file>'</code> options.",
       "in_current_stash_directory": "In the <code>$HOME/.stash</code> directory",
       "in_the_current_working_directory": "In the current working directory",
       "next_step": "With all of that out of the way, if you're ready to proceed with setting up a new system, choose where you'd like to store your configuration file and click Next.",

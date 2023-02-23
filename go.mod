@@ -58,6 +58,7 @@ require (
 	github.com/vearutop/statigz v1.1.6
 	github.com/vektah/dataloaden v0.3.0
 	github.com/vektah/gqlparser/v2 v2.4.1
+	github.com/xWTF/chardet v0.0.0-20230208095535-c780f2ac244e
 	gopkg.in/guregu/null.v4 v4.0.0
 )
 

@@ -8,13 +8,10 @@ import {
   useSceneMarkerUpdate,
   useSceneMarkerDestroy,
 } from "src/core/StashService";
-import {
-  DurationInput,
-  TagSelect,
-  MarkerTitleSuggest,
-} from "src/components/Shared";
+import { DurationInput } from "src/components/Shared/DurationInput";
+import { TagSelect, MarkerTitleSuggest } from "src/components/Shared/Select";
 import { getPlayerPosition } from "src/components/ScenePlayer/util";
-import useToast from "src/hooks/Toast";
+import { useToast } from "src/hooks/Toast";
 
 interface IFormFields {
   title: string;

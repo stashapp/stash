@@ -639,7 +639,9 @@ func (qb *PerformerStore) makeQuery(ctx context.Context, performerFilter *models
 	}
 	filter := qb.makeFilter(ctx, performerFilter)
 
-	query.addFilter(filter)
+	if err := query.addFilter(filter); err != nil {
+		return nil, err
+	}
 
 	query.sortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
 

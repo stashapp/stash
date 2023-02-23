@@ -3,14 +3,13 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
-import {
-  Icon,
-  TagLink,
-  HoverPopover,
-  SweatDrops,
-  TruncatedText,
-} from "src/components/Shared";
-import { NavUtils, TextUtils } from "src/utils";
+import { Icon } from "../Shared/Icon";
+import { TagLink } from "../Shared/TagLink";
+import { HoverPopover } from "../Shared/HoverPopover";
+import { SweatDrops } from "../Shared/SweatDrops";
+import { TruncatedText } from "../Shared/TruncatedText";
+import NavUtils from "src/utils/navigation";
+import TextUtils from "src/utils/text";
 import { SceneQueue } from "src/models/sceneQueue";
 import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
@@ -99,9 +98,8 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   );
 
   // studio image is missing if it uses the default
-  const missingStudioImage = props.scene.studio?.image_path?.endsWith(
-    "?default=true"
-  );
+  const missingStudioImage =
+    props.scene.studio?.image_path?.endsWith("?default=true");
   const showStudioAsText =
     missingStudioImage || (configuration?.interface.showStudioAsText ?? false);
 

@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { defineMessages, FormattedMessage, useIntl } from "react-intl";
 import { FetchResult } from "@apollo/client";
 
-import Modal from "src/components/Shared/Modal";
-import { useToast } from "src/hooks";
+import { ModalComponent } from "./Modal";
+import { useToast } from "src/hooks/Toast";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 
 interface IDeletionEntity {
@@ -39,7 +39,7 @@ const messages = defineMessages({
   },
 });
 
-const DeleteEntityDialog: React.FC<IDeleteEntityDialogProps> = ({
+export const DeleteEntityDialog: React.FC<IDeleteEntityDialogProps> = ({
   selected,
   onClose,
   singularEntity,
@@ -77,7 +77,7 @@ const DeleteEntityDialog: React.FC<IDeleteEntityDialogProps> = ({
   }
 
   return (
-    <Modal
+    <ModalComponent
       show
       icon={faTrashAlt}
       header={intl.formatMessage(messages.deleteHeader, {
@@ -118,8 +118,6 @@ const DeleteEntityDialog: React.FC<IDeleteEntityDialogProps> = ({
           />
         )}
       </ul>
-    </Modal>
+    </ModalComponent>
   );
 };
-
-export default DeleteEntityDialog;

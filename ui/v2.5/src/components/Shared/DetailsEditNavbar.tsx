@@ -1,7 +1,7 @@
 import { Button, Modal } from "react-bootstrap";
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { ImageInput } from "src/components/Shared/ImageInput";
+import { ImageInput } from "./ImageInput";
 import cx from "classnames";
 
 interface IProps {

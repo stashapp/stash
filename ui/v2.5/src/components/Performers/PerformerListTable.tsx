@@ -5,8 +5,8 @@ import { useIntl } from "react-intl";
 import { Button, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { Icon } from "src/components/Shared";
-import { NavUtils } from "src/utils";
+import { Icon } from "../Shared/Icon";
+import NavUtils from "src/utils/navigation";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import { cmToImperial } from "src/utils/units";
 

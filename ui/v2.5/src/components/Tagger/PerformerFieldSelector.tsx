@@ -3,8 +3,9 @@ import React, { useState } from "react";
 import { Button, Row, Col } from "react-bootstrap";
 import { useIntl } from "react-intl";
 
-import { Modal, Icon } from "src/components/Shared";
-import { TextUtils } from "src/utils";
+import { ModalComponent } from "../Shared/Modal";
+import { Icon } from "../Shared/Icon";
+import TextUtils from "src/utils/text";
 
 interface IProps {
   fields: string[];
@@ -44,7 +45,7 @@ const PerformerFieldSelect: React.FC<IProps> = ({
   );
 
   return (
-    <Modal
+    <ModalComponent
       show={show}
       icon={faList}
       dialogClassName="FieldSelect"
@@ -59,7 +60,7 @@ const PerformerFieldSelect: React.FC<IProps> = ({
         These fields will be tagged by default. Click the button to toggle.
       </div>
       <Row>{fields.map((f) => renderField(f))}</Row>
-    </Modal>
+    </ModalComponent>
   );
 };
 

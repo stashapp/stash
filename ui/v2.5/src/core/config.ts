@@ -1,5 +1,5 @@
 import { IntlShape } from "react-intl";
-import { ITypename } from "src/utils";
+import { ITypename } from "src/utils/data";
 import { RatingSystemOptions } from "src/utils/rating";
 import { FilterMode, SortDirectionEnum } from "./generated-graphql";
 

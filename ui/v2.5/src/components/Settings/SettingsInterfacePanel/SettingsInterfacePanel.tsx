@@ -1,11 +1,9 @@
 import React from "react";
 import { Button, Form } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
-import {
-  DurationInput,
-  PercentInput,
-  LoadingIndicator,
-} from "src/components/Shared";
+import { DurationInput } from "src/components/Shared/DurationInput";
+import { PercentInput } from "src/components/Shared/PercentInput";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { CheckboxGroup } from "./CheckboxGroup";
 import { SettingSection } from "../SettingSection";
 import {
@@ -16,13 +14,13 @@ import {
   StringSetting,
 } from "../Inputs";
 import { SettingStateContext } from "../context";
-import { DurationUtils } from "src/utils";
+import DurationUtils from "src/utils/duration";
 import * as GQL from "src/core/generated-graphql";
 import {
   imageLightboxDisplayModeIntlMap,
   imageLightboxScrollModeIntlMap,
 } from "src/core/enums";
-import { useInterfaceLocalForage } from "src/hooks";
+import { useInterfaceLocalForage } from "src/hooks/LocalForage";
 import {
   ConnectionState,
   connectionStateLabel,

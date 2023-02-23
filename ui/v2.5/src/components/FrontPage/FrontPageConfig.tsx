@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { FormattedMessage, IntlShape, useIntl } from "react-intl";
 import { useFindSavedFilters } from "src/core/StashService";
-import { LoadingIndicator } from "src/components/Shared";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { Button, Form, Modal } from "react-bootstrap";
 import {
   FilterMode,
@@ -243,7 +243,8 @@ const ContentRow: React.FC<IFilterRowProps> = (props: IFilterRowProps) => {
       case "SavedFilter":
         const savedFilter = props.allSavedFilters.find(
           (f) =>
-            f.id === (props.content as ISavedFilterRow).savedFilterId.toString()
+            f.id ===
+            (props.content as ISavedFilterRow).savedFilterId?.toString()
         );
         if (!savedFilter) return "";
         return filterTitle(intl, savedFilter);
@@ -337,7 +338,10 @@ export const FrontPageConfig: React.FC<IFrontPageConfigProps> = ({
   }
 
   const existingSavedFilterIDs = currentContent
-    .filter((f) => f.__typename === "SavedFilter")
+    .filter(
+      (f) =>
+        f.__typename === "SavedFilter" && (f as ISavedFilterRow).savedFilterId
+    )
     .map((f) => (f as ISavedFilterRow).savedFilterId.toString());
 
   function addSavedFilter(content?: FrontPageContent) {

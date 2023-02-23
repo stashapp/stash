@@ -1,7 +1,7 @@
 import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { Button } from "react-bootstrap";
-import { Icon } from "../Shared";
+import { Icon } from "../Shared/Icon";
 
 interface IIncludeExcludeButton {
   exclude: boolean;

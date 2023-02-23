@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"strconv"
 
 	"github.com/99designs/gqlgen/graphql"
@@ -21,7 +23,7 @@ func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *str
 				return err
 			}
 			scene, err = qb.Find(ctx, idInt)
-			if err != nil {
+			if err != nil && !errors.Is(err, sql.ErrNoRows) {
 				return err
 			}
 		} else if checksum != nil {
@@ -225,6 +227,17 @@ func (r *queryResolver) FindDuplicateScenes(ctx context.Context, distance *int) 
 	}
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Scene.FindDuplicates(ctx, dist)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (r *queryResolver) AllScenes(ctx context.Context) (ret []*models.Scene, err error) {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Scene.All(ctx)
 		return err
 	}); err != nil {
 		return nil, err

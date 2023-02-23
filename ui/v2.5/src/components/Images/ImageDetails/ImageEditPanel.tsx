@@ -9,11 +9,11 @@ import {
   PerformerSelect,
   TagSelect,
   StudioSelect,
-  LoadingIndicator,
-  URLField,
-} from "src/components/Shared";
-import { useToast } from "src/hooks";
-import { FormUtils } from "src/utils";
+} from "src/components/Shared/Select";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { URLField } from "src/components/Shared/URLField";
+import { useToast } from "src/hooks/Toast";
+import FormUtils from "src/utils/form";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";

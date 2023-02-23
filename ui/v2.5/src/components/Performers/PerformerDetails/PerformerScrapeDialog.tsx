@@ -12,8 +12,8 @@ import {
 } from "src/components/Shared/ScrapeDialog";
 import { useTagCreate } from "src/core/StashService";
 import { Form } from "react-bootstrap";
-import { TagSelect } from "src/components/Shared";
-import { useToast } from "src/hooks";
+import { TagSelect } from "src/components/Shared/Select";
+import { useToast } from "src/hooks/Toast";
 import clone from "lodash-es/clone";
 import {
   genderStrings,
