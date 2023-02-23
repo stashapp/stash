@@ -69,11 +69,11 @@ const (
 	ParallelTasks        = "parallel_tasks"
 	parallelTasksDefault = 1
 
-	SequentialScanning        = "sequential_scanning"
-	SequentialScanningDefault = false
-
 	PreviewPreset                 = "preview_preset"
 	TranscodeHardwareAcceleration = "ffmpeg.hardware_acceleration"
+
+	SequentialScanning        = "sequential_scanning"
+	SequentialScanningDefault = false
 
 	PreviewAudio        = "preview_audio"
 	previewAudioDefault = true
