@@ -104,6 +104,7 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		MaxTranscodeSize:              &maxTranscodeSize,
 		MaxStreamingTranscodeSize:     &maxStreamingTranscodeSize,
 		WriteImageThumbnails:          config.IsWriteImageThumbnails(),
+		GalleryCoverRegex:             config.GetGalleryCoverRegex(),
 		APIKey:                        config.GetAPIKey(),
 		Username:                      config.GetUsername(),
 		Password:                      config.GetPasswordHash(),
@@ -128,6 +129,7 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		TranscodeOutputArgs:           config.GetTranscodeOutputArgs(),
 		LiveTranscodeInputArgs:        config.GetLiveTranscodeInputArgs(),
 		LiveTranscodeOutputArgs:       config.GetLiveTranscodeOutputArgs(),
+		DrawFunscriptHeatmapRange:     config.GetDrawFunscriptHeatmapRange(),
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -31,7 +32,13 @@ func post42(ctx context.Context, db *sqlx.DB) error {
 	}
 
 	if err := m.migrateDuplicatePerformers(ctx); err != nil {
-		return fmt.Errorf("migrating performer aliases: %w", err)
+		return fmt.Errorf("migrating duplicate performers: %w", err)
+	}
+
+	// do this after duplicate performer detection, since setting disambiguation
+	// breaks the duplicate disambiguation setting code
+	if err := m.migratePerformersDisam(ctx); err != nil {
+		return fmt.Errorf("migrating performer names: %w", err)
 	}
 
 	if err := m.executeSchemaChanges(); err != nil {
@@ -137,6 +144,100 @@ func (m *schema42Migrator) migratePerformerAliases(id int, aliases string) error
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *schema42Migrator) migratePerformersDisam(ctx context.Context) error {
+	logger.Info("Migrating performer disambiguation")
+
+	const (
+		limit    = 1
+		logEvery = 10000
+	)
+
+	count := 0
+	lastID := 0
+
+	for {
+		gotSome := false
+
+		if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
+			query := `
+SELECT id, name FROM performers WHERE performers.name like '% (%)'`
+
+			if lastID != 0 {
+				query += fmt.Sprintf(" AND `id` > %d ", lastID)
+			}
+
+			query += fmt.Sprintf(" ORDER BY `id` LIMIT %d", limit)
+
+			rows, err := m.db.Query(query)
+			if err != nil {
+				return err
+			}
+			defer rows.Close()
+
+			for rows.Next() {
+				var (
+					id   int
+					name string
+				)
+
+				err := rows.Scan(&id, &name)
+				if err != nil {
+					return err
+				}
+
+				gotSome = true
+				lastID = id
+				count++
+
+				if err := m.massagePerformerName(id, name); err != nil {
+					return err
+				}
+			}
+
+			return rows.Err()
+		}); err != nil {
+			return err
+		}
+
+		if !gotSome {
+			break
+		}
+
+		if count%logEvery == 0 {
+			logger.Infof("Migrated %d performers", count)
+		}
+	}
+
+	return nil
+}
+
+// extracts the performer name and disambiguation from the name field based on
+// the format "name (disambiguation)".
+var performerDisRE = regexp.MustCompile(`^((?:[^(\s]+\s)+)\(([^)]+)\)$`)
+
+func (m *schema42Migrator) massagePerformerName(performerID int, name string) error {
+
+	r := performerDisRE.FindStringSubmatch(name)
+	if len(r) != 3 {
+		// ignore corner case invalid names
+		return nil
+	}
+
+	// get the performer name and disambiguation from the capturing groups
+	// trim the trailing whitespace (single only) from the name
+	newName := strings.TrimSuffix(r[1], " ")
+	newDis := r[2]
+
+	logger.Infof("Separating %q into %q and disambiguation %q", name, newName, newDis)
+
+	_, err := m.db.Exec("UPDATE performers SET name = ?, disambiguation = ? WHERE id = ?", newName, newDis, performerID)
+	if err != nil {
+		return err
 	}
 
 	return nil

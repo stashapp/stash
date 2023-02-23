@@ -10,7 +10,7 @@ import {
   PerformerSelect,
   TagSelect,
   StudioSelect,
-} from "src/components/Shared";
+} from "src/components/Shared/Select";
 import cx from "classnames";
 import { objectTitle } from "src/core/files";
 

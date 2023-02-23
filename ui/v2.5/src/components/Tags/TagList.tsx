@@ -18,10 +18,12 @@ import {
   useTagDestroy,
   useTagsDestroy,
 } from "src/core/StashService";
-import { useToast } from "src/hooks";
+import { useToast } from "src/hooks/Toast";
 import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
-import { NavUtils } from "src/utils";
-import { Icon, Modal, DeleteEntityDialog } from "src/components/Shared";
+import NavUtils from "src/utils/navigation";
+import { Icon } from "../Shared/Icon";
+import { ModalComponent } from "../Shared/Modal";
+import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { TagCard } from "./TagCard";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { tagRelationHook } from "../../core/tags";
@@ -33,10 +35,8 @@ interface ITagList {
 
 export const TagList: React.FC<ITagList> = ({ filterHook }) => {
   const Toast = useToast();
-  const [
-    deletingTag,
-    setDeletingTag,
-  ] = useState<Partial<GQL.TagDataFragment> | null>(null);
+  const [deletingTag, setDeletingTag] =
+    useState<Partial<GQL.TagDataFragment> | null>(null);
 
   const [deleteTag] = useTagDestroy(getDeleteTagInput() as GQL.TagDestroyInput);
 
@@ -238,7 +238,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
     }
     if (filter.displayMode === DisplayMode.List) {
       const deleteAlert = (
-        <Modal
+        <ModalComponent
           onHide={() => {}}
           show={!!deletingTag}
           icon={faTrashAlt}
@@ -255,7 +255,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
               values={{ entityName: deletingTag && deletingTag.name }}
             />
           </span>
-        </Modal>
+        </ModalComponent>
       );
 
       const tagElements = result.data.findTags.tags.map((tag) => {

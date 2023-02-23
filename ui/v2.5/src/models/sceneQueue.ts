@@ -1,4 +1,3 @@
-import queryString, { ParsedQuery } from "query-string";
 import { FilterMode, Scene } from "src/core/generated-graphql";
 import { ListFilterModel } from "./list-filter/filter";
 import { SceneListFilterOptions } from "./list-filter/scenes";
@@ -38,18 +37,27 @@ export class SceneQueue {
   }
 
   private makeQueryParameters(sceneIndex?: number, page?: number) {
-    if (this.query) {
-      const queryParams = this.query.getQueryParameters();
-      const translatedParams = {
-        qfp: queryParams.p ?? 1,
-        qfc: queryParams.c,
-        qfq: queryParams.q,
-        qsort: queryParams.sortby,
-        qsortd: queryParams.sortdir,
-      };
+    const ret: string[] = [];
 
+    if (this.query) {
+      const queryParams = this.query.getEncodedParams();
+
+      if (queryParams.sortby) {
+        ret.push(`qsort=${queryParams.sortby}`);
+      }
+      if (queryParams.sortdir) {
+        ret.push(`qsortd=${queryParams.sortdir}`);
+      }
+      if (queryParams.q) {
+        ret.push(`qfq=${queryParams.q}`);
+      }
+      for (const c of queryParams.c ?? []) {
+        ret.push(`qfc=${c}`);
+      }
+
+      let qfp = queryParams.p ?? "1";
       if (page !== undefined) {
-        translatedParams.qfp = page;
+        qfp = String(page);
       } else if (
         sceneIndex !== undefined &&
         this.originalQueryPage !== undefined &&
@@ -60,46 +68,40 @@ export class SceneQueue {
           sceneIndex +
           (this.originalQueryPage - 1) * this.originalQueryPageSize;
         const newPage = Math.floor(filterIndex / this.query.itemsPerPage) + 1;
-        translatedParams.qfp = newPage;
+        qfp = String(newPage);
       }
-
-      return queryString.stringify(translatedParams, { encode: false });
+      ret.push(`qfp=${qfp}`);
+    } else if (this.sceneIDs && this.sceneIDs.length > 0) {
+      for (const id of this.sceneIDs) {
+        ret.push(`qs=${id}`);
+      }
     }
 
-    if (this.sceneIDs && this.sceneIDs.length > 0) {
-      const params = {
-        qs: this.sceneIDs,
-      };
-      return queryString.stringify(params, { encode: false });
-    }
-
-    return "";
+    return ret.join("&");
   }
 
-  public static fromQueryParameters(params: ParsedQuery<string>) {
+  public static fromQueryParameters(params: URLSearchParams) {
     const ret = new SceneQueue();
-    const translated = {
-      sortby: params.qsort,
-      sortdir: params.qsortd,
-      q: params.qfq,
-      p: params.qfp,
-      c: params.qfc,
-    };
 
-    if (params.qfp) {
-      const decoded = ListFilterModel.decodeQueryParameters(translated);
+    if (params.has("qfp")) {
+      const translated = {
+        sortby: params.get("qsort"),
+        sortdir: params.get("qsortd"),
+        q: params.get("qfq"),
+        p: params.get("qfp"),
+        c: params.getAll("qfc"),
+      };
+      const decoded = ListFilterModel.decodeParams(translated);
       const query = new ListFilterModel(
         FilterMode.Scenes,
         undefined,
         SceneListFilterOptions.defaultSortBy
       );
-      query.configureFromQueryParameters(decoded);
+      query.configureFromDecodedParams(decoded);
       ret.query = query;
-    } else if (params.qs) {
+    } else if (params.has("qs")) {
       // must be scene list
-      ret.sceneIDs = Array.isArray(params.qs)
-        ? params.qs.map((v) => Number(v))
-        : [Number(params.qs)];
+      ret.sceneIDs = params.getAll("qs").map((v) => Number(v));
     }
 
     return ret;

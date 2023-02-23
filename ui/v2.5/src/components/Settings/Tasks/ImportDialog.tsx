@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Form } from "react-bootstrap";
 import { mutateImportObjects } from "src/core/StashService";
-import { Modal } from "src/components/Shared";
+import { ModalComponent } from "src/components/Shared/Modal";
 import * as GQL from "src/core/generated-graphql";
-import { useToast } from "src/hooks";
+import { useToast } from "src/hooks/Toast";
 import { useIntl } from "react-intl";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 
@@ -114,7 +114,7 @@ export const ImportDialog: React.FC<IImportDialogProps> = (
   }
 
   return (
-    <Modal
+    <ModalComponent
       show
       icon={faPencilAlt}
       header={intl.formatMessage({ id: "actions.import" })}
@@ -171,6 +171,6 @@ export const ImportDialog: React.FC<IImportDialogProps> = (
           </Form.Group>
         </Form>
       </div>
-    </Modal>
+    </ModalComponent>
   );
 };

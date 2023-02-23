@@ -5,8 +5,8 @@ import * as GQL from "src/core/generated-graphql";
 import { Button, Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { SettingStateContext } from "./context";
-import { LoadingIndicator } from "../Shared";
-import { useToast } from "src/hooks";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
+import { useToast } from "src/hooks/Toast";
 import { useGenerateAPIKey } from "src/core/StashService";
 
 type AuthenticationSettingsInput = Pick<
@@ -71,14 +71,8 @@ export const SettingsSecurityPanel: React.FC = () => {
   const intl = useIntl();
   const Toast = useToast();
 
-  const {
-    general,
-    apiKey,
-    loading,
-    error,
-    saveGeneral,
-    refetch,
-  } = React.useContext(SettingStateContext);
+  const { general, apiKey, loading, error, saveGeneral, refetch } =
+    React.useContext(SettingStateContext);
 
   const [generateAPIKey] = useGenerateAPIKey();
 

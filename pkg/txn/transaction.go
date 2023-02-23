@@ -51,9 +51,8 @@ func WithReadTxn(ctx context.Context, m Manager, fn TxnFunc) error {
 	return withTxn(ctx, m, fn, exclusive, execComplete)
 }
 
-func withTxn(ctx context.Context, m Manager, fn TxnFunc, exclusive bool, execCompleteOnLocked bool) error {
-	var err error
-	ctx, err = begin(ctx, m, exclusive)
+func withTxn(outerCtx context.Context, m Manager, fn TxnFunc, exclusive bool, execCompleteOnLocked bool) error {
+	ctx, err := begin(outerCtx, m, exclusive)
 	if err != nil {
 		return err
 	}
@@ -61,21 +60,21 @@ func withTxn(ctx context.Context, m Manager, fn TxnFunc, exclusive bool, execCom
 	defer func() {
 		if p := recover(); p != nil {
 			// a panic occurred, rollback and repanic
-			rollback(ctx, m)
+			rollback(ctx, outerCtx, m)
 			panic(p)
 		}
 
 		if err != nil {
 			// something went wrong, rollback
-			rollback(ctx, m)
+			rollback(ctx, outerCtx, m)
 
 			if execCompleteOnLocked || !m.IsLocked(err) {
-				executePostCompleteHooks(ctx)
+				executePostCompleteHooks(ctx, outerCtx)
 			}
 		} else {
 			// all good, commit
-			err = commit(ctx, m)
-			executePostCompleteHooks(ctx)
+			err = commit(ctx, outerCtx, m)
+			executePostCompleteHooks(ctx, outerCtx)
 		}
 
 	}()
@@ -97,21 +96,21 @@ func begin(ctx context.Context, m Manager, exclusive bool) (context.Context, err
 	return ctx, nil
 }
 
-func commit(ctx context.Context, m Manager) error {
+func commit(ctx context.Context, outerCtx context.Context, m Manager) error {
 	if err := m.Commit(ctx); err != nil {
 		return err
 	}
 
-	executePostCommitHooks(ctx)
+	executePostCommitHooks(ctx, outerCtx)
 	return nil
 }
 
-func rollback(ctx context.Context, m Manager) {
+func rollback(ctx context.Context, outerCtx context.Context, m Manager) {
 	if err := m.Rollback(ctx); err != nil {
 		return
 	}
 
-	executePostRollbackHooks(ctx)
+	executePostRollbackHooks(ctx, outerCtx)
 }
 
 // WithDatabase executes fn with the context provided by p.WithDatabase.

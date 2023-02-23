@@ -398,6 +398,9 @@ github.com/vektra/mockery/v2/cmd
 github.com/vektra/mockery/v2/pkg
 github.com/vektra/mockery/v2/pkg/config
 github.com/vektra/mockery/v2/pkg/logging
+# github.com/xWTF/chardet v0.0.0-20230208095535-c780f2ac244e
+## explicit; go 1.19
+github.com/xWTF/chardet
 # go.uber.org/atomic v1.7.0
 ## explicit; go 1.13
 go.uber.org/atomic

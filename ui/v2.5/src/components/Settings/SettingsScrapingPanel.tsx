@@ -8,9 +8,11 @@ import {
   useListSceneScrapers,
   useListGalleryScrapers,
 } from "src/core/StashService";
-import { useToast } from "src/hooks";
-import { TextUtils } from "src/utils";
-import { CollapseButton, Icon, LoadingIndicator } from "src/components/Shared";
+import { useToast } from "src/hooks/Toast";
+import TextUtils from "src/utils/text";
+import { CollapseButton } from "../Shared/CollapseButton";
+import { Icon } from "../Shared/Icon";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { ScrapeType } from "src/core/generated-graphql";
 import { SettingSection } from "./SettingSection";
 import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";
@@ -75,31 +77,17 @@ const URLList: React.FC<IURLList> = ({ urls }) => {
 export const SettingsScrapingPanel: React.FC = () => {
   const Toast = useToast();
   const intl = useIntl();
-  const {
-    data: performerScrapers,
-    loading: loadingPerformers,
-  } = useListPerformerScrapers();
-  const {
-    data: sceneScrapers,
-    loading: loadingScenes,
-  } = useListSceneScrapers();
-  const {
-    data: galleryScrapers,
-    loading: loadingGalleries,
-  } = useListGalleryScrapers();
-  const {
-    data: movieScrapers,
-    loading: loadingMovies,
-  } = useListMovieScrapers();
+  const { data: performerScrapers, loading: loadingPerformers } =
+    useListPerformerScrapers();
+  const { data: sceneScrapers, loading: loadingScenes } =
+    useListSceneScrapers();
+  const { data: galleryScrapers, loading: loadingGalleries } =
+    useListGalleryScrapers();
+  const { data: movieScrapers, loading: loadingMovies } =
+    useListMovieScrapers();
 
-  const {
-    general,
-    scraping,
-    loading,
-    error,
-    saveGeneral,
-    saveScraping,
-  } = React.useContext(SettingStateContext);
+  const { general, scraping, loading, error, saveGeneral, saveScraping } =
+    React.useContext(SettingStateContext);
 
   async function onReloadScrapers() {
     await mutateReloadScrapers().catch((e) => Toast.error(e));

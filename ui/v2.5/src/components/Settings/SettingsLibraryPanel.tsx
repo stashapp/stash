@@ -1,5 +1,6 @@
 import React from "react";
-import { Icon, LoadingIndicator } from "src/components/Shared";
+import { Icon } from "../Shared/Icon";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { StashSetting } from "./StashConfiguration";
 import { SettingSection } from "./SettingSection";
 import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";
@@ -9,14 +10,8 @@ import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 
 export const SettingsLibraryPanel: React.FC = () => {
   const intl = useIntl();
-  const {
-    general,
-    loading,
-    error,
-    saveGeneral,
-    defaults,
-    saveDefaults,
-  } = React.useContext(SettingStateContext);
+  const { general, loading, error, saveGeneral, defaults, saveDefaults } =
+    React.useContext(SettingStateContext);
 
   function commaDelimitedToList(value: string | undefined) {
     if (value) {
@@ -133,6 +128,14 @@ export const SettingsLibraryPanel: React.FC = () => {
           subHeadingID="config.ui.images.options.write_image_thumbnails.description"
           checked={general.writeImageThumbnails ?? false}
           onChange={(v) => saveGeneral({ writeImageThumbnails: v })}
+        />
+
+        <StringSetting
+          id="gallery-cover-regex"
+          headingID="config.general.gallery_cover_regex_label"
+          subHeadingID="config.general.gallery_cover_regex_desc"
+          value={general.galleryCoverRegex ?? ""}
+          onChange={(v) => saveGeneral({ galleryCoverRegex: v })}
         />
       </SettingSection>
 

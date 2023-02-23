@@ -191,8 +191,14 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 			}
 		} else if t.name != nil && performer.Name != nil {
 			currentTime := time.Now()
+			var aliases []string
+			if performer.Aliases != nil {
+				aliases = stringslice.FromString(*performer.Aliases, ",")
+			} else {
+				aliases = []string{}
+			}
 			newPerformer := models.Performer{
-				Aliases:      models.NewRelatedStrings(stringslice.FromString(*performer.Aliases, ",")),
+				Aliases:      models.NewRelatedStrings(aliases),
 				Birthdate:    getDate(performer.Birthdate),
 				CareerLength: getString(performer.CareerLength),
 				Country:      getString(performer.Country),

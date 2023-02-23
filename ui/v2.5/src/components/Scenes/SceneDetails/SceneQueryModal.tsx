@@ -3,14 +3,12 @@ import { Badge, Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
-import {
-  Modal,
-  LoadingIndicator,
-  TruncatedText,
-  Icon,
-} from "src/components/Shared";
+import { ModalComponent } from "src/components/Shared/Modal";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
+import { Icon } from "src/components/Shared/Icon";
 import { queryScrapeSceneQuery } from "src/core/StashService";
-import useToast from "src/hooks/Toast";
+import { useToast } from "src/hooks/Toast";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 
 interface ISceneSearchResultDetailsProps {
@@ -187,7 +185,7 @@ export const SceneQueryModal: React.FC<IProps> = ({
   }
 
   return (
-    <Modal
+    <ModalComponent
       show
       onHide={onHide}
       modalProps={{ size: "lg", dialogClassName: "scrape-query-dialog" }}
@@ -233,7 +231,7 @@ export const SceneQueryModal: React.FC<IProps> = ({
           renderResults()
         )}
       </div>
-    </Modal>
+    </ModalComponent>
   );
 };
 

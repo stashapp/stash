@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { Form } from "react-bootstrap";
 import { useScenesDestroy } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
-import { Modal } from "src/components/Shared";
-import { useToast } from "src/hooks";
+import { ModalComponent } from "src/components/Shared/Modal";
+import { useToast } from "src/hooks/Toast";
 import { ConfigurationContext } from "src/hooks/Config";
 import { FormattedMessage, useIntl } from "react-intl";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
@@ -126,7 +126,7 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
   }
 
   return (
-    <Modal
+    <ModalComponent
       show
       icon={faTrashAlt}
       header={header}
@@ -162,7 +162,7 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
           onChange={() => setDeleteGenerated(!deleteGenerated)}
         />
       </Form>
-    </Modal>
+    </ModalComponent>
   );
 };
 
