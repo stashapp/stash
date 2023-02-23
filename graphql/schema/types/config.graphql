@@ -84,6 +84,9 @@ input ConfigGeneralInput {
   These are applied when live transcoding"""
   liveTranscodeOutputArgs: [String!]
 
+  """whether to include range in generated funscript heatmaps"""
+  drawFunscriptHeatmapRange: Boolean
+
   """Write image thumbnails to disk when generating on the fly"""
   writeImageThumbnails: Boolean
   """Username"""
@@ -183,6 +186,9 @@ type ConfigGeneralResult {
   """ffmpeg stream output args - injected before output file
   These are applied when live transcoding"""
   liveTranscodeOutputArgs: [String!]!
+
+  """whether to include range in generated funscript heatmaps"""
+  drawFunscriptHeatmapRange: Boolean!
 
   """Write image thumbnails to disk when generating on the fly"""
   writeImageThumbnails: Boolean!

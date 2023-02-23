@@ -316,6 +316,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.LiveTranscodeOutputArgs, input.LiveTranscodeOutputArgs)
 	}
 
+	if input.DrawFunscriptHeatmapRange != nil {
+		c.Set(config.DrawFunscriptHeatmapRange, input.DrawFunscriptHeatmapRange)
+	}
+
 	if err := c.Write(); err != nil {
 		return makeConfigGeneralResult(), err
 	}

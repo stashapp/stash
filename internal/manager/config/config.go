@@ -185,6 +185,9 @@ const (
 	HandyKey        = "handy_key"
 	FunscriptOffset = "funscript_offset"
 
+	DrawFunscriptHeatmapRange        = "draw_funscript_heatmap_range"
+	drawFunscriptHeatmapRangeDefault = true
+
 	ThemeColor        = "theme_color"
 	DefaultThemeColor = "#202b33"
 
@@ -829,6 +832,10 @@ func (i *Instance) GetLiveTranscodeInputArgs() []string {
 
 func (i *Instance) GetLiveTranscodeOutputArgs() []string {
 	return i.getStringSlice(LiveTranscodeOutputArgs)
+}
+
+func (i *Instance) GetDrawFunscriptHeatmapRange() bool {
+	return i.getBoolDefault(DrawFunscriptHeatmapRange, drawFunscriptHeatmapRangeDefault)
 }
 
 // IsWriteImageThumbnails returns true if image thumbnails should be written

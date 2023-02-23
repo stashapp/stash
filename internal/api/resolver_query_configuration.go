@@ -128,6 +128,7 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		TranscodeOutputArgs:          config.GetTranscodeOutputArgs(),
 		LiveTranscodeInputArgs:       config.GetLiveTranscodeInputArgs(),
 		LiveTranscodeOutputArgs:      config.GetLiveTranscodeOutputArgs(),
+		DrawFunscriptHeatmapRange:    config.GetDrawFunscriptHeatmapRange(),
 	}
 }
 
