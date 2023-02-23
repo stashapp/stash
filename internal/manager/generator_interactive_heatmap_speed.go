@@ -15,14 +15,13 @@ import (
 )
 
 type InteractiveHeatmapSpeedGenerator struct {
-	sceneDurationMilli int64
-	InteractiveSpeed   int
-	Funscript          Script
-	FunscriptPath      string
-	HeatmapPath        string
-	Width              int
-	Height             int
-	NumSegments        int
+	InteractiveSpeed int
+	Funscript        Script
+	Width            int
+	Height           int
+	NumSegments      int
+
+	DrawRange bool
 }
 
 type Script struct {
@@ -33,8 +32,7 @@ type Script struct {
 	// Range is the percentage of a full stroke to use.
 	Range int `json:"range,omitempty"`
 	// Actions are the timed moves.
-	Actions      []Action `json:"actions"`
-	AvarageSpeed int64
+	Actions []Action `json:"actions"`
 }
 
 // Action is a move at a specific time.
@@ -55,19 +53,17 @@ type GradientTable []struct {
 	YRange [2]float64
 }
 
-func NewInteractiveHeatmapSpeedGenerator(funscriptPath string, heatmapPath string, sceneDuration float64) *InteractiveHeatmapSpeedGenerator {
+func NewInteractiveHeatmapSpeedGenerator(drawRange bool) *InteractiveHeatmapSpeedGenerator {
 	return &InteractiveHeatmapSpeedGenerator{
-		sceneDurationMilli: int64(sceneDuration * 1000),
-		FunscriptPath:      funscriptPath,
-		HeatmapPath:        heatmapPath,
-		Width:              1280,
-		Height:             60,
-		NumSegments:        600,
+		Width:       1280,
+		Height:      60,
+		NumSegments: 600,
+		DrawRange:   drawRange,
 	}
 }
 
-func (g *InteractiveHeatmapSpeedGenerator) Generate() error {
-	funscript, err := g.LoadFunscriptData(g.FunscriptPath)
+func (g *InteractiveHeatmapSpeedGenerator) Generate(funscriptPath string, heatmapPath string, sceneDuration float64) error {
+	funscript, err := g.LoadFunscriptData(funscriptPath, sceneDuration)
 
 	if err != nil {
 		return err
@@ -80,7 +76,7 @@ func (g *InteractiveHeatmapSpeedGenerator) Generate() error {
 	g.Funscript = funscript
 	g.Funscript.UpdateIntensityAndSpeed()
 
-	err = g.RenderHeatmap()
+	err = g.RenderHeatmap(heatmapPath)
 
 	if err != nil {
 		return err
@@ -91,7 +87,7 @@ func (g *InteractiveHeatmapSpeedGenerator) Generate() error {
 	return nil
 }
 
-func (g *InteractiveHeatmapSpeedGenerator) LoadFunscriptData(path string) (Script, error) {
+func (g *InteractiveHeatmapSpeedGenerator) LoadFunscriptData(path string, sceneDuration float64) (Script, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return Script{}, err
@@ -112,8 +108,9 @@ func (g *InteractiveHeatmapSpeedGenerator) LoadFunscriptData(path string) (Scrip
 	// trim actions with negative timestamps to avoid index range errors when generating heatmap
 	// #3181 - also trim actions that occur after the scene duration
 	loggedBadTimestamp := false
+	sceneDurationMilli := int64(sceneDuration * 1000)
 	isValid := func(x int64) bool {
-		return x >= 0 && x < g.sceneDurationMilli
+		return x >= 0 && x < sceneDurationMilli
 	}
 
 	i := 0
@@ -158,18 +155,27 @@ func (funscript *Script) UpdateIntensityAndSpeed() {
 }
 
 // funscript needs to have intensity updated first
-func (g *InteractiveHeatmapSpeedGenerator) RenderHeatmap() error {
-
+func (g *InteractiveHeatmapSpeedGenerator) RenderHeatmap(heatmapPath string) error {
 	gradient := g.Funscript.getGradientTable(g.NumSegments)
 
 	img := image.NewRGBA(image.Rect(0, 0, g.Width, g.Height))
 	for x := 0; x < g.Width; x++ {
 		xPos := float64(x) / float64(g.Width)
 		c := gradient.GetInterpolatedColorFor(xPos)
-		yRange := gradient.GetYRange(xPos)
-		top := int(yRange[0] / 100.0 * float64(g.Height))
-		bottom := int(yRange[1] / 100.0 * float64(g.Height))
-		draw.Draw(img, image.Rect(x, g.Height-top, x+1, g.Height-bottom), &image.Uniform{c}, image.Point{}, draw.Src)
+
+		y0 := 0
+		y1 := g.Height
+
+		if g.DrawRange {
+			yRange := gradient.GetYRange(xPos)
+			top := int(yRange[0] / 100.0 * float64(g.Height))
+			bottom := int(yRange[1] / 100.0 * float64(g.Height))
+
+			y0 = g.Height - top
+			y1 = g.Height - bottom
+		}
+
+		draw.Draw(img, image.Rect(x, y0, x+1, y1), &image.Uniform{c}, image.Point{}, draw.Src)
 	}
 
 	// add 10 minute marks
@@ -183,7 +189,7 @@ func (g *InteractiveHeatmapSpeedGenerator) RenderHeatmap() error {
 		ts += tick
 	}
 
-	outpng, err := os.Create(g.HeatmapPath)
+	outpng, err := os.Create(heatmapPath)
 	if err != nil {
 		return err
 	}
