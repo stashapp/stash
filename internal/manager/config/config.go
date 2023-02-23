@@ -139,6 +139,10 @@ const (
 	// rather than use the embedded UI.
 	CustomUILocation = "custom_ui_location"
 
+	// Gallery Cover Regex
+	GalleryCoverRegex        = "gallery_cover_regex"
+	galleryCoverRegexDefault = `(poster|cover|folder|board)\.[^\.]+$`
+
 	// Interface options
 	MenuItems = "menu_items"
 
@@ -183,6 +187,9 @@ const (
 
 	HandyKey        = "handy_key"
 	FunscriptOffset = "funscript_offset"
+
+	DrawFunscriptHeatmapRange        = "draw_funscript_heatmap_range"
+	drawFunscriptHeatmapRangeDefault = true
 
 	ThemeColor        = "theme_color"
 	DefaultThemeColor = "#202b33"
@@ -649,6 +656,18 @@ func (i *Instance) GetSequentialScanning() bool {
 	return i.getBool(SequentialScanning)
 }
 
+func (i *Instance) GetGalleryCoverRegex() string {
+	var regexString = i.getString(GalleryCoverRegex)
+
+	_, err := regexp.Compile(regexString)
+	if err != nil {
+		logger.Warnf("Gallery cover regex '%v' invalid, reverting to default.", regexString)
+		return galleryCoverRegexDefault
+	}
+
+	return regexString
+}
+
 func (i *Instance) GetScrapersPath() string {
 	return i.getString(ScrapersPath)
 }
@@ -820,6 +839,10 @@ func (i *Instance) GetLiveTranscodeInputArgs() []string {
 
 func (i *Instance) GetLiveTranscodeOutputArgs() []string {
 	return i.getStringSlice(LiveTranscodeOutputArgs)
+}
+
+func (i *Instance) GetDrawFunscriptHeatmapRange() bool {
+	return i.getBoolDefault(DrawFunscriptHeatmapRange, drawFunscriptHeatmapRangeDefault)
 }
 
 // IsWriteImageThumbnails returns true if image thumbnails should be written
@@ -1475,6 +1498,9 @@ func (i *Instance) setDefaultValues(write bool) error {
 	// Set default scrapers and plugins paths
 	i.main.SetDefault(ScrapersPath, defaultScrapersPath)
 	i.main.SetDefault(PluginsPath, defaultPluginsPath)
+
+	// Set default gallery cover regex
+	i.main.SetDefault(GalleryCoverRegex, galleryCoverRegexDefault)
 
 	// Set NoProxy default
 	i.main.SetDefault(NoProxy, noProxyDefault)

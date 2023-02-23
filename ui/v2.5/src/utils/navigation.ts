@@ -309,7 +309,7 @@ const makeGalleryImagesUrl = (
   return `/images?${filter.makeQueryParameters()}`;
 };
 
-export default {
+const NavUtils = {
   makePerformerScenesUrl,
   makePerformerImagesUrl,
   makePerformerGalleriesUrl,
@@ -333,3 +333,5 @@ export default {
   makeChildStudiosUrl,
   makeGalleryImagesUrl,
 };
+
+export default NavUtils;

@@ -21,12 +21,11 @@ export interface ISceneTaggerModalsContextState {
   ) => void;
 }
 
-export const SceneTaggerModalsState = React.createContext<ISceneTaggerModalsContextState>(
-  {
+export const SceneTaggerModalsState =
+  React.createContext<ISceneTaggerModalsContextState>({
     createPerformerModal: () => {},
     createStudioModal: () => {},
-  }
-);
+  });
 
 export const SceneTaggerModals: React.FC = ({ children }) => {
   const { currentSource } = useContext(TaggerStateContext);

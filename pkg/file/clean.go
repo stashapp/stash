@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"os"
+	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
@@ -349,6 +351,22 @@ func (j *cleanJob) shouldCleanFolder(ctx context.Context, f *Folder) bool {
 		// info is nil - file not exist
 		logger.Infof("Folder not found. Marking to clean: \"%s\"", path)
 		return true
+	}
+
+	// #3261 - handle symlinks
+	if info.Mode()&os.ModeSymlink == os.ModeSymlink {
+		finalPath, err := filepath.EvalSymlinks(path)
+		if err != nil {
+			// don't bail out if symlink is invalid
+			logger.Infof("Invalid symlink. Marking to clean: \"%s\"", path)
+			return true
+		}
+
+		info, err = j.FS.Lstat(finalPath)
+		if err != nil {
+			logger.Errorf("error getting file info for %q (-> %s), not cleaning: %v", path, finalPath, err)
+			return false
+		}
 	}
 
 	// run through path filter, if returns false then the file should be cleaned

@@ -1,8 +1,8 @@
 import React from "react";
 import { useStats } from "src/core/StashService";
 import { FormattedMessage, FormattedNumber } from "react-intl";
-import { LoadingIndicator } from "src/components/Shared";
-import { TextUtils } from "src/utils";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import TextUtils from "src/utils/text";
 
 export const Stats: React.FC = () => {
   const { data, error, loading } = useStats();

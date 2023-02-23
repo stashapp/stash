@@ -53,16 +53,16 @@ export const WallPanel: React.FC<IWallPanelProps> = (
     />
   ));
 
-  const sceneMarkers = (
-    props.sceneMarkers ?? []
-  ).map((marker, index, markerArray) => (
-    <WallItem
-      key={marker.id}
-      sceneMarker={marker}
-      clickHandler={props.clickHandler}
-      className={calculateClass(index, markerArray.length)}
-    />
-  ));
+  const sceneMarkers = (props.sceneMarkers ?? []).map(
+    (marker, index, markerArray) => (
+      <WallItem
+        key={marker.id}
+        sceneMarker={marker}
+        clickHandler={props.clickHandler}
+        className={calculateClass(index, markerArray.length)}
+      />
+    )
+  );
 
   const images = (props.images ?? []).map((image, index, imageArray) => (
     <WallItem

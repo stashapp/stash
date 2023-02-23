@@ -26,17 +26,18 @@ import {
   TagSelect,
   StudioSelect,
   GallerySelect,
-  Icon,
-  LoadingIndicator,
-  ImageInput,
-  URLField,
-} from "src/components/Shared";
-import useToast from "src/hooks/Toast";
-import { ImageUtils, FormUtils, getStashIDs } from "src/utils";
-import { MovieSelect } from "src/components/Shared/Select";
+  MovieSelect,
+} from "src/components/Shared/Select";
+import { Icon } from "src/components/Shared/Icon";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { ImageInput } from "src/components/Shared/ImageInput";
+import { URLField } from "src/components/Shared/URLField";
+import { useToast } from "src/hooks/Toast";
+import ImageUtils from "src/utils/image";
+import FormUtils from "src/utils/form";
+import { getStashIDs } from "src/utils/stashIds";
 import { useFormik } from "formik";
 import { Prompt, useHistory } from "react-router-dom";
-import queryString from "query-string";
 import { ConfigurationContext } from "src/hooks/Config";
 import { stashboxDisplayName } from "src/utils/stashbox";
 import { SceneMovieTable } from "./SceneMovieTable";
@@ -47,6 +48,7 @@ import {
   faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { objectTitle } from "src/core/files";
+import { galleryTitle } from "src/core/galleries";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 
 const SceneScrapeDialog = lazy(() => import("./SceneScrapeDialog"));
@@ -54,6 +56,7 @@ const SceneQueryModal = lazy(() => import("./SceneQueryModal"));
 
 interface IProps {
   scene: Partial<GQL.SceneDataFragment>;
+  fileID?: string;
   initialCoverImage?: string;
   isNew?: boolean;
   isVisible: boolean;
@@ -62,6 +65,7 @@ interface IProps {
 
 export const SceneEditPanel: React.FC<IProps> = ({
   scene,
+  fileID,
   initialCoverImage,
   isNew = false,
   isVisible,
@@ -71,10 +75,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const Toast = useToast();
   const history = useHistory();
 
-  const queryParams = queryString.parse(location.search);
-
-  const fileID = (queryParams?.file_id ?? "") as string;
-
   const [galleries, setGalleries] = useState<{ id: string; title: string }[]>(
     []
   );
@@ -83,17 +83,13 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const [fragmentScrapers, setFragmentScrapers] = useState<GQL.Scraper[]>([]);
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
 
-  const [scraper, setScraper] = useState<GQL.ScraperSourceInput | undefined>();
-  const [
-    isScraperQueryModalOpen,
-    setIsScraperQueryModalOpen,
-  ] = useState<boolean>(false);
+  const [scraper, setScraper] = useState<GQL.ScraperSourceInput>();
+  const [isScraperQueryModalOpen, setIsScraperQueryModalOpen] =
+    useState<boolean>(false);
   const [scrapedScene, setScrapedScene] = useState<GQL.ScrapedScene | null>();
-  const [endpoint, setEndpoint] = useState<string | undefined>();
+  const [endpoint, setEndpoint] = useState<string>();
 
-  const [coverImagePreview, setCoverImagePreview] = useState<
-    string | undefined
-  >();
+  const [coverImagePreview, setCoverImagePreview] = useState<string>();
 
   useEffect(() => {
     setCoverImagePreview(
@@ -105,7 +101,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     setGalleries(
       scene.galleries?.map((g) => ({
         id: g.id,
-        title: objectTitle(g),
+        title: galleryTitle(g),
       })) ?? []
     );
   }, [scene.galleries]);
@@ -129,15 +125,17 @@ export const SceneEditPanel: React.FC<IProps> = ({
     studio_id: yup.string().optional().nullable(),
     performer_ids: yup.array(yup.string().required()).optional().nullable(),
     movies: yup
-      .object({
-        movie_id: yup.string().required(),
-        scene_index: yup.string().optional().nullable(),
-      })
+      .array(
+        yup.object({
+          movie_id: yup.string().required(),
+          scene_index: yup.string().optional().nullable(),
+        })
+      )
       .optional()
       .nullable(),
     tag_ids: yup.array(yup.string().required()).optional().nullable(),
     cover_image: yup.string().optional().nullable(),
-    stash_ids: yup.mixed<GQL.StashIdInput>().optional().nullable(),
+    stash_ids: yup.mixed<GQL.StashIdInput[]>().optional().nullable(),
   });
 
   const initialValues = useMemo(
@@ -286,7 +284,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
         const createValues = getCreateValues(input);
         const result = await mutateCreateScene({
           ...createValues,
-          file_ids: fileID ? [fileID as string] : undefined,
+          file_ids: fileID ? [fileID] : undefined,
         });
         if (result.data?.sceneCreate?.id) {
           history.push(`/scenes/${result.data?.sceneCreate.id}`);
@@ -901,9 +899,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 </Form.Label>
                 <ul className="pl-0">
                   {formik.values.stash_ids.map((stashID) => {
-                    const base = stashID.endpoint.match(
-                      /https?:\/\/.*?\//
-                    )?.[0];
+                    const base =
+                      stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
                     const link = base ? (
                       <a
                         href={`${base}scenes/${stashID.stash_id}`}

@@ -1055,7 +1055,7 @@
       "your_system_has_been_created": "Framgång! Ditt system har skapats!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash försöker att hitta sin konfigurationsfil (<code>config.yml</code>) från den nuvarande arbetsmappen först, och om den inte finns där, letar den i <code>$HOME/.stash/config.yml</code> (för Windows är detta <code>%USERPROFILE%\\.stash\\config.yml</code>). Du kan också låta Stash läsa en specifik konfigurationsfil genom att starta den med <code>-c <path to config file></code> eller <code>--config <path to config file></code> inställningarna.",
+      "config_path_logic_explained": "Stash försöker att hitta sin konfigurationsfil (<code>config.yml</code>) från den nuvarande arbetsmappen först, och om den inte finns där, letar den i <code>$HOME/.stash/config.yml</code> (för Windows är detta <code>%USERPROFILE%\\.stash\\config.yml</code>). Du kan också låta Stash läsa en specifik konfigurationsfil genom att starta den med <code>-c '<path to config file>'</code> eller <code>--config '<path to config file>'</code> inställningarna.",
       "in_current_stash_directory": "I mappen <code>$HOME/.stash</code>",
       "in_the_current_working_directory": "I den nuvarande arbetsmappen",
       "next_step": "Med allt det färdigt, kan vi fortsätta med uppstarten om du är redo. Välj var du skulle vilja lagra din konfigurationsfil och tryck på Nästa.",

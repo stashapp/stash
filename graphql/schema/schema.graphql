@@ -144,6 +144,10 @@ type Query {
 
   # Get everything
 
+  allScenes: [Scene!]!
+  allSceneMarkers: [SceneMarker!]!
+  allImages: [Image!]!
+  allGalleries: [Gallery!]!
   allPerformers: [Performer!]!
   allStudios: [Studio!]!
   allMovies: [Movie!]!
@@ -155,7 +159,7 @@ type Query {
   version: Version!
 
   # LatestVersion
-  latestversion: ShortVersion!
+  latestversion: LatestVersion!
 }
 
 type Mutation {

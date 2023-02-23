@@ -5,8 +5,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import React, { useState, useEffect } from "react";
 import { Button, ButtonGroup, InputGroup, Form } from "react-bootstrap";
-import Icon from "src/components/Shared/Icon";
-import { DurationUtils } from "src/utils";
+import { Icon } from "./Icon";
+import DurationUtils from "src/utils/duration";
 
 interface IProps {
   disabled?: boolean;

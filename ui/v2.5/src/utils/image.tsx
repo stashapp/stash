@@ -66,9 +66,10 @@ const imageToDataURL = async (url: string) => {
   });
 };
 
-const Image = {
+const ImageUtils = {
   onImageChange,
   usePasteImage,
   imageToDataURL,
 };
-export default Image;
+
+export default ImageUtils;

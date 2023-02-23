@@ -1,21 +1,21 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { useLocation } from "react-router-dom";
 import { SceneEditPanel } from "./SceneEditPanel";
-import queryString from "query-string";
 import { useFindScene } from "src/core/StashService";
-import { ImageUtils } from "src/utils";
-import { LoadingIndicator } from "src/components/Shared";
+import ImageUtils from "src/utils/image";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 
 const SceneCreate: React.FC = () => {
   const intl = useIntl();
 
-  // create scene from provided scene id if applicable
-  const queryParams = queryString.parse(location.search);
+  const location = useLocation();
+  const query = useMemo(() => new URLSearchParams(location.search), [location]);
 
-  const fromSceneID = (queryParams?.from_scene_id ?? "") as string;
-  const { data, loading } = useFindScene(fromSceneID ?? "");
+  // create scene from provided scene id if applicable
+  const { data, loading } = useFindScene(query.get("from_scene_id") ?? "");
   const [loadingCoverImage, setLoadingCoverImage] = useState(false);
-  const [coverImage, setCoverImage] = useState<string | undefined>(undefined);
+  const [coverImage, setCoverImage] = useState<string>();
 
   const scene = useMemo(() => {
     if (data?.findScene) {
@@ -26,8 +26,10 @@ const SceneCreate: React.FC = () => {
       };
     }
 
-    return {};
-  }, [data?.findScene]);
+    return {
+      title: query.get("q") ?? undefined,
+    };
+  }, [data?.findScene, query]);
 
   useEffect(() => {
     async function fetchCoverImage() {
@@ -62,6 +64,7 @@ const SceneCreate: React.FC = () => {
         </h2>
         <SceneEditPanel
           scene={scene}
+          fileID={query.get("file_id") ?? undefined}
           initialCoverImage={coverImage}
           isVisible
           isNew

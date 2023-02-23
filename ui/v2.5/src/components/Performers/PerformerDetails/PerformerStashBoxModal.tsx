@@ -4,7 +4,8 @@ import { Button, Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
-import { Modal, LoadingIndicator } from "src/components/Shared";
+import { ModalComponent } from "src/components/Shared/Modal";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { stashboxDisplayName } from "src/utils/stashbox";
 
 const CLASSNAME = "PerformerScrapeModal";
@@ -50,7 +51,7 @@ const PerformerStashBoxModal: React.FC<IProps> = ({
   useEffect(() => inputRef.current?.focus(), []);
 
   return (
-    <Modal
+    <ModalComponent
       show
       onHide={onHide}
       header={`Scrape performer from ${stashboxDisplayName(
@@ -90,7 +91,7 @@ const PerformerStashBoxModal: React.FC<IProps> = ({
           query !== "" && <h5 className="text-center">No results found.</h5>
         )}
       </div>
-    </Modal>
+    </ModalComponent>
   );
 };
 

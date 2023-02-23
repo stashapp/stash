@@ -1,4 +1,4 @@
-import { TextUtils } from "src/utils";
+import TextUtils from "src/utils/text";
 import * as GQL from "src/core/generated-graphql";
 
 interface IFile {

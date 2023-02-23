@@ -9,15 +9,15 @@ import {
   mutateMetadataClean,
   mutateAnonymiseDatabase,
 } from "src/core/StashService";
-import { useToast } from "src/hooks";
-import { downloadFile } from "src/utils";
-import { Modal } from "../../Shared";
+import { useToast } from "src/hooks/Toast";
+import downloadFile from "src/utils/download";
+import { ModalComponent } from "src/components/Shared/Modal";
 import { ImportDialog } from "./ImportDialog";
 import * as GQL from "src/core/generated-graphql";
 import { SettingSection } from "../SettingSection";
 import { BooleanSetting, Setting } from "../Inputs";
 import { ManualLink } from "src/components/Help/context";
-import { Icon } from "src/components/Shared";
+import { Icon } from "src/components/Shared/Icon";
 import { ConfigurationContext } from "src/hooks/Config";
 import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
 import {
@@ -68,7 +68,7 @@ const CleanDialog: React.FC<ICleanDialog> = ({
   }
 
   return (
-    <Modal
+    <ModalComponent
       show
       icon={faTrashAlt}
       disabled={pathSelection && paths.length === 0}
@@ -119,7 +119,7 @@ const CleanDialog: React.FC<ICleanDialog> = ({
 
         {msg}
       </div>
-    </Modal>
+    </ModalComponent>
   );
 };
 
@@ -195,7 +195,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
 
   function renderImportAlert() {
     return (
-      <Modal
+      <ModalComponent
         show={dialogOpen.importAlert}
         icon={faTrashAlt}
         accept={{
@@ -206,7 +206,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
         cancel={{ onClick: () => setDialogOpen({ importAlert: false }) }}
       >
         <p>{intl.formatMessage({ id: "actions.tasks.import_warning" })}</p>
-      </Modal>
+      </ModalComponent>
     );
   }
 

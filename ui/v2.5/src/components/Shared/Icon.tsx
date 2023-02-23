@@ -9,7 +9,7 @@ interface IIcon {
   size?: SizeProp;
 }
 
-const Icon: React.FC<IIcon> = ({ icon, className, color, size }) => (
+export const Icon: React.FC<IIcon> = ({ icon, className, color, size }) => (
   <FontAwesomeIcon
     icon={icon}
     className={`fa-icon ${className ?? ""}`}
@@ -17,5 +17,3 @@ const Icon: React.FC<IIcon> = ({ icon, className, color, size }) => (
     size={size}
   />
 );
-
-export default Icon;

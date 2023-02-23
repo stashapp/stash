@@ -1055,7 +1055,7 @@
       "your_system_has_been_created": "Edukas! Su süsteem on loodud!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash püüab esmalt leida oma konfiguratsioonifaili (<code>config.yml</code>) praegusest töökataloogist ja kui ta seda sealt ei leia, läheb tagasi kausta <code>$HOME/.stash/config. yml</code> (Windowsis on see <code>%USERPROFILE%\\.stash\\config.yml</code>). Samuti saad panna Stashi lugema konkreetsest konfiguratsioonifailist, käivitades selle suvanditega <code>-c <konfiguratsioonifaili tee></code> või <code>--config <konfiguratsioonifaili tee></code>.",
+      "config_path_logic_explained": "Stash püüab esmalt leida oma konfiguratsioonifaili (<code>config.yml</code>) praegusest töökataloogist ja kui ta seda sealt ei leia, läheb tagasi kausta <code>$HOME/.stash/config. yml</code> (Windowsis on see <code>%USERPROFILE%\\.stash\\config.yml</code>). Samuti saad panna Stashi lugema konkreetsest konfiguratsioonifailist, käivitades selle suvanditega <code>-c '<konfiguratsioonifaili tee>'</code> või <code>--config '<konfiguratsioonifaili tee>'</code>.",
       "in_current_stash_directory": "Kaustas <code>$HOME/.stash</code>",
       "in_the_current_working_directory": "Praeguses töökaustas",
       "next_step": "Kui oled valmis uue süsteemi seadistamisega alustama, vali, kuhu soovid oma konfiguratsioonifaili salvestada, ja klõpsa nuppu Edasi.",
