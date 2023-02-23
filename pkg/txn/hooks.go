@@ -35,19 +35,19 @@ func executeHooks(ctx context.Context, hooks []TxnFunc) {
 	}
 }
 
-func executePostCommitHooks(ctx context.Context) {
+func executePostCommitHooks(ctx context.Context, outerCtx context.Context) {
 	m := hookManagerCtx(ctx)
-	executeHooks(ctx, m.postCommitHooks)
+	executeHooks(outerCtx, m.postCommitHooks)
 }
 
-func executePostRollbackHooks(ctx context.Context) {
+func executePostRollbackHooks(ctx context.Context, outerCtx context.Context) {
 	m := hookManagerCtx(ctx)
-	executeHooks(ctx, m.postRollbackHooks)
+	executeHooks(outerCtx, m.postRollbackHooks)
 }
 
-func executePostCompleteHooks(ctx context.Context) {
+func executePostCompleteHooks(ctx context.Context, outerCtx context.Context) {
 	m := hookManagerCtx(ctx)
-	executeHooks(ctx, m.postCompleteHooks)
+	executeHooks(outerCtx, m.postCompleteHooks)
 }
 
 func AddPostCommitHook(ctx context.Context, hook TxnFunc) {
