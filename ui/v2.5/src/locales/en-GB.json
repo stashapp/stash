@@ -296,6 +296,8 @@
           }
         }
       },
+      "funscript_heatmap_draw_range": "Include range in generated heatmaps",
+      "funscript_heatmap_draw_range_desc": "Draw range of motion on the y-axis of the generated heatmap. Existing heatmaps will need to be regenerated after changing.",
       "gallery_ext_desc": "Comma-delimited list of file extensions that will be identified as gallery zip files.",
       "gallery_ext_head": "Gallery zip Extensions",
       "generated_file_naming_hash_desc": "Use MD5 or oshash for generated file naming. Changing this requires that all scenes have the applicable MD5/oshash value populated. After changing this value, existing generated files will need to be migrated or regenerated. See Tasks page for migration.",
@@ -303,6 +305,7 @@
       "generated_files_location": "Directory location for the generated files (scene markers, scene previews, sprites, etc)",
       "generated_path_head": "Generated Path",
       "hashing": "Hashing",
+      "heatmap_generation": "Funscript Heatmap Generation",
       "image_ext_desc": "Comma-delimited list of file extensions that will be identified as images.",
       "image_ext_head": "Image Extensions",
       "include_audio_desc": "Includes audio stream when generating previews.",
