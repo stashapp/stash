@@ -191,8 +191,8 @@ var (
 		format:   FormatWebm,
 		MimeType: MimeWebm,
 		extraArgs: []string{
-			"-global_quality", "25",
-			"-preset", "fast",
+			"-global_quality", "20",
+			"-preset", "faster",
 		},
 	}
 

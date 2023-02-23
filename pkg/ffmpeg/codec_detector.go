@@ -18,15 +18,17 @@ func FindHWCodecs(ctx context.Context, encoder FFMpeg) {
 		StreamFormatN264,
 		StreamFormatI264,
 		StreamFormatIVP9,
-		StreamFormatV264,
 		StreamFormatVVP9,
-		StreamFormatA264,
-		StreamFormatM264,
-		StreamFormatO264,
 		/*
+			Untested:
+				StreamFormatIVP9,
+				StreamFormatVVP9,
+				StreamFormatA264,
+				StreamFormatM264,
+				StreamFormatO264,
 			Buggy:
-				StreamFormatR264
-				StreamFormatV264
+				StreamFormatR264,
+				StreamFormatV264,
 		*/
 	} {
 		var args Args
