@@ -15,5 +15,5 @@ export const releaseNotes: IReleaseNotes[] = [
   {
     date: 20230224,
     content: v0200,
-  }
+  },
 ];
