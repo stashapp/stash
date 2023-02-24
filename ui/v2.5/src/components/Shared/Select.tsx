@@ -30,6 +30,7 @@ import { useIntl } from "react-intl";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import { TagPopover } from "../Tags/TagPopover";
+import { defaultMaxOptionsShown, IUIConfig } from "src/core/config";
 
 export type SelectObject = {
   id: string;
@@ -131,7 +132,10 @@ const getSelectedValues = (selectedItems: OnChangeValue<Option, boolean>) =>
 const LimitedSelectMenu = <T extends boolean>(
   props: MenuListProps<Option, T, GroupBase<Option>>
 ) => {
-  const maxOptionsShown = 200;
+  const { configuration } = React.useContext(ConfigurationContext);
+  const maxOptionsShown =
+    (configuration?.ui as IUIConfig).maxOptionsShown ?? defaultMaxOptionsShown;
+
   const [hiddenCount, setHiddenCount] = useState<number>(0);
   const hiddenCountStyle = {
     padding: "8px 12px",
@@ -166,7 +170,7 @@ const LimitedSelectMenu = <T extends boolean>(
     }
     setHiddenCount(0);
     return props.children;
-  }, [props.children]);
+  }, [props.children, maxOptionsShown]);
   return (
     <reactSelectComponents.MenuList {...props}>
       {menuChildren}
