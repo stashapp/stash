@@ -123,6 +123,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.Metadata, input.MetadataPath)
 	}
 
+	refreshStreamManager := false
 	existingCachePath := c.GetCachePath()
 	if input.CachePath != nil && existingCachePath != *input.CachePath {
 		if err := validateDir(config.Cache, *input.CachePath, true); err != nil {
@@ -130,6 +131,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		}
 
 		c.Set(config.Cache, input.CachePath)
+		refreshStreamManager = true
 	}
 
 	if input.VideoFileNamingAlgorithm != nil && *input.VideoFileNamingAlgorithm != c.GetVideoFileNamingAlgorithm() {
@@ -330,6 +332,9 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	manager.GetInstance().RefreshConfig()
 	if refreshScraperCache {
 		manager.GetInstance().RefreshScraperCache()
+	}
+	if refreshStreamManager {
+		manager.GetInstance().RefreshStreamManager()
 	}
 
 	return makeConfigGeneralResult(), nil

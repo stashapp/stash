@@ -8,46 +8,31 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-var HWCodecSupport []StreamFormat
+var HWCodecSupport []VideoCodec
 
 // Tests all (given) hardware codec's
 func FindHWCodecs(ctx context.Context, encoder FFMpeg) {
 	HWCodecSupport = HWCodecSupport[:0]
 
-	for _, codec := range []StreamFormat{
-		StreamFormatN264,
-		StreamFormatI264,
-		StreamFormatIVP9,
-		StreamFormatVVP9,
-		/*
-			Untested:
-				StreamFormatIVP9,
-				StreamFormatVVP9,
-				StreamFormatA264,
-				StreamFormatM264,
-				StreamFormatO264,
-			Buggy:
-				StreamFormatR264,
-				StreamFormatV264,
-		*/
+	for _, codec := range []VideoCodec{
+		VideoCodecN264,
+		VideoCodecI264,
+		VideoCodecIVP9,
+		VideoCodecVVP9,
 	} {
 		var args Args
 		args = append(args, "-hide_banner")
 		args = args.LogLevel(LogLevelQuiet)
-		args = HWDeviceInit(args, codec.codec)
+		args = HWDeviceInit(args, codec)
 		args = args.Format("lavfi")
 		args = args.Input("color=c=red")
 		args = args.Duration(0.1)
 
-		args = args.VideoCodec(codec.codec)
-		if len(codec.extraArgs) > 0 {
-			args = append(args, codec.extraArgs...)
-		}
-
-		videoFilter := HWFilterInit(codec.codec)
+		videoFilter := HWFilterInit(codec)
 		// Test scaling
 		videoFilter = videoFilter.ScaleDimensions(-2, 160)
-		videoFilter = HWCodecFilter(videoFilter, codec.codec)
+		videoFilter = HWCodecFilter(videoFilter, codec)
+		args = append(args, CodecInit(codec)...)
 		args = args.VideoFilter(videoFilter)
 
 		args = args.Format("null")
@@ -62,7 +47,7 @@ func FindHWCodecs(ctx context.Context, encoder FFMpeg) {
 
 	logger.Info("Supported HW codecs: ")
 	for _, codec := range HWCodecSupport {
-		logger.Info("\t", codec.codec)
+		logger.Info("\t", codec)
 	}
 }
 
@@ -85,7 +70,7 @@ func HWCodecDetect(codec VideoCodec) bool {
 }
 
 // Test full-hardware transcoding on an input video
-func HWCodecVideoSupported(ctx context.Context, encoder FFMpeg, o TranscodeStreamOptions) bool {
+/*func HWCodecVideoSupported(ctx context.Context, encoder FFMpeg, o TranscodeStreamOptions) bool {
 	if !HWCodecDetect(o.Codec.codec) {
 		return false
 	}
@@ -116,7 +101,7 @@ func HWCodecVideoSupported(ctx context.Context, encoder FFMpeg, o TranscodeStrea
 
 	err := cmd.Run()
 	return err == nil
-}
+}*/
 
 // Prepend input for hardware encoding only
 func HWDeviceInit(args Args, codec VideoCodec) Args {
@@ -224,9 +209,9 @@ func HWCodecMaxRes(codec VideoCodec) (int, int) {
 }
 
 // Return if a hardware accelerated H264 codec is available
-func HWCodecH264Compatible() *StreamFormat {
+func HWCodecH264Compatible() *VideoCodec {
 	for _, element := range HWCodecSupport {
-		switch element.codec {
+		switch element {
 		case VideoCodecN264,
 			VideoCodecA264,
 			VideoCodecM264,
@@ -241,9 +226,9 @@ func HWCodecH264Compatible() *StreamFormat {
 }
 
 // Return if a hardware accelerated VP9 codec is available
-func HWCodecVP9Compatible() *StreamFormat {
+func HWCodecVP9Compatible() *VideoCodec {
 	for _, element := range HWCodecSupport {
-		switch element.codec {
+		switch element {
 		case VideoCodecIVP9,
 			VideoCodecVVP9:
 			return &element

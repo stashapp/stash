@@ -56,11 +56,11 @@ func (rs sceneRoutes) Routes() chi.Router {
 
 		// streaming endpoints
 		r.Get("/stream", rs.StreamDirect)
-		r.Get("/stream.mkv", rs.StreamMKV)
-		r.Get("/stream.webm", rs.StreamWebM)
-		r.Get("/stream.m3u8", rs.StreamHLS)
-		r.Get("/stream.ts", rs.StreamTS)
 		r.Get("/stream.mp4", rs.StreamMp4)
+		r.Get("/stream.webm", rs.StreamWebM)
+		r.Get("/stream.mkv", rs.StreamMKV)
+		r.Get("/stream.m3u8", rs.StreamHLS)
+		r.Get("/stream.m3u8/{segment}.ts", rs.StreamHLSSegment)
 
 		r.Get("/screenshot", rs.Screenshot)
 		r.Get("/preview", rs.Preview)
@@ -85,11 +85,25 @@ func (rs sceneRoutes) Routes() chi.Router {
 func (rs sceneRoutes) StreamDirect(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
-	ss := manager.SceneServer{
-		TxnManager:       rs.txnManager,
-		SceneCoverGetter: rs.sceneFinder,
-	}
-	ss.StreamSceneDirect(scene, w, r)
+	fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
+	hash := scene.GetHash(fileNamingAlgo)
+
+	filepath := manager.GetInstance().Paths.Scene.GetStreamPath(scene.Path, hash)
+	streamRequestCtx := ffmpeg.NewStreamRequestContext(w, r)
+
+	// #2579 - hijacking and closing the connection here causes video playback to fail in Safari
+	// We trust that the request context will be closed, so we don't need to call Cancel on the
+	// returned context here.
+	_ = manager.GetInstance().ReadLockManager.ReadLock(streamRequestCtx, filepath)
+	http.ServeFile(w, r, filepath)
+}
+
+func (rs sceneRoutes) StreamMp4(w http.ResponseWriter, r *http.Request) {
+	rs.streamTranscode(w, r, ffmpeg.StreamTypeMP4)
+}
+
+func (rs sceneRoutes) StreamWebM(w http.ResponseWriter, r *http.Request) {
+	rs.streamTranscode(w, r, ffmpeg.StreamTypeWEBM)
 }
 
 func (rs sceneRoutes) StreamMKV(w http.ResponseWriter, r *http.Request) {
@@ -114,148 +128,108 @@ func (rs sceneRoutes) StreamMKV(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rs.streamTranscode(w, r, ffmpeg.StreamFormatMKVAudio)
+	rs.streamTranscode(w, r, ffmpeg.StreamTypeMKV)
 }
 
-func parseQuery(identity string, r *http.Request) {
-	// start stream based on query param, if provided
-	if err := r.ParseForm(); err != nil {
-		logger.Warnf("[%s] error parsing query form: %v", identity, err)
-	}
-}
-
-func (rs sceneRoutes) StreamWebM(w http.ResponseWriter, r *http.Request) {
-	parseQuery("stream", r)
-
-	b, err := strconv.ParseBool(r.Form.Get("hwaccel"))
-	if err == nil && b {
-		if config.GetInstance().GetTranscodeHardwareAcceleration() {
-			codec := ffmpeg.HWCodecVP9Compatible()
-			if codec != nil {
-				rs.streamTranscode(w, r, *codec)
-			}
-		}
-		return
-	}
-	rs.streamTranscode(w, r, ffmpeg.StreamFormatVP9)
-}
-
-func (rs sceneRoutes) StreamMp4(w http.ResponseWriter, r *http.Request) {
-	parseQuery("stream", r)
-
-	b, err := strconv.ParseBool(r.Form.Get("hwaccel"))
-	if err == nil && b {
-		if config.GetInstance().GetTranscodeHardwareAcceleration() {
-			codec := ffmpeg.HWCodecH264Compatible()
-			if codec != nil {
-				rs.streamTranscode(w, r, *codec)
-			}
-		}
-		return
-	}
-	rs.streamTranscode(w, r, ffmpeg.StreamFormatH264)
-}
-
-func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
+func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, streamType ffmpeg.StreamFormat) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
-	pf := scene.Files.Primary()
-	if pf == nil {
+	streamManager := manager.GetInstance().StreamManager
+	if streamManager == nil {
+		http.Error(w, "Live transcoding disabled", http.StatusServiceUnavailable)
 		return
 	}
-
-	logger.Debug("Returning HLS playlist")
-
-	// getting the playlist manifest only
-	w.Header().Set("Content-Type", ffmpeg.MimeHLS)
-	var str strings.Builder
-
-	ffmpeg.WriteHLSPlaylist(pf.Duration, r.URL.String(), &str)
-
-	requestByteRange := createByteRange(r.Header.Get("Range"))
-	if requestByteRange.RawString != "" {
-		logger.Debugf("Requested range: %s", requestByteRange.RawString)
-	}
-
-	ret := requestByteRange.apply([]byte(str.String()))
-	rangeStr := requestByteRange.toHeaderValue(int64(str.Len()))
-	w.Header().Set("Content-Range", rangeStr)
-
-	if n, err := w.Write(ret); err != nil {
-		logger.Warnf("[stream] error writing stream (wrote %v bytes): %v", n, err)
-	}
-}
-
-func (rs sceneRoutes) StreamTS(w http.ResponseWriter, r *http.Request) {
-	rs.streamTranscode(w, r, ffmpeg.StreamFormatHLS)
-}
-
-func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, streamFormat ffmpeg.StreamFormat) {
-	scene := r.Context().Value(sceneKey).(*models.Scene)
 
 	f := scene.Files.Primary()
 	if f == nil {
 		return
 	}
-	logger.Debugf("Streaming as %s", streamFormat.MimeType)
+
+	if err := r.ParseForm(); err != nil {
+		logger.Warnf("[transcode] error parsing query form: %v", err)
+	}
 
 	startTime := r.Form.Get("start")
 	ss, _ := strconv.ParseFloat(startTime, 64)
-	requestedSize := r.Form.Get("resolution")
+	resolution := r.Form.Get("resolution")
 
-	audioCodec := ffmpeg.MissingUnsupported
-	if f.AudioCodec != "" {
-		audioCodec = ffmpeg.ProbeAudioCodec(f.AudioCodec)
+	options := ffmpeg.TranscodeOptions{
+		StreamType:    streamType,
+		VideoFile:     f,
+		Resolution:    resolution,
+		StartTime:     ss,
+		HardwareAccel: config.GetInstance().GetTranscodeHardwareAcceleration(),
 	}
 
-	width := f.Width
-	height := f.Height
+	logger.Debugf("[transcode] streaming scene %d as %s", scene.ID, streamType.MimeType)
+	streamManager.ServeTranscode(w, r, options)
+}
 
-	config := config.GetInstance()
+func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
+	rs.streamManifest(w, r, ffmpeg.StreamTypeHLS, "HLS")
+}
 
-	options := ffmpeg.TranscodeStreamOptions{
-		Input:     f.Path,
-		Codec:     streamFormat,
-		VideoOnly: audioCodec == ffmpeg.MissingUnsupported,
+func (rs sceneRoutes) streamManifest(w http.ResponseWriter, r *http.Request, streamType *ffmpeg.StreamType, logName string) {
+	scene := r.Context().Value(sceneKey).(*models.Scene)
 
-		VideoWidth:  width,
-		VideoHeight: height,
-
-		StartTime:        ss,
-		MaxTranscodeSize: config.GetMaxStreamingTranscodeSize().GetMaxResolution(),
-		ExtraInputArgs:   config.GetLiveTranscodeInputArgs(),
-		ExtraOutputArgs:  config.GetLiveTranscodeOutputArgs(),
-	}
-
-	if requestedSize != "" {
-		options.MaxTranscodeSize = models.StreamingResolutionEnum(requestedSize).GetMaxResolution()
-	}
-
-	encoder := manager.GetInstance().FFMPEG
-
-	lm := manager.GetInstance().ReadLockManager
-	streamRequestCtx := manager.NewStreamRequestContext(w, r)
-	lockCtx := lm.ReadLock(streamRequestCtx, f.Path)
-
-	// hijacking and closing the connection here causes video playback to hang in Chrome
-	// due to ERR_INCOMPLETE_CHUNKED_ENCODING
-	// We trust that the request context will be closed, so we don't need to call Cancel on the returned context here.
-
-	stream, err := encoder.GetTranscodeStream(lockCtx, options)
-
-	if err != nil {
-		logger.Errorf("[stream] error transcoding video file: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
-		if _, err := w.Write([]byte(err.Error())); err != nil {
-			logger.Warnf("[stream] error writing response: %v", err)
-		}
+	streamManager := manager.GetInstance().StreamManager
+	if streamManager == nil {
+		http.Error(w, "Live transcoding disabled", http.StatusServiceUnavailable)
 		return
 	}
 
-	lockCtx.AttachCommand(stream.Cmd)
+	f := scene.Files.Primary()
+	if f == nil {
+		return
+	}
 
-	stream.Serve(w, r)
-	w.(http.Flusher).Flush()
+	if err := r.ParseForm(); err != nil {
+		logger.Warnf("[transcode] error parsing query form: %v", err)
+	}
+
+	resolution := r.Form.Get("resolution")
+
+	logger.Debugf("[transcode] returning %s manifest for scene %d", logName, scene.ID)
+	streamManager.ServeManifest(w, r, streamType, f, resolution)
+}
+
+func (rs sceneRoutes) StreamHLSSegment(w http.ResponseWriter, r *http.Request) {
+	rs.streamSegment(w, r, ffmpeg.StreamTypeHLS)
+}
+
+func (rs sceneRoutes) streamSegment(w http.ResponseWriter, r *http.Request, streamType *ffmpeg.StreamType) {
+	scene := r.Context().Value(sceneKey).(*models.Scene)
+
+	streamManager := manager.GetInstance().StreamManager
+	if streamManager == nil {
+		http.Error(w, "Live transcoding disabled", http.StatusServiceUnavailable)
+		return
+	}
+
+	f := scene.Files.Primary()
+	if f == nil {
+		return
+	}
+
+	if err := r.ParseForm(); err != nil {
+		logger.Warnf("[transcode] error parsing query form: %v", err)
+	}
+
+	fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
+	hash := scene.GetHash(fileNamingAlgo)
+
+	segment := chi.URLParam(r, "segment")
+	resolution := r.Form.Get("resolution")
+
+	options := ffmpeg.StreamOptions{
+		StreamType: streamType,
+		VideoFile:  f,
+		Resolution: resolution,
+		Hash:       hash,
+		Segment:    segment,
+	}
+
+	streamManager.ServeSegment(w, r, options)
 }
 
 func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
@@ -426,7 +400,9 @@ func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang strin
 
 func (rs sceneRoutes) CaptionLang(w http.ResponseWriter, r *http.Request) {
 	// serve caption based on lang query param, if provided
-	parseQuery("caption", r)
+	if err := r.ParseForm(); err != nil {
+		logger.Warnf("[caption] error parsing query form: %v", err)
+	}
 
 	l := r.Form.Get("lang")
 	ext := r.Form.Get("type")
