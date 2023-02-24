@@ -4,6 +4,8 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"os/exec"
+	"strings"
 	"syscall"
 
 	"github.com/stashapp/stash/pkg/file"
@@ -159,10 +161,23 @@ func (sm *StreamManager) getTranscodeStream(ctx *fsutil.LockContext, options Tra
 
 	// stderr must be consumed or the process deadlocks
 	go func() {
-		stderrData, _ := io.ReadAll(stderr)
-		stderrString := string(stderrData)
-		if len(stderrString) > 0 {
-			logger.Debugf("[transcode] ffmpeg stderr: %s", stderrString)
+		errStr, _ := io.ReadAll(stderr)
+
+		errCmd := cmd.Wait()
+
+		var err error
+
+		e := string(errStr)
+		if e != "" {
+			err = errors.New(e)
+		} else {
+			err = errCmd
+		}
+
+		// ignore ExitErrors, the process is always forcibly killed
+		var exitError *exec.ExitError
+		if err != nil && !errors.As(err, &exitError) {
+			logger.Errorf("[transcode] ffmpeg error when running command <%s>: %v", strings.Join(cmd.Args, " "), err)
 		}
 	}()
 
