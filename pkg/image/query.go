@@ -7,11 +7,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-const (
-	coverFilename             = "cover.jpg"
-	coverFilenameSearchString = "%" + coverFilename
-)
-
 type Queryer interface {
 	Query(ctx context.Context, options models.ImageQueryOptions) (*models.ImageQueryResult, error)
 }
@@ -102,9 +97,9 @@ func FindByGalleryID(ctx context.Context, r Queryer, galleryID int, sortBy strin
 	}, &findFilter)
 }
 
-func FindGalleryCover(ctx context.Context, r Queryer, galleryID int) (*models.Image, error) {
+func FindGalleryCover(ctx context.Context, r Queryer, galleryID int, galleryCoverRegex string) (*models.Image, error) {
 	const useCoverJpg = true
-	img, err := findGalleryCover(ctx, r, galleryID, useCoverJpg)
+	img, err := findGalleryCover(ctx, r, galleryID, useCoverJpg, galleryCoverRegex)
 	if err != nil {
 		return nil, err
 	}
@@ -114,10 +109,10 @@ func FindGalleryCover(ctx context.Context, r Queryer, galleryID int) (*models.Im
 	}
 
 	// return the first image in the gallery
-	return findGalleryCover(ctx, r, galleryID, !useCoverJpg)
+	return findGalleryCover(ctx, r, galleryID, !useCoverJpg, galleryCoverRegex)
 }
 
-func findGalleryCover(ctx context.Context, r Queryer, galleryID int, useCoverJpg bool) (*models.Image, error) {
+func findGalleryCover(ctx context.Context, r Queryer, galleryID int, useCoverJpg bool, galleryCoverRegex string) (*models.Image, error) {
 	// try to find cover.jpg in the gallery
 	perPage := 1
 	sortBy := "path"
@@ -138,8 +133,8 @@ func findGalleryCover(ctx context.Context, r Queryer, galleryID int, useCoverJpg
 
 	if useCoverJpg {
 		imageFilter.Path = &models.StringCriterionInput{
-			Value:    coverFilenameSearchString,
-			Modifier: models.CriterionModifierEquals,
+			Value:    "(?i)" + galleryCoverRegex,
+			Modifier: models.CriterionModifierMatchesRegex,
 		}
 	}
 
