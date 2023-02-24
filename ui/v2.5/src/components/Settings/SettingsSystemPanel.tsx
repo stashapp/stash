@@ -315,6 +315,16 @@ export const SettingsConfigurationPanel: React.FC = () => {
         />
       </SettingSection>
 
+      <SettingSection headingID="config.general.heatmap_generation">
+        <BooleanSetting
+          id="heatmap-draw-range"
+          headingID="config.general.funscript_heatmap_draw_range"
+          subHeadingID="config.general.funscript_heatmap_draw_range_desc"
+          checked={general.drawFunscriptHeatmapRange ?? true}
+          onChange={(v) => saveGeneral({ drawFunscriptHeatmapRange: v })}
+        />
+      </SettingSection>
+
       <SettingSection headingID="config.general.logging">
         <StringSetting
           headingID="config.general.auth.log_file"
