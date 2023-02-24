@@ -6,9 +6,10 @@ Assuming the next version is $NEW_VERSION=v0.16.0 or something like that.
 ./bin/release $NEW_VERSION
 ```
 2. git-chglog -o CHANGELOG.md
-3. git commit and push the CHANGELOG.md
-4. Go to https://github.com/99designs/gqlgen/releases and draft new release, autogenerate the release notes, and Create a discussion for this release
-5. Comment on the release discussion with any really important notes (breaking changes)
+3. go generate ./...; cd _examples; go generate ./...; cd ..
+4. git commit and push the CHANGELOG.md
+5. Go to https://github.com/99designs/gqlgen/releases and draft new release, autogenerate the release notes, and Create a discussion for this release
+6. Comment on the release discussion with any really important notes (breaking changes)
 
 I used https://github.com/git-chglog/git-chglog to automate the changelog maintenance process for now. We could just as easily use go releaser to make the whole thing automated.
 

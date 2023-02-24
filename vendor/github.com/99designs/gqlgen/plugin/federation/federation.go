@@ -1,6 +1,7 @@
 package federation
 
 import (
+	_ "embed"
 	"fmt"
 	"sort"
 	"strings"
@@ -14,14 +15,22 @@ import (
 	"github.com/99designs/gqlgen/plugin/federation/fieldset"
 )
 
+//go:embed federation.gotpl
+var federationTemplate string
+
 type federation struct {
 	Entities []*Entity
+	Version  int
 }
 
 // New returns a federation plugin that injects
 // federated directives and types into the schema
-func New() plugin.Plugin {
-	return &federation{}
+func New(version int) plugin.Plugin {
+	if version == 0 {
+		version = 1
+	}
+
+	return &federation{Version: version}
 }
 
 // Name returns the plugin name
@@ -51,6 +60,7 @@ func (f *federation) MutateConfig(cfg *config.Config) error {
 			Model: config.StringList{"github.com/99designs/gqlgen/graphql.Map"},
 		},
 	}
+
 	for typeName, entry := range builtins {
 		if cfg.Models.Exists(typeName) {
 			return fmt.Errorf("%v already exists which must be reserved when Federation is enabled", typeName)
@@ -63,22 +73,46 @@ func (f *federation) MutateConfig(cfg *config.Config) error {
 	cfg.Directives["key"] = config.DirectiveConfig{SkipRuntime: true}
 	cfg.Directives["extends"] = config.DirectiveConfig{SkipRuntime: true}
 
+	// Federation 2 specific directives
+	if f.Version == 2 {
+		cfg.Directives["shareable"] = config.DirectiveConfig{SkipRuntime: true}
+		cfg.Directives["link"] = config.DirectiveConfig{SkipRuntime: true}
+		cfg.Directives["tag"] = config.DirectiveConfig{SkipRuntime: true}
+		cfg.Directives["override"] = config.DirectiveConfig{SkipRuntime: true}
+		cfg.Directives["inaccessible"] = config.DirectiveConfig{SkipRuntime: true}
+	}
+
 	return nil
 }
 
 func (f *federation) InjectSourceEarly() *ast.Source {
-	return &ast.Source{
-		Name: "federation/directives.graphql",
-		Input: `
-scalar _Any
-scalar _FieldSet
+	input := `
+	scalar _Any
+	scalar _FieldSet
 
-directive @external on FIELD_DEFINITION
-directive @requires(fields: _FieldSet!) on FIELD_DEFINITION
-directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
-directive @key(fields: _FieldSet!) repeatable on OBJECT | INTERFACE
-directive @extends on OBJECT | INTERFACE
-`,
+	directive @external on FIELD_DEFINITION
+	directive @requires(fields: _FieldSet!) on FIELD_DEFINITION
+	directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
+	directive @extends on OBJECT | INTERFACE
+`
+	// add version-specific changes on key directive, as well as adding the new directives for federation 2
+	if f.Version == 1 {
+		input += `
+	directive @key(fields: _FieldSet!) repeatable on OBJECT | INTERFACE
+`
+	} else if f.Version == 2 {
+		input += `
+	directive @key(fields: _FieldSet!, resolvable: Boolean = true) repeatable on OBJECT | INTERFACE
+	directive @link(import: [String!], url: String!) repeatable on SCHEMA
+	directive @shareable on OBJECT | FIELD_DEFINITION
+	directive @tag(name: String!) repeatable on FIELD_DEFINITION | INTERFACE | OBJECT | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
+	directive @override(from: String!) on FIELD_DEFINITION
+	directive @inaccessible on SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | INTERFACE | UNION | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
+`
+	}
+	return &ast.Source{
+		Name:    "federation/directives.graphql",
+		Input:   input,
 		BuiltIn: true,
 	}
 }
@@ -164,44 +198,6 @@ type Entity {
 	}
 }
 
-// Entity represents a federated type
-// that was declared in the GQL schema.
-type Entity struct {
-	Name      string // The same name as the type declaration
-	Def       *ast.Definition
-	Resolvers []*EntityResolver
-	Requires  []*Requires
-	Multi     bool
-}
-
-type EntityResolver struct {
-	ResolverName string      // The resolver name, such as FindUserByID
-	KeyFields    []*KeyField // The fields declared in @key.
-	InputType    string      // The Go generated input type for multi entity resolvers
-}
-
-type KeyField struct {
-	Definition *ast.FieldDefinition
-	Field      fieldset.Field        // len > 1 for nested fields
-	Type       *config.TypeReference // The Go representation of that field type
-}
-
-// Requires represents an @requires clause
-type Requires struct {
-	Name  string                // the name of the field
-	Field fieldset.Field        // source Field, len > 1 for nested fields
-	Type  *config.TypeReference // The Go representation of that field type
-}
-
-func (e *Entity) allFieldsAreExternal() bool {
-	for _, field := range e.Def.Fields {
-		if field.Directives.ForName("external") == nil {
-			return false
-		}
-	}
-	return true
-}
-
 func (f *federation) GenerateCode(data *codegen.Data) error {
 	if len(f.Entities) > 0 {
 		if data.Objects.ByName("Entity") != nil {
@@ -244,6 +240,7 @@ func (f *federation) GenerateCode(data *codegen.Data) error {
 		Data:            f,
 		GeneratedHeader: true,
 		Packages:        data.Config.Packages,
+		Template:        federationTemplate,
 	})
 }
 
@@ -288,12 +285,23 @@ func (f *federation) setEntities(schema *ast.Schema) {
 		//    extend TypeDefinedInOtherService @key(fields: "id") {
 		//       id: ID @external
 		//    }
-		if !e.allFieldsAreExternal() {
+		if !e.allFieldsAreExternal(f.Version) {
 			for _, dir := range keys {
-				if len(dir.Arguments) != 1 || dir.Arguments[0].Name != "fields" {
-					panic("Exactly one `fields` argument needed for @key declaration.")
+				if len(dir.Arguments) > 2 {
+					panic("More than two arguments provided for @key declaration.")
 				}
-				arg := dir.Arguments[0]
+				var arg *ast.Argument
+
+				// since keys are able to now have multiple arguments, we need to check both possible for a possible @key(fields="" fields="")
+				for _, a := range dir.Arguments {
+					if a.Name == "fields" {
+						if arg != nil {
+							panic("More than one `fields` provided for @key declaration.")
+						}
+						arg = a
+					}
+				}
+
 				keyFieldSet := fieldset.New(arg.Value.Raw, nil)
 
 				keyFields := make([]*KeyField, len(keyFieldSet))

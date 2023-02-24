@@ -1,6 +1,7 @@
 package graphql
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"strconv"
@@ -55,7 +56,9 @@ func UnmarshalString(v interface{}) (string, error) {
 	case int64:
 		return strconv.FormatInt(v, 10), nil
 	case float64:
-		return fmt.Sprintf("%f", v), nil
+		return strconv.FormatFloat(v, 'f', -1, 64), nil
+	case json.Number:
+		return string(v), nil
 	case bool:
 		if v {
 			return "true", nil

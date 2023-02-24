@@ -26,7 +26,8 @@ func ErrorOnPath(ctx context.Context, err error) error {
 		if gqlErr.Path == nil {
 			gqlErr.Path = GetPath(ctx)
 		}
-		return gqlErr
+		// Return the original error to avoid losing any attached annotation
+		return err
 	}
 	return gqlerror.WrapPath(GetPath(ctx), err)
 }
