@@ -280,8 +280,8 @@ func segmentExists(path string) bool {
 // are of the form {r.URL}/%d.ts{?urlQuery} where %d is the segment index.
 func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request, vf *file.VideoFile, resolution string) {
 	if sm.cacheDir == "" {
-		logger.Error("[transcode] cannot live transcode files because cache dir is unset")
-		http.Error(w, "cannot live transcode files because cache dir is unset", http.StatusServiceUnavailable)
+		logger.Error("[transcode] cannot live transcode with HLS because cache dir is unset")
+		http.Error(w, "cannot live transcode with HLS because cache dir is unset", http.StatusServiceUnavailable)
 		return
 	}
 
