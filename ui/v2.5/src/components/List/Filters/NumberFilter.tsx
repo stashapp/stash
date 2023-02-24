@@ -4,7 +4,7 @@ import { useIntl } from "react-intl";
 import { CriterionModifier } from "../../../core/generated-graphql";
 import { INumberValue } from "../../../models/list-filter/types";
 import { NumberCriterion } from "../../../models/list-filter/criteria/criterion";
-import { Icon } from "src/components/Shared";
+import { Icon } from "src/components/Shared/Icon";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 
 interface IDurationFilterProps {
