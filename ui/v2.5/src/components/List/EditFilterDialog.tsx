@@ -78,6 +78,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     cloneDeep(filter)
   );
   const [criterion, setCriterion] = useState<Criterion<CriterionValue>>();
+  const [newCriterion, setNewCriterion] = useState(false);
 
   const { criteria } = currentFilter;
 
@@ -107,9 +108,11 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
       );
       if (existing) {
         setCriterion(existing);
+        setNewCriterion(false);
       } else {
         const newCriterion = makeCriteria(config, option.type);
         setCriterion(newCriterion);
+        setNewCriterion(true);
       }
     },
     [criteria, config]
