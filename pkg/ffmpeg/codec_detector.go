@@ -200,12 +200,12 @@ func HWCodecFilter(args VideoFilter, codec VideoCodec) VideoFilter {
 	return args
 }
 
-func HWCodecMaxRes(codec VideoCodec) (int, int) {
+func HWCodecMaxRes(codec VideoCodec, dW int, dH int) (int, int) {
 	if codec == VideoCodecN264 {
 		return 4096, 4096
 	}
 
-	return 0, 0
+	return dW, dH
 }
 
 // Return if a hardware accelerated H264 codec is available

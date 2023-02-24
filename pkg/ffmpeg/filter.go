@@ -59,17 +59,23 @@ func (f VideoFilter) ScaleMax(inputWidth, inputHeight, maxSize int) VideoFilter 
 	return f.ScaleDimensions(maxSize, -2)
 }
 
-// ScaleMaxLM returns a VideoFilter scaling to maxSize.
-func (f VideoFilter) ScaleMaxLM(width int, height int, desiredHeight int, maxWidth int, maxHeight int) VideoFilter {
+// ScaleMaxLM returns a VideoFilter scaling to maxSize with respect to a max size.
+func (f VideoFilter) ScaleMaxLM(width int, height int, reqHeight int, maxWidth int, maxHeight int) VideoFilter {
 	// calculate the aspect ratio of the current resolution
 	aspectRatio := width / height
+
+	// find the max height
+	desiredHeight := reqHeight
+	if desiredHeight == 0 {
+		desiredHeight = height
+	}
 
 	// calculate the desired width based on the desired height and the aspect ratio
 	desiredWidth := int(desiredHeight * aspectRatio)
 
 	// check which dimension to scale based on the maximum resolution
-	if (maxHeight != 0 && desiredHeight > maxHeight) || (maxWidth != 0 && desiredWidth > maxWidth) {
-		if maxHeight != 0 && desiredHeight-maxHeight > desiredWidth-maxWidth {
+	if desiredHeight > maxHeight || desiredWidth > maxWidth {
+		if desiredHeight-maxHeight > desiredWidth-maxWidth {
 			// scale the height down to the maximum height
 			return f.ScaleDimensions(-2, maxHeight)
 		} else {
@@ -79,7 +85,7 @@ func (f VideoFilter) ScaleMaxLM(width int, height int, desiredHeight int, maxWid
 	}
 
 	// the current resolution can be scaled to the desired height without exceeding the maximum resolution
-	return f.ScaleMax(width, height, desiredHeight)
+	return f.ScaleMax(width, height, reqHeight)
 }
 
 // Fps returns a VideoFilter setting the frames per second.
