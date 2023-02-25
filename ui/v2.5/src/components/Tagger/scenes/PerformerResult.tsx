@@ -33,10 +33,10 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
       skip: !performer.stored_id,
     });
 
-  const matchedPerformer = performerData?.findPerformer;
-  const matchedStashID = matchedPerformer?.stash_ids.some(
-    (stashID) => stashID.endpoint === endpoint && stashID.stash_id
-  );
+    const matchedPerformer = performerData?.findPerformer;
+    const matchedStashID = matchedPerformer?.stash_ids.some(
+      (stashID) => stashID.endpoint === endpoint && stashID.stash_id === performer.remote_site_id
+    );
 
   const handlePerformerSelect = (performers: SelectObject[]) => {
     if (performers.length) {
