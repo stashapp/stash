@@ -42,6 +42,12 @@ query ListMovieScrapers {
   }
 }
 
+query ScrapeSingleStudio($source: ScraperSourceInput!, $input: ScrapeSingleStudioInput!) {
+  scrapeSingleStudio(source: $source, input: $input) {
+    ...ScrapedStudioData
+  }
+}
+
 query ScrapeSinglePerformer($source: ScraperSourceInput!, $input: ScrapeSinglePerformerInput!) {
   scrapeSinglePerformer(source: $source, input: $input) {
     ...ScrapedPerformerData

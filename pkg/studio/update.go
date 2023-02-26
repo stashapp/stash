@@ -9,7 +9,7 @@ import (
 
 type NameFinderCreator interface {
 	FindByName(ctx context.Context, name string, nocase bool) (*models.Studio, error)
-	Create(ctx context.Context, newStudio models.Studio) (*models.Studio, error)
+	Create(ctx context.Context, input models.StudioDBInput) (*int, error)
 }
 
 type NameExistsError struct {
@@ -53,7 +53,7 @@ func EnsureStudioNameUnique(ctx context.Context, id int, name string, qb Queryer
 	if sameNameStudio != nil && id != sameNameStudio.ID {
 		return &NameUsedByAliasError{
 			Name:        name,
-			OtherStudio: sameNameStudio.Name.String,
+			OtherStudio: sameNameStudio.Name,
 		}
 	}
 

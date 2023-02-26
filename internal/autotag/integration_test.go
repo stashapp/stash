@@ -5,7 +5,6 @@ package autotag
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -97,14 +96,16 @@ func createPerformer(ctx context.Context, pqb models.PerformerWriter) error {
 	return nil
 }
 
-func createStudio(ctx context.Context, qb models.StudioWriter, name string) (*models.Studio, error) {
+func createStudio(ctx context.Context, qb models.StudioWriter, name string) (*int, error) {
 	// create the studio
-	studio := models.Studio{
-		Checksum: name,
-		Name:     sql.NullString{Valid: true, String: name},
+	studioDBInput := models.StudioDBInput{
+		StudioCreate: &models.Studio{
+			Checksum: name,
+			Name:     name,
+		},
 	}
 
-	return qb.Create(ctx, studio)
+	return qb.Create(ctx, studioDBInput)
 }
 
 func createTag(ctx context.Context, qb models.TagWriter) error {
@@ -495,12 +496,11 @@ func populateDB() error {
 		}
 
 		// create existing studio
-		existingStudio, err := createStudio(ctx, r.Studio, existingStudioName)
+		createdID, err := createStudio(ctx, r.Studio, existingStudioName)
 		if err != nil {
 			return err
 		}
-
-		existingStudioID = existingStudio.ID
+		existingStudioID = *createdID
 
 		err = createTag(ctx, r.Tag)
 		if err != nil {

@@ -58,7 +58,7 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
     return (
       <>
         <dt>
-          <FormattedMessage id="StashIDs" />
+          <FormattedMessage id="stash_ids" />
         </dt>
         <dd>
           <ul className="pl-0">

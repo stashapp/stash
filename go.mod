@@ -11,6 +11,7 @@ require (
 	github.com/disintegration/imaging v1.6.0
 	github.com/fvbommel/sortorder v1.0.2
 	github.com/go-chi/chi v4.0.2+incompatible
+	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/golang-jwt/jwt/v4 v4.0.0
 	github.com/golang-migrate/migrate/v4 v4.15.0-beta.1
 	github.com/gorilla/securecookie v1.1.1

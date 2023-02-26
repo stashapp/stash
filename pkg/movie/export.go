@@ -58,7 +58,7 @@ func ToJSON(ctx context.Context, reader ImageGetter, studioReader studio.Finder,
 		}
 
 		if studio != nil {
-			newMovieJSON.Studio = studio.Name.String
+			newMovieJSON.Studio = studio.Name
 		}
 	}
 

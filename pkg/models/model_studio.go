@@ -1,38 +1,76 @@
 package models
 
 import (
-	"database/sql"
+	"context"
 	"time"
 
 	"github.com/stashapp/stash/pkg/hash/md5"
 )
 
 type Studio struct {
-	ID        int             `db:"id" json:"id"`
-	Checksum  string          `db:"checksum" json:"checksum"`
-	Name      sql.NullString  `db:"name" json:"name"`
-	URL       sql.NullString  `db:"url" json:"url"`
-	ParentID  sql.NullInt64   `db:"parent_id,omitempty" json:"parent_id"`
-	CreatedAt SQLiteTimestamp `db:"created_at" json:"created_at"`
-	UpdatedAt SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	ID        int       `json:"id"`
+	Checksum  string    `json:"checksum"`
+	Name      string    `json:"name"`
+	URL       string    `json:"url"`
+	ParentID  *int      `json:"parent_id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 	// Rating expressed in 1-100 scale
-	Rating        sql.NullInt64  `db:"rating" json:"rating"`
-	Details       sql.NullString `db:"details" json:"details"`
-	IgnoreAutoTag bool           `db:"ignore_auto_tag" json:"ignore_auto_tag"`
+	Rating        *int   `json:"rating"`
+	Details       string `json:"details"`
+	IgnoreAutoTag bool   `json:"ignore_auto_tag"`
+
+	ImageBytes []byte
+
+	Aliases  RelatedStrings  `json:"aliases"`
+	StashIDs RelatedStashIDs `json:"stash_ids"`
 }
 
+func (s *Studio) LoadAliases(ctx context.Context, l AliasLoader) error {
+	return s.Aliases.load(func() ([]string, error) {
+		return l.GetAliases(ctx, s.ID)
+	})
+}
+
+func (s *Studio) LoadStashIDs(ctx context.Context, l StashIDLoader) error {
+	return s.StashIDs.load(func() ([]StashID, error) {
+		return l.GetStashIDs(ctx, s.ID)
+	})
+}
+
+func (s *Studio) LoadRelationships(ctx context.Context, l PerformerReader) error {
+	if err := s.LoadAliases(ctx, l); err != nil {
+		return err
+	}
+
+	if err := s.LoadStashIDs(ctx, l); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// StudioPartial represents part of a Studio object. It is used to update the database entry.
 type StudioPartial struct {
-	ID        int              `db:"id" json:"id"`
-	Checksum  *string          `db:"checksum" json:"checksum"`
-	Name      *sql.NullString  `db:"name" json:"name"`
-	URL       *sql.NullString  `db:"url" json:"url"`
-	ParentID  *sql.NullInt64   `db:"parent_id,omitempty" json:"parent_id"`
-	CreatedAt *SQLiteTimestamp `db:"created_at" json:"created_at"`
-	UpdatedAt *SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	ID       int
+	Checksum OptionalString
+	Name     OptionalString
+	URL      OptionalString
+	ParentID OptionalInt
 	// Rating expressed in 1-100 scale
-	Rating        *sql.NullInt64  `db:"rating" json:"rating"`
-	Details       *sql.NullString `db:"details" json:"details"`
-	IgnoreAutoTag *bool           `db:"ignore_auto_tag" json:"ignore_auto_tag"`
+	Rating        OptionalInt
+	Details       OptionalString
+	CreatedAt     OptionalTime
+	UpdatedAt     OptionalTime
+	IgnoreAutoTag OptionalBool
+
+	// True if the image should be updated with ImageBytes
+	ImageIncluded bool
+	// Either contains the image, or is empty if the image should be removed
+	ImageBytes []byte
+
+	Aliases  *UpdateStrings
+	StashIDs *UpdateStashIDs
 }
 
 var DefaultStudioImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4wgVBQsJl1CMZAAAASJJREFUeNrt3N0JwyAYhlEj3cj9R3Cm5rbkqtAP+qrnGaCYHPwJpLlaa++mmLpbAERAgAgIEAEBIiBABERAgAgIEAEBIiBABERAgAgIEAHZuVflj40x4i94zhk9vqsVvEq6AsQqMP1EjORx20OACAgQRRx7T+zzcFBxcjNDfoB4ntQqTm5Awo7MlqywZxcgYQ+RlqywJ3ozJAQCSBiEJSsQA0gYBpDAgAARECACAkRAgAgIEAERECACAmSjUv6eAOSB8m8YIGGzBUjYbAESBgMkbBkDEjZbgITBAClcxiqQvEoatreYIWEBASIgJ4Gkf11ntXH3nS9uxfGWfJ5J9hAgAgJEQAQEiIAAERAgAgJEQAQEiIAAERAgAgJEQAQEiL7qBuc6RKLHxr0CAAAAAElFTkSuQmCC"
@@ -41,9 +79,16 @@ func NewStudio(name string) *Studio {
 	currentTime := time.Now()
 	return &Studio{
 		Checksum:  md5.FromString(name),
-		Name:      sql.NullString{String: name, Valid: true},
-		CreatedAt: SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt: SQLiteTimestamp{Timestamp: currentTime},
+		Name:      name,
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
+	}
+}
+
+func NewStudioPartial() StudioPartial {
+	updatedTime := time.Now()
+	return StudioPartial{
+		UpdatedAt: NewOptionalTime(updatedTime),
 	}
 }
 
@@ -55,4 +100,13 @@ func (s *Studios) Append(o interface{}) {
 
 func (s *Studios) New() interface{} {
 	return &Studio{}
+}
+
+// TODO: Seems like a good candidate for generics
+type StudioDBInput struct {
+	StudioCreate *Studio
+	StudioUpdate *StudioPartial
+
+	ParentCreate *Studio
+	ParentUpdate *StudioPartial
 }

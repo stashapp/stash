@@ -14,30 +14,57 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type StashBoxPerformerTagTask struct {
+type StashBoxTagTaskType int
+
+const (
+	Performer StashBoxTagTaskType = iota
+	Studio
+)
+
+type StashBoxBatchTagTask struct {
 	box             *models.StashBox
 	name            *string
 	performer       *models.Performer
+	studio          *models.Studio
 	refresh         bool
+	create_parent   bool
 	excluded_fields []string
+	task_type       StashBoxTagTaskType
 }
 
-func (t *StashBoxPerformerTagTask) Start(ctx context.Context) {
-	t.stashBoxPerformerTag(ctx)
-}
-
-func (t *StashBoxPerformerTagTask) Description() string {
-	var name string
-	if t.name != nil {
-		name = *t.name
-	} else if t.performer != nil {
-		name = t.performer.Name
+func (t *StashBoxBatchTagTask) Start(ctx context.Context) {
+	switch t.task_type {
+	case Performer:
+		t.stashBoxPerformerTag(ctx)
+	case Studio:
+		t.stashBoxStudioTag(ctx)
+	default:
+		logger.Errorf("Error starting batch task, unknown task_type %d", t.task_type)
 	}
-
-	return fmt.Sprintf("Tagging performer %s from stash-box", name)
 }
 
-func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
+func (t *StashBoxBatchTagTask) Description() string {
+	if t.task_type == Performer {
+		var name string
+		if t.name != nil {
+			name = *t.name
+		} else {
+			name = t.performer.Name
+		}
+		return fmt.Sprintf("Tagging performer %s from stash-box", name)
+	} else if t.task_type == Studio {
+		var name string
+		if t.name != nil {
+			name = *t.name
+		} else {
+			name = t.studio.Name
+		}
+		return fmt.Sprintf("Tagging studio %s from stash-box", name)
+	}
+	return fmt.Sprintf("Uknown tagging task type %d from stash-box", t.task_type)
+}
+
+func (t *StashBoxBatchTagTask) stashBoxPerformerTag(ctx context.Context) {
 	var performer *models.ScrapedPerformer
 	var err error
 
@@ -51,7 +78,14 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 	if t.refresh {
 		var performerID string
 		txnErr := txn.WithReadTxn(ctx, instance.Repository, func(ctx context.Context) error {
-			stashids, _ := instance.Repository.Performer.GetStashIDs(ctx, t.performer.ID)
+			if !t.performer.StashIDs.Loaded() {
+				err = t.performer.LoadStashIDs(ctx, instance.Repository.Performer)
+				if err != nil {
+					return err
+				}
+			}
+			stashids := t.performer.StashIDs.List()
+
 			for _, id := range stashids {
 				if id.Endpoint == t.box.Endpoint {
 					performerID = id.StashID
@@ -135,6 +169,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 			if performer.Measurements != nil && !excluded["measurements"] {
 				partial.Measurements = models.NewOptionalString(*performer.Measurements)
 			}
+			//TODO: This seems incorrect, is there a reason it's opposite?
 			if excluded["name"] && performer.Name != nil {
 				partial.Name = models.NewOptionalString(*performer.Name)
 			}
@@ -256,6 +291,260 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 		}
 		logger.Infof("No match found for %s", name)
 	}
+}
+
+func (t *StashBoxBatchTagTask) stashBoxStudioTag(ctx context.Context) {
+	var studio *models.ScrapedStudio
+	var err error
+
+	client := stashbox.NewClient(*t.box, instance.Repository, stashbox.Repository{
+		Scene:     instance.Repository.Scene,
+		Performer: instance.Repository.Performer,
+		Tag:       instance.Repository.Tag,
+		Studio:    instance.Repository.Studio,
+	})
+
+	if t.refresh {
+		var remoteID string
+		txnErr := txn.WithReadTxn(ctx, instance.Repository, func(ctx context.Context) error {
+			if !t.studio.StashIDs.Loaded() {
+				err = t.studio.LoadStashIDs(ctx, instance.Repository.Studio)
+				if err != nil {
+					return err
+				}
+			}
+			stashids := t.studio.StashIDs.List()
+
+			for _, id := range stashids {
+				if id.Endpoint == t.box.Endpoint {
+					remoteID = id.StashID
+				}
+			}
+			return nil
+		})
+		if txnErr != nil {
+			logger.Warnf("error while executing read transaction: %v", err)
+		}
+		if remoteID != "" {
+			studio, err = client.FindStashBoxStudio(ctx, remoteID)
+		}
+	} else {
+		var name string
+		if t.name != nil {
+			name = *t.name
+		} else {
+			name = t.studio.Name
+		}
+		studio, err = client.FindStashBoxStudio(ctx, name)
+	}
+
+	if err != nil {
+		logger.Errorf("Error fetching studio data from stash-box: %s", err.Error())
+		return
+	}
+
+	excluded := map[string]bool{}
+	for _, field := range t.excluded_fields {
+		excluded[field] = true
+	}
+
+	// studio will have a value if pulling from Stash-box by Stash ID or name was successful
+	if studio != nil {
+		var dbInput models.StudioDBInput
+		var err error
+
+		// Refreshing an existing studio
+		if t.studio != nil {
+			if studio.Parent != nil && t.create_parent {
+				if studio.Parent.StoredID == nil {
+					// The parent needs to be created
+					dbInput.ParentCreate, err = studioFromScrapedStudio(ctx, studio.Parent, t.box.Endpoint, excluded)
+					if err != nil {
+						logger.Errorf("Failed to make parent studio from scraped studio %s: %s", studio.Parent.Name, err.Error())
+						return
+					}
+				} else {
+					// The parent studio matched an existing one and the user has chosen in the UI to link and/or update it
+					dbInput.ParentUpdate, err = studioPartialFromScrapedStudio(ctx, studio.Parent, studio.Parent.StoredID, t.box.Endpoint, excluded)
+					if err != nil {
+						logger.Errorf("Failed to make parent studio partial from scraped studio %s: %s", studio.Parent.Name, err.Error())
+						return
+					}
+				}
+			}
+
+			dbInput.StudioUpdate, err = studioPartialFromScrapedStudio(ctx, studio, studio.StoredID, t.box.Endpoint, excluded)
+			if err != nil {
+				logger.Errorf("Failed to make studio partial from scraped studio %s: %s", studio.Name, err.Error())
+				return
+			}
+
+			// Start the transaction and update the studio
+			err = txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
+				qb := instance.Repository.Studio
+
+				if err := ValidateModifyStudio(ctx, *dbInput.StudioUpdate, qb); err != nil {
+					return err
+				}
+
+				_, err = qb.UpdatePartial(ctx, dbInput)
+				return err
+			})
+			if err != nil {
+				logger.Errorf("Failed to execute partial update of studio %s: %s", studio.Name, err.Error())
+			} else {
+				logger.Infof("Updated studio %s", studio.Name)
+			}
+
+			//TODO: This wasn't previously part of batch performer updates, but it probably should be for both perfomer and studio?
+			/*
+				if runParentCreateHook {
+					r.hookExecutor.ExecutePostHooks(ctx, *updatedStudio.ParentID, plugin.StudioCreatePost, input, nil)
+				} else if runParentUpdateHook {
+					r.hookExecutor.ExecutePostHooks(ctx, *updatedStudio.ParentID, plugin.StudioUpdatePost, input, parentTranslator.getFields())
+				}
+				r.hookExecutor.ExecutePostHooks(ctx, updatedStudio.ID, plugin.StudioUpdatePost, input, translator.getFields())
+			*/
+		} else if t.name != nil && studio.Name != "" {
+			// Creating a new studio
+			if studio.Parent != nil && t.create_parent {
+				if studio.Parent.StoredID == nil {
+					// The parent needs to be created
+					dbInput.ParentCreate, err = studioFromScrapedStudio(ctx, studio.Parent, t.box.Endpoint, excluded)
+					if err != nil {
+						logger.Errorf("Failed to make parent studio from scraped studio %s: %s", studio.Parent.Name, err.Error())
+						return
+					}
+				} else {
+					// The parent studio matched an existing one and the user has chosen in the UI to link and/or update it
+					dbInput.ParentUpdate, err = studioPartialFromScrapedStudio(ctx, studio.Parent, studio.Parent.StoredID, t.box.Endpoint, excluded)
+					if err != nil {
+						logger.Errorf("Failed to make parent studio partial from scraped studio %s: %s", studio.Parent.Name, err.Error())
+						return
+					}
+				}
+			}
+
+			dbInput.StudioCreate, err = studioFromScrapedStudio(ctx, studio, t.box.Endpoint, excluded)
+			if err != nil {
+				logger.Errorf("Failed to make studio from scraped studio %s: %s", studio.Name, err.Error())
+				return
+			}
+
+			// Start the transaction and save the studio
+			err = txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
+				qb := instance.Repository.Studio
+				_, err = qb.Create(ctx, dbInput)
+				return err
+			})
+			if err != nil {
+				logger.Errorf("Failed to save studio %s: %s", studio.Name, err.Error())
+			} else {
+				logger.Infof("Saved studio %s", studio.Name)
+			}
+
+			//TODO: This wasn't previously part of batch performer updates, but it probably should be for both perfomer and studio?
+			/*
+				if runParentCreateHook {
+					r.hookExecutor.ExecutePostHooks(ctx, *newStudio.ParentID, plugin.StudioCreatePost, input, nil)
+				} else if runParentUpdateHook {
+					r.hookExecutor.ExecutePostHooks(ctx, *newStudio.ParentID, plugin.StudioUpdatePost, input, parentTranslator.getFields())
+				}
+				r.hookExecutor.ExecutePostHooks(ctx, studioID, plugin.StudioCreatePost, input, nil)
+			*/
+		}
+	} else {
+		var name string
+		if t.name != nil {
+			name = *t.name
+		} else if t.studio != nil {
+			name = t.studio.Name
+		}
+		logger.Infof("No match found for %s", name)
+	}
+}
+
+// Duplicated in internal/identify/studio.go
+func studioFromScrapedStudio(ctx context.Context, input *models.ScrapedStudio, endpoint string, excluded map[string]bool) (*models.Studio, error) {
+	// Populate a new studio from the input
+	newStudio := models.Studio{
+		Name: input.Name,
+		StashIDs: models.NewRelatedStashIDs([]models.StashID{
+			{
+				Endpoint: endpoint,
+				StashID:  *input.RemoteSiteID,
+			},
+		}),
+	}
+
+	if input.URL != nil && !excluded["url"] {
+		newStudio.URL = *input.URL
+	}
+
+	if input.Parent != nil && input.Parent.StoredID != nil && !excluded["parent"] {
+		parentId, _ := strconv.Atoi(*input.Parent.StoredID)
+		newStudio.ParentID = &parentId
+	}
+
+	// Process the base 64 encoded image string
+	if input.Image != nil && !excluded["image"] {
+		var err error
+		newStudio.ImageBytes, err = utils.ProcessImageInput(ctx, *input.Image)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &newStudio, nil
+}
+
+// Duplicated in internal/identify/studio.go
+func studioPartialFromScrapedStudio(ctx context.Context, input *models.ScrapedStudio, id *string, endpoint string, excluded map[string]bool) (*models.StudioPartial, error) {
+	partial := models.NewStudioPartial()
+	partial.ID, _ = strconv.Atoi(*id)
+
+	if input.Name != "" && !excluded["name"] {
+		partial.Name = models.NewOptionalString(input.Name)
+
+	}
+
+	if input.URL != nil && !excluded["url"] {
+		partial.URL = models.NewOptionalString(*input.URL)
+	}
+
+	if input.Parent != nil && !excluded["parent"] {
+		if input.Parent.StoredID != nil {
+			parentID, _ := strconv.Atoi(*input.Parent.StoredID)
+			if parentID > 0 {
+				// This is to be set directly as we know it has a value and the translator won't have the field
+				partial.ParentID = models.NewOptionalInt(parentID)
+			}
+		}
+	} else {
+		partial.ParentID = models.NewOptionalIntPtr(nil)
+	}
+
+	// Process the base 64 encoded image string
+	if len(input.Images) > 0 && !excluded["image"] {
+		partial.ImageIncluded = true
+		var err error
+		partial.ImageBytes, err = utils.ProcessImageInput(ctx, input.Images[0])
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	partial.StashIDs = &models.UpdateStashIDs{
+		StashIDs: []models.StashID{
+			{
+				Endpoint: endpoint,
+				StashID:  *input.RemoteSiteID,
+			},
+		},
+		Mode: models.RelationshipUpdateModeSet,
+	}
+
+	return &partial, nil
 }
 
 func getDate(val *string) *models.Date {

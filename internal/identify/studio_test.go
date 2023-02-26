@@ -21,27 +21,43 @@ func Test_createMissingStudio(t *testing.T) {
 
 	repo := mocks.NewTxnRepository()
 	mockStudioReaderWriter := repo.Studio.(*mocks.StudioReaderWriter)
-	mockStudioReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p models.Studio) bool {
-		return p.Name.String == validName
-	})).Return(&models.Studio{
+	mockStudioReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p models.StudioDBInput) bool {
+		return p.StudioCreate.Name == validName
+	})).Return(&createdID, nil)
+	mockStudioReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p models.StudioDBInput) bool {
+		return p.StudioCreate.Name == invalidName
+	})).Return(nil, errors.New("error creating studio"))
+
+	mockStudioReaderWriter.On("UpdatePartial", testCtx, models.StudioDBInput{
+		StudioUpdate: &models.StudioPartial{
+			ID: createdID,
+			StashIDs: &models.UpdateStashIDs{
+				StashIDs: []models.StashID{
+					{
+						Endpoint: invalidEndpoint,
+						StashID:  remoteSiteID,
+					},
+				},
+				Mode: models.RelationshipUpdateModeSet,
+			},
+		},
+	}).Return(nil, errors.New("error updating stash ids"))
+	mockStudioReaderWriter.On("UpdatePartial", testCtx, models.StudioDBInput{
+		StudioUpdate: &models.StudioPartial{
+			ID: createdID,
+			StashIDs: &models.UpdateStashIDs{
+				StashIDs: []models.StashID{
+					{
+						Endpoint: validEndpoint,
+						StashID:  remoteSiteID,
+					},
+				},
+				Mode: models.RelationshipUpdateModeSet,
+			},
+		},
+	}).Return(models.Studio{
 		ID: createdID,
 	}, nil)
-	mockStudioReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p models.Studio) bool {
-		return p.Name.String == invalidName
-	})).Return(nil, errors.New("error creating performer"))
-
-	mockStudioReaderWriter.On("UpdateStashIDs", testCtx, createdID, []models.StashID{
-		{
-			Endpoint: invalidEndpoint,
-			StashID:  remoteSiteID,
-		},
-	}).Return(errors.New("error updating stash ids"))
-	mockStudioReaderWriter.On("UpdateStashIDs", testCtx, createdID, []models.StashID{
-		{
-			Endpoint: validEndpoint,
-			StashID:  remoteSiteID,
-		},
-	}).Return(nil)
 
 	type args struct {
 		endpoint string
@@ -58,7 +74,8 @@ func Test_createMissingStudio(t *testing.T) {
 			args{
 				emptyEndpoint,
 				&models.ScrapedStudio{
-					Name: validName,
+					Name:         validName,
+					RemoteSiteID: &remoteSiteID,
 				},
 			},
 			&createdID,
@@ -69,7 +86,8 @@ func Test_createMissingStudio(t *testing.T) {
 			args{
 				emptyEndpoint,
 				&models.ScrapedStudio{
-					Name: invalidName,
+					Name:         invalidName,
+					RemoteSiteID: &remoteSiteID,
 				},
 			},
 			nil,
@@ -86,18 +104,6 @@ func Test_createMissingStudio(t *testing.T) {
 			},
 			&createdID,
 			false,
-		},
-		{
-			"invalid stash id",
-			args{
-				invalidEndpoint,
-				&models.ScrapedStudio{
-					Name:         validName,
-					RemoteSiteID: &remoteSiteID,
-				},
-			},
-			nil,
-			true,
 		},
 	}
 	for _, tt := range tests {
@@ -116,47 +122,53 @@ func Test_createMissingStudio(t *testing.T) {
 
 func Test_scrapedToStudioInput(t *testing.T) {
 	const name = "name"
-	const md5 = "b068931cc450442b63f5b3d276ea4297"
 	url := "url"
+	remoteSiteID := "remoteSiteID"
 
 	tests := []struct {
 		name   string
 		studio *models.ScrapedStudio
-		want   models.Studio
+		want   *models.Studio
 	}{
 		{
 			"set all",
 			&models.ScrapedStudio{
-				Name: name,
-				URL:  &url,
+				Name:         name,
+				URL:          &url,
+				RemoteSiteID: &remoteSiteID,
 			},
-			models.Studio{
-				Name:     models.NullString(name),
-				Checksum: md5,
-				URL:      models.NullString(url),
+			&models.Studio{
+				Name: name,
+				URL:  url,
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{
+					{
+						StashID: remoteSiteID,
+					},
+				}),
 			},
 		},
 		{
 			"set none",
 			&models.ScrapedStudio{
-				Name: name,
+				Name:         name,
+				RemoteSiteID: &remoteSiteID,
 			},
-			models.Studio{
-				Name:     models.NullString(name),
-				Checksum: md5,
+			&models.Studio{
+				Name: name,
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{
+					{
+						StashID: remoteSiteID,
+					},
+				}),
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := scrapedToStudioInput(tt.studio)
-
-			// clear created/updated dates
-			got.CreatedAt = models.SQLiteTimestamp{}
-			got.UpdatedAt = got.CreatedAt
+			got, _ := studioFromScrapedStudio(testCtx, tt.studio, "")
 
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("scrapedToStudioInput() = %v, want %v", got, tt.want)
+				t.Errorf("%s, scrapedToStudioInput() = %v, want %v", tt.name, got, tt.want)
 			}
 		})
 	}

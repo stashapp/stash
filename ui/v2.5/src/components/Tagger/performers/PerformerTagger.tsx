@@ -418,7 +418,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
             type="radio"
             name="performer-query"
             label={<FormattedMessage id="performer_tagger.current_page" />}
-            defaultChecked
+            defaultChecked={!queryAll}
             onChange={() => setQueryAll(false)}
           />
           <Form.Check
@@ -428,7 +428,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
             label={intl.formatMessage({
               id: "performer_tagger.query_all_performers_in_the_database",
             })}
-            defaultChecked={false}
+            defaultChecked={queryAll}
             onChange={() => setQueryAll(true)}
           />
         </Form.Group>
@@ -445,7 +445,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
             label={intl.formatMessage({
               id: "performer_tagger.untagged_performers",
             })}
-            defaultChecked
+            defaultChecked={!refresh}
             onChange={() => setRefresh(false)}
           />
           <Form.Text>
@@ -458,7 +458,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
             label={intl.formatMessage({
               id: "performer_tagger.refresh_tagged_performers",
             })}
-            defaultChecked={false}
+            defaultChecked={refresh}
             onChange={() => setRefresh(true)}
           />
           <Form.Text>
@@ -582,9 +582,10 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
 
       if (names.length > 0) {
         const ret = await mutateStashBoxBatchPerformerTag({
-          performer_names: names,
+          names: names,
           endpoint: selectedEndpointIndex,
           refresh: false,
+          createParent: false,
         });
 
         setBatchJobID(ret.data?.stashBoxBatchPerformerTag);
@@ -595,10 +596,11 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
   async function batchUpdate(ids: string[] | undefined, refresh: boolean) {
     if (config && selectedEndpoint) {
       const ret = await mutateStashBoxBatchPerformerTag({
-        performer_ids: ids,
+        ids: ids,
         endpoint: selectedEndpointIndex,
         refresh,
         exclude_fields: config.excludedPerformerFields ?? [],
+        createParent: false,
       });
 
       setBatchJobID(ret.data?.stashBoxBatchPerformerTag);

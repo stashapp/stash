@@ -80,6 +80,9 @@ type Query {
   """Scrape for multiple scenes"""
   scrapeMultiScenes(source: ScraperSourceInput!, input: ScrapeMultiScenesInput!): [[ScrapedScene!]!]!
 
+  """Scrape for a single studio"""
+  scrapeSingleStudio(source: ScraperSourceInput!, input: ScrapeSingleStudioInput!): [ScrapedStudio!]!
+
   """Scrape for a single performer"""
   scrapeSinglePerformer(source: ScraperSourceInput!, input: ScrapeSinglePerformerInput!): [ScrapedPerformer!]!
   """Scrape for multiple performers"""
@@ -311,7 +314,9 @@ type Mutation {
   backupDatabase(input: BackupDatabaseInput!): String
 
   """Run batch performer tag task. Returns the job ID."""
-  stashBoxBatchPerformerTag(input: StashBoxBatchPerformerTagInput!): String!
+  stashBoxBatchPerformerTag(input: StashBoxBatchTagInput!): String!
+  """Run batch studio tag task. Returns the job ID."""
+  stashBoxBatchStudioTag(input: StashBoxBatchTagInput!): String!
 
   """Enables DLNA for an optional duration. Has no effect if DLNA is enabled by default"""
   enableDLNA(input: EnableDLNAInput!): Boolean!

@@ -132,6 +132,7 @@ export const SceneTaggerModals: React.FC = ({ children }) => {
             { id: "actions.create_entity" },
             { entityType: intl.formatMessage({ id: "studio" }) }
           )}
+          endpoint={endpoint}
         />
       )}
       {children}

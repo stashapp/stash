@@ -516,21 +516,6 @@ func (r *stashIDRepository) get(ctx context.Context, id int) ([]models.StashID, 
 	return []models.StashID(ret), err
 }
 
-func (r *stashIDRepository) replace(ctx context.Context, id int, newIDs []models.StashID) error {
-	if err := r.destroy(ctx, []int{id}); err != nil {
-		return err
-	}
-
-	query := fmt.Sprintf("INSERT INTO %s (%s, endpoint, stash_id) VALUES (?, ?, ?)", r.tableName, r.idColumn)
-	for _, stashID := range newIDs {
-		_, err := r.tx.Exec(ctx, query, id, stashID.Endpoint, stashID.StashID)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 type filesRepository struct {
 	repository
 }

@@ -18,8 +18,7 @@ const (
 	movieNameErr      = "movieNameErr"
 	existingMovieName = "existingMovieName"
 
-	existingMovieID  = 100
-	existingStudioID = 101
+	existingMovieID = 100
 
 	existingStudioName = "existingStudioName"
 	existingStudioErr  = "existingStudioErr"
@@ -27,6 +26,8 @@ const (
 
 	errImageID = 3
 )
+
+var existingStudioID = 101
 
 var testCtx = context.Background()
 
@@ -112,9 +113,7 @@ func TestImporterPreImportWithMissingStudio(t *testing.T) {
 	}
 
 	studioReaderWriter.On("FindByName", testCtx, missingStudioName, false).Return(nil, nil).Times(3)
-	studioReaderWriter.On("Create", testCtx, mock.AnythingOfType("models.Studio")).Return(&models.Studio{
-		ID: existingStudioID,
-	}, nil)
+	studioReaderWriter.On("Create", testCtx, mock.AnythingOfType("models.StudioDBInput")).Return(&existingStudioID, nil)
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
@@ -145,7 +144,7 @@ func TestImporterPreImportWithMissingStudioCreateErr(t *testing.T) {
 	}
 
 	studioReaderWriter.On("FindByName", testCtx, missingStudioName, false).Return(nil, nil).Once()
-	studioReaderWriter.On("Create", testCtx, mock.AnythingOfType("models.Studio")).Return(nil, errors.New("Create error"))
+	studioReaderWriter.On("Create", testCtx, mock.AnythingOfType("models.StudioDBInput")).Return(nil, errors.New("Create error"))
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
