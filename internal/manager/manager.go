@@ -108,8 +108,9 @@ type Manager struct {
 
 	Paths *paths.Paths
 
-	FFMPEG  ffmpeg.FFMpeg
-	FFProbe ffmpeg.FFProbe
+	FFMPEG        ffmpeg.FFMpeg
+	FFProbe       ffmpeg.FFProbe
+	StreamManager *ffmpeg.StreamManager
 
 	ReadLockManager *fsutil.ReadLockManager
 
@@ -430,6 +431,7 @@ func initFFMPEG(ctx context.Context) error {
 
 		instance.FFMPEG = ffmpeg.FFMpeg(ffmpegPath)
 		instance.FFProbe = ffmpeg.FFProbe(ffprobePath)
+		instance.RefreshStreamManager()
 	}
 
 	return nil
@@ -562,6 +564,19 @@ func (s *Manager) RefreshConfig() {
 // configuration changes.
 func (s *Manager) RefreshScraperCache() {
 	s.ScraperCache = s.initScraperCache()
+}
+
+// RefreshStreamManager refreshes the stream manager. Call this when cache directory
+// changes.
+func (s *Manager) RefreshStreamManager() {
+	// shutdown existing manager if needed
+	if s.StreamManager != nil {
+		s.StreamManager.Shutdown()
+		s.StreamManager = nil
+	}
+
+	cacheDir := s.Config.GetCachePath()
+	s.StreamManager = ffmpeg.NewStreamManager(cacheDir, s.FFMPEG, s.FFProbe, s.Config, s.ReadLockManager)
 }
 
 func setSetupDefaults(input *SetupInput) {
@@ -734,6 +749,11 @@ func (s *Manager) GetSystemStatus() *SystemStatus {
 func (s *Manager) Shutdown(code int) {
 	// stop any profiling at exit
 	pprof.StopCPUProfile()
+
+	if s.StreamManager != nil {
+		s.StreamManager.Shutdown()
+		s.StreamManager = nil
+	}
 
 	// TODO: Each part of the manager needs to gracefully stop at some point
 	// for now, we just close the database.

@@ -84,6 +84,9 @@ input ConfigGeneralInput {
   These are applied when live transcoding"""
   liveTranscodeOutputArgs: [String!]
 
+  """whether to include range in generated funscript heatmaps"""
+  drawFunscriptHeatmapRange: Boolean
+
   """Write image thumbnails to disk when generating on the fly"""
   writeImageThumbnails: Boolean
   """Username"""
@@ -104,6 +107,8 @@ input ConfigGeneralInput {
   logAccess: Boolean
   """True if galleries should be created from folders with images"""
   createGalleriesFromFolders: Boolean
+  """Regex used to identify images as gallery covers"""
+  galleryCoverRegex: String  
   """Array of video file extensions"""
   videoExtensions: [String!]
   """Array of image file extensions"""
@@ -182,6 +187,9 @@ type ConfigGeneralResult {
   These are applied when live transcoding"""
   liveTranscodeOutputArgs: [String!]!
 
+  """whether to include range in generated funscript heatmaps"""
+  drawFunscriptHeatmapRange: Boolean!
+
   """Write image thumbnails to disk when generating on the fly"""
   writeImageThumbnails: Boolean!
   """API Key"""
@@ -210,6 +218,8 @@ type ConfigGeneralResult {
   galleryExtensions: [String!]!
   """True if galleries should be created from folders with images"""
   createGalleriesFromFolders: Boolean!
+  """Regex used to identify images as gallery covers"""
+  galleryCoverRegex: String!
   """Array of file regexp to exclude from Video Scans"""
   excludes: [String!]!
   """Array of file regexp to exclude from Image Scans"""

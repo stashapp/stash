@@ -20,6 +20,7 @@ import (
 const apiReleases string = "https://api.github.com/repos/stashapp/stash/releases"
 const apiTags string = "https://api.github.com/repos/stashapp/stash/tags"
 const apiAcceptHeader string = "application/vnd.github.v3+json"
+const developmentTag string = "latest_develop"
 const defaultSHLength int = 8 // default length of SHA short hash returned by <git rev-parse --short HEAD>
 
 var stashReleases = func() map[string]string {
@@ -168,21 +169,19 @@ func GetLatestRelease(ctx context.Context) (*LatestRelease, error) {
 	platform := fmt.Sprintf("%s/%s", runtime.GOOS, arch)
 	wantedRelease := stashReleases()[platform]
 
-	var release githubReleasesResponse
+	url := apiReleases
 	if IsDevelop() {
-		// get the latest release, prerelease or not
-		releases := []githubReleasesResponse{}
-		err := makeGithubRequest(ctx, apiReleases+"?per_page=1", &releases)
-		if err != nil {
-			return nil, err
-		}
-		release = releases[0]
+		// get the release tagged with the development tag
+		url += "/tags/" + developmentTag
 	} else {
 		// just get the latest full release
-		err := makeGithubRequest(ctx, apiReleases+"/latest", &release)
-		if err != nil {
-			return nil, err
-		}
+		url += "/latest"
+	}
+
+	var release githubReleasesResponse
+	err := makeGithubRequest(ctx, url, &release)
+	if err != nil {
+		return nil, err
 	}
 
 	version := release.Name
