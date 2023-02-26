@@ -1,3 +1,11 @@
+fragment ScrapedStudioData on ScrapedStudio {
+  stored_id
+  name
+  url
+  image
+  remote_site_id
+}
+
 fragment ScrapedPerformerData on ScrapedPerformer {
   stored_id
   name

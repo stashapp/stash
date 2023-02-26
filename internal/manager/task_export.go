@@ -1133,7 +1133,7 @@ func (t *ExportTask) ExportScrapedItems(ctx context.Context, repo Repository) {
 		if scrapedItem.StudioID.Valid {
 			studio, _ := sqb.Find(ctx, int(scrapedItem.StudioID.Int64))
 			if studio != nil {
-				studioName = studio.Name.String
+				studioName = studio.Name
 			}
 		}
 

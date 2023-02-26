@@ -51,7 +51,7 @@ func GetStudioName(ctx context.Context, reader studio.Finder, gallery *models.Ga
 		}
 
 		if studio != nil {
-			return studio.Name.String, nil
+			return studio.Name, nil
 		}
 	}
 

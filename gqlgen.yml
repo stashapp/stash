@@ -78,8 +78,8 @@ models:
     model: github.com/stashapp/stash/internal/manager.AutoTagMetadataInput
   CleanMetadataInput:
     model: github.com/stashapp/stash/internal/manager.CleanMetadataInput
-  StashBoxBatchPerformerTagInput:
-    model: github.com/stashapp/stash/internal/manager.StashBoxBatchPerformerTagInput
+  StashBoxBatchTagInput:
+    model: github.com/stashapp/stash/internal/manager.StashBoxBatchTagInput
   SceneStreamEndpoint:
     model: github.com/stashapp/stash/internal/manager.SceneStreamEndpoint
   ExportObjectTypeInput:

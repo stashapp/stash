@@ -1,5 +1,6 @@
 import React, { useContext, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import cx from "classnames";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 import * as GQL from "src/core/generated-graphql";
@@ -7,17 +8,18 @@ import { useFindStudio } from "src/core/StashService";
 import { Icon } from "src/components/Shared/Icon";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
-import { TaggerStateContext } from "../context";
-import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
-import { Form } from "react-bootstrap";
+import { faCheck, faExternalLinkAlt, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { Button, Form } from "react-bootstrap";
 
 interface IStudioModalProps {
   studio: GQL.ScrapedSceneStudioDataFragment;
   modalVisible: boolean;
   closeModal: () => void;
   handleStudioCreate: (input: GQL.StudioCreateInput) => void;
+  excludedStudioFields?: string[];
   header: string;
   icon: IconDefinition;
+  endpoint?: string;
 }
 
 const StudioModal: React.FC<IStudioModalProps> = ({
@@ -25,11 +27,25 @@ const StudioModal: React.FC<IStudioModalProps> = ({
   studio,
   handleStudioCreate,
   closeModal,
+  excludedStudioFields = [],
   header,
   icon,
+  endpoint,
 }) => {
-  const { currentSource } = useContext(TaggerStateContext);
   const intl = useIntl();
+
+  const [excluded, setExcluded] = useState<Record<string, boolean>>(
+    excludedStudioFields.reduce(
+      (dict, field) => ({ ...dict, [field]: true }),
+      {}
+    )
+  );
+  const toggleField = (name: string) =>
+    setExcluded({
+      ...excluded,
+      [name]: !excluded[name],
+    });
+
 
   const [createParentStudio, setCreateParentStudio] = useState<boolean>(
     !!studio.parent
@@ -47,7 +63,9 @@ const StudioModal: React.FC<IStudioModalProps> = ({
       throw new Error("studio name must set");
     }
 
-    const studioData: GQL.StudioCreateInput = {
+    const studioData: GQL.StudioCreateInput & {
+      [index: string]: unknown;
+    } = {
       name: studio.name,
       url: studio.url,
       image: studio.image,
@@ -55,21 +73,30 @@ const StudioModal: React.FC<IStudioModalProps> = ({
 
     // stashid handling code
     const remoteSiteID = studio.remote_site_id;
-    if (remoteSiteID && currentSource?.stashboxEndpoint) {
+    if (remoteSiteID && endpoint) {
       studioData.stash_ids = [
         {
-          endpoint: currentSource.stashboxEndpoint,
+          endpoint,
           stash_id: remoteSiteID,
         },
       ];
     }
+
+    // handle exclusions
+    Object.keys(studioData).forEach((k) => {
+      if (excluded[k] || !studioData[k]) {
+        studioData[k] = undefined;
+      }
+    });
 
     if (createParentStudio) {
       if (!studio.parent?.name) {
         throw new Error("parent studio name must set");
       }
 
-      const parentData: GQL.StudioCreateInput = {
+      const parentData: GQL.StudioCreateInput & {
+        [index: string]: unknown;
+      } = {
         name: studio.parent?.name,
         url: studio.parent?.url,
         image: studio.parent?.image,
@@ -77,14 +104,21 @@ const StudioModal: React.FC<IStudioModalProps> = ({
 
       // stashid handling code
       const remoteSiteID = studio.parent?.remote_site_id;
-      if (remoteSiteID && currentSource?.stashboxEndpoint) {
+      if (remoteSiteID && endpoint) {
         parentData.stash_ids = [
           {
-            endpoint: currentSource.stashboxEndpoint,
+            endpoint,
             stash_id: remoteSiteID,
           },
         ];
       }
+
+      // handle exclusions
+      Object.keys(parentData).forEach((k) => {
+        if (excluded[k] || !parentData[k]) {
+          parentData[k] = undefined;
+        }
+      });
 
       studioData.parent = parentData;
     }
@@ -100,12 +134,21 @@ const StudioModal: React.FC<IStudioModalProps> = ({
     text && (
       <div className="row no-gutters">
         <div className="col-5 studio-create-modal-field" key={id}>
+          <Button
+            onClick={() => toggleField(id)}
+            variant="secondary"
+            className={excluded[id] ? "text-muted" : "text-success"}
+          >
+            <Icon icon={excluded[id] ? faTimes : faCheck} />
+          </Button>
           <strong>
             <FormattedMessage id={id} />:
           </strong>
         </div>
         {truncate ? (
-          <TruncatedText className="col-7" text={text} />
+          <div className="col-7">
+            <TruncatedText text={text} />
+          </div>
         ) : (
           <span className="col-7">{text}</span>
         )}
@@ -182,7 +225,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
     );
   }
 
-  const base = currentSource?.stashboxEndpoint?.match(/https?:\/\/.*?\//)?.[0];
+  const base = endpoint?.match(/https?:\/\/.*?\//)?.[0];
   const link = base ? `${base}studios/${studio.remote_site_id}` : undefined;
   const parent_link = base
     ? `${base}studios/${studio.parent?.remote_site_id}`
@@ -195,20 +238,34 @@ const StudioModal: React.FC<IStudioModalProps> = ({
         text: intl.formatMessage({ id: "actions.save" }),
         onClick: onSave,
       }}
-      onHide={() => closeModal()}
       cancel={{ onClick: () => closeModal(), variant: "secondary" }}
+      onHide={() => closeModal()}
+      dialogClassName="studio-create-modal"
       icon={icon}
       header={header}
     >
-      <div className="row mb-4">
-        <img
-          className="col-12 studio-card-image"
-          src={studio.image ?? ""}
-          alt=""
-        />
+      <div className="row">
+        <div className="col-12 image-selection">
+          <div className="studio-image">
+            <Button
+              onClick={() => toggleField("image")}
+              variant="secondary"
+              className={cx(
+                "studio-image-exclude",
+                excluded.image ? "text-muted" : "text-success"
+              )}
+            >
+              <Icon icon={excluded.image ? faTimes : faCheck} />
+            </Button>
+            <img
+              src={studio.image ?? ""}
+              alt=""
+            />
+          </div>
+        </div>
       </div>
 
-      <div className="row mb-4">
+      <div className="row">
         <div className="col-12">
           {renderField("name", studio.name)}
           {renderField("url", studio.url)}

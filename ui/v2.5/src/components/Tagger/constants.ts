@@ -25,6 +25,7 @@ export const DEFAULT_BLACKLIST = [
   "\\]",
 ];
 export const DEFAULT_EXCLUDED_PERFORMER_FIELDS = ["name"];
+export const DEFAULT_EXCLUDED_STUDIO_FIELDS = ["name"];
 
 export const initialConfig: ITaggerConfig = {
   blacklist: DEFAULT_BLACKLIST,
@@ -35,6 +36,7 @@ export const initialConfig: ITaggerConfig = {
   tagOperation: "merge",
   fingerprintQueue: {},
   excludedPerformerFields: DEFAULT_EXCLUDED_PERFORMER_FIELDS,
+  excludedStudioFields: DEFAULT_EXCLUDED_STUDIO_FIELDS,
 };
 
 export type ParseMode = "auto" | "filename" | "dir" | "path" | "metadata";
@@ -49,6 +51,7 @@ export interface ITaggerConfig {
   selectedEndpoint?: string;
   fingerprintQueue: Record<string, string[]>;
   excludedPerformerFields?: string[];
+  excludedStudioFields?: string[];
 }
 
 export const PERFORMER_FIELDS = [
@@ -73,4 +76,11 @@ export const PERFORMER_FIELDS = [
   "details",
   "death_date",
   "weight",
+];
+
+export const STUDIO_FIELDS = [
+  "name",
+  "image",
+  "url",
+  "parent",
 ];

@@ -165,8 +165,8 @@ query FindSceneByID($id: ID!) {
   }
 }
 
-query FindStudioByID($id: ID!) {
-  findStudio(id: $id) {
+query FindStudio($id: ID, $name: String) {
+  findStudio(id: $id, name: $name) {
     ...StudioFragment
   }
 }

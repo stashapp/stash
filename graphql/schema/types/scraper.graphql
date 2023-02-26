@@ -157,6 +157,11 @@ input ScrapeMultiScenesInput {
   scene_ids: [ID!]
 }
 
+input ScrapeSingleStudioInput {
+  """Query can be either a name or a Stash ID"""
+  query: String
+}
+
 input ScrapeSinglePerformerInput {
   """Instructs to query by string"""
   query: String
@@ -218,16 +223,16 @@ type StashBoxFingerprint {
   duration: Int!
 }
 
-"""If neither performer_ids nor performer_names are set, tag all performers"""
-input StashBoxBatchPerformerTagInput {
-  "Stash endpoint to use for the performer tagging"
+"""If neither ids nor names are set, tag all items"""
+input StashBoxBatchTagInput {
+  "Stash endpoint to use for the tagging"
   endpoint: Int!
-  "Fields to exclude when executing the performer tagging"
+  "Fields to exclude when executing the tagging"
   exclude_fields: [String!]
-  "Refresh performers already tagged by StashBox if true. Only tag performers with no StashBox tagging if false"
+  "Refresh items already tagged by StashBox if true. Only tag items with no StashBox tagging if false"
   refresh: Boolean!
-  "If set, only tag these performer ids"
-  performer_ids: [ID!]
-  "If set, only tag these performer names"
-  performer_names: [String!]
+  "If set, only tag these ids"
+  ids: [ID!]
+  "If set, only tag these names"
+  names: [String!]
 }

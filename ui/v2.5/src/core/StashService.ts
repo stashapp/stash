@@ -1221,10 +1221,18 @@ export const mutateAnonymiseDatabase = (input: GQL.AnonymiseDatabaseInput) =>
   });
 
 export const mutateStashBoxBatchPerformerTag = (
-  input: GQL.StashBoxBatchPerformerTagInput
+  input: GQL.StashBoxBatchTagInput
 ) =>
   client.mutate<GQL.StashBoxBatchPerformerTagMutation>({
     mutation: GQL.StashBoxBatchPerformerTagDocument,
+    variables: { input },
+  });
+
+export const mutateStashBoxBatchStudioTag = (
+  input: GQL.StashBoxBatchTagInput
+) =>
+  client.mutate<GQL.StashBoxBatchStudioTagMutation>({
+    mutation: GQL.StashBoxBatchStudioTagDocument,
     variables: { input },
   });
 
@@ -1300,6 +1308,22 @@ export const stashBoxPerformerQuery = (
       },
       input: {
         query: searchVal,
+      },
+    },
+  });
+
+export const stashBoxStudioQuery = (
+  query: string | null,
+  stashBoxIndex: number
+) =>
+  client.query<GQL.ScrapeSingleStudioQuery>({
+    query: GQL.ScrapeSingleStudioDocument,
+    variables: {
+      source: {
+        stash_box_index: stashBoxIndex,
+      },
+      input: {
+        query: query,
       },
     },
   });

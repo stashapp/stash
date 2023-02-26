@@ -19,6 +19,7 @@ import (
 	"golang.org/x/text/language"
 
 	"github.com/Yamashou/gqlgenc/graphqljson"
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
@@ -747,9 +748,9 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 				return err
 			}
 
-			var parent_studio *graphql.FindStudioByID
+			var parent_studio *graphql.FindStudio
 			if s.Studio.Parent != nil {
-				parent_studio, err = c.client.FindStudioByID(ctx, s.Studio.Parent.ID)
+				parent_studio, err = c.client.FindStudio(ctx, &s.Studio.Parent.ID, nil)
 				if err != nil {
 					return err
 				}
@@ -821,6 +822,30 @@ func (c Client) FindStashBoxPerformerByName(ctx context.Context, name string) (*
 	return ret, nil
 }
 
+func (c Client) FindStashBoxStudio(ctx context.Context, query string) (*models.ScrapedStudio, error) {
+	var studio *graphql.FindStudio
+
+	_, err := uuid.FromString(query)
+	if err == nil {
+		// Confirmed the user passed in a Stash ID
+		studio, err = c.client.FindStudio(ctx, &query, nil)
+	} else {
+		// Otherwise assume they're searching on a name
+		studio, err = c.client.FindStudio(ctx, nil, &query)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	var ret *models.ScrapedStudio
+	if studio.FindStudio != nil {
+		ret = studioFragmentToScrapedStudio(*studio.FindStudio)
+	}
+
+	return ret, nil
+}
+
 func (c Client) GetUser(ctx context.Context) (*graphql.Me, error) {
 	return c.client.Me(ctx)
 }
@@ -869,7 +894,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 			return nil, err
 		}
 		studioDraft := graphql.DraftEntityInput{
-			Name: studio.Name.String,
+			Name: studio.Name,
 		}
 
 		stashIDs, err := sqb.GetStashIDs(ctx, studio.ID)

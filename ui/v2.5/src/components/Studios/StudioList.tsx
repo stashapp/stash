@@ -18,6 +18,7 @@ import { queryFindStudios, useStudiosDestroy } from "src/core/StashService";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { StudioCard } from "./StudioCard";
+import { StudioTagger } from "../Tagger/studios/StudioTagger";
 
 interface IStudioList {
   fromParent?: boolean;
@@ -171,6 +172,11 @@ export const StudioList: React.FC<IStudioList> = ({
     }
     if (filter.displayMode === DisplayMode.Wall) {
       return <h1>TODO</h1>;
+    }
+    if (filter.displayMode === DisplayMode.Tagger) {
+      return (
+        <StudioTagger studios={result.data.findStudios.studios} />
+      );
     }
   }
 

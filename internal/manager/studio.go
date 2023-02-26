@@ -10,26 +10,31 @@ import (
 )
 
 func ValidateModifyStudio(ctx context.Context, studio models.StudioPartial, qb studio.Finder) error {
-	if studio.ParentID == nil || !studio.ParentID.Valid {
+	existing, err := qb.Find(ctx, studio.ID)
+	if err != nil {
+		return err
+	}
+	if existing == nil {
+		return fmt.Errorf("studio with id %d not found", studio.ID)
+	}
+
+	if !studio.ParentID.Set {
 		return nil
 	}
 
 	// ensure there is no cyclic dependency
 	thisID := studio.ID
+	currentParentID := studio.ParentID
 
-	currentParentID := *studio.ParentID
+	if currentParentID.Value == thisID {
+		return errors.New("studio cannot be an ancestor of itself")
+	}
 
-	for currentParentID.Valid {
-		if currentParentID.Int64 == int64(thisID) {
-			return errors.New("studio cannot be an ancestor of itself")
-		}
-
-		currentStudio, err := qb.Find(ctx, int(currentParentID.Int64))
-		if err != nil {
-			return fmt.Errorf("error finding parent studio: %v", err)
-		}
-
-		currentParentID = currentStudio.ParentID
+	parentStudio, err := qb.Find(ctx, currentParentID.Value)
+	if err != nil {
+		return fmt.Errorf("error finding parent studio: %v", err)
+	} else if parentStudio.ParentID == &thisID {
+		return errors.New("studio is already parent studio of the new parent studio")
 	}
 
 	return nil

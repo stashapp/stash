@@ -31,8 +31,13 @@ func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input
 	return client.SubmitStashBoxFingerprints(ctx, input.SceneIds, boxes[input.StashBoxIndex].Endpoint)
 }
 
-func (r *mutationResolver) StashBoxBatchPerformerTag(ctx context.Context, input manager.StashBoxBatchPerformerTagInput) (string, error) {
+func (r *mutationResolver) StashBoxBatchPerformerTag(ctx context.Context, input manager.StashBoxBatchTagInput) (string, error) {
 	jobID := manager.GetInstance().StashBoxBatchPerformerTag(ctx, input)
+	return strconv.Itoa(jobID), nil
+}
+
+func (r *mutationResolver) StashBoxBatchStudioTag(ctx context.Context, input manager.StashBoxBatchTagInput) (string, error) {
+	jobID := manager.GetInstance().StashBoxBatchStudioTag(ctx, input)
 	return strconv.Itoa(jobID), nil
 }
 

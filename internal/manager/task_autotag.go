@@ -269,7 +269,7 @@ func (j *autoTagJob) autoTagStudios(ctx context.Context, progress *job.Progress,
 
 					return nil
 				}(); err != nil {
-					return fmt.Errorf("error auto-tagging studio '%s': %s", studio.Name.String, err.Error())
+					return fmt.Errorf("error auto-tagging studio '%s': %s", studio.Name, err.Error())
 				}
 
 				progress.Increment()

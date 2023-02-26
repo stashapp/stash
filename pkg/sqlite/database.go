@@ -66,6 +66,7 @@ type Database struct {
 	Gallery   *GalleryStore
 	Scene     *SceneStore
 	Performer *PerformerStore
+	Studio    *StudioStore
 
 	db     *sqlx.DB
 	dbPath string
@@ -86,6 +87,7 @@ func NewDatabase() *Database {
 		Image:     NewImageStore(fileStore),
 		Gallery:   NewGalleryStore(fileStore, folderStore),
 		Performer: NewPerformerStore(),
+		Studio:    NewStudioStore(),
 		lockChan:  make(chan struct{}, 1),
 	}
 

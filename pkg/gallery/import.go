@@ -118,12 +118,13 @@ func (i *Importer) populateStudio(ctx context.Context) error {
 func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
 	newStudio := *models.NewStudio(name)
 
-	created, err := i.StudioWriter.Create(ctx, newStudio)
+	err := i.StudioWriter.Create(ctx, &newStudio)
 	if err != nil {
 		return 0, err
 	}
 
-	return created.ID, nil
+	id := newStudio.ID
+	return id, nil
 }
 
 func (i *Importer) populatePerformers(ctx context.Context) error {
