@@ -17,9 +17,6 @@
     "gqlgen": "gql-gen --config codegen.yml",
     "extract": "NODE_ENV=development extract-messages -l=en,de -o src/locale -d en --flat false 'src/**/!(*.test).tsx'"
   },
-  "browserslist": [
-    ">0.5% and supports es6-module-dynamic-import"
-  ],
   "dependencies": {
     "@ant-design/react-slick": "^1.0.0",
     "@apollo/client": "^3.7.8",
@@ -93,6 +90,7 @@
     "@types/videojs-seek-buttons": "^2.1.0",
     "@typescript-eslint/eslint-plugin": "^5.52.0",
     "@typescript-eslint/parser": "^5.52.0",
+    "@vitejs/plugin-legacy": "^4.0.1",
     "@vitejs/plugin-react": "^3.1.0",
     "eslint": "^8.34.0",
     "eslint-config-airbnb": "^19.0.4",
@@ -109,6 +107,7 @@
     "sass": "^1.58.1",
     "stylelint": "^15.1.0",
     "stylelint-order": "^6.0.2",
+    "terser": "^5.9.0",
     "ts-node": "^10.9.1",
     "typescript": "~4.8.4",
     "vite": "^4.1.1",
