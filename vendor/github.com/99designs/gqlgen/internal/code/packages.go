@@ -151,7 +151,7 @@ func (p *Packages) NameForPackage(importPath string) string {
 	pkg := p.packages[importPath]
 
 	if pkg == nil {
-		// otherwise do a name only lookup for it but dont put it in the package cache.
+		// otherwise do a name only lookup for it but don't put it in the package cache.
 		p.numNameCalls++
 		pkgs, err := packages.Load(&packages.Config{Mode: packages.NeedName}, importPath)
 		if err != nil {

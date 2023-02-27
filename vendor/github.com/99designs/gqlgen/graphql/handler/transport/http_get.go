@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/99designs/gqlgen/graphql"
@@ -27,15 +28,22 @@ func (h GET) Supports(r *http.Request) bool {
 }
 
 func (h GET) Do(w http.ResponseWriter, r *http.Request, exec graphql.GraphExecutor) {
+	query, err := url.ParseQuery(r.URL.RawQuery)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		writeJsonError(w, err.Error())
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
 
 	raw := &graphql.RawParams{
-		Query:         r.URL.Query().Get("query"),
-		OperationName: r.URL.Query().Get("operationName"),
+		Query:         query.Get("query"),
+		OperationName: query.Get("operationName"),
+		Headers:       r.Header,
 	}
 	raw.ReadTime.Start = graphql.Now()
 
-	if variables := r.URL.Query().Get("variables"); variables != "" {
+	if variables := query.Get("variables"); variables != "" {
 		if err := jsonDecode(strings.NewReader(variables), &raw.Variables); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			writeJsonError(w, "variables could not be decoded")
@@ -43,7 +51,7 @@ func (h GET) Do(w http.ResponseWriter, r *http.Request, exec graphql.GraphExecut
 		}
 	}
 
-	if extensions := r.URL.Query().Get("extensions"); extensions != "" {
+	if extensions := query.Get("extensions"); extensions != "" {
 		if err := jsonDecode(strings.NewReader(extensions), &raw.Extensions); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			writeJsonError(w, "extensions could not be decoded")
@@ -53,10 +61,10 @@ func (h GET) Do(w http.ResponseWriter, r *http.Request, exec graphql.GraphExecut
 
 	raw.ReadTime.End = graphql.Now()
 
-	rc, err := exec.CreateOperationContext(r.Context(), raw)
-	if err != nil {
-		w.WriteHeader(statusFor(err))
-		resp := exec.DispatchError(graphql.WithOperationContext(r.Context(), rc), err)
+	rc, gqlError := exec.CreateOperationContext(r.Context(), raw)
+	if gqlError != nil {
+		w.WriteHeader(statusFor(gqlError))
+		resp := exec.DispatchError(graphql.WithOperationContext(r.Context(), rc), gqlError)
 		writeJson(w, resp)
 		return
 	}

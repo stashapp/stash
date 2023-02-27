@@ -118,6 +118,11 @@ func getOrCreateAndAppendField(c *[]CollectedField, name string, alias string, o
 					return &(*c)[i]
 				}
 			}
+			for _, ifc := range cf.ObjectDefinition.Interfaces {
+				if ifc == objectDefinition.Name {
+					return &(*c)[i]
+				}
+			}
 		}
 	}
 

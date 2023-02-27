@@ -45,7 +45,7 @@ func (s *Imports) Reserve(path string, aliases ...string) (string, error) {
 		panic("empty ambient import")
 	}
 
-	// if we are referencing our own package we dont need an import
+	// if we are referencing our own package we don't need an import
 	if code.ImportPathForDir(s.destDir) == path {
 		return "", nil
 	}
@@ -85,7 +85,7 @@ func (s *Imports) Lookup(path string) string {
 
 	path = code.NormalizeVendor(path)
 
-	// if we are referencing our own package we dont need an import
+	// if we are referencing our own package we don't need an import
 	if code.ImportPathForDir(s.destDir) == path {
 		return ""
 	}

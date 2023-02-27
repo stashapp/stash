@@ -39,12 +39,16 @@ func CompatibleTypes(expected types.Type, actual types.Type) error {
 		}
 
 	case *types.Basic:
-		if actual, ok := actual.(*types.Basic); ok {
-			if actual.Kind() != expected.Kind() {
-				return fmt.Errorf("basic kind differs, %s != %s", expected.Name(), actual.Name())
+		if actualBasic, ok := actual.(*types.Basic); ok {
+			if similarBasicKind(actualBasic.Kind()) != expected.Kind() {
+				return fmt.Errorf("basic kind differs, %s != %s", expected.Name(), actualBasic.Name())
 			}
 
 			return nil
+		} else if actual, ok := actual.(*types.Named); ok {
+			if underlyingBasic, ok := actual.Underlying().(*types.Basic); ok {
+				return CompatibleTypes(expected, underlyingBasic)
+			}
 		}
 
 	case *types.Struct:
@@ -158,4 +162,15 @@ func CompatibleTypes(expected types.Type, actual types.Type) error {
 	}
 
 	return fmt.Errorf("type mismatch %T != %T", expected, actual)
+}
+
+func similarBasicKind(kind types.BasicKind) types.BasicKind {
+	switch kind {
+	case types.Int8, types.Int16:
+		return types.Int64
+	case types.Uint, types.Uint8, types.Uint16, types.Uint32: // exclude Uint64: it still needs scalar with custom marshalling/unmarshalling because it is bigger then int64
+		return types.Int64
+	default:
+		return kind
+	}
 }
