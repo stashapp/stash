@@ -156,12 +156,13 @@ func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
 
 	args = HWDeviceInit(args, codec)
 
+	args = append(args, extraInputArgs...)
+
 	if o.StartTime != 0 {
 		args = args.Seek(o.StartTime)
 	}
 
 	args = args.Input(o.VideoFile.Path)
-	args = append(args, extraInputArgs...)
 
 	videoOnly := ProbeAudioCodec(o.VideoFile.AudioCodec) == MissingUnsupported
 
