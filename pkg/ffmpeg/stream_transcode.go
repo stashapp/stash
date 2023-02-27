@@ -89,22 +89,33 @@ type TranscodeOptions struct {
 	StartTime  float64
 }
 
-func (o TranscodeOptions) makeStreamArgs(vf *file.VideoFile, maxScale int, startTime float64) Args {
+func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
+	maxTranscodeSize := sm.config.GetMaxStreamingTranscodeSize().GetMaxResolution()
+	if o.Resolution != "" {
+		maxTranscodeSize = models.StreamingResolutionEnum(o.Resolution).GetMaxResolution()
+	}
+	extraInputArgs := sm.config.GetLiveTranscodeInputArgs()
+	extraOutputArgs := sm.config.GetLiveTranscodeOutputArgs()
+
 	args := Args{"-hide_banner"}
 	args = args.LogLevel(LogLevelError)
 
-	if startTime != 0 {
-		args = args.Seek(startTime)
+	args = append(args, extraInputArgs...)
+
+	if o.StartTime != 0 {
+		args = args.Seek(o.StartTime)
 	}
 
-	args = args.Input(vf.Path)
+	args = args.Input(o.VideoFile.Path)
 
-	videoOnly := ProbeAudioCodec(vf.AudioCodec) == MissingUnsupported
+	videoOnly := ProbeAudioCodec(o.VideoFile.AudioCodec) == MissingUnsupported
 
 	var videoFilter VideoFilter
-	videoFilter = videoFilter.ScaleMax(vf.Width, vf.Height, maxScale)
+	videoFilter = videoFilter.ScaleMax(o.VideoFile.Width, o.VideoFile.Height, maxTranscodeSize)
 
 	args = append(args, o.StreamType.Args(videoFilter, videoOnly)...)
+
+	args = append(args, extraOutputArgs...)
 
 	args = args.Output("pipe:")
 
@@ -134,12 +145,7 @@ func (sm *StreamManager) ServeTranscode(w http.ResponseWriter, r *http.Request, 
 }
 
 func (sm *StreamManager) getTranscodeStream(ctx *fsutil.LockContext, options TranscodeOptions) (http.HandlerFunc, error) {
-	maxTranscodeSize := sm.config.GetMaxStreamingTranscodeSize().GetMaxResolution()
-	if options.Resolution != "" {
-		maxTranscodeSize = models.StreamingResolutionEnum(options.Resolution).GetMaxResolution()
-	}
-
-	args := options.makeStreamArgs(options.VideoFile, maxTranscodeSize, options.StartTime)
+	args := options.makeStreamArgs(sm)
 	cmd := sm.encoder.Command(ctx, args)
 
 	stdout, err := cmd.StdoutPipe()

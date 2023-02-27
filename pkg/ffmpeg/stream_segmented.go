@@ -202,9 +202,14 @@ func (t StreamType) FileDir(hash string, maxTranscodeSize int) string {
 	}
 }
 
-func (s *runningStream) makeStreamArgs(segment int) Args {
+func (s *runningStream) makeStreamArgs(sm *StreamManager, segment int) Args {
+	extraInputArgs := sm.config.GetLiveTranscodeInputArgs()
+	extraOutputArgs := sm.config.GetLiveTranscodeOutputArgs()
+
 	args := Args{"-hide_banner"}
 	args = args.LogLevel(LogLevelError)
+
+	args = append(args, extraInputArgs...)
 
 	if segment > 0 {
 		args = args.Seek(float64(segment * segmentLength))
@@ -218,6 +223,8 @@ func (s *runningStream) makeStreamArgs(segment int) Args {
 	videoFilter = videoFilter.ScaleMax(s.vf.Width, s.vf.Height, s.maxTranscodeSize)
 
 	args = append(args, s.streamType.Args(segment, videoFilter, videoOnly, s.outputDir)...)
+
+	args = append(args, extraOutputArgs...)
 
 	return args
 }
@@ -441,7 +448,7 @@ func (sm *StreamManager) startTranscode(stream *runningStream, segment int, done
 
 	lockCtx := sm.lockManager.ReadLock(sm.context, stream.vf.Path)
 
-	args := stream.makeStreamArgs(segment)
+	args := stream.makeStreamArgs(sm, segment)
 	cmd := sm.encoder.Command(lockCtx, args)
 
 	stderr, err := cmd.StderrPipe()
