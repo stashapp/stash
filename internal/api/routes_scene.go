@@ -154,11 +154,10 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, st
 	resolution := r.Form.Get("resolution")
 
 	options := ffmpeg.TranscodeOptions{
-		StreamType:    streamType,
-		VideoFile:     f,
-		Resolution:    resolution,
-		StartTime:     ss,
-		HardwareAccel: config.GetInstance().GetTranscodeHardwareAcceleration(),
+		StreamType: streamType,
+		VideoFile:  f,
+		Resolution: resolution,
+		StartTime:  ss,
 	}
 
 	logger.Debugf("[transcode] streaming scene %d as %s", scene.ID, streamType.MimeType)

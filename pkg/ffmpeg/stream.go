@@ -37,6 +37,7 @@ type StreamManager struct {
 
 type StreamManagerConfig interface {
 	GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum
+	GetTranscodeHardwareAcceleration() bool
 }
 
 func NewStreamManager(cacheDir string, encoder FFMpeg, ffprobe FFProbe, config StreamManagerConfig, lockManager *fsutil.ReadLockManager) *StreamManager {

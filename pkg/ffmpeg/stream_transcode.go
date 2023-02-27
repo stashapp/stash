@@ -25,7 +25,6 @@ func CodecInit(codec VideoCodec) (args Args) {
 	case VideoCodecLibX264:
 		args = args.VideoCodec(VideoCodecLibX264)
 		args = append(args,
-			"-movflags", "frag_keyframe+empty_moov",
 			"-pix_fmt", "yuv420p",
 			"-preset", "veryfast",
 			"-crf", "25",
@@ -44,7 +43,6 @@ func CodecInit(codec VideoCodec) (args Args) {
 	case VideoCodecN264:
 		args = args.VideoCodec(VideoCodecN264)
 		args = append(args,
-			"-movflags", "frag_keyframe+empty_moov",
 			"-rc", "vbr",
 			"-cq", "15",
 			"-preset", "p2",
@@ -52,7 +50,6 @@ func CodecInit(codec VideoCodec) (args Args) {
 	case VideoCodecI264:
 		args = args.VideoCodec(VideoCodecI264)
 		args = append(args,
-			"-movflags", "frag_keyframe+empty_moov",
 			"-global_quality", "20",
 			"-preset", "faster",
 		)
@@ -78,6 +75,7 @@ var (
 		MimeType: MimeMp4Video,
 		Args: func(codec VideoCodec, videoFilter VideoFilter, videoOnly bool) (args Args) {
 			args = CodecInit(codec)
+			args = append(args, "-movflags", "frag_keyframe+empty_moov")
 			args = args.VideoFilter(videoFilter)
 			if videoOnly {
 				args = args.SkipAudio()
@@ -123,14 +121,18 @@ var (
 )
 
 type TranscodeOptions struct {
-	StreamType    StreamFormat
-	VideoFile     *file.VideoFile
-	Resolution    string
-	StartTime     float64
-	HardwareAccel bool
+	StreamType StreamFormat
+	VideoFile  *file.VideoFile
+	Resolution string
+	StartTime  float64
 }
 
-func (o TranscodeOptions) makeStreamArgs(maxScale int) Args {
+func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
+	maxTranscodeSize := sm.config.GetMaxStreamingTranscodeSize().GetMaxResolution()
+	if o.Resolution != "" {
+		maxTranscodeSize = models.StreamingResolutionEnum(o.Resolution).GetMaxResolution()
+	}
+
 	args := Args{"-hide_banner"}
 	args = args.LogLevel(LogLevelError)
 
@@ -138,12 +140,12 @@ func (o TranscodeOptions) makeStreamArgs(maxScale int) Args {
 	switch o.StreamType.MimeType {
 	case MimeMp4Video:
 		codec = VideoCodecLibX264
-		if hwcodec := HWCodecH264Compatible(); hwcodec != nil && o.HardwareAccel {
+		if hwcodec := HWCodecH264Compatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
 			codec = *hwcodec
 		}
 	case MimeWebmVideo:
 		codec = VideoCodecVP9
-		if hwcodec := HWCodecVP9Compatible(); hwcodec != nil && o.HardwareAccel {
+		if hwcodec := HWCodecVP9Compatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
 			codec = *hwcodec
 		}
 	case MimeMkvVideo:
@@ -162,7 +164,7 @@ func (o TranscodeOptions) makeStreamArgs(maxScale int) Args {
 
 	videoFilter := HWFilterInit(codec)
 	maxWidth, maxHeight := HWCodecMaxRes(codec, o.VideoFile.Width, o.VideoFile.Height)
-	videoFilter = videoFilter.ScaleMaxLM(o.VideoFile.Width, o.VideoFile.Height, maxScale, maxWidth, maxHeight)
+	videoFilter = videoFilter.ScaleMaxLM(o.VideoFile.Width, o.VideoFile.Height, maxTranscodeSize, maxWidth, maxHeight)
 	videoFilter = HWCodecFilter(videoFilter, codec)
 
 	args = append(args, o.StreamType.Args(codec, videoFilter, videoOnly)...)
@@ -195,12 +197,7 @@ func (sm *StreamManager) ServeTranscode(w http.ResponseWriter, r *http.Request, 
 }
 
 func (sm *StreamManager) getTranscodeStream(ctx *fsutil.LockContext, options TranscodeOptions) (http.HandlerFunc, error) {
-	maxTranscodeSize := sm.config.GetMaxStreamingTranscodeSize().GetMaxResolution()
-	if options.Resolution != "" {
-		maxTranscodeSize = models.StreamingResolutionEnum(options.Resolution).GetMaxResolution()
-	}
-
-	args := options.makeStreamArgs(maxTranscodeSize)
+	args := options.makeStreamArgs(sm)
 	cmd := sm.encoder.Command(ctx, args)
 
 	stdout, err := cmd.StdoutPipe()
