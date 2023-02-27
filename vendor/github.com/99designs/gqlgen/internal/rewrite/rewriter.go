@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -56,7 +56,7 @@ func (r *Rewriter) getSource(start, end token.Pos) string {
 
 func (r *Rewriter) getFile(filename string) string {
 	if _, ok := r.files[filename]; !ok {
-		b, err := ioutil.ReadFile(filename)
+		b, err := os.ReadFile(filename)
 		if err != nil {
 			panic(fmt.Errorf("unable to load file, already exists: %w", err))
 		}
@@ -68,7 +68,7 @@ func (r *Rewriter) getFile(filename string) string {
 	return r.files[filename]
 }
 
-func (r *Rewriter) GetMethodBody(structname string, methodname string) string {
+func (r *Rewriter) GetPrevDecl(structname string, methodname string) *ast.FuncDecl {
 	for _, f := range r.pkg.Syntax {
 		for _, d := range f.Decls {
 			d, isFunc := d.(*ast.FuncDecl)
@@ -89,17 +89,29 @@ func (r *Rewriter) GetMethodBody(structname string, methodname string) string {
 			if !ok {
 				continue
 			}
-
 			if ident.Name != structname {
 				continue
 			}
-
 			r.copied[d] = true
-
-			return r.getSource(d.Body.Pos()+1, d.Body.End()-1)
+			return d
 		}
 	}
+	return nil
+}
 
+func (r *Rewriter) GetMethodComment(structname string, methodname string) string {
+	d := r.GetPrevDecl(structname, methodname)
+	if d != nil {
+		return d.Doc.Text()
+	}
+	return ""
+}
+
+func (r *Rewriter) GetMethodBody(structname string, methodname string) string {
+	d := r.GetPrevDecl(structname, methodname)
+	if d != nil {
+		return r.getSource(d.Body.Pos()+1, d.Body.End()-1)
+	}
 	return ""
 }
 

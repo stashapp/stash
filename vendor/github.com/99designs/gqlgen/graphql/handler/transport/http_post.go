@@ -1,8 +1,14 @@
 package transport
 
 import (
+	"fmt"
+	"io"
+	"log"
 	"mime"
 	"net/http"
+	"strings"
+
+	"github.com/vektah/gqlparser/v2/gqlerror"
 
 	"github.com/99designs/gqlgen/graphql"
 )
@@ -26,28 +32,59 @@ func (h POST) Supports(r *http.Request) bool {
 	return r.Method == "POST" && mediaType == "application/json"
 }
 
-func (h POST) Do(w http.ResponseWriter, r *http.Request, exec graphql.GraphExecutor) {
-	w.Header().Set("Content-Type", "application/json")
-
-	var params *graphql.RawParams
-	start := graphql.Now()
-	if err := jsonDecode(r.Body, &params); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		writeJsonErrorf(w, "json body could not be decoded: "+err.Error())
-		return
+func getRequestBody(r *http.Request) (string, error) {
+	if r == nil || r.Body == nil {
+		return "", nil
 	}
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		return "", fmt.Errorf("unable to get Request Body %w", err)
+	}
+	return string(body), nil
+}
+
+func (h POST) Do(w http.ResponseWriter, r *http.Request, exec graphql.GraphExecutor) {
+	ctx := r.Context()
+	w.Header().Set("Content-Type", "application/json")
+	params := &graphql.RawParams{}
+	start := graphql.Now()
+	params.Headers = r.Header
 	params.ReadTime = graphql.TraceTiming{
 		Start: start,
 		End:   graphql.Now(),
 	}
 
-	rc, err := exec.CreateOperationContext(r.Context(), params)
+	bodyString, err := getRequestBody(r)
 	if err != nil {
-		w.WriteHeader(statusFor(err))
-		resp := exec.DispatchError(graphql.WithOperationContext(r.Context(), rc), err)
+		gqlErr := gqlerror.Errorf("could not get json request body: %+v", err)
+		resp := exec.DispatchError(ctx, gqlerror.List{gqlErr})
+		log.Printf("could not get json request body: %+v", err.Error())
+		writeJson(w, resp)
+	}
+
+	bodyReader := io.NopCloser(strings.NewReader(bodyString))
+	if err = jsonDecode(bodyReader, &params); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		gqlErr := gqlerror.Errorf(
+			"json request body could not be decoded: %+v body:%s",
+			err,
+			bodyString,
+		)
+		resp := exec.DispatchError(ctx, gqlerror.List{gqlErr})
+		log.Printf("decoding error: %+v body:%s", err.Error(), bodyString)
 		writeJson(w, resp)
 		return
 	}
-	responses, ctx := exec.DispatchOperation(r.Context(), rc)
+
+	rc, OpErr := exec.CreateOperationContext(ctx, params)
+	if OpErr != nil {
+		w.WriteHeader(statusFor(OpErr))
+		resp := exec.DispatchError(graphql.WithOperationContext(ctx, rc), OpErr)
+		writeJson(w, resp)
+		return
+	}
+
+	var responses graphql.ResponseHandler
+	responses, ctx = exec.DispatchOperation(ctx, rc)
 	writeJson(w, responses(ctx))
 }

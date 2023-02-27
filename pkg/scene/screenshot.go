@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 
@@ -85,4 +86,18 @@ func SetScreenshot(paths *paths.Paths, checksum string, imageData []byte) error 
 	err = writeImage(normalPath, imageData)
 
 	return err
+}
+
+func (s *Service) GetCover(ctx context.Context, scene *models.Scene) ([]byte, error) {
+	if scene.Path != "" {
+		filepath := s.Paths.Scene.GetScreenshotPath(scene.GetHash(s.Config.GetVideoFileNamingAlgorithm()))
+
+		// fall back to the scene image blob if the file isn't present
+		screenshotExists, _ := fsutil.FileExists(filepath)
+		if screenshotExists {
+			return os.ReadFile(filepath)
+		}
+	}
+
+	return s.Repository.GetCover(ctx, scene.ID)
 }
