@@ -287,7 +287,7 @@
         },
         "live_transcode": {
           "input_args": {
-            "heading": "FFmpeg LiveTranscode Input Args",
+            "heading": "FFmpeg Live Transcode Input Args",
             "desc": "Advanced: Additional arguments to pass to ffmpeg before the input field when live transcoding video."
           },
           "output_args": {
