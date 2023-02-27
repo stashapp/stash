@@ -183,15 +183,16 @@ func (b *Binder) PointerTo(ref *TypeReference) *TypeReference {
 
 // TypeReference is used by args and field types. The Definition can refer to both input and output types.
 type TypeReference struct {
-	Definition  *ast.Definition
-	GQL         *ast.Type
-	GO          types.Type  // Type of the field being bound. Could be a pointer or a value type of Target.
-	Target      types.Type  // The actual type that we know how to bind to. May require pointer juggling when traversing to fields.
-	CastType    types.Type  // Before calling marshalling functions cast from/to this base type
-	Marshaler   *types.Func // When using external marshalling functions this will point to the Marshal function
-	Unmarshaler *types.Func // When using external marshalling functions this will point to the Unmarshal function
-	IsMarshaler bool        // Does the type implement graphql.Marshaler and graphql.Unmarshaler
-	IsContext   bool        // Is the Marshaler/Unmarshaller the context version; applies to either the method or interface variety.
+	Definition              *ast.Definition
+	GQL                     *ast.Type
+	GO                      types.Type  // Type of the field being bound. Could be a pointer or a value type of Target.
+	Target                  types.Type  // The actual type that we know how to bind to. May require pointer juggling when traversing to fields.
+	CastType                types.Type  // Before calling marshalling functions cast from/to this base type
+	Marshaler               *types.Func // When using external marshalling functions this will point to the Marshal function
+	Unmarshaler             *types.Func // When using external marshalling functions this will point to the Unmarshal function
+	IsMarshaler             bool        // Does the type implement graphql.Marshaler and graphql.Unmarshaler
+	IsContext               bool        // Is the Marshaler/Unmarshaller the context version; applies to either the method or interface variety.
+	PointersInUmarshalInput bool        // Inverse values and pointers in return.
 }
 
 func (ref *TypeReference) Elem() *TypeReference {
@@ -216,7 +217,6 @@ func (t *TypeReference) IsPtr() bool {
 }
 
 // fix for https://github.com/golang/go/issues/31103 may make it possible to remove this (may still be useful)
-//
 func (t *TypeReference) IsPtrToPtr() bool {
 	if p, isPtr := t.GO.(*types.Pointer); isPtr {
 		_, isPtr := p.Elem().(*types.Pointer)
@@ -250,6 +250,39 @@ func (t *TypeReference) IsNamed() bool {
 func (t *TypeReference) IsStruct() bool {
 	_, isStruct := t.GO.Underlying().(*types.Struct)
 	return isStruct
+}
+
+func (t *TypeReference) IsUnderlyingBasic() bool {
+	_, isUnderlyingBasic := t.GO.Underlying().(*types.Basic)
+	return isUnderlyingBasic
+}
+
+func (t *TypeReference) IsUnusualBasic() bool {
+	if basic, isBasic := t.GO.(*types.Basic); isBasic {
+		switch basic.Kind() {
+		case types.Int8, types.Int16, types.Uint, types.Uint8, types.Uint16, types.Uint32:
+			return true
+		default:
+			return false
+		}
+	}
+	return false
+}
+
+func (t *TypeReference) IsUnderlyingUnusualBasic() bool {
+	if basic, isUnderlyingBasic := t.GO.Underlying().(*types.Basic); isUnderlyingBasic {
+		switch basic.Kind() {
+		case types.Int8, types.Int16, types.Uint, types.Uint8, types.Uint16, types.Uint32:
+			return true
+		default:
+			return false
+		}
+	}
+	return false
+}
+
+func (t *TypeReference) IsScalarID() bool {
+	return t.Definition.Kind == ast.Scalar && t.Marshaler.Name() == "MarshalID"
 }
 
 func (t *TypeReference) IsScalar() bool {
@@ -412,6 +445,8 @@ func (b *Binder) TypeReference(schemaType *ast.Type, bindTarget types.Type) (ret
 			}
 			ref.GO = bindTarget
 		}
+
+		ref.PointersInUmarshalInput = b.cfg.ReturnPointersInUmarshalInput
 
 		return ref, nil
 	}

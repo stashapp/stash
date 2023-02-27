@@ -35,6 +35,7 @@ import {
   ratingSystemIntlMap,
   RatingSystemType,
 } from "src/utils/rating";
+import { defaultMaxOptionsShown } from "src/core/config";
 
 const allMenuItems = [
   { id: "scenes", headingID: "scenes" },
@@ -486,6 +487,12 @@ export const SettingsInterfacePanel: React.FC = () => {
             }
           />
         </div>
+        <NumberSetting
+          id="max_options_shown"
+          headingID="config.ui.editing.max_options_shown.label"
+          value={ui.maxOptionsShown ?? defaultMaxOptionsShown}
+          onChange={(v) => saveUI({ maxOptionsShown: v })}
+        />
         <SelectSetting
           id="rating_system"
           headingID="config.ui.editing.rating_system.type.label"

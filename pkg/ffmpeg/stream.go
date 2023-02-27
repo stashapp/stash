@@ -37,6 +37,8 @@ type StreamManager struct {
 
 type StreamManagerConfig interface {
 	GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum
+	GetLiveTranscodeInputArgs() []string
+	GetLiveTranscodeOutputArgs() []string
 	GetTranscodeHardwareAcceleration() bool
 }
 

@@ -22,7 +22,8 @@ Still not convinced enough to use **gqlgen**? Compare **gqlgen** with other Go g
 
 2. Add `github.com/99designs/gqlgen` to your [project's tools.go](https://github.com/golang/go/wiki/Modules#how-can-i-track-tool-dependencies-for-a-module)
 
-       printf '// +build tools\npackage tools\nimport _ "github.com/99designs/gqlgen"' | gofmt > tools.go
+       printf '// +build tools\npackage tools\nimport (_ "github.com/99designs/gqlgen"\n _ "github.com/99designs/gqlgen/graphql/introspection")' | gofmt > tools.go
+
        go mod tidy
 
 3. Initialise gqlgen config and generate models
@@ -142,9 +143,20 @@ first model in this list is used as the default type and it will always be used 
 
 There isn't any way around this, gqlgen has no way to know what you want in a given context.
 
+### Why do my interfaces have getters? Can I disable these?
+These were added in v0.17.14 to allow accessing common interface fields without casting to a concrete type.
+However, certain fields, like Relay-style Connections, cannot be implemented with simple getters.
+
+If you'd prefer to not have getters generated in your interfaces, you can add the following in your `gqlgen.yml`:
+```yaml
+# gqlgen.yml
+omit_getters: true
+```
+
 ## Other Resources
 
 - [Christopher Biscardi @ Gophercon UK 2018](https://youtu.be/FdURVezcdcw)
 - [Introducing gqlgen: a GraphQL Server Generator for Go](https://99designs.com.au/blog/engineering/gqlgen-a-graphql-server-generator-for-go/)
 - [Dive into GraphQL by Iván Corrales Solera](https://medium.com/@ivan.corrales.solera/dive-into-graphql-9bfedf22e1a)
 - [Sample Project built on gqlgen with Postgres by Oleg Shalygin](https://github.com/oshalygin/gqlgen-pg-todo-example)
+- [Hackernews GraphQL Server with gqlgen by Shayegan Hooshyari](https://www.howtographql.com/graphql-go/0-introduction/)

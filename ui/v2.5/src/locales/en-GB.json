@@ -287,7 +287,7 @@
         },
         "live_transcode": {
           "input_args": {
-            "heading": "FFmpeg LiveTranscode Input Args",
+            "heading": "FFmpeg Live Transcode Input Args",
             "desc": "Advanced: Additional arguments to pass to ffmpeg before the input field when live transcoding video."
           },
           "output_args": {
@@ -506,6 +506,9 @@
         "disable_dropdown_create": {
           "description": "Remove the ability to create new objects from the dropdown selectors",
           "heading": "Disable dropdown create"
+        },
+        "max_options_shown": {
+          "label": "Maximum number of items to show in select dropdowns"
         },
         "rating_system": {
           "type": {

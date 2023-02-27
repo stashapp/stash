@@ -70,7 +70,7 @@ func (ec *executionContext) _mutationMiddleware(ctx context.Context, obj *ast.Op
 {{ end }}
 
 {{ if .Directives.LocationDirectives "SUBSCRIPTION" }}
-func (ec *executionContext) _subscriptionMiddleware(ctx context.Context, obj *ast.OperationDefinition, next func(ctx context.Context) (interface{}, error)) func() graphql.Marshaler {
+func (ec *executionContext) _subscriptionMiddleware(ctx context.Context, obj *ast.OperationDefinition, next func(ctx context.Context) (interface{}, error)) func(ctx context.Context) graphql.Marshaler {
 	for _, d := range obj.Directives {
 		switch d.Name {
 		{{- range $directive := .Directives.LocationDirectives "SUBSCRIPTION" }}
@@ -80,7 +80,7 @@ func (ec *executionContext) _subscriptionMiddleware(ctx context.Context, obj *as
 				args, err := ec.{{ $directive.ArgsFunc }}(ctx,rawArgs)
 				if err != nil {
 					ec.Error(ctx, err)
-					return func() graphql.Marshaler {
+					return func(ctx context.Context) graphql.Marshaler {
 						return graphql.Null
 					}
 				}
@@ -98,15 +98,15 @@ func (ec *executionContext) _subscriptionMiddleware(ctx context.Context, obj *as
 	tmp, err := next(ctx)
 	if err != nil {
 		ec.Error(ctx, err)
-		return func() graphql.Marshaler {
+		return func(ctx context.Context) graphql.Marshaler {
 			return graphql.Null
 		}
 	}
-	if data, ok := tmp.(func() graphql.Marshaler); ok {
+	if data, ok := tmp.(func(ctx context.Context) graphql.Marshaler); ok {
 		return data
 	}
 	ec.Errorf(ctx, `unexpected type %T from directive, should be graphql.Marshaler`, tmp)
-	return func() graphql.Marshaler {
+	return func(ctx context.Context) graphql.Marshaler {
 		return graphql.Null
 	}
 }

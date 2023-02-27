@@ -132,6 +132,8 @@ func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
 	if o.Resolution != "" {
 		maxTranscodeSize = models.StreamingResolutionEnum(o.Resolution).GetMaxResolution()
 	}
+	extraInputArgs := sm.config.GetLiveTranscodeInputArgs()
+	extraOutputArgs := sm.config.GetLiveTranscodeOutputArgs()
 
 	args := Args{"-hide_banner"}
 	args = args.LogLevel(LogLevelError)
@@ -159,6 +161,7 @@ func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
 	}
 
 	args = args.Input(o.VideoFile.Path)
+	args = append(args, extraInputArgs...)
 
 	videoOnly := ProbeAudioCodec(o.VideoFile.AudioCodec) == MissingUnsupported
 
@@ -168,6 +171,8 @@ func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
 	videoFilter = HWCodecFilter(videoFilter, codec)
 
 	args = append(args, o.StreamType.Args(codec, videoFilter, videoOnly)...)
+
+	args = append(args, extraOutputArgs...)
 
 	args = args.Output("pipe:")
 
