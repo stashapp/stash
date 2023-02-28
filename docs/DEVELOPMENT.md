@@ -41,6 +41,32 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MingW. For examp
 * `make validate` - Run all of the tests and checks required to submit a PR
 * `make ui-start` - Runs the UI in development mode. Requires a running stash server to connect to. Stash server port can be changed from the default of `9999` using environment variable `VITE_APP_PLATFORM_PORT`. UI runs on port `3000` or the next available port.
 
+## Local development quickstart
+
+1. Run `make pre-ui` to install UI dependencies
+2. Run `make generate` to create generated files
+3. In one terminal, run `make server-start` to run the server code
+4. In a separate terminal, run `make ui-start` to run the UI in development mode
+5. Open the UI in a browser `http://localhost:3000/`
+
+Changes to the UI code can be seen by reloading the browser page.
+
+Changes to the server code requires a restart (`CTRL-C` in the server terminal).
+
+On first launch:
+1. At the "Welcome to Stash" screen, you can choose the current directory for local development (to keep it separate from `$HOME/.stash`)
+2. On the "Stash Setup Wizard" screen, choose a directory with some files to test with.
+3. Press "Next" to use the default locations for the database and generated content.
+4. Press the "Confirm" and "Finish" buttons to get into the UI.
+5. On the side menu, navigate to "Tasks -> Library -> Scan" and press the "Scan" button.
+6. You're all set! Set any other configurations you'd like and test your code changes.
+
+To start fresh with new configuration:
+1. Stop the server (`CTRL-C` in the server terminal)
+2. Run `make dev-clean` to clear all config, database, and generated files.
+3. Run `make server-start` to restart the server
+4. Follow the "On first launch" steps above.
+
 ## Building a release
 
 1. Run `make pre-ui` to install UI dependencies

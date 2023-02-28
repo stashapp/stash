@@ -9,9 +9,13 @@ endif
 ifdef IS_WIN_SHELL
   SEPARATOR := &&
   SET := set
+  RM := del /s /q
+  RMDIR := rmdir /s /q
 else
   SEPARATOR := ;
   SET := export
+  RM := rm -f
+  RMDIR := rm -rf
 endif
 
 # set LDFLAGS environment variable to any extra ldflags required
@@ -99,7 +103,7 @@ cross-compile-macos-applesilicon: GO_BUILD_TAGS := $(GO_BUILD_TAGS_DEFAULT)
 # can't use static build for OSX
 cross-compile-macos-applesilicon: build-release
 
-cross-compile-macos: 
+cross-compile-macos:
 	rm -rf dist/Stash.app dist/Stash-macos.zip
 	make cross-compile-macos-applesilicon
 	make cross-compile-macos-intel
@@ -175,7 +179,7 @@ generate-frontend:
 	cd ui/v2.5 && yarn run gqlgen
 
 .PHONY: generate-backend
-generate-backend: touch-ui 
+generate-backend: touch-ui
 	go generate -mod=vendor ./cmd/stash
 
 .PHONY: generate-dataloaders
@@ -210,6 +214,17 @@ it:
 .PHONY: generate-test-mocks
 generate-test-mocks:
 	go run -mod=vendor github.com/vektra/mockery/v2 --dir ./pkg/models --name '.*ReaderWriter' --outpkg mocks --output ./pkg/models/mocks
+
+# runs server
+.PHONY: server-start
+server-start:
+	go run ./cmd/stash
+
+# removes local dev config files
+.PHONY: dev-clean
+dev-clean:
+	$(RM) config.yml icon.png stash-go.sqlite
+	$(RMDIR) generated
 
 # installs UI dependencies. Run when first cloning repository, or if UI
 # dependencies have changed

@@ -63,3 +63,8 @@ node_modules
 /stash
 dist
 .DS_Store
+/generated
+/config.yml
+/icon.png
+/stash-go.sqlite
+/plugins
