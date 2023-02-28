@@ -218,13 +218,17 @@ generate-test-mocks:
 # runs server
 .PHONY: server-start
 server-start:
-	go run ./cmd/stash
+ifndef IS_WIN_SHELL
+	@mkdir -p .local
+else
+	@if not exist ".local" mkdir .local
+endif
+	cd .local && go run ../cmd/stash
 
 # removes local dev config files
-.PHONY: dev-clean
-dev-clean:
-	$(RM) config.yml icon.png stash-go.sqlite
-	$(RMDIR) generated
+.PHONY: server-clean
+server-clean:
+	$(RMDIR) .local/*
 
 # installs UI dependencies. Run when first cloning repository, or if UI
 # dependencies have changed
