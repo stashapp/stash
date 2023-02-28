@@ -228,7 +228,7 @@ endif
 # removes local dev config files
 .PHONY: server-clean
 server-clean:
-	$(RMDIR) .local/*
+	$(RMDIR) .local
 
 # installs UI dependencies. Run when first cloning repository, or if UI
 # dependencies have changed
