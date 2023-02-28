@@ -228,7 +228,7 @@ func (m *schema45Migrator) insertImage(data []byte, id int, destTable string, de
 	// calculate checksum and insert into blobs table
 	checksum := md5.FromBytes(data)
 
-	if _, err := m.db.Exec("INSERT INTO `blobs` (`checksum`, `blob`) VALUES (?, ?)", checksum, data); err != nil {
+	if _, err := m.db.Exec("INSERT INTO `blobs` (`checksum`, `blob`) VALUES (?, ?) ON CONFLICT DO NOTHING", checksum, data); err != nil {
 		return err
 	}
 
