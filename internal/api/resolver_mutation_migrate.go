@@ -59,13 +59,12 @@ func (j *migrateSceneJob) Execute(ctx context.Context, progress *job.Progress) {
 		return
 	}
 
-	if errors.Is(err, io.EOF) {
-		// end of directory
-		logger.Infof("Finished migrating scene screenshots")
-	} else if err != nil {
+	if err != nil && !errors.Is(err, io.EOF) {
 		logger.Errorf("Error reading screenshots directory: %v", err)
 		return
 	}
+
+	logger.Infof("Finished migrating scene screenshots")
 }
 
 func (j *migrateSceneJob) countFiles(ctx context.Context, screenshotDir string) (int, error) {
