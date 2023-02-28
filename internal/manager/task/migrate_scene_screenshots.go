@@ -43,8 +43,8 @@ func (j *MigrateSceneScreenshotsJob) Execute(ctx context.Context, progress *job.
 		return
 	}
 
-	if err != nil && !errors.Is(err, io.EOF) {
-		logger.Errorf("Error reading screenshots directory: %v", err)
+	if err != nil {
+		logger.Errorf("Error migrating scene screenshots: %v", err)
 		return
 	}
 
