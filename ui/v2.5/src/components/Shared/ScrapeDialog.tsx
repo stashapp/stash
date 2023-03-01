@@ -416,21 +416,23 @@ export const ScrapeImageDialogRow = <
   }
 
   function setPrev() {
-    if (imageIndex === 0) {
-      return;
+    let newIdx = imageIndex - 1;
+    if (newIdx < 0) {
+      newIdx = props.images.length - 1;
     }
-    const ret = props.result.cloneWithValue(props.images[imageIndex - 1]);
+    const ret = props.result.cloneWithValue(props.images[newIdx]);
     props.onChange(ret as T);
-    setImageIndex(imageIndex - 1);
+    setImageIndex(newIdx);
   }
 
   function setNext() {
-    if (imageIndex === props.images.length - 1) {
-      return;
+    let newIdx = imageIndex + 1;
+    if (newIdx >= props.images.length) {
+      newIdx = 0;
     }
-    const ret = props.result.cloneWithValue(props.images[imageIndex + 1]);
+    const ret = props.result.cloneWithValue(props.images[newIdx]);
     props.onChange(ret as T);
-    setImageIndex(imageIndex + 1);
+    setImageIndex(newIdx);
   }
 
   if (!props.result.scraped && !hasNewValues()) {
@@ -441,10 +443,7 @@ export const ScrapeImageDialogRow = <
     return (
       props.images.length > 0 && (
         <div className="d-flex mt-2 image-selection">
-          <Button
-            onClick={setPrev}
-            disabled={props.images.length === 1 || imageIndex === 0}
-          >
+          <Button onClick={setPrev} disabled={props.images.length === 1}>
             <Icon icon={faArrowLeft} />
           </Button>
           <h5 className="flex-grow-1 px-2">
@@ -452,13 +451,7 @@ export const ScrapeImageDialogRow = <
             <br />
             {imageIndex + 1} of {props.images.length}
           </h5>
-          <Button
-            onClick={setNext}
-            disabled={
-              props.images.length === 1 ||
-              imageIndex === props.images.length - 1
-            }
-          >
+          <Button onClick={setNext} disabled={props.images.length === 1}>
             <Icon icon={faArrowRight} />
           </Button>
         </div>
