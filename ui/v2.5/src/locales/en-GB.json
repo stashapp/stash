@@ -61,6 +61,8 @@
     "merge": "Merge",
     "merge_from": "Merge from",
     "merge_into": "Merge into",
+    "migrate_blobs": "Migrate Blobs",
+    "migrate_scene_screenshots": "Migrate Scene Screenshots",
     "next_action": "Next",
     "not_running": "not running",
     "open_in_external_player": "Open in external player",
@@ -264,11 +266,11 @@
       },
       "blobs_storage": {
         "heading": "Binary data storage type",
-        "description": "Where to store binary data such as scene covers, performer, studio and tag images. WARNING: changing this requires migrating existing data."
+        "description": "Where to store binary data such as scene covers, performer, studio and tag images. After changing this value, the existing data must be migrated using the Migrate Blobs tasks. See Tasks page for migration."
       },
       "blobs_path": {
         "heading": "Binary data filesystem path",
-        "description": "Where in the filesystem to store binary data. WARNING: changing this requires migrating existing data."
+        "description": "Where in the filesystem to store binary data. Applicable only when using the Filesystem blob storage type. WARNING: changing this requires manually moving existing data."
       },
       "cache_location": "Directory location of the cache. Required if streaming using HLS (such as on Apple devices) or DASH.",
       "cache_path_head": "Cache Path",
@@ -452,7 +454,16 @@
       "incremental_import": "Incremental import from a supplied export zip file.",
       "job_queue": "Task Queue",
       "maintenance": "Maintenance",
+      "migrate_blobs": {
+        "delete_old": "Delete old data",
+        "description": "Migrate blobs to the current blob storage system. This migration should be run after changing the blob storage system. Can optionally delete the old data after migration."
+      },
       "migrate_hash_files": "Used after changing the Generated file naming hash to rename existing generated files to the new hash format.",
+      "migrate_scene_screenshots": {
+        "delete_files": "Delete screenshot files",
+        "description": "Migrate scene screenshots into the new blob storage system. This migration should be run after migrating an existing system to 0.20. Can optionally delete the old screenshots after migration.",
+        "overwrite_existing": "Overwrite existing blobs with screenshot data"
+      },
       "migrations": "Migrations",
       "only_dry_run": "Only perform a dry run. Don't remove anything",
       "plugin_tasks": "Plugin Tasks",
