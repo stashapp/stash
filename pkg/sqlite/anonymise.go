@@ -70,12 +70,28 @@ func (db *Anonymiser) Anonymise(ctx context.Context) error {
 	return nil
 }
 
+func (db *Anonymiser) truncateColumn(tableName string, column string) error {
+	_, err := db.db.Exec("UPDATE " + tableName + " SET " + column + " = NULL")
+	return err
+}
+
 func (db *Anonymiser) truncateTable(tableName string) error {
 	_, err := db.db.Exec("DELETE FROM " + tableName)
 	return err
 }
 
 func (db *Anonymiser) deleteBlobs() error {
+	if err := utils.Do([]func() error{
+		func() error { return db.truncateColumn("tags", "image_blob") },
+		func() error { return db.truncateColumn("studios", "image_blob") },
+		func() error { return db.truncateColumn("performers", "image_blob") },
+		func() error { return db.truncateColumn("scenes", "cover_blob") },
+		func() error { return db.truncateColumn("movies", "front_image_blob") },
+		func() error { return db.truncateColumn("movies", "back_image_blob") },
+	}); err != nil {
+		return err
+	}
+
 	return utils.Do([]func() error{
 		func() error { return db.truncateTable("scenes_cover") },
 		func() error { return db.truncateTable("movies_images") },
