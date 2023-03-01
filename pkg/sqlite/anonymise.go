@@ -81,23 +81,15 @@ func (db *Anonymiser) truncateTable(tableName string) error {
 }
 
 func (db *Anonymiser) deleteBlobs() error {
-	if err := utils.Do([]func() error{
+	return utils.Do([]func() error{
 		func() error { return db.truncateColumn("tags", "image_blob") },
 		func() error { return db.truncateColumn("studios", "image_blob") },
 		func() error { return db.truncateColumn("performers", "image_blob") },
 		func() error { return db.truncateColumn("scenes", "cover_blob") },
 		func() error { return db.truncateColumn("movies", "front_image_blob") },
 		func() error { return db.truncateColumn("movies", "back_image_blob") },
-	}); err != nil {
-		return err
-	}
 
-	return utils.Do([]func() error{
-		func() error { return db.truncateTable("scenes_cover") },
-		func() error { return db.truncateTable("movies_images") },
-		func() error { return db.truncateTable("performers_image") },
-		func() error { return db.truncateTable("studios_image") },
-		func() error { return db.truncateTable("tags_image") },
+		func() error { return db.truncateTable("blobs") },
 	})
 }
 
