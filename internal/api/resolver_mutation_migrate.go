@@ -25,3 +25,15 @@ func (r *mutationResolver) MigrateSceneScreenshots(ctx context.Context, input Mi
 
 	return strconv.Itoa(jobID), nil
 }
+
+func (r *mutationResolver) MigrateBlobs(ctx context.Context, input MigrateBlobsInput) (string, error) {
+	db := manager.GetInstance().Database
+	t := &task.MigrateBlobsJob{
+		TxnManager: db,
+		BlobStore:  db.Blobs,
+		DeleteOld:  utils.IsTrue(input.DeleteOld),
+	}
+	jobID := manager.GetInstance().JobManager.Add(ctx, "Migrating blobs...", t)
+
+	return strconv.Itoa(jobID), nil
+}

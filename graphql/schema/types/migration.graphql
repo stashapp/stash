@@ -4,3 +4,8 @@ input MigrateSceneScreenshotsInput {
   # if true, overwrite existing covers with the covers from the screenshots directory
   overwriteExisting: Boolean
 }
+
+input MigrateBlobsInput {
+  # if true, delete blob data from old storage system
+  deleteOld: Boolean
+}

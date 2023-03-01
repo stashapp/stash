@@ -292,6 +292,8 @@ type Mutation {
   migrateHashNaming: ID!
   """Migrates legacy scene screenshot files into the blob storage"""
   migrateSceneScreenshots(input: MigrateSceneScreenshotsInput!): ID!
+  """Migrates blobs from the old storage system to the current one"""
+  migrateBlobs(input: MigrateBlobsInput!): ID!
   
   """Anonymise the database in a separate file. Optionally returns a link to download the database file"""
   anonymiseDatabase(input: AnonymiseDatabaseInput!): String

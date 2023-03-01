@@ -64,6 +64,18 @@ func (qb *BlobStore) table() exp.IdentifierExpression {
 	return qb.tableMgr.table
 }
 
+func (qb *BlobStore) Count(ctx context.Context) (int, error) {
+	table := qb.table()
+	q := dialect.From(table).Select(goqu.COUNT(table.Col(blobChecksumColumn)))
+
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
 // Write stores the data and its checksum in enabled stores.
 // Always writes at least the checksum to the database.
 func (qb *BlobStore) Write(ctx context.Context, data []byte) (string, error) {
@@ -107,6 +119,20 @@ func (qb *BlobStore) write(ctx context.Context, checksum string, data []byte) er
 	_, err := exec(ctx, q)
 	if err != nil {
 		return fmt.Errorf("inserting into %s: %w", table, err)
+	}
+
+	return nil
+}
+
+func (qb *BlobStore) update(ctx context.Context, checksum string, data []byte) error {
+	table := qb.table()
+	q := dialect.Update(table).Prepared(true).Set(goqu.Record{
+		"blob": data,
+	}).Where(goqu.C(blobChecksumColumn).Eq(checksum))
+
+	_, err := exec(ctx, q)
+	if err != nil {
+		return fmt.Errorf("updating %s: %w", table, err)
 	}
 
 	return nil
