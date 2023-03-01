@@ -356,40 +356,6 @@ export const ScrapedImageRow: React.FC<IScrapedImageRowProps> = (props) => {
   );
 };
 
-interface IScrapedImagesRowProps {
-  title: string;
-  className?: string;
-  result: ScrapeResult<string>;
-  images: string[];
-  onChange: (value: ScrapeResult<string>) => void;
-}
-
-export const ScrapedImagesRow: React.FC<IScrapedImagesRowProps> = (props) => {
-  return (
-    <ScrapeImageDialogRow
-      title={props.title}
-      result={props.result}
-      images={props.images}
-      renderOriginalField={() => (
-        <ScrapedImage
-          result={props.result}
-          className={props.className}
-          placeholder={props.title}
-        />
-      )}
-      renderNewField={() => (
-        <ScrapedImage
-          result={props.result}
-          className={props.className}
-          placeholder={props.title}
-          isNew
-        />
-      )}
-      onChange={props.onChange}
-    />
-  );
-};
-
 interface IScrapedImageDialogRowProps<
   T extends ScrapeResult<string>,
   V extends IHasName
@@ -516,6 +482,40 @@ export const ScrapeImageDialogRow = <
         </Row>
       </Col>
     </Row>
+  );
+};
+
+interface IScrapedImagesRowProps {
+  title: string;
+  className?: string;
+  result: ScrapeResult<string>;
+  images: string[];
+  onChange: (value: ScrapeResult<string>) => void;
+}
+
+export const ScrapedImagesRow: React.FC<IScrapedImagesRowProps> = (props) => {
+  return (
+    <ScrapeImageDialogRow
+      title={props.title}
+      result={props.result}
+      images={props.images}
+      renderOriginalField={() => (
+        <ScrapedImage
+          result={props.result}
+          className={props.className}
+          placeholder={props.title}
+        />
+      )}
+      renderNewField={() => (
+        <ScrapedImage
+          result={props.result}
+          className={props.className}
+          placeholder={props.title}
+          isNew
+        />
+      )}
+      onChange={props.onChange}
+    />
   );
 };
 
