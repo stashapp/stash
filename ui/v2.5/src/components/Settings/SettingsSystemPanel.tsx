@@ -20,9 +20,8 @@ import { useIntl } from "react-intl";
 export const SettingsConfigurationPanel: React.FC = () => {
   const intl = useIntl();
 
-  const { general, loading, error, saveGeneral } = React.useContext(
-    SettingStateContext
-  );
+  const { general, loading, error, saveGeneral } =
+    React.useContext(SettingStateContext);
 
   const transcodeQualities = [
     GQL.StreamingResolutionEnum.Low,
@@ -199,7 +198,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
           id="blobs-path"
           headingID="config.general.blobs_path.heading"
           subHeadingID="config.general.blobs_path.description"
-          disabled={general.blobsStorage !== GQL.BlobsStorageType.Filesystem}
           value={general.blobsPath ?? ""}
           onChange={(v) => saveGeneral({ blobsPath: v })}
         />
