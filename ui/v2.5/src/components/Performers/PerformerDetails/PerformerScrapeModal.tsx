@@ -12,6 +12,7 @@ import { queryScrapePerformerQuery } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import TextUtils from "src/utils/text";
+import GenderIcon from "src/components/Performers/GenderIcon";
 
 interface IPerformerSearchResultDetailsProps {
   performer: GQL.ScrapedPerformerDataFragment;
@@ -71,11 +72,19 @@ const PerformerSearchResultDetails: React.FC<
         <div className="col flex-column">
           <h4>
             {performer.name}
-            {performer.disambiguation && ` (${performer.disambiguation})`}
+            {performer.disambiguation && (
+              <span className="performer-disambiguation">
+                {` (${performer.disambiguation})`}
+              </span>
+            )}
           </h4>
           <h5>
-            {performer.gender &&
-              genderToString(stringToGender(performer.gender, true))}
+            {performer.gender && (
+              <GenderIcon
+                className="gender-icon"
+                gender={stringToGender(performer.gender, true)}
+              />
+            )}
             {performer.gender && calculated_age && ` • `}
             {calculated_age}
             {calculated_age && " "}
