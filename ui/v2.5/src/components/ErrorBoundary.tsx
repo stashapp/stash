@@ -1,4 +1,5 @@
 import React from "react";
+import { is_lazy_component_error } from "src/utils/lazy_component";
 
 interface IErrorBoundaryProps {
   children?: React.ReactNode;
@@ -10,6 +11,7 @@ type ErrorInfo = {
 
 interface IErrorBoundaryState {
   error?: Error;
+  errorHelp?: string;
   errorInfo?: ErrorInfo;
 }
 
@@ -23,22 +25,30 @@ export class ErrorBoundary extends React.Component<
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    let errorHelp: string | undefined;
+    if (is_lazy_component_error(error)) {
+      errorHelp =
+        "If you recently upgraded Stash, please reload the page or clear your browser cache.";
+    }
     this.setState({
       error,
+      errorHelp,
       errorInfo,
     });
   }
 
   public render() {
-    if (this.state.errorInfo) {
+    const { error, errorHelp, errorInfo } = this.state;
+    if (errorInfo) {
       // Error path
       return (
         <div>
           <h2>Something went wrong.</h2>
+          {errorHelp && <h5>{errorHelp}</h5>}
           <details className="error-message">
-            {this.state.error && this.state.error.toString()}
+            {error?.toString()}
             <br />
-            {this.state.errorInfo.componentStack}
+            {errorInfo.componentStack.trim().replaceAll(/^\s*/gm, "    ")}
           </details>
         </div>
       );

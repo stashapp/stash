@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { Route, Switch, useRouteMatch } from "react-router-dom";
 import { IntlProvider, CustomFormats } from "react-intl";
 import { Helmet } from "react-helmet";
@@ -31,25 +31,32 @@ import { ReleaseNotesDialog } from "./components/Dialogs/ReleaseNotesDialog";
 import { IUIConfig } from "./core/config";
 import { releaseNotes } from "./docs/en/ReleaseNotes";
 import { getPlatformURL, getBaseURL } from "./core/createClient";
+import { lazy_component } from "./utils/lazy_component";
 
-const Performers = lazy(() => import("./components/Performers/Performers"));
-const FrontPage = lazy(() => import("./components/FrontPage/FrontPage"));
-const Scenes = lazy(() => import("./components/Scenes/Scenes"));
-const Settings = lazy(() => import("./components/Settings/Settings"));
-const Stats = lazy(() => import("./components/Stats"));
-const Studios = lazy(() => import("./components/Studios/Studios"));
-const Galleries = lazy(() => import("./components/Galleries/Galleries"));
+const Performers = lazy_component(
+  () => import("./components/Performers/Performers")
+);
+const FrontPage = lazy_component(
+  () => import("./components/FrontPage/FrontPage")
+);
+const Scenes = lazy_component(() => import("./components/Scenes/Scenes"));
+const Settings = lazy_component(() => import("./components/Settings/Settings"));
+const Stats = lazy_component(() => import("./components/Stats"));
+const Studios = lazy_component(() => import("./components/Studios/Studios"));
+const Galleries = lazy_component(
+  () => import("./components/Galleries/Galleries")
+);
 
-const Movies = lazy(() => import("./components/Movies/Movies"));
-const Tags = lazy(() => import("./components/Tags/Tags"));
-const Images = lazy(() => import("./components/Images/Images"));
-const Setup = lazy(() => import("./components/Setup/Setup"));
-const Migrate = lazy(() => import("./components/Setup/Migrate"));
+const Movies = lazy_component(() => import("./components/Movies/Movies"));
+const Tags = lazy_component(() => import("./components/Tags/Tags"));
+const Images = lazy_component(() => import("./components/Images/Images"));
+const Setup = lazy_component(() => import("./components/Setup/Setup"));
+const Migrate = lazy_component(() => import("./components/Setup/Migrate"));
 
-const SceneFilenameParser = lazy(
+const SceneFilenameParser = lazy_component(
   () => import("./components/SceneFilenameParser/SceneFilenameParser")
 );
-const SceneDuplicateChecker = lazy(
+const SceneDuplicateChecker = lazy_component(
   () => import("./components/SceneDuplicateChecker/SceneDuplicateChecker")
 );
 
