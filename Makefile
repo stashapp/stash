@@ -11,6 +11,7 @@ ifdef IS_WIN_SHELL
   SET := set
   RM := del /s /q
   RMDIR := rmdir /s /q
+  PWD := $(shell echo %cd%)
 else
   SEPARATOR := ;
   SET := export
@@ -216,7 +217,9 @@ generate-test-mocks:
 	go run -mod=vendor github.com/vektra/mockery/v2 --dir ./pkg/models --name '.*ReaderWriter' --outpkg mocks --output ./pkg/models/mocks
 
 # runs server
+# sets the config file to use the local dev config
 .PHONY: server-start
+server-start: export STASH_CONFIG_FILE=config.yml
 server-start:
 ifndef IS_WIN_SHELL
 	@mkdir -p .local
