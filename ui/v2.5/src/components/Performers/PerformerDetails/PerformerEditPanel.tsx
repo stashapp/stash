@@ -10,7 +10,8 @@ import {
   usePerformerUpdate,
   usePerformerCreate,
   useTagCreate,
-  queryScrapePerformerURL, queryScrapePerformerQueryFragment,
+  queryScrapePerformerURL,
+  queryScrapePerformerQueryFragment,
 } from "src/core/StashService";
 import { Icon } from "src/components/Shared/Icon";
 import { ImageInput } from "src/components/Shared/ImageInput";
@@ -718,7 +719,6 @@ export const PerformerEditPanel: React.FC<IProps> = ({
         onHide={() => setScraper(undefined)}
         onSelectPerformer={(s) => {
           setIsScraperModalOpen(false);
-          setScraper(undefined);
           onPerformerSelected(s);
         }}
         name={formik.values.name || ""}

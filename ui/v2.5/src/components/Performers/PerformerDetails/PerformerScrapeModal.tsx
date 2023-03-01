@@ -17,9 +17,9 @@ interface IPerformerSearchResultDetailsProps {
   performer: GQL.ScrapedPerformerDataFragment;
 }
 
-const PerformerSearchResultDetails: React.FC<IPerformerSearchResultDetailsProps> = ({
-  performer,
-}) => {
+const PerformerSearchResultDetails: React.FC<
+  IPerformerSearchResultDetailsProps
+> = ({ performer }) => {
   function renderImage() {
     if (performer.images && performer.images.length > 0) {
       return (
@@ -69,7 +69,10 @@ const PerformerSearchResultDetails: React.FC<IPerformerSearchResultDetailsProps>
       <Row>
         {renderImage()}
         <div className="col flex-column">
-          <h4>{performer.name}{performer.disambiguation && ` (${performer.disambiguation})`}</h4>
+          <h4>
+            {performer.name}
+            {performer.disambiguation && ` (${performer.disambiguation})`}
+          </h4>
           <h5>
             {performer.gender &&
               genderToString(stringToGender(performer.gender, true))}
