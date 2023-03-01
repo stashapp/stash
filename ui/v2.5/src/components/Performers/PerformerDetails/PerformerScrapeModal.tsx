@@ -7,7 +7,7 @@ import { Icon } from "src/components/Shared/Icon";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
-import { genderToString, stringToGender } from "src/utils/gender";
+import { stringToGender } from "src/utils/gender";
 import { queryScrapePerformerQuery } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
