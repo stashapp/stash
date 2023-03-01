@@ -5,7 +5,7 @@ import {
   ScrapeDialog,
   ScrapeResult,
   ScrapedInputGroupRow,
-  ScrapedImageRow,
+  ScrapedImagesRow,
   ScrapeDialogRow,
   ScrapedTextAreaRow,
   ScrapedCountryRow,
@@ -320,11 +320,21 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
 
   const [image, setImage] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(
-      props.performer.image,
+      props.performer.image as string,
       props.scraped.images && props.scraped.images.length > 0
         ? props.scraped.images[0]
-        : undefined
+        : props.scraped.image
+        ? (props.scraped.image as string)
+        : ""
     )
+  );
+
+  const [images, _] = useState<string[]>(
+    props.scraped.images && props.scraped.images.length > 0
+      ? props.scraped.images
+      : props.scraped.image
+      ? [props.scraped.image as string]
+      : []
   );
 
   const allFields = [
@@ -545,10 +555,11 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           newTags,
           createNewTag
         )}
-        <ScrapedImageRow
+        <ScrapedImagesRow
           title={intl.formatMessage({ id: "performer_image" })}
           className="performer-image"
           result={image}
+          images={images}
           onChange={(value) => setImage(value)}
         />
         <ScrapedInputGroupRow

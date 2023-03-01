@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Form,
   Col,
@@ -15,6 +15,8 @@ import isEqual from "lodash-es/isEqual";
 import clone from "lodash-es/clone";
 import { FormattedMessage, useIntl } from "react-intl";
 import {
+  faArrowLeft,
+  faArrowRight,
   faCheck,
   faPencilAlt,
   faPlus,
@@ -351,6 +353,176 @@ export const ScrapedImageRow: React.FC<IScrapedImageRowProps> = (props) => {
       )}
       onChange={props.onChange}
     />
+  );
+};
+
+interface IScrapedImagesRowProps {
+  title: string;
+  className?: string;
+  result: ScrapeResult<string>;
+  images: string[];
+  onChange: (value: ScrapeResult<string>) => void;
+}
+
+export const ScrapedImagesRow: React.FC<IScrapedImagesRowProps> = (props) => {
+  return (
+    <ScrapeImageDialogRow
+      title={props.title}
+      result={props.result}
+      images={props.images}
+      renderOriginalField={() => (
+        <ScrapedImage
+          result={props.result}
+          className={props.className}
+          placeholder={props.title}
+        />
+      )}
+      renderNewField={() => (
+        <ScrapedImage
+          result={props.result}
+          className={props.className}
+          placeholder={props.title}
+          isNew
+        />
+      )}
+      onChange={props.onChange}
+    />
+  );
+};
+
+interface IScrapedImageDialogRowProps<
+  T extends ScrapeResult<string>,
+  V extends IHasName
+> extends IScrapedFieldProps<string> {
+  title: string;
+  renderOriginalField: () => JSX.Element | undefined;
+  renderNewField: () => JSX.Element | undefined;
+  onChange: (value: T) => void;
+  newValues?: V[];
+  images: string[];
+  onCreateNew?: (index: number) => void;
+}
+
+export const ScrapeImageDialogRow = <
+  T extends ScrapeResult<string>,
+  V extends IHasName
+>(
+  props: IScrapedImageDialogRowProps<T, V>
+) => {
+  const [imageIndex, setImageIndex] = useState(0);
+
+  function hasNewValues() {
+    return props.newValues && props.newValues.length > 0 && props.onCreateNew;
+  }
+
+  function setPrev() {
+    if (imageIndex === 0) {
+      return;
+    }
+    const ret = props.result.cloneWithValue(props.images[imageIndex - 1]);
+    props.onChange(ret as T);
+    setImageIndex(imageIndex - 1);
+  }
+
+  function setNext() {
+    if (imageIndex === props.images.length - 1) {
+      return;
+    }
+    const ret = props.result.cloneWithValue(props.images[imageIndex + 1]);
+    props.onChange(ret as T);
+    setImageIndex(imageIndex + 1);
+  }
+
+  if (!props.result.scraped && !hasNewValues()) {
+    return <></>;
+  }
+
+  function renderSelector() {
+    return (
+      props.images.length > 0 && (
+        <div className="d-flex mt-2 image-selection">
+          <Button
+            onClick={setPrev}
+            disabled={props.images.length === 1 || imageIndex === 0}
+          >
+            <Icon icon={faArrowLeft} />
+          </Button>
+          <h5 className="flex-grow-1 px-2">
+            Select performer image
+            <br />
+            {imageIndex + 1} of {props.images.length}
+          </h5>
+          <Button
+            onClick={setNext}
+            disabled={
+              props.images.length === 1 ||
+              imageIndex === props.images.length - 1
+            }
+          >
+            <Icon icon={faArrowRight} />
+          </Button>
+        </div>
+      )
+    );
+  }
+
+  function renderNewValues() {
+    if (!hasNewValues()) {
+      return;
+    }
+
+    const ret = (
+      <>
+        {props.newValues!.map((t, i) => (
+          <Badge
+            className="tag-item"
+            variant="secondary"
+            key={t.name}
+            onClick={() => props.onCreateNew!(i)}
+          >
+            {t.name}
+            <Button className="minimal ml-2">
+              <Icon className="fa-fw" icon={faPlus} />
+            </Button>
+          </Badge>
+        ))}
+      </>
+    );
+
+    const minCollapseLength = 10;
+
+    if (props.newValues!.length >= minCollapseLength) {
+      return (
+        <CollapseButton text={`Missing (${props.newValues!.length})`}>
+          {ret}
+        </CollapseButton>
+      );
+    }
+
+    return ret;
+  }
+
+  return (
+    <Row className="px-3 pt-3">
+      <Form.Label column lg="3">
+        {props.title}
+      </Form.Label>
+
+      <Col lg="9">
+        <Row>
+          <Col xs="6">
+            <InputGroup>{props.renderOriginalField()}</InputGroup>
+          </Col>
+          <Col xs="6">
+            <InputGroup>
+              {props.renderNewField()}
+              {renderSelector()}
+            </InputGroup>
+            {renderNewValues()}
+          </Col>
+        </Row>
+      </Col>
+    </Row>
   );
 };
 
