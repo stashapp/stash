@@ -629,7 +629,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           value={iface.handyKey ?? undefined}
           onChange={(v) => saveInterface({ handyKey: v })}
         />
-        {interactive.handyKey && (
+        {interactive.enabled() && (
           <>
             <div className="setting" id="handy-status">
               <div>

@@ -639,7 +639,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     // check if we're waiting for the interactive client
     if (
       scene.interactive &&
-      interactiveClient.handyKey &&
+      interactiveClient.enabled() &&                // TODO: May not have Handy key for other devices
       currentScript !== scene.paths.funscript
     ) {
       return;

@@ -5,6 +5,11 @@ import {
   CsvUploadResponse,
   HandyFirmwareStatus,
 } from "thehandy/lib/types";
+import {
+  ButtplugClient,
+  ButtplugClientDevice,
+  ButtplugBrowserWebsocketClientConnector
+} from "buttplug";
 
 interface IFunscript {
   actions: Array<IAction>;
@@ -90,20 +95,36 @@ async function uploadCsv(
   return newUrl;
 }
 
+export interface IInteractive {
+  scriptOffset: number;
+  enabled(): boolean;
+  connect(): Promise<void>;
+  uploadScript(funscriptPath: string): Promise<void>;
+  sync(): Promise<number>;
+  setServerTimeOffset(offset: number): void;
+  play(position: number): Promise<void>;
+  pause(): Promise<void>;
+  ensurePlaying(position: number): Promise<void>;
+  setLooping(looping: boolean): Promise<void>;
+}
+
 // Interactive currently uses the Handy API, but could be expanded to use buttplug.io
 // via buttplugio/buttplug-rs-ffi's WASM module.
-export class Interactive {
+export class HandyInteractive implements IInteractive {
   _connected: boolean;
   _playing: boolean;
   _scriptOffset: number;
   _handy: Handy;
 
-  constructor(handyKey: string, scriptOffset: number) {
+  constructor(scriptOffset: number = 0) {
     this._handy = new Handy();
-    this._handy.connectionKey = handyKey;
     this._scriptOffset = scriptOffset;
     this._connected = false;
     this._playing = false;
+  }
+
+  enabled(): boolean {
+    return (this._handy.connectionKey !== "");
   }
 
   async connect() {
@@ -191,5 +212,81 @@ export class Interactive {
       return;
     }
     this._handy.setHsspLoop(looping);
+  }
+}
+
+export class ButtplugInteractive implements IInteractive {
+  _scriptOffset: number;
+
+  constructor(scriptOffset: number = 0) {
+    this._scriptOffset = scriptOffset;
+  }
+
+  enabled(): boolean {
+    return true;
+  }
+
+  async connect() {
+    const connector = new ButtplugBrowserWebsocketClientConnector("ws://localhost:12345");
+    const client = new ButtplugClient("Device Control Example");
+    client.addListener(
+      "deviceadded",
+      async (device: ButtplugClientDevice) => {
+        console.log(`Device Connected: ${device.name}`);
+        //devices.current.push(device);
+        // setDeviceDatas((deviceDatas) => [
+        //   ...deviceDatas,
+        //   {
+        //     intensities: { vibration: 0, rotation: 0 },
+        //   },
+        // ]);
+      }
+    );
+    client.addListener("deviceremoved", (device) =>
+      console.log(`Device Removed: ${device.name}`)
+    );
+    await client.connect(connector);
+    await client.startScanning();
+  }
+
+  set scriptOffset(offset: number) {
+    this._scriptOffset = offset;
+  }
+
+  async uploadScript(funscriptPath: string) {
+    if (!funscriptPath) {
+      return;
+    }
+
+    const csv = await fetch(funscriptPath)
+      .then((response) => response.json())
+      .then((json) => convertFunscriptToCSV(json));
+    const fileName = `${Math.round(Math.random() * 100000000)}.csv`;
+    const csvFile = new File([csv], fileName);
+    return;
+  }
+
+  async sync() {
+    return 0;
+  }
+
+  setServerTimeOffset(offset: number) {
+    return;
+  }
+
+  async play(position: number) {
+    return;
+  }
+
+  async pause() {
+    return;
+  }
+
+  async ensurePlaying(position: number) {
+    return;
+  }
+
+  async setLooping(looping: boolean) {
+    return;
   }
 }

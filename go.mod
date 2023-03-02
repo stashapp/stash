@@ -57,6 +57,7 @@ require (
 	github.com/spf13/cast v1.4.1
 	github.com/vearutop/statigz v1.1.6
 	github.com/vektah/dataloaden v0.3.0
+	github.com/vektah/gqlparser/v2 v2.5.1
 	github.com/xWTF/chardet v0.0.0-20230208095535-c780f2ac244e
 	gopkg.in/guregu/null.v4 v4.0.0
 )
@@ -99,7 +100,6 @@ require (
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/urfave/cli/v2 v2.8.1 // indirect
-	github.com/vektah/gqlparser/v2 v2.5.1 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect

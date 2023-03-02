@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { ConfigurationContext } from "../Config";
 import { useLocalForage } from "../LocalForage";
-import { Interactive as InteractiveAPI } from "./interactive";
+import { IInteractive, HandyInteractive, ButtplugInteractive } from "./interactive";
 
 export enum ConnectionState {
   Missing,
@@ -34,7 +34,7 @@ export function connectionStateLabel(s: ConnectionState) {
 }
 
 export interface IState {
-  interactive: InteractiveAPI;
+  interactive: IInteractive;
   state: ConnectionState;
   serverOffset: number;
   initialised: boolean;
@@ -46,7 +46,7 @@ export interface IState {
 }
 
 export const InteractiveContext = React.createContext<IState>({
-  interactive: new InteractiveAPI("", 0),
+  interactive: new ButtplugInteractive(),
   state: ConnectionState.Missing,
   serverOffset: 0,
   initialised: false,
@@ -81,7 +81,7 @@ export const InteractiveProvider: React.FC = ({ children }) => {
     undefined
   );
   const [scriptOffset, setScriptOffset] = useState<number>(0);
-  const [interactive] = useState<InteractiveAPI>(new InteractiveAPI("", 0));
+  const [interactive] = useState<IInteractive>(new ButtplugInteractive());
 
   const [initialised, setInitialised] = useState(false);
   const [error, setError] = useState<string | undefined>();
@@ -125,6 +125,7 @@ export const InteractiveProvider: React.FC = ({ children }) => {
       return;
     }
 
+    /*
     const oldKey = interactive.handyKey;
 
     interactive.handyKey = handyKey ?? "";
@@ -133,11 +134,12 @@ export const InteractiveProvider: React.FC = ({ children }) => {
     if (oldKey !== interactive.handyKey && interactive.handyKey) {
       initialise();
     }
+    */
   }, [handyKey, scriptOffset, config, interactive, initialise]);
 
   const sync = useCallback(async () => {
     if (
-      !interactive.handyKey ||
+      !interactive.enabled() ||
       state === ConnectionState.Syncing ||
       !initialised
     ) {
@@ -154,7 +156,7 @@ export const InteractiveProvider: React.FC = ({ children }) => {
     async (funscriptPath: string) => {
       interactive.pause();
       if (
-        !interactive.handyKey ||
+        !interactive.enabled() ||
         !funscriptPath ||
         funscriptPath === currentScript
       ) {
