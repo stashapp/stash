@@ -1,8 +1,10 @@
 package validator
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/vektah/gqlparser/v2/ast"
@@ -28,6 +30,7 @@ func VariableValues(schema *ast.Schema, op *ast.OperationDefinition, variables m
 		}
 
 		val, hasValue := variables[v.Variable]
+
 		if !hasValue {
 			if v.DefaultValue != nil {
 				var err error
@@ -49,6 +52,24 @@ func VariableValues(schema *ast.Schema, op *ast.OperationDefinition, variables m
 				coercedVars[v.Variable] = nil
 			} else {
 				rv := reflect.ValueOf(val)
+
+				jsonNumber, isJsonNumber := val.(json.Number)
+				if isJsonNumber {
+					if v.Type.NamedType == "Int" {
+						n, err := jsonNumber.Int64()
+						if err != nil {
+							return nil, gqlerror.ErrorPathf(validator.path, "cannot use value %d as %s", n, v.Type.NamedType)
+						}
+						rv = reflect.ValueOf(n)
+					} else if v.Type.NamedType == "Float" {
+						f, err := jsonNumber.Float64()
+						if err != nil {
+							return nil, gqlerror.ErrorPathf(validator.path, "cannot use value %f as %s", f, v.Type.NamedType)
+						}
+						rv = reflect.ValueOf(f)
+
+					}
+				}
 				if rv.Kind() == reflect.Ptr || rv.Kind() == reflect.Interface {
 					rv = rv.Elem()
 				}
@@ -132,11 +153,11 @@ func (v *varValidator) validateVarType(typ *ast.Type, val reflect.Value) (reflec
 		kind := val.Type().Kind()
 		switch typ.NamedType {
 		case "Int":
-			if kind == reflect.String || kind == reflect.Int || kind == reflect.Int32 || kind == reflect.Int64 {
+			if kind == reflect.Int || kind == reflect.Int32 || kind == reflect.Int64 || kind == reflect.Float32 || kind == reflect.Float64 || IsValidIntString(val, kind) {
 				return val, nil
 			}
 		case "Float":
-			if kind == reflect.String || kind == reflect.Float32 || kind == reflect.Float64 || kind == reflect.Int || kind == reflect.Int32 || kind == reflect.Int64 {
+			if kind == reflect.Float32 || kind == reflect.Float64 || kind == reflect.Int || kind == reflect.Int32 || kind == reflect.Int64 || IsValidFloatString(val, kind) {
 				return val, nil
 			}
 		case "String":
@@ -217,4 +238,21 @@ func (v *varValidator) validateVarType(typ *ast.Type, val reflect.Value) (reflec
 		panic(fmt.Errorf("unsupported type %s", def.Kind))
 	}
 	return val, nil
+}
+
+func IsValidIntString(val reflect.Value, kind reflect.Kind) bool {
+	if kind != reflect.String {
+		return false
+	}
+	_, e := strconv.ParseInt(fmt.Sprintf("%v", val.Interface()), 10, 64)
+
+	return e == nil
+}
+
+func IsValidFloatString(val reflect.Value, kind reflect.Kind) bool {
+	if kind != reflect.String {
+		return false
+	}
+	_, e := strconv.ParseFloat(fmt.Sprintf("%v", val.Interface()), 64)
+	return e == nil
 }

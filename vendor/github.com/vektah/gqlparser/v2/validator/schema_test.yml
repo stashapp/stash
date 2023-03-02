@@ -61,7 +61,7 @@ object types:
         b: Int
       }
     error:
-      message: 'OBJECT must define one or more fields.'
+      message: 'OBJECT InvalidObject2: must define one or more fields.'
       locations: [{line: 6, column: 6}]
   - name: check reserved names on type name
     input: |
@@ -98,7 +98,7 @@ object types:
         input: Input!
       }
     error:
-      message: 'OBJECT field must be one of SCALAR, OBJECT, INTERFACE, UNION, ENUM.'
+      message: 'OBJECT Query: field must be one of SCALAR, OBJECT, INTERFACE, UNION, ENUM.'
       locations: [{line: 5, column: 3}]
 
 interfaces:
@@ -149,7 +149,7 @@ interfaces:
         b: Int
       }
     error:
-      message: 'INTERFACE must define one or more fields.'
+      message: 'INTERFACE InvalidInterface2: must define one or more fields.'
       locations: [{line: 6, column: 11}]
 
   - name: check reserved names on type name
@@ -173,7 +173,7 @@ interfaces:
         input: Input!
       }
     error:
-      message: 'INTERFACE field must be one of SCALAR, OBJECT, INTERFACE, UNION, ENUM.'
+      message: 'INTERFACE Foo: field must be one of SCALAR, OBJECT, INTERFACE, UNION, ENUM.'
       locations: [{line: 8, column: 3}]
 
   - name: must have all fields from interface
@@ -341,7 +341,7 @@ inputs:
         b: Int
       }
     error:
-      message: 'INPUT_OBJECT must define one or more input fields.'
+      message: 'INPUT_OBJECT InvalidInput2: must define one or more input fields.'
       locations: [{line: 6, column: 7}]
   - name: check reserved names on type name
     input: |
@@ -357,7 +357,7 @@ inputs:
       type Object { id: ID }
       input Foo { a: Object! }
     error:
-      message: INPUT_OBJECT field must be one of SCALAR, ENUM, INPUT_OBJECT.
+      message: 'OBJECT a: field must be one of SCALAR, ENUM, INPUT_OBJECT.'
       locations: [{line: 2, column: 13}]
 
   - name: fields cannot be Interfaces
@@ -365,7 +365,7 @@ inputs:
       interface Interface { id: ID! }
       input Foo { a: Interface! }
     error:
-      message: INPUT_OBJECT field must be one of SCALAR, ENUM, INPUT_OBJECT.
+      message: 'INTERFACE a: field must be one of SCALAR, ENUM, INPUT_OBJECT.'
       locations: [{line: 2, column: 13}]
 
   - name: fields cannot be Unions
@@ -374,7 +374,7 @@ inputs:
       union Union = Object
       input Foo { a: Union! }
     error:
-      message: INPUT_OBJECT field must be one of SCALAR, ENUM, INPUT_OBJECT.
+      message: 'UNION a: field must be one of SCALAR, ENUM, INPUT_OBJECT.'
       locations: [{line: 3, column: 13}]
 
 args:
@@ -434,7 +434,7 @@ enums:
         BAR
       }
     error:
-      message: 'ENUM must define one or more unique enum values.'
+      message: 'ENUM InvalidEnum2: must define one or more unique enum values.'
       locations: [{line: 6, column: 6}]
   - name: check reserved names on type name
     input: |

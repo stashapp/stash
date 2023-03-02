@@ -757,8 +757,9 @@ github.com/vearutop/statigz v1.1.6/go.mod h1:czAv7iXgPv/s+xsgXpVEhhD0NSOQ4wZPgmM
 github.com/vektah/dataloaden v0.3.0 h1:ZfVN2QD6swgvp+tDqdH/OIT/wu3Dhu0cus0k5gIZS84=
 github.com/vektah/dataloaden v0.3.0/go.mod h1:/HUdMve7rvxZma+2ZELQeNh88+003LL7Pf/CZ089j8U=
 github.com/vektah/gqlparser/v2 v2.4.0/go.mod h1:flJWIR04IMQPGz+BXLrORkrARBxv/rtyIAFvd/MceW0=
-github.com/vektah/gqlparser/v2 v2.4.1 h1:QOyEn8DAPMUMARGMeshKDkDgNmVoEaEGiDB0uWxcSlQ=
 github.com/vektah/gqlparser/v2 v2.4.1/go.mod h1:flJWIR04IMQPGz+BXLrORkrARBxv/rtyIAFvd/MceW0=
+github.com/vektah/gqlparser/v2 v2.4.2 h1:29TGc6QmhEUq5fll+2FPoTmhUhR65WEKN4VK/jo0OlM=
+github.com/vektah/gqlparser/v2 v2.4.2/go.mod h1:flJWIR04IMQPGz+BXLrORkrARBxv/rtyIAFvd/MceW0=
 github.com/vektra/mockery/v2 v2.10.0 h1:MiiQWxwdq7/ET6dCXLaJzSGEN17k758H7JHS9kOdiks=
 github.com/vektra/mockery/v2 v2.10.0/go.mod h1:m/WO2UzWzqgVX3nvqpRQq70I4Z7jbSCRhdmkgtp+Ab4=
 github.com/willf/bitset v1.1.9/go.mod h1:RjeCKbqT1RxIR/KWY6phxZiaY1IyutSBfGjNPySAYV4=

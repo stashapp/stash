@@ -381,7 +381,7 @@ github.com/vearutop/statigz
 ## explicit
 github.com/vektah/dataloaden
 github.com/vektah/dataloaden/pkg/generator
-# github.com/vektah/gqlparser/v2 v2.4.1
+# github.com/vektah/gqlparser/v2 v2.4.2
 ## explicit; go 1.16
 github.com/vektah/gqlparser/v2
 github.com/vektah/gqlparser/v2/ast
