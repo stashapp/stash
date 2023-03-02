@@ -25,7 +25,7 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MingW. For examp
 ### macOS
 
 1. If you don't have it already, install the [Homebrew package manager](https://brew.sh).
-2. Install dependencies: `brew install go git yarn gcc make`
+2. Install dependencies: `brew install go git yarn gcc make node ffmpeg`
 
 ## Commands
 
@@ -39,7 +39,34 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MingW. For examp
 * `make fmt` - Run `go fmt`
 * `make it` - Run the unit and integration tests
 * `make validate` - Run all of the tests and checks required to submit a PR
+* `make server-start` - Runs an instance of the server in the `.local` directory.
+* `make server-clean` - Removes the `.local` directory and all of its contents.
 * `make ui-start` - Runs the UI in development mode. Requires a running stash server to connect to. Stash server port can be changed from the default of `9999` using environment variable `VITE_APP_PLATFORM_PORT`. UI runs on port `3000` or the next available port.
+
+## Local development quickstart
+
+1. Run `make pre-ui` to install UI dependencies
+2. Run `make generate` to create generated files
+3. In one terminal, run `make server-start` to run the server code
+4. In a separate terminal, run `make ui-start` to run the UI in development mode
+5. Open the UI in a browser `http://localhost:3000/`
+
+Changes to the UI code can be seen by reloading the browser page.
+
+Changes to the server code requires a restart (`CTRL-C` in the server terminal).
+
+On first launch:
+1. On the "Stash Setup Wizard" screen, choose a directory with some files to test with
+2. Press "Next" to use the default locations for the database and generated content
+3. Press the "Confirm" and "Finish" buttons to get into the UI
+4. On the side menu, navigate to "Tasks -> Library -> Scan" and press the "Scan" button
+5. You're all set! Set any other configurations you'd like and test your code changes.
+
+To start fresh with new configuration:
+1. Stop the server (`CTRL-C` in the server terminal)
+2. Run `make server-clean` to clear all config, database, and generated files (under `.local/`)
+3. Run `make server-start` to restart the server
+4. Follow the "On first launch" steps above
 
 ## Building a release
 

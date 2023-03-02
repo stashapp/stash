@@ -129,6 +129,14 @@ export const SettingsLibraryPanel: React.FC = () => {
           checked={general.writeImageThumbnails ?? false}
           onChange={(v) => saveGeneral({ writeImageThumbnails: v })}
         />
+
+        <StringSetting
+          id="gallery-cover-regex"
+          headingID="config.general.gallery_cover_regex_label"
+          subHeadingID="config.general.gallery_cover_regex_desc"
+          value={general.galleryCoverRegex ?? ""}
+          onChange={(v) => saveGeneral({ galleryCoverRegex: v })}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.ui.delete_options.heading">

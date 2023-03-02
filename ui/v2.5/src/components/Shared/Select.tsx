@@ -30,12 +30,13 @@ import { useIntl } from "react-intl";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import { TagPopover } from "../Tags/TagPopover";
+import { defaultMaxOptionsShown, IUIConfig } from "src/core/config";
 
-export type ValidTypes =
-  | GQL.SlimPerformerDataFragment
-  | GQL.SlimTagDataFragment
-  | GQL.SlimStudioDataFragment
-  | GQL.SlimMovieDataFragment;
+export type SelectObject = {
+  id: string;
+  name?: string | null;
+  title?: string | null;
+};
 type Option = { value: string; label: string };
 
 interface ITypeProps {
@@ -53,7 +54,7 @@ interface ITypeProps {
 interface IFilterProps {
   ids?: string[];
   initialIds?: string[];
-  onSelect?: (item: ValidTypes[]) => void;
+  onSelect?: (item: SelectObject[]) => void;
   noSelectionString?: string;
   className?: string;
   isMulti?: boolean;
@@ -90,9 +91,9 @@ interface ISelectProps<T extends boolean> {
   noOptionsMessage?: string | null;
 }
 interface IFilterComponentProps extends IFilterProps {
-  items: Array<ValidTypes>;
-  toOption?: (item: ValidTypes) => Option;
-  onCreate?: (name: string) => Promise<{ item: ValidTypes; message: string }>;
+  items: SelectObject[];
+  toOption?: (item: SelectObject) => Option;
+  onCreate?: (name: string) => Promise<{ item: SelectObject; message: string }>;
 }
 interface IFilterSelectProps<T extends boolean>
   extends Pick<
@@ -131,7 +132,10 @@ const getSelectedValues = (selectedItems: OnChangeValue<Option, boolean>) =>
 const LimitedSelectMenu = <T extends boolean>(
   props: MenuListProps<Option, T, GroupBase<Option>>
 ) => {
-  const maxOptionsShown = 200;
+  const { configuration } = React.useContext(ConfigurationContext);
+  const maxOptionsShown =
+    (configuration?.ui as IUIConfig).maxOptionsShown ?? defaultMaxOptionsShown;
+
   const [hiddenCount, setHiddenCount] = useState<number>(0);
   const hiddenCountStyle = {
     padding: "8px 12px",
@@ -166,7 +170,7 @@ const LimitedSelectMenu = <T extends boolean>(
     }
     setHiddenCount(0);
     return props.children;
-  }, [props.children]);
+  }, [props.children, maxOptionsShown]);
   return (
     <reactSelectComponents.MenuList {...props}>
       {menuChildren}
@@ -284,7 +288,7 @@ const FilterSelectComponent = <T extends boolean>(
     }
     return {
       value: i.id,
-      label: i.name ?? "",
+      label: i.name ?? i.title ?? "",
     };
   });
 

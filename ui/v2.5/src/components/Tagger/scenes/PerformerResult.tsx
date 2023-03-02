@@ -6,7 +6,7 @@ import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "src/components/Shared/Icon";
 import { OperationButton } from "src/components/Shared/OperationButton";
-import { PerformerSelect, ValidTypes } from "src/components/Shared/Select";
+import { PerformerSelect, SelectObject } from "src/components/Shared/Select";
 import { OptionalField } from "../IncludeButton";
 import { faSave } from "@fortawesome/free-solid-svg-icons";
 
@@ -35,10 +35,12 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
 
   const matchedPerformer = performerData?.findPerformer;
   const matchedStashID = matchedPerformer?.stash_ids.some(
-    (stashID) => stashID.endpoint === endpoint && stashID.stash_id
+    (stashID) =>
+      stashID.endpoint === endpoint &&
+      stashID.stash_id === performer.remote_site_id
   );
 
-  const handlePerformerSelect = (performers: ValidTypes[]) => {
+  const handlePerformerSelect = (performers: SelectObject[]) => {
     if (performers.length) {
       setSelectedID(performers[0].id);
     } else {

@@ -207,7 +207,7 @@ export const App: React.FC = () => {
 
     return (
       <ReleaseNotesDialog
-        notes={notes.map((n) => n.content)}
+        notes={notes}
         onClose={() => {
           saveUI({
             variables: {
