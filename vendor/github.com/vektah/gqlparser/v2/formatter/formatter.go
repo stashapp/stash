@@ -299,9 +299,7 @@ func (f *formatter) FormatArgumentDefinitionList(lists ast.ArgumentDefinitionLis
 	for idx, arg := range lists {
 		f.FormatArgumentDefinition(arg)
 
-		// Skip emitting (insignificant) comma in case it is the
-		// last argument, or we printed a new line in its definition.
-		if idx != len(lists)-1 && arg.Description == "" {
+		if idx != len(lists)-1 {
 			f.NoPadding().WriteWord(",")
 		}
 	}

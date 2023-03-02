@@ -6,7 +6,7 @@ import (
 )
 
 type Upload struct {
-	File        io.ReadSeeker
+	File        io.Reader
 	Filename    string
 	Size        int64
 	ContentType string

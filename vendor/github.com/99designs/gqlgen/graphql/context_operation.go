@@ -3,10 +3,8 @@ package graphql
 import (
 	"context"
 	"errors"
-	"net/http"
 
 	"github.com/vektah/gqlparser/v2/ast"
-	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // Deprecated: Please update all references to OperationContext instead
@@ -17,7 +15,6 @@ type OperationContext struct {
 	Variables     map[string]interface{}
 	OperationName string
 	Doc           *ast.QueryDocument
-	Headers       http.Header
 
 	Operation              *ast.OperationDefinition
 	DisableIntrospection   bool
@@ -107,16 +104,9 @@ func (c *OperationContext) Errorf(ctx context.Context, format string, args ...in
 	AddErrorf(ctx, format, args...)
 }
 
-// Error add error or multiple errors (if underlaying type is gqlerror.List) into the stack.
-// Then it will be sends to the client, passing it through the formatter.
+// Error sends an error to the client, passing it through the formatter.
+// Deprecated: use graphql.AddError(ctx, err) instead
 func (c *OperationContext) Error(ctx context.Context, err error) {
-	if errList, ok := err.(gqlerror.List); ok {
-		for _, e := range errList {
-			AddError(ctx, e)
-		}
-		return
-	}
-
 	AddError(ctx, err)
 }
 

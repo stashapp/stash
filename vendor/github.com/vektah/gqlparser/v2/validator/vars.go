@@ -14,7 +14,7 @@ import (
 var UnexpectedType = fmt.Errorf("Unexpected Type")
 
 // VariableValues coerces and validates variable values
-func VariableValues(schema *ast.Schema, op *ast.OperationDefinition, variables map[string]interface{}) (map[string]interface{}, error) {
+func VariableValues(schema *ast.Schema, op *ast.OperationDefinition, variables map[string]interface{}) (map[string]interface{}, *gqlerror.Error) {
 	coercedVars := map[string]interface{}{}
 
 	validator := varValidator{
