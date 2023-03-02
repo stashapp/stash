@@ -9,8 +9,6 @@ import (
 
 	"github.com/99designs/gqlgen/codegen/config"
 	"github.com/vektah/gqlparser/v2/ast"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 type GoFieldType int
@@ -25,15 +23,14 @@ const (
 type Object struct {
 	*ast.Definition
 
-	Type                    types.Type
-	ResolverInterface       types.Type
-	Root                    bool
-	Fields                  []*Field
-	Implements              []*ast.Definition
-	DisableConcurrency      bool
-	Stream                  bool
-	Directives              []*Directive
-	PointersInUmarshalInput bool
+	Type               types.Type
+	ResolverInterface  types.Type
+	Root               bool
+	Fields             []*Field
+	Implements         []*ast.Definition
+	DisableConcurrency bool
+	Stream             bool
+	Directives         []*Directive
 }
 
 func (b *builder) buildObject(typ *ast.Definition) (*Object, error) {
@@ -41,16 +38,15 @@ func (b *builder) buildObject(typ *ast.Definition) (*Object, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", typ.Name, err)
 	}
-	caser := cases.Title(language.English, cases.NoLower)
+
 	obj := &Object{
-		Definition:              typ,
-		Root:                    b.Schema.Query == typ || b.Schema.Mutation == typ || b.Schema.Subscription == typ,
-		DisableConcurrency:      typ == b.Schema.Mutation,
-		Stream:                  typ == b.Schema.Subscription,
-		Directives:              dirs,
-		PointersInUmarshalInput: b.Config.ReturnPointersInUmarshalInput,
+		Definition:         typ,
+		Root:               b.Schema.Query == typ || b.Schema.Mutation == typ || b.Schema.Subscription == typ,
+		DisableConcurrency: typ == b.Schema.Mutation,
+		Stream:             typ == b.Schema.Subscription,
+		Directives:         dirs,
 		ResolverInterface: types.NewNamed(
-			types.NewTypeName(0, b.Config.Exec.Pkg(), caser.String(typ.Name)+"Resolver", nil),
+			types.NewTypeName(0, b.Config.Exec.Pkg(), strings.Title(typ.Name)+"Resolver", nil),
 			nil,
 			nil,
 		),

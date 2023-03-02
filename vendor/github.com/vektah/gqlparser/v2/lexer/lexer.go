@@ -37,11 +37,11 @@ func (s *Lexer) peek() (rune, int) {
 	return utf8.DecodeRuneInString(s.Input[s.end:])
 }
 
-func (s *Lexer) makeToken(kind Type) (Token, error) {
+func (s *Lexer) makeToken(kind Type) (Token, *gqlerror.Error) {
 	return s.makeValueToken(kind, s.Input[s.start:s.end])
 }
 
-func (s *Lexer) makeValueToken(kind Type, value string) (Token, error) {
+func (s *Lexer) makeValueToken(kind Type, value string) (Token, *gqlerror.Error) {
 	return Token{
 		Kind:  kind,
 		Value: value,
@@ -55,7 +55,7 @@ func (s *Lexer) makeValueToken(kind Type, value string) (Token, error) {
 	}, nil
 }
 
-func (s *Lexer) makeError(format string, args ...interface{}) (Token, error) {
+func (s *Lexer) makeError(format string, args ...interface{}) (Token, *gqlerror.Error) {
 	column := s.endRunes - s.lineStartRunes + 1
 	return Token{
 		Kind: Invalid,
@@ -74,7 +74,7 @@ func (s *Lexer) makeError(format string, args ...interface{}) (Token, error) {
 // This skips over whitespace and comments until it finds the next lexable
 // token, then lexes punctuators immediately or calls the appropriate helper
 // function for more complicated tokens.
-func (s *Lexer) ReadToken() (token Token, err error) {
+func (s *Lexer) ReadToken() (token Token, err *gqlerror.Error) {
 
 	s.ws()
 	s.start = s.end
@@ -192,7 +192,7 @@ func (s *Lexer) ws() {
 // readComment from the input
 //
 // #[\u0009\u0020-\uFFFF]*
-func (s *Lexer) readComment() (Token, error) {
+func (s *Lexer) readComment() (Token, *gqlerror.Error) {
 	for s.end < len(s.Input) {
 		r, w := s.peek()
 
@@ -213,7 +213,7 @@ func (s *Lexer) readComment() (Token, error) {
 //
 // Int:   -?(0|[1-9][0-9]*)
 // Float: -?(0|[1-9][0-9]*)(\.[0-9]+)?((E|e)(+|-)?[0-9]+)?
-func (s *Lexer) readNumber() (Token, error) {
+func (s *Lexer) readNumber() (Token, *gqlerror.Error) {
 	float := false
 
 	// backup to the first digit
@@ -299,7 +299,7 @@ func (s *Lexer) describeNext() string {
 // readString from the input
 //
 // "([^"\\\u000A\u000D]|(\\(u[0-9a-fA-F]{4}|["\\/bfnrt])))*"
-func (s *Lexer) readString() (Token, error) {
+func (s *Lexer) readString() (Token, *gqlerror.Error) {
 	inputLen := len(s.Input)
 
 	// this buffer is lazily created only if there are escape characters.
@@ -409,7 +409,7 @@ func (s *Lexer) readString() (Token, error) {
 // readBlockString from the input
 //
 // """("?"?(\\"""|\\(?!=""")|[^"\\]))*"""
-func (s *Lexer) readBlockString() (Token, error) {
+func (s *Lexer) readBlockString() (Token, *gqlerror.Error) {
 	inputLen := len(s.Input)
 
 	var buf bytes.Buffer
@@ -434,6 +434,7 @@ func (s *Lexer) readBlockString() (Token, error) {
 			// skip the close quote
 			s.end += 3
 			s.endRunes += 3
+
 			return t, err
 		}
 
@@ -455,8 +456,6 @@ func (s *Lexer) readBlockString() (Token, error) {
 			buf.WriteByte('\n')
 			s.end++
 			s.endRunes++
-			s.line++
-			s.lineStartRunes = s.endRunes
 		} else {
 			var char = rune(r)
 			var w = 1
@@ -468,10 +467,6 @@ func (s *Lexer) readBlockString() (Token, error) {
 			s.end += w
 			s.endRunes++
 			buf.WriteRune(char)
-			if r == '\n' {
-				s.line++
-				s.lineStartRunes = s.endRunes
-			}
 		}
 	}
 
@@ -499,7 +494,7 @@ func unhex(b string) (v rune, ok bool) {
 // readName from the input
 //
 // [_A-Za-z][_0-9A-Za-z]*
-func (s *Lexer) readName() (Token, error) {
+func (s *Lexer) readName() (Token, *gqlerror.Error) {
 	for s.end < len(s.Input) {
 		r, w := s.peek()
 

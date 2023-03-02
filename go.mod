@@ -1,7 +1,7 @@
 module github.com/stashapp/stash
 
 require (
-	github.com/99designs/gqlgen v0.17.24
+	github.com/99designs/gqlgen v0.17.2
 	github.com/Yamashou/gqlgenc v0.0.6
 	github.com/anacrolix/dms v1.2.2
 	github.com/antchfx/htmlquery v1.2.5-0.20211125074323-810ee8082758
@@ -57,6 +57,7 @@ require (
 	github.com/spf13/cast v1.4.1
 	github.com/vearutop/statigz v1.1.6
 	github.com/vektah/dataloaden v0.3.0
+	github.com/vektah/gqlparser/v2 v2.4.1
 	github.com/xWTF/chardet v0.0.0-20230208095535-c780f2ac244e
 	gopkg.in/guregu/null.v4 v4.0.0
 )
@@ -82,6 +83,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/matryer/moq v0.2.3 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
@@ -99,7 +101,6 @@ require (
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/urfave/cli/v2 v2.8.1 // indirect
-	github.com/vektah/gqlparser/v2 v2.5.1 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect

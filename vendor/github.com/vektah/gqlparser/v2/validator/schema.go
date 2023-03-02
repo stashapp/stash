@@ -1,3 +1,5 @@
+//go:generate go run ./inliner/inliner.go
+
 package validator
 
 import (
@@ -10,7 +12,7 @@ import (
 	"github.com/vektah/gqlparser/v2/parser"
 )
 
-func LoadSchema(inputs ...*Source) (*Schema, error) {
+func LoadSchema(inputs ...*Source) (*Schema, *gqlerror.Error) {
 	ast, err := parser.ParseSchemas(inputs...)
 	if err != nil {
 		return nil, err
@@ -18,7 +20,7 @@ func LoadSchema(inputs ...*Source) (*Schema, error) {
 	return ValidateSchemaDocument(ast)
 }
 
-func ValidateSchemaDocument(ast *SchemaDocument) (*Schema, error) {
+func ValidateSchemaDocument(ast *SchemaDocument) (*Schema, *gqlerror.Error) {
 	schema := Schema{
 		Types:         map[string]*Definition{},
 		Directives:    map[string]*DirectiveDefinition{},
@@ -81,22 +83,7 @@ func ValidateSchemaDocument(ast *SchemaDocument) (*Schema, error) {
 
 	for i, dir := range ast.Directives {
 		if schema.Directives[dir.Name] != nil {
-			// While the spec says SDL must not (§3.5) explicitly define builtin
-			// scalars, it may (§3.13) define builtin directives. Here we check for
-			// that, and reject doubly-defined directives otherwise.
-			switch dir.Name {
-			case "include", "skip", "deprecated", "specifiedBy": // the builtins
-				// In principle here we might want to validate that the
-				// directives are the same. But they might not be, if the
-				// server has an older spec than we do. (Plus, validating this
-				// is a lot of work.) So we just keep the first one we saw.
-				// That's an arbitrary choice, but in theory the only way it
-				// fails is if the server is using features newer than this
-				// version of gqlparser, in which case they're in trouble
-				// anyway.
-			default:
-				return nil, gqlerror.ErrorPosf(dir.Position, "Cannot redeclare directive %s.", dir.Name)
-			}
+			return nil, gqlerror.ErrorPosf(dir.Position, "Cannot redeclare directive %s.", dir.Name)
 		}
 		schema.Directives[dir.Name] = ast.Directives[i]
 	}
@@ -264,34 +251,27 @@ func validateDefinition(schema *Schema, def *Definition) *gqlerror.Error {
 	switch def.Kind {
 	case Object, Interface:
 		if len(def.Fields) == 0 {
-			return gqlerror.ErrorPosf(def.Position, "%s %s: must define one or more fields.", def.Kind, def.Name)
+			return gqlerror.ErrorPosf(def.Position, "%s must define one or more fields.", def.Kind)
 		}
 		for _, field := range def.Fields {
 			if typ, ok := schema.Types[field.Type.Name()]; ok {
 				if !isValidKind(typ.Kind, Scalar, Object, Interface, Union, Enum) {
-					return gqlerror.ErrorPosf(field.Position, "%s %s: field must be one of %s.", def.Kind, def.Name, kindList(Scalar, Object, Interface, Union, Enum))
+					return gqlerror.ErrorPosf(field.Position, "%s field must be one of %s.", def.Kind, kindList(Scalar, Object, Interface, Union, Enum))
 				}
 			}
 		}
 	case Enum:
 		if len(def.EnumValues) == 0 {
-			return gqlerror.ErrorPosf(def.Position, "%s %s: must define one or more unique enum values.", def.Kind, def.Name)
-		}
-		for _, value := range def.EnumValues {
-			for _, nonEnum := range [3]string{"true", "false", "null"} {
-				if value.Name == nonEnum {
-					return gqlerror.ErrorPosf(def.Position, "%s %s: non-enum value %s.", def.Kind, def.Name, value.Name)
-				}
-			}
+			return gqlerror.ErrorPosf(def.Position, "%s must define one or more unique enum values.", def.Kind)
 		}
 	case InputObject:
 		if len(def.Fields) == 0 {
-			return gqlerror.ErrorPosf(def.Position, "%s %s: must define one or more input fields.", def.Kind, def.Name)
+			return gqlerror.ErrorPosf(def.Position, "%s must define one or more input fields.", def.Kind)
 		}
 		for _, field := range def.Fields {
 			if typ, ok := schema.Types[field.Type.Name()]; ok {
 				if !isValidKind(typ.Kind, Scalar, Enum, InputObject) {
-					return gqlerror.ErrorPosf(field.Position, "%s %s: field must be one of %s.", typ.Kind, field.Name, kindList(Scalar, Enum, InputObject))
+					return gqlerror.ErrorPosf(field.Position, "%s field must be one of %s.", def.Kind, kindList(Scalar, Enum, InputObject))
 				}
 			}
 		}

@@ -5,1171 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <a name="unreleased"></a>
-## [Unreleased](https://github.com/99designs/gqlgen/compare/v0.17.22...HEAD)
+## [Unreleased](https://github.com/99designs/gqlgen/compare/v0.17.1...HEAD)
 
 <!-- end of if -->
 <!-- end of CommitGroups -->
-<a name="v0.17.22"></a>
-## [v0.17.22](https://github.com/99designs/gqlgen/compare/v0.17.21...v0.17.22) - 2022-12-08
-- <a href="https://github.com/99designs/gqlgen/commit/d6579466a12896270f8b96543f8b9490ce3626e1"><tt>d6579466</tt></a> release v0.17.22
-
-- <a href="https://github.com/99designs/gqlgen/commit/9a2922997512939cd116983d267720505d45584b"><tt>9a292299</tt></a> graphql.Error is not deprecated anymore (<a href="https://github.com/99designs/gqlgen/pull/2455">#2455</a>)
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a44685b258710d56e1ce9f2374ca7ee577d37295"><tt>a44685b2</tt></a> Ability to return multiple errors from resolvers raise than add it to stack. (<a href="https://github.com/99designs/gqlgen/pull/2454">#2454</a>)</summary>
-
-* Remove DO NOT EDIT
-
-Sometimes vscode warn about this while editing resolvers code.
-Finally the resolver's code is editable and generated at the same time.
-
-* Ability to return multiple errors from resolver.
-
-* Multiple errors return example
-
-* Fix missing import
-
-* reformat
-
-* gofmt
-
-* go generate ./...
-
-* go generate ./...
-
-* Regenerate
-
-
-* remove trailing period
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/db1e3b81e71adcbad5143cf4b91fb402bb7ceba6"><tt>db1e3b81</tt></a> Implicit external check (<a href="https://github.com/99designs/gqlgen/pull/2449">#2449</a>)</summary>
-
-* Prevent entity resolver generation for stub types.
-In Federation 2 key fields are implicitly external
-
-* Add more comments to "isResolvable"
-
-* Check that no resolvers are set for stub "Hello"
-
-* Run generate with go 1.16
-
-* Simplify implicit external check
-
-* Add stricter federation version check.
-Update comment on expected behavior of the resolvable argument.
-Add comment to documentation about external directive.
-
-* Preallocate keyFields slice
-
-* Add non stub type to federation v2 test
-
-* Do not append to preallocated slice
-
-* Add test coverage for multiple fields in key
-
-* Fix typo in comment
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/5065163c99cda23ae9d789da5cdd5896107540a3"><tt>5065163c</tt></a> Re-generate and update release checklist to regenerate for new version
-
-- <a href="https://github.com/99designs/gqlgen/commit/5cfc22de31bbcb17ca15d090d9c2565f825950bd"><tt>5cfc22de</tt></a> Add v0.17.21 Release notes
-
-- <a href="https://github.com/99designs/gqlgen/commit/5d39046df9cea9cb83e3fca08e2f60e972adbb96"><tt>5d39046d</tt></a> v0.17.21 postrelease bump
-
- <!-- end of Commits -->
-<!-- end of Else -->
-
-<!-- end of If NoteGroups -->
-<a name="v0.17.21"></a>
-## [v0.17.21](https://github.com/99designs/gqlgen/compare/v0.17.20...v0.17.21) - 2022-12-03
-- <a href="https://github.com/99designs/gqlgen/commit/9deb8381725196dc2a7f2234457d8f6b0e145aab"><tt>9deb8381</tt></a> release v0.17.21
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5c083c792afa0b0ab9fd61221df7681922b6c723"><tt>5c083c79</tt></a> use goField directive for getters generation (<a href="https://github.com/99designs/gqlgen/pull/2447">#2447</a>)</summary>
-
-* consider goField directive for getters generation
-
-* Re-generate to pass linting
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/463d213465bb561fbceb1374cf1ea89bd8e54705"><tt>463d2134</tt></a> fix: safe http error response  (<a href="https://github.com/99designs/gqlgen/pull/2438">#2438</a>)</summary>
-
-* safe http error when parsing body
-
-* fix tests
-
-* fix linting
-
-* fix linting
-
-* Dispatch decoding errors so hook can present them
-
-
-* Revert test expectation to original
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/86c144fc7cd2772ae9bf5137cc9c521a7fc8b242"><tt>86c144fc</tt></a> Bump decode-uri-component from 0.2.0 to 0.2.2 in /integration (<a href="https://github.com/99designs/gqlgen/pull/2445">#2445</a>)</summary>
-
-Bumps [decode-uri-component](https://github.com/SamVerschueren/decode-uri-component) from 0.2.0 to 0.2.2.
-- [Release notes](https://github.com/SamVerschueren/decode-uri-component/releases)
-- [Commits](https://github.com/SamVerschueren/decode-uri-component/compare/v0.2.0...v0.2.2)
-
----
-updated-dependencies:
-- dependency-name: decode-uri-component
-  dependency-type: indirect
-...
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f28ffccd265e7f9eeb3c921459d7162decf94645"><tt>f28ffccd</tt></a> Bump minimatch from 3.0.4 to 3.1.2 in /integration (<a href="https://github.com/99designs/gqlgen/pull/2435">#2435</a>)</summary>
-
-Bumps [minimatch](https://github.com/isaacs/minimatch) from 3.0.4 to 3.1.2.
-- [Release notes](https://github.com/isaacs/minimatch/releases)
-- [Commits](https://github.com/isaacs/minimatch/compare/v3.0.4...v3.1.2)
-
----
-updated-dependencies:
-- dependency-name: minimatch
-  dependency-type: indirect
-...
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/e3af4459021800e71f5c48246ada4fc43f43ba3d"><tt>e3af4459</tt></a> docs : embedding schema in generated code (<a href="https://github.com/99designs/gqlgen/pull/2351">#2351</a>)
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/efb31b54320f1311aec963fd751cfee874c353cf"><tt>efb31b54</tt></a> Check if go.mod exists while init (<a href="https://github.com/99designs/gqlgen/pull/2432">#2432</a>)</summary>
-
-* Add check go.mod first to prevent cascade errors in "init" directive
-
-* Fix formatting
-
-* Fix formatting with gofmt
-
-
-
-This reverts commit c23d183d9da4e33993e600beefcccd1fc4ec6264.
-
-
-* Adjust go.mod file to look in parent directories as well
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/89e91da1b724073d1c723ba1d90d8ad0cb610499"><tt>89e91da1</tt></a> Add resolver commit (<a href="https://github.com/99designs/gqlgen/pull/2434">#2434</a>)</summary>
-
-* Add resolver commit
-
-* Add version to comment and re-generate
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/3087cf3a9830f80d01f508cf49d55e2370f60a19"><tt>3087cf3a</tt></a> Fix for <a href="https://github.com/99designs/gqlgen/pull/1274">#1274</a>. (<a href="https://github.com/99designs/gqlgen/pull/2411">#2411</a>)
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/906c0dee5abe3e173f0cac7b7c9e207f9471755e"><tt>906c0dee</tt></a> optional return pointers in unmarshalInput (<a href="https://github.com/99designs/gqlgen/pull/2397">#2397</a>)</summary>
-
-* optional return pointers in unmarshalInput
-
-* add docs for return_pointers_in_unmarshalinput
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a9d06036ff999ce6245f4b730c38cf69422e6937"><tt>a9d06036</tt></a> Add json.Number support to UnmarshalString (<a href="https://github.com/99designs/gqlgen/pull/2396">#2396</a>)</summary>
-
-* Add json.Number support to UnmarshalString
-
-* Add UnmarshalString tests
-
-* Remove trailing zeros when calling UnmarshalString with float64
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/daa440791ff2377bb5f3b0f5c61bb4d7ab5ce119"><tt>daa44079</tt></a> Update README.md (<a href="https://github.com/99designs/gqlgen/pull/2391">#2391</a>)</summary>
-
-fix: execute gqlgen generate command error.  eg: systems failed: unable to build object definition: unable to find type: github.com/99designs/gqlgen/graphql/introspection.InputValue. need import  github.com/99designs/gqlgen/graphql/introspection .
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/419dd96c96975be33ae35d016ad272ac72392135"><tt>419dd96c</tt></a> Bump got and [@graphql](https://github.com/graphql)-codegen/cli in /integration (<a href="https://github.com/99designs/gqlgen/pull/2389">#2389</a>)</summary>
-
-Removes `got`
-
-- [Release notes](https://github.com/dotansimha/graphql-code-generator/releases)
-- [Changelog](https://github.com/dotansimha/graphql-code-generator/blob/master/packages/graphql-codegen-cli/CHANGELOG.md)
-
----
-updated-dependencies:
-- dependency-name: got
-  dependency-type: indirect
-  dependency-type: direct:development
-...
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/b1ca215aa7f9dcbd167e1354c7a40925ee59c909"><tt>b1ca215a</tt></a> Add global typescript (<a href="https://github.com/99designs/gqlgen/pull/2390">#2390</a>)
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/265888c6812c6f0784a020b5082c142a387d4776"><tt>265888c6</tt></a> Bump jsdom and jest in /integration (<a href="https://github.com/99designs/gqlgen/pull/2388">#2388</a>)</summary>
-
-Bumps [jsdom](https://github.com/jsdom/jsdom) and [jest](https://github.com/facebook/jest/tree/HEAD/packages/jest). These dependencies needed to be updated together.
-
-Removes `jsdom`
-
-Updates `jest` from 24.9.0 to 29.0.3
-- [Release notes](https://github.com/facebook/jest/releases)
-- [Changelog](https://github.com/facebook/jest/blob/main/CHANGELOG.md)
-- [Commits](https://github.com/facebook/jest/commits/v29.0.3/packages/jest)
-
----
-updated-dependencies:
-- dependency-name: jsdom
-  dependency-type: indirect
-- dependency-name: jest
-  dependency-type: direct:development
-...
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/56f6db04b9d90b4a8de5f0177c787b99d9386e52"><tt>56f6db04</tt></a> Update module mitchellh/mapstructure to 1.5.0 (<a href="https://github.com/99designs/gqlgen/pull/2111">#2111</a>)</summary>
-
-* Update mitchellh/mapstructure
-
-
-* Avoid double pointer
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/ea9590a44419b9d56ea8c2afcdfa6a7fc7a55699"><tt>ea9590a4</tt></a> update changelog for v0.17.20
-
-- <a href="https://github.com/99designs/gqlgen/commit/4c06e6c6287fef6ad619abd3ca86f96c62afa67f"><tt>4c06e6c6</tt></a> v0.17.20 postrelease bump
-
- <!-- end of Commits -->
-<!-- end of Else -->
-
-<!-- end of If NoteGroups -->
-<a name="v0.17.20"></a>
-## [v0.17.20](https://github.com/99designs/gqlgen/compare/v0.17.19...v0.17.20) - 2022-09-19
-- <a href="https://github.com/99designs/gqlgen/commit/0e4cbd109c7bed3966b13546d8b9cc87feebf4a1"><tt>0e4cbd10</tt></a> release v0.17.20
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/12ae8ffaaa2f2ce0ecc82c003b941b91c9633c5f"><tt>12ae8ffa</tt></a> Update go-colorable and x/tools. (<a href="https://github.com/99designs/gqlgen/pull/2382">#2382</a>)</summary>
-
-This picks up a new 2022 version of golang.org/x/sys which is caused by
-https://github.com/golang/go/issues/49219 and is needed to fix building
-using Go 1.18 on aarch64-darwin.
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/68136ffb237eb7b51bab59a08f51f8a08e8035a5"><tt>68136ffb</tt></a> Update diagram in documentation (<a href="https://github.com/99designs/gqlgen/pull/2381">#2381</a>)</summary>
-
-The diagram wasn't rendering properly in Go docs, which was a shame because it's a great diagram. This PR fixes that by indenting it another space.
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/d29d098fdf508b2e36cbc1c8c1415b2ca995ff8a"><tt>d29d098f</tt></a> fix field merging behavior for fragments on interfaces (<a href="https://github.com/99designs/gqlgen/pull/2380">#2380</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/6bb31862f05d37e7381a84704a8db5e0b849b7eb"><tt>6bb31862</tt></a> Update changelog for v0.17.19
-
-- <a href="https://github.com/99designs/gqlgen/commit/bb7fbc0f2cb6320c015efce80c0ff0764f2a3884"><tt>bb7fbc0f</tt></a> v0.17.19 postrelease bump
-
- <!-- end of Commits -->
-<!-- end of Else -->
-
-<!-- end of If NoteGroups -->
-<a name="v0.17.19"></a>
-## [v0.17.19](https://github.com/99designs/gqlgen/compare/v0.17.18...v0.17.19) - 2022-09-15
-- <a href="https://github.com/99designs/gqlgen/commit/588c6ac137b8ed7aea1bc7c009ea23cb9dec5caa"><tt>588c6ac1</tt></a> release v0.17.19
-
-- <a href="https://github.com/99designs/gqlgen/commit/c671317056298db8073498c8db02120b6f737032"><tt>c6713170</tt></a> v0.17.18 postrelease bump
-
- <!-- end of Commits -->
-<!-- end of Else -->
-
-<!-- end of If NoteGroups -->
-<a name="v0.17.18"></a>
-## [v0.17.18](https://github.com/99designs/gqlgen/compare/v0.17.17...v0.17.18) - 2022-09-15
-- <a href="https://github.com/99designs/gqlgen/commit/1d41c808a93446fca8ff867e957ef552e56f6ae3"><tt>1d41c808</tt></a> release v0.17.18
-
-- <a href="https://github.com/99designs/gqlgen/commit/4dbe2e475f15ce77a498c841ea6c9149ef5ceaba"><tt>4dbe2e47</tt></a> update graphiql to 2.0.7 (<a href="https://github.com/99designs/gqlgen/pull/2375">#2375</a>)
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b7cc094a49e3d348cfc457aa76f1640c86cdcae9"><tt>b7cc094a</tt></a> testfix: make apollo federated tracer test more consistent (<a href="https://github.com/99designs/gqlgen/pull/2374">#2374</a>)</summary>
-
-* Update tracing_test.go
-
-* add missing imports
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/d096fb9b08531b0dc389a786b6f44add045ea75e"><tt>d096fb9b</tt></a> Update directives (<a href="https://github.com/99designs/gqlgen/pull/2371">#2371</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/1acfea2fbdf3564df16f8023f4e736e90a05b909"><tt>1acfea2f</tt></a> Add v0.17.17 changelog
-
-- <a href="https://github.com/99designs/gqlgen/commit/c273adc8ad45e15940bbb6fe211603670d9f3220"><tt>c273adc8</tt></a> v0.17.17 postrelease bump
-
- <!-- end of Commits -->
-<!-- end of Else -->
-
-<!-- end of If NoteGroups -->
-<a name="v0.17.17"></a>
-## [v0.17.17](https://github.com/99designs/gqlgen/compare/v0.17.16...v0.17.17) - 2022-09-13
-- <a href="https://github.com/99designs/gqlgen/commit/d50bc5aca10c5a5dd6a1680b2288c35a61327ade"><tt>d50bc5ac</tt></a> release v0.17.17
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/462025b400e9b792a5afbe320cde4cc952f6b547"><tt>462025b4</tt></a> nil check error before type assertion follow-up from <a href="https://github.com/99designs/gqlgen/pull/2341">#2341</a> (<a href="https://github.com/99designs/gqlgen/pull/2368">#2368</a>)</summary>
-
-* Improve errcode.Set safety
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/59493aff86020d170e58900654d334f5ebc2ceee"><tt>59493aff</tt></a> fix: apollo federation tracer was race prone (<a href="https://github.com/99designs/gqlgen/pull/2366">#2366</a>)</summary>
-
-The tracer was using a global state across different goroutines
-Added req headers to operation context to allow it to be fetched in InterceptOperation
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/fc0185567f2dfc37b38f11283efb9cc1db69e96d"><tt>fc018556</tt></a> Update gqlparser to v2.5.1 (<a href="https://github.com/99designs/gqlgen/pull/2363">#2363</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/56574a146bd16a13c9055128ec3c80e96a7c4b29"><tt>56574a14</tt></a> feat: make Playground HTML content compatible with UTF-8 charset (<a href="https://github.com/99designs/gqlgen/pull/2355">#2355</a>)
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/182b039d34cb730f432c486ebe763f246937dea4"><tt>182b039d</tt></a> Add `subscriptions.md` recipe to docs (<a href="https://github.com/99designs/gqlgen/pull/2346">#2346</a>)</summary>
-
-* Add `subscriptions.md` recipe to docs
-
-* Fix wrong request type
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/b66fff16de0b16edc317398a5574fcff2cb39e66"><tt>b66fff16</tt></a> Add omit_getters config option (<a href="https://github.com/99designs/gqlgen/pull/2348">#2348</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/2ba8040f20e32d06dc6d5bfacaadc5619a6e66ee"><tt>2ba8040f</tt></a> Update changelog for v0.17.16
-
-- <a href="https://github.com/99designs/gqlgen/commit/8bef8c8061222071e6c814e45bbc33fcabcb3980"><tt>8bef8c80</tt></a> v0.17.16 postrelease bump
-
- <!-- end of Commits -->
-<!-- end of Else -->
-
-<!-- end of If NoteGroups -->
-<a name="v0.17.16"></a>
-## [v0.17.16](https://github.com/99designs/gqlgen/compare/v0.17.15...v0.17.16) - 2022-08-26
-- <a href="https://github.com/99designs/gqlgen/commit/9593ceadd6e07c6fd0f0b0e0c55b9f1bf8ade762"><tt>9593cead</tt></a> release v0.17.16
-
-- <a href="https://github.com/99designs/gqlgen/commit/2390af2db920dc632fe47bc778a24c30495b9efd"><tt>2390af2d</tt></a> Update gqlparser to v2.5.0 (<a href="https://github.com/99designs/gqlgen/pull/2341">#2341</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/2a87fe0645fd271e4e71d2b7bde34ecf31bf844c"><tt>2a87fe06</tt></a> feat: update Graphiql to version 2 (<a href="https://github.com/99designs/gqlgen/pull/2340">#2340</a>)
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/32e2ccd30e82fc566ca022a65dcc4a67c4b6125a"><tt>32e2ccd3</tt></a> Update yaml to v3 (<a href="https://github.com/99designs/gqlgen/pull/2339">#2339</a>)</summary>
-
-* update yaml to v3
-
-* add missing go entry for yaml on _example
-
-* add missing sum file
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/7949117a524be7f8882a61e2d4ade1bedf105107"><tt>7949117a</tt></a> v0.17.15 postrelease bump
-
- <!-- end of Commits -->
-<!-- end of Else -->
-
-<!-- end of If NoteGroups -->
-<a name="v0.17.15"></a>
-## [v0.17.15](https://github.com/99designs/gqlgen/compare/v0.17.14...v0.17.15) - 2022-08-23
-- <a href="https://github.com/99designs/gqlgen/commit/23cc749256b4e2edc4b11ce9e84c643a7bb3194f"><tt>23cc7492</tt></a> release v0.17.15
-
-- <a href="https://github.com/99designs/gqlgen/commit/577a570cdb6b1b9185f24940690a14cdced37a36"><tt>577a570c</tt></a> Markdown formatting fixes (<a href="https://github.com/99designs/gqlgen/pull/2335">#2335</a>)
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2b584011fc64a55cbda67f46637a280bf94d9cc1"><tt>2b584011</tt></a> Fix Interface Slice Getter Generation (<a href="https://github.com/99designs/gqlgen/pull/2332">#2332</a>)</summary>
-
-* Make modelgen test fail if generated doesn't build
-Added returning list of interface to modelgen test schema
-
-* Implement slice copying when returning interface slices
-
-* Re-generate to satisfy the linter
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/aee57b4c521e527ebc0538b8edfbe610973abf21"><tt>aee57b4c</tt></a> Correct boolean logic (<a href="https://github.com/99designs/gqlgen/pull/2330">#2330</a>)</summary>
-
-Correcting boolean logic issue
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/da0610e11accf3afd34903f03bfc0abd045d07ed"><tt>da0610e1</tt></a> Update changelog for v0.17.14
-
-- <a href="https://github.com/99designs/gqlgen/commit/ddcb524e3321d849505f6937307ef3dcbd3acace"><tt>ddcb524e</tt></a> v0.17.14 postrelease bump
-
- <!-- end of Commits -->
-<!-- end of Else -->
-
-<!-- end of If NoteGroups -->
-<a name="v0.17.14"></a>
-## [v0.17.14](https://github.com/99designs/gqlgen/compare/v0.17.13...v0.17.14) - 2022-08-18
-- <a href="https://github.com/99designs/gqlgen/commit/581bf6eb063a0d6a3cec3b6bc7a16ca10e310a97"><tt>581bf6eb</tt></a> release v0.17.14
-
-- <a href="https://github.com/99designs/gqlgen/commit/d3384377aefb4b7d34ba52f8def6c0a6a3dec27f"><tt>d3384377</tt></a> Update gqlparser
-
-- <a href="https://github.com/99designs/gqlgen/commit/c2d02d352f8d531fa0bd9b246fc152eeb6dbf10a"><tt>c2d02d35</tt></a> More descriptive `not implemented` stubs (<a href="https://github.com/99designs/gqlgen/pull/2328">#2328</a>) (closes <a href="https://github.com/99designs/gqlgen/issues/2327"> #2327</a>)
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9f919d2cee464acdaf4a490aeb42d63369dbd572"><tt>9f919d2c</tt></a> Avoid GraphQL to Go Naming Collision with "ToGoModelName" func (<a href="https://github.com/99designs/gqlgen/pull/2322">#2322</a>) (closes <a href="https://github.com/99designs/gqlgen/issues/2321"> #2321</a>)</summary>
-
-* using ReplaceAllStringLiteral
-
-* fixing wordInfo template test
-
-* bumping linter timeout to 5m
-
-* comment cleanup
-
-* some cleanup, adding "ToGoPrivateModelName" func
-
-* adding "ToGoPrivateModelName" func
-
-* refactoring word walker impl and tests
-
-* hopefully making linter happy
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/2304c104fc8d26487f50e80e9c5eaee113005a30"><tt>2304c104</tt></a> Include docstrings on interface getters (<a href="https://github.com/99designs/gqlgen/pull/2317">#2317</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/f5d603269502b50e19d0ed966e2dfe3ecd74049f"><tt>f5d60326</tt></a> Leverage (*Imports).LookupType when generating interface field getters (<a href="https://github.com/99designs/gqlgen/pull/2315">#2315</a>)
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/242c3ba217ee740e37445ce4b14e0808554263f5"><tt>242c3ba2</tt></a> Generate getters for interface fields (<a href="https://github.com/99designs/gqlgen/pull/2314">#2314</a>)</summary>
-
-* Generate getters for interface fields
-
-* Changes to make models_test.go pass
-
-* Use text/template, not html/template
-
-* Re-run go generate ./...
-
-* gofmt a few files that were failing lint checks
-
-* Another gofmt straggler
-
-* Try making the "generated" match the exact whitespace github is disliking
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/0d91c893e285cc14330c80643b663cd2bebeb911"><tt>0d91c893</tt></a> Add hackernews graphql api tutorial to other resources (<a href="https://github.com/99designs/gqlgen/pull/2305">#2305</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/c2526ba50ff3a69b5eca88a62a571c47f3c245ed"><tt>c2526ba5</tt></a> Update gqlparser to v2.4.7 (<a href="https://github.com/99designs/gqlgen/pull/2300">#2300</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/f283124d1cea309e054afb197d16012364b88097"><tt>f283124d</tt></a> <a href="https://github.com/99designs/gqlgen/pull/2298">#2298</a>: fix gqlgen extracting module name from comment line (<a href="https://github.com/99designs/gqlgen/pull/2299">#2299</a>)
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/779d7cdd4991e3cf4bf1ecbdea1f02664a56ac8d"><tt>779d7cdd</tt></a> Add support for KeepAlive message in websocket client (<a href="https://github.com/99designs/gqlgen/pull/2293">#2293</a>)</summary>
-
-* Add support for KeepAlive message in websocket client
-
-* rewrite if-else to switch statement
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/5a37d1dc079f5212b6e043b0f6889cae7b08dea9"><tt>5a37d1dc</tt></a> v0.17.13 postrelease bump
-
- <!-- end of Commits -->
-<!-- end of Else -->
-
-<!-- end of If NoteGroups -->
-<a name="v0.17.13"></a>
-## [v0.17.13](https://github.com/99designs/gqlgen/compare/v0.17.12...v0.17.13) - 2022-07-15
-- <a href="https://github.com/99designs/gqlgen/commit/e82b6bf1cf311d6af2e280127f47b15ae35ca6ac"><tt>e82b6bf1</tt></a> release v0.17.13
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f0e9047df5f86efbfbceea9c04593bb1f52e06de"><tt>f0e9047d</tt></a> Hide dependencies in `tools.go` from importers (<a href="https://github.com/99designs/gqlgen/pull/2287">#2287</a>)</summary>
-
-Projects that use `go mod vendor` will vendor `github.com/matryer/moq`
-despite it not being required at runtime.
-
-Moving `tools.go` to `internal` hides this import from downstream
-users and avoids `github.com/matryer/moq` being vendored.
-
-`go generate` of the mocks still works as expected.
-
-The assumption behind the import test broke, so I've pointed it at a
-different path that has no Go code. This seems to match the intent
-behind the original test for the `internal/code/..` path.
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/6310e6a736ccbf3bb8caea981553ee7549aea748"><tt>6310e6a7</tt></a> support named interface to Field.CallArgs (<a href="https://github.com/99designs/gqlgen/pull/2289">#2289</a>)
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/30493696aacf79090bb5e144a304a5a7df488c67"><tt>30493696</tt></a> fix: return the original error (<a href="https://github.com/99designs/gqlgen/pull/2288">#2288</a>)</summary>
-
-* fix: return the original error
-
-close https://github.com/99designs/gqlgen/issues/2286
-
-* Update error.go
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/fb13091df76b47b936224336fe19b15fe310b41d"><tt>fb13091d</tt></a> updated WebSocker InitFunc recipe (<a href="https://github.com/99designs/gqlgen/pull/2275">#2275</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/770c09fb9db0485943590b9986afe36818c2a70e"><tt>770c09fb</tt></a> Update changelog for v0.17.12
-
-- <a href="https://github.com/99designs/gqlgen/commit/b4c186a7142c0a151b6a21b40914fe317e13819d"><tt>b4c186a7</tt></a> v0.17.12 postrelease bump
-
- <!-- end of Commits -->
-<!-- end of Else -->
-
-<!-- end of If NoteGroups -->
-<a name="v0.17.12"></a>
-## [v0.17.12](https://github.com/99designs/gqlgen/compare/v0.17.11...v0.17.12) - 2022-07-04
-- <a href="https://github.com/99designs/gqlgen/commit/94c02b0de6d483d87453fc18a7f7625ae4adaa6c"><tt>94c02b0d</tt></a> release v0.17.12
-
-- <a href="https://github.com/99designs/gqlgen/commit/7eb8ba93daacef77ca7266fdfb9e5abc8a720eb7"><tt>7eb8ba93</tt></a> Fix CreateTodo (<a href="https://github.com/99designs/gqlgen/pull/2256">#2256</a>)
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0b0e5ce4afc5b503217304f89914b2e903c05fa5"><tt>0b0e5ce4</tt></a> Replace use of strings.Title with cases.Title (<a href="https://github.com/99designs/gqlgen/pull/2268">#2268</a>)</summary>
-
-* github: Test more go versions
-
-* github: Fix ci tests
-
-* github: Increase verbosity, sleep
-
-* github: Drop bash
-
-* github: Test go 1.18 and newer node verisons
-
-* github: Pull out node 16 for now
-
-* github: Only lint 1.16 for now
-
-* cases: Use cases.Title over strings.Title which is deprecated
-
-* gqlgen: Remove use of deprecated strings.Title
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/0c11e5fdd8ec4fd7612b857c4c554e1ef463d194"><tt>0c11e5fd</tt></a> parse at beginning of do function (<a href="https://github.com/99designs/gqlgen/pull/2269">#2269</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/edb1c585c1c49102dc962e0ac3bd271688e51ecf"><tt>edb1c585</tt></a> Update Changelog for v0.17.11
-
-- <a href="https://github.com/99designs/gqlgen/commit/5e6b52fddab835611513e3572f23716666ebae58"><tt>5e6b52fd</tt></a> v0.17.11 postrelease bump
-
- <!-- end of Commits -->
-<!-- end of Else -->
-
-<!-- end of If NoteGroups -->
-<a name="v0.17.11"></a>
-## [v0.17.11](https://github.com/99designs/gqlgen/compare/v0.17.10...v0.17.11) - 2022-07-03
-- <a href="https://github.com/99designs/gqlgen/commit/ea294c4ea344186c3b41b82d5f1c60138f6ce05e"><tt>ea294c4e</tt></a> release v0.17.11
-
-- <a href="https://github.com/99designs/gqlgen/commit/8ebf75c19d775ddbd12b3d94461b605ef4c5f711"><tt>8ebf75c1</tt></a> Update gqlparser (<a href="https://github.com/99designs/gqlgen/pull/2270">#2270</a>)
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b8497f52fde0803277d981405cd2e42ce0455a70"><tt>b8497f52</tt></a> github: Fix CI pipelines (<a href="https://github.com/99designs/gqlgen/pull/2266">#2266</a>)</summary>
-
-* github: Test more go versions
-
-* github: Fix ci tests
-
-* github: Increase verbosity, sleep
-
-* github: Drop bash
-
-* github: Test go 1.18 and newer node verisons
-
-* github: Pull out node 16 for now
-
-* github: Only lint 1.16 for now
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c287a7b0b40cdd8c94077ed54fff257fe383e796"><tt>c287a7b0</tt></a> codegen: fix resolvers execution order (<a href="https://github.com/99designs/gqlgen/pull/2267">#2267</a>)</summary>
-
-* codegen: fix run order of resolver
-
-
-* fix: update code generate
-
-* fix: update stub, root to generate resolver for input
-
-* fix: added unit-test for input field order
-
-* fix: added test for singlefile
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8481457f2fd6ae711f688fc4726d724df5992b8c"><tt>8481457f</tt></a> gqlgen: Add resolver comment generation and preservation (<a href="https://github.com/99designs/gqlgen/pull/2263">#2263</a>)</summary>
-
-* gqlgen: Add resolver comment generation and preservation
-
-* gqlgen: Regenerate
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/532d46af5b2b97f5b69ebd1ce261a191e2690fa3"><tt>532d46af</tt></a> Make uploads content seekable (<a href="https://github.com/99designs/gqlgen/pull/2247">#2247</a>)
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/34bbc450c502919cd46c5eefcc66341ef697c0e8"><tt>34bbc450</tt></a> Use the go:embed API to lookup templates (<a href="https://github.com/99designs/gqlgen/pull/2262">#2262</a>)</summary>
-
-* Switch the templates package internally to read from TemplateFS
-
-Users are expected to pass in the FS by using the embed API.
-
-* Update all usages of templates.Render to use the TemplateFS option
-
-* Fix unit tests
-
-* Fix linter error
-
-* Commit generated changes
-
-Doesn't look like anything has changed though. Maybe just a different
-whitespace character.
-
-* Fix test
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/53ca207a4c53c78e4dec1e4d34d3b9251dd00b0b"><tt>53ca207a</tt></a> Fix PR links in CHANGELOG.md (<a href="https://github.com/99designs/gqlgen/pull/2257">#2257</a>)</summary>
-
-* fix "PR" regex in CHANGELOG-full-history.tpl.md
-
-* regenerate CHANGELOG.md
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/53ada82edb7e8bb91059cbf3f344270a668934c5"><tt>53ada82e</tt></a> Replace deprecated ioutil pkg with os & io (<a href="https://github.com/99designs/gqlgen/pull/2254">#2254</a>)</summary>
-
-As of Go 1.16, the same functionality is now provided by package io or
-package os, and those implementations should be preferred in new code.
-
-So replacing all usage of ioutil pkg with io & os.
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/a8f112e0c5b3466de2f550e68cbe872233f052ac"><tt>a8f112e0</tt></a> update changelog
-
-- <a href="https://github.com/99designs/gqlgen/commit/82fbbe4163459cbb8d862c99931fcd015ed756e6"><tt>82fbbe41</tt></a> v0.17.10 postrelease bump
-
- <!-- end of Commits -->
-<!-- end of Else -->
-
-<!-- end of If NoteGroups -->
-<a name="v0.17.10"></a>
-## [v0.17.10](https://github.com/99designs/gqlgen/compare/v0.17.9...v0.17.10) - 2022-06-13
-- <a href="https://github.com/99designs/gqlgen/commit/4ff9ea92b0d90f7fdc7c22bec592fbec1aca60a6"><tt>4ff9ea92</tt></a> release v0.17.10
-
-- <a href="https://github.com/99designs/gqlgen/commit/cac4f40486edd280654412485979ff619238a877"><tt>cac4f404</tt></a> update gqlparser (<a href="https://github.com/99designs/gqlgen/pull/2239">#2239</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/d07ec12d69d3db0e5b502be7528884fdb5fb7593"><tt>d07ec12d</tt></a> Use exact capitalization from field names overridden in config (<a href="https://github.com/99designs/gqlgen/pull/2237">#2237</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/3a64078299f0417fca48c652620015937cb19c5a"><tt>3a640782</tt></a> fix: <a href="https://github.com/99designs/gqlgen/pull/2234">#2234</a> (<a href="https://github.com/99designs/gqlgen/pull/2235">#2235</a>) Response.Errors in DispatchError function is not PresentedError
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c355df9efc910053e888922edc14170271968671"><tt>c355df9e</tt></a> fix <a href="https://github.com/99designs/gqlgen/pull/1876">#1876</a>: Optional Any type should allow nil values (<a href="https://github.com/99designs/gqlgen/pull/2231">#2231</a>)</summary>
-
-* Anonymous func that checks value of arg type interface for nil
-
-* Added unit test for `CallArgs()`
-
-* Fixed type of argument in unit test
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/65e68108d926faf635285144d7b6670f7f6d9ce4"><tt>65e68108</tt></a> Add config boolean for whether resolvers return pointers (<a href="https://github.com/99designs/gqlgen/pull/2175">#2175</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/ddd825ef62f1fa7cbc0824c1696f72a3c67d78e0"><tt>ddd825ef</tt></a> Only make cyclical struct fields pointers (<a href="https://github.com/99designs/gqlgen/pull/2174">#2174</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/5a87fe29353e3fee987a39431df0322d12b575f9"><tt>5a87fe29</tt></a> Update websocket.go (<a href="https://github.com/99designs/gqlgen/pull/2223">#2223</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/e2edda5d5d02a1496dcf9eb48ab95ecd8f07f018"><tt>e2edda5d</tt></a> Update dataloaders.MD (<a href="https://github.com/99designs/gqlgen/pull/2221">#2221</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/3de7d2cf730cc060a27f6d1c815742d1a9f479cd"><tt>3de7d2cf</tt></a> fix: chat example frontend race condition (<a href="https://github.com/99designs/gqlgen/pull/2219">#2219</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/11f405724f19fa4b93120746fdf74c1d97f4575b"><tt>11f40572</tt></a> Update Changelog
-
-- <a href="https://github.com/99designs/gqlgen/commit/caca01fb6c64ad078ff195cddf52dd6966e7995e"><tt>caca01fb</tt></a> v0.17.9 postrelease bump
-
- <!-- end of Commits -->
-<!-- end of Else -->
-
-<!-- end of If NoteGroups -->
-<a name="v0.17.9"></a>
-## [v0.17.9](https://github.com/99designs/gqlgen/compare/v0.17.8...v0.17.9) - 2022-05-26
-- <a href="https://github.com/99designs/gqlgen/commit/7f0611b2d19833a740afcfaf5708febff942da2d"><tt>7f0611b2</tt></a> release v0.17.9
-
-- <a href="https://github.com/99designs/gqlgen/commit/738209b26337bc1116be7b0afacc83eae6bb93b0"><tt>738209b2</tt></a> Update gqlparser (<a href="https://github.com/99designs/gqlgen/pull/2216">#2216</a>)
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/6855b7290cab62a1fc6a26a2b633e0b5bbf248da"><tt>6855b729</tt></a> fix: prevent goroutine leak and CPU spinning at websocket transport (<a href="https://github.com/99designs/gqlgen/pull/2209">#2209</a>) (closes <a href="https://github.com/99designs/gqlgen/issues/2168"> #2168</a>)</summary>
-
-* Added goroutine leak test for chat example
-
-* Improved chat example with proper concurrency
-
-
-This reverts commit eef7bfaad1b524f9e2fc0c1150fdb321c276069e.
-
-* Improved subscription channel usage
-
-* Regenerated examples and codegen
-
-* Add support for subscription keepalives in websocket client
-
-* Update chat example test
-
-* if else chain to switch
-
-
-* Revert "Add support for subscription keepalives in websocket client"
-
-This reverts commits 64b882c3c9901f25edc0684ce2a1f9b63443416b and 670cf22272b490005d46dc2bee1634de1cd06d68.
-
-* Fixed chat example race condition
-
-* Fixed chatroom#Messages type
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5f5bfcb97fdb01026cf35a5dc46f1246a30f9b26"><tt>5f5bfcb9</tt></a> fix <a href="https://github.com/99designs/gqlgen/pull/2204">#2204</a> - don't try to embed builtin sources (<a href="https://github.com/99designs/gqlgen/pull/2214">#2214</a>)</summary>
-
-* don't try to embed builtins
-
-* add test
-
-* generated code
-
-* fix error message string
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/8d9d3f125f13dcd19f59072d3c38366dc520758b"><tt>8d9d3f12</tt></a> Check only direct dependencies (<a href="https://github.com/99designs/gqlgen/pull/2205">#2205</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/b262e40a485f67d2659e239a156418938d0fe2e9"><tt>b262e40a</tt></a> v0.17.8 postrelease bump
-
- <!-- end of Commits -->
-<!-- end of Else -->
-
-<!-- end of If NoteGroups -->
-<a name="v0.17.8"></a>
-## [v0.17.8](https://github.com/99designs/gqlgen/compare/v0.17.7...v0.17.8) - 2022-05-25
-- <a href="https://github.com/99designs/gqlgen/commit/25367e0a24998aea40f09218f60d1d0e6d1cce4a"><tt>25367e0a</tt></a> release v0.17.8
-
-- <a href="https://github.com/99designs/gqlgen/commit/5a56b69d89c7414e21b2f01e0e5042a26b69c5cb"><tt>5a56b69d</tt></a> Add security workflow with nancy (<a href="https://github.com/99designs/gqlgen/pull/2202">#2202</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/482f4ce08e65458cec2dbfaf7d184f1c8fccb129"><tt>482f4ce0</tt></a> Run CI tests on windows (<a href="https://github.com/99designs/gqlgen/pull/2199">#2199</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/656045d3fa643b898932c3f5332544b0baed1af4"><tt>656045d3</tt></a> This works on Windows too! (<a href="https://github.com/99designs/gqlgen/pull/2197">#2197</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/f6aeed60a508dae102b2b821d3a947e24e5e0826"><tt>f6aeed60</tt></a> Merge branch 'master' of github.com:99designs/gqlgen
-
-- <a href="https://github.com/99designs/gqlgen/commit/d91080be396af96266941499d369d0f8279761b0"><tt>d91080be</tt></a> Update changelog
-
-- <a href="https://github.com/99designs/gqlgen/commit/752d2d7e9fff08c82a6d3ffc1c8c7ffe2a2e9fe2"><tt>752d2d7e</tt></a> v0.17.7 postrelease bump
-
- <!-- end of Commits -->
-<!-- end of Else -->
-
-<!-- end of If NoteGroups -->
-<a name="v0.17.7"></a>
-## [v0.17.7](https://github.com/99designs/gqlgen/compare/v0.17.6...v0.17.7) - 2022-05-24
-- <a href="https://github.com/99designs/gqlgen/commit/2b1dff1b71f89c95e946bbe5948b7061f9c47aa8"><tt>2b1dff1b</tt></a> release v0.17.7
-
-- <a href="https://github.com/99designs/gqlgen/commit/b2087f944d9b9af6e776a9d97662c9e8b86a8c3b"><tt>b2087f94</tt></a> Update module dependencies (<a href="https://github.com/99designs/gqlgen/pull/2192">#2192</a>)
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8825ac460b047e22724ed7728c7d7ffbf1b523a9"><tt>8825ac46</tt></a> Fix misprint (<a href="https://github.com/99designs/gqlgen/pull/2187">#2187</a>)</summary>
-
-* Fix misprint
-
-* Fix misprint
-
-* Re-generate
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/41daa5d8dc1e35bdbfe68e95b37c10599b224456"><tt>41daa5d8</tt></a> fix <a href="https://github.com/99designs/gqlgen/pull/2190">#2190</a> - don't use backslash for "embed" paths on windows (<a href="https://github.com/99designs/gqlgen/pull/2191">#2191</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/0cce5544f06fd84831ef2ca0f60e16f7f554814d"><tt>0cce5544</tt></a> Update Changelog
-
-- <a href="https://github.com/99designs/gqlgen/commit/26644541aafbcdb46f10a6ff0f5894637227c331"><tt>26644541</tt></a> v0.17.6 postrelease bump
-
- <!-- end of Commits -->
-<!-- end of Else -->
-
-<!-- end of If NoteGroups -->
-<a name="v0.17.6"></a>
-## [v0.17.6](https://github.com/99designs/gqlgen/compare/v0.17.5...v0.17.6) - 2022-05-23
-- <a href="https://github.com/99designs/gqlgen/commit/358d45dcfc2b022fdda9476a37f44c0622607ae9"><tt>358d45dc</tt></a> release v0.17.6
-
-- <a href="https://github.com/99designs/gqlgen/commit/7c95938c5f1278fa14a13a92eb88d117102e0330"><tt>7c95938c</tt></a> Improve operation error handling (<a href="https://github.com/99designs/gqlgen/pull/2184">#2184</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/2526f6871166377b4f444ad8d22577a632b0abf4"><tt>2526f687</tt></a> Correct identation (<a href="https://github.com/99designs/gqlgen/pull/2182">#2182</a>)
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f7bf453c79d82b01ed4baed894043aaff645bf2f"><tt>f7bf453c</tt></a> Bump dset from 3.1.1 to 3.1.2 in /integration (<a href="https://github.com/99designs/gqlgen/pull/2176">#2176</a>)</summary>
-
-Bumps [dset](https://github.com/lukeed/dset) from 3.1.1 to 3.1.2.
-- [Release notes](https://github.com/lukeed/dset/releases)
-- [Commits](https://github.com/lukeed/dset/compare/v3.1.1...v3.1.2)
-
----
-updated-dependencies:
-- dependency-name: dset
-  dependency-type: indirect
-...
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4cdf70261a9dc8af589399f09b56d0f90606a9fa"><tt>4cdf7026</tt></a> Update getting-started.md (<a href="https://github.com/99designs/gqlgen/pull/2157">#2157</a>)</summary>
-
-Fix getting-started missing fields resolver config
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/eef7bfaad1b524f9e2fc0c1150fdb321c276069e"><tt>eef7bfaa</tt></a> fix: prevents goroutine leak at websocket transport (<a href="https://github.com/99designs/gqlgen/pull/2168">#2168</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/b8ec51d8629a24288353b4ee4be70fff3645b03e"><tt>b8ec51d8</tt></a> go: update gqlparser to latest (<a href="https://github.com/99designs/gqlgen/pull/2149">#2149</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/ec3e597e7b45e17464cd8c7faaa51e75755ce3cf"><tt>ec3e597e</tt></a> Fix docs bug in field collection (<a href="https://github.com/99designs/gqlgen/pull/2141">#2141</a>)
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f6b352316fae4b4fdc6317e24ea94ba48ac29e85"><tt>f6b35231</tt></a> Add argument to WebsocketErrorFunc (<a href="https://github.com/99designs/gqlgen/pull/2124">#2124</a>)</summary>
-
-* Add argument to WebsocketErrorFunc
-
-to determine whether the error ocured on read or write to the websocket.
-
-* Wrap websocket error
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/0f016df3ae7ee4898358dc67a491689164297df6"><tt>0f016df3</tt></a> Fix invalid query parameter for playground subscription endpoint (<a href="https://github.com/99designs/gqlgen/pull/2148">#2148</a>)
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/fb5751ab478603a864977f9fbe70655776d7fb55"><tt>fb5751ab</tt></a> use "embed" in generated code (<a href="https://github.com/99designs/gqlgen/pull/2119">#2119</a>)</summary>
-
-* use "embed" in generated code
-
-* don't use embed for builtins
-
-* working poc
-
-* handle no embeddable sources
-
-* fix dir
-
-* comment
-
-* add test for embedding
-
-* improve error handling
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d38911f1a9d7f0ec39a74a95994d95291f1922c3"><tt>d38911f1</tt></a> Allow absolute https://github.com/99designs/gqlgens to the GraphQL playground (<a href="https://github.com/99designs/gqlgen/pull/2142">#2142</a>)</summary>
-
-* Allow absolute URLs to the GraphQL playground
-
-* Add test for playground URLs
-
-* Close res.Body in playground test
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3228f36fec50930483801b27b92658592fab5e87"><tt>3228f36f</tt></a> Update getting-started.md (<a href="https://github.com/99designs/gqlgen/pull/2140">#2140</a>)</summary>
-
-* Update getting-started.md
-
-function rand.Int requires two parameters and returns two value in golang version 1.18.1.
-
-* Highlight the package used so people don't pick crypto/rand
-
-* Revert to original
-
-* Remove extra space
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/33fe0b9b824ec86699059f410505c02659fc6c81"><tt>33fe0b9b</tt></a> Update package.json (<a href="https://github.com/99designs/gqlgen/pull/2138">#2138</a>)</summary>
-
-I added `graphql-ws` because there is no graphql-ws in package.json
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f8e837b824ef4903a60f3cb974ef72fb4718a858"><tt>f8e837b8</tt></a> Use MultipartReader to parse file uploads (<a href="https://github.com/99designs/gqlgen/pull/2135">#2135</a>)</summary>
-
-Use a streaming MultipartReader to parse requests with file
-uploads. The GraphQL multipart request specification guarantees
-that the operations and map form fields will come first.
-
-There are two reasons motivating this change:
-
-- This allows for file uploads without specifying a specific
-  filename.
-- This avoids unnecessary copies for requests with more than one
-  file. Go's ParseForm already copies the request's body into
-  memory or on disk. We were also doing this manually as a second
-  step.
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/05bfc1fb12f73648833e1055e775e074a6df7eed"><tt>05bfc1fb</tt></a> Upddate Changelog
-
-- <a href="https://github.com/99designs/gqlgen/commit/62f694f0a8cf24f52dffca5823bb44fa1c32f97b"><tt>62f694f0</tt></a> v0.17.5 postrelease bump
-
- <!-- end of Commits -->
-<!-- end of Else -->
-
-<!-- end of If NoteGroups -->
-<a name="v0.17.5"></a>
-## [v0.17.5](https://github.com/99designs/gqlgen/compare/v0.17.4...v0.17.5) - 2022-04-29
-- <a href="https://github.com/99designs/gqlgen/commit/fd97e74eafc898278fd4b74477cb053393672232"><tt>fd97e74e</tt></a> release v0.17.5
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9250f9ac1f90b27da0bd8583ef8dcf0894d70686"><tt>9250f9ac</tt></a> Feature: Add FTV1 Support via Handler (<a href="https://github.com/99designs/gqlgen/pull/2132">#2132</a>)</summary>
-
-* initial support for ftv1 traces via handler
-
-* remove testing json extension
-
-* remove binary from commit and add to .gitignore
-
-* updating go.mod
-
-* updating examples go.sum
-
-* rerunning generate within the examples folder
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/fce3a11a9f570ffed3e9035d32deddfb3076c2cf"><tt>fce3a11a</tt></a> feat: added graphql.UnmarshalInputFromContext (<a href="https://github.com/99designs/gqlgen/pull/2131">#2131</a>)</summary>
-
-* feat: added graphql.UnmarshalInputFromContext
-
-* chore: run go generate for _examples
-
-* fix: apply suggestions from code review
-
-
-* fix: update error cases
-
-* fix: fixed unit-test by update root_.gotpl
-
-* fix: apply suggestions from code review
-
-* fix: update graphql/input.go
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/6a24e88147fb2523af0163d7fa84d296b5e32e4d"><tt>6a24e881</tt></a> update instructions to specify package of Role (<a href="https://github.com/99designs/gqlgen/pull/2130">#2130</a>)</summary>
-
-Can't compile with the example unless I also include `model.` for Role.
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/ccfa245b1eb2657e588bf73f4df0e99f96869cbd"><tt>ccfa245b</tt></a> Ignore protobuf files in coverage (<a href="https://github.com/99designs/gqlgen/pull/2133">#2133</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/0465dcb1e8e4177945c2670f15316ac96e4b992a"><tt>0465dcb1</tt></a> Update federation.md (<a href="https://github.com/99designs/gqlgen/pull/2129">#2129</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/8f0631dcd3ca6fcfcd3dc6e69f4a92fec54e6dc7"><tt>8f0631dc</tt></a> Update Changelog
-
-- <a href="https://github.com/99designs/gqlgen/commit/41611560d45f1226b860e795bcb35b5ecf09c5b3"><tt>41611560</tt></a> v0.17.4 postrelease bump
-
- <!-- end of Commits -->
-<!-- end of Else -->
-
-<!-- end of If NoteGroups -->
-<a name="v0.17.4"></a>
-## [v0.17.4](https://github.com/99designs/gqlgen/compare/v0.17.3...v0.17.4) - 2022-04-25
-- <a href="https://github.com/99designs/gqlgen/commit/d6de831a28a0f1d8834c5dba4216dcd763814d3f"><tt>d6de831a</tt></a> release v0.17.4
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2a2a3dcb67c7d713e41476eac47e20ab0e21fba7"><tt>2a2a3dcb</tt></a> Feature: Adds Federation 2 Support (<a href="https://github.com/99designs/gqlgen/pull/2115">#2115</a>)</summary>
-
-* fed2 rough support
-
-* autodetection of fed2
-
-* adding basic tests for changes
-
-* fixing docs
-
-* Update plugin/federation/federation.go
-
-* removing custom scalar since it was causing issues
-
-* fixing lint test
-
-* should fix for real this time
-
-* fixing test failures
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/77260e88c853a047e4e61a5357ceda4a5ea26405"><tt>77260e88</tt></a> shorten some generated code (<a href="https://github.com/99designs/gqlgen/pull/2120">#2120</a>)</summary>
-
-* shorten some generated code
-
-* generate examples
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4da17e1c7a59149eb6c2f5d60fcf11a2374b2488"><tt>4da17e1c</tt></a> update modules except mapstructure (<a href="https://github.com/99designs/gqlgen/pull/2118">#2118</a>)</summary>
-
-* Update modules
-
-
-* Update modules except for mapstructure
-
-
-* Try to update to v1.3.1
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/cddbf02d494e3aeaac3f60d1708b25facc5b767d"><tt>cddbf02d</tt></a> Update Changelog file
-
-- <a href="https://github.com/99designs/gqlgen/commit/8f80f4efe8947b55919ce37291f4e908f57fd8dc"><tt>8f80f4ef</tt></a> v0.17.3 postrelease bump
-
- <!-- end of Commits -->
-<!-- end of Else -->
-
-<!-- end of If NoteGroups -->
-<a name="v0.17.3"></a>
-## [v0.17.3](https://github.com/99designs/gqlgen/compare/v0.17.2...v0.17.3) - 2022-04-20
-- <a href="https://github.com/99designs/gqlgen/commit/0bb262d1a0143f60640f60ebbb516e0f4cd79042"><tt>0bb262d1</tt></a> release v0.17.3
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8d0bd22aff1cdb6ad2e36190e11871b169f8da0a"><tt>8d0bd22a</tt></a> Update gqlparser (<a href="https://github.com/99designs/gqlgen/pull/2109">#2109</a>)</summary>
-
-* Update gqlparser
-
-
-* Update tests to be NoError
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ec0dea883a2c967d533e5f1530791ad72a08198b"><tt>ec0dea88</tt></a> Fix the ability of websockets to get errors (<a href="https://github.com/99designs/gqlgen/pull/2097">#2097</a>)</summary>
-
-Because DispatchOperation creates tempResponseContext,
-which is passed into Exec, which is then used in _Subscription to
-generate the next function. Inside the various subscription functions
-when generating next the context was captured there.
-
-Which means later when the returned function from DispatchOperation is
-called. The responseContext which accumulates the errors is the
-tempResponseContext which we no longer have access to to read the errors
-out of it.
-
-Instead add a context to next() so that it can be passed through and
-accumulated the errors as expected.
-
-Added a unit test for this as well.
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e3f04b42f1fc5d4b13dc0579b2ec713f770a4fd0"><tt>e3f04b42</tt></a> Change the error message to be consumer targeted (<a href="https://github.com/99designs/gqlgen/pull/2096">#2096</a>)</summary>
-
-* Change the error message to be slightly more clear
-
-* Rebase on updated origin/master.
-
-Fix the test to not be sensitive to array ordering.
-Re-generate on master as there was a schema change.
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5a49764956ffb674df2c9bee19455bb1fd3407db"><tt>5a497649</tt></a> Fix websocket subscriptions to not double close. (<a href="https://github.com/99designs/gqlgen/pull/2095">#2095</a>)</summary>
-
-We were closing at the end of the loop and also in the defer.
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/a15a9bfdbad30b2f5ce7a966ec1190c108c4df3e"><tt>a15a9bfd</tt></a> Update test.yml to be valid
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a1538928a569a09834579db941863ccce28113e3"><tt>a1538928</tt></a> Use Github API to update the docs (<a href="https://github.com/99designs/gqlgen/pull/2101">#2101</a>)</summary>
-
-* Use Github API to update the docs
-
-Instead of a hard-coded version of the docs we want to realease, this
-uses the Github API to get the last 20 versions and publish those. This
-will allow any script invoking this to make sure to always have the
-latest version of the docs
-
-* Reinstate set -e
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/3bf437c232f8be30a473cf94495a1014c0583af2"><tt>3bf437c2</tt></a> Update golangci-lint (<a href="https://github.com/99designs/gqlgen/pull/2103">#2103</a>)
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/12c6d0bf15431f666d08c4c82581957e1b727898"><tt>12c6d0bf</tt></a> Fix misprint (<a href="https://github.com/99designs/gqlgen/pull/2102">#2102</a>)</summary>
-
-* Fix misprint
-
-* Update websocket_graphql_transport_ws.go
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9f5fad13fa6275139e051788cc5fe8c2b2630428"><tt>9f5fad13</tt></a> Bump minimist from 1.2.5 to 1.2.6 in /integration (<a href="https://github.com/99designs/gqlgen/pull/2085">#2085</a>)</summary>
-
-Bumps [minimist](https://github.com/substack/minimist) from 1.2.5 to 1.2.6.
-- [Release notes](https://github.com/substack/minimist/releases)
-- [Commits](https://github.com/substack/minimist/compare/1.2.5...1.2.6)
-
----
-updated-dependencies:
-- dependency-name: minimist
-  dependency-type: indirect
-...
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/035e1d6eeb81179ddec3d36d8776212d8fe35cd6"><tt>035e1d6e</tt></a> Add AllowedMethods field to transport.Options (<a href="https://github.com/99designs/gqlgen/pull/2080">#2080</a>)</summary>
-
-* Add AllowedMethods field to transport.Options
-
-to enable users to specify allowed HTTP methods.
-
-* Update graphql/handler/transport/options.go
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/f0fdb116f45350aabf698c20bf6410283f96bb11"><tt>f0fdb116</tt></a> Add instructions for enabling autobinding (<a href="https://github.com/99designs/gqlgen/pull/2079">#2079</a>)
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/12b0b38583e2c7b2174585bf1243a98cbbc2eba6"><tt>12b0b385</tt></a> Bump Playground version (<a href="https://github.com/99designs/gqlgen/pull/2078">#2078</a>)</summary>
-
-* update playground
-
-* enables tabs
-
-* update shas
-
-</details></dd></dl>
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1324c3ffb9ff0afef6e9cc41d99b5b4b9bc928b6"><tt>1324c3ff</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/2062">#2062</a> from a8m/childfield</summary>
-
-graphql: add FieldContext.Child field function and enable it in codegen
-
-</details></dd></dl>
-
-- <a href="https://github.com/99designs/gqlgen/commit/bf9caeaee091e32178fe2906894a7c7e72fdd66d"><tt>bf9caeae</tt></a> graphql: add FieldContext.ChildArgs field and enable it in codegen
-
-- <a href="https://github.com/99designs/gqlgen/commit/36fb3dc6733601f96162bc80fccda42e34b3b7ff"><tt>36fb3dc6</tt></a> codegen: allow binding methods with optional variadic arguments (<a href="https://github.com/99designs/gqlgen/pull/2066">#2066</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/fba5edd4fa1176ef0f2840f3bb90fe10b9f4b695"><tt>fba5edd4</tt></a> Update Changelog
-
-- <a href="https://github.com/99designs/gqlgen/commit/48b2b7e1521c50d03cabf524bbb78805e3fb023f"><tt>48b2b7e1</tt></a> v0.17.2 postrelease bump
-
- <!-- end of Commits -->
-<!-- end of Else -->
-
-<!-- end of If NoteGroups -->
-<a name="v0.17.2"></a>
-## [v0.17.2](https://github.com/99designs/gqlgen/compare/v0.17.1...v0.17.2) - 2022-03-21
-- <a href="https://github.com/99designs/gqlgen/commit/1f04d38a4441c5de6171400218b9dd25cebb3639"><tt>1f04d38a</tt></a> release v0.17.2
-
-- <a href="https://github.com/99designs/gqlgen/commit/87fc5f22e8fbfa28a180cbf0e7008af9f830273e"><tt>87fc5f22</tt></a> Fix <a href="https://github.com/99designs/gqlgen/pull/1961">#1961</a> for Go 1.18 (<a href="https://github.com/99designs/gqlgen/pull/2052">#2052</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/f85d59d30ae055fd89b79aa3d7e3ca1c7fcaedfa"><tt>f85d59d3</tt></a> fixed modelgen test schema (<a href="https://github.com/99designs/gqlgen/pull/2032">#2032</a>)
-
-- <a href="https://github.com/99designs/gqlgen/commit/d873ff8bb9927b302752bd48d7836f2597db558e"><tt>d873ff8b</tt></a> v0.17.1 postrelease bump
-
- <!-- end of Commits -->
-<!-- end of Else -->
-
-<!-- end of If NoteGroups -->
 <a name="v0.17.1"></a>
 ## [v0.17.1](https://github.com/99designs/gqlgen/compare/v0.17.0...v0.17.1) - 2022-03-02
-- <a href="https://github.com/99designs/gqlgen/commit/5ea50aee16088ed414be73ca9a59a90f622c9483"><tt>5ea50aee</tt></a> release v0.17.1
-
-- <a href="https://github.com/99designs/gqlgen/commit/a493a4239673c5922281628fc8b94c727398283e"><tt>a493a423</tt></a> Prepare for new release
-
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9f520a2897cf42750e7290cbd83de6fdf13f2e75"><tt>9f520a28</tt></a> Update golangci-lint and fix resource leak (<a href="https://github.com/99designs/gqlgen/pull/2024">#2024</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9f520a2897cf42750e7290cbd83de6fdf13f2e75"><tt>9f520a28</tt></a> Update golangci-lint and fix resource leak (<a href="https://github.com/99designs/gqlgen/pull/24">#2024</a>)</summary>
 
 * Fix golangci-lint in CI
 
@@ -1177,7 +19,7 @@ graphql: add FieldContext.Child field function and enable it in codegen
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/74baaa14c924871d100b56e8103ec27d678c33d0"><tt>74baaa14</tt></a> fixed model gen for multiple implemented type (<a href="https://github.com/99designs/gqlgen/pull/2021">#2021</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/74baaa14c924871d100b56e8103ec27d678c33d0"><tt>74baaa14</tt></a> fixed model gen for multiple implemented type (<a href="https://github.com/99designs/gqlgen/pull/21">#2021</a>)
 
 - <a href="https://github.com/99designs/gqlgen/commit/d31cf6bed5712e4015c286498ede649894e48d01"><tt>d31cf6be</tt></a> v0.17.0 postrelease bump
 
@@ -1189,19 +31,19 @@ graphql: add FieldContext.Child field function and enable it in codegen
 ## [v0.17.0](https://github.com/99designs/gqlgen/compare/v0.16.0...v0.17.0) - 2022-03-01
 - <a href="https://github.com/99designs/gqlgen/commit/e4be56513300286729b1276de2741ce6a93f3afa"><tt>e4be5651</tt></a> release v0.17.0
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/082bbff65eaf9931d4637001635d72014033523f"><tt>082bbff6</tt></a> Revert "Update quickstart (<a href="https://github.com/99designs/gqlgen/pull/1850">#1850</a>)" (<a href="https://github.com/99designs/gqlgen/pull/2014">#2014</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/082bbff65eaf9931d4637001635d72014033523f"><tt>082bbff6</tt></a> Revert "Update quickstart (<a href="https://github.com/99designs/gqlgen/pull/14">#1850](https://github.com/99designs/gqlgen/issues/1850))" ([#2014</a>)</summary>
 
 This reverts commit 0ab636144bfc875f86e4d9fd7a2686bc57d5050c.
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/a58411b804f848aa7e2e4547a1ba768f5dfdc8d3"><tt>a58411b8</tt></a> Embed templates instead of inlining them (<a href="https://github.com/99designs/gqlgen/pull/2019">#2019</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/a58411b804f848aa7e2e4547a1ba768f5dfdc8d3"><tt>a58411b8</tt></a> Embed templates instead of inlining them (<a href="https://github.com/99designs/gqlgen/pull/19">#2019</a>)
 
-- <a href="https://github.com/99designs/gqlgen/commit/839b50df1c068e6b17adb27a68a26984ea363bcc"><tt>839b50df</tt></a> Test gqlgen generate in CI (<a href="https://github.com/99designs/gqlgen/pull/2017">#2017</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/839b50df1c068e6b17adb27a68a26984ea363bcc"><tt>839b50df</tt></a> Test gqlgen generate in CI (<a href="https://github.com/99designs/gqlgen/pull/17">#2017</a>)
 
-- <a href="https://github.com/99designs/gqlgen/commit/00dc14ad817806840ca4df4a04d7a658f6f38105"><tt>00dc14ad</tt></a> Remove ambient imports (<a href="https://github.com/99designs/gqlgen/pull/2016">#2016</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/00dc14ad817806840ca4df4a04d7a658f6f38105"><tt>00dc14ad</tt></a> Remove ambient imports (<a href="https://github.com/99designs/gqlgen/pull/16">#2016</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/45e192ea9fa2af6ed3b16e1a8b5c67276f13d34f"><tt>45e192ea</tt></a> Clean up docs to clarify how to use a particular version (<a href="https://github.com/99designs/gqlgen/pull/2015">#2015</a>) (closes <a href="https://github.com/99designs/gqlgen/issues/1851"> #1851</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/45e192ea9fa2af6ed3b16e1a8b5c67276f13d34f"><tt>45e192ea</tt></a> Clean up docs to clarify how to use a particular version (<a href="https://github.com/99designs/gqlgen/pull/15">#2015</a>) (closes <a href="https://github.com/99designs/gqlgen/issues/1851"> #1851</a>)</summary>
 
 This reverts commit 57a148f6d12572fe585ecfcafafbb7441dbf9cab.
 
@@ -1213,7 +55,7 @@ This reverts commit 57a148f6d12572fe585ecfcafafbb7441dbf9cab.
 
 - <a href="https://github.com/99designs/gqlgen/commit/3a9413f718b217866c89cb88e268e8f2c461fb95"><tt>3a9413f7</tt></a> Fix issue template
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5236fb096802dc66ba9d11d096b2c6fa1ad24b14"><tt>5236fb09</tt></a> fix introspection for description to be nullable (<a href="https://github.com/99designs/gqlgen/pull/2008">#2008</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5236fb096802dc66ba9d11d096b2c6fa1ad24b14"><tt>5236fb09</tt></a> fix introspection for description to be nullable (<a href="https://github.com/99designs/gqlgen/pull/08">#2008</a>)</summary>
 
 * fixed introspection for description to be nullable
 
@@ -1227,7 +69,7 @@ This reverts commit 57a148f6d12572fe585ecfcafafbb7441dbf9cab.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/82fefdb51046ca80506292f25dcb2d636301f865"><tt>82fefdb5</tt></a> support to generate model for intermediate interface (<a href="https://github.com/99designs/gqlgen/pull/1982">#1982</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/82fefdb51046ca80506292f25dcb2d636301f865"><tt>82fefdb5</tt></a> support to generate model for intermediate interface (<a href="https://github.com/99designs/gqlgen/pull/82">#1982</a>)</summary>
 
 * support to generate model for intermediate interface
 
@@ -1237,7 +79,7 @@ This reverts commit 57a148f6d12572fe585ecfcafafbb7441dbf9cab.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3ec8363554ff17e3ffb3e86c58f1ee2d5689e798"><tt>3ec83635</tt></a> Bump ajv from 6.10.2 to 6.12.6 in /integration (<a href="https://github.com/99designs/gqlgen/pull/2007">#2007</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3ec8363554ff17e3ffb3e86c58f1ee2d5689e798"><tt>3ec83635</tt></a> Bump ajv from 6.10.2 to 6.12.6 in /integration (<a href="https://github.com/99designs/gqlgen/pull/07">#2007</a>)</summary>
 
 Bumps [ajv](https://github.com/ajv-validator/ajv) from 6.10.2 to 6.12.6.
 - [Release notes](https://github.com/ajv-validator/ajv/releases)
@@ -1251,7 +93,7 @@ updated-dependencies:
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9546de2c825c92318230d21d525791dfa3f0f184"><tt>9546de2c</tt></a> Web Socket initialization message timeout (<a href="https://github.com/99designs/gqlgen/pull/2006">#2006</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9546de2c825c92318230d21d525791dfa3f0f184"><tt>9546de2c</tt></a> Web Socket initialization message timeout (<a href="https://github.com/99designs/gqlgen/pull/06">#2006</a>)</summary>
 
 * Added an optional timeout to the web socket initialization message read operation.
 
@@ -1259,7 +101,7 @@ updated-dependencies:
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f6ea623003fe8b8f40beb1b545a6dc91a2af0f12"><tt>f6ea6230</tt></a> fixed introspection for schema description and specifiedByhttps://github.com/99designs/gqlgen (<a href="https://github.com/99designs/gqlgen/pull/1986">#1986</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f6ea623003fe8b8f40beb1b545a6dc91a2af0f12"><tt>f6ea6230</tt></a> fixed introspection for schema description and specifiedByhttps://github.com/99designs/gqlgen (<a href="https://github.com/99designs/gqlgen/pull/86">#1986</a>)</summary>
 
 * fixed introspection for schema description and specifiedByURL
 
@@ -1291,13 +133,13 @@ updated-dependencies:
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/f17ca15e1fab4837ebcca99958e1651034e48852"><tt>f17ca15e</tt></a> Fix broken links in docs (<a href="https://github.com/99designs/gqlgen/pull/1983">#1983</a>) (closes <a href="https://github.com/99designs/gqlgen/issues/1734"> #1734</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/f17ca15e1fab4837ebcca99958e1651034e48852"><tt>f17ca15e</tt></a> Fix broken links in docs (<a href="https://github.com/99designs/gqlgen/pull/83">#1983</a>) (closes <a href="https://github.com/99designs/gqlgen/issues/1734"> #1734</a>)
 
-- <a href="https://github.com/99designs/gqlgen/commit/a0c856b72e1e001633388644310a388342d7d0ff"><tt>a0c856b7</tt></a> Added a callback error handling function to the websocket and added tests for it. (<a href="https://github.com/99designs/gqlgen/pull/1975">#1975</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/a0c856b72e1e001633388644310a388342d7d0ff"><tt>a0c856b7</tt></a> Added a callback error handling function to the websocket and added tests for it. (<a href="https://github.com/99designs/gqlgen/pull/75">#1975</a>)
 
-- <a href="https://github.com/99designs/gqlgen/commit/cfea9f07627143fd184e8f36448cb501006bc63a"><tt>cfea9f07</tt></a> generate resolvers for input types (<a href="https://github.com/99designs/gqlgen/pull/1950">#1950</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/cfea9f07627143fd184e8f36448cb501006bc63a"><tt>cfea9f07</tt></a> generate resolvers for input types (<a href="https://github.com/99designs/gqlgen/pull/50">#1950</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ffa857ef346e87215bd985b5e84330b0f31afe96"><tt>ffa857ef</tt></a> Websocket i/o timeout fix (<a href="https://github.com/99designs/gqlgen/pull/1973">#1973</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ffa857ef346e87215bd985b5e84330b0f31afe96"><tt>ffa857ef</tt></a> Websocket i/o timeout fix (<a href="https://github.com/99designs/gqlgen/pull/73">#1973</a>)</summary>
 
 * Renamed "pingMesageType" to "pingMessageType" and refactored websocket_graphqlws.go to look more like websocket_graphql_transport_ws.go for the sake of consistency.
 
@@ -1307,13 +149,13 @@ updated-dependencies:
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d7da5b0d3b3cffa0cdb30fa7dcf16c87d8434e7e"><tt>d7da5b0d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1958">#1958</a> from 99designs/cleanup-main</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d7da5b0d3b3cffa0cdb30fa7dcf16c87d8434e7e"><tt>d7da5b0d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/58">#1958</a> from 99designs/cleanup-main</summary>
 
 Cleanup main
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/42f32432b068b381d4666a56da50ebf73520831f"><tt>42f32432</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1957">#1957</a> from 99designs/move-init-ci</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/42f32432b068b381d4666a56da50ebf73520831f"><tt>42f32432</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/57">#1957</a> from 99designs/move-init-ci</summary>
 
 Upate init CI step
 
@@ -1323,9 +165,9 @@ Upate init CI step
 
 - <a href="https://github.com/99designs/gqlgen/commit/8ea290c0854579f7cb6746fb7e51485fda01a6b6"><tt>8ea290c0</tt></a> Upate init CI step
 
-- <a href="https://github.com/99designs/gqlgen/commit/56bfb1880603486189025f043d8155beaa9f53d2"><tt>56bfb188</tt></a> Fix 1955: only print message on [@key](https://github.com/key) found on interfaces (<a href="https://github.com/99designs/gqlgen/pull/1956">#1956</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/56bfb1880603486189025f043d8155beaa9f53d2"><tt>56bfb188</tt></a> Fix 1955: only print message on <a href="https://github.com/99designs/gqlgen/pull/56">@key](https://github.com/key) found on interfaces ([#1956</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/213a085b954945eeaa1fc87f0fedef2c07fe14c1"><tt>213a085b</tt></a> rename "example" dir to "_examples" (<a href="https://github.com/99designs/gqlgen/pull/1734">#1734</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/213a085b954945eeaa1fc87f0fedef2c07fe14c1"><tt>213a085b</tt></a> rename "example" dir to "_examples" (<a href="https://github.com/99designs/gqlgen/pull/34">#1734</a>)</summary>
 
 * rename "example" dir to "_examples"
 
@@ -1335,7 +177,7 @@ Upate init CI step
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9262b35865e4a8c62749a0bdf4cce075877a8b4f"><tt>9262b358</tt></a> fix: typo in dataloader code sample (<a href="https://github.com/99designs/gqlgen/pull/1954">#1954</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9262b35865e4a8c62749a0bdf4cce075877a8b4f"><tt>9262b358</tt></a> fix: typo in dataloader code sample (<a href="https://github.com/99designs/gqlgen/pull/54">#1954</a>)</summary>
 
 * fix: typo in dataloader code sample
 
@@ -1343,9 +185,9 @@ Upate init CI step
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/a05437332754fab8bebce18ae8371dcdbe05460b"><tt>a0543733</tt></a> remove autobind example (<a href="https://github.com/99designs/gqlgen/pull/1949">#1949</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/a05437332754fab8bebce18ae8371dcdbe05460b"><tt>a0543733</tt></a> remove autobind example (<a href="https://github.com/99designs/gqlgen/pull/49">#1949</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/06bbca37286edb32db2480db6d200b709ae071a9"><tt>06bbca37</tt></a> docs: migrate dataloaders sample to graph-gophers/dataloader (<a href="https://github.com/99designs/gqlgen/pull/1871">#1871</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/06bbca37286edb32db2480db6d200b709ae071a9"><tt>06bbca37</tt></a> docs: migrate dataloaders sample to graph-gophers/dataloader (<a href="https://github.com/99designs/gqlgen/pull/71">#1871</a>)</summary>
 
 * docs: add dataloader sample
 
@@ -1369,15 +211,15 @@ Upate init CI step
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f9fcfa16a13c64ecfb298ad6cf97b3548b7ee0ff"><tt>f9fcfa16</tt></a> Comment out autobind in the sample config file (<a href="https://github.com/99designs/gqlgen/pull/1872">#1872</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f9fcfa16a13c64ecfb298ad6cf97b3548b7ee0ff"><tt>f9fcfa16</tt></a> Comment out autobind in the sample config file (<a href="https://github.com/99designs/gqlgen/pull/72">#1872</a>)</summary>
 
 The reason is that many people using it for the first time copy exactly that configuration example and then open the issues to say it doesn't work.
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/a30b68de58cbd5fa19e88bd5a198e7ca67147f3b"><tt>a30b68de</tt></a> fix: whitelist VERSION and CURRENT_VERSION env vars (<a href="https://github.com/99designs/gqlgen/pull/1870">#1870</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/a30b68de58cbd5fa19e88bd5a198e7ca67147f3b"><tt>a30b68de</tt></a> fix: whitelist VERSION and CURRENT_VERSION env vars (<a href="https://github.com/99designs/gqlgen/pull/70">#1870</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/76a533b8161ad3ee56b721404650697cce808221"><tt>76a533b8</tt></a> Bump gopkg.in/yaml.v2 from 2.2.4 to 2.2.8 (<a href="https://github.com/99designs/gqlgen/pull/1858">#1858</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/76a533b8161ad3ee56b721404650697cce808221"><tt>76a533b8</tt></a> Bump gopkg.in/yaml.v2 from 2.2.4 to 2.2.8 (<a href="https://github.com/99designs/gqlgen/pull/58">#1858</a>)</summary>
 
 * Bump gopkg.in/yaml.v2 from 2.2.4 to 2.2.8
 
@@ -1396,7 +238,7 @@ updated-dependencies:
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/eed4301c7123e329e067600fe25aa1c876c99b8d"><tt>eed4301c</tt></a> Bump node-fetch from 2.6.1 to 2.6.7 in /integration (<a href="https://github.com/99designs/gqlgen/pull/1859">#1859</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/eed4301c7123e329e067600fe25aa1c876c99b8d"><tt>eed4301c</tt></a> Bump node-fetch from 2.6.1 to 2.6.7 in /integration (<a href="https://github.com/99designs/gqlgen/pull/59">#1859</a>)</summary>
 
 Bumps [node-fetch](https://github.com/node-fetch/node-fetch) from 2.6.1 to 2.6.7.
 - [Release notes](https://github.com/node-fetch/node-fetch/releases)
@@ -1410,15 +252,15 @@ updated-dependencies:
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/7f5dce6d9eebe829edf20ba67e5c5019921fa1ee"><tt>7f5dce6d</tt></a> Fix <a href="https://github.com/99designs/gqlgen/pull/1776">#1776</a> : Edit and persist headers in GraphiQL (<a href="https://github.com/99designs/gqlgen/pull/1856">#1856</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/7f5dce6d9eebe829edf20ba67e5c5019921fa1ee"><tt>7f5dce6d</tt></a> Fix <a href="https://github.com/99designs/gqlgen/pull/56">#1776](https://github.com/99designs/gqlgen/issues/1776) : Edit and persist headers in GraphiQL ([#1856</a>)
 
-- <a href="https://github.com/99designs/gqlgen/commit/e0b42f9981825814e9ec7c216d9c393b2486831c"><tt>e0b42f99</tt></a> fix requires directive with nested field when entityResolver directive is used (<a href="https://github.com/99designs/gqlgen/pull/1863">#1863</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/e0b42f9981825814e9ec7c216d9c393b2486831c"><tt>e0b42f99</tt></a> fix requires directive with nested field when entityResolver directive is used (<a href="https://github.com/99designs/gqlgen/pull/63">#1863</a>)
 
-- <a href="https://github.com/99designs/gqlgen/commit/25c2cdcb12d574e597e8902ab9e2d94b1e5ef974"><tt>25c2cdcb</tt></a> Fix <a href="https://github.com/99designs/gqlgen/pull/1636">#1636</a> by updating gqlparser (<a href="https://github.com/99designs/gqlgen/pull/1857">#1857</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/25c2cdcb12d574e597e8902ab9e2d94b1e5ef974"><tt>25c2cdcb</tt></a> Fix <a href="https://github.com/99designs/gqlgen/pull/57">#1636](https://github.com/99designs/gqlgen/issues/1636) by updating gqlparser ([#1857</a>)
 
-- <a href="https://github.com/99designs/gqlgen/commit/c161ab382547948feb9a54e7bf9ff17458b8c3c9"><tt>c161ab38</tt></a> fix <a href="https://github.com/99designs/gqlgen/pull/1770">#1770</a> minor error in getting-started.md (<a href="https://github.com/99designs/gqlgen/pull/1771">#1771</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/c161ab382547948feb9a54e7bf9ff17458b8c3c9"><tt>c161ab38</tt></a> fix <a href="https://github.com/99designs/gqlgen/pull/71">#1770](https://github.com/99designs/gqlgen/issues/1770) minor error in getting-started.md ([#1771</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/57a148f6d12572fe585ecfcafafbb7441dbf9cab"><tt>57a148f6</tt></a> Remove outdated version reference so example is always for latest (<a href="https://github.com/99designs/gqlgen/pull/1851">#1851</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/57a148f6d12572fe585ecfcafafbb7441dbf9cab"><tt>57a148f6</tt></a> Remove outdated version reference so example is always for latest (<a href="https://github.com/99designs/gqlgen/pull/51">#1851</a>)</summary>
 
 * Also update version reference to next
 
@@ -1426,9 +268,9 @@ updated-dependencies:
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/0ab636144bfc875f86e4d9fd7a2686bc57d5050c"><tt>0ab63614</tt></a> Update quickstart (<a href="https://github.com/99designs/gqlgen/pull/1850">#1850</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/0ab636144bfc875f86e4d9fd7a2686bc57d5050c"><tt>0ab63614</tt></a> Update quickstart (<a href="https://github.com/99designs/gqlgen/pull/50">#1850</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a8eba26dec863c5d34905ab6408f970b4d2abdb5"><tt>a8eba26d</tt></a> Fix <a href="https://github.com/99designs/gqlgen/pull/1777">#1777</a> by updating version constant and adding release checklist (<a href="https://github.com/99designs/gqlgen/pull/1848">#1848</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a8eba26dec863c5d34905ab6408f970b4d2abdb5"><tt>a8eba26d</tt></a> Fix <a href="https://github.com/99designs/gqlgen/pull/48">#1777](https://github.com/99designs/gqlgen/issues/1777) by updating version constant and adding release checklist ([#1848</a>)</summary>
 
 * Revise to use script 🤦
 
@@ -1442,11 +284,11 @@ updated-dependencies:
 ## [v0.16.0](https://github.com/99designs/gqlgen/compare/v0.15.1...v0.16.0) - 2022-01-24
 - <a href="https://github.com/99designs/gqlgen/commit/b90f9750f40583823a3e875d6bbe1538ce50f527"><tt>b90f9750</tt></a> Merge branch 'master' of github.com:99designs/gqlgen
 
-- <a href="https://github.com/99designs/gqlgen/commit/99523e44ae67633ecfa714794a209191d3519017"><tt>99523e44</tt></a> Prepare for v0.16.0 release (<a href="https://github.com/99designs/gqlgen/pull/1842">#1842</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/99523e44ae67633ecfa714794a209191d3519017"><tt>99523e44</tt></a> Prepare for v0.16.0 release (<a href="https://github.com/99designs/gqlgen/pull/42">#1842</a>)
 
 - <a href="https://github.com/99designs/gqlgen/commit/0563146c6bd7188b2ae187040c5a7f3d17cc9f89"><tt>0563146c</tt></a> Prepare for v0.16.0 release
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7cefef26f7b714eb9d5be117ba2159d4e40168f3"><tt>7cefef26</tt></a> add PrependPlugin (<a href="https://github.com/99designs/gqlgen/pull/1839">#1839</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7cefef26f7b714eb9d5be117ba2159d4e40168f3"><tt>7cefef26</tt></a> add PrependPlugin (<a href="https://github.com/99designs/gqlgen/pull/39">#1839</a>)</summary>
 
 * add PrependPlugin
 
@@ -1456,13 +298,13 @@ related: https://github.com/99designs/gqlgen/pull/1838
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/972878a04fc8e9065df212b7cdbe934f141d069b"><tt>972878a0</tt></a> Revert "Fix plugin addition (<a href="https://github.com/99designs/gqlgen/pull/1717">#1717</a>)" (<a href="https://github.com/99designs/gqlgen/pull/1838">#1838</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/972878a04fc8e9065df212b7cdbe934f141d069b"><tt>972878a0</tt></a> Revert "Fix plugin addition (<a href="https://github.com/99designs/gqlgen/pull/38">#1717](https://github.com/99designs/gqlgen/issues/1717))" ([#1838</a>)</summary>
 
 This reverts commit f591c8f797e35635fb5eb0e4465c77b6a073896b.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1ed7e050a1f736b7395dd3e61f771d3ddcf80a8d"><tt>1ed7e050</tt></a> Fix <a href="https://github.com/99designs/gqlgen/pull/1832">#1832</a> [@requires](https://github.com/requires) directive when [@entityResolver](https://github.com/entityResolver) is used (<a href="https://github.com/99designs/gqlgen/pull/1833">#1833</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1ed7e050a1f736b7395dd3e61f771d3ddcf80a8d"><tt>1ed7e050</tt></a> Fix <a href="https://github.com/99designs/gqlgen/pull/33">#1832](https://github.com/99designs/gqlgen/issues/1832) [@requires](https://github.com/requires) directive when [@entityResolver](https://github.com/entityResolver) is used ([#1833</a>)</summary>
 
 * fix requires directive for multipleEntity directive
 
@@ -1471,13 +313,13 @@ This reverts commit f591c8f797e35635fb5eb0e4465c77b6a073896b.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/fcee4c404f52c2debcb8b8acaa31421804f625ea"><tt>fcee4c40</tt></a> Update README.md (<a href="https://github.com/99designs/gqlgen/pull/1836">#1836</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/fcee4c404f52c2debcb8b8acaa31421804f625ea"><tt>fcee4c40</tt></a> Update README.md (<a href="https://github.com/99designs/gqlgen/pull/36">#1836</a>)</summary>
 
 Corrected a simple grammar typo.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3fb5fd9916896d2c084c646093b3cbd634f61121"><tt>3fb5fd99</tt></a> Fix <a href="https://github.com/99designs/gqlgen/pull/1834">#1834</a>: Implement federation correctly (<a href="https://github.com/99designs/gqlgen/pull/1835">#1835</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3fb5fd9916896d2c084c646093b3cbd634f61121"><tt>3fb5fd99</tt></a> Fix <a href="https://github.com/99designs/gqlgen/pull/35">#1834](https://github.com/99designs/gqlgen/issues/1834): Implement federation correctly ([#1835</a>)</summary>
 
 * Fix federation implementation which does not conform to Apollo Federation subgraph specification
 
@@ -1487,13 +329,13 @@ Corrected a simple grammar typo.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/986650718267770018139713df874a70e1e79e16"><tt>98665071</tt></a> Imporve gqlgen test cases (<a href="https://github.com/99designs/gqlgen/pull/1773">#1773</a>) (closes <a href="https://github.com/99designs/gqlgen/issues/1765"> #1765</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/986650718267770018139713df874a70e1e79e16"><tt>98665071</tt></a> Imporve gqlgen test cases (<a href="https://github.com/99designs/gqlgen/pull/73">#1773</a>) (closes <a href="https://github.com/99designs/gqlgen/issues/1765"> #1765</a>)</summary>
 
 * Imporve test cases for init and generate
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5d904d8782833d85ca6fedb47420237b3258eb66"><tt>5d904d87</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1778">#1778</a> from ipfans/gh-pages-patch</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5d904d8782833d85ca6fedb47420237b3258eb66"><tt>5d904d87</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/78">#1778</a> from ipfans/gh-pages-patch</summary>
 
 Bump gqlgen.com version list
 
@@ -1509,13 +351,13 @@ Bump gqlgen.com version list
 ## [v0.15.1](https://github.com/99designs/gqlgen/compare/v0.15.0...v0.15.1) - 2022-01-16
 - <a href="https://github.com/99designs/gqlgen/commit/7102a36bbde485fbbb671499fdde8697232c0725"><tt>7102a36b</tt></a> Prepare for 0.15.1 release
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2b8f50b3b38b129f56e06c3dadccd0cb8667a741"><tt>2b8f50b3</tt></a> Fix <a href="https://github.com/99designs/gqlgen/pull/1765">#1765</a>: Sometimes module info not exists or not loaded. (<a href="https://github.com/99designs/gqlgen/pull/1767">#1767</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2b8f50b3b38b129f56e06c3dadccd0cb8667a741"><tt>2b8f50b3</tt></a> Fix <a href="https://github.com/99designs/gqlgen/pull/67">#1765](https://github.com/99designs/gqlgen/issues/1765): Sometimes module info not exists or not loaded. ([#1767</a>)</summary>
 
 * Remove failing test
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/46502e5e5af713208143f089fa2db5b266aa5fc7"><tt>46502e5e</tt></a> fixed broken link (<a href="https://github.com/99designs/gqlgen/pull/1768">#1768</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/46502e5e5af713208143f089fa2db5b266aa5fc7"><tt>46502e5e</tt></a> fixed broken link (<a href="https://github.com/99designs/gqlgen/pull/68">#1768</a>)
 
  <!-- end of Commits -->
 <!-- end of Else -->
@@ -1525,15 +367,15 @@ Bump gqlgen.com version list
 ## [v0.15.0](https://github.com/99designs/gqlgen/compare/v0.14.0...v0.15.0) - 2022-01-14
 - <a href="https://github.com/99designs/gqlgen/commit/99be19512eb2f7c5f3db3d699eecc8cdd2020d25"><tt>99be1951</tt></a> Prepare for release
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/931271a2f3af4cf50de702855d396cde02a3d99f"><tt>931271a2</tt></a> Fix <a href="https://github.com/99designs/gqlgen/pull/1762">#1762</a>: Reload packages before merging type systems (<a href="https://github.com/99designs/gqlgen/pull/1763">#1763</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/931271a2f3af4cf50de702855d396cde02a3d99f"><tt>931271a2</tt></a> Fix <a href="https://github.com/99designs/gqlgen/pull/63">#1762](https://github.com/99designs/gqlgen/issues/1762): Reload packages before merging type systems ([#1763</a>)</summary>
 
 * run gofmt on file
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/e5b5e832e5c5ab388af3ebbae8a899f2b362eab1"><tt>e5b5e832</tt></a> Improve performance of MarshalBoolean (<a href="https://github.com/99designs/gqlgen/pull/1757">#1757</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/e5b5e832e5c5ab388af3ebbae8a899f2b362eab1"><tt>e5b5e832</tt></a> Improve performance of MarshalBoolean (<a href="https://github.com/99designs/gqlgen/pull/57">#1757</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/57664bf0369a843e56f74f4f1951a1808656fe99"><tt>57664bf0</tt></a> Migrate playgrounds to GraphiQL (<a href="https://github.com/99designs/gqlgen/pull/1751">#1751</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/57664bf0369a843e56f74f4f1951a1808656fe99"><tt>57664bf0</tt></a> Migrate playgrounds to GraphiQL (<a href="https://github.com/99designs/gqlgen/pull/51">#1751</a>)</summary>
 
 * migrate to GraphiQL playground
 
@@ -1541,7 +383,7 @@ Bump gqlgen.com version list
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b2a832d51d5d67463d35fc1397b7d6133e1d6b43"><tt>b2a832d5</tt></a> Avoid problems with `val` being undefined in the federation template. (<a href="https://github.com/99designs/gqlgen/pull/1760">#1760</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b2a832d51d5d67463d35fc1397b7d6133e1d6b43"><tt>b2a832d5</tt></a> Avoid problems with `val` being undefined in the federation template. (<a href="https://github.com/99designs/gqlgen/pull/60">#1760</a>)</summary>
 
 * Avoid problems with `val` being undefined in the federation template.
 
@@ -1598,15 +440,15 @@ go run github.com/99designs/gqlgen --config testdata/entityresolver/gqlgen.yml
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/47015f12e3aa26af251fec67eab50d3388c17efe"><tt>47015f12</tt></a> Added pointer to a solution for `no Go files` err (<a href="https://github.com/99designs/gqlgen/pull/1747">#1747</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/47015f12e3aa26af251fec67eab50d3388c17efe"><tt>47015f12</tt></a> Added pointer to a solution for `no Go files` err (<a href="https://github.com/99designs/gqlgen/pull/47">#1747</a>)</summary>
 
 While following the instructions in this getting started guide I run into this error `package github.com/99designs/gqlgen: no Go files` which was pretty annoying to fix. Its a golang issue but for people who are unfamiliar with how the `go generate` command works in vendored projects its a blocker trying to follow the rest of this guide. It will be really nice to at least have a pointer in the guide for people to find a possible solution to the issue while going through the guide. I'm sure many folks have run into this issue given vendoring is now very popular with the latest go releases.
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/27a2b210d9137e2f1d341a103542b47dcc783182"><tt>27a2b210</tt></a> Downgrade to Go 1.16 (<a href="https://github.com/99designs/gqlgen/pull/1743">#1743</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/27a2b210d9137e2f1d341a103542b47dcc783182"><tt>27a2b210</tt></a> Downgrade to Go 1.16 (<a href="https://github.com/99designs/gqlgen/pull/43">#1743</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/14cfee7002fb07f3f247b13582fe45959f7133de"><tt>14cfee70</tt></a> Support for multiple [@key](https://github.com/key) directives in federation (reworked) (<a href="https://github.com/99designs/gqlgen/pull/1723">#1723</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/14cfee7002fb07f3f247b13582fe45959f7133de"><tt>14cfee70</tt></a> Support for multiple <a href="https://github.com/99designs/gqlgen/pull/23">@key](https://github.com/key) directives in federation (reworked) ([#1723</a>)</summary>
 
 * address review comments
 
@@ -1620,9 +462,9 @@ Still missing:
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/2747bd5f3c69db7d55db5f10592ecd0accf3499f"><tt>2747bd5f</tt></a> Add CSV and PDF to common initialisms (<a href="https://github.com/99designs/gqlgen/pull/1741">#1741</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/2747bd5f3c69db7d55db5f10592ecd0accf3499f"><tt>2747bd5f</tt></a> Add CSV and PDF to common initialisms (<a href="https://github.com/99designs/gqlgen/pull/41">#1741</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/44beadc1d037a0d46c799c85d88dc71a57f3938b"><tt>44beadc1</tt></a> Fix list coercion when using graphql variables (<a href="https://github.com/99designs/gqlgen/pull/1740">#1740</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/44beadc1d037a0d46c799c85d88dc71a57f3938b"><tt>44beadc1</tt></a> Fix list coercion when using graphql variables (<a href="https://github.com/99designs/gqlgen/pull/40">#1740</a>)</summary>
 
 * fix(codegen): support coercion of lists in graphql variables
 
@@ -1640,7 +482,7 @@ This was broken by an upstream dependency `gqlparser` coercing variables during 
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bd8938d853e0aade3eab106e35f28d586e355124"><tt>bd8938d8</tt></a> fix: automatically register built-in directive goTag (<a href="https://github.com/99designs/gqlgen/pull/1737">#1737</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bd8938d853e0aade3eab106e35f28d586e355124"><tt>bd8938d8</tt></a> fix: automatically register built-in directive goTag (<a href="https://github.com/99designs/gqlgen/pull/37">#1737</a>)</summary>
 
 * fix: automatically register built-in tag goTag
 
@@ -1648,7 +490,7 @@ This was broken by an upstream dependency `gqlparser` coercing variables during 
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/497227faf4e43266bf1a8f9ef756b98ef85cfee7"><tt>497227fa</tt></a> Close Websocket Connection on Context close/cancel (<a href="https://github.com/99designs/gqlgen/pull/1728">#1728</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/497227faf4e43266bf1a8f9ef756b98ef85cfee7"><tt>497227fa</tt></a> Close Websocket Connection on Context close/cancel (<a href="https://github.com/99designs/gqlgen/pull/28">#1728</a>)</summary>
 
 * Added code to the web socket so it closes when the context is cancelled (with an optional close reason).
 
@@ -1661,9 +503,9 @@ This was broken by an upstream dependency `gqlparser` coercing variables during 
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/4581fccdb67e05937ba862bf601a18393731bccc"><tt>4581fccd</tt></a> Don't loose field arguments when none match (<a href="https://github.com/99designs/gqlgen/pull/1725">#1725</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/4581fccdb67e05937ba862bf601a18393731bccc"><tt>4581fccd</tt></a> Don't loose field arguments when none match (<a href="https://github.com/99designs/gqlgen/pull/25">#1725</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/213ecd93c2593a535efc291b065966573d798a5d"><tt>213ecd93</tt></a> Add support for graphql-transport-ws with duplex ping-pong (<a href="https://github.com/99designs/gqlgen/pull/1578">#1578</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/213ecd93c2593a535efc291b065966573d798a5d"><tt>213ecd93</tt></a> Add support for graphql-transport-ws with duplex ping-pong (<a href="https://github.com/99designs/gqlgen/pull/78">#1578</a>)</summary>
 
 * Add support for graphql-transport-ws with duplex ping-pong
 
@@ -1671,13 +513,13 @@ This was broken by an upstream dependency `gqlparser` coercing variables during 
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/ae92c83d7f7d14ab3a29016eb71d577e1c66721e"><tt>ae92c83d</tt></a> add federation tests (<a href="https://github.com/99designs/gqlgen/pull/1719">#1719</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/ae92c83d7f7d14ab3a29016eb71d577e1c66721e"><tt>ae92c83d</tt></a> add federation tests (<a href="https://github.com/99designs/gqlgen/pull/19">#1719</a>)
 
-- <a href="https://github.com/99designs/gqlgen/commit/f591c8f797e35635fb5eb0e4465c77b6a073896b"><tt>f591c8f7</tt></a> Fix plugin addition (<a href="https://github.com/99designs/gqlgen/pull/1717">#1717</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/f591c8f797e35635fb5eb0e4465c77b6a073896b"><tt>f591c8f7</tt></a> Fix plugin addition (<a href="https://github.com/99designs/gqlgen/pull/17">#1717</a>)
 
-- <a href="https://github.com/99designs/gqlgen/commit/8fa6470f9e0eb8d85e90f211a90b0ea38a228f35"><tt>8fa6470f</tt></a> Fix <a href="https://github.com/99designs/gqlgen/pull/1704">#1704</a>: handle [@required](https://github.com/required) nested fields as in [@key](https://github.com/key) (<a href="https://github.com/99designs/gqlgen/pull/1706">#1706</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/8fa6470f9e0eb8d85e90f211a90b0ea38a228f35"><tt>8fa6470f</tt></a> Fix <a href="https://github.com/99designs/gqlgen/pull/06">#1704](https://github.com/99designs/gqlgen/issues/1704): handle [@required](https://github.com/required) nested fields as in [@key](https://github.com/key) ([#1706</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/af33b7cd2486d52363ba1ed90e1963ce12c22250"><tt>af33b7cd</tt></a> Cleaning up extra return in federation generated code (<a href="https://github.com/99designs/gqlgen/pull/1713">#1713</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/af33b7cd2486d52363ba1ed90e1963ce12c22250"><tt>af33b7cd</tt></a> Cleaning up extra return in federation generated code (<a href="https://github.com/99designs/gqlgen/pull/13">#1713</a>)</summary>
 
 In PR 1709, I introduced GetMany semantics for resolving federated entities.  But I left a couple of extra return statements in the generated code that are not necessary. So Im just cleaning those up here.
 
@@ -1691,7 +533,7 @@ go test -race ./... && cd example && go test -race ./... && cd ..
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/402a22593f6fe71ff33d805a057de0f331eded5a"><tt>402a2259</tt></a> Optimize performance for binder, imports and packages (Rebased from sbalabanov/master) (<a href="https://github.com/99designs/gqlgen/pull/1711">#1711</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/402a22593f6fe71ff33d805a057de0f331eded5a"><tt>402a2259</tt></a> Optimize performance for binder, imports and packages (Rebased from sbalabanov/master) (<a href="https://github.com/99designs/gqlgen/pull/11">#1711</a>)</summary>
 
 * Cache go.mod resolution for module name search
 
@@ -1705,9 +547,9 @@ go test -race ./... && cd example && go test -race ./... && cd ..
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/237a7e6a7bb1abdd71e957adeb119691bbae5671"><tt>237a7e6a</tt></a> Separate golangci-lint from other jobs (<a href="https://github.com/99designs/gqlgen/pull/1712">#1712</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/237a7e6a7bb1abdd71e957adeb119691bbae5671"><tt>237a7e6a</tt></a> Separate golangci-lint from other jobs (<a href="https://github.com/99designs/gqlgen/pull/12">#1712</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/50292e99d5cd0021f9fbec6118e406e4da86505b"><tt>50292e99</tt></a> Resolve multiple federated entities in a single entityResolve call (<a href="https://github.com/99designs/gqlgen/pull/1709">#1709</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/50292e99d5cd0021f9fbec6118e406e4da86505b"><tt>50292e99</tt></a> Resolve multiple federated entities in a single entityResolve call (<a href="https://github.com/99designs/gqlgen/pull/09">#1709</a>)</summary>
 
 * Resolve multiple federated entities in a single entityResolve call
 
@@ -1737,7 +579,7 @@ You can look at the federated code in `plugin/federation/testdata/entityresolver
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/80713b84cf937b203cbd745603809e0d72f1dd84"><tt>80713b84</tt></a> Adding entity resolver tests for errors, entities with different type… (<a href="https://github.com/99designs/gqlgen/pull/1708">#1708</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/80713b84cf937b203cbd745603809e0d72f1dd84"><tt>80713b84</tt></a> Adding entity resolver tests for errors, entities with different type… (<a href="https://github.com/99designs/gqlgen/pull/08">#1708</a>)</summary>
 
 * Adding entity resolver tests for errors, entities with different types, and requires
 
@@ -1752,9 +594,9 @@ To run tests:
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/ed2d699804c09875c678900937923fcbc4f6e00a"><tt>ed2d6998</tt></a> Replace ! with _ in root.generated file to avoid build conflicts (<a href="https://github.com/99designs/gqlgen/pull/1701">#1701</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/ed2d699804c09875c678900937923fcbc4f6e00a"><tt>ed2d6998</tt></a> Replace ! with _ in root.generated file to avoid build conflicts (<a href="https://github.com/99designs/gqlgen/pull/01">#1701</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/828820afa95e4e66857839cbcbf6584665cef10c"><tt>828820af</tt></a> transport: implement `graphql-transport-ws` ws sub-protocol   (<a href="https://github.com/99designs/gqlgen/pull/1507">#1507</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/828820afa95e4e66857839cbcbf6584665cef10c"><tt>828820af</tt></a> transport: implement `graphql-transport-ws` ws sub-protocol   (<a href="https://github.com/99designs/gqlgen/pull/07">#1507</a>)</summary>
 
 * websocket: create `messageExchanger` to handle subprotocol messages
 
@@ -1780,11 +622,11 @@ To run tests:
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/28caa6ce504b4ed206407dcaea8f8418feb91888"><tt>28caa6ce</tt></a> Ignore generated files from test coverage (<a href="https://github.com/99designs/gqlgen/pull/1699">#1699</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/28caa6ce504b4ed206407dcaea8f8418feb91888"><tt>28caa6ce</tt></a> Ignore generated files from test coverage (<a href="https://github.com/99designs/gqlgen/pull/99">#1699</a>)
 
 - <a href="https://github.com/99designs/gqlgen/commit/7ac988dee1187a27bb1290fe25f7b179f6102e42"><tt>7ac988de</tt></a> Fix linting issue
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/01d3c4f8c0b732ee85b919415322fdb190127fac"><tt>01d3c4f8</tt></a> Entity resolver tests (<a href="https://github.com/99designs/gqlgen/pull/1697">#1697</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/01d3c4f8c0b732ee85b919415322fdb190127fac"><tt>01d3c4f8</tt></a> Entity resolver tests (<a href="https://github.com/99designs/gqlgen/pull/97">#1697</a>)</summary>
 
 * Moving federation tests to their own folders
 
@@ -1823,21 +665,21 @@ To run the tests:
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b7db36d368c260d90fb5fa6084c295d92c1a001d"><tt>b7db36d3</tt></a> Revert "Support for multiple [@key](https://github.com/key) directives in federation (<a href="https://github.com/99designs/gqlgen/pull/1684">#1684</a>)" (<a href="https://github.com/99designs/gqlgen/pull/1698">#1698</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b7db36d368c260d90fb5fa6084c295d92c1a001d"><tt>b7db36d3</tt></a> Revert "Support for multiple <a href="https://github.com/99designs/gqlgen/pull/98">@key](https://github.com/key) directives in federation ([#1684](https://github.com/99designs/gqlgen/issues/1684))" ([#1698</a>)</summary>
 
 This reverts commit 47de912f56cd4bd6da9b74929cd67b8881617026.
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/4a4b5601a661259cc33d22c8a254803025e8a1f7"><tt>4a4b5601</tt></a> DOC: Fixed indention in example code. (<a href="https://github.com/99designs/gqlgen/pull/1693">#1693</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/4a4b5601a661259cc33d22c8a254803025e8a1f7"><tt>4a4b5601</tt></a> DOC: Fixed indention in example code. (<a href="https://github.com/99designs/gqlgen/pull/93">#1693</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/47de912f56cd4bd6da9b74929cd67b8881617026"><tt>47de912f</tt></a> Support for multiple [@key](https://github.com/key) directives in federation (<a href="https://github.com/99designs/gqlgen/pull/1684">#1684</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/47de912f56cd4bd6da9b74929cd67b8881617026"><tt>47de912f</tt></a> Support for multiple <a href="https://github.com/99designs/gqlgen/pull/84">@key](https://github.com/key) directives in federation ([#1684</a>)</summary>
 
 * add more unit test coverage to plugin/federation
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/59a30919a8d8a9b67972cc7e4dd1e425901f15c2"><tt>59a30919</tt></a> Reimplement goTag using FieldMutateHook (<a href="https://github.com/99designs/gqlgen/pull/1682">#1682</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/59a30919a8d8a9b67972cc7e4dd1e425901f15c2"><tt>59a30919</tt></a> Reimplement goTag using FieldMutateHook (<a href="https://github.com/99designs/gqlgen/pull/82">#1682</a>)</summary>
 
 * Reimplement goTag using a FieldMutateHook
 
@@ -1847,7 +689,7 @@ This change does not change the logic of goTag, merely reimplements it using a F
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/37a4e7eefa241dd7e5eeab7bbca56b1677d37daf"><tt>37a4e7ee</tt></a> Rename `[@extraTag](https://github.com/extraTag)` directive to `[@goTag](https://github.com/goTag)` and make repeatable (<a href="https://github.com/99designs/gqlgen/pull/1680">#1680</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/37a4e7eefa241dd7e5eeab7bbca56b1677d37daf"><tt>37a4e7ee</tt></a> Rename `<a href="https://github.com/99designs/gqlgen/pull/80">@extraTag](https://github.com/extraTag)` directive to `[@goTag](https://github.com/goTag)` and make repeatable ([#1680</a>)</summary>
 
 * Allow Repeatable `goTag` Directive
 
@@ -1857,7 +699,7 @@ This change does not change the logic of goTag, merely reimplements it using a F
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/87f9e436e922a977b6002bb3070f087641001782"><tt>87f9e436</tt></a> Fix nil pointer dereference when an invalid import is bound to a model (<a href="https://github.com/99designs/gqlgen/pull/1676">#1676</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/87f9e436e922a977b6002bb3070f087641001782"><tt>87f9e436</tt></a> Fix nil pointer dereference when an invalid import is bound to a model (<a href="https://github.com/99designs/gqlgen/pull/76">#1676</a>)</summary>
 
 * Fixes remaining Name field in singlefile test
 
@@ -1875,15 +717,15 @@ Totally accidental, sorry!
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/6c65e8f15389e8aad7e20e7ba4a9b3ff4be565d9"><tt>6c65e8f1</tt></a> Update getting-started.md (<a href="https://github.com/99designs/gqlgen/pull/1674">#1674</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/6c65e8f15389e8aad7e20e7ba4a9b3ff4be565d9"><tt>6c65e8f1</tt></a> Update getting-started.md (<a href="https://github.com/99designs/gqlgen/pull/74">#1674</a>)</summary>
 
 missing an 's' on quoted filename default
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/3bbc2a342fc7a0839b25e26ebd0aa25d7f498dac"><tt>3bbc2a34</tt></a> feat: generate resolvers for inputs if fields are missing (<a href="https://github.com/99designs/gqlgen/pull/1404">#1404</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/3bbc2a342fc7a0839b25e26ebd0aa25d7f498dac"><tt>3bbc2a34</tt></a> feat: generate resolvers for inputs if fields are missing (<a href="https://github.com/99designs/gqlgen/pull/04">#1404</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7db941a56e742dca10cbba1e32d4d09458cdc8ef"><tt>7db941a5</tt></a> Fix 1138: nested fieldset support (<a href="https://github.com/99designs/gqlgen/pull/1669">#1669</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7db941a56e742dca10cbba1e32d4d09458cdc8ef"><tt>7db941a5</tt></a> Fix 1138: nested fieldset support (<a href="https://github.com/99designs/gqlgen/pull/69">#1669</a>)</summary>
 
 * formatting
 
@@ -1896,7 +738,7 @@ upgrade deps in federation integration tests
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/488a31fc12979b825b166cf6f317f4b27ee456a0"><tt>488a31fc</tt></a> ContextMarshaler (<a href="https://github.com/99designs/gqlgen/pull/1652">#1652</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/488a31fc12979b825b166cf6f317f4b27ee456a0"><tt>488a31fc</tt></a> ContextMarshaler (<a href="https://github.com/99designs/gqlgen/pull/52">#1652</a>)</summary>
 
 * Add interface and detection for ContextMarshaler
 
@@ -1923,11 +765,11 @@ upgrade deps in federation integration tests
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/a626d9b47e54e4439976d3ad333dfefe4c2710d6"><tt>a626d9b4</tt></a> Add ICMP to common initialisms (<a href="https://github.com/99designs/gqlgen/pull/1666">#1666</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/a626d9b47e54e4439976d3ad333dfefe4c2710d6"><tt>a626d9b4</tt></a> Add ICMP to common initialisms (<a href="https://github.com/99designs/gqlgen/pull/66">#1666</a>)
 
-- <a href="https://github.com/99designs/gqlgen/commit/db4b5eb71b4959c3f8b68086b753ec3c01c5b4c9"><tt>db4b5eb7</tt></a> Merge Inline Fragment Nested Interface Fields (<a href="https://github.com/99designs/gqlgen/pull/1663">#1663</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/db4b5eb71b4959c3f8b68086b753ec3c01c5b4c9"><tt>db4b5eb7</tt></a> Merge Inline Fragment Nested Interface Fields (<a href="https://github.com/99designs/gqlgen/pull/63">#1663</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8b9737179d3ba08405ab6422fb8c4883dd8e720c"><tt>8b973717</tt></a> Update directives doc page (<a href="https://github.com/99designs/gqlgen/pull/1660">#1660</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8b9737179d3ba08405ab6422fb8c4883dd8e720c"><tt>8b973717</tt></a> Update directives doc page (<a href="https://github.com/99designs/gqlgen/pull/60">#1660</a>)</summary>
 
 * Update directives doc page
 
@@ -1935,7 +777,7 @@ upgrade deps in federation integration tests
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1f500016aedcb9bc35eb9964b55730efe966ef5e"><tt>1f500016</tt></a> Add follow-schema layout for exec (<a href="https://github.com/99designs/gqlgen/pull/1309">#1309</a>) (closes <a href="https://github.com/99designs/gqlgen/issues/1265"> #1265</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1f500016aedcb9bc35eb9964b55730efe966ef5e"><tt>1f500016</tt></a> Add follow-schema layout for exec (<a href="https://github.com/99designs/gqlgen/pull/09">#1309</a>) (closes <a href="https://github.com/99designs/gqlgen/issues/1265"> #1265</a>)</summary>
 
 * Define ExecConfig separate from PackageConfig
 
@@ -1962,7 +804,7 @@ the same name, just applied to `exec` instead of `resolver`.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/129783590c9cb8c709a2b0e9cbb7b69f022ee78a"><tt>12978359</tt></a> Update GQLgen test client to work with multipart form data (take 2) (<a href="https://github.com/99designs/gqlgen/pull/1661">#1661</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/129783590c9cb8c709a2b0e9cbb7b69f022ee78a"><tt>12978359</tt></a> Update GQLgen test client to work with multipart form data (take 2) (<a href="https://github.com/99designs/gqlgen/pull/61">#1661</a>)</summary>
 
 * Update GQLgen test client to work with multipart form data
 
@@ -2034,7 +876,7 @@ running the test on and/or race condition
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7435403cf94ce8147fdd9d473a5469d63e7e5b38"><tt>7435403c</tt></a> Adds RootFieldInterceptor to extension interfaces (<a href="https://github.com/99designs/gqlgen/pull/1647">#1647</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7435403cf94ce8147fdd9d473a5469d63e7e5b38"><tt>7435403c</tt></a> Adds RootFieldInterceptor to extension interfaces (<a href="https://github.com/99designs/gqlgen/pull/47">#1647</a>)</summary>
 
 * Adds RootFieldInterceptor to extension interfaces
 
@@ -2046,19 +888,19 @@ running the test on and/or race condition
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/8b25c9e005c44ae3730eca83445fa7f7223481d1"><tt>8b25c9e0</tt></a> Add a config option to skip running "go mod tidy" on code generation (<a href="https://github.com/99designs/gqlgen/pull/1644">#1644</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/8b25c9e005c44ae3730eca83445fa7f7223481d1"><tt>8b25c9e0</tt></a> Add a config option to skip running "go mod tidy" on code generation (<a href="https://github.com/99designs/gqlgen/pull/44">#1644</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/658195b79d8c9072a90419ce3ddccda4e430ebf0"><tt>658195b7</tt></a> Revert "Update GQLgen test client to work with multipart form data (<a href="https://github.com/99designs/gqlgen/pull/1418">#1418</a>)" (<a href="https://github.com/99designs/gqlgen/pull/1659">#1659</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/658195b79d8c9072a90419ce3ddccda4e430ebf0"><tt>658195b7</tt></a> Revert "Update GQLgen test client to work with multipart form data (<a href="https://github.com/99designs/gqlgen/pull/59">#1418](https://github.com/99designs/gqlgen/issues/1418))" ([#1659</a>)</summary>
 
 This reverts commit 1318f12792e86c76a2cdff9132ebac5b3e30e148.
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/41c867658a9eacf94b3c682121b03727e18940d5"><tt>41c86765</tt></a> Revert 1595 (<a href="https://github.com/99designs/gqlgen/pull/1658">#1658</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/41c867658a9eacf94b3c682121b03727e18940d5"><tt>41c86765</tt></a> Revert 1595 (<a href="https://github.com/99designs/gqlgen/pull/58">#1658</a>)
 
-- <a href="https://github.com/99designs/gqlgen/commit/8359f9749e6fd54be20325ff6aafb05503124238"><tt>8359f974</tt></a> Allow custom websocket upgrader (<a href="https://github.com/99designs/gqlgen/pull/1595">#1595</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/8359f9749e6fd54be20325ff6aafb05503124238"><tt>8359f974</tt></a> Allow custom websocket upgrader (<a href="https://github.com/99designs/gqlgen/pull/95">#1595</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1318f12792e86c76a2cdff9132ebac5b3e30e148"><tt>1318f127</tt></a> Update GQLgen test client to work with multipart form data (<a href="https://github.com/99designs/gqlgen/pull/1418">#1418</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1318f12792e86c76a2cdff9132ebac5b3e30e148"><tt>1318f127</tt></a> Update GQLgen test client to work with multipart form data (<a href="https://github.com/99designs/gqlgen/pull/18">#1418</a>)</summary>
 
 * Update GQLgen test client to work with multipart form data
 
@@ -2109,9 +951,9 @@ builder `createUploadRequest`.
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/6758654c4e28dc0589147c9e962c9d4c1fd44705"><tt>6758654c</tt></a> raise panic when nested [@requires](https://github.com/requires) are used on federation (<a href="https://github.com/99designs/gqlgen/pull/1655">#1655</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/6758654c4e28dc0589147c9e962c9d4c1fd44705"><tt>6758654c</tt></a> raise panic when nested <a href="https://github.com/99designs/gqlgen/pull/55">@requires](https://github.com/requires) are used on federation ([#1655</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f6c35be2128d8d0ec6c0c0d63bc0f135292ab5fe"><tt>f6c35be2</tt></a> Add ReplacePlugin option to replace a specific plugin (<a href="https://github.com/99designs/gqlgen/pull/1657">#1657</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f6c35be2128d8d0ec6c0c0d63bc0f135292ab5fe"><tt>f6c35be2</tt></a> Add ReplacePlugin option to replace a specific plugin (<a href="https://github.com/99designs/gqlgen/pull/57">#1657</a>)</summary>
 
 * Add Helper Option for replacing plugins
 
@@ -2121,7 +963,7 @@ builder `createUploadRequest`.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f8c46600aa005be4d62e52ca6f4a0467480c58c2"><tt>f8c46600</tt></a> fix double indirect bug (<a href="https://github.com/99designs/gqlgen/pull/1604">#1604</a>) (closes <a href="https://github.com/99designs/gqlgen/issues/1587"> #1587</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f8c46600aa005be4d62e52ca6f4a0467480c58c2"><tt>f8c46600</tt></a> fix double indirect bug (<a href="https://github.com/99designs/gqlgen/pull/04">#1604</a>) (closes <a href="https://github.com/99designs/gqlgen/issues/1587"> #1587</a>)</summary>
 
 * invalid code generated
 
@@ -2129,11 +971,11 @@ builder `createUploadRequest`.
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/629c91a2dff9982a5c469f25e8076ab7737e167a"><tt>629c91a2</tt></a> remove extra WithOperationContext call (<a href="https://github.com/99designs/gqlgen/pull/1641">#1641</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/629c91a2dff9982a5c469f25e8076ab7737e167a"><tt>629c91a2</tt></a> remove extra WithOperationContext call (<a href="https://github.com/99designs/gqlgen/pull/41">#1641</a>)
 
-- <a href="https://github.com/99designs/gqlgen/commit/35199c49ab02648b518d5653ee25eac3e3627602"><tt>35199c49</tt></a> codegen: ensure Elem present before using (<a href="https://github.com/99designs/gqlgen/pull/1317">#1317</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/35199c49ab02648b518d5653ee25eac3e3627602"><tt>35199c49</tt></a> codegen: ensure Elem present before using (<a href="https://github.com/99designs/gqlgen/pull/17">#1317</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bfea93cdf3594edf0924e5ecd251eea09a1d35cb"><tt>bfea93cd</tt></a> Reload config packages after generating models (<a href="https://github.com/99designs/gqlgen/pull/1491">#1491</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bfea93cdf3594edf0924e5ecd251eea09a1d35cb"><tt>bfea93cd</tt></a> Reload config packages after generating models (<a href="https://github.com/99designs/gqlgen/pull/91">#1491</a>)</summary>
 
 If models are generated in a package that has already been loaded, and
 that package refers to another package that has already been loaded, we
@@ -2198,7 +1040,7 @@ code that fails in this scenario.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9e0817cdc7428ea9f3a1542faaca72ce9c5f317c"><tt>9e0817cd</tt></a> Add graphql schema aware field level hook to modelgen (<a href="https://github.com/99designs/gqlgen/pull/1650">#1650</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9e0817cdc7428ea9f3a1542faaca72ce9c5f317c"><tt>9e0817cd</tt></a> Add graphql schema aware field level hook to modelgen (<a href="https://github.com/99designs/gqlgen/pull/50">#1650</a>)</summary>
 
 * Add ast aware field level hook to modelgen
 
@@ -2212,7 +1054,7 @@ This change adds a hook at the end of the field creation process which provides 
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/af2ac061db4e08616cecff2ed74649465ee5fc20"><tt>af2ac061</tt></a> handling unconventional naming used in type names (<a href="https://github.com/99designs/gqlgen/pull/1549">#1549</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/af2ac061db4e08616cecff2ed74649465ee5fc20"><tt>af2ac061</tt></a> handling unconventional naming used in type names (<a href="https://github.com/99designs/gqlgen/pull/49">#1549</a>)</summary>
 
 * handling unconventional naming used in type names
 
@@ -2222,20 +1064,20 @@ This change adds a hook at the end of the field creation process which provides 
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/393f755421ae42d207655984dbe6b8b990440384"><tt>393f7554</tt></a> add extraTag directive (<a href="https://github.com/99designs/gqlgen/pull/1173">#1173</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/393f755421ae42d207655984dbe6b8b990440384"><tt>393f7554</tt></a> add extraTag directive (<a href="https://github.com/99designs/gqlgen/pull/73">#1173</a>)
 
-- <a href="https://github.com/99designs/gqlgen/commit/fd1bd7c9b3b3804ce1b90b786cd3fb9281918882"><tt>fd1bd7c9</tt></a> adding support for sending extension with gqlgen client (<a href="https://github.com/99designs/gqlgen/pull/1633">#1633</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/fd1bd7c9b3b3804ce1b90b786cd3fb9281918882"><tt>fd1bd7c9</tt></a> adding support for sending extension with gqlgen client (<a href="https://github.com/99designs/gqlgen/pull/33">#1633</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/589a774290cfaf8f39d6099650e930c6f10cd670"><tt>589a7742</tt></a> Enable lowercase type names in GraphQL schema to properly render (<a href="https://github.com/99designs/gqlgen/pull/1359">#1359</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/589a774290cfaf8f39d6099650e930c6f10cd670"><tt>589a7742</tt></a> Enable lowercase type names in GraphQL schema to properly render (<a href="https://github.com/99designs/gqlgen/pull/59">#1359</a>)</summary>
 
 The difficulty with lowercased type names is that in go code any lowercased name is not exported.
 This change makes the names title case for go code while preserving the proper case when interacting with the GraphQL schema.
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/50f6a2aa603842fcdc158ab135fa117d1716d7e2"><tt>50f6a2aa</tt></a> Fixes <a href="https://github.com/99designs/gqlgen/pull/1653">#1653</a>: update docs and wrap error if not *gqlerror.Error (<a href="https://github.com/99designs/gqlgen/pull/1654">#1654</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/50f6a2aa603842fcdc158ab135fa117d1716d7e2"><tt>50f6a2aa</tt></a> Fixes <a href="https://github.com/99designs/gqlgen/pull/54">#1653](https://github.com/99designs/gqlgen/issues/1653): update docs and wrap error if not *gqlerror.Error ([#1654</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7081dedb0efc6ed650118c7fce65ca3bdb33b8de"><tt>7081dedb</tt></a> Bump tmpl from 1.0.4 to 1.0.5 in /integration (<a href="https://github.com/99designs/gqlgen/pull/1627">#1627</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7081dedb0efc6ed650118c7fce65ca3bdb33b8de"><tt>7081dedb</tt></a> Bump tmpl from 1.0.4 to 1.0.5 in /integration (<a href="https://github.com/99designs/gqlgen/pull/27">#1627</a>)</summary>
 
 Bumps [tmpl](https://github.com/daaku/nodejs-tmpl) from 1.0.4 to 1.0.5.
 - [Release notes](https://github.com/daaku/nodejs-tmpl/releases)
@@ -2249,7 +1091,7 @@ updated-dependencies:
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5287e4e5f30548d233f58111d128787c673c7f01"><tt>5287e4e5</tt></a> Add QR and KVK to common initialisms (<a href="https://github.com/99designs/gqlgen/pull/1419">#1419</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5287e4e5f30548d233f58111d128787c673c7f01"><tt>5287e4e5</tt></a> Add QR and KVK to common initialisms (<a href="https://github.com/99designs/gqlgen/pull/19">#1419</a>)</summary>
 
 * Add QR and KVK to common initialisms
 
@@ -2259,7 +1101,7 @@ updated-dependencies:
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f9df1a46601a23df87d364b33cc9c5564d77edd8"><tt>f9df1a46</tt></a> Update time format for `Time` scalar (<a href="https://github.com/99designs/gqlgen/pull/1648">#1648</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f9df1a46601a23df87d364b33cc9c5564d77edd8"><tt>f9df1a46</tt></a> Update time format for `Time` scalar (<a href="https://github.com/99designs/gqlgen/pull/48">#1648</a>)</summary>
 
 * Use more precise time format
 
@@ -2273,27 +1115,27 @@ updated-dependencies:
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/77c757f0cf9f18de02f3b9e6a235a51dd2c75259"><tt>77c757f0</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1640">#1640</a> from minus7/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/77c757f0cf9f18de02f3b9e6a235a51dd2c75259"><tt>77c757f0</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/40">#1640</a> from minus7/master</summary>
 
 Fix example run instructions
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e60dc7af373aeca15f48df234c1cb90d4909db5d"><tt>e60dc7af</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1619">#1619</a> from Khan/benkraft.mod-tidy-stdout</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e60dc7af373aeca15f48df234c1cb90d4909db5d"><tt>e60dc7af</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/19">#1619</a> from Khan/benkraft.mod-tidy-stdout</summary>
 
 Forward `go mod tidy` stdout/stderr
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0c63f1d10f508f528037c94c5cdb9f29af890098"><tt>0c63f1d1</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1515">#1515</a> from OpenSourceProjects/time</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0c63f1d10f508f528037c94c5cdb9f29af890098"><tt>0c63f1d1</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/15">#1515</a> from OpenSourceProjects/time</summary>
 
 Marshaling & Unmarshaling time return initial value
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/a3d9e8ce9689533ab8c3ab4b3b4cd22df3cbfa03"><tt>a3d9e8ce</tt></a> Remove redundant favicon (<a href="https://github.com/99designs/gqlgen/pull/1638">#1638</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/a3d9e8ce9689533ab8c3ab4b3b4cd22df3cbfa03"><tt>a3d9e8ce</tt></a> Remove redundant favicon (<a href="https://github.com/99designs/gqlgen/pull/38">#1638</a>)
 
-- <a href="https://github.com/99designs/gqlgen/commit/210c1aa6edf8b34d6e2f35e8c66b3d404cf7e8eb"><tt>210c1aa6</tt></a> Appropriately Handle Falsy Default Field Values (<a href="https://github.com/99designs/gqlgen/pull/1623">#1623</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/210c1aa6edf8b34d6e2f35e8c66b3d404cf7e8eb"><tt>210c1aa6</tt></a> Appropriately Handle Falsy Default Field Values (<a href="https://github.com/99designs/gqlgen/pull/23">#1623</a>)
 
 <dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/47ce074a3c30a981bbeef8f3465fca4330aba783"><tt>47ce074a</tt></a> Fix example run instructions (closes <a href="https://github.com/99designs/gqlgen/issues/1607"> #1607</a>)</summary>
 
@@ -2309,7 +1151,7 @@ example/todo/server/server.go:10:2: no required module provides package github.c
 
 - <a href="https://github.com/99designs/gqlgen/commit/1a0b19feff6f02d2af6631c9d847bc243f8ede39"><tt>1a0b19fe</tt></a> Update README.md
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d999828375978c666728167f75a208fd727b4b15"><tt>d9998283</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1628">#1628</a> from robertmarsal/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d999828375978c666728167f75a208fd727b4b15"><tt>d9998283</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/28">#1628</a> from robertmarsal/patch-1</summary>
 
 Fix typo in the getting-started docs
 
@@ -2317,7 +1159,7 @@ Fix typo in the getting-started docs
 
 - <a href="https://github.com/99designs/gqlgen/commit/f93f73ac395209cd158862b86b2a0c136bc3e11b"><tt>f93f73ac</tt></a> Fix typo in the getting-started docs
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2f6919ff74dd165d58c0c2039e3fb1fc1f72b598"><tt>2f6919ff</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1624">#1624</a> from FlymeDllVa/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2f6919ff74dd165d58c0c2039e3fb1fc1f72b598"><tt>2f6919ff</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/24">#1624</a> from FlymeDllVa/master</summary>
 
 Update disabling Introspection
 
@@ -2354,7 +1196,7 @@ output to our own stdout/stderr rather than devnull.
 
 - <a href="https://github.com/99designs/gqlgen/commit/cacd49a6d0421093bdb67d17551ea0323ceb438a"><tt>cacd49a6</tt></a> Update README.md
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7d549d6476853a33aaacab76c3d954bed9d6f0cd"><tt>7d549d64</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1617">#1617</a> from 99designs/update-docs-for-go1.17</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7d549d6476853a33aaacab76c3d954bed9d6f0cd"><tt>7d549d64</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/17">#1617</a> from 99designs/update-docs-for-go1.17</summary>
 
 Update docs for getting started
 
@@ -2368,7 +1210,7 @@ Update docs for getting started
 
 - <a href="https://github.com/99designs/gqlgen/commit/2272e05bc00cc9f38e6d3179a8981651812acbba"><tt>2272e05b</tt></a> Update README.md
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ef4d4a38a229a485bec4f111a1112b47c638382e"><tt>ef4d4a38</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1614">#1614</a> from 99designs/go-1.16</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ef4d4a38a229a485bec4f111a1112b47c638382e"><tt>ef4d4a38</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/14">#1614</a> from 99designs/go-1.16</summary>
 
 Also test against 1.16
 
@@ -2376,7 +1218,7 @@ Also test against 1.16
 
 - <a href="https://github.com/99designs/gqlgen/commit/00ed6fb1a74b1c94d195b38025b1721f9c77db90"><tt>00ed6fb1</tt></a> Also test against 1.16
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/473f0671b5d9c3a0bb9afe6c2de2b4f10d9eeef6"><tt>473f0671</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1613">#1613</a> from 99designs/bump-non-module-deps</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/473f0671b5d9c3a0bb9afe6c2de2b4f10d9eeef6"><tt>473f0671</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/13">#1613</a> from 99designs/bump-non-module-deps</summary>
 
 Clean up non-module deps
 
@@ -2384,7 +1226,7 @@ Clean up non-module deps
 
 - <a href="https://github.com/99designs/gqlgen/commit/6960c0c2adbe9e2359e0d7cb332d1eaceccb6b6f"><tt>6960c0c2</tt></a> Bump non-module deps
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bf9b34aae2eb079913aacbb75fa8b3dff7c45c32"><tt>bf9b34aa</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1612">#1612</a> from 99designs/update-linter</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bf9b34aae2eb079913aacbb75fa8b3dff7c45c32"><tt>bf9b34aa</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/12">#1612</a> from 99designs/update-linter</summary>
 
 Update golangci linter
 
@@ -2394,7 +1236,7 @@ Update golangci linter
 
 - <a href="https://github.com/99designs/gqlgen/commit/777dabde381c1c4b1b6bb0316658f65cce22c654"><tt>777dabde</tt></a> Update the linter
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/85dd47bb8ca9547ebc3530f441aab8a99e16b5a7"><tt>85dd47bb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1607">#1607</a> from 99designs/example-module</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/85dd47bb8ca9547ebc3530f441aab8a99e16b5a7"><tt>85dd47bb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/07">#1607</a> from 99designs/example-module</summary>
 
 [POC/RFC] Split examples into separate go module
 
@@ -2402,7 +1244,7 @@ Update golangci linter
 
 - <a href="https://github.com/99designs/gqlgen/commit/f93fb2489285eef0542c4aa7b11341a8479b606a"><tt>f93fb248</tt></a> Split examples into separate go module
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/890f5f66fb2059ccd760bb7dd708b04166ed274d"><tt>890f5f66</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1610">#1610</a> from 99designs/go-1.17</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/890f5f66fb2059ccd760bb7dd708b04166ed274d"><tt>890f5f66</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/10">#1610</a> from 99designs/go-1.17</summary>
 
 Update to go 1.17
 
@@ -2412,7 +1254,7 @@ Update to go 1.17
 
 - <a href="https://github.com/99designs/gqlgen/commit/f67a5b2611ca89dfb0ffd3dd4c72cebb8f2532ef"><tt>f67a5b26</tt></a> Update github.com/urfave/cli/v2
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1116ea6cdc1f3c66af5e214365af7ed67d464a52"><tt>1116ea6c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1608">#1608</a> from jjmengze/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1116ea6cdc1f3c66af5e214365af7ed67d464a52"><tt>1116ea6c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/08">#1608</a> from jjmengze/patch-1</summary>
 
 fix Options response header
 
@@ -2460,43 +1302,43 @@ operatee the header of ResponseWriter should before WriteHeader called
 
 - <a href="https://github.com/99designs/gqlgen/commit/a991e3e73ec4d624f6b23124d83198ce51af8ae3"><tt>a991e3e7</tt></a> Update errors to use go1.13 semantics
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8f179be920401bf993630693b0586cfc51dbdd04"><tt>8f179be9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1581">#1581</a> from tsh96/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8f179be920401bf993630693b0586cfc51dbdd04"><tt>8f179be9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/81">#1581</a> from tsh96/master</summary>
 
 Bypass complexity limit on __Schema queries.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5048f9927e54828b07ea47cd79d1b30b3858d320"><tt>5048f992</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1525">#1525</a> from Code-Hex/fix/support-input-object</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5048f9927e54828b07ea47cd79d1b30b3858d320"><tt>5048f992</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/25">#1525</a> from Code-Hex/fix/support-input-object</summary>
 
 support input object directive
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1e2b303a8cc8a596fc24cb79b560c33bec2c9ad6"><tt>1e2b303a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1526">#1526</a> from epulze/fix/allow-more-types</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1e2b303a8cc8a596fc24cb79b560c33bec2c9ad6"><tt>1e2b303a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/26">#1526</a> from epulze/fix/allow-more-types</summary>
 
 allow more than 10 different import sources with types
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e7df3e5c7d33dd485ec928c4be07f421423c722b"><tt>e7df3e5c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1405">#1405</a> from alexsn/subsciption-complete-on-panic</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e7df3e5c7d33dd485ec928c4be07f421423c722b"><tt>e7df3e5c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/05">#1405</a> from alexsn/subsciption-complete-on-panic</summary>
 
 subscriptions: send complete message on resolver panic
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/06e4fe8810d14649a5b6e2f9c1482eff28c86ddb"><tt>06e4fe88</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1529">#1529</a> from mathieupost/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/06e4fe8810d14649a5b6e2f9c1482eff28c86ddb"><tt>06e4fe88</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/29">#1529</a> from mathieupost/master</summary>
 
 Return type loading errors in config.Binder.FindObject
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a557c90cd741f808f4065e9846b0c59ba1d29f9b"><tt>a557c90c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1340">#1340</a> from bickyeric/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a557c90cd741f808f4065e9846b0c59ba1d29f9b"><tt>a557c90c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/40">#1340</a> from bickyeric/master</summary>
 
 serialize ID just like String
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/522cab59d1ecb9813610013a60596da2edf91f33"><tt>522cab59</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1285">#1285</a> from Khan/benkraft.federation</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/522cab59d1ecb9813610013a60596da2edf91f33"><tt>522cab59</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/85">#1285</a> from Khan/benkraft.federation</summary>
 
 Resolve requests for federation entities in parallel
 
@@ -2554,25 +1396,25 @@ clearest test; the changed functionality is already exercised by
 ## [v0.14.0](https://github.com/99designs/gqlgen/compare/v0.13.0...v0.14.0) - 2021-09-08
 - <a href="https://github.com/99designs/gqlgen/commit/56451d92d626be6d15317b44e448c857297ddb68"><tt>56451d92</tt></a> release v0.14.0
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8e97969b06e6d63160f1252a92bb36972c55a0b6"><tt>8e97969b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1358">#1358</a> from mtsmfm/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8e97969b06e6d63160f1252a92bb36972c55a0b6"><tt>8e97969b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/58">#1358</a> from mtsmfm/patch-1</summary>
 
 Create package declaration to run dataloaden
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b978593ca852ca1968a93501eaebec7bdc7fd359"><tt>b978593c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1387">#1387</a> from Khan/benkraft.config</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b978593ca852ca1968a93501eaebec7bdc7fd359"><tt>b978593c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/87">#1387</a> from Khan/benkraft.config</summary>
 
 codegen/config: Add a new API to finish an already-validated config
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/71507dfc1be232bed3d4d08f63d61f8c8a9cdd77"><tt>71507dfc</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1408">#1408</a> from max107/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/71507dfc1be232bed3d4d08f63d61f8c8a9cdd77"><tt>71507dfc</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/08">#1408</a> from max107/patch-1</summary>
 
 int64 support graphql/string.go
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/23577b696e36bf3342c685b20ec48b8484158518"><tt>23577b69</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1460">#1460</a> from snxk/edit-docs-recipe-gin</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/23577b696e36bf3342c685b20ec48b8484158518"><tt>23577b69</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/60">#1460</a> from snxk/edit-docs-recipe-gin</summary>
 
 Edited the Gin-Gonic Recipe Docs
 
@@ -2580,7 +1422,7 @@ Edited the Gin-Gonic Recipe Docs
 
 - <a href="https://github.com/99designs/gqlgen/commit/db6154b9eac60bf3ec82b959c0e6bfe1e79f0bb8"><tt>db6154b9</tt></a> Update README.md
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/cecda16053ffe9f2b689c6e7da987eabe5c2515f"><tt>cecda160</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1464">#1464</a> from frederikhors/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/cecda16053ffe9f2b689c6e7da987eabe5c2515f"><tt>cecda160</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/64">#1464</a> from frederikhors/patch-1</summary>
 
 Add goreportcard badge
 
@@ -2588,61 +1430,61 @@ Add goreportcard badge
 
 - <a href="https://github.com/99designs/gqlgen/commit/cc957171fc77df6bfb0749ddd66e1d8d9ca24afe"><tt>cc957171</tt></a> Merge branch 'master' into patch-1
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/023f66df41a1761ab36eed6c68733e1dd85e5608"><tt>023f66df</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1465">#1465</a> from frederikhors/patch-2</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/023f66df41a1761ab36eed6c68733e1dd85e5608"><tt>023f66df</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/65">#1465</a> from frederikhors/patch-2</summary>
 
 Add coveralls badge
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/50c2028a9574c89f59d7720b84bf720e07a6a974"><tt>50c2028a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1497">#1497</a> from polytomic/stable-introspection</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/50c2028a9574c89f59d7720b84bf720e07a6a974"><tt>50c2028a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/97">#1497</a> from polytomic/stable-introspection</summary>
 
 Return introspection document in stable order
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a0232dd21c2fe51d8d52e6541d7a01d50bbaab4d"><tt>a0232dd2</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1603">#1603</a> from 99designs/dependabot/npm_and_yarn/integration/normalize-url-4.5.1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a0232dd21c2fe51d8d52e6541d7a01d50bbaab4d"><tt>a0232dd2</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/03">#1603</a> from 99designs/dependabot/npm_and_yarn/integration/normalize-url-4.5.1</summary>
 
 Bump normalize-url from 4.5.0 to 4.5.1 in /integration
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4e059eba3d28e0b27445ba71ffe670852c84c096"><tt>4e059eba</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1602">#1602</a> from 99designs/dependabot/npm_and_yarn/integration/ini-1.3.8</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4e059eba3d28e0b27445ba71ffe670852c84c096"><tt>4e059eba</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/02">#1602</a> from 99designs/dependabot/npm_and_yarn/integration/ini-1.3.8</summary>
 
 Bump ini from 1.3.5 to 1.3.8 in /integration
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/43705d459a1340ef0e7c4ee46af97cec592c976c"><tt>43705d45</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1601">#1601</a> from 99designs/dependabot/npm_and_yarn/integration/y18n-3.2.2</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/43705d459a1340ef0e7c4ee46af97cec592c976c"><tt>43705d45</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/01">#1601</a> from 99designs/dependabot/npm_and_yarn/integration/y18n-3.2.2</summary>
 
 Bump y18n from 3.2.1 to 3.2.2 in /integration
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1f2465c6d29a731ad1b9dd5b08d57da37ce14043"><tt>1f2465c6</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1600">#1600</a> from 99designs/dependabot/npm_and_yarn/integration/browserslist-4.17.0</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1f2465c6d29a731ad1b9dd5b08d57da37ce14043"><tt>1f2465c6</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/00">#1600</a> from 99designs/dependabot/npm_and_yarn/integration/browserslist-4.17.0</summary>
 
 Bump browserslist from 4.14.0 to 4.17.0 in /integration
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bbdebd4c55194a2e18428a33546adbecea99b05d"><tt>bbdebd4c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1599">#1599</a> from 99designs/dependabot/npm_and_yarn/integration/hosted-git-info-2.8.9</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bbdebd4c55194a2e18428a33546adbecea99b05d"><tt>bbdebd4c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/99">#1599</a> from 99designs/dependabot/npm_and_yarn/integration/hosted-git-info-2.8.9</summary>
 
 Bump hosted-git-info from 2.8.5 to 2.8.9 in /integration
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/900a37af53ee048bd10a755d227bebf11b0bc53f"><tt>900a37af</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1598">#1598</a> from 99designs/dependabot/npm_and_yarn/integration/node-fetch-2.6.1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/900a37af53ee048bd10a755d227bebf11b0bc53f"><tt>900a37af</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/98">#1598</a> from 99designs/dependabot/npm_and_yarn/integration/node-fetch-2.6.1</summary>
 
 Bump node-fetch from 2.6.0 to 2.6.1 in /integration
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9d334cdd222c4616165e0ef168086c4d178d4313"><tt>9d334cdd</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1597">#1597</a> from 99designs/dependabot/npm_and_yarn/integration/ws-7.4.6</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9d334cdd222c4616165e0ef168086c4d178d4313"><tt>9d334cdd</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/97">#1597</a> from 99designs/dependabot/npm_and_yarn/integration/ws-7.4.6</summary>
 
 Bump ws from 7.3.1 to 7.4.6 in /integration
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/56181e8abe857e229a3e63e8d634582647480681"><tt>56181e8a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1365">#1365</a> from frederikhors/add-uint,-uint64,-uint32-types-in-graphql</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/56181e8abe857e229a3e63e8d634582647480681"><tt>56181e8a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/65">#1365</a> from frederikhors/add-uint,-uint64,-uint32-types-in-graphql</summary>
 
 add uint, uint64, uint32 types in graphql pkg
 
@@ -2750,19 +1592,19 @@ updated-dependencies:
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2b3b721258bb22d0da26790a9383047cf1ef444c"><tt>2b3b7212</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1594">#1594</a> from 99designs/dependabot/npm_and_yarn/integration/tar-6.1.11</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2b3b721258bb22d0da26790a9383047cf1ef444c"><tt>2b3b7212</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/94">#1594</a> from 99designs/dependabot/npm_and_yarn/integration/tar-6.1.11</summary>
 
 Bump tar from 6.0.5 to 6.1.11 in /integration
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5b43833db94d42332553ba79103f3d054c461e62"><tt>5b43833d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1582">#1582</a> from 99designs/dependabot/npm_and_yarn/integration/path-parse-1.0.7</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5b43833db94d42332553ba79103f3d054c461e62"><tt>5b43833d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/82">#1582</a> from 99designs/dependabot/npm_and_yarn/integration/path-parse-1.0.7</summary>
 
 Bump path-parse from 1.0.6 to 1.0.7 in /integration
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/55b028cadc5e16421f0cb06ec9ffa94febee72a4"><tt>55b028ca</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1584">#1584</a> from nullism/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/55b028cadc5e16421f0cb06ec9ffa94febee72a4"><tt>55b028ca</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/84">#1584</a> from nullism/patch-1</summary>
 
 Fix spaces -> tabs typo in authentication.md
 
@@ -2803,25 +1645,25 @@ updated-dependencies:
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9a214e80158b78443cfb53bb10059df9c36d352e"><tt>9a214e80</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1451">#1451</a> from sanjeevchopra/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9a214e80158b78443cfb53bb10059df9c36d352e"><tt>9a214e80</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/51">#1451</a> from sanjeevchopra/patch-1</summary>
 
 doc only change: updated sample code for disabling introspection
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/011974377ac4437c060d963c97f9c04f1fd1bfae"><tt>01197437</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1417">#1417</a> from RicCu/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/011974377ac4437c060d963c97f9c04f1fd1bfae"><tt>01197437</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/17">#1417</a> from RicCu/patch-1</summary>
 
 Use mutation instead of query in 'Changesets' doc example
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e3293b53d07145d4932a7b05fea534763cc8af12"><tt>e3293b53</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1444">#1444</a> from lisowskibraeden/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e3293b53d07145d4932a7b05fea534763cc8af12"><tt>e3293b53</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/44">#1444</a> from lisowskibraeden/patch-1</summary>
 
 Update cors.md
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a4d6785526f2423e5cd7d2a35bf2f6e68ab66bf7"><tt>a4d67855</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1517">#1517</a> from ShivangGoswami/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a4d6785526f2423e5cd7d2a35bf2f6e68ab66bf7"><tt>a4d67855</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/17">#1517</a> from ShivangGoswami/patch-1</summary>
 
 Update apq.md function definition mismatch
 
@@ -2834,13 +1676,13 @@ something like graphql-codegen.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7e38dd46943cc103a82c6bca0c2510e5d1291edc"><tt>7e38dd46</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1568">#1568</a> from DanyHenriquez/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7e38dd46943cc103a82c6bca0c2510e5d1291edc"><tt>7e38dd46</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/68">#1568</a> from DanyHenriquez/patch-1</summary>
 
 Update apq.md
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/88f2b8a77680f49b07238cdafc03d429e5fb75b7"><tt>88f2b8a7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1572">#1572</a> from talhaguy/dataloaders-doc-casing</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/88f2b8a77680f49b07238cdafc03d429e5fb75b7"><tt>88f2b8a7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/72">#1572</a> from talhaguy/dataloaders-doc-casing</summary>
 
 Correct minor casing issue
 
@@ -2862,7 +1704,7 @@ Proposed the first one for now.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5ad012e3d7be1127706b9c8a3da0378df3a98ec1"><tt>5ad012e3</tt></a> Revert "Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1511">#1511</a> from a8m/a8m/restore-cwd"</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5ad012e3d7be1127706b9c8a3da0378df3a98ec1"><tt>5ad012e3</tt></a> Revert "Merge pull request <a href="https://github.com/99designs/gqlgen/pull/11">#1511</a> from a8m/a8m/restore-cwd"</summary>
 
 This reverts commit f4bf1f591b6a3884041876deb64ce0dd70c3c883, reversing
 changes made to 3f68ea27a1a9fea2064caf877f7e24d00aa439e6.
@@ -2872,11 +1714,11 @@ generated files get put.
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/bb59cc43aa5bae2595ec823f8d7e67369e990082"><tt>bb59cc43</tt></a> Add a CHANGELOG.md (<a href="https://github.com/99designs/gqlgen/pull/1512">#1512</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/bb59cc43aa5bae2595ec823f8d7e67369e990082"><tt>bb59cc43</tt></a> Add a CHANGELOG.md (<a href="https://github.com/99designs/gqlgen/pull/12">#1512</a>)
 
-- <a href="https://github.com/99designs/gqlgen/commit/058a365a3608a0d8e9704ee8715eb6c70e7cc902"><tt>058a365a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1456">#1456</a> from skaji/issue-1455
+- <a href="https://github.com/99designs/gqlgen/commit/058a365a3608a0d8e9704ee8715eb6c70e7cc902"><tt>058a365a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/56">#1456</a> from skaji/issue-1455
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bf2fdf4401b3c77a4d032572f641787eb99e8b71"><tt>bf2fdf44</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1514">#1514</a> from 99designs/bump-gqlparser</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bf2fdf4401b3c77a4d032572f641787eb99e8b71"><tt>bf2fdf44</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/14">#1514</a> from 99designs/bump-gqlparser</summary>
 
 Bump gqlparser to v2.2.0
 
@@ -2888,15 +1730,15 @@ Bump gqlparser to v2.2.0
 
 - <a href="https://github.com/99designs/gqlgen/commit/f57d1a0285eebce853a6a008da3c9c7b4eb77c57"><tt>f57d1a02</tt></a> Bump gqlparser to master & support repeated directives
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f4bf1f591b6a3884041876deb64ce0dd70c3c883"><tt>f4bf1f59</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1511">#1511</a> from a8m/a8m/restore-cwd</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f4bf1f591b6a3884041876deb64ce0dd70c3c883"><tt>f4bf1f59</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/11">#1511</a> from a8m/a8m/restore-cwd</summary>
 
 codegen/config: restore current working directory after changing it
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/3f68ea27a1a9fea2064caf877f7e24d00aa439e6"><tt>3f68ea27</tt></a> Special handling for pointers to slices (<a href="https://github.com/99designs/gqlgen/pull/1363">#1363</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/3f68ea27a1a9fea2064caf877f7e24d00aa439e6"><tt>3f68ea27</tt></a> Special handling for pointers to slices (<a href="https://github.com/99designs/gqlgen/pull/63">#1363</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c920bdebb02f1fc4c406b9f36a63114556303657"><tt>c920bdeb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1449">#1449</a> from steebchen/feat-prisma-compat</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c920bdebb02f1fc4c406b9f36a63114556303657"><tt>c920bdeb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/49">#1449</a> from steebchen/feat-prisma-compat</summary>
 
 feat(codegen): handle (v, ok) methods
 
@@ -2913,25 +1755,25 @@ after loading the config.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/35b80a72f6cdae48cf98c68128d96d9d70e5f756"><tt>35b80a72</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1495">#1495</a> from Niennienzz/improve-apq-doc</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/35b80a72f6cdae48cf98c68128d96d9d70e5f756"><tt>35b80a72</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/95">#1495</a> from Niennienzz/improve-apq-doc</summary>
 
 Update apq.md
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/463debae6b4eb068aff0b882e6ea292bfac0fae2"><tt>463debae</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1503">#1503</a> from nana4gonta/resolve-vulnerability</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/463debae6b4eb068aff0b882e6ea292bfac0fae2"><tt>463debae</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/03">#1503</a> from nana4gonta/resolve-vulnerability</summary>
 
 Resolve indirect dependency vulnerability in example
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/29e7bccbf7fcb7d8d7f8c47cabd7abdc542cdcc6"><tt>29e7bccb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1501">#1501</a> from 99designs/fix-init-1.16</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/29e7bccbf7fcb7d8d7f8c47cabd7abdc542cdcc6"><tt>29e7bccb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/01">#1501</a> from 99designs/fix-init-1.16</summary>
 
 Run go mod tidy after code generation
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9a4c80abc704d77c9471f5b7ee47d64cbced0348"><tt>9a4c80ab</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1502">#1502</a> from 99designs/rm-chi</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9a4c80abc704d77c9471f5b7ee47d64cbced0348"><tt>9a4c80ab</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/02">#1502</a> from 99designs/rm-chi</summary>
 
 Remove chi from dataloader example
 
@@ -2947,31 +1789,31 @@ Remove chi from dataloader example
 
 - <a href="https://github.com/99designs/gqlgen/commit/54e387c45e97e7b7922f06baf1c6e57dd5a7ff2e"><tt>54e387c4</tt></a> Resolve indirect dependency vulnerability in example
 
-- <a href="https://github.com/99designs/gqlgen/commit/7985db44855b160c1f2552bedbfed5bc150fc840"><tt>7985db44</tt></a> Mention math.rand for the todo ID (<a href="https://github.com/99designs/gqlgen/pull/1489">#1489</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/7985db44855b160c1f2552bedbfed5bc150fc840"><tt>7985db44</tt></a> Mention math.rand for the todo ID (<a href="https://github.com/99designs/gqlgen/pull/89">#1489</a>)
 
-- <a href="https://github.com/99designs/gqlgen/commit/b995f7f1fa2e18b4016d167739213ec5de95a053"><tt>b995f7f1</tt></a> Make spacing consistent (<a href="https://github.com/99designs/gqlgen/pull/1488">#1488</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/b995f7f1fa2e18b4016d167739213ec5de95a053"><tt>b995f7f1</tt></a> Make spacing consistent (<a href="https://github.com/99designs/gqlgen/pull/88">#1488</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/52ded95125beecffe5ad61d37ef942fbac2d726f"><tt>52ded951</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1459">#1459</a> from aaronArinder/getting-started-server-section</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/52ded95125beecffe5ad61d37ef942fbac2d726f"><tt>52ded951</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/59">#1459</a> from aaronArinder/getting-started-server-section</summary>
 
 getting started: make running server own section
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/82a8e1bf39aec5225e05deb8e026083d859d50ef"><tt>82a8e1bf</tt></a> Make it clearer what happened on init. (<a href="https://github.com/99designs/gqlgen/pull/1487">#1487</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/82a8e1bf39aec5225e05deb8e026083d859d50ef"><tt>82a8e1bf</tt></a> Make it clearer what happened on init. (<a href="https://github.com/99designs/gqlgen/pull/87">#1487</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7258af5f837802cd1673afd0778ee7a76b8c2471"><tt>7258af5f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1458">#1458</a> from aaronArinder/getting-started-wording</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7258af5f837802cd1673afd0778ee7a76b8c2471"><tt>7258af5f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/58">#1458</a> from aaronArinder/getting-started-wording</summary>
 
 getting started: making the resolver fn section clearer
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4fead4895bc44aff95fd06a4a5a3aa4b184cc2ff"><tt>4fead489</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1452">#1452</a> from fmyd/fix/formatted-query-indent</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4fead4895bc44aff95fd06a4a5a3aa4b184cc2ff"><tt>4fead489</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/52">#1452</a> from fmyd/fix/formatted-query-indent</summary>
 
 prettified some indentation
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/58e3225ed3100371d286869e9a2a4b19ec9810e6"><tt>58e3225e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1480">#1480</a> from wilhelmeek/double-bubble</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/58e3225ed3100371d286869e9a2a4b19ec9810e6"><tt>58e3225e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/80">#1480</a> from wilhelmeek/double-bubble</summary>
 
 Bubble Null from List Element to Nearest Nullable Ancestor
 
@@ -3028,7 +1870,7 @@ I had problems reading this page and applying it to my project. With these chang
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/997da421b0b80884fcb43c8c6a22d747564b301c"><tt>997da421</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1436">#1436</a> from ddouglas/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/997da421b0b80884fcb43c8c6a22d747564b301c"><tt>997da421</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/36">#1436</a> from ddouglas/patch-1</summary>
 
 Upgrade graphql-playground to 1.7.26
 
@@ -3038,7 +1880,7 @@ Upgrade graphql-playground to 1.7.26
 
 - <a href="https://github.com/99designs/gqlgen/commit/918801eac861c0ceb5cf45969745f674b823ef7c"><tt>918801ea</tt></a> Change 'Changeset' doc example to mutation
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/862762c77bae8b5f119c401d037358cfaf33fa52"><tt>862762c7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1409">#1409</a> from zikaeroh/chi-mod</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/862762c77bae8b5f119c401d037358cfaf33fa52"><tt>862762c7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/09">#1409</a> from zikaeroh/chi-mod</summary>
 
 Upgrade go-chi to v1.5.1 with module support
 
@@ -3048,27 +1890,27 @@ Upgrade go-chi to v1.5.1 with module support
 
 - <a href="https://github.com/99designs/gqlgen/commit/a9c8fabff6d56c9c523ca68764dcd9f9e6cd4f45"><tt>a9c8fabf</tt></a> int64 support
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b484fc27b153639c6d96a3f1df7e952d587749be"><tt>b484fc27</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1401">#1401</a> from oseifrimpong/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b484fc27b153639c6d96a3f1df7e952d587749be"><tt>b484fc27</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/01">#1401</a> from oseifrimpong/patch-1</summary>
 
 fix typo
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4cc031afba041dd41b9f533cba3ac1399e8b66cd"><tt>4cc031af</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1394">#1394</a> from j2gg0s/fix-default-recover-func</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4cc031afba041dd41b9f533cba3ac1399e8b66cd"><tt>4cc031af</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/94">#1394</a> from j2gg0s/fix-default-recover-func</summary>
 
 bugfix: Default Recover func should return gqlerror.Error
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2af51336b421f45bd5076f5ee144d4d44c15ec54"><tt>2af51336</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1400">#1400</a> from 99designs/sanstale</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2af51336b421f45bd5076f5ee144d4d44c15ec54"><tt>2af51336</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/00">#1400</a> from 99designs/sanstale</summary>
 
 Remove stale bot
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/34a442c7980f5ba363f58aaee67b9ddaa77d7520"><tt>34a442c7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1399">#1399</a> from 99designs/prevent-possible-error-deadlock</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/34a442c7980f5ba363f58aaee67b9ddaa77d7520"><tt>34a442c7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/99">#1399</a> from 99designs/prevent-possible-error-deadlock</summary>
 
-Don't hold error lock when calling into error presenters
+Dont hold error lock when calling into error presenters
 
 </details></dd></dl>
 
@@ -3115,19 +1957,19 @@ that could break existing clients.  Either way would work for us.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0e12bfbfde3b8fc8e54241fcd107c6301c98c6fa"><tt>0e12bfbf</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1269">#1269</a> from dqn/new-line-at-the-end-of-file</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0e12bfbfde3b8fc8e54241fcd107c6301c98c6fa"><tt>0e12bfbf</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/69">#1269</a> from dqn/new-line-at-the-end-of-file</summary>
 
 Add a new line to end of the file schema.graphqls
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/22c5d1f56eb081104b586c6a73f9324ded90a8b5"><tt>22c5d1f5</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1303">#1303</a> from kunalpowar/inline-directives-doc</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/22c5d1f56eb081104b586c6a73f9324ded90a8b5"><tt>22c5d1f5</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/03">#1303</a> from kunalpowar/inline-directives-doc</summary>
 
 Update README.md
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/88cffee4fc5a29b2899d70d93b4ef64c145e4722"><tt>88cffee4</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1356">#1356</a> from maapteh/chore/chat-example-update</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/88cffee4fc5a29b2899d70d93b4ef64c145e4722"><tt>88cffee4</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/56">#1356</a> from maapteh/chore/chat-example-update</summary>
 
 Chore: update Chat example
 
@@ -3135,7 +1977,7 @@ Chore: update Chat example
 
 - <a href="https://github.com/99designs/gqlgen/commit/1e8c34e540c04b5bb203a385788e0e02111f0afb"><tt>1e8c34e5</tt></a> Dont export  Input
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/de8af66c892a5b2ec8b2ce7ed274003d7706d904"><tt>de8af66c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1360">#1360</a> from Captain-K-101/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/de8af66c892a5b2ec8b2ce7ed274003d7706d904"><tt>de8af66c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/60">#1360</a> from Captain-K-101/master</summary>
 
 Update introspection.md
 
@@ -3143,7 +1985,7 @@ Update introspection.md
 
 - <a href="https://github.com/99designs/gqlgen/commit/0975691550f23be6b68c29b57840e2af4698eac4"><tt>09756915</tt></a> Update introspection docs
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/651eda40fe4318ec7acd48e7e1f1eb933331c22d"><tt>651eda40</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1374">#1374</a> from rudylee/docs-file-upload-small-typo</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/651eda40fe4318ec7acd48e7e1f1eb933331c22d"><tt>651eda40</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/74">#1374</a> from rudylee/docs-file-upload-small-typo</summary>
 
 Fix small typo in file upload docs
 
@@ -3181,13 +2023,13 @@ ref: https://github.com/vektah/dataloaden/issues/35
 
 - <a href="https://github.com/99designs/gqlgen/commit/e6e64224a32ca35bf543b1cb18e7ccfe65ba824f"><tt>e6e64224</tt></a> update deps
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3a31a752df764738b1f6e99408df3b169d514784"><tt>3a31a752</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1345">#1345</a> from abeltay/fix-alignment</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3a31a752df764738b1f6e99408df3b169d514784"><tt>3a31a752</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/45">#1345</a> from abeltay/fix-alignment</summary>
 
 Fix tab spacing in cors.md
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0c68337cee2cb15ef0487ae3b9bf902d2d2a96d1"><tt>0c68337c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1346">#1346</a> from abeltay/fix-typo</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0c68337cee2cb15ef0487ae3b9bf902d2d2a96d1"><tt>0c68337c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/46">#1346</a> from abeltay/fix-typo</summary>
 
 Fix typo in migration guide
 
@@ -3197,7 +2039,7 @@ Fix typo in migration guide
 
 - <a href="https://github.com/99designs/gqlgen/commit/3791f71df5a39d0e57e59ce6c9460627d45a8ab0"><tt>3791f71d</tt></a> Fix tab spacing in cors.md
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/819e751c2416245370ec00a33ec3b8708aee51c4"><tt>819e751c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1341">#1341</a> from dgraph-io/rajas/fix-gqlgen-1299</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/819e751c2416245370ec00a33ec3b8708aee51c4"><tt>819e751c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/41">#1341</a> from dgraph-io/rajas/fix-gqlgen-1299</summary>
 
 Rajas/fix gqlgen 1299
 
@@ -3223,13 +2065,13 @@ Rajas/fix gqlgen 1299
 
 - <a href="https://github.com/99designs/gqlgen/commit/259f27119bf24ef4806e86334200c216429fbf5c"><tt>259f2711</tt></a> Bump to gqlparser to v2.1.0 Error unwrapping release
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/669a16680de3e31be5650ccdbf6ca4e8f011dcda"><tt>669a1668</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1312">#1312</a> from 99designs/error-wrapping</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/669a16680de3e31be5650ccdbf6ca4e8f011dcda"><tt>669a1668</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/12">#1312</a> from 99designs/error-wrapping</summary>
 
 Always wrap user errors
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9b948a5f7816eb2764ef85b88f9af582f53a1d78"><tt>9b948a5f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1316">#1316</a> from skaji/is-resolver</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9b948a5f7816eb2764ef85b88f9af582f53a1d78"><tt>9b948a5f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/16">#1316</a> from skaji/is-resolver</summary>
 
 Add IsResolver to FieldContext
 
@@ -3253,7 +2095,7 @@ Questions:
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/51b580de1408b934a03614dcdea94f6aa6f25f97"><tt>51b580de</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1324">#1324</a> from bemasher/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/51b580de1408b934a03614dcdea94f6aa6f25f97"><tt>51b580de</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/24">#1324</a> from bemasher/patch-1</summary>
 
 Fix typos in README.md
 
@@ -3267,7 +2109,7 @@ Fix typos in README.md
 
 - <a href="https://github.com/99designs/gqlgen/commit/55951163bacbda7399b23824903e9d4a318ebd51"><tt>55951163</tt></a> add IsResolver to FieldContext
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/622316e764b5c296455c558d6fae4b314ca52733"><tt>622316e7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1295">#1295</a> from a-oz/a-oz-patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/622316e764b5c296455c558d6fae4b314ca52733"><tt>622316e7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/95">#1295</a> from a-oz/a-oz-patch-1</summary>
 
 Update getting-started.md
 
@@ -3289,19 +2131,19 @@ fix typo
 ## [v0.12.2](https://github.com/99designs/gqlgen/compare/v0.12.1...v0.12.2) - 2020-08-18
 - <a href="https://github.com/99designs/gqlgen/commit/03cebf201ec911411c2c1463ff9b05dfe574bd40"><tt>03cebf20</tt></a> release v0.12.2
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e3ce560de7c2ceb00076b439495883548c462c78"><tt>e3ce560d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1288">#1288</a> from alexsn/nopath-field-noerror</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e3ce560de7c2ceb00076b439495883548c462c78"><tt>e3ce560d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/88">#1288</a> from alexsn/nopath-field-noerror</summary>
 
 avoid computing field path when getting field errors
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/108975c3add6ca4fd1e0d629b82813073d5f49b6"><tt>108975c3</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1284">#1284</a> from dgraph-io/jatin/sameFieldSameTypeGettingIgnored</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/108975c3add6ca4fd1e0d629b82813073d5f49b6"><tt>108975c3</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/84">#1284</a> from dgraph-io/jatin/sameFieldSameTypeGettingIgnored</summary>
 
 fix same field name in two different fragments
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/eb424a22657c04b3f2a08d592fe132ca8ff6309f"><tt>eb424a22</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1294">#1294</a> from 99designs/fix-init</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/eb424a22657c04b3f2a08d592fe132ca8ff6309f"><tt>eb424a22</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/94">#1294</a> from 99designs/fix-init</summary>
 
 Allow rewriter to work on empty but potentially importable packages
 
@@ -3347,25 +2189,25 @@ Allow rewriter to work on empty but potentially importable packages
 ## [v0.12.0](https://github.com/99designs/gqlgen/compare/v0.11.3...v0.12.0) - 2020-08-14
 - <a href="https://github.com/99designs/gqlgen/commit/7030212379f41dea8a1cac2f76f9e56e3054cf24"><tt>70302123</tt></a> Version 0.12.0
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3b633dfa11874ae5fc8d03da6c963acea6c12a07"><tt>3b633dfa</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1267">#1267</a> from ImKcat/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3b633dfa11874ae5fc8d03da6c963acea6c12a07"><tt>3b633dfa</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/67">#1267</a> from ImKcat/master</summary>
 
 Fixed transport not support issue
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c9a27ae3bee99c22ea0af06744257f0184f78e70"><tt>c9a27ae3</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1255">#1255</a> from s-ichikawa/fix-object-directive-bug</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c9a27ae3bee99c22ea0af06744257f0184f78e70"><tt>c9a27ae3</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/55">#1255</a> from s-ichikawa/fix-object-directive-bug</summary>
 
 Fix bug about OBJECT directive
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e9863af16691f94a68c23f073854930bd754781f"><tt>e9863af1</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1276">#1276</a> from Ghvstcode/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e9863af16691f94a68c23f073854930bd754781f"><tt>e9863af1</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/76">#1276</a> from Ghvstcode/master</summary>
 
 Documentation Fixes
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/04f6a691577d627caaa0952c13cedecda5455e28"><tt>04f6a691</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1277">#1277</a> from 99designs/direct-pointer-binding</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/04f6a691577d627caaa0952c13cedecda5455e28"><tt>04f6a691</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/77">#1277</a> from 99designs/direct-pointer-binding</summary>
 
 Support pointers in un/marshal functions
 
@@ -3395,13 +2237,13 @@ This reverts commit 89960664d05f0e93ed629a22753b9e30ced2698f.
 
 - <a href="https://github.com/99designs/gqlgen/commit/f35b162f214ca0ae1461c25fde29d41b55293f16"><tt>f35b162f</tt></a> Fixed transport not support issue
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/39a12e0f1b6d9833f516f0271db0dbfa45c5ec45"><tt>39a12e0f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1134">#1134</a> from seriousben/fix-default-config-no-ast-sources</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/39a12e0f1b6d9833f516f0271db0dbfa45c5ec45"><tt>39a12e0f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/34">#1134</a> from seriousben/fix-default-config-no-ast-sources</summary>
 
 Add LoadDefaultConfig to load the schema by default
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1b23cf15b134cd695a11fe899d59c5457778a8be"><tt>1b23cf15</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1264">#1264</a> from 99designs/go-1.14</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1b23cf15b134cd695a11fe899d59c5457778a8be"><tt>1b23cf15</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/64">#1264</a> from 99designs/go-1.14</summary>
 
 Target multiple go versions for CI
 
@@ -3409,7 +2251,7 @@ Target multiple go versions for CI
 
 - <a href="https://github.com/99designs/gqlgen/commit/dbbda22ef42a921190cf52b3f23fa53b54726828"><tt>dbbda22e</tt></a> go 1.14
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ce964c1f46bedff709f8d53356d83a3e983295f4"><tt>ce964c1f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1115">#1115</a> from bowd/add-input-path-for-unmarshaling</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ce964c1f46bedff709f8d53356d83a3e983295f4"><tt>ce964c1f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/15">#1115</a> from bowd/add-input-path-for-unmarshaling</summary>
 
 Add input path in unmarshaling errors
 
@@ -3427,19 +2269,19 @@ resolve merge conflicts.
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/fbfdd41c12147ec7fbc307163e4667dd28065626"><tt>fbfdd41c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1262">#1262</a> from sateeshpnv/gqlparser-alias (closes <a href="https://github.com/99designs/gqlgen/issues/1258"> #1258</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/fbfdd41c12147ec7fbc307163e4667dd28065626"><tt>fbfdd41c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/62">#1262</a> from sateeshpnv/gqlparser-alias (closes <a href="https://github.com/99designs/gqlgen/issues/1258"> #1258</a>)
 
-- <a href="https://github.com/99designs/gqlgen/commit/99fafc9f19c838f26afc71785da6adbf0a1dbe76"><tt>99fafc9f</tt></a> [issue <a href="https://github.com/99designs/gqlgen/pull/1258">#1258</a>] explicitly add gqlparser alias to vektah/gqlparser/v2 import
+- <a href="https://github.com/99designs/gqlgen/commit/99fafc9f19c838f26afc71785da6adbf0a1dbe76"><tt>99fafc9f</tt></a> <a href="https://github.com/99designs/gqlgen/pull/58">issue [#1258</a>] explicitly add gqlparser alias to vektah/gqlparser/v2 import
 
 - <a href="https://github.com/99designs/gqlgen/commit/49291f234e99878b925946efeb13c5bf1b2c348e"><tt>49291f23</tt></a> fix bug in OBJECT directive
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0fbf293f29f3c2ca01822723f1f43e01cab358d4"><tt>0fbf293f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1248">#1248</a> from sotoslammer/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0fbf293f29f3c2ca01822723f1f43e01cab358d4"><tt>0fbf293f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/48">#1248</a> from sotoslammer/master</summary>
 
 close the connection when run returns
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d7eabafb4085e7b802ab553c13ac62fa6e3331f8"><tt>d7eabafb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1246">#1246</a> from arkhvoid/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d7eabafb4085e7b802ab553c13ac62fa6e3331f8"><tt>d7eabafb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/46">#1246</a> from arkhvoid/master</summary>
 
 Fix typo cause memory problem on upload
 
@@ -3449,7 +2291,7 @@ Fix typo cause memory problem on upload
 
 - <a href="https://github.com/99designs/gqlgen/commit/cc9c520f1ecf11e5786f2aca8d9cf24ef4af2f2e"><tt>cc9c520f</tt></a> close the connection when run returns
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8494028eac6a22ef26f71ff30a9eb5738a86adff"><tt>8494028e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1243">#1243</a> from 99designs/nilable-nullable-unnmarshal</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8494028eac6a22ef26f71ff30a9eb5738a86adff"><tt>8494028e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/43">#1243</a> from 99designs/nilable-nullable-unnmarshal</summary>
 
 Remove a bunch of unneeded nil checks from non-nullable graphql type unmarshalling
 
@@ -3459,13 +2301,13 @@ Remove a bunch of unneeded nil checks from non-nullable graphql type unmarshalli
 
 - <a href="https://github.com/99designs/gqlgen/commit/14d1a4dc0a9242154d3a22787d92ab70239f079a"><tt>14d1a4dc</tt></a> Only return nil for nilable types when the graphql spec would allow it
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3e59a10d4268671b92428ef1b860aebbb73da60b"><tt>3e59a10d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1215">#1215</a> from ddouglas/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3e59a10d4268671b92428ef1b860aebbb73da60b"><tt>3e59a10d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/15">#1215</a> from ddouglas/master</summary>
 
 Adding Missing Header to response
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1650c499548c074d5afb152a90235589dc98d107"><tt>1650c499</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1242">#1242</a> from 99designs/named_map_references</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1650c499548c074d5afb152a90235589dc98d107"><tt>1650c499</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/42">#1242</a> from 99designs/named_map_references</summary>
 
 Do not use pointers on named map types
 
@@ -3473,13 +2315,13 @@ Do not use pointers on named map types
 
 - <a href="https://github.com/99designs/gqlgen/commit/d11f60218ccb4e5b17d702e736585f02978b69a4"><tt>d11f6021</tt></a> Do not use pointers on named map types
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/acaee3615ba86465e710635d7676cf05e017eb9b"><tt>acaee361</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1121">#1121</a> from Khan/extern-only</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/acaee3615ba86465e710635d7676cf05e017eb9b"><tt>acaee361</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/21">#1121</a> from Khan/extern-only</summary>
 
 Do not require a resolver for "empty" extended types.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/555db6d20b0157674b5ad05f6ce8856c6502db2e"><tt>555db6d2</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1224">#1224</a> from frederikhors/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/555db6d20b0157674b5ad05f6ce8856c6502db2e"><tt>555db6d2</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/24">#1224</a> from frederikhors/patch-1</summary>
 
 Indentation misprint
 
@@ -3487,7 +2329,7 @@ Indentation misprint
 
 - <a href="https://github.com/99designs/gqlgen/commit/77b37bb290c55008d2ca1653aca587d3f1ea17e5"><tt>77b37bb2</tt></a> Indentation misprint
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a3c38c6574b71389895e5162296ed12e13347349"><tt>a3c38c65</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1221">#1221</a> from longngn/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a3c38c6574b71389895e5162296ed12e13347349"><tt>a3c38c65</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/21">#1221</a> from longngn/patch-1</summary>
 
 Update dataloaders.md
 
@@ -3495,7 +2337,7 @@ Update dataloaders.md
 
 - <a href="https://github.com/99designs/gqlgen/commit/71182de820e20edc5fd5a2e7363f089ff75bdb9a"><tt>71182de8</tt></a> Update dataloaders.md
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d81baeed9f212c2728e6d9901bdec99929787ac2"><tt>d81baeed</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1218">#1218</a> from StevenACoffman/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d81baeed9f212c2728e6d9901bdec99929787ac2"><tt>d81baeed</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/18">#1218</a> from StevenACoffman/patch-1</summary>
 
 Update feature comparison for federation
 
@@ -3509,13 +2351,13 @@ Update feature comparison for federation
 
 - <a href="https://github.com/99designs/gqlgen/commit/f5de4731aa552bff75d6ddb06f7d7338388c5a34"><tt>f5de4731</tt></a> Add timeout to integration test
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a21a6633b841779b9b720f95e7297db888935993"><tt>a21a6633</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1189">#1189</a> from RichardLindhout/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a21a6633b841779b9b720f95e7297db888935993"><tt>a21a6633</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/89">#1189</a> from RichardLindhout/patch-1</summary>
 
 Upgrade to OperationContext and remove duplicate fields to fix https:…
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/543317a28754c46f1679af33dde0c311d73f7ddd"><tt>543317a2</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1170">#1170</a> from alexsn/apollotracing/nopanic</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/543317a28754c46f1679af33dde0c311d73f7ddd"><tt>543317a2</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/70">#1170</a> from alexsn/apollotracing/nopanic</summary>
 
 apollotracing: skip field interceptor when on no tracing extension
 
@@ -3523,31 +2365,31 @@ apollotracing: skip field interceptor when on no tracing extension
 
 - <a href="https://github.com/99designs/gqlgen/commit/d347d97278ec166866b309d458001a17ed5779e0"><tt>d347d972</tt></a> Update stale.yml
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/032854bb8a0877796d8d84d7d619d503beae5d52"><tt>032854bb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1154">#1154</a> from gsgalloway/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/032854bb8a0877796d8d84d7d619d503beae5d52"><tt>032854bb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/54">#1154</a> from gsgalloway/master</summary>
 
 Add operation context when dispatching
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ccc4eb1db613027376e0bd69da02bdde8914e911"><tt>ccc4eb1d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1188">#1188</a> from k-yomo/update-errors-doc</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ccc4eb1db613027376e0bd69da02bdde8914e911"><tt>ccc4eb1d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/88">#1188</a> from k-yomo/update-errors-doc</summary>
 
 Update outdated examples in errors doc
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/628b83c19657e042a0c4e8d694bcabb6ac182b1f"><tt>628b83c1</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1198">#1198</a> from ddevault/pgp</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/628b83c19657e042a0c4e8d694bcabb6ac182b1f"><tt>628b83c1</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/98">#1198</a> from ddevault/pgp</summary>
 
 codegen: add PGP to common initialisms
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d881559bb1d9e6a4d61deb296cb6a18a6d8e1476"><tt>d881559b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1202">#1202</a> from whereswaldon/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d881559bb1d9e6a4d61deb296cb6a18a6d8e1476"><tt>d881559b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/02">#1202</a> from whereswaldon/patch-1</summary>
 
 doc: fix typo in embedded struct example
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b6ce42a7a218c33e327e68d7ebe5e49017dbe223"><tt>b6ce42a7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1207">#1207</a> from k-yomo/update-gorilla-websocket</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b6ce42a7a218c33e327e68d7ebe5e49017dbe223"><tt>b6ce42a7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/07">#1207</a> from k-yomo/update-gorilla-websocket</summary>
 
 Update gorilla/websocket to v1.4.2 to resolve vulnerability
 
@@ -3561,13 +2403,13 @@ Update gorilla/websocket to v1.4.2 to resolve vulnerability
 
 - <a href="https://github.com/99designs/gqlgen/commit/9ab7294d79825e96b00063abecccfabf4286ba9b"><tt>9ab7294d</tt></a> apollotracing: skip field interceptor when on no tracing extension
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/40570d1b4d70070c84915f7a468e406705b3f3ef"><tt>40570d1b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1163">#1163</a> from fwojciec/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/40570d1b4d70070c84915f7a468e406705b3f3ef"><tt>40570d1b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/63">#1163</a> from fwojciec/master</summary>
 
 fix redundant type warning
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3f7f60bf180a405ea24600c82a6e5b24c605ca9f"><tt>3f7f60bf</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1181">#1181</a> from tmc/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3f7f60bf180a405ea24600c82a6e5b24c605ca9f"><tt>3f7f60bf</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/81">#1181</a> from tmc/patch-1</summary>
 
 Update getting-started.md
 
@@ -3579,37 +2421,37 @@ Update getting-started.md
 
 - <a href="https://github.com/99designs/gqlgen/commit/0921915d02741d3021a69ac7834bd76e9bbc38ab"><tt>0921915d</tt></a> Update getting-started.md
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0a40481343ef344121b5a2a5c0910ff7391aad1f"><tt>0a404813</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1117">#1117</a> from s-ichikawa/object-directive</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0a40481343ef344121b5a2a5c0910ff7391aad1f"><tt>0a404813</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/17">#1117</a> from s-ichikawa/object-directive</summary>
 
 Add support for OBJECT directive
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/90ee8dedb8dbea7d447801380639de7d475e62e8"><tt>90ee8ded</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1137">#1137</a> from ddevault/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/90ee8dedb8dbea7d447801380639de7d475e62e8"><tt>90ee8ded</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/37">#1137</a> from ddevault/master</summary>
 
 Replace ~ with א in package names
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e4c699dcd4b8b1ccc62c31c158670904092fb374"><tt>e4c699dc</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1147">#1147</a> from ddevault/docs</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e4c699dcd4b8b1ccc62c31c158670904092fb374"><tt>e4c699dc</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/47">#1147</a> from ddevault/docs</summary>
 
 Add links to godoc to the README and docsite
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/73746621696f25c55bd64d2d81b09fe314667c21"><tt>73746621</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1131">#1131</a> from muraoka/fix-typo</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/73746621696f25c55bd64d2d81b09fe314667c21"><tt>73746621</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/31">#1131</a> from muraoka/fix-typo</summary>
 
 Fix typo in authentication docs
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ace558b411ec2633cfa4cc8b76d7a035d3216cef"><tt>ace558b4</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1124">#1124</a> from OpenSourceProjects/update-apq-documentation</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ace558b411ec2633cfa4cc8b76d7a035d3216cef"><tt>ace558b4</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/24">#1124</a> from OpenSourceProjects/update-apq-documentation</summary>
 
 Update APQ example to reflect newer API
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3c126f9edba3ba3f4c252b003f052743d5fd1c72"><tt>3c126f9e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1119">#1119</a> from skaji/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3c126f9edba3ba3f4c252b003f052743d5fd1c72"><tt>3c126f9e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/19">#1119</a> from skaji/patch-1</summary>
 
 type Person -> type Person struct
 
@@ -3716,13 +2558,13 @@ Differential Revision: https://phabricator.khanacademy.org/D61883
 
 - <a href="https://github.com/99designs/gqlgen/commit/d98ff1b04ca102e74037ac914dddb595aa9c6808"><tt>d98ff1b0</tt></a> Modify templates to include deeper context nesting
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a1a02615f705292de46bd1c14f1710eedc95cb86"><tt>a1a02615</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1104">#1104</a> from oshalygin/docs/update-query-complexity-initialization</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a1a02615f705292de46bd1c14f1710eedc95cb86"><tt>a1a02615</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/04">#1104</a> from oshalygin/docs/update-query-complexity-initialization</summary>
 
 Update Query Complexity Documentation
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c68df3c61f389e065a4607c67e973f46f492cd9f"><tt>c68df3c6</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1112">#1112</a> from s-ichikawa/delete-unused-code</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c68df3c61f389e065a4607c67e973f46f492cd9f"><tt>c68df3c6</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/12">#1112</a> from s-ichikawa/delete-unused-code</summary>
 
 delete unused code
 
@@ -3764,21 +2606,21 @@ PRs from outside the org arent running CI, hopefully this fixes it.
 
 - <a href="https://github.com/99designs/gqlgen/commit/4b949f2e69026b51ddd26b71d5efb7b5dc8c6aca"><tt>4b949f2e</tt></a> remove copyright notice at bottom of doc pages
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c5039196612e7afeee14fc6373d8dcfe70eb5ab9"><tt>c5039196</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1094">#1094</a> from 99designs/update-upload-docs</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c5039196612e7afeee14fc6373d8dcfe70eb5ab9"><tt>c5039196</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/94">#1094</a> from 99designs/update-upload-docs</summary>
 
 Update file upload docs with Apollo client usage
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/5e3cef245a1e87b64c8e57630fa78dae706d069b"><tt>5e3cef24</tt></a> revert <a href="https://github.com/99designs/gqlgen/pull/1079">#1079</a>
+- <a href="https://github.com/99designs/gqlgen/commit/5e3cef245a1e87b64c8e57630fa78dae706d069b"><tt>5e3cef24</tt></a> revert <a href="https://github.com/99designs/gqlgen/pull/79">#1079</a>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/793b0672cee7c096e4b32f4b132469c455407c15"><tt>793b0672</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1100">#1100</a> from sonatard/fast</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/793b0672cee7c096e4b32f4b132469c455407c15"><tt>793b0672</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/00">#1100</a> from sonatard/fast</summary>
 
 Gnerate to fast by exec codegen.GenerateCode before plugin GenerateCode
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/6ac2d1cdcb2b2ff33048a768a0e3cfefe8f29d75"><tt>6ac2d1cd</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1097">#1097</a> from 86/86/update-federation-doc</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/6ac2d1cdcb2b2ff33048a768a0e3cfefe8f29d75"><tt>6ac2d1cd</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/97">#1097</a> from 86/86/update-federation-doc</summary>
 
 Add Enable federation section in federation doc
 
@@ -3802,7 +2644,7 @@ Add Enable federation section in federation doc
 ## [v0.11.2](https://github.com/99designs/gqlgen/compare/v0.11.1...v0.11.2) - 2020-03-05
 - <a href="https://github.com/99designs/gqlgen/commit/2ccc0aa65998154a57ddb2fcb37046cbffbd6518"><tt>2ccc0aa6</tt></a> release v0.11.2
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/78f3da2296a5d69967a7ab09b66338ed9bd94033"><tt>78f3da22</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1050">#1050</a> from technoweenie/executor</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/78f3da2296a5d69967a7ab09b66338ed9bd94033"><tt>78f3da22</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/50">#1050</a> from technoweenie/executor</summary>
 
 Executor
 
@@ -3810,13 +2652,13 @@ Executor
 
 - <a href="https://github.com/99designs/gqlgen/commit/b82ee517f528dbdbd1236aca61b7aacdfc633978"><tt>b82ee517</tt></a> Fix CI badge
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/42eff5a9a5011606b5a89556dd211e6e08224b19"><tt>42eff5a9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1057">#1057</a> from RichardLindhout/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/42eff5a9a5011606b5a89556dd211e6e08224b19"><tt>42eff5a9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/57">#1057</a> from RichardLindhout/master</summary>
 
 Upgrade to github.com/urfave/cli/v2
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bb5cb8a3dd51980a9b5c27dc4d5da87e9ab9a1c9"><tt>bb5cb8a3</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1086">#1086</a> from 99designs/github-actions</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bb5cb8a3dd51980a9b5c27dc4d5da87e9ab9a1c9"><tt>bb5cb8a3</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/86">#1086</a> from 99designs/github-actions</summary>
 
 Use GitHub Actions
 
@@ -3824,7 +2666,7 @@ Use GitHub Actions
 
 - <a href="https://github.com/99designs/gqlgen/commit/cd2b53f210373729a2d483183db08fd6cce38ebd"><tt>cd2b53f2</tt></a> remove os.Exits
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/587bc81c1a52f259da85421500d971c035d8a0cc"><tt>587bc81c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1074">#1074</a> from yudppp/feature/add_contenttype_for_upload</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/587bc81c1a52f259da85421500d971c035d8a0cc"><tt>587bc81c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/74">#1074</a> from yudppp/feature/add_contenttype_for_upload</summary>
 
 Add ContentType to graphql.Upload
 
@@ -3858,31 +2700,31 @@ Add ContentType to graphql.Upload
 
 - <a href="https://github.com/99designs/gqlgen/commit/f21832af91c7b9f7523f4f149c775700860286c1"><tt>f21832af</tt></a> fix: Fixed Upload type document
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b165568cce7d5027ba1ee2da68dad3012b12d189"><tt>b165568c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1071">#1071</a> from kandros/fix-server-path</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b165568cce7d5027ba1ee2da68dad3012b12d189"><tt>b165568c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/71">#1071</a> from kandros/fix-server-path</summary>
 
 fix server path
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9d7648aa95d7479b11685350d6bd71d26e9aecac"><tt>9d7648aa</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1072">#1072</a> from wtask/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9d7648aa95d7479b11685350d6bd71d26e9aecac"><tt>9d7648aa</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/72">#1072</a> from wtask/patch-1</summary>
 
 Fix a typo in sql example
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/24400c9b44d7a2dfc177969d13f9ca7cc1f158e0"><tt>24400c9b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1079">#1079</a> from sonatard/remove-unused</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/24400c9b44d7a2dfc177969d13f9ca7cc1f158e0"><tt>24400c9b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/79">#1079</a> from sonatard/remove-unused</summary>
 
 Remove unused code
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a7c79891abdd4323ce74b71521508d064f057f6d"><tt>a7c79891</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1081">#1081</a> from sonatard/fix-plugin-test</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a7c79891abdd4323ce74b71521508d064f057f6d"><tt>a7c79891</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/81">#1081</a> from sonatard/fix-plugin-test</summary>
 
 Fix unlink file path in resolvergen test
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e7bf75481aa110b533e1cc710a8dbeb88930a6ac"><tt>e7bf7548</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1080">#1080</a> from sonatard/fix-testdata</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e7bf75481aa110b533e1cc710a8dbeb88930a6ac"><tt>e7bf7548</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/80">#1080</a> from sonatard/fix-testdata</summary>
 
 Fix test data
 
@@ -3904,19 +2746,19 @@ I think todo is referenced to user by user_id field, not by todo.id
 
 - <a href="https://github.com/99designs/gqlgen/commit/22a43d776126936526ae37070ccc765983823f23"><tt>22a43d77</tt></a> fix server path
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b788cce5682351522a12ae63e8f1d11be60276a1"><tt>b788cce5</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1054">#1054</a> from 99designs/golint-free-resolvers</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b788cce5682351522a12ae63e8f1d11be60276a1"><tt>b788cce5</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/54">#1054</a> from 99designs/golint-free-resolvers</summary>
 
 suppress golint messages
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c515d403319c4c85799959501f56d927d221e1ce"><tt>c515d403</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1053">#1053</a> from RichardLindhout/patch-3</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c515d403319c4c85799959501f56d927d221e1ce"><tt>c515d403</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/53">#1053</a> from RichardLindhout/patch-3</summary>
 
 Add practical example of getting all the requested fields
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e57cd44598f2446c5f00888c1c545dde4b63edf3"><tt>e57cd445</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1061">#1061</a> from halvdan/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e57cd44598f2446c5f00888c1c545dde4b63edf3"><tt>e57cd445</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/61">#1061</a> from halvdan/patch-1</summary>
 
 Fix mismatching documentation of Todo struct
 
@@ -3940,7 +2782,7 @@ Based on this https://github.com/99designs/gqlgen/issues/954 was tagged as 'need
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a53ce377c9f7601f09e00da71a958c6f45deca4c"><tt>a53ce377</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1051">#1051</a> from 99designs/has-operation-context</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a53ce377c9f7601f09e00da71a958c6f45deca4c"><tt>a53ce377</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/51">#1051</a> from 99designs/has-operation-context</summary>
 
 Add function to check presense of operation context
 
@@ -3970,7 +2812,7 @@ Add function to check presense of operation context
 ## [v0.11.1](https://github.com/99designs/gqlgen/compare/v0.11.0...v0.11.1) - 2020-02-19
 - <a href="https://github.com/99designs/gqlgen/commit/11af15a14ba1f3217f1e81a0aeaf053f3f17d56d"><tt>11af15a1</tt></a> release v0.11.1
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bc07188cd6eaa4b5509843c7cc2d20a03623c759"><tt>bc07188c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1038">#1038</a> from 99designs/feat-check-len</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bc07188cd6eaa4b5509843c7cc2d20a03623c759"><tt>bc07188c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/38">#1038</a> from 99designs/feat-check-len</summary>
 
 check slice length
 
@@ -3978,13 +2820,13 @@ check slice length
 
 - <a href="https://github.com/99designs/gqlgen/commit/2c3853c8dc0f500339e7349f9256c3a9ac1ef129"><tt>2c3853c8</tt></a> fix whitespace in comparison
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/07a13861cf2a3bcaa96433a3a5e6380f688489f4"><tt>07a13861</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1043">#1043</a> from 99designs/ensure-panic-handlers-get-applied</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/07a13861cf2a3bcaa96433a3a5e6380f688489f4"><tt>07a13861</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/43">#1043</a> from 99designs/ensure-panic-handlers-get-applied</summary>
 
 Ensure panic handlers get applied
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/156d306d69255cea25ee3cbf4f0b9f57c0b9f09f"><tt>156d306d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1046">#1046</a> from appleboy/patch</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/156d306d69255cea25ee3cbf4f0b9f57c0b9f09f"><tt>156d306d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/46">#1046</a> from appleboy/patch</summary>
 
 docs(gin): missing import playground
 
@@ -3998,7 +2840,7 @@ docs(gin): missing import playground
 
 - <a href="https://github.com/99designs/gqlgen/commit/2340f7a7ae54c33e5d065d99a1f30906f64ba229"><tt>2340f7a7</tt></a> Ensure panic handlers get applied
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/25d167613df1e8e50dd895394343238b0e9f92ad"><tt>25d16761</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1039">#1039</a> from VitaliiLakusta/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/25d167613df1e8e50dd895394343238b0e9f92ad"><tt>25d16761</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/39">#1039</a> from VitaliiLakusta/patch-1</summary>
 
 Fix link to examples directory in Federation docs
 
@@ -4026,7 +2868,7 @@ Fix link to examples directory in Federation docs
 ## [v0.11.0](https://github.com/99designs/gqlgen/compare/v0.10.2...v0.11.0) - 2020-02-17
 - <a href="https://github.com/99designs/gqlgen/commit/368597aa18d82bc778e45d8e1f7a817a70ca62a7"><tt>368597aa</tt></a> release v0.11.0
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e65d62285c5af647fa58ae947fde286f3e0ccc9c"><tt>e65d6228</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1036">#1036</a> from 99designs/update-v011-docs</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e65d62285c5af647fa58ae947fde286f3e0ccc9c"><tt>e65d6228</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/36">#1036</a> from 99designs/update-v011-docs</summary>
 
 Update 0.11 migration docs
 
@@ -4034,7 +2876,7 @@ Update 0.11 migration docs
 
 - <a href="https://github.com/99designs/gqlgen/commit/11f979365864fd6739fcf9c6d8d6deddfed834ba"><tt>11f97936</tt></a> Update 0.11 migration docs
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2b3eed303e63e433088efbfa026b7a42e66ff0de"><tt>2b3eed30</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1034">#1034</a> from 99designs/strip-underscores-from-entity-interfaces</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2b3eed303e63e433088efbfa026b7a42e66ff0de"><tt>2b3eed30</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/34">#1034</a> from 99designs/strip-underscores-from-entity-interfaces</summary>
 
 Trim underscores from around go identifiers
 
@@ -4046,13 +2888,13 @@ Trim underscores from around go identifiers
 
 - <a href="https://github.com/99designs/gqlgen/commit/4b9dfa61085d478814efbdd8ac237e3f81d4189b"><tt>4b9dfa61</tt></a> trim underscores from around go identifiers
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7cac3610246fb0b8a9028c88f57e63c41e5cced7"><tt>7cac3610</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1027">#1027</a> from sonatard/response-errors</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7cac3610246fb0b8a9028c88f57e63c41e5cced7"><tt>7cac3610</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/27">#1027</a> from sonatard/response-errors</summary>
 
 propagate resolver errors to response error in ResponseMiddleware
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/14dccc57885df5d5ca4ef347c1b80f5f3648719a"><tt>14dccc57</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1022">#1022</a> from 99designs/feat-gqlparser-117</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/14dccc57885df5d5ca4ef347c1b80f5f3648719a"><tt>14dccc57</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/22">#1022</a> from 99designs/feat-gqlparser-117</summary>
 
 example about apply https://github.com/vektah/gqlparser/pull/117
 
@@ -4060,7 +2902,7 @@ example about apply https://github.com/vektah/gqlparser/pull/117
 
 - <a href="https://github.com/99designs/gqlgen/commit/cf6f76830d3ebbfbce26a96f709edbb11c828551"><tt>cf6f7683</tt></a> bump to gqlparser v2
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4ece3857c9abb4dc0c6122af6a72d4d5ce134feb"><tt>4ece3857</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1028">#1028</a> from abhimanyusinghgaur/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4ece3857c9abb4dc0c6122af6a72d4d5ce134feb"><tt>4ece3857</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/28">#1028</a> from abhimanyusinghgaur/master</summary>
 
 Respect includeDeprecated for EnumValues
 
@@ -4078,7 +2920,7 @@ Respect includeDeprecated for EnumValues
 
 - <a href="https://github.com/99designs/gqlgen/commit/e4530da6a4636a6d6430ae93356fa423d7a5ead7"><tt>e4530da6</tt></a> apply https://github.com/vektah/gqlparser/pull/117
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/30e23757e9b50612f3300edd84310efe7eac9d4d"><tt>30e23757</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1020">#1020</a> from 99designs/handle-interfaces-implementing-interfaces</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/30e23757e9b50612f3300edd84310efe7eac9d4d"><tt>30e23757</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/20">#1020</a> from 99designs/handle-interfaces-implementing-interfaces</summary>
 
 Handle interfaces that implement interfaces
 
@@ -4086,7 +2928,7 @@ Handle interfaces that implement interfaces
 
 - <a href="https://github.com/99designs/gqlgen/commit/b7a58a1c0e4b30a75d97ef69a8593e1ce3914bf2"><tt>b7a58a1c</tt></a> Handle interfaces that implement interfaces
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ab8d62b67dd0dd9a27ad5320b3cb57b0bd76df51"><tt>ab8d62b6</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1019">#1019</a> from 99designs/remove-source-reprinting</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ab8d62b67dd0dd9a27ad5320b3cb57b0bd76df51"><tt>ab8d62b6</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/19">#1019</a> from 99designs/remove-source-reprinting</summary>
 
 Remove source reprinting
 
@@ -4096,7 +2938,7 @@ Remove source reprinting
 
 - <a href="https://github.com/99designs/gqlgen/commit/aacc9b1fd6ff8fa91d4b4985b4c115796851b416"><tt>aacc9b1f</tt></a> Remove source reprinting
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e289aaa0b2ee378279710b018f0fb1c9c0da7997"><tt>e289aaa0</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1018">#1018</a> from 99designs/federation-docs</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e289aaa0b2ee378279710b018f0fb1c9c0da7997"><tt>e289aaa0</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/18">#1018</a> from 99designs/federation-docs</summary>
 
 Federation docs and examples
 
@@ -4104,7 +2946,7 @@ Federation docs and examples
 
 - <a href="https://github.com/99designs/gqlgen/commit/3045b2cfadc80b4645dbb7228bf7e3cceb74d3c7"><tt>3045b2cf</tt></a> Federation docs and examples
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/656a07d1877081199058c3bc54ed521350a15e72"><tt>656a07d1</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1016">#1016</a> from 99designs/federation-entity-type</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/656a07d1877081199058c3bc54ed521350a15e72"><tt>656a07d1</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/16">#1016</a> from 99designs/federation-entity-type</summary>
 
 Create a non generated federation _Entity type
 
@@ -4112,13 +2954,13 @@ Create a non generated federation _Entity type
 
 - <a href="https://github.com/99designs/gqlgen/commit/8850a527a89f9b880531dc7fdcfec1016882b777"><tt>8850a527</tt></a> Create a non generated federation _Entity type
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1d41c2ebf22664de9660365fb4584c4ca1ac776c"><tt>1d41c2eb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1012">#1012</a> from 99designs/federation-config</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1d41c2ebf22664de9660365fb4584c4ca1ac776c"><tt>1d41c2eb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/12">#1012</a> from 99designs/federation-config</summary>
 
 Allow configuring the federation output file location
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/afa9a1504edb7da3e8055ed5923ce74647152396"><tt>afa9a150</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1013">#1013</a> from 99designs/feat-error-dispatch</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/afa9a1504edb7da3e8055ed5923ce74647152396"><tt>afa9a150</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/13">#1013</a> from 99designs/feat-error-dispatch</summary>
 
 propagate errors to response context in DispatchError
 
@@ -4126,7 +2968,7 @@ propagate errors to response context in DispatchError
 
 - <a href="https://github.com/99designs/gqlgen/commit/652aa2fb2917fc4c2362abc608e7643ee589daa7"><tt>652aa2fb</tt></a> propagate errors to response context in DispatchError
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0fe1af8c8c55cfcef938e59ee63fac3df1a319df"><tt>0fe1af8c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1011">#1011</a> from Khan/compound-keys</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0fe1af8c8c55cfcef938e59ee63fac3df1a319df"><tt>0fe1af8c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/11">#1011</a> from Khan/compound-keys</summary>
 
 Compound key support in federation
 
@@ -4134,7 +2976,7 @@ Compound key support in federation
 
 - <a href="https://github.com/99designs/gqlgen/commit/ad3c1c818f86e8e610733e4be0cf6f755e60af25"><tt>ad3c1c81</tt></a> Allow configuring the federation output file location
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b4a00e6cfd6a7c0da51caa002bc72b7210610db9"><tt>b4a00e6c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1010">#1010</a> from Khan/query-exists</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b4a00e6cfd6a7c0da51caa002bc72b7210610db9"><tt>b4a00e6c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/10">#1010</a> from Khan/query-exists</summary>
 
 Make sure there's a Query node before trying to add a field to it.
 
@@ -4190,7 +3032,7 @@ too.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b941b970f0b67a4e102ee1635156a6a2b5a2863b"><tt>b941b970</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1007">#1007</a> from 99designs/handle-invalid-autoload-path</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b941b970f0b67a4e102ee1635156a6a2b5a2863b"><tt>b941b970</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/07">#1007</a> from 99designs/handle-invalid-autoload-path</summary>
 
 Give an appropriate error message when autoload isnt a valid package
 
@@ -4202,7 +3044,7 @@ Give an appropriate error message when autoload isnt a valid package
 
 - <a href="https://github.com/99designs/gqlgen/commit/d5d6f830475fcaa5790bb1d6390f3876cd9073a2"><tt>d5d6f830</tt></a> Give an appropriate error message when autoload isnt a valid package
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f7667e127039af2d7fb4252c0bb3a36554634f80"><tt>f7667e12</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1009">#1009</a> from 99designs/interface-regression</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f7667e127039af2d7fb4252c0bb3a36554634f80"><tt>f7667e12</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/09">#1009</a> from 99designs/interface-regression</summary>
 
 Interface regression
 
@@ -4212,7 +3054,7 @@ Interface regression
 
 - <a href="https://github.com/99designs/gqlgen/commit/44cfb92639db2e7f18a1b0a4091b29f120a0dbb4"><tt>44cfb926</tt></a> Test example for interface regression
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0ddb3ef308d1f801928e919cc478d5b8d6653458"><tt>0ddb3ef3</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1006">#1006</a> from ravisastryk/entity-directives-lookup</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0ddb3ef308d1f801928e919cc478d5b8d6653458"><tt>0ddb3ef3</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/06">#1006</a> from ravisastryk/entity-directives-lookup</summary>
 
 skip searching directives when entity is found
 
@@ -4222,7 +3064,7 @@ skip searching directives when entity is found
 
 - <a href="https://github.com/99designs/gqlgen/commit/e1f2282e1331fd38c01fe449f116d47d16583cd6"><tt>e1f2282e</tt></a> bump to go 1.13 in ci
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/34c92eba0b29a49cc592060890263d1677490a3d"><tt>34c92eba</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1003">#1003</a> from 99designs/fix-chat-example</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/34c92eba0b29a49cc592060890263d1677490a3d"><tt>34c92eba</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/03">#1003</a> from 99designs/fix-chat-example</summary>
 
 fix chat example
 
@@ -4230,7 +3072,7 @@ fix chat example
 
 - <a href="https://github.com/99designs/gqlgen/commit/6bf88417d867bce8bc3eca3b52a62f56eee994b9"><tt>6bf88417</tt></a> fix chat example
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8ed2ec599b8faed3751177fd4335b1b3c3a79922"><tt>8ed2ec59</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/988">#988</a> from 99designs/package-cache</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8ed2ec599b8faed3751177fd4335b1b3c3a79922"><tt>8ed2ec59</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/88">#988</a> from 99designs/package-cache</summary>
 
 Cache all packages.Load calls in a central object
 
@@ -4238,7 +3080,7 @@ Cache all packages.Load calls in a central object
 
 - <a href="https://github.com/99designs/gqlgen/commit/9ccd7ed7199405ecbcc917ce601b83b72419009b"><tt>9ccd7ed7</tt></a> Cache all packages.Load calls in a central object
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/565619a80674052de24a4df5c9a2dba87ceb72df"><tt>565619a8</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/993">#993</a> from 99designs/resolver-generator-v2</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/565619a80674052de24a4df5c9a2dba87ceb72df"><tt>565619a8</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/93">#993</a> from 99designs/resolver-generator-v2</summary>
 
 Resolver regenerator
 
@@ -4268,7 +3110,7 @@ Resolver regenerator
 
 - <a href="https://github.com/99designs/gqlgen/commit/8a18895e1ec49e383ce2cda79d315c78f5a701ca"><tt>8a18895e</tt></a> Update to latest golangci-lint
 
-- <a href="https://github.com/99designs/gqlgen/commit/f7a67722a6baf2612fa429bd21ceb9c6b9cbed1c"><tt>f7a67722</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/985">#985</a> from Khan/no-key-needed
+- <a href="https://github.com/99designs/gqlgen/commit/f7a67722a6baf2612fa429bd21ceb9c6b9cbed1c"><tt>f7a67722</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/85">#985</a> from Khan/no-key-needed
 
 <dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/fa884991b5faec01f1ded737a64350d782e3a418"><tt>fa884991</tt></a> Correctly generate a federated schema when no entity has a `[@key](https://github.com/key)`.</summary>
 
@@ -4286,13 +3128,13 @@ This commit updates the federation code to support that use case.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/36aae4aa277847bc5dc2d4fcec5ae0c1d7a1d686"><tt>36aae4aa</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/994">#994</a> from 99designs/feat-cache-ctx</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/36aae4aa277847bc5dc2d4fcec5ae0c1d7a1d686"><tt>36aae4aa</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/94">#994</a> from 99designs/feat-cache-ctx</summary>
 
 Add context.Context to graphql.Cache interface's methods
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/61e060bdfe4559138a08a00683815a315f85a154"><tt>61e060bd</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/995">#995</a> from alexsn/directiveroot_empty_lines</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/61e060bdfe4559138a08a00683815a315f85a154"><tt>61e060bd</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/95">#995</a> from alexsn/directiveroot_empty_lines</summary>
 
 Remove empty lines on DirectiveRoot generation
 
@@ -4302,13 +3144,13 @@ Remove empty lines on DirectiveRoot generation
 
 - <a href="https://github.com/99designs/gqlgen/commit/85cfa8a3afffad11a99bf4205310f46987f3329d"><tt>85cfa8a3</tt></a> Add context.Context to graphql.Cache interface's methods
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a6c7aafb928f648d0a8106c0a42554abdce53952"><tt>a6c7aafb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/931">#931</a> from fridolin-koch/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a6c7aafb928f648d0a8106c0a42554abdce53952"><tt>a6c7aafb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/31">#931</a> from fridolin-koch/master</summary>
 
 Fix for Panic if only interfaces shall be generated
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ec4f6b151d4c14d704f27ae7fe341f7ad5ad4883"><tt>ec4f6b15</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/989">#989</a> from 99designs/fix-intermittent-test-ka-failure</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ec4f6b151d4c14d704f27ae7fe341f7ad5ad4883"><tt>ec4f6b15</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/89">#989</a> from 99designs/fix-intermittent-test-ka-failure</summary>
 
 Fix intermittent websocket ka test failure
 
@@ -4316,7 +3158,7 @@ Fix intermittent websocket ka test failure
 
 - <a href="https://github.com/99designs/gqlgen/commit/76035df5e63c580004440762edbf6779fe9243db"><tt>76035df5</tt></a> Fix intermittent websocket ka test failure
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/aa407b1f3553ac2aee1939fbe28c85ed5cbfcdf9"><tt>aa407b1f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/979">#979</a> from 99designs/capture-read-times</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/aa407b1f3553ac2aee1939fbe28c85ed5cbfcdf9"><tt>aa407b1f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/79">#979</a> from 99designs/capture-read-times</summary>
 
 Capture read times
 
@@ -4326,13 +3168,13 @@ Capture read times
 
 - <a href="https://github.com/99designs/gqlgen/commit/8dbce3cf161f19c132d3cf29aa95851732c7f922"><tt>8dbce3cf</tt></a> Capture the time spent reading requests from the client
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c6b3e2a1ef220cd122ad3c2a6e25bc74c89a7a4c"><tt>c6b3e2a1</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/983">#983</a> from vikstrous/name-for-package-global</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c6b3e2a1ef220cd122ad3c2a6e25bc74c89a7a4c"><tt>c6b3e2a1</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/83">#983</a> from vikstrous/name-for-package-global</summary>
 
 single packages.Load for NameForPackage
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ae79e75bc2d8296551e8b88b7b3f8596f038ca94"><tt>ae79e75b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/978">#978</a> from 99designs/pluggable-error-code</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ae79e75bc2d8296551e8b88b7b3f8596f038ca94"><tt>ae79e75b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/78">#978</a> from 99designs/pluggable-error-code</summary>
 
 Allow customizing http and websocket status codes for errors
 
@@ -4346,7 +3188,7 @@ Allow customizing http and websocket status codes for errors
 
 - <a href="https://github.com/99designs/gqlgen/commit/bd50bbcbb3d96bc168c1b5186147be14487e0cc6"><tt>bd50bbcb</tt></a> single packages.Load for NameForPackage
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/28c032d1f3ba55761dbac0cf846c9c66b7abb5e8"><tt>28c032d1</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/982">#982</a> from DavidJFelix/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/28c032d1f3ba55761dbac0cf846c9c66b7abb5e8"><tt>28c032d1</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/82">#982</a> from DavidJFelix/patch-1</summary>
 
 fix: explicitly exclude trailing comma from link
 
@@ -4370,7 +3212,7 @@ fix: explicitly exclude trailing comma from link
 
 - <a href="https://github.com/99designs/gqlgen/commit/cfa2907a017d517ce90a62c4ef978f7bce66e9b7"><tt>cfa2907a</tt></a> Generate docs for all tags
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8218c734fb126b49882b44801228b36f033909d2"><tt>8218c734</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/851">#851</a> from marwan-at-work/federation</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8218c734fb126b49882b44801228b36f033909d2"><tt>8218c734</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/51">#851</a> from marwan-at-work/federation</summary>
 
 Apollo Federation MVP
 
@@ -4382,13 +3224,13 @@ Apollo Federation MVP
 
 - <a href="https://github.com/99designs/gqlgen/commit/d2a13d33cdcb27e8e141c54e1ab1fa0aebad2d2b"><tt>d2a13d33</tt></a> update go.mod
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0eef2fe2cf5123990844a6c2bbb2418b044df1e6"><tt>0eef2fe2</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/970">#970</a> from spiffyjr/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0eef2fe2cf5123990844a6c2bbb2418b044df1e6"><tt>0eef2fe2</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/70">#970</a> from spiffyjr/master</summary>
 
 Fix extra trimspace on nillable Unmarshals
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/56b8eef2b7ca0852fff3f3cda80a08df3569868e"><tt>56b8eef2</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/974">#974</a> from oshalygin/docs/gqlgen-pg-example-repo</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/56b8eef2b7ca0852fff3f3cda80a08df3569868e"><tt>56b8eef2</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/74">#974</a> from oshalygin/docs/gqlgen-pg-example-repo</summary>
 
 Add Link to Sample Project with GQLGen and Postgres
 
@@ -4443,7 +3285,7 @@ README which covers a ton of the details on how to use this project:
 
 - <a href="https://github.com/99designs/gqlgen/commit/21356ce35cc55896ee855c9b3238aa00684ac242"><tt>21356ce3</tt></a> markdown cleanup
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/412a72fe26b093b08d27e90adf0390ad0ea0a7ea"><tt>412a72fe</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/885">#885</a> from 99designs/handler-refactor</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/412a72fe26b093b08d27e90adf0390ad0ea0a7ea"><tt>412a72fe</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/85">#885</a> from 99designs/handler-refactor</summary>
 
 Refactor handler package
 
@@ -4453,7 +3295,7 @@ Refactor handler package
 
 - <a href="https://github.com/99designs/gqlgen/commit/dca9e4a5b04f34f1bba32d472c0075ee9d0ea476"><tt>dca9e4a5</tt></a> Add migration docs
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5106480b4c6332c9488b88b4f9a66b29a666948b"><tt>5106480b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/947">#947</a> from 99designs/handler-oc-handling</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5106480b4c6332c9488b88b4f9a66b29a666948b"><tt>5106480b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/47">#947</a> from 99designs/handler-oc-handling</summary>
 
 always return OperationContext for postpone process
 
@@ -4577,25 +3419,25 @@ always return OperationContext for postpone process
 ## [v0.10.2](https://github.com/99designs/gqlgen/compare/v0.10.1...v0.10.2) - 2019-11-28
 - <a href="https://github.com/99designs/gqlgen/commit/f276a4e6773992c572119b22821d375ad008c53d"><tt>f276a4e6</tt></a> release v0.10.2
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9e989d946989e941985a62c1497d3d2d0abd856c"><tt>9e989d94</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/929">#929</a> from nmaquet/check-nil-interface-ptrs</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9e989d946989e941985a62c1497d3d2d0abd856c"><tt>9e989d94</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/29">#929</a> from nmaquet/check-nil-interface-ptrs</summary>
 
 Don't crash when interface resolver returns a typed nil
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/6f20101c40adf13a6ceef483ce0158b83273afed"><tt>6f20101c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/940">#940</a> from vikstrous/optional-modelgen</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/6f20101c40adf13a6ceef483ce0158b83273afed"><tt>6f20101c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/40">#940</a> from vikstrous/optional-modelgen</summary>
 
 make model generation optional
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9b9dd5620e65c4d1632c71c52acf1c3c12e7ca3d"><tt>9b9dd562</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/942">#942</a> from vikstrous/disable-validation</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9b9dd5620e65c4d1632c71c52acf1c3c12e7ca3d"><tt>9b9dd562</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/42">#942</a> from vikstrous/disable-validation</summary>
 
 add skip_validation flag
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f9f2063a5f77a5cb21d30db1f038d17242f2dbd9"><tt>f9f2063a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/941">#941</a> from vikstrous/qualify-package-path-faster</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f9f2063a5f77a5cb21d30db1f038d17242f2dbd9"><tt>f9f2063a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/41">#941</a> from vikstrous/qualify-package-path-faster</summary>
 
 shortcut QualifyPackagePath in go module mode
 
@@ -4613,7 +3455,7 @@ shortcut QualifyPackagePath in go module mode
 
 - <a href="https://github.com/99designs/gqlgen/commit/c2c2d7de0cf8dfb232e33c619d72e85e70e656b8"><tt>c2c2d7de</tt></a> make model generation optional
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d3f6384425e61f39d58819e7fc893b55cfd00d21"><tt>d3f63844</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/939">#939</a> from mjarkk/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d3f6384425e61f39d58819e7fc893b55cfd00d21"><tt>d3f63844</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/39">#939</a> from mjarkk/patch-1</summary>
 
 (docs) graph-gophers now supports Struct Field resolving
 
@@ -4621,13 +3463,13 @@ shortcut QualifyPackagePath in go module mode
 
 - <a href="https://github.com/99designs/gqlgen/commit/ba3d018929670a1831e58086660c6e062704d815"><tt>ba3d0189</tt></a> graph-gophers now supports Struct Field resolvers
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e747d923d3d0c587a59b5586e1a6dddb2f0f3a7f"><tt>e747d923</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/938">#938</a> from lulucas/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e747d923d3d0c587a59b5586e1a6dddb2f0f3a7f"><tt>e747d923</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/38">#938</a> from lulucas/master</summary>
 
 modelgen hook docs fixed
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/63be1d5e2a0365cc1eaf23c57826ec47f77eb730"><tt>63be1d5e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1">#1</a> from lulucas/modelgen-hook-patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/63be1d5e2a0365cc1eaf23c57826ec47f77eb730"><tt>63be1d5e</tt></a> Merge pull request [#1](https://github.com/99designs/gqlgen/issues/1) from lulucas/modelgen-hook-patch-1</summary>
 
 modelgen hook docs use plugin poitner
 
@@ -4660,7 +3502,7 @@ See https://golang.org/doc/faq#nil_error
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/15b30588a1451bbe280660a1d6cf629f50121d86"><tt>15b30588</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/894">#894</a> from 99designs/enum-var-value-coercion</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/15b30588a1451bbe280660a1d6cf629f50121d86"><tt>15b30588</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/94">#894</a> from 99designs/enum-var-value-coercion</summary>
 
 Improve enum value (with vars) validation timing
 
@@ -4670,25 +3512,25 @@ Improve enum value (with vars) validation timing
 
 - <a href="https://github.com/99designs/gqlgen/commit/0ccfc7e0ebadffe8d59300a2b05dc8cfaa78d5a8"><tt>0ccfc7e0</tt></a> Merge branch 'master' into enum-var-value-coercion
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9cfd817e013b951206bc969ba517c98ff208a11c"><tt>9cfd817e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/897">#897</a> from mskrip/modelgen-hook</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9cfd817e013b951206bc969ba517c98ff208a11c"><tt>9cfd817e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/97">#897</a> from mskrip/modelgen-hook</summary>
 
 Add possibility to hook into modelgen plugin
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/c1e6414834344c20728f9a31b74dacf312713516"><tt>c1e64148</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/900">#900</a> from zannen/master (closes <a href="https://github.com/99designs/gqlgen/issues/896"> #896</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/c1e6414834344c20728f9a31b74dacf312713516"><tt>c1e64148</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/00">#900</a> from zannen/master (closes <a href="https://github.com/99designs/gqlgen/issues/896"> #896</a>)
 
-- <a href="https://github.com/99designs/gqlgen/commit/8a8f0a0f8de1c10e1e8749d12108038ed5eac452"><tt>8a8f0a0f</tt></a> Add autogenerated files (<a href="https://github.com/99designs/gqlgen/pull/896">#896</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/8a8f0a0f8de1c10e1e8749d12108038ed5eac452"><tt>8a8f0a0f</tt></a> Add autogenerated files (<a href="https://github.com/99designs/gqlgen/pull/96">#896</a>)
 
-- <a href="https://github.com/99designs/gqlgen/commit/531729df1303cde002c0bede5a8a0cb11ac4abda"><tt>531729df</tt></a> Move test schema file from example dir into codegen/testserver (<a href="https://github.com/99designs/gqlgen/pull/896">#896</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/531729df1303cde002c0bede5a8a0cb11ac4abda"><tt>531729df</tt></a> Move test schema file from example dir into codegen/testserver (<a href="https://github.com/99designs/gqlgen/pull/96">#896</a>)
 
-- <a href="https://github.com/99designs/gqlgen/commit/5144775f6c57ab7c0ca2b8eaa2441ed398042e40"><tt>5144775f</tt></a> Add example to check for regression of <a href="https://github.com/99designs/gqlgen/pull/896">#896</a>
+- <a href="https://github.com/99designs/gqlgen/commit/5144775f6c57ab7c0ca2b8eaa2441ed398042e40"><tt>5144775f</tt></a> Add example to check for regression of <a href="https://github.com/99designs/gqlgen/pull/96">#896</a>
 
-- <a href="https://github.com/99designs/gqlgen/commit/3b5df4ceec3629694cf8ba3f0c62eac8dd66e82e"><tt>3b5df4ce</tt></a> Add check for obviously different TypeReferences (<a href="https://github.com/99designs/gqlgen/pull/896">#896</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/3b5df4ceec3629694cf8ba3f0c62eac8dd66e82e"><tt>3b5df4ce</tt></a> Add check for obviously different TypeReferences (<a href="https://github.com/99designs/gqlgen/pull/96">#896</a>)
 
-- <a href="https://github.com/99designs/gqlgen/commit/fb96756a2095523acb9b59e219eb5861ca41e588"><tt>fb96756a</tt></a> Update generated content (<a href="https://github.com/99designs/gqlgen/pull/896">#896</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/fb96756a2095523acb9b59e219eb5861ca41e588"><tt>fb96756a</tt></a> Update generated content (<a href="https://github.com/99designs/gqlgen/pull/96">#896</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/fd201a8c8b0f6d95fa4593c8f7cdf3b629f062aa"><tt>fd201a8c</tt></a> Update UniquenessKey for when Element is/isn't nullable (<a href="https://github.com/99designs/gqlgen/pull/896">#896</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/fd201a8c8b0f6d95fa4593c8f7cdf3b629f062aa"><tt>fd201a8c</tt></a> Update UniquenessKey for when Element is/isn't nullable (<a href="https://github.com/99designs/gqlgen/pull/96">#896</a>)</summary>
 
 With a schema:
 type Query {
@@ -4739,7 +3581,7 @@ func main() {
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/99a55da2cdb986686f72dd6d4c6841dc1a79c688"><tt>99a55da2</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/927">#927</a> from matiasanaya/feature/bind-to-embedded-interface</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/99a55da2cdb986686f72dd6d4c6841dc1a79c688"><tt>99a55da2</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/27">#927</a> from matiasanaya/feature/bind-to-embedded-interface</summary>
 
 Bind to embedded interface
 
@@ -4747,9 +3589,9 @@ Bind to embedded interface
 
 - <a href="https://github.com/99designs/gqlgen/commit/70e860cce0a3c943f34b796351cc956fa48ab900"><tt>70e860cc</tt></a> Bind to embedded interface method
 
-- <a href="https://github.com/99designs/gqlgen/commit/a745dc7807357e9064292a7978d80fe85c6794cd"><tt>a745dc78</tt></a> Fixes <a href="https://github.com/99designs/gqlgen/pull/843">#843</a>: Bind to embedded struct method or field
+- <a href="https://github.com/99designs/gqlgen/commit/a745dc7807357e9064292a7978d80fe85c6794cd"><tt>a745dc78</tt></a> Fixes <a href="https://github.com/99designs/gqlgen/pull/43">#843</a>: Bind to embedded struct method or field
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f80cab0662d30abd847bfcb012a3d54e7fe4d8bb"><tt>f80cab06</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/923">#923</a> from 99designs/gqlparser-1.2.0</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f80cab0662d30abd847bfcb012a3d54e7fe4d8bb"><tt>f80cab06</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/23">#923</a> from 99designs/gqlparser-1.2.0</summary>
 
 Update to gqlparser-1.2.0
 
@@ -4757,13 +3599,13 @@ Update to gqlparser-1.2.0
 
 - <a href="https://github.com/99designs/gqlgen/commit/7508f4e560194d17862ae269df40e7cf1968698e"><tt>7508f4e5</tt></a> Update to gqlparser-1.2.0
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7653a681a9696ba5a2562c976d298e38a408ba1b"><tt>7653a681</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/916">#916</a> from karthikraobr/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7653a681a9696ba5a2562c976d298e38a408ba1b"><tt>7653a681</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/16">#916</a> from karthikraobr/patch-1</summary>
 
 3->4 scalars
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8faa0e3aad002970214f2e04de0fb3f3186c13ec"><tt>8faa0e3a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/917">#917</a> from colelawrence/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8faa0e3aad002970214f2e04de0fb3f3186c13ec"><tt>8faa0e3a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/17">#917</a> from colelawrence/patch-1</summary>
 
 docs: Fix typo in title of "Resolvers"
 
@@ -4773,7 +3615,7 @@ docs: Fix typo in title of "Resolvers"
 
 - <a href="https://github.com/99designs/gqlgen/commit/d722ac66368529b8f57e0a5c1feea635a2b1bbbe"><tt>d722ac66</tt></a> Update scalars.md
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1172128c3c7f231e8ca1654a0c978b1f3447736e"><tt>1172128c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/904">#904</a> from cfilby/fix-config-docs</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1172128c3c7f231e8ca1654a0c978b1f3447736e"><tt>1172128c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/04">#904</a> from cfilby/fix-config-docs</summary>
 
 Minor Documentation Tweaks
 
@@ -4785,11 +3627,11 @@ Minor Documentation Tweaks
 
 - <a href="https://github.com/99designs/gqlgen/commit/5eb6bef6f515b31ca5c539ede824241b1befb75f"><tt>5eb6bef6</tt></a> Fix weird indending
 
-- <a href="https://github.com/99designs/gqlgen/commit/756dcf6bb3be6680d6574b01eb31fd378c225bdf"><tt>756dcf6b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/907">#907</a> from lian-yue/patch-1 (closes <a href="https://github.com/99designs/gqlgen/issues/860"> #860</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/756dcf6bb3be6680d6574b01eb31fd378c225bdf"><tt>756dcf6b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/07">#907</a> from lian-yue/patch-1 (closes <a href="https://github.com/99designs/gqlgen/issues/860"> #860</a>)
 
 - <a href="https://github.com/99designs/gqlgen/commit/2a943eed912ab9557d124ea1ab7abfc9dd9fa8e8"><tt>2a943eed</tt></a> Update directive.go (closes <a href="https://github.com/99designs/gqlgen/issues/860"> #860</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/adbceeea04b3b8c27b92760da4bd1a8beae0a913"><tt>adbceeea</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/902">#902</a> from cfilby/fix-int64-marshalling</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/adbceeea04b3b8c27b92760da4bd1a8beae0a913"><tt>adbceeea</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/02">#902</a> from cfilby/fix-int64-marshalling</summary>
 
 Add support for int64 IDs
 
@@ -4815,7 +3657,7 @@ Add support for int64 IDs
 
 - <a href="https://github.com/99designs/gqlgen/commit/395fc85e02c2be3a6d1b67169919e2555f2b74de"><tt>395fc85e</tt></a> Add support for int64 ids
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/dbc88428d2d13c2de3554ffb361c09c90ac21474"><tt>dbc88428</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/889">#889</a> from thnt/fix-init-with-schema-arg</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/dbc88428d2d13c2de3554ffb361c09c90ac21474"><tt>dbc88428</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/89">#889</a> from thnt/fix-init-with-schema-arg</summary>
 
 fix init not use custom schema filename
 
@@ -4825,7 +3667,7 @@ fix init not use custom schema filename
 
 - <a href="https://github.com/99designs/gqlgen/commit/dd98bb13d9a3ae85f9afa525091b8c0c1c2fa7c8"><tt>dd98bb13</tt></a> fix init not use custom schema
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4c35356cbe7bf886fd8c59c9f754d2d98f6987b8"><tt>4c35356c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/883">#883</a> from 99designs/handle-invalid-types</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4c35356cbe7bf886fd8c59c9f754d2d98f6987b8"><tt>4c35356c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/83">#883</a> from 99designs/handle-invalid-types</summary>
 
 Gracefully handle invalid types from invalid go packages
 
@@ -4833,7 +3675,7 @@ Gracefully handle invalid types from invalid go packages
 
 - <a href="https://github.com/99designs/gqlgen/commit/25b7027118f99c097255d0d11e7384898d65b471"><tt>25b70271</tt></a> Gracefully handle invalid types from invalid go packages
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/046054dbda38cc50f8f1e2e3c6073cbcc315c2b1"><tt>046054db</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/882">#882</a> from 99designs/testserver-autobind</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/046054dbda38cc50f8f1e2e3c6073cbcc315c2b1"><tt>046054db</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/82">#882</a> from 99designs/testserver-autobind</summary>
 
 Use autobinding in testserver
 
@@ -4841,7 +3683,7 @@ Use autobinding in testserver
 
 - <a href="https://github.com/99designs/gqlgen/commit/12c963a4f3b88e3545f5b878216e54f1c2d6b32d"><tt>12c963a4</tt></a> Use autobinding in testserver
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/305116a0a0dc48fff6486a78642e77058365a41c"><tt>305116a0</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/879">#879</a> from coderste/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/305116a0a0dc48fff6486a78642e77058365a41c"><tt>305116a0</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/79">#879</a> from coderste/patch-1</summary>
 
 Fixed broken GitHub link within the APQ page
 
@@ -4863,7 +3705,7 @@ Small documentation change to fix a broken GitHub link.
 ## [v0.10.1](https://github.com/99designs/gqlgen/compare/v0.10.0...v0.10.1) - 2019-09-25
 - <a href="https://github.com/99designs/gqlgen/commit/efb6efe06c6e4fc706440acebf6f81fff85f295c"><tt>efb6efe0</tt></a> release v0.10.1
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/955f3499b245507e817e74417f8179a18b18eb81"><tt>955f3499</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/877">#877</a> from 99designs/fix-websocket-client</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/955f3499b245507e817e74417f8179a18b18eb81"><tt>955f3499</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/77">#877</a> from 99designs/fix-websocket-client</summary>
 
 Fix websocket connections on test client
 
@@ -4881,13 +3723,13 @@ Fix websocket connections on test client
 ## [v0.10.0](https://github.com/99designs/gqlgen/compare/v0.9.3...v0.10.0) - 2019-09-24
 - <a href="https://github.com/99designs/gqlgen/commit/75a837522ff029e1d0c5349922182c14023649ef"><tt>75a83752</tt></a> release v0.10.0
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0bc3cc86fae5aef301b93a6e206cb275a053b2a1"><tt>0bc3cc86</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/875">#875</a> from 99designs/fix-clientwide-opts</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0bc3cc86fae5aef301b93a6e206cb275a053b2a1"><tt>0bc3cc86</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/75">#875</a> from 99designs/fix-clientwide-opts</summary>
 
 Fix client global options
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b43edf5d613c79cbc3d4e26a9446a81f80437a07"><tt>b43edf5d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/874">#874</a> from 99designs/configurable-slice-element-pointers</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b43edf5d613c79cbc3d4e26a9446a81f80437a07"><tt>b43edf5d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/74">#874</a> from 99designs/configurable-slice-element-pointers</summary>
 
 Add config option to omit pointers to slice elements
 
@@ -4897,7 +3739,7 @@ Add config option to omit pointers to slice elements
 
 - <a href="https://github.com/99designs/gqlgen/commit/d0098e60acc03cc7314bfc743579be75c46625a8"><tt>d0098e60</tt></a> Add config option to omit pointers to slice elements
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0189328068eb49438a131715a6d9354dc30731db"><tt>01893280</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/819">#819</a> from 99designs/fix-directive-interface-nils</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0189328068eb49438a131715a6d9354dc30731db"><tt>01893280</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/19">#819</a> from 99designs/fix-directive-interface-nils</summary>
 
 Fix directives returning nils from optional interfaces
 
@@ -4905,37 +3747,37 @@ Fix directives returning nils from optional interfaces
 
 - <a href="https://github.com/99designs/gqlgen/commit/34d109754e83d85262d53a5b7df098e07908007c"><tt>34d10975</tt></a> Fix directives returning nils from optional interfaces
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/eea38e55661d6de749d1851e6d4447331a063df7"><tt>eea38e55</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/862">#862</a> from qhenkart/fixes-shareable-link-setting</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/eea38e55661d6de749d1851e6d4447331a063df7"><tt>eea38e55</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/62">#862</a> from qhenkart/fixes-shareable-link-setting</summary>
 
 fixes shareable link button in playground
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b5e78342937549496dbc3a362ed7a2a8738279c6"><tt>b5e78342</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/870">#870</a> from 99designs/ws-init-ctx</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b5e78342937549496dbc3a362ed7a2a8738279c6"><tt>b5e78342</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/70">#870</a> from 99designs/ws-init-ctx</summary>
 
 Allow changing context in websocket init func
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/034aa627cfa5b943497b54595e87b53637a6d1f5"><tt>034aa627</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/871">#871</a> from 99designs/subscription-middleware</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/034aa627cfa5b943497b54595e87b53637a6d1f5"><tt>034aa627</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/71">#871</a> from 99designs/subscription-middleware</summary>
 
 Call middleware and directives for subscriptions
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7b41ca3c13858ca6e69659ade6bc0fc7a54d81da"><tt>7b41ca3c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/872">#872</a> from 99designs/autobind-prefix</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7b41ca3c13858ca6e69659ade6bc0fc7a54d81da"><tt>7b41ca3c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/72">#872</a> from 99designs/autobind-prefix</summary>
 
 Allow prefixes when using autobind
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/de8e559f5a90fb1120bec15465f10cc5adea74cc"><tt>de8e559f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/854">#854</a> from wabain/nested-map-interface</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/de8e559f5a90fb1120bec15465f10cc5adea74cc"><tt>de8e559f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/54">#854</a> from wabain/nested-map-interface</summary>
 
 Fix for nested fields backed by map or interface
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/cc64f331d1024d485ee583cdd0be61e8cf03a506"><tt>cc64f331</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/828">#828</a> from 99designs/feat-rc</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/cc64f331d1024d485ee583cdd0be61e8cf03a506"><tt>cc64f331</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/28">#828</a> from 99designs/feat-rc</summary>
 
 introduce RequestContext#Validate and use it instead of NewRequestContext function
 
@@ -4947,7 +3789,7 @@ introduce RequestContext#Validate and use it instead of NewRequestContext functi
 
 - <a href="https://github.com/99designs/gqlgen/commit/5a7c5903f64efb240d575ef947b0ed1d59b1a3d0"><tt>5a7c5903</tt></a> Allow changing context in websocket init func
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/17f32d28c29ec45dce407f2f6afac16bdd8d64ca"><tt>17f32d28</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/861">#861</a> from 99designs/refactor-test-client</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/17f32d28c29ec45dce407f2f6afac16bdd8d64ca"><tt>17f32d28</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/61">#861</a> from 99designs/refactor-test-client</summary>
 
 Refactor test client
 
@@ -4975,7 +3817,7 @@ fix formatting
 
 - <a href="https://github.com/99designs/gqlgen/commit/feebee7d305e02b6ba96eb9307922436a61f99a4"><tt>feebee7d</tt></a> stalebot
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7e643fdc5cc5097f786ef6a386e28feee293fd7a"><tt>7e643fdc</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/838">#838</a> from 99designs/fix-directive-nil</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7e643fdc5cc5097f786ef6a386e28feee293fd7a"><tt>7e643fdc</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/38">#838</a> from 99designs/fix-directive-nil</summary>
 
 fix directives return nil handling
 
@@ -4983,7 +3825,7 @@ fix directives return nil handling
 
 - <a href="https://github.com/99designs/gqlgen/commit/f33e09e8109cfcc1ef2dd4096d27d0a4b6eee9c8"><tt>f33e09e8</tt></a> Merge branch 'master' into fix-directive-nil
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8590edef5b8bbf094240f33c0ed696e034ca80e0"><tt>8590edef</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/839">#839</a> from 99designs/fix-nil-directive</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8590edef5b8bbf094240f33c0ed696e034ca80e0"><tt>8590edef</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/39">#839</a> from 99designs/fix-nil-directive</summary>
 
 refactor unimplemented directive handling
 
@@ -5009,13 +3851,13 @@ refactor unimplemented directive handling
 ## [v0.9.3](https://github.com/99designs/gqlgen/compare/v0.9.2...v0.9.3) - 2019-08-16
 - <a href="https://github.com/99designs/gqlgen/commit/a7bc468ca1b184a5ce1b07ea331e0121fc56ae82"><tt>a7bc468c</tt></a> release v0.9.3
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/fc02cfe83a8f78f36b5e37a63b0a87bf511e94b2"><tt>fc02cfe8</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/829">#829</a> from 99designs/fix-2directives</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/fc02cfe83a8f78f36b5e37a63b0a87bf511e94b2"><tt>fc02cfe8</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/29">#829</a> from 99designs/fix-2directives</summary>
 
 fix go syntax issue when field has 2 directives
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/924f620c4110ac02b76d302d686f3c58e77948ed"><tt>924f620c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/831">#831</a> from yudppp/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/924f620c4110ac02b76d302d686f3c58e77948ed"><tt>924f620c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/31">#831</a> from yudppp/patch-1</summary>
 
 Fixed scalar reference documentation
 
@@ -5035,7 +3877,7 @@ Fixed scalar reference documentation
 ## [v0.9.2](https://github.com/99designs/gqlgen/compare/v0.9.1...v0.9.2) - 2019-08-08
 - <a href="https://github.com/99designs/gqlgen/commit/4eeacc6e4cb7bedc7c5312b6a3947697ad5cfb55"><tt>4eeacc6e</tt></a> release v0.9.2
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5628169dd38517e856e3d12b50696b4e9a79d60f"><tt>5628169d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/822">#822</a> from 99designs/windows-import-path-loop</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5628169dd38517e856e3d12b50696b4e9a79d60f"><tt>5628169d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/22">#822</a> from 99designs/windows-import-path-loop</summary>
 
 fix for windows infinite loop
 
@@ -5045,7 +3887,7 @@ fix for windows infinite loop
 
 - <a href="https://github.com/99designs/gqlgen/commit/6348a5632123286aae227c456f5178275ddb737a"><tt>6348a563</tt></a> fix for windows infinite loop
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/12893fa4db4bcd5b341aed584dd584d0c6f2b226"><tt>12893fa4</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/821">#821</a> from 99designs/fix-init</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/12893fa4db4bcd5b341aed584dd584d0c6f2b226"><tt>12893fa4</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/21">#821</a> from 99designs/fix-init</summary>
 
 Fix config loading during gqlgen init
 
@@ -5053,7 +3895,7 @@ Fix config loading during gqlgen init
 
 - <a href="https://github.com/99designs/gqlgen/commit/5fafe79c050ae34448ee495c703caced6b8f3126"><tt>5fafe79c</tt></a> Fix config loading during gqlgen init
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2599f5607863415a015feb97f1abb9d46359e1ee"><tt>2599f560</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/820">#820</a> from 99designs/keepalive-on-init</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2599f5607863415a015feb97f1abb9d46359e1ee"><tt>2599f560</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/20">#820</a> from 99designs/keepalive-on-init</summary>
 
 send keepalive on init
 
@@ -5063,7 +3905,7 @@ send keepalive on init
 
 - <a href="https://github.com/99designs/gqlgen/commit/f93df34059a0867c7c33bc992aff0e3a5ddb0f14"><tt>f93df340</tt></a> send keepalive on init
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8f0d9b482a9b735810a99c80543c37323592e4e9"><tt>8f0d9b48</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/816">#816</a> from nii236/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8f0d9b482a9b735810a99c80543c37323592e4e9"><tt>8f0d9b48</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/16">#816</a> from nii236/patch-1</summary>
 
 Update cors.md to allow CORS for websockets
 
@@ -5071,7 +3913,7 @@ Update cors.md to allow CORS for websockets
 
 - <a href="https://github.com/99designs/gqlgen/commit/297e09c4a99356b8c7ef7ec7922ba86a94d4c435"><tt>297e09c4</tt></a> change origin check
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/410d83225aec8f4cb20e50b2a187a16d6dceded6"><tt>410d8322</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/805">#805</a> from andrey1s/golangci</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/410d83225aec8f4cb20e50b2a187a16d6dceded6"><tt>410d8322</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/05">#805</a> from andrey1s/golangci</summary>
 
 enable-all linters on golangci-lint
 
@@ -5085,31 +3927,31 @@ enable-all linters on golangci-lint
 
 - <a href="https://github.com/99designs/gqlgen/commit/cce06f1d060bbb5093e6c5b992ec907499725403"><tt>cce06f1d</tt></a> update lint in circleci
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/da1c208e00658e40800af7029fd4b522c5f9655c"><tt>da1c208e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/795">#795</a> from oshalygin/feature/issue-794-resolve-dead-readme-link</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/da1c208e00658e40800af7029fd4b522c5f9655c"><tt>da1c208e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/95">#795</a> from oshalygin/feature/issue-794-resolve-dead-readme-link</summary>
 
 Update GraphQL Reference Link
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8343c32c2b0059bd8d04ac56fa3c82bbbb6b908e"><tt>8343c32c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/784">#784</a> from y15e/add-missing-header</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8343c32c2b0059bd8d04ac56fa3c82bbbb6b908e"><tt>8343c32c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/84">#784</a> from y15e/add-missing-header</summary>
 
 Add a missing "Upload" header
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8302463fb74745c198436381049f7adbd750421e"><tt>8302463f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/797">#797</a> from muesli/format-fixes</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8302463fb74745c198436381049f7adbd750421e"><tt>8302463f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/97">#797</a> from muesli/format-fixes</summary>
 
 Format import order using goimports
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f2825e09c2331e21d0e3bdbeba4ffbd23cd7a1b0"><tt>f2825e09</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/801">#801</a> from Schparky/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f2825e09c2331e21d0e3bdbeba4ffbd23cd7a1b0"><tt>f2825e09</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/01">#801</a> from Schparky/patch-1</summary>
 
 Documentation: getting-started edits
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3db5627f2f3987b7cec7e8732b24cc2fdf27fc24"><tt>3db5627f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/807">#807</a> from flrossetto/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3db5627f2f3987b7cec7e8732b24cc2fdf27fc24"><tt>3db5627f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/07">#807</a> from flrossetto/patch-1</summary>
 
 Fix doc
 
@@ -5156,7 +3998,7 @@ map[string]{interface} -> map[string]interface{}
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/373359de83dd626d4a19ec57b7b599c58c88ca2c"><tt>373359de</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/781">#781</a> from 99designs/fix-default-directives-init</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/373359de83dd626d4a19ec57b7b599c58c88ca2c"><tt>373359de</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/81">#781</a> from 99designs/fix-default-directives-init</summary>
 
 Set default directives after parsing config
 
@@ -5166,13 +4008,13 @@ Set default directives after parsing config
 
 - <a href="https://github.com/99designs/gqlgen/commit/8cab5fba1f1c7ebda1a3cffc789a7ab7a2ac2736"><tt>8cab5fba</tt></a> Set default directives after parsing config
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d2c5bf2ae2d8d7da647aded0b3287be4ad2547a9"><tt>d2c5bf2a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/780">#780</a> from zdebra/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d2c5bf2ae2d8d7da647aded0b3287be4ad2547a9"><tt>d2c5bf2a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/80">#780</a> from zdebra/master</summary>
 
 fixed generating a description to golang comments for enum type
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bf2cc90ec9bda2be035d6fc93f58344577f12172"><tt>bf2cc90e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/768">#768</a> from 99designs/fix-ptr-from-directive</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bf2cc90ec9bda2be035d6fc93f58344577f12172"><tt>bf2cc90e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/68">#768</a> from 99designs/fix-ptr-from-directive</summary>
 
 Fix pointer returns from directive
 
@@ -5180,7 +4022,7 @@ Fix pointer returns from directive
 
 - <a href="https://github.com/99designs/gqlgen/commit/446c3df37f727fd638442669f2e86b12fa688c3a"><tt>446c3df3</tt></a> fixed generating a description to golang comments for enum type
 
-- <a href="https://github.com/99designs/gqlgen/commit/414a4d3414b2b5856851816f0152980098f7b3ab"><tt>414a4d34</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/771">#771</a> from sunfmin/master
+- <a href="https://github.com/99designs/gqlgen/commit/414a4d3414b2b5856851816f0152980098f7b3ab"><tt>414a4d34</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/71">#771</a> from sunfmin/master
 
 - <a href="https://github.com/99designs/gqlgen/commit/4d1484b012d9f0d35d82f1ffa24157e66faac444"><tt>4d1484b0</tt></a> Fix doc for how to use [@goField](https://github.com/goField) directives forceResolver option
 
@@ -5202,7 +4044,7 @@ this was affecting the version shown in go modules when using commits
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5ffc29754dd71a847f6860f0fb37d75dea367ee7"><tt>5ffc2975</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/764">#764</a> from 99designs/fix-field-directives-on-roots</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5ffc29754dd71a847f6860f0fb37d75dea367ee7"><tt>5ffc2975</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/64">#764</a> from 99designs/fix-field-directives-on-roots</summary>
 
 fix field schema directives applied to roots
 
@@ -5210,7 +4052,7 @@ fix field schema directives applied to roots
 
 - <a href="https://github.com/99designs/gqlgen/commit/ef3830b5e951d30dd49c43183dc029c79c338645"><tt>ef3830b5</tt></a> fix field schema directives applied to roots
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/17ee40ba40898db7b8293e537ee6bb0aa953c0b3"><tt>17ee40ba</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/761">#761</a> from 99designs/autobinding</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/17ee40ba40898db7b8293e537ee6bb0aa953c0b3"><tt>17ee40ba</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/61">#761</a> from 99designs/autobinding</summary>
 
 Autobind models
 
@@ -5218,7 +4060,7 @@ Autobind models
 
 - <a href="https://github.com/99designs/gqlgen/commit/b716bfac517ae641461df88c525643b5fcdf184e"><tt>b716bfac</tt></a> Autobind models
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/fc3755f1c2f0eb6383c59646388161052aa5e676"><tt>fc3755f1</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/732">#732</a> from 99designs/schemaconfig-plugin</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/fc3755f1c2f0eb6383c59646388161052aa5e676"><tt>fc3755f1</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/32">#732</a> from 99designs/schemaconfig-plugin</summary>
 
 Add a plugin for configuring gqlgen via directives
 
@@ -5228,13 +4070,13 @@ Add a plugin for configuring gqlgen via directives
 
 - <a href="https://github.com/99designs/gqlgen/commit/64aca616f334797818f7272c0c11eccc86d2d93b"><tt>64aca616</tt></a> Merge remote-tracking branch 'origin/master' into schemaconfig-plugin
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5e7e94c80034a986f45305eb6c5ed559259fbd16"><tt>5e7e94c8</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/756">#756</a> from andrey1s/field</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5e7e94c80034a986f45305eb6c5ed559259fbd16"><tt>5e7e94c8</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/56">#756</a> from andrey1s/field</summary>
 
 generate field defenition and execute field directive
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ad2ca304b532470721a0a6d2a9a78b85eef633cf"><tt>ad2ca304</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/759">#759</a> from 99designs/circle-workflows</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ad2ca304b532470721a0a6d2a9a78b85eef633cf"><tt>ad2ca304</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/59">#759</a> from 99designs/circle-workflows</summary>
 
 CircleCI workflows
 
@@ -5242,7 +4084,7 @@ CircleCI workflows
 
 - <a href="https://github.com/99designs/gqlgen/commit/0fc822ca68f02fe7c510519ca91c7e0a131fbb99"><tt>0fc822ca</tt></a> CircleCI workflows
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2dc8423b7937c9d012ee8886d2854011cf61dee7"><tt>2dc8423b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/758">#758</a> from franxois/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2dc8423b7937c9d012ee8886d2854011cf61dee7"><tt>2dc8423b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/58">#758</a> from franxois/patch-1</summary>
 
 Update dataloaders.md
 
@@ -5266,7 +4108,7 @@ Make SQL request use requested IDs
 
 - <a href="https://github.com/99designs/gqlgen/commit/dd162f04051c034bfae7c8fb3732975dec449586"><tt>dd162f04</tt></a> define implDirectives template
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/56f3f92b8ee315ef8a3c32484e6b63dd13ae574a"><tt>56f3f92b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/755">#755</a> from 99designs/fix-globbing-windows</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/56f3f92b8ee315ef8a3c32484e6b63dd13ae574a"><tt>56f3f92b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/55">#755</a> from 99designs/fix-globbing-windows</summary>
 
 fix globbing on windows
 
@@ -5274,7 +4116,7 @@ fix globbing on windows
 
 - <a href="https://github.com/99designs/gqlgen/commit/a4480fb078794d8761a77d5053abf7fd0cb759fc"><tt>a4480fb0</tt></a> fix globbing on windows
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ba176e2efbc717c6da5ca9b604524104c3daddec"><tt>ba176e2e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/754">#754</a> from 99designs/coveralls</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ba176e2efbc717c6da5ca9b604524104c3daddec"><tt>ba176e2e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/54">#754</a> from 99designs/coveralls</summary>
 
 Add coveralls
 
@@ -5282,7 +4124,7 @@ Add coveralls
 
 - <a href="https://github.com/99designs/gqlgen/commit/f28ed264310d3c62c0a19a5de742d006019a7675"><tt>f28ed264</tt></a> Add coveralls
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f4a69ab5fa6235e840c1059fbf0a670c1ab69177"><tt>f4a69ab5</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/744">#744</a> from andrey1s/directive</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f4a69ab5fa6235e840c1059fbf0a670c1ab69177"><tt>f4a69ab5</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/44">#744</a> from andrey1s/directive</summary>
 
 add Execute QUERY/MUTATION/SUBSCRIPTION Directives
 
@@ -5290,19 +4132,19 @@ add Execute QUERY/MUTATION/SUBSCRIPTION Directives
 
 - <a href="https://github.com/99designs/gqlgen/commit/dbd2cc6e5d5eedfad3c857c4d8cb1052a25ff19f"><tt>dbd2cc6e</tt></a> simplify resolver test
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7fed71b6ce42790a2894fb550ef33f186acacd65"><tt>7fed71b6</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/728">#728</a> from fgallina/make-generated-resolver-dependent-types-follow-configured-type</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7fed71b6ce42790a2894fb550ef33f186acacd65"><tt>7fed71b6</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/28">#728</a> from fgallina/make-generated-resolver-dependent-types-follow-configured-type</summary>
 
 resolvergen: use the resolver type as base name for dependent types
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/cb284c568490926d6d25999daab9ee3ad3bc6a06"><tt>cb284c56</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/734">#734</a> from DBL-Lee/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/cb284c568490926d6d25999daab9ee3ad3bc6a06"><tt>cb284c56</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/34">#734</a> from DBL-Lee/master</summary>
 
 Automatic Persisted Queries
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/726a94f4895cb9d7ca031e97893e60eac3ac0e5d"><tt>726a94f4</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/750">#750</a> from 99designs/ws-connection-param-check</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/726a94f4895cb9d7ca031e97893e60eac3ac0e5d"><tt>726a94f4</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/50">#750</a> from 99designs/ws-connection-param-check</summary>
 
 [websocket] Add a config to reject initial connection
 
@@ -5310,7 +4152,7 @@ Automatic Persisted Queries
 
 - <a href="https://github.com/99designs/gqlgen/commit/69d7e28241b9847a073f1a335a5cc12e2efddf05"><tt>69d7e282</tt></a> move directive to directives.gotpl
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/090f0bd949536c41d2d0610c0454263bd80f8243"><tt>090f0bd9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/722">#722</a> from marwan-at-work/deps</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/090f0bd949536c41d2d0610c0454263bd80f8243"><tt>090f0bd9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/22">#722</a> from marwan-at-work/deps</summary>
 
 resolve all pkg dependencies
 
@@ -5380,7 +4222,7 @@ diff -u resolver.go resolvernew.go
 
 - <a href="https://github.com/99designs/gqlgen/commit/8fcc186817974f99060f0f815dd3935876607bf0"><tt>8fcc1868</tt></a> format
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e0e1e318bb5bbae97348f3d773fd16d8f7fc8317"><tt>e0e1e318</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/1">#1</a> from radev/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e0e1e318bb5bbae97348f3d773fd16d8f7fc8317"><tt>e0e1e318</tt></a> Merge pull request [#1](https://github.com/99designs/gqlgen/issues/1) from radev/master</summary>
 
 Support for external APQ cache
 
@@ -5390,7 +4232,7 @@ Support for external APQ cache
 
 - <a href="https://github.com/99designs/gqlgen/commit/48292c1020344b7686efa6667ea16ed7706ece14"><tt>48292c10</tt></a> Support pluggable APQ cache implementations.
 
-- <a href="https://github.com/99designs/gqlgen/commit/694f90aa089c34a80bf3007a6d298a96ba7f132c"><tt>694f90aa</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/717">#717</a> from cbelsole/schema_file_globbing (closes <a href="https://github.com/99designs/gqlgen/issues/631"> #631</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/694f90aa089c34a80bf3007a6d298a96ba7f132c"><tt>694f90aa</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/17">#717</a> from cbelsole/schema_file_globbing (closes <a href="https://github.com/99designs/gqlgen/issues/631"> #631</a>)
 
 - <a href="https://github.com/99designs/gqlgen/commit/9be5aad0cf295796e01ea0955ff53f944a8c5cb9"><tt>9be5aad0</tt></a> Don't inject builtins during schema config
 
@@ -5402,7 +4244,7 @@ Support for external APQ cache
 
 - <a href="https://github.com/99designs/gqlgen/commit/17a82c37e86df494354c92de4b306a15c11747ee"><tt>17a82c37</tt></a> Provide config to skip generating runtime for a directive
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ba7092c595a7e62f3a2350504f35bd2cc11b0c1b"><tt>ba7092c5</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/724">#724</a> from saint1991/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ba7092c595a7e62f3a2350504f35bd2cc11b0c1b"><tt>ba7092c5</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/24">#724</a> from saint1991/patch-1</summary>
 
 added a missing close bracket
 
@@ -5412,7 +4254,7 @@ added a missing close bracket
 
 - <a href="https://github.com/99designs/gqlgen/commit/3dd8baf528b79dc3945f6a156c7cb7316ef87479"><tt>3dd8baf5</tt></a> resolve all pkg dependencies
 
-- <a href="https://github.com/99designs/gqlgen/commit/1617ff28daba04a67413ba9696c7650e718aa080"><tt>1617ff28</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/718">#718</a> from hh/fix-docs (closes <a href="https://github.com/99designs/gqlgen/issues/714"> #714</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/1617ff28daba04a67413ba9696c7650e718aa080"><tt>1617ff28</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/18">#718</a> from hh/fix-docs (closes <a href="https://github.com/99designs/gqlgen/issues/714"> #714</a>)
 
 - <a href="https://github.com/99designs/gqlgen/commit/9d332a7d77d025b2f4e9bec74a8c7c06c6129098"><tt>9d332a7d</tt></a> Fixing getting-started documentation
 
@@ -5420,9 +4262,9 @@ added a missing close bracket
 
 - <a href="https://github.com/99designs/gqlgen/commit/e32c82be0f3d562b149c01b08f459b6515b75aca"><tt>e32c82be</tt></a> cleanup
 
-- <a href="https://github.com/99designs/gqlgen/commit/e9389ef8f8eee80eec108983575ed303e99000e9"><tt>e9389ef8</tt></a> added schema file globbing fixes <a href="https://github.com/99designs/gqlgen/pull/631">#631</a>
+- <a href="https://github.com/99designs/gqlgen/commit/e9389ef8f8eee80eec108983575ed303e99000e9"><tt>e9389ef8</tt></a> added schema file globbing fixes <a href="https://github.com/99designs/gqlgen/pull/31">#631</a>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4f163cbc8466634ddaeca0a4071813a76ec55ea5"><tt>4f163cbc</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/713">#713</a> from 99designs/faq</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4f163cbc8466634ddaeca0a4071813a76ec55ea5"><tt>4f163cbc</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/13">#713</a> from 99designs/faq</summary>
 
 Add faq section
 
@@ -5438,7 +4280,7 @@ Add faq section
 ## [v0.9.0](https://github.com/99designs/gqlgen/compare/v0.8.3...v0.9.0) - 2019-05-15
 - <a href="https://github.com/99designs/gqlgen/commit/ea4652d223c441dc77b31882781ce08488763d67"><tt>ea4652d2</tt></a> release v0.9.0
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f3c8406d909bd3f7bce89897637648870f7b1295"><tt>f3c8406d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/710">#710</a> from 99designs/slice-pointers</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f3c8406d909bd3f7bce89897637648870f7b1295"><tt>f3c8406d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/10">#710</a> from 99designs/slice-pointers</summary>
 
 Use pointers to structs inside slices
 
@@ -5448,7 +4290,7 @@ Use pointers to structs inside slices
 
 - <a href="https://github.com/99designs/gqlgen/commit/315141d9bd2ab14169a88a50f19326c4483d17e3"><tt>315141d9</tt></a> Use pointers to structs inside slices
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9a6a10abe7d927f2d3271acc9bff9058cd070bf9"><tt>9a6a10ab</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/706">#706</a> from 99designs/mapping-primitive</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9a6a10abe7d927f2d3271acc9bff9058cd070bf9"><tt>9a6a10ab</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/06">#706</a> from 99designs/mapping-primitive</summary>
 
 Fix mapping object types onto go primitives
 
@@ -5458,13 +4300,13 @@ Fix mapping object types onto go primitives
 
 - <a href="https://github.com/99designs/gqlgen/commit/b0cd95a19710fd92ab9e76422591ac9f0c5a6f31"><tt>b0cd95a1</tt></a> Test mapping object types onto go string
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/eaa61bb56c75a6fdb98ee7b53b81b70b519b35ba"><tt>eaa61bb5</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/707">#707</a> from 99designs/gomodules-performance</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/eaa61bb56c75a6fdb98ee7b53b81b70b519b35ba"><tt>eaa61bb5</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/07">#707</a> from 99designs/gomodules-performance</summary>
 
 make gqlgen generate 10x faster in some projects
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ab961ce000f72314346521009172e6391d107b69"><tt>ab961ce0</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/705">#705</a> from 99designs/fix-error-race</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ab961ce000f72314346521009172e6391d107b69"><tt>ab961ce0</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/05">#705</a> from 99designs/fix-error-race</summary>
 
 Fix a data race when handling concurrent resolver errors
 
@@ -5476,7 +4318,7 @@ Fix a data race when handling concurrent resolver errors
 
 - <a href="https://github.com/99designs/gqlgen/commit/962470dec347d728e236395c59844ae0acf22333"><tt>962470de</tt></a> Fix a data race when handling concurrent resolver errors
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9ca43ba938f6c67a33986cddf650658fc406fe95"><tt>9ca43ba9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/701">#701</a> from 99designs/modelgen-pointers</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9ca43ba938f6c67a33986cddf650658fc406fe95"><tt>9ca43ba9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/01">#701</a> from 99designs/modelgen-pointers</summary>
 
 Use pointers when embedding structs in generated structs
 
@@ -5484,7 +4326,7 @@ Use pointers when embedding structs in generated structs
 
 - <a href="https://github.com/99designs/gqlgen/commit/4f5e9cf03a047ce69523df374be8dd3991735f65"><tt>4f5e9cf0</tt></a> always use pointers when refering to structs in generated models
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e2ac84807945c048572c49bb73b48aa70845ca04"><tt>e2ac8480</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/704">#704</a> from tul/doc-typo</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e2ac84807945c048572c49bb73b48aa70845ca04"><tt>e2ac8480</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/04">#704</a> from tul/doc-typo</summary>
 
 Fix typo
 
@@ -5492,13 +4334,13 @@ Fix typo
 
 - <a href="https://github.com/99designs/gqlgen/commit/80ebe644b0286a466beea67f6a76c910b083b8fd"><tt>80ebe644</tt></a> Fix typo
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0bd9080964817324cbb046a3833bdfc4674d22fb"><tt>0bd90809</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/700">#700</a> from 99designs/fix-interface-caseing</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0bd9080964817324cbb046a3833bdfc4674d22fb"><tt>0bd90809</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/00">#700</a> from 99designs/fix-interface-caseing</summary>
 
 Fix interface casing
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5586ee2c0e610ad2f257d2bda577d97437bbb17e"><tt>5586ee2c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/702">#702</a> from 99designs/drop-automatic-zeroisnull</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5586ee2c0e610ad2f257d2bda577d97437bbb17e"><tt>5586ee2c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/02">#702</a> from 99designs/drop-automatic-zeroisnull</summary>
 
 Drop automatic conversion of IsZero to null
 
@@ -5508,7 +4350,7 @@ Drop automatic conversion of IsZero to null
 
 - <a href="https://github.com/99designs/gqlgen/commit/46c40b748d55bcecd236c1ca827cef00808a5363"><tt>46c40b74</tt></a> Fix interface casing (closes <a href="https://github.com/99designs/gqlgen/issues/694"> #694</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e49d44f7464a05347691bfa9ed9eab44bf4ffe5f"><tt>e49d44f7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/689">#689</a> from tgwizard/enforce-request-content-type</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e49d44f7464a05347691bfa9ed9eab44bf4ffe5f"><tt>e49d44f7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/89">#689</a> from tgwizard/enforce-request-content-type</summary>
 
 Enforce content type for POST requests
 
@@ -5518,13 +4360,13 @@ Enforce content type for POST requests
 
 - <a href="https://github.com/99designs/gqlgen/commit/d4b3de3aff5eeb6ad9a7093e6b3905edeef10f1e"><tt>d4b3de3a</tt></a> Merge remote-tracking branch 'origin/master' into enforce-request-content-type
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f8ef6d2e2be1b481f4fdbb065da5b50236600143"><tt>f8ef6d2e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/668">#668</a> from mbranch/complexity</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f8ef6d2e2be1b481f4fdbb065da5b50236600143"><tt>f8ef6d2e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/68">#668</a> from mbranch/complexity</summary>
 
 Fix: complexity case selection
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c4805049b75965b1305583fda6e60487c727d8a0"><tt>c4805049</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/655">#655</a> from hantonelli/file-upload</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c4805049b75965b1305583fda6e60487c727d8a0"><tt>c4805049</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/55">#655</a> from hantonelli/file-upload</summary>
 
 File upload
 
@@ -5534,7 +4376,7 @@ File upload
 
 - <a href="https://github.com/99designs/gqlgen/commit/8a0c34a485d06a2eea5e8fb7cbc0aed0a025d80d"><tt>8a0c34a4</tt></a> Merge branch 'master' into file-upload
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4e359aa26d29f8a182010e907a834ee948abf45d"><tt>4e359aa2</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/686">#686</a> from qhenkart/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4e359aa26d29f8a182010e907a834ee948abf45d"><tt>4e359aa2</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/86">#686</a> from qhenkart/master</summary>
 
 Adds default custom scalar of interface{}
 
@@ -5563,7 +4405,7 @@ field names to the associated complexity func.
 
 - <a href="https://github.com/99designs/gqlgen/commit/bf2d07a47fa57b27434a02021ca8ed868019ba9c"><tt>bf2d07a4</tt></a> moves naming convention to a non-go standard
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d1e8acda1dd71b8f944ab08019e70ae6092ab61a"><tt>d1e8acda</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/687">#687</a> from stereosteve/fix-includeDeprecated</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d1e8acda1dd71b8f944ab08019e70ae6092ab61a"><tt>d1e8acda</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/87">#687</a> from stereosteve/fix-includeDeprecated</summary>
 
 Fix: omit deprecated fields when includeDeprecated=false
 
@@ -5595,7 +4437,7 @@ This reverts commit 7ade7c2
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/afe33f73875beca92e917742c1f49c1f6145018b"><tt>afe33f73</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/680">#680</a> from asp24/collect-fields-performance</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/afe33f73875beca92e917742c1f49c1f6145018b"><tt>afe33f73</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/80">#680</a> from asp24/collect-fields-performance</summary>
 
 Better CollectFields performance
 
@@ -5613,7 +4455,7 @@ Better CollectFields performance
 
 - <a href="https://github.com/99designs/gqlgen/commit/da52e810cf98ffe9a57cb0a8ecf68df97f6ac6f7"><tt>da52e810</tt></a> Extend test and don't close form file.
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1c95d42a4cd8e20fd41dba4170e02e03ad7dacbe"><tt>1c95d42a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/678">#678</a> from jonatasbaldin/gin-context-recipe</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1c95d42a4cd8e20fd41dba4170e02e03ad7dacbe"><tt>1c95d42a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/78">#678</a> from jonatasbaldin/gin-context-recipe</summary>
 
 Fix unset key and comment block at Gin recipe docs
 
@@ -5621,7 +4463,7 @@ Fix unset key and comment block at Gin recipe docs
 
 - <a href="https://github.com/99designs/gqlgen/commit/0b39c44526fa300bb9341edd1e11fa71e7cdcd74"><tt>0b39c445</tt></a> Fix unset key and comment block
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5aa6a20b72ec0d90dc676abcd796ad33b2e39a83"><tt>5aa6a20b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/673">#673</a> from marwan-at-work/tpl</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5aa6a20b72ec0d90dc676abcd796ad33b2e39a83"><tt>5aa6a20b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/73">#673</a> from marwan-at-work/tpl</summary>
 
 codegen/templates: allow templates to be passed in options instead of…
 
@@ -5631,7 +4473,7 @@ codegen/templates: allow templates to be passed in options instead of…
 
 - <a href="https://github.com/99designs/gqlgen/commit/e69b739955acd2e2bd744ec84abc61661ca6a626"><tt>e69b7399</tt></a> add docs to the templates package
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8cae895b99cad57406851d11b2fd92c628f18ff6"><tt>8cae895b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/676">#676</a> from jonatasbaldin/gin-context-recipe</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8cae895b99cad57406851d11b2fd92c628f18ff6"><tt>8cae895b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/76">#676</a> from jonatasbaldin/gin-context-recipe</summary>
 
 Add recipe to use gin.Context
 
@@ -5647,7 +4489,7 @@ Add recipe to use gin.Context
 
 - <a href="https://github.com/99designs/gqlgen/commit/2cf7f452dd9ca5b4baa1399c501926a51debf59d"><tt>2cf7f452</tt></a> Fix comments (add request size limit, remove useless comments, improve decoding and function signature, improve documentation)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5ff60925ce417b4689cd745361bb800608192dfe"><tt>5ff60925</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/665">#665</a> from ezeql/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5ff60925ce417b4689cd745361bb800608192dfe"><tt>5ff60925</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/65">#665</a> from ezeql/patch-1</summary>
 
 update README.md
 
@@ -5730,19 +4572,19 @@ fix link
 ## [v0.8.3](https://github.com/99designs/gqlgen/compare/v0.8.2...v0.8.3) - 2019-04-03
 - <a href="https://github.com/99designs/gqlgen/commit/010a79b66f08732cb70d133dcab297a8ee895572"><tt>010a79b6</tt></a> release v0.8.3
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3623f7fcd78ac6e8ddaff3ecfb5b0e006c8e862a"><tt>3623f7fc</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/650">#650</a> from andcan/plugin-funcmap</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3623f7fcd78ac6e8ddaff3ecfb5b0e006c8e862a"><tt>3623f7fc</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/50">#650</a> from andcan/plugin-funcmap</summary>
 
 Allow plugins to provide additional template funcs
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a2e5936250f2807a1d1faebd1a2bf0d918af533d"><tt>a2e59362</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/652">#652</a> from andrey1s/extraBuiltins</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a2e5936250f2807a1d1faebd1a2bf0d918af533d"><tt>a2e59362</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/52">#652</a> from andrey1s/extraBuiltins</summary>
 
 add extra builtins types when no type exists
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c93d92ba10391cd0a1e44e493ed38ff85bb2acb0"><tt>c93d92ba</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/654">#654</a> from sharkyze/fix-introscpetion-doc</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c93d92ba10391cd0a1e44e493ed38ff85bb2acb0"><tt>c93d92ba</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/54">#654</a> from sharkyze/fix-introscpetion-doc</summary>
 
 doc: fix mistake on introspection doc page
 
@@ -5750,7 +4592,7 @@ doc: fix mistake on introspection doc page
 
 - <a href="https://github.com/99designs/gqlgen/commit/93e72b589b09e7582f072d9e911decb2d897c971"><tt>93e72b58</tt></a> doc: fix error on introspection doc page
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ef2e51ba3e4b6408c48f4e44e0b048947196719b"><tt>ef2e51ba</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/637">#637</a> from 99designs/fix-is-slice</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ef2e51ba3e4b6408c48f4e44e0b048947196719b"><tt>ef2e51ba</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/37">#637</a> from 99designs/fix-is-slice</summary>
 
 Fix Mapping Custom Scalar to Slice
 
@@ -5764,7 +4606,7 @@ Fix Mapping Custom Scalar to Slice
 
 - <a href="https://github.com/99designs/gqlgen/commit/055157f979f06a490979726db7ec20d8d9a634d4"><tt>055157f9</tt></a> Update ISSUE_TEMPLATE.md
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a148229cff7c5cb02b61caba81d7142ec9ef9948"><tt>a148229c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/644">#644</a> from Sauraus/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a148229cff7c5cb02b61caba81d7142ec9ef9948"><tt>a148229c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/44">#644</a> from Sauraus/master</summary>
 
 Fix Gin installation instruction
 
@@ -5794,7 +4636,7 @@ cases such as a scalar mapping to []byte
 ## [v0.8.2](https://github.com/99designs/gqlgen/compare/v0.8.1...v0.8.2) - 2019-03-18
 - <a href="https://github.com/99designs/gqlgen/commit/ee06517c25deb254fa6708609ee5fd3fb3fbdbf2"><tt>ee06517c</tt></a> release v0.8.2
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8ac8a1f8142aaa0a4ce12d30c9680236efbffb03"><tt>8ac8a1f8</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/635">#635</a> from 99designs/fix-inject-builtin-scalars</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8ac8a1f8142aaa0a4ce12d30c9680236efbffb03"><tt>8ac8a1f8</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/35">#635</a> from 99designs/fix-inject-builtin-scalars</summary>
 
 Only Inject Builtin Scalars if Defined in Schema
 
@@ -5806,7 +4648,7 @@ Only Inject Builtin Scalars if Defined in Schema
 
 - <a href="https://github.com/99designs/gqlgen/commit/d567d5c8f737fc9870e4772e9e04e5e0dbe04e7a"><tt>d567d5c8</tt></a> Inject non-spec builtin values only if defined
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3e39b57a98fac8d4db1a85e0b998bd83e29fb9c5"><tt>3e39b57a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/634">#634</a> from 99designs/fallback-to-string</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3e39b57a98fac8d4db1a85e0b998bd83e29fb9c5"><tt>3e39b57a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/34">#634</a> from 99designs/fallback-to-string</summary>
 
 Use graphql.String for types wrapping a basic string
 
@@ -5814,7 +4656,7 @@ Use graphql.String for types wrapping a basic string
 
 - <a href="https://github.com/99designs/gqlgen/commit/a2cce0d14984402fccd9e8abb9f286a80e7296fb"><tt>a2cce0d1</tt></a> Use graphql.String for types wrapping a basic string
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/fc05501b87c73faf116b1096490978254b4f2436"><tt>fc05501b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/633">#633</a> from 99designs/fix-union-pointers</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/fc05501b87c73faf116b1096490978254b4f2436"><tt>fc05501b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/33">#633</a> from 99designs/fix-union-pointers</summary>
 
 Fix Having Pointers to Union Types
 
@@ -5831,7 +4673,7 @@ to a Go stuct.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5df0938f0dfa6418457a23b31c5bd1b3bc7e879d"><tt>5df0938f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/628">#628</a> from 99designs/fix-ambient-imports</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5df0938f0dfa6418457a23b31c5bd1b3bc7e879d"><tt>5df0938f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/28">#628</a> from 99designs/fix-ambient-imports</summary>
 
 Move ambient imports into cmd package
 
@@ -5846,7 +4688,7 @@ This was changed in 0.8 but the ambient imports weren't moved.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/58744de96123b48aea4728f844b01694ff2b8ae9"><tt>58744de9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/622">#622</a> from 99designs/handle-complexity-root-collisions</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/58744de96123b48aea4728f844b01694ff2b8ae9"><tt>58744de9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/22">#622</a> from 99designs/handle-complexity-root-collisions</summary>
 
 Handle colliding fields in complexity root gracefully
 
@@ -5854,7 +4696,7 @@ Handle colliding fields in complexity root gracefully
 
 - <a href="https://github.com/99designs/gqlgen/commit/c889b3148f631f9e6a9467ee60cf3d21c0333ff8"><tt>c889b314</tt></a> Handle colliding fields in complexity root gracefully
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/26c395b02c59e39b264ab3f9750f845e660ad99c"><tt>26c395b0</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/620">#620</a> from codyleyhan/cl/error</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/26c395b02c59e39b264ab3f9750f845e660ad99c"><tt>26c395b0</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/20">#620</a> from codyleyhan/cl/error</summary>
 
 Allow user to supply path to gqlerror
 
@@ -5862,7 +4704,7 @@ Allow user to supply path to gqlerror
 
 - <a href="https://github.com/99designs/gqlgen/commit/12cf01aa60fef7be26b6c78ac3139b407ed7a455"><tt>12cf01aa</tt></a> Allow user to supply path to gqlerror
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/932322b6da351176889e41102f032202d1b0778c"><tt>932322b6</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/619">#619</a> from 99designs/nil-slices</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/932322b6da351176889e41102f032202d1b0778c"><tt>932322b6</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/19">#619</a> from 99designs/nil-slices</summary>
 
 Support returning nulls from slices
 
@@ -5870,7 +4712,7 @@ Support returning nulls from slices
 
 - <a href="https://github.com/99designs/gqlgen/commit/a48c55b24e22490ef3b6baffec247cf41b2f07f3"><tt>a48c55b2</tt></a> Support returning nulls from slices
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2b270e4d5f469bf764fff2e7c76ee3abc6d2aaa8"><tt>2b270e4d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/618">#618</a> from codyleyhan/cl/method</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2b270e4d5f469bf764fff2e7c76ee3abc6d2aaa8"><tt>2b270e4d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/18">#618</a> from codyleyhan/cl/method</summary>
 
 Adds way to determine if a resolver is a function call or value
 
@@ -5882,19 +4724,19 @@ Adds way to determine if a resolver is a function call or value
 
 - <a href="https://github.com/99designs/gqlgen/commit/f52726dec03743d4e96aa0f56e2b6569d55beaba"><tt>f52726de</tt></a> Update README.md
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ac2422e3ccf40361d7fc597c7e8d55df314c87c3"><tt>ac2422e3</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/614">#614</a> from wesovilabs/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ac2422e3ccf40361d7fc597c7e8d55df314c87c3"><tt>ac2422e3</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/14">#614</a> from wesovilabs/master</summary>
 
 Adding entry for workshop
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/db4f7255b11fc4468e7642894f007fde9e2b1102"><tt>db4f7255</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/613">#613</a> from icco/patch-2</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/db4f7255b11fc4468e7642894f007fde9e2b1102"><tt>db4f7255</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/13">#613</a> from icco/patch-2</summary>
 
 Upgrade graphql-playground to 1.7.20
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/163bfc76c47e6663a8514020db26f67f0786c8b9"><tt>163bfc76</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/612">#612</a> from 99designs/maps-changesets</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/163bfc76c47e6663a8514020db26f67f0786c8b9"><tt>163bfc76</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/12">#612</a> from 99designs/maps-changesets</summary>
 
 Maps as changesets
 
@@ -5908,7 +4750,7 @@ CSS didn't change but js did.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8fb1fafdcf641f4520b726d209cf2eb685dd69f3"><tt>8fb1fafd</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/611">#611</a> from 99designs/gqlparser-1.1.2</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8fb1fafdcf641f4520b726d209cf2eb685dd69f3"><tt>8fb1fafd</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/11">#611</a> from 99designs/gqlparser-1.1.2</summary>
 
 Bump gqlparser to 1.1.2
 
@@ -5920,7 +4762,7 @@ Bump gqlparser to 1.1.2
 
 - <a href="https://github.com/99designs/gqlgen/commit/0a92ca465691ea96186481471ec1ba01d6ecfaf8"><tt>0a92ca46</tt></a> Support map[string]interface{} in return types
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ac56112b0cb83260f8f9b18ee5f03bb0af6f6905"><tt>ac56112b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/610">#610</a> from tgwizard/dynamic-complexity</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ac56112b0cb83260f8f9b18ee5f03bb0af6f6905"><tt>ac56112b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/10">#610</a> from tgwizard/dynamic-complexity</summary>
 
 Allow configuring the complexity limit dynamically per request
 
@@ -5930,13 +4772,13 @@ Allow configuring the complexity limit dynamically per request
 
 - <a href="https://github.com/99designs/gqlgen/commit/dd2881455f20f37ec601791bf09e32db9e928790"><tt>dd288145</tt></a> Allow configuring the complexity limit dynamically per request
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/485ddf3051a289874577c8384a22d7e58b199e72"><tt>485ddf30</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/605">#605</a> from 99designs/fix-default-scalars</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/485ddf3051a289874577c8384a22d7e58b199e72"><tt>485ddf30</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/05">#605</a> from 99designs/fix-default-scalars</summary>
 
 Fix default scalars
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3ca2599adf049dba59dbf904de1ab0aeb14e2da3"><tt>3ca2599a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/606">#606</a> from jonatasbaldin/add-gin-recipe</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3ca2599adf049dba59dbf904de1ab0aeb14e2da3"><tt>3ca2599a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/06">#606</a> from jonatasbaldin/add-gin-recipe</summary>
 
 Add Gin recipe
 
@@ -5944,7 +4786,7 @@ Add Gin recipe
 
 - <a href="https://github.com/99designs/gqlgen/commit/386eede91a4d5b3b2b35944d08716c4ed0e4886a"><tt>386eede9</tt></a> Add Gin recipe
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/22be59d159135252154e46e21b0e0cbdf0fb23b9"><tt>22be59d1</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/604">#604</a> from cevou/arg-scalar</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/22be59d159135252154e46e21b0e0cbdf0fb23b9"><tt>22be59d1</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/04">#604</a> from cevou/arg-scalar</summary>
 
 Fix directives on args with custom type
 
@@ -5954,7 +4796,7 @@ Fix directives on args with custom type
 
 - <a href="https://github.com/99designs/gqlgen/commit/30d235bc781c1976c08def2ca5283998f4786d76"><tt>30d235bc</tt></a> Fix default scalars
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d7b5dc283de948282815a8addaa4ef36d8253358"><tt>d7b5dc28</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/591">#591</a> from 99designs/fix-577</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d7b5dc283de948282815a8addaa4ef36d8253358"><tt>d7b5dc28</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/91">#591</a> from 99designs/fix-577</summary>
 
 Fix mixed case name handling in ToGo, ToGoPrivate
 
@@ -5972,13 +4814,13 @@ Fix mixed case name handling in ToGo, ToGoPrivate
 ## [v0.8.1](https://github.com/99designs/gqlgen/compare/v0.8.0...v0.8.1) - 2019-03-07
 - <a href="https://github.com/99designs/gqlgen/commit/229185e45e9f411de393ee22f0daf0c30ad83812"><tt>229185e4</tt></a> release v0.8.1
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d872af63addc93b6b8e8df37a82bd33e312f5b59"><tt>d872af63</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/582">#582</a> from demdxx/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d872af63addc93b6b8e8df37a82bd33e312f5b59"><tt>d872af63</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/82">#582</a> from demdxx/master</summary>
 
 Load the playground sources from HTTPS by default
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8e66832f1f8fad88af08b05e0f5f0a36a7b4e0a4"><tt>8e66832f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/589">#589</a> from 99designs/fix-autocasing-modelgen-bugs</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8e66832f1f8fad88af08b05e0f5f0a36a7b4e0a4"><tt>8e66832f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/89">#589</a> from 99designs/fix-autocasing-modelgen-bugs</summary>
 
 Fix autocasing modelgen bugs
 
@@ -5986,7 +4828,7 @@ Fix autocasing modelgen bugs
 
 - <a href="https://github.com/99designs/gqlgen/commit/de3b7cb825c9676c720826472c7c54b0c0301ce0"><tt>de3b7cb8</tt></a> Fix autocasing modelgen bugs
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8e00703ebe967db83bf5544e169a8b0cc5895866"><tt>8e00703e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/588">#588</a> from 99designs/fix-default-scalar-implementation-regression</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8e00703ebe967db83bf5544e169a8b0cc5895866"><tt>8e00703e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/88">#588</a> from 99designs/fix-default-scalar-implementation-regression</summary>
 
 Fix default scalar implementation regression
 
@@ -5994,7 +4836,7 @@ Fix default scalar implementation regression
 
 - <a href="https://github.com/99designs/gqlgen/commit/b27139ed5c290214d979e374a23689fc36eed78a"><tt>b27139ed</tt></a> Fix default scalar implementation regression
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/737a59a31d6663987127ff604f671d326e509337"><tt>737a59a3</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/579">#579</a> from 99designs/fix-camelcase</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/737a59a31d6663987127ff604f671d326e509337"><tt>737a59a3</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/79">#579</a> from 99designs/fix-camelcase</summary>
 
 Take care about commonInitialisms in ToGo
 
@@ -6006,7 +4848,7 @@ Take care about commonInitialisms in ToGo
 
 - <a href="https://github.com/99designs/gqlgen/commit/eb4536743c4dc507df32da1fe7a581052f7c438c"><tt>eb453674</tt></a> address comment
 
-- <a href="https://github.com/99designs/gqlgen/commit/dcd208d91603475f4cb3505e89a71aeb53d0c52f"><tt>dcd208d9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/584">#584</a> from 99designs/fix-deprecated-directive
+- <a href="https://github.com/99designs/gqlgen/commit/dcd208d91603475f4cb3505e89a71aeb53d0c52f"><tt>dcd208d9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/84">#584</a> from 99designs/fix-deprecated-directive
 
 <dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5ba8c8ead3ca891601215263b5969e4942c52a6b"><tt>5ba8c8ea</tt></a> Add builtin flag for build directives</summary>
 
@@ -6024,7 +4866,7 @@ For some browsers on non-secure domains resources from CDN doesn't loads, so I m
 
 - <a href="https://github.com/99designs/gqlgen/commit/6ea48ff69aa370cc8fe7f498149f55859c3c11dd"><tt>6ea48ff6</tt></a> Take care about commonInitialisms in ToCamel
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1968a7bcfff5a640b4fb80aecc485d404bf596e3"><tt>1968a7bc</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/576">#576</a> from jflam/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1968a7bcfff5a640b4fb80aecc485d404bf596e3"><tt>1968a7bc</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/76">#576</a> from jflam/patch-1</summary>
 
 Update README.md
 
@@ -6044,13 +4886,13 @@ Fixed typo in MD link ttps -> https
 ## [v0.8.0](https://github.com/99designs/gqlgen/compare/v0.7.2...v0.8.0) - 2019-03-04
 - <a href="https://github.com/99designs/gqlgen/commit/f24e79d00425f1bbf13fbc79f0230ff4b2037955"><tt>f24e79d0</tt></a> release v0.8.0
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/55df9b8d926d238ede66a29cd7b38513ab2bb2f7"><tt>55df9b8d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/574">#574</a> from 99designs/next</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/55df9b8d926d238ede66a29cd7b38513ab2bb2f7"><tt>55df9b8d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/74">#574</a> from 99designs/next</summary>
 
 v0.8.0
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/aedcc68ada4d9c299e6a1c96c56059787a193403"><tt>aedcc68a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/573">#573</a> from 99designs/plugin-docs</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/aedcc68ada4d9c299e6a1c96c56059787a193403"><tt>aedcc68a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/73">#573</a> from 99designs/plugin-docs</summary>
 
 Very rough first pass at plugin docs
 
@@ -6058,7 +4900,7 @@ Very rough first pass at plugin docs
 
 - <a href="https://github.com/99designs/gqlgen/commit/8f91cf56cf39de4f3845395f3564224452d9b95b"><tt>8f91cf56</tt></a> Very rough first pass at plugin docs
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3d9ad75ebd191d578a5b8085f150be6c9e42b3d2"><tt>3d9ad75e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/572">#572</a> from 99designs/handle-nonexistant-directories-when-genreating-packagenames</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3d9ad75ebd191d578a5b8085f150be6c9e42b3d2"><tt>3d9ad75e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/72">#572</a> from 99designs/handle-nonexistant-directories-when-genreating-packagenames</summary>
 
 Handle non-existant directories when generating default package names
 
@@ -6066,13 +4908,13 @@ Handle non-existant directories when generating default package names
 
 - <a href="https://github.com/99designs/gqlgen/commit/08923334725c963ffcff948efe030881d658c38a"><tt>08923334</tt></a> Handle non-existant directories when generating default package names
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2ef4b443a873c8be7ccabdbba39b941d71cd64d1"><tt>2ef4b443</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/571">#571</a> from 99designs/automatically-bind-to-int32-int64</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2ef4b443a873c8be7ccabdbba39b941d71cd64d1"><tt>2ef4b443</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/71">#571</a> from 99designs/automatically-bind-to-int32-int64</summary>
 
 Automatically bind to int32 and int64
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2888e96c01bbcb4614f636bbc5dd9ecf4af45284"><tt>2888e96c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/570">#570</a> from 99designs/vendor-packages-workaround</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2888e96c01bbcb4614f636bbc5dd9ecf4af45284"><tt>2888e96c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/70">#570</a> from 99designs/vendor-packages-workaround</summary>
 
 Workaround for using packages with vendored code
 
@@ -6080,7 +4922,7 @@ Workaround for using packages with vendored code
 
 - <a href="https://github.com/99designs/gqlgen/commit/fb87dc3942e4179aa1eb8007f8f3d384fd4b9fca"><tt>fb87dc39</tt></a> Automatically bind to int32 and int64
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f2d9c3f74f11947f4ae1e6fdaa12d2095ab30518"><tt>f2d9c3f7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/569">#569</a> from 99designs/improve-introduction</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f2d9c3f74f11947f4ae1e6fdaa12d2095ab30518"><tt>f2d9c3f7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/69">#569</a> from 99designs/improve-introduction</summary>
 
 Introduction Improvements
 
@@ -6096,13 +4938,13 @@ Introduction Improvements
 
 - <a href="https://github.com/99designs/gqlgen/commit/d9a9a532178aff2def9992c39db37fcd79092fa2"><tt>d9a9a532</tt></a> playground: secure CDN resources with Subresource Integrity
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/cb38b4be9c6baa228a67e897d1bdfa205142ea7b"><tt>cb38b4be</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/568">#568</a> from MichaelMure/secured-playground</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/cb38b4be9c6baa228a67e897d1bdfa205142ea7b"><tt>cb38b4be</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/68">#568</a> from MichaelMure/secured-playground</summary>
 
 playground: secure CDN resources with Subresource Integrity
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0258e1a29685aa8fd0adda5f9a7d57fb60f7ce22"><tt>0258e1a2</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/565">#565</a> from steebchen/next</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0258e1a29685aa8fd0adda5f9a7d57fb60f7ce22"><tt>0258e1a2</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/65">#565</a> from steebchen/next</summary>
 
 Fix cli config getters
 
@@ -6114,7 +4956,7 @@ Fix cli config getters
 
 - <a href="https://github.com/99designs/gqlgen/commit/da12fd11020c4d2449f5abb2545ce28d4dde75dd"><tt>da12fd11</tt></a> Fix cli config getters
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/51266b8f7ab04827838098a328ef9fcd70b545a2"><tt>51266b8f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/554">#554</a> from 99designs/fix-missing-recover</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/51266b8f7ab04827838098a328ef9fcd70b545a2"><tt>51266b8f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/54">#554</a> from 99designs/fix-missing-recover</summary>
 
 Recover from panics in unlikly places
 
@@ -6122,7 +4964,7 @@ Recover from panics in unlikly places
 
 - <a href="https://github.com/99designs/gqlgen/commit/67795c95b21a60fda303b35e509a447653bc8351"><tt>67795c95</tt></a> Recover from panics in unlikly places
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/56163b4584483d70ba5dd2cb5b968e63447c36e6"><tt>56163b45</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/553">#553</a> from 99designs/getting-started-0.8</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/56163b4584483d70ba5dd2cb5b968e63447c36e6"><tt>56163b45</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/53">#553</a> from 99designs/getting-started-0.8</summary>
 
 Update Getting Started for 0.8 and Go Modules
 
@@ -6140,13 +4982,13 @@ Update Getting Started for 0.8 and Go Modules
 
 - <a href="https://github.com/99designs/gqlgen/commit/d261b3fbb107b328ef6ffcfdbbc0e0903b1c5767"><tt>d261b3fb</tt></a> Fix navigation font weights
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/327a1a34f92860957148a011ce8e043224cf8cc5"><tt>327a1a34</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/551">#551</a> from 99designs/improved-collect-fields-api</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/327a1a34f92860957148a011ce8e043224cf8cc5"><tt>327a1a34</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/51">#551</a> from 99designs/improved-collect-fields-api</summary>
 
 Improved Collect Fields API and Documentation
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/6439f197d0d84d22b1abf3068bd7982bb3c98c22"><tt>6439f197</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/552">#552</a> from 99designs/always-return-struct-pointers</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/6439f197d0d84d22b1abf3068bd7982bb3c98c22"><tt>6439f197</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/52">#552</a> from 99designs/always-return-struct-pointers</summary>
 
 Always return *Thing from resolvers for structs
 
@@ -6156,7 +4998,7 @@ Always return *Thing from resolvers for structs
 
 - <a href="https://github.com/99designs/gqlgen/commit/e61b3e0be1fc52d94f0bbc80f7c486bb9eeb4f40"><tt>e61b3e0b</tt></a> Add Field Collection docs
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ef0223cfdf8a17e8dc5f83ef6a14e4f5a12ddd49"><tt>ef0223cf</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/541">#541</a> from 99designs/fix-underscore-only-fields</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ef0223cfdf8a17e8dc5f83ef6a14e4f5a12ddd49"><tt>ef0223cf</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/41">#541</a> from 99designs/fix-underscore-only-fields</summary>
 
 Allow underscore only fields and naming collisions to be aliased explicitly
 
@@ -6170,13 +5012,13 @@ Allow underscore only fields and naming collisions to be aliased explicitly
 
 - <a href="https://github.com/99designs/gqlgen/commit/0eb8b5c158eb2cfcad62444869ef077be1c7e1e0"><tt>0eb8b5c1</tt></a> Merge remote-tracking branch 'origin/master' into HEAD
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/015d02ebca21137a2bf5aff0e379956da14c2628"><tt>015d02eb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/542">#542</a> from Elgarni/add-more-validation-checks-on-yml-config-file</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/015d02ebca21137a2bf5aff0e379956da14c2628"><tt>015d02eb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/42">#542</a> from Elgarni/add-more-validation-checks-on-yml-config-file</summary>
 
 Add more validation checks on .yml config file
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/647c62a555775a278f1df528a3e71d14ad39320f"><tt>647c62a5</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/550">#550</a> from 99designs/fix-unstable-marshaler-func</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/647c62a555775a278f1df528a3e71d14ad39320f"><tt>647c62a5</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/50">#550</a> from 99designs/fix-unstable-marshaler-func</summary>
 
 Fix unstable external marshaler funcs with same name as type
 
@@ -6186,7 +5028,7 @@ Fix unstable external marshaler funcs with same name as type
 
 - <a href="https://github.com/99designs/gqlgen/commit/9ebe77175f676c267fb9091042ec3da209479659"><tt>9ebe7717</tt></a> Fix unstable external marshaler funcs with same name as type
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a1195843c84e17593a5b22c811484bb0f0b3d63b"><tt>a1195843</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/544">#544</a> from enjoylife/fix-directive</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a1195843c84e17593a5b22c811484bb0f0b3d63b"><tt>a1195843</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/44">#544</a> from enjoylife/fix-directive</summary>
 
 Fix directives on fields with custom scalars
 
@@ -6216,7 +5058,7 @@ Fix typo in README in selection example directory to point to the selection exam
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/66120d8fbff69609195a6483e53de00ccb5b54dd"><tt>66120d8f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/535">#535</a> from awiede/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/66120d8fbff69609195a6483e53de00ccb5b54dd"><tt>66120d8f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/35">#535</a> from awiede/master</summary>
 
 Fix typo in README
 
@@ -6224,13 +5066,13 @@ Fix typo in README
 
 - <a href="https://github.com/99designs/gqlgen/commit/fcacf200a365c1ad4201d17c8243a7d598765922"><tt>fcacf200</tt></a> Merge remote-tracking branch 'origin/master' into HEAD
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b9819b21789c0543161f77dd811a8b208ec17f0f"><tt>b9819b21</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/540">#540</a> from 99designs/check-is-zero</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b9819b21789c0543161f77dd811a8b208ec17f0f"><tt>b9819b21</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/40">#540</a> from 99designs/check-is-zero</summary>
 
 Automatically convert IsZero to null
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/03a655dc9e9d7a1db9271a385b3c3b0854fceec7"><tt>03a655dc</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/526">#526</a> from 99designs/union-fragment-bug</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/03a655dc9e9d7a1db9271a385b3c3b0854fceec7"><tt>03a655dc</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/26">#526</a> from 99designs/union-fragment-bug</summary>
 
 Union Fragment Bug Fix
 
@@ -6249,21 +5091,21 @@ conditional when reading through the first time.
 
 - <a href="https://github.com/99designs/gqlgen/commit/306da15f43db5b796bf7a77e7897e5f8772a7fa9"><tt>306da15f</tt></a> Automatically convert IsZero to null
 
-- <a href="https://github.com/99designs/gqlgen/commit/f81c61d3f8fa25b6cc1200f148dfefcd266810f7"><tt>f81c61d3</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/539">#539</a> from 99designs/test-nullable-interface-pointers (closes <a href="https://github.com/99designs/gqlgen/issues/484"> #484</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/f81c61d3f8fa25b6cc1200f148dfefcd266810f7"><tt>f81c61d3</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/39">#539</a> from 99designs/test-nullable-interface-pointers (closes <a href="https://github.com/99designs/gqlgen/issues/484"> #484</a>)
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f5200c80a42e5442c34dd97d4d680c240d5b4c46"><tt>f5200c80</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/498">#498</a> from vilterp/playground-content-type</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f5200c80a42e5442c34dd97d4d680c240d5b4c46"><tt>f5200c80</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/98">#498</a> from vilterp/playground-content-type</summary>
 
 add `content-type: text/html` header to playground handler
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/de148d133667b3cf0574b2054b8d5579f5c5db1a"><tt>de148d13</tt></a> Test for <a href="https://github.com/99designs/gqlgen/pull/484">#484</a>
+- <a href="https://github.com/99designs/gqlgen/commit/de148d133667b3cf0574b2054b8d5579f5c5db1a"><tt>de148d13</tt></a> Test for <a href="https://github.com/99designs/gqlgen/pull/84">#484</a>
 
-- <a href="https://github.com/99designs/gqlgen/commit/9a48a007bd7ee36752a0879c075bb3470d243ebd"><tt>9a48a007</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/538">#538</a> from 99designs/test-input-marshalling (closes <a href="https://github.com/99designs/gqlgen/issues/487"> #487</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/9a48a007bd7ee36752a0879c075bb3470d243ebd"><tt>9a48a007</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/38">#538</a> from 99designs/test-input-marshalling (closes <a href="https://github.com/99designs/gqlgen/issues/487"> #487</a>)
 
-- <a href="https://github.com/99designs/gqlgen/commit/7a82ab43a060b334d19c51a353a8924857dd39bb"><tt>7a82ab43</tt></a> Test for <a href="https://github.com/99designs/gqlgen/pull/487">#487</a>
+- <a href="https://github.com/99designs/gqlgen/commit/7a82ab43a060b334d19c51a353a8924857dd39bb"><tt>7a82ab43</tt></a> Test for <a href="https://github.com/99designs/gqlgen/pull/87">#487</a>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/48a7e07f4fd28b8bca8c270ee824c5f99436cfaa"><tt>48a7e07f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/537">#537</a> from 99designs/stub-generation</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/48a7e07f4fd28b8bca8c270ee824c5f99436cfaa"><tt>48a7e07f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/37">#537</a> from 99designs/stub-generation</summary>
 
 Stub generation
 
@@ -6273,7 +5115,7 @@ Stub generation
 
 - <a href="https://github.com/99designs/gqlgen/commit/c5e3dd44959d59bef6830cbe2652498e49b53089"><tt>c5e3dd44</tt></a> add stub generation plugin
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/43db679a9d39ed4939b2c06aeed5b6ee95b961cd"><tt>43db679a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/534">#534</a> from 99designs/multiple-bind-types</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/43db679a9d39ed4939b2c06aeed5b6ee95b961cd"><tt>43db679a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/34">#534</a> from 99designs/multiple-bind-types</summary>
 
 Multiple bind types
 
@@ -6303,7 +5145,7 @@ Fix typo in README in selection example directory to point to the selection exam
 
 - <a href="https://github.com/99designs/gqlgen/commit/cf94d3ba6a4a7cd513454a8cb4b250f1db68ee53"><tt>cf94d3ba</tt></a> Removed named types
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/82ded32137fcddf9b295bb283d118183bba983cb"><tt>82ded321</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/532">#532</a> from 99designs/fix-missing-json-content-type</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/82ded32137fcddf9b295bb283d118183bba983cb"><tt>82ded321</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/32">#532</a> from 99designs/fix-missing-json-content-type</summary>
 
 Fix set header to JSON earlier in GraphQL response
 
@@ -6333,7 +5175,7 @@ Fixes https://github.com/99designs/gqlgen/issues/519
 
 - <a href="https://github.com/99designs/gqlgen/commit/60473555e7668de29c188448558123d9dc8edb3b"><tt>60473555</tt></a> Shared arg unmarshaling logic
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a7c8abe6d89935c129e982fc91e0afb6db07dc9f"><tt>a7c8abe6</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/529">#529</a> from 99designs/websocket-keepalive</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a7c8abe6d89935c129e982fc91e0afb6db07dc9f"><tt>a7c8abe6</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/29">#529</a> from 99designs/websocket-keepalive</summary>
 
 Add websocket keepalive support
 
@@ -6353,15 +5195,15 @@ duration of inactivity.
 
 - <a href="https://github.com/99designs/gqlgen/commit/693753fcc69329fba282ad5f1d69c02979cbce08"><tt>693753fc</tt></a> Add websocket keepalive support
 
-- <a href="https://github.com/99designs/gqlgen/commit/162afad73b653d9456d21ec38d00c3476ab2dde4"><tt>162afad7</tt></a> enums don't exist in runtime
+- <a href="https://github.com/99designs/gqlgen/commit/162afad73b653d9456d21ec38d00c3476ab2dde4"><tt>162afad7</tt></a> enums dont exist in runtime
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d0b6485b23f259588e9ecd34e23924c741d9c6f2"><tt>d0b6485b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/525">#525</a> from 99designs/stop-grc-panic</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d0b6485b23f259588e9ecd34e23924c741d9c6f2"><tt>d0b6485b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/25">#525</a> from 99designs/stop-grc-panic</summary>
 
 Stop GetResolverContext from panicking when missing
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/78cfff48aa5895a9eefe35615aae3b7b33ed11b1"><tt>78cfff48</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/528">#528</a> from 99designs/fix-todo-directive</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/78cfff48aa5895a9eefe35615aae3b7b33ed11b1"><tt>78cfff48</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/28">#528</a> from 99designs/fix-todo-directive</summary>
 
 Fix Todo Example Directive
 
@@ -6386,7 +5228,7 @@ pointers to structs. Can just be removed.
 
 - <a href="https://github.com/99designs/gqlgen/commit/1bc51010eb895d675573cae4243207ea3aa6477e"><tt>1bc51010</tt></a> Everything is a plugin
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/055fb4bc9a6aae2ca92c50deb011b089d6fea5d0"><tt>055fb4bc</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/514">#514</a> from 99designs/gomod</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/055fb4bc9a6aae2ca92c50deb011b089d6fea5d0"><tt>055fb4bc</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/14">#514</a> from 99designs/gomod</summary>
 
 Add support for go modules
 
@@ -6398,7 +5240,7 @@ Add support for go modules
 
 - <a href="https://github.com/99designs/gqlgen/commit/251e8514d637b99bb0e52030dc25483f5e74085d"><tt>251e8514</tt></a> Add support for go modules
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/62175eab825058eadd79eddf40978db8a194a40b"><tt>62175eab</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/502">#502</a> from 99designs/model-plugin</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/62175eab825058eadd79eddf40978db8a194a40b"><tt>62175eab</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/02">#502</a> from 99designs/model-plugin</summary>
 
 Model plugin
 
@@ -6416,7 +5258,7 @@ middleware.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f94b4b7883e0e8e0db78146a4b4efa8a50f917ff"><tt>f94b4b78</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/497">#497</a> from azavorotnii/small_fixes</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f94b4b7883e0e8e0db78146a4b4efa8a50f917ff"><tt>f94b4b78</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/97">#497</a> from azavorotnii/small_fixes</summary>
 
 Small fixes
 
@@ -6430,7 +5272,7 @@ Small fixes
 
 - <a href="https://github.com/99designs/gqlgen/commit/940db1f962c24864fea7e41362f383e163bedd1a"><tt>940db1f9</tt></a> Fix cacheSize usage in handler
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/fba9a37816b6ff55f80ded3b941a7e85390decb3"><tt>fba9a378</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/492">#492</a> from 99designs/unified-merge-pass</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/fba9a37816b6ff55f80ded3b941a7e85390decb3"><tt>fba9a378</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/92">#492</a> from 99designs/unified-merge-pass</summary>
 
 Unified merge pass
 
@@ -6444,7 +5286,7 @@ Unified merge pass
 
 - <a href="https://github.com/99designs/gqlgen/commit/87b37b0c30b98f311d18db56c404679bf40b68e5"><tt>87b37b0c</tt></a> Replace string based type comparisons with recursive types.Type check
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/82b1917d512e24a1160e0f65f8334257a8abc2eb"><tt>82b1917d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/490">#490</a> from 99designs/bind-directly-to-types</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/82b1917d512e24a1160e0f65f8334257a8abc2eb"><tt>82b1917d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/90">#490</a> from 99designs/bind-directly-to-types</summary>
 
 Bind directly to AST types, instead of copying out random bits
 
@@ -6468,7 +5310,7 @@ Bind directly to AST types, instead of copying out random bits
 
 - <a href="https://github.com/99designs/gqlgen/commit/eb1011617b052446b44239ec2fb9b6f6ee9cfdde"><tt>eb101161</tt></a> Remove aliased types, to be replaced by allowing multiple backing types
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e79252b0ea6efabfd9131fab703089ed23ff2d38"><tt>e79252b0</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/488">#488</a> from 99designs/refactor-config</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e79252b0ea6efabfd9131fab703089ed23ff2d38"><tt>e79252b0</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/88">#488</a> from 99designs/refactor-config</summary>
 
 Refactor config
 
@@ -6482,7 +5324,7 @@ Refactor config
 
 - <a href="https://github.com/99designs/gqlgen/commit/f10fc649fe4db6a10d048d2bcf2520121a4bbcac"><tt>f10fc649</tt></a> Merge remote-tracking branch 'origin/next' into HEAD
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/dd972081ca802d30d94a9a6e42879491c572edca"><tt>dd972081</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/486">#486</a> from nicovogelaar/feature/list-of-enums</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/dd972081ca802d30d94a9a6e42879491c572edca"><tt>dd972081</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/86">#486</a> from nicovogelaar/feature/list-of-enums</summary>
 
 add list of enums
 
@@ -6494,7 +5336,7 @@ add list of enums
 
 - <a href="https://github.com/99designs/gqlgen/commit/f87ea6e85f867d169760c1bb2a73842f82194363"><tt>f87ea6e8</tt></a> Merge remote-tracking branch 'origin/master' into HEAD
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/473f4f0c566042e93d7ae9ae3cee49697386a766"><tt>473f4f0c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/465">#465</a> from 99designs/performance-improvments</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/473f4f0c566042e93d7ae9ae3cee49697386a766"><tt>473f4f0c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/65">#465</a> from 99designs/performance-improvments</summary>
 
 Performance improvments
 
@@ -6581,7 +5423,7 @@ ok      github.com/99designs/gqlgen/example/starwars    9.901s
 ## [v0.7.2](https://github.com/99designs/gqlgen/compare/v0.7.1...v0.7.2) - 2019-02-05
 - <a href="https://github.com/99designs/gqlgen/commit/da1e07f5876c0fb79cbad19006f7135be08590d6"><tt>da1e07f5</tt></a> release v0.7.2
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8c0562c17743ea26cc316e9ff4cd509054b35287"><tt>8c0562c1</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/530">#530</a> from 99designs/websocket-keepalive-master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8c0562c17743ea26cc316e9ff4cd509054b35287"><tt>8c0562c1</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/30">#530</a> from 99designs/websocket-keepalive-master</summary>
 
 Add websocket keepalive support
 
@@ -6599,7 +5441,7 @@ duration of inactivity.
 
 - <a href="https://github.com/99designs/gqlgen/commit/d36d3dc567476909853fd3bb0a0b3ba28b24ed9f"><tt>d36d3dc5</tt></a> Add websocket keepalive support
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/39216361225c6dc824331ad1a218c9c931cc0985"><tt>39216361</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/476">#476</a> from svanburen/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/39216361225c6dc824331ad1a218c9c931cc0985"><tt>39216361</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/76">#476</a> from svanburen/patch-1</summary>
 
 Update config.md
 
@@ -6617,7 +5459,7 @@ Add a missed word and add an apostrophe
 
 - <a href="https://github.com/99designs/gqlgen/commit/675ba773946c772b3bc405f7f9fb7cfe4c8b9a47"><tt>675ba773</tt></a> Update errors.md
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5c870a489da3eecd57b4152f0501b65cd682f4af"><tt>5c870a48</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/461">#461</a> from ryota548/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5c870a489da3eecd57b4152f0501b65cd682f4af"><tt>5c870a48</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/61">#461</a> from ryota548/patch-1</summary>
 
 Update getting-started.md
 
@@ -6635,7 +5477,7 @@ modify `graph/graph.go` to `resolver.go`
 <!-- end of If NoteGroups -->
 <a name="v0.7.1"></a>
 ## [v0.7.1](https://github.com/99designs/gqlgen/compare/v0.7.0...v0.7.1) - 2018-11-29
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3a7f37c7e22a8fedce430c4d340ad5c1351198f4"><tt>3a7f37c7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/455">#455</a> from 99designs/fix-deprecated-fields</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3a7f37c7e22a8fedce430c4d340ad5c1351198f4"><tt>3a7f37c7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/55">#455</a> from 99designs/fix-deprecated-fields</summary>
 
 Fix deprecated fields
 
@@ -6653,13 +5495,13 @@ Fix deprecated fields
 ## [v0.7.0](https://github.com/99designs/gqlgen/compare/v0.6.0...v0.7.0) - 2018-11-28
 - <a href="https://github.com/99designs/gqlgen/commit/a81fe5037b2492cdd312a7d8c875677da4b1f6c9"><tt>a81fe503</tt></a> release v0.7.0
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4bfc82d782409044f07e002c926f867fdb14ac8d"><tt>4bfc82d7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/453">#453</a> from 99designs/deprecate-binary</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4bfc82d782409044f07e002c926f867fdb14ac8d"><tt>4bfc82d7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/53">#453</a> from 99designs/deprecate-binary</summary>
 
 Add Deprecation Warning to Binary
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8dd29b8548320a3a01a8b7645bc79d5b216edd62"><tt>8dd29b85</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/454">#454</a> from 99designs/update-gqlparser</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8dd29b8548320a3a01a8b7645bc79d5b216edd62"><tt>8dd29b85</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/54">#454</a> from 99designs/update-gqlparser</summary>
 
 Update gqlparser to latest
 
@@ -6667,7 +5509,7 @@ Update gqlparser to latest
 
 - <a href="https://github.com/99designs/gqlgen/commit/747c3f9c41903a77781f50d919335d4b29a215b8"><tt>747c3f9c</tt></a> Update gqlparser to latest
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d6d9885fac16079f92aeda0f6571cc0e7697b0ac"><tt>d6d9885f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/416">#416</a> from 99designs/improved-getting-started</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d6d9885fac16079f92aeda0f6571cc0e7697b0ac"><tt>d6d9885f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/16">#416</a> from 99designs/improved-getting-started</summary>
 
 Improve Getting Started Documentation — No Binary Approach
 
@@ -6677,7 +5519,7 @@ Improve Getting Started Documentation — No Binary Approach
 
 - <a href="https://github.com/99designs/gqlgen/commit/878f3945f1ec84aa26400f67a714fd8cc7db40e3"><tt>878f3945</tt></a> Minor fixes to getting started code examples
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/6a02657c5a257173034efe93fa8cecd49da7d990"><tt>6a02657c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/447">#447</a> from 99designs/disable-introspection</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/6a02657c5a257173034efe93fa8cecd49da7d990"><tt>6a02657c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/47">#447</a> from 99designs/disable-introspection</summary>
 
 Add config option to disable introspection
 
@@ -6707,13 +5549,13 @@ Regenerate
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e4bad0e6bd11386d8436e1c268a02ed875b52ef5"><tt>e4bad0e6</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/449">#449</a> from 99designs/increase-float-precision</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e4bad0e6bd11386d8436e1c268a02ed875b52ef5"><tt>e4bad0e6</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/49">#449</a> from 99designs/increase-float-precision</summary>
 
 Increase float precision
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c5589792b0f69c28a536a13c12dbf2a8f5e11b01"><tt>c5589792</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/450">#450</a> from 99designs/import-refactor</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c5589792b0f69c28a536a13c12dbf2a8f5e11b01"><tt>c5589792</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/50">#450</a> from 99designs/import-refactor</summary>
 
 Refactor import handling
 
@@ -6721,7 +5563,7 @@ Refactor import handling
 
 - <a href="https://github.com/99designs/gqlgen/commit/62f0d085b5a019254b7699e2f02ee0e61c96f52d"><tt>62f0d085</tt></a> Edit copy for introspection docs
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/63fc2753eb74995bcb65f64914bbd913114cf4da"><tt>63fc2753</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/452">#452</a> from cemremengu/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/63fc2753eb74995bcb65f64914bbd913114cf4da"><tt>63fc2753</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/52">#452</a> from cemremengu/patch-1</summary>
 
 Fix typo in directives.md
 
@@ -6745,7 +5587,7 @@ Fix small typo
 
 - <a href="https://github.com/99designs/gqlgen/commit/c114346d88dbe979b7e5e7c09eacef2bba0f7500"><tt>c114346d</tt></a> Decouple loader creation from schema
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9d636e780e5b1aa3a1290b41e590d207764848a5"><tt>9d636e78</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/448">#448</a> from 99designs/update-gqlparser</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9d636e780e5b1aa3a1290b41e590d207764848a5"><tt>9d636e78</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/48">#448</a> from 99designs/update-gqlparser</summary>
 
 Update to latest gqlparser
 
@@ -6755,13 +5597,13 @@ Update to latest gqlparser
 
 - <a href="https://github.com/99designs/gqlgen/commit/b0acd078ac03f165a4d48a18e8e1743086e80270"><tt>b0acd078</tt></a> Add config option to disable introspection
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f9c880b6ee3a4423320468c1304237af7ee4e8b6"><tt>f9c880b6</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/446">#446</a> from 99designs/fix-flakey-test</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f9c880b6ee3a4423320468c1304237af7ee4e8b6"><tt>f9c880b6</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/46">#446</a> from 99designs/fix-flakey-test</summary>
 
 Fix flakey goroutine test
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5461e967f847df9d8c51d76f193c69b31882e89f"><tt>5461e967</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/445">#445</a> from 99designs/remove-graphqlgen</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5461e967f847df9d8c51d76f193c69b31882e89f"><tt>5461e967</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/45">#445</a> from 99designs/remove-graphqlgen</summary>
 
 Remove graphqlgen link
 
@@ -6769,7 +5611,7 @@ Remove graphqlgen link
 
 - <a href="https://github.com/99designs/gqlgen/commit/8a5039d8fe5157003196c995505ae8d1b1a59676"><tt>8a5039d8</tt></a> Fix flakey goroutine test
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4b082518034eeae70f74c32ed77b6d590853df25"><tt>4b082518</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/439">#439</a> from snormore/pointer-slice</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4b082518034eeae70f74c32ed77b6d590853df25"><tt>4b082518</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/39">#439</a> from snormore/pointer-slice</summary>
 
 Fix type binding validation for slices of pointers like []*foo
 
@@ -6777,7 +5619,7 @@ Fix type binding validation for slices of pointers like []*foo
 
 - <a href="https://github.com/99designs/gqlgen/commit/293b9eaf5c88e3d524da38cd7421ed0ba038d1b2"><tt>293b9eaf</tt></a> Remove graphqlgen link
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/77b27884d0d4d5238d9e72ba881ae1b142e6abca"><tt>77b27884</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/443">#443</a> from mgutz/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/77b27884d0d4d5238d9e72ba881ae1b142e6abca"><tt>77b27884</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/43">#443</a> from mgutz/patch-1</summary>
 
 fix generate stubs sentence
 
@@ -6787,7 +5629,7 @@ fix generate stubs sentence
 
 - <a href="https://github.com/99designs/gqlgen/commit/827dac5e0991bb6368f6d47642e9b1e7a232cf4d"><tt>827dac5e</tt></a> Fix type binding validation for slices of pointers like []*foo
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f7932b40ee0f75b35428af917cd05193b7f3414f"><tt>f7932b40</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/435">#435</a> from matiasanaya/update-readme</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f7932b40ee0f75b35428af917cd05193b7f3414f"><tt>f7932b40</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/35">#435</a> from matiasanaya/update-readme</summary>
 
 Update README.md comparison with graph-gophers
 
@@ -6795,13 +5637,13 @@ Update README.md comparison with graph-gophers
 
 - <a href="https://github.com/99designs/gqlgen/commit/a816208b938269ed569bf6d9b8e9884c28547dfc"><tt>a816208b</tt></a> Update README.md comparison with graph-gophers
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d25e3b4b2ba627f306dcd703cb98506f3268837b"><tt>d25e3b4b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/422">#422</a> from gracenoah/model-method-context</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d25e3b4b2ba627f306dcd703cb98506f3268837b"><tt>d25e3b4b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/22">#422</a> from gracenoah/model-method-context</summary>
 
 accept an optional ctx parameter on model methods
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0ac6fa5758104b70852eb0c90317fa21f1cd4ecf"><tt>0ac6fa57</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/434">#434</a> from urakozz/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0ac6fa5758104b70852eb0c90317fa21f1cd4ecf"><tt>0ac6fa57</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/34">#434</a> from urakozz/patch-1</summary>
 
 Tracer: fixed nil pointer issue
 
@@ -6829,7 +5671,7 @@ Right now code generated with latest master fails since there are usages of Trac
 
 - <a href="https://github.com/99designs/gqlgen/commit/497551202238b0befd67d69b1da547bfff660948"><tt>49755120</tt></a> accept an optional ctx parameter on model methods
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/02a1935255fadced7f122dff7f2a9f54546c9d61"><tt>02a19352</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/429">#429</a> from 99designs/refactor-gofmt</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/02a1935255fadced7f122dff7f2a9f54546c9d61"><tt>02a19352</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/29">#429</a> from 99designs/refactor-gofmt</summary>
 
 apply go fmt ./...
 
@@ -6839,7 +5681,7 @@ apply go fmt ./...
 
 - <a href="https://github.com/99designs/gqlgen/commit/c656dc3127d29b102bdcd286ac94dc00b2a9600a"><tt>c656dc31</tt></a> apply go fmt ./...
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3f598bdc8c72c9f20cb47046aac6837090005452"><tt>3f598bdc</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/427">#427</a> from anurag/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3f598bdc8c72c9f20cb47046aac6837090005452"><tt>3f598bdc</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/27">#427</a> from anurag/patch-1</summary>
 
 Fix docs typo
 
@@ -6847,7 +5689,7 @@ Fix docs typo
 
 - <a href="https://github.com/99designs/gqlgen/commit/cac61bb2035545137ac96c9d0ac102b71f2f3169"><tt>cac61bb2</tt></a> Fix docs typo
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9f4afe3a6eb09e9ba12fbf5591ce3c0f06ad48be"><tt>9f4afe3a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/425">#425</a> from 99designs/render</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9f4afe3a6eb09e9ba12fbf5591ce3c0f06ad48be"><tt>9f4afe3a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/25">#425</a> from 99designs/render</summary>
 
 Switch to hosting docs on render.com
 
@@ -6861,7 +5703,7 @@ switched the DNS records and updated the docs.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/981fd10a677716bd3e5b803465e2084e4fac3723"><tt>981fd10a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/419">#419</a> from 99designs/fix-capture-ctx</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/981fd10a677716bd3e5b803465e2084e4fac3723"><tt>981fd10a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/19">#419</a> from 99designs/fix-capture-ctx</summary>
 
 fix unexpected ctx variable capture on Tracing
 
@@ -6877,7 +5719,7 @@ fix unexpected ctx variable capture on Tracing
 
 - <a href="https://github.com/99designs/gqlgen/commit/5c28d0116ee17a921ab891f06e555fda7cf7ca61"><tt>5c28d011</tt></a> fix unexpected ctx variable capture on Tracing
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4bda3bc1291bdc0bc44e3057b5229d987eeecde2"><tt>4bda3bc1</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/411">#411</a> from 99designs/feat-geterrors</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4bda3bc1291bdc0bc44e3057b5229d987eeecde2"><tt>4bda3bc1</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/11">#411</a> from 99designs/feat-geterrors</summary>
 
 add GetErrors to RequestContext
 
@@ -6885,7 +5727,7 @@ add GetErrors to RequestContext
 
 - <a href="https://github.com/99designs/gqlgen/commit/a4eaa400c2cdfd0aa6fd4471a5899a93deb460f4"><tt>a4eaa400</tt></a> add tests for RequestContext#GetErrors
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/53f33f7722464e3063ecd15f053dfe3d79928dff"><tt>53f33f77</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/410">#410</a> from 99designs/move-tracing-to-contrib</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/53f33f7722464e3063ecd15f053dfe3d79928dff"><tt>53f33f77</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/10">#410</a> from 99designs/move-tracing-to-contrib</summary>
 
 Move tracing to contrib
 
@@ -6895,13 +5737,13 @@ Move tracing to contrib
 
 - <a href="https://github.com/99designs/gqlgen/commit/f0dbce5a30b444ece286db2b7bac21dca01de174"><tt>f0dbce5a</tt></a> Move tracing to contrib
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a3a92775eee4365784bcf35a5cb550027c680fd7"><tt>a3a92775</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/409">#409</a> from 99designs/graphql-playground-1.7.8</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a3a92775eee4365784bcf35a5cb550027c680fd7"><tt>a3a92775</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/09">#409</a> from 99designs/graphql-playground-1.7.8</summary>
 
 Bump to the latest version of graphql-playground
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d2648580b441915b0a57b37b70b0e136bc20ea61"><tt>d2648580</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/402">#402</a> from 99designs/feat-opencensus</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d2648580b441915b0a57b37b70b0e136bc20ea61"><tt>d2648580</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/02">#402</a> from 99designs/feat-opencensus</summary>
 
 add Tracer for OpenCensus
 
@@ -6917,7 +5759,7 @@ add Tracer for OpenCensus
 
 - <a href="https://github.com/99designs/gqlgen/commit/4e7e6a1c7167e938e611dcaffa9c25b34e4ecc02"><tt>4e7e6a1c</tt></a> Merge branch 'master' into feat-opencensus
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/926ad17adfe84c26db5f4882c289941fe654af31"><tt>926ad17a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/403">#403</a> from 99designs/feat-complexity</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/926ad17adfe84c26db5f4882c289941fe654af31"><tt>926ad17a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/03">#403</a> from 99designs/feat-complexity</summary>
 
 copy complexity to RequestContext
 
@@ -6929,7 +5771,7 @@ copy complexity to RequestContext
 
 - <a href="https://github.com/99designs/gqlgen/commit/c9368904b5cab04655a1ce2666346c0070f37ed0"><tt>c9368904</tt></a> Merge branch 'master' into feat-opencensus
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b26ee6b4ea235d699f34eee09cd569d814a4bafc"><tt>b26ee6b4</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/404">#404</a> from 99designs/feat-apollo-tracing</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b26ee6b4ea235d699f34eee09cd569d814a4bafc"><tt>b26ee6b4</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/04">#404</a> from 99designs/feat-apollo-tracing</summary>
 
 add apollo-tracing support
 
@@ -6955,7 +5797,7 @@ add apollo-tracing support
 
 - <a href="https://github.com/99designs/gqlgen/commit/ececa23c60cafd25454d0c2d45f89f6e0549b8f4"><tt>ececa23c</tt></a> add Tracer for OpenCensus
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0d5c65b6dc1c80d7809b862fd0b9ad3247926b0f"><tt>0d5c65b6</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/400">#400</a> from 99designs/fix-ci</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0d5c65b6dc1c80d7809b862fd0b9ad3247926b0f"><tt>0d5c65b6</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/00">#400</a> from 99designs/fix-ci</summary>
 
 fix Circle CI test
 
@@ -6967,19 +5809,19 @@ fix Circle CI test
 
 - <a href="https://github.com/99designs/gqlgen/commit/f70cedc2bac7e4582e9b50d8b34cb49d41dcc8d2"><tt>f70cedc2</tt></a> fix Circle CI test
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1b17b5a2489094911e701a299aedee3d1d1a2319"><tt>1b17b5a2</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/392">#392</a> from 99designs/feat-tracer</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1b17b5a2489094911e701a299aedee3d1d1a2319"><tt>1b17b5a2</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/92">#392</a> from 99designs/feat-tracer</summary>
 
 Add Tracer layer
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/184e48cbd3c1391a2dd1434b17dc0bcceaf41661"><tt>184e48cb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/396">#396</a> from 99designs/remove-ci-exclusion</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/184e48cbd3c1391a2dd1434b17dc0bcceaf41661"><tt>184e48cb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/96">#396</a> from 99designs/remove-ci-exclusion</summary>
 
 Run generate ./... and test ./... in circle
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/fd5d9ecae750465e74475112f6af0496404db87b"><tt>fd5d9eca</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/395">#395</a> from 99designs/feat-extension-example</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/fd5d9ecae750465e74475112f6af0496404db87b"><tt>fd5d9eca</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/95">#395</a> from 99designs/feat-extension-example</summary>
 
 add Type System Extension syntax example
 
@@ -7023,7 +5865,7 @@ This reverts commit 583f98047f5d1b6604d87e7b8d6f8fd38082d459.
 
 - <a href="https://github.com/99designs/gqlgen/commit/ab4752c28debbe543601e16dc7861b7973407b5c"><tt>ab4752c2</tt></a> Update README.md
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3447dd2d8b361c532d38688474d04315788edec1"><tt>3447dd2d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/389">#389</a> from 99designs/multiple-schemas</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3447dd2d8b361c532d38688474d04315788edec1"><tt>3447dd2d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/89">#389</a> from 99designs/multiple-schemas</summary>
 
 Support multiple schemas
 
@@ -7031,7 +5873,7 @@ Support multiple schemas
 
 - <a href="https://github.com/99designs/gqlgen/commit/a230eb049370be09434b451ed8e913e68a134ad1"><tt>a230eb04</tt></a> Support multiple schemas
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/20a5b6c7f2f6a9feabe96dcde68ce0b6d23f4982"><tt>20a5b6c7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/369">#369</a> from vetcher/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/20a5b6c7f2f6a9feabe96dcde68ce0b6d23f4982"><tt>20a5b6c7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/69">#369</a> from vetcher/master</summary>
 
 reverse errors and data order in response
 
@@ -7039,7 +5881,7 @@ reverse errors and data order in response
 
 - <a href="https://github.com/99designs/gqlgen/commit/f1f043b9d4e97d3dc8ad1559110e8ff8688b4afe"><tt>f1f043b9</tt></a> reverse 'data' and 'error' fields order in failure tests
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3eab22a33bf8a9ff99482c899dd184c589445c7b"><tt>3eab22a3</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/370">#370</a> from rodrigo-brito/fix-underscore</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3eab22a33bf8a9ff99482c899dd184c589445c7b"><tt>3eab22a3</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/70">#370</a> from rodrigo-brito/fix-underscore</summary>
 
 Underscore on field name finder
 
@@ -7057,7 +5899,7 @@ Underscore on field name finder
 ## [v0.6.0](https://github.com/99designs/gqlgen/compare/v0.5.1...v0.6.0) - 2018-10-03
 - <a href="https://github.com/99designs/gqlgen/commit/6f486bde038887adf67c3e3766624ef111ea95cf"><tt>6f486bde</tt></a> release v0.6.0
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7833d0cbf3fd7fb82ddadf8c19a9284554f48250"><tt>7833d0cb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/365">#365</a> from 99designs/dont-guess-imports</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7833d0cbf3fd7fb82ddadf8c19a9284554f48250"><tt>7833d0cb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/65">#365</a> from 99designs/dont-guess-imports</summary>
 
 Don't let goimports guess import paths
 
@@ -7065,7 +5907,7 @@ Don't let goimports guess import paths
 
 - <a href="https://github.com/99designs/gqlgen/commit/732be3959b402bbd3b864c5f40f475640f1334c5"><tt>732be395</tt></a> Don't let goimports guess import paths
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/926eb9d814747bf3726313d397a31cd7dbddddd1"><tt>926eb9d8</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/364">#364</a> from 99designs/query-cache-test</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/926eb9d814747bf3726313d397a31cd7dbddddd1"><tt>926eb9d8</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/64">#364</a> from 99designs/query-cache-test</summary>
 
 Add a stress test on query cache
 
@@ -7073,7 +5915,7 @@ Add a stress test on query cache
 
 - <a href="https://github.com/99designs/gqlgen/commit/bab70df5bf66675b16bf1945ce902658a4fdaed2"><tt>bab70df5</tt></a> Add a stress test on query cache
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8448176179aa4492d6cb2962b6155bdeaae2774a"><tt>84481761</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/362">#362</a> from 99designs/fix-error-docs</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8448176179aa4492d6cb2962b6155bdeaae2774a"><tt>84481761</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/62">#362</a> from 99designs/fix-error-docs</summary>
 
 fix error docs
 
@@ -7081,7 +5923,7 @@ fix error docs
 
 - <a href="https://github.com/99designs/gqlgen/commit/23b58f6d5c03e69e05eb0d862be9286912a70151"><tt>23b58f6d</tt></a> fix error docs
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8f0ef777fbb502ed453fa64861a8a0ca59fcacef"><tt>8f0ef777</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/361">#361</a> from 99designs/revert-360-revert-335-typed-interfaces</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8f0ef777fbb502ed453fa64861a8a0ca59fcacef"><tt>8f0ef777</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/61">#361</a> from 99designs/revert-360-revert-335-typed-interfaces</summary>
 
 Revert "Revert "Generate typed interfaces for gql interfaces & unions""
 
@@ -7089,13 +5931,13 @@ Revert "Revert "Generate typed interfaces for gql interfaces & unions""
 
 - <a href="https://github.com/99designs/gqlgen/commit/77257d1e593f35e6b639b3120b8ee6ba4dc7d4a5"><tt>77257d1e</tt></a> Revert "Revert "Generate typed interfaces for gql interfaces & unions""
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1cae19bb114a3bee95ebac0e2e0e47ecdb59ec46"><tt>1cae19bb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/359">#359</a> from 99designs/fix-null-arg-error</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1cae19bb114a3bee95ebac0e2e0e47ecdb59ec46"><tt>1cae19bb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/59">#359</a> from 99designs/fix-null-arg-error</summary>
 
 Fix Issue With Argument Pointer Type
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ee862717e87b39a46d01efc031f272ac26fd7b0b"><tt>ee862717</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/360">#360</a> from 99designs/revert-335-typed-interfaces</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ee862717e87b39a46d01efc031f272ac26fd7b0b"><tt>ee862717</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/60">#360</a> from 99designs/revert-335-typed-interfaces</summary>
 
 Revert "Generate typed interfaces for gql interfaces & unions"
 
@@ -7103,7 +5945,7 @@ Revert "Generate typed interfaces for gql interfaces & unions"
 
 - <a href="https://github.com/99designs/gqlgen/commit/02658647f2de7ad601c8eee43417d322b4060ccc"><tt>02658647</tt></a> Revert "Generate typed interfaces for gql interfaces & unions"
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bc35d730cf4a22df34faafe066c77f891b750b9d"><tt>bc35d730</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/335">#335</a> from 99designs/typed-interfaces</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bc35d730cf4a22df34faafe066c77f891b750b9d"><tt>bc35d730</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/35">#335</a> from 99designs/typed-interfaces</summary>
 
 Generate typed interfaces for gql interfaces & unions
 
@@ -7124,7 +5966,7 @@ but has a default, then null is still a valid value to send through.
 
 - <a href="https://github.com/99designs/gqlgen/commit/0c399270a5c29e617d0cfc147d1809325ad8b8cc"><tt>0c399270</tt></a> Add test case
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b836a976a12a3ea70b0e5b1767b6aceefb8a9fa6"><tt>b836a976</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/358">#358</a> from 99designs/fix-embedded-pointer</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b836a976a12a3ea70b0e5b1767b6aceefb8a9fa6"><tt>b836a976</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/58">#358</a> from 99designs/fix-embedded-pointer</summary>
 
 Fix Embedded Pointer
 
@@ -7134,7 +5976,7 @@ Fix Embedded Pointer
 
 - <a href="https://github.com/99designs/gqlgen/commit/b8af0c811747c48190126e2d2b4006e718362756"><tt>b8af0c81</tt></a> Use types.Implements to check if an interface implementor accepts value recievers
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2ab05daf9c7864073fcbf8eeb03328223dc66df2"><tt>2ab05daf</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/353">#353</a> from 99designs/resolver-ctx-parenting</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2ab05daf9c7864073fcbf8eeb03328223dc66df2"><tt>2ab05daf</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/53">#353</a> from 99designs/resolver-ctx-parenting</summary>
 
 Parent middleware generated contexts
 
@@ -7146,7 +5988,7 @@ Parent middleware generated contexts
 
 - <a href="https://github.com/99designs/gqlgen/commit/f302b4082be7f143304f3e2c39419b2297efef03"><tt>f302b408</tt></a> Added reproduce test case
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/14cf46bc15514a35ac23f8f8b980203cb7bb31da"><tt>14cf46bc</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/348">#348</a> from gissleh/feat-websocket-initpayload</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/14cf46bc15514a35ac23f8f8b980203cb7bb31da"><tt>14cf46bc</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/48">#348</a> from gissleh/feat-websocket-initpayload</summary>
 
 Added parsing of the websocket init message payload
 
@@ -7171,7 +6013,7 @@ Added parsing of the websocket init message payload
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2bd1cc2e669c685d41cacf82c8b730c04c44fef5"><tt>2bd1cc2e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/334">#334</a> from 99designs/support-response-extensions</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2bd1cc2e669c685d41cacf82c8b730c04c44fef5"><tt>2bd1cc2e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/34">#334</a> from 99designs/support-response-extensions</summary>
 
 Support Extensions in Response
 
@@ -7193,13 +6035,13 @@ Support Extensions in Response
 
 - <a href="https://github.com/99designs/gqlgen/commit/bfb48f2f833c6ab7f2981035b61efdf773dcddba"><tt>bfb48f2f</tt></a> Update README.md
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/869215a7e69f227f4869f901d319267d1061289d"><tt>869215a7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/339">#339</a> from 99designs/fix-subscription-goroutine-leak</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/869215a7e69f227f4869f901d319267d1061289d"><tt>869215a7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/39">#339</a> from 99designs/fix-subscription-goroutine-leak</summary>
 
 Fix gouroutine leak when using subscriptions
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/535dd24bf4986186af9fbac5f5965e853fcbdb4f"><tt>535dd24b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/338">#338</a> from codyleyhan/cl/docs</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/535dd24bf4986186af9fbac5f5965e853fcbdb4f"><tt>535dd24b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/38">#338</a> from codyleyhan/cl/docs</summary>
 
 Adds docs for how resolvers are bound
 
@@ -7207,7 +6049,7 @@ Adds docs for how resolvers are bound
 
 - <a href="https://github.com/99designs/gqlgen/commit/baa99fc58711afed393a3952296a4a9bc754494c"><tt>baa99fc5</tt></a> cleaned up resolver doc
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/647fbbc95b4b3926bedf1ad84e10bc38f050bc68"><tt>647fbbc9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/340">#340</a> from chris-ramon/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/647fbbc95b4b3926bedf1ad84e10bc38f050bc68"><tt>647fbbc9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/40">#340</a> from chris-ramon/patch-1</summary>
 
 README.md: Updates `graphql-go/graphql` features.
 
@@ -7227,7 +6069,7 @@ README.md: Updates `graphql-go/graphql` features.
 
 - <a href="https://github.com/99designs/gqlgen/commit/35c15c940d3b83909551818ed5dc2dd5cd926c6a"><tt>35c15c94</tt></a> Add link to talk by Christopher Biscardi
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/72edf98a67f4efbe44cf03e4922dcbfd0a1bf91a"><tt>72edf98a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/331">#331</a> from edsrzf/arg-refactor</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/72edf98a67f4efbe44cf03e4922dcbfd0a1bf91a"><tt>72edf98a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/31">#331</a> from edsrzf/arg-refactor</summary>
 
 Refactor arg codegen
 
@@ -7250,7 +6092,7 @@ its purpose is a little different than it used to be.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8026e63b05391e9313a6450207e49fb03c8418f9"><tt>8026e63b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/330">#330</a> from edsrzf/string-compare</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8026e63b05391e9313a6450207e49fb03c8418f9"><tt>8026e63b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/30">#330</a> from edsrzf/string-compare</summary>
 
 Use built-in less than operator instead of strings.Compare
 
@@ -7266,7 +6108,7 @@ Use built-in less than operator instead of strings.Compare
 ## [v0.5.0](https://github.com/99designs/gqlgen/compare/v0.4.4...v0.5.0) - 2018-08-31
 - <a href="https://github.com/99designs/gqlgen/commit/5bc4665fab378aa7fe6b81bef968ed608aad1477"><tt>5bc4665f</tt></a> release v0.5.0
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b48c6b92dcdfc7a797c34250478a2b1d1dc486c8"><tt>b48c6b92</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/326">#326</a> from 99designs/version</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b48c6b92dcdfc7a797c34250478a2b1d1dc486c8"><tt>b48c6b92</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/26">#326</a> from 99designs/version</summary>
 
 Add version const
 
@@ -7274,7 +6116,7 @@ Add version const
 
 - <a href="https://github.com/99designs/gqlgen/commit/14587a5f44f051fdd733fe80102194edd368d84f"><tt>14587a5f</tt></a> Add version const
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7d44dd6bfe71faf85b6df5e651157210d573b6cd"><tt>7d44dd6b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/315">#315</a> from edsrzf/query-complexity</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7d44dd6bfe71faf85b6df5e651157210d573b6cd"><tt>7d44dd6b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/15">#315</a> from edsrzf/query-complexity</summary>
 
 Query complexity calculation and limits
 
@@ -7284,7 +6126,7 @@ Query complexity calculation and limits
 
 - <a href="https://github.com/99designs/gqlgen/commit/6e408d5d64d45e3797fd5fd5b1bf5acc7c50a094"><tt>6e408d5d</tt></a> Interfaces take max complexity of implementors
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d08b9c4a36a8b7c3a22ec1f328a6bef9c95ec1e8"><tt>d08b9c4a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/325">#325</a> from edsrzf/no-get-mutations</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d08b9c4a36a8b7c3a22ec1f328a6bef9c95ec1e8"><tt>d08b9c4a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/25">#325</a> from edsrzf/no-get-mutations</summary>
 
 Only allow query operations on GET requests
 
@@ -7300,19 +6142,19 @@ This mitigates the risk of CSRF attacks.
 
 - <a href="https://github.com/99designs/gqlgen/commit/8da5d61b045ee4ea230ecac6706c8857d8f9081d"><tt>8da5d61b</tt></a> Generate complexity for all fields. Fix bugs. Re-generate examples.
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/40943c6d92d2158db473aac699277dc6a95b95bb"><tt>40943c6d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/322">#322</a> from 99designs/drop-old-flags</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/40943c6d92d2158db473aac699277dc6a95b95bb"><tt>40943c6d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/22">#322</a> from 99designs/drop-old-flags</summary>
 
 Drop old cli flags
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8c17eea9ed7fb449e84f89c3f295b119a636c80c"><tt>8c17eea9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/320">#320</a> from andrioid/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/8c17eea9ed7fb449e84f89c3f295b119a636c80c"><tt>8c17eea9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/20">#320</a> from andrioid/master</summary>
 
 Description added to generated Model code
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/988b367a542f44fac6e01148503b2e2e7e13fd5d"><tt>988b367a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/316">#316</a> from 99designs/feat-concurrent-each-element</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/988b367a542f44fac6e01148503b2e2e7e13fd5d"><tt>988b367a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/16">#316</a> from 99designs/feat-concurrent-each-element</summary>
 
 use goroutine about processing each array elements
 
@@ -7332,13 +6174,13 @@ use goroutine about processing each array elements
 
 - <a href="https://github.com/99designs/gqlgen/commit/2488e1b3c0b30b36cc0a0289a4813d21ff672824"><tt>2488e1b3</tt></a> Merge branch 'master' of https://github.com/99designs/gqlgen
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f6a733aea7c01e71ce43efecd1622b61eb8b537c"><tt>f6a733ae</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/308">#308</a> from codyleyhan/tags</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f6a733aea7c01e71ce43efecd1622b61eb8b537c"><tt>f6a733ae</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/08">#308</a> from codyleyhan/tags</summary>
 
 Finds fields by configurable struct tag
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f7aeb88adbe30d19b2c37f8ed41e0322d27f5ef4"><tt>f7aeb88a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/321">#321</a> from 99designs/remove-typemap</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f7aeb88adbe30d19b2c37f8ed41e0322d27f5ef4"><tt>f7aeb88a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/21">#321</a> from 99designs/remove-typemap</summary>
 
 Remove support for the old json typemap
 
@@ -7356,7 +6198,7 @@ Also some small behavior fixes to complexity calculations.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/002ea4761fff26f723d0bbf0119b61b2f5c4f816"><tt>002ea476</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/318">#318</a> from edsrzf/query-cache</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/002ea4761fff26f723d0bbf0119b61b2f5c4f816"><tt>002ea476</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/18">#318</a> from edsrzf/query-cache</summary>
 
 Add query cache
 
@@ -7390,7 +6232,7 @@ Also ran `dep ensure` to add the new dependency to `Gopkg.lock`.
 
 - <a href="https://github.com/99designs/gqlgen/commit/556b93ac9f76f72cedb4be5189a1c014dea4da04"><tt>556b93ac</tt></a> Run go generate ./...
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2dcb2dd8c3aea0d993b19c93660b4579e404c53f"><tt>2dcb2dd8</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/314">#314</a> from 99designs/directive-obj</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2dcb2dd8c3aea0d993b19c93660b4579e404c53f"><tt>2dcb2dd8</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/14">#314</a> from 99designs/directive-obj</summary>
 
 Add obj to Directives
 
@@ -7406,7 +6248,7 @@ Add obj to Directives
 
 - <a href="https://github.com/99designs/gqlgen/commit/1fda3edefc6e9a028903fafeca7f59bedb796e6f"><tt>1fda3ede</tt></a> Add obj to Directives
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9b24710218507d6420c9710f92ab33d59594584e"><tt>9b247102</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/301">#301</a> from 99designs/feat-directive-parent</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9b24710218507d6420c9710f92ab33d59594584e"><tt>9b247102</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/01">#301</a> from 99designs/feat-directive-parent</summary>
 
 add Result field to ResolverContext
 
@@ -7420,7 +6262,7 @@ add Result field to ResolverContext
 
 - <a href="https://github.com/99designs/gqlgen/commit/568a72e9edde1d564f64e1e22267b76670d12853"><tt>568a72e9</tt></a> add some refactor
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/50588a8af8eedc8c85f388cf17a83ec5077bb39e"><tt>50588a8a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/299">#299</a> from 99designs/test-init-on-windows</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/50588a8af8eedc8c85f388cf17a83ec5077bb39e"><tt>50588a8a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/99">#299</a> from 99designs/test-init-on-windows</summary>
 
 Test gqlgen init on windows
 
@@ -7430,19 +6272,19 @@ Test gqlgen init on windows
 
 - <a href="https://github.com/99designs/gqlgen/commit/c7fd841666d8fbd3496a7da63abb9c9ced3f1c61"><tt>c7fd8416</tt></a> Merge branch 'master' into feat-directive-parent
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3f8a601b5b1d129bdccf79aa72787897701a0027"><tt>3f8a601b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/312">#312</a> from 99designs/validate-gopath</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3f8a601b5b1d129bdccf79aa72787897701a0027"><tt>3f8a601b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/12">#312</a> from 99designs/validate-gopath</summary>
 
 Validate gopath when running gqlgen
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/77e6955279ca8c844bd1bd5541f4fd7f793164cd"><tt>77e69552</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/310">#310</a> from 99designs/sitemap-404s</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/77e6955279ca8c844bd1bd5541f4fd7f793164cd"><tt>77e69552</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/10">#310</a> from 99designs/sitemap-404s</summary>
 
 Remove 404s from sitemap
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0b6cedfbab61fd9fbe93c5ac36ce25fff48dd4d1"><tt>0b6cedfb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/311">#311</a> from jekaspekas/fix-mapstructure-err</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0b6cedfbab61fd9fbe93c5ac36ce25fff48dd4d1"><tt>0b6cedfb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/11">#311</a> from jekaspekas/fix-mapstructure-err</summary>
 
 fix mapstructure unit test error
 
@@ -7458,7 +6300,7 @@ fix unit test error "mapstructure: result must be a pointer". It appears instead
 
 - <a href="https://github.com/99designs/gqlgen/commit/25b12cb600ae04866a089831c9fb4c01d2e53ab4"><tt>25b12cb6</tt></a> Remove 404s from sitemap
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4a6f505d968843836998a154d06fe8f46e7b598c"><tt>4a6f505d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/309">#309</a> from 99designs/pr-template</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/4a6f505d968843836998a154d06fe8f46e7b598c"><tt>4a6f505d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/09">#309</a> from 99designs/pr-template</summary>
 
 Add a PR template
 
@@ -7480,7 +6322,7 @@ Add a PR template
 
 - <a href="https://github.com/99designs/gqlgen/commit/09e4bf8c481a8fbdc2ed34bad80051ded1a2023e"><tt>09e4bf8c</tt></a> add Result field instead of ParentObject field
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b8695fb5223ba49fce18aad984af831b710c8b60"><tt>b8695fb5</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/304">#304</a> from 99designs/newline-for-init-response</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b8695fb5223ba49fce18aad984af831b710c8b60"><tt>b8695fb5</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/04">#304</a> from 99designs/newline-for-init-response</summary>
 
 Put newline at end of `gqlgen init` output
 
@@ -7490,7 +6332,7 @@ Put newline at end of `gqlgen init` output
 
 - <a href="https://github.com/99designs/gqlgen/commit/e53d224e2ad3137cf93deb5baae638197a3e73f6"><tt>e53d224e</tt></a> Merge branch 'master' into feat-directive-parent
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/de750645ac12568d8909b52f539d625c6a4ee62c"><tt>de750645</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/298">#298</a> from 99designs/handle-response-nulls</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/de750645ac12568d8909b52f539d625c6a4ee62c"><tt>de750645</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/98">#298</a> from 99designs/handle-response-nulls</summary>
 
 Nulls in required fields should cause errors and bubble
 
@@ -7500,7 +6342,7 @@ Nulls in required fields should cause errors and bubble
 
 - <a href="https://github.com/99designs/gqlgen/commit/072363c777fa35f726d5c6f0626720dab296bc3b"><tt>072363c7</tt></a> add ParentObject field to ResolverContext
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e15d78906a5ab4d528c4ca4b13aaeae2dd944a14"><tt>e15d7890</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/300">#300</a> from 99designs/fix-starwars-connection-example</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e15d78906a5ab4d528c4ca4b13aaeae2dd944a14"><tt>e15d7890</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/00">#300</a> from 99designs/fix-starwars-connection-example</summary>
 
 fix connection example
 
@@ -7510,7 +6352,7 @@ fix connection example
 
 - <a href="https://github.com/99designs/gqlgen/commit/7d1cdacabfb6dcea8367468d97ec29be02164a2c"><tt>7d1cdaca</tt></a> Nulls in required fields should cause errors and bubble
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2c4e6cbf05e6920d119790b6f9d6262b87a56e3b"><tt>2c4e6cbf</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/294">#294</a> from 99designs/simplfy-concurrent-resolvers</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2c4e6cbf05e6920d119790b6f9d6262b87a56e3b"><tt>2c4e6cbf</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/94">#294</a> from 99designs/simplfy-concurrent-resolvers</summary>
 
 Simplfy concurrent resolver logic
 
@@ -7526,7 +6368,7 @@ Simplfy concurrent resolver logic
 ## [v0.4.4](https://github.com/99designs/gqlgen/compare/0.4.3...v0.4.4) - 2018-08-21
 - <a href="https://github.com/99designs/gqlgen/commit/6f6622c6b78098660f03d38fb8f0d459d428bdbe"><tt>6f6622c6</tt></a> Bump gqlparser to latest version
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/72659af418c34428b706f6dfc100a678540c8acd"><tt>72659af4</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/297">#297</a> from 99designs/fix-dep-pruning</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/72659af418c34428b706f6dfc100a678540c8acd"><tt>72659af4</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/97">#297</a> from 99designs/fix-dep-pruning</summary>
 
 Explicitly import ambient imports so dep doesn't prune them
 
@@ -7534,7 +6376,7 @@ Explicitly import ambient imports so dep doesn't prune them
 
 - <a href="https://github.com/99designs/gqlgen/commit/cac3c729ad5fbb5d0e4de0b156c7a0f6f5453b24"><tt>cac3c729</tt></a> Explicitly import ambient imports so dep doesn't prune them
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e6af26e097a8046ad2463c3c580b4777ad54f848"><tt>e6af26e0</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/296">#296</a> from heww/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e6af26e097a8046ad2463c3c580b4777ad54f848"><tt>e6af26e0</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/96">#296</a> from heww/master</summary>
 
 sort directives by name when gen
 
@@ -7542,7 +6384,7 @@ sort directives by name when gen
 
 - <a href="https://github.com/99designs/gqlgen/commit/fd09cd9931347475cfc83f67685ff6ef7e815f6b"><tt>fd09cd99</tt></a> sort directives by name when gen
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/719172670d1c5f80e819bf1376edb8e1f9ed59f3"><tt>71917267</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/292">#292</a> from m4ppi/fix-doc</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/719172670d1c5f80e819bf1376edb8e1f9ed59f3"><tt>71917267</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/92">#292</a> from m4ppi/fix-doc</summary>
 
 Fix broken links in docs
 
@@ -7550,7 +6392,7 @@ Fix broken links in docs
 
 - <a href="https://github.com/99designs/gqlgen/commit/05c73d9f5eac7c84319e894febf9b74b8ae76336"><tt>05c73d9f</tt></a> Fix broken links in docs
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5a0b56aa613bf7604688f2c5f8f10ec586aec835"><tt>5a0b56aa</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/285">#285</a> from 99designs/fix-force-type</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5a0b56aa613bf7604688f2c5f8f10ec586aec835"><tt>5a0b56aa</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/85">#285</a> from 99designs/fix-force-type</summary>
 
 Stop force resolver from picking up types from matching fields
 
@@ -7558,7 +6400,7 @@ Stop force resolver from picking up types from matching fields
 
 - <a href="https://github.com/99designs/gqlgen/commit/31478cf4f74564682f6b0160867661c25b0bbe78"><tt>31478cf4</tt></a> Stop force resolver from picking up types from matching fields
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ebdcf7401de7853e33940a3be357cd7b19b543be"><tt>ebdcf740</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/283">#283</a> from 99designs/speed-up-tests</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ebdcf7401de7853e33940a3be357cd7b19b543be"><tt>ebdcf740</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/83">#283</a> from 99designs/speed-up-tests</summary>
 
 Speed up tests
 
@@ -7572,7 +6414,7 @@ Speed up tests
 <!-- end of If NoteGroups -->
 <a name="0.4.3"></a>
 ## [0.4.3](https://github.com/99designs/gqlgen/compare/0.4.2...0.4.3) - 2018-08-10
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3575c289486fce174c941b63749b9bbb88c3ca90"><tt>3575c289</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/281">#281</a> from 99designs/introspection-default-args</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3575c289486fce174c941b63749b9bbb88c3ca90"><tt>3575c289</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/81">#281</a> from 99designs/introspection-default-args</summary>
 
 Fix missing default args on types
 
@@ -7580,7 +6422,7 @@ Fix missing default args on types
 
 - <a href="https://github.com/99designs/gqlgen/commit/b808253f02667601d6162acc2a941a504d5a95c2"><tt>b808253f</tt></a> Fix missing default args on types
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bf235296103837d477e5d05b062c20f399a51553"><tt>bf235296</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/282">#282</a> from 99designs/flakey-tests</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bf235296103837d477e5d05b062c20f399a51553"><tt>bf235296</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/82">#282</a> from 99designs/flakey-tests</summary>
 
 Remove sleeps in tests
 
@@ -7596,7 +6438,7 @@ Remove sleeps in tests
 ## [0.4.2](https://github.com/99designs/gqlgen/compare/0.4.1...0.4.2) - 2018-08-10
 - <a href="https://github.com/99designs/gqlgen/commit/06b00d459e44d7a7e29094992d56697fcf8b0f2b"><tt>06b00d45</tt></a> Update README.md
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5c379a338ee2a7d46da0f0cbab6427d00aa93fc3"><tt>5c379a33</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/279">#279</a> from 99designs/integration-tests</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5c379a338ee2a7d46da0f0cbab6427d00aa93fc3"><tt>5c379a33</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/79">#279</a> from 99designs/integration-tests</summary>
 
 Integration tests
 
@@ -7610,7 +6452,7 @@ Integration tests
 
 - <a href="https://github.com/99designs/gqlgen/commit/45e22cb1f117b1b277c23e2483cb12f041528e91"><tt>45e22cb1</tt></a> Add introspection schema check
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/53109cd081a7e3f6a0304a0f205eac7fa9cd6b03"><tt>53109cd0</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/270">#270</a> from 99designs/feat-handlers</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/53109cd081a7e3f6a0304a0f205eac7fa9cd6b03"><tt>53109cd0</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/70">#270</a> from 99designs/feat-handlers</summary>
 
 stop pickup "github.com/vektah/gqlgen/handler" from GOPATH
 
@@ -7624,7 +6466,7 @@ stop pickup "github.com/vektah/gqlgen/handler" from GOPATH
 
 - <a href="https://github.com/99designs/gqlgen/commit/f372b1c920835b873005e33e77e79733267ec93f"><tt>f372b1c9</tt></a> Use docker in docker for the existing testsuite
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0eb08ab9545252332e683fbd912c39dbd9dbc821"><tt>0eb08ab9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/274">#274</a> from 99designs/fix-variable-validation-data</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0eb08ab9545252332e683fbd912c39dbd9dbc821"><tt>0eb08ab9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/74">#274</a> from 99designs/fix-variable-validation-data</summary>
 
 Prevent executing queries on variable validation failures
 
@@ -7636,7 +6478,7 @@ Prevent executing queries on variable validation failures
 
 - <a href="https://github.com/99designs/gqlgen/commit/e6005f6b9205ea489b453614858488d46eb48672"><tt>e6005f6b</tt></a> fix mobile nav
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5cdbc9751f61597d92519e4b406674b6a53f6650"><tt>5cdbc975</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/267">#267</a> from 99designs/authentication-docs</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/5cdbc9751f61597d92519e4b406674b6a53f6650"><tt>5cdbc975</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/67">#267</a> from 99designs/authentication-docs</summary>
 
 Authentication docs
 
@@ -7650,13 +6492,13 @@ Authentication docs
 
 - <a href="https://github.com/99designs/gqlgen/commit/8db3c143559c65ff3317e17b3b6307afa90c02cb"><tt>8db3c143</tt></a> Add structure to menu
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c57619e0879f25bc749940b8dba3e75910b4e5eb"><tt>c57619e0</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/260">#260</a> from 99designs/init-improvements</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c57619e0879f25bc749940b8dba3e75910b4e5eb"><tt>c57619e0</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/60">#260</a> from 99designs/init-improvements</summary>
 
 Init Config Improvement
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/336b62ec685d04a065c2163cd728877165b3e2ea"><tt>336b62ec</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/266">#266</a> from 99designs/lint-friendly-decollision</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/336b62ec685d04a065c2163cd728877165b3e2ea"><tt>336b62ec</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/66">#266</a> from 99designs/lint-friendly-decollision</summary>
 
 Make keyword decollision more lint friendly
 
@@ -7664,7 +6506,7 @@ Make keyword decollision more lint friendly
 
 - <a href="https://github.com/99designs/gqlgen/commit/2acbc245889a300d00c4943983afc9963b3db912"><tt>2acbc245</tt></a> Make keyword decollision more lint friendly
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f12f08a78c27a8d1736cfe19cec983db0c91cdd1"><tt>f12f08a7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/264">#264</a> from 99designs/docs</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f12f08a78c27a8d1736cfe19cec983db0c91cdd1"><tt>f12f08a7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/64">#264</a> from 99designs/docs</summary>
 
 CORS docs
 
@@ -7676,7 +6518,7 @@ CORS docs
 
 - <a href="https://github.com/99designs/gqlgen/commit/96e6aab249b4caf1248cd290fa214474caf3d406"><tt>96e6aab2</tt></a> Add CORS docs
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0ab1c685eb45f580dc52bfe143f8185f3dc363ef"><tt>0ab1c685</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/263">#263</a> from 99designs/add-logo</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0ab1c685eb45f580dc52bfe143f8185f3dc363ef"><tt>0ab1c685</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/63">#263</a> from 99designs/add-logo</summary>
 
 Add logo to doc site
 
@@ -7696,7 +6538,7 @@ Add logo to doc site
 <!-- end of If NoteGroups -->
 <a name="0.4.1"></a>
 ## [0.4.1](https://github.com/99designs/gqlgen/compare/0.4.0...0.4.1) - 2018-08-04
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/42f10ec9122abaac7b9cf03444f35b6c5cb5f53d"><tt>42f10ec9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/255">#255</a> from 99designs/introspection-fixes</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/42f10ec9122abaac7b9cf03444f35b6c5cb5f53d"><tt>42f10ec9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/55">#255</a> from 99designs/introspection-fixes</summary>
 
 Fix introspection api
 
@@ -7704,7 +6546,7 @@ Fix introspection api
 
 - <a href="https://github.com/99designs/gqlgen/commit/7400221c3a5e8cd8917726e9e92522679c2acfbe"><tt>7400221c</tt></a> Fix introspection api
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b35804bac53cf90fa4179dcff6cf6b3b47126c5e"><tt>b35804ba</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/254">#254</a> from oskanberg/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b35804bac53cf90fa4179dcff6cf6b3b47126c5e"><tt>b35804ba</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/54">#254</a> from oskanberg/patch-1</summary>
 
 Fix typo in introduction docs
 
@@ -7722,13 +6564,13 @@ Fix typo in introduction docs
 <!-- end of If NoteGroups -->
 <a name="0.4.0"></a>
 ## [0.4.0](https://github.com/99designs/gqlgen/compare/0.3.0...0.4.0) - 2018-08-03
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7b5a3d7473f375bb81bd8efe1a08e69a932e6706"><tt>7b5a3d74</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/247">#247</a> from 99designs/next</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7b5a3d7473f375bb81bd8efe1a08e69a932e6706"><tt>7b5a3d74</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/47">#247</a> from 99designs/next</summary>
 
 0.4.0 Release
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c0be9c9943982ce21a0ff47655c9f4f99034d489"><tt>c0be9c99</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/251">#251</a> from 99designs/rewrite-imports</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c0be9c9943982ce21a0ff47655c9f4f99034d489"><tt>c0be9c99</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/51">#251</a> from 99designs/rewrite-imports</summary>
 
 Rewrite import paths
 
@@ -7736,7 +6578,7 @@ Rewrite import paths
 
 - <a href="https://github.com/99designs/gqlgen/commit/4361401a903bda5d84220b8cb41d8cef3c11f720"><tt>4361401a</tt></a> Rewrite import paths
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f042328a2c75ea771472390e9f1bc33d7cad75f0"><tt>f042328a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/252">#252</a> from 99designs/move-doc-site</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f042328a2c75ea771472390e9f1bc33d7cad75f0"><tt>f042328a</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/52">#252</a> from 99designs/move-doc-site</summary>
 
 Move doc site
 
@@ -7744,7 +6586,7 @@ Move doc site
 
 - <a href="https://github.com/99designs/gqlgen/commit/658a24d9dcda158b451f5f21535ce2363eb188f8"><tt>658a24d9</tt></a> Move doc site
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/07b7e6ca88acceb1882789fa180109d2a54331dd"><tt>07b7e6ca</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/248">#248</a> from 99designs/json-usenumber</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/07b7e6ca88acceb1882789fa180109d2a54331dd"><tt>07b7e6ca</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/48">#248</a> from 99designs/json-usenumber</summary>
 
 use json.Decoder.UseNumber() when unmarshalling vars
 
@@ -7752,19 +6594,19 @@ use json.Decoder.UseNumber() when unmarshalling vars
 
 - <a href="https://github.com/99designs/gqlgen/commit/95fe07fef6e87653242067346d7f3e99c0589e5c"><tt>95fe07fe</tt></a> use json.Decoder.UseNumber() when unmarshalling vars
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c555f54cead11d8885d24eb6f7e11260ac930450"><tt>c555f54c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/245">#245</a> from vektah/new-feature-docs</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c555f54cead11d8885d24eb6f7e11260ac930450"><tt>c555f54c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/45">#245</a> from vektah/new-feature-docs</summary>
 
 New feature docs
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/825840aacdf3f160372add5e714dc6e7e42566db"><tt>825840aa</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/244">#244</a> from vektah/array-coercion</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/825840aacdf3f160372add5e714dc6e7e42566db"><tt>825840aa</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/44">#244</a> from vektah/array-coercion</summary>
 
 Add implicit value to array coercion
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/90b4076951ef8b5962ec2276b38434d957ae6c94"><tt>90b40769</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/246">#246</a> from vektah/fix-introspection</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/90b4076951ef8b5962ec2276b38434d957ae6c94"><tt>90b40769</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/46">#246</a> from vektah/fix-introspection</summary>
 
 Fix introspection
 
@@ -7784,7 +6626,7 @@ Fix introspection
 
 - <a href="https://github.com/99designs/gqlgen/commit/d2265f3d0a40525359328a52a3d30467f330baa5"><tt>d2265f3d</tt></a> Add implicit value to array coercion
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/191c8ba020f10a1f000cfe5925b972f00807ab6c"><tt>191c8ba0</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/239">#239</a> from vektah/directive-args</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/191c8ba020f10a1f000cfe5925b972f00807ab6c"><tt>191c8ba0</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/39">#239</a> from vektah/directive-args</summary>
 
 Directive args
 
@@ -7794,7 +6636,7 @@ Directive args
 
 - <a href="https://github.com/99designs/gqlgen/commit/4f37d17028f85eb6e12009d26bea8604e332f766"><tt>4f37d170</tt></a> Add directive args
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f78a6046f87d4ba6d7dc81421b189fa2e772741a"><tt>f78a6046</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/241">#241</a> from vektah/feat-lintfree</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f78a6046f87d4ba6d7dc81421b189fa2e772741a"><tt>f78a6046</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/41">#241</a> from vektah/feat-lintfree</summary>
 
 Make more golint free generated code
 
@@ -7804,7 +6646,7 @@ Make more golint free generated code
 
 - <a href="https://github.com/99designs/gqlgen/commit/c3fa1a55981538ea9d5b6c9bef10a1c19880588a"><tt>c3fa1a55</tt></a> Merge branch 'next' into feat-lintfree
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/17bfa2cbd4bfccffe704eefbf4d11007ad193e92"><tt>17bfa2cb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/240">#240</a> from vektah/doc-fonts</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/17bfa2cbd4bfccffe704eefbf4d11007ad193e92"><tt>17bfa2cb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/40">#240</a> from vektah/doc-fonts</summary>
 
 Use fonts from golang styleguide
 
@@ -7812,7 +6654,7 @@ Use fonts from golang styleguide
 
 - <a href="https://github.com/99designs/gqlgen/commit/64ef0571cc62cae0c71ddb3e1f1dfe6369e6d6e3"><tt>64ef0571</tt></a> Use fonts from golang styleguide
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/6b532383c4176fb9b0b683eddc267a0e15ab7481"><tt>6b532383</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/237">#237</a> from vektah/feat-fieldmapping</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/6b532383c4176fb9b0b683eddc267a0e15ab7481"><tt>6b532383</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/37">#237</a> from vektah/feat-fieldmapping</summary>
 
 Add model field mapping
 
@@ -7826,13 +6668,13 @@ Add model field mapping
 
 - <a href="https://github.com/99designs/gqlgen/commit/d7e24664af0c9d143b002598ae6cae686eebb59e"><tt>d7e24664</tt></a> Add method support
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/17bcb322d07c82ac794884b572f3acbe59b8bbc0"><tt>17bcb322</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/236">#236</a> from vektah/generate-handler-on-init</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/17bcb322d07c82ac794884b572f3acbe59b8bbc0"><tt>17bcb322</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/36">#236</a> from vektah/generate-handler-on-init</summary>
 
 Generate server on running init
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/600f4675970cbca0b376f204fe75e820906db863"><tt>600f4675</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/238">#238</a> from vektah/variable-validation</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/600f4675970cbca0b376f204fe75e820906db863"><tt>600f4675</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/38">#238</a> from vektah/variable-validation</summary>
 
 Add missing variable validation
 
@@ -7848,7 +6690,7 @@ Add missing variable validation
 
 - <a href="https://github.com/99designs/gqlgen/commit/69eab93811af49085104fb1aca7822a3c62392b4"><tt>69eab938</tt></a> Add model field mapping
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ffee020c33783b5e9e2d7f91eff01800b09d6b29"><tt>ffee020c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/235">#235</a> from vektah/generate-resolver-on-init</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ffee020c33783b5e9e2d7f91eff01800b09d6b29"><tt>ffee020c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/35">#235</a> from vektah/generate-resolver-on-init</summary>
 
 Generate resolver on init
 
@@ -7858,7 +6700,7 @@ Generate resolver on init
 
 - <a href="https://github.com/99designs/gqlgen/commit/58831ac11446af5960153aed1a7ae84b88ec1506"><tt>58831ac1</tt></a> Generate resolver if configured
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7031264d468ad298a4a562c26cce0f746e2ea5e2"><tt>7031264d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/229">#229</a> from vektah/fix-init-command</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7031264d468ad298a4a562c26cce0f746e2ea5e2"><tt>7031264d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/29">#229</a> from vektah/fix-init-command</summary>
 
 Fixing init command
 
@@ -7884,7 +6726,7 @@ mutating the default config.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/803711e941fa9465ebd4ffa7565cba84412a26f9"><tt>803711e9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/221">#221</a> from vektah/middleware-stack</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/803711e941fa9465ebd4ffa7565cba84412a26f9"><tt>803711e9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/21">#221</a> from vektah/middleware-stack</summary>
 
 Implement FieldMiddleware Stack
 
@@ -7925,7 +6767,7 @@ setup, that will run after Resolver middlewares.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7226e573a85b9ac69e054e7c1a73122a1c4afc7d"><tt>7226e573</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/225">#225</a> from rongfengliang/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/7226e573a85b9ac69e054e7c1a73122a1c4afc7d"><tt>7226e573</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/25">#225</a> from rongfengliang/patch-1</summary>
 
 Update getting-started.md
 
@@ -7941,7 +6783,7 @@ CreateTodo  UserID   input should be UserId not User
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0fa7977f9a778a0ba8b56e7272702d508bd390f9"><tt>0fa7977f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/217">#217</a> from vektah/resolver-middleware-all</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0fa7977f9a778a0ba8b56e7272702d508bd390f9"><tt>0fa7977f</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/17">#217</a> from vektah/resolver-middleware-all</summary>
 
 Run Resolver Middleware For All Fields
 
@@ -7965,13 +6807,13 @@ Not true anymore!
 
 - <a href="https://github.com/99designs/gqlgen/commit/b512176ccd04fca974685829c93345357a0c9cf1"><tt>b512176c</tt></a> Run resolver middleware for all fields
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f67f8390f31b2a498900aa4e3db817b8da3e704f"><tt>f67f8390</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/218">#218</a> from vektah/remove-old-resolvers</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f67f8390f31b2a498900aa4e3db817b8da3e704f"><tt>f67f8390</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/18">#218</a> from vektah/remove-old-resolvers</summary>
 
 Remove old resolvers
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1a3e4e9940602bb047924e623e641f6e7c40cff0"><tt>1a3e4e99</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/220">#220</a> from vektah/feat-race</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/1a3e4e9940602bb047924e623e641f6e7c40cff0"><tt>1a3e4e99</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/20">#220</a> from vektah/feat-race</summary>
 
 turn back -race option
 
@@ -8002,7 +6844,7 @@ directly.
 
 </details></dd></dl>
 
-- <a href="https://github.com/99designs/gqlgen/commit/ffe42658fed0fd990c80c1cb58684c79e9c33642"><tt>ffe42658</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/208">#208</a> from vektah/directives-skip-include
+- <a href="https://github.com/99designs/gqlgen/commit/ffe42658fed0fd990c80c1cb58684c79e9c33642"><tt>ffe42658</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/08">#208</a> from vektah/directives-skip-include
 
 <dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a69071e3a59ae80bef327cbc9f823933d5ec4794"><tt>a69071e3</tt></a> Pass context to CollectFields instead of RequestContext</summary>
 
@@ -8032,13 +6874,13 @@ the graphql-js implementation.  Skip takes precedence here.
 
 - <a href="https://github.com/99designs/gqlgen/commit/ebfde103e0ca294e8ce6ba131419344a1be67048"><tt>ebfde103</tt></a> Pass request context through to CollectFields
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bab7abb21b7328380e9ff8985db81fc523160158"><tt>bab7abb2</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/210">#210</a> from vektah/feat-init</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bab7abb21b7328380e9ff8985db81fc523160158"><tt>bab7abb2</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/10">#210</a> from vektah/feat-init</summary>
 
 introduce gen & init subcommand
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/6ba508f96ab7dd962ce4ac3a43f3bd2572e1bf4c"><tt>6ba508f9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/214">#214</a> from vektah/gqlparser-schema-validation</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/6ba508f96ab7dd962ce4ac3a43f3bd2572e1bf4c"><tt>6ba508f9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/14">#214</a> from vektah/gqlparser-schema-validation</summary>
 
 Bump gqlparser to get schema validation
 
@@ -8060,13 +6902,13 @@ Bump gqlparser to get schema validation
 
 - <a href="https://github.com/99designs/gqlgen/commit/c3c20f8f609b0e58e3da1dc26d481becd90d8b8a"><tt>c3c20f8f</tt></a> Merge remote-tracking branch 'origin/master' into HEAD
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/90df37f6a80713a4c6faf0e9887036189c29453a"><tt>90df37f6</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/205">#205</a> from vektah/forward-credential-to-graphql-endpoint</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/90df37f6a80713a4c6faf0e9887036189c29453a"><tt>90df37f6</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/05">#205</a> from vektah/forward-credential-to-graphql-endpoint</summary>
 
 Use original credential for query request in playground
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/52343745e6e491a072e4ea51bc624bf2a911c159"><tt>52343745</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/206">#206</a> from vektah/validation-locations</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/52343745e6e491a072e4ea51bc624bf2a911c159"><tt>52343745</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/06">#206</a> from vektah/validation-locations</summary>
 
 Update gqlparser for validation locations
 
@@ -8074,13 +6916,13 @@ Update gqlparser for validation locations
 
 - <a href="https://github.com/99designs/gqlgen/commit/f4d31aa429fe5e5ea20e5e88e114c2d29a551a71"><tt>f4d31aa4</tt></a> Update gqlparser for validation locations
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9d473f8b6585a1919cca3b7224ef0cca9767dae9"><tt>9d473f8b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/203">#203</a> from vektah/99designs-announcement</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9d473f8b6585a1919cca3b7224ef0cca9767dae9"><tt>9d473f8b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/03">#203</a> from vektah/99designs-announcement</summary>
 
 Announcement: 99designs is now sponsoring gqlgen
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c2f1570d1a9b0cbe2fdc97f568b4fa4005eab608"><tt>c2f1570d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/204">#204</a> from vektah/gqlparser-prelude</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c2f1570d1a9b0cbe2fdc97f568b4fa4005eab608"><tt>c2f1570d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/04">#204</a> from vektah/gqlparser-prelude</summary>
 
 Use shared prelude
 
@@ -8098,7 +6940,7 @@ credential logins.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f855a89c8a873d1d8523bb3c1d4b47330778da65"><tt>f855a89c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/201">#201</a> from cocorambo/remove-trailing-println</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f855a89c8a873d1d8523bb3c1d4b47330778da65"><tt>f855a89c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/01">#201</a> from cocorambo/remove-trailing-println</summary>
 
 Remove trailing Println
 
@@ -8106,7 +6948,7 @@ Remove trailing Println
 
 - <a href="https://github.com/99designs/gqlgen/commit/c41a6c36cf9adad011de060817bae8cf66f79933"><tt>c41a6c36</tt></a> Remove trailing Println
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2692d3e0aa5a6c5936301a822c5c71320ad96dbc"><tt>2692d3e0</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/197">#197</a> from vektah/new-parser</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2692d3e0aa5a6c5936301a822c5c71320ad96dbc"><tt>2692d3e0</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/97">#197</a> from vektah/new-parser</summary>
 
 Integrate gqlparser
 
@@ -8116,7 +6958,7 @@ Integrate gqlparser
 
 - <a href="https://github.com/99designs/gqlgen/commit/55179a61aeefeb044f023d7fa0342518b90af76e"><tt>55179a61</tt></a> Update badges
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/01a4c67737c161aebd8e76c3a9406140ecdd895f"><tt>01a4c677</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/195">#195</a> from jonstaryuk/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/01a4c67737c161aebd8e76c3a9406140ecdd895f"><tt>01a4c677</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/95">#195</a> from jonstaryuk/master</summary>
 
 Update playground version
 
@@ -8130,7 +6972,7 @@ Update playground version
 <!-- end of If NoteGroups -->
 <a name="0.3.0"></a>
 ## [0.3.0](https://github.com/99designs/gqlgen/compare/0.2.5...0.3.0) - 2018-07-14
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/381b34691fd93829e50ba8821412dc3467ec4821"><tt>381b3469</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/194">#194</a> from vektah/multiline-comments</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/381b34691fd93829e50ba8821412dc3467ec4821"><tt>381b3469</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/94">#194</a> from vektah/multiline-comments</summary>
 
 Fix multiline comments
 
@@ -8140,7 +6982,7 @@ Fix multiline comments
 
 - <a href="https://github.com/99designs/gqlgen/commit/4b3778e32cffe09c745f12b130aae3b08f281902"><tt>4b3778e3</tt></a> Fix multiline comments
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/eb44925cb17032879939a5352a2fbdc930f79320"><tt>eb44925c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/193">#193</a> from vektah/validate-method-returns</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/eb44925cb17032879939a5352a2fbdc930f79320"><tt>eb44925c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/93">#193</a> from vektah/validate-method-returns</summary>
 
 validate method return types
 
@@ -8148,7 +6990,7 @@ validate method return types
 
 - <a href="https://github.com/99designs/gqlgen/commit/164acaed8876c96f0b9f726fd4fdc5e59f79aad9"><tt>164acaed</tt></a> validate method return types
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f478f816529a9045ad39a90df36629250445a317"><tt>f478f816</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/192">#192</a> from vektah/strict-config</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f478f816529a9045ad39a90df36629250445a317"><tt>f478f816</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/92">#192</a> from vektah/strict-config</summary>
 
 Strict config
 
@@ -8156,7 +6998,7 @@ Strict config
 
 - <a href="https://github.com/99designs/gqlgen/commit/a1c02e7b771e7898aff1590326b324c3e373a702"><tt>a1c02e7b</tt></a> Strict config
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/533dcba7f4062ee4c090ea5f3bdceafe29e3bce0"><tt>533dcba7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/191">#191</a> from vektah/nullable-list-elements</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/533dcba7f4062ee4c090ea5f3bdceafe29e3bce0"><tt>533dcba7</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/91">#191</a> from vektah/nullable-list-elements</summary>
 
 Support nullable list elements
 
@@ -8164,7 +7006,7 @@ Support nullable list elements
 
 - <a href="https://github.com/99designs/gqlgen/commit/e0bf6afd14fbba795a0823248a05547c0d4fc520"><tt>e0bf6afd</tt></a> Support nullable list elements
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0780bf2ecce2409042b359ddfb86f34a59417ef4"><tt>0780bf2e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/190">#190</a> from vektah/generated-forced-resolvers</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0780bf2ecce2409042b359ddfb86f34a59417ef4"><tt>0780bf2e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/90">#190</a> from vektah/generated-forced-resolvers</summary>
 
 Allow forcing resolvers on generated types
 
@@ -8172,7 +7014,7 @@ Allow forcing resolvers on generated types
 
 - <a href="https://github.com/99designs/gqlgen/commit/bf1823cdf0e531aeda296090a5fd249efa8131ec"><tt>bf1823cd</tt></a> Allow forcing resolvers on generated types
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/febd0358f4f7373e619597f1199c8e4f71270329"><tt>febd0358</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/186">#186</a> from vektah/error-redux</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/febd0358f4f7373e619597f1199c8e4f71270329"><tt>febd0358</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/86">#186</a> from vektah/error-redux</summary>
 
 Error redux
 
@@ -8190,7 +7032,7 @@ Error redux
 <!-- end of If NoteGroups -->
 <a name="0.2.5"></a>
 ## [0.2.5](https://github.com/99designs/gqlgen/compare/0.2.4...0.2.5) - 2018-07-13
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0a9709db44324b53cb37ee23eff512213678362d"><tt>0a9709db</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/188">#188</a> from vektah/fix-windows-gopath</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0a9709db44324b53cb37ee23eff512213678362d"><tt>0a9709db</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/88">#188</a> from vektah/fix-windows-gopath</summary>
 
 Fix windows gopath issue
 
@@ -8210,7 +7052,7 @@ Fix windows gopath issue
 <!-- end of If NoteGroups -->
 <a name="0.2.4"></a>
 ## [0.2.4](https://github.com/99designs/gqlgen/compare/0.2.3...0.2.4) - 2018-07-10
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ac9e5a66f8790951063927b9c971f99cdaae7a2f"><tt>ac9e5a66</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/180">#180</a> from vektah/import-alias-before-finalize</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ac9e5a66f8790951063927b9c971f99cdaae7a2f"><tt>ac9e5a66</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/80">#180</a> from vektah/import-alias-before-finalize</summary>
 
 Fix a bug custom scalar marshallers in external packages
 
@@ -8218,7 +7060,7 @@ Fix a bug custom scalar marshallers in external packages
 
 - <a href="https://github.com/99designs/gqlgen/commit/160ebab52f7ed9d95944dadaa07050a08e81ac36"><tt>160ebab5</tt></a> Fix a bug custom scalar marshallers in external packages
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/43212c04c9ffa65fa3c44d3179f8b123addae767"><tt>43212c04</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/179">#179</a> from vektah/models-config-error</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/43212c04c9ffa65fa3c44d3179f8b123addae767"><tt>43212c04</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/79">#179</a> from vektah/models-config-error</summary>
 
 Improve Output Filename and Package Handling
 
@@ -8244,7 +7086,7 @@ Improve Output Filename and Package Handling
 ## [0.2.3](https://github.com/99designs/gqlgen/compare/0.2.2...0.2.3) - 2018-07-08
 - <a href="https://github.com/99designs/gqlgen/commit/6391596d0b6d3fb06b412bffbb7e18e3bc1e3044"><tt>6391596d</tt></a> Add some basic docs on the new config file
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a9c3af86ee8cda101e1e6044407db9d447da9f86"><tt>a9c3af86</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/176">#176</a> from vektah/config-search-paths</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a9c3af86ee8cda101e1e6044407db9d447da9f86"><tt>a9c3af86</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/76">#176</a> from vektah/config-search-paths</summary>
 
 Search for config
 
@@ -8252,7 +7094,7 @@ Search for config
 
 - <a href="https://github.com/99designs/gqlgen/commit/25cfbf082d8a07c4f9f247acb5452631056160e1"><tt>25cfbf08</tt></a> Search for config
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bff3356bec9b9b3ea70ff157fee5a9fa9421ab2a"><tt>bff3356b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/175">#175</a> from vektah/lint-all-packages</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/bff3356bec9b9b3ea70ff157fee5a9fa9421ab2a"><tt>bff3356b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/75">#175</a> from vektah/lint-all-packages</summary>
 
 gometalinter should cover all packages
 
@@ -8260,13 +7102,13 @@ gometalinter should cover all packages
 
 - <a href="https://github.com/99designs/gqlgen/commit/61f3717348e532ea4c072268a40844e3f758a1b1"><tt>61f37173</tt></a> gometalinter should cover all packages
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ce6570448d36a9805c89bf4d071f1943872cc02e"><tt>ce657044</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/173">#173</a> from vvakame/feat-resolver-hint</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/ce6570448d36a9805c89bf4d071f1943872cc02e"><tt>ce657044</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/73">#173</a> from vvakame/feat-resolver-hint</summary>
 
 add resolver option support to field
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/57b8279e2bb11344280410baa8e9a4c11721955d"><tt>57b8279e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/172">#172</a> from vvakame/feat-newconfig</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/57b8279e2bb11344280410baa8e9a4c11721955d"><tt>57b8279e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/72">#172</a> from vvakame/feat-newconfig</summary>
 
 switch to .gqlgen.yml
 
@@ -8278,7 +7120,7 @@ switch to .gqlgen.yml
 
 - <a href="https://github.com/99designs/gqlgen/commit/42948153981d2fe84c715b20b396966dd74d5c09"><tt>42948153</tt></a> move to .gqlgen.yml
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/325c45a40b41dec948abd1138cc8f84ae815b285"><tt>325c45a4</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/171">#171</a> from vvakame/add-gitignore</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/325c45a40b41dec948abd1138cc8f84ae815b285"><tt>325c45a4</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/71">#171</a> from vvakame/add-gitignore</summary>
 
 add .idea/ to .gitignore
 
@@ -8294,13 +7136,13 @@ add .idea/ to .gitignore
 ## [0.2.2](https://github.com/99designs/gqlgen/compare/0.2.1...0.2.2) - 2018-07-05
 - <a href="https://github.com/99designs/gqlgen/commit/f79b6a52ef73871a2f0d2d57b15a77078439c3b1"><tt>f79b6a52</tt></a> cleanup new config
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f0a08617588220df36b0938dd5e0dbe0f2a06538"><tt>f0a08617</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/163">#163</a> from vvakame/feat-types-json</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/f0a08617588220df36b0938dd5e0dbe0f2a06538"><tt>f0a08617</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/63">#163</a> from vvakame/feat-types-json</summary>
 
 support .gqlgen.yml
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/faf095fc412ac24799165e3e6217a46a34396cb8"><tt>faf095fc</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/166">#166</a> from vektah/validate-at-end</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/faf095fc412ac24799165e3e6217a46a34396cb8"><tt>faf095fc</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/66">#166</a> from vektah/validate-at-end</summary>
 
 Validate at end
 
@@ -8320,9 +7162,9 @@ Validate at end
 
 - <a href="https://github.com/99designs/gqlgen/commit/ecf56003d5b366805930e62f787ec338f57d9543"><tt>ecf56003</tt></a> Refactor types.json parsing
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b16e84295a1e72d27c6b96784c0266058d8716bb"><tt>b16e8429</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/159">#159</a> from vektah/enum-only-generation</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/b16e84295a1e72d27c6b96784c0266058d8716bb"><tt>b16e8429</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/59">#159</a> from vektah/enum-only-generation</summary>
 
-Don't skip model generation if there are enums defined
+Dont skip model generation if there are enums defined
 
 </details></dd></dl>
 
@@ -8330,7 +7172,7 @@ Don't skip model generation if there are enums defined
 
 - <a href="https://github.com/99designs/gqlgen/commit/588aeacb5fb32b6b3e4ee818fec784eae2277956"><tt>588aeacb</tt></a> more tutorial fixes
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/dc472965103858af8dd0af0f951f453f88ea3f3e"><tt>dc472965</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/157">#157</a> from johncurley/fix-docs-argument</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/dc472965103858af8dd0af0f951f453f88ea3f3e"><tt>dc472965</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/57">#157</a> from johncurley/fix-docs-argument</summary>
 
 Updated mutation to take correct argument
 
@@ -8338,7 +7180,7 @@ Updated mutation to take correct argument
 
 - <a href="https://github.com/99designs/gqlgen/commit/88a84f83320c19fb01b6935af8d4fd34652344fc"><tt>88a84f83</tt></a> Updated mutation to take correct argument
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/404f0b0d4844035f971135864bb4b20e98761b22"><tt>404f0b0d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/151">#151</a> from qdentity/fix-longer-gopath</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/404f0b0d4844035f971135864bb4b20e98761b22"><tt>404f0b0d</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/51">#151</a> from qdentity/fix-longer-gopath</summary>
 
 Fix bug with multiple GOPATH full package name resolving
 
@@ -8356,19 +7198,19 @@ This commit fixes the bug where GOPATH values that are longer than the input pac
 <!-- end of If NoteGroups -->
 <a name="0.2.1"></a>
 ## [0.2.1](https://github.com/99designs/gqlgen/compare/0.2.0...0.2.1) - 2018-06-26
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/cb87a2cb66f5a64749f6464900b1c12bca47ed67"><tt>cb87a2cb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/147">#147</a> from vektah/import-overhaul</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/cb87a2cb66f5a64749f6464900b1c12bca47ed67"><tt>cb87a2cb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/47">#147</a> from vektah/import-overhaul</summary>
 
 Improve import handling
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9fa3f0fbdc5691042e6ca21e9574d87715838318"><tt>9fa3f0fb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/134">#134</a> from mastercactapus/small-interfaces</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/9fa3f0fbdc5691042e6ca21e9574d87715838318"><tt>9fa3f0fb</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/34">#134</a> from mastercactapus/small-interfaces</summary>
 
 add lint-friendly small interfaces option for resolvers
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e8c30acdce72d1f39b9308f1b548a89f7a11316c"><tt>e8c30acd</tt></a> fix template error on generated defaults (<a href="https://github.com/99designs/gqlgen/pull/146">#146</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e8c30acdce72d1f39b9308f1b548a89f7a11316c"><tt>e8c30acd</tt></a> fix template error on generated defaults (<a href="https://github.com/99designs/gqlgen/pull/46">#146</a>)</summary>
 
 * fix template error on generated defaults
 
@@ -8404,7 +7246,7 @@ add lint-friendly small interfaces option for resolvers
 
 - <a href="https://github.com/99designs/gqlgen/commit/f48cbf03b9df1d3bcedf44f8b23fa7f18b6c909a"><tt>f48cbf03</tt></a> tutorial fixes
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0a85d4f2df870106b309ab11c467070de5214200"><tt>0a85d4f2</tt></a> Update generated headers to match convention. (<a href="https://github.com/99designs/gqlgen/pull/139">#139</a>)</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/0a85d4f2df870106b309ab11c467070de5214200"><tt>0a85d4f2</tt></a> Update generated headers to match convention. (<a href="https://github.com/99designs/gqlgen/pull/39">#139</a>)</summary>
 
 * Update generated.gotpl
 
@@ -8438,19 +7280,19 @@ add lint-friendly small interfaces option for resolvers
 <!-- end of If NoteGroups -->
 <a name="0.2.0"></a>
 ## [0.2.0](https://github.com/99designs/gqlgen/releases/tag/0.2.0) - 2018-06-21
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d26ef2a2622e005e6047c924ef83fcbec83ea46c"><tt>d26ef2a2</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/136">#136</a> from tianhai82/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/d26ef2a2622e005e6047c924ef83fcbec83ea46c"><tt>d26ef2a2</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/36">#136</a> from tianhai82/master</summary>
 
 fix GOPATH case mismatch issue
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a34b4de4cdf37401d82871970f7696b857cd63ce"><tt>a34b4de4</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/137">#137</a> from appleboy/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a34b4de4cdf37401d82871970f7696b857cd63ce"><tt>a34b4de4</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/37">#137</a> from appleboy/patch-1</summary>
 
 fix example links
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c1cde36c18c84633c4adcc8de9d6f97e48b7ec31"><tt>c1cde36c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/133">#133</a> from mastercactapus/skip-type-mismatch</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/c1cde36c18c84633c4adcc8de9d6f97e48b7ec31"><tt>c1cde36c</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/33">#133</a> from mastercactapus/skip-type-mismatch</summary>
 
 skip struct fields with incompatible types
 
@@ -8462,7 +7304,7 @@ skip struct fields with incompatible types
 
 - <a href="https://github.com/99designs/gqlgen/commit/8771065fa6a95ac7cf8c0548f6f1da3e0d23818f"><tt>8771065f</tt></a> skip fields with incompatible types
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/40d9a11be10846d2d69c8731c503ddf434b93146"><tt>40d9a11b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/127">#127</a> from jon-walton/windows-path-slash</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/40d9a11be10846d2d69c8731c503ddf434b93146"><tt>40d9a11b</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/27">#127</a> from jon-walton/windows-path-slash</summary>
 
 convert windows input path separators to slash
 
@@ -8470,7 +7312,7 @@ convert windows input path separators to slash
 
 - <a href="https://github.com/99designs/gqlgen/commit/7db9d122bb7b2145dac61b69a1947c5d211c7623"><tt>7db9d122</tt></a> convert windows input path separators to slash
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a5f7260161f98d29b79c3484f80279ce42990dfc"><tt>a5f72601</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/122">#122</a> from vektah/json-encoding-fixes</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a5f7260161f98d29b79c3484f80279ce42990dfc"><tt>a5f72601</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/22">#122</a> from vektah/json-encoding-fixes</summary>
 
 Fix json string encoding
 
@@ -8480,13 +7322,13 @@ Fix json string encoding
 
 - <a href="https://github.com/99designs/gqlgen/commit/578d8415192341986a44ee0e1acf5f623534f5ac"><tt>578d8415</tt></a> Fix json string encoding
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e9b406669f567b4804958606dfd68f641dbce6a3"><tt>e9b40666</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/123">#123</a> from vektah/drop-fk-generation</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/e9b406669f567b4804958606dfd68f641dbce6a3"><tt>e9b40666</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/23">#123</a> from vektah/drop-fk-generation</summary>
 
 BC Break: Stop generating foreign keys in models
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a8419e20b5181f1397761cf17cd4da773c2873c9"><tt>a8419e20</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/124">#124</a> from vektah/fix-backtick-escaping</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a8419e20b5181f1397761cf17cd4da773c2873c9"><tt>a8419e20</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/24">#124</a> from vektah/fix-backtick-escaping</summary>
 
 Fix backtick escaping
 
@@ -8496,7 +7338,7 @@ Fix backtick escaping
 
 - <a href="https://github.com/99designs/gqlgen/commit/a5c02e6c1d9700b620d6735ed38e4f023f26bbd9"><tt>a5c02e6c</tt></a> BC Break: Stop generating foreign keys in models
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/94d5c89eabde2bef4efd024c23587474d38ddf94"><tt>94d5c89e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/120">#120</a> from andrewmunro/bugfix/fix-panic-on-invalid-array-type</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/94d5c89eabde2bef4efd024c23587474d38ddf94"><tt>94d5c89e</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/20">#120</a> from andrewmunro/bugfix/fix-panic-on-invalid-array-type</summary>
 
 Fixing panic when non array value is passed to array type
 
@@ -8510,7 +7352,7 @@ Fixing panic when non array value is passed to array type
 
 - <a href="https://github.com/99designs/gqlgen/commit/6c823beb069be4fed6f0218ec5ff6a5211968b56"><tt>6c823beb</tt></a> add doc publish script
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a25232d8cce19899b610fcaffbda5cee3d1f4bab"><tt>a25232d8</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/113">#113</a> from mikeifomin/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/a25232d8cce19899b610fcaffbda5cee3d1f4bab"><tt>a25232d8</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/13">#113</a> from mikeifomin/patch-1</summary>
 
 Fix typo in url dataloaden
 
@@ -8518,11 +7360,11 @@ Fix typo in url dataloaden
 
 - <a href="https://github.com/99designs/gqlgen/commit/3a129c77a73b340bd9e04ecfdbebe65e9779f47f"><tt>3a129c77</tt></a> Fix typo in url dataloaden
 
-- <a href="https://github.com/99designs/gqlgen/commit/e1fd79fed15f60c47471d901c8250ab56aff1c55"><tt>e1fd79fe</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/111">#111</a> from imiskolee/master (closes <a href="https://github.com/99designs/gqlgen/issues/110"> #110</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/e1fd79fed15f60c47471d901c8250ab56aff1c55"><tt>e1fd79fe</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/11">#111</a> from imiskolee/master (closes <a href="https://github.com/99designs/gqlgen/issues/110"> #110</a>)
 
-- <a href="https://github.com/99designs/gqlgen/commit/e38cb497d72a1452c04ed2b82195f6b7cb142038"><tt>e38cb497</tt></a> 1. fix bug: <a href="https://github.com/99designs/gqlgen/pull/110">#110</a>
+- <a href="https://github.com/99designs/gqlgen/commit/e38cb497d72a1452c04ed2b82195f6b7cb142038"><tt>e38cb497</tt></a> 1. fix bug: <a href="https://github.com/99designs/gqlgen/pull/10">#110</a>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3990eacf7d8d99143a69b249ef164787ed00e2ee"><tt>3990eacf</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/108">#108</a> from imiskolee/master</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/3990eacf7d8d99143a69b249ef164787ed00e2ee"><tt>3990eacf</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/08">#108</a> from imiskolee/master</summary>
 
 generate json tag to model field  by gql name.
 
@@ -8532,7 +7374,7 @@ generate json tag to model field  by gql name.
 
 - <a href="https://github.com/99designs/gqlgen/commit/e1f90946d1d81737ef40e2bcf8cecdb770d34f5f"><tt>e1f90946</tt></a> 1. add json tag in models_gen.go 2. use gqlname to model filed json tag.
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/35e0971773350fc64949ed5526bf74d7ea2cd574"><tt>35e09717</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/107">#107</a> from vektah/fix-vendor-normalization</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/35e0971773350fc64949ed5526bf74d7ea2cd574"><tt>35e09717</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/07">#107</a> from vektah/fix-vendor-normalization</summary>
 
 Fix vendor normalization
 
@@ -8546,13 +7388,13 @@ directory.
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2a437c23b379cdcad7b7f4ca2e14a5c6075123a9"><tt>2a437c23</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/105">#105</a> from vektah/keyword-input-args</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/2a437c23b379cdcad7b7f4ca2e14a5c6075123a9"><tt>2a437c23</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/05">#105</a> from vektah/keyword-input-args</summary>
 
 Automatically add a _ suffix to reserved words
 
 </details></dd></dl>
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/26ac13ffec364baf5d6db0a3d6bb613c5fba25ea"><tt>26ac13ff</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/104">#104</a> from vektah/new-request-context</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/26ac13ffec364baf5d6db0a3d6bb613c5fba25ea"><tt>26ac13ff</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/04">#104</a> from vektah/new-request-context</summary>
 
 Add a NewRequestContext method
 
@@ -9019,7 +7861,7 @@ User defined custom types
 
 - <a href="https://github.com/99designs/gqlgen/commit/5c04d1adaddd2b67b5052caa33488a4a2c011df0"><tt>5c04d1ad</tt></a> __typename support
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/51292db98260ba3dd75630a87104d69b057a20b4"><tt>51292db9</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/4">#4</a> from vektah/cleanup-type-binding</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/51292db98260ba3dd75630a87104d69b057a20b4"><tt>51292db9</tt></a> Merge pull request [#4](https://github.com/99designs/gqlgen/issues/4) from vektah/cleanup-type-binding</summary>
 
 Cleanup schema binding code
 
@@ -9027,7 +7869,7 @@ Cleanup schema binding code
 
 - <a href="https://github.com/99designs/gqlgen/commit/c89a8774650d41a4a99bf5b90d0c69c4a7a166a3"><tt>c89a8774</tt></a> Cleanup schema binding code
 
-<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/030954a5d49ccc5129c10edd921d169a33f79be4"><tt>030954a5</tt></a> Merge pull request <a href="https://github.com/99designs/gqlgen/pull/2">#2</a> from ulrikstrid/patch-1</summary>
+<dl><dd><details><summary><a href="https://github.com/99designs/gqlgen/commit/030954a5d49ccc5129c10edd921d169a33f79be4"><tt>030954a5</tt></a> Merge pull request [#2](https://github.com/99designs/gqlgen/issues/2) from ulrikstrid/patch-1</summary>
 
 Fix typo in README
 
@@ -9430,7 +8272,7 @@ aren't included in any production builds.
 
 - <a href="https://github.com/99designs/gqlgen/commit/e06f58558c5a1b319f1bea12bc157cf2d25f0aa9"><tt>e06f5855</tt></a> support for "deprecated" directive on enum values
 
-- <a href="https://github.com/99designs/gqlgen/commit/498fe3961c3058c45f5ad90b1212a48adfbba266"><tt>498fe396</tt></a> support for [@deprecated](https://github.com/deprecated) directive on fields (fixes <a href="https://github.com/99designs/gqlgen/pull/64">#64</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/498fe3961c3058c45f5ad90b1212a48adfbba266"><tt>498fe396</tt></a> support for <a href="https://github.com/99designs/gqlgen/pull/64">@deprecated](https://github.com/deprecated) directive on fields (fixes [#64</a>)
 
 - <a href="https://github.com/99designs/gqlgen/commit/93ddece9c068b9e3ce6f0c85f8517e60047fb9f5"><tt>93ddece9</tt></a> refactor: DirectiveArgs
 
@@ -9560,11 +8402,11 @@ fix wrong import statement
 
 - <a href="https://github.com/99designs/gqlgen/commit/8f7d2b1efd9e96e423c0dc0ecf7dbc905e1b5ff0"><tt>8f7d2b1e</tt></a> added relay.Handler
 
-- <a href="https://github.com/99designs/gqlgen/commit/fce75a50a4f393bbf1bcef85835d406b03228b87"><tt>fce75a50</tt></a> properly coerce Int input values (<a href="https://github.com/99designs/gqlgen/pull/8">#8</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/fce75a50a4f393bbf1bcef85835d406b03228b87"><tt>fce75a50</tt></a> properly coerce Int input values ([#8](https://github.com/99designs/gqlgen/issues/8))
 
-- <a href="https://github.com/99designs/gqlgen/commit/0dd38747e3d5907dfc56d098bda073e2f5c34a4b"><tt>0dd38747</tt></a> star wars example: pass operation name and variables (<a href="https://github.com/99designs/gqlgen/pull/8">#8</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/0dd38747e3d5907dfc56d098bda073e2f5c34a4b"><tt>0dd38747</tt></a> star wars example: pass operation name and variables ([#8](https://github.com/99designs/gqlgen/issues/8))
 
-- <a href="https://github.com/99designs/gqlgen/commit/3b7efd5cb6e73337e26a67ca05750b6e1b02320e"><tt>3b7efd5c</tt></a> fix __typename for concrete object types (fixes <a href="https://github.com/99designs/gqlgen/pull/9">#9</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/3b7efd5cb6e73337e26a67ca05750b6e1b02320e"><tt>3b7efd5c</tt></a> fix __typename for concrete object types (fixes [#9](https://github.com/99designs/gqlgen/issues/9))
 
 - <a href="https://github.com/99designs/gqlgen/commit/35667edabfbc519b7d9fc5e1ca0d3c4943448df5"><tt>35667eda</tt></a> testing tools
 
@@ -9582,7 +8424,7 @@ fix wrong import statement
 
 - <a href="https://github.com/99designs/gqlgen/commit/e3386b067b33fb73ca885fc5b25c5a1249134671"><tt>e3386b06</tt></a> improved type coercion and explicit ID type
 
-- <a href="https://github.com/99designs/gqlgen/commit/2ab9d765d642ae067a0055a4b2bde56eb6fcd461"><tt>2ab9d765</tt></a> support for custom scalars (fixes <a href="https://github.com/99designs/gqlgen/pull/3">#3</a>)
+- <a href="https://github.com/99designs/gqlgen/commit/2ab9d765d642ae067a0055a4b2bde56eb6fcd461"><tt>2ab9d765</tt></a> support for custom scalars (fixes [#3](https://github.com/99designs/gqlgen/issues/3))
 
 - <a href="https://github.com/99designs/gqlgen/commit/bdfd5ce306598d599f7d26bc9c4f9a70fe0c0c66"><tt>bdfd5ce3</tt></a> use custom error type less
 

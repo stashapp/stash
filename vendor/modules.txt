@@ -1,4 +1,4 @@
-# github.com/99designs/gqlgen v0.17.24
+# github.com/99designs/gqlgen v0.17.2
 ## explicit; go 1.16
 github.com/99designs/gqlgen
 github.com/99designs/gqlgen/api
@@ -254,6 +254,12 @@ github.com/mailru/easyjson
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
+# github.com/matryer/moq v0.2.3
+## explicit; go 1.14
+github.com/matryer/moq
+github.com/matryer/moq/internal/registry
+github.com/matryer/moq/internal/template
+github.com/matryer/moq/pkg/moq
 # github.com/mattn/go-sqlite3 v1.14.7
 ## explicit; go 1.12
 github.com/mattn/go-sqlite3
@@ -375,7 +381,7 @@ github.com/vearutop/statigz
 ## explicit
 github.com/vektah/dataloaden
 github.com/vektah/dataloaden/pkg/generator
-# github.com/vektah/gqlparser/v2 v2.5.1
+# github.com/vektah/gqlparser/v2 v2.4.1
 ## explicit; go 1.16
 github.com/vektah/gqlparser/v2
 github.com/vektah/gqlparser/v2/ast
