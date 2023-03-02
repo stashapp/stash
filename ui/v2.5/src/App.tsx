@@ -31,32 +31,32 @@ import { ReleaseNotesDialog } from "./components/Dialogs/ReleaseNotesDialog";
 import { IUIConfig } from "./core/config";
 import { releaseNotes } from "./docs/en/ReleaseNotes";
 import { getPlatformURL, getBaseURL } from "./core/createClient";
-import { lazy_component } from "./utils/lazy_component";
+import { lazyComponent } from "./utils/lazyComponent";
 
-const Performers = lazy_component(
+const Performers = lazyComponent(
   () => import("./components/Performers/Performers")
 );
-const FrontPage = lazy_component(
+const FrontPage = lazyComponent(
   () => import("./components/FrontPage/FrontPage")
 );
-const Scenes = lazy_component(() => import("./components/Scenes/Scenes"));
-const Settings = lazy_component(() => import("./components/Settings/Settings"));
-const Stats = lazy_component(() => import("./components/Stats"));
-const Studios = lazy_component(() => import("./components/Studios/Studios"));
-const Galleries = lazy_component(
+const Scenes = lazyComponent(() => import("./components/Scenes/Scenes"));
+const Settings = lazyComponent(() => import("./components/Settings/Settings"));
+const Stats = lazyComponent(() => import("./components/Stats"));
+const Studios = lazyComponent(() => import("./components/Studios/Studios"));
+const Galleries = lazyComponent(
   () => import("./components/Galleries/Galleries")
 );
 
-const Movies = lazy_component(() => import("./components/Movies/Movies"));
-const Tags = lazy_component(() => import("./components/Tags/Tags"));
-const Images = lazy_component(() => import("./components/Images/Images"));
-const Setup = lazy_component(() => import("./components/Setup/Setup"));
-const Migrate = lazy_component(() => import("./components/Setup/Migrate"));
+const Movies = lazyComponent(() => import("./components/Movies/Movies"));
+const Tags = lazyComponent(() => import("./components/Tags/Tags"));
+const Images = lazyComponent(() => import("./components/Images/Images"));
+const Setup = lazyComponent(() => import("./components/Setup/Setup"));
+const Migrate = lazyComponent(() => import("./components/Setup/Migrate"));
 
-const SceneFilenameParser = lazy_component(
+const SceneFilenameParser = lazyComponent(
   () => import("./components/SceneFilenameParser/SceneFilenameParser")
 );
-const SceneDuplicateChecker = lazy_component(
+const SceneDuplicateChecker = lazyComponent(
   () => import("./components/SceneDuplicateChecker/SceneDuplicateChecker")
 );
 

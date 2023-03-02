@@ -1,8 +1,8 @@
 import React, { Suspense, useCallback, useState } from "react";
-import { lazy_component } from "src/utils/lazy_component";
+import { lazyComponent } from "src/utils/lazyComponent";
 import { ILightboxImage } from "./types";
 
-const LightboxComponent = lazy_component(() => import("./Lightbox"));
+const LightboxComponent = lazyComponent(() => import("./Lightbox"));
 
 export interface IState {
   images: ILightboxImage[];

@@ -4,12 +4,12 @@ import { useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
 import { TITLE_SUFFIX } from "src/components/Shared/constants";
 import { PersistanceLevel } from "src/hooks/ListHook";
-import { lazy_component } from "src/utils/lazy_component";
+import { lazyComponent } from "src/utils/lazyComponent";
 
-const SceneList = lazy_component(() => import("./SceneList"));
-const SceneMarkerList = lazy_component(() => import("./SceneMarkerList"));
-const Scene = lazy_component(() => import("./SceneDetails/Scene"));
-const SceneCreate = lazy_component(() => import("./SceneDetails/SceneCreate"));
+const SceneList = lazyComponent(() => import("./SceneList"));
+const SceneMarkerList = lazyComponent(() => import("./SceneMarkerList"));
+const Scene = lazyComponent(() => import("./SceneDetails/Scene"));
+const SceneCreate = lazyComponent(() => import("./SceneDetails/SceneCreate"));
 
 const Scenes: React.FC = () => {
   const intl = useIntl();

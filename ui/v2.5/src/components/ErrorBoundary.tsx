@@ -1,5 +1,5 @@
 import React from "react";
-import { is_lazy_component_error } from "src/utils/lazy_component";
+import { isLazyComponentError } from "src/utils/lazyComponent";
 
 interface IErrorBoundaryProps {
   children?: React.ReactNode;
@@ -26,7 +26,7 @@ export class ErrorBoundary extends React.Component<
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     let errorHelp: string | undefined;
-    if (is_lazy_component_error(error)) {
+    if (isLazyComponentError(error)) {
       errorHelp =
         "If you recently upgraded Stash, please reload the page or clear your browser cache.";
     }

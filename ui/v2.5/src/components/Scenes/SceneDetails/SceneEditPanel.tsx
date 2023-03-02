@@ -50,10 +50,10 @@ import {
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import { useRatingKeybinds } from "src/hooks/keybinds";
-import { lazy_component } from "src/utils/lazy_component";
+import { lazyComponent } from "src/utils/lazyComponent";
 
-const SceneScrapeDialog = lazy_component(() => import("./SceneScrapeDialog"));
-const SceneQueryModal = lazy_component(() => import("./SceneQueryModal"));
+const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
+const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
 
 interface IProps {
   scene: Partial<GQL.SceneDataFragment>;
