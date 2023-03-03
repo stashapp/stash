@@ -1,4 +1,5 @@
 import React from "react";
+import { FormattedMessage } from "react-intl";
 import { isLazyComponentError } from "src/utils/lazyComponent";
 
 interface IErrorBoundaryProps {
@@ -11,7 +12,7 @@ type ErrorInfo = {
 
 interface IErrorBoundaryState {
   error?: Error;
-  errorHelp?: string;
+  errorHelpId?: string;
   errorInfo?: ErrorInfo;
 }
 
@@ -25,26 +26,31 @@ export class ErrorBoundary extends React.Component<
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    let errorHelp: string | undefined;
+    let errorHelpId: string | undefined;
     if (isLazyComponentError(error)) {
-      errorHelp =
-        "If you recently upgraded Stash, please reload the page or clear your browser cache.";
+      errorHelpId = "errors.lazy_component_error_help";
     }
     this.setState({
       error,
-      errorHelp,
+      errorHelpId,
       errorInfo,
     });
   }
 
   public render() {
-    const { error, errorHelp, errorInfo } = this.state;
+    const { error, errorHelpId, errorInfo } = this.state;
     if (errorInfo) {
       // Error path
       return (
         <div>
-          <h2>Something went wrong.</h2>
-          {errorHelp && <h5>{errorHelp}</h5>}
+          <h2>
+            <FormattedMessage id="errors.something_went_wrong" />
+          </h2>
+          {errorHelpId && (
+            <h5>
+              <FormattedMessage id={errorHelpId} />
+            </h5>
+          )}
           <details className="error-message">
             {error?.toString()}
             <br />
