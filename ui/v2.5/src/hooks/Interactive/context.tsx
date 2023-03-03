@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { ConfigurationContext } from "../Config";
 import { useLocalForage } from "../LocalForage";
-import { IInteractive, HandyInteractive, ButtplugInteractive } from "./interactive";
+import { IInteractive } from "./interactive";
+import { HandyInteractive } from "./handyInteractive";
+import { ButtplugInteractive } from "./buttplugInteractive";
 
 export enum ConnectionState {
   Missing,
