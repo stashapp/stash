@@ -2,6 +2,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -136,7 +137,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
 
   const RenderList: React.FC<IItemListProps<T, E> & IRenderListProps> = ({
     filter,
-    onChangePage,
+    onChangePage: _onChangePage,
     updateFilter,
     persistState,
     filterDialog,
@@ -162,12 +163,25 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     const [metadataByline, setMetadataByline] = useState<React.ReactNode>();
     const items = useMemo(() => getItems(result), [result]);
 
-    useEffect(() => {
+    const [arePaging, setArePaging] = useState(false);
+    const hidePagination = !arePaging && result.loading;
+
+    // useLayoutEffect to set total count before paint, avoiding a 0 being displayed
+    useLayoutEffect(() => {
       if (result.loading) return;
+      setArePaging(false);
 
       setTotalCount(getCount(result));
       setMetadataByline(renderMetadataByline?.(result));
     }, [result]);
+
+    const onChangePage = useCallback(
+      (page: number) => {
+        setArePaging(true);
+        _onChangePage(page);
+      },
+      [_onChangePage]
+    );
 
     // handle case where page is more than there are pages
     useEffect(() => {
@@ -359,6 +373,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     }
 
     function renderPagination() {
+      if (hidePagination) return;
       return (
         <Pagination
           itemsPerPage={filter.itemsPerPage}
@@ -371,6 +386,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     }
 
     function renderPaginationIndex() {
+      if (hidePagination) return;
       return (
         <PaginationIndex
           itemsPerPage={filter.itemsPerPage}
