@@ -14,7 +14,7 @@ import {
   useConfigureUI,
   useSystemStatus,
 } from "src/core/StashService";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { ConfigurationContext } from "src/hooks/Config";
 import StashConfiguration from "../Settings/StashConfiguration";
 import { Icon } from "../Shared/Icon";
@@ -43,6 +43,7 @@ export const Setup: React.FC = () => {
   const [setupError, setSetupError] = useState("");
 
   const intl = useIntl();
+  const history = useHistory();
 
   const [showGeneratedDialog, setShowGeneratedDialog] = useState(false);
 
@@ -610,26 +611,26 @@ export const Setup: React.FC = () => {
     return renderSuccess();
   }
 
+  const welcomeStep =
+    systemStatus && systemStatus.systemStatus.configPath !== ""
+      ? renderWelcomeSpecificConfig
+      : renderWelcome;
+  const steps = [welcomeStep, renderSetPaths, renderConfirm, renderFinish];
+
   // only display setup wizard if system is not setup
   if (statusLoading || configLoading) {
     return <LoadingIndicator />;
   }
 
   if (
+    step !== steps.length - 1 &&
     systemStatus &&
     systemStatus.systemStatus.status !== GQL.SystemStatusEnum.Setup
   ) {
     // redirect to main page
-    const newURL = new URL("/", window.location.toString());
-    window.location.href = newURL.toString();
+    history.push("/");
     return <LoadingIndicator />;
   }
-
-  const welcomeStep =
-    systemStatus && systemStatus.systemStatus.configPath !== ""
-      ? renderWelcomeSpecificConfig
-      : renderWelcome;
-  const steps = [welcomeStep, renderSetPaths, renderConfirm, renderFinish];
 
   function renderCreating() {
     return (
