@@ -1,6 +1,7 @@
-import React, { lazy, Suspense, useState } from "react";
+import React, { Suspense, useState } from "react";
+import { lazyComponent } from "src/utils/lazyComponent";
 
-const Manual = lazy(() => import("./Manual"));
+const Manual = lazyComponent(() => import("./Manual"));
 
 interface IManualContextState {
   openManual: (tab?: string) => void;
