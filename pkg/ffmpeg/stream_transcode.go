@@ -20,17 +20,18 @@ type StreamFormat struct {
 }
 
 func CodecInit(codec VideoCodec) (args Args) {
+	args = args.VideoCodec(codec)
+
 	switch codec {
 	// CPU Codecs
 	case VideoCodecLibX264:
-		args = args.VideoCodec(VideoCodecLibX264)
 		args = append(args,
 			"-pix_fmt", "yuv420p",
 			"-preset", "veryfast",
 			"-crf", "25",
+			"-sc_threshold", "0",
 		)
 	case VideoCodecVP9:
-		args = args.VideoCodec(VideoCodecVP9)
 		args = append(args,
 			"-pix_fmt", "yuv420p",
 			"-deadline", "realtime",
@@ -41,32 +42,27 @@ func CodecInit(codec VideoCodec) (args Args) {
 		)
 	// HW Codecs
 	case VideoCodecN264:
-		args = args.VideoCodec(VideoCodecN264)
 		args = append(args,
 			"-rc", "vbr",
 			"-cq", "15",
 			"-preset", "p2",
 		)
 	case VideoCodecI264:
-		args = args.VideoCodec(VideoCodecI264)
 		args = append(args,
 			"-global_quality", "20",
 			"-preset", "faster",
 		)
 	case VideoCodecVVP9:
-		args = args.VideoCodec(VideoCodecVVP9)
 		args = append(args,
 			"-qp", "20",
 		)
 	case VideoCodecIVP9:
-		args = args.VideoCodec(VideoCodecIVP9)
 		args = append(args,
 			"-global_quality", "20",
 			"-preset", "faster",
 		)
-	default:
-		args = args.VideoCodec(codec)
 	}
+
 	return args
 }
 
@@ -127,6 +123,25 @@ type TranscodeOptions struct {
 	StartTime  float64
 }
 
+func FileGetCodec(sm *StreamManager, mimetype string) (codec VideoCodec) {
+	switch mimetype {
+	case MimeMp4Video:
+		codec = VideoCodecLibX264
+		if hwcodec := HWCodecMP4Compatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
+			codec = *hwcodec
+		}
+	case MimeWebmVideo:
+		codec = VideoCodecVP9
+		if hwcodec := HWCodecWEBMCompatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
+			codec = *hwcodec
+		}
+	case MimeMkvVideo:
+		codec = VideoCodecCopy
+	}
+
+	return codec
+}
+
 func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
 	maxTranscodeSize := sm.config.GetMaxStreamingTranscodeSize().GetMaxResolution()
 	if o.Resolution != "" {
@@ -138,24 +153,9 @@ func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
 	args := Args{"-hide_banner"}
 	args = args.LogLevel(LogLevelError)
 
-	var codec VideoCodec
-	switch o.StreamType.MimeType {
-	case MimeMp4Video:
-		codec = VideoCodecLibX264
-		if hwcodec := HWCodecH264Compatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
-			codec = *hwcodec
-		}
-	case MimeWebmVideo:
-		codec = VideoCodecVP9
-		if hwcodec := HWCodecVP9Compatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
-			codec = *hwcodec
-		}
-	case MimeMkvVideo:
-		codec = VideoCodecCopy
-	}
+	codec := FileGetCodec(sm, o.StreamType.MimeType)
 
 	args = HWDeviceInit(args, codec)
-
 	args = append(args, extraInputArgs...)
 
 	if o.StartTime != 0 {

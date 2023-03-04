@@ -17,6 +17,7 @@ func FindHWCodecs(ctx context.Context, encoder FFMpeg) {
 	for _, codec := range []VideoCodec{
 		VideoCodecN264,
 		VideoCodecI264,
+		VideoCodecV264,
 		VideoCodecIVP9,
 		VideoCodecVVP9,
 	} {
@@ -208,25 +209,33 @@ func HWCodecMaxRes(codec VideoCodec, dW int, dH int) (int, int) {
 	return dW, dH
 }
 
-// Return if a hardware accelerated H264 codec is available
-func HWCodecH264Compatible() *VideoCodec {
+// Return if a hardware accelerated for HLS is available
+func HWCodecHLSCompatible() *VideoCodec {
 	for _, element := range HWCodecSupport {
 		switch element {
 		case VideoCodecN264,
-			VideoCodecA264,
-			VideoCodecM264,
-			VideoCodecV264,
 			VideoCodecI264,
-			VideoCodecR264,
-			VideoCodecO264:
+			VideoCodecV264:
 			return &element
 		}
 	}
 	return nil
 }
 
-// Return if a hardware accelerated VP9 codec is available
-func HWCodecVP9Compatible() *VideoCodec {
+// Return if a hardware accelerated codec for MP4 is available
+func HWCodecMP4Compatible() *VideoCodec {
+	for _, element := range HWCodecSupport {
+		switch element {
+		case VideoCodecN264,
+			VideoCodecI264:
+			return &element
+		}
+	}
+	return nil
+}
+
+// Return if a hardware accelerated codec for WebM is available
+func HWCodecWEBMCompatible() *VideoCodec {
 	for _, element := range HWCodecSupport {
 		switch element {
 		case VideoCodecIVP9,
