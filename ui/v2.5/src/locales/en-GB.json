@@ -334,7 +334,7 @@
         "heading": "Scrapers Path"
       },
       "scraping": "Scraping",
-      "sqlite_location": "File location for the SQLite database (requires restart)",
+      "sqlite_location": "File location for the SQLite database (requires restart). WARNING: storing the database on a different system to where the Stash server is run from (i.e. over the network) is unsupported!",
       "video_ext_desc": "Comma-delimited list of file extensions that will be identified as videos.",
       "video_ext_head": "Video Extensions",
       "video_head": "Video"
@@ -1069,7 +1069,8 @@
       "set_up_your_paths": "Set up your paths",
       "stash_alert": "No library paths have been selected. No media will be able to be scanned into Stash. Are you sure?",
       "where_can_stash_store_its_database": "Where can Stash store its database?",
-      "where_can_stash_store_its_database_description": "Stash uses an sqlite database to store your porn metadata. By default, this will be created as <code>stash-go.sqlite</code> in the directory containing your config file. If you want to change this, please enter an absolute or relative (to the current working directory) filename.",
+      "where_can_stash_store_its_database_description": "Stash uses an SQLite database to store your porn metadata. By default, this will be created as <code>stash-go.sqlite</code> in the directory containing your config file. If you want to change this, please enter an absolute or relative (to the current working directory) filename.",
+      "where_can_stash_store_its_database_warning": "WARNING: storing the database on a different system to where Stash is run from (e.g. storing the database on a NAS while running the Stash server on another computer) is <strong>unsupported</strong>! SQLite is not intended for use across a network, and attempting to do so can very easily cause your entire database to become corrupted.",
       "where_can_stash_store_its_generated_content": "Where can Stash store its generated content?",
       "where_can_stash_store_its_generated_content_description": "In order to provide thumbnails, previews and sprites, Stash generates images and videos. This also includes transcodes for unsupported file formats. By default, Stash will create a <code>generated</code> directory within the directory containing your config file. If you want to change where this generated media will be stored, please enter an absolute or relative (to the current working directory) path. Stash will create this directory if it does not already exist.",
       "where_is_your_porn_located": "Where is your porn located?",

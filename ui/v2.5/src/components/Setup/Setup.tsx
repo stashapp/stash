@@ -329,6 +329,13 @@ export const Setup: React.FC = () => {
                   code: (chunks: string) => <code>{chunks}</code>,
                 }}
               />
+              <br />
+              <FormattedMessage
+                id="setup.paths.where_can_stash_store_its_database_warning"
+                values={{
+                  strong: (chunks: string) => <strong>{chunks}</strong>,
+                }}
+              />
             </p>
             <Form.Control
               className="text-input"
