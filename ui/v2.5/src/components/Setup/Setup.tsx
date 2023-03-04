@@ -37,15 +37,18 @@ export const Setup: React.FC = () => {
   const [configLocation, setConfigLocation] = useState("");
   const [stashes, setStashes] = useState<GQL.StashConfig[]>([]);
   const [showStashAlert, setShowStashAlert] = useState(false);
-  const [generatedLocation, setGeneratedLocation] = useState("");
   const [databaseFile, setDatabaseFile] = useState("");
+  const [generatedLocation, setGeneratedLocation] = useState("");
+  const [cacheLocation, setCacheLocation] = useState("");
   const [loading, setLoading] = useState(false);
   const [setupError, setSetupError] = useState("");
 
   const intl = useIntl();
   const history = useHistory();
 
-  const [showGeneratedDialog, setShowGeneratedDialog] = useState(false);
+  const [showGeneratedSelectDialog, setShowGeneratedSelectDialog] =
+    useState(false);
+  const [showCacheSelectDialog, setShowCacheSelectDialog] = useState(false);
 
   const { data: systemStatus, loading: statusLoading } = useSystemStatus();
 
@@ -234,20 +237,20 @@ export const Setup: React.FC = () => {
     );
   }
 
-  function onGeneratedClosed(d?: string) {
+  function onGeneratedSelectClosed(d?: string) {
     if (d) {
       setGeneratedLocation(d);
     }
 
-    setShowGeneratedDialog(false);
+    setShowGeneratedSelectDialog(false);
   }
 
   function maybeRenderGeneratedSelectDialog() {
-    if (!showGeneratedDialog) {
+    if (!showGeneratedSelectDialog) {
       return;
     }
 
-    return <FolderSelectDialog onClose={onGeneratedClosed} />;
+    return <FolderSelectDialog onClose={onGeneratedSelectClosed} />;
   }
 
   function maybeRenderGenerated() {
@@ -280,7 +283,64 @@ export const Setup: React.FC = () => {
               <Button
                 variant="secondary"
                 className="text-input"
-                onClick={() => setShowGeneratedDialog(true)}
+                onClick={() => setShowGeneratedSelectDialog(true)}
+              >
+                <Icon icon={faEllipsisH} />
+              </Button>
+            </InputGroup.Append>
+          </InputGroup>
+        </Form.Group>
+      );
+    }
+  }
+
+  function onCacheSelectClosed(d?: string) {
+    if (d) {
+      setCacheLocation(d);
+    }
+
+    setShowCacheSelectDialog(false);
+  }
+
+  function maybeRenderCacheSelectDialog() {
+    if (!showCacheSelectDialog) {
+      return;
+    }
+
+    return <FolderSelectDialog onClose={onCacheSelectClosed} />;
+  }
+
+  function maybeRenderCache() {
+    if (!configuration?.general.cachePath) {
+      return (
+        <Form.Group id="cache">
+          <h3>
+            <FormattedMessage id="setup.paths.where_can_stash_store_cache_files" />
+          </h3>
+          <p>
+            <FormattedMessage
+              id="setup.paths.where_can_stash_store_cache_files_description"
+              values={{
+                code: (chunks: string) => <code>{chunks}</code>,
+              }}
+            />
+          </p>
+          <InputGroup>
+            <Form.Control
+              className="text-input"
+              value={cacheLocation}
+              placeholder={intl.formatMessage({
+                id: "setup.paths.path_to_cache_directory_empty_for_default",
+              })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setCacheLocation(e.currentTarget.value)
+              }
+            />
+            <InputGroup.Append>
+              <Button
+                variant="secondary"
+                className="text-input"
+                onClick={() => setShowCacheSelectDialog(true)}
               >
                 <Icon icon={faEllipsisH} />
               </Button>
@@ -349,6 +409,7 @@ export const Setup: React.FC = () => {
             />
           </Form.Group>
           {maybeRenderGenerated()}
+          {maybeRenderCache()}
         </section>
         <section className="mt-5">
           <div className="d-flex justify-content-center">
@@ -412,6 +473,7 @@ export const Setup: React.FC = () => {
         configLocation,
         databaseFile,
         generatedLocation,
+        cacheLocation,
         stashes,
       });
       // Set lastNoteSeen to hide release notes dialog
@@ -477,6 +539,20 @@ export const Setup: React.FC = () => {
                   ? generatedLocation
                   : intl.formatMessage({
                       id: "setup.confirm.default_generated_content_location",
+                    })}
+              </code>
+            </dd>
+          </dl>
+          <dl>
+            <dt>
+              <FormattedMessage id="setup.confirm.cache_directory" />
+            </dt>
+            <dd>
+              <code>
+                {cacheLocation !== ""
+                  ? cacheLocation
+                  : intl.formatMessage({
+                      id: "setup.confirm.default_cache_location",
                     })}
               </code>
             </dd>
@@ -600,7 +676,7 @@ export const Setup: React.FC = () => {
         <section className="mt-5">
           <div className="d-flex justify-content-center">
             <Link to="/settings?tab=library">
-              <Button variant="success mx-2 p-5" onClick={() => goBack(2)}>
+              <Button variant="success mx-2 p-5">
                 <FormattedMessage id="actions.finish" />
               </Button>
             </Link>
@@ -662,6 +738,7 @@ export const Setup: React.FC = () => {
   return (
     <Container>
       {maybeRenderGeneratedSelectDialog()}
+      {maybeRenderCacheSelectDialog()}
       <h1 className="text-center">
         <FormattedMessage id="setup.stash_setup_wizard" />
       </h1>

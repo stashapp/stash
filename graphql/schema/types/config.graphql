@@ -6,6 +6,8 @@ input SetupInput {
   databaseFile: String!
   """Empty to indicate default"""
   generatedLocation: String!
+  """Empty to indicate default"""
+  cacheLocation: String!
 }
 
 enum StreamingResolutionEnum {

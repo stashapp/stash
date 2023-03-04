@@ -1027,8 +1027,10 @@
   "setup": {
     "confirm": {
       "almost_ready": "We're almost ready to complete the configuration. Please confirm the following settings. You can click back to change anything incorrect. If everything looks good, click Confirm to create your system.",
+      "cache_directory": "Cache directory",
       "configuration_file_location": "Configuration file location:",
       "database_file_path": "Database file path",
+      "default_cache_location": "<path containing configuration file>/cache",
       "default_db_location": "<path containing configuration file>/stash-go.sqlite",
       "default_generated_content_location": "<path containing configuration file>/generated",
       "generated_directory": "Generated directory",
@@ -1064,10 +1066,13 @@
     },
     "paths": {
       "database_filename_empty_for_default": "database filename (empty for default)",
-      "description": "Next up, we need to determine where to find your porn collection, where to store the stash database and generated files. These settings can be changed later if needed.",
+      "description": "Next up, we need to determine where to find your porn collection, and where to store the Stash database, generated files and cache files. These settings can be changed later if needed.",
+      "path_to_cache_directory_empty_for_default": "path to cache directory (empty for default)",
       "path_to_generated_directory_empty_for_default": "path to generated directory (empty for default)",
       "set_up_your_paths": "Set up your paths",
       "stash_alert": "No library paths have been selected. No media will be able to be scanned into Stash. Are you sure?",
+      "where_can_stash_store_cache_files": "Where can Stash store cache files?",
+      "where_can_stash_store_cache_files_description": "In order for some functionality like HLS live transcoding to function, Stash requires a cache directory for temporary files. By default, Stash will create a <code>cache</code> directory within the directory containing your config file. If you want to change this, please enter an absolute or relative (to the current working directory) path. Stash will create this directory if it does not already exist.",
       "where_can_stash_store_its_database": "Where can Stash store its database?",
       "where_can_stash_store_its_database_description": "Stash uses an SQLite database to store your porn metadata. By default, this will be created as <code>stash-go.sqlite</code> in the directory containing your config file. If you want to change this, please enter an absolute or relative (to the current working directory) filename.",
       "where_can_stash_store_its_database_warning": "WARNING: storing the database on a different system to where Stash is run from (e.g. storing the database on a NAS while running the Stash server on another computer) is <strong>unsupported</strong>! SQLite is not intended for use across a network, and attempting to do so can very easily cause your entire database to become corrupted.",
