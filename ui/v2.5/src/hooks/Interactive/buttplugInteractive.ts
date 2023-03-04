@@ -9,22 +9,17 @@ import {
 
 export class ButtplugInteractive implements IInteractive {
   _scriptOffset: number;
+  _connector: ButtplugBrowserWebsocketClientConnector;
+  _client: ButtplugClient;
 
   constructor(scriptOffset: number = 0) {
     this._scriptOffset = scriptOffset;
-  }
-
-  enabled(): boolean {
-    return true;
-  }
-
-  async connect() {
-    const connector = new ButtplugBrowserWebsocketClientConnector("ws://localhost:12345");
-    const client = new ButtplugClient("Device Control Example");
-    client.addListener(
+    this._connector = new ButtplugBrowserWebsocketClientConnector("ws://localhost:12345");
+    this._client = new ButtplugClient("Stash - An organizer for your porn");
+    this._client.addListener(
       "deviceadded",
       async (device: ButtplugClientDevice) => {
-        console.log(`Device Connected: ${device.name}`);
+        console.log(`[buttplug] Device Connected: ${device.name}`);
         //devices.current.push(device);
         // setDeviceDatas((deviceDatas) => [
         //   ...deviceDatas,
@@ -34,11 +29,18 @@ export class ButtplugInteractive implements IInteractive {
         // ]);
       }
     );
-    client.addListener("deviceremoved", (device) =>
-      console.log(`Device Removed: ${device.name}`)
+    this._client.addListener("deviceremoved", (device) =>
+      console.log(`[buttplug] Device Removed: ${device.name}`)
     );
-    await client.connect(connector);
-    await client.startScanning();
+  }
+
+  enabled(): boolean {
+    return true; //this._connector.Connected;
+  }
+
+  async connect() {
+    await this._client.connect(this._connector);
+    await this._client.startScanning();
   }
 
   set scriptOffset(offset: number) {
@@ -54,7 +56,7 @@ export class ButtplugInteractive implements IInteractive {
       .then((response) => response.json());
 
     // TODO
-    console.log(json);
+    console.log('[buttplug] Funscript:', json);
     return;
   }
 
@@ -63,22 +65,27 @@ export class ButtplugInteractive implements IInteractive {
   }
 
   setServerTimeOffset(offset: number) {
+    console.log(`[buttplug] ServerTimeOffset: ${offset}`);
     return;
   }
 
   async play(position: number) {
+    console.log(`[buttplug] Play position: ${position}`);
     return;
   }
 
   async pause() {
+    console.log('[buttplug] Pause');
     return;
   }
 
   async ensurePlaying(position: number) {
+    console.log(`[buttplug] Ensure play position: ${position}`);
     return;
   }
 
   async setLooping(looping: boolean) {
+    console.log(`[buttplug] Looping: ${looping}`);
     return;
   }
 }
