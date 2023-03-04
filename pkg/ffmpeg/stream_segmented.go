@@ -84,7 +84,7 @@ var (
 				"-avoid_negative_ts", "disabled",
 				"-f", "hls",
 				"-start_number", fmt.Sprint(segment),
-				"-hls_time", "2",
+				"-hls_time", fmt.Sprint(segmentLength),
 				"-hls_segment_type", "mpegts",
 				"-hls_playlist_type", "vod",
 				"-hls_segment_filename", filepath.Join(outputDir, ".%d.ts"),
@@ -115,7 +115,7 @@ var (
 				"-avoid_negative_ts", "disabled",
 				"-f", "hls",
 				"-start_number", fmt.Sprint(segment),
-				"-hls_time", "2",
+				"-hls_time", fmt.Sprint(segmentLength),
 				"-hls_segment_type", "mpegts",
 				"-hls_playlist_type", "vod",
 				"-hls_segment_filename", filepath.Join(outputDir, ".%d.ts"),
@@ -520,13 +520,13 @@ func serveDASHManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request
 	baseUrl.RawQuery = ""
 	m.BaseURL = baseUrl.String()
 
-	video, _ := m.AddNewAdaptationSetVideo("video/webm", "progressive", true, 1)
+	video, _ := m.AddNewAdaptationSetVideo(MimeWebmVideo, "progressive", true, 1)
 
 	_, _ = video.SetNewSegmentTemplate(2, "init_v.webm"+urlQuery, "$Number$_v.webm"+urlQuery, 0, 1)
 	_, _ = video.AddNewRepresentationVideo(200000, "vp09.00.40.08", "0", framerate, int64(videoWidth), int64(videoHeight))
 
 	if ProbeAudioCodec(vf.AudioCodec) != MissingUnsupported {
-		audio, _ := m.AddNewAdaptationSetAudio("audio/webm", true, 1, "und")
+		audio, _ := m.AddNewAdaptationSetAudio(MimeWebmAudio, true, 1, "und")
 		_, _ = audio.SetNewSegmentTemplate(2, "init_a.webm"+urlQuery, "$Number$_a.webm"+urlQuery, 0, 1)
 		_, _ = audio.AddNewRepresentationAudio(48000, 96000, "opus", "1")
 	}
