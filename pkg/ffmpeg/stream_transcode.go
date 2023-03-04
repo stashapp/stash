@@ -166,10 +166,7 @@ func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
 
 	videoOnly := ProbeAudioCodec(o.VideoFile.AudioCodec) == MissingUnsupported
 
-	videoFilter := HWFilterInit(codec)
-	maxWidth, maxHeight := HWCodecMaxRes(codec, o.VideoFile.Width, o.VideoFile.Height)
-	videoFilter = videoFilter.ScaleMaxLM(o.VideoFile.Width, o.VideoFile.Height, maxTranscodeSize, maxWidth, maxHeight)
-	videoFilter = HWCodecFilter(videoFilter, codec)
+	videoFilter := HWMaxResFilter(codec, o.VideoFile.Width, o.VideoFile.Height, maxTranscodeSize)
 
 	args = append(args, o.StreamType.Args(codec, videoFilter, videoOnly)...)
 

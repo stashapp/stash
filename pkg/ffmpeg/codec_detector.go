@@ -52,24 +52,6 @@ func FindHWCodecs(ctx context.Context, encoder FFMpeg) {
 	}
 }
 
-// Return if given codec is hardware accelerated
-func HWCodecDetect(codec VideoCodec) bool {
-	switch codec {
-	case VideoCodecN264,
-		VideoCodecA264,
-		VideoCodecM264,
-		VideoCodecV264,
-		VideoCodecI264,
-		VideoCodecR264,
-		VideoCodecO264,
-		VideoCodecIVP9,
-		VideoCodecVVP9:
-		return true
-	default:
-		return false
-	}
-}
-
 // Test full-hardware transcoding on an input video
 /*func HWCodecVideoSupported(ctx context.Context, encoder FFMpeg, o TranscodeStreamOptions) bool {
 	if !HWCodecDetect(o.Codec.codec) {
@@ -201,12 +183,21 @@ func HWCodecFilter(args VideoFilter, codec VideoCodec) VideoFilter {
 	return args
 }
 
+// Returns the max resolution for a given codec, or a default
 func HWCodecMaxRes(codec VideoCodec, dW int, dH int) (int, int) {
 	if codec == VideoCodecN264 {
 		return 4096, 4096
 	}
 
 	return dW, dH
+}
+
+// Return a maxres filter
+func HWMaxResFilter(codec VideoCodec, width int, height int, max int) VideoFilter {
+	videoFilter := HWFilterInit(codec)
+	maxWidth, maxHeight := HWCodecMaxRes(codec, width, height)
+	videoFilter = videoFilter.ScaleMaxLM(width, height, max, maxWidth, maxHeight)
+	return HWCodecFilter(videoFilter, codec)
 }
 
 // Return if a hardware accelerated for HLS is available
