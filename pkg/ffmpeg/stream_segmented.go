@@ -554,7 +554,6 @@ func (sm *StreamManager) serveWaitingSegment(w http.ResponseWriter, r *http.Requ
 			w.Header().Add("Cache-Control", "no-cache")
 			http.ServeFile(w, r, segment.path)
 		} else if !errors.Is(err, context.Canceled) {
-			logger.Errorf("[transcode] %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	}
@@ -641,6 +640,7 @@ func (sm *StreamManager) startTranscode(stream *runningStream, segment int, done
 	logger.Debugf("[transcode] starting transcode for %s at segment #%d", stream.dir, segment)
 
 	if err := os.MkdirAll(stream.outputDir, os.ModePerm); err != nil {
+		logger.Errorf("[transcode] %v", err)
 		done <- err
 		return
 	}
@@ -663,7 +663,9 @@ func (sm *StreamManager) startTranscode(stream *runningStream, segment int, done
 	logger.Tracef("[transcode] running %s", cmd)
 	if err := cmd.Start(); err != nil {
 		lockCtx.Cancel()
-		done <- fmt.Errorf("error starting transcode process: %w", err)
+		err = fmt.Errorf("error starting transcode process: %w", err)
+		logger.Errorf("[transcode] %v", err)
+		done <- err
 		return
 	}
 
@@ -698,7 +700,12 @@ func (sm *StreamManager) startTranscode(stream *runningStream, segment int, done
 			}
 
 			if err != nil {
-				err = fmt.Errorf("[transcode] ffmpeg error when running command <%s>: %w", strings.Join(cmd.Args, " "), err)
+				err = fmt.Errorf("ffmpeg error when running command <%s>: %w", strings.Join(cmd.Args, " "), err)
+
+				var exitError *exec.ExitError
+				if !errors.As(err, &exitError) {
+					logger.Errorf("[transcode] %v", err)
+				}
 			}
 		}
 
@@ -716,7 +723,9 @@ func (sm *StreamManager) startTranscode(stream *runningStream, segment int, done
 
 		sm.streamsMutex.Unlock()
 
-		done <- err
+		if err != nil {
+			done <- err
+		}
 	}()
 }
 
@@ -761,7 +770,9 @@ func (s *waitingSegment) checkAvailable(now time.Time) bool {
 		s.available <- nil
 		return true
 	} else if s.accessed.Add(maxSegmentWait).Before(now) {
-		s.available <- fmt.Errorf("timed out waiting for segment file %s to be generated", s.file)
+		err := fmt.Errorf("timed out waiting for segment file %s to be generated", s.file)
+		logger.Errorf("[transcode] %v", err)
+		s.available <- err
 		return true
 	}
 	return false
