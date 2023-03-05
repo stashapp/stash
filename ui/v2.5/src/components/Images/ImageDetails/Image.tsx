@@ -1,4 +1,4 @@
-import { Tab, Nav, Dropdown } from "react-bootstrap";
+import { Button, Tab, Nav, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useParams, useHistory, Link } from "react-router-dom";
@@ -36,6 +36,8 @@ export const Image: React.FC = () => {
   const Toast = useToast();
   const intl = useIntl();
 
+  const [collapsed, setCollapsed] = useState(false);
+
   const { data, error, loading } = useFindImage(id);
   const image = data?.findImage;
   const [incrementO] = useImageIncrementO(image?.id ?? "0");
@@ -49,6 +51,10 @@ export const Image: React.FC = () => {
   const [activeTabKey, setActiveTabKey] = useState("image-details-panel");
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+
+  function getCollapseButtonText() {
+    return collapsed ? ">" : "<";
+  }
 
   async function onRescan() {
     if (!image || !image.files.length) {
@@ -268,7 +274,11 @@ export const Image: React.FC = () => {
       </Helmet>
 
       {maybeRenderDeleteDialog()}
-      <div className="image-tabs order-xl-first order-last">
+      <div
+        className={`image-tabs order-xl-first order-last ${
+          collapsed ? "collapsed" : ""
+        }`}
+      >
         <div className="d-none d-xl-block">
           {image.studio && (
             <h1 className="text-center">
@@ -285,7 +295,12 @@ export const Image: React.FC = () => {
         </div>
         {renderTabs()}
       </div>
-      <div className="image-container">
+      <div className="image-divider d-none d-xl-block">
+        <Button onClick={() => setCollapsed(!collapsed)}>
+          {getCollapseButtonText()}
+        </Button>
+      </div>
+      <div className={`image-container ${collapsed ? "expanded" : ""}`}>
         <img
           className="m-sm-auto no-gutter image-image"
           alt={title}
