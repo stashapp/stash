@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, lazy } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import {
   Button,
@@ -50,9 +50,10 @@ import {
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import { useRatingKeybinds } from "src/hooks/keybinds";
+import { lazyComponent } from "src/utils/lazyComponent";
 
-const SceneScrapeDialog = lazy(() => import("./SceneScrapeDialog"));
-const SceneQueryModal = lazy(() => import("./SceneQueryModal"));
+const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
+const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
 
 interface IProps {
   scene: Partial<GQL.SceneDataFragment>;

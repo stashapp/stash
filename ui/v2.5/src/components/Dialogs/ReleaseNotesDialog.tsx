@@ -1,12 +1,12 @@
 import React from "react";
-import { Form } from "react-bootstrap";
 import { ModalComponent } from "../Shared/Modal";
 import { faCogs } from "@fortawesome/free-solid-svg-icons";
 import { useIntl } from "react-intl";
 import { MarkdownPage } from "../Shared/MarkdownPage";
+import { IReleaseNotes } from "src/docs/en/ReleaseNotes";
 
 interface IReleaseNotesDialog {
-  notes: string[];
+  notes: IReleaseNotes[];
   onClose: () => void;
 }
 
@@ -26,11 +26,22 @@ export const ReleaseNotesDialog: React.FC<IReleaseNotesDialog> = ({
         text: intl.formatMessage({ id: "actions.close" }),
       }}
     >
-      <Form>
-        {notes.map((n, i) => (
-          <MarkdownPage page={n} key={i} />
-        ))}
-      </Form>
+      <div className="m-n3">
+        {notes
+          .map((n, i) => (
+            <div key={i} className="m-3">
+              <h3>{n.version}</h3>
+              <MarkdownPage page={n.content} />
+            </div>
+          ))
+          .reduce((accu, curr) => (
+            <>
+              {accu}
+              <hr />
+              {curr}
+            </>
+          ))}
+      </div>
     </ModalComponent>
   );
 };

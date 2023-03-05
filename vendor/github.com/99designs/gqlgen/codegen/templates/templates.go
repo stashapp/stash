@@ -4,16 +4,14 @@ import (
 	"bytes"
 	"fmt"
 	"go/types"
-	"io/fs"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
-	"regexp"
 	"runtime"
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 	"text/template"
 	"unicode"
 
@@ -38,11 +36,6 @@ type Options struct {
 	// the plugin processor will look for .gotpl files
 	// in the same directory of where you wrote the plugin.
 	Template string
-
-	// Use the go:embed API to collect all the template files you want to pass into Render
-	// this is an alternative to passing the Template option
-	TemplateFS fs.FS
-
 	// Filename is the name of the file that will be
 	// written to the system disk once the template is rendered.
 	Filename        string
@@ -60,12 +53,6 @@ type Options struct {
 	Packages *code.Packages
 }
 
-var (
-	modelNamesMu sync.Mutex
-	modelNames   = make(map[string]string, 0)
-	goNameRe     = regexp.MustCompile("[^a-zA-Z0-9_]")
-)
-
 // Render renders a gql plugin template from the given Options. Render is an
 // abstraction of the text/template package that makes it easier to write gqlgen
 // plugins. If Options.Template is empty, the Render function will look for `.gotpl`
@@ -76,27 +63,55 @@ func Render(cfg Options) error {
 	}
 	CurrentImports = &Imports{packages: cfg.Packages, destDir: filepath.Dir(cfg.Filename)}
 
+	// load path relative to calling source file
+	_, callerFile, _, _ := runtime.Caller(1)
+	rootDir := filepath.Dir(callerFile)
+
 	funcs := Funcs()
 	for n, f := range cfg.Funcs {
 		funcs[n] = f
 	}
-
 	t := template.New("").Funcs(funcs)
-	t, err := parseTemplates(cfg, t)
-	if err != nil {
-		return err
-	}
 
-	roots := make([]string, 0, len(t.Templates()))
-	for _, template := range t.Templates() {
-		// templates that end with _.gotpl are special files we don't want to include
-		if strings.HasSuffix(template.Name(), "_.gotpl") ||
-			// filter out templates added with {{ template xxx }} syntax inside the template file
-			!strings.HasSuffix(template.Name(), ".gotpl") {
-			continue
+	var roots []string
+	if cfg.Template != "" {
+		var err error
+		t, err = t.New("template.gotpl").Parse(cfg.Template)
+		if err != nil {
+			return fmt.Errorf("error with provided template: %w", err)
 		}
+		roots = append(roots, "template.gotpl")
+	} else {
+		// load all the templates in the directory
+		err := filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			name := filepath.ToSlash(strings.TrimPrefix(path, rootDir+string(os.PathSeparator)))
+			if !strings.HasSuffix(info.Name(), ".gotpl") {
+				return nil
+			}
+			// omit any templates with "_" at the end of their name, which are meant for specific contexts only
+			if strings.HasSuffix(info.Name(), "_.gotpl") {
+				return nil
+			}
+			b, err := ioutil.ReadFile(path)
+			if err != nil {
+				return err
+			}
 
-		roots = append(roots, template.Name())
+			t, err = t.New(name).Parse(string(b))
+			if err != nil {
+				return fmt.Errorf("%s: %w", cfg.Filename, err)
+			}
+
+			roots = append(roots, name)
+
+			return nil
+		})
+		if err != nil {
+			return fmt.Errorf("locating templates: %w", err)
+		}
 	}
 
 	// then execute all the important looking ones in order, adding them to the same file
@@ -110,7 +125,6 @@ func Render(cfg Options) error {
 		}
 		return roots[i] < roots[j]
 	})
-
 	var buf bytes.Buffer
 	for _, root := range roots {
 		if cfg.RegionTags {
@@ -142,7 +156,7 @@ func Render(cfg Options) error {
 	result.WriteString("import (\n")
 	result.WriteString(CurrentImports.String())
 	result.WriteString(")\n")
-	_, err = buf.WriteTo(&result)
+	_, err := buf.WriteTo(&result)
 	if err != nil {
 		return err
 	}
@@ -157,34 +171,6 @@ func Render(cfg Options) error {
 	return nil
 }
 
-func parseTemplates(cfg Options, t *template.Template) (*template.Template, error) {
-	if cfg.Template != "" {
-		var err error
-		t, err = t.New("template.gotpl").Parse(cfg.Template)
-		if err != nil {
-			return nil, fmt.Errorf("error with provided template: %w", err)
-		}
-		return t, nil
-	}
-
-	var fileSystem fs.FS
-	if cfg.TemplateFS != nil {
-		fileSystem = cfg.TemplateFS
-	} else {
-		// load path relative to calling source file
-		_, callerFile, _, _ := runtime.Caller(1)
-		rootDir := filepath.Dir(callerFile)
-		fileSystem = os.DirFS(rootDir)
-	}
-
-	t, err := t.ParseFS(fileSystem, "*.gotpl")
-	if err != nil {
-		return nil, fmt.Errorf("locating templates: %w", err)
-	}
-
-	return t, nil
-}
-
 func center(width int, pad string, s string) string {
 	if len(s)+2 > width {
 		return s
@@ -196,22 +182,20 @@ func center(width int, pad string, s string) string {
 
 func Funcs() template.FuncMap {
 	return template.FuncMap{
-		"ucFirst":            UcFirst,
-		"lcFirst":            LcFirst,
-		"quote":              strconv.Quote,
-		"rawQuote":           rawQuote,
-		"dump":               Dump,
-		"ref":                ref,
-		"ts":                 TypeIdentifier,
-		"call":               Call,
-		"prefixLines":        prefixLines,
-		"notNil":             notNil,
-		"reserveImport":      CurrentImports.Reserve,
-		"lookupImport":       CurrentImports.Lookup,
-		"go":                 ToGo,
-		"goPrivate":          ToGoPrivate,
-		"goModelName":        ToGoModelName,
-		"goPrivateModelName": ToGoPrivateModelName,
+		"ucFirst":       UcFirst,
+		"lcFirst":       LcFirst,
+		"quote":         strconv.Quote,
+		"rawQuote":      rawQuote,
+		"dump":          Dump,
+		"ref":           ref,
+		"ts":            TypeIdentifier,
+		"call":          Call,
+		"prefixLines":   prefixLines,
+		"notNil":        notNil,
+		"reserveImport": CurrentImports.Reserve,
+		"lookupImport":  CurrentImports.Lookup,
+		"go":            ToGo,
+		"goPrivate":     ToGoPrivate,
 		"add": func(a, b int) int {
 			return a + b
 		},
@@ -301,154 +285,25 @@ func Call(p *types.Func) string {
 	return pkg + p.Name()
 }
 
-func resetModelNames() {
-	modelNamesMu.Lock()
-	defer modelNamesMu.Unlock()
-	modelNames = make(map[string]string, 0)
-}
-
-func buildGoModelNameKey(parts []string) string {
-	const sep = ":"
-	return strings.Join(parts, sep)
-}
-
-func goModelName(primaryToGoFunc func(string) string, parts []string) string {
-	modelNamesMu.Lock()
-	defer modelNamesMu.Unlock()
-
-	var (
-		goNameKey string
-		partLen   int
-
-		nameExists = func(n string) bool {
-			for _, v := range modelNames {
-				if n == v {
-					return true
-				}
-			}
-			return false
-		}
-
-		applyToGoFunc = func(parts []string) string {
-			var out string
-			switch len(parts) {
-			case 0:
-				return ""
-			case 1:
-				return primaryToGoFunc(parts[0])
-			default:
-				out = primaryToGoFunc(parts[0])
-			}
-			for _, p := range parts[1:] {
-				out = fmt.Sprintf("%s%s", out, ToGo(p))
-			}
-			return out
-		}
-
-		applyValidGoName = func(parts []string) string {
-			var out string
-			for _, p := range parts {
-				out = fmt.Sprintf("%s%s", out, replaceInvalidCharacters(p))
-			}
-			return out
-		}
-	)
-
-	// build key for this entity
-	goNameKey = buildGoModelNameKey(parts)
-
-	// determine if we've seen this entity before, and reuse if so
-	if goName, ok := modelNames[goNameKey]; ok {
-		return goName
-	}
-
-	// attempt first pass
-	if goName := applyToGoFunc(parts); !nameExists(goName) {
-		modelNames[goNameKey] = goName
-		return goName
-	}
-
-	// determine number of parts
-	partLen = len(parts)
-
-	// if there is only 1 part, append incrementing number until no conflict
-	if partLen == 1 {
-		base := applyToGoFunc(parts)
-		for i := 0; ; i++ {
-			tmp := fmt.Sprintf("%s%d", base, i)
-			if !nameExists(tmp) {
-				modelNames[goNameKey] = tmp
-				return tmp
-			}
-		}
-	}
-
-	// best effort "pretty" name
-	for i := partLen - 1; i >= 1; i-- {
-		tmp := fmt.Sprintf("%s%s", applyToGoFunc(parts[0:i]), applyValidGoName(parts[i:]))
-		if !nameExists(tmp) {
-			modelNames[goNameKey] = tmp
-			return tmp
-		}
-	}
-
-	// finally, fallback to just adding an incrementing number
-	base := applyToGoFunc(parts)
-	for i := 0; ; i++ {
-		tmp := fmt.Sprintf("%s%d", base, i)
-		if !nameExists(tmp) {
-			modelNames[goNameKey] = tmp
-			return tmp
-		}
-	}
-}
-
-func ToGoModelName(parts ...string) string {
-	return goModelName(ToGo, parts)
-}
-
-func ToGoPrivateModelName(parts ...string) string {
-	return goModelName(ToGoPrivate, parts)
-}
-
-func replaceInvalidCharacters(in string) string {
-	return goNameRe.ReplaceAllLiteralString(in, "_")
-}
-
-func wordWalkerFunc(private bool, nameRunes *[]rune) func(*wordInfo) {
-	return func(info *wordInfo) {
-		word := info.Word
-
-		switch {
-		case private && info.WordOffset == 0:
-			if strings.ToUpper(word) == word || strings.ToLower(word) == word {
-				// ID → id, CAMEL → camel
-				word = strings.ToLower(info.Word)
-			} else {
-				// ITicket → iTicket
-				word = LcFirst(info.Word)
-			}
-
-		case info.MatchCommonInitial:
-			word = strings.ToUpper(word)
-
-		case !info.HasCommonInitial && (strings.ToUpper(word) == word || strings.ToLower(word) == word):
-			// FOO or foo → Foo
-			// FOo → FOo
-			word = UcFirst(strings.ToLower(word))
-		}
-
-		*nameRunes = append(*nameRunes, []rune(word)...)
-	}
-}
-
 func ToGo(name string) string {
 	if name == "_" {
 		return "_"
 	}
 	runes := make([]rune, 0, len(name))
 
-	wordWalker(name, wordWalkerFunc(false, &runes))
+	wordWalker(name, func(info *wordInfo) {
+		word := info.Word
+		if info.MatchCommonInitial {
+			word = strings.ToUpper(word)
+		} else if !info.HasCommonInitial {
+			if strings.ToUpper(word) == word || strings.ToLower(word) == word {
+				// FOO or foo → Foo
+				// FOo → FOo
+				word = UcFirst(strings.ToLower(word))
+			}
+		}
+		runes = append(runes, []rune(word)...)
+	})
 
 	return string(runes)
 }
@@ -459,13 +314,31 @@ func ToGoPrivate(name string) string {
 	}
 	runes := make([]rune, 0, len(name))
 
-	wordWalker(name, wordWalkerFunc(true, &runes))
+	first := true
+	wordWalker(name, func(info *wordInfo) {
+		word := info.Word
+		switch {
+		case first:
+			if strings.ToUpper(word) == word || strings.ToLower(word) == word {
+				// ID → id, CAMEL → camel
+				word = strings.ToLower(info.Word)
+			} else {
+				// ITicket → iTicket
+				word = LcFirst(info.Word)
+			}
+			first = false
+		case info.MatchCommonInitial:
+			word = strings.ToUpper(word)
+		case !info.HasCommonInitial:
+			word = UcFirst(strings.ToLower(word))
+		}
+		runes = append(runes, []rune(word)...)
+	})
 
 	return sanitizeKeywords(string(runes))
 }
 
 type wordInfo struct {
-	WordOffset         int
 	Word               string
 	MatchCommonInitial bool
 	HasCommonInitial   bool
@@ -475,7 +348,7 @@ type wordInfo struct {
 // https://github.com/golang/lint/blob/06c8688daad7faa9da5a0c2f163a3d14aac986ca/lint.go#L679
 func wordWalker(str string, f func(*wordInfo)) {
 	runes := []rune(strings.TrimFunc(str, isDelimiter))
-	w, i, wo := 0, 0, 0 // index of start of word, scan, word offset
+	w, i := 0, 0 // index of start of word, scan
 	hasCommonInitial := false
 	for i+1 <= len(runes) {
 		eow := false // whether we hit the end of a word
@@ -523,14 +396,12 @@ func wordWalker(str string, f func(*wordInfo)) {
 		}
 
 		f(&wordInfo{
-			WordOffset:         wo,
 			Word:               word,
 			MatchCommonInitial: matchCommonInitial,
 			HasCommonInitial:   hasCommonInitial,
 		})
 		hasCommonInitial = false
 		w = i
-		wo++
 	}
 }
 
@@ -705,7 +576,7 @@ func resolveName(name string, skip int) string {
 func render(filename string, tpldata interface{}) (*bytes.Buffer, error) {
 	t := template.New("").Funcs(Funcs())
 
-	b, err := os.ReadFile(filename)
+	b, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
@@ -731,7 +602,7 @@ func write(filename string, b []byte, packages *code.Packages) error {
 		formatted = b
 	}
 
-	err = os.WriteFile(filename, formatted, 0o644)
+	err = ioutil.WriteFile(filename, formatted, 0o644)
 	if err != nil {
 		return fmt.Errorf("failed to write %s: %w", filename, err)
 	}

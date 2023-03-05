@@ -9,7 +9,11 @@ import {
   InputGroup,
 } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { mutateSetup, useSystemStatus } from "src/core/StashService";
+import {
+  mutateSetup,
+  useConfigureUI,
+  useSystemStatus,
+} from "src/core/StashService";
 import { Link } from "react-router-dom";
 import { ConfigurationContext } from "src/hooks/Config";
 import StashConfiguration from "../Settings/StashConfiguration";
@@ -22,10 +26,12 @@ import {
   faExclamationTriangle,
   faQuestionCircle,
 } from "@fortawesome/free-solid-svg-icons";
+import { releaseNotes } from "src/docs/en/ReleaseNotes";
 
 export const Setup: React.FC = () => {
   const { configuration, loading: configLoading } =
     useContext(ConfigurationContext);
+  const [saveUI] = useConfigureUI();
 
   const [step, setStep] = useState(0);
   const [configLocation, setConfigLocation] = useState("");
@@ -399,6 +405,15 @@ export const Setup: React.FC = () => {
         databaseFile,
         generatedLocation,
         stashes,
+      });
+      // Set lastNoteSeen to hide release notes dialog
+      await saveUI({
+        variables: {
+          input: {
+            ...configuration?.ui,
+            lastNoteSeen: releaseNotes[0].date,
+          },
+        },
       });
     } catch (e) {
       if (e instanceof Error) setSetupError(e.message ?? e.toString());

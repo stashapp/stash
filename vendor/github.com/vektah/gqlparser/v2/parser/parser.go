@@ -10,11 +10,11 @@ import (
 
 type parser struct {
 	lexer lexer.Lexer
-	err   error
+	err   *gqlerror.Error
 
 	peeked    bool
 	peekToken lexer.Token
-	peekError error
+	peekError *gqlerror.Error
 
 	prev lexer.Token
 }

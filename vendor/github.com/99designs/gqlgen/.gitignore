@@ -14,5 +14,3 @@
 .idea/
 *.test
 *.out
-gqlgen
-*.exe
