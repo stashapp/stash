@@ -78,6 +78,10 @@ export class HandyInteractive implements IInteractive {
     }
   }
 
+  async disconnect() {
+    // TODO: Not immediately obvious how to disconnect using the thehandy library
+  }
+
   set handyKey(key: string) {
     this._handy.connectionKey = key;
   }

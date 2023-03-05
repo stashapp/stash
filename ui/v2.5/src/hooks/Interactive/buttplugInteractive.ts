@@ -1,5 +1,6 @@
 import {
-  IInteractive
+  IInteractive,
+  FunscriptPlayer
 } from "./interactive";
 import {
   ButtplugClient,
@@ -8,14 +9,16 @@ import {
 } from "buttplug";
 
 export class ButtplugInteractive implements IInteractive {
-  _scriptOffset: number;
   _connector: ButtplugBrowserWebsocketClientConnector;
   _client: ButtplugClient;
+  _funscriptPlayer: FunscriptPlayer;
 
   constructor(scriptOffset: number = 0) {
-    this._scriptOffset = scriptOffset;
+    this._funscriptPlayer = new FunscriptPlayer(async (pos: number) => {
+      await this.sendToDevice(pos);
+    }, scriptOffset);
     this._connector = new ButtplugBrowserWebsocketClientConnector("ws://localhost:12345");
-    this._client = new ButtplugClient("Stash - An organizer for your porn");
+    this._client = new ButtplugClient(`Stash ${import.meta.env.VITE_APP_STASH_VERSION}`);
     this._client.addListener(
       "deviceadded",
       async (device: ButtplugClientDevice) => {
@@ -32,6 +35,7 @@ export class ButtplugInteractive implements IInteractive {
     this._client.addListener("deviceremoved", (device) =>
       console.log(`[buttplug] Device Removed: ${device.name}`)
     );
+    console.log('Buttplug construct');
   }
 
   enabled(): boolean {
@@ -39,12 +43,18 @@ export class ButtplugInteractive implements IInteractive {
   }
 
   async connect() {
+    console.log('Buttplug.io connect');
     await this._client.connect(this._connector);
     await this._client.startScanning();
   }
 
+  async disconnect() {
+    // TODO
+    return;
+  }
+
   set scriptOffset(offset: number) {
-    this._scriptOffset = offset;
+    this._funscriptPlayer.offset = offset;
   }
 
   async uploadScript(funscriptPath: string) {
@@ -57,11 +67,17 @@ export class ButtplugInteractive implements IInteractive {
 
     // TODO
     console.log('[buttplug] Funscript:', json);
+    this._funscriptPlayer.funscript = json;
     return;
   }
 
+  async sendToDevice(pos: number) {
+    console.log(`[buttplug] Action pos: ${pos}`);
+  }
+
   async sync() {
-    return 0;
+    console.log(`[buttplug] Sync`);
+    return 1;
   }
 
   setServerTimeOffset(offset: number) {
@@ -71,16 +87,19 @@ export class ButtplugInteractive implements IInteractive {
 
   async play(position: number) {
     console.log(`[buttplug] Play position: ${position}`);
+    this._funscriptPlayer.play(position * 1000);
     return;
   }
 
   async pause() {
     console.log('[buttplug] Pause');
+    this._funscriptPlayer.pause();
     return;
   }
 
   async ensurePlaying(position: number) {
     console.log(`[buttplug] Ensure play position: ${position}`);
+    this._funscriptPlayer.playSync(position * 1000);
     return;
   }
 
