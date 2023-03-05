@@ -459,7 +459,15 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     const { duration } = file;
     const sourceSelector = player.sourceSelector();
     sourceSelector.setSources(
-      scene.sceneStreams.map((stream) => {
+      scene.sceneStreams.filter((stream) => {
+        const src = new URL(stream.url);
+        const isFileTranscode = 
+          src.pathname.endsWith("/stream.mp4") || 
+          src.pathname.endsWith("/stream.webm");
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+        return !(isFileTranscode && isSafari)
+      }).map((stream) => {
         const src = new URL(stream.url);
         const isDirect =
           src.pathname.endsWith("/stream") ||
