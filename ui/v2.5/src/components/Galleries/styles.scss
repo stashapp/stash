@@ -63,11 +63,46 @@ $galleryTabWidth: 450px;
     flex: 0 0 $galleryTabWidth;
     max-width: $galleryTabWidth;
     overflow: auto;
+
+    &.collapsed {
+      display: none;
+    }
+  }
+
+  .gallery-divider {
+    flex: 0 0 15px;
+    max-width: 15px;
+
+    button {
+      background-color: transparent;
+      border: 0;
+      color: $link-color;
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 800;
+      height: 100%;
+      line-height: 100%;
+      padding: 0;
+      text-align: center;
+      width: 100%;
+
+      &:active:not(:hover),
+      &:focus:not(:hover) {
+        background-color: transparent;
+        border: 0;
+        box-shadow: none;
+      }
+    }
   }
 
   .gallery-container {
-    flex: 0 0 calc(100% - #{$galleryTabWidth});
-    max-width: calc(100% - #{$galleryTabWidth});
+    flex: 0 0 calc(100% - #{$galleryTabWidth} - 15px);
+    max-width: calc(100% - #{$galleryTabWidth} - 15px);
+
+    &.expanded {
+      flex: 0 0 calc(100% - 15px);
+      max-width: calc(100% - 15px);
+    }
   }
 }
 
