@@ -1,7 +1,5 @@
-import {
-  IInteractive,
-  FunscriptPlayer
-} from "./interactive";
+import { IInteractive } from "./interactive";
+import { FunscriptPlayer } from "./funscriptPlayer";
 import {
   ButtplugClient,
   ButtplugClientDevice,
@@ -13,11 +11,11 @@ export class ButtplugInteractive implements IInteractive {
   _client: ButtplugClient;
   _funscriptPlayer: FunscriptPlayer;
 
-  constructor(scriptOffset: number = 0) {
+  constructor(wsUri: string = "ws://localhost:12345", scriptOffset: number = 0) {
     this._funscriptPlayer = new FunscriptPlayer(async (pos: number) => {
       await this.sendToDevice(pos);
     }, scriptOffset);
-    this._connector = new ButtplugBrowserWebsocketClientConnector("ws://localhost:12345");
+    this._connector = new ButtplugBrowserWebsocketClientConnector(wsUri);
     this._client = new ButtplugClient(`Stash ${import.meta.env.VITE_APP_STASH_VERSION}`);
     this._client.addListener("deviceadded", (device: ButtplugClientDevice) => {
       console.log(`[buttplug] Device Connected: ${device.name}`, device);
