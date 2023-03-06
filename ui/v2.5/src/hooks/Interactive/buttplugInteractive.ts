@@ -19,23 +19,12 @@ export class ButtplugInteractive implements IInteractive {
     }, scriptOffset);
     this._connector = new ButtplugBrowserWebsocketClientConnector("ws://localhost:12345");
     this._client = new ButtplugClient(`Stash ${import.meta.env.VITE_APP_STASH_VERSION}`);
-    this._client.addListener(
-      "deviceadded",
-      async (device: ButtplugClientDevice) => {
-        console.log(`[buttplug] Device Connected: ${device.name}`);
-        // TODO
-        //devices.current.push(device);
-        // setDeviceDatas((deviceDatas) => [
-        //   ...deviceDatas,
-        //   {
-        //     intensities: { vibration: 0, rotation: 0 },
-        //   },
-        // ]);
-      }
-    );
-    this._client.addListener("deviceremoved", (device) =>
-      console.log(`[buttplug] Device Removed: ${device.name}`)
-    );
+    this._client.addListener("deviceadded", (device: ButtplugClientDevice) => {
+      console.log(`[buttplug] Device Connected: ${device.name}`, device);
+    });
+    this._client.addListener("deviceremoved", (device: ButtplugClientDevice) => {
+      console.log(`[buttplug] Device Removed: ${device.name}`);
+    });
     console.log('Buttplug construct');
   }
 
@@ -47,10 +36,11 @@ export class ButtplugInteractive implements IInteractive {
     console.log('Buttplug.io connect');
     await this._client.connect(this._connector);
     await this._client.startScanning();
+    await this._client.stopScanning();
   }
 
   async disconnect() {
-    // TODO
+    await this._client.disconnect();
     return;
   }
 
@@ -73,7 +63,23 @@ export class ButtplugInteractive implements IInteractive {
 
   async sendToDevice(pos: number) {
     console.log(`[buttplug] Action pos: ${pos}`);
-    // TODO
+    for (const device of this._client.devices) {
+      await device.linear(pos);
+      /**
+       * Getting following error from Intiface Central v2.3.0 and buttplug-js v3.1.1:
+       *
+       * [E] Global Loggy: Got invalid messages from remote Buttplug connection
+       * - Message: Text("[{\"LinearCmd\":{\"Id\":312,\"DeviceIndex\":0,\"Vectors\":[{\"Index\":0,\"Position\":28}]}}]")
+       * - Error: JsonSerializerError("Error during JSON Schema Validation
+       * - Message: [{\"LinearCmd\":{\"DeviceIndex\":0,\"Id\":312,\"Vectors\":[{\"Index\":0,\"Position\":28}]}}]
+       * - Error: [ValidationError { instance: Array [Object {\"LinearCmd\": Object {\"DeviceIndex\": Number(0), \"Id\": Number(312), \"Vectors\": Array [Object {\"Index\": Number(0), \"Position\": Number(28)}]}}], kind: AnyOf, instance_path: JSONPointer([]), schema_path: JSONPointer([Keyword(\"anyOf\")]) }]")
+       *
+       * Also, `device.linearAttributes` does not return any info, even with having messageAttributes.LinearCmd
+       *    https://github.com/buttplugio/buttplug-js/blob/3.1.1/src/client/ButtplugClientDevice.ts#L212
+       *
+       * TODO: Submit issue
+       */
+    }
   }
 
   async sync() {

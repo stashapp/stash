@@ -65,7 +65,7 @@ export class FunscriptPlayer {
   _funscript: IFunscript | undefined;
   _offset: number; // ms
   _hzRate: number;
-  _startPos: number = 50;
+  _startPos: number = 50;      // TODO: make this configurable
   _timeoutId: any | undefined;
   _paused: boolean = true;
   _currTime: number = 0;       // most recent video time sync event
