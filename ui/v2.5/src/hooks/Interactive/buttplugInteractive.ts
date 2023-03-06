@@ -60,6 +60,7 @@ export class ButtplugInteractive implements IInteractive {
 
   async uploadScript(funscriptPath: string) {
     if (!funscriptPath) {
+      this._funscriptPlayer.funscript = undefined;
       return;
     }
 
@@ -68,7 +69,6 @@ export class ButtplugInteractive implements IInteractive {
 
     console.log('[buttplug] Funscript:', json);
     this._funscriptPlayer.funscript = json;
-    return;
   }
 
   async sendToDevice(pos: number) {
@@ -78,13 +78,14 @@ export class ButtplugInteractive implements IInteractive {
 
   async sync() {
     console.log(`[buttplug] Sync`);
-    return 1; // TODO
+    // TODO: Setting to 1 to ensure connect is called.
+    //       Need to revisit this when focusing on the settings panel and context.
+    return 1;
   }
 
   setServerTimeOffset(offset: number) {
     console.log(`[buttplug] ServerTimeOffset: ${offset}`);
-    // TODO
-    return;
+    // TODO: I don't think anything is needed here (noop)
   }
 
   async play(position: number) {
@@ -96,17 +97,15 @@ export class ButtplugInteractive implements IInteractive {
   async pause() {
     console.log('[buttplug] Pause');
     this._funscriptPlayer.pause();
-    return;
   }
 
   async ensurePlaying(position: number) {
     console.log(`[buttplug] Ensure play position: ${position}`);
     this._funscriptPlayer.playSync(Math.trunc(position * 1000));
-    return;
   }
 
   async setLooping(looping: boolean) {
     console.log(`[buttplug] Looping: ${looping}`);
-    return;
+    // TODO: I don't think anything is needed here (noop)
   }
 }

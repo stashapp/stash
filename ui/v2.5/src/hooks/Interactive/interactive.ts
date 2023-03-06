@@ -89,29 +89,51 @@ export class FunscriptPlayer {
   }
 
   set funscript(json: IFunscript | undefined) {
-    this._funscript = json;
     this.pause();
+    this._funscript = json;
+
+    if (this._funscript?.inverted) {
+      // Pre-process - invert the positions once at the start
+      this._funscript.actions = this._funscript.actions.map((a: IAction) => {
+        a.pos = convertRange(a.pos, 0, 100, 100, 0);
+        return a;
+      });
+    }
   }
 
+  /**
+   * Callback for sending interpolated position updates
+   */
   set posCallback(cb: (pos: number) => Promise<void>) {
     this._posCallback = cb;
   }
 
+  /**
+   * Time offset in milliseconds to apply to funscript action times.
+   * (positive = later, negative = sooner)
+   */
   set offset(ms: number) {
     this._offset = ms;
   }
 
+  /**
+   * Sets how often `posCallback()` should be called with position updates
+   */
   set hzRate(hz: number) {
     this._hzRate = hz;
   }
 
+  /**
+   * Start playing the funscript
+   * @param at current video time position
+   */
   play(at: number = 0) {
-    if (!this._funscript) {
-      return;
-    }
+    if (!this._funscript) return;
+
     this.cancelLoop();
     this._paused = false;
 
+    // Reset time buffer
     this._prevTime = this._currTime = Date.now();
     this._prevAt = this._currAt = at;
 
@@ -126,6 +148,11 @@ export class FunscriptPlayer {
     this.runLoop();
   }
 
+  /**
+   * Called periodically to sync with video playback.
+   * A small buffer is used to detect playback speed changes.
+   * @param at current video time position
+   */
   playSync(at: number) {
     this._prevTime = this._currTime;
     this._prevAt = this._currAt;
@@ -210,7 +237,7 @@ export class FunscriptPlayer {
     if (isAtEndOfActions) return false; // at end, can't advance further
 
     // Advance to the next active keyframes
-    do { // loop since the rate of actions could exceed our hzRate
+    do { // loop since queued actions could exceed our hzRate
       this._prevAction = currAction;
       this._actionIndex++;
       currAction = this._funscript.actions[this._actionIndex];
