@@ -38,6 +38,7 @@ import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { galleryTitle } from "src/core/galleries";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { ConfigurationContext } from "src/hooks/Config";
+import isEqual from "lodash-es/isEqual";
 
 interface IProps {
   gallery: Partial<GQL.GalleryDataFragment>;
@@ -79,43 +80,49 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     isNew || (gallery?.files?.length === 0 && !gallery?.folder);
 
   const schema = yup.object({
-    title: titleRequired
-      ? yup.string().required()
-      : yup.string().optional().nullable(),
-    details: yup.string().optional().nullable(),
-    url: yup.string().optional().nullable(),
-    date: yup.string().optional().nullable(),
-    rating100: yup.number().optional().nullable(),
-    studio_id: yup.string().optional().nullable(),
-    performer_ids: yup.array(yup.string().required()).optional().nullable(),
-    tag_ids: yup.array(yup.string().required()).optional().nullable(),
-    scene_ids: yup.array(yup.string().required()).optional().nullable(),
+    title: titleRequired ? yup.string().required() : yup.string().ensure(),
+    url: yup.string().ensure(),
+    date: yup
+      .string()
+      .ensure()
+      .test({
+        name: "date",
+        test: (value) => {
+          if (!value) return true;
+          if (!value.match(/^\d{4}-\d{2}-\d{2}$/)) return false;
+          if (Number.isNaN(Date.parse(value))) return false;
+          return true;
+        },
+        message: "date must be in YYYY-MM-DD form",
+      }),
+    rating100: yup.number().nullable().defined(),
+    studio_id: yup.string().required().nullable(),
+    performer_ids: yup.array(yup.string().required()).defined(),
+    tag_ids: yup.array(yup.string().required()).defined(),
+    scene_ids: yup.array(yup.string().required()).defined(),
+    details: yup.string().ensure(),
   });
 
   const initialValues = {
     title: gallery?.title ?? "",
-    details: gallery?.details ?? "",
     url: gallery?.url ?? "",
     date: gallery?.date ?? "",
     rating100: gallery?.rating100 ?? null,
-    studio_id: gallery?.studio?.id,
+    studio_id: gallery?.studio?.id ?? null,
     performer_ids: (gallery?.performers ?? []).map((p) => p.id),
     tag_ids: (gallery?.tags ?? []).map((t) => t.id),
     scene_ids: (gallery?.scenes ?? []).map((s) => s.id),
+    details: gallery?.details ?? "",
   };
 
-  type InputValues = typeof initialValues;
+  type InputValues = yup.InferType<typeof schema>;
 
-  const formik = useFormik({
+  const formik = useFormik<InputValues>({
     initialValues,
+    enableReinitialize: true,
     validationSchema: schema,
-    onSubmit: (values) => onSave(getGalleryInput(values)),
+    onSubmit: (values) => onSave(values),
   });
-
-  // always dirty if creating a new gallery with a title
-  if (isNew && gallery?.title) {
-    formik.dirty = true;
-  }
 
   function setRating(v: number) {
     formik.setFieldValue("rating100", v);
@@ -166,24 +173,13 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     setQueryableScrapers(newQueryableScrapers);
   }, [Scrapers]);
 
-  function getGalleryInput(
-    input: InputValues
-  ): GQL.GalleryCreateInput | GQL.GalleryUpdateInput {
-    return {
-      id: isNew ? undefined : gallery?.id ?? "",
-      ...input,
-    };
-  }
-
-  async function onSave(
-    input: GQL.GalleryCreateInput | GQL.GalleryUpdateInput
-  ) {
+  async function onSave(input: GQL.GalleryCreateInput) {
     setIsLoading(true);
     try {
       if (isNew) {
         const result = await createGallery({
           variables: {
-            input: input as GQL.GalleryCreateInput,
+            input,
           },
         });
         if (result.data?.galleryCreate) {
@@ -202,7 +198,10 @@ export const GalleryEditPanel: React.FC<IProps> = ({
       } else {
         const result = await updateGallery({
           variables: {
-            input: input as GQL.GalleryUpdateInput,
+            input: {
+              id: gallery.id!,
+              ...input,
+            },
           },
         });
         if (result.data?.galleryUpdate) {
@@ -216,7 +215,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
               }
             ),
           });
-          formik.resetForm({ values: formik.values });
+          formik.resetForm();
         }
       }
     } catch (e) {
@@ -271,7 +270,10 @@ export const GalleryEditPanel: React.FC<IProps> = ({
       return;
     }
 
-    const currentGallery = getGalleryInput(formik.values);
+    const currentGallery = {
+      id: gallery.id!,
+      ...formik.values,
+    };
 
     return (
       <GalleryScrapeDialog
@@ -384,7 +386,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
 
   function renderTextField(field: string, title: string, placeholder?: string) {
     return (
-      <Form.Group controlId={title} as={Row}>
+      <Form.Group controlId={field} as={Row}>
         {FormUtils.renderLabel({
           title,
         })}
@@ -419,7 +421,9 @@ export const GalleryEditPanel: React.FC<IProps> = ({
             <Button
               className="edit-button"
               variant="primary"
-              disabled={!formik.dirty}
+              disabled={
+                (!isNew && !formik.dirty) || !isEqual(formik.errors, {})
+              }
               onClick={() => formik.submitForm()}
             >
               <FormattedMessage id="actions.save" />
@@ -561,8 +565,8 @@ export const GalleryEditPanel: React.FC<IProps> = ({
               <Form.Control
                 as="textarea"
                 className="gallery-description text-input"
-                onChange={(newValue: React.ChangeEvent<HTMLTextAreaElement>) =>
-                  formik.setFieldValue("details", newValue.currentTarget.value)
+                onChange={(e) =>
+                  formik.setFieldValue("details", e.currentTarget.value)
                 }
                 value={formik.values.details}
               />

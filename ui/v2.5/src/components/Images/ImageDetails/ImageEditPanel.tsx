@@ -19,6 +19,7 @@ import { Prompt } from "react-router-dom";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { ConfigurationContext } from "src/hooks/Config";
+import isEqual from "lodash-es/isEqual";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -42,31 +43,44 @@ export const ImageEditPanel: React.FC<IProps> = ({
   const [updateImage] = useImageUpdate();
 
   const schema = yup.object({
-    title: yup.string().optional().nullable(),
-    rating100: yup.number().optional().nullable(),
-    url: yup.string().optional().nullable(),
-    date: yup.string().optional().nullable(),
-    studio_id: yup.string().optional().nullable(),
-    performer_ids: yup.array(yup.string().required()).optional().nullable(),
-    tag_ids: yup.array(yup.string().required()).optional().nullable(),
+    title: yup.string().ensure(),
+    url: yup.string().ensure(),
+    date: yup
+      .string()
+      .ensure()
+      .test({
+        name: "date",
+        test: (value) => {
+          if (!value) return true;
+          if (!value.match(/^\d{4}-\d{2}-\d{2}$/)) return false;
+          if (Number.isNaN(Date.parse(value))) return false;
+          return true;
+        },
+        message: "date must be in YYYY-MM-DD form",
+      }),
+    rating100: yup.number().nullable().defined(),
+    studio_id: yup.string().required().nullable(),
+    performer_ids: yup.array(yup.string().required()).defined(),
+    tag_ids: yup.array(yup.string().required()).defined(),
   });
 
   const initialValues = {
     title: image.title ?? "",
-    rating100: image.rating100 ?? null,
     url: image?.url ?? "",
     date: image?.date ?? "",
-    studio_id: image.studio?.id,
+    rating100: image.rating100 ?? null,
+    studio_id: image.studio?.id ?? null,
     performer_ids: (image.performers ?? []).map((p) => p.id),
     tag_ids: (image.tags ?? []).map((t) => t.id),
   };
 
-  type InputValues = typeof initialValues;
+  type InputValues = yup.InferType<typeof schema>;
 
-  const formik = useFormik({
+  const formik = useFormik<InputValues>({
     initialValues,
+    enableReinitialize: true,
     validationSchema: schema,
-    onSubmit: (values) => onSave(getImageInput(values)),
+    onSubmit: (values) => onSave(values),
   });
 
   function setRating(v: number) {
@@ -95,19 +109,15 @@ export const ImageEditPanel: React.FC<IProps> = ({
     }
   });
 
-  function getImageInput(input: InputValues): GQL.ImageUpdateInput {
-    return {
-      id: image.id,
-      ...input,
-    };
-  }
-
-  async function onSave(input: GQL.ImageUpdateInput) {
+  async function onSave(input: InputValues) {
     setIsLoading(true);
     try {
       const result = await updateImage({
         variables: {
-          input,
+          input: {
+            id: image.id,
+            ...input,
+          },
         },
       });
       if (result.data?.imageUpdate) {
@@ -117,7 +127,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
             { entity: intl.formatMessage({ id: "image" }).toLocaleLowerCase() }
           ),
         });
-        formik.resetForm({ values: formik.values });
+        formik.resetForm();
       }
     } catch (e) {
       Toast.error(e);
@@ -127,7 +137,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
   function renderTextField(field: string, title: string, placeholder?: string) {
     return (
-      <Form.Group controlId={title} as={Row}>
+      <Form.Group controlId={field} as={Row}>
         {FormUtils.renderLabel({
           title,
         })}
@@ -161,7 +171,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
             <Button
               className="edit-button"
               variant="primary"
-              disabled={!formik.dirty}
+              disabled={!formik.dirty || !isEqual(formik.errors, {})}
               onClick={() => formik.submitForm()}
             >
               <FormattedMessage id="actions.save" />

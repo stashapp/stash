@@ -9,7 +9,7 @@ export const stringGenderMap = new Map<string, GQL.GenderEnum>([
   ["Non-Binary", GQL.GenderEnum.NonBinary],
 ]);
 
-export const genderToString = (value?: GQL.GenderEnum | string) => {
+export const genderToString = (value?: GQL.GenderEnum | string | null) => {
   if (!value) {
     return undefined;
   }

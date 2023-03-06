@@ -54,17 +54,17 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const abbreviateCounter =
     (configuration?.ui as IUIConfig)?.abbreviateCounters ?? false;
 
-  const [imagePreview, setImagePreview] = useState<string | null>();
-  const [imageEncoding, setImageEncoding] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [image, setImage] = useState<string | null>();
+  const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
   // if undefined then get the existing image
   // if null then get the default (no) image
   // otherwise get the set image
   const activeImage =
-    imagePreview === undefined
+    image === undefined
       ? performer.image_path ?? ""
-      : imagePreview ?? `${performer.image_path}&default=true`;
+      : image ?? `${performer.image_path}&default=true`;
   const lightboxImages = useMemo(
     () => [{ paths: { thumbnail: activeImage, image: activeImage } }],
     [activeImage]
@@ -90,10 +90,6 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       history.replace(`/performers/${performer.id}${tabParam}`);
     }
   };
-
-  const onImageChange = (image?: string | null) => setImagePreview(image);
-
-  const onImageEncoding = (isEncoding = false) => setImageEncoding(isEncoding);
 
   async function onAutoTag() {
     try {
@@ -242,11 +238,9 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <PerformerEditPanel
           performer={performer}
           isVisible={isEditing}
-          onImageChange={onImageChange}
-          onImageEncoding={onImageEncoding}
-          onCancelEditing={() => {
-            setIsEditing(false);
-          }}
+          onCancelEditing={() => setIsEditing(false)}
+          setImage={setImage}
+          setEncodingImage={setEncodingImage}
         />
       );
     } else {
@@ -381,7 +375,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       </Helmet>
 
       <div className="performer-image-container col-md-4 text-center">
-        {imageEncoding ? (
+        {encodingImage ? (
           <LoadingIndicator message="Encoding image..." />
         ) : (
           <Button variant="link" onClick={() => showLightbox()}>

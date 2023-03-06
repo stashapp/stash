@@ -17,16 +17,15 @@ import { StringListInput } from "../../Shared/StringListInput";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { ConfigurationContext } from "src/hooks/Config";
+import isEqual from "lodash-es/isEqual";
 
 interface IStudioEditPanel {
   studio: Partial<GQL.StudioDataFragment>;
-  onSubmit: (
-    studio: Partial<GQL.StudioCreateInput | GQL.StudioUpdateInput>
-  ) => void;
+  onSubmit: (studio: GQL.StudioCreateInput) => void;
   onCancel: () => void;
   onDelete: () => void;
-  onImageChange?: (image?: string | null) => void;
-  onImageEncoding?: (loading?: boolean) => void;
+  setImage: (image?: string | null) => void;
+  setEncodingImage: (loading: boolean) => void;
 }
 
 export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
@@ -34,81 +33,73 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
   onSubmit,
   onCancel,
   onDelete,
-  onImageChange,
-  onImageEncoding,
+  setImage,
+  setEncodingImage,
 }) => {
   const intl = useIntl();
 
   const isNew = studio.id === undefined;
   const { configuration } = React.useContext(ConfigurationContext);
 
-  const imageEncoding = ImageUtils.usePasteImage(onImageLoad, true);
-
   const schema = yup.object({
     name: yup.string().required(),
-    url: yup.string().optional().nullable(),
-    details: yup.string().optional().nullable(),
-    image: yup.string().optional().nullable(),
-    rating100: yup.number().optional().nullable(),
-    parent_id: yup.string().optional().nullable(),
-    stash_ids: yup.mixed<GQL.StashIdInput[]>().optional().nullable(),
+    url: yup.string().ensure(),
+    details: yup.string().ensure(),
+    parent_id: yup.string().required().nullable(),
+    rating100: yup.number().nullable().defined(),
     aliases: yup
       .array(yup.string().required())
-      .optional()
+      .defined()
       .test({
         name: "unique",
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        test: (value: any) => {
-          return (value ?? []).length === new Set(value).size;
+        test: (value, context) => {
+          if (!value) return true;
+          const aliases = new Set(value);
+          aliases.add(context.parent.name);
+          return value.length + 1 === aliases.size;
         },
-        message: "aliases must be unique",
+        message: intl.formatMessage({ id: "dialogs.aliases_must_be_unique" }),
       }),
-    ignore_auto_tag: yup.boolean().optional(),
+    ignore_auto_tag: yup.boolean().defined(),
+    stash_ids: yup.mixed<GQL.StashIdInput[]>().defined(),
+    image: yup.string().nullable().optional(),
   });
 
   const initialValues = {
     name: studio.name ?? "",
     url: studio.url ?? "",
     details: studio.details ?? "",
-    image: undefined,
+    parent_id: studio.parent_studio?.id ?? null,
     rating100: studio.rating100 ?? null,
-    parent_id: studio.parent_studio?.id,
-    stash_ids: studio.stash_ids ?? undefined,
-    aliases: studio.aliases,
+    aliases: studio.aliases ?? [],
     ignore_auto_tag: studio.ignore_auto_tag ?? false,
+    stash_ids: getStashIDs(studio.stash_ids),
   };
 
-  type InputValues = typeof initialValues;
+  type InputValues = yup.InferType<typeof schema>;
 
-  const formik = useFormik({
+  const formik = useFormik<InputValues>({
     initialValues,
+    enableReinitialize: true,
     validationSchema: schema,
-    onSubmit: (values) => onSubmit(getStudioInput(values)),
+    onSubmit: (values) => onSubmit(values),
   });
 
-  // always dirty if creating a new studio with a name
-  if (isNew && studio.name) {
-    formik.dirty = true;
-  }
+  const encodingImage = ImageUtils.usePasteImage((imageData) =>
+    formik.setFieldValue("image", imageData)
+  );
+
+  useEffect(() => {
+    setImage(formik.values.image);
+  }, [formik.values.image, setImage]);
+
+  useEffect(
+    () => setEncodingImage(encodingImage),
+    [setEncodingImage, encodingImage]
+  );
 
   function setRating(v: number) {
     formik.setFieldValue("rating100", v);
-  }
-
-  function onImageLoad(imageData: string) {
-    formik.setFieldValue("image", imageData);
-  }
-
-  function getStudioInput(values: InputValues) {
-    const input: Partial<GQL.StudioCreateInput | GQL.StudioUpdateInput> = {
-      ...values,
-      stash_ids: getStashIDs(values.stash_ids),
-    };
-
-    if (studio && studio.id) {
-      (input as GQL.StudioUpdateInput).id = studio.id;
-    }
-    return input;
   }
 
   useRatingKeybinds(
@@ -126,24 +117,12 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     };
   });
 
-  useEffect(() => {
-    if (onImageChange) {
-      onImageChange(formik.values.image);
-    }
-    return () => onImageChange?.();
-  }, [formik.values.image, onImageChange]);
-
-  useEffect(
-    () => onImageEncoding?.(imageEncoding),
-    [onImageEncoding, imageEncoding]
-  );
-
-  function onImageChangeHandler(event: React.FormEvent<HTMLInputElement>) {
-    ImageUtils.onImageChange(event, onImageLoad);
+  function onImageLoad(imageData: string | null) {
+    formik.setFieldValue("image", imageData);
   }
 
-  function onImageChangeURL(url: string) {
-    formik.setFieldValue("image", url);
+  function onImageChange(event: React.FormEvent<HTMLInputElement>) {
+    ImageUtils.onImageChange(event, onImageLoad);
   }
 
   const removeStashID = (stashID: GQL.StashIdInput) => {
@@ -306,7 +285,11 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
             <StringListInput
               value={formik.values.aliases ?? []}
               setValue={(value) => formik.setFieldValue("aliases", value)}
-              errors={formik.errors.aliases}
+              errors={
+                Array.isArray(formik.errors.aliases)
+                  ? formik.errors.aliases[0]
+                  : formik.errors.aliases
+              }
             />
           </Col>
         </Form.Group>
@@ -333,13 +316,11 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         isNew={isNew}
         isEditing
         onToggleEdit={onCancel}
-        onSave={() => formik.handleSubmit()}
-        saveDisabled={!formik.dirty}
-        onImageChange={onImageChangeHandler}
-        onImageChangeURL={onImageChangeURL}
-        onClearImage={() => {
-          formik.setFieldValue("image", null);
-        }}
+        onSave={formik.handleSubmit}
+        saveDisabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}
+        onImageChange={onImageChange}
+        onImageChangeURL={onImageLoad}
+        onClearImage={() => onImageLoad(null)}
         onDelete={onDelete}
         acceptSVG
       />
