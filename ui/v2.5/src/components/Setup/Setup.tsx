@@ -623,7 +623,7 @@ export const Setup: React.FC = () => {
                   ? cacheLocation
                   : intl.formatMessage({
                       id: "setup.confirm.default_cache_location",
-                  })}
+                    })}
               </code>
             </dd>
             <dt>
