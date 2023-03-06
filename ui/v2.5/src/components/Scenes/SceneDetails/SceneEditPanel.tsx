@@ -130,7 +130,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
           if (Number.isNaN(Date.parse(value))) return false;
           return true;
         },
-        message: "date must be in YYYY-MM-DD form",
+        message: intl.formatMessage({ id: "validation.date_invalid_form" }),
       }),
     director: yup.string().ensure(),
     rating100: yup.number().nullable().defined(),

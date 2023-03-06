@@ -666,7 +666,6 @@
   "details": "詳細",
   "developmentVersion": "開発者バージョン",
   "dialogs": {
-    "aliases_must_be_unique": "別名は一意でなければいけません",
     "create_new_entity": "{entity}を新規作成する",
     "delete_alert": "次の{count, plural, one {{singularEntity}} other {{pluralEntity}}}は完全に削除されます:",
     "delete_confirm": "本当に{entityName}を削除してよろしいですか？",
@@ -1124,6 +1123,9 @@
   "type": "タイプ",
   "updated_at": "更新日:",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "別名は一意でなければいけません"
+  },
   "videos": "動画",
   "view_all": "全て表示",
   "weight": "幅",

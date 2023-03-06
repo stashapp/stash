@@ -56,7 +56,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
           if (Number.isNaN(Date.parse(value))) return false;
           return true;
         },
-        message: "date must be in YYYY-MM-DD form",
+        message: intl.formatMessage({ id: "validation.date_invalid_form" }),
       }),
     rating100: yup.number().nullable().defined(),
     studio_id: yup.string().required().nullable(),

@@ -58,7 +58,9 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
           aliases.add(context.parent.name);
           return value.length + 1 === aliases.size;
         },
-        message: intl.formatMessage({ id: "dialogs.aliases_must_be_unique" }),
+        message: intl.formatMessage({
+          id: "validation.aliases_must_be_unique",
+        }),
       }),
     ignore_auto_tag: yup.boolean().defined(),
     stash_ids: yup.mixed<GQL.StashIdInput[]>().defined(),

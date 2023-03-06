@@ -73,7 +73,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
           if (Number.isNaN(Date.parse(value))) return false;
           return true;
         },
-        message: "date must be in YYYY-MM-DD form",
+        message: intl.formatMessage({ id: "validation.date_invalid_form" }),
       }),
     studio_id: yup.string().required().nullable(),
     director: yup.string().ensure(),

@@ -53,7 +53,9 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
           aliases.add(context.parent.name);
           return value.length + 1 === aliases.size;
         },
-        message: intl.formatMessage({ id: "dialogs.aliases_must_be_unique" }),
+        message: intl.formatMessage({
+          id: "validation.aliases_must_be_unique",
+        }),
       }),
     description: yup.string().ensure(),
     parent_ids: yup.array(yup.string().required()).defined(),
