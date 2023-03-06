@@ -18,6 +18,7 @@ func FindHWCodecs(ctx context.Context, encoder FFMpeg) {
 		VideoCodecN264,
 		VideoCodecI264,
 		VideoCodecV264,
+		VideoCodecR264,
 		VideoCodecIVP9,
 		VideoCodecVVP9,
 	} {
@@ -206,7 +207,8 @@ func HWCodecHLSCompatible() *VideoCodec {
 		switch element {
 		case VideoCodecN264,
 			VideoCodecI264,
-			VideoCodecV264:
+			VideoCodecV264,
+			VideoCodecR264:
 			return &element
 		}
 	}
