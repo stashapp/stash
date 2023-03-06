@@ -616,7 +616,7 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 		configDir := filepath.Dir(configFile)
 
 		if exists, _ := fsutil.DirExists(configDir); !exists {
-			if err := os.Mkdir(configDir, 0755); err != nil {
+			if err := os.MkdirAll(configDir, 0755); err != nil {
 				return fmt.Errorf("error creating config directory: %v", err)
 			}
 		}
@@ -631,7 +631,7 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 	// create the generated directory if it does not exist
 	if !c.HasOverride(config.Generated) {
 		if exists, _ := fsutil.DirExists(input.GeneratedLocation); !exists {
-			if err := os.Mkdir(input.GeneratedLocation, 0755); err != nil {
+			if err := os.MkdirAll(input.GeneratedLocation, 0755); err != nil {
 				return fmt.Errorf("error creating generated directory: %v", err)
 			}
 		}
@@ -642,7 +642,7 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 	// create the cache directory if it does not exist
 	if !c.HasOverride(config.Cache) {
 		if exists, _ := fsutil.DirExists(input.CacheLocation); !exists {
-			if err := os.Mkdir(input.CacheLocation, 0755); err != nil {
+			if err := os.MkdirAll(input.CacheLocation, 0755); err != nil {
 				return fmt.Errorf("error creating cache directory: %v", err)
 			}
 		}
@@ -654,7 +654,7 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 	if input.BlobsLocation != "" {
 		if !c.HasOverride(config.BlobsPath) {
 			if exists, _ := fsutil.DirExists(input.BlobsLocation); !exists {
-				if err := os.Mkdir(input.BlobsLocation, 0755); err != nil {
+				if err := os.MkdirAll(input.BlobsLocation, 0755); err != nil {
 					return fmt.Errorf("error creating blobs directory: %v", err)
 				}
 			}
