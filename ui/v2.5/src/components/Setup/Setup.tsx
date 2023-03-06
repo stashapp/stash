@@ -694,19 +694,13 @@ export const Setup: React.FC = () => {
     return renderSuccess();
   }
 
-  const welcomeStep =
-    systemStatus && systemStatus.systemStatus.configPath !== ""
-      ? renderWelcomeSpecificConfig
-      : renderWelcome;
-  const steps = [welcomeStep, renderSetPaths, renderConfirm, renderFinish];
-
   // only display setup wizard if system is not setup
   if (statusLoading || configLoading) {
     return <LoadingIndicator />;
   }
 
   if (
-    step !== steps.length - 1 &&
+    step === 0 &&
     systemStatus &&
     systemStatus.systemStatus.status !== GQL.SystemStatusEnum.Setup
   ) {
@@ -714,6 +708,12 @@ export const Setup: React.FC = () => {
     history.push("/");
     return <LoadingIndicator />;
   }
+
+  const welcomeStep =
+    systemStatus && systemStatus.systemStatus.configPath !== ""
+      ? renderWelcomeSpecificConfig
+      : renderWelcome;
+  const steps = [welcomeStep, renderSetPaths, renderConfirm, renderFinish];
 
   function renderCreating() {
     return (
