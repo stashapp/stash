@@ -61,25 +61,31 @@ export interface IInteractive {
 }
 
 export class FunscriptPlayer {
-  _callback: (pos: number) => Promise<void>;
+  _posCallback: (pos: number) => Promise<void>;
   _funscript: IFunscript | undefined;
-  _offset: number;
+  _offset: number; // ms
   _hzRate: number;
+  _startPos: number = 50;
   _timeoutId: any | undefined;
   _paused: boolean = true;
-  _currTime: number = 0;
+  _currTime: number = 0;       // most recent video time sync event
   _currAt: number = 0;
-  _lastTime: number = 0;
-  _lastAt: number = 0;
+  _prevTime: number = 0;       // previous video time sync event
+  _prevAt: number = 0;
+  _actionIndex: number = -1;
+  _prevAction: IAction | null;
+  _prevPos: number | null;
 
   constructor(
-    callback: (pos: number) => Promise<void>,
+    posCallback: (pos: number) => Promise<void>,
     offset: number = 0,
     hzRate: number = 60
   ) {
-    this._callback = callback;
+    this._posCallback = posCallback;
     this._offset = offset;
     this._hzRate = hzRate;
+    this._prevAction = null;
+    this._prevPos = null;
   }
 
   set funscript(json: IFunscript | undefined) {
@@ -87,12 +93,12 @@ export class FunscriptPlayer {
     this.pause();
   }
 
-  set callback(callback: (pos: number) => Promise<void>) {
-    this._callback = callback;
+  set posCallback(cb: (pos: number) => Promise<void>) {
+    this._posCallback = cb;
   }
 
-  set offset(val: number) {
-    this._offset = val;
+  set offset(ms: number) {
+    this._offset = ms;
   }
 
   set hzRate(hz: number) {
@@ -106,15 +112,23 @@ export class FunscriptPlayer {
     this.cancelLoop();
     this._paused = false;
 
-    this._lastTime = this._currTime = Date.now();
-    this._lastAt = this._currAt = at;
+    this._prevTime = this._currTime = Date.now();
+    this._prevAt = this._currAt = at;
+
+    // Seek to next action
+    this._actionIndex = this._funscript.actions.findIndex(
+      (action: IAction) => (at < (action.at + this._offset))
+    );
+
+    // Reset starting position
+    this._prevAction = { at, pos: this._prevPos || this._startPos };
 
     this.runLoop();
   }
 
   playSync(at: number) {
-    this._lastTime = this._currTime;
-    this._lastAt = this._currAt;
+    this._prevTime = this._currTime;
+    this._prevAt = this._currAt;
     this._currTime = Date.now();
     this._currAt = at;
   }
@@ -132,30 +146,79 @@ export class FunscriptPlayer {
   }
 
   /**
-   * Calculates the current frame's funscript "at" time based on synced play time
+   * Calculates the current frame's "at" time based on synced play time
    */
   private nextAt(now: number) {
     const nowTimeDelta = now - this._currTime; // ms since last sync frame
-    const lastTimeDelta = this._currTime - this._lastTime;
-    const lastAtDelta = this._currAt - this._lastAt;
+    const lastTimeDelta = this._currTime - this._prevTime;
+    const lastAtDelta = this._currAt - this._prevAt;
     if (lastTimeDelta === 0 || lastAtDelta === 0) {
       return this._currAt + nowTimeDelta; // with no history, assume playback rate of 1x
     }
-    return this._currAt + convertRange(nowTimeDelta, 0, lastTimeDelta, 0, lastAtDelta);
+    return this._currAt + Math.trunc(convertRange(nowTimeDelta, 0, lastTimeDelta, 0, lastAtDelta));
   }
 
+  /**
+   * Send interpolated position updates between action keyframes at a constant rate
+   */
   private runLoop() {
     this._timeoutId = setTimeout(() => {
-      if (this._paused) {
+      if (this._paused || !this._funscript || !this._prevAction || this._actionIndex < 0) {
         return;
       }
 
-      const currAt = this.nextAt(Date.now());
-      console.log(`Funscript at: ${currAt}`);
-      // TODO: Lookup and queue actions to send
-      this._callback(0); // TODO
+      const at = this.nextAt(Date.now());
+      if (!this.advanceKeyframes(at)) {
+        return; // reached the end, no more to do
+      }
+
+      // Interpolate position between active keyframes
+      const currAction = this._funscript.actions[this._actionIndex];
+      let pos = this._prevAction.pos;
+      if (this._prevAction.at !== currAction.at && this._prevAction.pos !== currAction.pos) {
+        pos = Math.round(convertRange(at,
+          this._prevAction.at + this._offset, currAction.at + this._offset,
+          this._prevAction.pos, currAction.pos
+        ));
+      }
+
+      // Only send updates if changed from last frame and valid range
+      if (pos !== this._prevPos && pos >= 0 && pos <= 100) {
+        this._posCallback(pos);
+        this._prevPos = pos;
+      }
 
       this.runLoop();
     }, 1000 / this._hzRate);
+  }
+
+  /**
+   * If we go beyond the currAction "at" time, advance to the next active keyframes.
+   * Keyframes should be before and after the current "at" time:
+   *     prevAction.at <= currAt < currAction.at
+   *
+   * @param currAt the current "at" time
+   * @returns boolean of whether to continue looping (or not)
+   */
+  private advanceKeyframes(currAt: number): boolean {
+    if (!this._funscript) return false;
+
+    let currAction = this._funscript.actions[this._actionIndex];
+    if (currAt < (currAction.at + this._offset)) return true; // no advancement required
+
+    let isAtEndOfActions = this._actionIndex >= (this._funscript.actions.length - 1);
+    if (isAtEndOfActions) return false; // at end, can't advance further
+
+    // Advance to the next active keyframes
+    do { // loop since the rate of actions could exceed our hzRate
+      this._prevAction = currAction;
+      this._actionIndex++;
+      currAction = this._funscript.actions[this._actionIndex];
+      isAtEndOfActions = this._actionIndex >= this._funscript.actions.length - 1;
+    } while ((currAt < (this._prevAction.at + this._offset)) && !isAtEndOfActions);
+
+    if (currAt < (currAction.at + this._offset)) return true; // found valid keyframes
+
+    return false; // at end, no more to do
   }
 }

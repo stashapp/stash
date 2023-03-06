@@ -23,6 +23,7 @@ export class ButtplugInteractive implements IInteractive {
       "deviceadded",
       async (device: ButtplugClientDevice) => {
         console.log(`[buttplug] Device Connected: ${device.name}`);
+        // TODO
         //devices.current.push(device);
         // setDeviceDatas((deviceDatas) => [
         //   ...deviceDatas,
@@ -39,7 +40,7 @@ export class ButtplugInteractive implements IInteractive {
   }
 
   enabled(): boolean {
-    return true; //this._connector.Connected;
+    return true; // TODO?: this._connector.Connected;
   }
 
   async connect() {
@@ -65,7 +66,6 @@ export class ButtplugInteractive implements IInteractive {
     const json = await fetch(funscriptPath)
       .then((response) => response.json());
 
-    // TODO
     console.log('[buttplug] Funscript:', json);
     this._funscriptPlayer.funscript = json;
     return;
@@ -73,21 +73,23 @@ export class ButtplugInteractive implements IInteractive {
 
   async sendToDevice(pos: number) {
     console.log(`[buttplug] Action pos: ${pos}`);
+    // TODO
   }
 
   async sync() {
     console.log(`[buttplug] Sync`);
-    return 1;
+    return 1; // TODO
   }
 
   setServerTimeOffset(offset: number) {
     console.log(`[buttplug] ServerTimeOffset: ${offset}`);
+    // TODO
     return;
   }
 
   async play(position: number) {
     console.log(`[buttplug] Play position: ${position}`);
-    this._funscriptPlayer.play(position * 1000);
+    this._funscriptPlayer.play(Math.trunc(position * 1000));
     return;
   }
 
@@ -99,7 +101,7 @@ export class ButtplugInteractive implements IInteractive {
 
   async ensurePlaying(position: number) {
     console.log(`[buttplug] Ensure play position: ${position}`);
-    this._funscriptPlayer.playSync(position * 1000);
+    this._funscriptPlayer.playSync(Math.trunc(position * 1000));
     return;
   }
 
