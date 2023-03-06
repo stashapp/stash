@@ -52,7 +52,7 @@ func CodecInit(codec VideoCodec) (args Args) {
 			"-global_quality", "20",
 			"-preset", "faster",
 		)
-	case StreamFormatV264:
+	case VideoCodecV264:
 		args = append(args,
 			"-qp", "20",
 		)
@@ -61,7 +61,7 @@ func CodecInit(codec VideoCodec) (args Args) {
 			"-global_quality", "20",
 			"-preset", "faster",
 		)
-	case StreamFormatVVP9:
+	case VideoCodecVVP9:
 		args = append(args,
 			"-qp", "20",
 		)
