@@ -70,7 +70,7 @@ export const GalleryViewer: React.FC<IProps> = ({ galleryId }) => {
       width: image.files[0].width,
       height: image.files[0].height,
       tabIndex: index,
-      key: image.id,
+      key: image.id ?? index,
       loading: "lazy",
       className: "gallery-image",
       alt: image.title ?? index.toString(),
