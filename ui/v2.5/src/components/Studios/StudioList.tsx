@@ -4,7 +4,6 @@ import cloneDeep from "lodash-es/cloneDeep";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
-//TODO: These needed?
 import {
   queryFindStudios,
   useFindStudios,
@@ -32,7 +31,6 @@ const StudioItemList = makeItemList({
     return result?.data?.findStudios?.count ?? 0;
   },
 });
-
 
 interface IStudioList {
   fromParent?: boolean;
@@ -146,7 +144,7 @@ export const StudioList: React.FC<IStudioList> = ({
                 selecting={selectedIds.size > 0}
                 selected={selectedIds.has(studio.id)}
                 onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-                  listData.onSelectChange(studio.id, selected, shiftKey)
+                  onSelectChange(studio.id, selected, shiftKey)
                 }
               />
             ))}
@@ -160,9 +158,7 @@ export const StudioList: React.FC<IStudioList> = ({
         return <h1>TODO</h1>;
       }
       if (filter.displayMode === DisplayMode.Tagger) {
-        return (
-          <StudioTagger studios={result.data.findStudios.studios} />
-        );
+        return <StudioTagger studios={result.data.findStudios.studios} />;
       }
     }
 
