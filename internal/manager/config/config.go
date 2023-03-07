@@ -1055,7 +1055,6 @@ func (i *Instance) GetImageLightboxOptions() ConfigImageLightboxResult {
 		mode := ImageLightboxDisplayMode(v.GetString(ImageLightboxDisplayModeKey))
 		ret.DisplayMode = &mode
 	}
-
 	if v := i.viperWith(ImageLightboxScaleUp); v != nil {
 		value := v.GetBool(ImageLightboxScaleUp)
 		ret.ScaleUp = &value
