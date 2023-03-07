@@ -7,6 +7,7 @@ import React, {
   useState,
 } from "react";
 import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
+import "videojs-contrib-dash";
 import "videojs-mobile-ui";
 import "videojs-seek-buttons";
 import "./live";
@@ -267,6 +268,25 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         },
         chaptersButton: false,
       },
+      html5: {
+        nativeTextTracks: false,
+        dash: {
+          updateSettings: [
+            {
+              streaming: {
+                buffer: {
+                  bufferTimeAtTopQuality: 30,
+                  bufferTimeAtTopQualityLongForm: 30,
+                },
+                gaps: {
+                  jumpGaps: false,
+                  jumpLargeGaps: false,
+                },
+              },
+            },
+          ],
+        },
+      },
       nativeControlsForTouch: false,
       playbackRates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
       inactivityTimeout: 2000,
@@ -463,6 +483,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         const src = new URL(stream.url);
         const isDirect =
           src.pathname.endsWith("/stream") ||
+          src.pathname.endsWith("/stream.mpd") ||
           src.pathname.endsWith("/stream.m3u8");
 
         return {

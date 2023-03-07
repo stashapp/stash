@@ -50,6 +50,11 @@ var (
 		mimeType:  ffmpeg.MimeHLS,
 		extension: ".m3u8",
 	}
+	dashEndpointType = endpointType{
+		label:     "DASH",
+		mimeType:  ffmpeg.MimeDASH,
+		extension: ".mpd",
+	}
 )
 
 func GetVideoFileContainer(file *file.VideoFile) (ffmpeg.Container, error) {
@@ -163,46 +168,54 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL *url.URL, maxStrea
 	mp4Streams := []*SceneStreamEndpoint{}
 	webmStreams := []*SceneStreamEndpoint{}
 	hlsStreams := []*SceneStreamEndpoint{}
+	dashStreams := []*SceneStreamEndpoint{}
 
 	if includeSceneStreamPath(models.StreamingResolutionEnumOriginal) {
 		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4EndpointType, models.StreamingResolutionEnumOriginal))
 		webmStreams = append(webmStreams, makeStreamEndpoint(webmEndpointType, models.StreamingResolutionEnumOriginal))
 		hlsStreams = append(hlsStreams, makeStreamEndpoint(hlsEndpointType, models.StreamingResolutionEnumOriginal))
+		dashStreams = append(dashStreams, makeStreamEndpoint(dashEndpointType, models.StreamingResolutionEnumOriginal))
 	}
 
 	if includeSceneStreamPath(models.StreamingResolutionEnumFourK) {
 		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4EndpointType, models.StreamingResolutionEnumFourK))
 		webmStreams = append(webmStreams, makeStreamEndpoint(webmEndpointType, models.StreamingResolutionEnumFourK))
 		hlsStreams = append(hlsStreams, makeStreamEndpoint(hlsEndpointType, models.StreamingResolutionEnumFourK))
+		dashStreams = append(dashStreams, makeStreamEndpoint(dashEndpointType, models.StreamingResolutionEnumFourK))
 	}
 
 	if includeSceneStreamPath(models.StreamingResolutionEnumFullHd) {
 		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4EndpointType, models.StreamingResolutionEnumFullHd))
 		webmStreams = append(webmStreams, makeStreamEndpoint(webmEndpointType, models.StreamingResolutionEnumFullHd))
 		hlsStreams = append(hlsStreams, makeStreamEndpoint(hlsEndpointType, models.StreamingResolutionEnumFullHd))
+		dashStreams = append(dashStreams, makeStreamEndpoint(dashEndpointType, models.StreamingResolutionEnumFullHd))
 	}
 
 	if includeSceneStreamPath(models.StreamingResolutionEnumStandardHd) {
 		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4EndpointType, models.StreamingResolutionEnumStandardHd))
 		webmStreams = append(webmStreams, makeStreamEndpoint(webmEndpointType, models.StreamingResolutionEnumStandardHd))
 		hlsStreams = append(hlsStreams, makeStreamEndpoint(hlsEndpointType, models.StreamingResolutionEnumStandardHd))
+		dashStreams = append(dashStreams, makeStreamEndpoint(dashEndpointType, models.StreamingResolutionEnumStandardHd))
 	}
 
 	if includeSceneStreamPath(models.StreamingResolutionEnumStandard) {
 		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4EndpointType, models.StreamingResolutionEnumStandard))
 		webmStreams = append(webmStreams, makeStreamEndpoint(webmEndpointType, models.StreamingResolutionEnumStandard))
 		hlsStreams = append(hlsStreams, makeStreamEndpoint(hlsEndpointType, models.StreamingResolutionEnumStandard))
+		dashStreams = append(dashStreams, makeStreamEndpoint(dashEndpointType, models.StreamingResolutionEnumStandard))
 	}
 
 	if includeSceneStreamPath(models.StreamingResolutionEnumLow) {
 		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4EndpointType, models.StreamingResolutionEnumLow))
 		webmStreams = append(webmStreams, makeStreamEndpoint(webmEndpointType, models.StreamingResolutionEnumLow))
 		hlsStreams = append(hlsStreams, makeStreamEndpoint(hlsEndpointType, models.StreamingResolutionEnumLow))
+		dashStreams = append(dashStreams, makeStreamEndpoint(dashEndpointType, models.StreamingResolutionEnumLow))
 	}
 
 	endpoints = append(endpoints, mp4Streams...)
 	endpoints = append(endpoints, webmStreams...)
 	endpoints = append(endpoints, hlsStreams...)
+	endpoints = append(endpoints, dashStreams...)
 
 	return endpoints, nil
 }
