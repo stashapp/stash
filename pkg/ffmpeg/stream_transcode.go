@@ -144,12 +144,12 @@ func FileGetCodec(sm *StreamManager, mimetype string) (codec VideoCodec) {
 	switch mimetype {
 	case MimeMp4Video:
 		codec = VideoCodecLibX264
-		if hwcodec := HWCodecMP4Compatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
+		if hwcodec := sm.encoder.hwCodecMP4Compatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
 			codec = *hwcodec
 		}
 	case MimeWebmVideo:
 		codec = VideoCodecVP9
-		if hwcodec := HWCodecWEBMCompatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
+		if hwcodec := sm.encoder.hwCodecWEBMCompatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
 			codec = *hwcodec
 		}
 	case MimeMkvVideo:
@@ -172,7 +172,7 @@ func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
 
 	codec := FileGetCodec(sm, o.StreamType.MimeType)
 
-	args = HWDeviceInit(args, codec)
+	args = sm.encoder.hwDeviceInit(args, codec)
 	args = append(args, extraInputArgs...)
 
 	if o.StartTime != 0 {
@@ -183,7 +183,7 @@ func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
 
 	videoOnly := ProbeAudioCodec(o.VideoFile.AudioCodec) == MissingUnsupported
 
-	videoFilter := HWMaxResFilter(codec, o.VideoFile.Width, o.VideoFile.Height, maxTranscodeSize)
+	videoFilter := sm.encoder.hwMaxResFilter(codec, o.VideoFile.Width, o.VideoFile.Height, maxTranscodeSize)
 
 	args = append(args, o.StreamType.Args(codec, videoFilter, videoOnly)...)
 

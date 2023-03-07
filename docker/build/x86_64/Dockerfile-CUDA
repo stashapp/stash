@@ -1,4 +1,4 @@
-# This dockerfile should be built with `make docker-build` from the stash root.
+# This dockerfile should be built with `make docker-cuda-build` from the stash root.
 
 # Build Frontend
 FROM node:alpine as frontend

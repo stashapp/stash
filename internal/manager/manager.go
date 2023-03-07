@@ -108,7 +108,7 @@ type Manager struct {
 
 	Paths *paths.Paths
 
-	FFMPEG        ffmpeg.FFMpeg
+	FFMPEG        *ffmpeg.FFMpeg
 	FFProbe       ffmpeg.FFProbe
 	StreamManager *ffmpeg.StreamManager
 
@@ -429,10 +429,9 @@ func initFFMPEG(ctx context.Context) error {
 			}
 		}
 
-		instance.FFMPEG = ffmpeg.FFMpeg(ffmpegPath)
+		instance.FFMPEG = ffmpeg.NewEncoder(ffmpegPath, ctx)
 		instance.FFProbe = ffmpeg.FFProbe(ffprobePath)
 
-		ffmpeg.FindHWCodecs(context.Background(), instance.FFMPEG)
 		instance.RefreshStreamManager()
 	}
 
@@ -667,7 +666,7 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 }
 
 func (s *Manager) validateFFMPEG() error {
-	if s.FFMPEG == "" || s.FFProbe == "" {
+	if s.FFMPEG == nil || s.FFProbe == "" {
 		return errors.New("missing ffmpeg and/or ffprobe")
 	}
 

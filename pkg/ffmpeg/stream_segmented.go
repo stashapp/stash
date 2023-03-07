@@ -200,7 +200,7 @@ func HLSGetCodec(sm *StreamManager, name string) (codec VideoCodec) {
 	switch name {
 	case "hls":
 		codec = VideoCodecLibX264
-		if hwcodec := HWCodecHLSCompatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
+		if hwcodec := sm.encoder.hwCodecHLSCompatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
 			codec = *hwcodec
 		}
 	case "hls-copy":
@@ -219,7 +219,7 @@ func (s *runningStream) makeStreamArgs(sm *StreamManager, segment int) Args {
 
 	codec := HLSGetCodec(sm, s.streamType.Name)
 
-	args = HWDeviceInit(args, codec)
+	args = sm.encoder.hwDeviceInit(args, codec)
 	args = append(args, extraInputArgs...)
 
 	if segment > 0 {
@@ -230,7 +230,7 @@ func (s *runningStream) makeStreamArgs(sm *StreamManager, segment int) Args {
 
 	videoOnly := ProbeAudioCodec(s.vf.AudioCodec) == MissingUnsupported
 
-	videoFilter := HWMaxResFilter(codec, s.vf.Width, s.vf.Height, s.maxTranscodeSize)
+	videoFilter := sm.encoder.hwMaxResFilter(codec, s.vf.Width, s.vf.Height, s.maxTranscodeSize)
 
 	args = append(args, s.streamType.Args(codec, segment, videoFilter, videoOnly, s.outputDir)...)
 
