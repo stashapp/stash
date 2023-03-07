@@ -331,14 +331,22 @@ export const mutateSetup = (input: GQL.SetupInput) =>
   client.mutate<GQL.SetupMutation>({
     mutation: GQL.SetupDocument,
     variables: { input },
-    refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
-    update: deleteCache([GQL.ConfigurationDocument]),
+    refetchQueries: getQueryNames([
+      GQL.ConfigurationDocument,
+      GQL.SystemStatusDocument,
+    ]),
+    update: deleteCache([GQL.ConfigurationDocument, GQL.SystemStatusDocument]),
   });
 
 export const mutateMigrate = (input: GQL.MigrateInput) =>
   client.mutate<GQL.MigrateMutation>({
     mutation: GQL.MigrateDocument,
     variables: { input },
+    refetchQueries: getQueryNames([
+      GQL.ConfigurationDocument,
+      GQL.SystemStatusDocument,
+    ]),
+    update: deleteCache([GQL.ConfigurationDocument, GQL.SystemStatusDocument]),
   });
 
 export const useDirectory = (path?: string) =>

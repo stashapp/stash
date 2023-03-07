@@ -100,6 +100,8 @@ type SetupInput struct {
 	DatabaseFile string `json:"databaseFile"`
 	// Empty to indicate default
 	GeneratedLocation string `json:"generatedLocation"`
+	// Empty to indicate default
+	CacheLocation string `json:"cacheLocation"`
 }
 
 type Manager struct {
@@ -108,8 +110,9 @@ type Manager struct {
 
 	Paths *paths.Paths
 
-	FFMPEG  ffmpeg.FFMpeg
-	FFProbe ffmpeg.FFProbe
+	FFMPEG        ffmpeg.FFMpeg
+	FFProbe       ffmpeg.FFProbe
+	StreamManager *ffmpeg.StreamManager
 
 	ReadLockManager *fsutil.ReadLockManager
 
@@ -430,6 +433,7 @@ func initFFMPEG(ctx context.Context) error {
 
 		instance.FFMPEG = ffmpeg.FFMpeg(ffmpegPath)
 		instance.FFProbe = ffmpeg.FFProbe(ffprobePath)
+		instance.RefreshStreamManager()
 	}
 
 	return nil
@@ -564,6 +568,19 @@ func (s *Manager) RefreshScraperCache() {
 	s.ScraperCache = s.initScraperCache()
 }
 
+// RefreshStreamManager refreshes the stream manager. Call this when cache directory
+// changes.
+func (s *Manager) RefreshStreamManager() {
+	// shutdown existing manager if needed
+	if s.StreamManager != nil {
+		s.StreamManager.Shutdown()
+		s.StreamManager = nil
+	}
+
+	cacheDir := s.Config.GetCachePath()
+	s.StreamManager = ffmpeg.NewStreamManager(cacheDir, s.FFMPEG, s.FFProbe, s.Config, s.ReadLockManager)
+}
+
 func setSetupDefaults(input *SetupInput) {
 	if input.ConfigLocation == "" {
 		input.ConfigLocation = filepath.Join(fsutil.GetHomeDirectory(), ".stash", "config.yml")
@@ -572,6 +589,9 @@ func setSetupDefaults(input *SetupInput) {
 	configDir := filepath.Dir(input.ConfigLocation)
 	if input.GeneratedLocation == "" {
 		input.GeneratedLocation = filepath.Join(configDir, "generated")
+	}
+	if input.CacheLocation == "" {
+		input.CacheLocation = filepath.Join(configDir, "cache")
 	}
 
 	if input.DatabaseFile == "" {
@@ -616,6 +636,17 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 		}
 
 		s.Config.Set(config.Generated, input.GeneratedLocation)
+	}
+
+	// create the cache directory if it does not exist
+	if !c.HasOverride(config.Cache) {
+		if exists, _ := fsutil.DirExists(input.CacheLocation); !exists {
+			if err := os.Mkdir(input.CacheLocation, 0755); err != nil {
+				return fmt.Errorf("error creating cache directory: %v", err)
+			}
+		}
+
+		s.Config.Set(config.Cache, input.CacheLocation)
 	}
 
 	// set the configuration
@@ -734,6 +765,11 @@ func (s *Manager) GetSystemStatus() *SystemStatus {
 func (s *Manager) Shutdown(code int) {
 	// stop any profiling at exit
 	pprof.StopCPUProfile()
+
+	if s.StreamManager != nil {
+		s.StreamManager.Shutdown()
+		s.StreamManager = nil
+	}
 
 	// TODO: Each part of the manager needs to gracefully stop at some point
 	// for now, we just close the database.

@@ -117,6 +117,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
         />
 
         <StringSetting
+          id="cache-path"
+          headingID="config.general.cache_path_head"
+          subHeadingID="config.general.cache_location"
+          value={general.cachePath ?? undefined}
+          onChange={(v) => saveGeneral({ cachePath: v })}
+        />
+
+        <StringSetting
           id="scrapers-path"
           headingID="config.general.scrapers_path.heading"
           subHeadingID="config.general.scrapers_path.description"
@@ -130,14 +138,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
           subHeadingID="config.general.metadata_path.description"
           value={general.metadataPath ?? undefined}
           onChange={(v) => saveGeneral({ metadataPath: v })}
-        />
-
-        <StringSetting
-          id="cache-path"
-          headingID="config.general.cache_path_head"
-          subHeadingID="config.general.cache_location"
-          value={general.cachePath ?? undefined}
-          onChange={(v) => saveGeneral({ cachePath: v })}
         />
 
         <StringSetting
@@ -312,6 +312,16 @@ export const SettingsConfigurationPanel: React.FC = () => {
           renderValue={() => {
             return <></>;
           }}
+        />
+      </SettingSection>
+
+      <SettingSection headingID="config.general.heatmap_generation">
+        <BooleanSetting
+          id="heatmap-draw-range"
+          headingID="config.general.funscript_heatmap_draw_range"
+          subHeadingID="config.general.funscript_heatmap_draw_range_desc"
+          checked={general.drawFunscriptHeatmapRange ?? true}
+          onChange={(v) => saveGeneral({ drawFunscriptHeatmapRange: v })}
         />
       </SettingSection>
 
