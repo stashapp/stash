@@ -184,7 +184,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             </React.Fragment>
           }
         >
-          <PerformerScenesPanel performer={performer} />
+          <PerformerScenesPanel
+            active={activeTabKey == "scenes"}
+            performer={performer}
+          />
         </Tab>
         <Tab
           eventKey="galleries"
@@ -198,7 +201,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             </React.Fragment>
           }
         >
-          <PerformerGalleriesPanel performer={performer} />
+          <PerformerGalleriesPanel
+            active={activeTabKey == "galleries"}
+            performer={performer}
+          />
         </Tab>
         <Tab
           eventKey="images"
@@ -212,7 +218,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             </React.Fragment>
           }
         >
-          <PerformerImagesPanel performer={performer} />
+          <PerformerImagesPanel
+            active={activeTabKey == "images"}
+            performer={performer}
+          />
         </Tab>
         <Tab
           eventKey="movies"
@@ -226,7 +235,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             </React.Fragment>
           }
         >
-          <PerformerMoviesPanel performer={performer} />
+          <PerformerMoviesPanel
+            active={activeTabKey == "movies"}
+            performer={performer}
+          />
         </Tab>
       </Tabs>
     </React.Fragment>

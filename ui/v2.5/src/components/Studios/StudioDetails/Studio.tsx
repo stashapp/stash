@@ -235,7 +235,10 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               </React.Fragment>
             }
           >
-            <StudioScenesPanel studio={studio} />
+            <StudioScenesPanel
+              active={activeTabKey == "scenes"}
+              studio={studio}
+            />
           </Tab>
           <Tab
             eventKey="galleries"
@@ -249,7 +252,10 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               </React.Fragment>
             }
           >
-            <StudioGalleriesPanel studio={studio} />
+            <StudioGalleriesPanel
+              active={activeTabKey == "galleries"}
+              studio={studio}
+            />
           </Tab>
           <Tab
             eventKey="images"
@@ -263,7 +269,10 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               </React.Fragment>
             }
           >
-            <StudioImagesPanel studio={studio} />
+            <StudioImagesPanel
+              active={activeTabKey == "images"}
+              studio={studio}
+            />
           </Tab>
           <Tab
             eventKey="performers"
@@ -277,7 +286,10 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               </React.Fragment>
             }
           >
-            <StudioPerformersPanel studio={studio} />
+            <StudioPerformersPanel
+              active={activeTabKey == "performers"}
+              studio={studio}
+            />
           </Tab>
           <Tab
             eventKey="movies"
@@ -291,7 +303,10 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               </React.Fragment>
             }
           >
-            <StudioMoviesPanel studio={studio} />
+            <StudioMoviesPanel
+              active={activeTabKey == "movies"}
+              studio={studio}
+            />
           </Tab>
           <Tab
             eventKey="childstudios"
@@ -305,7 +320,10 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               </React.Fragment>
             }
           >
-            <StudioChildrenPanel studio={studio} />
+            <StudioChildrenPanel
+              active={activeTabKey == "childstudios"}
+              studio={studio}
+            />
           </Tab>
         </Tabs>
       </div>

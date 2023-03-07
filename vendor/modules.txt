@@ -404,6 +404,10 @@ github.com/xWTF/chardet
 # github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673
 ## explicit
 github.com/xrash/smetrics
+# github.com/zencoder/go-dash/v3 v3.0.2
+## explicit; go 1.13
+github.com/zencoder/go-dash/v3/helpers/ptrs
+github.com/zencoder/go-dash/v3/mpd
 # go.uber.org/atomic v1.7.0
 ## explicit; go 1.13
 go.uber.org/atomic

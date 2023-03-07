@@ -204,7 +204,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
       </div>
 
       <div className="col-xl-8 col-lg-6">
-        <MovieScenesPanel movie={movie} />
+        <MovieScenesPanel active={true} movie={movie} />
       </div>
       {renderDeleteAlert()}
     </div>

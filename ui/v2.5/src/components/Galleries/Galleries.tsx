@@ -3,7 +3,7 @@ import { Route, Switch } from "react-router-dom";
 import { useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
 import { TITLE_SUFFIX } from "../Shared/constants";
-import { PersistanceLevel } from "src/hooks/ListHook";
+import { PersistanceLevel } from "../List/ItemList";
 import Gallery from "./GalleryDetails/Gallery";
 import GalleryCreate from "./GalleryDetails/GalleryCreate";
 import { GalleryList } from "./GalleryList";
