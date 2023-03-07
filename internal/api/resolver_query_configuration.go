@@ -156,7 +156,6 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 	handyKey := config.GetHandyKey()
 	scriptOffset := config.GetFunscriptOffset()
 	imageLightboxOptions := config.GetImageLightboxOptions()
-	imageWallOptions := config.GetImageWallOptions()
 	// FIXME - misnamed output field means we have redundant fields
 	disableDropdownCreate := config.GetDisableDropdownCreate()
 
@@ -182,7 +181,6 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 		Language:                     &language,
 
 		ImageLightbox: &imageLightboxOptions,
-		ImageWall:     &imageWallOptions,
 
 		// FIXME - see above
 		DisabledDropdownCreate: disableDropdownCreate,

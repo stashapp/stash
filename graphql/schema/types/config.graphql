@@ -257,11 +257,6 @@ enum ImageLightboxScrollMode {
   PAN_Y
 }
 
-enum ImageWallDirection {
-  ROW
-  COLUMN
-}
-
 input ConfigImageLightboxInput {
   slideshowDelay: Int
   displayMode: ImageLightboxDisplayMode
@@ -278,16 +273,6 @@ type ConfigImageLightboxResult {
   resetZoomOnNav: Boolean
   scrollMode: ImageLightboxScrollMode
   scrollAttemptsBeforeChange: Int!
-}
-
-input ConfigImageWallInput {
-  margin: Int
-  direction: ImageWallDirection
-}
-
-type ConfigImageWallResult {
-  margin: Int
-  direction: ImageWallDirection
 }
 
 input ConfigInterfaceInput {
@@ -336,8 +321,6 @@ input ConfigInterfaceInput {
   slideshowDelay: Int @deprecated(reason: "Use imageLightbox.slideshowDelay")
   
   imageLightbox: ConfigImageLightboxInput
-
-  imageWall: ConfigImageWallInput
   
   """Set to true to disable creating new objects via the dropdown menus"""
   disableDropdownCreate: ConfigDisableDropdownCreateInput
@@ -408,8 +391,6 @@ type ConfigInterfaceResult {
   slideshowDelay: Int @deprecated(reason: "Use imageLightbox.slideshowDelay")
 
   imageLightbox: ConfigImageLightboxResult!
-
-  imageWall: ConfigImageWallResult!
 
   """Fields are true if creating via dropdown menus are disabled"""
   disableDropdownCreate: ConfigDisableDropdownCreate!

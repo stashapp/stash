@@ -19,7 +19,6 @@ import * as GQL from "src/core/generated-graphql";
 import {
   imageLightboxDisplayModeIntlMap,
   imageLightboxScrollModeIntlMap,
-  imageWallDirectionIntlMap,
 } from "src/core/enums";
 import { useInterfaceLocalForage } from "src/hooks/LocalForage";
 import {
@@ -36,6 +35,13 @@ import {
   ratingSystemIntlMap,
   RatingSystemType,
 } from "src/utils/rating";
+import {
+  imageWallDirectionIntlMap,
+  ImageWallDirection,
+  defaultImageWallOptions,
+  defaultImageWallDirection,
+  defaultImageWallMargin,
+} from "src/utils/imageWall";
 import { defaultMaxOptionsShown } from "src/core/config";
 
 const allMenuItems = [
@@ -93,22 +99,20 @@ export const SettingsInterfacePanel: React.FC = () => {
     });
   }
 
-  function saveImageWallSettings(v: Partial<GQL.ConfigImageWallInput>) {
-    // save in local forage as well for consistency
-    setInterfaceLocalForage((prev) => {
-      return {
-        ...prev,
-        imageWall: {
-          ...prev.imageWall,
-          ...v,
-        },
-      };
+  function saveImageWallMargin(m: number) {
+    saveUI({
+      imageWallOptions: {
+        ...(ui.imageWallOptions ?? defaultImageWallOptions),
+        margin: m,
+      },
     });
+  }
 
-    saveInterface({
-      imageWall: {
-        ...iface.imageWall,
-        ...v,
+  function saveImageWallDirection(d: ImageWallDirection) {
+    saveUI({
+      imageWallOptions: {
+        ...(ui.imageWallOptions ?? defaultImageWallOptions),
+        direction: d,
       },
     });
   }
@@ -378,20 +382,16 @@ export const SettingsInterfacePanel: React.FC = () => {
         <NumberSetting
           headingID="config.ui.image_wall.margin"
           subHeadingID="dialogs.imagewall.margin_desc"
-          value={iface.imageWall?.margin ?? 3}
-          onChange={(v) => saveImageWallSettings({ margin: v })}
+          value={ui.imageWallOptions?.margin ?? defaultImageWallMargin}
+          onChange={(v) => saveImageWallMargin(v)}
         />
 
         <SelectSetting
           id="image_wall_direction"
           headingID="config.ui.image_wall.direction"
           subHeadingID="dialogs.imagewall.direction.description"
-          value={iface.imageWall?.direction ?? GQL.ImageWallDirection.Row}
-          onChange={(v) =>
-            saveImageWallSettings({
-              direction: v as GQL.ImageWallDirection,
-            })
-          }
+          value={ui.imageWallOptions?.direction ?? defaultImageWallDirection}
+          onChange={(v) => saveImageWallDirection(v as ImageWallDirection)}
         >
           {Array.from(imageWallDirectionIntlMap.entries()).map((v) => (
             <option key={v[0]} value={v[0]}>

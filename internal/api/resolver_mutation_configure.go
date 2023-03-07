@@ -404,15 +404,6 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 		}
 	}
 
-	if input.ImageWall != nil {
-		options := input.ImageWall
-
-		if options.Margin != nil {
-			c.Set(config.ImageWallMargin, *options.Margin)
-		}
-		setString(config.ImageWallDirectionKey, (*string)(options.Direction))
-	}
-
 	if input.CSS != nil {
 		c.SetCSS(*input.CSS)
 	}

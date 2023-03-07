@@ -1,4 +1,10 @@
-import React, { useCallback, useState, useMemo, MouseEvent } from "react";
+import React, {
+  useCallback,
+  useState,
+  useMemo,
+  MouseEvent,
+  useContext,
+} from "react";
 import { FormattedNumber, useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
 import { useHistory } from "react-router-dom";
@@ -23,7 +29,8 @@ import Gallery from "react-photo-gallery";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { objectTitle } from "src/core/files";
 import TextUtils from "src/utils/text";
-import { useInterfaceLocalForage } from "src/hooks/LocalForage";
+import { ConfigurationContext } from "src/hooks/Config";
+import { IUIConfig } from "src/core/config";
 
 interface IImageWallProps {
   images: GQL.SlimImageDataFragment[];
@@ -34,9 +41,8 @@ interface IImageWallProps {
 }
 
 const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
-  const [interfaceLocalForage] = useInterfaceLocalForage();
-
-  const imageWallSettings = interfaceLocalForage.data?.imageWall;
+  const { configuration } = useContext(ConfigurationContext);
+  const uiConfig = configuration?.ui as IUIConfig | undefined;
 
   let photos: {
     src: string;
@@ -80,8 +86,8 @@ const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
       <Gallery
         photos={photos}
         onClick={showLightboxOnClick}
-        margin={imageWallSettings?.margin!}
-        direction={imageWallSettings?.direction!.toLowerCase()}
+        margin={uiConfig?.imageWallOptions?.margin!}
+        direction={uiConfig?.imageWallOptions?.direction!}
         columns={columns}
       />
     </div>

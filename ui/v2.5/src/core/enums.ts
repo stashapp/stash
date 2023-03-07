@@ -1,7 +1,6 @@
 import {
   ImageLightboxDisplayMode,
   ImageLightboxScrollMode,
-  ImageWallDirection,
 } from "../core/generated-graphql";
 
 export const imageLightboxDisplayModeIntlMap = new Map<
@@ -25,9 +24,4 @@ export const imageLightboxScrollModeIntlMap = new Map<
 >([
   [ImageLightboxScrollMode.Zoom, "dialogs.lightbox.scroll_mode.zoom"],
   [ImageLightboxScrollMode.PanY, "dialogs.lightbox.scroll_mode.pan_y"],
-]);
-
-export const imageWallDirectionIntlMap = new Map<ImageWallDirection, string>([
-  [ImageWallDirection.Column, "dialogs.imagewall.direction.column"],
-  [ImageWallDirection.Row, "dialogs.imagewall.direction.row"],
 ]);
