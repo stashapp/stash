@@ -100,6 +100,8 @@ type SetupInput struct {
 	DatabaseFile string `json:"databaseFile"`
 	// Empty to indicate default
 	GeneratedLocation string `json:"generatedLocation"`
+	// Empty to indicate default
+	CacheLocation string `json:"cacheLocation"`
 }
 
 type Manager struct {
@@ -588,6 +590,9 @@ func setSetupDefaults(input *SetupInput) {
 	if input.GeneratedLocation == "" {
 		input.GeneratedLocation = filepath.Join(configDir, "generated")
 	}
+	if input.CacheLocation == "" {
+		input.CacheLocation = filepath.Join(configDir, "cache")
+	}
 
 	if input.DatabaseFile == "" {
 		input.DatabaseFile = filepath.Join(configDir, "stash-go.sqlite")
@@ -631,6 +636,17 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 		}
 
 		s.Config.Set(config.Generated, input.GeneratedLocation)
+	}
+
+	// create the cache directory if it does not exist
+	if !c.HasOverride(config.Cache) {
+		if exists, _ := fsutil.DirExists(input.CacheLocation); !exists {
+			if err := os.Mkdir(input.CacheLocation, 0755); err != nil {
+				return fmt.Errorf("error creating cache directory: %v", err)
+			}
+		}
+
+		s.Config.Set(config.Cache, input.CacheLocation)
 	}
 
 	// set the configuration

@@ -1,5 +1,11 @@
 import React, { Suspense, useEffect, useState } from "react";
-import { Route, Switch, useRouteMatch } from "react-router-dom";
+import {
+  Route,
+  Switch,
+  useHistory,
+  useLocation,
+  useRouteMatch,
+} from "react-router-dom";
 import { IntlProvider, CustomFormats } from "react-intl";
 import { Helmet } from "react-helmet";
 import cloneDeep from "lodash-es/cloneDeep";
@@ -30,7 +36,7 @@ import { InteractiveProvider } from "./hooks/Interactive/context";
 import { ReleaseNotesDialog } from "./components/Dialogs/ReleaseNotesDialog";
 import { IUIConfig } from "./core/config";
 import { releaseNotes } from "./docs/en/ReleaseNotes";
-import { getPlatformURL, getBaseURL } from "./core/createClient";
+import { getPlatformURL } from "./core/createClient";
 import { lazyComponent } from "./utils/lazyComponent";
 
 const Performers = lazyComponent(
@@ -126,6 +132,8 @@ export const App: React.FC = () => {
     setLocale();
   }, [language]);
 
+  const location = useLocation();
+  const history = useHistory();
   const setupMatch = useRouteMatch(["/setup", "/migrate"]);
 
   // redirect to setup or migrate as needed
@@ -134,27 +142,24 @@ export const App: React.FC = () => {
       return;
     }
 
-    const baseURL = getBaseURL();
+    const { status } = systemStatusData.systemStatus;
 
     if (
-      window.location.pathname !== baseURL + "setup" &&
-      systemStatusData.systemStatus.status === GQL.SystemStatusEnum.Setup
+      location.pathname !== "/setup" &&
+      status === GQL.SystemStatusEnum.Setup
     ) {
       // redirect to setup page
-      const newURL = new URL("setup", window.location.origin + baseURL);
-      window.location.href = newURL.toString();
+      history.push("/setup");
     }
 
     if (
-      window.location.pathname !== baseURL + "migrate" &&
-      systemStatusData.systemStatus.status ===
-        GQL.SystemStatusEnum.NeedsMigration
+      location.pathname !== "/migrate" &&
+      status === GQL.SystemStatusEnum.NeedsMigration
     ) {
-      // redirect to setup page
-      const newURL = new URL("migrate", window.location.origin + baseURL);
-      window.location.href = newURL.toString();
+      // redirect to migrate page
+      history.push("/migrate");
     }
-  }, [systemStatusData]);
+  }, [systemStatusData, setupMatch, history, location]);
 
   function maybeRenderNavbar() {
     // don't render navbar for setup views
@@ -200,7 +205,7 @@ export const App: React.FC = () => {
   }
 
   function maybeRenderReleaseNotes() {
-    if (setupMatch || config.loading || config.error) {
+    if (setupMatch || !systemStatusData || config.loading || config.error) {
       return;
     }
 
