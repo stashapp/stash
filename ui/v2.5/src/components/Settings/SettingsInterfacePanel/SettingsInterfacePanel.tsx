@@ -19,6 +19,7 @@ import * as GQL from "src/core/generated-graphql";
 import {
   imageLightboxDisplayModeIntlMap,
   imageLightboxScrollModeIntlMap,
+  imageWallDirectionIntlMap,
 } from "src/core/enums";
 import { useInterfaceLocalForage } from "src/hooks/LocalForage";
 import {
@@ -87,6 +88,26 @@ export const SettingsInterfacePanel: React.FC = () => {
     saveInterface({
       imageLightbox: {
         ...iface.imageLightbox,
+        ...v,
+      },
+    });
+  }
+
+  function saveImageWallSettings(v: Partial<GQL.ConfigImageWallInput>) {
+    // save in local forage as well for consistency
+    setInterfaceLocalForage((prev) => {
+      return {
+        ...prev,
+        imageWall: {
+          ...prev.imageWall,
+          ...v,
+        },
+      };
+    });
+
+    saveInterface({
+      imageWall: {
+        ...iface.imageWall,
         ...v,
       },
     });
@@ -351,6 +372,35 @@ export const SettingsInterfacePanel: React.FC = () => {
           checked={ui.showChildStudioContent ?? undefined}
           onChange={(v) => saveUI({ showChildStudioContent: v })}
         />
+      </SettingSection>
+
+      <SettingSection headingID="config.ui.image_wall.heading">
+        <NumberSetting
+          headingID="config.ui.image_wall.margin"
+          subHeadingID="dialogs.imagewall.margin_desc"
+          value={iface.imageWall?.margin ?? 3}
+          onChange={(v) => saveImageWallSettings({ margin: v })}
+        />
+
+        <SelectSetting
+          id="image_wall_direction"
+          headingID="config.ui.image_wall.direction"
+          subHeadingID="dialogs.imagewall.direction.description"
+          value={iface.imageWall?.direction ?? GQL.ImageWallDirection.Row}
+          onChange={(v) =>
+            saveImageWallSettings({
+              direction: v as GQL.ImageWallDirection,
+            })
+          }
+        >
+          {Array.from(imageWallDirectionIntlMap.entries()).map((v) => (
+            <option key={v[0]} value={v[0]}>
+              {intl.formatMessage({
+                id: v[1],
+              })}
+            </option>
+          ))}
+        </SelectSetting>
       </SettingSection>
 
       <SettingSection headingID="config.ui.image_lightbox.heading">

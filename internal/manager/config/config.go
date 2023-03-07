@@ -177,9 +177,14 @@ const (
 	ImageLightboxScrollModeKey              = "image_lightbox.scroll_mode"
 	ImageLightboxScrollAttemptsBeforeChange = "image_lightbox.scroll_attempts_before_change"
 
+	ImageWallMargin       = "image_wall.margin"
+	ImageWallDirectionKey = "image_wall.direction"
+
 	UI = "ui"
 
 	defaultImageLightboxSlideshowDelay = 5000
+
+	defaultImageWallMargin = 3
 
 	DisableDropdownCreatePerformer = "disable_dropdown_create.performer"
 	DisableDropdownCreateStudio    = "disable_dropdown_create.studio"
@@ -1055,6 +1060,7 @@ func (i *Instance) GetImageLightboxOptions() ConfigImageLightboxResult {
 		mode := ImageLightboxDisplayMode(v.GetString(ImageLightboxDisplayModeKey))
 		ret.DisplayMode = &mode
 	}
+
 	if v := i.viperWith(ImageLightboxScaleUp); v != nil {
 		value := v.GetBool(ImageLightboxScaleUp)
 		ret.ScaleUp = &value
@@ -1069,6 +1075,35 @@ func (i *Instance) GetImageLightboxOptions() ConfigImageLightboxResult {
 	}
 	if v := i.viperWith(ImageLightboxScrollAttemptsBeforeChange); v != nil {
 		ret.ScrollAttemptsBeforeChange = v.GetInt(ImageLightboxScrollAttemptsBeforeChange)
+	}
+
+	return ret
+}
+
+func (i *Instance) getMargin() int {
+	ret := defaultImageWallMargin
+
+	v := i.viper(ImageWallMargin)
+	if v.IsSet(ImageWallMargin) {
+		ret = v.GetInt(ImageWallMargin)
+	}
+
+	return ret
+}
+
+func (i *Instance) GetImageWallOptions() ConfigImageWallResult {
+	i.RLock()
+	defer i.RUnlock()
+
+	margin := i.getMargin()
+
+	ret := ConfigImageWallResult{
+		Margin: margin,
+	}
+
+	if v := i.viperWith(ImageWallDirectionKey); v != nil {
+		direction := ImageWallDirection(v.GetString(ImageWallDirectionKey))
+		ret.Direction = &direction
 	}
 
 	return ret

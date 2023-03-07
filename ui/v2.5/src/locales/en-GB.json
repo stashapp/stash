@@ -547,6 +547,12 @@
       "image_lightbox": {
         "heading": "Image Lightbox"
       },
+      
+      "image_wall": {
+        "direction": "Direction",
+        "heading": "Image Wall",
+        "margin": "Margin"
+      },
       "images": {
         "heading": "Images",
         "options": {
@@ -734,6 +740,14 @@
         "label": "Scroll Mode",
         "pan_y": "Pan Y",
         "zoom": "Zoom"
+      }
+    },
+    "imagewall": {
+      "margin_desc": "Number of margin pixels around each entire image.",
+      "direction": {
+        "description": "Column or row based layout.",
+        "column": "Column",
+        "row": "Row"
       }
     },
     "merge": {

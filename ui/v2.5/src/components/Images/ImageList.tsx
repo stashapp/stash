@@ -23,6 +23,7 @@ import Gallery from "react-photo-gallery";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { objectTitle } from "src/core/files";
 import TextUtils from "src/utils/text";
+import { useInterfaceLocalForage } from "src/hooks/LocalForage";
 
 interface IImageWallProps {
   images: GQL.SlimImageDataFragment[];
@@ -33,6 +34,10 @@ interface IImageWallProps {
 }
 
 const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
+  const [interfaceLocalForage] = useInterfaceLocalForage();
+
+  const imageWallSettings = interfaceLocalForage.data?.imageWall;
+
   let photos: {
     src: string;
     srcSet?: string | string[] | undefined;
@@ -64,9 +69,21 @@ const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
     [handleImageOpen]
   );
 
+  function columns(containerWidth: number) {
+    let preferredSize = 250;
+    let columnCount = containerWidth / preferredSize;
+    return Math.floor(columnCount);
+  }
+
   return (
     <div className="gallery">
-      <Gallery photos={photos} onClick={showLightboxOnClick} margin={2.5} />
+      <Gallery
+        photos={photos}
+        onClick={showLightboxOnClick}
+        margin={imageWallSettings?.margin!}
+        direction={imageWallSettings?.direction!.toLowerCase()}
+        columns={columns}
+      />
     </div>
   );
 };

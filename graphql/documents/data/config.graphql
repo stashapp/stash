@@ -82,6 +82,10 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
     scrollMode
     scrollAttemptsBeforeChange
   }
+  imageWall {
+    margin
+    direction
+  }
   disableDropdownCreate {
     performer
     tag

@@ -42,6 +42,10 @@ models:
     model: github.com/stashapp/stash/internal/manager/config.StashBoxInput
   ConfigImageLightboxResult:
     model: github.com/stashapp/stash/internal/manager/config.ConfigImageLightboxResult
+  ConfigImageWallResult:
+    model: github.com/stashapp/stash/internal/manager/config.ConfigImageWallResult
+  ImageWallDirection:
+    model: github.com/stashapp/stash/internal/manager/config.ImageWallDirection
   ImageLightboxDisplayMode:
     model: github.com/stashapp/stash/internal/manager/config.ImageLightboxDisplayMode
   ImageLightboxScrollMode:

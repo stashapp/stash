@@ -6,6 +6,52 @@ import (
 	"strconv"
 )
 
+type ConfigImageWallResult struct {
+	Margin    int                 `json:"margin"`
+	Direction *ImageWallDirection `json:"direction"`
+}
+
+type ImageWallDirection string
+
+const (
+	ImageWallDirectionRow    ImageWallDirection = "ROW"
+	ImageWallDirectionColumn ImageWallDirection = "COLUMN"
+)
+
+var AllImageWallDirection = []ImageWallDirection{
+	ImageWallDirectionRow,
+	ImageWallDirectionColumn,
+}
+
+func (e ImageWallDirection) IsValid() bool {
+	switch e {
+	case ImageWallDirectionRow, ImageWallDirectionColumn:
+		return true
+	}
+	return false
+}
+
+func (e ImageWallDirection) String() string {
+	return string(e)
+}
+
+func (e *ImageWallDirection) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ImageWallDirection(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ImageWallDirection", str)
+	}
+	return nil
+}
+
+func (e ImageWallDirection) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type ConfigImageLightboxResult struct {
 	SlideshowDelay             *int                      `json:"slideshowDelay"`
 	DisplayMode                *ImageLightboxDisplayMode `json:"displayMode"`
