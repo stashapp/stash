@@ -1,6 +1,13 @@
 import debounce from "lodash-es/debounce";
 import cloneDeep from "lodash-es/cloneDeep";
-import React, { HTMLAttributes, useEffect, useRef, useState } from "react";
+import React, {
+  HTMLAttributes,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
 import { SortDirectionEnum } from "src/core/generated-graphql";
@@ -62,12 +69,24 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   const perPageSelect = useRef(null);
   const [perPageInput, perPageFocus] = useFocus();
 
-  const searchCallback = debounce((value: string) => {
-    const newFilter = cloneDeep(filter);
-    newFilter.searchTerm = value;
-    newFilter.currentPage = 1;
-    onFilterUpdate(newFilter);
-  }, 500);
+  const searchQueryUpdated = useCallback(
+    (value: string) => {
+      const newFilter = cloneDeep(filter);
+      newFilter.searchTerm = value;
+      newFilter.currentPage = 1;
+      onFilterUpdate(newFilter);
+    },
+    [filter, onFilterUpdate]
+  );
+
+  // useMemo to prevent debounce from being recreated on every render
+  const debouncedSearchQueryUpdated = useMemo(
+    () =>
+      debounce((value: string) => {
+        searchQueryUpdated(value);
+      }, 500),
+    [searchQueryUpdated]
+  );
 
   const intl = useIntl();
 
@@ -126,13 +145,13 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   }
 
   function onChangeQuery(event: React.FormEvent<HTMLInputElement>) {
-    searchCallback(event.currentTarget.value);
+    debouncedSearchQueryUpdated(event.currentTarget.value);
     setQueryClearShowing(!!event.currentTarget.value);
   }
 
   function onClearQuery() {
     queryRef.current.value = "";
-    searchCallback("");
+    searchQueryUpdated("");
     setQueryFocus();
     setQueryClearShowing(false);
   }
