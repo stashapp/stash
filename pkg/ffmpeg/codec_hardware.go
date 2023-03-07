@@ -4,10 +4,14 @@ import (
 	"context"
 	"regexp"
 	"strings"
+
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 // Tests all (given) hardware codec's
-func (f *FFMpeg) findHWCodecs(ctx context.Context) (hwCodecSupport []VideoCodec) {
+func (f *FFMpeg) findHWCodecs(ctx context.Context) {
+	var hwCodecSupport []VideoCodec
+
 	for _, codec := range []VideoCodec{
 		VideoCodecN264,
 		VideoCodecI264,
@@ -41,7 +45,12 @@ func (f *FFMpeg) findHWCodecs(ctx context.Context) (hwCodecSupport []VideoCodec)
 		}
 	}
 
-	return hwCodecSupport
+	logger.Info("Supported HW codecs: ")
+	for _, codec := range hwCodecSupport {
+		logger.Info("\t", codec)
+	}
+
+	f.hwCodecSupport = hwCodecSupport
 }
 
 // Prepend input for hardware encoding only

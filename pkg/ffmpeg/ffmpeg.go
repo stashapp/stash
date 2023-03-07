@@ -6,7 +6,6 @@ import (
 	"os/exec"
 
 	stashExec "github.com/stashapp/stash/pkg/exec"
-	"github.com/stashapp/stash/pkg/logger"
 )
 
 // FFMpeg provides an interface to ffmpeg.
@@ -21,12 +20,7 @@ func NewEncoder(ffmpegPath string, ctx context.Context) *FFMpeg {
 		ffmpeg: ffmpegPath,
 	}
 
-	ret.hwCodecSupport = ret.findHWCodecs(ctx)
-
-	logger.Info("Supported HW codecs: ")
-	for _, codec := range ret.hwCodecSupport {
-		logger.Info("\t", codec)
-	}
+	ret.findHWCodecs(ctx)
 
 	return ret
 }
