@@ -80,7 +80,7 @@ export const GalleryViewer: React.FC<IProps> = ({ galleryId }) => {
 
   return (
     <div className="gallery">
-      <Gallery photos={photos} onClick={showLightboxOnClick} />
+      <Gallery photos={photos} onClick={showLightboxOnClick} margin={2.5} />
     </div>
   );
 };
