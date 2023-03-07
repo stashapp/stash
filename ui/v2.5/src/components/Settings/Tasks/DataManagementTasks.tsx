@@ -596,7 +596,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
           </Setting>
 
           <BooleanSetting
-            id="migrate-blobs-delete-files"
+            id="migrate-scene-screenshots-overwrite-existing"
             checked={migrateSceneScreenshotsOptions.overwriteExisting ?? false}
             headingID="config.tasks.migrate_scene_screenshots.overwrite_existing"
             onChange={(v) =>
@@ -608,7 +608,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
           />
 
           <BooleanSetting
-            id="migrate-blobs-delete-files"
+            id="migrate-scene-screenshots-delete-files"
             checked={migrateSceneScreenshotsOptions.deleteFiles ?? false}
             headingID="config.tasks.migrate_scene_screenshots.delete_files"
             onChange={(v) =>
