@@ -21,6 +21,7 @@ import {
   useSystemStatus,
 } from "src/core/StashService";
 import flattenMessages from "./utils/flattenMessages";
+import * as yup from "yup";
 import Mousetrap from "mousetrap";
 import MousetrapPause from "mousetrap-pause";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -126,7 +127,18 @@ export const App: React.FC = () => {
         }
       );
 
-      setMessages(flattenMessages(mergedMessages));
+      const newMessages = flattenMessages(mergedMessages) as Record<
+        string,
+        string
+      >;
+
+      yup.setLocale({
+        mixed: {
+          required: newMessages["validation.required"],
+        },
+      });
+
+      setMessages(newMessages);
     };
 
     setLocale();

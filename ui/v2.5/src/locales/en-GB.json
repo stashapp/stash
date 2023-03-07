@@ -699,7 +699,6 @@
   "details": "Details",
   "developmentVersion": "Development Version",
   "dialogs": {
-    "aliases_must_be_unique": "aliases must be unique",
     "create_new_entity": "Create new {entity}",
     "delete_alert": "The following {count, plural, one {{singularEntity}} other {{pluralEntity}}} will be deleted permanently:",
     "delete_confirm": "Are you sure you want to delete {entityName}?",
@@ -1164,6 +1163,11 @@
   "type": "Type",
   "updated_at": "Updated At",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "aliases must be unique",
+    "date_invalid_form": "${path} must be in YYYY-MM-DD form",
+    "required": "${path} is a required field"
+  },
   "videos": "Videos",
   "view_all": "View All",
   "play_count": "Play Count",

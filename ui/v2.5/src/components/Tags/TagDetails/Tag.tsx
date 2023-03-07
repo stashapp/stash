@@ -12,7 +12,6 @@ import {
   useTagDestroy,
   mutateMetadataAutoTag,
 } from "src/core/StashService";
-import ImageUtils from "src/utils/image";
 import { Counter } from "src/components/Shared/Counter";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
@@ -64,6 +63,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
 
   // Editing tag state
   const [image, setImage] = useState<string | null>();
+  const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
   const [updateTag] = useTagUpdate();
   const [deleteTag] = useTagDestroy({ id: tag.id });
@@ -99,27 +99,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
     };
   });
 
-  function onImageLoad(imageData: string) {
-    setImage(imageData);
-  }
-
-  const imageEncoding = ImageUtils.usePasteImage(onImageLoad, isEditing);
-
-  function getTagInput(
-    input: Partial<GQL.TagCreateInput | GQL.TagUpdateInput>
-  ) {
-    const ret: Partial<GQL.TagCreateInput | GQL.TagUpdateInput> = {
-      ...input,
-      image,
-      id: tag.id,
-    };
-
-    return ret;
-  }
-
-  async function onSave(
-    input: Partial<GQL.TagCreateInput | GQL.TagUpdateInput>
-  ) {
+  async function onSave(input: GQL.TagCreateInput) {
     try {
       const oldRelations = {
         parents: tag.parents ?? [],
@@ -127,7 +107,10 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
       };
       const result = await updateTag({
         variables: {
-          input: getTagInput(input) as GQL.TagUpdateInput,
+          input: {
+            id: tag.id,
+            ...input,
+          },
         },
       });
       if (result.data?.tagUpdate) {
@@ -270,7 +253,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
       <div className="row">
         <div className="tag-details col-md-4">
           <div className="text-center logo-container">
-            {imageEncoding ? (
+            {encodingImage ? (
               <LoadingIndicator message="Encoding image..." />
             ) : (
               renderImage()
@@ -303,6 +286,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
               onCancel={onToggleEdit}
               onDelete={onDelete}
               setImage={setImage}
+              setEncodingImage={setEncodingImage}
             />
           )}
         </div>

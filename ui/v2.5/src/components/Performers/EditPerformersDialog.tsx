@@ -227,7 +227,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
             <Form.Control
               as="select"
               className="input-control"
-              value={genderToString(updateInput.gender ?? undefined)}
+              value={genderToString(updateInput.gender)}
               onChange={(event) =>
                 setUpdateField({
                   gender: stringToGender(event.currentTarget.value),

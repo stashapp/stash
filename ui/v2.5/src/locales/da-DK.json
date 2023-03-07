@@ -614,7 +614,6 @@
   "details": "Detaljer",
   "developmentVersion": "Udviklingsversion",
   "dialogs": {
-    "aliases_must_be_unique": "aliaser skal være unikke",
     "delete_alert": "Følgende {count, plural, one {{singularEntity}} other {{pluralEntity}}} vil blive slettet permanent:",
     "delete_confirm": "Er du sikker på, at du vil slette {entityName}?",
     "delete_entity_desc": "{count, plural, one {Er du sikker på, at du vil slette denne {singularEntity}? Medmindre filen også slettes, vil denne {singularEntity} blive tilføjet igen, når scanningen udføres.} andet {Er du sikker på, at du vil slette disse {pluralEntity}? Medmindre filerne også slettes, vil disse {pluralEntity} blive tilføjet igen, når scanningen udføres.}}",
@@ -1039,6 +1038,9 @@
   "type": "Type",
   "updated_at": "Opdateret Den",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "aliaser skal være unikke"
+  },
   "videos": "Videoer",
   "view_all": "Se alle",
   "weight": "Vægt",
