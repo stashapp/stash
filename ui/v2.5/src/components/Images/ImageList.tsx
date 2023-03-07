@@ -19,6 +19,7 @@ import { ImageCard } from "./ImageCard";
 import { EditImagesDialog } from "./EditImagesDialog";
 import { DeleteImagesDialog } from "./DeleteImagesDialog";
 import "flexbin/flexbin.css";
+import Gallery from "react-photo-gallery";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { objectTitle } from "src/core/files";
 import TextUtils from "src/utils/text";
@@ -32,26 +33,40 @@ interface IImageWallProps {
 }
 
 const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
-  const thumbs = images.map((image, index) => (
-    <div
-      role="link"
-      tabIndex={index}
-      key={image.id}
-      onClick={() => handleImageOpen(index)}
-      onKeyPress={() => handleImageOpen(index)}
-    >
-      <img
-        src={image.paths.thumbnail ?? ""}
-        loading="lazy"
-        className="gallery-image"
-        alt={objectTitle(image)}
-      />
-    </div>
-  ));
+  let photos: {
+    src: string;
+    srcSet?: string | string[] | undefined;
+    sizes?: string | string[] | undefined;
+    width: number;
+    height: number;
+    alt?: string | undefined;
+    key?: string | undefined;
+  }[] = [];
+
+  images.forEach((image, index) => {
+    let imageData = {
+      src: image.paths.thumbnail!,
+      width: image.files[0].width,
+      height: image.files[0].height,
+      tabIndex: index,
+      key: image.id,
+      loading: "lazy",
+      className: "gallery-image",
+      alt: objectTitle(image),
+    };
+    photos.push(imageData);
+  });
+
+  const showLightboxOnClick = useCallback(
+    (event, { index }) => {
+      handleImageOpen(index);
+    },
+    [handleImageOpen]
+  );
 
   return (
     <div className="gallery">
-      <div className="flexbin">{thumbs}</div>
+      <Gallery photos={photos} onClick={showLightboxOnClick} margin={2.5} />
     </div>
   );
 };
