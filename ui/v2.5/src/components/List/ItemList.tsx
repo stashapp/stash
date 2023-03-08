@@ -441,6 +441,13 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       updateFilter(newFilter);
     }
 
+    function onClearAllCriteria() {
+      const newFilter = cloneDeep(filter);
+      newFilter.criteria = [];
+      newFilter.currentPage = 1;
+      updateFilter(newFilter);
+    }
+
     function updateCriteria(c: Criterion<CriterionValue>[]) {
       const newFilter = cloneDeep(filter);
       newFilter.criteria = c.slice();
@@ -487,6 +494,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
           criteria={filter.criteria}
           onEditCriterion={(c) => setEditingCriterion(c)}
           onRemoveCriterion={onRemoveCriterion}
+          onRemoveAll={() => onClearAllCriteria()}
         />
         {showEditFilter && !filterDialog && (
           <EditFilterDialog

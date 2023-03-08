@@ -196,6 +196,12 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     }
   }
 
+  function onClearAll() {
+    const newFilter = cloneDeep(currentFilter);
+    newFilter.criteria = [];
+    setCurrentFilter(newFilter);
+  }
+
   return (
     <>
       <Modal
@@ -228,6 +234,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
                   criteria={criteria}
                   onEditCriterion={(c) => optionSelected(c.criterionOption)}
                   onRemoveCriterion={(c) => removeCriterion(c)}
+                  onRemoveAll={() => onClearAll()}
                 />
               </div>
             </div>
