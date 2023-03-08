@@ -281,11 +281,14 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
     Mousetrap.bind("a", () => setActiveTabKey("gallery-details-panel"));
     Mousetrap.bind("e", () => setActiveTabKey("gallery-edit-panel"));
     Mousetrap.bind("f", () => setActiveTabKey("gallery-file-info-panel"));
+    Mousetrap.bind(",", () => setCollapsed(!collapsed));
+
 
     return () => {
       Mousetrap.unbind("a");
       Mousetrap.unbind("e");
       Mousetrap.unbind("f");
+      Mousetrap.unbind(",");
     };
   });
 

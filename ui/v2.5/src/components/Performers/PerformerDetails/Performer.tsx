@@ -118,6 +118,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     Mousetrap.bind("g", () => setActiveTabKey("galleries"));
     Mousetrap.bind("m", () => setActiveTabKey("movies"));
     Mousetrap.bind("f", () => setFavorite(!performer.favorite));
+    Mousetrap.bind(",", () => setCollapsed(!collapsed));
 
     return () => {
       Mousetrap.unbind("a");
@@ -125,6 +126,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       Mousetrap.unbind("c");
       Mousetrap.unbind("f");
       Mousetrap.unbind("o");
+      Mousetrap.unbind(",");
     };
   });
 
@@ -410,11 +412,6 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         )}
       </div>
       <div className="col-divider d-none d-xl-block">
-        <Button onClick={() => setCollapsed(!collapsed)}>
-          {getCollapseButtonText()}
-        </Button>
-      </div>
-      <div className={`col-md-8 ${collapsed ? "expanded" : ""}`}>
         <Button onClick={() => setCollapsed(!collapsed)}>
           {getCollapseButtonText()}
         </Button>
