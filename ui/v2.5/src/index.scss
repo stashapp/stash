@@ -767,6 +767,60 @@ div.dropdown-menu {
   }
 }
 
+$colTabWidth: 550px;
+
+@media (min-width: 1200px) {
+  .col-md-4 {
+    flex: 0 0 $colTabWidth !important;
+    max-height: calc(100vh - 4rem);
+    max-width: $colTabWidth !important;
+    overflow: auto;
+
+    &.collapsed {
+      display: none;
+    }
+  }
+
+  .col-divider {
+    flex: 0 0 15px;
+    max-width: 15px;
+    height: calc(100vh - 4rem);
+
+    button {
+      background-color: transparent;
+      border: 0;
+      color: $link-color;
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 800;
+      height: 100%;
+      line-height: 100%;
+      padding: 0;
+      text-align: center;
+      width: 100%;
+
+      &:active:not(:hover),
+      &:focus:not(:hover) {
+        background-color: transparent;
+        border: 0;
+        box-shadow: none;
+      }
+    }
+  }
+
+  .col-md-8 {
+    flex: 0 0 calc(100% - #{$colTabWidth} - 15px) !important;
+    max-height: calc(100vh - 4rem);
+    max-width: calc(100% - #{$colTabWidth} - 15px) !important;
+    overflow: auto;
+
+    &.expanded {
+      flex: 0 0 calc(100% - 15px) !important;
+      max-width: calc(100% - 15px) !important;
+    }
+  }
+}
+
 .pre {
   white-space: pre-line;
 }

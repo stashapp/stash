@@ -1,4 +1,4 @@
-import { Tabs, Tab, Dropdown } from "react-bootstrap";
+import { Button, Tabs, Tab, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -49,6 +49,8 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
   const history = useHistory();
   const Toast = useToast();
   const intl = useIntl();
+
+  const [collapsed, setCollapsed] = useState(false);
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
@@ -262,13 +264,17 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
     );
   }
 
+  function getCollapseButtonText() {
+    return collapsed ? ">" : "<";
+  }
+
   return (
     <>
       <Helmet>
         <title>{tag.name}</title>
       </Helmet>
       <div className="row">
-        <div className="tag-details col-md-4">
+        <div className={`tag-details col-md-4 ${collapsed ? "collapsed" : ""}`}>
           <div className="text-center logo-container">
             {imageEncoding ? (
               <LoadingIndicator message="Encoding image..." />
@@ -306,7 +312,12 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
             />
           )}
         </div>
-        <div className="col col-md-8">
+        <div className="col-divider d-none d-xl-block">
+        <Button onClick={() => setCollapsed(!collapsed)}>
+          {getCollapseButtonText()}
+        </Button>
+      </div>
+        <div className={`col col-md-8 ${collapsed ? "expanded" : ""}`}>
           <Tabs
             id="tag-tabs"
             mountOnEnter

@@ -49,6 +49,8 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const intl = useIntl();
   const { tab = "details" } = useParams<IPerformerParams>();
 
+  const [collapsed, setCollapsed] = useState(false);
+
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
   const abbreviateCounter =
@@ -386,13 +388,21 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       />
     );
 
+  function getCollapseButtonText() {
+    return collapsed ? ">" : "<";
+  }
+
   return (
     <div id="performer-page" className="row">
       <Helmet>
         <title>{performer.name}</title>
       </Helmet>
 
-      <div className="performer-image-container col-md-4 text-center">
+      <div
+        className={`performer-image-container col-md-4 text-center ${
+          collapsed ? "collapsed" : ""
+        }`}
+      >
         {imageEncoding ? (
           <LoadingIndicator message="Encoding image..." />
         ) : (
@@ -405,7 +415,12 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           </Button>
         )}
       </div>
-      <div className="col-md-8">
+      <div className="col-divider d-none d-xl-block">
+        <Button onClick={() => setCollapsed(!collapsed)}>
+          {getCollapseButtonText()}
+        </Button>
+      </div>
+      <div className={`col-md-8 ${collapsed ? "expanded" : ""}`}>
         <div className="row">
           <div className="performer-head col">
             <h2>
