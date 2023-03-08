@@ -128,6 +128,19 @@ input[type="range"].zoom-slider {
     flex-wrap: nowrap;
     max-height: 550px;
     overflow-y: auto;
+
+    .nav-link {
+      display: flex;
+      justify-content: space-between;
+      padding-right: 0;
+    }
+
+    .remove-criterion-button {
+      border: 0;
+      color: $danger;
+      padding-bottom: 0;
+      padding-top: 0;
+    }
   }
 
   .edit-filter-right {

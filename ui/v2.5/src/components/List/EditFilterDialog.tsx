@@ -19,17 +19,23 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { getFilterOptions } from "src/models/list-filter/factory";
 import { FilterTags } from "./FilterTags";
 import { CriterionEditor } from "./CriterionEditor";
+import { Icon } from "../Shared/Icon";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
 interface ICriterionList {
+  criteria: string[];
   criterionOptions: CriterionOption[];
   selected?: CriterionOption;
   optionSelected: (o: CriterionOption) => void;
+  onRemoveCriterion: (c: string) => void;
 }
 
 const CriterionOptionList: React.FC<ICriterionList> = ({
+  criteria,
   criterionOptions,
   selected,
   optionSelected,
+  onRemoveCriterion,
 }) => {
   function onSelect(k: string | null) {
     if (!k) return;
@@ -52,6 +58,15 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
         <Nav.Item key={c.type}>
           <Nav.Link eventKey={c.type}>
             <FormattedMessage id={c.messageID} />
+            {criteria.some((cc) => c.type === cc) && (
+              <Button
+                className="remove-criterion-button"
+                variant="minimal"
+                onClick={() => onRemoveCriterion(c.type)}
+              >
+                <Icon icon={faTimes} />
+              </Button>
+            )}
           </Nav.Link>
         </Nav.Item>
       ))}
@@ -80,6 +95,10 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   const [criterion, setCriterion] = useState<Criterion<CriterionValue>>();
 
   const { criteria } = currentFilter;
+
+  const criteriaList = useMemo(() => {
+    return criteria.map((c) => c.criterionOption.type);
+  }, [criteria]);
 
   const filterOptions = useMemo(() => {
     return getFilterOptions(currentFilter.mode);
@@ -170,6 +189,13 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     }
   }
 
+  function removeCriterionString(c: string) {
+    const cc = criteria.find((ccc) => ccc.criterionOption.type === c);
+    if (cc) {
+      removeCriterion(cc);
+    }
+  }
+
   return (
     <>
       <Modal
@@ -184,9 +210,11 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
         <Modal.Body>
           <div className="dialog-content">
             <CriterionOptionList
+              criteria={criteriaList}
               criterionOptions={criterionOptions}
               optionSelected={optionSelected}
               selected={criterion?.criterionOption}
+              onRemoveCriterion={(c) => removeCriterionString(c)}
             />
             <div className="edit-filter-right">
               {criterion ? (
