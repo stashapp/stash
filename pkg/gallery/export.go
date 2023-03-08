@@ -76,7 +76,7 @@ func GetGalleryChaptersJSON(ctx context.Context, chapterReader ChapterFinder, ga
 	for _, galleryChapter := range galleryChapters {
 		galleryChapterJSON := jsonschema.GalleryChapter{
 			Title:      galleryChapter.Title,
-			PageNumber: galleryChapter.PageNumber,
+			ImageIndex: galleryChapter.ImageIndex,
 			CreatedAt:  json.JSONTime{Time: galleryChapter.CreatedAt.Timestamp},
 			UpdatedAt:  json.JSONTime{Time: galleryChapter.UpdatedAt.Timestamp},
 		}

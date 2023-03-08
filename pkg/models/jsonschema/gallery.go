@@ -12,7 +12,7 @@ import (
 
 type GalleryChapter struct {
 	Title      string        `json:"title,omitempty"`
-	PageNumber int           `json:"page_number,omitempty"`
+	ImageIndex int           `json:"image_index,omitempty"`
 	CreatedAt  json.JSONTime `json:"created_at,omitempty"`
 	UpdatedAt  json.JSONTime `json:"updated_at,omitempty"`
 }

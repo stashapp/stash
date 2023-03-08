@@ -27,7 +27,7 @@ type ChapterImporter struct {
 func (i *ChapterImporter) PreImport(ctx context.Context) error {
 	i.chapter = models.GalleryChapter{
 		Title:      i.Input.Title,
-		PageNumber: i.Input.PageNumber,
+		ImageIndex: i.Input.ImageIndex,
 		GalleryID:  sql.NullInt64{Int64: int64(i.GalleryID), Valid: true},
 		CreatedAt:  models.SQLiteTimestamp{Timestamp: i.Input.CreatedAt.GetTime()},
 		UpdatedAt:  models.SQLiteTimestamp{Timestamp: i.Input.UpdatedAt.GetTime()},
@@ -37,7 +37,7 @@ func (i *ChapterImporter) PreImport(ctx context.Context) error {
 }
 
 func (i *ChapterImporter) Name() string {
-	return fmt.Sprintf("%s (%d)", i.Input.Title, i.Input.PageNumber)
+	return fmt.Sprintf("%s (%d)", i.Input.Title, i.Input.ImageIndex)
 }
 
 func (i *ChapterImporter) PostImport(ctx context.Context, id int) error {
@@ -52,7 +52,7 @@ func (i *ChapterImporter) FindExistingID(ctx context.Context) (*int, error) {
 	}
 
 	for _, m := range existingChapters {
-		if m.PageNumber == i.chapter.PageNumber {
+		if m.ImageIndex == i.chapter.ImageIndex {
 			id := m.ID
 			return &id, nil
 		}

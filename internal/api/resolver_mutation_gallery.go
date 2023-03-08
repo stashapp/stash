@@ -512,7 +512,7 @@ func (r *mutationResolver) GalleryChapterCreate(ctx context.Context, input Galle
 	currentTime := time.Now()
 	newGalleryChapter := models.GalleryChapter{
 		Title:      input.Title,
-		PageNumber: input.PageNumber,
+		ImageIndex: input.ImageIndex,
 		GalleryID:  sql.NullInt64{Int64: int64(galleryID), Valid: galleryID != 0},
 		CreatedAt:  models.SQLiteTimestamp{Timestamp: currentTime},
 		UpdatedAt:  models.SQLiteTimestamp{Timestamp: currentTime},
@@ -546,7 +546,7 @@ func (r *mutationResolver) GalleryChapterUpdate(ctx context.Context, input Galle
 	updatedGalleryChapter := models.GalleryChapter{
 		ID:         galleryChapterID,
 		Title:      input.Title,
-		PageNumber: input.PageNumber,
+		ImageIndex: input.ImageIndex,
 		GalleryID:  sql.NullInt64{Int64: int64(galleryID), Valid: galleryID != 0},
 		UpdatedAt:  models.SQLiteTimestamp{Timestamp: time.Now()},
 	}

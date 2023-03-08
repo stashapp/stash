@@ -97,8 +97,8 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
     });
   }
 
-  async function onClickChapter(pagenum: number) {
-    showLightbox(pagenum - 1);
+  async function onClickChapter(imageindex: number) {
+    showLightbox(imageindex - 1);
   }
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);

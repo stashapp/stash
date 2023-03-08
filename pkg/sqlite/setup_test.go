@@ -382,7 +382,7 @@ var (
 type chapterSpec struct {
 	galleryIdx int
 	title      string
-	pageNumber int
+	imageIndex int
 }
 
 var (
@@ -1609,7 +1609,7 @@ func createChapter(ctx context.Context, mqb models.GalleryChapterReaderWriter, c
 	chapter := models.GalleryChapter{
 		GalleryID:  sql.NullInt64{Int64: int64(sceneIDs[chapterSpec.galleryIdx]), Valid: true},
 		Title:      chapterSpec.title,
-		PageNumber: chapterSpec.pageNumber,
+		ImageIndex: chapterSpec.imageIndex,
 	}
 
 	created, err := mqb.Create(ctx, chapter)

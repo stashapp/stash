@@ -25,7 +25,7 @@ fragment SlimGalleryData on Gallery {
   gallery_chapters {
     id
     title
-    page_number
+    image_index
   }
   studio {
     id

@@ -2,7 +2,7 @@ type GalleryChapter {
   id: ID!
   gallery: Gallery!
   title: String!
-  page_number: Int!
+  image_index: Int!
   created_at: Time!
   updated_at: Time!
 }
@@ -10,14 +10,14 @@ type GalleryChapter {
 input GalleryChapterCreateInput {
   gallery_id: ID!
   title: String!
-  page_number: Int!
+  image_index: Int!
 }
 
 input GalleryChapterUpdateInput {
   id: ID!
   gallery_id: ID!
   title: String!
-  page_number: Int!
+  image_index: Int!
 }
 
 type FindGalleryChaptersResultType {

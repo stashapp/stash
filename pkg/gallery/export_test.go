@@ -192,8 +192,8 @@ const (
 	chapterTitle1 = "chapterTitle1"
 	chapterTitle2 = "chapterTitle2"
 
-	chapterPageNumber1 = 10
-	chapterPageNumber2 = 50
+	chapterImageIndex1 = 10
+	chapterImageIndex2 = 50
 )
 
 type galleryChaptersTestScenario struct {
@@ -208,7 +208,7 @@ var getGalleryChaptersJSONScenarios = []galleryChaptersTestScenario{
 		[]jsonschema.GalleryChapter{
 			{
 				Title:      chapterTitle1,
-				PageNumber: chapterPageNumber1,
+				ImageIndex: chapterImageIndex1,
 				CreatedAt: json.JSONTime{
 					Time: createTime,
 				},
@@ -218,7 +218,7 @@ var getGalleryChaptersJSONScenarios = []galleryChaptersTestScenario{
 			},
 			{
 				Title:      chapterTitle2,
-				PageNumber: chapterPageNumber2,
+				ImageIndex: chapterImageIndex2,
 				CreatedAt: json.JSONTime{
 					Time: createTime,
 				},
@@ -245,7 +245,7 @@ var validChapters = []*models.GalleryChapter{
 	{
 		ID:         validChapterID1,
 		Title:      chapterTitle1,
-		PageNumber: chapterPageNumber1,
+		ImageIndex: chapterImageIndex1,
 		CreatedAt: models.SQLiteTimestamp{
 			Timestamp: createTime,
 		},
@@ -256,7 +256,7 @@ var validChapters = []*models.GalleryChapter{
 	{
 		ID:         validChapterID2,
 		Title:      chapterTitle2,
-		PageNumber: chapterPageNumber2,
+		ImageIndex: chapterImageIndex2,
 		CreatedAt: models.SQLiteTimestamp{
 			Timestamp: createTime,
 		},

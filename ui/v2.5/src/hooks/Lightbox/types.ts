@@ -16,5 +16,5 @@ export interface ILightboxImage {
 export interface IChapter {
   id: string;
   title: string;
-  page_number: number;
+  image_index: number;
 }

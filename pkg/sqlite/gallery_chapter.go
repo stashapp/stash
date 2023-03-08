@@ -78,7 +78,7 @@ func (qb *galleryChapterQueryBuilder) FindByGalleryID(ctx context.Context, galle
 		SELECT galleries_chapters.* FROM galleries_chapters
 		WHERE galleries_chapters.gallery_id = ?
 		GROUP BY galleries_chapters.id
-		ORDER BY galleries_chapters.page_number ASC
+		ORDER BY galleries_chapters.image_index ASC
 	`
 	args := []interface{}{galleryID}
 	return qb.queryGalleryChapters(ctx, query, args)

@@ -1,7 +1,7 @@
 fragment GalleryChapterData on GalleryChapter {
   id
   title
-  page_number
+  image_index
 
   gallery {
     id

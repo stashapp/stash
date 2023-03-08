@@ -483,7 +483,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
     let r = "";
     chapters.forEach(function (chapter) {
-      if (chapter.page_number > completePage) {
+      if (chapter.image_index > completePage) {
         return r;
       }
       r = chapter.title;
@@ -494,10 +494,10 @@ export const LightboxComponent: React.FC<IProps> = ({
   const renderChapterMenu = () => {
     if (chapters.length <= 0) return;
 
-    const popoverContent = chapters.map(({ id, title, page_number }) => (
-      <p key={id} onClick={() => gotoPage(page_number - 1)}>
+    const popoverContent = chapters.map(({ id, title, image_index }) => (
+      <p key={id} onClick={() => gotoPage(image_index - 1)}>
         {" "}
-        {title} - {page_number}
+        {title} - {image_index}
       </p>
     ));
 

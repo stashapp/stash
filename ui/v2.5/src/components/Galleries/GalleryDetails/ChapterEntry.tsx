@@ -5,7 +5,7 @@ import { Button } from "react-bootstrap";
 
 interface IChapterEntries {
   galleryChapters: GQL.GalleryChapterDataFragment[];
-  onClickChapter: (page_number: number) => void;
+  onClickChapter: (image_index: number) => void;
   onEdit: (chapter: GQL.GalleryChapterDataFragment) => void;
 }
 
@@ -23,11 +23,10 @@ export const ChapterEntries: React.FC<IChapterEntries> = ({
         <div className="row">
           <Button
             variant="link"
-            onClick={() => onClickChapter(chapter.page_number)}
+            onClick={() => onClickChapter(chapter.image_index)}
           >
             <div className="row">
-              {chapter.title} - <FormattedMessage id="page" />{" "}
-              {chapter.page_number}
+              {chapter.title} - #{chapter.image_index}
             </div>
           </Button>
           <Button

@@ -12,7 +12,7 @@ import useToast from "src/hooks/Toast";
 
 interface IFormFields {
   title: string;
-  pageNumber: string;
+  imageIndex: string;
 }
 
 interface IGalleryChapterForm {
@@ -36,7 +36,7 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
       | GQL.GalleryChapterUpdateInput
       | GQL.GalleryChapterCreateInput = {
       title: values.title,
-      page_number: parseInt(values.pageNumber),
+      image_index: parseInt(values.imageIndex),
       gallery_id: galleryID,
     };
     if (!editingChapter) {
@@ -69,19 +69,19 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
     />
   );
 
-  const renderPageNumberField = (fieldProps: FieldProps<string>) => (
+  const renderImageIndexField = (fieldProps: FieldProps<string>) => (
     <input
       className="text-input"
       value={fieldProps.field.value}
       onChange={(query: React.ChangeEvent<HTMLInputElement>) => {
-        fieldProps.form.setFieldValue("pageNumber", query.target.value);
+        fieldProps.form.setFieldValue("imageIndex", query.target.value);
       }}
     />
   );
 
   const values: IFormFields = {
     title: editingChapter?.title ?? "",
-    pageNumber: editingChapter?.page_number.toString() ?? "1",
+    imageIndex: editingChapter?.image_index.toString() ?? "1",
   };
 
   return (
@@ -99,13 +99,13 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
               <Field name="title">{renderTitleField}</Field>
             </div>
             <Form.Label
-              htmlFor="pageNumber"
+              htmlFor="imageIndex"
               className="col-sm-4 col-md-4 col-xl-12 col-form-label text-sm-right text-xl-left"
             >
-              Index
+              Image #
             </Form.Label>
             <div className="col-sm-8 col-xl-12">
-              <Field name="pageNumber">{renderPageNumberField}</Field>
+              <Field name="imageIndex">{renderImageIndexField}</Field>
             </div>
           </Form.Group>
         </div>

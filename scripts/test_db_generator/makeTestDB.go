@@ -526,7 +526,7 @@ func makeChapters(n int) {
 func generateChapter(i int) models.GalleryChapter {
         return models.GalleryChapter{
                 Title: names[c.Naming.Galleries].generateName(rand.Intn(7) + 1),
-                PageNumber: rand.Intn(200),
+                ImageIndex: rand.Intn(200),
         }
 }
 

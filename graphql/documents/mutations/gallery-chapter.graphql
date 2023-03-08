@@ -1,10 +1,10 @@
 mutation GalleryChapterCreate(
   $title: String!,
-  $page_number: Int!,
+  $image_index: Int!,
   $gallery_id: ID!) {
   galleryChapterCreate(input: {
                               title: $title,
-                              page_number: $page_number,
+                              image_index: $image_index,
                               gallery_id: $gallery_id,
                             }) {
     ...GalleryChapterData
@@ -14,12 +14,12 @@ mutation GalleryChapterCreate(
 mutation GalleryChapterUpdate(
   $id: ID!,
   $title: String!,
-  $page_number: Int!,
+  $image_index: Int!,
   $gallery_id: ID!) {
   galleryChapterUpdate(input: {
                               id: $id,
                               title: $title,
-                              page_number: $page_number,
+                              image_index: $image_index,
                               gallery_id: $gallery_id,
                             }) {
     ...GalleryChapterData

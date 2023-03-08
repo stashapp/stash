@@ -37,8 +37,8 @@ export const GalleryChapterPanel: React.FC<IGalleryChapterPanelProps> = (
     setEditingChapter(chapter ?? undefined);
   }
 
-  function onClickChapter(page_number: number) {
-    props.onClickChapter(page_number);
+  function onClickChapter(image_index: number) {
+    props.onClickChapter(image_index);
   }
 
   const closeEditor = () => {

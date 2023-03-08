@@ -1,7 +1,7 @@
 CREATE TABLE `galleries_chapters` (
   `id` integer not null primary key autoincrement,
   `title` varchar(255) not null,
-  `page_number` integer not null,
+  `image_index` integer not null,
   `gallery_id` integer,
   `created_at` datetime not null,
   `updated_at` datetime not null,
