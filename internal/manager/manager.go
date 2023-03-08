@@ -429,9 +429,10 @@ func initFFMPEG(ctx context.Context) error {
 			}
 		}
 
-		instance.FFMPEG = ffmpeg.NewEncoder(ffmpegPath, ctx)
+		instance.FFMPEG = ffmpeg.NewEncoder(ffmpegPath)
 		instance.FFProbe = ffmpeg.FFProbe(ffprobePath)
 
+		instance.FFMPEG.InitHWSupport(ctx)
 		instance.RefreshStreamManager()
 	}
 

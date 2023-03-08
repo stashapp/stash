@@ -9,7 +9,7 @@ import (
 )
 
 // Tests all (given) hardware codec's
-func (f *FFMpeg) findHWCodecs(ctx context.Context) {
+func (f *FFMpeg) InitHWSupport(ctx context.Context) {
 	var hwCodecSupport []VideoCodec
 
 	for _, codec := range []VideoCodec{

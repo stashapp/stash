@@ -15,12 +15,10 @@ type FFMpeg struct {
 }
 
 // Creates a new FFMpeg encoder
-func NewEncoder(ffmpegPath string, ctx context.Context) *FFMpeg {
+func NewEncoder(ffmpegPath string) *FFMpeg {
 	ret := &FFMpeg{
 		ffmpeg: ffmpegPath,
 	}
-
-	ret.findHWCodecs(ctx)
 
 	return ret
 }
