@@ -36,11 +36,15 @@ export const TimestampFilter: React.FC<ITimestampFilterProps> = ({
   }
 
   function isValid() {
+    if (!value.value) {
+      return false;
+    }
+
     if (
       criterion.modifier === CriterionModifier.Between ||
       criterion.modifier === CriterionModifier.NotBetween
     ) {
-      return value.value !== undefined && value.value2 !== undefined;
+      return value.value && value.value2;
     }
 
     return true;

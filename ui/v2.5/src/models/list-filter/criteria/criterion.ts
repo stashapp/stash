@@ -665,12 +665,12 @@ export class DateCriterion extends Criterion<IDateValue> {
     }
 
     const { value, value2 } = this.value;
-    if (value === undefined) {
+    if (!value) {
       return false;
     }
 
     if (
-      value2 === undefined &&
+      !value2 &&
       (this.modifier === CriterionModifier.Between ||
         this.modifier === CriterionModifier.NotBetween)
     ) {
@@ -759,12 +759,12 @@ export class TimestampCriterion extends Criterion<ITimestampValue> {
     }
 
     const { value, value2 } = this.value;
-    if (value === undefined) {
+    if (!value) {
       return false;
     }
 
     if (
-      value2 === undefined &&
+      !value2 &&
       (this.modifier === CriterionModifier.Between ||
         this.modifier === CriterionModifier.NotBetween)
     ) {
