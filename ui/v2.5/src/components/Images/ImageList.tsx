@@ -76,9 +76,9 @@ const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
   );
 
   function columns(containerWidth: number) {
-    let preferredSize = 250;
+    let preferredSize = 300;
     let columnCount = containerWidth / preferredSize;
-    return Math.floor(columnCount);
+    return Math.round(columnCount);
   }
 
   return (
