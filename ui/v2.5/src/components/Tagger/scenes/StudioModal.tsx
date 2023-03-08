@@ -13,6 +13,7 @@ import {
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { Button, Form } from "react-bootstrap";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
 
 interface IStudioModalProps {
   studio: GQL.ScrapedSceneStudioDataFragment;
@@ -148,7 +149,8 @@ const StudioModal: React.FC<IStudioModalProps> = ({
   const renderField = (
     id: string,
     text: string | null | undefined,
-    is_selectable: boolean = true
+    is_selectable: boolean = true,
+    truncate: boolean = true
   ) =>
     text && (
       <div className="row no-gutters">
@@ -166,7 +168,11 @@ const StudioModal: React.FC<IStudioModalProps> = ({
             <FormattedMessage id={id} />:
           </strong>
         </div>
-        <span className="col-7">{text}</span>
+        {truncate ? (
+          <TruncatedText className="col-7" text={text} />
+        ) : (
+          <span className="col-7">{text}</span>
+        )}
       </div>
     );
 

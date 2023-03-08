@@ -17,17 +17,6 @@ type ScrapedStudio struct {
 
 func (ScrapedStudio) IsScrapedContent() {}
 
-type ScrapedParentStudio struct {
-	StoredID     *string  `json:"stored_id"`
-	Name         string   `json:"name"`
-	URL          *string  `json:"url"`
-	Image        *string  `json:"image"`
-	Images       []string `json:"images"`
-	RemoteSiteID *string  `json:"remote_site_id"`
-}
-
-func (ScrapedParentStudio) IsScrapedContent() {}
-
 // A performer from a scraping operation...
 type ScrapedPerformer struct {
 	// Set if performer matched

@@ -310,6 +310,14 @@ type StashBoxBatchTagInput struct {
 	Ids []string `json:"ids"`
 	// If set, only tag these names
 	Names []string `json:"names"`
+	// If set, only tag these performer ids
+	//
+	// Deprecated: please use Ids
+	PerformerIds []string `json:"performer_ids"`
+	// If set, only tag these performer names
+	//
+	// Deprecated: please use Names
+	PerformerNames []string `json:"performer_names"`
 }
 
 func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxBatchTagInput) int {
@@ -331,12 +339,17 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 		//
 		// This is why we mark this section nolint. In principle, we should look to
 		// rewrite the section at some point, to avoid the linter warning.
-		if len(input.Ids) > 0 { //nolint:gocritic
+		if len(input.Ids) > 0 || len(input.PerformerIds) > 0 { //nolint:gocritic
 			// The user has chosen only to tag the items on the current page
 			if err := s.Repository.WithTxn(ctx, func(ctx context.Context) error {
 				performerQuery := s.Repository.Performer
 
-				for _, performerID := range input.Ids {
+				idsToUse := input.PerformerIds
+				if len(input.Ids) > 0 {
+					idsToUse = input.Ids
+				}
+
+				for _, performerID := range idsToUse {
 					if id, err := strconv.Atoi(performerID); err == nil {
 						performer, err := performerQuery.Find(ctx, id)
 						if err == nil {
@@ -364,12 +377,17 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 			}); err != nil {
 				logger.Error(err.Error())
 			}
-		} else if len(input.Names) > 0 {
+		} else if len(input.Names) > 0 || len(input.PerformerNames) > 0 {
 			// The user is batch adding performers
-			for i := range input.Names {
-				if len(input.Names[i]) > 0 {
+			namesToUse := input.PerformerNames
+			if len(input.Names) > 0 {
+				namesToUse = input.Names
+			}
+
+			for i := range namesToUse {
+				if len(namesToUse[i]) > 0 {
 					performer := models.Performer{
-						Name: input.Names[i],
+						Name: namesToUse[i],
 					}
 
 					tasks = append(tasks, StashBoxBatchTagTask{

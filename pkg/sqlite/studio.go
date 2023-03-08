@@ -117,7 +117,9 @@ func (qb *StudioStore) Create(ctx context.Context, input models.StudioDBInput) (
 	// Create the main studio
 	var r studioRow
 	r.fromStudio(*input.StudioCreate)
-	r.CreatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+	time := time.Now()
+	r.CreatedAt = models.SQLiteTimestamp{Timestamp: time}
+	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: time}
 
 	id, err := qb.tableMgr.insertID(ctx, r)
 	if err != nil {

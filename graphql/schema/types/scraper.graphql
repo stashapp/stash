@@ -54,15 +54,6 @@ type ScrapedStudio {
   remote_site_id: String
 }
 
-type ScrapedParentStudio {
-    stored_id: ID
-    name: String!
-    url: String
-    image: String
-
-    remote_site_id: String
-}
-
 type ScrapedTag {
   """Set if tag matched"""
   stored_id: ID
@@ -237,4 +228,8 @@ input StashBoxBatchTagInput {
   ids: [ID!]
   "If set, only tag these names"
   names: [String!]
+  "If set, only tag these performer ids"
+  performer_ids: [ID!] @deprecated(reason: "use ids")
+  "If set, only tag these performer names"
+  performer_names: [String!] @deprecated(reason: "use names")
 }
