@@ -313,10 +313,10 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
           )}
         </div>
         <div className="col-divider d-none d-xl-block">
-        <Button onClick={() => setCollapsed(!collapsed)}>
-          {getCollapseButtonText()}
-        </Button>
-      </div>
+          <Button onClick={() => setCollapsed(!collapsed)}>
+            {getCollapseButtonText()}
+          </Button>
+        </div>
         <div className={`col col-md-8 ${collapsed ? "expanded" : ""}`}>
           <Tabs
             id="tag-tabs"

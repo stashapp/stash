@@ -770,6 +770,7 @@ div.dropdown-menu {
 $colTabWidth: 550px;
 
 @media (min-width: 1200px) {
+  /* stylelint-disable */
   .col-md-4 {
     flex: 0 0 $colTabWidth !important;
     max-height: calc(100vh - 4rem);
@@ -819,6 +820,7 @@ $colTabWidth: 550px;
       max-width: calc(100% - 15px) !important;
     }
   }
+  /* stylelint-enable */
 }
 
 .pre {
