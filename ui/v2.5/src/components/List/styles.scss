@@ -166,3 +166,17 @@ input[type="range"].zoom-slider {
   color: $text-color;
   padding: 0;
 }
+
+.filter-button {
+  .fa-icon {
+    margin: 0;
+  }
+
+  .badge {
+    position: absolute;
+    right: -3px;
+
+    // button group has a z-index of 1
+    z-index: 2;
+  }
+}

@@ -140,7 +140,6 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     onChangePage: _onChangePage,
     updateFilter,
     persistState,
-    filterDialog,
     zoomable,
     selectable,
     otherOperations,
@@ -154,8 +153,9 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [lastClickedId, setLastClickedId] = useState<string>();
 
-    const [editingCriterion, setEditingCriterion] =
-      useState<Criterion<CriterionValue>>();
+    const [editingCriterion, setEditingCriterion] = useState<
+      string | undefined
+    >();
     const [showEditFilter, setShowEditFilter] = useState(false);
 
     const result = useResult(filter);
@@ -448,19 +448,15 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       updateFilter(newFilter);
     }
 
-    function updateCriteria(c: Criterion<CriterionValue>[]) {
-      const newFilter = cloneDeep(filter);
-      newFilter.criteria = c.slice();
-      setShowEditFilter(false);
-    }
-
     function onApplyEditFilter(f: ListFilterModel) {
       setShowEditFilter(false);
+      setEditingCriterion(undefined);
       updateFilter(f);
     }
 
     function onCancelEditFilter() {
       setShowEditFilter(false);
+      setEditingCriterion(undefined);
     }
 
     return (
@@ -471,7 +467,6 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
             filter={filter}
             filterOptions={filterOptions}
             openFilterDialog={() => setShowEditFilter(true)}
-            filterDialogOpen={showEditFilter ?? editingCriterion}
             persistState={persistState}
           />
           <ListOperationButtons
@@ -492,20 +487,18 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
         </ButtonToolbar>
         <FilterTags
           criteria={filter.criteria}
-          onEditCriterion={(c) => setEditingCriterion(c)}
+          onEditCriterion={(c) => setEditingCriterion(c.criterionOption.type)}
           onRemoveCriterion={onRemoveCriterion}
           onRemoveAll={() => onClearAllCriteria()}
         />
-        {showEditFilter && !filterDialog && (
+        {(showEditFilter || editingCriterion) && (
           <EditFilterDialog
             filter={filter}
             onApply={onApplyEditFilter}
             onCancel={onCancelEditFilter}
+            editingCriterion={editingCriterion}
           />
         )}
-        {showEditFilter &&
-          filterDialog &&
-          filterDialog(filter.criteria, (c) => updateCriteria(c))}
         {isEditDialogOpen &&
           renderEditDialog &&
           renderEditDialog(getSelectedData(items, selectedIds), (applied) =>

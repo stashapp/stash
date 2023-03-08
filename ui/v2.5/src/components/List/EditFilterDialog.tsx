@@ -76,12 +76,14 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
 
 interface IEditFilterProps {
   filter: ListFilterModel;
+  editingCriterion?: string;
   onApply: (filter: ListFilterModel) => void;
   onCancel: () => void;
 }
 
 export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   filter,
+  editingCriterion,
   onApply,
   onCancel,
 }) => {
@@ -133,6 +135,15 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     },
     [criteria, config]
   );
+
+  useEffect(() => {
+    if (editingCriterion) {
+      const option = criterionOptions.find((c) => c.type === editingCriterion);
+      if (option) {
+        optionSelected(option);
+      }
+    }
+  });
 
   useEffect(() => {
     if (!criterion && criterionOptions.length > 0) {
