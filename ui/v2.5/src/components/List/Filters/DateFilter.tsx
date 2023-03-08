@@ -1,9 +1,11 @@
-import React, { useRef } from "react";
-import { Form } from "react-bootstrap";
+import React, { useEffect } from "react";
+import { Button, Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { CriterionModifier } from "../../../core/generated-graphql";
 import { IDateValue } from "../../../models/list-filter/types";
 import { Criterion } from "../../../models/list-filter/criteria/criterion";
+import { Icon } from "src/components/Shared/Icon";
+import { faCheck } from "@fortawesome/free-solid-svg-icons";
 
 interface IDateFilterProps {
   criterion: Criterion<IDateValue>;
@@ -16,18 +18,36 @@ export const DateFilter: React.FC<IDateFilterProps> = ({
 }) => {
   const intl = useIntl();
 
-  const valueStage = useRef<IDateValue>(criterion.value);
+  const [value, setValue] = React.useState({ ...criterion.value });
+
+  useEffect(() => {
+    setValue({ ...criterion.value });
+  }, [criterion.value]);
 
   function onChanged(
     event: React.ChangeEvent<HTMLInputElement>,
     property: "value" | "value2"
   ) {
-    const { value } = event.target;
-    valueStage.current[property] = value;
+    const newValue = event.target.value;
+    const valueCopy = { ...value };
+
+    valueCopy[property] = newValue;
+    setValue(valueCopy);
   }
 
-  function onBlurInput() {
-    onValueChanged(valueStage.current);
+  function isValid() {
+    if (
+      criterion.modifier === CriterionModifier.Between ||
+      criterion.modifier === CriterionModifier.NotBetween
+    ) {
+      return value.value !== undefined && value.value2 !== undefined;
+    }
+
+    return true;
+  }
+
+  function confirm() {
+    onValueChanged(value);
   }
 
   let equalsControl: JSX.Element | null = null;
@@ -43,8 +63,7 @@ export const DateFilter: React.FC<IDateFilterProps> = ({
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             onChanged(e, "value")
           }
-          onBlur={onBlurInput}
-          defaultValue={criterion.value?.value ?? ""}
+          value={value?.value ?? ""}
           placeholder={
             intl.formatMessage({ id: "criterion.value" }) + " (YYYY-MM-DD)"
           }
@@ -67,8 +86,7 @@ export const DateFilter: React.FC<IDateFilterProps> = ({
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             onChanged(e, "value")
           }
-          onBlur={onBlurInput}
-          defaultValue={criterion.value?.value ?? ""}
+          value={value?.value ?? ""}
           placeholder={
             intl.formatMessage({ id: "criterion.greater_than" }) +
             " (YYYY-MM-DD)"
@@ -97,11 +115,10 @@ export const DateFilter: React.FC<IDateFilterProps> = ({
                 : "value2"
             )
           }
-          onBlur={onBlurInput}
-          defaultValue={
+          value={
             (criterion.modifier === CriterionModifier.LessThan
-              ? criterion.value?.value
-              : criterion.value?.value2) ?? ""
+              ? value?.value
+              : value?.value2) ?? ""
           }
           placeholder={
             intl.formatMessage({ id: "criterion.less_than" }) + " (YYYY-MM-DD)"
@@ -116,6 +133,9 @@ export const DateFilter: React.FC<IDateFilterProps> = ({
       {equalsControl}
       {lowerControl}
       {upperControl}
+      <Button disabled={!isValid()} onClick={() => confirm()}>
+        <Icon icon={faCheck} />
+      </Button>
     </>
   );
 };

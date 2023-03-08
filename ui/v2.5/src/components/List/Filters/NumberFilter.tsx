@@ -35,6 +35,17 @@ export const NumberFilter: React.FC<IDurationFilterProps> = ({
     setValue(valueCopy);
   }
 
+  function isValid() {
+    if (
+      criterion.modifier === CriterionModifier.Between ||
+      criterion.modifier === CriterionModifier.NotBetween
+    ) {
+      return value.value !== undefined && value.value2 !== undefined;
+    }
+
+    return true;
+  }
+
   function confirm() {
     onValueChanged(value);
   }
@@ -115,7 +126,7 @@ export const NumberFilter: React.FC<IDurationFilterProps> = ({
       {equalsControl}
       {lowerControl}
       {upperControl}
-      <Button onClick={() => confirm()}>
+      <Button disabled={!isValid()} onClick={() => confirm()}>
         <Icon icon={faCheck} />
       </Button>
     </>

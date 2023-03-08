@@ -566,6 +566,30 @@ export class DurationCriterion extends Criterion<INumberValue> {
       ? DurationUtils.secondsToString(this.value.value)
       : "?";
   }
+
+  public isValid(): boolean {
+    if (
+      this.modifier === CriterionModifier.IsNull ||
+      this.modifier === CriterionModifier.NotNull
+    ) {
+      return true;
+    }
+
+    const { value, value2 } = this.value;
+    if (value === undefined) {
+      return false;
+    }
+
+    if (
+      value2 === undefined &&
+      (this.modifier === CriterionModifier.Between ||
+        this.modifier === CriterionModifier.NotBetween)
+    ) {
+      return false;
+    }
+
+    return true;
+  }
 }
 
 export class PhashDuplicateCriterion extends StringCriterion {
@@ -630,6 +654,30 @@ export class DateCriterion extends Criterion<IDateValue> {
       this.modifier === CriterionModifier.NotBetween
       ? `${value}, ${this.value.value2}`
       : `${value}`;
+  }
+
+  public isValid(): boolean {
+    if (
+      this.modifier === CriterionModifier.IsNull ||
+      this.modifier === CriterionModifier.NotNull
+    ) {
+      return true;
+    }
+
+    const { value, value2 } = this.value;
+    if (value === undefined) {
+      return false;
+    }
+
+    if (
+      value2 === undefined &&
+      (this.modifier === CriterionModifier.Between ||
+        this.modifier === CriterionModifier.NotBetween)
+    ) {
+      return false;
+    }
+
+    return true;
   }
 
   constructor(type: CriterionOption) {
@@ -700,6 +748,30 @@ export class TimestampCriterion extends Criterion<ITimestampValue> {
     }
 
     return "";
+  }
+
+  public isValid(): boolean {
+    if (
+      this.modifier === CriterionModifier.IsNull ||
+      this.modifier === CriterionModifier.NotNull
+    ) {
+      return true;
+    }
+
+    const { value, value2 } = this.value;
+    if (value === undefined) {
+      return false;
+    }
+
+    if (
+      value2 === undefined &&
+      (this.modifier === CriterionModifier.Between ||
+        this.modifier === CriterionModifier.NotBetween)
+    ) {
+      return false;
+    }
+
+    return true;
   }
 
   constructor(type: CriterionOption) {
