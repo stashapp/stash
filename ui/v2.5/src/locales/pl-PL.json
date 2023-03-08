@@ -666,7 +666,6 @@
   "details": "Szczegóły",
   "developmentVersion": "Wersja deweloperska",
   "dialogs": {
-    "aliases_must_be_unique": "aliasy muszą być unikatowe",
     "create_new_entity": "Dodaj {entity}",
     "delete_alert": "Następujące elementy {count, plural, one {{singularEntity}} other {{pluralEntity}}} zostaną trwale usunięte:",
     "delete_confirm": "Czy na pewno chcesz usunąć {entityName}?",
@@ -1124,6 +1123,9 @@
   "type": "Typ",
   "updated_at": "Zaktualizowano",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "aliasy muszą być unikatowe"
+  },
   "videos": "Filmy wideo",
   "view_all": "Pokaż wszystko",
   "weight": "Waga",

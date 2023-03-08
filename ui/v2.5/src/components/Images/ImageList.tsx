@@ -1,4 +1,10 @@
-import React, { useCallback, useState, useMemo, MouseEvent } from "react";
+import React, {
+  useCallback,
+  useState,
+  useMemo,
+  MouseEvent,
+  useContext,
+} from "react";
 import { FormattedNumber, useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
 import { useHistory } from "react-router-dom";
@@ -19,9 +25,12 @@ import { ImageCard } from "./ImageCard";
 import { EditImagesDialog } from "./EditImagesDialog";
 import { DeleteImagesDialog } from "./DeleteImagesDialog";
 import "flexbin/flexbin.css";
+import Gallery from "react-photo-gallery";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { objectTitle } from "src/core/files";
 import TextUtils from "src/utils/text";
+import { ConfigurationContext } from "src/hooks/Config";
+import { IUIConfig } from "src/core/config";
 
 interface IImageWallProps {
   images: GQL.SlimImageDataFragment[];
@@ -32,26 +41,55 @@ interface IImageWallProps {
 }
 
 const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
-  const thumbs = images.map((image, index) => (
-    <div
-      role="link"
-      tabIndex={index}
-      key={image.id}
-      onClick={() => handleImageOpen(index)}
-      onKeyPress={() => handleImageOpen(index)}
-    >
-      <img
-        src={image.paths.thumbnail ?? ""}
-        loading="lazy"
-        className="gallery-image"
-        alt={objectTitle(image)}
-      />
-    </div>
-  ));
+  const { configuration } = useContext(ConfigurationContext);
+  const uiConfig = configuration?.ui as IUIConfig | undefined;
+
+  let photos: {
+    src: string;
+    srcSet?: string | string[] | undefined;
+    sizes?: string | string[] | undefined;
+    width: number;
+    height: number;
+    alt?: string | undefined;
+    key?: string | undefined;
+  }[] = [];
+
+  images.forEach((image, index) => {
+    let imageData = {
+      src: image.paths.thumbnail!,
+      width: image.files[0].width,
+      height: image.files[0].height,
+      tabIndex: index,
+      key: image.id,
+      loading: "lazy",
+      className: "gallery-image",
+      alt: objectTitle(image),
+    };
+    photos.push(imageData);
+  });
+
+  const showLightboxOnClick = useCallback(
+    (event, { index }) => {
+      handleImageOpen(index);
+    },
+    [handleImageOpen]
+  );
+
+  function columns(containerWidth: number) {
+    let preferredSize = 250;
+    let columnCount = containerWidth / preferredSize;
+    return Math.floor(columnCount);
+  }
 
   return (
     <div className="gallery">
-      <div className="flexbin">{thumbs}</div>
+      <Gallery
+        photos={photos}
+        onClick={showLightboxOnClick}
+        margin={uiConfig?.imageWallOptions?.margin!}
+        direction={uiConfig?.imageWallOptions?.direction!}
+        columns={columns}
+      />
     </div>
   );
 };

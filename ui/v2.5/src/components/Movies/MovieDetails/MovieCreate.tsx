@@ -23,24 +23,10 @@ const MovieCreate: React.FC = () => {
 
   const [createMovie] = useMovieCreate();
 
-  const onImageEncoding = (isEncoding = false) => setEncodingImage(isEncoding);
-
-  function getMovieInput(
-    input: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput>
-  ) {
-    const ret: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput> = {
-      ...input,
-    };
-
-    return ret;
-  }
-
-  async function onSave(
-    input: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput>
-  ) {
+  async function onSave(input: GQL.MovieCreateInput) {
     try {
       const result = await createMovie({
-        variables: getMovieInput(input) as GQL.MovieCreateInput,
+        variables: input,
       });
       if (result.data?.movieCreate?.id) {
         history.push(`/movies/${result.data.movieCreate.id}`);
@@ -92,7 +78,7 @@ const MovieCreate: React.FC = () => {
           onDelete={() => {}}
           setFrontImage={setFrontImage}
           setBackImage={setBackImage}
-          onImageEncoding={onImageEncoding}
+          setEncodingImage={setEncodingImage}
         />
       </div>
     </div>

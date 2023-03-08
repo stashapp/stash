@@ -5,8 +5,8 @@ import { PerformerEditPanel } from "./PerformerEditPanel";
 import { useLocation } from "react-router-dom";
 
 const PerformerCreate: React.FC = () => {
-  const [imagePreview, setImagePreview] = useState<string | null>();
-  const [imageEncoding, setImageEncoding] = useState<boolean>(false);
+  const [image, setImage] = useState<string | null>();
+  const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
   const location = useLocation();
   const query = useMemo(() => new URLSearchParams(location.search), [location]);
@@ -14,21 +14,17 @@ const PerformerCreate: React.FC = () => {
     name: query.get("q") ?? undefined,
   };
 
-  const activeImage = imagePreview ?? "";
   const intl = useIntl();
 
-  const onImageChange = (image?: string | null) => setImagePreview(image);
-  const onImageEncoding = (isEncoding = false) => setImageEncoding(isEncoding);
-
   function renderPerformerImage() {
-    if (imageEncoding) {
+    if (encodingImage) {
       return <LoadingIndicator message="Encoding image..." />;
     }
-    if (activeImage) {
+    if (image) {
       return (
         <img
           className="performer"
-          src={activeImage}
+          src={image}
           alt={intl.formatMessage({ id: "performer" })}
         />
       );
@@ -50,8 +46,8 @@ const PerformerCreate: React.FC = () => {
         <PerformerEditPanel
           performer={performer}
           isVisible
-          onImageChange={onImageChange}
-          onImageEncoding={onImageEncoding}
+          setImage={setImage}
+          setEncodingImage={setEncodingImage}
         />
       </div>
     </div>
