@@ -122,6 +122,10 @@ input[type="range"].zoom-slider {
     display: flex;
   }
 
+  .criterion-title {
+    display: none;
+  }
+
   .criterion-list {
     flex-basis: 30%;
     flex-direction: column;
@@ -150,6 +154,45 @@ input[type="range"].zoom-slider {
     padding-left: 1rem;
     padding-right: 1rem;
     width: 100%;
+  }
+
+  @media screen and (max-width: 768px) {
+    height: 100%;
+
+    .dialog-content {
+      flex-wrap: wrap;
+    }
+
+    .criterion-title {
+      align-items: center;
+      display: flex;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      margin-left: -1rem;
+
+      .btn {
+        margin-right: 1rem;
+      }
+    }
+
+    .criterion-list {
+      flex-basis: 100%;
+      height: 100%;
+    }
+
+    .criterion-editor {
+      display: none;
+    }
+
+    .dialog-content.criterion-selected {
+      .criterion-list {
+        height: 0;
+      }
+
+      .criterion-editor {
+        display: block;
+      }
+    }
   }
 }
 

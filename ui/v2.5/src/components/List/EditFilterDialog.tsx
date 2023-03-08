@@ -7,6 +7,7 @@ import React, {
   useState,
 } from "react";
 import { Button, Modal, Nav } from "react-bootstrap";
+import cx from "classnames";
 import {
   CriterionValue,
   Criterion,
@@ -20,7 +21,7 @@ import { getFilterOptions } from "src/models/list-filter/factory";
 import { FilterTags } from "./FilterTags";
 import { CriterionEditor } from "./CriterionEditor";
 import { Icon } from "../Shared/Icon";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faChevronLeft, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 interface ICriterionList {
   criteria: string[];
@@ -47,6 +48,13 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
     }
   }
 
+  function removeClicked(ev: React.MouseEvent, t: string) {
+    // needed to prevent the nav item from being selected
+    ev.stopPropagation();
+    ev.preventDefault();
+    onRemoveCriterion(t);
+  }
+
   return (
     <Nav
       variant="pills"
@@ -62,7 +70,7 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
               <Button
                 className="remove-criterion-button"
                 variant="minimal"
-                onClick={() => onRemoveCriterion(c.type)}
+                onClick={(e) => removeClicked(e, c.type)}
               >
                 <Icon icon={faTimes} />
               </Button>
@@ -71,6 +79,22 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
         </Nav.Item>
       ))}
     </Nav>
+  );
+};
+
+interface ICriterionTitle {
+  messageID: string;
+  onBack: () => void;
+}
+
+const CriterionTitle: React.FC<ICriterionTitle> = ({ messageID, onBack }) => {
+  return (
+    <div className="criterion-title">
+      <Button onClick={() => onBack()} variant="secondary">
+        <Icon icon={faChevronLeft} />
+      </Button>
+      <FormattedMessage id={messageID} />
+    </div>
   );
 };
 
@@ -143,14 +167,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
         optionSelected(option);
       }
     }
-  });
-
-  useEffect(() => {
-    if (!criterion && criterionOptions.length > 0) {
-      const option = criterionOptions[0];
-      optionSelected(option);
-    }
-  }, [criterion, criterionOptions, optionSelected]);
+  }, [editingCriterion, criterionOptions, optionSelected]);
 
   function replaceCriterion(c: Criterion<CriterionValue>) {
     const newFilter = cloneDeep(currentFilter);
@@ -225,7 +242,11 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
           <FormattedMessage id="search_filter.edit_filter" />
         </Modal.Header>
         <Modal.Body>
-          <div className="dialog-content">
+          <div
+            className={cx("dialog-content", {
+              "criterion-selected": !!criterion,
+            })}
+          >
             <CriterionOptionList
               criteria={criteriaList}
               criterionOptions={criterionOptions}
@@ -235,10 +256,16 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
             />
             <div className="edit-filter-right">
               {criterion ? (
-                <CriterionEditor
-                  criterion={criterion}
-                  setCriterion={replaceCriterion}
-                />
+                <div>
+                  <CriterionTitle
+                    messageID={criterion.criterionOption.messageID}
+                    onBack={() => setCriterion(undefined)}
+                  />
+                  <CriterionEditor
+                    criterion={criterion}
+                    setCriterion={replaceCriterion}
+                  />
+                </div>
               ) : undefined}
               <div>
                 <FilterTags
