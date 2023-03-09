@@ -77,9 +77,9 @@ This setting can be used to increase/decrease overall CPU utilisation in two sce
 
 Note: If this is set too high it will decrease overall performance and causes failures (out of memory).
 
-## HLS Streaming
+## HLS/DASH Streaming
 
-If using HLS streaming (such as on Apple devices), the Cache path must be set. This directory is used to store temporary files during the live-transcoding process. The Cache path can be set in the System settings page. 
+To stream using HLS (such as on Apple devices) or DASH, the Cache path must be set. This directory is used to store temporary files during the live-transcoding process. The Cache path can be set in the System settings page. 
 
 ## ffmpeg arguments
 
