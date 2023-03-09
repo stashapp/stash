@@ -45,7 +45,6 @@ func CodecInit(codec VideoCodec) (args Args) {
 		args = append(args,
 			"-rc", "vbr",
 			"-cq", "15",
-			"-preset", "p2",
 		)
 	case VideoCodecI264:
 		args = append(args,
