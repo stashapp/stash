@@ -592,7 +592,6 @@
   "details": "Detalhes",
   "developmentVersion": "Versão de desenvolvimento",
   "dialogs": {
-    "aliases_must_be_unique": "apelidos devem ser únicos",
     "delete_alert": "Os seguintes {count, plural, one {{singularEntity}} other {{pluralEntity}}} serão deletados permanentemente:",
     "delete_confirm": "Tem certeza de que deseja excluir {entityName}?",
     "delete_entity_desc": "{count, plural, one {Tem certeza de que deseja excluir este(a) {singularEntity}? A menos que o arquivo também esteja excluído, este(a) {singularEntity} será re-adicionado quando a escaneamento for executado.} other {Tem certeza de que deseja excluir estes(as) {pluralEntity}? A menos que os arquivos também estejam excluídos, estes(as) {pluralEntity} serão re-adicionados quando o escaneamento for executado.}}",
@@ -956,7 +955,7 @@
       "your_system_has_been_created": "Sucesso! Seu sistema foi criado!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash tenta encontrar o arquivo de configuração (<code>config.yml</code>) a partir do diretório de trabalho atual, caso não o encontre lá, tentará encontra-lo em <code>$HOME/.stash/config.yml</code> (no Windows, será <code>%USERPROFILE%\\.stash\\config.yml</code>). Você também pode fazer o Stash ler um arquivo de configuração específico ao executar a aplicação com as opções <code>-c <caminho para o arquivo de configuração></code> ou <code>--config <caminho para o arquivo de configuração></code>.",
+      "config_path_logic_explained": "Stash tenta encontrar o arquivo de configuração (<code>config.yml</code>) a partir do diretório de trabalho atual, caso não o encontre lá, tentará encontra-lo em <code>$HOME/.stash/config.yml</code> (no Windows, será <code>%USERPROFILE%\\.stash\\config.yml</code>). Você também pode fazer o Stash ler um arquivo de configuração específico ao executar a aplicação com as opções <code>-c '<caminho para o arquivo de configuração>'</code> ou <code>--config '<caminho para o arquivo de configuração>'</code>.",
       "in_current_stash_directory": "No diretório <code>$HOME/.stash</code>",
       "in_the_current_working_directory": "No diretório de trabalho atual",
       "next_step": "Caso esteja pronto para criar um novo sistema, escolha onde você deseja armazenar seu arquivo de configuração e clique Próximo.",
@@ -1021,6 +1020,9 @@
   "type": "Tipo",
   "updated_at": "Atualizado em",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "apelidos devem ser únicos"
+  },
   "videos": "Vídeos",
   "view_all": "Ver todos",
   "weight": "Peso",

@@ -12,8 +12,11 @@ import cx from "classnames";
 import Mousetrap from "mousetrap";
 import debounce from "lodash-es/debounce";
 
-import { Icon, LoadingIndicator } from "src/components/Shared";
-import { useInterval, usePageVisibility, useToast } from "src/hooks";
+import { Icon } from "src/components/Shared/Icon";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import useInterval from "../Interval";
+import usePageVisibility from "../PageVisibility";
+import { useToast } from "../Toast";
 import { FormattedMessage, useIntl } from "react-intl";
 import { LightboxImage } from "./LightboxImage";
 import { ConfigurationContext } from "../Config";
@@ -127,10 +130,8 @@ export const LightboxComponent: React.FC<IProps> = ({
   const Toast = useToast();
   const intl = useIntl();
   const { configuration: config } = React.useContext(ConfigurationContext);
-  const [
-    interfaceLocalForage,
-    setInterfaceLocalForage,
-  ] = useInterfaceLocalForage();
+  const [interfaceLocalForage, setInterfaceLocalForage] =
+    useInterfaceLocalForage();
 
   const lightboxSettings = interfaceLocalForage.data?.imageLightbox;
 
@@ -194,10 +195,8 @@ export const LightboxComponent: React.FC<IProps> = ({
     null
   );
 
-  const [
-    displayedSlideshowInterval,
-    setDisplayedSlideshowInterval,
-  ] = useState<string>((slideshowDelay / SECONDS_TO_MS).toString());
+  const [displayedSlideshowInterval, setDisplayedSlideshowInterval] =
+    useState<string>((slideshowDelay / SECONDS_TO_MS).toString());
 
   useEffect(() => {
     if (images !== oldImages.current && isSwitchingPage) {

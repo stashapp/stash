@@ -12,8 +12,8 @@ import {
 } from "src/components/Shared/ScrapeDialog";
 import { useTagCreate } from "src/core/StashService";
 import { Form } from "react-bootstrap";
-import { TagSelect } from "src/components/Shared";
-import { useToast } from "src/hooks";
+import { TagSelect } from "src/components/Shared/Select";
+import { useToast } from "src/hooks/Toast";
 import clone from "lodash-es/clone";
 import {
   genderStrings,
@@ -152,8 +152,8 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     let retEnum: GQL.GenderEnum | undefined;
 
     // try to translate from enum values first
-    const upperGender = scrapedGender?.toUpperCase();
-    const asEnum = genderToString(upperGender as GQL.GenderEnum);
+    const upperGender = scrapedGender.toUpperCase();
+    const asEnum = genderToString(upperGender);
     if (asEnum) {
       retEnum = stringToGender(asEnum);
     } else {
@@ -248,7 +248,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   );
   const [gender, setGender] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(
-      genderToString(props.performer.gender ?? undefined),
+      genderToString(props.performer.gender),
       translateScrapedGender(props.scraped.gender)
     )
   );

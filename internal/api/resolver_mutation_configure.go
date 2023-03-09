@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"regexp"
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
@@ -122,6 +123,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.Metadata, input.MetadataPath)
 	}
 
+	refreshStreamManager := false
 	existingCachePath := c.GetCachePath()
 	if input.CachePath != nil && existingCachePath != *input.CachePath {
 		if err := validateDir(config.Cache, *input.CachePath, true); err != nil {
@@ -129,6 +131,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		}
 
 		c.Set(config.Cache, input.CachePath)
+		refreshStreamManager = true
 	}
 
 	if input.VideoFileNamingAlgorithm != nil && *input.VideoFileNamingAlgorithm != c.GetVideoFileNamingAlgorithm() {
@@ -190,6 +193,16 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.WriteImageThumbnails, *input.WriteImageThumbnails)
 	}
 
+	if input.GalleryCoverRegex != nil {
+
+		_, err := regexp.Compile(*input.GalleryCoverRegex)
+		if err != nil {
+			return makeConfigGeneralResult(), fmt.Errorf("Gallery cover regex '%v' invalid, '%v'", *input.GalleryCoverRegex, err.Error())
+		}
+
+		c.Set(config.GalleryCoverRegex, *input.GalleryCoverRegex)
+	}
+
 	if input.Username != nil {
 		c.Set(config.Username, input.Username)
 	}
@@ -227,10 +240,22 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	}
 
 	if input.Excludes != nil {
+		for _, r := range input.Excludes {
+			_, err := regexp.Compile(r)
+			if err != nil {
+				return makeConfigGeneralResult(), fmt.Errorf("video exclusion pattern '%v' invalid: %w", r, err)
+			}
+		}
 		c.Set(config.Exclude, input.Excludes)
 	}
 
 	if input.ImageExcludes != nil {
+		for _, r := range input.ImageExcludes {
+			_, err := regexp.Compile(r)
+			if err != nil {
+				return makeConfigGeneralResult(), fmt.Errorf("image/gallery exclusion pattern '%v' invalid: %w", r, err)
+			}
+		}
 		c.Set(config.ImageExclude, input.ImageExcludes)
 	}
 
@@ -280,6 +305,23 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.PythonPath, input.PythonPath)
 	}
 
+	if input.TranscodeInputArgs != nil {
+		c.Set(config.TranscodeInputArgs, input.TranscodeInputArgs)
+	}
+	if input.TranscodeOutputArgs != nil {
+		c.Set(config.TranscodeOutputArgs, input.TranscodeOutputArgs)
+	}
+	if input.LiveTranscodeInputArgs != nil {
+		c.Set(config.LiveTranscodeInputArgs, input.LiveTranscodeInputArgs)
+	}
+	if input.LiveTranscodeOutputArgs != nil {
+		c.Set(config.LiveTranscodeOutputArgs, input.LiveTranscodeOutputArgs)
+	}
+
+	if input.DrawFunscriptHeatmapRange != nil {
+		c.Set(config.DrawFunscriptHeatmapRange, input.DrawFunscriptHeatmapRange)
+	}
+
 	if err := c.Write(); err != nil {
 		return makeConfigGeneralResult(), err
 	}
@@ -287,6 +329,9 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	manager.GetInstance().RefreshConfig()
 	if refreshScraperCache {
 		manager.GetInstance().RefreshScraperCache()
+	}
+	if refreshStreamManager {
+		manager.GetInstance().RefreshStreamManager()
 	}
 
 	return makeConfigGeneralResult(), nil
@@ -451,6 +496,12 @@ func (r *mutationResolver) ConfigureScraping(ctx context.Context, input ConfigSc
 	}
 
 	if input.ExcludeTagPatterns != nil {
+		for _, r := range input.ExcludeTagPatterns {
+			_, err := regexp.Compile(r)
+			if err != nil {
+				return makeConfigScrapingResult(), fmt.Errorf("tag exclusion pattern '%v' invalid: %w", r, err)
+			}
+		}
 		c.Set(config.ScraperExcludeTagPatterns, input.ExcludeTagPatterns)
 	}
 

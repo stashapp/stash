@@ -1,19 +1,18 @@
 import React from "react";
 import { Form } from "react-bootstrap";
 import { defineMessages, MessageDescriptor, useIntl } from "react-intl";
-import { FilterSelect, ValidTypes } from "../../Shared";
-import { Criterion } from "../../../models/list-filter/criteria/criterion";
-import { IHierarchicalLabelValue } from "../../../models/list-filter/types";
+import { FilterSelect, SelectObject } from "src/components/Shared/Select";
+import { Criterion } from "src/models/list-filter/criteria/criterion";
+import { IHierarchicalLabelValue } from "src/models/list-filter/types";
 
 interface IHierarchicalLabelValueFilterProps {
   criterion: Criterion<IHierarchicalLabelValue>;
   onValueChanged: (value: IHierarchicalLabelValue) => void;
 }
 
-export const HierarchicalLabelValueFilter: React.FC<IHierarchicalLabelValueFilterProps> = ({
-  criterion,
-  onValueChanged,
-}) => {
+export const HierarchicalLabelValueFilter: React.FC<
+  IHierarchicalLabelValueFilterProps
+> = ({ criterion, onValueChanged }) => {
   const intl = useIntl();
 
   if (
@@ -36,11 +35,11 @@ export const HierarchicalLabelValueFilter: React.FC<IHierarchicalLabelValueFilte
     },
   });
 
-  function onSelectionChanged(items: ValidTypes[]) {
+  function onSelectionChanged(items: SelectObject[]) {
     const { value } = criterion;
     value.items = items.map((i) => ({
       id: i.id,
-      label: i.name!,
+      label: i.name ?? i.title ?? "",
     }));
     onValueChanged(value);
   }

@@ -1,7 +1,7 @@
 import { faCheck, faMinus, faTimes } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { Button } from "react-bootstrap";
-import Icon from "./Icon";
+import { Icon } from "./Icon";
 
 interface IThreeStateCheckbox {
   value: boolean | undefined;

@@ -6,6 +6,7 @@
     "add_to_entity": "新增至{entityType}",
     "allow": "允許",
     "allow_temporarily": "暫時允許",
+    "anonymise": "匿名化",
     "apply": "套用",
     "auto_tag": "自動套用標籤",
     "backup": "備份",
@@ -32,10 +33,11 @@
     "delete_stashid": "刪除 StashID",
     "disallow": "不允許",
     "download": "下載",
+    "download_anonymised": "下載匿名化版本資料庫",
     "download_backup": "下載備份",
     "edit": "編輯",
     "edit_entity": "編輯{entityType}",
-    "export": "匯出…",
+    "export": "匯出",
     "export_all": "匯出所有…",
     "find": "搜尋",
     "finish": "完成",
@@ -67,6 +69,7 @@
     "play_selected": "播放所選",
     "preview": "預覽",
     "previous_action": "上一步",
+    "reassign": "重新指定",
     "refresh": "重新整理",
     "reload_plugins": "重新整理外掛程式",
     "reload_scrapers": "重新整理爬蟲",
@@ -99,10 +102,12 @@
     "show": "顯示",
     "show_configuration": "顯示設定",
     "skip": "跳過",
+    "split": "分開",
     "stop": "停止",
     "submit": "提交",
     "submit_stash_box": "提交至 Stash-Box",
     "submit_update": "提交更新",
+    "swap": "替換",
     "tasks": {
       "clean_confirm_message": "您確定要進行清理嗎？這將從資料庫及產生的文件中清除已不在的短片及圖庫。",
       "dry_mode_selected": "已選擇了模擬作業模式。不會進行任何實際刪除作業，只會進行模擬記錄。",
@@ -121,6 +126,7 @@
   "also_known_as": "又稱為",
   "ascending": "升序",
   "average_resolution": "平均解析度",
+  "between_and": "及",
   "birth_year": "出生年分",
   "birthdate": "出生日期",
   "bitrate": "位元率",
@@ -342,6 +348,9 @@
     },
     "tasks": {
       "added_job_to_queue": "已將『{operation_name}』加入至工作排程",
+      "anonymise_and_download": "產生並下載匿名化版本的資料庫。",
+      "anonymise_database": "建立一份去除敏感資訊且匿名化的資料庫檔案至備份資料夾中。此檔案可供其他人員幫助您排除相關問題以及除錯用。您現有的資料庫當案將不會被修改。匿名化版本的資料庫檔案命名為 {filename_format}。",
+      "anonymising_database": "匿名化資料庫中",
       "auto_tag": {
         "auto_tagging_all_paths": "為所有路徑自動套用標籤中",
         "auto_tagging_paths": "為以下路徑自動套用標籤中"
@@ -436,6 +445,11 @@
         "heading": "自訂 CSS",
         "option_label": "啟用自訂 CSS"
       },
+      "custom_javascript": {
+        "description": "必須重新整理頁面才能使更改生效。",
+        "heading": "自定義 JavaScript",
+        "option_label": "已啟用自定義 JavaScript"
+      },
       "custom_locales": {
         "description": "強制使用特定翻譯字串。主列表請參閱 https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json。必須重新整理頁面才能使更改生效。",
         "heading": "自訂翻譯",
@@ -461,7 +475,24 @@
           "description": "關閉下拉選單建立物件功能",
           "heading": "關閉下拉選單建立"
         },
-        "heading": "編輯"
+        "heading": "編輯",
+        "rating_system": {
+          "star_precision": {
+            "label": "星級精度",
+            "options": {
+              "full": "完整",
+              "half": "一半",
+              "quarter": "四分之一"
+            }
+          },
+          "type": {
+            "label": "評分系統類別",
+            "options": {
+              "decimal": "數字",
+              "stars": "星級"
+            }
+          }
+        }
       },
       "funscript_offset": {
         "description": "互動式腳本的時間偏移量 (毫秒)。",
@@ -505,6 +536,10 @@
         "description": "顯示或隱藏導覽列表中的項目",
         "heading": "選單項目"
       },
+      "minimum_play_percent": {
+        "description": "在增加播放次數前必須播放的短片總長百分比。",
+        "heading": "最低播放百分比"
+      },
       "performers": {
         "options": {
           "image_location": {
@@ -531,6 +566,7 @@
       "scene_player": {
         "heading": "短片播放器",
         "options": {
+          "always_start_from_beginning": "永遠從頭開始播放影片",
           "auto_start_video": "自動播放",
           "auto_start_video_on_play_selected": {
             "description": "開啟佇列中或所選短片、或隨機播放時，自動開始播放影片",
@@ -540,7 +576,8 @@
             "description": "當影片播放完畢時，自動跳至下一個短片",
             "heading": "持續播放播放清單"
           },
-          "show_scrubber": "顯示預覽軸"
+          "show_scrubber": "顯示預覽軸",
+          "track_activity": "追蹤使用活動"
         }
       },
       "scene_wall": {
@@ -629,7 +666,7 @@
   "details": "細節",
   "developmentVersion": "開發版本",
   "dialogs": {
-    "aliases_must_be_unique": "別名不可重複",
+    "create_new_entity": "建立新{entity}",
     "delete_alert": "以下{count, plural, one {{singularEntity}} other {{pluralEntity}}}將被永久刪除：",
     "delete_confirm": "你確定要刪除 {entityName} 嗎？",
     "delete_entity_desc": "{count, plural, one {你確定要刪除該{singularEntity}嗎？除非連同檔案一起刪除，否則，下次進行檔案掃描時，該{singularEntity}會被重新加到資料庫中。} other {你確定要刪除這些{pluralEntity}嗎？除非連同檔案一起刪除，否則，下次進行檔案掃描時，這些{pluralEntity}會被重新加到資料庫中。}}",
@@ -665,11 +702,20 @@
         "zoom": "放大"
       }
     },
+    "merge": {
+      "destination": "目標",
+      "empty_results": "目標值將保持不變。",
+      "source": "源頭"
+    },
     "merge_tags": {
       "destination": "目的地",
       "source": "來源"
     },
     "overwrite_filter_confirm": "您確定要覆蓋現有的條件 {entityName} 嗎？",
+    "reassign_entity_title": "{count, plural, one {重新指定{singularEntity}}}",
+    "reassign_files": {
+      "destination": "重新指定至"
+    },
     "scene_gen": {
       "force_transcodes": "強制產生轉檔檔案",
       "force_transcodes_tooltip": "預設情況下，只有無法正常於瀏覽器中播放的影片檔會被轉檔成可播放的格式。開啟此設定後，即使是可正常播放的影片檔，也會被視為需轉檔的檔案。",
@@ -715,6 +761,7 @@
   },
   "dimensions": "解析度",
   "director": "導演",
+  "disambiguation": "消歧義",
   "display_mode": {
     "grid": "格狀顯示",
     "list": "條列顯示",
@@ -770,6 +817,7 @@
   "file_info": "檔案資訊",
   "file_mod_time": "檔案修改於",
   "files": "檔案",
+  "files_amount": "{value} 個檔案",
   "filesize": "檔案大小",
   "filter": "過濾",
   "filter_name": "過濾條件名稱",
@@ -807,6 +855,7 @@
   },
   "hasMarkers": "含有章節標記",
   "height": "身高",
+  "height_cm": "高度 (cm)",
   "help": "說明",
   "ignore_auto_tag": "忽略自動標籤",
   "image": "圖片",
@@ -819,6 +868,7 @@
   "interactive": "互動性支援",
   "interactive_speed": "互動速度",
   "isMissing": "缺失",
+  "last_played_at": "上次播放於",
   "library": "收藏庫",
   "loading": {
     "generic": "載入中…"
@@ -837,6 +887,8 @@
       "age_context": "這齣戲裡面 {age} {years_old}"
     },
     "phash": "PHash",
+    "play_count": "播放次數",
+    "play_duration": "播放長度",
     "stream": "串流連結",
     "video_codec": "影片編碼"
   },
@@ -907,6 +959,8 @@
   },
   "performers": "演員",
   "piercings": "穿洞",
+  "play_count": "播放次數",
+  "play_duration": "播放時數",
   "primary_file": "主檔案",
   "queue": "佇列",
   "random": "隨機",
@@ -915,11 +969,16 @@
   "recently_released_objects": "最近釋出的{objects}",
   "release_notes": "更新日誌",
   "resolution": "解析度",
+  "resume_time": "恢復播放時間",
   "scene": "短片",
   "sceneTagger": "短片標籤器",
   "sceneTags": "短片標籤",
+  "scene_code": "番號",
   "scene_count": "短片數量",
+  "scene_created_at": "短片建立於",
+  "scene_date": "短片日期",
   "scene_id": "短片 ID",
+  "scene_updated_at": "短片更新於",
   "scenes": "短片",
   "scenes_updated_at": "短片更新時間",
   "search_filter": {
@@ -995,7 +1054,7 @@
       "your_system_has_been_created": "成功！您的系統已安裝完成！"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash 於執行時，會先在執行目錄中找尋其設定檔案 (<code>config.yml</code>)，當找不到時，它將會再試著使用 <code>$HOME/.stash/config.yml</code>（於 Windows 中，此路徑為 <code>%USERPROFILE%\\.stash\\config.yml</code>）。您也可在執行 Stash 時透過 <code>-c <設定檔路徑></code> 提供設定路徑，或者 <code>--config <path to config file></code>。",
+      "config_path_logic_explained": "Stash 於執行時，會先在執行目錄中找尋其設定檔案 (<code>config.yml</code>)，當找不到時，它將會再試著使用 <code>$HOME/.stash/config.yml</code>（於 Windows 中，此路徑為 <code>%USERPROFILE%\\.stash\\config.yml</code>）。您也可在執行 Stash 時透過 <code>-c '<設定檔路徑>'</code> 提供設定路徑，或者 <code>--config '<path to config file>'</code>。",
       "in_current_stash_directory": "於 <code>$HOME/.stash</code> 資料夾中",
       "in_the_current_working_directory": "於目前的工作路徑",
       "next_step": "如果您已準備好繼續安裝本程式，請選擇您想要儲存設定檔案的位置，然後點擊「下一步」。",
@@ -1011,6 +1070,7 @@
     "welcome_to_stash": "歡迎使用 Stash"
   },
   "stash_id": "Stash ID",
+  "stash_id_endpoint": "Stash ID 端點",
   "stash_ids": "Stash IDs",
   "stashbox": {
     "go_review_draft": "到 {endpoint_name} 預覽草稿。",
@@ -1046,7 +1106,9 @@
     "default_filter_set": "已設定預設過濾選項",
     "delete_past_tense": "已刪除{singularEntity}",
     "generating_screenshot": "產生截圖中…",
+    "merged_scenes": "合併的短片",
     "merged_tags": "已合併的標籤",
+    "reassign_past_tense": "已重新指定檔案",
     "removed_entity": "已刪除{singularEntity}",
     "rescanning_entity": "重新掃描{singularEntity}中…",
     "saved_entity": "已儲存{entity}",
@@ -1061,9 +1123,13 @@
   "type": "種類",
   "updated_at": "更新於",
   "url": "連結",
+  "validation": {
+    "aliases_must_be_unique": "別名不可重複"
+  },
   "videos": "影片",
   "view_all": "顯示全部",
   "weight": "體重",
+  "weight_kg": "體重 (kg)",
   "years_old": "歲",
   "zip_file_count": "壓縮檔內容數量"
 }

@@ -742,7 +742,9 @@ func (qb *GalleryStore) makeQuery(ctx context.Context, galleryFilter *models.Gal
 	}
 	filter := qb.makeFilter(ctx, galleryFilter)
 
-	query.addFilter(filter)
+	if err := query.addFilter(filter); err != nil {
+		return nil, err
+	}
 
 	qb.setGallerySort(&query, findFilter)
 	query.sortAndPagination += getPagination(findFilter)

@@ -6,6 +6,7 @@
     "add_to_entity": "Aggiungi a {entityType}",
     "allow": "Acconsenti",
     "allow_temporarily": "Acconsenti temporaneamente",
+    "anonymise": "Anonimizza",
     "apply": "Applica",
     "auto_tag": "Tag Automatico",
     "backup": "Backup",
@@ -32,10 +33,11 @@
     "delete_stashid": "Cancellare StashID",
     "disallow": "Non Acconsentire",
     "download": "Scarica",
+    "download_anonymised": "Scarica anonimamente",
     "download_backup": "Scarica Backup",
     "edit": "Edita",
     "edit_entity": "Modifica {entityType}",
-    "export": "Esporta…",
+    "export": "Esporta",
     "export_all": "Esporta tutto…",
     "find": "Trova",
     "finish": "Finire",
@@ -194,7 +196,7 @@
     },
     "categories": {
       "about": "Chi siamo",
-      "changelog": "Changelog",
+      "changelog": "Registro dei cambiamenti",
       "interface": "Interfaccia",
       "logs": "Log",
       "metadata_providers": "Provider dei Metadata",
@@ -263,6 +265,8 @@
       "chrome_cdp_path_desc": "Percorso all'eseguibile di Chrome, o indirizzo remoto (iniziando con http:// o https://, per esempio http://localhost:9222/json/version) verso un'istanza Chrome.",
       "create_galleries_from_folders_desc": "Se spuntato, crea gallerie dalle cartelle che contengono immagini.",
       "create_galleries_from_folders_label": "Crea gallerie dalle cartelle con immagini",
+      "gallery_cover_regex_desc": "Espressione regolare usata per identificare un immagine come copertina di galleria",
+      "gallery_cover_regex_label": "Schema copertina di galleria",
       "db_path_head": "Percorso del Database",
       "directory_locations_to_your_content": "Percorso della Cartella del tuo contenuto",
       "excluded_image_gallery_patterns_desc": "Espressioni Regolari di file/percorsi di immagini e gallerie per escluderle dalla Scansione e aggiungerle alla Pulizia",
@@ -346,6 +350,9 @@
     },
     "tasks": {
       "added_job_to_queue": "Aggiunto/a {operation_name} alla coda lavori",
+      "anonymise_and_download": "Crea una copia anonima del database e scarica il file creato.",
+      "anonymise_database": "Crea una copia del database nella cartella di backup, anonimizzando tutti i dati sensibili. Questo file può essere inviato ad altri come aiuto nella risoluzione dei problemi. Il database anonimizzato viene salvato in formato {filename_format}.",
+      "anonymising_database": "Anonimizzando il database",
       "auto_tag": {
         "auto_tagging_all_paths": "Taggare Automaticamente tutti i percorsi",
         "auto_tagging_paths": "Taggare Automaticamente i seguenti percorsi"
@@ -661,7 +668,6 @@
   "details": "Dettagli",
   "developmentVersion": "Versione Sviluppo",
   "dialogs": {
-    "aliases_must_be_unique": "gli alias devono essere univoci",
     "create_new_entity": "Crea nuovo/a {entity}",
     "delete_alert": "Il seguente/I seguenti {count, plural, one {{singularEntity}} other {{pluralEntity}}} sarà/saranno cancellati permanentemente:",
     "delete_confirm": "Sei sicuro di voler cancellare {entityName}?",
@@ -757,6 +763,7 @@
   },
   "dimensions": "Dimensioni",
   "director": "Regista",
+  "disambiguation": "Disambiguità",
   "display_mode": {
     "grid": "Griglia",
     "list": "Lista",
@@ -1049,7 +1056,7 @@
       "your_system_has_been_created": "Successo! Il vostro sistema è stato creato!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash cerca di trovare il file di configurazione (<code>config.yml</code>) dall'attuale cartella di lavoro inizialmente e se non lo trova lì, cerca in <code>$HOME/.stash/config.yml</code> (sotto Windows, sarà <code>%USERPROFILE%\\.stash\\config.yml</code>). Potete far leggere a Stash un specifico file di configurazione lanciandolo con l'opzione <code>-c <percorso al file></code> o <code>--config <percorso al file></code>.",
+      "config_path_logic_explained": "Stash cerca di trovare il file di configurazione (<code>config.yml</code>) dall'attuale cartella di lavoro inizialmente e se non lo trova lì, cerca in <code>$HOME/.stash/config.yml</code> (sotto Windows, sarà <code>%USERPROFILE%\\.stash\\config.yml</code>). Potete far leggere a Stash un specifico file di configurazione lanciandolo con l'opzione <code>-c '<percorso al file>'</code> o <code>--config '<percorso al file>'</code>.",
       "in_current_stash_directory": "Nella cartella <code>$HOME/.stash</code>",
       "in_the_current_working_directory": "Nell'attuale cartella di lavoro",
       "next_step": "Dopo tutto questo, se siete pronti a procedere con la configurazione di un nuovo sistema, scegliete dove vorreste salvare il file di configurazione e premete Prossimo.",
@@ -1118,6 +1125,9 @@
   "type": "Tipo",
   "updated_at": "Aggiornato Al",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "gli alias devono essere univoci"
+  },
   "videos": "Video",
   "view_all": "Vedi Tutto",
   "weight": "Peso",

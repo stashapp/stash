@@ -1,4 +1,5 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# generated
+src/core/generated-*.tsx
 
 # dependencies
 /node_modules
@@ -12,6 +13,7 @@
 /build
 
 # misc
+.gitignore
 .DS_Store
 .env.local
 .env.development.local
@@ -23,3 +25,4 @@ yarn-debug.log*
 yarn-error.log*
 
 .eslintcache
+.stylelintcache

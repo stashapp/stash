@@ -67,6 +67,7 @@
     "play_selected": "Afspil valgte",
     "preview": "Forhåndsvisning",
     "previous_action": "Tilbage",
+    "reassign": "Gentildel",
     "refresh": "Opdater",
     "reload_plugins": "Genindlæs plugins",
     "reload_scrapers": "Genindlæs scrapers",
@@ -99,10 +100,12 @@
     "show": "Vis",
     "show_configuration": "Vis Konfiguration",
     "skip": "Spring over",
+    "split": "Opdel",
     "stop": "Stop",
     "submit": "Send",
     "submit_stash_box": "Send til Stash-Box",
     "submit_update": "Send opdatering",
+    "swap": "Ombyt",
     "tasks": {
       "clean_confirm_message": "Er du sikker på, at du vil Rense? Dette vil slette databaseinformation og genereret indhold for alle scener og gallerier, der ikke længere findes i filsystemet.",
       "dry_mode_selected": "Tør Tilstand valgt. Ingen egentlig sletning vil finde sted, kun logning.",
@@ -121,6 +124,7 @@
   "also_known_as": "Også kendt som",
   "ascending": "Stigende",
   "average_resolution": "Gennemsnitlig Opløsning",
+  "between_and": "og",
   "birth_year": "Fødselsår",
   "birthdate": "Fødselsdato",
   "bitrate": "Bithastighed",
@@ -350,7 +354,7 @@
       "auto_tagging": "Auto tagging",
       "backing_up_database": "Sikkerhedskopiering af database",
       "backup_and_download": "Udfører en sikkerhedskopi af databasen og downloader den resulterende fil.",
-      "backup_database": "Udfører en sikkerhedskopi af databasen til samme mappe som databasen med filnavnsformatet {filename_format}",
+      "backup_database": "Udfører en sikkerhedskopi af databasen til backup-mappen med filnavnsformatet {filename_format}",
       "cleanup_desc": "Tjek for manglende filer og fjern dem fra databasen. Dette er en destruktiv handling.",
       "data_management": "Datastyring",
       "defaults_set": "Standarder er blevet indstillet og vil blive brugt, når du klikker på knappen {action} på siden Opgaver.",
@@ -427,13 +431,18 @@
     },
     "ui": {
       "abbreviate_counters": {
-        "description": "Forkort tællere i kort- og detaljebilleder, fx bliver \"1831\" forkortet til \"1.8K\"."
+        "description": "Forkort tællere i kort- og detaljebilleder, fx bliver \"1831\" forkortet til \"1.8K\".",
+        "heading": "Forkort tællere"
       },
       "basic_settings": "Grundlæggende indstillinger",
       "custom_css": {
         "description": "Siden skal genindlæses for at ændringer kan træde i kraft.",
         "heading": "Brugerdefineret CSS",
         "option_label": "Brugerdefineret CSS aktiveret"
+      },
+      "custom_javascript": {
+        "description": "Siden skal genindlæses før ændringerne træder i kraft.",
+        "heading": "Brugerdefineret Javascript"
       },
       "custom_locales": {
         "description": "Ændre individuelle lokale strenge. Se https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json for master-listen. Siden skal genindlæses for at aktivere ændringerne.",
@@ -605,7 +614,6 @@
   "details": "Detaljer",
   "developmentVersion": "Udviklingsversion",
   "dialogs": {
-    "aliases_must_be_unique": "aliaser skal være unikke",
     "delete_alert": "Følgende {count, plural, one {{singularEntity}} other {{pluralEntity}}} vil blive slettet permanent:",
     "delete_confirm": "Er du sikker på, at du vil slette {entityName}?",
     "delete_entity_desc": "{count, plural, one {Er du sikker på, at du vil slette denne {singularEntity}? Medmindre filen også slettes, vil denne {singularEntity} blive tilføjet igen, når scanningen udføres.} andet {Er du sikker på, at du vil slette disse {pluralEntity}? Medmindre filerne også slettes, vil disse {pluralEntity} blive tilføjet igen, når scanningen udføres.}}",
@@ -964,7 +972,7 @@
       "your_system_has_been_created": "Succes! Dit system er blevet oprettet!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash prøver først at finde sin konfigurationsfil (<code>config.yml</code>) fra den aktuelle arbejdsmappe, og hvis den ikke finder den der, falder den tilbage til <code>$HOME/.stash/config. yml</code> (på Windows vil dette være <code>%USERPROFILE%\\.stash\\config.yml</code>). Du kan også få Stash til at læse fra en specifik konfigurationsfil ved at køre den med <code>-c <sti til konfigurationsfil></code> eller <code>--config <sti til konfigurationsfil></code> muligheder.",
+      "config_path_logic_explained": "Stash prøver først at finde sin konfigurationsfil (<code>config.yml</code>) fra den aktuelle arbejdsmappe, og hvis den ikke finder den der, falder den tilbage til <code>$HOME/.stash/config. yml</code> (på Windows vil dette være <code>%USERPROFILE%\\.stash\\config.yml</code>). Du kan også få Stash til at læse fra en specifik konfigurationsfil ved at køre den med <code>-c '<sti til konfigurationsfil>'</code> eller <code>--config '<sti til konfigurationsfil>'</code> muligheder.",
       "in_current_stash_directory": "I mappen <code>$HOME/.stash</code>",
       "in_the_current_working_directory": "I den aktuelle arbejdsmappe",
       "next_step": "Med alt det ude af vejen, hvis du er klar til at fortsætte med at konfigurere et nyt system, skal du vælge, hvor du vil gemme din konfigurationsfil og klikke på Næste.",
@@ -1030,6 +1038,9 @@
   "type": "Type",
   "updated_at": "Opdateret Den",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "aliaser skal være unikke"
+  },
   "videos": "Videoer",
   "view_all": "Se alle",
   "weight": "Vægt",

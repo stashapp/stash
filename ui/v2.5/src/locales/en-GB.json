@@ -6,6 +6,7 @@
     "add_to_entity": "Add to {entityType}",
     "allow": "Allow",
     "allow_temporarily": "Allow temporarily",
+    "anonymise": "Anonymise",
     "apply": "Apply",
     "auto_tag": "Auto Tag",
     "backup": "Backup",
@@ -33,10 +34,11 @@
     "delete_stashid": "Delete StashID",
     "disallow": "Disallow",
     "download": "Download",
+    "download_anonymised": "Download anonymised",
     "download_backup": "Download Backup",
     "edit": "Edit",
     "edit_entity": "Edit {entityType}",
-    "export": "Export…",
+    "export": "Export",
     "export_all": "Export all…",
     "find": "Find",
     "finish": "Finish",
@@ -185,6 +187,7 @@
       "latest_version": "Latest Version",
       "latest_version_build_hash": "Latest Version Build Hash:",
       "new_version_notice": "[NEW]",
+      "release_date": "Release date:",
       "stash_discord": "Join our {url} channel",
       "stash_home": "Stash home at {url}",
       "stash_open_collective": "Support us through {url}",
@@ -255,7 +258,7 @@
         "description": "Directory location for SQLite database file backups",
         "heading": "Backup Directory Path"
       },
-      "cache_location": "Directory location of the cache",
+      "cache_location": "Directory location of the cache. Required if streaming using HLS (such as on Apple devices).",
       "cache_path_head": "Cache Path",
       "calculate_md5_and_ohash_desc": "Calculate MD5 checksum in addition to oshash. Enabling will cause initial scans to be slower. File naming hash must be set to oshash to disable MD5 calculation.",
       "calculate_md5_and_ohash_label": "Calculate MD5 for videos",
@@ -265,12 +268,38 @@
       "chrome_cdp_path_desc": "File path to the Chrome executable, or a remote address (starting with http:// or https://, for example http://localhost:9222/json/version) to a Chrome instance.",
       "create_galleries_from_folders_desc": "If true, creates galleries from folders containing images.",
       "create_galleries_from_folders_label": "Create galleries from folders containing images",
+      "gallery_cover_regex_desc": "Regexp used to identify an image as gallery cover",
+      "gallery_cover_regex_label": "Gallery cover pattern",
       "db_path_head": "Database Path",
       "directory_locations_to_your_content": "Directory locations to your content",
       "excluded_image_gallery_patterns_desc": "Regexps of image and gallery files/paths to exclude from Scan and add to Clean",
       "excluded_image_gallery_patterns_head": "Excluded Image/Gallery Patterns",
       "excluded_video_patterns_desc": "Regexps of video files/paths to exclude from Scan and add to Clean",
       "excluded_video_patterns_head": "Excluded Video Patterns",
+      "ffmpeg": {
+        "transcode": {
+          "input_args": {
+            "heading": "FFmpeg Transcode Input Args",
+            "desc": "Advanced: Additional arguments to pass to ffmpeg before the input field when generating video."
+          },
+          "output_args": {
+            "heading": "FFmpeg Transcode Output Args",
+            "desc": "Advanced: Additional arguments to pass to ffmpeg before the output field when generating video."
+          }
+        },
+        "live_transcode": {
+          "input_args": {
+            "heading": "FFmpeg Live Transcode Input Args",
+            "desc": "Advanced: Additional arguments to pass to ffmpeg before the input field when live transcoding video."
+          },
+          "output_args": {
+            "heading": "FFmpeg Live Transcode Output Args",
+            "desc": "Advanced: Additional arguments to pass to ffmpeg before the output field when live transcoding video."
+          }
+        }
+      },
+      "funscript_heatmap_draw_range": "Include range in generated heatmaps",
+      "funscript_heatmap_draw_range_desc": "Draw range of motion on the y-axis of the generated heatmap. Existing heatmaps will need to be regenerated after changing.",
       "gallery_ext_desc": "Comma-delimited list of file extensions that will be identified as gallery zip files.",
       "gallery_ext_head": "Gallery zip Extensions",
       "generated_file_naming_hash_desc": "Use MD5 or oshash for generated file naming. Changing this requires that all scenes have the applicable MD5/oshash value populated. After changing this value, existing generated files will need to be migrated or regenerated. See Tasks page for migration.",
@@ -278,6 +307,7 @@
       "generated_files_location": "Directory location for the generated files (scene markers, scene previews, sprites, etc)",
       "generated_path_head": "Generated Path",
       "hashing": "Hashing",
+      "heatmap_generation": "Funscript Heatmap Generation",
       "image_ext_desc": "Comma-delimited list of file extensions that will be identified as images.",
       "image_ext_head": "Image Extensions",
       "include_audio_desc": "Includes audio stream when generating previews.",
@@ -306,7 +336,7 @@
         "heading": "Scrapers Path"
       },
       "scraping": "Scraping",
-      "sqlite_location": "File location for the SQLite database (requires restart)",
+      "sqlite_location": "File location for the SQLite database (requires restart). WARNING: storing the database on a different system to where the Stash server is run from (i.e. over the network) is unsupported!",
       "video_ext_desc": "Comma-delimited list of file extensions that will be identified as videos.",
       "video_ext_head": "Video Extensions",
       "video_head": "Video"
@@ -348,6 +378,9 @@
     },
     "tasks": {
       "added_job_to_queue": "Added {operation_name} to job queue",
+      "anonymising_database": "Anonymising database",
+      "anonymise_and_download": "Makes an anonymised copy of the database and downloads the resulting file.",
+      "anonymise_database": "Makes a copy of the database to the backups directory, anonymising all sensitive data. This can then be provided to others for troubleshooting and debugging purposes. The original database is not modified. Anonymised database uses the filename format {filename_format}.",
       "auto_tag": {
         "auto_tagging_all_paths": "Auto Tagging all paths",
         "auto_tagging_paths": "Auto Tagging the following paths"
@@ -438,12 +471,12 @@
       },
       "basic_settings": "Basic Settings",
       "custom_css": {
-        "description": "Page must be reloaded for changes to take effect.",
+        "description": "Page must be reloaded for changes to take effect. There is no guarantee of compatibility between custom CSS and future releases of Stash.",
         "heading": "Custom CSS",
         "option_label": "Custom CSS enabled"
       },
       "custom_javascript": {
-        "description": "Page must be reloaded for changes to take effect.",
+        "description": "Page must be reloaded for changes to take effect. There is no guarantee of compatibility between custom Javascript and future releases of Stash.",
         "heading": "Custom Javascript",
         "option_label": "Custom Javascript enabled"
       },
@@ -472,6 +505,9 @@
           "description": "Remove the ability to create new objects from the dropdown selectors",
           "heading": "Disable dropdown create"
         },
+        "max_options_shown": {
+          "label": "Maximum number of items to show in select dropdowns"
+        },
         "rating_system": {
           "type": {
             "label": "Rating System Type",
@@ -485,7 +521,8 @@
             "options": {
               "full": "Full",
               "half": "Half",
-              "quarter": "Quarter"
+              "quarter": "Quarter",
+              "tenth": "Tenth"
             }
           }
         },
@@ -511,6 +548,12 @@
       },
       "image_lightbox": {
         "heading": "Image Lightbox"
+      },
+      
+      "image_wall": {
+        "direction": "Direction",
+        "heading": "Image Wall",
+        "margin": "Margin (pixels)"
       },
       "images": {
         "heading": "Images",
@@ -664,7 +707,6 @@
   "details": "Details",
   "developmentVersion": "Development Version",
   "dialogs": {
-    "aliases_must_be_unique": "aliases must be unique",
     "create_new_entity": "Create new {entity}",
     "delete_alert": "The following {count, plural, one {{singularEntity}} other {{pluralEntity}}} will be deleted permanently:",
     "delete_confirm": "Are you sure you want to delete {entityName}?",
@@ -699,6 +741,14 @@
         "label": "Scroll Mode",
         "pan_y": "Pan Y",
         "zoom": "Zoom"
+      }
+    },
+    "imagewall": {
+      "margin_desc": "Number of margin pixels around each entire image.",
+      "direction": {
+        "description": "Column or row based layout.",
+        "column": "Column",
+        "row": "Row"
       }
     },
     "merge": {
@@ -805,6 +855,10 @@
     "warmth": "Warmth"
   },
   "empty_server": "Add some scenes to your server to view recommendations on this page.",
+  "errors": {
+    "something_went_wrong": "Something went wrong.",
+    "lazy_component_error_help": "If you recently upgraded Stash, please reload the page or clear your browser cache."
+  },
   "ethnicity": "Ethnicity",
   "existing_value": "existing value",
   "eye_color": "Eye Colour",
@@ -989,8 +1043,10 @@
   "setup": {
     "confirm": {
       "almost_ready": "We're almost ready to complete the configuration. Please confirm the following settings. You can click back to change anything incorrect. If everything looks good, click Confirm to create your system.",
+      "cache_directory": "Cache directory",
       "configuration_file_location": "Configuration file location:",
       "database_file_path": "Database file path",
+      "default_cache_location": "<path containing configuration file>/cache",
       "default_db_location": "<path containing configuration file>/stash-go.sqlite",
       "default_generated_content_location": "<path containing configuration file>/generated",
       "generated_directory": "Generated directory",
@@ -1026,12 +1082,16 @@
     },
     "paths": {
       "database_filename_empty_for_default": "database filename (empty for default)",
-      "description": "Next up, we need to determine where to find your porn collection, where to store the stash database and generated files. These settings can be changed later if needed.",
+      "description": "Next up, we need to determine where to find your porn collection, and where to store the Stash database, generated files and cache files. These settings can be changed later if needed.",
+      "path_to_cache_directory_empty_for_default": "path to cache directory (empty for default)",
       "path_to_generated_directory_empty_for_default": "path to generated directory (empty for default)",
       "set_up_your_paths": "Set up your paths",
       "stash_alert": "No library paths have been selected. No media will be able to be scanned into Stash. Are you sure?",
+      "where_can_stash_store_cache_files": "Where can Stash store cache files?",
+      "where_can_stash_store_cache_files_description": "In order for some functionality like HLS live transcoding to function, Stash requires a cache directory for temporary files. By default, Stash will create a <code>cache</code> directory within the directory containing your config file. If you want to change this, please enter an absolute or relative (to the current working directory) path. Stash will create this directory if it does not already exist.",
       "where_can_stash_store_its_database": "Where can Stash store its database?",
-      "where_can_stash_store_its_database_description": "Stash uses an sqlite database to store your porn metadata. By default, this will be created as <code>stash-go.sqlite</code> in the directory containing your config file. If you want to change this, please enter an absolute or relative (to the current working directory) filename.",
+      "where_can_stash_store_its_database_description": "Stash uses an SQLite database to store your porn metadata. By default, this will be created as <code>stash-go.sqlite</code> in the directory containing your config file. If you want to change this, please enter an absolute or relative (to the current working directory) filename.",
+      "where_can_stash_store_its_database_warning": "WARNING: storing the database on a different system to where Stash is run from (e.g. storing the database on a NAS while running the Stash server on another computer) is <strong>unsupported</strong>! SQLite is not intended for use across a network, and attempting to do so can very easily cause your entire database to become corrupted.",
       "where_can_stash_store_its_generated_content": "Where can Stash store its generated content?",
       "where_can_stash_store_its_generated_content_description": "In order to provide thumbnails, previews and sprites, Stash generates images and videos. This also includes transcodes for unsupported file formats. By default, Stash will create a <code>generated</code> directory within the directory containing your config file. If you want to change where this generated media will be stored, please enter an absolute or relative (to the current working directory) path. Stash will create this directory if it does not already exist.",
       "where_is_your_porn_located": "Where is your porn located?",
@@ -1051,7 +1111,7 @@
       "your_system_has_been_created": "Success! Your system has been created!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash tries to find its configuration file (<code>config.yml</code>) from the current working directory first, and if it does not find it there, it falls back to <code>$HOME/.stash/config.yml</code> (on Windows, this will be <code>%USERPROFILE%\\.stash\\config.yml</code>). You can also make Stash read from a specific configuration file by running it with the <code>-c <path to config file></code> or <code>--config <path to config file></code> options.",
+      "config_path_logic_explained": "Stash tries to find its configuration file (<code>config.yml</code>) from the current working directory first, and if it does not find it there, it falls back to <code>$HOME/.stash/config.yml</code> (on Windows, this will be <code>%USERPROFILE%\\.stash\\config.yml</code>). You can also make Stash read from a specific configuration file by running it with the <code>-c '<path to config file>'</code> or <code>--config '<path to config file>'</code> options.",
       "in_current_stash_directory": "In the <code>$HOME/.stash</code> directory",
       "in_the_current_working_directory": "In the current working directory",
       "next_step": "With all of that out of the way, if you're ready to proceed with setting up a new system, choose where you'd like to store your configuration file and click Next.",
@@ -1120,6 +1180,11 @@
   "type": "Type",
   "updated_at": "Updated At",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "aliases must be unique",
+    "date_invalid_form": "${path} must be in YYYY-MM-DD form",
+    "required": "${path} is a required field"
+  },
   "videos": "Videos",
   "view_all": "View All",
   "play_count": "Play Count",

@@ -17,12 +17,12 @@ const loginEndPoint = "/login"
 
 const (
 	tripwireActivatedErrMsg = "Stash is exposed to the public internet without authentication, and is not serving any more content to protect your privacy. " +
-		"More information and fixes are available at https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet"
+		"More information and fixes are available at https://docs.stashapp.cc/networking/authentication-required-when-accessing-stash-from-the-internet"
 
 	externalAccessErrMsg = "You have attempted to access Stash over the internet, and authentication is not enabled. " +
 		"This is extremely dangerous! The whole world can see your your stash page and browse your files! " +
 		"Stash is not answering any other requests to protect your privacy. " +
-		"Please read the log entry or visit https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet"
+		"Please read the log entry or visit https://docs.stashapp.cc/networking/authentication-required-when-accessing-stash-from-the-internet"
 )
 
 func allowUnauthenticated(r *http.Request) bool {
@@ -85,12 +85,16 @@ func authenticateHandler() func(http.Handler) http.Handler {
 					prefix := getProxyPrefix(r.Header)
 
 					// otherwise redirect to the login page
-					u := url.URL{
-						Path: prefix + "/login",
+					returnURL := url.URL{
+						Path:     prefix + r.URL.Path,
+						RawQuery: r.URL.RawQuery,
 					}
-					q := u.Query()
-					q.Set(returnURLParam, prefix+r.URL.Path)
-					u.RawQuery = q.Encode()
+					q := make(url.Values)
+					q.Set(returnURLParam, returnURL.String())
+					u := url.URL{
+						Path:     prefix + "/login",
+						RawQuery: q.Encode(),
+					}
 					http.Redirect(w, r, u.String(), http.StatusFound)
 					return
 				}

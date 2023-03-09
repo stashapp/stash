@@ -649,7 +649,7 @@
     "not_between": "не между",
     "not_equals": "является не",
     "not_matches_regex": "не соответствует регулярному выражению",
-    "not_null": "не равняется ничему"
+    "not_null": "не пуст"
   },
   "custom": "Пользовательский",
   "date": "Дата",
@@ -661,7 +661,6 @@
   "details": "Подробности",
   "developmentVersion": "Версия разработки",
   "dialogs": {
-    "aliases_must_be_unique": "псевдонимы должны быть уникальными",
     "create_new_entity": "Создать новую запись в {entity}",
     "delete_alert": "Следующие {count, plural, one {{singularEntity}} other {{pluralEntity}}} будут удалены безвозвратно:",
     "delete_confirm": "Вы уверены что хотите удалить {entityName}?",
@@ -757,6 +756,7 @@
   },
   "dimensions": "Размер",
   "director": "Режиссер",
+  "disambiguation": "Многозначность",
   "display_mode": {
     "grid": "Сетка",
     "list": "Список",
@@ -1049,7 +1049,7 @@
       "your_system_has_been_created": "Готово! Ваша система создана!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash сначала пытается найти свой файл конфигурации (<code>config.yml</code>) в текущем рабочем каталоге, и, если он не находит его там, возвращается к <code>$HOME/.stash/config.yml</code> (в Windows это будет <code>%USERPROFILE%\\.stash\\config.yml</code>). Вы также можете заставить Stash читать из определенного файла конфигурации, запустив его с параметрами <code>-c <путь к файлу конфигурации></code> или <code>--config <путь к файлу конфигурации></code>.",
+      "config_path_logic_explained": "Stash сначала пытается найти свой файл конфигурации (<code>config.yml</code>) в текущем рабочем каталоге, и, если он не находит его там, возвращается к <code>$HOME/.stash/config.yml</code> (в Windows это будет <code>%USERPROFILE%\\.stash\\config.yml</code>). Вы также можете заставить Stash читать из определенного файла конфигурации, запустив его с параметрами <code>-c '<путь к файлу конфигурации>'</code> или <code>--config '<путь к файлу конфигурации>'</code>.",
       "in_current_stash_directory": "В <code>$HOME/.stash</code> каталоге",
       "in_the_current_working_directory": "В текущем рабочем каталоге",
       "next_step": "После всего этого, если вы готовы приступить к настройке новой системы, выберите, где вы хотите сохранить файл конфигурации, и нажмите «Далее».",
@@ -1118,6 +1118,9 @@
   "type": "Тип",
   "updated_at": "Обновлено",
   "url": "Ссылка",
+  "validation": {
+    "aliases_must_be_unique": "псевдонимы должны быть уникальными"
+  },
   "videos": "Видео",
   "view_all": "Показать все",
   "weight": "Вес",

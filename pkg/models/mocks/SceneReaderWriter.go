@@ -638,29 +638,8 @@ func (_m *SceneReaderWriter) GetTagIDs(ctx context.Context, relatedID int) ([]in
 	return r0, r1
 }
 
-// SaveActivity provides a mock function with given fields: ctx, id, resumeTime, playDuration
-func (_m *SceneReaderWriter) SaveActivity(ctx context.Context, id int, resumeTime *float64, playDuration *float64) (bool, error) {
-	ret := _m.Called(ctx, id, resumeTime, playDuration)
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func(context.Context, int, *float64, *float64) bool); ok {
-		r0 = rf(ctx, id, resumeTime, playDuration)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int, *float64, *float64) error); ok {
-		r1 = rf(ctx, id, resumeTime, playDuration)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// IncrementWatchCount provides a mock function with given fields: ctx, id
-func (_m *SceneReaderWriter) IncrementWatchCount(ctx context.Context, id int) (int, error) {
+// IncrementOCounter provides a mock function with given fields: ctx, id
+func (_m *SceneReaderWriter) IncrementOCounter(ctx context.Context, id int) (int, error) {
 	ret := _m.Called(ctx, id)
 
 	var r0 int
@@ -680,8 +659,8 @@ func (_m *SceneReaderWriter) IncrementWatchCount(ctx context.Context, id int) (i
 	return r0, r1
 }
 
-// IncrementOCounter provides a mock function with given fields: ctx, id
-func (_m *SceneReaderWriter) IncrementOCounter(ctx context.Context, id int) (int, error) {
+// IncrementWatchCount provides a mock function with given fields: ctx, id
+func (_m *SceneReaderWriter) IncrementWatchCount(ctx context.Context, id int) (int, error) {
 	ret := _m.Called(ctx, id)
 
 	var r0 int
@@ -738,6 +717,27 @@ func (_m *SceneReaderWriter) ResetOCounter(ctx context.Context, id int) (int, er
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
 		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// SaveActivity provides a mock function with given fields: ctx, id, resumeTime, playDuration
+func (_m *SceneReaderWriter) SaveActivity(ctx context.Context, id int, resumeTime *float64, playDuration *float64) (bool, error) {
+	ret := _m.Called(ctx, id, resumeTime, playDuration)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(context.Context, int, *float64, *float64) bool); ok {
+		r0 = rf(ctx, id, resumeTime, playDuration)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int, *float64, *float64) error); ok {
+		r1 = rf(ctx, id, resumeTime, playDuration)
 	} else {
 		r1 = ret.Error(1)
 	}

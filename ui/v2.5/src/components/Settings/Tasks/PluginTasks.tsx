@@ -2,7 +2,7 @@ import React from "react";
 import { useIntl } from "react-intl";
 import { Button, Form } from "react-bootstrap";
 import { mutateRunPluginTask, usePlugins } from "src/core/StashService";
-import { useToast } from "src/hooks";
+import { useToast } from "src/hooks/Toast";
 import * as GQL from "src/core/generated-graphql";
 import { SettingSection } from "../SettingSection";
 import { Setting, SettingGroup } from "../Inputs";

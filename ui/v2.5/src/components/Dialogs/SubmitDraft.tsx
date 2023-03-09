@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { useMutation, DocumentNode } from "@apollo/client";
 import { Button, Form } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { Modal } from "src/components/Shared";
-import { getStashboxBase } from "src/utils";
+import { ModalComponent } from "src/components/Shared/Modal";
+import { getStashboxBase } from "src/utils/stashbox";
 import { FormattedMessage, useIntl } from "react-intl";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 
@@ -78,7 +78,7 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
     undefined;
 
   return (
-    <Modal
+    <ModalComponent
       icon={faPaperPlane}
       header={intl.formatMessage({ id: "actions.submit_stash_box" })}
       isRunning={loading}
@@ -96,7 +96,7 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
             <Form.Control
               as="select"
               onChange={handleSelectBox}
-              className="col-6"
+              className="col-6 input-control"
             >
               {boxes.map((box, i) => (
                 <option value={i} key={`${box.endpoint}-${i}`}>
@@ -153,7 +153,7 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
           <div>{error.message}</div>
         </>
       )}
-    </Modal>
+    </ModalComponent>
   );
 };
 

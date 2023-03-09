@@ -6,6 +6,7 @@
     "add_to_entity": "Lisa {entityType}-sse",
     "allow": "Luba",
     "allow_temporarily": "Luba ajutiselt",
+    "anonymise": "Anonüümseks Muutmine",
     "apply": "Rakenda",
     "auto_tag": "Märgi Automaatselt",
     "backup": "Varunda",
@@ -32,10 +33,11 @@
     "delete_stashid": "Kustuta StashID",
     "disallow": "Keela",
     "download": "Lae alla",
+    "download_anonymised": "Lae alla anonümiseeritult",
     "download_backup": "Lae varundus alla",
     "edit": "Muuda",
     "edit_entity": "Muuda {entityType}",
-    "export": "Ekspordi…",
+    "export": "Ekspordi",
     "export_all": "Ekspordi kõik…",
     "find": "Otsi",
     "finish": "Lõpeta",
@@ -346,6 +348,9 @@
     },
     "tasks": {
       "added_job_to_queue": "{operation_name} lisatud tööde järjekorda",
+      "anonymise_and_download": "Loob anonüümse koopia andmebaasist ja laeb väljundfaili alla.",
+      "anonymise_database": "Loob andmebaasist tagavarakoopia tagavara koopiate kausta, muudab tundliku teabe anonüümseks. Seda saab jagada teistega abistamise ja probleemide analüüsimise eesmärgil. Originaalset andmebaasi ei muudeta. Anonüümne andmebaas kasutab failinime formaati {filename_format}.",
+      "anonymising_database": "Muudan andmebaasi anonüümseks",
       "auto_tag": {
         "auto_tagging_all_paths": "Automaatne Märkimine kõikidel failiteedel",
         "auto_tagging_paths": "Automaatne Märkimine järgnevatel failiteedel"
@@ -436,12 +441,12 @@
       },
       "basic_settings": "Põhisätted",
       "custom_css": {
-        "description": "Muudatuste jõustumiseks tuleb leht uuesti laadida.",
+        "description": "Muudatuste jõustumiseks tuleb leht uuesti laadida. Pole garantiid, et kohandatud CSS töötab ka tuleviku Stashi uuendustes.",
         "heading": "Kohandatud CSS",
         "option_label": "Kohandatud CSS lubatud"
       },
       "custom_javascript": {
-        "description": "Pead muudatuste nägemiseks lehe uuesti laadima.",
+        "description": "Pead muudatuste nägemiseks lehe uuesti laadima. Pole garantiid, et kohandatud Javascript töötab ka tuleviku Stashi uuendustes.",
         "heading": "Kohandatud Javascript",
         "option_label": "Kohandatud Javascript lubatud"
       },
@@ -661,7 +666,6 @@
   "details": "Detailid",
   "developmentVersion": "Arendusversioon",
   "dialogs": {
-    "aliases_must_be_unique": "aliased peavad olema erilised",
     "create_new_entity": "Loo uus {entity}",
     "delete_alert": "Järgnev {count, plural, one {{singularEntity}} other {{pluralEntity}}} kustutatakse lõplikult:",
     "delete_confirm": "Kas oled kindel, et soovid kustutada {entityName}?",
@@ -757,6 +761,7 @@
   },
   "dimensions": "Dimensioonid",
   "director": "Režissöör",
+  "disambiguation": "Ühesõnastamine",
   "display_mode": {
     "grid": "Võrgustik",
     "list": "Nimekiri",
@@ -1049,7 +1054,7 @@
       "your_system_has_been_created": "Edukas! Su süsteem on loodud!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash püüab esmalt leida oma konfiguratsioonifaili (<code>config.yml</code>) praegusest töökataloogist ja kui ta seda sealt ei leia, läheb tagasi kausta <code>$HOME/.stash/config. yml</code> (Windowsis on see <code>%USERPROFILE%\\.stash\\config.yml</code>). Samuti saad panna Stashi lugema konkreetsest konfiguratsioonifailist, käivitades selle suvanditega <code>-c <konfiguratsioonifaili tee></code> või <code>--config <konfiguratsioonifaili tee></code>.",
+      "config_path_logic_explained": "Stash püüab esmalt leida oma konfiguratsioonifaili (<code>config.yml</code>) praegusest töökataloogist ja kui ta seda sealt ei leia, läheb tagasi kausta <code>$HOME/.stash/config. yml</code> (Windowsis on see <code>%USERPROFILE%\\.stash\\config.yml</code>). Samuti saad panna Stashi lugema konkreetsest konfiguratsioonifailist, käivitades selle suvanditega <code>-c '<konfiguratsioonifaili tee>'</code> või <code>--config '<konfiguratsioonifaili tee>'</code>.",
       "in_current_stash_directory": "Kaustas <code>$HOME/.stash</code>",
       "in_the_current_working_directory": "Praeguses töökaustas",
       "next_step": "Kui oled valmis uue süsteemi seadistamisega alustama, vali, kuhu soovid oma konfiguratsioonifaili salvestada, ja klõpsa nuppu Edasi.",
@@ -1118,6 +1123,9 @@
   "type": "Tüüp",
   "updated_at": "Viimati Uuendatud",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "aliased peavad olema erilised"
+  },
   "videos": "Videod",
   "view_all": "Vaata Kõiki",
   "weight": "Kaal",

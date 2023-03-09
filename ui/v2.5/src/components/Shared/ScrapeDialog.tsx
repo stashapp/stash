@@ -8,9 +8,9 @@ import {
   FormControl,
   Badge,
 } from "react-bootstrap";
-import { CollapseButton } from "src/components/Shared/CollapseButton";
-import Icon from "src/components/Shared/Icon";
-import Modal from "src/components/Shared/Modal";
+import { CollapseButton } from "./CollapseButton";
+import { Icon } from "./Icon";
+import { ModalComponent } from "./Modal";
 import isEqual from "lodash-es/isEqual";
 import clone from "lodash-es/clone";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -20,8 +20,8 @@ import {
   faPlus,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
-import { getCountryByISO } from "src/utils";
-import CountrySelect from "./CountrySelect";
+import { getCountryByISO } from "src/utils/country";
+import { CountrySelect } from "./CountrySelect";
 
 export class ScrapeResult<T> {
   public newValue?: T;
@@ -367,7 +367,7 @@ export const ScrapeDialog: React.FC<IScrapeDialogProps> = (
 ) => {
   const intl = useIntl();
   return (
-    <Modal
+    <ModalComponent
       show
       icon={faPencilAlt}
       header={props.title}
@@ -406,7 +406,7 @@ export const ScrapeDialog: React.FC<IScrapeDialogProps> = (
           {props.renderScrapeRows()}
         </Form>
       </div>
-    </Modal>
+    </ModalComponent>
   );
 };
 

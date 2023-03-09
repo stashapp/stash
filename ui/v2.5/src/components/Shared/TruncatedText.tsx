@@ -15,7 +15,7 @@ interface ITruncatedTextProps {
   className?: string;
 }
 
-const TruncatedText: React.FC<ITruncatedTextProps> = ({
+export const TruncatedText: React.FC<ITruncatedTextProps> = ({
   text,
   className,
   lineCount = 1,
@@ -66,5 +66,3 @@ const TruncatedText: React.FC<ITruncatedTextProps> = ({
     </div>
   );
 };
-
-export default TruncatedText;

@@ -6,6 +6,7 @@
     "add_to_entity": "Dodaj do {entityType}",
     "allow": "Zezwól",
     "allow_temporarily": "Zezwól tymczasowo",
+    "anonymise": "Zanonimizuj",
     "apply": "Zastosuj",
     "auto_tag": "Automatyczne oznaczanie",
     "backup": "Kopia zapasowa",
@@ -32,10 +33,11 @@
     "delete_stashid": "Usuń StashID",
     "disallow": "Nie zezwalaj",
     "download": "Pobierz",
+    "download_anonymised": "Pobierz zanonimizowane",
     "download_backup": "Pobierz kopię zapasową",
     "edit": "Edytuj",
     "edit_entity": "Edytuj {entityType}",
-    "export": "Eksportuj…",
+    "export": "Eksportuj",
     "export_all": "Eksportuj wszystko…",
     "find": "Znajdź",
     "finish": "Zakończ",
@@ -346,6 +348,9 @@
     },
     "tasks": {
       "added_job_to_queue": "Dodano {operation_name} do kolejki zadań",
+      "anonymise_and_download": "Wykonuje zanonimizowaną kopię bazy danych i pobiera plik wynikowy.",
+      "anonymise_database": "Wykonuje kopię bazy danych do katalogu kopii zapasowych, anonimizując wszystkie wrażliwe dane. Kopia ta może być udostępniona innym osobom w celu rozwiązywania problemów i usuwania usterek. Oryginalna baza danych nie jest modyfikowana. Zanonimizowana baza danych używa formatu nazwy pliku {filename_format}.",
+      "anonymising_database": "Anonimizowanie bazy danych",
       "auto_tag": {
         "auto_tagging_all_paths": "Automatyczne tagowanie wszystkich ścieżek",
         "auto_tagging_paths": "Automatyczne tagowanie następujących ścieżek"
@@ -436,12 +441,12 @@
       },
       "basic_settings": "Ustawienia podstawowe",
       "custom_css": {
-        "description": "Strona musi zostać ponownie załadowana, aby zmiany zaczęły obowiązywać.",
+        "description": "Strona musi zostać ponownie załadowana, aby zmiany zaczęły obowiązywać. Nie ma gwarancji kompatybilności między niestandardowym CSS a przyszłymi wydaniami Stash.",
         "heading": "Własny CSS",
         "option_label": "Włączony własny CSS"
       },
       "custom_javascript": {
-        "description": "Strona musi zostać ponownie załadowana, aby zmiany zaczęły obowiązywać.",
+        "description": "Strona musi zostać ponownie załadowana, aby zmiany zaczęły obowiązywać. Nie ma gwarancji zgodności między niestandardowym Javascriptem a przyszłymi wydaniami Stash.",
         "heading": "Własny Javascript",
         "option_label": "Własny Javascript włączony"
       },
@@ -483,7 +488,7 @@
           "type": {
             "label": "Rodzaj systemu oceny",
             "options": {
-              "decimal": "Liczby",
+              "decimal": "Liczba",
               "stars": "Gwiazdki"
             }
           }
@@ -661,7 +666,6 @@
   "details": "Szczegóły",
   "developmentVersion": "Wersja deweloperska",
   "dialogs": {
-    "aliases_must_be_unique": "aliasy muszą być unikatowe",
     "create_new_entity": "Dodaj {entity}",
     "delete_alert": "Następujące elementy {count, plural, one {{singularEntity}} other {{pluralEntity}}} zostaną trwale usunięte:",
     "delete_confirm": "Czy na pewno chcesz usunąć {entityName}?",
@@ -699,6 +703,8 @@
       }
     },
     "merge": {
+      "destination": "Cel",
+      "empty_results": "Wartości pola \"cel\" nie zostaną zmienione.",
       "source": "Źródło"
     },
     "merge_tags": {
@@ -706,6 +712,10 @@
       "source": "Źródło"
     },
     "overwrite_filter_confirm": "Czy na pewno chcesz nadpisać istniejące zapisane zapytanie {entityName}?",
+    "reassign_entity_title": "{count, plural, one {Reassign {singularEntity}} other {Reassign {pluralEntity}}}",
+    "reassign_files": {
+      "destination": "Przypisz ponownie do"
+    },
     "scene_gen": {
       "force_transcodes": "Wymuś generowanie transkodu",
       "force_transcodes_tooltip": "Domyślnie transkody są generowane tylko wtedy, gdy plik wideo nie jest obsługiwany przez przeglądarkę. Po włączeniu tej funkcji transkod będzie generowany nawet wtedy, gdy plik wideo wydaje się być obsługiwany przez przeglądarkę.",
@@ -751,6 +761,7 @@
   },
   "dimensions": "Wymiary",
   "director": "Reżyser",
+  "disambiguation": "Ujednoznacznienie",
   "display_mode": {
     "grid": "Siatka",
     "list": "Lista",
@@ -958,6 +969,7 @@
   "recently_released_objects": "Ostatnio wydane {objects}",
   "release_notes": "Informacje o wydaniu",
   "resolution": "Rozdzielczość",
+  "resume_time": "Rozpocznij od",
   "scene": "Scena",
   "sceneTagger": "Otagowywacz scen",
   "sceneTags": "Tagi sceny",
@@ -1042,7 +1054,7 @@
       "your_system_has_been_created": "Sukces! Twój system został utworzony!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash próbuje najpierw znaleźć swój plik konfiguracyjny (<code>config.yml</code>) w bieżącym katalogu roboczym, a jeśli go tam nie znajdzie, wraca do <code>$HOME/.stash/config.yml</code> (w systemie Windows będzie to <code>%USERPROFILE%\\.stash\\config.yml</code>). Można również sprawić, że Stash będzie odczytywał dane z określonego pliku konfiguracyjnego, uruchamiając go z opcją opcji <code>-c <ścieżka do pliku konfiguracyjnego></code> lub <code>--config <ścieżka do pliku konfiguracyjnego></code>.",
+      "config_path_logic_explained": "Stash próbuje najpierw znaleźć swój plik konfiguracyjny (<code>config.yml</code>) w bieżącym katalogu roboczym, a jeśli go tam nie znajdzie, wraca do <code>$HOME/.stash/config.yml</code> (w systemie Windows będzie to <code>%USERPROFILE%\\.stash\\config.yml</code>). Można również sprawić, że Stash będzie odczytywał dane z określonego pliku konfiguracyjnego, uruchamiając go z opcją opcji <code>-c '<ścieżka do pliku konfiguracyjnego>'</code> lub <code>--config '<ścieżka do pliku konfiguracyjnego>'</code>.",
       "in_current_stash_directory": "W katalogu <code>$HOME/.stash</code>",
       "in_the_current_working_directory": "W bieżącym katalogu roboczym",
       "next_step": "Jeśli jesteś gotowy do skonfigurowania nowego systemu, wybierz miejsce, w którym chcesz przechowywać plik konfiguracyjny, i kliknij przycisk Dalej.",
@@ -1058,6 +1070,7 @@
     "welcome_to_stash": "Witamy w Stashu"
   },
   "stash_id": "ID Stasha",
+  "stash_id_endpoint": "Punkt końcowy Stash ID",
   "stash_ids": "ID Stasha",
   "stashbox": {
     "go_review_draft": "Przejdź do {endpoint_name}, aby zapoznać się z projektem.",
@@ -1095,6 +1108,7 @@
     "generating_screenshot": "Generowanie zrzutu ekranu…",
     "merged_scenes": "Połączone sceny",
     "merged_tags": "Połączone tagi",
+    "reassign_past_tense": "Plik przypisany ponownie",
     "removed_entity": "Usunięto {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "rescanning_entity": "Ponowne skanowanie {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "Zapisano {entity}",
@@ -1109,6 +1123,9 @@
   "type": "Typ",
   "updated_at": "Zaktualizowano",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "aliasy muszą być unikatowe"
+  },
   "videos": "Filmy wideo",
   "view_all": "Pokaż wszystko",
   "weight": "Waga",

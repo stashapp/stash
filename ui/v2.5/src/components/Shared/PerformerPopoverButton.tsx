@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { sortPerformers } from "src/core/performers";
 import { HoverPopover } from "./HoverPopover";
-import Icon from "./Icon";
+import { Icon } from "./Icon";
 import { TagLink } from "./TagLink";
 
 interface IProps {

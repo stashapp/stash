@@ -6,6 +6,7 @@
     "add_to_entity": "Ajouter à {entityType}",
     "allow": "Autoriser",
     "allow_temporarily": "Autoriser temporairement",
+    "anonymise": "Anonymiser",
     "apply": "Appliquer",
     "auto_tag": "Étiquetage automatique",
     "backup": "Sauvegarde",
@@ -32,10 +33,11 @@
     "delete_stashid": "Supprimer StashID",
     "disallow": "Refuser",
     "download": "Télécharger",
+    "download_anonymised": "Téléchargement anonymisé",
     "download_backup": "Télécharger une sauvegarde",
     "edit": "Éditer",
     "edit_entity": "Éditer {entityType}",
-    "export": "Exporter…",
+    "export": "Exporter",
     "export_all": "Tout exporter…",
     "find": "Rechercher",
     "finish": "Terminer",
@@ -323,7 +325,7 @@
     },
     "scraping": {
       "entity_metadata": "Métadonnées {entityType}",
-      "entity_scrapers": "Extracteurs de {entityType}s",
+      "entity_scrapers": "Extracteurs de {entityType}",
       "excluded_tag_patterns_desc": "Expressions régulières de noms d'étiquettes à exclure des résultats de l'extraction",
       "excluded_tag_patterns_head": "Modèles d'étiquette excluse",
       "scraper": "Extracteur",
@@ -346,6 +348,9 @@
     },
     "tasks": {
       "added_job_to_queue": "{operation_name} ajouté·e à la liste des tâches",
+      "anonymise_and_download": "Effectue une copie anonymisée de la base de données et télécharge le fichier résultant.",
+      "anonymise_database": "Faire une copie de la base de données dans le répertoire de sauvegarde, en anonymisant toutes données sensibles. Celle-ci peut être transmise aux autres pour diagnostic et débogage. La base de données originale n'est pas modifiée. La base de données anonymisée utilise le format de nom de fichier {filename_format}.",
+      "anonymising_database": "Anonymisation de la base de données",
       "auto_tag": {
         "auto_tagging_all_paths": "Étiquetage automatique de tous les chemins",
         "auto_tagging_paths": "Étiquetage automatique des chemins suivants"
@@ -436,12 +441,12 @@
       },
       "basic_settings": "Paramètres de base",
       "custom_css": {
-        "description": "La page doit être rafraichie pour que les changements prennent effet.",
+        "description": "La page doit être rafraichie pour que les changements prennent effet. La compatibilité entre le CSS personnalisé et les futures versions de Stash n'est pas garantie.",
         "heading": "CSS personnalisé",
         "option_label": "Activer le CSS personnalisé"
       },
       "custom_javascript": {
-        "description": "La page doit être actualisée pour que les changements prennent effet.",
+        "description": "La page doit être actualisée pour que les changements prennent effet. La compatibilité entre le Javascript personnalisé et les futures versions de Stash n'est pas garantie.",
         "heading": "Javascript personnalisé",
         "option_label": "Activer le Javascript personnalisé"
       },
@@ -661,7 +666,6 @@
   "details": "Détails",
   "developmentVersion": "Version de développement",
   "dialogs": {
-    "aliases_must_be_unique": "Les alias doivent être uniques",
     "create_new_entity": "Créer un nouveau {entity}",
     "delete_alert": "{count, plural, one {Le {singularEntity} suivant sera supprimé} other {Les {pluralEntity} suivants seront supprimés}} définitivement :",
     "delete_confirm": "Êtes-vous sûr de vouloir supprimer {entityName} ?",
@@ -757,6 +761,7 @@
   },
   "dimensions": "Dimensions",
   "director": "Réalisateur",
+  "disambiguation": "Désambiguïsation",
   "display_mode": {
     "grid": "Grille",
     "list": "Liste",
@@ -890,7 +895,7 @@
   "megabits_per_second": "{value} mégabits par seconde",
   "metadata": "Métadonnées",
   "movie": "Film",
-  "movie_scene_number": "Numéro de scène du film",
+  "movie_scene_number": "Numéro de scène",
   "movies": "Films",
   "name": "Nom",
   "new": "Nouveau",
@@ -1020,7 +1025,7 @@
       "migration_notes": "Notes de migration",
       "migration_required": "Migration requise",
       "perform_schema_migration": "Procéder à la migration du schéma",
-      "schema_too_old": "La version du schéma de votre base de données Stash actuelle est <strong>{databaseSchema}</strong> et doit être migrée vers la version <strong>{appSchema}</strong>. Cette version de Stash ne fonctionnera pas sans migration de la base de données. Si vous souhaitez ne pas migrer, vous devrez rétrograder vers une version qui correspond au schéma de votre base de données."
+      "schema_too_old": "La version du schéma de votre base de données Stash actuelle est <strong>{databaseSchema}</strong> et doit être migrée vers la version <strong>{appSchema}</strong>. Cette version de Stash ne fonctionnera pas sans migration de la base de données. Si vous ne souhaitez pas migrer, vous devrez rétrograder vers une version qui correspond au schéma de votre base de données."
     },
     "paths": {
       "database_filename_empty_for_default": "Nom de fichier de la base de données (vide par défaut)",
@@ -1049,7 +1054,7 @@
       "your_system_has_been_created": "Bravo ! Votre système a été créé !"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash essaie d'abord de trouver son fichier de configuration (<code>config.yml</code>) dans le répertoire de travail courant, et s'il ne le trouve pas, il se reporte sur <code>$HOME/.stash/config. yml</code> (sous Windows, ce sera <code>%USERPROFILE%\\.stash\\config.yml</code>). Vous pouvez également faire en sorte que Stash lise un fichier de configuration spécifique en le lançant avec les options <code>-c <path to config file></code> ou <code>--config <path to config file></code>.",
+      "config_path_logic_explained": "Stash essaie d'abord de trouver son fichier de configuration (<code>config.yml</code>) dans le répertoire de travail courant, et s'il ne le trouve pas, il se reporte sur <code>$HOME/.stash/config. yml</code> (sous Windows, ce sera <code>%USERPROFILE%\\.stash\\config.yml</code>). Vous pouvez également faire en sorte que Stash lise un fichier de configuration spécifique en le lançant avec les options <code>-c '<path to config file>'</code> ou <code>--config '<path to config file>'</code>.",
       "in_current_stash_directory": "Dans le répertoire <code>$HOME/.stash</code>",
       "in_the_current_working_directory": "Dans le répertoire de travail courant",
       "next_step": "Une fois que tout est réglé, si vous êtes prêt à procéder à la configuration d'un nouveau système, choisissez l'emplacement où vous souhaitez stocker votre fichier de configuration et cliquez sur Suivant.",
@@ -1118,6 +1123,9 @@
   "type": "Type",
   "updated_at": "Actualisé le",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "Les alias doivent être uniques"
+  },
   "videos": "Vidéos",
   "view_all": "Tout voir",
   "weight": "Poids",

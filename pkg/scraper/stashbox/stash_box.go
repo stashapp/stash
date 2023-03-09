@@ -10,7 +10,6 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 
@@ -20,7 +19,6 @@ import (
 
 	"github.com/Yamashou/gqlgenc/graphqljson"
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
@@ -235,7 +233,7 @@ func (c Client) findStashBoxScenesByFingerprints(ctx context.Context, scenes [][
 		}
 	}
 
-	return results, nil
+	return ret, nil
 }
 
 func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []string, endpoint string) (bool, error) {
@@ -707,6 +705,13 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 		ss.Image = getFirstImage(ctx, c.getHTTPClient(), s.Images)
 	}
 
+	if ss.URL == nil && len(s.Urls) > 0 {
+		// The scene in Stash-box may not have a Studio URL but it does have another URL.
+		// For example it has a www.manyvids.com URL, which is auto set as type ManyVids.
+		// This should be re-visited once Stashapp can support more than one URL.
+		ss.URL = &s.Urls[0].URL
+	}
+
 	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
 		pqb := c.repository.Performer
 		tqb := c.repository.Tag
@@ -797,7 +802,7 @@ func appendFingerprintUnique(v []*graphql.FingerprintInput, toAdd *graphql.Finge
 	return append(v, toAdd)
 }
 
-func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpoint string, imagePath string) (*string, error) {
+func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpoint string, cover []byte) (*string, error) {
 	draft := graphql.SceneDraftInput{}
 	var image io.Reader
 	r := c.repository
@@ -807,8 +812,14 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 	if scene.Title != "" {
 		draft.Title = &scene.Title
 	}
+	if scene.Code != "" {
+		draft.Code = &scene.Code
+	}
 	if scene.Details != "" {
 		draft.Details = &scene.Details
+	}
+	if scene.Director != "" {
+		draft.Director = &scene.Director
 	}
 	if scene.URL != "" && len(strings.TrimSpace(scene.URL)) > 0 {
 		url := strings.TrimSpace(scene.URL)
@@ -921,14 +932,8 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 	}
 	draft.Tags = tags
 
-	if imagePath != "" {
-		exists, _ := fsutil.FileExists(imagePath)
-		if exists {
-			file, err := os.Open(imagePath)
-			if err == nil {
-				image = file
-			}
-		}
+	if cover != nil {
+		image = bytes.NewReader(cover)
 	}
 
 	if err := scene.LoadStashIDs(ctx, r.Scene); err != nil {

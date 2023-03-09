@@ -1,7 +1,8 @@
-import React, { lazy, Suspense, useCallback, useState } from "react";
-import { ILightboxImage, IChapter } from "./types";
+import React, { Suspense, useCallback, useState } from "react";
+import { lazyComponent } from "src/utils/lazyComponent";
+import { ILightboxImage } from "./types";
 
-const LightboxComponent = lazy(() => import("./Lightbox"));
+const LightboxComponent = lazyComponent(() => import("./Lightbox"));
 
 export interface IState {
   images: ILightboxImage[];
@@ -23,7 +24,8 @@ interface IContext {
 export const LightboxContext = React.createContext<IContext>({
   setLightboxState: () => {},
 });
-const Lightbox: React.FC = ({ children }) => {
+
+export const LightboxProvider: React.FC = ({ children }) => {
   const [lightboxState, setLightboxState] = useState<IState>({
     images: [],
     isVisible: false,
@@ -60,5 +62,3 @@ const Lightbox: React.FC = ({ children }) => {
     </LightboxContext.Provider>
   );
 };
-
-export default Lightbox;

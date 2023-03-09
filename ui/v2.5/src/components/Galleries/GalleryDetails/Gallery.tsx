@@ -1,4 +1,4 @@
-import { Tab, Nav, Dropdown } from "react-bootstrap";
+import { Button, Tab, Nav, Dropdown } from "react-bootstrap";
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useHistory, Link } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -9,13 +9,12 @@ import {
   useFindGallery,
   useGalleryUpdate,
 } from "src/core/StashService";
-import {
-  ErrorMessage,
-  LoadingIndicator,
-  Icon,
-  Counter,
-} from "src/components/Shared";
+import { ErrorMessage } from "src/components/Shared/ErrorMessage";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { Icon } from "src/components/Shared/Icon";
+import { Counter } from "src/components/Shared/Counter";
 import Mousetrap from "mousetrap";
+
 import { useToast, useGalleryLightbox } from "src/hooks";
 import { OrganizedButton } from "src/components/Scenes/SceneDetails/OrganizedButton";
 import { GalleryEditPanel } from "./GalleryEditPanel";
@@ -43,6 +42,8 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
   const Toast = useToast();
   const intl = useIntl();
   const showLightbox = useGalleryLightbox(gallery.id, gallery.gallery_chapters);
+
+  const [collapsed, setCollapsed] = useState(false);
 
   const [activeTabKey, setActiveTabKey] = useState("gallery-details-panel");
   const activeRightTabKey = tab === "images" || tab === "add" ? tab : "images";
@@ -76,6 +77,10 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
       setOrganizedLoading(false);
     }
   };
+
+  function getCollapseButtonText() {
+    return collapsed ? ">" : "<";
+  }
 
   async function onRescan() {
     if (!gallery || !path) {
@@ -232,7 +237,6 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
           <Tab.Pane eventKey="gallery-edit-panel">
             <GalleryEditPanel
               isVisible={activeTabKey === "gallery-edit-panel"}
-              isNew={false}
               gallery={gallery}
               onDelete={() => setIsDeleteAlertOpen(true)}
             />
@@ -275,10 +279,16 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
 
         <Tab.Content>
           <Tab.Pane eventKey="images">
-            <GalleryImagesPanel gallery={gallery} />
+            <GalleryImagesPanel
+              active={activeRightTabKey == "images"}
+              gallery={gallery}
+            />
           </Tab.Pane>
           <Tab.Pane eventKey="add">
-            <GalleryAddPanel gallery={gallery} />
+            <GalleryAddPanel
+              active={activeRightTabKey == "add"}
+              gallery={gallery}
+            />
           </Tab.Pane>
         </Tab.Content>
       </Tab.Container>
@@ -308,7 +318,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
         <title>{title}</title>
       </Helmet>
       {maybeRenderDeleteDialog()}
-      <div className="gallery-tabs">
+      <div className={`gallery-tabs ${collapsed ? "collapsed" : ""}`}>
         <div className="d-none d-xl-block">
           {gallery.studio && (
             <h1 className="text-center">
@@ -325,7 +335,14 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
         </div>
         {renderTabs()}
       </div>
-      <div className="gallery-container">{renderRightTabs()}</div>
+      <div className="gallery-divider d-none d-xl-block">
+        <Button onClick={() => setCollapsed(!collapsed)}>
+          {getCollapseButtonText()}
+        </Button>
+      </div>
+      <div className={`gallery-container ${collapsed ? "expanded" : ""}`}>
+        {renderRightTabs()}
+      </div>
     </div>
   );
 };

@@ -31,6 +31,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   logLevel
   logAccess
   createGalleriesFromFolders
+  galleryCoverRegex
   videoExtensions
   imageExtensions
   galleryExtensions
@@ -46,6 +47,11 @@ fragment ConfigGeneralData on ConfigGeneralResult {
     api_key
   }
   pythonPath
+  transcodeInputArgs
+  transcodeOutputArgs
+  liveTranscodeInputArgs
+  liveTranscodeOutputArgs
+  drawFunscriptHeatmapRange
 }
 
 fragment ConfigInterfaceData on ConfigInterfaceResult {

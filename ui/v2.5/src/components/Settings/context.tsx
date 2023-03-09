@@ -23,9 +23,9 @@ import {
   useConfigureScraping,
   useConfigureUI,
 } from "src/core/StashService";
-import { useToast } from "src/hooks";
-import { withoutTypename } from "src/utils";
-import { Icon } from "../Shared";
+import { useToast } from "src/hooks/Toast";
+import { withoutTypename } from "src/utils/data";
+import { Icon } from "../Shared/Icon";
 
 export interface ISettingsContextState {
   loading: boolean;

@@ -60,8 +60,17 @@ const (
 	MaxTranscodeSize          = "max_transcode_size"
 	MaxStreamingTranscodeSize = "max_streaming_transcode_size"
 
+	// ffmpeg extra args options
+	TranscodeInputArgs      = "ffmpeg.transcode.input_args"
+	TranscodeOutputArgs     = "ffmpeg.transcode.output_args"
+	LiveTranscodeInputArgs  = "ffmpeg.live_transcode.input_args"
+	LiveTranscodeOutputArgs = "ffmpeg.live_transcode.output_args"
+
 	ParallelTasks        = "parallel_tasks"
 	parallelTasksDefault = 1
+
+	SequentialScanning        = "sequential_scanning"
+	SequentialScanningDefault = false
 
 	PreviewPreset = "preview_preset"
 
@@ -90,6 +99,13 @@ const (
 	portDefault = 9999
 
 	ExternalHost = "external_host"
+
+	// http proxy url if required
+	Proxy = "proxy"
+
+	// urls or IPs that should not use the proxy
+	NoProxy        = "no_proxy"
+	noProxyDefault = "localhost,127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12"
 
 	// key used to sign JWT tokens
 	JWTSignKey = "jwt_secret_key"
@@ -122,6 +138,10 @@ const (
 	// UI directory. Overrides to serve the UI from a specific location
 	// rather than use the embedded UI.
 	CustomUILocation = "custom_ui_location"
+
+	// Gallery Cover Regex
+	GalleryCoverRegex        = "gallery_cover_regex"
+	galleryCoverRegexDefault = `(poster|cover|folder|board)\.[^\.]+$`
 
 	// Interface options
 	MenuItems = "menu_items"
@@ -167,6 +187,9 @@ const (
 
 	HandyKey        = "handy_key"
 	FunscriptOffset = "funscript_offset"
+
+	DrawFunscriptHeatmapRange        = "draw_funscript_heatmap_range"
+	drawFunscriptHeatmapRangeDefault = true
 
 	ThemeColor        = "theme_color"
 	DefaultThemeColor = "#202b33"
@@ -629,6 +652,22 @@ func (i *Instance) GetVideoFileNamingAlgorithm() models.HashAlgorithm {
 	return models.HashAlgorithm(ret)
 }
 
+func (i *Instance) GetSequentialScanning() bool {
+	return i.getBool(SequentialScanning)
+}
+
+func (i *Instance) GetGalleryCoverRegex() string {
+	var regexString = i.getString(GalleryCoverRegex)
+
+	_, err := regexp.Compile(regexString)
+	if err != nil {
+		logger.Warnf("Gallery cover regex '%v' invalid, reverting to default.", regexString)
+		return galleryCoverRegexDefault
+	}
+
+	return regexString
+}
+
 func (i *Instance) GetScrapersPath() string {
 	return i.getString(ScrapersPath)
 }
@@ -784,6 +823,26 @@ func (i *Instance) GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum
 	}
 
 	return models.StreamingResolutionEnum(ret)
+}
+
+func (i *Instance) GetTranscodeInputArgs() []string {
+	return i.getStringSlice(TranscodeInputArgs)
+}
+
+func (i *Instance) GetTranscodeOutputArgs() []string {
+	return i.getStringSlice(TranscodeOutputArgs)
+}
+
+func (i *Instance) GetLiveTranscodeInputArgs() []string {
+	return i.getStringSlice(LiveTranscodeInputArgs)
+}
+
+func (i *Instance) GetLiveTranscodeOutputArgs() []string {
+	return i.getStringSlice(LiveTranscodeOutputArgs)
+}
+
+func (i *Instance) GetDrawFunscriptHeatmapRange() bool {
+	return i.getBoolDefault(DrawFunscriptHeatmapRange, drawFunscriptHeatmapRangeDefault)
 }
 
 // IsWriteImageThumbnails returns true if image thumbnails should be written
@@ -1265,7 +1324,7 @@ func (i *Instance) GetDefaultGenerateSettings() *models.GenerateMetadataOptions 
 }
 
 // GetDangerousAllowPublicWithoutAuth determines if the security feature is enabled.
-// See https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet
+// See https://docs.stashapp.cc/networking/authentication-required-when-accessing-stash-from-the-internet
 func (i *Instance) GetDangerousAllowPublicWithoutAuth() bool {
 	return i.getBool(dangerousAllowPublicWithoutAuth)
 }
@@ -1343,6 +1402,27 @@ func (i *Instance) GetMaxUploadSize() int64 {
 	return ret << 20
 }
 
+// GetProxy returns the url of a http proxy to be used for all outgoing http calls.
+func (i *Instance) GetProxy() string {
+	// Validate format
+	reg := regexp.MustCompile(`^((?:socks5h?|https?):\/\/)(([\P{Cc}]+):([\P{Cc}]+)@)?(([a-zA-Z0-9][a-zA-Z0-9.-]*)(:[0-9]{1,5})?)`)
+	proxy := i.getString(Proxy)
+	if proxy != "" && reg.MatchString(proxy) {
+		logger.Debug("Proxy is valid, using it")
+		return proxy
+	} else if proxy != "" {
+		logger.Error("Proxy is invalid, please review your configuration")
+		return ""
+	}
+	return ""
+}
+
+// GetProxy returns the url of a http proxy to be used for all outgoing http calls.
+func (i *Instance) GetNoProxy() string {
+	// NoProxy does not require validation, it is validated by the native Go library sufficiently
+	return i.getString(NoProxy)
+}
+
 // ActivatePublicAccessTripwire sets the security_tripwire_accessed_from_public_internet
 // config field to the provided IP address to indicate that stash has been accessed
 // from this public IP without authentication.
@@ -1391,6 +1471,7 @@ func (i *Instance) setDefaultValues(write bool) error {
 	i.main.SetDefault(Port, portDefault)
 
 	i.main.SetDefault(ParallelTasks, parallelTasksDefault)
+	i.main.SetDefault(SequentialScanning, SequentialScanningDefault)
 	i.main.SetDefault(PreviewSegmentDuration, previewSegmentDurationDefault)
 	i.main.SetDefault(PreviewSegments, previewSegmentsDefault)
 	i.main.SetDefault(PreviewExcludeStart, previewExcludeStartDefault)
@@ -1417,6 +1498,12 @@ func (i *Instance) setDefaultValues(write bool) error {
 	// Set default scrapers and plugins paths
 	i.main.SetDefault(ScrapersPath, defaultScrapersPath)
 	i.main.SetDefault(PluginsPath, defaultPluginsPath)
+
+	// Set default gallery cover regex
+	i.main.SetDefault(GalleryCoverRegex, galleryCoverRegexDefault)
+
+	// Set NoProxy default
+	i.main.SetDefault(NoProxy, noProxyDefault)
 
 	if write {
 		return i.main.WriteConfig()

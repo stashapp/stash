@@ -4,12 +4,14 @@ import { GalleryList } from "src/components/Galleries/GalleryList";
 import { usePerformerFilterHook } from "src/core/performers";
 
 interface IPerformerDetailsProps {
+  active: boolean;
   performer: GQL.PerformerDataFragment;
 }
 
 export const PerformerGalleriesPanel: React.FC<IPerformerDetailsProps> = ({
+  active,
   performer,
 }) => {
   const filterHook = usePerformerFilterHook(performer);
-  return <GalleryList filterHook={filterHook} />;
+  return <GalleryList filterHook={filterHook} alterQuery={active} />;
 };

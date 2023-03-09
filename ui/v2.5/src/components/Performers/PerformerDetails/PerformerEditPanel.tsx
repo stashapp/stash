@@ -13,26 +13,25 @@ import {
   useTagCreate,
   queryScrapePerformerURL,
 } from "src/core/StashService";
-import {
-  Icon,
-  ImageInput,
-  LoadingIndicator,
-  CollapseButton,
-  TagSelect,
-  URLField,
-  CountrySelect,
-} from "src/components/Shared";
-import { ImageUtils, getStashIDs } from "src/utils";
-import { useToast } from "src/hooks";
+import { Icon } from "src/components/Shared/Icon";
+import { ImageInput } from "src/components/Shared/ImageInput";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { CollapseButton } from "src/components/Shared/CollapseButton";
+import { TagSelect } from "src/components/Shared/Select";
+import { CountrySelect } from "src/components/Shared/CountrySelect";
+import { URLField } from "src/components/Shared/URLField";
+import ImageUtils from "src/utils/image";
+import { getStashIDs } from "src/utils/stashIds";
+import { stashboxDisplayName } from "src/utils/stashbox";
+import { useToast } from "src/hooks/Toast";
 import { Prompt, useHistory } from "react-router-dom";
 import { useFormik } from "formik";
 import {
-  genderStrings,
   genderToString,
+  stringGenderMap,
   stringToGender,
 } from "src/utils/gender";
 import { ConfigurationContext } from "src/hooks/Config";
-import { stashboxDisplayName } from "src/utils/stashbox";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 import PerformerScrapeModal from "./PerformerScrapeModal";
 import PerformerStashBoxModal, { IStashBox } from "./PerformerStashBoxModal";
@@ -43,6 +42,7 @@ import {
   faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { StringListInput } from "src/components/Shared/StringListInput";
+import isEqual from "lodash-es/isEqual";
 
 const isScraper = (
   scraper: GQL.Scraper | GQL.StashBox
@@ -50,26 +50,26 @@ const isScraper = (
 
 interface IPerformerDetails {
   performer: Partial<GQL.PerformerDataFragment>;
-  isNew?: boolean;
   isVisible: boolean;
-  onImageChange?: (image?: string | null) => void;
-  onImageEncoding?: (loading?: boolean) => void;
   onCancelEditing?: () => void;
+  setImage: (image?: string | null) => void;
+  setEncodingImage: (loading: boolean) => void;
 }
 
 export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   performer,
-  isNew,
   isVisible,
-  onImageChange,
-  onImageEncoding,
   onCancelEditing,
+  setImage,
+  setEncodingImage,
 }) => {
   const Toast = useToast();
   const history = useHistory();
 
+  const isNew = performer.id === undefined;
+
   // Editing state
-  const [scraper, setScraper] = useState<GQL.Scraper | IStashBox | undefined>();
+  const [scraper, setScraper] = useState<GQL.Scraper | IStashBox>();
   const [newTags, setNewTags] = useState<GQL.ScrapedTag[]>();
   const [isScraperModalOpen, setIsScraperModalOpen] = useState<boolean>(false);
 
@@ -82,17 +82,12 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const Scrapers = useListPerformerScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
 
-  const [scrapedPerformer, setScrapedPerformer] = useState<
-    GQL.ScrapedPerformer | undefined
-  >();
+  const [scrapedPerformer, setScrapedPerformer] =
+    useState<GQL.ScrapedPerformer>();
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
-
-  const imageEncoding = ImageUtils.usePasteImage(onImageLoad, true);
 
   const [createTag] = useTagCreate();
   const intl = useIntl();
-
-  const genderOptions = [""].concat(genderStrings);
 
   const labelXS = 3;
   const labelXL = 2;
@@ -101,74 +96,102 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   const schema = yup.object({
     name: yup.string().required(),
-    disambiguation: yup.string().optional(),
+    disambiguation: yup.string().ensure(),
     alias_list: yup
       .array(yup.string().required())
-      .optional()
+      .defined()
       .test({
         name: "unique",
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        test: (value: any) => {
-          return (value ?? []).length === new Set(value).size;
+        test: (value, context) => {
+          if (!value) return true;
+          const aliases = new Set(value);
+          aliases.add(context.parent.name);
+          return value.length + 1 === aliases.size;
         },
-        message: intl.formatMessage({ id: "dialogs.aliases_must_be_unique" }),
+        message: intl.formatMessage({
+          id: "validation.aliases_must_be_unique",
+        }),
       }),
-    gender: yup.string().optional().oneOf(genderOptions),
-    birthdate: yup.string().optional(),
-    ethnicity: yup.string().optional(),
-    eye_color: yup.string().optional(),
-    country: yup.string().optional(),
-    height_cm: yup.number().optional(),
-    measurements: yup.string().optional(),
-    fake_tits: yup.string().optional(),
-    career_length: yup.string().optional(),
-    tattoos: yup.string().optional(),
-    piercings: yup.string().optional(),
-    url: yup.string().optional(),
-    twitter: yup.string().optional(),
-    instagram: yup.string().optional(),
-    tag_ids: yup.array(yup.string().required()).optional(),
-    stash_ids: yup.mixed<GQL.StashIdInput>().optional(),
-    image: yup.string().optional().nullable(),
-    details: yup.string().optional(),
-    death_date: yup.string().optional(),
-    hair_color: yup.string().optional(),
-    weight: yup.number().optional(),
-    ignore_auto_tag: yup.boolean().optional(),
+    gender: yup.string<GQL.GenderEnum | "">().ensure(),
+    birthdate: yup
+      .string()
+      .ensure()
+      .test({
+        name: "date",
+        test: (value) => {
+          if (!value) return true;
+          if (!value.match(/^\d{4}-\d{2}-\d{2}$/)) return false;
+          if (Number.isNaN(Date.parse(value))) return false;
+          return true;
+        },
+        message: intl.formatMessage({ id: "validation.date_invalid_form" }),
+      }),
+    death_date: yup
+      .string()
+      .ensure()
+      .test({
+        name: "date",
+        test: (value) => {
+          if (!value) return true;
+          if (!value.match(/^\d{4}-\d{2}-\d{2}$/)) return false;
+          if (Number.isNaN(Date.parse(value))) return false;
+          return true;
+        },
+        message: intl.formatMessage({ id: "validation.date_invalid_form" }),
+      }),
+    country: yup.string().ensure(),
+    ethnicity: yup.string().ensure(),
+    hair_color: yup.string().ensure(),
+    eye_color: yup.string().ensure(),
+    height_cm: yup.number().nullable().defined().default(null),
+    weight: yup.number().nullable().defined().default(null),
+    measurements: yup.string().ensure(),
+    fake_tits: yup.string().ensure(),
+    tattoos: yup.string().ensure(),
+    piercings: yup.string().ensure(),
+    career_length: yup.string().ensure(),
+    url: yup.string().ensure(),
+    twitter: yup.string().ensure(),
+    instagram: yup.string().ensure(),
+    details: yup.string().ensure(),
+    tag_ids: yup.array(yup.string().required()).defined(),
+    ignore_auto_tag: yup.boolean().defined(),
+    stash_ids: yup.mixed<GQL.StashIdInput[]>().defined(),
+    image: yup.string().nullable().optional(),
   });
 
   const initialValues = {
     name: performer.name ?? "",
     disambiguation: performer.disambiguation ?? "",
-    alias_list: performer.alias_list?.slice().sort(),
-    gender: genderToString(performer.gender ?? undefined),
+    alias_list: performer.alias_list ?? [],
+    gender: (performer.gender as GQL.GenderEnum) ?? "",
     birthdate: performer.birthdate ?? "",
-    ethnicity: performer.ethnicity ?? "",
-    eye_color: performer.eye_color ?? "",
+    death_date: performer.death_date ?? "",
     country: performer.country ?? "",
-    height_cm: performer.height_cm ?? undefined,
+    ethnicity: performer.ethnicity ?? "",
+    hair_color: performer.hair_color ?? "",
+    eye_color: performer.eye_color ?? "",
+    height_cm: performer.height_cm ?? null,
+    weight: performer.weight ?? null,
     measurements: performer.measurements ?? "",
     fake_tits: performer.fake_tits ?? "",
-    career_length: performer.career_length ?? "",
     tattoos: performer.tattoos ?? "",
     piercings: performer.piercings ?? "",
+    career_length: performer.career_length ?? "",
     url: performer.url ?? "",
     twitter: performer.twitter ?? "",
     instagram: performer.instagram ?? "",
-    tag_ids: (performer.tags ?? []).map((t) => t.id),
-    stash_ids: performer.stash_ids ?? undefined,
-    image: undefined,
     details: performer.details ?? "",
-    death_date: performer.death_date ?? "",
-    hair_color: performer.hair_color ?? "",
-    weight: performer.weight ?? undefined,
+    tag_ids: (performer.tags ?? []).map((t) => t.id),
     ignore_auto_tag: performer.ignore_auto_tag ?? false,
+    stash_ids: getStashIDs(performer.stash_ids),
   };
 
-  type InputValues = typeof initialValues;
+  type InputValues = yup.InferType<typeof schema>;
 
-  const formik = useFormik({
+  const formik = useFormik<InputValues>({
     initialValues,
+    enableReinitialize: true,
     validationSchema: schema,
     onSubmit: (values) => onSave(values),
   });
@@ -178,20 +201,16 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       return;
     }
 
-    let retEnum: GQL.GenderEnum | undefined;
-
     // try to translate from enum values first
-    const upperGender = scrapedGender?.toUpperCase();
+    const upperGender = scrapedGender.toUpperCase();
     const asEnum = genderToString(upperGender);
     if (asEnum) {
-      retEnum = stringToGender(asEnum);
+      return stringToGender(asEnum);
     } else {
       // try to match against gender strings
       const caseInsensitive = true;
-      retEnum = stringToGender(scrapedGender, caseInsensitive);
+      return stringToGender(scrapedGender, caseInsensitive);
     }
-
-    return genderToString(retEnum);
   }
 
   function renderNewTags() {
@@ -325,10 +344,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
     if (state.gender) {
       // gender is a string in the scraper data
-      formik.setFieldValue(
-        "gender",
-        translateScrapedGender(state.gender ?? undefined)
-      );
+      const newGender = translateScrapedGender(state.gender);
+      if (newGender) {
+        formik.setFieldValue("gender", newGender);
+      }
     }
     if (state.tags) {
       // map tags to their ids and filter out those not found
@@ -341,15 +360,14 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     // image is a base64 string
     // #404: don't overwrite image if it has been modified by the user
     // overwrite if not new since it came from a dialog
-    // overwrite if image was cleared (`null`)
-    // otherwise follow existing behaviour (`undefined`)
+    // overwrite if image is unset
     if (
-      (!isNew || [null, undefined].includes(formik.values.image)) &&
+      (!isNew || !formik.values.image) &&
       state.images &&
       state.images.length > 0
     ) {
       const imageStr = state.images[0];
-      formik.setFieldValue("image", imageStr ?? undefined);
+      formik.setFieldValue("image", imageStr);
     }
     if (state.details) {
       formik.setFieldValue("details", state.details);
@@ -378,31 +396,47 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
   }
 
-  function onImageLoad(imageData: string) {
+  const encodingImage = ImageUtils.usePasteImage(onImageLoad);
+
+  useEffect(() => {
+    setImage(formik.values.image);
+  }, [formik.values.image, setImage]);
+
+  useEffect(
+    () => setEncodingImage(encodingImage),
+    [setEncodingImage, encodingImage]
+  );
+
+  function onImageLoad(imageData: string | null) {
     formik.setFieldValue("image", imageData);
   }
 
-  async function onSave(performerInput: InputValues) {
+  function onImageChange(event: React.FormEvent<HTMLInputElement>) {
+    ImageUtils.onImageChange(event, onImageLoad);
+  }
+
+  async function onSave(input: InputValues) {
     setIsLoading(true);
     try {
       if (isNew) {
-        const input = getCreateValues(performerInput);
         const result = await createPerformer({
           variables: {
-            input,
+            input: {
+              ...input,
+              gender: input.gender || null,
+            },
           },
         });
         if (result.data?.performerCreate) {
           history.push(`/performers/${result.data.performerCreate.id}`);
         }
       } else {
-        const input = getUpdateValues(performerInput);
-
         await updatePerformer({
           variables: {
             input: {
+              id: performer.id!,
               ...input,
-              stash_ids: getStashIDs(performerInput?.stash_ids),
+              gender: input.gender || null,
             },
           },
         });
@@ -436,16 +470,12 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   });
 
   useEffect(() => {
-    if (onImageChange) {
-      onImageChange(formik.values.image);
-    }
-    return () => onImageChange?.();
-  }, [formik.values.image, onImageChange]);
+    setImage(formik.values.image);
+  }, [formik.values.image, setImage]);
 
-  useEffect(() => onImageEncoding?.(imageEncoding), [
-    onImageEncoding,
-    imageEncoding,
-  ]);
+  useEffect(() => {
+    setEncodingImage(encodingImage);
+  }, [setEncodingImage, encodingImage]);
 
   useEffect(() => {
     const newQueryableScrapers = (
@@ -458,33 +488,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   }, [Scrapers]);
 
   if (isLoading) return <LoadingIndicator />;
-
-  function getUpdateValues(values: InputValues): GQL.PerformerUpdateInput {
-    return {
-      ...values,
-      gender: stringToGender(values.gender) ?? null,
-      height_cm: values.height_cm ? Number(values.height_cm) : null,
-      weight: values.weight ? Number(values.weight) : null,
-      id: performer.id ?? "",
-    };
-  }
-
-  function getCreateValues(values: InputValues): GQL.PerformerCreateInput {
-    return {
-      ...values,
-      gender: stringToGender(values.gender),
-      height_cm: values.height_cm ? Number(values.height_cm) : null,
-      weight: values.weight ? Number(values.weight) : null,
-    };
-  }
-
-  function onImageChangeHandler(event: React.FormEvent<HTMLInputElement>) {
-    ImageUtils.onImageChange(event, onImageLoad);
-  }
-
-  function onImageChangeURL(url: string) {
-    formik.setFieldValue("image", url);
-  }
 
   async function onReloadScrapers() {
     setIsLoading(true);
@@ -651,9 +654,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       return;
     }
 
-    const currentPerformer: Partial<GQL.PerformerUpdateInput> = {
+    const currentPerformer = {
       ...formik.values,
-      gender: stringToGender(formik.values.gender),
+      gender: formik.values.gender || null,
       image: formik.values.image ?? performer.image_path,
     };
 
@@ -694,8 +697,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderScraperMenu()}
         <ImageInput
           isEditing
-          onImageChange={onImageChangeHandler}
-          onImageURL={onImageChangeURL}
+          onImageChange={onImageChange}
+          onImageURL={onImageLoad}
         />
         <div>
           <Button
@@ -708,7 +711,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         </div>
         <Button
           variant="success"
-          disabled={!formik.dirty}
+          disabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}
           onClick={() => formik.submitForm()}
         >
           <FormattedMessage id="actions.save" />
@@ -839,6 +842,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             {...formik.getFieldProps(field)}
             isInvalid={!!formik.getFieldMeta(field).error}
           />
+          <Form.Control.Feedback type="invalid">
+            {formik.getFieldMeta(field).error}
+          </Form.Control.Feedback>
         </Col>
       </Form.Group>
     );
@@ -898,7 +904,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             <StringListInput
               value={formik.values.alias_list ?? []}
               setValue={(value) => formik.setFieldValue("alias_list", value)}
-              errors={formik.errors.alias_list}
+              errors={
+                Array.isArray(formik.errors.alias_list)
+                  ? formik.errors.alias_list[0]
+                  : formik.errors.alias_list
+              }
             />
           </Col>
         </Form.Group>
@@ -913,9 +923,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
               className="input-control"
               {...formik.getFieldProps("gender")}
             >
-              {genderOptions.map((opt) => (
-                <option value={opt} key={opt}>
-                  {opt}
+              <option value="" key=""></option>
+              {Array.from(stringGenderMap.entries()).map(([name, value]) => (
+                <option value={value} key={value}>
+                  {name}
                 </option>
               ))}
             </Form.Control>

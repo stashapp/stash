@@ -1,8 +1,9 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { TextUtils } from "src/utils";
-import { TagLink, TruncatedText } from "src/components/Shared";
+import TextUtils from "src/utils/text";
+import { TagLink } from "src/components/Shared/TagLink";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { sortPerformers } from "src/core/performers";
@@ -42,7 +43,11 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
     if (props.image.performers.length === 0) return;
     const performers = sortPerformers(props.image.performers);
     const cards = performers.map((performer) => (
-      <PerformerCard key={performer.id} performer={performer} />
+      <PerformerCard
+        key={performer.id}
+        performer={performer}
+        ageFromDate={props.image.date ?? undefined}
+      />
     ));
 
     return (

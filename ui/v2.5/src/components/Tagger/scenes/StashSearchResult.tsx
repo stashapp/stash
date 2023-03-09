@@ -7,16 +7,14 @@ import { blobToBase64 } from "base64-blob";
 import { distance } from "src/utils/hamming";
 
 import * as GQL from "src/core/generated-graphql";
-import {
-  HoverPopover,
-  Icon,
-  LoadingIndicator,
-  SuccessIcon,
-  TagSelect,
-  TruncatedText,
-  OperationButton,
-} from "src/components/Shared";
-import { FormUtils } from "src/utils";
+import { HoverPopover } from "src/components/Shared/HoverPopover";
+import { Icon } from "src/components/Shared/Icon";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { SuccessIcon } from "src/components/Shared/SuccessIcon";
+import { TagSelect } from "src/components/Shared/Select";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
+import { OperationButton } from "src/components/Shared/OperationButton";
+import FormUtils from "src/utils/form";
 import { stringToGender } from "src/utils/gender";
 import { IScrapedScene, TaggerStateContext } from "../context";
 import { OptionalField } from "../IncludeButton";

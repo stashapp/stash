@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"strconv"
 
 	"github.com/99designs/gqlgen/graphql"
@@ -23,7 +25,7 @@ func (r *queryResolver) FindImage(ctx context.Context, id *string, checksum *str
 			}
 
 			image, err = qb.Find(ctx, idInt)
-			if err != nil {
+			if err != nil && !errors.Is(err, sql.ErrNoRows) {
 				return err
 			}
 		} else if checksum != nil {
@@ -78,6 +80,17 @@ func (r *queryResolver) FindImages(ctx context.Context, imageFilter *models.Imag
 		}
 
 		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (r *queryResolver) AllImages(ctx context.Context) (ret []*models.Image, err error) {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Image.All(ctx)
+		return err
 	}); err != nil {
 		return nil, err
 	}

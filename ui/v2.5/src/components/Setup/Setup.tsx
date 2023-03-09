@@ -9,35 +9,46 @@ import {
   InputGroup,
 } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { mutateSetup, useSystemStatus } from "src/core/StashService";
-import { Link } from "react-router-dom";
+import {
+  mutateSetup,
+  useConfigureUI,
+  useSystemStatus,
+} from "src/core/StashService";
+import { Link, useHistory } from "react-router-dom";
 import { ConfigurationContext } from "src/hooks/Config";
 import StashConfiguration from "../Settings/StashConfiguration";
-import { Icon, LoadingIndicator, Modal } from "../Shared";
+import { Icon } from "../Shared/Icon";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
+import { ModalComponent } from "../Shared/Modal";
 import { FolderSelectDialog } from "../Shared/FolderSelect/FolderSelectDialog";
 import {
   faEllipsisH,
   faExclamationTriangle,
   faQuestionCircle,
 } from "@fortawesome/free-solid-svg-icons";
+import { releaseNotes } from "src/docs/en/ReleaseNotes";
 
 export const Setup: React.FC = () => {
-  const { configuration, loading: configLoading } = useContext(
-    ConfigurationContext
-  );
+  const { configuration, loading: configLoading } =
+    useContext(ConfigurationContext);
+  const [saveUI] = useConfigureUI();
 
   const [step, setStep] = useState(0);
   const [configLocation, setConfigLocation] = useState("");
   const [stashes, setStashes] = useState<GQL.StashConfig[]>([]);
   const [showStashAlert, setShowStashAlert] = useState(false);
-  const [generatedLocation, setGeneratedLocation] = useState("");
   const [databaseFile, setDatabaseFile] = useState("");
+  const [generatedLocation, setGeneratedLocation] = useState("");
+  const [cacheLocation, setCacheLocation] = useState("");
   const [loading, setLoading] = useState(false);
   const [setupError, setSetupError] = useState("");
 
   const intl = useIntl();
+  const history = useHistory();
 
-  const [showGeneratedDialog, setShowGeneratedDialog] = useState(false);
+  const [showGeneratedSelectDialog, setShowGeneratedSelectDialog] =
+    useState(false);
+  const [showCacheSelectDialog, setShowCacheSelectDialog] = useState(false);
 
   const { data: systemStatus, loading: statusLoading } = useSystemStatus();
 
@@ -111,7 +122,7 @@ export const Setup: React.FC = () => {
     }
 
     return (
-      <Modal
+      <ModalComponent
         show
         icon={faExclamationTriangle}
         accept={{
@@ -127,7 +138,7 @@ export const Setup: React.FC = () => {
         <p>
           <FormattedMessage id="setup.paths.stash_alert" />
         </p>
-      </Modal>
+      </ModalComponent>
     );
   }
 
@@ -226,20 +237,20 @@ export const Setup: React.FC = () => {
     );
   }
 
-  function onGeneratedClosed(d?: string) {
+  function onGeneratedSelectClosed(d?: string) {
     if (d) {
       setGeneratedLocation(d);
     }
 
-    setShowGeneratedDialog(false);
+    setShowGeneratedSelectDialog(false);
   }
 
   function maybeRenderGeneratedSelectDialog() {
-    if (!showGeneratedDialog) {
+    if (!showGeneratedSelectDialog) {
       return;
     }
 
-    return <FolderSelectDialog onClose={onGeneratedClosed} />;
+    return <FolderSelectDialog onClose={onGeneratedSelectClosed} />;
   }
 
   function maybeRenderGenerated() {
@@ -272,7 +283,64 @@ export const Setup: React.FC = () => {
               <Button
                 variant="secondary"
                 className="text-input"
-                onClick={() => setShowGeneratedDialog(true)}
+                onClick={() => setShowGeneratedSelectDialog(true)}
+              >
+                <Icon icon={faEllipsisH} />
+              </Button>
+            </InputGroup.Append>
+          </InputGroup>
+        </Form.Group>
+      );
+    }
+  }
+
+  function onCacheSelectClosed(d?: string) {
+    if (d) {
+      setCacheLocation(d);
+    }
+
+    setShowCacheSelectDialog(false);
+  }
+
+  function maybeRenderCacheSelectDialog() {
+    if (!showCacheSelectDialog) {
+      return;
+    }
+
+    return <FolderSelectDialog onClose={onCacheSelectClosed} />;
+  }
+
+  function maybeRenderCache() {
+    if (!configuration?.general.cachePath) {
+      return (
+        <Form.Group id="cache">
+          <h3>
+            <FormattedMessage id="setup.paths.where_can_stash_store_cache_files" />
+          </h3>
+          <p>
+            <FormattedMessage
+              id="setup.paths.where_can_stash_store_cache_files_description"
+              values={{
+                code: (chunks: string) => <code>{chunks}</code>,
+              }}
+            />
+          </p>
+          <InputGroup>
+            <Form.Control
+              className="text-input"
+              value={cacheLocation}
+              placeholder={intl.formatMessage({
+                id: "setup.paths.path_to_cache_directory_empty_for_default",
+              })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setCacheLocation(e.currentTarget.value)
+              }
+            />
+            <InputGroup.Append>
+              <Button
+                variant="secondary"
+                className="text-input"
+                onClick={() => setShowCacheSelectDialog(true)}
               >
                 <Icon icon={faEllipsisH} />
               </Button>
@@ -321,6 +389,13 @@ export const Setup: React.FC = () => {
                   code: (chunks: string) => <code>{chunks}</code>,
                 }}
               />
+              <br />
+              <FormattedMessage
+                id="setup.paths.where_can_stash_store_its_database_warning"
+                values={{
+                  strong: (chunks: string) => <strong>{chunks}</strong>,
+                }}
+              />
             </p>
             <Form.Control
               className="text-input"
@@ -334,6 +409,7 @@ export const Setup: React.FC = () => {
             />
           </Form.Group>
           {maybeRenderGenerated()}
+          {maybeRenderCache()}
         </section>
         <section className="mt-5">
           <div className="d-flex justify-content-center">
@@ -397,7 +473,17 @@ export const Setup: React.FC = () => {
         configLocation,
         databaseFile,
         generatedLocation,
+        cacheLocation,
         stashes,
+      });
+      // Set lastNoteSeen to hide release notes dialog
+      await saveUI({
+        variables: {
+          input: {
+            ...configuration?.ui,
+            lastNoteSeen: releaseNotes[0].date,
+          },
+        },
       });
     } catch (e) {
       if (e instanceof Error) setSetupError(e.message ?? e.toString());
@@ -453,6 +539,20 @@ export const Setup: React.FC = () => {
                   ? generatedLocation
                   : intl.formatMessage({
                       id: "setup.confirm.default_generated_content_location",
+                    })}
+              </code>
+            </dd>
+          </dl>
+          <dl>
+            <dt>
+              <FormattedMessage id="setup.confirm.cache_directory" />
+            </dt>
+            <dd>
+              <code>
+                {cacheLocation !== ""
+                  ? cacheLocation
+                  : intl.formatMessage({
+                      id: "setup.confirm.default_cache_location",
                     })}
               </code>
             </dd>
@@ -576,7 +676,7 @@ export const Setup: React.FC = () => {
         <section className="mt-5">
           <div className="d-flex justify-content-center">
             <Link to="/settings?tab=library">
-              <Button variant="success mx-2 p-5" onClick={() => goBack(2)}>
+              <Button variant="success mx-2 p-5">
                 <FormattedMessage id="actions.finish" />
               </Button>
             </Link>
@@ -600,12 +700,12 @@ export const Setup: React.FC = () => {
   }
 
   if (
+    step === 0 &&
     systemStatus &&
     systemStatus.systemStatus.status !== GQL.SystemStatusEnum.Setup
   ) {
     // redirect to main page
-    const newURL = new URL("/", window.location.toString());
-    window.location.href = newURL.toString();
+    history.push("/");
     return <LoadingIndicator />;
   }
 
@@ -638,6 +738,7 @@ export const Setup: React.FC = () => {
   return (
     <Container>
       {maybeRenderGeneratedSelectDialog()}
+      {maybeRenderCacheSelectDialog()}
       <h1 className="text-center">
         <FormattedMessage id="setup.stash_setup_wizard" />
       </h1>

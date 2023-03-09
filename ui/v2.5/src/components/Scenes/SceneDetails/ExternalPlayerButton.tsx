@@ -2,7 +2,7 @@ import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { Button } from "react-bootstrap";
 import { useIntl } from "react-intl";
-import Icon from "src/components/Shared/Icon";
+import { Icon } from "src/components/Shared/Icon";
 import { objectTitle } from "src/core/files";
 import { SceneDataFragment } from "src/core/generated-graphql";
 

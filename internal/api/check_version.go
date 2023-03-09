@@ -21,11 +21,7 @@ const apiReleases string = "https://api.github.com/repos/stashapp/stash/releases
 const apiTags string = "https://api.github.com/repos/stashapp/stash/tags"
 const apiAcceptHeader string = "application/vnd.github.v3+json"
 const developmentTag string = "latest_develop"
-const defaultSHLength int = 7 // default length of SHA short hash returned by <git rev-parse --short HEAD>
-
-// ErrNoVersion indicates that no version information has been embedded in the
-// stash binary
-var ErrNoVersion = errors.New("no stash version")
+const defaultSHLength int = 8 // default length of SHA short hash returned by <git rev-parse --short HEAD>
 
 var stashReleases = func() map[string]string {
 	return map[string]string{
@@ -108,9 +104,21 @@ type githubTagResponse struct {
 	Node_id string
 }
 
+type LatestRelease struct {
+	Version   string
+	Hash      string
+	ShortHash string
+	Date      string
+	Url       string
+}
+
 func makeGithubRequest(ctx context.Context, url string, output interface{}) error {
+
+	transport := &http.Transport{Proxy: http.ProxyFromEnvironment}
+
 	client := &http.Client{
-		Timeout: 3 * time.Second,
+		Timeout:   3 * time.Second,
+		Transport: transport,
 	}
 
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
@@ -144,14 +152,16 @@ func makeGithubRequest(ctx context.Context, url string, output interface{}) erro
 	return nil
 }
 
-// GetLatestVersion gets latest version (git commit hash) from github API
+// GetLatestRelease gets latest release information from github API
 // If running a build from the "master" branch, then the latest full release
 // is used, otherwise it uses the release that is tagged with "latest_develop"
 // which is the latest pre-release build.
-func GetLatestVersion(ctx context.Context, shortHash bool) (latestVersion string, latestRelease string, err error) {
+func GetLatestRelease(ctx context.Context) (*LatestRelease, error) {
+	arch := runtime.GOARCH
 
-	arch := runtime.GOARCH                                                                    // https://en.wikipedia.org/wiki/Comparison_of_ARM_cores
-	isARMv7 := cpu.ARM.HasNEON || cpu.ARM.HasVFPv3 || cpu.ARM.HasVFPv3D16 || cpu.ARM.HasVFPv4 // armv6 doesn't support any of these features
+	// https://en.wikipedia.org/wiki/Comparison_of_ARM_cores
+	// armv6 doesn't support any of these features
+	isARMv7 := cpu.ARM.HasNEON || cpu.ARM.HasVFPv3 || cpu.ARM.HasVFPv3D16 || cpu.ARM.HasVFPv4
 	if arch == "arm" && isARMv7 {
 		arch = "armv7"
 	}
@@ -159,125 +169,98 @@ func GetLatestVersion(ctx context.Context, shortHash bool) (latestVersion string
 	platform := fmt.Sprintf("%s/%s", runtime.GOOS, arch)
 	wantedRelease := stashReleases()[platform]
 
-	version, _, _ := GetVersion()
-	if version == "" {
-		return "", "", ErrNoVersion
-	}
-
-	// if the version is suffixed with -x-xxxx, then we are running a development build
-	usePreRelease := false
-	re := regexp.MustCompile(`-\d+-g\w+$`)
-	if re.MatchString(version) {
-		usePreRelease = true
-	}
-
 	url := apiReleases
-	if !usePreRelease {
-		// just get the latest full release
-		url += "/latest"
-	} else {
+	if IsDevelop() {
 		// get the release tagged with the development tag
 		url += "/tags/" + developmentTag
+	} else {
+		// just get the latest full release
+		url += "/latest"
 	}
 
-	release := githubReleasesResponse{}
-	err = makeGithubRequest(ctx, url, &release)
-
+	var release githubReleasesResponse
+	err := makeGithubRequest(ctx, url, &release)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
-	if release.Prerelease == usePreRelease {
-		latestVersion = getReleaseHash(ctx, release, shortHash, usePreRelease)
+	version := release.Name
+	if release.Prerelease {
+		// find version in prerelease name
+		re := regexp.MustCompile(`v[\w-\.]+-\d+-g[0-9a-f]+`)
+		if match := re.FindString(version); match != "" {
+			version = match
+		}
+	}
 
-		if wantedRelease != "" {
-			for _, asset := range release.Assets {
-				if asset.Name == wantedRelease {
-					latestRelease = asset.Browser_download_url
-					break
-				}
+	latestHash, err := getReleaseHash(ctx, release.Tag_name)
+	if err != nil {
+		return nil, err
+	}
+
+	var releaseDate string
+	if publishedAt, err := time.Parse(time.RFC3339, release.Published_at); err == nil {
+		releaseDate = publishedAt.Format("2006-01-02")
+	}
+
+	var releaseUrl string
+	if wantedRelease != "" {
+		for _, asset := range release.Assets {
+			if asset.Name == wantedRelease {
+				releaseUrl = asset.Browser_download_url
+				break
 			}
 		}
 	}
 
-	if latestVersion == "" {
-		return "", "", fmt.Errorf("no version found for \"%s\"", version)
+	_, githash, _ := GetVersion()
+	shLength := len(githash)
+	if shLength == 0 {
+		shLength = defaultSHLength
 	}
-	return latestVersion, latestRelease, nil
+
+	return &LatestRelease{
+		Version:   version,
+		Hash:      latestHash,
+		ShortHash: latestHash[:shLength],
+		Date:      releaseDate,
+		Url:       releaseUrl,
+	}, nil
 }
 
-func getReleaseHash(ctx context.Context, release githubReleasesResponse, shortHash bool, usePreRelease bool) string {
-	shaLength := len(release.Target_commitish)
-	// the /latest API call doesn't return the hash in target_commitish
-	// also add sanity check in case Target_commitish is not 40 characters
-	if !usePreRelease || shaLength != 40 {
-		return getShaFromTags(ctx, shortHash, release.Tag_name)
-	}
-
-	if shortHash {
-		last := defaultSHLength                                // default length of git short hash
-		_, gitShort, _ := GetVersion()                         // retrieve it to check actual length
-		if len(gitShort) > last && len(gitShort) < shaLength { // sometimes short hash is longer
-			last = len(gitShort)
-		}
-		return release.Target_commitish[0:last]
-	}
-
-	return release.Target_commitish
-}
-
-func printLatestVersion(ctx context.Context) {
-	_, githash, _ = GetVersion()
-	latest, _, err := GetLatestVersion(ctx, true)
-	if err != nil {
-		logger.Errorf("Couldn't find latest version: %s", err)
-	} else {
-		if githash == latest {
-			logger.Infof("Version: (%s) is already the latest released.", latest)
-		} else {
-			logger.Infof("New version: (%s) available.", latest)
-		}
-	}
-}
-
-// get sha from the github api tags endpoint
-// returns the sha1 hash/shorthash or "" if something's wrong
-func getShaFromTags(ctx context.Context, shortHash bool, name string) string {
+func getReleaseHash(ctx context.Context, tagName string) (string, error) {
 	url := apiTags
 	tags := []githubTagResponse{}
 	err := makeGithubRequest(ctx, url, &tags)
-
 	if err != nil {
-		// If the context is canceled, we don't want to log this as an error
-		// in the path. The function here just gives up and returns "" if
-		// something goes wrong. Hence, log the error at the info-level so
-		// it's still present, but don't treat this as an error.
-		if errors.Is(err, context.Canceled) {
-			logger.Infof("aborting sha request due to context cancellation")
-		} else {
-			logger.Errorf("Github Tags Api: %v", err)
-		}
-		return ""
+		return "", err
 	}
-	_, gitShort, _ := GetVersion() // retrieve short hash to check actual length
 
 	for _, tag := range tags {
-		if tag.Name == name {
-			shaLength := len(tag.Commit.Sha)
-			if shaLength != 40 {
-				return ""
+		if tag.Name == tagName {
+			if len(tag.Commit.Sha) != 40 {
+				return "", errors.New("invalid Github API response")
 			}
-			if shortHash {
-				last := defaultSHLength                                // default length of git short hash
-				if len(gitShort) > last && len(gitShort) < shaLength { // sometimes short hash is longer
-					last = len(gitShort)
-				}
-				return tag.Commit.Sha[0:last]
-			}
-
-			return tag.Commit.Sha
+			return tag.Commit.Sha, nil
 		}
 	}
 
-	return ""
+	return "", errors.New("invalid Github API response")
+}
+
+func printLatestVersion(ctx context.Context) {
+	latestRelease, err := GetLatestRelease(ctx)
+	if err != nil {
+		logger.Errorf("Couldn't retrieve latest version: %v", err)
+	} else {
+		_, githash, _ = GetVersion()
+		switch {
+		case githash == "":
+			logger.Infof("Latest version: %s (%s)", latestRelease.Version, latestRelease.ShortHash)
+		case githash == latestRelease.ShortHash:
+			logger.Infof("Version %s (%s) is already the latest released", latestRelease.Version, latestRelease.ShortHash)
+		default:
+			logger.Infof("New version available: %s (%s)", latestRelease.Version, latestRelease.ShortHash)
+		}
+	}
 }

@@ -45,9 +45,8 @@ export class ResolutionCriterion extends AbstractResolutionCriterion {
   }
 }
 
-export const AverageResolutionCriterionOption = new ResolutionCriterionOptionType(
-  "average_resolution"
-);
+export const AverageResolutionCriterionOption =
+  new ResolutionCriterionOptionType("average_resolution");
 
 export class AverageResolutionCriterion extends AbstractResolutionCriterion {
   constructor() {

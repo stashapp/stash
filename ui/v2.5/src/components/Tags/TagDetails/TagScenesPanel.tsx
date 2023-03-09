@@ -4,10 +4,11 @@ import { SceneList } from "src/components/Scenes/SceneList";
 import { useTagFilterHook } from "src/core/tags";
 
 interface ITagScenesPanel {
+  active: boolean;
   tag: GQL.TagDataFragment;
 }
 
-export const TagScenesPanel: React.FC<ITagScenesPanel> = ({ tag }) => {
+export const TagScenesPanel: React.FC<ITagScenesPanel> = ({ active, tag }) => {
   const filterHook = useTagFilterHook(tag);
-  return <SceneList filterHook={filterHook} />;
+  return <SceneList filterHook={filterHook} alterQuery={active} />;
 };

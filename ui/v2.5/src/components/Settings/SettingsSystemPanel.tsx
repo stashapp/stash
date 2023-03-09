@@ -1,12 +1,13 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { LoadingIndicator } from "src/components/Shared";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { SettingSection } from "./SettingSection";
 import {
   BooleanSetting,
   ModalSetting,
   NumberSetting,
   SelectSetting,
+  StringListSetting,
   StringSetting,
 } from "./Inputs";
 import { SettingStateContext } from "./context";
@@ -16,9 +17,8 @@ import {
 } from "./GeneratePreviewOptions";
 
 export const SettingsConfigurationPanel: React.FC = () => {
-  const { general, loading, error, saveGeneral } = React.useContext(
-    SettingStateContext
-  );
+  const { general, loading, error, saveGeneral } =
+    React.useContext(SettingStateContext);
 
   const transcodeQualities = [
     GQL.StreamingResolutionEnum.Low,
@@ -117,6 +117,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
         />
 
         <StringSetting
+          id="cache-path"
+          headingID="config.general.cache_path_head"
+          subHeadingID="config.general.cache_location"
+          value={general.cachePath ?? undefined}
+          onChange={(v) => saveGeneral({ cachePath: v })}
+        />
+
+        <StringSetting
           id="scrapers-path"
           headingID="config.general.scrapers_path.heading"
           subHeadingID="config.general.scrapers_path.description"
@@ -130,14 +138,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
           subHeadingID="config.general.metadata_path.description"
           value={general.metadataPath ?? undefined}
           onChange={(v) => saveGeneral({ metadataPath: v })}
-        />
-
-        <StringSetting
-          id="cache-path"
-          headingID="config.general.cache_path_head"
-          subHeadingID="config.general.cache_location"
-          value={general.cachePath ?? undefined}
-          onChange={(v) => saveGeneral({ cachePath: v })}
         />
 
         <StringSetting
@@ -227,6 +227,36 @@ export const SettingsConfigurationPanel: React.FC = () => {
             </option>
           ))}
         </SelectSetting>
+
+        <StringListSetting
+          id="transcode-input-args"
+          headingID="config.general.ffmpeg.transcode.input_args.heading"
+          subHeadingID="config.general.ffmpeg.transcode.input_args.desc"
+          onChange={(v) => saveGeneral({ transcodeInputArgs: v })}
+          value={general.transcodeInputArgs ?? []}
+        />
+        <StringListSetting
+          id="transcode-output-args"
+          headingID="config.general.ffmpeg.transcode.output_args.heading"
+          subHeadingID="config.general.ffmpeg.transcode.output_args.desc"
+          onChange={(v) => saveGeneral({ transcodeOutputArgs: v })}
+          value={general.transcodeOutputArgs ?? []}
+        />
+
+        <StringListSetting
+          id="live-transcode-input-args"
+          headingID="config.general.ffmpeg.live_transcode.input_args.heading"
+          subHeadingID="config.general.ffmpeg.live_transcode.input_args.desc"
+          onChange={(v) => saveGeneral({ liveTranscodeInputArgs: v })}
+          value={general.liveTranscodeInputArgs ?? []}
+        />
+        <StringListSetting
+          id="live-transcode-output-args"
+          headingID="config.general.ffmpeg.live_transcode.output_args.heading"
+          subHeadingID="config.general.ffmpeg.live_transcode.output_args.desc"
+          onChange={(v) => saveGeneral({ liveTranscodeOutputArgs: v })}
+          value={general.liveTranscodeOutputArgs ?? []}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.general.parallel_scan_head">
@@ -282,6 +312,16 @@ export const SettingsConfigurationPanel: React.FC = () => {
           renderValue={() => {
             return <></>;
           }}
+        />
+      </SettingSection>
+
+      <SettingSection headingID="config.general.heatmap_generation">
+        <BooleanSetting
+          id="heatmap-draw-range"
+          headingID="config.general.funscript_heatmap_draw_range"
+          subHeadingID="config.general.funscript_heatmap_draw_range_desc"
+          checked={general.drawFunscriptHeatmapRange ?? true}
+          onChange={(v) => saveGeneral({ drawFunscriptHeatmapRange: v })}
         />
       </SettingSection>
 

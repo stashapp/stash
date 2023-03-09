@@ -6,6 +6,7 @@
     "add_to_entity": "Lägg till {entityType}",
     "allow": "Tillåt",
     "allow_temporarily": "Tillåt tillfälligt",
+    "anonymise": "Anonymisera",
     "apply": "Tillämpa",
     "auto_tag": "Tagga automatiskt",
     "backup": "Säkerhetskopiera",
@@ -32,10 +33,11 @@
     "delete_stashid": "Radera StashID",
     "disallow": "Tillåt ej",
     "download": "Ladda ner",
+    "download_anonymised": "Ladda ner anonymiserad",
     "download_backup": "Ladda ner säkerhetskopia",
     "edit": "Redigera",
     "edit_entity": "Redigera {entityType}",
-    "export": "Exportera…",
+    "export": "Exportera",
     "export_all": "Exportera alla…",
     "find": "Sök",
     "finish": "Slutför",
@@ -67,6 +69,7 @@
     "play_selected": "Spela vald",
     "preview": "Förhandsvisa",
     "previous_action": "Backa",
+    "reassign": "Omplacera",
     "refresh": "Uppdatera",
     "reload_plugins": "Ladda om tillägg",
     "reload_scrapers": "Ladda om skrapare",
@@ -99,10 +102,12 @@
     "show": "Visa",
     "show_configuration": "Visa konfigureringen",
     "skip": "Hoppa över",
+    "split": "Dela",
     "stop": "Stoppa",
     "submit": "Skicka",
     "submit_stash_box": "Skicka till Stash-Box",
     "submit_update": "Skicka uppdatering",
+    "swap": "Byt",
     "tasks": {
       "clean_confirm_message": "Är du säker att du vill rensa? Detta kommer radera databasinformation och genererade filer för alla scener och gallerier som inte längre finns på filsystemet.",
       "dry_mode_selected": "Torrt läge valt. Inget kommer raderas utan bara loggning kommer ske.",
@@ -121,6 +126,7 @@
   "also_known_as": "Även känd som",
   "ascending": "Stigande",
   "average_resolution": "Genomsnittlig upplösning",
+  "between_and": "och",
   "birth_year": "Födelseår",
   "birthdate": "Födelsedatum",
   "bitrate": "Bithastighet",
@@ -342,6 +348,9 @@
     },
     "tasks": {
       "added_job_to_queue": "Köade {operation_name}",
+      "anonymise_and_download": "Skapar en anonymiserad kopia av databasen och laddar ner kopian.",
+      "anonymise_database": "Skapar en kopia av databasen till backup-sökvägen och anonymiserar all känslig data. Denna kan sedan skickas till andra för felsökning och problemlösning. Originaldatabasen påverkas ej. Anonymiserad databas använder filnamnsformatet {filename_format}.",
+      "anonymising_database": "Anonymiserar databas",
       "auto_tag": {
         "auto_tagging_all_paths": "Autotagga alla sökvägar",
         "auto_tagging_paths": "Autotagga följande sökvägar"
@@ -432,9 +441,14 @@
       },
       "basic_settings": "Grundinställningar",
       "custom_css": {
-        "description": "Sidan måste laddas om för att ändringar ska ta effekt.",
+        "description": "Sidan måste laddas om för att ändringar ska ta effekt. Det finns ingen garanti att egen CSS kommer vara kompatibel med framtida versioner av Stash.",
         "heading": "Anpassad CSS",
         "option_label": "Använd anpassad CSS"
+      },
+      "custom_javascript": {
+        "description": "Sidan måste laddas om för att förändringarna ska ske. Det finns ingen garanti att egen JavaScript kommer vara kompatibel med framtida versioner av Stash.",
+        "heading": "Egen Javascript",
+        "option_label": "Egen Javascript aktiverad"
       },
       "custom_locales": {
         "description": "Ändra individuella lokala strängar. Se https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json för kompletta listan. Sidan måste laddas om för att ändringar ska ske.",
@@ -461,7 +475,24 @@
           "description": "Ta bort möjligheten att skapa nya objekt från dropdown-menyer",
           "heading": "Stäng av skapande via dropdowns"
         },
-        "heading": "Redigering"
+        "heading": "Redigering",
+        "rating_system": {
+          "star_precision": {
+            "label": "Betygstjärnors precision",
+            "options": {
+              "full": "Hel",
+              "half": "Halv",
+              "quarter": "Fjärdedel"
+            }
+          },
+          "type": {
+            "label": "Typ av betygsystem",
+            "options": {
+              "decimal": "Decimal",
+              "stars": "Stjärnor"
+            }
+          }
+        }
       },
       "funscript_offset": {
         "description": "Tidsfördröjning i millisekunder för interaktiva skripter.",
@@ -505,6 +536,10 @@
         "description": "Visa eller göm olika flikar på navigationsremsan",
         "heading": "Menyobjekt"
       },
+      "minimum_play_percent": {
+        "description": "I procent, hur mycket av scenen som måste spelas innan visningsräknaren ökar.",
+        "heading": "Minimal Visningsprocent"
+      },
       "performers": {
         "options": {
           "image_location": {
@@ -531,6 +566,7 @@
       "scene_player": {
         "heading": "Scenspelaren",
         "options": {
+          "always_start_from_beginning": "Starta alltid video från början",
           "auto_start_video": "Starta videouppspelning automatiskt",
           "auto_start_video_on_play_selected": {
             "description": "Autostarta uppspelning från kön, valda eller slumpade från Scener-sidan",
@@ -540,7 +576,8 @@
             "description": "Spela nästa scen i kö efter scenens slut",
             "heading": "Fortsätt spellista som standard"
           },
-          "show_scrubber": "Visa skrubbaren"
+          "show_scrubber": "Visa skrubbaren",
+          "track_activity": "Spåra Aktivitet"
         }
       },
       "scene_wall": {
@@ -629,7 +666,7 @@
   "details": "Beskrivningar",
   "developmentVersion": "Utvecklingsversion",
   "dialogs": {
-    "aliases_must_be_unique": "alias måste vara unik",
+    "create_new_entity": "Skapa ny {entity}",
     "delete_alert": "De följande {count, plural, one {{singularEntity}} andra {{pluralEntity}}} kommer raderas permanent:",
     "delete_confirm": "Är du säker på att du vill radera {entityName}?",
     "delete_entity_desc": "{count, plural, one {Är du säker att du vill radera detta {singularEntity}? Sålänge filen inte också raderas, kommer {singularEntity} att läggas till igen vid nästa skanning.} other {Är du säker att du vill radera dessa {pluralEntity}? Sålänge filen inte också raderas, kommer dessa {pluralEntity} att läggas till igen vid nästa skanning.}}",
@@ -665,11 +702,20 @@
         "zoom": "Zooma"
       }
     },
+    "merge": {
+      "destination": "Destination",
+      "empty_results": "Destinationens värden kommer ej ändras.",
+      "source": "Källa"
+    },
     "merge_tags": {
       "destination": "Mål",
       "source": "Källa"
     },
     "overwrite_filter_confirm": "Är du säker på att du vill skriva över existerande sökning {entityName}?",
+    "reassign_entity_title": "{count, plural, one {Omplacera {singularEntity}} other {Omplacera {pluralEntity}}}",
+    "reassign_files": {
+      "destination": "Omplacera till"
+    },
     "scene_gen": {
       "force_transcodes": "Tvinga omkodning",
       "force_transcodes_tooltip": "Som standard blir videofiler bara omkodade om formatet inte stöds i webbläsaren. Vid aktivering kommer alla videofiler bli omkodande, även om de antas vara stöttade i webbläsaren.",
@@ -715,6 +761,7 @@
   },
   "dimensions": "Mått",
   "director": "Regissör",
+  "disambiguation": "Särskiljning",
   "display_mode": {
     "grid": "Rutnät",
     "list": "Lista",
@@ -770,6 +817,7 @@
   "file_info": "Filinfo",
   "file_mod_time": "Filens Modifikationstid",
   "files": "filer",
+  "files_amount": "{value} filer",
   "filesize": "Filstorlek",
   "filter": "Filter",
   "filter_name": "Filternamn",
@@ -820,6 +868,7 @@
   "interactive": "Interaktiv",
   "interactive_speed": "Interaktiv hastighet",
   "isMissing": "Saknas",
+  "last_played_at": "Senast spelad",
   "library": "Bibliotek",
   "loading": {
     "generic": "Laddar…"
@@ -838,6 +887,8 @@
       "age_context": "{age} {years_old} i den här scenen"
     },
     "phash": "PHash",
+    "play_count": "Visningar",
+    "play_duration": "Uppspelad tid",
     "stream": "Ström",
     "video_codec": "Videokodek"
   },
@@ -908,6 +959,8 @@
   },
   "performers": "Stjärnor",
   "piercings": "Piercingar",
+  "play_count": "Visningar",
+  "play_duration": "Uppspelad tid",
   "primary_file": "Primär fil",
   "queue": "Kö",
   "random": "Slumpad",
@@ -916,12 +969,16 @@
   "recently_released_objects": "Nyligen Släppta {objects}",
   "release_notes": "Versionsfakta",
   "resolution": "Upplösning",
+  "resume_time": "Återupptagningstid",
   "scene": "Scen",
   "sceneTagger": "Scentaggaren",
   "sceneTags": "Scentaggar",
   "scene_code": "Studiokod",
   "scene_count": "Antal scener",
+  "scene_created_at": "Scenen Skapad",
+  "scene_date": "Scenens Datum",
   "scene_id": "Scenens ID",
+  "scene_updated_at": "Scenen Uppdaterad",
   "scenes": "Scener",
   "scenes_updated_at": "Scen uppdaterad vid",
   "search_filter": {
@@ -997,7 +1054,7 @@
       "your_system_has_been_created": "Framgång! Ditt system har skapats!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash försöker att hitta sin konfigurationsfil (<code>config.yml</code>) från den nuvarande arbetsmappen först, och om den inte finns där, letar den i <code>$HOME/.stash/config.yml</code> (för Windows är detta <code>%USERPROFILE%\\.stash\\config.yml</code>). Du kan också låta Stash läsa en specifik konfigurationsfil genom att starta den med <code>-c <path to config file></code> eller <code>--config <path to config file></code> inställningarna.",
+      "config_path_logic_explained": "Stash försöker att hitta sin konfigurationsfil (<code>config.yml</code>) från den nuvarande arbetsmappen först, och om den inte finns där, letar den i <code>$HOME/.stash/config.yml</code> (för Windows är detta <code>%USERPROFILE%\\.stash\\config.yml</code>). Du kan också låta Stash läsa en specifik konfigurationsfil genom att starta den med <code>-c '<path to config file>'</code> eller <code>--config '<path to config file>'</code> inställningarna.",
       "in_current_stash_directory": "I mappen <code>$HOME/.stash</code>",
       "in_the_current_working_directory": "I den nuvarande arbetsmappen",
       "next_step": "Med allt det färdigt, kan vi fortsätta med uppstarten om du är redo. Välj var du skulle vilja lagra din konfigurationsfil och tryck på Nästa.",
@@ -1013,6 +1070,7 @@
     "welcome_to_stash": "Välkommen till Stash"
   },
   "stash_id": "Stash ID",
+  "stash_id_endpoint": "Stash ID Slutpunkt",
   "stash_ids": "Stash ID:er",
   "stashbox": {
     "go_review_draft": "Gå till {endpoint_name} för att granska utkast.",
@@ -1048,7 +1106,9 @@
     "default_filter_set": "Standardfilter valt",
     "delete_past_tense": "Raderade {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Genererar skärmbild…",
+    "merged_scenes": "Sammanslagna scener",
     "merged_tags": "Slog samman taggar",
+    "reassign_past_tense": "Fil omplacerad",
     "removed_entity": "Tog bort {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "rescanning_entity": "Återskannar {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "Sparade {entity}",
@@ -1063,6 +1123,9 @@
   "type": "Typ",
   "updated_at": "Uppdaterad vid",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "alias måste vara unik"
+  },
   "videos": "Videor",
   "view_all": "Visa Allt",
   "weight": "Vikt",

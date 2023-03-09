@@ -17,7 +17,6 @@
 
 # GraphQL generated output
 internal/api/generated_*.go
-ui/v2.5/src/core/generated-*.tsx
 
 ####
 # Jetbrains
@@ -64,3 +63,4 @@ node_modules
 /stash
 dist
 .DS_Store
+/.local

@@ -8,7 +8,7 @@ const useInterval = (
   delay: number | null = 5000
 ): (() => void)[] => {
   const savedCallback = useRef<() => void>();
-  const savedIntervalId = useRef<NodeJS.Timeout>();
+  const savedIntervalId = useRef<number>();
   const [savedDelay, setSavedDelay] = useState<number | null>(delay);
 
   useEffect(() => {

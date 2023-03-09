@@ -66,6 +66,7 @@
     "play_selected": "Reproducir seleccionada",
     "preview": "Vista previa",
     "previous_action": "Atrás",
+    "reassign": "Reasignar",
     "refresh": "Actualizar",
     "reload_plugins": "Recargar plugins",
     "reload_scrapers": "Recargar rastreadores",
@@ -98,10 +99,12 @@
     "show": "Mostrar",
     "show_configuration": "Mostrar configuración",
     "skip": "Saltar",
+    "split": "Dividir",
     "stop": "Parar",
     "submit": "Enviar",
     "submit_stash_box": "Enviar a Stash-Box",
     "submit_update": "Enviar Actualización",
+    "swap": "Intercambia",
     "tasks": {
       "clean_confirm_message": "¿Estás seguro que quieres iniciar la limpieza? Esto eliminará la información en la base de datos, y el contenido generado para todas las escenas y galerías que ya no estén disponibles en el sistema de ficheros.",
       "dry_mode_selected": "Modo de simulación seleccionado. No se eliminará información, solo se guardarán registros de las acciones a realizar.",
@@ -120,6 +123,7 @@
   "also_known_as": "También conocida como",
   "ascending": "Ascendente",
   "average_resolution": "Resolución media",
+  "between_and": "y",
   "birth_year": "Año de nacimiento",
   "birthdate": "Cumpleaños",
   "bitrate": "Tasa de bits",
@@ -189,6 +193,7 @@
     },
     "categories": {
       "about": "Acerca de",
+      "changelog": "Registro de cambios",
       "interface": "Diseño",
       "logs": "Registros",
       "metadata_providers": "Proveedores de Metadatos",
@@ -242,6 +247,10 @@
         "stash-box_integration": "Integración Stash-box",
         "username": "Usuario",
         "username_desc": "Usuario para acceder a Stash. Dejar en blanco para deshabilitar la exigencia de identificación para acceder a la aplicación"
+      },
+      "backup_directory_path": {
+        "description": "Ubicación del directorio para copias de seguridad de archivos de bases de datos SQLite",
+        "heading": "Ruta del directorio de la copia de seguridad"
       },
       "cache_location": "Ruta relativa del directorio donde se almacenarán los ficheros de la caché",
       "cache_path_head": "Ruta relative para la caché",
@@ -420,11 +429,20 @@
       "scene_tools": "Herramientas de escenas"
     },
     "ui": {
+      "abbreviate_counters": {
+        "description": "Abrevie los contadores en las tarjetas y en las páginas de vista de detalles, por ejemplo, \"1831\" tendrá el formato \"1.8K\".",
+        "heading": "Abreviar contadores"
+      },
       "basic_settings": "Ajustes básicos",
       "custom_css": {
         "description": "La página debe ser recargada para que se lleven a cabo los cambios realizados.",
         "heading": "CSS personalizado",
         "option_label": "Habilitar CSS personalizado"
+      },
+      "custom_javascript": {
+        "description": "La página debe ser refrescada para que los cambios tomen efecto.",
+        "heading": "JavaScript personalizada",
+        "option_label": "JavaScript personalizada activada"
       },
       "delete_options": {
         "description": "Opciones por defecto al borrar escenas, imágenes y galerías.",
@@ -446,7 +464,15 @@
           "description": "Eliminar la capacidad de crear nuevos recursos desde los selectores de formulario desplegables",
           "heading": "Deshabilitar creación en menú desplegable"
         },
-        "heading": "Edición"
+        "heading": "Edición",
+        "rating_system": {
+          "type": {
+            "options": {
+              "decimal": "Decimal",
+              "stars": "Estrellas"
+            }
+          }
+        }
       },
       "funscript_offset": {
         "description": "Tiempo de compensación en milisegundos para la reproducción de scripts interactivos.",
@@ -581,7 +607,6 @@
   "details": "Detalles",
   "developmentVersion": "Versión de desarrollo",
   "dialogs": {
-    "aliases_must_be_unique": "Los alias deben ser únicos",
     "delete_alert": "El/los siguiente/s {count, plural, one {{singularEntity}} other {{pluralEntity}}} se eliminará/n de forma permanente:",
     "delete_confirm": "¿Estás seguro que deseas eliminar {entityName}?",
     "delete_entity_desc": "{count, plural, one {¿Estás seguro que deseas eliminar esta {singularEntity}? Hasta que el archivo sea eliminado también, esta {singularEntity} se volverá a añadir cuando se lleve a cabo un escaneo.} other {¿Estás seguro que deseas eliminar {pluralEntity}? Hasta que los archivos sean eliminados del sistema de ficheros también, estas {pluralEntity} se volverán a añadir cuando se lleve a cabo un escaneo.}}",
@@ -929,7 +954,7 @@
       "your_system_has_been_created": "¡Todo correcto! ¡Tu entorno ha sido creado!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash intenta encontrar primero su archivo de configuración (<code>config.yml</code>) en el directorio actual de trabajo y, en caso de no encontrarlo, lo intenta en <code>$HOME/.stash/config.yml</code> (en Windows será <code>%USERPROFILE%\\.stash\\config.yml</code>). También puedes hacer que Stash obtenga su configuración de un archivo de configuración lanzando la aplicación con las opciones <code>-c <ruta personalizada al archivo de configuración></code> o <code>--config <ruta personalizada al archivo de configuración></code>.",
+      "config_path_logic_explained": "Stash intenta encontrar primero su archivo de configuración (<code>config.yml</code>) en el directorio actual de trabajo y, en caso de no encontrarlo, lo intenta en <code>$HOME/.stash/config.yml</code> (en Windows será <code>%USERPROFILE%\\.stash\\config.yml</code>). También puedes hacer que Stash obtenga su configuración de un archivo de configuración lanzando la aplicación con las opciones <code>-c '<ruta personalizada al archivo de configuración>'</code> o <code>--config '<ruta personalizada al archivo de configuración>'</code>.",
       "in_current_stash_directory": "En el directorio <code>$HOME/.stash</code>",
       "in_the_current_working_directory": "En el directorio de trabajo actual",
       "next_step": "Si estás listo para crear un nuevo entorno, por favor, selecciona donde quieres guardar tu archivo de configuración y haz clic en siguiente.",
@@ -991,6 +1016,9 @@
   "twitter": "Twitter",
   "updated_at": "Fecha de modificación",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "Los alias deben ser únicos"
+  },
   "videos": "Vídeos",
   "weight": "Peso",
   "years_old": "años"
