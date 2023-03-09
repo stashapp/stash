@@ -424,6 +424,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             input: {
               ...input,
               gender: input.gender || null,
+              height_cm: input.height_cm || null,
+              weight: input.weight || null,
             },
           },
         });
@@ -437,6 +439,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
               id: performer.id!,
               ...input,
               gender: input.gender || null,
+              height_cm: input.height_cm || null,
+              weight: input.weight || null,
             },
           },
         });
