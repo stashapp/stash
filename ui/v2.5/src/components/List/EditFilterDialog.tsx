@@ -22,6 +22,7 @@ import { FilterTags } from "./FilterTags";
 import { CriterionEditor } from "./CriterionEditor";
 import { Icon } from "../Shared/Icon";
 import { faChevronLeft, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { useCompare } from "src/hooks/state";
 
 interface ICriterionList {
   criteria: string[];
@@ -160,14 +161,21 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     [criteria, config]
   );
 
+  const editingCriterionChanged = useCompare(editingCriterion);
+
   useEffect(() => {
-    if (editingCriterion) {
+    if (editingCriterionChanged && editingCriterion) {
       const option = criterionOptions.find((c) => c.type === editingCriterion);
       if (option) {
         optionSelected(option);
       }
     }
-  }, [editingCriterion, criterionOptions, optionSelected]);
+  }, [
+    editingCriterion,
+    criterionOptions,
+    optionSelected,
+    editingCriterionChanged,
+  ]);
 
   function replaceCriterion(c: Criterion<CriterionValue>) {
     const newFilter = cloneDeep(currentFilter);
