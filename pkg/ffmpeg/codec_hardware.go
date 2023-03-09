@@ -2,6 +2,8 @@ package ffmpeg
 
 import (
 	"context"
+	"fmt"
+	"io"
 	"regexp"
 	"strings"
 
@@ -22,7 +24,7 @@ func (f *FFMpeg) InitHWSupport(ctx context.Context) {
 	} {
 		var args Args
 		args = append(args, "-hide_banner")
-		args = args.LogLevel(LogLevelQuiet)
+		args = args.LogLevel(LogLevelWarning)
 		args = f.hwDeviceInit(args, codec)
 		args = args.Format("lavfi")
 		args = args.Input("color=c=red")
@@ -40,15 +42,29 @@ func (f *FFMpeg) InitHWSupport(ctx context.Context) {
 
 		cmd := f.Command(ctx, args)
 
-		if err := cmd.Run(); err == nil {
+		stderr, err := cmd.StderrPipe()
+		if err != nil {
+			logger.Errorf("[transcode] ffmpeg stderr not available: %v", err)
+		}
+
+		if err := cmd.Start(); err != nil {
+			logger.Debugf("[InitHWSupport] error starting command: %w", err)
+			continue
+		}
+
+		errStr, _ := io.ReadAll(stderr)
+		if err := cmd.Wait(); err != nil {
+			logger.Debugf("[InitHWSupport] error running ffmpeg command <%s>: %s", strings.Join(args, " "), errStr)
+		} else {
 			hwCodecSupport = append(hwCodecSupport, codec)
 		}
 	}
 
-	logger.Info("Supported HW codecs: ")
+	outstr := "[InitHWSupport] Supported HW codecs:\n"
 	for _, codec := range hwCodecSupport {
-		logger.Info("\t", codec)
+		outstr += fmt.Sprintf("\t%s\n", codec)
 	}
+	logger.Info(outstr)
 
 	f.hwCodecSupport = hwCodecSupport
 }
