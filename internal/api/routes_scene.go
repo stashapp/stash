@@ -61,6 +61,9 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/stream.mkv", rs.StreamMKV)
 		r.Get("/stream.m3u8", rs.StreamHLS)
 		r.Get("/stream.m3u8/{segment}.ts", rs.StreamHLSSegment)
+		r.Get("/stream.mpd", rs.StreamDASH)
+		r.Get("/stream.mpd/{segment}_v.webm", rs.StreamDASHVideoSegment)
+		r.Get("/stream.mpd/{segment}_a.webm", rs.StreamDASHAudioSegment)
 
 		r.Get("/screenshot", rs.Screenshot)
 		r.Get("/preview", rs.Preview)
@@ -168,6 +171,10 @@ func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
 	rs.streamManifest(w, r, ffmpeg.StreamTypeHLS, "HLS")
 }
 
+func (rs sceneRoutes) StreamDASH(w http.ResponseWriter, r *http.Request) {
+	rs.streamManifest(w, r, ffmpeg.StreamTypeDASHVideo, "DASH")
+}
+
 func (rs sceneRoutes) streamManifest(w http.ResponseWriter, r *http.Request, streamType *ffmpeg.StreamType, logName string) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
@@ -194,6 +201,14 @@ func (rs sceneRoutes) streamManifest(w http.ResponseWriter, r *http.Request, str
 
 func (rs sceneRoutes) StreamHLSSegment(w http.ResponseWriter, r *http.Request) {
 	rs.streamSegment(w, r, ffmpeg.StreamTypeHLS)
+}
+
+func (rs sceneRoutes) StreamDASHVideoSegment(w http.ResponseWriter, r *http.Request) {
+	rs.streamSegment(w, r, ffmpeg.StreamTypeDASHVideo)
+}
+
+func (rs sceneRoutes) StreamDASHAudioSegment(w http.ResponseWriter, r *http.Request) {
+	rs.streamSegment(w, r, ffmpeg.StreamTypeDASHAudio)
 }
 
 func (rs sceneRoutes) streamSegment(w http.ResponseWriter, r *http.Request, streamType *ffmpeg.StreamType) {

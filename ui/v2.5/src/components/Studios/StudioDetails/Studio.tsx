@@ -12,7 +12,6 @@ import {
   useStudioDestroy,
   mutateMetadataAutoTag,
 } from "src/core/StashService";
-import ImageUtils from "src/utils/image";
 import { Counter } from "src/components/Shared/Counter";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { ModalComponent } from "src/components/Shared/Modal";
@@ -54,8 +53,9 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
-  // Studio state
+  // Editing studio state
   const [image, setImage] = useState<string | null>();
+  const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
   const [updateStudio] = useStudioUpdate();
   const [deleteStudio] = useStudioDestroy({ id: studio.id });
@@ -73,17 +73,14 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     };
   });
 
-  function onImageLoad(imageData: string) {
-    setImage(imageData);
-  }
-
-  const imageEncoding = ImageUtils.usePasteImage(onImageLoad, isEditing);
-
-  async function onSave(input: Partial<GQL.StudioUpdateInput>) {
+  async function onSave(input: GQL.StudioCreateInput) {
     try {
       const result = await updateStudio({
         variables: {
-          input: input as GQL.StudioUpdateInput,
+          input: {
+            id: studio.id,
+            ...input,
+          },
         },
       });
       if (result.data?.studioUpdate) {
@@ -181,7 +178,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     <div className="row">
       <div className="studio-details col-md-4">
         <div className="text-center">
-          {imageEncoding ? (
+          {encodingImage ? (
             <LoadingIndicator message="Encoding image..." />
           ) : (
             renderImage()
@@ -213,7 +210,8 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
             onSubmit={onSave}
             onCancel={onToggleEdit}
             onDelete={onDelete}
-            onImageChange={setImage}
+            setImage={setImage}
+            setEncodingImage={setEncodingImage}
           />
         )}
       </div>
@@ -237,7 +235,10 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               </React.Fragment>
             }
           >
-            <StudioScenesPanel studio={studio} />
+            <StudioScenesPanel
+              active={activeTabKey == "scenes"}
+              studio={studio}
+            />
           </Tab>
           <Tab
             eventKey="galleries"
@@ -251,7 +252,10 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               </React.Fragment>
             }
           >
-            <StudioGalleriesPanel studio={studio} />
+            <StudioGalleriesPanel
+              active={activeTabKey == "galleries"}
+              studio={studio}
+            />
           </Tab>
           <Tab
             eventKey="images"
@@ -265,7 +269,10 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               </React.Fragment>
             }
           >
-            <StudioImagesPanel studio={studio} />
+            <StudioImagesPanel
+              active={activeTabKey == "images"}
+              studio={studio}
+            />
           </Tab>
           <Tab
             eventKey="performers"
@@ -279,7 +286,10 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               </React.Fragment>
             }
           >
-            <StudioPerformersPanel studio={studio} />
+            <StudioPerformersPanel
+              active={activeTabKey == "performers"}
+              studio={studio}
+            />
           </Tab>
           <Tab
             eventKey="movies"
@@ -293,7 +303,10 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               </React.Fragment>
             }
           >
-            <StudioMoviesPanel studio={studio} />
+            <StudioMoviesPanel
+              active={activeTabKey == "movies"}
+              studio={studio}
+            />
           </Tab>
           <Tab
             eventKey="childstudios"
@@ -307,7 +320,10 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               </React.Fragment>
             }
           >
-            <StudioChildrenPanel studio={studio} />
+            <StudioChildrenPanel
+              active={activeTabKey == "childstudios"}
+              studio={studio}
+            />
           </Tab>
         </Tabs>
       </div>

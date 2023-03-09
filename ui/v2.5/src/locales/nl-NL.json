@@ -590,7 +590,6 @@
   "details": "Details",
   "developmentVersion": "Ontwikkelingsversie",
   "dialogs": {
-    "aliases_must_be_unique": "aliases moeten uniek zijn",
     "delete_alert": "De volgende {count, plural, one {{singularEntity}} other {{pluralEntity}}} zal permanent verwijderd worden:",
     "delete_confirm": "Weet je zeker dat je {entityName} wilt verwijderen?",
     "delete_entity_desc": "{count, plural, one {Weet u zeker dat u deze {singularEntity} wilt verwijderen? Tenzij het bestand ook wordt verwijderd, wordt deze {singularEntity} opnieuw toegevoegd wanneer de scan wordt uitgevoerd.} other {Weet u zeker dat u deze {pluralEntity} wilt verwijderen? Tenzij de bestanden ook worden verwijderd, worden deze {pluralEntity} opnieuw toegevoegd wanneer de scan wordt uitgevoerd.}}",
@@ -988,6 +987,9 @@
   "twitter": "Twitter",
   "updated_at": "Bijgewerkt op",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "aliases moeten uniek zijn"
+  },
   "videos": "Video's",
   "view_all": "Alles weergeven",
   "weight": "Gewicht",

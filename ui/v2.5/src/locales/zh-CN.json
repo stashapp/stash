@@ -666,7 +666,6 @@
   "details": "简介",
   "developmentVersion": "开发版本",
   "dialogs": {
-    "aliases_must_be_unique": "别名必须是唯一的",
     "create_new_entity": "创建新的 {entity}",
     "delete_alert": "以下 {count, plural, one {{singularEntity}} other {{pluralEntity}}} 会被永久删除:",
     "delete_confirm": "确定要删除 {entityName} 吗?",
@@ -1124,6 +1123,9 @@
   "type": "类别",
   "updated_at": "更新时间",
   "url": "链接",
+  "validation": {
+    "aliases_must_be_unique": "别名必须是唯一的"
+  },
   "videos": "视频",
   "view_all": "查看全部",
   "weight": "体重",

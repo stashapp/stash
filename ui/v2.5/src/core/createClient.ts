@@ -120,8 +120,8 @@ export const createClient = () => {
   const platformUrl = getPlatformURL();
   const wsPlatformUrl = getPlatformURL(true);
 
-  const url = `${platformUrl.toString()}graphql`;
-  const wsUrl = `${wsPlatformUrl.toString()}graphql`;
+  const url = `${platformUrl}graphql`;
+  const wsUrl = `${wsPlatformUrl}graphql`;
 
   const httpLink = createUploadLink({ uri: url });
 
@@ -140,7 +140,7 @@ export const createClient = () => {
     if (networkError && (networkError as ServerError).statusCode === 401) {
       // redirect to login page
       const newURL = new URL(
-        `${window.STASH_BASE_URL}login`,
+        `${getBaseURL()}login`,
         window.location.toString()
       );
       newURL.searchParams.append("returnURL", window.location.href);

@@ -666,7 +666,6 @@
   "details": "細節",
   "developmentVersion": "開發版本",
   "dialogs": {
-    "aliases_must_be_unique": "別名不可重複",
     "create_new_entity": "建立新{entity}",
     "delete_alert": "以下{count, plural, one {{singularEntity}} other {{pluralEntity}}}將被永久刪除：",
     "delete_confirm": "你確定要刪除 {entityName} 嗎？",
@@ -1124,6 +1123,9 @@
   "type": "種類",
   "updated_at": "更新於",
   "url": "連結",
+  "validation": {
+    "aliases_must_be_unique": "別名不可重複"
+  },
   "videos": "影片",
   "view_all": "顯示全部",
   "weight": "體重",
