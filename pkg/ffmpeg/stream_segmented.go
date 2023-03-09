@@ -122,23 +122,19 @@ var (
 		Name:          "dash-v",
 		SegmentType:   SegmentTypeWEBMVideo,
 		ServeManifest: serveDASHManifest,
-		Args: func(segment int, videoFilter VideoFilter, videoOnly bool, outputDir string) (args Args) {
+		Args: func(codec VideoCodec, segment int, videoFilter VideoFilter, videoOnly bool, outputDir string) (args Args) {
 			// only generate the actual init segment (init_v.webm)
 			// when generating the first segment
 			init := ".init"
 			if segment == 0 {
 				init = "init"
 			}
+
+			args = CodecInit(codec)
 			args = append(args,
-				"-c:v", "libvpx-vp9",
-				"-pix_fmt", "yuv420p",
-				"-deadline", "realtime",
-				"-cpu-used", "5",
-				"-row-mt", "1",
-				"-crf", "30",
-				"-b:v", "0",
 				"-force_key_frames", fmt.Sprintf("expr:gte(t,n_forced*%d)", segmentLength),
 			)
+
 			args = args.VideoFilter(videoFilter)
 			args = append(args,
 				"-copyts",
@@ -156,7 +152,7 @@ var (
 		Name:          "dash-a",
 		SegmentType:   SegmentTypeWEBMAudio,
 		ServeManifest: serveDASHManifest,
-		Args: func(segment int, videoFilter VideoFilter, videoOnly bool, outputDir string) (args Args) {
+		Args: func(codec VideoCodec, segment int, videoFilter VideoFilter, videoOnly bool, outputDir string) (args Args) {
 			// only generate the actual init segment (init_a.webm)
 			// when generating the first segment
 			init := ".init"
@@ -309,6 +305,11 @@ func HLSGetCodec(sm *StreamManager, name string) (codec VideoCodec) {
 	case "hls":
 		codec = VideoCodecLibX264
 		if hwcodec := sm.encoder.hwCodecHLSCompatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
+			codec = *hwcodec
+		}
+	case "dash-v":
+		codec = VideoCodecVP9
+		if hwcodec := sm.encoder.hwCodecWEBMCompatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
 			codec = *hwcodec
 		}
 	case "hls-copy":
