@@ -10,6 +10,20 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
+var (
+	// Hardware codec's
+	VideoCodecN264 VideoCodec = "h264_nvenc"
+	VideoCodecI264 VideoCodec = "h264_qsv"
+	VideoCodecA264 VideoCodec = "h264_amf"
+	VideoCodecM264 VideoCodec = "h264_videotoolbox"
+	VideoCodecV264 VideoCodec = "h264_vaapi"
+	VideoCodecR264 VideoCodec = "h264_v4l2m2m"
+	VideoCodecO264 VideoCodec = "h264_omx"
+	VideoCodecIVP9 VideoCodec = "vp9_qsv"
+	VideoCodecVVP9 VideoCodec = "vp9_vaapi"
+	VideoCodecVVPX VideoCodec = "vp8_vaapi"
+)
+
 // Tests all (given) hardware codec's
 func (f *FFMpeg) InitHWSupport(ctx context.Context) {
 	var hwCodecSupport []VideoCodec
