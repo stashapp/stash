@@ -26,7 +26,9 @@ export const ChapterEntries: React.FC<IChapterEntries> = ({
             onClick={() => onClickChapter(chapter.image_index)}
           >
             <div className="row">
-              {chapter.title} - #{chapter.image_index}
+              {chapter.title}
+              {chapter.title.length > 0 ? " - #" : "#"}
+              {chapter.image_index}
             </div>
           </Button>
           <Button

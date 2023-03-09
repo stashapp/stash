@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, Form } from "react-bootstrap";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Field, FieldProps, Form as FormikForm, Formik } from "formik";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -8,7 +8,7 @@ import {
   useGalleryChapterUpdate,
   useGalleryChapterDestroy,
 } from "src/core/StashService";
-import useToast from "src/hooks/Toast";
+import { useToast } from "src/hooks/Toast";
 
 interface IFormFields {
   title: string;
@@ -30,8 +30,23 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
   const [galleryChapterUpdate] = useGalleryChapterUpdate();
   const [galleryChapterDestroy] = useGalleryChapterDestroy();
   const Toast = useToast();
+  const intl = useIntl();
+  const imagesQuery = GQL.useFindImagesQuery({
+    variables: {
+      filter: {
+        per_page: 100000,
+        sort: "path",
+      },
+      image_filter: {
+        galleries: {
+          modifier: GQL.CriterionModifier.Includes,
+          value: [galleryID],
+        },
+      },
+    },
+  });
 
-  const onSubmit = (values: IFormFields) => {
+  const onSubmit = async (values: IFormFields) => {
     const variables:
       | GQL.GalleryChapterUpdateInput
       | GQL.GalleryChapterCreateInput = {
@@ -39,6 +54,15 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
       image_index: parseInt(values.imageIndex),
       gallery_id: galleryID,
     };
+    await imagesQuery;
+    if (
+      imagesQuery.data?.findImages.count &&
+      variables.image_index > imagesQuery.data.findImages.count
+    ) {
+      Toast.error(intl.formatMessage({ id: "toast.image_index_too_large" }));
+      return;
+    }
+
     if (!editingChapter) {
       galleryChapterCreate({ variables })
         .then(onClose)
@@ -100,7 +124,7 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
             </div>
             <Form.Label
               htmlFor="imageIndex"
-              className="col-sm-4 col-md-4 col-xl-12 col-form-label text-sm-right text-xl-left"
+              className="col-sm-3 col-md-2 col-xl-12 col-form-label"
             >
               Image #
             </Form.Label>

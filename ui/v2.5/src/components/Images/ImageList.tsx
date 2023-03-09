@@ -163,7 +163,8 @@ const ImageListImages: React.FC<IImageListImages> = ({
 
   const showLightbox = useLightbox(
     lightboxState,
-    filter.sortBy === "path" && filter.sortDirection === GQL.SortDirectionEnum.Asc
+    filter.sortBy === "path" &&
+      filter.sortDirection === GQL.SortDirectionEnum.Asc
       ? chapters
       : []
   );

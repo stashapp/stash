@@ -496,7 +496,9 @@ export const LightboxComponent: React.FC<IProps> = ({
     const popoverContent = chapters.map(({ id, title, image_index }) => (
       <p key={id} onClick={() => gotoPage(image_index - 1)}>
         {" "}
-        {title} - {image_index}
+        {title}
+        {title.length > 0 ? " - #" : "#"}
+        {image_index}
       </p>
     ));
 
@@ -511,22 +513,23 @@ export const LightboxComponent: React.FC<IProps> = ({
             <Icon icon={showChapters ? faTimes : faBars} />
           </Button>
         </div>
-        {chapterMenuRef.current && (
-          <Overlay
-            show={showChapters}
-            placement="bottom"
-            target={chapterMenuRef.current}
-            container={containerRef}
+        <Overlay
+          show={showChapters}
+          placement="bottom"
+          target={chapterMenuRef.current}
+          container={containerRef}
+          rootClose
+        >
+          <div
+            onClick={() => setShowChapters(!showChapters)}
+            className={CLASSNAME_CHAPTERS + " popover"}
           >
-            <Popover
-              onClick={() => setShowChapters(!showChapters)}
-              id="popover"
-              className={CLASSNAME_CHAPTERS + " hover-popover-content"}
-            >
-              {popoverContent}
-            </Popover>
-          </Overlay>
-        )}
+            <Popover.Title>
+              <FormattedMessage id="chapters" />
+            </Popover.Title>
+            <div className="popover-body">{popoverContent}</div>
+          </div>
+        </Overlay>
       </>
     );
   };

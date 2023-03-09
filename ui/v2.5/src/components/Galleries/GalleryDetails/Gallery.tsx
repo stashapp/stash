@@ -14,8 +14,8 @@ import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { Icon } from "src/components/Shared/Icon";
 import { Counter } from "src/components/Shared/Counter";
 import Mousetrap from "mousetrap";
-
-import { useToast, useGalleryLightbox } from "src/hooks";
+import { useGalleryLightbox } from "src/hooks/Lightbox/hooks";
+import { useToast } from "src/hooks/Toast";
 import { OrganizedButton } from "src/components/Scenes/SceneDetails/OrganizedButton";
 import { GalleryEditPanel } from "./GalleryEditPanel";
 import { GalleryDetailPanel } from "./GalleryDetailPanel";

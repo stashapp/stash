@@ -1,6 +1,6 @@
 import React, { Suspense, useCallback, useState } from "react";
 import { lazyComponent } from "src/utils/lazyComponent";
-import { ILightboxImage } from "./types";
+import { ILightboxImage, IChapter } from "./types";
 
 const LightboxComponent = lazyComponent(() => import("./Lightbox"));
 

@@ -16,10 +16,8 @@ export const GalleryChapterPanel: React.FC<IGalleryChapterPanelProps> = (
   props: IGalleryChapterPanelProps
 ) => {
   const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
-  const [
-    editingChapter,
-    setEditingChapter,
-  ] = useState<GQL.GalleryChapterDataFragment>();
+  const [editingChapter, setEditingChapter] =
+    useState<GQL.GalleryChapterDataFragment>();
 
   // set up hotkeys
   useEffect(() => {
