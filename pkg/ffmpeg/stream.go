@@ -22,7 +22,7 @@ const (
 
 type StreamManager struct {
 	cacheDir string
-	encoder  FFMpeg
+	encoder  *FFMpeg
 	ffprobe  FFProbe
 
 	config      StreamManagerConfig
@@ -39,9 +39,10 @@ type StreamManagerConfig interface {
 	GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum
 	GetLiveTranscodeInputArgs() []string
 	GetLiveTranscodeOutputArgs() []string
+	GetTranscodeHardwareAcceleration() bool
 }
 
-func NewStreamManager(cacheDir string, encoder FFMpeg, ffprobe FFProbe, config StreamManagerConfig, lockManager *fsutil.ReadLockManager) *StreamManager {
+func NewStreamManager(cacheDir string, encoder *FFMpeg, ffprobe FFProbe, config StreamManagerConfig, lockManager *fsutil.ReadLockManager) *StreamManager {
 	if cacheDir == "" {
 		logger.Warn("cache directory is not set. Live HLS/DASH transcoding will be disabled")
 	}

@@ -294,6 +294,10 @@
             "heading": "FFmpeg Live Transcode Output Args",
             "desc": "Advanced: Additional arguments to pass to ffmpeg before the output field when live transcoding video."
           }
+        },
+        "hardware_acceleration": {
+            "heading": "FFmpeg hardware encoding",
+            "desc": "Uses available hardware to encode video for live transcoding."
         }
       },
       "funscript_heatmap_draw_range": "Include range in generated heatmaps",
