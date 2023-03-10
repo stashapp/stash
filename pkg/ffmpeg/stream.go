@@ -44,7 +44,7 @@ type StreamManagerConfig interface {
 
 func NewStreamManager(cacheDir string, encoder *FFMpeg, ffprobe FFProbe, config StreamManagerConfig, lockManager *fsutil.ReadLockManager) *StreamManager {
 	if cacheDir == "" {
-		logger.Warn("cache directory is not set. Live HLS transcoding will be disabled")
+		logger.Warn("cache directory is not set. Live HLS/DASH transcoding will be disabled")
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
