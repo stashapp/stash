@@ -1,9 +1,9 @@
 package ffmpeg
 
 import (
+	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"regexp"
 	"strings"
 
@@ -56,19 +56,22 @@ func (f *FFMpeg) InitHWSupport(ctx context.Context) {
 
 		cmd := f.Command(ctx, args)
 
-		stderr, err := cmd.StderrPipe()
-		if err != nil {
-			logger.Errorf("[transcode] ffmpeg stderr not available: %v", err)
-		}
+		var stderr bytes.Buffer
+		cmd.Stderr = &stderr
 
 		if err := cmd.Start(); err != nil {
 			logger.Debugf("[InitHWSupport] error starting command: %w", err)
 			continue
 		}
 
-		errStr, _ := io.ReadAll(stderr)
 		if err := cmd.Wait(); err != nil {
-			logger.Debugf("[InitHWSupport] error running ffmpeg command <%s>: %s", strings.Join(args, " "), errStr)
+			errOutput := stderr.String()
+
+			if len(errOutput) == 0 {
+				errOutput = err.Error()
+			}
+
+			logger.Debugf("[InitHWSupport] Codec %s not supported. Error output:\n%s", codec, errOutput)
 		} else {
 			hwCodecSupport = append(hwCodecSupport, codec)
 		}
