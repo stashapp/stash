@@ -1,4 +1,4 @@
-import { Tabs, Tab, Dropdown } from "react-bootstrap";
+import { Button, Tabs, Tab, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -49,6 +49,8 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
   const Toast = useToast();
   const intl = useIntl();
 
+  const [collapsed, setCollapsed] = useState(false);
+
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
   const abbreviateCounter =
@@ -88,6 +90,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
     Mousetrap.bind("d d", () => {
       onDelete();
     });
+    Mousetrap.bind(",", () => setCollapsed(!collapsed));
 
     return () => {
       if (isEditing) {
@@ -96,6 +99,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
 
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");
+      Mousetrap.unbind(",");
     };
   });
 
@@ -245,13 +249,19 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
     );
   }
 
+  function getCollapseButtonText() {
+    return collapsed ? ">" : "<";
+  }
+
   return (
     <>
       <Helmet>
         <title>{tag.name}</title>
       </Helmet>
       <div className="row">
-        <div className="tag-details col-md-4">
+        <div
+          className={`tag-details details-tab ${collapsed ? "collapsed" : ""}`}
+        >
           <div className="text-center logo-container">
             {encodingImage ? (
               <LoadingIndicator message="Encoding image..." />
@@ -290,7 +300,12 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
             />
           )}
         </div>
-        <div className="col col-md-8">
+        <div className="details-divider d-none d-xl-block">
+          <Button onClick={() => setCollapsed(!collapsed)}>
+            {getCollapseButtonText()}
+          </Button>
+        </div>
+        <div className={`col content-container ${collapsed ? "expanded" : ""}`}>
           <Tabs
             id="tag-tabs"
             mountOnEnter

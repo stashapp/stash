@@ -1,4 +1,4 @@
-import { Tabs, Tab } from "react-bootstrap";
+import { Button, Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -44,6 +44,8 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
   const intl = useIntl();
   const { tab = "details" } = useParams<IStudioParams>();
 
+  const [collapsed, setCollapsed] = useState(false);
+
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
   const abbreviateCounter =
@@ -66,10 +68,12 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     Mousetrap.bind("d d", () => {
       onDelete();
     });
+    Mousetrap.bind(",", () => setCollapsed(!collapsed));
 
     return () => {
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");
+      Mousetrap.unbind(",");
     };
   });
 
@@ -174,9 +178,15 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     }
   };
 
+  function getCollapseButtonText() {
+    return collapsed ? ">" : "<";
+  }
+
   return (
     <div className="row">
-      <div className="studio-details col-md-4">
+      <div
+        className={`studio-details details-tab ${collapsed ? "collapsed" : ""}`}
+      >
         <div className="text-center">
           {encodingImage ? (
             <LoadingIndicator message="Encoding image..." />
@@ -215,7 +225,12 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           />
         )}
       </div>
-      <div className="col col-md-8">
+      <div className="details-divider d-none d-xl-block">
+        <Button onClick={() => setCollapsed(!collapsed)}>
+          {getCollapseButtonText()}
+        </Button>
+      </div>
+      <div className={`col content-container ${collapsed ? "expanded" : ""}`}>
         <Tabs
           id="studio-tabs"
           mountOnEnter
