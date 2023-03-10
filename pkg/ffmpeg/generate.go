@@ -13,7 +13,7 @@ import (
 // Generate runs ffmpeg with the given args and waits for it to finish.
 // Returns an error if the command fails. If the command fails, the return
 // value will be of type *exec.ExitError.
-func (f FFMpeg) Generate(ctx context.Context, args Args) error {
+func (f *FFMpeg) Generate(ctx context.Context, args Args) error {
 	cmd := f.Command(ctx, args)
 
 	var stderr bytes.Buffer
@@ -36,7 +36,7 @@ func (f FFMpeg) Generate(ctx context.Context, args Args) error {
 }
 
 // GenerateOutput runs ffmpeg with the given args and returns it standard output.
-func (f FFMpeg) GenerateOutput(ctx context.Context, args []string, stdin io.Reader) ([]byte, error) {
+func (f *FFMpeg) GenerateOutput(ctx context.Context, args []string, stdin io.Reader) ([]byte, error) {
 	cmd := f.Command(ctx, args)
 	cmd.Stdin = stdin
 

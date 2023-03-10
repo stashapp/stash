@@ -11,6 +11,7 @@ func (c VideoCodec) Args() []string {
 }
 
 var (
+	// Software codec's
 	VideoCodecLibX264 VideoCodec = "libx264"
 	VideoCodecLibWebP VideoCodec = "libwebp"
 	VideoCodecBMP     VideoCodec = "bmp"

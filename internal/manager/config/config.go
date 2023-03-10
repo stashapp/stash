@@ -69,10 +69,11 @@ const (
 	ParallelTasks        = "parallel_tasks"
 	parallelTasksDefault = 1
 
+	PreviewPreset                 = "preview_preset"
+	TranscodeHardwareAcceleration = "ffmpeg.hardware_acceleration"
+
 	SequentialScanning        = "sequential_scanning"
 	SequentialScanningDefault = false
-
-	PreviewPreset = "preview_preset"
 
 	PreviewAudio        = "preview_audio"
 	previewAudioDefault = true
@@ -801,6 +802,10 @@ func (i *Instance) GetPreviewPreset() models.PreviewPreset {
 	}
 
 	return models.PreviewPreset(ret)
+}
+
+func (i *Instance) GetTranscodeHardwareAcceleration() bool {
+	return i.getBool(TranscodeHardwareAcceleration)
 }
 
 func (i *Instance) GetMaxTranscodeSize() models.StreamingResolutionEnum {
