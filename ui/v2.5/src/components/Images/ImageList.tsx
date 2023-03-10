@@ -83,13 +83,15 @@ const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
 
   return (
     <div className="gallery">
-      <Gallery
-        photos={photos}
-        onClick={showLightboxOnClick}
-        margin={uiConfig?.imageWallOptions?.margin!}
-        direction={uiConfig?.imageWallOptions?.direction!}
-        columns={columns}
-      />
+      {photos.length ? (
+        <Gallery
+          photos={photos}
+          onClick={showLightboxOnClick}
+          margin={uiConfig?.imageWallOptions?.margin!}
+          direction={uiConfig?.imageWallOptions?.direction!}
+          columns={columns}
+        />
+      ) : null}
     </div>
   );
 };
