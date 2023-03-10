@@ -51,7 +51,7 @@ type StreamType struct {
 	Name          string
 	SegmentType   *SegmentType
 	ServeManifest func(sm *StreamManager, w http.ResponseWriter, r *http.Request, vf *file.VideoFile, resolution string)
-	Args          func(segment int, videoFilter VideoFilter, videoOnly bool, outputDir string) Args
+	Args          func(codec VideoCodec, segment int, videoFilter VideoFilter, videoOnly bool, outputDir string) Args
 }
 
 var (
@@ -59,15 +59,11 @@ var (
 		Name:          "hls",
 		SegmentType:   SegmentTypeTS,
 		ServeManifest: serveHLSManifest,
-		Args: func(segment int, videoFilter VideoFilter, videoOnly bool, outputDir string) (args Args) {
+		Args: func(codec VideoCodec, segment int, videoFilter VideoFilter, videoOnly bool, outputDir string) (args Args) {
+			args = CodecInit(codec)
 			args = append(args,
-				"-c:v", "libx264",
-				"-pix_fmt", "yuv420p",
-				"-preset", "veryfast",
-				"-crf", "25",
 				"-flags", "+cgop",
 				"-force_key_frames", fmt.Sprintf("expr:gte(t,n_forced*%d)", segmentLength),
-				"-sc_threshold", "0",
 			)
 			args = args.VideoFilter(videoFilter)
 			if videoOnly {
@@ -97,10 +93,8 @@ var (
 		Name:          "hls-copy",
 		SegmentType:   SegmentTypeTS,
 		ServeManifest: serveHLSManifest,
-		Args: func(segment int, videoFilter VideoFilter, videoOnly bool, outputDir string) (args Args) {
-			args = append(args,
-				"-c:v", "copy",
-			)
+		Args: func(codec VideoCodec, segment int, videoFilter VideoFilter, videoOnly bool, outputDir string) (args Args) {
+			args = CodecInit(codec)
 			if videoOnly {
 				args = append(args, "-an")
 			} else {
@@ -128,23 +122,19 @@ var (
 		Name:          "dash-v",
 		SegmentType:   SegmentTypeWEBMVideo,
 		ServeManifest: serveDASHManifest,
-		Args: func(segment int, videoFilter VideoFilter, videoOnly bool, outputDir string) (args Args) {
+		Args: func(codec VideoCodec, segment int, videoFilter VideoFilter, videoOnly bool, outputDir string) (args Args) {
 			// only generate the actual init segment (init_v.webm)
 			// when generating the first segment
 			init := ".init"
 			if segment == 0 {
 				init = "init"
 			}
+
+			args = CodecInit(codec)
 			args = append(args,
-				"-c:v", "libvpx-vp9",
-				"-pix_fmt", "yuv420p",
-				"-deadline", "realtime",
-				"-cpu-used", "5",
-				"-row-mt", "1",
-				"-crf", "30",
-				"-b:v", "0",
 				"-force_key_frames", fmt.Sprintf("expr:gte(t,n_forced*%d)", segmentLength),
 			)
+
 			args = args.VideoFilter(videoFilter)
 			args = append(args,
 				"-copyts",
@@ -162,7 +152,7 @@ var (
 		Name:          "dash-a",
 		SegmentType:   SegmentTypeWEBMAudio,
 		ServeManifest: serveDASHManifest,
-		Args: func(segment int, videoFilter VideoFilter, videoOnly bool, outputDir string) (args Args) {
+		Args: func(codec VideoCodec, segment int, videoFilter VideoFilter, videoOnly bool, outputDir string) (args Args) {
 			// only generate the actual init segment (init_a.webm)
 			// when generating the first segment
 			init := ".init"
@@ -310,6 +300,25 @@ func (t StreamType) FileDir(hash string, maxTranscodeSize int) string {
 	}
 }
 
+func HLSGetCodec(sm *StreamManager, name string) (codec VideoCodec) {
+	switch name {
+	case "hls":
+		codec = VideoCodecLibX264
+		if hwcodec := sm.encoder.hwCodecHLSCompatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
+			codec = *hwcodec
+		}
+	case "dash-v":
+		codec = VideoCodecVP9
+		if hwcodec := sm.encoder.hwCodecWEBMCompatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
+			codec = *hwcodec
+		}
+	case "hls-copy":
+		codec = VideoCodecCopy
+	}
+
+	return codec
+}
+
 func (s *runningStream) makeStreamArgs(sm *StreamManager, segment int) Args {
 	extraInputArgs := sm.config.GetLiveTranscodeInputArgs()
 	extraOutputArgs := sm.config.GetLiveTranscodeOutputArgs()
@@ -317,6 +326,9 @@ func (s *runningStream) makeStreamArgs(sm *StreamManager, segment int) Args {
 	args := Args{"-hide_banner"}
 	args = args.LogLevel(LogLevelError)
 
+	codec := HLSGetCodec(sm, s.streamType.Name)
+
+	args = sm.encoder.hwDeviceInit(args, codec)
 	args = append(args, extraInputArgs...)
 
 	if segment > 0 {
@@ -327,10 +339,9 @@ func (s *runningStream) makeStreamArgs(sm *StreamManager, segment int) Args {
 
 	videoOnly := ProbeAudioCodec(s.vf.AudioCodec) == MissingUnsupported
 
-	var videoFilter VideoFilter
-	videoFilter = videoFilter.ScaleMax(s.vf.Width, s.vf.Height, s.maxTranscodeSize)
+	videoFilter := sm.encoder.hwMaxResFilter(codec, s.vf.Width, s.vf.Height, s.maxTranscodeSize)
 
-	args = append(args, s.streamType.Args(segment, videoFilter, videoOnly, s.outputDir)...)
+	args = append(args, s.streamType.Args(codec, segment, videoFilter, videoOnly, s.outputDir)...)
 
 	args = append(args, extraOutputArgs...)
 

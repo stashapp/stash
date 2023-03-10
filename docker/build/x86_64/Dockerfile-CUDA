@@ -1,0 +1,53 @@
+# This dockerfile should be built with `make docker-cuda-build` from the stash root.
+
+# Build Frontend
+FROM node:alpine as frontend
+RUN apk add --no-cache make
+## cache node_modules separately
+COPY ./ui/v2.5/package.json ./ui/v2.5/yarn.lock /stash/ui/v2.5/
+WORKDIR /stash
+RUN yarn --cwd ui/v2.5 install --frozen-lockfile.
+COPY Makefile /stash/
+COPY ./graphql /stash/graphql/
+COPY ./ui /stash/ui/
+RUN make generate-frontend
+ARG GITHASH
+ARG STASH_VERSION
+RUN BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") make ui
+
+# Build Backend
+FROM golang:1.19-bullseye as backend
+RUN apt update && apt install -y build-essential golang
+WORKDIR /stash
+COPY ./go* ./*.go Makefile gqlgen.yml .gqlgenc.yml /stash/
+COPY ./scripts /stash/scripts/
+COPY ./vendor /stash/vendor/
+COPY ./pkg /stash/pkg/
+COPY ./cmd /stash/cmd
+COPY ./internal /stash/internal
+COPY --from=frontend /stash /stash/
+RUN make generate-backend
+ARG GITHASH
+ARG STASH_VERSION
+RUN make build
+
+# Final Runnable Image
+FROM nvidia/cuda:12.0.1-runtime-ubuntu22.04
+RUN apt update
+RUN apt upgrade -y
+RUN apt install -y ca-certificates libvips-tools ffmpeg wget
+RUN rm -rf /var/lib/apt/lists/*
+COPY --from=backend /stash/stash /usr/bin/
+
+# NVENC Patch
+RUN mkdir -p /usr/local/bin /patched-lib
+RUN wget https://raw.githubusercontent.com/keylase/nvidia-patch/master/patch.sh -O /usr/local/bin/patch.sh
+RUN wget https://raw.githubusercontent.com/keylase/nvidia-patch/master/docker-entrypoint.sh -O /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/patch.sh /usr/local/bin/docker-entrypoint.sh /usr/bin/stash
+
+ENV LANG C.UTF-8
+ENV NVIDIA_VISIBLE_DEVICES all
+ENV NVIDIA_DRIVER_CAPABILITIES=video,utility
+ENV STASH_CONFIG_FILE=/root/.stash/config.yml
+EXPOSE 9999
+ENTRYPOINT ["docker-entrypoint.sh", "stash"]
