@@ -767,14 +767,32 @@ div.dropdown-menu {
   }
 }
 
-$colTabWidth: 550px;
+$detailTabWidth: calc(100% / 3);
 
+.content-container,
+.details-tab {
+  padding-left: 15px;
+  padding-right: 15px;
+  position: relative;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .details-tab {
+    flex: 0 0 $detailTabWidth;
+    max-width: $detailTabWidth;
+  }
+
+  .content-container {
+    flex: 0 0 calc(100% - #{$detailTabWidth});
+    max-width: calc(100% - #{$detailTabWidth});
+  }
+}
 @media (min-width: 1200px) {
-  /* stylelint-disable */
-  .col-md-4 {
-    flex: 0 0 $colTabWidth !important;
+  .details-tab {
+    flex: 0 0 $detailTabWidth;
     max-height: calc(100vh - 4rem);
-    max-width: $colTabWidth !important;
+    max-width: $detailTabWidth;
     overflow: auto;
 
     &.collapsed {
@@ -782,10 +800,10 @@ $colTabWidth: 550px;
     }
   }
 
-  .col-divider {
+  .details-divider {
     flex: 0 0 15px;
-    max-width: 15px;
     height: calc(100vh - 4rem);
+    max-width: 15px;
 
     button {
       background-color: transparent;
@@ -809,18 +827,17 @@ $colTabWidth: 550px;
     }
   }
 
-  .col-md-8 {
-    flex: 0 0 calc(100% - #{$colTabWidth} - 15px) !important;
+  .content-container {
+    flex: 0 0 calc(100% - #{$detailTabWidth} - 15px);
     max-height: calc(100vh - 4rem);
-    max-width: calc(100% - #{$colTabWidth} - 15px) !important;
+    max-width: calc(100% - #{$detailTabWidth} - 15px);
     overflow: auto;
 
     &.expanded {
-      flex: 0 0 calc(100% - 15px) !important;
-      max-width: calc(100% - 15px) !important;
+      flex: 0 0 calc(100% - 15px);
+      max-width: calc(100% - 15px);
     }
   }
-  /* stylelint-enable */
 }
 
 .pre {

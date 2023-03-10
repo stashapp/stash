@@ -395,7 +395,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       </Helmet>
 
       <div
-        className={`performer-image-container col-md-4 text-center col-md-4 text-center ${
+        className={`performer-image-container details-tab text-center text-center ${
           collapsed ? "collapsed" : ""
         }`}
       >
@@ -411,12 +411,12 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           </Button>
         )}
       </div>
-      <div className="col-divider d-none d-xl-block">
+      <div className="details-divider d-none d-xl-block">
         <Button onClick={() => setCollapsed(!collapsed)}>
           {getCollapseButtonText()}
         </Button>
       </div>
-      <div className={`col-md-8 ${collapsed ? "expanded" : ""}`}>
+      <div className={`content-container ${collapsed ? "expanded" : ""}`}>
         <div className="row">
           <div className="performer-head col">
             <h2>

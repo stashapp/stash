@@ -259,7 +259,9 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
         <title>{tag.name}</title>
       </Helmet>
       <div className="row">
-        <div className={`tag-details col-md-4 ${collapsed ? "collapsed" : ""}`}>
+        <div
+          className={`tag-details details-tab ${collapsed ? "collapsed" : ""}`}
+        >
           <div className="text-center logo-container">
             {encodingImage ? (
               <LoadingIndicator message="Encoding image..." />
@@ -298,12 +300,12 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
             />
           )}
         </div>
-        <div className="col-divider d-none d-xl-block">
+        <div className="details-divider d-none d-xl-block">
           <Button onClick={() => setCollapsed(!collapsed)}>
             {getCollapseButtonText()}
           </Button>
         </div>
-        <div className={`col col-md-8 ${collapsed ? "expanded" : ""}`}>
+        <div className={`col content-container ${collapsed ? "expanded" : ""}`}>
           <Tabs
             id="tag-tabs"
             mountOnEnter

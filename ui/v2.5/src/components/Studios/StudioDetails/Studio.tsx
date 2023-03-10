@@ -185,7 +185,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
   return (
     <div className="row">
       <div
-        className={`studio-details col-md-4 ${collapsed ? "collapsed" : ""}`}
+        className={`studio-details details-tab ${collapsed ? "collapsed" : ""}`}
       >
         <div className="text-center">
           {encodingImage ? (
@@ -225,12 +225,12 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           />
         )}
       </div>
-      <div className="col-divider d-none d-xl-block">
+      <div className="details-divider d-none d-xl-block">
         <Button onClick={() => setCollapsed(!collapsed)}>
           {getCollapseButtonText()}
         </Button>
       </div>
-      <div className={`col col-md-8 ${collapsed ? "expanded" : ""}`}>
+      <div className={`col content-container ${collapsed ? "expanded" : ""}`}>
         <Tabs
           id="studio-tabs"
           mountOnEnter
