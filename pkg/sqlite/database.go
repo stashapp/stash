@@ -192,9 +192,9 @@ func (db *Database) open(disableForeignKeys bool) (*sqlx.DB, error) {
 	}
 
 	conn, err := sqlx.Open(sqlite3Driver, url)
-	conn.SetMaxOpenConns(25)
-	conn.SetMaxIdleConns(4)
-	conn.SetConnMaxLifetime(30 * time.Second)
+	conn.SetMaxOpenConns(10)
+	conn.SetMaxIdleConns(10)
+	conn.SetConnMaxIdleTime(30 * time.Second)
 	if err != nil {
 		return nil, fmt.Errorf("db.Open(): %w", err)
 	}
