@@ -51,7 +51,7 @@ const isScraper = (
 interface IPerformerDetails {
   performer: Partial<GQL.PerformerDataFragment>;
   isVisible: boolean;
-  onCancelEditing?: () => void;
+  onCancel?: () => void;
   setImage: (image?: string | null) => void;
   setEncodingImage: (loading: boolean) => void;
 }
@@ -59,7 +59,7 @@ interface IPerformerDetails {
 export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   performer,
   isVisible,
-  onCancelEditing,
+  onCancel,
   setImage,
   setEncodingImage,
 }) => {
@@ -402,10 +402,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     setImage(formik.values.image);
   }, [formik.values.image, setImage]);
 
-  useEffect(
-    () => setEncodingImage(encodingImage),
-    [setEncodingImage, encodingImage]
-  );
+  useEffect(() => {
+    setEncodingImage(encodingImage);
+  }, [setEncodingImage, encodingImage]);
 
   function onImageLoad(imageData: string | null) {
     formik.setFieldValue("image", imageData);
@@ -450,10 +449,15 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       setIsLoading(false);
       return;
     }
-    if (!isNew && onCancelEditing) {
-      onCancelEditing();
+    if (!isNew && onCancel) {
+      onCancel();
     }
     setIsLoading(false);
+  }
+
+  function onCancelEditing() {
+    setImage(undefined);
+    onCancel?.();
   }
 
   // set up hotkeys
@@ -472,14 +476,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       };
     }
   });
-
-  useEffect(() => {
-    setImage(formik.values.image);
-  }, [formik.values.image, setImage]);
-
-  useEffect(() => {
-    setEncodingImage(encodingImage);
-  }, [setEncodingImage, encodingImage]);
 
   useEffect(() => {
     const newQueryableScrapers = (
@@ -687,17 +683,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   function renderButtons(classNames: string) {
     return (
       <div className={cx("details-edit", "col-xl-9", classNames)}>
-        {!isNew && onCancelEditing ? (
-          <Button
-            className="mr-2"
-            variant="primary"
-            onClick={() => onCancelEditing()}
-          >
+        {!isNew && onCancel ? (
+          <Button className="mr-2" variant="primary" onClick={onCancelEditing}>
             <FormattedMessage id="actions.cancel" />
           </Button>
-        ) : (
-          ""
-        )}
+        ) : null}
         {renderScraperMenu()}
         <ImageInput
           isEditing
