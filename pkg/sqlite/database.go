@@ -2,7 +2,6 @@ package sqlite
 
 import (
 	"context"
-	"database/sql"
 	"embed"
 	"errors"
 	"fmt"
@@ -10,12 +9,10 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/fvbommel/sortorder"
 	"github.com/golang-migrate/migrate/v4"
 	sqlite3mig "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/jmoiron/sqlx"
-	sqlite3 "github.com/mattn/go-sqlite3"
 
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
@@ -50,13 +47,6 @@ type MismatchedSchemaVersionError struct {
 
 func (e *MismatchedSchemaVersionError) Error() string {
 	return fmt.Sprintf("schema version %d is incompatible with required schema version %d", e.CurrentSchemaVersion, e.RequiredSchemaVersion)
-}
-
-const sqlite3Driver = "sqlite3ex"
-
-func init() {
-	// register custom driver with regexp function
-	registerCustomDriver()
 }
 
 type Database struct {
@@ -452,39 +442,4 @@ func (db *Database) runCustomMigration(ctx context.Context, fn customMigrationFu
 	}
 
 	return nil
-}
-
-func registerCustomDriver() {
-	sql.Register(sqlite3Driver,
-		&sqlite3.SQLiteDriver{
-			ConnectHook: func(conn *sqlite3.SQLiteConn) error {
-				funcs := map[string]interface{}{
-					"regexp":            regexFn,
-					"durationToTinyInt": durationToTinyIntFn,
-					"basename":          basenameFn,
-				}
-
-				for name, fn := range funcs {
-					if err := conn.RegisterFunc(name, fn, true); err != nil {
-						return fmt.Errorf("error registering function %s: %s", name, err.Error())
-					}
-				}
-
-				// COLLATE NATURAL_CS - Case sensitive natural sort
-				err := conn.RegisterCollation("NATURAL_CS", func(s string, s2 string) int {
-					if sortorder.NaturalLess(s, s2) {
-						return -1
-					} else {
-						return 1
-					}
-				})
-
-				if err != nil {
-					return fmt.Errorf("error registering natural sort collation: %v", err)
-				}
-
-				return nil
-			},
-		},
-	)
 }
