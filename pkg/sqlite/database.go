@@ -18,6 +18,20 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
+const (
+	// Number of database connections to use
+	// The same value is used for both the maximum and idle limit,
+	// to prevent opening connections on the fly which has a notieable performance penalty.
+	// Fewer connections use less memory, more connections increase performance,
+	// but have diminishing returns.
+	// 10 was found to be a good tradeoff.
+	dbConns = 10
+	// Idle connection timeout, in seconds
+	// Closes a connection after a period of inactivity, which saves on memory and
+	// causes the sqlite -wal and -shm files to be automatically deleted.
+	dbConnTimeout = 30
+)
+
 var appSchemaVersion uint = 43
 
 //go:embed migrations/*.sql
@@ -192,9 +206,9 @@ func (db *Database) open(disableForeignKeys bool) (*sqlx.DB, error) {
 	}
 
 	conn, err := sqlx.Open(sqlite3Driver, url)
-	conn.SetMaxOpenConns(10)
-	conn.SetMaxIdleConns(10)
-	conn.SetConnMaxIdleTime(30 * time.Second)
+	conn.SetMaxOpenConns(dbConns)
+	conn.SetMaxIdleConns(dbConns)
+	conn.SetConnMaxIdleTime(dbConnTimeout * time.Second)
 	if err != nil {
 		return nil, fmt.Errorf("db.Open(): %w", err)
 	}
