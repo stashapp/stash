@@ -1,6 +1,6 @@
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import React, { useEffect } from "react";
-import { Button, Form, InputGroup } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import { Icon } from "src/components/Shared/Icon";
 import {
   Criterion,
@@ -33,26 +33,24 @@ export const InputFilter: React.FC<IInputFilterProps> = ({
   }
 
   return (
-    <Form.Group>
-      <InputGroup>
+    <>
+      <Form.Group>
         <Form.Control
           className="btn-secondary"
           type={criterion.criterionOption.inputType}
           onChange={onChanged}
           value={value}
         />
-        <InputGroup.Append>
-          <Button
-            disabled={!value}
-            variant="primary"
-            onClick={() => {
-              onConfirm();
-            }}
-          >
-            <Icon icon={faCheck} />
-          </Button>
-        </InputGroup.Append>
-      </InputGroup>
-    </Form.Group>
+      </Form.Group>
+      <Button
+        disabled={!value}
+        variant="primary"
+        onClick={() => {
+          onConfirm();
+        }}
+      >
+        <Icon icon={faCheck} />
+      </Button>
+    </>
   );
 };
