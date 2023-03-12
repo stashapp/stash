@@ -118,25 +118,37 @@ input[type="range"].zoom-slider {
 }
 
 .edit-filter-dialog {
-  .dialog-content {
-    display: flex;
+  .modal-body {
+    padding-left: 0;
+    padding-right: 0;
   }
 
-  .criterion-title {
-    display: none;
+  .filter-tags {
+    border-top: 1px solid rgb(16 22 26 / 40%);
+    padding: 1rem 1rem 0 1rem;
   }
 
   .criterion-list {
-    flex-basis: 30%;
     flex-direction: column;
     flex-wrap: nowrap;
     max-height: 550px;
     overflow-y: auto;
 
-    .nav-link {
-      display: flex;
-      justify-content: space-between;
-      padding-right: 0;
+    .card {
+      border: 1px solid rgb(16 22 26 / 40%);
+      box-shadow: none;
+      margin: 0 0 -1px;
+      padding: 0;
+
+      .collapse-icon {
+        margin-left: 0;
+      }
+
+      .card-header {
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+      }
     }
 
     .remove-criterion-button {
@@ -154,46 +166,6 @@ input[type="range"].zoom-slider {
     padding-left: 1rem;
     padding-right: 1rem;
     width: 100%;
-  }
-
-  @media screen and (max-width: 768px) {
-    height: 100%;
-
-    .dialog-content {
-      flex-wrap: wrap;
-    }
-
-    .criterion-title {
-      align-items: center;
-      display: flex;
-      font-weight: bold;
-      margin-bottom: 1rem;
-      margin-left: -1rem;
-
-      .btn {
-        margin-right: 1rem;
-      }
-    }
-
-    .criterion-list {
-      flex-basis: 100%;
-      height: 100%;
-      margin-bottom: 1rem;
-    }
-
-    .criterion-editor {
-      display: none;
-    }
-
-    .dialog-content.criterion-selected {
-      .criterion-list {
-        height: 0;
-      }
-
-      .criterion-editor {
-        display: block;
-      }
-    }
   }
 }
 

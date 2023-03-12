@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { Button, Modal, Nav } from "react-bootstrap";
+import { Accordion, Button, Card, Modal } from "react-bootstrap";
 import cx from "classnames";
 import {
   CriterionValue,
@@ -21,32 +21,56 @@ import { getFilterOptions } from "src/models/list-filter/factory";
 import { FilterTags } from "./FilterTags";
 import { CriterionEditor } from "./CriterionEditor";
 import { Icon } from "../Shared/Icon";
-import { faChevronLeft, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { useCompare } from "src/hooks/state";
+import {
+  faChevronDown,
+  faChevronRight,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
+import { useCompare, usePrevious } from "src/hooks/state";
+import { CriterionType } from "src/models/list-filter/types";
 
 interface ICriterionList {
   criteria: string[];
+  currentCriterion?: Criterion<CriterionValue>;
+  setCriterion: (c: Criterion<CriterionValue>) => void;
   criterionOptions: CriterionOption[];
   selected?: CriterionOption;
-  optionSelected: (o: CriterionOption) => void;
+  optionSelected: (o?: CriterionOption) => void;
   onRemoveCriterion: (c: string) => void;
 }
 
 const CriterionOptionList: React.FC<ICriterionList> = ({
   criteria,
+  currentCriterion,
+  setCriterion,
   criterionOptions,
   selected,
   optionSelected,
   onRemoveCriterion,
 }) => {
-  function onSelect(k: string | null) {
-    if (!k) return;
+  const prevCriterion = usePrevious(currentCriterion);
 
+  const type = currentCriterion?.criterionOption.type;
+  const prevType = prevCriterion?.criterionOption.type;
+
+  function onSelect(k: string | null) {
+    if (!k) {
+      optionSelected(undefined);
+      return;
+    }
     const option = criterionOptions.find((c) => c.type === k);
 
     if (option) {
       optionSelected(option);
     }
+  }
+
+  function getReleventCriterion(t: CriterionType) {
+    if (currentCriterion?.criterionOption.type === t) {
+      return currentCriterion;
+    }
+
+    return prevCriterion;
   }
 
   function removeClicked(ev: React.MouseEvent, t: string) {
@@ -57,16 +81,21 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
   }
 
   return (
-    <Nav
-      variant="pills"
+    <Accordion
       className="criterion-list"
       activeKey={selected?.type}
       onSelect={onSelect}
     >
       {criterionOptions.map((c) => (
-        <Nav.Item key={c.type}>
-          <Nav.Link eventKey={c.type}>
-            <FormattedMessage id={c.messageID} />
+        <Card key={c.type} data-type={c.type}>
+          <Accordion.Toggle eventKey={c.type} as={Card.Header}>
+            <span>
+              <Icon
+                className="collapse-icon fa-fw"
+                icon={type === c.type ? faChevronDown : faChevronRight}
+              />
+              <FormattedMessage id={c.messageID} />
+            </span>
             {criteria.some((cc) => c.type === cc) && (
               <Button
                 className="remove-criterion-button"
@@ -76,26 +105,23 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
                 <Icon icon={faTimes} />
               </Button>
             )}
-          </Nav.Link>
-        </Nav.Item>
+          </Accordion.Toggle>
+          <Accordion.Collapse eventKey={c.type}>
+            {(type === c.type && currentCriterion) ||
+            (prevType === c.type && prevCriterion) ? (
+              <Card.Body>
+                <CriterionEditor
+                  criterion={getReleventCriterion(c.type)!}
+                  setCriterion={setCriterion}
+                />
+              </Card.Body>
+            ) : (
+              <Card.Body></Card.Body>
+            )}
+          </Accordion.Collapse>
+        </Card>
       ))}
-    </Nav>
-  );
-};
-
-interface ICriterionTitle {
-  messageID: string;
-  onBack: () => void;
-}
-
-const CriterionTitle: React.FC<ICriterionTitle> = ({ messageID, onBack }) => {
-  return (
-    <div className="criterion-title">
-      <Button onClick={() => onBack()} variant="secondary">
-        <Icon icon={faChevronLeft} />
-      </Button>
-      <FormattedMessage id={messageID} />
-    </div>
+    </Accordion>
   );
 };
 
@@ -146,7 +172,12 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   }, [intl, filterOptions.criterionOptions]);
 
   const optionSelected = useCallback(
-    (option: CriterionOption) => {
+    (option?: CriterionOption) => {
+      if (!option) {
+        setCriterion(undefined);
+        return;
+      }
+
       // find the existing criterion if present
       const existing = criteria.find(
         (c) => c.criterionOption.type === option.type
@@ -240,12 +271,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
 
   return (
     <>
-      <Modal
-        show
-        size="lg"
-        onHide={() => onCancel()}
-        className="edit-filter-dialog"
-      >
+      <Modal show onHide={() => onCancel()} className="edit-filter-dialog">
         <Modal.Header>
           <FormattedMessage id="search_filter.edit_filter" />
         </Modal.Header>
@@ -257,24 +283,14 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
           >
             <CriterionOptionList
               criteria={criteriaList}
+              currentCriterion={criterion}
+              setCriterion={replaceCriterion}
               criterionOptions={criterionOptions}
               optionSelected={optionSelected}
               selected={criterion?.criterionOption}
               onRemoveCriterion={(c) => removeCriterionString(c)}
             />
-            <div className="edit-filter-right">
-              {criterion ? (
-                <div>
-                  <CriterionTitle
-                    messageID={criterion.criterionOption.messageID}
-                    onBack={() => setCriterion(undefined)}
-                  />
-                  <CriterionEditor
-                    criterion={criterion}
-                    setCriterion={replaceCriterion}
-                  />
-                </div>
-              ) : undefined}
+            {criteria.length > 0 && (
               <div>
                 <FilterTags
                   criteria={criteria}
@@ -283,7 +299,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
                   onRemoveAll={() => onClearAll()}
                 />
               </div>
-            </div>
+            )}
           </div>
         </Modal.Body>
         <Modal.Footer>

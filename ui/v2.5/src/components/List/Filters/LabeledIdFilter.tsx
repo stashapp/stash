@@ -42,6 +42,7 @@ export const LabeledIdFilter: React.FC<ILabeledIdFilterProps> = ({
         isMulti
         onSelect={onSelectionChanged}
         ids={criterion.value.map((labeled) => labeled.id)}
+        menuPortalTarget={document.body}
       />
     </Form.Group>
   );
