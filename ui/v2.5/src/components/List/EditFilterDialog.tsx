@@ -4,6 +4,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { Accordion, Button, Card, Modal } from "react-bootstrap";
@@ -50,8 +51,18 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
 }) => {
   const prevCriterion = usePrevious(currentCriterion);
 
+  const scrolled = useRef(false);
+
   const type = currentCriterion?.criterionOption.type;
   const prevType = prevCriterion?.criterionOption.type;
+
+  const criteriaRefs = useMemo(() => {
+    const refs: Record<string, React.RefObject<HTMLDivElement>> = {};
+    criterionOptions.forEach((c) => {
+      refs[c.type] = React.createRef();
+    });
+    return refs;
+  }, [criterionOptions]);
 
   function onSelect(k: string | null) {
     if (!k) {
@@ -64,6 +75,19 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
       optionSelected(option);
     }
   }
+
+  useEffect(() => {
+    // scrolling to the current criterion doesn't work well when the
+    // dialog is already open, so limit to when we click on the
+    // criterion from the external tags
+    if (!scrolled.current && type && criteriaRefs[type]?.current) {
+      criteriaRefs[type].current!.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+      scrolled.current = true;
+    }
+  }, [currentCriterion, criteriaRefs, type]);
 
   function getReleventCriterion(t: CriterionType) {
     if (currentCriterion?.criterionOption.type === t) {
@@ -87,7 +111,7 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
       onSelect={onSelect}
     >
       {criterionOptions.map((c) => (
-        <Card key={c.type} data-type={c.type}>
+        <Card key={c.type} data-type={c.type} ref={criteriaRefs[c.type]!}>
           <Accordion.Toggle eventKey={c.type} as={Card.Header}>
             <span>
               <Icon
@@ -252,7 +276,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
 
     setCurrentFilter(newFilter);
     if (criterion?.getId() === c.getId()) {
-      optionSelected(c.criterionOption);
+      optionSelected(undefined);
     }
   }
 
