@@ -53,6 +53,10 @@
     "import/namespace": "off",
     "import/no-unresolved": "off",
     "react/display-name": "off",
+    "react-hooks/exhaustive-deps": [
+      "error",
+      { "additionalHooks": "^(useDebounce)$" }
+    ],
     "react/prop-types": "off",
     "react/style-prop-object": [
       "error",

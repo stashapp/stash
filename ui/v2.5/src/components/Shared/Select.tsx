@@ -10,7 +10,6 @@ import Select, {
   OptionsOrGroups,
 } from "react-select";
 import CreatableSelect from "react-select/creatable";
-import debounce from "lodash-es/debounce";
 
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -31,6 +30,7 @@ import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import { TagPopover } from "../Tags/TagPopover";
 import { defaultMaxOptionsShown, IUIConfig } from "src/core/config";
+import { useDebouncedSetState } from "src/hooks/debounce";
 
 export type SelectObject = {
   id: string;
@@ -354,9 +354,7 @@ export const GallerySelect: React.FC<ITitledSelect> = (props) => {
     value: g.id,
   }));
 
-  const onInputChange = debounce((input: string) => {
-    setQuery(input);
-  }, 500);
+  const onInputChange = useDebouncedSetState(setQuery, 500);
 
   const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
     const selected = getSelectedItems(selectedItems);
@@ -407,9 +405,7 @@ export const SceneSelect: React.FC<ITitledSelect> = (props) => {
     value: s.id,
   }));
 
-  const onInputChange = debounce((input: string) => {
-    setQuery(input);
-  }, 500);
+  const onInputChange = useDebouncedSetState(setQuery, 500);
 
   const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
     const selected = getSelectedItems(selectedItems);
@@ -459,9 +455,7 @@ export const ImageSelect: React.FC<ITitledSelect> = (props) => {
     value: s.id,
   }));
 
-  const onInputChange = debounce((input: string) => {
-    setQuery(input);
-  }, 500);
+  const onInputChange = useDebouncedSetState(setQuery, 500);
 
   const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
     const selected = getSelectedItems(selectedItems);

@@ -3,14 +3,7 @@ import {
   faCheckCircle,
   faTimesCircle,
 } from "@fortawesome/free-solid-svg-icons";
-import debounce from "lodash-es/debounce";
-import React, {
-  useState,
-  useEffect,
-  useMemo,
-  useCallback,
-  useRef,
-} from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Spinner } from "react-bootstrap";
 import { IUIConfig } from "src/core/config";
 import * as GQL from "src/core/generated-graphql";
@@ -23,6 +16,7 @@ import {
   useConfigureScraping,
   useConfigureUI,
 } from "src/core/StashService";
+import { useDebounce } from "src/hooks/debounce";
 import { useToast } from "src/hooks/Toast";
 import { withoutTypename } from "src/utils/data";
 import { Icon } from "../Shared/Icon";
@@ -76,40 +70,34 @@ export const SettingsContext: React.FC = ({ children }) => {
   const initialRef = useRef(false);
 
   const [general, setGeneral] = useState<GQL.ConfigGeneralInput>({});
-  const [pendingGeneral, setPendingGeneral] = useState<
-    GQL.ConfigGeneralInput | undefined
-  >();
+  const [pendingGeneral, setPendingGeneral] =
+    useState<GQL.ConfigGeneralInput>();
   const [updateGeneralConfig] = useConfigureGeneral();
 
   const [iface, setIface] = useState<GQL.ConfigInterfaceInput>({});
-  const [pendingInterface, setPendingInterface] = useState<
-    GQL.ConfigInterfaceInput | undefined
-  >();
+  const [pendingInterface, setPendingInterface] =
+    useState<GQL.ConfigInterfaceInput>();
   const [updateInterfaceConfig] = useConfigureInterface();
 
   const [defaults, setDefaults] = useState<GQL.ConfigDefaultSettingsInput>({});
-  const [pendingDefaults, setPendingDefaults] = useState<
-    GQL.ConfigDefaultSettingsInput | undefined
-  >();
+  const [pendingDefaults, setPendingDefaults] =
+    useState<GQL.ConfigDefaultSettingsInput>();
   const [updateDefaultsConfig] = useConfigureDefaults();
 
   const [scraping, setScraping] = useState<GQL.ConfigScrapingInput>({});
-  const [pendingScraping, setPendingScraping] = useState<
-    GQL.ConfigScrapingInput | undefined
-  >();
+  const [pendingScraping, setPendingScraping] =
+    useState<GQL.ConfigScrapingInput>();
   const [updateScrapingConfig] = useConfigureScraping();
 
   const [dlna, setDLNA] = useState<GQL.ConfigDlnaInput>({});
-  const [pendingDLNA, setPendingDLNA] = useState<
-    GQL.ConfigDlnaInput | undefined
-  >();
+  const [pendingDLNA, setPendingDLNA] = useState<GQL.ConfigDlnaInput>();
   const [updateDLNAConfig] = useConfigureDLNA();
 
   const [ui, setUI] = useState({});
-  const [pendingUI, setPendingUI] = useState<{} | undefined>();
+  const [pendingUI, setPendingUI] = useState<{}>();
   const [updateUIConfig] = useConfigureUI();
 
-  const [updateSuccess, setUpdateSuccess] = useState<boolean | undefined>();
+  const [updateSuccess, setUpdateSuccess] = useState<boolean>();
 
   const [apiKey, setApiKey] = useState("");
 
@@ -146,13 +134,7 @@ export const SettingsContext: React.FC = ({ children }) => {
     setUI(data.configuration.ui);
   }, [data, error]);
 
-  const resetSuccess = useMemo(
-    () =>
-      debounce(() => {
-        setUpdateSuccess(undefined);
-      }, 4000),
-    []
-  );
+  const resetSuccess = useDebounce(() => setUpdateSuccess(undefined), [], 4000);
 
   const onSuccess = useCallback(() => {
     setUpdateSuccess(true);
@@ -160,24 +142,24 @@ export const SettingsContext: React.FC = ({ children }) => {
   }, [resetSuccess]);
 
   // saves the configuration if no further changes are made after a half second
-  const saveGeneralConfig = useMemo(
-    () =>
-      debounce(async (input: GQL.ConfigGeneralInput) => {
-        try {
-          setUpdateSuccess(undefined);
-          await updateGeneralConfig({
-            variables: {
-              input,
-            },
-          });
+  const saveGeneralConfig = useDebounce(
+    async (input: GQL.ConfigGeneralInput) => {
+      try {
+        setUpdateSuccess(undefined);
+        await updateGeneralConfig({
+          variables: {
+            input,
+          },
+        });
 
-          setPendingGeneral(undefined);
-          onSuccess();
-        } catch (e) {
-          setSaveError(e);
-        }
-      }, 500),
-    [updateGeneralConfig, onSuccess]
+        setPendingGeneral(undefined);
+        onSuccess();
+      } catch (e) {
+        setSaveError(e);
+      }
+    },
+    [updateGeneralConfig, onSuccess],
+    500
   );
 
   useEffect(() => {
@@ -210,24 +192,24 @@ export const SettingsContext: React.FC = ({ children }) => {
   }
 
   // saves the configuration if no further changes are made after a half second
-  const saveInterfaceConfig = useMemo(
-    () =>
-      debounce(async (input: GQL.ConfigInterfaceInput) => {
-        try {
-          setUpdateSuccess(undefined);
-          await updateInterfaceConfig({
-            variables: {
-              input,
-            },
-          });
+  const saveInterfaceConfig = useDebounce(
+    async (input: GQL.ConfigInterfaceInput) => {
+      try {
+        setUpdateSuccess(undefined);
+        await updateInterfaceConfig({
+          variables: {
+            input,
+          },
+        });
 
-          setPendingInterface(undefined);
-          onSuccess();
-        } catch (e) {
-          setSaveError(e);
-        }
-      }, 500),
-    [updateInterfaceConfig, onSuccess]
+        setPendingInterface(undefined);
+        onSuccess();
+      } catch (e) {
+        setSaveError(e);
+      }
+    },
+    [updateInterfaceConfig, onSuccess],
+    500
   );
 
   useEffect(() => {
@@ -260,24 +242,24 @@ export const SettingsContext: React.FC = ({ children }) => {
   }
 
   // saves the configuration if no further changes are made after a half second
-  const saveDefaultsConfig = useMemo(
-    () =>
-      debounce(async (input: GQL.ConfigDefaultSettingsInput) => {
-        try {
-          setUpdateSuccess(undefined);
-          await updateDefaultsConfig({
-            variables: {
-              input,
-            },
-          });
+  const saveDefaultsConfig = useDebounce(
+    async (input: GQL.ConfigDefaultSettingsInput) => {
+      try {
+        setUpdateSuccess(undefined);
+        await updateDefaultsConfig({
+          variables: {
+            input,
+          },
+        });
 
-          setPendingDefaults(undefined);
-          onSuccess();
-        } catch (e) {
-          setSaveError(e);
-        }
-      }, 500),
-    [updateDefaultsConfig, onSuccess]
+        setPendingDefaults(undefined);
+        onSuccess();
+      } catch (e) {
+        setSaveError(e);
+      }
+    },
+    [updateDefaultsConfig, onSuccess],
+    500
   );
 
   useEffect(() => {
@@ -310,24 +292,24 @@ export const SettingsContext: React.FC = ({ children }) => {
   }
 
   // saves the configuration if no further changes are made after a half second
-  const saveScrapingConfig = useMemo(
-    () =>
-      debounce(async (input: GQL.ConfigScrapingInput) => {
-        try {
-          setUpdateSuccess(undefined);
-          await updateScrapingConfig({
-            variables: {
-              input,
-            },
-          });
+  const saveScrapingConfig = useDebounce(
+    async (input: GQL.ConfigScrapingInput) => {
+      try {
+        setUpdateSuccess(undefined);
+        await updateScrapingConfig({
+          variables: {
+            input,
+          },
+        });
 
-          setPendingScraping(undefined);
-          onSuccess();
-        } catch (e) {
-          setSaveError(e);
-        }
-      }, 500),
-    [updateScrapingConfig, onSuccess]
+        setPendingScraping(undefined);
+        onSuccess();
+      } catch (e) {
+        setSaveError(e);
+      }
+    },
+    [updateScrapingConfig, onSuccess],
+    500
   );
 
   useEffect(() => {
@@ -360,24 +342,24 @@ export const SettingsContext: React.FC = ({ children }) => {
   }
 
   // saves the configuration if no further changes are made after a half second
-  const saveDLNAConfig = useMemo(
-    () =>
-      debounce(async (input: GQL.ConfigDlnaInput) => {
-        try {
-          setUpdateSuccess(undefined);
-          await updateDLNAConfig({
-            variables: {
-              input,
-            },
-          });
+  const saveDLNAConfig = useDebounce(
+    async (input: GQL.ConfigDlnaInput) => {
+      try {
+        setUpdateSuccess(undefined);
+        await updateDLNAConfig({
+          variables: {
+            input,
+          },
+        });
 
-          setPendingDLNA(undefined);
-          onSuccess();
-        } catch (e) {
-          setSaveError(e);
-        }
-      }, 500),
-    [updateDLNAConfig, onSuccess]
+        setPendingDLNA(undefined);
+        onSuccess();
+      } catch (e) {
+        setSaveError(e);
+      }
+    },
+    [updateDLNAConfig, onSuccess],
+    500
   );
 
   useEffect(() => {
@@ -410,24 +392,24 @@ export const SettingsContext: React.FC = ({ children }) => {
   }
 
   // saves the configuration if no further changes are made after a half second
-  const saveUIConfig = useMemo(
-    () =>
-      debounce(async (input: IUIConfig) => {
-        try {
-          setUpdateSuccess(undefined);
-          await updateUIConfig({
-            variables: {
-              input,
-            },
-          });
+  const saveUIConfig = useDebounce(
+    async (input: IUIConfig) => {
+      try {
+        setUpdateSuccess(undefined);
+        await updateUIConfig({
+          variables: {
+            input,
+          },
+        });
 
-          setPendingUI(undefined);
-          onSuccess();
-        } catch (e) {
-          setSaveError(e);
-        }
-      }, 500),
-    [updateUIConfig, onSuccess]
+        setPendingUI(undefined);
+        onSuccess();
+      } catch (e) {
+        setSaveError(e);
+      }
+    },
+    [updateUIConfig, onSuccess],
+    500
   );
 
   useEffect(() => {
