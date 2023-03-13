@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -51,6 +52,13 @@ func (m *ScreenshotMigrator) MigrateScreenshots(ctx context.Context, screenshotP
 			logger.Errorf("Error deleting screenshot file %s: %v", screenshotPath, err)
 		} else {
 			logger.Debugf("Deleted screenshot file %s", screenshotPath)
+		}
+
+		// also delete the thumb file
+		thumbPath := strings.TrimSuffix(screenshotPath, ".jpg") + ".thumb.jpg"
+		// ignore errors for thumb files
+		if err := os.Remove(thumbPath); err == nil {
+			logger.Debugf("Deleted thumb file %s", thumbPath)
 		}
 	}
 
