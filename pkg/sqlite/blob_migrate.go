@@ -56,15 +56,24 @@ func (qb *BlobStore) MigrateBlob(ctx context.Context, checksum string, deleteOld
 
 // migrateBlobDatabase migrates a blob from the filesystem to the database
 func (qb *BlobStore) migrateBlobDatabase(ctx context.Context, checksum string, deleteOld bool) error {
-	// find the blob in the filesystem
-	blob, err := qb.fsStore.Read(ctx, checksum)
+	// ignore if the blob is already present in the database
+	// (still delete the old data if requested)
+	existing, err := qb.read(ctx, checksum)
 	if err != nil {
-		return fmt.Errorf("reading from filesystem: %w", err)
+		return fmt.Errorf("reading from database: %w", err)
 	}
 
-	// write the blob to the database
-	if err := qb.update(ctx, checksum, blob); err != nil {
-		return fmt.Errorf("writing to database: %w", err)
+	if len(existing) == 0 {
+		// find the blob in the filesystem
+		blob, err := qb.fsStore.Read(ctx, checksum)
+		if err != nil {
+			return fmt.Errorf("reading from filesystem: %w", err)
+		}
+
+		// write the blob to the database
+		if err := qb.update(ctx, checksum, blob); err != nil {
+			return fmt.Errorf("writing to database: %w", err)
+		}
 	}
 
 	if deleteOld {
@@ -86,7 +95,9 @@ func (qb *BlobStore) migrateBlobFilesystem(ctx context.Context, checksum string,
 	}
 
 	if len(blob) == 0 {
-		return fmt.Errorf("empty blob")
+		// it's possible that the blob is already present in the filesystem
+		// just ignore
+		return nil
 	}
 
 	// write the blob to the filesystem
