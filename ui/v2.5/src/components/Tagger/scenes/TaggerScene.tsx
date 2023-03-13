@@ -194,15 +194,12 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
 
   function maybeRenderSpriteIcon() {
     if (scene.paths.sprite && scene.paths.sprite.length > 0) {
-      // Even if a scene doesn't have a sprite generated, the path will be
-      // http://localhost:9999/scene/_sprite.jpg so check for that case
-      const spriteParts = scene.paths.sprite.split("/");
-      const filename = spriteParts.pop();
-      if (filename?.includes("_sprite") && filename.split("_")[0].length > 0) {
-        // Assume there is a hash before _sprite.jpg in the url.
+      // If a scene doesn't have any files, or doesn't have a sprite generated, the
+      // path will be http://localhost:9999/scene/_sprite.jpg
+      if (scene.files.length > 0) {
         return (
           <Button
-            className="p-0"
+            className="sprite-button"
             variant="link"
             onClick={() => showLightboxImage(scene.paths.sprite ?? "")}
           >
@@ -226,9 +223,7 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
                 soundActive={false}
               />
             </Link>
-            <div className="d-flex justify-content-center">
-              {maybeRenderSpriteIcon()}
-            </div>
+            {maybeRenderSpriteIcon()}
           </div>
           <Link to={url} className="scene-link overflow-hidden">
             <TruncatedText text={objectTitle(scene)} lineCount={2} />
