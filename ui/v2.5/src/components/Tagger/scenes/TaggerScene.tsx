@@ -193,20 +193,18 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
   }
 
   function maybeRenderSpriteIcon() {
-    if (scene.paths.sprite && scene.paths.sprite.length > 0) {
-      // If a scene doesn't have any files, or doesn't have a sprite generated, the
-      // path will be http://localhost:9999/scene/_sprite.jpg
-      if (scene.files.length > 0) {
-        return (
-          <Button
-            className="sprite-button"
-            variant="link"
-            onClick={() => showLightboxImage(scene.paths.sprite ?? "")}
-          >
-            <Icon icon={faImage} />
-          </Button>
-        );
-      }
+    // If a scene doesn't have any files, or doesn't have a sprite generated, the
+    // path will be http://localhost:9999/scene/_sprite.jpg
+    if (scene.files.length > 0) {
+      return (
+        <Button
+          className="sprite-button"
+          variant="link"
+          onClick={() => showLightboxImage(scene.paths.sprite ?? "")}
+        >
+          <Icon icon={faImage} />
+        </Button>
+      );
     }
   }
 
