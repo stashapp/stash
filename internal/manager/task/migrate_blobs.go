@@ -15,9 +15,14 @@ type BlobStoreMigrator interface {
 	MigrateBlob(ctx context.Context, checksum string, deleteOld bool) error
 }
 
+type Vacuumer interface {
+	Vacuum(ctx context.Context) error
+}
+
 type MigrateBlobsJob struct {
 	TxnManager txn.Manager
 	BlobStore  BlobStoreMigrator
+	Vacuumer   Vacuumer
 	DeleteOld  bool
 }
 
@@ -56,6 +61,14 @@ func (j *MigrateBlobsJob) Execute(ctx context.Context, progress *job.Progress) {
 		logger.Errorf("Error migrating blobs: %v", err)
 		return
 	}
+
+	// run a vacuum to reclaim space
+	progress.ExecuteTask("Vacuuming database", func() {
+		err = j.Vacuumer.Vacuum(ctx)
+		if err != nil {
+			logger.Errorf("Error vacuuming database: %v", err)
+		}
+	})
 
 	logger.Infof("Finished migrating blobs")
 }

@@ -446,6 +446,12 @@ func (db *Database) optimise() {
 	}
 }
 
+// Vacuum runs a VACUUM on the database, rebuilding the database file into a minimal amount of disk space.
+func (db *Database) Vacuum(ctx context.Context) error {
+	_, err := db.db.ExecContext(ctx, "VACUUM")
+	return err
+}
+
 func (db *Database) runCustomMigrations(ctx context.Context, fns []customMigrationFunc) error {
 	for _, fn := range fns {
 		if err := db.runCustomMigration(ctx, fn); err != nil {
