@@ -9,6 +9,8 @@ import (
 	"github.com/kermieisinthehouse/systray"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/logger"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // MUST be run on the main goroutine or will have no effect on macOS
@@ -55,7 +57,8 @@ func systrayInitialize(shutdownHandler ShutdownHandler, faviconProvider FaviconP
 	if !c.IsNewSystem() {
 		menuItems = c.GetMenuItems()
 		for _, item := range menuItems {
-			titleCaseItem := strings.Title(strings.ToLower(item))
+			c := cases.Title(language.Und)
+			titleCaseItem := c.String(strings.ToLower(item))
 			curr := systray.AddMenuItem(titleCaseItem, "Open to "+titleCaseItem)
 			go func(item string) {
 				for {
