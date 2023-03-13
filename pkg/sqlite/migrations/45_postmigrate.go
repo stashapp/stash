@@ -259,7 +259,8 @@ func (m *schema45Migrator) dropTable(ctx context.Context, table string) error {
 func (m *schema45Migrator) migrateConfig(ctx context.Context) error {
 	c := config.GetInstance()
 
-	if c.GetBlobsStorage().IsValid() {
+	// if we don't have blobs, and storage is already set, then don't overwrite
+	if !m.hasBlobs && c.GetBlobsStorage().IsValid() {
 		logger.Infof("Blobs storage already set, not overwriting")
 		return nil
 	}
