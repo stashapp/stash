@@ -1,8 +1,8 @@
 import React, { useRef, useState } from "react";
 import { Overlay, Tooltip } from "react-bootstrap";
 import { Placement } from "react-bootstrap/Overlay";
-import debounce from "lodash-es/debounce";
 import cx from "classnames";
+import { useDebounce } from "src/hooks/debounce";
 
 const CLASSNAME = "TruncatedText";
 const CLASSNAME_TOOLTIP = `${CLASSNAME}-tooltip`;
@@ -25,9 +25,13 @@ export const TruncatedText: React.FC<ITruncatedTextProps> = ({
   const [showTooltip, setShowTooltip] = useState(false);
   const target = useRef(null);
 
-  if (!text) return <></>;
+  const startShowingTooltip = useDebounce(
+    () => setShowTooltip(true),
+    [],
+    delay
+  );
 
-  const startShowingTooltip = debounce(() => setShowTooltip(true), delay);
+  if (!text) return <></>;
 
   const handleFocus = (element: HTMLElement) => {
     // Check if visible size is smaller than the content size

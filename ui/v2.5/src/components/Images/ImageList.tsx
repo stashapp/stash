@@ -76,20 +76,22 @@ const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
   );
 
   function columns(containerWidth: number) {
-    let preferredSize = 250;
+    let preferredSize = 300;
     let columnCount = containerWidth / preferredSize;
-    return Math.floor(columnCount);
+    return Math.round(columnCount);
   }
 
   return (
     <div className="gallery">
-      <Gallery
-        photos={photos}
-        onClick={showLightboxOnClick}
-        margin={uiConfig?.imageWallOptions?.margin!}
-        direction={uiConfig?.imageWallOptions?.direction!}
-        columns={columns}
-      />
+      {photos.length ? (
+        <Gallery
+          photos={photos}
+          onClick={showLightboxOnClick}
+          margin={uiConfig?.imageWallOptions?.margin!}
+          direction={uiConfig?.imageWallOptions?.direction!}
+          columns={columns}
+        />
+      ) : null}
     </div>
   );
 };

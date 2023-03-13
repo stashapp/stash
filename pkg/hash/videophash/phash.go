@@ -23,7 +23,7 @@ const (
 	rows           = 5
 )
 
-func Generate(encoder ffmpeg.FFMpeg, videoFile *file.VideoFile) (*uint64, error) {
+func Generate(encoder *ffmpeg.FFMpeg, videoFile *file.VideoFile) (*uint64, error) {
 	sprite, err := generateSprite(encoder, videoFile)
 	if err != nil {
 		return nil, err
@@ -37,7 +37,7 @@ func Generate(encoder ffmpeg.FFMpeg, videoFile *file.VideoFile) (*uint64, error)
 	return &hashValue, nil
 }
 
-func generateSpriteScreenshot(encoder ffmpeg.FFMpeg, input string, t float64) (image.Image, error) {
+func generateSpriteScreenshot(encoder *ffmpeg.FFMpeg, input string, t float64) (image.Image, error) {
 	options := transcoder.ScreenshotOptions{
 		Width:      screenshotSize,
 		OutputPath: "-",
@@ -76,7 +76,7 @@ func combineImages(images []image.Image) image.Image {
 	return montage
 }
 
-func generateSprite(encoder ffmpeg.FFMpeg, videoFile *file.VideoFile) (image.Image, error) {
+func generateSprite(encoder *ffmpeg.FFMpeg, videoFile *file.VideoFile) (image.Image, error) {
 	logger.Infof("[generator] generating phash sprite for %s", videoFile.Path)
 
 	// Generate sprite image offset by 5% on each end to avoid intro/outros

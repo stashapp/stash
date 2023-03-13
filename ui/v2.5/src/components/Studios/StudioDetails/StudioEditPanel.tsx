@@ -95,10 +95,9 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     setImage(formik.values.image);
   }, [formik.values.image, setImage]);
 
-  useEffect(
-    () => setEncodingImage(encodingImage),
-    [setEncodingImage, encodingImage]
-  );
+  useEffect(() => {
+    setEncodingImage(encodingImage);
+  }, [setEncodingImage, encodingImage]);
 
   function setRating(v: number) {
     formik.setFieldValue("rating100", v);
@@ -109,6 +108,11 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     configuration?.ui?.ratingSystemOptions?.type,
     setRating
   );
+
+  function onCancelEditing() {
+    setImage(undefined);
+    onCancel?.();
+  }
 
   // set up hotkeys
   useEffect(() => {
@@ -317,7 +321,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         objectName={studio?.name ?? intl.formatMessage({ id: "studio" })}
         isNew={isNew}
         isEditing
-        onToggleEdit={onCancel}
+        onToggleEdit={onCancelEditing}
         onSave={formik.handleSubmit}
         saveDisabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}
         onImageChange={onImageChange}
