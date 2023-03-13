@@ -254,7 +254,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <PerformerEditPanel
           performer={performer}
           isVisible={isEditing}
-          onCancelEditing={() => setIsEditing(false)}
+          onCancel={() => setIsEditing(false)}
           setImage={setImage}
           setEncodingImage={setEncodingImage}
         />
