@@ -1,11 +1,9 @@
-import React, { useEffect } from "react";
-import { Button, Form } from "react-bootstrap";
+import React from "react";
+import { Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { CriterionModifier } from "../../../core/generated-graphql";
 import { ITimestampValue } from "../../../models/list-filter/types";
 import { Criterion } from "../../../models/list-filter/criteria/criterion";
-import { Icon } from "src/components/Shared/Icon";
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
 
 interface ITimestampFilterProps {
   criterion: Criterion<ITimestampValue>;
@@ -18,11 +16,7 @@ export const TimestampFilter: React.FC<ITimestampFilterProps> = ({
 }) => {
   const intl = useIntl();
 
-  const [value, setValue] = React.useState({ ...criterion.value });
-
-  useEffect(() => {
-    setValue({ ...criterion.value });
-  }, [criterion.value]);
+  const { value } = criterion;
 
   function onChanged(
     event: React.ChangeEvent<HTMLInputElement>,
@@ -32,26 +26,7 @@ export const TimestampFilter: React.FC<ITimestampFilterProps> = ({
     const valueCopy = { ...value };
 
     valueCopy[property] = newValue;
-    setValue(valueCopy);
-  }
-
-  function isValid() {
-    if (!value.value) {
-      return false;
-    }
-
-    if (
-      criterion.modifier === CriterionModifier.Between ||
-      criterion.modifier === CriterionModifier.NotBetween
-    ) {
-      return value.value && value.value2;
-    }
-
-    return true;
-  }
-
-  function confirm() {
-    onValueChanged(value);
+    onValueChanged(valueCopy);
   }
 
   let equalsControl: JSX.Element | null = null;
@@ -70,7 +45,7 @@ export const TimestampFilter: React.FC<ITimestampFilterProps> = ({
           value={value?.value ?? ""}
           placeholder={
             intl.formatMessage({ id: "criterion.value" }) +
-            " (YYYY-MM-DD HH-MM)"
+            " (YYYY-MM-DD HH:MM)"
           }
         />
       </Form.Group>
@@ -94,7 +69,7 @@ export const TimestampFilter: React.FC<ITimestampFilterProps> = ({
           value={value?.value ?? ""}
           placeholder={
             intl.formatMessage({ id: "criterion.greater_than" }) +
-            " (YYYY-MM-DD HH-MM)"
+            " (YYYY-MM-DD HH:MM)"
           }
         />
       </Form.Group>
@@ -127,7 +102,7 @@ export const TimestampFilter: React.FC<ITimestampFilterProps> = ({
           }
           placeholder={
             intl.formatMessage({ id: "criterion.less_than" }) +
-            " (YYYY-MM-DD HH-MM)"
+            " (YYYY-MM-DD HH:MM)"
           }
         />
       </Form.Group>
@@ -139,9 +114,6 @@ export const TimestampFilter: React.FC<ITimestampFilterProps> = ({
       {equalsControl}
       {lowerControl}
       {upperControl}
-      <Button disabled={!isValid()} onClick={() => confirm()}>
-        <Icon icon={faCheck} />
-      </Button>
     </>
   );
 };

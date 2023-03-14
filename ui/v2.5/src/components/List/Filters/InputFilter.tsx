@@ -1,7 +1,5 @@
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
-import React, { useEffect } from "react";
-import { Button, Form } from "react-bootstrap";
-import { Icon } from "src/components/Shared/Icon";
+import React from "react";
+import { Form } from "react-bootstrap";
 import {
   Criterion,
   CriterionValue,
@@ -16,20 +14,8 @@ export const InputFilter: React.FC<IInputFilterProps> = ({
   criterion,
   onValueChanged,
 }) => {
-  const [value, setValue] = React.useState<string>(
-    criterion.value ? criterion.value.toString() : ""
-  );
-
-  useEffect(() => {
-    setValue(criterion.value ? criterion.value.toString() : "");
-  }, [criterion.value]);
-
   function onChanged(event: React.ChangeEvent<HTMLInputElement>) {
-    setValue(event.target.value);
-  }
-
-  function onConfirm() {
-    onValueChanged(value);
+    onValueChanged(event.target.value);
   }
 
   return (
@@ -39,18 +25,9 @@ export const InputFilter: React.FC<IInputFilterProps> = ({
           className="btn-secondary"
           type={criterion.criterionOption.inputType}
           onChange={onChanged}
-          value={value}
+          value={criterion.value ? criterion.value.toString() : ""}
         />
       </Form.Group>
-      <Button
-        disabled={!value}
-        variant="primary"
-        onClick={() => {
-          onConfirm();
-        }}
-      >
-        <Icon icon={faCheck} />
-      </Button>
     </>
   );
 };

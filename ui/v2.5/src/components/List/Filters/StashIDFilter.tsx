@@ -1,11 +1,9 @@
-import React, { useEffect } from "react";
-import { Button, Form } from "react-bootstrap";
+import React from "react";
+import { Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { IStashIDValue } from "../../../models/list-filter/types";
 import { Criterion } from "../../../models/list-filter/criteria/criterion";
 import { CriterionModifier } from "src/core/generated-graphql";
-import { Icon } from "src/components/Shared/Icon";
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
 
 interface IStashIDFilterProps {
   criterion: Criterion<IStashIDValue>;
@@ -17,33 +15,20 @@ export const StashIDFilter: React.FC<IStashIDFilterProps> = ({
   onValueChanged,
 }) => {
   const intl = useIntl();
-
-  const [value, setValue] = React.useState({ ...criterion.value });
-
-  useEffect(() => {
-    setValue({ ...criterion.value });
-  }, [criterion.value]);
+  const { value } = criterion;
 
   function onEndpointChanged(event: React.ChangeEvent<HTMLInputElement>) {
-    setValue({
+    onValueChanged({
       endpoint: event.target.value,
       stashID: criterion.value.stashID,
     });
   }
 
   function onStashIDChanged(event: React.ChangeEvent<HTMLInputElement>) {
-    setValue({
+    onValueChanged({
       stashID: event.target.value,
       endpoint: criterion.value.endpoint,
     });
-  }
-
-  function isValid() {
-    return value.stashID;
-  }
-
-  function confirm() {
-    onValueChanged(value);
   }
 
   return (
@@ -67,9 +52,6 @@ export const StashIDFilter: React.FC<IStashIDFilterProps> = ({
             />
           </Form.Group>
         )}
-      <Button disabled={!isValid()} onClick={() => confirm()}>
-        <Icon icon={faCheck} />
-      </Button>
     </div>
   );
 };

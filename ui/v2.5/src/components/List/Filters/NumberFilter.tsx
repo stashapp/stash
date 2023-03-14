@@ -1,11 +1,9 @@
-import React, { useEffect } from "react";
-import { Button, Form } from "react-bootstrap";
+import React from "react";
+import { Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { CriterionModifier } from "../../../core/generated-graphql";
 import { INumberValue } from "../../../models/list-filter/types";
 import { NumberCriterion } from "../../../models/list-filter/criteria/criterion";
-import { Icon } from "src/components/Shared/Icon";
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
 
 interface IDurationFilterProps {
   criterion: NumberCriterion;
@@ -18,11 +16,7 @@ export const NumberFilter: React.FC<IDurationFilterProps> = ({
 }) => {
   const intl = useIntl();
 
-  const [value, setValue] = React.useState({ ...criterion.value });
-
-  useEffect(() => {
-    setValue({ ...criterion.value });
-  }, [criterion.value]);
+  const { value } = criterion;
 
   function onChanged(
     event: React.ChangeEvent<HTMLInputElement>,
@@ -32,22 +26,7 @@ export const NumberFilter: React.FC<IDurationFilterProps> = ({
     const valueCopy = { ...value };
 
     valueCopy[property] = !Number.isNaN(numericValue) ? numericValue : 0;
-    setValue(valueCopy);
-  }
-
-  function isValid() {
-    if (
-      criterion.modifier === CriterionModifier.Between ||
-      criterion.modifier === CriterionModifier.NotBetween
-    ) {
-      return value.value !== undefined && value.value2 !== undefined;
-    }
-
-    return true;
-  }
-
-  function confirm() {
-    onValueChanged(value);
+    onValueChanged(valueCopy);
   }
 
   let equalsControl: JSX.Element | null = null;
@@ -126,9 +105,6 @@ export const NumberFilter: React.FC<IDurationFilterProps> = ({
       {equalsControl}
       {lowerControl}
       {upperControl}
-      <Button disabled={!isValid()} onClick={() => confirm()}>
-        <Icon icon={faCheck} />
-      </Button>
     </>
   );
 };

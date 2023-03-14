@@ -24,7 +24,7 @@ export interface IHierarchicalLabelValue {
 }
 
 export interface INumberValue {
-  value: number;
+  value: number | undefined;
   value2: number | undefined;
 }
 
