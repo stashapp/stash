@@ -36,6 +36,7 @@ FROM nvidia/cuda:12.0.1-runtime-ubuntu22.04
 RUN apt update
 RUN apt upgrade -y
 RUN apt install -y ca-certificates libvips-tools ffmpeg wget
+RUN apt install -y intel-media-va-driver-non-free vainfo
 RUN rm -rf /var/lib/apt/lists/*
 COPY --from=backend /stash/stash /usr/bin/
 
