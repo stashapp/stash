@@ -514,6 +514,17 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
     return `${labels} (+${this.value.depth > 0 ? this.value.depth : "all"})`;
   }
 
+  public isValid(): boolean {
+    if (
+      this.modifier === CriterionModifier.IsNull ||
+      this.modifier === CriterionModifier.NotNull
+    ) {
+      return true;
+    }
+
+    return this.value.items.length > 0;
+  }
+
   constructor(type: CriterionOption) {
     const value: IHierarchicalLabelValue = {
       items: [],
