@@ -6,6 +6,10 @@
     padding-bottom: 0;
   }
 
+  .scene-card {
+    position: relative;
+  }
+
   .scene-card-preview {
     border-radius: 3px;
     margin-bottom: 0;
@@ -19,10 +23,11 @@
   }
 
   .sprite-button {
-    left: 15px;
+    bottom: 5px;
+    filter: drop-shadow(1px 1px 1px #222);
     padding: 0;
     position: absolute;
-    top: 10px;
+    right: 5px;
   }
 
   .sub-content {

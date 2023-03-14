@@ -192,6 +192,11 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
     }
   }
 
+  function onSpriteClick(ev: React.MouseEvent<HTMLElement>) {
+    ev.preventDefault();
+    showLightboxImage(scene.paths.sprite ?? "");
+  }
+
   function maybeRenderSpriteIcon() {
     // If a scene doesn't have any files, or doesn't have a sprite generated, the
     // path will be http://localhost:9999/scene/_sprite.jpg
@@ -200,7 +205,7 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
         <Button
           className="sprite-button"
           variant="link"
-          onClick={() => showLightboxImage(scene.paths.sprite ?? "")}
+          onClick={onSpriteClick}
         >
           <Icon icon={faImage} />
         </Button>
@@ -220,8 +225,8 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
                 isPortrait={isPortrait}
                 soundActive={false}
               />
+              {maybeRenderSpriteIcon()}
             </Link>
-            {maybeRenderSpriteIcon()}
           </div>
           <Link to={url} className="scene-link overflow-hidden">
             <TruncatedText text={objectTitle(scene)} lineCount={2} />
