@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { SceneQueue } from "src/models/sceneQueue";
 import { Button, Form } from "react-bootstrap";
@@ -15,6 +15,7 @@ import { SceneSearchResults } from "./StashSearchResult";
 import { ConfigurationContext } from "src/hooks/Config";
 import { faCog } from "@fortawesome/free-solid-svg-icons";
 import { distance } from "src/utils/hamming";
+import { useLightbox } from "src/hooks/Lightbox/hooks";
 
 interface ITaggerProps {
   scenes: GQL.SlimSceneDataFragment[];
@@ -221,6 +222,19 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
     return minDurationDiffSceneA - minDurationDiffSceneB;
   }
 
+  const [spriteImage, setSpriteImage] = useState<string | null>(null);
+  const lightboxImage = useMemo(
+    () => [{ paths: { thumbnail: spriteImage, image: spriteImage } }],
+    [spriteImage]
+  );
+  const showLightbox = useLightbox({
+    images: lightboxImage,
+  });
+  function showLightboxImage(imagePath: string) {
+    setSpriteImage(imagePath);
+    showLightbox();
+  }
+
   function renderScenes() {
     const filteredScenes = !hideUnmatched
       ? scenes
@@ -267,6 +281,7 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
                 }
               : undefined
           }
+          showLightboxImage={showLightboxImage}
         >
           {searchResult && searchResult.results?.length ? (
             <SceneSearchResults scenes={searchResult.results} target={scene} />
