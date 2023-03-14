@@ -89,7 +89,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
   const [showBatchUpdate, setShowBatchUpdate] = useState(false);
   const studioInput = useRef<HTMLTextAreaElement | null>(null);
   const [batchAddParents, setBatchAddParents] = useState(
-    config.createParentStudios
+    config.createParentStudios || false
   );
 
   const [error, setError] = useState<
