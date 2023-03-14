@@ -142,7 +142,11 @@ const ScenePage: React.FC<IProps> = ({
     Mousetrap.bind("q", () => setActiveTabKey("scene-queue-panel"));
     Mousetrap.bind("e", () => setActiveTabKey("scene-edit-panel"));
     Mousetrap.bind("k", () => setActiveTabKey("scene-markers-panel"));
-    Mousetrap.bind("i", () => setActiveTabKey("scene-file-info-panel"));
+    Mousetrap.bind("i", () => {
+      if (scene.files.length > 0) {
+        setActiveTabKey("scene-file-info-panel");
+      }
+    });
     Mousetrap.bind("o", () => {
       onIncrementClick();
     });
@@ -370,14 +374,16 @@ const ScenePage: React.FC<IProps> = ({
               <FormattedMessage id="effect_filters.name" />
             </Nav.Link>
           </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="scene-file-info-panel">
-              <FormattedMessage id="file_info" />
-              {scene.files.length > 1 && (
-                <Counter count={scene.files.length ?? 0} />
-              )}
-            </Nav.Link>
-          </Nav.Item>
+          {scene.files.length > 0 && (
+            <Nav.Item>
+              <Nav.Link eventKey="scene-file-info-panel">
+                <FormattedMessage id="file_info" />
+                {scene.files.length > 1 && (
+                  <Counter count={scene.files.length ?? 0} />
+                )}
+              </Nav.Link>
+            </Nav.Item>
+          )}
           <Nav.Item>
             <Nav.Link eventKey="scene-edit-panel">
               <FormattedMessage id="actions.edit" />
@@ -450,9 +456,14 @@ const ScenePage: React.FC<IProps> = ({
         <Tab.Pane eventKey="scene-video-filter-panel">
           <SceneVideoFilterPanel scene={scene} />
         </Tab.Pane>
-        <Tab.Pane className="file-info-panel" eventKey="scene-file-info-panel">
-          <SceneFileInfoPanel scene={scene} />
-        </Tab.Pane>
+        {scene.files.length > 0 && (
+          <Tab.Pane
+            className="file-info-panel"
+            eventKey="scene-file-info-panel"
+          >
+            <SceneFileInfoPanel scene={scene} />
+          </Tab.Pane>
+        )}
         <Tab.Pane eventKey="scene-edit-panel">
           <SceneEditPanel
             isVisible={activeTabKey === "scene-edit-panel"}
