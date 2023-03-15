@@ -8,6 +8,10 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
+func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) (bool, error) {
+	panic("not implemented")
+}
+
 func (r *mutationResolver) DeleteFiles(ctx context.Context, ids []string) (ret bool, err error) {
 	fileIDs, err := stringslice.StringSliceToIntSlice(ids)
 	if err != nil {

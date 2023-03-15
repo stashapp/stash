@@ -245,6 +245,7 @@ type Mutation {
   tagsDestroy(ids: [ID!]!): Boolean!
   tagsMerge(input: TagsMergeInput!): Tag
 
+  moveFiles(input: MoveFilesInput!): Boolean!
   deleteFiles(ids: [ID!]!): Boolean!
 
   # Saved filters
