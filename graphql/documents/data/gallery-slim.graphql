@@ -22,7 +22,7 @@ fragment SlimGalleryData on Gallery {
       thumbnail
     }
   }
-  gallery_chapters {
+  chapters {
     id
     title
     image_index

@@ -19,7 +19,7 @@ interface IProps {
 
 const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
   const intl = useIntl();
-  const showLightbox = useGalleryLightbox(gallery.id, gallery.gallery_chapters);
+  const showLightbox = useGalleryLightbox(gallery.id, gallery.chapters);
 
   const coverFile = gallery?.cover?.files.length
     ? gallery.cover.files[0]

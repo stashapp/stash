@@ -41,7 +41,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
   const history = useHistory();
   const Toast = useToast();
   const intl = useIntl();
-  const showLightbox = useGalleryLightbox(gallery.id, gallery.gallery_chapters);
+  const showLightbox = useGalleryLightbox(gallery.id, gallery.chapters);
 
   const [collapsed, setCollapsed] = useState(false);
 

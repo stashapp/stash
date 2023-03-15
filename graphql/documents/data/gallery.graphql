@@ -16,7 +16,7 @@ fragment GalleryData on Gallery {
     ...FolderData
   }
 
-  gallery_chapters {
+  chapters {
     ...GalleryChapterData
   }
   cover {

@@ -60,7 +60,7 @@ export const GalleryChapterPanel: React.FC<IGalleryChapterPanelProps> = (
       </Button>
       <div className="container">
         <ChapterEntries
-          galleryChapters={props.gallery.gallery_chapters}
+          galleryChapters={props.gallery.chapters}
           onClickChapter={onClickChapter}
           onEdit={onOpenEditor}
         />

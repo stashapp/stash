@@ -22,5 +22,5 @@ input GalleryChapterUpdateInput {
 
 type FindGalleryChaptersResultType {
   count: Int!
-  gallery_chapters: [GalleryChapter!]!
+  chapters: [GalleryChapter!]!
 }

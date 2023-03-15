@@ -1,7 +1,8 @@
 import React from "react";
 import { Button, Form } from "react-bootstrap";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import { Field, FieldProps, Form as FormikForm, Formik } from "formik";
+import * as yup from "yup";
 import * as GQL from "src/core/generated-graphql";
 import {
   useGalleryChapterCreate,
@@ -30,23 +31,13 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
   const [galleryChapterUpdate] = useGalleryChapterUpdate();
   const [galleryChapterDestroy] = useGalleryChapterDestroy();
   const Toast = useToast();
-  const intl = useIntl();
-  const imagesQuery = GQL.useFindImagesQuery({
-    variables: {
-      filter: {
-        per_page: 100000,
-        sort: "path",
-      },
-      image_filter: {
-        galleries: {
-          modifier: GQL.CriterionModifier.Includes,
-          value: [galleryID],
-        },
-      },
-    },
+
+  const schema = yup.object({
+    title: yup.string().ensure(),
+    imageIndex: yup.number().required().moreThan(0),
   });
 
-  const onSubmit = async (values: IFormFields) => {
+  const onSubmit = (values: IFormFields) => {
     const variables:
       | GQL.GalleryChapterUpdateInput
       | GQL.GalleryChapterCreateInput = {
@@ -54,14 +45,6 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
       image_index: parseInt(values.imageIndex),
       gallery_id: galleryID,
     };
-    await imagesQuery;
-    if (
-      imagesQuery.data?.findImages.count &&
-      variables.image_index > imagesQuery.data.findImages.count
-    ) {
-      Toast.error(intl.formatMessage({ id: "toast.image_index_too_large" }));
-      return;
-    }
 
     if (!editingChapter) {
       galleryChapterCreate({ variables })
@@ -109,7 +92,11 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
   };
 
   return (
-    <Formik initialValues={values} onSubmit={onSubmit}>
+    <Formik
+      initialValues={values}
+      onSubmit={onSubmit}
+      validationSchema={schema}
+    >
       <FormikForm>
         <div>
           <Form.Group>
