@@ -10,7 +10,6 @@ import {
 } from "react-bootstrap";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
-import debounce from "lodash-es/debounce";
 
 import { Icon } from "src/components/Shared/Icon";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
@@ -46,6 +45,7 @@ import {
   faBars,
 } from "@fortawesome/free-solid-svg-icons";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
+import { useDebounce } from "../debounce";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
@@ -205,8 +205,9 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
   }, [isSwitchingPage, images, index]);
 
-  const disableInstantTransition = debounce(
+  const disableInstantTransition = useDebounce(
     () => setInstantTransition(false),
+    [],
     400
   );
 

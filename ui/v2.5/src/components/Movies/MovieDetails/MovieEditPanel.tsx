@@ -115,6 +115,12 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     setRating
   );
 
+  function onCancelEditing() {
+    setFrontImage(undefined);
+    setBackImage(undefined);
+    onCancel?.();
+  }
+
   // set up hotkeys
   useEffect(() => {
     // Mousetrap.bind("u", (e) => {
@@ -474,7 +480,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
         objectName={movie?.name ?? intl.formatMessage({ id: "movie" })}
         isNew={isNew}
         isEditing={isEditing}
-        onToggleEdit={onCancel}
+        onToggleEdit={onCancelEditing}
         onSave={formik.handleSubmit}
         saveDisabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}
         onImageChange={onFrontImageChange}

@@ -7,7 +7,6 @@ import (
 
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/internal/manager"
-	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -32,8 +31,11 @@ func (r *queryResolver) SceneStreams(ctx context.Context, id *string) ([]*manage
 		return nil, errors.New("nil scene")
 	}
 
+	config := manager.GetInstance().Config
+
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, scene.ID)
+	apiKey := config.GetAPIKey()
 
-	return manager.GetSceneStreamPaths(scene, builder.GetStreamURL(), config.GetInstance().GetMaxStreamingTranscodeSize())
+	return manager.GetSceneStreamPaths(scene, builder.GetStreamURL(apiKey), config.GetMaxStreamingTranscodeSize())
 }
