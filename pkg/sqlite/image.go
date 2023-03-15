@@ -260,17 +260,23 @@ func (qb *ImageStore) Find(ctx context.Context, id int) (*models.Image, error) {
 }
 
 func (qb *ImageStore) FindMany(ctx context.Context, ids []int) ([]*models.Image, error) {
-	q := qb.selectDataset().Prepared(true).Where(qb.table().Col(idColumn).In(ids))
-	unsorted, err := qb.getMany(ctx, q)
-	if err != nil {
-		return nil, err
-	}
-
 	images := make([]*models.Image, len(ids))
 
-	for _, s := range unsorted {
-		i := intslice.IntIndex(ids, s.ID)
-		images[i] = s
+	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
+		q := qb.selectDataset().Prepared(true).Where(qb.table().Col(idColumn).In(batch))
+		unsorted, err := qb.getMany(ctx, q)
+		if err != nil {
+			return err
+		}
+
+		for _, s := range unsorted {
+			i := intslice.IntIndex(ids, s.ID)
+			images[i] = s
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
 	for i := range images {

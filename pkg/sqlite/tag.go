@@ -98,17 +98,23 @@ func (qb *tagQueryBuilder) Find(ctx context.Context, id int) (*models.Tag, error
 
 func (qb *tagQueryBuilder) FindMany(ctx context.Context, ids []int) ([]*models.Tag, error) {
 	tableMgr := tagTableMgr
-	q := goqu.Select("*").From(tableMgr.table).Where(tableMgr.byIDInts(ids...))
-	unsorted, err := qb.getMany(ctx, q)
-	if err != nil {
-		return nil, err
-	}
-
 	ret := make([]*models.Tag, len(ids))
 
-	for _, s := range unsorted {
-		i := intslice.IntIndex(ids, s.ID)
-		ret[i] = s
+	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
+		q := goqu.Select("*").From(tableMgr.table).Where(tableMgr.byIDInts(batch...))
+		unsorted, err := qb.getMany(ctx, q)
+		if err != nil {
+			return err
+		}
+
+		for _, s := range unsorted {
+			i := intslice.IntIndex(ids, s.ID)
+			ret[i] = s
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
 	for i := range ret {
