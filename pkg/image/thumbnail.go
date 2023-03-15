@@ -32,7 +32,7 @@ type ThumbnailGenerator interface {
 }
 
 type ThumbnailEncoder struct {
-	ffmpeg ffmpeg.FFMpeg
+	ffmpeg *ffmpeg.FFMpeg
 	vips   *vipsEncoder
 }
 
@@ -43,7 +43,7 @@ func GetVipsPath() string {
 	return vipsPath
 }
 
-func NewThumbnailEncoder(ffmpegEncoder ffmpeg.FFMpeg) ThumbnailEncoder {
+func NewThumbnailEncoder(ffmpegEncoder *ffmpeg.FFMpeg) ThumbnailEncoder {
 	ret := ThumbnailEncoder{
 		ffmpeg: ffmpegEncoder,
 	}

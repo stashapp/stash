@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Button, InputGroup, Form } from "react-bootstrap";
-import debounce from "lodash-es/debounce";
 import { Icon } from "../Icon";
 import { LoadingIndicator } from "../LoadingIndicator";
 import { useDirectory } from "src/core/StashService";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { useDebouncedSetState } from "src/hooks/debounce";
 
 interface IProps {
   currentDirectory: string;
@@ -20,22 +20,15 @@ export const FolderSelect: React.FC<IProps> = ({
   defaultDirectories,
   appendButton,
 }) => {
-  const [debouncedDirectory, setDebouncedDirectory] =
-    useState(currentDirectory);
-  const { data, error, loading } = useDirectory(debouncedDirectory);
+  const [directory, setDirectory] = useState(currentDirectory);
+  const { data, error, loading } = useDirectory(directory);
   const intl = useIntl();
 
   const selectableDirectories: string[] = currentDirectory
     ? data?.directory.directories ?? defaultDirectories ?? []
     : defaultDirectories ?? [];
 
-  const debouncedSetDirectory = useMemo(
-    () =>
-      debounce((input: string) => {
-        setDebouncedDirectory(input);
-      }, 250),
-    []
-  );
+  const debouncedSetDirectory = useDebouncedSetState(setDirectory, 250);
 
   useEffect(() => {
     if (currentDirectory === "" && !defaultDirectories && data?.directory.path)
@@ -44,7 +37,7 @@ export const FolderSelect: React.FC<IProps> = ({
 
   function setInstant(value: string) {
     setCurrentDirectory(value);
-    setDebouncedDirectory(value);
+    setDirectory(value);
   }
 
   function setDebounced(value: string) {

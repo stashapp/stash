@@ -179,13 +179,13 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePat
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	config := manager.GetInstance().Config
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj.ID)
-	builder.APIKey = config.GetAPIKey()
 	screenshotPath := builder.GetScreenshotURL(obj.UpdatedAt)
 	previewPath := builder.GetStreamPreviewURL()
-	streamPath := builder.GetStreamURL().String()
+	streamPath := builder.GetStreamURL(config.GetAPIKey()).String()
 	webpPath := builder.GetStreamPreviewImageURL()
-	vttPath := builder.GetSpriteVTTURL()
-	spritePath := builder.GetSpriteURL()
+	objHash := obj.GetHash(config.GetVideoFileNamingAlgorithm())
+	vttPath := builder.GetSpriteVTTURL(objHash)
+	spritePath := builder.GetSpriteURL(objHash)
 	chaptersVttPath := builder.GetChaptersVTTURL()
 	funscriptPath := builder.GetFunscriptURL()
 	captionBasePath := builder.GetCaptionURL()
@@ -371,9 +371,9 @@ func (r *sceneResolver) SceneStreams(ctx context.Context, obj *models.Scene) ([]
 
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj.ID)
-	builder.APIKey = config.GetAPIKey()
+	apiKey := config.GetAPIKey()
 
-	return manager.GetSceneStreamPaths(obj, builder.GetStreamURL(), config.GetMaxStreamingTranscodeSize())
+	return manager.GetSceneStreamPaths(obj, builder.GetStreamURL(apiKey), config.GetMaxStreamingTranscodeSize())
 }
 
 func (r *sceneResolver) Interactive(ctx context.Context, obj *models.Scene) (bool, error) {
