@@ -40,7 +40,6 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useDebounce } from "src/hooks/debounce";
 
-const maxPageSize = 1000;
 interface IListFilterProps {
   onFilterUpdate: (newFilter: ListFilterModel) => void;
   filter: ListFilterModel;
@@ -132,11 +131,6 @@ export const ListFilter: React.FC<IListFilterProps> = ({
     let pp = parseInt(val, 10);
     if (Number.isNaN(pp) || pp <= 0) {
       return;
-    }
-
-    // don't allow page sizes over 1000
-    if (pp > maxPageSize) {
-      pp = maxPageSize;
     }
 
     const newFilter = cloneDeep(filter);
@@ -377,7 +371,6 @@ export const ListFilter: React.FC<IListFilterProps> = ({
                   <Form.Control
                     type="number"
                     min={1}
-                    max={maxPageSize}
                     className="text-input"
                     ref={perPageInput}
                     onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
