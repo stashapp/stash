@@ -178,6 +178,8 @@ input[type="range"].zoom-slider {
 
 .filter-tags .clear-all-button {
   color: $text-color;
+  // to match filter pills
+  line-height: 16px;
   padding: 0;
 }
 
