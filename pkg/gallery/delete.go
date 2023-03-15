@@ -11,17 +11,7 @@ import (
 func (s *Service) Destroy(ctx context.Context, i *models.Gallery, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) ([]*models.Image, error) {
 	var imgsDestroyed []*models.Image
 
-	mqb := s.ChapterRepository
-	chapters, err := mqb.FindByGalleryID(ctx, i.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, m := range chapters {
-		if err := DestroyChapter(ctx, m, mqb); err != nil {
-			return nil, err
-		}
-	}
+	// chapter deletion is done via delete cascade, so we don't need to do anything here
 
 	// if this is a zip-based gallery, delete the images as well first
 	zipImgsDestroyed, err := s.destroyZipFileImages(ctx, i, fileDeleter, deleteGenerated, deleteFile)

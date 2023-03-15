@@ -39,10 +39,9 @@ type ChapterRepository interface {
 }
 
 type Service struct {
-	Repository        Repository
-	ChapterRepository ChapterRepository
-	ImageFinder       ImageFinder
-	ImageService      ImageService
-	File              file.Store
-	Folder            file.FolderStore
+	Repository   Repository
+	ImageFinder  ImageFinder
+	ImageService ImageService
+	File         file.Store
+	Folder       file.FolderStore
 }
