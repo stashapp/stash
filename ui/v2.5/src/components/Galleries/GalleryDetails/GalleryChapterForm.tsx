@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, Form } from "react-bootstrap";
-import { FormattedMessage } from "react-intl";
-import { Field, FieldProps, Form as FormikForm, Formik } from "formik";
+import { FormattedMessage, useIntl } from "react-intl";
+import { Form as FormikForm, Formik } from "formik";
 import * as yup from "yup";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -10,10 +10,11 @@ import {
   useGalleryChapterDestroy,
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
+import isEqual from "lodash-es/isEqual";
 
 interface IFormFields {
   title: string;
-  imageIndex: string;
+  imageIndex: number;
 }
 
 interface IGalleryChapterForm {
@@ -27,6 +28,8 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
   editingChapter,
   onClose,
 }) => {
+  const intl = useIntl();
+
   const [galleryChapterCreate] = useGalleryChapterCreate();
   const [galleryChapterUpdate] = useGalleryChapterUpdate();
   const [galleryChapterDestroy] = useGalleryChapterDestroy();
@@ -34,7 +37,11 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
 
   const schema = yup.object({
     title: yup.string().ensure(),
-    imageIndex: yup.number().required().moreThan(0),
+    imageIndex: yup
+      .number()
+      .required()
+      .label(intl.formatMessage({ id: "image_index" }))
+      .moreThan(0),
   });
 
   const onSubmit = (values: IFormFields) => {
@@ -42,7 +49,7 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
       | GQL.GalleryChapterUpdateInput
       | GQL.GalleryChapterCreateInput = {
       title: values.title,
-      image_index: parseInt(values.imageIndex),
+      image_index: values.imageIndex,
       gallery_id: galleryID,
     };
 
@@ -66,29 +73,10 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
       .then(onClose)
       .catch((err) => Toast.error(err));
   };
-  const renderTitleField = (fieldProps: FieldProps<string>) => (
-    <input
-      className="text-input"
-      value={fieldProps.field.value}
-      onChange={(query: React.ChangeEvent<HTMLInputElement>) => {
-        fieldProps.form.setFieldValue("title", query.target.value);
-      }}
-    />
-  );
-
-  const renderImageIndexField = (fieldProps: FieldProps<string>) => (
-    <input
-      className="text-input"
-      value={fieldProps.field.value}
-      onChange={(query: React.ChangeEvent<HTMLInputElement>) => {
-        fieldProps.form.setFieldValue("imageIndex", query.target.value);
-      }}
-    />
-  );
 
   const values: IFormFields = {
     title: editingChapter?.title ?? "",
-    imageIndex: editingChapter?.image_index.toString() ?? "1",
+    imageIndex: editingChapter?.image_index ?? 1,
   };
 
   return (
@@ -97,54 +85,74 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
       onSubmit={onSubmit}
       validationSchema={schema}
     >
-      <FormikForm>
-        <div>
-          <Form.Group>
-            <Form.Label
-              htmlFor="title"
-              className="col-sm-3 col-md-2 col-xl-12 col-form-label"
-            >
-              Chapter Title
-            </Form.Label>
-            <div className="col-sm-9 col-md-10 col-xl-12">
-              <Field name="title">{renderTitleField}</Field>
-            </div>
-            <Form.Label
-              htmlFor="imageIndex"
-              className="col-sm-3 col-md-2 col-xl-12 col-form-label"
-            >
-              Image #
-            </Form.Label>
-            <div className="col-sm-8 col-xl-12">
-              <Field name="imageIndex">{renderImageIndexField}</Field>
-            </div>
-          </Form.Group>
-        </div>
-        <div className="buttons-container row">
-          <div className="col d-flex">
-            <Button variant="primary" type="submit">
-              Submit
-            </Button>
-            <Button
-              variant="secondary"
-              type="button"
-              onClick={onClose}
-              className="ml-2"
-            >
-              <FormattedMessage id="actions.cancel" />
-            </Button>
-            {editingChapter && (
-              <Button
-                variant="danger"
-                className="ml-auto"
-                onClick={() => onDelete()}
-              >
-                <FormattedMessage id="actions.delete" />
-              </Button>
-            )}
+      {(formik) => (
+        <FormikForm>
+          <div>
+            <Form.Group>
+              <Form.Label>
+                <FormattedMessage id="title" />
+              </Form.Label>
+
+              <Form.Control
+                className="text-input"
+                placeholder={intl.formatMessage({ id: "title" })}
+                {...formik.getFieldProps("title")}
+                isInvalid={!!formik.getFieldMeta("title").error}
+              />
+              <Form.Control.Feedback type="invalid">
+                {formik.getFieldMeta("title").error}
+              </Form.Control.Feedback>
+            </Form.Group>
+
+            <Form.Group>
+              <Form.Label>
+                <FormattedMessage id="image_index" />
+              </Form.Label>
+
+              <Form.Control
+                className="text-input"
+                placeholder={intl.formatMessage({ id: "image_index" })}
+                {...formik.getFieldProps("imageIndex")}
+                isInvalid={!!formik.getFieldMeta("imageIndex").error}
+              />
+              <Form.Control.Feedback type="invalid">
+                {formik.getFieldMeta("imageIndex").error}
+              </Form.Control.Feedback>
+            </Form.Group>
           </div>
-        </div>
-      </FormikForm>
+          <div className="buttons-container row">
+            <div className="col d-flex">
+              <Button
+                variant="primary"
+                disabled={
+                  (editingChapter && !formik.dirty) ||
+                  !isEqual(formik.errors, {})
+                }
+                onClick={() => formik.submitForm()}
+              >
+                <FormattedMessage id="actions.save" />
+              </Button>
+              <Button
+                variant="secondary"
+                type="button"
+                onClick={onClose}
+                className="ml-2"
+              >
+                <FormattedMessage id="actions.cancel" />
+              </Button>
+              {editingChapter && (
+                <Button
+                  variant="danger"
+                  className="ml-auto"
+                  onClick={() => onDelete()}
+                >
+                  <FormattedMessage id="actions.delete" />
+                </Button>
+              )}
+            </div>
+          </div>
+        </FormikForm>
+      )}
     </Formik>
   );
 };

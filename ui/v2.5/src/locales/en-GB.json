@@ -859,6 +859,7 @@
   },
   "empty_server": "Add some scenes to your server to view recommendations on this page.",
   "errors": {
+    "image_index_greater_than_zero": "Image index must be greater than 0",
     "something_went_wrong": "Something went wrong.",
     "lazy_component_error_help": "If you recently upgraded Stash, please reload the page or clear your browser cache."
   },
@@ -917,6 +918,7 @@
   "ignore_auto_tag": "Ignore Auto Tag",
   "image": "Image",
   "image_count": "Image Count",
+  "image_index": "Image #",
   "images": "Images",
   "include_parent_tags": "Include parent tags",
   "include_sub_studios": "Include subsidiary studios",
