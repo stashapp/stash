@@ -7,6 +7,7 @@ import {
   Popover,
   Form,
   Row,
+  Dropdown,
 } from "react-bootstrap";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
@@ -51,6 +52,7 @@ const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
 const CLASSNAME_LEFT_SPACER = `${CLASSNAME_HEADER}-left-spacer`;
 const CLASSNAME_CHAPTERS = `${CLASSNAME_HEADER}-chapters`;
+const CLASSNAME_CHAPTER_BUTTON = `${CLASSNAME_HEADER}-chapter-button`;
 const CLASSNAME_INDICATOR = `${CLASSNAME_HEADER}-indicator`;
 const CLASSNAME_OPTIONS = `${CLASSNAME_HEADER}-options`;
 const CLASSNAME_OPTIONS_ICON = `${CLASSNAME_OPTIONS}-icon`;
@@ -120,7 +122,6 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [resetPosition, setResetPosition] = useState(false);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const chapterMenuRef = useRef<HTMLDivElement>(null);
   const overlayTarget = useRef<HTMLButtonElement | null>(null);
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const indicatorRef = useRef<HTMLDivElement | null>(null);
@@ -498,43 +499,26 @@ export const LightboxComponent: React.FC<IProps> = ({
     if (chapters.length <= 0) return;
 
     const popoverContent = chapters.map(({ id, title, image_index }) => (
-      <p key={id} onClick={() => gotoPage(image_index)}>
+      <Dropdown.Item key={id} onClick={() => gotoPage(image_index)}>
         {" "}
         {title}
         {title.length > 0 ? " - #" : "#"}
         {image_index}
-      </p>
+      </Dropdown.Item>
     ));
 
     return (
-      <>
-        <div
-          className="chaptermenu"
-          onClick={() => setShowChapters(!showChapters)}
-          ref={chapterMenuRef}
-        >
-          <Button className="minimal">
-            <Icon icon={showChapters ? faTimes : faBars} />
-          </Button>
-        </div>
-        <Overlay
-          show={showChapters}
-          placement="bottom"
-          target={chapterMenuRef.current}
-          container={containerRef}
-          rootClose
-        >
-          <div
-            onClick={() => setShowChapters(!showChapters)}
-            className={CLASSNAME_CHAPTERS + " popover"}
-          >
-            <Popover.Title>
-              <FormattedMessage id="chapters" />
-            </Popover.Title>
-            <div className="popover-body">{popoverContent}</div>
-          </div>
-        </Overlay>
-      </>
+      <Dropdown
+        show={showChapters}
+        onToggle={() => setShowChapters(!showChapters)}
+      >
+        <Dropdown.Toggle className={`minimal ${CLASSNAME_CHAPTER_BUTTON}`}>
+          <Icon icon={showChapters ? faTimes : faBars} />
+        </Dropdown.Toggle>
+        <Dropdown.Menu className={`${CLASSNAME_CHAPTERS}`}>
+          {popoverContent}
+        </Dropdown.Menu>
+      </Dropdown>
     );
   };
 
