@@ -105,6 +105,7 @@ interface IImageListImages {
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
   slideshowRunning: boolean;
   setSlideshowRunning: (running: boolean) => void;
+  chapters?: GQL.GalleryChapterDataFragment[];
 }
 
 const ImageListImages: React.FC<IImageListImages> = ({
@@ -116,22 +117,29 @@ const ImageListImages: React.FC<IImageListImages> = ({
   onSelectChange,
   slideshowRunning,
   setSlideshowRunning,
+  chapters = [],
 }) => {
   const handleLightBoxPage = useCallback(
-    (direction: number) => {
-      if (direction === -1) {
-        if (filter.currentPage === 1) {
-          onChangePage(pageCount);
-        } else {
-          onChangePage(filter.currentPage - 1);
+    (props: { direction?: number; page?: number }) => {
+      const { direction, page: newPage } = props;
+
+      if (direction !== undefined) {
+        if (direction < 0) {
+          if (filter.currentPage === 1) {
+            onChangePage(pageCount);
+          } else {
+            onChangePage(filter.currentPage + direction);
+          }
+        } else if (direction > 0) {
+          if (filter.currentPage === pageCount) {
+            // return to the first page
+            onChangePage(1);
+          } else {
+            onChangePage(filter.currentPage + direction);
+          }
         }
-      } else if (direction === 1) {
-        if (filter.currentPage === pageCount) {
-          // return to the first page
-          onChangePage(1);
-        } else {
-          onChangePage(filter.currentPage + 1);
-        }
+      } else if (newPage !== undefined) {
+        onChangePage(newPage);
       }
     },
     [onChangePage, filter.currentPage, pageCount]
@@ -146,7 +154,9 @@ const ImageListImages: React.FC<IImageListImages> = ({
       images,
       showNavigation: false,
       pageCallback: pageCount > 1 ? handleLightBoxPage : undefined,
-      pageHeader: `Page ${filter.currentPage} / ${pageCount}`,
+      page: filter.currentPage,
+      pages: pageCount,
+      pageSize: filter.itemsPerPage,
       slideshowEnabled: slideshowRunning,
       onClose: handleClose,
     };
@@ -154,12 +164,19 @@ const ImageListImages: React.FC<IImageListImages> = ({
     images,
     pageCount,
     filter.currentPage,
+    filter.itemsPerPage,
     slideshowRunning,
     handleClose,
     handleLightBoxPage,
   ]);
 
-  const showLightbox = useLightbox(lightboxState);
+  const showLightbox = useLightbox(
+    lightboxState,
+    filter.sortBy === "path" &&
+      filter.sortDirection === GQL.SortDirectionEnum.Asc
+      ? chapters
+      : []
+  );
 
   const handleImageOpen = useCallback(
     (index) => {
@@ -273,6 +290,7 @@ interface IImageList {
   persistanceKey?: string;
   alterQuery?: boolean;
   extraOperations?: IItemListOperation<GQL.FindImagesQueryResult>[];
+  chapters?: GQL.GalleryChapterDataFragment[];
 }
 
 export const ImageList: React.FC<IImageList> = ({
@@ -281,6 +299,7 @@ export const ImageList: React.FC<IImageList> = ({
   persistanceKey,
   alterQuery,
   extraOperations,
+  chapters = [],
 }) => {
   const intl = useIntl();
   const history = useHistory();
@@ -386,6 +405,7 @@ export const ImageList: React.FC<IImageList> = ({
           selectedIds={selectedIds}
           slideshowRunning={slideshowRunning}
           setSlideshowRunning={setSlideshowRunning}
+          chapters={chapters}
         />
       );
     }

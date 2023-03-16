@@ -12,7 +12,11 @@ import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { parsePath, prepareQueryString } from "src/components/Tagger/utils";
 import { ScenePreview } from "src/components/Scenes/SceneCard";
 import { TaggerStateContext } from "../context";
-import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
+import {
+  faChevronDown,
+  faChevronUp,
+  faImage,
+} from "@fortawesome/free-solid-svg-icons";
 import { objectPath, objectTitle } from "src/core/files";
 
 interface ITaggerSceneDetails {
@@ -84,6 +88,7 @@ interface ITaggerScene {
   doSceneQuery?: (queryString: string) => void;
   scrapeSceneFragment?: (scene: GQL.SlimSceneDataFragment) => void;
   loading?: boolean;
+  showLightboxImage: (imagePath: string) => void;
 }
 
 export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
@@ -94,6 +99,7 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
   scrapeSceneFragment,
   errorMessage,
   children,
+  showLightboxImage,
 }) => {
   const { config } = useContext(TaggerStateContext);
   const [queryString, setQueryString] = useState<string>("");
@@ -186,6 +192,27 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
     }
   }
 
+  function onSpriteClick(ev: React.MouseEvent<HTMLElement>) {
+    ev.preventDefault();
+    showLightboxImage(scene.paths.sprite ?? "");
+  }
+
+  function maybeRenderSpriteIcon() {
+    // If a scene doesn't have any files, or doesn't have a sprite generated, the
+    // path will be http://localhost:9999/scene/_sprite.jpg
+    if (scene.files.length > 0) {
+      return (
+        <Button
+          className="sprite-button"
+          variant="link"
+          onClick={onSpriteClick}
+        >
+          <Icon icon={faImage} />
+        </Button>
+      );
+    }
+  }
+
   return (
     <div key={scene.id} className="mt-3 search-item">
       <div className="row">
@@ -198,6 +225,7 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
                 isPortrait={isPortrait}
                 soundActive={false}
               />
+              {maybeRenderSpriteIcon()}
             </Link>
           </div>
           <Link to={url} className="scene-link overflow-hidden">

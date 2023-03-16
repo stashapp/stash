@@ -104,6 +104,7 @@ export const GalleryImagesPanel: React.FC<IGalleryDetailsProps> = ({
       extraOperations={otherOperations}
       persistState={PersistanceLevel.VIEW}
       persistanceKey="galleryimages"
+      chapters={gallery.chapters}
     />
   );
 };

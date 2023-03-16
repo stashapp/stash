@@ -16,6 +16,9 @@ fragment GalleryData on Gallery {
     ...FolderData
   }
 
+  chapters {
+    ...GalleryChapterData
+  }
   cover {
     ...SlimImageData
   }
