@@ -78,9 +78,10 @@ interface IProps {
   initialIndex?: number;
   showNavigation: boolean;
   slideshowEnabled?: boolean;
-  pageHeader?: string;
-  pageCount?: number;
-  pageCallback?: (direction: number) => void;
+  page?: number;
+  pages?: number;
+  pageSize?: number;
+  pageCallback?: (props: { direction?: number; page?: number }) => void;
   chapters?: IChapter[];
   hide: () => void;
 }
@@ -92,14 +93,16 @@ export const LightboxComponent: React.FC<IProps> = ({
   initialIndex = 0,
   showNavigation,
   slideshowEnabled = false,
-  pageHeader,
-  pageCount = 40,
+  page,
+  pages,
+  pageSize: pageSize = 40,
   pageCallback,
   chapters = [],
   hide,
 }) => {
   const [updateImage] = useImageUpdate();
 
+  // zero-based
   const [index, setIndex] = useState<number | null>(null);
   const [movingLeft, setMovingLeft] = useState(false);
   const oldIndex = useRef<number | null>(null);
@@ -324,7 +327,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       if (index === 0) {
         // go to next page, or loop back if no callback is set
         if (pageCallback) {
-          pageCallback(-1);
+          pageCallback({ direction: -1 });
           setIndex(-1);
           oldImages.current = images;
           setIsSwitchingPage(true);
@@ -348,7 +351,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       if (index === images.length - 1) {
         // go to preview page, or loop back if no callback is set
         if (pageCallback) {
-          pageCallback(1);
+          pageCallback({ direction: 1 });
           oldImages.current = images;
           setIsSwitchingPage(true);
           setIndex(0);
@@ -459,43 +462,43 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const currentIndex = index === null ? initialIndex : index;
 
-  function gotoPage(i: number) {
+  function gotoPage(imageIndex: number) {
+    const indexInPage = (imageIndex - 1) % pageSize;
     if (pageCallback) {
-      let jumppage = Math.floor(i / pageCount);
-      if (pageHeader && pageHeader.startsWith("Page ")) {
-        jumppage = jumppage - (parseInt(pageHeader.split(" ")[1] ?? "1") - 1);
-      }
-      if (jumppage !== 0) {
-        pageCallback(jumppage);
+      let jumppage = Math.floor(imageIndex / pageSize) + 1;
+      if (page !== jumppage) {
+        pageCallback({ page: jumppage });
         oldImages.current = images;
         setIsSwitchingPage(true);
       }
-      setIndex(i % pageCount);
-    } else setIndex(i);
+    }
+
+    setIndex(indexInPage);
     setShowChapters(false);
   }
 
   function chapterHeader() {
-    let completePage = (index ?? 0) + 1;
-    if (pageHeader && pageHeader.startsWith("Page ")) {
-      completePage =
-        completePage + (parseInt(pageHeader.split(" ")[1]) - 1) * pageCount;
-    }
-    let r = "";
+    const imageNumber = (index ?? 0) + 1;
+    const globalIndex = page
+      ? (page - 1) * pageSize + imageNumber
+      : imageNumber;
+
+    let chapterTitle = "";
     chapters.forEach(function (chapter) {
-      if (chapter.image_index > completePage) {
-        return r;
+      if (chapter.image_index > globalIndex) {
+        return;
       }
-      r = chapter.title;
+      chapterTitle = chapter.title;
     });
-    return r;
+
+    return chapterTitle ?? "";
   }
 
   const renderChapterMenu = () => {
     if (chapters.length <= 0) return;
 
     const popoverContent = chapters.map(({ id, title, image_index }) => (
-      <p key={id} onClick={() => gotoPage(image_index - 1)}>
+      <p key={id} onClick={() => gotoPage(image_index)}>
         {" "}
         {title}
         {title.length > 0 ? " - #" : "#"}
@@ -719,6 +722,14 @@ export const LightboxComponent: React.FC<IProps> = ({
       Toast.error(e);
     }
   }
+
+  const pageHeader =
+    page && pages
+      ? intl.formatMessage(
+          { id: "dialogs.lightbox.page_header" },
+          { page, total: pages }
+        )
+      : "";
 
   return (
     <div

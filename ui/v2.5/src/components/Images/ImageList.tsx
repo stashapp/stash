@@ -120,20 +120,26 @@ const ImageListImages: React.FC<IImageListImages> = ({
   chapters = [],
 }) => {
   const handleLightBoxPage = useCallback(
-    (direction: number) => {
-      if (direction < 0) {
-        if (filter.currentPage === 1) {
-          onChangePage(pageCount);
-        } else {
-          onChangePage(filter.currentPage + direction);
+    (props: { direction?: number; page?: number }) => {
+      const { direction, page: newPage } = props;
+
+      if (direction !== undefined) {
+        if (direction < 0) {
+          if (filter.currentPage === 1) {
+            onChangePage(pageCount);
+          } else {
+            onChangePage(filter.currentPage + direction);
+          }
+        } else if (direction > 0) {
+          if (filter.currentPage === pageCount) {
+            // return to the first page
+            onChangePage(1);
+          } else {
+            onChangePage(filter.currentPage + direction);
+          }
         }
-      } else if (direction > 0) {
-        if (filter.currentPage === pageCount) {
-          // return to the first page
-          onChangePage(1);
-        } else {
-          onChangePage(filter.currentPage + direction);
-        }
+      } else if (newPage !== undefined) {
+        onChangePage(newPage);
       }
     },
     [onChangePage, filter.currentPage, pageCount]
@@ -148,8 +154,9 @@ const ImageListImages: React.FC<IImageListImages> = ({
       images,
       showNavigation: false,
       pageCallback: pageCount > 1 ? handleLightBoxPage : undefined,
-      pageHeader: `Page ${filter.currentPage} / ${pageCount}`,
-      pageCount: filter.itemsPerPage,
+      page: filter.currentPage,
+      pages: pageCount,
+      pageSize: filter.itemsPerPage,
       slideshowEnabled: slideshowRunning,
       onClose: handleClose,
     };

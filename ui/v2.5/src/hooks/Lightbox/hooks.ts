@@ -14,7 +14,9 @@ export const useLightbox = (
       images: state.images,
       showNavigation: state.showNavigation,
       pageCallback: state.pageCallback,
-      pageHeader: state.pageHeader,
+      page: state.page,
+      pages: state.pages,
+      pageSize: state.pageSize,
       slideshowEnabled: state.slideshowEnabled,
       onClose: state.onClose,
     });
@@ -23,7 +25,9 @@ export const useLightbox = (
     state.images,
     state.showNavigation,
     state.pageCallback,
-    state.pageHeader,
+    state.page,
+    state.pages,
+    state.pageSize,
     state.slideshowEnabled,
     state.onClose,
   ]);
@@ -34,11 +38,13 @@ export const useLightbox = (
         initialIndex: index,
         isVisible: true,
         slideshowEnabled,
-        pageCount: state.pageCount,
+        page: state.page,
+        pages: state.pages,
+        pageSize: state.pageSize,
         chapters: chapters,
       });
     },
-    [setLightboxState, state.pageCount, chapters]
+    [setLightboxState, state.page, state.pages, state.pageSize, chapters]
   );
   return show;
 };
@@ -75,20 +81,26 @@ export const useGalleryLightbox = (id: string, chapters: IChapter[] = []) => {
   }, [data?.findImages.count]);
 
   const handleLightBoxPage = useCallback(
-    (direction: number) => {
-      if (direction < 0) {
-        if (page === 1) {
-          setPage(pages);
-        } else {
-          setPage(page + direction);
+    (props: { direction?: number; page?: number }) => {
+      const { direction, page: newPage } = props;
+
+      if (direction !== undefined) {
+        if (direction < 0) {
+          if (page === 1) {
+            setPage(pages);
+          } else {
+            setPage(page + direction);
+          }
+        } else if (direction > 0) {
+          if (page === pages) {
+            // return to the first page
+            setPage(1);
+          } else {
+            setPage(page + direction);
+          }
         }
-      } else if (direction > 0) {
-        if (page === pages) {
-          // return to the first page
-          setPage(1);
-        } else {
-          setPage(page + direction);
-        }
+      } else if (newPage !== undefined) {
+        setPage(newPage);
       }
     },
     [page, pages]
@@ -101,7 +113,8 @@ export const useGalleryLightbox = (id: string, chapters: IChapter[] = []) => {
         isVisible: true,
         images: data.findImages?.images ?? [],
         pageCallback: pages > 1 ? handleLightBoxPage : undefined,
-        pageHeader: `Page ${page} / ${pages}`,
+        page,
+        pages,
       });
   }, [setLightboxState, data, handleLightBoxPage, page, pages]);
 
@@ -109,6 +122,8 @@ export const useGalleryLightbox = (id: string, chapters: IChapter[] = []) => {
     if (index > pageSize) {
       setPage(Math.floor(index / pageSize) + 1);
       index = index % pageSize;
+    } else {
+      setPage(1);
     }
     if (data)
       setLightboxState({
@@ -117,8 +132,9 @@ export const useGalleryLightbox = (id: string, chapters: IChapter[] = []) => {
         initialIndex: index,
         images: data.findImages?.images ?? [],
         pageCallback: pages > 1 ? handleLightBoxPage : undefined,
-        pageHeader: `Page ${page} / ${pages}`,
-        pageCount: pageSize,
+        page,
+        pages,
+        pageSize,
         chapters: chapters,
       });
     else {
@@ -127,8 +143,8 @@ export const useGalleryLightbox = (id: string, chapters: IChapter[] = []) => {
         isVisible: true,
         initialIndex: index,
         pageCallback: undefined,
-        pageHeader: undefined,
-        pageCount: pageSize,
+        page: undefined,
+        pageSize,
         chapters: chapters,
       });
       fetchGallery();

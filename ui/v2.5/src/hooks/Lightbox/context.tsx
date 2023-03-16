@@ -10,10 +10,11 @@ export interface IState {
   isLoading: boolean;
   showNavigation: boolean;
   initialIndex?: number;
-  pageCallback?: (direction: number) => void;
+  pageCallback?: (props: { direction?: number; page?: number }) => void;
   chapters?: IChapter[];
-  pageHeader?: string;
-  pageCount?: number;
+  page?: number;
+  pages?: number;
+  pageSize?: number;
   slideshowEnabled: boolean;
   onClose?: () => void;
 }

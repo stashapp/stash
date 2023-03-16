@@ -734,6 +734,7 @@
         "original": "Original"
       },
       "options": "Options",
+      "page_header": "Page {page} / {total}",
       "reset_zoom_on_nav": "Reset zoom level when changing image",
       "scale_up": {
         "description": "Scale smaller images up to fill screen",
