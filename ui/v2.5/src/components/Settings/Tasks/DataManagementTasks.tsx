@@ -174,7 +174,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
 
   const [migrateBlobsOptions, setMigrateBlobsOptions] =
     useState<GQL.MigrateBlobsInput>({
-      deleteOld: false,
+      deleteOld: true,
     });
 
   const [migrateSceneScreenshotsOptions, setMigrateSceneScreenshotsOptions] =
