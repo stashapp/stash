@@ -34,17 +34,16 @@ import {
   faCaretDown,
   faCaretUp,
   faCheck,
-  faFilter,
   faRandom,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
+import { FilterButton } from "./Filters/FilterButton";
 import { useDebounce } from "src/hooks/debounce";
 
 interface IListFilterProps {
   onFilterUpdate: (newFilter: ListFilterModel) => void;
   filter: ListFilterModel;
   filterOptions: ListFilterOptions;
-  filterDialogOpen?: boolean;
   persistState?: PersistanceLevel;
   openFilterDialog: () => void;
 }
@@ -55,7 +54,6 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   onFilterUpdate,
   filter,
   filterOptions,
-  filterDialogOpen,
   openFilterDialog,
   persistState,
 }) => {
@@ -289,13 +287,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
               </Tooltip>
             }
           >
-            <Button
-              variant="secondary"
-              onClick={() => openFilterDialog()}
-              active={filterDialogOpen}
-            >
-              <Icon icon={faFilter} />
-            </Button>
+            <FilterButton onClick={() => openFilterDialog()} filter={filter} />
           </OverlayTrigger>
         </ButtonGroup>
 

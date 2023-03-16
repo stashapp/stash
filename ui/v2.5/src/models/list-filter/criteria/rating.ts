@@ -31,7 +31,7 @@ export class RatingCriterion extends Criterion<INumberValue> {
   protected toCriterionInput(): IntCriterionInput {
     return {
       modifier: this.modifier,
-      value: this.value.value,
+      value: this.value.value ?? 0,
       value2: this.value.value2,
     };
   }

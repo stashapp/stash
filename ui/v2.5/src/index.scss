@@ -286,11 +286,15 @@ div.react-select__control {
   }
 }
 
+div.react-select__menu-portal {
+  z-index: 1600;
+}
+
 div.react-select__menu,
 div.dropdown-menu {
   background-color: $secondary;
   color: $text-color;
-  z-index: 16;
+  z-index: 1600;
 
   .react-select__option,
   .dropdown-item {

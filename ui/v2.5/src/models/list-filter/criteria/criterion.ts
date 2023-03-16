@@ -70,6 +70,10 @@ export abstract class Criterion<V extends CriterionValue> {
     this._value = newValue;
   }
 
+  public isValid(): boolean {
+    return true;
+  }
+
   public abstract getLabelValue(intl: IntlShape): string;
 
   constructor(type: CriterionOption, value: V) {
@@ -227,6 +231,14 @@ export class StringCriterion extends Criterion<string> {
   public getLabelValue(_intl: IntlShape) {
     return this.value;
   }
+
+  public isValid(): boolean {
+    return (
+      this.modifier === CriterionModifier.IsNull ||
+      this.modifier === CriterionModifier.NotNull ||
+      this.value.length > 0
+    );
+  }
 }
 
 export class MandatoryStringCriterionOption extends CriterionOption {
@@ -283,6 +295,10 @@ export class BooleanCriterionOption extends CriterionOption {
 export class BooleanCriterion extends StringCriterion {
   protected toCriterionInput(): boolean {
     return this.value === "true";
+  }
+
+  public isValid() {
+    return this.value === "true" || this.value === "false";
   }
 }
 
@@ -375,7 +391,7 @@ export class NumberCriterion extends Criterion<INumberValue> {
   protected toCriterionInput(): IntCriterionInput {
     return {
       modifier: this.modifier,
-      value: this.value.value,
+      value: this.value.value ?? 0,
       value2: this.value.value2,
     };
   }
@@ -392,8 +408,32 @@ export class NumberCriterion extends Criterion<INumberValue> {
     }
   }
 
+  public isValid(): boolean {
+    if (
+      this.modifier === CriterionModifier.IsNull ||
+      this.modifier === CriterionModifier.NotNull
+    ) {
+      return true;
+    }
+
+    const { value, value2 } = this.value;
+    if (value === undefined) {
+      return false;
+    }
+
+    if (
+      value2 === undefined &&
+      (this.modifier === CriterionModifier.Between ||
+        this.modifier === CriterionModifier.NotBetween)
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
   constructor(type: CriterionOption) {
-    super(type, { value: 0, value2: undefined });
+    super(type, { value: undefined, value2: undefined });
   }
 }
 
@@ -439,6 +479,17 @@ export class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
     };
   }
 
+  public isValid(): boolean {
+    if (
+      this.modifier === CriterionModifier.IsNull ||
+      this.modifier === CriterionModifier.NotNull
+    ) {
+      return true;
+    }
+
+    return this.value.length > 0;
+  }
+
   constructor(type: CriterionOption) {
     super(type, []);
   }
@@ -461,6 +512,17 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
     }
 
     return `${labels} (+${this.value.depth > 0 ? this.value.depth : "all"})`;
+  }
+
+  public isValid(): boolean {
+    if (
+      this.modifier === CriterionModifier.IsNull ||
+      this.modifier === CriterionModifier.NotNull
+    ) {
+      return true;
+    }
+
+    return this.value.items.length > 0;
   }
 
   constructor(type: CriterionOption) {
@@ -502,13 +564,13 @@ export function createMandatoryNumberCriterionOption(
 
 export class DurationCriterion extends Criterion<INumberValue> {
   constructor(type: CriterionOption) {
-    super(type, { value: 0, value2: undefined });
+    super(type, { value: undefined, value2: undefined });
   }
 
   protected toCriterionInput(): IntCriterionInput {
     return {
       modifier: this.modifier,
-      value: this.value.value,
+      value: this.value.value ?? 0,
       value2: this.value.value2,
     };
   }
@@ -517,14 +579,38 @@ export class DurationCriterion extends Criterion<INumberValue> {
     return this.modifier === CriterionModifier.Between ||
       this.modifier === CriterionModifier.NotBetween
       ? `${DurationUtils.secondsToString(
-          this.value.value
+          this.value.value ?? 0
         )} ${DurationUtils.secondsToString(this.value.value2 ?? 0)}`
       : this.modifier === CriterionModifier.GreaterThan ||
         this.modifier === CriterionModifier.LessThan ||
         this.modifier === CriterionModifier.Equals ||
         this.modifier === CriterionModifier.NotEquals
-      ? DurationUtils.secondsToString(this.value.value)
+      ? DurationUtils.secondsToString(this.value.value ?? 0)
       : "?";
+  }
+
+  public isValid(): boolean {
+    if (
+      this.modifier === CriterionModifier.IsNull ||
+      this.modifier === CriterionModifier.NotNull
+    ) {
+      return true;
+    }
+
+    const { value, value2 } = this.value;
+    if (value === undefined) {
+      return false;
+    }
+
+    if (
+      value2 === undefined &&
+      (this.modifier === CriterionModifier.Between ||
+        this.modifier === CriterionModifier.NotBetween)
+    ) {
+      return false;
+    }
+
+    return true;
   }
 }
 
@@ -590,6 +676,30 @@ export class DateCriterion extends Criterion<IDateValue> {
       this.modifier === CriterionModifier.NotBetween
       ? `${value}, ${this.value.value2}`
       : `${value}`;
+  }
+
+  public isValid(): boolean {
+    if (
+      this.modifier === CriterionModifier.IsNull ||
+      this.modifier === CriterionModifier.NotNull
+    ) {
+      return true;
+    }
+
+    const { value, value2 } = this.value;
+    if (!value) {
+      return false;
+    }
+
+    if (
+      !value2 &&
+      (this.modifier === CriterionModifier.Between ||
+        this.modifier === CriterionModifier.NotBetween)
+    ) {
+      return false;
+    }
+
+    return true;
   }
 
   constructor(type: CriterionOption) {
@@ -660,6 +770,30 @@ export class TimestampCriterion extends Criterion<ITimestampValue> {
     }
 
     return "";
+  }
+
+  public isValid(): boolean {
+    if (
+      this.modifier === CriterionModifier.IsNull ||
+      this.modifier === CriterionModifier.NotNull
+    ) {
+      return true;
+    }
+
+    const { value, value2 } = this.value;
+    if (!value) {
+      return false;
+    }
+
+    if (
+      !value2 &&
+      (this.modifier === CriterionModifier.Between ||
+        this.modifier === CriterionModifier.NotBetween)
+    ) {
+      return false;
+    }
+
+    return true;
   }
 
   constructor(type: CriterionOption) {

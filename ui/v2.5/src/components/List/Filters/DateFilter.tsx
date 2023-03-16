@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import { Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { CriterionModifier } from "../../../core/generated-graphql";
@@ -16,18 +16,17 @@ export const DateFilter: React.FC<IDateFilterProps> = ({
 }) => {
   const intl = useIntl();
 
-  const valueStage = useRef<IDateValue>(criterion.value);
+  const { value } = criterion;
 
   function onChanged(
     event: React.ChangeEvent<HTMLInputElement>,
     property: "value" | "value2"
   ) {
-    const { value } = event.target;
-    valueStage.current[property] = value;
-  }
+    const newValue = event.target.value;
+    const valueCopy = { ...value };
 
-  function onBlurInput() {
-    onValueChanged(valueStage.current);
+    valueCopy[property] = newValue;
+    onValueChanged(valueCopy);
   }
 
   let equalsControl: JSX.Element | null = null;
@@ -43,8 +42,7 @@ export const DateFilter: React.FC<IDateFilterProps> = ({
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             onChanged(e, "value")
           }
-          onBlur={onBlurInput}
-          defaultValue={criterion.value?.value ?? ""}
+          value={value?.value ?? ""}
           placeholder={
             intl.formatMessage({ id: "criterion.value" }) + " (YYYY-MM-DD)"
           }
@@ -67,8 +65,7 @@ export const DateFilter: React.FC<IDateFilterProps> = ({
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             onChanged(e, "value")
           }
-          onBlur={onBlurInput}
-          defaultValue={criterion.value?.value ?? ""}
+          value={value?.value ?? ""}
           placeholder={
             intl.formatMessage({ id: "criterion.greater_than" }) +
             " (YYYY-MM-DD)"
@@ -97,11 +94,10 @@ export const DateFilter: React.FC<IDateFilterProps> = ({
                 : "value2"
             )
           }
-          onBlur={onBlurInput}
-          defaultValue={
+          value={
             (criterion.modifier === CriterionModifier.LessThan
-              ? criterion.value?.value
-              : criterion.value?.value2) ?? ""
+              ? value?.value
+              : value?.value2) ?? ""
           }
           placeholder={
             intl.formatMessage({ id: "criterion.less_than" }) + " (YYYY-MM-DD)"
