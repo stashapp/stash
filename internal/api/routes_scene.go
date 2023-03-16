@@ -88,7 +88,14 @@ func (rs sceneRoutes) Routes() chi.Router {
 // region Handlers
 
 func (rs sceneRoutes) StreamDirect(w http.ResponseWriter, r *http.Request) {
+
 	scene := r.Context().Value(sceneKey).(*models.Scene)
+	// #3526 - return 404 if the scene does not have any files
+	if scene.Path == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
 	sceneHash := scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
 
 	filepath := manager.GetInstance().Paths.Scene.GetStreamPath(scene.Path, sceneHash)
