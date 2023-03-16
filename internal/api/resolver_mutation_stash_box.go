@@ -62,7 +62,7 @@ func (r *mutationResolver) SubmitStashBoxSceneDraft(ctx context.Context, input S
 			return fmt.Errorf("scene with id %d not found", id)
 		}
 
-		cover, err := r.sceneService.GetCover(ctx, scene)
+		cover, err := qb.GetCover(ctx, id)
 		if err != nil {
 			return fmt.Errorf("getting scene cover: %w", err)
 		}

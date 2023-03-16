@@ -27,6 +27,12 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
   return (
     <>
       <BooleanSetting
+        id="covers-task"
+        headingID="dialogs.scene_gen.covers"
+        checked={options.covers ?? false}
+        onChange={(v) => setOptions({ covers: v })}
+      />
+      <BooleanSetting
         id="preview-task"
         checked={options.previews ?? false}
         headingID="dialogs.scene_gen.video_previews"

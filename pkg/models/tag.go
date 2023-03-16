@@ -74,7 +74,6 @@ type TagWriter interface {
 	UpdateFull(ctx context.Context, updatedTag Tag) (*Tag, error)
 	Destroy(ctx context.Context, id int) error
 	UpdateImage(ctx context.Context, tagID int, image []byte) error
-	DestroyImage(ctx context.Context, tagID int) error
 	UpdateAliases(ctx context.Context, tagID int, aliases []string) error
 	Merge(ctx context.Context, source []int, destination int) error
 	UpdateParentTags(ctx context.Context, tagID int, parentIDs []int) error

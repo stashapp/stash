@@ -15,8 +15,11 @@ import {
   VideoPreviewInput,
   VideoPreviewSettingsInput,
 } from "./GeneratePreviewOptions";
+import { useIntl } from "react-intl";
 
 export const SettingsConfigurationPanel: React.FC = () => {
+  const intl = useIntl();
+
   const { general, loading, error, saveGeneral } =
     React.useContext(SettingStateContext);
 
@@ -94,20 +97,23 @@ export const SettingsConfigurationPanel: React.FC = () => {
     return GQL.HashAlgorithm.Md5;
   }
 
+  function blobStorageTypeToID(value: GQL.BlobsStorageType | undefined) {
+    switch (value) {
+      case GQL.BlobsStorageType.Database:
+        return "blobs_storage_type.database";
+      case GQL.BlobsStorageType.Filesystem:
+        return "blobs_storage_type.filesystem";
+    }
+
+    return "blobs_storage_type.database";
+  }
+
   if (error) return <h1>{error.message}</h1>;
   if (loading) return <LoadingIndicator />;
 
   return (
     <>
       <SettingSection headingID="config.application_paths.heading">
-        <StringSetting
-          id="database-path"
-          headingID="config.general.db_path_head"
-          subHeadingID="config.general.sqlite_location"
-          value={general.databasePath ?? undefined}
-          onChange={(v) => saveGeneral({ databasePath: v })}
-        />
-
         <StringSetting
           id="generated-path"
           headingID="config.general.generated_path_head"
@@ -162,6 +168,38 @@ export const SettingsConfigurationPanel: React.FC = () => {
           subHeadingID="config.general.backup_directory_path.description"
           value={general.backupDirectoryPath ?? undefined}
           onChange={(v) => saveGeneral({ backupDirectoryPath: v })}
+        />
+      </SettingSection>
+
+      <SettingSection headingID="config.general.database">
+        <StringSetting
+          id="database-path"
+          headingID="config.general.db_path_head"
+          subHeadingID="config.general.sqlite_location"
+          value={general.databasePath ?? undefined}
+          onChange={(v) => saveGeneral({ databasePath: v })}
+        />
+        <SelectSetting
+          id="blobs-storage"
+          headingID="config.general.blobs_storage.heading"
+          subHeadingID="config.general.blobs_storage.description"
+          value={general.blobsStorage ?? GQL.BlobsStorageType.Database}
+          onChange={(v) =>
+            saveGeneral({ blobsStorage: v as GQL.BlobsStorageType })
+          }
+        >
+          {Object.values(GQL.BlobsStorageType).map((q) => (
+            <option key={q} value={q}>
+              {intl.formatMessage({ id: blobStorageTypeToID(q) })}
+            </option>
+          ))}
+        </SelectSetting>
+        <StringSetting
+          id="blobs-path"
+          headingID="config.general.blobs_path.heading"
+          subHeadingID="config.general.blobs_path.description"
+          value={general.blobsPath ?? ""}
+          onChange={(v) => saveGeneral({ blobsPath: v })}
         />
       </SettingSection>
 

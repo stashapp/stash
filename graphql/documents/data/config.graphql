@@ -10,6 +10,8 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   metadataPath
   scrapersPath
   cachePath
+  blobsPath
+  blobsStorage
   calculateMD5
   videoFileNamingAlgorithm
   parallelTasks
@@ -131,6 +133,7 @@ fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
   scan {
     useFileMetadata
     stripFileExtension
+    scanGenerateCovers
     scanGeneratePreviews
     scanGenerateImagePreviews
     scanGenerateSprites
@@ -159,6 +162,7 @@ fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
   }
 
   generate {
+    covers
     sprites
     previews
     imagePreviews

@@ -4088,53 +4088,7 @@ func TestSceneUpdateSceneCover(t *testing.T) {
 
 		sceneID := sceneIDs[sceneIdxWithGallery]
 
-		image := []byte("image")
-		if err := qb.UpdateCover(ctx, sceneID, image); err != nil {
-			return fmt.Errorf("Error updating scene cover: %s", err.Error())
-		}
-
-		// ensure image set
-		storedImage, err := qb.GetCover(ctx, sceneID)
-		if err != nil {
-			return fmt.Errorf("Error getting image: %s", err.Error())
-		}
-		assert.Equal(t, storedImage, image)
-
-		// set nil image
-		err = qb.UpdateCover(ctx, sceneID, nil)
-		if err == nil {
-			return fmt.Errorf("Expected error setting nil image")
-		}
-
-		return nil
-	}); err != nil {
-		t.Error(err.Error())
-	}
-}
-
-func TestSceneDestroySceneCover(t *testing.T) {
-	if err := withTxn(func(ctx context.Context) error {
-		qb := db.Scene
-
-		sceneID := sceneIDs[sceneIdxWithGallery]
-
-		image := []byte("image")
-		if err := qb.UpdateCover(ctx, sceneID, image); err != nil {
-			return fmt.Errorf("Error updating scene image: %s", err.Error())
-		}
-
-		if err := qb.DestroyCover(ctx, sceneID); err != nil {
-			return fmt.Errorf("Error destroying scene cover: %s", err.Error())
-		}
-
-		// image should be nil
-		storedImage, err := qb.GetCover(ctx, sceneID)
-		if err != nil {
-			return fmt.Errorf("Error getting image: %s", err.Error())
-		}
-		assert.Nil(t, storedImage)
-
-		return nil
+		return testUpdateImage(t, ctx, sceneID, qb.UpdateCover, qb.GetCover)
 	}); err != nil {
 		t.Error(err.Error())
 	}

@@ -7,16 +7,17 @@ import (
 )
 
 type GenerateMetadataOptions struct {
-	Sprites                   *bool                   `json:"sprites"`
-	Previews                  *bool                   `json:"previews"`
-	ImagePreviews             *bool                   `json:"imagePreviews"`
+	Covers                    bool                    `json:"covers"`
+	Sprites                   bool                    `json:"sprites"`
+	Previews                  bool                    `json:"previews"`
+	ImagePreviews             bool                    `json:"imagePreviews"`
 	PreviewOptions            *GeneratePreviewOptions `json:"previewOptions"`
-	Markers                   *bool                   `json:"markers"`
-	MarkerImagePreviews       *bool                   `json:"markerImagePreviews"`
-	MarkerScreenshots         *bool                   `json:"markerScreenshots"`
-	Transcodes                *bool                   `json:"transcodes"`
-	Phashes                   *bool                   `json:"phashes"`
-	InteractiveHeatmapsSpeeds *bool                   `json:"interactiveHeatmapsSpeeds"`
+	Markers                   bool                    `json:"markers"`
+	MarkerImagePreviews       bool                    `json:"markerImagePreviews"`
+	MarkerScreenshots         bool                    `json:"markerScreenshots"`
+	Transcodes                bool                    `json:"transcodes"`
+	Phashes                   bool                    `json:"phashes"`
+	InteractiveHeatmapsSpeeds bool                    `json:"interactiveHeatmapsSpeeds"`
 }
 
 type GeneratePreviewOptions struct {

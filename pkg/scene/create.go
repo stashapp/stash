@@ -7,10 +7,8 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
-	"github.com/stashapp/stash/pkg/txn"
 )
 
 func (s *Service) Create(ctx context.Context, input *models.Scene, fileIDs []file.ID, coverImage []byte) (*models.Scene, error) {
@@ -54,18 +52,6 @@ func (s *Service) Create(ctx context.Context, input *models.Scene, fileIDs []fil
 	if len(coverImage) > 0 {
 		if err := s.Repository.UpdateCover(ctx, ret.ID, coverImage); err != nil {
 			return nil, fmt.Errorf("setting cover on new scene: %w", err)
-		}
-
-		// only update the cover image if provided and everything else was successful
-		// only do this if there is a file associated
-		if len(fileIDs) > 0 {
-			txn.AddPostCommitHook(ctx, func(ctx context.Context) error {
-				if err := SetScreenshot(s.Paths, ret.GetHash(s.Config.GetVideoFileNamingAlgorithm()), coverImage); err != nil {
-					logger.Errorf("Error setting screenshot: %v", err)
-				}
-
-				return nil
-			})
 		}
 	}
 

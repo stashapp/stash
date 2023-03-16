@@ -13,20 +13,31 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
-const studioTable = "studios"
-const studioIDColumn = "studio_id"
-const studioAliasesTable = "studio_aliases"
-const studioAliasColumn = "alias"
+const (
+	studioTable        = "studios"
+	studioIDColumn     = "studio_id"
+	studioAliasesTable = "studio_aliases"
+	studioAliasColumn  = "alias"
+
+	studioImageBlobColumn = "image_blob"
+)
 
 type studioQueryBuilder struct {
 	repository
+	blobJoinQueryBuilder
 }
 
-var StudioReaderWriter = &studioQueryBuilder{
-	repository{
-		tableName: studioTable,
-		idColumn:  idColumn,
-	},
+func NewStudioReaderWriter(blobStore *BlobStore) *studioQueryBuilder {
+	return &studioQueryBuilder{
+		repository{
+			tableName: studioTable,
+			idColumn:  idColumn,
+		},
+		blobJoinQueryBuilder{
+			blobStore: blobStore,
+			joinTable: studioTable,
+		},
+	}
 }
 
 func (qb *studioQueryBuilder) Create(ctx context.Context, newObject models.Studio) (*models.Studio, error) {
@@ -57,6 +68,11 @@ func (qb *studioQueryBuilder) UpdateFull(ctx context.Context, updatedObject mode
 }
 
 func (qb *studioQueryBuilder) Destroy(ctx context.Context, id int) error {
+	// must handle image checksums manually
+	if err := qb.destroyImage(ctx, id); err != nil {
+		return err
+	}
+
 	// TODO - set null on foreign key in scraped items
 	// remove studio from scraped items
 	_, err := qb.tx.Exec(ctx, "UPDATE scraped_items SET studio_id = null WHERE studio_id = ?", id)
@@ -428,31 +444,20 @@ func (qb *studioQueryBuilder) queryStudios(ctx context.Context, query string, ar
 	return []*models.Studio(ret), nil
 }
 
-func (qb *studioQueryBuilder) imageRepository() *imageRepository {
-	return &imageRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: "studios_image",
-			idColumn:  studioIDColumn,
-		},
-		imageColumn: "image",
-	}
-}
-
 func (qb *studioQueryBuilder) GetImage(ctx context.Context, studioID int) ([]byte, error) {
-	return qb.imageRepository().get(ctx, studioID)
+	return qb.blobJoinQueryBuilder.GetImage(ctx, studioID, studioImageBlobColumn)
 }
 
 func (qb *studioQueryBuilder) HasImage(ctx context.Context, studioID int) (bool, error) {
-	return qb.imageRepository().exists(ctx, studioID)
+	return qb.blobJoinQueryBuilder.HasImage(ctx, studioID, studioImageBlobColumn)
 }
 
 func (qb *studioQueryBuilder) UpdateImage(ctx context.Context, studioID int, image []byte) error {
-	return qb.imageRepository().replace(ctx, studioID, image)
+	return qb.blobJoinQueryBuilder.UpdateImage(ctx, studioID, studioImageBlobColumn, image)
 }
 
-func (qb *studioQueryBuilder) DestroyImage(ctx context.Context, studioID int) error {
-	return qb.imageRepository().destroy(ctx, []int{studioID})
+func (qb *studioQueryBuilder) destroyImage(ctx context.Context, studioID int) error {
+	return qb.blobJoinQueryBuilder.DestroyImage(ctx, studioID, studioImageBlobColumn)
 }
 
 func (qb *studioQueryBuilder) stashIDRepository() *stashIDRepository {

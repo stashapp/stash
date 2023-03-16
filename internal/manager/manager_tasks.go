@@ -194,11 +194,11 @@ func (s *Manager) generateScreenshot(ctx context.Context, sceneId string, at *fl
 			return
 		}
 
-		task := GenerateScreenshotTask{
-			txnManager:          s.Repository,
-			Scene:               *scene,
-			ScreenshotAt:        at,
-			fileNamingAlgorithm: config.GetInstance().GetVideoFileNamingAlgorithm(),
+		task := GenerateCoverTask{
+			txnManager:   s.Repository,
+			Scene:        *scene,
+			ScreenshotAt: at,
+			Overwrite:    true,
 		}
 
 		task.Start(ctx)

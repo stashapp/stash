@@ -123,7 +123,7 @@ func (s *Service) mergeSceneMarkers(ctx context.Context, dest *models.Scene, src
 	}
 
 	if len(toRename) > 0 {
-		txn.AddPostCommitHook(ctx, func(ctx context.Context) error {
+		txn.AddPostCommitHook(ctx, func(ctx context.Context) {
 			// rename the files if they exist
 			for _, e := range toRename {
 				srcExists, _ := fsutil.FileExists(e.src)
@@ -135,8 +135,6 @@ func (s *Service) mergeSceneMarkers(ctx context.Context, dest *models.Scene, src
 					}
 				}
 			}
-
-			return nil
 		})
 	}
 

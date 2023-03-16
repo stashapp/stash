@@ -26,11 +26,9 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/scene/generate"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/sqlite"
@@ -102,6 +100,8 @@ type SetupInput struct {
 	GeneratedLocation string `json:"generatedLocation"`
 	// Empty to indicate default
 	CacheLocation string `json:"cacheLocation"`
+	// Empty to indicate database storage for blobs
+	BlobsLocation string `json:"blobsLocation"`
 }
 
 type Manager struct {
@@ -290,20 +290,6 @@ func galleryFileFilter(ctx context.Context, f file.File) bool {
 	return isZip(f.Base().Basename)
 }
 
-type coverGenerator struct {
-}
-
-func (g *coverGenerator) GenerateCover(ctx context.Context, scene *models.Scene, f *file.VideoFile) error {
-	gg := generate.Generator{
-		Encoder:      instance.FFMPEG,
-		FFMpegConfig: instance.Config,
-		LockManager:  instance.ReadLockManager,
-		ScenePaths:   instance.Paths.Scene,
-	}
-
-	return gg.Screenshot(ctx, f.Path, scene.GetHash(instance.Config.GetVideoFileNamingAlgorithm()), f.Width, f.Duration, generate.ScreenshotOptions{})
-}
-
 func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
 	return &file.Scanner{
 		Repository: file.Repository{
@@ -458,7 +444,7 @@ func (s *Manager) PostInit(ctx context.Context) error {
 		logger.Warnf("could not set initial configuration: %v", err)
 	}
 
-	*s.Paths = paths.NewPaths(s.Config.GetGeneratedPath())
+	*s.Paths = paths.NewPaths(s.Config.GetGeneratedPath(), s.Config.GetBlobsPath())
 	s.RefreshConfig()
 	s.SessionStore = session.NewStore(s.Config)
 	s.PluginCache.RegisterSessionStore(s.SessionStore)
@@ -466,6 +452,8 @@ func (s *Manager) PostInit(ctx context.Context) error {
 	if err := s.PluginCache.LoadPlugins(); err != nil {
 		logger.Errorf("Error reading plugin configs: %s", err.Error())
 	}
+
+	s.SetBlobStoreOptions()
 
 	s.ScraperCache = instance.initScraperCache()
 	writeStashIcon()
@@ -509,6 +497,17 @@ func (s *Manager) PostInit(ctx context.Context) error {
 	return nil
 }
 
+func (s *Manager) SetBlobStoreOptions() {
+	storageType := s.Config.GetBlobsStorage()
+	blobsPath := s.Config.GetBlobsPath()
+
+	s.Database.SetBlobStoreOptions(sqlite.BlobStoreOptions{
+		UseFilesystem: storageType == config.BlobStorageTypeFilesystem,
+		UseDatabase:   storageType == config.BlobStorageTypeDatabase,
+		Path:          blobsPath,
+	})
+}
+
 func writeStashIcon() {
 	p := FaviconProvider{
 		UIBox: ui.UIBox,
@@ -540,7 +539,7 @@ func (s *Manager) initScraperCache() *scraper.Cache {
 }
 
 func (s *Manager) RefreshConfig() {
-	*s.Paths = paths.NewPaths(s.Config.GetGeneratedPath())
+	*s.Paths = paths.NewPaths(s.Config.GetGeneratedPath(), s.Config.GetBlobsPath())
 	config := s.Config
 	if config.Validate() == nil {
 		if err := fsutil.EnsureDir(s.Paths.Generated.Screenshots); err != nil {
@@ -617,7 +616,7 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 		configDir := filepath.Dir(configFile)
 
 		if exists, _ := fsutil.DirExists(configDir); !exists {
-			if err := os.Mkdir(configDir, 0755); err != nil {
+			if err := os.MkdirAll(configDir, 0755); err != nil {
 				return fmt.Errorf("error creating config directory: %v", err)
 			}
 		}
@@ -632,7 +631,7 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 	// create the generated directory if it does not exist
 	if !c.HasOverride(config.Generated) {
 		if exists, _ := fsutil.DirExists(input.GeneratedLocation); !exists {
-			if err := os.Mkdir(input.GeneratedLocation, 0755); err != nil {
+			if err := os.MkdirAll(input.GeneratedLocation, 0755); err != nil {
 				return fmt.Errorf("error creating generated directory: %v", err)
 			}
 		}
@@ -643,12 +642,28 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 	// create the cache directory if it does not exist
 	if !c.HasOverride(config.Cache) {
 		if exists, _ := fsutil.DirExists(input.CacheLocation); !exists {
-			if err := os.Mkdir(input.CacheLocation, 0755); err != nil {
+			if err := os.MkdirAll(input.CacheLocation, 0755); err != nil {
 				return fmt.Errorf("error creating cache directory: %v", err)
 			}
 		}
 
 		s.Config.Set(config.Cache, input.CacheLocation)
+	}
+
+	// if blobs path was provided then use filesystem based blob storage
+	if input.BlobsLocation != "" {
+		if !c.HasOverride(config.BlobsPath) {
+			if exists, _ := fsutil.DirExists(input.BlobsLocation); !exists {
+				if err := os.MkdirAll(input.BlobsLocation, 0755); err != nil {
+					return fmt.Errorf("error creating blobs directory: %v", err)
+				}
+			}
+		}
+
+		s.Config.Set(config.BlobsPath, input.BlobsLocation)
+		s.Config.Set(config.BlobsStorage, config.BlobStorageTypeFilesystem)
+	} else {
+		s.Config.Set(config.BlobsStorage, config.BlobStorageTypeDatabase)
 	}
 
 	// set the configuration
