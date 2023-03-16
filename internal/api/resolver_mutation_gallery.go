@@ -509,15 +509,15 @@ func (r *mutationResolver) GalleryChapterCreate(ctx context.Context, input Galle
 		return nil, err
 	}
 
-	var imageData []*models.Image
+	var imageCount int
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		imageData, err = r.repository.Image.FindByGalleryID(ctx, galleryID)
+		imageCount, err = r.repository.Image.CountByGalleryID(ctx, galleryID)
 		return err
 	}); err != nil {
 		return nil, err
 	}
 	// Sanity Check of Index
-	if input.ImageIndex > len(imageData) || input.ImageIndex < 1 {
+	if input.ImageIndex > imageCount || input.ImageIndex < 1 {
 		return nil, errors.New("Image # must greater than zero and in range of the gallery images")
 	}
 
@@ -555,15 +555,15 @@ func (r *mutationResolver) GalleryChapterUpdate(ctx context.Context, input Galle
 		return nil, err
 	}
 
-	var imageData []*models.Image
+	var imageCount int
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		imageData, err = r.repository.Image.FindByGalleryID(ctx, galleryID)
+		imageCount, err = r.repository.Image.CountByGalleryID(ctx, galleryID)
 		return err
 	}); err != nil {
 		return nil, err
 	}
 	// Sanity Check of Index
-	if input.ImageIndex > len(imageData) || input.ImageIndex < 1 {
+	if input.ImageIndex > imageCount || input.ImageIndex < 1 {
 		return nil, errors.New("Image # must greater than zero and in range of the gallery images")
 	}
 
