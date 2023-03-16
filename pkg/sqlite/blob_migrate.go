@@ -58,7 +58,7 @@ func (qb *BlobStore) MigrateBlob(ctx context.Context, checksum string, deleteOld
 func (qb *BlobStore) migrateBlobDatabase(ctx context.Context, checksum string, deleteOld bool) error {
 	// ignore if the blob is already present in the database
 	// (still delete the old data if requested)
-	existing, err := qb.read(ctx, checksum)
+	existing, err := qb.readFromDatabase(ctx, checksum)
 	if err != nil {
 		return fmt.Errorf("reading from database: %w", err)
 	}
@@ -89,7 +89,7 @@ func (qb *BlobStore) migrateBlobDatabase(ctx context.Context, checksum string, d
 // migrateBlobFilesystem migrates a blob from the database to the filesystem
 func (qb *BlobStore) migrateBlobFilesystem(ctx context.Context, checksum string, deleteOld bool) error {
 	// find the blob in the database
-	blob, err := qb.read(ctx, checksum)
+	blob, err := qb.readFromDatabase(ctx, checksum)
 	if err != nil {
 		return fmt.Errorf("reading from database: %w", err)
 	}

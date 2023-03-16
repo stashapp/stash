@@ -146,12 +146,12 @@ func (e *ChecksumNotFoundError) Error() string {
 	return fmt.Sprintf("checksum %s does not exist", e.Checksum)
 }
 
-type ChecksumFileNotExistError struct {
+type ChecksumBlobNotExistError struct {
 	Checksum string
 }
 
-func (e *ChecksumFileNotExistError) Error() string {
-	return fmt.Sprintf("checksum %s does not exist in filesystem", e.Checksum)
+func (e *ChecksumBlobNotExistError) Error() string {
+	return fmt.Sprintf("blob for checksum %s does not exist", e.Checksum)
 }
 
 func (qb *BlobStore) readSQL(ctx context.Context, querySQL string, args ...interface{}) ([]byte, string, error) {
@@ -159,6 +159,7 @@ func (qb *BlobStore) readSQL(ctx context.Context, querySQL string, args ...inter
 		panic("no blob store configured")
 	}
 
+	// always try to get from the database first, even if set to use filesystem
 	var row blobRow
 	found := false
 	const single = true
@@ -178,29 +179,27 @@ func (qb *BlobStore) readSQL(ctx context.Context, querySQL string, args ...inter
 		return nil, "", nil
 	}
 
-	if qb.options.UseDatabase && row.Blob != nil {
-		return row.Blob, row.Checksum, nil
-	}
-
 	checksum := row.Checksum
 
-	if qb.options.UseFilesystem {
-		ret, err := qb.fsStore.Read(ctx, checksum)
-		if err != nil {
-			if !errors.Is(err, fs.ErrNotExist) {
-				return nil, checksum, fmt.Errorf("reading from filesystem: %w", err)
-			}
-
-			// not found in the filesystem - should not happen
-			return nil, checksum, &ChecksumFileNotExistError{
-				Checksum: checksum,
-			}
-		}
-
-		return ret, checksum, nil
+	if row.Blob != nil {
+		return row.Blob, checksum, nil
 	}
 
-	return nil, checksum, fmt.Errorf("unexpected nil blob")
+	// don't use the filesystem if not configured to do so
+	if qb.options.UseFilesystem {
+		ret, err := qb.fsStore.Read(ctx, checksum)
+		if err == nil {
+			return ret, checksum, nil
+		}
+
+		if !errors.Is(err, fs.ErrNotExist) {
+			return nil, checksum, fmt.Errorf("reading from filesystem: %w", err)
+		}
+	}
+
+	return nil, checksum, &ChecksumBlobNotExistError{
+		Checksum: checksum,
+	}
 }
 
 // Read reads the data from the database or filesystem, depending on which is enabled.
@@ -209,8 +208,8 @@ func (qb *BlobStore) Read(ctx context.Context, checksum string) ([]byte, error) 
 		panic("no blob store configured")
 	}
 
-	// check the database first
-	ret, err := qb.read(ctx, checksum)
+	// always try to get from the database first, even if set to use filesystem
+	ret, err := qb.readFromDatabase(ctx, checksum)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("reading from database: %w", err)
@@ -222,30 +221,29 @@ func (qb *BlobStore) Read(ctx context.Context, checksum string) ([]byte, error) 
 		}
 	}
 
-	if qb.options.UseDatabase && ret != nil {
+	if ret != nil {
 		return ret, nil
 	}
 
+	// don't use the filesystem if not configured to do so
 	if qb.options.UseFilesystem {
 		ret, err := qb.fsStore.Read(ctx, checksum)
-		if err != nil {
-			if !errors.Is(err, fs.ErrNotExist) {
-				return nil, fmt.Errorf("reading from filesystem: %w", err)
-			}
-
-			// not found in the filesystem - should not happen
-			return nil, &ChecksumFileNotExistError{
-				Checksum: checksum,
-			}
+		if err == nil {
+			return ret, nil
 		}
 
-		return ret, nil
+		if !errors.Is(err, fs.ErrNotExist) {
+			return nil, fmt.Errorf("reading from filesystem: %w", err)
+		}
 	}
 
-	return nil, fmt.Errorf("unexpected nil blob")
+	// blob not found - should not happen
+	return nil, &ChecksumBlobNotExistError{
+		Checksum: checksum,
+	}
 }
 
-func (qb *BlobStore) read(ctx context.Context, checksum string) ([]byte, error) {
+func (qb *BlobStore) readFromDatabase(ctx context.Context, checksum string) ([]byte, error) {
 	q := dialect.From(qb.table()).Select(qb.table().All()).Where(qb.tableMgr.byID(checksum))
 
 	var row blobRow
