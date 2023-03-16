@@ -218,6 +218,10 @@ type Mutation {
   addGalleryImages(input: GalleryAddInput!): Boolean!
   removeGalleryImages(input: GalleryRemoveInput!): Boolean!
 
+  galleryChapterCreate(input: GalleryChapterCreateInput!): GalleryChapter
+  galleryChapterUpdate(input: GalleryChapterUpdateInput!): GalleryChapter
+  galleryChapterDestroy(id: ID!): Boolean!
+
   performerCreate(input: PerformerCreateInput!): Performer
   performerUpdate(input: PerformerUpdateInput!): Performer
   performerDestroy(input: PerformerDestroyInput!): Boolean!

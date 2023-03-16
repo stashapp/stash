@@ -21,6 +21,7 @@
     "confirm": "Confirm",
     "continue": "Continue",
     "create": "Create",
+    "create_chapters": "Create Chapter",
     "create_entity": "Create {entityType}",
     "create_marker": "Create Marker",
     "created_entity": "Created {entity_type}: {entity_name}",
@@ -132,6 +133,7 @@
   "between_and": "and",
   "captions": "Captions",
   "career_length": "Career Length",
+  "chapters": "Chapters",
   "component_tagger": {
     "config": {
       "active_instance": "Active stash-box instance:",
@@ -732,6 +734,7 @@
         "original": "Original"
       },
       "options": "Options",
+      "page_header": "Page {page} / {total}",
       "reset_zoom_on_nav": "Reset zoom level when changing image",
       "scale_up": {
         "description": "Scale smaller images up to fill screen",
@@ -857,6 +860,7 @@
   },
   "empty_server": "Add some scenes to your server to view recommendations on this page.",
   "errors": {
+    "image_index_greater_than_zero": "Image index must be greater than 0",
     "something_went_wrong": "Something went wrong.",
     "lazy_component_error_help": "If you recently upgraded Stash, please reload the page or clear your browser cache."
   },
@@ -908,12 +912,14 @@
     "uploading": "Uploading script"
   },
   "hasMarkers": "Has Markers",
+  "hasChapters": "Has Chapters",
   "height": "Height",
   "height_cm": "Height (cm)",
   "help": "Help",
   "ignore_auto_tag": "Ignore Auto Tag",
   "image": "Image",
   "image_count": "Image Count",
+  "image_index": "Image #",
   "images": "Images",
   "include_parent_tags": "Include parent tags",
   "include_sub_studios": "Include subsidiary studios",
@@ -1172,7 +1178,8 @@
     "started_auto_tagging": "Started auto tagging",
     "started_generating": "Started generating",
     "started_importing": "Started importing",
-    "updated_entity": "Updated {entity}"
+    "updated_entity": "Updated {entity}",
+    "image_index_too_large": "Error: Image index is larger than the number of images in the Gallery"
   },
   "total": "Total",
   "true": "True",

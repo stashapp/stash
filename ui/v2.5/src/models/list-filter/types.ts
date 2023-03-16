@@ -177,4 +177,5 @@ export type CriterionType =
   | "scene_updated_at"
   | "description"
   | "scene_code"
-  | "disambiguation";
+  | "disambiguation"
+  | "hasChapters";
