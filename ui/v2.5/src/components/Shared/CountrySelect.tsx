@@ -11,6 +11,7 @@ interface IProps {
   className?: string;
   showFlag?: boolean;
   isClearable?: boolean;
+  menuPortalTarget?: HTMLElement | null;
 }
 
 export const CountrySelect: React.FC<IProps> = ({
@@ -20,6 +21,7 @@ export const CountrySelect: React.FC<IProps> = ({
   isClearable = true,
   showFlag,
   className,
+  menuPortalTarget,
 }) => {
   const { locale } = useIntl();
   const options = getCountries(locale);
@@ -44,6 +46,7 @@ export const CountrySelect: React.FC<IProps> = ({
         IndicatorSeparator: null,
       }}
       className={`CountrySelect ${className}`}
+      menuPortalTarget={menuPortalTarget}
     />
   );
 };
