@@ -30,9 +30,14 @@ func (f *Folder) Info(fs FS) (fs.FileInfo, error) {
 	return f.info(fs, f.Path)
 }
 
+// FolderPathFinder finds Folders by their path.
+type FolderPathFinder interface {
+	FindByPath(ctx context.Context, path string) (*Folder, error)
+}
+
 // FolderGetter provides methods to find Folders.
 type FolderGetter interface {
-	FindByPath(ctx context.Context, path string) (*Folder, error)
+	FolderPathFinder
 	FindByZipFileID(ctx context.Context, zipFileID ID) ([]*Folder, error)
 	FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]*Folder, error)
 	FindByParentFolderID(ctx context.Context, parentFolderID FolderID) ([]*Folder, error)
@@ -45,6 +50,11 @@ type FolderCounter interface {
 // FolderCreator provides methods to create Folders.
 type FolderCreator interface {
 	Create(ctx context.Context, f *Folder) error
+}
+
+type FolderFinderCreator interface {
+	FolderPathFinder
+	FolderCreator
 }
 
 // FolderUpdater provides methods to update Folders.

@@ -15,7 +15,7 @@ const deleteFileSuffix = ".delete"
 
 // RenamerRemover provides access to the Rename and Remove functions.
 type RenamerRemover interface {
-	Rename(oldpath, newpath string) error
+	Renamer
 	Remove(name string) error
 	RemoveAll(path string) error
 	Stat(name string) (fs.FileInfo, error)
