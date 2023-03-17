@@ -337,6 +337,10 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 					if id, err := strconv.Atoi(performerID); err == nil {
 						performer, err := performerQuery.Find(ctx, id)
 						if err == nil {
+							err = performer.LoadStashIDs(ctx, performerQuery)
+						}
+
+						if err == nil {
 							tasks = append(tasks, StashBoxPerformerTagTask{
 								performer:       performer,
 								refresh:         input.Refresh,
@@ -382,6 +386,10 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 				}
 
 				for _, performer := range performers {
+					if err := performer.LoadStashIDs(ctx, performerQuery); err != nil {
+						return fmt.Errorf("error loading stash ids for performer %s: %v", performer.Name, err)
+					}
+
 					tasks = append(tasks, StashBoxPerformerTagTask{
 						performer:       performer,
 						refresh:         input.Refresh,
