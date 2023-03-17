@@ -245,6 +245,13 @@ type Mutation {
   tagsDestroy(ids: [ID!]!): Boolean!
   tagsMerge(input: TagsMergeInput!): Tag
 
+  """Moves the given files to the given destination. Returns true if successful.
+  Either the destination_folder or destination_folder_id must be provided. If both are provided, the destination_folder_id takes precedence.
+  Destination folder must be a subfolder of one of the stash library paths.
+  If provided, destination_basename must be a valid filename with an extension that
+  matches one of the media extensions.
+  Creates folder hierarchy if needed.
+  """
   moveFiles(input: MoveFilesInput!): Boolean!
   deleteFiles(ids: [ID!]!): Boolean!
 
