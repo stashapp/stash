@@ -174,6 +174,7 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
         <CountrySelect
           value={criterion.value}
           onChange={(v) => onValueChanged(v)}
+          menuPortalTarget={document.body}
         />
       );
     }
