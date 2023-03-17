@@ -625,6 +625,15 @@ func (i *Instance) GetGalleryExtensions() []string {
 	return ret
 }
 
+// GetFileExtensions returns the list of file extensions that should be accepted.
+// It is a combination of the video, image and gallery extensions.
+func (i *Instance) GetFileExtensions() []string {
+	ret := i.GetVideoExtensions()
+	ret = append(ret, i.GetImageExtensions()...)
+	ret = append(ret, i.GetGalleryExtensions()...)
+	return ret
+}
+
 func (i *Instance) GetCreateGalleriesFromFolders() bool {
 	return i.getBool(CreateGalleriesFromFolders)
 }

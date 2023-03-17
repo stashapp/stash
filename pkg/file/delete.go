@@ -18,7 +18,7 @@ type RenamerRemover interface {
 	Renamer
 	Remove(name string) error
 	RemoveAll(path string) error
-	Stat(name string) (fs.FileInfo, error)
+	Statter
 }
 
 type renamerRemoverImpl struct {
@@ -44,6 +44,15 @@ func (r renamerRemoverImpl) Stat(path string) (fs.FileInfo, error) {
 	return r.StatFn(path)
 }
 
+func newRenamerRemoverImpl() renamerRemoverImpl {
+	return renamerRemoverImpl{
+		RenameFn:    os.Rename,
+		RemoveFn:    os.Remove,
+		RemoveAllFn: os.RemoveAll,
+		StatFn:      os.Stat,
+	}
+}
+
 // Deleter is used to safely delete files and directories from the filesystem.
 // During a transaction, files and directories are marked for deletion using
 // the Files and Dirs methods. This will rename the files/directories to be
@@ -59,12 +68,7 @@ type Deleter struct {
 
 func NewDeleter() *Deleter {
 	return &Deleter{
-		RenamerRemover: renamerRemoverImpl{
-			RenameFn:    os.Rename,
-			RemoveFn:    os.Remove,
-			RemoveAllFn: os.RemoveAll,
-			StatFn:      os.Stat,
-		},
+		RenamerRemover: newRenamerRemoverImpl(),
 	}
 }
 

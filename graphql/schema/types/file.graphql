@@ -98,12 +98,12 @@ type GalleryFile implements BaseFile {
 
 input MoveFilesInput {
     ids: [ID!]!
-    # only valid for a single file id - must be a full file path
-    destination_path: String
-
-    # valid for single or multiple file ids
+    """valid for single or multiple file ids"""
     destination_folder: String
 
-    # valid for single or multiple file ids
+    """valid for single or multiple file ids"""
     destination_folder_id: ID
+
+    """valid only for single file id. If empty, existing basename is used"""
+    destination_basename: String
 }

@@ -2,7 +2,9 @@ package file
 
 import (
 	"context"
+	"fmt"
 	"io/fs"
+	"path/filepath"
 	"strconv"
 	"time"
 )
@@ -78,4 +80,40 @@ type FolderStore interface {
 	FolderCreator
 	FolderUpdater
 	FolderDestroyer
+}
+
+// GetOrCreateFolderHierarchy gets the folder for the given path, or creates a folder hierarchy for the given path if one if no existing folder is found.
+// Does not create any folders in the file system
+func GetOrCreateFolderHierarchy(ctx context.Context, fc FolderFinderCreator, path string) (*Folder, error) {
+	// get or create folder hierarchy
+	folder, err := fc.FindByPath(ctx, path)
+	if err != nil {
+		return nil, err
+	}
+
+	if folder == nil {
+		parentPath := filepath.Dir(path)
+		parent, err := GetOrCreateFolderHierarchy(ctx, fc, parentPath)
+		if err != nil {
+			return nil, err
+		}
+
+		now := time.Now()
+
+		folder = &Folder{
+			Path:           path,
+			ParentFolderID: &parent.ID,
+			DirEntry:       DirEntry{
+				// leave mod time empty for now - it will be updated when the folder is scanned
+			},
+			CreatedAt: now,
+			UpdatedAt: now,
+		}
+
+		if err = fc.Create(ctx, folder); err != nil {
+			return nil, fmt.Errorf("creating folder %s: %w", path, err)
+		}
+	}
+
+	return folder, nil
 }

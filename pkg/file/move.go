@@ -2,8 +2,12 @@ package file
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io/fs"
+	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/txn"
@@ -13,24 +17,71 @@ type Renamer interface {
 	Rename(oldpath, newpath string) error
 }
 
-type Mover struct {
-	Renamer Renamer
-	Updater Updater
-
-	moved map[string]string
+type Statter interface {
+	Stat(name string) (fs.FileInfo, error)
 }
 
-func (m *Mover) Move(ctx context.Context, f File, folder Folder, basename string) error {
+type DirMakerStatRenamer interface {
+	Statter
+	Renamer
+	Mkdir(name string, perm os.FileMode) error
+	Remove(name string) error
+}
+
+type folderCreatorStatRenamerImpl struct {
+	renamerRemoverImpl
+	mkDirFn func(name string, perm os.FileMode) error
+}
+
+func (r folderCreatorStatRenamerImpl) Mkdir(name string, perm os.FileMode) error {
+	return r.mkDirFn(name, perm)
+}
+
+type Mover struct {
+	Renamer DirMakerStatRenamer
+	Updater Updater
+
+	moved          map[string]string
+	foldersCreated []string
+}
+
+func NewMover(u Updater) *Mover {
+	return &Mover{
+		Updater: u,
+		Renamer: &folderCreatorStatRenamerImpl{
+			renamerRemoverImpl: newRenamerRemoverImpl(),
+			mkDirFn:            os.Mkdir,
+		},
+	}
+}
+
+// Move moves the file to the given folder and basename. If basename is empty, then the existing basename is used.
+// Assumes that the parent folder exists in the filesystem.
+func (m *Mover) Move(ctx context.Context, f File, folder *Folder, basename string) error {
+	fBase := f.Base()
+
 	// don't allow moving files in zip files
-	if f.Base().ZipFileID != nil {
+	if fBase.ZipFileID != nil {
 		return fmt.Errorf("cannot move file %s in zip file", f.Base().Path)
 	}
 
+	if basename == "" {
+		basename = fBase.Basename
+	}
+
 	// modify the database first
-	fBase := f.Base()
+
 	oldPath := fBase.Path
+
+	if folder.ID == fBase.ParentFolderID && (basename == "" || basename == fBase.Basename) {
+		// nothing to do
+		return nil
+	}
+
 	fBase.ParentFolderID = folder.ID
 	fBase.Basename = basename
+	fBase.UpdatedAt = time.Now()
+	// leave ModTime as is. It may or may not be changed by this operation
 
 	if err := m.Updater.Update(ctx, f); err != nil {
 		return fmt.Errorf("updating file %s: %w", oldPath, err)
@@ -39,6 +90,34 @@ func (m *Mover) Move(ctx context.Context, f File, folder Folder, basename string
 	// then move the file
 	newPath := filepath.Join(folder.Path, basename)
 	return m.moveFile(oldPath, newPath)
+}
+
+func (m *Mover) CreateFolderHierarchy(path string) error {
+	info, err := m.Renamer.Stat(path)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			// create the parent folder
+			parentPath := filepath.Dir(path)
+			if err := m.CreateFolderHierarchy(parentPath); err != nil {
+				return err
+			}
+
+			// create the folder
+			if err := m.Renamer.Mkdir(path, 0755); err != nil {
+				return fmt.Errorf("creating folder %s: %w", path, err)
+			}
+
+			m.foldersCreated = append(m.foldersCreated, path)
+		} else {
+			return fmt.Errorf("getting info for %s: %w", path, err)
+		}
+	} else {
+		if !info.IsDir() {
+			return fmt.Errorf("%s is not a directory", path)
+		}
+	}
+
+	return nil
 }
 
 func (m *Mover) moveFile(oldPath, newPath string) error {
@@ -67,6 +146,7 @@ func (m *Mover) RegisterHooks(ctx context.Context, mgr txn.Manager) {
 
 func (m *Mover) commit() {
 	m.moved = nil
+	m.foldersCreated = nil
 }
 
 func (m *Mover) rollback() {
@@ -74,6 +154,14 @@ func (m *Mover) rollback() {
 	for newPath, oldPath := range m.moved {
 		if err := m.Renamer.Rename(newPath, oldPath); err != nil {
 			logger.Errorf("error moving file %s back to %s: %s", newPath, oldPath, err.Error())
+		}
+	}
+
+	// remove folders created in reverse order
+	for i := len(m.foldersCreated) - 1; i >= 0; i-- {
+		folder := m.foldersCreated[i]
+		if err := m.Renamer.Remove(folder); err != nil {
+			logger.Errorf("error removing folder %s: %s", folder, err.Error())
 		}
 	}
 }
