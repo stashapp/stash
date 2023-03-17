@@ -19,7 +19,7 @@ export const FilterButton: React.FC<IFilterButtonProps> = ({
     <Button variant="secondary" className="filter-button" onClick={onClick}>
       <Icon icon={faFilter} />
       {count ? (
-        <Badge pill variant="danger">
+        <Badge pill variant="info">
           {count}
         </Badge>
       ) : undefined}
