@@ -880,20 +880,23 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) st
 		direction = findFilter.GetDirection()
 	}
 
-	if sort == "tag_count" {
-		return getCountSort(performerTable, performersTagsTable, performerIDColumn, direction)
-	}
-	if sort == "scenes_count" {
-		return getCountSort(performerTable, performersScenesTable, performerIDColumn, direction)
-	}
-	if sort == "images_count" {
-		return getCountSort(performerTable, performersImagesTable, performerIDColumn, direction)
-	}
-	if sort == "galleries_count" {
-		return getCountSort(performerTable, performersGalleriesTable, performerIDColumn, direction)
+	sortQuery := ""
+	switch sort {
+	case "tag_count":
+		sortQuery += getCountSort(performerTable, performersTagsTable, performerIDColumn, direction)
+	case "scenes_count":
+		sortQuery += getCountSort(performerTable, performersScenesTable, performerIDColumn, direction)
+	case "images_count":
+		sortQuery += getCountSort(performerTable, performersImagesTable, performerIDColumn, direction)
+	case "galleries_count":
+		sortQuery += getCountSort(performerTable, performersGalleriesTable, performerIDColumn, direction)
+	default:
+		sortQuery += getSort(sort, direction, "performers")
 	}
 
-	return getSort(sort, direction, "performers")
+	// Whatever the sorting, always use name/id as a final sort
+	sortQuery += ", COALESCE(performers.name, performers.id) COLLATE NATURAL_CI ASC"
+	return sortQuery
 }
 
 func (qb *PerformerStore) tagsRepository() *joinRepository {

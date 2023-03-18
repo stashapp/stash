@@ -44,7 +44,7 @@ export class ListFilterModel {
   public searchTerm: string = "";
   public currentPage = DEFAULT_PARAMS.currentPage;
   public itemsPerPage = DEFAULT_PARAMS.itemsPerPage;
-  public sortDirection: SortDirectionEnum = SortDirectionEnum.Asc;
+  public sortDirection: SortDirectionEnum = DEFAULT_PARAMS.sortDirection;
   public sortBy?: string;
   public displayMode: DisplayMode = DEFAULT_PARAMS.displayMode;
   public zoomIndex: number = 1;
@@ -62,6 +62,9 @@ export class ListFilterModel {
     this.mode = mode;
     this.config = config;
     this.sortBy = defaultSort;
+    if (this.sortBy === "date") {
+      this.sortDirection = SortDirectionEnum.Desc
+    }
     if (defaultDisplayMode !== undefined) {
       this.displayMode = defaultDisplayMode;
     }
@@ -99,12 +102,19 @@ export class ListFilterModel {
         this.randomSeed = Number.parseInt(match[1], 10);
       }
     }
-    // #3193 - sortdir undefined means asc
-    this.sortDirection =
-      params.sortdir === "desc"
-        ? SortDirectionEnum.Desc
-        : SortDirectionEnum.Asc;
-
+    if (params.sortdir !== undefined) {
+      this.sortDirection =
+        params.sortdir === "desc"
+          ? SortDirectionEnum.Desc
+          : SortDirectionEnum.Asc;
+    } else {
+      // #3193 - sortdir undefined means asc
+      // #3559 - unless sortby is date, then desc
+      this.sortDirection =
+        params.sortby === "date"
+          ? SortDirectionEnum.Desc
+          : SortDirectionEnum.Asc;
+    }
     if (params.disp !== undefined) {
       this.displayMode = params.disp;
     }
@@ -298,7 +308,9 @@ export class ListFilterModel {
           : undefined,
       sortby: this.getSortBy(),
       sortdir:
-        this.sortDirection === SortDirectionEnum.Desc ? "desc" : undefined,
+        this.sortBy === "date"
+          ? this.sortDirection === SortDirectionEnum.Asc ? "asc" : undefined
+          : this.sortDirection === SortDirectionEnum.Desc ? "desc" : undefined,
       disp:
         this.displayMode !== DEFAULT_PARAMS.displayMode
           ? String(this.displayMode)
@@ -325,7 +337,9 @@ export class ListFilterModel {
       perPage: this.itemsPerPage,
       sortby: this.getSortBy(),
       sortdir:
-        this.sortDirection === SortDirectionEnum.Desc ? "desc" : undefined,
+        this.sortBy === "date"
+          ? this.sortDirection === SortDirectionEnum.Asc ? "asc" : undefined
+          : this.sortDirection === SortDirectionEnum.Desc ? "desc" : undefined,
       disp: this.displayMode,
       q: this.searchTerm || undefined,
       z: this.zoomIndex,

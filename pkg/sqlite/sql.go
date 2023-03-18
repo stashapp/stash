@@ -85,10 +85,10 @@ func getSort(sort string, direction string, tableName string) string {
 			colName = sort
 		}
 		if strings.Compare(sort, "name") == 0 {
-			return " ORDER BY " + colName + " COLLATE NOCASE " + direction
+			return " ORDER BY " + colName + " COLLATE NATURAL_CI " + direction
 		}
 		if strings.Compare(sort, "title") == 0 {
-			return " ORDER BY " + colName + " COLLATE NATURAL_CS " + direction
+			return " ORDER BY " + colName + " COLLATE NATURAL_CI " + direction
 		}
 
 		return " ORDER BY " + colName + " " + direction

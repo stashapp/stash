@@ -607,22 +607,25 @@ func (qb *tagQueryBuilder) getTagSort(query *queryBuilder, findFilter *models.Fi
 		direction = findFilter.GetDirection()
 	}
 
-	if findFilter.Sort != nil {
-		switch *findFilter.Sort {
-		case "scenes_count":
-			return getCountSort(tagTable, scenesTagsTable, tagIDColumn, direction)
-		case "scene_markers_count":
-			return fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM scene_markers_tags WHERE tags.id = scene_markers_tags.tag_id)+(SELECT COUNT(*) FROM scene_markers WHERE tags.id = scene_markers.primary_tag_id) %s", getSortDirection(direction))
-		case "images_count":
-			return getCountSort(tagTable, imagesTagsTable, tagIDColumn, direction)
-		case "galleries_count":
-			return getCountSort(tagTable, galleriesTagsTable, tagIDColumn, direction)
-		case "performers_count":
-			return getCountSort(tagTable, performersTagsTable, tagIDColumn, direction)
-		}
+	sortQuery := ""
+	switch sort {
+	case "scenes_count":
+		sortQuery += getCountSort(tagTable, scenesTagsTable, tagIDColumn, direction)
+	case "scene_markers_count":
+		sortQuery += fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM scene_markers_tags WHERE tags.id = scene_markers_tags.tag_id)+(SELECT COUNT(*) FROM scene_markers WHERE tags.id = scene_markers.primary_tag_id) %s", getSortDirection(direction))
+	case "images_count":
+		sortQuery += getCountSort(tagTable, imagesTagsTable, tagIDColumn, direction)
+	case "galleries_count":
+		sortQuery += getCountSort(tagTable, galleriesTagsTable, tagIDColumn, direction)
+	case "performers_count":
+		sortQuery += getCountSort(tagTable, performersTagsTable, tagIDColumn, direction)
+	default:
+		sortQuery += getSort(sort, direction, "tags")
 	}
 
-	return getSort(sort, direction, "tags")
+	// Whatever the sorting, always use name/id as a final sort
+	sortQuery += ", COALESCE(tags.name, tags.id) COLLATE NATURAL_CI ASC"
+	return sortQuery
 }
 
 func (qb *tagQueryBuilder) queryTag(ctx context.Context, query string, args []interface{}) (*models.Tag, error) {
