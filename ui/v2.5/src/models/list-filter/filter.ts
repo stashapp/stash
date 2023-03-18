@@ -63,7 +63,7 @@ export class ListFilterModel {
     this.config = config;
     this.sortBy = defaultSort;
     if (this.sortBy === "date") {
-      this.sortDirection = SortDirectionEnum.Desc
+      this.sortDirection = SortDirectionEnum.Desc;
     }
     if (defaultDisplayMode !== undefined) {
       this.displayMode = defaultDisplayMode;
@@ -309,8 +309,12 @@ export class ListFilterModel {
       sortby: this.getSortBy(),
       sortdir:
         this.sortBy === "date"
-          ? this.sortDirection === SortDirectionEnum.Asc ? "asc" : undefined
-          : this.sortDirection === SortDirectionEnum.Desc ? "desc" : undefined,
+          ? this.sortDirection === SortDirectionEnum.Asc
+            ? "asc"
+            : undefined
+          : this.sortDirection === SortDirectionEnum.Desc
+          ? "desc"
+          : undefined,
       disp:
         this.displayMode !== DEFAULT_PARAMS.displayMode
           ? String(this.displayMode)
@@ -338,8 +342,12 @@ export class ListFilterModel {
       sortby: this.getSortBy(),
       sortdir:
         this.sortBy === "date"
-          ? this.sortDirection === SortDirectionEnum.Asc ? "asc" : undefined
-          : this.sortDirection === SortDirectionEnum.Desc ? "desc" : undefined,
+          ? this.sortDirection === SortDirectionEnum.Asc
+            ? "asc"
+            : undefined
+          : this.sortDirection === SortDirectionEnum.Desc
+          ? "desc"
+          : undefined,
       disp: this.displayMode,
       q: this.searchTerm || undefined,
       z: this.zoomIndex,
