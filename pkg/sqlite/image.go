@@ -1043,10 +1043,10 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 		default:
 			sortClause = getSort(sort, direction, "images")
 		}
-	}
 
-	// Whatever the sorting, always use title/id as a final sort
-	sortClause += ", COALESCE(images.title, images.id) COLLATE NATURAL_CI ASC"
+		// Whatever the sorting, always use title/id as a final sort
+		sortClause += ", COALESCE(images.title, images.id) COLLATE NATURAL_CI ASC"
+	}
 
 	q.sortAndPagination = sortClause + getPagination(findFilter)
 }
