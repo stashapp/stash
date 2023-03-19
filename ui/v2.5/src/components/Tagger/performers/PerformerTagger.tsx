@@ -379,10 +379,13 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   const renderPerformers = () =>
     performers.map((performer) => {
       const isTagged = taggedPerformers[performer.id];
-      const hasStashIDs = performer.stash_ids.length > 0;
+
+      const stashID = performer.stash_ids.find((s) => {
+        return s.endpoint === selectedEndpoint.endpoint;
+      });
 
       let mainContent;
-      if (!isTagged && hasStashIDs) {
+      if (!isTagged && stashID !== undefined) {
         mainContent = (
           <div className="text-left">
             <h5 className="text-bold">
@@ -390,7 +393,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
             </h5>
           </div>
         );
-      } else if (!isTagged && !hasStashIDs) {
+      } else if (!isTagged && !stashID) {
         mainContent = (
           <InputGroup>
             <Form.Control
@@ -441,60 +444,57 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
       }
 
       let subContent;
-      if (performer.stash_ids.length > 0) {
-        const stashLinks = performer.stash_ids.map((stashID) => {
-          const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
-          const link = base ? (
-            <a
-              className="small d-block"
-              href={`${base}performers/${stashID.stash_id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {stashID.stash_id}
-            </a>
-          ) : (
-            <div className="small">{stashID.stash_id}</div>
-          );
+      if (stashID !== undefined) {
+        const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
+        const link = base ? (
+          <a
+            className="small d-block"
+            href={`${base}performers/${stashID.stash_id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {stashID.stash_id}
+          </a>
+        ) : (
+          <div className="small">{stashID.stash_id}</div>
+        );
 
-          const endpoint =
-            stashBoxes?.findIndex((box) => box.endpoint === stashID.endpoint) ??
-            -1;
+        const endpointIndex =
+          stashBoxes?.findIndex((box) => box.endpoint === stashID.endpoint) ??
+          -1;
 
-          return (
-            <div key={performer.id}>
-              <InputGroup className="PerformerTagger-box-link">
-                <InputGroup.Text>{link}</InputGroup.Text>
-                <InputGroup.Append>
-                  {endpoint !== -1 && (
-                    <Button
-                      onClick={() =>
-                        doBoxUpdate(performer.id, stashID.stash_id, endpoint)
-                      }
-                      disabled={!!loadingUpdate}
-                    >
-                      {loadingUpdate === stashID.stash_id ? (
-                        <LoadingIndicator inline small message="" />
-                      ) : (
-                        <FormattedMessage id="actions.refresh" />
-                      )}
-                    </Button>
-                  )}
-                </InputGroup.Append>
-              </InputGroup>
-              {error[performer.id] && (
-                <div className="text-danger mt-1">
-                  <strong>
-                    <span className="mr-2">Error:</span>
-                    {error[performer.id]?.message}
-                  </strong>
-                  <div>{error[performer.id]?.details}</div>
-                </div>
-              )}
-            </div>
-          );
-        });
-        subContent = <>{stashLinks}</>;
+        subContent = (
+          <div key={performer.id}>
+            <InputGroup className="PerformerTagger-box-link">
+              <InputGroup.Text>{link}</InputGroup.Text>
+              <InputGroup.Append>
+                {endpointIndex !== -1 && (
+                  <Button
+                    onClick={() =>
+                      doBoxUpdate(performer.id, stashID.stash_id, endpointIndex)
+                    }
+                    disabled={!!loadingUpdate}
+                  >
+                    {loadingUpdate === stashID.stash_id ? (
+                      <LoadingIndicator inline small message="" />
+                    ) : (
+                      <FormattedMessage id="actions.refresh" />
+                    )}
+                  </Button>
+                )}
+              </InputGroup.Append>
+            </InputGroup>
+            {error[performer.id] && (
+              <div className="text-danger mt-1">
+                <strong>
+                  <span className="mr-2">Error:</span>
+                  {error[performer.id]?.message}
+                </strong>
+                <div>{error[performer.id]?.details}</div>
+              </div>
+            )}
+          </div>
+        );
       } else if (searchErrors[performer.id]) {
         subContent = (
           <div className="text-danger font-weight-bold">
