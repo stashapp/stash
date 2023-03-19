@@ -1,0 +1,36 @@
+package api
+
+import (
+	"context"
+	"encoding/json"
+
+	"github.com/99designs/gqlgen/graphql"
+	"github.com/stashapp/stash/pkg/logger"
+	"github.com/vektah/gqlparser/v2/gqlerror"
+)
+
+func gqlErrorHandler(ctx context.Context, e error) *gqlerror.Error {
+	// log all errors - for now just log the error message
+	// we can potentially add more context later
+	logger.Errorf("%s: %v", graphql.GetFieldContext(ctx).Path(), e)
+
+	// log the args in debug level
+	logger.DebugFunc(func() (string, []interface{}) {
+		var args interface{}
+		args = graphql.GetFieldContext(ctx).Args
+
+		s, _ := json.Marshal(args)
+		if len(s) > 0 {
+			args = string(s)
+		}
+
+		return "%s: %v", []interface{}{
+			graphql.GetFieldContext(ctx).Path(),
+			args,
+		}
+	})
+
+	// we may also want to transform the error message for the response
+	// for now just return the original error
+	return graphql.DefaultErrorPresenter(ctx, e)
+}
