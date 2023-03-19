@@ -259,7 +259,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           }
         >
           <PerformerAppearsWithPanel
-            active={activeTabKey == "movies"}
+            active={activeTabKey == "appears-with"}
             performer={performer}
           />
         </Tab>
