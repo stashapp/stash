@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/txn"
 )
@@ -46,7 +47,8 @@ func (r renamerRemoverImpl) Stat(path string) (fs.FileInfo, error) {
 
 func newRenamerRemoverImpl() renamerRemoverImpl {
 	return renamerRemoverImpl{
-		RenameFn:    os.Rename,
+		// use fsutil.SafeMove to support cross-device moves
+		RenameFn:    fsutil.SafeMove,
 		RemoveFn:    os.Remove,
 		RemoveAllFn: os.RemoveAll,
 		StatFn:      os.Stat,
