@@ -28,6 +28,7 @@ import { PerformerScenesPanel } from "./PerformerScenesPanel";
 import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";
 import { PerformerMoviesPanel } from "./PerformerMoviesPanel";
 import { PerformerImagesPanel } from "./PerformerImagesPanel";
+import { PerformerAppearsWithPanel } from "./performerAppearsWithPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
 import { PerformerSubmitButton } from "./PerformerSubmitButton";
 import GenderIcon from "../GenderIcon";
@@ -83,7 +84,8 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     tab === "scenes" ||
     tab === "galleries" ||
     tab === "images" ||
-    tab === "movies"
+    tab === "movies" ||
+    tab == "appears-with"
       ? tab
       : "details";
   const setActiveTabKey = (newTab: string | null) => {
@@ -240,6 +242,23 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           }
         >
           <PerformerMoviesPanel
+            active={activeTabKey == "movies"}
+            performer={performer}
+          />
+        </Tab>
+        <Tab
+          eventKey="appears-with"
+          title={
+            <React.Fragment>
+              {intl.formatMessage({ id: "appears-with" })}
+              <Counter
+                abbreviateCounter={abbreviateCounter}
+                count={performer.performer_count ?? 0}
+              />
+            </React.Fragment>
+          }
+        >
+          <PerformerAppearsWithPanel
             active={activeTabKey == "movies"}
             performer={performer}
           />

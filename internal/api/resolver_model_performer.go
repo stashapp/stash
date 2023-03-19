@@ -10,6 +10,7 @@ import (
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/performer"
 )
 
 // Checksum is deprecated
@@ -174,6 +175,18 @@ func (r *performerResolver) MovieCount(ctx context.Context, obj *models.Performe
 	var res int
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		res, err = r.repository.Movie.CountByPerformerID(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+func (r *performerResolver) PerformerCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
+	var res int
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		res, err = performer.CountByAppearsWith(ctx, r.repository.Performer, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
