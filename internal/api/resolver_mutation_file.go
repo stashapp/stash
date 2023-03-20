@@ -48,7 +48,7 @@ func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) 
 			folderPath := *input.DestinationFolder
 
 			// ensure folder path is within the library
-			if err := r.validateFolderPath(ctx, folderPath); err != nil {
+			if err := r.validateFolderPath(folderPath); err != nil {
 				return err
 			}
 
@@ -69,12 +69,6 @@ func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) 
 			}
 
 			basename = *input.DestinationBasename
-
-			fileExts := manager.GetInstance().Config.GetFileExtensions()
-
-			if err := r.validateFileExtension(ctx, fileExts, basename); err != nil {
-				return err
-			}
 		}
 
 		// create the folder hierarchy in the filesystem if needed
@@ -87,6 +81,13 @@ func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) 
 			f, err := qb.Find(ctx, fileID)
 			if err != nil {
 				return fmt.Errorf("finding file %d: %w", fileID, err)
+			}
+
+			// ensure that the file extension matches the existing file type
+			if basename != "" {
+				if err := r.validateFileExtension(f[0].Base().Basename, basename); err != nil {
+					return err
+				}
 			}
 
 			if err := mover.Move(ctx, f[0], folder, basename); err != nil {
@@ -102,7 +103,7 @@ func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) 
 	return true, nil
 }
 
-func (r *mutationResolver) validateFolderPath(ctx context.Context, folderPath string) error {
+func (r *mutationResolver) validateFolderPath(folderPath string) error {
 	paths := manager.GetInstance().Config.GetStashPaths()
 	if l := paths.GetStashFromDirPath(folderPath); l == nil {
 		return fmt.Errorf("folder path %s must be within a stash library path", folderPath)
@@ -111,9 +112,26 @@ func (r *mutationResolver) validateFolderPath(ctx context.Context, folderPath st
 	return nil
 }
 
-func (r *mutationResolver) validateFileExtension(ctx context.Context, exts []string, basename string) error {
-	if !fsutil.MatchExtension(basename, exts) {
-		return fmt.Errorf("file extension for %s is not valid for the library", basename)
+func (r *mutationResolver) validateFileExtension(oldBasename, newBasename string) error {
+	c := manager.GetInstance().Config
+	if err := r.validateFileExtensionList(c.GetVideoExtensions(), oldBasename, newBasename); err != nil {
+		return err
+	}
+
+	if err := r.validateFileExtensionList(c.GetImageExtensions(), oldBasename, newBasename); err != nil {
+		return err
+	}
+
+	if err := r.validateFileExtensionList(c.GetGalleryExtensions(), oldBasename, newBasename); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *mutationResolver) validateFileExtensionList(exts []string, oldBasename, newBasename string) error {
+	if fsutil.MatchExtension(oldBasename, exts) && !fsutil.MatchExtension(newBasename, exts) {
+		return fmt.Errorf("file extension for %s is inconsistent with old filename %s", newBasename, oldBasename)
 	}
 
 	return nil
