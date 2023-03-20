@@ -29,7 +29,7 @@ export const ScanOptions: React.FC<IScanOptions> = ({
       <BooleanSetting
         id="scan-generate-covers"
         headingID="config.tasks.generate_video_covers_during_scan"
-        checked={scanGenerateCovers ?? false}
+        checked={scanGenerateCovers ?? true}
         onChange={(v) => setOptions({ scanGenerateCovers: v })}
       />
       <BooleanSetting
