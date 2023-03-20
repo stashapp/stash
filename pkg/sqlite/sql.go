@@ -291,6 +291,11 @@ func getCountCriterionClause(primaryTable, joinTable, primaryFK string, criterio
 	return getIntCriterionWhereClause(lhs, criterion)
 }
 
+func getJoinedSumCriterionClause(primaryTable, foreignTable, joinTable, primaryFK string, foreignFK string, sum string, criterion models.IntCriterionInput) (string, []interface{}) {
+	lhs := fmt.Sprintf("(SELECT SUM(%s) FROM %s s LEFT JOIN %s ON s.id = %s.%s WHERE %s.%s = %s.id)", sum, foreignTable, joinTable, joinTable, foreignFK, joinTable, primaryFK, primaryTable)
+	return getIntCriterionWhereClause(lhs, criterion)
+}
+
 func coalesce(column string) string {
 	return fmt.Sprintf("COALESCE(%s, '')", column)
 }

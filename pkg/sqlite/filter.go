@@ -722,6 +722,25 @@ func (m *countCriterionHandlerBuilder) handler(criterion *models.IntCriterionInp
 	}
 }
 
+type joinedSumCriterionHandlerBuilder struct {
+	primaryTable string
+	foreignTable string
+	joinTable    string
+	primaryFK    string
+	foreignFK    string
+	sum string
+}
+
+func (m *joinedSumCriterionHandlerBuilder) handler(criterion *models.IntCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if criterion != nil {
+			clause, args := getJoinedSumCriterionClause(m.primaryTable, m.foreignTable, m.joinTable, m.primaryFK, m.foreignFK, m.sum, *criterion)
+
+			f.addWhere(clause, args...)
+		}
+	}
+}
+
 // handler for StringCriterion for string list fields
 type stringListCriterionHandlerBuilder struct {
 	// table joining primary and foreign objects

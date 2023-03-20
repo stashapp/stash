@@ -629,6 +629,7 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 	query.handleCriterion(ctx, performerSceneCountCriterionHandler(qb, filter.SceneCount))
 	query.handleCriterion(ctx, performerImageCountCriterionHandler(qb, filter.ImageCount))
 	query.handleCriterion(ctx, performerGalleryCountCriterionHandler(qb, filter.GalleryCount))
+	query.handleCriterion(ctx, performerOCounterCriterionHandler(qb, filter.OCounter))
 	query.handleCriterion(ctx, dateCriterionHandler(filter.Birthdate, tableName+".birthdate"))
 	query.handleCriterion(ctx, dateCriterionHandler(filter.DeathDate, tableName+".death_date"))
 	query.handleCriterion(ctx, timestampCriterionHandler(filter.CreatedAt, tableName+".created_at"))
@@ -805,6 +806,19 @@ func performerGalleryCountCriterionHandler(qb *PerformerStore, count *models.Int
 	return h.handler(count)
 }
 
+func performerOCounterCriterionHandler(qb *PerformerStore, count *models.IntCriterionInput) criterionHandlerFunc {
+	h := joinedSumCriterionHandlerBuilder{
+		primaryTable: performerTable,
+		joinTable: 	  performersScenesTable,
+		foreignTable: sceneTable,
+		primaryFK:    performerIDColumn,
+		foreignFK:    sceneIDColumn,
+		sum: "o_counter",
+	}
+
+	return h.handler(count)
+}
+
 func performerStudiosCriterionHandler(qb *PerformerStore, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if studios != nil {
@@ -905,7 +919,7 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) st
 	if sort == "galleries_count" {
 		return getCountSort(performerTable, performersGalleriesTable, performerIDColumn, direction)
 	}
-	if sort == "os_count" {
+	if sort == "o_counter" {
 		return getSumSort("o_counter", performerTable, performersScenesTable, sceneTable, performerIDColumn, sceneIDColumn, direction)
 	}
 

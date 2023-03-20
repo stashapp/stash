@@ -42,7 +42,7 @@ const sortByOptions = [
     },
     {
       messageID: "o_counter",
-      value: "os_count",
+      value: "o_counter",
     },
   ]);
 
