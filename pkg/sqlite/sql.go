@@ -103,6 +103,10 @@ func getCountSort(primaryTable, joinTable, primaryFK, direction string) string {
 	return fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM %s WHERE %s = %s.id) %s", joinTable, primaryFK, primaryTable, getSortDirection(direction))
 }
 
+func getSumSort(sum string, primaryTable, joinTable1, joinTable2, primaryFK, secondaryFK, direction string) string {
+	return fmt.Sprintf(" ORDER BY (SELECT SUM(%s) FROM %s LEFT JOIN %s ON %s.%s = %s.id WHERE %s = %s.id) %s", sum, joinTable1, joinTable2, joinTable1, secondaryFK, joinTable2, primaryFK, primaryTable, getSortDirection(direction))
+}
+
 func getStringSearchClause(columns []string, q string, not bool) sqlClause {
 	var likeClauses []string
 	var args []interface{}

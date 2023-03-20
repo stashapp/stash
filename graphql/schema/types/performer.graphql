@@ -37,6 +37,7 @@ type Performer {
   scene_count: Int # Resolver
   image_count: Int # Resolver
   gallery_count: Int # Resolver
+  o_count: Int # Resolver
   scenes: [Scene!]!
   stash_ids: [StashID!]!
   # rating expressed as 1-5

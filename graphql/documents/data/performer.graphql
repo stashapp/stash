@@ -25,6 +25,7 @@ fragment PerformerData on Performer {
   image_count
   gallery_count
   movie_count
+  o_count
 
   tags {
     ...SlimTagData

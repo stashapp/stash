@@ -118,6 +118,18 @@ func (r *performerResolver) GalleryCount(ctx context.Context, obj *models.Perfor
 	return &res, nil
 }
 
+func (r *performerResolver) OCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
+	var res int
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		res, err = r.repository.Scene.OCountByPerformerID(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
 func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer) (ret []*models.Scene, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Scene.FindByPerformerID(ctx, obj.ID)
