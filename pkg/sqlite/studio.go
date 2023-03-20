@@ -332,8 +332,7 @@ func studioIsMissingCriterionHandler(qb *studioQueryBuilder, isMissing *string) 
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
 			case "image":
-				f.addLeftJoin("studios_image", "", "studios_image.studio_id = studios.id")
-				f.addWhere("studios_image.studio_id IS NULL")
+				f.addWhere("studios.image_blob IS NULL")
 			case "stash_id":
 				qb.stashIDRepository().join(f, "studio_stash_ids", "studios.id")
 				f.addWhere("studio_stash_ids.studio_id IS NULL")
