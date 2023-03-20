@@ -138,16 +138,16 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     );
   }
 
-  function maybeRenderOs() {
-    if (!performer.o_count) return;
+  function maybeRenderOCounter() {
+    if (!performer.o_counter) return;
 
     return (
-      <div className="o-count">
+      <div className="o-counter">
         <Button className="minimal">
           <span className="fa-icon">
             <SweatDrops />
           </span>
-          <span>{performer.o_count}</span>
+          <span>{performer.o_counter}</span>
         </Button>
       </div>
     );
@@ -189,7 +189,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       performer.image_count ||
       performer.gallery_count ||
       performer.tags.length > 0 ||
-      performer.o_count ||
+      performer.o_counter ||
       performer.movie_count
     ) {
       return (
@@ -201,7 +201,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
             {maybeRenderImagesPopoverButton()}
             {maybeRenderGalleriesPopoverButton()}
             {maybeRenderTagPopoverButton()}
-            {maybeRenderOs()}
+            {maybeRenderOCounter()}
           </ButtonGroup>
         </>
       );

@@ -118,7 +118,7 @@ func (r *performerResolver) GalleryCount(ctx context.Context, obj *models.Perfor
 	return &res, nil
 }
 
-func (r *performerResolver) OCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
+func (r *performerResolver) OCounter(ctx context.Context, obj *models.Performer) (ret *int, err error) {
 	var res int
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		res, err = r.repository.Scene.OCountByPerformerID(ctx, obj.ID)

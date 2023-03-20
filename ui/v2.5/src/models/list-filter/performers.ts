@@ -88,7 +88,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("scene_count"),
   createMandatoryNumberCriterionOption("image_count"),
   createMandatoryNumberCriterionOption("gallery_count"),
-  createMandatoryNumberCriterionOption("o_count"),
+  createMandatoryNumberCriterionOption("o_counter"),
   createBooleanCriterionOption("ignore_auto_tag"),
   new NumberCriterionOption("height", "height_cm", "height_cm"),
   ...numberCriteria.map((c) => createNumberCriterionOption(c)),
