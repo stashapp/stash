@@ -78,6 +78,12 @@ func (m *Mover) Move(ctx context.Context, f File, folder *Folder, basename strin
 		return nil
 	}
 
+	// ensure that the new path doesn't already exist
+	newPath := filepath.Join(folder.Path, basename)
+	if _, err := m.Renamer.Stat(newPath); !errors.Is(err, fs.ErrNotExist) {
+		return fmt.Errorf("file %s already exists", newPath)
+	}
+
 	fBase.ParentFolderID = folder.ID
 	fBase.Basename = basename
 	fBase.UpdatedAt = time.Now()
@@ -88,7 +94,6 @@ func (m *Mover) Move(ctx context.Context, f File, folder *Folder, basename strin
 	}
 
 	// then move the file
-	newPath := filepath.Join(folder.Path, basename)
 	return m.moveFile(oldPath, newPath)
 }
 
