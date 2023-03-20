@@ -32,10 +32,8 @@ ARG STASH_VERSION
 RUN make build
 
 # Final Runnable Image
-FROM nvidia/cuda:12.0.1-runtime-ubuntu22.04
-RUN apt update
-RUN apt upgrade -y
-RUN apt install -y ca-certificates libvips-tools ffmpeg wget
+FROM nvidia/cuda:12.0.1-base-ubuntu22.04
+RUN apt update && apt upgrade -y && apt install -y ca-certificates libvips-tools ffmpeg wget intel-media-va-driver-non-free vainfo
 RUN rm -rf /var/lib/apt/lists/*
 COPY --from=backend /stash/stash /usr/bin/
 

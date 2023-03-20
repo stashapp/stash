@@ -96,6 +96,7 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
             <Form.Control
               as="select"
               onChange={handleSelectBox}
+              value={selectedBoxIndex}
               className="col-6 input-control"
             >
               {boxes.map((box, i) => (
