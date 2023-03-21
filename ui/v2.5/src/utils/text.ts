@@ -189,6 +189,33 @@ const stringToDate = (dateString: string) => {
   return new Date(year, monthIndex, day, 0, 0, 0, 0);
 };
 
+const stringToFuzzyDate = (dateString: string) => {
+  if (!dateString) return null;
+
+  const parts = dateString.split("-");
+  // Invalid date string
+  let year = Number(parts[0]);
+  if (isNaN(year)) year = new Date().getFullYear();
+  let monthIndex = 0;
+  if (parts.length > 1) {
+    monthIndex = Math.max(0, Number(parts[1]) - 1);
+    if (monthIndex > 11 || isNaN(monthIndex)) monthIndex = 0;
+  }
+  let day = 1;
+  if (parts.length > 2) {
+    day = Number(parts[2]);
+    if (day > 31 || isNaN(day)) day = 1;
+  }
+
+  return new Date(year, monthIndex, day, 0, 0, 0, 0);
+};
+
+function dateToString(date: Date) {
+  return `${date.getFullYear()}-${(date.getMonth() + 1)
+    .toString()
+    .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
+}
+
 const getAge = (dateString?: string | null, fromDateString?: string | null) => {
   if (!dateString) return 0;
 
@@ -355,6 +382,8 @@ const TextUtils = {
   secondsToTimestamp,
   fileNameFromPath,
   stringToDate,
+  stringToFuzzyDate,
+  dateToString,
   age: getAge,
   bitRate,
   resolution,
