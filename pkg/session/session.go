@@ -34,7 +34,14 @@ const (
 	passwordFormKey = "password"
 )
 
-var ErrInvalidCredentials = errors.New("invalid username or password")
+type InvalidCredentialsError struct {
+	Username string
+}
+
+func (e InvalidCredentialsError) Error() string {
+	return "invalid credentials for user " + e.Username
+}
+
 var ErrUnauthorized = errors.New("unauthorized")
 
 type Store struct {
@@ -63,8 +70,10 @@ func (s *Store) Login(w http.ResponseWriter, r *http.Request) error {
 
 	// authenticate the user
 	if !s.config.ValidateCredentials(username, password) {
-		return ErrInvalidCredentials
+		return &InvalidCredentialsError{Username: username}
 	}
+
+	logger.Infof("User %s logged in", username)
 
 	newSession.Values[userIDKey] = username
 
@@ -82,6 +91,8 @@ func (s *Store) Logout(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	username := session.Values[userIDKey]
+
 	delete(session.Values, userIDKey)
 	session.Options.MaxAge = -1
 
@@ -89,6 +100,8 @@ func (s *Store) Logout(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
+
+	logger.Infof("User %s logged out", username)
 
 	return nil
 }
