@@ -35,6 +35,7 @@ func (d *Decorator) Decorate(ctx context.Context, fs file.FS, f file.File) (file
 		Format:   format,
 		Width:    c.Width,
 		Height:   c.Height,
+		Clip:     false,
 	}, nil
 }
 

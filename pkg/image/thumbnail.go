@@ -6,12 +6,14 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"sync"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/ffmpeg/transcoder"
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -118,4 +120,64 @@ func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, format stri
 	})
 
 	return e.ffmpeg.GenerateOutput(context.TODO(), args, image)
+}
+
+func (e *ThumbnailEncoder) GetClipThumbnail(f *file.ImageFile, maxsize int, preset string, iArgs []string, oArgs []string, clipDuration float64, frameRate float64, thumbPath string) error {
+	reader, err := f.Open(&file.OsFS{})
+	if err != nil {
+		return err
+	}
+	defer reader.Close()
+
+	buf := new(bytes.Buffer)
+	if _, err := buf.ReadFrom(reader); err != nil {
+		return err
+	}
+
+	var thumbFilter ffmpeg.VideoFilter
+	thumbFilter = thumbFilter.ScaleWidth(maxsize)
+
+	var thumbArgs ffmpeg.Args
+	thumbArgs = thumbArgs.VideoFilter(thumbFilter)
+
+	thumbArgs = append(thumbArgs,
+		"-pix_fmt", "yuv420p",
+		"-profile:v", "high",
+		"-level", "4.2",
+		"-preset", preset,
+		"-crf", "21",
+		"-threads", "4",
+		"-strict", "-2",
+	)
+
+	if frameRate <= 0.01 {
+		thumbArgs = append(thumbArgs, "-vsync", "2")
+	}
+
+	thumbOptions := transcoder.TranscodeOptions{
+		OutputPath: thumbPath + ".mp4",
+		StartTime:  0,
+		Duration:   clipDuration,
+
+		XError:   true,
+		SlowSeek: false,
+
+		VideoCodec: ffmpeg.VideoCodecLibX264,
+		VideoArgs:  thumbArgs,
+
+		ExtraInputArgs:  iArgs,
+		ExtraOutputArgs: oArgs,
+	}
+
+	err = fsutil.EnsureDirAll(filepath.Dir(thumbPath))
+	if err != nil {
+		return err
+	}
+	args := transcoder.Transcode("-", thumbOptions)
+
+	_, err = e.ffmpeg.GenerateOutput(context.TODO(), args, buf)
+	if err != nil {
+		return err
+	}
+	return nil
 }

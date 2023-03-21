@@ -83,6 +83,7 @@ type imageFileRow struct {
 	Format string  `db:"format"`
 	Width  int     `db:"width"`
 	Height int     `db:"height"`
+	Clip   bool    `db:"clip"`
 }
 
 func (f *imageFileRow) fromImageFile(ff file.ImageFile) {
@@ -90,6 +91,7 @@ func (f *imageFileRow) fromImageFile(ff file.ImageFile) {
 	f.Format = ff.Format
 	f.Width = ff.Width
 	f.Height = ff.Height
+	f.Clip = ff.Clip
 }
 
 // we redefine this to change the columns around
@@ -146,6 +148,7 @@ type imageFileQueryRow struct {
 	Format null.String `db:"image_format"`
 	Width  null.Int    `db:"image_width"`
 	Height null.Int    `db:"image_height"`
+	Clip   null.Bool   `db:"image_clip"`
 }
 
 func (imageFileQueryRow) columns(table *table) []interface{} {
@@ -154,6 +157,7 @@ func (imageFileQueryRow) columns(table *table) []interface{} {
 		ex.Col("format").As("image_format"),
 		ex.Col("width").As("image_width"),
 		ex.Col("height").As("image_height"),
+		ex.Col("clip").As("image_clip"),
 	}
 }
 
@@ -162,6 +166,7 @@ func (f *imageFileQueryRow) resolve() *file.ImageFile {
 		Format: f.Format.String,
 		Width:  int(f.Width.Int64),
 		Height: int(f.Height.Int64),
+		Clip:   f.Clip.Bool,
 	}
 }
 

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
@@ -25,9 +26,36 @@ func isVideo(pathname string) bool {
 	return fsutil.MatchExtension(pathname, vidExt)
 }
 
-func isImage(pathname string) bool {
+func isImage(pathname string, ffProbe ffmpeg.FFProbe) bool {
 	imgExt := config.GetInstance().GetImageExtensions()
-	return fsutil.MatchExtension(pathname, imgExt)
+	filetype, err := ffProbe.NewVideoFile(pathname)
+	if err != nil {
+		logger.Errorf("Error identifying filetype of %s, skipping: %s", pathname, err.Error())
+		return false
+	}
+	isImageFormat := false
+	for _, item := range []string{"png", "mjpeg", "webp"} {
+		if item == filetype.VideoCodec {
+			isImageFormat = true
+		}
+	}
+	return fsutil.MatchExtension(pathname, imgExt) && isImageFormat
+}
+
+func isClip(pathname string, ffProbe ffmpeg.FFProbe) bool {
+	imgExt := config.GetInstance().GetImageExtensions()
+	filetype, err := ffProbe.NewVideoFile(pathname)
+	if err != nil {
+		logger.Errorf("Error identifying filetype of %s, skipping: %s", pathname, err.Error())
+		return false
+	}
+	isImageFormat := false
+	for _, item := range []string{"png", "mjpeg", "webp"} {
+		if item == filetype.VideoCodec {
+			isImageFormat = true
+		}
+	}
+	return fsutil.MatchExtension(pathname, imgExt) && !isImageFormat
 }
 
 func getScanPaths(inputPaths []string) []*config.StashConfig {

@@ -138,6 +138,8 @@ export const ImageCard: React.FC<IImageCardProps> = (
     return height > width;
   }
 
+  const ImagePreview = file?.clip ? "video" : "img";
+
   return (
     <GridCard
       className={`image-card zoom-${props.zoomIndex}`}
@@ -147,7 +149,9 @@ export const ImageCard: React.FC<IImageCardProps> = (
       image={
         <>
           <div className={cx("image-card-preview", { portrait: isPortrait() })}>
-            <img
+            <ImagePreview
+              loop={file?.clip}
+              autoPlay={file?.clip}
               className="image-card-preview-image"
               alt={props.image.title ?? ""}
               src={props.image.paths.thumbnail ?? ""}

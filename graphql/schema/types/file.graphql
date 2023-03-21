@@ -73,7 +73,8 @@ type ImageFile implements BaseFile {
     fingerprints: [Fingerprint!]!
 
     width: Int!
-	height: Int!
+    height: Int!
+    clip: Boolean!
 
     created_at: Time!
     updated_at: Time!

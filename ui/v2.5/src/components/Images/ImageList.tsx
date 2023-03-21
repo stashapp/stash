@@ -22,6 +22,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 
 import { ImageCard } from "./ImageCard";
+import { ImageWallItem } from "./ImageWallItem";
 import { EditImagesDialog } from "./EditImagesDialog";
 import { DeleteImagesDialog } from "./DeleteImagesDialog";
 import "flexbin/flexbin.css";
@@ -63,7 +64,7 @@ const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
       key: image.id,
       loading: "lazy",
       className: "gallery-image",
-      alt: objectTitle(image),
+      alt: objectTitle(image) + Number(image.files[0].clip).toString(),
     };
     photos.push(imageData);
   });
@@ -86,6 +87,7 @@ const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
       {photos.length ? (
         <Gallery
           photos={photos}
+          renderImage={ImageWallItem}
           onClick={showLightboxOnClick}
           margin={uiConfig?.imageWallOptions?.margin!}
           direction={uiConfig?.imageWallOptions?.direction!}

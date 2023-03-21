@@ -68,10 +68,12 @@ func (r *imageResolver) File(ctx context.Context, obj *models.Image) (*ImageFile
 	width := f.Width
 	height := f.Height
 	size := f.Size
+	clip := f.Clip
 	return &ImageFileType{
 		Size:   int(size),
 		Width:  width,
 		Height: height,
+		Clip:   clip,
 	}, nil
 }
 
@@ -101,6 +103,7 @@ func (r *imageResolver) Files(ctx context.Context, obj *models.Image) ([]*ImageF
 			Size:           f.Size,
 			Width:          f.Width,
 			Height:         f.Height,
+			Clip:           f.Clip,
 			CreatedAt:      f.CreatedAt,
 			UpdatedAt:      f.UpdatedAt,
 			Fingerprints:   resolveFingerprints(f.Base()),

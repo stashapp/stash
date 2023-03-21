@@ -260,6 +260,7 @@ export const Image: React.FC = () => {
   }
 
   const title = objectTitle(image);
+  const ImageView = image.files[0].clip ? "video" : "img";
 
   return (
     <div className="row">
@@ -286,7 +287,9 @@ export const Image: React.FC = () => {
         {renderTabs()}
       </div>
       <div className="image-container">
-        <img
+        <ImageView
+          loop={image.files[0].clip}
+          autoPlay={image.files[0].clip}
           className="m-sm-auto no-gutter image-image"
           alt={title}
           src={image.paths.image ?? ""}

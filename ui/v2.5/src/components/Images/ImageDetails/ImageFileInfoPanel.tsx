@@ -77,6 +77,7 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
           value={`${props.file.width} x ${props.file.height}`}
           truncate
         />
+        <TextField id="isClip" value={`${props.file.clip}`} truncate />
       </dl>
       {props.ofMany && props.onSetPrimaryFile && !props.primary && (
         <div>

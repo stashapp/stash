@@ -28,6 +28,7 @@ fragment ImageFileData on ImageFile {
   mod_time
   width
   height
+  clip
   fingerprints {
     type
     value

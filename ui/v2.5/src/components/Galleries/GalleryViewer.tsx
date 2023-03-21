@@ -60,6 +60,7 @@ export const GalleryViewer: React.FC<IProps> = ({ galleryId }) => {
     sizes?: string | string[] | undefined;
     width: number;
     height: number;
+    clip: boolean;
     alt?: string | undefined;
     key?: string | undefined;
   }[] = [];
@@ -69,6 +70,7 @@ export const GalleryViewer: React.FC<IProps> = ({ galleryId }) => {
       src: image.paths.thumbnail!,
       width: image.files[0].width,
       height: image.files[0].height,
+      clip: image.files[0].clip,
       tabIndex: index,
       key: image.id ?? index,
       loading: "lazy",

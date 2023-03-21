@@ -449,6 +449,7 @@ func fileToJSON(f file.File) jsonschema.DirEntry {
 			Format:   ff.Format,
 			Width:    ff.Width,
 			Height:   ff.Height,
+			Clip:     ff.Clip,
 		}
 	}
 

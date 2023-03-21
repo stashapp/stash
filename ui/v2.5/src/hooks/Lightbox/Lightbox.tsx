@@ -845,6 +845,7 @@ export const LightboxComponent: React.FC<IProps> = ({
                   scrollAttemptsBeforeChange={scrollAttemptsBeforeChange}
                   setZoom={(v) => setZoom(v)}
                   resetPosition={resetPosition}
+                  isClip={image.files?.[0]?.clip ?? false}
                 />
               ) : undefined}
             </div>
