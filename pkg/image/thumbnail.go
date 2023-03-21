@@ -101,6 +101,7 @@ func (e *ThumbnailEncoder) GetThumbnail(f *file.ImageFile, maxSize int) ([]byte,
 func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, format string, maxSize int) ([]byte, error) {
 	var ffmpegFormat ffmpeg.ImageFormat
 
+	// These Options are used in isImage and isClip in internal/manager/manager_tasks. If one gets updated, the other should be as well
 	switch format {
 	case "jpeg":
 		ffmpegFormat = ffmpeg.ImageFormatJpeg
@@ -135,7 +136,7 @@ func (e *ThumbnailEncoder) GetClipThumbnail(f *file.ImageFile, maxsize int, pres
 	}
 
 	var thumbFilter ffmpeg.VideoFilter
-	thumbFilter = thumbFilter.ScaleWidth(maxsize)
+	thumbFilter = thumbFilter.ScaleMaxSize(maxsize)
 
 	var thumbArgs ffmpeg.Args
 	thumbArgs = thumbArgs.VideoFilter(thumbFilter)

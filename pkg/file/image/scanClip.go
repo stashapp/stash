@@ -14,7 +14,6 @@ type DecoratorClip struct {
 }
 
 func (d *DecoratorClip) Decorate(ctx context.Context, fs file.FS, f file.File) (file.File, error) {
-	fmt.Println("test")
 	if d.FFProbe == "" {
 		return f, errors.New("ffprobe not configured")
 	}

@@ -34,6 +34,7 @@ func isImage(pathname string, ffProbe ffmpeg.FFProbe) bool {
 		return false
 	}
 	isImageFormat := false
+	// This list is derived from ffmpegImageThumbnail in pkg/image/thumbnail. If one gets updated, the other should be as well
 	for _, item := range []string{"png", "mjpeg", "webp"} {
 		if item == filetype.VideoCodec {
 			isImageFormat = true
@@ -50,6 +51,7 @@ func isClip(pathname string, ffProbe ffmpeg.FFProbe) bool {
 		return false
 	}
 	isImageFormat := false
+	// This list is derived from ffmpegImageThumbnail in pkg/image/thumbnail. If one gets updated, the other should be as well
 	for _, item := range []string{"png", "mjpeg", "webp"} {
 		if item == filetype.VideoCodec {
 			isImageFormat = true

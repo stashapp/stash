@@ -425,20 +425,22 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
   }
 
-  const navItems = images.map((image, i) => (
-    <img
-      src={image.paths.thumbnail ?? ""}
-      alt=""
-      className={cx(CLASSNAME_NAVIMAGE, {
+  const navItems = images.map((image, i) =>
+    React.createElement(image.files?.[0]?.clip ? "video" : "img", {
+      loop: image.files?.[0]?.clip,
+      autoPlay: image.files?.[0]?.clip,
+      src: image.paths.thumbnail ?? "",
+      alt: "",
+      className: cx(CLASSNAME_NAVIMAGE, {
         [CLASSNAME_NAVSELECTED]: i === index,
-      })}
-      onClick={(e: React.MouseEvent) => selectIndex(e, i)}
-      role="presentation"
-      loading="lazy"
-      key={image.paths.thumbnail}
-      onLoad={imageLoaded}
-    />
-  ));
+      }),
+      onClick: (e: React.MouseEvent) => selectIndex(e, i),
+      role: "presentation",
+      loading: "lazy",
+      key: image.paths.thumbnail,
+      onLoad: imageLoaded,
+    })
+  );
 
   const onDelayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let numberValue = Number.parseInt(e.currentTarget.value, 10);

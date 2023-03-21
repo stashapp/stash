@@ -954,6 +954,7 @@
   "interactive": "Interactive",
   "interactive_speed": "Interactive speed",
   "isMissing": "Is Missing",
+  "isClip": "is Clip",
   "last_played_at": "Last Played At",
   "library": "Library",
   "loading": {

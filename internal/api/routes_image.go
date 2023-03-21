@@ -66,6 +66,13 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		if f.Clip {
+			logger.Errorf("A thumbnail for a clip (%s) will not be created on the fly. Use the scanner for this.", f.Path)
+			// backwards compatibility - fallback to original image instead
+			rs.serveImage(w, r, img, useDefault)
+			return
+		}
+
 		encoder := image.NewThumbnailEncoder(manager.GetInstance().FFMPEG)
 		data, err := encoder.GetThumbnail(f, models.DefaultGthumbWidth)
 		if err != nil {

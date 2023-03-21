@@ -514,9 +514,9 @@ export const LightboxImage: React.FC<IProps> = ({
     ? {
         touchAction: "none",
         display: "flex",
-        width: "100%",
         margin: "auto",
-        "max-height": "100%",
+        width: "100%",
+        "max-height": "90vh",
       }
     : { touchAction: "none" };
 

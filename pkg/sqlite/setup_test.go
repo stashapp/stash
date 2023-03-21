@@ -767,6 +767,7 @@ func makeFile(i int) file.File {
 			Format:   getFileStringValue(i, "format"),
 			Width:    getWidth(i),
 			Height:   getHeight(i),
+			Clip:     getClip(i),
 		}
 	}
 
@@ -903,6 +904,12 @@ func getHeight(index int) int {
 func getWidth(index int) int {
 	height := getHeight(index)
 	return height * 2
+}
+
+func getClip(index int) bool {
+	clips := []bool{true, false}
+	clip := clips[index%len(clips)]
+	return clip
 }
 
 func getObjectDate(index int) models.SQLiteDate {
