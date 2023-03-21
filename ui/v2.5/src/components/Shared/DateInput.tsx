@@ -6,26 +6,33 @@ import TextUtils from "src/utils/text";
 import { Icon } from "./Icon";
 
 import "react-datepicker/dist/react-datepicker.css";
+import { useIntl } from "react-intl";
 
 interface IProps {
   disabled?: boolean;
   value: string | undefined;
+  isTime?: boolean;
   onValueChange(value: string): void;
   placeholder?: string;
   error?: string;
 }
 
 export const DateInput: React.FC<IProps> = (props: IProps) => {
+  const intl = useIntl();
+
   const date = useMemo(() => {
+    const toDate = props.isTime
+      ? TextUtils.stringToFuzzyDateTime
+      : TextUtils.stringToFuzzyDate;
     if (props.value) {
-      const ret = TextUtils.stringToFuzzyDate(props.value);
+      const ret = toDate(props.value);
       if (!ret || isNaN(ret.getTime())) {
         return undefined;
       }
 
       return ret;
     }
-  }, [props.value]);
+  }, [props.value, props.isTime]);
 
   function maybeRenderButton() {
     if (!props.disabled) {
@@ -41,11 +48,15 @@ export const DateInput: React.FC<IProps> = (props: IProps) => {
         </Button>
       );
 
+      const dateToString = props.isTime
+        ? TextUtils.dateTimeToString
+        : TextUtils.dateToString;
+
       return (
         <ReactDatePicker
           selected={date}
           onChange={(v) => {
-            props.onValueChange(v ? TextUtils.dateToString(v) : "");
+            props.onValueChange(v ? dateToString(v) : "");
           }}
           customInput={React.createElement(ShowPickerButton)}
           showMonthDropdown
@@ -55,10 +66,15 @@ export const DateInput: React.FC<IProps> = (props: IProps) => {
           maxDate={new Date()}
           yearDropdownItemNumber={100}
           portalId="date-picker-portal"
+          showTimeSelect={props.isTime}
         />
       );
     }
   }
+
+  const placeholderText = intl.formatMessage({
+    id: props.isTime ? "datetime_format" : "date_format",
+  });
 
   return (
     <div>
@@ -73,8 +89,8 @@ export const DateInput: React.FC<IProps> = (props: IProps) => {
           placeholder={
             !props.disabled
               ? props.placeholder
-                ? `${props.placeholder} ("YYYY-MM-DD")`
-                : "YYYY-MM-DD"
+                ? `${props.placeholder} (${placeholderText})`
+                : placeholderText
               : undefined
           }
           isInvalid={!!props.error}

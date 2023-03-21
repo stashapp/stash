@@ -335,7 +335,8 @@ div.react-datepicker {
   border-color: $card-bg;
   color: $text-color;
 
-  .react-datepicker__header {
+  .react-datepicker__header,
+  .react-datepicker-time__header {
     background-color: $secondary;
     color: $text-color;
   }
@@ -348,6 +349,15 @@ div.react-datepicker {
 
     &:hover {
       background: rgba(138, 155, 168, 0.15);
+    }
+  }
+
+  div.react-datepicker__time-container div.react-datepicker__time {
+    background-color: $body-bg;
+    color: $text-color;
+
+    ul.react-datepicker__time-list li.react-datepicker__time-list-item:hover {
+      background-color: rgba(138, 155, 168, 0.15);
     }
   }
 
