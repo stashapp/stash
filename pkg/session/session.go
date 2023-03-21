@@ -39,7 +39,8 @@ type InvalidCredentialsError struct {
 }
 
 func (e InvalidCredentialsError) Error() string {
-	return "invalid credentials for user " + e.Username
+	// don't leak the username
+	return "invalid credentials"
 }
 
 var ErrUnauthorized = errors.New("unauthorized")
@@ -73,7 +74,8 @@ func (s *Store) Login(w http.ResponseWriter, r *http.Request) error {
 		return &InvalidCredentialsError{Username: username}
 	}
 
-	logger.Infof("User %s logged in", username)
+	// since we only have one user, don't leak the name
+	logger.Info("User logged in")
 
 	newSession.Values[userIDKey] = username
 
@@ -91,8 +93,6 @@ func (s *Store) Logout(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	username := session.Values[userIDKey]
-
 	delete(session.Values, userIDKey)
 	session.Options.MaxAge = -1
 
@@ -101,7 +101,8 @@ func (s *Store) Logout(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	logger.Infof("User %s logged out", username)
+	// since we only have one user, don't leak the name
+	logger.Infof("User logged out")
 
 	return nil
 }
