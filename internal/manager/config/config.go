@@ -504,27 +504,14 @@ func (i *Instance) getStringMapString(key string) map[string]string {
 	return ret
 }
 
-type StashConfig struct {
-	Path         string `json:"path"`
-	ExcludeVideo bool   `json:"excludeVideo"`
-	ExcludeImage bool   `json:"excludeImage"`
-}
-
-// Stash configuration details
-type StashConfigInput struct {
-	Path         string `json:"path"`
-	ExcludeVideo bool   `json:"excludeVideo"`
-	ExcludeImage bool   `json:"excludeImage"`
-}
-
 // GetStathPaths returns the configured stash library paths.
 // Works opposite to the usual case - it will return the override
 // value only if the main value is not set.
-func (i *Instance) GetStashPaths() []*StashConfig {
+func (i *Instance) GetStashPaths() StashConfigs {
 	i.RLock()
 	defer i.RUnlock()
 
-	var ret []*StashConfig
+	var ret StashConfigs
 
 	v := i.main
 	if !v.IsSet(Stash) {
