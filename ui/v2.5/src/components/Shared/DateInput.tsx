@@ -1,4 +1,4 @@
-import { faEllipsis } from "@fortawesome/free-solid-svg-icons";
+import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import React, { useMemo } from "react";
 import { Button, InputGroup, Form } from "react-bootstrap";
 import ReactDatePicker from "react-datepicker";
@@ -44,7 +44,7 @@ export const DateInput: React.FC<IProps> = (props: IProps) => {
         ) => void;
       }) => (
         <Button variant="secondary" onClick={onClick}>
-          <Icon icon={faEllipsis} />
+          <Icon icon={faCalendar} />
         </Button>
       );
 
