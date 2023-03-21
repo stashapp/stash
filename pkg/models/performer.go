@@ -128,7 +128,7 @@ type PerformerFilterType struct {
 	DeathYear *IntCriterionInput `json:"death_year"`
 	// Filter by studios where performer appears in scene/image/gallery
 	Studios *HierarchicalMultiCriterionInput `json:"studios"`
-	//Filter by perfomers where performer appears with another performer in scene/image/gallery
+	// Filter by performers where performer appears with another performer in scene/image/gallery
 	Performers *MultiCriterionInput `json:"performers"`
 	// Filter by autotag ignore value
 	IgnoreAutoTag *bool `json:"ignore_auto_tag"`

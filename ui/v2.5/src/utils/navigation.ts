@@ -41,8 +41,8 @@ const makePerformerScenesUrl = (
   criterion.value = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
   ];
-  
-  if (extraPerformer){
+
+  if (extraPerformer) {
     criterion.value.push(extraPerformer);
   }
 
@@ -63,7 +63,7 @@ const makePerformerImagesUrl = (
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
   ];
 
-  if (extraPerformer){
+  if (extraPerformer) {
     criterion.value.push(extraPerformer);
   }
 
@@ -84,7 +84,7 @@ const makePerformerGalleriesUrl = (
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
   ];
 
-  if (extraPerformer){
+  if (extraPerformer) {
     criterion.value.push(extraPerformer);
   }
 
@@ -105,7 +105,7 @@ const makePerformerMoviesUrl = (
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
   ];
 
-  if (extraPerformer){
+  if (extraPerformer) {
     criterion.value.push(extraPerformer);
   }
 

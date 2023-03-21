@@ -9,11 +9,9 @@ interface IPerformerAppearsWithPanel {
   performer: GQL.PerformerDataFragment;
 }
 
-export const PerformerAppearsWithPanel: React.FC<IPerformerAppearsWithPanel> = ({
-  active,
-  performer,
-}) => {
-
+export const PerformerAppearsWithPanel: React.FC<
+  IPerformerAppearsWithPanel
+> = ({ active, performer }) => {
   const criterion = new PerformersCriterion();
   criterion.value = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
@@ -27,8 +25,6 @@ export const PerformerAppearsWithPanel: React.FC<IPerformerAppearsWithPanel> = (
   const extraCriteria = {
     performer: performerValue,
   };
-
-  criterion.modifier === GQL.CriterionModifier.Includes
 
   const filterHook = usePerformerFilterHook(performer);
 
