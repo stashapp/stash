@@ -403,3 +403,7 @@ div.react-datepicker {
   }
 }
 /* stylelint-enable */
+
+#date-picker-portal .react-datepicker-popper {
+  z-index: 1600;
+}

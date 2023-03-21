@@ -54,6 +54,7 @@ export const DateInput: React.FC<IProps> = (props: IProps) => {
           scrollableYearDropdown
           maxDate={new Date()}
           yearDropdownItemNumber={100}
+          portalId="date-picker-portal"
         />
       );
     }
