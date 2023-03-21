@@ -256,7 +256,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }
 
   async function onSave(input: InputValues) {
-    console.log("onSave", input);
     setIsLoading(true);
     try {
       if (!isNew) {
@@ -352,7 +351,17 @@ export const SceneEditPanel: React.FC<IProps> = ({
   ) {
     setIsLoading(true);
     try {
-      const result = await queryScrapeSceneQueryFragment(s, fragment);
+      const input: GQL.ScrapedSceneInput = {
+        date: fragment.date,
+        code: fragment.code,
+        details: fragment.details,
+        director: fragment.director,
+        remote_site_id: fragment.remote_site_id,
+        title: fragment.title,
+        url: fragment.url,
+      };
+
+      const result = await queryScrapeSceneQueryFragment(s, input);
       if (!result.data || !result.data.scrapeSingleScene?.length) {
         Toast.success({
           content: "No scenes found",
