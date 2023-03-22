@@ -124,8 +124,10 @@ func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, format stri
 
 	// These Options are used in isImage and isClip in internal/manager/manager_tasks. If one gets updated, the other should be as well
 	switch format {
-	case "jpeg":
+	case "mjpeg":
 		ffmpegFormat = ffmpeg.ImageFormatJpeg
+        case "jpeg":
+                ffmpegFormat = ffmpeg.ImageFormatJpeg
 	case "png":
 		ffmpegFormat = ffmpeg.ImageFormatPng
 	case "webp":

@@ -283,11 +283,7 @@ func videoFileFilter(ctx context.Context, f file.File) bool {
 }
 
 func imageFileFilter(ctx context.Context, f file.File) bool {
-	return isImage(f.Base().Path, instance.FFProbe)
-}
-
-func clipFileFilter(ctx context.Context, f file.File) bool {
-	return isClip(f.Base().Path, instance.FFProbe)
+	return isImage(f.Base().Path)
 }
 
 func galleryFileFilter(ctx context.Context, f file.File) bool {
@@ -310,14 +306,10 @@ func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
 				Filter: file.FilterFunc(videoFileFilter),
 			},
 			&file.FilteredDecorator{
-				Decorator: &file_image.Decorator{},
-				Filter:    file.FilterFunc(imageFileFilter),
-			},
-			&file.FilteredDecorator{
-				Decorator: &file_image.DecoratorClip{
-					FFProbe: instance.FFProbe,
+				Decorator: &file_image.Decorator{
+                                        FFProbe: instance.FFProbe,
 				},
-				Filter: file.FilterFunc(clipFileFilter),
+				Filter:    file.FilterFunc(imageFileFilter),
 			},
 		},
 		FingerprintCalculator: &fingerprintCalculator{instance.Config},

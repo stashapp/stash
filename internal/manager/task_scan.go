@@ -358,19 +358,6 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 				Paths:               instance.Paths,
 			},
 		},
-		&file.FilteredHandler{
-			Filter: file.FilterFunc(clipFileFilter),
-			Handler: &image.ScanHandler{
-				CreatorUpdater:     db.Image,
-				GalleryFinder:      db.Gallery,
-				ThumbnailGenerator: &imageThumbnailGenerator{},
-				ScanConfig: &scanConfig{
-					isGenerateThumbnails: options.ScanGenerateThumbnails,
-				},
-				PluginCache: pluginCache,
-				Paths:       instance.Paths,
-			},
-		},
 	}
 }
 
