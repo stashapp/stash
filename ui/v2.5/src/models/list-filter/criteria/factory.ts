@@ -15,6 +15,7 @@ import {
   DateCriterionOption,
   TimestampCriterion,
   MandatoryTimestampCriterionOption,
+  PathCriterionOption,
 } from "./criterion";
 import { OrganizedCriterion } from "./organized";
 import { FavoriteCriterion, PerformerFavoriteCriterion } from "./favorite";
@@ -65,9 +66,7 @@ export function makeCriteria(
       return new NoneCriterion();
     case "name":
     case "path":
-      return new StringCriterion(
-        new MandatoryStringCriterionOption(type, type)
-      );
+      return new StringCriterion(new PathCriterionOption(type, type));
     case "checksum":
       return new StringCriterion(
         new MandatoryStringCriterionOption("media_info.checksum", type, type)
