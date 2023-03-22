@@ -279,16 +279,16 @@ func initialize() error {
 }
 
 func videoFileFilter(ctx context.Context, f file.File) bool {
-        if getStashFromDirPath(instance.Config.GetStashPaths(), f.Base().Path).ExcludeVideo {
-                return false
-        }
+	if config.StashConfigs.GetStashFromDirPath(instance.Config.GetStashPaths(), f.Base().Path).ExcludeVideo {
+		return false
+	}
 	return isVideo(f.Base().Basename)
 }
 
 func imageFileFilter(ctx context.Context, f file.File) bool {
-	if getStashFromDirPath(instance.Config.GetStashPaths(), f.Base().Path).ExcludeVideo {
-                return isImage(f.Base().Path) || isVideo(f.Base().Basename)
-        }
+	if config.StashConfigs.GetStashFromDirPath(instance.Config.GetStashPaths(), f.Base().Path).ExcludeVideo {
+		return isImage(f.Base().Path) || isVideo(f.Base().Basename)
+	}
 	return isImage(f.Base().Path)
 }
 
