@@ -13,3 +13,6 @@ var Scene embed.FS
 
 //go:embed image
 var Image embed.FS
+
+//go:embed tag
+var Tag embed.FS
