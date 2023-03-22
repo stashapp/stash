@@ -16,3 +16,6 @@ var Image embed.FS
 
 //go:embed tag
 var Tag embed.FS
+
+//go:embed studio
+var Studio embed.FS
