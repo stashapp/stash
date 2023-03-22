@@ -32,12 +32,12 @@ type ThumbnailGenerator interface {
 }
 
 type ThumbnailEncoder struct {
-	ffmpeg *ffmpeg.FFMpeg
-	ffprobe ffmpeg.FFProbe
-	inputArgs []string
+	ffmpeg     *ffmpeg.FFMpeg
+	ffprobe    ffmpeg.FFProbe
+	inputArgs  []string
 	outputArgs []string
-	preset string
-	vips   *vipsEncoder
+	preset     string
+	vips       *vipsEncoder
 }
 
 func GetVipsPath() string {
@@ -49,11 +49,11 @@ func GetVipsPath() string {
 
 func NewThumbnailEncoder(ffmpegEncoder *ffmpeg.FFMpeg, ffProbe ffmpeg.FFProbe, inputArgs []string, outputArgs []string, preset string) ThumbnailEncoder {
 	ret := ThumbnailEncoder{
-		ffmpeg: ffmpegEncoder,
-		ffprobe: ffProbe,
-		inputArgs: inputArgs,
+		ffmpeg:     ffmpegEncoder,
+		ffprobe:    ffProbe,
+		inputArgs:  inputArgs,
 		outputArgs: outputArgs,
-		preset: preset,
+		preset:     preset,
 	}
 
 	vipsPath := GetVipsPath()
@@ -97,17 +97,17 @@ func (e *ThumbnailEncoder) GetThumbnail(f *file.ImageFile, maxSize int) ([]byte,
 	}
 
 	if f.Clip {
-                fileData, err := e.ffprobe.NewVideoFile(f.Path)
-                if err != nil {
-                        return nil, err
-                }
-                if f.Width <= maxSize {
-                   maxSize = f.Width
-                }
-                clipDuration := fileData.VideoStreamDuration
-                if clipDuration > 30.0 {
-                    clipDuration = 30.0
-                }
+		fileData, err := e.ffprobe.NewVideoFile(f.Path)
+		if err != nil {
+			return nil, err
+		}
+		if f.Width <= maxSize {
+			maxSize = f.Width
+		}
+		clipDuration := fileData.VideoStreamDuration
+		if clipDuration > 30.0 {
+			clipDuration = 30.0
+		}
 		return e.getClipThumbnail(buf, maxSize, clipDuration, fileData.FrameRate)
 	}
 

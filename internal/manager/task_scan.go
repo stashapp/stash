@@ -385,9 +385,9 @@ func (g *imageThumbnailGenerator) GenerateThumbnail(ctx context.Context, i *mode
 
 	logger.Debugf("Generating thumbnail for %s", f.Path)
 
-        if !f.Clip && f.Height <= models.DefaultGthumbWidth && f.Width <= models.DefaultGthumbWidth {
-                return nil
-        }
+	if !f.Clip && f.Height <= models.DefaultGthumbWidth && f.Width <= models.DefaultGthumbWidth {
+		return nil
+	}
 
 	encoder := image.NewThumbnailEncoder(instance.FFMPEG, instance.FFProbe, instance.Config.GetTranscodeInputArgs(), instance.Config.GetTranscodeOutputArgs(), instance.Config.GetPreviewPreset().String())
 	data, err := encoder.GetThumbnail(f, models.DefaultGthumbWidth)
