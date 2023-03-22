@@ -52,6 +52,7 @@ import { galleryTitle } from "src/core/galleries";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { lazyComponent } from "src/utils/lazyComponent";
 import isEqual from "lodash-es/isEqual";
+import { DateInput } from "src/components/Shared/DateInput";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
@@ -769,11 +770,20 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 />
               </Col>
             </Form.Group>
-            {renderTextField(
-              "date",
-              intl.formatMessage({ id: "date" }),
-              "YYYY-MM-DD"
-            )}
+
+            <Form.Group controlId="date" as={Row}>
+              {FormUtils.renderLabel({
+                title: intl.formatMessage({ id: "date" }),
+              })}
+              <Col xs={9}>
+                <DateInput
+                  value={formik.values.date}
+                  onValueChange={(value) => formik.setFieldValue("date", value)}
+                  error={formik.errors.date}
+                />
+              </Col>
+            </Form.Group>
+
             {renderTextField(
               "director",
               intl.formatMessage({ id: "director" })

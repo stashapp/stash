@@ -24,6 +24,7 @@ import { MovieScrapeDialog } from "./MovieScrapeDialog";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { ConfigurationContext } from "src/hooks/Config";
 import isEqual from "lodash-es/isEqual";
+import { DateInput } from "src/components/Shared/DateInput";
 
 interface IMovieEditPanel {
   movie: Partial<GQL.MovieDataFragment>;
@@ -410,11 +411,18 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
           </Col>
         </Form.Group>
 
-        {renderTextField(
-          "date",
-          intl.formatMessage({ id: "date" }),
-          "YYYY-MM-DD"
-        )}
+        <Form.Group controlId="date" as={Row}>
+          {FormUtils.renderLabel({
+            title: intl.formatMessage({ id: "date" }),
+          })}
+          <Col xs={9}>
+            <DateInput
+              value={formik.values.date}
+              onValueChange={(value) => formik.setFieldValue("date", value)}
+              error={formik.errors.date}
+            />
+          </Col>
+        </Form.Group>
 
         <Form.Group controlId="studio" as={Row}>
           {FormUtils.renderLabel({
