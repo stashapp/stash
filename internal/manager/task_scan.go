@@ -288,12 +288,12 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 	// shortcut: skip the directory entirely if it matches both exclusion patterns
 	// add a trailing separator so that it correctly matches against patterns like path/.*
 	pathExcludeTest := path + string(filepath.Separator)
-	if (s.ExcludeVideo || matchFileRegex(pathExcludeTest, f.videoExcludeRegex)) && (s.ExcludeImage || matchFileRegex(pathExcludeTest, f.imageExcludeRegex)) {
+	if (matchFileRegex(pathExcludeTest, f.videoExcludeRegex)) && (s.ExcludeImage || matchFileRegex(pathExcludeTest, f.imageExcludeRegex)) {
 		logger.Debugf("Skipping directory %s as it matches video and image exclusion patterns", path)
 		return false
 	}
 
-	if isVideoFile && (s.ExcludeVideo || matchFileRegex(path, f.videoExcludeRegex)) {
+	if isVideoFile && (matchFileRegex(path, f.videoExcludeRegex)) {
 		logger.Debugf("Skipping %s as it matches video exclusion patterns", path)
 		return false
 	} else if (isImageFile || isZipFile) && (s.ExcludeImage || matchFileRegex(path, f.imageExcludeRegex)) {

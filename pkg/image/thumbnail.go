@@ -126,8 +126,8 @@ func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, format stri
 	switch format {
 	case "mjpeg":
 		ffmpegFormat = ffmpeg.ImageFormatJpeg
-        case "jpeg":
-                ffmpegFormat = ffmpeg.ImageFormatJpeg
+	case "jpeg":
+		ffmpegFormat = ffmpeg.ImageFormatJpeg
 	case "png":
 		ffmpegFormat = ffmpeg.ImageFormatPng
 	case "webp":

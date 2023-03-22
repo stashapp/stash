@@ -279,10 +279,16 @@ func initialize() error {
 }
 
 func videoFileFilter(ctx context.Context, f file.File) bool {
+        if getStashFromDirPath(instance.Config.GetStashPaths(), f.Base().Path).ExcludeVideo {
+                return false
+        }
 	return isVideo(f.Base().Basename)
 }
 
 func imageFileFilter(ctx context.Context, f file.File) bool {
+	if getStashFromDirPath(instance.Config.GetStashPaths(), f.Base().Path).ExcludeVideo {
+                return isImage(f.Base().Path) || isVideo(f.Base().Basename)
+        }
 	return isImage(f.Base().Path)
 }
 
@@ -307,9 +313,9 @@ func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
 			},
 			&file.FilteredDecorator{
 				Decorator: &file_image.Decorator{
-                                        FFProbe: instance.FFProbe,
+					FFProbe: instance.FFProbe,
 				},
-				Filter:    file.FilterFunc(imageFileFilter),
+				Filter: file.FilterFunc(imageFileFilter),
 			},
 		},
 		FingerprintCalculator: &fingerprintCalculator{instance.Config},
