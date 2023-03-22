@@ -12,23 +12,26 @@ import (
 func gqlErrorHandler(ctx context.Context, e error) *gqlerror.Error {
 	// log all errors - for now just log the error message
 	// we can potentially add more context later
-	logger.Errorf("%s: %v", graphql.GetFieldContext(ctx).Path(), e)
+	fc := graphql.GetFieldContext(ctx)
+	if fc != nil {
+		logger.Errorf("%s: %v", fc.Path(), e)
 
-	// log the args in debug level
-	logger.DebugFunc(func() (string, []interface{}) {
-		var args interface{}
-		args = graphql.GetFieldContext(ctx).Args
+		// log the args in debug level
+		logger.DebugFunc(func() (string, []interface{}) {
+			var args interface{}
+			args = fc.Args
 
-		s, _ := json.Marshal(args)
-		if len(s) > 0 {
-			args = string(s)
-		}
+			s, _ := json.Marshal(args)
+			if len(s) > 0 {
+				args = string(s)
+			}
 
-		return "%s: %v", []interface{}{
-			graphql.GetFieldContext(ctx).Path(),
-			args,
-		}
-	})
+			return "%s: %v", []interface{}{
+				fc.Path(),
+				args,
+			}
+		})
+	}
 
 	// we may also want to transform the error message for the response
 	// for now just return the original error
