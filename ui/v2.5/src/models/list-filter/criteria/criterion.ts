@@ -279,6 +279,20 @@ export function createMandatoryStringCriterionOption(
   );
 }
 
+export class PathCriterionOption extends StringCriterionOption {}
+
+export function createPathCriterionOption(
+  value: CriterionType,
+  messageID?: string,
+  parameterName?: string
+) {
+  return new PathCriterionOption(
+    messageID ?? value,
+    value,
+    parameterName ?? messageID ?? value
+  );
+}
+
 export class BooleanCriterionOption extends CriterionOption {
   constructor(messageID: string, value: CriterionType, parameterName?: string) {
     super({

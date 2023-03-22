@@ -135,7 +135,7 @@ func Start() error {
 
 	// session handlers
 	r.Post(loginEndPoint, handleLogin(loginUIBox))
-	r.Get("/logout", handleLogout(loginUIBox))
+	r.Get(logoutEndPoint, handleLogout(loginUIBox))
 
 	r.Get(loginEndPoint, getLoginHandler(loginUIBox))
 

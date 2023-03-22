@@ -728,6 +728,8 @@
   "custom": "Custom",
   "date": "Date",
   "death_date": "Death Date",
+  "date_format": "YYYY-MM-DD",
+  "datetime_format": "YYYY-MM-DD HH:MM",
   "death_year": "Death Year",
   "descending": "Descending",
   "description": "Description",

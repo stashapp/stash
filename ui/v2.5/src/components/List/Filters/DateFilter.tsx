@@ -4,6 +4,7 @@ import { useIntl } from "react-intl";
 import { CriterionModifier } from "../../../core/generated-graphql";
 import { IDateValue } from "../../../models/list-filter/types";
 import { Criterion } from "../../../models/list-filter/criteria/criterion";
+import { DateInput } from "src/components/Shared/DateInput";
 
 interface IDateFilterProps {
   criterion: Criterion<IDateValue>;
@@ -18,11 +19,7 @@ export const DateFilter: React.FC<IDateFilterProps> = ({
 
   const { value } = criterion;
 
-  function onChanged(
-    event: React.ChangeEvent<HTMLInputElement>,
-    property: "value" | "value2"
-  ) {
-    const newValue = event.target.value;
+  function onChanged(newValue: string, property: "value" | "value2") {
     const valueCopy = { ...value };
 
     valueCopy[property] = newValue;
@@ -36,16 +33,10 @@ export const DateFilter: React.FC<IDateFilterProps> = ({
   ) {
     equalsControl = (
       <Form.Group>
-        <Form.Control
-          className="btn-secondary"
-          type="text"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            onChanged(e, "value")
-          }
+        <DateInput
           value={value?.value ?? ""}
-          placeholder={
-            intl.formatMessage({ id: "criterion.value" }) + " (YYYY-MM-DD)"
-          }
+          onValueChange={(v) => onChanged(v, "value")}
+          placeholder={intl.formatMessage({ id: "criterion.value" })}
         />
       </Form.Group>
     );
@@ -59,17 +50,10 @@ export const DateFilter: React.FC<IDateFilterProps> = ({
   ) {
     lowerControl = (
       <Form.Group>
-        <Form.Control
-          className="btn-secondary"
-          type="text"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            onChanged(e, "value")
-          }
+        <DateInput
           value={value?.value ?? ""}
-          placeholder={
-            intl.formatMessage({ id: "criterion.greater_than" }) +
-            " (YYYY-MM-DD)"
-          }
+          onValueChange={(v) => onChanged(v, "value")}
+          placeholder={intl.formatMessage({ id: "criterion.greater_than" })}
         />
       </Form.Group>
     );
@@ -83,25 +67,21 @@ export const DateFilter: React.FC<IDateFilterProps> = ({
   ) {
     upperControl = (
       <Form.Group>
-        <Form.Control
-          className="btn-secondary"
-          type="text"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            onChanged(
-              e,
-              criterion.modifier === CriterionModifier.LessThan
-                ? "value"
-                : "value2"
-            )
-          }
+        <DateInput
           value={
             (criterion.modifier === CriterionModifier.LessThan
               ? value?.value
               : value?.value2) ?? ""
           }
-          placeholder={
-            intl.formatMessage({ id: "criterion.less_than" }) + " (YYYY-MM-DD)"
+          onValueChange={(v) =>
+            onChanged(
+              v,
+              criterion.modifier === CriterionModifier.LessThan
+                ? "value"
+                : "value2"
+            )
           }
+          placeholder={intl.formatMessage({ id: "criterion.less_than" })}
         />
       </Form.Group>
     );

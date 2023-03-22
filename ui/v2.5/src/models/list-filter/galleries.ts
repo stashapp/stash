@@ -4,6 +4,7 @@ import {
   NullNumberCriterionOption,
   createDateCriterionOption,
   createMandatoryTimestampCriterionOption,
+  createPathCriterionOption,
 } from "./criteria/criterion";
 import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
 import { GalleryIsMissingCriterionOption } from "./criteria/is-missing";
@@ -43,7 +44,7 @@ const displayModeOptions = [
 const criterionOptions = [
   createStringCriterionOption("title"),
   createStringCriterionOption("details"),
-  createStringCriterionOption("path"),
+  createPathCriterionOption("path"),
   createStringCriterionOption(
     "galleryChecksum",
     "media_info.checksum",
