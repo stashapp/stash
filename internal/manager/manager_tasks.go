@@ -37,9 +37,9 @@ func getScanPaths(inputPaths []string) []*config.StashConfig {
 		return stashPaths
 	}
 
-	var ret []*config.StashConfig
+	var ret config.StashConfigs
 	for _, p := range inputPaths {
-		s := getStashFromDirPath(stashPaths, p)
+		s := stashPaths.GetStashFromDirPath(p)
 		if s == nil {
 			logger.Warnf("%s is not in the configured stash paths", p)
 			continue
