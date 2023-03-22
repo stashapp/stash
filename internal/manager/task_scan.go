@@ -383,59 +383,26 @@ func (g *imageThumbnailGenerator) GenerateThumbnail(ctx context.Context, i *mode
 		return nil
 	}
 
-	var err error
-	var data []byte
-	if f.Clip {
-		logger.Debugf("Generating thumbnail for %s", f.Path)
-		preset := instance.Config.GetPreviewPreset().String()
-		iArgs := instance.Config.GetTranscodeInputArgs()
-		oArgs := instance.Config.GetTranscodeOutputArgs()
-		fileData, errProbe := instance.FFProbe.NewVideoFile(f.Path)
-		if errProbe != nil {
-			return errProbe
-		}
-		maxsize := models.DefaultGthumbWidth
-		if f.Width <= maxsize {
-			maxsize = f.Width
-		}
-		clipDuration := fileData.VideoStreamDuration
-		if clipDuration > 30.0 {
-			clipDuration = 30.0
-		}
+	logger.Debugf("Generating thumbnail for %s", f.Path)
 
-		encoder := image.NewThumbnailEncoder(instance.FFMPEG)
-		err := encoder.GetClipThumbnail(f, maxsize, preset, iArgs, oArgs, clipDuration, fileData.FrameRate, thumbPath)
-		if err != nil {
-			return fmt.Errorf("creating thumbnail for image %s: %w", f.Path, err)
+        if !f.Clip && f.Height <= models.DefaultGthumbWidth && f.Width <= models.DefaultGthumbWidth {
+                return nil
+        }
+
+	encoder := image.NewThumbnailEncoder(instance.FFMPEG, instance.FFProbe, instance.Config.GetTranscodeInputArgs(), instance.Config.GetTranscodeOutputArgs(), instance.Config.GetPreviewPreset().String())
+	data, err := encoder.GetThumbnail(f, models.DefaultGthumbWidth)
+
+	if err != nil {
+		// don't log for animated images
+		if !errors.Is(err, image.ErrNotSupportedForThumbnail) {
+			return fmt.Errorf("getting thumbnail for image %s: %w", f.Path, err)
 		}
-		err = fsutil.SafeMove(thumbPath+".mp4", thumbPath)
-		if err != nil {
-			return fmt.Errorf("moving thumbnail for image %s: %w", f.Path, err)
-		}
+		return nil
+	}
 
-	} else {
-		if f.Height <= models.DefaultGthumbWidth && f.Width <= models.DefaultGthumbWidth {
-			return nil
-		}
-
-		logger.Debugf("Generating thumbnail for %s", f.Path)
-
-		encoder := image.NewThumbnailEncoder(instance.FFMPEG)
-		data, err = encoder.GetThumbnail(f, models.DefaultGthumbWidth)
-
-		if err != nil {
-			// don't log for animated images
-			if !errors.Is(err, image.ErrNotSupportedForThumbnail) {
-				return fmt.Errorf("getting thumbnail for image %s: %w", f.Path, err)
-			}
-			return nil
-		}
-
-		err = fsutil.WriteFile(thumbPath, data)
-		if err != nil {
-			return fmt.Errorf("writing thumbnail for image %s: %w", f.Path, err)
-		}
-
+	err = fsutil.WriteFile(thumbPath, data)
+	if err != nil {
+		return fmt.Errorf("writing thumbnail for image %s: %w", f.Path, err)
 	}
 
 	return nil

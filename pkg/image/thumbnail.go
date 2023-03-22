@@ -6,14 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
-	"path/filepath"
 	"runtime"
 	"sync"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/ffmpeg/transcoder"
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -35,6 +33,10 @@ type ThumbnailGenerator interface {
 
 type ThumbnailEncoder struct {
 	ffmpeg *ffmpeg.FFMpeg
+	ffprobe ffmpeg.FFProbe
+	inputArgs []string
+	outputArgs []string
+	preset string
 	vips   *vipsEncoder
 }
 
@@ -45,9 +47,13 @@ func GetVipsPath() string {
 	return vipsPath
 }
 
-func NewThumbnailEncoder(ffmpegEncoder *ffmpeg.FFMpeg) ThumbnailEncoder {
+func NewThumbnailEncoder(ffmpegEncoder *ffmpeg.FFMpeg, ffProbe ffmpeg.FFProbe, inputArgs []string, outputArgs []string, preset string) ThumbnailEncoder {
 	ret := ThumbnailEncoder{
 		ffmpeg: ffmpegEncoder,
+		ffprobe: ffProbe,
+		inputArgs: inputArgs,
+		outputArgs: outputArgs,
+		preset: preset,
 	}
 
 	vipsPath := GetVipsPath()
@@ -90,6 +96,21 @@ func (e *ThumbnailEncoder) GetThumbnail(f *file.ImageFile, maxSize int) ([]byte,
 		return nil, fmt.Errorf("%w: %s", ErrNotSupportedForThumbnail, format)
 	}
 
+	if f.Clip {
+                fileData, err := e.ffprobe.NewVideoFile(f.Path)
+                if err != nil {
+                        return nil, err
+                }
+                if f.Width <= maxSize {
+                   maxSize = f.Width
+                }
+                clipDuration := fileData.VideoStreamDuration
+                if clipDuration > 30.0 {
+                    clipDuration = 30.0
+                }
+		return e.getClipThumbnail(buf, maxSize, clipDuration, fileData.FrameRate)
+	}
+
 	// vips has issues loading files from stdin on Windows
 	if e.vips != nil && runtime.GOOS != "windows" {
 		return e.vips.ImageThumbnail(buf, maxSize)
@@ -123,32 +144,20 @@ func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, format stri
 	return e.ffmpeg.GenerateOutput(context.TODO(), args, image)
 }
 
-func (e *ThumbnailEncoder) GetClipThumbnail(f *file.ImageFile, maxsize int, preset string, iArgs []string, oArgs []string, clipDuration float64, frameRate float64, thumbPath string) error {
-	reader, err := f.Open(&file.OsFS{})
-	if err != nil {
-		return err
-	}
-	defer reader.Close()
-
-	buf := new(bytes.Buffer)
-	if _, err := buf.ReadFrom(reader); err != nil {
-		return err
-	}
-
+func (e *ThumbnailEncoder) getClipThumbnail(image *bytes.Buffer, maxSize int, clipDuration float64, frameRate float64) ([]byte, error) {
 	var thumbFilter ffmpeg.VideoFilter
-	thumbFilter = thumbFilter.ScaleMaxSize(maxsize)
+	thumbFilter = thumbFilter.ScaleMaxSize(maxSize)
 
 	var thumbArgs ffmpeg.Args
 	thumbArgs = thumbArgs.VideoFilter(thumbFilter)
 
 	thumbArgs = append(thumbArgs,
 		"-pix_fmt", "yuv420p",
-		"-profile:v", "high",
-		"-level", "4.2",
-		"-preset", preset,
-		"-crf", "21",
+		"-preset", e.preset,
+		"-crf", "25",
 		"-threads", "4",
 		"-strict", "-2",
+		"-f", "webm",
 	)
 
 	if frameRate <= 0.01 {
@@ -156,29 +165,20 @@ func (e *ThumbnailEncoder) GetClipThumbnail(f *file.ImageFile, maxsize int, pres
 	}
 
 	thumbOptions := transcoder.TranscodeOptions{
-		OutputPath: thumbPath + ".mp4",
+		OutputPath: "-",
 		StartTime:  0,
 		Duration:   clipDuration,
 
 		XError:   true,
 		SlowSeek: false,
 
-		VideoCodec: ffmpeg.VideoCodecLibX264,
+		VideoCodec: ffmpeg.VideoCodecVP9,
 		VideoArgs:  thumbArgs,
 
-		ExtraInputArgs:  iArgs,
-		ExtraOutputArgs: oArgs,
+		ExtraInputArgs:  e.inputArgs,
+		ExtraOutputArgs: e.outputArgs,
 	}
 
-	err = fsutil.EnsureDirAll(filepath.Dir(thumbPath))
-	if err != nil {
-		return err
-	}
 	args := transcoder.Transcode("-", thumbOptions)
-
-	_, err = e.ffmpeg.GenerateOutput(context.TODO(), args, buf)
-	if err != nil {
-		return err
-	}
-	return nil
+	return e.ffmpeg.GenerateOutput(context.TODO(), args, image)
 }

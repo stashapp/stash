@@ -66,14 +66,7 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if f.Clip {
-			logger.Errorf("A thumbnail for a clip (%s) will not be created on the fly. Use the scanner for this.", f.Path)
-			// backwards compatibility - fallback to original image instead
-			rs.serveImage(w, r, img, useDefault)
-			return
-		}
-
-		encoder := image.NewThumbnailEncoder(manager.GetInstance().FFMPEG)
+		encoder := image.NewThumbnailEncoder(manager.GetInstance().FFMPEG, manager.GetInstance().FFProbe, manager.GetInstance().Config.GetTranscodeInputArgs(), manager.GetInstance().Config.GetTranscodeOutputArgs(), manager.GetInstance().Config.GetPreviewPreset().String())
 		data, err := encoder.GetThumbnail(f, models.DefaultGthumbWidth)
 		if err != nil {
 			// don't log for unsupported image format
@@ -93,7 +86,7 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// write the generated thumbnail to disk if enabled
-		if manager.GetInstance().Config.IsWriteImageThumbnails() {
+		if manager.GetInstance().Config.IsWriteImageThumbnails() || f.Clip {
 			logger.Debugf("writing thumbnail to disk: %s", img.Path)
 			if err := fsutil.WriteFile(filepath, data); err != nil {
 				logger.Errorf("error writing thumbnail for image %s: %v", img.Path, err)
