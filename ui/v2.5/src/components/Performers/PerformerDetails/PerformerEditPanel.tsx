@@ -43,6 +43,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { StringListInput } from "src/components/Shared/StringListInput";
 import isEqual from "lodash-es/isEqual";
+import { DateInput } from "src/components/Shared/DateInput";
 
 const isScraper = (
   scraper: GQL.Scraper | GQL.StashBox
@@ -927,8 +928,35 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           </Col>
         </Form.Group>
 
-        {renderField("birthdate", { placeholder: "YYYY-MM-DD" })}
-        {renderField("death_date", { placeholder: "YYYY-MM-DD" })}
+        <Form.Group controlId="birthdate" as={Row}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            <FormattedMessage id="birthdate" />
+          </Form.Label>
+          <Col xs={fieldXS} xl={fieldXL}>
+            <DateInput
+              value={formik.values.birthdate}
+              onValueChange={(value) =>
+                formik.setFieldValue("birthdate", value)
+              }
+              error={formik.errors.birthdate}
+            />
+          </Col>
+        </Form.Group>
+
+        <Form.Group controlId="death_date" as={Row}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            <FormattedMessage id="death_date" />
+          </Form.Label>
+          <Col xs={fieldXS} xl={fieldXL}>
+            <DateInput
+              value={formik.values.death_date}
+              onValueChange={(value) =>
+                formik.setFieldValue("death_date", value)
+              }
+              error={formik.errors.death_date}
+            />
+          </Col>
+        </Form.Group>
 
         <Form.Group as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>

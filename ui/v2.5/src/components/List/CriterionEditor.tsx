@@ -12,6 +12,7 @@ import {
   DateCriterion,
   TimestampCriterion,
   BooleanCriterion,
+  PathCriterionOption,
 } from "src/models/list-filter/criteria/criterion";
 import { useIntl } from "react-intl";
 import {
@@ -36,6 +37,7 @@ import { RatingCriterion } from "../../models/list-filter/criteria/rating";
 import { RatingFilter } from "./Filters/RatingFilter";
 import { BooleanFilter } from "./Filters/BooleanFilter";
 import { OptionsListFilter } from "./Filters/OptionsListFilter";
+import { PathFilter } from "./Filters/PathFilter";
 
 interface IGenericCriterionEditor {
   criterion: Criterion<CriterionValue>;
@@ -136,6 +138,11 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
       // return (
       //   <OptionsFilter criterion={criterion} onValueChanged={onValueChanged} />
       // );
+    }
+    if (criterion.criterionOption instanceof PathCriterionOption) {
+      return (
+        <PathFilter criterion={criterion} onValueChanged={onValueChanged} />
+      );
     }
     if (criterion instanceof DurationCriterion) {
       return (

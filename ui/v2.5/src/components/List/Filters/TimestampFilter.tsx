@@ -4,6 +4,7 @@ import { useIntl } from "react-intl";
 import { CriterionModifier } from "../../../core/generated-graphql";
 import { ITimestampValue } from "../../../models/list-filter/types";
 import { Criterion } from "../../../models/list-filter/criteria/criterion";
+import { DateInput } from "src/components/Shared/DateInput";
 
 interface ITimestampFilterProps {
   criterion: Criterion<ITimestampValue>;
@@ -18,11 +19,7 @@ export const TimestampFilter: React.FC<ITimestampFilterProps> = ({
 
   const { value } = criterion;
 
-  function onChanged(
-    event: React.ChangeEvent<HTMLInputElement>,
-    property: "value" | "value2"
-  ) {
-    const newValue = event.target.value;
+  function onChanged(newValue: string, property: "value" | "value2") {
     const valueCopy = { ...value };
 
     valueCopy[property] = newValue;
@@ -36,7 +33,13 @@ export const TimestampFilter: React.FC<ITimestampFilterProps> = ({
   ) {
     equalsControl = (
       <Form.Group>
-        <Form.Control
+        <DateInput
+          value={value?.value ?? ""}
+          onValueChange={(v) => onChanged(v, "value")}
+          placeholder={intl.formatMessage({ id: "criterion.value" })}
+          isTime
+        />
+        {/* <Form.Control
           className="btn-secondary"
           type="text"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -47,7 +50,7 @@ export const TimestampFilter: React.FC<ITimestampFilterProps> = ({
             intl.formatMessage({ id: "criterion.value" }) +
             " (YYYY-MM-DD HH:MM)"
           }
-        />
+        /> */}
       </Form.Group>
     );
   }
@@ -60,7 +63,13 @@ export const TimestampFilter: React.FC<ITimestampFilterProps> = ({
   ) {
     lowerControl = (
       <Form.Group>
-        <Form.Control
+        <DateInput
+          value={value?.value ?? ""}
+          onValueChange={(v) => onChanged(v, "value")}
+          placeholder={intl.formatMessage({ id: "criterion.greater_than" })}
+          isTime
+        />
+        {/* <Form.Control
           className="btn-secondary"
           type="text"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -71,7 +80,7 @@ export const TimestampFilter: React.FC<ITimestampFilterProps> = ({
             intl.formatMessage({ id: "criterion.greater_than" }) +
             " (YYYY-MM-DD HH:MM)"
           }
-        />
+        /> */}
       </Form.Group>
     );
   }
@@ -84,7 +93,24 @@ export const TimestampFilter: React.FC<ITimestampFilterProps> = ({
   ) {
     upperControl = (
       <Form.Group>
-        <Form.Control
+        <DateInput
+          value={
+            (criterion.modifier === CriterionModifier.LessThan
+              ? value?.value
+              : value?.value2) ?? ""
+          }
+          onValueChange={(v) =>
+            onChanged(
+              v,
+              criterion.modifier === CriterionModifier.LessThan
+                ? "value"
+                : "value2"
+            )
+          }
+          placeholder={intl.formatMessage({ id: "criterion.less_than" })}
+          isTime
+        />
+        {/* <Form.Control
           className="btn-secondary"
           type="text"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -104,7 +130,7 @@ export const TimestampFilter: React.FC<ITimestampFilterProps> = ({
             intl.formatMessage({ id: "criterion.less_than" }) +
             " (YYYY-MM-DD HH:MM)"
           }
-        />
+        /> */}
       </Form.Group>
     );
   }

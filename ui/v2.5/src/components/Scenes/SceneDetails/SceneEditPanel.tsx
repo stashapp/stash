@@ -52,6 +52,7 @@ import { galleryTitle } from "src/core/galleries";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { lazyComponent } from "src/utils/lazyComponent";
 import isEqual from "lodash-es/isEqual";
+import { DateInput } from "src/components/Shared/DateInput";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
@@ -256,7 +257,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }
 
   async function onSave(input: InputValues) {
-    console.log("onSave", input);
     setIsLoading(true);
     try {
       if (!isNew) {
@@ -352,7 +352,17 @@ export const SceneEditPanel: React.FC<IProps> = ({
   ) {
     setIsLoading(true);
     try {
-      const result = await queryScrapeSceneQueryFragment(s, fragment);
+      const input: GQL.ScrapedSceneInput = {
+        date: fragment.date,
+        code: fragment.code,
+        details: fragment.details,
+        director: fragment.director,
+        remote_site_id: fragment.remote_site_id,
+        title: fragment.title,
+        url: fragment.url,
+      };
+
+      const result = await queryScrapeSceneQueryFragment(s, input);
       if (!result.data || !result.data.scrapeSingleScene?.length) {
         Toast.success({
           content: "No scenes found",
@@ -760,11 +770,20 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 />
               </Col>
             </Form.Group>
-            {renderTextField(
-              "date",
-              intl.formatMessage({ id: "date" }),
-              "YYYY-MM-DD"
-            )}
+
+            <Form.Group controlId="date" as={Row}>
+              {FormUtils.renderLabel({
+                title: intl.formatMessage({ id: "date" }),
+              })}
+              <Col xs={9}>
+                <DateInput
+                  value={formik.values.date}
+                  onValueChange={(value) => formik.setFieldValue("date", value)}
+                  error={formik.errors.date}
+                />
+              </Col>
+            </Form.Group>
+
             {renderTextField(
               "director",
               intl.formatMessage({ id: "director" })

@@ -226,7 +226,7 @@ func (f *handlerRequiredFilter) Accept(ctx context.Context, ff file.File) bool {
 
 type scanFilter struct {
 	extensionConfig
-	stashPaths        []*config.StashConfig
+	stashPaths        config.StashConfigs
 	generatedPath     string
 	videoExcludeRegex []*regexp.Regexp
 	imageExcludeRegex []*regexp.Regexp
@@ -278,7 +278,7 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 		return false
 	}
 
-	s := getStashFromDirPath(f.stashPaths, path)
+	s := f.stashPaths.GetStashFromDirPath(path)
 
 	if s == nil {
 		logger.Debugf("Skipping %s as it is not in the stash library", path)
