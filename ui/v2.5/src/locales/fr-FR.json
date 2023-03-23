@@ -9,7 +9,7 @@
     "anonymise": "Anonymiser",
     "apply": "Appliquer",
     "auto_tag": "Étiquetage automatique",
-    "backup": "Sauvegarde",
+    "backup": "Sauvegarder",
     "browse_for_image": "Sélectionner une image…",
     "cancel": "Annuler",
     "clean": "Nettoyer",
@@ -185,11 +185,12 @@
       "latest_version": "Dernière version",
       "latest_version_build_hash": "Empreinte de construction de la dernière version :",
       "new_version_notice": "[Nouveautés]",
+      "release_date": "Date de sortie :",
       "stash_discord": "Rejoignez notre chaine {url}",
-      "stash_home": "Accueil Stash sur {url}",
+      "stash_home": "Accueil de Stash sur {url}",
       "stash_open_collective": "Soutenez-nous via {url}",
-      "stash_wiki": "Page {url} Stash",
-      "version": "Version"
+      "stash_wiki": "{url} de Stash",
+      "version": "Version actuelle"
     },
     "application_paths": {
       "heading": "Chemins de l'application"
@@ -267,10 +268,34 @@
       "create_galleries_from_folders_label": "Créer des galeries à partir de dossiers contenant des images",
       "db_path_head": "Chemin de la base de données",
       "directory_locations_to_your_content": "Emplacements de votre contenu",
-      "excluded_image_gallery_patterns_desc": "Expression régulière de fichiers images et galeries ou de chemins d'accès à exclure de l'analyse et à ajouter au nettoyage",
-      "excluded_image_gallery_patterns_head": "Modèles d'image ou galerie exclués",
+      "excluded_image_gallery_patterns_desc": "Expressions régulières de fichiers images et galeries ou de chemins d'accès à exclure de l'analyse et à ajouter au nettoyage",
+      "excluded_image_gallery_patterns_head": "Modèles d'image ou galerie exclus",
       "excluded_video_patterns_desc": "Expressions régulières de fichiers vidéo ou de chemins d'accès à exclure de l'analyse et à ajouter au nettoyage",
-      "excluded_video_patterns_head": "Modèles de vidéo exclués",
+      "excluded_video_patterns_head": "Modèles de vidéo exclus",
+      "ffmpeg": {
+        "live_transcode": {
+          "input_args": {
+            "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ d'entrée lors du transcodage vidéo en temps réel.",
+            "heading": "Arguments d'entrée du transcodage FFmpeg en temps réel"
+          },
+          "output_args": {
+            "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ de sortie lors du transcodage vidéo en temps réel.",
+            "heading": "Arguments de sortie du transcodage FFmpeg en temps réel"
+          }
+        },
+        "transcode": {
+          "input_args": {
+            "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ d'entrée lors de la génération de la vidéo.",
+            "heading": "Arguments d'entrée pour le transcodage FFmpeg"
+          },
+          "output_args": {
+            "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ de sortie lors de la génération de la vidéo.",
+            "heading": "Arguments de sortie du transcodage FFmpeg"
+          }
+        }
+      },
+      "gallery_cover_regex_desc": "Expression régulière utilisée pour identifier une image comme vignette de la galerie",
+      "gallery_cover_regex_label": "Modèle de vignette de la galerie",
       "gallery_ext_desc": "Liste d'extensions de fichiers séparées par des virgules qui seront reconnues comme des archives zip de la galerie.",
       "gallery_ext_head": "Extensions zip de la galerie",
       "generated_file_naming_hash_desc": "Utilisez MD5 ou oshash pour le nommage des fichiers générés. Le modifier exige que toutes les scènes soient renseignées avec une valeur MD5/oshash appropriée. Après avoir modifié cette valeur, les fichiers générés existants devront être migrés ou régénérés. Voir la page Tâches pour la migration.",
@@ -482,7 +507,8 @@
             "options": {
               "full": "Complète",
               "half": "Moitié",
-              "quarter": "Quart"
+              "quarter": "Quart",
+              "tenth": "Dixième"
             }
           },
           "type": {
@@ -958,7 +984,7 @@
     "updating_untagged_performers_description": "Une mise à jour des performeurs non étiquetés essaiera de faire correspondre tous les performeurs qui n'ont pas de StashID et actualisera les métadonnées."
   },
   "performers": "Performeurs",
-  "piercings": "Perçages",
+  "piercings": "Piercings",
   "play_count": "Compteur de lecture",
   "play_duration": "Temps de lecture",
   "primary_file": "Fichier principal",
@@ -972,7 +998,7 @@
   "resume_time": "Reprendre le temps",
   "scene": "Scène",
   "sceneTagger": "Étiqueteuse de scènes",
-  "sceneTags": "Étiquettes de scène",
+  "sceneTags": "Étiquettes de la scène",
   "scene_code": "Code studio",
   "scene_count": "Nombre de scènes",
   "scene_created_at": "Scène créée le",
@@ -1094,7 +1120,7 @@
   "sub_tags": "Étiquettes affiliées",
   "subsidiary_studios": "Studios affiliés",
   "synopsis": "Résumé",
-  "tag": "Étiquettes",
+  "tag": "Étiquette",
   "tag_count": "Nombre d'étiquettes",
   "tags": "Étiquettes",
   "tattoos": "Tatouages",

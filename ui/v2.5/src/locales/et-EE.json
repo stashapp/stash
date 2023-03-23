@@ -185,6 +185,7 @@
       "latest_version": "Uusim Versioon",
       "latest_version_build_hash": "Uusima Versiooni Ehituse Hash:",
       "new_version_notice": "[UUS]",
+      "release_date": "Väljalaskekuupäev:",
       "stash_discord": "Liitu meie {url}i kanaliga",
       "stash_home": "Stashi kodu {url}-is",
       "stash_open_collective": "Toeta meid läbi {url}-i",
@@ -271,6 +272,28 @@
       "excluded_image_gallery_patterns_head": "Välistatud Pildi/Galerii Mustrid",
       "excluded_video_patterns_desc": "Videofailide/teede regexpid, mida skannimisest välja jätta ja Clean'i lisada",
       "excluded_video_patterns_head": "Välistatud Video Mustrid",
+      "ffmpeg": {
+        "live_transcode": {
+          "input_args": {
+            "desc": "Edasijõudnutele: Lisaargumendid mida edastada ffmpegi sisendväljale live video transkodeerimise ajal.",
+            "heading": "FFmpeg Live Transkodeerimise Sisendargumendid"
+          },
+          "output_args": {
+            "desc": "Edasijõudnutele: Lisaargumendid mida edastada ffmpegi väljundväljale live video transkodeerimise ajal.",
+            "heading": "FFmpeg Live Transkodeerimise Väljundargumendid"
+          }
+        },
+        "transcode": {
+          "input_args": {
+            "desc": "Edasijõudnutele: Lisaargumendid mida edastada ffmpegi sisendväljale video genereerimisel.",
+            "heading": "FFmpeg Transkodeerimise Sisendargumendid"
+          },
+          "output_args": {
+            "desc": "Edasijõudnutele: Lisaargumendid mida edastada ffmpegi väljundväljale video genereerimisel.",
+            "heading": "FFmpeg Transkodeerimise Väljundargumendid"
+          }
+        }
+      },
       "gallery_ext_desc": "Komadega eraldatud faililaiendite loend, mis tuvastatakse galerii ZIP-failidena.",
       "gallery_ext_head": "Galerii zip Laiendused",
       "generated_file_naming_hash_desc": "Kasutage failide nimetamiseks MD5 või oshashi. Selle muutmiseks on vaja, et kõikides stseenides oleks kohaldatav MD5/oshash väärtus täidetud. Pärast selle väärtuse muutmist tuleb olemasolevad loodud failid migreerida või uuesti genereerida. Vaadake üleviimise kohta lehekülge Ülesanded.",
@@ -482,7 +505,8 @@
             "options": {
               "full": "Täis",
               "half": "Pool",
-              "quarter": "Neljandik"
+              "quarter": "Neljandik",
+              "tenth": "Kümme"
             }
           },
           "type": {
