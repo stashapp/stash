@@ -104,25 +104,24 @@ func getCountSort(primaryTable, joinTable, primaryFK, direction string) string {
 }
 
 func getMultiSumSort(sum string, primaryTable, foreignTable1, joinTable1, foreignTable2, joinTable2, primaryFK, foreignFK1, foreignFK2, direction string) string {
-		return fmt.Sprintf(" ORDER BY (SELECT SUM(%s) "+
-						"FROM ("+
-						"SELECT SUM(%s) as %s from %s s "+
-						"LEFT JOIN %s ON %s.id = s.%s "+
-						"WHERE s.%s = %s.id "+
-						"UNION ALL "+
-						"SELECT SUM(%s) as %s from %s s "+
-						"LEFT JOIN %s ON %s.id = s.%s "+
-						"WHERE s.%s = %s.id "+
-						")) %s",
-						sum,
-						sum, sum, joinTable1,
-						foreignTable1, foreignTable1, foreignFK1,
-						primaryFK, primaryTable,
-						sum, sum, joinTable2,
-						foreignTable2, foreignTable2, foreignFK2,
-						primaryFK, primaryTable,
-						getSortDirection(direction))
-	return fmt.Sprintf("(SELECT SUM(%s) FROM %s s LEFT JOIN %s ON s.id = %s.%s WHERE %s.%s = %s.id LEFT JOIN %s ON s.id = %s.%s WHERE %s.%s = %s.id) %s", sum, foreignTable1, joinTable1, joinTable1, foreignFK1, joinTable1, primaryFK, primaryTable, foreignTable2, joinTable2, joinTable2, foreignFK2, joinTable2, primaryFK, primaryTable, getSortDirection(direction))
+	return fmt.Sprintf(" ORDER BY (SELECT SUM(%s) "+
+		"FROM ("+
+		"SELECT SUM(%s) as %s from %s s "+
+		"LEFT JOIN %s ON %s.id = s.%s "+
+		"WHERE s.%s = %s.id "+
+		"UNION ALL "+
+		"SELECT SUM(%s) as %s from %s s "+
+		"LEFT JOIN %s ON %s.id = s.%s "+
+		"WHERE s.%s = %s.id "+
+		")) %s",
+		sum,
+		sum, sum, joinTable1,
+		foreignTable1, foreignTable1, foreignFK1,
+		primaryFK, primaryTable,
+		sum, sum, joinTable2,
+		foreignTable2, foreignTable2, foreignFK2,
+		primaryFK, primaryTable,
+		getSortDirection(direction))
 }
 
 func getStringSearchClause(columns []string, q string, not bool) sqlClause {
@@ -311,23 +310,23 @@ func getCountCriterionClause(primaryTable, joinTable, primaryFK string, criterio
 
 func getJoinedMultiSumCriterionClause(primaryTable, foreignTable1, joinTable1, foreignTable2, joinTable2, primaryFK string, foreignFK1 string, foreignFK2 string, sum string, criterion models.IntCriterionInput) (string, []interface{}) {
 	lhs := fmt.Sprintf("(SELECT SUM(%s) "+
-						"FROM ("+
-						"SELECT SUM(%s) as %s from %s s "+
-						"LEFT JOIN %s ON %s.id = s.%s "+
-						"WHERE s.%s = %s.id "+
-						"UNION ALL "+
-						"SELECT SUM(%s) as %s from %s s "+
-						"LEFT JOIN %s ON %s.id = s.%s "+
-						"WHERE s.%s = %s.id "+
-						"))",
-						sum,
-						sum, sum, joinTable1,
-						foreignTable1, foreignTable1, foreignFK1,
-						primaryFK, primaryTable,
-						sum, sum, joinTable2,
-						foreignTable2, foreignTable2, foreignFK2,
-						primaryFK, primaryTable,
-					)
+		"FROM ("+
+		"SELECT SUM(%s) as %s from %s s "+
+		"LEFT JOIN %s ON %s.id = s.%s "+
+		"WHERE s.%s = %s.id "+
+		"UNION ALL "+
+		"SELECT SUM(%s) as %s from %s s "+
+		"LEFT JOIN %s ON %s.id = s.%s "+
+		"WHERE s.%s = %s.id "+
+		"))",
+		sum,
+		sum, sum, joinTable1,
+		foreignTable1, foreignTable1, foreignFK1,
+		primaryFK, primaryTable,
+		sum, sum, joinTable2,
+		foreignTable2, foreignTable2, foreignFK2,
+		primaryFK, primaryTable,
+	)
 	return getIntCriterionWhereClause(lhs, criterion)
 }
 

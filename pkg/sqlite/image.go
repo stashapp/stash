@@ -517,7 +517,7 @@ func (qb *ImageStore) OCountByPerformerID(ctx context.Context, performerID int) 
 	table := qb.table()
 	joinTable := performersImagesJoinTable
 	q := dialect.Select(goqu.COALESCE(goqu.SUM("o_counter"), 0)).From(table).InnerJoin(joinTable, goqu.On(table.Col(idColumn).Eq(joinTable.Col(imageIDColumn)))).Where(joinTable.Col(performerIDColumn).Eq(performerID))
-	
+
 	var ret int
 	if err := querySimple(ctx, q, &ret); err != nil {
 		return 0, err
@@ -525,7 +525,6 @@ func (qb *ImageStore) OCountByPerformerID(ctx context.Context, performerID int) 
 
 	return ret, nil
 }
-
 
 func (qb *ImageStore) FindByFolderID(ctx context.Context, folderID file.FolderID) ([]*models.Image, error) {
 	table := qb.table()

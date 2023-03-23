@@ -731,7 +731,7 @@ type joinedMultiSumCriterionHandlerBuilder struct {
 	primaryFK     string
 	foreignFK1    string
 	foreignFK2    string
-	sum string
+	sum           string
 }
 
 func (m *joinedMultiSumCriterionHandlerBuilder) handler(criterion *models.IntCriterionInput) criterionHandlerFunc {

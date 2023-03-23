@@ -124,7 +124,7 @@ func (r *performerResolver) OCounter(ctx context.Context, obj *models.Performer)
 	var res int
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		res_scene, err = r.repository.Scene.OCountByPerformerID(ctx, obj.ID)
-		if (err != nil) {
+		if err != nil {
 			return err
 		}
 		res_image, err = r.repository.Image.OCountByPerformerID(ctx, obj.ID)
