@@ -134,10 +134,9 @@ func Start() error {
 	r.HandleFunc("/playground", gqlPlayground.Handler("GraphQL playground", "/graphql"))
 
 	// session handlers
-	r.Post(loginEndPoint, handleLogin(loginUIBox))
-	r.Get(logoutEndPoint, handleLogout(loginUIBox))
-
-	r.Get(loginEndPoint, getLoginHandler(loginUIBox))
+	r.Get(loginEndPoint, handleLogin(loginUIBox))
+	r.Post(loginEndPoint, handleLoginPost(loginUIBox))
+	r.Get(logoutEndPoint, handleLogout())
 
 	r.Mount("/performer", performerRoutes{
 		txnManager:      txnManager,
@@ -189,13 +188,9 @@ func Start() error {
 	r.HandleFunc("/login*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
 		if ext == ".html" || ext == "" {
-			prefix := getProxyPrefix(r.Header)
-
-			data := getLoginPage(loginUIBox)
-			baseURLIndex := strings.Replace(string(data), "%BASE_URL%", prefix+"/", 2)
-			_, _ = w.Write([]byte(baseURLIndex))
+			handleLogin(loginUIBox)(w, r)
 		} else {
-			r.URL.Path = strings.Replace(r.URL.Path, loginEndPoint, "", 1)
+			r.URL.Path = strings.TrimPrefix(r.URL.Path, loginEndPoint)
 			loginRoot, err := fs.Sub(loginUIBox, loginRootDir)
 			if err != nil {
 				panic(err)
