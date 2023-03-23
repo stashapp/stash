@@ -722,19 +722,22 @@ func (m *countCriterionHandlerBuilder) handler(criterion *models.IntCriterionInp
 	}
 }
 
-type joinedSumCriterionHandlerBuilder struct {
-	primaryTable string
-	foreignTable string
-	joinTable    string
-	primaryFK    string
-	foreignFK    string
+type joinedMultiSumCriterionHandlerBuilder struct {
+	primaryTable  string
+	foreignTable1 string
+	joinTable1    string
+	foreignTable2 string
+	joinTable2    string
+	primaryFK     string
+	foreignFK1    string
+	foreignFK2    string
 	sum string
 }
 
-func (m *joinedSumCriterionHandlerBuilder) handler(criterion *models.IntCriterionInput) criterionHandlerFunc {
+func (m *joinedMultiSumCriterionHandlerBuilder) handler(criterion *models.IntCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if criterion != nil {
-			clause, args := getJoinedSumCriterionClause(m.primaryTable, m.foreignTable, m.joinTable, m.primaryFK, m.foreignFK, m.sum, *criterion)
+			clause, args := getJoinedMultiSumCriterionClause(m.primaryTable, m.foreignTable1, m.joinTable1, m.foreignTable2, m.joinTable2, m.primaryFK, m.foreignFK1, m.foreignFK2, m.sum, *criterion)
 
 			f.addWhere(clause, args...)
 		}

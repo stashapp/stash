@@ -807,13 +807,16 @@ func performerGalleryCountCriterionHandler(qb *PerformerStore, count *models.Int
 }
 
 func performerOCounterCriterionHandler(qb *PerformerStore, count *models.IntCriterionInput) criterionHandlerFunc {
-	h := joinedSumCriterionHandlerBuilder{
-		primaryTable: performerTable,
-		joinTable: 	  performersScenesTable,
-		foreignTable: sceneTable,
-		primaryFK:    performerIDColumn,
-		foreignFK:    sceneIDColumn,
-		sum: "o_counter",
+	h := joinedMultiSumCriterionHandlerBuilder{
+		primaryTable:  performerTable,
+		foreignTable1: sceneTable,
+		joinTable1:    performersScenesTable,
+		foreignTable2: imageTable,
+		joinTable2:    performersImagesTable,
+		primaryFK:     performerIDColumn,
+		foreignFK1:    sceneIDColumn,
+		foreignFK2:    imageIDColumn,
+		sum:           "o_counter",
 	}
 
 	return h.handler(count)
@@ -920,7 +923,7 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) st
 		return getCountSort(performerTable, performersGalleriesTable, performerIDColumn, direction)
 	}
 	if sort == "o_counter" {
-		return getSumSort("o_counter", performerTable, performersScenesTable, sceneTable, performerIDColumn, sceneIDColumn, direction)
+		return getMultiSumSort("o_counter", performerTable, sceneTable, performersScenesTable, imageTable, performersImagesTable, performerIDColumn, sceneIDColumn, imageIDColumn, direction)
 	}
 
 	return getSort(sort, direction, "performers")
