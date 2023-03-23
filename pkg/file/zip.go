@@ -58,28 +58,30 @@ func newZipFS(fs FS, path string, info fs.FileInfo) (*ZipFS, error) {
 	// Detect encoding
 	d, err := chardet.NewTextDetector().DetectBest(buffer.Bytes())
 	if err != nil {
-		reader.Close()
-		return nil, fmt.Errorf("unable to detect decoding: %w", err)
+		// If we can't detect the encoding, just assume it's UTF8
+		logger.Warnf("Unable to detect decoding for %s: %w", path, err)
 	}
 
 	// If the charset is not UTF8, decode'em
-	if d.Charset != "UTF-8" {
+	if d != nil && d.Charset != "UTF-8" {
 		logger.Debugf("Detected non-utf8 zip charset %s (%s): %s", d.Charset, d.Language, path)
 
 		e, _ := charset.Lookup(d.Charset)
 		if e == nil {
-			reader.Close()
-			return nil, fmt.Errorf("failed to lookup charset %s, language %s", d.Charset, d.Language)
-		}
-
-		decoder := e.NewDecoder()
-		for _, f := range zipReader.File {
-			f.Name, _, err = transform.String(decoder, f.Name)
-			if err != nil {
-				reader.Close()
-				return nil, fmt.Errorf("failed to decode %v: %w", []byte(f.Name), err)
+			// if we can't find the encoding, just assume it's UTF8
+			logger.Warnf("Failed to lookup charset %s, language %s", d.Charset, d.Language)
+		} else {
+			decoder := e.NewDecoder()
+			for _, f := range zipReader.File {
+				newName, _, err := transform.String(decoder, f.Name)
+				if err != nil {
+					reader.Close()
+					logger.Warnf("Failed to decode %v: %v", []byte(f.Name), err)
+				} else {
+					f.Name = newName
+				}
+				// Comments are not decoded cuz stash doesn't use that
 			}
-			// Comments are not decoded cuz stash doesn't use that
 		}
 	}
 
