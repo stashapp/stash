@@ -21,6 +21,7 @@
     "confirm": "Confirm",
     "continue": "Continue",
     "create": "Create",
+    "create_chapters": "Create Chapter",
     "create_entity": "Create {entityType}",
     "create_marker": "Create Marker",
     "created_entity": "Created {entity_type}: {entity_name}",
@@ -60,6 +61,8 @@
     "merge": "Merge",
     "merge_from": "Merge from",
     "merge_into": "Merge into",
+    "migrate_blobs": "Migrate Blobs",
+    "migrate_scene_screenshots": "Migrate Scene Screenshots",
     "next_action": "Next",
     "not_running": "not running",
     "open_in_external_player": "Open in external player",
@@ -130,8 +133,14 @@
   "birth_year": "Birth Year",
   "birthdate": "Birthdate",
   "bitrate": "Bit Rate",
+  "between_and": "and",
+  "blobs_storage_type": {
+    "database": "Database",
+    "filesystem": "Filesystem"
+  },
   "captions": "Captions",
   "career_length": "Career Length",
+  "chapters": "Chapters",
   "component_tagger": {
     "config": {
       "active_instance": "Active stash-box instance:",
@@ -256,7 +265,15 @@
         "description": "Directory location for SQLite database file backups",
         "heading": "Backup Directory Path"
       },
-      "cache_location": "Directory location of the cache",
+      "blobs_storage": {
+        "heading": "Binary data storage type",
+        "description": "Where to store binary data such as scene covers, performer, studio and tag images. After changing this value, the existing data must be migrated using the Migrate Blobs tasks. See Tasks page for migration."
+      },
+      "blobs_path": {
+        "heading": "Binary data filesystem path",
+        "description": "Where in the filesystem to store binary data. Applicable only when using the Filesystem blob storage type. WARNING: changing this requires manually moving existing data."
+      },
+      "cache_location": "Directory location of the cache. Required if streaming using HLS (such as on Apple devices) or DASH.",
       "cache_path_head": "Cache Path",
       "calculate_md5_and_ohash_desc": "Calculate MD5 checksum in addition to oshash. Enabling will cause initial scans to be slower. File naming hash must be set to oshash to disable MD5 calculation.",
       "calculate_md5_and_ohash_label": "Calculate MD5 for videos",
@@ -268,6 +285,7 @@
       "create_galleries_from_folders_label": "Create galleries from folders containing images",
       "gallery_cover_regex_desc": "Regexp used to identify an image as gallery cover",
       "gallery_cover_regex_label": "Gallery cover pattern",
+      "database": "Database",
       "db_path_head": "Database Path",
       "directory_locations_to_your_content": "Directory locations to your content",
       "excluded_image_gallery_patterns_desc": "Regexps of image and gallery files/paths to exclude from Scan and add to Clean",
@@ -287,15 +305,21 @@
         },
         "transcode": {
           "input_args": {
-            "desc": "Advanced: Additional arguments to pass to ffmpeg before the input field when generating video.",
-            "heading": "FFmpeg Transcode Input Args"
+            "heading": "FFmpeg Live Transcode Input Args",
+            "desc": "Advanced: Additional arguments to pass to ffmpeg before the input field when live transcoding video."
           },
           "output_args": {
             "desc": "Advanced: Additional arguments to pass to ffmpeg before the output field when generating video.",
             "heading": "FFmpeg Transcode Output Args"
           }
+        },
+        "hardware_acceleration": {
+            "heading": "FFmpeg hardware encoding",
+            "desc": "Uses available hardware to encode video for live transcoding."
         }
       },
+      "funscript_heatmap_draw_range": "Include range in generated heatmaps",
+      "funscript_heatmap_draw_range_desc": "Draw range of motion on the y-axis of the generated heatmap. Existing heatmaps will need to be regenerated after changing.",
       "gallery_ext_desc": "Comma-delimited list of file extensions that will be identified as gallery zip files.",
       "gallery_ext_head": "Gallery zip Extensions",
       "generated_file_naming_hash_desc": "Use MD5 or oshash for generated file naming. Changing this requires that all scenes have the applicable MD5/oshash value populated. After changing this value, existing generated files will need to be migrated or regenerated. See Tasks page for migration.",
@@ -303,6 +327,7 @@
       "generated_files_location": "Directory location for the generated files (scene markers, scene previews, sprites, etc)",
       "generated_path_head": "Generated Path",
       "hashing": "Hashing",
+      "heatmap_generation": "Funscript Heatmap Generation",
       "image_ext_desc": "Comma-delimited list of file extensions that will be identified as images.",
       "image_ext_head": "Image Extensions",
       "include_audio_desc": "Includes audio stream when generating previews.",
@@ -331,7 +356,7 @@
         "heading": "Scrapers Path"
       },
       "scraping": "Scraping",
-      "sqlite_location": "File location for the SQLite database (requires restart)",
+      "sqlite_location": "File location for the SQLite database (requires restart). WARNING: storing the database on a different system to where the Stash server is run from (i.e. over the network) is unsupported!",
       "video_ext_desc": "Comma-delimited list of file extensions that will be identified as videos.",
       "video_ext_head": "Video Extensions",
       "video_head": "Video"
@@ -402,6 +427,7 @@
       "generate_previews_during_scan_tooltip": "Generate animated WebP previews, only required if Preview Type is set to Animated Image.",
       "generate_sprites_during_scan": "Generate scrubber sprites",
       "generate_thumbnails_during_scan": "Generate thumbnails for images",
+      "generate_video_covers_during_scan": "Generate scene covers",
       "generate_video_previews_during_scan": "Generate previews",
       "generate_video_previews_during_scan_tooltip": "Generate video previews which play when hovering over a scene",
       "generated_content": "Generated Content",
@@ -429,7 +455,16 @@
       "incremental_import": "Incremental import from a supplied export zip file.",
       "job_queue": "Task Queue",
       "maintenance": "Maintenance",
+      "migrate_blobs": {
+        "delete_old": "Delete old data",
+        "description": "Migrate blobs to the current blob storage system. This migration should be run after changing the blob storage system. Can optionally delete the old data after migration."
+      },
       "migrate_hash_files": "Used after changing the Generated file naming hash to rename existing generated files to the new hash format.",
+      "migrate_scene_screenshots": {
+        "delete_files": "Delete screenshot files",
+        "description": "Migrate scene screenshots into the new blob storage system. This migration should be run after migrating an existing system to 0.20. Can optionally delete the old screenshots after migration.",
+        "overwrite_existing": "Overwrite existing blobs with screenshot data"
+      },
       "migrations": "Migrations",
       "only_dry_run": "Only perform a dry run. Don't remove anything",
       "plugin_tasks": "Plugin Tasks",
@@ -501,6 +536,9 @@
           "heading": "Disable dropdown create"
         },
         "heading": "Editing",
+        "max_options_shown": {
+          "label": "Maximum number of items to show in select dropdowns"
+        },
         "rating_system": {
           "star_precision": {
             "label": "Rating Star Precision",
@@ -540,6 +578,11 @@
       },
       "image_lightbox": {
         "heading": "Image Lightbox"
+      },
+      "image_wall": {
+        "direction": "Direction",
+        "heading": "Image Wall",
+        "margin": "Margin (pixels)"
       },
       "images": {
         "heading": "Images",
@@ -685,6 +728,8 @@
   "custom": "Custom",
   "date": "Date",
   "death_date": "Death Date",
+  "date_format": "YYYY-MM-DD",
+  "datetime_format": "YYYY-MM-DD HH:MM",
   "death_year": "Death Year",
   "descending": "Descending",
   "description": "Description",
@@ -692,7 +737,6 @@
   "details": "Details",
   "developmentVersion": "Development Version",
   "dialogs": {
-    "aliases_must_be_unique": "aliases must be unique",
     "create_new_entity": "Create new {entity}",
     "delete_alert": "The following {count, plural, one {{singularEntity}} other {{pluralEntity}}} will be deleted permanently:",
     "delete_confirm": "Are you sure you want to delete {entityName}?",
@@ -717,6 +761,7 @@
         "original": "Original"
       },
       "options": "Options",
+      "page_header": "Page {page} / {total}",
       "reset_zoom_on_nav": "Reset zoom level when changing image",
       "scale_up": {
         "description": "Scale smaller images up to fill screen",
@@ -727,6 +772,14 @@
         "label": "Scroll Mode",
         "pan_y": "Pan Y",
         "zoom": "Zoom"
+      }
+    },
+    "imagewall": {
+      "margin_desc": "Number of margin pixels around each entire image.",
+      "direction": {
+        "description": "Column or row based layout.",
+        "column": "Column",
+        "row": "Row"
       }
     },
     "merge": {
@@ -744,6 +797,7 @@
       "destination": "Reassign to"
     },
     "scene_gen": {
+      "covers": "Scene covers",
       "force_transcodes": "Force Transcode generation",
       "force_transcodes_tooltip": "By default, transcodes are only generated when the video file is not supported in the browser. When enabled, transcodes will be generated even when the video file appears to be supported in the browser.",
       "image_previews": "Animated Image Previews",
@@ -833,6 +887,11 @@
     "warmth": "Warmth"
   },
   "empty_server": "Add some scenes to your server to view recommendations on this page.",
+  "errors": {
+    "image_index_greater_than_zero": "Image index must be greater than 0",
+    "something_went_wrong": "Something went wrong.",
+    "lazy_component_error_help": "If you recently upgraded Stash, please reload the page or clear your browser cache."
+  },
   "ethnicity": "Ethnicity",
   "existing_value": "existing value",
   "eye_color": "Eye Colour",
@@ -881,12 +940,14 @@
     "uploading": "Uploading script"
   },
   "hasMarkers": "Has Markers",
+  "hasChapters": "Has Chapters",
   "height": "Height",
   "height_cm": "Height (cm)",
   "help": "Help",
   "ignore_auto_tag": "Ignore Auto Tag",
   "image": "Image",
   "image_count": "Image Count",
+  "image_index": "Image #",
   "images": "Images",
   "include_parent_tags": "Include parent tags",
   "include_sub_studios": "Include subsidiary studios",
@@ -1009,7 +1070,7 @@
   "scenes": "Scenes",
   "scenes_updated_at": "Scene Updated At",
   "search_filter": {
-    "add_filter": "Add Filter",
+    "edit_filter": "Edit Filter",
     "name": "Filter",
     "saved_filters": "Saved filters",
     "update_filter": "Update Filter"
@@ -1019,8 +1080,12 @@
   "setup": {
     "confirm": {
       "almost_ready": "We're almost ready to complete the configuration. Please confirm the following settings. You can click back to change anything incorrect. If everything looks good, click Confirm to create your system.",
+      "blobs_directory": "Binary data directory",      
+      "cache_directory": "Cache directory",
       "configuration_file_location": "Configuration file location:",
       "database_file_path": "Database file path",
+      "default_blobs_location": "<use database>",
+      "default_cache_location": "<path containing configuration file>/cache",
       "default_db_location": "<path containing configuration file>/stash-go.sqlite",
       "default_generated_content_location": "<path containing configuration file>/generated",
       "generated_directory": "Generated directory",
@@ -1056,12 +1121,20 @@
     },
     "paths": {
       "database_filename_empty_for_default": "database filename (empty for default)",
-      "description": "Next up, we need to determine where to find your porn collection, where to store the stash database and generated files. These settings can be changed later if needed.",
+      "description": "Next up, we need to determine where to find your porn collection, and where to store the Stash database, generated files and cache files. These settings can be changed later if needed.",
+      "path_to_cache_directory_empty_for_default": "path to cache directory (empty for default)",
       "path_to_generated_directory_empty_for_default": "path to generated directory (empty for default)",
+      "path_to_blobs_directory_empty_for_database": "path to blobs directory (empty to use database)",
       "set_up_your_paths": "Set up your paths",
       "stash_alert": "No library paths have been selected. No media will be able to be scanned into Stash. Are you sure?",
+      "where_can_stash_store_cache_files": "Where can Stash store cache files?",
+      "where_can_stash_store_cache_files_description": "In order for some functionality like HLS/DASH live transcoding to function, Stash requires a cache directory for temporary files. By default, Stash will create a <code>cache</code> directory within the directory containing your config file. If you want to change this, please enter an absolute or relative (to the current working directory) path. Stash will create this directory if it does not already exist.",
       "where_can_stash_store_its_database": "Where can Stash store its database?",
-      "where_can_stash_store_its_database_description": "Stash uses an sqlite database to store your porn metadata. By default, this will be created as <code>stash-go.sqlite</code> in the directory containing your config file. If you want to change this, please enter an absolute or relative (to the current working directory) filename.",
+      "where_can_stash_store_its_database_description": "Stash uses an SQLite database to store your porn metadata. By default, this will be created as <code>stash-go.sqlite</code> in the directory containing your config file. If you want to change this, please enter an absolute or relative (to the current working directory) filename.",
+      "where_can_stash_store_its_database_warning": "WARNING: storing the database on a different system to where Stash is run from (e.g. storing the database on a NAS while running the Stash server on another computer) is <strong>unsupported</strong>! SQLite is not intended for use across a network, and attempting to do so can very easily cause your entire database to become corrupted.",
+      "where_can_stash_store_blobs": "Where can Stash store database binary data?",
+      "where_can_stash_store_blobs_description": "Stash can store binary data such as scene covers, performer, studio and tag images either in the database or in the filesystem. By default, it will store this data in the filesystem in the subdirectory <code>blobs</code>. If you want to change this, please enter an absolute or relative (to the current working directory) path. Stash will create this directory if it does not already exist.",
+      "where_can_stash_store_blobs_description_addendum": "Alternatively, if you want to store this data in the database, you can leave this field blank. <strong>Note:</strong> This will increase the size of your database file, and will increase database migration times.",
       "where_can_stash_store_its_generated_content": "Where can Stash store its generated content?",
       "where_can_stash_store_its_generated_content_description": "In order to provide thumbnails, previews and sprites, Stash generates images and videos. This also includes transcodes for unsupported file formats. By default, Stash will create a <code>generated</code> directory within the directory containing your config file. If you want to change where this generated media will be stored, please enter an absolute or relative (to the current working directory) path. Stash will create this directory if it does not already exist.",
       "where_is_your_porn_located": "Where is your porn located?",
@@ -1142,7 +1215,8 @@
     "started_auto_tagging": "Started auto tagging",
     "started_generating": "Started generating",
     "started_importing": "Started importing",
-    "updated_entity": "Updated {entity}"
+    "updated_entity": "Updated {entity}",
+    "image_index_too_large": "Error: Image index is larger than the number of images in the Gallery"
   },
   "total": "Total",
   "true": "True",
@@ -1150,6 +1224,11 @@
   "type": "Type",
   "updated_at": "Updated At",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "aliases must be unique",
+    "date_invalid_form": "${path} must be in YYYY-MM-DD form",
+    "required": "${path} is a required field"
+  },
   "videos": "Videos",
   "view_all": "View All",
   "weight": "Weight",

@@ -19,6 +19,7 @@ type Gallery {
   files: [GalleryFile!]!
   folder: Folder
 
+  chapters: [GalleryChapter!]!
   scenes: [Scene!]!
   studio: Studio
   image_count: Int!

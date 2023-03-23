@@ -32,3 +32,18 @@ export function useInitialState<T>(
 
   return [value, setValue, setInitialValue];
 }
+
+// useCompare is a hook that returns true if the value has changed since the last render.
+export function useCompare<T>(val: T) {
+  const prevVal = usePrevious(val);
+  return prevVal !== val;
+}
+
+// usePrevious is a hook that returns the previous value of a variable.
+export function usePrevious<T>(value: T) {
+  const ref = React.useRef<T>();
+  React.useEffect(() => {
+    ref.current = value;
+  }, [value]);
+  return ref.current;
+}

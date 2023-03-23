@@ -96,7 +96,8 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
             <Form.Control
               as="select"
               onChange={handleSelectBox}
-              className="col-6"
+              value={selectedBoxIndex}
+              className="col-6 input-control"
             >
               {boxes.map((box, i) => (
                 <option value={i} key={`${box.endpoint}-${i}`}>

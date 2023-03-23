@@ -2,7 +2,6 @@ package sqlite
 
 import (
 	"context"
-	"database/sql"
 	"embed"
 	"errors"
 	"fmt"
@@ -10,18 +9,30 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/fvbommel/sortorder"
 	"github.com/golang-migrate/migrate/v4"
 	sqlite3mig "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/jmoiron/sqlx"
-	sqlite3 "github.com/mattn/go-sqlite3"
 
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-var appSchemaVersion uint = 43
+const (
+	// Number of database connections to use
+	// The same value is used for both the maximum and idle limit,
+	// to prevent opening connections on the fly which has a notieable performance penalty.
+	// Fewer connections use less memory, more connections increase performance,
+	// but have diminishing returns.
+	// 10 was found to be a good tradeoff.
+	dbConns = 10
+	// Idle connection timeout, in seconds
+	// Closes a connection after a period of inactivity, which saves on memory and
+	// causes the sqlite -wal and -shm files to be automatically deleted.
+	dbConnTimeout = 30
+)
+
+var appSchemaVersion uint = 45
 
 //go:embed migrations/*.sql
 var migrationsBox embed.FS
@@ -52,20 +63,17 @@ func (e *MismatchedSchemaVersionError) Error() string {
 	return fmt.Sprintf("schema version %d is incompatible with required schema version %d", e.CurrentSchemaVersion, e.RequiredSchemaVersion)
 }
 
-const sqlite3Driver = "sqlite3ex"
-
-func init() {
-	// register custom driver with regexp function
-	registerCustomDriver()
-}
-
 type Database struct {
+	Blobs     *BlobStore
 	File      *FileStore
 	Folder    *FolderStore
 	Image     *ImageStore
 	Gallery   *GalleryStore
 	Scene     *SceneStore
 	Performer *PerformerStore
+	Studio    *studioQueryBuilder
+	Tag       *tagQueryBuilder
+	Movie     *movieQueryBuilder
 
 	db     *sqlx.DB
 	dbPath string
@@ -78,18 +86,27 @@ type Database struct {
 func NewDatabase() *Database {
 	fileStore := NewFileStore()
 	folderStore := NewFolderStore()
+	blobStore := NewBlobStore(BlobStoreOptions{})
 
 	ret := &Database{
+		Blobs:     blobStore,
 		File:      fileStore,
 		Folder:    folderStore,
-		Scene:     NewSceneStore(fileStore),
+		Scene:     NewSceneStore(fileStore, blobStore),
 		Image:     NewImageStore(fileStore),
 		Gallery:   NewGalleryStore(fileStore, folderStore),
-		Performer: NewPerformerStore(),
+		Performer: NewPerformerStore(blobStore),
+		Studio:    NewStudioReaderWriter(blobStore),
+		Tag:       NewTagReaderWriter(blobStore),
+		Movie:     NewMovieReaderWriter(blobStore),
 		lockChan:  make(chan struct{}, 1),
 	}
 
 	return ret
+}
+
+func (db *Database) SetBlobStoreOptions(options BlobStoreOptions) {
+	*db.Blobs = *NewBlobStore(options)
 }
 
 // Ready returns an error if the database is not ready to begin transactions.
@@ -202,9 +219,9 @@ func (db *Database) open(disableForeignKeys bool) (*sqlx.DB, error) {
 	}
 
 	conn, err := sqlx.Open(sqlite3Driver, url)
-	conn.SetMaxOpenConns(25)
-	conn.SetMaxIdleConns(4)
-	conn.SetConnMaxLifetime(30 * time.Second)
+	conn.SetMaxOpenConns(dbConns)
+	conn.SetMaxIdleConns(dbConns)
+	conn.SetConnMaxIdleTime(dbConnTimeout * time.Second)
 	if err != nil {
 		return nil, fmt.Errorf("db.Open(): %w", err)
 	}
@@ -429,6 +446,12 @@ func (db *Database) optimise() {
 	}
 }
 
+// Vacuum runs a VACUUM on the database, rebuilding the database file into a minimal amount of disk space.
+func (db *Database) Vacuum(ctx context.Context) error {
+	_, err := db.db.ExecContext(ctx, "VACUUM")
+	return err
+}
+
 func (db *Database) runCustomMigrations(ctx context.Context, fns []customMigrationFunc) error {
 	for _, fn := range fns {
 		if err := db.runCustomMigration(ctx, fn); err != nil {
@@ -452,39 +475,4 @@ func (db *Database) runCustomMigration(ctx context.Context, fn customMigrationFu
 	}
 
 	return nil
-}
-
-func registerCustomDriver() {
-	sql.Register(sqlite3Driver,
-		&sqlite3.SQLiteDriver{
-			ConnectHook: func(conn *sqlite3.SQLiteConn) error {
-				funcs := map[string]interface{}{
-					"regexp":            regexFn,
-					"durationToTinyInt": durationToTinyIntFn,
-					"basename":          basenameFn,
-				}
-
-				for name, fn := range funcs {
-					if err := conn.RegisterFunc(name, fn, true); err != nil {
-						return fmt.Errorf("error registering function %s: %s", name, err.Error())
-					}
-				}
-
-				// COLLATE NATURAL_CS - Case sensitive natural sort
-				err := conn.RegisterCollation("NATURAL_CS", func(s string, s2 string) int {
-					if sortorder.NaturalLess(s, s2) {
-						return -1
-					} else {
-						return 1
-					}
-				})
-
-				if err != nil {
-					return fmt.Errorf("error registering natural sort collation: %v", err)
-				}
-
-				return nil
-			},
-		},
-	)
 }

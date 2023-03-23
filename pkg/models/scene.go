@@ -176,6 +176,7 @@ type SceneReader interface {
 	All(ctx context.Context) ([]*Scene, error)
 	Query(ctx context.Context, options SceneQueryOptions) (*SceneQueryResult, error)
 	GetCover(ctx context.Context, sceneID int) ([]byte, error)
+	HasCover(ctx context.Context, sceneID int) (bool, error)
 }
 
 type SceneWriter interface {
@@ -189,7 +190,6 @@ type SceneWriter interface {
 	IncrementWatchCount(ctx context.Context, id int) (int, error)
 	Destroy(ctx context.Context, id int) error
 	UpdateCover(ctx context.Context, sceneID int, cover []byte) error
-	DestroyCover(ctx context.Context, sceneID int) error
 }
 
 type SceneReaderWriter interface {

@@ -10,7 +10,6 @@ import (
 type SceneURLBuilder struct {
 	BaseURL string
 	SceneID string
-	APIKey  string
 }
 
 func NewSceneURLBuilder(baseURL string, sceneID int) SceneURLBuilder {
@@ -20,16 +19,16 @@ func NewSceneURLBuilder(baseURL string, sceneID int) SceneURLBuilder {
 	}
 }
 
-func (b SceneURLBuilder) GetStreamURL() *url.URL {
+func (b SceneURLBuilder) GetStreamURL(apiKey string) *url.URL {
 	u, err := url.Parse(fmt.Sprintf("%s/scene/%s/stream", b.BaseURL, b.SceneID))
 	if err != nil {
 		// shouldn't happen
 		panic(err)
 	}
 
-	if b.APIKey != "" {
+	if apiKey != "" {
 		v := u.Query()
-		v.Set("apikey", b.APIKey)
+		v.Set("apikey", apiKey)
 		u.RawQuery = v.Encode()
 	}
 	return u
@@ -43,12 +42,12 @@ func (b SceneURLBuilder) GetStreamPreviewImageURL() string {
 	return b.BaseURL + "/scene/" + b.SceneID + "/webp"
 }
 
-func (b SceneURLBuilder) GetSpriteVTTURL() string {
-	return b.BaseURL + "/scene/" + b.SceneID + "_thumbs.vtt"
+func (b SceneURLBuilder) GetSpriteVTTURL(checksum string) string {
+	return b.BaseURL + "/scene/" + checksum + "_thumbs.vtt"
 }
 
-func (b SceneURLBuilder) GetSpriteURL() string {
-	return b.BaseURL + "/scene/" + b.SceneID + "_sprite.jpg"
+func (b SceneURLBuilder) GetSpriteURL(checksum string) string {
+	return b.BaseURL + "/scene/" + checksum + "_sprite.jpg"
 }
 
 func (b SceneURLBuilder) GetScreenshotURL(updateTime time.Time) string {

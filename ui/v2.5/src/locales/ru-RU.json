@@ -672,7 +672,6 @@
   "details": "Подробности",
   "developmentVersion": "Версия разработки",
   "dialogs": {
-    "aliases_must_be_unique": "псевдонимы должны быть уникальными",
     "create_new_entity": "Создать новую запись в {entity}",
     "delete_alert": "Следующие {count, plural, one {{singularEntity}} other {{pluralEntity}}} будут удалены безвозвратно:",
     "delete_confirm": "Вы уверены что хотите удалить {entityName}?",
@@ -1130,6 +1129,9 @@
   "type": "Тип",
   "updated_at": "Обновлено",
   "url": "Ссылка",
+  "validation": {
+    "aliases_must_be_unique": "псевдонимы должны быть уникальными"
+  },
   "videos": "Видео",
   "view_all": "Показать все",
   "weight": "Вес",

@@ -34,6 +34,10 @@ const (
 	GalleryUpdatePost  HookTriggerEnum = "Gallery.Update.Post"
 	GalleryDestroyPost HookTriggerEnum = "Gallery.Destroy.Post"
 
+	GalleryChapterCreatePost  HookTriggerEnum = "GalleryChapter.Create.Post"
+	GalleryChapterUpdatePost  HookTriggerEnum = "GalleryChapter.Update.Post"
+	GalleryChapterDestroyPost HookTriggerEnum = "GalleryChapter.Destroy.Post"
+
 	MovieCreatePost  HookTriggerEnum = "Movie.Create.Post"
 	MovieUpdatePost  HookTriggerEnum = "Movie.Update.Post"
 	MovieDestroyPost HookTriggerEnum = "Movie.Destroy.Post"
@@ -68,6 +72,10 @@ var AllHookTriggerEnum = []HookTriggerEnum{
 	GalleryCreatePost,
 	GalleryUpdatePost,
 	GalleryDestroyPost,
+
+	GalleryChapterCreatePost,
+	GalleryChapterUpdatePost,
+	GalleryChapterDestroyPost,
 
 	MovieCreatePost,
 	MovieUpdatePost,
@@ -105,6 +113,10 @@ func (e HookTriggerEnum) IsValid() bool {
 		GalleryCreatePost,
 		GalleryUpdatePost,
 		GalleryDestroyPost,
+
+		GalleryChapterCreatePost,
+		GalleryChapterUpdatePost,
+		GalleryChapterDestroyPost,
 
 		MovieCreatePost,
 		MovieUpdatePost,

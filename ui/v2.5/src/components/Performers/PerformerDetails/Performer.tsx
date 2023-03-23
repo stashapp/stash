@@ -49,22 +49,24 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const intl = useIntl();
   const { tab = "details" } = useParams<IPerformerParams>();
 
+  const [collapsed, setCollapsed] = useState(false);
+
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
   const abbreviateCounter =
     (configuration?.ui as IUIConfig)?.abbreviateCounters ?? false;
 
-  const [imagePreview, setImagePreview] = useState<string | null>();
-  const [imageEncoding, setImageEncoding] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [image, setImage] = useState<string | null>();
+  const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
   // if undefined then get the existing image
   // if null then get the default (no) image
   // otherwise get the set image
   const activeImage =
-    imagePreview === undefined
+    image === undefined
       ? performer.image_path ?? ""
-      : imagePreview ?? `${performer.image_path}&default=true`;
+      : image ?? `${performer.image_path}&default=true`;
   const lightboxImages = useMemo(
     () => [{ paths: { thumbnail: activeImage, image: activeImage } }],
     [activeImage]
@@ -91,10 +93,6 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     }
   };
 
-  const onImageChange = (image?: string | null) => setImagePreview(image);
-
-  const onImageEncoding = (isEncoding = false) => setImageEncoding(isEncoding);
-
   async function onAutoTag() {
     try {
       await mutateMetadataAutoTag({ performers: [performer.id] });
@@ -120,6 +118,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     Mousetrap.bind("g", () => setActiveTabKey("galleries"));
     Mousetrap.bind("m", () => setActiveTabKey("movies"));
     Mousetrap.bind("f", () => setFavorite(!performer.favorite));
+    Mousetrap.bind(",", () => setCollapsed(!collapsed));
 
     return () => {
       Mousetrap.unbind("a");
@@ -127,6 +126,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       Mousetrap.unbind("c");
       Mousetrap.unbind("f");
       Mousetrap.unbind("o");
+      Mousetrap.unbind(",");
     };
   });
 
@@ -188,7 +188,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             </React.Fragment>
           }
         >
-          <PerformerScenesPanel performer={performer} />
+          <PerformerScenesPanel
+            active={activeTabKey == "scenes"}
+            performer={performer}
+          />
         </Tab>
         <Tab
           eventKey="galleries"
@@ -202,7 +205,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             </React.Fragment>
           }
         >
-          <PerformerGalleriesPanel performer={performer} />
+          <PerformerGalleriesPanel
+            active={activeTabKey == "galleries"}
+            performer={performer}
+          />
         </Tab>
         <Tab
           eventKey="images"
@@ -216,7 +222,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             </React.Fragment>
           }
         >
-          <PerformerImagesPanel performer={performer} />
+          <PerformerImagesPanel
+            active={activeTabKey == "images"}
+            performer={performer}
+          />
         </Tab>
         <Tab
           eventKey="movies"
@@ -230,7 +239,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             </React.Fragment>
           }
         >
-          <PerformerMoviesPanel performer={performer} />
+          <PerformerMoviesPanel
+            active={activeTabKey == "movies"}
+            performer={performer}
+          />
         </Tab>
       </Tabs>
     </React.Fragment>
@@ -242,11 +254,9 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <PerformerEditPanel
           performer={performer}
           isVisible={isEditing}
-          onImageChange={onImageChange}
-          onImageEncoding={onImageEncoding}
-          onCancelEditing={() => {
-            setIsEditing(false);
-          }}
+          onCancel={() => setIsEditing(false)}
+          setImage={setImage}
+          setEncodingImage={setEncodingImage}
         />
       );
     } else {
@@ -374,14 +384,22 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       />
     );
 
+  function getCollapseButtonText() {
+    return collapsed ? ">" : "<";
+  }
+
   return (
     <div id="performer-page" className="row">
       <Helmet>
         <title>{performer.name}</title>
       </Helmet>
 
-      <div className="performer-image-container col-md-4 text-center">
-        {imageEncoding ? (
+      <div
+        className={`performer-image-container details-tab text-center text-center ${
+          collapsed ? "collapsed" : ""
+        }`}
+      >
+        {encodingImage ? (
           <LoadingIndicator message="Encoding image..." />
         ) : (
           <Button variant="link" onClick={() => showLightbox()}>
@@ -393,7 +411,12 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           </Button>
         )}
       </div>
-      <div className="col-md-8">
+      <div className="details-divider d-none d-xl-block">
+        <Button onClick={() => setCollapsed(!collapsed)}>
+          {getCollapseButtonText()}
+        </Button>
+      </div>
+      <div className={`content-container ${collapsed ? "expanded" : ""}`}>
         <div className="row">
           <div className="performer-head col">
             <h2>

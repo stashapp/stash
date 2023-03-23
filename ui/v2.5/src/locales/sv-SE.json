@@ -692,7 +692,6 @@
   "details": "Beskrivningar",
   "developmentVersion": "Utvecklingsversion",
   "dialogs": {
-    "aliases_must_be_unique": "alias måste vara unik",
     "create_new_entity": "Skapa ny {entity}",
     "delete_alert": "De följande {count, plural, one {{singularEntity}} andra {{pluralEntity}}} kommer raderas permanent:",
     "delete_confirm": "Är du säker på att du vill radera {entityName}?",
@@ -1150,6 +1149,9 @@
   "type": "Typ",
   "updated_at": "Uppdaterad vid",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "alias måste vara unik"
+  },
   "videos": "Videor",
   "view_all": "Visa Allt",
   "weight": "Vikt",

@@ -19,7 +19,7 @@ import (
 
 func TestMarkerFindBySceneMarkerID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		tqb := sqlite.TagReaderWriter
+		tqb := db.Tag
 
 		markerID := markerIDs[markerIdxWithTag]
 
@@ -46,7 +46,7 @@ func TestMarkerFindBySceneMarkerID(t *testing.T) {
 
 func TestTagFindByName(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		tqb := sqlite.TagReaderWriter
+		tqb := db.Tag
 
 		name := tagNames[tagIdxWithScene] // find a tag by name
 
@@ -82,7 +82,7 @@ func TestTagQueryIgnoreAutoTag(t *testing.T) {
 			IgnoreAutoTag: &ignoreAutoTag,
 		}
 
-		sqb := sqlite.TagReaderWriter
+		sqb := db.Tag
 
 		tags := queryTags(ctx, t, sqb, &tagFilter, nil)
 
@@ -97,7 +97,7 @@ func TestTagQueryIgnoreAutoTag(t *testing.T) {
 
 func TestTagQueryForAutoTag(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		tqb := sqlite.TagReaderWriter
+		tqb := db.Tag
 
 		name := tagNames[tagIdx1WithScene] // find a tag by name
 
@@ -131,7 +131,7 @@ func TestTagFindByNames(t *testing.T) {
 	var names []string
 
 	withTxn(func(ctx context.Context) error {
-		tqb := sqlite.TagReaderWriter
+		tqb := db.Tag
 
 		names = append(names, tagNames[tagIdxWithScene]) // find tags by names
 
@@ -176,7 +176,7 @@ func TestTagFindByNames(t *testing.T) {
 
 func TestTagQuerySort(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.TagReaderWriter
+		sqb := db.Tag
 
 		sortBy := "scenes_count"
 		dir := models.SortDirectionEnumDesc
@@ -253,7 +253,7 @@ func TestTagQueryAlias(t *testing.T) {
 	}
 
 	verifyFn := func(ctx context.Context, tag *models.Tag) {
-		aliases, err := sqlite.TagReaderWriter.GetAliases(ctx, tag.ID)
+		aliases, err := db.Tag.GetAliases(ctx, tag.ID)
 		if err != nil {
 			t.Errorf("Error querying tags: %s", err.Error())
 		}
@@ -288,7 +288,7 @@ func TestTagQueryAlias(t *testing.T) {
 
 func verifyTagQuery(t *testing.T, tagFilter *models.TagFilterType, findFilter *models.FindFilterType, verifyFn func(ctx context.Context, t *models.Tag)) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.TagReaderWriter
+		sqb := db.Tag
 
 		tags := queryTags(ctx, t, sqb, tagFilter, findFilter)
 
@@ -312,7 +312,7 @@ func queryTags(ctx context.Context, t *testing.T, qb models.TagReader, tagFilter
 
 func TestTagQueryIsMissingImage(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		qb := sqlite.TagReaderWriter
+		qb := db.Tag
 		isMissing := "image"
 		tagFilter := models.TagFilterType{
 			IsMissing: &isMissing,
@@ -366,7 +366,7 @@ func TestTagQuerySceneCount(t *testing.T) {
 
 func verifyTagSceneCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		qb := sqlite.TagReaderWriter
+		qb := db.Tag
 		tagFilter := models.TagFilterType{
 			SceneCount: &sceneCountCriterion,
 		}
@@ -408,7 +408,7 @@ func TestTagQueryMarkerCount(t *testing.T) {
 
 func verifyTagMarkerCount(t *testing.T, markerCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		qb := sqlite.TagReaderWriter
+		qb := db.Tag
 		tagFilter := models.TagFilterType{
 			MarkerCount: &markerCountCriterion,
 		}
@@ -450,7 +450,7 @@ func TestTagQueryImageCount(t *testing.T) {
 
 func verifyTagImageCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		qb := sqlite.TagReaderWriter
+		qb := db.Tag
 		tagFilter := models.TagFilterType{
 			ImageCount: &imageCountCriterion,
 		}
@@ -492,7 +492,7 @@ func TestTagQueryGalleryCount(t *testing.T) {
 
 func verifyTagGalleryCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		qb := sqlite.TagReaderWriter
+		qb := db.Tag
 		tagFilter := models.TagFilterType{
 			GalleryCount: &imageCountCriterion,
 		}
@@ -534,7 +534,7 @@ func TestTagQueryPerformerCount(t *testing.T) {
 
 func verifyTagPerformerCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		qb := sqlite.TagReaderWriter
+		qb := db.Tag
 		tagFilter := models.TagFilterType{
 			PerformerCount: &imageCountCriterion,
 		}
@@ -576,7 +576,7 @@ func TestTagQueryParentCount(t *testing.T) {
 
 func verifyTagParentCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		qb := sqlite.TagReaderWriter
+		qb := db.Tag
 		tagFilter := models.TagFilterType{
 			ParentCount: &sceneCountCriterion,
 		}
@@ -619,7 +619,7 @@ func TestTagQueryChildCount(t *testing.T) {
 
 func verifyTagChildCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		qb := sqlite.TagReaderWriter
+		qb := db.Tag
 		tagFilter := models.TagFilterType{
 			ChildCount: &sceneCountCriterion,
 		}
@@ -644,7 +644,7 @@ func verifyTagChildCount(t *testing.T, sceneCountCriterion models.IntCriterionIn
 func TestTagQueryParent(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		const nameField = "Name"
-		sqb := sqlite.TagReaderWriter
+		sqb := db.Tag
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithChildTag]),
@@ -722,7 +722,7 @@ func TestTagQueryChild(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		const nameField = "Name"
 
-		sqb := sqlite.TagReaderWriter
+		sqb := db.Tag
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithParentTag]),
@@ -798,7 +798,7 @@ func TestTagQueryChild(t *testing.T) {
 
 func TestTagUpdateTagImage(t *testing.T) {
 	if err := withTxn(func(ctx context.Context) error {
-		qb := sqlite.TagReaderWriter
+		qb := db.Tag
 
 		// create tag to test against
 		const name = "TestTagUpdateTagImage"
@@ -810,64 +810,7 @@ func TestTagUpdateTagImage(t *testing.T) {
 			return fmt.Errorf("Error creating tag: %s", err.Error())
 		}
 
-		image := []byte("image")
-		err = qb.UpdateImage(ctx, created.ID, image)
-		if err != nil {
-			return fmt.Errorf("Error updating studio image: %s", err.Error())
-		}
-
-		// ensure image set
-		storedImage, err := qb.GetImage(ctx, created.ID)
-		if err != nil {
-			return fmt.Errorf("Error getting image: %s", err.Error())
-		}
-		assert.Equal(t, storedImage, image)
-
-		// set nil image
-		err = qb.UpdateImage(ctx, created.ID, nil)
-		if err == nil {
-			return fmt.Errorf("Expected error setting nil image")
-		}
-
-		return nil
-	}); err != nil {
-		t.Error(err.Error())
-	}
-}
-
-func TestTagDestroyTagImage(t *testing.T) {
-	if err := withTxn(func(ctx context.Context) error {
-		qb := sqlite.TagReaderWriter
-
-		// create performer to test against
-		const name = "TestTagDestroyTagImage"
-		tag := models.Tag{
-			Name: name,
-		}
-		created, err := qb.Create(ctx, tag)
-		if err != nil {
-			return fmt.Errorf("Error creating tag: %s", err.Error())
-		}
-
-		image := []byte("image")
-		err = qb.UpdateImage(ctx, created.ID, image)
-		if err != nil {
-			return fmt.Errorf("Error updating studio image: %s", err.Error())
-		}
-
-		err = qb.DestroyImage(ctx, created.ID)
-		if err != nil {
-			return fmt.Errorf("Error destroying studio image: %s", err.Error())
-		}
-
-		// image should be nil
-		storedImage, err := qb.GetImage(ctx, created.ID)
-		if err != nil {
-			return fmt.Errorf("Error getting image: %s", err.Error())
-		}
-		assert.Nil(t, storedImage)
-
-		return nil
+		return testUpdateImage(t, ctx, created.ID, qb.UpdateImage, qb.GetImage)
 	}); err != nil {
 		t.Error(err.Error())
 	}
@@ -875,7 +818,7 @@ func TestTagDestroyTagImage(t *testing.T) {
 
 func TestTagUpdateAlias(t *testing.T) {
 	if err := withTxn(func(ctx context.Context) error {
-		qb := sqlite.TagReaderWriter
+		qb := db.Tag
 
 		// create tag to test against
 		const name = "TestTagUpdateAlias"
@@ -911,7 +854,7 @@ func TestTagMerge(t *testing.T) {
 
 	// merge tests - perform these in a transaction that we'll rollback
 	if err := withRollbackTxn(func(ctx context.Context) error {
-		qb := sqlite.TagReaderWriter
+		qb := db.Tag
 
 		// try merging into same tag
 		err := qb.Merge(ctx, []int{tagIDs[tagIdx1WithScene]}, tagIDs[tagIdx1WithScene])

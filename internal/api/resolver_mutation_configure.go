@@ -123,6 +123,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.Metadata, input.MetadataPath)
 	}
 
+	refreshStreamManager := false
 	existingCachePath := c.GetCachePath()
 	if input.CachePath != nil && existingCachePath != *input.CachePath {
 		if err := validateDir(config.Cache, *input.CachePath, true); err != nil {
@@ -130,6 +131,29 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		}
 
 		c.Set(config.Cache, input.CachePath)
+		refreshStreamManager = true
+	}
+
+	refreshBlobStorage := false
+	existingBlobsPath := c.GetBlobsPath()
+	if input.BlobsPath != nil && existingBlobsPath != *input.BlobsPath {
+		if err := validateDir(config.BlobsPath, *input.BlobsPath, true); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+
+		c.Set(config.BlobsPath, input.BlobsPath)
+		refreshBlobStorage = true
+	}
+
+	if input.BlobsStorage != nil && *input.BlobsStorage != c.GetBlobsStorage() {
+		if *input.BlobsStorage == config.BlobStorageTypeFilesystem && c.GetBlobsPath() == "" {
+			return makeConfigGeneralResult(), fmt.Errorf("blobs path must be set when using filesystem storage")
+		}
+
+		// TODO - migrate between systems
+		c.Set(config.BlobsStorage, input.BlobsStorage)
+
+		refreshBlobStorage = true
 	}
 
 	if input.VideoFileNamingAlgorithm != nil && *input.VideoFileNamingAlgorithm != c.GetVideoFileNamingAlgorithm() {
@@ -179,6 +203,9 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.PreviewPreset, input.PreviewPreset.String())
 	}
 
+	if input.TranscodeHardwareAcceleration != nil {
+		c.Set(config.TranscodeHardwareAcceleration, *input.TranscodeHardwareAcceleration)
+	}
 	if input.MaxTranscodeSize != nil {
 		c.Set(config.MaxTranscodeSize, input.MaxTranscodeSize.String())
 	}
@@ -316,6 +343,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.LiveTranscodeOutputArgs, input.LiveTranscodeOutputArgs)
 	}
 
+	if input.DrawFunscriptHeatmapRange != nil {
+		c.Set(config.DrawFunscriptHeatmapRange, input.DrawFunscriptHeatmapRange)
+	}
+
 	if err := c.Write(); err != nil {
 		return makeConfigGeneralResult(), err
 	}
@@ -323,6 +354,12 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	manager.GetInstance().RefreshConfig()
 	if refreshScraperCache {
 		manager.GetInstance().RefreshScraperCache()
+	}
+	if refreshStreamManager {
+		manager.GetInstance().RefreshStreamManager()
+	}
+	if refreshBlobStorage {
+		manager.GetInstance().SetBlobStoreOptions()
 	}
 
 	return makeConfigGeneralResult(), nil
@@ -518,6 +555,8 @@ func (r *mutationResolver) ConfigureDefaults(ctx context.Context, input ConfigDe
 	}
 
 	if input.Scan != nil {
+		// if input.Scan is used then ScanMetadataOptions is included in the config file
+		// this causes the values to not be read correctly
 		c.Set(config.DefaultScanSettings, input.Scan.ScanMetadataOptions)
 	}
 

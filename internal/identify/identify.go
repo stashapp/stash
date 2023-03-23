@@ -35,7 +35,6 @@ type SceneIdentifier struct {
 
 	DefaultOptions              *MetadataOptions
 	Sources                     []ScraperSource
-	ScreenshotSetter            scene.ScreenshotSetter
 	SceneUpdatePostHookExecutor SceneUpdatePostHookExecutor
 }
 
@@ -216,7 +215,7 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager txn.Manage
 			return nil
 		}
 
-		if _, err := updater.Update(ctx, t.SceneReaderUpdater, t.ScreenshotSetter); err != nil {
+		if _, err := updater.Update(ctx, t.SceneReaderUpdater); err != nil {
 			return fmt.Errorf("error updating scene: %w", err)
 		}
 

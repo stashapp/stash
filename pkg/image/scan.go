@@ -143,15 +143,13 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File
 
 	if h.ScanConfig.IsGenerateThumbnails() {
 		// do this after the commit so that the transaction isn't held up
-		txn.AddPostCommitHook(ctx, func(ctx context.Context) error {
+		txn.AddPostCommitHook(ctx, func(ctx context.Context) {
 			for _, s := range existing {
 				if err := h.ThumbnailGenerator.GenerateThumbnail(ctx, s, imageFile); err != nil {
 					// just log if cover generation fails. We can try again on rescan
 					logger.Errorf("Error generating thumbnail for %s: %v", imageFile.Path, err)
 				}
 			}
-
-			return nil
 		})
 	}
 

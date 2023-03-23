@@ -47,6 +47,9 @@ func (r *Resolver) scraperCache() *scraper.Cache {
 func (r *Resolver) Gallery() GalleryResolver {
 	return &galleryResolver{r}
 }
+func (r *Resolver) GalleryChapter() GalleryChapterResolver {
+	return &galleryChapterResolver{r}
+}
 func (r *Resolver) Mutation() MutationResolver {
 	return &mutationResolver{r}
 }
@@ -83,6 +86,7 @@ type queryResolver struct{ *Resolver }
 type subscriptionResolver struct{ *Resolver }
 
 type galleryResolver struct{ *Resolver }
+type galleryChapterResolver struct{ *Resolver }
 type performerResolver struct{ *Resolver }
 type sceneResolver struct{ *Resolver }
 type sceneMarkerResolver struct{ *Resolver }

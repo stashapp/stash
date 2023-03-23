@@ -50,17 +50,10 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 
 	if t.refresh {
 		var performerID string
-		txnErr := txn.WithReadTxn(ctx, instance.Repository, func(ctx context.Context) error {
-			stashids, _ := instance.Repository.Performer.GetStashIDs(ctx, t.performer.ID)
-			for _, id := range stashids {
-				if id.Endpoint == t.box.Endpoint {
-					performerID = id.StashID
-				}
+		for _, id := range t.performer.StashIDs.List() {
+			if id.Endpoint == t.box.Endpoint {
+				performerID = id.StashID
 			}
-			return nil
-		})
-		if txnErr != nil {
-			logger.Warnf("error while executing read transaction: %v", err)
 		}
 		if performerID != "" {
 			performer, err = client.FindStashBoxPerformerByID(ctx, performerID)
@@ -87,80 +80,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 
 	if performer != nil {
 		if t.performer != nil {
-			partial := models.NewPerformerPartial()
-
-			if performer.Aliases != nil && !excluded["aliases"] {
-				partial.Aliases = &models.UpdateStrings{
-					Values: stringslice.FromString(*performer.Aliases, ","),
-					Mode:   models.RelationshipUpdateModeSet,
-				}
-			}
-			if performer.Birthdate != nil && *performer.Birthdate != "" && !excluded["birthdate"] {
-				value := getDate(performer.Birthdate)
-				partial.Birthdate = models.NewOptionalDate(*value)
-			}
-			if performer.CareerLength != nil && !excluded["career_length"] {
-				partial.CareerLength = models.NewOptionalString(*performer.CareerLength)
-			}
-			if performer.Country != nil && !excluded["country"] {
-				partial.Country = models.NewOptionalString(*performer.Country)
-			}
-			if performer.Ethnicity != nil && !excluded["ethnicity"] {
-				partial.Ethnicity = models.NewOptionalString(*performer.Ethnicity)
-			}
-			if performer.EyeColor != nil && !excluded["eye_color"] {
-				partial.EyeColor = models.NewOptionalString(*performer.EyeColor)
-			}
-			if performer.FakeTits != nil && !excluded["fake_tits"] {
-				partial.FakeTits = models.NewOptionalString(*performer.FakeTits)
-			}
-			if performer.Gender != nil && !excluded["gender"] {
-				partial.Gender = models.NewOptionalString(*performer.Gender)
-			}
-			if performer.Height != nil && !excluded["height"] {
-				h, err := strconv.Atoi(*performer.Height)
-				if err == nil {
-					partial.Height = models.NewOptionalInt(h)
-				}
-			}
-			if performer.Weight != nil && !excluded["weight"] {
-				w, err := strconv.Atoi(*performer.Weight)
-				if err == nil {
-					partial.Weight = models.NewOptionalInt(w)
-				}
-			}
-			if performer.Instagram != nil && !excluded["instagram"] {
-				partial.Instagram = models.NewOptionalString(*performer.Instagram)
-			}
-			if performer.Measurements != nil && !excluded["measurements"] {
-				partial.Measurements = models.NewOptionalString(*performer.Measurements)
-			}
-			if excluded["name"] && performer.Name != nil {
-				partial.Name = models.NewOptionalString(*performer.Name)
-			}
-			if performer.Piercings != nil && !excluded["piercings"] {
-				partial.Piercings = models.NewOptionalString(*performer.Piercings)
-			}
-			if performer.Tattoos != nil && !excluded["tattoos"] {
-				partial.Tattoos = models.NewOptionalString(*performer.Tattoos)
-			}
-			if performer.Twitter != nil && !excluded["twitter"] {
-				partial.Twitter = models.NewOptionalString(*performer.Twitter)
-			}
-			if performer.URL != nil && !excluded["url"] {
-				partial.URL = models.NewOptionalString(*performer.URL)
-			}
-			if !t.refresh {
-				partial.StashIDs = &models.UpdateStashIDs{
-					StashIDs: []models.StashID{
-						{
-							Endpoint: t.box.Endpoint,
-							StashID:  *performer.RemoteSiteID,
-						},
-					},
-					Mode: models.RelationshipUpdateModeSet,
-				}
-			}
+			partial := t.getPartial(performer, excluded)
 
 			txnErr := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
 				r := instance.Repository
@@ -168,12 +88,13 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 
 				if len(performer.Images) > 0 && !excluded["image"] {
 					image, err := utils.ReadImageFromURL(ctx, performer.Images[0])
-					if err != nil {
-						return err
-					}
-					err = r.Performer.UpdateImage(ctx, t.performer.ID, image)
-					if err != nil {
-						return err
+					if err == nil {
+						err = r.Performer.UpdateImage(ctx, t.performer.ID, image)
+						if err != nil {
+							return err
+						}
+					} else {
+						logger.Warnf("Failed to read performer image: %v", err)
 					}
 				}
 
@@ -187,7 +108,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 				return err
 			})
 			if txnErr != nil {
-				logger.Warnf("failure to execute partial update of performer: %v", err)
+				logger.Warnf("failure to execute partial update of performer: %v", txnErr)
 			}
 		} else if t.name != nil && performer.Name != nil {
 			currentTime := time.Now()
@@ -256,6 +177,87 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 		}
 		logger.Infof("No match found for %s", name)
 	}
+}
+
+func (t *StashBoxPerformerTagTask) getPartial(performer *models.ScrapedPerformer, excluded map[string]bool) models.PerformerPartial {
+	partial := models.NewPerformerPartial()
+
+	if performer.Aliases != nil && !excluded["aliases"] {
+		partial.Aliases = &models.UpdateStrings{
+			Values: stringslice.FromString(*performer.Aliases, ","),
+			Mode:   models.RelationshipUpdateModeSet,
+		}
+	}
+	if performer.Birthdate != nil && *performer.Birthdate != "" && !excluded["birthdate"] {
+		value := getDate(performer.Birthdate)
+		partial.Birthdate = models.NewOptionalDate(*value)
+	}
+	if performer.CareerLength != nil && !excluded["career_length"] {
+		partial.CareerLength = models.NewOptionalString(*performer.CareerLength)
+	}
+	if performer.Country != nil && !excluded["country"] {
+		partial.Country = models.NewOptionalString(*performer.Country)
+	}
+	if performer.Ethnicity != nil && !excluded["ethnicity"] {
+		partial.Ethnicity = models.NewOptionalString(*performer.Ethnicity)
+	}
+	if performer.EyeColor != nil && !excluded["eye_color"] {
+		partial.EyeColor = models.NewOptionalString(*performer.EyeColor)
+	}
+	if performer.FakeTits != nil && !excluded["fake_tits"] {
+		partial.FakeTits = models.NewOptionalString(*performer.FakeTits)
+	}
+	if performer.Gender != nil && !excluded["gender"] {
+		partial.Gender = models.NewOptionalString(*performer.Gender)
+	}
+	if performer.Height != nil && !excluded["height"] {
+		h, err := strconv.Atoi(*performer.Height)
+		if err == nil {
+			partial.Height = models.NewOptionalInt(h)
+		}
+	}
+	if performer.Weight != nil && !excluded["weight"] {
+		w, err := strconv.Atoi(*performer.Weight)
+		if err == nil {
+			partial.Weight = models.NewOptionalInt(w)
+		}
+	}
+	if performer.Instagram != nil && !excluded["instagram"] {
+		partial.Instagram = models.NewOptionalString(*performer.Instagram)
+	}
+	if performer.Measurements != nil && !excluded["measurements"] {
+		partial.Measurements = models.NewOptionalString(*performer.Measurements)
+	}
+	if excluded["name"] && performer.Name != nil {
+		partial.Name = models.NewOptionalString(*performer.Name)
+	}
+	if performer.Piercings != nil && !excluded["piercings"] {
+		partial.Piercings = models.NewOptionalString(*performer.Piercings)
+	}
+	if performer.Tattoos != nil && !excluded["tattoos"] {
+		partial.Tattoos = models.NewOptionalString(*performer.Tattoos)
+	}
+	if performer.Twitter != nil && !excluded["twitter"] {
+		partial.Twitter = models.NewOptionalString(*performer.Twitter)
+	}
+	if performer.URL != nil && !excluded["url"] {
+		partial.URL = models.NewOptionalString(*performer.URL)
+	}
+	if !t.refresh {
+		// #3547 - need to overwrite the stash id for the endpoint, but preserve
+		// existing stash ids for other endpoints
+		partial.StashIDs = &models.UpdateStashIDs{
+			StashIDs: t.performer.StashIDs.List(),
+			Mode:     models.RelationshipUpdateModeSet,
+		}
+
+		partial.StashIDs.Set(models.StashID{
+			Endpoint: t.box.Endpoint,
+			StashID:  *performer.RemoteSiteID,
+		})
+	}
+
+	return partial
 }
 
 func getDate(val *string) *models.Date {

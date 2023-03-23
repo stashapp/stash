@@ -668,7 +668,6 @@
   "details": "Dettagli",
   "developmentVersion": "Versione Sviluppo",
   "dialogs": {
-    "aliases_must_be_unique": "gli alias devono essere univoci",
     "create_new_entity": "Crea nuovo/a {entity}",
     "delete_alert": "Il seguente/I seguenti {count, plural, one {{singularEntity}} other {{pluralEntity}}} sarà/saranno cancellati permanentemente:",
     "delete_confirm": "Sei sicuro di voler cancellare {entityName}?",
@@ -1126,6 +1125,9 @@
   "type": "Tipo",
   "updated_at": "Aggiornato Al",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "gli alias devono essere univoci"
+  },
   "videos": "Video",
   "view_all": "Vedi Tutto",
   "weight": "Peso",

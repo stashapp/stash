@@ -661,7 +661,6 @@
   "details": "세부사항",
   "developmentVersion": "개발 버전",
   "dialogs": {
-    "aliases_must_be_unique": "별칭은 유일해야 합니다",
     "create_new_entity": "새로운 {entity} 생성",
     "delete_alert": "다음 {count, plural, one {{singularEntity}} other {{pluralEntity}}}이(가) 영구 삭제될 것입니다:",
     "delete_confirm": "정말 {entityName}을 삭제하시겠습니까?",
@@ -1107,6 +1106,9 @@
   "type": "유형",
   "updated_at": "수정 날짜",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "별칭은 유일해야 합니다"
+  },
   "videos": "비디오",
   "view_all": "모두 보기",
   "weight": "몸무게",

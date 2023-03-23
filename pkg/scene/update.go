@@ -46,7 +46,7 @@ func (u *UpdateSet) IsEmpty() bool {
 // Update updates a scene by updating the fields in the Partial field, then
 // updates non-nil relationships. Returns an error if there is no work to
 // be done.
-func (u *UpdateSet) Update(ctx context.Context, qb Updater, screenshotSetter ScreenshotSetter) (*models.Scene, error) {
+func (u *UpdateSet) Update(ctx context.Context, qb Updater) (*models.Scene, error) {
 	if u.IsEmpty() {
 		return nil, ErrEmptyUpdater
 	}
@@ -63,10 +63,6 @@ func (u *UpdateSet) Update(ctx context.Context, qb Updater, screenshotSetter Scr
 	if u.CoverImage != nil {
 		if err := qb.UpdateCover(ctx, u.ID, u.CoverImage); err != nil {
 			return nil, fmt.Errorf("error updating scene cover: %w", err)
-		}
-
-		if err := screenshotSetter.SetScreenshot(ret, u.CoverImage); err != nil {
-			return nil, fmt.Errorf("error setting scene screenshot: %w", err)
 		}
 	}
 

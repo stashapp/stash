@@ -1,12 +1,5 @@
 import { Tab, Nav, Dropdown, Button, ButtonGroup } from "react-bootstrap";
-import React, {
-  useEffect,
-  useState,
-  useMemo,
-  useContext,
-  lazy,
-  useRef,
-} from "react";
+import React, { useEffect, useState, useMemo, useContext, useRef } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useParams, useLocation, useHistory, Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
@@ -36,29 +29,38 @@ import { OrganizedButton } from "./OrganizedButton";
 import { ConfigurationContext } from "src/hooks/Config";
 import { getPlayerPosition } from "src/components/ScenePlayer/util";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
+import { lazyComponent } from "src/utils/lazyComponent";
 
-const SubmitStashBoxDraft = lazy(
+const SubmitStashBoxDraft = lazyComponent(
   () => import("src/components/Dialogs/SubmitDraft")
 );
-const ScenePlayer = lazy(
+const ScenePlayer = lazyComponent(
   () => import("src/components/ScenePlayer/ScenePlayer")
 );
 
-const GalleryViewer = lazy(
+const GalleryViewer = lazyComponent(
   () => import("src/components/Galleries/GalleryViewer")
 );
-const ExternalPlayerButton = lazy(() => import("./ExternalPlayerButton"));
+const ExternalPlayerButton = lazyComponent(
+  () => import("./ExternalPlayerButton")
+);
 
-const QueueViewer = lazy(() => import("./QueueViewer"));
-const SceneMarkersPanel = lazy(() => import("./SceneMarkersPanel"));
-const SceneFileInfoPanel = lazy(() => import("./SceneFileInfoPanel"));
-const SceneEditPanel = lazy(() => import("./SceneEditPanel"));
-const SceneDetailPanel = lazy(() => import("./SceneDetailPanel"));
-const SceneMoviePanel = lazy(() => import("./SceneMoviePanel"));
-const SceneGalleriesPanel = lazy(() => import("./SceneGalleriesPanel"));
-const DeleteScenesDialog = lazy(() => import("../DeleteScenesDialog"));
-const GenerateDialog = lazy(() => import("../../Dialogs/GenerateDialog"));
-const SceneVideoFilterPanel = lazy(() => import("./SceneVideoFilterPanel"));
+const QueueViewer = lazyComponent(() => import("./QueueViewer"));
+const SceneMarkersPanel = lazyComponent(() => import("./SceneMarkersPanel"));
+const SceneFileInfoPanel = lazyComponent(() => import("./SceneFileInfoPanel"));
+const SceneEditPanel = lazyComponent(() => import("./SceneEditPanel"));
+const SceneDetailPanel = lazyComponent(() => import("./SceneDetailPanel"));
+const SceneMoviePanel = lazyComponent(() => import("./SceneMoviePanel"));
+const SceneGalleriesPanel = lazyComponent(
+  () => import("./SceneGalleriesPanel")
+);
+const DeleteScenesDialog = lazyComponent(() => import("../DeleteScenesDialog"));
+const GenerateDialog = lazyComponent(
+  () => import("../../Dialogs/GenerateDialog")
+);
+const SceneVideoFilterPanel = lazyComponent(
+  () => import("./SceneVideoFilterPanel")
+);
 import { objectPath, objectTitle } from "src/core/files";
 
 interface IProps {

@@ -90,6 +90,7 @@ export const LibraryTasks: React.FC = () => {
 
   function getDefaultGenerateOptions(): GQL.GenerateMetadataInput {
     return {
+      covers: true,
       sprites: true,
       phashes: true,
       previews: true,

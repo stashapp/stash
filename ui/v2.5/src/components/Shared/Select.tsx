@@ -10,7 +10,6 @@ import Select, {
   OptionsOrGroups,
 } from "react-select";
 import CreatableSelect from "react-select/creatable";
-import debounce from "lodash-es/debounce";
 
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -30,6 +29,8 @@ import { useIntl } from "react-intl";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import { TagPopover } from "../Tags/TagPopover";
+import { defaultMaxOptionsShown, IUIConfig } from "src/core/config";
+import { useDebouncedSetState } from "src/hooks/debounce";
 
 export type SelectObject = {
   id: string;
@@ -131,7 +132,10 @@ const getSelectedValues = (selectedItems: OnChangeValue<Option, boolean>) =>
 const LimitedSelectMenu = <T extends boolean>(
   props: MenuListProps<Option, T, GroupBase<Option>>
 ) => {
-  const maxOptionsShown = 200;
+  const { configuration } = React.useContext(ConfigurationContext);
+  const maxOptionsShown =
+    (configuration?.ui as IUIConfig).maxOptionsShown ?? defaultMaxOptionsShown;
+
   const [hiddenCount, setHiddenCount] = useState<number>(0);
   const hiddenCountStyle = {
     padding: "8px 12px",
@@ -166,7 +170,7 @@ const LimitedSelectMenu = <T extends boolean>(
     }
     setHiddenCount(0);
     return props.children;
-  }, [props.children]);
+  }, [props.children, maxOptionsShown]);
   return (
     <reactSelectComponents.MenuList {...props}>
       {menuChildren}
@@ -350,9 +354,7 @@ export const GallerySelect: React.FC<ITitledSelect> = (props) => {
     value: g.id,
   }));
 
-  const onInputChange = debounce((input: string) => {
-    setQuery(input);
-  }, 500);
+  const onInputChange = useDebouncedSetState(setQuery, 500);
 
   const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
     const selected = getSelectedItems(selectedItems);
@@ -403,9 +405,7 @@ export const SceneSelect: React.FC<ITitledSelect> = (props) => {
     value: s.id,
   }));
 
-  const onInputChange = debounce((input: string) => {
-    setQuery(input);
-  }, 500);
+  const onInputChange = useDebouncedSetState(setQuery, 500);
 
   const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
     const selected = getSelectedItems(selectedItems);
@@ -455,9 +455,7 @@ export const ImageSelect: React.FC<ITitledSelect> = (props) => {
     value: s.id,
   }));
 
-  const onInputChange = debounce((input: string) => {
-    setQuery(input);
-  }, 500);
+  const onInputChange = useDebouncedSetState(setQuery, 500);
 
   const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
     const selected = getSelectedItems(selectedItems);

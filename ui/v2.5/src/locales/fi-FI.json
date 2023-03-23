@@ -615,7 +615,6 @@
   "details": "Lisätiedot",
   "developmentVersion": "Kehitysversio",
   "dialogs": {
-    "aliases_must_be_unique": "Aliaksien pitää olla uniikkeja",
     "create_new_entity": "Luo uus {entity}",
     "delete_alert": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} poistetaan pysyvästi:",
     "delete_confirm": "Haluatko varmasti poistaa {entityName}?",
@@ -1029,6 +1028,9 @@
   "twitter": "Twitter",
   "updated_at": "Päivitetty",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "Aliaksien pitää olla uniikkeja"
+  },
   "videos": "Videot",
   "view_all": "Näytä kaikki",
   "weight": "Paino",

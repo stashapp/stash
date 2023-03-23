@@ -35,6 +35,14 @@ import {
   ratingSystemIntlMap,
   RatingSystemType,
 } from "src/utils/rating";
+import {
+  imageWallDirectionIntlMap,
+  ImageWallDirection,
+  defaultImageWallOptions,
+  defaultImageWallDirection,
+  defaultImageWallMargin,
+} from "src/utils/imageWall";
+import { defaultMaxOptionsShown } from "src/core/config";
 
 const allMenuItems = [
   { id: "scenes", headingID: "scenes" },
@@ -87,6 +95,24 @@ export const SettingsInterfacePanel: React.FC = () => {
       imageLightbox: {
         ...iface.imageLightbox,
         ...v,
+      },
+    });
+  }
+
+  function saveImageWallMargin(m: number) {
+    saveUI({
+      imageWallOptions: {
+        ...(ui.imageWallOptions ?? defaultImageWallOptions),
+        margin: m,
+      },
+    });
+  }
+
+  function saveImageWallDirection(d: ImageWallDirection) {
+    saveUI({
+      imageWallOptions: {
+        ...(ui.imageWallOptions ?? defaultImageWallOptions),
+        direction: d,
       },
     });
   }
@@ -352,6 +378,31 @@ export const SettingsInterfacePanel: React.FC = () => {
         />
       </SettingSection>
 
+      <SettingSection headingID="config.ui.image_wall.heading">
+        <NumberSetting
+          headingID="config.ui.image_wall.margin"
+          subHeadingID="dialogs.imagewall.margin_desc"
+          value={ui.imageWallOptions?.margin ?? defaultImageWallMargin}
+          onChange={(v) => saveImageWallMargin(v)}
+        />
+
+        <SelectSetting
+          id="image_wall_direction"
+          headingID="config.ui.image_wall.direction"
+          subHeadingID="dialogs.imagewall.direction.description"
+          value={ui.imageWallOptions?.direction ?? defaultImageWallDirection}
+          onChange={(v) => saveImageWallDirection(v as ImageWallDirection)}
+        >
+          {Array.from(imageWallDirectionIntlMap.entries()).map((v) => (
+            <option key={v[0]} value={v[0]}>
+              {intl.formatMessage({
+                id: v[1],
+              })}
+            </option>
+          ))}
+        </SelectSetting>
+      </SettingSection>
+
       <SettingSection headingID="config.ui.image_lightbox.heading">
         <NumberSetting
           headingID="config.ui.slideshow_delay.heading"
@@ -486,6 +537,12 @@ export const SettingsInterfacePanel: React.FC = () => {
             }
           />
         </div>
+        <NumberSetting
+          id="max_options_shown"
+          headingID="config.ui.editing.max_options_shown.label"
+          value={ui.maxOptionsShown ?? defaultMaxOptionsShown}
+          onChange={(v) => saveUI({ maxOptionsShown: v })}
+        />
         <SelectSetting
           id="rating_system"
           headingID="config.ui.editing.rating_system.type.label"

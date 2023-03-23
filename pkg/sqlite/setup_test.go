@@ -146,6 +146,7 @@ const (
 
 const (
 	galleryIdxWithScene = iota
+	galleryIdxWithChapters
 	galleryIdxWithImage
 	galleryIdx1WithImage
 	galleryIdx2WithImage
@@ -237,6 +238,11 @@ const (
 )
 
 const (
+	chapterIdxWithGallery = iota
+	totalChapters
+)
+
+const (
 	savedFilterIdxDefaultScene = iota
 	savedFilterIdxDefaultImage
 	savedFilterIdxScene
@@ -261,6 +267,7 @@ var (
 	sceneFileIDs   []file.ID
 	imageFileIDs   []file.ID
 	galleryFileIDs []file.ID
+	chapterIDs     []int
 
 	sceneIDs       []int
 	imageIDs       []int
@@ -369,6 +376,19 @@ var (
 		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, nil},
 		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, []int{tagIdxWithMarkers}},
 		{sceneIdxWithMarkerAndTag, tagIdxWithPrimaryMarkers, nil},
+	}
+)
+
+type chapterSpec struct {
+	galleryIdx int
+	title      string
+	imageIndex int
+}
+
+var (
+	// indexed by chapter
+	chapterSpecs = []chapterSpec{
+		{galleryIdxWithChapters, "Test1", 10},
 	}
 )
 
@@ -517,6 +537,10 @@ func runTests(m *testing.M) int {
 	f.Close()
 	databaseFile := f.Name()
 	db = sqlite.NewDatabase()
+	db.SetBlobStoreOptions(sqlite.BlobStoreOptions{
+		UseDatabase: true,
+		// don't use filesystem
+	})
 
 	if err := db.Open(databaseFile); err != nil {
 		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
@@ -546,11 +570,11 @@ func populateDB() error {
 
 		// TODO - link folders to zip files
 
-		if err := createMovies(ctx, sqlite.MovieReaderWriter, moviesNameCase, moviesNameNoCase); err != nil {
+		if err := createMovies(ctx, db.Movie, moviesNameCase, moviesNameNoCase); err != nil {
 			return fmt.Errorf("error creating movies: %s", err.Error())
 		}
 
-		if err := createTags(ctx, sqlite.TagReaderWriter, tagsNameCase, tagsNameNoCase); err != nil {
+		if err := createTags(ctx, db.Tag, tagsNameCase, tagsNameNoCase); err != nil {
 			return fmt.Errorf("error creating tags: %s", err.Error())
 		}
 
@@ -558,7 +582,7 @@ func populateDB() error {
 			return fmt.Errorf("error creating performers: %s", err.Error())
 		}
 
-		if err := createStudios(ctx, sqlite.StudioReaderWriter, studiosNameCase, studiosNameNoCase); err != nil {
+		if err := createStudios(ctx, db.Studio, studiosNameCase, studiosNameNoCase); err != nil {
 			return fmt.Errorf("error creating studios: %s", err.Error())
 		}
 
@@ -574,7 +598,7 @@ func populateDB() error {
 			return fmt.Errorf("error creating images: %s", err.Error())
 		}
 
-		if err := addTagImage(ctx, sqlite.TagReaderWriter, tagIdxWithCoverImage); err != nil {
+		if err := addTagImage(ctx, db.Tag, tagIdxWithCoverImage); err != nil {
 			return fmt.Errorf("error adding tag image: %s", err.Error())
 		}
 
@@ -582,21 +606,26 @@ func populateDB() error {
 			return fmt.Errorf("error creating saved filters: %s", err.Error())
 		}
 
-		if err := linkMovieStudios(ctx, sqlite.MovieReaderWriter); err != nil {
+		if err := linkMovieStudios(ctx, db.Movie); err != nil {
 			return fmt.Errorf("error linking movie studios: %s", err.Error())
 		}
 
-		if err := linkStudiosParent(ctx, sqlite.StudioReaderWriter); err != nil {
+		if err := linkStudiosParent(ctx, db.Studio); err != nil {
 			return fmt.Errorf("error linking studios parent: %s", err.Error())
 		}
 
-		if err := linkTagsParent(ctx, sqlite.TagReaderWriter); err != nil {
+		if err := linkTagsParent(ctx, db.Tag); err != nil {
 			return fmt.Errorf("error linking tags parent: %s", err.Error())
 		}
 
 		for _, ms := range markerSpecs {
 			if err := createMarker(ctx, sqlite.SceneMarkerReaderWriter, ms); err != nil {
 				return fmt.Errorf("error creating scene marker: %s", err.Error())
+			}
+		}
+		for _, cs := range chapterSpecs {
+			if err := createChapter(ctx, sqlite.GalleryChapterReaderWriter, cs); err != nil {
+				return fmt.Errorf("error creating gallery chapter: %s", err.Error())
 			}
 		}
 
@@ -1576,6 +1605,24 @@ func createMarker(ctx context.Context, mqb models.SceneMarkerReaderWriter, marke
 			return fmt.Errorf("error creating marker/tag join: %w", err)
 		}
 	}
+
+	return nil
+}
+
+func createChapter(ctx context.Context, mqb models.GalleryChapterReaderWriter, chapterSpec chapterSpec) error {
+	chapter := models.GalleryChapter{
+		GalleryID:  sql.NullInt64{Int64: int64(sceneIDs[chapterSpec.galleryIdx]), Valid: true},
+		Title:      chapterSpec.title,
+		ImageIndex: chapterSpec.imageIndex,
+	}
+
+	created, err := mqb.Create(ctx, chapter)
+
+	if err != nil {
+		return fmt.Errorf("error creating chapter %v+: %w", chapter, err)
+	}
+
+	chapterIDs = append(chapterIDs, created.ID)
 
 	return nil
 }

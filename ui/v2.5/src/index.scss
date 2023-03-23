@@ -286,11 +286,15 @@ div.react-select__control {
   }
 }
 
+div.react-select__menu-portal {
+  z-index: 1600;
+}
+
 div.react-select__menu,
 div.dropdown-menu {
   background-color: $secondary;
   color: $text-color;
-  z-index: 16;
+  z-index: 1600;
 
   .react-select__option,
   .dropdown-item {
@@ -739,7 +743,7 @@ div.dropdown-menu {
 }
 
 .error-message {
-  white-space: "pre-wrap";
+  white-space: pre-wrap;
 }
 
 .btn-toolbar .form-control {
@@ -764,6 +768,79 @@ div.dropdown-menu {
   .heading {
     text-align: center;
     text-transform: uppercase;
+  }
+}
+
+$detailTabWidth: calc(100% / 3);
+
+.content-container,
+.details-tab {
+  padding-left: 15px;
+  padding-right: 15px;
+  position: relative;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .details-tab {
+    flex: 0 0 $detailTabWidth;
+    max-width: $detailTabWidth;
+  }
+
+  .content-container {
+    flex: 0 0 calc(100% - #{$detailTabWidth});
+    max-width: calc(100% - #{$detailTabWidth});
+  }
+}
+@media (min-width: 1200px) {
+  .details-tab {
+    flex: 0 0 $detailTabWidth;
+    max-height: calc(100vh - 4rem);
+    max-width: $detailTabWidth;
+    overflow: auto;
+
+    &.collapsed {
+      display: none;
+    }
+  }
+
+  .details-divider {
+    flex: 0 0 15px;
+    height: calc(100vh - 4rem);
+    max-width: 15px;
+
+    button {
+      background-color: transparent;
+      border: 0;
+      color: $link-color;
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 800;
+      height: 100%;
+      line-height: 100%;
+      padding: 0;
+      text-align: center;
+      width: 100%;
+
+      &:active:not(:hover),
+      &:focus:not(:hover) {
+        background-color: transparent;
+        border: 0;
+        box-shadow: none;
+      }
+    }
+  }
+
+  .content-container {
+    flex: 0 0 calc(100% - #{$detailTabWidth} - 15px);
+    max-height: calc(100vh - 4rem);
+    max-width: calc(100% - #{$detailTabWidth} - 15px);
+    overflow: auto;
+
+    &.expanded {
+      flex: 0 0 calc(100% - 15px);
+      max-width: calc(100% - 15px);
+    }
   }
 }
 

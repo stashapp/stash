@@ -42,8 +42,9 @@ func (rs tagRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	var image []byte
 	if defaultParam != "true" {
 		readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
-			image, _ = rs.tagFinder.GetImage(ctx, tag.ID)
-			return nil
+			var err error
+			image, err = rs.tagFinder.GetImage(ctx, tag.ID)
+			return err
 		})
 		if errors.Is(readTxnErr, context.Canceled) {
 			return

@@ -306,12 +306,14 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
   return (
     <>
       <dl className="container scene-file-info details-list">
-        <URLField
-          id="media_info.stream"
-          url={props.scene.paths.stream}
-          value={props.scene.paths.stream}
-          truncate
-        />
+        {props.scene.files.length > 0 && (
+          <URLField
+            id="media_info.stream"
+            url={props.scene.paths.stream}
+            value={props.scene.paths.stream}
+            truncate
+          />
+        )}
         {renderFunscript()}
         {renderInteractiveSpeed()}
         <URLField

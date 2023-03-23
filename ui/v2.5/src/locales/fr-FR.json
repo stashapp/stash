@@ -692,7 +692,6 @@
   "details": "Détails",
   "developmentVersion": "Version de développement",
   "dialogs": {
-    "aliases_must_be_unique": "Les alias doivent être uniques",
     "create_new_entity": "Créer un nouveau {entity}",
     "delete_alert": "{count, plural, one {Le {singularEntity} suivant sera supprimé} other {Les {pluralEntity} suivants seront supprimés}} définitivement :",
     "delete_confirm": "Êtes-vous sûr de vouloir supprimer {entityName} ?",
@@ -1150,6 +1149,9 @@
   "type": "Type",
   "updated_at": "Actualisé le",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "Les alias doivent être uniques"
+  },
   "videos": "Vidéos",
   "view_all": "Tout voir",
   "weight": "Poids",

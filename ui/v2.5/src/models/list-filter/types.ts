@@ -24,7 +24,7 @@ export interface IHierarchicalLabelValue {
 }
 
 export interface INumberValue {
-  value: number;
+  value: number | undefined;
   value2: number | undefined;
 }
 
@@ -177,4 +177,5 @@ export type CriterionType =
   | "scene_updated_at"
   | "description"
   | "scene_code"
-  | "disambiguation";
+  | "disambiguation"
+  | "hasChapters";

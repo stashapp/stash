@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 // SafeMove attempts to move the file with path src to dest using os.Rename. If this fails, then it copies src to dest, then deletes src.
@@ -38,7 +40,7 @@ func SafeMove(src, dst string) error {
 
 		err = os.Remove(src)
 		if err != nil {
-			return err
+			logger.Errorf("error removing old file %s during SafeMove: %v", src, err)
 		}
 	}
 

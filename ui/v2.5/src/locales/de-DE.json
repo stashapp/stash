@@ -690,7 +690,6 @@
   "details": "Details",
   "developmentVersion": "Entwicklungsversion",
   "dialogs": {
-    "aliases_must_be_unique": "Aliase müssen einzigartig sein",
     "create_new_entity": "Neues {entity} erstellen",
     "delete_alert": "Folgende {count, plural, one {{singularEntity}} other {{pluralEntity}}} werden dauerhaft gelöscht:",
     "delete_confirm": "Möchten Sie {entityName} wirklich löschen?",
@@ -1148,6 +1147,9 @@
   "type": "Typ",
   "updated_at": "Aktualisiert am",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "Aliase müssen einzigartig sein"
+  },
   "videos": "Videos",
   "view_all": "Alle ansehen",
   "weight": "Gewicht",

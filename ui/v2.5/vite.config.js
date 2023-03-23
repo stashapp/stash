@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import legacy from "@vitejs/plugin-legacy";
 import tsconfigPaths from "vite-tsconfig-paths";
 import viteCompression from "vite-plugin-compression";
 
@@ -25,11 +26,8 @@ export default defineConfig({
   publicDir: "public",
   assetsInclude: ["**/*.md"],
   plugins: [
-    react({
-      babel: {
-        compact: true,
-      },
-    }),
+    react(),
+    legacy(),
     tsconfigPaths(),
     viteCompression({
       algorithm: "gzip",

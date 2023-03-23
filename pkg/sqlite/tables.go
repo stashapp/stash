@@ -112,6 +112,11 @@ var (
 		idColumn: goqu.T(sceneTable).Col(idColumn),
 	}
 
+	sceneMarkerTableMgr = &table{
+		table:    goqu.T(sceneMarkerTable),
+		idColumn: goqu.T(sceneMarkerTable).Col(idColumn),
+	}
+
 	scenesFilesTableMgr = &relatedFilesTable{
 		table: table{
 			table:    scenesFilesJoinTable,
@@ -227,5 +232,12 @@ var (
 	movieTableMgr = &table{
 		table:    goqu.T(movieTable),
 		idColumn: goqu.T(movieTable).Col(idColumn),
+	}
+)
+
+var (
+	blobTableMgr = &table{
+		table:    goqu.T(blobTable),
+		idColumn: goqu.T(blobTable).Col(blobChecksumColumn),
 	}
 )

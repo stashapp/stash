@@ -31,11 +31,14 @@ const (
 	BackupDirectoryPath = "backup_directory_path"
 	Generated           = "generated"
 	Metadata            = "metadata"
+	BlobsPath           = "blobs_path"
 	Downloads           = "downloads"
 	ApiKey              = "api_key"
 	Username            = "username"
 	Password            = "password"
 	MaxSessionAge       = "max_session_age"
+
+	BlobsStorage = "blobs_storage"
 
 	DefaultMaxSessionAge = 60 * 60 * 1 // 1 hours
 
@@ -69,7 +72,11 @@ const (
 	ParallelTasks        = "parallel_tasks"
 	parallelTasksDefault = 1
 
-	PreviewPreset = "preview_preset"
+	PreviewPreset                 = "preview_preset"
+	TranscodeHardwareAcceleration = "ffmpeg.hardware_acceleration"
+
+	SequentialScanning        = "sequential_scanning"
+	SequentialScanningDefault = false
 
 	PreviewAudio        = "preview_audio"
 	previewAudioDefault = true
@@ -184,6 +191,9 @@ const (
 
 	HandyKey        = "handy_key"
 	FunscriptOffset = "funscript_offset"
+
+	DrawFunscriptHeatmapRange        = "draw_funscript_heatmap_range"
+	drawFunscriptHeatmapRangeDefault = true
 
 	ThemeColor        = "theme_color"
 	DefaultThemeColor = "#202b33"
@@ -494,27 +504,14 @@ func (i *Instance) getStringMapString(key string) map[string]string {
 	return ret
 }
 
-type StashConfig struct {
-	Path         string `json:"path"`
-	ExcludeVideo bool   `json:"excludeVideo"`
-	ExcludeImage bool   `json:"excludeImage"`
-}
-
-// Stash configuration details
-type StashConfigInput struct {
-	Path         string `json:"path"`
-	ExcludeVideo bool   `json:"excludeVideo"`
-	ExcludeImage bool   `json:"excludeImage"`
-}
-
 // GetStathPaths returns the configured stash library paths.
 // Works opposite to the usual case - it will return the override
 // value only if the main value is not set.
-func (i *Instance) GetStashPaths() []*StashConfig {
+func (i *Instance) GetStashPaths() StashConfigs {
 	i.RLock()
 	defer i.RUnlock()
 
-	var ret []*StashConfig
+	var ret StashConfigs
 
 	v := i.main
 	if !v.IsSet(Stash) {
@@ -542,6 +539,22 @@ func (i *Instance) GetCachePath() string {
 
 func (i *Instance) GetGeneratedPath() string {
 	return i.getString(Generated)
+}
+
+func (i *Instance) GetBlobsPath() string {
+	return i.getString(BlobsPath)
+}
+
+func (i *Instance) GetBlobsStorage() BlobsStorageType {
+	ret := BlobsStorageType(i.getString(BlobsStorage))
+
+	if !ret.IsValid() {
+		// default to database storage
+		// for legacy systems this is probably the safer option
+		ret = BlobStorageTypeDatabase
+	}
+
+	return ret
 }
 
 func (i *Instance) GetMetadataPath() string {
@@ -644,6 +657,10 @@ func (i *Instance) GetVideoFileNamingAlgorithm() models.HashAlgorithm {
 	}
 
 	return models.HashAlgorithm(ret)
+}
+
+func (i *Instance) GetSequentialScanning() bool {
+	return i.getBool(SequentialScanning)
 }
 
 func (i *Instance) GetGalleryCoverRegex() string {
@@ -793,6 +810,10 @@ func (i *Instance) GetPreviewPreset() models.PreviewPreset {
 	return models.PreviewPreset(ret)
 }
 
+func (i *Instance) GetTranscodeHardwareAcceleration() bool {
+	return i.getBool(TranscodeHardwareAcceleration)
+}
+
 func (i *Instance) GetMaxTranscodeSize() models.StreamingResolutionEnum {
 	ret := i.getString(MaxTranscodeSize)
 
@@ -829,6 +850,10 @@ func (i *Instance) GetLiveTranscodeInputArgs() []string {
 
 func (i *Instance) GetLiveTranscodeOutputArgs() []string {
 	return i.getStringSlice(LiveTranscodeOutputArgs)
+}
+
+func (i *Instance) GetDrawFunscriptHeatmapRange() bool {
+	return i.getBoolDefault(DrawFunscriptHeatmapRange, drawFunscriptHeatmapRangeDefault)
 }
 
 // IsWriteImageThumbnails returns true if image thumbnails should be written
@@ -1439,6 +1464,12 @@ func (i *Instance) Validate() error {
 		}
 	}
 
+	if i.GetBlobsStorage() == BlobStorageTypeFilesystem && i.viper(BlobsPath).GetString(BlobsPath) == "" {
+		return MissingConfigError{
+			missingFields: []string{BlobsPath},
+		}
+	}
+
 	return nil
 }
 
@@ -1457,6 +1488,7 @@ func (i *Instance) setDefaultValues(write bool) error {
 	i.main.SetDefault(Port, portDefault)
 
 	i.main.SetDefault(ParallelTasks, parallelTasksDefault)
+	i.main.SetDefault(SequentialScanning, SequentialScanningDefault)
 	i.main.SetDefault(PreviewSegmentDuration, previewSegmentDurationDefault)
 	i.main.SetDefault(PreviewSegments, previewSegmentsDefault)
 	i.main.SetDefault(PreviewExcludeStart, previewExcludeStartDefault)

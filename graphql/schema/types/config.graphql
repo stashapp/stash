@@ -6,6 +6,10 @@ input SetupInput {
   databaseFile: String!
   """Empty to indicate default"""
   generatedLocation: String!
+  """Empty to indicate default"""
+  cacheLocation: String!
+  """Empty to indicate database storage for blobs"""
+  blobsLocation: String!
 }
 
 enum StreamingResolutionEnum {
@@ -32,6 +36,13 @@ enum HashAlgorithm {
   "oshash", OSHASH
 }
 
+enum BlobsStorageType {
+  # blobs are stored in the database
+  "Database", DATABASE
+  # blobs are stored in the filesystem under the configured blobs directory
+  "Filesystem", FILESYSTEM
+}
+
 input ConfigGeneralInput {
   """Array of file paths to content"""
   stashes: [StashConfigInput!]
@@ -47,6 +58,10 @@ input ConfigGeneralInput {
   scrapersPath: String
   """Path to cache"""
   cachePath: String
+  """Path to blobs - required for filesystem blob storage"""
+  blobsPath: String
+  """Where to store blobs"""
+  blobsStorage: BlobsStorageType
   """Whether to calculate MD5 checksums for scene video files"""
   calculateMD5: Boolean
   """Hash algorithm to use for generated file naming"""
@@ -65,6 +80,8 @@ input ConfigGeneralInput {
   previewExcludeEnd: String
   """Preset when generating preview"""
   previewPreset: PreviewPreset
+  """Transcode Hardware Acceleration"""
+  transcodeHardwareAcceleration: Boolean
   """Max generated transcode size"""
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
@@ -83,6 +100,9 @@ input ConfigGeneralInput {
   """ffmpeg stream output args - injected before output file
   These are applied when live transcoding"""
   liveTranscodeOutputArgs: [String!]
+
+  """whether to include range in generated funscript heatmaps"""
+  drawFunscriptHeatmapRange: Boolean
 
   """Write image thumbnails to disk when generating on the fly"""
   writeImageThumbnails: Boolean
@@ -147,6 +167,10 @@ type ConfigGeneralResult {
   scrapersPath: String!
   """Path to cache"""
   cachePath: String!
+  """Path to blobs - required for filesystem blob storage"""
+  blobsPath: String!
+  """Where to store blobs"""
+  blobsStorage: BlobsStorageType!
   """Whether to calculate MD5 checksums for scene video files"""
   calculateMD5: Boolean!
   """Hash algorithm to use for generated file naming"""
@@ -165,6 +189,8 @@ type ConfigGeneralResult {
   previewExcludeEnd: String!
   """Preset when generating preview"""
   previewPreset: PreviewPreset!
+  """Transcode Hardware Acceleration"""
+  transcodeHardwareAcceleration: Boolean!
   """Max generated transcode size"""
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
@@ -183,6 +209,9 @@ type ConfigGeneralResult {
   """ffmpeg stream output args - injected before output file
   These are applied when live transcoding"""
   liveTranscodeOutputArgs: [String!]!
+
+  """whether to include range in generated funscript heatmaps"""
+  drawFunscriptHeatmapRange: Boolean!
 
   """Write image thumbnails to disk when generating on the fly"""
   writeImageThumbnails: Boolean!

@@ -690,7 +690,6 @@
   "details": "Detailid",
   "developmentVersion": "Arendusversioon",
   "dialogs": {
-    "aliases_must_be_unique": "aliased peavad olema erilised",
     "create_new_entity": "Loo uus {entity}",
     "delete_alert": "Järgnev {count, plural, one {{singularEntity}} other {{pluralEntity}}} kustutatakse lõplikult:",
     "delete_confirm": "Kas oled kindel, et soovid kustutada {entityName}?",
@@ -1148,6 +1147,9 @@
   "type": "Tüüp",
   "updated_at": "Viimati Uuendatud",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "aliased peavad olema erilised"
+  },
   "videos": "Videod",
   "view_all": "Vaata Kõiki",
   "weight": "Kaal",

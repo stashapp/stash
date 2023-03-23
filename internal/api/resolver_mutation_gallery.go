@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"os"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
@@ -488,4 +490,151 @@ func (r *mutationResolver) RemoveGalleryImages(ctx context.Context, input Galler
 	}
 
 	return true, nil
+}
+
+func (r *mutationResolver) getGalleryChapter(ctx context.Context, id int) (ret *models.GalleryChapter, err error) {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.GalleryChapter.Find(ctx, id)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (r *mutationResolver) GalleryChapterCreate(ctx context.Context, input GalleryChapterCreateInput) (*models.GalleryChapter, error) {
+	galleryID, err := strconv.Atoi(input.GalleryID)
+	if err != nil {
+		return nil, err
+	}
+
+	var imageCount int
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		imageCount, err = r.repository.Image.CountByGalleryID(ctx, galleryID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+	// Sanity Check of Index
+	if input.ImageIndex > imageCount || input.ImageIndex < 1 {
+		return nil, errors.New("Image # must greater than zero and in range of the gallery images")
+	}
+
+	currentTime := time.Now()
+	newGalleryChapter := models.GalleryChapter{
+		Title:      input.Title,
+		ImageIndex: input.ImageIndex,
+		GalleryID:  sql.NullInt64{Int64: int64(galleryID), Valid: galleryID != 0},
+		CreatedAt:  models.SQLiteTimestamp{Timestamp: currentTime},
+		UpdatedAt:  models.SQLiteTimestamp{Timestamp: currentTime},
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	ret, err := r.changeChapter(ctx, create, newGalleryChapter)
+	if err != nil {
+		return nil, err
+	}
+
+	r.hookExecutor.ExecutePostHooks(ctx, ret.ID, plugin.GalleryChapterCreatePost, input, nil)
+	return r.getGalleryChapter(ctx, ret.ID)
+}
+
+func (r *mutationResolver) GalleryChapterUpdate(ctx context.Context, input GalleryChapterUpdateInput) (*models.GalleryChapter, error) {
+	// Populate gallery chapter from the input
+	galleryChapterID, err := strconv.Atoi(input.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	galleryID, err := strconv.Atoi(input.GalleryID)
+	if err != nil {
+		return nil, err
+	}
+
+	var imageCount int
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		imageCount, err = r.repository.Image.CountByGalleryID(ctx, galleryID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+	// Sanity Check of Index
+	if input.ImageIndex > imageCount || input.ImageIndex < 1 {
+		return nil, errors.New("Image # must greater than zero and in range of the gallery images")
+	}
+
+	updatedGalleryChapter := models.GalleryChapter{
+		ID:         galleryChapterID,
+		Title:      input.Title,
+		ImageIndex: input.ImageIndex,
+		GalleryID:  sql.NullInt64{Int64: int64(galleryID), Valid: galleryID != 0},
+		UpdatedAt:  models.SQLiteTimestamp{Timestamp: time.Now()},
+	}
+
+	ret, err := r.changeChapter(ctx, update, updatedGalleryChapter)
+	if err != nil {
+		return nil, err
+	}
+
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+	r.hookExecutor.ExecutePostHooks(ctx, ret.ID, plugin.GalleryChapterUpdatePost, input, translator.getFields())
+	return r.getGalleryChapter(ctx, ret.ID)
+}
+
+func (r *mutationResolver) GalleryChapterDestroy(ctx context.Context, id string) (bool, error) {
+	chapterID, err := strconv.Atoi(id)
+	if err != nil {
+		return false, err
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.GalleryChapter
+
+		chapter, err := qb.Find(ctx, chapterID)
+
+		if err != nil {
+			return err
+		}
+
+		if chapter == nil {
+			return fmt.Errorf("Chapter with id %d not found", chapterID)
+		}
+
+		return gallery.DestroyChapter(ctx, chapter, qb)
+	}); err != nil {
+		return false, err
+	}
+
+	r.hookExecutor.ExecutePostHooks(ctx, chapterID, plugin.GalleryChapterDestroyPost, id, nil)
+
+	return true, nil
+}
+
+func (r *mutationResolver) changeChapter(ctx context.Context, changeType int, changedChapter models.GalleryChapter) (*models.GalleryChapter, error) {
+	var galleryChapter *models.GalleryChapter
+
+	// Start the transaction and save the gallery chapter
+	var err = r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.GalleryChapter
+		var err error
+
+		switch changeType {
+		case create:
+			galleryChapter, err = qb.Create(ctx, changedChapter)
+		case update:
+			galleryChapter, err = qb.Update(ctx, changedChapter)
+			if err != nil {
+				return err
+			}
+		}
+		return err
+	})
+
+	return galleryChapter, err
 }

@@ -1,11 +1,15 @@
 #performer-page {
   flex-direction: row;
-  margin: 10px auto;
+  margin: 0 auto;
   overflow: hidden;
 
   .performer-image-container .performer {
     max-height: calc(100vh - 6rem);
     max-width: 100%;
+  }
+
+  .content-container {
+    padding-bottom: 10px;
   }
 
   .performer-head {

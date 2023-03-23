@@ -40,8 +40,8 @@ const DEFAULT_PARAMS = {
 // TODO: handle customCriteria
 export class ListFilterModel {
   public mode: FilterMode;
-  private config: ConfigDataFragment | undefined;
-  public searchTerm?: string;
+  private config?: ConfigDataFragment;
+  public searchTerm: string = "";
   public currentPage = DEFAULT_PARAMS.currentPage;
   public itemsPerPage = DEFAULT_PARAMS.itemsPerPage;
   public sortDirection: SortDirectionEnum = SortDirectionEnum.Asc;
@@ -54,7 +54,7 @@ export class ListFilterModel {
 
   public constructor(
     mode: FilterMode,
-    config: ConfigDataFragment | undefined,
+    config?: ConfigDataFragment,
     defaultSort?: string,
     defaultDisplayMode?: DisplayMode,
     defaultZoomIndex?: number
@@ -62,7 +62,9 @@ export class ListFilterModel {
     this.mode = mode;
     this.config = config;
     this.sortBy = defaultSort;
-    if (defaultDisplayMode !== undefined) this.displayMode = defaultDisplayMode;
+    if (defaultDisplayMode !== undefined) {
+      this.displayMode = defaultDisplayMode;
+    }
     if (defaultZoomIndex !== undefined) {
       this.defaultZoomIndex = defaultZoomIndex;
       this.zoomIndex = defaultZoomIndex;
@@ -71,6 +73,12 @@ export class ListFilterModel {
 
   public clone() {
     return Object.assign(new ListFilterModel(this.mode, this.config), this);
+  }
+
+  // returns the number of filters applied
+  public count() {
+    // don't include search term
+    return this.criteria.length;
   }
 
   public configureFromDecodedParams(params: IDecodedParams) {
@@ -98,9 +106,6 @@ export class ListFilterModel {
     }
     if (params.q !== undefined) {
       this.searchTerm = params.q;
-    } else {
-      // #1795 - reset search term if not provided
-      this.searchTerm = "";
     }
     this.currentPage = params.p ?? 1;
     if (params.z !== undefined) {
@@ -318,7 +323,7 @@ export class ListFilterModel {
       sortdir:
         this.sortDirection === SortDirectionEnum.Desc ? "desc" : undefined,
       disp: this.displayMode,
-      q: this.searchTerm,
+      q: this.searchTerm || undefined,
       z: this.zoomIndex,
       c: encodedCriteria,
     };

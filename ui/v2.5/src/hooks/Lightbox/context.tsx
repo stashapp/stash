@@ -1,7 +1,8 @@
-import React, { lazy, Suspense, useCallback, useState } from "react";
-import { ILightboxImage } from "./types";
+import React, { Suspense, useCallback, useState } from "react";
+import { lazyComponent } from "src/utils/lazyComponent";
+import { ILightboxImage, IChapter } from "./types";
 
-const LightboxComponent = lazy(() => import("./Lightbox"));
+const LightboxComponent = lazyComponent(() => import("./Lightbox"));
 
 export interface IState {
   images: ILightboxImage[];
@@ -9,8 +10,11 @@ export interface IState {
   isLoading: boolean;
   showNavigation: boolean;
   initialIndex?: number;
-  pageCallback?: (direction: number) => void;
-  pageHeader?: string;
+  pageCallback?: (props: { direction?: number; page?: number }) => void;
+  chapters?: IChapter[];
+  page?: number;
+  pages?: number;
+  pageSize?: number;
   slideshowEnabled: boolean;
   onClose?: () => void;
 }
