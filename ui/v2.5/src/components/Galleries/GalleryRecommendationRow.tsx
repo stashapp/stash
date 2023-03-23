@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { useFindGalleries } from "src/core/StashService";
 import Slider from "@ant-design/react-slick";
 import { GalleryCard } from "./GalleryCard";
@@ -26,9 +27,9 @@ export const GalleryRecommendationRow: React.FC<IProps> = (props) => {
       className="gallery-recommendations"
       header={props.header}
       link={
-        <a href={`/galleries?${props.filter.makeQueryParameters()}`}>
+        <Link to={`/galleries?${props.filter.makeQueryParameters()}`}>
           <FormattedMessage id="view_all" />
-        </a>
+        </Link>
       }
     >
       <Slider
