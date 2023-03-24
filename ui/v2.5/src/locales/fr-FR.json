@@ -21,6 +21,7 @@
     "confirm": "Confirmer",
     "continue": "Continuer",
     "create": "Créer",
+    "create_chapters": "Créer un chapitre",
     "create_entity": "Créer {entityType}",
     "create_marker": "Créer un marqueur",
     "created_entity": "Créé {entity_type} : {entity_name}",
@@ -60,6 +61,8 @@
     "merge": "Fusionner",
     "merge_from": "Fusionner depuis",
     "merge_into": "Fusionner dans",
+    "migrate_blobs": "Migrer les Blobs",
+    "migrate_scene_screenshots": "Migrer les captures d'écran de scène",
     "next_action": "Suivant",
     "not_running": "arrêt",
     "open_in_external_player": "Ouvrir dans un lecteur externe",
@@ -130,8 +133,13 @@
   "birth_year": "Année de naissance",
   "birthdate": "Date de naissance",
   "bitrate": "Débit",
+  "blobs_storage_type": {
+    "database": "Base de données",
+    "filesystem": "Système de fichier"
+  },
   "captions": "Sous-titres",
   "career_length": "Durée de la carrière",
+  "chapters": "Chapitres",
   "component_tagger": {
     "config": {
       "active_instance": "Instance Stash-Box active :",
@@ -255,6 +263,13 @@
       "backup_directory_path": {
         "description": "Emplacement de sauvegarde des bases de données SQLite",
         "heading": "Chemin du répertoire de sauvegarde"
+      },
+      "blobs_path": {
+        "heading": "Chemin d'accès du système de fichiers des données binaires"
+      },
+      "blobs_storage": {
+        "description": "Emplacement de stockage des données binaires telles que les couvertures de scènes, les interprètes, les studios et les images d'étiquettes. Après avoir modifié cette valeur, les données existantes doivent être migrées via la tâche Migrate Blobs (Migrer les blocs). Voir la page Tâches pour la migration.",
+        "heading": "Type d'enregistrement de données binaires"
       },
       "cache_location": "Emplacement du cache",
       "cache_path_head": "Chemin du cache",
@@ -1008,7 +1023,6 @@
   "scenes": "Scènes",
   "scenes_updated_at": "Scène actualisée le",
   "search_filter": {
-    "add_filter": "Ajouter un filtre",
     "name": "Filtre",
     "saved_filters": "Filtres sauvegardés",
     "update_filter": "Filtre actualisé"
