@@ -39,6 +39,7 @@ func serveLoginPage(loginUIBox fs.FS, w http.ResponseWriter, r *http.Request, re
 		return
 	}
 
+	setPageSecurityHeaders(w, r)
 	w.Header().Set("Content-Type", "text/html")
 	err = templ.Execute(w, loginTemplateData{URL: returnURL, Error: loginError})
 	if err != nil {
@@ -97,7 +98,7 @@ func handleLogout() http.HandlerFunc {
 		// redirect to the login page if credentials are required
 		prefix := getProxyPrefix(r)
 		if config.GetInstance().HasCredentials() {
-			http.Redirect(w, r, prefix+"/login", http.StatusFound)
+			http.Redirect(w, r, prefix+loginEndpoint, http.StatusFound)
 		} else {
 			http.Redirect(w, r, prefix+"/", http.StatusFound)
 		}

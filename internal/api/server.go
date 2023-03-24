@@ -38,6 +38,13 @@ import (
 	"github.com/stashapp/stash/ui"
 )
 
+const (
+	loginEndpoint      = "/login"
+	logoutEndpoint     = "/logout"
+	gqlEndpoint        = "/graphql"
+	playgroundEndpoint = "/playground"
+)
+
 var version string
 var buildstamp string
 var githash string
@@ -130,16 +137,17 @@ func Start() error {
 	gqlHandler := visitedPluginHandler(dataloaders.Middleware(http.HandlerFunc(gqlHandlerFunc)))
 	manager.GetInstance().PluginCache.RegisterGQLHandler(gqlHandler)
 
-	r.HandleFunc("/graphql", gqlHandlerFunc)
-	r.HandleFunc("/playground", func(w http.ResponseWriter, r *http.Request) {
-		endpoint := getProxyPrefix(r) + "/graphql"
+	r.HandleFunc(gqlEndpoint, gqlHandlerFunc)
+	r.HandleFunc(playgroundEndpoint, func(w http.ResponseWriter, r *http.Request) {
+		setPageSecurityHeaders(w, r)
+		endpoint := getProxyPrefix(r) + gqlEndpoint
 		gqlPlayground.Handler("GraphQL playground", endpoint)(w, r)
 	})
 
 	// session handlers
-	r.Get(loginEndPoint, handleLogin(loginUIBox))
-	r.Post(loginEndPoint, handleLoginPost(loginUIBox))
-	r.Get(logoutEndPoint, handleLogout())
+	r.Get(loginEndpoint, handleLogin(loginUIBox))
+	r.Post(loginEndpoint, handleLoginPost(loginUIBox))
+	r.Get(logoutEndpoint, handleLogout())
 
 	r.Mount("/performer", performerRoutes{
 		txnManager:      txnManager,
@@ -188,8 +196,8 @@ func Start() error {
 		_, _ = w.Write([]byte("{}"))
 	})
 
-	r.HandleFunc("/login/*", func(w http.ResponseWriter, r *http.Request) {
-		r.URL.Path = strings.TrimPrefix(r.URL.Path, loginEndPoint)
+	r.HandleFunc(loginEndpoint+"/*", func(w http.ResponseWriter, r *http.Request) {
+		r.URL.Path = strings.TrimPrefix(r.URL.Path, loginEndpoint)
 		http.FileServer(http.FS(loginUIBox)).ServeHTTP(w, r)
 	})
 
@@ -228,6 +236,7 @@ func Start() error {
 			prefix := getProxyPrefix(r)
 			indexHtml = strings.ReplaceAll(indexHtml, "%COLOR%", themeColor)
 			indexHtml = strings.Replace(indexHtml, `<base href="/"`, fmt.Sprintf(`<base href="%s/"`, prefix), 1)
+			setPageSecurityHeaders(w, r)
 			_, _ = w.Write([]byte(indexHtml))
 		} else {
 			isStatic, _ := path.Match("/static/*/*", r.URL.Path)
@@ -459,6 +468,47 @@ func makeTLSConfig(c *config.Instance) (*tls.Config, error) {
 	return tlsConfig, nil
 }
 
+func setPageSecurityHeaders(w http.ResponseWriter, r *http.Request) {
+	c := config.GetInstance()
+
+	defaultSrc := "data: 'self' 'unsafe-inline'"
+	connectSrc := "data: 'self'"
+	imageSrc := "data: *"
+	scriptSrc := "'self' 'unsafe-inline' 'unsafe-eval'"
+	styleSrc := "'self' 'unsafe-inline'"
+	mediaSrc := "blob: 'self'"
+
+	// Workaround Safari bug https://bugs.webkit.org/show_bug.cgi?id=201591
+	// Allows websocket requests to any origin
+	connectSrc += " ws: wss:"
+
+	// The graphql playground pulls its frontend from a cdn
+	if r.URL.Path == playgroundEndpoint {
+		connectSrc += " https://cdn.jsdelivr.net"
+		scriptSrc += " https://cdn.jsdelivr.net"
+		styleSrc += " https://cdn.jsdelivr.net"
+	}
+
+	if !c.IsNewSystem() && c.GetHandyKey() != "" {
+		connectSrc += " https://www.handyfeeling.com"
+	}
+
+	cspDirectives := fmt.Sprintf("default-src %s; connect-src %s; img-src %s; script-src %s; style-src %s; media-src %s;", defaultSrc, connectSrc, imageSrc, scriptSrc, styleSrc, mediaSrc)
+	cspDirectives += " worker-src blob:; child-src 'none'; object-src 'none'; form-action 'self';"
+
+	w.Header().Set("Referrer-Policy", "same-origin")
+	w.Header().Set("Content-Security-Policy", cspDirectives)
+}
+
+func SecurityHeadersMiddleware(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+
+		next.ServeHTTP(w, r)
+	}
+	return http.HandlerFunc(fn)
+}
+
 type contextKey struct {
 	name string
 }
@@ -466,35 +516,6 @@ type contextKey struct {
 var (
 	BaseURLCtxKey = &contextKey{"BaseURL"}
 )
-
-func SecurityHeadersMiddleware(next http.Handler) http.Handler {
-	fn := func(w http.ResponseWriter, r *http.Request) {
-		c := config.GetInstance()
-		connectableOrigins := "connect-src data: 'self'"
-
-		// Workaround Safari bug https://bugs.webkit.org/show_bug.cgi?id=201591
-		// Allows websocket requests to any origin
-		connectableOrigins += " ws: wss:"
-
-		// The graphql playground pulls its frontend from a cdn
-		connectableOrigins += " https://cdn.jsdelivr.net "
-
-		if !c.IsNewSystem() && c.GetHandyKey() != "" {
-			connectableOrigins += " https://www.handyfeeling.com"
-		}
-		connectableOrigins += "; "
-
-		cspDirectives := "default-src data: 'self' 'unsafe-inline';" + connectableOrigins + "img-src data: *; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline' 'unsafe-eval'; style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src-elem 'self' https://cdn.jsdelivr.net 'unsafe-inline'; media-src 'self' blob:; child-src 'none'; worker-src blob:; object-src 'none'; form-action 'self'"
-
-		w.Header().Set("Referrer-Policy", "same-origin")
-		w.Header().Set("X-Content-Type-Options", "nosniff")
-		w.Header().Set("X-XSS-Protection", "1")
-		w.Header().Set("Content-Security-Policy", cspDirectives)
-
-		next.ServeHTTP(w, r)
-	}
-	return http.HandlerFunc(fn)
-}
 
 func BaseURLMiddleware(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {

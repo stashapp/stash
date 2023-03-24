@@ -14,11 +14,6 @@ import (
 )
 
 const (
-	loginEndPoint  = "/login"
-	logoutEndPoint = "/logout"
-)
-
-const (
 	tripwireActivatedErrMsg = "Stash is exposed to the public internet without authentication, and is not serving any more content to protect your privacy. " +
 		"More information and fixes are available at https://docs.stashapp.cc/networking/authentication-required-when-accessing-stash-from-the-internet"
 
@@ -30,7 +25,7 @@ const (
 
 func allowUnauthenticated(r *http.Request) bool {
 	// #2715 - allow access to UI files
-	return strings.HasPrefix(r.URL.Path, loginEndPoint) || r.URL.Path == logoutEndPoint || r.URL.Path == "/css" || strings.HasPrefix(r.URL.Path, "/assets")
+	return strings.HasPrefix(r.URL.Path, loginEndpoint) || r.URL.Path == logoutEndpoint || r.URL.Path == "/css" || strings.HasPrefix(r.URL.Path, "/assets")
 }
 
 func authenticateHandler() func(http.Handler) http.Handler {
@@ -79,7 +74,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 				if userID == "" && !allowUnauthenticated(r) {
 					// authentication was not received, redirect
 					// if graphql was requested, we just return a forbidden error
-					if r.URL.Path == "/graphql" {
+					if r.URL.Path == gqlEndpoint {
 						w.Header().Add("WWW-Authenticate", `FormBased`)
 						w.WriteHeader(http.StatusUnauthorized)
 						return
@@ -95,7 +90,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 					q := make(url.Values)
 					q.Set(returnURLParam, returnURL.String())
 					u := url.URL{
-						Path:     prefix + "/login",
+						Path:     prefix + loginEndpoint,
 						RawQuery: q.Encode(),
 					}
 					http.Redirect(w, r, u.String(), http.StatusFound)
