@@ -61,8 +61,8 @@
     "merge": "Fusionner",
     "merge_from": "Fusionner depuis",
     "merge_into": "Fusionner dans",
-    "migrate_blobs": "Migrer les Blobs",
-    "migrate_scene_screenshots": "Migrer les captures d'écran de scène",
+    "migrate_blobs": "Migrer les blobs",
+    "migrate_scene_screenshots": "Migrer les vignettes de scène",
     "next_action": "Suivant",
     "not_running": "arrêt",
     "open_in_external_player": "Ouvrir dans un lecteur externe",
@@ -265,13 +265,14 @@
         "heading": "Chemin du répertoire de sauvegarde"
       },
       "blobs_path": {
-        "heading": "Chemin d'accès du système de fichiers des données binaires"
+        "description": "Emplacement dans le système de fichiers pour le stockage des données binaires. Uniquement applicable lors de l'utilisation du type de stockage blob du système de fichiers. AVERTISSEMENT : La modification de ce paramètre nécessite le déplacement manuel des données existantes.",
+        "heading": "Chemin du système de fichiers des données binaires"
       },
       "blobs_storage": {
-        "description": "Emplacement de stockage des données binaires telles que les couvertures de scènes, les interprètes, les studios et les images d'étiquettes. Après avoir modifié cette valeur, les données existantes doivent être migrées via la tâche Migrate Blobs (Migrer les blocs). Voir la page Tâches pour la migration.",
+        "description": "Emplacement où stocker les données binaires telles que les vignettes de scènes, les images de performeurs, de studios et d'étiquettes. Après avoir modifié cette valeur, les données existantes doivent être migrées à l'aide de la tâche Migrer les blobs. Voir la page Tâches de migration.",
         "heading": "Type d'enregistrement de données binaires"
       },
-      "cache_location": "Emplacement du cache",
+      "cache_location": "Emplacement du cache. Requis si le flux est diffusé à l'aide de HLS (comme sur les appareils Apple) ou de DASH.",
       "cache_path_head": "Chemin du cache",
       "calculate_md5_and_ohash_desc": "Calculer la somme de contrôle MD5 en complément de oshash. Son activation entraîne un ralentissement des analyses initiales. Le hachage du nom de fichier doit être défini sur oshash pour désactiver le calcul MD5.",
       "calculate_md5_and_ohash_label": "Calculer le MD5 pour les vidéos",
@@ -281,6 +282,7 @@
       "chrome_cdp_path_desc": "Chemin de l'exécutable Chrome, ou adresse distante (commençant par http:// ou https://, par exemple http://localhost:9222/json/version) d'une instance de Chrome.",
       "create_galleries_from_folders_desc": "Coché, crée des galeries à partir de dossiers contenant des images.",
       "create_galleries_from_folders_label": "Créer des galeries à partir de dossiers contenant des images",
+      "database": "Base de données",
       "db_path_head": "Chemin de la base de données",
       "directory_locations_to_your_content": "Emplacements de votre contenu",
       "excluded_image_gallery_patterns_desc": "Expressions régulières de fichiers images et galeries ou de chemins d'accès à exclure de l'analyse et à ajouter au nettoyage",
@@ -288,6 +290,10 @@
       "excluded_video_patterns_desc": "Expressions régulières de fichiers vidéo ou de chemins d'accès à exclure de l'analyse et à ajouter au nettoyage",
       "excluded_video_patterns_head": "Modèles de vidéo exclus",
       "ffmpeg": {
+        "hardware_acceleration": {
+          "desc": "Utiliser le matériel disponible pour encoder la vidéo en vue d'un transcodage en temps réel.",
+          "heading": "Encodage matériel FFmpeg"
+        },
         "live_transcode": {
           "input_args": {
             "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ d'entrée lors du transcodage vidéo en temps réel.",
@@ -300,8 +306,8 @@
         },
         "transcode": {
           "input_args": {
-            "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ d'entrée lors de la génération de la vidéo.",
-            "heading": "Arguments d'entrée pour le transcodage FFmpeg"
+            "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ d'entrée lors du transcodage vidéo en temps réel.",
+            "heading": "Arguments d'entrée pour le transcodage FFmpeg en temps réel"
           },
           "output_args": {
             "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ de sortie lors de la génération de la vidéo.",
@@ -309,6 +315,8 @@
           }
         }
       },
+      "funscript_heatmap_draw_range": "Inclure l'amplitude dans les cartes thermiques générées",
+      "funscript_heatmap_draw_range_desc": "Dessiner l'étendue du mouvement sur l'axe des ordonnées de la carte thermique générée. Les cartes thermiques existantes devront être régénérées après modifications.",
       "gallery_cover_regex_desc": "Expression régulière utilisée pour identifier une image comme vignette de la galerie",
       "gallery_cover_regex_label": "Modèle de vignette de la galerie",
       "gallery_ext_desc": "Liste d'extensions de fichiers séparées par des virgules qui seront reconnues comme des archives zip de la galerie.",
@@ -318,6 +326,7 @@
       "generated_files_location": "Emplacement des fichiers générés (marqueurs de scène, aperçus de scène, sprites, etc.)",
       "generated_path_head": "Chemin des fichiers générés",
       "hashing": "Hachage",
+      "heatmap_generation": "Génération de la carte thermique du script interactif",
       "image_ext_desc": "Liste d'extensions de fichiers séparées par des virgules qui seront reconnues comme des images.",
       "image_ext_head": "Extensions des images",
       "include_audio_desc": "Inclure le flux audio lors de la génération des aperçus.",
@@ -346,7 +355,7 @@
         "heading": "Chemin des extracteurs de contenu"
       },
       "scraping": "Extraction de données",
-      "sqlite_location": "Emplacement du fichier de base de données SQLite (nécessite un redémarrage)",
+      "sqlite_location": "Emplacement du fichier de base de données SQLite (nécessite un redémarrage). AVERTISSEMENT : Le stockage de la base de données sur un système différent de celui qui exécute le serveur Stash (c'est-à-dire sur le réseau) n'est pas pris en charge !",
       "video_ext_desc": "Liste d'extensions de fichiers séparées par des virgules qui seront reconnues comme des vidéos.",
       "video_ext_head": "Extensions de fichiers vidéo",
       "video_head": "Vidéo"
@@ -417,6 +426,7 @@
       "generate_previews_during_scan_tooltip": "Générer des aperçus WebP animés, requis uniquement si le mode d'aperçu est défini sur Image animée.",
       "generate_sprites_during_scan": "Générer les sprites de progression",
       "generate_thumbnails_during_scan": "Générer des vignettes pour les images",
+      "generate_video_covers_during_scan": "Générer les vignettes de scène",
       "generate_video_previews_during_scan": "Générer les aperçus",
       "generate_video_previews_during_scan_tooltip": "Générer des aperçus vidéo joués lors du survol d'une scène",
       "generated_content": "Contenu généré",
@@ -444,7 +454,16 @@
       "incremental_import": "Importation incrémentielle à partir d'un fichier zip d'exportation fourni.",
       "job_queue": "File d'attente des tâches",
       "maintenance": "Maintenance",
+      "migrate_blobs": {
+        "delete_old": "Supprimer les anciennes données",
+        "description": "Migrer les blobs vers le système de stockage de blobs actuel. Cette migration doit être exécutée après avoir modifié le système de stockage des blobs. Il est possible de supprimer les anciennes données après migration."
+      },
       "migrate_hash_files": "Utilisé après modification de l'empreinte des fichiers générés pour renommer les existants au nouveau format.",
+      "migrate_scene_screenshots": {
+        "delete_files": "Supprimer les fichiers de vignette",
+        "description": "Migrer les vignettes de scène dans le nouveau système de stockage blob. Cette migration doit être exécutée après avoir migré un système existant vers la version 0.20. Il est possible de supprimer les anciennes vignettes après migration.",
+        "overwrite_existing": "Remplacer les blobs existants par les données de vignettes"
+      },
       "migrations": "Migrations",
       "only_dry_run": "Effectuer un essai à blanc. Ne supprime rien",
       "plugin_tasks": "Tâches de Plugin",
@@ -516,6 +535,9 @@
           "heading": "Désactiver la création depuis la liste déroulante"
         },
         "heading": "Édition",
+        "max_options_shown": {
+          "label": "Nombre maximal d'éléments à afficher dans les listes déroulantes de sélection"
+        },
         "rating_system": {
           "star_precision": {
             "label": "Précision de la notation",
@@ -555,6 +577,11 @@
       },
       "image_lightbox": {
         "heading": "Visionneuse d'images"
+      },
+      "image_wall": {
+        "direction": "Orientation",
+        "heading": "Mur d'images",
+        "margin": "Marge (pixels)"
       },
       "images": {
         "heading": "Images",
@@ -699,6 +726,8 @@
   },
   "custom": "Personnalisé",
   "date": "Date",
+  "date_format": "AAAA-MM-JJ",
+  "datetime_format": "AAAA-MM-JJ HH:MM",
   "death_date": "Date du décès",
   "death_year": "Année du décès",
   "descending": "Descendant",
@@ -722,6 +751,14 @@
     "edit_entity_title": "Éditer {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Inclure les objets liés dans l'exportation",
     "export_title": "Exporter",
+    "imagewall": {
+      "direction": {
+        "column": "Colonne",
+        "description": "Agencement en colonnes ou en lignes.",
+        "row": "Ligne"
+      },
+      "margin_desc": "Nombre de pixels de marge autour de chaque image entière."
+    },
     "lightbox": {
       "delay": "Délai (Secondes)",
       "display_mode": {
@@ -731,6 +768,7 @@
         "original": "Original"
       },
       "options": "Options",
+      "page_header": "Page {page} / {total}",
       "reset_zoom_on_nav": "Réinitialisation du facteur de zoom lors d'un changement d'image",
       "scale_up": {
         "description": "Redimensionner les petites images pour les adapter à l'écran",
@@ -758,6 +796,7 @@
       "destination": "Réaffecter à"
     },
     "scene_gen": {
+      "covers": "Vignettes de scène",
       "force_transcodes": "Forcer la génération du transcodage",
       "force_transcodes_tooltip": "Par défaut, les transcodes ne sont générés que lorsque le fichier vidéo n'est pas pris en charge par le navigateur. Activé, les transcodes seront générés même si le fichier vidéo semble être pris en charge par le navigateur.",
       "image_previews": "Aperçus d'images animées",
@@ -847,6 +886,11 @@
     "warmth": "Température"
   },
   "empty_server": "Ajoutez quelques scènes à votre serveur pour afficher les recommandations sur cette page.",
+  "errors": {
+    "image_index_greater_than_zero": "L'index de l'image doit être supérieur à 0",
+    "lazy_component_error_help": "Si vous avez récemment mis à jour Stash, merci de recharger la page ou de vider le cache de votre navigateur.",
+    "something_went_wrong": "Quelque chose n'a pas fonctionné."
+  },
   "ethnicity": "Ethnicité",
   "existing_value": "valeur existante",
   "eye_color": "Couleur des yeux",
