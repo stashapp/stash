@@ -139,7 +139,7 @@
       "blacklist_label": "Lista Nera",
       "query_mode_auto": "Automatico",
       "query_mode_auto_desc": "Usa metadati se presenti, o nome file",
-      "query_mode_dir": "Dir",
+      "query_mode_dir": "Elenco",
       "query_mode_dir_desc": "Usa solo la cartella che contiene il file video",
       "query_mode_filename": "Nome file",
       "query_mode_filename_desc": "Usa solo il nome file",
