@@ -131,7 +131,10 @@ func Start() error {
 	manager.GetInstance().PluginCache.RegisterGQLHandler(gqlHandler)
 
 	r.HandleFunc("/graphql", gqlHandlerFunc)
-	r.HandleFunc("/playground", gqlPlayground.Handler("GraphQL playground", "/graphql"))
+	r.HandleFunc("/playground", func(w http.ResponseWriter, r *http.Request) {
+		endpoint := getProxyPrefix(r) + "/graphql"
+		gqlPlayground.Handler("GraphQL playground", endpoint)(w, r)
+	})
 
 	// session handlers
 	r.Get(loginEndPoint, handleLogin(loginUIBox))
@@ -231,19 +234,19 @@ func Start() error {
 			if err != nil {
 				panic(err)
 			}
+			indexHtml := string(data)
 
-			prefix := getProxyPrefix(r.Header)
-			baseURLIndex := strings.ReplaceAll(string(data), "%COLOR%", themeColor)
-			baseURLIndex = strings.ReplaceAll(baseURLIndex, "/%BASE_URL%", prefix)
-			baseURLIndex = strings.Replace(baseURLIndex, "base href=\"/\"", fmt.Sprintf("base href=\"%s\"", prefix+"/"), 1)
-			_, _ = w.Write([]byte(baseURLIndex))
+			prefix := getProxyPrefix(r)
+			indexHtml = strings.ReplaceAll(indexHtml, "%COLOR%", themeColor)
+			indexHtml = strings.Replace(indexHtml, `<base href="/"`, fmt.Sprintf(`<base href="%s/"`, prefix), 1)
+			_, _ = w.Write([]byte(indexHtml))
 		} else {
 			isStatic, _ := path.Match("/static/*/*", r.URL.Path)
 			if isStatic {
 				w.Header().Add("Cache-Control", "max-age=604800000")
 			}
 
-			prefix := getProxyPrefix(r.Header)
+			prefix := getProxyPrefix(r)
 			if prefix != "" {
 				r.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
 			}
@@ -518,7 +521,7 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		if strings.Compare("https", r.URL.Scheme) == 0 || r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https" {
 			scheme = "https"
 		}
-		prefix := getProxyPrefix(r.Header)
+		prefix := getProxyPrefix(r)
 
 		baseURL := scheme + "://" + r.Host + prefix
 
@@ -534,11 +537,6 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
-func getProxyPrefix(headers http.Header) string {
-	prefix := ""
-	if headers.Get("X-Forwarded-Prefix") != "" {
-		prefix = strings.TrimRight(headers.Get("X-Forwarded-Prefix"), "/")
-	}
-
-	return prefix
+func getProxyPrefix(r *http.Request) string {
+	return strings.TrimRight(r.Header.Get("X-Forwarded-Prefix"), "/")
 }

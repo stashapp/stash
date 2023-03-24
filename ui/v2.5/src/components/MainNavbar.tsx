@@ -32,7 +32,7 @@ import {
   faUser,
   faVideo,
 } from "@fortawesome/free-solid-svg-icons";
-import { getBaseURL } from "src/core/createClient";
+import { baseURL } from "src/core/createClient";
 
 interface IMenuItem {
   name: string;
@@ -257,7 +257,7 @@ export const MainNavbar: React.FC = () => {
       return (
         <Button
           className="minimal logout-button d-flex align-items-center"
-          href={`${getBaseURL()}logout`}
+          href={`${baseURL}logout`}
           title={intl.formatMessage({ id: "actions.logout" })}
         >
           <Icon icon={faSignOutAlt} />
