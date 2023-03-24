@@ -1,10 +1,10 @@
 package api
 
 import (
-	"embed"
 	"errors"
 	"fmt"
 	"html/template"
+	"io/fs"
 	"net/http"
 	"strings"
 
@@ -13,11 +13,10 @@ import (
 	"github.com/stashapp/stash/pkg/session"
 )
 
-const loginRootDir = "login"
 const returnURLParam = "returnURL"
 
-func getLoginPage(loginUIBox embed.FS) []byte {
-	data, err := loginUIBox.ReadFile(loginRootDir + "/login.html")
+func getLoginPage(loginUIBox fs.FS) []byte {
+	data, err := fs.ReadFile(loginUIBox, "login.html")
 	if err != nil {
 		panic(err)
 	}
@@ -29,7 +28,7 @@ type loginTemplateData struct {
 	Error string
 }
 
-func serveLoginPage(loginUIBox embed.FS, w http.ResponseWriter, r *http.Request, returnURL string, loginError string) {
+func serveLoginPage(loginUIBox fs.FS, w http.ResponseWriter, r *http.Request, returnURL string, loginError string) {
 	loginPage := string(getLoginPage(loginUIBox))
 	prefix := getProxyPrefix(r)
 	loginPage = strings.ReplaceAll(loginPage, "/%BASE_URL%", prefix)
@@ -47,7 +46,7 @@ func serveLoginPage(loginUIBox embed.FS, w http.ResponseWriter, r *http.Request,
 	}
 }
 
-func handleLogin(loginUIBox embed.FS) http.HandlerFunc {
+func handleLogin(loginUIBox fs.FS) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		returnURL := r.URL.Query().Get(returnURLParam)
 
@@ -65,7 +64,7 @@ func handleLogin(loginUIBox embed.FS) http.HandlerFunc {
 	}
 }
 
-func handleLoginPost(loginUIBox embed.FS) http.HandlerFunc {
+func handleLoginPost(loginUIBox fs.FS) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		url := r.FormValue(returnURLParam)
 		if url == "" {

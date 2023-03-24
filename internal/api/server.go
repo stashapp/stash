@@ -188,18 +188,9 @@ func Start() error {
 		_, _ = w.Write([]byte("{}"))
 	})
 
-	r.HandleFunc("/login*", func(w http.ResponseWriter, r *http.Request) {
-		ext := path.Ext(r.URL.Path)
-		if ext == ".html" || ext == "" {
-			handleLogin(loginUIBox)(w, r)
-		} else {
-			r.URL.Path = strings.TrimPrefix(r.URL.Path, loginEndPoint)
-			loginRoot, err := fs.Sub(loginUIBox, loginRootDir)
-			if err != nil {
-				panic(err)
-			}
-			http.FileServer(http.FS(loginRoot)).ServeHTTP(w, r)
-		}
+	r.HandleFunc("/login/*", func(w http.ResponseWriter, r *http.Request) {
+		r.URL.Path = strings.TrimPrefix(r.URL.Path, loginEndPoint)
+		http.FileServer(http.FS(loginUIBox)).ServeHTTP(w, r)
 	})
 
 	// Serve static folders
@@ -211,12 +202,10 @@ func Start() error {
 	}
 
 	customUILocation := c.GetCustomUILocation()
-	static := statigz.FileServer(uiBox)
+	static := statigz.FileServer(uiBox.(fs.ReadDirFS))
 
 	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
-		const uiRootDir = "v2.5/build"
-
 		ext := path.Ext(r.URL.Path)
 
 		if customUILocation != "" {
@@ -230,7 +219,7 @@ func Start() error {
 
 		if ext == ".html" || ext == "" {
 			themeColor := c.GetThemeColor()
-			data, err := uiBox.ReadFile(uiRootDir + "/index.html")
+			data, err := fs.ReadFile(uiBox, "index.html")
 			if err != nil {
 				panic(err)
 			}
@@ -245,12 +234,6 @@ func Start() error {
 			if isStatic {
 				w.Header().Add("Cache-Control", "max-age=604800000")
 			}
-
-			prefix := getProxyPrefix(r)
-			if prefix != "" {
-				r.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
-			}
-			r.URL.Path = uiRootDir + r.URL.Path
 
 			static.ServeHTTP(w, r)
 		}
