@@ -30,7 +30,7 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MingW. For examp
 ### Linux
 
 #### Arch Linux
-1. Install dependencies: `sudo pacman -Sy go git yarn gcc make nodejs ffmpeg --needed`
+1. Install dependencies: `sudo pacman -S go git yarn gcc make nodejs ffmpeg --needed`
 
 #### Ubuntu
 1. Install dependencies: `sudo apt-get install golang git gcc nodejs ffmpeg -y`
