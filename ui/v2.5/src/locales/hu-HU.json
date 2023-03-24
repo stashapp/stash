@@ -465,7 +465,6 @@
   "scene_id": "Jelenet ID",
   "scenes": "Jelenetek",
   "search_filter": {
-    "add_filter": "Szűrő Hozzáadása",
     "name": "Szűrő",
     "saved_filters": "Mentett szűrők",
     "update_filter": "Szűrő Frissítése"

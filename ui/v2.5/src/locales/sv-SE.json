@@ -1008,7 +1008,6 @@
   "scenes": "Scener",
   "scenes_updated_at": "Scen uppdaterad vid",
   "search_filter": {
-    "add_filter": "Lägg till filter",
     "name": "Filter",
     "saved_filters": "Sparade filter",
     "update_filter": "Uppdatera filter"

@@ -1005,7 +1005,6 @@
   "scenes": "シーン",
   "scenes_updated_at": "シーンの更新日：",
   "search_filter": {
-    "add_filter": "フィルターを追加",
     "name": "フィルター",
     "saved_filters": "保存済みのフィルター",
     "update_filter": "フィルターを更新"

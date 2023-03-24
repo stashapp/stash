@@ -388,7 +388,6 @@
   "scenes": "Scene",
   "scenes_updated_at": "Scenă Actualizată La",
   "search_filter": {
-    "add_filter": "Adaugă Filtru",
     "name": "Filtru",
     "saved_filters": "Filtre Salvate",
     "update_filter": "Actualizează Filtru"

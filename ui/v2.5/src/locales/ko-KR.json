@@ -965,7 +965,6 @@
   "scenes": "영상",
   "scenes_updated_at": "영상 업데이트 날짜",
   "search_filter": {
-    "add_filter": "필터 추가",
     "name": "필터",
     "saved_filters": "저장된 필터",
     "update_filter": "필터 업데이트"

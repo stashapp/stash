@@ -764,7 +764,6 @@
   "scenes": "Sahneler",
   "scenes_updated_at": "Sahne Güncelleme Tarihi",
   "search_filter": {
-    "add_filter": "Filtre Ekle",
     "name": "Filtre",
     "saved_filters": "Kaydedilmiş filtreler",
     "update_filter": "Filtreyi Güncelle"

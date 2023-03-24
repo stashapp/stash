@@ -988,7 +988,6 @@
   "scenes": "Сцены",
   "scenes_updated_at": "Сцена обновлена в",
   "search_filter": {
-    "add_filter": "Добавить фильтр",
     "name": "Фильтр",
     "saved_filters": "Сохраненные фильтры",
     "update_filter": "Обновить фильтр"

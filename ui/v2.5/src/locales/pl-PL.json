@@ -1002,7 +1002,6 @@
   "scenes": "Sceny",
   "scenes_updated_at": "Scena aktualizowana",
   "search_filter": {
-    "add_filter": "Dodaj filtr",
     "name": "Filtr",
     "saved_filters": "Zapisane filtry",
     "update_filter": "Aktualizuj filtr"

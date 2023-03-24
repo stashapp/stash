@@ -265,8 +265,6 @@
       "chrome_cdp_path_desc": "Dateipfad zur Chrome Executable oder einer externen Adresse (beginnend mit http:// oder https://, bspw. http://localhost:9222/json/version) die auf eine Chrome Instanz zeigt.",
       "create_galleries_from_folders_desc": "Wenn ausgewählt, erzeuge Galerien aus Verzeichnissen, welche Bilder enthalten.",
       "create_galleries_from_folders_label": "Erzeuge Galerien aus Verzeichnissen mit Bilder darin",
-      "gallery_cover_regex_desc": "Regulärer Ausdruck, verwendet um ein Bild als Galerietitelbild zu identifiziert",
-      "gallery_cover_regex_label": "Schema für Galerietitelbilder",
       "db_path_head": "Datenbank Pfad",
       "directory_locations_to_your_content": "Verzeichnis zu Ihren Inhalten",
       "excluded_image_gallery_patterns_desc": "Reguläre Ausdrücke für Dateinamen/Pfade von Bildern/Galerien, welche von Scans ausgeschlossen werden und beim Aufräumen der Datenbank berücksichtigt werden sollen",
@@ -295,6 +293,8 @@
           }
         }
       },
+      "gallery_cover_regex_desc": "Regulärer Ausdruck, verwendet um ein Bild als Galerietitelbild zu identifiziert",
+      "gallery_cover_regex_label": "Schema für Galerietitelbilder",
       "gallery_ext_desc": "Durch Kommas getrennte Liste von Dateiformaten, welche als Galeriecontainer gelesen werden sollen.",
       "gallery_ext_head": "Galeriecontainer Dateiformate",
       "generated_file_naming_hash_desc": "Verwende MD5 oder oshash für die Benennung der generierten Dateien. Um dies zu ändern, müssen für alle Szenen der entsprechende MD5/oshash berechnet werden. Nachdem dieser Wert geändert wurde, müssen vorhandene generierte Dateien migriert oder neu generiert werden. Siehe Aufgabenseite für die Migration.",
@@ -1006,7 +1006,6 @@
   "scenes": "Szenen",
   "scenes_updated_at": "Szene aktualisiert am",
   "search_filter": {
-    "add_filter": "Filter hinzufügen",
     "name": "Filter",
     "saved_filters": "Gespeicherte Filter",
     "update_filter": "Filter aktualisieren"
