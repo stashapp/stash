@@ -333,17 +333,33 @@ func (qb *blobJoinQueryBuilder) UpdateImage(ctx context.Context, id int, blobCol
 	if len(image) == 0 {
 		return qb.DestroyImage(ctx, id, blobCol)
 	}
+
+	oldChecksum, err := qb.getChecksum(ctx, id, blobCol)
+	if err != nil {
+		return err
+	}
+
 	checksum, err := qb.blobStore.Write(ctx, image)
 	if err != nil {
 		return err
 	}
 
 	sqlQuery := fmt.Sprintf("UPDATE %s SET %s = ? WHERE id = ?", qb.joinTable, blobCol)
-	_, err = qb.tx.Exec(ctx, sqlQuery, checksum, id)
-	return err
+	if _, err := qb.tx.Exec(ctx, sqlQuery, checksum, id); err != nil {
+		return err
+	}
+
+	// #3595 - delete the old blob if the checksum is different
+	if oldChecksum != nil && *oldChecksum != checksum {
+		if err := qb.blobStore.Delete(ctx, *oldChecksum); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
-func (qb *blobJoinQueryBuilder) DestroyImage(ctx context.Context, id int, blobCol string) error {
+func (qb *blobJoinQueryBuilder) getChecksum(ctx context.Context, id int, blobCol string) (*string, error) {
 	sqlQuery := utils.StrFormat(`
 SELECT {joinTable}.{joinCol} FROM {joinTable} WHERE {joinTable}.id = ?
 `, utils.StrFormatMap{
@@ -354,10 +370,23 @@ SELECT {joinTable}.{joinCol} FROM {joinTable} WHERE {joinTable}.id = ?
 	var checksum null.String
 	err := qb.repository.querySimple(ctx, sqlQuery, []interface{}{id}, &checksum)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if !checksum.Valid {
+		return nil, nil
+	}
+
+	return &checksum.String, nil
+}
+
+func (qb *blobJoinQueryBuilder) DestroyImage(ctx context.Context, id int, blobCol string) error {
+	checksum, err := qb.getChecksum(ctx, id, blobCol)
+	if err != nil {
+		return err
+	}
+
+	if checksum == nil {
 		// no image to delete
 		return nil
 	}
@@ -367,7 +396,7 @@ SELECT {joinTable}.{joinCol} FROM {joinTable} WHERE {joinTable}.id = ?
 		return err
 	}
 
-	return qb.blobStore.Delete(ctx, checksum.String)
+	return qb.blobStore.Delete(ctx, *checksum)
 }
 
 func (qb *blobJoinQueryBuilder) HasImage(ctx context.Context, id int, blobCol string) (bool, error) {
