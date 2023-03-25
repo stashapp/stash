@@ -27,6 +27,8 @@ type SceneFilterType struct {
 	Checksum *StringCriterionInput `json:"checksum"`
 	// Filter by file phash
 	Phash *StringCriterionInput `json:"phash"`
+	// Filter by phash distance
+	PhashDistance *PhashDistanceCriterionInput `json:"phash_distance"`
 	// Filter by path
 	Path *StringCriterionInput `json:"path"`
 	// Filter by file count
