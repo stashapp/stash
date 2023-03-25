@@ -40,6 +40,7 @@ export const PathFilter: React.FC<IInputFilterProps> = ({
           setCurrentDirectory={(v) => onValueChanged(v)}
           collapsible
           quoteSpaced
+          hideError
           defaultDirectories={libraryPaths}
         />
       )}
