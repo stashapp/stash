@@ -364,6 +364,10 @@ func (qb *movieQueryBuilder) GetBackImage(ctx context.Context, movieID int) ([]b
 	return qb.GetImage(ctx, movieID, movieBackImageBlobColumn)
 }
 
+func (qb *movieQueryBuilder) HasBackImage(ctx context.Context, movieID int) (bool, error) {
+	return qb.HasImage(ctx, movieID, movieBackImageBlobColumn)
+}
+
 func (qb *movieQueryBuilder) FindByPerformerID(ctx context.Context, performerID int) ([]*models.Movie, error) {
 	query := `SELECT DISTINCT movies.*
 FROM movies
