@@ -13,6 +13,8 @@ interface IProps {
   defaultDirectories?: string[];
   appendButton?: JSX.Element;
   collapsible?: boolean;
+  quoteSpaced?: boolean;
+  hideError?: boolean;
 }
 
 export const FolderSelect: React.FC<IProps> = ({
@@ -21,15 +23,26 @@ export const FolderSelect: React.FC<IProps> = ({
   defaultDirectories,
   appendButton,
   collapsible = false,
+  quoteSpaced = false,
+  hideError = false,
 }) => {
   const [showBrowser, setShowBrowser] = React.useState(false);
   const [directory, setDirectory] = useState(currentDirectory);
-  const { data, error, loading } = useDirectory(directory);
+
+  const isQuoted =
+    quoteSpaced && directory.startsWith('"') && directory.endsWith('"');
+  const { data, error, loading } = useDirectory(
+    isQuoted ? directory.slice(1, -1) : directory
+  );
+
   const intl = useIntl();
 
+  const defaultDirectoriesOrEmpty = defaultDirectories ?? [];
+
   const selectableDirectories: string[] = currentDirectory
-    ? data?.directory.directories ?? defaultDirectories ?? []
-    : defaultDirectories ?? [];
+    ? data?.directory.directories ??
+      (error && hideError ? [] : defaultDirectoriesOrEmpty)
+    : defaultDirectoriesOrEmpty;
 
   const debouncedSetDirectory = useDebouncedSetState(setDirectory, 250);
 
@@ -40,6 +53,10 @@ export const FolderSelect: React.FC<IProps> = ({
   }, [currentDirectory, directory, debouncedSetDirectory]);
 
   function setInstant(value: string) {
+    if (quoteSpaced && value.includes(" ")) {
+      value = `"${value}"`;
+    }
+
     setCurrentDirectory(value);
     setDirectory(value);
   }
@@ -95,13 +112,13 @@ export const FolderSelect: React.FC<IProps> = ({
           <InputGroup.Append className="align-self-center">
             {loading ? (
               <LoadingIndicator inline small message="" />
-            ) : (
+            ) : !hideError ? (
               <Icon icon={faTimes} color="red" className="ml-3" />
-            )}
+            ) : undefined}
           </InputGroup.Append>
         ) : undefined}
       </InputGroup>
-      {error !== undefined && (
+      {!hideError && error !== undefined && (
         <h5 className="mt-4 text-break">Error: {error.message}</h5>
       )}
       <Collapse in={!collapsible || showBrowser}>
