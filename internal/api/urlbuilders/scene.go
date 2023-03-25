@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
-	"time"
 )
 
 type SceneURLBuilder struct {
@@ -50,8 +49,8 @@ func (b SceneURLBuilder) GetSpriteURL(checksum string) string {
 	return b.BaseURL + "/scene/" + checksum + "_sprite.jpg"
 }
 
-func (b SceneURLBuilder) GetScreenshotURL(updateTime time.Time) string {
-	return b.BaseURL + "/scene/" + b.SceneID + "/screenshot?" + strconv.FormatInt(updateTime.Unix(), 10)
+func (b SceneURLBuilder) GetScreenshotURL() string {
+	return b.BaseURL + "/scene/" + b.SceneID + "/screenshot"
 }
 
 func (b SceneURLBuilder) GetChaptersVTTURL() string {

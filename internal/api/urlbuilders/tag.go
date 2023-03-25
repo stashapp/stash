@@ -6,19 +6,17 @@ import (
 )
 
 type TagURLBuilder struct {
-	BaseURL   string
-	TagID     string
-	UpdatedAt string
+	BaseURL string
+	TagID   string
 }
 
 func NewTagURLBuilder(baseURL string, tag *models.Tag) TagURLBuilder {
 	return TagURLBuilder{
-		BaseURL:   baseURL,
-		TagID:     strconv.Itoa(tag.ID),
-		UpdatedAt: strconv.FormatInt(tag.UpdatedAt.Timestamp.Unix(), 10),
+		BaseURL: baseURL,
+		TagID:   strconv.Itoa(tag.ID),
 	}
 }
 
 func (b TagURLBuilder) GetTagImageURL() string {
-	return b.BaseURL + "/tag/" + b.TagID + "/image?" + b.UpdatedAt
+	return b.BaseURL + "/tag/" + b.TagID + "/image"
 }

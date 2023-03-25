@@ -6,19 +6,17 @@ import (
 )
 
 type StudioURLBuilder struct {
-	BaseURL   string
-	StudioID  string
-	UpdatedAt string
+	BaseURL  string
+	StudioID string
 }
 
 func NewStudioURLBuilder(baseURL string, studio *models.Studio) StudioURLBuilder {
 	return StudioURLBuilder{
-		BaseURL:   baseURL,
-		StudioID:  strconv.Itoa(studio.ID),
-		UpdatedAt: strconv.FormatInt(studio.UpdatedAt.Timestamp.Unix(), 10),
+		BaseURL:  baseURL,
+		StudioID: strconv.Itoa(studio.ID),
 	}
 }
 
 func (b StudioURLBuilder) GetStudioImageURL() string {
-	return b.BaseURL + "/studio/" + b.StudioID + "/image?" + b.UpdatedAt
+	return b.BaseURL + "/studio/" + b.StudioID + "/image"
 }

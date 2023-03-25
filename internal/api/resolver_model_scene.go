@@ -179,7 +179,7 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePat
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	config := manager.GetInstance().Config
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj.ID)
-	screenshotPath := builder.GetScreenshotURL(obj.UpdatedAt)
+	screenshotPath := builder.GetScreenshotURL()
 	previewPath := builder.GetStreamPreviewURL()
 	streamPath := builder.GetStreamURL(config.GetAPIKey()).String()
 	webpPath := builder.GetStreamPreviewImageURL()

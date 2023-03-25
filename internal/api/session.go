@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"html/template"
@@ -11,6 +12,7 @@ import (
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/session"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 const returnURLParam = "returnURL"
@@ -39,12 +41,17 @@ func serveLoginPage(loginUIBox fs.FS, w http.ResponseWriter, r *http.Request, re
 		return
 	}
 
-	setPageSecurityHeaders(w, r)
-	w.Header().Set("Content-Type", "text/html")
-	err = templ.Execute(w, loginTemplateData{URL: returnURL, Error: loginError})
+	buffer := bytes.Buffer{}
+	err = templ.Execute(&buffer, loginTemplateData{URL: returnURL, Error: loginError})
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error: %s", err), http.StatusInternalServerError)
+		return
 	}
+
+	w.Header().Set("Content-Type", "text/html")
+	setPageSecurityHeaders(w, r)
+
+	utils.ServeStaticContent(w, r, buffer.Bytes())
 }
 
 func handleLogin(loginUIBox fs.FS) http.HandlerFunc {

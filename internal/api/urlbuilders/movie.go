@@ -6,23 +6,21 @@ import (
 )
 
 type MovieURLBuilder struct {
-	BaseURL   string
-	MovieID   string
-	UpdatedAt string
+	BaseURL string
+	MovieID string
 }
 
 func NewMovieURLBuilder(baseURL string, movie *models.Movie) MovieURLBuilder {
 	return MovieURLBuilder{
-		BaseURL:   baseURL,
-		MovieID:   strconv.Itoa(movie.ID),
-		UpdatedAt: strconv.FormatInt(movie.UpdatedAt.Timestamp.Unix(), 10),
+		BaseURL: baseURL,
+		MovieID: strconv.Itoa(movie.ID),
 	}
 }
 
 func (b MovieURLBuilder) GetMovieFrontImageURL() string {
-	return b.BaseURL + "/movie/" + b.MovieID + "/frontimage?" + b.UpdatedAt
+	return b.BaseURL + "/movie/" + b.MovieID + "/frontimage"
 }
 
 func (b MovieURLBuilder) GetMovieBackImageURL() string {
-	return b.BaseURL + "/movie/" + b.MovieID + "/backimage?" + b.UpdatedAt
+	return b.BaseURL + "/movie/" + b.MovieID + "/backimage"
 }

@@ -80,6 +80,7 @@ func (s *DownloadStore) Serve(hash string, w http.ResponseWriter, r *http.Reques
 	if f.contentType != "" {
 		w.Header().Add("Content-Type", f.contentType)
 	}
+	w.Header().Set("Cache-Control", "no-store")
 	http.ServeFile(w, r, f.path)
 }
 

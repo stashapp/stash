@@ -35,6 +35,7 @@ import (
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/utils"
 	"github.com/stashapp/stash/ui"
 )
 
@@ -128,6 +129,7 @@ func Start() error {
 	gqlSrv.Use(gqlExtension.Introspection{})
 
 	gqlHandlerFunc := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-store")
 		gqlSrv.ServeHTTP(w, r)
 	}
 
@@ -143,11 +145,6 @@ func Start() error {
 		endpoint := getProxyPrefix(r) + gqlEndpoint
 		gqlPlayground.Handler("GraphQL playground", endpoint)(w, r)
 	})
-
-	// session handlers
-	r.Get(loginEndpoint, handleLogin(loginUIBox))
-	r.Post(loginEndpoint, handleLoginPost(loginUIBox))
-	r.Get(logoutEndpoint, handleLogout())
 
 	r.Mount("/performer", performerRoutes{
 		txnManager:      txnManager,
@@ -182,23 +179,17 @@ func Start() error {
 
 	r.HandleFunc("/css", cssHandler(c, pluginCache))
 	r.HandleFunc("/javascript", javascriptHandler(c, pluginCache))
-	r.HandleFunc("/customlocales", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		if c.GetCustomLocalesEnabled() {
-			// search for custom-locales.json in current directory, then $HOME/.stash
-			fn := c.GetCustomLocalesPath()
-			exists, _ := fsutil.FileExists(fn)
-			if exists {
-				http.ServeFile(w, r, fn)
-				return
-			}
-		}
-		_, _ = w.Write([]byte("{}"))
-	})
+	r.HandleFunc("/customlocales", customLocalesHandler(c))
 
+	staticLoginUI := statigz.FileServer(loginUIBox.(fs.ReadDirFS))
+
+	r.Get(loginEndpoint, handleLogin(loginUIBox))
+	r.Post(loginEndpoint, handleLoginPost(loginUIBox))
+	r.Get(logoutEndpoint, handleLogout())
 	r.HandleFunc(loginEndpoint+"/*", func(w http.ResponseWriter, r *http.Request) {
 		r.URL.Path = strings.TrimPrefix(r.URL.Path, loginEndpoint)
-		http.FileServer(http.FS(loginUIBox)).ServeHTTP(w, r)
+		w.Header().Set("Cache-Control", "no-cache")
+		staticLoginUI.ServeHTTP(w, r)
 	})
 
 	// Serve static folders
@@ -210,7 +201,7 @@ func Start() error {
 	}
 
 	customUILocation := c.GetCustomUILocation()
-	static := statigz.FileServer(uiBox.(fs.ReadDirFS))
+	staticUI := statigz.FileServer(uiBox.(fs.ReadDirFS))
 
 	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
@@ -236,15 +227,20 @@ func Start() error {
 			prefix := getProxyPrefix(r)
 			indexHtml = strings.ReplaceAll(indexHtml, "%COLOR%", themeColor)
 			indexHtml = strings.Replace(indexHtml, `<base href="/"`, fmt.Sprintf(`<base href="%s/"`, prefix), 1)
+
+			w.Header().Set("Content-Type", "text/html")
 			setPageSecurityHeaders(w, r)
-			_, _ = w.Write([]byte(indexHtml))
+
+			utils.ServeStaticContent(w, r, []byte(indexHtml))
 		} else {
-			isStatic, _ := path.Match("/static/*/*", r.URL.Path)
+			isStatic, _ := path.Match("/assets/*", r.URL.Path)
 			if isStatic {
-				w.Header().Add("Cache-Control", "max-age=604800000")
+				w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+			} else {
+				w.Header().Set("Cache-Control", "no-cache")
 			}
 
-			static.ServeHTTP(w, r)
+			staticUI.ServeHTTP(w, r)
 		}
 	})
 
@@ -295,52 +291,34 @@ func Start() error {
 	return nil
 }
 
-func copyFile(w io.Writer, path string) (time.Time, error) {
+func copyFile(w io.Writer, path string) error {
 	f, err := os.Open(path)
 	if err != nil {
-		return time.Time{}, err
+		return err
 	}
 	defer f.Close()
 
-	info, err := f.Stat()
-	if err != nil {
-		return time.Time{}, err
-	}
-
 	_, err = io.Copy(w, f)
 
-	return info.ModTime(), err
+	return err
 }
 
-func serveFiles(w http.ResponseWriter, r *http.Request, name string, paths []string) {
+func serveFiles(w http.ResponseWriter, r *http.Request, paths []string) {
 	buffer := bytes.Buffer{}
 
-	latestModTime := time.Time{}
-
 	for _, path := range paths {
-		modTime, err := copyFile(&buffer, path)
+		err := copyFile(&buffer, path)
 		if err != nil {
 			logger.Errorf("error serving file %s: %v", path, err)
-		} else {
-			if modTime.After(latestModTime) {
-				latestModTime = modTime
-			}
-			buffer.Write([]byte("\n"))
 		}
+		buffer.Write([]byte("\n"))
 	}
 
-	// Always revalidate with server
-	w.Header().Set("Cache-Control", "no-cache")
-
-	bufferReader := bytes.NewReader(buffer.Bytes())
-	http.ServeContent(w, r, name, latestModTime, bufferReader)
+	utils.ServeStaticContent(w, r, buffer.Bytes())
 }
 
 func cssHandler(c *config.Instance, pluginCache *plugin.Cache) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// concatenate with plugin css files
-		w.Header().Set("Content-Type", "text/css")
-
 		// add plugin css files first
 		var paths []string
 
@@ -357,14 +335,13 @@ func cssHandler(c *config.Instance, pluginCache *plugin.Cache) func(w http.Respo
 			}
 		}
 
-		serveFiles(w, r, "custom.css", paths)
+		w.Header().Set("Content-Type", "text/css")
+		serveFiles(w, r, paths)
 	}
 }
 
 func javascriptHandler(c *config.Instance, pluginCache *plugin.Cache) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/javascript")
-
 		// add plugin javascript files first
 		var paths []string
 
@@ -381,7 +358,33 @@ func javascriptHandler(c *config.Instance, pluginCache *plugin.Cache) func(w htt
 			}
 		}
 
-		serveFiles(w, r, "custom.js", paths)
+		w.Header().Set("Content-Type", "text/javascript")
+		serveFiles(w, r, paths)
+	}
+}
+
+func customLocalesHandler(c *config.Instance) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		buffer := bytes.Buffer{}
+
+		if c.GetCustomLocalesEnabled() {
+			// search for custom-locales.json in current directory, then $HOME/.stash
+			path := c.GetCustomLocalesPath()
+			exists, _ := fsutil.FileExists(path)
+			if exists {
+				err := copyFile(&buffer, path)
+				if err != nil {
+					logger.Errorf("error serving file %s: %v", path, err)
+				}
+			}
+		}
+
+		if buffer.Len() == 0 {
+			buffer.Write([]byte("{}"))
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		utils.ServeStaticContent(w, r, buffer.Bytes())
 	}
 }
 

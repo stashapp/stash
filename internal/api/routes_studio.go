@@ -58,9 +58,7 @@ func (rs studioRoutes) Image(w http.ResponseWriter, r *http.Request) {
 		image, _ = utils.ProcessBase64Image(models.DefaultStudioImage)
 	}
 
-	if err := utils.ServeImage(image, w, r); err != nil {
-		logger.Warnf("error serving studio image: %v", err)
-	}
+	utils.ServeImage(w, r, image)
 }
 
 func (rs studioRoutes) StudioCtx(next http.Handler) http.Handler {
