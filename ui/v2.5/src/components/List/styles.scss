@@ -169,11 +169,22 @@ input[type="range"].zoom-slider {
   }
 }
 
-.modifier-selector {
-  margin-bottom: 1rem;
+.modifier-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
 
-  // to accommodate for caret
-  padding-right: 2rem;
+.modifier-options .modifier-option {
+  background-color: $secondary;
+  cursor: pointer;
+  font-size: 100%;
+  margin-bottom: 0.5rem;
+  margin-right: 0.25rem;
+
+  &.selected {
+    background-color: $primary;
+  }
 }
 
 .filter-tags .clear-all-button {
