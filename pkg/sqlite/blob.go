@@ -13,6 +13,7 @@ import (
 	"github.com/mattn/go-sqlite3"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/hash/md5"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/sqlite/blob"
 	"github.com/stashapp/stash/pkg/utils"
 	"gopkg.in/guregu/null.v4"
@@ -268,6 +269,7 @@ func (qb *BlobStore) Delete(ctx context.Context, checksum string) error {
 	if err := qb.delete(ctx, checksum); err != nil {
 		if qb.isConstraintError(err) {
 			// blob is still referenced - do not delete
+			logger.Debugf("Blob %s is still referenced - not deleting", checksum)
 			return nil
 		}
 
@@ -277,6 +279,7 @@ func (qb *BlobStore) Delete(ctx context.Context, checksum string) error {
 
 	// blob was deleted from the database - delete from filesystem if enabled
 	if qb.options.UseFilesystem {
+		logger.Debugf("Deleting blob %s from filesystem", checksum)
 		if err := qb.fsStore.Delete(ctx, checksum); err != nil {
 			return fmt.Errorf("deleting from filesystem: %w", err)
 		}
