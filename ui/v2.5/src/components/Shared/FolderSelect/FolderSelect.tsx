@@ -13,6 +13,7 @@ interface IProps {
   defaultDirectories?: string[];
   appendButton?: JSX.Element;
   collapsible?: boolean;
+  quoteSpaced?: boolean;
 }
 
 export const FolderSelect: React.FC<IProps> = ({
@@ -21,10 +22,17 @@ export const FolderSelect: React.FC<IProps> = ({
   defaultDirectories,
   appendButton,
   collapsible = false,
+  quoteSpaced = false,
 }) => {
   const [showBrowser, setShowBrowser] = React.useState(false);
   const [directory, setDirectory] = useState(currentDirectory);
-  const { data, error, loading } = useDirectory(directory);
+
+  const isQuoted =
+    quoteSpaced && directory.startsWith('"') && directory.endsWith('"');
+  const { data, error, loading } = useDirectory(
+    isQuoted ? directory.slice(1, -1) : directory
+  );
+
   const intl = useIntl();
 
   const selectableDirectories: string[] = currentDirectory
@@ -40,6 +48,10 @@ export const FolderSelect: React.FC<IProps> = ({
   }, [currentDirectory, directory, debouncedSetDirectory]);
 
   function setInstant(value: string) {
+    if (quoteSpaced && value.includes(" ")) {
+      value = `"${value}"`;
+    }
+
     setCurrentDirectory(value);
     setDirectory(value);
   }
