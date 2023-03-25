@@ -39,6 +39,7 @@ type MovieReader interface {
 	Query(ctx context.Context, movieFilter *MovieFilterType, findFilter *FindFilterType) ([]*Movie, int, error)
 	GetFrontImage(ctx context.Context, movieID int) ([]byte, error)
 	GetBackImage(ctx context.Context, movieID int) ([]byte, error)
+	HasBackImage(ctx context.Context, movieID int) (bool, error)
 	FindByPerformerID(ctx context.Context, performerID int) ([]*Movie, error)
 	CountByPerformerID(ctx context.Context, performerID int) (int, error)
 	FindByStudioID(ctx context.Context, studioID int) ([]*Movie, error)
