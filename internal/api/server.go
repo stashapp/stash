@@ -27,8 +27,8 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/vearutop/statigz"
 
+	"github.com/go-chi/cors"
 	"github.com/go-chi/httplog"
-	"github.com/rs/cors"
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
@@ -59,6 +59,7 @@ func Start() error {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Heartbeat("/healthz"))
+	r.Use(cors.AllowAll().Handler)
 	r.Use(authenticateHandler())
 	visitedPluginHandler := manager.GetInstance().SessionStore.VisitedPluginHandler()
 	r.Use(visitedPluginHandler)
@@ -75,7 +76,6 @@ func Start() error {
 	r.Use(SecurityHeadersMiddleware)
 	r.Use(middleware.DefaultCompress)
 	r.Use(middleware.StripSlashes)
-	r.Use(cors.AllowAll().Handler)
 	r.Use(BaseURLMiddleware)
 
 	recoverFunc := func(ctx context.Context, err interface{}) error {
