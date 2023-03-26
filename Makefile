@@ -246,6 +246,10 @@ ui: pre-build
 	$(SET) VITE_APP_STASH_VERSION=$(STASH_VERSION) $(SEPARATOR) \
 	cd ui/v2.5 && yarn build
 
+.PHONY: ui-sourcemaps
+ui-sourcemaps: export VITE_APP_SOURCEMAPS := true
+ui-sourcemaps: ui
+
 .PHONY: ui-start
 ui-start: pre-build
 	$(SET) VITE_APP_DATE="$(BUILD_DATE)" $(SEPARATOR) \

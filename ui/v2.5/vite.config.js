@@ -4,11 +4,14 @@ import legacy from "@vitejs/plugin-legacy";
 import tsconfigPaths from "vite-tsconfig-paths";
 import viteCompression from "vite-plugin-compression";
 
+const sourcemap = process.env.VITE_APP_SOURCEMAPS === "true";
+
 // https://vitejs.dev/config/
 export default defineConfig({
   base: "",
   build: {
     outDir: "build",
+    sourcemap: sourcemap,
     reportCompressedSize: false,
     rollupOptions: {
       output: {
