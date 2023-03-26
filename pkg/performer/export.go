@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
@@ -74,7 +75,7 @@ func ToJSON(ctx context.Context, reader ImageAliasStashIDGetter, performer *mode
 
 	image, err := reader.GetImage(ctx, performer.ID)
 	if err != nil {
-		return nil, fmt.Errorf("getting performers image: %w", err)
+		logger.Errorf("Error getting performer image: %v", err)
 	}
 
 	if len(image) > 0 {
