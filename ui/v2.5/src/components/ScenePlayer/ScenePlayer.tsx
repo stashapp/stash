@@ -17,6 +17,7 @@ import "./persist-volume";
 import "./markers";
 import "./vtt-thumbnails";
 import "./track-activity";
+import "./vrmode";
 import cx from "classnames";
 import {
   useSceneSaveActivity,
@@ -309,6 +310,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         },
         skipButtons: {},
         trackActivity: {},
+        vrMenu: {},
+        // vr: {},
       },
     };
 

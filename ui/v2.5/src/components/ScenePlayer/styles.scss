@@ -180,6 +180,17 @@ $sceneTabWidth: 450px;
     }
   }
 
+  .vjs-vr-selector {
+    .vjs-menu li {
+      font-size: 0.8em;
+    }
+
+    .vjs-button {
+      background: url("/vr.svg") center center no-repeat;
+      width: 50%;
+    }
+  }
+
   .vjs-marker {
     background-color: rgba(33, 33, 33, 0.8);
     bottom: 0;
