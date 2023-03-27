@@ -163,6 +163,7 @@ type PerformerReader interface {
 	QueryCount(ctx context.Context, galleryFilter *PerformerFilterType, findFilter *FindFilterType) (int, error)
 	AliasLoader
 	GetImage(ctx context.Context, performerID int) ([]byte, error)
+	HasImage(ctx context.Context, performerID int) (bool, error)
 	StashIDLoader
 	TagIDLoader
 }
