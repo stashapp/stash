@@ -16,7 +16,6 @@ endif
 
 # set LDFLAGS environment variable to any extra ldflags required
 # set OUTPUT to generate a specific binary name
-
 LDFLAGS := $(LDFLAGS)
 ifdef OUTPUT
   OUTPUT := -o $(OUTPUT)
@@ -28,6 +27,12 @@ export CGO_ENABLED = 1
 # and isn't necessary for static builds on Windows
 GO_BUILD_TAGS_WINDOWS := sqlite_omit_load_extension sqlite_stat4 osusergo
 GO_BUILD_TAGS_DEFAULT = $(GO_BUILD_TAGS_WINDOWS) netgo
+
+# set STASH_NOLEGACY environment variable or uncomment to disable legacy browser support
+# STASH_NOLEGACY := true
+
+# set STASH_SOURCEMAPS environment variable or uncomment to enable UI sourcemaps
+# STASH_SOURCEMAPS := true
 
 .PHONY: release
 release: pre-ui generate ui build-release
@@ -257,13 +262,23 @@ ui-env: pre-build
 	$(eval export VITE_APP_DATE := $(BUILD_DATE))
 	$(eval export VITE_APP_GITHASH := $(GITHASH))
 	$(eval export VITE_APP_STASH_VERSION := $(STASH_VERSION))
+ifdef STASH_NOLEGACY
+	$(eval export VITE_APP_NOLEGACY := true)
+endif
+ifdef STASH_SOURCEMAPS
+	$(eval export VITE_APP_SOURCEMAPS := true)
+endif
 
 .PHONY: ui
 ui: ui-env
 	cd ui/v2.5 && yarn build
 
+.PHONY: ui-nolegacy
+ui-nolegacy: STASH_NOLEGACY := true
+ui-nolegacy: ui
+
 .PHONY: ui-sourcemaps
-ui-sourcemaps: export VITE_APP_SOURCEMAPS := true
+ui-sourcemaps: STASH_SOURCEMAPS := true
 ui-sourcemaps: ui
 
 .PHONY: ui-start
