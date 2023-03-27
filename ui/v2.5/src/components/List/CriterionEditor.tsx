@@ -38,6 +38,8 @@ import { RatingFilter } from "./Filters/RatingFilter";
 import { BooleanFilter } from "./Filters/BooleanFilter";
 import { OptionsListFilter } from "./Filters/OptionsListFilter";
 import { PathFilter } from "./Filters/PathFilter";
+import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
+import PerformersFilter from "./Filters/PerformersFilter";
 
 interface IGenericCriterionEditor {
   criterion: Criterion<CriterionValue>;
@@ -102,6 +104,15 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
       criterion.modifier === CriterionModifier.NotNull
     ) {
       return;
+    }
+
+    if (criterion instanceof PerformersCriterion) {
+      return (
+        <PerformersFilter
+          criterion={criterion}
+          setCriterion={(c) => setCriterion(c)}
+        />
+      )
     }
 
     if (criterion instanceof ILabeledIdCriterion) {
