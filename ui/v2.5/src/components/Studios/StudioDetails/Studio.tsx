@@ -151,8 +151,10 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
   function renderImage() {
     let studioImage = studio.image_path;
     if (isEditing) {
-      if (image === null) {
-        studioImage = `${studioImage}&default=true`;
+      if (image === null && studioImage) {
+        const studioImageURL = new URL(studioImage);
+        studioImageURL.searchParams.set("default", "true");
+        studioImage = studioImageURL.toString();
       } else if (image) {
         studioImage = image;
       }

@@ -41,7 +41,7 @@ func (r *studioResolver) ImagePath(ctx context.Context, obj *models.Studio) (*st
 
 	// indicate that image is missing by setting default query param to true
 	if !hasImage {
-		imagePath += "?default=true"
+		imagePath += "&default=true"
 	}
 
 	return &imagePath, nil
