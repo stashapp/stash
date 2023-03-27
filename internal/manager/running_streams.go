@@ -81,7 +81,11 @@ func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter
 			// fall back to the scene image blob if the file isn't present
 			screenshotExists, _ := fsutil.FileExists(filepath)
 			if screenshotExists {
-				w.Header().Set("Cache-Control", "no-cache")
+				if r.URL.Query().Has("t") {
+					w.Header().Set("Cache-Control", "private, max-age=31536000, immutable")
+				} else {
+					w.Header().Set("Cache-Control", "no-cache")
+				}
 				http.ServeFile(w, r, filepath)
 				return
 			}

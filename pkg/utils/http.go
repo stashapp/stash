@@ -18,7 +18,11 @@ func GenerateETag(data []byte) string {
 // Serves static content, adding Cache-Control: no-cache and a generated ETag header.
 // Responds to conditional requests using the ETag.
 func ServeStaticContent(w http.ResponseWriter, r *http.Request, data []byte) {
-	w.Header().Set("Cache-Control", "no-cache")
+	if r.URL.Query().Has("t") {
+		w.Header().Set("Cache-Control", "private, max-age=31536000, immutable")
+	} else {
+		w.Header().Set("Cache-Control", "no-cache")
+	}
 	w.Header().Set("ETag", GenerateETag(data))
 
 	http.ServeContent(w, r, "", time.Time{}, bytes.NewReader(data))
@@ -27,7 +31,11 @@ func ServeStaticContent(w http.ResponseWriter, r *http.Request, data []byte) {
 // Serves static content at filepath, adding Cache-Control: no-cache.
 // Responds to conditional requests using the file modtime.
 func ServeStaticFile(w http.ResponseWriter, r *http.Request, filepath string) {
-	w.Header().Set("Cache-Control", "no-cache")
+	if r.URL.Query().Has("t") {
+		w.Header().Set("Cache-Control", "private, max-age=31536000, immutable")
+	} else {
+		w.Header().Set("Cache-Control", "no-cache")
+	}
 
 	http.ServeFile(w, r, filepath)
 }

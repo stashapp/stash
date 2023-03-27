@@ -54,7 +54,7 @@ func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if len(image) == 0 || defaultParam == "true" {
+	if len(image) == 0 {
 		image, _ = getRandomPerformerImageUsingName(performer.Name, performer.Gender, config.GetInstance().GetCustomPerformerImageLocation())
 	}
 

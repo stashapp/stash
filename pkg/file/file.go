@@ -132,7 +132,11 @@ func (f *BaseFile) Serve(fs FS, w http.ResponseWriter, r *http.Request) error {
 		content = bytes.NewReader(data)
 	}
 
-	w.Header().Add("Cache-Control", "no-cache")
+	if r.URL.Query().Has("t") {
+		w.Header().Set("Cache-Control", "private, max-age=31536000, immutable")
+	} else {
+		w.Header().Set("Cache-Control", "no-cache")
+	}
 	http.ServeContent(w, r, f.Basename, f.ModTime, content)
 
 	return nil

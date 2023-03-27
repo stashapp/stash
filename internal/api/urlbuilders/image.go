@@ -7,21 +7,23 @@ import (
 )
 
 type ImageURLBuilder struct {
-	BaseURL string
-	ImageID string
+	BaseURL   string
+	ImageID   string
+	UpdatedAt string
 }
 
 func NewImageURLBuilder(baseURL string, image *models.Image) ImageURLBuilder {
 	return ImageURLBuilder{
-		BaseURL: baseURL,
-		ImageID: strconv.Itoa(image.ID),
+		BaseURL:   baseURL,
+		ImageID:   strconv.Itoa(image.ID),
+		UpdatedAt: strconv.FormatInt(image.UpdatedAt.Unix(), 10),
 	}
 }
 
 func (b ImageURLBuilder) GetImageURL() string {
-	return b.BaseURL + "/image/" + b.ImageID + "/image"
+	return b.BaseURL + "/image/" + b.ImageID + "/image?t=" + b.UpdatedAt
 }
 
 func (b ImageURLBuilder) GetThumbnailURL() string {
-	return b.BaseURL + "/image/" + b.ImageID + "/thumbnail"
+	return b.BaseURL + "/image/" + b.ImageID + "/thumbnail?t=" + b.UpdatedAt
 }
