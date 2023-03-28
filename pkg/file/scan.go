@@ -523,13 +523,29 @@ func (s *scanJob) onNewFolder(ctx context.Context, file scanFile) (*Folder, erro
 }
 
 func (s *scanJob) onExistingFolder(ctx context.Context, f scanFile, existing *Folder) (*Folder, error) {
-	// check if the mod time is changed
+	update := false
+
+	// update if mod time is changed
 	entryModTime := f.ModTime
-
 	if !entryModTime.Equal(existing.ModTime) {
-		// update entry in store
 		existing.ModTime = entryModTime
+		update = true
+	}
 
+	// update if zip file ID has changed
+	fZfID := f.ZipFileID
+	existingZfID := existing.ZipFileID
+	if fZfID != existingZfID {
+		if fZfID == nil {
+			existing.ZipFileID = nil
+			update = true
+		} else if existingZfID == nil || *fZfID != *existingZfID {
+			existing.ZipFileID = fZfID
+			update = true
+		}
+	}
+
+	if update {
 		var err error
 		if err = s.Repository.FolderStore.Update(ctx, existing); err != nil {
 			return nil, fmt.Errorf("updating folder %q: %w", f.Path, err)
@@ -796,6 +812,12 @@ func (s *scanJob) handleRename(ctx context.Context, f File, fp []Fingerprint) (F
 	if err := s.withTxn(ctx, func(ctx context.Context) error {
 		if err := s.Repository.Update(ctx, f); err != nil {
 			return fmt.Errorf("updating file for rename %q: %w", fBase.Path, err)
+		}
+
+		if s.isZipFile(fBase.Basename) {
+			if err := TransferZipFolderHierarchy(ctx, s.Repository.FolderStore, fBase.ID, otherBase.Path, fBase.Path); err != nil {
+				return fmt.Errorf("moving folder hierarchy for renamed zip file %q: %w", fBase.Path, err)
+			}
 		}
 
 		if err := s.fireHandlers(ctx, f, other); err != nil {
