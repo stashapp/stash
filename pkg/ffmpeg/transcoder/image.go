@@ -10,6 +10,7 @@ var ErrUnsupportedFormat = errors.New("unsupported image format")
 
 type ImageThumbnailOptions struct {
 	InputFormat   ffmpeg.ImageFormat
+	OutputFormat  ffmpeg.ImageFormat
 	OutputPath    string
 	MaxDimensions int
 	Quality       int
@@ -34,7 +35,8 @@ func ImageThumbnail(input string, options ImageThumbnailOptions) ffmpeg.Args {
 	}
 
 	args = args.ImageFormat(ffmpeg.ImageFormatImage2Pipe).
-		Output(options.OutputPath)
+		Output(options.OutputPath).
+		ImageFormat(options.OutputFormat)
 
 	return args
 }

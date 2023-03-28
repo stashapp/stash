@@ -72,7 +72,7 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 			// don't log for unsupported image format
 			// don't log for file not found - can optionally be logged in serveImage
 			if !errors.Is(err, image.ErrNotSupportedForThumbnail) && !errors.Is(err, fs.ErrNotExist) {
-				logger.Errorf("error generating thumbnail for %s: %v", f.Path, err)
+				logger.Errorf("error generating thumbnail for %s: %v", f.Base().Path, err)
 
 				var exitErr *exec.ExitError
 				if errors.As(err, &exitErr) {
@@ -109,7 +109,7 @@ func (rs imageRoutes) serveImage(w http.ResponseWriter, r *http.Request, i *mode
 	const defaultImageImage = "image/image.svg"
 
 	if i.Files.Primary() != nil {
-		err := i.Files.Primary().Serve(&file.OsFS{}, w, r)
+		err := i.Files.Primary().Base().Serve(&file.OsFS{}, w, r)
 		if err == nil {
 			return
 		}

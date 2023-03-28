@@ -29,7 +29,7 @@ type FinderCreatorUpdater interface {
 	UpdatePartial(ctx context.Context, id int, updatedImage models.ImagePartial) (*models.Image, error)
 	AddFileID(ctx context.Context, id int, fileID file.ID) error
 	models.GalleryIDLoader
-	models.ImageFileLoader
+	models.FileLoader
 }
 
 type GalleryFinderCreator interface {
@@ -78,10 +78,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File
 		return err
 	}
 
-	imageFile, ok := f.(*file.ImageFile)
-	if !ok {
-		return ErrNotImageFile
-	}
+	imageFile := f.Base()
 
 	// try to match the file to an image
 	existing, err := h.CreatorUpdater.FindByFileID(ctx, imageFile.ID)
@@ -156,7 +153,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File
 	return nil
 }
 
-func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Image, f *file.ImageFile, updateExisting bool) error {
+func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Image, f *file.BaseFile, updateExisting bool) error {
 	for _, i := range existing {
 		if err := i.LoadFiles(ctx, h.CreatorUpdater); err != nil {
 			return err
@@ -164,7 +161,7 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 
 		found := false
 		for _, sf := range i.Files.List() {
-			if sf.ID == f.Base().ID {
+			if sf.Base().ID == f.Base().ID {
 				found = true
 				break
 			}

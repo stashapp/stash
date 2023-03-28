@@ -15,7 +15,6 @@ import (
 type ImageReaderWriter interface {
 	models.ImageReaderWriter
 	image.FinderCreatorUpdater
-	models.ImageFileLoader
 	GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error)
 }
 

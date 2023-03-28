@@ -18,6 +18,7 @@ type Image {
 
   file: ImageFileType! @deprecated(reason: "Use files.mod_time")
   files: [ImageFile!]!
+  visual_files: [VisualFile!]!
   paths: ImagePathsType! # Resolver
 
   galleries: [Gallery!]!

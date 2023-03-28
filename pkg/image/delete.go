@@ -87,7 +87,7 @@ func (s *Service) deleteFiles(ctx context.Context, i *models.Image, fileDeleter 
 
 	for _, f := range i.Files.List() {
 		// only delete files where there is no other associated image
-		otherImages, err := s.Repository.FindByFileID(ctx, f.ID)
+		otherImages, err := s.Repository.FindByFileID(ctx, f.Base().ID)
 		if err != nil {
 			return err
 		}
@@ -99,7 +99,7 @@ func (s *Service) deleteFiles(ctx context.Context, i *models.Image, fileDeleter 
 
 		// don't delete files in zip archives
 		const deleteFile = true
-		if f.ZipFileID == nil {
+		if f.Base().ZipFileID == nil {
 			if err := file.Destroy(ctx, s.File, f, fileDeleter.Deleter, deleteFile); err != nil {
 				return err
 			}

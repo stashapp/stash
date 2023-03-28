@@ -241,7 +241,7 @@ func (qb *ImageStore) Update(ctx context.Context, updatedObject *models.Image) e
 	if updatedObject.Files.Loaded() {
 		fileIDs := make([]file.ID, len(updatedObject.Files.List()))
 		for i, f := range updatedObject.Files.List() {
-			fileIDs[i] = f.ID
+			fileIDs[i] = f.Base().ID
 		}
 
 		if err := imagesFilesTableMgr.replaceJoins(ctx, updatedObject.ID, fileIDs); err != nil {
@@ -360,7 +360,7 @@ func (qb *ImageStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*mo
 	return ret, nil
 }
 
-func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]*file.ImageFile, error) {
+func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]file.File, error) {
 	fileIDs, err := qb.filesRepository().get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -372,16 +372,7 @@ func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]*file.ImageFile, 
 		return nil, err
 	}
 
-	ret := make([]*file.ImageFile, len(files))
-	for i, f := range files {
-		var ok bool
-		ret[i], ok = f.(*file.ImageFile)
-		if !ok {
-			return nil, fmt.Errorf("expected file to be *file.ImageFile not %T", f)
-		}
-	}
-
-	return ret, nil
+	return files, nil
 }
 
 func (qb *ImageStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error) {

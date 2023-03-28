@@ -293,12 +293,19 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 		return false
 	}
 
-	if isVideoFile && (matchFileRegex(path, f.videoExcludeRegex)) {
+	if isVideoFile && matchFileRegex(path, f.videoExcludeRegex) {
 		logger.Debugf("Skipping %s as it matches video exclusion patterns", path)
 		return false
 	} else if (isImageFile || isZipFile) && (s.ExcludeImage || matchFileRegex(path, f.imageExcludeRegex)) {
 		logger.Debugf("Skipping %s as it matches image exclusion patterns", path)
 		return false
+	}
+
+	// if the file is a video file, and we're excluding video files, then scan it
+	// for inclusion as an image
+	// TODO - make this optional
+	if isVideoFile && s.ExcludeVideo {
+		logger.Debugf("Found video file %s in library excluding video files. Treating as image.", path)
 	}
 
 	return true
@@ -316,23 +323,68 @@ func (c *scanConfig) IsGenerateThumbnails() bool {
 	return c.isGenerateThumbnails
 }
 
+type videoScanHandler struct {
+	extensionConfig
+	stashPaths config.StashConfigs
+
+	sceneHandler scene.ScanHandler
+	imageHandler image.ScanHandler
+}
+
+func (h *videoScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File) error {
+	path := f.Base().Path
+
+	s := h.stashPaths.GetStashFromDirPath(path)
+
+	isVideoFile := fsutil.MatchExtension(path, h.vidExt)
+
+	// if the file is a video file, and we're excluding video files, then scan it
+	// for inclusion as an image
+	// TODO - make this optional
+	if isVideoFile && s.ExcludeVideo {
+		return h.imageHandler.Handle(ctx, f, oldFile)
+	}
+
+	return h.sceneHandler.Handle(ctx, f, oldFile)
+}
+
 func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progress *job.Progress) []file.Handler {
 	db := instance.Database
 	pluginCache := instance.PluginCache
 
+	imageFileHandler := &image.ScanHandler{
+		CreatorUpdater:     db.Image,
+		GalleryFinder:      db.Gallery,
+		ThumbnailGenerator: &imageThumbnailGenerator{},
+		ScanConfig: &scanConfig{
+			isGenerateThumbnails: options.ScanGenerateThumbnails,
+		},
+		PluginCache: pluginCache,
+		Paths:       instance.Paths,
+	}
+
+	videoFileHandler := &videoScanHandler{
+		extensionConfig: newExtensionConfig(instance.Config),
+		stashPaths:      instance.Config.GetStashPaths(),
+		imageHandler:    *imageFileHandler,
+		sceneHandler: scene.ScanHandler{
+			CreatorUpdater: db.Scene,
+			PluginCache:    pluginCache,
+			CaptionUpdater: db.File,
+			ScanGenerator: &sceneGenerators{
+				input:     options,
+				taskQueue: taskQueue,
+				progress:  progress,
+			},
+			FileNamingAlgorithm: instance.Config.GetVideoFileNamingAlgorithm(),
+			Paths:               instance.Paths,
+		},
+	}
+
 	return []file.Handler{
 		&file.FilteredHandler{
-			Filter: file.FilterFunc(imageFileFilter),
-			Handler: &image.ScanHandler{
-				CreatorUpdater:     db.Image,
-				GalleryFinder:      db.Gallery,
-				ThumbnailGenerator: &imageThumbnailGenerator{},
-				ScanConfig: &scanConfig{
-					isGenerateThumbnails: options.ScanGenerateThumbnails,
-				},
-				PluginCache: pluginCache,
-				Paths:       instance.Paths,
-			},
+			Filter:  file.FilterFunc(imageFileFilter),
+			Handler: imageFileHandler,
 		},
 		&file.FilteredHandler{
 			Filter: file.FilterFunc(galleryFileFilter),
@@ -344,52 +396,48 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 			},
 		},
 		&file.FilteredHandler{
-			Filter: file.FilterFunc(videoFileFilter),
-			Handler: &scene.ScanHandler{
-				CreatorUpdater: db.Scene,
-				PluginCache:    pluginCache,
-				CaptionUpdater: db.File,
-				ScanGenerator: &sceneGenerators{
-					input:     options,
-					taskQueue: taskQueue,
-					progress:  progress,
-				},
-				FileNamingAlgorithm: instance.Config.GetVideoFileNamingAlgorithm(),
-				Paths:               instance.Paths,
-			},
+			Filter:  file.FilterFunc(videoFileFilter),
+			Handler: videoFileHandler,
 		},
 	}
 }
 
 type imageThumbnailGenerator struct{}
 
-func (g *imageThumbnailGenerator) GenerateThumbnail(ctx context.Context, i *models.Image, f *file.ImageFile) error {
+func (g *imageThumbnailGenerator) GenerateThumbnail(ctx context.Context, i *models.Image, f file.File) error {
 	thumbPath := GetInstance().Paths.Generated.GetThumbnailPath(i.Checksum, models.DefaultGthumbWidth)
 	exists, _ := fsutil.FileExists(thumbPath)
 	if exists {
 		return nil
 	}
 
-	logger.Debugf("Generating thumbnail for %s", f.Path)
+	path := f.Base().Path
 
-	if !f.Clip && f.Height <= models.DefaultGthumbWidth && f.Width <= models.DefaultGthumbWidth {
+	asFrame, ok := f.(file.VisualFile)
+	if !ok {
+		return fmt.Errorf("file %s does not implement Frame", path)
+	}
+
+	if asFrame.GetHeight() <= models.DefaultGthumbWidth && asFrame.GetWidth() <= models.DefaultGthumbWidth {
 		return nil
 	}
 
-	encoder := image.NewThumbnailEncoder(instance.FFMPEG, instance.FFProbe, instance.Config.GetTranscodeInputArgs(), instance.Config.GetTranscodeOutputArgs(), instance.Config.GetPreviewPreset().String())
+	logger.Debugf("Generating thumbnail for %s", path)
+
+	encoder := image.NewThumbnailEncoder(instance.FFMPEG)
 	data, err := encoder.GetThumbnail(f, models.DefaultGthumbWidth)
 
 	if err != nil {
 		// don't log for animated images
 		if !errors.Is(err, image.ErrNotSupportedForThumbnail) {
-			return fmt.Errorf("getting thumbnail for image %s: %w", f.Path, err)
+			return fmt.Errorf("getting thumbnail for image %s: %w", path, err)
 		}
 		return nil
 	}
 
 	err = fsutil.WriteFile(thumbPath, data)
 	if err != nil {
-		return fmt.Errorf("writing thumbnail for image %s: %w", f.Path, err)
+		return fmt.Errorf("writing thumbnail for image %s: %w", path, err)
 	}
 
 	return nil

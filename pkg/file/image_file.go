@@ -8,3 +8,15 @@ type ImageFile struct {
 	Height int    `json:"height"`
 	Clip   bool   `json:"clip"`
 }
+
+func (f ImageFile) GetWidth() int {
+	return f.Width
+}
+
+func (f ImageFile) GetHeight() int {
+	return f.Height
+}
+
+func (f ImageFile) GetFormat() string {
+	return f.Format
+}

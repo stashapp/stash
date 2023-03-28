@@ -15,7 +15,7 @@ type FinderByFile interface {
 type Repository interface {
 	FinderByFile
 	Destroyer
-	models.ImageFileLoader
+	models.FileLoader
 }
 
 type Service struct {

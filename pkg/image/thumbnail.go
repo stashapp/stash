@@ -28,7 +28,7 @@ var (
 )
 
 type ThumbnailGenerator interface {
-	GenerateThumbnail(ctx context.Context, i *models.Image, f *file.ImageFile) error
+	GenerateThumbnail(ctx context.Context, i *models.Image, f file.File) error
 }
 
 type ThumbnailEncoder struct {
@@ -69,7 +69,7 @@ func NewThumbnailEncoder(ffmpegEncoder *ffmpeg.FFMpeg, ffProbe ffmpeg.FFProbe, i
 // the provided max size. It resizes based on the largest X/Y direction.
 // It returns nil and an error if an error occurs reading, decoding or encoding
 // the image, or if the image is not suitable for thumbnails.
-func (e *ThumbnailEncoder) GetThumbnail(f *file.ImageFile, maxSize int) ([]byte, error) {
+func (e *ThumbnailEncoder) GetThumbnail(f file.File, maxSize int) ([]byte, error) {
 	reader, err := f.Open(&file.OsFS{})
 	if err != nil {
 		return nil, err
@@ -83,17 +83,19 @@ func (e *ThumbnailEncoder) GetThumbnail(f *file.ImageFile, maxSize int) ([]byte,
 
 	data := buf.Bytes()
 
-	format := f.Format
-	animated := f.Format == formatGif
+	if imageFile, ok := f.(*file.ImageFile); ok {
+		format := imageFile.Format
+		animated := imageFile.Format == formatGif
 
-	// #2266 - if image is webp, then determine if it is animated
-	if format == formatWebP {
-		animated = isWebPAnimated(data)
-	}
+		// #2266 - if image is webp, then determine if it is animated
+		if format == formatWebP {
+			animated = isWebPAnimated(data)
+		}
 
-	// #2266 - don't generate a thumbnail for animated images
-	if animated {
-		return nil, fmt.Errorf("%w: %s", ErrNotSupportedForThumbnail, format)
+		// #2266 - don't generate a thumbnail for animated images
+		if animated {
+			return nil, fmt.Errorf("%w: %s", ErrNotSupportedForThumbnail, format)
+		}
 	}
 
 	if f.Clip {
@@ -115,29 +117,26 @@ func (e *ThumbnailEncoder) GetThumbnail(f *file.ImageFile, maxSize int) ([]byte,
 	if e.vips != nil && runtime.GOOS != "windows" {
 		return e.vips.ImageThumbnail(buf, maxSize)
 	} else {
-		return e.ffmpegImageThumbnail(buf, format, maxSize)
+		return e.ffmpegImageThumbnail(buf, maxSize)
 	}
 }
 
-func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, format string, maxSize int) ([]byte, error) {
-	var ffmpegFormat ffmpeg.ImageFormat
+func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, maxSize int) ([]byte, error) {
+	// var ffmpegFormat ffmpeg.ImageFormat
 
-	// These Options are used in isImage and isClip in internal/manager/manager_tasks. If one gets updated, the other should be as well
-	switch format {
-	case "mjpeg":
-		ffmpegFormat = ffmpeg.ImageFormatJpeg
-	case "jpeg":
-		ffmpegFormat = ffmpeg.ImageFormatJpeg
-	case "png":
-		ffmpegFormat = ffmpeg.ImageFormatPng
-	case "webp":
-		ffmpegFormat = ffmpeg.ImageFormatWebp
-	default:
-		return nil, ErrUnsupportedImageFormat
-	}
+	// switch format {
+	// case "jpeg":
+	// 	ffmpegFormat = ffmpeg.ImageFormatJpeg
+	// case "png":
+	// 	ffmpegFormat = ffmpeg.ImageFormatPng
+	// case "webp":
+	// 	ffmpegFormat = ffmpeg.ImageFormatWebp
+	// default:
+	// 	return nil, ErrUnsupportedImageFormat
+	// }
 
 	args := transcoder.ImageThumbnail("-", transcoder.ImageThumbnailOptions{
-		InputFormat:   ffmpegFormat,
+		OutputFormat:  ffmpeg.ImageFormatJpeg,
 		OutputPath:    "-",
 		MaxDimensions: maxSize,
 		Quality:       ffmpegImageQuality,

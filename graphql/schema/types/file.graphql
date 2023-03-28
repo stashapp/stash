@@ -80,6 +80,8 @@ type ImageFile implements BaseFile {
     updated_at: Time!
 }
 
+union VisualFile = VideoFile | ImageFile
+
 type GalleryFile implements BaseFile {
     id: ID!
     path: String!
