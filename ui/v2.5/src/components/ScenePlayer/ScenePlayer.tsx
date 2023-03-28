@@ -739,6 +739,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           ref={videoRef}
           id={VIDEO_PLAYER_ID}
           className="video-js vjs-big-play-centered"
+          crossOrigin="anonymous"
         />
       </div>
       {scene?.interactive &&

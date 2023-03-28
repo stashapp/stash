@@ -62,14 +62,22 @@ class VRMenuButton extends videojs.getComponent("MenuButton") {
     this.setTypes();
   }
 
+  private onSelected(item: VRMenuItem) {
+    this.selectedType = item.type;
+
+    this.items.forEach((i) => {
+      i.selected(i.type === this.selectedType);
+    });
+
+    this.trigger("typeselected", item.type);
+  }
+
   public setTypes() {
     this.items = Object.values(VRType).map((type) => {
       const item = new VRMenuItem(this, type);
 
       item.on("selected", () => {
-        this.selectedType = type;
-
-        this.trigger("typeselected", type);
+        this.onSelected(item);
       });
 
       return item;
@@ -103,7 +111,7 @@ class VRMenuPlugin extends videojs.getPlugin("plugin") {
 
     this.menu = new VRMenuButton(player);
 
-    if (!isVrDevice()) return;
+    if (isVrDevice()) return;
 
     this.menu.on("typeselected", (_, type: VRType) => {
       const projection = vrTypeProjection[type];
