@@ -769,7 +769,14 @@ func (s *scanJob) handleRename(ctx context.Context, f File, fp []Fingerprint) (F
 
 	var missing []File
 
+	fZipID := f.Base().ZipFileID
 	for _, other := range others {
+		// if file is from a zip file, then only rename if both files are from the same zip file
+		otherZipID := other.Base().ZipFileID
+		if otherZipID != nil && (fZipID == nil || *otherZipID != *fZipID) {
+			continue
+		}
+
 		// if file does not exist, then update it to the new path
 		fs, err := s.getFileFS(other.Base())
 		if err != nil {
