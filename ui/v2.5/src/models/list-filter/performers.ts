@@ -25,6 +25,7 @@ const sortByOptions = [
   "tag_count",
   "random",
   "rating",
+  "penis_length",
 ]
   .map(ListFilterOptions.createSortBy)
   .concat([
@@ -53,6 +54,7 @@ const numberCriteria: CriterionType[] = [
   "death_year",
   "age",
   "weight",
+  "penis_length",
 ];
 
 const stringCriteria: CriterionType[] = [

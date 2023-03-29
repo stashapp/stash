@@ -208,6 +208,18 @@
   }
 }
 
+.performer-penis-length {
+  .penis-length-imperial {
+    &::before {
+      content: " (";
+    }
+
+    &::after {
+      content: ")";
+    }
+  }
+}
+
 .performer-disambiguation {
   color: $text-muted;
   /* stylelint-disable */

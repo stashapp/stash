@@ -45,6 +45,7 @@ const performerFields = [
   // "weight",
   "measurements",
   "fake_tits",
+  "penis_length",
   "hair_color",
   "tattoos",
   "piercings",
@@ -64,6 +65,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     useState<GQL.BulkPerformerUpdateInput>({});
   // weight needs conversion to/from number
   const [weight, setWeight] = useState<string | undefined>();
+  const [penis_length, setPenisLength] = useState<string | undefined>();
   const [updateInput, setUpdateInput] = useState<GQL.BulkPerformerUpdateInput>(
     {}
   );
@@ -105,6 +107,10 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
       performerInput.weight = parseFloat(weight);
     }
 
+    if (penis_length !== undefined) {
+      performerInput.penis_length = parseFloat(penis_length);
+    }
+
     return performerInput;
   }
 
@@ -135,6 +141,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     const state = props.selected;
     let updateTagIds: string[] = [];
     let updateWeight: string | undefined | null = undefined;
+    let updatePenisLength: string | undefined | null = undefined;
     let first = true;
 
     state.forEach((performer: GQL.SlimPerformerDataFragment) => {
@@ -150,6 +157,16 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           ? performer.weight.toString()
           : performer.weight;
       updateWeight = getAggregateState(updateWeight, thisWeight, first);
+
+      const thisPenisLength =
+        performer.penis_length !== undefined && performer.penis_length !== null
+          ? performer.penis_length.toString()
+          : performer.penis_length;
+      updatePenisLength = getAggregateState(
+        updatePenisLength,
+        thisPenisLength,
+        first
+      );
 
       first = false;
     });
@@ -269,6 +286,9 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           {renderTextField("weight", weight, (v) => setWeight(v))}
           {renderTextField("measurements", updateInput.measurements, (v) =>
             setUpdateField({ measurements: v })
+          )}
+          {renderTextField("penis_length", penis_length, (v) =>
+            setPenisLength(v)
           )}
           {renderTextField("fake_tits", updateInput.fake_tits, (v) =>
             setUpdateField({ fake_tits: v })

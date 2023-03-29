@@ -98,6 +98,9 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerC
 	if input.FakeTits != nil {
 		newPerformer.FakeTits = *input.FakeTits
 	}
+	if input.PenisLength != nil {
+		newPerformer.PenisLength = input.PenisLength
+	}
 	if input.CareerLength != nil {
 		newPerformer.CareerLength = *input.CareerLength
 	}
@@ -222,6 +225,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 
 	updatedPerformer.Ethnicity = translator.optionalString(input.Ethnicity, "ethnicity")
 	updatedPerformer.FakeTits = translator.optionalString(input.FakeTits, "fake_tits")
+	updatedPerformer.PenisLength = translator.optionalFloat64(input.PenisLength, "penis_length")
 	updatedPerformer.CareerLength = translator.optionalString(input.CareerLength, "career_length")
 	updatedPerformer.Tattoos = translator.optionalString(input.Tattoos, "tattoos")
 	updatedPerformer.Piercings = translator.optionalString(input.Piercings, "piercings")
@@ -339,6 +343,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 
 	updatedPerformer.Measurements = translator.optionalString(input.Measurements, "measurements")
 	updatedPerformer.FakeTits = translator.optionalString(input.FakeTits, "fake_tits")
+	updatedPerformer.PenisLength = translator.optionalFloat64(input.PenisLength, "penis_length")
 	updatedPerformer.CareerLength = translator.optionalString(input.CareerLength, "career_length")
 	updatedPerformer.Tattoos = translator.optionalString(input.Tattoos, "tattoos")
 	updatedPerformer.Piercings = translator.optionalString(input.Piercings, "piercings")

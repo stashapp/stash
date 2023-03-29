@@ -129,6 +129,7 @@ export type CriterionType =
   | "weight"
   | "measurements"
   | "fake_tits"
+  | "penis_length"
   | "career_length"
   | "tattoos"
   | "piercings"

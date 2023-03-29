@@ -68,6 +68,7 @@ export const PerformerIsMissingCriterionOption =
       "eye_color",
       "height",
       "weight",
+      "penis_length",
       "measurements",
       "fake_tits",
       "career_length",

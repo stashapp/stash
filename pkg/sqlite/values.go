@@ -24,6 +24,15 @@ func nullIntPtr(i null.Int) *int {
 	return &v
 }
 
+func nullFloatPtr(i null.Float) *float64 {
+	if !i.Valid {
+		return nil
+	}
+
+	v := float64(i.Float64)
+	return &v
+}
+
 func nullIntFolderIDPtr(i null.Int) *file.FolderID {
 	if !i.Valid {
 		return nil

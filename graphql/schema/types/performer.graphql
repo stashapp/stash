@@ -24,6 +24,7 @@ type Performer {
   height_cm: Int
   measurements: String
   fake_tits: String
+  penis_length: Float
   career_length: String
   tattoos: String
   piercings: String
@@ -67,6 +68,7 @@ input PerformerCreateInput {
   height_cm: Int
   measurements: String
   fake_tits: String
+  penis_length: Float
   career_length: String
   tattoos: String
   piercings: String
@@ -105,6 +107,7 @@ input PerformerUpdateInput {
   height_cm: Int
   measurements: String
   fake_tits: String
+  penis_length: Float
   career_length: String
   tattoos: String
   piercings: String
@@ -148,6 +151,7 @@ input BulkPerformerUpdateInput {
   height_cm: Int
   measurements: String
   fake_tits: String
+  penis_length: Float
   career_length: String
   tattoos: String
   piercings: String

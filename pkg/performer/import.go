@@ -237,6 +237,10 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 		newPerformer.Weight = &performerJSON.Weight
 	}
 
+	if performerJSON.PenisLength != 0 {
+		newPerformer.PenisLength = &performerJSON.PenisLength
+	}
+
 	if performerJSON.Height != "" {
 		h, err := strconv.Atoi(performerJSON.Height)
 		if err == nil {

@@ -148,6 +148,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     weight: yup.number().nullable().defined().default(null),
     measurements: yup.string().ensure(),
     fake_tits: yup.string().ensure(),
+    penis_length: yup.number().nullable().defined().default(null),
     tattoos: yup.string().ensure(),
     piercings: yup.string().ensure(),
     career_length: yup.string().ensure(),
@@ -176,6 +177,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     weight: performer.weight ?? null,
     measurements: performer.measurements ?? "",
     fake_tits: performer.fake_tits ?? "",
+    penis_length: performer.penis_length ?? null,
     tattoos: performer.tattoos ?? "",
     piercings: performer.piercings ?? "",
     career_length: performer.career_length ?? "",
@@ -382,6 +384,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     if (state.weight) {
       formik.setFieldValue("weight", state.weight);
     }
+    if (state.penis_length) {
+      formik.setFieldValue("penis_length", state.penis_length);
+    }
 
     const remoteSiteID = state.remote_site_id;
     if (remoteSiteID && (scraper as IStashBox).endpoint) {
@@ -426,6 +431,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
               gender: input.gender || null,
               height_cm: input.height_cm || null,
               weight: input.weight || null,
+              penis_length: input.penis_length || null,
             },
           },
         });
@@ -441,6 +447,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
               gender: input.gender || null,
               height_cm: input.height_cm || null,
               weight: input.weight || null,
+              penis_length: input.penis_length || null,
             },
           },
         });
@@ -979,6 +986,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderField("weight", {
           type: "number",
           messageID: "weight_kg",
+        })}
+        {renderField("penis_length", {
+          type: "number",
+          messageID: "penis_length_cm",
         })}
         {renderField("measurements")}
         {renderField("fake_tits")}

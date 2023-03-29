@@ -216,6 +216,12 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
       props.scraped.weight
     )
   );
+  const [penisLength, setPenisLength] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(
+      props.performer.penis_length?.toString(),
+      props.scraped.penis_length
+    )
+  );
   const [measurements, setMeasurements] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(
       props.performer.measurements,
@@ -338,6 +344,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     height,
     measurements,
     fakeTits,
+    penisLength,
     careerLength,
     tattoos,
     piercings,
@@ -426,6 +433,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
       death_date: deathDate.getNewValue(),
       hair_color: hairColor.getNewValue(),
       weight: weight.getNewValue(),
+      penis_length: penisLength.getNewValue(),
       remote_site_id: remoteSiteID.getNewValue(),
     };
   }
@@ -492,6 +500,11 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           title={intl.formatMessage({ id: "height" })}
           result={height}
           onChange={(value) => setHeight(value)}
+        />
+        <ScrapedInputGroupRow
+          title={intl.formatMessage({ id: "penis_length" })}
+          result={penisLength}
+          onChange={(value) => setPenisLength(value)}
         />
         <ScrapedInputGroupRow
           title={intl.formatMessage({ id: "measurements" })}

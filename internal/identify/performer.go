@@ -97,6 +97,12 @@ func scrapedToPerformerInput(performer *models.ScrapedPerformer) models.Performe
 	if performer.FakeTits != nil {
 		ret.FakeTits = *performer.FakeTits
 	}
+	if performer.PenisLength != nil {
+		h, err := strconv.ParseFloat(*performer.PenisLength, 64)
+		if err == nil {
+			ret.PenisLength = &h
+		}
+	}
 	if performer.CareerLength != nil {
 		ret.CareerLength = *performer.CareerLength
 	}

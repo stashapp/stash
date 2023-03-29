@@ -155,6 +155,8 @@ export function makeCriteria(
     case "death_year":
     case "weight":
       return new NumberCriterion(new NumberCriterionOption(type, type));
+    case "penis_length":
+      return new NumberCriterion(new NumberCriterionOption(type, type));
     case "age":
       return new NumberCriterion(
         new MandatoryNumberCriterionOption(type, type)

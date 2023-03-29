@@ -42,6 +42,7 @@ type performerRow struct {
 	Height        null.Int               `db:"height"`
 	Measurements  zero.String            `db:"measurements"`
 	FakeTits      zero.String            `db:"fake_tits"`
+	PenisLength   null.Float             `db:"penis_length"`
 	CareerLength  zero.String            `db:"career_length"`
 	Tattoos       zero.String            `db:"tattoos"`
 	Piercings     zero.String            `db:"piercings"`
@@ -79,6 +80,7 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	r.Height = intFromPtr(o.Height)
 	r.Measurements = zero.StringFrom(o.Measurements)
 	r.FakeTits = zero.StringFrom(o.FakeTits)
+	r.PenisLength = null.FloatFromPtr(o.PenisLength)
 	r.CareerLength = zero.StringFrom(o.CareerLength)
 	r.Tattoos = zero.StringFrom(o.Tattoos)
 	r.Piercings = zero.StringFrom(o.Piercings)
@@ -111,6 +113,7 @@ func (r *performerRow) resolve() *models.Performer {
 		Height:         nullIntPtr(r.Height),
 		Measurements:   r.Measurements.String,
 		FakeTits:       r.FakeTits.String,
+		PenisLength:    nullFloatPtr(r.PenisLength),
 		CareerLength:   r.CareerLength.String,
 		Tattoos:        r.Tattoos.String,
 		Piercings:      r.Piercings.String,
@@ -147,6 +150,7 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setNullInt("height", o.Height)
 	r.setNullString("measurements", o.Measurements)
 	r.setNullString("fake_tits", o.FakeTits)
+	r.setNullFloat64("penis_length", o.PenisLength)
 	r.setNullString("career_length", o.CareerLength)
 	r.setNullString("tattoos", o.Tattoos)
 	r.setNullString("piercings", o.Piercings)
@@ -597,6 +601,7 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Measurements, tableName+".measurements"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.FakeTits, tableName+".fake_tits"))
+	query.handleCriterion(ctx, floatCriterionHandler(filter.PenisLength, tableName+".penis_length", nil))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.CareerLength, tableName+".career_length"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Tattoos, tableName+".tattoos"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Piercings, tableName+".piercings"))

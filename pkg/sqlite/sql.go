@@ -179,6 +179,41 @@ func getIntWhereClause(column string, modifier models.CriterionModifier, value i
 	panic("unsupported int modifier type " + modifier)
 }
 
+func getFloatCriterionWhereClause(column string, input models.FloatCriterionInput) (string, []interface{}) {
+	return getFloatWhereClause(column, input.Modifier, input.Value, input.Value2)
+}
+
+func getFloatWhereClause(column string, modifier models.CriterionModifier, value float64, upper *float64) (string, []interface{}) {
+	if upper == nil {
+		u := 0.0
+		upper = &u
+	}
+
+	args := []interface{}{value}
+	betweenArgs := []interface{}{value, *upper}
+
+	switch modifier {
+	case models.CriterionModifierIsNull:
+		return fmt.Sprintf("%s IS NULL", column), nil
+	case models.CriterionModifierNotNull:
+		return fmt.Sprintf("%s IS NOT NULL", column), nil
+	case models.CriterionModifierEquals:
+		return fmt.Sprintf("%s = ?", column), args
+	case models.CriterionModifierNotEquals:
+		return fmt.Sprintf("%s != ?", column), args
+	case models.CriterionModifierBetween:
+		return fmt.Sprintf("%s BETWEEN ? AND ?", column), betweenArgs
+	case models.CriterionModifierNotBetween:
+		return fmt.Sprintf("%s NOT BETWEEN ? AND ?", column), betweenArgs
+	case models.CriterionModifierLessThan:
+		return fmt.Sprintf("%s < ?", column), args
+	case models.CriterionModifierGreaterThan:
+		return fmt.Sprintf("%s > ?", column), args
+	}
+
+	panic("unsupported int modifier type " + modifier)
+}
+
 func getDateCriterionWhereClause(column string, input models.DateCriterionInput) (string, []interface{}) {
 	return getDateWhereClause(column, input.Modifier, input.Value, input.Value2)
 }

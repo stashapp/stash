@@ -1314,6 +1314,9 @@ export const makePerformerCreateInput = (toCreate: GQL.ScrapedPerformer) => {
     death_date: toCreate.death_date,
     hair_color: toCreate.hair_color,
     weight: toCreate.weight ? Number(toCreate.weight) : undefined,
+    penis_length: toCreate.penis_length
+      ? Number(toCreate.penis_length)
+      : undefined,
   };
   return input;
 };

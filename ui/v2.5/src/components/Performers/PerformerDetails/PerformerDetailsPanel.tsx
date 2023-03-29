@@ -6,7 +6,7 @@ import TextUtils from "src/utils/text";
 import { getStashboxBase } from "src/utils/stashbox";
 import { getCountryByISO } from "src/utils/country";
 import { TextField, URLField } from "src/utils/field";
-import { cmToImperial, kgToLbs } from "src/utils/units";
+import { cmToImperial, cmToInches, kgToLbs } from "src/utils/units";
 
 interface IPerformerDetails {
   performer: GQL.PerformerDataFragment;
@@ -133,6 +133,35 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     );
   };
 
+  const formatPenisLength = (penis_length?: number | null) => {
+    if (!penis_length) {
+      return "";
+    }
+
+    const inches = cmToInches(penis_length);
+
+    return (
+      <span className="performer-penis-length">
+        <span className="penis-length-metric">
+          {intl.formatNumber(penis_length, {
+            style: "unit",
+            unit: "centimeter",
+            unitDisplay: "short",
+            maximumFractionDigits: 2,
+          })}
+        </span>
+        <span className="penis-length-imperial">
+          {intl.formatNumber(inches, {
+            style: "unit",
+            unit: "inch",
+            unitDisplay: "narrow",
+            maximumFractionDigits: 2,
+          })}
+        </span>
+      </span>
+    );
+  };
+
   return (
     <dl className="details-list">
       <TextField
@@ -176,6 +205,15 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
             <FormattedMessage id="weight" />
           </dt>
           <dd>{formatWeight(performer.weight)}</dd>
+        </>
+      )}
+
+      {!!performer.penis_length && (
+        <>
+          <dt>
+            <FormattedMessage id="penis_length" />
+          </dt>
+          <dd>{formatPenisLength(performer.penis_length)}</dd>
         </>
       )}
 

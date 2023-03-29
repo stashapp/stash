@@ -88,6 +88,8 @@ type PerformerFilterType struct {
 	Measurements *StringCriterionInput `json:"measurements"`
 	// Filter by fake tits value
 	FakeTits *StringCriterionInput `json:"fake_tits"`
+	// Filter by penis length value
+	PenisLength *FloatCriterionInput `json:"penis_length"`
 	// Filter by career length
 	CareerLength *StringCriterionInput `json:"career_length"`
 	// Filter by tattoos
