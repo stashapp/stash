@@ -33,4 +33,8 @@ fragment ImageData on Image {
   performers {
     ...PerformerData
   }
+
+  visual_files {
+    ...VisualFileData
+  }
 }

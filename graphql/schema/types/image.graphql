@@ -32,7 +32,6 @@ type ImageFileType {
   size: Int!
   width: Int!
   height: Int!
-  clip: Boolean!
 }
 
 type ImagePathsType {

@@ -45,7 +45,6 @@ func Test_fileFileStore_Create(t *testing.T) {
 		videoCodec       = "videoCodec"
 		audioCodec       = "audioCodec"
 		format           = "format"
-		clip             = false
 	)
 
 	tests := []struct {
@@ -134,7 +133,6 @@ func Test_fileFileStore_Create(t *testing.T) {
 				Format: format,
 				Width:  width,
 				Height: height,
-				Clip:   clip,
 			},
 			false,
 		},
@@ -264,7 +262,6 @@ func Test_fileStore_Update(t *testing.T) {
 		videoCodec       = "videoCodec"
 		audioCodec       = "audioCodec"
 		format           = "format"
-		clip             = true
 	)
 
 	tests := []struct {
@@ -356,7 +353,6 @@ func Test_fileStore_Update(t *testing.T) {
 				Format: format,
 				Width:  width,
 				Height: height,
-				Clip:   clip,
 			},
 			false,
 		},

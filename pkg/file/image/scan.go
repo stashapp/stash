@@ -10,6 +10,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/file/video"
 	_ "golang.org/x/image/webp"
 )
 
@@ -37,13 +38,16 @@ func (d *Decorator) Decorate(ctx context.Context, fs file.FS, f file.File) (file
 			isClip = false
 		}
 	}
+	if isClip {
+		videoFileDecorator := video.Decorator{FFProbe: d.FFProbe}
+		return videoFileDecorator.Decorate(ctx, fs, f)
+	}
 
 	return &file.ImageFile{
 		BaseFile: base,
 		Format:   probe.VideoCodec,
 		Width:    probe.Width,
 		Height:   probe.Height,
-		Clip:     isClip,
 	}, nil
 }
 

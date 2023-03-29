@@ -86,7 +86,6 @@ func (i *fileFolderImporter) fileJSONToFile(ctx context.Context, fileJSON jsonsc
 			Format:   ff.Format,
 			Width:    ff.Width,
 			Height:   ff.Height,
-			Clip:     ff.Clip,
 		}, nil
 	case *jsonschema.BaseFile:
 		return i.baseFileJSONToBaseFile(ctx, ff)

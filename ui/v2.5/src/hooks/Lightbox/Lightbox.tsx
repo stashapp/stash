@@ -426,20 +426,23 @@ export const LightboxComponent: React.FC<IProps> = ({
   }
 
   const navItems = images.map((image, i) =>
-    React.createElement(image.files?.[0]?.clip ? "video" : "img", {
-      loop: image.files?.[0]?.clip,
-      autoPlay: image.files?.[0]?.clip,
-      src: image.paths.thumbnail ?? "",
-      alt: "",
-      className: cx(CLASSNAME_NAVIMAGE, {
-        [CLASSNAME_NAVSELECTED]: i === index,
-      }),
-      onClick: (e: React.MouseEvent) => selectIndex(e, i),
-      role: "presentation",
-      loading: "lazy",
-      key: image.paths.thumbnail,
-      onLoad: imageLoaded,
-    })
+    React.createElement(
+      image.visual_files?.[0]?.__typename == "VideoFile" ? "video" : "img",
+      {
+        loop: image.visual_files?.[0]?.__typename == "VideoFile",
+        autoPlay: image.visual_files?.[0]?.__typename == "VideoFile",
+        src: image.paths.thumbnail ?? "",
+        alt: "",
+        className: cx(CLASSNAME_NAVIMAGE, {
+          [CLASSNAME_NAVSELECTED]: i === index,
+        }),
+        onClick: (e: React.MouseEvent) => selectIndex(e, i),
+        role: "presentation",
+        loading: "lazy",
+        key: image.paths.thumbnail,
+        onLoad: imageLoaded,
+      }
+    )
   );
 
   const onDelayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -847,7 +850,7 @@ export const LightboxComponent: React.FC<IProps> = ({
                   scrollAttemptsBeforeChange={scrollAttemptsBeforeChange}
                   setZoom={(v) => setZoom(v)}
                   resetPosition={resetPosition}
-                  isClip={image.files?.[0]?.clip ?? false}
+                  isVideo={image.visual_files?.[0]?.__typename == "VideoFile"}
                 />
               ) : undefined}
             </div>

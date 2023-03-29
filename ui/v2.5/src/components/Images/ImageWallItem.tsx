@@ -18,7 +18,7 @@ interface IImageWallProps {
 export const ImageWallItem: React.FC<RenderImageProps> = (
   props: IImageWallProps
 ) => {
-  const clip = Boolean(
+  const video = Boolean(
     Number(props.photo.alt?.charAt(props.photo.alt?.length - 1))
   );
   props.photo.alt = props.photo.alt?.slice(0, -1);
@@ -43,12 +43,12 @@ export const ImageWallItem: React.FC<RenderImageProps> = (
     }
   };
 
-  const ImagePreview = clip ? "video" : "img";
+  const ImagePreview = video ? "video" : "img";
 
   return (
     <ImagePreview
-      loop={clip}
-      autoPlay={clip}
+      loop={video}
+      autoPlay={video}
       key={props.photo.key}
       style={imgStyle}
       src={props.photo.src}

@@ -59,7 +59,7 @@ interface IProps {
   setZoom: (v: number) => void;
   onLeft: () => void;
   onRight: () => void;
-  isClip: boolean;
+  isVideo: boolean;
 }
 
 export const LightboxImage: React.FC<IProps> = ({
@@ -75,7 +75,7 @@ export const LightboxImage: React.FC<IProps> = ({
   current,
   setZoom,
   resetPosition,
-  isClip,
+  isVideo,
 }) => {
   const [defaultZoom, setDefaultZoom] = useState(1);
   const [moving, setMoving] = useState(false);
@@ -509,8 +509,8 @@ export const LightboxImage: React.FC<IProps> = ({
     }
   }
 
-  const ImageView = isClip ? "video" : "img";
-  const customStyle = isClip
+  const ImageView = isVideo ? "video" : "img";
+  const customStyle = isVideo
     ? {
         touchAction: "none",
         display: "flex",
@@ -537,7 +537,7 @@ export const LightboxImage: React.FC<IProps> = ({
           <source srcSet={src} media="(min-width: 800px)" />
           {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
           <ImageView
-            loop={isClip}
+            loop={isVideo}
             src={src}
             alt=""
             draggable={false}

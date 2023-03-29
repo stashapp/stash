@@ -367,42 +367,6 @@ func (r RelatedImageFiles) Primary() *file.ImageFile {
 	return r.primaryFile
 }
 
-func (r *RelatedImageFiles) load(fn func() ([]*file.ImageFile, error)) error {
-	if r.Loaded() {
-		return nil
-	}
-
-	var err error
-	r.files, err = fn()
-	if err != nil {
-		return err
-	}
-
-	if len(r.files) > 0 {
-		r.primaryFile = r.files[0]
-	}
-
-	r.primaryLoaded = true
-
-	return nil
-}
-
-func (r *RelatedImageFiles) loadPrimary(fn func() (*file.ImageFile, error)) error {
-	if r.PrimaryLoaded() {
-		return nil
-	}
-
-	var err error
-	r.primaryFile, err = fn()
-	if err != nil {
-		return err
-	}
-
-	r.primaryLoaded = true
-
-	return nil
-}
-
 type RelatedFiles struct {
 	primaryFile   file.File
 	files         []file.File

@@ -30,7 +30,10 @@ export const ImageCard: React.FC<IImageCardProps> = (
   props: IImageCardProps
 ) => {
   const file = useMemo(
-    () => (props.image.files.length > 0 ? props.image.files[0] : undefined),
+    () =>
+      props.image.visual_files.length > 0
+        ? props.image.visual_files[0]
+        : undefined,
     [props.image]
   );
 
@@ -138,7 +141,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
     return height > width;
   }
 
-  const ImagePreview = file?.clip ? "video" : "img";
+  const ImagePreview = file?.__typename == "VideoFile" ? "video" : "img";
 
   return (
     <GridCard
@@ -150,8 +153,8 @@ export const ImageCard: React.FC<IImageCardProps> = (
         <>
           <div className={cx("image-card-preview", { portrait: isPortrait() })}>
             <ImagePreview
-              loop={file?.clip}
-              autoPlay={file?.clip}
+              loop={file?.__typename == "VideoFile"}
+              autoPlay={file?.__typename == "VideoFile"}
               className="image-card-preview-image"
               alt={props.image.title ?? ""}
               src={props.image.paths.thumbnail ?? ""}

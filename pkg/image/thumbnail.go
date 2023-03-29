@@ -98,13 +98,13 @@ func (e *ThumbnailEncoder) GetThumbnail(f file.File, maxSize int) ([]byte, error
 		}
 	}
 
-	if f.Clip {
-		fileData, err := e.ffprobe.NewVideoFile(f.Path)
+	if videoFile, ok := f.(*file.VideoFile); ok {
+		fileData, err := e.ffprobe.NewVideoFile(videoFile.Base().Path)
 		if err != nil {
 			return nil, err
 		}
-		if f.Width <= maxSize {
-			maxSize = f.Width
+		if videoFile.GetWidth() <= maxSize {
+			maxSize = videoFile.GetWidth()
 		}
 		clipDuration := fileData.VideoStreamDuration
 		if clipDuration > 30.0 {

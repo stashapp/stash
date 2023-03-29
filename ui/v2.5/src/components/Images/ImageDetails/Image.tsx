@@ -51,7 +51,7 @@ export const Image: React.FC = () => {
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   async function onRescan() {
-    if (!image || !image.files.length) {
+    if (!image || !image.visual_files.length) {
       return;
     }
 
@@ -181,8 +181,8 @@ export const Image: React.FC = () => {
             <Nav.Item>
               <Nav.Link eventKey="image-file-info-panel">
                 <FormattedMessage id="file_info" />
-                {image.files.length > 1 && (
-                  <Counter count={image.files.length ?? 0} />
+                {image.visual_files.length > 1 && (
+                  <Counter count={image.visual_files.length ?? 0} />
                 )}
               </Nav.Link>
             </Nav.Item>
@@ -260,7 +260,8 @@ export const Image: React.FC = () => {
   }
 
   const title = objectTitle(image);
-  const ImageView = image.files[0].clip ? "video" : "img";
+  const ImageView =
+    image.visual_files[0].__typename == "VideoFile" ? "video" : "img";
 
   return (
     <div className="row">
@@ -288,8 +289,9 @@ export const Image: React.FC = () => {
       </div>
       <div className="image-container">
         <ImageView
-          loop={image.files[0].clip}
-          autoPlay={image.files[0].clip}
+          loop={image.visual_files[0].__typename == "VideoFile"}
+          autoPlay={image.visual_files[0].__typename == "VideoFile"}
+          controls={image.visual_files[0].__typename == "VideoFile"}
           className="m-sm-auto no-gutter image-image"
           alt={title}
           src={image.paths.image ?? ""}

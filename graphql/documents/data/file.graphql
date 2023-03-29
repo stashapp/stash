@@ -28,7 +28,6 @@ fragment ImageFileData on ImageFile {
   mod_time
   width
   height
-  clip
   fingerprints {
     type
     value
@@ -44,4 +43,14 @@ fragment GalleryFileData on GalleryFile {
     type
     value
   }
+}
+
+fragment VisualFileData on VisualFile {
+  ... on BaseFile { id, path, size, mod_time, fingerprints {
+      type
+      value
+    } 
+  }
+  ... on ImageFile { width, height }
+  ... on VideoFile { width, height, duration, video_codec, audio_codec, frame_rate, bit_rate }
 }

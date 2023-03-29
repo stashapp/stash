@@ -6,7 +6,6 @@ type ImageFile struct {
 	Format string `json:"format"`
 	Width  int    `json:"width"`
 	Height int    `json:"height"`
-	Clip   bool   `json:"clip"`
 }
 
 func (f ImageFile) GetWidth() int {

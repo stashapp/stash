@@ -58,13 +58,15 @@ const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
   images.forEach((image, index) => {
     let imageData = {
       src: image.paths.thumbnail!,
-      width: image.files[0].width,
-      height: image.files[0].height,
+      width: image.visual_files[0].width,
+      height: image.visual_files[0].height,
       tabIndex: index,
       key: image.id,
       loading: "lazy",
       className: "gallery-image",
-      alt: objectTitle(image) + Number(image.files[0].clip).toString(),
+      alt:
+        objectTitle(image) +
+        Number(image.visual_files[0].__typename == "VideoFile").toString(),
     };
     photos.push(imageData);
   });

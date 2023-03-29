@@ -86,7 +86,7 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// write the generated thumbnail to disk if enabled
-		if manager.GetInstance().Config.IsWriteImageThumbnails() || f.Clip {
+		if manager.GetInstance().Config.IsWriteImageThumbnails() {
 			logger.Debugf("writing thumbnail to disk: %s", img.Path)
 			if err := fsutil.WriteFile(filepath, data); err != nil {
 				logger.Errorf("error writing thumbnail for image %s: %v", img.Path, err)

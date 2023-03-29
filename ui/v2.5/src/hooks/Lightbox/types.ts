@@ -5,8 +5,10 @@ interface IImagePaths {
   thumbnail?: GQL.Maybe<string>;
 }
 
-interface IImageFiles {
-  clip?: boolean;
+interface IFiles {
+  __typename?: string;
+  width: number;
+  height: number;
 }
 
 export interface ILightboxImage {
@@ -15,7 +17,7 @@ export interface ILightboxImage {
   rating100?: GQL.Maybe<number>;
   o_counter?: GQL.Maybe<number>;
   paths: IImagePaths;
-  files?: GQL.Maybe<IImageFiles>[];
+  visual_files?: GQL.Maybe<IFiles>[];
 }
 
 export interface IChapter {

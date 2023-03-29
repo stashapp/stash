@@ -45,4 +45,8 @@ fragment SlimImageData on Image {
     favorite
     image_path
   }
+
+  visual_files {
+    ...VisualFileData
+  }
 }

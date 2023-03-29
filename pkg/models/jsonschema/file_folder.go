@@ -95,7 +95,6 @@ type ImageFile struct {
 	Format string `json:"format,omitempty"`
 	Width  int    `json:"width,omitempty"`
 	Height int    `json:"height,omitempty"`
-	Clip   bool   `json:"clip,omitempty"`
 }
 
 func LoadFileFile(filePath string) (DirEntry, error) {

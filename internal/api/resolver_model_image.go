@@ -35,6 +35,7 @@ func convertImageFile(f *file.ImageFile) *ImageFile {
 	return ret
 }
 
+/*
 func frameToImageFile(f file.File) (*file.ImageFile, error) {
 	frame, ok := f.(file.VisualFile)
 	if !ok {
@@ -48,6 +49,7 @@ func frameToImageFile(f file.File) (*file.ImageFile, error) {
 		Height:   frame.GetHeight(),
 	}, nil
 }
+*/
 
 func (r *imageResolver) getPrimaryFile(ctx context.Context, obj *models.Image) (file.VisualFile, error) {
 	if obj.PrimaryFileID != nil {
@@ -99,7 +101,6 @@ func (r *imageResolver) File(ctx context.Context, obj *models.Image) (*ImageFile
 		Size:   int(size),
 		Width:  width,
 		Height: height,
-		Clip:   clip,
 	}, nil
 }
 
