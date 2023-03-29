@@ -21,6 +21,7 @@
     "confirm": "確認",
     "continue": "繼續",
     "create": "建立",
+    "create_chapters": "建立章節",
     "create_entity": "建立{entityType}",
     "create_marker": "建立章節標記",
     "created_entity": "已建立{entity_type}：{entity_name}",
@@ -60,6 +61,8 @@
     "merge": "合併",
     "merge_from": "與其他項目合併",
     "merge_into": "合併至其他項目",
+    "migrate_blobs": "遷移物件檔案",
+    "migrate_scene_screenshots": "遷移短片截圖",
     "next_action": "下一步",
     "not_running": "尚未執行",
     "open_in_external_player": "透過外部播放器開啟",
@@ -130,8 +133,13 @@
   "birth_year": "出生年分",
   "birthdate": "出生日期",
   "bitrate": "位元率",
+  "blobs_storage_type": {
+    "database": "資料庫",
+    "filesystem": "檔案系統"
+  },
   "captions": "字幕",
   "career_length": "活躍年代",
+  "chapters": "章節",
   "component_tagger": {
     "config": {
       "active_instance": "目前使用的 Stash-box：",
@@ -185,6 +193,7 @@
       "latest_version": "最新版本",
       "latest_version_build_hash": "最新版本的雜湊值：",
       "new_version_notice": "[新版本]",
+      "release_date": "上映日期:",
       "stash_discord": "加入我們的 {url} 頻道",
       "stash_home": "Stash 的 {url} 專案",
       "stash_open_collective": "透過 {url} 來支持本計畫的開發",
@@ -255,7 +264,15 @@
         "description": "SQLite 資料庫備份的檔案位置",
         "heading": "備份目錄位置"
       },
-      "cache_location": "快取的檔案位置",
+      "blobs_path": {
+        "description": "存取物件檔案的檔案系統路徑。僅適用於使用檔案系統格式的物件檔案。警告：更改此選項後須手動遷移現有檔案。",
+        "heading": "物件檔案檔案系統路徑"
+      },
+      "blobs_storage": {
+        "description": "選擇物件檔案存取路徑，這些檔案可能包括檔案如短片封面、演員、工作室、及標籤圖案等等。若您修改此選項，請記得透過『遷移物件檔案』來遷移所有相關檔案。詳情請見『排程』頁面。",
+        "heading": "物件檔案儲存類別"
+      },
+      "cache_location": "快取的檔案位置。透過 HLS 或 DASH 格式串流時所需的必要選項。",
       "cache_path_head": "快取路徑",
       "calculate_md5_and_ohash_desc": "除 oshash 外，同時也計算 MD5 的雜湊值。開啟後，可能會影響初次掃描的速度。若要關閉 MD5 計算，請將『生成檔案名所使用的雜湊演算法』設為 oshash。",
       "calculate_md5_and_ohash_label": "計算影片 MD5",
@@ -265,12 +282,34 @@
       "chrome_cdp_path_desc": "Chrome 執行檔的檔案路徑，或 Chrome 的遠端地址（以 http:// 或 https:// 開頭，例如 http://localhost:9222/json/version）。",
       "create_galleries_from_folders_desc": "勾選後，則會從包含圖片的資料夾建立圖庫。",
       "create_galleries_from_folders_label": "從包含圖片的資料夾建立圖庫",
+      "database": "資料庫",
       "db_path_head": "資料庫路徑",
       "directory_locations_to_your_content": "多媒體的檔案位置",
       "excluded_image_gallery_patterns_desc": "要從掃描中排除，並會被『清理』功能所移除的圖片及圖庫檔案/路徑的正規表示式",
       "excluded_image_gallery_patterns_head": "圖片/圖庫排除規則",
       "excluded_video_patterns_desc": "要從掃描中排除，並會被『清理』功能所移除的影片檔案/路徑的正規表示式",
       "excluded_video_patterns_head": "影片排除規則",
+      "ffmpeg": {
+        "hardware_acceleration": {
+          "heading": "FFMpeg 硬體編碼"
+        },
+        "live_transcode": {
+          "input_args": {
+            "heading": "FFMpeg 即時串流輸入選項"
+          },
+          "output_args": {
+            "heading": "FFMpeg 即時串流輸出選項"
+          }
+        },
+        "transcode": {
+          "input_args": {
+            "heading": "FFMpeg 即時串流輸入選項"
+          },
+          "output_args": {
+            "heading": "FFMpeg 即時串流輸出選項"
+          }
+        }
+      },
       "gallery_ext_desc": "以逗號分隔的副檔名名稱，這些檔案將視為圖庫或圖包。",
       "gallery_ext_head": "圖庫 ZIP 檔副檔名",
       "generated_file_naming_hash_desc": "使用 MD5 或 oshash 生成檔案命名。更改此設定後，所有短片則須有先對應的 MD5/oshash 雜湊值。因此，之前已經生成的檔案可能需要重新遷移或重新生成。請參閱『遷移』設定。",
@@ -982,7 +1021,6 @@
   "scenes": "短片",
   "scenes_updated_at": "短片更新時間",
   "search_filter": {
-    "add_filter": "新增篩選",
     "name": "篩選",
     "saved_filters": "已儲存的過濾條件",
     "update_filter": "更新篩選"

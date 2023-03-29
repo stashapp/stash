@@ -35,7 +35,7 @@
     "download_backup": "Download Backup",
     "edit": "Ændre",
     "edit_entity": "Ændre {entityType}",
-    "export": "Eksportere…",
+    "export": "Eksportere",
     "export_all": "Exportere alt…",
     "find": "Finde",
     "finish": "Afslut",
@@ -901,7 +901,6 @@
   "scenes": "Scener",
   "scenes_updated_at": "Scene opdateret den",
   "search_filter": {
-    "add_filter": "Tilføj filter",
     "name": "Filter",
     "saved_filters": "Gemte filtre",
     "update_filter": "Opdater filter"
