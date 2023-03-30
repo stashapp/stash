@@ -98,7 +98,7 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 				OCounter:  ocounter,
 				StudioID:  &studioIDs[studioIdxWithImage],
 				Files: models.NewRelatedFiles([]file.File{
-					imageFile.(file.File),
+					imageFile.(*file.ImageFile),
 				}),
 				PrimaryFileID: &imageFile.Base().ID,
 				Path:          imageFile.Base().Path,
@@ -445,7 +445,7 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 				OCounter:  ocounter,
 				StudioID:  &studioIDs[studioIdxWithImage],
 				Files: models.NewRelatedFiles([]file.File{
-					makeFile(imageIdx1WithGallery),
+					makeImageFile(imageIdx1WithGallery),
 				}),
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
@@ -463,7 +463,7 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 				ID:       imageIDs[imageIdx1WithGallery],
 				OCounter: getOCounter(imageIdx1WithGallery),
 				Files: models.NewRelatedFiles([]file.File{
-					makeFile(imageIdx1WithGallery),
+					makeImageFile(imageIdx1WithGallery),
 				}),
 				GalleryIDs:   models.NewRelatedIDs([]int{}),
 				TagIDs:       models.NewRelatedIDs([]int{}),
@@ -965,7 +965,7 @@ func makeImageWithID(index int) *models.Image {
 	ret := makeImage(index, true)
 	ret.ID = imageIDs[index]
 
-	ret.Files = models.NewRelatedFiles([]file.File{makeFile(index)})
+	ret.Files = models.NewRelatedFiles([]file.File{makeImageFile(index)})
 
 	return ret
 }
@@ -1868,11 +1868,11 @@ func verifyImagesResolution(t *testing.T, resolution models.ResolutionEnum) {
 				t.Errorf("Error loading primary file: %s", err.Error())
 				return nil
 			}
-			visualFile, ok := image.Files.Primary().(file.VisualFile)
+			asFrame, ok := image.Files.Primary().(file.VisualFile)
 			if !ok {
-				t.Errorf("Error: File Associated with image is neither a Video File nor an Image File")
+				t.Errorf("Error: Associated primary file of image is not of type VisualFile")
 			}
-			verifyImageResolution(t, visualFile.GetHeight(), resolution)
+			verifyImageResolution(t, asFrame.GetHeight(), resolution)
 		}
 
 		return nil
