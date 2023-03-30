@@ -123,6 +123,7 @@ type HierarchicalMultiCriterionInput struct {
 type MultiCriterionInput struct {
 	Value    []string          `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
+	Excludes []string          `json:"excludes"`
 }
 
 type DateCriterionInput struct {

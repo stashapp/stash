@@ -502,6 +502,7 @@ input IntCriterionInput {
 input MultiCriterionInput {
   value: [ID!]
   modifier: CriterionModifier!
+  excludes: [ID!]
 }
 
 input GenderCriterionInput {

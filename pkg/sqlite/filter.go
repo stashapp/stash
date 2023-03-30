@@ -597,9 +597,12 @@ type joinedMultiCriterionHandlerBuilder struct {
 	addJoinTable func(f *filterBuilder)
 }
 
-func (m *joinedMultiCriterionHandlerBuilder) handler(criterion *models.MultiCriterionInput) criterionHandlerFunc {
+func (m *joinedMultiCriterionHandlerBuilder) handler(c *models.MultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
-		if criterion != nil {
+		if c != nil {
+			// make local copy so we can modify it
+			criterion := *c
+
 			joinAlias := m.joinAs
 			if joinAlias == "" {
 				joinAlias = m.joinTable
@@ -621,37 +624,67 @@ func (m *joinedMultiCriterionHandlerBuilder) handler(criterion *models.MultiCrit
 				return
 			}
 
-			if len(criterion.Value) == 0 {
+			if len(criterion.Value) == 0 && len(criterion.Excludes) == 0 {
 				return
 			}
 
-			var args []interface{}
-			for _, tagID := range criterion.Value {
-				args = append(args, tagID)
+			// combine excludes if excludes modifier is selected
+			if criterion.Modifier == models.CriterionModifierExcludes {
+				criterion.Modifier = models.CriterionModifierIncludesAll
+				criterion.Excludes = append(criterion.Excludes, criterion.Value...)
+				criterion.Value = nil
 			}
 
-			whereClause := ""
-			havingClause := ""
+			if len(criterion.Value) > 0 {
+				whereClause := ""
+				havingClause := ""
 
-			switch criterion.Modifier {
-			case models.CriterionModifierIncludes:
-				// includes any of the provided ids
-				m.addJoinTable(f)
-				whereClause = fmt.Sprintf("%s.%s IN %s", joinAlias, m.foreignFK, getInBinding(len(criterion.Value)))
-			case models.CriterionModifierIncludesAll:
-				// includes all of the provided ids
-				m.addJoinTable(f)
-				whereClause = fmt.Sprintf("%s.%s IN %s", joinAlias, m.foreignFK, getInBinding(len(criterion.Value)))
-				havingClause = fmt.Sprintf("count(distinct %s.%s) IS %d", joinAlias, m.foreignFK, len(criterion.Value))
-			case models.CriterionModifierExcludes:
+				var args []interface{}
+				for _, tagID := range criterion.Value {
+					args = append(args, tagID)
+				}
+
+				switch criterion.Modifier {
+				case models.CriterionModifierIncludes:
+					// includes any of the provided ids
+					m.addJoinTable(f)
+					whereClause = fmt.Sprintf("%s.%s IN %s", joinAlias, m.foreignFK, getInBinding(len(criterion.Value)))
+				case models.CriterionModifierEquals:
+					// includes only the provided ids
+					m.addJoinTable(f)
+					whereClause = utils.StrFormat("{joinAlias}.{foreignFK} IN {inBinding} AND (SELECT COUNT(*) FROM {joinTable} s WHERE s.{primaryFK} = {primaryTable}.id) = ?", utils.StrFormatMap{
+						"joinAlias":    joinAlias,
+						"foreignFK":    m.foreignFK,
+						"inBinding":    getInBinding(len(criterion.Value)),
+						"joinTable":    m.joinTable,
+						"primaryFK":    m.primaryFK,
+						"primaryTable": m.primaryTable,
+					})
+					args = append(args, len(criterion.Value))
+				case models.CriterionModifierIncludesAll:
+					// includes all of the provided ids
+					m.addJoinTable(f)
+					whereClause = fmt.Sprintf("%s.%s IN %s", joinAlias, m.foreignFK, getInBinding(len(criterion.Value)))
+					havingClause = fmt.Sprintf("count(distinct %s.%s) IS %d", joinAlias, m.foreignFK, len(criterion.Value))
+				}
+
+				f.addWhere(whereClause, args...)
+				f.addHaving(havingClause)
+			}
+
+			if len(criterion.Excludes) > 0 {
+				var args []interface{}
+				for _, tagID := range criterion.Excludes {
+					args = append(args, tagID)
+				}
+
 				// excludes all of the provided ids
 				// need to use actual join table name for this
 				// <primaryTable>.id NOT IN (select <joinTable>.<primaryFK> from <joinTable> where <joinTable>.<foreignFK> in <values>)
-				whereClause = fmt.Sprintf("%[1]s.id NOT IN (SELECT %[3]s.%[2]s from %[3]s where %[3]s.%[4]s in %[5]s)", m.primaryTable, m.primaryFK, m.joinTable, m.foreignFK, getInBinding(len(criterion.Value)))
-			}
+				whereClause := fmt.Sprintf("%[1]s.id NOT IN (SELECT %[3]s.%[2]s from %[3]s where %[3]s.%[4]s in %[5]s)", m.primaryTable, m.primaryFK, m.joinTable, m.foreignFK, getInBinding(len(criterion.Excludes)))
 
-			f.addWhere(whereClause, args...)
-			f.addHaving(havingClause)
+				f.addWhere(whereClause, args...)
+			}
 		}
 	}
 }

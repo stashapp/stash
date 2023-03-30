@@ -35,6 +35,7 @@ export class PerformersCriterion extends Criterion<ILabeledValueListValue> {
   protected toCriterionInput(): MultiCriterionInput {
     return {
       value: this.value.items.map((v) => v.id),
+      excludes: this.value.excluded.map((v) => v.id),
       modifier: this.modifier,
     };
   }
