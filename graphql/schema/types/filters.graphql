@@ -514,6 +514,7 @@ input HierarchicalMultiCriterionInput {
   value: [ID!]
   modifier: CriterionModifier!
   depth: Int
+  excludes: [ID!]
 }
 
 input DateCriterionInput {

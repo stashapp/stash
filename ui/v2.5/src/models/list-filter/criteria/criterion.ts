@@ -534,19 +534,12 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
 
   protected toCriterionInput(): HierarchicalMultiCriterionInput {
     return {
-      value: (this.value.items ?? []).map((v) => v.id),
+      value: this.value.items.map((v) => v.id),
+      excludes: this.value.excluded.map((v) => v.id),
       modifier: this.modifier,
       depth: this.value.depth,
     };
   }
-
-  // protected toCriterionInput(): MultiCriterionInput {
-  //   return {
-  //     value: this.value.items.map((v) => v.id),
-  //     excludes: this.value.excluded.map((v) => v.id),
-  //     modifier: this.modifier,
-  //   };
-  // }
 
   public isValid(): boolean {
     if (

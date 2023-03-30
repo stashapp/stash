@@ -118,6 +118,7 @@ type HierarchicalMultiCriterionInput struct {
 	Value    []string          `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
 	Depth    *int              `json:"depth"`
+	Excludes []string          `json:"excludes"`
 }
 
 type MultiCriterionInput struct {
