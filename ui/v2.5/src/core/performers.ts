@@ -22,21 +22,21 @@ export const usePerformerFilterHook = (
       ) {
         // add the performer if not present
         if (
-          !performerCriterion.value.find((p) => {
+          !performerCriterion.value.items.find((p) => {
             return p.id === performer.id;
           })
         ) {
-          performerCriterion.value.push(performerValue);
+          performerCriterion.value.items.push(performerValue);
         }
       } else {
         // overwrite
-        performerCriterion.value = [performerValue];
+        performerCriterion.value.items = [performerValue];
       }
 
       performerCriterion.modifier = GQL.CriterionModifier.IncludesAll;
     } else {
       performerCriterion = new PerformersCriterion();
-      performerCriterion.value = [performerValue];
+      performerCriterion.value.items = [performerValue];
       performerCriterion.modifier = GQL.CriterionModifier.IncludesAll;
       filter.criteria.push(performerCriterion);
     }

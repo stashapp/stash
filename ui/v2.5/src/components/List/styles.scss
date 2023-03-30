@@ -213,8 +213,8 @@ input[type="range"].zoom-slider {
 
 .selectable-filter ul {
   list-style-type: none;
-  max-height: 300px;
   margin-top: 0.5rem;
+  max-height: 300px;
   overflow-y: auto;
   padding-inline-start: 0;
 
@@ -231,7 +231,7 @@ input[type="range"].zoom-slider {
       justify-content: space-between;
 
       &:hover {
-        background-color: rgba(138, 155, 168, 0.1490196);
+        background-color: rgba(138, 155, 168, 0.15);
       }
 
       .selected-object-label,

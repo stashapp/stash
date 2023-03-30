@@ -22,6 +22,7 @@ import {
   IStashIDValue,
   IDateValue,
   ITimestampValue,
+  ILabeledValueListValue,
 } from "../types";
 
 export type Option = string | number | IOptionType;
@@ -29,6 +30,7 @@ export type CriterionValue =
   | string
   | ILabeledId[]
   | IHierarchicalLabelValue
+  | ILabeledValueListValue
   | INumberValue
   | IStashIDValue
   | IDateValue

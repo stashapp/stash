@@ -1,17 +1,21 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { Badge, Button, Collapse, Form } from "react-bootstrap";
+import { Badge, Button, Collapse } from "react-bootstrap";
 import { Icon } from "src/components/Shared/Icon";
-import { faCheckCircle, faMinus, faPlus, faTimes, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
-import { ClearableInput } from "src/components/Shared/ClearableInput";
-import { CriterionType, ILabeledId } from "src/models/list-filter/types";
-import { cloneDeep, debounce } from "lodash-es";
 import {
-  IHierarchicalLabeledIdCriterion,
-  ILabeledIdCriterion,
-} from "src/models/list-filter/criteria/criterion";
-import { useIntl } from "react-intl";
+  faCheckCircle,
+  faMinus,
+  faPlus,
+  faTimesCircle,
+} from "@fortawesome/free-solid-svg-icons";
+import { ClearableInput } from "src/components/Shared/ClearableInput";
+import {
+  CriterionType,
+  ILabeledId,
+  ILabeledValueListValue,
+} from "src/models/list-filter/types";
+import { cloneDeep, debounce } from "lodash-es";
+import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
-import { CriterionModifier } from "src/core/generated-graphql";
 
 interface ISelectableFilter {
   query: string;
@@ -47,9 +51,11 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
 
   const objects = useMemo(() => {
     return queryResults.filter(
-      (p) => selected.find((s) => s.id === p.id) === undefined && excluded.find((s) => s.id === p.id) === undefined
+      (p) =>
+        selected.find((s) => s.id === p.id) === undefined &&
+        excluded.find((s) => s.id === p.id) === undefined
     );
-  }, [queryResults, selected]);
+  }, [queryResults, selected, excluded]);
 
   return (
     <div className="selectable-filter">
@@ -88,8 +94,15 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
                 <span>{p.label}</span>
               </div>
               <div>
-                <span className="object-count">{p.id}</span>
-                <Button onClick={() => onSelect(p, false)} className="minimal exclude-button">
+                {/* TODO item count */}
+                {/* <span className="object-count">{p.id}</span> */}
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelect(p, false);
+                  }}
+                  className="minimal exclude-button"
+                >
                   <Icon className="fa-fw exclude-icon" icon={faMinus} />
                 </Button>
               </div>
@@ -134,21 +147,17 @@ export const Header: React.FC<React.PropsWithChildren<IHeader>> = (
   );
 };
 
-interface IObjectsFilter<T extends ILabeledIdCriterion> {
+interface IObjectsFilter<T extends Criterion<ILabeledValueListValue>> {
   type: CriterionType;
   criterion: T;
   setCriterion: (criterion: T) => void;
   queryHook: (query: string) => ILabeledId[];
 }
 
-export const ObjectsFilter = <T extends ILabeledIdCriterion>(
+export const ObjectsFilter = <T extends Criterion<ILabeledValueListValue>>(
   props: IObjectsFilter<T>
 ) => {
-  const { type, criterion, setCriterion, queryHook } = props;
-
-  const [excluded, setExcluded] = useState<ILabeledId[]>([]);
-
-  const intl = useIntl();
+  const { criterion, setCriterion, queryHook } = props;
 
   const [query, setQuery] = useState("");
 
@@ -158,11 +167,12 @@ export const ObjectsFilter = <T extends ILabeledIdCriterion>(
     let newCriterion: T = cloneDeep(criterion);
 
     if (newInclude) {
-      newCriterion.value.push(value);
-      setCriterion(newCriterion);
+      newCriterion.value.items.push(value);
     } else {
-      setExcluded([...excluded, value]);
+      newCriterion.value.excluded.push(value);
     }
+
+    setCriterion(newCriterion);
   }
 
   const onUnselect = useCallback(
@@ -171,7 +181,12 @@ export const ObjectsFilter = <T extends ILabeledIdCriterion>(
 
       let newCriterion: T = cloneDeep(criterion);
 
-      newCriterion.value = criterion.value.filter((v) => v.id !== value.id);
+      newCriterion.value.items = criterion.value.items.filter(
+        (v) => v.id !== value.id
+      );
+      newCriterion.value.excluded = criterion.value.excluded.filter(
+        (v) => v.id !== value.id
+      );
 
       setCriterion(newCriterion);
     },
@@ -179,7 +194,13 @@ export const ObjectsFilter = <T extends ILabeledIdCriterion>(
   );
 
   const sortedSelected = useMemo(() => {
-    const ret = criterion.value.slice();
+    const ret = criterion.value.items.slice();
+    ret.sort((a, b) => a.label.localeCompare(b.label));
+    return ret;
+  }, [criterion]);
+
+  const sortedExcluded = useMemo(() => {
+    const ret = criterion.value.excluded.slice();
     ret.sort((a, b) => a.label.localeCompare(b.label));
     return ret;
   }, [criterion]);
@@ -192,131 +213,119 @@ export const ObjectsFilter = <T extends ILabeledIdCriterion>(
       queryResults={queryResults}
       onSelect={onSelect}
       onUnselect={onUnselect}
-      excluded={excluded}
+      excluded={sortedExcluded}
     />
   );
 };
 
-interface IHierarchicalObjectsFilter<
-  T extends IHierarchicalLabeledIdCriterion
-> {
-  type: CriterionType;
-  criterion: T;
-  setCriterion: (filter: T) => void;
-  queryHook: (query: string) => ILabeledId[];
-}
+// interface IHierarchicalObjectsFilter<
+//   T extends IHierarchicalLabeledIdCriterion
+// > {
+//   type: CriterionType;
+//   criterion: T;
+//   setCriterion: (filter: T) => void;
+//   queryHook: (query: string) => ILabeledId[];
+// }
 
-export const HierarchicalObjectsFilter = <
-  T extends IHierarchicalLabeledIdCriterion
->(
-  props: IHierarchicalObjectsFilter<T>
-) => {
-  const { type, criterion, setCriterion, queryHook } = props;
+// export const HierarchicalObjectsFilter = <
+//   T extends IHierarchicalLabeledIdCriterion
+// >(
+//   props: IHierarchicalObjectsFilter<T>
+// ) => {
+//   const { type, criterion, setCriterion, queryHook } = props;
 
-  const intl = useIntl();
+//   const intl = useIntl();
 
-  const [query, setQuery] = useState("");
+//   const [query, setQuery] = useState("");
 
-  const queryResults = queryHook(query);
+//   const queryResults = queryHook(query);
 
-  // const criterion = useMemo(() => {
-  //   return filter.criteria.find((cc) => {
-  //     return cc.criterionOption.type === type;
-  //   }) as T | undefined;
-  // }, [filter, type]);
+//   const include = useMemo(() => {
+//     if (!criterion) return;
 
-  const include = useMemo(() => {
-    if (!criterion) return;
+//     switch (criterion.modifier) {
+//       case CriterionModifier.IncludesAll:
+//         return true;
+//       case CriterionModifier.Excludes:
+//         return false;
+//     }
+//   }, [criterion]);
 
-    switch (criterion.modifier) {
-      case CriterionModifier.IncludesAll:
-        return true;
-      case CriterionModifier.Excludes:
-        return false;
-    }
-  }, [criterion]);
+//   function onSelect(value: ILabeledId, newInclude: boolean) {
+//     let newCriterion: T = cloneDeep(criterion);
 
-  function onSelect(value: ILabeledId, newInclude: boolean) {
-    let newCriterion: T = cloneDeep(criterion);
+//     newCriterion.value.items.push(value);
 
-    // if (newInclude) {
-    //   newCriterion.modifier = CriterionModifier.IncludesAll;
-    // } else {
-    //   newCriterion.modifier = CriterionModifier.Excludes;
-    // }
+//     // const newFilter = filter.setCriterion(type, newCriterion);
 
-    newCriterion.value.items.push(value);
+//     setCriterion(newCriterion);
+//   }
 
-    // const newFilter = filter.setCriterion(type, newCriterion);
+//   const onUnselect = useCallback(
+//     (id: string) => {
+//       if (!criterion) return;
 
-    setCriterion(newCriterion);
-  }
+//       let newCriterion: T | undefined = cloneDeep(criterion);
 
-  const onUnselect = useCallback(
-    (id: string) => {
-      if (!criterion) return;
+//       newCriterion.value.items = criterion.value.items.filter(
+//         (v) => v.id !== id
+//       );
+//       // if (newCriterion.value.items.length === 0) {
+//       //   newCriterion = undefined;
+//       // }
 
-      let newCriterion: T | undefined = cloneDeep(criterion);
+//       // const newFilter = filter.setCriterion(type, newCriterion);
 
-      newCriterion.value.items = criterion.value.items.filter(
-        (v) => v.id !== id
-      );
-      // if (newCriterion.value.items.length === 0) {
-      //   newCriterion = undefined;
-      // }
+//       setCriterion(newCriterion);
+//     },
+//     [setCriterion, criterion, type]
+//   );
 
-      // const newFilter = filter.setCriterion(type, newCriterion);
+//   const sortedSelected = useMemo(() => {
+//     const ret = criterion.value.items.slice();
+//     ret.sort((a, b) => a.label.localeCompare(b.label));
+//     return ret;
+//   }, [criterion]);
 
-      setCriterion(newCriterion);
-    },
-    [setCriterion, criterion, type]
-  );
+//   const selected = useMemo(() => {
+//     if (!sortedSelected.length) return;
 
-  const sortedSelected = useMemo(() => {
-    const ret = criterion.value.items.slice();
-    ret.sort((a, b) => a.label.localeCompare(b.label));
-    return ret;
-  }, [criterion]);
+//     return (
+//       <ul className="selected-objects">
+//         {sortedSelected.map((s) => {
+//           return (
+//             <li key={s.id}>
+//               <Badge
+//                 className="selected-object"
+//                 variant="secondary"
+//                 onClick={() => onUnselect(s.id)}
+//               >
+//                 <span>{s.label}</span>
+//                 <Button variant="secondary">
+//                   <Icon icon={faTimes} />
+//                 </Button>
+//               </Badge>
+//             </li>
+//           );
+//         })}
+//       </ul>
+//     );
+//   }, [sortedSelected, onUnselect]);
 
-  const selected = useMemo(() => {
-    if (!sortedSelected.length) return;
-
-    return (
-      <ul className="selected-objects">
-        {sortedSelected.map((s) => {
-          return (
-            <li key={s.id}>
-              <Badge
-                className="selected-object"
-                variant="secondary"
-                onClick={() => onUnselect(s.id)}
-              >
-                <span>{s.label}</span>
-                <Button variant="secondary">
-                  <Icon icon={faTimes} />
-                </Button>
-              </Badge>
-            </li>
-          );
-        })}
-      </ul>
-    );
-  }, [sortedSelected, onUnselect]);
-
-  return (
-    <Header
-      title={intl.formatMessage({ id: type })}
-      include={include}
-      selected={criterion?.value.items.length ?? 0}
-      alwaysShown={selected}
-    >
-      <SelectableFilter
-        query={query}
-        setQuery={setQuery}
-        selected={criterion?.value.items ?? []}
-        queryResults={queryResults}
-        onSelect={onSelect}
-      />
-    </Header>
-  );
-};
+//   return (
+//     <Header
+//       title={intl.formatMessage({ id: type })}
+//       include={include}
+//       selected={criterion?.value.items.length ?? 0}
+//       alwaysShown={selected}
+//     >
+//       <SelectableFilter
+//         query={query}
+//         setQuery={setQuery}
+//         selected={criterion?.value.items ?? []}
+//         queryResults={queryResults}
+//         onSelect={onSelect}
+//       />
+//     </Header>
+//   );
+// };

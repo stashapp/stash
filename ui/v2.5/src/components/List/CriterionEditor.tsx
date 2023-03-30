@@ -112,7 +112,7 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
           criterion={criterion}
           setCriterion={(c) => setCriterion(c)}
         />
-      )
+      );
     }
 
     if (criterion instanceof ILabeledIdCriterion) {

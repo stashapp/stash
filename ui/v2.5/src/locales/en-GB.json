@@ -714,6 +714,7 @@
     "equals": "is",
     "excludes": "excludes",
     "format_string": "{criterion} {modifierString} {valueString}",
+    "format_string_excludes": "{criterion} {modifierString} {valueString} (excludes {excludedString})",
     "greater_than": "is greater than",
     "includes": "includes",
     "includes_all": "includes all",

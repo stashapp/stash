@@ -36,7 +36,7 @@ const makePerformerScenesUrl = (
   if (!performer.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
   const criterion = new PerformersCriterion();
-  criterion.value = [
+  criterion.value.items = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
   ];
   filter.criteria.push(criterion);
@@ -51,7 +51,7 @@ const makePerformerImagesUrl = (
   if (!performer.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Images, undefined);
   const criterion = new PerformersCriterion();
-  criterion.value = [
+  criterion.value.items = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
   ];
   filter.criteria.push(criterion);
@@ -66,7 +66,7 @@ const makePerformerGalleriesUrl = (
   if (!performer.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Galleries, undefined);
   const criterion = new PerformersCriterion();
-  criterion.value = [
+  criterion.value.items = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
   ];
   filter.criteria.push(criterion);
@@ -81,7 +81,7 @@ const makePerformerMoviesUrl = (
   if (!performer.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Movies, undefined);
   const criterion = new PerformersCriterion();
-  criterion.value = [
+  criterion.value.items = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
   ];
   filter.criteria.push(criterion);
