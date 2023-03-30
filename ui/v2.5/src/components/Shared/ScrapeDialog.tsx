@@ -36,7 +36,7 @@ export class ScrapeResult<T> {
   ) {
     this.originalValue = originalValue ?? undefined;
     this.newValue = newValue ?? undefined;
-    const hasNewValue = newValue !== undefined;
+    const hasNewValue = this.newValue !== undefined;
 
     const valuesEqual = isEqual(originalValue, newValue);
     this.useNewValue = useNewValue ?? (hasNewValue && !valuesEqual);
