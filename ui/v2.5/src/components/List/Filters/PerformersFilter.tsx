@@ -34,7 +34,6 @@ const PerformersFilter: React.FC<IPerformersFilter> = ({
 }) => {
   return (
     <ObjectsFilter
-      type="performers"
       criterion={criterion}
       setCriterion={setCriterion}
       queryHook={usePerformerQuery}

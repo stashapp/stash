@@ -25,6 +25,7 @@ export interface ILabeledValueListValue {
 
 export interface IHierarchicalLabelValue {
   items: ILabeledId[];
+  excluded: ILabeledId[];
   depth: number;
 }
 

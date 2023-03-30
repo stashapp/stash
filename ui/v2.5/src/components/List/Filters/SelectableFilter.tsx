@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { Badge, Button, Collapse } from "react-bootstrap";
+import { Badge, Button, Collapse, Form } from "react-bootstrap";
 import { Icon } from "src/components/Shared/Icon";
 import {
   faCheckCircle,
@@ -9,17 +9,22 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { ClearableInput } from "src/components/Shared/ClearableInput";
 import {
-  CriterionType,
+  IHierarchicalLabelValue,
   ILabeledId,
   ILabeledValueListValue,
 } from "src/models/list-filter/types";
 import { cloneDeep, debounce } from "lodash-es";
-import { Criterion } from "src/models/list-filter/criteria/criterion";
+import {
+  Criterion,
+  IHierarchicalLabeledIdCriterion,
+} from "src/models/list-filter/criteria/criterion";
 import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
+import { defineMessages, MessageDescriptor, useIntl } from "react-intl";
 
 interface ISelectableFilter {
   query: string;
   setQuery: (query: string) => void;
+  single: boolean;
   queryResults: ILabeledId[];
   selected: ILabeledId[];
   excluded: ILabeledId[];
@@ -30,6 +35,7 @@ interface ISelectableFilter {
 const SelectableFilter: React.FC<ISelectableFilter> = ({
   query,
   setQuery,
+  single,
   queryResults,
   selected,
   excluded,
@@ -56,6 +62,12 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
         excluded.find((s) => s.id === p.id) === undefined
     );
   }, [queryResults, selected, excluded]);
+
+  const includingOnly = selected.length > 0 && single;
+  const excludingOnly = excluded.length > 0 && single;
+
+  const includeIcon = <Icon className="fa-fw include-button" icon={faPlus} />;
+  const excludeIcon = <Icon className="fa-fw exclude-icon" icon={faMinus} />;
 
   return (
     <div className="selectable-filter">
@@ -88,23 +100,26 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
         ))}
         {objects.map((p) => (
           <li key={p.id} className="unselected-object">
-            <a onClick={() => onSelect(p, true)}>
+            {/* if excluding only, clicking on an item also excludes it */}
+            <a onClick={() => onSelect(p, !excludingOnly)}>
               <div>
-                <Icon className="fa-fw include-button" icon={faPlus} />
+                {!excludingOnly ? includeIcon : excludeIcon}
                 <span>{p.label}</span>
               </div>
               <div>
                 {/* TODO item count */}
                 {/* <span className="object-count">{p.id}</span> */}
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onSelect(p, false);
-                  }}
-                  className="minimal exclude-button"
-                >
-                  <Icon className="fa-fw exclude-icon" icon={faMinus} />
-                </Button>
+                {!includingOnly && !excludingOnly && (
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelect(p, false);
+                    }}
+                    className="minimal exclude-button"
+                  >
+                    {excludeIcon}
+                  </Button>
+                )}
               </div>
             </a>
           </li>
@@ -148,16 +163,18 @@ export const Header: React.FC<React.PropsWithChildren<IHeader>> = (
 };
 
 interface IObjectsFilter<T extends Criterion<ILabeledValueListValue>> {
-  type: CriterionType;
   criterion: T;
+  single?: boolean;
   setCriterion: (criterion: T) => void;
   queryHook: (query: string) => ILabeledId[];
 }
 
-export const ObjectsFilter = <T extends Criterion<ILabeledValueListValue>>(
+export const ObjectsFilter = <
+  T extends Criterion<ILabeledValueListValue | IHierarchicalLabelValue>
+>(
   props: IObjectsFilter<T>
 ) => {
-  const { criterion, setCriterion, queryHook } = props;
+  const { criterion, setCriterion, queryHook, single = false } = props;
 
   const [query, setQuery] = useState("");
 
@@ -207,6 +224,7 @@ export const ObjectsFilter = <T extends Criterion<ILabeledValueListValue>>(
 
   return (
     <SelectableFilter
+      single={single}
       query={query}
       setQuery={setQuery}
       selected={sortedSelected}
@@ -218,114 +236,82 @@ export const ObjectsFilter = <T extends Criterion<ILabeledValueListValue>>(
   );
 };
 
-// interface IHierarchicalObjectsFilter<
-//   T extends IHierarchicalLabeledIdCriterion
-// > {
-//   type: CriterionType;
-//   criterion: T;
-//   setCriterion: (filter: T) => void;
-//   queryHook: (query: string) => ILabeledId[];
-// }
+interface IHierarchicalObjectsFilter<T extends IHierarchicalLabeledIdCriterion>
+  extends IObjectsFilter<T> {}
 
-// export const HierarchicalObjectsFilter = <
-//   T extends IHierarchicalLabeledIdCriterion
-// >(
-//   props: IHierarchicalObjectsFilter<T>
-// ) => {
-//   const { type, criterion, setCriterion, queryHook } = props;
+export const HierarchicalObjectsFilter = <
+  T extends IHierarchicalLabeledIdCriterion
+>(
+  props: IHierarchicalObjectsFilter<T>
+) => {
+  const intl = useIntl();
+  const { criterion, setCriterion } = props;
 
-//   const intl = useIntl();
+  const messages = defineMessages({
+    studio_depth: {
+      id: "studio_depth",
+      defaultMessage: "Levels (empty for all)",
+    },
+  });
 
-//   const [query, setQuery] = useState("");
+  function onDepthChanged(depth: number) {
+    let newCriterion: T = cloneDeep(criterion);
+    newCriterion.value.depth = depth;
+    setCriterion(newCriterion);
+  }
 
-//   const queryResults = queryHook(query);
+  function criterionOptionTypeToIncludeID(): string {
+    if (criterion.criterionOption.type === "studios") {
+      return "include-sub-studios";
+    }
+    if (criterion.criterionOption.type === "childTags") {
+      return "include-parent-tags";
+    }
+    return "include-sub-tags";
+  }
 
-//   const include = useMemo(() => {
-//     if (!criterion) return;
+  function criterionOptionTypeToIncludeUIString(): MessageDescriptor {
+    const optionType =
+      criterion.criterionOption.type === "studios"
+        ? "include_sub_studios"
+        : criterion.criterionOption.type === "childTags"
+        ? "include_parent_tags"
+        : "include_sub_tags";
+    return {
+      id: optionType,
+    };
+  }
 
-//     switch (criterion.modifier) {
-//       case CriterionModifier.IncludesAll:
-//         return true;
-//       case CriterionModifier.Excludes:
-//         return false;
-//     }
-//   }, [criterion]);
+  return (
+    <Form>
+      <Form.Group>
+        <Form.Check
+          id={criterionOptionTypeToIncludeID()}
+          checked={criterion.value.depth !== 0}
+          label={intl.formatMessage(criterionOptionTypeToIncludeUIString())}
+          onChange={() => onDepthChanged(criterion.value.depth !== 0 ? 0 : -1)}
+        />
+      </Form.Group>
 
-//   function onSelect(value: ILabeledId, newInclude: boolean) {
-//     let newCriterion: T = cloneDeep(criterion);
-
-//     newCriterion.value.items.push(value);
-
-//     // const newFilter = filter.setCriterion(type, newCriterion);
-
-//     setCriterion(newCriterion);
-//   }
-
-//   const onUnselect = useCallback(
-//     (id: string) => {
-//       if (!criterion) return;
-
-//       let newCriterion: T | undefined = cloneDeep(criterion);
-
-//       newCriterion.value.items = criterion.value.items.filter(
-//         (v) => v.id !== id
-//       );
-//       // if (newCriterion.value.items.length === 0) {
-//       //   newCriterion = undefined;
-//       // }
-
-//       // const newFilter = filter.setCriterion(type, newCriterion);
-
-//       setCriterion(newCriterion);
-//     },
-//     [setCriterion, criterion, type]
-//   );
-
-//   const sortedSelected = useMemo(() => {
-//     const ret = criterion.value.items.slice();
-//     ret.sort((a, b) => a.label.localeCompare(b.label));
-//     return ret;
-//   }, [criterion]);
-
-//   const selected = useMemo(() => {
-//     if (!sortedSelected.length) return;
-
-//     return (
-//       <ul className="selected-objects">
-//         {sortedSelected.map((s) => {
-//           return (
-//             <li key={s.id}>
-//               <Badge
-//                 className="selected-object"
-//                 variant="secondary"
-//                 onClick={() => onUnselect(s.id)}
-//               >
-//                 <span>{s.label}</span>
-//                 <Button variant="secondary">
-//                   <Icon icon={faTimes} />
-//                 </Button>
-//               </Badge>
-//             </li>
-//           );
-//         })}
-//       </ul>
-//     );
-//   }, [sortedSelected, onUnselect]);
-
-//   return (
-//     <Header
-//       title={intl.formatMessage({ id: type })}
-//       include={include}
-//       selected={criterion?.value.items.length ?? 0}
-//       alwaysShown={selected}
-//     >
-//       <SelectableFilter
-//         query={query}
-//         setQuery={setQuery}
-//         selected={criterion?.value.items ?? []}
-//         queryResults={queryResults}
-//         onSelect={onSelect}
-//       />
-//     </Header>
-//   );
-// };
+      {criterion.value.depth !== 0 && (
+        <Form.Group>
+          <Form.Control
+            className="btn-secondary"
+            type="number"
+            placeholder={intl.formatMessage(messages.studio_depth)}
+            onChange={(e) =>
+              onDepthChanged(e.target.value ? parseInt(e.target.value, 10) : -1)
+            }
+            defaultValue={
+              criterion.value && criterion.value.depth !== -1
+                ? criterion.value.depth
+                : ""
+            }
+            min="1"
+          />
+        </Form.Group>
+      )}
+      <ObjectsFilter {...props} />
+    </Form>
+  );
+};

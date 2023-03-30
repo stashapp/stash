@@ -40,6 +40,8 @@ import { OptionsListFilter } from "./Filters/OptionsListFilter";
 import { PathFilter } from "./Filters/PathFilter";
 import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
 import PerformersFilter from "./Filters/PerformersFilter";
+import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
+import StudiosFilter from "./Filters/StudiosFilter";
 
 interface IGenericCriterionEditor {
   criterion: Criterion<CriterionValue>;
@@ -109,6 +111,15 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
     if (criterion instanceof PerformersCriterion) {
       return (
         <PerformersFilter
+          criterion={criterion}
+          setCriterion={(c) => setCriterion(c)}
+        />
+      );
+    }
+
+    if (criterion instanceof StudiosCriterion) {
+      return (
+        <StudiosFilter
           criterion={criterion}
           setCriterion={(c) => setCriterion(c)}
         />

@@ -533,17 +533,19 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
   public isValid(): boolean {
     if (
       this.modifier === CriterionModifier.IsNull ||
-      this.modifier === CriterionModifier.NotNull
+      this.modifier === CriterionModifier.NotNull ||
+      this.modifier === CriterionModifier.Equals
     ) {
       return true;
     }
 
-    return this.value.items.length > 0;
+    return this.value.items.length > 0 || this.value.excluded.length > 0;
   }
 
   constructor(type: CriterionOption) {
     const value: IHierarchicalLabelValue = {
       items: [],
+      excluded: [],
       depth: 0,
     };
 

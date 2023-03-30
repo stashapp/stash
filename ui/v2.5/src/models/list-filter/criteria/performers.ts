@@ -41,7 +41,11 @@ export class PerformersCriterion extends Criterion<ILabeledValueListValue> {
   }
 
   public isValid(): boolean {
-    if (this.modifier === CriterionModifier.Equals) {
+    if (
+      this.modifier === CriterionModifier.IsNull ||
+      this.modifier === CriterionModifier.NotNull ||
+      this.modifier === CriterionModifier.Equals
+    ) {
       return true;
     }
 
