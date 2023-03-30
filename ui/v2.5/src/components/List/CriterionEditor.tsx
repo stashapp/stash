@@ -42,6 +42,8 @@ import { PerformersCriterion } from "src/models/list-filter/criteria/performers"
 import PerformersFilter from "./Filters/PerformersFilter";
 import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
 import StudiosFilter from "./Filters/StudiosFilter";
+import { TagsCriterion } from "src/models/list-filter/criteria/tags";
+import TagsFilter from "./Filters/TagsFilter";
 
 interface IGenericCriterionEditor {
   criterion: Criterion<CriterionValue>;
@@ -120,6 +122,15 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
     if (criterion instanceof StudiosCriterion) {
       return (
         <StudiosFilter
+          criterion={criterion}
+          setCriterion={(c) => setCriterion(c)}
+        />
+      );
+    }
+
+    if (criterion instanceof TagsCriterion) {
+      return (
+        <TagsFilter
           criterion={criterion}
           setCriterion={(c) => setCriterion(c)}
         />

@@ -1,37 +1,51 @@
-import {
-  IHierarchicalLabeledIdCriterion,
-  ILabeledIdCriterionOption,
-} from "./criterion";
+import { CriterionModifier } from "src/core/generated-graphql";
+import { CriterionType } from "../types";
+import { CriterionOption, IHierarchicalLabeledIdCriterion } from "./criterion";
 
 export class TagsCriterion extends IHierarchicalLabeledIdCriterion {}
 
-export const TagsCriterionOption = new ILabeledIdCriterionOption(
+class tagsCriterionOption extends CriterionOption {
+  constructor(messageID: string, value: CriterionType, parameterName: string) {
+    const modifierOptions = [
+      CriterionModifier.Includes,
+      CriterionModifier.IncludesAll,
+      CriterionModifier.Equals,
+    ];
+
+    let defaultModifier = CriterionModifier.IncludesAll;
+
+    super({
+      messageID,
+      type: value,
+      parameterName,
+      modifierOptions,
+      defaultModifier,
+    });
+  }
+}
+
+export const TagsCriterionOption = new tagsCriterionOption(
   "tags",
   "tags",
-  "tags",
-  true
+  "tags"
 );
-export const SceneTagsCriterionOption = new ILabeledIdCriterionOption(
+export const SceneTagsCriterionOption = new tagsCriterionOption(
   "sceneTags",
   "sceneTags",
-  "scene_tags",
-  true
+  "scene_tags"
 );
-export const PerformerTagsCriterionOption = new ILabeledIdCriterionOption(
+export const PerformerTagsCriterionOption = new tagsCriterionOption(
   "performerTags",
   "performerTags",
-  "performer_tags",
-  true
+  "performer_tags"
 );
-export const ParentTagsCriterionOption = new ILabeledIdCriterionOption(
+export const ParentTagsCriterionOption = new tagsCriterionOption(
   "parent_tags",
   "parentTags",
-  "parents",
-  true
+  "parents"
 );
-export const ChildTagsCriterionOption = new ILabeledIdCriterionOption(
+export const ChildTagsCriterionOption = new tagsCriterionOption(
   "sub_tags",
   "childTags",
-  "children",
-  true
+  "children"
 );

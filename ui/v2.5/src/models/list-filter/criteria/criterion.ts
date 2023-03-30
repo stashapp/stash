@@ -512,12 +512,14 @@ export class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
 }
 
 export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabelValue> {
-  protected toCriterionInput(): HierarchicalMultiCriterionInput {
-    return {
-      value: (this.value.items ?? []).map((v) => v.id),
-      modifier: this.modifier,
-      depth: this.value.depth,
+  constructor(type: CriterionOption) {
+    const value: IHierarchicalLabelValue = {
+      items: [],
+      excluded: [],
+      depth: 0,
     };
+
+    super(type, value);
   }
 
   public getLabelValue(_intl: IntlShape): string {
@@ -529,6 +531,22 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
 
     return `${labels} (+${this.value.depth > 0 ? this.value.depth : "all"})`;
   }
+
+  protected toCriterionInput(): HierarchicalMultiCriterionInput {
+    return {
+      value: (this.value.items ?? []).map((v) => v.id),
+      modifier: this.modifier,
+      depth: this.value.depth,
+    };
+  }
+
+  // protected toCriterionInput(): MultiCriterionInput {
+  //   return {
+  //     value: this.value.items.map((v) => v.id),
+  //     excludes: this.value.excluded.map((v) => v.id),
+  //     modifier: this.modifier,
+  //   };
+  // }
 
   public isValid(): boolean {
     if (
@@ -542,14 +560,34 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
     return this.value.items.length > 0 || this.value.excluded.length > 0;
   }
 
-  constructor(type: CriterionOption) {
-    const value: IHierarchicalLabelValue = {
-      items: [],
-      excluded: [],
-      depth: 0,
-    };
+  public getLabel(intl: IntlShape): string {
+    const modifierString = Criterion.getModifierLabel(intl, this.modifier);
+    let valueString = "";
 
-    super(type, value);
+    if (
+      this.modifier !== CriterionModifier.IsNull &&
+      this.modifier !== CriterionModifier.NotNull
+    ) {
+      valueString = this.value.items.map((v) => v.label).join(", ");
+    }
+
+    let id = "criterion_modifier.format_string";
+    let excludedString = "";
+
+    if (this.value.excluded.length > 0) {
+      id = "criterion_modifier.format_string_excludes";
+      excludedString = this.value.excluded.map((v) => v.label).join(", ");
+    }
+
+    return intl.formatMessage(
+      { id },
+      {
+        criterion: intl.formatMessage({ id: this.criterionOption.messageID }),
+        modifierString,
+        valueString,
+        excludedString,
+      }
+    );
   }
 }
 

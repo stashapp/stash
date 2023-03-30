@@ -216,7 +216,13 @@ input[type="range"].zoom-slider {
   margin-top: 0.5rem;
   max-height: 300px;
   overflow-y: auto;
+  // to prevent unnecessary vertical scrollbar
+  padding-bottom: 0.15rem;
   padding-inline-start: 0;
+
+  .unselected-object {
+    opacity: 0.8;
+  }
 
   .selected-object,
   .excluded-object,

@@ -20,11 +20,13 @@ import {
 } from "src/models/list-filter/criteria/criterion";
 import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 import { defineMessages, MessageDescriptor, useIntl } from "react-intl";
+import { CriterionModifier } from "src/core/generated-graphql";
 
 interface ISelectableFilter {
   query: string;
   setQuery: (query: string) => void;
   single: boolean;
+  includeOnly: boolean;
   queryResults: ILabeledId[];
   selected: ILabeledId[];
   excluded: ILabeledId[];
@@ -39,6 +41,7 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
   queryResults,
   selected,
   excluded,
+  includeOnly,
   onSelect,
   onUnselect,
 }) => {
@@ -63,7 +66,7 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
     );
   }, [queryResults, selected, excluded]);
 
-  const includingOnly = selected.length > 0 && single;
+  const includingOnly = includeOnly || (selected.length > 0 && single);
   const excludingOnly = excluded.length > 0 && single;
 
   const includeIcon = <Icon className="fa-fw include-button" icon={faPlus} />;
@@ -225,6 +228,7 @@ export const ObjectsFilter = <
   return (
     <SelectableFilter
       single={single}
+      includeOnly={criterion.modifier === CriterionModifier.Equals}
       query={query}
       setQuery={setQuery}
       selected={sortedSelected}
