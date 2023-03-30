@@ -870,7 +870,7 @@ WHERE id in {inBinding}
 	return valuesClause
 }
 
-func addHierarchicalConditionClauses(f *filterBuilder, criterion *models.HierarchicalMultiCriterionInput, table, idColumn string) {
+func addHierarchicalConditionClauses(f *filterBuilder, criterion models.HierarchicalMultiCriterionInput, table, idColumn string) {
 	switch criterion.Modifier {
 	case models.CriterionModifierIncludes:
 		f.addWhere(fmt.Sprintf("%s.%s IS NOT NULL", table, idColumn))
@@ -882,9 +882,12 @@ func addHierarchicalConditionClauses(f *filterBuilder, criterion *models.Hierarc
 	}
 }
 
-func (m *hierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func (m *hierarchicalMultiCriterionHandlerBuilder) handler(c *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
-		if criterion != nil {
+		if c != nil {
+			// make a copy so we don't modify the original
+			criterion := *c
+
 			if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotNull {
 				var notClause string
 				if criterion.Modifier == models.CriterionModifierNotNull {
@@ -947,7 +950,7 @@ type joinedHierarchicalMultiCriterionHandlerBuilder struct {
 	primaryFK string
 }
 
-func (m *joinedHierarchicalMultiCriterionHandlerBuilder) addHierarchicalConditionClauses(f *filterBuilder, criterion *models.HierarchicalMultiCriterionInput, table, idColumn string) {
+func (m *joinedHierarchicalMultiCriterionHandlerBuilder) addHierarchicalConditionClauses(f *filterBuilder, criterion models.HierarchicalMultiCriterionInput, table, idColumn string) {
 	if criterion.Modifier == models.CriterionModifierEquals {
 		// includes only the provided ids
 		f.addWhere(fmt.Sprintf("%s.%s IS NOT NULL", table, idColumn))
@@ -962,9 +965,11 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) addHierarchicalConditio
 	}
 }
 
-func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(c *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
-		if criterion != nil {
+		if c != nil {
+			// make a copy so we don't modify the original
+			criterion := *c
 			joinAlias := m.joinAs
 
 			if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotNull {
@@ -1030,11 +1035,11 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(criterion *mode
 				f.addLeftJoin(joinTable, joinAlias2, fmt.Sprintf("%s.%s = %s.id", joinAlias2, m.primaryFK, m.primaryTable))
 
 				// modify for exclusion
-				c := *criterion
-				c.Modifier = models.CriterionModifierExcludes
-				c.Value = c.Excludes
+				criterionCopy := criterion
+				criterionCopy.Modifier = models.CriterionModifierExcludes
+				criterionCopy.Value = c.Excludes
 
-				m.addHierarchicalConditionClauses(f, &c, joinAlias2, "root_id")
+				m.addHierarchicalConditionClauses(f, criterionCopy, joinAlias2, "root_id")
 			}
 		}
 	}
