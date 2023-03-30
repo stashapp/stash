@@ -13,6 +13,7 @@ fragment SlimImageData on Image {
 
   paths {
     thumbnail
+    preview
     image
   }
 

@@ -3,6 +3,7 @@ import * as GQL from "src/core/generated-graphql";
 interface IImagePaths {
   image?: GQL.Maybe<string>;
   thumbnail?: GQL.Maybe<string>;
+  preview?: GQL.Maybe<string>;
 }
 
 interface IFiles {

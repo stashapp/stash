@@ -141,8 +141,8 @@ func newHandlerRequiredFilter(c *config.Instance) *handlerRequiredFilter {
 
 func (f *handlerRequiredFilter) Accept(ctx context.Context, ff file.File) bool {
 	path := ff.Base().Path
-	isVideoFile := fsutil.MatchExtension(path, f.vidExt)
-	isImageFile := fsutil.MatchExtension(path, f.imgExt)
+	isVideoFile := useAsVideo(path)
+	isImageFile := useAsImage(path)
 	isZipFile := fsutil.MatchExtension(path, f.zipExt)
 
 	var counter fileCounter
@@ -254,8 +254,8 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 		return false
 	}
 
-	isVideoFile := fsutil.MatchExtension(path, f.vidExt)
-	isImageFile := fsutil.MatchExtension(path, f.imgExt)
+	isVideoFile := useAsVideo(path)
+	isImageFile := useAsImage(path)
 	isZipFile := fsutil.MatchExtension(path, f.zipExt)
 
 	// handle caption files
@@ -293,7 +293,7 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 		return false
 	}
 
-	if isVideoFile && matchFileRegex(path, f.videoExcludeRegex) {
+	if isVideoFile && (s.ExcludeVideo || matchFileRegex(path, f.videoExcludeRegex)) {
 		logger.Debugf("Skipping %s as it matches video exclusion patterns", path)
 		return false
 	} else if (isImageFile || isZipFile) && (s.ExcludeImage || matchFileRegex(path, f.imageExcludeRegex)) {
@@ -301,18 +301,12 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 		return false
 	}
 
-	// if the file is a video file, and we're excluding video files, then scan it
-	// for inclusion as an image
-	// TODO - make this optional
-	if isVideoFile && s.ExcludeVideo {
-		logger.Debugf("Found video file %s in library excluding video files. Treating as image.", path)
-	}
-
 	return true
 }
 
 type scanConfig struct {
-	isGenerateThumbnails bool
+	isGenerateThumbnails   bool
+	isGenerateClipPreviews bool
 }
 
 func (c *scanConfig) GetCreateGalleriesFromFolders() bool {
@@ -323,68 +317,27 @@ func (c *scanConfig) IsGenerateThumbnails() bool {
 	return c.isGenerateThumbnails
 }
 
-type videoScanHandler struct {
-	extensionConfig
-	stashPaths config.StashConfigs
-
-	sceneHandler scene.ScanHandler
-	imageHandler image.ScanHandler
-}
-
-func (h *videoScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File) error {
-	path := f.Base().Path
-
-	s := h.stashPaths.GetStashFromDirPath(path)
-
-	isVideoFile := fsutil.MatchExtension(path, h.vidExt)
-
-	// if the file is a video file, and we're excluding video files, then scan it
-	// for inclusion as an image
-	// TODO - make this optional
-	if isVideoFile && s.ExcludeVideo {
-		return h.imageHandler.Handle(ctx, f, oldFile)
-	}
-
-	return h.sceneHandler.Handle(ctx, f, oldFile)
+func (c *scanConfig) IsGenerateClipPreviews() bool {
+	return c.isGenerateClipPreviews
 }
 
 func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progress *job.Progress) []file.Handler {
 	db := instance.Database
 	pluginCache := instance.PluginCache
 
-	imageFileHandler := &image.ScanHandler{
-		CreatorUpdater:     db.Image,
-		GalleryFinder:      db.Gallery,
-		ThumbnailGenerator: &imageThumbnailGenerator{},
-		ScanConfig: &scanConfig{
-			isGenerateThumbnails: options.ScanGenerateThumbnails,
-		},
-		PluginCache: pluginCache,
-		Paths:       instance.Paths,
-	}
-
-	videoFileHandler := &videoScanHandler{
-		extensionConfig: newExtensionConfig(instance.Config),
-		stashPaths:      instance.Config.GetStashPaths(),
-		imageHandler:    *imageFileHandler,
-		sceneHandler: scene.ScanHandler{
-			CreatorUpdater: db.Scene,
-			PluginCache:    pluginCache,
-			CaptionUpdater: db.File,
-			ScanGenerator: &sceneGenerators{
-				input:     options,
-				taskQueue: taskQueue,
-				progress:  progress,
-			},
-			FileNamingAlgorithm: instance.Config.GetVideoFileNamingAlgorithm(),
-			Paths:               instance.Paths,
-		},
-	}
-
 	return []file.Handler{
 		&file.FilteredHandler{
-			Filter:  file.FilterFunc(imageFileFilter),
-			Handler: imageFileHandler,
+			Filter: file.FilterFunc(imageFileFilter),
+			Handler: &image.ScanHandler{
+				CreatorUpdater:     db.Image,
+				GalleryFinder:      db.Gallery,
+				ThumbnailGenerator: &imageThumbnailGenerator{},
+				ScanConfig: &scanConfig{
+					isGenerateThumbnails: options.ScanGenerateThumbnails,
+				},
+				PluginCache: pluginCache,
+				Paths:       instance.Paths,
+			},
 		},
 		&file.FilteredHandler{
 			Filter: file.FilterFunc(galleryFileFilter),
@@ -396,8 +349,19 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 			},
 		},
 		&file.FilteredHandler{
-			Filter:  file.FilterFunc(videoFileFilter),
-			Handler: videoFileHandler,
+			Filter: file.FilterFunc(videoFileFilter),
+			Handler: &scene.ScanHandler{
+				CreatorUpdater: db.Scene,
+				PluginCache:    pluginCache,
+				CaptionUpdater: db.File,
+				ScanGenerator: &sceneGenerators{
+					input:     options,
+					taskQueue: taskQueue,
+					progress:  progress,
+				},
+				FileNamingAlgorithm: instance.Config.GetVideoFileNamingAlgorithm(),
+				Paths:               instance.Paths,
+			},
 		},
 	}
 }
@@ -442,6 +406,37 @@ func (g *imageThumbnailGenerator) GenerateThumbnail(ctx context.Context, i *mode
 
 	return nil
 
+}
+
+func (g *imageThumbnailGenerator) GeneratePreview(ctx context.Context, i *models.Image, f file.File) error {
+	prevPath := GetInstance().Paths.Generated.GetClipPreviewPath(i.Checksum, models.DefaultGthumbWidth)
+	exists, _ := fsutil.FileExists(prevPath)
+	if exists {
+		return nil
+	}
+
+	path := f.Base().Path
+
+	_, ok := f.(*file.VideoFile)
+	if !ok {
+		logger.Debugf("file %s is not a Videofile. Not generating preview for it", path)
+		return nil
+	}
+
+	logger.Debugf("Generating preview for %s", path)
+
+	encoder := image.NewThumbnailEncoder(instance.FFMPEG, instance.FFProbe, instance.Config.GetTranscodeInputArgs(), instance.Config.GetTranscodeOutputArgs(), instance.Config.GetPreviewPreset().String())
+	data, err := encoder.GetPreview(f, models.DefaultGthumbWidth)
+	if err != nil {
+		return fmt.Errorf("getting preview for image %s: %w", path, err)
+	}
+
+	err = fsutil.WriteFile(prevPath, data)
+	if err != nil {
+		return fmt.Errorf("writing preview for image %s: %w", path, err)
+	}
+
+	return nil
 }
 
 type sceneGenerators struct {

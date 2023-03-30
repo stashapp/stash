@@ -7,6 +7,7 @@ import (
 
 	"github.com/remeh/sizedwaitgroup"
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -29,6 +30,7 @@ type GenerateMetadataInput struct {
 	ForceTranscodes           bool `json:"forceTranscodes"`
 	Phashes                   bool `json:"phashes"`
 	InteractiveHeatmapsSpeeds bool `json:"interactiveHeatmapsSpeeds"`
+	ClipPreviews              bool `json:"clipPreviews"`
 	// scene ids to generate for
 	SceneIDs []string `json:"sceneIDs"`
 	// marker ids to generate for
@@ -69,6 +71,7 @@ type totalsGenerate struct {
 	transcodes               int64
 	phashes                  int64
 	interactiveHeatmapSpeeds int64
+	clipPreviews             int64
 
 	tasks int
 }
@@ -142,7 +145,7 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 			return
 		}
 
-		logger.Infof("Generating %d covers %d sprites %d previews %d image previews %d markers %d transcodes %d phashes %d heatmaps & speeds", totals.covers, totals.sprites, totals.previews, totals.imagePreviews, totals.markers, totals.transcodes, totals.phashes, totals.interactiveHeatmapSpeeds)
+		logger.Infof("Generating %d covers %d sprites %d previews %d image previews %d markers %d transcodes %d phashes %d heatmaps & speeds %d Image Clip Previews", totals.covers, totals.sprites, totals.previews, totals.imagePreviews, totals.markers, totals.transcodes, totals.phashes, totals.interactiveHeatmapSpeeds, totals.clipPreviews)
 
 		progress.SetTotal(int(totals.tasks))
 	}()
@@ -220,6 +223,38 @@ func (j *GenerateJob) queueTasks(ctx context.Context, g *generate.Generator, que
 		}
 
 		if len(scenes) != batchSize {
+			more = false
+		} else {
+			*findFilter.Page++
+		}
+	}
+
+	*findFilter.Page = 1
+	for more := j.input.ClipPreviews; more; {
+		if job.IsCancelled(ctx) {
+			return totals
+		}
+
+		images, err := image.Query(ctx, j.txnManager.Image, nil, findFilter)
+		if err != nil {
+			logger.Errorf("Error encountered queuing files to scan: %s", err.Error())
+			return totals
+		}
+
+		for _, ss := range images {
+			if job.IsCancelled(ctx) {
+				return totals
+			}
+
+			if err := ss.LoadFiles(ctx, j.txnManager.Image); err != nil {
+				logger.Errorf("Error encountered queuing files to scan: %s", err.Error())
+				return totals
+			}
+
+			j.queueImageJob(g, ss, queue, &totals)
+		}
+
+		if len(images) != batchSize {
 			more = false
 		} else {
 			*findFilter.Page++
@@ -410,4 +445,17 @@ func (j *GenerateJob) queueMarkerJob(g *generate.Generator, marker *models.Scene
 	totals.markers++
 	totals.tasks++
 	queue <- task
+}
+
+func (j *GenerateJob) queueImageJob(g *generate.Generator, image *models.Image, queue chan<- Task, totals *totalsGenerate) {
+	task := &GenerateClipPreviewTask{
+		Image:     *image,
+		Overwrite: j.overwrite,
+	}
+
+	if task.shouldGenerate() {
+		totals.clipPreviews++
+		totals.tasks++
+		queue <- task
+	}
 }

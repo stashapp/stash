@@ -36,6 +36,7 @@ type ImageFileType {
 
 type ImagePathsType {
   thumbnail: String # Resolver
+  preview: String # Resolver
   image: String # Resolver
 }
 

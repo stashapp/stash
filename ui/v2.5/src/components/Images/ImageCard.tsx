@@ -141,7 +141,12 @@ export const ImageCard: React.FC<IImageCardProps> = (
     return height > width;
   }
 
-  const ImagePreview = file?.__typename == "VideoFile" ? "video" : "img";
+  const source =
+    props.image.paths.preview != ""
+      ? props.image.paths.preview ?? ""
+      : props.image.paths.thumbnail ?? "";
+  const video = source.includes("preview");
+  const ImagePreview = video ? "video" : "img";
 
   return (
     <GridCard
@@ -153,11 +158,11 @@ export const ImageCard: React.FC<IImageCardProps> = (
         <>
           <div className={cx("image-card-preview", { portrait: isPortrait() })}>
             <ImagePreview
-              loop={file?.__typename == "VideoFile"}
-              autoPlay={file?.__typename == "VideoFile"}
+              loop={video}
+              autoPlay={video}
               className="image-card-preview-image"
               alt={props.image.title ?? ""}
-              src={props.image.paths.thumbnail ?? ""}
+              src={source}
             />
             {props.onPreview ? (
               <div className="preview-button">

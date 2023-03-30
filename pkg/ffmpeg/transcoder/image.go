@@ -30,6 +30,8 @@ func ImageThumbnail(input string, options ImageThumbnailOptions) ffmpeg.Args {
 		VideoFilter(videoFilter).
 		VideoCodec(ffmpeg.VideoCodecMJpeg)
 
+	args = append(args, "-frames:v", "1")
+
 	if options.Quality > 0 {
 		args = args.FixedQualityScaleVideo(options.Quality)
 	}

@@ -22,13 +22,19 @@ type FileDeleter struct {
 
 // MarkGeneratedFiles marks for deletion the generated files for the provided image.
 func (d *FileDeleter) MarkGeneratedFiles(image *models.Image) error {
+	var files []string
 	thumbPath := d.Paths.Generated.GetThumbnailPath(image.Checksum, models.DefaultGthumbWidth)
 	exists, _ := fsutil.FileExists(thumbPath)
 	if exists {
-		return d.Files([]string{thumbPath})
+		files = append(files, thumbPath)
+	}
+	prevPath := d.Paths.Generated.GetClipPreviewPath(image.Checksum, models.DefaultGthumbWidth)
+	exists, _ = fsutil.FileExists(prevPath)
+	if exists {
+		files = append(files, prevPath)
 	}
 
-	return nil
+	return d.Files(files)
 }
 
 // Destroy destroys an image, optionally marking the file and generated files for deletion.

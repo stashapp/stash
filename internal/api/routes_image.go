@@ -40,6 +40,7 @@ func (rs imageRoutes) Routes() chi.Router {
 
 		r.Get("/image", rs.Image)
 		r.Get("/thumbnail", rs.Thumbnail)
+		r.Get("/preview", rs.Preview)
 	})
 
 	return r
@@ -95,6 +96,20 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 		if n, err := w.Write(data); err != nil && !errors.Is(err, syscall.EPIPE) {
 			logger.Errorf("error serving thumbnail (wrote %v bytes out of %v): %v", n, len(data), err)
 		}
+	}
+}
+
+func (rs imageRoutes) Preview(w http.ResponseWriter, r *http.Request) {
+	img := r.Context().Value(imageKey).(*models.Image)
+	filepath := manager.GetInstance().Paths.Generated.GetClipPreviewPath(img.Checksum, models.DefaultGthumbWidth)
+
+	w.Header().Add("Cache-Control", "max-age=604800000")
+
+	exists, _ := fsutil.FileExists(filepath)
+	if exists {
+		http.ServeFile(w, r, filepath)
+	} else {
+		logger.Errorf("Error: No Preview exists for this image. It either has none (no Clip) or its not yet generated: %s", img.Files.Primary().Base().Path)
 	}
 }
 

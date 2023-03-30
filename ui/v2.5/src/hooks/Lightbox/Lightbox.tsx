@@ -426,23 +426,23 @@ export const LightboxComponent: React.FC<IProps> = ({
   }
 
   const navItems = images.map((image, i) =>
-    React.createElement(
-      image.visual_files?.[0]?.__typename == "VideoFile" ? "video" : "img",
-      {
-        loop: image.visual_files?.[0]?.__typename == "VideoFile",
-        autoPlay: image.visual_files?.[0]?.__typename == "VideoFile",
-        src: image.paths.thumbnail ?? "",
-        alt: "",
-        className: cx(CLASSNAME_NAVIMAGE, {
-          [CLASSNAME_NAVSELECTED]: i === index,
-        }),
-        onClick: (e: React.MouseEvent) => selectIndex(e, i),
-        role: "presentation",
-        loading: "lazy",
-        key: image.paths.thumbnail,
-        onLoad: imageLoaded,
-      }
-    )
+    React.createElement(image.paths.preview != "" ? "video" : "img", {
+      loop: image.paths.preview != "",
+      autoPlay: image.paths.preview != "",
+      src:
+        image.paths.preview != ""
+          ? image.paths.preview ?? ""
+          : image.paths.thumbnail ?? "",
+      alt: "",
+      className: cx(CLASSNAME_NAVIMAGE, {
+        [CLASSNAME_NAVSELECTED]: i === index,
+      }),
+      onClick: (e: React.MouseEvent) => selectIndex(e, i),
+      role: "presentation",
+      loading: "lazy",
+      key: image.paths.thumbnail,
+      onLoad: imageLoaded,
+    })
   );
 
   const onDelayChange = (e: React.ChangeEvent<HTMLInputElement>) => {

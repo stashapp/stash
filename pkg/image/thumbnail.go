@@ -29,6 +29,7 @@ var (
 
 type ThumbnailGenerator interface {
 	GenerateThumbnail(ctx context.Context, i *models.Image, f file.File) error
+	GeneratePreview(ctx context.Context, i *models.Image, f file.File) error
 }
 
 type ThumbnailEncoder struct {
@@ -98,19 +99,9 @@ func (e *ThumbnailEncoder) GetThumbnail(f file.File, maxSize int) ([]byte, error
 		}
 	}
 
-	if videoFile, ok := f.(*file.VideoFile); ok {
-		fileData, err := e.ffprobe.NewVideoFile(videoFile.Base().Path)
-		if err != nil {
-			return nil, err
-		}
-		if videoFile.GetWidth() <= maxSize {
-			maxSize = videoFile.GetWidth()
-		}
-		clipDuration := fileData.VideoStreamDuration
-		if clipDuration > 30.0 {
-			clipDuration = 30.0
-		}
-		return e.getClipThumbnail(buf, maxSize, clipDuration, fileData.FrameRate)
+	// Videofiles can only be thumbnailed with ffmpeg
+	if _, ok := f.(*file.VideoFile); ok {
+		return e.ffmpegImageThumbnail(buf, maxSize)
 	}
 
 	// vips has issues loading files from stdin on Windows
@@ -121,20 +112,38 @@ func (e *ThumbnailEncoder) GetThumbnail(f file.File, maxSize int) ([]byte, error
 	}
 }
 
+// GetPreview returns the preview clip of the provided image clip resized to
+// the provided max size. It resizes based on the largest X/Y direction.
+// It returns nil and an error if an error occurs reading, decoding or encoding
+// the image, or if the image is not suitable for thumbnails.
+// It is hardcoded to 30 seconds maximum right now
+func (e *ThumbnailEncoder) GetPreview(f file.File, maxSize int) ([]byte, error) {
+	reader, err := f.Open(&file.OsFS{})
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Close()
+
+	buf := new(bytes.Buffer)
+	if _, err := buf.ReadFrom(reader); err != nil {
+		return nil, err
+	}
+
+	fileData, err := e.ffprobe.NewVideoFile(f.Base().Path)
+	if err != nil {
+		return nil, err
+	}
+	if fileData.Width <= maxSize {
+		maxSize = fileData.Width
+	}
+	clipDuration := fileData.VideoStreamDuration
+	if clipDuration > 30.0 {
+		clipDuration = 30.0
+	}
+	return e.getClipPreview(buf, maxSize, clipDuration, fileData.FrameRate)
+}
+
 func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, maxSize int) ([]byte, error) {
-	// var ffmpegFormat ffmpeg.ImageFormat
-
-	// switch format {
-	// case "jpeg":
-	// 	ffmpegFormat = ffmpeg.ImageFormatJpeg
-	// case "png":
-	// 	ffmpegFormat = ffmpeg.ImageFormatPng
-	// case "webp":
-	// 	ffmpegFormat = ffmpeg.ImageFormatWebp
-	// default:
-	// 	return nil, ErrUnsupportedImageFormat
-	// }
-
 	args := transcoder.ImageThumbnail("-", transcoder.ImageThumbnailOptions{
 		OutputFormat:  ffmpeg.ImageFormatJpeg,
 		OutputPath:    "-",
@@ -145,7 +154,7 @@ func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, maxSize int
 	return e.ffmpeg.GenerateOutput(context.TODO(), args, image)
 }
 
-func (e *ThumbnailEncoder) getClipThumbnail(image *bytes.Buffer, maxSize int, clipDuration float64, frameRate float64) ([]byte, error) {
+func (e *ThumbnailEncoder) getClipPreview(image *bytes.Buffer, maxSize int, clipDuration float64, frameRate float64) ([]byte, error) {
 	var thumbFilter ffmpeg.VideoFilter
 	thumbFilter = thumbFilter.ScaleMaxSize(maxSize)
 

@@ -63,8 +63,7 @@ func (c *fingerprintCalculator) CalculateFingerprints(f *file.BaseFile, o file.O
 	var ret []file.Fingerprint
 	calculateMD5 := true
 
-	// TODO: When an option is applied for changing this behavior, this needs to be adjusted
-	if !config.StashConfigs.GetStashFromDirPath(instance.Config.GetStashPaths(), f.Path).ExcludeVideo && isVideo(f.Basename) {
+	if useAsVideo(f.Path) {
 		var (
 			fp  *file.Fingerprint
 			err error

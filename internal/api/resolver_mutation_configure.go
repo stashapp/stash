@@ -218,6 +218,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.WriteImageThumbnails, *input.WriteImageThumbnails)
 	}
 
+	if input.CreateImageClipsFromVideos != nil {
+		c.Set(config.CreateImageClipsFromVideos, *input.CreateImageClipsFromVideos)
+	}
+
 	if input.GalleryCoverRegex != nil {
 
 		_, err := regexp.Compile(*input.GalleryCoverRegex)

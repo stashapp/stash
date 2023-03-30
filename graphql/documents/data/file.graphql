@@ -46,7 +46,6 @@ fragment GalleryFileData on GalleryFile {
 }
 
 fragment VisualFileData on VisualFile {
-  __typename
   ... on BaseFile {
     id
     path

@@ -15,6 +15,7 @@ fragment ImageData on Image {
 
   paths {
     thumbnail
+    preview
     image
   }
 

@@ -18,11 +18,6 @@ interface IImageWallProps {
 export const ImageWallItem: React.FC<RenderImageProps> = (
   props: IImageWallProps
 ) => {
-  const video = Boolean(
-    Number(props.photo.alt?.charAt(props.photo.alt?.length - 1))
-  );
-  props.photo.alt = props.photo.alt?.slice(0, -1);
-
   type style = Record<string, string | number | undefined>;
   var imgStyle: style = {
     margin: props.margin,
@@ -43,6 +38,7 @@ export const ImageWallItem: React.FC<RenderImageProps> = (
     }
   };
 
+  const video = props.photo.src.includes("preview");
   const ImagePreview = video ? "video" : "img";
 
   return (
