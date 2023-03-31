@@ -6,6 +6,7 @@
     "add_to_entity": "Добавить к {entityType}",
     "allow": "Разрешить",
     "allow_temporarily": "Временно разрешить",
+    "anonymise": "Анонимизировать",
     "apply": "Применить",
     "auto_tag": "Автоматически пометить тегом",
     "backup": "Резервная копия",
@@ -20,6 +21,7 @@
     "confirm": "Подтвердить",
     "continue": "Продолжить",
     "create": "Создать",
+    "create_chapters": "Создать раздел",
     "create_entity": "Создать {entityType}",
     "create_marker": "Создать Маркер",
     "created_entity": "Создано {entity_type}: {entity_name}",
@@ -32,10 +34,11 @@
     "delete_stashid": "Удалить StashID",
     "disallow": "Запретить",
     "download": "Скачать",
+    "download_anonymised": "Скачать анонимно",
     "download_backup": "Скачать резервную копию",
     "edit": "Изменить",
     "edit_entity": "Изменить {entityType}",
-    "export": "Экспортировать…",
+    "export": "Экспортировать",
     "export_all": "Экспортировать все…",
     "find": "Найти",
     "finish": "Завершить",
@@ -58,6 +61,8 @@
     "merge": "Слияние",
     "merge_from": "Слияние из",
     "merge_into": "Слияние в",
+    "migrate_blobs": "Перенос блоков",
+    "migrate_scene_screenshots": "Перенос скриншотов сцены",
     "next_action": "Вперёд",
     "not_running": "не запущен",
     "open_in_external_player": "Открыть во внешнем проигрывателе",
@@ -128,8 +133,13 @@
   "birth_year": "Год рождения",
   "birthdate": "Дата рождения",
   "bitrate": "Битрейт",
+  "blobs_storage_type": {
+    "database": "База данных",
+    "filesystem": "Файловая система"
+  },
   "captions": "Субтитры",
   "career_length": "Продолжительность карьеры",
+  "chapters": "Разделы",
   "component_tagger": {
     "config": {
       "active_instance": "Активная инстанция Stash-устройства:",
@@ -269,6 +279,17 @@
       "excluded_image_gallery_patterns_head": "Шаблоны исключений изображений/галерей",
       "excluded_video_patterns_desc": "Регулярные выражения видеофайлов/путей которые будут исключены при Сканировании, и добавлены в Очистку",
       "excluded_video_patterns_head": "Шаблоны исключенные видео",
+      "ffmpeg": {
+        "transcode": {
+          "input_args": {
+            "desc": "Расширенные настройки: Дополнительные параметры для генерации видео при помощи ffmpeg.",
+            "heading": "Входные параметры транскодирования FFmpeg"
+          },
+          "output_args": {
+            "heading": "Выходные параметры транскодирования FFmpeg"
+          }
+        }
+      },
       "gallery_ext_desc": "Список расширений через запятую, которые будут распознаны как архивы с картинками.",
       "gallery_ext_head": "Расширения архивов галерей",
       "generated_file_naming_hash_desc": "Использовать MD5 или oshash для имен сгенерированных файлов. Меняя это, необходимо чтобы у всех сцен имелись соответствующие MD5/oshash значение. После изменения значения, существующие сгенерированные файлы нужно будет перенести или сгенерировать повторно. Подробнее о переносе на странице Задач.",
@@ -977,7 +998,6 @@
   "scenes": "Сцены",
   "scenes_updated_at": "Сцена обновлена в",
   "search_filter": {
-    "add_filter": "Добавить фильтр",
     "name": "Фильтр",
     "saved_filters": "Сохраненные фильтры",
     "update_filter": "Обновить фильтр"

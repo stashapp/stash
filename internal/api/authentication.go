@@ -13,7 +13,10 @@ import (
 	"github.com/stashapp/stash/pkg/session"
 )
 
-const loginEndPoint = "/login"
+const (
+	loginEndPoint  = "/login"
+	logoutEndPoint = "/logout"
+)
 
 const (
 	tripwireActivatedErrMsg = "Stash is exposed to the public internet without authentication, and is not serving any more content to protect your privacy. " +
@@ -27,7 +30,7 @@ const (
 
 func allowUnauthenticated(r *http.Request) bool {
 	// #2715 - allow access to UI files
-	return strings.HasPrefix(r.URL.Path, loginEndPoint) || r.URL.Path == "/css" || strings.HasPrefix(r.URL.Path, "/assets")
+	return strings.HasPrefix(r.URL.Path, loginEndPoint) || r.URL.Path == logoutEndPoint || r.URL.Path == "/css" || strings.HasPrefix(r.URL.Path, "/assets")
 }
 
 func authenticateHandler() func(http.Handler) http.Handler {

@@ -21,6 +21,7 @@
     "confirm": "Bekräfta",
     "continue": "Fortsätt",
     "create": "Skapa",
+    "create_chapters": "Skapa Kapitel",
     "create_entity": "Skapa {entityType}",
     "create_marker": "Skapa markör",
     "created_entity": "Skapade {entity_type}: {entity_name}",
@@ -60,6 +61,8 @@
     "merge": "Slå samman",
     "merge_from": "Slå samman från",
     "merge_into": "Slå samman till",
+    "migrate_blobs": "Migrera Blobbar",
+    "migrate_scene_screenshots": "Migrera Scenbilder",
     "next_action": "Nästa",
     "not_running": "körs ej",
     "open_in_external_player": "Öppna i extern spelare",
@@ -130,8 +133,13 @@
   "birth_year": "Födelseår",
   "birthdate": "Födelsedatum",
   "bitrate": "Bithastighet",
+  "blobs_storage_type": {
+    "database": "Databas",
+    "filesystem": "Filsystem"
+  },
   "captions": "Undertexter",
   "career_length": "Karriärlängd",
+  "chapters": "Kapitel",
   "component_tagger": {
     "config": {
       "active_instance": "Aktiv stash-box instans:",
@@ -185,6 +193,7 @@
       "latest_version": "Senaste version",
       "latest_version_build_hash": "Senaste versionens bygghash:",
       "new_version_notice": "[Ny]",
+      "release_date": "Utgivningsdatum:",
       "stash_discord": "Gå med i vår {url}-kanal",
       "stash_home": "Stasha hemma vid {url}",
       "stash_open_collective": "Stötta oss genom {url}",
@@ -255,7 +264,15 @@
         "description": "Filsökväg för SQLite-databas backupfil",
         "heading": "Backup filsökväg"
       },
-      "cache_location": "Mappsökväg till cache",
+      "blobs_path": {
+        "description": "Var i filsystemet som binär data ska lagras. Används bara när Blobbar lagras i Filsystemet. VARNING: ändring kräver manuell flytt av redan existerande data.",
+        "heading": "Binär data filsystemssökväg"
+      },
+      "blobs_storage": {
+        "description": "Var binär data som scenomslag, stjärnor-, studio-, och taggbilder ska lagras. Efter ändring måste den redan existerande datan migreras genom Migrera Blobbar-uppgiften. Se Uppgifter-sidan för migrering.",
+        "heading": "Binär data lagringstyp"
+      },
+      "cache_location": "Mappsökväg till cache. Krävs om strömning använder HLS (som på Apple-enheter) eller DASH.",
       "cache_path_head": "Cache-sökväg",
       "calculate_md5_and_ohash_desc": "Beräkna MD5 checksumma i tillägg med ohash. Aktivering kan sakta ner första skanningar. Hashen måste vara vald till ohash för att avaktivera MD5-beräkning.",
       "calculate_md5_and_ohash_label": "Beräkna MD5 för videor",
@@ -265,12 +282,43 @@
       "chrome_cdp_path_desc": "Sökväg till Chrome-programfilen, eller en fjärradress (börjar med http:// eller https://, till exempel http://localhost:9222/json/version) till en Chrome-instans.",
       "create_galleries_from_folders_desc": "Om sant, skapar gallerier från mappar som innehåller bilder.",
       "create_galleries_from_folders_label": "Skapa gallerier från mappar som innehåller bilder",
+      "database": "Databas",
       "db_path_head": "Databassökväg",
       "directory_locations_to_your_content": "Sökväg till ditt innehåll",
       "excluded_image_gallery_patterns_desc": "Regexps av bilder och gallery filer/sökväg att exkludera från Skanna och lägga till på Rensa",
       "excluded_image_gallery_patterns_head": "Mönster för Bild/Galleri exklusion",
       "excluded_video_patterns_desc": "Regexps av video filer/sökväg att exkludera från Skanna och lägga till på Rensa",
       "excluded_video_patterns_head": "Exluderade video-mönster",
+      "ffmpeg": {
+        "hardware_acceleration": {
+          "desc": "Använder tillgänglig hårdvara för liveomkodning av video.",
+          "heading": "FFmpeg hårdvaruomkodning"
+        },
+        "live_transcode": {
+          "input_args": {
+            "desc": "Avancerat: Ytterligare argument att skicka till ffmpeg innan input-fältet vid live videogenerering.",
+            "heading": "FFmpeg Liveomkodning Input Argument"
+          },
+          "output_args": {
+            "desc": "Avancerat: Ytterligare argument att skicka till ffmpeg innan output-fältet vid live videogenerering.",
+            "heading": "FFmpeg Liveomkodning Output Argument"
+          }
+        },
+        "transcode": {
+          "input_args": {
+            "desc": "Avancerat: Ytterligare argument att skicka till ffmpeg innan input-fältet vid liveomkodning av video.",
+            "heading": "FFmpeg Liveomkodning Input Argument"
+          },
+          "output_args": {
+            "desc": "Avancerat: Ytterligare argument att skicka till ffmpeg innan output-fältet vid videogenerering.",
+            "heading": "FFmpeg Omkodning Output Argument"
+          }
+        }
+      },
+      "funscript_heatmap_draw_range": "Inkludera räckvidd i genererade värmekartor",
+      "funscript_heatmap_draw_range_desc": "Visa y-axelns rörelseräckvidd på den genererade värmekartan. Existerande värmekartor kommer behöva genereras om efter ändring.",
+      "gallery_cover_regex_desc": "Regexp som används för att identifiera en bild som galleriomslag",
+      "gallery_cover_regex_label": "Galleriomslagsmönster",
       "gallery_ext_desc": "Komma-avgränsad lista av filtillägg som kommer identifieras som galleri zip-filer.",
       "gallery_ext_head": "Galleri zip-tillägg",
       "generated_file_naming_hash_desc": "Använd MD5 eller ohash för att döpa genererade filer. Ett byte kräver att alla scener har ett värde för MD5/oshash. Efter ett byte måste existerande genererade filer migreras eller återgenereras. Se Job-sidan för migration.",
@@ -278,6 +326,7 @@
       "generated_files_location": "Mappsökväg för genererade filer (markörer, förhandsvisningar, sprites, m.m.)",
       "generated_path_head": "Genererad filsökväg",
       "hashing": "Hashande",
+      "heatmap_generation": "Funscript Värmekarta Generering",
       "image_ext_desc": "Kommaavgränsad lista av filändelser som kommer identifieras som bilder.",
       "image_ext_head": "Bildfiländelser",
       "include_audio_desc": "Inkluderar ljud vid förhandsvisningsgeneration.",
@@ -306,7 +355,7 @@
         "heading": "Skraparnas sökväg"
       },
       "scraping": "Skrapning",
-      "sqlite_location": "Filsökväg för SQLite databasen (kräver omstart)",
+      "sqlite_location": "Filsökväg för SQLite databasen (kräver omstart). VARNING: lagring av databasen på ett annat system än det som Stash körs ifrån (t.ex. över nätvärket) är inte stöttat!",
       "video_ext_desc": "Kommaavgränsad lista av filändelser som kommer identifieras som videor.",
       "video_ext_head": "Videofiländelser",
       "video_head": "Video"
@@ -377,6 +426,7 @@
       "generate_previews_during_scan_tooltip": "Generera animera WebP-förhandsvisningar, krävs bara om Typ av Förhandsvisning är Animerad Bild.",
       "generate_sprites_during_scan": "Generera sprites för videoskrubbaren",
       "generate_thumbnails_during_scan": "Generera miniatyrer för bilder",
+      "generate_video_covers_during_scan": "Generera scenomslag",
       "generate_video_previews_during_scan": "Generera förhandsvisningar",
       "generate_video_previews_during_scan_tooltip": "Generera videoförhandsvisningar som spelas när man håller över en video",
       "generated_content": "Genererat Material",
@@ -404,7 +454,16 @@
       "incremental_import": "Stegvis import från en exporterad zip-fil.",
       "job_queue": "Uppgiftskö",
       "maintenance": "Underhåll",
+      "migrate_blobs": {
+        "delete_old": "Radera gammal data",
+        "description": "Migrera blobbar till det nuvarande bloblagringssystemet. Denna migrering borde köras efter ändring av bloblagringssystemet. Kan också radera den gamla datan efter migreringen."
+      },
       "migrate_hash_files": "Används efter att genererade filers namn-hash har ändrats för att döpa om existerande filer till ny namnhash.",
+      "migrate_scene_screenshots": {
+        "delete_files": "Radera skärmbildsfiler",
+        "description": "Migrera skärmbilder till det nuvarande bloblagringssystemet. Denna migrering borde köras efter uppdatering av ett äldre system till 0.20. Kan också radera de gamla skärmbilderna efter migreringen.",
+        "overwrite_existing": "Skriv över redan existerande blobbar med skärmbildsdata"
+      },
       "migrations": "Migration",
       "only_dry_run": "Kör bara en torr rensning. Radera ingenting",
       "plugin_tasks": "Tilläggsuppgifter",
@@ -441,19 +500,19 @@
       },
       "basic_settings": "Grundinställningar",
       "custom_css": {
-        "description": "Sidan måste laddas om för att ändringar ska ta effekt. Det finns ingen garanti att egen CSS kommer vara kompatibel med framtida versioner av Stash.",
+        "description": "Sidan måste laddas om för att ändringar ska ta effekt. Det finns ingen garanti att anpassad CSS kommer vara kompatibel med framtida versioner av Stash.",
         "heading": "Anpassad CSS",
         "option_label": "Använd anpassad CSS"
       },
       "custom_javascript": {
-        "description": "Sidan måste laddas om för att förändringarna ska ske. Det finns ingen garanti att egen JavaScript kommer vara kompatibel med framtida versioner av Stash.",
-        "heading": "Egen Javascript",
-        "option_label": "Egen Javascript aktiverad"
+        "description": "Sidan måste laddas om för att ändringar ska ta effekt. Det finns ingen garanti att anpassad Javascript kommer vara kompatibel med framtida versioner av Stash.",
+        "heading": "Anpassad Javascript",
+        "option_label": "Använd anpassad Javascript"
       },
       "custom_locales": {
         "description": "Ändra individuella lokala strängar. Se https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json för kompletta listan. Sidan måste laddas om för att ändringar ska ske.",
-        "heading": "Egen översättning",
-        "option_label": "Aktiverat egen översättning"
+        "heading": "Anpassad översättning",
+        "option_label": "Använd anpassad översättning"
       },
       "delete_options": {
         "description": "Standardalternativ vid radering av bilder, gallerier och scener.",
@@ -476,13 +535,17 @@
           "heading": "Stäng av skapande via dropdowns"
         },
         "heading": "Redigering",
+        "max_options_shown": {
+          "label": "Maximalt antal objekt att visa i dropdowns"
+        },
         "rating_system": {
           "star_precision": {
             "label": "Betygstjärnors precision",
             "options": {
               "full": "Hel",
               "half": "Halv",
-              "quarter": "Fjärdedel"
+              "quarter": "Fjärdedel",
+              "tenth": "Tiondel"
             }
           },
           "type": {
@@ -514,6 +577,11 @@
       },
       "image_lightbox": {
         "heading": "Bild Ljuslåda"
+      },
+      "image_wall": {
+        "direction": "Riktning",
+        "heading": "Bildvägg",
+        "margin": "Åtskiljare (pixlar)"
       },
       "images": {
         "heading": "Bilder",
@@ -581,7 +649,7 @@
         }
       },
       "scene_wall": {
-        "heading": "Scen / Markör Vägg",
+        "heading": "Scen / Markörvägg",
         "options": {
           "display_title": "Visa titel och taggar",
           "toggle_sound": "Aktivera ljud"
@@ -658,6 +726,8 @@
   },
   "custom": "Anpassad",
   "date": "Datum",
+  "date_format": "ÅÅÅÅ-MM-DD",
+  "datetime_format": "ÅÅÅÅ-MM-DD HH:MM",
   "death_date": "Dödsdatum",
   "death_year": "Dödsår",
   "descending": "Fallande",
@@ -681,6 +751,14 @@
     "edit_entity_title": "Redigera {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Inkludera relaterade objekt i exporten",
     "export_title": "Exportera",
+    "imagewall": {
+      "direction": {
+        "column": "Kolumn",
+        "description": "Kolumn eller radbaserad layout.",
+        "row": "Rad"
+      },
+      "margin_desc": "Antal åtskiljande pixlar runt varje bild."
+    },
     "lightbox": {
       "delay": "Fördröjning (Sekund)",
       "display_mode": {
@@ -690,6 +768,7 @@
         "original": "Original"
       },
       "options": "Alternativ",
+      "page_header": "Sida {page} / {total}",
       "reset_zoom_on_nav": "Återställ zoom vid bildbyte",
       "scale_up": {
         "description": "Skala mindre bilder så att de fyller skärmen",
@@ -717,6 +796,7 @@
       "destination": "Omplacera till"
     },
     "scene_gen": {
+      "covers": "Scenomslag",
       "force_transcodes": "Tvinga omkodning",
       "force_transcodes_tooltip": "Som standard blir videofiler bara omkodade om formatet inte stöds i webbläsaren. Vid aktivering kommer alla videofiler bli omkodande, även om de antas vara stöttade i webbläsaren.",
       "image_previews": "Animerad Bildförhandsvisning",
@@ -806,6 +886,11 @@
     "warmth": "Värme"
   },
   "empty_server": "Lägg till några scener i Stash för att se rekommendationer på denna sida.",
+  "errors": {
+    "image_index_greater_than_zero": "Bildindex måste vara större än 0",
+    "lazy_component_error_help": "Om du nyligen uppdaterade Stash ladda om sidan eller rensa din webbläsares cache.",
+    "something_went_wrong": "Något gick fel."
+  },
   "ethnicity": "Etnicitet",
   "existing_value": "existerande värde",
   "eye_color": "Ögonfärg",
@@ -853,13 +938,15 @@
     "syncing": "Synkar med server",
     "uploading": "Laddar upp skript"
   },
-  "hasMarkers": "Har markörer",
+  "hasChapters": "Har Kapitel",
+  "hasMarkers": "Har Markörer",
   "height": "Längd",
   "height_cm": "Längd (cm)",
   "help": "Hjälp",
   "ignore_auto_tag": "Ignorera Autotagg",
   "image": "Bild",
-  "image_count": "Antal bilder",
+  "image_count": "Antal Bilder",
+  "image_index": "Bild #",
   "images": "Bilder",
   "include_parent_tags": "Inkludera överordnade taggar",
   "include_sub_studios": "Inkludera underordnade studior",
@@ -982,7 +1069,7 @@
   "scenes": "Scener",
   "scenes_updated_at": "Scen uppdaterad vid",
   "search_filter": {
-    "add_filter": "Lägg till filter",
+    "edit_filter": "Ändra Filter",
     "name": "Filter",
     "saved_filters": "Sparade filter",
     "update_filter": "Uppdatera filter"
@@ -992,8 +1079,12 @@
   "setup": {
     "confirm": {
       "almost_ready": "Vi är nästan redo att slutfärdiga konfigurationen. Bekräfta följande inställningar. Du kan trycka bakåt för att ändra något inkorrekt. Tryck på Bekräfta om allting ser korrekt ut.",
+      "blobs_directory": "Binär data mappsökväg",
+      "cache_directory": "Cache mappsökväg",
       "configuration_file_location": "Konfiguration filsökväg:",
       "database_file_path": "Databas filsökväg",
+      "default_blobs_location": "<använd databas>",
+      "default_cache_location": "<sökväg innehållande konfigurationsfil>/cache",
       "default_db_location": "<sökväg innehållande konfigurationsfil>/stash-go.sqlite",
       "default_generated_content_location": "<sökväg innehållande konfigurationsfil>/generated",
       "generated_directory": "Genererat sökväg",
@@ -1029,12 +1120,20 @@
     },
     "paths": {
       "database_filename_empty_for_default": "databasfilnamn (blank för standard)",
-      "description": "Härnäst, måste vi avgöra var Stash hittar din samling med porr och vart databasen och de genererade filerna ska lagras . Om det skulle behövas kan dessa inställningar ändras senare.",
+      "description": "Härnäst, måste vi avgöra var Stash hittar din porrsamling, och vart databasen, de genererade filerna, och cachen ska lagras . Om det skulle behövas kan dessa inställningar ändras senare.",
+      "path_to_blobs_directory_empty_for_database": "sökväg till blobmappen (tomt för att använda databas)",
+      "path_to_cache_directory_empty_for_default": "sökväg till cachemappen (tomt för standard)",
       "path_to_generated_directory_empty_for_default": "sökväg till mappen för genererade filer (blank för standard)",
       "set_up_your_paths": "Ställ in dina sökvägar",
       "stash_alert": "Inga bibliotekssökvägar har valts. Ingen media kommer kunna skannas in i Stash. Är du säker?",
+      "where_can_stash_store_blobs": "Var kan Stash lagra databasens binära data?",
+      "where_can_stash_store_blobs_description": "Stash kan lagra binär data som scenomslag, stjärn-, studio-, och taggbilder i antingen databasen eller på filsystemet. Som standard, kommer datan lagras på filsystemet i mappen <code>Blobbar</code>. Om du vill ändra detta skriv en absolut eller relativ (till den nuvarande platsen) sökväg. Stash kommer skapa mappen om den inte redan finns på platsen.",
+      "where_can_stash_store_blobs_description_addendum": "Alternativt om du vill lagra denna data i databasen kan du lämna detta fält tomt. <strong>Notis:</strong> Detta kommer öka storleken på databasfilen och kommer förlänga databasmigrationstider.",
+      "where_can_stash_store_cache_files": "Var kan Stash lagra cachefiler?",
+      "where_can_stash_store_cache_files_description": "För att viss funktionalitet som HLS/DASH-liveomkodning ska fungera kräver Stash en cache-mapp för tillfälliga filer. Som standard kommer Stash skapa en <code>Cache</code> mapp i mappen som innehåller konfigurationsfilen. Om du vill ändra detta skriv en absolut eller relativ (till den nuvarande platsen) sökväg. Stash kommer skapa mappen om den inte redan finns på platsen.",
       "where_can_stash_store_its_database": "Var kan Stash lagra sin databas?",
-      "where_can_stash_store_its_database_description": "Stash använder en sqlite-databas för att spara metadata till din porr. Som standard kommer databasen att skapas som <code>stash-go.sqlite</code> i mappen som innehåller din konfigurationsfil. Om du vill ändra detta, ange en absolut eller relativ (till den nuvarande arbetsmappen) filnamn.",
+      "where_can_stash_store_its_database_description": "Stash använder en SQLite-databas för att spara metadata till din porr. Som standard kommer databasen att skapas som <code>stash-go.sqlite</code> i mappen som innehåller din konfigurationsfil. Om du vill ändra detta, ange en absolut eller relativ (till den nuvarande arbetsmappen) filnamn.",
+      "where_can_stash_store_its_database_warning": "VARNING: att lagra databasen på ett annat system än det som Stash körs ifrån (t.ex. databasen på en NAS medan Stash körs från en annan dator) är <strong>inte stöttat</strong>! SQLite är inte avsett för att använding över nätverket, och att försöka oavsett kan väldigt enkelt korrumpera hela databasen.",
       "where_can_stash_store_its_generated_content": "Var kan Stash spara sitt genererade innehåll?",
       "where_can_stash_store_its_generated_content_description": "För att kunna erbjuda miniatyrbilder, förhandsvisningar och sprites måste Stash generera bilder och videor. Detta inkluderar också omkodning av ej stöttade filformat. Som standard skapar Stash en <code>generated</code> mapp i mappen som innehåller din konfigurationsfil. Om du vill ändra detta, ange en absolut eller relativ (till din nuvarande arbetsmapp) sökväg. Stash kommer skapa denna mapp om den inte redan finns.",
       "where_is_your_porn_located": "Var är din porr lagrad?",
@@ -1106,6 +1205,7 @@
     "default_filter_set": "Standardfilter valt",
     "delete_past_tense": "Raderade {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Genererar skärmbild…",
+    "image_index_too_large": "Fel: BIldindex är större än antalet bilder i Galleriet",
     "merged_scenes": "Sammanslagna scener",
     "merged_tags": "Slog samman taggar",
     "reassign_past_tense": "Fil omplacerad",
@@ -1124,7 +1224,9 @@
   "updated_at": "Uppdaterad vid",
   "url": "URL",
   "validation": {
-    "aliases_must_be_unique": "alias måste vara unik"
+    "aliases_must_be_unique": "alias måste vara unik",
+    "date_invalid_form": "${path} måste vara i formatet ÅÅÅÅ-MM-DD",
+    "required": "${path} är ett obligatoriskt fält"
   },
   "videos": "Videor",
   "view_all": "Visa Allt",

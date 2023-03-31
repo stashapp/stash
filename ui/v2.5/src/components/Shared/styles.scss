@@ -323,3 +323,97 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
   }
   /* stylelint-enable */
 }
+
+.date-input.form-control:focus {
+  // z-index gets set to 3 in input groups
+  z-index: inherit;
+}
+
+/* stylelint-disable */
+div.react-datepicker {
+  background-color: $body-bg;
+  border-color: $card-bg;
+  color: $text-color;
+
+  .react-datepicker__header,
+  .react-datepicker-time__header {
+    background-color: $secondary;
+    color: $text-color;
+  }
+
+  .react-datepicker__day {
+    color: $text-color;
+    &.react-datepicker__day--disabled {
+      color: $text-muted;
+    }
+
+    &:hover {
+      background: rgba(138, 155, 168, 0.15);
+    }
+  }
+
+  div.react-datepicker__time-container div.react-datepicker__time {
+    background-color: $body-bg;
+    color: $text-color;
+
+    ul.react-datepicker__time-list li.react-datepicker__time-list-item:hover {
+      background-color: rgba(138, 155, 168, 0.15);
+    }
+  }
+
+  .react-datepicker__day-name {
+    color: $text-color;
+  }
+
+  // replace the current month with the dropdowns
+  .react-datepicker__current-month {
+    display: none;
+  }
+
+  .react-datepicker__triangle {
+    display: none;
+  }
+
+  .react-datepicker__month-dropdown-container {
+    margin-left: 0;
+    margin-right: 0.25rem;
+  }
+
+  .react-datepicker__year-dropdown-container {
+    margin-left: 0.25rem;
+    margin-right: 0;
+  }
+
+  .react-datepicker__month-dropdown-container
+    .react-datepicker__month-read-view,
+  .react-datepicker__year-dropdown-container .react-datepicker__year-read-view {
+    font-weight: bold;
+    font-size: 0.944rem;
+
+    // react-datepicker hides these fields when the dropdown is shown
+    visibility: visible !important;
+  }
+
+  // hide the dropdown arrows
+  .react-datepicker__month-dropdown-container
+    .react-datepicker__month-read-view--down-arrow,
+  .react-datepicker__year-dropdown-container
+    .react-datepicker__year-read-view--down-arrow {
+    display: none;
+  }
+
+  .react-datepicker__year-dropdown,
+  .react-datepicker__month-dropdown {
+    background-color: $body-bg;
+
+    .react-datepicker__year-option:hover,
+    .react-datepicker__month-option:hover {
+      background-color: #8a9ba826;
+    }
+  }
+}
+/* stylelint-enable */
+
+#date-picker-portal .react-datepicker-popper {
+  z-index: 1600;
+}

@@ -13,6 +13,7 @@ import (
 	"github.com/mattn/go-sqlite3"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/hash/md5"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/sqlite/blob"
 	"github.com/stashapp/stash/pkg/utils"
 	"gopkg.in/guregu/null.v4"
@@ -268,6 +269,7 @@ func (qb *BlobStore) Delete(ctx context.Context, checksum string) error {
 	if err := qb.delete(ctx, checksum); err != nil {
 		if qb.isConstraintError(err) {
 			// blob is still referenced - do not delete
+			logger.Debugf("Blob %s is still referenced - not deleting", checksum)
 			return nil
 		}
 
@@ -277,6 +279,7 @@ func (qb *BlobStore) Delete(ctx context.Context, checksum string) error {
 
 	// blob was deleted from the database - delete from filesystem if enabled
 	if qb.options.UseFilesystem {
+		logger.Debugf("Deleting blob %s from filesystem", checksum)
 		if err := qb.fsStore.Delete(ctx, checksum); err != nil {
 			return fmt.Errorf("deleting from filesystem: %w", err)
 		}
@@ -330,17 +333,33 @@ func (qb *blobJoinQueryBuilder) UpdateImage(ctx context.Context, id int, blobCol
 	if len(image) == 0 {
 		return qb.DestroyImage(ctx, id, blobCol)
 	}
+
+	oldChecksum, err := qb.getChecksum(ctx, id, blobCol)
+	if err != nil {
+		return err
+	}
+
 	checksum, err := qb.blobStore.Write(ctx, image)
 	if err != nil {
 		return err
 	}
 
 	sqlQuery := fmt.Sprintf("UPDATE %s SET %s = ? WHERE id = ?", qb.joinTable, blobCol)
-	_, err = qb.tx.Exec(ctx, sqlQuery, checksum, id)
-	return err
+	if _, err := qb.tx.Exec(ctx, sqlQuery, checksum, id); err != nil {
+		return err
+	}
+
+	// #3595 - delete the old blob if the checksum is different
+	if oldChecksum != nil && *oldChecksum != checksum {
+		if err := qb.blobStore.Delete(ctx, *oldChecksum); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
-func (qb *blobJoinQueryBuilder) DestroyImage(ctx context.Context, id int, blobCol string) error {
+func (qb *blobJoinQueryBuilder) getChecksum(ctx context.Context, id int, blobCol string) (*string, error) {
 	sqlQuery := utils.StrFormat(`
 SELECT {joinTable}.{joinCol} FROM {joinTable} WHERE {joinTable}.id = ?
 `, utils.StrFormatMap{
@@ -351,10 +370,23 @@ SELECT {joinTable}.{joinCol} FROM {joinTable} WHERE {joinTable}.id = ?
 	var checksum null.String
 	err := qb.repository.querySimple(ctx, sqlQuery, []interface{}{id}, &checksum)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if !checksum.Valid {
+		return nil, nil
+	}
+
+	return &checksum.String, nil
+}
+
+func (qb *blobJoinQueryBuilder) DestroyImage(ctx context.Context, id int, blobCol string) error {
+	checksum, err := qb.getChecksum(ctx, id, blobCol)
+	if err != nil {
+		return err
+	}
+
+	if checksum == nil {
 		// no image to delete
 		return nil
 	}
@@ -364,7 +396,7 @@ SELECT {joinTable}.{joinCol} FROM {joinTable} WHERE {joinTable}.id = ?
 		return err
 	}
 
-	return qb.blobStore.Delete(ctx, checksum.String)
+	return qb.blobStore.Delete(ctx, *checksum)
 }
 
 func (qb *blobJoinQueryBuilder) HasImage(ctx context.Context, id int, blobCol string) (bool, error) {

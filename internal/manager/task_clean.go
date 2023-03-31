@@ -164,9 +164,9 @@ func (f *cleanFilter) Accept(ctx context.Context, path string, info fs.FileInfo)
 
 	if info.IsDir() {
 		fileOrFolder = "Folder"
-		stash = getStashFromDirPath(f.stashPaths, path)
+		stash = f.stashPaths.GetStashFromDirPath(path)
 	} else {
-		stash = getStashFromPath(f.stashPaths, path)
+		stash = f.stashPaths.GetStashFromPath(path)
 	}
 
 	if stash == nil {
@@ -447,23 +447,5 @@ func (h *cleanHandler) handleRelatedImages(ctx context.Context, fileDeleter *fil
 		}
 	}
 
-	return nil
-}
-
-func getStashFromPath(stashes []*config.StashConfig, pathToCheck string) *config.StashConfig {
-	for _, f := range stashes {
-		if fsutil.IsPathInDir(f.Path, filepath.Dir(pathToCheck)) {
-			return f
-		}
-	}
-	return nil
-}
-
-func getStashFromDirPath(stashes []*config.StashConfig, pathToCheck string) *config.StashConfig {
-	for _, f := range stashes {
-		if fsutil.IsPathInDir(f.Path, pathToCheck) {
-			return f
-		}
-	}
 	return nil
 }

@@ -36,10 +36,11 @@ export class ScrapeResult<T> {
   ) {
     this.originalValue = originalValue ?? undefined;
     this.newValue = newValue ?? undefined;
+    const hasNewValue = this.newValue !== undefined;
 
     const valuesEqual = isEqual(originalValue, newValue);
-    this.useNewValue = useNewValue ?? (!!this.newValue && !valuesEqual);
-    this.scraped = !!this.newValue && !valuesEqual;
+    this.useNewValue = useNewValue ?? (hasNewValue && !valuesEqual);
+    this.scraped = hasNewValue && !valuesEqual;
   }
 
   public setOriginalValue(value?: T) {

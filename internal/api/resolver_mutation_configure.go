@@ -555,7 +555,9 @@ func (r *mutationResolver) ConfigureDefaults(ctx context.Context, input ConfigDe
 	}
 
 	if input.Scan != nil {
-		c.Set(config.DefaultScanSettings, input.Scan)
+		// if input.Scan is used then ScanMetadataOptions is included in the config file
+		// this causes the values to not be read correctly
+		c.Set(config.DefaultScanSettings, input.Scan.ScanMetadataOptions)
 	}
 
 	if input.AutoTag != nil {

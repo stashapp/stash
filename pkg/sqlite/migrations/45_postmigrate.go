@@ -278,6 +278,16 @@ func (m *schema45Migrator) migrateConfig(ctx context.Context) error {
 		logger.Errorf("Error while writing configuration file: %s", err.Error())
 	}
 
+	// if default scan settings are set, then set to generate scene covers by default
+	scanDefaults := c.GetDefaultScanSettings()
+	if scanDefaults != nil {
+		scanDefaults.ScanGenerateCovers = true
+		c.Set(config.DefaultScanSettings, scanDefaults)
+		if err := c.Write(); err != nil {
+			logger.Errorf("Error while writing configuration file: %s", err.Error())
+		}
+	}
+
 	return nil
 }
 

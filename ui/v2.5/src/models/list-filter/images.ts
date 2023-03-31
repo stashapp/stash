@@ -5,6 +5,7 @@ import {
   NullNumberCriterionOption,
   createMandatoryTimestampCriterionOption,
   createDateCriterionOption,
+  createPathCriterionOption,
 } from "./criteria/criterion";
 import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
 import { ImageIsMissingCriterionOption } from "./criteria/is-missing";
@@ -33,7 +34,7 @@ const displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
 const criterionOptions = [
   createStringCriterionOption("title"),
   createMandatoryStringCriterionOption("checksum", "media_info.checksum"),
-  createMandatoryStringCriterionOption("path"),
+  createPathCriterionOption("path"),
   OrganizedCriterionOption,
   createMandatoryNumberCriterionOption("o_counter"),
   ResolutionCriterionOption,
