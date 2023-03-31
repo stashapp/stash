@@ -70,6 +70,7 @@ type scrapedPerformerStash struct {
 	Measurements *string            `graphql:"measurements" json:"measurements"`
 	FakeTits     *string            `graphql:"fake_tits" json:"fake_tits"`
 	PenisLength  *string            `graphql:"penis_length" json:"penis_length"`
+	Circumcised  *string            `graphql:"circumcised" json:"circumcised"`
 	CareerLength *string            `graphql:"career_length" json:"career_length"`
 	Tattoos      *string            `graphql:"tattoos" json:"tattoos"`
 	Piercings    *string            `graphql:"piercings" json:"piercings"`

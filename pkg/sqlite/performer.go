@@ -43,6 +43,7 @@ type performerRow struct {
 	Measurements  zero.String            `db:"measurements"`
 	FakeTits      zero.String            `db:"fake_tits"`
 	PenisLength   null.Float             `db:"penis_length"`
+	Circumcised   zero.String            `db:"circumcised"`
 	CareerLength  zero.String            `db:"career_length"`
 	Tattoos       zero.String            `db:"tattoos"`
 	Piercings     zero.String            `db:"piercings"`
@@ -81,6 +82,9 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	r.Measurements = zero.StringFrom(o.Measurements)
 	r.FakeTits = zero.StringFrom(o.FakeTits)
 	r.PenisLength = null.FloatFromPtr(o.PenisLength)
+	if o.Circumcised.IsValid() {
+		r.Circumcised = zero.StringFrom(o.Circumcised.String())
+	}
 	r.CareerLength = zero.StringFrom(o.CareerLength)
 	r.Tattoos = zero.StringFrom(o.Tattoos)
 	r.Piercings = zero.StringFrom(o.Piercings)
@@ -110,6 +114,7 @@ func (r *performerRow) resolve() *models.Performer {
 		Ethnicity:      r.Ethnicity.String,
 		Country:        r.Country.String,
 		EyeColor:       r.EyeColor.String,
+		Circumcised:    models.CircumEnum(r.Circumcised.String),
 		Height:         nullIntPtr(r.Height),
 		Measurements:   r.Measurements.String,
 		FakeTits:       r.FakeTits.String,
@@ -151,6 +156,7 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setNullString("measurements", o.Measurements)
 	r.setNullString("fake_tits", o.FakeTits)
 	r.setNullFloat64("penis_length", o.PenisLength)
+	r.setNullString("circumcised", o.Circumcised)
 	r.setNullString("career_length", o.CareerLength)
 	r.setNullString("tattoos", o.Tattoos)
 	r.setNullString("piercings", o.Piercings)
@@ -602,6 +608,13 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Measurements, tableName+".measurements"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.FakeTits, tableName+".fake_tits"))
 	query.handleCriterion(ctx, floatCriterionHandler(filter.PenisLength, tableName+".penis_length", nil))
+
+	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
+		if circumcised := filter.Circumcised; circumcised != nil {
+			f.addWhere(tableName+".circumcised = ?", circumcised.Value.String())
+		}
+	}))
+
 	query.handleCriterion(ctx, stringCriterionHandler(filter.CareerLength, tableName+".career_length"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Tattoos, tableName+".tattoos"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Piercings, tableName+".piercings"))

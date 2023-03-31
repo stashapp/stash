@@ -103,6 +103,9 @@ func scrapedToPerformerInput(performer *models.ScrapedPerformer) models.Performe
 			ret.PenisLength = &h
 		}
 	}
+	if performer.Circumcised != nil {
+		ret.Circumcised = models.CircumEnum(*performer.Circumcised)
+	}
 	if performer.CareerLength != nil {
 		ret.CareerLength = *performer.CareerLength
 	}

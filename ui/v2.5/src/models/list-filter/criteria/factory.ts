@@ -44,6 +44,7 @@ import {
   TagsCriterionOption,
 } from "./tags";
 import { GenderCriterion } from "./gender";
+import { CircumcisedCriterion } from "./circumcised";
 import { MoviesCriterionOption } from "./movies";
 import { GalleriesCriterion } from "./galleries";
 import { CriterionType } from "../types";
@@ -163,6 +164,8 @@ export function makeCriteria(
       );
     case "gender":
       return new GenderCriterion();
+    case "circumcised":
+      return new CircumcisedCriterion();
     case "sceneChecksum":
     case "galleryChecksum":
       return new StringCriterion(

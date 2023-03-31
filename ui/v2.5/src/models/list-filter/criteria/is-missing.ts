@@ -69,6 +69,7 @@ export const PerformerIsMissingCriterionOption =
       "height",
       "weight",
       "penis_length",
+      "circumcised",
       "measurements",
       "fake_tits",
       "career_length",

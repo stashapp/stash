@@ -61,6 +61,52 @@ type GenderCriterionInput struct {
 	Modifier CriterionModifier `json:"modifier"`
 }
 
+type CircumEnum string
+
+const (
+	CircumEnumCut   CircumEnum = "CUT"
+	CircumEnumUncut CircumEnum = "UNCUT"
+)
+
+var AllCircumcisionEnum = []CircumEnum{
+	CircumEnumCut,
+	CircumEnumUncut,
+}
+
+func (e CircumEnum) IsValid() bool {
+	switch e {
+	case CircumEnumCut, CircumEnumUncut:
+		return true
+	}
+	return false
+}
+
+func (e CircumEnum) String() string {
+	return string(e)
+}
+
+func (e *CircumEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = CircumEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid CircumEnum", str)
+	}
+	return nil
+}
+
+func (e CircumEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type CircumcisionCriterionInput struct {
+	Value    *CircumEnum       `json:"value"`
+	Modifier CriterionModifier `json:"modifier"`
+}
+
 type PerformerFilterType struct {
 	And            *PerformerFilterType  `json:"AND"`
 	Or             *PerformerFilterType  `json:"OR"`
@@ -90,6 +136,8 @@ type PerformerFilterType struct {
 	FakeTits *StringCriterionInput `json:"fake_tits"`
 	// Filter by penis length value
 	PenisLength *FloatCriterionInput `json:"penis_length"`
+	// Filter by circumcision
+	Circumcised *CircumcisionCriterionInput `json:"circumcised"`
 	// Filter by career length
 	CareerLength *StringCriterionInput `json:"career_length"`
 	// Filter by tattoos

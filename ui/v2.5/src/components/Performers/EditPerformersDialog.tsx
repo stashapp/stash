@@ -17,6 +17,11 @@ import {
   genderToString,
   stringToGender,
 } from "src/utils/gender";
+import {
+  circumcisedStrings,
+  circumcisedToString,
+  stringToCircumcised,
+} from "src/utils/circumcised";
 import { IndeterminateCheckbox } from "../Shared/IndeterminateCheckbox";
 import { BulkUpdateTextInput } from "../Shared/BulkUpdateTextInput";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
@@ -46,6 +51,7 @@ const performerFields = [
   "measurements",
   "fake_tits",
   "penis_length",
+  "circumcised",
   "hair_color",
   "tattoos",
   "piercings",
@@ -70,6 +76,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     {}
   );
   const genderOptions = [""].concat(genderStrings);
+  const circumcisedOptions = [""].concat(circumcisedStrings);
 
   const [updatePerformers] = useBulkPerformerUpdate(getPerformerInput());
 
@@ -101,6 +108,10 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     performerInput.gender = getAggregateInputValue(
       updateInput.gender,
       aggregateState.gender
+    );
+    performerInput.circumcised = getAggregateInputValue(
+      updateInput.circumcised,
+      aggregateState.circumcised
     );
 
     if (weight !== undefined) {
@@ -290,6 +301,29 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           {renderTextField("penis_length", penis_length, (v) =>
             setPenisLength(v)
           )}
+
+          <Form.Group>
+            <Form.Label>
+              <FormattedMessage id="circumcised" />
+            </Form.Label>
+            <Form.Control
+              as="select"
+              className="input-control"
+              value={circumcisedToString(updateInput.circumcised)}
+              onChange={(event) =>
+                setUpdateField({
+                  circumcised: stringToCircumcised(event.currentTarget.value),
+                })
+              }
+            >
+              {circumcisedOptions.map((opt) => (
+                <option value={opt} key={opt}>
+                  {opt}
+                </option>
+              ))}
+            </Form.Control>
+          </Form.Group>
+
           {renderTextField("fake_tits", updateInput.fake_tits, (v) =>
             setUpdateField({ fake_tits: v })
           )}

@@ -6,6 +6,7 @@ import {
   getOperationName,
 } from "@apollo/client/utilities";
 import { stringToGender } from "src/utils/gender";
+import { stringToCircumcised } from "src/utils/circumcised";
 import { filterData } from "../utils/data";
 import { ListFilterModel } from "../models/list-filter/filter";
 import * as GQL from "./generated-graphql";
@@ -1317,6 +1318,7 @@ export const makePerformerCreateInput = (toCreate: GQL.ScrapedPerformer) => {
     penis_length: toCreate.penis_length
       ? Number(toCreate.penis_length)
       : undefined,
+    circumcised: stringToCircumcised(toCreate.circumcised),
   };
   return input;
 };

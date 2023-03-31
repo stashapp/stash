@@ -216,7 +216,16 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
           <dd>{formatPenisLength(performer.penis_length)}</dd>
         </>
       )}
-
+      <TextField
+        id="circumcised"
+        value={
+          performer.circumcised
+            ? intl.formatMessage({
+                id: "circumcised_types." + performer.circumcised,
+              })
+            : undefined
+        }
+      />
       <TextField id="measurements" value={performer.measurements} />
       <TextField id="fake_tits" value={performer.fake_tits} />
       <TextField id="career_length" value={performer.career_length} />

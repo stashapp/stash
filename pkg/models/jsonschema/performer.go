@@ -49,6 +49,7 @@ type Performer struct {
 	Measurements  string             `json:"measurements,omitempty"`
 	FakeTits      string             `json:"fake_tits,omitempty"`
 	PenisLength   float64            `json:"penis_length,omitempty"`
+	Circumcised   string             `json:"circumcised,omitempty"`
 	CareerLength  string             `json:"career_length,omitempty"`
 	Tattoos       string             `json:"tattoos,omitempty"`
 	Piercings     string             `json:"piercings,omitempty"`

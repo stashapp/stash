@@ -130,6 +130,7 @@ export type CriterionType =
   | "measurements"
   | "fake_tits"
   | "penis_length"
+  | "circumcised"
   | "career_length"
   | "tattoos"
   | "piercings"

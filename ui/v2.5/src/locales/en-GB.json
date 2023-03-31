@@ -140,6 +140,11 @@
   "captions": "Captions",
   "career_length": "Career Length",
   "chapters": "Chapters",
+  "circumcised": "Circumcised",
+  "circumcised_types": {
+    "UNCUT": "Uncut",
+    "CUT": "Cut"
+  },
   "component_tagger": {
     "config": {
       "active_instance": "Active stash-box instance:",
