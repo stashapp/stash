@@ -1,22 +1,17 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { usePerformerFilterHook } from "src/core/performers";
 import { PerformerList } from "src/components/Performers/PerformerList";
-import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
+import { usePerformerFilterHook } from "src/core/performers";
 
-interface IPerformerAppearsWithPanel {
+interface IPerformerDetailsProps {
   active: boolean;
   performer: GQL.PerformerDataFragment;
 }
 
-export const PerformerAppearsWithPanel: React.FC<
-  IPerformerAppearsWithPanel
-> = ({ active, performer }) => {
-  const criterion = new PerformersCriterion();
-  criterion.value = [
-    { id: performer.id, label: performer.name || `Performer ${performer.id}` },
-  ];
-
+export const PerformerAppearsWithPanel: React.FC<IPerformerDetailsProps> = ({
+  active,
+  performer,
+}) => {
   const performerValue = {
     id: performer.id,
     label: performer.name ?? `Performer ${performer.id}`,

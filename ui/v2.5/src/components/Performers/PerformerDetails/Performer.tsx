@@ -85,7 +85,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     tab === "galleries" ||
     tab === "images" ||
     tab === "movies" ||
-    tab == "appears-with"
+    tab == "appearswith"
       ? tab
       : "details";
   const setActiveTabKey = (newTab: string | null) => {
@@ -247,10 +247,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           />
         </Tab>
         <Tab
-          eventKey="appears-with"
+          eventKey="appearswith"
           title={
             <React.Fragment>
-              {intl.formatMessage({ id: "appears-with" })}
+              {intl.formatMessage({ id: "appears_with" })}
               <Counter
                 abbreviateCounter={abbreviateCounter}
                 count={performer.performer_count ?? 0}
@@ -259,7 +259,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           }
         >
           <PerformerAppearsWithPanel
-            active={activeTabKey == "appears-with"}
+            active={activeTabKey == "appearswith"}
             performer={performer}
           />
         </Tab>
