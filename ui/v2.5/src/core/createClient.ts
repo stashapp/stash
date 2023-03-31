@@ -88,6 +88,10 @@ const typePolicies: TypePolicies = {
   },
 };
 
+const possibleTypes = {
+  VisualFile: ["VideoFile", "ImageFile"],
+}
+
 export const getBaseURL = () => {
   const baseURL = window.STASH_BASE_URL;
   if (baseURL === "/%BASE_URL%/") return "/";
@@ -162,7 +166,7 @@ export const createClient = () => {
 
   const link = from([errorLink, splitLink]);
 
-  const cache = new InMemoryCache({ typePolicies });
+  const cache = new InMemoryCache({ typePolicies, possibleTypes: possibleTypes });
   const client = new ApolloClient({
     link,
     cache,
