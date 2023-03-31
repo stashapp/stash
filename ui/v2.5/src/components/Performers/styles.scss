@@ -219,6 +219,15 @@
     }
   }
 }
+.penis-circumcised {
+  &::before {
+    content: " ";
+  }
+
+  &::after {
+    content: "";
+  }
+}
 
 .performer-disambiguation {
   color: $text-muted;

@@ -162,6 +162,20 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     );
   };
 
+  const formatCircumcised = (circumcised?: GQL.CircumEnum | null) => {
+    if (!circumcised) {
+      return "";
+    }
+
+    return (
+      <span className="penis-circumcised">
+        {intl.formatMessage({
+          id: "circumcised_types." + performer.circumcised,
+        })}
+      </span>
+    );
+  };
+
   return (
     <dl className="details-list">
       <TextField
@@ -208,24 +222,17 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         </>
       )}
 
-      {!!performer.penis_length && (
+      {(performer.penis_length || performer.circumcised) && (
         <>
           <dt>
-            <FormattedMessage id="penis_length" />
+            <FormattedMessage id="penis" />:
           </dt>
-          <dd>{formatPenisLength(performer.penis_length)}</dd>
+          <dd>
+            {formatPenisLength(performer.penis_length)}
+            {formatCircumcised(performer.circumcised)}
+          </dd>
         </>
       )}
-      <TextField
-        id="circumcised"
-        value={
-          performer.circumcised
-            ? intl.formatMessage({
-                id: "circumcised_types." + performer.circumcised,
-              })
-            : undefined
-        }
-      />
       <TextField id="measurements" value={performer.measurements} />
       <TextField id="fake_tits" value={performer.fake_tits} />
       <TextField id="career_length" value={performer.career_length} />
