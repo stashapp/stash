@@ -1369,15 +1369,15 @@ func scenePerformerTagsCriterionHandler(qb *SceneStore, tags *models.Hierarchica
 
 			valuesClause := getHierarchicalValues(ctx, qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
 
-			f.addWith(`performer_tags AS (
+			f.addWith(`performers_tags AS (
 SELECT ps.scene_id, t.column1 AS root_tag_id FROM performers_scenes ps
 INNER JOIN performers_tags pt ON pt.performer_id = ps.performer_id
 INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
 )`)
 
-			f.addLeftJoin("performer_tags", "", "performer_tags.scene_id = scenes.id")
+			f.addLeftJoin("performers_tags", "", "performers_tags.scene_id = scenes.id")
 
-			addHierarchicalConditionClauses(f, tags, "performer_tags", "root_tag_id")
+			addHierarchicalConditionClauses(f, tags, "performers_tags", "root_tag_id")
 		}
 	}
 }

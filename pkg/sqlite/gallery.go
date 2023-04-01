@@ -1003,15 +1003,15 @@ func galleryPerformerTagsCriterionHandler(qb *GalleryStore, tags *models.Hierarc
 
 			valuesClause := getHierarchicalValues(ctx, qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
 
-			f.addWith(`performer_tags AS (
+			f.addWith(`performers_tags AS (
 SELECT pg.gallery_id, t.column1 AS root_tag_id FROM performers_galleries pg
 INNER JOIN performers_tags pt ON pt.performer_id = pg.performer_id
 INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
 )`)
 
-			f.addLeftJoin("performer_tags", "", "performer_tags.gallery_id = galleries.id")
+			f.addLeftJoin("performers_tags", "", "performers_tags.gallery_id = galleries.id")
 
-			addHierarchicalConditionClauses(f, tags, "performer_tags", "root_tag_id")
+			addHierarchicalConditionClauses(f, tags, "performers_tags", "root_tag_id")
 		}
 	}
 }
