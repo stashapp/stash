@@ -211,7 +211,7 @@ func sceneMarkerTagsCriterionHandler(qb *sceneMarkerQueryBuilder, tags *models.H
 			}
 			valuesClause := getHierarchicalValues(ctx, qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
 
-			f.addWith(`marker_tags AS (
+			f.addWith(`scene_markers_tags AS (
 SELECT mt.scene_marker_id, t.column1 AS root_tag_id FROM scene_markers_tags mt
 INNER JOIN (` + valuesClause + `) t ON t.column2 = mt.tag_id
 UNION
@@ -219,9 +219,9 @@ SELECT m.id, t.column1 FROM scene_markers m
 INNER JOIN (` + valuesClause + `) t ON t.column2 = m.primary_tag_id
 )`)
 
-			f.addLeftJoin("marker_tags", "", "marker_tags.scene_marker_id = scene_markers.id")
+			f.addLeftJoin("scene_markers_tags", "", "scene_markers_tags.scene_marker_id = scene_markers.id")
 
-			addHierarchicalConditionClauses(f, tags, "marker_tags", "root_tag_id")
+			addHierarchicalConditionClauses(f, tags, "scene_markers_tags", "root_tag_id")
 		}
 	}
 }
