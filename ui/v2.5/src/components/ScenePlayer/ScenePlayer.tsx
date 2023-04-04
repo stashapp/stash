@@ -311,7 +311,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         skipButtons: {},
         trackActivity: {},
         vrMenu: {},
-        // vr: {},
       },
     };
 
