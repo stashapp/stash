@@ -3,19 +3,11 @@ import videojs, { VideoJsPlayer } from "video.js";
 import "videojs-vr";
 
 enum VRType {
-  Mono180 = "180 Mono",
-  LeftRight180 = "180 Left Right",
-  TopBottom360 = "360 Top Bottom",
-  LeftRight360 = "360 Left Right",
   Spherical = "360",
   Off = "Off",
 }
 
 const vrTypeProjection = {
-  [VRType.Mono180]: "180_MONO",
-  [VRType.LeftRight180]: "180_LR",
-  [VRType.TopBottom360]: "360_TB",
-  [VRType.LeftRight360]: "360_LR",
   [VRType.Spherical]: "360",
   [VRType.Off]: "NONE",
 };
