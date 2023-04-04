@@ -7485,10 +7485,10 @@ thehandy@^1.0.3:
   resolved "https://registry.yarnpkg.com/thehandy/-/thehandy-1.0.3.tgz#51c5e9bae5932a6e5c563203711d78610b99d402"
   integrity sha512-zuuyWKBx/jqku9+MZkdkoK2oLM2mS8byWVR/vkQYq/ygAT6gPAXwiT94rfGuqv+1BLmsyJxm69nhVIzOZjfyIg==
 
-three@0.125.2:
-  version "0.125.2"
-  resolved "https://registry.yarnpkg.com/three/-/three-0.125.2.tgz#dcba12749a2eb41522e15212b919cd3fbf729b12"
-  integrity sha512-7rIRO23jVKWcAPFdW/HREU2NZMGWPBZ4XwEMt0Ak0jwLUKVJhcKM55eCBWyGZq/KiQbeo1IeuAoo/9l2dzhTXA==
+three@0.93.0:
+  version "0.93.0"
+  resolved "https://registry.yarnpkg.com/three/-/three-0.93.0.tgz#3fd6c367ef4554abbb6e16ad69936283e895c123"
+  integrity sha1-P9bDZ+9FVKu7bhataZNig+iVwSM=
 
 throttle-debounce@^5.0.0:
   version "5.0.0"
@@ -7996,7 +7996,7 @@ videojs-vr@^2.0.0:
   dependencies:
     "@babel/runtime" "^7.14.5"
     global "^4.4.0"
-    three "0.125.2"
+    three "0.93.0"
     video.js "^6 || ^7"
     webvr-polyfill "0.10.12"
 
