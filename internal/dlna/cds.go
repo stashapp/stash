@@ -445,9 +445,14 @@ func (me *contentDirectoryService) getVideos(sceneFilter *models.SceneFilterType
 
 	if err := txn.WithReadTxn(context.TODO(), me.txnManager, func(ctx context.Context) error {
 		sort := me.VideoSortOrder
+		direction := models.SortDirectionEnumDesc
+		if sort == "title" {
+			direction = models.SortDirectionEnumAsc
+		}
 		findFilter := &models.FindFilterType{
-			PerPage: &pageSize,
-			Sort:    &sort,
+			PerPage:   &pageSize,
+			Sort:      &sort,
+			Direction: &direction,
 		}
 
 		scenes, total, err := scene.QueryWithCount(ctx, me.repository.SceneFinder, sceneFilter, findFilter)
