@@ -14,12 +14,17 @@ import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { ModalComponent } from "../Shared/Modal";
 import { SettingSection } from "./SettingSection";
-import { BooleanSetting, StringListSetting, StringSetting, SelectSetting } from "./Inputs";
+import {
+  BooleanSetting,
+  StringListSetting,
+  StringSetting,
+  SelectSetting,
+} from "./Inputs";
 import { SettingStateContext } from "./context";
 import {
   videoSortOrderIntlMap,
   VideoSortOrder,
-  defaultVideoSort
+  defaultVideoSort,
 } from "src/utils/dlnaVideoSort";
 import {
   faClock,
