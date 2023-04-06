@@ -23,7 +23,6 @@ import {
 import { SettingStateContext } from "./context";
 import {
   videoSortOrderIntlMap,
-  VideoSortOrder,
   defaultVideoSort,
 } from "src/utils/dlnaVideoSort";
 import {
