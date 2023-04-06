@@ -444,7 +444,7 @@ func (me *contentDirectoryService) getVideos(sceneFilter *models.SceneFilterType
 	var objs []interface{}
 
 	if err := txn.WithReadTxn(context.TODO(), me.txnManager, func(ctx context.Context) error {
-		sort := "title"
+		sort := me.VideoSortOrder
 		findFilter := &models.FindFilterType{
 			PerPage: &pageSize,
 			Sort:    &sort,
