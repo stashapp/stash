@@ -34,28 +34,6 @@ $sceneTabWidth: 450px;
     outline: none;
   }
 
-  .vjs-big-button-group {
-    display: none;
-    height: 80px;
-    justify-content: space-around;
-    opacity: 0;
-    position: absolute;
-    top: calc(50% - 40px);
-    width: 100%;
-    z-index: 1;
-
-    .vjs-button {
-      font-size: 4em;
-      height: 100%;
-      width: 80px;
-
-      .vjs-icon-placeholder::before {
-        height: 100%;
-        line-height: 80px;
-      }
-    }
-  }
-
   &.vjs-has-started {
     .vjs-touch-overlay {
       display: block;
@@ -305,28 +283,6 @@ $sceneTabWidth: 450px;
 
   @media (pointer: coarse) {
     &.vjs-touch-enabled {
-      &.vjs-has-started .vjs-big-button-group {
-        display: flex;
-        opacity: 1;
-        visibility: visible;
-      }
-
-      &.vjs-has-started.vjs-user-inactive.vjs-playing .vjs-big-button-group {
-        opacity: 0;
-        pointer-events: none;
-        transition: visibility 1s, opacity 1s;
-        visibility: visible;
-      }
-
-      .vjs-big-play-pause-button .vjs-icon-placeholder::before {
-        content: "\f101";
-        font-family: VideoJS;
-      }
-
-      &.vjs-playing .vjs-big-play-pause-button .vjs-icon-placeholder::before {
-        content: "\f103";
-      }
-
       .vjs-vtt-thumbnail-display {
         bottom: 2.8em;
       }
@@ -382,11 +338,6 @@ $sceneTabWidth: 450px;
 
     .vjs-time-control {
       font-size: 12px;
-    }
-
-    .vjs-big-button-group .vjs-button {
-      font-size: 2em;
-      width: 50px;
     }
 
     .vjs-current-time {
