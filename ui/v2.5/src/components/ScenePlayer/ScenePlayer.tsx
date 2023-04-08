@@ -471,7 +471,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         lockToLandscapeOnEnter: isLandscape,
       },
       touchControls: {
-        disabled: true
+        disabled: true,
       },
     };
     player.mobileUi(mobileUiOptions);
