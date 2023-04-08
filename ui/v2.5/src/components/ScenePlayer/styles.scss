@@ -56,8 +56,65 @@ $sceneTabWidth: 450px;
     }
   }
 
-  .vjs-touch-overlay .vjs-play-control {
-    z-index: 1;
+  &.vjs-has-started {
+    .vjs-touch-overlay {
+      display: block;
+    }
+
+    &.vjs-user-inactive.vjs-playing .vjs-touch-overlay .vjs-play-control {
+      opacity: 0;
+      pointer-events: none;
+      transition: visibility 1s, opacity 1s;
+      visibility: visible;
+    }
+  }
+
+  .vjs-touch-overlay {
+    display: none;
+
+    .vjs-play-control {
+      height: calc(80% - 14em);
+      opacity: 1;
+      pointer-events: auto;
+      transition: visibility 0.1s, opacity 0.1s;
+      visibility: visible;
+      z-index: 1;
+    }
+
+    &.skip {
+      -webkit-animation: none;
+      animation: none;
+      background: none;
+      opacity: 1;
+
+      &::before {
+        -webkit-animation: fadeAndScale 0.6s linear;
+        animation: fadeAndScale 0.6s linear;
+        background-image: url('data:image/svg+xml;utf8,<svg fill="%23FFFFFF" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+        background-position: 80% center;
+        background-repeat: no-repeat;
+        background-size: 10%;
+        bottom: 0;
+        content: "";
+        left: 0;
+        opacity: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+
+      &.reverse {
+        -webkit-animation: none;
+        animation: none;
+        background: none;
+        opacity: 1;
+
+        &::before {
+          background-image: url('data:image/svg+xml;utf8,<svg fill="%23FFFFFF" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+          background-position: 20% center;
+        }
+      }
+    }
   }
 
   .vjs-control-bar {
