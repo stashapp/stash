@@ -204,7 +204,22 @@ $sceneTabWidth: 450px;
   &:hover .vjs-big-play-button {
     background: none;
     border: none;
-    font-size: 10em;
+    font-size: inherit;
+    height: calc(80% - 14em);
+    left: 50%;
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 30%;
+
+    .vjs-icon-placeholder::before {
+      background-image: url('data:image/svg+xml;utf8,<svg fill="%23FFFFFF" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: 60%;
+      content: "";
+    }
   }
 
   .vjs-skip-button {
