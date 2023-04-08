@@ -51,12 +51,17 @@ $sceneTabWidth: 450px;
     display: none;
 
     .vjs-play-control {
-      height: calc(80% - 14em);
+      height: 100px;
       opacity: 1;
       pointer-events: auto;
       transition: visibility 0.1s, opacity 0.1s;
       visibility: visible;
+      width: 100px;
       z-index: 1;
+
+      .vjs-icon-placeholder::before {
+        background-size: 80%;
+      }
     }
 
     &.skip {
@@ -183,19 +188,19 @@ $sceneTabWidth: 450px;
     background: none;
     border: none;
     font-size: inherit;
-    height: calc(80% - 14em);
+    height: 100px;
     left: 50%;
     margin: 0;
     position: absolute;
     top: 50%;
     transform: translate(-50%, -50%);
-    width: 30%;
+    width: 100px;
 
     .vjs-icon-placeholder::before {
       background-image: url('data:image/svg+xml;utf8,<svg fill="%23FFFFFF" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
       background-position: center center;
       background-repeat: no-repeat;
-      background-size: 60%;
+      background-size: 80%;
       content: "";
     }
   }
@@ -338,6 +343,16 @@ $sceneTabWidth: 450px;
 
     .vjs-time-control {
       font-size: 12px;
+    }
+
+    .vjs-big-play-button {
+      height: 60px;
+      width: 60px;
+    }
+
+    .vjs-touch-overlay .vjs-play-control {
+      height: 60px;
+      width: 60px;
     }
 
     .vjs-current-time {
