@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import videojs, { VideoJsPlayer } from "video.js";
+import * as GQL from "../../core/generated-graphql";
 import "videojs-vr";
 
 enum VRType {
@@ -98,12 +99,17 @@ class VRMenuButton extends videojs.getComponent("MenuButton") {
 class VRMenuPlugin extends videojs.getPlugin("plugin") {
   private menu: VRMenuButton;
 
+  isVrScene: () => Promise<void> = () => {
+    return Promise.resolve();
+  };
+
   constructor(player: VideoJsPlayer) {
     super(player);
 
     this.menu = new VRMenuButton(player);
 
-    if (isVrDevice()) return;
+    console.log(`isVrScene: ${this.isVrScene()}`)
+    if (isVrDevice() || !this.isVrScene()) return;
 
     this.menu.on("typeselected", (_, type: VRType) => {
       const projection = vrTypeProjection[type];

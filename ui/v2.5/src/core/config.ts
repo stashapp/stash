@@ -55,6 +55,8 @@ export interface IUIConfig {
   imageWallOptions?: ImageWallOptions;
 
   lastNoteSeen?: number;
+
+  vrTag?: string;
 }
 
 function recentlyReleased(

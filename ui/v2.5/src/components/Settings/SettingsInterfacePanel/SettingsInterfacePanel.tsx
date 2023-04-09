@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Button, Form } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { DurationInput } from "src/components/Shared/DurationInput";
@@ -6,6 +6,7 @@ import { PercentInput } from "src/components/Shared/PercentInput";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { CheckboxGroup } from "./CheckboxGroup";
 import { SettingSection } from "../SettingSection";
+import { useAllTagsForFilter } from "src/core/StashService";
 import {
   BooleanSetting,
   ModalSetting,
@@ -79,6 +80,9 @@ export const SettingsInterfacePanel: React.FC = () => {
 
   const [, setInterfaceLocalForage] = useInterfaceLocalForage();
 
+  const { data: tagData, loading: loadingTags } = useAllTagsForFilter();
+  const tags = useMemo(() => tagData?.allTags ?? [], [tagData?.allTags]);
+
   function saveLightboxSettings(v: Partial<GQL.ConfigImageLightboxInput>) {
     // save in local forage as well for consistency
     setInterfaceLocalForage((prev) => {
@@ -136,7 +140,9 @@ export const SettingsInterfacePanel: React.FC = () => {
   }
 
   if (error) return <h1>{error.message}</h1>;
-  if (loading) return <LoadingIndicator />;
+  if (loading || loadingTags) return <LoadingIndicator />;
+
+  console.log(`tags ${tags}`)
 
   // https://en.wikipedia.org/wiki/List_of_language_names
   return (
@@ -289,6 +295,13 @@ export const SettingsInterfacePanel: React.FC = () => {
           headingID="config.ui.scene_player.options.track_activity"
           checked={ui.trackActivity ?? undefined}
           onChange={(v) => saveUI({ trackActivity: v })}
+        />
+        <StringSetting
+          id="vr_tag"
+          headingID="config.ui.scene_player.options.vr_tag.heading"
+          subHeadingID="config.ui.scene_player.options.vr_tag.description"
+          value={ui.vrTag ?? undefined}
+          onChange={(v) => saveUI({ vrTag: v })}
         />
         <ModalSetting<number>
           id="ignore-interval"
