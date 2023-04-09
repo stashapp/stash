@@ -31,8 +31,8 @@
 }
 
 .details-edit {
-  /* 
-    The penultimate button should be wrapped in an unstyled div. 
+  /*
+    The penultimate button should be wrapped in an unstyled div.
     This allows the div to expand, to right-justify the last (save / delete) button.
   */
 
@@ -285,8 +285,8 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
   opacity: 0.5;
 }
 
-.string-list-input .text-input {
-  margin-bottom: 0.25rem;
+.string-list-input .input-group {
+  margin-bottom: 0.35rem;
 }
 
 .bulk-update-text-input {
