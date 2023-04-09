@@ -316,14 +316,6 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
   }
 }
 
-.CountrySelect {
-  /* stylelint-disable */
-  .react-select__control:hover {
-    border: none;
-  }
-  /* stylelint-enable */
-}
-
 .date-input.form-control:focus {
   // z-index gets set to 3 in input groups
   z-index: inherit;
