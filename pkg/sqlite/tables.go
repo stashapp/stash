@@ -234,3 +234,10 @@ var (
 		idColumn: goqu.T(movieTable).Col(idColumn),
 	}
 )
+
+var (
+	blobTableMgr = &table{
+		table:    goqu.T(blobTable),
+		idColumn: goqu.T(blobTable).Col(blobChecksumColumn),
+	}
+)

@@ -387,29 +387,6 @@ func (r *joinRepository) replace(ctx context.Context, id int, foreignIDs []int) 
 	return nil
 }
 
-type imageRepository struct {
-	repository
-	imageColumn string
-}
-
-func (r *imageRepository) get(ctx context.Context, id int) ([]byte, error) {
-	query := fmt.Sprintf("SELECT %s from %s WHERE %s = ?", r.imageColumn, r.tableName, r.idColumn)
-	var ret []byte
-	err := r.querySimple(ctx, query, []interface{}{id}, &ret)
-	return ret, err
-}
-
-func (r *imageRepository) replace(ctx context.Context, id int, image []byte) error {
-	if err := r.destroy(ctx, []int{id}); err != nil {
-		return err
-	}
-
-	stmt := fmt.Sprintf("INSERT INTO %s (%s, %s) VALUES (?, ?)", r.tableName, r.idColumn, r.imageColumn)
-	_, err := r.tx.Exec(ctx, stmt, id, image)
-
-	return err
-}
-
 type captionRepository struct {
 	repository
 }

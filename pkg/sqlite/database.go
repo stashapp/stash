@@ -32,7 +32,7 @@ const (
 	dbConnTimeout = 30
 )
 
-var appSchemaVersion uint = 44
+var appSchemaVersion uint = 45
 
 //go:embed migrations/*.sql
 var migrationsBox embed.FS
@@ -64,12 +64,16 @@ func (e *MismatchedSchemaVersionError) Error() string {
 }
 
 type Database struct {
+	Blobs     *BlobStore
 	File      *FileStore
 	Folder    *FolderStore
 	Image     *ImageStore
 	Gallery   *GalleryStore
 	Scene     *SceneStore
 	Performer *PerformerStore
+	Studio    *studioQueryBuilder
+	Tag       *tagQueryBuilder
+	Movie     *movieQueryBuilder
 
 	db     *sqlx.DB
 	dbPath string
@@ -82,18 +86,27 @@ type Database struct {
 func NewDatabase() *Database {
 	fileStore := NewFileStore()
 	folderStore := NewFolderStore()
+	blobStore := NewBlobStore(BlobStoreOptions{})
 
 	ret := &Database{
+		Blobs:     blobStore,
 		File:      fileStore,
 		Folder:    folderStore,
-		Scene:     NewSceneStore(fileStore),
+		Scene:     NewSceneStore(fileStore, blobStore),
 		Image:     NewImageStore(fileStore),
 		Gallery:   NewGalleryStore(fileStore, folderStore),
-		Performer: NewPerformerStore(),
+		Performer: NewPerformerStore(blobStore),
+		Studio:    NewStudioReaderWriter(blobStore),
+		Tag:       NewTagReaderWriter(blobStore),
+		Movie:     NewMovieReaderWriter(blobStore),
 		lockChan:  make(chan struct{}, 1),
 	}
 
 	return ret
+}
+
+func (db *Database) SetBlobStoreOptions(options BlobStoreOptions) {
+	*db.Blobs = *NewBlobStore(options)
 }
 
 // Ready returns an error if the database is not ready to begin transactions.
@@ -200,7 +213,7 @@ func (db *Database) Close() error {
 
 func (db *Database) open(disableForeignKeys bool) (*sqlx.DB, error) {
 	// https://github.com/mattn/go-sqlite3
-	url := "file:" + db.dbPath + "?_journal=WAL&_sync=NORMAL"
+	url := "file:" + db.dbPath + "?_journal=WAL&_sync=NORMAL&_busy_timeout=50"
 	if !disableForeignKeys {
 		url += "&_fk=true"
 	}
@@ -431,6 +444,12 @@ func (db *Database) optimise() {
 	if err != nil {
 		logger.Warnf("error while performing post-migration vacuum: %v", err)
 	}
+}
+
+// Vacuum runs a VACUUM on the database, rebuilding the database file into a minimal amount of disk space.
+func (db *Database) Vacuum(ctx context.Context) error {
+	_, err := db.db.ExecContext(ctx, "VACUUM")
+	return err
 }
 
 func (db *Database) runCustomMigrations(ctx context.Context, fns []customMigrationFunc) error {

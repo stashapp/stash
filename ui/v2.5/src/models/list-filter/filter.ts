@@ -80,12 +80,8 @@ export class ListFilterModel {
 
   // returns the number of filters applied
   public count() {
-    const count = this.criteria.length;
-    if (this.searchTerm) {
-      return count + 1;
-    }
-
-    return count;
+    // don't include search term
+    return this.criteria.length;
   }
 
   public configureFromDecodedParams(params: IDecodedParams) {

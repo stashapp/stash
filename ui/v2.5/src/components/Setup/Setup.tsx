@@ -40,6 +40,7 @@ export const Setup: React.FC = () => {
   const [databaseFile, setDatabaseFile] = useState("");
   const [generatedLocation, setGeneratedLocation] = useState("");
   const [cacheLocation, setCacheLocation] = useState("");
+  const [blobsLocation, setBlobsLocation] = useState("blobs");
   const [loading, setLoading] = useState(false);
   const [setupError, setSetupError] = useState("");
 
@@ -49,6 +50,7 @@ export const Setup: React.FC = () => {
   const [showGeneratedSelectDialog, setShowGeneratedSelectDialog] =
     useState(false);
   const [showCacheSelectDialog, setShowCacheSelectDialog] = useState(false);
+  const [showBlobsDialog, setShowBlobsDialog] = useState(false);
 
   const { data: systemStatus, loading: statusLoading } = useSystemStatus();
 
@@ -253,6 +255,22 @@ export const Setup: React.FC = () => {
     return <FolderSelectDialog onClose={onGeneratedSelectClosed} />;
   }
 
+  function onBlobsClosed(d?: string) {
+    if (d) {
+      setBlobsLocation(d);
+    }
+
+    setShowBlobsDialog(false);
+  }
+
+  function maybeRenderBlobsSelectDialog() {
+    if (!showBlobsDialog) {
+      return;
+    }
+
+    return <FolderSelectDialog onClose={onBlobsClosed} />;
+  }
+
   function maybeRenderGenerated() {
     if (!configuration?.general.generatedPath) {
       return (
@@ -351,6 +369,56 @@ export const Setup: React.FC = () => {
     }
   }
 
+  function maybeRenderBlobs() {
+    if (!configuration?.general.blobsPath) {
+      return (
+        <Form.Group id="blobs">
+          <h3>
+            <FormattedMessage id="setup.paths.where_can_stash_store_blobs" />
+          </h3>
+          <p>
+            <FormattedMessage
+              id="setup.paths.where_can_stash_store_blobs_description"
+              values={{
+                code: (chunks: string) => <code>{chunks}</code>,
+              }}
+            />
+          </p>
+          <p>
+            <FormattedMessage
+              id="setup.paths.where_can_stash_store_blobs_description_addendum"
+              values={{
+                code: (chunks: string) => <code>{chunks}</code>,
+                strong: (chunks: string) => <strong>{chunks}</strong>,
+              }}
+            />
+          </p>
+          <InputGroup>
+            <Form.Control
+              className="text-input"
+              value={blobsLocation}
+              placeholder={intl.formatMessage({
+                id: "setup.paths.path_to_blobs_directory_empty_for_database",
+              })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setBlobsLocation(e.currentTarget.value)
+              }
+            />
+            <InputGroup.Append>
+              <Button
+                variant="secondary"
+                className="text-input"
+                onClick={() => setShowBlobsDialog(true)}
+              >
+                <Icon icon={faEllipsisH} />
+              </Button>
+            </InputGroup.Append>
+          </InputGroup>
+        </Form.Group>
+      );
+    }
+  }
+
   function renderSetPaths() {
     return (
       <>
@@ -410,6 +478,7 @@ export const Setup: React.FC = () => {
           </Form.Group>
           {maybeRenderGenerated()}
           {maybeRenderCache()}
+          {maybeRenderBlobs()}
         </section>
         <section className="mt-5">
           <div className="d-flex justify-content-center">
@@ -474,6 +543,7 @@ export const Setup: React.FC = () => {
         databaseFile,
         generatedLocation,
         cacheLocation,
+        blobsLocation,
         stashes,
       });
       // Set lastNoteSeen to hide release notes dialog
@@ -553,6 +623,18 @@ export const Setup: React.FC = () => {
                   ? cacheLocation
                   : intl.formatMessage({
                       id: "setup.confirm.default_cache_location",
+                    })}
+              </code>
+            </dd>
+            <dt>
+              <FormattedMessage id="setup.confirm.blobs_directory" />
+            </dt>
+            <dd>
+              <code>
+                {blobsLocation !== ""
+                  ? blobsLocation
+                  : intl.formatMessage({
+                      id: "setup.confirm.default_blobs_location",
                     })}
               </code>
             </dd>
@@ -739,6 +821,7 @@ export const Setup: React.FC = () => {
     <Container>
       {maybeRenderGeneratedSelectDialog()}
       {maybeRenderCacheSelectDialog()}
+      {maybeRenderBlobsSelectDialog()}
       <h1 className="text-center">
         <FormattedMessage id="setup.stash_setup_wizard" />
       </h1>

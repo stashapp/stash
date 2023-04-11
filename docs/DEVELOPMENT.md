@@ -27,6 +27,16 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MingW. For examp
 1. If you don't have it already, install the [Homebrew package manager](https://brew.sh).
 2. Install dependencies: `brew install go git yarn gcc make node ffmpeg`
 
+### Linux
+
+#### Arch Linux
+1. Install dependencies: `sudo pacman -S go git yarn gcc make nodejs ffmpeg --needed`
+
+#### Ubuntu
+1. Install dependencies: `sudo apt-get install golang git gcc nodejs ffmpeg -y`
+2. Enable corepack in Node.js: `corepack enable`
+3. Install yarn: `corepack prepare yarn@stable --activate`
+
 ## Commands
 
 * `make pre-ui` - Installs the UI dependencies. Only needs to be run once before building the UI for the first time, or if the dependencies are updated

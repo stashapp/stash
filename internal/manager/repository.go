@@ -35,7 +35,6 @@ type SceneReaderWriter interface {
 
 type FileReaderWriter interface {
 	file.Store
-	file.Finder
 	Query(ctx context.Context, options models.FileQueryOptions) (*models.FileQueryResult, error)
 	GetCaptions(ctx context.Context, fileID file.ID) ([]*models.VideoCaption, error)
 	IsPrimary(ctx context.Context, fileID file.ID) (bool, error)
@@ -43,7 +42,6 @@ type FileReaderWriter interface {
 
 type FolderReaderWriter interface {
 	file.FolderStore
-	Find(ctx context.Context, id file.FolderID) (*file.Folder, error)
 }
 
 type Repository struct {
@@ -102,8 +100,6 @@ type SceneService interface {
 	AssignFile(ctx context.Context, sceneID int, fileID file.ID) error
 	Merge(ctx context.Context, sourceIDs []int, destinationID int, values models.ScenePartial) error
 	Destroy(ctx context.Context, scene *models.Scene, fileDeleter *scene.FileDeleter, deleteGenerated, deleteFile bool) error
-
-	GetCover(ctx context.Context, scene *models.Scene) ([]byte, error)
 }
 
 type ImageService interface {

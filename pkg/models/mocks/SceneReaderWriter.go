@@ -235,20 +235,6 @@ func (_m *SceneReaderWriter) Destroy(ctx context.Context, id int) error {
 	return r0
 }
 
-// DestroyCover provides a mock function with given fields: ctx, sceneID
-func (_m *SceneReaderWriter) DestroyCover(ctx context.Context, sceneID int) error {
-	ret := _m.Called(ctx, sceneID)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
-		r0 = rf(ctx, sceneID)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // Duration provides a mock function with given fields: ctx
 func (_m *SceneReaderWriter) Duration(ctx context.Context) (float64, error) {
 	ret := _m.Called(ctx)
@@ -631,6 +617,27 @@ func (_m *SceneReaderWriter) GetTagIDs(ctx context.Context, relatedID int) ([]in
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
 		r1 = rf(ctx, relatedID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// HasCover provides a mock function with given fields: ctx, sceneID
+func (_m *SceneReaderWriter) HasCover(ctx context.Context, sceneID int) (bool, error) {
+	ret := _m.Called(ctx, sceneID)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(context.Context, int) bool); ok {
+		r0 = rf(ctx, sceneID)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, sceneID)
 	} else {
 		r1 = ret.Error(1)
 	}

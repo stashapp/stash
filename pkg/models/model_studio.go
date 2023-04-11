@@ -19,6 +19,8 @@ type Studio struct {
 	Rating        sql.NullInt64  `db:"rating" json:"rating"`
 	Details       sql.NullString `db:"details" json:"details"`
 	IgnoreAutoTag bool           `db:"ignore_auto_tag" json:"ignore_auto_tag"`
+	// TODO - this is only here because of database code in the models package
+	ImageBlob sql.NullString `db:"image_blob" json:"-"`
 }
 
 type StudioPartial struct {

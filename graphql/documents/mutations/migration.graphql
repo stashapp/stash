@@ -1,0 +1,7 @@
+mutation MigrateSceneScreenshots($input: MigrateSceneScreenshotsInput!) {
+  migrateSceneScreenshots(input: $input)
+}
+
+mutation MigrateBlobs($input: MigrateBlobsInput!) {
+  migrateBlobs(input: $input)
+}

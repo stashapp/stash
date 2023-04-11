@@ -38,9 +38,6 @@ type ScenePaths interface {
 	GetVideoPreviewPath(checksum string) string
 	GetWebpPreviewPath(checksum string) string
 
-	GetScreenshotPath(checksum string) string
-	GetThumbnailScreenshotPath(checksum string) string
-
 	GetSpriteImageFilePath(checksum string) string
 	GetSpriteVttFilePath(checksum string) string
 
@@ -104,6 +101,26 @@ func (g Generator) generateFile(lockCtx *fsutil.LockContext, p Paths, pattern st
 	}
 
 	return nil
+}
+
+// generateBytes performs a generate operation by generating a temporary file using p and pattern, returns the contents, then deletes it.
+func (g Generator) generateBytes(lockCtx *fsutil.LockContext, p Paths, pattern string, generateFn generateFn) ([]byte, error) {
+	tmpFile, err := g.tempFile(p, pattern) // tmp output in case the process ends abruptly
+	if err != nil {
+		return nil, err
+	}
+
+	tmpFn := tmpFile.Name()
+	defer func() {
+		_ = os.Remove(tmpFn)
+	}()
+
+	if err := generateFn(lockCtx, tmpFn); err != nil {
+		return nil, err
+	}
+
+	defer os.Remove(tmpFn)
+	return os.ReadFile(tmpFn)
 }
 
 // generate runs ffmpeg with the given args and waits for it to finish.

@@ -23,7 +23,8 @@ const (
 	performersAliasesTable = "performer_aliases"
 	performerAliasColumn   = "alias"
 	performersTagsTable    = "performers_tags"
-	performersImageTable   = "performers_image" // performer cover image
+
+	performerImageBlobColumn = "image_blob"
 )
 
 type performerRow struct {
@@ -54,6 +55,9 @@ type performerRow struct {
 	HairColor     zero.String       `db:"hair_color"`
 	Weight        null.Int          `db:"weight"`
 	IgnoreAutoTag bool              `db:"ignore_auto_tag"`
+
+	// not used for resolution
+	ImageBlob zero.String `db:"image_blob"`
 }
 
 func (r *performerRow) fromPerformer(o models.Performer) {
@@ -159,15 +163,20 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 
 type PerformerStore struct {
 	repository
+	blobJoinQueryBuilder
 
 	tableMgr *table
 }
 
-func NewPerformerStore() *PerformerStore {
+func NewPerformerStore(blobStore *BlobStore) *PerformerStore {
 	return &PerformerStore{
 		repository: repository{
 			tableName: performerTable,
 			idColumn:  idColumn,
+		},
+		blobJoinQueryBuilder: blobJoinQueryBuilder{
+			blobStore: blobStore,
+			joinTable: performerTable,
 		},
 		tableMgr: performerTableMgr,
 	}
@@ -275,6 +284,11 @@ func (qb *PerformerStore) Update(ctx context.Context, updatedObject *models.Perf
 }
 
 func (qb *PerformerStore) Destroy(ctx context.Context, id int) error {
+	// must handle image checksums manually
+	if err := qb.DestroyImage(ctx, id); err != nil {
+		return err
+	}
+
 	return qb.destroyExisting(ctx, []int{id})
 }
 
@@ -690,8 +704,7 @@ func performerIsMissingCriterionHandler(qb *PerformerStore, isMissing *string) c
 				f.addLeftJoin(performersScenesTable, "scenes_join", "scenes_join.performer_id = performers.id")
 				f.addWhere("scenes_join.scene_id IS NULL")
 			case "image":
-				f.addLeftJoin(performersImageTable, "image_join", "image_join.performer_id = performers.id")
-				f.addWhere("image_join.performer_id IS NULL")
+				f.addWhere("performers.image_blob IS NULL")
 			case "stash_id":
 				performersStashIDsTableMgr.join(f, "performer_stash_ids", "performers.id")
 				f.addWhere("performer_stash_ids.performer_id IS NULL")
@@ -914,27 +927,16 @@ func (qb *PerformerStore) GetTagIDs(ctx context.Context, id int) ([]int, error) 
 	return qb.tagsRepository().getIDs(ctx, id)
 }
 
-func (qb *PerformerStore) imageRepository() *imageRepository {
-	return &imageRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: "performers_image",
-			idColumn:  performerIDColumn,
-		},
-		imageColumn: "image",
-	}
-}
-
 func (qb *PerformerStore) GetImage(ctx context.Context, performerID int) ([]byte, error) {
-	return qb.imageRepository().get(ctx, performerID)
+	return qb.blobJoinQueryBuilder.GetImage(ctx, performerID, performerImageBlobColumn)
 }
 
 func (qb *PerformerStore) UpdateImage(ctx context.Context, performerID int, image []byte) error {
-	return qb.imageRepository().replace(ctx, performerID, image)
+	return qb.blobJoinQueryBuilder.UpdateImage(ctx, performerID, performerImageBlobColumn, image)
 }
 
 func (qb *PerformerStore) DestroyImage(ctx context.Context, performerID int) error {
-	return qb.imageRepository().destroy(ctx, []int{performerID})
+	return qb.blobJoinQueryBuilder.DestroyImage(ctx, performerID, performerImageBlobColumn)
 }
 
 func (qb *PerformerStore) stashIDRepository() *stashIDRepository {

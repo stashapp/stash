@@ -271,6 +271,28 @@
       "excluded_image_gallery_patterns_head": "图片/图库排除规则",
       "excluded_video_patterns_desc": "要从扫描中排除并会被[清除]功能所移除的视频文件/路径的正则表达式",
       "excluded_video_patterns_head": "视频排除规则",
+      "ffmpeg": {
+        "live_transcode": {
+          "input_args": {
+            "desc": "高级：当直播转码的视频时，在输入参数前要传给ffmpeg用的附加参数。",
+            "heading": "FFmpeg直播转码用的输入参数"
+          },
+          "output_args": {
+            "desc": "高级：当直播转码视频时，在输出视频参数前要传给ffmpeg的附加参数。",
+            "heading": "FFmpeg直播转码输出参数"
+          }
+        },
+        "transcode": {
+          "input_args": {
+            "desc": "高级：当生成视频时，在输入视频参数前要传给ffmpeg的附加参数。",
+            "heading": "FFmpeg 转码用的输入参数"
+          },
+          "output_args": {
+            "desc": "高级：当生成视频时，在输出视频参数前要传给ffmpeg的附加参数。",
+            "heading": "FFmpeg转码输出参数"
+          }
+        }
+      },
       "gallery_ext_desc": "逗号(半角)分隔的文件扩展名列表，将被标识为图库或图包。",
       "gallery_ext_head": "图库压缩包扩展名",
       "generated_file_naming_hash_desc": "使用 MD5 或快搜码为生成的文件命名。 更改此设置要求所有短片都有对应的 MD5/快搜码 值。 更改此值后，之前生成的数据需要迁移或重新生成。 请参阅 [迁移] 页面。",
@@ -441,12 +463,12 @@
       },
       "basic_settings": "基本设定",
       "custom_css": {
-        "description": "必须重新加载页面才能使更改生效。",
+        "description": "必须重新加载页面才能使更改生效。不保证未来的Stash会和客制的CSS兼容。",
         "heading": "自定义样式",
         "option_label": "自定义样式已启用"
       },
       "custom_javascript": {
-        "description": "必须重新加载页面才能生效。",
+        "description": "必须重新加载页面才能生效。不保证未来的Stash和客制的Javascript会兼容。",
         "heading": "自定义 JavaScript",
         "option_label": "自定义 JavaScript 已启用"
       },
@@ -982,7 +1004,6 @@
   "scenes": "短片",
   "scenes_updated_at": "短片更新时间",
   "search_filter": {
-    "add_filter": "添加过滤器",
     "name": "过滤",
     "saved_filters": "保存过滤器",
     "update_filter": "更新过滤器"

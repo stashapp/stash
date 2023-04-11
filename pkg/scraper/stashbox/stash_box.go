@@ -932,7 +932,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 	}
 	draft.Tags = tags
 
-	if cover != nil {
+	if len(cover) > 0 {
 		image = bytes.NewReader(cover)
 	}
 

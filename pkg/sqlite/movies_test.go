@@ -15,12 +15,11 @@ import (
 
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 func TestMovieFindByName(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		mqb := sqlite.MovieReaderWriter
+		mqb := db.Movie
 
 		name := movieNames[movieIdxWithScene] // find a movie by name
 
@@ -53,7 +52,7 @@ func TestMovieFindByNames(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		var names []string
 
-		mqb := sqlite.MovieReaderWriter
+		mqb := db.Movie
 
 		names = append(names, movieNames[movieIdxWithScene]) // find movies by names
 
@@ -76,9 +75,80 @@ func TestMovieFindByNames(t *testing.T) {
 	})
 }
 
+func moviesToIDs(i []*models.Movie) []int {
+	ret := make([]int, len(i))
+	for i, v := range i {
+		ret[i] = v.ID
+	}
+
+	return ret
+}
+
+func TestMovieQuery(t *testing.T) {
+	var (
+		frontImage = "front_image"
+		backImage  = "back_image"
+	)
+
+	tests := []struct {
+		name        string
+		findFilter  *models.FindFilterType
+		filter      *models.MovieFilterType
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"is missing front image",
+			nil,
+			&models.MovieFilterType{
+				IsMissing: &frontImage,
+			},
+			// just ensure that it doesn't error
+			nil,
+			nil,
+			false,
+		},
+		{
+			"is missing back image",
+			nil,
+			&models.MovieFilterType{
+				IsMissing: &backImage,
+			},
+			// just ensure that it doesn't error
+			nil,
+			nil,
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			results, _, err := db.Movie.Query(ctx, tt.filter, tt.findFilter)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("MovieQueryBuilder.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			ids := moviesToIDs(results)
+			include := indexesToIDs(performerIDs, tt.includeIdxs)
+			exclude := indexesToIDs(performerIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
+}
+
 func TestMovieQueryStudio(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		mqb := sqlite.MovieReaderWriter
+		mqb := db.Movie
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithMovie]),
@@ -163,7 +233,7 @@ func TestMovieQueryURL(t *testing.T) {
 func verifyMovieQuery(t *testing.T, filter models.MovieFilterType, verifyFn func(s *models.Movie)) {
 	withTxn(func(ctx context.Context) error {
 		t.Helper()
-		sqb := sqlite.MovieReaderWriter
+		sqb := db.Movie
 
 		movies := queryMovie(ctx, t, sqb, &filter, nil)
 
@@ -196,7 +266,7 @@ func TestMovieQuerySorting(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.MovieReaderWriter
+		sqb := db.Movie
 		movies := queryMovie(ctx, t, sqb, nil, &findFilter)
 
 		// scenes should be in same order as indexes
@@ -216,122 +286,50 @@ func TestMovieQuerySorting(t *testing.T) {
 	})
 }
 
-func TestMovieUpdateMovieImages(t *testing.T) {
-	if err := withTxn(func(ctx context.Context) error {
-		mqb := sqlite.MovieReaderWriter
+func TestMovieUpdateFrontImage(t *testing.T) {
+	if err := withRollbackTxn(func(ctx context.Context) error {
+		qb := db.Movie
 
 		// create movie to test against
 		const name = "TestMovieUpdateMovieImages"
-		movie := models.Movie{
+		toCreate := models.Movie{
 			Name:     sql.NullString{String: name, Valid: true},
 			Checksum: md5.FromString(name),
 		}
-		created, err := mqb.Create(ctx, movie)
+		movie, err := qb.Create(ctx, toCreate)
 		if err != nil {
 			return fmt.Errorf("Error creating movie: %s", err.Error())
 		}
 
-		frontImage := []byte("frontImage")
-		backImage := []byte("backImage")
-		err = mqb.UpdateImages(ctx, created.ID, frontImage, backImage)
-		if err != nil {
-			return fmt.Errorf("Error updating movie images: %s", err.Error())
-		}
-
-		// ensure images are set
-		storedFront, err := mqb.GetFrontImage(ctx, created.ID)
-		if err != nil {
-			return fmt.Errorf("Error getting front image: %s", err.Error())
-		}
-		assert.Equal(t, storedFront, frontImage)
-
-		storedBack, err := mqb.GetBackImage(ctx, created.ID)
-		if err != nil {
-			return fmt.Errorf("Error getting back image: %s", err.Error())
-		}
-		assert.Equal(t, storedBack, backImage)
-
-		// set front image only
-		newImage := []byte("newImage")
-		err = mqb.UpdateImages(ctx, created.ID, newImage, nil)
-		if err != nil {
-			return fmt.Errorf("Error updating movie images: %s", err.Error())
-		}
-
-		storedFront, err = mqb.GetFrontImage(ctx, created.ID)
-		if err != nil {
-			return fmt.Errorf("Error getting front image: %s", err.Error())
-		}
-		assert.Equal(t, storedFront, newImage)
-
-		// back image should be nil
-		storedBack, err = mqb.GetBackImage(ctx, created.ID)
-		if err != nil {
-			return fmt.Errorf("Error getting back image: %s", err.Error())
-		}
-		assert.Nil(t, nil)
-
-		// set back image only
-		err = mqb.UpdateImages(ctx, created.ID, nil, newImage)
-		if err == nil {
-			return fmt.Errorf("Expected error setting nil front image")
-		}
-
-		return nil
+		return testUpdateImage(t, ctx, movie.ID, qb.UpdateFrontImage, qb.GetFrontImage)
 	}); err != nil {
 		t.Error(err.Error())
 	}
 }
 
-func TestMovieDestroyMovieImages(t *testing.T) {
-	if err := withTxn(func(ctx context.Context) error {
-		mqb := sqlite.MovieReaderWriter
+func TestMovieUpdateBackImage(t *testing.T) {
+	if err := withRollbackTxn(func(ctx context.Context) error {
+		qb := db.Movie
 
 		// create movie to test against
-		const name = "TestMovieDestroyMovieImages"
-		movie := models.Movie{
+		const name = "TestMovieUpdateMovieImages"
+		toCreate := models.Movie{
 			Name:     sql.NullString{String: name, Valid: true},
 			Checksum: md5.FromString(name),
 		}
-		created, err := mqb.Create(ctx, movie)
+		movie, err := qb.Create(ctx, toCreate)
 		if err != nil {
 			return fmt.Errorf("Error creating movie: %s", err.Error())
 		}
 
-		frontImage := []byte("frontImage")
-		backImage := []byte("backImage")
-		err = mqb.UpdateImages(ctx, created.ID, frontImage, backImage)
-		if err != nil {
-			return fmt.Errorf("Error updating movie images: %s", err.Error())
-		}
-
-		err = mqb.DestroyImages(ctx, created.ID)
-		if err != nil {
-			return fmt.Errorf("Error destroying movie images: %s", err.Error())
-		}
-
-		// front image should be nil
-		storedFront, err := mqb.GetFrontImage(ctx, created.ID)
-		if err != nil {
-			return fmt.Errorf("Error getting front image: %s", err.Error())
-		}
-		assert.Nil(t, storedFront)
-
-		// back image should be nil
-		storedBack, err := mqb.GetBackImage(ctx, created.ID)
-		if err != nil {
-			return fmt.Errorf("Error getting back image: %s", err.Error())
-		}
-		assert.Nil(t, storedBack)
-
-		return nil
+		return testUpdateImage(t, ctx, movie.ID, qb.UpdateBackImage, qb.GetBackImage)
 	}); err != nil {
 		t.Error(err.Error())
 	}
 }
 
 // TODO Update
-// TODO Destroy
+// TODO Destroy - ensure image is destroyed
 // TODO Find
 // TODO Count
 // TODO All

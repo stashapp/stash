@@ -31,11 +31,14 @@ const (
 	BackupDirectoryPath = "backup_directory_path"
 	Generated           = "generated"
 	Metadata            = "metadata"
+	BlobsPath           = "blobs_path"
 	Downloads           = "downloads"
 	ApiKey              = "api_key"
 	Username            = "username"
 	Password            = "password"
 	MaxSessionAge       = "max_session_age"
+
+	BlobsStorage = "blobs_storage"
 
 	DefaultMaxSessionAge = 60 * 60 * 1 // 1 hours
 
@@ -501,27 +504,14 @@ func (i *Instance) getStringMapString(key string) map[string]string {
 	return ret
 }
 
-type StashConfig struct {
-	Path         string `json:"path"`
-	ExcludeVideo bool   `json:"excludeVideo"`
-	ExcludeImage bool   `json:"excludeImage"`
-}
-
-// Stash configuration details
-type StashConfigInput struct {
-	Path         string `json:"path"`
-	ExcludeVideo bool   `json:"excludeVideo"`
-	ExcludeImage bool   `json:"excludeImage"`
-}
-
 // GetStathPaths returns the configured stash library paths.
 // Works opposite to the usual case - it will return the override
 // value only if the main value is not set.
-func (i *Instance) GetStashPaths() []*StashConfig {
+func (i *Instance) GetStashPaths() StashConfigs {
 	i.RLock()
 	defer i.RUnlock()
 
-	var ret []*StashConfig
+	var ret StashConfigs
 
 	v := i.main
 	if !v.IsSet(Stash) {
@@ -549,6 +539,22 @@ func (i *Instance) GetCachePath() string {
 
 func (i *Instance) GetGeneratedPath() string {
 	return i.getString(Generated)
+}
+
+func (i *Instance) GetBlobsPath() string {
+	return i.getString(BlobsPath)
+}
+
+func (i *Instance) GetBlobsStorage() BlobsStorageType {
+	ret := BlobsStorageType(i.getString(BlobsStorage))
+
+	if !ret.IsValid() {
+		// default to database storage
+		// for legacy systems this is probably the safer option
+		ret = BlobStorageTypeDatabase
+	}
+
+	return ret
 }
 
 func (i *Instance) GetMetadataPath() string {
@@ -1455,6 +1461,12 @@ func (i *Instance) Validate() error {
 	if len(missingFields) > 0 {
 		return MissingConfigError{
 			missingFields: missingFields,
+		}
+	}
+
+	if i.GetBlobsStorage() == BlobStorageTypeFilesystem && i.viper(BlobsPath).GetString(BlobsPath) == "" {
+		return MissingConfigError{
+			missingFields: []string{BlobsPath},
 		}
 	}
 

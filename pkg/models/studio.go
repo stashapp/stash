@@ -66,7 +66,6 @@ type StudioWriter interface {
 	UpdateFull(ctx context.Context, updatedStudio Studio) (*Studio, error)
 	Destroy(ctx context.Context, id int) error
 	UpdateImage(ctx context.Context, studioID int, image []byte) error
-	DestroyImage(ctx context.Context, studioID int) error
 	UpdateStashIDs(ctx context.Context, studioID int, stashIDs []StashID) error
 	UpdateAliases(ctx context.Context, studioID int, aliases []string) error
 }

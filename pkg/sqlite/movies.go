@@ -12,18 +12,30 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
-const movieTable = "movies"
-const movieIDColumn = "movie_id"
+const (
+	movieTable    = "movies"
+	movieIDColumn = "movie_id"
+
+	movieFrontImageBlobColumn = "front_image_blob"
+	movieBackImageBlobColumn  = "back_image_blob"
+)
 
 type movieQueryBuilder struct {
 	repository
+	blobJoinQueryBuilder
 }
 
-var MovieReaderWriter = &movieQueryBuilder{
-	repository{
-		tableName: movieTable,
-		idColumn:  idColumn,
-	},
+func NewMovieReaderWriter(blobStore *BlobStore) *movieQueryBuilder {
+	return &movieQueryBuilder{
+		repository{
+			tableName: movieTable,
+			idColumn:  idColumn,
+		},
+		blobJoinQueryBuilder{
+			blobStore: blobStore,
+			joinTable: movieTable,
+		},
+	}
 }
 
 func (qb *movieQueryBuilder) Create(ctx context.Context, newObject models.Movie) (*models.Movie, error) {
@@ -54,6 +66,11 @@ func (qb *movieQueryBuilder) UpdateFull(ctx context.Context, updatedObject model
 }
 
 func (qb *movieQueryBuilder) Destroy(ctx context.Context, id int) error {
+	// must handle image checksums manually
+	if err := qb.destroyImages(ctx, id); err != nil {
+		return err
+	}
+
 	return qb.destroyExisting(ctx, []int{id})
 }
 
@@ -209,11 +226,9 @@ func movieIsMissingCriterionHandler(qb *movieQueryBuilder, isMissing *string) cr
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
 			case "front_image":
-				f.addLeftJoin("movies_images", "", "movies_images.movie_id = movies.id")
-				f.addWhere("movies_images.front_image IS NULL")
+				f.addWhere("movies.front_image_blob IS NULL")
 			case "back_image":
-				f.addLeftJoin("movies_images", "", "movies_images.movie_id = movies.id")
-				f.addWhere("movies_images.back_image IS NULL")
+				f.addWhere("movies.back_image_blob IS NULL")
 			case "scenes":
 				f.addLeftJoin("movies_scenes", "", "movies_scenes.movie_id = movies.id")
 				f.addWhere("movies_scenes.scene_id IS NULL")
@@ -325,39 +340,35 @@ func (qb *movieQueryBuilder) queryMovies(ctx context.Context, query string, args
 	return []*models.Movie(ret), nil
 }
 
-func (qb *movieQueryBuilder) UpdateImages(ctx context.Context, movieID int, frontImage []byte, backImage []byte) error {
-	// Delete the existing cover and then create new
-	if err := qb.DestroyImages(ctx, movieID); err != nil {
-		return err
-	}
-
-	_, err := qb.tx.Exec(ctx,
-		`INSERT INTO movies_images (movie_id, front_image, back_image) VALUES (?, ?, ?)`,
-		movieID,
-		frontImage,
-		backImage,
-	)
-
-	return err
+func (qb *movieQueryBuilder) UpdateFrontImage(ctx context.Context, movieID int, frontImage []byte) error {
+	return qb.UpdateImage(ctx, movieID, movieFrontImageBlobColumn, frontImage)
 }
 
-func (qb *movieQueryBuilder) DestroyImages(ctx context.Context, movieID int) error {
-	// Delete the existing joins
-	_, err := qb.tx.Exec(ctx, "DELETE FROM movies_images WHERE movie_id = ?", movieID)
-	if err != nil {
+func (qb *movieQueryBuilder) UpdateBackImage(ctx context.Context, movieID int, backImage []byte) error {
+	return qb.UpdateImage(ctx, movieID, movieBackImageBlobColumn, backImage)
+}
+
+func (qb *movieQueryBuilder) destroyImages(ctx context.Context, movieID int) error {
+	if err := qb.DestroyImage(ctx, movieID, movieFrontImageBlobColumn); err != nil {
 		return err
 	}
-	return err
+	if err := qb.DestroyImage(ctx, movieID, movieBackImageBlobColumn); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (qb *movieQueryBuilder) GetFrontImage(ctx context.Context, movieID int) ([]byte, error) {
-	query := `SELECT front_image from movies_images WHERE movie_id = ?`
-	return getImage(ctx, qb.tx, query, movieID)
+	return qb.GetImage(ctx, movieID, movieFrontImageBlobColumn)
 }
 
 func (qb *movieQueryBuilder) GetBackImage(ctx context.Context, movieID int) ([]byte, error) {
-	query := `SELECT back_image from movies_images WHERE movie_id = ?`
-	return getImage(ctx, qb.tx, query, movieID)
+	return qb.GetImage(ctx, movieID, movieBackImageBlobColumn)
+}
+
+func (qb *movieQueryBuilder) HasBackImage(ctx context.Context, movieID int) (bool, error) {
+	return qb.HasImage(ctx, movieID, movieBackImageBlobColumn)
 }
 
 func (qb *movieQueryBuilder) FindByPerformerID(ctx context.Context, performerID int) ([]*models.Movie, error) {

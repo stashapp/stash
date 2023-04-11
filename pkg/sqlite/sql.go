@@ -1,9 +1,6 @@
 package sqlite
 
 import (
-	"context"
-	"database/sql"
-	"errors"
 	"fmt"
 	"math/rand"
 	"regexp"
@@ -288,28 +285,6 @@ func getMultiCriterionClause(primaryTable, foreignTable, joinTable, primaryFK, f
 func getCountCriterionClause(primaryTable, joinTable, primaryFK string, criterion models.IntCriterionInput) (string, []interface{}) {
 	lhs := fmt.Sprintf("(SELECT COUNT(*) FROM %s s WHERE s.%s = %s.id)", joinTable, primaryFK, primaryTable)
 	return getIntCriterionWhereClause(lhs, criterion)
-}
-
-func getImage(ctx context.Context, tx dbWrapper, query string, args ...interface{}) ([]byte, error) {
-	rows, err := tx.Queryx(ctx, query, args...)
-
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var ret []byte
-	if rows.Next() {
-		if err := rows.Scan(&ret); err != nil {
-			return nil, err
-		}
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return ret, nil
 }
 
 func coalesce(column string) string {

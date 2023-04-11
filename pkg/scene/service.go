@@ -22,6 +22,7 @@ type Creator interface {
 }
 
 type CoverUpdater interface {
+	HasCover(ctx context.Context, sceneID int) (bool, error)
 	UpdateCover(ctx context.Context, sceneID int, cover []byte) error
 }
 

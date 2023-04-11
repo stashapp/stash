@@ -1215,6 +1215,20 @@ export const mutateMigrateHashNaming = () =>
     mutation: GQL.MigrateHashNamingDocument,
   });
 
+export const mutateMigrateSceneScreenshots = (
+  input: GQL.MigrateSceneScreenshotsInput
+) =>
+  client.mutate<GQL.MigrateSceneScreenshotsMutation>({
+    mutation: GQL.MigrateSceneScreenshotsDocument,
+    variables: { input },
+  });
+
+export const mutateMigrateBlobs = (input: GQL.MigrateBlobsInput) =>
+  client.mutate<GQL.MigrateBlobsMutation>({
+    mutation: GQL.MigrateBlobsDocument,
+    variables: { input },
+  });
+
 export const mutateMetadataExport = () =>
   client.mutate<GQL.MetadataExportMutation>({
     mutation: GQL.MetadataExportDocument,

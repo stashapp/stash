@@ -380,7 +380,7 @@ func (j *cleanJob) deleteFile(ctx context.Context, fileID ID, fn string) {
 	// delete associated objects
 	fileDeleter := NewDeleter()
 	if err := txn.WithTxn(ctx, j.Repository, func(ctx context.Context) error {
-		fileDeleter.RegisterHooks(ctx, j.Repository)
+		fileDeleter.RegisterHooks(ctx)
 
 		if err := j.fireHandlers(ctx, fileDeleter, fileID); err != nil {
 			return err
@@ -397,7 +397,7 @@ func (j *cleanJob) deleteFolder(ctx context.Context, folderID FolderID, fn strin
 	// delete associated objects
 	fileDeleter := NewDeleter()
 	if err := txn.WithTxn(ctx, j.Repository, func(ctx context.Context) error {
-		fileDeleter.RegisterHooks(ctx, j.Repository)
+		fileDeleter.RegisterHooks(ctx)
 
 		if err := j.fireFolderHandlers(ctx, fileDeleter, folderID); err != nil {
 			return err
