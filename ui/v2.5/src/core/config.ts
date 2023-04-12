@@ -1,5 +1,6 @@
 import { IntlShape } from "react-intl";
 import { ITypename } from "src/utils/data";
+import { ImageWallOptions } from "src/utils/imageWall";
 import { RatingSystemOptions } from "src/utils/rating";
 import { FilterMode, SortDirectionEnum } from "./generated-graphql";
 
@@ -50,6 +51,8 @@ export interface IUIConfig {
   // maximum number of items to shown in the dropdown list - defaults to 200
   // upper limit of 1000
   maxOptionsShown?: number;
+
+  imageWallOptions?: ImageWallOptions;
 
   lastNoteSeen?: number;
 }

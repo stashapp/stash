@@ -115,3 +115,18 @@ button, input {
     font-weight: 500;
     padding-bottom: 1rem;
 }
+
+@media (max-width: 576px) {
+    .card {
+        width: 100%;
+    }
+
+    .dialog {
+        height: auto;
+        margin-top: 50%;
+    }
+
+    .btn-primary {
+        width: 100%;
+    }
+}

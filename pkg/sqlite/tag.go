@@ -13,20 +13,31 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
-const tagTable = "tags"
-const tagIDColumn = "tag_id"
-const tagAliasesTable = "tag_aliases"
-const tagAliasColumn = "alias"
+const (
+	tagTable        = "tags"
+	tagIDColumn     = "tag_id"
+	tagAliasesTable = "tag_aliases"
+	tagAliasColumn  = "alias"
+
+	tagImageBlobColumn = "image_blob"
+)
 
 type tagQueryBuilder struct {
 	repository
+	blobJoinQueryBuilder
 }
 
-var TagReaderWriter = &tagQueryBuilder{
-	repository{
-		tableName: tagTable,
-		idColumn:  idColumn,
-	},
+func NewTagReaderWriter(blobStore *BlobStore) *tagQueryBuilder {
+	return &tagQueryBuilder{
+		repository{
+			tableName: tagTable,
+			idColumn:  idColumn,
+		},
+		blobJoinQueryBuilder{
+			blobStore: blobStore,
+			joinTable: tagTable,
+		},
+	}
 }
 
 func (qb *tagQueryBuilder) Create(ctx context.Context, newObject models.Tag) (*models.Tag, error) {
@@ -57,16 +68,8 @@ func (qb *tagQueryBuilder) UpdateFull(ctx context.Context, updatedObject models.
 }
 
 func (qb *tagQueryBuilder) Destroy(ctx context.Context, id int) error {
-	// TODO - add delete cascade to foreign key
-	// delete tag from scenes and markers first
-	_, err := qb.tx.Exec(ctx, "DELETE FROM scenes_tags WHERE tag_id = ?", id)
-	if err != nil {
-		return err
-	}
-
-	// TODO - add delete cascade to foreign key
-	_, err = qb.tx.Exec(ctx, "DELETE FROM scene_markers_tags WHERE tag_id = ?", id)
-	if err != nil {
+	// must handle image checksums manually
+	if err := qb.destroyImage(ctx, id); err != nil {
 		return err
 	}
 
@@ -98,17 +101,23 @@ func (qb *tagQueryBuilder) Find(ctx context.Context, id int) (*models.Tag, error
 
 func (qb *tagQueryBuilder) FindMany(ctx context.Context, ids []int) ([]*models.Tag, error) {
 	tableMgr := tagTableMgr
-	q := goqu.Select("*").From(tableMgr.table).Where(tableMgr.byIDInts(ids...))
-	unsorted, err := qb.getMany(ctx, q)
-	if err != nil {
-		return nil, err
-	}
-
 	ret := make([]*models.Tag, len(ids))
 
-	for _, s := range unsorted {
-		i := intslice.IntIndex(ids, s.ID)
-		ret[i] = s
+	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
+		q := goqu.Select("*").From(tableMgr.table).Where(tableMgr.byIDInts(batch...))
+		unsorted, err := qb.getMany(ctx, q)
+		if err != nil {
+			return err
+		}
+
+		for _, s := range unsorted {
+			i := intslice.IntIndex(ids, s.ID)
+			ret[i] = s
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
 	for i := range ret {
@@ -401,8 +410,7 @@ func tagIsMissingCriterionHandler(qb *tagQueryBuilder, isMissing *string) criter
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
 			case "image":
-				qb.imageRepository().join(f, "", "tags.id")
-				f.addWhere("tags_image.tag_id IS NULL")
+				f.addWhere("tags.image_blob IS NULL")
 			default:
 				f.addWhere("(tags." + *isMissing + " IS NULL OR TRIM(tags." + *isMissing + ") = '')")
 			}
@@ -636,31 +644,16 @@ func (qb *tagQueryBuilder) queryTags(ctx context.Context, query string, args []i
 	return []*models.Tag(ret), nil
 }
 
-func (qb *tagQueryBuilder) imageRepository() *imageRepository {
-	return &imageRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: "tags_image",
-			idColumn:  tagIDColumn,
-		},
-		imageColumn: "image",
-	}
-}
-
 func (qb *tagQueryBuilder) GetImage(ctx context.Context, tagID int) ([]byte, error) {
-	return qb.imageRepository().get(ctx, tagID)
-}
-
-func (qb *tagQueryBuilder) HasImage(ctx context.Context, tagID int) (bool, error) {
-	return qb.imageRepository().exists(ctx, tagID)
+	return qb.blobJoinQueryBuilder.GetImage(ctx, tagID, tagImageBlobColumn)
 }
 
 func (qb *tagQueryBuilder) UpdateImage(ctx context.Context, tagID int, image []byte) error {
-	return qb.imageRepository().replace(ctx, tagID, image)
+	return qb.blobJoinQueryBuilder.UpdateImage(ctx, tagID, tagImageBlobColumn, image)
 }
 
-func (qb *tagQueryBuilder) DestroyImage(ctx context.Context, tagID int) error {
-	return qb.imageRepository().destroy(ctx, []int{tagID})
+func (qb *tagQueryBuilder) destroyImage(ctx context.Context, tagID int) error {
+	return qb.blobJoinQueryBuilder.DestroyImage(ctx, tagID, tagImageBlobColumn)
 }
 
 func (qb *tagQueryBuilder) aliasRepository() *stringRepository {

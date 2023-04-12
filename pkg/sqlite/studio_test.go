@@ -389,68 +389,14 @@ func TestStudioUpdateStudioImage(t *testing.T) {
 	if err := withTxn(func(ctx context.Context) error {
 		qb := db.Studio
 
-		// create performer to test against
+		// create studio to test against
 		const name = "TestStudioUpdateStudioImage"
 		createdID, err := createStudio(ctx, db.Studio, name, nil)
 		if err != nil {
 			return fmt.Errorf("Error creating studio: %s", err.Error())
 		}
 
-		image := []byte("image")
-		err = qb.UpdateImage(ctx, *createdID, image)
-		if err != nil {
-			return fmt.Errorf("Error updating studio image: %s", err.Error())
-		}
-
-		// ensure image set
-		storedImage, err := qb.GetImage(ctx, *createdID)
-		if err != nil {
-			return fmt.Errorf("Error getting image: %s", err.Error())
-		}
-		assert.Equal(t, storedImage, image)
-
-		// set nil image
-		err = qb.UpdateImage(ctx, *createdID, nil)
-		if err == nil {
-			return fmt.Errorf("Expected error setting nil image")
-		}
-
-		return nil
-	}); err != nil {
-		t.Error(err.Error())
-	}
-}
-
-func TestStudioDestroyStudioImage(t *testing.T) {
-	if err := withTxn(func(ctx context.Context) error {
-		qb := db.Studio
-
-		// create performer to test against
-		const name = "TestStudioDestroyStudioImage"
-		createdID, err := createStudio(ctx, db.Studio, name, nil)
-		if err != nil {
-			return fmt.Errorf("Error creating studio: %s", err.Error())
-		}
-
-		image := []byte("image")
-		err = qb.UpdateImage(ctx, *createdID, image)
-		if err != nil {
-			return fmt.Errorf("Error updating studio image: %s", err.Error())
-		}
-
-		err = qb.DestroyImage(ctx, *createdID)
-		if err != nil {
-			return fmt.Errorf("Error destroying studio image: %s", err.Error())
-		}
-
-		// image should be nil
-		storedImage, err := qb.GetImage(ctx, *createdID)
-		if err != nil {
-			return fmt.Errorf("Error getting image: %s", err.Error())
-		}
-		assert.Nil(t, storedImage)
-
-		return nil
+		return testUpdateImage(t, ctx, createdID, qb.UpdateImage, qb.GetImage)
 	}); err != nil {
 		t.Error(err.Error())
 	}

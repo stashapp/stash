@@ -7,6 +7,7 @@ import (
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
 )
 
@@ -67,9 +68,9 @@ func (r *mutationResolver) SubmitStashBoxSceneDraft(ctx context.Context, input S
 			return fmt.Errorf("scene with id %d not found", id)
 		}
 
-		cover, err := r.sceneService.GetCover(ctx, scene)
+		cover, err := qb.GetCover(ctx, id)
 		if err != nil {
-			return fmt.Errorf("getting scene cover: %w", err)
+			logger.Errorf("Error getting scene cover: %v", err)
 		}
 
 		res, err = client.SubmitSceneDraft(ctx, scene, boxes[input.StashBoxIndex].Endpoint, cover)

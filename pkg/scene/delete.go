@@ -38,18 +38,6 @@ func (d *FileDeleter) MarkGeneratedFiles(scene *models.Scene) error {
 
 	var files []string
 
-	thumbPath := d.Paths.Scene.GetThumbnailScreenshotPath(sceneHash)
-	exists, _ = fsutil.FileExists(thumbPath)
-	if exists {
-		files = append(files, thumbPath)
-	}
-
-	normalPath := d.Paths.Scene.GetScreenshotPath(sceneHash)
-	exists, _ = fsutil.FileExists(normalPath)
-	if exists {
-		files = append(files, normalPath)
-	}
-
 	streamPreviewPath := d.Paths.Scene.GetVideoPreviewPath(sceneHash)
 	exists, _ = fsutil.FileExists(streamPreviewPath)
 	if exists {

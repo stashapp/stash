@@ -36,10 +36,13 @@ export class ScrapeResult<T> {
   ) {
     this.originalValue = originalValue ?? undefined;
     this.newValue = newValue ?? undefined;
+    // NOTE: this means that zero values are treated as null
+    // this is incorrect for numbers and booleans, but correct for strings
+    const hasNewValue = !!this.newValue;
 
     const valuesEqual = isEqual(originalValue, newValue);
-    this.useNewValue = useNewValue ?? (!!this.newValue && !valuesEqual);
-    this.scraped = !!this.newValue && !valuesEqual;
+    this.useNewValue = useNewValue ?? (hasNewValue && !valuesEqual);
+    this.scraped = hasNewValue && !valuesEqual;
   }
 
   public setOriginalValue(value?: T) {
@@ -64,6 +67,23 @@ export class ScrapeResult<T> {
     if (this.useNewValue) {
       return this.newValue;
     }
+  }
+}
+
+// for types where !!value is a valid value (boolean and number)
+export class ZeroableScrapeResult<T> extends ScrapeResult<T> {
+  public constructor(
+    originalValue?: T | null,
+    newValue?: T | null,
+    useNewValue?: boolean
+  ) {
+    super(originalValue, newValue, useNewValue);
+
+    const hasNewValue = this.newValue !== undefined;
+
+    const valuesEqual = isEqual(originalValue, newValue);
+    this.useNewValue = useNewValue ?? (hasNewValue && !valuesEqual);
+    this.scraped = hasNewValue && !valuesEqual;
   }
 }
 

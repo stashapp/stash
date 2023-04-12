@@ -67,7 +67,6 @@ type StudioWriter interface {
 	Update(ctx context.Context, updatedStudio *Studio) error
 	Destroy(ctx context.Context, id int) error
 	UpdateImage(ctx context.Context, studioID int, image []byte) error
-	DestroyImage(ctx context.Context, studioID int) error
 }
 
 type StudioReaderWriter interface {

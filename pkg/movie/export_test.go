@@ -161,13 +161,15 @@ func initTestTable() {
 		},
 		{
 			createFullMovie(errFrontImageID, studioID),
-			nil,
-			true,
+			createFullJSONMovie(studioName, "", backImage),
+			// failure to get front image should not cause error
+			false,
 		},
 		{
 			createFullMovie(errBackImageID, studioID),
-			nil,
-			true,
+			createFullJSONMovie(studioName, frontImage, ""),
+			// failure to get back image should not cause error
+			false,
 		},
 		{
 			createFullMovie(errStudioMovieID, errStudioID),

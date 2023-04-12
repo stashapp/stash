@@ -93,10 +93,10 @@ func (r *movieResolver) FrontImagePath(ctx context.Context, obj *models.Movie) (
 
 func (r *movieResolver) BackImagePath(ctx context.Context, obj *models.Movie) (*string, error) {
 	// don't return any thing if there is no back image
-	var img []byte
+	hasImage := false
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var err error
-		img, err = r.repository.Movie.GetBackImage(ctx, obj.ID)
+		hasImage, err = r.repository.Movie.HasBackImage(ctx, obj.ID)
 		if err != nil {
 			return err
 		}
@@ -106,7 +106,7 @@ func (r *movieResolver) BackImagePath(ctx context.Context, obj *models.Movie) (*
 		return nil, err
 	}
 
-	if img == nil {
+	if !hasImage {
 		return nil, nil
 	}
 

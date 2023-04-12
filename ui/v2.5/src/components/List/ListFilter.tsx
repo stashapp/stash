@@ -1,10 +1,8 @@
-import debounce from "lodash-es/debounce";
 import cloneDeep from "lodash-es/cloneDeep";
 import React, {
   HTMLAttributes,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -36,17 +34,16 @@ import {
   faCaretDown,
   faCaretUp,
   faCheck,
-  faFilter,
   faRandom,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
+import { FilterButton } from "./Filters/FilterButton";
+import { useDebounce } from "src/hooks/debounce";
 
-const maxPageSize = 1000;
 interface IListFilterProps {
   onFilterUpdate: (newFilter: ListFilterModel) => void;
   filter: ListFilterModel;
   filterOptions: ListFilterOptions;
-  filterDialogOpen?: boolean;
   persistState?: PersistanceLevel;
   openFilterDialog: () => void;
 }
@@ -57,7 +54,6 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   onFilterUpdate,
   filter,
   filterOptions,
-  filterDialogOpen,
   openFilterDialog,
   persistState,
 }) => {
@@ -79,13 +75,15 @@ export const ListFilter: React.FC<IListFilterProps> = ({
     [filter, onFilterUpdate]
   );
 
-  // useMemo to prevent debounce from being recreated on every render
-  const debouncedSearchQueryUpdated = useMemo(
-    () =>
-      debounce((value: string) => {
-        searchQueryUpdated(value);
-      }, 500),
-    [searchQueryUpdated]
+  const searchCallback = useDebounce(
+    (value: string) => {
+      const newFilter = cloneDeep(filter);
+      newFilter.searchTerm = value;
+      newFilter.currentPage = 1;
+      onFilterUpdate(newFilter);
+    },
+    [filter, onFilterUpdate],
+    500
   );
 
   const intl = useIntl();
@@ -133,11 +131,6 @@ export const ListFilter: React.FC<IListFilterProps> = ({
       return;
     }
 
-    // don't allow page sizes over 1000
-    if (pp > maxPageSize) {
-      pp = maxPageSize;
-    }
-
     const newFilter = cloneDeep(filter);
     newFilter.itemsPerPage = pp;
     newFilter.currentPage = 1;
@@ -145,7 +138,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   }
 
   function onChangeQuery(event: React.FormEvent<HTMLInputElement>) {
-    debouncedSearchQueryUpdated(event.currentTarget.value);
+    searchCallback(event.currentTarget.value);
     setQueryClearShowing(!!event.currentTarget.value);
   }
 
@@ -294,13 +287,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
               </Tooltip>
             }
           >
-            <Button
-              variant="secondary"
-              onClick={() => openFilterDialog()}
-              active={filterDialogOpen}
-            >
-              <Icon icon={faFilter} />
-            </Button>
+            <FilterButton onClick={() => openFilterDialog()} filter={filter} />
           </OverlayTrigger>
         </ButtonGroup>
 
@@ -376,7 +363,6 @@ export const ListFilter: React.FC<IListFilterProps> = ({
                   <Form.Control
                     type="number"
                     min={1}
-                    max={maxPageSize}
                     className="text-input"
                     ref={perPageInput}
                     onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {

@@ -95,20 +95,6 @@ func (_m *StudioReaderWriter) Destroy(ctx context.Context, id int) error {
 	return r0
 }
 
-// DestroyImage provides a mock function with given fields: ctx, studioID
-func (_m *StudioReaderWriter) DestroyImage(ctx context.Context, studioID int) error {
-	ret := _m.Called(ctx, studioID)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
-		r0 = rf(ctx, studioID)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // Find provides a mock function with given fields: ctx, id
 func (_m *StudioReaderWriter) Find(ctx context.Context, id int) (*models.Studio, error) {
 	ret := _m.Called(ctx, id)

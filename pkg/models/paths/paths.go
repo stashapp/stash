@@ -11,14 +11,17 @@ type Paths struct {
 
 	Scene        *scenePaths
 	SceneMarkers *sceneMarkerPaths
+	Blobs        string
 }
 
-func NewPaths(generatedPath string) Paths {
+func NewPaths(generatedPath string, blobsPath string) Paths {
 	p := Paths{}
 	p.Generated = newGeneratedPaths(generatedPath)
 
 	p.Scene = newScenePaths(p)
 	p.SceneMarkers = newSceneMarkerPaths(p)
+	p.Blobs = blobsPath
+
 	return p
 }
 

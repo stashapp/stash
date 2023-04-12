@@ -1,4 +1,10 @@
-import React, { useCallback, useState, useMemo, MouseEvent } from "react";
+import React, {
+  useCallback,
+  useState,
+  useMemo,
+  MouseEvent,
+  useContext,
+} from "react";
 import { FormattedNumber, useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
 import { useHistory } from "react-router-dom";
@@ -19,9 +25,12 @@ import { ImageCard } from "./ImageCard";
 import { EditImagesDialog } from "./EditImagesDialog";
 import { DeleteImagesDialog } from "./DeleteImagesDialog";
 import "flexbin/flexbin.css";
+import Gallery from "react-photo-gallery";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { objectTitle } from "src/core/files";
 import TextUtils from "src/utils/text";
+import { ConfigurationContext } from "src/hooks/Config";
+import { IUIConfig } from "src/core/config";
 
 interface IImageWallProps {
   images: GQL.SlimImageDataFragment[];
@@ -32,26 +41,57 @@ interface IImageWallProps {
 }
 
 const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
-  const thumbs = images.map((image, index) => (
-    <div
-      role="link"
-      tabIndex={index}
-      key={image.id}
-      onClick={() => handleImageOpen(index)}
-      onKeyPress={() => handleImageOpen(index)}
-    >
-      <img
-        src={image.paths.thumbnail ?? ""}
-        loading="lazy"
-        className="gallery-image"
-        alt={objectTitle(image)}
-      />
-    </div>
-  ));
+  const { configuration } = useContext(ConfigurationContext);
+  const uiConfig = configuration?.ui as IUIConfig | undefined;
+
+  let photos: {
+    src: string;
+    srcSet?: string | string[] | undefined;
+    sizes?: string | string[] | undefined;
+    width: number;
+    height: number;
+    alt?: string | undefined;
+    key?: string | undefined;
+  }[] = [];
+
+  images.forEach((image, index) => {
+    let imageData = {
+      src: image.paths.thumbnail!,
+      width: image.files[0].width,
+      height: image.files[0].height,
+      tabIndex: index,
+      key: image.id,
+      loading: "lazy",
+      className: "gallery-image",
+      alt: objectTitle(image),
+    };
+    photos.push(imageData);
+  });
+
+  const showLightboxOnClick = useCallback(
+    (event, { index }) => {
+      handleImageOpen(index);
+    },
+    [handleImageOpen]
+  );
+
+  function columns(containerWidth: number) {
+    let preferredSize = 300;
+    let columnCount = containerWidth / preferredSize;
+    return Math.round(columnCount);
+  }
 
   return (
     <div className="gallery">
-      <div className="flexbin">{thumbs}</div>
+      {photos.length ? (
+        <Gallery
+          photos={photos}
+          onClick={showLightboxOnClick}
+          margin={uiConfig?.imageWallOptions?.margin!}
+          direction={uiConfig?.imageWallOptions?.direction!}
+          columns={columns}
+        />
+      ) : null}
     </div>
   );
 };
@@ -65,6 +105,7 @@ interface IImageListImages {
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
   slideshowRunning: boolean;
   setSlideshowRunning: (running: boolean) => void;
+  chapters?: GQL.GalleryChapterDataFragment[];
 }
 
 const ImageListImages: React.FC<IImageListImages> = ({
@@ -76,22 +117,29 @@ const ImageListImages: React.FC<IImageListImages> = ({
   onSelectChange,
   slideshowRunning,
   setSlideshowRunning,
+  chapters = [],
 }) => {
   const handleLightBoxPage = useCallback(
-    (direction: number) => {
-      if (direction === -1) {
-        if (filter.currentPage === 1) {
-          onChangePage(pageCount);
-        } else {
-          onChangePage(filter.currentPage - 1);
+    (props: { direction?: number; page?: number }) => {
+      const { direction, page: newPage } = props;
+
+      if (direction !== undefined) {
+        if (direction < 0) {
+          if (filter.currentPage === 1) {
+            onChangePage(pageCount);
+          } else {
+            onChangePage(filter.currentPage + direction);
+          }
+        } else if (direction > 0) {
+          if (filter.currentPage === pageCount) {
+            // return to the first page
+            onChangePage(1);
+          } else {
+            onChangePage(filter.currentPage + direction);
+          }
         }
-      } else if (direction === 1) {
-        if (filter.currentPage === pageCount) {
-          // return to the first page
-          onChangePage(1);
-        } else {
-          onChangePage(filter.currentPage + 1);
-        }
+      } else if (newPage !== undefined) {
+        onChangePage(newPage);
       }
     },
     [onChangePage, filter.currentPage, pageCount]
@@ -106,7 +154,9 @@ const ImageListImages: React.FC<IImageListImages> = ({
       images,
       showNavigation: false,
       pageCallback: pageCount > 1 ? handleLightBoxPage : undefined,
-      pageHeader: `Page ${filter.currentPage} / ${pageCount}`,
+      page: filter.currentPage,
+      pages: pageCount,
+      pageSize: filter.itemsPerPage,
       slideshowEnabled: slideshowRunning,
       onClose: handleClose,
     };
@@ -114,12 +164,19 @@ const ImageListImages: React.FC<IImageListImages> = ({
     images,
     pageCount,
     filter.currentPage,
+    filter.itemsPerPage,
     slideshowRunning,
     handleClose,
     handleLightBoxPage,
   ]);
 
-  const showLightbox = useLightbox(lightboxState);
+  const showLightbox = useLightbox(
+    lightboxState,
+    filter.sortBy === "path" &&
+      filter.sortDirection === GQL.SortDirectionEnum.Asc
+      ? chapters
+      : []
+  );
 
   const handleImageOpen = useCallback(
     (index) => {
@@ -233,6 +290,7 @@ interface IImageList {
   persistanceKey?: string;
   alterQuery?: boolean;
   extraOperations?: IItemListOperation<GQL.FindImagesQueryResult>[];
+  chapters?: GQL.GalleryChapterDataFragment[];
 }
 
 export const ImageList: React.FC<IImageList> = ({
@@ -241,6 +299,7 @@ export const ImageList: React.FC<IImageList> = ({
   persistanceKey,
   alterQuery,
   extraOperations,
+  chapters = [],
 }) => {
   const intl = useIntl();
   const history = useHistory();
@@ -346,6 +405,7 @@ export const ImageList: React.FC<IImageList> = ({
           selectedIds={selectedIds}
           slideshowRunning={slideshowRunning}
           setSlideshowRunning={setSlideshowRunning}
+          chapters={chapters}
         />
       );
     }

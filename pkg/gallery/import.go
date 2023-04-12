@@ -24,6 +24,7 @@ type Importer struct {
 	Input               jsonschema.Gallery
 	MissingRefBehaviour models.ImportMissingRefEnum
 
+	ID      int
 	gallery models.Gallery
 }
 

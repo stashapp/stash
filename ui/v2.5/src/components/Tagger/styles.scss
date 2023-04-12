@@ -6,6 +6,10 @@
     padding-bottom: 0;
   }
 
+  .scene-card {
+    position: relative;
+  }
+
   .scene-card-preview {
     border-radius: 3px;
     margin-bottom: 0;
@@ -16,6 +20,14 @@
     &-video {
       background-color: #495b68;
     }
+  }
+
+  .sprite-button {
+    bottom: 5px;
+    filter: drop-shadow(1px 1px 1px #222);
+    padding: 0;
+    position: absolute;
+    right: 5px;
   }
 
   .sub-content {

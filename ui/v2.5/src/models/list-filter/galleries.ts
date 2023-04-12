@@ -4,10 +4,12 @@ import {
   NullNumberCriterionOption,
   createDateCriterionOption,
   createMandatoryTimestampCriterionOption,
+  createPathCriterionOption,
 } from "./criteria/criterion";
 import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
 import { GalleryIsMissingCriterionOption } from "./criteria/is-missing";
 import { OrganizedCriterionOption } from "./criteria/organized";
+import { HasChaptersCriterionOption } from "./criteria/has-chapters";
 import { PerformersCriterionOption } from "./criteria/performers";
 import { AverageResolutionCriterionOption } from "./criteria/resolution";
 import { StudiosCriterionOption } from "./criteria/studios";
@@ -42,7 +44,7 @@ const displayModeOptions = [
 const criterionOptions = [
   createStringCriterionOption("title"),
   createStringCriterionOption("details"),
-  createStringCriterionOption("path"),
+  createPathCriterionOption("path"),
   createStringCriterionOption(
     "galleryChecksum",
     "media_info.checksum",
@@ -53,6 +55,7 @@ const criterionOptions = [
   AverageResolutionCriterionOption,
   GalleryIsMissingCriterionOption,
   TagsCriterionOption,
+  HasChaptersCriterionOption,
   createStringCriterionOption("tag_count"),
   PerformerTagsCriterionOption,
   PerformersCriterionOption,

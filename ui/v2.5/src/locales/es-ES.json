@@ -35,7 +35,7 @@
     "download_backup": "Descargar copia de seguridad",
     "edit": "Editar",
     "edit_entity": "Editar {entityType}",
-    "export": "Exportar…",
+    "export": "Exportar",
     "export_all": "Exportar todo…",
     "find": "Buscar",
     "finish": "Terminar",
@@ -607,7 +607,6 @@
   "details": "Detalles",
   "developmentVersion": "Versión de desarrollo",
   "dialogs": {
-    "aliases_must_be_unique": "Los alias deben ser únicos",
     "delete_alert": "El/los siguiente/s {count, plural, one {{singularEntity}} other {{pluralEntity}}} se eliminará/n de forma permanente:",
     "delete_confirm": "¿Estás seguro que deseas eliminar {entityName}?",
     "delete_entity_desc": "{count, plural, one {¿Estás seguro que deseas eliminar esta {singularEntity}? Hasta que el archivo sea eliminado también, esta {singularEntity} se volverá a añadir cuando se lleve a cabo un escaneo.} other {¿Estás seguro que deseas eliminar {pluralEntity}? Hasta que los archivos sean eliminados del sistema de ficheros también, estas {pluralEntity} se volverán a añadir cuando se lleve a cabo un escaneo.}}",
@@ -884,7 +883,6 @@
   "scenes": "Escenas",
   "scenes_updated_at": "Fecha de actualización de la escena",
   "search_filter": {
-    "add_filter": "Añadir filtro",
     "name": "Filtro",
     "saved_filters": "Filtros guardados",
     "update_filter": "Actualizar filtro"
@@ -1017,6 +1015,9 @@
   "twitter": "Twitter",
   "updated_at": "Fecha de modificación",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "Los alias deben ser únicos"
+  },
   "videos": "Vídeos",
   "weight": "Peso",
   "years_old": "años"

@@ -33,6 +33,7 @@ export const SceneIsMissingCriterionOption = new IsMissingCriterionOptionClass(
   "is_missing",
   [
     "title",
+    "cover",
     "details",
     "url",
     "date",

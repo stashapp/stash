@@ -35,7 +35,7 @@
     "download_backup": "Download backup",
     "edit": "Editar",
     "edit_entity": "Editar {entityType}",
-    "export": "Exportar…",
+    "export": "Exportar",
     "export_all": "Exportar tudo…",
     "find": "Encontrar",
     "finish": "Finalizar",
@@ -592,7 +592,6 @@
   "details": "Detalhes",
   "developmentVersion": "Versão de desenvolvimento",
   "dialogs": {
-    "aliases_must_be_unique": "apelidos devem ser únicos",
     "delete_alert": "Os seguintes {count, plural, one {{singularEntity}} other {{pluralEntity}}} serão deletados permanentemente:",
     "delete_confirm": "Tem certeza de que deseja excluir {entityName}?",
     "delete_entity_desc": "{count, plural, one {Tem certeza de que deseja excluir este(a) {singularEntity}? A menos que o arquivo também esteja excluído, este(a) {singularEntity} será re-adicionado quando a escaneamento for executado.} other {Tem certeza de que deseja excluir estes(as) {pluralEntity}? A menos que os arquivos também estejam excluídos, estes(as) {pluralEntity} serão re-adicionados quando o escaneamento for executado.}}",
@@ -884,7 +883,6 @@
   "scenes": "Cenas",
   "scenes_updated_at": "Cena atualizada em",
   "search_filter": {
-    "add_filter": "Adicionar filtro",
     "name": "Filtro",
     "saved_filters": "Filtros salvos",
     "update_filter": "Atualizar filtro"
@@ -1021,6 +1019,9 @@
   "type": "Tipo",
   "updated_at": "Atualizado em",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "apelidos devem ser únicos"
+  },
   "videos": "Vídeos",
   "view_all": "Ver todos",
   "weight": "Peso",

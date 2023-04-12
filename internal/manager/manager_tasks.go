@@ -37,9 +37,9 @@ func getScanPaths(inputPaths []string) []*config.StashConfig {
 		return stashPaths
 	}
 
-	var ret []*config.StashConfig
+	var ret config.StashConfigs
 	for _, p := range inputPaths {
-		s := getStashFromDirPath(stashPaths, p)
+		s := stashPaths.GetStashFromDirPath(p)
 		if s == nil {
 			logger.Warnf("%s is not in the configured stash paths", p)
 			continue
@@ -194,11 +194,11 @@ func (s *Manager) generateScreenshot(ctx context.Context, sceneId string, at *fl
 			return
 		}
 
-		task := GenerateScreenshotTask{
-			txnManager:          s.Repository,
-			Scene:               *scene,
-			ScreenshotAt:        at,
-			fileNamingAlgorithm: config.GetInstance().GetVideoFileNamingAlgorithm(),
+		task := GenerateCoverTask{
+			txnManager:   s.Repository,
+			Scene:        *scene,
+			ScreenshotAt: at,
+			Overwrite:    true,
 		}
 
 		task.Start(ctx)
@@ -421,6 +421,10 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 				}
 
 				for _, performer := range performers {
+					if err := performer.LoadStashIDs(ctx, performerQuery); err != nil {
+						return fmt.Errorf("error loading stash ids for performer %s: %v", performer.Name, err)
+					}
+
 					tasks = append(tasks, StashBoxBatchTagTask{
 						performer:       performer,
 						refresh:         input.Refresh,

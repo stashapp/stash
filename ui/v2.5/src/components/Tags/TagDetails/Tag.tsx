@@ -1,4 +1,4 @@
-import { Tabs, Tab, Dropdown } from "react-bootstrap";
+import { Button, Tabs, Tab, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -12,7 +12,6 @@ import {
   useTagDestroy,
   mutateMetadataAutoTag,
 } from "src/core/StashService";
-import ImageUtils from "src/utils/image";
 import { Counter } from "src/components/Shared/Counter";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
@@ -50,6 +49,8 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
   const Toast = useToast();
   const intl = useIntl();
 
+  const [collapsed, setCollapsed] = useState(false);
+
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
   const abbreviateCounter =
@@ -64,6 +65,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
 
   // Editing tag state
   const [image, setImage] = useState<string | null>();
+  const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
   const [updateTag] = useTagUpdate();
   const [deleteTag] = useTagDestroy({ id: tag.id });
@@ -88,6 +90,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
     Mousetrap.bind("d d", () => {
       onDelete();
     });
+    Mousetrap.bind(",", () => setCollapsed(!collapsed));
 
     return () => {
       if (isEditing) {
@@ -96,30 +99,11 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
 
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");
+      Mousetrap.unbind(",");
     };
   });
 
-  function onImageLoad(imageData: string) {
-    setImage(imageData);
-  }
-
-  const imageEncoding = ImageUtils.usePasteImage(onImageLoad, isEditing);
-
-  function getTagInput(
-    input: Partial<GQL.TagCreateInput | GQL.TagUpdateInput>
-  ) {
-    const ret: Partial<GQL.TagCreateInput | GQL.TagUpdateInput> = {
-      ...input,
-      image,
-      id: tag.id,
-    };
-
-    return ret;
-  }
-
-  async function onSave(
-    input: Partial<GQL.TagCreateInput | GQL.TagUpdateInput>
-  ) {
+  async function onSave(input: GQL.TagCreateInput) {
     try {
       const oldRelations = {
         parents: tag.parents ?? [],
@@ -127,7 +111,10 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
       };
       const result = await updateTag({
         variables: {
-          input: getTagInput(input) as GQL.TagUpdateInput,
+          input: {
+            id: tag.id,
+            ...input,
+          },
         },
       });
       if (result.data?.tagUpdate) {
@@ -262,15 +249,21 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
     );
   }
 
+  function getCollapseButtonText() {
+    return collapsed ? ">" : "<";
+  }
+
   return (
     <>
       <Helmet>
         <title>{tag.name}</title>
       </Helmet>
       <div className="row">
-        <div className="tag-details col-md-4">
+        <div
+          className={`tag-details details-tab ${collapsed ? "collapsed" : ""}`}
+        >
           <div className="text-center logo-container">
-            {imageEncoding ? (
+            {encodingImage ? (
               <LoadingIndicator message="Encoding image..." />
             ) : (
               renderImage()
@@ -303,10 +296,16 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
               onCancel={onToggleEdit}
               onDelete={onDelete}
               setImage={setImage}
+              setEncodingImage={setEncodingImage}
             />
           )}
         </div>
-        <div className="col col-md-8">
+        <div className="details-divider d-none d-xl-block">
+          <Button onClick={() => setCollapsed(!collapsed)}>
+            {getCollapseButtonText()}
+          </Button>
+        </div>
+        <div className={`col content-container ${collapsed ? "expanded" : ""}`}>
           <Tabs
             id="tag-tabs"
             mountOnEnter

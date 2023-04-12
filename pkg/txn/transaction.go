@@ -17,12 +17,13 @@ type DatabaseProvider interface {
 	WithDatabase(ctx context.Context) (context.Context, error)
 }
 
-type DatabaseProviderManager interface {
-	DatabaseProvider
-	Manager
-}
-
+// TxnFunc is a function that is used in transaction hooks.
+// It should return an error if something went wrong.
 type TxnFunc func(ctx context.Context) error
+
+// MustFunc is a function that is used in transaction hooks.
+// It does not return an error.
+type MustFunc func(ctx context.Context)
 
 // WithTxn executes fn in a transaction. If fn returns an error then
 // the transaction is rolled back. Otherwise it is committed.
@@ -51,35 +52,44 @@ func WithReadTxn(ctx context.Context, m Manager, fn TxnFunc) error {
 	return withTxn(ctx, m, fn, exclusive, execComplete)
 }
 
-func withTxn(outerCtx context.Context, m Manager, fn TxnFunc, exclusive bool, execCompleteOnLocked bool) error {
-	ctx, err := begin(outerCtx, m, exclusive)
+func withTxn(ctx context.Context, m Manager, fn TxnFunc, exclusive bool, execCompleteOnLocked bool) error {
+	// post-hooks should be executed with the outside context
+	txnCtx, err := begin(ctx, m, exclusive)
 	if err != nil {
 		return err
 	}
 
+	hookMgr := hookManagerCtx(txnCtx)
+
 	defer func() {
 		if p := recover(); p != nil {
 			// a panic occurred, rollback and repanic
-			rollback(ctx, outerCtx, m)
+			rollback(txnCtx, m)
 			panic(p)
 		}
 
 		if err != nil {
 			// something went wrong, rollback
-			rollback(ctx, outerCtx, m)
+			rollback(txnCtx, m)
+
+			// execute post-hooks with outside context
+			hookMgr.executePostRollbackHooks(ctx)
 
 			if execCompleteOnLocked || !m.IsLocked(err) {
-				executePostCompleteHooks(ctx, outerCtx)
+				hookMgr.executePostCompleteHooks(ctx)
 			}
 		} else {
 			// all good, commit
-			err = commit(ctx, outerCtx, m)
-			executePostCompleteHooks(ctx, outerCtx)
+			err = commit(txnCtx, m)
+
+			// execute post-hooks with outside context
+			hookMgr.executePostCommitHooks(ctx)
+			hookMgr.executePostCompleteHooks(ctx)
 		}
 
 	}()
 
-	err = fn(ctx)
+	err = fn(txnCtx)
 	return err
 }
 
@@ -96,21 +106,23 @@ func begin(ctx context.Context, m Manager, exclusive bool) (context.Context, err
 	return ctx, nil
 }
 
-func commit(ctx context.Context, outerCtx context.Context, m Manager) error {
+func commit(ctx context.Context, m Manager) error {
+	hookMgr := hookManagerCtx(ctx)
+	if err := hookMgr.executePreCommitHooks(ctx); err != nil {
+		return err
+	}
+
 	if err := m.Commit(ctx); err != nil {
 		return err
 	}
 
-	executePostCommitHooks(ctx, outerCtx)
 	return nil
 }
 
-func rollback(ctx context.Context, outerCtx context.Context, m Manager) {
+func rollback(ctx context.Context, m Manager) {
 	if err := m.Rollback(ctx); err != nil {
 		return
 	}
-
-	executePostRollbackHooks(ctx, outerCtx)
 }
 
 // WithDatabase executes fn with the context provided by p.WithDatabase.

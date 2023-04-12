@@ -68,7 +68,9 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/screenshot", rs.Screenshot)
 		r.Get("/preview", rs.Preview)
 		r.Get("/webp", rs.Webp)
-		r.Get("/vtt/chapter", rs.ChapterVtt)
+		r.Get("/vtt/chapter", rs.VttChapter)
+		r.Get("/vtt/thumbs", rs.VttThumbs)
+		r.Get("/vtt/sprite", rs.VttSprite)
 		r.Get("/funscript", rs.Funscript)
 		r.Get("/interactive_heatmap", rs.InteractiveHeatmap)
 		r.Get("/caption", rs.CaptionLang)
@@ -77,8 +79,8 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/scene_marker/{sceneMarkerId}/preview", rs.SceneMarkerPreview)
 		r.Get("/scene_marker/{sceneMarkerId}/screenshot", rs.SceneMarkerScreenshot)
 	})
-	r.With(rs.SceneCtx).Get("/{sceneId}_thumbs.vtt", rs.VttThumbs)
-	r.With(rs.SceneCtx).Get("/{sceneId}_sprite.jpg", rs.VttSprite)
+	r.Get("/{sceneHash}_thumbs.vtt", rs.VttThumbs)
+	r.Get("/{sceneHash}_sprite.jpg", rs.VttSprite)
 
 	return r
 }
@@ -86,12 +88,17 @@ func (rs sceneRoutes) Routes() chi.Router {
 // region Handlers
 
 func (rs sceneRoutes) StreamDirect(w http.ResponseWriter, r *http.Request) {
+
 	scene := r.Context().Value(sceneKey).(*models.Scene)
+	// #3526 - return 404 if the scene does not have any files
+	if scene.Path == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
-	fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
-	hash := scene.GetHash(fileNamingAlgo)
+	sceneHash := scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
 
-	filepath := manager.GetInstance().Paths.Scene.GetStreamPath(scene.Path, hash)
+	filepath := manager.GetInstance().Paths.Scene.GetStreamPath(scene.Path, sceneHash)
 	streamRequestCtx := ffmpeg.NewStreamRequestContext(w, r)
 
 	// #2579 - hijacking and closing the connection here causes video playback to fail in Safari
@@ -229,8 +236,7 @@ func (rs sceneRoutes) streamSegment(w http.ResponseWriter, r *http.Request, stre
 		logger.Warnf("[transcode] error parsing query form: %v", err)
 	}
 
-	fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
-	hash := scene.GetHash(fileNamingAlgo)
+	sceneHash := scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
 
 	segment := chi.URLParam(r, "segment")
 	resolution := r.Form.Get("resolution")
@@ -239,7 +245,7 @@ func (rs sceneRoutes) streamSegment(w http.ResponseWriter, r *http.Request, stre
 		StreamType: streamType,
 		VideoFile:  f,
 		Resolution: resolution,
-		Hash:       hash,
+		Hash:       sceneHash,
 		Segment:    segment,
 	}
 
@@ -258,7 +264,8 @@ func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
 
 func (rs sceneRoutes) Preview(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-	filepath := manager.GetInstance().Paths.Scene.GetVideoPreviewPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
+	sceneHash := scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
+	filepath := manager.GetInstance().Paths.Scene.GetVideoPreviewPath(sceneHash)
 	serveFileNoCache(w, r, filepath)
 }
 
@@ -272,7 +279,8 @@ func serveFileNoCache(w http.ResponseWriter, r *http.Request, filepath string) {
 
 func (rs sceneRoutes) Webp(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-	filepath := manager.GetInstance().Paths.Scene.GetWebpPreviewPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
+	sceneHash := scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
+	filepath := manager.GetInstance().Paths.Scene.GetWebpPreviewPath(sceneHash)
 	http.ServeFile(w, r, filepath)
 }
 
@@ -308,7 +316,7 @@ func (rs sceneRoutes) getChapterVttTitle(ctx context.Context, marker *models.Sce
 	return &title, nil
 }
 
-func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
+func (rs sceneRoutes) VttChapter(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	var sceneMarkers []*models.SceneMarker
 	readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
@@ -350,6 +358,32 @@ func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte(vtt))
 }
 
+func (rs sceneRoutes) VttThumbs(w http.ResponseWriter, r *http.Request) {
+	scene, ok := r.Context().Value(sceneKey).(*models.Scene)
+	var sceneHash string
+	if ok && scene != nil {
+		sceneHash = scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
+	} else {
+		sceneHash = chi.URLParam(r, "sceneHash")
+	}
+	w.Header().Set("Content-Type", "text/vtt")
+	filepath := manager.GetInstance().Paths.Scene.GetSpriteVttFilePath(sceneHash)
+	http.ServeFile(w, r, filepath)
+}
+
+func (rs sceneRoutes) VttSprite(w http.ResponseWriter, r *http.Request) {
+	scene, ok := r.Context().Value(sceneKey).(*models.Scene)
+	var sceneHash string
+	if ok && scene != nil {
+		sceneHash = scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
+	} else {
+		sceneHash = chi.URLParam(r, "sceneHash")
+	}
+	w.Header().Set("Content-Type", "image/jpeg")
+	filepath := manager.GetInstance().Paths.Scene.GetSpriteImageFilePath(sceneHash)
+	http.ServeFile(w, r, filepath)
+}
+
 func (rs sceneRoutes) Funscript(w http.ResponseWriter, r *http.Request) {
 	s := r.Context().Value(sceneKey).(*models.Scene)
 	funscript := video.GetFunscriptPath(s.Path)
@@ -358,8 +392,9 @@ func (rs sceneRoutes) Funscript(w http.ResponseWriter, r *http.Request) {
 
 func (rs sceneRoutes) InteractiveHeatmap(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
+	sceneHash := scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
 	w.Header().Set("Content-Type", "image/png")
-	filepath := manager.GetInstance().Paths.Scene.GetInteractiveHeatmapPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
+	filepath := manager.GetInstance().Paths.Scene.GetInteractiveHeatmapPath(sceneHash)
 	http.ServeFile(w, r, filepath)
 }
 
@@ -423,22 +458,9 @@ func (rs sceneRoutes) CaptionLang(w http.ResponseWriter, r *http.Request) {
 	rs.Caption(w, r, l, ext)
 }
 
-func (rs sceneRoutes) VttThumbs(w http.ResponseWriter, r *http.Request) {
-	scene := r.Context().Value(sceneKey).(*models.Scene)
-	w.Header().Set("Content-Type", "text/vtt")
-	filepath := manager.GetInstance().Paths.Scene.GetSpriteVttFilePath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
-	http.ServeFile(w, r, filepath)
-}
-
-func (rs sceneRoutes) VttSprite(w http.ResponseWriter, r *http.Request) {
-	scene := r.Context().Value(sceneKey).(*models.Scene)
-	w.Header().Set("Content-Type", "image/jpeg")
-	filepath := manager.GetInstance().Paths.Scene.GetSpriteImageFilePath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
-	http.ServeFile(w, r, filepath)
-}
-
 func (rs sceneRoutes) SceneMarkerStream(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
+	sceneHash := scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
 	var sceneMarker *models.SceneMarker
 	readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
@@ -460,12 +482,13 @@ func (rs sceneRoutes) SceneMarkerStream(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	filepath := manager.GetInstance().Paths.SceneMarkers.GetVideoPreviewPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), int(sceneMarker.Seconds))
+	filepath := manager.GetInstance().Paths.SceneMarkers.GetVideoPreviewPath(sceneHash, int(sceneMarker.Seconds))
 	http.ServeFile(w, r, filepath)
 }
 
 func (rs sceneRoutes) SceneMarkerPreview(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
+	sceneHash := scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
 	var sceneMarker *models.SceneMarker
 	readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
@@ -487,7 +510,7 @@ func (rs sceneRoutes) SceneMarkerPreview(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	filepath := manager.GetInstance().Paths.SceneMarkers.GetWebpPreviewPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), int(sceneMarker.Seconds))
+	filepath := manager.GetInstance().Paths.SceneMarkers.GetWebpPreviewPath(sceneHash, int(sceneMarker.Seconds))
 
 	// If the image doesn't exist, send the placeholder
 	exists, _ := fsutil.FileExists(filepath)
@@ -503,6 +526,7 @@ func (rs sceneRoutes) SceneMarkerPreview(w http.ResponseWriter, r *http.Request)
 
 func (rs sceneRoutes) SceneMarkerScreenshot(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
+	sceneHash := scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
 	var sceneMarker *models.SceneMarker
 	readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
@@ -524,7 +548,7 @@ func (rs sceneRoutes) SceneMarkerScreenshot(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	filepath := manager.GetInstance().Paths.SceneMarkers.GetScreenshotPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), int(sceneMarker.Seconds))
+	filepath := manager.GetInstance().Paths.SceneMarkers.GetScreenshotPath(sceneHash, int(sceneMarker.Seconds))
 
 	// If the image doesn't exist, send the placeholder
 	exists, _ := fsutil.FileExists(filepath)
@@ -542,28 +566,16 @@ func (rs sceneRoutes) SceneMarkerScreenshot(w http.ResponseWriter, r *http.Reque
 
 func (rs sceneRoutes) SceneCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		sceneIdentifierQueryParam := chi.URLParam(r, "sceneId")
-		sceneID, _ := strconv.Atoi(sceneIdentifierQueryParam)
+		sceneID, err := strconv.Atoi(chi.URLParam(r, "sceneId"))
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
 
 		var scene *models.Scene
 		_ = txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 			qb := rs.sceneFinder
-			if sceneID == 0 {
-				var scenes []*models.Scene
-				// determine checksum/os by the length of the query param
-				if len(sceneIdentifierQueryParam) == 32 {
-					scenes, _ = qb.FindByChecksum(ctx, sceneIdentifierQueryParam)
-
-				} else {
-					scenes, _ = qb.FindByOSHash(ctx, sceneIdentifierQueryParam)
-				}
-
-				if len(scenes) > 0 {
-					scene = scenes[0]
-				}
-			} else {
-				scene, _ = qb.Find(ctx, sceneID)
-			}
+			scene, _ = qb.Find(ctx, sceneID)
 
 			if scene != nil {
 				if err := scene.LoadPrimaryFile(ctx, rs.fileFinder); err != nil {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
@@ -55,7 +56,7 @@ func ToJSON(ctx context.Context, reader FinderImageAliasStashIDGetter, studio *m
 
 	image, err := reader.GetImage(ctx, studio.ID)
 	if err != nil {
-		return nil, fmt.Errorf("error getting studio image: %v", err)
+		logger.Errorf("Error getting studio image: %v", err)
 	}
 
 	if len(image) > 0 {

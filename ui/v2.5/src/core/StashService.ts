@@ -752,6 +752,27 @@ export const mutateGallerySetPrimaryFile = (id: string, fileID: string) =>
     update: deleteCache(galleryMutationImpactedQueries),
   });
 
+const galleryChapterMutationImpactedQueries = [
+  GQL.FindGalleryDocument,
+  GQL.FindGalleriesDocument,
+];
+
+export const useGalleryChapterCreate = () =>
+  GQL.useGalleryChapterCreateMutation({
+    refetchQueries: getQueryNames([GQL.FindGalleryDocument]),
+    update: deleteCache(galleryChapterMutationImpactedQueries),
+  });
+export const useGalleryChapterUpdate = () =>
+  GQL.useGalleryChapterUpdateMutation({
+    refetchQueries: getQueryNames([GQL.FindGalleryDocument]),
+    update: deleteCache(galleryChapterMutationImpactedQueries),
+  });
+export const useGalleryChapterDestroy = () =>
+  GQL.useGalleryChapterDestroyMutation({
+    refetchQueries: getQueryNames([GQL.FindGalleryDocument]),
+    update: deleteCache(galleryChapterMutationImpactedQueries),
+  });
+
 export const studioMutationImpactedQueries = [
   GQL.FindStudiosDocument,
   GQL.FindSceneDocument,
@@ -1192,6 +1213,20 @@ export const mutateMetadataIdentify = (input: GQL.IdentifyMetadataInput) =>
 export const mutateMigrateHashNaming = () =>
   client.mutate<GQL.MigrateHashNamingMutation>({
     mutation: GQL.MigrateHashNamingDocument,
+  });
+
+export const mutateMigrateSceneScreenshots = (
+  input: GQL.MigrateSceneScreenshotsInput
+) =>
+  client.mutate<GQL.MigrateSceneScreenshotsMutation>({
+    mutation: GQL.MigrateSceneScreenshotsDocument,
+    variables: { input },
+  });
+
+export const mutateMigrateBlobs = (input: GQL.MigrateBlobsInput) =>
+  client.mutate<GQL.MigrateBlobsMutation>({
+    mutation: GQL.MigrateBlobsDocument,
+    variables: { input },
   });
 
 export const mutateMetadataExport = () =>

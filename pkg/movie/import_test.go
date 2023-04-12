@@ -161,8 +161,9 @@ func TestImporterPostImport(t *testing.T) {
 
 	updateMovieImageErr := errors.New("UpdateImages error")
 
-	readerWriter.On("UpdateImages", testCtx, movieID, frontImageBytes, backImageBytes).Return(nil).Once()
-	readerWriter.On("UpdateImages", testCtx, errImageID, frontImageBytes, backImageBytes).Return(updateMovieImageErr).Once()
+	readerWriter.On("UpdateFrontImage", testCtx, movieID, frontImageBytes).Return(nil).Once()
+	readerWriter.On("UpdateBackImage", testCtx, movieID, backImageBytes).Return(nil).Once()
+	readerWriter.On("UpdateFrontImage", testCtx, errImageID, frontImageBytes).Return(updateMovieImageErr).Once()
 
 	err := i.PostImport(testCtx, movieID)
 	assert.Nil(t, err)

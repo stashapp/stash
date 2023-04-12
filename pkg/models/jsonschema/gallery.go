@@ -10,20 +10,28 @@ import (
 	"github.com/stashapp/stash/pkg/models/json"
 )
 
-type Gallery struct {
-	ZipFiles   []string      `json:"zip_files,omitempty"`
-	FolderPath string        `json:"folder_path,omitempty"`
+type GalleryChapter struct {
 	Title      string        `json:"title,omitempty"`
-	URL        string        `json:"url,omitempty"`
-	Date       string        `json:"date,omitempty"`
-	Details    string        `json:"details,omitempty"`
-	Rating     int           `json:"rating,omitempty"`
-	Organized  bool          `json:"organized,omitempty"`
-	Studio     string        `json:"studio,omitempty"`
-	Performers []string      `json:"performers,omitempty"`
-	Tags       []string      `json:"tags,omitempty"`
+	ImageIndex int           `json:"image_index,omitempty"`
 	CreatedAt  json.JSONTime `json:"created_at,omitempty"`
 	UpdatedAt  json.JSONTime `json:"updated_at,omitempty"`
+}
+
+type Gallery struct {
+	ZipFiles   []string         `json:"zip_files,omitempty"`
+	FolderPath string           `json:"folder_path,omitempty"`
+	Title      string           `json:"title,omitempty"`
+	URL        string           `json:"url,omitempty"`
+	Date       string           `json:"date,omitempty"`
+	Details    string           `json:"details,omitempty"`
+	Rating     int              `json:"rating,omitempty"`
+	Organized  bool             `json:"organized,omitempty"`
+	Chapters   []GalleryChapter `json:"chapters,omitempty"`
+	Studio     string           `json:"studio,omitempty"`
+	Performers []string         `json:"performers,omitempty"`
+	Tags       []string         `json:"tags,omitempty"`
+	CreatedAt  json.JSONTime    `json:"created_at,omitempty"`
+	UpdatedAt  json.JSONTime    `json:"updated_at,omitempty"`
 }
 
 func (s Gallery) Filename(basename string, hash string) string {

@@ -31,7 +31,7 @@
     "download": "İndir",
     "download_backup": "Yedekleme Dosyasını İndir",
     "edit": "Düzenle",
-    "export": "Dışa Aktar…",
+    "export": "Dışa Aktar",
     "export_all": "Tümünü dışa aktar…",
     "find": "Bul",
     "finish": "Bitir",
@@ -547,7 +547,6 @@
   "details": "Ayrıntılar",
   "developmentVersion": "Geliştirme Sürümü",
   "dialogs": {
-    "aliases_must_be_unique": "takma adlar benzersiz olmalıdır",
     "delete_alert": "Bu {count, plural, one {{singularEntity}} other {{pluralEntity}}} kalıcı olarak silinecektir:",
     "delete_confirm": "Bunu silmek istediğinizden emin misiniz: {entityName}?",
     "delete_entity_desc": "{count, plural, one {Bunu silmek istediğinizden emin misiniz: {entityName}? Dosyayı bilgisayarınızdan silmediğiniz sürece, yeniden tarama işleminde bu {singularEntity} tekrar veritabanına eklenecektir.} other {Bunları silmek istediğinizden emin misiniz: {pluralEntity}? Dosyayı bilgisayarınızdan silmediğiniz sürece, yeniden tarama işleminde bu {pluralEntity} tekrar veritabanına eklenecektir.}}",
@@ -765,7 +764,6 @@
   "scenes": "Sahneler",
   "scenes_updated_at": "Sahne Güncelleme Tarihi",
   "search_filter": {
-    "add_filter": "Filtre Ekle",
     "name": "Filtre",
     "saved_filters": "Kaydedilmiş filtreler",
     "update_filter": "Filtreyi Güncelle"
@@ -891,6 +889,9 @@
   "twitter": "Twitter",
   "updated_at": "Güncellenme Zamanı",
   "url": "Internet Adresi (URL)",
+  "validation": {
+    "aliases_must_be_unique": "takma adlar benzersiz olmalıdır"
+  },
   "videos": "Videolar",
   "weight": "Kilo",
   "years_old": "yaşında"

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Card, Form, InputGroup, ProgressBar } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
@@ -31,6 +31,232 @@ type JobFragment = Pick<
 >;
 
 const CLASSNAME = "StudioTagger";
+
+interface IStudioBatchUpdateModal {
+  studios: GQL.StudioDataFragment[];
+  isIdle: boolean;
+  selectedEndpoint: { endpoint: string; index: number };
+  onBatchUpdate: (queryAll: boolean, refresh: boolean) => void;
+  batchAddParents: boolean;
+  setBatchAddParents: (addParents: boolean) => void;
+  close: () => void;
+}
+
+const StudioBatchUpdateModal: React.FC<IStudioBatchUpdateModal> = ({
+  studios,
+  isIdle,
+  selectedEndpoint,
+  onBatchUpdate,
+  batchAddParents,
+  setBatchAddParents,
+  close,
+}) => {
+  const intl = useIntl();
+
+  const [queryAll, setQueryAll] = useState(false);
+
+  const [refresh, setRefresh] = useState(false);
+  const { data: allStudios } = GQL.useFindStudiosQuery({
+    variables: {
+      studio_filter: {
+        stash_id_endpoint: {
+          endpoint: selectedEndpoint.endpoint,
+          modifier: refresh
+            ? GQL.CriterionModifier.NotNull
+            : GQL.CriterionModifier.IsNull,
+        },
+      },
+      filter: {
+        per_page: 0,
+      },
+    },
+  });
+
+  const studioCount = useMemo(() => {
+    // get all stash ids for the selected endpoint
+    const filteredStashIDs = studios.map((p) =>
+      p.stash_ids.filter((s) => s.endpoint === selectedEndpoint.endpoint)
+    );
+
+    return queryAll
+      ? allStudios?.findStudios.count
+      : filteredStashIDs.filter((s) =>
+        // if refresh, then we filter out the studios without a stash id
+        // otherwise, we want untagged studios, filtering out those with a stash id
+        refresh ? s.length > 0 : s.length === 0
+      ).length;
+  }, [queryAll, refresh, studios, allStudios, selectedEndpoint.endpoint]);
+
+  return (
+    <ModalComponent
+      show
+      icon={faTags}
+      header={intl.formatMessage({
+        id: "studio_tagger.update_studios",
+      })}
+      accept={{
+        text: intl.formatMessage({
+          id: "studio_tagger.update_studios",
+        }),
+        onClick: () => onBatchUpdate(queryAll, refresh),
+      }}
+      cancel={{
+        text: intl.formatMessage({ id: "actions.cancel" }),
+        variant: "danger",
+        onClick: () => close(),
+      }}
+      disabled={!isIdle}
+    >
+      <Form.Group>
+        <Form.Label>
+          <h6>
+            <FormattedMessage id="studio_tagger.studio_selection" />
+          </h6>
+        </Form.Label>
+        <Form.Check
+          id="query-page"
+          type="radio"
+          name="studio-query"
+          label={<FormattedMessage id="studio_tagger.current_page" />}
+          defaultChecked={!queryAll}
+          onChange={() => setQueryAll(false)}
+        />
+        <Form.Check
+          id="query-all"
+          type="radio"
+          name="studio-query"
+          label={intl.formatMessage({
+            id: "studio_tagger.query_all_studios_in_the_database",
+          })}
+          defaultChecked={queryAll}
+          onChange={() => setQueryAll(true)}
+        />
+      </Form.Group>
+      <Form.Group>
+        <Form.Label>
+          <h6>
+            <FormattedMessage id="studio_tagger.tag_status" />
+          </h6>
+        </Form.Label>
+        <Form.Check
+          id="untagged-studios"
+          type="radio"
+          name="studio-refresh"
+          label={intl.formatMessage({
+            id: "studio_tagger.untagged_studios",
+          })}
+          defaultChecked={!refresh}
+          onChange={() => setRefresh(false)}
+        />
+        <Form.Text>
+          <FormattedMessage id="studio_tagger.updating_untagged_studios_description" />
+        </Form.Text>
+        <Form.Check
+          id="tagged-studios"
+          type="radio"
+          name="studio-refresh"
+          label={intl.formatMessage({
+            id: "studio_tagger.refresh_tagged_studios",
+          })}
+          defaultChecked={refresh}
+          onChange={() => setRefresh(true)}
+        />
+        <Form.Text>
+          <FormattedMessage id="studio_tagger.refreshing_will_update_the_data" />
+        </Form.Text>
+        <div className="mt-4">
+          <Form.Check
+            id="add-parent"
+            checked={batchAddParents}
+            label={intl.formatMessage({
+              id: "studio_tagger.create_or_tag_parent_studios",
+            })}
+            onChange={() => setBatchAddParents(!batchAddParents)}
+          />
+        </div>
+      </Form.Group>
+      <b>
+        <FormattedMessage
+          id="studio_tagger.number_of_studios_will_be_processed"
+          values={{
+            studio_count: studioCount,
+          }}
+        />
+      </b>
+    </ModalComponent>
+  );
+};
+
+interface IStudioBatchAddModal {
+  isIdle: boolean;
+  onBatchAdd: (input: string) => void;
+  batchAddParents: boolean;
+  setBatchAddParents: (addParents: boolean) => void;
+  close: () => void;
+}
+
+const StudioBatchAddModal: React.FC<IStudioBatchAddModal> = ({
+  isIdle,
+  onBatchAdd,
+  batchAddParents,
+  setBatchAddParents,
+  close,
+}) => {
+  const intl = useIntl();
+
+  const studioInput = useRef<HTMLTextAreaElement | null>(null);
+
+  return (
+    <ModalComponent
+      show
+      icon={faStar}
+      header={intl.formatMessage({
+        id: "studio_tagger.add_new_studios",
+      })}
+      accept={{
+        text: intl.formatMessage({
+          id: "studio_tagger.add_new_studios",
+        }),
+        onClick: () => {
+          if (studioInput.current) {
+            onBatchAdd(studioInput.current.value);
+          } else {
+            close();
+          }
+        },
+      }}
+      cancel={{
+        text: intl.formatMessage({ id: "actions.cancel" }),
+        variant: "danger",
+        onClick: () => close(),
+      }}
+      disabled={!isIdle}
+    >
+      <Form.Control
+        className="text-input"
+        as="textarea"
+        ref={studioInput}
+        placeholder={intl.formatMessage({
+          id: "studio_tagger.studio_names_separated_by_comma",
+        })}
+        rows={6}
+      />
+      <Form.Text>
+        <FormattedMessage id="studio_tagger.any_names_entered_will_be_queried" />
+      </Form.Text>
+      <div className="mt-2">
+        <Form.Check
+          id="add-parent"
+          checked={batchAddParents}
+          label={intl.formatMessage({
+            id: "studio_tagger.create_or_tag_parent_studios",
+          })}
+          onChange={() => setBatchAddParents(!batchAddParents)}
+        />
+      </div>
+    </ModalComponent>
+  );
+};
 
 interface IStudioTaggerListProps {
   studios: GQL.StudioDataFragment[];
@@ -67,27 +293,9 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
     Record<string, Partial<GQL.SlimStudioDataFragment>>
   >({});
   const [queries, setQueries] = useState<Record<string, string>>({});
-  const [queryAll, setQueryAll] = useState(false);
 
-  const [refresh, setRefresh] = useState(false);
-  const { data: allStudios } = GQL.useFindStudiosQuery({
-    variables: {
-      studio_filter: {
-        stash_id: {
-          value: "",
-          modifier: refresh
-            ? GQL.CriterionModifier.NotNull
-            : GQL.CriterionModifier.IsNull,
-        },
-      },
-      filter: {
-        per_page: 0,
-      },
-    },
-  });
   const [showBatchAdd, setShowBatchAdd] = useState(false);
   const [showBatchUpdate, setShowBatchUpdate] = useState(false);
-  const studioInput = useRef<HTMLTextAreaElement | null>(null);
   const [batchAddParents, setBatchAddParents] = useState(
     config.createParentStudios || false
   );
@@ -153,14 +361,12 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
       .finally(() => setLoadingUpdate(undefined));
   };
 
-  async function handleBatchAdd() {
-    if (studioInput.current) {
-      onBatchAdd(studioInput.current.value, batchAddParents);
-    }
+  async function handleBatchAdd(input: string) {
+    onBatchAdd(input, batchAddParents);
     setShowBatchAdd(false);
   }
 
-  const handleBatchUpdate = () => {
+  const handleBatchUpdate = (queryAll: boolean, refresh: boolean) => {
     onBatchUpdate(
       !queryAll ? studios.map((p) => p.id) : undefined,
       refresh,
@@ -201,10 +407,10 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
             ),
             details:
               res?.errors?.[0].message ===
-              "UNIQUE constraint failed: studios.checksum"
+                "UNIQUE constraint failed: studios.checksum"
                 ? intl.formatMessage({
-                    id: "studio_tagger.name_already_exists",
-                  })
+                  id: "studio_tagger.name_already_exists",
+                })
                 : res?.errors?.[0].message,
           },
         });
@@ -214,10 +420,13 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
   const renderStudios = () =>
     studios.map((studio) => {
       const isTagged = taggedStudios[studio.id];
-      const hasStashIDs = studio.stash_ids.length > 0;
+
+      const stashID = studio.stash_ids.find((s) => {
+        return s.endpoint === selectedEndpoint.endpoint;
+      });
 
       let mainContent;
-      if (!isTagged && hasStashIDs) {
+      if (!isTagged && stashID !== undefined) {
         mainContent = (
           <div className="text-left">
             <h5 className="text-bold">
@@ -225,7 +434,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
             </h5>
           </div>
         );
-      } else if (!isTagged && !hasStashIDs) {
+      } else if (!isTagged && !stashID) {
         mainContent = (
           <InputGroup>
             <Form.Control
@@ -268,60 +477,57 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
       }
 
       let subContent;
-      if (studio.stash_ids.length > 0) {
-        const stashLinks = studio.stash_ids.map((stashID) => {
-          const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
-          const link = base ? (
-            <a
-              className="small d-block"
-              href={`${base}studios/${stashID.stash_id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {stashID.stash_id}
-            </a>
-          ) : (
-            <div className="small">{stashID.stash_id}</div>
-          );
+      if (stashID !== undefined) {
+        const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
+        const link = base ? (
+          <a
+            className="small d-block"
+            href={`${base}studios/${stashID.stash_id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {stashID.stash_id}
+          </a>
+        ) : (
+          <div className="small">{stashID.stash_id}</div>
+        );
 
-          const endpoint =
-            stashBoxes?.findIndex((box) => box.endpoint === stashID.endpoint) ??
-            -1;
+        const endpointIndex =
+          stashBoxes?.findIndex((box) => box.endpoint === stashID.endpoint) ??
+          -1;
 
-          return (
-            <div key={studio.id}>
-              <InputGroup className="StudioTagger-box-link">
-                <InputGroup.Text>{link}</InputGroup.Text>
-                <InputGroup.Append>
-                  {endpoint !== -1 && (
-                    <Button
-                      onClick={() =>
-                        doBoxUpdate(studio.id, stashID.stash_id, endpoint)
-                      }
-                      disabled={!!loadingUpdate}
-                    >
-                      {loadingUpdate === stashID.stash_id ? (
-                        <LoadingIndicator inline small message="" />
-                      ) : (
-                        <FormattedMessage id="actions.refresh" />
-                      )}
-                    </Button>
-                  )}
-                </InputGroup.Append>
-              </InputGroup>
-              {error[studio.id] && (
-                <div className="text-danger mt-1">
-                  <strong>
-                    <span className="mr-2">Error:</span>
-                    {error[studio.id]?.message}
-                  </strong>
-                  <div>{error[studio.id]?.details}</div>
-                </div>
-              )}
-            </div>
-          );
-        });
-        subContent = <>{stashLinks}</>;
+        subContent = (
+          <div key={studio.id}>
+            <InputGroup className="StudioTagger-box-link">
+              <InputGroup.Text>{link}</InputGroup.Text>
+              <InputGroup.Append>
+                {endpointIndex !== -1 && (
+                  <Button
+                    onClick={() =>
+                      doBoxUpdate(studio.id, stashID.stash_id, endpointIndex)
+                    }
+                    disabled={!!loadingUpdate}
+                  >
+                    {loadingUpdate === stashID.stash_id ? (
+                      <LoadingIndicator inline small message="" />
+                    ) : (
+                      <FormattedMessage id="actions.refresh" />
+                    )}
+                  </Button>
+                )}
+              </InputGroup.Append>
+            </InputGroup>
+            {error[studio.id] && (
+              <div className="text-danger mt-1">
+                <strong>
+                  <span className="mr-2">Error:</span>
+                  {error[studio.id]?.message}
+                </strong>
+                <div>{error[studio.id]?.details}</div>
+              </div>
+            )}
+          </div>
+        );
       } else if (searchErrors[studio.id]) {
         subContent = (
           <div className="text-danger font-weight-bold">
@@ -391,148 +597,27 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
 
   return (
     <Card>
-      <ModalComponent
-        show={showBatchUpdate}
-        icon={faTags}
-        header={intl.formatMessage({
-          id: "studio_tagger.update_studios",
-        })}
-        accept={{
-          text: intl.formatMessage({
-            id: "studio_tagger.update_studios",
-          }),
-          onClick: handleBatchUpdate,
-        }}
-        cancel={{
-          text: intl.formatMessage({ id: "actions.cancel" }),
-          variant: "danger",
-          onClick: () => setShowBatchUpdate(false),
-        }}
-        disabled={!isIdle}
-      >
-        <Form.Group>
-          <Form.Label>
-            <h6>
-              <FormattedMessage id="studio_tagger.studio_selection" />
-            </h6>
-          </Form.Label>
-          <Form.Check
-            id="query-page"
-            type="radio"
-            name="studio-query"
-            label={<FormattedMessage id="studio_tagger.current_page" />}
-            defaultChecked={!queryAll}
-            onChange={() => setQueryAll(false)}
-          />
-          <Form.Check
-            id="query-all"
-            type="radio"
-            name="studio-query"
-            label={intl.formatMessage({
-              id: "studio_tagger.query_all_studios_in_the_database",
-            })}
-            defaultChecked={queryAll}
-            onChange={() => setQueryAll(true)}
-          />
-        </Form.Group>
-        <Form.Group>
-          <Form.Label>
-            <h6>
-              <FormattedMessage id="studio_tagger.tag_status" />
-            </h6>
-          </Form.Label>
-          <Form.Check
-            id="untagged-studios"
-            type="radio"
-            name="studio-refresh"
-            label={intl.formatMessage({
-              id: "studio_tagger.untagged_studios",
-            })}
-            defaultChecked={!refresh}
-            onChange={() => setRefresh(false)}
-          />
-          <Form.Text>
-            <FormattedMessage id="studio_tagger.updating_untagged_studios_description" />
-          </Form.Text>
-          <Form.Check
-            id="tagged-studios"
-            type="radio"
-            name="studio-refresh"
-            label={intl.formatMessage({
-              id: "studio_tagger.refresh_tagged_studios",
-            })}
-            defaultChecked={refresh}
-            onChange={() => setRefresh(true)}
-          />
-          <Form.Text>
-            <FormattedMessage id="studio_tagger.refreshing_will_update_the_data" />
-          </Form.Text>
-          <div className="mt-4">
-            <Form.Check
-              id="add-parent"
-              checked={batchAddParents}
-              label={intl.formatMessage({
-                id: "studio_tagger.create_or_tag_parent_studios",
-              })}
-              onChange={() => setBatchAddParents(!batchAddParents)}
-            />
-          </div>
-        </Form.Group>
-        <b>
-          <FormattedMessage
-            id="studio_tagger.number_of_studios_will_be_processed"
-            values={{
-              studio_count: queryAll
-                ? allStudios?.findStudios.count
-                : studios.filter((p) =>
-                    refresh ? p.stash_ids.length > 0 : p.stash_ids.length === 0
-                  ).length,
-            }}
-          />
-        </b>
-      </ModalComponent>
-      <ModalComponent
-        show={showBatchAdd}
-        icon={faStar}
-        header={intl.formatMessage({
-          id: "studio_tagger.add_new_studios",
-        })}
-        accept={{
-          text: intl.formatMessage({
-            id: "studio_tagger.add_new_studios",
-          }),
-          onClick: handleBatchAdd,
-        }}
-        cancel={{
-          text: intl.formatMessage({ id: "actions.cancel" }),
-          variant: "danger",
-          onClick: () => setShowBatchAdd(false),
-        }}
-        disabled={!isIdle}
-      >
-        <Form.Control
-          className="text-input"
-          as="textarea"
-          ref={studioInput}
-          placeholder={intl.formatMessage({
-            id: "studio_tagger.studio_names_separated_by_comma",
-          })}
-          rows={6}
+      {showBatchUpdate && (
+        <StudioBatchUpdateModal
+          close={() => setShowBatchUpdate(false)}
+          isIdle={isIdle}
+          selectedEndpoint={selectedEndpoint}
+          studios={studios}
+          onBatchUpdate={handleBatchUpdate}
+          batchAddParents={batchAddParents}
+          setBatchAddParents={setBatchAddParents}
         />
-        <Form.Text>
-          <FormattedMessage id="studio_tagger.any_names_entered_will_be_queried" />
-        </Form.Text>
-        <div className="mt-2">
-          <Form.Check
-            id="add-parent"
-            checked={batchAddParents}
-            label={intl.formatMessage({
-              id: "studio_tagger.create_or_tag_parent_studios",
-            })}
-            onChange={() => setBatchAddParents(!batchAddParents)}
-          />
-        </div>
-      </ModalComponent>
+      )}
+
+      {showBatchAdd && (
+        <StudioBatchAddModal
+          close={() => setShowBatchAdd(false)}
+          isIdle={isIdle}
+          onBatchAdd={handleBatchAdd}
+          batchAddParents={batchAddParents}
+          setBatchAddParents={setBatchAddParents}
+        />
+      )}
       <div className="ml-auto mb-3">
         <Button onClick={() => setShowBatchAdd(true)}>
           <FormattedMessage id="studio_tagger.batch_add_studios" />

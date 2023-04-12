@@ -30,10 +30,11 @@
       display: flex;
       flex: 1;
       justify-content: center;
+    }
 
-      @media (max-width: 575px) {
-        display: none;
-      }
+    &-chapters {
+      max-height: 90%;
+      overflow: auto;
     }
 
     &-indicator {

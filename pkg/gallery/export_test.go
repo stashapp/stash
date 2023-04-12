@@ -22,6 +22,9 @@ const (
 	errStudioID     = 6
 
 	// noTagsID  = 11
+	noChaptersID       = 7
+	errChaptersID      = 8
+	errFindByChapterID = 9
 )
 
 var (
@@ -58,6 +61,19 @@ func createFullGallery(id int) models.Gallery {
 		Rating:    &rating,
 		Organized: organized,
 		URL:       url,
+		CreatedAt: createTime,
+		UpdatedAt: updateTime,
+	}
+}
+
+func createEmptyGallery(id int) models.Gallery {
+	return models.Gallery{
+		ID: id,
+		Files: models.NewRelatedFiles([]file.File{
+			&file.BaseFile{
+				Path: path,
+			},
+		}),
 		CreatedAt: createTime,
 		UpdatedAt: updateTime,
 	}
@@ -167,4 +183,110 @@ func TestGetStudioName(t *testing.T) {
 	}
 
 	mockStudioReader.AssertExpectations(t)
+}
+
+const (
+	validChapterID1 = 1
+	validChapterID2 = 2
+
+	chapterTitle1 = "chapterTitle1"
+	chapterTitle2 = "chapterTitle2"
+
+	chapterImageIndex1 = 10
+	chapterImageIndex2 = 50
+)
+
+type galleryChaptersTestScenario struct {
+	input    models.Gallery
+	expected []jsonschema.GalleryChapter
+	err      bool
+}
+
+var getGalleryChaptersJSONScenarios = []galleryChaptersTestScenario{
+	{
+		createEmptyGallery(galleryID),
+		[]jsonschema.GalleryChapter{
+			{
+				Title:      chapterTitle1,
+				ImageIndex: chapterImageIndex1,
+				CreatedAt: json.JSONTime{
+					Time: createTime,
+				},
+				UpdatedAt: json.JSONTime{
+					Time: updateTime,
+				},
+			},
+			{
+				Title:      chapterTitle2,
+				ImageIndex: chapterImageIndex2,
+				CreatedAt: json.JSONTime{
+					Time: createTime,
+				},
+				UpdatedAt: json.JSONTime{
+					Time: updateTime,
+				},
+			},
+		},
+		false,
+	},
+	{
+		createEmptyGallery(noChaptersID),
+		nil,
+		false,
+	},
+	{
+		createEmptyGallery(errChaptersID),
+		nil,
+		true,
+	},
+}
+
+var validChapters = []*models.GalleryChapter{
+	{
+		ID:         validChapterID1,
+		Title:      chapterTitle1,
+		ImageIndex: chapterImageIndex1,
+		CreatedAt: models.SQLiteTimestamp{
+			Timestamp: createTime,
+		},
+		UpdatedAt: models.SQLiteTimestamp{
+			Timestamp: updateTime,
+		},
+	},
+	{
+		ID:         validChapterID2,
+		Title:      chapterTitle2,
+		ImageIndex: chapterImageIndex2,
+		CreatedAt: models.SQLiteTimestamp{
+			Timestamp: createTime,
+		},
+		UpdatedAt: models.SQLiteTimestamp{
+			Timestamp: updateTime,
+		},
+	},
+}
+
+func TestGetGalleryChaptersJSON(t *testing.T) {
+	mockChapterReader := &mocks.GalleryChapterReaderWriter{}
+
+	chaptersErr := errors.New("error getting gallery chapters")
+
+	mockChapterReader.On("FindByGalleryID", testCtx, galleryID).Return(validChapters, nil).Once()
+	mockChapterReader.On("FindByGalleryID", testCtx, noChaptersID).Return(nil, nil).Once()
+	mockChapterReader.On("FindByGalleryID", testCtx, errChaptersID).Return(nil, chaptersErr).Once()
+
+	for i, s := range getGalleryChaptersJSONScenarios {
+		gallery := s.input
+		json, err := GetGalleryChaptersJSON(testCtx, mockChapterReader, &gallery)
+
+		switch {
+		case !s.err && err != nil:
+			t.Errorf("[%d] unexpected error: %s", i, err.Error())
+		case s.err && err == nil:
+			t.Errorf("[%d] expected error not returned", i)
+		default:
+			assert.Equal(t, s.expected, json, "[%d]", i)
+		}
+	}
+
 }

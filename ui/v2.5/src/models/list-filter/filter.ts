@@ -75,6 +75,12 @@ export class ListFilterModel {
     return Object.assign(new ListFilterModel(this.mode, this.config), this);
   }
 
+  // returns the number of filters applied
+  public count() {
+    // don't include search term
+    return this.criteria.length;
+  }
+
   public configureFromDecodedParams(params: IDecodedParams) {
     if (params.perPage !== undefined) {
       this.itemsPerPage = params.perPage;

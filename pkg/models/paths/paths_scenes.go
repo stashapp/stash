@@ -17,12 +17,8 @@ func newScenePaths(p Paths) *scenePaths {
 	return &sp
 }
 
-func (sp *scenePaths) GetScreenshotPath(checksum string) string {
+func (sp *scenePaths) GetLegacyScreenshotPath(checksum string) string {
 	return filepath.Join(sp.Screenshots, checksum+".jpg")
-}
-
-func (sp *scenePaths) GetThumbnailScreenshotPath(checksum string) string {
-	return filepath.Join(sp.Screenshots, checksum+".thumb.jpg")
 }
 
 func (sp *scenePaths) GetTranscodePath(checksum string) string {

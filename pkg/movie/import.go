@@ -12,10 +12,15 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+type ImageUpdater interface {
+	UpdateFrontImage(ctx context.Context, movieID int, frontImage []byte) error
+	UpdateBackImage(ctx context.Context, movieID int, backImage []byte) error
+}
+
 type NameFinderCreatorUpdater interface {
 	NameFinderCreator
 	UpdateFull(ctx context.Context, updatedMovie models.Movie) (*models.Movie, error)
-	UpdateImages(ctx context.Context, movieID int, frontImage []byte, backImage []byte) error
+	ImageUpdater
 }
 
 type Importer struct {
@@ -127,8 +132,14 @@ func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
 
 func (i *Importer) PostImport(ctx context.Context, id int) error {
 	if len(i.frontImageData) > 0 {
-		if err := i.ReaderWriter.UpdateImages(ctx, id, i.frontImageData, i.backImageData); err != nil {
-			return fmt.Errorf("error setting movie images: %v", err)
+		if err := i.ReaderWriter.UpdateFrontImage(ctx, id, i.frontImageData); err != nil {
+			return fmt.Errorf("error setting movie front image: %v", err)
+		}
+	}
+
+	if len(i.backImageData) > 0 {
+		if err := i.ReaderWriter.UpdateBackImage(ctx, id, i.backImageData); err != nil {
+			return fmt.Errorf("error setting movie back image: %v", err)
 		}
 	}
 

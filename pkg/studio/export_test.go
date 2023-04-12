@@ -143,8 +143,9 @@ func initTestTable() {
 		},
 		{
 			createFullStudio(errImageID, parentStudioID),
-			nil,
-			true,
+			createFullJSONStudio(parentStudioName, "", nil),
+			// failure to get image is not an error
+			false,
 		},
 		{
 			createFullStudio(missingParentStudioID, missingStudioID),

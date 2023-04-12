@@ -18,12 +18,13 @@ import (
 )
 
 const (
-	studioTable          = "studios"
-	studioIDColumn       = "studio_id"
-	studioAliasesTable   = "studio_aliases"
-	studioAliasColumn    = "alias"
-	studioParentIDColumn = "parent_id"
-	studioNameColumn     = "name"
+	studioTable           = "studios"
+	studioIDColumn        = "studio_id"
+	studioAliasesTable    = "studio_aliases"
+	studioAliasColumn     = "alias"
+	studioParentIDColumn  = "parent_id"
+	studioNameColumn      = "name"
+	studioImageBlobColumn = "image_blob"
 )
 
 type studioRow struct {
@@ -38,6 +39,9 @@ type studioRow struct {
 	// expressed as 1-100
 	Rating        null.Int `db:"rating"`
 	IgnoreAutoTag bool     `db:"ignore_auto_tag"`
+
+	// not used for resolution
+	ImageBlob zero.String `db:"image_blob"`
 }
 
 func (r *studioRow) fromStudio(o models.Studio) {
@@ -89,15 +93,20 @@ func (r *studioRowRecord) fromPartial(o models.StudioPartial) {
 
 type StudioStore struct {
 	repository
+	blobJoinQueryBuilder
 
 	tableMgr *table
 }
 
-func NewStudioStore() *StudioStore {
+func NewStudioStore(blobStore *BlobStore) *StudioStore {
 	return &StudioStore{
 		repository: repository{
 			tableName: studioTable,
 			idColumn:  idColumn,
+		},
+		blobJoinQueryBuilder: blobJoinQueryBuilder{
+			blobStore: blobStore,
+			joinTable: performerTable,
 		},
 		tableMgr: studioTableMgr,
 	}
@@ -254,6 +263,11 @@ func (qb *StudioStore) Update(ctx context.Context, updatedObject *models.Studio)
 }
 
 func (qb *StudioStore) Destroy(ctx context.Context, id int) error {
+	// must handle image checksums manually
+	if err := qb.DestroyImage(ctx, id); err != nil {
+		return err
+	}
+
 	// TODO - set null on foreign key in scraped items
 	// remove studio from scraped items
 	_, err := qb.tx.Exec(ctx, "UPDATE scraped_items SET studio_id = null WHERE studio_id = ?", id)
@@ -285,17 +299,23 @@ func (qb *StudioStore) Find(ctx context.Context, id int) (*models.Studio, error)
 
 func (qb *StudioStore) FindMany(ctx context.Context, ids []int) ([]*models.Studio, error) {
 	tableMgr := studioTableMgr
-	q := goqu.Select("*").From(tableMgr.table).Where(tableMgr.byIDInts(ids...))
-	unsorted, err := qb.getMany(ctx, q)
-	if err != nil {
-		return nil, err
-	}
-
 	ret := make([]*models.Studio, len(ids))
 
-	for _, s := range unsorted {
-		i := intslice.IntIndex(ids, s.ID)
-		ret[i] = s
+	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
+		q := goqu.Select("*").From(tableMgr.table).Where(tableMgr.byIDInts(batch...))
+		unsorted, err := qb.getMany(ctx, q)
+		if err != nil {
+			return err
+		}
+
+		for _, s := range unsorted {
+			i := intslice.IntIndex(ids, s.ID)
+			ret[i] = s
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
 	for i := range ret {
@@ -627,8 +647,7 @@ func studioIsMissingCriterionHandler(qb *StudioStore, isMissing *string) criteri
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
 			case "image":
-				f.addLeftJoin("studios_image", "", "studios_image.studio_id = studios.id")
-				f.addWhere("studios_image.studio_id IS NULL")
+				f.addWhere("studios.image_blob IS NULL")
 			case "stash_id":
 				qb.stashIDRepository().join(f, "studio_stash_ids", "studios.id")
 				f.addWhere("studio_stash_ids.studio_id IS NULL")
@@ -722,31 +741,20 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) string {
 	}
 }
 
-func (qb *StudioStore) imageRepository() *imageRepository {
-	return &imageRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: "studios_image",
-			idColumn:  studioIDColumn,
-		},
-		imageColumn: "image",
-	}
-}
-
 func (qb *StudioStore) GetImage(ctx context.Context, studioID int) ([]byte, error) {
-	return qb.imageRepository().get(ctx, studioID)
+	return qb.blobJoinQueryBuilder.GetImage(ctx, studioID, studioImageBlobColumn)
 }
 
 func (qb *StudioStore) HasImage(ctx context.Context, studioID int) (bool, error) {
-	return qb.imageRepository().exists(ctx, studioID)
+	return qb.blobJoinQueryBuilder.HasImage(ctx, studioID, studioImageBlobColumn)
 }
 
 func (qb *StudioStore) UpdateImage(ctx context.Context, studioID int, image []byte) error {
-	return qb.imageRepository().replace(ctx, studioID, image)
+	return qb.blobJoinQueryBuilder.UpdateImage(ctx, studioID, studioImageBlobColumn, image)
 }
 
 func (qb *StudioStore) DestroyImage(ctx context.Context, studioID int) error {
-	return qb.imageRepository().destroy(ctx, []int{studioID})
+	return qb.blobJoinQueryBuilder.DestroyImage(ctx, studioID, studioImageBlobColumn)
 }
 
 func (qb *StudioStore) stashIDRepository() *stashIDRepository {

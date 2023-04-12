@@ -6,6 +6,7 @@ import (
 	"math"
 	"strconv"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
@@ -64,7 +65,7 @@ func ToBasicJSON(ctx context.Context, reader CoverGetter, scene *models.Scene) (
 
 	cover, err := reader.GetCover(ctx, scene.ID)
 	if err != nil {
-		return nil, fmt.Errorf("error getting scene cover: %v", err)
+		logger.Errorf("Error getting scene cover: %v", err)
 	}
 
 	if len(cover) > 0 {

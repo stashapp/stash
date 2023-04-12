@@ -9,14 +9,12 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/manager"
-	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -319,13 +317,6 @@ func (r *mutationResolver) sceneUpdateCoverImage(ctx context.Context, s *models.
 		// update cover table
 		if err := qb.UpdateCover(ctx, s.ID, coverImageData); err != nil {
 			return err
-		}
-
-		if s.Path != "" {
-			// update the file-based screenshot after commit
-			txn.AddPostCommitHook(ctx, func(ctx context.Context) error {
-				return scene.SetScreenshot(manager.GetInstance().Paths, s.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), coverImageData)
-			})
 		}
 	}
 

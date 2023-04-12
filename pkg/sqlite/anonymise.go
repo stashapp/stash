@@ -51,6 +51,7 @@ func (db *Anonymiser) Anonymise(ctx context.Context) error {
 			func() error { return db.anonymiseFiles(ctx) },
 			func() error { return db.anonymiseFingerprints(ctx) },
 			func() error { return db.anonymiseScenes(ctx) },
+			func() error { return db.anonymiseMarkers(ctx) },
 			func() error { return db.anonymiseImages(ctx) },
 			func() error { return db.anonymiseGalleries(ctx) },
 			func() error { return db.anonymisePerformers(ctx) },
@@ -69,6 +70,11 @@ func (db *Anonymiser) Anonymise(ctx context.Context) error {
 	return nil
 }
 
+func (db *Anonymiser) truncateColumn(tableName string, column string) error {
+	_, err := db.db.Exec("UPDATE " + tableName + " SET " + column + " = NULL")
+	return err
+}
+
 func (db *Anonymiser) truncateTable(tableName string) error {
 	_, err := db.db.Exec("DELETE FROM " + tableName)
 	return err
@@ -76,11 +82,14 @@ func (db *Anonymiser) truncateTable(tableName string) error {
 
 func (db *Anonymiser) deleteBlobs() error {
 	return utils.Do([]func() error{
-		func() error { return db.truncateTable("scenes_cover") },
-		func() error { return db.truncateTable("movies_images") },
-		func() error { return db.truncateTable("performers_image") },
-		func() error { return db.truncateTable("studios_image") },
-		func() error { return db.truncateTable("tags_image") },
+		func() error { return db.truncateColumn("tags", "image_blob") },
+		func() error { return db.truncateColumn("studios", "image_blob") },
+		func() error { return db.truncateColumn("performers", "image_blob") },
+		func() error { return db.truncateColumn("scenes", "cover_blob") },
+		func() error { return db.truncateColumn("movies", "front_image_blob") },
+		func() error { return db.truncateColumn("movies", "back_image_blob") },
+
+		func() error { return db.truncateTable("blobs") },
 	})
 }
 
@@ -283,6 +292,58 @@ func (db *Anonymiser) anonymiseScenes(ctx context.Context) error {
 
 				if total%logEvery == 0 {
 					logger.Infof("Anonymised %d scenes", total)
+				}
+
+				return nil
+			})
+		}); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (db *Anonymiser) anonymiseMarkers(ctx context.Context) error {
+	logger.Infof("Anonymising scene markers")
+	table := sceneMarkerTableMgr.table
+	lastID := 0
+	total := 0
+	const logEvery = 10000
+
+	for gotSome := true; gotSome; {
+		if err := txn.WithTxn(ctx, db, func(ctx context.Context) error {
+			query := dialect.From(table).Select(
+				table.Col(idColumn),
+				table.Col("title"),
+			).Where(table.Col(idColumn).Gt(lastID)).Limit(1000)
+
+			gotSome = false
+
+			const single = false
+			return queryFunc(ctx, query, single, func(rows *sqlx.Rows) error {
+				var (
+					id    int
+					title string
+				)
+
+				if err := rows.Scan(
+					&id,
+					&title,
+				); err != nil {
+					return err
+				}
+
+				if err := db.anonymiseText(ctx, table, "title", title); err != nil {
+					return err
+				}
+
+				lastID = id
+				gotSome = true
+				total++
+
+				if total%logEvery == 0 {
+					logger.Infof("Anonymised %d scene markers", total)
 				}
 
 				return nil

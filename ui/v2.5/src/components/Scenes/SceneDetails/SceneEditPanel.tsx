@@ -51,6 +51,8 @@ import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { lazyComponent } from "src/utils/lazyComponent";
+import isEqual from "lodash-es/isEqual";
+import { DateInput } from "src/components/Shared/DateInput";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
@@ -115,55 +117,66 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const [updateScene] = useSceneUpdate();
 
   const schema = yup.object({
-    title: yup.string().optional().nullable(),
-    code: yup.string().optional().nullable(),
-    details: yup.string().optional().nullable(),
-    director: yup.string().optional().nullable(),
-    url: yup.string().optional().nullable(),
-    date: yup.string().optional().nullable(),
-    rating100: yup.number().optional().nullable(),
-    gallery_ids: yup.array(yup.string().required()).optional().nullable(),
-    studio_id: yup.string().optional().nullable(),
-    performer_ids: yup.array(yup.string().required()).optional().nullable(),
+    title: yup.string().ensure(),
+    code: yup.string().ensure(),
+    url: yup.string().ensure(),
+    date: yup
+      .string()
+      .ensure()
+      .test({
+        name: "date",
+        test: (value) => {
+          if (!value) return true;
+          if (!value.match(/^\d{4}-\d{2}-\d{2}$/)) return false;
+          if (Number.isNaN(Date.parse(value))) return false;
+          return true;
+        },
+        message: intl.formatMessage({ id: "validation.date_invalid_form" }),
+      }),
+    director: yup.string().ensure(),
+    rating100: yup.number().nullable().defined(),
+    gallery_ids: yup.array(yup.string().required()).defined(),
+    studio_id: yup.string().required().nullable(),
+    performer_ids: yup.array(yup.string().required()).defined(),
     movies: yup
       .array(
         yup.object({
           movie_id: yup.string().required(),
-          scene_index: yup.string().optional().nullable(),
+          scene_index: yup.number().nullable().defined(),
         })
       )
-      .optional()
-      .nullable(),
-    tag_ids: yup.array(yup.string().required()).optional().nullable(),
-    cover_image: yup.string().optional().nullable(),
-    stash_ids: yup.mixed<GQL.StashIdInput[]>().optional().nullable(),
+      .defined(),
+    tag_ids: yup.array(yup.string().required()).defined(),
+    stash_ids: yup.mixed<GQL.StashIdInput[]>().defined(),
+    details: yup.string().ensure(),
+    cover_image: yup.string().nullable().optional(),
   });
 
   const initialValues = useMemo(
     () => ({
       title: scene.title ?? "",
       code: scene.code ?? "",
-      details: scene.details ?? "",
-      director: scene.director ?? "",
       url: scene.url ?? "",
       date: scene.date ?? "",
+      director: scene.director ?? "",
       rating100: scene.rating100 ?? null,
       gallery_ids: (scene.galleries ?? []).map((g) => g.id),
-      studio_id: scene.studio?.id,
+      studio_id: scene.studio?.id ?? null,
       performer_ids: (scene.performers ?? []).map((p) => p.id),
       movies: (scene.movies ?? []).map((m) => {
-        return { movie_id: m.movie.id, scene_index: m.scene_index };
+        return { movie_id: m.movie.id, scene_index: m.scene_index ?? null };
       }),
       tag_ids: (scene.tags ?? []).map((t) => t.id),
-      cover_image: initialCoverImage,
       stash_ids: getStashIDs(scene.stash_ids),
+      details: scene.details ?? "",
+      cover_image: initialCoverImage,
     }),
     [scene, initialCoverImage]
   );
 
-  type InputValues = typeof initialValues;
+  type InputValues = yup.InferType<typeof schema>;
 
-  const formik = useFormik({
+  const formik = useFormik<InputValues>({
     initialValues,
     enableReinitialize: true,
     validationSchema: schema,
@@ -225,15 +238,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
     setQueryableScrapers(newQueryableScrapers);
   }, [Scrapers, stashConfig]);
 
-  const imageEncoding = ImageUtils.usePasteImage(onImageLoad, true);
-
-  function getSceneInput(input: InputValues): GQL.SceneUpdateInput {
-    return {
-      id: scene.id!,
-      ...input,
-    };
-  }
-
   function setMovieIds(movieIds: string[]) {
     const existingMovies = formik.values.movies;
 
@@ -245,29 +249,22 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
       return {
         movie_id: m,
+        scene_index: null,
       };
     });
 
     formik.setFieldValue("movies", newMovies);
   }
 
-  function getCreateValues(values: InputValues): GQL.SceneCreateInput {
-    return {
-      ...values,
-    };
-  }
-
   async function onSave(input: InputValues) {
     setIsLoading(true);
     try {
       if (!isNew) {
-        const updateValues = getSceneInput(input);
         const result = await updateScene({
           variables: {
             input: {
-              ...updateValues,
               id: scene.id!,
-              rating100: input.rating100 ?? null,
+              ...input,
             },
           },
         });
@@ -280,20 +277,17 @@ export const SceneEditPanel: React.FC<IProps> = ({
               }
             ),
           });
+          formik.resetForm();
         }
       } else {
-        const createValues = getCreateValues(input);
         const result = await mutateCreateScene({
-          ...createValues,
+          ...input,
           file_ids: fileID ? [fileID] : undefined,
         });
         if (result.data?.sceneCreate?.id) {
           history.push(`/scenes/${result.data?.sceneCreate.id}`);
         }
       }
-
-      // clear the cover image so that it doesn't appear dirty
-      formik.resetForm({ values: formik.values });
     } catch (e) {
       Toast.error(e);
     }
@@ -320,6 +314,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
       />
     );
   }
+
+  const encodingImage = ImageUtils.usePasteImage(onImageLoad);
 
   function onImageLoad(imageData: string) {
     setCoverImagePreview(imageData);
@@ -414,7 +410,11 @@ export const SceneEditPanel: React.FC<IProps> = ({
       return;
     }
 
-    const currentScene = getSceneInput(formik.values);
+    const currentScene = {
+      id: scene.id!,
+      ...formik.values,
+    };
+
     if (!currentScene.cover_image) {
       currentScene.cover_image = scene.paths?.screenshot;
     }
@@ -671,7 +671,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   function renderTextField(field: string, title: string, placeholder?: string) {
     return (
-      <Form.Group controlId={title} as={Row}>
+      <Form.Group controlId={field} as={Row}>
         {FormUtils.renderLabel({
           title,
         })}
@@ -682,13 +682,16 @@ export const SceneEditPanel: React.FC<IProps> = ({
             {...formik.getFieldProps(field)}
             isInvalid={!!formik.getFieldMeta(field).error}
           />
+          <Form.Control.Feedback type="invalid">
+            {formik.getFieldMeta(field).error}
+          </Form.Control.Feedback>
         </Col>
       </Form.Group>
     );
   }
 
   const image = useMemo(() => {
-    if (imageEncoding) {
+    if (encodingImage) {
       return <LoadingIndicator message="Encoding image..." />;
     }
 
@@ -703,7 +706,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     }
 
     return <div></div>;
-  }, [imageEncoding, coverImagePreview, intl]);
+  }, [encodingImage, coverImagePreview, intl]);
 
   if (isLoading) return <LoadingIndicator />;
 
@@ -722,7 +725,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
             <Button
               className="edit-button"
               variant="primary"
-              disabled={!isNew && !formik.dirty}
+              disabled={
+                (!isNew && !formik.dirty) || !isEqual(formik.errors, {})
+              }
               onClick={() => formik.submitForm()}
             >
               <FormattedMessage id="actions.save" />
@@ -765,11 +770,20 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 />
               </Col>
             </Form.Group>
-            {renderTextField(
-              "date",
-              intl.formatMessage({ id: "date" }),
-              "YYYY-MM-DD"
-            )}
+
+            <Form.Group controlId="date" as={Row}>
+              {FormUtils.renderLabel({
+                title: intl.formatMessage({ id: "date" }),
+              })}
+              <Col xs={9}>
+                <DateInput
+                  value={formik.values.date}
+                  onValueChange={(value) => formik.setFieldValue("date", value)}
+                  error={formik.errors.date}
+                />
+              </Col>
+            </Form.Group>
+
             {renderTextField(
               "director",
               intl.formatMessage({ id: "director" })
@@ -946,10 +960,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
               <Form.Control
                 as="textarea"
                 className="scene-description text-input"
-                onChange={(newValue: React.ChangeEvent<HTMLTextAreaElement>) =>
-                  formik.setFieldValue("details", newValue.currentTarget.value)
+                onChange={(e) =>
+                  formik.setFieldValue("details", e.currentTarget.value)
                 }
-                value={formik.values.details}
+                value={formik.values.details ?? ""}
               />
             </Form.Group>
             <div>
