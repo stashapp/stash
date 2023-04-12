@@ -810,7 +810,7 @@
       "markers_tooltip": "20 second videos which begin at the given timecode.",
       "override_preview_generation_options": "Override Preview Generation Options",
       "override_preview_generation_options_desc": "Override Preview Generation Options for this operation. Defaults are set in System -> Preview Generation.",
-      "overwrite": "Overwrite existing generated files",
+      "overwrite": "Overwrite existing files",
       "phash": "Perceptual hashes (for deduplication)",
       "preview_exclude_end_time_desc": "Exclude the last x seconds from scene previews. This can be a value in seconds, or a percentage (eg 2%) of the total scene duration.",
       "preview_exclude_end_time_head": "Exclude end time",
