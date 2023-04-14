@@ -418,7 +418,7 @@ func (_m *SceneReaderWriter) FindByPerformerID(ctx context.Context, performerID 
 }
 
 // FindDuplicates provides a mock function with given fields: ctx, distance
-func (_m *SceneReaderWriter) FindDuplicates(ctx context.Context, distance int) ([][]*models.Scene, error) {
+func (_m *SceneReaderWriter) FindDuplicates(ctx context.Context, distance int, durationDiff float64) ([][]*models.Scene, error) {
 	ret := _m.Called(ctx, distance)
 
 	var r0 [][]*models.Scene

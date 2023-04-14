@@ -49,6 +49,7 @@ export const SceneDuplicateChecker: React.FC = () => {
   const currentPage = Number.parseInt(query.get("page") ?? "1", 10);
   const pageSize = Number.parseInt(query.get("size") ?? "20", 10);
   const hashDistance = Number.parseInt(query.get("distance") ?? "0", 10);
+  const durationDiff = Number.parseFloat(query.get("durationDiff") ?? "1");
 
   const [currentPageSize, setCurrentPageSize] = useState(pageSize);
   const [isMultiDelete, setIsMultiDelete] = useState(false);
@@ -59,8 +60,11 @@ export const SceneDuplicateChecker: React.FC = () => {
   );
   const { data, loading, refetch } = GQL.useFindDuplicateScenesQuery({
     fetchPolicy: "no-cache",
-    variables: { distance: hashDistance },
-  });
+      variables: {
+        distance: hashDistance,
+        durationDiff: durationDiff,
+      },
+   });
   const { data: missingPhash } = GQL.useFindScenesQuery({
     variables: {
       filter: {

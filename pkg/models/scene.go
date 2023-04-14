@@ -151,7 +151,7 @@ type SceneReader interface {
 	FindByPath(ctx context.Context, path string) ([]*Scene, error)
 	FindByPerformerID(ctx context.Context, performerID int) ([]*Scene, error)
 	FindByGalleryID(ctx context.Context, performerID int) ([]*Scene, error)
-	FindDuplicates(ctx context.Context, distance int) ([][]*Scene, error)
+	FindDuplicates(ctx context.Context, distance int, durationDiff float64) ([][]*Scene, error)
 
 	GalleryIDLoader
 	PerformerIDLoader
