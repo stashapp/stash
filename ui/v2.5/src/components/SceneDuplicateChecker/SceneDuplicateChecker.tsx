@@ -60,11 +60,11 @@ export const SceneDuplicateChecker: React.FC = () => {
   );
   const { data, loading, refetch } = GQL.useFindDuplicateScenesQuery({
     fetchPolicy: "no-cache",
-      variables: {
-        distance: hashDistance,
-        durationDiff: durationDiff,
-      },
-   });
+    variables: {
+      distance: hashDistance,
+      durationDiff: durationDiff,
+    },
+  });
   const { data: missingPhash } = GQL.useFindScenesQuery({
     variables: {
       filter: {
