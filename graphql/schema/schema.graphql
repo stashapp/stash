@@ -22,9 +22,9 @@ type Query {
     distance: Int,
     """Max difference in seconds between files in order to be considered for similarity matching.
     Fractional seconds are ok: 0.5 will mean only files that have durations within 0.5 seconds between them will be matched based on PHash distance.
-    Default: 1 second.
-    Pass a negative number to disable checking by duration difference"""
-    durationDiff: Float = 1
+    Pass a negative number to disable checking by duration difference
+    Default: -1 to maintain backwards compatibility"""
+    durationDiff: Float = -1
   ): [[Scene!]!]!
 
   """Return valid stream paths"""
