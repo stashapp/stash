@@ -24,3 +24,14 @@ func (r *queryResolver) FindSceneMarkers(ctx context.Context, sceneMarkerFilter 
 
 	return ret, nil
 }
+
+func (r *queryResolver) AllSceneMarkers(ctx context.Context) (ret []*models.SceneMarker, err error) {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.SceneMarker.All(ctx)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}

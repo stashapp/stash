@@ -10,6 +10,8 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   metadataPath
   scrapersPath
   cachePath
+  blobsPath
+  blobsStorage
   calculateMD5
   videoFileNamingAlgorithm
   parallelTasks
@@ -19,6 +21,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   previewExcludeStart
   previewExcludeEnd
   previewPreset
+  transcodeHardwareAcceleration
   maxTranscodeSize
   maxStreamingTranscodeSize
   writeImageThumbnails
@@ -31,6 +34,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   logLevel
   logAccess
   createGalleriesFromFolders
+  galleryCoverRegex
   videoExtensions
   imageExtensions
   galleryExtensions
@@ -46,6 +50,11 @@ fragment ConfigGeneralData on ConfigGeneralResult {
     api_key
   }
   pythonPath
+  transcodeInputArgs
+  transcodeOutputArgs
+  liveTranscodeInputArgs
+  liveTranscodeOutputArgs
+  drawFunscriptHeatmapRange
 }
 
 fragment ConfigInterfaceData on ConfigInterfaceResult {
@@ -124,6 +133,7 @@ fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
   scan {
     useFileMetadata
     stripFileExtension
+    scanGenerateCovers
     scanGeneratePreviews
     scanGenerateImagePreviews
     scanGenerateSprites
@@ -152,6 +162,7 @@ fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
   }
 
   generate {
+    covers
     sprites
     previews
     imagePreviews

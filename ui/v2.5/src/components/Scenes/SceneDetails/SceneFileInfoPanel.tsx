@@ -7,13 +7,15 @@ import {
   useIntl,
 } from "react-intl";
 import { useHistory } from "react-router-dom";
-import { TruncatedText } from "src/components/Shared";
-import DeleteFilesDialog from "src/components/Shared/DeleteFilesDialog";
-import ReassignFilesDialog from "src/components/Shared/ReassignFilesDialog";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
+import { DeleteFilesDialog } from "src/components/Shared/DeleteFilesDialog";
+import { ReassignFilesDialog } from "src/components/Shared/ReassignFilesDialog";
 import * as GQL from "src/core/generated-graphql";
 import { mutateSceneSetPrimaryFile } from "src/core/StashService";
-import { useToast } from "src/hooks";
-import { NavUtils, TextUtils, getStashboxBase } from "src/utils";
+import { useToast } from "src/hooks/Toast";
+import NavUtils from "src/utils/navigation";
+import TextUtils from "src/utils/text";
+import { getStashboxBase } from "src/utils/stashbox";
 import { TextField, URLField } from "src/utils/field";
 
 interface IFileInfoPanelProps {
@@ -178,12 +180,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
   const Toast = useToast();
 
   const [loading, setLoading] = useState(false);
-  const [deletingFile, setDeletingFile] = useState<
-    GQL.VideoFileDataFragment | undefined
-  >();
-  const [reassigningFile, setReassigningFile] = useState<
-    GQL.VideoFileDataFragment | undefined
-  >();
+  const [deletingFile, setDeletingFile] = useState<GQL.VideoFileDataFragment>();
+  const [reassigningFile, setReassigningFile] =
+    useState<GQL.VideoFileDataFragment>();
 
   function renderStashIDs() {
     if (!props.scene.stash_ids.length) {
@@ -307,12 +306,14 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
   return (
     <>
       <dl className="container scene-file-info details-list">
-        <URLField
-          id="media_info.stream"
-          url={props.scene.paths.stream}
-          value={props.scene.paths.stream}
-          truncate
-        />
+        {props.scene.files.length > 0 && (
+          <URLField
+            id="media_info.stream"
+            url={props.scene.paths.stream}
+            value={props.scene.paths.stream}
+            truncate
+          />
+        )}
         {renderFunscript()}
         {renderInteractiveSpeed()}
         <URLField

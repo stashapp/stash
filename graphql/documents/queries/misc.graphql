@@ -6,26 +6,27 @@ query MarkerStrings($q: String, $sort: String) {
   }
 }
 
-query AllTags {
-  allTags {
-    ...TagData
-  }
-}
-
 query AllPerformersForFilter {
   allPerformers {
-    ...SlimPerformerData
+    id
+    name
+    disambiguation
+    alias_list
   }
 }
 
 query AllStudiosForFilter {
   allStudios {
-    ...SlimStudioData
+    id
+    name
+    aliases
   }
 }
+
 query AllMoviesForFilter {
   allMovies {
-    ...SlimMovieData
+    id
+    name
   }
 }
 
@@ -67,7 +68,9 @@ query Version {
 
 query LatestVersion {
   latestversion {
+    version
     shorthash
+    release_date
     url
   }
 }

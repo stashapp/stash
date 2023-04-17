@@ -218,7 +218,7 @@ For those preferring the json-format, defined [here](https://json-schema.org/), 
 ``` json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/stashapp/stash/wiki/JSON-Specification/performer.json",
+  "$id": "https://docs.stashapp.cc/in-app-manual/tasks/jsonspec#performerjson",
   "title": "performer",
   "description": "A json file representing a performer. The file is named by a MD5 Code.",
   "type": "object",
@@ -318,7 +318,7 @@ For those preferring the json-format, defined [here](https://json-schema.org/), 
 ``` json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/stashapp/stash/wiki/JSON-Specification/studio.json",
+  "$id": "https://docs.stashapp.cc/in-app-manual/tasks/jsonspec#studiojson",
   "title": "studio",
   "description": "A json file representing a studio. The file is named by a MD5 Code.",
   "type": "object",
@@ -357,7 +357,7 @@ For those preferring the json-format, defined [here](https://json-schema.org/), 
 ```json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/stashapp/stash/wiki/JSON-Specification/scene.json",
+  "$id": "https://docs.stashapp.cc/in-app-manual/tasks/jsonspec#scenejson",
   "title": "scene",
   "description": "A json file representing a scene. The file is named by the MD5 Code of the file its data is referring to.",
   "type": "object",

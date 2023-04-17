@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/performer"
 )
 
 func (r *studioResolver) Name(ctx context.Context, obj *models.Studio) (string, error) {
@@ -85,6 +86,18 @@ func (r *studioResolver) GalleryCount(ctx context.Context, obj *models.Studio) (
 	var res int
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		res, err = gallery.CountByStudioID(ctx, r.repository.Gallery, obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+func (r *studioResolver) PerformerCount(ctx context.Context, obj *models.Studio) (ret *int, err error) {
+	var res int
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		res, err = performer.CountByStudioID(ctx, r.repository.Performer, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err

@@ -158,7 +158,9 @@ func (qb *sceneMarkerQueryBuilder) Query(ctx context.Context, sceneMarkerFilter 
 
 	filter := qb.makeFilter(ctx, sceneMarkerFilter)
 
-	query.addFilter(filter)
+	if err := query.addFilter(filter); err != nil {
+		return nil, 0, err
+	}
 
 	query.sortAndPagination = qb.getSceneMarkerSort(&query, findFilter) + getPagination(findFilter)
 	idsResult, countResult, err := query.executeFind(ctx)
@@ -343,4 +345,12 @@ func (qb *sceneMarkerQueryBuilder) GetTagIDs(ctx context.Context, id int) ([]int
 func (qb *sceneMarkerQueryBuilder) UpdateTags(ctx context.Context, id int, tagIDs []int) error {
 	// Delete the existing joins and then create new ones
 	return qb.tagsRepository().replace(ctx, id, tagIDs)
+}
+
+func (qb *sceneMarkerQueryBuilder) Count(ctx context.Context) (int, error) {
+	return qb.runCountQuery(ctx, qb.buildCountQuery("SELECT scene_markers.id FROM scene_markers"), nil)
+}
+
+func (qb *sceneMarkerQueryBuilder) All(ctx context.Context) ([]*models.SceneMarker, error) {
+	return qb.querySceneMarkers(ctx, selectAll("scene_markers")+qb.getSceneMarkerSort(nil, nil), nil)
 }

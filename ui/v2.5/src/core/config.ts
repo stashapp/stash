@@ -1,5 +1,6 @@
 import { IntlShape } from "react-intl";
-import { ITypename } from "src/utils";
+import { ITypename } from "src/utils/data";
+import { ImageWallOptions } from "src/utils/imageWall";
 import { RatingSystemOptions } from "src/utils/rating";
 import { FilterMode, SortDirectionEnum } from "./generated-graphql";
 
@@ -26,6 +27,8 @@ export interface ICustomFilter extends ITypename {
 
 export type FrontPageContent = ISavedFilterRow | ICustomFilter;
 
+export const defaultMaxOptionsShown = 200;
+
 export interface IUIConfig {
   frontPageContent?: FrontPageContent[];
 
@@ -44,6 +47,12 @@ export interface IUIConfig {
   // the minimum percentage of scene duration which a scene must be played
   // before the play count is incremented
   minimumPlayPercent?: number;
+
+  // maximum number of items to shown in the dropdown list - defaults to 200
+  // upper limit of 1000
+  maxOptionsShown?: number;
+
+  imageWallOptions?: ImageWallOptions;
 
   lastNoteSeen?: number;
 }

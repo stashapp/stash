@@ -1,14 +1,17 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"net/http"
 	"os"
 	"path"
+	"regexp"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -31,6 +34,7 @@ import (
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/ui"
 )
 
@@ -131,7 +135,7 @@ func Start() error {
 
 	// session handlers
 	r.Post(loginEndPoint, handleLogin(loginUIBox))
-	r.Get("/logout", handleLogout(loginUIBox))
+	r.Get(logoutEndPoint, handleLogout(loginUIBox))
 
 	r.Get(loginEndPoint, getLoginHandler(loginUIBox))
 
@@ -166,36 +170,8 @@ func Start() error {
 	}.Routes())
 	r.Mount("/downloads", downloadsRoutes{}.Routes())
 
-	r.HandleFunc("/css", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/css")
-		if !c.GetCSSEnabled() {
-			return
-		}
-
-		// search for custom.css in current directory, then $HOME/.stash
-		fn := c.GetCSSPath()
-		exists, _ := fsutil.FileExists(fn)
-		if !exists {
-			return
-		}
-
-		http.ServeFile(w, r, fn)
-	})
-	r.HandleFunc("/javascript", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/javascript")
-		if !c.GetJavascriptEnabled() {
-			return
-		}
-
-		// search for custom.js in current directory, then $HOME/.stash
-		fn := c.GetJavascriptPath()
-		exists, _ := fsutil.FileExists(fn)
-		if !exists {
-			return
-		}
-
-		http.ServeFile(w, r, fn)
-	})
+	r.HandleFunc("/css", cssHandler(c, pluginCache))
+	r.HandleFunc("/javascript", javascriptHandler(c, pluginCache))
 	r.HandleFunc("/customlocales", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		if c.GetCustomLocalesEnabled() {
@@ -329,21 +305,137 @@ func Start() error {
 	return nil
 }
 
+func copyFile(w io.Writer, path string) (time.Time, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return time.Time{}, err
+	}
+	defer f.Close()
+
+	info, err := f.Stat()
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	_, err = io.Copy(w, f)
+
+	return info.ModTime(), err
+}
+
+func serveFiles(w http.ResponseWriter, r *http.Request, name string, paths []string) {
+	buffer := bytes.Buffer{}
+
+	latestModTime := time.Time{}
+
+	for _, path := range paths {
+		modTime, err := copyFile(&buffer, path)
+		if err != nil {
+			logger.Errorf("error serving file %s: %v", path, err)
+		} else {
+			if modTime.After(latestModTime) {
+				latestModTime = modTime
+			}
+			buffer.Write([]byte("\n"))
+		}
+	}
+
+	// Always revalidate with server
+	w.Header().Set("Cache-Control", "no-cache")
+
+	bufferReader := bytes.NewReader(buffer.Bytes())
+	http.ServeContent(w, r, name, latestModTime, bufferReader)
+}
+
+func cssHandler(c *config.Instance, pluginCache *plugin.Cache) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// concatenate with plugin css files
+		w.Header().Set("Content-Type", "text/css")
+
+		// add plugin css files first
+		var paths []string
+
+		for _, p := range pluginCache.ListPlugins() {
+			paths = append(paths, p.UI.CSS...)
+		}
+
+		if c.GetCSSEnabled() {
+			// search for custom.css in current directory, then $HOME/.stash
+			fn := c.GetCSSPath()
+			exists, _ := fsutil.FileExists(fn)
+			if exists {
+				paths = append(paths, fn)
+			}
+		}
+
+		serveFiles(w, r, "custom.css", paths)
+	}
+}
+
+func javascriptHandler(c *config.Instance, pluginCache *plugin.Cache) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/javascript")
+
+		// add plugin javascript files first
+		var paths []string
+
+		for _, p := range pluginCache.ListPlugins() {
+			paths = append(paths, p.UI.Javascript...)
+		}
+
+		if c.GetJavascriptEnabled() {
+			// search for custom.js in current directory, then $HOME/.stash
+			fn := c.GetJavascriptPath()
+			exists, _ := fsutil.FileExists(fn)
+			if exists {
+				paths = append(paths, fn)
+			}
+		}
+
+		serveFiles(w, r, "custom.js", paths)
+	}
+}
+
 func printVersion() {
-	versionString := githash
+	var versionString string
+	switch {
+	case version != "":
+		if githash != "" && !IsDevelop() {
+			versionString = version + " (" + githash + ")"
+		} else {
+			versionString = version
+		}
+	case githash != "":
+		versionString = githash
+	default:
+		versionString = "unknown"
+	}
 	if config.IsOfficialBuild() {
 		versionString += " - Official Build"
 	} else {
 		versionString += " - Unofficial Build"
 	}
-	if version != "" {
-		versionString = version + " (" + versionString + ")"
+	if buildstamp != "" {
+		versionString += " - " + buildstamp
 	}
-	fmt.Printf("stash version: %s - %s\n", versionString, buildstamp)
+	logger.Infof("stash version: %s\n", versionString)
 }
 
 func GetVersion() (string, string, string) {
 	return version, githash, buildstamp
+}
+
+func IsDevelop() bool {
+	if githash == "" {
+		return false
+	}
+
+	// if the version is suffixed with -x-xxxx, then we are running a development build
+	develop := false
+	re := regexp.MustCompile(`-\d+-g\w+$`)
+	if re.MatchString(version) {
+		develop = true
+	}
+	return develop
 }
 
 func makeTLSConfig(c *config.Instance) (*tls.Config, error) {
@@ -366,12 +458,12 @@ func makeTLSConfig(c *config.Instance) (*tls.Config, error) {
 
 	cert, err := os.ReadFile(certFile)
 	if err != nil {
-		return nil, fmt.Errorf("error reading SSL certificate file %s: %s", certFile, err.Error())
+		return nil, fmt.Errorf("error reading SSL certificate file %s: %v", certFile, err)
 	}
 
 	key, err := os.ReadFile(keyFile)
 	if err != nil {
-		return nil, fmt.Errorf("error reading SSL key file %s: %s", keyFile, err.Error())
+		return nil, fmt.Errorf("error reading SSL key file %s: %v", keyFile, err)
 	}
 
 	certs := make([]tls.Certificate, 1)
@@ -411,7 +503,7 @@ func SecurityHeadersMiddleware(next http.Handler) http.Handler {
 		}
 		connectableOrigins += "; "
 
-		cspDirectives := "default-src data: 'self' 'unsafe-inline';" + connectableOrigins + "img-src data: *; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline' 'unsafe-eval'; style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src-elem 'self' https://cdn.jsdelivr.net 'unsafe-inline'; media-src 'self' blob:; child-src 'none'; object-src 'none'; form-action 'self'"
+		cspDirectives := "default-src data: 'self' 'unsafe-inline';" + connectableOrigins + "img-src data: *; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline' 'unsafe-eval'; style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src-elem 'self' https://cdn.jsdelivr.net 'unsafe-inline'; media-src 'self' blob:; child-src 'none'; worker-src blob:; object-src 'none'; form-action 'self'"
 
 		w.Header().Set("Referrer-Policy", "same-origin")
 		w.Header().Set("X-Content-Type-Options", "nosniff")

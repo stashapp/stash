@@ -62,11 +62,12 @@ type GenderCriterionInput struct {
 }
 
 type PerformerFilterType struct {
-	And     *PerformerFilterType  `json:"AND"`
-	Or      *PerformerFilterType  `json:"OR"`
-	Not     *PerformerFilterType  `json:"NOT"`
-	Name    *StringCriterionInput `json:"name"`
-	Details *StringCriterionInput `json:"details"`
+	And            *PerformerFilterType  `json:"AND"`
+	Or             *PerformerFilterType  `json:"OR"`
+	Not            *PerformerFilterType  `json:"NOT"`
+	Name           *StringCriterionInput `json:"name"`
+	Disambiguation *StringCriterionInput `json:"disambiguation"`
+	Details        *StringCriterionInput `json:"details"`
 	// Filter by favorite
 	FilterFavorites *bool `json:"filter_favorites"`
 	// Filter by birth year
@@ -159,9 +160,11 @@ type PerformerReader interface {
 	// support the query needed
 	QueryForAutoTag(ctx context.Context, words []string) ([]*Performer, error)
 	Query(ctx context.Context, performerFilter *PerformerFilterType, findFilter *FindFilterType) ([]*Performer, int, error)
+	QueryCount(ctx context.Context, galleryFilter *PerformerFilterType, findFilter *FindFilterType) (int, error)
+	AliasLoader
 	GetImage(ctx context.Context, performerID int) ([]byte, error)
 	StashIDLoader
-	GetTagIDs(ctx context.Context, performerID int) ([]int, error)
+	TagIDLoader
 }
 
 type PerformerWriter interface {
@@ -171,8 +174,6 @@ type PerformerWriter interface {
 	Destroy(ctx context.Context, id int) error
 	UpdateImage(ctx context.Context, performerID int, image []byte) error
 	DestroyImage(ctx context.Context, performerID int) error
-	UpdateStashIDs(ctx context.Context, performerID int, stashIDs []StashID) error
-	UpdateTags(ctx context.Context, performerID int, tagIDs []int) error
 }
 
 type PerformerReaderWriter interface {

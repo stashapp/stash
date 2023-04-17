@@ -1,11 +1,17 @@
-import React, { lazy, Suspense, useEffect, useState } from "react";
-import { Route, Switch, useRouteMatch } from "react-router-dom";
+import React, { Suspense, useEffect, useState } from "react";
+import {
+  Route,
+  Switch,
+  useHistory,
+  useLocation,
+  useRouteMatch,
+} from "react-router-dom";
 import { IntlProvider, CustomFormats } from "react-intl";
 import { Helmet } from "react-helmet";
 import cloneDeep from "lodash-es/cloneDeep";
 import mergeWith from "lodash-es/mergeWith";
 import { ToastProvider } from "src/hooks/Toast";
-import LightboxProvider from "src/hooks/Lightbox/context";
+import { LightboxProvider } from "src/hooks/Lightbox/context";
 import { initPolyfills } from "src/polyfills";
 
 import locales, { registerCountry } from "src/locales";
@@ -14,14 +20,16 @@ import {
   useConfigureUI,
   useSystemStatus,
 } from "src/core/StashService";
-import { flattenMessages } from "src/utils";
+import flattenMessages from "./utils/flattenMessages";
+import * as yup from "yup";
 import Mousetrap from "mousetrap";
 import MousetrapPause from "mousetrap-pause";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { MainNavbar } from "./components/MainNavbar";
 import { PageNotFound } from "./components/PageNotFound";
 import * as GQL from "./core/generated-graphql";
-import { LoadingIndicator, TITLE_SUFFIX } from "./components/Shared";
+import { TITLE_SUFFIX } from "./components/Shared/constants";
+import { LoadingIndicator } from "./components/Shared/LoadingIndicator";
 
 import { ConfigurationProvider } from "./hooks/Config";
 import { ManualProvider } from "./components/Help/context";
@@ -29,26 +37,33 @@ import { InteractiveProvider } from "./hooks/Interactive/context";
 import { ReleaseNotesDialog } from "./components/Dialogs/ReleaseNotesDialog";
 import { IUIConfig } from "./core/config";
 import { releaseNotes } from "./docs/en/ReleaseNotes";
-import { getPlatformURL, getBaseURL } from "./core/createClient";
+import { getPlatformURL } from "./core/createClient";
+import { lazyComponent } from "./utils/lazyComponent";
 
-const Performers = lazy(() => import("./components/Performers/Performers"));
-const FrontPage = lazy(() => import("./components/FrontPage/FrontPage"));
-const Scenes = lazy(() => import("./components/Scenes/Scenes"));
-const Settings = lazy(() => import("./components/Settings/Settings"));
-const Stats = lazy(() => import("./components/Stats"));
-const Studios = lazy(() => import("./components/Studios/Studios"));
-const Galleries = lazy(() => import("./components/Galleries/Galleries"));
+const Performers = lazyComponent(
+  () => import("./components/Performers/Performers")
+);
+const FrontPage = lazyComponent(
+  () => import("./components/FrontPage/FrontPage")
+);
+const Scenes = lazyComponent(() => import("./components/Scenes/Scenes"));
+const Settings = lazyComponent(() => import("./components/Settings/Settings"));
+const Stats = lazyComponent(() => import("./components/Stats"));
+const Studios = lazyComponent(() => import("./components/Studios/Studios"));
+const Galleries = lazyComponent(
+  () => import("./components/Galleries/Galleries")
+);
 
-const Movies = lazy(() => import("./components/Movies/Movies"));
-const Tags = lazy(() => import("./components/Tags/Tags"));
-const Images = lazy(() => import("./components/Images/Images"));
-const Setup = lazy(() => import("./components/Setup/Setup"));
-const Migrate = lazy(() => import("./components/Setup/Migrate"));
+const Movies = lazyComponent(() => import("./components/Movies/Movies"));
+const Tags = lazyComponent(() => import("./components/Tags/Tags"));
+const Images = lazyComponent(() => import("./components/Images/Images"));
+const Setup = lazyComponent(() => import("./components/Setup/Setup"));
+const Migrate = lazyComponent(() => import("./components/Setup/Migrate"));
 
-const SceneFilenameParser = lazy(
+const SceneFilenameParser = lazyComponent(
   () => import("./components/SceneFilenameParser/SceneFilenameParser")
 );
-const SceneDuplicateChecker = lazy(
+const SceneDuplicateChecker = lazyComponent(
   () => import("./components/SceneDuplicateChecker/SceneDuplicateChecker")
 );
 
@@ -91,10 +106,12 @@ export const App: React.FC = () => {
       const defaultMessages = (await locales[defaultMessageLanguage]()).default;
       const mergedMessages = cloneDeep(Object.assign({}, defaultMessages));
       const chosenMessages = (await locales[messageLanguage]()).default;
-      const res = await fetch(getPlatformURL() + "customlocales");
       let customMessages = {};
       try {
-        customMessages = res.ok ? await res.json() : {};
+        const res = await fetch(getPlatformURL() + "customlocales");
+        if (res.ok) {
+          customMessages = await res.json();
+        }
       } catch (err) {
         console.log(err);
       }
@@ -110,12 +127,25 @@ export const App: React.FC = () => {
         }
       );
 
-      setMessages(flattenMessages(mergedMessages));
+      const newMessages = flattenMessages(mergedMessages) as Record<
+        string,
+        string
+      >;
+
+      yup.setLocale({
+        mixed: {
+          required: newMessages["validation.required"],
+        },
+      });
+
+      setMessages(newMessages);
     };
 
     setLocale();
   }, [language]);
 
+  const location = useLocation();
+  const history = useHistory();
   const setupMatch = useRouteMatch(["/setup", "/migrate"]);
 
   // redirect to setup or migrate as needed
@@ -124,27 +154,24 @@ export const App: React.FC = () => {
       return;
     }
 
-    const baseURL = getBaseURL();
+    const { status } = systemStatusData.systemStatus;
 
     if (
-      window.location.pathname !== baseURL + "setup" &&
-      systemStatusData.systemStatus.status === GQL.SystemStatusEnum.Setup
+      location.pathname !== "/setup" &&
+      status === GQL.SystemStatusEnum.Setup
     ) {
       // redirect to setup page
-      const newURL = new URL("setup", window.location.origin + baseURL);
-      window.location.href = newURL.toString();
+      history.push("/setup");
     }
 
     if (
-      window.location.pathname !== baseURL + "migrate" &&
-      systemStatusData.systemStatus.status ===
-        GQL.SystemStatusEnum.NeedsMigration
+      location.pathname !== "/migrate" &&
+      status === GQL.SystemStatusEnum.NeedsMigration
     ) {
-      // redirect to setup page
-      const newURL = new URL("migrate", window.location.origin + baseURL);
-      window.location.href = newURL.toString();
+      // redirect to migrate page
+      history.push("/migrate");
     }
-  }, [systemStatusData]);
+  }, [systemStatusData, setupMatch, history, location]);
 
   function maybeRenderNavbar() {
     // don't render navbar for setup views
@@ -190,7 +217,7 @@ export const App: React.FC = () => {
   }
 
   function maybeRenderReleaseNotes() {
-    if (setupMatch || config.loading || config.error) {
+    if (setupMatch || !systemStatusData || config.loading || config.error) {
       return;
     }
 
@@ -204,7 +231,7 @@ export const App: React.FC = () => {
 
     return (
       <ReleaseNotesDialog
-        notes={notes.map((n) => n.content)}
+        notes={notes}
         onClose={() => {
           saveUI({
             variables: {

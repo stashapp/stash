@@ -178,8 +178,9 @@ var scenarios = []basicTestScenario{
 	},
 	{
 		createFullScene(errImageID),
-		nil,
-		true,
+		createFullJSONScene(""),
+		// failure to get image should not cause an error
+		false,
 	},
 }
 

@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -16,7 +18,7 @@ func (r *queryResolver) FindMovie(ctx context.Context, id string) (ret *models.M
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Movie.Find(ctx, idInt)
 		return err
-	}); err != nil {
+	}); err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 
@@ -34,7 +36,6 @@ func (r *queryResolver) FindMovies(ctx context.Context, movieFilter *models.Movi
 			Count:  total,
 			Movies: movies,
 		}
-
 		return nil
 	}); err != nil {
 		return nil, err

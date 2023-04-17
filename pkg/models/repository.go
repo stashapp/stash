@@ -14,16 +14,17 @@ type TxnManager interface {
 type Repository struct {
 	TxnManager
 
-	File        file.Store
-	Folder      file.FolderStore
-	Gallery     GalleryReaderWriter
-	Image       ImageReaderWriter
-	Movie       MovieReaderWriter
-	Performer   PerformerReaderWriter
-	Scene       SceneReaderWriter
-	SceneMarker SceneMarkerReaderWriter
-	ScrapedItem ScrapedItemReaderWriter
-	Studio      StudioReaderWriter
-	Tag         TagReaderWriter
-	SavedFilter SavedFilterReaderWriter
+	File           file.Store
+	Folder         file.FolderStore
+	Gallery        GalleryReaderWriter
+	GalleryChapter GalleryChapterReaderWriter
+	Image          ImageReaderWriter
+	Movie          MovieReaderWriter
+	Performer      PerformerReaderWriter
+	Scene          SceneReaderWriter
+	SceneMarker    SceneMarkerReaderWriter
+	ScrapedItem    ScrapedItemReaderWriter
+	Studio         StudioReaderWriter
+	Tag            TagReaderWriter
+	SavedFilter    SavedFilterReaderWriter
 }

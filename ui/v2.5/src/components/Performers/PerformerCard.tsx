@@ -2,14 +2,13 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
-import { NavUtils, TextUtils } from "src/utils";
-import {
-  GridCard,
-  CountryFlag,
-  HoverPopover,
-  Icon,
-  TagLink,
-} from "src/components/Shared";
+import NavUtils from "src/utils/navigation";
+import TextUtils from "src/utils/text";
+import { GridCard } from "../Shared/GridCard";
+import { CountryFlag } from "../Shared/CountryFlag";
+import { HoverPopover } from "../Shared/HoverPopover";
+import { Icon } from "../Shared/Icon";
+import { TagLink } from "../Shared/TagLink";
 import { Button, ButtonGroup } from "react-bootstrap";
 import {
   Criterion,
@@ -19,6 +18,8 @@ import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import GenderIcon from "./GenderIcon";
 import { faHeart, faTag } from "@fortawesome/free-solid-svg-icons";
 import { RatingBanner } from "../Shared/RatingBanner";
+import cx from "classnames";
+import { usePerformerUpdate } from "src/core/StashService";
 
 export interface IPerformerCardExtraCriteria {
   scenes: Criterion<CriterionValue>[];
@@ -61,15 +62,37 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     { age, years_old: ageL10String }
   );
 
-  function maybeRenderFavoriteIcon() {
-    if (performer.favorite === false) {
-      return;
-    }
+  const [updatePerformer] = usePerformerUpdate();
+
+  function renderFavoriteIcon() {
     return (
-      <div className="favorite">
-        <Icon icon={faHeart} size="2x" />
-      </div>
+      <Link to="" onClick={(e) => e.preventDefault()}>
+        <Button
+          className={cx(
+            "minimal",
+            "mousetrap",
+            "favorite-button",
+            performer.favorite ? "favorite" : "not-favorite"
+          )}
+          onClick={() => onToggleFavorite!(!performer.favorite)}
+        >
+          <Icon icon={faHeart} size="2x" />
+        </Button>
+      </Link>
     );
+  }
+
+  function onToggleFavorite(v: boolean) {
+    if (performer.id) {
+      updatePerformer({
+        variables: {
+          input: {
+            id: performer.id,
+            favorite: v,
+          },
+        },
+      });
+    }
   }
 
   function maybeRenderScenesPopoverButton() {
@@ -197,7 +220,16 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       pretitleIcon={
         <GenderIcon className="gender-icon" gender={performer.gender} />
       }
-      title={performer.name ?? ""}
+      title={
+        <div>
+          <span className="performer-name">{performer.name}</span>
+          {performer.disambiguation && (
+            <span className="performer-disambiguation">
+              {` (${performer.disambiguation})`}
+            </span>
+          )}
+        </div>
+      }
       image={
         <>
           <img
@@ -205,7 +237,8 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
             alt={performer.name ?? ""}
             src={performer.image_path ?? ""}
           />
-          {maybeRenderFavoriteIcon()}
+
+          {renderFavoriteIcon()}
           {maybeRenderRatingBanner()}
           {maybeRenderFlag()}
         </>
@@ -217,9 +250,9 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
           ) : (
             ""
           )}
-          {maybeRenderPopoverButtonGroup()}
         </>
       }
+      popovers={maybeRenderPopoverButtonGroup()}
       selected={selected}
       selecting={selecting}
       onSelectedChanged={onSelectedChanged}

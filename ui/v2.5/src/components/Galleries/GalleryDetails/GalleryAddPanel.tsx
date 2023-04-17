@@ -3,18 +3,22 @@ import * as GQL from "src/core/generated-graphql";
 import { GalleriesCriterion } from "src/models/list-filter/criteria/galleries";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { ImageList } from "src/components/Images/ImageList";
-import { showWhenSelected } from "src/hooks/ListHook";
+import { showWhenSelected } from "src/components/List/ItemList";
 import { mutateAddGalleryImages } from "src/core/StashService";
-import { useToast } from "src/hooks";
+import { useToast } from "src/hooks/Toast";
 import { useIntl } from "react-intl";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { galleryTitle } from "src/core/galleries";
 
 interface IGalleryAddProps {
+  active: boolean;
   gallery: GQL.GalleryDataFragment;
 }
 
-export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({ gallery }) => {
+export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({
+  active,
+  gallery,
+}) => {
   const Toast = useToast();
   const intl = useIntl();
 
@@ -93,6 +97,10 @@ export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({ gallery }) => {
   ];
 
   return (
-    <ImageList filterHook={filterHook} extraOperations={otherOperations} />
+    <ImageList
+      filterHook={filterHook}
+      extraOperations={otherOperations}
+      alterQuery={active}
+    />
   );
 };

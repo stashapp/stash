@@ -15,6 +15,7 @@ export const StashIDFilter: React.FC<IStashIDFilterProps> = ({
   onValueChanged,
 }) => {
   const intl = useIntl();
+  const { value } = criterion;
 
   function onEndpointChanged(event: React.ChangeEvent<HTMLInputElement>) {
     onValueChanged({
@@ -35,8 +36,8 @@ export const StashIDFilter: React.FC<IStashIDFilterProps> = ({
       <Form.Group>
         <Form.Control
           className="btn-secondary"
-          onBlur={onEndpointChanged}
-          defaultValue={criterion.value ? criterion.value.endpoint : ""}
+          onChange={onEndpointChanged}
+          value={value ? value.endpoint : ""}
           placeholder={intl.formatMessage({ id: "stash_id_endpoint" })}
         />
       </Form.Group>
@@ -45,8 +46,8 @@ export const StashIDFilter: React.FC<IStashIDFilterProps> = ({
           <Form.Group>
             <Form.Control
               className="btn-secondary"
-              onBlur={onStashIDChanged}
-              defaultValue={criterion.value ? criterion.value.stashID : ""}
+              onChange={onStashIDChanged}
+              value={value ? value.stashID : ""}
               placeholder={intl.formatMessage({ id: "stash_id" })}
             />
           </Form.Group>

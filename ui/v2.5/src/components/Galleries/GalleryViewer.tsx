@@ -1,6 +1,7 @@
-import React, { useMemo } from "react";
-import { useLightbox } from "src/hooks";
-import { LoadingIndicator } from "src/components/Shared";
+import React, { useCallback, useMemo } from "react";
+import { useLightbox } from "src/hooks/Lightbox/hooks";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import Gallery from "react-photo-gallery";
 import "flexbin/flexbin.css";
 import {
   CriterionModifier,
@@ -44,29 +45,42 @@ export const GalleryViewer: React.FC<IProps> = ({ galleryId }) => {
   }, [images]);
 
   const showLightbox = useLightbox(lightboxState);
+  const showLightboxOnClick = useCallback(
+    (event, { index }) => {
+      showLightbox(index);
+    },
+    [showLightbox]
+  );
 
   if (loading) return <LoadingIndicator />;
 
-  const thumbs = images.map((file, index) => (
-    <div
-      role="link"
-      tabIndex={index}
-      key={file.id ?? index}
-      onClick={() => showLightbox(index)}
-      onKeyPress={() => showLightbox(index)}
-    >
-      <img
-        src={file.paths.thumbnail ?? ""}
-        loading="lazy"
-        className="gallery-image"
-        alt={file.title ?? index.toString()}
-      />
-    </div>
-  ));
+  let photos: {
+    src: string;
+    srcSet?: string | string[] | undefined;
+    sizes?: string | string[] | undefined;
+    width: number;
+    height: number;
+    alt?: string | undefined;
+    key?: string | undefined;
+  }[] = [];
+
+  images.forEach((image, index) => {
+    let imageData = {
+      src: image.paths.thumbnail!,
+      width: image.files[0].width,
+      height: image.files[0].height,
+      tabIndex: index,
+      key: image.id ?? index,
+      loading: "lazy",
+      className: "gallery-image",
+      alt: image.title ?? index.toString(),
+    };
+    photos.push(imageData);
+  });
 
   return (
     <div className="gallery">
-      <div className="flexbin">{thumbs}</div>
+      <Gallery photos={photos} onClick={showLightboxOnClick} margin={2.5} />
     </div>
   );
 };

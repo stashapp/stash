@@ -2414,6 +2414,13 @@ func TestGalleryQuerySorting(t *testing.T) {
 			-1,
 			-1,
 		},
+		{
+			"title",
+			"title",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
 	}
 
 	qb := db.Gallery
@@ -2607,6 +2614,37 @@ func TestGalleryStore_RemoveImages(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGalleryQueryHasChapters(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Gallery
+		hasChapters := "true"
+		galleryFilter := models.GalleryFilterType{
+			HasChapters: &hasChapters,
+		}
+
+		q := getGalleryStringValue(galleryIdxWithChapters, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		galleries := queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
+
+		assert.Len(t, galleries, 1)
+		assert.Equal(t, galleryIDs[galleryIdxWithChapters], galleries[0].ID)
+
+		hasChapters = "false"
+		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
+		assert.Len(t, galleries, 0)
+
+		findFilter.Q = nil
+		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
+
+		assert.NotEqual(t, 0, len(galleries))
+
+		return nil
+	})
 }
 
 // TODO Count

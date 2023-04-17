@@ -765,6 +765,7 @@ func exportGallery(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *mode
 	studioReader := repo.Studio
 	performerReader := repo.Performer
 	tagReader := repo.Tag
+	galleryChapterReader := repo.GalleryChapter
 
 	for g := range jobChan {
 		if err := g.LoadFiles(ctx, repo.Gallery); err != nil {
@@ -818,6 +819,12 @@ func exportGallery(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *mode
 		tags, err := tagReader.FindByGalleryID(ctx, g.ID)
 		if err != nil {
 			logger.Errorf("[galleries] <%s> error getting gallery tag names: %s", galleryHash, err.Error())
+			continue
+		}
+
+		newGalleryJSON.Chapters, err = gallery.GetGalleryChaptersJSON(ctx, galleryChapterReader, g)
+		if err != nil {
+			logger.Errorf("[galleries] <%s> error getting gallery chapters JSON: %s", galleryHash, err.Error())
 			continue
 		}
 
@@ -899,13 +906,13 @@ func (t *ExportTask) exportPerformer(ctx context.Context, wg *sync.WaitGroup, jo
 		newPerformerJSON, err := performer.ToJSON(ctx, performerReader, p)
 
 		if err != nil {
-			logger.Errorf("[performers] <%s> error getting performer JSON: %s", p.Checksum, err.Error())
+			logger.Errorf("[performers] <%s> error getting performer JSON: %s", p.Name, err.Error())
 			continue
 		}
 
 		tags, err := repo.Tag.FindByPerformerID(ctx, p.ID)
 		if err != nil {
-			logger.Errorf("[performers] <%s> error getting performer tags: %s", p.Checksum, err.Error())
+			logger.Errorf("[performers] <%s> error getting performer tags: %s", p.Name, err.Error())
 			continue
 		}
 
@@ -918,7 +925,7 @@ func (t *ExportTask) exportPerformer(ctx context.Context, wg *sync.WaitGroup, jo
 		fn := newPerformerJSON.Filename()
 
 		if err := t.json.savePerformer(fn, newPerformerJSON); err != nil {
-			logger.Errorf("[performers] <%s> failed to save json: %s", p.Checksum, err.Error())
+			logger.Errorf("[performers] <%s> failed to save json: %s", p.Name, err.Error())
 		}
 	}
 }

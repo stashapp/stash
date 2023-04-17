@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Button, Card, Container, Form } from "react-bootstrap";
 import { useIntl, FormattedMessage } from "react-intl";
-import { getBaseURL } from "src/core/createClient";
+import { useHistory } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { useSystemStatus, mutateMigrate } from "src/core/StashService";
 import { migrationNotes } from "src/docs/en/MigrationNotes";
-import { LoadingIndicator } from "../Shared";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { MarkdownPage } from "../Shared/MarkdownPage";
 
 export const Migrate: React.FC = () => {
@@ -15,6 +15,7 @@ export const Migrate: React.FC = () => {
   const [migrateError, setMigrateError] = useState("");
 
   const intl = useIntl();
+  const history = useHistory();
 
   // if database path includes path separators, then this is passed through
   // to the migration path. Extract the base name of the database file.
@@ -109,8 +110,7 @@ export const Migrate: React.FC = () => {
     systemStatus.systemStatus.status !== GQL.SystemStatusEnum.NeedsMigration
   ) {
     // redirect to main page
-    const newURL = new URL("/", window.location.toString());
-    window.location.href = newURL.toString();
+    history.push("/");
     return <LoadingIndicator />;
   }
 
@@ -122,8 +122,7 @@ export const Migrate: React.FC = () => {
         backupPath: backupPath ?? "",
       });
 
-      const newURL = new URL("", window.location.origin + getBaseURL());
-      window.location.href = newURL.toString();
+      history.push("/");
     } catch (e) {
       if (e instanceof Error) setMigrateError(e.message ?? e.toString());
       setMigrateLoading(false);

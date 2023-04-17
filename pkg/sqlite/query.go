@@ -22,8 +22,6 @@ type queryBuilder struct {
 	recursiveWith bool
 
 	sortAndPagination string
-
-	err error
 }
 
 func (qb queryBuilder) body() string {
@@ -61,20 +59,11 @@ func (qb queryBuilder) findIDs(ctx context.Context) ([]int, error) {
 }
 
 func (qb queryBuilder) executeFind(ctx context.Context) ([]int, int, error) {
-	if qb.err != nil {
-		return nil, 0, qb.err
-	}
-
 	body := qb.body()
-
 	return qb.repository.executeFindQuery(ctx, body, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses, qb.withClauses, qb.recursiveWith)
 }
 
 func (qb queryBuilder) executeCount(ctx context.Context) (int, error) {
-	if qb.err != nil {
-		return 0, qb.err
-	}
-
 	body := qb.body()
 
 	withClause := ""
@@ -136,11 +125,10 @@ func (qb *queryBuilder) addJoins(joins ...join) {
 	qb.joins.add(joins...)
 }
 
-func (qb *queryBuilder) addFilter(f *filterBuilder) {
+func (qb *queryBuilder) addFilter(f *filterBuilder) error {
 	err := f.getError()
 	if err != nil {
-		qb.err = err
-		return
+		return err
 	}
 
 	clause, args := f.generateWithClauses()
@@ -172,6 +160,8 @@ func (qb *queryBuilder) addFilter(f *filterBuilder) {
 	}
 
 	qb.addJoins(f.getAllJoins()...)
+
+	return nil
 }
 
 func (qb *queryBuilder) parseQueryString(columns []string, q string) {

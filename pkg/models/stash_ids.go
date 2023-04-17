@@ -21,6 +21,18 @@ func (u *UpdateStashIDs) AddUnique(v StashID) {
 	u.StashIDs = append(u.StashIDs, v)
 }
 
+// Set sets or replaces the stash id for the endpoint in the provided value.
+func (u *UpdateStashIDs) Set(v StashID) {
+	for i, vv := range u.StashIDs {
+		if vv.Endpoint == v.Endpoint {
+			u.StashIDs[i] = v
+			return
+		}
+	}
+
+	u.StashIDs = append(u.StashIDs, v)
+}
+
 type StashIDCriterionInput struct {
 	// If present, this value is treated as a predicate.
 	// That is, it will filter based on stash_ids with the matching endpoint

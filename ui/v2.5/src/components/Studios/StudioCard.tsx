@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { NavUtils } from "src/utils";
-import { GridCard } from "src/components/Shared";
+import NavUtils from "src/utils/navigation";
+import { GridCard } from "src/components/Shared/GridCard";
 import { ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
@@ -116,12 +116,26 @@ export const StudioCard: React.FC<IProps> = ({
     );
   }
 
+  function maybeRenderPerformersPopoverButton() {
+    if (!studio.performer_count) return;
+
+    return (
+      <PopoverCountButton
+        className="performer-count"
+        type="performer"
+        count={studio.performer_count}
+        url={NavUtils.makeStudioPerformersUrl(studio)}
+      />
+    );
+  }
+
   function maybeRenderPopoverButtonGroup() {
     if (
       studio.scene_count ||
       studio.image_count ||
       studio.gallery_count ||
-      studio.movie_count
+      studio.movie_count ||
+      studio.performer_count
     ) {
       return (
         <>
@@ -131,6 +145,7 @@ export const StudioCard: React.FC<IProps> = ({
             {maybeRenderMoviesPopoverButton()}
             {maybeRenderImagesPopoverButton()}
             {maybeRenderGalleriesPopoverButton()}
+            {maybeRenderPerformersPopoverButton()}
           </ButtonGroup>
         </>
       );
@@ -155,9 +170,9 @@ export const StudioCard: React.FC<IProps> = ({
           {maybeRenderParent(studio, hideParent)}
           {maybeRenderChildren(studio)}
           <RatingBanner rating={studio.rating100} />
-          {maybeRenderPopoverButtonGroup()}
         </div>
       }
+      popovers={maybeRenderPopoverButtonGroup()}
       selected={selected}
       selecting={selecting}
       onSelectedChanged={onSelectedChanged}

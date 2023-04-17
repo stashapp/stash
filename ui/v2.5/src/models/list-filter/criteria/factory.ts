@@ -15,10 +15,12 @@ import {
   DateCriterionOption,
   TimestampCriterion,
   MandatoryTimestampCriterionOption,
+  PathCriterionOption,
 } from "./criterion";
 import { OrganizedCriterion } from "./organized";
 import { FavoriteCriterion, PerformerFavoriteCriterion } from "./favorite";
 import { HasMarkersCriterion } from "./has-markers";
+import { HasChaptersCriterion } from "./has-chapters";
 import {
   PerformerIsMissingCriterionOption,
   ImageIsMissingCriterionOption,
@@ -64,9 +66,7 @@ export function makeCriteria(
       return new NoneCriterion();
     case "name":
     case "path":
-      return new StringCriterion(
-        new MandatoryStringCriterionOption(type, type)
-      );
+      return new StringCriterion(new PathCriterionOption(type, type));
     case "checksum":
       return new StringCriterion(
         new MandatoryStringCriterionOption("media_info.checksum", type, type)
@@ -106,11 +106,15 @@ export function makeCriteria(
     case "resume_time":
     case "duration":
     case "play_duration":
-      return new DurationCriterion(new NumberCriterionOption(type, type));
+      return new DurationCriterion(
+        new MandatoryNumberCriterionOption(type, type)
+      );
     case "favorite":
       return new FavoriteCriterion();
     case "hasMarkers":
       return new HasMarkersCriterion();
+    case "hasChapters":
+      return new HasChaptersCriterion();
     case "sceneIsMissing":
       return new IsMissingCriterion(SceneIsMissingCriterionOption);
     case "imageIsMissing":
@@ -192,6 +196,7 @@ export function makeCriteria(
     case "director":
     case "synopsis":
     case "description":
+    case "disambiguation":
       return new StringCriterion(new StringCriterionOption(type, type));
     case "scene_code":
       return new StringCriterion(new StringCriterionOption(type, type, "code"));

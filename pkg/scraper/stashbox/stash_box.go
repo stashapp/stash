@@ -10,7 +10,6 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 
@@ -20,7 +19,6 @@ import (
 
 	"github.com/Yamashou/gqlgenc/graphqljson"
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
@@ -43,6 +41,7 @@ type PerformerReader interface {
 	match.PerformerFinder
 	Find(ctx context.Context, id int) (*models.Performer, error)
 	FindBySceneID(ctx context.Context, sceneID int) ([]*models.Performer, error)
+	models.AliasLoader
 	models.StashIDLoader
 	GetImage(ctx context.Context, performerID int) ([]byte, error)
 }
@@ -234,7 +233,7 @@ func (c Client) findStashBoxScenesByFingerprints(ctx context.Context, scenes [][
 		}
 	}
 
-	return results, nil
+	return ret, nil
 }
 
 func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []string, endpoint string) (bool, error) {
@@ -606,15 +605,16 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 		images = append(images, image.URL)
 	}
 	sp := &models.ScrapedPerformer{
-		Name:         &p.Name,
-		Country:      p.Country,
-		Measurements: formatMeasurements(p.Measurements),
-		CareerLength: formatCareerLength(p.CareerStartYear, p.CareerEndYear),
-		Tattoos:      formatBodyModifications(p.Tattoos),
-		Piercings:    formatBodyModifications(p.Piercings),
-		Twitter:      findURL(p.Urls, "TWITTER"),
-		RemoteSiteID: &id,
-		Images:       images,
+		Name:           &p.Name,
+		Disambiguation: p.Disambiguation,
+		Country:        p.Country,
+		Measurements:   formatMeasurements(p.Measurements),
+		CareerLength:   formatCareerLength(p.CareerStartYear, p.CareerEndYear),
+		Tattoos:        formatBodyModifications(p.Tattoos),
+		Piercings:      formatBodyModifications(p.Piercings),
+		Twitter:        findURL(p.Urls, "TWITTER"),
+		RemoteSiteID:   &id,
+		Images:         images,
 		// TODO - tags not currently supported
 		// graphql schema change to accommodate this. Leave off for now.
 	}
@@ -703,6 +703,13 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 		// TODO - #454 code sorts images by aspect ratio according to a wanted
 		// orientation. I'm just grabbing the first for now
 		ss.Image = getFirstImage(ctx, c.getHTTPClient(), s.Images)
+	}
+
+	if ss.URL == nil && len(s.Urls) > 0 {
+		// The scene in Stash-box may not have a Studio URL but it does have another URL.
+		// For example it has a www.manyvids.com URL, which is auto set as type ManyVids.
+		// This should be re-visited once Stashapp can support more than one URL.
+		ss.URL = &s.Urls[0].URL
 	}
 
 	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
@@ -795,7 +802,7 @@ func appendFingerprintUnique(v []*graphql.FingerprintInput, toAdd *graphql.Finge
 	return append(v, toAdd)
 }
 
-func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpoint string, imagePath string) (*string, error) {
+func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpoint string, cover []byte) (*string, error) {
 	draft := graphql.SceneDraftInput{}
 	var image io.Reader
 	r := c.repository
@@ -805,8 +812,14 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 	if scene.Title != "" {
 		draft.Title = &scene.Title
 	}
+	if scene.Code != "" {
+		draft.Code = &scene.Code
+	}
 	if scene.Details != "" {
 		draft.Details = &scene.Details
+	}
+	if scene.Director != "" {
+		draft.Director = &scene.Director
 	}
 	if scene.URL != "" && len(strings.TrimSpace(scene.URL)) > 0 {
 		url := strings.TrimSpace(scene.URL)
@@ -919,14 +932,8 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 	}
 	draft.Tags = tags
 
-	if imagePath != "" {
-		exists, _ := fsutil.FileExists(imagePath)
-		if exists {
-			file, err := os.Open(imagePath)
-			if err == nil {
-				image = file
-			}
-		}
+	if len(cover) > 0 {
+		image = bytes.NewReader(cover)
 	}
 
 	if err := scene.LoadStashIDs(ctx, r.Scene); err != nil {
@@ -964,6 +971,15 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 	draft := graphql.PerformerDraftInput{}
 	var image io.Reader
 	pqb := c.repository.Performer
+
+	if err := performer.LoadAliases(ctx, pqb); err != nil {
+		return nil, err
+	}
+
+	if err := performer.LoadStashIDs(ctx, pqb); err != nil {
+		return nil, err
+	}
+
 	img, _ := pqb.GetImage(ctx, performer.ID)
 	if img != nil {
 		image = bytes.NewReader(img)
@@ -972,6 +988,10 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 	if performer.Name != "" {
 		draft.Name = performer.Name
 	}
+	// stash-box does not support Disambiguation currently
+	// if performer.Disambiguation != "" {
+	// 	draft.Disambiguation = performer.Disambiguation
+	// }
 	if performer.Birthdate != nil {
 		d := performer.Birthdate.String()
 		draft.Birthdate = &d
@@ -1008,8 +1028,20 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 	if performer.Tattoos != "" {
 		draft.Tattoos = &performer.Tattoos
 	}
-	if performer.Aliases != "" {
-		draft.Aliases = &performer.Aliases
+	if len(performer.Aliases.List()) > 0 {
+		aliases := strings.Join(performer.Aliases.List(), ",")
+		draft.Aliases = &aliases
+	}
+	if performer.CareerLength != "" {
+		var career = strings.Split(performer.CareerLength, "-")
+		if i, err := strconv.Atoi(strings.TrimSpace(career[0])); err == nil {
+			draft.CareerStartYear = &i
+		}
+		if len(career) == 2 {
+			if y, err := strconv.Atoi(strings.TrimSpace(career[1])); err == nil {
+				draft.CareerEndYear = &y
+			}
+		}
 	}
 
 	var urls []string

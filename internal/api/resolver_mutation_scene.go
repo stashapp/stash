@@ -9,14 +9,12 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/manager"
-	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -320,13 +318,6 @@ func (r *mutationResolver) sceneUpdateCoverImage(ctx context.Context, s *models.
 		if err := qb.UpdateCover(ctx, s.ID, coverImageData); err != nil {
 			return err
 		}
-
-		if s.Path != "" {
-			// update the file-based screenshot after commit
-			txn.AddPostCommitHook(ctx, func(ctx context.Context) error {
-				return scene.SetScreenshot(manager.GetInstance().Paths, s.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), coverImageData)
-			})
-		}
 	}
 
 	return nil
@@ -421,56 +412,6 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 	}
 
 	return newRet, nil
-}
-
-func adjustIDs(existingIDs []int, updateIDs BulkUpdateIds) []int {
-	// if we are setting the ids, just return the ids
-	if updateIDs.Mode == models.RelationshipUpdateModeSet {
-		existingIDs = []int{}
-		for _, idStr := range updateIDs.Ids {
-			id, _ := strconv.Atoi(idStr)
-			existingIDs = append(existingIDs, id)
-		}
-
-		return existingIDs
-	}
-
-	for _, idStr := range updateIDs.Ids {
-		id, _ := strconv.Atoi(idStr)
-
-		// look for the id in the list
-		foundExisting := false
-		for idx, existingID := range existingIDs {
-			if existingID == id {
-				if updateIDs.Mode == models.RelationshipUpdateModeRemove {
-					// remove from the list
-					existingIDs = append(existingIDs[:idx], existingIDs[idx+1:]...)
-				}
-
-				foundExisting = true
-				break
-			}
-		}
-
-		if !foundExisting && updateIDs.Mode != models.RelationshipUpdateModeRemove {
-			existingIDs = append(existingIDs, id)
-		}
-	}
-
-	return existingIDs
-}
-
-type tagIDsGetter interface {
-	GetTagIDs(ctx context.Context, id int) ([]int, error)
-}
-
-func adjustTagIDs(ctx context.Context, qb tagIDsGetter, sceneID int, ids BulkUpdateIds) (ret []int, err error) {
-	ret, err = qb.GetTagIDs(ctx, sceneID)
-	if err != nil {
-		return nil, err
-	}
-
-	return adjustIDs(ret, ids), nil
 }
 
 func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneDestroyInput) (bool, error) {

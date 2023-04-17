@@ -1,8 +1,12 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { LightboxContext, IState } from "./context";
+import { IChapter } from "./types";
 
-export const useLightbox = (state: Partial<Omit<IState, "isVisible">>) => {
+export const useLightbox = (
+  state: Partial<Omit<IState, "isVisible">>,
+  chapters: IChapter[] = []
+) => {
   const { setLightboxState } = useContext(LightboxContext);
 
   useEffect(() => {
@@ -10,7 +14,9 @@ export const useLightbox = (state: Partial<Omit<IState, "isVisible">>) => {
       images: state.images,
       showNavigation: state.showNavigation,
       pageCallback: state.pageCallback,
-      pageHeader: state.pageHeader,
+      page: state.page,
+      pages: state.pages,
+      pageSize: state.pageSize,
       slideshowEnabled: state.slideshowEnabled,
       onClose: state.onClose,
     });
@@ -19,7 +25,9 @@ export const useLightbox = (state: Partial<Omit<IState, "isVisible">>) => {
     state.images,
     state.showNavigation,
     state.pageCallback,
-    state.pageHeader,
+    state.page,
+    state.pages,
+    state.pageSize,
     state.slideshowEnabled,
     state.onClose,
   ]);
@@ -30,14 +38,18 @@ export const useLightbox = (state: Partial<Omit<IState, "isVisible">>) => {
         initialIndex: index,
         isVisible: true,
         slideshowEnabled,
+        page: state.page,
+        pages: state.pages,
+        pageSize: state.pageSize,
+        chapters: chapters,
       });
     },
-    [setLightboxState]
+    [setLightboxState, state.page, state.pages, state.pageSize, chapters]
   );
   return show;
 };
 
-export const useGalleryLightbox = (id: string) => {
+export const useGalleryLightbox = (id: string, chapters: IChapter[] = []) => {
   const { setLightboxState } = useContext(LightboxContext);
 
   const pageSize = 40;
@@ -69,20 +81,26 @@ export const useGalleryLightbox = (id: string) => {
   }, [data?.findImages.count]);
 
   const handleLightBoxPage = useCallback(
-    (direction: number) => {
-      if (direction === -1) {
-        if (page === 1) {
-          setPage(pages);
-        } else {
-          setPage(page - 1);
+    (props: { direction?: number; page?: number }) => {
+      const { direction, page: newPage } = props;
+
+      if (direction !== undefined) {
+        if (direction < 0) {
+          if (page === 1) {
+            setPage(pages);
+          } else {
+            setPage(page + direction);
+          }
+        } else if (direction > 0) {
+          if (page === pages) {
+            // return to the first page
+            setPage(1);
+          } else {
+            setPage(page + direction);
+          }
         }
-      } else if (direction === 1) {
-        if (page === pages) {
-          // return to the first page
-          setPage(1);
-        } else {
-          setPage(page + 1);
-        }
+      } else if (newPage !== undefined) {
+        setPage(newPage);
       }
     },
     [page, pages]
@@ -95,25 +113,39 @@ export const useGalleryLightbox = (id: string) => {
         isVisible: true,
         images: data.findImages?.images ?? [],
         pageCallback: pages > 1 ? handleLightBoxPage : undefined,
-        pageHeader: `Page ${page} / ${pages}`,
+        page,
+        pages,
       });
   }, [setLightboxState, data, handleLightBoxPage, page, pages]);
 
-  const show = () => {
+  const show = (index: number = 0) => {
+    if (index > pageSize) {
+      setPage(Math.floor(index / pageSize) + 1);
+      index = index % pageSize;
+    } else {
+      setPage(1);
+    }
     if (data)
       setLightboxState({
         isLoading: false,
         isVisible: true,
+        initialIndex: index,
         images: data.findImages?.images ?? [],
         pageCallback: pages > 1 ? handleLightBoxPage : undefined,
-        pageHeader: `Page ${page} / ${pages}`,
+        page,
+        pages,
+        pageSize,
+        chapters: chapters,
       });
     else {
       setLightboxState({
         isLoading: true,
         isVisible: true,
+        initialIndex: index,
         pageCallback: undefined,
-        pageHeader: undefined,
+        page: undefined,
+        pageSize,
+        chapters: chapters,
       });
       fetchGallery();
     }

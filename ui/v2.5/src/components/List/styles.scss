@@ -116,3 +116,83 @@ input[type="range"].zoom-slider {
 .rating-filter .and-divider {
   margin-left: 0.5em;
 }
+
+.edit-filter-dialog {
+  .modal-body {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .filter-tags {
+    border-top: 1px solid rgb(16 22 26 / 40%);
+    padding: 1rem 1rem 0 1rem;
+  }
+
+  .criterion-list {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    max-height: 550px;
+    overflow-y: auto;
+
+    .card {
+      border: 1px solid rgb(16 22 26 / 40%);
+      box-shadow: none;
+      margin: 0 0 -1px;
+      padding: 0;
+
+      .collapse-icon {
+        margin-left: 0;
+      }
+
+      .card-header {
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+      }
+    }
+
+    .remove-criterion-button {
+      border: 0;
+      color: $danger;
+      padding-bottom: 0;
+      padding-top: 0;
+    }
+  }
+
+  .edit-filter-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    width: 100%;
+  }
+}
+
+.modifier-selector {
+  margin-bottom: 1rem;
+
+  // to accommodate for caret
+  padding-right: 2rem;
+}
+
+.filter-tags .clear-all-button {
+  color: $text-color;
+  // to match filter pills
+  line-height: 16px;
+  padding: 0;
+}
+
+.filter-button {
+  .fa-icon {
+    margin: 0;
+  }
+
+  .badge {
+    position: absolute;
+    right: -3px;
+
+    // button group has a z-index of 1
+    z-index: 2;
+  }
+}

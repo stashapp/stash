@@ -7,6 +7,7 @@ import (
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
 )
 
@@ -58,9 +59,16 @@ func (r *mutationResolver) SubmitStashBoxSceneDraft(ctx context.Context, input S
 			return err
 		}
 
-		filepath := manager.GetInstance().Paths.Scene.GetScreenshotPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
+		if scene == nil {
+			return fmt.Errorf("scene with id %d not found", id)
+		}
 
-		res, err = client.SubmitSceneDraft(ctx, scene, boxes[input.StashBoxIndex].Endpoint, filepath)
+		cover, err := qb.GetCover(ctx, id)
+		if err != nil {
+			logger.Errorf("Error getting scene cover: %v", err)
+		}
+
+		res, err = client.SubmitSceneDraft(ctx, scene, boxes[input.StashBoxIndex].Endpoint, cover)
 		return err
 	})
 

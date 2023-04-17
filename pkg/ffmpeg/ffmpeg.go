@@ -9,9 +9,21 @@ import (
 )
 
 // FFMpeg provides an interface to ffmpeg.
-type FFMpeg string
+type FFMpeg struct {
+	ffmpeg         string
+	hwCodecSupport []VideoCodec
+}
+
+// Creates a new FFMpeg encoder
+func NewEncoder(ffmpegPath string) *FFMpeg {
+	ret := &FFMpeg{
+		ffmpeg: ffmpegPath,
+	}
+
+	return ret
+}
 
 // Returns an exec.Cmd that can be used to run ffmpeg using args.
 func (f *FFMpeg) Command(ctx context.Context, args []string) *exec.Cmd {
-	return stashExec.CommandContext(ctx, string(*f), args...)
+	return stashExec.CommandContext(ctx, string(f.ffmpeg), args...)
 }

@@ -2,7 +2,7 @@ import React from "react";
 import { Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
-import TruncatedText from "./TruncatedText";
+import { TruncatedText } from "./TruncatedText";
 
 interface ICardProps {
   className?: string;
@@ -10,7 +10,7 @@ interface ICardProps {
   thumbnailSectionClassName?: string;
   url: string;
   pretitleIcon?: JSX.Element;
-  title: string;
+  title: JSX.Element | string;
   image: JSX.Element;
   details?: JSX.Element;
   overlays?: JSX.Element;

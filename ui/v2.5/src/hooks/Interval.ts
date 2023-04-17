@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import noop from "lodash-es/noop";
 
 const MIN_VALID_INTERVAL = 1000;
+
+function noop() {}
 
 const useInterval = (
   callback: () => void,
   delay: number | null = 5000
 ): (() => void)[] => {
   const savedCallback = useRef<() => void>();
-  const savedIntervalId = useRef<NodeJS.Timeout>();
+  const savedIntervalId = useRef<number>();
   const [savedDelay, setSavedDelay] = useState<number | null>(delay);
 
   useEffect(() => {

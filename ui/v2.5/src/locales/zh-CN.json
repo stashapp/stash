@@ -6,12 +6,13 @@
     "add_to_entity": "添加到 {entityType}",
     "allow": "允许",
     "allow_temporarily": "暂时允许",
+    "anonymise": "匿名化",
     "apply": "应用",
     "auto_tag": "自动添加标签",
     "backup": "备份",
     "browse_for_image": "浏览图片…",
     "cancel": "取消",
-    "clean": "清除",
+    "clean": "清理",
     "clear": "清除",
     "clear_back_image": "清除背面图片",
     "clear_front_image": "清除正面图片",
@@ -32,10 +33,11 @@
     "delete_stashid": "删除 StashID",
     "disallow": "不允许",
     "download": "下载",
+    "download_anonymised": "匿名下载",
     "download_backup": "下载备份",
     "edit": "编辑",
     "edit_entity": "编辑 {entityType}",
-    "export": "导出…",
+    "export": "导出",
     "export_all": "导出所有…",
     "find": "搜索",
     "finish": "结束",
@@ -269,6 +271,28 @@
       "excluded_image_gallery_patterns_head": "图片/图库排除规则",
       "excluded_video_patterns_desc": "要从扫描中排除并会被[清除]功能所移除的视频文件/路径的正则表达式",
       "excluded_video_patterns_head": "视频排除规则",
+      "ffmpeg": {
+        "live_transcode": {
+          "input_args": {
+            "desc": "高级：当直播转码的视频时，在输入参数前要传给ffmpeg用的附加参数。",
+            "heading": "FFmpeg直播转码用的输入参数"
+          },
+          "output_args": {
+            "desc": "高级：当直播转码视频时，在输出视频参数前要传给ffmpeg的附加参数。",
+            "heading": "FFmpeg直播转码输出参数"
+          }
+        },
+        "transcode": {
+          "input_args": {
+            "desc": "高级：当生成视频时，在输入视频参数前要传给ffmpeg的附加参数。",
+            "heading": "FFmpeg 转码用的输入参数"
+          },
+          "output_args": {
+            "desc": "高级：当生成视频时，在输出视频参数前要传给ffmpeg的附加参数。",
+            "heading": "FFmpeg转码输出参数"
+          }
+        }
+      },
       "gallery_ext_desc": "逗号(半角)分隔的文件扩展名列表，将被标识为图库或图包。",
       "gallery_ext_head": "图库压缩包扩展名",
       "generated_file_naming_hash_desc": "使用 MD5 或快搜码为生成的文件命名。 更改此设置要求所有短片都有对应的 MD5/快搜码 值。 更改此值后，之前生成的数据需要迁移或重新生成。 请参阅 [迁移] 页面。",
@@ -346,6 +370,9 @@
     },
     "tasks": {
       "added_job_to_queue": "已经添加 {operation_name} 到工作队列",
+      "anonymise_and_download": "建立一个匿名的数据库拷贝然后下载其文件。",
+      "anonymise_database": "建立一个数据库的拷贝到备份目录，匿名化所有敏感数据。这可以为其他人提供查找问题和去虫的方法。原本的数据库是没有改动的。匿名化数据库使用文件名格式 {filename_format}.",
+      "anonymising_database": "数据库匿名化",
       "auto_tag": {
         "auto_tagging_all_paths": "自动标签所有路径",
         "auto_tagging_paths": "自动标签以下路径"
@@ -436,12 +463,12 @@
       },
       "basic_settings": "基本设定",
       "custom_css": {
-        "description": "必须重新加载页面才能使更改生效。",
+        "description": "必须重新加载页面才能使更改生效。不保证未来的Stash会和客制的CSS兼容。",
         "heading": "自定义样式",
         "option_label": "自定义样式已启用"
       },
       "custom_javascript": {
-        "description": "必须重新加载页面才能生效。",
+        "description": "必须重新加载页面才能生效。不保证未来的Stash和客制的Javascript会兼容。",
         "heading": "自定义 JavaScript",
         "option_label": "自定义 JavaScript 已启用"
       },
@@ -661,7 +688,6 @@
   "details": "简介",
   "developmentVersion": "开发版本",
   "dialogs": {
-    "aliases_must_be_unique": "别名必须是唯一的",
     "create_new_entity": "创建新的 {entity}",
     "delete_alert": "以下 {count, plural, one {{singularEntity}} other {{pluralEntity}}} 会被永久删除:",
     "delete_confirm": "确定要删除 {entityName} 吗?",
@@ -757,6 +783,7 @@
   },
   "dimensions": "大小",
   "director": "导演",
+  "disambiguation": "确定含义",
   "display_mode": {
     "grid": "格状显示",
     "list": "列表显示",
@@ -767,7 +794,7 @@
   "donate": "赞助",
   "dupe_check": {
     "description": "低于“精确”的准确度需要更长的时间来计算，但使用较低的准确度可能会产生误报。",
-    "found_sets": "{setCount, plural, one{# 发现的重复数据。} other {# 发现的重复数据。}}",
+    "found_sets": "{setCount, plural, one{# 个发现的重复数据。} other {# 个发现的重复数据。}}",
     "options": {
       "exact": "精确",
       "high": "高",
@@ -785,7 +812,7 @@
     "blur": "模糊",
     "brightness": "亮度",
     "contrast": "对比",
-    "gamma": "伽马",
+    "gamma": "伽马亮度",
     "green": "绿色",
     "hue": "色调",
     "name": "滤镜",
@@ -977,7 +1004,6 @@
   "scenes": "短片",
   "scenes_updated_at": "短片更新时间",
   "search_filter": {
-    "add_filter": "添加过滤器",
     "name": "过滤",
     "saved_filters": "保存过滤器",
     "update_filter": "更新过滤器"
@@ -1049,7 +1075,7 @@
       "your_system_has_been_created": "成功！你的系统建立了！"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash首先尝试从当前工作目录中找配置文件 (<code>config.yml</code>)，如果没找到，会退回到 <code>$HOME/.stash/config.yml</code> (在微软视窗里，目录是<code>%USERPROFILE%\\.stash\\config.yml</code>). 你也可以让Stash读特定的配置文件，只要运行它时加上<code>-c <配置文件目录></code>或者<code>--config <配置文件目录></code>的选项。",
+      "config_path_logic_explained": "Stash首先尝试从当前工作目录中找配置文件 (<code>config.yml</code>)，如果没找到，会退回到 <code>$HOME/.stash/config.yml</code> (在微软视窗里，目录是<code>%USERPROFILE%\\.stash\\config.yml</code>). 你也可以让Stash读特定的配置文件，只要运行它时加上<code>-c '<配置文件目录>'</code>或者<code>--config '<配置文件目录>'</code>的选项。",
       "in_current_stash_directory": "在 <code>$HOMT/.stash</code>目录里",
       "in_the_current_working_directory": "在当前工作目录里",
       "next_step": "之前的问题都解决了，如果你准备好建立一个新的系统，选择你想在哪里存放你的配置文件，然后点击“下一个”。",
@@ -1118,6 +1144,9 @@
   "type": "类别",
   "updated_at": "更新时间",
   "url": "链接",
+  "validation": {
+    "aliases_must_be_unique": "别名必须是唯一的"
+  },
   "videos": "视频",
   "view_all": "查看全部",
   "weight": "体重",

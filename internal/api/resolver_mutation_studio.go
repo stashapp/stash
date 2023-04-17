@@ -176,13 +176,8 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input StudioUpdateI
 		}
 
 		// update image table
-		if len(imageData) > 0 {
+		if imageIncluded {
 			if err := qb.UpdateImage(ctx, s.ID, imageData); err != nil {
-				return err
-			}
-		} else if imageIncluded {
-			// must be unsetting
-			if err := qb.DestroyImage(ctx, s.ID); err != nil {
 				return err
 			}
 		}

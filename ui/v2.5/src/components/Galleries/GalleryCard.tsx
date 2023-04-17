@@ -2,17 +2,15 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import {
-  GridCard,
-  HoverPopover,
-  Icon,
-  TagLink,
-  TruncatedText,
-} from "src/components/Shared";
-import { PopoverCountButton } from "src/components/Shared/PopoverCountButton";
-import { NavUtils } from "src/utils";
-import { ConfigurationContext } from "src/hooks/Config";
+import { GridCard } from "../Shared/GridCard";
+import { HoverPopover } from "../Shared/HoverPopover";
+import { Icon } from "../Shared/Icon";
+import { TagLink } from "../Shared/TagLink";
+import { TruncatedText } from "../Shared/TruncatedText";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
+import { PopoverCountButton } from "../Shared/PopoverCountButton";
+import NavUtils from "src/utils/navigation";
+import { ConfigurationContext } from "src/hooks/Config";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { faBox, faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
 import { galleryTitle } from "src/core/galleries";
@@ -167,13 +165,11 @@ export const GalleryCard: React.FC<IProps> = (props) => {
       details={
         <div className="gallery-card__details">
           <span className="gallery-card__date">{props.gallery.date}</span>
-          <p>
-            <TruncatedText
-              className="gallery-card__description"
-              text={props.gallery.details}
-              lineCount={3}
-            />
-          </p>
+          <TruncatedText
+            className="gallery-card__description"
+            text={props.gallery.details}
+            lineCount={3}
+          />
         </div>
       }
       popovers={maybeRenderPopoverButtonGroup()}

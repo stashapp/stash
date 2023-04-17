@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import debounce from "lodash-es/debounce";
 import { Button, Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
-import { Modal, LoadingIndicator } from "src/components/Shared";
+import { ModalComponent } from "src/components/Shared/Modal";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { stashboxDisplayName } from "src/utils/stashbox";
+import { useDebouncedSetState } from "src/hooks/debounce";
 
 const CLASSNAME = "PerformerScrapeModal";
 const CLASSNAME_LIST = `${CLASSNAME}-list`;
@@ -43,14 +44,12 @@ const PerformerStashBoxModal: React.FC<IProps> = ({
 
   const performers = data?.scrapeSinglePerformer ?? [];
 
-  const onInputChange = debounce((input: string) => {
-    setQuery(input);
-  }, 500);
+  const onInputChange = useDebouncedSetState(setQuery, 500);
 
   useEffect(() => inputRef.current?.focus(), []);
 
   return (
-    <Modal
+    <ModalComponent
       show
       onHide={onHide}
       header={`Scrape performer from ${stashboxDisplayName(
@@ -81,6 +80,7 @@ const PerformerStashBoxModal: React.FC<IProps> = ({
               <li key={p.remote_site_id}>
                 <Button variant="link" onClick={() => onSelectPerformer(p)}>
                   {p.name}
+                  {p.disambiguation && ` (${p.disambiguation})`}
                 </Button>
               </li>
             ))}
@@ -89,7 +89,7 @@ const PerformerStashBoxModal: React.FC<IProps> = ({
           query !== "" && <h5 className="text-center">No results found.</h5>
         )}
       </div>
-    </Modal>
+    </ModalComponent>
   );
 };
 

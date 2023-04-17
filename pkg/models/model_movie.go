@@ -22,6 +22,10 @@ type Movie struct {
 	URL       sql.NullString  `db:"url" json:"url"`
 	CreatedAt SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+
+	// TODO - this is only here because of database code in the models package
+	FrontImageBlob sql.NullString `db:"front_image_blob" json:"-"`
+	BackImageBlob  sql.NullString `db:"back_image_blob" json:"-"`
 }
 
 type MoviePartial struct {

@@ -1,18 +1,15 @@
 import { Form, Col, Row, Button, FormControl } from "react-bootstrap";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
-import {
-  GallerySelect,
-  Icon,
-  LoadingIndicator,
-  Modal,
-  SceneSelect,
-  StringListSelect,
-} from "src/components/Shared";
-import { FormUtils, ImageUtils, TextUtils } from "src/utils";
+import { Icon } from "../Shared/Icon";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
+import { StringListSelect, GallerySelect, SceneSelect } from "../Shared/Select";
+import FormUtils from "src/utils/form";
+import ImageUtils from "src/utils/image";
+import TextUtils from "src/utils/text";
 import { mutateSceneMerge, queryFindScenesByID } from "src/core/StashService";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useToast } from "src/hooks";
+import { useToast } from "src/hooks/Toast";
 import { faExchangeAlt, faSignInAlt } from "@fortawesome/free-solid-svg-icons";
 import {
   hasScrapedValues,
@@ -22,6 +19,7 @@ import {
   ScrapedInputGroupRow,
   ScrapedTextAreaRow,
   ScrapeResult,
+  ZeroableScrapeResult,
 } from "../Shared/ScrapeDialog";
 import { clone, uniq } from "lodash-es";
 import {
@@ -32,6 +30,7 @@ import {
 } from "./SceneDetails/SceneScrapeDialog";
 import { galleryTitle } from "src/core/galleries";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
+import { ModalComponent } from "../Shared/Modal";
 
 interface IStashIDsField {
   values: GQL.StashId[];
@@ -67,8 +66,9 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
   );
 
   const [rating, setRating] = useState(
-    new ScrapeResult<number>(dest.rating100)
+    new ZeroableScrapeResult<number>(dest.rating100)
   );
+  // zero values can be treated as missing for these fields
   const [oCounter, setOCounter] = useState(
     new ScrapeResult<number>(dest.o_counter)
   );
@@ -119,6 +119,10 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
 
   const [stashIDs, setStashIDs] = useState(new ScrapeResult<GQL.StashId[]>([]));
 
+  const [organized, setOrganized] = useState(
+    new ZeroableScrapeResult<boolean>(dest.organized)
+  );
+
   const [image, setImage] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(dest.paths.screenshot)
   );
@@ -133,7 +137,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       setLoading(true);
 
       const destData = await ImageUtils.imageToDataURL(dest.paths.screenshot);
-      const srcData = await ImageUtils.imageToDataURL(src.paths!.screenshot!);
+      const srcData = await ImageUtils.imageToDataURL(src.paths.screenshot!);
 
       // keep destination image by default
       const useNewValue = false;
@@ -230,6 +234,13 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       )
     );
 
+    setOrganized(
+      new ScrapeResult(
+        dest.organized ?? false,
+        sources.every((s) => s.organized)
+      )
+    );
+
     setStashIDs(
       new ScrapeResult(
         dest.stash_ids,
@@ -289,6 +300,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       movies,
       tags,
       details,
+      organized,
       stashIDs,
       image,
     ]);
@@ -304,6 +316,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     movies,
     tags,
     details,
+    organized,
     stashIDs,
     image,
   ]);
@@ -324,6 +337,9 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
         </div>
       );
     }
+
+    const trueString = intl.formatMessage({ id: "true" });
+    const falseString = intl.formatMessage({ id: "false" });
 
     return (
       <>
@@ -466,6 +482,27 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           onChange={(value) => setDetails(value)}
         />
         <ScrapeDialogRow
+          title={intl.formatMessage({ id: "organized" })}
+          result={organized}
+          renderOriginalField={() => (
+            <FormControl
+              value={organized.originalValue ? trueString : falseString}
+              readOnly
+              onChange={() => {}}
+              className="bg-secondary text-white border-secondary"
+            />
+          )}
+          renderNewField={() => (
+            <FormControl
+              value={organized.newValue ? trueString : falseString}
+              readOnly
+              onChange={() => {}}
+              className="bg-secondary text-white border-secondary"
+            />
+          )}
+          onChange={(value) => setOrganized(value)}
+        />
+        <ScrapeDialogRow
           title={intl.formatMessage({ id: "stash_id" })}
           result={stashIDs}
           renderOriginalField={() => (
@@ -517,6 +554,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       }),
       tag_ids: tags.getNewValue(),
       details: details.getNewValue(),
+      organized: organized.getNewValue(),
       stash_ids: stashIDs.getNewValue(),
       cover_image: coverImage,
     };
@@ -658,7 +696,7 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
   }
 
   return (
-    <Modal
+    <ModalComponent
       show={show}
       header={title}
       icon={faSignInAlt}
@@ -726,6 +764,6 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
           </Form.Group>
         </div>
       </div>
-    </Modal>
+    </ModalComponent>
   );
 };

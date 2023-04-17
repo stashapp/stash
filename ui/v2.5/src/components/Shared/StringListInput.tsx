@@ -1,22 +1,26 @@
-import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faMinus } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
-import Icon from "src/components/Shared/Icon";
+import { Icon } from "./Icon";
 
 interface IStringListInputProps {
   value: string[];
   setValue: (value: string[]) => void;
-  defaultNewValue?: string;
+  placeholder?: string;
   className?: string;
   errors?: string;
 }
 
 export const StringListInput: React.FC<IStringListInputProps> = (props) => {
+  const values = props.value.concat("");
+
   function valueChanged(idx: number, value: string) {
-    const newValues = props.value.map((v, i) => {
-      const ret = idx !== i ? v : value;
-      return ret;
-    });
+    const newValues = values
+      .map((v, i) => {
+        const ret = idx !== i ? v : value;
+        return ret;
+      })
+      .filter((v, i) => i < values.length - 2 || v);
     props.setValue(newValues);
   }
 
@@ -26,40 +30,33 @@ export const StringListInput: React.FC<IStringListInputProps> = (props) => {
     props.setValue(newValues);
   }
 
-  function addValue() {
-    const newValues = props.value.concat(props.defaultNewValue ?? "");
-
-    props.setValue(newValues);
-  }
-
   return (
     <>
       <div className={`string-list-input ${props.errors ? "is-invalid" : ""}`}>
-        {props.value && props.value.length > 0 && (
-          <Form.Group>
-            {props.value &&
-              props.value.map((v, i) => (
-                // eslint-disable-next-line react/no-array-index-key
-                <InputGroup className={props.className} key={i}>
-                  <Form.Control
-                    className="text-input"
-                    value={v}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      valueChanged(i, e.currentTarget.value)
-                    }
-                  />
-                  <InputGroup.Append>
-                    <Button variant="danger" onClick={() => removeValue(i)}>
-                      <Icon icon={faMinus} />
-                    </Button>
-                  </InputGroup.Append>
-                </InputGroup>
-              ))}
-          </Form.Group>
-        )}
-        <Button className="minimal" size="sm" onClick={() => addValue()}>
-          <Icon icon={faPlus} />
-        </Button>
+        <Form.Group>
+          {values.map((v, i) => (
+            // eslint-disable-next-line react/no-array-index-key
+            <InputGroup className={props.className} key={i}>
+              <Form.Control
+                className="text-input"
+                value={v}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  valueChanged(i, e.currentTarget.value)
+                }
+                placeholder={props.placeholder}
+              />
+              <InputGroup.Append>
+                <Button
+                  variant="danger"
+                  onClick={() => removeValue(i)}
+                  disabled={i === values.length - 1}
+                >
+                  <Icon icon={faMinus} />
+                </Button>
+              </InputGroup.Append>
+            </InputGroup>
+          ))}
+        </Form.Group>
       </div>
       <div className="invalid-feedback">{props.errors}</div>
     </>

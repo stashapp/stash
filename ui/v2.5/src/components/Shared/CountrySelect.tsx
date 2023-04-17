@@ -1,25 +1,27 @@
 import React from "react";
 import Creatable from "react-select/creatable";
 import { useIntl } from "react-intl";
-import { getCountries } from "src/utils";
-import CountryLabel from "./CountryLabel";
+import { getCountries } from "src/utils/country";
+import { CountryLabel } from "./CountryLabel";
 
 interface IProps {
-  value?: string | undefined;
+  value?: string;
   onChange?: (value: string) => void;
   disabled?: boolean;
   className?: string;
   showFlag?: boolean;
   isClearable?: boolean;
+  menuPortalTarget?: HTMLElement | null;
 }
 
-const CountrySelect: React.FC<IProps> = ({
+export const CountrySelect: React.FC<IProps> = ({
   value,
   onChange,
   disabled = false,
   isClearable = true,
   showFlag,
   className,
+  menuPortalTarget,
 }) => {
   const { locale } = useIntl();
   const options = getCountries(locale);
@@ -44,8 +46,7 @@ const CountrySelect: React.FC<IProps> = ({
         IndicatorSeparator: null,
       }}
       className={`CountrySelect ${className}`}
+      menuPortalTarget={menuPortalTarget}
     />
   );
 };
-
-export default CountrySelect;

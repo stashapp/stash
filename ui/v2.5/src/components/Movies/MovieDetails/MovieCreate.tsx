@@ -1,44 +1,32 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { useMovieCreate } from "src/core/StashService";
-import { useHistory } from "react-router-dom";
-import { LoadingIndicator } from "src/components/Shared";
-import { useToast } from "src/hooks";
+import { useHistory, useLocation } from "react-router-dom";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { useToast } from "src/hooks/Toast";
 import { MovieEditPanel } from "./MovieEditPanel";
 
 const MovieCreate: React.FC = () => {
   const history = useHistory();
+  const location = useLocation();
   const Toast = useToast();
 
+  const query = useMemo(() => new URLSearchParams(location.search), [location]);
+  const movie = {
+    name: query.get("q") ?? undefined,
+  };
+
   // Editing movie state
-  const [frontImage, setFrontImage] = useState<string | undefined | null>(
-    undefined
-  );
-  const [backImage, setBackImage] = useState<string | undefined | null>(
-    undefined
-  );
+  const [frontImage, setFrontImage] = useState<string | null>();
+  const [backImage, setBackImage] = useState<string | null>();
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
   const [createMovie] = useMovieCreate();
 
-  const onImageEncoding = (isEncoding = false) => setEncodingImage(isEncoding);
-
-  function getMovieInput(
-    input: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput>
-  ) {
-    const ret: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput> = {
-      ...input,
-    };
-
-    return ret;
-  }
-
-  async function onSave(
-    input: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput>
-  ) {
+  async function onSave(input: GQL.MovieCreateInput) {
     try {
       const result = await createMovie({
-        variables: getMovieInput(input) as GQL.MovieCreateInput,
+        variables: input,
       });
       if (result.data?.movieCreate?.id) {
         history.push(`/movies/${result.data.movieCreate.id}`);
@@ -84,12 +72,13 @@ const MovieCreate: React.FC = () => {
         </div>
 
         <MovieEditPanel
+          movie={movie}
           onSubmit={onSave}
           onCancel={() => history.push("/movies")}
           onDelete={() => {}}
           setFrontImage={setFrontImage}
           setBackImage={setBackImage}
-          onImageEncoding={onImageEncoding}
+          setEncodingImage={setEncodingImage}
         />
       </div>
     </div>

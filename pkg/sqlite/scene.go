@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -30,6 +31,8 @@ const (
 	scenesTagsTable       = "scenes_tags"
 	scenesGalleriesTable  = "scenes_galleries"
 	moviesScenesTable     = "movies_scenes"
+
+	sceneCoverBlobColumn = "cover_blob"
 )
 
 var findExactDuplicateQuery = `
@@ -71,6 +74,9 @@ type sceneRow struct {
 	ResumeTime   float64                    `db:"resume_time"`
 	PlayDuration float64                    `db:"play_duration"`
 	PlayCount    int                        `db:"play_count"`
+
+	// not used in resolutions or updates
+	CoverBlob zero.String `db:"cover_blob"`
 }
 
 func (r *sceneRow) fromScene(o models.Scene) {
@@ -171,6 +177,7 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 
 type SceneStore struct {
 	repository
+	blobJoinQueryBuilder
 
 	tableMgr *table
 	oCounterManager
@@ -178,11 +185,15 @@ type SceneStore struct {
 	fileStore *FileStore
 }
 
-func NewSceneStore(fileStore *FileStore) *SceneStore {
+func NewSceneStore(fileStore *FileStore, blobStore *BlobStore) *SceneStore {
 	return &SceneStore{
 		repository: repository{
 			tableName: sceneTable,
 			idColumn:  idColumn,
+		},
+		blobJoinQueryBuilder: blobJoinQueryBuilder{
+			blobStore: blobStore,
+			joinTable: sceneTable,
 		},
 
 		tableMgr:        sceneTableMgr,
@@ -352,6 +363,11 @@ func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) e
 }
 
 func (qb *SceneStore) Destroy(ctx context.Context, id int) error {
+	// must handle image checksums manually
+	if err := qb.destroyCover(ctx, id); err != nil {
+		return err
+	}
+
 	// scene markers should be handled prior to calling destroy
 	// galleries should be handled prior to calling destroy
 
@@ -363,18 +379,24 @@ func (qb *SceneStore) Find(ctx context.Context, id int) (*models.Scene, error) {
 }
 
 func (qb *SceneStore) FindMany(ctx context.Context, ids []int) ([]*models.Scene, error) {
-	table := qb.table()
-	q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(ids))
-	unsorted, err := qb.getMany(ctx, q)
-	if err != nil {
-		return nil, err
-	}
-
 	scenes := make([]*models.Scene, len(ids))
 
-	for _, s := range unsorted {
-		i := intslice.IntIndex(ids, s.ID)
-		scenes[i] = s
+	table := qb.table()
+	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
+		q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(batch))
+		unsorted, err := qb.getMany(ctx, q)
+		if err != nil {
+			return err
+		}
+
+		for _, s := range unsorted {
+			i := intslice.IntIndex(ids, s.ID)
+			scenes[i] = s
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
 	for i := range scenes {
@@ -990,7 +1012,9 @@ func (qb *SceneStore) Query(ctx context.Context, options models.SceneQueryOption
 	}
 	filter := qb.makeFilter(ctx, sceneFilter)
 
-	query.addFilter(filter)
+	if err := query.addFilter(filter); err != nil {
+		return nil, err
+	}
 
 	qb.setSceneSort(&query, findFilter)
 	query.sortAndPagination += getPagination(findFilter)
@@ -1178,6 +1202,8 @@ func sceneIsMissingCriterionHandler(qb *SceneStore, isMissing *string) criterion
 				qb.addSceneFilesTable(f)
 				f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
 				f.addWhere("fingerprints_phash.fingerprint IS NULL")
+			case "cover":
+				f.addWhere("scenes.cover_blob IS NULL")
 			default:
 				f.addWhere("(scenes." + *isMissing + " IS NULL OR TRIM(scenes." + *isMissing + ") = '')")
 			}
@@ -1446,23 +1472,12 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	case "title":
 		addFileTable()
 		addFolderTable()
-		query.sortAndPagination += " ORDER BY scenes.title COLLATE NATURAL_CS " + direction + ", folders.path " + direction + ", files.basename COLLATE NATURAL_CS " + direction
+		query.sortAndPagination += " ORDER BY COALESCE(scenes.title, files.basename) COLLATE NATURAL_CS " + direction + ", folders.path " + direction
 	case "play_count":
 		// handle here since getSort has special handling for _count suffix
 		query.sortAndPagination += " ORDER BY scenes.play_count " + direction
 	default:
 		query.sortAndPagination += getSort(sort, direction, "scenes")
-	}
-}
-
-func (qb *SceneStore) imageRepository() *imageRepository {
-	return &imageRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: "scenes_cover",
-			idColumn:  sceneIDColumn,
-		},
-		imageColumn: "cover",
 	}
 }
 
@@ -1523,15 +1538,19 @@ func (qb *SceneStore) IncrementWatchCount(ctx context.Context, id int) (int, err
 }
 
 func (qb *SceneStore) GetCover(ctx context.Context, sceneID int) ([]byte, error) {
-	return qb.imageRepository().get(ctx, sceneID)
+	return qb.GetImage(ctx, sceneID, sceneCoverBlobColumn)
+}
+
+func (qb *SceneStore) HasCover(ctx context.Context, sceneID int) (bool, error) {
+	return qb.HasImage(ctx, sceneID, sceneCoverBlobColumn)
 }
 
 func (qb *SceneStore) UpdateCover(ctx context.Context, sceneID int, image []byte) error {
-	return qb.imageRepository().replace(ctx, sceneID, image)
+	return qb.UpdateImage(ctx, sceneID, sceneCoverBlobColumn, image)
 }
 
-func (qb *SceneStore) DestroyCover(ctx context.Context, sceneID int) error {
-	return qb.imageRepository().destroy(ctx, []int{sceneID})
+func (qb *SceneStore) destroyCover(ctx context.Context, sceneID int) error {
+	return qb.DestroyImage(ctx, sceneID, sceneCoverBlobColumn)
 }
 
 func (qb *SceneStore) AssignFiles(ctx context.Context, sceneID int, fileIDs []file.ID) error {
@@ -1704,5 +1723,26 @@ func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int) ([][]*mo
 		}
 	}
 
+	sortByPath(duplicates)
+
 	return duplicates, nil
+}
+
+func sortByPath(scenes [][]*models.Scene) {
+	lessFunc := func(i int, j int) bool {
+		firstPathI := getFirstPath(scenes[i])
+		firstPathJ := getFirstPath(scenes[j])
+		return firstPathI < firstPathJ
+	}
+	sort.SliceStable(scenes, lessFunc)
+}
+
+func getFirstPath(scenes []*models.Scene) string {
+	var firstPath string
+	for i, scene := range scenes {
+		if i == 0 || scene.Path < firstPath {
+			firstPath = scene.Path
+		}
+	}
+	return firstPath
 }

@@ -157,14 +157,10 @@ export const Manual: React.FC<IManualProps> = ({
     },
   ];
 
-  const [activeTab, setActiveTab] = useState(
-    defaultActiveTab ?? content[0].key
-  );
+  const [activeTab, setActiveTab] = useState<string>();
 
   useEffect(() => {
-    if (defaultActiveTab) {
-      setActiveTab(defaultActiveTab);
-    }
+    setActiveTab(defaultActiveTab);
   }, [defaultActiveTab]);
 
   // links to other manual pages are specified as "/help/page.md"
@@ -173,11 +169,9 @@ export const Manual: React.FC<IManualProps> = ({
     event: React.MouseEvent<HTMLDivElement, MouseEvent>
   ) {
     if (event.target instanceof HTMLAnchorElement) {
-      const href = (event.target as HTMLAnchorElement).getAttribute("href");
+      const href = event.target.getAttribute("href");
       if (href && href.startsWith("/help")) {
-        const newKey = (event.target as HTMLAnchorElement).pathname.substring(
-          "/help/".length
-        );
+        const newKey = event.target.pathname.substring("/help/".length);
         setActiveTab(newKey);
         event.preventDefault();
       }
@@ -197,7 +191,7 @@ export const Manual: React.FC<IManualProps> = ({
       <Modal.Body>
         <Container className="manual-container">
           <Tab.Container
-            activeKey={activeTab}
+            activeKey={activeTab ?? content[0].key}
             onSelect={(k) => k && setActiveTab(k)}
             id="manual-tabs"
           >

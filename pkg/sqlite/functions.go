@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -29,4 +30,8 @@ func durationToTinyIntFn(str string) (int64, error) {
 	}
 
 	return int64(seconds), nil
+}
+
+func basenameFn(str string) (string, error) {
+	return filepath.Base(str), nil
 }

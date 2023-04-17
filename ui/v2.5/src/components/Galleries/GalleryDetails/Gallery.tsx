@@ -1,4 +1,4 @@
-import { Tab, Nav, Dropdown } from "react-bootstrap";
+import { Button, Tab, Nav, Dropdown } from "react-bootstrap";
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useHistory, Link } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -9,14 +9,13 @@ import {
   useFindGallery,
   useGalleryUpdate,
 } from "src/core/StashService";
-import {
-  ErrorMessage,
-  LoadingIndicator,
-  Icon,
-  Counter,
-} from "src/components/Shared";
+import { ErrorMessage } from "src/components/Shared/ErrorMessage";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { Icon } from "src/components/Shared/Icon";
+import { Counter } from "src/components/Shared/Counter";
 import Mousetrap from "mousetrap";
-import { useToast } from "src/hooks";
+import { useGalleryLightbox } from "src/hooks/Lightbox/hooks";
+import { useToast } from "src/hooks/Toast";
 import { OrganizedButton } from "src/components/Scenes/SceneDetails/OrganizedButton";
 import { GalleryEditPanel } from "./GalleryEditPanel";
 import { GalleryDetailPanel } from "./GalleryDetailPanel";
@@ -27,6 +26,7 @@ import { GalleryFileInfoPanel } from "./GalleryFileInfoPanel";
 import { GalleryScenesPanel } from "./GalleryScenesPanel";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 import { galleryPath, galleryTitle } from "src/core/galleries";
+import { GalleryChapterPanel } from "./GalleryChaptersPanel";
 
 interface IProps {
   gallery: GQL.GalleryDataFragment;
@@ -41,6 +41,9 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
   const history = useHistory();
   const Toast = useToast();
   const intl = useIntl();
+  const showLightbox = useGalleryLightbox(gallery.id, gallery.chapters);
+
+  const [collapsed, setCollapsed] = useState(false);
 
   const [activeTabKey, setActiveTabKey] = useState("gallery-details-panel");
   const activeRightTabKey = tab === "images" || tab === "add" ? tab : "images";
@@ -75,6 +78,10 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
     }
   };
 
+  function getCollapseButtonText() {
+    return collapsed ? ">" : "<";
+  }
+
   async function onRescan() {
     if (!gallery || !path) {
       return;
@@ -93,6 +100,10 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
         }
       ),
     });
+  }
+
+  async function onClickChapter(imageindex: number) {
+    showLightbox(imageindex - 1);
   }
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
@@ -186,6 +197,11 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
               </Nav.Item>
             ) : undefined}
             <Nav.Item>
+              <Nav.Link eventKey="gallery-chapter-panel">
+                <FormattedMessage id="chapters" />
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
               <Nav.Link eventKey="gallery-edit-panel">
                 <FormattedMessage id="actions.edit" />
               </Nav.Link>
@@ -211,10 +227,16 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
           >
             <GalleryFileInfoPanel gallery={gallery} />
           </Tab.Pane>
+          <Tab.Pane eventKey="gallery-chapter-panel">
+            <GalleryChapterPanel
+              gallery={gallery}
+              onClickChapter={onClickChapter}
+              isVisible={activeTabKey === "gallery-chapter-panel"}
+            />
+          </Tab.Pane>
           <Tab.Pane eventKey="gallery-edit-panel">
             <GalleryEditPanel
               isVisible={activeTabKey === "gallery-edit-panel"}
-              isNew={false}
               gallery={gallery}
               onDelete={() => setIsDeleteAlertOpen(true)}
             />
@@ -257,10 +279,16 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
 
         <Tab.Content>
           <Tab.Pane eventKey="images">
-            <GalleryImagesPanel gallery={gallery} />
+            <GalleryImagesPanel
+              active={activeRightTabKey == "images"}
+              gallery={gallery}
+            />
           </Tab.Pane>
           <Tab.Pane eventKey="add">
-            <GalleryAddPanel gallery={gallery} />
+            <GalleryAddPanel
+              active={activeRightTabKey == "add"}
+              gallery={gallery}
+            />
           </Tab.Pane>
         </Tab.Content>
       </Tab.Container>
@@ -270,13 +298,17 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("a", () => setActiveTabKey("gallery-details-panel"));
+    Mousetrap.bind("c", () => setActiveTabKey("gallery-chapter-panel"));
     Mousetrap.bind("e", () => setActiveTabKey("gallery-edit-panel"));
     Mousetrap.bind("f", () => setActiveTabKey("gallery-file-info-panel"));
+    Mousetrap.bind(",", () => setCollapsed(!collapsed));
 
     return () => {
       Mousetrap.unbind("a");
+      Mousetrap.unbind("c");
       Mousetrap.unbind("e");
       Mousetrap.unbind("f");
+      Mousetrap.unbind(",");
     };
   });
 
@@ -288,7 +320,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
         <title>{title}</title>
       </Helmet>
       {maybeRenderDeleteDialog()}
-      <div className="gallery-tabs">
+      <div className={`gallery-tabs ${collapsed ? "collapsed" : ""}`}>
         <div className="d-none d-xl-block">
           {gallery.studio && (
             <h1 className="text-center">
@@ -305,7 +337,14 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
         </div>
         {renderTabs()}
       </div>
-      <div className="gallery-container">{renderRightTabs()}</div>
+      <div className="gallery-divider d-none d-xl-block">
+        <Button onClick={() => setCollapsed(!collapsed)}>
+          {getCollapseButtonText()}
+        </Button>
+      </div>
+      <div className={`gallery-container ${collapsed ? "expanded" : ""}`}>
+        {renderRightTabs()}
+      </div>
     </div>
   );
 };

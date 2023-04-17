@@ -2836,21 +2836,23 @@ func verifyScenesOCounter(t *testing.T, oCounterCriterion models.IntCriterionInp
 	})
 }
 
-func verifyInt(t *testing.T, value int, criterion models.IntCriterionInput) {
+func verifyInt(t *testing.T, value int, criterion models.IntCriterionInput) bool {
 	t.Helper()
 	assert := assert.New(t)
 	if criterion.Modifier == models.CriterionModifierEquals {
-		assert.Equal(criterion.Value, value)
+		return assert.Equal(criterion.Value, value)
 	}
 	if criterion.Modifier == models.CriterionModifierNotEquals {
-		assert.NotEqual(criterion.Value, value)
+		return assert.NotEqual(criterion.Value, value)
 	}
 	if criterion.Modifier == models.CriterionModifierGreaterThan {
-		assert.Greater(value, criterion.Value)
+		return assert.Greater(value, criterion.Value)
 	}
 	if criterion.Modifier == models.CriterionModifierLessThan {
-		assert.Less(value, criterion.Value)
+		return assert.Less(value, criterion.Value)
 	}
+
+	return true
 }
 
 func TestSceneQueryDuration(t *testing.T) {
@@ -4088,53 +4090,7 @@ func TestSceneUpdateSceneCover(t *testing.T) {
 
 		sceneID := sceneIDs[sceneIdxWithGallery]
 
-		image := []byte("image")
-		if err := qb.UpdateCover(ctx, sceneID, image); err != nil {
-			return fmt.Errorf("Error updating scene cover: %s", err.Error())
-		}
-
-		// ensure image set
-		storedImage, err := qb.GetCover(ctx, sceneID)
-		if err != nil {
-			return fmt.Errorf("Error getting image: %s", err.Error())
-		}
-		assert.Equal(t, storedImage, image)
-
-		// set nil image
-		err = qb.UpdateCover(ctx, sceneID, nil)
-		if err == nil {
-			return fmt.Errorf("Expected error setting nil image")
-		}
-
-		return nil
-	}); err != nil {
-		t.Error(err.Error())
-	}
-}
-
-func TestSceneDestroySceneCover(t *testing.T) {
-	if err := withTxn(func(ctx context.Context) error {
-		qb := db.Scene
-
-		sceneID := sceneIDs[sceneIdxWithGallery]
-
-		image := []byte("image")
-		if err := qb.UpdateCover(ctx, sceneID, image); err != nil {
-			return fmt.Errorf("Error updating scene image: %s", err.Error())
-		}
-
-		if err := qb.DestroyCover(ctx, sceneID); err != nil {
-			return fmt.Errorf("Error destroying scene cover: %s", err.Error())
-		}
-
-		// image should be nil
-		storedImage, err := qb.GetCover(ctx, sceneID)
-		if err != nil {
-			return fmt.Errorf("Error getting image: %s", err.Error())
-		}
-		assert.Nil(t, storedImage)
-
-		return nil
+		return testUpdateImage(t, ctx, sceneID, qb.UpdateCover, qb.GetCover)
 	}); err != nil {
 		t.Error(err.Error())
 	}

@@ -31,6 +31,15 @@ type Plugin struct {
 	Version     *string       `json:"version"`
 	Tasks       []*PluginTask `json:"tasks"`
 	Hooks       []*PluginHook `json:"hooks"`
+	UI          PluginUI      `json:"ui"`
+}
+
+type PluginUI struct {
+	// Javascript files that will be injected into the stash UI.
+	Javascript []string `json:"javascript"`
+
+	// CSS files that will be injected into the stash UI.
+	CSS []string `json:"css"`
 }
 
 type ServerConfig interface {
@@ -201,9 +210,8 @@ func (c Cache) ExecutePostHooks(ctx context.Context, id int, hookType HookTrigge
 }
 
 func (c Cache) RegisterPostHooks(ctx context.Context, id int, hookType HookTriggerEnum, input interface{}, inputFields []string) {
-	txn.AddPostCommitHook(ctx, func(ctx context.Context) error {
+	txn.AddPostCommitHook(ctx, func(ctx context.Context) {
 		c.ExecutePostHooks(ctx, id, hookType, input, inputFields)
-		return nil
 	})
 }
 

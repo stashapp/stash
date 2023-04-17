@@ -1,36 +1,30 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { LoadingIndicator } from "src/components/Shared";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { PerformerEditPanel } from "./PerformerEditPanel";
 import { useLocation } from "react-router-dom";
 
 const PerformerCreate: React.FC = () => {
-  const [imagePreview, setImagePreview] = useState<string | null>();
-  const [imageEncoding, setImageEncoding] = useState<boolean>(false);
+  const [image, setImage] = useState<string | null>();
+  const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
-  function useQuery() {
-    const { search } = useLocation();
-    return React.useMemo(() => new URLSearchParams(search), [search]);
-  }
+  const location = useLocation();
+  const query = useMemo(() => new URLSearchParams(location.search), [location]);
+  const performer = {
+    name: query.get("q") ?? undefined,
+  };
 
-  const query = useQuery();
-  const nameQuery = query.get("name");
-
-  const activeImage = imagePreview ?? "";
   const intl = useIntl();
 
-  const onImageChange = (image?: string | null) => setImagePreview(image);
-  const onImageEncoding = (isEncoding = false) => setImageEncoding(isEncoding);
-
   function renderPerformerImage() {
-    if (imageEncoding) {
+    if (encodingImage) {
       return <LoadingIndicator message="Encoding image..." />;
     }
-    if (activeImage) {
+    if (image) {
       return (
         <img
           className="performer"
-          src={activeImage}
+          src={image}
           alt={intl.formatMessage({ id: "performer" })}
         />
       );
@@ -50,11 +44,10 @@ const PerformerCreate: React.FC = () => {
           />
         </h2>
         <PerformerEditPanel
-          performer={{ name: nameQuery ?? "" }}
+          performer={performer}
           isVisible
-          isNew
-          onImageChange={onImageChange}
-          onImageEncoding={onImageEncoding}
+          setImage={setImage}
+          setEncodingImage={setEncodingImage}
         />
       </div>
     </div>

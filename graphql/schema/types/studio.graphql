@@ -12,6 +12,7 @@ type Studio {
   scene_count: Int # Resolver
   image_count: Int # Resolver
   gallery_count: Int # Resolver
+  performer_count: Int # Resolver
   stash_ids: [StashID!]!
   # rating expressed as 1-5
   rating: Int @deprecated(reason: "Use 1-100 range with rating100")

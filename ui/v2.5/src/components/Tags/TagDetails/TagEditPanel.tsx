@@ -2,27 +2,25 @@ import React, { useEffect } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
-import { DetailsEditNavbar, TagSelect } from "src/components/Shared";
+import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
+import { TagSelect } from "src/components/Shared/Select";
 import { Form, Col, Row } from "react-bootstrap";
-import { FormUtils, ImageUtils } from "src/utils";
+import FormUtils from "src/utils/form";
+import ImageUtils from "src/utils/image";
 import { useFormik } from "formik";
-import { Prompt, useHistory, useParams } from "react-router-dom";
+import { Prompt } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import { StringListInput } from "src/components/Shared/StringListInput";
+import isEqual from "lodash-es/isEqual";
 
 interface ITagEditPanel {
-  tag?: Partial<GQL.TagDataFragment>;
+  tag: Partial<GQL.TagDataFragment>;
   // returns id
-  onSubmit: (
-    tag: Partial<GQL.TagCreateInput | GQL.TagUpdateInput>
-  ) => Promise<string | undefined>;
+  onSubmit: (tag: GQL.TagCreateInput) => void;
   onCancel: () => void;
   onDelete: () => void;
   setImage: (image?: string | null) => void;
-}
-
-interface ITagEditPanelParams {
-  id?: string;
+  setEncodingImage: (loading: boolean) => void;
 }
 
 export const TagEditPanel: React.FC<ITagEditPanel> = ({
@@ -31,14 +29,11 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
   onCancel,
   onDelete,
   setImage,
+  setEncodingImage,
 }) => {
   const intl = useIntl();
-  const history = useHistory();
 
-  const params = useParams<ITagEditPanelParams>();
-  const idParam = params.id;
-
-  const isNew = idParam === undefined;
+  const isNew = tag.id === undefined;
 
   const labelXS = 3;
   const labelXL = 3;
@@ -47,47 +42,49 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
   const schema = yup.object({
     name: yup.string().required(),
-    description: yup.string().optional().nullable(),
     aliases: yup
       .array(yup.string().required())
-      .optional()
+      .defined()
       .test({
         name: "unique",
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        test: (value: any) => {
-          return (value ?? []).length === new Set(value).size;
+        test: (value, context) => {
+          if (!value) return true;
+          const aliases = new Set(value);
+          aliases.add(context.parent.name);
+          return value.length + 1 === aliases.size;
         },
-        message: intl.formatMessage({ id: "dialogs.aliases_must_be_unique" }),
+        message: intl.formatMessage({
+          id: "validation.aliases_must_be_unique",
+        }),
       }),
-    parent_ids: yup.array(yup.string().required()).optional().nullable(),
-    child_ids: yup.array(yup.string().required()).optional().nullable(),
-    ignore_auto_tag: yup.boolean().optional(),
+    description: yup.string().ensure(),
+    parent_ids: yup.array(yup.string().required()).defined(),
+    child_ids: yup.array(yup.string().required()).defined(),
+    ignore_auto_tag: yup.boolean().defined(),
+    image: yup.string().nullable().optional(),
   });
 
   const initialValues = {
-    name: tag?.name,
-    description: tag?.description,
-    aliases: tag?.aliases,
+    name: tag?.name ?? "",
+    aliases: tag?.aliases ?? [],
+    description: tag?.description ?? "",
     parent_ids: (tag?.parents ?? []).map((t) => t.id),
     child_ids: (tag?.children ?? []).map((t) => t.id),
     ignore_auto_tag: tag?.ignore_auto_tag ?? false,
   };
 
-  type InputValues = typeof initialValues;
+  type InputValues = yup.InferType<typeof schema>;
 
-  const formik = useFormik({
+  const formik = useFormik<InputValues>({
     initialValues,
     validationSchema: schema,
     enableReinitialize: true,
-    onSubmit: doSubmit,
+    onSubmit: (values) => onSubmit(values),
   });
 
-  async function doSubmit(values: InputValues) {
-    const id = await onSubmit(getTagInput(values));
-    if (id) {
-      formik.resetForm({ values });
-      history.push(`/tags/${id}`);
-    }
+  function onCancelEditing() {
+    setImage(undefined);
+    onCancel?.();
   }
 
   // set up hotkeys
@@ -99,19 +96,22 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     };
   });
 
-  function getTagInput(values: InputValues) {
-    const input: Partial<GQL.TagCreateInput | GQL.TagUpdateInput> = {
-      ...values,
-    };
+  const encodingImage = ImageUtils.usePasteImage(onImageLoad);
 
-    if (tag && tag.id) {
-      (input as GQL.TagUpdateInput).id = tag.id;
-    }
-    return input;
+  useEffect(() => {
+    setImage(formik.values.image);
+  }, [formik.values.image, setImage]);
+
+  useEffect(() => {
+    setEncodingImage(encodingImage);
+  }, [setEncodingImage, encodingImage]);
+
+  function onImageLoad(imageData: string | null) {
+    formik.setFieldValue("image", imageData);
   }
 
   function onImageChange(event: React.FormEvent<HTMLInputElement>) {
-    ImageUtils.onImageChange(event, setImage);
+    ImageUtils.onImageChange(event, onImageLoad);
   }
 
   const isEditing = true;
@@ -130,8 +130,9 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
       <Prompt
         when={formik.dirty}
-        message={(location) => {
-          if (!isNew && location.pathname.startsWith(`/tags/${tag?.id}`)) {
+        message={(location, action) => {
+          // Check if it's a redirect after movie creation
+          if (action === "PUSH" && location.pathname.startsWith("/tags/")) {
             return true;
           }
           return intl.formatMessage({ id: "dialogs.unsaved_changes" });
@@ -162,9 +163,13 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
           </Form.Label>
           <Col xs={fieldXS} xl={fieldXL}>
             <StringListInput
-              value={formik.values.aliases ?? []}
+              value={formik.values.aliases}
               setValue={(value) => formik.setFieldValue("aliases", value)}
-              errors={formik.errors.aliases}
+              errors={
+                Array.isArray(formik.errors.aliases)
+                  ? formik.errors.aliases[0]
+                  : formik.errors.aliases
+              }
             />
           </Col>
         </Form.Group>
@@ -202,9 +207,10 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
                 )
               }
               ids={formik.values.parent_ids}
-              excludeIds={(tag?.id ? [tag.id] : []).concat(
-                ...formik.values.child_ids
-              )}
+              excludeIds={[
+                ...(tag?.id ? [tag.id] : []),
+                ...formik.values.child_ids,
+              ]}
               creatable={false}
             />
           </Col>
@@ -229,9 +235,10 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
                 )
               }
               ids={formik.values.child_ids}
-              excludeIds={(tag?.id ? [tag.id] : []).concat(
-                ...formik.values.parent_ids
-              )}
+              excludeIds={[
+                ...(tag?.id ? [tag.id] : []),
+                ...formik.values.parent_ids,
+              ]}
               creatable={false}
             />
           </Col>
@@ -258,13 +265,12 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
         objectName={tag?.name ?? intl.formatMessage({ id: "tag" })}
         isNew={isNew}
         isEditing={isEditing}
-        onToggleEdit={onCancel}
-        onSave={() => formik.handleSubmit()}
+        onToggleEdit={onCancelEditing}
+        onSave={formik.handleSubmit}
+        saveDisabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}
         onImageChange={onImageChange}
-        onImageChangeURL={setImage}
-        onClearImage={() => {
-          setImage(null);
-        }}
+        onImageChangeURL={onImageLoad}
+        onClearImage={() => onImageLoad(null)}
         onDelete={onDelete}
         acceptSVG
       />

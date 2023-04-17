@@ -2,9 +2,10 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { NavUtils } from "src/utils";
+import NavUtils from "src/utils/navigation";
 import { FormattedMessage } from "react-intl";
-import { Icon, TruncatedText } from "../Shared";
+import { Icon } from "../Shared/Icon";
+import { TruncatedText } from "../Shared/TruncatedText";
 import { GridCard } from "../Shared/GridCard";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import { faMapMarkerAlt, faUser } from "@fortawesome/free-solid-svg-icons";
@@ -196,9 +197,9 @@ export const TagCard: React.FC<IProps> = ({
           {maybeRenderDescription()}
           {maybeRenderParents()}
           {maybeRenderChildren()}
-          {maybeRenderPopoverButtonGroup()}
         </>
       }
+      popovers={maybeRenderPopoverButtonGroup()}
       selected={selected}
       selecting={selecting}
       onSelectedChanged={onSelectedChanged}

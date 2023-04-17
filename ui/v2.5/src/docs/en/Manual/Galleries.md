@@ -6,7 +6,7 @@ Galleries are automatically created from zip files found during scanning that co
 
 For best results, images in zip file should be stored without compression (copy, store or no compression options depending on the software you use. Eg on linux: `zip -0 -r gallery.zip foldertozip/`). This impacts **heavily** on the zip read performance.
 
-If an filename of an image in the gallery zip file ends with `cover.jpg`, it will be treated like a cover and presented first in the gallery view page and as a gallery cover in the gallery list view. If more than one images match the name the first one found in natural sort order is selected.
+If a filename of an image in the gallery zip file ends with `cover.jpg`, it will be treated like a cover and presented first in the gallery view page and as a gallery cover in the gallery list view. If more than one images match the name the first one found in natural sort order is selected.
 
 Images can be added to a gallery by navigating to the gallery's page, selecting the "Add" tab, querying for and selecting the images to add, then selecting "Add to Gallery" from the `...` menu button. Likewise, images may be removed from a gallery by selecting the "Images" tab, selecting the images to remove and selecting "Remove from Gallery" from the `...` menu button.
 

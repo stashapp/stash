@@ -77,6 +77,22 @@ This setting can be used to increase/decrease overall CPU utilisation in two sce
 
 Note: If this is set too high it will decrease overall performance and causes failures (out of memory).
 
+## Hardware Accelerated Live Transcoding
+
+Hardware accelerated live transcoding can be enabled by setting the `FFmpeg hardware encoding` setting. Stash outputs the supported hardware encoders to the log file on startup at the Info log level. If a given hardware encoder is not supported, it's error message is logged to the Debug log level for debugging purposes.
+
+## HLS/DASH Streaming
+
+To stream using HLS (such as on Apple devices) or DASH, the Cache path must be set. This directory is used to store temporary files during the live-transcoding process. The Cache path can be set in the System settings page. 
+
+## ffmpeg arguments
+
+Additional arguments can be injected into ffmpeg when generating previews and sprites, and when live-transcoding videos. 
+
+The ffmpeg arguments configuration is split into `Input` and `Output` arguments. Input arguments are injected before the input file argument, and output arguments are injected before the output file argument.
+
+Arguments are accepted as a list of strings. Each string is a separate argument. For example, a single argument of `-foo bar` would be treated as a single argument `"-foo bar"`. The correct way to pass this argument would be to split it into two separate arguments: `"-foo", "bar"`.
+
 ## Scraping
 
 ### User Agent string
@@ -121,6 +137,10 @@ These options are typically not exposed in the UI and must be changed manually i
 | `custom_ui_location` | The file system folder where the UI files will be served from, instead of using the embedded UI. Empty to disable. Stash must be restarted to take effect. |
 | `max_upload_size` | Maximum file upload size for import files. Defaults to 1GB. |
 | `theme_color` | Sets the `theme-color` property in the UI. |
+| `gallery_cover_regex` | The regex responsible for selecting images as gallery covers |
+| `proxy` | The url of a HTTP(S) proxy to be used when stash makes calls to online services Example: https://user:password@my.proxy:8080 |
+| `no_proxy` | A list of domains for which the proxy must not be used. Default is all local LAN: localhost,127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12 |
+| `sequential_scanning` | Modifies behaviour of the scanning functionality to generate support files (previews/sprites/phash) at the same time as fingerprinting/screenshotting. Useful when scanning cached remote files. |
 
 ### Custom served folders
 

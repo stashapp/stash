@@ -19,23 +19,26 @@ export const useTagFilterHook = (tag: GQL.TagDataFragment) => {
       return c.criterionOption.type === "tags";
     }) as TagsCriterion;
 
-    if (
-      tagCriterion &&
-      (tagCriterion.modifier === GQL.CriterionModifier.IncludesAll ||
-        tagCriterion.modifier === GQL.CriterionModifier.Includes)
-    ) {
-      // add the tag if not present
+    if (tagCriterion) {
       if (
-        !tagCriterion.value.items.find((p) => {
-          return p.id === tag.id;
-        })
+        tagCriterion.modifier === GQL.CriterionModifier.IncludesAll ||
+        tagCriterion.modifier === GQL.CriterionModifier.Includes
       ) {
-        tagCriterion.value.items.push(tagValue);
+        // add the tag if not present
+        if (
+          !tagCriterion.value.items.find((p) => {
+            return p.id === tag.id;
+          })
+        ) {
+          tagCriterion.value.items.push(tagValue);
+        }
+      } else {
+        // overwrite
+        tagCriterion.value.items = [tagValue];
       }
 
       tagCriterion.modifier = GQL.CriterionModifier.IncludesAll;
     } else {
-      // overwrite
       tagCriterion = new TagsCriterion(TagsCriterionOption);
       tagCriterion.value = {
         items: [tagValue],
@@ -43,6 +46,7 @@ export const useTagFilterHook = (tag: GQL.TagDataFragment) => {
           ? -1
           : 0,
       };
+      tagCriterion.modifier = GQL.CriterionModifier.IncludesAll;
       filter.criteria.push(tagCriterion);
     }
 

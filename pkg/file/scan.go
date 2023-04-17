@@ -14,6 +14,7 @@ import (
 	"github.com/remeh/sizedwaitgroup"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/txn"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 const (
@@ -507,12 +508,11 @@ func (s *scanJob) onNewFolder(ctx context.Context, file scanFile) (*Folder, erro
 		}
 	}
 
-	txn.AddPostCommitHook(ctx, func(ctx context.Context) error {
+	txn.AddPostCommitHook(ctx, func(ctx context.Context) {
 		// log at the end so that if anything fails above due to a locked database
 		// error and the transaction must be retried, then we shouldn't get multiple
 		// logs of the same thing.
 		logger.Infof("%s doesn't exist. Creating new folder entry...", file.Path)
-		return nil
 	})
 
 	if err := s.Repository.FolderStore.Create(ctx, toCreate); err != nil {
@@ -574,7 +574,7 @@ func (s *scanJob) handleFile(ctx context.Context, f scanFile) error {
 		// scan zip files with a different context that is not cancellable
 		// cancelling while scanning zip file contents results in the scan
 		// contents being partially completed
-		zipCtx := context.Background()
+		zipCtx := utils.ValueOnlyContext{Context: ctx}
 
 		if err := s.scanZipFile(zipCtx, f); err != nil {
 			logger.Errorf("Error scanning zip file %q: %v", f.Path, err)

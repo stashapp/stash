@@ -2,7 +2,7 @@ import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 import React, { useState } from "react";
 import { Button, Form, Row, Col, Dropdown } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
-import { Icon } from "src/components/Shared";
+import { Icon } from "src/components/Shared/Icon";
 import * as GQL from "src/core/generated-graphql";
 import { FolderSelectDialog } from "../Shared/FolderSelect/FolderSelectDialog";
 import { BooleanSetting } from "./Inputs";

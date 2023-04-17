@@ -2,25 +2,41 @@ import cloneDeep from "lodash-es/cloneDeep";
 import React from "react";
 import { useHistory } from "react-router-dom";
 import { useIntl } from "react-intl";
-import { Helmet } from "react-helmet";
-import { TITLE_SUFFIX } from "src/components/Shared";
 import Mousetrap from "mousetrap";
-import { FindSceneMarkersQueryResult } from "src/core/generated-graphql";
-import { queryFindSceneMarkers } from "src/core/StashService";
-import { NavUtils } from "src/utils";
-import { useSceneMarkersList } from "src/hooks";
-import { PersistanceLevel } from "src/hooks/ListHook";
+import * as GQL from "src/core/generated-graphql";
+import {
+  queryFindSceneMarkers,
+  useFindSceneMarkers,
+} from "src/core/StashService";
+import NavUtils from "src/utils/navigation";
+import { makeItemList, PersistanceLevel } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { WallPanel } from "../Wall/WallPanel";
 
+const SceneMarkerItemList = makeItemList({
+  filterMode: GQL.FilterMode.SceneMarkers,
+  useResult: useFindSceneMarkers,
+  getItems(result: GQL.FindSceneMarkersQueryResult) {
+    return result?.data?.findSceneMarkers?.scene_markers ?? [];
+  },
+  getCount(result: GQL.FindSceneMarkersQueryResult) {
+    return result?.data?.findSceneMarkers?.count ?? 0;
+  },
+});
+
 interface ISceneMarkerList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  alterQuery?: boolean;
 }
 
-export const SceneMarkerList: React.FC<ISceneMarkerList> = ({ filterHook }) => {
+export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
+  filterHook,
+  alterQuery,
+}) => {
   const intl = useIntl();
   const history = useHistory();
+
   const otherOperations = [
     {
       text: intl.formatMessage({ id: "actions.play_random" }),
@@ -28,10 +44,10 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({ filterHook }) => {
     },
   ];
 
-  const addKeybinds = (
-    result: FindSceneMarkersQueryResult,
+  function addKeybinds(
+    result: GQL.FindSceneMarkersQueryResult,
     filter: ListFilterModel
-  ) => {
+  ) {
     Mousetrap.bind("p r", () => {
       playRandom(result, filter);
     });
@@ -39,18 +55,10 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({ filterHook }) => {
     return () => {
       Mousetrap.unbind("p r");
     };
-  };
-
-  const listData = useSceneMarkersList({
-    otherOperations,
-    renderContent,
-    filterHook,
-    addKeybinds,
-    persistState: PersistanceLevel.ALL,
-  });
+  }
 
   async function playRandom(
-    result: FindSceneMarkersQueryResult,
+    result: GQL.FindSceneMarkersQueryResult,
     filter: ListFilterModel
   ) {
     // query for a random scene
@@ -62,7 +70,7 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({ filterHook }) => {
       filterCopy.itemsPerPage = 1;
       filterCopy.currentPage = index + 1;
       const singleResult = await queryFindSceneMarkers(filterCopy);
-      if (singleResult?.data?.findSceneMarkers?.scene_markers?.length === 1) {
+      if (singleResult.data.findSceneMarkers.scene_markers.length === 1) {
         // navigate to the scene player page
         const url = NavUtils.makeSceneMarkerUrl(
           singleResult.data.findSceneMarkers.scene_markers[0]
@@ -73,29 +81,27 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({ filterHook }) => {
   }
 
   function renderContent(
-    result: FindSceneMarkersQueryResult,
+    result: GQL.FindSceneMarkersQueryResult,
     filter: ListFilterModel
   ) {
-    if (!result?.data?.findSceneMarkers) return;
+    if (!result.data?.findSceneMarkers) return;
+
     if (filter.displayMode === DisplayMode.Wall) {
       return (
         <WallPanel sceneMarkers={result.data.findSceneMarkers.scene_markers} />
       );
     }
   }
-  const title_template = `${intl.formatMessage({
-    id: "markers",
-  })} ${TITLE_SUFFIX}`;
 
   return (
-    <>
-      <Helmet
-        defaultTitle={title_template}
-        titleTemplate={`%s | ${title_template}`}
-      />
-
-      {listData.template}
-    </>
+    <SceneMarkerItemList
+      filterHook={filterHook}
+      persistState={PersistanceLevel.ALL}
+      alterQuery={alterQuery}
+      otherOperations={otherOperations}
+      addKeybinds={addKeybinds}
+      renderContent={renderContent}
+    />
   );
 };
 

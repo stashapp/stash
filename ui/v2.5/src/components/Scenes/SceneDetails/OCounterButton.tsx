@@ -2,7 +2,9 @@ import { faBan, faMinus } from "@fortawesome/free-solid-svg-icons";
 import React, { useState } from "react";
 import { Button, ButtonGroup, Dropdown, DropdownButton } from "react-bootstrap";
 import { useIntl } from "react-intl";
-import { Icon, LoadingIndicator, SweatDrops } from "src/components/Shared";
+import { Icon } from "src/components/Shared/Icon";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { SweatDrops } from "src/components/Shared/SweatDrops";
 
 export interface IOCounterButtonProps {
   value: number;

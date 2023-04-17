@@ -14,6 +14,50 @@ type SceneMarkerReaderWriter struct {
 	mock.Mock
 }
 
+// All provides a mock function with given fields: ctx
+func (_m *SceneMarkerReaderWriter) All(ctx context.Context) ([]*models.SceneMarker, error) {
+	ret := _m.Called(ctx)
+
+	var r0 []*models.SceneMarker
+	if rf, ok := ret.Get(0).(func(context.Context) []*models.SceneMarker); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.SceneMarker)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Count provides a mock function with given fields: ctx
+func (_m *SceneMarkerReaderWriter) Count(ctx context.Context) (int, error) {
+	ret := _m.Called(ctx)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context) int); ok {
+		r0 = rf(ctx)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CountByTagID provides a mock function with given fields: ctx, tagID
 func (_m *SceneMarkerReaderWriter) CountByTagID(ctx context.Context, tagID int) (int, error) {
 	ret := _m.Called(ctx, tagID)

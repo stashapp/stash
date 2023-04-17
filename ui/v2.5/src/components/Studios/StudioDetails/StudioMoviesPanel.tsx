@@ -4,10 +4,14 @@ import { MovieList } from "src/components/Movies/MovieList";
 import { useStudioFilterHook } from "src/core/studios";
 
 interface IStudioMoviesPanel {
+  active: boolean;
   studio: GQL.StudioDataFragment;
 }
 
-export const StudioMoviesPanel: React.FC<IStudioMoviesPanel> = ({ studio }) => {
+export const StudioMoviesPanel: React.FC<IStudioMoviesPanel> = ({
+  active,
+  studio,
+}) => {
   const filterHook = useStudioFilterHook(studio);
-  return <MovieList filterHook={filterHook} />;
+  return <MovieList filterHook={filterHook} alterQuery={active} />;
 };
