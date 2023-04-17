@@ -120,6 +120,8 @@ func Start() error {
 	gqlSrv.SetQueryCache(gqlLru.New(1000))
 	gqlSrv.Use(gqlExtension.Introspection{})
 
+	gqlSrv.SetErrorPresenter(gqlErrorHandler)
+
 	gqlHandlerFunc := func(w http.ResponseWriter, r *http.Request) {
 		gqlSrv.ServeHTTP(w, r)
 	}
