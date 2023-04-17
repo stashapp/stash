@@ -882,16 +882,15 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if sceneFilter.Phash != nil {
-			qb.addSceneFilesTable(f)
-			f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
-
-			value, _ := utils.StringToPhash(sceneFilter.Phash.Value)
-			intCriterionHandler(&models.IntCriterionInput{
-				Value:    int(value),
+			// backwards compatibility
+			scenePhashDistanceCriterionHandler(qb, &models.PhashDistanceCriterionInput{
+				Value:    sceneFilter.Phash.Value,
 				Modifier: sceneFilter.Phash.Modifier,
-			}, "fingerprints_phash.fingerprint", nil)(ctx, f)
+			})(ctx, f)
 		}
 	}))
+
+	query.handleCriterion(ctx, scenePhashDistanceCriterionHandler(qb, sceneFilter.PhashDistance))
 
 	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.Rating100, "scenes.rating", nil))
 	// legacy rating handler
@@ -1378,6 +1377,45 @@ INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
 			f.addLeftJoin("performer_tags", "", "performer_tags.scene_id = scenes.id")
 
 			addHierarchicalConditionClauses(f, tags, "performer_tags", "root_tag_id")
+		}
+	}
+}
+
+func scenePhashDistanceCriterionHandler(qb *SceneStore, phashDistance *models.PhashDistanceCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if phashDistance != nil {
+			qb.addSceneFilesTable(f)
+			f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
+
+			value, _ := utils.StringToPhash(phashDistance.Value)
+			distance := 0
+			if phashDistance.Distance != nil {
+				distance = *phashDistance.Distance
+			}
+
+			if distance == 0 {
+				// use the default handler
+				intCriterionHandler(&models.IntCriterionInput{
+					Value:    int(value),
+					Modifier: phashDistance.Modifier,
+				}, "fingerprints_phash.fingerprint", nil)(ctx, f)
+			}
+
+			switch {
+			case phashDistance.Modifier == models.CriterionModifierEquals && distance > 0:
+				// needed to avoid a type mismatch
+				f.addWhere("typeof(fingerprints_phash.fingerprint) = 'integer'")
+				f.addWhere("phash_distance(fingerprints_phash.fingerprint, ?) < ?", value, distance)
+			case phashDistance.Modifier == models.CriterionModifierNotEquals && distance > 0:
+				// needed to avoid a type mismatch
+				f.addWhere("typeof(fingerprints_phash.fingerprint) = 'integer'")
+				f.addWhere("phash_distance(fingerprints_phash.fingerprint, ?) > ?", value, distance)
+			default:
+				intCriterionHandler(&models.IntCriterionInput{
+					Value:    int(value),
+					Modifier: phashDistance.Modifier,
+				}, "fingerprints_phash.fingerprint", nil)(ctx, f)
+			}
 		}
 	}
 }

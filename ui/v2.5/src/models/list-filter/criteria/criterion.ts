@@ -22,6 +22,7 @@ import {
   IStashIDValue,
   IDateValue,
   ITimestampValue,
+  IPhashDistanceValue,
 } from "../types";
 
 export type Option = string | number | IOptionType;
@@ -32,7 +33,8 @@ export type CriterionValue =
   | INumberValue
   | IStashIDValue
   | IDateValue
-  | ITimestampValue;
+  | ITimestampValue
+  | IPhashDistanceValue;
 
 const modifierMessageIDs = {
   [CriterionModifier.Equals]: "criterion_modifier.equals",
