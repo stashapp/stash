@@ -3,10 +3,12 @@ package api
 import (
 	"context"
 	"errors"
+	"io"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi"
+	"github.com/stashapp/stash/internal/static"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/studio"
@@ -55,7 +57,14 @@ func (rs studioRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(image) == 0 {
-		image, _ = utils.ProcessBase64Image(models.DefaultStudioImage)
+		const defaultStudioImage = "studio/studio.svg"
+
+		// fall back to static image
+		f, _ := static.Studio.Open(defaultStudioImage)
+		defer f.Close()
+		stat, _ := f.Stat()
+		http.ServeContent(w, r, "studio.svg", stat.ModTime(), f.(io.ReadSeeker))
+		return
 	}
 
 	if err := utils.ServeImage(image, w, r); err != nil {
