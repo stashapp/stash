@@ -5,7 +5,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 
-	"github.com/fvbommel/sortorder"
+	"github.com/fvbommel/sortorder/casefolded"
 	sqlite3 "github.com/mattn/go-sqlite3"
 )
 
@@ -37,9 +37,9 @@ func (d *CustomSQLiteDriver) Open(dsn string) (driver.Conn, error) {
 				}
 			}
 
-			// COLLATE NATURAL_CS - Case sensitive natural sort
-			err := conn.RegisterCollation("NATURAL_CS", func(s string, s2 string) int {
-				if sortorder.NaturalLess(s, s2) {
+			// COLLATE NATURAL_CI - Case insensitive natural sort
+			err := conn.RegisterCollation("NATURAL_CI", func(s string, s2 string) int {
+				if casefolded.NaturalLess(s, s2) {
 					return -1
 				} else {
 					return 1
