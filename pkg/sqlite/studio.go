@@ -106,7 +106,7 @@ func NewStudioStore(blobStore *BlobStore) *StudioStore {
 		},
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
-			joinTable: performerTable,
+			joinTable: studioTable,
 		},
 		tableMgr: studioTableMgr,
 	}
@@ -186,13 +186,8 @@ func (qb *StudioStore) UpdatePartial(ctx context.Context, input models.StudioDBI
 	}
 
 	// Update image table
-	if len(input.StudioUpdate.ImageBytes) > 0 {
+	if input.StudioUpdate.ImageIncluded {
 		if err := qb.UpdateImage(ctx, input.StudioUpdate.ID, input.StudioUpdate.ImageBytes); err != nil {
-			return nil, err
-		}
-	} else if input.StudioUpdate.ImageIncluded {
-		// must be unsetting
-		if err := qb.DestroyImage(ctx, input.StudioUpdate.ID); err != nil {
 			return nil, err
 		}
 	}
