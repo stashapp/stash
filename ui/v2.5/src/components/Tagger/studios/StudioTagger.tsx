@@ -81,10 +81,10 @@ const StudioBatchUpdateModal: React.FC<IStudioBatchUpdateModal> = ({
     return queryAll
       ? allStudios?.findStudios.count
       : filteredStashIDs.filter((s) =>
-        // if refresh, then we filter out the studios without a stash id
-        // otherwise, we want untagged studios, filtering out those with a stash id
-        refresh ? s.length > 0 : s.length === 0
-      ).length;
+          // if refresh, then we filter out the studios without a stash id
+          // otherwise, we want untagged studios, filtering out those with a stash id
+          refresh ? s.length > 0 : s.length === 0
+        ).length;
   }, [queryAll, refresh, studios, allStudios, selectedEndpoint.endpoint]);
 
   return (
@@ -407,10 +407,10 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
             ),
             details:
               res?.errors?.[0].message ===
-                "UNIQUE constraint failed: studios.checksum"
+              "UNIQUE constraint failed: studios.checksum"
                 ? intl.formatMessage({
-                  id: "studio_tagger.name_already_exists",
-                })
+                    id: "studio_tagger.name_already_exists",
+                  })
                 : res?.errors?.[0].message,
           },
         });

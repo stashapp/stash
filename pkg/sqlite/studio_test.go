@@ -396,7 +396,7 @@ func TestStudioUpdateStudioImage(t *testing.T) {
 			return fmt.Errorf("Error creating studio: %s", err.Error())
 		}
 
-		return testUpdateImage(t, ctx, createdID, qb.UpdateImage, qb.GetImage)
+		return testUpdateImage(t, ctx, *createdID, qb.UpdateImage, qb.GetImage)
 	}); err != nil {
 		t.Error(err.Error())
 	}

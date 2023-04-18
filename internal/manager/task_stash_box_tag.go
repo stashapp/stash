@@ -509,8 +509,8 @@ func (t *StashBoxBatchTagTask) getPartial(performer *models.ScrapedPerformer, ex
 	if performer.Measurements != nil && !excluded["measurements"] {
 		partial.Measurements = models.NewOptionalString(*performer.Measurements)
 	}
-	//TODO: This seems incorrect, if the user wants to exclude name but one is passed in, it will assign it
-	//But if they want to include Name, it will never get set.
+	// TODO: This seems incorrect, if the user wants to exclude name but one is passed in, it will assign it
+	// But if they want to include Name, it will never get set.
 	if excluded["name"] && performer.Name != nil {
 		partial.Name = models.NewOptionalString(*performer.Name)
 	}

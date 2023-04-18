@@ -75,10 +75,10 @@ const PerformerBatchUpdateModal: React.FC<IPerformerBatchUpdateModal> = ({
     return queryAll
       ? allPerformers?.findPerformers.count
       : filteredStashIDs.filter((s) =>
-        // if refresh, then we filter out the performers without a stash id
-        // otherwise, we want untagged performers, filtering out those with a stash id
-        refresh ? s.length > 0 : s.length === 0
-      ).length;
+          // if refresh, then we filter out the performers without a stash id
+          // otherwise, we want untagged performers, filtering out those with a stash id
+          refresh ? s.length > 0 : s.length === 0
+        ).length;
   }, [queryAll, refresh, performers, allPerformers, selectedEndpoint.endpoint]);
 
   return (
@@ -366,10 +366,10 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
             ),
             details:
               res?.errors?.[0].message ===
-                "UNIQUE constraint failed: performers.checksum"
+              "UNIQUE constraint failed: performers.checksum"
                 ? intl.formatMessage({
-                  id: "performer_tagger.name_already_exists",
-                })
+                    id: "performer_tagger.name_already_exists",
+                  })
                 : res?.errors?.[0].message,
           },
         });
