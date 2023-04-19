@@ -28,7 +28,11 @@ import { OCounterButton } from "./OCounterButton";
 import { OrganizedButton } from "./OrganizedButton";
 import { ConfigurationContext } from "src/hooks/Config";
 import { getPlayerPosition } from "src/components/ScenePlayer/util";
-import { faEllipsisV, faChevronRight, faChevronLeft } from "@fortawesome/free-solid-svg-icons";
+import {
+  faEllipsisV,
+  faChevronRight,
+  faChevronLeft,
+} from "@fortawesome/free-solid-svg-icons";
 import { lazyComponent } from "src/utils/lazyComponent";
 
 const SubmitStashBoxDraft = lazyComponent(
