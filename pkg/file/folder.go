@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -121,4 +122,47 @@ func GetOrCreateFolderHierarchy(ctx context.Context, fc FolderFinderCreator, pat
 	}
 
 	return folder, nil
+}
+
+// TransferZipFolderHierarchy creates the folder hierarchy for zipFileID under newPath, and removes
+// ZipFileID from folders under oldPath.
+func TransferZipFolderHierarchy(ctx context.Context, folderStore FolderStore, zipFileID ID, oldPath string, newPath string) error {
+	zipFolders, err := folderStore.FindByZipFileID(ctx, zipFileID)
+	if err != nil {
+		return err
+	}
+
+	for _, oldFolder := range zipFolders {
+		oldZfPath := oldFolder.Path
+
+		// sanity check - ignore folders which aren't under oldPath
+		if !strings.HasPrefix(oldZfPath, oldPath) {
+			continue
+		}
+
+		relZfPath, err := filepath.Rel(oldPath, oldZfPath)
+		if err != nil {
+			return err
+		}
+		newZfPath := filepath.Join(newPath, relZfPath)
+
+		newFolder, err := GetOrCreateFolderHierarchy(ctx, folderStore, newZfPath)
+		if err != nil {
+			return err
+		}
+
+		// add ZipFileID to new folder
+		newFolder.ZipFileID = &zipFileID
+		if err = folderStore.Update(ctx, newFolder); err != nil {
+			return err
+		}
+
+		// remove ZipFileID from old folder
+		oldFolder.ZipFileID = nil
+		if err = folderStore.Update(ctx, oldFolder); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

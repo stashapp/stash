@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { useFindStudios } from "src/core/StashService";
 import Slider from "@ant-design/react-slick";
 import { StudioCard } from "./StudioCard";
@@ -26,9 +27,9 @@ export const StudioRecommendationRow: React.FC<IProps> = (props) => {
       className="studio-recommendations"
       header={props.header}
       link={
-        <a href={`/studios?${props.filter.makeQueryParameters()}`}>
+        <Link to={`/studios?${props.filter.makeQueryParameters()}`}>
           <FormattedMessage id="view_all" />
-        </a>
+        </Link>
       }
     >
       <Slider

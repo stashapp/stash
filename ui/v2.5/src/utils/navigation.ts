@@ -289,7 +289,7 @@ const makeScenesPHashMatchUrl = (phash: GQL.Maybe<string> | undefined) => {
   if (!phash) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
   const criterion = new PhashCriterion();
-  criterion.value = phash;
+  criterion.value = { value: phash };
   filter.criteria.push(criterion);
   return `/scenes?${filter.makeQueryParameters()}`;
 };

@@ -170,6 +170,10 @@ $sceneTabWidth: 450px;
   }
 
   .vjs-source-selector {
+    &.vjs-hover .vjs-menu {
+      display: none;
+    }
+
     .vjs-menu li {
       font-size: 0.8em;
     }

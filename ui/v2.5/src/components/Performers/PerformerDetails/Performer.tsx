@@ -60,13 +60,18 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const [image, setImage] = useState<string | null>();
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
-  // if undefined then get the existing image
-  // if null then get the default (no) image
-  // otherwise get the set image
-  const activeImage =
-    image === undefined
-      ? performer.image_path ?? ""
-      : image ?? `${performer.image_path}&default=true`;
+  const activeImage = useMemo(() => {
+    const performerImage = performer.image_path;
+    if (image === null && performerImage) {
+      const performerImageURL = new URL(performerImage);
+      performerImageURL.searchParams.set("default", "true");
+      return performerImageURL.toString();
+    } else if (image) {
+      return image;
+    }
+    return performerImage;
+  }, [image, performer.image_path]);
+
   const lightboxImages = useMemo(
     () => [{ paths: { thumbnail: activeImage, image: activeImage } }],
     [activeImage]
@@ -141,6 +146,15 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     history.push("/performers");
   }
 
+  function renderImage() {
+    if (activeImage) {
+      return (
+        <Button variant="link" onClick={() => showLightbox()}>
+          <img className="performer" src={activeImage} alt={performer.name} />
+        </Button>
+      );
+    }
+  }
   const renderTabs = () => (
     <React.Fragment>
       <Col>
@@ -402,13 +416,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         {encodingImage ? (
           <LoadingIndicator message="Encoding image..." />
         ) : (
-          <Button variant="link" onClick={() => showLightbox()}>
-            <img
-              className="performer"
-              src={activeImage}
-              alt={intl.formatMessage({ id: "performer" })}
-            />
-          </Button>
+          renderImage()
         )}
       </div>
       <div className="details-divider d-none d-xl-block">

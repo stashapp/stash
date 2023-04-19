@@ -22,6 +22,10 @@
 .tag-card {
   padding: 0.5rem;
 
+  @media (max-width: 576px) {
+    width: 100%;
+  }
+
   &-image {
     display: block;
     margin: 0 auto;

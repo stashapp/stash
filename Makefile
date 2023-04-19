@@ -7,21 +7,15 @@ ifeq (${SHELL}, cmd)
 endif
 
 ifdef IS_WIN_SHELL
-  SEPARATOR := &&
-  SET := set
   RM := del /s /q
   RMDIR := rmdir /s /q
-  PWD := $(shell echo %cd%)
 else
-  SEPARATOR := ;
-  SET := export
   RM := rm -f
   RMDIR := rm -rf
 endif
 
 # set LDFLAGS environment variable to any extra ldflags required
 # set OUTPUT to generate a specific binary name
-
 LDFLAGS := $(LDFLAGS)
 ifdef OUTPUT
   OUTPUT := -o $(OUTPUT)
@@ -34,10 +28,16 @@ export CGO_ENABLED = 1
 GO_BUILD_TAGS_WINDOWS := sqlite_omit_load_extension sqlite_stat4 osusergo
 GO_BUILD_TAGS_DEFAULT = $(GO_BUILD_TAGS_WINDOWS) netgo
 
-.PHONY: release pre-build
+# set STASH_NOLEGACY environment variable or uncomment to disable legacy browser support
+# STASH_NOLEGACY := true
 
+# set STASH_SOURCEMAPS environment variable or uncomment to enable UI sourcemaps
+# STASH_SOURCEMAPS := true
+
+.PHONY: release
 release: pre-ui generate ui build-release
 
+.PHONY: pre-build
 pre-build:
 ifndef BUILD_DATE
 	$(eval BUILD_DATE := $(shell go run -mod=vendor scripts/getDate.go))
@@ -55,29 +55,37 @@ ifndef OFFICIAL_BUILD
 	$(eval OFFICIAL_BUILD := false)
 endif
 
+.PHONY: build-flags
+build-flags: pre-build
+	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/internal/api.buildstamp=$(BUILD_DATE)')
+	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/internal/api.githash=$(GITHASH)')
+	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/internal/api.version=$(STASH_VERSION)')
+	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/internal/manager/config.officialBuild=$(OFFICIAL_BUILD)')
 ifndef GO_BUILD_TAGS
 	$(eval GO_BUILD_TAGS := $(GO_BUILD_TAGS_DEFAULT))
 endif
-
+	$(eval BUILD_FLAGS := -mod=vendor -v -tags "$(GO_BUILD_TAGS)" $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)")
 
 # NOTE: the build target still includes netgo because we cannot detect
 # Windows easily from the Makefile.
-build: pre-build
+.PHONY: build
+build: build-flags
 build:
-	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/internal/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/internal/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash/internal/api.githash=$(GITHASH)')
-	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/internal/manager/config.officialBuild=$(OFFICIAL_BUILD)')
-	go build $(OUTPUT) -mod=vendor -v -tags "$(GO_BUILD_TAGS)" $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS) $(PLATFORM_SPECIFIC_LDFLAGS)" ./cmd/stash
+	go build $(OUTPUT) $(BUILD_FLAGS) ./cmd/stash
 
 # strips debug symbols from the release build
+.PHONY: build-release
 build-release: EXTRA_LDFLAGS := -s -w
 build-release: GO_BUILD_FLAGS := -trimpath
 build-release: build
 
+.PHONY: build-release-static
 build-release-static: EXTRA_LDFLAGS := -extldflags=-static -s -w
 build-release-static: GO_BUILD_FLAGS := -trimpath
 build-release-static: build
 
 # cross-compile- targets should be run within the compiler docker container
+.PHONY: cross-compile-windows
 cross-compile-windows: export GOOS := windows
 cross-compile-windows: export GOARCH := amd64
 cross-compile-windows: export CC := x86_64-w64-mingw32-gcc
@@ -86,6 +94,7 @@ cross-compile-windows: OUTPUT := -o dist/stash-win.exe
 cross-compile-windows: GO_BUILD_TAGS := $(GO_BUILD_TAGS_WINDOWS)
 cross-compile-windows: build-release-static
 
+.PHONY: cross-compile-macos-intel
 cross-compile-macos-intel: export GOOS := darwin
 cross-compile-macos-intel: export GOARCH := amd64
 cross-compile-macos-intel: export CC := o64-clang
@@ -95,6 +104,7 @@ cross-compile-macos-intel: GO_BUILD_TAGS := $(GO_BUILD_TAGS_DEFAULT)
 # can't use static build for OSX
 cross-compile-macos-intel: build-release
 
+.PHONY: cross-compile-macos-applesilicon
 cross-compile-macos-applesilicon: export GOOS := darwin
 cross-compile-macos-applesilicon: export GOARCH := arm64
 cross-compile-macos-applesilicon: export CC := oa64e-clang
@@ -104,6 +114,7 @@ cross-compile-macos-applesilicon: GO_BUILD_TAGS := $(GO_BUILD_TAGS_DEFAULT)
 # can't use static build for OSX
 cross-compile-macos-applesilicon: build-release
 
+.PHONY: cross-compile-macos
 cross-compile-macos:
 	rm -rf dist/Stash.app dist/Stash-macos.zip
 	make cross-compile-macos-applesilicon
@@ -118,18 +129,21 @@ cross-compile-macos:
 	cd dist && zip -r Stash-macos.zip Stash.app && cd ..
 	rm -rf dist/Stash.app
 
+.PHONY: cross-compile-freebsd
 cross-compile-freebsd: export GOOS := freebsd
 cross-compile-freebsd: export GOARCH := amd64
 cross-compile-freebsd: OUTPUT := -o dist/stash-freebsd
 cross-compile-freebsd: GO_BUILD_TAGS += netgo
 cross-compile-freebsd: build-release-static
 
+.PHONY: cross-compile-linux
 cross-compile-linux: export GOOS := linux
 cross-compile-linux: export GOARCH := amd64
 cross-compile-linux: OUTPUT := -o dist/stash-linux
 cross-compile-linux: GO_BUILD_TAGS := $(GO_BUILD_TAGS_DEFAULT)
 cross-compile-linux: build-release-static
 
+.PHONY: cross-compile-linux-arm64v8
 cross-compile-linux-arm64v8: export GOOS := linux
 cross-compile-linux-arm64v8: export GOARCH := arm64
 cross-compile-linux-arm64v8: export CC := aarch64-linux-gnu-gcc
@@ -137,6 +151,7 @@ cross-compile-linux-arm64v8: OUTPUT := -o dist/stash-linux-arm64v8
 cross-compile-linux-arm64v8: GO_BUILD_TAGS := $(GO_BUILD_TAGS_DEFAULT)
 cross-compile-linux-arm64v8: build-release-static
 
+.PHONY: cross-compile-linux-arm32v7
 cross-compile-linux-arm32v7: export GOOS := linux
 cross-compile-linux-arm32v7: export GOARCH := arm
 cross-compile-linux-arm32v7: export GOARM := 7
@@ -145,6 +160,7 @@ cross-compile-linux-arm32v7: OUTPUT := -o dist/stash-linux-arm32v7
 cross-compile-linux-arm32v7: GO_BUILD_TAGS := $(GO_BUILD_TAGS_DEFAULT)
 cross-compile-linux-arm32v7: build-release-static
 
+.PHONY: cross-compile-linux-arm32v6
 cross-compile-linux-arm32v6: export GOOS := linux
 cross-compile-linux-arm32v6: export GOARCH := arm
 cross-compile-linux-arm32v6: export GOARM := 6
@@ -153,6 +169,7 @@ cross-compile-linux-arm32v6: OUTPUT := -o dist/stash-linux-arm32v6
 cross-compile-linux-arm32v6: GO_BUILD_TAGS := $(GO_BUILD_TAGS_DEFAULT)
 cross-compile-linux-arm32v6: build-release-static
 
+.PHONY: cross-compile-all
 cross-compile-all:
 	make cross-compile-windows
 	make cross-compile-macos-intel
@@ -164,15 +181,16 @@ cross-compile-all:
 
 .PHONY: touch-ui
 touch-ui:
-ifndef IS_WIN_SHELL
-	@mkdir -p ui/v2.5/build
-	@touch ui/v2.5/build/index.html
-else
+ifdef IS_WIN_SHELL
 	@if not exist "ui\\v2.5\\build" mkdir ui\\v2.5\\build
 	@type nul >> ui/v2.5/build/index.html
+else
+	@mkdir -p ui/v2.5/build
+	@touch ui/v2.5/build/index.html
 endif
 
 # Regenerates GraphQL files
+.PHONY: generate
 generate: generate-backend generate-frontend
 
 .PHONY: generate-frontend
@@ -219,14 +237,14 @@ generate-test-mocks:
 # runs server
 # sets the config file to use the local dev config
 .PHONY: server-start
-server-start: export STASH_CONFIG_FILE=config.yml
-server-start:
-ifndef IS_WIN_SHELL
-	@mkdir -p .local
-else
+server-start: export STASH_CONFIG_FILE := config.yml
+server-start: build-flags
+ifdef IS_WIN_SHELL
 	@if not exist ".local" mkdir .local
+else
+	@mkdir -p .local
 endif
-	cd .local && go run ../cmd/stash
+	cd .local && go run $(BUILD_FLAGS) ../cmd/stash
 
 # removes local dev config files
 .PHONY: server-clean
@@ -239,18 +257,32 @@ server-clean:
 pre-ui:
 	cd ui/v2.5 && yarn install --frozen-lockfile
 
+.PHONY: ui-env
+ui-env: pre-build
+	$(eval export VITE_APP_DATE := $(BUILD_DATE))
+	$(eval export VITE_APP_GITHASH := $(GITHASH))
+	$(eval export VITE_APP_STASH_VERSION := $(STASH_VERSION))
+ifdef STASH_NOLEGACY
+	$(eval export VITE_APP_NOLEGACY := true)
+endif
+ifdef STASH_SOURCEMAPS
+	$(eval export VITE_APP_SOURCEMAPS := true)
+endif
+
 .PHONY: ui
-ui: pre-build
-	$(SET) VITE_APP_DATE="$(BUILD_DATE)" $(SEPARATOR) \
-	$(SET) VITE_APP_GITHASH=$(GITHASH) $(SEPARATOR) \
-	$(SET) VITE_APP_STASH_VERSION=$(STASH_VERSION) $(SEPARATOR) \
+ui: ui-env
 	cd ui/v2.5 && yarn build
 
+.PHONY: ui-nolegacy
+ui-nolegacy: STASH_NOLEGACY := true
+ui-nolegacy: ui
+
+.PHONY: ui-sourcemaps
+ui-sourcemaps: STASH_SOURCEMAPS := true
+ui-sourcemaps: ui
+
 .PHONY: ui-start
-ui-start: pre-build
-	$(SET) VITE_APP_DATE="$(BUILD_DATE)" $(SEPARATOR) \
-	$(SET) VITE_APP_GITHASH=$(GITHASH) $(SEPARATOR) \
-	$(SET) VITE_APP_STASH_VERSION=$(STASH_VERSION) $(SEPARATOR) \
+ui-start: ui-env
 	cd ui/v2.5 && yarn start --host
 
 .PHONY: fmt-ui
