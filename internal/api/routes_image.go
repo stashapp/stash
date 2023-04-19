@@ -122,7 +122,7 @@ func (rs imageRoutes) serveImage(w http.ResponseWriter, r *http.Request, i *mode
 	}
 
 	if !useDefault {
-		http.Error(w, http.StatusText(404), 404)
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
