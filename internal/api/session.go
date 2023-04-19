@@ -11,6 +11,7 @@ import (
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -80,7 +81,14 @@ func handleLoginPost(loginUIBox fs.FS) http.HandlerFunc {
 		}
 
 		err := manager.GetInstance().SessionStore.Login(w, r)
-		if errors.Is(err, session.ErrInvalidCredentials) {
+		if err != nil {
+			// always log the error
+			logger.Errorf("Error logging in: %v", err)
+		}
+
+		var invalidCredentialsError *session.InvalidCredentialsError
+
+		if errors.As(err, &invalidCredentialsError) {
 			// serve login page with an error
 			serveLoginPage(loginUIBox, w, r, url, "Username or password is invalid")
 			return

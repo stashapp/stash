@@ -1004,7 +1004,6 @@
   "scenes": "短片",
   "scenes_updated_at": "短片更新时间",
   "search_filter": {
-    "add_filter": "添加过滤器",
     "name": "过滤",
     "saved_filters": "保存过滤器",
     "update_filter": "更新过滤器"

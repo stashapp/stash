@@ -143,9 +143,9 @@ github.com/doug-martin/goqu/v9/sqlgen
 # github.com/fsnotify/fsnotify v1.5.1
 ## explicit; go 1.13
 github.com/fsnotify/fsnotify
-# github.com/fvbommel/sortorder v1.0.2
+# github.com/fvbommel/sortorder v1.1.0
 ## explicit; go 1.13
-github.com/fvbommel/sortorder
+github.com/fvbommel/sortorder/casefolded
 # github.com/go-chi/chi v4.0.2+incompatible
 ## explicit
 github.com/go-chi/chi

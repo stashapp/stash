@@ -3,10 +3,12 @@ package api
 import (
 	"context"
 	"errors"
+	"io"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi"
+	"github.com/stashapp/stash/internal/static"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/tag"
@@ -55,7 +57,14 @@ func (rs tagRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(image) == 0 {
-		image = models.DefaultTagImage
+		const defaultTagImage = "tag/tag.svg"
+
+		// fall back to static image
+		f, _ := static.Tag.Open(defaultTagImage)
+		defer f.Close()
+		stat, _ := f.Stat()
+		http.ServeContent(w, r, "tag.svg", stat.ModTime(), f.(io.ReadSeeker))
+		return
 	}
 
 	utils.ServeImage(w, r, image)

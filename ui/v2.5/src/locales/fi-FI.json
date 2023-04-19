@@ -903,7 +903,6 @@
   "scenes": "Kohtaukset",
   "scenes_updated_at": "Kohtaus päivitetty",
   "search_filter": {
-    "add_filter": "Aseta suodatin",
     "name": "Suodatin",
     "saved_filters": "Tallennetut suodattimet",
     "update_filter": "Päivitä suodatin"

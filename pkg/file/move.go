@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -39,15 +40,17 @@ func (r folderCreatorStatRenamerImpl) Mkdir(name string, perm os.FileMode) error
 
 type Mover struct {
 	Renamer DirMakerStatRenamer
-	Updater Updater
+	Files   GetterUpdater
+	Folders FolderStore
 
 	moved          map[string]string
 	foldersCreated []string
 }
 
-func NewMover(u Updater) *Mover {
+func NewMover(fileStore GetterUpdater, folderStore FolderStore) *Mover {
 	return &Mover{
-		Updater: u,
+		Files:   fileStore,
+		Folders: folderStore,
 		Renamer: &folderCreatorStatRenamerImpl{
 			renamerRemoverImpl: newRenamerRemoverImpl(),
 			mkDirFn:            os.Mkdir,
@@ -62,7 +65,7 @@ func (m *Mover) Move(ctx context.Context, f File, folder *Folder, basename strin
 
 	// don't allow moving files in zip files
 	if fBase.ZipFileID != nil {
-		return fmt.Errorf("cannot move file %s in zip file", f.Base().Path)
+		return fmt.Errorf("cannot move file %s, is in a zip file", fBase.Path)
 	}
 
 	if basename == "" {
@@ -84,12 +87,50 @@ func (m *Mover) Move(ctx context.Context, f File, folder *Folder, basename strin
 		return fmt.Errorf("file %s already exists", newPath)
 	}
 
+	if err := m.transferZipFolderHierarchy(ctx, fBase.ID, oldPath, newPath); err != nil {
+		return fmt.Errorf("moving folder hierarchy for file %s: %w", fBase.Path, err)
+	}
+
+	// move contained files if file is a zip file
+	zipFiles, err := m.Files.FindByZipFileID(ctx, fBase.ID)
+	if err != nil {
+		return fmt.Errorf("finding contained files in file %s: %w", fBase.Path, err)
+	}
+	for _, zf := range zipFiles {
+		zfBase := zf.Base()
+		oldZfPath := zfBase.Path
+		oldZfDir := filepath.Dir(oldZfPath)
+
+		// sanity check - ignore files which aren't under oldPath
+		if !strings.HasPrefix(oldZfPath, oldPath) {
+			continue
+		}
+
+		relZfDir, err := filepath.Rel(oldPath, oldZfDir)
+		if err != nil {
+			return fmt.Errorf("moving contained file %s: %w", zfBase.ID, err)
+		}
+		newZfDir := filepath.Join(newPath, relZfDir)
+
+		// folder should have been created by moveZipFolderHierarchy
+		newZfFolder, err := GetOrCreateFolderHierarchy(ctx, m.Folders, newZfDir)
+		if err != nil {
+			return fmt.Errorf("getting or creating folder hierarchy: %w", err)
+		}
+
+		// update file parent folder
+		zfBase.ParentFolderID = newZfFolder.ID
+		if err := m.Files.Update(ctx, zf); err != nil {
+			return fmt.Errorf("updating file %s: %w", oldZfPath, err)
+		}
+	}
+
 	fBase.ParentFolderID = folder.ID
 	fBase.Basename = basename
 	fBase.UpdatedAt = time.Now()
 	// leave ModTime as is. It may or may not be changed by this operation
 
-	if err := m.Updater.Update(ctx, f); err != nil {
+	if err := m.Files.Update(ctx, f); err != nil {
 		return fmt.Errorf("updating file %s: %w", oldPath, err)
 	}
 
@@ -119,6 +160,49 @@ func (m *Mover) CreateFolderHierarchy(path string) error {
 	} else {
 		if !info.IsDir() {
 			return fmt.Errorf("%s is not a directory", path)
+		}
+	}
+
+	return nil
+}
+
+// transferZipFolderHierarchy creates the folder hierarchy for zipFileID under newPath, and removes
+// ZipFileID from folders under oldPath.
+func (m *Mover) transferZipFolderHierarchy(ctx context.Context, zipFileID ID, oldPath string, newPath string) error {
+	zipFolders, err := m.Folders.FindByZipFileID(ctx, zipFileID)
+	if err != nil {
+		return err
+	}
+
+	for _, oldFolder := range zipFolders {
+		oldZfPath := oldFolder.Path
+
+		// sanity check - ignore folders which aren't under oldPath
+		if !strings.HasPrefix(oldZfPath, oldPath) {
+			continue
+		}
+
+		relZfPath, err := filepath.Rel(oldPath, oldZfPath)
+		if err != nil {
+			return err
+		}
+		newZfPath := filepath.Join(newPath, relZfPath)
+
+		newFolder, err := GetOrCreateFolderHierarchy(ctx, m.Folders, newZfPath)
+		if err != nil {
+			return err
+		}
+
+		// add ZipFileID to new folder
+		newFolder.ZipFileID = &zipFileID
+		if err = m.Folders.Update(ctx, newFolder); err != nil {
+			return err
+		}
+
+		// remove ZipFileID from old folder
+		oldFolder.ZipFileID = nil
+		if err = m.Folders.Update(ctx, oldFolder); err != nil {
+			return err
 		}
 	}
 

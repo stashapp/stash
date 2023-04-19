@@ -174,6 +174,11 @@ type Destroyer interface {
 	Destroy(ctx context.Context, id ID) error
 }
 
+type GetterUpdater interface {
+	Getter
+	Updater
+}
+
 type GetterDestroyer interface {
 	Getter
 	Destroyer

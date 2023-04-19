@@ -36,5 +36,7 @@ services:
       - ./metadata:/metadata
       ## Any other cache content.
       - ./cache:/cache
+      ## Where to store binary blob data (scene covers, images)
+      - ./blobs:/blobs
       ## Where to store generated content (screenshots,previews,transcodes,sprites)
       - ./generated:/generated

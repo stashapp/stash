@@ -19,6 +19,7 @@ import {
   ScrapedInputGroupRow,
   ScrapedTextAreaRow,
   ScrapeResult,
+  ZeroableScrapeResult,
 } from "../Shared/ScrapeDialog";
 import { clone, uniq } from "lodash-es";
 import {
@@ -65,8 +66,9 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
   );
 
   const [rating, setRating] = useState(
-    new ScrapeResult<number>(dest.rating100)
+    new ZeroableScrapeResult<number>(dest.rating100)
   );
+  // zero values can be treated as missing for these fields
   const [oCounter, setOCounter] = useState(
     new ScrapeResult<number>(dest.o_counter)
   );
@@ -118,7 +120,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
   const [stashIDs, setStashIDs] = useState(new ScrapeResult<GQL.StashId[]>([]));
 
   const [organized, setOrganized] = useState(
-    new ScrapeResult<boolean>(dest.organized)
+    new ZeroableScrapeResult<boolean>(dest.organized)
   );
 
   const [image, setImage] = useState<ScrapeResult<string>>(
