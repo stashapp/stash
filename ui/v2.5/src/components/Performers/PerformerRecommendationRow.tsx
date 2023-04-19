@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { useFindPerformers } from "src/core/StashService";
 import Slider from "@ant-design/react-slick";
 import { PerformerCard } from "./PerformerCard";
@@ -26,9 +27,9 @@ export const PerformerRecommendationRow: React.FC<IProps> = (props) => {
       className="performer-recommendations"
       header={props.header}
       link={
-        <a href={`/performers?${props.filter.makeQueryParameters()}`}>
+        <Link to={`/performers?${props.filter.makeQueryParameters()}`}>
           <FormattedMessage id="view_all" />
-        </a>
+        </Link>
       }
     >
       <Slider

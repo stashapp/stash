@@ -67,9 +67,7 @@ func (rs tagRoutes) Image(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := utils.ServeImage(image, w, r); err != nil {
-		logger.Warnf("error serving tag image: %v", err)
-	}
+	utils.ServeImage(w, r, image)
 }
 
 func (rs tagRoutes) TagCtx(next http.Handler) http.Handler {

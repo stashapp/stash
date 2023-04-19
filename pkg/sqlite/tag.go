@@ -651,6 +651,10 @@ func (qb *tagQueryBuilder) GetImage(ctx context.Context, tagID int) ([]byte, err
 	return qb.blobJoinQueryBuilder.GetImage(ctx, tagID, tagImageBlobColumn)
 }
 
+func (qb *tagQueryBuilder) HasImage(ctx context.Context, tagID int) (bool, error) {
+	return qb.blobJoinQueryBuilder.HasImage(ctx, tagID, tagImageBlobColumn)
+}
+
 func (qb *tagQueryBuilder) UpdateImage(ctx context.Context, tagID int, image []byte) error {
 	return qb.blobJoinQueryBuilder.UpdateImage(ctx, tagID, tagImageBlobColumn, image)
 }

@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os/exec"
 	"strconv"
-	"syscall"
 
 	"github.com/go-chi/chi"
 	"github.com/stashapp/stash/internal/manager"
@@ -19,6 +18,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type ImageFinder interface {
@@ -51,12 +51,10 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 	img := r.Context().Value(imageKey).(*models.Image)
 	filepath := manager.GetInstance().Paths.Generated.GetThumbnailPath(img.Checksum, models.DefaultGthumbWidth)
 
-	w.Header().Add("Cache-Control", "max-age=604800000")
-
 	// if the thumbnail doesn't exist, encode on the fly
 	exists, _ := fsutil.FileExists(filepath)
 	if exists {
-		http.ServeFile(w, r, filepath)
+		utils.ServeStaticFile(w, r, filepath)
 	} else {
 		const useDefault = true
 
@@ -88,13 +86,13 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 		// write the generated thumbnail to disk if enabled
 		if manager.GetInstance().Config.IsWriteImageThumbnails() {
 			logger.Debugf("writing thumbnail to disk: %s", img.Path)
-			if err := fsutil.WriteFile(filepath, data); err != nil {
-				logger.Errorf("error writing thumbnail for image %s: %v", img.Path, err)
+			if err := fsutil.WriteFile(filepath, data); err == nil {
+				utils.ServeStaticFile(w, r, filepath)
+				return
 			}
+			logger.Errorf("error writing thumbnail for image %s: %v", img.Path, err)
 		}
-		if n, err := w.Write(data); err != nil && !errors.Is(err, syscall.EPIPE) {
-			logger.Errorf("error serving thumbnail (wrote %v bytes out of %v): %v", n, len(data), err)
-		}
+		utils.ServeStaticContent(w, r, data)
 	}
 }
 
@@ -131,8 +129,8 @@ func (rs imageRoutes) serveImage(w http.ResponseWriter, r *http.Request, i *mode
 	// fall back to static image
 	f, _ := static.Image.Open(defaultImageImage)
 	defer f.Close()
-	stat, _ := f.Stat()
-	http.ServeContent(w, r, "image.svg", stat.ModTime(), f.(io.ReadSeeker))
+	image, _ := io.ReadAll(f)
+	utils.ServeImage(w, r, image)
 }
 
 // endregion

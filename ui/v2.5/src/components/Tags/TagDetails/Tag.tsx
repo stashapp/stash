@@ -196,8 +196,10 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
   function renderImage() {
     let tagImage = tag.image_path;
     if (isEditing) {
-      if (image === null) {
-        tagImage = `${tagImage}&default=true`;
+      if (image === null && tagImage) {
+        const tagImageURL = new URL(tagImage);
+        tagImageURL.searchParams.set("default", "true");
+        tagImage = tagImageURL.toString();
       } else if (image) {
         tagImage = image;
       }

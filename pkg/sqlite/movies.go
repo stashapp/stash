@@ -363,6 +363,10 @@ func (qb *movieQueryBuilder) GetFrontImage(ctx context.Context, movieID int) ([]
 	return qb.GetImage(ctx, movieID, movieFrontImageBlobColumn)
 }
 
+func (qb *movieQueryBuilder) HasFrontImage(ctx context.Context, movieID int) (bool, error) {
+	return qb.HasImage(ctx, movieID, movieFrontImageBlobColumn)
+}
+
 func (qb *movieQueryBuilder) GetBackImage(ctx context.Context, movieID int) ([]byte, error) {
 	return qb.GetImage(ctx, movieID, movieBackImageBlobColumn)
 }

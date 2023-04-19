@@ -63,8 +63,17 @@ func (r *performerResolver) Birthdate(ctx context.Context, obj *models.Performer
 }
 
 func (r *performerResolver) ImagePath(ctx context.Context, obj *models.Performer) (*string, error) {
+	var hasImage bool
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		var err error
+		hasImage, err = r.repository.Performer.HasImage(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-	imagePath := urlbuilders.NewPerformerURLBuilder(baseURL, obj).GetPerformerImageURL()
+	imagePath := urlbuilders.NewPerformerURLBuilder(baseURL, obj).GetPerformerImageURL(hasImage)
 	return &imagePath, nil
 }
 

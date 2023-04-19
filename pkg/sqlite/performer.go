@@ -931,6 +931,10 @@ func (qb *PerformerStore) GetImage(ctx context.Context, performerID int) ([]byte
 	return qb.blobJoinQueryBuilder.GetImage(ctx, performerID, performerImageBlobColumn)
 }
 
+func (qb *PerformerStore) HasImage(ctx context.Context, performerID int) (bool, error) {
+	return qb.blobJoinQueryBuilder.HasImage(ctx, performerID, performerImageBlobColumn)
+}
+
 func (qb *PerformerStore) UpdateImage(ctx context.Context, performerID int, image []byte) error {
 	return qb.blobJoinQueryBuilder.UpdateImage(ctx, performerID, performerImageBlobColumn, image)
 }

@@ -48,20 +48,17 @@ func (r *sceneMarkerResolver) Tags(ctx context.Context, obj *models.SceneMarker)
 
 func (r *sceneMarkerResolver) Stream(ctx context.Context, obj *models.SceneMarker) (string, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-	sceneID := int(obj.SceneID.Int64)
-	return urlbuilders.NewSceneURLBuilder(baseURL, sceneID).GetSceneMarkerStreamURL(obj.ID), nil
+	return urlbuilders.NewSceneMarkerURLBuilder(baseURL, obj).GetStreamURL(), nil
 }
 
 func (r *sceneMarkerResolver) Preview(ctx context.Context, obj *models.SceneMarker) (string, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-	sceneID := int(obj.SceneID.Int64)
-	return urlbuilders.NewSceneURLBuilder(baseURL, sceneID).GetSceneMarkerStreamPreviewURL(obj.ID), nil
+	return urlbuilders.NewSceneMarkerURLBuilder(baseURL, obj).GetPreviewURL(), nil
 }
 
 func (r *sceneMarkerResolver) Screenshot(ctx context.Context, obj *models.SceneMarker) (string, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-	sceneID := int(obj.SceneID.Int64)
-	return urlbuilders.NewSceneURLBuilder(baseURL, sceneID).GetSceneMarkerStreamScreenshotURL(obj.ID), nil
+	return urlbuilders.NewSceneMarkerURLBuilder(baseURL, obj).GetScreenshotURL(), nil
 }
 
 func (r *sceneMarkerResolver) CreatedAt(ctx context.Context, obj *models.SceneMarker) (*time.Time, error) {
