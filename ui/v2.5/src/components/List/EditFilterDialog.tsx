@@ -404,7 +404,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
               "criterion-selected": !!criterion,
             })}
           >
-            <div style={{ overflowY: "auto" }}>
+            <div style={{ overflowY: "auto", maxHeight: "70vh" }}>
               {loading && (
                 <div className="loading">
                   <LoadingIndicator message="" />
