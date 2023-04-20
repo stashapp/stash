@@ -33,6 +33,8 @@ import {
   faSignInAlt,
   faSignOutAlt,
   faTrashAlt,
+  faChevronRight,
+  faChevronLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import { IUIConfig } from "src/core/config";
 
@@ -249,8 +251,8 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
     );
   }
 
-  function getCollapseButtonText() {
-    return collapsed ? ">" : "<";
+  function getCollapseButtonIcon() {
+    return collapsed ? faChevronRight : faChevronLeft;
   }
 
   return (
@@ -302,7 +304,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
         </div>
         <div className="details-divider d-none d-xl-block">
           <Button onClick={() => setCollapsed(!collapsed)}>
-            {getCollapseButtonText()}
+            <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
           </Button>
         </div>
         <div className={`col content-container ${collapsed ? "expanded" : ""}`}>
