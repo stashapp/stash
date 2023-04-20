@@ -535,8 +535,21 @@
           "heading": "Deshabilitar creación en menú desplegable"
         },
         "heading": "Edición",
+        "max_options_shown": {
+          "label": "Número máximo de elementos a mostrar en menús desplegables"
+        },
         "rating_system": {
+          "star_precision": {
+            "label": "Precisión estrellas valoraciones",
+            "options": {
+              "full": "Lleno",
+              "half": "Medias",
+              "quarter": "Cuartos",
+              "tenth": "Décimas"
+            }
+          },
           "type": {
+            "label": "Sistema de valoración",
             "options": {
               "decimal": "Decimal",
               "stars": "Estrellas"
@@ -550,6 +563,12 @@
       },
       "handy_connection": {
         "connect": "Conectar",
+        "server_offset": {
+          "heading": "Tiempo compensación servidor"
+        },
+        "status": {
+          "heading": "Estado conexión móvil"
+        },
         "sync": "Sincronizar"
       },
       "handy_connection_key": {
@@ -558,6 +577,11 @@
       },
       "image_lightbox": {
         "heading": "Lightbox para imágenes"
+      },
+      "image_wall": {
+        "direction": "Dirección",
+        "heading": "Imagen de fondo",
+        "margin": "Margen (píxeles)"
       },
       "images": {
         "heading": "Imágenes",
@@ -579,6 +603,10 @@
       "menu_items": {
         "description": "Mostrar u ocultar los diferentes tipos de contenido del menú de navegación",
         "heading": "Elementos del menú"
+      },
+      "minimum_play_percent": {
+        "description": "Porcentaje de tiempo a reproducir una escena antes de incrementar su contador de visionados.",
+        "heading": "Porcentaje mínimo de reproducción"
       },
       "performers": {
         "options": {
@@ -606,6 +634,7 @@
       "scene_player": {
         "heading": "Reproductor de vídeo",
         "options": {
+          "always_start_from_beginning": "Siempre iniciar vídeo desde el inicio",
           "auto_start_video": "Iniciar vídeo automáticamente",
           "auto_start_video_on_play_selected": {
             "description": "Comenzar automáticamente la reproducción del vídeo de la escena cuando \"reproducir\" esté seleccionado o se seleccione una escena aleatoria desde la página de escenas",
@@ -615,7 +644,8 @@
             "description": "Reproducir la siguiente escena cuando el fichero en reproducción finalice",
             "heading": "(Por defecto) Continuar lista de reproducción"
           },
-          "show_scrubber": "Mostrar depurador"
+          "show_scrubber": "Mostrar depurador",
+          "track_activity": "Registrar actividad"
         }
       },
       "scene_wall": {
