@@ -1,0 +1,11 @@
+query FindPinnedFilter($id: ID!) {
+  findPinnedFilter(id: $id) {
+    ...PinnedFilterData
+  }
+}
+
+query FindPinnedFilters($mode: FilterMode) {
+  findPinnedFilters(mode: $mode) {
+    ...PinnedFilterData
+  }
+}

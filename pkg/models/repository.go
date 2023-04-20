@@ -27,4 +27,5 @@ type Repository struct {
 	Studio         StudioReaderWriter
 	Tag            TagReaderWriter
 	SavedFilter    SavedFilterReaderWriter
+	PinnedFilter   PinnedFilterReaderWriter
 }

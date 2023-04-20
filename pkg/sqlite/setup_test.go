@@ -253,6 +253,16 @@ const (
 )
 
 const (
+	pinnedFilterIdxDefaultScene = iota
+	pinnedFilterIdxDefaultImage
+	pinnedFilterIdxScene
+	pinnedFilterIdxImage
+
+	// new indexes above
+	totalPinnedFilters
+)
+
+const (
 	pathField            = "Path"
 	checksumField        = "Checksum"
 	titleField           = "Title"
@@ -269,15 +279,16 @@ var (
 	galleryFileIDs []file.ID
 	chapterIDs     []int
 
-	sceneIDs       []int
-	imageIDs       []int
-	performerIDs   []int
-	movieIDs       []int
-	galleryIDs     []int
-	tagIDs         []int
-	studioIDs      []int
-	markerIDs      []int
-	savedFilterIDs []int
+	sceneIDs        []int
+	imageIDs        []int
+	performerIDs    []int
+	movieIDs        []int
+	galleryIDs      []int
+	tagIDs          []int
+	studioIDs       []int
+	markerIDs       []int
+	savedFilterIDs  []int
+	pinnedFilterIDs []int
 
 	folderPaths []string
 
@@ -604,6 +615,10 @@ func populateDB() error {
 
 		if err := createSavedFilters(ctx, sqlite.SavedFilterReaderWriter, totalSavedFilters); err != nil {
 			return fmt.Errorf("error creating saved filters: %s", err.Error())
+		}
+
+		if err := createPinnedFilters(ctx, sqlite.PinnedFilterReaderWriter, totalPinnedFilters); err != nil {
+			return fmt.Errorf("error creating pinned filters: %s", err.Error())
 		}
 
 		if err := linkMovieStudios(ctx, db.Movie); err != nil {
@@ -1667,6 +1682,50 @@ func createSavedFilters(ctx context.Context, qb models.SavedFilterReaderWriter, 
 		}
 
 		savedFilterIDs = append(savedFilterIDs, created.ID)
+	}
+
+	return nil
+}
+
+func getPinnedFilterMode(index int) models.FilterMode {
+	switch index {
+	case pinnedFilterIdxScene, pinnedFilterIdxDefaultScene:
+		return models.FilterModeScenes
+	case pinnedFilterIdxImage, pinnedFilterIdxDefaultImage:
+		return models.FilterModeImages
+	default:
+		return models.FilterModeScenes
+	}
+}
+
+func getPinnedFilterName(index int) string {
+	if index <= pinnedFilterIdxDefaultImage {
+		// empty string for default filters
+		return ""
+	}
+
+	if index <= pinnedFilterIdxImage {
+		// use the same name for the first two - should be possible
+		return firstSavedFilterName
+	}
+
+	return getPrefixedStringValue("pinnedFilter", index, "Name")
+}
+
+func createPinnedFilters(ctx context.Context, qb models.PinnedFilterReaderWriter, n int) error {
+	for i := 0; i < n; i++ {
+		pinnedFilter := models.PinnedFilter{
+			Mode: getPinnedFilterMode(i),
+			Name: getPinnedFilterName(i),
+		}
+
+		created, err := qb.Create(ctx, pinnedFilter)
+
+		if err != nil {
+			return fmt.Errorf("Error creating pinned filter %v+: %s", pinnedFilter, err.Error())
+		}
+
+		pinnedFilterIDs = append(pinnedFilterIDs, created.ID)
 	}
 
 	return nil

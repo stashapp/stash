@@ -132,7 +132,6 @@ input[type="range"].zoom-slider {
     flex-direction: column;
     flex-wrap: nowrap;
     max-height: 550px;
-    overflow-y: auto;
 
     .card {
       border: 1px solid rgb(16 22 26 / 40%);
@@ -195,4 +194,22 @@ input[type="range"].zoom-slider {
     // button group has a z-index of 1
     z-index: 2;
   }
+}
+
+.pinIcon {
+  position: absolute;
+  right: 5%;
+}
+
+.tilted {
+  transform: rotate(45deg);
+}
+
+.divider {
+  border-bottom: 1px solid rgb(222, 226, 230);
+  border-top: 1px solid rgb(222, 226, 230);
+  margin-bottom: 5%;
+  margin-left: 5%;
+  margin-top: 5%;
+  width: 90%;
 }

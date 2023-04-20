@@ -139,5 +139,6 @@ func (db *Database) TxnRepository() models.Repository {
 		Studio:         db.Studio,
 		Tag:            db.Tag,
 		SavedFilter:    SavedFilterReaderWriter,
+		PinnedFilter:   PinnedFilterReaderWriter,
 	}
 }

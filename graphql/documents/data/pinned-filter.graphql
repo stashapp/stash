@@ -1,0 +1,5 @@
+fragment PinnedFilterData on PinnedFilter {
+  id
+  mode
+  name
+}
