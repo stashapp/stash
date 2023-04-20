@@ -306,8 +306,8 @@
         },
         "transcode": {
           "input_args": {
-            "desc": "Avancerat: Ytterligare argument att skicka till ffmpeg innan input-fältet vid liveomkodning av video.",
-            "heading": "FFmpeg Liveomkodning Input Argument"
+            "desc": "Avancerat: Ytterligare argument att skicka till ffmpeg innan input-fältet vid videogeneration.",
+            "heading": "FFmpeg Omkodning Input Argument"
           },
           "output_args": {
             "desc": "Avancerat: Ytterligare argument att skicka till ffmpeg innan output-fältet vid videogenerering.",
