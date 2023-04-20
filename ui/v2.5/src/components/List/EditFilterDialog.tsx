@@ -403,40 +403,41 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
             className={cx("dialog-content", {
               "criterion-selected": !!criterion,
             })}
-            style={{ overflowY: "auto" }}
           >
-            {loading && (
-              <div className="loading">
-                <LoadingIndicator message="" />
-              </div>
-            )}
-            {!loading && pinnedFilterElements.length > 0 && (
+            <div style={{ overflowY: "auto" }}>
+              {loading && (
+                <div className="loading">
+                  <LoadingIndicator message="" />
+                </div>
+              )}
+              {!loading && pinnedFilterElements.length > 0 && (
+                <CriterionOptionList
+                  criteria={criteriaList}
+                  currentCriterion={criterion}
+                  setCriterion={replaceCriterion}
+                  criterionOptions={pinnedFilterElements}
+                  optionSelected={optionSelected}
+                  selected={criterion?.criterionOption}
+                  onRemoveCriterion={(c) => removeCriterionString(c)}
+                  onPinAction={(c) => onUnpinFilter(c)}
+                  isPin={true}
+                />
+              )}
+              {!loading && pinnedFilterElements.length > 0 && (
+                <div className="divider" />
+              )}
               <CriterionOptionList
                 criteria={criteriaList}
                 currentCriterion={criterion}
                 setCriterion={replaceCriterion}
-                criterionOptions={pinnedFilterElements}
+                criterionOptions={unpinnedFilterElements}
                 optionSelected={optionSelected}
                 selected={criterion?.criterionOption}
                 onRemoveCriterion={(c) => removeCriterionString(c)}
-                onPinAction={(c) => onUnpinFilter(c)}
-                isPin={true}
+                onPinAction={(c) => onPinFilter(c)}
+                isPin={false}
               />
-            )}
-            {!loading && pinnedFilterElements.length > 0 && (
-              <div className="divider" />
-            )}
-            <CriterionOptionList
-              criteria={criteriaList}
-              currentCriterion={criterion}
-              setCriterion={replaceCriterion}
-              criterionOptions={unpinnedFilterElements}
-              optionSelected={optionSelected}
-              selected={criterion?.criterionOption}
-              onRemoveCriterion={(c) => removeCriterionString(c)}
-              onPinAction={(c) => onPinFilter(c)}
-              isPin={false}
-            />
+            </div>
             {criteria.length > 0 && (
               <div>
                 <FilterTags
