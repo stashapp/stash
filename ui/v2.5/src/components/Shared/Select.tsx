@@ -21,6 +21,7 @@ import {
   useTagCreate,
   useStudioCreate,
   usePerformerCreate,
+  useMovieCreate
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import { SelectComponents } from "react-select/dist/declarations/src/components";
@@ -811,8 +812,20 @@ export const StudioSelect: React.FC<
 
 export const MovieSelect: React.FC<IFilterProps> = (props) => {
   const { data, loading } = useAllMoviesForFilter();
+  const [createMovie] = useMovieCreate();
   const items = data?.allMovies ?? [];
   const intl = useIntl();
+  
+  const { configuration } = React.useContext(ConfigurationContext);
+  const defaultCreatable =
+  !configuration?.interface.disableDropdownCreate.movie ?? true;
+
+  const onCreate = async (name: string) => {
+    const result = await createMovie({
+      variables: { name },
+    });
+    return { item: result.data!.movieCreate!, message: "Created movie" };
+  };
 
   return (
     <FilterSelectComponent
@@ -828,6 +841,8 @@ export const MovieSelect: React.FC<IFilterProps> = (props) => {
           { entityType: intl.formatMessage({ id: "movie" }) }
         )
       }
+      creatable={props.creatable ?? defaultCreatable}
+      onCreate={onCreate}
     />
   );
 };

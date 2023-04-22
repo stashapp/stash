@@ -465,6 +465,7 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 		setBool(config.DisableDropdownCreatePerformer, ddc.Performer)
 		setBool(config.DisableDropdownCreateStudio, ddc.Studio)
 		setBool(config.DisableDropdownCreateTag, ddc.Tag)
+		setBool(config.DisableDropdownCreateMovie, ddc.Movie)
 	}
 
 	if input.HandyKey != nil {

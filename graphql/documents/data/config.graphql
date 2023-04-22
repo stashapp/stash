@@ -89,6 +89,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
     performer
     tag
     studio
+    movie
   }
   handyKey
   funscriptOffset
