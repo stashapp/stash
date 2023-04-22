@@ -485,7 +485,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           const src = new URL(stream.url);
           const isFileTranscode =
             src.pathname.endsWith("/stream.mp4") ||
-            src.pathname.endsWith("/stream.mpd") ||
             src.pathname.endsWith("/stream.webm");
           const isSafari = UAParser().browser.name?.includes("Safari");
 
@@ -495,6 +494,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           const src = new URL(stream.url);
           const isDirect =
             src.pathname.endsWith("/stream") ||
+            src.pathname.endsWith("/stream.mpd") ||
             src.pathname.endsWith("/stream.m3u8");
 
           return {
