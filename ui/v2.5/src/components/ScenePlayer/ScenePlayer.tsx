@@ -9,6 +9,7 @@ import React, {
 import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
 import "videojs-mobile-ui";
 import "videojs-seek-buttons";
+import { UAParser } from "ua-parser-js";
 import "./live";
 import "./PlaylistButtons";
 import "./source-selector";
@@ -464,9 +465,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         const isFileTranscode = 
           src.pathname.endsWith("/stream.mp4") || 
           src.pathname.endsWith("/stream.webm");
-        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        const isSafari = UAParser().browser.name?.includes("Safari");
 
-        return !(isFileTranscode && isSafari)
+        return !(isFileTranscode && isSafari);
       }).map((stream) => {
         const src = new URL(stream.url);
         const isDirect =
