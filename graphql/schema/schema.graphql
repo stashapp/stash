@@ -218,6 +218,10 @@ type Mutation {
   addGalleryImages(input: GalleryAddInput!): Boolean!
   removeGalleryImages(input: GalleryRemoveInput!): Boolean!
 
+  galleryChapterCreate(input: GalleryChapterCreateInput!): GalleryChapter
+  galleryChapterUpdate(input: GalleryChapterUpdateInput!): GalleryChapter
+  galleryChapterDestroy(id: ID!): Boolean!
+
   performerCreate(input: PerformerCreateInput!): Performer
   performerUpdate(input: PerformerUpdateInput!): Performer
   performerDestroy(input: PerformerDestroyInput!): Boolean!
@@ -241,6 +245,14 @@ type Mutation {
   tagsDestroy(ids: [ID!]!): Boolean!
   tagsMerge(input: TagsMergeInput!): Tag
 
+  """Moves the given files to the given destination. Returns true if successful.
+  Either the destination_folder or destination_folder_id must be provided. If both are provided, the destination_folder_id takes precedence.
+  Destination folder must be a subfolder of one of the stash library paths.
+  If provided, destination_basename must be a valid filename with an extension that
+  matches one of the media extensions.
+  Creates folder hierarchy if needed.
+  """
+  moveFiles(input: MoveFilesInput!): Boolean!
   deleteFiles(ids: [ID!]!): Boolean!
 
   # Saved filters
@@ -283,8 +295,13 @@ type Mutation {
   metadataClean(input: CleanMetadataInput!): ID!
   """Identifies scenes using scrapers. Returns the job ID"""
   metadataIdentify(input: IdentifyMetadataInput!): ID!
+  
   """Migrate generated files for the current hash naming"""
   migrateHashNaming: ID!
+  """Migrates legacy scene screenshot files into the blob storage"""
+  migrateSceneScreenshots(input: MigrateSceneScreenshotsInput!): ID!
+  """Migrates blobs from the old storage system to the current one"""
+  migrateBlobs(input: MigrateBlobsInput!): ID!
   
   """Anonymise the database in a separate file. Optionally returns a link to download the database file"""
   anonymiseDatabase(input: AnonymiseDatabaseInput!): String

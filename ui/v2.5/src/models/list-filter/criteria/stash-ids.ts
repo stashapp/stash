@@ -103,4 +103,12 @@ export class StashIDCriterion extends Criterion<IStashIDValue> {
     }
     return JSON.stringify(encodedCriterion);
   }
+
+  public isValid(): boolean {
+    return (
+      this.modifier === CriterionModifier.IsNull ||
+      this.modifier === CriterionModifier.NotNull ||
+      this.value.stashID.length > 0
+    );
+  }
 }

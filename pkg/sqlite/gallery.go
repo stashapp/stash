@@ -26,6 +26,7 @@ const (
 	galleriesTagsTable       = "galleries_tags"
 	galleriesImagesTable     = "galleries_images"
 	galleriesScenesTable     = "scenes_galleries"
+	galleriesChaptersTable   = "galleries_chapters"
 	galleryIDColumn          = "gallery_id"
 )
 
@@ -363,17 +364,23 @@ func (qb *GalleryStore) Find(ctx context.Context, id int) (*models.Gallery, erro
 }
 
 func (qb *GalleryStore) FindMany(ctx context.Context, ids []int) ([]*models.Gallery, error) {
-	q := qb.selectDataset().Prepared(true).Where(qb.table().Col(idColumn).In(ids))
-	unsorted, err := qb.getMany(ctx, q)
-	if err != nil {
-		return nil, err
-	}
-
 	galleries := make([]*models.Gallery, len(ids))
 
-	for _, s := range unsorted {
-		i := intslice.IntIndex(ids, s.ID)
-		galleries[i] = s
+	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
+		q := qb.selectDataset().Prepared(true).Where(qb.table().Col(idColumn).In(batch))
+		unsorted, err := qb.getMany(ctx, q)
+		if err != nil {
+			return err
+		}
+
+		for _, s := range unsorted {
+			i := intslice.IntIndex(ids, s.ID)
+			galleries[i] = s
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
 	for i := range galleries {
@@ -662,6 +669,7 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 	query.handleCriterion(ctx, galleryTagCountCriterionHandler(qb, galleryFilter.TagCount))
 	query.handleCriterion(ctx, galleryPerformersCriterionHandler(qb, galleryFilter.Performers))
 	query.handleCriterion(ctx, galleryPerformerCountCriterionHandler(qb, galleryFilter.PerformerCount))
+	query.handleCriterion(ctx, hasChaptersCriterionHandler(galleryFilter.HasChapters))
 	query.handleCriterion(ctx, galleryStudioCriterionHandler(qb, galleryFilter.Studios))
 	query.handleCriterion(ctx, galleryPerformerTagsCriterionHandler(qb, galleryFilter.PerformerTags))
 	query.handleCriterion(ctx, galleryAverageResolutionCriterionHandler(qb, galleryFilter.AverageResolution))
@@ -723,11 +731,15 @@ func (qb *GalleryStore) makeQuery(ctx context.Context, galleryFilter *models.Gal
 				as:       "gallery_folder",
 				onClause: "galleries.folder_id = gallery_folder.id",
 			},
+			join{
+				table:    galleriesChaptersTable,
+				onClause: "galleries_chapters.gallery_id = galleries.id",
+			},
 		)
 
 		// add joins for files and checksum
 		filepathColumn := "folders.path || '" + string(filepath.Separator) + "' || files.basename"
-		searchColumns := []string{"galleries.title", "gallery_folder.path", filepathColumn, "files_fingerprints.fingerprint"}
+		searchColumns := []string{"galleries.title", "gallery_folder.path", filepathColumn, "files_fingerprints.fingerprint", "galleries_chapters.title"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
@@ -943,6 +955,19 @@ func galleryImageCountCriterionHandler(qb *GalleryStore, imageCount *models.IntC
 	return h.handler(imageCount)
 }
 
+func hasChaptersCriterionHandler(hasChapters *string) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if hasChapters != nil {
+			f.addLeftJoin("galleries_chapters", "", "galleries_chapters.gallery_id = galleries.id")
+			if *hasChapters == "true" {
+				f.addHaving("count(galleries_chapters.gallery_id) > 0")
+			} else {
+				f.addWhere("galleries_chapters.id IS NULL")
+			}
+		}
+	}
+}
+
 func galleryStudioCriterionHandler(qb *GalleryStore, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	h := hierarchicalMultiCriterionHandlerBuilder{
 		tx: qb.tx,
@@ -1103,7 +1128,7 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 		// special handling for path
 		addFileTable()
 		addFolderTable()
-		query.sortAndPagination += fmt.Sprintf(" ORDER BY folders.path %s, file_folder.path %[1]s, files.basename %[1]s", direction)
+		query.sortAndPagination += fmt.Sprintf(" ORDER BY COALESCE(folders.path, '') || COALESCE(file_folder.path, '') || COALESCE(files.basename, '') COLLATE NATURAL_CI %s", direction)
 	case "file_mod_time":
 		sort = "mod_time"
 		addFileTable()
@@ -1111,10 +1136,13 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 	case "title":
 		addFileTable()
 		addFolderTable()
-		query.sortAndPagination += " ORDER BY COALESCE(galleries.title, files.basename, basename(COALESCE(folders.path, ''))) COLLATE NATURAL_CS " + direction + ", file_folder.path " + direction
+		query.sortAndPagination += " ORDER BY COALESCE(galleries.title, files.basename, basename(COALESCE(folders.path, ''))) COLLATE NATURAL_CI " + direction + ", file_folder.path COLLATE NATURAL_CI " + direction
 	default:
 		query.sortAndPagination += getSort(sort, direction, "galleries")
 	}
+
+	// Whatever the sorting, always use title/id as a final sort
+	query.sortAndPagination += ", COALESCE(galleries.title, galleries.id) COLLATE NATURAL_CI ASC"
 }
 
 func (qb *GalleryStore) filesRepository() *filesRepository {

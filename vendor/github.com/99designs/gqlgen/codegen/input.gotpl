@@ -1,10 +1,6 @@
 {{- range $input := .Inputs }}
 	{{- if not .HasUnmarshal }}
-	{{- $it := "it" }}
-	{{- if .PointersInUmarshalInput }}
-	  {{- $it = "&it" }}
-	{{- end }}
-	func (ec *executionContext) unmarshalInput{{ .Name }}(ctx context.Context, obj interface{}) ({{ if .PointersInUmarshalInput }}*{{ end }}{{.Type | ref}}, error) {
+	func (ec *executionContext) unmarshalInput{{ .Name }}(ctx context.Context, obj interface{}) ({{.Type | ref}}, error) {
 		var it {{.Type | ref}}
 		asMap := map[string]interface{}{}
 		for k, v := range obj.(map[string]interface{}) {
@@ -18,12 +14,7 @@
 			{{- end}}
 		{{- end }}
 
-		fieldsInOrder := [...]string{ {{ range .Fields }}{{ quote .Name }},{{ end }} }
-		for _, k := range fieldsInOrder {
-			v, ok := asMap[k]
-			if !ok {
-				continue
-			}
+		for k, v := range asMap {
 			switch k {
 			{{- range $field := .Fields }}
 			case {{$field.Name|quote}}:
@@ -35,12 +26,12 @@
 					{{ template "implDirectives" $field }}
 					tmp, err := directive{{$field.ImplDirectives|len}}(ctx)
 					if err != nil {
-						return {{$it}}, graphql.ErrorOnPath(ctx, err)
+						return it, graphql.ErrorOnPath(ctx, err)
 					}
 					if data, ok := tmp.({{ $field.TypeReference.GO | ref }}) ; ok {
 						{{- if $field.IsResolver }}
 							if err = ec.resolvers.{{ $field.ShortInvocation }}; err != nil {
-								return {{$it}}, err
+								return it, err
 							}
 						{{- else }}
 							it.{{$field.GoFieldName}} = data
@@ -53,21 +44,21 @@
 					{{- end }}
 					} else {
 						err := fmt.Errorf(`unexpected type %T from directive, should be {{ $field.TypeReference.GO }}`, tmp)
-						return {{$it}}, graphql.ErrorOnPath(ctx, err)
+						return it, graphql.ErrorOnPath(ctx, err)
 					}
 				{{- else }}
 					{{- if $field.IsResolver }}
 						data, err := ec.{{ $field.TypeReference.UnmarshalFunc }}(ctx, v)
 						if err != nil {
-							return {{$it}}, err
+							return it, err
 						}
 						if err = ec.resolvers.{{ $field.ShortInvocation }}; err != nil {
-							return {{$it}}, err
+							return it, err
 						}
 					{{- else }}
 						it.{{$field.GoFieldName}}, err = ec.{{ $field.TypeReference.UnmarshalFunc }}(ctx, v)
 						if err != nil {
-							return {{$it}}, err
+							return it, err
 						}
 					{{- end }}
 				{{- end }}
@@ -75,7 +66,7 @@
 			}
 		}
 
-		return {{$it}}, nil
+		return it, nil
 	}
 	{{- end }}
 {{ end }}

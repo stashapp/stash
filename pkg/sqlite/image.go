@@ -260,17 +260,23 @@ func (qb *ImageStore) Find(ctx context.Context, id int) (*models.Image, error) {
 }
 
 func (qb *ImageStore) FindMany(ctx context.Context, ids []int) ([]*models.Image, error) {
-	q := qb.selectDataset().Prepared(true).Where(qb.table().Col(idColumn).In(ids))
-	unsorted, err := qb.getMany(ctx, q)
-	if err != nil {
-		return nil, err
-	}
-
 	images := make([]*models.Image, len(ids))
 
-	for _, s := range unsorted {
-		i := intslice.IntIndex(ids, s.ID)
-		images[i] = s
+	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
+		q := qb.selectDataset().Prepared(true).Where(qb.table().Col(idColumn).In(batch))
+		unsorted, err := qb.getMany(ctx, q)
+		if err != nil {
+			return err
+		}
+
+		for _, s := range unsorted {
+			i := intslice.IntIndex(ids, s.ID)
+			images[i] = s
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
 	for i := range images {
@@ -1020,7 +1026,7 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 		case "path":
 			addFilesJoin()
 			addFolderJoin()
-			sortClause = " ORDER BY folders.path " + direction + ", files.basename " + direction
+			sortClause = " ORDER BY COALESCE(folders.path, '') || COALESCE(files.basename, '') COLLATE NATURAL_CI " + direction
 		case "file_count":
 			sortClause = getCountSort(imageTable, imagesFilesTable, imageIDColumn, direction)
 		case "tag_count":
@@ -1033,10 +1039,13 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 		case "title":
 			addFilesJoin()
 			addFolderJoin()
-			sortClause = " ORDER BY COALESCE(images.title, files.basename) COLLATE NATURAL_CS " + direction + ", folders.path " + direction
+			sortClause = " ORDER BY COALESCE(images.title, files.basename) COLLATE NATURAL_CI " + direction + ", folders.path COLLATE NATURAL_CI " + direction
 		default:
 			sortClause = getSort(sort, direction, "images")
 		}
+
+		// Whatever the sorting, always use title/id as a final sort
+		sortClause += ", COALESCE(images.title, images.id) COLLATE NATURAL_CI ASC"
 	}
 
 	q.sortAndPagination = sortClause + getPagination(findFilter)

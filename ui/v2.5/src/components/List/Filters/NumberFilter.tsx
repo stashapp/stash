@@ -3,10 +3,10 @@ import { Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { CriterionModifier } from "../../../core/generated-graphql";
 import { INumberValue } from "../../../models/list-filter/types";
-import { Criterion } from "../../../models/list-filter/criteria/criterion";
+import { NumberCriterion } from "../../../models/list-filter/criteria/criterion";
 
 interface IDurationFilterProps {
-  criterion: Criterion<INumberValue>;
+  criterion: NumberCriterion;
   onValueChanged: (value: INumberValue) => void;
 }
 
@@ -16,12 +16,14 @@ export const NumberFilter: React.FC<IDurationFilterProps> = ({
 }) => {
   const intl = useIntl();
 
+  const { value } = criterion;
+
   function onChanged(
     event: React.ChangeEvent<HTMLInputElement>,
     property: "value" | "value2"
   ) {
     const numericValue = parseInt(event.target.value, 10);
-    const valueCopy = { ...criterion.value };
+    const valueCopy = { ...value };
 
     valueCopy[property] = !Number.isNaN(numericValue) ? numericValue : 0;
     onValueChanged(valueCopy);
@@ -40,7 +42,7 @@ export const NumberFilter: React.FC<IDurationFilterProps> = ({
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             onChanged(e, "value")
           }
-          value={criterion.value?.value ?? ""}
+          value={value?.value ?? ""}
           placeholder={intl.formatMessage({ id: "criterion.value" })}
         />
       </Form.Group>
@@ -61,7 +63,7 @@ export const NumberFilter: React.FC<IDurationFilterProps> = ({
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             onChanged(e, "value")
           }
-          value={criterion.value?.value ?? ""}
+          value={value?.value ?? ""}
           placeholder={intl.formatMessage({ id: "criterion.greater_than" })}
         />
       </Form.Group>
@@ -89,8 +91,8 @@ export const NumberFilter: React.FC<IDurationFilterProps> = ({
           }
           value={
             (criterion.modifier === CriterionModifier.LessThan
-              ? criterion.value?.value
-              : criterion.value?.value2) ?? ""
+              ? value?.value
+              : value?.value2) ?? ""
           }
           placeholder={intl.formatMessage({ id: "criterion.less_than" })}
         />

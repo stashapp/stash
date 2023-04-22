@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
@@ -64,7 +65,7 @@ func ToJSON(ctx context.Context, reader ImageGetter, studioReader studio.Finder,
 
 	frontImage, err := reader.GetFrontImage(ctx, movie.ID)
 	if err != nil {
-		return nil, fmt.Errorf("error getting movie front image: %v", err)
+		logger.Errorf("Error getting movie front image: %v", err)
 	}
 
 	if len(frontImage) > 0 {
@@ -73,7 +74,7 @@ func ToJSON(ctx context.Context, reader ImageGetter, studioReader studio.Finder,
 
 	backImage, err := reader.GetBackImage(ctx, movie.ID)
 	if err != nil {
-		return nil, fmt.Errorf("error getting movie back image: %v", err)
+		logger.Errorf("Error getting movie back image: %v", err)
 	}
 
 	if len(backImage) > 0 {

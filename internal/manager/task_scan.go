@@ -194,22 +194,22 @@ func (f *handlerRequiredFilter) Accept(ctx context.Context, ff file.File) bool {
 	}
 
 	if isVideoFile {
-		// check if the screenshot file exists
-		hash := scene.GetHash(ff, f.videoFileNamingAlgorithm)
-		ssPath := instance.Paths.Scene.GetScreenshotPath(hash)
-		if exists, _ := fsutil.FileExists(ssPath); !exists {
-			// if not, check if the file is a primary file for a scene
-			scenes, err := f.SceneFinder.FindByPrimaryFileID(ctx, ff.Base().ID)
-			if err != nil {
-				// just ignore
-				return false
-			}
+		// TODO - check if the cover exists
+		// hash := scene.GetHash(ff, f.videoFileNamingAlgorithm)
+		// ssPath := instance.Paths.Scene.GetScreenshotPath(hash)
+		// if exists, _ := fsutil.FileExists(ssPath); !exists {
+		// 	// if not, check if the file is a primary file for a scene
+		// 	scenes, err := f.SceneFinder.FindByPrimaryFileID(ctx, ff.Base().ID)
+		// 	if err != nil {
+		// 		// just ignore
+		// 		return false
+		// 	}
 
-			if len(scenes) > 0 {
-				// if it is, then it needs to be re-generated
-				return true
-			}
-		}
+		// 	if len(scenes) > 0 {
+		// 		// if it is, then it needs to be re-generated
+		// 		return true
+		// 	}
+		// }
 
 		// clean captions - scene handler handles this as well, but
 		// unchanged files aren't processed by the scene handler
@@ -226,7 +226,7 @@ func (f *handlerRequiredFilter) Accept(ctx context.Context, ff file.File) bool {
 
 type scanFilter struct {
 	extensionConfig
-	stashPaths        []*config.StashConfig
+	stashPaths        config.StashConfigs
 	generatedPath     string
 	videoExcludeRegex []*regexp.Regexp
 	imageExcludeRegex []*regexp.Regexp
@@ -278,7 +278,7 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 		return false
 	}
 
-	s := getStashFromDirPath(f.stashPaths, path)
+	s := f.stashPaths.GetStashFromDirPath(path)
 
 	if s == nil {
 		logger.Debugf("Skipping %s as it is not in the stash library", path)
@@ -349,7 +349,6 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 				CreatorUpdater: db.Scene,
 				PluginCache:    pluginCache,
 				CaptionUpdater: db.File,
-				CoverGenerator: &coverGenerator{},
 				ScanGenerator: &sceneGenerators{
 					input:     options,
 					taskQueue: taskQueue,
@@ -483,6 +482,18 @@ func (g *sceneGenerators) Generate(ctx context.Context, s *models.Scene, f *file
 		} else {
 			g.taskQueue.Add(fmt.Sprintf("Generating preview for %s", path), previewsFn)
 		}
+	}
+
+	if t.ScanGenerateCovers {
+		progress.AddTotal(1)
+		g.taskQueue.Add(fmt.Sprintf("Generating cover for %s", path), func(ctx context.Context) {
+			taskCover := GenerateCoverTask{
+				Scene:      *s,
+				txnManager: instance.Repository,
+			}
+			taskCover.Start(ctx)
+			progress.Increment()
+		})
 	}
 
 	return nil

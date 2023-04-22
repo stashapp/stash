@@ -32,7 +32,7 @@
     "download_backup": "Descarcă Backup",
     "edit": "Editare",
     "edit_entity": "Editați {entityType}",
-    "export": "Export…",
+    "export": "Export",
     "export_all": "Exportați tot…",
     "find": "Găsire",
     "finish": "Terminare",
@@ -112,7 +112,7 @@
       "blacklist_label": "Lista neagră",
       "query_mode_auto": "Automat",
       "query_mode_auto_desc": "Folosește metadatele, dacă sunt prezente, sau numele fișierului",
-      "query_mode_dir": "Dir",
+      "query_mode_dir": "Director",
       "query_mode_dir_desc": "Folosește numai directorul părinte al fișierului video",
       "query_mode_filename": "Numele fișierului",
       "query_mode_filename_desc": "Folosește numai numele fișierului",
@@ -388,7 +388,6 @@
   "scenes": "Scene",
   "scenes_updated_at": "Scenă Actualizată La",
   "search_filter": {
-    "add_filter": "Adaugă Filtru",
     "name": "Filtru",
     "saved_filters": "Filtre Salvate",
     "update_filter": "Actualizează Filtru"

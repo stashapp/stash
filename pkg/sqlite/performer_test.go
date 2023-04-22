@@ -1029,26 +1029,7 @@ func TestPerformerUpdatePerformerImage(t *testing.T) {
 			return fmt.Errorf("Error creating performer: %s", err.Error())
 		}
 
-		image := []byte("image")
-		err = qb.UpdateImage(ctx, performer.ID, image)
-		if err != nil {
-			return fmt.Errorf("Error updating performer image: %s", err.Error())
-		}
-
-		// ensure image set
-		storedImage, err := qb.GetImage(ctx, performer.ID)
-		if err != nil {
-			return fmt.Errorf("Error getting image: %s", err.Error())
-		}
-		assert.Equal(t, storedImage, image)
-
-		// set nil image
-		err = qb.UpdateImage(ctx, performer.ID, nil)
-		if err == nil {
-			return fmt.Errorf("Expected error setting nil image")
-		}
-
-		return nil
+		return testUpdateImage(t, ctx, performer.ID, qb.UpdateImage, qb.GetImage)
 	}); err != nil {
 		t.Error(err.Error())
 	}
@@ -1133,11 +1114,14 @@ func verifyPerformerAge(t *testing.T, ageCriterion models.IntCriterionInput) {
 
 			d := performer.Birthdate.Time
 			age := cd.Year() - d.Year()
-			if cd.YearDay() < d.YearDay() {
+			// using YearDay screws up on leap years
+			if cd.Month() < d.Month() || (cd.Month() == d.Month() && cd.Day() < d.Day()) {
 				age = age - 1
 			}
 
-			verifyInt(t, age, ageCriterion)
+			if !verifyInt(t, age, ageCriterion) {
+				t.Errorf("Performer birthdate: %s, deathdate: %s", performer.Birthdate.String(), performer.DeathDate.String())
+			}
 		}
 
 		return nil

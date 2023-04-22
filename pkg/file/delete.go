@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/txn"
 )
@@ -15,10 +16,10 @@ const deleteFileSuffix = ".delete"
 
 // RenamerRemover provides access to the Rename and Remove functions.
 type RenamerRemover interface {
-	Rename(oldpath, newpath string) error
+	Renamer
 	Remove(name string) error
 	RemoveAll(path string) error
-	Stat(name string) (fs.FileInfo, error)
+	Statter
 }
 
 type renamerRemoverImpl struct {
@@ -44,6 +45,16 @@ func (r renamerRemoverImpl) Stat(path string) (fs.FileInfo, error) {
 	return r.StatFn(path)
 }
 
+func newRenamerRemoverImpl() renamerRemoverImpl {
+	return renamerRemoverImpl{
+		// use fsutil.SafeMove to support cross-device moves
+		RenameFn:    fsutil.SafeMove,
+		RemoveFn:    os.Remove,
+		RemoveAllFn: os.RemoveAll,
+		StatFn:      os.Stat,
+	}
+}
+
 // Deleter is used to safely delete files and directories from the filesystem.
 // During a transaction, files and directories are marked for deletion using
 // the Files and Dirs methods. This will rename the files/directories to be
@@ -59,25 +70,18 @@ type Deleter struct {
 
 func NewDeleter() *Deleter {
 	return &Deleter{
-		RenamerRemover: renamerRemoverImpl{
-			RenameFn:    os.Rename,
-			RemoveFn:    os.Remove,
-			RemoveAllFn: os.RemoveAll,
-			StatFn:      os.Stat,
-		},
+		RenamerRemover: newRenamerRemoverImpl(),
 	}
 }
 
 // RegisterHooks registers post-commit and post-rollback hooks.
-func (d *Deleter) RegisterHooks(ctx context.Context, mgr txn.Manager) {
-	txn.AddPostCommitHook(ctx, func(ctx context.Context) error {
+func (d *Deleter) RegisterHooks(ctx context.Context) {
+	txn.AddPostCommitHook(ctx, func(ctx context.Context) {
 		d.Commit()
-		return nil
 	})
 
-	txn.AddPostRollbackHook(ctx, func(ctx context.Context) error {
+	txn.AddPostRollbackHook(ctx, func(ctx context.Context) {
 		d.Rollback()
-		return nil
 	})
 }
 

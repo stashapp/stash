@@ -33,12 +33,8 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   // Editing movie state
-  const [frontImage, setFrontImage] = useState<string | undefined | null>(
-    undefined
-  );
-  const [backImage, setBackImage] = useState<string | undefined | null>(
-    undefined
-  );
+  const [frontImage, setFrontImage] = useState<string | null>();
+  const [backImage, setBackImage] = useState<string | null>();
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
   const [updateMovie, { loading: updating }] = useMovieUpdate();
@@ -59,26 +55,14 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
     };
   });
 
-  const onImageEncoding = (isEncoding = false) => setEncodingImage(isEncoding);
-
-  function getMovieInput(
-    input: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput>
-  ) {
-    const ret: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput> = {
-      ...input,
-      id: movie.id,
-    };
-
-    return ret;
-  }
-
-  async function onSave(
-    input: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput>
-  ) {
+  async function onSave(input: GQL.MovieCreateInput) {
     try {
       const result = await updateMovie({
         variables: {
-          input: getMovieInput(input) as GQL.MovieUpdateInput,
+          input: {
+            id: movie.id,
+            ...input,
+          },
         },
       });
       if (result.data?.movieUpdate) {
@@ -136,8 +120,10 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   function renderFrontImage() {
     let image = movie.front_image_path;
     if (isEditing) {
-      if (frontImage === null) {
-        image = `${image}&default=true`;
+      if (frontImage === null && image) {
+        const imageURL = new URL(image);
+        imageURL.searchParams.set("default", "true");
+        image = imageURL.toString();
       } else if (frontImage) {
         image = frontImage;
       }
@@ -214,13 +200,13 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
             onDelete={onDelete}
             setFrontImage={setFrontImage}
             setBackImage={setBackImage}
-            onImageEncoding={onImageEncoding}
+            setEncodingImage={setEncodingImage}
           />
         )}
       </div>
 
       <div className="col-xl-8 col-lg-6">
-        <MovieScenesPanel movie={movie} />
+        <MovieScenesPanel active={true} movie={movie} />
       </div>
       {renderDeleteAlert()}
     </div>

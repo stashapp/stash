@@ -523,11 +523,6 @@ directives:
       message: "Cannot redeclare directive A."
       locations: [{line: 2, column: 12}]
 
-  - name: can redeclare builtin directives
-    input: |
-      directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
-      directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
-
   - name: must be declared
     input: |
       type User {
@@ -668,11 +663,3 @@ type references:
     error:
       message: "Undefined type FooBar."
       locations: [{line: 1, column: 21}]
-
-  - name: Invalid enum value
-    input: |
-      enum Enum { true }
-
-    error:
-      message: "ENUM Enum: non-enum value true."
-      locations: [{line: 1, column: 6}]

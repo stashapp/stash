@@ -35,8 +35,8 @@
     "download_backup": "백업 다운로드",
     "edit": "수정",
     "edit_entity": "{entityType} 수정",
-    "export": "내보내기…",
-    "export_all": "모두 내보내기…",
+    "export": "내보내기",
+    "export_all": "모두 내보내기",
     "find": "찾기",
     "finish": "완료",
     "from_file": "파일로 불러오기…",
@@ -661,7 +661,6 @@
   "details": "세부사항",
   "developmentVersion": "개발 버전",
   "dialogs": {
-    "aliases_must_be_unique": "별칭은 유일해야 합니다",
     "create_new_entity": "새로운 {entity} 생성",
     "delete_alert": "다음 {count, plural, one {{singularEntity}} other {{pluralEntity}}}이(가) 영구 삭제될 것입니다:",
     "delete_confirm": "정말 {entityName}을 삭제하시겠습니까?",
@@ -966,7 +965,6 @@
   "scenes": "영상",
   "scenes_updated_at": "영상 업데이트 날짜",
   "search_filter": {
-    "add_filter": "필터 추가",
     "name": "필터",
     "saved_filters": "저장된 필터",
     "update_filter": "필터 업데이트"
@@ -1107,6 +1105,9 @@
   "type": "유형",
   "updated_at": "수정 날짜",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "별칭은 유일해야 합니다"
+  },
   "videos": "비디오",
   "view_all": "모두 보기",
   "weight": "몸무게",

@@ -23,7 +23,8 @@ const (
 	performersAliasesTable = "performer_aliases"
 	performerAliasColumn   = "alias"
 	performersTagsTable    = "performers_tags"
-	performersImageTable   = "performers_image" // performer cover image
+
+	performerImageBlobColumn = "image_blob"
 )
 
 type performerRow struct {
@@ -54,6 +55,9 @@ type performerRow struct {
 	HairColor     zero.String       `db:"hair_color"`
 	Weight        null.Int          `db:"weight"`
 	IgnoreAutoTag bool              `db:"ignore_auto_tag"`
+
+	// not used for resolution
+	ImageBlob zero.String `db:"image_blob"`
 }
 
 func (r *performerRow) fromPerformer(o models.Performer) {
@@ -159,15 +163,20 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 
 type PerformerStore struct {
 	repository
+	blobJoinQueryBuilder
 
 	tableMgr *table
 }
 
-func NewPerformerStore() *PerformerStore {
+func NewPerformerStore(blobStore *BlobStore) *PerformerStore {
 	return &PerformerStore{
 		repository: repository{
 			tableName: performerTable,
 			idColumn:  idColumn,
+		},
+		blobJoinQueryBuilder: blobJoinQueryBuilder{
+			blobStore: blobStore,
+			joinTable: performerTable,
 		},
 		tableMgr: performerTableMgr,
 	}
@@ -275,6 +284,11 @@ func (qb *PerformerStore) Update(ctx context.Context, updatedObject *models.Perf
 }
 
 func (qb *PerformerStore) Destroy(ctx context.Context, id int) error {
+	// must handle image checksums manually
+	if err := qb.DestroyImage(ctx, id); err != nil {
+		return err
+	}
+
 	return qb.destroyExisting(ctx, []int{id})
 }
 
@@ -299,17 +313,23 @@ func (qb *PerformerStore) Find(ctx context.Context, id int) (*models.Performer, 
 
 func (qb *PerformerStore) FindMany(ctx context.Context, ids []int) ([]*models.Performer, error) {
 	tableMgr := performerTableMgr
-	q := goqu.Select("*").From(tableMgr.table).Where(tableMgr.byIDInts(ids...))
-	unsorted, err := qb.getMany(ctx, q)
-	if err != nil {
-		return nil, err
-	}
-
 	ret := make([]*models.Performer, len(ids))
 
-	for _, s := range unsorted {
-		i := intslice.IntIndex(ids, s.ID)
-		ret[i] = s
+	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
+		q := goqu.Select("*").From(tableMgr.table).Where(tableMgr.byIDInts(batch...))
+		unsorted, err := qb.getMany(ctx, q)
+		if err != nil {
+			return err
+		}
+
+		for _, s := range unsorted {
+			i := intslice.IntIndex(ids, s.ID)
+			ret[i] = s
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
 	for i := range ret {
@@ -684,8 +704,7 @@ func performerIsMissingCriterionHandler(qb *PerformerStore, isMissing *string) c
 				f.addLeftJoin(performersScenesTable, "scenes_join", "scenes_join.performer_id = performers.id")
 				f.addWhere("scenes_join.scene_id IS NULL")
 			case "image":
-				f.addLeftJoin(performersImageTable, "image_join", "image_join.performer_id = performers.id")
-				f.addWhere("image_join.performer_id IS NULL")
+				f.addWhere("performers.image_blob IS NULL")
 			case "stash_id":
 				performersStashIDsTableMgr.join(f, "performer_stash_ids", "performers.id")
 				f.addWhere("performer_stash_ids.performer_id IS NULL")
@@ -874,20 +893,23 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) st
 		direction = findFilter.GetDirection()
 	}
 
-	if sort == "tag_count" {
-		return getCountSort(performerTable, performersTagsTable, performerIDColumn, direction)
-	}
-	if sort == "scenes_count" {
-		return getCountSort(performerTable, performersScenesTable, performerIDColumn, direction)
-	}
-	if sort == "images_count" {
-		return getCountSort(performerTable, performersImagesTable, performerIDColumn, direction)
-	}
-	if sort == "galleries_count" {
-		return getCountSort(performerTable, performersGalleriesTable, performerIDColumn, direction)
+	sortQuery := ""
+	switch sort {
+	case "tag_count":
+		sortQuery += getCountSort(performerTable, performersTagsTable, performerIDColumn, direction)
+	case "scenes_count":
+		sortQuery += getCountSort(performerTable, performersScenesTable, performerIDColumn, direction)
+	case "images_count":
+		sortQuery += getCountSort(performerTable, performersImagesTable, performerIDColumn, direction)
+	case "galleries_count":
+		sortQuery += getCountSort(performerTable, performersGalleriesTable, performerIDColumn, direction)
+	default:
+		sortQuery += getSort(sort, direction, "performers")
 	}
 
-	return getSort(sort, direction, "performers")
+	// Whatever the sorting, always use name/id as a final sort
+	sortQuery += ", COALESCE(performers.name, performers.id) COLLATE NATURAL_CI ASC"
+	return sortQuery
 }
 
 func (qb *PerformerStore) tagsRepository() *joinRepository {
@@ -905,27 +927,20 @@ func (qb *PerformerStore) GetTagIDs(ctx context.Context, id int) ([]int, error) 
 	return qb.tagsRepository().getIDs(ctx, id)
 }
 
-func (qb *PerformerStore) imageRepository() *imageRepository {
-	return &imageRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: "performers_image",
-			idColumn:  performerIDColumn,
-		},
-		imageColumn: "image",
-	}
+func (qb *PerformerStore) GetImage(ctx context.Context, performerID int) ([]byte, error) {
+	return qb.blobJoinQueryBuilder.GetImage(ctx, performerID, performerImageBlobColumn)
 }
 
-func (qb *PerformerStore) GetImage(ctx context.Context, performerID int) ([]byte, error) {
-	return qb.imageRepository().get(ctx, performerID)
+func (qb *PerformerStore) HasImage(ctx context.Context, performerID int) (bool, error) {
+	return qb.blobJoinQueryBuilder.HasImage(ctx, performerID, performerImageBlobColumn)
 }
 
 func (qb *PerformerStore) UpdateImage(ctx context.Context, performerID int, image []byte) error {
-	return qb.imageRepository().replace(ctx, performerID, image)
+	return qb.blobJoinQueryBuilder.UpdateImage(ctx, performerID, performerImageBlobColumn, image)
 }
 
 func (qb *PerformerStore) DestroyImage(ctx context.Context, performerID int) error {
-	return qb.imageRepository().destroy(ctx, []int{performerID})
+	return qb.blobJoinQueryBuilder.DestroyImage(ctx, performerID, performerImageBlobColumn)
 }
 
 func (qb *PerformerStore) stashIDRepository() *stashIDRepository {

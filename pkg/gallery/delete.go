@@ -11,6 +11,8 @@ import (
 func (s *Service) Destroy(ctx context.Context, i *models.Gallery, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) ([]*models.Image, error) {
 	var imgsDestroyed []*models.Image
 
+	// chapter deletion is done via delete cascade, so we don't need to do anything here
+
 	// if this is a zip-based gallery, delete the images as well first
 	zipImgsDestroyed, err := s.destroyZipFileImages(ctx, i, fileDeleter, deleteGenerated, deleteFile)
 	if err != nil {
@@ -37,6 +39,15 @@ func (s *Service) Destroy(ctx context.Context, i *models.Gallery, fileDeleter *i
 	}
 
 	return imgsDestroyed, nil
+}
+
+type ChapterDestroyer interface {
+	FindByGalleryID(ctx context.Context, galleryID int) ([]*models.GalleryChapter, error)
+	Destroy(ctx context.Context, id int) error
+}
+
+func DestroyChapter(ctx context.Context, galleryChapter *models.GalleryChapter, qb ChapterDestroyer) error {
+	return qb.Destroy(ctx, galleryChapter.ID)
 }
 
 func (s *Service) destroyZipFileImages(ctx context.Context, i *models.Gallery, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) ([]*models.Image, error) {

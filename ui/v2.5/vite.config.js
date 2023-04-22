@@ -1,41 +1,50 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import legacy from "@vitejs/plugin-legacy";
 import tsconfigPaths from "vite-tsconfig-paths";
 import viteCompression from "vite-plugin-compression";
 
+const nolegacy = process.env.VITE_APP_NOLEGACY === "true";
+const sourcemap = process.env.VITE_APP_SOURCEMAPS === "true";
+
 // https://vitejs.dev/config/
-export default defineConfig({
-  base: "",
-  build: {
-    outDir: "build",
-    reportCompressedSize: false,
-    rollupOptions: {
-      output: {
-        experimentalDeepDynamicChunkOptimization: true,
-      },
-    },
-  },
-  optimizeDeps: {
-    entries: "src/index.tsx",
-  },
-  server: {
-    port: 3000,
-    cors: false,
-  },
-  publicDir: "public",
-  assetsInclude: ["**/*.md"],
-  plugins: [
-    react({
-      babel: {
-        compact: true,
-      },
-    }),
+export default defineConfig(() => {
+  let plugins = [
+    react(),
     tsconfigPaths(),
     viteCompression({
       algorithm: "gzip",
-      disable: false,
       deleteOriginFile: true,
+      threshold: 0,
       filter: /\.(js|json|css|svg|md)$/i,
     }),
-  ],
+  ];
+
+  if (!nolegacy) {
+    plugins = [...plugins, legacy()];
+  }
+
+  return {
+    base: "",
+    build: {
+      outDir: "build",
+      sourcemap: sourcemap,
+      reportCompressedSize: false,
+      rollupOptions: {
+        output: {
+          experimentalDeepDynamicChunkOptimization: true,
+        },
+      },
+    },
+    optimizeDeps: {
+      entries: "src/index.tsx",
+    },
+    server: {
+      port: 3000,
+      cors: false,
+    },
+    publicDir: "public",
+    assetsInclude: ["**/*.md"],
+    plugins,
+  };
 });

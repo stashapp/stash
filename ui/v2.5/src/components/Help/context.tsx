@@ -1,12 +1,8 @@
-import React, {
-  lazy,
-  PropsWithChildren,
-  Suspense,
-  useEffect,
-  useState,
-} from "react";
+import React, { Suspense, useState } from "react";
+import { Link } from "react-router-dom";
+import { lazyComponent } from "src/utils/lazyComponent";
 
-const Manual = lazy(() => import("./Manual"));
+const Manual = lazyComponent(() => import("./Manual"));
 
 interface IManualContextState {
   openManual: (tab?: string) => void;
@@ -24,10 +20,6 @@ export const ManualProvider: React.FC = ({ children }) => {
     setManualLink(tab);
     setShowManual(true);
   }
-
-  useEffect(() => {
-    if (manualLink) setManualLink(undefined);
-  }, [manualLink]);
 
   return (
     <ManualStateContext.Provider
@@ -53,21 +45,18 @@ interface IManualLink {
   tab: string;
 }
 
-export const ManualLink: React.FC<PropsWithChildren<IManualLink>> = ({
-  tab,
-  children,
-}) => {
+export const ManualLink: React.FC<IManualLink> = ({ tab, children }) => {
   const { openManual } = React.useContext(ManualStateContext);
 
   return (
-    <a
-      href={`/help/${tab}.md`}
+    <Link
+      to={`/help/${tab}.md`}
       onClick={(e) => {
         openManual(`${tab}.md`);
         e.preventDefault();
       }}
     >
       {children}
-    </a>
+    </Link>
   );
 };

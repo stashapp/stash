@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	thumbnailWidth   = 320
-	thumbnailQuality = 5
+	// thumbnailWidth   = 320
+	// thumbnailQuality = 5
 
 	screenshotQuality = 2
 
@@ -21,16 +21,9 @@ type ScreenshotOptions struct {
 	At *float64
 }
 
-func (g Generator) Screenshot(ctx context.Context, input string, hash string, videoWidth int, videoDuration float64, options ScreenshotOptions) error {
+func (g Generator) Screenshot(ctx context.Context, input string, videoWidth int, videoDuration float64, options ScreenshotOptions) ([]byte, error) {
 	lockCtx := g.LockManager.ReadLock(ctx, input)
 	defer lockCtx.Cancel()
-
-	output := g.ScenePaths.GetScreenshotPath(hash)
-	if !g.Overwrite {
-		if exists, _ := fsutil.FileExists(output); exists {
-			return nil
-		}
-	}
 
 	logger.Infof("Creating screenshot for %s", input)
 
@@ -39,46 +32,16 @@ func (g Generator) Screenshot(ctx context.Context, input string, hash string, vi
 		at = *options.At
 	}
 
-	if err := g.generateFile(lockCtx, g.ScenePaths, jpgPattern, output, g.screenshot(input, screenshotOptions{
+	ret, err := g.generateBytes(lockCtx, g.ScenePaths, jpgPattern, g.screenshot(input, screenshotOptions{
 		Time:    at,
 		Quality: screenshotQuality,
 		// default Width is video width
-	})); err != nil {
-		return err
+	}))
+	if err != nil {
+		return nil, err
 	}
 
-	logger.Debug("created screenshot: ", output)
-
-	return nil
-}
-
-func (g Generator) Thumbnail(ctx context.Context, input string, hash string, videoDuration float64, options ScreenshotOptions) error {
-	lockCtx := g.LockManager.ReadLock(ctx, input)
-	defer lockCtx.Cancel()
-
-	output := g.ScenePaths.GetThumbnailScreenshotPath(hash)
-	if !g.Overwrite {
-		if exists, _ := fsutil.FileExists(output); exists {
-			return nil
-		}
-	}
-
-	at := screenshotDurationProportion * videoDuration
-	if options.At != nil {
-		at = *options.At
-	}
-
-	if err := g.generateFile(lockCtx, g.ScenePaths, jpgPattern, output, g.screenshot(input, screenshotOptions{
-		Time:    at,
-		Quality: thumbnailQuality,
-		Width:   thumbnailWidth,
-	})); err != nil {
-		return err
-	}
-
-	logger.Debug("created thumbnail: ", output)
-
-	return nil
+	return ret, nil
 }
 
 type screenshotOptions struct {

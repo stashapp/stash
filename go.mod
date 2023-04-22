@@ -1,7 +1,7 @@
 module github.com/stashapp/stash
 
 require (
-	github.com/99designs/gqlgen v0.17.24
+	github.com/99designs/gqlgen v0.17.2
 	github.com/Yamashou/gqlgenc v0.0.6
 	github.com/anacrolix/dms v1.2.2
 	github.com/antchfx/htmlquery v1.2.5-0.20211125074323-810ee8082758
@@ -9,7 +9,7 @@ require (
 	github.com/chromedp/chromedp v0.7.3
 	github.com/corona10/goimagehash v1.0.3
 	github.com/disintegration/imaging v1.6.0
-	github.com/fvbommel/sortorder v1.0.2
+	github.com/fvbommel/sortorder v1.1.0
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/golang-jwt/jwt/v4 v4.0.0
 	github.com/golang-migrate/migrate/v4 v4.15.0-beta.1
@@ -24,7 +24,6 @@ require (
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/remeh/sizedwaitgroup v1.0.0
 	github.com/robertkrimen/otto v0.0.0-20200922221731-ef014fd054ac
-	github.com/rs/cors v1.6.0
 	github.com/shurcooL/graphql v0.0.0-20181231061246-d48a9a75455f
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/afero v1.8.2 // indirect
@@ -48,6 +47,7 @@ require (
 require (
 	github.com/asticode/go-astisub v0.20.0
 	github.com/doug-martin/goqu/v9 v9.18.0
+	github.com/go-chi/cors v1.2.1
 	github.com/go-chi/httplog v0.2.1
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4
 	github.com/hashicorp/golang-lru v0.5.4
@@ -57,7 +57,9 @@ require (
 	github.com/spf13/cast v1.4.1
 	github.com/vearutop/statigz v1.1.6
 	github.com/vektah/dataloaden v0.3.0
+	github.com/vektah/gqlparser/v2 v2.4.2
 	github.com/xWTF/chardet v0.0.0-20230208095535-c780f2ac244e
+	github.com/zencoder/go-dash/v3 v3.0.2
 	gopkg.in/guregu/null.v4 v4.0.0
 )
 
@@ -82,6 +84,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/matryer/moq v0.2.3 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
@@ -99,7 +102,6 @@ require (
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/urfave/cli/v2 v2.8.1 // indirect
-	github.com/vektah/gqlparser/v2 v2.5.1 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect

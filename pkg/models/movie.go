@@ -38,7 +38,9 @@ type MovieReader interface {
 	Count(ctx context.Context) (int, error)
 	Query(ctx context.Context, movieFilter *MovieFilterType, findFilter *FindFilterType) ([]*Movie, int, error)
 	GetFrontImage(ctx context.Context, movieID int) ([]byte, error)
+	HasFrontImage(ctx context.Context, movieID int) (bool, error)
 	GetBackImage(ctx context.Context, movieID int) ([]byte, error)
+	HasBackImage(ctx context.Context, movieID int) (bool, error)
 	FindByPerformerID(ctx context.Context, performerID int) ([]*Movie, error)
 	CountByPerformerID(ctx context.Context, performerID int) (int, error)
 	FindByStudioID(ctx context.Context, studioID int) ([]*Movie, error)
@@ -50,8 +52,8 @@ type MovieWriter interface {
 	Update(ctx context.Context, updatedMovie MoviePartial) (*Movie, error)
 	UpdateFull(ctx context.Context, updatedMovie Movie) (*Movie, error)
 	Destroy(ctx context.Context, id int) error
-	UpdateImages(ctx context.Context, movieID int, frontImage []byte, backImage []byte) error
-	DestroyImages(ctx context.Context, movieID int) error
+	UpdateFrontImage(ctx context.Context, movieID int, frontImage []byte) error
+	UpdateBackImage(ctx context.Context, movieID int, backImage []byte) error
 }
 
 type MovieReaderWriter interface {

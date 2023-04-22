@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Form } from "react-bootstrap";
 import {
   Criterion,
@@ -18,16 +18,13 @@ export const OptionsFilter: React.FC<IOptionsFilterProps> = ({
     onValueChanged(event.target.value);
   }
 
-  const options = criterion.criterionOption.options ?? [];
+  const options = useMemo(() => {
+    const ret = criterion.criterionOption.options?.slice() ?? [];
 
-  if (
-    options &&
-    (criterion.value === undefined ||
-      criterion.value === "" ||
-      typeof criterion.value === "number")
-  ) {
-    onValueChanged(options[0].toString());
-  }
+    ret.unshift("");
+
+    return ret;
+  }, [criterion.criterionOption.options]);
 
   return (
     <Form.Group>
@@ -39,7 +36,7 @@ export const OptionsFilter: React.FC<IOptionsFilterProps> = ({
       >
         {options.map((c) => (
           <option key={c.toString()} value={c.toString()}>
-            {c}
+            {c ? c : "---"}
           </option>
         ))}
       </Form.Control>

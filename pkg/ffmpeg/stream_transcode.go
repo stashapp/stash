@@ -16,20 +16,78 @@ import (
 
 type StreamFormat struct {
 	MimeType string
-	Args     func(videoFilter VideoFilter, videoOnly bool) Args
+	Args     func(codec VideoCodec, videoFilter VideoFilter, videoOnly bool) Args
+}
+
+func CodecInit(codec VideoCodec) (args Args) {
+	args = args.VideoCodec(codec)
+
+	switch codec {
+	// CPU Codecs
+	case VideoCodecLibX264:
+		args = append(args,
+			"-pix_fmt", "yuv420p",
+			"-preset", "veryfast",
+			"-crf", "25",
+			"-sc_threshold", "0",
+		)
+	case VideoCodecVP9:
+		args = append(args,
+			"-pix_fmt", "yuv420p",
+			"-deadline", "realtime",
+			"-cpu-used", "5",
+			"-row-mt", "1",
+			"-crf", "30",
+			"-b:v", "0",
+		)
+	// HW Codecs
+	case VideoCodecN264:
+		args = append(args,
+			"-rc", "vbr",
+			"-cq", "15",
+		)
+	case VideoCodecI264:
+		args = append(args,
+			"-global_quality", "20",
+			"-preset", "faster",
+		)
+	case VideoCodecV264:
+		args = append(args,
+			"-qp", "20",
+		)
+	case VideoCodecA264:
+		args = append(args,
+			"-quality", "speed",
+		)
+	case VideoCodecM264:
+		args = append(args,
+			"-prio_speed", "1",
+		)
+	case VideoCodecO264:
+		args = append(args,
+			"-preset", "superfast",
+			"-crf", "25",
+		)
+	case VideoCodecIVP9:
+		args = append(args,
+			"-global_quality", "20",
+			"-preset", "faster",
+		)
+	case VideoCodecVVP9:
+		args = append(args,
+			"-qp", "20",
+		)
+	}
+
+	return args
 }
 
 var (
 	StreamTypeMP4 = StreamFormat{
 		MimeType: MimeMp4Video,
-		Args: func(videoFilter VideoFilter, videoOnly bool) (args Args) {
-			args = args.VideoCodec(VideoCodecLibX264)
-			args = append(args,
-				"-movflags", "frag_keyframe+empty_moov",
-				"-pix_fmt", "yuv420p",
-				"-preset", "veryfast",
-				"-crf", "25",
-			)
+		Args: func(codec VideoCodec, videoFilter VideoFilter, videoOnly bool) (args Args) {
+			args = CodecInit(codec)
+			args = append(args, "-movflags", "frag_keyframe+empty_moov")
 			args = args.VideoFilter(videoFilter)
 			if videoOnly {
 				args = args.SkipAudio()
@@ -42,16 +100,8 @@ var (
 	}
 	StreamTypeWEBM = StreamFormat{
 		MimeType: MimeWebmVideo,
-		Args: func(videoFilter VideoFilter, videoOnly bool) (args Args) {
-			args = args.VideoCodec(VideoCodecVP9)
-			args = append(args,
-				"-pix_fmt", "yuv420p",
-				"-deadline", "realtime",
-				"-cpu-used", "5",
-				"-row-mt", "1",
-				"-crf", "30",
-				"-b:v", "0",
-			)
+		Args: func(codec VideoCodec, videoFilter VideoFilter, videoOnly bool) (args Args) {
+			args = CodecInit(codec)
 			args = args.VideoFilter(videoFilter)
 			if videoOnly {
 				args = args.SkipAudio()
@@ -64,8 +114,8 @@ var (
 	}
 	StreamTypeMKV = StreamFormat{
 		MimeType: MimeMkvVideo,
-		Args: func(videoFilter VideoFilter, videoOnly bool) (args Args) {
-			args = args.VideoCodec(VideoCodecCopy)
+		Args: func(codec VideoCodec, videoFilter VideoFilter, videoOnly bool) (args Args) {
+			args = CodecInit(codec)
 			if videoOnly {
 				args = args.SkipAudio()
 			} else {
@@ -89,6 +139,25 @@ type TranscodeOptions struct {
 	StartTime  float64
 }
 
+func FileGetCodec(sm *StreamManager, mimetype string) (codec VideoCodec) {
+	switch mimetype {
+	case MimeMp4Video:
+		codec = VideoCodecLibX264
+		if hwcodec := sm.encoder.hwCodecMP4Compatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
+			codec = *hwcodec
+		}
+	case MimeWebmVideo:
+		codec = VideoCodecVP9
+		if hwcodec := sm.encoder.hwCodecWEBMCompatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
+			codec = *hwcodec
+		}
+	case MimeMkvVideo:
+		codec = VideoCodecCopy
+	}
+
+	return codec
+}
+
 func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
 	maxTranscodeSize := sm.config.GetMaxStreamingTranscodeSize().GetMaxResolution()
 	if o.Resolution != "" {
@@ -100,6 +169,9 @@ func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
 	args := Args{"-hide_banner"}
 	args = args.LogLevel(LogLevelError)
 
+	codec := FileGetCodec(sm, o.StreamType.MimeType)
+
+	args = sm.encoder.hwDeviceInit(args, codec)
 	args = append(args, extraInputArgs...)
 
 	if o.StartTime != 0 {
@@ -110,10 +182,9 @@ func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
 
 	videoOnly := ProbeAudioCodec(o.VideoFile.AudioCodec) == MissingUnsupported
 
-	var videoFilter VideoFilter
-	videoFilter = videoFilter.ScaleMax(o.VideoFile.Width, o.VideoFile.Height, maxTranscodeSize)
+	videoFilter := sm.encoder.hwMaxResFilter(codec, o.VideoFile.Width, o.VideoFile.Height, maxTranscodeSize)
 
-	args = append(args, o.StreamType.Args(videoFilter, videoOnly)...)
+	args = append(args, o.StreamType.Args(codec, videoFilter, videoOnly)...)
 
 	args = append(args, extraOutputArgs...)
 
@@ -189,6 +260,7 @@ func (sm *StreamManager) getTranscodeStream(ctx *fsutil.LockContext, options Tra
 
 	mimeType := options.StreamType.MimeType
 	handler := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-store")
 		w.Header().Set("Content-Type", mimeType)
 		w.WriteHeader(http.StatusOK)
 

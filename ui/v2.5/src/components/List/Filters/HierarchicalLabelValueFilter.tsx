@@ -80,6 +80,7 @@ export const HierarchicalLabelValueFilter: React.FC<
           isMulti
           onSelect={onSelectionChanged}
           ids={criterion.value.items.map((labeled) => labeled.id)}
+          menuPortalTarget={document.body}
         />
       </Form.Group>
 

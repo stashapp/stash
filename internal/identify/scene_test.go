@@ -742,8 +742,8 @@ func Test_sceneRelationships_cover(t *testing.T) {
 			"error getting scene cover",
 			errSceneID,
 			&newDataEncoded,
-			nil,
-			true,
+			newData,
+			false,
 		},
 		{
 			"invalid data",

@@ -208,13 +208,8 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 		}
 
 		// update image table
-		if len(imageData) > 0 {
+		if imageIncluded {
 			if err := qb.UpdateImage(ctx, tagID, imageData); err != nil {
-				return err
-			}
-		} else if imageIncluded {
-			// must be unsetting
-			if err := qb.DestroyImage(ctx, tagID); err != nil {
 				return err
 			}
 		}

@@ -15,10 +15,12 @@ import {
   DateCriterionOption,
   TimestampCriterion,
   MandatoryTimestampCriterionOption,
+  PathCriterionOption,
 } from "./criterion";
 import { OrganizedCriterion } from "./organized";
 import { FavoriteCriterion, PerformerFavoriteCriterion } from "./favorite";
 import { HasMarkersCriterion } from "./has-markers";
+import { HasChaptersCriterion } from "./has-chapters";
 import {
   PerformerIsMissingCriterionOption,
   ImageIsMissingCriterionOption,
@@ -46,7 +48,7 @@ import { MoviesCriterionOption } from "./movies";
 import { GalleriesCriterion } from "./galleries";
 import { CriterionType } from "../types";
 import { InteractiveCriterion } from "./interactive";
-import { DuplicatedCriterion, PhashCriterionOption } from "./phash";
+import { DuplicatedCriterion, PhashCriterion } from "./phash";
 import { CaptionCriterion } from "./captions";
 import { RatingCriterion } from "./rating";
 import { CountryCriterion } from "./country";
@@ -64,9 +66,7 @@ export function makeCriteria(
       return new NoneCriterion();
     case "name":
     case "path":
-      return new StringCriterion(
-        new MandatoryStringCriterionOption(type, type)
-      );
+      return new StringCriterion(new PathCriterionOption(type, type));
     case "checksum":
       return new StringCriterion(
         new MandatoryStringCriterionOption("media_info.checksum", type, type)
@@ -113,6 +113,8 @@ export function makeCriteria(
       return new FavoriteCriterion();
     case "hasMarkers":
       return new HasMarkersCriterion();
+    case "hasChapters":
+      return new HasChaptersCriterion();
     case "sceneIsMissing":
       return new IsMissingCriterion(SceneIsMissingCriterionOption);
     case "imageIsMissing":
@@ -165,7 +167,7 @@ export function makeCriteria(
         new StringCriterionOption("media_info.checksum", type, "checksum")
       );
     case "phash":
-      return new StringCriterion(PhashCriterionOption);
+      return new PhashCriterion();
     case "duplicated":
       return new DuplicatedCriterion();
     case "country":

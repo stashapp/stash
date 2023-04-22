@@ -35,7 +35,7 @@
     "download_backup": "Stáhnout zálohu",
     "edit": "Upravit",
     "edit_entity": "Upravit {entityType}",
-    "export": "Exportovat…",
+    "export": "Exportovat",
     "export_all": "Exportovat vše…",
     "find": "Hledat",
     "finish": "Dokončit",
@@ -646,7 +646,6 @@
   "details": "Detaily",
   "developmentVersion": "Vývojářská verze",
   "dialogs": {
-    "aliases_must_be_unique": "aliasy musí být unikátní",
     "delete_alert": "Následující {count, plural, one {{singularEntity}} other {{pluralEntity}}} budou permanentně smazány:",
     "delete_confirm": "Jste si jisti, že chcete smazat {entityName}?",
     "delete_entity_desc": "{count, plural, one {Jste si jisti, že checete smazat toto {singularEntity}? Pokud není soubor rovněž smazán, tato {singularEntity} bude znovu přidána při příštím skenování.} other {Jste si jisti, že chcete smazat tyto {pluralEntity}? Pokud nejsou soubory rovněž smazány, tyto {pluralEntity} budou znovu přidány při příštím skenování.}}",
@@ -696,5 +695,8 @@
       "marker_image_previews_tooltip": "Animované WebP náhledy markerů, nezbytné pouze tehdy, pokud je Typ náhledu nastaven na \"Animovaný obrázek\".",
       "marker_screenshots": "Screenshoty markerů"
     }
+  },
+  "validation": {
+    "aliases_must_be_unique": "aliasy musí být unikátní"
   }
 }

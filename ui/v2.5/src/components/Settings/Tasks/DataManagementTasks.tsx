@@ -8,6 +8,8 @@ import {
   mutateMetadataImport,
   mutateMetadataClean,
   mutateAnonymiseDatabase,
+  mutateMigrateSceneScreenshots,
+  mutateMigrateBlobs,
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import downloadFile from "src/utils/download";
@@ -170,6 +172,17 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
     dryRun: false,
   });
 
+  const [migrateBlobsOptions, setMigrateBlobsOptions] =
+    useState<GQL.MigrateBlobsInput>({
+      deleteOld: true,
+    });
+
+  const [migrateSceneScreenshotsOptions, setMigrateSceneScreenshotsOptions] =
+    useState<GQL.MigrateSceneScreenshotsInput>({
+      deleteFiles: false,
+      overwriteExisting: false,
+    });
+
   type DialogOpenState = typeof dialogOpen;
 
   function setDialogOpen(s: Partial<DialogOpenState>) {
@@ -247,6 +260,42 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
           {
             operation_name: intl.formatMessage({
               id: "actions.hash_migration",
+            }),
+          }
+        ),
+      });
+    } catch (err) {
+      Toast.error(err);
+    }
+  }
+
+  async function onMigrateSceneScreenshots() {
+    try {
+      await mutateMigrateSceneScreenshots(migrateSceneScreenshotsOptions);
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          {
+            operation_name: intl.formatMessage({
+              id: "actions.migrate_scene_screenshots",
+            }),
+          }
+        ),
+      });
+    } catch (err) {
+      Toast.error(err);
+    }
+  }
+
+  async function onMigrateBlobs() {
+    try {
+      await mutateMigrateBlobs(migrateBlobsOptions);
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          {
+            operation_name: intl.formatMessage({
+              id: "actions.migrate_blobs",
             }),
           }
         ),
@@ -507,6 +556,69 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
             <FormattedMessage id="actions.rename_gen_files" />
           </Button>
         </Setting>
+
+        <div className="setting-group">
+          <Setting
+            headingID="actions.migrate_blobs"
+            subHeadingID="config.tasks.migrate_blobs.description"
+          >
+            <Button
+              id="migrateBlobs"
+              variant="danger"
+              onClick={() => onMigrateBlobs()}
+            >
+              <FormattedMessage id="actions.migrate_blobs" />
+            </Button>
+          </Setting>
+
+          <BooleanSetting
+            id="migrate-blobs-delete-old"
+            checked={migrateBlobsOptions.deleteOld ?? false}
+            headingID="config.tasks.migrate_blobs.delete_old"
+            onChange={(v) =>
+              setMigrateBlobsOptions({ ...migrateBlobsOptions, deleteOld: v })
+            }
+          />
+        </div>
+
+        <div className="setting-group">
+          <Setting
+            headingID="actions.migrate_scene_screenshots"
+            subHeadingID="config.tasks.migrate_scene_screenshots.description"
+          >
+            <Button
+              id="migrateSceneScreenshots"
+              variant="danger"
+              onClick={() => onMigrateSceneScreenshots()}
+            >
+              <FormattedMessage id="actions.migrate_scene_screenshots" />
+            </Button>
+          </Setting>
+
+          <BooleanSetting
+            id="migrate-scene-screenshots-overwrite-existing"
+            checked={migrateSceneScreenshotsOptions.overwriteExisting ?? false}
+            headingID="config.tasks.migrate_scene_screenshots.overwrite_existing"
+            onChange={(v) =>
+              setMigrateSceneScreenshotsOptions({
+                ...migrateSceneScreenshotsOptions,
+                overwriteExisting: v,
+              })
+            }
+          />
+
+          <BooleanSetting
+            id="migrate-scene-screenshots-delete-files"
+            checked={migrateSceneScreenshotsOptions.deleteFiles ?? false}
+            headingID="config.tasks.migrate_scene_screenshots.delete_files"
+            onChange={(v) =>
+              setMigrateSceneScreenshotsOptions({
+                ...migrateSceneScreenshotsOptions,
+                deleteFiles: v,
+              })
+            }
+          />
+        </div>
       </SettingSection>
     </Form.Group>
   );

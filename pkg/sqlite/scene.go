@@ -31,6 +31,8 @@ const (
 	scenesTagsTable       = "scenes_tags"
 	scenesGalleriesTable  = "scenes_galleries"
 	moviesScenesTable     = "movies_scenes"
+
+	sceneCoverBlobColumn = "cover_blob"
 )
 
 var findExactDuplicateQuery = `
@@ -72,6 +74,9 @@ type sceneRow struct {
 	ResumeTime   float64                    `db:"resume_time"`
 	PlayDuration float64                    `db:"play_duration"`
 	PlayCount    int                        `db:"play_count"`
+
+	// not used in resolutions or updates
+	CoverBlob zero.String `db:"cover_blob"`
 }
 
 func (r *sceneRow) fromScene(o models.Scene) {
@@ -172,6 +177,7 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 
 type SceneStore struct {
 	repository
+	blobJoinQueryBuilder
 
 	tableMgr *table
 	oCounterManager
@@ -179,11 +185,15 @@ type SceneStore struct {
 	fileStore *FileStore
 }
 
-func NewSceneStore(fileStore *FileStore) *SceneStore {
+func NewSceneStore(fileStore *FileStore, blobStore *BlobStore) *SceneStore {
 	return &SceneStore{
 		repository: repository{
 			tableName: sceneTable,
 			idColumn:  idColumn,
+		},
+		blobJoinQueryBuilder: blobJoinQueryBuilder{
+			blobStore: blobStore,
+			joinTable: sceneTable,
 		},
 
 		tableMgr:        sceneTableMgr,
@@ -353,6 +363,11 @@ func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) e
 }
 
 func (qb *SceneStore) Destroy(ctx context.Context, id int) error {
+	// must handle image checksums manually
+	if err := qb.destroyCover(ctx, id); err != nil {
+		return err
+	}
+
 	// scene markers should be handled prior to calling destroy
 	// galleries should be handled prior to calling destroy
 
@@ -364,18 +379,24 @@ func (qb *SceneStore) Find(ctx context.Context, id int) (*models.Scene, error) {
 }
 
 func (qb *SceneStore) FindMany(ctx context.Context, ids []int) ([]*models.Scene, error) {
-	table := qb.table()
-	q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(ids))
-	unsorted, err := qb.getMany(ctx, q)
-	if err != nil {
-		return nil, err
-	}
-
 	scenes := make([]*models.Scene, len(ids))
 
-	for _, s := range unsorted {
-		i := intslice.IntIndex(ids, s.ID)
-		scenes[i] = s
+	table := qb.table()
+	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
+		q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(batch))
+		unsorted, err := qb.getMany(ctx, q)
+		if err != nil {
+			return err
+		}
+
+		for _, s := range unsorted {
+			i := intslice.IntIndex(ids, s.ID)
+			scenes[i] = s
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
 	for i := range scenes {
@@ -861,16 +882,15 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if sceneFilter.Phash != nil {
-			qb.addSceneFilesTable(f)
-			f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
-
-			value, _ := utils.StringToPhash(sceneFilter.Phash.Value)
-			intCriterionHandler(&models.IntCriterionInput{
-				Value:    int(value),
+			// backwards compatibility
+			scenePhashDistanceCriterionHandler(qb, &models.PhashDistanceCriterionInput{
+				Value:    sceneFilter.Phash.Value,
 				Modifier: sceneFilter.Phash.Modifier,
-			}, "fingerprints_phash.fingerprint", nil)(ctx, f)
+			})(ctx, f)
 		}
 	}))
+
+	query.handleCriterion(ctx, scenePhashDistanceCriterionHandler(qb, sceneFilter.PhashDistance))
 
 	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.Rating100, "scenes.rating", nil))
 	// legacy rating handler
@@ -1181,6 +1201,8 @@ func sceneIsMissingCriterionHandler(qb *SceneStore, isMissing *string) criterion
 				qb.addSceneFilesTable(f)
 				f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
 				f.addWhere("fingerprints_phash.fingerprint IS NULL")
+			case "cover":
+				f.addWhere("scenes.cover_blob IS NULL")
 			default:
 				f.addWhere("(scenes." + *isMissing + " IS NULL OR TRIM(scenes." + *isMissing + ") = '')")
 			}
@@ -1359,6 +1381,45 @@ INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
 	}
 }
 
+func scenePhashDistanceCriterionHandler(qb *SceneStore, phashDistance *models.PhashDistanceCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if phashDistance != nil {
+			qb.addSceneFilesTable(f)
+			f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
+
+			value, _ := utils.StringToPhash(phashDistance.Value)
+			distance := 0
+			if phashDistance.Distance != nil {
+				distance = *phashDistance.Distance
+			}
+
+			if distance == 0 {
+				// use the default handler
+				intCriterionHandler(&models.IntCriterionInput{
+					Value:    int(value),
+					Modifier: phashDistance.Modifier,
+				}, "fingerprints_phash.fingerprint", nil)(ctx, f)
+			}
+
+			switch {
+			case phashDistance.Modifier == models.CriterionModifierEquals && distance > 0:
+				// needed to avoid a type mismatch
+				f.addWhere("typeof(fingerprints_phash.fingerprint) = 'integer'")
+				f.addWhere("phash_distance(fingerprints_phash.fingerprint, ?) < ?", value, distance)
+			case phashDistance.Modifier == models.CriterionModifierNotEquals && distance > 0:
+				// needed to avoid a type mismatch
+				f.addWhere("typeof(fingerprints_phash.fingerprint) = 'integer'")
+				f.addWhere("phash_distance(fingerprints_phash.fingerprint, ?) > ?", value, distance)
+			default:
+				intCriterionHandler(&models.IntCriterionInput{
+					Value:    int(value),
+					Modifier: phashDistance.Modifier,
+				}, "fingerprints_phash.fingerprint", nil)(ctx, f)
+			}
+		}
+	}
+}
+
 func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindFilterType) {
 	if findFilter == nil || findFilter.Sort == nil || *findFilter.Sort == "" {
 		return
@@ -1412,7 +1473,7 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		// special handling for path
 		addFileTable()
 		addFolderTable()
-		query.sortAndPagination += fmt.Sprintf(" ORDER BY folders.path %s, files.basename %[1]s", direction)
+		query.sortAndPagination += fmt.Sprintf(" ORDER BY COALESCE(folders.path, '') || COALESCE(files.basename, '') COLLATE NATURAL_CI %s", direction)
 	case "perceptual_similarity":
 		// special handling for phash
 		addFileTable()
@@ -1449,24 +1510,16 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	case "title":
 		addFileTable()
 		addFolderTable()
-		query.sortAndPagination += " ORDER BY COALESCE(scenes.title, files.basename) COLLATE NATURAL_CS " + direction + ", folders.path " + direction
+		query.sortAndPagination += " ORDER BY COALESCE(scenes.title, files.basename) COLLATE NATURAL_CI " + direction + ", folders.path COLLATE NATURAL_CI " + direction
 	case "play_count":
 		// handle here since getSort has special handling for _count suffix
 		query.sortAndPagination += " ORDER BY scenes.play_count " + direction
 	default:
 		query.sortAndPagination += getSort(sort, direction, "scenes")
 	}
-}
 
-func (qb *SceneStore) imageRepository() *imageRepository {
-	return &imageRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: "scenes_cover",
-			idColumn:  sceneIDColumn,
-		},
-		imageColumn: "cover",
-	}
+	// Whatever the sorting, always use title/id as a final sort
+	query.sortAndPagination += ", COALESCE(scenes.title, scenes.id) COLLATE NATURAL_CI ASC"
 }
 
 func (qb *SceneStore) getPlayCount(ctx context.Context, id int) (int, error) {
@@ -1526,15 +1579,19 @@ func (qb *SceneStore) IncrementWatchCount(ctx context.Context, id int) (int, err
 }
 
 func (qb *SceneStore) GetCover(ctx context.Context, sceneID int) ([]byte, error) {
-	return qb.imageRepository().get(ctx, sceneID)
+	return qb.GetImage(ctx, sceneID, sceneCoverBlobColumn)
+}
+
+func (qb *SceneStore) HasCover(ctx context.Context, sceneID int) (bool, error) {
+	return qb.HasImage(ctx, sceneID, sceneCoverBlobColumn)
 }
 
 func (qb *SceneStore) UpdateCover(ctx context.Context, sceneID int, image []byte) error {
-	return qb.imageRepository().replace(ctx, sceneID, image)
+	return qb.UpdateImage(ctx, sceneID, sceneCoverBlobColumn, image)
 }
 
-func (qb *SceneStore) DestroyCover(ctx context.Context, sceneID int) error {
-	return qb.imageRepository().destroy(ctx, []int{sceneID})
+func (qb *SceneStore) destroyCover(ctx context.Context, sceneID int) error {
+	return qb.DestroyImage(ctx, sceneID, sceneCoverBlobColumn)
 }
 
 func (qb *SceneStore) AssignFiles(ctx context.Context, sceneID int, fileIDs []file.ID) error {

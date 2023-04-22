@@ -165,7 +165,9 @@ input SceneFilterType {
   """Filter by file checksum"""
   checksum: StringCriterionInput
   """Filter by file phash"""
-  phash: StringCriterionInput
+  phash: StringCriterionInput @deprecated(reason: "Use phash_distance instead")
+  """Filter by file phash distance"""
+  phash_distance: PhashDistanceCriterionInput
   """Filter by path"""
   path: StringCriterionInput
   """Filter by file count"""
@@ -324,6 +326,8 @@ input GalleryFilterType {
   organized: Boolean
   """Filter by average image resolution"""
   average_resolution: ResolutionCriterionInput
+  """Filter to only include galleries that have chapters. `true` or `false`"""
+  has_chapters: String
   """Filter to only include galleries with this studio"""
   studios: HierarchicalMultiCriterionInput
   """Filter to only include galleries with these tags"""
@@ -523,6 +527,12 @@ input TimestampCriterionInput {
   value: String!
   value2: String
   modifier: CriterionModifier!
+}
+
+input PhashDistanceCriterionInput {
+  value: String!
+  modifier: CriterionModifier!
+  distance: Int
 }
 
 enum FilterMode {

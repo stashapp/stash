@@ -111,8 +111,17 @@ func (r *tagResolver) PerformerCount(ctx context.Context, obj *models.Tag) (ret 
 }
 
 func (r *tagResolver) ImagePath(ctx context.Context, obj *models.Tag) (*string, error) {
+	var hasImage bool
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		var err error
+		hasImage, err = r.repository.Performer.HasImage(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-	imagePath := urlbuilders.NewTagURLBuilder(baseURL, obj).GetTagImageURL()
+	imagePath := urlbuilders.NewTagURLBuilder(baseURL, obj).GetTagImageURL(hasImage)
 	return &imagePath, nil
 }
 

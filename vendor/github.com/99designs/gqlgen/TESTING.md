@@ -36,4 +36,5 @@ npm install
 
 will write the schema to `integration/schema-fetched.graphql`, compare that with `schema-expected.graphql`
 
-CI will run this and fail the build if the two files don't match.
+CI will run this and fail the build if the two files dont match.
+

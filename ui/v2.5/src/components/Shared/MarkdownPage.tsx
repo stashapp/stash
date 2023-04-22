@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import ReactMarkdown from "react-markdown";
+import { Remark } from "react-remark";
 import remarkGfm from "remark-gfm";
 
 interface IPageProps {
@@ -19,8 +19,8 @@ export const MarkdownPage: React.FC<IPageProps> = ({ page }) => {
   }, [page, markdown]);
 
   return (
-    <ReactMarkdown className="markdown" remarkPlugins={[remarkGfm]}>
-      {markdown}
-    </ReactMarkdown>
+    <div className="markdown">
+      <Remark remarkPlugins={[remarkGfm]}>{markdown}</Remark>
+    </div>
   );
 };

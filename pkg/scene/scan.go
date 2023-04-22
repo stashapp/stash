@@ -35,7 +35,6 @@ type ScanGenerator interface {
 type ScanHandler struct {
 	CreatorUpdater CreatorUpdater
 
-	CoverGenerator CoverGenerator
 	ScanGenerator  ScanGenerator
 	CaptionUpdater video.CaptionUpdater
 	PluginCache    *plugin.Cache
@@ -47,9 +46,6 @@ type ScanHandler struct {
 func (h *ScanHandler) validate() error {
 	if h.CreatorUpdater == nil {
 		return errors.New("CreatorUpdater is required")
-	}
-	if h.CoverGenerator == nil {
-		return errors.New("CoverGenerator is required")
 	}
 	if h.ScanGenerator == nil {
 		return errors.New("ScanGenerator is required")
@@ -132,20 +128,13 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File
 	}
 
 	// do this after the commit so that cover generation doesn't hold up the transaction
-	txn.AddPostCommitHook(ctx, func(ctx context.Context) error {
+	txn.AddPostCommitHook(ctx, func(ctx context.Context) {
 		for _, s := range existing {
-			if err := h.CoverGenerator.GenerateCover(ctx, s, videoFile); err != nil {
-				// just log if cover generation fails. We can try again on rescan
-				logger.Errorf("Error generating cover for %s: %v", videoFile.Path, err)
-			}
-
 			if err := h.ScanGenerator.Generate(ctx, s, videoFile); err != nil {
 				// just log if cover generation fails. We can try again on rescan
 				logger.Errorf("Error generating content for %s: %v", videoFile.Path, err)
 			}
 		}
-
-		return nil
 	})
 
 	return nil

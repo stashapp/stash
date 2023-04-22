@@ -1,6 +1,7 @@
 scalar Upload
 
 input GenerateMetadataInput {
+  covers: Boolean
   sprites: Boolean
   previews: Boolean
   imagePreviews: Boolean
@@ -37,6 +38,7 @@ input GeneratePreviewOptionsInput {
 }
 
 type GenerateMetadataOptions {
+  covers: Boolean
   sprites: Boolean
   previews: Boolean
   imagePreviews: Boolean
@@ -84,6 +86,8 @@ input ScanMetadataInput {
 
   """Strip file extension from title"""
   stripFileExtension: Boolean @deprecated(reason: "Not implemented")
+  """Generate covers during scan"""
+  scanGenerateCovers: Boolean
   """Generate previews during scan"""
   scanGeneratePreviews: Boolean
   """Generate image previews during scan"""
@@ -101,9 +105,11 @@ input ScanMetadataInput {
 
 type ScanMetadataOptions {
   """Set name, date, details from metadata (if present)"""
-  useFileMetadata: Boolean!
+  useFileMetadata: Boolean! @deprecated(reason: "Not implemented")
   """Strip file extension from title"""
-  stripFileExtension: Boolean!
+  stripFileExtension: Boolean! @deprecated(reason: "Not implemented")
+  """Generate covers during scan"""
+  scanGenerateCovers: Boolean!
   """Generate previews during scan"""
   scanGeneratePreviews: Boolean!
   """Generate image previews during scan"""
