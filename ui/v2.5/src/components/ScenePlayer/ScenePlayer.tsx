@@ -480,29 +480,30 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     const { duration } = file;
     const sourceSelector = player.sourceSelector();
     sourceSelector.setSources(
-      scene.sceneStreams.filter((stream) => {
-        const src = new URL(stream.url);
-        const isFileTranscode = 
-          src.pathname.endsWith("/stream.mp4") || 
-          src.pathname.endsWith("/stream.webm");
-        const isSafari = UAParser().browser.name?.includes("Safari");
+      scene.sceneStreams
+        .filter((stream) => {
+          const src = new URL(stream.url);
+          const isFileTranscode =
+            src.pathname.endsWith("/stream.mp4") ||
+            src.pathname.endsWith("/stream.webm");
+          const isSafari = UAParser().browser.name?.includes("Safari");
 
-        return !(isFileTranscode && isSafari);
-      }).map((stream) => {
-        const src = new URL(stream.url);
-        const isDirect =
-          src.pathname.endsWith("/stream") ||
-          src.pathname.endsWith("/stream.mpd") ||
-          src.pathname.endsWith("/stream.m3u8");
+          return !(isFileTranscode && isSafari);
+        })
+        .map((stream) => {
+          const src = new URL(stream.url);
+          const isDirect =
+            src.pathname.endsWith("/stream") ||
+            src.pathname.endsWith("/stream.m3u8");
 
-        return {
-          src: stream.url,
-          type: stream.mime_type ?? undefined,
-          label: stream.label ?? undefined,
-          offset: !isDirect,
-          duration,
-        };
-      })
+          return {
+            src: stream.url,
+            type: stream.mime_type ?? undefined,
+            label: stream.label ?? undefined,
+            offset: !isDirect,
+            duration,
+          };
+        })
     );
 
     function getDefaultLanguageCode() {
