@@ -20,7 +20,7 @@ func (r *performerResolver) Checksum(ctx context.Context, obj *models.Performer)
 
 func (r *performerResolver) Aliases(ctx context.Context, obj *models.Performer) (*string, error) {
 	if !obj.Aliases.Loaded() {
-		if err := r.withTxn(ctx, func(ctx context.Context) error {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 			return obj.LoadAliases(ctx, r.repository.Performer)
 		}); err != nil {
 			return nil, err
@@ -33,7 +33,7 @@ func (r *performerResolver) Aliases(ctx context.Context, obj *models.Performer) 
 
 func (r *performerResolver) AliasList(ctx context.Context, obj *models.Performer) ([]string, error) {
 	if !obj.Aliases.Loaded() {
-		if err := r.withTxn(ctx, func(ctx context.Context) error {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 			return obj.LoadAliases(ctx, r.repository.Performer)
 		}); err != nil {
 			return nil, err
@@ -64,8 +64,17 @@ func (r *performerResolver) Birthdate(ctx context.Context, obj *models.Performer
 }
 
 func (r *performerResolver) ImagePath(ctx context.Context, obj *models.Performer) (*string, error) {
+	var hasImage bool
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		var err error
+		hasImage, err = r.repository.Performer.HasImage(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-	imagePath := urlbuilders.NewPerformerURLBuilder(baseURL, obj).GetPerformerImageURL()
+	imagePath := urlbuilders.NewPerformerURLBuilder(baseURL, obj).GetPerformerImageURL(hasImage)
 	return &imagePath, nil
 }
 
@@ -116,6 +125,24 @@ func (r *performerResolver) GalleryCount(ctx context.Context, obj *models.Perfor
 		return nil, err
 	}
 
+	return &res, nil
+}
+
+func (r *performerResolver) OCounter(ctx context.Context, obj *models.Performer) (ret *int, err error) {
+	var res_scene int
+	var res_image int
+	var res int
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		res_scene, err = r.repository.Scene.OCountByPerformerID(ctx, obj.ID)
+		if err != nil {
+			return err
+		}
+		res_image, err = r.repository.Image.OCountByPerformerID(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+	res = res_scene + res_image
 	return &res, nil
 }
 

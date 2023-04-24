@@ -1,16 +1,13 @@
 package file
 
 import (
+	"bytes"
 	"context"
-	"errors"
 	"io"
 	"io/fs"
 	"net/http"
 	"strconv"
-	"syscall"
 	"time"
-
-	"github.com/stashapp/stash/pkg/logger"
 )
 
 // ID represents an ID of a file.
@@ -119,8 +116,6 @@ func (f *BaseFile) Info(fs FS) (fs.FileInfo, error) {
 }
 
 func (f *BaseFile) Serve(fs FS, w http.ResponseWriter, r *http.Request) error {
-	w.Header().Add("Cache-Control", "max-age=604800000") // 1 Week
-
 	reader, err := f.Open(fs)
 	if err != nil {
 		return err
@@ -128,23 +123,22 @@ func (f *BaseFile) Serve(fs FS, w http.ResponseWriter, r *http.Request) error {
 
 	defer reader.Close()
 
-	rsc, ok := reader.(io.ReadSeeker)
+	content, ok := reader.(io.ReadSeeker)
 	if !ok {
-		// fallback to direct copy
 		data, err := io.ReadAll(reader)
 		if err != nil {
 			return err
 		}
-
-		k, err := w.Write(data)
-		if err != nil && !errors.Is(err, syscall.EPIPE) {
-			logger.Warnf("error serving file (wrote %v bytes out of %v): %v", k, len(data), err)
-		}
-
-		return nil
+		content = bytes.NewReader(data)
 	}
 
-	http.ServeContent(w, r, f.Basename, f.ModTime, rsc)
+	if r.URL.Query().Has("t") {
+		w.Header().Set("Cache-Control", "private, max-age=31536000, immutable")
+	} else {
+		w.Header().Set("Cache-Control", "no-cache")
+	}
+	http.ServeContent(w, r, f.Basename, f.ModTime, content)
+
 	return nil
 }
 

@@ -32,7 +32,12 @@ import { PerformerAppearsWithPanel } from "./performerAppearsWithPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
 import { PerformerSubmitButton } from "./PerformerSubmitButton";
 import GenderIcon from "../GenderIcon";
-import { faHeart, faLink } from "@fortawesome/free-solid-svg-icons";
+import {
+  faHeart,
+  faLink,
+  faChevronRight,
+  faChevronLeft,
+} from "@fortawesome/free-solid-svg-icons";
 import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { IUIConfig } from "src/core/config";
 import { useRatingKeybinds } from "src/hooks/keybinds";
@@ -61,13 +66,18 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const [image, setImage] = useState<string | null>();
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
-  // if undefined then get the existing image
-  // if null then get the default (no) image
-  // otherwise get the set image
-  const activeImage =
-    image === undefined
-      ? performer.image_path ?? ""
-      : image ?? `${performer.image_path}&default=true`;
+  const activeImage = useMemo(() => {
+    const performerImage = performer.image_path;
+    if (image === null && performerImage) {
+      const performerImageURL = new URL(performerImage);
+      performerImageURL.searchParams.set("default", "true");
+      return performerImageURL.toString();
+    } else if (image) {
+      return image;
+    }
+    return performerImage;
+  }, [image, performer.image_path]);
+
   const lightboxImages = useMemo(
     () => [{ paths: { thumbnail: activeImage, image: activeImage } }],
     [activeImage]
@@ -143,6 +153,15 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     history.push("/performers");
   }
 
+  function renderImage() {
+    if (activeImage) {
+      return (
+        <Button variant="link" onClick={() => showLightbox()}>
+          <img className="performer" src={activeImage} alt={performer.name} />
+        </Button>
+      );
+    }
+  }
   const renderTabs = () => (
     <React.Fragment>
       <Col>
@@ -403,8 +422,8 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       />
     );
 
-  function getCollapseButtonText() {
-    return collapsed ? ">" : "<";
+  function getCollapseButtonIcon() {
+    return collapsed ? faChevronRight : faChevronLeft;
   }
 
   return (
@@ -421,18 +440,12 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         {encodingImage ? (
           <LoadingIndicator message="Encoding image..." />
         ) : (
-          <Button variant="link" onClick={() => showLightbox()}>
-            <img
-              className="performer"
-              src={activeImage}
-              alt={intl.formatMessage({ id: "performer" })}
-            />
-          </Button>
+          renderImage()
         )}
       </div>
       <div className="details-divider d-none d-xl-block">
         <Button onClick={() => setCollapsed(!collapsed)}>
-          {getCollapseButtonText()}
+          <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
         </Button>
       </div>
       <div className={`content-container ${collapsed ? "expanded" : ""}`}>

@@ -631,6 +631,7 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 	query.handleCriterion(ctx, performerSceneCountCriterionHandler(qb, filter.SceneCount))
 	query.handleCriterion(ctx, performerImageCountCriterionHandler(qb, filter.ImageCount))
 	query.handleCriterion(ctx, performerGalleryCountCriterionHandler(qb, filter.GalleryCount))
+	query.handleCriterion(ctx, performerOCounterCriterionHandler(qb, filter.OCounter))
 	query.handleCriterion(ctx, dateCriterionHandler(filter.Birthdate, tableName+".birthdate"))
 	query.handleCriterion(ctx, dateCriterionHandler(filter.DeathDate, tableName+".death_date"))
 	query.handleCriterion(ctx, timestampCriterionHandler(filter.CreatedAt, tableName+".created_at"))
@@ -807,6 +808,22 @@ func performerGalleryCountCriterionHandler(qb *PerformerStore, count *models.Int
 	return h.handler(count)
 }
 
+func performerOCounterCriterionHandler(qb *PerformerStore, count *models.IntCriterionInput) criterionHandlerFunc {
+	h := joinedMultiSumCriterionHandlerBuilder{
+		primaryTable:  performerTable,
+		foreignTable1: sceneTable,
+		joinTable1:    performersScenesTable,
+		foreignTable2: imageTable,
+		joinTable2:    performersImagesTable,
+		primaryFK:     performerIDColumn,
+		foreignFK1:    sceneIDColumn,
+		foreignFK2:    imageIDColumn,
+		sum:           "o_counter",
+	}
+
+	return h.handler(count)
+}
+
 func performerStudiosCriterionHandler(qb *PerformerStore, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if studios != nil {
@@ -949,20 +966,26 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) st
 		direction = findFilter.GetDirection()
 	}
 
-	if sort == "tag_count" {
-		return getCountSort(performerTable, performersTagsTable, performerIDColumn, direction)
+	sortQuery := ""
+	switch sort {
+	case "tag_count":
+		sortQuery += getCountSort(performerTable, performersTagsTable, performerIDColumn, direction)
+	case "scenes_count":
+		sortQuery += getCountSort(performerTable, performersScenesTable, performerIDColumn, direction)
+	case "images_count":
+		sortQuery += getCountSort(performerTable, performersImagesTable, performerIDColumn, direction)
+	case "galleries_count":
+		sortQuery += getCountSort(performerTable, performersGalleriesTable, performerIDColumn, direction)
+	default:
+		sortQuery += getSort(sort, direction, "performers")
 	}
-	if sort == "scenes_count" {
-		return getCountSort(performerTable, performersScenesTable, performerIDColumn, direction)
-	}
-	if sort == "images_count" {
-		return getCountSort(performerTable, performersImagesTable, performerIDColumn, direction)
-	}
-	if sort == "galleries_count" {
-		return getCountSort(performerTable, performersGalleriesTable, performerIDColumn, direction)
+	if sort == "o_counter" {
+		return getMultiSumSort("o_counter", performerTable, sceneTable, performersScenesTable, imageTable, performersImagesTable, performerIDColumn, sceneIDColumn, imageIDColumn, direction)
 	}
 
-	return getSort(sort, direction, "performers")
+	// Whatever the sorting, always use name/id as a final sort
+	sortQuery += ", COALESCE(performers.name, performers.id) COLLATE NATURAL_CI ASC"
+	return sortQuery
 }
 
 func (qb *PerformerStore) tagsRepository() *joinRepository {
@@ -982,6 +1005,10 @@ func (qb *PerformerStore) GetTagIDs(ctx context.Context, id int) ([]int, error) 
 
 func (qb *PerformerStore) GetImage(ctx context.Context, performerID int) ([]byte, error) {
 	return qb.blobJoinQueryBuilder.GetImage(ctx, performerID, performerImageBlobColumn)
+}
+
+func (qb *PerformerStore) HasImage(ctx context.Context, performerID int) (bool, error) {
+	return qb.blobJoinQueryBuilder.HasImage(ctx, performerID, performerImageBlobColumn)
 }
 
 func (qb *PerformerStore) UpdateImage(ctx context.Context, performerID int, image []byte) error {

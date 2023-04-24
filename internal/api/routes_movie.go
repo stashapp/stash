@@ -58,9 +58,7 @@ func (rs movieRoutes) FrontImage(w http.ResponseWriter, r *http.Request) {
 		image, _ = utils.ProcessBase64Image(models.DefaultMovieImage)
 	}
 
-	if err := utils.ServeImage(image, w, r); err != nil {
-		logger.Warnf("error serving movie front image: %v", err)
-	}
+	utils.ServeImage(w, r, image)
 }
 
 func (rs movieRoutes) BackImage(w http.ResponseWriter, r *http.Request) {
@@ -85,9 +83,7 @@ func (rs movieRoutes) BackImage(w http.ResponseWriter, r *http.Request) {
 		image, _ = utils.ProcessBase64Image(models.DefaultMovieImage)
 	}
 
-	if err := utils.ServeImage(image, w, r); err != nil {
-		logger.Warnf("error serving movie back image: %v", err)
-	}
+	utils.ServeImage(w, r, image)
 }
 
 func (rs movieRoutes) MovieCtx(next http.Handler) http.Handler {

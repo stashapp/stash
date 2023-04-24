@@ -48,14 +48,19 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
       .test({
         name: "unique",
         test: (value, context) => {
-          if (!value) return true;
-          const aliases = new Set(value);
-          aliases.add(context.parent.name);
-          return value.length + 1 === aliases.size;
+          const aliases = [context.parent.name, ...value];
+          const dupes = aliases
+            .map((e, i, a) => {
+              if (a.indexOf(e) !== i) {
+                return String(i - 1);
+              } else {
+                return null;
+              }
+            })
+            .filter((e) => e !== null) as string[];
+          if (dupes.length === 0) return true;
+          return new yup.ValidationError(dupes.join(" "), value, "aliases");
         },
-        message: intl.formatMessage({
-          id: "validation.aliases_must_be_unique",
-        }),
       }),
     description: yup.string().ensure(),
     parent_ids: yup.array(yup.string().required()).defined(),
@@ -114,6 +119,14 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
+  const aliasErrors = Array.isArray(formik.errors.aliases)
+    ? formik.errors.aliases[0]
+    : formik.errors.aliases;
+  const aliasErrorMsg = aliasErrors
+    ? intl.formatMessage({ id: "validation.aliases_must_be_unique" })
+    : undefined;
+  const aliasErrorIdx = aliasErrors?.split(" ").map((e) => parseInt(e));
+
   const isEditing = true;
 
   // TODO: CSS class
@@ -165,11 +178,8 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
             <StringListInput
               value={formik.values.aliases}
               setValue={(value) => formik.setFieldValue("aliases", value)}
-              errors={
-                Array.isArray(formik.errors.aliases)
-                  ? formik.errors.aliases[0]
-                  : formik.errors.aliases
-              }
+              errors={aliasErrorMsg}
+              errorIdx={aliasErrorIdx}
             />
           </Col>
         </Form.Group>
