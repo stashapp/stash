@@ -26,7 +26,7 @@ export interface ICustomFilter extends ITypename {
 }
 
 // NOTE: This value cannot be more defined, because the generated enum it depends upon is UpperCase, which leads to errors on saving
-export type PinnedFilter = Map<string, Array<string>>;
+export type PinnedFilters = Record<string, Array<string>>;
 
 export type FrontPageContent = ISavedFilterRow | ICustomFilter;
 
@@ -59,7 +59,7 @@ export interface IUIConfig {
 
   lastNoteSeen?: number;
 
-  pinnedFilter?: PinnedFilter;
+  pinnedFilters?: PinnedFilters;
 }
 
 function recentlyReleased(

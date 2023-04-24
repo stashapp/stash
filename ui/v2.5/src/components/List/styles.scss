@@ -132,6 +132,11 @@ input[type="range"].zoom-slider {
     flex-direction: column;
     flex-wrap: nowrap;
     max-height: 550px;
+    overflow-y: auto;
+
+    .pinned-criterion-divider {
+      padding-bottom: 1rem;
+    }
 
     .card {
       border: 1px solid rgb(16 22 26 / 40%);
@@ -146,15 +151,25 @@ input[type="range"].zoom-slider {
       .card-header {
         cursor: pointer;
         display: flex;
-        justify-content: space-between;
+      }
+    }
+
+    .btn {
+      border: 0;
+      padding-bottom: 0;
+      padding-top: 0;
+    }
+
+    .pin-criterion-button {
+      color: $text_color;
+
+      &:hover svg {
+        transform: rotate(0);
       }
     }
 
     .remove-criterion-button {
-      border: 0;
       color: $danger;
-      padding-bottom: 0;
-      padding-top: 0;
     }
   }
 
@@ -196,20 +211,6 @@ input[type="range"].zoom-slider {
   }
 }
 
-.pinIcon {
-  position: absolute;
-  right: 15%;
-}
-
 .tilted {
   transform: rotate(45deg);
-}
-
-.divider {
-  border-bottom: 1px solid rgb(222, 226, 230);
-  border-top: 1px solid rgb(222, 226, 230);
-  margin-bottom: 5%;
-  margin-left: 5%;
-  margin-top: 5%;
-  width: 90%;
 }

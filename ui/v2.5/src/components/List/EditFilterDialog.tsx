@@ -31,19 +31,19 @@ import {
 import { useCompare, usePrevious } from "src/hooks/state";
 import { CriterionType } from "src/models/list-filter/types";
 import { useToast } from "src/hooks/Toast";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useConfigureUI } from "src/core/StashService";
+import { IUIConfig } from "src/core/config";
 
 interface ICriterionList {
   criteria: string[];
   currentCriterion?: Criterion<CriterionValue>;
   setCriterion: (c: Criterion<CriterionValue>) => void;
   criterionOptions: CriterionOption[];
+  pinnedCriterionOptions: CriterionOption[];
   selected?: CriterionOption;
   optionSelected: (o?: CriterionOption) => void;
   onRemoveCriterion: (c: string) => void;
-  onPinAction: (c: CriterionOption) => void;
-  isPin: boolean;
+  onTogglePin: (c: CriterionOption) => void;
 }
 
 const CriterionOptionList: React.FC<ICriterionList> = ({
@@ -51,11 +51,11 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
   currentCriterion,
   setCriterion,
   criterionOptions,
+  pinnedCriterionOptions,
   selected,
   optionSelected,
   onRemoveCriterion,
-  onPinAction,
-  isPin,
+  onTogglePin,
 }) => {
   const prevCriterion = usePrevious(currentCriterion);
 
@@ -69,15 +69,22 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
     criterionOptions.forEach((c) => {
       refs[c.type] = React.createRef();
     });
+    pinnedCriterionOptions.forEach((c) => {
+      refs[c.type] = React.createRef();
+    });
     return refs;
-  }, [criterionOptions]);
+  }, [criterionOptions, pinnedCriterionOptions]);
 
   function onSelect(k: string | null) {
     if (!k) {
       optionSelected(undefined);
       return;
     }
-    const option = criterionOptions.find((c) => c.type === k);
+
+    let option = criterionOptions.find((c) => c.type === k);
+    if (!option) {
+      option = pinnedCriterionOptions.find((c) => c.type === k);
+    }
 
     if (option) {
       optionSelected(option);
@@ -112,11 +119,56 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
     onRemoveCriterion(t);
   }
 
-  function pinAction(ev: React.MouseEvent, c: CriterionOption) {
+  function togglePin(ev: React.MouseEvent, c: CriterionOption) {
     // needed to prevent the nav item from being selected
     ev.stopPropagation();
     ev.preventDefault();
-    onPinAction(c);
+    onTogglePin(c);
+  }
+
+  function renderCard(c: CriterionOption, isPin: boolean) {
+    return (
+      <Card key={c.type} data-type={c.type} ref={criteriaRefs[c.type]!}>
+        <Accordion.Toggle eventKey={c.type} as={Card.Header}>
+          <span className="mr-auto">
+            <Icon
+              className="collapse-icon fa-fw"
+              icon={type === c.type ? faChevronDown : faChevronRight}
+            />
+            <FormattedMessage id={c.messageID} />
+          </span>
+          {criteria.some((cc) => c.type === cc) && (
+            <Button
+              className="remove-criterion-button"
+              variant="minimal"
+              onClick={(e) => removeClicked(e, c.type)}
+            >
+              <Icon icon={faTimes} />
+            </Button>
+          )}
+          <Button
+            className="pin-criterion-button"
+            variant="minimal"
+            onClick={(e) => togglePin(e, c)}
+          >
+            <Icon icon={faThumbtack} className={isPin ? "" : "tilted"} />
+          </Button>
+        </Accordion.Toggle>
+        <Accordion.Collapse eventKey={c.type}>
+          {(type === c.type && currentCriterion) ||
+          (prevType === c.type && prevCriterion) ? (
+            <Card.Body>
+              <CriterionEditor
+                criterion={getReleventCriterion(c.type)!}
+                setCriterion={setCriterion}
+              />
+            </Card.Body>
+          ) : (
+            <Card.Body></Card.Body>
+          )}
+        </Accordion.Collapse>
+      </Card>
+    );
   }
 
   return (
@@ -125,46 +177,13 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
       activeKey={selected?.type}
       onSelect={onSelect}
     >
-      {criterionOptions.map((c) => (
-        <Card key={c.type} data-type={c.type} ref={criteriaRefs[c.type]!}>
-          <Accordion.Toggle eventKey={c.type} as={Card.Header}>
-            <span>
-              <Icon
-                className="collapse-icon fa-fw"
-                icon={type === c.type ? faChevronDown : faChevronRight}
-              />
-              <FormattedMessage id={c.messageID} />
-              <FontAwesomeIcon
-                icon={faThumbtack}
-                className={isPin ? "pinIcon" : "pinIcon tilted"}
-                onClick={(e) => pinAction(e, c)}
-              />
-            </span>
-            {criteria.some((cc) => c.type === cc) && (
-              <Button
-                className="remove-criterion-button"
-                variant="minimal"
-                onClick={(e) => removeClicked(e, c.type)}
-              >
-                <Icon icon={faTimes} />
-              </Button>
-            )}
-          </Accordion.Toggle>
-          <Accordion.Collapse eventKey={c.type}>
-            {(type === c.type && currentCriterion) ||
-            (prevType === c.type && prevCriterion) ? (
-              <Card.Body>
-                <CriterionEditor
-                  criterion={getReleventCriterion(c.type)!}
-                  setCriterion={setCriterion}
-                />
-              </Card.Body>
-            ) : (
-              <Card.Body></Card.Body>
-            )}
-          </Accordion.Collapse>
-        </Card>
-      ))}
+      {pinnedCriterionOptions.length !== 0 && (
+        <>
+          {pinnedCriterionOptions.map((c) => renderCard(c, true))}
+          <div className="pinned-criterion-divider" />
+        </>
+      )}
+      {criterionOptions.map((c) => renderCard(c, false))}
     </Accordion>
   );
 };
@@ -186,6 +205,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   const intl = useIntl();
 
   const { configuration } = useContext(ConfigurationContext);
+
   const [currentFilter, setCurrentFilter] = useState<ListFilterModel>(
     cloneDeep(filter)
   );
@@ -236,16 +256,21 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     [criteria, configuration]
   );
 
+  const ui = (configuration?.ui ?? {}) as IUIConfig;
   const [saveUI] = useConfigureUI();
-  const [pinnedFilters, savePinnedFilters] = useState(
-    configuration?.ui?.pinnedFilter?.[currentFilter.mode.toLowerCase()] ?? []
+
+  const pinnedFilters = useMemo(
+    () => ui.pinnedFilters?.[currentFilter.mode.toLowerCase()] ?? [],
+    [currentFilter.mode, ui.pinnedFilters]
   );
-  const getPinnedElements = useCallback(() => {
-    return criterionOptions.filter((c) => pinnedFilters.includes(c.messageID));
-  }, [pinnedFilters, criterionOptions]);
-  const getUnpinnedElements = useCallback(() => {
-    return criterionOptions.filter((c) => !pinnedFilters.includes(c.messageID));
-  }, [pinnedFilters, criterionOptions]);
+  const pinnedElements = useMemo(
+    () => criterionOptions.filter((c) => pinnedFilters.includes(c.messageID)),
+    [pinnedFilters, criterionOptions]
+  );
+  const unpinnedElements = useMemo(
+    () => criterionOptions.filter((c) => !pinnedFilters.includes(c.messageID)),
+    [pinnedFilters, criterionOptions]
+  );
 
   const editingCriterionChanged = useCompare(editingCriterion);
 
@@ -263,15 +288,17 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     editingCriterionChanged,
   ]);
 
-  async function updateConfig() {
+  async function updatePinnedFilters(filters: string[]) {
+    const currentMode = currentFilter.mode.toLowerCase();
     try {
-      let collectedPinnedFilter = configuration?.ui?.pinnedFilter ?? {};
-      collectedPinnedFilter[currentFilter.mode.toLowerCase()] = pinnedFilters;
       await saveUI({
         variables: {
           input: {
             ...configuration?.ui,
-            pinnedFilter: collectedPinnedFilter,
+            pinnedFilters: {
+              ...ui.pinnedFilters,
+              [currentMode]: filters,
+            },
           },
         },
       });
@@ -280,26 +307,18 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     }
   }
 
-  async function onPinFilter(f: CriterionOption) {
-    if (pinnedFilters.indexOf(f.messageID) === -1) {
-      let updatedPinnedFilters = pinnedFilters;
-      updatedPinnedFilters.push(f.messageID);
-      savePinnedFilters(updatedPinnedFilters);
-      updateConfig();
-    } else {
-      Toast.error("Trying to pin Filter that is already pinned...");
-    }
-  }
-
-  async function onUnpinFilter(f: CriterionOption) {
-    let updatedPinnedFilters = pinnedFilters.filter(
-      (filtername: string) => filtername != f.messageID
-    );
-    if (updatedPinnedFilters === pinnedFilters) {
-      Toast.error("Trying to unpin Filter that is not pinned...");
-    } else {
-      savePinnedFilters(updatedPinnedFilters);
-      updateConfig();
+  async function onTogglePinFilter(f: CriterionOption) {
+    try {
+      const existing = pinnedFilters.find((name) => name === f.messageID);
+      if (existing) {
+        await updatePinnedFilters(
+          pinnedFilters.filter((name) => name !== f.messageID)
+        );
+      } else {
+        await updatePinnedFilters([...pinnedFilters, f.messageID]);
+      }
+    } catch (err) {
+      Toast.error(err);
     }
   }
 
@@ -376,33 +395,17 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
               "criterion-selected": !!criterion,
             })}
           >
-            <div style={{ overflowY: "auto", maxHeight: "70vh" }}>
-              {getPinnedElements().length > 0 && (
-                <CriterionOptionList
-                  criteria={criteriaList}
-                  currentCriterion={criterion}
-                  setCriterion={replaceCriterion}
-                  criterionOptions={getPinnedElements()}
-                  optionSelected={optionSelected}
-                  selected={criterion?.criterionOption}
-                  onRemoveCriterion={(c) => removeCriterionString(c)}
-                  onPinAction={(c) => onUnpinFilter(c)}
-                  isPin={true}
-                />
-              )}
-              {getPinnedElements().length > 0 && <div className="divider" />}
-              <CriterionOptionList
-                criteria={criteriaList}
-                currentCriterion={criterion}
-                setCriterion={replaceCriterion}
-                criterionOptions={getUnpinnedElements()}
-                optionSelected={optionSelected}
-                selected={criterion?.criterionOption}
-                onRemoveCriterion={(c) => removeCriterionString(c)}
-                onPinAction={(c) => onPinFilter(c)}
-                isPin={false}
-              />
-            </div>
+            <CriterionOptionList
+              criteria={criteriaList}
+              currentCriterion={criterion}
+              setCriterion={replaceCriterion}
+              criterionOptions={unpinnedElements}
+              pinnedCriterionOptions={pinnedElements}
+              optionSelected={optionSelected}
+              selected={criterion?.criterionOption}
+              onRemoveCriterion={(c) => removeCriterionString(c)}
+              onTogglePin={(c) => onTogglePinFilter(c)}
+            />
             {criteria.length > 0 && (
               <div>
                 <FilterTags
