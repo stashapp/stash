@@ -31,7 +31,12 @@ import { PerformerImagesPanel } from "./PerformerImagesPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
 import { PerformerSubmitButton } from "./PerformerSubmitButton";
 import GenderIcon from "../GenderIcon";
-import { faHeart, faLink } from "@fortawesome/free-solid-svg-icons";
+import {
+  faHeart,
+  faLink,
+  faChevronRight,
+  faChevronLeft,
+} from "@fortawesome/free-solid-svg-icons";
 import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { IUIConfig } from "src/core/config";
 import { useRatingKeybinds } from "src/hooks/keybinds";
@@ -398,8 +403,8 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       />
     );
 
-  function getCollapseButtonText() {
-    return collapsed ? ">" : "<";
+  function getCollapseButtonIcon() {
+    return collapsed ? faChevronRight : faChevronLeft;
   }
 
   return (
@@ -421,7 +426,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       </div>
       <div className="details-divider d-none d-xl-block">
         <Button onClick={() => setCollapsed(!collapsed)}>
-          {getCollapseButtonText()}
+          <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
         </Button>
       </div>
       <div className={`content-container ${collapsed ? "expanded" : ""}`}>
