@@ -30,14 +30,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useCompare, usePrevious } from "src/hooks/state";
 import { CriterionType } from "src/models/list-filter/types";
-import {
-  useFindPinnedFilters,
-  usePinnedFilterDestroy,
-  useSavePinnedFilter,
-} from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
-import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useConfigureUI } from "src/core/StashService";
 
 interface ICriterionList {
   criteria: string[];
@@ -190,8 +185,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   const Toast = useToast();
   const intl = useIntl();
 
-  const { configuration: config } = useContext(ConfigurationContext);
-
+  const { configuration } = useContext(ConfigurationContext);
   const [currentFilter, setCurrentFilter] = useState<ListFilterModel>(
     cloneDeep(filter)
   );
@@ -235,36 +229,23 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
       if (existing) {
         setCriterion(existing);
       } else {
-        const newCriterion = makeCriteria(config, option.type);
+        const newCriterion = makeCriteria(configuration, option.type);
         setCriterion(newCriterion);
       }
     },
-    [criteria, config]
+    [criteria, configuration]
   );
 
-  const { data, error, loading, refetch } = useFindPinnedFilters(
-    currentFilter.mode
+  const [saveUI] = useConfigureUI();
+  const [pinnedFilters, savePinnedFilters] = useState(
+    configuration?.ui?.pinnedFilter?.[currentFilter.mode.toLowerCase()] ?? []
   );
-  const oldError = useRef(error);
-  const [savePin] = useSavePinnedFilter();
-  const [destroyPin] = usePinnedFilterDestroy();
-  const pinnedFilters = useMemo(() => {
-    return data?.findPinnedFilters ?? [];
-  }, [data]);
   const getPinnedElements = useCallback(() => {
-    let pinnedNames = pinnedFilters.map((p) => p.name);
-    return criterionOptions.filter((c) => pinnedNames.includes(c.messageID));
+    return criterionOptions.filter((c) => pinnedFilters.includes(c.messageID));
   }, [pinnedFilters, criterionOptions]);
   const getUnpinnedElements = useCallback(() => {
-    let pinnedNames = pinnedFilters.map((p) => p.name);
-    return criterionOptions.filter((c) => !pinnedNames.includes(c.messageID));
+    return criterionOptions.filter((c) => !pinnedFilters.includes(c.messageID));
   }, [pinnedFilters, criterionOptions]);
-  const [pinnedFilterElements, savePinnedFilterElements] = useState(
-    getPinnedElements()
-  );
-  const [unpinnedFilterElements, saveUnpinnedFilterElements] = useState(
-    getUnpinnedElements()
-  );
 
   const editingCriterionChanged = useCompare(editingCriterion);
 
@@ -282,52 +263,43 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     editingCriterionChanged,
   ]);
 
-  useEffect(() => {
-    if (error && error !== oldError.current) {
-      Toast.error(error);
-    }
-
-    oldError.current = error;
-  }, [error, Toast, oldError]);
-
-  useEffect(() => {
-    savePinnedFilterElements(getPinnedElements());
-    saveUnpinnedFilterElements(getUnpinnedElements());
-  }, [data, getPinnedElements, getUnpinnedElements]);
-
-  async function onPinFilter(f: CriterionOption) {
+  async function updateConfig() {
     try {
-      await savePin({
+      let collectedPinnedFilter = configuration?.ui?.pinnedFilter ?? {};
+      collectedPinnedFilter[currentFilter.mode.toLowerCase()] = pinnedFilters;
+      await saveUI({
         variables: {
           input: {
-            mode: currentFilter.mode,
-            name: f.messageID,
+            ...configuration?.ui,
+            pinnedFilter: collectedPinnedFilter,
           },
         },
       });
-      refetch();
-    } catch (err) {
-      Toast.error(err);
+    } catch (e) {
+      Toast.error(e);
+    }
+  }
+
+  async function onPinFilter(f: CriterionOption) {
+    if (pinnedFilters.indexOf(f.messageID) === -1) {
+      let updatedPinnedFilters = pinnedFilters;
+      updatedPinnedFilters.push(f.messageID);
+      savePinnedFilters(updatedPinnedFilters);
+      updateConfig();
+    } else {
+      Toast.error("Trying to pin Filter that is already pinned...");
     }
   }
 
   async function onUnpinFilter(f: CriterionOption) {
-    let toDelete = pinnedFilters.find((p) => p.name === f.messageID);
-    if (toDelete) {
-      try {
-        await destroyPin({
-          variables: {
-            input: {
-              id: toDelete.id,
-            },
-          },
-        });
-        refetch();
-      } catch (err) {
-        Toast.error(err);
-      }
-    } else {
+    let updatedPinnedFilters = pinnedFilters.filter(
+      (filtername: string) => filtername != f.messageID
+    );
+    if (updatedPinnedFilters === pinnedFilters) {
       Toast.error("Trying to unpin Filter that is not pinned...");
+    } else {
+      savePinnedFilters(updatedPinnedFilters);
+      updateConfig();
     }
   }
 
@@ -405,17 +377,12 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
             })}
           >
             <div style={{ overflowY: "auto", maxHeight: "70vh" }}>
-              {loading && (
-                <div className="loading">
-                  <LoadingIndicator message="" />
-                </div>
-              )}
-              {!loading && pinnedFilterElements.length > 0 && (
+              {getPinnedElements().length > 0 && (
                 <CriterionOptionList
                   criteria={criteriaList}
                   currentCriterion={criterion}
                   setCriterion={replaceCriterion}
-                  criterionOptions={pinnedFilterElements}
+                  criterionOptions={getPinnedElements()}
                   optionSelected={optionSelected}
                   selected={criterion?.criterionOption}
                   onRemoveCriterion={(c) => removeCriterionString(c)}
@@ -423,14 +390,12 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
                   isPin={true}
                 />
               )}
-              {!loading && pinnedFilterElements.length > 0 && (
-                <div className="divider" />
-              )}
+              {getPinnedElements().length > 0 && <div className="divider" />}
               <CriterionOptionList
                 criteria={criteriaList}
                 currentCriterion={criterion}
                 setCriterion={replaceCriterion}
-                criterionOptions={unpinnedFilterElements}
+                criterionOptions={getUnpinnedElements()}
                 optionSelected={optionSelected}
                 selected={criterion?.criterionOption}
                 onRemoveCriterion={(c) => removeCriterionString(c)}

@@ -58,20 +58,6 @@ export const useFindSavedFilters = (mode?: GQL.FilterMode) =>
     },
   });
 
-export const useFindPinnedFilter = (id: string) =>
-  GQL.useFindPinnedFilterQuery({
-    variables: {
-      id,
-    },
-  });
-
-export const useFindPinnedFilters = (mode?: GQL.FilterMode) =>
-  GQL.useFindPinnedFiltersQuery({
-    variables: {
-      mode,
-    },
-  });
-
 export const useFindDefaultFilter = (mode: GQL.FilterMode) =>
   GQL.useFindDefaultFilterQuery({
     variables: {
@@ -941,20 +927,6 @@ export const useSetDefaultFilter = () =>
 export const useSavedFilterDestroy = () =>
   GQL.useDestroySavedFilterMutation({
     update: deleteCache(savedFilterMutationImpactedQueries),
-  });
-
-export const pinnedFilterMutationImpactedQueries = [
-  GQL.FindPinnedFiltersDocument,
-];
-
-export const useSavePinnedFilter = () =>
-  GQL.useSavePinnedFilterMutation({
-    update: deleteCache(pinnedFilterMutationImpactedQueries),
-  });
-
-export const usePinnedFilterDestroy = () =>
-  GQL.useDestroyPinnedFilterMutation({
-    update: deleteCache(pinnedFilterMutationImpactedQueries),
   });
 
 export const useTagsMerge = () =>

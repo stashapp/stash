@@ -56,6 +56,5 @@ func NewTxnRepository() models.Repository {
 		Studio:         &StudioReaderWriter{},
 		Tag:            &TagReaderWriter{},
 		SavedFilter:    &SavedFilterReaderWriter{},
-		PinnedFilter:   &PinnedFilterReaderWriter{},
 	}
 }

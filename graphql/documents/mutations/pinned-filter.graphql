@@ -1,9 +1,0 @@
-mutation SavePinnedFilter($input: SavePinnedFilterInput!) {
-  savePinnedFilter(input: $input) {
-    ...PinnedFilterData
-  }
-} 
-
-mutation DestroyPinnedFilter($input: DestroyPinnedFilterInput!) {
-  destroyPinnedFilter(input: $input)
-}

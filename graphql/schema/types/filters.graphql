@@ -572,18 +572,3 @@ input SetDefaultFilterInput {
   """JSON-encoded filter string - null to clear"""
   filter: String
 }
-
-type PinnedFilter {
-  id: ID!
-  mode: FilterMode!
-  name: String!
-}
-
-input SavePinnedFilterInput {
-  mode: FilterMode!
-  name: String!
-}
-
-input DestroyPinnedFilterInput {
-  id: ID!
-}

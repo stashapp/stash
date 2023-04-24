@@ -4,8 +4,6 @@ type Query {
   findSavedFilter(id: ID!): SavedFilter
   findSavedFilters(mode: FilterMode): [SavedFilter!]!
   findDefaultFilter(mode: FilterMode!): SavedFilter
-  findPinnedFilter(id: ID!): PinnedFilter
-  findPinnedFilters(mode: FilterMode): [PinnedFilter!]!
 
   """Find a scene by ID or Checksum"""
   findScene(id: ID, checksum: String): Scene
@@ -261,8 +259,6 @@ type Mutation {
   saveFilter(input: SaveFilterInput!): SavedFilter!
   destroySavedFilter(input: DestroyFilterInput!): Boolean!
   setDefaultFilter(input: SetDefaultFilterInput!): Boolean!
-  savePinnedFilter(input: SavePinnedFilterInput!): PinnedFilter!
-  destroyPinnedFilter(input: DestroyPinnedFilterInput!): Boolean!
 
   """Change general configuration options"""
   configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!
