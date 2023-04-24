@@ -21,12 +21,14 @@ import { faHeart, faTag } from "@fortawesome/free-solid-svg-icons";
 import { RatingBanner } from "../Shared/RatingBanner";
 import cx from "classnames";
 import { usePerformerUpdate } from "src/core/StashService";
+import { ILabeledId } from "src/models/list-filter/types";
 
 export interface IPerformerCardExtraCriteria {
-  scenes: Criterion<CriterionValue>[];
-  images: Criterion<CriterionValue>[];
-  galleries: Criterion<CriterionValue>[];
-  movies: Criterion<CriterionValue>[];
+  scenes?: Criterion<CriterionValue>[];
+  images?: Criterion<CriterionValue>[];
+  galleries?: Criterion<CriterionValue>[];
+  movies?: Criterion<CriterionValue>[];
+  performer?: ILabeledId;
 }
 
 interface IPerformerCardProps {
@@ -104,7 +106,11 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
         className="scene-count"
         type="scene"
         count={performer.scene_count}
-        url={NavUtils.makePerformerScenesUrl(performer, extraCriteria?.scenes)}
+        url={NavUtils.makePerformerScenesUrl(
+          performer,
+          extraCriteria?.performer,
+          extraCriteria?.scenes
+        )}
       />
     );
   }
@@ -117,7 +123,11 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
         className="image-count"
         type="image"
         count={performer.image_count}
-        url={NavUtils.makePerformerImagesUrl(performer, extraCriteria?.images)}
+        url={NavUtils.makePerformerImagesUrl(
+          performer,
+          extraCriteria?.performer,
+          extraCriteria?.images
+        )}
       />
     );
   }
@@ -132,6 +142,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
         count={performer.gallery_count}
         url={NavUtils.makePerformerGalleriesUrl(
           performer,
+          extraCriteria?.performer,
           extraCriteria?.galleries
         )}
       />
@@ -178,7 +189,11 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
         className="movie-count"
         type="movie"
         count={performer.movie_count}
-        url={NavUtils.makePerformerMoviesUrl(performer, extraCriteria?.movies)}
+        url={NavUtils.makePerformerMoviesUrl(
+          performer,
+          extraCriteria?.performer,
+          extraCriteria?.movies
+        )}
       />
     );
   }

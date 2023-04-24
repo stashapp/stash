@@ -625,6 +625,8 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 
 	query.handleCriterion(ctx, performerStudiosCriterionHandler(qb, filter.Studios))
 
+	query.handleCriterion(ctx, performerAppearsWithCriterionHandler(qb, filter.Performers))
+
 	query.handleCriterion(ctx, performerTagCountCriterionHandler(qb, filter.TagCount))
 	query.handleCriterion(ctx, performerSceneCountCriterionHandler(qb, filter.SceneCount))
 	query.handleCriterion(ctx, performerImageCountCriterionHandler(qb, filter.ImageCount))
@@ -895,6 +897,60 @@ func performerStudiosCriterionHandler(qb *PerformerStore, studios *models.Hierar
 
 			f.addLeftJoin(derivedPerformerStudioTable, "", fmt.Sprintf("performers.id = %s.performer_id", derivedPerformerStudioTable))
 			f.addWhere(fmt.Sprintf("%s.performer_id IS %s NULL", derivedPerformerStudioTable, clauseCondition))
+		}
+	}
+}
+
+func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models.MultiCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if performers != nil {
+			formatMaps := []utils.StrFormatMap{
+				{
+					"primaryTable": performersScenesTable,
+					"joinTable":    performersScenesTable,
+					"primaryFK":    sceneIDColumn,
+				},
+				{
+					"primaryTable": performersImagesTable,
+					"joinTable":    performersImagesTable,
+					"primaryFK":    imageIDColumn,
+				},
+				{
+					"primaryTable": performersGalleriesTable,
+					"joinTable":    performersGalleriesTable,
+					"primaryFK":    galleryIDColumn,
+				},
+			}
+
+			if len(performers.Value) == '0' {
+				return
+			}
+
+			const derivedPerformerPerformersTable = "performer_performers"
+
+			valuesClause := strings.Join(performers.Value, "),(")
+
+			f.addWith("performer(id) AS (VALUES(" + valuesClause + "))")
+
+			templStr := `SELECT {primaryTable}2.performer_id FROM {primaryTable}
+			INNER JOIN {primaryTable} AS {primaryTable}2 ON {primaryTable}.{primaryFK} = {primaryTable}2.{primaryFK}
+			INNER JOIN performer ON {primaryTable}.performer_id = performer.id
+			WHERE {primaryTable}2.performer_id != performer.id`
+
+			if performers.Modifier == models.CriterionModifierIncludesAll && len(performers.Value) > 1 {
+				templStr += `
+							GROUP BY {primaryTable}2.performer_id
+							HAVING(count(distinct {primaryTable}.performer_id) IS ` + strconv.Itoa(len(performers.Value)) + `)`
+			}
+
+			var unions []string
+			for _, c := range formatMaps {
+				unions = append(unions, utils.StrFormat(templStr, c))
+			}
+
+			f.addWith(fmt.Sprintf("%s AS (%s)", derivedPerformerPerformersTable, strings.Join(unions, " UNION ")))
+
+			f.addInnerJoin(derivedPerformerPerformersTable, "", fmt.Sprintf("performers.id = %s.performer_id", derivedPerformerPerformersTable))
 		}
 	}
 }

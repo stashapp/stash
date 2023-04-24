@@ -118,6 +118,8 @@ input PerformerFilterType {
   death_year: IntCriterionInput
   """Filter by studios where performer appears in scene/image/gallery"""
   studios: HierarchicalMultiCriterionInput
+	"""Filter by performers where performer appears with another performer in scene/image/gallery"""
+	performers: MultiCriterionInput
   """Filter by autotag ignore value"""
   ignore_auto_tag: Boolean
   """Filter by birthdate"""
