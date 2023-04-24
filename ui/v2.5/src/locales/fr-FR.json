@@ -306,8 +306,8 @@
         },
         "transcode": {
           "input_args": {
-            "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ d'entrée lors du transcodage vidéo en temps réel.",
-            "heading": "Arguments d'entrée pour le transcodage FFmpeg en temps réel"
+            "desc": "Avancé : Arguments additionnels à transmettre à FFmpeg avant le champ d'entrée lors de la génération de la vidéo.",
+            "heading": "Arguments d'entrée de FFmpeg transcode"
           },
           "output_args": {
             "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ de sortie lors de la génération de la vidéo.",
