@@ -127,6 +127,24 @@ func (r *performerResolver) GalleryCount(ctx context.Context, obj *models.Perfor
 	return &res, nil
 }
 
+func (r *performerResolver) OCounter(ctx context.Context, obj *models.Performer) (ret *int, err error) {
+	var res_scene int
+	var res_image int
+	var res int
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		res_scene, err = r.repository.Scene.OCountByPerformerID(ctx, obj.ID)
+		if err != nil {
+			return err
+		}
+		res_image, err = r.repository.Image.OCountByPerformerID(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+	res = res_scene + res_image
+	return &res, nil
+}
+
 func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer) (ret []*models.Scene, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Scene.FindByPerformerID(ctx, obj.ID)

@@ -629,6 +629,7 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 	query.handleCriterion(ctx, performerSceneCountCriterionHandler(qb, filter.SceneCount))
 	query.handleCriterion(ctx, performerImageCountCriterionHandler(qb, filter.ImageCount))
 	query.handleCriterion(ctx, performerGalleryCountCriterionHandler(qb, filter.GalleryCount))
+	query.handleCriterion(ctx, performerOCounterCriterionHandler(qb, filter.OCounter))
 	query.handleCriterion(ctx, dateCriterionHandler(filter.Birthdate, tableName+".birthdate"))
 	query.handleCriterion(ctx, dateCriterionHandler(filter.DeathDate, tableName+".death_date"))
 	query.handleCriterion(ctx, timestampCriterionHandler(filter.CreatedAt, tableName+".created_at"))
@@ -805,6 +806,22 @@ func performerGalleryCountCriterionHandler(qb *PerformerStore, count *models.Int
 	return h.handler(count)
 }
 
+func performerOCounterCriterionHandler(qb *PerformerStore, count *models.IntCriterionInput) criterionHandlerFunc {
+	h := joinedMultiSumCriterionHandlerBuilder{
+		primaryTable:  performerTable,
+		foreignTable1: sceneTable,
+		joinTable1:    performersScenesTable,
+		foreignTable2: imageTable,
+		joinTable2:    performersImagesTable,
+		primaryFK:     performerIDColumn,
+		foreignFK1:    sceneIDColumn,
+		foreignFK2:    imageIDColumn,
+		sum:           "o_counter",
+	}
+
+	return h.handler(count)
+}
+
 func performerStudiosCriterionHandler(qb *PerformerStore, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if studios != nil {
@@ -905,6 +922,9 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) st
 		sortQuery += getCountSort(performerTable, performersGalleriesTable, performerIDColumn, direction)
 	default:
 		sortQuery += getSort(sort, direction, "performers")
+	}
+	if sort == "o_counter" {
+		return getMultiSumSort("o_counter", performerTable, sceneTable, performersScenesTable, imageTable, performersImagesTable, performerIDColumn, sceneIDColumn, imageIDColumn, direction)
 	}
 
 	// Whatever the sorting, always use name/id as a final sort

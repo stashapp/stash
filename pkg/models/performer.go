@@ -110,6 +110,8 @@ type PerformerFilterType struct {
 	ImageCount *IntCriterionInput `json:"image_count"`
 	// Filter by gallery count
 	GalleryCount *IntCriterionInput `json:"gallery_count"`
+	// Filter by O count
+	OCounter *IntCriterionInput `json:"o_counter"`
 	// Filter by StashID
 	StashID *StringCriterionInput `json:"stash_id"`
 	// Filter by StashID Endpoint

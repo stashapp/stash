@@ -6,6 +6,7 @@ import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
 import { GridCard } from "../Shared/GridCard";
 import { CountryFlag } from "../Shared/CountryFlag";
+import { SweatDrops } from "../Shared/SweatDrops";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
 import { TagLink } from "../Shared/TagLink";
@@ -137,6 +138,21 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     );
   }
 
+  function maybeRenderOCounter() {
+    if (!performer.o_counter) return;
+
+    return (
+      <div className="o-counter">
+        <Button className="minimal">
+          <span className="fa-icon">
+            <SweatDrops />
+          </span>
+          <span>{performer.o_counter}</span>
+        </Button>
+      </div>
+    );
+  }
+
   function maybeRenderTagPopoverButton() {
     if (performer.tags.length <= 0) return;
 
@@ -173,6 +189,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       performer.image_count ||
       performer.gallery_count ||
       performer.tags.length > 0 ||
+      performer.o_counter ||
       performer.movie_count
     ) {
       return (
@@ -184,6 +201,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
             {maybeRenderImagesPopoverButton()}
             {maybeRenderGalleriesPopoverButton()}
             {maybeRenderTagPopoverButton()}
+            {maybeRenderOCounter()}
           </ButtonGroup>
         </>
       );

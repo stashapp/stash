@@ -98,6 +98,8 @@ input PerformerFilterType {
   image_count: IntCriterionInput
   """Filter by gallery count"""
   gallery_count: IntCriterionInput
+  """Filter by o count"""
+  o_counter: IntCriterionInput
   """Filter by StashID"""
   stash_id: StringCriterionInput @deprecated(reason: "Use stash_id_endpoint instead") 
   """Filter by StashID"""

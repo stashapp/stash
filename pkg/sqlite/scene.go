@@ -680,6 +680,19 @@ func (qb *SceneStore) CountByPerformerID(ctx context.Context, performerID int) (
 	return count(ctx, q)
 }
 
+func (qb *SceneStore) OCountByPerformerID(ctx context.Context, performerID int) (int, error) {
+	table := qb.table()
+	joinTable := scenesPerformersJoinTable
+
+	q := dialect.Select(goqu.COALESCE(goqu.SUM("o_counter"), 0)).From(table).InnerJoin(joinTable, goqu.On(table.Col(idColumn).Eq(joinTable.Col(sceneIDColumn)))).Where(joinTable.Col(performerIDColumn).Eq(performerID))
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
 func (qb *SceneStore) FindByMovieID(ctx context.Context, movieID int) ([]*models.Scene, error) {
 	sq := dialect.From(scenesMoviesJoinTable).Select(scenesMoviesJoinTable.Col(sceneIDColumn)).Where(
 		scenesMoviesJoinTable.Col(movieIDColumn).Eq(movieID),
