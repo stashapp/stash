@@ -10,6 +10,7 @@ import (
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/performer"
 )
 
 // Checksum is deprecated
@@ -127,6 +128,24 @@ func (r *performerResolver) GalleryCount(ctx context.Context, obj *models.Perfor
 	return &res, nil
 }
 
+func (r *performerResolver) OCounter(ctx context.Context, obj *models.Performer) (ret *int, err error) {
+	var res_scene int
+	var res_image int
+	var res int
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		res_scene, err = r.repository.Scene.OCountByPerformerID(ctx, obj.ID)
+		if err != nil {
+			return err
+		}
+		res_image, err = r.repository.Image.OCountByPerformerID(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+	res = res_scene + res_image
+	return &res, nil
+}
+
 func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer) (ret []*models.Scene, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Scene.FindByPerformerID(ctx, obj.ID)
@@ -183,6 +202,18 @@ func (r *performerResolver) MovieCount(ctx context.Context, obj *models.Performe
 	var res int
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		res, err = r.repository.Movie.CountByPerformerID(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+func (r *performerResolver) PerformerCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
+	var res int
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		res, err = performer.CountByAppearsWith(ctx, r.repository.Performer, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err

@@ -28,10 +28,16 @@ import { PerformerScenesPanel } from "./PerformerScenesPanel";
 import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";
 import { PerformerMoviesPanel } from "./PerformerMoviesPanel";
 import { PerformerImagesPanel } from "./PerformerImagesPanel";
+import { PerformerAppearsWithPanel } from "./performerAppearsWithPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
 import { PerformerSubmitButton } from "./PerformerSubmitButton";
 import GenderIcon from "../GenderIcon";
-import { faHeart, faLink } from "@fortawesome/free-solid-svg-icons";
+import {
+  faHeart,
+  faLink,
+  faChevronRight,
+  faChevronLeft,
+} from "@fortawesome/free-solid-svg-icons";
 import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { IUIConfig } from "src/core/config";
 import { useRatingKeybinds } from "src/hooks/keybinds";
@@ -88,7 +94,8 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     tab === "scenes" ||
     tab === "galleries" ||
     tab === "images" ||
-    tab === "movies"
+    tab === "movies" ||
+    tab == "appearswith"
       ? tab
       : "details";
   const setActiveTabKey = (newTab: string | null) => {
@@ -258,6 +265,23 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             performer={performer}
           />
         </Tab>
+        <Tab
+          eventKey="appearswith"
+          title={
+            <React.Fragment>
+              {intl.formatMessage({ id: "appears_with" })}
+              <Counter
+                abbreviateCounter={abbreviateCounter}
+                count={performer.performer_count ?? 0}
+              />
+            </React.Fragment>
+          }
+        >
+          <PerformerAppearsWithPanel
+            active={activeTabKey == "appearswith"}
+            performer={performer}
+          />
+        </Tab>
       </Tabs>
     </React.Fragment>
   );
@@ -398,8 +422,8 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       />
     );
 
-  function getCollapseButtonText() {
-    return collapsed ? ">" : "<";
+  function getCollapseButtonIcon() {
+    return collapsed ? faChevronRight : faChevronLeft;
   }
 
   return (
@@ -421,7 +445,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       </div>
       <div className="details-divider d-none d-xl-block">
         <Button onClick={() => setCollapsed(!collapsed)}>
-          {getCollapseButtonText()}
+          <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
         </Button>
       </div>
       <div className={`content-container ${collapsed ? "expanded" : ""}`}>

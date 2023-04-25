@@ -625,10 +625,13 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 
 	query.handleCriterion(ctx, performerStudiosCriterionHandler(qb, filter.Studios))
 
+	query.handleCriterion(ctx, performerAppearsWithCriterionHandler(qb, filter.Performers))
+
 	query.handleCriterion(ctx, performerTagCountCriterionHandler(qb, filter.TagCount))
 	query.handleCriterion(ctx, performerSceneCountCriterionHandler(qb, filter.SceneCount))
 	query.handleCriterion(ctx, performerImageCountCriterionHandler(qb, filter.ImageCount))
 	query.handleCriterion(ctx, performerGalleryCountCriterionHandler(qb, filter.GalleryCount))
+	query.handleCriterion(ctx, performerOCounterCriterionHandler(qb, filter.OCounter))
 	query.handleCriterion(ctx, dateCriterionHandler(filter.Birthdate, tableName+".birthdate"))
 	query.handleCriterion(ctx, dateCriterionHandler(filter.DeathDate, tableName+".death_date"))
 	query.handleCriterion(ctx, timestampCriterionHandler(filter.CreatedAt, tableName+".created_at"))
@@ -805,6 +808,22 @@ func performerGalleryCountCriterionHandler(qb *PerformerStore, count *models.Int
 	return h.handler(count)
 }
 
+func performerOCounterCriterionHandler(qb *PerformerStore, count *models.IntCriterionInput) criterionHandlerFunc {
+	h := joinedMultiSumCriterionHandlerBuilder{
+		primaryTable:  performerTable,
+		foreignTable1: sceneTable,
+		joinTable1:    performersScenesTable,
+		foreignTable2: imageTable,
+		joinTable2:    performersImagesTable,
+		primaryFK:     performerIDColumn,
+		foreignFK1:    sceneIDColumn,
+		foreignFK2:    imageIDColumn,
+		sum:           "o_counter",
+	}
+
+	return h.handler(count)
+}
+
 func performerStudiosCriterionHandler(qb *PerformerStore, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if studios != nil {
@@ -882,6 +901,60 @@ func performerStudiosCriterionHandler(qb *PerformerStore, studios *models.Hierar
 	}
 }
 
+func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models.MultiCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if performers != nil {
+			formatMaps := []utils.StrFormatMap{
+				{
+					"primaryTable": performersScenesTable,
+					"joinTable":    performersScenesTable,
+					"primaryFK":    sceneIDColumn,
+				},
+				{
+					"primaryTable": performersImagesTable,
+					"joinTable":    performersImagesTable,
+					"primaryFK":    imageIDColumn,
+				},
+				{
+					"primaryTable": performersGalleriesTable,
+					"joinTable":    performersGalleriesTable,
+					"primaryFK":    galleryIDColumn,
+				},
+			}
+
+			if len(performers.Value) == '0' {
+				return
+			}
+
+			const derivedPerformerPerformersTable = "performer_performers"
+
+			valuesClause := strings.Join(performers.Value, "),(")
+
+			f.addWith("performer(id) AS (VALUES(" + valuesClause + "))")
+
+			templStr := `SELECT {primaryTable}2.performer_id FROM {primaryTable}
+			INNER JOIN {primaryTable} AS {primaryTable}2 ON {primaryTable}.{primaryFK} = {primaryTable}2.{primaryFK}
+			INNER JOIN performer ON {primaryTable}.performer_id = performer.id
+			WHERE {primaryTable}2.performer_id != performer.id`
+
+			if performers.Modifier == models.CriterionModifierIncludesAll && len(performers.Value) > 1 {
+				templStr += `
+							GROUP BY {primaryTable}2.performer_id
+							HAVING(count(distinct {primaryTable}.performer_id) IS ` + strconv.Itoa(len(performers.Value)) + `)`
+			}
+
+			var unions []string
+			for _, c := range formatMaps {
+				unions = append(unions, utils.StrFormat(templStr, c))
+			}
+
+			f.addWith(fmt.Sprintf("%s AS (%s)", derivedPerformerPerformersTable, strings.Join(unions, " UNION ")))
+
+			f.addInnerJoin(derivedPerformerPerformersTable, "", fmt.Sprintf("performers.id = %s.performer_id", derivedPerformerPerformersTable))
+		}
+	}
+}
+
 func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) string {
 	var sort string
 	var direction string
@@ -905,6 +978,9 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) st
 		sortQuery += getCountSort(performerTable, performersGalleriesTable, performerIDColumn, direction)
 	default:
 		sortQuery += getSort(sort, direction, "performers")
+	}
+	if sort == "o_counter" {
+		return getMultiSumSort("o_counter", performerTable, sceneTable, performersScenesTable, imageTable, performersImagesTable, performerIDColumn, sceneIDColumn, imageIDColumn, direction)
 	}
 
 	// Whatever the sorting, always use name/id as a final sort
