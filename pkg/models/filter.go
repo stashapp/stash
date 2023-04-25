@@ -136,3 +136,9 @@ type TimestampCriterionInput struct {
 	Value2   *string           `json:"value2"`
 	Modifier CriterionModifier `json:"modifier"`
 }
+
+type PhashDistanceCriterionInput struct {
+	Value    string            `json:"value"`
+	Modifier CriterionModifier `json:"modifier"`
+	Distance *int              `json:"distance"`
+}

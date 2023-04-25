@@ -509,12 +509,8 @@ func (s *Manager) SetBlobStoreOptions() {
 }
 
 func writeStashIcon() {
-	p := FaviconProvider{
-		UIBox: ui.UIBox,
-	}
-
 	iconPath := filepath.Join(instance.Config.GetConfigPath(), "icon.png")
-	err := os.WriteFile(iconPath, p.GetFaviconPng(), 0644)
+	err := os.WriteFile(iconPath, ui.FaviconProvider.GetFaviconPng(), 0644)
 	if err != nil {
 		logger.Errorf("Couldn't write icon file: %s", err.Error())
 	}

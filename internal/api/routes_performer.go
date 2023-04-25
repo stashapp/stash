@@ -54,13 +54,11 @@ func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if len(image) == 0 || defaultParam == "true" {
+	if len(image) == 0 {
 		image, _ = getRandomPerformerImageUsingName(performer.Name, performer.Gender, config.GetInstance().GetCustomPerformerImageLocation())
 	}
 
-	if err := utils.ServeImage(image, w, r); err != nil {
-		logger.Warnf("error serving performer image: %v", err)
-	}
+	utils.ServeImage(w, r, image)
 }
 
 func (rs performerRoutes) PerformerCtx(next http.Handler) http.Handler {

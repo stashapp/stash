@@ -23,10 +23,17 @@ func (t *GenerateCoverTask) GetDescription() string {
 func (t *GenerateCoverTask) Start(ctx context.Context) {
 	scenePath := t.Scene.Path
 
+	var required bool
 	if err := t.txnManager.WithReadTxn(ctx, func(ctx context.Context) error {
+		// don't generate the screenshot if it already exists
+		required = t.required(ctx)
 		return t.Scene.LoadPrimaryFile(ctx, t.txnManager.File)
 	}); err != nil {
 		logger.Error(err)
+	}
+
+	if !required {
+		return
 	}
 
 	videoFile := t.Scene.Files.Primary()

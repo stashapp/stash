@@ -513,6 +513,19 @@ func (qb *ImageStore) CountByGalleryID(ctx context.Context, galleryID int) (int,
 	return count(ctx, q)
 }
 
+func (qb *ImageStore) OCountByPerformerID(ctx context.Context, performerID int) (int, error) {
+	table := qb.table()
+	joinTable := performersImagesJoinTable
+	q := dialect.Select(goqu.COALESCE(goqu.SUM("o_counter"), 0)).From(table).InnerJoin(joinTable, goqu.On(table.Col(idColumn).Eq(joinTable.Col(imageIDColumn)))).Where(joinTable.Col(performerIDColumn).Eq(performerID))
+
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
 func (qb *ImageStore) FindByFolderID(ctx context.Context, folderID file.FolderID) ([]*models.Image, error) {
 	table := qb.table()
 	fileTable := goqu.T(fileTable)
@@ -1026,7 +1039,7 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 		case "path":
 			addFilesJoin()
 			addFolderJoin()
-			sortClause = " ORDER BY folders.path " + direction + ", files.basename " + direction
+			sortClause = " ORDER BY COALESCE(folders.path, '') || COALESCE(files.basename, '') COLLATE NATURAL_CI " + direction
 		case "file_count":
 			sortClause = getCountSort(imageTable, imagesFilesTable, imageIDColumn, direction)
 		case "tag_count":
@@ -1039,10 +1052,13 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 		case "title":
 			addFilesJoin()
 			addFolderJoin()
-			sortClause = " ORDER BY COALESCE(images.title, files.basename) COLLATE NATURAL_CS " + direction + ", folders.path " + direction
+			sortClause = " ORDER BY COALESCE(images.title, files.basename) COLLATE NATURAL_CI " + direction + ", folders.path COLLATE NATURAL_CI " + direction
 		default:
 			sortClause = getSort(sort, direction, "images")
 		}
+
+		// Whatever the sorting, always use title/id as a final sort
+		sortClause += ", COALESCE(images.title, images.id) COLLATE NATURAL_CI ASC"
 	}
 
 	q.sortAndPagination = sortClause + getPagination(findFilter)

@@ -9,6 +9,7 @@ interface IStringListInputProps {
   placeholder?: string;
   className?: string;
   errors?: string;
+  errorIdx?: number[];
 }
 
 export const StringListInput: React.FC<IStringListInputProps> = (props) => {
@@ -35,10 +36,11 @@ export const StringListInput: React.FC<IStringListInputProps> = (props) => {
       <div className={`string-list-input ${props.errors ? "is-invalid" : ""}`}>
         <Form.Group>
           {values.map((v, i) => (
-            // eslint-disable-next-line react/no-array-index-key
             <InputGroup className={props.className} key={i}>
               <Form.Control
-                className="text-input"
+                className={`text-input ${
+                  props.errorIdx?.includes(i) ? "is-invalid" : ""
+                }`}
                 value={v}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   valueChanged(i, e.currentTarget.value)
@@ -58,7 +60,7 @@ export const StringListInput: React.FC<IStringListInputProps> = (props) => {
           ))}
         </Form.Group>
       </div>
-      <div className="invalid-feedback">{props.errors}</div>
+      <div className="invalid-feedback mt-n2">{props.errors}</div>
     </>
   );
 };

@@ -87,7 +87,7 @@ func (m *Mover) Move(ctx context.Context, f File, folder *Folder, basename strin
 		return fmt.Errorf("file %s already exists", newPath)
 	}
 
-	if err := m.transferZipFolderHierarchy(ctx, fBase.ID, oldPath, newPath); err != nil {
+	if err := TransferZipFolderHierarchy(ctx, m.Folders, fBase.ID, oldPath, newPath); err != nil {
 		return fmt.Errorf("moving folder hierarchy for file %s: %w", fBase.Path, err)
 	}
 
@@ -160,49 +160,6 @@ func (m *Mover) CreateFolderHierarchy(path string) error {
 	} else {
 		if !info.IsDir() {
 			return fmt.Errorf("%s is not a directory", path)
-		}
-	}
-
-	return nil
-}
-
-// transferZipFolderHierarchy creates the folder hierarchy for zipFileID under newPath, and removes
-// ZipFileID from folders under oldPath.
-func (m *Mover) transferZipFolderHierarchy(ctx context.Context, zipFileID ID, oldPath string, newPath string) error {
-	zipFolders, err := m.Folders.FindByZipFileID(ctx, zipFileID)
-	if err != nil {
-		return err
-	}
-
-	for _, oldFolder := range zipFolders {
-		oldZfPath := oldFolder.Path
-
-		// sanity check - ignore folders which aren't under oldPath
-		if !strings.HasPrefix(oldZfPath, oldPath) {
-			continue
-		}
-
-		relZfPath, err := filepath.Rel(oldPath, oldZfPath)
-		if err != nil {
-			return err
-		}
-		newZfPath := filepath.Join(newPath, relZfPath)
-
-		newFolder, err := GetOrCreateFolderHierarchy(ctx, m.Folders, newZfPath)
-		if err != nil {
-			return err
-		}
-
-		// add ZipFileID to new folder
-		newFolder.ZipFileID = &zipFileID
-		if err = m.Folders.Update(ctx, newFolder); err != nil {
-			return err
-		}
-
-		// remove ZipFileID from old folder
-		oldFolder.ZipFileID = nil
-		if err = m.Folders.Update(ctx, oldFolder); err != nil {
-			return err
 		}
 	}
 

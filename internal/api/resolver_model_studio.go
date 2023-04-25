@@ -27,9 +27,6 @@ func (r *studioResolver) URL(ctx context.Context, obj *models.Studio) (*string, 
 }
 
 func (r *studioResolver) ImagePath(ctx context.Context, obj *models.Studio) (*string, error) {
-	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-	imagePath := urlbuilders.NewStudioURLBuilder(baseURL, obj).GetStudioImageURL()
-
 	var hasImage bool
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var err error
@@ -39,11 +36,8 @@ func (r *studioResolver) ImagePath(ctx context.Context, obj *models.Studio) (*st
 		return nil, err
 	}
 
-	// indicate that image is missing by setting default query param to true
-	if !hasImage {
-		imagePath += "?default=true"
-	}
-
+	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
+	imagePath := urlbuilders.NewStudioURLBuilder(baseURL, obj).GetStudioImageURL(hasImage)
 	return &imagePath, nil
 }
 
