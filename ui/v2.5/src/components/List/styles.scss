@@ -134,6 +134,10 @@ input[type="range"].zoom-slider {
     max-height: 550px;
     overflow-y: auto;
 
+    .pinned-criterion-divider {
+      padding-bottom: 2.5rem;
+    }
+
     .card {
       border: 1px solid rgb(16 22 26 / 40%);
       box-shadow: none;
@@ -147,15 +151,25 @@ input[type="range"].zoom-slider {
       .card-header {
         cursor: pointer;
         display: flex;
-        justify-content: space-between;
+      }
+    }
+
+    .btn {
+      border: 0;
+      padding-bottom: 0;
+      padding-top: 0;
+    }
+
+    .pin-criterion-button {
+      color: $text_color;
+
+      &:hover svg {
+        transform: rotate(0);
       }
     }
 
     .remove-criterion-button {
-      border: 0;
       color: $danger;
-      padding-bottom: 0;
-      padding-top: 0;
     }
   }
 
@@ -195,4 +209,8 @@ input[type="range"].zoom-slider {
     // button group has a z-index of 1
     z-index: 2;
   }
+}
+
+.tilted {
+  transform: rotate(45deg);
 }
