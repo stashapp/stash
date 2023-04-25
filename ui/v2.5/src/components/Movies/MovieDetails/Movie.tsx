@@ -120,8 +120,10 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   function renderFrontImage() {
     let image = movie.front_image_path;
     if (isEditing) {
-      if (frontImage === null) {
-        image = `${image}&default=true`;
+      if (frontImage === null && image) {
+        const imageURL = new URL(image);
+        imageURL.searchParams.set("default", "true");
+        image = imageURL.toString();
       } else if (frontImage) {
         image = frontImage;
       }

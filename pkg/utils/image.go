@@ -2,16 +2,12 @@ package utils
 
 import (
 	"context"
-	"crypto/md5"
 	"crypto/tls"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"regexp"
-	"strings"
-	"syscall"
 	"time"
 )
 
@@ -110,30 +106,12 @@ func GetBase64StringFromData(data []byte) string {
 	return base64.StdEncoding.EncodeToString(data)
 }
 
-func ServeImage(image []byte, w http.ResponseWriter, r *http.Request) error {
-	etag := fmt.Sprintf("%x", md5.Sum(image))
-
-	if match := r.Header.Get("If-None-Match"); match != "" {
-		if strings.Contains(match, etag) {
-			w.WriteHeader(http.StatusNotModified)
-			return nil
-		}
-	}
-
+func ServeImage(w http.ResponseWriter, r *http.Request, image []byte) {
 	contentType := http.DetectContentType(image)
 	if contentType == "text/xml; charset=utf-8" || contentType == "text/plain; charset=utf-8" {
 		contentType = "image/svg+xml"
 	}
 
 	w.Header().Set("Content-Type", contentType)
-	w.Header().Add("Etag", etag)
-	w.Header().Set("Cache-Control", "public, max-age=604800, immutable")
-	_, err := w.Write(image)
-	// Broken pipe errors are common when serving images and the remote
-	// connection closes the connection. Filter them out of the error
-	// messages, as they are benign.
-	if errors.Is(err, syscall.EPIPE) {
-		return nil
-	}
-	return err
+	ServeStaticContent(w, r, image)
 }

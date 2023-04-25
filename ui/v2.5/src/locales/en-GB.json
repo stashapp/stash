@@ -127,6 +127,7 @@
   "aliases": "Aliases",
   "all": "all",
   "also_known_as": "Also known as",
+  "appears_with": "Appears With",
   "ascending": "Ascending",
   "average_resolution": "Average Resolution",
   "between_and": "and",
@@ -306,8 +307,8 @@
         },
         "transcode": {
           "input_args": {
-            "desc": "Advanced: Additional arguments to pass to ffmpeg before the input field when live transcoding video.",
-            "heading": "FFmpeg Live Transcode Input Args"
+            "desc": "Advanced: Additional arguments to pass to ffmpeg before the input field when generating video.",
+            "heading": "FFmpeg Transcode Input Args"
           },
           "output_args": {
             "desc": "Advanced: Additional arguments to pass to ffmpeg before the output field when generating video.",

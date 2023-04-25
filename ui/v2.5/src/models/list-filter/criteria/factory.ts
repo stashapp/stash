@@ -48,7 +48,7 @@ import { MoviesCriterionOption } from "./movies";
 import { GalleriesCriterion } from "./galleries";
 import { CriterionType } from "../types";
 import { InteractiveCriterion } from "./interactive";
-import { DuplicatedCriterion, PhashCriterionOption } from "./phash";
+import { DuplicatedCriterion, PhashCriterion } from "./phash";
 import { CaptionCriterion } from "./captions";
 import { RatingCriterion } from "./rating";
 import { CountryCriterion } from "./country";
@@ -167,7 +167,7 @@ export function makeCriteria(
         new StringCriterionOption("media_info.checksum", type, "checksum")
       );
     case "phash":
-      return new StringCriterion(PhashCriterionOption);
+      return new PhashCriterion();
     case "duplicated":
       return new DuplicatedCriterion();
     case "country":

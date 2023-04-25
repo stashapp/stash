@@ -397,6 +397,27 @@ func (_m *PerformerReaderWriter) GetTagIDs(ctx context.Context, relatedID int) (
 	return r0, r1
 }
 
+// HasImage provides a mock function with given fields: ctx, performerID
+func (_m *PerformerReaderWriter) HasImage(ctx context.Context, performerID int) (bool, error) {
+	ret := _m.Called(ctx, performerID)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(context.Context, int) bool); ok {
+		r0 = rf(ctx, performerID)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, performerID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Query provides a mock function with given fields: ctx, performerFilter, findFilter
 func (_m *PerformerReaderWriter) Query(ctx context.Context, performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) ([]*models.Performer, int, error) {
 	ret := _m.Called(ctx, performerFilter, findFilter)
