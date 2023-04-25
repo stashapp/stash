@@ -306,8 +306,8 @@
         },
         "transcode": {
           "input_args": {
-            "desc": "Edasijõudnutele: Lisaargumendid mida edastada ffmpegi sisendväljale video reaalajas transkodeerimisel.",
-            "heading": "FFmpeg Reaalajas Transkodeerimise Sisendargumendid"
+            "desc": "Edasijõudnutele: Lisaargumendid mida edastada ffmpegi sisendväljale video genereerimisel.",
+            "heading": "FFmpeg Transkodeerimise Sisendargumendid"
           },
           "output_args": {
             "desc": "Edasijõudnutele: Lisaargumendid mida edastada ffmpegi väljundväljale video genereerimisel.",
