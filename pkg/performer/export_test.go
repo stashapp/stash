@@ -185,8 +185,9 @@ func initTestTable() {
 		},
 		{
 			*createFullPerformer(errImageID, performerName),
-			nil,
-			true,
+			createFullJSONPerformer(performerName, ""),
+			// failure to get image should not cause an error
+			false,
 		},
 	}
 }

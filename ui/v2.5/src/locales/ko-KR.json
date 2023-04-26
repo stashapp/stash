@@ -35,8 +35,8 @@
     "download_backup": "백업 다운로드",
     "edit": "수정",
     "edit_entity": "{entityType} 수정",
-    "export": "내보내기…",
-    "export_all": "모두 내보내기…",
+    "export": "내보내기",
+    "export_all": "모두 내보내기",
     "find": "찾기",
     "finish": "완료",
     "from_file": "파일로 불러오기…",
@@ -965,7 +965,6 @@
   "scenes": "영상",
   "scenes_updated_at": "영상 업데이트 날짜",
   "search_filter": {
-    "add_filter": "필터 추가",
     "name": "필터",
     "saved_filters": "저장된 필터",
     "update_filter": "필터 업데이트"

@@ -680,6 +680,19 @@ func (qb *SceneStore) CountByPerformerID(ctx context.Context, performerID int) (
 	return count(ctx, q)
 }
 
+func (qb *SceneStore) OCountByPerformerID(ctx context.Context, performerID int) (int, error) {
+	table := qb.table()
+	joinTable := scenesPerformersJoinTable
+
+	q := dialect.Select(goqu.COALESCE(goqu.SUM("o_counter"), 0)).From(table).InnerJoin(joinTable, goqu.On(table.Col(idColumn).Eq(joinTable.Col(sceneIDColumn)))).Where(joinTable.Col(performerIDColumn).Eq(performerID))
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
 func (qb *SceneStore) FindByMovieID(ctx context.Context, movieID int) ([]*models.Scene, error) {
 	sq := dialect.From(scenesMoviesJoinTable).Select(scenesMoviesJoinTable.Col(sceneIDColumn)).Where(
 		scenesMoviesJoinTable.Col(movieIDColumn).Eq(movieID),
@@ -882,16 +895,15 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if sceneFilter.Phash != nil {
-			qb.addSceneFilesTable(f)
-			f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
-
-			value, _ := utils.StringToPhash(sceneFilter.Phash.Value)
-			intCriterionHandler(&models.IntCriterionInput{
-				Value:    int(value),
+			// backwards compatibility
+			scenePhashDistanceCriterionHandler(qb, &models.PhashDistanceCriterionInput{
+				Value:    sceneFilter.Phash.Value,
 				Modifier: sceneFilter.Phash.Modifier,
-			}, "fingerprints_phash.fingerprint", nil)(ctx, f)
+			})(ctx, f)
 		}
 	}))
+
+	query.handleCriterion(ctx, scenePhashDistanceCriterionHandler(qb, sceneFilter.PhashDistance))
 
 	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.Rating100, "scenes.rating", nil))
 	// legacy rating handler
@@ -1382,6 +1394,45 @@ INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
 	}
 }
 
+func scenePhashDistanceCriterionHandler(qb *SceneStore, phashDistance *models.PhashDistanceCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if phashDistance != nil {
+			qb.addSceneFilesTable(f)
+			f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
+
+			value, _ := utils.StringToPhash(phashDistance.Value)
+			distance := 0
+			if phashDistance.Distance != nil {
+				distance = *phashDistance.Distance
+			}
+
+			if distance == 0 {
+				// use the default handler
+				intCriterionHandler(&models.IntCriterionInput{
+					Value:    int(value),
+					Modifier: phashDistance.Modifier,
+				}, "fingerprints_phash.fingerprint", nil)(ctx, f)
+			}
+
+			switch {
+			case phashDistance.Modifier == models.CriterionModifierEquals && distance > 0:
+				// needed to avoid a type mismatch
+				f.addWhere("typeof(fingerprints_phash.fingerprint) = 'integer'")
+				f.addWhere("phash_distance(fingerprints_phash.fingerprint, ?) < ?", value, distance)
+			case phashDistance.Modifier == models.CriterionModifierNotEquals && distance > 0:
+				// needed to avoid a type mismatch
+				f.addWhere("typeof(fingerprints_phash.fingerprint) = 'integer'")
+				f.addWhere("phash_distance(fingerprints_phash.fingerprint, ?) > ?", value, distance)
+			default:
+				intCriterionHandler(&models.IntCriterionInput{
+					Value:    int(value),
+					Modifier: phashDistance.Modifier,
+				}, "fingerprints_phash.fingerprint", nil)(ctx, f)
+			}
+		}
+	}
+}
+
 func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindFilterType) {
 	if findFilter == nil || findFilter.Sort == nil || *findFilter.Sort == "" {
 		return
@@ -1435,7 +1486,7 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		// special handling for path
 		addFileTable()
 		addFolderTable()
-		query.sortAndPagination += fmt.Sprintf(" ORDER BY folders.path %s, files.basename %[1]s", direction)
+		query.sortAndPagination += fmt.Sprintf(" ORDER BY COALESCE(folders.path, '') || COALESCE(files.basename, '') COLLATE NATURAL_CI %s", direction)
 	case "perceptual_similarity":
 		// special handling for phash
 		addFileTable()
@@ -1472,13 +1523,16 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	case "title":
 		addFileTable()
 		addFolderTable()
-		query.sortAndPagination += " ORDER BY COALESCE(scenes.title, files.basename) COLLATE NATURAL_CS " + direction + ", folders.path " + direction
+		query.sortAndPagination += " ORDER BY COALESCE(scenes.title, files.basename) COLLATE NATURAL_CI " + direction + ", folders.path COLLATE NATURAL_CI " + direction
 	case "play_count":
 		// handle here since getSort has special handling for _count suffix
 		query.sortAndPagination += " ORDER BY scenes.play_count " + direction
 	default:
 		query.sortAndPagination += getSort(sort, direction, "scenes")
 	}
+
+	// Whatever the sorting, always use title/id as a final sort
+	query.sortAndPagination += ", COALESCE(scenes.title, scenes.id) COLLATE NATURAL_CI ASC"
 }
 
 func (qb *SceneStore) getPlayCount(ctx context.Context, id int) (int, error) {

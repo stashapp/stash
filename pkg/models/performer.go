@@ -110,6 +110,8 @@ type PerformerFilterType struct {
 	ImageCount *IntCriterionInput `json:"image_count"`
 	// Filter by gallery count
 	GalleryCount *IntCriterionInput `json:"gallery_count"`
+	// Filter by O count
+	OCounter *IntCriterionInput `json:"o_counter"`
 	// Filter by StashID
 	StashID *StringCriterionInput `json:"stash_id"`
 	// Filter by StashID Endpoint
@@ -128,6 +130,8 @@ type PerformerFilterType struct {
 	DeathYear *IntCriterionInput `json:"death_year"`
 	// Filter by studios where performer appears in scene/image/gallery
 	Studios *HierarchicalMultiCriterionInput `json:"studios"`
+	// Filter by performers where performer appears with another performer in scene/image/gallery
+	Performers *MultiCriterionInput `json:"performers"`
 	// Filter by autotag ignore value
 	IgnoreAutoTag *bool `json:"ignore_auto_tag"`
 	// Filter by birthdate
@@ -163,6 +167,7 @@ type PerformerReader interface {
 	QueryCount(ctx context.Context, galleryFilter *PerformerFilterType, findFilter *FindFilterType) (int, error)
 	AliasLoader
 	GetImage(ctx context.Context, performerID int) ([]byte, error)
+	HasImage(ctx context.Context, performerID int) (bool, error)
 	StashIDLoader
 	TagIDLoader
 }

@@ -9,7 +9,7 @@
     "anonymise": "Anonymiser",
     "apply": "Appliquer",
     "auto_tag": "Étiquetage automatique",
-    "backup": "Sauvegarde",
+    "backup": "Sauvegarder",
     "browse_for_image": "Sélectionner une image…",
     "cancel": "Annuler",
     "clean": "Nettoyer",
@@ -21,6 +21,7 @@
     "confirm": "Confirmer",
     "continue": "Continuer",
     "create": "Créer",
+    "create_chapters": "Créer un chapitre",
     "create_entity": "Créer {entityType}",
     "create_marker": "Créer un marqueur",
     "created_entity": "Créé {entity_type} : {entity_name}",
@@ -60,6 +61,8 @@
     "merge": "Fusionner",
     "merge_from": "Fusionner depuis",
     "merge_into": "Fusionner dans",
+    "migrate_blobs": "Migrer les blobs",
+    "migrate_scene_screenshots": "Migrer les vignettes de scène",
     "next_action": "Suivant",
     "not_running": "arrêt",
     "open_in_external_player": "Ouvrir dans un lecteur externe",
@@ -130,8 +133,13 @@
   "birth_year": "Année de naissance",
   "birthdate": "Date de naissance",
   "bitrate": "Débit",
+  "blobs_storage_type": {
+    "database": "Base de données",
+    "filesystem": "Système de fichier"
+  },
   "captions": "Sous-titres",
   "career_length": "Durée de la carrière",
+  "chapters": "Chapitres",
   "component_tagger": {
     "config": {
       "active_instance": "Instance Stash-Box active :",
@@ -162,7 +170,7 @@
       "duration_unknown": "Durée inconnue",
       "fp_found": "{fpCount, plural, =0 {Aucune nouvelle correspondance d'empreinte trouvée} other {# nouvelles correspondances d'empreintes trouvées}}",
       "fp_matches": "La durée correspond",
-      "fp_matches_multi": "La durée correspond à {matchCount}/{durationsLength} empreinte·s",
+      "fp_matches_multi": "La durée correspond à {matchCount}/{durationsLength} empreintes",
       "hash_matches": "{hash_type} est une correspondance",
       "match_failed_already_tagged": "Scène déjà étiquetée",
       "match_failed_no_result": "Aucun résultat trouvé",
@@ -185,11 +193,12 @@
       "latest_version": "Dernière version",
       "latest_version_build_hash": "Empreinte de construction de la dernière version :",
       "new_version_notice": "[Nouveautés]",
+      "release_date": "Date de sortie :",
       "stash_discord": "Rejoignez notre chaine {url}",
-      "stash_home": "Accueil Stash sur {url}",
+      "stash_home": "Accueil de Stash sur {url}",
       "stash_open_collective": "Soutenez-nous via {url}",
-      "stash_wiki": "Page {url} Stash",
-      "version": "Version"
+      "stash_wiki": "{url} de Stash",
+      "version": "Version actuelle"
     },
     "application_paths": {
       "heading": "Chemins de l'application"
@@ -255,7 +264,15 @@
         "description": "Emplacement de sauvegarde des bases de données SQLite",
         "heading": "Chemin du répertoire de sauvegarde"
       },
-      "cache_location": "Emplacement du cache",
+      "blobs_path": {
+        "description": "Emplacement dans le système de fichiers pour le stockage des données binaires. Uniquement applicable lors de l'utilisation du type de stockage blob du système de fichiers. AVERTISSEMENT : La modification de ce paramètre nécessite le déplacement manuel des données existantes.",
+        "heading": "Chemin du système de fichiers des données binaires"
+      },
+      "blobs_storage": {
+        "description": "Emplacement où stocker les données binaires telles que les vignettes de scènes, les images de performeurs, de studios et d'étiquettes. Après avoir modifié cette valeur, les données existantes doivent être migrées à l'aide de la tâche Migrer les blobs. Voir la page Tâches de migration.",
+        "heading": "Type d'enregistrement de données binaires"
+      },
+      "cache_location": "Emplacement du cache. Requis si le flux est diffusé à l'aide de HLS (comme sur les appareils Apple) ou de DASH.",
       "cache_path_head": "Chemin du cache",
       "calculate_md5_and_ohash_desc": "Calculer la somme de contrôle MD5 en complément de oshash. Son activation entraîne un ralentissement des analyses initiales. Le hachage du nom de fichier doit être défini sur oshash pour désactiver le calcul MD5.",
       "calculate_md5_and_ohash_label": "Calculer le MD5 pour les vidéos",
@@ -265,12 +282,43 @@
       "chrome_cdp_path_desc": "Chemin de l'exécutable Chrome, ou adresse distante (commençant par http:// ou https://, par exemple http://localhost:9222/json/version) d'une instance de Chrome.",
       "create_galleries_from_folders_desc": "Coché, crée des galeries à partir de dossiers contenant des images.",
       "create_galleries_from_folders_label": "Créer des galeries à partir de dossiers contenant des images",
+      "database": "Base de données",
       "db_path_head": "Chemin de la base de données",
       "directory_locations_to_your_content": "Emplacements de votre contenu",
-      "excluded_image_gallery_patterns_desc": "Expression régulière de fichiers images et galeries ou de chemins d'accès à exclure de l'analyse et à ajouter au nettoyage",
-      "excluded_image_gallery_patterns_head": "Modèles d'image ou galerie exclués",
+      "excluded_image_gallery_patterns_desc": "Expressions régulières de fichiers images et galeries ou de chemins d'accès à exclure de l'analyse et à ajouter au nettoyage",
+      "excluded_image_gallery_patterns_head": "Modèles d'image ou galerie exclus",
       "excluded_video_patterns_desc": "Expressions régulières de fichiers vidéo ou de chemins d'accès à exclure de l'analyse et à ajouter au nettoyage",
-      "excluded_video_patterns_head": "Modèles de vidéo exclués",
+      "excluded_video_patterns_head": "Modèles de vidéo exclus",
+      "ffmpeg": {
+        "hardware_acceleration": {
+          "desc": "Utiliser le matériel disponible pour encoder la vidéo en vue d'un transcodage en temps réel.",
+          "heading": "Encodage matériel FFmpeg"
+        },
+        "live_transcode": {
+          "input_args": {
+            "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ d'entrée lors du transcodage vidéo en temps réel.",
+            "heading": "Arguments d'entrée du transcodage FFmpeg en temps réel"
+          },
+          "output_args": {
+            "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ de sortie lors du transcodage vidéo en temps réel.",
+            "heading": "Arguments de sortie du transcodage FFmpeg en temps réel"
+          }
+        },
+        "transcode": {
+          "input_args": {
+            "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ d'entrée lors du transcodage vidéo en temps réel.",
+            "heading": "Arguments d'entrée pour le transcodage FFmpeg en temps réel"
+          },
+          "output_args": {
+            "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ de sortie lors de la génération de la vidéo.",
+            "heading": "Arguments de sortie du transcodage FFmpeg"
+          }
+        }
+      },
+      "funscript_heatmap_draw_range": "Inclure l'amplitude dans les cartes thermiques générées",
+      "funscript_heatmap_draw_range_desc": "Dessiner l'étendue du mouvement sur l'axe des ordonnées de la carte thermique générée. Les cartes thermiques existantes devront être régénérées après modifications.",
+      "gallery_cover_regex_desc": "Expression régulière utilisée pour identifier une image comme vignette de la galerie",
+      "gallery_cover_regex_label": "Modèle de vignette de la galerie",
       "gallery_ext_desc": "Liste d'extensions de fichiers séparées par des virgules qui seront reconnues comme des archives zip de la galerie.",
       "gallery_ext_head": "Extensions zip de la galerie",
       "generated_file_naming_hash_desc": "Utilisez MD5 ou oshash pour le nommage des fichiers générés. Le modifier exige que toutes les scènes soient renseignées avec une valeur MD5/oshash appropriée. Après avoir modifié cette valeur, les fichiers générés existants devront être migrés ou régénérés. Voir la page Tâches pour la migration.",
@@ -278,6 +326,7 @@
       "generated_files_location": "Emplacement des fichiers générés (marqueurs de scène, aperçus de scène, sprites, etc.)",
       "generated_path_head": "Chemin des fichiers générés",
       "hashing": "Hachage",
+      "heatmap_generation": "Génération de la carte thermique du script interactif",
       "image_ext_desc": "Liste d'extensions de fichiers séparées par des virgules qui seront reconnues comme des images.",
       "image_ext_head": "Extensions des images",
       "include_audio_desc": "Inclure le flux audio lors de la génération des aperçus.",
@@ -306,7 +355,7 @@
         "heading": "Chemin des extracteurs de contenu"
       },
       "scraping": "Extraction de données",
-      "sqlite_location": "Emplacement du fichier de base de données SQLite (nécessite un redémarrage)",
+      "sqlite_location": "Emplacement du fichier de base de données SQLite (nécessite un redémarrage). AVERTISSEMENT : Le stockage de la base de données sur un système différent de celui qui exécute le serveur Stash (c'est-à-dire sur le réseau) n'est pas pris en charge !",
       "video_ext_desc": "Liste d'extensions de fichiers séparées par des virgules qui seront reconnues comme des vidéos.",
       "video_ext_head": "Extensions de fichiers vidéo",
       "video_head": "Vidéo"
@@ -377,6 +426,7 @@
       "generate_previews_during_scan_tooltip": "Générer des aperçus WebP animés, requis uniquement si le mode d'aperçu est défini sur Image animée.",
       "generate_sprites_during_scan": "Générer les sprites de progression",
       "generate_thumbnails_during_scan": "Générer des vignettes pour les images",
+      "generate_video_covers_during_scan": "Générer les vignettes de scène",
       "generate_video_previews_during_scan": "Générer les aperçus",
       "generate_video_previews_during_scan_tooltip": "Générer des aperçus vidéo joués lors du survol d'une scène",
       "generated_content": "Contenu généré",
@@ -404,7 +454,16 @@
       "incremental_import": "Importation incrémentielle à partir d'un fichier zip d'exportation fourni.",
       "job_queue": "File d'attente des tâches",
       "maintenance": "Maintenance",
+      "migrate_blobs": {
+        "delete_old": "Supprimer les anciennes données",
+        "description": "Migrer les blobs vers le système de stockage de blobs actuel. Cette migration doit être exécutée après avoir modifié le système de stockage des blobs. Il est possible de supprimer les anciennes données après migration."
+      },
       "migrate_hash_files": "Utilisé après modification de l'empreinte des fichiers générés pour renommer les existants au nouveau format.",
+      "migrate_scene_screenshots": {
+        "delete_files": "Supprimer les fichiers de vignette",
+        "description": "Migrer les vignettes de scène dans le nouveau système de stockage blob. Cette migration doit être exécutée après avoir migré un système existant vers la version 0.20. Il est possible de supprimer les anciennes vignettes après migration.",
+        "overwrite_existing": "Remplacer les blobs existants par les données de vignettes"
+      },
       "migrations": "Migrations",
       "only_dry_run": "Effectuer un essai à blanc. Ne supprime rien",
       "plugin_tasks": "Tâches de Plugin",
@@ -476,13 +535,17 @@
           "heading": "Désactiver la création depuis la liste déroulante"
         },
         "heading": "Édition",
+        "max_options_shown": {
+          "label": "Nombre maximal d'éléments à afficher dans les listes déroulantes de sélection"
+        },
         "rating_system": {
           "star_precision": {
             "label": "Précision de la notation",
             "options": {
               "full": "Complète",
               "half": "Moitié",
-              "quarter": "Quart"
+              "quarter": "Quart",
+              "tenth": "Dixième"
             }
           },
           "type": {
@@ -514,6 +577,11 @@
       },
       "image_lightbox": {
         "heading": "Visionneuse d'images"
+      },
+      "image_wall": {
+        "direction": "Orientation",
+        "heading": "Mur d'images",
+        "margin": "Marge (pixels)"
       },
       "images": {
         "heading": "Images",
@@ -658,6 +726,8 @@
   },
   "custom": "Personnalisé",
   "date": "Date",
+  "date_format": "AAAA-MM-JJ",
+  "datetime_format": "AAAA-MM-JJ HH:MM",
   "death_date": "Date du décès",
   "death_year": "Année du décès",
   "descending": "Descendant",
@@ -681,6 +751,14 @@
     "edit_entity_title": "Éditer {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Inclure les objets liés dans l'exportation",
     "export_title": "Exporter",
+    "imagewall": {
+      "direction": {
+        "column": "Colonne",
+        "description": "Agencement en colonnes ou en lignes.",
+        "row": "Ligne"
+      },
+      "margin_desc": "Nombre de pixels de marge autour de chaque image entière."
+    },
     "lightbox": {
       "delay": "Délai (Secondes)",
       "display_mode": {
@@ -690,6 +768,7 @@
         "original": "Original"
       },
       "options": "Options",
+      "page_header": "Page {page} / {total}",
       "reset_zoom_on_nav": "Réinitialisation du facteur de zoom lors d'un changement d'image",
       "scale_up": {
         "description": "Redimensionner les petites images pour les adapter à l'écran",
@@ -717,11 +796,12 @@
       "destination": "Réaffecter à"
     },
     "scene_gen": {
+      "covers": "Vignettes de scène",
       "force_transcodes": "Forcer la génération du transcodage",
       "force_transcodes_tooltip": "Par défaut, les transcodes ne sont générés que lorsque le fichier vidéo n'est pas pris en charge par le navigateur. Activé, les transcodes seront générés même si le fichier vidéo semble être pris en charge par le navigateur.",
       "image_previews": "Aperçus d'images animées",
       "image_previews_tooltip": "Aperçu WebP animé, requis uniquement si le mode d'aperçu est défini sur Image animée.",
-      "interactive_heatmap_speed": "Générer des cartes de fréquentation et vitesses pour les scènes interactives",
+      "interactive_heatmap_speed": "Générer des cartes thermiques et vitesses pour les scènes interactives",
       "marker_image_previews": "Aperçus animés des marqueurs",
       "marker_image_previews_tooltip": "Aperçus WebP animés de marqueurs, requis uniquement si le mode d'aperçu est défini sur Image animée.",
       "marker_screenshots": "Captures d'écran des marqueurs",
@@ -806,6 +886,11 @@
     "warmth": "Température"
   },
   "empty_server": "Ajoutez quelques scènes à votre serveur pour afficher les recommandations sur cette page.",
+  "errors": {
+    "image_index_greater_than_zero": "L'index de l'image doit être supérieur à 0",
+    "lazy_component_error_help": "Si vous avez récemment mis à jour Stash, merci de recharger la page ou de vider le cache de votre navigateur.",
+    "something_went_wrong": "Quelque chose n'a pas fonctionné."
+  },
   "ethnicity": "Ethnicité",
   "existing_value": "valeur existante",
   "eye_color": "Couleur des yeux",
@@ -853,6 +938,7 @@
     "syncing": "Synchronisation avec le serveur",
     "uploading": "Script de chargement"
   },
+  "hasChapters": "A des chapitres",
   "hasMarkers": "Dispose de marqueurs",
   "height": "Taille",
   "height_cm": "Taille (cm)",
@@ -860,6 +946,7 @@
   "ignore_auto_tag": "Ignorer l'étiquetage automatique",
   "image": "Image",
   "image_count": "Nombre d'Images",
+  "image_index": "Image #",
   "images": "Images",
   "include_parent_tags": "Inclure les étiquettes parentes",
   "include_sub_studios": "Inclure les studios affiliés",
@@ -958,7 +1045,7 @@
     "updating_untagged_performers_description": "Une mise à jour des performeurs non étiquetés essaiera de faire correspondre tous les performeurs qui n'ont pas de StashID et actualisera les métadonnées."
   },
   "performers": "Performeurs",
-  "piercings": "Perçages",
+  "piercings": "Piercings",
   "play_count": "Compteur de lecture",
   "play_duration": "Temps de lecture",
   "primary_file": "Fichier principal",
@@ -972,7 +1059,7 @@
   "resume_time": "Reprendre le temps",
   "scene": "Scène",
   "sceneTagger": "Étiqueteuse de scènes",
-  "sceneTags": "Étiquettes de scène",
+  "sceneTags": "Étiquettes de la scène",
   "scene_code": "Code studio",
   "scene_count": "Nombre de scènes",
   "scene_created_at": "Scène créée le",
@@ -982,7 +1069,7 @@
   "scenes": "Scènes",
   "scenes_updated_at": "Scène actualisée le",
   "search_filter": {
-    "add_filter": "Ajouter un filtre",
+    "edit_filter": "Modifier le filtre",
     "name": "Filtre",
     "saved_filters": "Filtres sauvegardés",
     "update_filter": "Filtre actualisé"
@@ -992,8 +1079,12 @@
   "setup": {
     "confirm": {
       "almost_ready": "Nous sommes presque prêts à terminer la configuration. Confirmez les paramètres suivants. Vous pouvez revenir en arrière pour modifier toute erreur. Si tout semble correct, cliquez sur Confirmer pour créer votre système.",
+      "blobs_directory": "Répertoire de données binaires",
+      "cache_directory": "Répertoire du cache",
       "configuration_file_location": "Emplacement du fichier de configuration :",
       "database_file_path": "Chemin du fichier de base de données",
+      "default_blobs_location": "<utiliser la base de données>",
+      "default_cache_location": "<chemin contenant le fichier de configuration>/cache",
       "default_db_location": "<chemin contenant le fichier de configuration>/stash-go.sqlite",
       "default_generated_content_location": "<chemin contenant le fichier de configuration>/generated",
       "generated_directory": "Répertoire généré",
@@ -1029,12 +1120,20 @@
     },
     "paths": {
       "database_filename_empty_for_default": "Nom de fichier de la base de données (vide par défaut)",
-      "description": "Ensuite, nous devons déterminer où trouver votre collection pornographique, où stocker la base de données Stash et les fichiers générés. Ces paramètres peuvent être modifiés ultérieurement si nécessaire.",
+      "description": "Ensuite, nous devons déterminer où trouver votre collection pornographique, et où stocker la base de données Stash, les fichiers générés et les fichiers cache. Ces paramètres peuvent être modifiés ultérieurement si nécessaire.",
+      "path_to_blobs_directory_empty_for_database": "chemin vers le répertoire blobs (vide pour utiliser la base de données)",
+      "path_to_cache_directory_empty_for_default": "chemin du répertoire du cache (vide par défaut)",
       "path_to_generated_directory_empty_for_default": "Chemin vers le répertoire généré (vide par défaut)",
       "set_up_your_paths": "Configurez vos chemins",
       "stash_alert": "Aucun chemin de bibliothèque n'a été sélectionné. Aucun média ne pourra être analysé dans Stash. En êtes-vous sûr ?",
+      "where_can_stash_store_blobs": "Où Stash peut-il stocker les données binaires de la base de données ?",
+      "where_can_stash_store_blobs_description": "Stash peut stocker des données binaires telles que les vignettes de scènes, les images de performeurs, de studios et de tags, soit dans la base de données, soit dans le système de fichiers. Par défaut, ces données sont stockées dans le système de fichiers, dans le sous-répertoire <code>blobs</code>. Si vous souhaitez modifier cela, veuillez saisir un chemin absolu ou relatif (par rapport au répertoire de travail actuel). Stash créera ce sous-répertoire s'il n'existe pas déjà.",
+      "where_can_stash_store_blobs_description_addendum": "Alternativement, si vous souhaitez stocker ces données dans la base de données, vous pouvez laisser ce champ vide. <strong>Remarque :</strong> cela augmentera la taille de votre base de données et son temps de migration.",
+      "where_can_stash_store_cache_files": "Où Stash peut-il stocker les fichiers cache ?",
+      "where_can_stash_store_cache_files_description": "Pour que certaines fonctionnalités telles que le transcodage en temps réel HLS/DASH puissent fonctionner, Stash a besoin d'un répertoire de cache pour les fichiers temporaires. Par défaut, Stash créera un sous-répertoire <code>cache</code> dans le répertoire contenant votre fichier de configuration. Si vous souhaitez le modifier, merci de saisir un chemin absolu ou relatif (par rapport au répertoire de travail actuel). Stash créera ce sous-répertoire s'il n'existe pas déjà.",
       "where_can_stash_store_its_database": "Où Stash peut-il stocker sa base de données ?",
-      "where_can_stash_store_its_database_description": "Stash utilise une base de données sqlite pour stocker vos métadonnées pornographiques. Par défaut, cette base sera créée en tant que <code>stash-go.sqlite</code> dans le répertoire contenant votre fichier de configuration. Si vous souhaitez modifier cela, saisissez un nom de fichier absolu ou relatif ( vers le répertoire de travail actuel).",
+      "where_can_stash_store_its_database_description": "Stash utilise une base de données SQLite pour stocker vos métadonnées pornographiques. Par défaut, cette base sera créée en tant que <code>stash-go.sqlite</code> dans le répertoire contenant votre fichier de configuration. Si vous souhaitez modifier cela, saisissez un nom de fichier absolu ou relatif ( vers le répertoire de travail actuel).",
+      "where_can_stash_store_its_database_warning": "AVERTISSEMENT : Le stockage de la base de données sur un système différent de celui à partir duquel Stash est exécuté (par exemple, le stockage de la base de données sur un NAS tout en exécutant le serveur Stash sur un autre ordinateur) est <strong>non pris en charge</strong> ! SQLite n'est pas conçu pour être utilisé sur un réseau, et toute tentative de le faire peut très facilement entraîner la corruption de l'ensemble de votre base de données.",
       "where_can_stash_store_its_generated_content": "Où Stash peut-il stocker son contenu généré ?",
       "where_can_stash_store_its_generated_content_description": "Afin de produire les vignettes, aperçus et sprites, Stash génère des images et des vidéos. Cela inclut également les transcodes pour les formats de fichiers non pris en charge. Par défaut, Stash crée un répertoire <code>generated</code> dans le répertoire contenant votre fichier de configuration. Si vous souhaitez modifier l'emplacement où seront stockés les médias générés, veuillez saisir un chemin absolu ou relatif ( vers le répertoire de travail actuel). Stash créera ce répertoire s'il n'existe pas déjà.",
       "where_is_your_porn_located": "Où se trouve votre porno ?",
@@ -1094,7 +1193,7 @@
   "sub_tags": "Étiquettes affiliées",
   "subsidiary_studios": "Studios affiliés",
   "synopsis": "Résumé",
-  "tag": "Étiquettes",
+  "tag": "Étiquette",
   "tag_count": "Nombre d'étiquettes",
   "tags": "Étiquettes",
   "tattoos": "Tatouages",
@@ -1106,6 +1205,7 @@
     "default_filter_set": "Filtre par défaut défini",
     "delete_past_tense": "{count, plural, one {{singularEntity} supprimé} other {{pluralEntity} supprimés}}",
     "generating_screenshot": "Génération de la capture d'écran…",
+    "image_index_too_large": "Erreur : L'index de l'image est plus grand que le nombre d'images dans la galerie",
     "merged_scenes": "Scènes fusionnées",
     "merged_tags": "Étiquettes fusionnées",
     "reassign_past_tense": "Fichier réaffecté",
@@ -1124,7 +1224,9 @@
   "updated_at": "Actualisé le",
   "url": "URL",
   "validation": {
-    "aliases_must_be_unique": "Les alias doivent être uniques"
+    "aliases_must_be_unique": "Les alias doivent être uniques",
+    "date_invalid_form": "${path} doit être au format AAAA-MM-JJ",
+    "required": "${path} est un champ requis"
   },
   "videos": "Vidéos",
   "view_all": "Tout voir",

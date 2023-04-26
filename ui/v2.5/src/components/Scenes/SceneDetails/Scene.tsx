@@ -28,7 +28,11 @@ import { OCounterButton } from "./OCounterButton";
 import { OrganizedButton } from "./OrganizedButton";
 import { ConfigurationContext } from "src/hooks/Config";
 import { getPlayerPosition } from "src/components/ScenePlayer/util";
-import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
+import {
+  faEllipsisV,
+  faChevronRight,
+  faChevronLeft,
+} from "@fortawesome/free-solid-svg-icons";
 import { lazyComponent } from "src/utils/lazyComponent";
 
 const SubmitStashBoxDraft = lazyComponent(
@@ -464,8 +468,8 @@ const ScenePage: React.FC<IProps> = ({
     </Tab.Container>
   );
 
-  function getCollapseButtonText() {
-    return collapsed ? ">" : "<";
+  function getCollapseButtonIcon() {
+    return collapsed ? faChevronRight : faChevronLeft;
   }
 
   const title = objectTitle(scene);
@@ -500,7 +504,7 @@ const ScenePage: React.FC<IProps> = ({
       </div>
       <div className="scene-divider d-none d-xl-block">
         <Button onClick={() => setCollapsed(!collapsed)}>
-          {getCollapseButtonText()}
+          <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
         </Button>
       </div>
       <SubmitStashBoxDraft

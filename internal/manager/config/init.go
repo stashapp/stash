@@ -24,6 +24,7 @@ type flagStruct struct {
 	configFilePath string
 	cpuProfilePath string
 	nobrowser      bool
+	helpFlag       bool
 }
 
 func GetInstance() *Instance {
@@ -40,6 +41,12 @@ func Initialize() (*Instance, error) {
 	var err error
 	initOnce.Do(func() {
 		flags := initFlags()
+
+		if flags.helpFlag {
+			pflag.Usage()
+			os.Exit(0)
+		}
+
 		overrides := makeOverrideConfig()
 
 		_ = GetInstance()
@@ -126,6 +133,7 @@ func initFlags() flagStruct {
 	pflag.StringVarP(&flags.configFilePath, "config", "c", "", "config file to use")
 	pflag.StringVar(&flags.cpuProfilePath, "cpuprofile", "", "write cpu profile to file")
 	pflag.BoolVar(&flags.nobrowser, "nobrowser", false, "Don't open a browser window after launch")
+	pflag.BoolVarP(&flags.helpFlag, "help", "h", false, "show this help text and exit")
 
 	pflag.Parse()
 

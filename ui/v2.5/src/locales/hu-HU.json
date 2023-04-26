@@ -30,7 +30,7 @@
     "download_backup": "Biztonsági Mentés Letöltése",
     "edit": "Módosít",
     "edit_entity": "{entityType} Módosítása",
-    "export": "Exportálás…",
+    "export": "Exportálás",
     "export_all": "Összes exportálása…",
     "find": "Keresés",
     "finish": "Befejez",
@@ -465,7 +465,6 @@
   "scene_id": "Jelenet ID",
   "scenes": "Jelenetek",
   "search_filter": {
-    "add_filter": "Szűrő Hozzáadása",
     "name": "Szűrő",
     "saved_filters": "Mentett szűrők",
     "update_filter": "Szűrő Frissítése"

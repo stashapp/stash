@@ -170,6 +170,10 @@ $sceneTabWidth: 450px;
   }
 
   .vjs-source-selector {
+    &.vjs-hover .vjs-menu {
+      display: none;
+    }
+
     .vjs-menu li {
       font-size: 0.8em;
     }
@@ -355,13 +359,13 @@ $sceneTabWidth: 450px;
   border: 1px solid #555;
   color: $link-color;
   cursor: pointer;
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   font-weight: 800;
   height: 100%;
   line-height: $scrubberHeight;
   padding: 0;
   text-align: center;
-  width: 1.3rem;
+  width: 1.8rem;
 }
 
 .scrubber-content {

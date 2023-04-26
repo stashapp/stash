@@ -213,7 +213,7 @@ func (db *Database) Close() error {
 
 func (db *Database) open(disableForeignKeys bool) (*sqlx.DB, error) {
 	// https://github.com/mattn/go-sqlite3
-	url := "file:" + db.dbPath + "?_journal=WAL&_sync=NORMAL"
+	url := "file:" + db.dbPath + "?_journal=WAL&_sync=NORMAL&_busy_timeout=50"
 	if !disableForeignKeys {
 		url += "&_fk=true"
 	}

@@ -232,8 +232,13 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.GalleryCoverRegex, *input.GalleryCoverRegex)
 	}
 
-	if input.Username != nil {
+	if input.Username != nil && *input.Username != c.GetUsername() {
 		c.Set(config.Username, input.Username)
+		if *input.Password == "" {
+			logger.Info("Username cleared")
+		} else {
+			logger.Info("Username changed")
+		}
 	}
 
 	if input.Password != nil {
@@ -242,6 +247,11 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		currentPWHash := c.GetPasswordHash()
 
 		if *input.Password != currentPWHash {
+			if *input.Password == "" {
+				logger.Info("Password cleared")
+			} else {
+				logger.Info("Password changed")
+			}
 			c.SetPassword(*input.Password)
 		}
 	}
@@ -559,7 +569,9 @@ func (r *mutationResolver) ConfigureDefaults(ctx context.Context, input ConfigDe
 	}
 
 	if input.Scan != nil {
-		c.Set(config.DefaultScanSettings, input.Scan)
+		// if input.Scan is used then ScanMetadataOptions is included in the config file
+		// this causes the values to not be read correctly
+		c.Set(config.DefaultScanSettings, input.Scan.ScanMetadataOptions)
 	}
 
 	if input.AutoTag != nil {

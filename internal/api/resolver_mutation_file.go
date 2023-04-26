@@ -13,8 +13,9 @@ import (
 
 func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) (bool, error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.File
-		mover := file.NewMover(qb)
+		fileStore := r.repository.File
+		folderStore := r.repository.Folder
+		mover := file.NewMover(fileStore, folderStore)
 		mover.RegisterHooks(ctx, r.txnManager)
 
 		var (
@@ -36,13 +37,17 @@ func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) 
 				return fmt.Errorf("invalid folder id %s: %w", *input.DestinationFolderID, err)
 			}
 
-			folder, err = r.repository.Folder.Find(ctx, file.FolderID(folderID))
+			folder, err = folderStore.Find(ctx, file.FolderID(folderID))
 			if err != nil {
 				return fmt.Errorf("finding destination folder: %w", err)
 			}
 
 			if folder == nil {
 				return fmt.Errorf("folder with id %d not found", input.DestinationFolderID)
+			}
+
+			if folder.ZipFileID != nil {
+				return fmt.Errorf("cannot move to %s, is in a zip file", folder.Path)
 			}
 		case input.DestinationFolder != nil:
 			folderPath := *input.DestinationFolder
@@ -54,7 +59,7 @@ func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) 
 
 			// get or create folder hierarchy
 			var err error
-			folder, err = file.GetOrCreateFolderHierarchy(ctx, r.repository.Folder, folderPath)
+			folder, err = file.GetOrCreateFolderHierarchy(ctx, folderStore, folderPath)
 			if err != nil {
 				return fmt.Errorf("getting or creating folder hierarchy: %w", err)
 			}
@@ -78,7 +83,7 @@ func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) 
 
 		for _, fileIDInt := range fileIDs {
 			fileID := file.ID(fileIDInt)
-			f, err := qb.Find(ctx, fileID)
+			f, err := fileStore.Find(ctx, fileID)
 			if err != nil {
 				return fmt.Errorf("finding file %d: %w", fileID, err)
 			}
