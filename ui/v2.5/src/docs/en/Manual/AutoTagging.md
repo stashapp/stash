@@ -1,6 +1,6 @@
 # Auto Tagging
 
-When media filepaths or filenames contain a Performer, Studio, or Tag name, it is assigned those Performers, Studios, and Tags. It will **only** tag based on Performer, Studio, and Tag names that already exist in your database.
+When media filepaths or filenames contain a Performer, Studio, or Tag name, it is assigned those Performers, Studios, and Tags. It will **only** tag based on Performer, Studio, and Tag names that exist in your database.
 
 When the Performer/Studio/Tag name has multiple words, the search will include paths/filenames where the Performer/Studio/Tag name is separated with `.`, `-`, `_`, and whitespace characters.
 
