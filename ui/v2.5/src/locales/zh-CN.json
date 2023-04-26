@@ -130,6 +130,9 @@
   "birth_year": "出生年份",
   "birthdate": "出生日期",
   "bitrate": "比特率",
+  "blobs_storage_type": {
+    "filesystem": "文件系统"
+  },
   "captions": "字幕",
   "career_length": "工龄",
   "component_tagger": {
@@ -185,6 +188,7 @@
       "latest_version": "最新版本",
       "latest_version_build_hash": "最新版本识别码:",
       "new_version_notice": "[新版本]",
+      "release_date": "发布日期：",
       "stash_discord": "加入我们的 {url} 频道",
       "stash_home": "Stash 主页在 {url}",
       "stash_open_collective": "通过 {url} 支持我们",
@@ -255,7 +259,10 @@
         "description": "备份SQLite 数据库文件的目录路径",
         "heading": "备份用的路径"
       },
-      "cache_location": "缓存目录的位置",
+      "blobs_path": {
+        "description": "在文件系统中存储二进制数据的位置。仅在使用 Filesystem blob 存储类型时适用。警告：更改此项需要手动移动现有数据。"
+      },
+      "cache_location": "缓存的目录位置。如果使用 HLS（例如在 Apple 设备上）或 DASH 进行流传输，则需要该位置。",
       "cache_path_head": "缓存路径",
       "calculate_md5_and_ohash_desc": "除了快搜码外还计算 MD5 值。如果开启，初次扫描时速度会较慢。如果关闭 MD5 值计算，则必须将文件名识别码算法设置为快搜码.",
       "calculate_md5_and_ohash_label": "计算影片MD5值",
@@ -272,6 +279,9 @@
       "excluded_video_patterns_desc": "要从扫描中排除并会被[清除]功能所移除的视频文件/路径的正则表达式",
       "excluded_video_patterns_head": "视频排除规则",
       "ffmpeg": {
+        "hardware_acceleration": {
+          "desc": "使用可用的硬件对视频进行编码来用于实时转码。"
+        },
         "live_transcode": {
           "input_args": {
             "desc": "高级：当直播转码的视频时，在输入参数前要传给ffmpeg用的附加参数。",
@@ -328,7 +338,7 @@
         "heading": "网页挖掘器路径"
       },
       "scraping": "挖掘器设置",
-      "sqlite_location": "Sqlite 数据库的位置（需要重启）",
+      "sqlite_location": "SQLite 数据库的位置（需要重启）。警告：不支持将数据库放在与 Stash 服务器以外的系统上（即通过网络）！",
       "video_ext_desc": "逗号(半角)分隔的文件扩展名列表，将被标识为视频。",
       "video_ext_head": "视频扩展名",
       "video_head": "视频设置"
@@ -426,7 +436,13 @@
       "incremental_import": "从导出的 zip 文件增量导入。",
       "job_queue": "任务队列",
       "maintenance": "维护",
+      "migrate_blobs": {
+        "delete_old": "删除旧数据"
+      },
       "migrate_hash_files": "使用更改之后的识别码算法重新命名已经存在的文件到新的识别码格式。",
+      "migrate_scene_screenshots": {
+        "delete_files": "删除截图文件"
+      },
       "migrations": "迁移",
       "only_dry_run": "仅模拟运行，不要删除任何东西",
       "plugin_tasks": "插件任务",
@@ -498,6 +514,9 @@
           "heading": "禁止下拉菜单建立"
         },
         "heading": "编辑",
+        "max_options_shown": {
+          "label": "在选择下拉列表中显示的最大项数"
+        },
         "rating_system": {
           "star_precision": {
             "label": "评分星的精度",
@@ -536,6 +555,9 @@
       },
       "image_lightbox": {
         "heading": "图片灯箱"
+      },
+      "image_wall": {
+        "margin": "边距（像素）"
       },
       "images": {
         "heading": "图片",
@@ -712,6 +734,7 @@
         "original": "原图"
       },
       "options": "选项",
+      "page_header": "第 {page} 页，共 {total} 页",
       "reset_zoom_on_nav": "图片改动时重设缩放度",
       "scale_up": {
         "description": "放大小图到整屏",
@@ -828,6 +851,10 @@
     "warmth": "色温"
   },
   "empty_server": "增加一些短片到服务器以看到本页面的推荐。",
+  "errors": {
+    "lazy_component_error_help": "如果您最近升级了 Stash，请重新加载页面或清除浏览器缓存。",
+    "something_went_wrong": "出了些问题。"
+  },
   "ethnicity": "人种",
   "existing_value": "现值",
   "eye_color": "瞳孔颜色",
