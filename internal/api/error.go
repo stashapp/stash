@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"errors"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/stashapp/stash/pkg/logger"
@@ -13,7 +14,7 @@ func gqlErrorHandler(ctx context.Context, e error) *gqlerror.Error {
 	// log all errors - for now just log the error message
 	// we can potentially add more context later
 	fc := graphql.GetFieldContext(ctx)
-	if fc != nil {
+	if fc != nil && !errors.Is(e, context.Canceled) {
 		logger.Errorf("%s: %v", fc.Path(), e)
 
 		// log the args in debug level
