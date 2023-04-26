@@ -60,6 +60,8 @@
     "merge": "合并",
     "merge_from": "合并源",
     "merge_into": "合并入",
+    "migrate_blobs": "迁移数据",
+    "migrate_scene_screenshots": "迁移截图",
     "next_action": "下一个",
     "not_running": "未运行",
     "open_in_external_player": "由外部播放器打开",
@@ -131,6 +133,7 @@
   "birthdate": "出生日期",
   "bitrate": "比特率",
   "blobs_storage_type": {
+    "database": "数据库",
     "filesystem": "文件系统"
   },
   "captions": "字幕",
@@ -260,7 +263,12 @@
         "heading": "备份用的路径"
       },
       "blobs_path": {
-        "description": "在文件系统中存储二进制数据的位置。仅在使用 Filesystem blob 存储类型时适用。警告：更改此项需要手动移动现有数据。"
+        "description": "在文件系统中存储二进制数据的位置。仅在使用 Filesystem blob 存储类型时适用。警告：更改此项需要手动移动现有数据。",
+        "heading": "二进制数据文件储存路径"
+      },
+      "blobs_storage": {
+        "description": "存储二进制数据（如场景封面、表演者、工作室和标签图像）的地方。在改变这个值之后，必须使用迁移数据任务来迁移现有数据。参见迁移数据任务页面。",
+        "heading": "二进制数据存储类型"
       },
       "cache_location": "缓存的目录位置。如果使用 HLS（例如在 Apple 设备上）或 DASH 进行流传输，则需要该位置。",
       "cache_path_head": "缓存路径",
@@ -272,6 +280,7 @@
       "chrome_cdp_path_desc": "谷歌浏览器 可执行文件的路径, 或者远端地址 (以 http:// 或 https:// 开头, 比如 http://localhost:9222/json/version)。",
       "create_galleries_from_folders_desc": "如果勾选，则会从包含图片的文件夹建立图库。",
       "create_galleries_from_folders_label": "从包含图片的文件夹建立图库",
+      "database": "数据库",
       "db_path_head": "数据库所在路径",
       "directory_locations_to_your_content": "你的影片等收藏的路径",
       "excluded_image_gallery_patterns_desc": "要从扫描中排除并会被[清除]功能所移除的图片及图库文件/路径的正则表达式",
