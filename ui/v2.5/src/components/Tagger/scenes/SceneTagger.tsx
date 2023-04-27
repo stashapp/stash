@@ -207,7 +207,7 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
     // Give priority to the most exact matches
     if (exactPhashMatchSceneA != exactPhashMatchSceneB) {
       return exactPhashMatchSceneB - exactPhashMatchSceneA;
-    } else {
+    } else if (exactPhashMatchSceneA > 0) {
       // Same exact matches, check for most durations before moving on to similar phash matches
       if (nbDurationMatchSceneA != nbDurationMatchSceneB) {
         return nbDurationMatchSceneB - nbDurationMatchSceneA;
