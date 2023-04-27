@@ -66,47 +66,76 @@ class LogEntry {
   }
 }
 
-// maximum number of log entries to keep - entries are discarded oldest-first
-const MAX_LOG_ENTRIES = 50000;
-// maximum number of log entries to display
-const MAX_DISPLAY_LOG_ENTRIES = 1000;
-const logLevels = ["Trace", "Debug", "Info", "Warning", "Error"];
+// maximum number of log entries to display - entries are discarded oldest-first
+const MAX_LOG_ENTRIES = 1000;
+
+const logLevels = {
+  Trace: GQL.LogLevel.Trace,
+  Debug: GQL.LogLevel.Debug,
+  Info: GQL.LogLevel.Info,
+  Warning: GQL.LogLevel.Warning,
+  Error: GQL.LogLevel.Error,
+};
 
 export const SettingsLogsPanel: React.FC = () => {
-  const [entries, setEntries] = useState<LogEntry[]>([]);
-  const { data, error } = useLoggingSubscribe();
-  const [logLevel, setLogLevel] = useState<string>("Info");
   const intl = useIntl();
+  const [entries, setEntries] = useState<LogEntry[]>([]);
+  const [logLevel, setLogLevel] = useState(GQL.LogLevel.Info);
+
+  const [subscribe, setSubscribe] = useState(false);
+  const { data, error: subscriptionError } = useLoggingSubscribe(
+    logLevel,
+    !subscribe
+  );
+
+  const [error, setError] = useState<Error>();
+
+  function onChangeLogLevel(v: string) {
+    const level = logLevels[v as keyof typeof logLevels];
+    setLogLevel(level);
+  }
 
   useEffect(() => {
-    async function getInitialLogs() {
-      const logQuery = await queryLogs();
-      if (logQuery.error) return;
+    async function setInitialLogs() {
+      let logQuery;
+      try {
+        logQuery = await queryLogs(logLevel);
+      } catch (e) {
+        setError(e as Error);
+        return;
+      }
+      if (logQuery.error) {
+        setError(logQuery.error);
+        return;
+      }
+      setError(undefined);
 
       const initEntries = logQuery.data.logs.map((e) => new LogEntry(e));
-      if (initEntries.length !== 0) {
-        setEntries((prev) => {
-          return [...prev, ...initEntries].slice(0, MAX_LOG_ENTRIES);
-        });
-      }
+      setEntries(initEntries.slice(0, MAX_LOG_ENTRIES));
+      setSubscribe(true);
     }
 
-    getInitialLogs();
-  }, []);
+    setSubscribe(false);
+    setInitialLogs();
+  }, [logLevel]);
+
+  useEffect(() => {
+    if (subscriptionError) {
+      setError(subscriptionError);
+    }
+  }, [subscriptionError]);
 
   useEffect(() => {
     if (!data) return;
 
     const newEntries = data.loggingSubscribe.map((e) => new LogEntry(e));
+    if (newEntries.length === 0) return;
+
     newEntries.reverse();
     setEntries((prev) => {
       return [...newEntries, ...prev].slice(0, MAX_LOG_ENTRIES);
     });
   }, [data]);
-
-  const displayEntries = entries
-    .filter(filterByLogLevel)
-    .slice(0, MAX_DISPLAY_LOG_ENTRIES);
 
   function maybeRenderError() {
     if (error) {
@@ -118,15 +147,6 @@ export const SettingsLogsPanel: React.FC = () => {
     }
   }
 
-  function filterByLogLevel(logEntry: LogEntry) {
-    if (logLevel === "Trace") return true;
-
-    const logLevelIndex = logLevels.indexOf(logLevel);
-    const levelIndex = logLevels.indexOf(logEntry.level);
-
-    return levelIndex >= logLevelIndex;
-  }
-
   return (
     <>
       <h2>{intl.formatMessage({ id: "config.tasks.job_queue" })}</h2>
@@ -136,9 +156,9 @@ export const SettingsLogsPanel: React.FC = () => {
           id="log-level"
           headingID="config.logs.log_level"
           value={logLevel}
-          onChange={(v) => setLogLevel(v)}
+          onChange={onChangeLogLevel}
         >
-          {logLevels.map((level) => (
+          {Object.keys(logLevels).map((level) => (
             <option key={level} value={level}>
               {level}
             </option>
@@ -148,7 +168,7 @@ export const SettingsLogsPanel: React.FC = () => {
 
       <div className="logs">
         {maybeRenderError()}
-        {displayEntries.map((logEntry) => (
+        {entries.map((logEntry) => (
           <LogElement logEntry={logEntry} key={logEntry.id} />
         ))}
       </div>

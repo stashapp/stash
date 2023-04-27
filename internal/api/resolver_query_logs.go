@@ -4,11 +4,17 @@ import (
 	"context"
 
 	"github.com/stashapp/stash/internal/manager"
+	"github.com/stashapp/stash/pkg/models"
 )
 
-func (r *queryResolver) Logs(ctx context.Context) ([]*LogEntry, error) {
+func (r *queryResolver) Logs(ctx context.Context, minLevel *models.LogLevel) ([]*LogEntry, error) {
 	logger := manager.GetInstance().Logger
-	logCache := logger.GetLogCache()
+	level := ""
+	if minLevel != nil {
+		level = minLevel.String()
+	}
+	logCache := logger.GetLogCache(level)
+
 	ret := make([]*LogEntry, len(logCache))
 
 	for i, entry := range logCache {

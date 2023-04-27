@@ -48,8 +48,8 @@ query Stats {
   }
 }
 
-query Logs {
-  logs {
+query Logs($minLevel: LogLevel) {
+  logs(minLevel: $minLevel) {
     ...LogEntryData
   }
 }

@@ -1,6 +1,7 @@
 package log
 
 import (
+	"container/list"
 	"fmt"
 	"os"
 	"strings"
@@ -9,6 +10,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 )
+
+const CACHE_SIZE = 1000
 
 type LogItem struct {
 	Time    time.Time `json:"time"`
@@ -20,18 +23,33 @@ type Logger struct {
 	logger         *logrus.Logger
 	progressLogger *logrus.Logger
 	mutex          sync.Mutex
-	logCache       []LogItem
+	logCache       logCache
 	logSubs        []chan []LogItem
 	waiting        bool
 	lastBroadcast  time.Time
 	logBuffer      []LogItem
 }
 
+type logCache struct {
+	trace   *list.List
+	debug   *list.List
+	info    *list.List
+	warning *list.List
+	error   *list.List
+}
+
 func NewLogger() *Logger {
 	ret := &Logger{
 		logger:         logrus.New(),
 		progressLogger: logrus.New(),
-		lastBroadcast:  time.Now(),
+		logCache: logCache{
+			trace:   list.New(),
+			debug:   list.New(),
+			info:    list.New(),
+			warning: list.New(),
+			error:   list.New(),
+		},
+		lastBroadcast: time.Now(),
 	}
 
 	ret.progressLogger.SetFormatter(new(ProgressFormatter))
@@ -89,35 +107,58 @@ func (log *Logger) Init(logFile string, logOut bool, logLevel string) {
 }
 
 func (log *Logger) SetLogLevel(level string) {
-	log.logger.Level = logLevelFromString(level)
+	log.logger.Level = logLevelFromString(level, logrus.InfoLevel)
 }
 
-func logLevelFromString(level string) logrus.Level {
-	ret := logrus.InfoLevel
-
+func logLevelFromString(level string, defaultLevel logrus.Level) logrus.Level {
 	switch strings.ToLower(level) {
 	case "debug":
-		ret = logrus.DebugLevel
+		return logrus.DebugLevel
+	case "info":
+		return logrus.InfoLevel
 	case "warning":
-		ret = logrus.WarnLevel
+		return logrus.WarnLevel
 	case "error":
-		ret = logrus.ErrorLevel
+		return logrus.ErrorLevel
 	case "trace":
-		ret = logrus.TraceLevel
+		return logrus.TraceLevel
 	}
 
-	return ret
+	return defaultLevel
 }
 
+func addToCacheList(cache *list.List, l *LogItem) {
+	// remove last item if list is full
+	if cache.Len() == CACHE_SIZE {
+		cache.Remove(cache.Back())
+	}
+	// prepend new item
+	cache.PushFront(l)
+}
+
+// assumes mutex held
 func (log *Logger) addToCache(l *LogItem) {
-	// assumes mutex held
-	// only add to cache if meets minimum log level
-	level := logLevelFromString(l.Type)
-	if level <= log.logger.Level {
-		log.logCache = append([]LogItem{*l}, log.logCache...)
-		if len(log.logCache) > 30 {
-			log.logCache = log.logCache[:len(log.logCache)-1]
-		}
+	switch logLevelFromString(l.Type, logrus.DebugLevel) {
+	case logrus.TraceLevel:
+		addToCacheList(log.logCache.trace, l)
+	case logrus.DebugLevel:
+		addToCacheList(log.logCache.trace, l)
+		addToCacheList(log.logCache.debug, l)
+	case logrus.InfoLevel:
+		addToCacheList(log.logCache.trace, l)
+		addToCacheList(log.logCache.debug, l)
+		addToCacheList(log.logCache.info, l)
+	case logrus.WarnLevel:
+		addToCacheList(log.logCache.trace, l)
+		addToCacheList(log.logCache.debug, l)
+		addToCacheList(log.logCache.info, l)
+		addToCacheList(log.logCache.warning, l)
+	case logrus.ErrorLevel:
+		addToCacheList(log.logCache.trace, l)
+		addToCacheList(log.logCache.debug, l)
+		addToCacheList(log.logCache.info, l)
+		addToCacheList(log.logCache.warning, l)
+		addToCacheList(log.logCache.error, l)
 	}
 }
 
@@ -125,15 +166,40 @@ func (log *Logger) addLogItem(l *LogItem) {
 	log.mutex.Lock()
 	l.Time = time.Now()
 	log.addToCache(l)
+	log.logBuffer = append(log.logBuffer, *l)
 	log.mutex.Unlock()
 	go log.broadcastLogItem(l)
 }
 
-func (log *Logger) GetLogCache() []LogItem {
+// Returns a list of recent log items, with more recent items first.
+// minLevel sets the minimum log level of items to return.
+// set minLevel to the empty string to return all items.
+func (log *Logger) GetLogCache(minLevel string) []*LogItem {
+	level := logLevelFromString(minLevel, logrus.TraceLevel)
+
 	log.mutex.Lock()
 
-	ret := make([]LogItem, len(log.logCache))
-	copy(ret, log.logCache)
+	var items *list.List
+
+	switch level {
+	case logrus.TraceLevel:
+		items = log.logCache.trace
+	case logrus.DebugLevel:
+		items = log.logCache.debug
+	case logrus.InfoLevel:
+		items = log.logCache.info
+	case logrus.WarnLevel:
+		items = log.logCache.warning
+	case logrus.ErrorLevel:
+		items = log.logCache.error
+	}
+
+	ret := make([]*LogItem, items.Len())
+	i := 0
+	for e := items.Front(); e != nil; e = e.Next() {
+		ret[i] = e.Value.(*LogItem)
+		i++
+	}
 
 	log.mutex.Unlock()
 
@@ -185,8 +251,6 @@ func (log *Logger) doBroadcastLogItems() {
 func (log *Logger) broadcastLogItem(l *LogItem) {
 	log.mutex.Lock()
 
-	log.logBuffer = append(log.logBuffer, *l)
-
 	// don't send more than once per second
 	if !log.waiting {
 		// if last broadcast was under a second ago, wait until a second has
@@ -204,17 +268,11 @@ func (log *Logger) broadcastLogItem(l *LogItem) {
 		}
 	}
 
-	// if waiting then adding it to the buffer is sufficient
 	log.mutex.Unlock()
 }
 
 func (log *Logger) Progressf(format string, args ...interface{}) {
 	log.progressLogger.Infof(format, args...)
-	l := &LogItem{
-		Type:    "progress",
-		Message: fmt.Sprintf(format, args...),
-	}
-	log.addLogItem(l)
 }
 
 func (log *Logger) Trace(args ...interface{}) {
@@ -236,10 +294,8 @@ func (log *Logger) Tracef(format string, args ...interface{}) {
 }
 
 func (log *Logger) TraceFunc(fn func() (string, []interface{})) {
-	if log.logger.Level >= logrus.TraceLevel {
-		msg, args := fn()
-		log.Tracef(msg, args...)
-	}
+	msg, args := fn()
+	log.Tracef(msg, args...)
 }
 
 func (log *Logger) Debug(args ...interface{}) {
@@ -260,15 +316,9 @@ func (log *Logger) Debugf(format string, args ...interface{}) {
 	log.addLogItem(l)
 }
 
-func (log *Logger) logFunc(level logrus.Level, logFn func(format string, args ...interface{}), fn func() (string, []interface{})) {
-	if log.logger.Level >= level {
-		msg, args := fn()
-		logFn(msg, args...)
-	}
-}
-
 func (log *Logger) DebugFunc(fn func() (string, []interface{})) {
-	log.logFunc(logrus.DebugLevel, log.logger.Debugf, fn)
+	msg, args := fn()
+	log.Debugf(msg, args...)
 }
 
 func (log *Logger) Info(args ...interface{}) {
@@ -290,7 +340,8 @@ func (log *Logger) Infof(format string, args ...interface{}) {
 }
 
 func (log *Logger) InfoFunc(fn func() (string, []interface{})) {
-	log.logFunc(logrus.InfoLevel, log.logger.Infof, fn)
+	msg, args := fn()
+	log.Infof(msg, args...)
 }
 
 func (log *Logger) Warn(args ...interface{}) {
@@ -312,7 +363,8 @@ func (log *Logger) Warnf(format string, args ...interface{}) {
 }
 
 func (log *Logger) WarnFunc(fn func() (string, []interface{})) {
-	log.logFunc(logrus.WarnLevel, log.logger.Warnf, fn)
+	msg, args := fn()
+	log.Warnf(msg, args...)
 }
 
 func (log *Logger) Error(args ...interface{}) {
@@ -334,7 +386,8 @@ func (log *Logger) Errorf(format string, args ...interface{}) {
 }
 
 func (log *Logger) ErrorFunc(fn func() (string, []interface{})) {
-	log.logFunc(logrus.ErrorLevel, log.logger.Errorf, fn)
+	msg, args := fn()
+	log.Errorf(msg, args...)
 }
 
 func (log *Logger) Fatal(args ...interface{}) {

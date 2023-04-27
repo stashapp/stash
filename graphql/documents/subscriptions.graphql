@@ -11,8 +11,8 @@ subscription JobsSubscribe {
   }
 }
 
-subscription LoggingSubscribe {
-  loggingSubscribe {
+subscription LoggingSubscribe($minLevel: LogLevel) {
+  loggingSubscribe(minLevel: $minLevel) {
     ...LogEntryData
   }
 }

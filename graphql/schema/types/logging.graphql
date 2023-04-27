@@ -2,10 +2,10 @@
 scalar Time
 
 enum LogLevel {
+  Progress
   Trace
   Debug
   Info
-  Progress
   Warning
   Error
 }

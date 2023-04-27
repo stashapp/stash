@@ -103,7 +103,11 @@ type Query {
   "Organize scene markers by tag for a given scene ID"
   sceneMarkerTags(scene_id: ID!): [SceneMarkerTag!]!
 
-  logs: [LogEntry!]!
+  "Retrieve server log messages"
+  logs(
+    "Specifies minimum LogLevel of messages to return. Returns all messages if omitted."
+    minLevel: LogLevel
+  ): [LogEntry!]!
 
   # Scrapers
 
@@ -422,7 +426,11 @@ type Subscription {
   "Update from the metadata manager"
   jobsSubscribe: JobStatusUpdate!
 
-  loggingSubscribe: [LogEntry!]!
+  "Subscription to receive server log messages"
+  loggingSubscribe(
+    "Specifies minimum LogLevel of messages to return. Returns all messages if omitted."
+    minLevel: LogLevel
+  ): [LogEntry!]!
 
   scanCompleteSubscribe: Boolean!
 }

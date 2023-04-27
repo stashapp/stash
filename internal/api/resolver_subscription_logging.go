@@ -5,42 +5,47 @@ import (
 
 	"github.com/stashapp/stash/internal/log"
 	"github.com/stashapp/stash/internal/manager"
+	"github.com/stashapp/stash/pkg/models"
 )
 
-func getLogLevel(logType string) LogLevel {
+func getLogLevel(logType string) models.LogLevel {
 	switch logType {
 	case "progress":
-		return LogLevelProgress
+		return models.LogLevelProgress
 	case "trace":
-		return LogLevelTrace
+		return models.LogLevelTrace
 	case "debug":
-		return LogLevelDebug
+		return models.LogLevelDebug
 	case "info":
-		return LogLevelInfo
+		return models.LogLevelInfo
 	case "warn":
-		return LogLevelWarning
+		return models.LogLevelWarning
 	case "error":
-		return LogLevelError
+		return models.LogLevelError
 	default:
-		return LogLevelDebug
+		return models.LogLevelDebug
 	}
 }
 
-func logEntriesFromLogItems(logItems []log.LogItem) []*LogEntry {
-	ret := make([]*LogEntry, len(logItems))
+func logEntriesFromLogItems(logItems []log.LogItem, minLevel *models.LogLevel) []*LogEntry {
+	ret := make([]*LogEntry, 0, len(logItems))
 
-	for i, entry := range logItems {
-		ret[i] = &LogEntry{
-			Time:    entry.Time,
-			Level:   getLogLevel(entry.Type),
-			Message: entry.Message,
+	for _, entry := range logItems {
+		level := getLogLevel(entry.Type)
+		if minLevel != nil && level < *minLevel {
+			continue
 		}
+		ret = append(ret, &LogEntry{
+			Time:    entry.Time,
+			Level:   level,
+			Message: entry.Message,
+		})
 	}
 
 	return ret
 }
 
-func (r *subscriptionResolver) LoggingSubscribe(ctx context.Context) (<-chan []*LogEntry, error) {
+func (r *subscriptionResolver) LoggingSubscribe(ctx context.Context, minLevel *models.LogLevel) (<-chan []*LogEntry, error) {
 	ret := make(chan []*LogEntry, 100)
 	stop := make(chan int, 1)
 	logger := manager.GetInstance().Logger
@@ -50,7 +55,7 @@ func (r *subscriptionResolver) LoggingSubscribe(ctx context.Context) (<-chan []*
 		for {
 			select {
 			case logEntries := <-logSub:
-				ret <- logEntriesFromLogItems(logEntries)
+				ret <- logEntriesFromLogItems(logEntries, minLevel)
 			case <-ctx.Done():
 				stop <- 0
 				close(ret)

@@ -1973,14 +1973,16 @@ export const useJobQueue = () =>
     fetchPolicy: "no-cache",
   });
 
-export const useLogs = () =>
+export const useLogs = (minLevel?: GQL.LogLevel) =>
   GQL.useLogsQuery({
+    variables: { minLevel },
     fetchPolicy: "no-cache",
   });
 
-export const queryLogs = () =>
+export const queryLogs = (minLevel?: GQL.LogLevel) =>
   client.query<GQL.LogsQuery>({
     query: GQL.LogsDocument,
+    variables: { minLevel },
     fetchPolicy: "no-cache",
   });
 
@@ -1988,7 +1990,12 @@ export const useSystemStatus = () => GQL.useSystemStatusQuery();
 
 export const useJobsSubscribe = () => GQL.useJobsSubscribeSubscription();
 
-export const useLoggingSubscribe = () => GQL.useLoggingSubscribeSubscription();
+export const useLoggingSubscribe = (minLevel?: GQL.LogLevel, skip?: boolean) =>
+  GQL.useLoggingSubscribeSubscription({
+    variables: { minLevel },
+    skip,
+    fetchPolicy: "no-cache",
+  });
 
 function updateConfiguration(cache: ApolloCache<unknown>, result: FetchResult) {
   if (!result.data) return;
