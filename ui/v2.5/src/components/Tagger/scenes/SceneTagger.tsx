@@ -118,13 +118,18 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
   ) {
     const phashFingerprints =
       scrapedScene.fingerprints?.filter((f) => f.algorithm === "PHASH") ?? [];
+
+    if (phashFingerprints.length == 0) return [0, 0];
+
+    const exactFingerprints = phashFingerprints.filter(
+      (f) => minDistance(f.hash, stashScene) === 0
+    );
     const filteredFingerprints = phashFingerprints.filter(
       (f) => minDistance(f.hash, stashScene) <= 8
     );
 
-    if (phashFingerprints.length == 0) return [0, 0];
-
     return [
+      exactFingerprints.length,
       filteredFingerprints.length,
       filteredFingerprints.length / phashFingerprints.length,
     ];
@@ -173,7 +178,7 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
     sceneB: IScrapedScene
   ) {
     // Compare sceneA and sceneB to each other for sorting based on similarity to stashScene
-    // Order of priority is: nb. phash match > nb. duration match > ratio duration match > ratio phash match
+    // Order of priority is: nb. exact phash match > nb. phash match > nb. duration match > ratio duration match > ratio phash match
 
     // scenes without any fingerprints should be sorted to the end
     if (!sceneA.fingerprints?.length && sceneB.fingerprints?.length) {
@@ -183,16 +188,11 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
       return -1;
     }
 
-    const [nbPhashMatchSceneA, ratioPhashMatchSceneA] =
+    const [exactPhashMatchSceneA, nbPhashMatchSceneA, ratioPhashMatchSceneA] =
       calculatePhashComparisonScore(stashScene, sceneA);
-    const [nbPhashMatchSceneB, ratioPhashMatchSceneB] =
+    const [exactPhashMatchSceneB, nbPhashMatchSceneB, ratioPhashMatchSceneB] =
       calculatePhashComparisonScore(stashScene, sceneB);
 
-    if (nbPhashMatchSceneA != nbPhashMatchSceneB) {
-      return nbPhashMatchSceneB - nbPhashMatchSceneA;
-    }
-
-    // Same number of phash matches, check duration
     const [
       nbDurationMatchSceneA,
       ratioDurationMatchSceneA,
@@ -204,6 +204,22 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
       minDurationDiffSceneB,
     ] = calculateDurationComparisonScore(stashScene, sceneB);
 
+    // Give priority to the most exact matches
+    if (exactPhashMatchSceneA != exactPhashMatchSceneB) {
+      return exactPhashMatchSceneB - exactPhashMatchSceneA;
+    } else {
+      // Same exact matches, check for most durations before moving on to similar phash matches
+      if (nbDurationMatchSceneA != nbDurationMatchSceneB) {
+        return nbDurationMatchSceneB - nbDurationMatchSceneA;
+      }
+    }
+
+    // Most exact and similar phash matches
+    if (nbPhashMatchSceneA != nbPhashMatchSceneB) {
+      return nbPhashMatchSceneB - nbPhashMatchSceneA;
+    }
+
+    // Same number of phash matches, check duration
     if (nbDurationMatchSceneA != nbDurationMatchSceneB) {
       return nbDurationMatchSceneB - nbDurationMatchSceneA;
     }
