@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { Button } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
 import Mousetrap from "mousetrap";
@@ -12,6 +13,7 @@ import { useParams, useHistory } from "react-router-dom";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { useLightbox } from "src/hooks/Lightbox/hooks";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { useToast } from "src/hooks/Toast";
 import { MovieScenesPanel } from "./MovieScenesPanel";
@@ -36,6 +38,43 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   const [frontImage, setFrontImage] = useState<string | null>();
   const [backImage, setBackImage] = useState<string | null>();
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
+
+  const defaultImage =
+    movie.front_image_path && movie.front_image_path.includes("default=true")
+      ? true
+      : false;
+
+  const lightboxImages = useMemo(() => {
+    const covers = [
+      ...(movie.front_image_path && !defaultImage
+        ? [
+            {
+              paths: {
+                thumbnail: movie.front_image_path,
+                image: movie.front_image_path,
+              },
+            },
+          ]
+        : []),
+      ...(movie.back_image_path
+        ? [
+            {
+              paths: {
+                thumbnail: movie.back_image_path,
+                image: movie.back_image_path,
+              },
+            },
+          ]
+        : []),
+    ];
+    return covers;
+  }, [movie.front_image_path, movie.back_image_path, defaultImage]);
+
+  const index = lightboxImages.length;
+
+  const showLightbox = useLightbox({
+    images: lightboxImages,
+  });
 
   const [updateMovie, { loading: updating }] = useMovieUpdate();
   const [deleteMovie, { loading: deleting }] = useMovieDestroy({
@@ -129,11 +168,21 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
       }
     }
 
-    if (image) {
+    if (image && defaultImage) {
       return (
         <div className="movie-image-container">
           <img alt="Front Cover" src={image} />
         </div>
+      );
+    } else if (image) {
+      return (
+        <Button
+          className="shadow-none"
+          variant="link"
+          onClick={() => showLightbox()}
+        >
+          <img alt="Front Cover" src={image} />
+        </Button>
       );
     }
   }
@@ -150,9 +199,13 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
 
     if (image) {
       return (
-        <div className="movie-image-container">
+        <Button
+          className="shadow-none"
+          variant="link"
+          onClick={() => showLightbox(index - 1)}
+        >
           <img alt="Back Cover" src={image} />
-        </div>
+        </Button>
       );
     }
   }
