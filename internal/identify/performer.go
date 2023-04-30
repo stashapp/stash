@@ -4,17 +4,20 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type PerformerCreator interface {
 	Create(ctx context.Context, newPerformer *models.Performer) error
+	UpdateImage(ctx context.Context, performerID int, image []byte) error
 }
 
-func getPerformerID(ctx context.Context, endpoint string, w PerformerCreator, p *models.ScrapedPerformer, createMissing bool) (*int, error) {
+func getPerformerID(ctx context.Context, endpoint string, w PerformerCreator, p *models.ScrapedPerformer, createMissing bool, skipSingleNamePerformers bool) (*int, error) {
 	if p.StoredID != nil {
 		// existing performer, just add it
 		performerID, err := strconv.Atoi(*p.StoredID)
@@ -24,6 +27,12 @@ func getPerformerID(ctx context.Context, endpoint string, w PerformerCreator, p 
 
 		return &performerID, nil
 	} else if createMissing && p.Name != nil { // name is mandatory
+		// skip single name performers with no disambiguation
+		if skipSingleNamePerformers && !strings.Contains(*p.Name, " ") && (p.Disambiguation == nil || len(*p.Disambiguation) == 0) {
+			// hack to let the upstream code know a performer was skipped
+			id := int(-1)
+			return &id, nil
+		}
 		return createMissingPerformer(ctx, endpoint, w, p)
 	}
 
@@ -46,6 +55,19 @@ func createMissingPerformer(ctx context.Context, endpoint string, w PerformerCre
 		return nil, fmt.Errorf("error creating performer: %w", err)
 	}
 
+	// update image table
+	if p.Image != nil && len(*p.Image) > 0 {
+		imageData, err := utils.ReadImageFromURL(ctx, *p.Image)
+		if err != nil {
+			return nil, err
+		}
+
+		err = w.UpdateImage(ctx, performerInput.ID, imageData)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &performerInput.ID, nil
 }
 
@@ -55,6 +77,9 @@ func scrapedToPerformerInput(performer *models.ScrapedPerformer) models.Performe
 		Name:      *performer.Name,
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,
+	}
+	if performer.Disambiguation != nil {
+		ret.Disambiguation = *performer.Disambiguation
 	}
 	if performer.Birthdate != nil {
 		d := models.NewDate(*performer.Birthdate)
@@ -114,6 +139,12 @@ func scrapedToPerformerInput(performer *models.ScrapedPerformer) models.Performe
 	}
 	if performer.Instagram != nil {
 		ret.Instagram = *performer.Instagram
+	}
+	if performer.URL != nil {
+		ret.URL = *performer.URL
+	}
+	if performer.Details != nil {
+		ret.Details = *performer.Details
 	}
 
 	return ret

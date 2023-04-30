@@ -29,13 +29,14 @@ type TagCreator interface {
 }
 
 type sceneRelationships struct {
-	sceneReader      SceneReaderUpdater
-	studioCreator    StudioCreator
-	performerCreator PerformerCreator
-	tagCreator       TagCreator
-	scene            *models.Scene
-	result           *scrapeResult
-	fieldOptions     map[string]*FieldOptions
+	sceneReader              SceneReaderUpdater
+	studioCreator            StudioCreator
+	performerCreator         PerformerCreator
+	tagCreator               TagCreator
+	scene                    *models.Scene
+	result                   *scrapeResult
+	fieldOptions             map[string]*FieldOptions
+	skipSingleNamePerformers bool
 }
 
 func (g sceneRelationships) studio(ctx context.Context) (*int, error) {
@@ -98,7 +99,7 @@ func (g sceneRelationships) performers(ctx context.Context, ignoreMale bool) ([]
 			continue
 		}
 
-		performerID, err := getPerformerID(ctx, endpoint, g.performerCreator, p, createMissing)
+		performerID, err := getPerformerID(ctx, endpoint, g.performerCreator, p, createMissing, g.skipSingleNamePerformers)
 		if err != nil {
 			return nil, err
 		}

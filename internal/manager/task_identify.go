@@ -248,14 +248,14 @@ type stashboxSource struct {
 	endpoint string
 }
 
-func (s stashboxSource) ScrapeScene(ctx context.Context, sceneID int) (*scraper.ScrapedScene, error) {
+func (s stashboxSource) ScrapeScenes(ctx context.Context, sceneID int) ([]*scraper.ScrapedScene, error) {
 	results, err := s.FindStashBoxSceneByFingerprints(ctx, sceneID)
 	if err != nil {
 		return nil, fmt.Errorf("error querying stash-box using scene ID %d: %w", sceneID, err)
 	}
 
 	if len(results) > 0 {
-		return results[0], nil
+		return results, nil
 	}
 
 	return nil, nil
@@ -270,7 +270,7 @@ type scraperSource struct {
 	scraperID string
 }
 
-func (s scraperSource) ScrapeScene(ctx context.Context, sceneID int) (*scraper.ScrapedScene, error) {
+func (s scraperSource) ScrapeScenes(ctx context.Context, sceneID int) ([]*scraper.ScrapedScene, error) {
 	content, err := s.cache.ScrapeID(ctx, s.scraperID, sceneID, scraper.ScrapeContentTypeScene)
 	if err != nil {
 		return nil, err
@@ -282,7 +282,7 @@ func (s scraperSource) ScrapeScene(ctx context.Context, sceneID int) (*scraper.S
 	}
 
 	if scene, ok := content.(scraper.ScrapedScene); ok {
-		return &scene, nil
+		return []*scraper.ScrapedScene{&scene}, nil
 	}
 
 	return nil, errors.New("could not convert content to scene")
