@@ -303,8 +303,8 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
     return !editingSource?.id === undefined
       ? []
       : allSources?.filter((s) => {
-        return !sources.some((ss) => ss.id === s.id);
-      }) ?? [];
+          return !sources.some((ss) => ss.id === s.id);
+        }) ?? [];
   }
 
   function onEditSource(s?: IScraperSource) {

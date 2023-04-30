@@ -20,11 +20,17 @@ type mockSceneScraper struct {
 	results map[int]*scraper.ScrapedScene
 }
 
-func (s mockSceneScraper) ScrapeScene(ctx context.Context, sceneID int) (*scraper.ScrapedScene, error) {
+func (s mockSceneScraper) ScrapeScenes(ctx context.Context, sceneID int) ([]*scraper.ScrapedScene, error) {
 	if intslice.IntInclude(s.errIDs, sceneID) {
 		return nil, errors.New("scrape scene error")
 	}
-	return s.results[sceneID], nil
+	output := []*scraper.ScrapedScene{}
+	output = append(output, s.results[sceneID])
+
+	if len(output) == 0 || (len(output) > 0 && output[0] == nil) {
+		return nil, nil
+	}
+	return output, nil
 }
 
 type mockHookExecutor struct {
@@ -44,8 +50,14 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 	)
 
 	var scrapedTitle = "scrapedTitle"
+	var bool_false = false
 
-	defaultOptions := &MetadataOptions{}
+	defaultOptions := &MetadataOptions{
+		SetOrganized:             &bool_false,
+		SetCoverImage:            &bool_false,
+		IncludeMalePerformers:    &bool_false,
+		SkipSingleNamePerformers: &bool_false,
+	}
 	sources := []ScraperSource{
 		{
 			Scraper: mockSceneScraper{
@@ -56,6 +68,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 					},
 				},
 			},
+			Options: defaultOptions,
 		},
 		{
 			Scraper: mockSceneScraper{
@@ -69,6 +82,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 					},
 				},
 			},
+			Options: defaultOptions,
 		},
 	}
 
@@ -144,7 +158,16 @@ func TestSceneIdentifier_modifyScene(t *testing.T) {
 	repo := models.Repository{
 		TxnManager: &mocks.TxnManager{},
 	}
-	tr := &SceneIdentifier{}
+	bool_false := false
+	defaultOptions := &MetadataOptions{
+		SetOrganized:             &bool_false,
+		SetCoverImage:            &bool_false,
+		IncludeMalePerformers:    &bool_false,
+		SkipSingleNamePerformers: &bool_false,
+	}
+	tr := &SceneIdentifier{
+		DefaultOptions: defaultOptions,
+	}
 
 	type args struct {
 		scene  *models.Scene
@@ -165,6 +188,9 @@ func TestSceneIdentifier_modifyScene(t *testing.T) {
 				},
 				&scrapeResult{
 					result: &scraper.ScrapedScene{},
+					source: ScraperSource{
+						Options: defaultOptions,
+					},
 				},
 			},
 			false,

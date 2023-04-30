@@ -82,7 +82,10 @@ func (t *SceneIdentifier) scrapeScene(ctx context.Context, txnManager txn.Manage
 			if len(results) > 1 && *options.SkipMultipleMatches {
 				if options.SkipMultipleMatchTag != nil && len(*options.SkipMultipleMatchTag) > 0 {
 					// Tag it with the multiple results tag and ignore
-					t.addTagToScene(ctx, txnManager, scene, *&options.SkipMultipleMatchTag)
+					err := t.addTagToScene(ctx, txnManager, scene, options.SkipMultipleMatchTag)
+					if err != nil {
+						return nil, err
+					}
 					return nil, nil
 				}
 			} else {
@@ -342,7 +345,7 @@ func getFieldOptions(options []MetadataOptions) map[string]*FieldOptions {
 }
 
 func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOptions map[string]*FieldOptions, setOrganized bool) models.ScenePartial {
-	partial := models.NewScenePartial()
+	partial := models.ScenePartial{}
 
 	if scraped.Title != nil && (scene.Title != *scraped.Title) {
 		if shouldSetSingleValueField(fieldOptions["title"], scene.Title != "") {

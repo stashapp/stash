@@ -1,14 +1,13 @@
 @import "IdentifyDialog/styles.scss";
 
 .dialog-selected-folders {
-  &>div {
+  & > div {
     display: flex;
     justify-content: space-between;
   }
 }
 
 .form-group {
-
   h6,
   label {
     &[title]:not([title=""]) {
