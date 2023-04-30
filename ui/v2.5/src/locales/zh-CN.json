@@ -21,6 +21,7 @@
     "confirm": "确认",
     "continue": "继续",
     "create": "创建",
+    "create_chapters": "新建章节",
     "create_entity": "创建 {entityType}",
     "create_marker": "创建标记",
     "created_entity": "已经创建 {entity_type}: {entity_name}",
@@ -126,6 +127,7 @@
   "aliases": "别名",
   "all": "所有",
   "also_known_as": "又称作",
+  "appears_with": "显示方式",
   "ascending": "升序",
   "average_resolution": "平均分辨率",
   "between_and": "以及",
@@ -138,6 +140,7 @@
   },
   "captions": "字幕",
   "career_length": "工龄",
+  "chapters": "章节",
   "component_tagger": {
     "config": {
       "active_instance": "目前使用的 Stash-box：",
@@ -289,7 +292,8 @@
       "excluded_video_patterns_head": "视频排除规则",
       "ffmpeg": {
         "hardware_acceleration": {
-          "desc": "使用可用的硬件对视频进行编码来用于实时转码。"
+          "desc": "使用可用的硬件对视频进行编码来用于实时转码。",
+          "heading": "FFmpeg 硬件编码"
         },
         "live_transcode": {
           "input_args": {
@@ -312,6 +316,10 @@
           }
         }
       },
+      "funscript_heatmap_draw_range": "在生成的热图中包括范围",
+      "funscript_heatmap_draw_range_desc": "在生成的热图的y轴上绘制运动范围。更改后需要重新生成现有热图。",
+      "gallery_cover_regex_desc": "正则表达式用于将图像识别为图库封面",
+      "gallery_cover_regex_label": "图库封面模式",
       "gallery_ext_desc": "逗号(半角)分隔的文件扩展名列表，将被标识为图库或图包。",
       "gallery_ext_head": "图库压缩包扩展名",
       "generated_file_naming_hash_desc": "使用 MD5 或快搜码为生成的文件命名。 更改此设置要求所有短片都有对应的 MD5/快搜码 值。 更改此值后，之前生成的数据需要迁移或重新生成。 请参阅 [迁移] 页面。",
@@ -319,6 +327,7 @@
       "generated_files_location": "生成数据的存储目录（短片标记，短片预览，预览图等）",
       "generated_path_head": "生成数据的存储路径",
       "hashing": "识别码设置",
+      "heatmap_generation": "Funscript 热图生成",
       "image_ext_desc": "逗号(半角)分隔的文件扩展名列表，将被标识为图片。",
       "image_ext_head": "图片扩展名",
       "include_audio_desc": "生成预览时包括音频流.",
@@ -418,6 +427,7 @@
       "generate_previews_during_scan_tooltip": "生成WebP动画预览，仅适用于预览类型设为动图的情况.",
       "generate_sprites_during_scan": "生成时间轴预览小图",
       "generate_thumbnails_during_scan": "生成图片的缩略图",
+      "generate_video_covers_during_scan": "生成短片封面",
       "generate_video_previews_during_scan": "生成预览",
       "generate_video_previews_during_scan_tooltip": "产生视频预览，用以鼠标移到短片上时播放",
       "generated_content": "生成的内容",
@@ -446,11 +456,14 @@
       "job_queue": "任务队列",
       "maintenance": "维护",
       "migrate_blobs": {
-        "delete_old": "删除旧数据"
+        "delete_old": "删除旧数据",
+        "description": "将 blob 迁移到当前 blob 存储系统。应在更改 blob 存储系统之后运行此迁移。可以选择在迁移后删除旧数据。"
       },
       "migrate_hash_files": "使用更改之后的识别码算法重新命名已经存在的文件到新的识别码格式。",
       "migrate_scene_screenshots": {
-        "delete_files": "删除截图文件"
+        "delete_files": "删除截图文件",
+        "description": "将短片屏幕截图迁移到新的 blob 存储系统中。应在将现有系统迁移到 0.20 之后运行此迁移。可以选择在迁移后删除旧的屏幕截图。",
+        "overwrite_existing": "用屏幕截图数据覆盖现有 Blob"
       },
       "migrations": "迁移",
       "only_dry_run": "仅模拟运行，不要删除任何东西",
@@ -532,7 +545,8 @@
             "options": {
               "full": "完整",
               "half": "一半",
-              "quarter": "四分之一"
+              "quarter": "四分之一",
+              "tenth": "十分之一"
             }
           },
           "type": {
@@ -566,6 +580,8 @@
         "heading": "图片灯箱"
       },
       "image_wall": {
+        "direction": "方向",
+        "heading": "图片墙",
         "margin": "边距（像素）"
       },
       "images": {
@@ -711,6 +727,8 @@
   },
   "custom": "自定义",
   "date": "日期",
+  "date_format": "YYYY-MM-DD",
+  "datetime_format": "YYYY-MM-DD HH:MM",
   "death_date": "去世日期",
   "death_year": "去世年份",
   "descending": "降序",
@@ -734,6 +752,14 @@
     "edit_entity_title": "编辑 {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "导出时包含相关的数据",
     "export_title": "导出",
+    "imagewall": {
+      "direction": {
+        "column": "列",
+        "description": "基于列或行的布局。",
+        "row": "行"
+      },
+      "margin_desc": "每个完整图像周围的边距像素数。"
+    },
     "lightbox": {
       "delay": "延迟(秒)",
       "display_mode": {
@@ -771,6 +797,7 @@
       "destination": "重新指定至"
     },
     "scene_gen": {
+      "covers": "短片封面",
       "force_transcodes": "强制生成转码文件",
       "force_transcodes_tooltip": "默认情况下，转码文件只会在浏览器不支持的情况下生成。如果开启此选项，即使浏览器支持该视频，也会生成转码文件。",
       "image_previews": "动图预览",
@@ -861,6 +888,7 @@
   },
   "empty_server": "增加一些短片到服务器以看到本页面的推荐。",
   "errors": {
+    "image_index_greater_than_zero": "图像索引必须大于 0",
     "lazy_component_error_help": "如果您最近升级了 Stash，请重新加载页面或清除浏览器缓存。",
     "something_went_wrong": "出了些问题。"
   },
@@ -911,6 +939,7 @@
     "syncing": "正在和服务器同步",
     "uploading": "上传脚本中"
   },
+  "hasChapters": "已有章节",
   "hasMarkers": "含有章节标记",
   "height": "身高",
   "height_cm": "高(cm)",
@@ -918,6 +947,7 @@
   "ignore_auto_tag": "忽略自动标签",
   "image": "图片",
   "image_count": "图片数量",
+  "image_index": "图像 #",
   "images": "图片",
   "include_parent_tags": "包含母标签",
   "include_sub_studios": "包含子工作室",
@@ -1040,6 +1070,7 @@
   "scenes": "短片",
   "scenes_updated_at": "短片更新时间",
   "search_filter": {
+    "edit_filter": "编辑筛选器",
     "name": "过滤",
     "saved_filters": "保存过滤器",
     "update_filter": "更新过滤器"
@@ -1049,8 +1080,12 @@
   "setup": {
     "confirm": {
       "almost_ready": "设置就快完成，请确认以下设定。你可以点“回去”去改变任何不正确的东西，如果一切看来都好，请按“确定”去建立你的系统。",
+      "blobs_directory": "二进制文件目录",
+      "cache_directory": "缓存目录",
       "configuration_file_location": "配置文件的路径:",
       "database_file_path": "数据库文件的路径",
+      "default_blobs_location": "<用户数据库>",
+      "default_cache_location": "<包含配置文件的路径>/cache",
       "default_db_location": "<含有设置文件的路径>/stash-go.sqlite",
       "default_generated_content_location": "<含有设置文件的路径>/generated",
       "generated_directory": "生成资料的路径",
@@ -1086,12 +1121,20 @@
     },
     "paths": {
       "database_filename_empty_for_default": "数据库文件名 (留空则用默认名)",
-      "description": "接下来，我们需要决定哪里找到你的收藏，哪里存放stash数据库和产生资料文件。如果需要，这些设定可在以后再修改。",
+      "description": "接下来，我们需要决定哪里找到你的收藏，哪里存放 stash 数据库和产生资料文件。如果需要，这些设定可在以后再修改。",
+      "path_to_blobs_directory_empty_for_database": "Blob 目录的路径（为空以使用数据库）",
+      "path_to_cache_directory_empty_for_default": "缓存目录的路径（默认为空）",
       "path_to_generated_directory_empty_for_default": "生成资料的文件夹路径 (留空则使用默认路径)",
       "set_up_your_paths": "设立你的路径",
       "stash_alert": "没有选择任何影像库的路径。Stash将不会扫描到任何媒体文件。你确认吗？",
+      "where_can_stash_store_blobs": "Stash 在哪里可以存储数据库二进制数据？",
+      "where_can_stash_store_blobs_description": "Stash 可以在数据库或文件系统中存储二进制数据，如场景封面、表演者、工作室和标签图像。默认情况下，它会将这些数据存储在子目录 <code>blobs</code> 中的文件系统中。如果要更改此路径，请输入绝对或相对（相对于当前工作目录）路径。如果该目录不存在，Stash将创建该目录。",
+      "where_can_stash_store_blobs_description_addendum": "或者，如果要将此数据存储在数据库中，可以将此字段留空<strong>注意：</strong>这将增加数据库文件的大小，并增加数据库迁移时间。",
+      "where_can_stash_store_cache_files": "Stash可以在哪里存储缓存文件？",
+      "where_can_stash_store_cache_files_description": "为了使 HLS/DASH 实时转码等功能发挥作用，Stash 需要一个临时文件的缓存目录。默认情况下，Stash将在包含配置文件的目录中创建一个<code>缓存</code>目录。如果要更改此路径，请输入绝对或相对（相对于当前工作目录）路径。如果该目录不存在，Stash 将创建该目录。",
       "where_can_stash_store_its_database": "在哪里可以储存Stash的数据库？",
-      "where_can_stash_store_its_database_description": "Stash使用一个sqlite数据库来存放你的收藏的元数据。默认情况下，会建立<code>stash-go.sqlite</code>在包含有你配置文件的目录里。如果你想改动，请输入一个绝对，或者相对(对于当前目录)的文件名。",
+      "where_can_stash_store_its_database_description": "Stash 使用 sqlite 数据库来存放你的收藏的元数据。默认情况下，会建立<code>stash-go.sqlite</code>在包含有你配置文件的目录里。如果你想改动，请输入一个绝对，或者相对（对于当前目录）的文件名。",
+      "where_can_stash_store_its_database_warning": "警告：<strong>不支持</strong>将数据库存储在运行 Stash 的不同系统上（例如，在另一台计算机上运行 Stash 服务器时将数据库存储到 NAS 上）！SQLite 不适合在网络上使用，尝试这样做很容易导致整个数据库损坏。",
       "where_can_stash_store_its_generated_content": "哪里可以存放Stash产生的资料？",
       "where_can_stash_store_its_generated_content_description": "为了可以提供缩图，预览和浏览图，Stash生成图片和视频。同时也包括将不支持的文件转码后的视频。默认情况下，Stash会建立一个<code>generated</code>文件夹在含有你配置文件的目录中。如果你要修改生成媒体的地方，请输入一个绝对，或者相对(对于当前工作目录)的路径。如果此目录不存在，Stash会自动建立它。",
       "where_is_your_porn_located": "你的收藏在哪里？",
@@ -1163,6 +1206,7 @@
     "default_filter_set": "默认过滤器",
     "delete_past_tense": "已经删除 {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "正在生成截图…",
+    "image_index_too_large": "错误：图像索引大于库中的图像数",
     "merged_scenes": "拼合的短片",
     "merged_tags": "已经合并标签",
     "reassign_past_tense": "文件重新指定了",
@@ -1181,7 +1225,9 @@
   "updated_at": "更新时间",
   "url": "链接",
   "validation": {
-    "aliases_must_be_unique": "别名必须是唯一的"
+    "aliases_must_be_unique": "别名必须是唯一的",
+    "date_invalid_form": "${path} 的格式必须为 YYYY-MM-DD",
+    "required": "${path} 是必填字段"
   },
   "videos": "视频",
   "view_all": "查看全部",
