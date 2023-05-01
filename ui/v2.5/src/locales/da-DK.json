@@ -308,7 +308,6 @@
       "generated_file_naming_hash_head": "Genereret hash til filnavngivning",
       "generated_files_location": "Katalogplacering for de genererede filer (scenemarkører, sceneforhåndsvisninger, sprites osv.)",
       "generated_path_head": "Genereret sti",
-      "hashing": "",
       "image_ext_desc": "Kommasepareret liste over filtypenavne, der vil blive identificeret som billeder.",
       "image_ext_head": "Billedudvidelser",
       "include_audio_desc": "Inkluderer lydstream ved generering af forhåndsvisninger.",
