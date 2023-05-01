@@ -104,6 +104,9 @@ func (t *SceneIdentifier) scrapeScene(ctx context.Context, txnManager txn.Manage
 // Returns a MetadataOptions object with any default options overwritten by source specific options
 func (t *SceneIdentifier) getOptions(source *ScraperSource) MetadataOptions {
 	options := t.DefaultOptions
+	if source.Options == nil {
+		return *options
+	}
 	if source.Options.SetCoverImage != nil {
 		options.SetCoverImage = source.Options.SetCoverImage
 	}
