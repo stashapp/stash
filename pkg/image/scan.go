@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
@@ -307,7 +308,29 @@ func (h *ScanHandler) getOrCreateGallery(ctx context.Context, f file.File) (*mod
 		return h.getOrCreateZipBasedGallery(ctx, f.Base().ZipFile)
 	}
 
-	if h.ScanConfig.GetCreateGalleriesFromFolders() {
+	// Read files in Folder to find out if the Folder is marked to be handled differently as the setting
+	folderPath := filepath.Dir(f.Base().Path)
+	folder, err := os.Open(folderPath)
+	if err != nil {
+		return nil, fmt.Errorf("Could not open Folder %s: %w", folderPath, err)
+	}
+	files, err := folder.Readdir(0)
+	if err != nil {
+		return nil, fmt.Errorf("Could not read Files in Folder %s: %w", folderPath, err)
+	}
+
+	forceGallery := false
+	exemptGallery := false
+	for _, file := range files {
+		if strings.ToLower(file.Name()) == ".forcegallery" {
+			forceGallery = true
+		}
+		if strings.ToLower(file.Name()) == ".nogallery" {
+			exemptGallery = true
+		}
+	}
+
+	if forceGallery || (h.ScanConfig.GetCreateGalleriesFromFolders() && !exemptGallery) {
 		return h.getOrCreateFolderBasedGallery(ctx, f)
 	}
 

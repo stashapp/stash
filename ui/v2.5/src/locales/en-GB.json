@@ -281,7 +281,7 @@
       "check_for_insecure_certificates_desc": "Some sites use insecure ssl certificates. When unticked the scraper skips the insecure certificates check and allows scraping of those sites. If you get a certificate error when scraping untick this.",
       "chrome_cdp_path": "Chrome CDP path",
       "chrome_cdp_path_desc": "File path to the Chrome executable, or a remote address (starting with http:// or https://, for example http://localhost:9222/json/version) to a Chrome instance.",
-      "create_galleries_from_folders_desc": "If true, creates galleries from folders containing images.",
+      "create_galleries_from_folders_desc": "If true, creates galleries from folders containing images by default. Create a File called .forceGallery or .noGallery in a folder to enforce/prevent this.",
       "create_galleries_from_folders_label": "Create galleries from folders containing images",
       "database": "Database",
       "db_path_head": "Database Path",
