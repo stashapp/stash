@@ -855,6 +855,11 @@
   "donate": "Donate",
   "dupe_check": {
     "description": "Levels below 'Exact' can take longer to calculate. False positives might also be returned on lower accuracy levels.",
+    "duration_diff": "Maximum Duration Difference",
+    "duration_options": {
+      "any": "Any",
+      "equal": "Equal"
+    },
     "found_sets": "{setCount, plural, one{# set of duplicates found.} other {# sets of duplicates found.}}",
     "options": {
       "exact": "Exact",
@@ -1077,6 +1082,7 @@
     "saved_filters": "Saved filters",
     "update_filter": "Update Filter"
   },
+  "second": "Second",
   "seconds": "Seconds",
   "settings": "Settings",
   "setup": {
