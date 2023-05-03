@@ -479,7 +479,7 @@ func (j *GenerateJob) queueImageJob(g *generate.Generator, image *models.Image, 
 		Overwrite: j.overwrite,
 	}
 
-	if task.shouldGenerate() {
+	if task.required() {
 		totals.clipPreviews++
 		totals.tasks++
 		queue <- task

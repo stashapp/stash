@@ -21,7 +21,7 @@ func (t *GenerateClipPreviewTask) GetDescription() string {
 }
 
 func (t *GenerateClipPreviewTask) Start(ctx context.Context) {
-	if !t.shouldGenerate() {
+	if !t.required() {
 		return
 	}
 
@@ -42,7 +42,7 @@ func (t *GenerateClipPreviewTask) Start(ctx context.Context) {
 
 }
 
-func (t *GenerateClipPreviewTask) shouldGenerate() bool {
+func (t *GenerateClipPreviewTask) required() bool {
 	_, ok := t.Image.Files.Primary().(*file.VideoFile)
 	if !ok {
 		return false
