@@ -234,7 +234,9 @@
       "server_display_name": "Server Display Name",
       "server_display_name_desc": "Display name for the DLNA server. Defaults to {server_name} if empty.",
       "successfully_cancelled_temporary_behaviour": "Successfully cancelled temporary behaviour",
-      "until_restart": "until restart"
+      "until_restart": "until restart",
+      "video_sort_order": "Default Video Sort Order",
+      "video_sort_order_desc": "Order to sort videos by default."
     },
     "general": {
       "auth": {
