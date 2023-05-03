@@ -49,7 +49,7 @@ FROM (
 	INNER JOIN files_fingerprints ON (scenes_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'phash')
 	INNER JOIN video_files ON (files.id == video_files.file_id)
 )
-WHERE durationDiff < ?1
+WHERE durationDiff <= ?1
     OR ?1 < 0   --  Always TRUE if the parameter is negative.
                 --  That will disable the durationDiff checking.
 GROUP BY phash
