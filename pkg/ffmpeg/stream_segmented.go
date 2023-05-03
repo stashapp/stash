@@ -20,6 +20,7 @@ import (
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 
 	"github.com/zencoder/go-dash/v3/mpd"
 )
@@ -455,7 +456,7 @@ func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request,
 	fmt.Fprint(&buf, "#EXT-X-ENDLIST\n")
 
 	w.Header().Set("Content-Type", MimeHLS)
-	http.ServeContent(w, r, "", time.Time{}, bytes.NewReader(buf.Bytes()))
+	utils.ServeStaticContent(w, r, buf.Bytes())
 }
 
 // serveDASHManifest serves a generated DASH manifest.
@@ -546,7 +547,7 @@ func serveDASHManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request
 	_ = m.Write(&buf)
 
 	w.Header().Set("Content-Type", MimeDASH)
-	http.ServeContent(w, r, "", time.Time{}, bytes.NewReader(buf.Bytes()))
+	utils.ServeStaticContent(w, r, buf.Bytes())
 }
 
 func (sm *StreamManager) ServeManifest(w http.ResponseWriter, r *http.Request, streamType *StreamType, vf *file.VideoFile, resolution string) {
@@ -561,9 +562,7 @@ func (sm *StreamManager) serveWaitingSegment(w http.ResponseWriter, r *http.Requ
 		if err == nil {
 			logger.Tracef("[transcode] streaming segment file %s", segment.file)
 			w.Header().Set("Content-Type", segment.segmentType.MimeType)
-			// Prevent caching as segments are generated on the fly
-			w.Header().Add("Cache-Control", "no-cache")
-			http.ServeFile(w, r, segment.path)
+			utils.ServeStaticFile(w, r, segment.path)
 		} else if !errors.Is(err, context.Canceled) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}

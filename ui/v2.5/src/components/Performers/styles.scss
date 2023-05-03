@@ -1,8 +1,4 @@
 #performer-page {
-  flex-direction: row;
-  margin: 0 auto;
-  overflow: hidden;
-
   .performer-image-container .performer {
     max-height: calc(100vh - 6rem);
     max-width: 100%;
@@ -67,6 +63,10 @@
 
 .performer-card {
   width: 20rem;
+
+  @media (max-width: 576px) {
+    width: 100%;
+  }
 
   .thumbnail-section {
     position: relative;

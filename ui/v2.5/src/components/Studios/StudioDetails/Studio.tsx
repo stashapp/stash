@@ -19,6 +19,7 @@ import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { useToast } from "src/hooks/Toast";
 import { ConfigurationContext } from "src/hooks/Config";
+import { Icon } from "src/components/Shared/Icon";
 import { StudioScenesPanel } from "./StudioScenesPanel";
 import { StudioGalleriesPanel } from "./StudioGalleriesPanel";
 import { StudioImagesPanel } from "./StudioImagesPanel";
@@ -27,7 +28,11 @@ import { StudioPerformersPanel } from "./StudioPerformersPanel";
 import { StudioEditPanel } from "./StudioEditPanel";
 import { StudioDetailsPanel } from "./StudioDetailsPanel";
 import { StudioMoviesPanel } from "./StudioMoviesPanel";
-import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import {
+  faTrashAlt,
+  faChevronRight,
+  faChevronLeft,
+} from "@fortawesome/free-solid-svg-icons";
 import { IUIConfig } from "src/core/config";
 
 interface IProps {
@@ -151,8 +156,10 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
   function renderImage() {
     let studioImage = studio.image_path;
     if (isEditing) {
-      if (image === null) {
-        studioImage = `${studioImage}&default=true`;
+      if (image === null && studioImage) {
+        const studioImageURL = new URL(studioImage);
+        studioImageURL.searchParams.set("default", "true");
+        studioImage = studioImageURL.toString();
       } else if (image) {
         studioImage = image;
       }
@@ -178,8 +185,8 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     }
   };
 
-  function getCollapseButtonText() {
-    return collapsed ? ">" : "<";
+  function getCollapseButtonIcon() {
+    return collapsed ? faChevronRight : faChevronLeft;
   }
 
   return (
@@ -227,7 +234,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
       </div>
       <div className="details-divider d-none d-xl-block">
         <Button onClick={() => setCollapsed(!collapsed)}>
-          {getCollapseButtonText()}
+          <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
         </Button>
       </div>
       <div className={`col content-container ${collapsed ? "expanded" : ""}`}>

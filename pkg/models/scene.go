@@ -27,6 +27,8 @@ type SceneFilterType struct {
 	Checksum *StringCriterionInput `json:"checksum"`
 	// Filter by file phash
 	Phash *StringCriterionInput `json:"phash"`
+	// Filter by phash distance
+	PhashDistance *PhashDistanceCriterionInput `json:"phash_distance"`
 	// Filter by path
 	Path *StringCriterionInput `json:"path"`
 	// Filter by file count
@@ -161,6 +163,7 @@ type SceneReader interface {
 	VideoFileLoader
 
 	CountByPerformerID(ctx context.Context, performerID int) (int, error)
+	OCountByPerformerID(ctx context.Context, performerID int) (int, error)
 	// FindByStudioID(studioID int) ([]*Scene, error)
 	FindByMovieID(ctx context.Context, movieID int) ([]*Scene, error)
 	CountByMovieID(ctx context.Context, movieID int) (int, error)

@@ -98,6 +98,8 @@ input PerformerFilterType {
   image_count: IntCriterionInput
   """Filter by gallery count"""
   gallery_count: IntCriterionInput
+  """Filter by o count"""
+  o_counter: IntCriterionInput
   """Filter by StashID"""
   stash_id: StringCriterionInput @deprecated(reason: "Use stash_id_endpoint instead") 
   """Filter by StashID"""
@@ -116,6 +118,8 @@ input PerformerFilterType {
   death_year: IntCriterionInput
   """Filter by studios where performer appears in scene/image/gallery"""
   studios: HierarchicalMultiCriterionInput
+	"""Filter by performers where performer appears with another performer in scene/image/gallery"""
+	performers: MultiCriterionInput
   """Filter by autotag ignore value"""
   ignore_auto_tag: Boolean
   """Filter by birthdate"""
@@ -165,7 +169,9 @@ input SceneFilterType {
   """Filter by file checksum"""
   checksum: StringCriterionInput
   """Filter by file phash"""
-  phash: StringCriterionInput
+  phash: StringCriterionInput @deprecated(reason: "Use phash_distance instead")
+  """Filter by file phash distance"""
+  phash_distance: PhashDistanceCriterionInput
   """Filter by path"""
   path: StringCriterionInput
   """Filter by file count"""
@@ -525,6 +531,12 @@ input TimestampCriterionInput {
   value: String!
   value2: String
   modifier: CriterionModifier!
+}
+
+input PhashDistanceCriterionInput {
+  value: String!
+  modifier: CriterionModifier!
+  distance: Int
 }
 
 enum FilterMode {

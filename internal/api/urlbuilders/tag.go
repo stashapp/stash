@@ -19,6 +19,10 @@ func NewTagURLBuilder(baseURL string, tag *models.Tag) TagURLBuilder {
 	}
 }
 
-func (b TagURLBuilder) GetTagImageURL() string {
-	return b.BaseURL + "/tag/" + b.TagID + "/image?" + b.UpdatedAt
+func (b TagURLBuilder) GetTagImageURL(hasImage bool) string {
+	url := b.BaseURL + "/tag/" + b.TagID + "/image?t=" + b.UpdatedAt
+	if !hasImage {
+		url += "&default=true"
+	}
+	return url
 }
