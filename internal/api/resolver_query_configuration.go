@@ -203,6 +203,7 @@ func makeConfigDLNAResult() *ConfigDLNAResult {
 		Enabled:        config.GetDLNADefaultEnabled(),
 		WhitelistedIPs: config.GetDLNADefaultIPWhitelist(),
 		Interfaces:     config.GetDLNAInterfaces(),
+		VideoSortOrder: config.GetVideoSortOrder(),
 	}
 }
 

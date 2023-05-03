@@ -16,6 +16,7 @@ import "./source-selector";
 import "./persist-volume";
 import "./markers";
 import "./vtt-thumbnails";
+import "./big-buttons";
 import "./track-activity";
 import cx from "classnames";
 import {
@@ -303,6 +304,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         markers: {},
         sourceSelector: {},
         persistVolume: {},
+        bigButtons: {},
         seekButtons: {
           forward: 10,
           back: 10,
@@ -469,9 +471,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         lockToLandscapeOnEnter: isLandscape,
       },
       touchControls: {
-        seekSeconds: 10,
-        tapTimeout: 500,
-        disableOnEnd: false,
+        disabled: true,
       },
     };
     player.mobileUi(mobileUiOptions);

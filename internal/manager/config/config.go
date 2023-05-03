@@ -213,6 +213,9 @@ const (
 	DLNADefaultIPWhitelist = "dlna.default_whitelist"
 	DLNAInterfaces         = "dlna.interfaces"
 
+	DLNAVideoSortOrder        = "dlna.video_sort_order"
+	dlnaVideoSortOrderDefault = "title"
+
 	// Logging options
 	LogFile          = "logFile"
 	LogOut           = "logOut"
@@ -1375,6 +1378,17 @@ func (i *Instance) GetDLNADefaultIPWhitelist() []string {
 // empty, runs on all interfaces.
 func (i *Instance) GetDLNAInterfaces() []string {
 	return i.getStringSlice(DLNAInterfaces)
+}
+
+// GetVideoSortOrder returns the sort order to display videos. If
+// empty, videos will be sorted by titles.
+func (i *Instance) GetVideoSortOrder() string {
+	ret := i.getString(DLNAVideoSortOrder)
+	if ret == "" {
+		ret = dlnaVideoSortOrderDefault
+	}
+
+	return ret
 }
 
 // GetLogFile returns the filename of the file to output logs to.

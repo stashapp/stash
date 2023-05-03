@@ -100,6 +100,7 @@ fragment ConfigDLNAData on ConfigDLNAResult {
   enabled
   whitelistedIPs
   interfaces
+  videoSortOrder
 }
 
 fragment ConfigScrapingData on ConfigScrapingResult {
