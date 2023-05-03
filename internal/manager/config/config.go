@@ -97,7 +97,7 @@ const (
 	writeImageThumbnailsDefault = true
 
 	CreateImageClipsFromVideos        = "create_image_clip_from_videos"
-	createImageClipsFromVideosDefault = true
+	createImageClipsFromVideosDefault = false
 
 	Host        = "host"
 	hostDefault = "0.0.0.0"

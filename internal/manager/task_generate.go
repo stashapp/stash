@@ -170,9 +170,9 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 		if j.input.InteractiveHeatmapsSpeeds {
 			logMsg += fmt.Sprintf(" %d heatmaps & speeds", totals.interactiveHeatmapSpeeds)
 		}
-    if j.input.ClipPreviews {
-			logMsg += fmt.Sprintf(" %d Image Clip Previews", totals.clipPreviews)      
-    }
+		if j.input.ClipPreviews {
+			logMsg += fmt.Sprintf(" %d Image Clip Previews", totals.clipPreviews)
+		}
 		if logMsg == "Generating" {
 			logMsg = "Nothing selected to generate"
 		}
