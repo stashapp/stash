@@ -164,7 +164,9 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
         (f) => f.field === localOptions.field
       )?.createMissing;
 
-      if (localOptions.strategy === undefined) {
+      // if allowSetDefault is false, then strategy is considered merge
+      // if its true, then its using the default value and should not be shown here
+      if (localOptions.strategy === undefined && allowSetDefault) {
         return;
       }
 
