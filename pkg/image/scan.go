@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
@@ -308,25 +307,31 @@ func (h *ScanHandler) getOrCreateGallery(ctx context.Context, f file.File) (*mod
 		return h.getOrCreateZipBasedGallery(ctx, f.Base().ZipFile)
 	}
 
-	// Read files in Folder to find out if the Folder is marked to be handled differently as the setting
+	// Look for specific filenames in Folder to find out if the Folder is marked to be handled differently as the setting
 	folderPath := filepath.Dir(f.Base().Path)
-	folder, err := os.Open(folderPath)
-	if err != nil {
-		return nil, fmt.Errorf("Could not open Folder %s: %w", folderPath, err)
-	}
-	files, err := folder.Readdir(0)
-	if err != nil {
-		return nil, fmt.Errorf("Could not read Files in Folder %s: %w", folderPath, err)
-	}
+	forceGalleryFileNames := [...]string{".forcegallery", ".Forcegallery", ".ForceGallery", ".forceGallery", ".FORCEGALLERY"}
+	noGalleryFileNames := [...]string{".nogallery", ".Nogallery", ".NoGallery", ".noGallery", ".NOGALLERY"}
 
 	forceGallery := false
-	exemptGallery := false
-	for _, file := range files {
-		if strings.ToLower(file.Name()) == ".forcegallery" {
+	for _, filename := range forceGalleryFileNames {
+		if _, err := os.Stat(filepath.Join(folderPath, filename)); err == nil {
 			forceGallery = true
+			break
+		} else if errors.Is(err, os.ErrNotExist) {
+			continue
+		} else {
+			return nil, fmt.Errorf("Could not test Path %s: %w", folderPath, err)
 		}
-		if strings.ToLower(file.Name()) == ".nogallery" {
+	}
+	exemptGallery := false
+	for _, filename := range noGalleryFileNames {
+		if _, err := os.Stat(filepath.Join(folderPath, filename)); err == nil {
 			exemptGallery = true
+			break
+		} else if errors.Is(err, os.ErrNotExist) {
+			continue
+		} else {
+			return nil, fmt.Errorf("Could not test Path %s: %w", folderPath, err)
 		}
 	}
 
