@@ -99,15 +99,12 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
       this.selectedIndex = this.sources.findIndex((src) => src === source);
       if (this.selectedIndex === -1) return;
 
+      const loadSrc = this.sources[this.selectedIndex];
+
       const currentTime = player.currentTime();
-
-      // put the selected source at the top of the list
-      const loadSources = [...this.sources];
-      const selectedSrc = loadSources.splice(this.selectedIndex, 1)[0];
-      loadSources.unshift(selectedSrc);
-
       const paused = player.paused();
-      player.src(loadSources);
+
+      player.src(loadSrc);
       player.one("canplay", () => {
         if (paused) {
           player.pause();
@@ -128,10 +125,15 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
       if (!player.videoWidth() && !player.videoHeight()) {
         // Occurs during preload when videos with supported audio/unsupported video are preloaded.
         // Treat this as a decoding error and try the next source without playing.
-        // However on Safari we get an media event when m3u8 is loaded which needs to be ignored.
+        // However on Safari we get an media event when m3u8 or mpd is loaded which needs to be ignored.
         if (player.error() !== null) return;
+
         const currentSrc = player.currentSrc();
-        if (currentSrc !== null && !currentSrc.includes(".m3u8")) {
+        if (currentSrc === null) return;
+
+        if (currentSrc.includes(".m3u8") || currentSrc.includes(".mpd")) {
+          player.play();
+        } else {
           player.error(MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
           return;
         }
@@ -156,7 +158,7 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
         console.log(`Trying next source in playlist: '${newSource.label}'`);
         this.menu.setSources(this.sources);
         this.selectedIndex = 0;
-        player.src(this.sources);
+        player.src(newSource);
         player.load();
         player.play();
       } else {
@@ -179,7 +181,7 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
     }
 
     this.sources = sources;
-    this.player.src(this.sources);
+    this.player.src(sources[0]);
   }
 
   get textTracks(): HTMLTrackElement[] {

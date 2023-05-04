@@ -765,7 +765,6 @@ const SceneLoader: React.FC = () => {
       <div className={`scene-player-container ${collapsed ? "expanded" : ""}`}>
         <ScenePlayer
           key="ScenePlayer"
-          className="w-100 m-sm-auto no-gutter"
           scene={scene}
           hideScrubberOverride={hideScrubber}
           autoplay={autoplay}
