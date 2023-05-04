@@ -16,12 +16,12 @@ $sceneTabWidth: 450px;
     height: 100vh;
   }
 
-  &.portrait .video-js {
+  &.portrait .video-wrapper {
     height: 177.78vw;
   }
 }
 
-.video-js {
+.video-wrapper {
   height: 56.25vw;
   overflow: hidden;
   width: 100%;
@@ -29,6 +29,11 @@ $sceneTabWidth: 450px;
   @media (min-width: 1200px) {
     height: 100%;
   }
+}
+
+.video-js {
+  height: 100%;
+  width: 100%;
 
   .vjs-button {
     outline: none;
@@ -109,7 +114,7 @@ $sceneTabWidth: 450px;
     width: 100%;
 
     .vjs-progress-holder {
-      margin: 0 1rem;
+      margin: 0 15px;
     }
   }
 

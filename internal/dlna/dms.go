@@ -276,6 +276,7 @@ type Server struct {
 	repository         Repository
 	sceneServer        sceneServer
 	ipWhitelistManager *ipWhitelistManager
+	VideoSortOrder     string
 }
 
 // UPnP SOAP service.

@@ -234,7 +234,9 @@
       "server_display_name": "Server Display Name",
       "server_display_name_desc": "Display name for the DLNA server. Defaults to {server_name} if empty.",
       "successfully_cancelled_temporary_behaviour": "Successfully cancelled temporary behaviour",
-      "until_restart": "until restart"
+      "until_restart": "until restart",
+      "video_sort_order": "Default Video Sort Order",
+      "video_sort_order_desc": "Order to sort videos by default."
     },
     "general": {
       "auth": {
@@ -811,7 +813,7 @@
       "markers_tooltip": "20 second videos which begin at the given timecode.",
       "override_preview_generation_options": "Override Preview Generation Options",
       "override_preview_generation_options_desc": "Override Preview Generation Options for this operation. Defaults are set in System -> Preview Generation.",
-      "overwrite": "Overwrite existing generated files",
+      "overwrite": "Overwrite existing files",
       "phash": "Perceptual hashes (for deduplication)",
       "preview_exclude_end_time_desc": "Exclude the last x seconds from scene previews. This can be a value in seconds, or a percentage (eg 2%) of the total scene duration.",
       "preview_exclude_end_time_head": "Exclude end time",
@@ -853,6 +855,11 @@
   "donate": "Donate",
   "dupe_check": {
     "description": "Levels below 'Exact' can take longer to calculate. False positives might also be returned on lower accuracy levels.",
+    "duration_diff": "Maximum Duration Difference",
+    "duration_options": {
+      "any": "Any",
+      "equal": "Equal"
+    },
     "found_sets": "{setCount, plural, one{# set of duplicates found.} other {# sets of duplicates found.}}",
     "options": {
       "exact": "Exact",
@@ -1075,6 +1082,7 @@
     "saved_filters": "Saved filters",
     "update_filter": "Update Filter"
   },
+  "second": "Second",
   "seconds": "Seconds",
   "settings": "Settings",
   "setup": {

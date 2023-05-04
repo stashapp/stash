@@ -431,6 +431,8 @@ input ConfigDLNAInput {
   whitelistedIPs: [String!]
   """List of interfaces to run DLNA on. Empty for all"""
   interfaces: [String!]
+  """Order to sort videos"""
+  videoSortOrder: String
 }
 
 type ConfigDLNAResult {
@@ -441,6 +443,8 @@ type ConfigDLNAResult {
   whitelistedIPs: [String!]!
   """List of interfaces to run DLNA on. Empty for all"""
   interfaces: [String!]!
+  """Order to sort videos"""
+  videoSortOrder: String!
 }
 
 input ConfigScrapingInput {
