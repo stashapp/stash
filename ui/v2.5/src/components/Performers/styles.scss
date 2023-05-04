@@ -1,7 +1,13 @@
 #performer-page {
-  .performer-image-container .performer {
-    max-height: calc(100vh - 6rem);
-    max-width: 100%;
+  .performer-image-container {
+    .btn {
+      box-shadow: none;
+    }
+
+    .performer {
+      max-height: calc(100vh - 6rem);
+      max-width: 100%;
+    }
   }
 
   .content-container {
