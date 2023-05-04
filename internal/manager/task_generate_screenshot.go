@@ -26,12 +26,12 @@ func (t *GenerateCoverTask) Start(ctx context.Context) {
 	var required bool
 	if err := t.txnManager.WithReadTxn(ctx, func(ctx context.Context) error {
 		required = t.required(ctx)
-		
+
 		return t.Scene.LoadPrimaryFile(ctx, t.txnManager.File)
 	}); err != nil {
 		logger.Error(err)
 	}
-	
+
 	if !required {
 		return
 	}
