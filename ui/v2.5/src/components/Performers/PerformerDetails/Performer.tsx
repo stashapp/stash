@@ -156,11 +156,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   function renderImage() {
     if (activeImage) {
       return (
-        <Button
-          className="shadow-none"
-          variant="link"
-          onClick={() => showLightbox()}
-        >
+        <Button variant="link" onClick={() => showLightbox()}>
           <img className="performer" src={activeImage} alt={performer.name} />
         </Button>
       );

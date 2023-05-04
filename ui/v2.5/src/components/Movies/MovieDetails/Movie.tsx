@@ -177,7 +177,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
     } else if (image) {
       return (
         <Button
-          className="shadow-none"
+          className="movie-image-container"
           variant="link"
           onClick={() => showLightbox()}
         >
@@ -200,7 +200,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
     if (image) {
       return (
         <Button
-          className="shadow-none"
+          className="movie-image-container"
           variant="link"
           onClick={() => showLightbox(index - 1)}
         >
