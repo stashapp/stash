@@ -44,7 +44,7 @@ If you wish to apply this on a per folder basis, you can create a file called **
 
 This will either exclude the folder from becoming a gallery even if the setting is set, or create a gallery from the folder even if the setting is not set. 
 
-You can use CamelCase/camelCase, CAPITALIZED or noncapitalized naming for those files.
+The file will only be recognized if written in lower case letters.
 
 Files with a dot in front are handled as hidden in the Linux OS and Mac OS, so you will not see those files after creation on your system without setting your file manager accordingly.
 
