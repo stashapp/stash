@@ -1,19 +1,13 @@
-import React from "react";
+import React, { MouseEvent } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { SceneQueue } from "src/models/sceneQueue";
-import { WallItem } from "./WallItem";
+import { WallItem, WallItemData, WallItemType } from "./WallItem";
 
-interface IWallPanelProps {
-  scenes?: GQL.SlimSceneDataFragment[];
+interface IWallPanelProps<T extends WallItemType> {
+  type: T;
+  data: WallItemData[T][];
   sceneQueue?: SceneQueue;
-  sceneMarkers?: GQL.SceneMarkerDataFragment[];
-  images?: GQL.SlimImageDataFragment[];
-  clickHandler?: (
-    item:
-      | GQL.SlimSceneDataFragment
-      | GQL.SceneMarkerDataFragment
-      | GQL.SlimImageDataFragment
-  ) => void;
+  clickHandler?: (e: MouseEvent, item: WallItemData[T]) => void;
 }
 
 const calculateClass = (index: number, count: number) => {
@@ -33,53 +27,84 @@ const calculateClass = (index: number, count: number) => {
   if (index % 5 === 4) return "transform-origin-right";
   // Multiple of five
   if (index % 5 === 0) return "transform-origin-left";
-  // Position is equal or larger than first postion in last row
+  // Position is equal or larger than first position in last row
   if (count - (count % 5 || 5) <= index + 1) return "transform-origin-bottom";
   // Default
   return "transform-origin-center";
 };
 
-export const WallPanel: React.FC<IWallPanelProps> = (
-  props: IWallPanelProps
-) => {
-  const scenes = (props.scenes ?? []).map((scene, index, sceneArray) => (
-    <WallItem
-      key={scene.id}
-      index={index}
-      scene={scene}
-      sceneQueue={props.sceneQueue}
-      clickHandler={props.clickHandler}
-      className={calculateClass(index, sceneArray.length)}
-    />
-  ));
-
-  const sceneMarkers = (props.sceneMarkers ?? []).map(
-    (marker, index, markerArray) => (
+const WallPanel = <T extends WallItemType>({
+  type,
+  data,
+  sceneQueue,
+  clickHandler,
+}: IWallPanelProps<T>) => {
+  function renderItems() {
+    return data.map((item, index, arr) => (
       <WallItem
-        key={marker.id}
-        sceneMarker={marker}
-        clickHandler={props.clickHandler}
-        className={calculateClass(index, markerArray.length)}
+        type={type}
+        key={item.id}
+        index={index}
+        data={item}
+        sceneQueue={sceneQueue}
+        clickHandler={clickHandler}
+        className={calculateClass(index, arr.length)}
       />
-    )
-  );
-
-  const images = (props.images ?? []).map((image, index, imageArray) => (
-    <WallItem
-      key={image.id}
-      image={image}
-      clickHandler={props.clickHandler}
-      className={calculateClass(index, imageArray.length)}
-    />
-  ));
+    ));
+  }
 
   return (
     <div className="row">
       <div className="wall w-100 row justify-content-center">
-        {scenes}
-        {sceneMarkers}
-        {images}
+        {renderItems()}
       </div>
     </div>
+  );
+};
+
+interface IImageWallPanelProps {
+  images: GQL.SlimImageDataFragment[];
+  clickHandler?: (e: MouseEvent, item: GQL.SlimImageDataFragment) => void;
+}
+
+export const ImageWallPanel: React.FC<IImageWallPanelProps> = ({
+  images,
+  clickHandler,
+}) => {
+  return <WallPanel type="image" data={images} clickHandler={clickHandler} />;
+};
+
+interface IMarkerWallPanelProps {
+  markers: GQL.SceneMarkerDataFragment[];
+  clickHandler?: (e: MouseEvent, item: GQL.SceneMarkerDataFragment) => void;
+}
+
+export const MarkerWallPanel: React.FC<IMarkerWallPanelProps> = ({
+  markers,
+  clickHandler,
+}) => {
+  return (
+    <WallPanel type="sceneMarker" data={markers} clickHandler={clickHandler} />
+  );
+};
+
+interface ISceneWallPanelProps {
+  scenes: GQL.SlimSceneDataFragment[];
+  sceneQueue?: SceneQueue;
+  clickHandler?: (e: MouseEvent, item: GQL.SlimSceneDataFragment) => void;
+}
+
+export const SceneWallPanel: React.FC<ISceneWallPanelProps> = ({
+  scenes,
+  sceneQueue,
+  clickHandler,
+}) => {
+  return (
+    <WallPanel
+      type="scene"
+      data={scenes}
+      sceneQueue={sceneQueue}
+      clickHandler={clickHandler}
+    />
   );
 };

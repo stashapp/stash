@@ -24,7 +24,7 @@ func (t *GeneratePhashTask) GetDescription() string {
 }
 
 func (t *GeneratePhashTask) Start(ctx context.Context) {
-	if !t.shouldGenerate() {
+	if !t.required() {
 		return
 	}
 
@@ -49,6 +49,10 @@ func (t *GeneratePhashTask) Start(ctx context.Context) {
 	}
 }
 
-func (t *GeneratePhashTask) shouldGenerate() bool {
-	return t.Overwrite || t.File.Fingerprints.Get(file.FingerprintTypePhash) == nil
+func (t *GeneratePhashTask) required() bool {
+	if t.Overwrite {
+		return true
+	}
+
+	return t.File.Fingerprints.Get(file.FingerprintTypePhash) == nil
 }

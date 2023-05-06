@@ -142,7 +142,35 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 			return
 		}
 
-		logger.Infof("Generating %d covers %d sprites %d previews %d image previews %d markers %d transcodes %d phashes %d heatmaps & speeds", totals.covers, totals.sprites, totals.previews, totals.imagePreviews, totals.markers, totals.transcodes, totals.phashes, totals.interactiveHeatmapSpeeds)
+		logMsg := "Generating"
+		if j.input.Covers {
+			logMsg += fmt.Sprintf(" %d covers", totals.covers)
+		}
+		if j.input.Sprites {
+			logMsg += fmt.Sprintf(" %d sprites", totals.sprites)
+		}
+		if j.input.Previews {
+			logMsg += fmt.Sprintf(" %d previews", totals.previews)
+		}
+		if j.input.ImagePreviews {
+			logMsg += fmt.Sprintf(" %d image previews", totals.imagePreviews)
+		}
+		if j.input.Markers {
+			logMsg += fmt.Sprintf(" %d markers", totals.markers)
+		}
+		if j.input.Transcodes {
+			logMsg += fmt.Sprintf(" %d transcodes", totals.transcodes)
+		}
+		if j.input.Phashes {
+			logMsg += fmt.Sprintf(" %d phashes", totals.phashes)
+		}
+		if j.input.InteractiveHeatmapsSpeeds {
+			logMsg += fmt.Sprintf(" %d heatmaps & speeds", totals.interactiveHeatmapSpeeds)
+		}
+		if logMsg == "Generating" {
+			logMsg = "Nothing selected to generate"
+		}
+		logger.Infof(logMsg)
 
 		progress.SetTotal(int(totals.tasks))
 	}()
@@ -269,9 +297,10 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 		task := &GenerateCoverTask{
 			txnManager: j.txnManager,
 			Scene:      *scene,
+			Overwrite:  j.overwrite,
 		}
 
-		if j.overwrite || task.required(ctx) {
+		if task.required(ctx) {
 			totals.covers++
 			totals.tasks++
 			queue <- task
@@ -285,7 +314,7 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 			fileNamingAlgorithm: j.fileNamingAlgo,
 		}
 
-		if j.overwrite || task.required() {
+		if task.required() {
 			totals.sprites++
 			totals.tasks++
 			queue <- task
@@ -309,21 +338,15 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 		}
 
 		if task.required() {
-			addTask := false
-			if j.overwrite || !task.doesVideoPreviewExist() {
+			if task.videoPreviewRequired() {
 				totals.previews++
-				addTask = true
 			}
-
-			if j.input.ImagePreviews && (j.overwrite || !task.doesImagePreviewExist()) {
+			if task.imagePreviewRequired() {
 				totals.imagePreviews++
-				addTask = true
 			}
 
-			if addTask {
-				totals.tasks++
-				queue <- task
-			}
+			totals.tasks++
+			queue <- task
 		}
 	}
 
@@ -357,7 +380,7 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 			fileNamingAlgorithm: j.fileNamingAlgo,
 			g:                   g,
 		}
-		if task.isTranscodeNeeded() {
+		if task.required() {
 			totals.transcodes++
 			totals.tasks++
 			queue <- task
@@ -375,7 +398,7 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 				Overwrite:           j.overwrite,
 			}
 
-			if task.shouldGenerate() {
+			if task.required() {
 				totals.phashes++
 				totals.tasks++
 				queue <- task
@@ -391,7 +414,7 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 			TxnManager:          j.txnManager,
 		}
 
-		if task.shouldGenerate() {
+		if task.required() {
 			totals.interactiveHeatmapSpeeds++
 			totals.tasks++
 			queue <- task

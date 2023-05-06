@@ -33,6 +33,7 @@ import { CriterionType } from "src/models/list-filter/types";
 import { useToast } from "src/hooks/Toast";
 import { useConfigureUI } from "src/core/StashService";
 import { IUIConfig } from "src/core/config";
+import { FilterMode } from "src/core/generated-graphql";
 
 interface ICriterionList {
   criteria: string[];
@@ -188,6 +189,21 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
   );
 };
 
+const FilterModeToConfigKey = {
+  [FilterMode.Galleries]: "galleries",
+  [FilterMode.Images]: "images",
+  [FilterMode.Movies]: "movies",
+  [FilterMode.Performers]: "performers",
+  [FilterMode.SceneMarkers]: "sceneMarkers",
+  [FilterMode.Scenes]: "scenes",
+  [FilterMode.Studios]: "studios",
+  [FilterMode.Tags]: "tags",
+};
+
+function filterModeToConfigKey(filterMode: FilterMode) {
+  return FilterModeToConfigKey[filterMode];
+}
+
 interface IEditFilterProps {
   filter: ListFilterModel;
   editingCriterion?: string;
@@ -260,7 +276,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   const [saveUI] = useConfigureUI();
 
   const pinnedFilters = useMemo(
-    () => ui.pinnedFilters?.[currentFilter.mode.toLowerCase()] ?? [],
+    () => ui.pinnedFilters?.[filterModeToConfigKey(currentFilter.mode)] ?? [],
     [currentFilter.mode, ui.pinnedFilters]
   );
   const pinnedElements = useMemo(
@@ -289,7 +305,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   ]);
 
   async function updatePinnedFilters(filters: string[]) {
-    const currentMode = currentFilter.mode.toLowerCase();
+    const configKey = filterModeToConfigKey(currentFilter.mode);
     try {
       await saveUI({
         variables: {
@@ -297,7 +313,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
             ...configuration?.ui,
             pinnedFilters: {
               ...ui.pinnedFilters,
-              [currentMode]: filters,
+              [configKey]: filters,
             },
           },
         },

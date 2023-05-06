@@ -36,23 +36,38 @@ const (
 )
 
 var findExactDuplicateQuery = `
-SELECT GROUP_CONCAT(scenes.id) as ids
-FROM scenes
-INNER JOIN scenes_files ON (scenes.id = scenes_files.scene_id) 
-INNER JOIN files ON (scenes_files.file_id = files.id) 
-INNER JOIN files_fingerprints ON (scenes_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'phash')
-GROUP BY files_fingerprints.fingerprint
-HAVING COUNT(files_fingerprints.fingerprint) > 1 AND COUNT(DISTINCT scenes.id) > 1
-ORDER BY SUM(files.size) DESC;
+SELECT GROUP_CONCAT(DISTINCT scene_id) as ids
+FROM (
+	SELECT scenes.id as scene_id
+		, video_files.duration as file_duration
+		, files.size as file_size
+		, files_fingerprints.fingerprint as phash
+		, abs(max(video_files.duration) OVER (PARTITION by files_fingerprints.fingerprint) - video_files.duration) as durationDiff
+	FROM scenes
+	INNER JOIN scenes_files ON (scenes.id = scenes_files.scene_id)
+	INNER JOIN files ON (scenes_files.file_id = files.id)
+	INNER JOIN files_fingerprints ON (scenes_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'phash')
+	INNER JOIN video_files ON (files.id == video_files.file_id)
+)
+WHERE durationDiff <= ?1
+    OR ?1 < 0   --  Always TRUE if the parameter is negative.
+                --  That will disable the durationDiff checking.
+GROUP BY phash
+HAVING COUNT(phash) > 1
+	AND COUNT(DISTINCT scene_id) > 1
+ORDER BY SUM(file_size) DESC;
 `
 
 var findAllPhashesQuery = `
-SELECT scenes.id as id, files_fingerprints.fingerprint as phash
+SELECT scenes.id as id
+    , files_fingerprints.fingerprint as phash
+    , video_files.duration as duration
 FROM scenes
-INNER JOIN scenes_files ON (scenes.id = scenes_files.scene_id) 
-INNER JOIN files ON (scenes_files.file_id = files.id) 
+INNER JOIN scenes_files ON (scenes.id = scenes_files.scene_id)
+INNER JOIN files ON (scenes_files.file_id = files.id)
 INNER JOIN files_fingerprints ON (scenes_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'phash')
-ORDER BY files.size DESC
+INNER JOIN video_files ON (files.id == video_files.file_id)
+ORDER BY files.size DESC;
 `
 
 type sceneRow struct {
@@ -1729,11 +1744,11 @@ func (qb *SceneStore) GetStashIDs(ctx context.Context, sceneID int) ([]models.St
 	return qb.stashIDRepository().get(ctx, sceneID)
 }
 
-func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int) ([][]*models.Scene, error) {
+func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int, durationDiff float64) ([][]*models.Scene, error) {
 	var dupeIds [][]int
 	if distance == 0 {
 		var ids []string
-		if err := qb.tx.Select(ctx, &ids, findExactDuplicateQuery); err != nil {
+		if err := qb.tx.Select(ctx, &ids, findExactDuplicateQuery, durationDiff); err != nil {
 			return nil, err
 		}
 
@@ -1755,7 +1770,8 @@ func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int) ([][]*mo
 
 		if err := qb.queryFunc(ctx, findAllPhashesQuery, nil, false, func(rows *sqlx.Rows) error {
 			phash := utils.Phash{
-				Bucket: -1,
+				Bucket:   -1,
+				Duration: -1,
 			}
 			if err := rows.StructScan(&phash); err != nil {
 				return err
@@ -1767,7 +1783,7 @@ func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int) ([][]*mo
 			return nil, err
 		}
 
-		dupeIds = utils.FindDuplicates(hashes, distance)
+		dupeIds = utils.FindDuplicates(hashes, distance, durationDiff)
 	}
 
 	var duplicates [][]*models.Scene
