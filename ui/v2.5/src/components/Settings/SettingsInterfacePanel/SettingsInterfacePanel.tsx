@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { Button, Form } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { DurationInput } from "src/components/Shared/DurationInput";
@@ -6,7 +6,6 @@ import { PercentInput } from "src/components/Shared/PercentInput";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { CheckboxGroup } from "./CheckboxGroup";
 import { SettingSection } from "../SettingSection";
-import { useAllTagsForFilter } from "src/core/StashService";
 import {
   BooleanSetting,
   ModalSetting,
@@ -80,9 +79,6 @@ export const SettingsInterfacePanel: React.FC = () => {
 
   const [, setInterfaceLocalForage] = useInterfaceLocalForage();
 
-  const { data: tagData, loading: loadingTags } = useAllTagsForFilter();
-  const tags = useMemo(() => tagData?.allTags ?? [], [tagData?.allTags]);
-
   function saveLightboxSettings(v: Partial<GQL.ConfigImageLightboxInput>) {
     // save in local forage as well for consistency
     setInterfaceLocalForage((prev) => {
@@ -140,9 +136,7 @@ export const SettingsInterfacePanel: React.FC = () => {
   }
 
   if (error) return <h1>{error.message}</h1>;
-  if (loading || loadingTags) return <LoadingIndicator />;
-
-  console.log(`tags ${tags}`)
+  if (loading) return <LoadingIndicator />;
 
   // https://en.wikipedia.org/wiki/List_of_language_names
   return (

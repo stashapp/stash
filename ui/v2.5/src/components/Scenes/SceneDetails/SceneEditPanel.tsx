@@ -815,7 +815,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 />
               </Col>
             </Form.Group>
-            a
             <Form.Group controlId="studio" as={Row}>
               {FormUtils.renderLabel({
                 title: intl.formatMessage({ id: "studio" }),

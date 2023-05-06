@@ -215,7 +215,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const minimumPlayPercent = uiConfig?.minimumPlayPercent ?? 0;
   const trackActivity = uiConfig?.trackActivity ?? false;
   const vrTag = uiConfig?.vrTag ?? undefined;
-  console.log(`vrTag: ${vrTag}`)
 
   const file = useMemo(
     () => ((scene?.files.length ?? 0) > 0 ? scene?.files[0] : undefined),
@@ -262,6 +261,17 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   // Initialize VideoJS player
   useEffect(() => {
+    function isVrScene() {
+      if (!scene?.id || !vrTag) return false;
+
+      scene?.tags.map((tag) => {
+        if (vrTag == tag.name) {
+          return true;
+        }
+      });
+      return false;
+    }
+
     const options: VideoJsPlayerOptions = {
       controls: true,
       controlBar: {
@@ -312,7 +322,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         },
         skipButtons: {},
         trackActivity: {},
-        vrMenu: {},
+        vrMenu: {
+          showButton: isVrScene(),
+        },
       },
     };
 
@@ -334,7 +346,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       playerRef.current = undefined;
       player.dispose();
     };
-  }, []);
+  }, [scene, vrTag]);
 
   useEffect(() => {
     const player = playerRef.current;
@@ -613,34 +625,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     const player = playerRef.current;
     if (!player) return;
 
-    console.log(`isVrScene useEffect`)
-
-    async function isVrScene() {
-      if (!scene?.id) return;
-      console.log(`vrTag 2: ${vrTag}`)
-
-      let foundTag = false;
-      scene?.tags.map((tag) => {
-        if (vrTag == tag.name) {
-          foundTag = true;
-          return;
-        }
-      });
-      console.log(`foundTag: ${foundTag}`)
-      return;
-    }
-
-    const vrButton = player.vrMenu();
-    vrButton.isVrScene = isVrScene;
-  }, [
-    scene,
-    vrTag
-  ]);
-
-  useEffect(() => {
-    const player = playerRef.current;
-    if (!player) return;
-
     async function saveActivity(resumeTime: number, playDuration: number) {
       if (!scene?.id) return;
 
@@ -670,6 +654,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     activity.setEnabled(trackActivity);
   }, [
     scene,
+    vrTag,
     trackActivity,
     minimumPlayPercent,
     sceneIncrementPlayCount,

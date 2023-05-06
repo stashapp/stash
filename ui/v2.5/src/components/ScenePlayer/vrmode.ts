@@ -1,7 +1,14 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import videojs, { VideoJsPlayer } from "video.js";
-import * as GQL from "../../core/generated-graphql";
 import "videojs-vr";
+
+export interface VRMenuOptions {
+  /**
+   * Whether to show the vr button.
+   * @default false
+   */
+  showButton?: boolean;
+}
 
 enum VRType {
   Spherical = "360",
@@ -99,17 +106,12 @@ class VRMenuButton extends videojs.getComponent("MenuButton") {
 class VRMenuPlugin extends videojs.getPlugin("plugin") {
   private menu: VRMenuButton;
 
-  isVrScene: () => Promise<void> = () => {
-    return Promise.resolve();
-  };
-
-  constructor(player: VideoJsPlayer) {
+  constructor(player: VideoJsPlayer, options: VRMenuOptions) {
     super(player);
 
     this.menu = new VRMenuButton(player);
 
-    console.log(`isVrScene: ${this.isVrScene()}`)
-    if (isVrDevice() || !this.isVrScene()) return;
+    if (isVrDevice() || !options.showButton) return;
 
     this.menu.on("typeselected", (_, type: VRType) => {
       const projection = vrTypeProjection[type];
@@ -137,7 +139,7 @@ declare module "video.js" {
     vr: (options: Object) => void;
   }
   interface VideoJsPlayerPluginOptions {
-    vrMenu?: {};
+    vrMenu?: VRMenuOptions;
   }
 }
 
