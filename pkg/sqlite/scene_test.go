@@ -2836,21 +2836,23 @@ func verifyScenesOCounter(t *testing.T, oCounterCriterion models.IntCriterionInp
 	})
 }
 
-func verifyInt(t *testing.T, value int, criterion models.IntCriterionInput) {
+func verifyInt(t *testing.T, value int, criterion models.IntCriterionInput) bool {
 	t.Helper()
 	assert := assert.New(t)
 	if criterion.Modifier == models.CriterionModifierEquals {
-		assert.Equal(criterion.Value, value)
+		return assert.Equal(criterion.Value, value)
 	}
 	if criterion.Modifier == models.CriterionModifierNotEquals {
-		assert.NotEqual(criterion.Value, value)
+		return assert.NotEqual(criterion.Value, value)
 	}
 	if criterion.Modifier == models.CriterionModifierGreaterThan {
-		assert.Greater(value, criterion.Value)
+		return assert.Greater(value, criterion.Value)
 	}
 	if criterion.Modifier == models.CriterionModifierLessThan {
-		assert.Less(value, criterion.Value)
+		return assert.Less(value, criterion.Value)
 	}
+
+	return true
 }
 
 func TestSceneQueryDuration(t *testing.T) {
@@ -4235,7 +4237,8 @@ func TestSceneStore_FindDuplicates(t *testing.T) {
 
 	withRollbackTxn(func(ctx context.Context) error {
 		distance := 0
-		got, err := qb.FindDuplicates(ctx, distance)
+		durationDiff := -1.
+		got, err := qb.FindDuplicates(ctx, distance, durationDiff)
 		if err != nil {
 			t.Errorf("SceneStore.FindDuplicates() error = %v", err)
 			return nil
@@ -4244,7 +4247,8 @@ func TestSceneStore_FindDuplicates(t *testing.T) {
 		assert.Len(t, got, dupeScenePhashes)
 
 		distance = 1
-		got, err = qb.FindDuplicates(ctx, distance)
+		durationDiff = -1.
+		got, err = qb.FindDuplicates(ctx, distance, durationDiff)
 		if err != nil {
 			t.Errorf("SceneStore.FindDuplicates() error = %v", err)
 			return nil

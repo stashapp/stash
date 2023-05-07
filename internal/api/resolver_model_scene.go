@@ -178,8 +178,8 @@ func formatFingerprint(fp interface{}) string {
 func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePathsType, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	config := manager.GetInstance().Config
-	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj.ID)
-	screenshotPath := builder.GetScreenshotURL(obj.UpdatedAt)
+	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj)
+	screenshotPath := builder.GetScreenshotURL()
 	previewPath := builder.GetStreamPreviewURL()
 	streamPath := builder.GetStreamURL(config.GetAPIKey()).String()
 	webpPath := builder.GetStreamPreviewImageURL()
@@ -370,7 +370,7 @@ func (r *sceneResolver) SceneStreams(ctx context.Context, obj *models.Scene) ([]
 	config := manager.GetInstance().Config
 
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj.ID)
+	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj)
 	apiKey := config.GetAPIKey()
 
 	return manager.GetSceneStreamPaths(obj, builder.GetStreamURL(apiKey), config.GetMaxStreamingTranscodeSize())

@@ -35,7 +35,7 @@
     "download_backup": "Download backup",
     "edit": "Editar",
     "edit_entity": "Editar {entityType}",
-    "export": "Exportar…",
+    "export": "Exportar",
     "export_all": "Exportar tudo…",
     "find": "Encontrar",
     "finish": "Finalizar",
@@ -883,7 +883,6 @@
   "scenes": "Cenas",
   "scenes_updated_at": "Cena atualizada em",
   "search_filter": {
-    "add_filter": "Adicionar filtro",
     "name": "Filtro",
     "saved_filters": "Filtros salvos",
     "update_filter": "Atualizar filtro"

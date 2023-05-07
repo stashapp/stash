@@ -147,8 +147,9 @@ func initTestTable() {
 		},
 		{
 			createFullStudio(errImageID, parentStudioID),
-			nil,
-			true,
+			createFullJSONStudio(parentStudioName, "", nil),
+			// failure to get image is not an error
+			false,
 		},
 		{
 			createFullStudio(missingParentStudioID, missingStudioID),
@@ -200,6 +201,7 @@ func TestToJSON(t *testing.T) {
 	mockStudioReader.On("GetStashIDs", ctx, studioID).Return(stashIDs, nil).Once()
 	mockStudioReader.On("GetStashIDs", ctx, noImageID).Return(nil, nil).Once()
 	mockStudioReader.On("GetStashIDs", ctx, missingParentStudioID).Return(stashIDs, nil).Once()
+	mockStudioReader.On("GetStashIDs", ctx, errImageID).Return(stashIDs, nil).Once()
 
 	for i, s := range scenarios {
 		studio := s.input

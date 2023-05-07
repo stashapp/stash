@@ -490,6 +490,7 @@ func (g *sceneGenerators) Generate(ctx context.Context, s *models.Scene, f *file
 			taskCover := GenerateCoverTask{
 				Scene:      *s,
 				txnManager: instance.Repository,
+				Overwrite:  overwrite,
 			}
 			taskCover.Start(ctx)
 			progress.Increment()

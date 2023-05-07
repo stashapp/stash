@@ -94,6 +94,20 @@ export const App: React.FC = () => {
 
   // use en-GB as default messages if any messages aren't found in the chosen language
   const [messages, setMessages] = useState<{}>();
+  const [customMessages, setCustomMessages] = useState<{}>();
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(getPlatformURL() + "customlocales");
+        if (res.ok) {
+          setCustomMessages(await res.json());
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     const setLocale = async () => {
@@ -106,15 +120,6 @@ export const App: React.FC = () => {
       const defaultMessages = (await locales[defaultMessageLanguage]()).default;
       const mergedMessages = cloneDeep(Object.assign({}, defaultMessages));
       const chosenMessages = (await locales[messageLanguage]()).default;
-      let customMessages = {};
-      try {
-        const res = await fetch(getPlatformURL() + "customlocales");
-        if (res.ok) {
-          customMessages = await res.json();
-        }
-      } catch (err) {
-        console.log(err);
-      }
 
       mergeWith(
         mergedMessages,
@@ -142,7 +147,7 @@ export const App: React.FC = () => {
     };
 
     setLocale();
-  }, [language]);
+  }, [customMessages, language]);
 
   const location = useLocation();
   const history = useHistory();

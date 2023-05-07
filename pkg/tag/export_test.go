@@ -92,8 +92,9 @@ func initTestTable() {
 		},
 		{
 			createTag(errImageID),
-			nil,
-			true,
+			createJSONTag(nil, "", nil),
+			// getting the image should not cause an error
+			false,
 		},
 		{
 			createTag(errAliasID),
@@ -140,6 +141,7 @@ func TestToJSON(t *testing.T) {
 	mockTagReader.On("FindByChildTagID", ctx, noImageID).Return(nil, nil).Once()
 	mockTagReader.On("FindByChildTagID", ctx, withParentsID).Return([]*models.Tag{{Name: "parent"}}, nil).Once()
 	mockTagReader.On("FindByChildTagID", ctx, errParentsID).Return(nil, parentsErr).Once()
+	mockTagReader.On("FindByChildTagID", ctx, errImageID).Return(nil, nil).Once()
 
 	for i, s := range scenarios {
 		tag := s.tag

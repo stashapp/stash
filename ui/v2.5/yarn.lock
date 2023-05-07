@@ -2440,10 +2440,10 @@
   resolved "https://registry.yarnpkg.com/@types/video.js/-/video.js-7.3.51.tgz#ce69e02681ed6ed8abe61bb3802dd032a74d63e8"
   integrity sha512-xLlt/ZfCuWYBvG2MRn018RvaEplcK6dI63aOiVUeeAWFyjx3Br1hL749ndFgbrvNdY4m9FoHG1FQ/PB6IpfSAQ==
 
-"@types/videojs-mobile-ui@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@types/videojs-mobile-ui/-/videojs-mobile-ui-0.5.0.tgz#66934b140fd437fda361986f8e7e87b01dc39138"
-  integrity sha512-wqeapTB35qpLfERxvL5mZGoexf5bA2TreDpFgc3zyCdr7Acf86VItvo9oTclFeUc11wOo7W7/4ueZZAEYmlTaA==
+"@types/videojs-mobile-ui@^0.8.0":
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/@types/videojs-mobile-ui/-/videojs-mobile-ui-0.8.0.tgz#0fb82810155f3dee9620ea411c8b9bd17e1ac645"
+  integrity sha512-Q8p7ezQLZzf8pnvYd8GZ/6tcg2oX0269Q94dDoqNnq2QMmqWp1sj8npU3gGnTaLkYvvdrO8UjBOIzX68RkQLew==
   dependencies:
     "@types/video.js" "*"
 

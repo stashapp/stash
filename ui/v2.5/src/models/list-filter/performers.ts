@@ -40,6 +40,10 @@ const sortByOptions = [
       messageID: "gallery_count",
       value: "galleries_count",
     },
+    {
+      messageID: "o_counter",
+      value: "o_counter",
+    },
   ]);
 
 const displayModeOptions = [
@@ -84,6 +88,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("scene_count"),
   createMandatoryNumberCriterionOption("image_count"),
   createMandatoryNumberCriterionOption("gallery_count"),
+  createMandatoryNumberCriterionOption("o_counter"),
   createBooleanCriterionOption("ignore_auto_tag"),
   new NumberCriterionOption("height", "height_cm", "height_cm"),
   ...numberCriteria.map((c) => createNumberCriterionOption(c)),

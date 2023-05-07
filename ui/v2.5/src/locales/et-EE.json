@@ -21,6 +21,7 @@
     "confirm": "Kinnita",
     "continue": "Jätka",
     "create": "Loo",
+    "create_chapters": "Loo Peatükk",
     "create_entity": "Loo {entityType}",
     "create_marker": "Loo Marker",
     "created_entity": "Loodud {entity_type}: {entity_name}",
@@ -60,6 +61,8 @@
     "merge": "Liida",
     "merge_from": "Liida teisest",
     "merge_into": "Liida teise",
+    "migrate_blobs": "Migreeri Blobid",
+    "migrate_scene_screenshots": "Migreeri Stseenide Ekraanipildid",
     "next_action": "Järgmine",
     "not_running": "ei jookse",
     "open_in_external_player": "Ava välises mängijas",
@@ -130,8 +133,13 @@
   "birth_year": "Sünniaasta",
   "birthdate": "Sünnikuupäev",
   "bitrate": "Bitikiirus",
+  "blobs_storage_type": {
+    "database": "Andmebaas",
+    "filesystem": "Failisüsteem"
+  },
   "captions": "Subtiitrid",
   "career_length": "Karjääri Pikkus",
+  "chapters": "Peatükid",
   "component_tagger": {
     "config": {
       "active_instance": "Aktiivne stash-kasti eksemplar:",
@@ -162,7 +170,7 @@
       "duration_unknown": "Kestus teadmata",
       "fp_found": "{fpCount, plural, =0 {Uusi sõrmejälje kattuvusi ei leitud} other {# uut sõrmejälje kattuvust leitud}}",
       "fp_matches": "Kestus klapib",
-      "fp_matches_multi": "Kestus klapib {matchCount}/{durationsLength} sõrmejäljel",
+      "fp_matches_multi": "Kestus klapib {matchCount}/{durationsLength} sõrmejälgedel",
       "hash_matches": "{hash_type} klapib",
       "match_failed_already_tagged": "Stseen juba sildistatud",
       "match_failed_no_result": "Vasteid ei leitud",
@@ -185,6 +193,7 @@
       "latest_version": "Uusim Versioon",
       "latest_version_build_hash": "Uusima Versiooni Ehituse Hash:",
       "new_version_notice": "[UUS]",
+      "release_date": "Väljalaskekuupäev:",
       "stash_discord": "Liitu meie {url}i kanaliga",
       "stash_home": "Stashi kodu {url}-is",
       "stash_open_collective": "Toeta meid läbi {url}-i",
@@ -255,7 +264,15 @@
         "description": "Failitee SQLite andmebaasi varundusfailide jaoks",
         "heading": "Varunduse Failitee"
       },
-      "cache_location": "Failitee vahemäluni",
+      "blobs_path": {
+        "description": "Kus kohas hoida binaarseid andmeid failisüsteemis. Kehtib ainult kui kasutad Failisüsteem blob salvestustüüpi. HOIATUS: selle muutmine nõuab olemasolevate andmete manuaalset liigutamist.",
+        "heading": "Binaarseete andmete failisüsteemi tee"
+      },
+      "blobs_storage": {
+        "description": "Kus hoida binaarseid andmeid nagu stseeni kaanepildid, näitlejate, stuudiote ja siltide pilte. Peale selle väärtuse muutmist tuleb olemasolevad andmed migreerida kasutades Migreeri Blobe ülesannet. Vaata Ülesannete lehele migreerimiseks.",
+        "heading": "Binaarsete andmete hoiustamistüüp"
+      },
+      "cache_location": "Failitee vahemäluni. Nõutud kui striimimiseks kasutatakse HLSi (näiteks Apple seadetel) või DASHi.",
       "cache_path_head": "Vahemälu Failitee",
       "calculate_md5_and_ohash_desc": "Kalkuleeri MD5 checksum lisaks oshashile. Lubamine põhjustab aeglasemat esmast skaneerimist. Faili nimetuse hash peab olema sätitud oshashiks, et keelata MD5 kalkuleerimine.",
       "calculate_md5_and_ohash_label": "Kalkuleeri MD5 videote jaoks",
@@ -265,12 +282,43 @@
       "chrome_cdp_path_desc": "Failitee Chrome käivitajani, või kaugaadress (algab http:// või https:// -iga, näiteks http://localhost:9222/json/version) Chrome'i eksemplarini.",
       "create_galleries_from_folders_desc": "Kui lubatud, loob galeriisid pilte sisaldavatest kaustadest.",
       "create_galleries_from_folders_label": "Loo galeriisid kaustadest, mis sisaldavad pilte",
+      "database": "Andmebaas",
       "db_path_head": "Andmebaasi Failitee",
       "directory_locations_to_your_content": "Failitee asukohad sisule",
       "excluded_image_gallery_patterns_desc": "Pildi- ja galeriifailide/teede regexpid, mida skannimisest välja jätta ja Clean'i lisada",
       "excluded_image_gallery_patterns_head": "Välistatud Pildi/Galerii Mustrid",
       "excluded_video_patterns_desc": "Videofailide/teede regexpid, mida skannimisest välja jätta ja Clean'i lisada",
       "excluded_video_patterns_head": "Välistatud Video Mustrid",
+      "ffmpeg": {
+        "hardware_acceleration": {
+          "desc": "Kasutab olemasolevat riistvara reaalajas video transkodeerimiseks.",
+          "heading": "FFmpeg riistvara enkodeerimine"
+        },
+        "live_transcode": {
+          "input_args": {
+            "desc": "Edasijõudnutele: Lisaargumendid mida edastada ffmpegi sisendväljale live video transkodeerimise ajal.",
+            "heading": "FFmpeg Live Transkodeerimise Sisendargumendid"
+          },
+          "output_args": {
+            "desc": "Edasijõudnutele: Lisaargumendid mida edastada ffmpegi väljundväljale live video transkodeerimise ajal.",
+            "heading": "FFmpeg Live Transkodeerimise Väljundargumendid"
+          }
+        },
+        "transcode": {
+          "input_args": {
+            "desc": "Edasijõudnutele: Lisaargumendid mida edastada ffmpegi sisendväljale video reaalajas transkodeerimisel.",
+            "heading": "FFmpeg Reaalajas Transkodeerimise Sisendargumendid"
+          },
+          "output_args": {
+            "desc": "Edasijõudnutele: Lisaargumendid mida edastada ffmpegi väljundväljale video genereerimisel.",
+            "heading": "FFmpeg Transkodeerimise Väljundargumendid"
+          }
+        }
+      },
+      "funscript_heatmap_draw_range": "Kaasa vahemik genereeritud kuumkaartidel",
+      "funscript_heatmap_draw_range_desc": "Joonista liikumisvahemik genereeritud kuumkaardi y-teljel. Olemasolevad kuumkaardid tuleb peale muutmist uuesti genereerida.",
+      "gallery_cover_regex_desc": "Regexp kasutakse, et tuvastada pilti kui galerii kaanepildina",
+      "gallery_cover_regex_label": "Galerii kaanepildi muster",
       "gallery_ext_desc": "Komadega eraldatud faililaiendite loend, mis tuvastatakse galerii ZIP-failidena.",
       "gallery_ext_head": "Galerii zip Laiendused",
       "generated_file_naming_hash_desc": "Kasutage failide nimetamiseks MD5 või oshashi. Selle muutmiseks on vaja, et kõikides stseenides oleks kohaldatav MD5/oshash väärtus täidetud. Pärast selle väärtuse muutmist tuleb olemasolevad loodud failid migreerida või uuesti genereerida. Vaadake üleviimise kohta lehekülge Ülesanded.",
@@ -278,6 +326,7 @@
       "generated_files_location": "Loodud failide (stseenimarkerid, stseeni eelvaated, spraidid jne) asukoht Failiteel",
       "generated_path_head": "Genereeritud Failitee",
       "hashing": "Hashimine",
+      "heatmap_generation": "Funscripti Kuumkaardi Genereerimine",
       "image_ext_desc": "Komadega eraldatud faililaiendite loend, mis tuvastatakse piltidena.",
       "image_ext_head": "Pildilaiendused",
       "include_audio_desc": "Kaasa eelvaadete loomisel helivoog.",
@@ -306,7 +355,7 @@
         "heading": "Kraapijate Failitee"
       },
       "scraping": "Kraapimine",
-      "sqlite_location": "Failitee asukoht SQLite andmebaasi jaoks (vajab taaskäivitust)",
+      "sqlite_location": "Failitee asukoht SQLite andmebaasi jaoks (vajab taaskäivitust). HOIATUS: andmebaasi kasutamine, mis ei jookse samal süsteemil, kui Stash (nt üle võrgu) ei ole toetatud!",
       "video_ext_desc": "Komadega eraldatud faililaiendite loend, mis tuvastatakse videotena.",
       "video_ext_head": "Videolaiendused",
       "video_head": "Video"
@@ -377,6 +426,7 @@
       "generate_previews_during_scan_tooltip": "Genereeri animeeritud WebP eelvaateid, nõutav ainult siis, kui eelvaate tüüp on seatud väärtusele Animeeritud Pilt.",
       "generate_sprites_during_scan": "Genereeri puhastusspriite",
       "generate_thumbnails_during_scan": "Genereeri piltide jaoks pisipilte",
+      "generate_video_covers_during_scan": "Genereeri stseeni kaanepidid",
       "generate_video_previews_during_scan": "Genereeri eelvaateid",
       "generate_video_previews_during_scan_tooltip": "Genereeri video eelvaateid, mis esitatakse kursorit stseeni kohal hoides",
       "generated_content": "Genereeritud Sisu",
@@ -404,7 +454,16 @@
       "incremental_import": "Järkjärguline import esitatud eksporditud ZIP-failist.",
       "job_queue": "Ülesannete Järjekord",
       "maintenance": "Hooldus",
+      "migrate_blobs": {
+        "delete_old": "Kustuta vanad andmed",
+        "description": "Migreeri blobid praegusele blobi andmesüsteemile. Seeda migratsiooni tuleb jooksutada peale blobi andmesalvestussüsteemi muutmist. Saab valikuliselt kustutada vanad andmed peale migratsiooni."
+      },
       "migrate_hash_files": "Kasutatakse pärast genereeritud faili nimetamise hashi muutmist olemasolevate loodud failide ümbernimetamiseks uuele hashivormingule.",
+      "migrate_scene_screenshots": {
+        "delete_files": "Kustuta ekraanipiltide failid",
+        "description": "Migreeri stseeni ekranipildid uute blobi andmesüsteemi. Seda migratsuiooni peaks jooksutama peale olemasoleva süsteemi migreerimist 0.20le. Saab valikuselt kustutada vanu ekraanipilte peale migratsiooni.",
+        "overwrite_existing": "Kirjuta üle eksisteerivad blobid koos ekraanipiltide andmetega"
+      },
       "migrations": "Migreerimised",
       "only_dry_run": "Tee ainult kuivjooks. Ära eemalda midagi",
       "plugin_tasks": "Plugina Ülesanded",
@@ -476,13 +535,17 @@
           "heading": "Keela rippmenüü loomine"
         },
         "heading": "Redigeerimine",
+        "max_options_shown": {
+          "label": "Maksimaalne number esemeid mida näidata valikmenüüdes"
+        },
         "rating_system": {
           "star_precision": {
             "label": "Tähtedega Hindamise Täpsus",
             "options": {
               "full": "Täis",
               "half": "Pool",
-              "quarter": "Neljandik"
+              "quarter": "Neljandik",
+              "tenth": "Kümme"
             }
           },
           "type": {
@@ -514,6 +577,11 @@
       },
       "image_lightbox": {
         "heading": "Pildi Valguskast"
+      },
+      "image_wall": {
+        "direction": "Direktsioon",
+        "heading": "Pildisein",
+        "margin": "Marginaalid (pikslid)"
       },
       "images": {
         "heading": "Pildid",
@@ -658,6 +726,8 @@
   },
   "custom": "Kohandatud",
   "date": "Kuupäev",
+  "date_format": "AAAA-KK-PP",
+  "datetime_format": "AAAA-KK-PP TT:MM",
   "death_date": "Surmakuupäev",
   "death_year": "Surma-aasta",
   "descending": "Langev",
@@ -681,6 +751,14 @@
     "edit_entity_title": "Redigeeri {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Kaasa seotud objektid eksporti",
     "export_title": "Ekspordi",
+    "imagewall": {
+      "direction": {
+        "column": "Kolumn",
+        "description": "Kolumni või ridade põhine välimus.",
+        "row": "Rida"
+      },
+      "margin_desc": "Marginaali pikslite arv ümber iga täispildi."
+    },
     "lightbox": {
       "delay": "Viivitus (s)",
       "display_mode": {
@@ -690,6 +768,7 @@
         "original": "Originaal"
       },
       "options": "Sätted",
+      "page_header": "Leht {page} / {total}",
       "reset_zoom_on_nav": "Pildi muutumisel lähtesta suumi tase",
       "scale_up": {
         "description": "Suurendage väiksemaid pilte ekraani täitmiseks",
@@ -717,6 +796,7 @@
       "destination": "Määra Ümber"
     },
     "scene_gen": {
+      "covers": "Stseeni kaaned",
       "force_transcodes": "Sunni Ümbertöötlemise genereerimine",
       "force_transcodes_tooltip": "Vaikimisi genereeritakse ümbertöötlemisi ainult siis, kui brauser videofaili ei toeta. Kui see on lubatud, genereeritakse ümbertöötlemisi isegi siis, kui videofail näib olevat brauseris toetatud.",
       "image_previews": "Animeeritud Piltide Eelvaated",
@@ -806,6 +886,11 @@
     "warmth": "Soojus"
   },
   "empty_server": "Sellel lehel soovituste nägemiseks lisage oma serverisse mõned stseenid.",
+  "errors": {
+    "image_index_greater_than_zero": "Pildi indeks peab olema suurem kui 0",
+    "lazy_component_error_help": "Kui uuendasid Stashi hiljuti, palun taaslae leht või tühjenda oma brauseri cache.",
+    "something_went_wrong": "Midagi läks valesti."
+  },
   "ethnicity": "Rahvus",
   "existing_value": "eksisteeriv väärtus",
   "eye_color": "Silmavärv",
@@ -853,6 +938,7 @@
     "syncing": "Serveriga sünkroniseerimine",
     "uploading": "Skripti üleslaadimine"
   },
+  "hasChapters": "Sisaldab Episoode",
   "hasMarkers": "On Markereid",
   "height": "Pikkus",
   "height_cm": "Pikkus (cm)",
@@ -860,6 +946,7 @@
   "ignore_auto_tag": "Ignoneeri Automaatset Märkimist",
   "image": "Pilt",
   "image_count": "Pildiarv",
+  "image_index": "Pilt #",
   "images": "Pildid",
   "include_parent_tags": "Kaasa vanem-silte",
   "include_sub_studios": "Kaasa tütarstuudioid",
@@ -982,7 +1069,7 @@
   "scenes": "Stseenid",
   "scenes_updated_at": "Stseen Uuendatud",
   "search_filter": {
-    "add_filter": "Lisa Filter",
+    "edit_filter": "Muuda Filtrit",
     "name": "Filter",
     "saved_filters": "Salvestatud filtrid",
     "update_filter": "Uuenda Filtrit"
@@ -992,8 +1079,12 @@
   "setup": {
     "confirm": {
       "almost_ready": "Oleme seadistamise lõpuleviimiseks peaaegu valmis. Vaata üle järgmised sätted. Valede väärtuste muutmiseks võite klõpsata tagasi. Kui kõik tundub õige, klõpsa süsteemi loomiseks nuppu Kinnita.",
+      "blobs_directory": "Binaarsete andmete kaust",
+      "cache_directory": "Cache kaust",
       "configuration_file_location": "Konfiguratsioonifaili asukoht:",
       "database_file_path": "Andmebaasi faili failitee",
+      "default_blobs_location": "<kasuta andmebaasi>",
+      "default_cache_location": "<tee mis sisaldab konfiguratsioonifaili>/cache",
       "default_db_location": "<failidee konfiguratsioonifaili kausta>/stash-go.sqlite",
       "default_generated_content_location": "<failidee konfiguratsioonifaili kausta>/generated",
       "generated_directory": "Genereeritud kaust",
@@ -1029,12 +1120,20 @@
     },
     "paths": {
       "database_filename_empty_for_default": "andmebaasi failinimi (vaikimisi tühi)",
-      "description": "Järgmisena peame kindlaks määrama, kust leida su pornokogu, kuhu salvestada stashi andmebaas ja loodud failid. Neid sätteid saab hiljem vajadusel muuta.",
+      "description": "Järgmisena peame kindlaks määrama, kust leida su pornokogu ja kuhu salvestada stashi andmebaas, genereeritud failid ja cache. Neid sätteid saab hiljem vajadusel muuta.",
+      "path_to_blobs_directory_empty_for_database": "tee blobide kaustani (tühi, et kasutada andmebaasi)",
+      "path_to_cache_directory_empty_for_default": "tee cache kaustani (tühi vaikeseadeks)",
       "path_to_generated_directory_empty_for_default": "genereeritud kataloogi tee (vaikimisi tühi)",
       "set_up_your_paths": "Seadista oma failiteed",
       "stash_alert": "Ühtegi kogu teed pole valitud. Stash ei saa skannida mitte ühtegi meediumifaili. Oled sa kindel?",
+      "where_can_stash_store_blobs": "Kus saab Stash hoida oma andmebaasi binaarseid andmeid?",
+      "where_can_stash_store_blobs_description": "Stash saab hoida binaarseid andmeid nagu stseeni kaanepilte, esinejate, stuudiote ja siltide pilte kas andmebaasis või failisüsteemis. Vaikimisi salvestab Stash neid andmeid failsüsteemi alamkausta <code>blobs</code>. Kui tahad seda muuta, palun sisesta absoluutne või relatiivne (hetke töökaustaga) tee. Stash loob selle kausta, kui seda juba ei eksisteeri.",
+      "where_can_stash_store_blobs_description_addendum": "Alternatiivselt, kui tahad hoida neid anmeid andmebaasis, saad jätta selle välja tühjaks. <strong>NB:</strong> See suurendab su andmebaasi fail ja suurendab andmebaasi migratsiooni aega.",
+      "where_can_stash_store_cache_files": "Kus saab Stash hoida cache faile?",
+      "where_can_stash_store_cache_files_description": "Mõne funktsionaalsuse, nagu HLS/DASH reaalas transkodeerimine, töötamiseks vajab Stash cache kausta ajutiste failide jaoks. Vaikimisi loob Stash <code>cache</code> kausta mis asub konfiguratsioonifailiga samas kaustas. Kui tahad seda muuta, palun sisesta absoluutne või relatiivne (töökaustaga) tee. Stash loob selle kausta kui seda juba ei eksisteeri.",
       "where_can_stash_store_its_database": "Kuhu saab Stash oma andmebaasi salvestada?",
-      "where_can_stash_store_its_database_description": "Stash kasutab su porno metaandmete salvestamiseks sqlite'i andmebaasi. Vaikimisi luuakse see konfiguratsioonifaili sisaldavasse kataloogi kui <code>stash-go.sqlite</code>. Kui soovid seda muuta, sisesta absoluutne või suhteline failinimi (praeguse töökataloogi suhtes).",
+      "where_can_stash_store_its_database_description": "Stash kasutab su porno metaandmete salvestamiseks SQLite'i andmebaasi. Vaikimisi luuakse see konfiguratsioonifaili sisaldavasse kataloogi kui <code>stash-go.sqlite</code>. Kui soovid seda muuta, sisesta absoluutne või suhteline failinimi (praeguse töökataloogi suhtes).",
+      "where_can_stash_store_its_database_warning": "HOIATUS: hoides andmebaasi erineval süsteemil kui millel Stash jookseb (nt hoides andmebaasi NASil kui Stash jookseb teisel arvutil) on <strong>mitte toetatud</strong>! SQLite ei ole mõeldud kasutamiseks üle võrgu ja selle proovimine võib väga kergesti viia andmebaasi korrupeerumiseni.",
       "where_can_stash_store_its_generated_content": "Kus saab Stash oma genereeritud sisu salvestada?",
       "where_can_stash_store_its_generated_content_description": "Pisipiltide, eelvaadete ja spraitide pakkumiseks loob Stash pilte ja videoid. See hõlmab ka toetamata failivormingute ümbertöötlemist. Vaikimisi loob Stash konfiguratsioonifaili sisaldavas kaustas <code>genereeritud</code> kausta. Kui soovid muuta seda, kus see loodud meedium salvestatakse, sisesta absoluutne või suhteline failitee (praeguse töökataloogi suhtes). Stash loob selle kausta, kui seda veel pole.",
       "where_is_your_porn_located": "Kus su porno asub?",
@@ -1106,6 +1205,7 @@
     "default_filter_set": "Vaikimisi filtrikomplekt",
     "delete_past_tense": "Kustutatud {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Ekraanipildi genereerimine…",
+    "image_index_too_large": "Error: Pildi index on suurem kui Galeriis olevate piltide arv",
     "merged_scenes": "Ühendatud stseenid",
     "merged_tags": "Sildid ühendatud",
     "reassign_past_tense": "Fail ümbermääratud",
@@ -1124,7 +1224,9 @@
   "updated_at": "Viimati Uuendatud",
   "url": "URL",
   "validation": {
-    "aliases_must_be_unique": "aliased peavad olema erilised"
+    "aliases_must_be_unique": "aliased peavad olema erilised",
+    "date_invalid_form": "${path} peab olema AAAA-KK-PP vormis",
+    "required": "${path} on nõutud väli"
   },
   "videos": "Videod",
   "view_all": "Vaata Kõiki",

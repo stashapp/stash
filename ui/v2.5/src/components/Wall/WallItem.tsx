@@ -1,4 +1,11 @@
-import React, { useRef, useState, useEffect, useMemo } from "react";
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+  MouseEvent,
+  useMemo,
+} from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
@@ -9,18 +16,20 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { markerTitle } from "src/core/markers";
 import { objectTitle } from "src/core/files";
 
-interface IWallItemProps {
+export type WallItemType = keyof WallItemData;
+
+export type WallItemData = {
+  scene: GQL.SlimSceneDataFragment;
+  sceneMarker: GQL.SceneMarkerDataFragment;
+  image: GQL.SlimImageDataFragment;
+};
+
+interface IWallItemProps<T extends WallItemType> {
+  type: T;
   index?: number;
-  scene?: GQL.SlimSceneDataFragment;
+  data: WallItemData[T];
   sceneQueue?: SceneQueue;
-  sceneMarker?: GQL.SceneMarkerDataFragment;
-  image?: GQL.SlimImageDataFragment;
-  clickHandler?: (
-    item:
-      | GQL.SlimSceneDataFragment
-      | GQL.SceneMarkerDataFragment
-      | GQL.SlimImageDataFragment
-  ) => void;
+  clickHandler?: (e: MouseEvent, item: WallItemData[T]) => void;
   className: string;
 }
 
@@ -31,26 +40,29 @@ interface IPreviews {
 }
 
 const Preview: React.FC<{
-  previews?: IPreviews;
+  previews: IPreviews;
   config?: GQL.ConfigDataFragment;
   active: boolean;
 }> = ({ previews, config, active }) => {
-  const videoElement = useRef() as React.MutableRefObject<HTMLVideoElement>;
+  const videoEl = useRef<HTMLVideoElement>(null);
   const [isMissing, setIsMissing] = useState(false);
 
   const previewType = config?.interface?.wallPlayback;
   const soundOnPreview = config?.interface?.soundOnPreview ?? false;
 
   useEffect(() => {
-    if (!videoElement.current) return;
-    videoElement.current.muted = !(soundOnPreview && active);
-    if (previewType !== "video") {
-      if (active) videoElement.current.play();
-      else videoElement.current.pause();
-    }
-  }, [videoElement, previewType, soundOnPreview, active]);
+    const video = videoEl.current;
+    if (!video) return;
 
-  if (!previews) return <div />;
+    video.muted = !(soundOnPreview && active);
+    if (previewType !== "video") {
+      if (active) {
+        video.play();
+      } else {
+        video.pause();
+      }
+    }
+  }, [previewType, soundOnPreview, active]);
 
   const image = (
     <img
@@ -77,7 +89,7 @@ const Preview: React.FC<{
         // Error code 4 indicates media not found or unsupported
         setIsMissing(error.currentTarget.error?.code === 4);
       }}
-      ref={videoElement}
+      ref={videoEl}
     />
   );
 
@@ -105,108 +117,123 @@ const Preview: React.FC<{
   );
 };
 
-export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
+export const WallItem = <T extends WallItemType>({
+  type,
+  index,
+  data,
+  sceneQueue,
+  clickHandler,
+  className,
+}: IWallItemProps<T>) => {
   const [active, setActive] = useState(false);
-  const wallItem = useRef() as React.MutableRefObject<HTMLDivElement>;
+  const itemEl = useRef<HTMLDivElement>(null);
   const { configuration: config } = React.useContext(ConfigurationContext);
 
   const showTextContainer = config?.interface.wallShowTitle ?? true;
 
-  const previews = props.sceneMarker
-    ? {
-        video: props.sceneMarker.stream,
-        animation: props.sceneMarker.preview,
-        image: props.sceneMarker.screenshot,
-      }
-    : props.scene
-    ? {
-        video: props.scene?.paths.preview ?? undefined,
-        animation: props.scene?.paths.webp ?? undefined,
-        image: props.scene?.paths.screenshot ?? undefined,
-      }
-    : props.image
-    ? {
-        image: props.image?.paths.thumbnail ?? undefined,
-      }
-    : undefined;
+  const previews = useMemo(() => {
+    switch (type) {
+      case "scene":
+        const scene = data as GQL.SlimSceneDataFragment;
+        return {
+          video: scene.paths.preview ?? undefined,
+          animation: scene.paths.webp ?? undefined,
+          image: scene.paths.screenshot ?? undefined,
+        };
+      case "sceneMarker":
+        const sceneMarker = data as GQL.SceneMarkerDataFragment;
+        return {
+          video: sceneMarker.stream,
+          animation: sceneMarker.preview,
+          image: sceneMarker.screenshot,
+        };
+      case "image":
+        const image = data as GQL.SlimImageDataFragment;
+        return {
+          image: image.paths.thumbnail ?? undefined,
+        };
+      default:
+        // this is unreachable, inference fails for some reason
+        return type as never;
+    }
+  }, [type, data]);
+  const linkSrc = useMemo(() => {
+    switch (type) {
+      case "scene":
+        const scene = data as GQL.SlimSceneDataFragment;
+        return sceneQueue
+          ? sceneQueue.makeLink(scene.id, { sceneIndex: index })
+          : `/scenes/${scene.id}`;
+      case "sceneMarker":
+        const sceneMarker = data as GQL.SceneMarkerDataFragment;
+        return NavUtils.makeSceneMarkerUrl(sceneMarker);
+      case "image":
+        const image = data as GQL.SlimImageDataFragment;
+        return `/images/${image.id}`;
+      default:
+        return type;
+    }
+  }, [type, data, sceneQueue, index]);
+  const title = useMemo(() => {
+    switch (type) {
+      case "scene":
+        const scene = data as GQL.SlimSceneDataFragment;
+        return objectTitle(scene);
+      case "sceneMarker":
+        const sceneMarker = data as GQL.SceneMarkerDataFragment;
+        const newTitle = markerTitle(sceneMarker);
+        const seconds = TextUtils.secondsToTimestamp(sceneMarker.seconds);
+        if (newTitle) {
+          return `${newTitle} - ${seconds}`;
+        } else {
+          return seconds;
+        }
+      case "image":
+        return "";
+      default:
+        return type;
+    }
+  }, [type, data]);
+  const tags = useMemo(() => {
+    if (type === "sceneMarker") {
+      const sceneMarker = data as GQL.SceneMarkerDataFragment;
+      return [sceneMarker.primary_tag, ...sceneMarker.tags];
+    }
+  }, [type, data]);
 
   const setInactive = () => setActive(false);
-  const toggleActive = (e: TransitionEvent) => {
+  const toggleActive = useCallback((e: TransitionEvent) => {
     if (e.propertyName === "transform" && e.elapsedTime === 0) {
       // Get the current scale of the wall-item. If it's smaller than 1.1 the item is being scaled up, otherwise down.
-      const matrixScale = getComputedStyle(wallItem.current).transform.match(
+      const matrixScale = getComputedStyle(itemEl.current!).transform.match(
         /-?\d+\.?\d+|\d+/g
       )?.[0];
       const scale = Number.parseFloat(matrixScale ?? "2") || 2;
-      setActive(scale <= 1.1 && !active);
+      setActive((value) => scale <= 1.1 && !value);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    const { current } = wallItem;
-    current?.addEventListener("transitioncancel", setInactive);
-    current?.addEventListener("transitionstart", toggleActive);
+    const item = itemEl.current!;
+    item.addEventListener("transitioncancel", setInactive);
+    item.addEventListener("transitionstart", toggleActive);
     return () => {
-      current?.removeEventListener("transitioncancel", setInactive);
-      current?.removeEventListener("transitionstart", toggleActive);
+      item.removeEventListener("transitioncancel", setInactive);
+      item.removeEventListener("transitionstart", toggleActive);
     };
-  });
+  }, [toggleActive]);
 
-  const clickHandler = () => {
-    if (props.scene) {
-      props?.clickHandler?.(props.scene);
-    }
-    if (props.sceneMarker) {
-      props?.clickHandler?.(props.sceneMarker);
-    }
-    if (props.image) {
-      props?.clickHandler?.(props.image);
-    }
+  const onClick = (e: MouseEvent) => {
+    clickHandler?.(e, data);
   };
-
-  const cont = config?.interface.continuePlaylistDefault ?? false;
-
-  let linkSrc: string = "#";
-  if (!props.clickHandler) {
-    if (props.scene) {
-      linkSrc = props.sceneQueue
-        ? props.sceneQueue.makeLink(props.scene.id, {
-            sceneIndex: props.index,
-            continue: cont,
-          })
-        : `/scenes/${props.scene.id}`;
-    } else if (props.sceneMarker) {
-      linkSrc = NavUtils.makeSceneMarkerUrl(props.sceneMarker);
-    } else if (props.image) {
-      linkSrc = `/images/${props.image.id}`;
-    }
-  }
-
-  const title = useMemo(() => {
-    if (props.sceneMarker) {
-      return `${markerTitle(
-        props.sceneMarker
-      )} - ${TextUtils.secondsToTimestamp(props.sceneMarker.seconds)}`;
-    }
-
-    if (props.scene) {
-      return objectTitle(props.scene);
-    }
-
-    return "";
-  }, [props.sceneMarker, props.scene]);
 
   const renderText = () => {
     if (!showTextContainer) return;
 
-    const tags = props.sceneMarker
-      ? [props.sceneMarker.primary_tag, ...props.sceneMarker.tags]
-      : [];
-
     return (
       <div className="wall-item-text">
         <div>{title}</div>
-        {tags.map((tag) => (
+        {tags?.map((tag) => (
           <span key={tag.id} className="wall-tag">
             {tag.name}
           </span>
@@ -217,8 +244,8 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
 
   return (
     <div className="wall-item">
-      <div className={`wall-item-container ${props.className}`} ref={wallItem}>
-        <Link onClick={clickHandler} to={linkSrc} className="wall-item-anchor">
+      <div className={`wall-item-container ${className}`} ref={itemEl}>
+        <Link onClick={onClick} to={linkSrc} className="wall-item-anchor">
           <Preview previews={previews} config={config} active={active} />
           {renderText()}
         </Link>

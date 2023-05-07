@@ -11,6 +11,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 const (
@@ -61,6 +62,7 @@ func (s *FilesystemStore) Write(ctx context.Context, checksum string, data []byt
 		return fmt.Errorf("creating directory %q: %w", filepath.Dir(fn), err)
 	}
 
+	logger.Debugf("Writing blob file %s", fn)
 	out, err := s.fs.Create(fn)
 	if err != nil {
 		return fmt.Errorf("creating file %q: %w", fn, err)

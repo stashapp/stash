@@ -1114,11 +1114,14 @@ func verifyPerformerAge(t *testing.T, ageCriterion models.IntCriterionInput) {
 
 			d := performer.Birthdate.Time
 			age := cd.Year() - d.Year()
-			if cd.YearDay() < d.YearDay() {
+			// using YearDay screws up on leap years
+			if cd.Month() < d.Month() || (cd.Month() == d.Month() && cd.Day() < d.Day()) {
 				age = age - 1
 			}
 
-			verifyInt(t, age, ageCriterion)
+			if !verifyInt(t, age, ageCriterion) {
+				t.Errorf("Performer birthdate: %s, deathdate: %s", performer.Birthdate.String(), performer.DeathDate.String())
+			}
 		}
 
 		return nil

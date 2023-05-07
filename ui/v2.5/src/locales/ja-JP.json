@@ -185,6 +185,7 @@
       "latest_version": "最新バージョン",
       "latest_version_build_hash": "最新バージョンのビルドハッシュ:",
       "new_version_notice": "[NEW]",
+      "release_date": "リリース日:",
       "stash_discord": "私たちの{url}チャンネルへ参加しませんか",
       "stash_home": "Stashのすべては{url}にあります",
       "stash_open_collective": "{url}からStashの開発を支援",
@@ -271,6 +272,28 @@
       "excluded_image_gallery_patterns_head": "除外する画像/ギャラリーの規則",
       "excluded_video_patterns_desc": "スキャンから除外し、クリーニングに追加する動画のファイル/パスの正規表現を指定できます",
       "excluded_video_patterns_head": "除外する動画の規則",
+      "ffmpeg": {
+        "live_transcode": {
+          "input_args": {
+            "desc": "詳細: 動画をライブ変換する際に、ffmpegに通す、input欄の前に付与する追加の引数を指定できます。",
+            "heading": "ffmpegライブ変換入力引数"
+          },
+          "output_args": {
+            "desc": "詳細: 動画をライブ変換する際に、ffmpegに通す、output欄の前に付与する追加の引数を指定できます。",
+            "heading": "ffmpegライブ変換出力引数"
+          }
+        },
+        "transcode": {
+          "input_args": {
+            "desc": "詳細: 動画を生成する際に、ffmpegに通す、input欄の前に付与する追加の引数を指定できます。",
+            "heading": "ffmpeg変換入力引数"
+          },
+          "output_args": {
+            "desc": "詳細: 動画をライブ変換する際に、ffmpegに通す、output欄の前に付与する追加の引数を指定できます。",
+            "heading": "ffmpeg変換出力引数"
+          }
+        }
+      },
       "gallery_ext_desc": "ギャラリーzipファイルとして認識させるファイル拡張子のコンマ区切りリストです。",
       "gallery_ext_head": "ギャラリーzipの拡張子",
       "generated_file_naming_hash_desc": "生成されたファイルの命名にMD5またはoshashを使用します。これを変更するには、すべてのシーンに該当するMD5/oshash値が適用されている必要があります。この値を変更後、既に存在する生成済みのファイルを移行または再生成する必要があります。遺構についてはタスクページをご確認ください。",
@@ -441,12 +464,12 @@
       },
       "basic_settings": "基本設定",
       "custom_css": {
-        "description": "変更を適用するにはページを更新する必要があります。",
+        "description": "変更を適用するにはページを更新する必要があります。カスタムCSSは、将来のStashリリースとの互換性を保証しません。",
         "heading": "カスタムCSS",
         "option_label": "カスタムCSSを有効にする"
       },
       "custom_javascript": {
-        "description": "エフェクトの変更を反映させるためにはページをリロードしてください。",
+        "description": "エフェクトの変更を反映させるためにはページをリロードしてください。カスタムJavaScriptは、将来のStashリリースとの互換性を保証しません。",
         "heading": "カスタムJavascript",
         "option_label": "カスタムJavascriptを有効化する"
       },
@@ -982,7 +1005,6 @@
   "scenes": "シーン",
   "scenes_updated_at": "シーンの更新日：",
   "search_filter": {
-    "add_filter": "フィルターを追加",
     "name": "フィルター",
     "saved_filters": "保存済みのフィルター",
     "update_filter": "フィルターを更新"
