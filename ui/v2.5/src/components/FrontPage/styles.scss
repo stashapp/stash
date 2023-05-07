@@ -306,17 +306,17 @@
 }
 
 @media (max-width: 576px) {
-  .slick-list .scene-card,
-  .slick-list .studio-card,
-  .slick-list .gallery-card {
+  .slick-list .scene-card.card,
+  .slick-list .studio-card.card,
+  .slick-list .gallery-card.card {
     width: 20rem;
   }
 
-  .slick-list .movie-card {
+  .slick-list .movie-card.card {
     width: 16rem;
   }
 
-  .slick-list .performer-card {
+  .slick-list .performer-card.card {
     width: 16rem;
   }
 
