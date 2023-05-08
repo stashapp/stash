@@ -234,7 +234,9 @@
       "server_display_name": "Serveri Nimi",
       "server_display_name_desc": "DLNA server nimi. Vaikimisi {server_name}, kui midagi pole sisestatud.",
       "successfully_cancelled_temporary_behaviour": "Edukalt tühistatud ajutine käitumine",
-      "until_restart": "restardini"
+      "until_restart": "restardini",
+      "video_sort_order": "Videote Sorteerimise Vaikeväärtus",
+      "video_sort_order_desc": "Viis, kuidas vaikimisi videoid sorteerida."
     },
     "general": {
       "auth": {
@@ -811,7 +813,7 @@
       "markers_tooltip": "20-sekundilised videod, mis algavad etteantud ajakoodiga.",
       "override_preview_generation_options": "Eelvaate Genereerimise Valikute Ülekirjutamine",
       "override_preview_generation_options_desc": "Eelvaate Genereerimise Sätete üle kirjutamine selle operatsiooni jaoks. Vaikeseaded määratakse jaotises Süsteem -> Eelvaate Genereerimine.",
-      "overwrite": "Kirjuta üle olemasolevad genereeritud failid",
+      "overwrite": "Kirjuta üle olemasolevad failid",
       "phash": "Nähtavad hashid (duplikaatide eemaldamiseks)",
       "preview_exclude_end_time_desc": "Välista stseeni eelvaadetest viimased x sekundid. See võib olla väärtus sekundites või protsent (nt 2%) stseeni kogukestusest.",
       "preview_exclude_end_time_head": "Välista lõpuaeg",
@@ -853,6 +855,11 @@
   "donate": "Anneta",
   "dupe_check": {
     "description": "Täpsetest madalamate tasemete arvutamine võib võtta kauem aega. Valepositiivsed tulemused võidakse tagastada ka madalamal täpsustasemel.",
+    "duration_diff": "Maksimaalse Pikkuse Vahe",
+    "duration_options": {
+      "any": "Kõik",
+      "equal": "Võrdne"
+    },
     "found_sets": "{setCount, plural, one{# duplikaat leitud.} other {# duplikaati leitud.}}",
     "options": {
       "exact": "Täpselt",
@@ -1075,6 +1082,7 @@
     "saved_filters": "Salvestatud filtrid",
     "update_filter": "Uuenda Filtrit"
   },
+  "second": "Sekund",
   "seconds": "Sekundit",
   "settings": "Sätted",
   "setup": {
