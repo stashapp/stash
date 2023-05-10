@@ -234,7 +234,9 @@
       "server_display_name": "Servers visningsnamn",
       "server_display_name_desc": "Visningsnamnet för DLNA-servern. Återgår till standard {server_name} om tom.",
       "successfully_cancelled_temporary_behaviour": "Lyckad avbrytning av temporärt beteende",
-      "until_restart": "tills omstart"
+      "until_restart": "tills omstart",
+      "video_sort_order": "Standard Scen Sorteringsordning",
+      "video_sort_order_desc": "Ordningen som scener sorteras i som standard."
     },
     "general": {
       "auth": {
@@ -281,7 +283,7 @@
       "check_for_insecure_certificates_desc": "Vissa webbplatser använder osäkra SSl-certifikat. När detta är avstängt kommer skraparen att kunna skrapa webbplatser med osäkra certifikat. Stäng av detta om du får certifikatfel vid skrapning.",
       "chrome_cdp_path": "Chrome CDP-sökväg",
       "chrome_cdp_path_desc": "Sökväg till Chrome-programfilen, eller en fjärradress (börjar med http:// eller https://, till exempel http://localhost:9222/json/version) till en Chrome-instans.",
-      "create_galleries_from_folders_desc": "Om sant, skapar gallerier från mappar som innehåller bilder.",
+      "create_galleries_from_folders_desc": "Om sant, skapar gallerier från mappar som innehåller bilder. Skapa en fil med namn .forcegalllery i en mapp för att aktivera/förhindra detta.",
       "create_galleries_from_folders_label": "Skapa gallerier från mappar som innehåller bilder",
       "database": "Databas",
       "db_path_head": "Databassökväg",
@@ -811,7 +813,7 @@
       "markers_tooltip": "20-sekunders videor som börjar vid angiven tidsstämpel.",
       "override_preview_generation_options": "Åsidosätt Inställningar för Förhandsvisningsgeneration",
       "override_preview_generation_options_desc": "Åsidosätt inställningar för Förhandsvisningsgeneration. Standarder ställs in i System -> Förhandsvisningsgeneration.",
-      "overwrite": "Ersätt existerande genererade filer",
+      "overwrite": "Ersätt existerande filer",
       "phash": "Perceptuella hashar (för de-duplikation)",
       "preview_exclude_end_time_desc": "Exkludera de sista x sekunderna från videoförhandsvisning. Detta kan vara ett värde i sekunder, eller en procent (ex. 2%) av scenes totala speltid.",
       "preview_exclude_end_time_head": "Exludera sluttid",
@@ -853,6 +855,11 @@
   "donate": "Donera",
   "dupe_check": {
     "description": "Nivåer under 'Exakt' kan ta längre tid att beräkna. Falskt positiva svar riskeras också genom att välja en lägre nivå.",
+    "duration_diff": "Maximal Speltidsskillnad",
+    "duration_options": {
+      "any": "Allt",
+      "equal": "Lika"
+    },
     "found_sets": "{setCount, plural, one{# kopia hittades.} other {# antal kopior hittades.}}",
     "options": {
       "exact": "Exakt",
@@ -1075,6 +1082,7 @@
     "saved_filters": "Sparade filter",
     "update_filter": "Uppdatera filter"
   },
+  "second": "Sekund",
   "seconds": "Sekunder",
   "settings": "Inställningar",
   "setup": {
