@@ -246,6 +246,7 @@ func newScanFilter(c *config.Instance, minModTime time.Time) *scanFilter {
 
 func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) bool {
 	if fsutil.IsPathInDir(f.generatedPath, path) {
+		logger.Warnf("Skipping %q as it overlaps with the generated folder", path)
 		return false
 	}
 
