@@ -234,7 +234,8 @@
       "server_display_name": "服务器名称",
       "server_display_name_desc": "DLAN服务器的名称。如果为空，则默认为 {server_name}。",
       "successfully_cancelled_temporary_behaviour": "成功取消暂时的服务行为",
-      "until_restart": "直到服务重启"
+      "until_restart": "直到服务重启",
+      "video_sort_order": "默认视频排序"
     },
     "general": {
       "auth": {
@@ -281,7 +282,7 @@
       "check_for_insecure_certificates_desc": "某些网站所使用的证书可能有安全问题。取消勾选之后挖掘器会跳过证书安全性检查，如果你遇到了证书错误的问题，可以取消此选项。",
       "chrome_cdp_path": "谷歌浏览器 CDP 路径",
       "chrome_cdp_path_desc": "谷歌浏览器 可执行文件的路径, 或者远端地址 (以 http:// 或 https:// 开头, 比如 http://localhost:9222/json/version)。",
-      "create_galleries_from_folders_desc": "如果勾选，则会从包含图片的文件夹建立图库。",
+      "create_galleries_from_folders_desc": "如果勾选，则默认从包含图片的文件夹中创建画廊。在文件夹中创建一个名为 .forcegallery 或 .nogallery 的文件来强制/防止这种情况。",
       "create_galleries_from_folders_label": "从包含图片的文件夹建立图库",
       "database": "数据库",
       "db_path_head": "数据库所在路径",
