@@ -466,7 +466,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   function gotoPage(imageIndex: number) {
     const indexInPage = (imageIndex - 1) % pageSize;
     if (pageCallback) {
-      let jumppage = Math.floor(imageIndex / pageSize) + 1;
+      let jumppage = Math.floor((imageIndex - 1) / pageSize) + 1;
       if (page !== jumppage) {
         pageCallback({ page: jumppage });
         oldImages.current = images;
