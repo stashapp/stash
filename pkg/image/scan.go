@@ -317,7 +317,23 @@ func (h *ScanHandler) getOrCreateGallery(ctx context.Context, f file.File) (*mod
 		return h.getOrCreateZipBasedGallery(ctx, f.Base().ZipFile)
 	}
 
-	if h.ScanConfig.GetCreateGalleriesFromFolders() {
+	// Look for specific filename in Folder to find out if the Folder is marked to be handled differently as the setting
+	folderPath := filepath.Dir(f.Base().Path)
+
+	forceGallery := false
+	if _, err := os.Stat(filepath.Join(folderPath, ".forcegallery")); err == nil {
+		forceGallery = true
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return nil, fmt.Errorf("Could not test Path %s: %w", folderPath, err)
+	}
+	exemptGallery := false
+	if _, err := os.Stat(filepath.Join(folderPath, ".nogallery")); err == nil {
+		exemptGallery = true
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return nil, fmt.Errorf("Could not test Path %s: %w", folderPath, err)
+	}
+
+	if forceGallery || (h.ScanConfig.GetCreateGalleriesFromFolders() && !exemptGallery) {
 		return h.getOrCreateFolderBasedGallery(ctx, f)
 	}
 
