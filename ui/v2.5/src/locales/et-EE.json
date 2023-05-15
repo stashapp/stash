@@ -283,7 +283,7 @@
       "check_for_insecure_certificates_desc": "Mõned lehed kasutavad ebaturvalisi ssl sertifikaate. Kui märkimata, kraapija jätab sertifikaadi kontrollimise vahele ning võimaldab nendelt lehtedelt andmeid kraapida. Kui kraapimise ajal esineb sertifikaadivigu, eemalda linnuke.",
       "chrome_cdp_path": "Chrome CDP tee",
       "chrome_cdp_path_desc": "Failitee Chrome käivitajani, või kaugaadress (algab http:// või https:// -iga, näiteks http://localhost:9222/json/version) Chrome'i eksemplarini.",
-      "create_galleries_from_folders_desc": "Kui lubatud, loob galeriisid pilte sisaldavatest kaustadest.",
+      "create_galleries_from_folders_desc": "Kui lubatud, loob vaikeväärtusena galeriisid pilte sisaldavatest kaustadest. Loo kasutas fail nimega .forcegallery või .nogallery, et seda sundida või sellest hoiduda.",
       "create_galleries_from_folders_label": "Loo galeriisid kaustadest, mis sisaldavad pilte",
       "database": "Andmebaas",
       "db_path_head": "Andmebaasi Failitee",
