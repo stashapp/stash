@@ -35,22 +35,6 @@ func convertImageFile(f *file.ImageFile) *ImageFile {
 	return ret
 }
 
-/*
-func frameToImageFile(f file.File) (*file.ImageFile, error) {
-	frame, ok := f.(file.VisualFile)
-	if !ok {
-		return nil, fmt.Errorf("file %T is not an frame", f)
-	}
-
-	return &file.ImageFile{
-		BaseFile: f.Base(),
-		Format:   frame.GetFormat(),
-		Width:    frame.GetWidth(),
-		Height:   frame.GetHeight(),
-	}, nil
-}
-*/
-
 func (r *imageResolver) getPrimaryFile(ctx context.Context, obj *models.Image) (file.VisualFile, error) {
 	if obj.PrimaryFileID != nil {
 		f, err := loaders.From(ctx).FileByID.Load(*obj.PrimaryFileID)
