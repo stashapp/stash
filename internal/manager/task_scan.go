@@ -314,14 +314,6 @@ func (c *scanConfig) GetCreateGalleriesFromFolders() bool {
 	return instance.Config.GetCreateGalleriesFromFolders()
 }
 
-func (c *scanConfig) IsGenerateThumbnails() bool {
-	return c.isGenerateThumbnails
-}
-
-func (c *scanConfig) IsGenerateClipPreviews() bool {
-	return c.isGenerateClipPreviews
-}
-
 func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progress *job.Progress) []file.Handler {
 	db := instance.Database
 	pluginCache := instance.PluginCache
@@ -330,11 +322,16 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 		&file.FilteredHandler{
 			Filter: file.FilterFunc(imageFileFilter),
 			Handler: &image.ScanHandler{
-				CreatorUpdater:     db.Image,
-				GalleryFinder:      db.Gallery,
-				ThumbnailGenerator: &imageThumbnailGenerator{},
+				CreatorUpdater: db.Image,
+				GalleryFinder:  db.Gallery,
+				ScanGenerator: &imageGenerators{
+					input:     options,
+					taskQueue: taskQueue,
+					progress:  progress,
+				},
 				ScanConfig: &scanConfig{
-					isGenerateThumbnails: options.ScanGenerateThumbnails,
+					isGenerateThumbnails:   options.ScanGenerateThumbnails,
+					isGenerateClipPreviews: options.ScanGenerateClipPreviews,
 				},
 				PluginCache: pluginCache,
 				Paths:       instance.Paths,
@@ -367,9 +364,58 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 	}
 }
 
-type imageThumbnailGenerator struct{}
+type imageGenerators struct {
+	input     ScanMetadataInput
+	taskQueue *job.TaskQueue
+	progress  *job.Progress
+}
 
-func (g *imageThumbnailGenerator) GenerateThumbnail(ctx context.Context, i *models.Image, f file.File) error {
+func (g *imageGenerators) Generate(ctx context.Context, i *models.Image, f file.File) error {
+	const overwrite = false
+
+	progress := g.progress
+	t := g.input
+	path := f.Base().Path
+	config := instance.Config
+	sequentialScanning := config.GetSequentialScanning()
+
+	if t.ScanGenerateThumbnails {
+		// this should be quick, so always generate sequentially
+		if err := g.generateThumbnail(ctx, i, f); err != nil {
+			logger.Errorf("Error generating thumbnail for %s: %v", path, err)
+		}
+	}
+
+	// avoid adding a task if the file isn't a video file
+	_, isVideo := f.(*file.VideoFile)
+	if isVideo && t.ScanGenerateClipPreviews {
+		// this is a bit of a hack: the task requires files to be loaded, but
+		// we don't really need to since we already have the file
+		ii := *i
+		ii.Files = models.NewRelatedFiles([]file.File{f})
+
+		progress.AddTotal(1)
+		previewsFn := func(ctx context.Context) {
+			taskPreview := GenerateClipPreviewTask{
+				Image:     ii,
+				Overwrite: overwrite,
+			}
+
+			taskPreview.Start(ctx)
+			progress.Increment()
+		}
+
+		if sequentialScanning {
+			previewsFn(ctx)
+		} else {
+			g.taskQueue.Add(fmt.Sprintf("Generating preview for %s", path), previewsFn)
+		}
+	}
+
+	return nil
+}
+
+func (g *imageGenerators) generateThumbnail(ctx context.Context, i *models.Image, f file.File) error {
 	thumbPath := GetInstance().Paths.Generated.GetThumbnailPath(i.Checksum, models.DefaultGthumbWidth)
 	exists, _ := fsutil.FileExists(thumbPath)
 	if exists {
@@ -409,44 +455,6 @@ func (g *imageThumbnailGenerator) GenerateThumbnail(ctx context.Context, i *mode
 	err = fsutil.WriteFile(thumbPath, data)
 	if err != nil {
 		return fmt.Errorf("writing thumbnail for image %s: %w", path, err)
-	}
-
-	return nil
-
-}
-
-func (g *imageThumbnailGenerator) GeneratePreview(ctx context.Context, i *models.Image, f file.File) error {
-	prevPath := GetInstance().Paths.Generated.GetClipPreviewPath(i.Checksum, models.DefaultGthumbWidth)
-	exists, _ := fsutil.FileExists(prevPath)
-	if exists {
-		return nil
-	}
-
-	path := f.Base().Path
-
-	_, ok := f.(*file.VideoFile)
-	if !ok {
-		logger.Debugf("file %s is not a Videofile. Not generating preview for it", path)
-		return nil
-	}
-
-	logger.Debugf("Generating preview for %s", path)
-
-	clipPreviewOptions := image.ClipPreviewOptions{
-		InputArgs:  instance.Config.GetTranscodeInputArgs(),
-		OutputArgs: instance.Config.GetTranscodeOutputArgs(),
-		Preset:     instance.Config.GetPreviewPreset().String(),
-	}
-
-	encoder := image.NewThumbnailEncoder(instance.FFMPEG, instance.FFProbe, clipPreviewOptions)
-	data, err := encoder.GetPreview(f, models.DefaultGthumbWidth)
-	if err != nil {
-		return fmt.Errorf("getting preview for image %s: %w", path, err)
-	}
-
-	err = fsutil.WriteFile(prevPath, data)
-	if err != nil {
-		return fmt.Errorf("writing preview for image %s: %w", path, err)
 	}
 
 	return nil

@@ -12,7 +12,6 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/ffmpeg/transcoder"
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/models"
 )
 
 const ffmpegImageQuality = 5
@@ -26,11 +25,6 @@ var (
 	// ErrNotSupportedForThumbnail is returned if the image format is not supported for thumbnail generation
 	ErrNotSupportedForThumbnail = errors.New("unsupported image format for thumbnail")
 )
-
-type ThumbnailGenerator interface {
-	GenerateThumbnail(ctx context.Context, i *models.Image, f file.File) error
-	GeneratePreview(ctx context.Context, i *models.Image, f file.File) error
-}
 
 type ThumbnailEncoder struct {
 	FFMpeg             *ffmpeg.FFMpeg

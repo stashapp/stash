@@ -40,15 +40,17 @@ type GalleryFinderCreator interface {
 
 type ScanConfig interface {
 	GetCreateGalleriesFromFolders() bool
-	IsGenerateThumbnails() bool
-	IsGenerateClipPreviews() bool
+}
+
+type ScanGenerator interface {
+	Generate(ctx context.Context, i *models.Image, f file.File) error
 }
 
 type ScanHandler struct {
 	CreatorUpdater FinderCreatorUpdater
 	GalleryFinder  GalleryFinderCreator
 
-	ThumbnailGenerator ThumbnailGenerator
+	ScanGenerator ScanGenerator
 
 	ScanConfig ScanConfig
 
@@ -60,6 +62,9 @@ type ScanHandler struct {
 func (h *ScanHandler) validate() error {
 	if h.CreatorUpdater == nil {
 		return errors.New("CreatorUpdater is required")
+	}
+	if h.ScanGenerator == nil {
+		return errors.New("ScanGenerator is required")
 	}
 	if h.GalleryFinder == nil {
 		return errors.New("GalleryFinder is required")
@@ -139,29 +144,15 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File
 		}
 	}
 
-	if h.ScanConfig.IsGenerateThumbnails() {
-		// do this after the commit so that the transaction isn't held up
-		txn.AddPostCommitHook(ctx, func(ctx context.Context) {
-			for _, s := range existing {
-				if err := h.ThumbnailGenerator.GenerateThumbnail(ctx, s, f); err != nil {
-					// just log if cover generation fails. We can try again on rescan
-					logger.Errorf("Error generating thumbnail for %s: %v", imageFile.Path, err)
-				}
+	// do this after the commit so that generation doesn't hold up the transaction
+	txn.AddPostCommitHook(ctx, func(ctx context.Context) {
+		for _, s := range existing {
+			if err := h.ScanGenerator.Generate(ctx, s, f); err != nil {
+				// just log if cover generation fails. We can try again on rescan
+				logger.Errorf("Error generating content for %s: %v", imageFile.Path, err)
 			}
-		})
-	}
-
-	if h.ScanConfig.IsGenerateClipPreviews() {
-		// do this after the commit so that the transaction isn't held up
-		txn.AddPostCommitHook(ctx, func(ctx context.Context) {
-			for _, s := range existing {
-				if err := h.ThumbnailGenerator.GeneratePreview(ctx, s, f); err != nil {
-					// just log if image preview generation fails. We can try again on rescan
-					logger.Errorf("Error generating preview for %s: %v", imageFile.Path, err)
-				}
-			}
-		})
-	}
+		}
+	})
 
 	return nil
 }
