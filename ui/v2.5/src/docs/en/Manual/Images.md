@@ -23,5 +23,5 @@ Images can also be clips/gifs. These are meant to be short video loops. Right no
 A clip/gif will be a stillframe in the wall and grid view by default. To view the loop, you can go into the Lightbox Carousel (e.g. by clicking on an image in the wall view) or the image detail page.
 
 If you want the loop to be used as a preview on the wall and grid view, you will have to generate them. 
-You can do this as you scan for the new clip file by activating **Generate previews for image clips** on the scan settings, or do it after by going to the **Generated Content** section in the task section of your settings, activating **Image Clip Previews** and clicking generate. This takes a while, as the files are reencoded.
+You can do this as you scan for the new clip file by activating **Generate previews for image clips** on the scan settings, or do it after by going to the **Generated Content** section in the task section of your settings, activating **Image Clip Previews** and clicking generate. This takes a while, as the files are transcoded.
 
