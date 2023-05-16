@@ -65,7 +65,13 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		encoder := image.NewThumbnailEncoder(manager.GetInstance().FFMPEG, manager.GetInstance().FFProbe, manager.GetInstance().Config.GetTranscodeInputArgs(), manager.GetInstance().Config.GetTranscodeOutputArgs(), manager.GetInstance().Config.GetPreviewPreset().String())
+		clipPreviewOptions := image.ClipPreviewOptions{
+			InputArgs:  manager.GetInstance().Config.GetTranscodeInputArgs(),
+			OutputArgs: manager.GetInstance().Config.GetTranscodeOutputArgs(),
+			Preset:     manager.GetInstance().Config.GetPreviewPreset().String(),
+		}
+
+		encoder := image.NewThumbnailEncoder(manager.GetInstance().FFMPEG, manager.GetInstance().FFProbe, clipPreviewOptions)
 		data, err := encoder.GetThumbnail(f, models.DefaultGthumbWidth)
 		if err != nil {
 			// don't log for unsupported image format

@@ -389,7 +389,13 @@ func (g *imageThumbnailGenerator) GenerateThumbnail(ctx context.Context, i *mode
 
 	logger.Debugf("Generating thumbnail for %s", path)
 
-	encoder := image.NewThumbnailEncoder(instance.FFMPEG, instance.FFProbe, instance.Config.GetTranscodeInputArgs(), instance.Config.GetTranscodeOutputArgs(), instance.Config.GetPreviewPreset().String())
+	clipPreviewOptions := image.ClipPreviewOptions{
+		InputArgs:  instance.Config.GetTranscodeInputArgs(),
+		OutputArgs: instance.Config.GetTranscodeOutputArgs(),
+		Preset:     instance.Config.GetPreviewPreset().String(),
+	}
+
+	encoder := image.NewThumbnailEncoder(instance.FFMPEG, instance.FFProbe, clipPreviewOptions)
 	data, err := encoder.GetThumbnail(f, models.DefaultGthumbWidth)
 
 	if err != nil {
@@ -426,7 +432,13 @@ func (g *imageThumbnailGenerator) GeneratePreview(ctx context.Context, i *models
 
 	logger.Debugf("Generating preview for %s", path)
 
-	encoder := image.NewThumbnailEncoder(instance.FFMPEG, instance.FFProbe, instance.Config.GetTranscodeInputArgs(), instance.Config.GetTranscodeOutputArgs(), instance.Config.GetPreviewPreset().String())
+	clipPreviewOptions := image.ClipPreviewOptions{
+		InputArgs:  instance.Config.GetTranscodeInputArgs(),
+		OutputArgs: instance.Config.GetTranscodeOutputArgs(),
+		Preset:     instance.Config.GetPreviewPreset().String(),
+	}
+
+	encoder := image.NewThumbnailEncoder(instance.FFMPEG, instance.FFProbe, clipPreviewOptions)
 	data, err := encoder.GetPreview(f, models.DefaultGthumbWidth)
 	if err != nil {
 		return fmt.Errorf("getting preview for image %s: %w", path, err)

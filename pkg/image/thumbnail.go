@@ -33,12 +33,16 @@ type ThumbnailGenerator interface {
 }
 
 type ThumbnailEncoder struct {
-	ffmpeg     *ffmpeg.FFMpeg
-	ffprobe    ffmpeg.FFProbe
-	inputArgs  []string
-	outputArgs []string
-	preset     string
-	vips       *vipsEncoder
+	FFMpeg             *ffmpeg.FFMpeg
+	FFProbe            ffmpeg.FFProbe
+	ClipPreviewOptions ClipPreviewOptions
+	vips               *vipsEncoder
+}
+
+type ClipPreviewOptions struct {
+	InputArgs  []string
+	OutputArgs []string
+	Preset     string
 }
 
 func GetVipsPath() string {
@@ -48,13 +52,11 @@ func GetVipsPath() string {
 	return vipsPath
 }
 
-func NewThumbnailEncoder(ffmpegEncoder *ffmpeg.FFMpeg, ffProbe ffmpeg.FFProbe, inputArgs []string, outputArgs []string, preset string) ThumbnailEncoder {
+func NewThumbnailEncoder(ffmpegEncoder *ffmpeg.FFMpeg, ffProbe ffmpeg.FFProbe, clipPreviewOptions ClipPreviewOptions) ThumbnailEncoder {
 	ret := ThumbnailEncoder{
-		ffmpeg:     ffmpegEncoder,
-		ffprobe:    ffProbe,
-		inputArgs:  inputArgs,
-		outputArgs: outputArgs,
-		preset:     preset,
+		FFMpeg:             ffmpegEncoder,
+		FFProbe:            ffProbe,
+		ClipPreviewOptions: clipPreviewOptions,
 	}
 
 	vipsPath := GetVipsPath()
@@ -129,7 +131,7 @@ func (e *ThumbnailEncoder) GetPreview(f file.File, maxSize int) ([]byte, error) 
 		return nil, err
 	}
 
-	fileData, err := e.ffprobe.NewVideoFile(f.Base().Path)
+	fileData, err := e.FFProbe.NewVideoFile(f.Base().Path)
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +153,7 @@ func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, maxSize int
 		Quality:       ffmpegImageQuality,
 	})
 
-	return e.ffmpeg.GenerateOutput(context.TODO(), args, image)
+	return e.FFMpeg.GenerateOutput(context.TODO(), args, image)
 }
 
 func (e *ThumbnailEncoder) getClipPreview(image *bytes.Buffer, maxSize int, clipDuration float64, frameRate float64) ([]byte, error) {
@@ -161,9 +163,11 @@ func (e *ThumbnailEncoder) getClipPreview(image *bytes.Buffer, maxSize int, clip
 	var thumbArgs ffmpeg.Args
 	thumbArgs = thumbArgs.VideoFilter(thumbFilter)
 
+	o := e.ClipPreviewOptions
+
 	thumbArgs = append(thumbArgs,
 		"-pix_fmt", "yuv420p",
-		"-preset", e.preset,
+		"-preset", o.Preset,
 		"-crf", "25",
 		"-threads", "4",
 		"-strict", "-2",
@@ -185,10 +189,10 @@ func (e *ThumbnailEncoder) getClipPreview(image *bytes.Buffer, maxSize int, clip
 		VideoCodec: ffmpeg.VideoCodecVP9,
 		VideoArgs:  thumbArgs,
 
-		ExtraInputArgs:  e.inputArgs,
-		ExtraOutputArgs: e.outputArgs,
+		ExtraInputArgs:  o.InputArgs,
+		ExtraOutputArgs: o.OutputArgs,
 	}
 
 	args := transcoder.Transcode("-", thumbOptions)
-	return e.ffmpeg.GenerateOutput(context.TODO(), args, image)
+	return e.FFMpeg.GenerateOutput(context.TODO(), args, image)
 }
