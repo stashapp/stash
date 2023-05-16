@@ -18,6 +18,7 @@ export const ScanOptions: React.FC<IScanOptions> = ({
     scanGenerateSprites,
     scanGeneratePhashes,
     scanGenerateThumbnails,
+    scanGenerateClipPreviews,
   } = options;
 
   function setOptions(input: Partial<GQL.ScanMetadataInput>) {
@@ -67,6 +68,12 @@ export const ScanOptions: React.FC<IScanOptions> = ({
         checked={scanGenerateThumbnails ?? false}
         headingID="config.tasks.generate_thumbnails_during_scan"
         onChange={(v) => setOptions({ scanGenerateThumbnails: v })}
+      />
+      <BooleanSetting
+        id="scan-generate-clip-previews"
+        checked={scanGenerateClipPreviews ?? false}
+        headingID="config.tasks.generate_clip_previews_during_scan"
+        onChange={(v) => setOptions({ scanGenerateClipPreviews: v })}
       />
     </>
   );

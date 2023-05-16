@@ -143,6 +143,12 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
         onChange={(v) => setOptions({ interactiveHeatmapsSpeeds: v })}
       />
       <BooleanSetting
+        id="clip-previews"
+        checked={options.clipPreviews ?? false}
+        headingID="dialogs.scene_gen.clip_previews"
+        onChange={(v) => setOptions({ clipPreviews: v })}
+      />
+      <BooleanSetting
         id="overwrite"
         checked={options.overwrite ?? false}
         headingID="dialogs.scene_gen.overwrite"

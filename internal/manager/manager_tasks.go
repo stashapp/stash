@@ -15,6 +15,20 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
+func useAsVideo(pathname string) bool {
+	if instance.Config.IsCreateImageClipsFromVideos() && config.StashConfigs.GetStashFromDirPath(instance.Config.GetStashPaths(), pathname).ExcludeVideo {
+		return false
+	}
+	return isVideo(pathname)
+}
+
+func useAsImage(pathname string) bool {
+	if instance.Config.IsCreateImageClipsFromVideos() && config.StashConfigs.GetStashFromDirPath(instance.Config.GetStashPaths(), pathname).ExcludeVideo {
+		return isImage(pathname) || isVideo(pathname)
+	}
+	return isImage(pathname)
+}
+
 func isZip(pathname string) bool {
 	gExt := config.GetInstance().GetGalleryExtensions()
 	return fsutil.MatchExtension(pathname, gExt)

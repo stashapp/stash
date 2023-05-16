@@ -422,6 +422,7 @@
         "generating_from_paths": "Generating for scenes from the following paths",
         "generating_scenes": "Generating for {num} {scene}"
       },
+      "generate_clip_previews_during_scan": "Generate previews for image clips",
       "generate_desc": "Generate supporting image, sprite, video, vtt and other files.",
       "generate_phashes_during_scan": "Generate perceptual hashes",
       "generate_phashes_during_scan_tooltip": "For deduplication and scene identification.",
@@ -592,6 +593,10 @@
           "write_image_thumbnails": {
             "description": "Write image thumbnails to disk when generated on-the-fly",
             "heading": "Write image thumbnails"
+          },
+          "create_image_clips_from_videos": {
+            "description": "When a library has Videos disabled, Video Files (files ending with Video Extension) will be scanned as Image Clip",
+            "heading": "Scan Video Extensions as Image Clip"
           }
         }
       },
@@ -799,6 +804,7 @@
       "destination": "Reassign to"
     },
     "scene_gen": {
+      "clip_previews": "Image Clip Previews",
       "covers": "Scene covers",
       "force_transcodes": "Force Transcode generation",
       "force_transcodes_tooltip": "By default, transcodes are only generated when the video file is not supported in the browser. When enabled, transcodes will be generated even when the video file appears to be supported in the browser.",
