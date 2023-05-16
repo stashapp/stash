@@ -114,7 +114,7 @@ func (r *tagResolver) ImagePath(ctx context.Context, obj *models.Tag) (*string, 
 	var hasImage bool
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var err error
-		hasImage, err = r.repository.Performer.HasImage(ctx, obj.ID)
+		hasImage, err = r.repository.Tag.HasImage(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
