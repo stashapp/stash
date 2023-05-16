@@ -107,14 +107,8 @@ func (rs imageRoutes) Preview(w http.ResponseWriter, r *http.Request) {
 	img := r.Context().Value(imageKey).(*models.Image)
 	filepath := manager.GetInstance().Paths.Generated.GetClipPreviewPath(img.Checksum, models.DefaultGthumbWidth)
 
-	w.Header().Add("Cache-Control", "max-age=604800000")
-
-	exists, _ := fsutil.FileExists(filepath)
-	if exists {
-		http.ServeFile(w, r, filepath)
-	} else {
-		logger.Errorf("Error: No Preview exists for this image. It either has none (no Clip) or its not yet generated: %s", img.Files.Primary().Base().Path)
-	}
+	// don't check if the preview exists - we'll just return a 404 if it doesn't
+	utils.ServeStaticFile(w, r, filepath)
 }
 
 func (rs imageRoutes) Image(w http.ResponseWriter, r *http.Request) {
