@@ -9,12 +9,15 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 
+	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/file/video"
 	_ "golang.org/x/image/webp"
 )
 
 // Decorator adds image specific fields to a File.
 type Decorator struct {
+	FFProbe ffmpeg.FFProbe
 }
 
 func (d *Decorator) Decorate(ctx context.Context, fs file.FS, f file.File) (file.File, error) {
@@ -25,16 +28,38 @@ func (d *Decorator) Decorate(ctx context.Context, fs file.FS, f file.File) (file
 	}
 	defer r.Close()
 
-	c, format, err := image.DecodeConfig(r)
+	probe, err := d.FFProbe.NewVideoFile(base.Path)
 	if err != nil {
-		return f, fmt.Errorf("decoding image file %q: %w", base.Path, err)
+		fmt.Printf("Warning: File %q could not be read with ffprobe: %s, assuming ImageFile", base.Path, err)
+		c, format, err := image.DecodeConfig(r)
+		if err != nil {
+			return f, fmt.Errorf("decoding image file %q: %w", base.Path, err)
+		}
+		return &file.ImageFile{
+			BaseFile: base,
+			Format:   format,
+			Width:    c.Width,
+			Height:   c.Height,
+		}, nil
+	}
+
+	isClip := true
+	// This list is derived from ffmpegImageThumbnail in pkg/image/thumbnail. If one gets updated, the other should be as well
+	for _, item := range []string{"png", "mjpeg", "webp"} {
+		if item == probe.VideoCodec {
+			isClip = false
+		}
+	}
+	if isClip {
+		videoFileDecorator := video.Decorator{FFProbe: d.FFProbe}
+		return videoFileDecorator.Decorate(ctx, fs, f)
 	}
 
 	return &file.ImageFile{
 		BaseFile: base,
-		Format:   format,
-		Width:    c.Width,
-		Height:   c.Height,
+		Format:   probe.VideoCodec,
+		Width:    probe.Width,
+		Height:   probe.Height,
 	}, nil
 }
 

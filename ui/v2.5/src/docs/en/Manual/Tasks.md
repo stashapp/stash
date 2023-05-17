@@ -20,6 +20,7 @@ The scan task accepts the following options:
 | Generate scrubber sprites | Generates sprites for the scene scrubber. |
 | Generate perceptual hashes | Generates perceptual hashes for scene deduplication and identification. |
 | Generate thumbnails for images | Generates thumbnails for image files. | 
+| Generate previews for image clips | Generates a gif/looping video as thumbnail for image clips/gifs. |
 
 # Auto Tagging
 See the [Auto Tagging](/help/AutoTagging.md) page.
@@ -51,6 +52,7 @@ The generate task accepts the following options:
 | Transcodes | MP4 conversions of unsupported video formats. Allows direct streaming instead of live transcoding. |
 | Perceptual hashes (for deduplication) | Generates perceptual hashes for scene deduplication and identification. |
 | Generate heatmaps and speeds for interactive scenes | Generates heatmaps and speeds for interactive scenes. |
+| Image Clip Previews | Generates a gif/looping video as thumbnail for image clips/gifs. |
 | Overwrite existing generated files | By default, where a generated file exists, it is not regenerated. When this flag is enabled, then the generated files are regenerated. |
 
 ## Transcodes
