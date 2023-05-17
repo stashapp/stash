@@ -21,6 +21,7 @@
     "confirm": "Conferma",
     "continue": "Continua",
     "create": "Crea",
+    "create_chapters": "Crea Capitolo",
     "create_entity": "Crea {entityType}",
     "create_marker": "Crea Marker",
     "created_entity": "Creata/o {entity_type}: {entity_name}",
@@ -124,6 +125,7 @@
   "aliases": "Alias",
   "all": "tutto",
   "also_known_as": "Anche conosciuto/a come",
+  "appears_with": "Appare Con",
   "ascending": "Ascendente",
   "average_resolution": "Risoluzione Media",
   "between_and": "e",
@@ -132,6 +134,7 @@
   "bitrate": "Bit Rate",
   "captions": "Sottotitoli",
   "career_length": "Lunghezza Carriera",
+  "chapters": "Capitoli",
   "component_tagger": {
     "config": {
       "active_instance": "Istanza stash-box Attiva:",
