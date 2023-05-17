@@ -422,6 +422,7 @@
         "generating_from_paths": "Genererar för scener från följande sökvägar",
         "generating_scenes": "Genererar för {num} {scene}"
       },
+      "generate_clip_previews_during_scan": "Generera förhandsvisningar för bildklipp",
       "generate_desc": "Generera stöttande bilder, sprites, videor, vtt och andra filer.",
       "generate_phashes_during_scan": "Generera phash",
       "generate_phashes_during_scan_tooltip": "För deduplikation och identifiering av scener.",
@@ -589,6 +590,10 @@
       "images": {
         "heading": "Bilder",
         "options": {
+          "create_image_clips_from_videos": {
+            "description": "När ett bibliotek har Videor avstängt kommer Videofiler (filer som slutar med Videofiltillägg) att skannas som Bildklipp",
+            "heading": "Skanna Videofiltillägg som Bildklipp"
+          },
           "write_image_thumbnails": {
             "description": "Skriv miniatyrer till disk när de genereras",
             "heading": "Skriv bildminiatyrer"
@@ -799,6 +804,7 @@
       "destination": "Omplacera till"
     },
     "scene_gen": {
+      "clip_previews": "Bildklipp Förhandsvisning",
       "covers": "Scenomslag",
       "force_transcodes": "Tvinga omkodning",
       "force_transcodes_tooltip": "Som standard blir videofiler bara omkodade om formatet inte stöds i webbläsaren. Vid aktivering kommer alla videofiler bli omkodande, även om de antas vara stöttade i webbläsaren.",
