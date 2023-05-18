@@ -118,6 +118,15 @@ input[type="range"].zoom-slider {
 }
 
 .edit-filter-dialog {
+  .modal-header {
+    align-items: center;
+    padding: 0.5rem 1rem;
+
+    .search-input {
+      width: auto;
+    }
+  }
+
   .modal-body {
     padding-left: 0;
     padding-right: 0;
