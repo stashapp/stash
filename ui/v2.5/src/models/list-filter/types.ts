@@ -54,6 +54,11 @@ export interface ITimestampValue {
   value2: string | undefined;
 }
 
+export interface IPhashDistanceValue {
+  value: string;
+  distance?: number;
+}
+
 export function criterionIsHierarchicalLabelValue(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: any

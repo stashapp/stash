@@ -185,6 +185,7 @@
       "latest_version": "Viimeisin Versio",
       "latest_version_build_hash": "Uusimman version tiiviste:",
       "new_version_notice": "[UUSI]",
+      "release_date": "Julkaisupäivä:",
       "stash_discord": "Liity {url} kanavallemme",
       "stash_home": "Stashin kotisivut {url}",
       "stash_open_collective": "Tue meitä {url}",
@@ -902,7 +903,6 @@
   "scenes": "Kohtaukset",
   "scenes_updated_at": "Kohtaus päivitetty",
   "search_filter": {
-    "add_filter": "Aseta suodatin",
     "name": "Suodatin",
     "saved_filters": "Tallennetut suodattimet",
     "update_filter": "Päivitä suodatin"

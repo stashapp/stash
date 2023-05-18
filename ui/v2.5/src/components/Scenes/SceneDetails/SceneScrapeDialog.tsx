@@ -521,7 +521,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
 
       // remove the movie from the list
       const newMoviesClone = newMovies.concat();
-      const pIndex = newMoviesClone.indexOf(toCreate);
+      const pIndex = newMoviesClone.findIndex((p) => p.name === toCreate.name);
       if (pIndex === -1) throw new Error("Could not find movie to remove");
       newMoviesClone.splice(pIndex, 1);
 
@@ -558,7 +558,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
       // remove the tag from the list
       const newTagsClone = newTags.concat();
       const pIndex = newTagsClone.indexOf(toCreate);
-      if (pIndex === -1) throw new Error("Could not find performer to remove");
+      if (pIndex === -1) throw new Error("Could not find tag to remove");
       newTagsClone.splice(pIndex, 1);
 
       setNewTags(newTagsClone);

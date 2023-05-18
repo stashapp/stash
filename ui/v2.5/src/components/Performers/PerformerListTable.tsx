@@ -97,6 +97,9 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
           <h6>{performer.gallery_count}</h6>
         </Link>
       </td>
+      <td>
+        <h6>{performer.o_counter}</h6>
+      </td>
       <td>{performer.birthdate}</td>
       <td>{!!performer.height_cm && formatHeight(performer.height_cm)}</td>
     </tr>
@@ -114,6 +117,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
             <th>{intl.formatMessage({ id: "scene_count" })}</th>
             <th>{intl.formatMessage({ id: "image_count" })}</th>
             <th>{intl.formatMessage({ id: "gallery_count" })}</th>
+            <th>{intl.formatMessage({ id: "o_counter" })}</th>
             <th>{intl.formatMessage({ id: "birthdate" })}</th>
             <th>{intl.formatMessage({ id: "height" })}</th>
           </tr>

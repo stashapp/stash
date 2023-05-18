@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil"
@@ -234,7 +235,7 @@ func (g sceneRelationships) cover(ctx context.Context) ([]byte, error) {
 	// always overwrite if present
 	existingCover, err := g.sceneReader.GetCover(ctx, g.scene.ID)
 	if err != nil {
-		return nil, fmt.Errorf("error getting scene cover: %w", err)
+		logger.Errorf("Error getting scene cover: %v", err)
 	}
 
 	data, err := utils.ProcessImageInput(ctx, *scraped)

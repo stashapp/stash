@@ -97,7 +97,7 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 				Organized: true,
 				OCounter:  ocounter,
 				StudioID:  &studioIDs[studioIdxWithImage],
-				Files: models.NewRelatedImageFiles([]*file.ImageFile{
+				Files: models.NewRelatedFiles([]file.File{
 					imageFile.(*file.ImageFile),
 				}),
 				PrimaryFileID: &imageFile.Base().ID,
@@ -149,7 +149,7 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 			var fileIDs []file.ID
 			if tt.newObject.Files.Loaded() {
 				for _, f := range tt.newObject.Files.List() {
-					fileIDs = append(fileIDs, f.ID)
+					fileIDs = append(fileIDs, f.Base().ID)
 				}
 			}
 			s := tt.newObject
@@ -444,7 +444,7 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 				Organized: true,
 				OCounter:  ocounter,
 				StudioID:  &studioIDs[studioIdxWithImage],
-				Files: models.NewRelatedImageFiles([]*file.ImageFile{
+				Files: models.NewRelatedFiles([]file.File{
 					makeImageFile(imageIdx1WithGallery),
 				}),
 				CreatedAt:    createdAt,
@@ -462,7 +462,7 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 			models.Image{
 				ID:       imageIDs[imageIdx1WithGallery],
 				OCounter: getOCounter(imageIdx1WithGallery),
-				Files: models.NewRelatedImageFiles([]*file.ImageFile{
+				Files: models.NewRelatedFiles([]file.File{
 					makeImageFile(imageIdx1WithGallery),
 				}),
 				GalleryIDs:   models.NewRelatedIDs([]int{}),
@@ -965,7 +965,7 @@ func makeImageWithID(index int) *models.Image {
 	ret := makeImage(index, true)
 	ret.ID = imageIDs[index]
 
-	ret.Files = models.NewRelatedImageFiles([]*file.ImageFile{makeImageFile(index)})
+	ret.Files = models.NewRelatedFiles([]file.File{makeImageFile(index)})
 
 	return ret
 }
@@ -1868,8 +1868,11 @@ func verifyImagesResolution(t *testing.T, resolution models.ResolutionEnum) {
 				t.Errorf("Error loading primary file: %s", err.Error())
 				return nil
 			}
-
-			verifyImageResolution(t, image.Files.Primary().Height, resolution)
+			asFrame, ok := image.Files.Primary().(file.VisualFile)
+			if !ok {
+				t.Errorf("Error: Associated primary file of image is not of type VisualFile")
+			}
+			verifyImageResolution(t, asFrame.GetHeight(), resolution)
 		}
 
 		return nil

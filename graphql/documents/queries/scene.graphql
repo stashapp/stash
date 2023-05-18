@@ -20,8 +20,8 @@ query FindScenesByPathRegex($filter: FindFilterType) {
   }
 }
 
-query FindDuplicateScenes($distance: Int) {
-  findDuplicateScenes(distance: $distance) {
+query FindDuplicateScenes($distance: Int, $duration_diff: Float) {
+  findDuplicateScenes(distance: $distance, duration_diff: $duration_diff) {
     ...SlimSceneData
   }
 }

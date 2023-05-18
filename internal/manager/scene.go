@@ -88,7 +88,7 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL *url.URL, maxStrea
 
 	// convert StreamingResolutionEnum to ResolutionEnum
 	maxStreamingResolution := models.ResolutionEnum(maxStreamingTranscodeSize)
-	sceneResolution := pf.GetMinResolution()
+	sceneResolution := file.GetMinResolution(pf)
 	includeSceneStreamPath := func(streamingResolution models.StreamingResolutionEnum) bool {
 		var minResolution int
 		if streamingResolution == models.StreamingResolutionEnumOriginal {

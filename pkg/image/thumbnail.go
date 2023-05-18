@@ -12,7 +12,6 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/ffmpeg/transcoder"
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/models"
 )
 
 const ffmpegImageQuality = 5
@@ -27,13 +26,17 @@ var (
 	ErrNotSupportedForThumbnail = errors.New("unsupported image format for thumbnail")
 )
 
-type ThumbnailGenerator interface {
-	GenerateThumbnail(ctx context.Context, i *models.Image, f *file.ImageFile) error
+type ThumbnailEncoder struct {
+	FFMpeg             *ffmpeg.FFMpeg
+	FFProbe            ffmpeg.FFProbe
+	ClipPreviewOptions ClipPreviewOptions
+	vips               *vipsEncoder
 }
 
-type ThumbnailEncoder struct {
-	ffmpeg *ffmpeg.FFMpeg
-	vips   *vipsEncoder
+type ClipPreviewOptions struct {
+	InputArgs  []string
+	OutputArgs []string
+	Preset     string
 }
 
 func GetVipsPath() string {
@@ -43,9 +46,11 @@ func GetVipsPath() string {
 	return vipsPath
 }
 
-func NewThumbnailEncoder(ffmpegEncoder *ffmpeg.FFMpeg) ThumbnailEncoder {
+func NewThumbnailEncoder(ffmpegEncoder *ffmpeg.FFMpeg, ffProbe ffmpeg.FFProbe, clipPreviewOptions ClipPreviewOptions) ThumbnailEncoder {
 	ret := ThumbnailEncoder{
-		ffmpeg: ffmpegEncoder,
+		FFMpeg:             ffmpegEncoder,
+		FFProbe:            ffProbe,
+		ClipPreviewOptions: clipPreviewOptions,
 	}
 
 	vipsPath := GetVipsPath()
@@ -61,7 +66,7 @@ func NewThumbnailEncoder(ffmpegEncoder *ffmpeg.FFMpeg) ThumbnailEncoder {
 // the provided max size. It resizes based on the largest X/Y direction.
 // It returns nil and an error if an error occurs reading, decoding or encoding
 // the image, or if the image is not suitable for thumbnails.
-func (e *ThumbnailEncoder) GetThumbnail(f *file.ImageFile, maxSize int) ([]byte, error) {
+func (e *ThumbnailEncoder) GetThumbnail(f file.File, maxSize int) ([]byte, error) {
 	reader, err := f.Open(&file.OsFS{})
 	if err != nil {
 		return nil, err
@@ -75,47 +80,113 @@ func (e *ThumbnailEncoder) GetThumbnail(f *file.ImageFile, maxSize int) ([]byte,
 
 	data := buf.Bytes()
 
-	format := f.Format
-	animated := f.Format == formatGif
+	if imageFile, ok := f.(*file.ImageFile); ok {
+		format := imageFile.Format
+		animated := imageFile.Format == formatGif
 
-	// #2266 - if image is webp, then determine if it is animated
-	if format == formatWebP {
-		animated = isWebPAnimated(data)
+		// #2266 - if image is webp, then determine if it is animated
+		if format == formatWebP {
+			animated = isWebPAnimated(data)
+		}
+
+		// #2266 - don't generate a thumbnail for animated images
+		if animated {
+			return nil, fmt.Errorf("%w: %s", ErrNotSupportedForThumbnail, format)
+		}
 	}
 
-	// #2266 - don't generate a thumbnail for animated images
-	if animated {
-		return nil, fmt.Errorf("%w: %s", ErrNotSupportedForThumbnail, format)
+	// Videofiles can only be thumbnailed with ffmpeg
+	if _, ok := f.(*file.VideoFile); ok {
+		return e.ffmpegImageThumbnail(buf, maxSize)
 	}
 
 	// vips has issues loading files from stdin on Windows
 	if e.vips != nil && runtime.GOOS != "windows" {
 		return e.vips.ImageThumbnail(buf, maxSize)
 	} else {
-		return e.ffmpegImageThumbnail(buf, format, maxSize)
+		return e.ffmpegImageThumbnail(buf, maxSize)
 	}
 }
 
-func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, format string, maxSize int) ([]byte, error) {
-	var ffmpegFormat ffmpeg.ImageFormat
+// GetPreview returns the preview clip of the provided image clip resized to
+// the provided max size. It resizes based on the largest X/Y direction.
+// It returns nil and an error if an error occurs reading, decoding or encoding
+// the image, or if the image is not suitable for thumbnails.
+// It is hardcoded to 30 seconds maximum right now
+func (e *ThumbnailEncoder) GetPreview(f file.File, maxSize int) ([]byte, error) {
+	reader, err := f.Open(&file.OsFS{})
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Close()
 
-	switch format {
-	case "jpeg":
-		ffmpegFormat = ffmpeg.ImageFormatJpeg
-	case "png":
-		ffmpegFormat = ffmpeg.ImageFormatPng
-	case "webp":
-		ffmpegFormat = ffmpeg.ImageFormatWebp
-	default:
-		return nil, ErrUnsupportedImageFormat
+	buf := new(bytes.Buffer)
+	if _, err := buf.ReadFrom(reader); err != nil {
+		return nil, err
 	}
 
+	fileData, err := e.FFProbe.NewVideoFile(f.Base().Path)
+	if err != nil {
+		return nil, err
+	}
+	if fileData.Width <= maxSize {
+		maxSize = fileData.Width
+	}
+	clipDuration := fileData.VideoStreamDuration
+	if clipDuration > 30.0 {
+		clipDuration = 30.0
+	}
+	return e.getClipPreview(buf, maxSize, clipDuration, fileData.FrameRate)
+}
+
+func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, maxSize int) ([]byte, error) {
 	args := transcoder.ImageThumbnail("-", transcoder.ImageThumbnailOptions{
-		InputFormat:   ffmpegFormat,
+		OutputFormat:  ffmpeg.ImageFormatJpeg,
 		OutputPath:    "-",
 		MaxDimensions: maxSize,
 		Quality:       ffmpegImageQuality,
 	})
 
-	return e.ffmpeg.GenerateOutput(context.TODO(), args, image)
+	return e.FFMpeg.GenerateOutput(context.TODO(), args, image)
+}
+
+func (e *ThumbnailEncoder) getClipPreview(image *bytes.Buffer, maxSize int, clipDuration float64, frameRate float64) ([]byte, error) {
+	var thumbFilter ffmpeg.VideoFilter
+	thumbFilter = thumbFilter.ScaleMaxSize(maxSize)
+
+	var thumbArgs ffmpeg.Args
+	thumbArgs = thumbArgs.VideoFilter(thumbFilter)
+
+	o := e.ClipPreviewOptions
+
+	thumbArgs = append(thumbArgs,
+		"-pix_fmt", "yuv420p",
+		"-preset", o.Preset,
+		"-crf", "25",
+		"-threads", "4",
+		"-strict", "-2",
+		"-f", "webm",
+	)
+
+	if frameRate <= 0.01 {
+		thumbArgs = append(thumbArgs, "-vsync", "2")
+	}
+
+	thumbOptions := transcoder.TranscodeOptions{
+		OutputPath: "-",
+		StartTime:  0,
+		Duration:   clipDuration,
+
+		XError:   true,
+		SlowSeek: false,
+
+		VideoCodec: ffmpeg.VideoCodecVP9,
+		VideoArgs:  thumbArgs,
+
+		ExtraInputArgs:  o.InputArgs,
+		ExtraOutputArgs: o.OutputArgs,
+	}
+
+	args := transcoder.Transcode("-", thumbOptions)
+	return e.FFMpeg.GenerateOutput(context.TODO(), args, image)
 }

@@ -1128,7 +1128,7 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 		// special handling for path
 		addFileTable()
 		addFolderTable()
-		query.sortAndPagination += fmt.Sprintf(" ORDER BY folders.path %s, file_folder.path %[1]s, files.basename %[1]s", direction)
+		query.sortAndPagination += fmt.Sprintf(" ORDER BY COALESCE(folders.path, '') || COALESCE(file_folder.path, '') || COALESCE(files.basename, '') COLLATE NATURAL_CI %s", direction)
 	case "file_mod_time":
 		sort = "mod_time"
 		addFileTable()
@@ -1136,10 +1136,13 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 	case "title":
 		addFileTable()
 		addFolderTable()
-		query.sortAndPagination += " ORDER BY COALESCE(galleries.title, files.basename, basename(COALESCE(folders.path, ''))) COLLATE NATURAL_CS " + direction + ", file_folder.path " + direction
+		query.sortAndPagination += " ORDER BY COALESCE(galleries.title, files.basename, basename(COALESCE(folders.path, ''))) COLLATE NATURAL_CI " + direction + ", file_folder.path COLLATE NATURAL_CI " + direction
 	default:
 		query.sortAndPagination += getSort(sort, direction, "galleries")
 	}
+
+	// Whatever the sorting, always use title/id as a final sort
+	query.sortAndPagination += ", COALESCE(galleries.title, galleries.id) COLLATE NATURAL_CI ASC"
 }
 
 func (qb *GalleryStore) filesRepository() *filesRepository {

@@ -44,6 +44,8 @@ import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
 import StudiosFilter from "./Filters/StudiosFilter";
 import { TagsCriterion } from "src/models/list-filter/criteria/tags";
 import TagsFilter from "./Filters/TagsFilter";
+import { PhashCriterion } from "src/models/list-filter/criteria/phash";
+import { PhashFilter } from "./Filters/PhashFilter";
 
 interface IGenericCriterionEditor {
   criterion: Criterion<CriterionValue>;
@@ -203,6 +205,11 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
     if (criterion instanceof RatingCriterion) {
       return (
         <RatingFilter criterion={criterion} onValueChanged={onValueChanged} />
+      );
+    }
+    if (criterion instanceof PhashCriterion) {
+      return (
+        <PhashFilter criterion={criterion} onValueChanged={onValueChanged} />
       );
     }
     if (

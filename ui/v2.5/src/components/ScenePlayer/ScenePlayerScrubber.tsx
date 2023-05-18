@@ -10,6 +10,11 @@ import axios from "axios";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
 import { WebVTT } from "videojs-vtt.js";
+import { Icon } from "src/components/Shared/Icon";
+import {
+  faChevronRight,
+  faChevronLeft,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface IScenePlayerScrubberProps {
   file: GQL.VideoFileDataFragment;
@@ -346,7 +351,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = ({
         id="scrubber-back"
         onClick={() => goBack()}
       >
-        &lt;
+        <Icon className="fa-fw" icon={faChevronLeft} />
       </Button>
       <div ref={contentEl} className="scrubber-content">
         <div className="scrubber-tags-background" />
@@ -372,7 +377,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = ({
         id="scrubber-forward"
         onClick={() => goForward()}
       >
-        &gt;
+        <Icon className="fa-fw" icon={faChevronRight} />
       </Button>
     </div>
   );

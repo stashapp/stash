@@ -19,6 +19,8 @@ type ScanMetadataOptions struct {
 	ScanGeneratePhashes bool `json:"scanGeneratePhashes"`
 	// Generate image thumbnails during scan
 	ScanGenerateThumbnails bool `json:"scanGenerateThumbnails"`
+	// Generate image thumbnails during scan
+	ScanGenerateClipPreviews bool `json:"scanGenerateClipPreviews"`
 }
 
 type AutoTagMetadataOptions struct {
