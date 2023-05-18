@@ -26,7 +26,7 @@ export const useFocusOnce = () => {
     }
   }, [setFocus]);
 
-  return htmlElRef;
+  return [htmlElRef, setFocus] as const;
 };
 
 export default useFocus;

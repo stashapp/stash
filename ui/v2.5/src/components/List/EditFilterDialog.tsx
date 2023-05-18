@@ -35,6 +35,7 @@ import { useConfigureUI } from "src/core/StashService";
 import { IUIConfig } from "src/core/config";
 import { FilterMode } from "src/core/generated-graphql";
 import { useFocusOnce } from "src/utils/focus";
+import Mousetrap from "mousetrap";
 
 interface ICriterionList {
   criteria: string[];
@@ -229,7 +230,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   );
   const [criterion, setCriterion] = useState<Criterion<CriterionValue>>();
 
-  const searchRef = useFocusOnce();
+  const [searchRef, setSearchFocus] = useFocusOnce();
 
   const { criteria } = currentFilter;
 
@@ -321,6 +322,17 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     optionSelected,
     editingCriterionChanged,
   ]);
+
+  useEffect(() => {
+    Mousetrap.bind("/", (e) => {
+      setSearchFocus();
+      e.preventDefault();
+    });
+
+    return () => {
+      Mousetrap.unbind("/");
+    };
+  });
 
   async function updatePinnedFilters(filters: string[]) {
     const configKey = filterModeToConfigKey(currentFilter.mode);
