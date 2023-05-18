@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { Badge, Button, Collapse, Form } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import { Icon } from "src/components/Shared/Icon";
 import {
   faCheckCircle,
@@ -7,6 +7,7 @@ import {
   faPlus,
   faTimesCircle,
 } from "@fortawesome/free-solid-svg-icons";
+import { faTimesCircle as faTimesCircleRegular } from "@fortawesome/free-regular-svg-icons";
 import { ClearableInput } from "src/components/Shared/ClearableInput";
 import {
   IHierarchicalLabelValue,
@@ -18,9 +19,58 @@ import {
   Criterion,
   IHierarchicalLabeledIdCriterion,
 } from "src/models/list-filter/criteria/criterion";
-import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 import { defineMessages, MessageDescriptor, useIntl } from "react-intl";
 import { CriterionModifier } from "src/core/generated-graphql";
+
+interface ISelectedItem {
+  item: ILabeledId;
+  excluded?: boolean;
+  onClick: () => void;
+}
+
+const SelectedItem: React.FC<ISelectedItem> = ({
+  item,
+  excluded = false,
+  onClick,
+}) => {
+  const iconClassName = excluded ? "exclude-icon" : "include-button";
+  const spanClassName = excluded
+    ? "excluded-object-label"
+    : "selected-object-label";
+  const [hovered, setHovered] = useState(false);
+
+  const icon = useMemo(() => {
+    if (!hovered) {
+      return excluded ? faTimesCircle : faCheckCircle;
+    }
+
+    return faTimesCircleRegular;
+  }, [hovered, excluded]);
+
+  function onMouseOver() {
+    setHovered(true);
+  }
+
+  function onMouseOut() {
+    setHovered(false);
+  }
+
+  return (
+    <a
+      onClick={() => onClick()}
+      onMouseEnter={() => onMouseOver()}
+      onMouseLeave={() => onMouseOut()}
+      onFocus={() => onMouseOver()}
+      onBlur={() => onMouseOut()}
+    >
+      <div>
+        <Icon className={`fa-fw ${iconClassName}`} icon={icon} />
+        <span className={spanClassName}>{item.label}</span>
+      </div>
+      <div></div>
+    </a>
+  );
+};
 
 interface ISelectableFilter {
   query: string;
@@ -81,24 +131,12 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
       <ul>
         {selected.map((p) => (
           <li key={p.id} className="selected-object">
-            <a onClick={() => onUnselect(p)}>
-              <div>
-                <Icon className="fa-fw include-button" icon={faCheckCircle} />
-                <span className="selected-object-label">{p.label}</span>
-              </div>
-              <div></div>
-            </a>
+            <SelectedItem item={p} onClick={() => onUnselect(p)} />
           </li>
         ))}
         {excluded.map((p) => (
           <li key={p.id} className="excluded-object">
-            <a onClick={() => onUnselect(p)}>
-              <div>
-                <Icon className="fa-fw exclude-icon" icon={faTimesCircle} />
-                <span className="excluded-object-label">{p.label}</span>
-              </div>
-              <div></div>
-            </a>
+            <SelectedItem item={p} excluded onClick={() => onUnselect(p)} />
           </li>
         ))}
         {objects.map((p) => (
@@ -128,39 +166,6 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
           </li>
         ))}
       </ul>
-    </div>
-  );
-};
-
-interface IHeader {
-  title: string;
-  selected: number;
-  include: boolean | undefined;
-  alwaysShown?: JSX.Element;
-}
-
-export const Header: React.FC<React.PropsWithChildren<IHeader>> = (
-  props: React.PropsWithChildren<IHeader>
-) => {
-  const [open, setOpen] = useState(false);
-
-  const icon = props.include ? faEye : faEyeSlash;
-
-  return (
-    <div>
-      <Button onClick={() => setOpen(!open)} className="filter-header">
-        <span className="header-title">{props.title}</span>
-        {!!props.selected && (
-          <span>
-            <Icon icon={icon} />
-            <Badge>{props.selected}</Badge>
-          </span>
-        )}
-      </Button>
-      {props.alwaysShown}
-      <Collapse in={open}>
-        <div>{props.children}</div>
-      </Collapse>
     </div>
   );
 };
