@@ -422,6 +422,7 @@
         "generating_from_paths": "Génération pour les scènes à partir des chemins suivants",
         "generating_scenes": "Génération pour {num} {scene}"
       },
+      "generate_clip_previews_during_scan": "Générer des aperçus pour les séquences d'images",
       "generate_desc": "Générer les supports images, sprites, vidéos, vtt et autres fichiers associés.",
       "generate_phashes_during_scan": "Générer des empreintes perceptuelles",
       "generate_phashes_during_scan_tooltip": "Pour la déduplication et l'identification des scènes.",
@@ -589,6 +590,10 @@
       "images": {
         "heading": "Images",
         "options": {
+          "create_image_clips_from_videos": {
+            "description": "Lorsqu'une bibliothèque a des vidéos désactivées, les fichiers vidéo (fichiers se terminant par une extension vidéo) seront analysés comme séquences d'images",
+            "heading": "Analyser les extensions vidéo comme séquences d'images"
+          },
           "write_image_thumbnails": {
             "description": "Écrire les vignettes des images sur disque lorsqu'elles sont générées à la volée",
             "heading": "Enregistrer les vignettes des images"
@@ -799,6 +804,7 @@
       "destination": "Réaffecter à"
     },
     "scene_gen": {
+      "clip_previews": "Aperçu des séquences d'images",
       "covers": "Vignettes de scène",
       "force_transcodes": "Forcer la génération du transcodage",
       "force_transcodes_tooltip": "Par défaut, les transcodes ne sont générés que lorsque le fichier vidéo n'est pas pris en charge par le navigateur. Activé, les transcodes seront générés même si le fichier vidéo semble être pris en charge par le navigateur.",
