@@ -183,11 +183,33 @@ input[type="range"].zoom-slider {
   }
 }
 
-.modifier-selector {
-  margin-bottom: 1rem;
+.modifier-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
 
-  // to accommodate for caret
-  padding-right: 2rem;
+.modifier-options .modifier-option {
+  background-color: $secondary;
+  border: none;
+  border-radius: 10rem;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 100%;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+  margin-right: 0.25rem;
+  padding: 0.25em 0.6em;
+  text-align: center;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  vertical-align: baseline;
+  white-space: nowrap;
+
+  &.selected {
+    background-color: $primary;
+  }
 }
 
 .filter-tags .clear-all-button {

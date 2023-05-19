@@ -1,6 +1,6 @@
 import cloneDeep from "lodash-es/cloneDeep";
 import React, { useCallback, useMemo } from "react";
-import { Form } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import { CriterionModifier } from "src/core/generated-graphql";
 import {
   DurationCriterion,
@@ -40,6 +40,7 @@ import { OptionsListFilter } from "./Filters/OptionsListFilter";
 import { PathFilter } from "./Filters/PathFilter";
 import { PhashCriterion } from "src/models/list-filter/criteria/phash";
 import { PhashFilter } from "./Filters/PhashFilter";
+import cx from "classnames";
 
 interface IGenericCriterionEditor {
   criterion: Criterion<CriterionValue>;
@@ -55,9 +56,9 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
   const { options, modifierOptions } = criterion.criterionOption;
 
   const onChangedModifierSelect = useCallback(
-    (event: React.ChangeEvent<HTMLSelectElement>) => {
+    (m: CriterionModifier) => {
       const newCriterion = cloneDeep(criterion);
-      newCriterion.modifier = event.target.value as CriterionModifier;
+      newCriterion.modifier = m;
       setCriterion(newCriterion);
     },
     [criterion, setCriterion]
@@ -69,18 +70,21 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
     }
 
     return (
-      <Form.Control
-        as="select"
-        onChange={onChangedModifierSelect}
-        value={criterion.modifier}
-        className="btn-secondary modifier-selector"
-      >
+      <Form.Group className="modifier-options">
         {modifierOptions.map((c) => (
-          <option key={c.value} value={c.value}>
+          <Button
+            className={cx("modifier-option", {
+              selected: criterion.modifier === c.value,
+            })}
+            key={c.value}
+            onClick={() =>
+              onChangedModifierSelect(c.value as CriterionModifier)
+            }
+          >
             {c.label ? intl.formatMessage({ id: c.label }) : ""}
-          </option>
+          </Button>
         ))}
-      </Form.Control>
+      </Form.Group>
     );
   }, [modifierOptions, onChangedModifierSelect, criterion.modifier, intl]);
 
