@@ -44,3 +44,45 @@ fragment GalleryFileData on GalleryFile {
     value
   }
 }
+
+fragment VisualFileData on VisualFile {
+  ... on BaseFile {
+    id
+    path
+    size
+    mod_time
+    fingerprints {
+      type
+      value
+    }
+  }
+  ... on ImageFile {
+    id
+    path
+    size
+    mod_time
+    width
+    height
+    fingerprints {
+      type
+      value
+    }
+  }
+  ... on VideoFile {
+    id
+    path
+    size
+    mod_time
+    duration
+    video_codec
+    audio_codec
+    width
+    height
+    frame_rate
+    bit_rate
+    fingerprints {
+      type
+      value
+    }
+  }
+}

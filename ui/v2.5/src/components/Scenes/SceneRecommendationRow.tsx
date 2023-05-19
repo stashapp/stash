@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { Link } from "react-router-dom";
 import { useFindScenes } from "src/core/StashService";
 import Slider from "@ant-design/react-slick";
 import { SceneCard } from "./SceneCard";
@@ -31,9 +32,9 @@ export const SceneRecommendationRow: React.FC<IProps> = (props) => {
       className="scene-recommendations"
       header={props.header}
       link={
-        <a href={`/scenes?${props.filter.makeQueryParameters()}`}>
+        <Link to={`/scenes?${props.filter.makeQueryParameters()}`}>
           <FormattedMessage id="view_all" />
-        </a>
+        </Link>
       }
     >
       <Slider

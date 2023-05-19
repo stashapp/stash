@@ -1,4 +1,5 @@
 import React, { Suspense, useState } from "react";
+import { Link } from "react-router-dom";
 import { lazyComponent } from "src/utils/lazyComponent";
 
 const Manual = lazyComponent(() => import("./Manual"));
@@ -48,14 +49,14 @@ export const ManualLink: React.FC<IManualLink> = ({ tab, children }) => {
   const { openManual } = React.useContext(ManualStateContext);
 
   return (
-    <a
-      href={`/help/${tab}.md`}
+    <Link
+      to={`/help/${tab}.md`}
       onClick={(e) => {
         openManual(`${tab}.md`);
         e.preventDefault();
       }}
     >
       {children}
-    </a>
+    </Link>
   );
 };

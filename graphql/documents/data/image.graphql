@@ -15,6 +15,7 @@ fragment ImageData on Image {
 
   paths {
     thumbnail
+    preview
     image
   }
 
@@ -32,5 +33,9 @@ fragment ImageData on Image {
 
   performers {
     ...PerformerData
+  }
+
+  visual_files {
+    ...VisualFileData
   }
 }

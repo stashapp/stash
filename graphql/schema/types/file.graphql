@@ -73,11 +73,13 @@ type ImageFile implements BaseFile {
     fingerprints: [Fingerprint!]!
 
     width: Int!
-	height: Int!
+    height: Int!
 
     created_at: Time!
     updated_at: Time!
 }
+
+union VisualFile = VideoFile | ImageFile
 
 type GalleryFile implements BaseFile {
     id: ID!

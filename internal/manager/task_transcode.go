@@ -101,7 +101,7 @@ func (t *GenerateTranscodeTask) Start(ctc context.Context) {
 // return true if transcode is needed
 // used only when counting files to generate, doesn't affect the actual transcode generation
 // if container is missing from DB it is treated as non supported in order not to delay the user
-func (t *GenerateTranscodeTask) isTranscodeNeeded() bool {
+func (t *GenerateTranscodeTask) required() bool {
 	f := t.Scene.Files.Primary()
 	if f == nil {
 		return false

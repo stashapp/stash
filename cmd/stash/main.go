@@ -34,7 +34,7 @@ func main() {
 	}()
 
 	go handleSignals()
-	desktop.Start(manager.GetInstance(), &manager.FaviconProvider{UIBox: ui.UIBox})
+	desktop.Start(manager.GetInstance(), &ui.FaviconProvider)
 
 	blockForever()
 }

@@ -38,6 +38,8 @@ import { RatingFilter } from "./Filters/RatingFilter";
 import { BooleanFilter } from "./Filters/BooleanFilter";
 import { OptionsListFilter } from "./Filters/OptionsListFilter";
 import { PathFilter } from "./Filters/PathFilter";
+import { PhashCriterion } from "src/models/list-filter/criteria/phash";
+import { PhashFilter } from "./Filters/PhashFilter";
 import cx from "classnames";
 
 interface IGenericCriterionEditor {
@@ -175,6 +177,11 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
     if (criterion instanceof RatingCriterion) {
       return (
         <RatingFilter criterion={criterion} onValueChanged={onValueChanged} />
+      );
+    }
+    if (criterion instanceof PhashCriterion) {
+      return (
+        <PhashFilter criterion={criterion} onValueChanged={onValueChanged} />
       );
     }
     if (

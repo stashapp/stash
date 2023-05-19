@@ -18,6 +18,7 @@ type GenerateMetadataOptions struct {
 	Transcodes                bool                    `json:"transcodes"`
 	Phashes                   bool                    `json:"phashes"`
 	InteractiveHeatmapsSpeeds bool                    `json:"interactiveHeatmapsSpeeds"`
+	ClipPreviews              bool                    `json:"clipPreviews"`
 }
 
 type GeneratePreviewOptions struct {

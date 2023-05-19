@@ -31,7 +31,7 @@
     "download": "İndir",
     "download_backup": "Yedekleme Dosyasını İndir",
     "edit": "Düzenle",
-    "export": "Dışa Aktar…",
+    "export": "Dışa Aktar",
     "export_all": "Tümünü dışa aktar…",
     "find": "Bul",
     "finish": "Bitir",
@@ -764,7 +764,6 @@
   "scenes": "Sahneler",
   "scenes_updated_at": "Sahne Güncelleme Tarihi",
   "search_filter": {
-    "add_filter": "Filtre Ekle",
     "name": "Filtre",
     "saved_filters": "Kaydedilmiş filtreler",
     "update_filter": "Filtreyi Güncelle"
