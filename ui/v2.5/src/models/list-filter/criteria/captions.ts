@@ -17,6 +17,7 @@ class CaptionsCriterionOptionType extends CriterionOption {
         CriterionModifier.IsNull,
         CriterionModifier.NotNull,
       ],
+      defaultModifier: CriterionModifier.Includes,
       options: languageStrings,
     });
   }
