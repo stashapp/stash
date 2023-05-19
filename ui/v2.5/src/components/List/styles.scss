@@ -250,8 +250,10 @@ input[type="range"].zoom-slider {
       display: flex;
       height: 2em;
       justify-content: space-between;
+      outline: none;
 
-      &:hover {
+      &:hover,
+      &:focus-visible {
         background-color: rgba(138, 155, 168, 0.15);
       }
 
@@ -299,9 +301,14 @@ input[type="range"].zoom-slider {
     }
   }
 
-  .selected-object:hover .include-button,
-  .excluded-object:hover .exclude-icon {
-    color: #fff;
+  .selected-object:hover,
+  .selected-object a:focus-visible,
+  .excluded-object:hover,
+  .excluded-object a:focus-visible {
+    .include-button,
+    .exclude-icon {
+      color: #fff;
+    }
   }
 }
 

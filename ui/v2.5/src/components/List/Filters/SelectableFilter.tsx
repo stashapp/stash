@@ -21,6 +21,7 @@ import {
 } from "src/models/list-filter/criteria/criterion";
 import { defineMessages, MessageDescriptor, useIntl } from "react-intl";
 import { CriterionModifier } from "src/core/generated-graphql";
+import { keyboardClickHandler } from "src/utils/keyboard";
 
 interface ISelectedItem {
   item: ILabeledId;
@@ -58,10 +59,12 @@ const SelectedItem: React.FC<ISelectedItem> = ({
   return (
     <a
       onClick={() => onClick()}
+      onKeyDown={keyboardClickHandler(onClick)}
       onMouseEnter={() => onMouseOver()}
       onMouseLeave={() => onMouseOut()}
       onFocus={() => onMouseOver()}
       onBlur={() => onMouseOut()}
+      tabIndex={0}
     >
       <div>
         <Icon className={`fa-fw ${iconClassName}`} icon={icon} />
@@ -142,7 +145,13 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
         {objects.map((p) => (
           <li key={p.id} className="unselected-object">
             {/* if excluding only, clicking on an item also excludes it */}
-            <a onClick={() => onSelect(p, !excludingOnly)}>
+            <a
+              onClick={() => onSelect(p, !excludingOnly)}
+              onKeyDown={keyboardClickHandler(() =>
+                onSelect(p, !excludingOnly)
+              )}
+              tabIndex={0}
+            >
               <div>
                 {!excludingOnly ? includeIcon : excludeIcon}
                 <span>{p.label}</span>
@@ -156,6 +165,7 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
                       e.stopPropagation();
                       onSelect(p, false);
                     }}
+                    onKeyDown={(e) => e.stopPropagation()}
                     className="minimal exclude-button"
                   >
                     <span className="exclude-button-text">exclude</span>
