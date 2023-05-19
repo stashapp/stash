@@ -130,7 +130,7 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
   function renderCard(c: CriterionOption, isPin: boolean) {
     return (
       <Card key={c.type} data-type={c.type} ref={criteriaRefs[c.type]!}>
-        <Accordion.Toggle eventKey={c.type} as={Card.Header}>
+        <Accordion.Toggle className="filter-item-header" eventKey={c.type}>
           <span className="mr-auto">
             <Icon
               className="collapse-icon fa-fw"
