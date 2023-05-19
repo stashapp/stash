@@ -1,6 +1,6 @@
 import cloneDeep from "lodash-es/cloneDeep";
 import React, { useCallback, useMemo } from "react";
-import { Badge, Form } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import { CriterionModifier } from "src/core/generated-graphql";
 import {
   DurationCriterion,
@@ -72,8 +72,7 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
     return (
       <Form.Group className="modifier-options">
         {modifierOptions.map((c) => (
-          <Badge
-            pill
+          <Button
             className={cx("modifier-option", {
               selected: criterion.modifier === c.value,
             })}
@@ -83,7 +82,7 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
             }
           >
             {c.label ? intl.formatMessage({ id: c.label }) : ""}
-          </Badge>
+          </Button>
         ))}
       </Form.Group>
     );
