@@ -270,9 +270,27 @@ input[type="range"].zoom-slider {
     }
 
     .exclude-button {
+      align-items: center;
+      display: flex;
       margin-left: 0.25rem;
       padding-left: 0.25rem;
       padding-right: 0.25rem;
+
+      .exclude-button-text {
+        color: $danger;
+        display: none;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      &:hover {
+        background-color: inherit;
+      }
+
+      &:hover .exclude-button-text,
+      &:focus .exclude-button-text {
+        display: inline;
+      }
     }
 
     .object-count {

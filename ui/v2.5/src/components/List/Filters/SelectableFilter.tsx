@@ -158,6 +158,7 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
                     }}
                     className="minimal exclude-button"
                   >
+                    <span className="exclude-button-text">exclude</span>
                     {excludeIcon}
                   </Button>
                 )}
