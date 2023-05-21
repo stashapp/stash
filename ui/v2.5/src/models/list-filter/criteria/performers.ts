@@ -33,9 +33,13 @@ export class PerformersCriterion extends Criterion<ILabeledValueListValue> {
   }
 
   protected toCriterionInput(): MultiCriterionInput {
+    let excludes: string[] = []
+    if (this.value.excluded) {
+      excludes = this.value.excluded.map((v) => v.id)
+    }
     return {
       value: this.value.items.map((v) => v.id),
-      excludes: this.value.excluded.map((v) => v.id),
+      excludes: excludes,
       modifier: this.modifier,
     };
   }
@@ -49,7 +53,7 @@ export class PerformersCriterion extends Criterion<ILabeledValueListValue> {
       return true;
     }
 
-    return this.value.items.length > 0 || this.value.excluded.length > 0;
+    return this.value.items.length > 0 || (this.value.excluded && this.value.excluded.length > 0);
   }
 
   public getLabel(intl: IntlShape): string {
@@ -66,7 +70,7 @@ export class PerformersCriterion extends Criterion<ILabeledValueListValue> {
     let id = "criterion_modifier.format_string";
     let excludedString = "";
 
-    if (this.value.excluded.length > 0) {
+    if (this.value.excluded && this.value.excluded.length > 0) {
       id = "criterion_modifier.format_string_excludes";
       excludedString = this.value.excluded.map((v) => v.label).join(", ");
     }

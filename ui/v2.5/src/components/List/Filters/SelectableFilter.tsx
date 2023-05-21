@@ -205,7 +205,11 @@ export const ObjectsFilter = <
     if (newInclude) {
       newCriterion.value.items.push(value);
     } else {
-      newCriterion.value.excluded.push(value);
+      if (newCriterion.value.excluded) {
+        newCriterion.value.excluded.push(value);
+      } else {
+        newCriterion.value.excluded = [value];
+      }
     }
 
     setCriterion(newCriterion);
@@ -236,6 +240,7 @@ export const ObjectsFilter = <
   }, [criterion]);
 
   const sortedExcluded = useMemo(() => {
+    if (!criterion.value.excluded) return [];
     const ret = criterion.value.excluded.slice();
     ret.sort((a, b) => a.label.localeCompare(b.label));
     return ret;

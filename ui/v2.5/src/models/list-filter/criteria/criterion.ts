@@ -535,9 +535,13 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
   }
 
   protected toCriterionInput(): HierarchicalMultiCriterionInput {
+    let excludes: string[] = []
+    if (this.value.excluded) {
+      excludes = this.value.excluded.map((v) => v.id)
+    }
     return {
       value: this.value.items.map((v) => v.id),
-      excludes: this.value.excluded.map((v) => v.id),
+      excludes: excludes,
       modifier: this.modifier,
       depth: this.value.depth,
     };
@@ -552,7 +556,7 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
       return true;
     }
 
-    return this.value.items.length > 0 || this.value.excluded.length > 0;
+    return this.value.items.length > 0 || (this.value.excluded && this.value.excluded.length > 0);
   }
 
   public getLabel(intl: IntlShape): string {
@@ -569,7 +573,7 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
     let id = "criterion_modifier.format_string";
     let excludedString = "";
 
-    if (this.value.excluded.length > 0) {
+    if (this.value.excluded && this.value.excluded.length > 0) {
       id = "criterion_modifier.format_string_excludes";
       excludedString = this.value.excluded.map((v) => v.label).join(", ");
     }
