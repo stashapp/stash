@@ -127,27 +127,45 @@ export class Interactive {
     return this._handy.connectionKey;
   }
 
+  set useStashHostedFunscript(useStashHostedFunscript: boolean) {
+    this._handy.useStashHostedFunscript = useStashHostedFunscript;
+  }
+
+  get useStashHostedFunscript(): boolean {
+    return this._handy.useStashHostedFunscript;
+  }
+
   set scriptOffset(offset: number) {
     this._scriptOffset = offset;
   }
 
   async uploadScript(funscriptPath: string) {
+    console.log("FS Path: " + funscriptPath);
     if (!(this._handy.connectionKey && funscriptPath)) {
       return;
     }
 
-    const csv = await fetch(funscriptPath)
+    var funscriptUrl;
+
+    if (this._handy.useStashHostedFunscript) {
+      funscriptUrl = funscriptPath.replace("/funscript", "/interactive_csv")
+    }
+    else {
+      const csv = await fetch(funscriptPath)
       .then((response) => response.json())
       .then((json) => convertFunscriptToCSV(json));
-    const fileName = `${Math.round(Math.random() * 100000000)}.csv`;
-    const csvFile = new File([csv], fileName);
-
-    const tempURL = await uploadCsv(csvFile).then((response) => response.url);
+      const fileName = `${Math.round(Math.random() * 100000000)}.csv`;
+      const csvFile = new File([csv], fileName);
+      
+      funscriptUrl = await uploadCsv(csvFile).then((response) => response.url);
+    }
+    
+    console.log("funscriptUrl:" + funscriptUrl);
 
     await this._handy.setMode(HandyMode.hssp);
 
     this._connected = await this._handy
-      .setHsspSetup(tempURL)
+      .setHsspSetup(funscriptUrl)
       .then((result) => result === HsspSetupResult.downloaded);
   }
 

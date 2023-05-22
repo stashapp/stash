@@ -192,8 +192,10 @@ const (
 	DisableDropdownCreateStudio    = "disable_dropdown_create.studio"
 	DisableDropdownCreateTag       = "disable_dropdown_create.tag"
 
-	HandyKey        = "handy_key"
-	FunscriptOffset = "funscript_offset"
+	HandyKey                       = "handy_key"
+	FunscriptOffset                = "funscript_offset"
+	UseStashHostedFunscript        = "use_stash_hosted_funscript"
+	useStashHostedFunscriptDefault = false
 
 	DrawFunscriptHeatmapRange        = "draw_funscript_heatmap_range"
 	drawFunscriptHeatmapRangeDefault = true
@@ -1258,6 +1260,10 @@ func (i *Instance) GetHandyKey() string {
 
 func (i *Instance) GetFunscriptOffset() int {
 	return i.getInt(FunscriptOffset)
+}
+
+func (i *Instance) GetUseStashHostedFunscript() bool {
+	return i.getBoolDefault(UseStashHostedFunscript, useStashHostedFunscriptDefault)
 }
 
 func (i *Instance) GetDeleteFileDefault() bool {

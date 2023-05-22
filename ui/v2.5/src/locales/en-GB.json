@@ -693,7 +693,11 @@
           }
         }
       },
-      "title": "User Interface"
+      "title": "User Interface",
+      "use_stash_hosted_funscript": {
+        "description": "When enabled, given that the stash instance is accessible from the Handy (like on the same network), the funscript will be transferred directly from Stash server to Handy, without going through TheHandy servers.",
+        "heading": "Use the funscript hosted by stash funscript"
+      }
     }
   },
   "configuration": "Configuration",
