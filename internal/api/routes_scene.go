@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"path"
 	"strconv"
 	"strings"
 
@@ -72,6 +73,7 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/vtt/thumbs", rs.VttThumbs)
 		r.Get("/vtt/sprite", rs.VttSprite)
 		r.Get("/funscript", rs.Funscript)
+		r.Get("/interactive_csv", rs.InteractiveCSV)
 		r.Get("/interactive_heatmap", rs.InteractiveHeatmap)
 		r.Get("/caption", rs.CaptionLang)
 
@@ -372,6 +374,29 @@ func (rs sceneRoutes) Funscript(w http.ResponseWriter, r *http.Request) {
 	filepath := video.GetFunscriptPath(s.Path)
 
 	utils.ServeStaticFile(w, r, filepath)
+}
+
+func (rs sceneRoutes) InteractiveCSV(w http.ResponseWriter, r *http.Request) {
+	s := r.Context().Value(sceneKey).(*models.Scene)
+	filepath := video.GetFunscriptPath(s.Path)
+	ext := path.Ext(filepath)
+
+	// saves the csv file to the same folder as the funscript with .csv extension
+	csvfile := filepath[0:len(filepath)-len(ext)] + ".csv"
+
+	// if the converted csv file already exists, we use it as it is
+	// maybe we need to check if the funscript file is updated to maybe force update the csv
+	exists, err := fsutil.FileExists(csvfile)
+	if err != nil || !exists {
+		// TheHandy directly only accepts interactive CSV files
+		err := manager.ConvertFunscriptToCSV(filepath, csvfile)
+
+		if err != nil {
+			utils.ServeStaticFile(w, r, filepath)
+		}
+	}
+
+	utils.ServeStaticFile(w, r, csvfile)
 }
 
 func (rs sceneRoutes) InteractiveHeatmap(w http.ResponseWriter, r *http.Request) {

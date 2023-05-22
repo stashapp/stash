@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"image"
@@ -11,6 +12,7 @@ import (
 	"sort"
 
 	"github.com/lucasb-eyer/go-colorful"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 )
 
@@ -364,4 +366,55 @@ func getSegmentColor(intensity float64) colorful.Color {
 	}
 
 	return c
+}
+
+func LoadFunscriptData(path string) (Script, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return Script{}, err
+	}
+
+	var funscript Script
+	err = json.Unmarshal(data, &funscript)
+	if err != nil {
+		return Script{}, err
+	}
+
+	if funscript.Actions == nil {
+		return Script{}, fmt.Errorf("actions list missing in %s", path)
+	}
+
+	sort.SliceStable(funscript.Actions, func(i, j int) bool { return funscript.Actions[i].At < funscript.Actions[j].At })
+
+	return funscript, nil
+}
+
+func convertRange(value int, fromLow int, fromHigh int, toLow int, toHigh int) int {
+	return ((value-fromLow)*(toHigh-toLow))/(fromHigh-fromLow) + toLow
+}
+
+func ConvertFunscriptToCSV(funscriptPath string, csvPath string) error {
+	funscript, err := LoadFunscriptData(funscriptPath)
+
+	if err != nil {
+		return err
+	}
+
+	var buffer bytes.Buffer
+	for _, action := range funscript.Actions {
+		pos := action.Pos
+
+		if funscript.Inverted {
+			pos = convertRange(pos, 0, 100, 100, 0)
+		}
+
+		if funscript.Range > 0 {
+			pos = convertRange(pos, 0, funscript.Range, 0, 100)
+		}
+
+		buffer.WriteString(fmt.Sprintf("%d,%d\r\n", action.At, pos))
+	}
+	fsutil.WriteFile(csvPath, buffer.Bytes())
+
+	return nil
 }
