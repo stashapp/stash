@@ -97,11 +97,13 @@ export class Interactive {
   _playing: boolean;
   _scriptOffset: number;
   _handy: Handy;
+  _useStashHostedFunscript: boolean;
 
   constructor(handyKey: string, scriptOffset: number) {
     this._handy = new Handy();
     this._handy.connectionKey = handyKey;
     this._scriptOffset = scriptOffset;
+    this._useStashHostedFunscript = false;
     this._connected = false;
     this._playing = false;
   }
@@ -128,11 +130,11 @@ export class Interactive {
   }
 
   set useStashHostedFunscript(useStashHostedFunscript: boolean) {
-    this._handy.useStashHostedFunscript = useStashHostedFunscript;
+    this._useStashHostedFunscript = useStashHostedFunscript;
   }
 
   get useStashHostedFunscript(): boolean {
-    return this._handy.useStashHostedFunscript;
+    return this._useStashHostedFunscript;
   }
 
   set scriptOffset(offset: number) {
@@ -147,7 +149,7 @@ export class Interactive {
 
     var funscriptUrl;
 
-    if (this._handy.useStashHostedFunscript) {
+    if (this._useStashHostedFunscript) {
       funscriptUrl = funscriptPath.replace("/funscript", "/interactive_csv")
     }
     else {
