@@ -196,7 +196,7 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 		EyeColor:       performerJSON.EyeColor,
 		Measurements:   performerJSON.Measurements,
 		FakeTits:       performerJSON.FakeTits,
-		Circumcised:    models.CircumEnum(performerJSON.Circumcised),
+		Circumcised:    models.CircumisedEnum(performerJSON.Circumcised),
 		CareerLength:   performerJSON.CareerLength,
 		Tattoos:        performerJSON.Tattoos,
 		Piercings:      performerJSON.Piercings,

@@ -526,7 +526,7 @@ input GenderCriterionInput {
 }
  
 input CircumcisionCriterionInput {
-  value: CircumEnum
+  value: CircumisedEnum
   modifier: CriterionModifier!
 }
 

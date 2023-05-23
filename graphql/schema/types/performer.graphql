@@ -7,7 +7,7 @@ enum GenderEnum {
   NON_BINARY
 }
  
-enum CircumEnum{
+enum CircumisedEnum {
   CUT
   UNCUT
 }
@@ -30,7 +30,7 @@ type Performer {
   measurements: String
   fake_tits: String
   penis_length: Float
-  circumcised: CircumEnum
+  circumcised: CircumisedEnum
   career_length: String
   tattoos: String
   piercings: String
@@ -77,7 +77,7 @@ input PerformerCreateInput {
   measurements: String
   fake_tits: String
   penis_length: Float
-  circumcised: CircumEnum
+  circumcised: CircumisedEnum
   career_length: String
   tattoos: String
   piercings: String
@@ -117,7 +117,7 @@ input PerformerUpdateInput {
   measurements: String
   fake_tits: String
   penis_length: Float
-  circumcised: CircumEnum
+  circumcised: CircumisedEnum
   career_length: String
   tattoos: String
   piercings: String
@@ -162,7 +162,7 @@ input BulkPerformerUpdateInput {
   measurements: String
   fake_tits: String
   penis_length: Float
-  circumcised: CircumEnum
+  circumcised: CircumisedEnum
   career_length: String
   tattoos: String
   piercings: String

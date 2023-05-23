@@ -61,49 +61,49 @@ type GenderCriterionInput struct {
 	Modifier CriterionModifier `json:"modifier"`
 }
 
-type CircumEnum string
+type CircumisedEnum string
 
 const (
-	CircumEnumCut   CircumEnum = "CUT"
-	CircumEnumUncut CircumEnum = "UNCUT"
+	CircumisedEnumCut   CircumisedEnum = "CUT"
+	CircumisedEnumUncut CircumisedEnum = "UNCUT"
 )
 
-var AllCircumcisionEnum = []CircumEnum{
-	CircumEnumCut,
-	CircumEnumUncut,
+var AllCircumcisionEnum = []CircumisedEnum{
+	CircumisedEnumCut,
+	CircumisedEnumUncut,
 }
 
-func (e CircumEnum) IsValid() bool {
+func (e CircumisedEnum) IsValid() bool {
 	switch e {
-	case CircumEnumCut, CircumEnumUncut:
+	case CircumisedEnumCut, CircumisedEnumUncut:
 		return true
 	}
 	return false
 }
 
-func (e CircumEnum) String() string {
+func (e CircumisedEnum) String() string {
 	return string(e)
 }
 
-func (e *CircumEnum) UnmarshalGQL(v interface{}) error {
+func (e *CircumisedEnum) UnmarshalGQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
 	}
 
-	*e = CircumEnum(str)
+	*e = CircumisedEnum(str)
 	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid CircumEnum", str)
+		return fmt.Errorf("%s is not a valid CircumisedEnum", str)
 	}
 	return nil
 }
 
-func (e CircumEnum) MarshalGQL(w io.Writer) {
+func (e CircumisedEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type CircumcisionCriterionInput struct {
-	Value    *CircumEnum       `json:"value"`
+	Value    *CircumisedEnum   `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
 }
 

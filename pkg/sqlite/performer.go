@@ -114,7 +114,7 @@ func (r *performerRow) resolve() *models.Performer {
 		Ethnicity:      r.Ethnicity.String,
 		Country:        r.Country.String,
 		EyeColor:       r.EyeColor.String,
-		Circumcised:    models.CircumEnum(r.Circumcised.String),
+		Circumcised:    models.CircumisedEnum(r.Circumcised.String),
 		Height:         nullIntPtr(r.Height),
 		Measurements:   r.Measurements.String,
 		FakeTits:       r.FakeTits.String,

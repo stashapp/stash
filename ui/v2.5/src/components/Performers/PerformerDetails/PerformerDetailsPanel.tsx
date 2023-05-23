@@ -162,7 +162,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     );
   };
 
-  const formatCircumcised = (circumcised?: GQL.CircumEnum | null) => {
+  const formatCircumcised = (circumcised?: GQL.CircumisedEnum | null) => {
     if (!circumcised) {
       return "";
     }

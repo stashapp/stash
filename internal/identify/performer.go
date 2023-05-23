@@ -104,7 +104,7 @@ func scrapedToPerformerInput(performer *models.ScrapedPerformer) models.Performe
 		}
 	}
 	if performer.Circumcised != nil {
-		ret.Circumcised = models.CircumEnum(*performer.Circumcised)
+		ret.Circumcised = models.CircumisedEnum(*performer.Circumcised)
 	}
 	if performer.CareerLength != nil {
 		ret.CareerLength = *performer.CareerLength
