@@ -414,7 +414,5 @@ func ConvertFunscriptToCSV(funscriptPath string, csvPath string) error {
 
 		buffer.WriteString(fmt.Sprintf("%d,%d\r\n", action.At, pos))
 	}
-	fsutil.WriteFile(csvPath, buffer.Bytes())
-
-	return nil
+	return fsutil.WriteFile(csvPath, buffer.Bytes())
 }
