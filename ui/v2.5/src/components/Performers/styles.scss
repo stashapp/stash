@@ -190,48 +190,21 @@
   color: #c8a2c8;
 }
 
-.performer-height {
-  .height-imperial {
-    &::before {
-      content: " (";
-    }
-
-    &::after {
-      content: ")";
-    }
-  }
-}
-
-.performer-weight {
-  .weight-imperial {
-    &::before {
-      content: " (";
-    }
-
-    &::after {
-      content: ")";
-    }
-  }
-}
-
-.performer-penis-length {
-  .penis-length-imperial {
-    &::before {
-      content: " (";
-    }
-
-    &::after {
-      content: ")";
-    }
-  }
-}
-.penis-circumcised {
+.performer-height .height-imperial,
+.performer-weight .weight-imperial,
+.performer-penis-length .penis-length-imperial {
   &::before {
-    content: " ";
+    content: " (";
   }
 
   &::after {
-    content: "";
+    content: ")";
+  }
+}
+
+.penis-circumcised {
+  &::before {
+    content: " ";
   }
 }
 
