@@ -28,6 +28,7 @@ import {
 export type Option = string | number | IOptionType;
 export type CriterionValue =
   | string
+  | string[]
   | ILabeledId[]
   | IHierarchicalLabelValue
   | INumberValue
@@ -232,6 +233,24 @@ export class StringCriterion extends Criterion<string> {
 
   public getLabelValue(_intl: IntlShape) {
     return this.value;
+  }
+
+  public isValid(): boolean {
+    return (
+      this.modifier === CriterionModifier.IsNull ||
+      this.modifier === CriterionModifier.NotNull ||
+      this.value.length > 0
+    );
+  }
+}
+
+export class MultiStringCriterion extends Criterion<string[]> {
+  constructor(type: CriterionOption) {
+    super(type, []);
+  }
+
+  public getLabelValue(_intl: IntlShape) {
+    return this.value.join(", ");
   }
 
   public isValid(): boolean {
