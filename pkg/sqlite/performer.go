@@ -611,7 +611,8 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if circumcised := filter.Circumcised; circumcised != nil {
-			f.addWhere(tableName+".circumcised = ?", circumcised.Value.String())
+			v := utils.StringerSliceToStringSlice(circumcised.Value)
+			enumCriterionHandler(circumcised.Modifier, v, tableName+".circumcised")(ctx, f)
 		}
 	}))
 

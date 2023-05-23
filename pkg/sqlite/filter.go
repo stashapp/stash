@@ -426,6 +426,25 @@ func stringCriterionHandler(c *models.StringCriterionInput, column string) crite
 	}
 }
 
+func enumCriterionHandler(modifier models.CriterionModifier, values []string, column string) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if modifier.IsValid() {
+			switch modifier {
+			case models.CriterionModifierIncludes, models.CriterionModifierEquals:
+				f.whereClauses = append(f.whereClauses, getEnumSearchClause(column, values, false))
+			case models.CriterionModifierExcludes, models.CriterionModifierNotEquals:
+				f.whereClauses = append(f.whereClauses, getEnumSearchClause(column, values, true))
+			case models.CriterionModifierIsNull:
+				f.addWhere("(" + column + " IS NULL OR TRIM(" + column + ") = '')")
+			case models.CriterionModifierNotNull:
+				f.addWhere("(" + column + " IS NOT NULL AND TRIM(" + column + ") != '')")
+			default:
+				panic("unsupported string filter modifier")
+			}
+		}
+	}
+}
+
 func pathCriterionHandler(c *models.StringCriterionInput, pathColumn string, basenameColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {

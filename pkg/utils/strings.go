@@ -31,3 +31,13 @@ func StrFormat(format string, m StrFormatMap) string {
 
 	return strings.NewReplacer(args...).Replace(format)
 }
+
+// StringerSliceToStringSlice converts a slice of fmt.Stringers to a slice of strings.
+func StringerSliceToStringSlice[V fmt.Stringer](v []V) []string {
+	ret := make([]string, len(v))
+	for i, vv := range v {
+		ret[i] = vv.String()
+	}
+
+	return ret
+}

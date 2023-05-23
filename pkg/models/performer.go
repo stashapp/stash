@@ -103,7 +103,7 @@ func (e CircumisedEnum) MarshalGQL(w io.Writer) {
 }
 
 type CircumcisionCriterionInput struct {
-	Value    *CircumisedEnum   `json:"value"`
+	Value    []CircumisedEnum  `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
 }
 

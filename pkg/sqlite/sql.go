@@ -159,6 +159,22 @@ func getStringSearchClause(columns []string, q string, not bool) sqlClause {
 	return makeClause("("+likes+")", args...)
 }
 
+func getEnumSearchClause(column string, enumVals []string, not bool) sqlClause {
+	var args []interface{}
+
+	notStr := ""
+	if not {
+		notStr = " NOT"
+	}
+
+	clause := fmt.Sprintf("(%s%s IN (%s))", column, notStr, getInBinding(len(enumVals)))
+	for _, enumVal := range enumVals {
+		args = append(args, enumVal)
+	}
+
+	return makeClause(clause, args)
+}
+
 func getInBinding(length int) string {
 	bindings := strings.Repeat("?, ", length)
 	bindings = strings.TrimRight(bindings, ", ")
