@@ -150,18 +150,17 @@ export class Interactive {
     var funscriptUrl;
 
     if (this._useStashHostedFunscript) {
-      funscriptUrl = funscriptPath.replace("/funscript", "/interactive_csv")
-    }
-    else {
+      funscriptUrl = funscriptPath.replace("/funscript", "/interactive_csv");
+    } else {
       const csv = await fetch(funscriptPath)
-      .then((response) => response.json())
-      .then((json) => convertFunscriptToCSV(json));
+        .then((response) => response.json())
+        .then((json) => convertFunscriptToCSV(json));
       const fileName = `${Math.round(Math.random() * 100000000)}.csv`;
       const csvFile = new File([csv], fileName);
-      
+
       funscriptUrl = await uploadCsv(csvFile).then((response) => response.url);
     }
-    
+
     console.log("funscriptUrl:" + funscriptUrl);
 
     await this._handy.setMode(HandyMode.hssp);
