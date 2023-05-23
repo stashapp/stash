@@ -5,7 +5,9 @@ export const stringCircumMap = new Map<string, GQL.CircumisedEnum>([
   ["Cut", GQL.CircumisedEnum.Cut],
 ]);
 
-export const circumcisedToString = (value?: GQL.CircumisedEnum | String | null) => {
+export const circumcisedToString = (
+  value?: GQL.CircumisedEnum | String | null
+) => {
   if (!value) {
     return undefined;
   }
@@ -27,7 +29,9 @@ export const stringToCircumcised = (
     return undefined;
   }
 
-  const existing = Object.entries(GQL.CircumisedEnum).find((e) => e[1] === value);
+  const existing = Object.entries(GQL.CircumisedEnum).find(
+    (e) => e[1] === value
+  );
   if (existing) return existing[1];
 
   const ret = stringCircumMap.get(value);
