@@ -167,12 +167,12 @@ func getEnumSearchClause(column string, enumVals []string, not bool) sqlClause {
 		notStr = " NOT"
 	}
 
-	clause := fmt.Sprintf("(%s%s IN (%s))", column, notStr, getInBinding(len(enumVals)))
+	clause := fmt.Sprintf("(%s%s IN %s)", column, notStr, getInBinding(len(enumVals)))
 	for _, enumVal := range enumVals {
 		args = append(args, enumVal)
 	}
 
-	return makeClause(clause, args)
+	return makeClause(clause, args...)
 }
 
 func getInBinding(length int) string {

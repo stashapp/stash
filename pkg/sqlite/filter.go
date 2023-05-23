@@ -431,9 +431,13 @@ func enumCriterionHandler(modifier models.CriterionModifier, values []string, co
 		if modifier.IsValid() {
 			switch modifier {
 			case models.CriterionModifierIncludes, models.CriterionModifierEquals:
-				f.whereClauses = append(f.whereClauses, getEnumSearchClause(column, values, false))
+				if len(values) > 0 {
+					f.whereClauses = append(f.whereClauses, getEnumSearchClause(column, values, false))
+				}
 			case models.CriterionModifierExcludes, models.CriterionModifierNotEquals:
-				f.whereClauses = append(f.whereClauses, getEnumSearchClause(column, values, true))
+				if len(values) > 0 {
+					f.whereClauses = append(f.whereClauses, getEnumSearchClause(column, values, true))
+				}
 			case models.CriterionModifierIsNull:
 				f.addWhere("(" + column + " IS NULL OR TRIM(" + column + ") = '')")
 			case models.CriterionModifierNotNull:
