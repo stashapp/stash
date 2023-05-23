@@ -16,8 +16,9 @@ type Image {
   
   file_mod_time: Time @deprecated(reason: "Use files.mod_time")
 
-  file: ImageFileType! @deprecated(reason: "Use files.mod_time")
-  files: [ImageFile!]!
+  file: ImageFileType! @deprecated(reason: "Use visual_files")
+  files: [ImageFile!]! @deprecated(reason: "Use visual_files")
+  visual_files: [VisualFile!]!
   paths: ImagePathsType! # Resolver
 
   galleries: [Gallery!]!
@@ -35,6 +36,7 @@ type ImageFileType {
 
 type ImagePathsType {
   thumbnail: String # Resolver
+  preview: String # Resolver
   image: String # Resolver
 }
 

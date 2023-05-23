@@ -23,10 +23,17 @@ func (t *GenerateCoverTask) GetDescription() string {
 func (t *GenerateCoverTask) Start(ctx context.Context) {
 	scenePath := t.Scene.Path
 
+	var required bool
 	if err := t.txnManager.WithReadTxn(ctx, func(ctx context.Context) error {
+		required = t.required(ctx)
+
 		return t.Scene.LoadPrimaryFile(ctx, t.txnManager.File)
 	}); err != nil {
 		logger.Error(err)
+	}
+
+	if !required {
+		return
 	}
 
 	videoFile := t.Scene.Files.Primary()
@@ -85,7 +92,12 @@ func (t *GenerateCoverTask) Start(ctx context.Context) {
 }
 
 // required returns true if the sprite needs to be generated
-func (t GenerateCoverTask) required(ctx context.Context) bool {
+// assumes in a transaction
+func (t *GenerateCoverTask) required(ctx context.Context) bool {
+	if t.Scene.Path == "" {
+		return false
+	}
+
 	if t.Overwrite {
 		return true
 	}

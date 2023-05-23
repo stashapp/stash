@@ -260,6 +260,7 @@ func (sm *StreamManager) getTranscodeStream(ctx *fsutil.LockContext, options Tra
 
 	mimeType := options.StreamType.MimeType
 	handler := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-store")
 		w.Header().Set("Content-Type", mimeType)
 		w.WriteHeader(http.StatusOK)
 

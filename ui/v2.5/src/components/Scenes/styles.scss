@@ -89,6 +89,10 @@ textarea.scene-description {
 .studio-card {
   padding: 0.5rem;
 
+  @media (max-width: 576px) {
+    width: 100%;
+  }
+
   &-header {
     height: 150px;
     line-height: 150px;
@@ -240,6 +244,10 @@ textarea.scene-description {
 .scene-card.card {
   overflow: hidden;
   padding: 0;
+
+  @media (max-width: 576px) {
+    width: 100%;
+  }
 
   &.fileless {
     background-color: darken($card-bg, 5%);

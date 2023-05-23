@@ -127,6 +127,7 @@
   "aliases": "Aliase",
   "all": "Alle",
   "also_known_as": "Auch bekannt unter",
+  "appears_with": "Tritt auf mit",
   "ascending": "Aufsteigend",
   "average_resolution": "Durchschnittliche Auflösung",
   "between_and": "und",
@@ -306,8 +307,8 @@
         },
         "transcode": {
           "input_args": {
-            "desc": "Erweitert: Zusätzliche Parameter für die Live-Transkodierung mit ffmpeg, welche vor dem Eingabefeld übergeben werden können.",
-            "heading": "FFmpeg Live-Transkodierung Eingangsparameter"
+            "desc": "Erweitert: Zusätzliche Parameter für die Video-Generierung mit ffmpeg, welche vor dem Eingabefeld übergeben werden können.",
+            "heading": "FFmpeg Transkodierung Eingangsparameter"
           },
           "output_args": {
             "desc": "Erweitert: Zusätzliche Parameter für die Videogenerierung mit ffmpeg, welche vor dem Ausgabefeld übergeben werden können.",

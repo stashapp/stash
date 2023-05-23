@@ -36,6 +36,18 @@ exclude:
 
 _a useful [link](https://regex101.com/) to experiment with regexps_
 
+## Gallery Creation from Folders
+
+In the Library section you can find an option to create a gallery from each folder containing images. This will be applied on all libraries when activated, including the base folder of a library. 
+
+If you wish to apply this on a per folder basis, you can create a file called **.nogallery** or **.forcegallery** in a folder that should act different than this global setting.
+
+This will either exclude the folder from becoming a gallery even if the setting is set, or create a gallery from the folder even if the setting is not set. 
+
+The file will only be recognized if written in lower case letters.
+
+Files with a dot in front are handled as hidden in the Linux OS and Mac OS, so you will not see those files after creation on your system without setting your file manager accordingly.
+
 ## Hashing algorithms
 
 Stash identifies video files by calculating a hash of the file. There are two algorithms available for hashing: `oshash` and `MD5`. `MD5` requires reading the entire file, and can therefore be slow, particularly when reading files over a network. `oshash` (which uses OpenSubtitle's hashing algorithm) only reads 64k from each end of the file.

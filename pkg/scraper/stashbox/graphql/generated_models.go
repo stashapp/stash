@@ -332,6 +332,7 @@ type Performer struct {
 	Deleted         bool                `json:"deleted"`
 	Edits           []*Edit             `json:"edits,omitempty"`
 	SceneCount      int                 `json:"scene_count"`
+	OCounter        int                 `json:"o_counter"`
 	MergedIds       []string            `json:"merged_ids,omitempty"`
 	Studios         []*PerformerStudio  `json:"studios,omitempty"`
 	IsFavorite      bool                `json:"is_favorite"`
@@ -1771,6 +1772,7 @@ const (
 	PerformerSortEnumName            PerformerSortEnum = "NAME"
 	PerformerSortEnumBirthdate       PerformerSortEnum = "BIRTHDATE"
 	PerformerSortEnumSceneCount      PerformerSortEnum = "SCENE_COUNT"
+	PerformerSortEnumOCounter        PerformerSortEnum = "O_COUNTER"
 	PerformerSortEnumCareerStartYear PerformerSortEnum = "CAREER_START_YEAR"
 	PerformerSortEnumDebut           PerformerSortEnum = "DEBUT"
 	PerformerSortEnumCreatedAt       PerformerSortEnum = "CREATED_AT"
@@ -1781,6 +1783,7 @@ var AllPerformerSortEnum = []PerformerSortEnum{
 	PerformerSortEnumName,
 	PerformerSortEnumBirthdate,
 	PerformerSortEnumSceneCount,
+	PerformerSortEnumOCounter,
 	PerformerSortEnumCareerStartYear,
 	PerformerSortEnumDebut,
 	PerformerSortEnumCreatedAt,
@@ -1789,7 +1792,7 @@ var AllPerformerSortEnum = []PerformerSortEnum{
 
 func (e PerformerSortEnum) IsValid() bool {
 	switch e {
-	case PerformerSortEnumName, PerformerSortEnumBirthdate, PerformerSortEnumSceneCount, PerformerSortEnumCareerStartYear, PerformerSortEnumDebut, PerformerSortEnumCreatedAt, PerformerSortEnumUpdatedAt:
+	case PerformerSortEnumName, PerformerSortEnumBirthdate, PerformerSortEnumSceneCount, PerformerSortEnumOCounter, PerformerSortEnumCareerStartYear, PerformerSortEnumDebut, PerformerSortEnumCreatedAt, PerformerSortEnumUpdatedAt:
 		return true
 	}
 	return false
