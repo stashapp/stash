@@ -33,9 +33,9 @@ export class PerformersCriterion extends Criterion<ILabeledValueListValue> {
   }
 
   protected toCriterionInput(): MultiCriterionInput {
-    let excludes: string[] = []
+    let excludes: string[] = [];
     if (this.value.excluded) {
-      excludes = this.value.excluded.map((v) => v.id)
+      excludes = this.value.excluded.map((v) => v.id);
     }
     return {
       value: this.value.items.map((v) => v.id),
@@ -53,7 +53,10 @@ export class PerformersCriterion extends Criterion<ILabeledValueListValue> {
       return true;
     }
 
-    return this.value.items.length > 0 || (this.value.excluded && this.value.excluded.length > 0);
+    return (
+      this.value.items.length > 0 ||
+      (this.value.excluded && this.value.excluded.length > 0)
+    );
   }
 
   public getLabel(intl: IntlShape): string {

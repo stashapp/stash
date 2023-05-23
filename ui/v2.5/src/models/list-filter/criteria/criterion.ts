@@ -535,9 +535,9 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
   }
 
   protected toCriterionInput(): HierarchicalMultiCriterionInput {
-    let excludes: string[] = []
+    let excludes: string[] = [];
     if (this.value.excluded) {
-      excludes = this.value.excluded.map((v) => v.id)
+      excludes = this.value.excluded.map((v) => v.id);
     }
     return {
       value: this.value.items.map((v) => v.id),
@@ -556,7 +556,10 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
       return true;
     }
 
-    return this.value.items.length > 0 || (this.value.excluded && this.value.excluded.length > 0);
+    return (
+      this.value.items.length > 0 ||
+      (this.value.excluded && this.value.excluded.length > 0)
+    );
   }
 
   public getLabel(intl: IntlShape): string {
