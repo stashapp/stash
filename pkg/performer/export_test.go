@@ -29,6 +29,7 @@ const (
 	ethnicity      = "ethnicity"
 	eyeColor       = "eyeColor"
 	fakeTits       = "fakeTits"
+	circumcised    = "circumcised"
 	gender         = "gender"
 	instagram      = "instagram"
 	measurements   = "measurements"
@@ -42,10 +43,11 @@ const (
 )
 
 var (
-	aliases = []string{"alias1", "alias2"}
-	rating  = 5
-	height  = 123
-	weight  = 60
+	aliases     = []string{"alias1", "alias2"}
+	rating      = 5
+	height      = 123
+	weight      = 60
+	penisLength = 1.23
 )
 
 var imageBytes = []byte("imageBytes")
@@ -81,6 +83,8 @@ func createFullPerformer(id int, name string) *models.Performer {
 		Ethnicity:      ethnicity,
 		EyeColor:       eyeColor,
 		FakeTits:       fakeTits,
+		PenisLength:    &penisLength,
+		Circumcised:    circumcised,
 		Favorite:       true,
 		Gender:         gender,
 		Height:         &height,
@@ -125,6 +129,8 @@ func createFullJSONPerformer(name string, image string) *jsonschema.Performer {
 		Ethnicity:      ethnicity,
 		EyeColor:       eyeColor,
 		FakeTits:       fakeTits,
+		PenisLength:    penisLength,
+		Circumcised:    circumcised,
 		Favorite:       true,
 		Gender:         gender,
 		Height:         strconv.Itoa(height),
