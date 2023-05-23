@@ -106,6 +106,7 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		MaxTranscodeSize:              &maxTranscodeSize,
 		MaxStreamingTranscodeSize:     &maxStreamingTranscodeSize,
 		WriteImageThumbnails:          config.IsWriteImageThumbnails(),
+		CreateImageClipsFromVideos:    config.IsCreateImageClipsFromVideos(),
 		GalleryCoverRegex:             config.GetGalleryCoverRegex(),
 		APIKey:                        config.GetAPIKey(),
 		Username:                      config.GetUsername(),
@@ -202,6 +203,7 @@ func makeConfigDLNAResult() *ConfigDLNAResult {
 		Enabled:        config.GetDLNADefaultEnabled(),
 		WhitelistedIPs: config.GetDLNADefaultIPWhitelist(),
 		Interfaces:     config.GetDLNAInterfaces(),
+		VideoSortOrder: config.GetVideoSortOrder(),
 	}
 }
 

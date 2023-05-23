@@ -25,6 +25,9 @@ export interface ICustomFilter extends ITypename {
   direction: SortDirectionEnum;
 }
 
+// NOTE: This value cannot be more defined, because the generated enum it depends upon is UpperCase, which leads to errors on saving
+export type PinnedFilters = Record<string, Array<string>>;
+
 export type FrontPageContent = ISavedFilterRow | ICustomFilter;
 
 export const defaultMaxOptionsShown = 200;
@@ -55,6 +58,8 @@ export interface IUIConfig {
   imageWallOptions?: ImageWallOptions;
 
   lastNoteSeen?: number;
+
+  pinnedFilters?: PinnedFilters;
 }
 
 function recentlyReleased(

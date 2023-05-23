@@ -13,6 +13,7 @@ fragment SlimImageData on Image {
 
   paths {
     thumbnail
+    preview
     image
   }
 
@@ -44,5 +45,9 @@ fragment SlimImageData on Image {
     gender
     favorite
     image_path
+  }
+
+  visual_files {
+    ...VisualFileData
   }
 }

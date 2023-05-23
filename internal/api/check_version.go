@@ -113,7 +113,6 @@ type LatestRelease struct {
 }
 
 func makeGithubRequest(ctx context.Context, url string, output interface{}) error {
-
 	transport := &http.Transport{Proxy: http.ProxyFromEnvironment}
 
 	client := &http.Client{
@@ -124,6 +123,7 @@ func makeGithubRequest(ctx context.Context, url string, output interface{}) erro
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 
 	req.Header.Add("Accept", apiAcceptHeader) // gh api recommendation , send header with api version
+	logger.Debugf("Github API request: %s", url)
 	response, err := client.Do(req)
 
 	if err != nil {
@@ -229,19 +229,39 @@ func GetLatestRelease(ctx context.Context) (*LatestRelease, error) {
 }
 
 func getReleaseHash(ctx context.Context, tagName string) (string, error) {
-	url := apiTags
-	tags := []githubTagResponse{}
-	err := makeGithubRequest(ctx, url, &tags)
-	if err != nil {
-		return "", err
+	// Start with a small page size if not searching for latest_develop
+	perPage := 10
+	if tagName == developmentTag {
+		perPage = 100
 	}
 
-	for _, tag := range tags {
-		if tag.Name == tagName {
-			if len(tag.Commit.Sha) != 40 {
-				return "", errors.New("invalid Github API response")
+	// Limit to 5 pages, ie 500 tags - should be plenty
+	for page := 1; page <= 5; {
+		url := fmt.Sprintf("%s?per_page=%d&page=%d", apiTags, perPage, page)
+		tags := []githubTagResponse{}
+		err := makeGithubRequest(ctx, url, &tags)
+		if err != nil {
+			return "", err
+		}
+
+		for _, tag := range tags {
+			if tag.Name == tagName {
+				if len(tag.Commit.Sha) != 40 {
+					return "", errors.New("invalid Github API response")
+				}
+				return tag.Commit.Sha, nil
 			}
-			return tag.Commit.Sha, nil
+		}
+
+		if len(tags) == 0 {
+			break
+		}
+
+		// if not found in the first 10, search again on page 1 with the first 100
+		if perPage == 10 {
+			perPage = 100
+		} else {
+			page++
 		}
 	}
 

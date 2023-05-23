@@ -97,7 +97,7 @@ func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 }
 
 func (i *Importer) populateFiles(ctx context.Context) error {
-	files := make([]*file.ImageFile, 0)
+	files := make([]file.File, 0)
 
 	for _, ref := range i.Input.Files {
 		path := ref
@@ -109,11 +109,11 @@ func (i *Importer) populateFiles(ctx context.Context) error {
 		if f == nil {
 			return fmt.Errorf("image file '%s' not found", path)
 		} else {
-			files = append(files, f.(*file.ImageFile))
+			files = append(files, f)
 		}
 	}
 
-	i.image.Files = models.NewRelatedImageFiles(files)
+	i.image.Files = models.NewRelatedFiles(files)
 
 	return nil
 }
@@ -312,7 +312,7 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 	var err error
 
 	for _, f := range i.image.Files.List() {
-		existing, err = i.ReaderWriter.FindByFileID(ctx, f.ID)
+		existing, err = i.ReaderWriter.FindByFileID(ctx, f.Base().ID)
 		if err != nil {
 			return nil, err
 		}

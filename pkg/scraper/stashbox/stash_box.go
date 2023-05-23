@@ -10,6 +10,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -1129,10 +1130,20 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 
 	var urls []string
 	if len(strings.TrimSpace(performer.Twitter)) > 0 {
-		urls = append(urls, "https://twitter.com/"+strings.TrimSpace(performer.Twitter))
+		reg := regexp.MustCompile(`https?:\/\/(?:www\.)?twitter\.com`)
+		if reg.MatchString(performer.Twitter) {
+			urls = append(urls, strings.TrimSpace(performer.Twitter))
+		} else {
+			urls = append(urls, "https://twitter.com/"+strings.TrimSpace(performer.Twitter))
+		}
 	}
 	if len(strings.TrimSpace(performer.Instagram)) > 0 {
-		urls = append(urls, "https://instagram.com/"+strings.TrimSpace(performer.Instagram))
+		reg := regexp.MustCompile(`https?:\/\/(?:www\.)?instagram\.com`)
+		if reg.MatchString(performer.Instagram) {
+			urls = append(urls, strings.TrimSpace(performer.Instagram))
+		} else {
+			urls = append(urls, "https://instagram.com/"+strings.TrimSpace(performer.Instagram))
+		}
 	}
 	if len(strings.TrimSpace(performer.URL)) > 0 {
 		urls = append(urls, strings.TrimSpace(performer.URL))

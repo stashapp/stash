@@ -53,14 +53,19 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
       .test({
         name: "unique",
         test: (value, context) => {
-          if (!value) return true;
-          const aliases = new Set(value);
-          aliases.add(context.parent.name);
-          return value.length + 1 === aliases.size;
+          const aliases = [context.parent.name, ...value];
+          const dupes = aliases
+            .map((e, i, a) => {
+              if (a.indexOf(e) !== i) {
+                return String(i - 1);
+              } else {
+                return null;
+              }
+            })
+            .filter((e) => e !== null) as string[];
+          if (dupes.length === 0) return true;
+          return new yup.ValidationError(dupes.join(" "), value, "aliases");
         },
-        message: intl.formatMessage({
-          id: "validation.aliases_must_be_unique",
-        }),
       }),
     ignore_auto_tag: yup.boolean().defined(),
     stash_ids: yup.mixed<GQL.StashIdInput[]>().defined(),
@@ -187,6 +192,14 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     );
   }
 
+  const aliasErrors = Array.isArray(formik.errors.aliases)
+    ? formik.errors.aliases[0]
+    : formik.errors.aliases;
+  const aliasErrorMsg = aliasErrors
+    ? intl.formatMessage({ id: "validation.aliases_must_be_unique" })
+    : undefined;
+  const aliasErrorIdx = aliasErrors?.split(" ").map((e) => parseInt(e));
+
   return (
     <>
       <Prompt
@@ -291,11 +304,8 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
             <StringListInput
               value={formik.values.aliases ?? []}
               setValue={(value) => formik.setFieldValue("aliases", value)}
-              errors={
-                Array.isArray(formik.errors.aliases)
-                  ? formik.errors.aliases[0]
-                  : formik.errors.aliases
-              }
+              errors={aliasErrorMsg}
+              errorIdx={aliasErrorIdx}
             />
           </Col>
         </Form.Group>

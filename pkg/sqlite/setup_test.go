@@ -1729,5 +1729,5 @@ func linkTagsParent(ctx context.Context, qb models.TagReaderWriter) error {
 }
 
 func addTagImage(ctx context.Context, qb models.TagWriter, tagIndex int) error {
-	return qb.UpdateImage(ctx, tagIDs[tagIndex], models.DefaultTagImage)
+	return qb.UpdateImage(ctx, tagIDs[tagIndex], []byte("image"))
 }

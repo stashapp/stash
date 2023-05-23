@@ -6,6 +6,7 @@
     "add_to_entity": "Tilføj til {entityType}",
     "allow": "Tillad",
     "allow_temporarily": "Tillad midlertidigt",
+    "anonymise": "Anonymisér",
     "apply": "Anvend",
     "auto_tag": "Auto Tagge",
     "backup": "Backup",
@@ -20,6 +21,7 @@
     "confirm": "Bekræft",
     "continue": "Forsæt",
     "create": "Lav",
+    "create_chapters": "Skab Kapitel",
     "create_entity": "Lav {entityType}",
     "create_marker": "Lav Mærke",
     "created_entity": "Lavet {entity_type}: {entity_name}",
@@ -32,6 +34,7 @@
     "delete_stashid": "Slet StashID",
     "disallow": "Tillad ikke",
     "download": "Download",
+    "download_anonymised": "Hent anonymiseret",
     "download_backup": "Download Backup",
     "edit": "Ændre",
     "edit_entity": "Ændre {entityType}",
@@ -58,6 +61,8 @@
     "merge": "Fusioner",
     "merge_from": "Fusioner fra",
     "merge_into": "Fusioner til",
+    "migrate_blobs": "Migrér Blobs",
+    "migrate_scene_screenshots": "Migrér Scene-skærmbilleder",
     "next_action": "Næste",
     "not_running": "kører ikke",
     "open_in_external_player": "Åben i ekstern afspiller",
@@ -122,14 +127,20 @@
   "aliases": "Aliaser",
   "all": "alt",
   "also_known_as": "Også kendt som",
+  "appears_with": "Optræder Med",
   "ascending": "Stigende",
   "average_resolution": "Gennemsnitlig Opløsning",
   "between_and": "og",
   "birth_year": "Fødselsår",
   "birthdate": "Fødselsdato",
   "bitrate": "Bithastighed",
+  "blobs_storage_type": {
+    "database": "Database",
+    "filesystem": "Filsystem"
+  },
   "captions": "Undertekster",
   "career_length": "Karrierer Længde",
+  "chapters": "Kapitler",
   "component_tagger": {
     "config": {
       "active_instance": "Aktiv stash-box instans:",
@@ -183,6 +194,7 @@
       "latest_version": "Seneste Version",
       "latest_version_build_hash": "Seneste version Byg Hash:",
       "new_version_notice": "[NY]",
+      "release_date": "Udgivelsesdato:",
       "stash_discord": "Tilmeld dig vores {url} kanal",
       "stash_home": "Stash hjem på {url}",
       "stash_open_collective": "Støt os gennem {url}",
@@ -253,7 +265,15 @@
         "description": "Mappelokation for SQLite database backup filer",
         "heading": "Backup mappesti"
       },
-      "cache_location": "Directory placering af cachen",
+      "blobs_path": {
+        "description": "Hvori filsystemet binær data skal lagres. Anvendes kun når blobs lagres i Filsystemet. ADVARSEL: Ændres dette, kræves manuel flytning af eksisterende data.",
+        "heading": "Binær data filsystem-sti"
+      },
+      "blobs_storage": {
+        "description": "Hvor binær data, som scene-forsider, performere, studie eller tag-billeder opbevares. Efter denne værdi ændres, skal den eksisterende data migreres med Migrér Blobs-opgaverne. Se Opgaver siden for migrering.",
+        "heading": "Binær data lagringstype"
+      },
+      "cache_location": "Mappe-placering af cachen. Påkrævet, hvis der streames via HLS (som på Apple-enheder) eller DASH.",
       "cache_path_head": "Cache Sti",
       "calculate_md5_and_ohash_desc": "Beregn MD5 kontrolsum ud over oshash. Aktivering vil medføre, at indledende scanninger bliver langsommere. Filnavnehash skal indstilles til oshash for at deaktivere MD5-beregning.",
       "calculate_md5_and_ohash_label": "Beregn MD5 for videoer",
@@ -263,19 +283,31 @@
       "chrome_cdp_path_desc": "Filsti til den eksekverbare Chrome-fil eller en ekstern adresse (startende med http:// eller https://, for eksempel http://localhost:9222/json/version) til en Chrome-instans.",
       "create_galleries_from_folders_desc": "Hvis sandt, opretter gallerier fra mapper, der indeholder billeder.",
       "create_galleries_from_folders_label": "Opret gallerier fra mapper, der indeholder billeder",
+      "database": "Database",
       "db_path_head": "Databasesti",
       "directory_locations_to_your_content": "Adresser til dit indhold i mappen",
       "excluded_image_gallery_patterns_desc": "Regexps af billed- og gallerifiler/stier, der skal udelukkes fra Scan og tilføje til Clean",
       "excluded_image_gallery_patterns_head": "Udelukkede billed-/gallerimønstre",
       "excluded_video_patterns_desc": "Regexps af videofiler/stier, der skal udelukkes fra Scan og tilføje til Clean",
       "excluded_video_patterns_head": "Udelukkede videomønstre",
+      "ffmpeg": {
+        "hardware_acceleration": {
+          "desc": "Anvender tilgængelig hardware til live-omkodning af video.",
+          "heading": "FFmpeg hardware-indkodning"
+        },
+        "live_transcode": {
+          "input_args": {
+            "desc": "Avanceret: Yderligere argumenter for videreførsel til ffmpeg forinden inputsfeltet, når live video omkodes.",
+            "heading": "FFmpeg Live Omkodning Input Argumenter"
+          }
+        }
+      },
       "gallery_ext_desc": "Kommasepareret liste over filtypenavne, der vil blive identificeret som galleri-zip-filer.",
       "gallery_ext_head": "Galleri zip-udvidelser",
       "generated_file_naming_hash_desc": "Brug MD5 eller oshash til genereret filnavngivning. Ændring af dette kræver, at alle scener har den relevante MD5/oshash-værdi udfyldt. Efter at have ændret denne værdi, skal eksisterende genererede filer migreres eller regenereres. Se siden Opgaver for migrering.",
       "generated_file_naming_hash_head": "Genereret hash til filnavngivning",
       "generated_files_location": "Katalogplacering for de genererede filer (scenemarkører, sceneforhåndsvisninger, sprites osv.)",
       "generated_path_head": "Genereret sti",
-      "hashing": "Hashing",
       "image_ext_desc": "Kommasepareret liste over filtypenavne, der vil blive identificeret som billeder.",
       "image_ext_head": "Billedudvidelser",
       "include_audio_desc": "Inkluderer lydstream ved generering af forhåndsvisninger.",
@@ -769,7 +801,7 @@
   "gender": "Køn",
   "gender_types": {
     "FEMALE": "Kvinde",
-    "INTERSEX": "Intersex",
+    "INTERSEX": "Interkønnet",
     "MALE": "Mand",
     "NON_BINARY": "Ikke-binær",
     "TRANSGENDER_FEMALE": "Transkønnet kvinde",
@@ -895,7 +927,7 @@
   "resolution": "Opløsning",
   "scene": "Scene",
   "sceneTagger": "Scenetagger",
-  "sceneTags": "Scene Tags",
+  "sceneTags": "Scene-etiketter",
   "scene_count": "Scene antal",
   "scene_id": "Scene-id",
   "scenes": "Scener",
@@ -1009,7 +1041,7 @@
   "sub_tag_of": "Under-tag til {parent}",
   "sub_tags": "Under-tags",
   "subsidiary_studios": "Underliggende Studier",
-  "synopsis": "Synopsis",
+  "synopsis": "Synopse",
   "tag": "Tag",
   "tag_count": "Tag Antal",
   "tags": "Tags",

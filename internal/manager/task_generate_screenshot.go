@@ -25,8 +25,8 @@ func (t *GenerateCoverTask) Start(ctx context.Context) {
 
 	var required bool
 	if err := t.txnManager.WithReadTxn(ctx, func(ctx context.Context) error {
-		// don't generate the screenshot if it already exists
 		required = t.required(ctx)
+
 		return t.Scene.LoadPrimaryFile(ctx, t.txnManager.File)
 	}); err != nil {
 		logger.Error(err)
@@ -92,7 +92,12 @@ func (t *GenerateCoverTask) Start(ctx context.Context) {
 }
 
 // required returns true if the sprite needs to be generated
-func (t GenerateCoverTask) required(ctx context.Context) bool {
+// assumes in a transaction
+func (t *GenerateCoverTask) required(ctx context.Context) bool {
+	if t.Scene.Path == "" {
+		return false
+	}
+
 	if t.Overwrite {
 		return true
 	}

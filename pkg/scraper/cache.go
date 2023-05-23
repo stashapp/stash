@@ -150,7 +150,6 @@ func (c *Cache) loadScrapers() (map[string]scraper, error) {
 
 	logger.Debugf("Reading scraper configs from %s", path)
 
-	scraperFiles := []string{}
 	err := fsutil.SymWalk(path, func(fp string, f os.FileInfo, err error) error {
 		if filepath.Ext(fp) == ".yml" {
 			conf, err := loadConfigFromYAMLFile(fp)
@@ -160,7 +159,6 @@ func (c *Cache) loadScrapers() (map[string]scraper, error) {
 				scraper := newGroupScraper(*conf, c.globalConfig)
 				scrapers[scraper.spec().ID] = scraper
 			}
-			scraperFiles = append(scraperFiles, fp)
 		}
 		return nil
 	})
@@ -187,7 +185,7 @@ func (c *Cache) ReloadScrapers() error {
 }
 
 // ListScrapers lists scrapers matching one of the given types.
-// Returns a list of scrapers, sorted by their ID.
+// Returns a list of scrapers, sorted by their name.
 func (c Cache) ListScrapers(tys []ScrapeContentType) []*Scraper {
 	var ret []*Scraper
 	for _, s := range c.scrapers {
@@ -201,7 +199,7 @@ func (c Cache) ListScrapers(tys []ScrapeContentType) []*Scraper {
 	}
 
 	sort.Slice(ret, func(i, j int) bool {
-		return ret[i].ID < ret[j].ID
+		return strings.ToLower(ret[i].Name) < strings.ToLower(ret[j].Name)
 	})
 
 	return ret

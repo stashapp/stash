@@ -279,11 +279,11 @@ func initialize() error {
 }
 
 func videoFileFilter(ctx context.Context, f file.File) bool {
-	return isVideo(f.Base().Basename)
+	return useAsVideo(f.Base().Path)
 }
 
 func imageFileFilter(ctx context.Context, f file.File) bool {
-	return isImage(f.Base().Basename)
+	return useAsImage(f.Base().Path)
 }
 
 func galleryFileFilter(ctx context.Context, f file.File) bool {
@@ -306,8 +306,10 @@ func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
 				Filter: file.FilterFunc(videoFileFilter),
 			},
 			&file.FilteredDecorator{
-				Decorator: &file_image.Decorator{},
-				Filter:    file.FilterFunc(imageFileFilter),
+				Decorator: &file_image.Decorator{
+					FFProbe: instance.FFProbe,
+				},
+				Filter: file.FilterFunc(imageFileFilter),
 			},
 		},
 		FingerprintCalculator: &fingerprintCalculator{instance.Config},
@@ -509,12 +511,8 @@ func (s *Manager) SetBlobStoreOptions() {
 }
 
 func writeStashIcon() {
-	p := FaviconProvider{
-		UIBox: ui.UIBox,
-	}
-
 	iconPath := filepath.Join(instance.Config.GetConfigPath(), "icon.png")
-	err := os.WriteFile(iconPath, p.GetFaviconPng(), 0644)
+	err := os.WriteFile(iconPath, ui.FaviconProvider.GetFaviconPng(), 0644)
 	if err != nil {
 		logger.Errorf("Couldn't write icon file: %s", err.Error())
 	}

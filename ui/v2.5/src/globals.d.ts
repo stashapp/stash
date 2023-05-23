@@ -1,5 +1,3 @@
-// eslint-disable-next-line no-var
-declare var STASH_BASE_URL: string;
 declare module "intersection-observer";
 
 declare module "*.md" {

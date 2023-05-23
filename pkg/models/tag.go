@@ -63,6 +63,7 @@ type TagReader interface {
 	QueryForAutoTag(ctx context.Context, words []string) ([]*Tag, error)
 	Query(ctx context.Context, tagFilter *TagFilterType, findFilter *FindFilterType) ([]*Tag, int, error)
 	GetImage(ctx context.Context, tagID int) ([]byte, error)
+	HasImage(ctx context.Context, tagID int) (bool, error)
 	GetAliases(ctx context.Context, tagID int) ([]string, error)
 	FindAllAncestors(ctx context.Context, tagID int, excludeIDs []int) ([]*TagPath, error)
 	FindAllDescendants(ctx context.Context, tagID int, excludeIDs []int) ([]*TagPath, error)

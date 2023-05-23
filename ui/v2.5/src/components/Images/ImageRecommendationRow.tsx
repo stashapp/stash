@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { useFindImages } from "src/core/StashService";
 import Slider from "@ant-design/react-slick";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -26,9 +27,9 @@ export const ImageRecommendationRow: React.FC<IProps> = (props: IProps) => {
       className="images-recommendations"
       header={props.header}
       link={
-        <a href={`/images?${props.filter.makeQueryParameters()}`}>
+        <Link to={`/images?${props.filter.makeQueryParameters()}`}>
           <FormattedMessage id="view_all" />
-        </a>
+        </Link>
       }
     >
       <Slider

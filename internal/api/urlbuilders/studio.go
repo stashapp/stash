@@ -20,6 +20,10 @@ func NewStudioURLBuilder(baseURL string, studio *models.Studio) StudioURLBuilder
 	}
 }
 
-func (b StudioURLBuilder) GetStudioImageURL() string {
-	return b.BaseURL + "/studio/" + b.StudioID + "/image?" + b.UpdatedAt
+func (b StudioURLBuilder) GetStudioImageURL(hasImage bool) string {
+	url := b.BaseURL + "/studio/" + b.StudioID + "/image?t=" + b.UpdatedAt
+	if !hasImage {
+		url += "&default=true"
+	}
+	return url
 }

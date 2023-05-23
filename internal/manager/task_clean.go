@@ -201,9 +201,9 @@ func (f *cleanFilter) shouldCleanFile(path string, info fs.FileInfo, stash *conf
 	switch {
 	case info.IsDir() || fsutil.MatchExtension(path, f.zipExt):
 		return f.shouldCleanGallery(path, stash)
-	case fsutil.MatchExtension(path, f.vidExt):
+	case useAsVideo(path):
 		return f.shouldCleanVideoFile(path, stash)
-	case fsutil.MatchExtension(path, f.imgExt):
+	case useAsImage(path):
 		return f.shouldCleanImage(path, stash)
 	default:
 		logger.Infof("File extension does not match any media extensions. Marking to clean: \"%s\"", path)

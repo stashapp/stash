@@ -12,7 +12,7 @@ import NavUtils from "src/utils/navigation";
 import { makeItemList, PersistanceLevel } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { WallPanel } from "../Wall/WallPanel";
+import { MarkerWallPanel } from "../Wall/WallPanel";
 
 const SceneMarkerItemList = makeItemList({
   filterMode: GQL.FilterMode.SceneMarkers,
@@ -88,7 +88,7 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
 
     if (filter.displayMode === DisplayMode.Wall) {
       return (
-        <WallPanel sceneMarkers={result.data.findSceneMarkers.scene_markers} />
+        <MarkerWallPanel markers={result.data.findSceneMarkers.scene_markers} />
       );
     }
   }

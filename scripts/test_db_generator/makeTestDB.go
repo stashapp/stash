@@ -347,6 +347,10 @@ func getResolution() (int, int) {
 	return w, h
 }
 
+func getBool() {
+	return rand.Intn(2) == 0
+}
+
 func getDate() time.Time {
 	s := rand.Int63n(time.Now().Unix())
 
@@ -371,6 +375,7 @@ func generateImageFile(parentFolderID file.FolderID, path string) file.File {
 		BaseFile: generateBaseFile(parentFolderID, path),
 		Height:   h,
 		Width:    w,
+		Clip:     getBool(),
 	}
 }
 

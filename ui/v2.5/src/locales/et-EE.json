@@ -127,6 +127,7 @@
   "aliases": "Varjunimed",
   "all": "kõik",
   "also_known_as": "Tuntud ka kui",
+  "appears_with": "Esineb Koos",
   "ascending": "Kasvav",
   "average_resolution": "Keskmine Resolutsioon",
   "between_and": "ja",
@@ -233,7 +234,9 @@
       "server_display_name": "Serveri Nimi",
       "server_display_name_desc": "DLNA server nimi. Vaikimisi {server_name}, kui midagi pole sisestatud.",
       "successfully_cancelled_temporary_behaviour": "Edukalt tühistatud ajutine käitumine",
-      "until_restart": "restardini"
+      "until_restart": "restardini",
+      "video_sort_order": "Videote Sorteerimise Vaikeväärtus",
+      "video_sort_order_desc": "Viis, kuidas vaikimisi videoid sorteerida."
     },
     "general": {
       "auth": {
@@ -280,7 +283,7 @@
       "check_for_insecure_certificates_desc": "Mõned lehed kasutavad ebaturvalisi ssl sertifikaate. Kui märkimata, kraapija jätab sertifikaadi kontrollimise vahele ning võimaldab nendelt lehtedelt andmeid kraapida. Kui kraapimise ajal esineb sertifikaadivigu, eemalda linnuke.",
       "chrome_cdp_path": "Chrome CDP tee",
       "chrome_cdp_path_desc": "Failitee Chrome käivitajani, või kaugaadress (algab http:// või https:// -iga, näiteks http://localhost:9222/json/version) Chrome'i eksemplarini.",
-      "create_galleries_from_folders_desc": "Kui lubatud, loob galeriisid pilte sisaldavatest kaustadest.",
+      "create_galleries_from_folders_desc": "Kui lubatud, loob vaikeväärtusena galeriisid pilte sisaldavatest kaustadest. Loo kasutas fail nimega .forcegallery või .nogallery, et seda sundida või sellest hoiduda.",
       "create_galleries_from_folders_label": "Loo galeriisid kaustadest, mis sisaldavad pilte",
       "database": "Andmebaas",
       "db_path_head": "Andmebaasi Failitee",
@@ -306,8 +309,8 @@
         },
         "transcode": {
           "input_args": {
-            "desc": "Edasijõudnutele: Lisaargumendid mida edastada ffmpegi sisendväljale video reaalajas transkodeerimisel.",
-            "heading": "FFmpeg Reaalajas Transkodeerimise Sisendargumendid"
+            "desc": "Edasijõudnutele: Lisaargumendid mida edastada ffmpegi sisendväljale video genereerimisel.",
+            "heading": "FFmpeg Transkodeerimise Sisendargumendid"
           },
           "output_args": {
             "desc": "Edasijõudnutele: Lisaargumendid mida edastada ffmpegi väljundväljale video genereerimisel.",
@@ -810,7 +813,7 @@
       "markers_tooltip": "20-sekundilised videod, mis algavad etteantud ajakoodiga.",
       "override_preview_generation_options": "Eelvaate Genereerimise Valikute Ülekirjutamine",
       "override_preview_generation_options_desc": "Eelvaate Genereerimise Sätete üle kirjutamine selle operatsiooni jaoks. Vaikeseaded määratakse jaotises Süsteem -> Eelvaate Genereerimine.",
-      "overwrite": "Kirjuta üle olemasolevad genereeritud failid",
+      "overwrite": "Kirjuta üle olemasolevad failid",
       "phash": "Nähtavad hashid (duplikaatide eemaldamiseks)",
       "preview_exclude_end_time_desc": "Välista stseeni eelvaadetest viimased x sekundid. See võib olla väärtus sekundites või protsent (nt 2%) stseeni kogukestusest.",
       "preview_exclude_end_time_head": "Välista lõpuaeg",
@@ -852,6 +855,11 @@
   "donate": "Anneta",
   "dupe_check": {
     "description": "Täpsetest madalamate tasemete arvutamine võib võtta kauem aega. Valepositiivsed tulemused võidakse tagastada ka madalamal täpsustasemel.",
+    "duration_diff": "Maksimaalse Pikkuse Vahe",
+    "duration_options": {
+      "any": "Kõik",
+      "equal": "Võrdne"
+    },
     "found_sets": "{setCount, plural, one{# duplikaat leitud.} other {# duplikaati leitud.}}",
     "options": {
       "exact": "Täpselt",
@@ -1074,6 +1082,7 @@
     "saved_filters": "Salvestatud filtrid",
     "update_filter": "Uuenda Filtrit"
   },
+  "second": "Sekund",
   "seconds": "Sekundit",
   "settings": "Sätted",
   "setup": {

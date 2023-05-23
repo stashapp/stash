@@ -19,6 +19,7 @@ import {
 } from "src/models/list-filter/criteria/criterion";
 import { GalleriesCriterion } from "src/models/list-filter/criteria/galleries";
 import { PhashCriterion } from "src/models/list-filter/criteria/phash";
+import { ILabeledId } from "src/models/list-filter/types";
 
 function addExtraCriteria(
   dest: Criterion<CriterionValue>[],
@@ -31,6 +32,7 @@ function addExtraCriteria(
 
 const makePerformerScenesUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
+  extraPerformer?: ILabeledId,
   extraCriteria?: Criterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
@@ -39,6 +41,11 @@ const makePerformerScenesUrl = (
   criterion.value = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
   ];
+
+  if (extraPerformer) {
+    criterion.value.push(extraPerformer);
+  }
+
   filter.criteria.push(criterion);
   addExtraCriteria(filter.criteria, extraCriteria);
   return `/scenes?${filter.makeQueryParameters()}`;
@@ -46,6 +53,7 @@ const makePerformerScenesUrl = (
 
 const makePerformerImagesUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
+  extraPerformer?: ILabeledId,
   extraCriteria?: Criterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
@@ -54,6 +62,11 @@ const makePerformerImagesUrl = (
   criterion.value = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
   ];
+
+  if (extraPerformer) {
+    criterion.value.push(extraPerformer);
+  }
+
   filter.criteria.push(criterion);
   addExtraCriteria(filter.criteria, extraCriteria);
   return `/images?${filter.makeQueryParameters()}`;
@@ -61,6 +74,7 @@ const makePerformerImagesUrl = (
 
 const makePerformerGalleriesUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
+  extraPerformer?: ILabeledId,
   extraCriteria?: Criterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
@@ -69,6 +83,11 @@ const makePerformerGalleriesUrl = (
   criterion.value = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
   ];
+
+  if (extraPerformer) {
+    criterion.value.push(extraPerformer);
+  }
+
   filter.criteria.push(criterion);
   addExtraCriteria(filter.criteria, extraCriteria);
   return `/galleries?${filter.makeQueryParameters()}`;
@@ -76,6 +95,7 @@ const makePerformerGalleriesUrl = (
 
 const makePerformerMoviesUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
+  extraPerformer?: ILabeledId,
   extraCriteria?: Criterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
@@ -84,6 +104,11 @@ const makePerformerMoviesUrl = (
   criterion.value = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
   ];
+
+  if (extraPerformer) {
+    criterion.value.push(extraPerformer);
+  }
+
   filter.criteria.push(criterion);
   addExtraCriteria(filter.criteria, extraCriteria);
   return `/movies?${filter.makeQueryParameters()}`;
@@ -289,7 +314,7 @@ const makeScenesPHashMatchUrl = (phash: GQL.Maybe<string> | undefined) => {
   if (!phash) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
   const criterion = new PhashCriterion();
-  criterion.value = phash;
+  criterion.value = { value: phash };
   filter.criteria.push(criterion);
   return `/scenes?${filter.makeQueryParameters()}`;
 };

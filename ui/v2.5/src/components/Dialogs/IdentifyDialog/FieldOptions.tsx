@@ -96,17 +96,13 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
       });
     }
 
-    if (!localOptions) {
-      return <></>;
-    }
-
     return (
       <Form.Group>
         {allowSetDefault ? (
           <Form.Check
             type="radio"
             id={`${field}-strategy-default`}
-            checked={localOptions.strategy === undefined}
+            checked={strategy === undefined}
             onChange={() =>
               setLocalOptions({
                 ...localOptions,
@@ -122,7 +118,7 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
             type="radio"
             key={f[0]}
             id={`${field}-strategy-${f[0]}`}
-            checked={localOptions.strategy === f[1]}
+            checked={strategy === f[1]}
             onChange={() =>
               setLocalOptions({
                 ...localOptions,
@@ -168,7 +164,9 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
         (f) => f.field === localOptions.field
       )?.createMissing;
 
-      if (localOptions.strategy === undefined) {
+      // if allowSetDefault is false, then strategy is considered merge
+      // if its true, then its using the default value and should not be shown here
+      if (localOptions.strategy === undefined && allowSetDefault) {
         return;
       }
 

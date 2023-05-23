@@ -14,8 +14,16 @@ type Query {
 
   findScenesByPathRegex(filter: FindFilterType): FindScenesResultType!
 
-  """ Returns any groups of scenes that are perceptual duplicates within the queried distance """
-  findDuplicateScenes(distance: Int): [[Scene!]!]!
+  """
+  Returns any groups of scenes that are perceptual duplicates within the queried distance
+  and the difference between their duration is smaller than durationDiff
+  """
+  findDuplicateScenes(
+    distance: Int,
+    """Max difference in seconds between files in order to be considered for similarity matching.
+    Fractional seconds are ok: 0.5 will mean only files that have durations within 0.5 seconds between them will be matched based on PHash distance."""
+    duration_diff: Float
+  ): [[Scene!]!]!
 
   """Return valid stream paths"""
   sceneStreams(id: ID): [SceneStreamEndpoint!]!
@@ -298,14 +306,14 @@ type Mutation {
   metadataClean(input: CleanMetadataInput!): ID!
   """Identifies scenes using scrapers. Returns the job ID"""
   metadataIdentify(input: IdentifyMetadataInput!): ID!
-  
+
   """Migrate generated files for the current hash naming"""
   migrateHashNaming: ID!
   """Migrates legacy scene screenshot files into the blob storage"""
   migrateSceneScreenshots(input: MigrateSceneScreenshotsInput!): ID!
   """Migrates blobs from the old storage system to the current one"""
   migrateBlobs(input: MigrateBlobsInput!): ID!
-  
+
   """Anonymise the database in a separate file. Optionally returns a link to download the database file"""
   anonymiseDatabase(input: AnonymiseDatabaseInput!): String
 

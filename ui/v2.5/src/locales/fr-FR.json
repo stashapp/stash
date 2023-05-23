@@ -127,6 +127,7 @@
   "aliases": "Alias",
   "all": "tout",
   "also_known_as": "Également connu comme",
+  "appears_with": "Apparaît avec",
   "ascending": "Ascendant",
   "average_resolution": "Résolution moyenne",
   "between_and": "et",
@@ -233,7 +234,9 @@
       "server_display_name": "Nom d'affichage du serveur",
       "server_display_name_desc": "Nom d'affichage du serveur DLNA. Par défaut {server_name} si vide.",
       "successfully_cancelled_temporary_behaviour": "Le comportement temporaire a été annulé avec succès",
-      "until_restart": "jusqu'au redémarrage"
+      "until_restart": "jusqu'au redémarrage",
+      "video_sort_order": "Ordre de tri vidéo par défaut",
+      "video_sort_order_desc": "Commande pour trier les vidéos par défaut."
     },
     "general": {
       "auth": {
@@ -280,7 +283,7 @@
       "check_for_insecure_certificates_desc": "Certains sites utilisent des certificats SSL non sécurisés. Lorsque cette option est décochée, l'extracteur de contenu ignore la vérification des certificats non sécurisés et autorise l'extraction de ces sites. Si vous obtenez une erreur de certificat lors de l'extraction, décochez cette option.",
       "chrome_cdp_path": "Chemin Chrome CDP (Chrome Debugging Protocol)",
       "chrome_cdp_path_desc": "Chemin de l'exécutable Chrome, ou adresse distante (commençant par http:// ou https://, par exemple http://localhost:9222/json/version) d'une instance de Chrome.",
-      "create_galleries_from_folders_desc": "Coché, crée des galeries à partir de dossiers contenant des images.",
+      "create_galleries_from_folders_desc": "Si vrai, crée par défaut des galeries à partir des répertoires contenant des images. Créer un fichier appelé .forcegallery ou .nogallery dans un répertoire pour forcer/empêcher cela.",
       "create_galleries_from_folders_label": "Créer des galeries à partir de dossiers contenant des images",
       "database": "Base de données",
       "db_path_head": "Chemin de la base de données",
@@ -306,8 +309,8 @@
         },
         "transcode": {
           "input_args": {
-            "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ d'entrée lors du transcodage vidéo en temps réel.",
-            "heading": "Arguments d'entrée pour le transcodage FFmpeg en temps réel"
+            "desc": "Avancé : Arguments additionnels à transmettre à FFmpeg avant le champ d'entrée lors de la génération de la vidéo.",
+            "heading": "Arguments d'entrée de FFmpeg transcode"
           },
           "output_args": {
             "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ de sortie lors de la génération de la vidéo.",
@@ -810,7 +813,7 @@
       "markers_tooltip": "Vidéos de 20 secondes qui débutent au repère temporel donné.",
       "override_preview_generation_options": "Remplacer les options de génération d'aperçu",
       "override_preview_generation_options_desc": "Remplacer les options de génération d'aperçu pour cette opération. Les valeurs par défaut sont définies dans Système -> Génération d'aperçus.",
-      "overwrite": "Remplacer les fichiers générés existants",
+      "overwrite": "Remplacer les fichiers existants",
       "phash": "Empreintes perceptuelles (pour la déduplication)",
       "preview_exclude_end_time_desc": "Exclure les x dernières secondes des aperçus de la scène. Cela peut être une valeur en secondes, ou un pourcentage (par exemple 2%) de la durée totale de la scène.",
       "preview_exclude_end_time_head": "Exclure le temps de fin",
@@ -852,6 +855,11 @@
   "donate": "Faire un don",
   "dupe_check": {
     "description": "Les niveaux en-deça de \"Exacte\" peuvent prendre plus de temps à calculer. Des faux positifs peuvent également être retournés à de faibles précisions.",
+    "duration_diff": "Écart maximum de temps",
+    "duration_options": {
+      "any": "Tous",
+      "equal": "Égal"
+    },
     "found_sets": "{setCount, plural, one{# ensemble de doublons trouvé.} other {# ensembles de doublons trouvés.}}",
     "options": {
       "exact": "Exacte",
@@ -1074,6 +1082,7 @@
     "saved_filters": "Filtres sauvegardés",
     "update_filter": "Filtre actualisé"
   },
+  "second": "Deuxième",
   "seconds": "Secondes",
   "settings": "Paramètres",
   "setup": {

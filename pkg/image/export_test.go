@@ -45,11 +45,9 @@ var (
 func createFullImage(id int) models.Image {
 	return models.Image{
 		ID: id,
-		Files: models.NewRelatedImageFiles([]*file.ImageFile{
-			{
-				BaseFile: &file.BaseFile{
-					Path: path,
-				},
+		Files: models.NewRelatedFiles([]file.File{
+			&file.BaseFile{
+				Path: path,
 			},
 		}),
 		Title:     title,

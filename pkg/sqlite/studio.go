@@ -724,16 +724,21 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) string {
 		direction = findFilter.GetDirection()
 	}
 
+	sortQuery := ""
 	switch sort {
 	case "scenes_count":
-		return getCountSort(studioTable, sceneTable, studioIDColumn, direction)
+		sortQuery += getCountSort(studioTable, sceneTable, studioIDColumn, direction)
 	case "images_count":
-		return getCountSort(studioTable, imageTable, studioIDColumn, direction)
+		sortQuery += getCountSort(studioTable, imageTable, studioIDColumn, direction)
 	case "galleries_count":
-		return getCountSort(studioTable, galleryTable, studioIDColumn, direction)
+		sortQuery += getCountSort(studioTable, galleryTable, studioIDColumn, direction)
 	default:
-		return getSort(sort, direction, "studios")
+		sortQuery += getSort(sort, direction, "studios")
 	}
+
+	// Whatever the sorting, always use name/id as a final sort
+	sortQuery += ", COALESCE(studios.name, studios.id) COLLATE NATURAL_CI ASC"
+	return sortQuery
 }
 
 func (qb *StudioStore) GetImage(ctx context.Context, studioID int) ([]byte, error) {

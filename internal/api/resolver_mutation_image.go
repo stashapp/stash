@@ -126,9 +126,9 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 		}
 
 		// ensure that new primary file is associated with scene
-		var f *file.ImageFile
+		var f file.File
 		for _, ff := range i.Files.List() {
-			if ff.ID == converted {
+			if ff.Base().ID == converted {
 				f = ff
 			}
 		}

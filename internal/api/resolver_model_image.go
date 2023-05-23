@@ -12,42 +12,55 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func (r *imageResolver) getPrimaryFile(ctx context.Context, obj *models.Image) (*file.ImageFile, error) {
+func convertImageFile(f *file.ImageFile) *ImageFile {
+	ret := &ImageFile{
+		ID:             strconv.Itoa(int(f.ID)),
+		Path:           f.Path,
+		Basename:       f.Basename,
+		ParentFolderID: strconv.Itoa(int(f.ParentFolderID)),
+		ModTime:        f.ModTime,
+		Size:           f.Size,
+		Width:          f.Width,
+		Height:         f.Height,
+		CreatedAt:      f.CreatedAt,
+		UpdatedAt:      f.UpdatedAt,
+		Fingerprints:   resolveFingerprints(f.Base()),
+	}
+
+	if f.ZipFileID != nil {
+		zipFileID := strconv.Itoa(int(*f.ZipFileID))
+		ret.ZipFileID = &zipFileID
+	}
+
+	return ret
+}
+
+func (r *imageResolver) getPrimaryFile(ctx context.Context, obj *models.Image) (file.VisualFile, error) {
 	if obj.PrimaryFileID != nil {
 		f, err := loaders.From(ctx).FileByID.Load(*obj.PrimaryFileID)
 		if err != nil {
 			return nil, err
 		}
 
-		ret, ok := f.(*file.ImageFile)
+		asFrame, ok := f.(file.VisualFile)
 		if !ok {
-			return nil, fmt.Errorf("file %T is not an image file", f)
+			return nil, fmt.Errorf("file %T is not an frame", f)
 		}
 
-		return ret, nil
+		return asFrame, nil
 	}
 
 	return nil, nil
 }
 
-func (r *imageResolver) getFiles(ctx context.Context, obj *models.Image) ([]*file.ImageFile, error) {
+func (r *imageResolver) getFiles(ctx context.Context, obj *models.Image) ([]file.File, error) {
 	fileIDs, err := loaders.From(ctx).ImageFiles.Load(obj.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	files, errs := loaders.From(ctx).FileByID.LoadAll(fileIDs)
-	ret := make([]*file.ImageFile, len(files))
-	for i, bf := range files {
-		f, ok := bf.(*file.ImageFile)
-		if !ok {
-			return nil, fmt.Errorf("file %T is not an image file", f)
-		}
-
-		ret[i] = f
-	}
-
-	return ret, firstError(errs)
+	return files, firstError(errs)
 }
 
 func (r *imageResolver) Title(ctx context.Context, obj *models.Image) (*string, error) {
@@ -65,14 +78,40 @@ func (r *imageResolver) File(ctx context.Context, obj *models.Image) (*ImageFile
 		return nil, nil
 	}
 
-	width := f.Width
-	height := f.Height
-	size := f.Size
+	width := f.GetWidth()
+	height := f.GetHeight()
+	size := f.Base().Size
 	return &ImageFileType{
 		Size:   int(size),
 		Width:  width,
 		Height: height,
 	}, nil
+}
+
+func convertVisualFile(f file.File) VisualFile {
+	switch f := f.(type) {
+	case *file.ImageFile:
+		return convertImageFile(f)
+	case *file.VideoFile:
+		return convertVideoFile(f)
+	default:
+		panic(fmt.Sprintf("unknown file type %T", f))
+	}
+}
+
+func (r *imageResolver) VisualFiles(ctx context.Context, obj *models.Image) ([]VisualFile, error) {
+	fileIDs, err := loaders.From(ctx).ImageFiles.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	files, errs := loaders.From(ctx).FileByID.LoadAll(fileIDs)
+	ret := make([]VisualFile, len(files))
+	for i, f := range files {
+		ret[i] = convertVisualFile(f)
+	}
+
+	return ret, firstError(errs)
 }
 
 func (r *imageResolver) Date(ctx context.Context, obj *models.Image) (*string, error) {
@@ -89,27 +128,18 @@ func (r *imageResolver) Files(ctx context.Context, obj *models.Image) ([]*ImageF
 		return nil, err
 	}
 
-	ret := make([]*ImageFile, len(files))
+	var ret []*ImageFile
 
-	for i, f := range files {
-		ret[i] = &ImageFile{
-			ID:             strconv.Itoa(int(f.ID)),
-			Path:           f.Path,
-			Basename:       f.Basename,
-			ParentFolderID: strconv.Itoa(int(f.ParentFolderID)),
-			ModTime:        f.ModTime,
-			Size:           f.Size,
-			Width:          f.Width,
-			Height:         f.Height,
-			CreatedAt:      f.CreatedAt,
-			UpdatedAt:      f.UpdatedAt,
-			Fingerprints:   resolveFingerprints(f.Base()),
+	for _, f := range files {
+		// filter out non-image files
+		imageFile, ok := f.(*file.ImageFile)
+		if !ok {
+			continue
 		}
 
-		if f.ZipFileID != nil {
-			zipFileID := strconv.Itoa(int(*f.ZipFileID))
-			ret[i].ZipFileID = &zipFileID
-		}
+		thisFile := convertImageFile(imageFile)
+
+		ret = append(ret, thisFile)
 	}
 
 	return ret, nil
@@ -121,7 +151,7 @@ func (r *imageResolver) FileModTime(ctx context.Context, obj *models.Image) (*ti
 		return nil, err
 	}
 	if f != nil {
-		return &f.ModTime, nil
+		return &f.Base().ModTime, nil
 	}
 
 	return nil, nil
@@ -131,10 +161,12 @@ func (r *imageResolver) Paths(ctx context.Context, obj *models.Image) (*ImagePat
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	builder := urlbuilders.NewImageURLBuilder(baseURL, obj)
 	thumbnailPath := builder.GetThumbnailURL()
+	previewPath := builder.GetPreviewURL()
 	imagePath := builder.GetImageURL()
 	return &ImagePathsType{
 		Image:     &imagePath,
 		Thumbnail: &thumbnailPath,
+		Preview:   &previewPath,
 	}, nil
 }
 
