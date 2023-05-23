@@ -175,29 +175,8 @@ func getIntWhereClause(column string, modifier models.CriterionModifier, value i
 		upper = &u
 	}
 
-	args := []interface{}{value}
-	betweenArgs := []interface{}{value, *upper}
-
-	switch modifier {
-	case models.CriterionModifierIsNull:
-		return fmt.Sprintf("%s IS NULL", column), nil
-	case models.CriterionModifierNotNull:
-		return fmt.Sprintf("%s IS NOT NULL", column), nil
-	case models.CriterionModifierEquals:
-		return fmt.Sprintf("%s = ?", column), args
-	case models.CriterionModifierNotEquals:
-		return fmt.Sprintf("%s != ?", column), args
-	case models.CriterionModifierBetween:
-		return fmt.Sprintf("%s BETWEEN ? AND ?", column), betweenArgs
-	case models.CriterionModifierNotBetween:
-		return fmt.Sprintf("%s NOT BETWEEN ? AND ?", column), betweenArgs
-	case models.CriterionModifierLessThan:
-		return fmt.Sprintf("%s < ?", column), args
-	case models.CriterionModifierGreaterThan:
-		return fmt.Sprintf("%s > ?", column), args
-	}
-
-	panic("unsupported int modifier type " + modifier)
+	args := []interface{}{value, *upper}
+	return getNumericWhereClause(column, modifier, args)
 }
 
 func getFloatCriterionWhereClause(column string, input models.FloatCriterionInput) (string, []interface{}) {
@@ -210,8 +189,12 @@ func getFloatWhereClause(column string, modifier models.CriterionModifier, value
 		upper = &u
 	}
 
-	args := []interface{}{value}
-	betweenArgs := []interface{}{value, *upper}
+	args := []interface{}{value, *upper}
+	return getNumericWhereClause(column, modifier, args)
+}
+
+func getNumericWhereClause(column string, modifier models.CriterionModifier, args []interface{}) (string, []interface{}) {
+	singleArgs := args[0:1]
 
 	switch modifier {
 	case models.CriterionModifierIsNull:
@@ -219,20 +202,20 @@ func getFloatWhereClause(column string, modifier models.CriterionModifier, value
 	case models.CriterionModifierNotNull:
 		return fmt.Sprintf("%s IS NOT NULL", column), nil
 	case models.CriterionModifierEquals:
-		return fmt.Sprintf("%s = ?", column), args
+		return fmt.Sprintf("%s = ?", column), singleArgs
 	case models.CriterionModifierNotEquals:
-		return fmt.Sprintf("%s != ?", column), args
+		return fmt.Sprintf("%s != ?", column), singleArgs
 	case models.CriterionModifierBetween:
-		return fmt.Sprintf("%s BETWEEN ? AND ?", column), betweenArgs
+		return fmt.Sprintf("%s BETWEEN ? AND ?", column), args
 	case models.CriterionModifierNotBetween:
-		return fmt.Sprintf("%s NOT BETWEEN ? AND ?", column), betweenArgs
+		return fmt.Sprintf("%s NOT BETWEEN ? AND ?", column), args
 	case models.CriterionModifierLessThan:
-		return fmt.Sprintf("%s < ?", column), args
+		return fmt.Sprintf("%s < ?", column), singleArgs
 	case models.CriterionModifierGreaterThan:
-		return fmt.Sprintf("%s > ?", column), args
+		return fmt.Sprintf("%s > ?", column), singleArgs
 	}
 
-	panic("unsupported int modifier type " + modifier)
+	panic("unsupported numeric modifier type " + modifier)
 }
 
 func getDateCriterionWhereClause(column string, input models.DateCriterionInput) (string, []interface{}) {
