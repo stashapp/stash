@@ -418,7 +418,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	// execute post hooks outside of txn
 	var newRet []*models.Performer
 	for _, performer := range ret {
-		r.hookExecutor.ExecutePostHooks(ctx, performer.ID, plugin.ImageUpdatePost, input, translator.getFields())
+		r.hookExecutor.ExecutePostHooks(ctx, performer.ID, plugin.PerformerUpdatePost, input, translator.getFields())
 
 		performer, err = r.getPerformer(ctx, performer.ID)
 		if err != nil {
