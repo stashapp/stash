@@ -1331,6 +1331,26 @@ func getPerformerCareerLength(index int) *string {
 	return &ret
 }
 
+func getPerformerPenisLength(index int) *float64 {
+	if index%5 == 0 {
+		return nil
+	}
+
+	ret := float64(index)
+	return &ret
+}
+
+func getPerformerCircumcised(index int) models.CircumisedEnum {
+	switch {
+	case index%3 == 0:
+		return models.CircumisedEnum("")
+	case index%3 == 1:
+		return models.CircumisedEnumCut
+	}
+
+	return models.CircumisedEnumUncut
+}
+
 func getIgnoreAutoTag(index int) bool {
 	return index%5 == 0
 }
@@ -1372,6 +1392,8 @@ func createPerformers(ctx context.Context, n int, o int) error {
 			DeathDate:      getPerformerDeathDate(i),
 			Details:        getPerformerStringValue(i, "Details"),
 			Ethnicity:      getPerformerStringValue(i, "Ethnicity"),
+			PenisLength:    getPerformerPenisLength(i),
+			Circumcised:    getPerformerCircumcised(i),
 			Rating:         getIntPtr(getRating(i)),
 			IgnoreAutoTag:  getIgnoreAutoTag(i),
 			TagIDs:         models.NewRelatedIDs(tids),
