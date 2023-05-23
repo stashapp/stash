@@ -947,8 +947,7 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(c *models.Hierarchica
 				}
 			}
 
-			// only bother with excludes if there are no values
-			if len(criterion.Value) == 0 && len(criterion.Excludes) > 0 {
+			if len(criterion.Excludes) > 0 {
 				valuesClause := getHierarchicalValues(ctx, m.tx, criterion.Excludes, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
 
 				f.addWhere(fmt.Sprintf("%s.%s NOT IN (SELECT column2 FROM (%s)) OR %[1]s.%[2]s IS NULL", m.primaryTable, m.foreignFK, valuesClause))

@@ -34,7 +34,6 @@ const StudiosFilter: React.FC<IStudiosFilter> = ({
 }) => {
   return (
     <HierarchicalObjectsFilter
-      single
       criterion={criterion}
       setCriterion={setCriterion}
       queryHook={useStudioQuery}
