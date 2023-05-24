@@ -69,10 +69,16 @@ func (d *Decorator) IsMissingMetadata(ctx context.Context, fs file.FS, f file.Fi
 		unsetNumber = -1
 	)
 
-	imf, ok := f.(*file.ImageFile)
-	if !ok {
+	imf, isImage := f.(*file.ImageFile)
+	vf, isVideo := f.(*file.VideoFile)
+
+	switch {
+	case isImage:
+		return imf.Format == unsetString || imf.Width == unsetNumber || imf.Height == unsetNumber
+	case isVideo:
+		videoFileDecorator := video.Decorator{FFProbe: d.FFProbe}
+		return videoFileDecorator.IsMissingMetadata(ctx, fs, vf)
+	default:
 		return true
 	}
-
-	return imf.Format == unsetString || imf.Width == unsetNumber || imf.Height == unsetNumber
 }
