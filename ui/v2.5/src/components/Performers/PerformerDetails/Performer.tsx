@@ -122,6 +122,11 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     setRating
   );
 
+  // reset image if performer changed
+  useEffect(() => {
+    setImage(undefined);
+  }, [performer]);
+
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("a", () => setActiveTabKey("details"));
