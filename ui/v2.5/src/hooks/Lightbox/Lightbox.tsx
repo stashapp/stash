@@ -850,7 +850,10 @@ export const LightboxComponent: React.FC<IProps> = ({
                   scrollAttemptsBeforeChange={scrollAttemptsBeforeChange}
                   setZoom={(v) => setZoom(v)}
                   resetPosition={resetPosition}
-                  isVideo={image.visual_files?.[0]?.__typename == "VideoFile"}
+                  isVideo={
+                    image.visual_files?.[0]?.__typename == "VideoFile" &&
+                    image.visual_files?.[0]?.video_codec != "gif"
+                  }
                 />
               ) : undefined}
             </div>

@@ -261,7 +261,10 @@ export const Image: React.FC = () => {
 
   const title = objectTitle(image);
   const ImageView =
-    image.visual_files[0].__typename == "VideoFile" ? "video" : "img";
+    image.visual_files[0].__typename == "VideoFile" &&
+    image.visual_files[0].video_codec != "gif"
+      ? "video"
+      : "img";
 
   return (
     <div className="row">
