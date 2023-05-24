@@ -76,16 +76,8 @@ func (d *Decorator) IsMissingMetadata(ctx context.Context, fs file.FS, f file.Fi
 	case isImage:
 		return imf.Format == unsetString || imf.Width == unsetNumber || imf.Height == unsetNumber
 	case isVideo:
-		interactive := false
-		if _, err := fs.Lstat(video.GetFunscriptPath(vf.Base().Path)); err == nil {
-			interactive = true
-		}
-
-		return vf.VideoCodec == unsetString || vf.AudioCodec == unsetString ||
-			vf.Format == unsetString || vf.Width == unsetNumber ||
-			vf.Height == unsetNumber || vf.FrameRate == unsetNumber ||
-			vf.Duration == unsetNumber ||
-			vf.BitRate == unsetNumber || interactive != vf.Interactive
+		videoFileDecorator := video.Decorator{FFProbe: d.FFProbe}
+		return videoFileDecorator.IsMissingMetadata(ctx, fs, vf)
 	default:
 		return true
 	}
