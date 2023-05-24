@@ -140,6 +140,10 @@ export abstract class Criterion<V extends CriterionValue> {
     return JSON.stringify(encodedCriterion);
   }
 
+  public setValueFromQueryString(v: V) {
+    this.value = v;
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public apply(outputFilter: Record<string, any>) {
     // eslint-disable-next-line no-param-reassign
@@ -541,6 +545,14 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
     };
 
     super(type, value);
+  }
+
+  public setValueFromQueryString(v: IHierarchicalLabelValue) {
+    this.value = {
+      items: v.items || [],
+      excluded: v.excluded || [],
+      depth: v.depth || 0,
+    };
   }
 
   public getLabelValue(_intl: IntlShape): string {

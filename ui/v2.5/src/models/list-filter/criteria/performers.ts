@@ -4,7 +4,7 @@ import {
   CriterionModifier,
   MultiCriterionInput,
 } from "src/core/generated-graphql";
-import { ILabeledValueListValue } from "../types";
+import { ILabeledId, ILabeledValueListValue } from "../types";
 import { Criterion, CriterionOption } from "./criterion";
 
 const modifierOptions = [
@@ -26,6 +26,19 @@ export const PerformersCriterionOption = new CriterionOption({
 export class PerformersCriterion extends Criterion<ILabeledValueListValue> {
   constructor() {
     super(PerformersCriterionOption, { items: [], excluded: [] });
+  }
+
+  public setValueFromQueryString(v: ILabeledId[] | ILabeledValueListValue) {
+    // #3619 - the format of performer value was changed from an array
+    // to an object. Check for both formats.
+    if (Array.isArray(v)) {
+      this.value = { items: v, excluded: [] };
+    } else {
+      this.value = {
+        items: v.items || [],
+        excluded: v.excluded || [],
+      };
+    }
   }
 
   public getLabelValue(_intl: IntlShape): string {
