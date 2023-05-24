@@ -32,6 +32,8 @@ type ScrapedPerformer struct {
 	Height         *string       `json:"height"`
 	Measurements   *string       `json:"measurements"`
 	FakeTits       *string       `json:"fake_tits"`
+	PenisLength    *string       `json:"penis_length"`
+	Circumcised    *string       `json:"circumcised"`
 	CareerLength   *string       `json:"career_length"`
 	Tattoos        *string       `json:"tattoos"`
 	Piercings      *string       `json:"piercings"`

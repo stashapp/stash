@@ -44,6 +44,7 @@ import {
   TagsCriterionOption,
 } from "./tags";
 import { GenderCriterion } from "./gender";
+import { CircumcisedCriterion } from "./circumcised";
 import { MoviesCriterionOption } from "./movies";
 import { GalleriesCriterion } from "./galleries";
 import { CriterionType } from "../types";
@@ -155,12 +156,16 @@ export function makeCriteria(
     case "death_year":
     case "weight":
       return new NumberCriterion(new NumberCriterionOption(type, type));
+    case "penis_length":
+      return new NumberCriterion(new NumberCriterionOption(type, type));
     case "age":
       return new NumberCriterion(
         new MandatoryNumberCriterionOption(type, type)
       );
     case "gender":
       return new GenderCriterion();
+    case "circumcised":
+      return new CircumcisedCriterion();
     case "sceneChecksum":
     case "galleryChecksum":
       return new StringCriterion(

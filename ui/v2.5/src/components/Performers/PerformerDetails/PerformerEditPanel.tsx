@@ -31,6 +31,11 @@ import {
   stringGenderMap,
   stringToGender,
 } from "src/utils/gender";
+import {
+  circumcisedToString,
+  stringCircumMap,
+  stringToCircumcised,
+} from "src/utils/circumcised";
 import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 import PerformerScrapeModal from "./PerformerScrapeModal";
@@ -153,6 +158,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     weight: yup.number().nullable().defined().default(null),
     measurements: yup.string().ensure(),
     fake_tits: yup.string().ensure(),
+    penis_length: yup.number().nullable().defined().default(null),
+    circumcised: yup.string<GQL.CircumisedEnum | "">().ensure(),
     tattoos: yup.string().ensure(),
     piercings: yup.string().ensure(),
     career_length: yup.string().ensure(),
@@ -181,6 +188,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     weight: performer.weight ?? null,
     measurements: performer.measurements ?? "",
     fake_tits: performer.fake_tits ?? "",
+    penis_length: performer.penis_length ?? null,
+    circumcised: (performer.circumcised as GQL.CircumisedEnum) ?? "",
     tattoos: performer.tattoos ?? "",
     piercings: performer.piercings ?? "",
     career_length: performer.career_length ?? "",
@@ -216,6 +225,21 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       // try to match against gender strings
       const caseInsensitive = true;
       return stringToGender(scrapedGender, caseInsensitive);
+    }
+  }
+
+  function translateScrapedCircumcised(scrapedCircumcised?: string) {
+    if (!scrapedCircumcised) {
+      return;
+    }
+
+    const upperCircumcised = scrapedCircumcised.toUpperCase();
+    const asEnum = circumcisedToString(upperCircumcised);
+    if (asEnum) {
+      return stringToCircumcised(asEnum);
+    } else {
+      const caseInsensitive = true;
+      return stringToCircumcised(scrapedCircumcised, caseInsensitive);
     }
   }
 
@@ -355,6 +379,13 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         formik.setFieldValue("gender", newGender);
       }
     }
+    if (state.circumcised) {
+      // circumcised is a string in the scraper data
+      const newCircumcised = translateScrapedCircumcised(state.circumcised);
+      if (newCircumcised) {
+        formik.setFieldValue("circumcised", newCircumcised);
+      }
+    }
     if (state.tags) {
       // map tags to their ids and filter out those not found
       const newTagIds = state.tags.map((t) => t.stored_id).filter((t) => t);
@@ -386,6 +417,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
     if (state.weight) {
       formik.setFieldValue("weight", state.weight);
+    }
+    if (state.penis_length) {
+      formik.setFieldValue("penis_length", state.penis_length);
     }
 
     const remoteSiteID = state.remote_site_id;
@@ -431,6 +465,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
               gender: input.gender || null,
               height_cm: input.height_cm || null,
               weight: input.weight || null,
+              penis_length: input.penis_length || null,
+              circumcised: input.circumcised || null,
             },
           },
         });
@@ -446,6 +482,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
               gender: input.gender || null,
               height_cm: input.height_cm || null,
               weight: input.weight || null,
+              penis_length: input.penis_length || null,
+              circumcised: input.circumcised || null,
             },
           },
         });
@@ -663,6 +701,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     const currentPerformer = {
       ...formik.values,
       gender: formik.values.gender || null,
+      circumcised: formik.values.circumcised || null,
       image: formik.values.image ?? performer.image_path,
     };
 
@@ -990,6 +1029,31 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           type: "number",
           messageID: "weight_kg",
         })}
+        {renderField("penis_length", {
+          type: "number",
+          messageID: "penis_length_cm",
+        })}
+
+        <Form.Group as={Row}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            <FormattedMessage id="circumcised" />
+          </Form.Label>
+          <Col xs="auto">
+            <Form.Control
+              as="select"
+              className="input-control"
+              {...formik.getFieldProps("circumcised")}
+            >
+              <option value="" key=""></option>
+              {Array.from(stringCircumMap.entries()).map(([name, value]) => (
+                <option value={value} key={value}>
+                  {name}
+                </option>
+              ))}
+            </Form.Control>
+          </Col>
+        </Form.Group>
+
         {renderField("measurements")}
         {renderField("fake_tits")}
 

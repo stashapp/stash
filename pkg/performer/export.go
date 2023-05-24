@@ -23,7 +23,6 @@ func ToJSON(ctx context.Context, reader ImageAliasStashIDGetter, performer *mode
 	newPerformerJSON := jsonschema.Performer{
 		Name:           performer.Name,
 		Disambiguation: performer.Disambiguation,
-		Gender:         performer.Gender.String(),
 		URL:            performer.URL,
 		Ethnicity:      performer.Ethnicity,
 		Country:        performer.Country,
@@ -43,6 +42,14 @@ func ToJSON(ctx context.Context, reader ImageAliasStashIDGetter, performer *mode
 		UpdatedAt:      json.JSONTime{Time: performer.UpdatedAt},
 	}
 
+	if performer.Gender != nil {
+		newPerformerJSON.Gender = performer.Gender.String()
+	}
+
+	if performer.Circumcised != nil {
+		newPerformerJSON.Circumcised = performer.Circumcised.String()
+	}
+
 	if performer.Birthdate != nil {
 		newPerformerJSON.Birthdate = performer.Birthdate.String()
 	}
@@ -59,6 +66,10 @@ func ToJSON(ctx context.Context, reader ImageAliasStashIDGetter, performer *mode
 
 	if performer.Weight != nil {
 		newPerformerJSON.Weight = *performer.Weight
+	}
+
+	if performer.PenisLength != nil {
+		newPerformerJSON.PenisLength = *performer.PenisLength
 	}
 
 	if err := performer.LoadAliases(ctx, reader); err != nil {

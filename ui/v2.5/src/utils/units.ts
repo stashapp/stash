@@ -9,3 +9,9 @@ export function cmToImperial(cm: number) {
 export function kgToLbs(kg: number) {
   return Math.round(kg * 2.20462262185);
 }
+
+export function cmToInches(cm: number) {
+  const cmInInches = 0.393700787;
+  const inches = cm * cmInInches;
+  return inches;
+}
