@@ -141,7 +141,7 @@ export class Interactive {
     this._scriptOffset = offset;
   }
 
-  async uploadScript(funscriptPath: string) {
+  async uploadScript(funscriptPath: string, apiKey?: string) {
     console.log("FS Path: " + funscriptPath);
     if (!(this._handy.connectionKey && funscriptPath)) {
       return;
@@ -151,6 +151,11 @@ export class Interactive {
 
     if (this._useStashHostedFunscript) {
       funscriptUrl = funscriptPath.replace("/funscript", "/interactive_csv");
+      if (typeof apiKey !== 'undefined') {
+        var url = new URL(funscriptUrl)
+        url.searchParams.append("apikey", apiKey);
+        funscriptUrl = url.toString()
+      }
     } else {
       const csv = await fetch(funscriptPath)
         .then((response) => response.json())
