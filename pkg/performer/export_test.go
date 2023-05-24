@@ -29,8 +29,6 @@ const (
 	ethnicity      = "ethnicity"
 	eyeColor       = "eyeColor"
 	fakeTits       = "fakeTits"
-	circumcised    = "circumcised"
-	gender         = "gender"
 	instagram      = "instagram"
 	measurements   = "measurements"
 	piercings      = "piercings"
@@ -43,11 +41,15 @@ const (
 )
 
 var (
-	aliases     = []string{"alias1", "alias2"}
-	rating      = 5
-	height      = 123
-	weight      = 60
-	penisLength = 1.23
+	genderEnum      = models.GenderEnumFemale
+	gender          = genderEnum.String()
+	aliases         = []string{"alias1", "alias2"}
+	rating          = 5
+	height          = 123
+	weight          = 60
+	penisLength     = 1.23
+	circumcisedEnum = models.CircumisedEnumCut
+	circumcised     = circumcisedEnum.String()
 )
 
 var imageBytes = []byte("imageBytes")
@@ -84,9 +86,9 @@ func createFullPerformer(id int, name string) *models.Performer {
 		EyeColor:       eyeColor,
 		FakeTits:       fakeTits,
 		PenisLength:    &penisLength,
-		Circumcised:    circumcised,
+		Circumcised:    &circumcisedEnum,
 		Favorite:       true,
-		Gender:         gender,
+		Gender:         &genderEnum,
 		Height:         &height,
 		Instagram:      instagram,
 		Measurements:   measurements,

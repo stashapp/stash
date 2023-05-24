@@ -67,7 +67,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerC
 		newPerformer.URL = *input.URL
 	}
 	if input.Gender != nil {
-		newPerformer.Gender = *input.Gender
+		newPerformer.Gender = input.Gender
 	}
 	if input.Birthdate != nil {
 		d := models.NewDate(*input.Birthdate)
@@ -102,7 +102,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerC
 		newPerformer.PenisLength = input.PenisLength
 	}
 	if input.Circumcised != nil {
-		newPerformer.Circumcised = *input.Circumcised
+		newPerformer.Circumcised = input.Circumcised
 	}
 	if input.CareerLength != nil {
 		newPerformer.CareerLength = *input.CareerLength

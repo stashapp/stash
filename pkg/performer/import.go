@@ -189,14 +189,12 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 	newPerformer := models.Performer{
 		Name:           performerJSON.Name,
 		Disambiguation: performerJSON.Disambiguation,
-		Gender:         models.GenderEnum(performerJSON.Gender),
 		URL:            performerJSON.URL,
 		Ethnicity:      performerJSON.Ethnicity,
 		Country:        performerJSON.Country,
 		EyeColor:       performerJSON.EyeColor,
 		Measurements:   performerJSON.Measurements,
 		FakeTits:       performerJSON.FakeTits,
-		Circumcised:    models.CircumisedEnum(performerJSON.Circumcised),
 		CareerLength:   performerJSON.CareerLength,
 		Tattoos:        performerJSON.Tattoos,
 		Piercings:      performerJSON.Piercings,
@@ -212,6 +210,16 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 
 		TagIDs:   models.NewRelatedIDs([]int{}),
 		StashIDs: models.NewRelatedStashIDs(performerJSON.StashIDs),
+	}
+
+	if performerJSON.Gender != "" {
+		v := models.GenderEnum(performerJSON.Gender)
+		newPerformer.Gender = &v
+	}
+
+	if performerJSON.Circumcised != "" {
+		v := models.CircumisedEnum(performerJSON.Circumcised)
+		newPerformer.Circumcised = &v
 	}
 
 	if performerJSON.Birthdate != "" {

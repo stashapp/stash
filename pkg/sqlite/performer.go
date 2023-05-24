@@ -66,7 +66,7 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	r.ID = o.ID
 	r.Name = o.Name
 	r.Disambigation = zero.StringFrom(o.Disambiguation)
-	if o.Gender.IsValid() {
+	if o.Gender != nil && o.Gender.IsValid() {
 		r.Gender = zero.StringFrom(o.Gender.String())
 	}
 	r.URL = zero.StringFrom(o.URL)
@@ -82,7 +82,7 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	r.Measurements = zero.StringFrom(o.Measurements)
 	r.FakeTits = zero.StringFrom(o.FakeTits)
 	r.PenisLength = null.FloatFromPtr(o.PenisLength)
-	if o.Circumcised.IsValid() {
+	if o.Circumcised != nil && o.Circumcised.IsValid() {
 		r.Circumcised = zero.StringFrom(o.Circumcised.String())
 	}
 	r.CareerLength = zero.StringFrom(o.CareerLength)
@@ -106,7 +106,6 @@ func (r *performerRow) resolve() *models.Performer {
 		ID:             r.ID,
 		Name:           r.Name,
 		Disambiguation: r.Disambigation.String,
-		Gender:         models.GenderEnum(r.Gender.String),
 		URL:            r.URL.String,
 		Twitter:        r.Twitter.String,
 		Instagram:      r.Instagram.String,
@@ -114,7 +113,6 @@ func (r *performerRow) resolve() *models.Performer {
 		Ethnicity:      r.Ethnicity.String,
 		Country:        r.Country.String,
 		EyeColor:       r.EyeColor.String,
-		Circumcised:    models.CircumisedEnum(r.Circumcised.String),
 		Height:         nullIntPtr(r.Height),
 		Measurements:   r.Measurements.String,
 		FakeTits:       r.FakeTits.String,
@@ -132,6 +130,16 @@ func (r *performerRow) resolve() *models.Performer {
 		HairColor:     r.HairColor.String,
 		Weight:        nullIntPtr(r.Weight),
 		IgnoreAutoTag: r.IgnoreAutoTag,
+	}
+
+	if r.Gender.ValueOrZero() != "" {
+		v := models.GenderEnum(r.Gender.String)
+		ret.Gender = &v
+	}
+
+	if r.Circumcised.ValueOrZero() != "" {
+		v := models.CircumisedEnum(r.Circumcised.String)
+		ret.Circumcised = &v
 	}
 
 	return ret

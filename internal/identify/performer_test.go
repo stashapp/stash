@@ -228,6 +228,10 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 		return &d
 	}
 
+	genderPtr := func(g models.GenderEnum) *models.GenderEnum {
+		return &g
+	}
+
 	tests := []struct {
 		name      string
 		performer *models.ScrapedPerformer
@@ -259,7 +263,7 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 				Name:         name,
 				Birthdate:    dateToDatePtr(models.NewDate(*nextVal())),
 				DeathDate:    dateToDatePtr(models.NewDate(*nextVal())),
-				Gender:       models.GenderEnum(*nextVal()),
+				Gender:       genderPtr(models.GenderEnum(*nextVal())),
 				Ethnicity:    *nextVal(),
 				Country:      *nextVal(),
 				EyeColor:     *nextVal(),

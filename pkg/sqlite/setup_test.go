@@ -1340,15 +1340,18 @@ func getPerformerPenisLength(index int) *float64 {
 	return &ret
 }
 
-func getPerformerCircumcised(index int) models.CircumisedEnum {
+func getPerformerCircumcised(index int) *models.CircumisedEnum {
+	var ret models.CircumisedEnum
 	switch {
 	case index%3 == 0:
-		return models.CircumisedEnum("")
+		return nil
 	case index%3 == 1:
-		return models.CircumisedEnumCut
+		ret = models.CircumisedEnumCut
+	default:
+		ret = models.CircumisedEnumUncut
 	}
 
-	return models.CircumisedEnumUncut
+	return &ret
 }
 
 func getIgnoreAutoTag(index int) bool {
