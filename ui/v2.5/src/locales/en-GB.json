@@ -412,7 +412,7 @@
         "auto_tagging_all_paths": "Auto Tagging all paths",
         "auto_tagging_paths": "Auto Tagging the following paths"
       },
-      "auto_tag_based_on_filenames": "Auto-tag content based on filenames.",
+      "auto_tag_based_on_filenames": "Auto-tag content based on file paths.",
       "auto_tagging": "Auto Tagging",
       "backing_up_database": "Backing up database",
       "backup_and_download": "Performs a backup of the database and downloads the resulting file.",
