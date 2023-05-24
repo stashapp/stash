@@ -42,6 +42,8 @@ type performerRow struct {
 	Height        null.Int               `db:"height"`
 	Measurements  zero.String            `db:"measurements"`
 	FakeTits      zero.String            `db:"fake_tits"`
+	PenisLength   null.Float             `db:"penis_length"`
+	Circumcised   zero.String            `db:"circumcised"`
 	CareerLength  zero.String            `db:"career_length"`
 	Tattoos       zero.String            `db:"tattoos"`
 	Piercings     zero.String            `db:"piercings"`
@@ -64,7 +66,7 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	r.ID = o.ID
 	r.Name = o.Name
 	r.Disambigation = zero.StringFrom(o.Disambiguation)
-	if o.Gender.IsValid() {
+	if o.Gender != nil && o.Gender.IsValid() {
 		r.Gender = zero.StringFrom(o.Gender.String())
 	}
 	r.URL = zero.StringFrom(o.URL)
@@ -79,6 +81,10 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	r.Height = intFromPtr(o.Height)
 	r.Measurements = zero.StringFrom(o.Measurements)
 	r.FakeTits = zero.StringFrom(o.FakeTits)
+	r.PenisLength = null.FloatFromPtr(o.PenisLength)
+	if o.Circumcised != nil && o.Circumcised.IsValid() {
+		r.Circumcised = zero.StringFrom(o.Circumcised.String())
+	}
 	r.CareerLength = zero.StringFrom(o.CareerLength)
 	r.Tattoos = zero.StringFrom(o.Tattoos)
 	r.Piercings = zero.StringFrom(o.Piercings)
@@ -100,7 +106,6 @@ func (r *performerRow) resolve() *models.Performer {
 		ID:             r.ID,
 		Name:           r.Name,
 		Disambiguation: r.Disambigation.String,
-		Gender:         models.GenderEnum(r.Gender.String),
 		URL:            r.URL.String,
 		Twitter:        r.Twitter.String,
 		Instagram:      r.Instagram.String,
@@ -111,6 +116,7 @@ func (r *performerRow) resolve() *models.Performer {
 		Height:         nullIntPtr(r.Height),
 		Measurements:   r.Measurements.String,
 		FakeTits:       r.FakeTits.String,
+		PenisLength:    nullFloatPtr(r.PenisLength),
 		CareerLength:   r.CareerLength.String,
 		Tattoos:        r.Tattoos.String,
 		Piercings:      r.Piercings.String,
@@ -124,6 +130,16 @@ func (r *performerRow) resolve() *models.Performer {
 		HairColor:     r.HairColor.String,
 		Weight:        nullIntPtr(r.Weight),
 		IgnoreAutoTag: r.IgnoreAutoTag,
+	}
+
+	if r.Gender.ValueOrZero() != "" {
+		v := models.GenderEnum(r.Gender.String)
+		ret.Gender = &v
+	}
+
+	if r.Circumcised.ValueOrZero() != "" {
+		v := models.CircumisedEnum(r.Circumcised.String)
+		ret.Circumcised = &v
 	}
 
 	return ret
@@ -147,6 +163,8 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setNullInt("height", o.Height)
 	r.setNullString("measurements", o.Measurements)
 	r.setNullString("fake_tits", o.FakeTits)
+	r.setNullFloat64("penis_length", o.PenisLength)
+	r.setNullString("circumcised", o.Circumcised)
 	r.setNullString("career_length", o.CareerLength)
 	r.setNullString("tattoos", o.Tattoos)
 	r.setNullString("piercings", o.Piercings)
@@ -597,6 +615,15 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Measurements, tableName+".measurements"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.FakeTits, tableName+".fake_tits"))
+	query.handleCriterion(ctx, floatCriterionHandler(filter.PenisLength, tableName+".penis_length", nil))
+
+	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
+		if circumcised := filter.Circumcised; circumcised != nil {
+			v := utils.StringerSliceToStringSlice(circumcised.Value)
+			enumCriterionHandler(circumcised.Modifier, v, tableName+".circumcised")(ctx, f)
+		}
+	}))
+
 	query.handleCriterion(ctx, stringCriterionHandler(filter.CareerLength, tableName+".career_length"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Tattoos, tableName+".tattoos"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Piercings, tableName+".piercings"))

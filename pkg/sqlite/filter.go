@@ -426,6 +426,29 @@ func stringCriterionHandler(c *models.StringCriterionInput, column string) crite
 	}
 }
 
+func enumCriterionHandler(modifier models.CriterionModifier, values []string, column string) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if modifier.IsValid() {
+			switch modifier {
+			case models.CriterionModifierIncludes, models.CriterionModifierEquals:
+				if len(values) > 0 {
+					f.whereClauses = append(f.whereClauses, getEnumSearchClause(column, values, false))
+				}
+			case models.CriterionModifierExcludes, models.CriterionModifierNotEquals:
+				if len(values) > 0 {
+					f.whereClauses = append(f.whereClauses, getEnumSearchClause(column, values, true))
+				}
+			case models.CriterionModifierIsNull:
+				f.addWhere("(" + column + " IS NULL OR TRIM(" + column + ") = '')")
+			case models.CriterionModifierNotNull:
+				f.addWhere("(" + column + " IS NOT NULL AND TRIM(" + column + ") != '')")
+			default:
+				panic("unsupported string filter modifier")
+			}
+		}
+	}
+}
+
 func pathCriterionHandler(c *models.StringCriterionInput, pathColumn string, basenameColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {
@@ -520,6 +543,15 @@ func intCriterionHandler(c *models.IntCriterionInput, column string, addJoinFn f
 	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {
 			clause, args := getIntCriterionWhereClause(column, *c)
+			f.addWhere(clause, args...)
+		}
+	}
+}
+
+func floatCriterionHandler(c *models.FloatCriterionInput, column string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if c != nil {
+			clause, args := getFloatCriterionWhereClause(column, *c)
 			f.addWhere(clause, args...)
 		}
 	}

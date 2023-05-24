@@ -76,6 +76,10 @@ input PerformerFilterType {
   measurements: StringCriterionInput
   """Filter by fake tits value"""
   fake_tits: StringCriterionInput
+  """Filter by penis length value"""
+  penis_length: FloatCriterionInput
+  """Filter by ciricumcision"""
+  circumcised: CircumcisionCriterionInput
   """Filter by career length"""
   career_length: StringCriterionInput
   """Filter by tattoos"""
@@ -505,6 +509,12 @@ input IntCriterionInput {
   modifier: CriterionModifier!
 }
 
+input FloatCriterionInput {
+  value: Float!
+  value2: Float
+  modifier: CriterionModifier!
+}
+
 input MultiCriterionInput {
   value: [ID!]
   modifier: CriterionModifier!
@@ -513,6 +523,11 @@ input MultiCriterionInput {
 
 input GenderCriterionInput {
   value: GenderEnum
+  modifier: CriterionModifier!
+}
+ 
+input CircumcisionCriterionInput {
+  value: [CircumisedEnum!]
   modifier: CriterionModifier!
 }
 
