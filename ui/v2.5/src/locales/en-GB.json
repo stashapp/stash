@@ -141,6 +141,11 @@
   "captions": "Captions",
   "career_length": "Career Length",
   "chapters": "Chapters",
+  "circumcised": "Circumcised",
+  "circumcised_types": {
+    "UNCUT": "Uncut",
+    "CUT": "Cut"
+  },
   "component_tagger": {
     "config": {
       "active_instance": "Active stash-box instance:",
@@ -1016,6 +1021,9 @@
   "parent_tags": "Parent Tags",
   "part_of": "Part of {parent}",
   "path": "Path",
+  "penis": "Penis",
+  "penis_length": "Penis Length",
+  "penis_length_cm": "Penis Length (cm)",
   "perceptual_similarity": "Perceptual Similarity (phash)",
   "performer": "Performer",
   "performerTags": "Performer Tags",

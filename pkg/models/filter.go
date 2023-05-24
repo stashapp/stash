@@ -109,6 +109,20 @@ func (i IntCriterionInput) ValidModifier() bool {
 	return false
 }
 
+type FloatCriterionInput struct {
+	Value    float64           `json:"value"`
+	Value2   *float64          `json:"value2"`
+	Modifier CriterionModifier `json:"modifier"`
+}
+
+func (i FloatCriterionInput) ValidModifier() bool {
+	switch i.Modifier {
+	case CriterionModifierEquals, CriterionModifierNotEquals, CriterionModifierGreaterThan, CriterionModifierLessThan, CriterionModifierIsNull, CriterionModifierNotNull, CriterionModifierBetween, CriterionModifierNotBetween:
+		return true
+	}
+	return false
+}
+
 type ResolutionCriterionInput struct {
 	Value    ResolutionEnum    `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`

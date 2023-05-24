@@ -131,7 +131,6 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 				EyeColor:       getString(performer.EyeColor),
 				HairColor:      getString(performer.HairColor),
 				FakeTits:       getString(performer.FakeTits),
-				Gender:         models.GenderEnum(getString(performer.Gender)),
 				Height:         getIntPtr(performer.Height),
 				Weight:         getIntPtr(performer.Weight),
 				Instagram:      getString(performer.Instagram),
@@ -148,6 +147,11 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 					},
 				}),
 				UpdatedAt: currentTime,
+			}
+
+			if performer.Gender != nil {
+				v := models.GenderEnum(getString(performer.Gender))
+				newPerformer.Gender = &v
 			}
 
 			err := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {

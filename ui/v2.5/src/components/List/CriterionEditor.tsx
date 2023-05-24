@@ -36,7 +36,7 @@ import { StashIDFilter } from "./Filters/StashIDFilter";
 import { RatingCriterion } from "../../models/list-filter/criteria/rating";
 import { RatingFilter } from "./Filters/RatingFilter";
 import { BooleanFilter } from "./Filters/BooleanFilter";
-import { OptionsListFilter } from "./Filters/OptionsListFilter";
+import { OptionFilter, OptionListFilter } from "./Filters/OptionFilter";
 import { PathFilter } from "./Filters/PathFilter";
 import { PhashCriterion } from "src/models/list-filter/criteria/phash";
 import { PhashFilter } from "./Filters/PhashFilter";
@@ -132,18 +132,17 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
       !criterionIsNumberValue(criterion.value) &&
       !criterionIsStashIDValue(criterion.value) &&
       !criterionIsDateValue(criterion.value) &&
-      !criterionIsTimestampValue(criterion.value) &&
-      !Array.isArray(criterion.value)
+      !criterionIsTimestampValue(criterion.value)
     ) {
-      // if (!modifierOptions || modifierOptions.length === 0) {
-      return (
-        <OptionsListFilter criterion={criterion} setCriterion={setCriterion} />
-      );
-      // }
-
-      // return (
-      //   <OptionsFilter criterion={criterion} onValueChanged={onValueChanged} />
-      // );
+      if (!Array.isArray(criterion.value)) {
+        return (
+          <OptionFilter criterion={criterion} setCriterion={setCriterion} />
+        );
+      } else {
+        return (
+          <OptionListFilter criterion={criterion} setCriterion={setCriterion} />
+        );
+      }
     }
     if (criterion.criterionOption instanceof PathCriterionOption) {
       return (
