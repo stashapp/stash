@@ -640,22 +640,29 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
   }
 
   public getLabel(intl: IntlShape): string {
-    const modifierString = Criterion.getModifierLabel(intl, this.modifier);
+    let id = "criterion_modifier.format_string";
+    let modifierString = Criterion.getModifierLabel(intl, this.modifier);
     let valueString = "";
+    let excludedString = "";
 
     if (
       this.modifier !== CriterionModifier.IsNull &&
       this.modifier !== CriterionModifier.NotNull
     ) {
       valueString = this.value.items.map((v) => v.label).join(", ");
-    }
 
-    let id = "criterion_modifier.format_string";
-    let excludedString = "";
-
-    if (this.value.excluded && this.value.excluded.length > 0) {
-      id = "criterion_modifier.format_string_excludes";
-      excludedString = this.value.excluded.map((v) => v.label).join(", ");
+      if (this.value.excluded && this.value.excluded.length > 0) {
+        if (this.value.items.length === 0) {
+          modifierString = Criterion.getModifierLabel(
+            intl,
+            CriterionModifier.Excludes
+          );
+          valueString = this.value.excluded.map((v) => v.label).join(", ");
+        } else {
+          id = "criterion_modifier.format_string_excludes";
+          excludedString = this.value.excluded.map((v) => v.label).join(", ");
+        }
+      }
     }
 
     return intl.formatMessage(
