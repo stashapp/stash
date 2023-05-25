@@ -47,6 +47,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { useDebounce } from "../debounce";
+import { isVideo } from "src/utils/visualFile";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
@@ -850,10 +851,7 @@ export const LightboxComponent: React.FC<IProps> = ({
                   scrollAttemptsBeforeChange={scrollAttemptsBeforeChange}
                   setZoom={(v) => setZoom(v)}
                   resetPosition={resetPosition}
-                  isVideo={
-                    image.visual_files?.[0]?.__typename == "VideoFile" &&
-                    image.visual_files?.[0]?.video_codec != "gif"
-                  }
+                  isVideo={isVideo(image.visual_files?.[0] ?? {})}
                 />
               ) : undefined}
             </div>

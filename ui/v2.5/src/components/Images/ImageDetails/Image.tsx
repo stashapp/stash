@@ -25,6 +25,7 @@ import { ImageDetailPanel } from "./ImageDetailPanel";
 import { DeleteImagesDialog } from "../DeleteImagesDialog";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 import { objectPath, objectTitle } from "src/core/files";
+import { isVideo } from "src/utils/visualFile";
 
 interface IImageParams {
   id?: string;
@@ -260,11 +261,7 @@ export const Image: React.FC = () => {
   }
 
   const title = objectTitle(image);
-  const ImageView =
-    image.visual_files[0].__typename == "VideoFile" &&
-    image.visual_files[0].video_codec != "gif"
-      ? "video"
-      : "img";
+  const ImageView = isVideo(image.visual_files[0]) ? "video" : "img";
 
   return (
     <div className="row">
