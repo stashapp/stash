@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -20,25 +21,61 @@ const (
 )
 
 type savedFilterRow struct {
-	ID     int    `db:"id" goqu:"skipinsert"`
-	Mode   string `db:"mode"`
-	Name   string `db:"name"`
-	Filter string `db:"filter"`
+	ID           int               `db:"id"`
+	Mode         models.FilterMode `db:"mode"`
+	Name         string            `db:"name"`
+	FindFilter   string            `db:"find_filter"`
+	ObjectFilter string            `db:"object_filter"`
+	UIOptions    string            `db:"ui_options"`
+}
+
+func encodeJSONOrEmpty(v interface{}) string {
+	if v == nil {
+		return ""
+	}
+
+	encoded, _ := json.Marshal(v)
+	return string(encoded)
+}
+
+func decodeJSON(s string, v interface{}) {
+	if s == "" {
+		return
+	}
+
+	_ = json.Unmarshal([]byte(s), v)
 }
 
 func (r *savedFilterRow) fromSavedFilter(o models.SavedFilter) {
 	r.ID = o.ID
-	r.Mode = string(o.Mode)
+	r.Mode = o.Mode
 	r.Name = o.Name
-	r.Filter = o.Filter
+
+	// encode the filters as json
+	r.FindFilter = encodeJSONOrEmpty(o.FindFilter)
+	r.ObjectFilter = encodeJSONOrEmpty(o.ObjectFilter)
+	r.UIOptions = encodeJSONOrEmpty(o.UIOptions)
 }
 
 func (r *savedFilterRow) resolve() *models.SavedFilter {
 	ret := &models.SavedFilter{
-		ID:     r.ID,
-		Name:   r.Name,
-		Mode:   models.FilterMode(r.Mode),
-		Filter: r.Filter,
+		ID:   r.ID,
+		Mode: r.Mode,
+		Name: r.Name,
+	}
+
+	// decode the filters from json
+	if r.FindFilter != "" {
+		ret.FindFilter = &models.FindFilterType{}
+		decodeJSON(r.FindFilter, ret.FindFilter)
+	}
+	if r.ObjectFilter != "" {
+		ret.ObjectFilter = make(map[string]interface{})
+		decodeJSON(r.ObjectFilter, ret.ObjectFilter)
+	}
+	if r.UIOptions != "" {
+		ret.UIOptions = make(map[string]interface{})
+		decodeJSON(r.UIOptions, ret.UIOptions)
 	}
 
 	return ret
@@ -46,7 +83,6 @@ func (r *savedFilterRow) resolve() *models.SavedFilter {
 
 type SavedFilterStore struct {
 	repository
-
 	tableMgr *table
 }
 
@@ -77,7 +113,7 @@ func (qb *SavedFilterStore) Create(ctx context.Context, newObject *models.SavedF
 		return err
 	}
 
-	updated, err := qb.find(ctx, id)
+	updated, err := qb.Find(ctx, id)
 	if err != nil {
 		return fmt.Errorf("finding after create: %w", err)
 	}
@@ -166,7 +202,6 @@ func (qb *SavedFilterStore) find(ctx context.Context, id int) (*models.SavedFilt
 	return ret, nil
 }
 
-// returns nil, sql.ErrNoRows if not found
 func (qb *SavedFilterStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.SavedFilter, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
