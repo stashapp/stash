@@ -14,7 +14,7 @@ import {
   ILabeledId,
   ILabeledValueListValue,
 } from "src/models/list-filter/types";
-import { cloneDeep, debounce } from "lodash-es";
+import { cloneDeep } from "lodash-es";
 import {
   Criterion,
   IHierarchicalLabeledIdCriterion,
@@ -22,6 +22,7 @@ import {
 import { defineMessages, MessageDescriptor, useIntl } from "react-intl";
 import { CriterionModifier } from "src/core/generated-graphql";
 import { keyboardClickHandler } from "src/utils/keyboard";
+import { useDebounce } from "src/hooks/debounce";
 
 interface ISelectedItem {
   item: ILabeledId;
@@ -100,11 +101,13 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
 }) => {
   const [internalQuery, setInternalQuery] = useState(query);
 
-  const onInputChange = useMemo(() => {
-    return debounce((input: string) => {
+  const onInputChange = useDebounce(
+    (input: string) => {
       setQuery(input);
-    }, 250);
-  }, [setQuery]);
+    },
+    [setQuery],
+    250
+  );
 
   function onInternalInputChange(input: string) {
     setInternalQuery(input);
