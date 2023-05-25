@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { Icon } from "src/components/Shared/Icon";
 import {
@@ -186,21 +186,28 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
 
 interface IObjectsFilter<T extends Criterion<ILabeledValueListValue>> {
   criterion: T;
-  single?: boolean;
   setCriterion: (criterion: T) => void;
-  queryHook: (query: string) => ILabeledId[];
+  useResults: (query: string) => { results: ILabeledId[]; loading: boolean };
+  single?: boolean;
 }
 
 export const ObjectsFilter = <
   T extends Criterion<ILabeledValueListValue | IHierarchicalLabelValue>
->(
-  props: IObjectsFilter<T>
-) => {
-  const { criterion, setCriterion, queryHook, single = false } = props;
-
+>({
+  criterion,
+  setCriterion,
+  useResults,
+  single = false,
+}: IObjectsFilter<T>) => {
   const [query, setQuery] = useState("");
+  const [queryResults, setQueryResults] = useState<ILabeledId[]>([]);
 
-  const queryResults = queryHook(query);
+  const { results, loading: resultsLoading } = useResults(query);
+  useEffect(() => {
+    if (!resultsLoading) {
+      setQueryResults(results);
+    }
+  }, [results, resultsLoading]);
 
   function onSelect(value: ILabeledId, newInclude: boolean) {
     let newCriterion: T = cloneDeep(criterion);

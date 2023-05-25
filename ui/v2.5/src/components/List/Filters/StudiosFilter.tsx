@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useFindStudiosQuery } from "src/core/generated-graphql";
 import { HierarchicalObjectsFilter } from "./SelectableFilter";
 import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
@@ -9,7 +9,7 @@ interface IStudiosFilter {
 }
 
 function useStudioQuery(query: string) {
-  const results = useFindStudiosQuery({
+  const { data, loading } = useFindStudiosQuery({
     variables: {
       filter: {
         q: query,
@@ -18,14 +18,18 @@ function useStudioQuery(query: string) {
     },
   });
 
-  return (
-    results.data?.findStudios.studios.map((p) => {
-      return {
-        id: p.id,
-        label: p.name,
-      };
-    }) ?? []
+  const results = useMemo(
+    () =>
+      data?.findStudios.studios.map((p) => {
+        return {
+          id: p.id,
+          label: p.name,
+        };
+      }) ?? [],
+    [data]
   );
+
+  return { results, loading };
 }
 
 const StudiosFilter: React.FC<IStudiosFilter> = ({
@@ -36,7 +40,7 @@ const StudiosFilter: React.FC<IStudiosFilter> = ({
     <HierarchicalObjectsFilter
       criterion={criterion}
       setCriterion={setCriterion}
-      queryHook={useStudioQuery}
+      useResults={useStudioQuery}
     />
   );
 };
