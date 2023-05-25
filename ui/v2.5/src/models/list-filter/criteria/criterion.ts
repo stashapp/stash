@@ -39,6 +39,11 @@ export type CriterionValue =
   | ITimestampValue
   | IPhashDistanceValue;
 
+export interface IEncodedCriterion<T extends CriterionValue> {
+  modifier: CriterionModifier;
+  value: T | undefined;
+}
+
 const modifierMessageIDs = {
   [CriterionModifier.Equals]: "criterion_modifier.equals",
   [CriterionModifier.NotEquals]: "criterion_modifier.not_equals",
@@ -65,7 +70,14 @@ export abstract class Criterion<V extends CriterionValue> {
   }
 
   public criterionOption: CriterionOption;
-  public modifier: CriterionModifier;
+
+  protected _modifier!: CriterionModifier;
+  public get modifier(): CriterionModifier {
+    return this._modifier;
+  }
+  public set modifier(value: CriterionModifier) {
+    this._modifier = value;
+  }
 
   protected _value!: V;
   public get value(): V {
@@ -140,8 +152,11 @@ export abstract class Criterion<V extends CriterionValue> {
     return JSON.stringify(encodedCriterion);
   }
 
-  public setValueFromQueryString(v: V) {
-    this.value = v;
+  public setFromEncodedCriterion(encodedCriterion: IEncodedCriterion<V>) {
+    if (encodedCriterion.value !== undefined) {
+      this.value = encodedCriterion.value;
+    }
+    this.modifier = encodedCriterion.modifier;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -547,12 +562,44 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
     super(type, value);
   }
 
-  public setValueFromQueryString(v: IHierarchicalLabelValue) {
-    this.value = {
-      items: v.items || [],
-      excluded: v.excluded || [],
-      depth: v.depth || 0,
-    };
+  override get modifier(): CriterionModifier {
+    return this._modifier;
+  }
+  override set modifier(value: CriterionModifier) {
+    this._modifier = value;
+
+    // excluded only makes sense for includes and includes all
+    // so reset it for other modifiers
+    if (
+      value !== CriterionModifier.Includes &&
+      value !== CriterionModifier.IncludesAll
+    ) {
+      this.value.excluded = [];
+    }
+  }
+
+  public setFromEncodedCriterion(
+    encodedCriterion: IEncodedCriterion<IHierarchicalLabelValue>
+  ) {
+    const { modifier, value } = encodedCriterion;
+
+    if (value !== undefined) {
+      this.value = {
+        items: value.items || [],
+        excluded: value.excluded || [],
+        depth: value.depth || 0,
+      };
+    }
+
+    // if the previous modifier was excludes, replace it with the equivalent includes criterion
+    // this is what is done on the backend
+    if (modifier === CriterionModifier.Excludes) {
+      this.modifier = CriterionModifier.Includes;
+      this.value.excluded = [...this.value.excluded, ...this.value.items];
+      this.value.items = [];
+    } else {
+      this.modifier = modifier;
+    }
   }
 
   public getLabelValue(_intl: IntlShape): string {

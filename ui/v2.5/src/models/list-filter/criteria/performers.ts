@@ -5,7 +5,7 @@ import {
   MultiCriterionInput,
 } from "src/core/generated-graphql";
 import { ILabeledId, ILabeledValueListValue } from "../types";
-import { Criterion, CriterionOption } from "./criterion";
+import { Criterion, CriterionOption, IEncodedCriterion } from "./criterion";
 
 const modifierOptions = [
   CriterionModifier.IncludesAll,
@@ -30,16 +30,46 @@ export class PerformersCriterion extends Criterion<ILabeledValueListValue> {
     super(PerformersCriterionOption, { items: [], excluded: [] });
   }
 
-  public setValueFromQueryString(v: ILabeledId[] | ILabeledValueListValue) {
+  override get modifier(): CriterionModifier {
+    return this._modifier;
+  }
+  override set modifier(value: CriterionModifier) {
+    this._modifier = value;
+
+    // excluded only makes sense for includes and includes all
+    // reset it for other modifiers
+    if (
+      value !== CriterionModifier.Includes &&
+      value !== CriterionModifier.IncludesAll
+    ) {
+      this.value.excluded = [];
+    }
+  }
+
+  public setFromEncodedCriterion(
+    encodedCriterion: IEncodedCriterion<ILabeledId[] | ILabeledValueListValue>
+  ) {
+    const { modifier, value } = encodedCriterion;
+
     // #3619 - the format of performer value was changed from an array
     // to an object. Check for both formats.
-    if (Array.isArray(v)) {
-      this.value = { items: v, excluded: [] };
-    } else {
+    if (Array.isArray(value)) {
+      this.value = { items: value, excluded: [] };
+    } else if (value !== undefined) {
       this.value = {
-        items: v.items || [],
-        excluded: v.excluded || [],
+        items: value.items || [],
+        excluded: value.excluded || [],
       };
+    }
+
+    // if the previous modifier was excludes, replace it with the equivalent includes criterion
+    // this is what is done on the backend
+    if (modifier === CriterionModifier.Excludes) {
+      this.modifier = CriterionModifier.Includes;
+      this.value.excluded = [...this.value.excluded, ...this.value.items];
+      this.value.items = [];
+    } else {
+      this.modifier = modifier;
     }
   }
 
