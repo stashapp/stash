@@ -581,8 +581,7 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
   public isValid(): boolean {
     if (
       this.modifier === CriterionModifier.IsNull ||
-      this.modifier === CriterionModifier.NotNull ||
-      this.modifier === CriterionModifier.Equals
+      this.modifier === CriterionModifier.NotNull
     ) {
       return true;
     }

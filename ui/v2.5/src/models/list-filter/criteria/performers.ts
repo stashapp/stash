@@ -11,6 +11,8 @@ const modifierOptions = [
   CriterionModifier.IncludesAll,
   CriterionModifier.Includes,
   CriterionModifier.Equals,
+  CriterionModifier.IsNull,
+  CriterionModifier.NotNull,
 ];
 
 const defaultModifier = CriterionModifier.IncludesAll;
@@ -60,8 +62,7 @@ export class PerformersCriterion extends Criterion<ILabeledValueListValue> {
   public isValid(): boolean {
     if (
       this.modifier === CriterionModifier.IsNull ||
-      this.modifier === CriterionModifier.NotNull ||
-      this.modifier === CriterionModifier.Equals
+      this.modifier === CriterionModifier.NotNull
     ) {
       return true;
     }

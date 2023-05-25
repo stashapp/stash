@@ -10,6 +10,8 @@ class tagsCriterionOption extends CriterionOption {
       CriterionModifier.Includes,
       CriterionModifier.IncludesAll,
       CriterionModifier.Equals,
+      CriterionModifier.IsNull,
+      CriterionModifier.NotNull,
     ];
 
     let defaultModifier = CriterionModifier.IncludesAll;
