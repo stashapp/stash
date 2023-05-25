@@ -38,6 +38,12 @@ import { RatingFilter } from "./Filters/RatingFilter";
 import { BooleanFilter } from "./Filters/BooleanFilter";
 import { OptionFilter, OptionListFilter } from "./Filters/OptionFilter";
 import { PathFilter } from "./Filters/PathFilter";
+import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
+import PerformersFilter from "./Filters/PerformersFilter";
+import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
+import StudiosFilter from "./Filters/StudiosFilter";
+import { TagsCriterion } from "src/models/list-filter/criteria/tags";
+import TagsFilter from "./Filters/TagsFilter";
 import { PhashCriterion } from "src/models/list-filter/criteria/phash";
 import { PhashFilter } from "./Filters/PhashFilter";
 import cx from "classnames";
@@ -108,6 +114,33 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
       criterion.modifier === CriterionModifier.NotNull
     ) {
       return;
+    }
+
+    if (criterion instanceof PerformersCriterion) {
+      return (
+        <PerformersFilter
+          criterion={criterion}
+          setCriterion={(c) => setCriterion(c)}
+        />
+      );
+    }
+
+    if (criterion instanceof StudiosCriterion) {
+      return (
+        <StudiosFilter
+          criterion={criterion}
+          setCriterion={(c) => setCriterion(c)}
+        />
+      );
+    }
+
+    if (criterion instanceof TagsCriterion) {
+      return (
+        <TagsFilter
+          criterion={criterion}
+          setCriterion={(c) => setCriterion(c)}
+        />
+      );
     }
 
     if (criterion instanceof ILabeledIdCriterion) {

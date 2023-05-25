@@ -629,9 +629,12 @@ type joinedMultiCriterionHandlerBuilder struct {
 	addJoinTable func(f *filterBuilder)
 }
 
-func (m *joinedMultiCriterionHandlerBuilder) handler(criterion *models.MultiCriterionInput) criterionHandlerFunc {
+func (m *joinedMultiCriterionHandlerBuilder) handler(c *models.MultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
-		if criterion != nil {
+		if c != nil {
+			// make local copy so we can modify it
+			criterion := *c
+
 			joinAlias := m.joinAs
 			if joinAlias == "" {
 				joinAlias = m.joinTable
@@ -653,37 +656,68 @@ func (m *joinedMultiCriterionHandlerBuilder) handler(criterion *models.MultiCrit
 				return
 			}
 
-			if len(criterion.Value) == 0 {
+			if len(criterion.Value) == 0 && len(criterion.Excludes) == 0 {
 				return
 			}
 
-			var args []interface{}
-			for _, tagID := range criterion.Value {
-				args = append(args, tagID)
+			// combine excludes if excludes modifier is selected
+			if criterion.Modifier == models.CriterionModifierExcludes {
+				criterion.Modifier = models.CriterionModifierIncludesAll
+				criterion.Excludes = append(criterion.Excludes, criterion.Value...)
+				criterion.Value = nil
 			}
 
-			whereClause := ""
-			havingClause := ""
+			if len(criterion.Value) > 0 {
+				whereClause := ""
+				havingClause := ""
 
-			switch criterion.Modifier {
-			case models.CriterionModifierIncludes:
-				// includes any of the provided ids
-				m.addJoinTable(f)
-				whereClause = fmt.Sprintf("%s.%s IN %s", joinAlias, m.foreignFK, getInBinding(len(criterion.Value)))
-			case models.CriterionModifierIncludesAll:
-				// includes all of the provided ids
-				m.addJoinTable(f)
-				whereClause = fmt.Sprintf("%s.%s IN %s", joinAlias, m.foreignFK, getInBinding(len(criterion.Value)))
-				havingClause = fmt.Sprintf("count(distinct %s.%s) IS %d", joinAlias, m.foreignFK, len(criterion.Value))
-			case models.CriterionModifierExcludes:
+				var args []interface{}
+				for _, tagID := range criterion.Value {
+					args = append(args, tagID)
+				}
+
+				switch criterion.Modifier {
+				case models.CriterionModifierIncludes:
+					// includes any of the provided ids
+					m.addJoinTable(f)
+					whereClause = fmt.Sprintf("%s.%s IN %s", joinAlias, m.foreignFK, getInBinding(len(criterion.Value)))
+				case models.CriterionModifierEquals:
+					// includes only the provided ids
+					m.addJoinTable(f)
+					whereClause = utils.StrFormat("{joinAlias}.{foreignFK} IN {inBinding} AND (SELECT COUNT(*) FROM {joinTable} s WHERE s.{primaryFK} = {primaryTable}.id) = ?", utils.StrFormatMap{
+						"joinAlias":    joinAlias,
+						"foreignFK":    m.foreignFK,
+						"inBinding":    getInBinding(len(criterion.Value)),
+						"joinTable":    m.joinTable,
+						"primaryFK":    m.primaryFK,
+						"primaryTable": m.primaryTable,
+					})
+					havingClause = fmt.Sprintf("count(distinct %s.%s) IS %d", joinAlias, m.foreignFK, len(criterion.Value))
+					args = append(args, len(criterion.Value))
+				case models.CriterionModifierIncludesAll:
+					// includes all of the provided ids
+					m.addJoinTable(f)
+					whereClause = fmt.Sprintf("%s.%s IN %s", joinAlias, m.foreignFK, getInBinding(len(criterion.Value)))
+					havingClause = fmt.Sprintf("count(distinct %s.%s) IS %d", joinAlias, m.foreignFK, len(criterion.Value))
+				}
+
+				f.addWhere(whereClause, args...)
+				f.addHaving(havingClause)
+			}
+
+			if len(criterion.Excludes) > 0 {
+				var args []interface{}
+				for _, tagID := range criterion.Excludes {
+					args = append(args, tagID)
+				}
+
 				// excludes all of the provided ids
 				// need to use actual join table name for this
 				// <primaryTable>.id NOT IN (select <joinTable>.<primaryFK> from <joinTable> where <joinTable>.<foreignFK> in <values>)
-				whereClause = fmt.Sprintf("%[1]s.id NOT IN (SELECT %[3]s.%[2]s from %[3]s where %[3]s.%[4]s in %[5]s)", m.primaryTable, m.primaryFK, m.joinTable, m.foreignFK, getInBinding(len(criterion.Value)))
-			}
+				whereClause := fmt.Sprintf("%[1]s.id NOT IN (SELECT %[3]s.%[2]s from %[3]s where %[3]s.%[4]s in %[5]s)", m.primaryTable, m.primaryFK, m.joinTable, m.foreignFK, getInBinding(len(criterion.Excludes)))
 
-			f.addWhere(whereClause, args...)
-			f.addHaving(havingClause)
+				f.addWhere(whereClause, args...)
+			}
 		}
 	}
 }
@@ -890,7 +924,7 @@ WHERE id in {inBinding}
 	return valuesClause
 }
 
-func addHierarchicalConditionClauses(f *filterBuilder, criterion *models.HierarchicalMultiCriterionInput, table, idColumn string) {
+func addHierarchicalConditionClauses(f *filterBuilder, criterion models.HierarchicalMultiCriterionInput, table, idColumn string) {
 	switch criterion.Modifier {
 	case models.CriterionModifierIncludes:
 		f.addWhere(fmt.Sprintf("%s.%s IS NOT NULL", table, idColumn))
@@ -902,9 +936,12 @@ func addHierarchicalConditionClauses(f *filterBuilder, criterion *models.Hierarc
 	}
 }
 
-func (m *hierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func (m *hierarchicalMultiCriterionHandlerBuilder) handler(c *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
-		if criterion != nil {
+		if c != nil {
+			// make a copy so we don't modify the original
+			criterion := *c
+
 			if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotNull {
 				var notClause string
 				if criterion.Modifier == models.CriterionModifierNotNull {
@@ -919,19 +956,32 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.Hie
 				return
 			}
 
-			if len(criterion.Value) == 0 {
+			if len(criterion.Value) == 0 && len(criterion.Excludes) == 0 {
 				return
 			}
 
-			valuesClause := getHierarchicalValues(ctx, m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
+			// combine excludes if excludes modifier is selected
+			if criterion.Modifier == models.CriterionModifierExcludes {
+				criterion.Modifier = models.CriterionModifierIncludesAll
+				criterion.Excludes = append(criterion.Excludes, criterion.Value...)
+				criterion.Value = nil
+			}
 
-			switch criterion.Modifier {
-			case models.CriterionModifierIncludes:
-				f.addWhere(fmt.Sprintf("%s.%s IN (SELECT column2 FROM (%s))", m.primaryTable, m.foreignFK, valuesClause))
-			case models.CriterionModifierIncludesAll:
-				f.addWhere(fmt.Sprintf("%s.%s IN (SELECT column2 FROM (%s))", m.primaryTable, m.foreignFK, valuesClause))
-				f.addHaving(fmt.Sprintf("count(distinct %s.%s) IS %d", m.primaryTable, m.foreignFK, len(criterion.Value)))
-			case models.CriterionModifierExcludes:
+			if len(criterion.Value) > 0 {
+				valuesClause := getHierarchicalValues(ctx, m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
+
+				switch criterion.Modifier {
+				case models.CriterionModifierIncludes:
+					f.addWhere(fmt.Sprintf("%s.%s IN (SELECT column2 FROM (%s))", m.primaryTable, m.foreignFK, valuesClause))
+				case models.CriterionModifierIncludesAll:
+					f.addWhere(fmt.Sprintf("%s.%s IN (SELECT column2 FROM (%s))", m.primaryTable, m.foreignFK, valuesClause))
+					f.addHaving(fmt.Sprintf("count(distinct %s.%s) IS %d", m.primaryTable, m.foreignFK, len(criterion.Value)))
+				}
+			}
+
+			if len(criterion.Excludes) > 0 {
+				valuesClause := getHierarchicalValues(ctx, m.tx, criterion.Excludes, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
+
 				f.addWhere(fmt.Sprintf("%s.%s NOT IN (SELECT column2 FROM (%s)) OR %[1]s.%[2]s IS NULL", m.primaryTable, m.foreignFK, valuesClause))
 			}
 		}
@@ -953,9 +1003,26 @@ type joinedHierarchicalMultiCriterionHandlerBuilder struct {
 	primaryFK string
 }
 
-func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func (m *joinedHierarchicalMultiCriterionHandlerBuilder) addHierarchicalConditionClauses(f *filterBuilder, criterion models.HierarchicalMultiCriterionInput, table, idColumn string) {
+	if criterion.Modifier == models.CriterionModifierEquals {
+		// includes only the provided ids
+		f.addWhere(fmt.Sprintf("%s.%s IS NOT NULL", table, idColumn))
+		f.addHaving(fmt.Sprintf("count(distinct %s.%s) IS %d", table, idColumn, len(criterion.Value)))
+		f.addWhere(utils.StrFormat("(SELECT COUNT(*) FROM {joinTable} s WHERE s.{primaryFK} = {primaryTable}.id) = ?", utils.StrFormatMap{
+			"joinTable":    m.joinTable,
+			"primaryFK":    m.primaryFK,
+			"primaryTable": m.primaryTable,
+		}), len(criterion.Value))
+	} else {
+		addHierarchicalConditionClauses(f, criterion, table, idColumn)
+	}
+}
+
+func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(c *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
-		if criterion != nil {
+		if c != nil {
+			// make a copy so we don't modify the original
+			criterion := *c
 			joinAlias := m.joinAs
 
 			if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotNull {
@@ -974,25 +1041,59 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(criterion *mode
 				return
 			}
 
-			if len(criterion.Value) == 0 {
+			// combine excludes if excludes modifier is selected
+			if criterion.Modifier == models.CriterionModifierExcludes {
+				criterion.Modifier = models.CriterionModifierIncludesAll
+				criterion.Excludes = append(criterion.Excludes, criterion.Value...)
+				criterion.Value = nil
+			}
+
+			if len(criterion.Value) == 0 && len(criterion.Excludes) == 0 {
 				return
 			}
 
-			valuesClause := getHierarchicalValues(ctx, m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
+			if len(criterion.Value) > 0 {
+				valuesClause := getHierarchicalValues(ctx, m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
 
-			joinTable := utils.StrFormat(`(
-	SELECT j.*, d.column1 AS root_id, d.column2 AS item_id FROM {joinTable} AS j
-	INNER JOIN ({valuesClause}) AS d ON j.{foreignFK} = d.column2
-)
-`, utils.StrFormatMap{
-				"joinTable":    m.joinTable,
-				"foreignFK":    m.foreignFK,
-				"valuesClause": valuesClause,
-			})
+				joinTable := utils.StrFormat(`(
+		SELECT j.*, d.column1 AS root_id, d.column2 AS item_id FROM {joinTable} AS j
+		INNER JOIN ({valuesClause}) AS d ON j.{foreignFK} = d.column2
+	)
+	`, utils.StrFormatMap{
+					"joinTable":    m.joinTable,
+					"foreignFK":    m.foreignFK,
+					"valuesClause": valuesClause,
+				})
 
-			f.addLeftJoin(joinTable, joinAlias, fmt.Sprintf("%s.%s = %s.id", joinAlias, m.primaryFK, m.primaryTable))
+				f.addLeftJoin(joinTable, joinAlias, fmt.Sprintf("%s.%s = %s.id", joinAlias, m.primaryFK, m.primaryTable))
 
-			addHierarchicalConditionClauses(f, criterion, joinAlias, "root_id")
+				m.addHierarchicalConditionClauses(f, criterion, joinAlias, "root_id")
+			}
+
+			if len(criterion.Excludes) > 0 {
+				valuesClause := getHierarchicalValues(ctx, m.tx, criterion.Excludes, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
+
+				joinTable := utils.StrFormat(`(
+		SELECT j2.*, e.column1 AS root_id, e.column2 AS item_id FROM {joinTable} AS j2
+		INNER JOIN ({valuesClause}) AS e ON j2.{foreignFK} = e.column2
+	)
+	`, utils.StrFormatMap{
+					"joinTable":    m.joinTable,
+					"foreignFK":    m.foreignFK,
+					"valuesClause": valuesClause,
+				})
+
+				joinAlias2 := joinAlias + "2"
+
+				f.addLeftJoin(joinTable, joinAlias2, fmt.Sprintf("%s.%s = %s.id", joinAlias2, m.primaryFK, m.primaryTable))
+
+				// modify for exclusion
+				criterionCopy := criterion
+				criterionCopy.Modifier = models.CriterionModifierExcludes
+				criterionCopy.Value = c.Excludes
+
+				m.addHierarchicalConditionClauses(f, criterionCopy, joinAlias2, "root_id")
+			}
 		}
 	}
 }

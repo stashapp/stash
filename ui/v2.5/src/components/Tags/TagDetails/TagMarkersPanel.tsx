@@ -43,6 +43,7 @@ export const TagMarkersPanel: React.FC<ITagMarkersPanel> = ({
       tagCriterion = new TagsCriterion(TagsCriterionOption);
       tagCriterion.value = {
         items: [tagValue],
+        excluded: [],
         depth: 0,
       };
       filter.criteria.push(tagCriterion);

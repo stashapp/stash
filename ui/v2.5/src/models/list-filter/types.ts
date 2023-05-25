@@ -18,8 +18,14 @@ export interface ILabeledValue {
   value: string;
 }
 
+export interface ILabeledValueListValue {
+  items: ILabeledId[];
+  excluded: ILabeledId[];
+}
+
 export interface IHierarchicalLabelValue {
   items: ILabeledId[];
+  excluded: ILabeledId[];
   depth: number;
 }
 

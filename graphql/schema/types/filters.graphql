@@ -518,6 +518,7 @@ input FloatCriterionInput {
 input MultiCriterionInput {
   value: [ID!]
   modifier: CriterionModifier!
+  excludes: [ID!]
 }
 
 input GenderCriterionInput {
@@ -534,6 +535,7 @@ input HierarchicalMultiCriterionInput {
   value: [ID!]
   modifier: CriterionModifier!
   depth: Int
+  excludes: [ID!]
 }
 
 input DateCriterionInput {
