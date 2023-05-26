@@ -64,6 +64,48 @@ func (u *UpdateIDs) IDStrings() []string {
 	return intslice.IntSliceToStringSlice(u.IDs)
 }
 
+// GetImpactedIDs returns the IDs that will be impacted by the update.
+// If the update is to add IDs, then the impacted IDs are the IDs being added.
+// If the update is to remove IDs, then the impacted IDs are the IDs being removed.
+// If the update is to set IDs, then the impacted IDs are the IDs being removed and the IDs being added.
+// Any IDs that are already present and are being added are not returned.
+// Likewise, any IDs that are not present that are being removed are not returned.
+func (u *UpdateIDs) ImpactedIDs(existing []int) []int {
+	if u == nil {
+		return nil
+	}
+
+	switch u.Mode {
+	case RelationshipUpdateModeAdd:
+		return intslice.IntExclude(u.IDs, existing)
+	case RelationshipUpdateModeRemove:
+		return intslice.IntIntercect(existing, u.IDs)
+	case RelationshipUpdateModeSet:
+		// get the difference between the two lists
+		return intslice.IntNotIntersect(existing, u.IDs)
+	}
+
+	return nil
+}
+
+// GetEffectiveIDs returns the new IDs that will be effective after the update.
+func (u *UpdateIDs) EffectiveIDs(existing []int) []int {
+	if u == nil {
+		return nil
+	}
+
+	switch u.Mode {
+	case RelationshipUpdateModeAdd:
+		return intslice.IntAppendUniques(existing, u.IDs)
+	case RelationshipUpdateModeRemove:
+		return intslice.IntExclude(existing, u.IDs)
+	case RelationshipUpdateModeSet:
+		return u.IDs
+	}
+
+	return nil
+}
+
 type UpdateStrings struct {
 	Values []string               `json:"values"`
 	Mode   RelationshipUpdateMode `json:"mode"`
