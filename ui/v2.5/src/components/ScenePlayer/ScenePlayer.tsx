@@ -268,7 +268,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   useEffect(() => {
     function isVrScene() {
       if (!scene?.id || !vrTag) return false;
-      let hasVrTag = false
+      let hasVrTag = false;
 
       scene?.tags.map((tag) => {
         if (vrTag == tag.name) {
@@ -276,7 +276,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           return;
         }
       });
-      
+
       return hasVrTag;
     }
 
