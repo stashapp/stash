@@ -268,13 +268,16 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   useEffect(() => {
     function isVrScene() {
       if (!scene?.id || !vrTag) return false;
+      let hasVrTag = false
 
       scene?.tags.map((tag) => {
         if (vrTag == tag.name) {
-          return true;
+          hasVrTag = true;
+          return;
         }
       });
-      return false;
+      
+      return hasVrTag;
     }
 
     const options: VideoJsPlayerOptions = {
@@ -338,6 +341,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     const videoEl = document.createElement("video-js");
     videoEl.setAttribute("data-vjs-player", "true");
+    videoEl.setAttribute("crossorigin", "anonymous");
     videoEl.classList.add("vjs-big-play-centered");
     videoRef.current!.appendChild(videoEl);
 
