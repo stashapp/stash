@@ -22,7 +22,7 @@ import {
 import { defineMessages, MessageDescriptor, useIntl } from "react-intl";
 import { CriterionModifier } from "src/core/generated-graphql";
 import { keyboardClickHandler } from "src/utils/keyboard";
-import { useDebounce } from "src/hooks/debounce";
+import { useDebouncedSetState } from "src/hooks/debounce";
 
 interface ISelectedItem {
   item: ILabeledId;
@@ -78,7 +78,7 @@ const SelectedItem: React.FC<ISelectedItem> = ({
 
 interface ISelectableFilter {
   query: string;
-  setQuery: (query: string) => void;
+  onQueryChange: (query: string) => void;
   single: boolean;
   includeOnly: boolean;
   queryResults: ILabeledId[];
@@ -90,7 +90,7 @@ interface ISelectableFilter {
 
 const SelectableFilter: React.FC<ISelectableFilter> = ({
   query,
-  setQuery,
+  onQueryChange,
   single,
   queryResults,
   selected,
@@ -99,21 +99,6 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
   onSelect,
   onUnselect,
 }) => {
-  const [internalQuery, setInternalQuery] = useState(query);
-
-  const onInputChange = useDebounce(
-    (input: string) => {
-      setQuery(input);
-    },
-    [setQuery],
-    250
-  );
-
-  function onInternalInputChange(input: string) {
-    setInternalQuery(input);
-    onInputChange(input);
-  }
-
   const objects = useMemo(() => {
     return queryResults.filter(
       (p) =>
@@ -130,10 +115,7 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
 
   return (
     <div className="selectable-filter">
-      <ClearableInput
-        value={internalQuery}
-        setValue={(v) => onInternalInputChange(v)}
-      />
+      <ClearableInput value={query} setValue={(v) => onQueryChange(v)} />
       <ul>
         {selected.map((p) => (
           <li key={p.id} className="selected-object">
@@ -200,8 +182,18 @@ export const ObjectsFilter = <
   single = false,
 }: IObjectsFilter<T>) => {
   const [query, setQuery] = useState("");
-  const [queryResults, setQueryResults] = useState<ILabeledId[]>([]);
+  const [displayQuery, setDisplayQuery] = useState(query);
 
+  const debouncedSetQuery = useDebouncedSetState(setQuery, 250);
+  const onQueryChange = useCallback(
+    (input: string) => {
+      setDisplayQuery(input);
+      debouncedSetQuery(input);
+    },
+    [debouncedSetQuery, setDisplayQuery]
+  );
+
+  const [queryResults, setQueryResults] = useState<ILabeledId[]>([]);
   const { results, loading: resultsLoading } = useResults(query);
   useEffect(() => {
     if (!resultsLoading) {
@@ -223,6 +215,11 @@ export const ObjectsFilter = <
     }
 
     setCriterion(newCriterion);
+
+    // reset filter query after selecting
+    debouncedSetQuery.cancel();
+    setQuery("");
+    setDisplayQuery("");
   }
 
   const onUnselect = useCallback(
@@ -260,8 +257,8 @@ export const ObjectsFilter = <
     <SelectableFilter
       single={single}
       includeOnly={criterion.modifier === CriterionModifier.Equals}
-      query={query}
-      setQuery={setQuery}
+      query={displayQuery}
+      onQueryChange={onQueryChange}
       selected={sortedSelected}
       queryResults={queryResults}
       onSelect={onSelect}
