@@ -91,7 +91,7 @@ export abstract class Criterion<V extends CriterionValue> {
     return true;
   }
 
-  public abstract getLabelValue(intl: IntlShape): string;
+  protected abstract getLabelValue(intl: IntlShape): string;
 
   constructor(type: CriterionOption, value: V) {
     this.criterionOption = type;
@@ -252,7 +252,7 @@ export class StringCriterion extends Criterion<string> {
     super(type, "");
   }
 
-  public getLabelValue(_intl: IntlShape) {
+  protected getLabelValue(_intl: IntlShape) {
     return this.value;
   }
 
@@ -270,7 +270,7 @@ export class MultiStringCriterion extends Criterion<string[]> {
     super(type, []);
   }
 
-  public getLabelValue(_intl: IntlShape) {
+  protected getLabelValue(_intl: IntlShape) {
     return this.value.join(", ");
   }
 
@@ -452,7 +452,7 @@ export class NumberCriterion extends Criterion<INumberValue> {
     };
   }
 
-  public getLabelValue(_intl: IntlShape) {
+  protected getLabelValue(_intl: IntlShape) {
     const { value, value2 } = this.value;
     if (
       this.modifier === CriterionModifier.Between ||
@@ -524,7 +524,7 @@ export class ILabeledIdCriterionOption extends CriterionOption {
 }
 
 export class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
-  public getLabelValue(_intl: IntlShape): string {
+  protected getLabelValue(_intl: IntlShape): string {
     return this.value.map((v) => v.label).join(", ");
   }
 
@@ -602,7 +602,7 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
     }
   }
 
-  public getLabelValue(_intl: IntlShape): string {
+  protected getLabelValue(_intl: IntlShape): string {
     const labels = (this.value.items ?? []).map((v) => v.label).join(", ");
 
     if (this.value.depth === 0) {
@@ -663,6 +663,10 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
           excludedString = this.value.excluded.map((v) => v.label).join(", ");
         }
       }
+
+      if (this.value.depth !== 0) {
+        id += "_depth";
+      }
     }
 
     return intl.formatMessage(
@@ -672,6 +676,7 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
         modifierString,
         valueString,
         excludedString,
+        depth: this.value.depth,
       }
     );
   }
@@ -717,7 +722,7 @@ export class DurationCriterion extends Criterion<INumberValue> {
     };
   }
 
-  public getLabelValue(_intl: IntlShape) {
+  protected getLabelValue(_intl: IntlShape) {
     return this.modifier === CriterionModifier.Between ||
       this.modifier === CriterionModifier.NotBetween
       ? `${DurationUtils.secondsToString(
@@ -812,7 +817,7 @@ export class DateCriterion extends Criterion<IDateValue> {
     };
   }
 
-  public getLabelValue() {
+  protected getLabelValue() {
     const { value } = this.value;
     return this.modifier === CriterionModifier.Between ||
       this.modifier === CriterionModifier.NotBetween
@@ -897,7 +902,7 @@ export class TimestampCriterion extends Criterion<ITimestampValue> {
     };
   }
 
-  public getLabelValue() {
+  protected getLabelValue() {
     const { value } = this.value;
     return this.modifier === CriterionModifier.Between ||
       this.modifier === CriterionModifier.NotBetween

@@ -73,7 +73,7 @@ export class PerformersCriterion extends Criterion<ILabeledValueListValue> {
     }
   }
 
-  public getLabelValue(_intl: IntlShape): string {
+  protected getLabelValue(_intl: IntlShape): string {
     return this.value.items.map((v) => v.label).join(", ");
   }
 
