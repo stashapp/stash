@@ -79,23 +79,23 @@ const SelectedItem: React.FC<ISelectedItem> = ({
 interface ISelectableFilter {
   query: string;
   onQueryChange: (query: string) => void;
-  single: boolean;
-  includeOnly: boolean;
+  modifier: CriterionModifier;
+  canExclude: boolean;
   queryResults: ILabeledId[];
   selected: ILabeledId[];
   excluded: ILabeledId[];
-  onSelect: (value: ILabeledId, include: boolean) => void;
+  onSelect: (value: ILabeledId, exclude: boolean) => void;
   onUnselect: (value: ILabeledId) => void;
 }
 
 const SelectableFilter: React.FC<ISelectableFilter> = ({
   query,
   onQueryChange,
-  single,
+  modifier,
+  canExclude,
   queryResults,
   selected,
   excluded,
-  includeOnly,
   onSelect,
   onUnselect,
 }) => {
@@ -107,8 +107,8 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
     );
   }, [queryResults, selected, excluded]);
 
-  const includingOnly = includeOnly || (selected.length > 0 && single);
-  const excludingOnly = excluded.length > 0 && single;
+  const includingOnly = modifier == CriterionModifier.Equals;
+  const excludingOnly = modifier == CriterionModifier.Excludes;
 
   const includeIcon = <Icon className="fa-fw include-button" icon={faPlus} />;
   const excludeIcon = <Icon className="fa-fw exclude-icon" icon={faMinus} />;
@@ -119,7 +119,11 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
       <ul>
         {selected.map((p) => (
           <li key={p.id} className="selected-object">
-            <SelectedItem item={p} onClick={() => onUnselect(p)} />
+            <SelectedItem
+              item={p}
+              excluded={excludingOnly}
+              onClick={() => onUnselect(p)}
+            />
           </li>
         ))}
         {excluded.map((p) => (
@@ -129,12 +133,9 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
         ))}
         {objects.map((p) => (
           <li key={p.id} className="unselected-object">
-            {/* if excluding only, clicking on an item also excludes it */}
             <a
-              onClick={() => onSelect(p, !excludingOnly)}
-              onKeyDown={keyboardClickHandler(() =>
-                onSelect(p, !excludingOnly)
-              )}
+              onClick={() => onSelect(p, false)}
+              onKeyDown={keyboardClickHandler(() => onSelect(p, false))}
               tabIndex={0}
             >
               <div>
@@ -144,11 +145,11 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
               <div>
                 {/* TODO item count */}
                 {/* <span className="object-count">{p.id}</span> */}
-                {!includingOnly && !excludingOnly && (
+                {canExclude && !includingOnly && !excludingOnly && (
                   <Button
                     onClick={(e) => {
                       e.stopPropagation();
-                      onSelect(p, false);
+                      onSelect(p, true);
                     }}
                     onKeyDown={(e) => e.stopPropagation()}
                     className="minimal exclude-button"
@@ -170,7 +171,6 @@ interface IObjectsFilter<T extends Criterion<ILabeledValueListValue>> {
   criterion: T;
   setCriterion: (criterion: T) => void;
   useResults: (query: string) => { results: ILabeledId[]; loading: boolean };
-  single?: boolean;
 }
 
 export const ObjectsFilter = <
@@ -179,7 +179,6 @@ export const ObjectsFilter = <
   criterion,
   setCriterion,
   useResults,
-  single = false,
 }: IObjectsFilter<T>) => {
   const [query, setQuery] = useState("");
   const [displayQuery, setDisplayQuery] = useState(query);
@@ -201,17 +200,17 @@ export const ObjectsFilter = <
     }
   }, [results, resultsLoading]);
 
-  function onSelect(value: ILabeledId, newInclude: boolean) {
+  function onSelect(value: ILabeledId, newExclude: boolean) {
     let newCriterion: T = cloneDeep(criterion);
 
-    if (newInclude) {
-      newCriterion.value.items.push(value);
-    } else {
+    if (newExclude) {
       if (newCriterion.value.excluded) {
         newCriterion.value.excluded.push(value);
       } else {
         newCriterion.value.excluded = [value];
       }
+    } else {
+      newCriterion.value.items.push(value);
     }
 
     setCriterion(newCriterion);
@@ -253,12 +252,18 @@ export const ObjectsFilter = <
     return ret;
   }, [criterion]);
 
+  // if excludes is not a valid modifierOption then we can use `value.excluded`
+  const canExclude =
+    criterion.criterionOption.modifierOptions.find(
+      (m) => m === CriterionModifier.Excludes
+    ) === undefined;
+
   return (
     <SelectableFilter
-      single={single}
-      includeOnly={criterion.modifier === CriterionModifier.Equals}
       query={displayQuery}
       onQueryChange={onQueryChange}
+      modifier={criterion.modifier}
+      canExclude={canExclude}
       selected={sortedSelected}
       queryResults={queryResults}
       onSelect={onSelect}

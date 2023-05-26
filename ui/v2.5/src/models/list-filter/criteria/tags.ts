@@ -5,10 +5,16 @@ import { CriterionOption, IHierarchicalLabeledIdCriterion } from "./criterion";
 export class TagsCriterion extends IHierarchicalLabeledIdCriterion {}
 
 class tagsCriterionOption extends CriterionOption {
-  constructor(messageID: string, value: CriterionType, parameterName: string) {
+  constructor(
+    messageID: string,
+    value: CriterionType,
+    parameterName: string,
+    excludeModifier: boolean
+  ) {
     const modifierOptions = [
       CriterionModifier.Includes,
       CriterionModifier.IncludesAll,
+      ...(excludeModifier ? [CriterionModifier.Excludes] : []),
       CriterionModifier.Equals,
       CriterionModifier.IsNull,
       CriterionModifier.NotNull,
@@ -29,25 +35,30 @@ class tagsCriterionOption extends CriterionOption {
 export const TagsCriterionOption = new tagsCriterionOption(
   "tags",
   "tags",
-  "tags"
+  "tags",
+  false
 );
 export const SceneTagsCriterionOption = new tagsCriterionOption(
   "sceneTags",
   "sceneTags",
-  "scene_tags"
+  "scene_tags",
+  true
 );
 export const PerformerTagsCriterionOption = new tagsCriterionOption(
   "performerTags",
   "performerTags",
-  "performer_tags"
+  "performer_tags",
+  true
 );
 export const ParentTagsCriterionOption = new tagsCriterionOption(
   "parent_tags",
   "parentTags",
-  "parents"
+  "parents",
+  true
 );
 export const ChildTagsCriterionOption = new tagsCriterionOption(
   "sub_tags",
   "childTags",
-  "children"
+  "children",
+  true
 );

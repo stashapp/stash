@@ -16,7 +16,6 @@ import {
   CriterionType,
   IHierarchicalLabelValue,
   ILabeledId,
-  ILabeledValue,
   INumberValue,
   IOptionType,
   IStashIDValue,
@@ -62,13 +61,6 @@ const modifierMessageIDs = {
 
 // V = criterion value type
 export abstract class Criterion<V extends CriterionValue> {
-  public static getModifierOption(
-    modifier: CriterionModifier = CriterionModifier.Equals
-  ): ILabeledValue {
-    const messageID = modifierMessageIDs[modifier];
-    return { value: modifier, label: messageID };
-  }
-
   public criterionOption: CriterionOption;
 
   protected _modifier!: CriterionModifier;
@@ -189,7 +181,7 @@ export class CriterionOption {
   public readonly messageID: string;
   public readonly type: CriterionType;
   public readonly parameterName: string;
-  public readonly modifierOptions: ILabeledValue[];
+  public readonly modifierOptions: CriterionModifier[];
   public readonly defaultModifier: CriterionModifier;
   public readonly options: Option[] | undefined;
   public readonly inputType: InputType;
@@ -198,9 +190,7 @@ export class CriterionOption {
     this.messageID = options.messageID;
     this.type = options.type;
     this.parameterName = options.parameterName ?? options.type;
-    this.modifierOptions = (options.modifierOptions ?? []).map((o) =>
-      Criterion.getModifierOption(o)
-    );
+    this.modifierOptions = options.modifierOptions ?? [];
     this.defaultModifier = options.defaultModifier ?? CriterionModifier.Equals;
     this.options = options.options;
     this.inputType = options.inputType;
@@ -593,7 +583,13 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
 
     // if the previous modifier was excludes, replace it with the equivalent includes criterion
     // this is what is done on the backend
-    if (modifier === CriterionModifier.Excludes) {
+    // only replace if excludes is not a valid modifierOption
+    if (
+      modifier === CriterionModifier.Excludes &&
+      this.criterionOption.modifierOptions.find(
+        (m) => m === CriterionModifier.Excludes
+      ) === undefined
+    ) {
       this.modifier = CriterionModifier.Includes;
       this.value.excluded = [...this.value.excluded, ...this.value.items];
       this.value.items = [];
