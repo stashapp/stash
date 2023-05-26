@@ -732,6 +732,7 @@ export const mutateAddGalleryImages = (input: GQL.GalleryAddInput) =>
     mutation: GQL.AddGalleryImagesDocument,
     variables: input,
     update: deleteCache(galleryMutationImpactedQueries),
+    refetchQueries: getQueryNames([GQL.FindGalleryDocument]),
   });
 
 export const mutateRemoveGalleryImages = (input: GQL.GalleryRemoveInput) =>
@@ -739,6 +740,7 @@ export const mutateRemoveGalleryImages = (input: GQL.GalleryRemoveInput) =>
     mutation: GQL.RemoveGalleryImagesDocument,
     variables: input,
     update: deleteCache(galleryMutationImpactedQueries),
+    refetchQueries: getQueryNames([GQL.FindGalleryDocument]),
   });
 
 export const mutateGallerySetPrimaryFile = (id: string, fileID: string) =>
