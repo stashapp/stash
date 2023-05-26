@@ -108,7 +108,9 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
   }, [queryResults, selected, excluded]);
 
   const includingOnly = modifier == CriterionModifier.Equals;
-  const excludingOnly = modifier == CriterionModifier.Excludes;
+  const excludingOnly =
+    modifier == CriterionModifier.Excludes ||
+    modifier == CriterionModifier.NotEquals;
 
   const includeIcon = <Icon className="fa-fw include-button" icon={faPlus} />;
   const excludeIcon = <Icon className="fa-fw exclude-icon" icon={faMinus} />;
