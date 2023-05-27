@@ -23,7 +23,6 @@ export const SceneTagsCriterionOption = new CriterionOption({
   modifierOptions: [
     CriterionModifier.IncludesAll,
     CriterionModifier.Includes,
-    CriterionModifier.Excludes,
     CriterionModifier.IsNull,
     CriterionModifier.NotNull,
   ],
@@ -36,7 +35,6 @@ export const PerformerTagsCriterionOption = new CriterionOption({
   modifierOptions: [
     CriterionModifier.IncludesAll,
     CriterionModifier.Includes,
-    CriterionModifier.Excludes,
     CriterionModifier.IsNull,
     CriterionModifier.NotNull,
   ],
@@ -49,7 +47,6 @@ export const ParentTagsCriterionOption = new CriterionOption({
   modifierOptions: [
     CriterionModifier.IncludesAll,
     CriterionModifier.Includes,
-    CriterionModifier.Excludes,
     CriterionModifier.IsNull,
     CriterionModifier.NotNull,
   ],
@@ -62,7 +59,6 @@ export const ChildTagsCriterionOption = new CriterionOption({
   modifierOptions: [
     CriterionModifier.IncludesAll,
     CriterionModifier.Includes,
-    CriterionModifier.Excludes,
     CriterionModifier.IsNull,
     CriterionModifier.NotNull,
   ],
