@@ -1,32 +1,33 @@
 import { CriterionModifier } from "src/core/generated-graphql";
 import { CriterionOption, IHierarchicalLabeledIdCriterion } from "./criterion";
 
-export class TagsCriterion extends IHierarchicalLabeledIdCriterion {}
+// TODO: should be modifierOptions for all CriterionOptions below but
+// the Equals modifier only works for the "tags" and "sceneTags" criterion.
+// Replace all modifierOptions below when the Equals modifier works
+// everywhere and add the NotEquals modifier here when that works.
+const modifierOptions = [
+  CriterionModifier.IncludesAll,
+  CriterionModifier.Includes,
+  CriterionModifier.Equals,
+  CriterionModifier.IsNull,
+  CriterionModifier.NotNull,
+];
+
+const defaultModifier = CriterionModifier.IncludesAll;
 
 export const TagsCriterionOption = new CriterionOption({
   messageID: "tags",
   type: "tags",
   parameterName: "tags",
-  modifierOptions: [
-    CriterionModifier.IncludesAll,
-    CriterionModifier.Includes,
-    CriterionModifier.Equals,
-    CriterionModifier.IsNull,
-    CriterionModifier.NotNull,
-  ],
-  defaultModifier: CriterionModifier.IncludesAll,
+  modifierOptions,
+  defaultModifier,
 });
 export const SceneTagsCriterionOption = new CriterionOption({
   messageID: "sceneTags",
   type: "sceneTags",
   parameterName: "scene_tags",
-  modifierOptions: [
-    CriterionModifier.IncludesAll,
-    CriterionModifier.Includes,
-    CriterionModifier.IsNull,
-    CriterionModifier.NotNull,
-  ],
-  defaultModifier: CriterionModifier.IncludesAll,
+  modifierOptions,
+  defaultModifier,
 });
 export const PerformerTagsCriterionOption = new CriterionOption({
   messageID: "performerTags",
@@ -38,7 +39,7 @@ export const PerformerTagsCriterionOption = new CriterionOption({
     CriterionModifier.IsNull,
     CriterionModifier.NotNull,
   ],
-  defaultModifier: CriterionModifier.IncludesAll,
+  defaultModifier,
 });
 export const ParentTagsCriterionOption = new CriterionOption({
   messageID: "parent_tags",
@@ -50,7 +51,7 @@ export const ParentTagsCriterionOption = new CriterionOption({
     CriterionModifier.IsNull,
     CriterionModifier.NotNull,
   ],
-  defaultModifier: CriterionModifier.IncludesAll,
+  defaultModifier,
 });
 export const ChildTagsCriterionOption = new CriterionOption({
   messageID: "sub_tags",
@@ -62,5 +63,7 @@ export const ChildTagsCriterionOption = new CriterionOption({
     CriterionModifier.IsNull,
     CriterionModifier.NotNull,
   ],
-  defaultModifier: CriterionModifier.IncludesAll,
+  defaultModifier,
 });
+
+export class TagsCriterion extends IHierarchicalLabeledIdCriterion {}
