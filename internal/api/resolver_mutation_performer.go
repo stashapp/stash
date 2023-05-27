@@ -67,7 +67,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerC
 		newPerformer.URL = *input.URL
 	}
 	if input.Gender != nil {
-		newPerformer.Gender = *input.Gender
+		newPerformer.Gender = input.Gender
 	}
 	if input.Birthdate != nil {
 		d := models.NewDate(*input.Birthdate)
@@ -97,6 +97,12 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerC
 	}
 	if input.FakeTits != nil {
 		newPerformer.FakeTits = *input.FakeTits
+	}
+	if input.PenisLength != nil {
+		newPerformer.PenisLength = input.PenisLength
+	}
+	if input.Circumcised != nil {
+		newPerformer.Circumcised = input.Circumcised
 	}
 	if input.CareerLength != nil {
 		newPerformer.CareerLength = *input.CareerLength
@@ -222,6 +228,16 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 
 	updatedPerformer.Ethnicity = translator.optionalString(input.Ethnicity, "ethnicity")
 	updatedPerformer.FakeTits = translator.optionalString(input.FakeTits, "fake_tits")
+	updatedPerformer.PenisLength = translator.optionalFloat64(input.PenisLength, "penis_length")
+
+	if translator.hasField("circumcised") {
+		if input.Circumcised != nil {
+			updatedPerformer.Circumcised = models.NewOptionalString(input.Circumcised.String())
+		} else {
+			updatedPerformer.Circumcised = models.NewOptionalStringPtr(nil)
+		}
+	}
+
 	updatedPerformer.CareerLength = translator.optionalString(input.CareerLength, "career_length")
 	updatedPerformer.Tattoos = translator.optionalString(input.Tattoos, "tattoos")
 	updatedPerformer.Piercings = translator.optionalString(input.Piercings, "piercings")
@@ -339,6 +355,16 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 
 	updatedPerformer.Measurements = translator.optionalString(input.Measurements, "measurements")
 	updatedPerformer.FakeTits = translator.optionalString(input.FakeTits, "fake_tits")
+	updatedPerformer.PenisLength = translator.optionalFloat64(input.PenisLength, "penis_length")
+
+	if translator.hasField("circumcised") {
+		if input.Circumcised != nil {
+			updatedPerformer.Circumcised = models.NewOptionalString(input.Circumcised.String())
+		} else {
+			updatedPerformer.Circumcised = models.NewOptionalStringPtr(nil)
+		}
+	}
+
 	updatedPerformer.CareerLength = translator.optionalString(input.CareerLength, "career_length")
 	updatedPerformer.Tattoos = translator.optionalString(input.Tattoos, "tattoos")
 	updatedPerformer.Piercings = translator.optionalString(input.Piercings, "piercings")
@@ -418,7 +444,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	// execute post hooks outside of txn
 	var newRet []*models.Performer
 	for _, performer := range ret {
-		r.hookExecutor.ExecutePostHooks(ctx, performer.ID, plugin.ImageUpdatePost, input, translator.getFields())
+		r.hookExecutor.ExecutePostHooks(ctx, performer.ID, plugin.PerformerUpdatePost, input, translator.getFields())
 
 		performer, err = r.getPerformer(ctx, performer.ID)
 		if err != nil {

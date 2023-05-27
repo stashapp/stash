@@ -1,15 +1,22 @@
+import { CriterionModifier } from "src/core/generated-graphql";
 import {
+  CriterionOption,
   IHierarchicalLabeledIdCriterion,
   ILabeledIdCriterion,
   ILabeledIdCriterionOption,
 } from "./criterion";
 
-export const StudiosCriterionOption = new ILabeledIdCriterionOption(
-  "studios",
-  "studios",
-  "studios",
-  false
-);
+const modifierOptions = [CriterionModifier.Includes];
+
+const defaultModifier = CriterionModifier.Includes;
+
+export const StudiosCriterionOption = new CriterionOption({
+  messageID: "studios",
+  type: "studios",
+  parameterName: "studios",
+  modifierOptions,
+  defaultModifier,
+});
 
 export class StudiosCriterion extends IHierarchicalLabeledIdCriterion {
   constructor() {

@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Accordion, Button, Card, Modal } from "react-bootstrap";
+import { Accordion, Button, Card, Form, Modal } from "react-bootstrap";
 import cx from "classnames";
 import {
   CriterionValue,
@@ -34,6 +34,8 @@ import { useToast } from "src/hooks/Toast";
 import { useConfigureUI } from "src/core/StashService";
 import { IUIConfig } from "src/core/config";
 import { FilterMode } from "src/core/generated-graphql";
+import { useFocusOnce } from "src/utils/focus";
+import Mousetrap from "mousetrap";
 
 interface ICriterionList {
   criteria: string[];
@@ -130,7 +132,7 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
   function renderCard(c: CriterionOption, isPin: boolean) {
     return (
       <Card key={c.type} data-type={c.type} ref={criteriaRefs[c.type]!}>
-        <Accordion.Toggle eventKey={c.type} as={Card.Header}>
+        <Accordion.Toggle className="filter-item-header" eventKey={c.type}>
           <span className="mr-auto">
             <Icon
               className="collapse-icon fa-fw"
@@ -222,10 +224,13 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
 
   const { configuration } = useContext(ConfigurationContext);
 
+  const [searchValue, setSearchValue] = useState("");
   const [currentFilter, setCurrentFilter] = useState<ListFilterModel>(
     cloneDeep(filter)
   );
   const [criterion, setCriterion] = useState<Criterion<CriterionValue>>();
+
+  const [searchRef, setSearchFocus] = useFocusOnce();
 
   const { criteria } = currentFilter;
 
@@ -275,17 +280,31 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   const ui = (configuration?.ui ?? {}) as IUIConfig;
   const [saveUI] = useConfigureUI();
 
+  const filteredOptions = useMemo(() => {
+    const trimmedSearch = searchValue.trim().toLowerCase();
+    if (!trimmedSearch) {
+      return criterionOptions;
+    }
+
+    return criterionOptions.filter((c) => {
+      return intl
+        .formatMessage({ id: c.messageID })
+        .toLowerCase()
+        .includes(trimmedSearch);
+    });
+  }, [intl, searchValue, criterionOptions]);
+
   const pinnedFilters = useMemo(
     () => ui.pinnedFilters?.[filterModeToConfigKey(currentFilter.mode)] ?? [],
     [currentFilter.mode, ui.pinnedFilters]
   );
   const pinnedElements = useMemo(
-    () => criterionOptions.filter((c) => pinnedFilters.includes(c.messageID)),
-    [pinnedFilters, criterionOptions]
+    () => filteredOptions.filter((c) => pinnedFilters.includes(c.messageID)),
+    [pinnedFilters, filteredOptions]
   );
   const unpinnedElements = useMemo(
-    () => criterionOptions.filter((c) => !pinnedFilters.includes(c.messageID)),
-    [pinnedFilters, criterionOptions]
+    () => filteredOptions.filter((c) => !pinnedFilters.includes(c.messageID)),
+    [pinnedFilters, filteredOptions]
   );
 
   const editingCriterionChanged = useCompare(editingCriterion);
@@ -303,6 +322,17 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     optionSelected,
     editingCriterionChanged,
   ]);
+
+  useEffect(() => {
+    Mousetrap.bind("/", (e) => {
+      setSearchFocus();
+      e.preventDefault();
+    });
+
+    return () => {
+      Mousetrap.unbind("/");
+    };
+  });
 
   async function updatePinnedFilters(filters: string[]) {
     const configKey = filterModeToConfigKey(currentFilter.mode);
@@ -403,7 +433,16 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     <>
       <Modal show onHide={() => onCancel()} className="edit-filter-dialog">
         <Modal.Header>
-          <FormattedMessage id="search_filter.edit_filter" />
+          <div>
+            <FormattedMessage id="search_filter.edit_filter" />
+          </div>
+          <Form.Control
+            className="btn-secondary search-input"
+            onChange={(e) => setSearchValue(e.target.value)}
+            value={searchValue}
+            placeholder={`${intl.formatMessage({ id: "actions.search" })}…`}
+            ref={searchRef}
+          />
         </Modal.Header>
         <Modal.Body>
           <div

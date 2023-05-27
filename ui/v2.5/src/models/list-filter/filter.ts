@@ -131,7 +131,7 @@ export class ListFilterModel {
           // it's possible that we have unsupported criteria. Just skip if so.
           if (criterion) {
             if (encodedCriterion.value !== undefined) {
-              criterion.value = encodedCriterion.value;
+              criterion.setValueFromQueryString(encodedCriterion.value);
             }
             criterion.modifier = encodedCriterion.modifier;
             this.criteria.push(criterion);

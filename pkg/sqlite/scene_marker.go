@@ -221,7 +221,7 @@ INNER JOIN (` + valuesClause + `) t ON t.column2 = m.primary_tag_id
 
 			f.addLeftJoin("marker_tags", "", "marker_tags.scene_marker_id = scene_markers.id")
 
-			addHierarchicalConditionClauses(f, tags, "marker_tags", "root_tag_id")
+			addHierarchicalConditionClauses(f, *tags, "marker_tags", "root_tag_id")
 		}
 	}
 }
@@ -254,7 +254,7 @@ INNER JOIN (` + valuesClause + `) t ON t.column2 = st.tag_id
 
 			f.addLeftJoin("scene_tags", "", "scene_tags.scene_id = scene_markers.scene_id")
 
-			addHierarchicalConditionClauses(f, tags, "scene_tags", "root_tag_id")
+			addHierarchicalConditionClauses(f, *tags, "scene_tags", "root_tag_id")
 		}
 	}
 }

@@ -22,14 +22,17 @@ import {
   IStashIDValue,
   IDateValue,
   ITimestampValue,
+  ILabeledValueListValue,
   IPhashDistanceValue,
 } from "../types";
 
 export type Option = string | number | IOptionType;
 export type CriterionValue =
   | string
+  | string[]
   | ILabeledId[]
   | IHierarchicalLabelValue
+  | ILabeledValueListValue
   | INumberValue
   | IStashIDValue
   | IDateValue
@@ -137,6 +140,10 @@ export abstract class Criterion<V extends CriterionValue> {
     return JSON.stringify(encodedCriterion);
   }
 
+  public setValueFromQueryString(v: V) {
+    this.value = v;
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public apply(outputFilter: Record<string, any>) {
     // eslint-disable-next-line no-param-reassign
@@ -232,6 +239,24 @@ export class StringCriterion extends Criterion<string> {
 
   public getLabelValue(_intl: IntlShape) {
     return this.value;
+  }
+
+  public isValid(): boolean {
+    return (
+      this.modifier === CriterionModifier.IsNull ||
+      this.modifier === CriterionModifier.NotNull ||
+      this.value.length > 0
+    );
+  }
+}
+
+export class MultiStringCriterion extends Criterion<string[]> {
+  constructor(type: CriterionOption) {
+    super(type, []);
+  }
+
+  public getLabelValue(_intl: IntlShape) {
+    return this.value.join(", ");
   }
 
   public isValid(): boolean {
@@ -512,11 +537,21 @@ export class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
 }
 
 export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabelValue> {
-  protected toCriterionInput(): HierarchicalMultiCriterionInput {
-    return {
-      value: (this.value.items ?? []).map((v) => v.id),
-      modifier: this.modifier,
-      depth: this.value.depth,
+  constructor(type: CriterionOption) {
+    const value: IHierarchicalLabelValue = {
+      items: [],
+      excluded: [],
+      depth: 0,
+    };
+
+    super(type, value);
+  }
+
+  public setValueFromQueryString(v: IHierarchicalLabelValue) {
+    this.value = {
+      items: v.items || [],
+      excluded: v.excluded || [],
+      depth: v.depth || 0,
     };
   }
 
@@ -530,24 +565,62 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
     return `${labels} (+${this.value.depth > 0 ? this.value.depth : "all"})`;
   }
 
+  protected toCriterionInput(): HierarchicalMultiCriterionInput {
+    let excludes: string[] = [];
+    if (this.value.excluded) {
+      excludes = this.value.excluded.map((v) => v.id);
+    }
+    return {
+      value: this.value.items.map((v) => v.id),
+      excludes: excludes,
+      modifier: this.modifier,
+      depth: this.value.depth,
+    };
+  }
+
   public isValid(): boolean {
     if (
       this.modifier === CriterionModifier.IsNull ||
-      this.modifier === CriterionModifier.NotNull
+      this.modifier === CriterionModifier.NotNull ||
+      this.modifier === CriterionModifier.Equals
     ) {
       return true;
     }
 
-    return this.value.items.length > 0;
+    return (
+      this.value.items.length > 0 ||
+      (this.value.excluded && this.value.excluded.length > 0)
+    );
   }
 
-  constructor(type: CriterionOption) {
-    const value: IHierarchicalLabelValue = {
-      items: [],
-      depth: 0,
-    };
+  public getLabel(intl: IntlShape): string {
+    const modifierString = Criterion.getModifierLabel(intl, this.modifier);
+    let valueString = "";
 
-    super(type, value);
+    if (
+      this.modifier !== CriterionModifier.IsNull &&
+      this.modifier !== CriterionModifier.NotNull
+    ) {
+      valueString = this.value.items.map((v) => v.label).join(", ");
+    }
+
+    let id = "criterion_modifier.format_string";
+    let excludedString = "";
+
+    if (this.value.excluded && this.value.excluded.length > 0) {
+      id = "criterion_modifier.format_string_excludes";
+      excludedString = this.value.excluded.map((v) => v.label).join(", ");
+    }
+
+    return intl.formatMessage(
+      { id },
+      {
+        criterion: intl.formatMessage({ id: this.criterionOption.messageID }),
+        modifierString,
+        valueString,
+        excludedString,
+      }
+    );
   }
 }
 

@@ -518,7 +518,7 @@ func tagParentsCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalMu
 
 			f.addLeftJoin("parents", "", "parents.item_id = tags.id")
 
-			addHierarchicalConditionClauses(f, tags, "parents", "root_id")
+			addHierarchicalConditionClauses(f, *tags, "parents", "root_id")
 		}
 	}
 }
@@ -567,7 +567,7 @@ func tagChildrenCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalM
 
 			f.addLeftJoin("children", "", "children.item_id = tags.id")
 
-			addHierarchicalConditionClauses(f, tags, "children", "root_id")
+			addHierarchicalConditionClauses(f, *tags, "children", "root_id")
 		}
 	}
 }

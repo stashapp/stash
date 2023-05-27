@@ -10,6 +10,7 @@ interface IFiles {
   __typename?: string;
   width: number;
   height: number;
+  video_codec?: GQL.Maybe<string>;
 }
 
 export interface ILightboxImage {

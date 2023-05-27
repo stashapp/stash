@@ -1011,7 +1011,7 @@ INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
 
 			f.addLeftJoin("performer_tags", "", "performer_tags.gallery_id = galleries.id")
 
-			addHierarchicalConditionClauses(f, tags, "performer_tags", "root_tag_id")
+			addHierarchicalConditionClauses(f, *tags, "performer_tags", "root_tag_id")
 		}
 	}
 }

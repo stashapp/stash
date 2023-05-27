@@ -30,14 +30,14 @@ export const BooleanFilter: React.FC<IBooleanFilter> = ({
         id={`${criterion.getId()}-true`}
         onChange={() => onSelect(true)}
         checked={criterion.value === "true"}
-        type="checkbox"
+        type="radio"
         label={<FormattedMessage id="true" />}
       />
       <Form.Check
         id={`${criterion.getId()}-false`}
         onChange={() => onSelect(false)}
         checked={criterion.value === "false"}
-        type="checkbox"
+        type="radio"
         label={<FormattedMessage id="false" />}
       />
     </div>

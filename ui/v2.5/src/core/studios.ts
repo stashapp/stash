@@ -22,6 +22,7 @@ export const useStudioFilterHook = (studio: GQL.StudioDataFragment) => {
       studioCriterion = new StudiosCriterion();
       studioCriterion.value = {
         items: [studioValue],
+        excluded: [],
         depth: (config?.configuration?.ui as IUIConfig)?.showChildStudioContent
           ? -1
           : 0,

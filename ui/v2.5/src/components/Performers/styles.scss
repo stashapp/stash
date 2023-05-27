@@ -190,27 +190,21 @@
   color: #c8a2c8;
 }
 
-.performer-height {
-  .height-imperial {
-    &::before {
-      content: " (";
-    }
+.performer-height .height-imperial,
+.performer-weight .weight-imperial,
+.performer-penis-length .penis-length-imperial {
+  &::before {
+    content: " (";
+  }
 
-    &::after {
-      content: ")";
-    }
+  &::after {
+    content: ")";
   }
 }
 
-.performer-weight {
-  .weight-imperial {
-    &::before {
-      content: " (";
-    }
-
-    &::after {
-      content: ")";
-    }
+.penis-circumcised {
+  &::before {
+    content: " ";
   }
 }
 

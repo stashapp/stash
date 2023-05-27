@@ -20,6 +20,11 @@ import {
   genderToString,
   stringToGender,
 } from "src/utils/gender";
+import {
+  circumcisedStrings,
+  circumcisedToString,
+  stringToCircumcised,
+} from "src/utils/circumcised";
 import { IStashBox } from "./PerformerStashBoxModal";
 
 function renderScrapedGender(
@@ -120,6 +125,55 @@ function renderScrapedTagsRow(
   );
 }
 
+function renderScrapedCircumcised(
+  result: ScrapeResult<string>,
+  isNew?: boolean,
+  onChange?: (value: string) => void
+) {
+  const selectOptions = [""].concat(circumcisedStrings);
+
+  return (
+    <Form.Control
+      as="select"
+      className="input-control"
+      disabled={!isNew}
+      plaintext={!isNew}
+      value={isNew ? result.newValue : result.originalValue}
+      onChange={(e) => {
+        if (isNew && onChange) {
+          onChange(e.currentTarget.value);
+        }
+      }}
+    >
+      {selectOptions.map((opt) => (
+        <option value={opt} key={opt}>
+          {opt}
+        </option>
+      ))}
+    </Form.Control>
+  );
+}
+
+function renderScrapedCircumcisedRow(
+  title: string,
+  result: ScrapeResult<string>,
+  onChange: (value: ScrapeResult<string>) => void
+) {
+  return (
+    <ScrapeDialogRow
+      title={title}
+      result={result}
+      renderOriginalField={() => renderScrapedCircumcised(result)}
+      renderNewField={() =>
+        renderScrapedCircumcised(result, true, (value) =>
+          onChange(result.cloneWithValue(value))
+        )
+      }
+      onChange={onChange}
+    />
+  );
+}
+
 interface IPerformerScrapeDialogProps {
   performer: Partial<GQL.PerformerUpdateInput>;
   scraped: GQL.ScrapedPerformer;
@@ -163,6 +217,27 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     }
 
     return genderToString(retEnum);
+  }
+
+  function translateScrapedCircumcised(scrapedCircumcised?: string | null) {
+    if (!scrapedCircumcised) {
+      return;
+    }
+
+    let retEnum: GQL.CircumisedEnum | undefined;
+
+    // try to translate from enum values first
+    const upperCircumcised = scrapedCircumcised.toUpperCase();
+    const asEnum = circumcisedToString(upperCircumcised);
+    if (asEnum) {
+      retEnum = stringToCircumcised(asEnum);
+    } else {
+      // try to match against circumcised strings
+      const caseInsensitive = true;
+      retEnum = stringToCircumcised(scrapedCircumcised, caseInsensitive);
+    }
+
+    return circumcisedToString(retEnum);
   }
 
   const [name, setName] = useState<ScrapeResult<string>>(
@@ -216,6 +291,12 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
       props.scraped.weight
     )
   );
+  const [penisLength, setPenisLength] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(
+      props.performer.penis_length?.toString(),
+      props.scraped.penis_length
+    )
+  );
   const [measurements, setMeasurements] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(
       props.performer.measurements,
@@ -250,6 +331,12 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     new ScrapeResult<string>(
       genderToString(props.performer.gender),
       translateScrapedGender(props.scraped.gender)
+    )
+  );
+  const [circumcised, setCircumcised] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(
+      circumcisedToString(props.performer.circumcised),
+      translateScrapedCircumcised(props.scraped.circumcised)
     )
   );
   const [details, setDetails] = useState<ScrapeResult<string>>(
@@ -338,6 +425,8 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     height,
     measurements,
     fakeTits,
+    penisLength,
+    circumcised,
     careerLength,
     tattoos,
     piercings,
@@ -426,6 +515,8 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
       death_date: deathDate.getNewValue(),
       hair_color: hairColor.getNewValue(),
       weight: weight.getNewValue(),
+      penis_length: penisLength.getNewValue(),
+      circumcised: circumcised.getNewValue(),
       remote_site_id: remoteSiteID.getNewValue(),
     };
   }
@@ -493,6 +584,16 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           result={height}
           onChange={(value) => setHeight(value)}
         />
+        <ScrapedInputGroupRow
+          title={intl.formatMessage({ id: "penis_length" })}
+          result={penisLength}
+          onChange={(value) => setPenisLength(value)}
+        />
+        {renderScrapedCircumcisedRow(
+          intl.formatMessage({ id: "circumcised" }),
+          circumcised,
+          (value) => setCircumcised(value)
+        )}
         <ScrapedInputGroupRow
           title={intl.formatMessage({ id: "measurements" })}
           result={measurements}

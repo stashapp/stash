@@ -24,7 +24,7 @@
 
 | Keyboard sequence | Action |
 |-------------------|--------|
-| `/` | Focus search field |
+| `/` | Focus search field / focus query field in filter dialog |
 | `f` | Show Add Filter dialog |
 | `r` | Reshuffle if sorted by random |
 | `v g` | Set view to grid |

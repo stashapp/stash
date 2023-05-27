@@ -141,6 +141,11 @@
   "captions": "Captions",
   "career_length": "Career Length",
   "chapters": "Chapters",
+  "circumcised": "Circumcised",
+  "circumcised_types": {
+    "UNCUT": "Uncut",
+    "CUT": "Cut"
+  },
   "component_tagger": {
     "config": {
       "active_instance": "Active stash-box instance:",
@@ -407,7 +412,7 @@
         "auto_tagging_all_paths": "Auto Tagging all paths",
         "auto_tagging_paths": "Auto Tagging the following paths"
       },
-      "auto_tag_based_on_filenames": "Auto-tag content based on filenames.",
+      "auto_tag_based_on_filenames": "Auto-tag content based on file paths.",
       "auto_tagging": "Auto Tagging",
       "backing_up_database": "Backing up database",
       "backup_and_download": "Performs a backup of the database and downloads the resulting file.",
@@ -721,6 +726,7 @@
     "equals": "is",
     "excludes": "excludes",
     "format_string": "{criterion} {modifierString} {valueString}",
+    "format_string_excludes": "{criterion} {modifierString} {valueString} (excludes {excludedString})",
     "greater_than": "is greater than",
     "includes": "includes",
     "includes_all": "includes all",
@@ -1016,6 +1022,9 @@
   "parent_tags": "Parent Tags",
   "part_of": "Part of {parent}",
   "path": "Path",
+  "penis": "Penis",
+  "penis_length": "Penis Length",
+  "penis_length_cm": "Penis Length (cm)",
   "perceptual_similarity": "Perceptual Similarity (phash)",
   "performer": "Performer",
   "performerTags": "Performer Tags",
