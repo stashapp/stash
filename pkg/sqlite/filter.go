@@ -838,11 +838,19 @@ type hierarchicalMultiCriterionHandlerBuilder struct {
 	foreignFK    string
 
 	parentFK       string
+	childFK        string
 	relationsTable string
 }
 
-func getHierarchicalValues(ctx context.Context, tx dbWrapper, values []string, table, relationsTable, parentFK string, depth *int) string {
+func getHierarchicalValues(ctx context.Context, tx dbWrapper, values []string, table, relationsTable, parentFK string, childFK string, depth *int) string {
 	var args []interface{}
+
+	if parentFK == "" {
+		parentFK = "parent_id"
+	}
+	if childFK == "" {
+		childFK = "child_id"
+	}
 
 	depthVal := 0
 	if depth != nil {
@@ -885,13 +893,14 @@ func getHierarchicalValues(ctx context.Context, tx dbWrapper, values []string, t
 		"inBinding":       getInBinding(inCount),
 		"recursiveSelect": "",
 		"parentFK":        parentFK,
+		"childFK":         childFK,
 		"depthCondition":  depthCondition,
 		"unionClause":     "",
 	}
 
 	if relationsTable != "" {
-		withClauseMap["recursiveSelect"] = utils.StrFormat(`SELECT p.root_id, c.child_id, depth + 1 FROM {relationsTable} AS c
-INNER JOIN items as p ON c.parent_id = p.item_id
+		withClauseMap["recursiveSelect"] = utils.StrFormat(`SELECT p.root_id, c.{childFK}, depth + 1 FROM {relationsTable} AS c
+INNER JOIN items as p ON c.{parentFK} = p.item_id
 `, withClauseMap)
 	} else {
 		withClauseMap["recursiveSelect"] = utils.StrFormat(`SELECT p.root_id, c.id, depth + 1 FROM {table} as c
@@ -968,7 +977,7 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(c *models.Hierarchica
 			}
 
 			if len(criterion.Value) > 0 {
-				valuesClause := getHierarchicalValues(ctx, m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
+				valuesClause := getHierarchicalValues(ctx, m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, m.childFK, criterion.Depth)
 
 				switch criterion.Modifier {
 				case models.CriterionModifierIncludes:
@@ -980,7 +989,7 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(c *models.Hierarchica
 			}
 
 			if len(criterion.Excludes) > 0 {
-				valuesClause := getHierarchicalValues(ctx, m.tx, criterion.Excludes, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
+				valuesClause := getHierarchicalValues(ctx, m.tx, criterion.Excludes, m.foreignTable, m.relationsTable, m.parentFK, m.childFK, criterion.Depth)
 
 				f.addWhere(fmt.Sprintf("%s.%s NOT IN (SELECT column2 FROM (%s)) OR %[1]s.%[2]s IS NULL", m.primaryTable, m.foreignFK, valuesClause))
 			}
@@ -992,10 +1001,12 @@ type joinedHierarchicalMultiCriterionHandlerBuilder struct {
 	tx dbWrapper
 
 	primaryTable string
+	primaryKey   string
 	foreignTable string
 	foreignFK    string
 
 	parentFK       string
+	childFK        string
 	relationsTable string
 
 	joinAs    string
@@ -1024,6 +1035,10 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(c *models.Hiera
 			// make a copy so we don't modify the original
 			criterion := *c
 			joinAlias := m.joinAs
+			primaryKey := m.primaryKey
+			if primaryKey == "" {
+				primaryKey = "id"
+			}
 
 			if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotNull {
 				var notClause string
@@ -1031,7 +1046,7 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(c *models.Hiera
 					notClause = "NOT"
 				}
 
-				f.addLeftJoin(m.joinTable, joinAlias, fmt.Sprintf("%s.%s = %s.id", joinAlias, m.primaryFK, m.primaryTable))
+				f.addLeftJoin(m.joinTable, joinAlias, fmt.Sprintf("%s.%s = %s.%s", joinAlias, m.primaryFK, m.primaryTable, primaryKey))
 
 				f.addWhere(utils.StrFormat("{table}.{column} IS {not} NULL", utils.StrFormatMap{
 					"table":  joinAlias,
@@ -1053,7 +1068,7 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(c *models.Hiera
 			}
 
 			if len(criterion.Value) > 0 {
-				valuesClause := getHierarchicalValues(ctx, m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
+				valuesClause := getHierarchicalValues(ctx, m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, m.childFK, criterion.Depth)
 
 				joinTable := utils.StrFormat(`(
 		SELECT j.*, d.column1 AS root_id, d.column2 AS item_id FROM {joinTable} AS j
@@ -1065,13 +1080,13 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(c *models.Hiera
 					"valuesClause": valuesClause,
 				})
 
-				f.addLeftJoin(joinTable, joinAlias, fmt.Sprintf("%s.%s = %s.id", joinAlias, m.primaryFK, m.primaryTable))
+				f.addLeftJoin(joinTable, joinAlias, fmt.Sprintf("%s.%s = %s.%s", joinAlias, m.primaryFK, m.primaryTable, primaryKey))
 
 				m.addHierarchicalConditionClauses(f, criterion, joinAlias, "root_id")
 			}
 
 			if len(criterion.Excludes) > 0 {
-				valuesClause := getHierarchicalValues(ctx, m.tx, criterion.Excludes, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
+				valuesClause := getHierarchicalValues(ctx, m.tx, criterion.Excludes, m.foreignTable, m.relationsTable, m.parentFK, m.childFK, criterion.Depth)
 
 				joinTable := utils.StrFormat(`(
 		SELECT j2.*, e.column1 AS root_id, e.column2 AS item_id FROM {joinTable} AS j2
@@ -1085,7 +1100,7 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(c *models.Hiera
 
 				joinAlias2 := joinAlias + "2"
 
-				f.addLeftJoin(joinTable, joinAlias2, fmt.Sprintf("%s.%s = %s.id", joinAlias2, m.primaryFK, m.primaryTable))
+				f.addLeftJoin(joinTable, joinAlias2, fmt.Sprintf("%s.%s = %s.%s", joinAlias2, m.primaryFK, m.primaryTable, primaryKey))
 
 				// modify for exclusion
 				criterionCopy := criterion

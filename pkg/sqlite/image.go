@@ -962,34 +962,23 @@ func imageStudioCriterionHandler(qb *ImageStore, studios *models.HierarchicalMul
 func imagePerformerTagsCriterionHandler(qb *ImageStore, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if tags != nil {
-			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
-				var notClause string
-				if tags.Modifier == models.CriterionModifierNotNull {
-					notClause = "NOT"
-				}
+			f.addLeftJoin("performers_images", "", "images.id = performers_images.image_id")
 
-				f.addLeftJoin("performers_images", "", "images.id = performers_images.image_id")
-				f.addLeftJoin("performers_tags", "", "performers_images.performer_id = performers_tags.performer_id")
+			h := joinedHierarchicalMultiCriterionHandlerBuilder{
+				tx: qb.tx,
 
-				f.addWhere(fmt.Sprintf("performers_tags.tag_id IS %s NULL", notClause))
-				return
+				primaryTable: "performers_images",
+				primaryKey:   performerIDColumn,
+				foreignTable: tagTable,
+				foreignFK:    tagIDColumn,
+
+				relationsTable: "tags_relations",
+				joinTable:      "performers_tags",
+				joinAs:         "image_performers_tags",
+				primaryFK:      performerIDColumn,
 			}
 
-			if len(tags.Value) == 0 {
-				return
-			}
-
-			valuesClause := getHierarchicalValues(ctx, qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
-
-			f.addWith(`performer_tags AS (
-SELECT pi.image_id, t.column1 AS root_tag_id FROM performers_images pi
-INNER JOIN performers_tags pt ON pt.performer_id = pi.performer_id
-INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
-)`)
-
-			f.addLeftJoin("performer_tags", "", "performer_tags.image_id = images.id")
-
-			addHierarchicalConditionClauses(f, *tags, "performer_tags", "root_tag_id")
+			h.handler(tags).handle(ctx, f)
 		}
 	}
 }

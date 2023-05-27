@@ -477,48 +477,21 @@ func tagMarkerCountCriterionHandler(qb *tagQueryBuilder, markerCount *models.Int
 func tagParentsCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if tags != nil {
-			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
-				var notClause string
-				if tags.Modifier == models.CriterionModifierNotNull {
-					notClause = "NOT"
-				}
+			f.addLeftJoin("tags_relations", "parent_relations", "tags.id = parent_relations.child_id")
 
-				f.addLeftJoin("tags_relations", "parent_relations", "tags.id = parent_relations.child_id")
+			h := hierarchicalMultiCriterionHandlerBuilder{
+				tx: qb.tx,
 
-				f.addWhere(fmt.Sprintf("parent_relations.parent_id IS %s NULL", notClause))
-				return
+				primaryTable: "parent_relations",
+				foreignTable: tagTable,
+				foreignFK:    "parent_id",
+
+				relationsTable: "tags_relations",
+				parentFK:       "parent_id",
+				childFK:        "child_id",
 			}
 
-			if len(tags.Value) == 0 {
-				return
-			}
-
-			var args []interface{}
-			for _, val := range tags.Value {
-				args = append(args, val)
-			}
-
-			depthVal := 0
-			if tags.Depth != nil {
-				depthVal = *tags.Depth
-			}
-
-			var depthCondition string
-			if depthVal != -1 {
-				depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
-			}
-
-			query := `parents AS (
-	SELECT parent_id AS root_id, child_id AS item_id, 0 AS depth FROM tags_relations WHERE parent_id IN` + getInBinding(len(tags.Value)) + `
-	UNION
-	SELECT root_id, child_id, depth + 1 FROM tags_relations INNER JOIN parents ON item_id = parent_id ` + depthCondition + `
-)`
-
-			f.addRecursiveWith(query, args...)
-
-			f.addLeftJoin("parents", "", "parents.item_id = tags.id")
-
-			addHierarchicalConditionClauses(f, *tags, "parents", "root_id")
+			h.handler(tags).handle(ctx, f)
 		}
 	}
 }
@@ -526,48 +499,21 @@ func tagParentsCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalMu
 func tagChildrenCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if tags != nil {
-			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
-				var notClause string
-				if tags.Modifier == models.CriterionModifierNotNull {
-					notClause = "NOT"
-				}
+			f.addLeftJoin("tags_relations", "child_relations", "tags.id = child_relations.parent_id")
 
-				f.addLeftJoin("tags_relations", "child_relations", "tags.id = child_relations.parent_id")
+			h := hierarchicalMultiCriterionHandlerBuilder{
+				tx: qb.tx,
 
-				f.addWhere(fmt.Sprintf("child_relations.child_id IS %s NULL", notClause))
-				return
+				primaryTable: "child_relations",
+				foreignTable: tagTable,
+				foreignFK:    "child_id",
+
+				relationsTable: "tags_relations",
+				parentFK:       "child_id",
+				childFK:        "parent_id",
 			}
 
-			if len(tags.Value) == 0 {
-				return
-			}
-
-			var args []interface{}
-			for _, val := range tags.Value {
-				args = append(args, val)
-			}
-
-			depthVal := 0
-			if tags.Depth != nil {
-				depthVal = *tags.Depth
-			}
-
-			var depthCondition string
-			if depthVal != -1 {
-				depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
-			}
-
-			query := `children AS (
-	SELECT child_id AS root_id, parent_id AS item_id, 0 AS depth FROM tags_relations WHERE child_id IN` + getInBinding(len(tags.Value)) + `
-	UNION
-	SELECT root_id, parent_id, depth + 1 FROM tags_relations INNER JOIN children ON item_id = child_id ` + depthCondition + `
-)`
-
-			f.addRecursiveWith(query, args...)
-
-			f.addLeftJoin("children", "", "children.item_id = tags.id")
-
-			addHierarchicalConditionClauses(f, *tags, "children", "root_id")
+			h.handler(tags).handle(ctx, f)
 		}
 	}
 }
