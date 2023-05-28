@@ -89,14 +89,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const [scrapedScene, setScrapedScene] = useState<GQL.ScrapedScene | null>();
   const [endpoint, setEndpoint] = useState<string>();
 
-  const [coverImagePreview, setCoverImagePreview] = useState<string>();
-
-  useEffect(() => {
-    setCoverImagePreview(
-      initialCoverImage ?? scene.paths?.screenshot ?? undefined
-    );
-  }, [scene.paths?.screenshot, initialCoverImage]);
-
   useEffect(() => {
     setGalleries(
       scene.galleries?.map((g) => ({
@@ -177,6 +169,19 @@ export const SceneEditPanel: React.FC<IProps> = ({
     validationSchema: schema,
     onSubmit: (values) => onSave(values),
   });
+
+  const coverImagePreview = useMemo(() => {
+    const sceneImage = scene.paths?.screenshot;
+    const formImage = formik.values.cover_image;
+    if (formImage === null && sceneImage) {
+      const sceneImageURL = new URL(sceneImage);
+      sceneImageURL.searchParams.set("default", "true");
+      return sceneImageURL.toString();
+    } else if (formImage) {
+      return formImage;
+    }
+    return sceneImage;
+  }, [formik.values.cover_image, scene.paths?.screenshot]);
 
   function setRating(v: number) {
     formik.setFieldValue("rating100", v);
@@ -288,7 +293,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const encodingImage = ImageUtils.usePasteImage(onImageLoad);
 
   function onImageLoad(imageData: string) {
-    setCoverImagePreview(imageData);
     formik.setFieldValue("cover_image", imageData);
   }
 
@@ -589,7 +593,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
     if (updatedScene.image) {
       // image is a base64 string
       formik.setFieldValue("cover_image", updatedScene.image);
-      setCoverImagePreview(updatedScene.image);
     }
 
     if (updatedScene.remote_site_id && endpoint) {
