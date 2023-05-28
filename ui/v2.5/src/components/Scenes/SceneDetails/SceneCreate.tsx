@@ -17,7 +17,7 @@ const SceneCreate: React.FC = () => {
   const query = useMemo(() => new URLSearchParams(location.search), [location]);
 
   // create scene from provided scene id if applicable
-  const { data, loading } = useFindScene(query.get("from_scene_id") ?? "");
+  const { data, loading } = useFindScene(query.get("from_scene_id") ?? "new");
   const [loadingCoverImage, setLoadingCoverImage] = useState(false);
   const [coverImage, setCoverImage] = useState<string>();
 

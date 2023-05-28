@@ -222,8 +222,10 @@ export const useFindGallery = (id: string) => {
   const skip = id === "new";
   return GQL.useFindGalleryQuery({ variables: { id }, skip });
 };
-export const useFindScene = (id: string) =>
-  GQL.useFindSceneQuery({ variables: { id } });
+export const useFindScene = (id: string) => {
+  const skip = id === "new";
+  return GQL.useFindSceneQuery({ variables: { id }, skip });
+};
 export const useSceneStreams = (id: string) =>
   GQL.useSceneStreamsQuery({ variables: { id } });
 
