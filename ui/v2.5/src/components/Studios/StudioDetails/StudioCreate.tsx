@@ -27,15 +27,17 @@ const StudioCreate: React.FC = () => {
   const [createStudio] = useStudioCreate();
 
   async function onSave(input: GQL.StudioCreateInput) {
-    try {
-      const result = await createStudio({
-        variables: { input },
+    const result = await createStudio({
+      variables: { input },
+    });
+    if (result.data?.studioCreate?.id) {
+      history.push(`/studios/${result.data.studioCreate.id}`);
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "toast.created_entity" },
+          { entity: intl.formatMessage({ id: "studio" }).toLocaleLowerCase() }
+        ),
       });
-      if (result.data?.studioCreate?.id) {
-        history.push(`/studios/${result.data.studioCreate.id}`);
-      }
-    } catch (e) {
-      Toast.error(e);
     }
   }
 

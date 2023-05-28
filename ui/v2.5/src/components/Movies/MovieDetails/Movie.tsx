@@ -95,21 +95,21 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   });
 
   async function onSave(input: GQL.MovieCreateInput) {
-    try {
-      const result = await updateMovie({
-        variables: {
-          input: {
-            id: movie.id,
-            ...input,
-          },
+    await updateMovie({
+      variables: {
+        input: {
+          id: movie.id,
+          ...input,
         },
-      });
-      if (result.data?.movieUpdate) {
-        toggleEditing();
-      }
-    } catch (e) {
-      Toast.error(e);
-    }
+      },
+    });
+    toggleEditing(false);
+    Toast.success({
+      content: intl.formatMessage(
+        { id: "toast.updated_entity" },
+        { entity: intl.formatMessage({ id: "movie" }).toLocaleLowerCase() }
+      ),
+    });
   }
 
   async function onDelete() {
@@ -123,8 +123,12 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
     history.push(`/movies`);
   }
 
-  function toggleEditing() {
-    setIsEditing((e) => !e);
+  function toggleEditing(value?: boolean) {
+    if (value !== undefined) {
+      setIsEditing(value);
+    } else {
+      setIsEditing((e) => !e);
+    }
     setFrontImage(undefined);
     setBackImage(undefined);
   }
@@ -238,7 +242,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
               objectName={movie.name}
               isNew={false}
               isEditing={isEditing}
-              onToggleEdit={toggleEditing}
+              onToggleEdit={() => toggleEditing()}
               onSave={() => {}}
               onImageChange={() => {}}
               onDelete={onDelete}
@@ -248,7 +252,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
           <MovieEditPanel
             movie={movie}
             onSubmit={onSave}
-            onCancel={toggleEditing}
+            onCancel={() => toggleEditing()}
             onDelete={onDelete}
             setFrontImage={setFrontImage}
             setBackImage={setBackImage}

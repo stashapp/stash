@@ -17,6 +17,7 @@ import { Icon } from "src/components/Shared/Icon";
 import { Counter } from "src/components/Shared/Counter";
 import { useToast } from "src/hooks/Toast";
 import * as Mousetrap from "mousetrap";
+import * as GQL from "src/core/generated-graphql";
 import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButton";
 import { OrganizedButton } from "src/components/Scenes/SceneDetails/OrganizedButton";
 import { ImageFileInfoPanel } from "./ImageFileInfoPanel";
@@ -50,6 +51,18 @@ export const Image: React.FC = () => {
   const [activeTabKey, setActiveTabKey] = useState("image-details-panel");
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+
+  async function onSave(input: GQL.ImageUpdateInput) {
+    await updateImage({
+      variables: { input },
+    });
+    Toast.success({
+      content: intl.formatMessage(
+        { id: "toast.updated_entity" },
+        { entity: intl.formatMessage({ id: "image" }).toLocaleLowerCase() }
+      ),
+    });
+  }
 
   async function onRescan() {
     if (!image || !image.visual_files.length) {
@@ -225,6 +238,7 @@ export const Image: React.FC = () => {
             <ImageEditPanel
               isVisible={activeTabKey === "image-edit-panel"}
               image={image}
+              onSubmit={onSave}
               onDelete={() => setIsDeleteAlertOpen(true)}
             />
           </Tab.Pane>

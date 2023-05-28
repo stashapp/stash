@@ -169,6 +169,23 @@ const ScenePage: React.FC<IProps> = ({
     };
   });
 
+  async function onSave(input: GQL.SceneCreateInput) {
+    await updateScene({
+      variables: {
+        input: {
+          id: scene.id,
+          ...input,
+        },
+      },
+    });
+    Toast.success({
+      content: intl.formatMessage(
+        { id: "toast.updated_entity" },
+        { entity: intl.formatMessage({ id: "scene" }).toLocaleLowerCase() }
+      ),
+    });
+  }
+
   const onOrganizedClick = async () => {
     try {
       setOrganizedLoading(true);
@@ -461,6 +478,7 @@ const ScenePage: React.FC<IProps> = ({
           <SceneEditPanel
             isVisible={activeTabKey === "scene-edit-panel"}
             scene={scene}
+            onSubmit={onSave}
             onDelete={() => setIsDeleteAlertOpen(true)}
           />
         </Tab.Pane>

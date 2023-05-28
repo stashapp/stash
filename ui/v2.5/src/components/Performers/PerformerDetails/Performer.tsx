@@ -144,6 +144,24 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     };
   });
 
+  async function onSave(input: GQL.PerformerCreateInput) {
+    await updatePerformer({
+      variables: {
+        input: {
+          id: performer.id,
+          ...input,
+        },
+      },
+    });
+    toggleEditing(false);
+    Toast.success({
+      content: intl.formatMessage(
+        { id: "toast.updated_entity" },
+        { entity: intl.formatMessage({ id: "performer" }).toLocaleLowerCase() }
+      ),
+    });
+  }
+
   async function onDelete() {
     try {
       await deletePerformer({ variables: { id: performer.id } });
@@ -155,8 +173,12 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     history.push("/performers");
   }
 
-  function toggleEditing() {
-    setIsEditing((e) => !e);
+  function toggleEditing(value?: boolean) {
+    if (value !== undefined) {
+      setIsEditing(value);
+    } else {
+      setIsEditing((e) => !e);
+    }
     setImage(undefined);
   }
 
@@ -177,7 +199,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             objectName={
               performer?.name ?? intl.formatMessage({ id: "performer" })
             }
-            onToggleEdit={toggleEditing}
+            onToggleEdit={() => toggleEditing()}
             onDelete={onDelete}
             onAutoTag={onAutoTag}
             isNew={false}
@@ -297,7 +319,8 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <PerformerEditPanel
           performer={performer}
           isVisible={isEditing}
-          onCancel={toggleEditing}
+          onSubmit={onSave}
+          onCancel={() => toggleEditing()}
           setImage={setImage}
           setEncodingImage={setEncodingImage}
         />

@@ -64,6 +64,23 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
 
   const [organizedLoading, setOrganizedLoading] = useState(false);
 
+  async function onSave(input: GQL.GalleryCreateInput) {
+    await updateGallery({
+      variables: {
+        input: {
+          id: gallery.id,
+          ...input,
+        },
+      },
+    });
+    Toast.success({
+      content: intl.formatMessage(
+        { id: "toast.updated_entity" },
+        { entity: intl.formatMessage({ id: "gallery" }).toLocaleLowerCase() }
+      ),
+    });
+  }
+
   const onOrganizedClick = async () => {
     try {
       setOrganizedLoading(true);
@@ -242,6 +259,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
             <GalleryEditPanel
               isVisible={activeTabKey === "gallery-edit-panel"}
               gallery={gallery}
+              onSubmit={onSave}
               onDelete={() => setIsDeleteAlertOpen(true)}
             />
           </Tab.Pane>
