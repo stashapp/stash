@@ -68,15 +68,17 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
 
   const activeImage = useMemo(() => {
     const performerImage = performer.image_path;
-    if (image === null && performerImage) {
-      const performerImageURL = new URL(performerImage);
-      performerImageURL.searchParams.set("default", "true");
-      return performerImageURL.toString();
-    } else if (image) {
-      return image;
+    if (isEditing) {
+      if (image === null && performerImage) {
+        const performerImageURL = new URL(performerImage);
+        performerImageURL.searchParams.set("default", "true");
+        return performerImageURL.toString();
+      } else if (image) {
+        return image;
+      }
     }
     return performerImage;
-  }, [image, performer.image_path]);
+  }, [image, isEditing, performer.image_path]);
 
   const lightboxImages = useMemo(
     () => [{ paths: { thumbnail: activeImage, image: activeImage } }],
@@ -122,11 +124,6 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     setRating
   );
 
-  // reset image if performer changed
-  useEffect(() => {
-    setImage(undefined);
-  }, [performer]);
-
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("a", () => setActiveTabKey("details"));
@@ -158,6 +155,11 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     history.push("/performers");
   }
 
+  function onToggleEdit() {
+    setIsEditing(!isEditing);
+    setImage(undefined);
+  }
+
   function renderImage() {
     if (activeImage) {
       return (
@@ -175,9 +177,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             objectName={
               performer?.name ?? intl.formatMessage({ id: "performer" })
             }
-            onToggleEdit={() => {
-              setIsEditing(!isEditing);
-            }}
+            onToggleEdit={onToggleEdit}
             onDelete={onDelete}
             onAutoTag={onAutoTag}
             isNew={false}
@@ -297,7 +297,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <PerformerEditPanel
           performer={performer}
           isVisible={isEditing}
-          onCancel={() => setIsEditing(false)}
+          onCancel={onToggleEdit}
           setImage={setImage}
           setEncodingImage={setEncodingImage}
         />
