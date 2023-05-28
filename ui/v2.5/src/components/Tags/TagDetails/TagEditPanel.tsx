@@ -87,11 +87,6 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     onSubmit: (values) => onSubmit(values),
   });
 
-  function onCancelEditing() {
-    setImage(undefined);
-    onCancel?.();
-  }
-
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("s s", () => formik.handleSubmit());
@@ -275,7 +270,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
         objectName={tag?.name ?? intl.formatMessage({ id: "tag" })}
         isNew={isNew}
         isEditing={isEditing}
-        onToggleEdit={onCancelEditing}
+        onToggleEdit={onCancel}
         onSave={formik.handleSubmit}
         saveDisabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}
         onImageChange={onImageChange}

@@ -499,11 +499,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     setIsLoading(false);
   }
 
-  function onCancelEditing() {
-    setImage(undefined);
-    onCancel?.();
-  }
-
   // set up hotkeys
   useEffect(() => {
     if (isVisible) {
@@ -729,7 +724,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return (
       <div className={cx("details-edit", "col-xl-9", classNames)}>
         {!isNew && onCancel ? (
-          <Button className="mr-2" variant="primary" onClick={onCancelEditing}>
+          <Button className="mr-2" variant="primary" onClick={onCancel}>
             <FormattedMessage id="actions.cancel" />
           </Button>
         ) : null}

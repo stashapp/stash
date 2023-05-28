@@ -88,7 +88,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
 
   // set up hotkeys
   useEffect(() => {
-    Mousetrap.bind("e", () => setIsEditing(true));
+    Mousetrap.bind("e", () => toggleEditing());
     Mousetrap.bind("d d", () => {
       onDelete();
     });
@@ -120,7 +120,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
         },
       });
       if (result.data?.tagUpdate) {
-        setIsEditing(false);
+        toggleEditing();
         const updated = result.data.tagUpdate;
         tagRelationHook(updated, oldRelations, {
           parents: updated.parents,
@@ -190,8 +190,8 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
     );
   }
 
-  function onToggleEdit() {
-    setIsEditing(!isEditing);
+  function toggleEditing() {
+    setIsEditing((e) => !e);
     setImage(undefined);
   }
 
@@ -283,7 +283,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 objectName={tag.name}
                 isNew={false}
                 isEditing={isEditing}
-                onToggleEdit={onToggleEdit}
+                onToggleEdit={toggleEditing}
                 onSave={() => {}}
                 onImageChange={() => {}}
                 onClearImage={() => {}}
@@ -297,7 +297,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
             <TagEditPanel
               tag={tag}
               onSubmit={onSave}
-              onCancel={onToggleEdit}
+              onCancel={toggleEditing}
               onDelete={onDelete}
               setImage={setImage}
               setEncodingImage={setEncodingImage}

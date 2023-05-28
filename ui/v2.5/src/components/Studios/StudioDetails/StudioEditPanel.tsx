@@ -114,11 +114,6 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     setRating
   );
 
-  function onCancelEditing() {
-    setImage(undefined);
-    onCancel?.();
-  }
-
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("s s", () => formik.handleSubmit());
@@ -331,7 +326,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         objectName={studio?.name ?? intl.formatMessage({ id: "studio" })}
         isNew={isNew}
         isEditing
-        onToggleEdit={onCancelEditing}
+        onToggleEdit={onCancel}
         onSave={formik.handleSubmit}
         saveDisabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}
         onImageChange={onImageChange}

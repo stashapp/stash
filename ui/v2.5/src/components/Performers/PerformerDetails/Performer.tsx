@@ -127,7 +127,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("a", () => setActiveTabKey("details"));
-    Mousetrap.bind("e", () => setIsEditing(!isEditing));
+    Mousetrap.bind("e", () => toggleEditing());
     Mousetrap.bind("c", () => setActiveTabKey("scenes"));
     Mousetrap.bind("g", () => setActiveTabKey("galleries"));
     Mousetrap.bind("m", () => setActiveTabKey("movies"));
@@ -155,8 +155,8 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     history.push("/performers");
   }
 
-  function onToggleEdit() {
-    setIsEditing(!isEditing);
+  function toggleEditing() {
+    setIsEditing((e) => !e);
     setImage(undefined);
   }
 
@@ -177,7 +177,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             objectName={
               performer?.name ?? intl.formatMessage({ id: "performer" })
             }
-            onToggleEdit={onToggleEdit}
+            onToggleEdit={toggleEditing}
             onDelete={onDelete}
             onAutoTag={onAutoTag}
             isNew={false}
@@ -297,7 +297,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <PerformerEditPanel
           performer={performer}
           isVisible={isEditing}
-          onCancel={onToggleEdit}
+          onCancel={toggleEditing}
           setImage={setImage}
           setEncodingImage={setEncodingImage}
         />

@@ -69,7 +69,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
 
   // set up hotkeys
   useEffect(() => {
-    Mousetrap.bind("e", () => setIsEditing(true));
+    Mousetrap.bind("e", () => toggleEditing());
     Mousetrap.bind("d d", () => {
       onDelete();
     });
@@ -93,7 +93,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
         },
       });
       if (result.data?.studioUpdate) {
-        setIsEditing(false);
+        toggleEditing();
       }
     } catch (e) {
       Toast.error(e);
@@ -149,8 +149,9 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     );
   }
 
-  function onToggleEdit() {
-    setIsEditing(!isEditing);
+  function toggleEditing() {
+    setIsEditing((e) => !e);
+    setImage(undefined);
   }
 
   function renderImage() {
@@ -213,7 +214,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               objectName={studio.name ?? intl.formatMessage({ id: "studio" })}
               isNew={false}
               isEditing={isEditing}
-              onToggleEdit={onToggleEdit}
+              onToggleEdit={toggleEditing}
               onSave={() => {}}
               onImageChange={() => {}}
               onClearImage={() => {}}
@@ -225,7 +226,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           <StudioEditPanel
             studio={studio}
             onSubmit={onSave}
-            onCancel={onToggleEdit}
+            onCancel={toggleEditing}
             onDelete={onDelete}
             setImage={setImage}
             setEncodingImage={setEncodingImage}
