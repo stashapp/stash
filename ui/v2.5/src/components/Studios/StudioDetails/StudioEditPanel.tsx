@@ -123,7 +123,11 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
 
   // set up hotkeys
   useEffect(() => {
-    Mousetrap.bind("s s", () => formik.handleSubmit());
+    Mousetrap.bind("s s", () => {
+      if (formik.dirty) {
+        formik.submitForm();
+      }
+    });
 
     return () => {
       Mousetrap.unbind("s s");

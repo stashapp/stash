@@ -122,7 +122,11 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     //   setStudioFocus()
     //   e.preventDefault();
     // });
-    Mousetrap.bind("s s", () => formik.handleSubmit());
+    Mousetrap.bind("s s", () => {
+      if (formik.dirty) {
+        formik.submitForm();
+      }
+    });
 
     return () => {
       // Mousetrap.unbind("u");

@@ -476,7 +476,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   useEffect(() => {
     if (isVisible) {
       Mousetrap.bind("s s", () => {
-        onSave?.(formik.values);
+        if (formik.dirty) {
+          formik.submitForm();
+        }
       });
 
       return () => {
