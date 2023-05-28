@@ -45,15 +45,21 @@ func (e InvalidCredentialsError) Error() string {
 
 var ErrUnauthorized = errors.New("unauthorized")
 
-type Store struct {
-	sessionStore *sessions.CookieStore
-	config       SessionConfig
+type Authenticator interface {
+	ValidateCredentials(username string, password string) bool
 }
 
-func NewStore(c SessionConfig) *Store {
+type Store struct {
+	sessionStore  *sessions.CookieStore
+	authenticator Authenticator
+	config        SessionConfig
+}
+
+func NewStore(c SessionConfig, a Authenticator) *Store {
 	ret := &Store{
-		sessionStore: sessions.NewCookieStore(c.GetSessionStoreKey()),
-		config:       c,
+		sessionStore:  sessions.NewCookieStore(c.GetSessionStoreKey()),
+		config:        c,
+		authenticator: a,
 	}
 
 	ret.sessionStore.MaxAge(c.GetMaxSessionAge())
@@ -70,7 +76,7 @@ func (s *Store) Login(w http.ResponseWriter, r *http.Request) error {
 	password := r.FormValue(passwordFormKey)
 
 	// authenticate the user
-	if !s.config.ValidateCredentials(username, password) {
+	if !s.authenticator.ValidateCredentials(username, password) {
 		return &InvalidCredentialsError{Username: username}
 	}
 

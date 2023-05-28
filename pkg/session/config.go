@@ -13,5 +13,4 @@ type SessionConfig interface {
 
 	GetSessionStoreKey() []byte
 	GetMaxSessionAge() int
-	ValidateCredentials(username string, password string) bool
 }
