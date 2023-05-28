@@ -33,7 +33,7 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
   displayModeOptions,
 }) => {
   const minZoom = 0;
-  const maxZoom = 3;
+  const maxZoom = 4;
 
   const intl = useIntl();
 
@@ -138,7 +138,7 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
   }
 
   function maybeRenderZoom() {
-    if (onSetZoom && displayMode === DisplayMode.Grid) {
+    if (onSetZoom && (displayMode === DisplayMode.Grid || displayMode === DisplayMode.Wall)) {
       return (
         <div className="ml-2 mb-2 d-none d-sm-inline-flex">
           <Form.Control

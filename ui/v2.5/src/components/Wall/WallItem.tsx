@@ -31,6 +31,7 @@ interface IWallItemProps<T extends WallItemType> {
   sceneQueue?: SceneQueue;
   clickHandler?: (e: MouseEvent, item: WallItemData[T]) => void;
   className: string;
+  zoomIndex?: number;
 }
 
 interface IPreviews {
@@ -124,6 +125,7 @@ export const WallItem = <T extends WallItemType>({
   sceneQueue,
   clickHandler,
   className,
+  zoomIndex,
 }: IWallItemProps<T>) => {
   const [active, setActive] = useState(false);
   const itemEl = useRef<HTMLDivElement>(null);
@@ -243,7 +245,7 @@ export const WallItem = <T extends WallItemType>({
   };
 
   return (
-    <div className="wall-item">
+    <div className={`wall-item item-size-${zoomIndex}`}>
       <div className={`wall-item-container ${className}`} ref={itemEl}>
         <Link onClick={onClick} to={linkSrc} className="wall-item-anchor">
           <Preview previews={previews} config={config} active={active} />

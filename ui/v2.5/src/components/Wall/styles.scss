@@ -1,22 +1,56 @@
+@mixin shared-size {
+  @media (max-width: 576px) {
+    width: 33%;
+  }
+}
+
+.item-size {
+  &-0 {
+    width: 20%;
+    @include shared-size;
+  }
+
+  &-1 {
+    width: 25%;
+    @include shared-size;
+  }
+
+  &-2 {
+    width: 33.33%;
+    @include shared-size;
+  }
+
+  &-3 {
+    width: 50%;
+    @include shared-size;
+  }
+
+  &-4 {
+    width: 90%;
+    @include shared-size;
+  }
+}
+
 .wall {
   margin: 0 auto;
   max-width: 2250px;
 
   &-item {
-    height: 11.25vw;
+    height: max-content;
     line-height: 0;
-    max-height: 253px;
-    max-width: 450px;
     overflow: visible;
     padding: 0;
     transition: z-index 0.5s 0.5s;
-    width: 20%;
     z-index: 0;
 
     @media (max-width: 576px) {
       height: inherit;
       max-width: 100%;
       min-height: 210px;
+      width: 100%;
+    }
+
+    &-anchor {
       width: 100%;
     }
 
