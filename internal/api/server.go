@@ -173,7 +173,14 @@ func Initialize() (*Server, error) {
 		hookExecutor:   pluginCache,
 	}
 
-	gqlSrv := gqlHandler.New(NewExecutableSchema(Config{Resolvers: resolver}))
+	gqlCfg := Config{
+		Resolvers: resolver,
+		Directives: DirectiveRoot{
+			HasRole: HasRoleDirective,
+		},
+	}
+
+	gqlSrv := gqlHandler.New(NewExecutableSchema(gqlCfg))
 	gqlSrv.SetRecoverFunc(recoverFunc)
 	gqlSrv.AddTransport(gqlTransport.Websocket{
 		Upgrader: websocket.Upgrader{

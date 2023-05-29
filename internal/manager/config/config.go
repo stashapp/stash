@@ -1142,6 +1142,14 @@ func (i *Config) GetUsername() string {
 }
 
 func (i *Config) GetUser(ctx context.Context, username string) (*user.User, error) {
+	// TODO - temp
+	if username == "read" {
+		return &user.User{
+			Username: username,
+			Roles:    []user.RoleEnum{user.RoleEnumRead},
+		}, nil
+	}
+
 	u := i.GetUsername()
 	if u != username {
 		return nil, user.ErrUserNotFound
@@ -1149,6 +1157,7 @@ func (i *Config) GetUser(ctx context.Context, username string) (*user.User, erro
 
 	return &user.User{
 		Username: u,
+		Roles:    []user.RoleEnum{user.RoleEnumAdmin},
 	}, nil
 }
 
@@ -1186,6 +1195,11 @@ func (i *Config) ValidateCredentials(username string, password string) bool {
 	if hc, _ := i.HasCredentials(context.Background()); !hc {
 		// don't need to authenticate if no credentials saved
 		return true
+	}
+
+	// TODO - temp
+	if username == "read" {
+		return password == "read"
 	}
 
 	authUser, authPWHash := i.GetCredentials()
