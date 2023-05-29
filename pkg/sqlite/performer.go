@@ -323,7 +323,7 @@ func (qb *PerformerStore) Find(ctx context.Context, id int) (*models.Performer, 
 
 	ret, err := qb.get(ctx, q)
 	if err != nil {
-		return nil, fmt.Errorf("getting scene by id %d: %w", id, err)
+		return nil, fmt.Errorf("getting performer by id %d: %w", id, err)
 	}
 
 	return ret, nil
