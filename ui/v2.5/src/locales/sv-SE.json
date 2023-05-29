@@ -141,6 +141,11 @@
   "captions": "Undertexter",
   "career_length": "Karriärlängd",
   "chapters": "Kapitel",
+  "circumcised": "Omskuren",
+  "circumcised_types": {
+    "CUT": "Omskuren",
+    "UNCUT": "Ej omskuren"
+  },
   "component_tagger": {
     "config": {
       "active_instance": "Aktiv stash-box instans:",
@@ -407,7 +412,7 @@
         "auto_tagging_all_paths": "Autotagga alla sökvägar",
         "auto_tagging_paths": "Autotagga följande sökvägar"
       },
-      "auto_tag_based_on_filenames": "Tagga innehåll automatiskt baserat på filnamn.",
+      "auto_tag_based_on_filenames": "Tagga innehåll automatiskt baserat på sökvägar.",
       "auto_tagging": "Automatisk taggning",
       "backing_up_database": "Säkerhetskopierar databas",
       "backup_and_download": "Säkerhetskopierar databasen och laddar ner den resulterande filen.",
@@ -721,6 +726,7 @@
     "equals": "är",
     "excludes": "exkluderar",
     "format_string": "{criterion} {modifierString} {valueString}",
+    "format_string_excludes": "",
     "greater_than": "är större än",
     "includes": "inkluderar",
     "includes_all": "inkluderar allt",
@@ -1016,6 +1022,9 @@
   "parent_tags": "Överordnade Taggar",
   "part_of": "Del av {parent}",
   "path": "Sökväg",
+  "penis": "Penis",
+  "penis_length": "Penislängd",
+  "penis_length_cm": "Penislängd (cm)",
   "perceptual_similarity": "Perceptuell likhet (phash)",
   "performer": "Stjärna",
   "performerTags": "Stjärntagg",
