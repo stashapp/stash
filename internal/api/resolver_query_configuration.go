@@ -78,6 +78,9 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 
 	customPerformerImageLocation := config.GetCustomPerformerImageLocation()
 
+	username := config.GetUsername()
+	pwHash, _ := config.GetPasswordHash(context.Background(), username)
+
 	return &ConfigGeneralResult{
 		Stashes:                       config.GetStashPaths(),
 		DatabasePath:                  config.GetDatabasePath(),
@@ -115,7 +118,7 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		GalleryCoverRegex:             config.GetGalleryCoverRegex(),
 		APIKey:                        config.GetAPIKey(),
 		Username:                      config.GetUsername(),
-		Password:                      config.GetPasswordHash(),
+		Password:                      pwHash,
 		MaxSessionAge:                 config.GetMaxSessionAge(),
 		LogFile:                       &logFile,
 		LogOut:                        config.GetLogOut(),

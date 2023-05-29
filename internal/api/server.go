@@ -122,9 +122,11 @@ func Initialize() (*Server, error) {
 		manager:        mgr,
 	}
 
+	userStore := manager.GetInstance().UserService
+
 	r.Use(middleware.Heartbeat("/healthz"))
 	r.Use(cors.AllowAll().Handler)
-	r.Use(authenticateHandler())
+	r.Use(authenticateHandler(userStore))
 	visitedPluginHandler := mgr.SessionStore.VisitedPluginHandler()
 	r.Use(visitedPluginHandler)
 

@@ -1,7 +1,9 @@
 package session
 
+import "context"
+
 type ExternalAccessConfig interface {
-	HasCredentials() bool
+	HasCredentials(ctx context.Context) (bool, error)
 	GetDangerousAllowPublicWithoutAuth() bool
 	GetSecurityTripwireAccessedFromPublicInternet() string
 	IsNewSystem() bool

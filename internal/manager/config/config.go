@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"os"
@@ -27,6 +28,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/sliceutil"
+	"github.com/stashapp/stash/pkg/user"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -1139,23 +1141,39 @@ func (i *Config) GetUsername() string {
 	return i.getString(Username)
 }
 
-func (i *Config) GetPasswordHash() string {
-	return i.getString(Password)
+func (i *Config) GetUser(ctx context.Context, username string) (*user.User, error) {
+	u := i.GetUsername()
+	if u != username {
+		return nil, user.ErrUserNotFound
+	}
+
+	return &user.User{
+		Username: u,
+	}, nil
+}
+
+func (i *Config) GetPasswordHash(ctx context.Context, username string) (string, error) {
+	u := i.GetUsername()
+	if u != username {
+		return "", user.ErrUserNotFound
+	}
+
+	return i.getString(Password), nil
 }
 
 func (i *Config) GetCredentials() (string, string) {
-	if i.HasCredentials() {
+	if hc, _ := i.HasCredentials(context.Background()); hc {
 		return i.getString(Username), i.getString(Password)
 	}
 
 	return "", ""
 }
 
-func (i *Config) HasCredentials() bool {
+func (i *Config) HasCredentials(ctx context.Context) (bool, error) {
 	username := i.getString(Username)
 	pwHash := i.getString(Password)
 
-	return username != "" && pwHash != ""
+	return username != "" && pwHash != "", nil
 }
 
 func hashPassword(password string) string {
@@ -1165,7 +1183,7 @@ func hashPassword(password string) string {
 }
 
 func (i *Config) ValidateCredentials(username string, password string) bool {
-	if !i.HasCredentials() {
+	if hc, _ := i.HasCredentials(context.Background()); !hc {
 		// don't need to authenticate if no credentials saved
 		return true
 	}

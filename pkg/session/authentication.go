@@ -1,6 +1,7 @@
 package session
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -16,7 +17,7 @@ func (e ExternalAccessError) Error() string {
 }
 
 func CheckAllowPublicWithoutAuth(c ExternalAccessConfig, r *http.Request) error {
-	if !c.HasCredentials() && !c.GetDangerousAllowPublicWithoutAuth() && !c.IsNewSystem() {
+	if hc, _ := c.HasCredentials(context.Background()); !hc && !c.GetDangerousAllowPublicWithoutAuth() && !c.IsNewSystem() {
 		requestIPString, _, err := net.SplitHostPort(r.RemoteAddr)
 		if err != nil {
 			return fmt.Errorf("error parsing remote host (%s): %w", r.RemoteAddr, err)
@@ -60,7 +61,7 @@ func CheckAllowPublicWithoutAuth(c ExternalAccessConfig, r *http.Request) error 
 }
 
 func CheckExternalAccessTripwire(c ExternalAccessConfig) *ExternalAccessError {
-	if !c.HasCredentials() && !c.GetDangerousAllowPublicWithoutAuth() {
+	if hc, _ := c.HasCredentials(context.Background()); !hc && !c.GetDangerousAllowPublicWithoutAuth() {
 		if remoteIP := c.GetSecurityTripwireAccessedFromPublicInternet(); remoteIP != "" {
 			err := ExternalAccessError(net.ParseIP(remoteIP))
 			return &err

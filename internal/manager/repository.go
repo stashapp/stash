@@ -7,6 +7,7 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/user"
 )
 
 type SceneService interface {
@@ -45,4 +46,8 @@ type GroupService interface {
 	AddSubGroups(ctx context.Context, groupID int, subGroups []models.GroupIDDescription, insertIndex *int) error
 	RemoveSubGroups(ctx context.Context, groupID int, subGroupIDs []int) error
 	ReorderSubGroups(ctx context.Context, groupID int, subGroupIDs []int, insertPointID int, insertAfter bool) error
+}
+
+type UserService interface {
+	GetUser(ctx context.Context, username string) (*user.User, error)
 }

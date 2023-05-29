@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/sessions"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/user"
 )
 
 type key int
@@ -138,15 +139,15 @@ func (s *Store) GetSessionUserID(w http.ResponseWriter, r *http.Request) (string
 	return "", nil
 }
 
-func SetCurrentUserID(ctx context.Context, userID string) context.Context {
-	return context.WithValue(ctx, contextUser, userID)
+func SetCurrentUser(ctx context.Context, u user.User) context.Context {
+	return context.WithValue(ctx, contextUser, u)
 }
 
-// GetCurrentUserID gets the current user id from the provided context
-func GetCurrentUserID(ctx context.Context) *string {
+// GetCurrentUser gets the current user id from the provided context
+func GetCurrentUser(ctx context.Context) *user.User {
 	userCtxVal := ctx.Value(contextUser)
 	if userCtxVal != nil {
-		currentUser := userCtxVal.(string)
+		currentUser := userCtxVal.(user.User)
 		return &currentUser
 	}
 

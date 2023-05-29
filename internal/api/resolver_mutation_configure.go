@@ -332,7 +332,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	if input.Password != nil {
 		// bit of a hack - check if the passed in password is the same as the stored hash
 		// and only set if they are different
-		currentPWHash := c.GetPasswordHash()
+		currentPWHash, _ := c.GetPasswordHash(ctx, c.GetUsername())
 
 		if *input.Password != currentPWHash {
 			if *input.Password == "" {

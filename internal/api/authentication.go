@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"net"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/session"
+	"github.com/stashapp/stash/pkg/user"
 )
 
 const (
@@ -29,7 +31,11 @@ func allowUnauthenticated(r *http.Request) bool {
 	return strings.HasPrefix(r.URL.Path, loginEndpoint) || r.URL.Path == logoutEndpoint || r.URL.Path == "/css" || strings.HasPrefix(r.URL.Path, "/assets")
 }
 
-func authenticateHandler() func(http.Handler) http.Handler {
+type UserGetter interface {
+	GetUser(ctx context.Context, username string) (*user.User, error)
+}
+
+func authenticateHandler(g UserGetter) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			c := config.GetInstance()
@@ -75,7 +81,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 
 			ctx := r.Context()
 
-			if c.HasCredentials() {
+			if hc, _ := c.HasCredentials(ctx); hc {
 				// authentication is required
 				if userID == "" && !allowUnauthenticated(r) {
 					// if graphql or a non-webpage was requested, we just return a forbidden error
@@ -104,7 +110,18 @@ func authenticateHandler() func(http.Handler) http.Handler {
 				}
 			}
 
-			ctx = session.SetCurrentUserID(ctx, userID)
+			if userID != "" {
+				// set the user object in the context
+				u, err := g.GetUser(ctx, userID)
+				if err != nil {
+					// if we can't get the user object, we just return a forbidden error
+					logger.Errorf("Error getting user object: %v", err)
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+
+				ctx = session.SetCurrentUser(ctx, *u)
+			}
 
 			r = r.WithContext(ctx)
 
