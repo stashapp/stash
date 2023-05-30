@@ -275,7 +275,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         chaptersButton: false,
       },
       html5: {
-        nativeTextTracks: true,
         dash: {
           updateSettings: [
             {
@@ -296,7 +295,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       nativeControlsForTouch: false,
       playbackRates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
       inactivityTimeout: 2000,
-      preload: "none",
+      preload: "auto",
       playsinline: true,
       userActions: {
         hotkeys: function (this: VideoJsPlayer, event) {
