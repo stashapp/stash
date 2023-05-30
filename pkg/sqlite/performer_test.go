@@ -513,12 +513,13 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 			performerIDs[performerIdxWithTwoTags],
 			clearPerformerPartial(),
 			models.Performer{
-				ID:       performerIDs[performerIdxWithTwoTags],
-				Name:     getPerformerStringValue(performerIdxWithTwoTags, "Name"),
-				Favorite: true,
-				Aliases:  models.NewRelatedStrings([]string{}),
-				TagIDs:   models.NewRelatedIDs([]int{}),
-				StashIDs: models.NewRelatedStashIDs([]models.StashID{}),
+				ID:            performerIDs[performerIdxWithTwoTags],
+				Name:          getPerformerStringValue(performerIdxWithTwoTags, "Name"),
+				Favorite:      getPerformerBoolValue(performerIdxWithTwoTags),
+				Aliases:       models.NewRelatedStrings([]string{}),
+				TagIDs:        models.NewRelatedIDs([]int{}),
+				StashIDs:      models.NewRelatedStashIDs([]models.StashID{}),
+				IgnoreAutoTag: getIgnoreAutoTag(performerIdxWithTwoTags),
 			},
 			false,
 		},
@@ -1920,7 +1921,7 @@ func TestPerformerQuerySortScenesCount(t *testing.T) {
 		assert.True(t, len(performers) > 0)
 		lastPerformer := performers[len(performers)-1]
 
-		assert.Equal(t, performerIDs[performerIdxWithTwoScenes], lastPerformer.ID)
+		assert.Equal(t, performerIDs[performerIdxWithTag], lastPerformer.ID)
 
 		return nil
 	})

@@ -203,7 +203,7 @@ func TestTagQuerySort(t *testing.T) {
 
 		sortBy = "performers_count"
 		tags = queryTags(ctx, t, sqb, nil, findFilter)
-		assert.Equal(tagIDs[tagIdxWithPerformer], tags[0].ID)
+		assert.Equal(tagIDs[tagIdx2WithPerformer], tags[0].ID)
 
 		return nil
 	})

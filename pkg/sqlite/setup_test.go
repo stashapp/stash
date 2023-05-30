@@ -17,6 +17,7 @@ import (
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
 
@@ -68,6 +69,7 @@ const (
 	sceneIdx2WithStudio
 	sceneIdxWithMarkers
 	sceneIdxWithPerformerTag
+	sceneIdxWithTwoPerformerTag
 	sceneIdxWithPerformerTwoTags
 	sceneIdxWithSpacedName
 	sceneIdxWithStudioPerformer
@@ -98,6 +100,7 @@ const (
 	imageIdxWithStudioPerformer
 	imageIdxInZip
 	imageIdxWithPerformerTag
+	imageIdxWithTwoPerformerTag
 	imageIdxWithPerformerTwoTags
 	imageIdxWithGrandChildStudio
 	// new indexes above
@@ -114,6 +117,7 @@ const (
 	performerIdx1WithImage
 	performerIdx2WithImage
 	performerIdxWithTag
+	performerIdx2WithTag
 	performerIdxWithTwoTags
 	performerIdxWithGallery
 	performerIdxWithTwoGalleries
@@ -161,6 +165,7 @@ const (
 	galleryIdx1WithStudio
 	galleryIdx2WithStudio
 	galleryIdxWithPerformerTag
+	galleryIdxWithTwoPerformerTag
 	galleryIdxWithPerformerTwoTags
 	galleryIdxWithStudioPerformer
 	galleryIdxWithGrandChildStudio
@@ -341,6 +346,7 @@ var (
 		sceneIdxWithPerformer:        {performerIdxWithScene},
 		sceneIdxWithTwoPerformers:    {performerIdx1WithScene, performerIdx2WithScene},
 		sceneIdxWithPerformerTag:     {performerIdxWithTag},
+		sceneIdxWithTwoPerformerTag:  {performerIdxWithTag, performerIdx2WithTag},
 		sceneIdxWithPerformerTwoTags: {performerIdxWithTwoTags},
 		sceneIdx1WithPerformer:       {performerIdxWithTwoScenes},
 		sceneIdx2WithPerformer:       {performerIdxWithTwoScenes},
@@ -414,6 +420,7 @@ var (
 		imageIdxWithPerformer:        {performerIdxWithImage},
 		imageIdxWithTwoPerformers:    {performerIdx1WithImage, performerIdx2WithImage},
 		imageIdxWithPerformerTag:     {performerIdxWithTag},
+		imageIdxWithTwoPerformerTag:  {performerIdxWithTag, performerIdx2WithTag},
 		imageIdxWithPerformerTwoTags: {performerIdxWithTwoTags},
 		imageIdx1WithPerformer:       {performerIdxWithTwoImages},
 		imageIdx2WithPerformer:       {performerIdxWithTwoImages},
@@ -426,6 +433,7 @@ var (
 		galleryIdxWithPerformer:        {performerIdxWithGallery},
 		galleryIdxWithTwoPerformers:    {performerIdx1WithGallery, performerIdx2WithGallery},
 		galleryIdxWithPerformerTag:     {performerIdxWithTag},
+		galleryIdxWithTwoPerformerTag:  {performerIdxWithTag, performerIdx2WithTag},
 		galleryIdxWithPerformerTwoTags: {performerIdxWithTwoTags},
 		galleryIdx1WithPerformer:       {performerIdxWithTwoGalleries},
 		galleryIdx2WithPerformer:       {performerIdxWithTwoGalleries},
@@ -463,6 +471,7 @@ var (
 var (
 	performerTags = linkMap{
 		performerIdxWithTag:     {tagIdxWithPerformer},
+		performerIdx2WithTag:    {tagIdx2WithPerformer},
 		performerIdxWithTwoTags: {tagIdx1WithPerformer, tagIdx2WithPerformer},
 	}
 )
@@ -1466,12 +1475,25 @@ func getTagGalleryCount(id int) int {
 	return 0
 }
 
-func getTagPerformerCount(id int) int {
-	if id == tagIDs[tagIdx1WithPerformer] || id == tagIDs[tagIdx2WithPerformer] || id == tagIDs[tagIdxWithPerformer] {
-		return 1
+func tagIdxFromID(id int) int {
+	for i, v := range tagIDs {
+		if v == id {
+			return i
+		}
 	}
 
-	return 0
+	return -1
+}
+
+func getTagPerformerCount(id int) int {
+	idx := tagIdxFromID(id)
+	ret := 0
+	for _, v := range performerTags {
+		if intslice.IntInclude(v, idx) {
+			ret++
+		}
+	}
+	return ret
 }
 
 func getTagParentCount(id int) int {
