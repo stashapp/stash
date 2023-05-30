@@ -1377,23 +1377,46 @@ func sceneMoviesCriterionHandler(qb *SceneStore, movies *models.MultiCriterionIn
 func scenePerformerTagsCriterionHandler(qb *SceneStore, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if tags != nil {
-			f.addLeftJoin("performers_scenes", "", "scenes.id = performers_scenes.scene_id")
+			criterion := *tags
+			criterion.CombineExcludes()
 
-			h := joinedHierarchicalMultiCriterionHandlerBuilder{
-				tx: qb.tx,
+			if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotNull {
+				var notClause string
+				if criterion.Modifier == models.CriterionModifierNotNull {
+					notClause = "NOT"
+				}
 
-				primaryTable: "performers_scenes",
-				primaryKey:   performerIDColumn,
-				foreignTable: tagTable,
-				foreignFK:    tagIDColumn,
+				f.addLeftJoin("performers_scenes", "", "scenes.id = performers_scenes.scene_id")
+				f.addLeftJoin("performers_tags", "", "performers_scenes.performer_id = performers_tags.performer_id")
 
-				relationsTable: "tags_relations",
-				joinTable:      "performers_tags",
-				joinAs:         "scene_performers_tags",
-				primaryFK:      performerIDColumn,
+				f.addWhere(fmt.Sprintf("performers_tags.tag_id IS %s NULL", notClause))
+				return
 			}
 
-			h.handler(tags).handle(ctx, f)
+			if len(criterion.Value) == 0 && len(criterion.Excludes) == 0 {
+				return
+			}
+
+			if len(criterion.Value) > 0 {
+				valuesClause := getHierarchicalValues(ctx, qb.tx, criterion.Value, tagTable, "tag_relations", "", "", criterion.Depth)
+
+				f.addLeftJoin("performers_scenes", "", "scenes.id = performers_scenes.scene_id")
+				f.addLeftJoin("performers_tags", "", "performers_scenes.performer_id = performers_tags.performer_id")
+
+				switch criterion.Modifier {
+				case models.CriterionModifierIncludes:
+					f.addWhere(fmt.Sprintf("performers_tags.tag_id IN (SELECT column2 FROM (%s)))", valuesClause))
+				case models.CriterionModifierIncludesAll:
+					f.addWhere(fmt.Sprintf("performers_tags.tag_id IN (SELECT column2 FROM (%s))", valuesClause))
+					f.addHaving(fmt.Sprintf("COUNT(DISTINCT performers_tags.tag_id) = %d", len(criterion.Value)))
+				}
+			}
+
+			if len(criterion.Excludes) > 0 {
+				valuesClause := getHierarchicalValues(ctx, qb.tx, criterion.Excludes, tagTable, "tag_relations", "", "", criterion.Depth)
+
+				f.addWhere(fmt.Sprintf("scenes.id NOT IN (SELECT performers_scenes.scene_id FROM performers_scenes INNER JOIN performers_tags ON performers_scenes.performer_id = performers_tags.performer_id WHERE performers_tags.tag_id IN (SELECT column2 FROM (%s)))", valuesClause))
+			}
 		}
 	}
 }
