@@ -56,7 +56,7 @@ var (
 )
 
 var movieStudio models.Studio = models.Studio{
-	Name: models.NullString(studioName),
+	Name: studioName,
 }
 
 var (

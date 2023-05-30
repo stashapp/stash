@@ -1568,31 +1568,38 @@ func getStudioStringValue(index int, field string) string {
 	return getPrefixedStringValue("studio", index, field)
 }
 
-func getStudioNullStringValue(index int, field string) sql.NullString {
-	return getPrefixedNullStringValue("studio", index, field)
+func getStudioNullStringValue(index int, field string) string {
+	ret := getPrefixedNullStringValue("studio", index, field)
+
+	return ret.String
 }
 
-func createStudio(ctx context.Context, sqb models.StudioReaderWriter, name string, parentID *int64) (*models.Studio, error) {
+func createStudio(ctx context.Context, sqb models.StudioReaderWriter, name string, parentID *int) (*models.Studio, error) {
 	studio := models.Studio{
-		Name:     sql.NullString{String: name, Valid: true},
+		Name:     name,
 		Checksum: md5.FromString(name),
 	}
 
 	if parentID != nil {
-		studio.ParentID = sql.NullInt64{Int64: *parentID, Valid: true}
+		studio.ParentID = parentID
 	}
 
-	return createStudioFromModel(ctx, sqb, studio)
+	err := createStudioFromModel(ctx, sqb, &studio)
+	if err != nil {
+		return nil, err
+	}
+
+	return &studio, nil
 }
 
-func createStudioFromModel(ctx context.Context, sqb models.StudioReaderWriter, studio models.Studio) (*models.Studio, error) {
-	created, err := sqb.Create(ctx, studio)
+func createStudioFromModel(ctx context.Context, sqb models.StudioReaderWriter, studio *models.Studio) error {
+	err := sqb.Create(ctx, studio)
 
 	if err != nil {
-		return nil, fmt.Errorf("Error creating studio %v+: %s", studio, err.Error())
+		return fmt.Errorf("Error creating studio %v+: %s", studio, err.Error())
 	}
 
-	return created, nil
+	return nil
 }
 
 // createStudios creates n studios with plain Name and o studios with camel cased NaMe included
@@ -1612,13 +1619,13 @@ func createStudios(ctx context.Context, sqb models.StudioReaderWriter, n int, o 
 
 		name = getStudioStringValue(index, name)
 		studio := models.Studio{
-			Name:          sql.NullString{String: name, Valid: true},
+			Name:          name,
 			Checksum:      md5.FromString(name),
 			URL:           getStudioNullStringValue(index, urlField),
 			IgnoreAutoTag: getIgnoreAutoTag(i),
 		}
-		created, err := createStudioFromModel(ctx, sqb, studio)
 
+		err := createStudioFromModel(ctx, sqb, &studio)
 		if err != nil {
 			return err
 		}
@@ -1627,13 +1634,13 @@ func createStudios(ctx context.Context, sqb models.StudioReaderWriter, n int, o 
 		// only add aliases for some scenes
 		if i == studioIdxWithMovie || i%5 == 0 {
 			alias := getStudioStringValue(i, "Alias")
-			if err := sqb.UpdateAliases(ctx, created.ID, []string{alias}); err != nil {
+			if err := sqb.UpdateAliases(ctx, studio.ID, []string{alias}); err != nil {
 				return fmt.Errorf("error setting studio alias: %s", err.Error())
 			}
 		}
 
-		studioIDs = append(studioIDs, created.ID)
-		studioNames = append(studioNames, created.Name.String)
+		studioIDs = append(studioIDs, studio.ID)
+		studioNames = append(studioNames, studio.Name)
 	}
 
 	return nil
@@ -1756,10 +1763,9 @@ func linkMovieStudios(ctx context.Context, mqb models.MovieWriter) error {
 func linkStudiosParent(ctx context.Context, qb models.StudioWriter) error {
 	return doLinks(studioParentLinks, func(parentIndex, childIndex int) error {
 		studio := models.StudioPartial{
-			ID:       studioIDs[childIndex],
-			ParentID: &sql.NullInt64{Int64: int64(studioIDs[parentIndex]), Valid: true},
+			ParentID: models.NewOptionalInt(studioIDs[parentIndex]),
 		}
-		_, err := qb.Update(ctx, studio)
+		_, err := qb.UpdatePartial(ctx, studioIDs[childIndex], studio)
 
 		return err
 	})

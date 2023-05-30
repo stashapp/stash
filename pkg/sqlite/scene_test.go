@@ -2761,29 +2761,6 @@ func verifyScenesRating100(t *testing.T, ratingCriterion models.IntCriterionInpu
 	})
 }
 
-func verifyInt64(t *testing.T, value sql.NullInt64, criterion models.IntCriterionInput) {
-	t.Helper()
-	assert := assert.New(t)
-	if criterion.Modifier == models.CriterionModifierIsNull {
-		assert.False(value.Valid, "expect is null values to be null")
-	}
-	if criterion.Modifier == models.CriterionModifierNotNull {
-		assert.True(value.Valid, "expect is null values to be null")
-	}
-	if criterion.Modifier == models.CriterionModifierEquals {
-		assert.Equal(int64(criterion.Value), value.Int64)
-	}
-	if criterion.Modifier == models.CriterionModifierNotEquals {
-		assert.NotEqual(int64(criterion.Value), value.Int64)
-	}
-	if criterion.Modifier == models.CriterionModifierGreaterThan {
-		assert.True(value.Int64 > int64(criterion.Value))
-	}
-	if criterion.Modifier == models.CriterionModifierLessThan {
-		assert.True(value.Int64 < int64(criterion.Value))
-	}
-}
-
 func verifyIntPtr(t *testing.T, value *int, criterion models.IntCriterionInput) {
 	t.Helper()
 	assert := assert.New(t)

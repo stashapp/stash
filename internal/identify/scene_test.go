@@ -25,9 +25,10 @@ func Test_sceneRelationships_studio(t *testing.T) {
 	}
 
 	mockStudioReaderWriter := &mocks.StudioReaderWriter{}
-	mockStudioReaderWriter.On("Create", testCtx, mock.Anything).Return(&models.Studio{
-		ID: int(validStoredIDInt),
-	}, nil)
+	mockStudioReaderWriter.On("Create", testCtx, mock.Anything).Run(func(args mock.Arguments) {
+		s := args.Get(1).(*models.Studio)
+		s.ID = validStoredIDInt
+	}).Return(nil)
 
 	tr := sceneRelationships{
 		studioCreator: mockStudioReaderWriter,

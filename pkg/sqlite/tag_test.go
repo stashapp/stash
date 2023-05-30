@@ -5,7 +5,6 @@ package sqlite_test
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"math"
 	"strconv"
@@ -377,10 +376,7 @@ func verifyTagSceneCount(t *testing.T, sceneCountCriterion models.IntCriterionIn
 		}
 
 		for _, tag := range tags {
-			verifyInt64(t, sql.NullInt64{
-				Int64: int64(getTagSceneCount(tag.ID)),
-				Valid: true,
-			}, sceneCountCriterion)
+			verifyInt(t, getTagSceneCount(tag.ID), sceneCountCriterion)
 		}
 
 		return nil
@@ -419,10 +415,7 @@ func verifyTagMarkerCount(t *testing.T, markerCountCriterion models.IntCriterion
 		}
 
 		for _, tag := range tags {
-			verifyInt64(t, sql.NullInt64{
-				Int64: int64(getTagMarkerCount(tag.ID)),
-				Valid: true,
-			}, markerCountCriterion)
+			verifyInt(t, getTagMarkerCount(tag.ID), markerCountCriterion)
 		}
 
 		return nil
@@ -461,10 +454,7 @@ func verifyTagImageCount(t *testing.T, imageCountCriterion models.IntCriterionIn
 		}
 
 		for _, tag := range tags {
-			verifyInt64(t, sql.NullInt64{
-				Int64: int64(getTagImageCount(tag.ID)),
-				Valid: true,
-			}, imageCountCriterion)
+			verifyInt(t, getTagImageCount(tag.ID), imageCountCriterion)
 		}
 
 		return nil
@@ -503,10 +493,7 @@ func verifyTagGalleryCount(t *testing.T, imageCountCriterion models.IntCriterion
 		}
 
 		for _, tag := range tags {
-			verifyInt64(t, sql.NullInt64{
-				Int64: int64(getTagGalleryCount(tag.ID)),
-				Valid: true,
-			}, imageCountCriterion)
+			verifyInt(t, getTagGalleryCount(tag.ID), imageCountCriterion)
 		}
 
 		return nil
@@ -545,10 +532,7 @@ func verifyTagPerformerCount(t *testing.T, imageCountCriterion models.IntCriteri
 		}
 
 		for _, tag := range tags {
-			verifyInt64(t, sql.NullInt64{
-				Int64: int64(getTagPerformerCount(tag.ID)),
-				Valid: true,
-			}, imageCountCriterion)
+			verifyInt(t, getTagPerformerCount(tag.ID), imageCountCriterion)
 		}
 
 		return nil
@@ -588,10 +572,7 @@ func verifyTagParentCount(t *testing.T, sceneCountCriterion models.IntCriterionI
 		}
 
 		for _, tag := range tags {
-			verifyInt64(t, sql.NullInt64{
-				Int64: int64(getTagParentCount(tag.ID)),
-				Valid: true,
-			}, sceneCountCriterion)
+			verifyInt(t, getTagParentCount(tag.ID), sceneCountCriterion)
 		}
 
 		return nil
@@ -631,10 +612,7 @@ func verifyTagChildCount(t *testing.T, sceneCountCriterion models.IntCriterionIn
 		}
 
 		for _, tag := range tags {
-			verifyInt64(t, sql.NullInt64{
-				Int64: int64(getTagChildCount(tag.ID)),
-				Valid: true,
-			}, sceneCountCriterion)
+			verifyInt(t, getTagChildCount(tag.ID), sceneCountCriterion)
 		}
 
 		return nil
