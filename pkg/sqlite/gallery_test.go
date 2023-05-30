@@ -2246,6 +2246,21 @@ func TestGalleryQueryPerformerTags(t *testing.T) {
 			[]int{galleryIdx1WithImage},
 			false,
 		},
+		{
+			"equals",
+			nil,
+			&models.GalleryFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierEquals,
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
+					},
+				},
+			},
+			[]int{galleryIdxWithTwoPerformerTag},
+			[]int{galleryIdxWithPerformerTag, galleryIdxWithPerformerTwoTags},
+			false,
+		},
 	}
 
 	for _, tt := range tests {

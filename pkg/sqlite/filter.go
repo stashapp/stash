@@ -1132,6 +1132,7 @@ func (h *joinedPerformerTagsHandler) handle(ctx context.Context, f *filterBuilde
 			"primaryTable":   h.primaryTable,
 			"joinTable":      h.joinTable,
 			"joinPrimaryKey": h.joinPrimaryKey,
+			"inBinding":      getInBinding(len(criterion.Value)),
 		}
 
 		if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotNull {
@@ -1158,6 +1159,18 @@ func (h *joinedPerformerTagsHandler) handle(ctx context.Context, f *filterBuilde
 			f.addLeftJoin("performers_tags", "", utils.StrFormat("{joinTable}.performer_id = performers_tags.performer_id", strFormatMap))
 
 			switch criterion.Modifier {
+			case models.CriterionModifierEquals:
+				// includes only the provided ids
+				whereClause := utils.StrFormat("performers_tags.tag_id IN {inBinding} AND (SELECT COUNT(*) FROM performers_tags WHERE performers_tags.performer_id = {joinTable}.performer_id) = ?", strFormatMap)
+
+				var args []interface{}
+				for _, tagID := range criterion.Value {
+					args = append(args, tagID)
+				}
+
+				f.addWhere(whereClause, append(args, len(criterion.Value))...)
+
+				f.addHaving("count(distinct performers_tags.tag_id) IS ?", len(criterion.Value))
 			case models.CriterionModifierIncludes:
 				f.addWhere(fmt.Sprintf("performers_tags.tag_id IN (SELECT column2 FROM (%s))", valuesClause))
 			case models.CriterionModifierIncludesAll:
@@ -1166,7 +1179,7 @@ func (h *joinedPerformerTagsHandler) handle(ctx context.Context, f *filterBuilde
 			}
 		}
 
-		if len(criterion.Excludes) > 0 {
+		if criterion.Modifier != models.CriterionModifierEquals && len(criterion.Excludes) > 0 {
 			valuesClause := getHierarchicalValues(ctx, dbWrapper{}, criterion.Excludes, tagTable, "tag_relations", "", "", criterion.Depth)
 
 			clause := utils.StrFormat("{primaryTable}.id NOT IN (SELECT {joinTable}.{joinPrimaryKey} FROM {joinTable} INNER JOIN performers_tags ON {joinTable}.performer_id = performers_tags.performer_id WHERE performers_tags.tag_id IN (SELECT column2 FROM (%s)))", strFormatMap)

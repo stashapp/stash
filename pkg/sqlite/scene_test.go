@@ -3534,6 +3534,21 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 			[]int{sceneIdx1WithPerformer},
 			false,
 		},
+		{
+			"equals",
+			nil,
+			&models.SceneFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierEquals,
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
+					},
+				},
+			},
+			[]int{sceneIdxWithTwoPerformerTag},
+			[]int{sceneIdxWithPerformerTag, sceneIdxWithPerformerTwoTags},
+			false,
+		},
 	}
 
 	for _, tt := range tests {
