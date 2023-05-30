@@ -9,22 +9,20 @@ import (
 	"github.com/stashapp/stash/pkg/studio"
 )
 
-func ValidateModifyStudio(ctx context.Context, studio models.StudioPartial, qb studio.Finder) error {
-	if studio.ParentID == nil || !studio.ParentID.Valid {
+func ValidateModifyStudio(ctx context.Context, studioID int, studio models.StudioPartial, qb studio.Finder) error {
+	if studio.ParentID.Ptr() == nil {
 		return nil
 	}
 
 	// ensure there is no cyclic dependency
-	thisID := studio.ID
+	currentParentID := studio.ParentID.Ptr()
 
-	currentParentID := *studio.ParentID
-
-	for currentParentID.Valid {
-		if currentParentID.Int64 == int64(thisID) {
+	for currentParentID != nil {
+		if *currentParentID == studioID {
 			return errors.New("studio cannot be an ancestor of itself")
 		}
 
-		currentStudio, err := qb.Find(ctx, int(currentParentID.Int64))
+		currentStudio, err := qb.Find(ctx, *currentParentID)
 		if err != nil {
 			return fmt.Errorf("error finding parent studio: %v", err)
 		}

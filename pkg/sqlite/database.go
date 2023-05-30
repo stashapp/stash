@@ -71,7 +71,7 @@ type Database struct {
 	Gallery   *GalleryStore
 	Scene     *SceneStore
 	Performer *PerformerStore
-	Studio    *studioQueryBuilder
+	Studio    *StudioStore
 	Tag       *tagQueryBuilder
 	Movie     *movieQueryBuilder
 
@@ -96,7 +96,7 @@ func NewDatabase() *Database {
 		Image:     NewImageStore(fileStore),
 		Gallery:   NewGalleryStore(fileStore, folderStore),
 		Performer: NewPerformerStore(blobStore),
-		Studio:    NewStudioReaderWriter(blobStore),
+		Studio:    NewStudioStore(blobStore),
 		Tag:       NewTagReaderWriter(blobStore),
 		Movie:     NewMovieReaderWriter(blobStore),
 		lockChan:  make(chan struct{}, 1),

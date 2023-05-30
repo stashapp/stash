@@ -837,7 +837,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 			return nil, err
 		}
 		studioDraft := graphql.DraftEntityInput{
-			Name: studio.Name.String,
+			Name: studio.Name,
 		}
 
 		stashIDs, err := sqb.GetStashIDs(ctx, studio.ID)
