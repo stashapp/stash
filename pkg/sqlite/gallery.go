@@ -981,28 +981,12 @@ func galleryStudioCriterionHandler(qb *GalleryStore, studios *models.Hierarchica
 	return h.handler(studios)
 }
 
-func galleryPerformerTagsCriterionHandler(qb *GalleryStore, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if tags != nil {
-			f.addLeftJoin("performers_galleries", "", "galleries.id = performers_galleries.gallery_id")
-
-			h := joinedHierarchicalMultiCriterionHandlerBuilder{
-				tx: qb.tx,
-
-				primaryTable: "performers_galleries",
-				primaryKey:   performerIDColumn,
-				foreignTable: tagTable,
-				foreignFK:    tagIDColumn,
-
-				relationsTable: "tags_relations",
-				parentFK:       "parent_id",
-				joinTable:      "performers_tags",
-				joinAs:         "gallery_performers_tags",
-				primaryFK:      performerIDColumn,
-			}
-
-			h.handler(tags).handle(ctx, f)
-		}
+func galleryPerformerTagsCriterionHandler(qb *GalleryStore, tags *models.HierarchicalMultiCriterionInput) criterionHandler {
+	return &joinedPerformerTagsHandler{
+		criterion:      tags,
+		primaryTable:   galleryTable,
+		joinTable:      performersGalleriesTable,
+		joinPrimaryKey: galleryIDColumn,
 	}
 }
 

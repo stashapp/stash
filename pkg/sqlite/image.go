@@ -959,27 +959,12 @@ func imageStudioCriterionHandler(qb *ImageStore, studios *models.HierarchicalMul
 	return h.handler(studios)
 }
 
-func imagePerformerTagsCriterionHandler(qb *ImageStore, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if tags != nil {
-			f.addLeftJoin("performers_images", "", "images.id = performers_images.image_id")
-
-			h := joinedHierarchicalMultiCriterionHandlerBuilder{
-				tx: qb.tx,
-
-				primaryTable: "performers_images",
-				primaryKey:   performerIDColumn,
-				foreignTable: tagTable,
-				foreignFK:    tagIDColumn,
-
-				relationsTable: "tags_relations",
-				joinTable:      "performers_tags",
-				joinAs:         "image_performers_tags",
-				primaryFK:      performerIDColumn,
-			}
-
-			h.handler(tags).handle(ctx, f)
-		}
+func imagePerformerTagsCriterionHandler(qb *ImageStore, tags *models.HierarchicalMultiCriterionInput) criterionHandler {
+	return &joinedPerformerTagsHandler{
+		criterion:      tags,
+		primaryTable:   imageTable,
+		joinTable:      performersImagesTable,
+		joinPrimaryKey: imageIDColumn,
 	}
 }
 

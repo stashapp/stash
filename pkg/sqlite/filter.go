@@ -1113,6 +1113,68 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(c *models.Hiera
 	}
 }
 
+type joinedPerformerTagsHandler struct {
+	criterion *models.HierarchicalMultiCriterionInput
+
+	primaryTable   string // eg scenes
+	joinTable      string // eg performers_scenes
+	joinPrimaryKey string // eg scene_id
+}
+
+func (h *joinedPerformerTagsHandler) handle(ctx context.Context, f *filterBuilder) {
+	tags := h.criterion
+
+	if tags != nil {
+		criterion := *tags
+		criterion.CombineExcludes()
+
+		strFormatMap := utils.StrFormatMap{
+			"primaryTable":   h.primaryTable,
+			"joinTable":      h.joinTable,
+			"joinPrimaryKey": h.joinPrimaryKey,
+		}
+
+		if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotNull {
+			var notClause string
+			if criterion.Modifier == models.CriterionModifierNotNull {
+				notClause = "NOT"
+			}
+
+			f.addLeftJoin(h.joinTable, "", utils.StrFormat("{primaryTable}.id = {joinTable}.{joinPrimaryKey}", strFormatMap))
+			f.addLeftJoin("performers_tags", "", utils.StrFormat("{joinTable}.performer_id = performers_tags.performer_id", strFormatMap))
+
+			f.addWhere(fmt.Sprintf("performers_tags.tag_id IS %s NULL", notClause))
+			return
+		}
+
+		if len(criterion.Value) == 0 && len(criterion.Excludes) == 0 {
+			return
+		}
+
+		if len(criterion.Value) > 0 {
+			valuesClause := getHierarchicalValues(ctx, dbWrapper{}, criterion.Value, tagTable, "tag_relations", "", "", criterion.Depth)
+
+			f.addLeftJoin(h.joinTable, "", utils.StrFormat("{primaryTable}.id = {joinTable}.{joinPrimaryKey}", strFormatMap))
+			f.addLeftJoin("performers_tags", "", utils.StrFormat("{joinTable}.performer_id = performers_tags.performer_id", strFormatMap))
+
+			switch criterion.Modifier {
+			case models.CriterionModifierIncludes:
+				f.addWhere(fmt.Sprintf("performers_tags.tag_id IN (SELECT column2 FROM (%s))", valuesClause))
+			case models.CriterionModifierIncludesAll:
+				f.addWhere(fmt.Sprintf("performers_tags.tag_id IN (SELECT column2 FROM (%s))", valuesClause))
+				f.addHaving(fmt.Sprintf("COUNT(DISTINCT performers_tags.tag_id) = %d", len(criterion.Value)))
+			}
+		}
+
+		if len(criterion.Excludes) > 0 {
+			valuesClause := getHierarchicalValues(ctx, dbWrapper{}, criterion.Excludes, tagTable, "tag_relations", "", "", criterion.Depth)
+
+			clause := utils.StrFormat("{primaryTable}.id NOT IN (SELECT {joinTable}.{joinPrimaryKey} FROM {joinTable} INNER JOIN performers_tags ON {joinTable}.performer_id = performers_tags.performer_id WHERE performers_tags.tag_id IN (SELECT column2 FROM (%s)))", strFormatMap)
+			f.addWhere(fmt.Sprintf(clause, valuesClause))
+		}
+	}
+}
+
 type stashIDCriterionHandler struct {
 	c                 *models.StashIDCriterionInput
 	stashIDRepository *stashIDRepository
