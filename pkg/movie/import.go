@@ -2,7 +2,6 @@ package movie
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/hash/md5"
@@ -19,7 +18,7 @@ type ImageUpdater interface {
 
 type NameFinderCreatorUpdater interface {
 	NameFinderCreator
-	UpdateFull(ctx context.Context, updatedMovie models.Movie) (*models.Movie, error)
+	Update(ctx context.Context, updatedMovie *models.Movie) error
 	ImageUpdater
 }
 
@@ -63,22 +62,25 @@ func (i *Importer) movieJSONToMovie(movieJSON jsonschema.Movie) models.Movie {
 
 	newMovie := models.Movie{
 		Checksum:  checksum,
-		Name:      sql.NullString{String: movieJSON.Name, Valid: true},
-		Aliases:   sql.NullString{String: movieJSON.Aliases, Valid: true},
-		Date:      models.SQLiteDate{String: movieJSON.Date, Valid: true},
-		Director:  sql.NullString{String: movieJSON.Director, Valid: true},
-		Synopsis:  sql.NullString{String: movieJSON.Synopsis, Valid: true},
-		URL:       sql.NullString{String: movieJSON.URL, Valid: true},
-		CreatedAt: models.SQLiteTimestamp{Timestamp: movieJSON.CreatedAt.GetTime()},
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: movieJSON.UpdatedAt.GetTime()},
+		Name:      movieJSON.Name,
+		Aliases:   movieJSON.Aliases,
+		Director:  movieJSON.Director,
+		Synopsis:  movieJSON.Synopsis,
+		URL:       movieJSON.URL,
+		CreatedAt: movieJSON.CreatedAt.GetTime(),
+		UpdatedAt: movieJSON.UpdatedAt.GetTime(),
 	}
 
+	if movieJSON.Date != "" {
+		d := models.NewDate(movieJSON.Date)
+		newMovie.Date = &d
+	}
 	if movieJSON.Rating != 0 {
-		newMovie.Rating = sql.NullInt64{Int64: int64(movieJSON.Rating), Valid: true}
+		newMovie.Rating = &movieJSON.Rating
 	}
 
 	if movieJSON.Duration != 0 {
-		newMovie.Duration = sql.NullInt64{Int64: int64(movieJSON.Duration), Valid: true}
+		newMovie.Duration = &movieJSON.Duration
 	}
 
 	return newMovie
@@ -105,13 +107,10 @@ func (i *Importer) populateStudio(ctx context.Context) error {
 				if err != nil {
 					return err
 				}
-				i.movie.StudioID = sql.NullInt64{
-					Int64: int64(studioID),
-					Valid: true,
-				}
+				i.movie.StudioID = &studioID
 			}
 		} else {
-			i.movie.StudioID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
+			i.movie.StudioID = &studio.ID
 		}
 	}
 
@@ -165,19 +164,19 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	created, err := i.ReaderWriter.Create(ctx, i.movie)
+	err := i.ReaderWriter.Create(ctx, &i.movie)
 	if err != nil {
 		return nil, fmt.Errorf("error creating movie: %v", err)
 	}
 
-	id := created.ID
+	id := i.movie.ID
 	return &id, nil
 }
 
 func (i *Importer) Update(ctx context.Context, id int) error {
 	movie := i.movie
 	movie.ID = id
-	_, err := i.ReaderWriter.UpdateFull(ctx, movie)
+	err := i.ReaderWriter.Update(ctx, &movie)
 	if err != nil {
 		return fmt.Errorf("error updating existing movie: %v", err)
 	}

@@ -299,13 +299,14 @@ func (i *Importer) populateMovies(ctx context.Context) error {
 				return fmt.Errorf("error finding scene movie: %v", err)
 			}
 
+			var movieID int
 			if movie == nil {
 				if i.MissingRefBehaviour == models.ImportMissingRefEnumFail {
 					return fmt.Errorf("scene movie [%s] not found", inputMovie.MovieName)
 				}
 
 				if i.MissingRefBehaviour == models.ImportMissingRefEnumCreate {
-					movie, err = i.createMovie(ctx, inputMovie.MovieName)
+					movieID, err = i.createMovie(ctx, inputMovie.MovieName)
 					if err != nil {
 						return fmt.Errorf("error creating scene movie: %v", err)
 					}
@@ -315,10 +316,12 @@ func (i *Importer) populateMovies(ctx context.Context) error {
 				if i.MissingRefBehaviour == models.ImportMissingRefEnumIgnore {
 					continue
 				}
+			} else {
+				movieID = movie.ID
 			}
 
 			toAdd := models.MoviesScenes{
-				MovieID: movie.ID,
+				MovieID: movieID,
 			}
 
 			if inputMovie.SceneIndex != 0 {
@@ -333,15 +336,15 @@ func (i *Importer) populateMovies(ctx context.Context) error {
 	return nil
 }
 
-func (i *Importer) createMovie(ctx context.Context, name string) (*models.Movie, error) {
-	newMovie := *models.NewMovie(name)
+func (i *Importer) createMovie(ctx context.Context, name string) (int, error) {
+	newMovie := models.NewMovie(name)
 
-	created, err := i.MovieWriter.Create(ctx, newMovie)
+	err := i.MovieWriter.Create(ctx, newMovie)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	return created, nil
+	return newMovie.ID, nil
 }
 
 func (i *Importer) populateTags(ctx context.Context) error {

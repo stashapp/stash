@@ -1107,8 +1107,8 @@ func (t *ExportTask) exportMovie(ctx context.Context, wg *sync.WaitGroup, jobCha
 		}
 
 		if t.includeDependencies {
-			if m.StudioID.Valid {
-				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, int(m.StudioID.Int64))
+			if m.StudioID != nil {
+				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, *m.StudioID)
 			}
 		}
 

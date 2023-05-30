@@ -221,15 +221,13 @@ func GetSceneMoviesJSON(ctx context.Context, movieReader MovieFinder, scene *mod
 			return nil, fmt.Errorf("error getting movie: %v", err)
 		}
 
-		if movie.Name.Valid {
-			sceneMovieJSON := jsonschema.SceneMovie{
-				MovieName: movie.Name.String,
-			}
-			if sceneMovie.SceneIndex != nil {
-				sceneMovieJSON.SceneIndex = *sceneMovie.SceneIndex
-			}
-			results = append(results, sceneMovieJSON)
+		sceneMovieJSON := jsonschema.SceneMovie{
+			MovieName: movie.Name,
 		}
+		if sceneMovie.SceneIndex != nil {
+			sceneMovieJSON.SceneIndex = *sceneMovie.SceneIndex
+		}
+		results = append(results, sceneMovieJSON)
 	}
 
 	return results, nil

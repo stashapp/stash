@@ -73,7 +73,7 @@ type Database struct {
 	Performer *PerformerStore
 	Studio    *StudioStore
 	Tag       *tagQueryBuilder
-	Movie     *movieQueryBuilder
+	Movie     *MovieStore
 
 	db     *sqlx.DB
 	dbPath string
@@ -98,7 +98,7 @@ func NewDatabase() *Database {
 		Performer: NewPerformerStore(blobStore),
 		Studio:    NewStudioStore(blobStore),
 		Tag:       NewTagReaderWriter(blobStore),
-		Movie:     NewMovieReaderWriter(blobStore),
+		Movie:     NewMovieStore(blobStore),
 		lockChan:  make(chan struct{}, 1),
 	}
 
