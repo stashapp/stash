@@ -270,14 +270,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       if (!scene?.id || !vrTag) return false;
       let hasVrTag = false;
 
-      scene?.tags.map((tag) => {
+      return scene?.tags.some((tag) => {
         if (vrTag == tag.name) {
-          hasVrTag = true;
-          return;
+          return true;
         }
       });
-
-      return hasVrTag;
     }
 
     const options: VideoJsPlayerOptions = {
