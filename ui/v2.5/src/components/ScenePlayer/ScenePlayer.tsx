@@ -268,7 +268,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   useEffect(() => {
     function isVrScene() {
       if (!scene?.id || !vrTag) return false;
-      
+
       return scene?.tags.some((tag) => {
         if (vrTag == tag.name) {
           return true;
