@@ -1289,8 +1289,10 @@ func getMovieStringValue(index int, field string) string {
 	return getPrefixedStringValue("movie", index, field)
 }
 
-func getMovieNullStringValue(index int, field string) sql.NullString {
-	return getPrefixedNullStringValue("movie", index, field)
+func getMovieNullStringValue(index int, field string) string {
+	ret := getPrefixedNullStringValue("movie", index, field)
+
+	return ret.String
 }
 
 // createMoviees creates n movies with plain Name and o movies with camel cased NaMe included
@@ -1310,19 +1312,19 @@ func createMovies(ctx context.Context, mqb models.MovieReaderWriter, n int, o in
 
 		name = getMovieStringValue(index, name)
 		movie := models.Movie{
-			Name:     sql.NullString{String: name, Valid: true},
+			Name:     name,
 			URL:      getMovieNullStringValue(index, urlField),
 			Checksum: md5.FromString(name),
 		}
 
-		created, err := mqb.Create(ctx, movie)
+		err := mqb.Create(ctx, &movie)
 
 		if err != nil {
 			return fmt.Errorf("Error creating movie [%d] %v+: %s", i, movie, err.Error())
 		}
 
-		movieIDs = append(movieIDs, created.ID)
-		movieNames = append(movieNames, created.Name.String)
+		movieIDs = append(movieIDs, movie.ID)
+		movieNames = append(movieNames, movie.Name)
 	}
 
 	return nil
@@ -1751,10 +1753,9 @@ func doLinks(links [][2]int, fn func(idx1, idx2 int) error) error {
 func linkMovieStudios(ctx context.Context, mqb models.MovieWriter) error {
 	return doLinks(movieStudioLinks, func(movieIndex, studioIndex int) error {
 		movie := models.MoviePartial{
-			ID:       movieIDs[movieIndex],
-			StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
+			StudioID: models.NewOptionalInt(studioIDs[studioIndex]),
 		}
-		_, err := mqb.Update(ctx, movie)
+		_, err := mqb.UpdatePartial(ctx, movieIDs[movieIndex], movie)
 
 		return err
 	})

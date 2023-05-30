@@ -394,10 +394,10 @@ func TestGetSceneMoviesJSON(t *testing.T) {
 	movieErr := errors.New("error getting movie")
 
 	mockMovieReader.On("Find", testCtx, validMovie1).Return(&models.Movie{
-		Name: models.NullString(movie1Name),
+		Name: movie1Name,
 	}, nil).Once()
 	mockMovieReader.On("Find", testCtx, validMovie2).Return(&models.Movie{
-		Name: models.NullString(movie2Name),
+		Name: movie2Name,
 	}, nil).Once()
 	mockMovieReader.On("Find", testCtx, invalidMovie).Return(nil, movieErr).Once()
 
