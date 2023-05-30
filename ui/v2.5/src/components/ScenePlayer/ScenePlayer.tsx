@@ -478,9 +478,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     player.mobileUi(mobileUiOptions);
 
     function isDirect(src: URL) {
-        return src.pathname.endsWith("/stream") ||
-           src.pathname.endsWith("/stream.mpd") ||
-           src.pathname.endsWith("/stream.m3u8");
+      return (
+        src.pathname.endsWith("/stream") ||
+        src.pathname.endsWith("/stream.mpd") ||
+        src.pathname.endsWith("/stream.m3u8")
+      );
     }
 
     const { duration } = file;
