@@ -233,14 +233,14 @@ func (i *Importer) populateTags(ctx context.Context) error {
 func (i *Importer) createTags(ctx context.Context, names []string) ([]*models.Tag, error) {
 	var ret []*models.Tag
 	for _, name := range names {
-		newTag := *models.NewTag(name)
+		newTag := models.NewTag(name)
 
-		created, err := i.TagWriter.Create(ctx, newTag)
+		err := i.TagWriter.Create(ctx, newTag)
 		if err != nil {
 			return nil, err
 		}
 
-		ret = append(ret, created)
+		ret = append(ret, newTag)
 	}
 
 	return ret, nil

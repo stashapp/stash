@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"strconv"
 	"strings"
@@ -87,21 +86,6 @@ func (t changesetTranslator) getFields() []string {
 	var ret []string
 	for k := range t.inputMap {
 		ret = append(ret, k)
-	}
-
-	return ret
-}
-
-func (t changesetTranslator) nullString(value *string, field string) *sql.NullString {
-	if !t.hasField(field) {
-		return nil
-	}
-
-	ret := &sql.NullString{}
-
-	if value != nil {
-		ret.String = *value
-		ret.Valid = true
 	}
 
 	return ret
