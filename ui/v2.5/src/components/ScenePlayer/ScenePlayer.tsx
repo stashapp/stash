@@ -20,6 +20,7 @@ import "./markers";
 import "./vtt-thumbnails";
 import "./big-buttons";
 import "./track-activity";
+import "./vrmode";
 import cx from "classnames";
 import {
   useSceneSaveActivity,
@@ -213,6 +214,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   const minimumPlayPercent = uiConfig?.minimumPlayPercent ?? 0;
   const trackActivity = uiConfig?.trackActivity ?? false;
+  const vrTag = uiConfig?.vrTag ?? undefined;
 
   const file = useMemo(
     () => ((scene?.files.length ?? 0) > 0 ? scene?.files[0] : undefined),
@@ -265,6 +267,16 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   // Initialize VideoJS player
   useEffect(() => {
+    function isVrScene() {
+      if (!scene?.id || !vrTag) return false;
+
+      return scene?.tags.some((tag) => {
+        if (vrTag == tag.name) {
+          return true;
+        }
+      });
+    }
+
     const options: VideoJsPlayerOptions = {
       id: VIDEO_PLAYER_ID,
       controls: true,
@@ -318,11 +330,15 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         },
         skipButtons: {},
         trackActivity: {},
+        vrMenu: {
+          showButton: isVrScene(),
+        },
       },
     };
 
     const videoEl = document.createElement("video-js");
     videoEl.setAttribute("data-vjs-player", "true");
+    videoEl.setAttribute("crossorigin", "anonymous");
     videoEl.classList.add("vjs-big-play-centered");
     videoRef.current!.appendChild(videoEl);
 
@@ -348,7 +364,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       // reset sceneId to force reload sources
       sceneId.current = undefined;
     };
-  }, []);
+  }, [scene, vrTag]);
 
   useEffect(() => {
     const player = getPlayer();
@@ -662,6 +678,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   }, [
     getPlayer,
     scene,
+    vrTag,
     trackActivity,
     minimumPlayPercent,
     sceneIncrementPlayCount,

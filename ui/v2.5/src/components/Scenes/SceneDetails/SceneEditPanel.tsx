@@ -743,7 +743,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 />
               </Col>
             </Form.Group>
-
             <Form.Group controlId="date" as={Row}>
               {FormUtils.renderLabel({
                 title: intl.formatMessage({ id: "date" }),
@@ -756,7 +755,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 />
               </Col>
             </Form.Group>
-
             {renderTextField(
               "director",
               intl.formatMessage({ id: "director" })
@@ -790,7 +788,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 />
               </Col>
             </Form.Group>
-
             <Form.Group controlId="studio" as={Row}>
               {FormUtils.renderLabel({
                 title: intl.formatMessage({ id: "studio" }),
@@ -811,7 +808,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 />
               </Col>
             </Form.Group>
-
             <Form.Group controlId="performers" as={Row}>
               {FormUtils.renderLabel({
                 title: intl.formatMessage({ id: "performers" }),
@@ -834,7 +830,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 />
               </Col>
             </Form.Group>
-
             <Form.Group controlId="moviesScenes" as={Row}>
               {FormUtils.renderLabel({
                 title: `${intl.formatMessage({
@@ -857,7 +852,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 {renderTableMovies()}
               </Col>
             </Form.Group>
-
             <Form.Group controlId="tags" as={Row}>
               {FormUtils.renderLabel({
                 title: intl.formatMessage({ id: "tags" }),

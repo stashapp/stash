@@ -111,7 +111,9 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
   function updateVideoStyle() {
     const playerVideoContainer = document.getElementById(VIDEO_PLAYER_ID);
     const videoElements =
-      playerVideoContainer?.getElementsByTagName("video") ?? [];
+      playerVideoContainer?.getElementsByTagName("canvas") ??
+      playerVideoContainer?.getElementsByTagName("video") ??
+      [];
     const playerVideoElement =
       videoElements.length > 0 ? videoElements[0] : null;
 
