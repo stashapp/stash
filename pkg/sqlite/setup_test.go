@@ -648,7 +648,7 @@ func populateDB() error {
 			return fmt.Errorf("error adding tag image: %s", err.Error())
 		}
 
-		if err := createSavedFilters(ctx, sqlite.SavedFilterReaderWriter, totalSavedFilters); err != nil {
+		if err := createSavedFilters(ctx, db.SavedFilter, totalSavedFilters); err != nil {
 			return fmt.Errorf("error creating saved filters: %s", err.Error())
 		}
 
@@ -1728,13 +1728,13 @@ func createSavedFilters(ctx context.Context, qb models.SavedFilterReaderWriter, 
 			Filter: getPrefixedStringValue("savedFilter", i, "Filter"),
 		}
 
-		created, err := qb.Create(ctx, savedFilter)
+		err := qb.Create(ctx, &savedFilter)
 
 		if err != nil {
 			return fmt.Errorf("Error creating saved filter %v+: %s", savedFilter, err.Error())
 		}
 
-		savedFilterIDs = append(savedFilterIDs, created.ID)
+		savedFilterIDs = append(savedFilterIDs, savedFilter.ID)
 	}
 
 	return nil
