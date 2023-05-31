@@ -412,8 +412,6 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 		qb := r.repository.Performer
 
 		for _, performerID := range performerIDs {
-			updatedPerformer.ID = performerID
-
 			// need to get existing performer
 			existing, err := qb.Find(ctx, performerID)
 			if err != nil {
