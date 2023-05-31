@@ -33,8 +33,6 @@ const calculateClass = (index: number, count: number, columns: number) => {
   if ((index + 1) % columns === 0) return "transform-origin-right";
   // Multiple of columns
   if (index % columns === 0) {
-    // Position is equal or larger than first position in last row
-    if (lastIndex - (lastIndex % columns || columns) <= index) return "transform-origin-bottom";
     return "transform-origin-left";
   }
   // Position is equal or larger than first position in last row
