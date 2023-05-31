@@ -2,18 +2,23 @@ package gallery
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 )
-
-type PartialUpdater interface {
-	UpdatePartial(ctx context.Context, id int, updatedGallery models.GalleryPartial) (*models.Gallery, error)
-}
 
 type ImageUpdater interface {
 	GetImageIDs(ctx context.Context, galleryID int) ([]int, error)
 	AddImages(ctx context.Context, galleryID int, imageIDs ...int) error
 	RemoveImages(ctx context.Context, galleryID int, imageIDs ...int) error
+}
+
+func (s *Service) Updated(ctx context.Context, galleryID int) error {
+	_, err := s.Repository.UpdatePartial(ctx, galleryID, models.GalleryPartial{
+		UpdatedAt: models.NewOptionalTime(time.Now()),
+	})
+	return err
 }
 
 // AddImages adds images to the provided gallery.
@@ -24,7 +29,12 @@ func (s *Service) AddImages(ctx context.Context, g *models.Gallery, toAdd ...int
 		return err
 	}
 
-	return s.Repository.AddImages(ctx, g.ID, toAdd...)
+	if err := s.Repository.AddImages(ctx, g.ID, toAdd...); err != nil {
+		return fmt.Errorf("failed to add images to gallery: %w", err)
+	}
+
+	// #3759 - update the gallery's UpdatedAt timestamp
+	return s.Updated(ctx, g.ID)
 }
 
 // RemoveImages removes images from the provided gallery.
@@ -36,7 +46,12 @@ func (s *Service) RemoveImages(ctx context.Context, g *models.Gallery, toRemove 
 		return err
 	}
 
-	return s.Repository.RemoveImages(ctx, g.ID, toRemove...)
+	if err := s.Repository.RemoveImages(ctx, g.ID, toRemove...); err != nil {
+		return fmt.Errorf("failed to remove images from gallery: %w", err)
+	}
+
+	// #3759 - update the gallery's UpdatedAt timestamp
+	return s.Updated(ctx, g.ID)
 }
 
 func AddPerformer(ctx context.Context, qb PartialUpdater, o *models.Gallery, performerID int) error {
