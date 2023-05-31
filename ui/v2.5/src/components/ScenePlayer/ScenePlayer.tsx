@@ -11,6 +11,7 @@ import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
 import "videojs-contrib-dash";
 import "videojs-mobile-ui";
 import "videojs-seek-buttons";
+import { UAParser } from "ua-parser-js";
 import "./live";
 import "./PlaylistButtons";
 import "./source-selector";
@@ -487,24 +488,36 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     };
     player.mobileUi(mobileUiOptions);
 
+    function isDirect(src: URL) {
+      return (
+        src.pathname.endsWith("/stream") ||
+        src.pathname.endsWith("/stream.mpd") ||
+        src.pathname.endsWith("/stream.m3u8")
+      );
+    }
+
     const { duration } = file;
     const sourceSelector = player.sourceSelector();
+    const isSafari = UAParser().browser.name?.includes("Safari");
     sourceSelector.setSources(
-      scene.sceneStreams.map((stream) => {
-        const src = new URL(stream.url);
-        const isDirect =
-          src.pathname.endsWith("/stream") ||
-          src.pathname.endsWith("/stream.mpd") ||
-          src.pathname.endsWith("/stream.m3u8");
+      scene.sceneStreams
+        .filter((stream) => {
+          const src = new URL(stream.url);
+          const isFileTranscode = !isDirect(src);
 
-        return {
-          src: stream.url,
-          type: stream.mime_type ?? undefined,
-          label: stream.label ?? undefined,
-          offset: !isDirect,
-          duration,
-        };
-      })
+          return !(isFileTranscode && isSafari);
+        })
+        .map((stream) => {
+          const src = new URL(stream.url);
+
+          return {
+            src: stream.url,
+            type: stream.mime_type ?? undefined,
+            label: stream.label ?? undefined,
+            offset: !isDirect(src),
+            duration,
+          };
+        })
     );
 
     function getDefaultLanguageCode() {
