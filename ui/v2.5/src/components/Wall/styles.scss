@@ -1,38 +1,40 @@
 @mixin shared-size {
   @media (max-width: 576px) {
+    max-height: 33*0.563vw;
     max-width: 33%;
   }
 }
 
 .item-size {
   &-0 {
+    max-height: 20*0.563vw;
     max-width: 20%;
-    max-height: 20*0.5625vw;
 
     @include shared-size;
   }
 
   &-1 {
+    max-height: 25*0.563vw;
     max-width: 25%;
-    max-height: 25*0.5625vw;
 
     @include shared-size;
   }
 
   &-2 {
+    max-height: 33.33*0.563vw;
     max-width: 33.33%;
-    max-height: 33.33*0.5625vw;
 
     @include shared-size;
   }
 
   &-3 {
+    max-height: 50*0.563vw;
     max-width: 50%;
-    max-height: 50*0.5625vw;
 
     &:hover {
       .wall-item-container {
-        transform: scale(1.85) !important;
+        /* stylelint-disable-next-line */
+        transform: scale(1.9) !important;
       }
     }
 
@@ -40,8 +42,8 @@
   }
 
   &-4 {
+    max-height: 90*0.563vw;
     max-width: 90%;
-    max-height: 90*0.5625vw;
 
     @include shared-size;
   }
@@ -52,12 +54,12 @@
   max-width: 2250px;
 
   &-item {
-    width: 100%;
     height: 100%;
     line-height: 0;
     overflow: visible;
     padding: 0;
     transition: z-index 0.5s 0.5s;
+    width: 100%;
     z-index: 0;
 
     @media (max-width: 576px) {
@@ -106,8 +108,10 @@
     }
 
     &-text {
-      background: linear-gradient(rgba(255, 255, 255, 0.25),
-          rgba(255, 255, 255, 0.65));
+      background: linear-gradient(
+        rgba(255, 255, 255, 0.25),
+        rgba(255, 255, 255, 0.65)
+      );
       bottom: 0;
       color: #444;
       font-weight: 700;
@@ -140,6 +144,7 @@
     }
 
     &-container.no-transform:hover {
+      /* stylelint-disable-next-line */
       transform: none !important;
     }
 
