@@ -241,3 +241,10 @@ var (
 		idColumn: goqu.T(blobTable).Col(blobChecksumColumn),
 	}
 )
+
+var (
+	savedFilterTableMgr = &table{
+		table:    goqu.T(savedFilterTable),
+		idColumn: goqu.T(savedFilterTable).Col(idColumn),
+	}
+)

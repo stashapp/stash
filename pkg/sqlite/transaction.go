@@ -138,6 +138,6 @@ func (db *Database) TxnRepository() models.Repository {
 		ScrapedItem:    ScrapedItemReaderWriter,
 		Studio:         db.Studio,
 		Tag:            db.Tag,
-		SavedFilter:    SavedFilterReaderWriter,
+		SavedFilter:    db.SavedFilter,
 	}
 }
