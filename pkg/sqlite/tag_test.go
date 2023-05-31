@@ -783,12 +783,12 @@ func TestTagUpdateTagImage(t *testing.T) {
 		tag := models.Tag{
 			Name: name,
 		}
-		created, err := qb.Create(ctx, tag)
+		err := qb.Create(ctx, &tag)
 		if err != nil {
 			return fmt.Errorf("Error creating tag: %s", err.Error())
 		}
 
-		return testUpdateImage(t, ctx, created.ID, qb.UpdateImage, qb.GetImage)
+		return testUpdateImage(t, ctx, tag.ID, qb.UpdateImage, qb.GetImage)
 	}); err != nil {
 		t.Error(err.Error())
 	}
@@ -803,19 +803,19 @@ func TestTagUpdateAlias(t *testing.T) {
 		tag := models.Tag{
 			Name: name,
 		}
-		created, err := qb.Create(ctx, tag)
+		err := qb.Create(ctx, &tag)
 		if err != nil {
 			return fmt.Errorf("Error creating tag: %s", err.Error())
 		}
 
 		aliases := []string{"alias1", "alias2"}
-		err = qb.UpdateAliases(ctx, created.ID, aliases)
+		err = qb.UpdateAliases(ctx, tag.ID, aliases)
 		if err != nil {
 			return fmt.Errorf("Error updating tag aliases: %s", err.Error())
 		}
 
 		// ensure aliases set
-		storedAliases, err := qb.GetAliases(ctx, created.ID)
+		storedAliases, err := qb.GetAliases(ctx, tag.ID)
 		if err != nil {
 			return fmt.Errorf("Error getting aliases: %s", err.Error())
 		}

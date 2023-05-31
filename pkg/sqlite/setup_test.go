@@ -1547,7 +1547,7 @@ func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) e
 			IgnoreAutoTag: getIgnoreAutoTag(i),
 		}
 
-		created, err := tqb.Create(ctx, tag)
+		err := tqb.Create(ctx, &tag)
 
 		if err != nil {
 			return fmt.Errorf("Error creating tag %v+: %s", tag, err.Error())
@@ -1555,12 +1555,12 @@ func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) e
 
 		// add alias
 		alias := getTagStringValue(i, "Alias")
-		if err := tqb.UpdateAliases(ctx, created.ID, []string{alias}); err != nil {
+		if err := tqb.UpdateAliases(ctx, tag.ID, []string{alias}); err != nil {
 			return fmt.Errorf("error setting tag alias: %s", err.Error())
 		}
 
-		tagIDs = append(tagIDs, created.ID)
-		tagNames = append(tagNames, created.Name)
+		tagIDs = append(tagIDs, tag.ID)
+		tagNames = append(tagNames, tag.Name)
 	}
 
 	return nil

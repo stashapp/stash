@@ -117,7 +117,7 @@ func createTag(ctx context.Context, qb models.TagWriter) error {
 		Name: testName,
 	}
 
-	_, err := qb.Create(ctx, tag)
+	err := qb.Create(ctx, &tag)
 	if err != nil {
 		return err
 	}
