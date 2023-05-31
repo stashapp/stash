@@ -66,6 +66,9 @@ export function makeCriteria(
     case "none":
       return new NoneCriterion();
     case "name":
+      return new StringCriterion(
+        new MandatoryStringCriterionOption(type, type)
+      );
     case "path":
       return new StringCriterion(new PathCriterionOption(type, type));
     case "checksum":
