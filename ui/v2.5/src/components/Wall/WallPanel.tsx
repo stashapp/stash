@@ -14,7 +14,7 @@ interface IWallPanelProps<T extends WallItemType> {
 const calculateClass = (index: number, count: number, columns: number) => {
   // No Classname if only 1 column
   if (columns === 1) {
-    return "";
+    return "no-transform";
   }
   const lastIndex = count - 1;
   const lastRowIndex = Math.floor(lastIndex / columns) * columns;
@@ -32,7 +32,11 @@ const calculateClass = (index: number, count: number, columns: number) => {
   // Multiple of columns minus one
   if ((index + 1) % columns === 0) return "transform-origin-right";
   // Multiple of columns
-  if (index % columns === 0) return "transform-origin-left";
+  if (index % columns === 0) {
+    // Position is equal or larger than first position in last row
+    if (lastIndex - (lastIndex % columns || columns) <= index) return "transform-origin-bottom";
+    return "transform-origin-left";
+  }
   // Position is equal or larger than first position in last row
   if (lastIndex - (lastIndex % columns || columns) <= index + 1) return "transform-origin-bottom";
   // Default
