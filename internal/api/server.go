@@ -178,6 +178,10 @@ func Start() error {
 		tagFinder:  txnManager.Tag,
 	}.Routes())
 	r.Mount("/downloads", downloadsRoutes{}.Routes())
+	r.Mount("/heresphere", heresphereRoutes{
+		txnManager: txnManager,
+		repository: txnManager,
+	}.Routes())
 
 	r.HandleFunc("/css", cssHandler(c, pluginCache))
 	r.HandleFunc("/javascript", javascriptHandler(c, pluginCache))
