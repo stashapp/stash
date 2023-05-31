@@ -151,10 +151,10 @@ export class Interactive {
 
     if (this._useStashHostedFunscript) {
       funscriptUrl = funscriptPath.replace("/funscript", "/interactive_csv");
-      if (typeof apiKey !== 'undefined') {
-        var url = new URL(funscriptUrl)
+      if (typeof apiKey !== "undefined" && apiKey !== "") {
+        var url = new URL(funscriptUrl);
         url.searchParams.append("apikey", apiKey);
-        funscriptUrl = url.toString()
+        funscriptUrl = url.toString();
       }
     } else {
       const csv = await fetch(funscriptPath)

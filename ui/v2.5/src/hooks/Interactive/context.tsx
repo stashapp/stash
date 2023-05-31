@@ -176,7 +176,10 @@ export const InteractiveProvider: React.FC = ({ children }) => {
 
       setState(ConnectionState.Uploading);
       try {
-        await interactive.uploadScript(funscriptPath, stashConfig?.general?.apiKey);
+        await interactive.uploadScript(
+          funscriptPath,
+          stashConfig?.general?.apiKey
+        );
         setCurrentScript(funscriptPath);
         setState(ConnectionState.Ready);
       } catch (e) {
