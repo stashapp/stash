@@ -291,7 +291,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           onChange={(v) => saveUI({ trackActivity: v })}
         />
         <StringSetting
-          id="vr_tag"
+          id="vr-tag"
           headingID="config.ui.scene_player.options.vr_tag.heading"
           subHeadingID="config.ui.scene_player.options.vr_tag.description"
           value={ui.vrTag ?? undefined}
