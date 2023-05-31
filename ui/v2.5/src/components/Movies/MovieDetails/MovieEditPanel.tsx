@@ -28,7 +28,7 @@ import { DateInput } from "src/components/Shared/DateInput";
 
 interface IMovieEditPanel {
   movie: Partial<GQL.MovieDataFragment>;
-  onSubmit: (movie: GQL.MovieCreateInput) => void;
+  onSubmit: (movie: GQL.MovieCreateInput) => Promise<void>;
   onCancel: () => void;
   onDelete: () => void;
   setFrontImage: (image?: string | null) => void;
@@ -103,7 +103,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     initialValues,
     enableReinitialize: true,
     validationSchema: schema,
-    onSubmit: (values) => onSubmit(values),
+    onSubmit: (values) => onSave(values),
   });
 
   function setRating(v: number) {
@@ -116,19 +116,17 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     setRating
   );
 
-  function onCancelEditing() {
-    setFrontImage(undefined);
-    setBackImage(undefined);
-    onCancel?.();
-  }
-
   // set up hotkeys
   useEffect(() => {
     // Mousetrap.bind("u", (e) => {
     //   setStudioFocus()
     //   e.preventDefault();
     // });
-    Mousetrap.bind("s s", () => formik.handleSubmit());
+    Mousetrap.bind("s s", () => {
+      if (formik.dirty) {
+        formik.submitForm();
+      }
+    });
 
     return () => {
       // Mousetrap.unbind("u");
@@ -180,6 +178,17 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
       // image is a base64 string
       formik.setFieldValue("back_image", state.back_image);
     }
+  }
+
+  async function onSave(input: InputValues) {
+    setIsLoading(true);
+    try {
+      await onSubmit(input);
+      formik.resetForm();
+    } catch (e) {
+      Toast.error(e);
+    }
+    setIsLoading(false);
   }
 
   async function onScrapeMovieURL() {
@@ -488,7 +497,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
         objectName={movie?.name ?? intl.formatMessage({ id: "movie" })}
         isNew={isNew}
         isEditing={isEditing}
-        onToggleEdit={onCancelEditing}
+        onToggleEdit={onCancel}
         onSave={formik.handleSubmit}
         saveDisabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}
         onImageChange={onFrontImageChange}

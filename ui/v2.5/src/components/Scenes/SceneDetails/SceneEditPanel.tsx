@@ -16,10 +16,8 @@ import {
   queryScrapeScene,
   queryScrapeSceneURL,
   useListSceneScrapers,
-  useSceneUpdate,
   mutateReloadScrapers,
   queryScrapeSceneQueryFragment,
-  mutateCreateScene,
 } from "src/core/StashService";
 import {
   PerformerSelect,
@@ -37,7 +35,7 @@ import ImageUtils from "src/utils/image";
 import FormUtils from "src/utils/form";
 import { getStashIDs } from "src/utils/stashIds";
 import { useFormik } from "formik";
-import { Prompt, useHistory } from "react-router-dom";
+import { Prompt } from "react-router-dom";
 import { ConfigurationContext } from "src/hooks/Config";
 import { stashboxDisplayName } from "src/utils/stashbox";
 import { SceneMovieTable } from "./SceneMovieTable";
@@ -59,24 +57,23 @@ const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
 
 interface IProps {
   scene: Partial<GQL.SceneDataFragment>;
-  fileID?: string;
   initialCoverImage?: string;
   isNew?: boolean;
   isVisible: boolean;
+  onSubmit: (input: GQL.SceneCreateInput) => Promise<void>;
   onDelete?: () => void;
 }
 
 export const SceneEditPanel: React.FC<IProps> = ({
   scene,
-  fileID,
   initialCoverImage,
   isNew = false,
   isVisible,
+  onSubmit,
   onDelete,
 }) => {
   const intl = useIntl();
   const Toast = useToast();
-  const history = useHistory();
 
   const [galleries, setGalleries] = useState<{ id: string; title: string }[]>(
     []
@@ -92,14 +89,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const [scrapedScene, setScrapedScene] = useState<GQL.ScrapedScene | null>();
   const [endpoint, setEndpoint] = useState<string>();
 
-  const [coverImagePreview, setCoverImagePreview] = useState<string>();
-
-  useEffect(() => {
-    setCoverImagePreview(
-      initialCoverImage ?? scene.paths?.screenshot ?? undefined
-    );
-  }, [scene.paths?.screenshot, initialCoverImage]);
-
   useEffect(() => {
     setGalleries(
       scene.galleries?.map((g) => ({
@@ -113,8 +102,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
-
-  const [updateScene] = useSceneUpdate();
 
   const schema = yup.object({
     title: yup.string().ensure(),
@@ -183,6 +170,19 @@ export const SceneEditPanel: React.FC<IProps> = ({
     onSubmit: (values) => onSave(values),
   });
 
+  const coverImagePreview = useMemo(() => {
+    const sceneImage = scene.paths?.screenshot;
+    const formImage = formik.values.cover_image;
+    if (formImage === null && sceneImage) {
+      const sceneImageURL = new URL(sceneImage);
+      sceneImageURL.searchParams.set("default", "true");
+      return sceneImageURL.toString();
+    } else if (formImage) {
+      return formImage;
+    }
+    return sceneImage;
+  }, [formik.values.cover_image, scene.paths?.screenshot]);
+
   function setRating(v: number) {
     formik.setFieldValue("rating100", v);
   }
@@ -209,7 +209,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
   useEffect(() => {
     if (isVisible) {
       Mousetrap.bind("s s", () => {
-        formik.handleSubmit();
+        if (formik.dirty) {
+          formik.submitForm();
+        }
       });
       Mousetrap.bind("d d", () => {
         if (onDelete) {
@@ -259,35 +261,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
   async function onSave(input: InputValues) {
     setIsLoading(true);
     try {
-      if (!isNew) {
-        const result = await updateScene({
-          variables: {
-            input: {
-              id: scene.id!,
-              ...input,
-            },
-          },
-        });
-        if (result.data?.sceneUpdate) {
-          Toast.success({
-            content: intl.formatMessage(
-              { id: "toast.updated_entity" },
-              {
-                entity: intl.formatMessage({ id: "scene" }).toLocaleLowerCase(),
-              }
-            ),
-          });
-          formik.resetForm();
-        }
-      } else {
-        const result = await mutateCreateScene({
-          ...input,
-          file_ids: fileID ? [fileID] : undefined,
-        });
-        if (result.data?.sceneCreate?.id) {
-          history.push(`/scenes/${result.data?.sceneCreate.id}`);
-        }
-      }
+      await onSubmit(input);
+      formik.resetForm();
     } catch (e) {
       Toast.error(e);
     }
@@ -318,7 +293,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const encodingImage = ImageUtils.usePasteImage(onImageLoad);
 
   function onImageLoad(imageData: string) {
-    setCoverImagePreview(imageData);
     formik.setFieldValue("cover_image", imageData);
   }
 
@@ -619,7 +593,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
     if (updatedScene.image) {
       // image is a base64 string
       formik.setFieldValue("cover_image", updatedScene.image);
-      setCoverImagePreview(updatedScene.image);
     }
 
     if (updatedScene.remote_site_id && endpoint) {
