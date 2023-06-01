@@ -104,6 +104,11 @@ var (
 		},
 		fkColumn: galleriesScenesJoinTable.Col(sceneIDColumn),
 	}
+
+	galleriesChaptersTableMgr = &table{
+		table:    goqu.T(galleriesChaptersTable),
+		idColumn: goqu.T(galleriesChaptersTable).Col(idColumn),
+	}
 )
 
 var (

@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"os"
@@ -525,22 +524,22 @@ func (r *mutationResolver) GalleryChapterCreate(ctx context.Context, input Galle
 	newGalleryChapter := models.GalleryChapter{
 		Title:      input.Title,
 		ImageIndex: input.ImageIndex,
-		GalleryID:  sql.NullInt64{Int64: int64(galleryID), Valid: galleryID != 0},
-		CreatedAt:  models.SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt:  models.SQLiteTimestamp{Timestamp: currentTime},
+		GalleryID:  galleryID,
+		CreatedAt:  currentTime,
+		UpdatedAt:  currentTime,
 	}
 
 	if err != nil {
 		return nil, err
 	}
 
-	ret, err := r.changeChapter(ctx, create, newGalleryChapter)
+	err = r.changeChapter(ctx, create, &newGalleryChapter)
 	if err != nil {
 		return nil, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, ret.ID, plugin.GalleryChapterCreatePost, input, nil)
-	return r.getGalleryChapter(ctx, ret.ID)
+	r.hookExecutor.ExecutePostHooks(ctx, newGalleryChapter.ID, plugin.GalleryChapterCreatePost, input, nil)
+	return r.getGalleryChapter(ctx, newGalleryChapter.ID)
 }
 
 func (r *mutationResolver) GalleryChapterUpdate(ctx context.Context, input GalleryChapterUpdateInput) (*models.GalleryChapter, error) {
@@ -548,6 +547,10 @@ func (r *mutationResolver) GalleryChapterUpdate(ctx context.Context, input Galle
 	galleryChapterID, err := strconv.Atoi(input.ID)
 	if err != nil {
 		return nil, err
+	}
+
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
 	}
 
 	galleryID, err := strconv.Atoi(input.GalleryID)
@@ -571,20 +574,17 @@ func (r *mutationResolver) GalleryChapterUpdate(ctx context.Context, input Galle
 		ID:         galleryChapterID,
 		Title:      input.Title,
 		ImageIndex: input.ImageIndex,
-		GalleryID:  sql.NullInt64{Int64: int64(galleryID), Valid: galleryID != 0},
-		UpdatedAt:  models.SQLiteTimestamp{Timestamp: time.Now()},
+		GalleryID:  galleryID,
+		UpdatedAt:  time.Now(),
 	}
 
-	ret, err := r.changeChapter(ctx, update, updatedGalleryChapter)
+	err = r.changeChapter(ctx, update, &updatedGalleryChapter)
 	if err != nil {
 		return nil, err
 	}
 
-	translator := changesetTranslator{
-		inputMap: getUpdateInputMap(ctx),
-	}
-	r.hookExecutor.ExecutePostHooks(ctx, ret.ID, plugin.GalleryChapterUpdatePost, input, translator.getFields())
-	return r.getGalleryChapter(ctx, ret.ID)
+	r.hookExecutor.ExecutePostHooks(ctx, updatedGalleryChapter.ID, plugin.GalleryChapterUpdatePost, input, translator.getFields())
+	return r.getGalleryChapter(ctx, updatedGalleryChapter.ID)
 }
 
 func (r *mutationResolver) GalleryChapterDestroy(ctx context.Context, id string) (bool, error) {
@@ -616,9 +616,7 @@ func (r *mutationResolver) GalleryChapterDestroy(ctx context.Context, id string)
 	return true, nil
 }
 
-func (r *mutationResolver) changeChapter(ctx context.Context, changeType int, changedChapter models.GalleryChapter) (*models.GalleryChapter, error) {
-	var galleryChapter *models.GalleryChapter
-
+func (r *mutationResolver) changeChapter(ctx context.Context, changeType int, changedChapter *models.GalleryChapter) error {
 	// Start the transaction and save the gallery chapter
 	var err = r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.GalleryChapter
@@ -626,9 +624,9 @@ func (r *mutationResolver) changeChapter(ctx context.Context, changeType int, ch
 
 		switch changeType {
 		case create:
-			galleryChapter, err = qb.Create(ctx, changedChapter)
+			err = qb.Create(ctx, changedChapter)
 		case update:
-			galleryChapter, err = qb.Update(ctx, changedChapter)
+			err = qb.Update(ctx, changedChapter)
 			if err != nil {
 				return err
 			}
@@ -636,5 +634,5 @@ func (r *mutationResolver) changeChapter(ctx context.Context, changeType int, ch
 		return err
 	})
 
-	return galleryChapter, err
+	return err
 }

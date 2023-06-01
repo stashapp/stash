@@ -129,7 +129,7 @@ func (db *Database) TxnRepository() models.Repository {
 		File:           db.File,
 		Folder:         db.Folder,
 		Gallery:        db.Gallery,
-		GalleryChapter: GalleryChapterReaderWriter,
+		GalleryChapter: db.GalleryChapter,
 		Image:          db.Image,
 		Movie:          db.Movie,
 		Performer:      db.Performer,

@@ -26,7 +26,6 @@ const (
 	galleriesTagsTable       = "galleries_tags"
 	galleriesImagesTable     = "galleries_images"
 	galleriesScenesTable     = "scenes_galleries"
-	galleriesChaptersTable   = "galleries_chapters"
 	galleryIDColumn          = "gallery_id"
 )
 
