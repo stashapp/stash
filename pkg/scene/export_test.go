@@ -513,24 +513,16 @@ var validMarkers = []*models.SceneMarker{
 		Title:        markerTitle1,
 		PrimaryTagID: validTagID1,
 		Seconds:      markerSeconds1,
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
+		CreatedAt:    createTime,
+		UpdatedAt:    updateTime,
 	},
 	{
 		ID:           validMarkerID2,
 		Title:        markerTitle2,
 		PrimaryTagID: validTagID2,
 		Seconds:      markerSeconds2,
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
+		CreatedAt:    createTime,
+		UpdatedAt:    updateTime,
 	},
 }
 

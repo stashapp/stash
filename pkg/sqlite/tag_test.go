@@ -12,7 +12,6 @@ import (
 	"testing"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -833,6 +832,7 @@ func TestTagMerge(t *testing.T) {
 	// merge tests - perform these in a transaction that we'll rollback
 	if err := withRollbackTxn(func(ctx context.Context) error {
 		qb := db.Tag
+		mqb := db.SceneMarker
 
 		// try merging into same tag
 		err := qb.Merge(ctx, []int{tagIDs[tagIdx1WithScene]}, tagIDs[tagIdx1WithScene])
@@ -897,14 +897,14 @@ func TestTagMerge(t *testing.T) {
 		assert.Contains(sceneTagIDs, destID)
 
 		// ensure marker points to new tag
-		marker, err := sqlite.SceneMarkerReaderWriter.Find(ctx, markerIDs[markerIdxWithTag])
+		marker, err := mqb.Find(ctx, markerIDs[markerIdxWithTag])
 		if err != nil {
 			return err
 		}
 
 		assert.Equal(destID, marker.PrimaryTagID)
 
-		markerTagIDs, err := sqlite.SceneMarkerReaderWriter.GetTagIDs(ctx, marker.ID)
+		markerTagIDs, err := mqb.GetTagIDs(ctx, marker.ID)
 		if err != nil {
 			return err
 		}

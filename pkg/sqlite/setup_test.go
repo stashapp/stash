@@ -665,7 +665,7 @@ func populateDB() error {
 		}
 
 		for _, ms := range markerSpecs {
-			if err := createMarker(ctx, sqlite.SceneMarkerReaderWriter, ms); err != nil {
+			if err := createMarker(ctx, db.SceneMarker, ms); err != nil {
 				return fmt.Errorf("error creating scene marker: %s", err.Error())
 			}
 		}
@@ -1650,17 +1650,17 @@ func createStudios(ctx context.Context, sqb models.StudioReaderWriter, n int, o 
 
 func createMarker(ctx context.Context, mqb models.SceneMarkerReaderWriter, markerSpec markerSpec) error {
 	marker := models.SceneMarker{
-		SceneID:      sql.NullInt64{Int64: int64(sceneIDs[markerSpec.sceneIdx]), Valid: true},
+		SceneID:      sceneIDs[markerSpec.sceneIdx],
 		PrimaryTagID: tagIDs[markerSpec.primaryTagIdx],
 	}
 
-	created, err := mqb.Create(ctx, marker)
+	err := mqb.Create(ctx, &marker)
 
 	if err != nil {
 		return fmt.Errorf("error creating marker %v+: %w", marker, err)
 	}
 
-	markerIDs = append(markerIDs, created.ID)
+	markerIDs = append(markerIDs, marker.ID)
 
 	if len(markerSpec.tagIdxs) > 0 {
 		newTagIDs := []int{}
@@ -1669,7 +1669,7 @@ func createMarker(ctx context.Context, mqb models.SceneMarkerReaderWriter, marke
 			newTagIDs = append(newTagIDs, tagIDs[tagIdx])
 		}
 
-		if err := mqb.UpdateTags(ctx, created.ID, newTagIDs); err != nil {
+		if err := mqb.UpdateTags(ctx, marker.ID, newTagIDs); err != nil {
 			return fmt.Errorf("error creating marker/tag join: %w", err)
 		}
 	}

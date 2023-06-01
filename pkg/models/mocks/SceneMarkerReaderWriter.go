@@ -80,26 +80,17 @@ func (_m *SceneMarkerReaderWriter) CountByTagID(ctx context.Context, tagID int) 
 }
 
 // Create provides a mock function with given fields: ctx, newSceneMarker
-func (_m *SceneMarkerReaderWriter) Create(ctx context.Context, newSceneMarker models.SceneMarker) (*models.SceneMarker, error) {
+func (_m *SceneMarkerReaderWriter) Create(ctx context.Context, newSceneMarker *models.SceneMarker) error {
 	ret := _m.Called(ctx, newSceneMarker)
 
-	var r0 *models.SceneMarker
-	if rf, ok := ret.Get(0).(func(context.Context, models.SceneMarker) *models.SceneMarker); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *models.SceneMarker) error); ok {
 		r0 = rf(ctx, newSceneMarker)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.SceneMarker)
-		}
+		r0 = ret.Error(0)
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, models.SceneMarker) error); ok {
-		r1 = rf(ctx, newSceneMarker)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // Destroy provides a mock function with given fields: ctx, id
@@ -262,26 +253,17 @@ func (_m *SceneMarkerReaderWriter) Query(ctx context.Context, sceneMarkerFilter 
 }
 
 // Update provides a mock function with given fields: ctx, updatedSceneMarker
-func (_m *SceneMarkerReaderWriter) Update(ctx context.Context, updatedSceneMarker models.SceneMarker) (*models.SceneMarker, error) {
+func (_m *SceneMarkerReaderWriter) Update(ctx context.Context, updatedSceneMarker *models.SceneMarker) error {
 	ret := _m.Called(ctx, updatedSceneMarker)
 
-	var r0 *models.SceneMarker
-	if rf, ok := ret.Get(0).(func(context.Context, models.SceneMarker) *models.SceneMarker); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *models.SceneMarker) error); ok {
 		r0 = rf(ctx, updatedSceneMarker)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.SceneMarker)
-		}
+		r0 = ret.Error(0)
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, models.SceneMarker) error); ok {
-		r1 = rf(ctx, updatedSceneMarker)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // UpdateTags provides a mock function with given fields: ctx, markerID, tagIDs
