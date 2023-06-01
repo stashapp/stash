@@ -3390,58 +3390,139 @@ func TestSceneQueryPerformers(t *testing.T) {
 }
 
 func TestSceneQueryTags(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
-		tagCriterion := models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(tagIDs[tagIdxWithScene]),
-				strconv.Itoa(tagIDs[tagIdx1WithScene]),
+	tests := []struct {
+		name        string
+		filter      models.HierarchicalMultiCriterionInput
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"includes",
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(tagIDs[tagIdxWithScene]),
+					strconv.Itoa(tagIDs[tagIdx1WithScene]),
+				},
+				Modifier: models.CriterionModifierIncludes,
 			},
-			Modifier: models.CriterionModifierIncludes,
-		}
-
-		sceneFilter := models.SceneFilterType{
-			Tags: &tagCriterion,
-		}
-
-		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
-		assert.Len(t, scenes, 2)
-
-		// ensure ids are correct
-		for _, scene := range scenes {
-			assert.True(t, scene.ID == sceneIDs[sceneIdxWithTag] || scene.ID == sceneIDs[sceneIdxWithTwoTags])
-		}
-
-		tagCriterion = models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(tagIDs[tagIdx1WithScene]),
-				strconv.Itoa(tagIDs[tagIdx2WithScene]),
+			[]int{
+				sceneIdxWithTag,
+				sceneIdxWithTwoTags,
 			},
-			Modifier: models.CriterionModifierIncludesAll,
-		}
-
-		scenes = queryScene(ctx, t, sqb, &sceneFilter, nil)
-
-		assert.Len(t, scenes, 1)
-		assert.Equal(t, sceneIDs[sceneIdxWithTwoTags], scenes[0].ID)
-
-		tagCriterion = models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(tagIDs[tagIdx1WithScene]),
+			[]int{
+				sceneIdxWithGallery,
 			},
-			Modifier: models.CriterionModifierExcludes,
-		}
+			false,
+		},
+		{
+			"includes all",
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(tagIDs[tagIdx1WithScene]),
+					strconv.Itoa(tagIDs[tagIdx2WithScene]),
+				},
+				Modifier: models.CriterionModifierIncludesAll,
+			},
+			[]int{
+				sceneIdxWithTwoTags,
+			},
+			[]int{
+				sceneIdxWithTag,
+			},
+			false,
+		},
+		{
+			"excludes",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierExcludes,
+				Value:    []string{strconv.Itoa(tagIDs[tagIdx1WithScene])},
+			},
+			nil,
+			[]int{sceneIdxWithTwoTags},
+			false,
+		},
+		{
+			"is null",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierIsNull,
+			},
+			[]int{sceneIdx1WithPerformer},
+			[]int{
+				sceneIdxWithTag,
+				sceneIdxWithTwoTags,
+				sceneIdxWithMarkerAndTag,
+			},
+			false,
+		},
+		{
+			"not null",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierNotNull,
+			},
+			[]int{
+				sceneIdxWithTag,
+				sceneIdxWithTwoTags,
+				sceneIdxWithMarkerAndTag,
+			},
+			[]int{sceneIdx1WithPerformer},
+			false,
+		},
+		{
+			"equals",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierEquals,
+				Value: []string{
+					strconv.Itoa(tagIDs[tagIdx1WithScene]),
+					strconv.Itoa(tagIDs[tagIdx2WithScene]),
+				},
+			},
+			[]int{sceneIdxWithTwoTags},
+			[]int{
+				sceneIdxWithThreeTags,
+			},
+			false,
+		},
+		{
+			"not equals",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierNotEquals,
+				Value: []string{
+					strconv.Itoa(tagIDs[tagIdx1WithScene]),
+					strconv.Itoa(tagIDs[tagIdx2WithScene]),
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+	}
 
-		q := getSceneStringValue(sceneIdxWithTwoTags, titleField)
-		findFilter := models.FindFilterType{
-			Q: &q,
-		}
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 
-		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
-		assert.Len(t, scenes, 0)
+			results, err := db.Scene.Query(ctx, models.SceneQueryOptions{
+				SceneFilter: &models.SceneFilterType{
+					Tags: &tt.filter,
+				},
+			})
+			if (err != nil) != tt.wantErr {
+				t.Errorf("SceneStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
-		return nil
-	})
+			include := indexesToIDs(sceneIDs, tt.includeIdxs)
+			exclude := indexesToIDs(sceneIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(results.IDs, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(results.IDs, e)
+			}
+		})
+	}
 }
 
 func TestSceneQueryPerformerTags(t *testing.T) {

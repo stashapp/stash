@@ -2201,80 +2201,139 @@ func TestImageQueryPerformers(t *testing.T) {
 }
 
 func TestImageQueryTags(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Image
-		tagCriterion := models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(tagIDs[tagIdxWithImage]),
-				strconv.Itoa(tagIDs[tagIdx1WithImage]),
+	tests := []struct {
+		name        string
+		filter      models.HierarchicalMultiCriterionInput
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"includes",
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(tagIDs[tagIdxWithImage]),
+					strconv.Itoa(tagIDs[tagIdx1WithImage]),
+				},
+				Modifier: models.CriterionModifierIncludes,
 			},
-			Modifier: models.CriterionModifierIncludes,
-		}
-
-		imageFilter := models.ImageFilterType{
-			Tags: &tagCriterion,
-		}
-
-		images := queryImages(ctx, t, sqb, &imageFilter, nil)
-		assert.Len(t, images, 2)
-
-		// ensure ids are correct
-		for _, image := range images {
-			assert.True(t, image.ID == imageIDs[imageIdxWithTag] || image.ID == imageIDs[imageIdxWithTwoTags])
-		}
-
-		tagCriterion = models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(tagIDs[tagIdx1WithImage]),
-				strconv.Itoa(tagIDs[tagIdx2WithImage]),
+			[]int{
+				imageIdxWithTag,
+				imageIdxWithTwoTags,
 			},
-			Modifier: models.CriterionModifierIncludesAll,
-		}
-
-		images = queryImages(ctx, t, sqb, &imageFilter, nil)
-		assert.Len(t, images, 1)
-		assert.Equal(t, imageIDs[imageIdxWithTwoTags], images[0].ID)
-
-		tagCriterion = models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(tagIDs[tagIdx1WithImage]),
+			[]int{
+				imageIdxWithGallery,
 			},
-			Modifier: models.CriterionModifierExcludes,
-		}
+			false,
+		},
+		{
+			"includes all",
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(tagIDs[tagIdx1WithImage]),
+					strconv.Itoa(tagIDs[tagIdx2WithImage]),
+				},
+				Modifier: models.CriterionModifierIncludesAll,
+			},
+			[]int{
+				imageIdxWithTwoTags,
+			},
+			[]int{
+				imageIdxWithTag,
+			},
+			false,
+		},
+		{
+			"excludes",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierExcludes,
+				Value:    []string{strconv.Itoa(tagIDs[tagIdx1WithImage])},
+			},
+			nil,
+			[]int{imageIdxWithTwoTags},
+			false,
+		},
+		{
+			"is null",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierIsNull,
+			},
+			[]int{imageIdx1WithPerformer},
+			[]int{
+				imageIdxWithTag,
+				imageIdxWithTwoTags,
+				imageIdxWithThreeTags,
+			},
+			false,
+		},
+		{
+			"not null",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierNotNull,
+			},
+			[]int{
+				imageIdxWithTag,
+				imageIdxWithTwoTags,
+				imageIdxWithThreeTags,
+			},
+			[]int{imageIdx1WithPerformer},
+			false,
+		},
+		{
+			"equals",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierEquals,
+				Value: []string{
+					strconv.Itoa(tagIDs[tagIdx1WithImage]),
+					strconv.Itoa(tagIDs[tagIdx2WithImage]),
+				},
+			},
+			[]int{imageIdxWithTwoTags},
+			[]int{
+				imageIdxWithThreeTags,
+			},
+			false,
+		},
+		{
+			"not equals",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierNotEquals,
+				Value: []string{
+					strconv.Itoa(tagIDs[tagIdx1WithImage]),
+					strconv.Itoa(tagIDs[tagIdx2WithImage]),
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+	}
 
-		q := getImageStringValue(imageIdxWithTwoTags, titleField)
-		findFilter := models.FindFilterType{
-			Q: &q,
-		}
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 
-		images = queryImages(ctx, t, sqb, &imageFilter, &findFilter)
-		assert.Len(t, images, 0)
+			results, err := db.Image.Query(ctx, models.ImageQueryOptions{
+				ImageFilter: &models.ImageFilterType{
+					Tags: &tt.filter,
+				},
+			})
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ImageStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
-		tagCriterion = models.HierarchicalMultiCriterionInput{
-			Modifier: models.CriterionModifierIsNull,
-		}
-		q = getImageStringValue(imageIdxWithGallery, titleField)
+			include := indexesToIDs(imageIDs, tt.includeIdxs)
+			exclude := indexesToIDs(imageIDs, tt.excludeIdxs)
 
-		images = queryImages(ctx, t, sqb, &imageFilter, &findFilter)
-		assert.Len(t, images, 1)
-		assert.Equal(t, imageIDs[imageIdxWithGallery], images[0].ID)
-
-		q = getImageStringValue(imageIdxWithTag, titleField)
-		images = queryImages(ctx, t, sqb, &imageFilter, &findFilter)
-		assert.Len(t, images, 0)
-
-		tagCriterion.Modifier = models.CriterionModifierNotNull
-
-		images = queryImages(ctx, t, sqb, &imageFilter, &findFilter)
-		assert.Len(t, images, 1)
-		assert.Equal(t, imageIDs[imageIdxWithTag], images[0].ID)
-
-		q = getImageStringValue(imageIdxWithGallery, titleField)
-		images = queryImages(ctx, t, sqb, &imageFilter, &findFilter)
-		assert.Len(t, images, 0)
-
-		return nil
-	})
+			for _, i := range include {
+				assert.Contains(results.IDs, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(results.IDs, e)
+			}
+		})
+	}
 }
 
 func TestImageQueryStudio(t *testing.T) {
@@ -2659,7 +2718,7 @@ func TestImageQuerySorting(t *testing.T) {
 			"date",
 			models.SortDirectionEnumDesc,
 			imageIdxWithTwoGalleries,
-			imageIdxWithGrandChildStudio,
+			imageIdxWithPerformerTwoTags,
 		},
 	}
 

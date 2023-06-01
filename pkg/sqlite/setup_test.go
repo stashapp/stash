@@ -17,7 +17,6 @@ import (
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
 
@@ -63,6 +62,7 @@ const (
 	sceneIdxWithTwoPerformers
 	sceneIdxWithTag
 	sceneIdxWithTwoTags
+	sceneIdxWithThreeTags
 	sceneIdxWithMarkerAndTag
 	sceneIdxWithStudio
 	sceneIdx1WithStudio
@@ -94,6 +94,7 @@ const (
 	imageIdxWithTwoPerformers
 	imageIdxWithTag
 	imageIdxWithTwoTags
+	imageIdxWithThreeTags
 	imageIdxWithStudio
 	imageIdx1WithStudio
 	imageIdx2WithStudio
@@ -161,6 +162,7 @@ const (
 	galleryIdxWithTwoPerformers
 	galleryIdxWithTag
 	galleryIdxWithTwoTags
+	galleryIdxWithThreeTags
 	galleryIdxWithStudio
 	galleryIdx1WithStudio
 	galleryIdx2WithStudio
@@ -187,12 +189,14 @@ const (
 	tagIdxWithImage
 	tagIdx1WithImage
 	tagIdx2WithImage
+	tagIdx3WithImage
 	tagIdxWithPerformer
 	tagIdx1WithPerformer
 	tagIdx2WithPerformer
 	tagIdxWithGallery
 	tagIdx1WithGallery
 	tagIdx2WithGallery
+	tagIdx3WithGallery
 	tagIdxWithChildTag
 	tagIdxWithParentTag
 	tagIdxWithGrandChild
@@ -339,6 +343,7 @@ var (
 	sceneTags = linkMap{
 		sceneIdxWithTag:          {tagIdxWithScene},
 		sceneIdxWithTwoTags:      {tagIdx1WithScene, tagIdx2WithScene},
+		sceneIdxWithThreeTags:    {tagIdx1WithScene, tagIdx2WithScene, tagIdx3WithScene},
 		sceneIdxWithMarkerAndTag: {tagIdx3WithScene},
 	}
 
@@ -413,8 +418,9 @@ var (
 		imageIdxWithGrandChildStudio: studioIdxWithGrandParent,
 	}
 	imageTags = linkMap{
-		imageIdxWithTag:     {tagIdxWithImage},
-		imageIdxWithTwoTags: {tagIdx1WithImage, tagIdx2WithImage},
+		imageIdxWithTag:       {tagIdxWithImage},
+		imageIdxWithTwoTags:   {tagIdx1WithImage, tagIdx2WithImage},
+		imageIdxWithThreeTags: {tagIdx1WithImage, tagIdx2WithImage, tagIdx3WithImage},
 	}
 	imagePerformers = linkMap{
 		imageIdxWithPerformer:        {performerIdxWithImage},
@@ -449,8 +455,9 @@ var (
 	}
 
 	galleryTags = linkMap{
-		galleryIdxWithTag:     {tagIdxWithGallery},
-		galleryIdxWithTwoTags: {tagIdx1WithGallery, tagIdx2WithGallery},
+		galleryIdxWithTag:       {tagIdxWithGallery},
+		galleryIdxWithTwoTags:   {tagIdx1WithGallery, tagIdx2WithGallery},
+		galleryIdxWithThreeTags: {tagIdx1WithGallery, tagIdx2WithGallery, tagIdx3WithGallery},
 	}
 )
 
@@ -491,6 +498,16 @@ func indexesToIDs(ids []int, indexes []int) []int {
 	}
 
 	return ret
+}
+
+func indexFromID(ids []int, id int) int {
+	for i, v := range ids {
+		if v == id {
+			return i
+		}
+	}
+
+	return -1
 }
 
 var db *sqlite.Database
@@ -1440,11 +1457,8 @@ func getTagStringValue(index int, field string) string {
 }
 
 func getTagSceneCount(id int) int {
-	if id == tagIDs[tagIdx1WithScene] || id == tagIDs[tagIdx2WithScene] || id == tagIDs[tagIdxWithScene] || id == tagIDs[tagIdx3WithScene] {
-		return 1
-	}
-
-	return 0
+	idx := indexFromID(tagIDs, id)
+	return len(sceneTags.reverseLookup(idx))
 }
 
 func getTagMarkerCount(id int) int {
@@ -1460,40 +1474,18 @@ func getTagMarkerCount(id int) int {
 }
 
 func getTagImageCount(id int) int {
-	if id == tagIDs[tagIdx1WithImage] || id == tagIDs[tagIdx2WithImage] || id == tagIDs[tagIdxWithImage] {
-		return 1
-	}
-
-	return 0
+	idx := indexFromID(tagIDs, id)
+	return len(imageTags.reverseLookup(idx))
 }
 
 func getTagGalleryCount(id int) int {
-	if id == tagIDs[tagIdx1WithGallery] || id == tagIDs[tagIdx2WithGallery] || id == tagIDs[tagIdxWithGallery] {
-		return 1
-	}
-
-	return 0
-}
-
-func tagIdxFromID(id int) int {
-	for i, v := range tagIDs {
-		if v == id {
-			return i
-		}
-	}
-
-	return -1
+	idx := indexFromID(tagIDs, id)
+	return len(galleryTags.reverseLookup(idx))
 }
 
 func getTagPerformerCount(id int) int {
-	idx := tagIdxFromID(id)
-	ret := 0
-	for _, v := range performerTags {
-		if intslice.IntInclude(v, idx) {
-			ret++
-		}
-	}
-	return ret
+	idx := indexFromID(tagIDs, id)
+	return len(performerTags.reverseLookup(idx))
 }
 
 func getTagParentCount(id int) int {

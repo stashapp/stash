@@ -2001,58 +2001,139 @@ func TestGalleryQueryPerformers(t *testing.T) {
 }
 
 func TestGalleryQueryTags(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
-		tagCriterion := models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(tagIDs[tagIdxWithGallery]),
-				strconv.Itoa(tagIDs[tagIdx1WithGallery]),
+	tests := []struct {
+		name        string
+		filter      models.HierarchicalMultiCriterionInput
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"includes",
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(tagIDs[tagIdxWithGallery]),
+					strconv.Itoa(tagIDs[tagIdx1WithGallery]),
+				},
+				Modifier: models.CriterionModifierIncludes,
 			},
-			Modifier: models.CriterionModifierIncludes,
-		}
-
-		galleryFilter := models.GalleryFilterType{
-			Tags: &tagCriterion,
-		}
-
-		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
-		assert.Len(t, galleries, 2)
-
-		// ensure ids are correct
-		for _, gallery := range galleries {
-			assert.True(t, gallery.ID == galleryIDs[galleryIdxWithTag] || gallery.ID == galleryIDs[galleryIdxWithTwoTags])
-		}
-
-		tagCriterion = models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(tagIDs[tagIdx1WithGallery]),
-				strconv.Itoa(tagIDs[tagIdx2WithGallery]),
+			[]int{
+				galleryIdxWithTag,
+				galleryIdxWithTwoTags,
 			},
-			Modifier: models.CriterionModifierIncludesAll,
-		}
-
-		galleries = queryGallery(ctx, t, sqb, &galleryFilter, nil)
-
-		assert.Len(t, galleries, 1)
-		assert.Equal(t, galleryIDs[galleryIdxWithTwoTags], galleries[0].ID)
-
-		tagCriterion = models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(tagIDs[tagIdx1WithGallery]),
+			[]int{
+				galleryIdxWithImage,
 			},
-			Modifier: models.CriterionModifierExcludes,
-		}
+			false,
+		},
+		{
+			"includes all",
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(tagIDs[tagIdx1WithGallery]),
+					strconv.Itoa(tagIDs[tagIdx2WithGallery]),
+				},
+				Modifier: models.CriterionModifierIncludesAll,
+			},
+			[]int{
+				galleryIdxWithTwoTags,
+			},
+			[]int{
+				galleryIdxWithTag,
+			},
+			false,
+		},
+		{
+			"excludes",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierExcludes,
+				Value:    []string{strconv.Itoa(tagIDs[tagIdx1WithGallery])},
+			},
+			nil,
+			[]int{galleryIdxWithTwoTags},
+			false,
+		},
+		{
+			"is null",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierIsNull,
+			},
+			[]int{galleryIdx1WithPerformer},
+			[]int{
+				galleryIdxWithTag,
+				galleryIdxWithTwoTags,
+				galleryIdxWithThreeTags,
+			},
+			false,
+		},
+		{
+			"not null",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierNotNull,
+			},
+			[]int{
+				galleryIdxWithTag,
+				galleryIdxWithTwoTags,
+				galleryIdxWithThreeTags,
+			},
+			[]int{galleryIdx1WithPerformer},
+			false,
+		},
+		{
+			"equals",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierEquals,
+				Value: []string{
+					strconv.Itoa(tagIDs[tagIdx1WithGallery]),
+					strconv.Itoa(tagIDs[tagIdx2WithGallery]),
+				},
+			},
+			[]int{galleryIdxWithTwoTags},
+			[]int{
+				galleryIdxWithThreeTags,
+			},
+			false,
+		},
+		{
+			"not equals",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierNotEquals,
+				Value: []string{
+					strconv.Itoa(tagIDs[tagIdx1WithGallery]),
+					strconv.Itoa(tagIDs[tagIdx2WithGallery]),
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+	}
 
-		q := getGalleryStringValue(galleryIdxWithTwoTags, titleField)
-		findFilter := models.FindFilterType{
-			Q: &q,
-		}
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 
-		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
-		assert.Len(t, galleries, 0)
+			results, _, err := db.Gallery.Query(ctx, &models.GalleryFilterType{
+				Tags: &tt.filter,
+			}, nil)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GalleryStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
-		return nil
-	})
+			ids := galleriesToIDs(results)
+
+			include := indexesToIDs(imageIDs, tt.includeIdxs)
+			exclude := indexesToIDs(imageIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
 }
 
 func TestGalleryQueryStudio(t *testing.T) {
