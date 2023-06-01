@@ -183,6 +183,7 @@ func Start() error {
 		sceneFinder: txnManager.Scene,
 		fileFinder:  txnManager.File,
 		repository:  txnManager,
+		resolver:    resolver,
 	}.Routes())
 
 	r.HandleFunc("/css", cssHandler(c, pluginCache))
