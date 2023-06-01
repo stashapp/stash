@@ -70,6 +70,7 @@ type Database struct {
 	Image       *ImageStore
 	Gallery     *GalleryStore
 	Scene       *SceneStore
+	SceneMarker *SceneMarkerStore
 	Performer   *PerformerStore
 	Studio      *StudioStore
 	Tag         *TagStore
@@ -94,6 +95,7 @@ func NewDatabase() *Database {
 		File:        fileStore,
 		Folder:      folderStore,
 		Scene:       NewSceneStore(fileStore, blobStore),
+		SceneMarker: NewSceneMarkerStore(),
 		Image:       NewImageStore(fileStore),
 		Gallery:     NewGalleryStore(fileStore, folderStore),
 		Performer:   NewPerformerStore(blobStore),

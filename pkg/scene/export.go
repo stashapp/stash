@@ -271,8 +271,8 @@ func GetSceneMarkersJSON(ctx context.Context, markerReader MarkerFinder, tagRead
 			Seconds:    getDecimalString(sceneMarker.Seconds),
 			PrimaryTag: primaryTag.Name,
 			Tags:       getTagNames(sceneMarkerTags),
-			CreatedAt:  json.JSONTime{Time: sceneMarker.CreatedAt.Timestamp},
-			UpdatedAt:  json.JSONTime{Time: sceneMarker.UpdatedAt.Timestamp},
+			CreatedAt:  json.JSONTime{Time: sceneMarker.CreatedAt},
+			UpdatedAt:  json.JSONTime{Time: sceneMarker.UpdatedAt},
 		}
 
 		results = append(results, sceneMarkerJSON)

@@ -15,7 +15,7 @@ type SceneMarkerURLBuilder struct {
 func NewSceneMarkerURLBuilder(baseURL string, sceneMarker *models.SceneMarker) SceneMarkerURLBuilder {
 	return SceneMarkerURLBuilder{
 		BaseURL:  baseURL,
-		SceneID:  strconv.Itoa(int(sceneMarker.SceneID.Int64)),
+		SceneID:  strconv.Itoa(sceneMarker.SceneID),
 		MarkerID: strconv.Itoa(sceneMarker.ID),
 	}
 }

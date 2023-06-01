@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"strconv"
@@ -629,9 +628,9 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input SceneMar
 		Title:        input.Title,
 		Seconds:      input.Seconds,
 		PrimaryTagID: primaryTagID,
-		SceneID:      sql.NullInt64{Int64: int64(sceneID), Valid: sceneID != 0},
-		CreatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
+		SceneID:      sceneID,
+		CreatedAt:    currentTime,
+		UpdatedAt:    currentTime,
 	}
 
 	tagIDs, err := stringslice.StringSliceToIntSlice(input.TagIds)
@@ -639,13 +638,13 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input SceneMar
 		return nil, err
 	}
 
-	ret, err := r.changeMarker(ctx, create, newSceneMarker, tagIDs)
+	err = r.changeMarker(ctx, create, &newSceneMarker, tagIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, ret.ID, plugin.SceneMarkerCreatePost, input, nil)
-	return r.getSceneMarker(ctx, ret.ID)
+	r.hookExecutor.ExecutePostHooks(ctx, newSceneMarker.ID, plugin.SceneMarkerCreatePost, input, nil)
+	return r.getSceneMarker(ctx, newSceneMarker.ID)
 }
 
 func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMarkerUpdateInput) (*models.SceneMarker, error) {
@@ -669,9 +668,9 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 		ID:           sceneMarkerID,
 		Title:        input.Title,
 		Seconds:      input.Seconds,
-		SceneID:      sql.NullInt64{Int64: int64(sceneID), Valid: sceneID != 0},
+		SceneID:      sceneID,
 		PrimaryTagID: primaryTagID,
-		UpdatedAt:    models.SQLiteTimestamp{Timestamp: time.Now()},
+		UpdatedAt:    time.Now(),
 	}
 
 	tagIDs, err := stringslice.StringSliceToIntSlice(input.TagIds)
@@ -679,7 +678,7 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 		return nil, err
 	}
 
-	ret, err := r.changeMarker(ctx, update, updatedSceneMarker, tagIDs)
+	err = r.changeMarker(ctx, update, &updatedSceneMarker, tagIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -687,8 +686,8 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
-	r.hookExecutor.ExecutePostHooks(ctx, ret.ID, plugin.SceneMarkerUpdatePost, input, translator.getFields())
-	return r.getSceneMarker(ctx, ret.ID)
+	r.hookExecutor.ExecutePostHooks(ctx, updatedSceneMarker.ID, plugin.SceneMarkerUpdatePost, input, translator.getFields())
+	return r.getSceneMarker(ctx, updatedSceneMarker.ID)
 }
 
 func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (bool, error) {
@@ -719,7 +718,7 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 			return fmt.Errorf("scene marker with id %d not found", markerID)
 		}
 
-		s, err := sqb.Find(ctx, int(marker.SceneID.Int64))
+		s, err := sqb.Find(ctx, marker.SceneID)
 		if err != nil {
 			return err
 		}
@@ -738,9 +737,8 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 	return true, nil
 }
 
-func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, changedMarker models.SceneMarker, tagIDs []int) (*models.SceneMarker, error) {
+func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, changedMarker *models.SceneMarker, tagIDs []int) error {
 	var existingMarker *models.SceneMarker
-	var sceneMarker *models.SceneMarker
 	var s *models.Scene
 
 	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
@@ -759,19 +757,19 @@ func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, cha
 		var err error
 		switch changeType {
 		case create:
-			sceneMarker, err = qb.Create(ctx, changedMarker)
+			err = qb.Create(ctx, changedMarker)
 		case update:
 			// check to see if timestamp was changed
 			existingMarker, err = qb.Find(ctx, changedMarker.ID)
 			if err != nil {
 				return err
 			}
-			sceneMarker, err = qb.Update(ctx, changedMarker)
+			err = qb.Update(ctx, changedMarker)
 			if err != nil {
 				return err
 			}
 
-			s, err = sqb.Find(ctx, int(existingMarker.SceneID.Int64))
+			s, err = sqb.Find(ctx, existingMarker.SceneID)
 		}
 		if err != nil {
 			return err
@@ -788,15 +786,15 @@ func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, cha
 		// Save the marker tags
 		// If this tag is the primary tag, then let's not add it.
 		tagIDs = intslice.IntExclude(tagIDs, []int{changedMarker.PrimaryTagID})
-		return qb.UpdateTags(ctx, sceneMarker.ID, tagIDs)
+		return qb.UpdateTags(ctx, changedMarker.ID, tagIDs)
 	}); err != nil {
 		fileDeleter.Rollback()
-		return nil, err
+		return err
 	}
 
 	// perform the post-commit actions
 	fileDeleter.Commit()
-	return sceneMarker, nil
+	return nil
 }
 
 func (r *mutationResolver) SceneSaveActivity(ctx context.Context, id string, resumeTime *float64, playDuration *float64) (ret bool, err error) {

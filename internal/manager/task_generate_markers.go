@@ -44,7 +44,7 @@ func (t *GenerateMarkersTask) Start(ctx context.Context) {
 		var scene *models.Scene
 		if err := t.TxnManager.WithReadTxn(ctx, func(ctx context.Context) error {
 			var err error
-			scene, err = t.TxnManager.Scene.Find(ctx, int(t.Marker.SceneID.Int64))
+			scene, err = t.TxnManager.Scene.Find(ctx, t.Marker.SceneID)
 			if err == nil && scene != nil {
 				err = scene.LoadPrimaryFile(ctx, t.TxnManager.File)
 			}
@@ -56,7 +56,7 @@ func (t *GenerateMarkersTask) Start(ctx context.Context) {
 		}
 
 		if scene == nil {
-			logger.Errorf("scene not found for id %d", t.Marker.SceneID.Int64)
+			logger.Errorf("scene not found for id %d", t.Marker.SceneID)
 			return
 		}
 
