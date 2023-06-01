@@ -670,7 +670,7 @@ func populateDB() error {
 			}
 		}
 		for _, cs := range chapterSpecs {
-			if err := createChapter(ctx, sqlite.GalleryChapterReaderWriter, cs); err != nil {
+			if err := createChapter(ctx, db.GalleryChapter, cs); err != nil {
 				return fmt.Errorf("error creating gallery chapter: %s", err.Error())
 			}
 		}
@@ -1679,18 +1679,18 @@ func createMarker(ctx context.Context, mqb models.SceneMarkerReaderWriter, marke
 
 func createChapter(ctx context.Context, mqb models.GalleryChapterReaderWriter, chapterSpec chapterSpec) error {
 	chapter := models.GalleryChapter{
-		GalleryID:  sql.NullInt64{Int64: int64(sceneIDs[chapterSpec.galleryIdx]), Valid: true},
+		GalleryID:  sceneIDs[chapterSpec.galleryIdx],
 		Title:      chapterSpec.title,
 		ImageIndex: chapterSpec.imageIndex,
 	}
 
-	created, err := mqb.Create(ctx, chapter)
+	err := mqb.Create(ctx, &chapter)
 
 	if err != nil {
 		return fmt.Errorf("error creating chapter %v+: %w", chapter, err)
 	}
 
-	chapterIDs = append(chapterIDs, created.ID)
+	chapterIDs = append(chapterIDs, chapter.ID)
 
 	return nil
 }
