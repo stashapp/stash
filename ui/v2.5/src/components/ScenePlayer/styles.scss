@@ -21,6 +21,15 @@ $sceneTabWidth: 450px;
   }
 }
 
+.vjs-vr-off canvas {
+  display: none !important;
+}
+
+.vjs-vr-off video {
+  opacity: unset !important;
+  z-index: unset !important;
+}
+
 .video-wrapper {
   height: 56.25vw;
   overflow: hidden;
