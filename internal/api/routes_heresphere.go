@@ -158,7 +158,7 @@ type HeresphereVideoEntryUpdate struct {
 	IsFavorite bool                 `json:"isFavorite"`
 	Rating     float32              `json:"rating,omitempty"`
 	Tags       []HeresphereVideoTag `json:"tags"`
-	//In base64
+	// In base64
 	Hsp        string `json:"hsp"`
 	DeleteFile bool   `json:"deleteFile"`
 }
@@ -198,7 +198,7 @@ func (rs heresphereRoutes) Routes() chi.Router {
 
 			r.Post("/", rs.HeresphereVideoData)
 			r.Get("/", rs.HeresphereVideoData)
-			//Ours
+
 			r.Get("/hsp", rs.HeresphereVideoHsp)
 			r.Post("/event", rs.HeresphereVideoEvent)
 		})
@@ -303,14 +303,14 @@ func (rs heresphereRoutes) getVideoTags(ctx context.Context, r *http.Request, sc
 
 	/*stash_ids, err := rs.resolver.Scene().StashIds(ctx, scene)
 	if err == nil {
-		//TODO: Markers have timestamps?
+		// TODO: Markers have timestamps?
 		for _, stash := range stash_ids {
 			genTag := HeresphereVideoTag{
 				Name: fmt.Sprintf("Scene:%v", stash.),
-				//Start:  0.0,
-				//End:    1.0,
-				//Track:  0,
-				//Rating: 0,
+				// Start:  0.0,
+				// End:    1.0,
+				// Track:  0,
+				// Rating: 0,
 			}
 			processedTags = append(processedTags, genTag)
 		}
@@ -331,7 +331,7 @@ func (rs heresphereRoutes) getVideoTags(ctx context.Context, r *http.Request, sc
 	return processedTags
 }
 func (rs heresphereRoutes) getVideoScripts(ctx context.Context, r *http.Request, scene *models.Scene) []HeresphereVideoScript {
-	//TODO: Check if exists
+	// TODO: Check if exists
 	processedScripts := []HeresphereVideoScript{}
 
 	exists, err := rs.resolver.Scene().Interactive(ctx, scene)
@@ -354,7 +354,7 @@ func (rs heresphereRoutes) getVideoSubtitles(ctx context.Context, r *http.Reques
 			processedCaption := HeresphereVideoSubtitle{
 				Name:     caption.Filename,
 				Language: caption.LanguageCode,
-				Url:      fmt.Sprintf("/scene/%v/caption?lang=%v&type=%v", scene.ID, caption.LanguageCode, caption.CaptionType),
+				Url:      relUrlToAbs(r, fmt.Sprintf("/scene/%v/caption?lang=%v&type=%v", scene.ID, caption.LanguageCode, caption.CaptionType)),
 			}
 			processedSubtitles = append(processedSubtitles, processedCaption)
 		}
@@ -387,7 +387,7 @@ func (rs heresphereRoutes) getVideoMedia(ctx context.Context, r *http.Request, s
 			Sources: sources,
 		})
 	}
-	//TODO: Transcode etc. /scene/%v/stream.mp4?resolution=ORIGINAL
+	// TODO: Transcode etc. /scene/%v/stream.mp4?resolution=ORIGINAL
 
 	return processedMedia
 }
@@ -432,7 +432,7 @@ func (rs heresphereRoutes) HeresphereIndex(w http.ResponseWriter, r *http.Reques
 	}
 }
 func (rs heresphereRoutes) HeresphereScan(w http.ResponseWriter, r *http.Request) {
-	//TODO: Auth
+	// TODO: Auth
 	var scenes []*models.Scene
 	if err := rs.repository.WithTxn(r.Context(), func(ctx context.Context) error {
 		var err error
@@ -485,13 +485,13 @@ func (rs heresphereRoutes) HeresphereScan(w http.ResponseWriter, r *http.Request
 }
 
 func (rs heresphereRoutes) HeresphereVideoHsp(w http.ResponseWriter, r *http.Request) {
-	//TODO: Auth
+	// TODO: Auth
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
 func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *http.Request) {
-	//TODO: This
-	//TODO: Auth
+	// TODO: This
+	// TODO: Auth
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -519,7 +519,7 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		return*/
 	}
 
-	//TODO: Auth
+	// TODO: Auth
 
 	processedScene := HeresphereVideoEntry{
 		Access:         HeresphereMember,
