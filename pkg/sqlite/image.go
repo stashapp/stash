@@ -669,7 +669,7 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 	query.handleCriterion(ctx, imageGalleriesCriterionHandler(qb, imageFilter.Galleries))
 	query.handleCriterion(ctx, imagePerformersCriterionHandler(qb, imageFilter.Performers))
 	query.handleCriterion(ctx, imagePerformerCountCriterionHandler(qb, imageFilter.PerformerCount))
-	query.handleCriterion(ctx, imageStudioCriterionHandler(qb, imageFilter.Studios))
+	query.handleCriterion(ctx, studioCriterionHandler(imageTable, imageFilter.Studios))
 	query.handleCriterion(ctx, imagePerformerTagsCriterionHandler(qb, imageFilter.PerformerTags))
 	query.handleCriterion(ctx, imagePerformerFavoriteCriterionHandler(imageFilter.PerformerFavorite))
 	query.handleCriterion(ctx, timestampCriterionHandler(imageFilter.CreatedAt, "images.created_at"))
@@ -944,19 +944,6 @@ GROUP BY performers_images.image_id HAVING SUM(performers.favorite) = 0)`, "nofa
 			}
 		}
 	}
-}
-
-func imageStudioCriterionHandler(qb *ImageStore, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	h := hierarchicalMultiCriterionHandlerBuilder{
-		tx: qb.tx,
-
-		primaryTable: imageTable,
-		foreignTable: studioTable,
-		foreignFK:    studioIDColumn,
-		parentFK:     "parent_id",
-	}
-
-	return h.handler(studios)
 }
 
 func imagePerformerTagsCriterionHandler(qb *ImageStore, tags *models.HierarchicalMultiCriterionInput) criterionHandler {

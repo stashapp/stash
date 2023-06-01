@@ -2217,43 +2217,97 @@ func TestGalleryQueryTags(t *testing.T) {
 }
 
 func TestGalleryQueryStudio(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
-		studioCriterion := models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(studioIDs[studioIdxWithGallery]),
+	tests := []struct {
+		name            string
+		q               string
+		studioCriterion models.HierarchicalMultiCriterionInput
+		expectedIDs     []int
+		wantErr         bool
+	}{
+		{
+			"includes",
+			"",
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[studioIdxWithGallery]),
+				},
+				Modifier: models.CriterionModifierIncludes,
 			},
-			Modifier: models.CriterionModifierIncludes,
-		}
-
-		galleryFilter := models.GalleryFilterType{
-			Studios: &studioCriterion,
-		}
-
-		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
-
-		assert.Len(t, galleries, 1)
-
-		// ensure id is correct
-		assert.Equal(t, galleryIDs[galleryIdxWithStudio], galleries[0].ID)
-
-		studioCriterion = models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(studioIDs[studioIdxWithGallery]),
+			[]int{galleryIDs[galleryIdxWithStudio]},
+			false,
+		},
+		{
+			"excludes",
+			getGalleryStringValue(galleryIdxWithStudio, titleField),
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[studioIdxWithGallery]),
+				},
+				Modifier: models.CriterionModifierExcludes,
 			},
-			Modifier: models.CriterionModifierExcludes,
-		}
+			[]int{},
+			false,
+		},
+		{
+			"excludes includes null",
+			getGalleryStringValue(galleryIdxWithImage, titleField),
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[studioIdxWithGallery]),
+				},
+				Modifier: models.CriterionModifierExcludes,
+			},
+			[]int{galleryIDs[galleryIdxWithImage]},
+			false,
+		},
+		{
+			"equals",
+			"",
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[studioIdxWithGallery]),
+				},
+				Modifier: models.CriterionModifierEquals,
+			},
+			[]int{galleryIDs[galleryIdxWithStudio]},
+			false,
+		},
+		{
+			"not equals",
+			getGalleryStringValue(galleryIdxWithStudio, titleField),
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[studioIdxWithGallery]),
+				},
+				Modifier: models.CriterionModifierNotEquals,
+			},
+			[]int{},
+			false,
+		},
+	}
 
-		q := getGalleryStringValue(galleryIdxWithStudio, titleField)
-		findFilter := models.FindFilterType{
-			Q: &q,
-		}
+	qb := db.Gallery
 
-		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
-		assert.Len(t, galleries, 0)
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			studioCriterion := tt.studioCriterion
 
-		return nil
-	})
+			galleryFilter := models.GalleryFilterType{
+				Studios: &studioCriterion,
+			}
+
+			var findFilter *models.FindFilterType
+			if tt.q != "" {
+				findFilter = &models.FindFilterType{
+					Q: &tt.q,
+				}
+			}
+
+			gallerys := queryGallery(ctx, t, qb, &galleryFilter, findFilter)
+
+			assert.ElementsMatch(t, galleriesToIDs(gallerys), tt.expectedIDs)
+		})
+	}
 }
 
 func TestGalleryQueryStudioDepth(t *testing.T) {

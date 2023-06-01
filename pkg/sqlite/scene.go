@@ -959,7 +959,7 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 	query.handleCriterion(ctx, sceneTagCountCriterionHandler(qb, sceneFilter.TagCount))
 	query.handleCriterion(ctx, scenePerformersCriterionHandler(qb, sceneFilter.Performers))
 	query.handleCriterion(ctx, scenePerformerCountCriterionHandler(qb, sceneFilter.PerformerCount))
-	query.handleCriterion(ctx, sceneStudioCriterionHandler(qb, sceneFilter.Studios))
+	query.handleCriterion(ctx, studioCriterionHandler(sceneTable, sceneFilter.Studios))
 	query.handleCriterion(ctx, sceneMoviesCriterionHandler(qb, sceneFilter.Movies))
 	query.handleCriterion(ctx, scenePerformerTagsCriterionHandler(qb, sceneFilter.PerformerTags))
 	query.handleCriterion(ctx, scenePerformerFavoriteCriterionHandler(sceneFilter.PerformerFavorite))
@@ -1350,19 +1350,6 @@ func scenePerformerAgeCriterionHandler(performerAge *models.IntCriterionInput) c
 			f.addWhere(whereClause, args...)
 		}
 	}
-}
-
-func sceneStudioCriterionHandler(qb *SceneStore, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	h := hierarchicalMultiCriterionHandlerBuilder{
-		tx: qb.tx,
-
-		primaryTable: sceneTable,
-		foreignTable: studioTable,
-		foreignFK:    studioIDColumn,
-		parentFK:     "parent_id",
-	}
-
-	return h.handler(studios)
 }
 
 func sceneMoviesCriterionHandler(qb *SceneStore, movies *models.MultiCriterionInput) criterionHandlerFunc {

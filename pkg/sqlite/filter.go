@@ -832,6 +832,33 @@ func (m *stringListCriterionHandlerBuilder) handler(criterion *models.StringCrit
 	}
 }
 
+func studioCriterionHandler(primaryTable string, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if studios == nil {
+			return
+		}
+
+		studiosCopy := *studios
+		switch studiosCopy.Modifier {
+		case models.CriterionModifierEquals:
+			studiosCopy.Modifier = models.CriterionModifierIncludesAll
+		case models.CriterionModifierNotEquals:
+			studiosCopy.Modifier = models.CriterionModifierExcludes
+		}
+
+		hh := hierarchicalMultiCriterionHandlerBuilder{
+			tx: dbWrapper{},
+
+			primaryTable: primaryTable,
+			foreignTable: studioTable,
+			foreignFK:    studioIDColumn,
+			parentFK:     "parent_id",
+		}
+
+		hh.handler(&studiosCopy)(ctx, f)
+	}
+}
+
 type hierarchicalMultiCriterionHandlerBuilder struct {
 	tx dbWrapper
 

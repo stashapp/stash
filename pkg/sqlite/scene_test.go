@@ -3799,6 +3799,30 @@ func TestSceneQueryStudio(t *testing.T) {
 			[]int{sceneIDs[sceneIdxWithGallery]},
 			false,
 		},
+		{
+			"equals",
+			"",
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[studioIdxWithScene]),
+				},
+				Modifier: models.CriterionModifierEquals,
+			},
+			[]int{sceneIDs[sceneIdxWithStudio]},
+			false,
+		},
+		{
+			"not equals",
+			getSceneStringValue(sceneIdxWithStudio, titleField),
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[studioIdxWithScene]),
+				},
+				Modifier: models.CriterionModifierNotEquals,
+			},
+			[]int{},
+			false,
+		},
 	}
 
 	qb := db.Scene

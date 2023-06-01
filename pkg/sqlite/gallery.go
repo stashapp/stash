@@ -670,7 +670,7 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 	query.handleCriterion(ctx, galleryPerformersCriterionHandler(qb, galleryFilter.Performers))
 	query.handleCriterion(ctx, galleryPerformerCountCriterionHandler(qb, galleryFilter.PerformerCount))
 	query.handleCriterion(ctx, hasChaptersCriterionHandler(galleryFilter.HasChapters))
-	query.handleCriterion(ctx, galleryStudioCriterionHandler(qb, galleryFilter.Studios))
+	query.handleCriterion(ctx, studioCriterionHandler(galleryTable, galleryFilter.Studios))
 	query.handleCriterion(ctx, galleryPerformerTagsCriterionHandler(qb, galleryFilter.PerformerTags))
 	query.handleCriterion(ctx, galleryAverageResolutionCriterionHandler(qb, galleryFilter.AverageResolution))
 	query.handleCriterion(ctx, galleryImageCountCriterionHandler(qb, galleryFilter.ImageCount))
@@ -966,19 +966,6 @@ func hasChaptersCriterionHandler(hasChapters *string) criterionHandlerFunc {
 			}
 		}
 	}
-}
-
-func galleryStudioCriterionHandler(qb *GalleryStore, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	h := hierarchicalMultiCriterionHandlerBuilder{
-		tx: qb.tx,
-
-		primaryTable: galleryTable,
-		foreignTable: studioTable,
-		foreignFK:    studioIDColumn,
-		parentFK:     "parent_id",
-	}
-
-	return h.handler(studios)
 }
 
 func galleryPerformerTagsCriterionHandler(qb *GalleryStore, tags *models.HierarchicalMultiCriterionInput) criterionHandler {
