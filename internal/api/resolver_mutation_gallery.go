@@ -177,7 +177,7 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 	}
 
 	if originalGallery == nil {
-		return nil, errors.New("not found")
+		return nil, fmt.Errorf("gallery with id %d not found", galleryID)
 	}
 
 	updatedGallery := models.NewGalleryPartial()
@@ -450,7 +450,7 @@ func (r *mutationResolver) AddGalleryImages(ctx context.Context, input GalleryAd
 		}
 
 		if gallery == nil {
-			return errors.New("gallery not found")
+			return fmt.Errorf("gallery with id %d not found", galleryID)
 		}
 
 		return r.galleryService.AddImages(ctx, gallery, imageIDs...)
@@ -480,7 +480,7 @@ func (r *mutationResolver) RemoveGalleryImages(ctx context.Context, input Galler
 		}
 
 		if gallery == nil {
-			return errors.New("gallery not found")
+			return fmt.Errorf("gallery with id %d not found", galleryID)
 		}
 
 		return r.galleryService.RemoveImages(ctx, gallery, imageIDs...)
@@ -603,7 +603,7 @@ func (r *mutationResolver) GalleryChapterDestroy(ctx context.Context, id string)
 		}
 
 		if chapter == nil {
-			return fmt.Errorf("Chapter with id %d not found", chapterID)
+			return fmt.Errorf("gallery chapter with id %d not found", chapterID)
 		}
 
 		return gallery.DestroyChapter(ctx, chapter, qb)

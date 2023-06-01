@@ -116,6 +116,7 @@ func (qb *SceneMarkerStore) Destroy(ctx context.Context, id int) error {
 	return qb.destroyExisting(ctx, []int{id})
 }
 
+// returns nil, nil if not found
 func (qb *SceneMarkerStore) Find(ctx context.Context, id int) (*models.SceneMarker, error) {
 	ret, err := qb.find(ctx, id)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -148,17 +149,19 @@ func (qb *SceneMarkerStore) FindMany(ctx context.Context, ids []int) ([]*models.
 	return ret, nil
 }
 
+// returns nil, sql.ErrNoRows if not found
 func (qb *SceneMarkerStore) find(ctx context.Context, id int) (*models.SceneMarker, error) {
 	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil {
-		return nil, fmt.Errorf("getting scene marker by id %d: %w", id, err)
+		return nil, err
 	}
 
 	return ret, nil
 }
 
+// returns nil, sql.ErrNoRows if not found
 func (qb *SceneMarkerStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.SceneMarker, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
@@ -278,14 +281,9 @@ func (qb *SceneMarkerStore) Query(ctx context.Context, sceneMarkerFilter *models
 		return nil, 0, err
 	}
 
-	var sceneMarkers []*models.SceneMarker
-	for _, id := range idsResult {
-		sceneMarker, err := qb.Find(ctx, id)
-		if err != nil {
-			return nil, 0, err
-		}
-
-		sceneMarkers = append(sceneMarkers, sceneMarker)
+	sceneMarkers, err := qb.FindMany(ctx, idsResult)
+	if err != nil {
+		return nil, 0, err
 	}
 
 	return sceneMarkers, countResult, nil

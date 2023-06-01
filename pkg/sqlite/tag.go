@@ -148,7 +148,7 @@ func (qb *TagStore) UpdatePartial(ctx context.Context, id int, partial models.Ta
 		}
 	}
 
-	return qb.Find(ctx, id)
+	return qb.find(ctx, id)
 }
 
 func (qb *TagStore) Update(ctx context.Context, updatedObject *models.Tag) error {
@@ -183,6 +183,7 @@ func (qb *TagStore) Destroy(ctx context.Context, id int) error {
 	return qb.destroyExisting(ctx, []int{id})
 }
 
+// returns nil, nil if not found
 func (qb *TagStore) Find(ctx context.Context, id int) (*models.Tag, error) {
 	ret, err := qb.find(ctx, id)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -221,17 +222,19 @@ func (qb *TagStore) FindMany(ctx context.Context, ids []int) ([]*models.Tag, err
 	return ret, nil
 }
 
+// returns nil, sql.ErrNoRows if not found
 func (qb *TagStore) find(ctx context.Context, id int) (*models.Tag, error) {
 	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil {
-		return nil, fmt.Errorf("getting tag by id %d: %w", id, err)
+		return nil, err
 	}
 
 	return ret, nil
 }
 
+// returns nil, sql.ErrNoRows if not found
 func (qb *TagStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Tag, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
@@ -338,7 +341,7 @@ func (qb *TagStore) FindByName(ctx context.Context, name string, nocase bool) (*
 	sq := qb.selectDataset().Prepared(true).Where(goqu.L(where, name)).Limit(1)
 	ret, err := qb.get(ctx, sq)
 
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 

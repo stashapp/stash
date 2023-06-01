@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -235,7 +236,7 @@ func (qb *PerformerStore) Create(ctx context.Context, newObject *models.Performe
 		}
 	}
 
-	updated, err := qb.Find(ctx, id)
+	updated, err := qb.find(ctx, id)
 	if err != nil {
 		return fmt.Errorf("finding after create: %w", err)
 	}
@@ -277,7 +278,7 @@ func (qb *PerformerStore) UpdatePartial(ctx context.Context, id int, partial mod
 		}
 	}
 
-	return qb.Find(ctx, id)
+	return qb.find(ctx, id)
 }
 
 func (qb *PerformerStore) Update(ctx context.Context, updatedObject *models.Performer) error {
@@ -318,15 +319,13 @@ func (qb *PerformerStore) Destroy(ctx context.Context, id int) error {
 	return qb.destroyExisting(ctx, []int{id})
 }
 
+// returns nil, nil if not found
 func (qb *PerformerStore) Find(ctx context.Context, id int) (*models.Performer, error) {
-	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
-
-	ret, err := qb.get(ctx, q)
-	if err != nil {
-		return nil, fmt.Errorf("getting performer by id %d: %w", id, err)
+	ret, err := qb.find(ctx, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
 	}
-
-	return ret, nil
+	return ret, err
 }
 
 func (qb *PerformerStore) FindMany(ctx context.Context, ids []int) ([]*models.Performer, error) {
@@ -359,6 +358,18 @@ func (qb *PerformerStore) FindMany(ctx context.Context, ids []int) ([]*models.Pe
 	return ret, nil
 }
 
+// returns nil, sql.ErrNoRows if not found
+func (qb *PerformerStore) find(ctx context.Context, id int) (*models.Performer, error) {
+	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
+
+	ret, err := qb.get(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
 func (qb *PerformerStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Performer, error) {
 	table := qb.table()
 
@@ -371,6 +382,7 @@ func (qb *PerformerStore) findBySubquery(ctx context.Context, sq *goqu.SelectDat
 	return qb.getMany(ctx, q)
 }
 
+// returns nil, sql.ErrNoRows if not found
 func (qb *PerformerStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Performer, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {

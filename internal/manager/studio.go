@@ -27,6 +27,10 @@ func ValidateModifyStudio(ctx context.Context, studioID int, studio models.Studi
 			return fmt.Errorf("error finding parent studio: %v", err)
 		}
 
+		if currentStudio == nil {
+			return fmt.Errorf("studio with id %d not found", *currentParentID)
+		}
+
 		currentParentID = currentStudio.ParentID
 	}
 

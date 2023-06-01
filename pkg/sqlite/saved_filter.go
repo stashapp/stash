@@ -119,6 +119,7 @@ func (qb *SavedFilterStore) Destroy(ctx context.Context, id int) error {
 	return qb.destroyExisting(ctx, []int{id})
 }
 
+// returns nil, nil if not found
 func (qb *SavedFilterStore) Find(ctx context.Context, id int) (*models.SavedFilter, error) {
 	ret, err := qb.find(ctx, id)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -153,17 +154,19 @@ func (qb *SavedFilterStore) FindMany(ctx context.Context, ids []int, ignoreNotFo
 	return ret, nil
 }
 
+// returns nil, sql.ErrNoRows if not found
 func (qb *SavedFilterStore) find(ctx context.Context, id int) (*models.SavedFilter, error) {
 	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil {
-		return nil, fmt.Errorf("getting filter by id %d: %w", id, err)
+		return nil, err
 	}
 
 	return ret, nil
 }
 
+// returns nil, sql.ErrNoRows if not found
 func (qb *SavedFilterStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.SavedFilter, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {

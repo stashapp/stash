@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"path/filepath"
 
@@ -195,7 +196,7 @@ func (qb *ImageStore) Create(ctx context.Context, newObject *models.ImageCreateI
 		}
 	}
 
-	updated, err := qb.Find(ctx, id)
+	updated, err := qb.find(ctx, id)
 	if err != nil {
 		return fmt.Errorf("finding after create: %w", err)
 	}
@@ -288,8 +289,13 @@ func (qb *ImageStore) Destroy(ctx context.Context, id int) error {
 	return qb.tableMgr.destroyExisting(ctx, []int{id})
 }
 
+// returns nil, nil if not found
 func (qb *ImageStore) Find(ctx context.Context, id int) (*models.Image, error) {
-	return qb.find(ctx, id)
+	ret, err := qb.find(ctx, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	return ret, err
 }
 
 func (qb *ImageStore) FindMany(ctx context.Context, ids []int) ([]*models.Image, error) {
@@ -321,12 +327,13 @@ func (qb *ImageStore) FindMany(ctx context.Context, ids []int) ([]*models.Image,
 	return images, nil
 }
 
+// returns nil, sql.ErrNoRows if not found
 func (qb *ImageStore) find(ctx context.Context, id int) (*models.Image, error) {
 	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil {
-		return nil, fmt.Errorf("getting image by id %d: %w", id, err)
+		return nil, err
 	}
 
 	return ret, nil
@@ -344,6 +351,7 @@ func (qb *ImageStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset
 	return qb.getMany(ctx, q)
 }
 
+// returns nil, sql.ErrNoRows if not found
 func (qb *ImageStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Image, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {

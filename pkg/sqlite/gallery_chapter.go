@@ -107,6 +107,7 @@ func (qb *GalleryChapterStore) Destroy(ctx context.Context, id int) error {
 	return qb.destroyExisting(ctx, []int{id})
 }
 
+// returns nil, nil if not found
 func (qb *GalleryChapterStore) Find(ctx context.Context, id int) (*models.GalleryChapter, error) {
 	ret, err := qb.find(ctx, id)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -139,17 +140,19 @@ func (qb *GalleryChapterStore) FindMany(ctx context.Context, ids []int) ([]*mode
 	return ret, nil
 }
 
+// returns nil, sql.ErrNoRows if not found
 func (qb *GalleryChapterStore) find(ctx context.Context, id int) (*models.GalleryChapter, error) {
 	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil {
-		return nil, fmt.Errorf("getting scene marker by id %d: %w", id, err)
+		return nil, err
 	}
 
 	return ret, nil
 }
 
+// returns nil, sql.ErrNoRows if not found
 func (qb *GalleryChapterStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.GalleryChapter, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {

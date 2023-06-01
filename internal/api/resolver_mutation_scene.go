@@ -489,9 +489,11 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 			if err != nil {
 				return err
 			}
-			if s != nil {
-				scenes = append(scenes, s)
+			if s == nil {
+				return fmt.Errorf("scene with id %d not found", sceneID)
 			}
+
+			scenes = append(scenes, s)
 
 			// kill any running encoders
 			manager.KillRunningStreams(s, fileNamingAlgo)
@@ -588,12 +590,14 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 		}
 
 		ret, err = r.Resolver.repository.Scene.Find(ctx, destID)
-
-		if err == nil && ret != nil {
-			err = r.sceneUpdateCoverImage(ctx, ret, coverImageData)
+		if err != nil {
+			return err
+		}
+		if ret == nil {
+			return fmt.Errorf("scene with id %d not found", destID)
 		}
 
-		return err
+		return r.sceneUpdateCoverImage(ctx, ret, coverImageData)
 	}); err != nil {
 		return nil, err
 	}
@@ -723,6 +727,10 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 			return err
 		}
 
+		if s == nil {
+			return fmt.Errorf("scene with id %d not found", marker.SceneID)
+		}
+
 		return scene.DestroyMarker(ctx, s, marker, qb, fileDeleter)
 	}); err != nil {
 		fileDeleter.Rollback()
@@ -738,9 +746,6 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 }
 
 func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, changedMarker *models.SceneMarker, tagIDs []int) error {
-	var existingMarker *models.SceneMarker
-	var s *models.Scene
-
 	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
 
 	fileDeleter := &scene.FileDeleter{
@@ -754,32 +759,41 @@ func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, cha
 		qb := r.repository.SceneMarker
 		sqb := r.repository.Scene
 
-		var err error
 		switch changeType {
 		case create:
-			err = qb.Create(ctx, changedMarker)
-		case update:
-			// check to see if timestamp was changed
-			existingMarker, err = qb.Find(ctx, changedMarker.ID)
+			err := qb.Create(ctx, changedMarker)
 			if err != nil {
 				return err
 			}
+		case update:
+			// check to see if timestamp was changed
+			existingMarker, err := qb.Find(ctx, changedMarker.ID)
+			if err != nil {
+				return err
+			}
+			if existingMarker == nil {
+				return fmt.Errorf("scene marker with id %d not found", changedMarker.ID)
+			}
+
 			err = qb.Update(ctx, changedMarker)
 			if err != nil {
 				return err
 			}
 
-			s, err = sqb.Find(ctx, existingMarker.SceneID)
-		}
-		if err != nil {
-			return err
-		}
-
-		// remove the marker preview if the timestamp was changed
-		if s != nil && existingMarker != nil && existingMarker.Seconds != changedMarker.Seconds {
-			seconds := int(existingMarker.Seconds)
-			if err := fileDeleter.MarkMarkerFiles(s, seconds); err != nil {
+			s, err := sqb.Find(ctx, existingMarker.SceneID)
+			if err != nil {
 				return err
+			}
+			if s == nil {
+				return fmt.Errorf("scene with id %d not found", existingMarker.ID)
+			}
+
+			// remove the marker preview if the timestamp was changed
+			if existingMarker.Seconds != changedMarker.Seconds {
+				seconds := int(existingMarker.Seconds)
+				if err := fileDeleter.MarkMarkerFiles(s, seconds); err != nil {
+					return err
+				}
 			}
 		}
 

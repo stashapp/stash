@@ -99,7 +99,7 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 	}
 
 	if i == nil {
-		return nil, fmt.Errorf("image not found %d", imageID)
+		return nil, fmt.Errorf("image with id %d not found", imageID)
 	}
 
 	updatedImage := models.NewImagePartial()
@@ -245,7 +245,7 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 			}
 
 			if i == nil {
-				return fmt.Errorf("image not found %d", imageID)
+				return fmt.Errorf("image with id %d not found", imageID)
 			}
 
 			if updatedImage.GalleryIDs != nil {

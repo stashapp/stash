@@ -340,6 +340,11 @@ func (j *autoTagJob) autoTagTags(ctx context.Context, progress *job.Progress, pa
 				if err != nil {
 					return fmt.Errorf("finding tag id %s: %s", tagId, err.Error())
 				}
+
+				if tag == nil {
+					return fmt.Errorf("tag with id %s not found", tagId)
+				}
+
 				tags = append(tags, tag)
 			}
 

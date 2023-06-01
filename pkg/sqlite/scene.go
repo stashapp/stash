@@ -363,7 +363,7 @@ func (qb *SceneStore) UpdatePartial(ctx context.Context, id int, partial models.
 		}
 	}
 
-	return qb.Find(ctx, id)
+	return qb.find(ctx, id)
 }
 
 func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) error {
@@ -430,8 +430,13 @@ func (qb *SceneStore) Destroy(ctx context.Context, id int) error {
 	return qb.tableMgr.destroyExisting(ctx, []int{id})
 }
 
+// returns nil, nil if not found
 func (qb *SceneStore) Find(ctx context.Context, id int) (*models.Scene, error) {
-	return qb.find(ctx, id)
+	ret, err := qb.find(ctx, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	return ret, err
 }
 
 func (qb *SceneStore) FindMany(ctx context.Context, ids []int) ([]*models.Scene, error) {
@@ -464,12 +469,13 @@ func (qb *SceneStore) FindMany(ctx context.Context, ids []int) ([]*models.Scene,
 	return scenes, nil
 }
 
+// returns nil, sql.ErrNoRows if not found
 func (qb *SceneStore) find(ctx context.Context, id int) (*models.Scene, error) {
 	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil {
-		return nil, fmt.Errorf("getting scene by id %d: %w", id, err)
+		return nil, err
 	}
 
 	return ret, nil
@@ -487,6 +493,7 @@ func (qb *SceneStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset
 	return qb.getMany(ctx, q)
 }
 
+// returns nil, sql.ErrNoRows if not found
 func (qb *SceneStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Scene, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {

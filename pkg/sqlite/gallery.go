@@ -197,7 +197,7 @@ func (qb *GalleryStore) Create(ctx context.Context, newObject *models.Gallery, f
 		}
 	}
 
-	updated, err := qb.Find(ctx, id)
+	updated, err := qb.find(ctx, id)
 	if err != nil {
 		return fmt.Errorf("finding after create: %w", err)
 	}
@@ -282,7 +282,7 @@ func (qb *GalleryStore) UpdatePartial(ctx context.Context, id int, partial model
 		}
 	}
 
-	return qb.Find(ctx, id)
+	return qb.find(ctx, id)
 }
 
 func (qb *GalleryStore) Destroy(ctx context.Context, id int) error {
@@ -312,15 +312,13 @@ func (qb *GalleryStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]file
 	return qb.filesRepository().getMany(ctx, ids, primaryOnly)
 }
 
+// returns nil, nil if not found
 func (qb *GalleryStore) Find(ctx context.Context, id int) (*models.Gallery, error) {
-	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
-
-	ret, err := qb.get(ctx, q)
-	if err != nil {
-		return nil, fmt.Errorf("getting gallery by id %d: %w", id, err)
+	ret, err := qb.find(ctx, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
 	}
-
-	return ret, nil
+	return ret, err
 }
 
 func (qb *GalleryStore) FindMany(ctx context.Context, ids []int) ([]*models.Gallery, error) {
@@ -352,6 +350,18 @@ func (qb *GalleryStore) FindMany(ctx context.Context, ids []int) ([]*models.Gall
 	return galleries, nil
 }
 
+// returns nil, sql.ErrNoRows if not found
+func (qb *GalleryStore) find(ctx context.Context, id int) (*models.Gallery, error) {
+	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
+
+	ret, err := qb.get(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
 func (qb *GalleryStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Gallery, error) {
 	table := qb.table()
 
@@ -364,6 +374,7 @@ func (qb *GalleryStore) findBySubquery(ctx context.Context, sq *goqu.SelectDatas
 	return qb.getMany(ctx, q)
 }
 
+// returns nil, sql.ErrNoRows if not found
 func (qb *GalleryStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Gallery, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
@@ -768,14 +779,9 @@ func (qb *GalleryStore) Query(ctx context.Context, galleryFilter *models.Gallery
 		return nil, 0, err
 	}
 
-	var galleries []*models.Gallery
-	for _, id := range idsResult {
-		gallery, err := qb.Find(ctx, id)
-		if err != nil {
-			return nil, 0, err
-		}
-
-		galleries = append(galleries, gallery)
+	galleries, err := qb.FindMany(ctx, idsResult)
+	if err != nil {
+		return nil, 0, err
 	}
 
 	return galleries, countResult, nil

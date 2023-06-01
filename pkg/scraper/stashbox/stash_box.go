@@ -3,7 +3,6 @@ package stashbox
 import (
 	"bytes"
 	"context"
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -249,9 +248,8 @@ func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []strin
 		qb := c.repository.Scene
 
 		for _, sceneID := range ids {
-			// TODO - Find should return an appropriate not found error
 			scene, err := qb.Find(ctx, sceneID)
-			if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			if err != nil {
 				return err
 			}
 
@@ -832,10 +830,14 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 	}
 
 	if scene.StudioID != nil {
-		studio, err := sqb.Find(ctx, int(*scene.StudioID))
+		studio, err := sqb.Find(ctx, *scene.StudioID)
 		if err != nil {
 			return nil, err
 		}
+		if studio == nil {
+			return nil, fmt.Errorf("studio with id %d not found", *scene.StudioID)
+		}
+
 		studioDraft := graphql.DraftEntityInput{
 			Name: studio.Name,
 		}

@@ -181,7 +181,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 		}
 
 		if t == nil {
-			return fmt.Errorf("Tag with ID %d not found", tagID)
+			return fmt.Errorf("tag with id %d not found", tagID)
 		}
 
 		if input.Name != nil && t.Name != *input.Name {
@@ -313,7 +313,7 @@ func (r *mutationResolver) TagsMerge(ctx context.Context, input TagsMergeInput) 
 		}
 
 		if t == nil {
-			return fmt.Errorf("Tag with ID %d not found", destination)
+			return fmt.Errorf("tag with id %d not found", destination)
 		}
 
 		parents, children, err := tag.MergeHierarchy(ctx, destination, source, qb)

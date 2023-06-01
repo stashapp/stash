@@ -166,7 +166,7 @@ func (qb *MovieStore) UpdatePartial(ctx context.Context, id int, partial models.
 		}
 	}
 
-	return qb.Find(ctx, id)
+	return qb.find(ctx, id)
 }
 
 func (qb *MovieStore) Update(ctx context.Context, updatedObject *models.Movie) error {
@@ -189,6 +189,7 @@ func (qb *MovieStore) Destroy(ctx context.Context, id int) error {
 	return qb.destroyExisting(ctx, []int{id})
 }
 
+// returns nil, nil if not found
 func (qb *MovieStore) Find(ctx context.Context, id int) (*models.Movie, error) {
 	ret, err := qb.find(ctx, id)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -227,17 +228,19 @@ func (qb *MovieStore) FindMany(ctx context.Context, ids []int) ([]*models.Movie,
 	return ret, nil
 }
 
+// returns nil, sql.ErrNoRows if not found
 func (qb *MovieStore) find(ctx context.Context, id int) (*models.Movie, error) {
 	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil {
-		return nil, fmt.Errorf("getting movie by id %d: %w", id, err)
+		return nil, err
 	}
 
 	return ret, nil
 }
 
+// returns nil, sql.ErrNoRows if not found
 func (qb *MovieStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Movie, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
@@ -284,7 +287,7 @@ func (qb *MovieStore) FindByName(ctx context.Context, name string, nocase bool) 
 	sq := qb.selectDataset().Prepared(true).Where(goqu.L(where, name)).Limit(1)
 	ret, err := qb.get(ctx, sq)
 
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 

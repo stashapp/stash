@@ -153,7 +153,7 @@ func (qb *StudioStore) UpdatePartial(ctx context.Context, id int, partial models
 		}
 	}
 
-	return qb.Find(ctx, id)
+	return qb.find(ctx, id)
 }
 
 func (qb *StudioStore) Update(ctx context.Context, updatedObject *models.Studio) error {
@@ -183,6 +183,7 @@ func (qb *StudioStore) Destroy(ctx context.Context, id int) error {
 	return qb.destroyExisting(ctx, []int{id})
 }
 
+// returns nil, nil if not found
 func (qb *StudioStore) Find(ctx context.Context, id int) (*models.Studio, error) {
 	ret, err := qb.find(ctx, id)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -221,17 +222,19 @@ func (qb *StudioStore) FindMany(ctx context.Context, ids []int) ([]*models.Studi
 	return ret, nil
 }
 
+// returns nil, sql.ErrNoRows if not found
 func (qb *StudioStore) find(ctx context.Context, id int) (*models.Studio, error) {
 	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil {
-		return nil, fmt.Errorf("getting studio by id %d: %w", id, err)
+		return nil, err
 	}
 
 	return ret, nil
 }
 
+// returns nil, sql.ErrNoRows if not found
 func (qb *StudioStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Studio, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
@@ -289,7 +292,7 @@ func (qb *StudioStore) FindBySceneID(ctx context.Context, sceneID int) (*models.
 	).Limit(1)
 	ret, err := qb.get(ctx, sq)
 
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 
@@ -309,7 +312,7 @@ func (qb *StudioStore) FindByName(ctx context.Context, name string, nocase bool)
 	sq := qb.selectDataset().Prepared(true).Where(goqu.L(where, name)).Limit(1)
 	ret, err := qb.get(ctx, sq)
 
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 
