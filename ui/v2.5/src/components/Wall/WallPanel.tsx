@@ -18,17 +18,20 @@ const calculateClass = (index: number, count: number, columns: number) => {
   }
   const lastIndex = count - 1;
   const lastRowIndex = Math.floor(lastIndex / columns) * columns;
-  
+
   // First position and more than one row
   if (index === 0 && count > columns) return "transform-origin-top-left";
   // MaxColumn+1 position and more than one row
-  if (index === columns - 1 && count > columns) return "transform-origin-top-right";
+  if (index === columns - 1 && count > columns)
+    return "transform-origin-top-right";
   // Top row
   if (index < columns) return "transform-origin-top";
   // Two or more rows, with full last row and index is last
-  if (count > lastRowIndex + columns && (index + 1) === lastIndex) return "transform-origin-bottom-right";
+  if (count > lastRowIndex + columns && index + 1 === lastIndex)
+    return "transform-origin-bottom-right";
   // Two or more rows, with full last row and index is fifth to last
-  if (count > lastRowIndex + columns && (index + columns) === lastIndex) return "transform-origin-bottom-left";
+  if (count > lastRowIndex + columns && index + columns === lastIndex)
+    return "transform-origin-bottom-left";
   // Multiple of columns minus one
   if ((index + 1) % columns === 0) return "transform-origin-right";
   // Multiple of columns
@@ -36,7 +39,8 @@ const calculateClass = (index: number, count: number, columns: number) => {
     return "transform-origin-left";
   }
   // Position is equal or larger than first position in last row
-  if (lastIndex - (lastIndex % columns || columns) <= index + 1) return "transform-origin-bottom";
+  if (lastIndex - (lastIndex % columns || columns) <= index + 1)
+    return "transform-origin-bottom";
   // Default
   return "transform-origin-center";
 };

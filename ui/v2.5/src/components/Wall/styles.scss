@@ -1,34 +1,34 @@
 @mixin shared-size {
   @media (max-width: 576px) {
-    max-height: 33*0.563vw;
+    max-height: 33 * 0.563vw;
     max-width: 33%;
   }
 }
 
 .item-size {
   &-0 {
-    max-height: 20*0.563vw;
+    max-height: 20 * 0.563vw;
     max-width: 20%;
 
     @include shared-size;
   }
 
   &-1 {
-    max-height: 25*0.563vw;
+    max-height: 25 * 0.563vw;
     max-width: 25%;
 
     @include shared-size;
   }
 
   &-2 {
-    max-height: 33.33*0.563vw;
+    max-height: 33.33 * 0.563vw;
     max-width: 33.33%;
 
     @include shared-size;
   }
 
   &-3 {
-    max-height: 50*0.563vw;
+    max-height: 50 * 0.563vw;
     max-width: 50%;
 
     &:hover {
@@ -42,7 +42,7 @@
   }
 
   &-4 {
-    max-height: 90*0.563vw;
+    max-height: 90 * 0.563vw;
     max-width: 90%;
 
     @include shared-size;
