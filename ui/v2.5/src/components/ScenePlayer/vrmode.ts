@@ -106,19 +106,6 @@ class VRMenuButton extends videojs.getComponent("MenuButton") {
 class VRMenuPlugin extends videojs.getPlugin("plugin") {
   private menu: VRMenuButton;
 
-  maybeToggleVrOffClass(projection: string) {
-    const playerVideoContainer = document.getElementById("VideoJsPlayer");
-    if (!playerVideoContainer) {
-      return;
-    }
-
-    if (projection == vrTypeProjection[VRType.Off]) {
-      playerVideoContainer.classList.add("vjs-vr-off");
-    } else {
-      playerVideoContainer.classList.remove("vjs-vr-off");
-    }
-  }
-
   constructor(player: VideoJsPlayer, options: VRMenuOptions) {
     super(player);
 
@@ -128,7 +115,6 @@ class VRMenuPlugin extends videojs.getPlugin("plugin") {
 
     this.menu.on("typeselected", (_, type: VRType) => {
       const projection = vrTypeProjection[type];
-      this.maybeToggleVrOffClass(projection);
       player.vr({ projection });
       player.load();
     });

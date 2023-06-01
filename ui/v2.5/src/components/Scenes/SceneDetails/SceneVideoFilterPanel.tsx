@@ -112,10 +112,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
   function getVideoElement(playerVideoContainer: any) {
     let videoElements = playerVideoContainer.getElementsByTagName("canvas");
 
-    if (
-      videoElements.length == 0 ||
-      playerVideoContainer.classList.contains("vjs-vr-off")
-    ) {
+    if (videoElements.length == 0) {
       videoElements = playerVideoContainer.getElementsByTagName("video");
     }
 
