@@ -1905,10 +1905,10 @@ func TestPerformerQuerySortScenesCount(t *testing.T) {
 
 		assert.True(t, len(performers) > 0)
 
-		// first performer should be performerIdxWithTwoScenes
+		// first performer should be performerIdx1WithScene
 		firstPerformer := performers[0]
 
-		assert.Equal(t, performerIDs[performerIdxWithTwoScenes], firstPerformer.ID)
+		assert.Equal(t, performerIDs[performerIdx1WithScene], firstPerformer.ID)
 
 		// sort in ascending order
 		direction = models.SortDirectionEnumAsc
@@ -2061,7 +2061,7 @@ func TestPerformerStore_FindByStashIDStatus(t *testing.T) {
 			name:             "!hasStashID",
 			hasStashID:       false,
 			stashboxEndpoint: getPerformerStringValue(performerIdxWithScene, "endpoint"),
-			include:          []int{performerIdxWithImage},
+			include:          []int{performerIdxWithTwoScenes},
 			exclude:          []int{performerIdx2WithScene},
 			wantErr:          false,
 		},

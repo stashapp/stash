@@ -694,6 +694,8 @@ func (m *joinedMultiCriterionHandlerBuilder) handler(c *models.MultiCriterionInp
 					})
 					havingClause = fmt.Sprintf("count(distinct %s.%s) IS %d", joinAlias, m.foreignFK, len(criterion.Value))
 					args = append(args, len(criterion.Value))
+				case models.CriterionModifierNotEquals:
+					f.setError(fmt.Errorf("not equals modifier is not supported for multi criterion input"))
 				case models.CriterionModifierIncludesAll:
 					// includes all of the provided ids
 					m.addJoinTable(f)
@@ -1026,7 +1028,7 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) addHierarchicalConditio
 			"primaryTable": m.primaryTable,
 		}), len(criterion.Value))
 	case models.CriterionModifierNotEquals:
-		f.setError(fmt.Errorf("not equals modifier is not supported for hierarchical multi criteria"))
+		f.setError(fmt.Errorf("not equals modifier is not supported for hierarchical multi criterion input"))
 	default:
 		addHierarchicalConditionClauses(f, criterion, table, idColumn)
 	}
