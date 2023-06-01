@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import videojs, { VideoJsPlayer } from "video.js";
 import "videojs-vr";
+// separate type import, otherwise typescript elides the above import
+// and the plugin does not get initialized
+import type { ProjectionType } from "videojs-vr";
 
 export interface VRMenuOptions {
   /**
@@ -15,7 +18,7 @@ enum VRType {
   Off = "Off",
 }
 
-const vrTypeProjection = {
+const vrTypeProjection: Record<VRType, ProjectionType> = {
   [VRType.Spherical]: "360",
   [VRType.Off]: "NONE",
 };
@@ -29,7 +32,7 @@ class VRMenuItem extends videojs.getComponent("MenuItem") {
   public isSelected = false;
 
   constructor(parent: VRMenuButton, type: VRType) {
-    const options = {} as videojs.MenuItemOptions;
+    const options: videojs.MenuItemOptions = {};
     options.selectable = true;
     options.multiSelectable = false;
     options.label = type;
@@ -136,7 +139,6 @@ videojs.registerPlugin("vrMenu", VRMenuPlugin);
 declare module "video.js" {
   interface VideoJsPlayer {
     vrMenu: () => VRMenuPlugin;
-    vr: (options: Object) => void;
   }
   interface VideoJsPlayerPluginOptions {
     vrMenu?: VRMenuOptions;
