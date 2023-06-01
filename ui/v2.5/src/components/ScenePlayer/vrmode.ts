@@ -106,7 +106,7 @@ class VRMenuButton extends videojs.getComponent("MenuButton") {
 class VRMenuPlugin extends videojs.getPlugin("plugin") {
   private menu: VRMenuButton;
 
-  toggleVrClass(projection: string) {
+  maybeToggleVrOffClass(projection: string) {
     const playerVideoContainer = document.getElementById("VideoJsPlayer");
     if (!playerVideoContainer) {
       return;
@@ -128,7 +128,7 @@ class VRMenuPlugin extends videojs.getPlugin("plugin") {
 
     this.menu.on("typeselected", (_, type: VRType) => {
       const projection = vrTypeProjection[type];
-      this.toggleVrClass(projection);
+      this.maybeToggleVrOffClass(projection);
       player.vr({ projection });
       player.load();
     });
