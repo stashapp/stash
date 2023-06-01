@@ -3476,7 +3476,7 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 			false,
 		},
 		{
-			"includes alls",
+			"includes all",
 			nil,
 			&models.SceneFilterType{
 				PerformerTags: &models.HierarchicalMultiCriterionInput{
@@ -3545,9 +3545,24 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 					},
 				},
 			},
-			[]int{sceneIdxWithTwoPerformerTag},
-			[]int{sceneIdxWithPerformerTag, sceneIdxWithPerformerTwoTags},
-			false,
+			nil,
+			nil,
+			true,
+		},
+		{
+			"not equals",
+			nil,
+			&models.SceneFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierNotEquals,
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
 		},
 	}
 

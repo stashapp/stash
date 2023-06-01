@@ -2494,9 +2494,24 @@ func TestImageQueryPerformerTags(t *testing.T) {
 					},
 				},
 			},
-			[]int{imageIdxWithTwoPerformerTag},
-			[]int{imageIdxWithPerformerTag, imageIdxWithPerformerTwoTags},
-			false,
+			nil,
+			nil,
+			true,
+		},
+		{
+			"not equals",
+			nil,
+			&models.ImageFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierNotEquals,
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
 		},
 	}
 
