@@ -111,41 +111,41 @@ type HeresphereVideoMedia struct {
 	Sources []HeresphereVideoMediaSource `json:"sources"`
 }
 type HeresphereVideoEntry struct {
-	Access         int                  `json:"access"`
-	Title          string               `json:"title"`
-	Description    string               `json:"description"`
-	ThumbnailImage string               `json:"thumbnailImage"`
-	ThumbnailVideo string               `json:"thumbnailVideo,omitempty"`
-	DateReleased   string               `json:"dateReleased"`
-	DateAdded      string               `json:"dateAdded"`
-	Duration       uint                 `json:"duration,omitempty"`
-	Rating         float32              `json:"rating,omitempty"`
-	Favorites      float32              `json:"favorites,omitempty"`
-	Comments       int                  `json:"comments"`
-	IsFavorite     bool                 `json:"isFavorite"`
-	Projection     HeresphereProjection `json:"projection"`
-	Stereo         HeresphereStereo     `json:"stereo"`
-	//IsEyeSwapped   bool                      `json:"isEyeSwapped"`
-	Fov  float32        `json:"fov,omitempty"`
-	Lens HeresphereLens `json:"lens"`
-	//CameraIPD      float32                   `json:"cameraIPD,omitempty"`
-	/*Hsp            string                    `json:"hsp,omitempty"`
-	EventServer    string                    `json:"eventServer,omitempty"`*/
-	Scripts       []HeresphereVideoScript   `json:"scripts,omitempty"`
-	Subtitles     []HeresphereVideoSubtitle `json:"subtitles,omitempty"`
-	Tags          []HeresphereVideoTag      `json:"tags,omitempty"`
-	Media         []HeresphereVideoMedia    `json:"media,omitempty"`
-	WriteFavorite bool                      `json:"writeFavorite"`
-	WriteRating   bool                      `json:"writeRating"`
-	WriteTags     bool                      `json:"writeTags"`
-	WriteHSP      bool                      `json:"writeHSP"`
+	Access         int                       `json:"access"`
+	Title          string                    `json:"title"`
+	Description    string                    `json:"description"`
+	ThumbnailImage string                    `json:"thumbnailImage"`
+	ThumbnailVideo string                    `json:"thumbnailVideo,omitempty"`
+	DateReleased   string                    `json:"dateReleased"`
+	DateAdded      string                    `json:"dateAdded"`
+	Duration       float64                   `json:"duration,omitempty"`
+	Rating         float32                   `json:"rating,omitempty"`
+	Favorites      float32                   `json:"favorites,omitempty"`
+	Comments       int                       `json:"comments"`
+	IsFavorite     bool                      `json:"isFavorite"`
+	Projection     HeresphereProjection      `json:"projection"`
+	Stereo         HeresphereStereo          `json:"stereo"`
+	IsEyeSwapped   bool                      `json:"isEyeSwapped"`
+	Fov            float32                   `json:"fov,omitempty"`
+	Lens           HeresphereLens            `json:"lens"`
+	CameraIPD      float32                   `json:"cameraIPD"`
+	Hsp            string                    `json:"hsp,omitempty"`
+	EventServer    string                    `json:"eventServer,omitempty"`
+	Scripts        []HeresphereVideoScript   `json:"scripts,omitempty"`
+	Subtitles      []HeresphereVideoSubtitle `json:"subtitles,omitempty"`
+	Tags           []HeresphereVideoTag      `json:"tags,omitempty"`
+	Media          []HeresphereVideoMedia    `json:"media,omitempty"`
+	WriteFavorite  bool                      `json:"writeFavorite"`
+	WriteRating    bool                      `json:"writeRating"`
+	WriteTags      bool                      `json:"writeTags"`
+	WriteHSP       bool                      `json:"writeHSP"`
 }
 type HeresphereVideoEntryShort struct {
 	Link         string               `json:"link"`
 	Title        string               `json:"title"`
 	DateReleased string               `json:"dateReleased"`
 	DateAdded    string               `json:"dateAdded"`
-	Duration     uint                 `json:"duration,omitempty"`
+	Duration     float64              `json:"duration,omitempty"`
 	Rating       float32              `json:"rating,omitempty"`
 	Favorites    int                  `json:"favorites"`
 	Comments     int                  `json:"comments"`
@@ -387,23 +387,6 @@ func (rs heresphereRoutes) getVideoMedia(ctx context.Context, r *http.Request, s
 			Sources: sources,
 		})
 	}
-
-	//TODO: Gather also secondary files, by Format, use a map/dict
-	/*mediaFile := scene.Files.Primary()
-	if mediaFile != nil {
-		processedEntry := HeresphereVideoMediaSource{
-			Resolution: mediaFile.Height,
-			Height:     mediaFile.Height,
-			Width:      mediaFile.Width,
-			Size:       mediaFile.Size,
-			Url:        relUrlToAbs(r, fmt.Sprintf("/scene/%v/stream", scene.ID)),
-		}
-		processedSources := []HeresphereVideoMediaSource{processedEntry}
-		processedMedia = append(processedMedia, HeresphereVideoMedia{
-			Name:    mediaFile.Format,
-			Sources: processedSources,
-		})
-	}*/
 	//TODO: Transcode etc. /scene/%v/stream.mp4?resolution=ORIGINAL
 
 	return processedMedia
@@ -469,7 +452,7 @@ func (rs heresphereRoutes) HeresphereScan(w http.ResponseWriter, r *http.Request
 			Title:        scene.GetTitle(),
 			DateReleased: scene.CreatedAt.Format("2006-01-02"),
 			DateAdded:    scene.CreatedAt.Format("2006-01-02"),
-			Duration:     0,
+			Duration:     60.0,
 			Rating:       0.0,
 			Favorites:    0,
 			Comments:     scene.OCounter,
@@ -486,7 +469,7 @@ func (rs heresphereRoutes) HeresphereScan(w http.ResponseWriter, r *http.Request
 		}
 		file_ids, err := rs.resolver.Scene().Files(r.Context(), scene)
 		if err == nil && len(file_ids) > 0 {
-			processedScene.Duration = uint(handleFloat64Value(file_ids[0].Duration))
+			processedScene.Duration = handleFloat64Value(file_ids[0].Duration)
 		}
 		processedScenes = append(processedScenes, processedScene)
 	}
@@ -509,7 +492,7 @@ func (rs heresphereRoutes) HeresphereVideoHsp(w http.ResponseWriter, r *http.Req
 func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *http.Request) {
 	//TODO: This
 	//TODO: Auth
-
+	w.WriteHeader(http.StatusNotImplemented)
 }
 
 func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Request) {
@@ -546,18 +529,18 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		ThumbnailVideo: relUrlToAbs(r, fmt.Sprintf("/scene/%v/preview", scene.ID)),
 		DateReleased:   scene.CreatedAt.Format("2006-01-02"),
 		DateAdded:      scene.CreatedAt.Format("2006-01-02"),
-		Duration:       0,
+		Duration:       60.0,
 		Rating:         0.0,
 		Favorites:      0,
 		Comments:       scene.OCounter,
 		IsFavorite:     false,
 		Projection:     HeresphereProjectionPerspective, // Default to flat cause i have no idea
 		Stereo:         HeresphereStereoMono,            // Default to flat cause i have no idea
-		//IsEyeSwapped: false,
-		Fov:  180,
-		Lens: HeresphereLensLinear,
-		/*CameraIPD:      6.5,
-		Hsp:            relUrlToAbs(r, fmt.Sprintf("/heresphere/%v/hsp", scene.ID)),
+		IsEyeSwapped:   false,
+		Fov:            180,
+		Lens:           HeresphereLensLinear,
+		CameraIPD:      6.5,
+		/*Hsp:            relUrlToAbs(r, fmt.Sprintf("/heresphere/%v/hsp", scene.ID)),
 		EventServer:    relUrlToAbs(r, fmt.Sprintf("/heresphere/%v/event", scene.ID)),*/
 		Scripts:       rs.getVideoScripts(r.Context(), r, scene),
 		Subtitles:     rs.getVideoSubtitles(r.Context(), r, scene),
@@ -582,12 +565,8 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 	}
 	file_ids, err := rs.resolver.Scene().Files(r.Context(), scene)
 	if err == nil && len(file_ids) > 0 {
-		processedScene.Duration = uint(handleFloat64Value(file_ids[0].Duration))
+		processedScene.Duration = handleFloat64Value(file_ids[0].Duration)
 	}
-	/*primaryFile := scene.Files.Primary()
-	if primaryFile != nil {
-		processedScene.Duration = uint(handleFloat64Value(primaryFile.Duration))
-	}*/
 
 	// Create a JSON encoder for the response writer
 	w.Header().Set("Content-Type", "application/json")
