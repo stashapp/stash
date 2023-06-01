@@ -65,6 +65,7 @@ const (
 	sceneIdxWithTwoTags
 	sceneIdxWithThreeTags
 	sceneIdxWithMarkerAndTag
+	sceneIdxWithMarkerTwoTags
 	sceneIdxWithStudio
 	sceneIdx1WithStudio
 	sceneIdx2WithStudio
@@ -347,10 +348,11 @@ var (
 
 var (
 	sceneTags = linkMap{
-		sceneIdxWithTag:          {tagIdxWithScene},
-		sceneIdxWithTwoTags:      {tagIdx1WithScene, tagIdx2WithScene},
-		sceneIdxWithThreeTags:    {tagIdx1WithScene, tagIdx2WithScene, tagIdx3WithScene},
-		sceneIdxWithMarkerAndTag: {tagIdx3WithScene},
+		sceneIdxWithTag:           {tagIdxWithScene},
+		sceneIdxWithTwoTags:       {tagIdx1WithScene, tagIdx2WithScene},
+		sceneIdxWithThreeTags:     {tagIdx1WithScene, tagIdx2WithScene, tagIdx3WithScene},
+		sceneIdxWithMarkerAndTag:  {tagIdx3WithScene},
+		sceneIdxWithMarkerTwoTags: {tagIdx2WithScene, tagIdx3WithScene},
 	}
 
 	scenePerformers = linkMap{
@@ -394,6 +396,7 @@ var (
 		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, nil},
 		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, []int{tagIdxWithMarkers}},
 		{sceneIdxWithMarkerAndTag, tagIdxWithPrimaryMarkers, nil},
+		{sceneIdxWithMarkerTwoTags, tagIdxWithPrimaryMarkers, nil},
 	}
 )
 

@@ -2106,6 +2106,8 @@ func sceneQueryQ(ctx context.Context, t *testing.T, sqb models.SceneReader, q st
 
 	// no Q should return all results
 	filter.Q = nil
+	pp := totalScenes
+	filter.PerPage = &pp
 	scenes = queryScene(ctx, t, sqb, nil, &filter)
 
 	assert.Len(t, scenes, totalScenes)
@@ -3062,7 +3064,13 @@ func queryScenes(ctx context.Context, t *testing.T, queryBuilder models.SceneRea
 		},
 	}
 
-	return queryScene(ctx, t, queryBuilder, &sceneFilter, nil)
+	// needed so that we don't hit the default limit of 25 scenes
+	pp := 1000
+	findFilter := &models.FindFilterType{
+		PerPage: &pp,
+	}
+
+	return queryScene(ctx, t, queryBuilder, &sceneFilter, findFilter)
 }
 
 func createScene(ctx context.Context, width int, height int) (*models.Scene, error) {

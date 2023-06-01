@@ -1044,15 +1044,21 @@ type joinedHierarchicalMultiCriterionHandlerBuilder struct {
 }
 
 func (m *joinedHierarchicalMultiCriterionHandlerBuilder) addHierarchicalConditionClauses(f *filterBuilder, criterion models.HierarchicalMultiCriterionInput, table, idColumn string) {
+	primaryKey := m.primaryKey
+	if primaryKey == "" {
+		primaryKey = "id"
+	}
+
 	switch criterion.Modifier {
 	case models.CriterionModifierEquals:
 		// includes only the provided ids
 		f.addWhere(fmt.Sprintf("%s.%s IS NOT NULL", table, idColumn))
 		f.addHaving(fmt.Sprintf("count(distinct %s.%s) IS %d", table, idColumn, len(criterion.Value)))
-		f.addWhere(utils.StrFormat("(SELECT COUNT(*) FROM {joinTable} s WHERE s.{primaryFK} = {primaryTable}.id) = ?", utils.StrFormatMap{
+		f.addWhere(utils.StrFormat("(SELECT COUNT(*) FROM {joinTable} s WHERE s.{primaryFK} = {primaryTable}.{primaryKey}) = ?", utils.StrFormatMap{
 			"joinTable":    m.joinTable,
 			"primaryFK":    m.primaryFK,
 			"primaryTable": m.primaryTable,
+			"primaryKey":   primaryKey,
 		}), len(criterion.Value))
 	case models.CriterionModifierNotEquals:
 		f.setError(fmt.Errorf("not equals modifier is not supported for hierarchical multi criterion input"))
