@@ -3,7 +3,7 @@ import videojs, { VideoJsPlayer } from "video.js";
 import "videojs-vr";
 // separate type import, otherwise typescript elides the above import
 // and the plugin does not get initialized
-import type { ProjectionType } from "videojs-vr";
+import type { ProjectionType, Plugin as VideoJsVRPlugin } from "videojs-vr";
 
 export interface VRMenuOptions {
   /**
@@ -108,26 +108,60 @@ class VRMenuButton extends videojs.getComponent("MenuButton") {
 
 class VRMenuPlugin extends videojs.getPlugin("plugin") {
   private menu: VRMenuButton;
+  private showButton: boolean;
+  private vr?: VideoJsVRPlugin;
 
   constructor(player: VideoJsPlayer, options: VRMenuOptions) {
     super(player);
 
     this.menu = new VRMenuButton(player);
+    this.showButton = options.showButton ?? false;
 
-    if (isVrDevice() || !options.showButton) return;
+    if (isVrDevice()) return;
+
+    this.vr = this.player.vr();
 
     this.menu.on("typeselected", (_, type: VRType) => {
-      const projection = vrTypeProjection[type];
-      player.vr({ projection });
-      player.load();
+      this.loadVR(type);
     });
 
     player.on("ready", () => {
-      const { controlBar } = player;
-      const fullscreenToggle = controlBar.getChild("fullscreenToggle")!.el();
-      controlBar.addChild(this.menu);
-      controlBar.el().insertBefore(this.menu.el(), fullscreenToggle);
+      if (this.showButton) {
+        this.addButton();
+      }
     });
+  }
+
+  private loadVR(type: VRType) {
+    const projection = vrTypeProjection[type];
+    this.vr?.setProjection(projection);
+    this.vr?.init();
+  }
+
+  private addButton() {
+    const { controlBar } = this.player;
+    const fullscreenToggle = controlBar.getChild("fullscreenToggle")!.el();
+    controlBar.addChild(this.menu);
+    controlBar.el().insertBefore(this.menu.el(), fullscreenToggle);
+  }
+
+  private removeButton() {
+    const { controlBar } = this.player;
+    controlBar.removeChild(this.menu);
+  }
+
+  public setShowButton(showButton: boolean) {
+    if (isVrDevice()) return;
+
+    if (showButton === this.showButton) return;
+
+    this.showButton = showButton;
+    if (showButton) {
+      this.addButton();
+    } else {
+      this.removeButton();
+      this.loadVR(VRType.Off);
+    }
   }
 }
 
