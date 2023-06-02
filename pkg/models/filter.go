@@ -135,12 +135,15 @@ type HierarchicalMultiCriterionInput struct {
 	Excludes []string          `json:"excludes"`
 }
 
-func (i *HierarchicalMultiCriterionInput) CombineExcludes() {
-	if i.Modifier == CriterionModifierExcludes {
-		i.Modifier = CriterionModifierIncludesAll
-		i.Excludes = append(i.Excludes, i.Value...)
-		i.Value = nil
+func (i HierarchicalMultiCriterionInput) CombineExcludes() HierarchicalMultiCriterionInput {
+	ii := i
+	if ii.Modifier == CriterionModifierExcludes {
+		ii.Modifier = CriterionModifierIncludesAll
+		ii.Excludes = append(ii.Excludes, ii.Value...)
+		ii.Value = nil
 	}
+
+	return ii
 }
 
 type MultiCriterionInput struct {

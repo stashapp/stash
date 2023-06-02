@@ -1182,8 +1182,7 @@ func (h *joinedPerformerTagsHandler) handle(ctx context.Context, f *filterBuilde
 	tags := h.criterion
 
 	if tags != nil {
-		criterion := *tags
-		criterion.CombineExcludes()
+		criterion := tags.CombineExcludes()
 
 		// validate the modifier
 		switch criterion.Modifier {
