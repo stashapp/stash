@@ -15,6 +15,7 @@ import (
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -626,8 +627,8 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		Fov:            fov,
 		Lens:           lens,
 		CameraIPD:      ipd,
-		// Hsp:            relUrlToAbs(r, fmt.Sprintf("/heresphere/%v/hsp", scene.ID)),
-		EventServer:   relUrlToAbs(r, fmt.Sprintf("/heresphere/%v/event", scene.ID)),
+		// Hsp:            relUrlToAbs(r, fmt.Sprintf("/heresphere/%v/hsp?apikey=%v", scene.ID, config.GetInstance().GetAPIKey())),
+		EventServer:   relUrlToAbs(r, fmt.Sprintf("/heresphere/%v/event?apikey=%v", scene.ID, config.GetInstance().GetAPIKey())),
 		Scripts:       rs.getVideoScripts(r.Context(), r, scene),
 		Subtitles:     rs.getVideoSubtitles(r.Context(), r, scene),
 		Tags:          rs.getVideoTags(r.Context(), r, scene),
@@ -740,7 +741,13 @@ func (rs heresphereRoutes) HeresphereSceneCtx(next http.Handler) http.Handler {
 }
 
 func HeresphereHasValidToken(r *http.Request) bool {
-	return len(r.Header.Get("auth-token")) > 0 && r.Header.Get("auth-token") == config.GetInstance().GetAPIKey()
+	apiKey := r.Header.Get("auth-token")
+
+	if apiKey == "" {
+		apiKey = r.URL.Query().Get(session.ApiKeyParameter)
+	}
+
+	return len(apiKey) > 0 && apiKey == config.GetInstance().GetAPIKey()
 }
 
 func writeNotAuthorized(w http.ResponseWriter, r *http.Request, msg string) {
@@ -750,6 +757,7 @@ func writeNotAuthorized(w http.ResponseWriter, r *http.Request, msg string) {
 	}
 	library := HeresphereIndexEntry{
 		Name: msg,
+		List: []string{relUrlToAbs(r, "/")},
 	}
 	idx := HeresphereIndex{
 		Access:  HeresphereBadLogin,
@@ -771,9 +779,9 @@ func (rs heresphereRoutes) HeresphereCtx(next http.Handler) http.Handler {
 		w.Header()["HereSphere-JSON-Version"] = []string{strconv.Itoa(HeresphereJsonVersion)}
 
 		user := HeresphereAuthReq{NeedsMediaSource: true}
-		if !strings.HasSuffix(r.URL.Path, "/event") {
+		if !strings.HasSuffix(r.URL.Path, "/event") && !strings.HasSuffix(r.URL.Path, "/hsp") {
 			if err := json.NewDecoder(r.Body).Decode(&user); err != nil && config.GetInstance().HasCredentials() {
-				http.Error(w, err.Error(), http.StatusBadRequest)
+				writeNotAuthorized(w, r, "Not logged in!")
 				return
 			}
 		}
