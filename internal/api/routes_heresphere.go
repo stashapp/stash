@@ -189,7 +189,7 @@ func (rs heresphereRoutes) Routes() chi.Router {
 		r.Head("/", rs.HeresphereIndex)
 
 		r.Post("/auth", rs.HeresphereLoginToken)
-		//r.Post("/scan", rs.HeresphereScan)
+		// r.Post("/scan", rs.HeresphereScan)
 		r.Post("/event", rs.HeresphereVideoEvent)
 		r.Route("/{sceneId}", func(r chi.Router) {
 			r.Use(rs.HeresphereSceneCtx)
@@ -301,7 +301,7 @@ func (rs heresphereRoutes) getVideoTags(ctx context.Context, r *http.Request, sc
 		}
 	}
 
-	//stash_ids, err := rs.resolver.Scene().StashIds(ctx, scene)
+	// stash_ids, err := rs.resolver.Scene().StashIds(ctx, scene)
 
 	studio_id, err := rs.resolver.Scene().Studio(ctx, scene)
 	if err == nil && studio_id != nil {
@@ -473,48 +473,52 @@ func FindProjection(path string) (proj HeresphereProjection, stereo HeresphereSt
 	proj, stereo, eyeswap, fov, lens, ipd = HeresphereProjectionPerspective, HeresphereStereoMono, false, 180, HeresphereLensLinear, 6.5
 
 	path = strings.ToUpper(path)
+	// TODO: Detect video tags
 
-	if strings.Index(path, "_LR") != -1 || strings.Index(path, "_3DH") != -1 {
+	if strings.Contains(path, "_LR") || strings.Contains(path, "_3DH") {
 		stereo = HeresphereStereoSbs
 	}
-	if strings.Index(path, "_RL") != -1 {
+	if strings.Contains(path, "_RL") {
 		stereo = HeresphereStereoSbs
 		eyeswap = true
 	}
-	if strings.Index(path, "_TB") != -1 || strings.Index(path, "_3DV") != -1 {
+	if strings.Contains(path, "_TB") || strings.Contains(path, "_3DV") {
 		stereo = HeresphereStereoTB
 	}
-	if strings.Index(path, "_BT") != -1 {
+	if strings.Contains(path, "_BT") {
 		stereo = HeresphereStereoTB
 		eyeswap = true
 	}
 
-	if strings.Index(path, "_EAC360") != -1 || strings.Index(path, "_360EAC") != -1 {
+	if strings.Contains(path, "_EAC360") || strings.Contains(path, "_360EAC") {
 		proj = HeresphereProjectionEquirectangularCubemap
 	}
-	if strings.Index(path, "_360") != -1 {
+	if strings.Contains(path, "_360") {
 		proj = HeresphereProjectionEquirectangular360
 	}
-	if strings.Index(path, "_F180") != -1 || strings.Index(path, "_180F") != -1 {
+	if strings.Contains(path, "_F180") || strings.Contains(path, "_180F") || strings.Contains(path, "_VR180") {
 		proj = HeresphereProjectionFisheye
-	} else if strings.Index(path, "_180") != -1 {
+	} else if strings.Contains(path, "_180") {
 		proj = HeresphereProjectionEquirectangular
 	}
-	if strings.Index(path, "_MKX200") != -1 {
+	if strings.Contains(path, "_MKX200") {
 		proj = HeresphereProjectionFisheye
 		fov = 200
+		lens = HeresphereLensMKX200
 	}
-	if strings.Index(path, "_MKX220") != -1 {
+	if strings.Contains(path, "_MKX220") {
 		proj = HeresphereProjectionFisheye
 		fov = 220
+		lens = HeresphereLensMKX220
 	}
-	if strings.Index(path, "_RF52") != -1 {
+	if strings.Contains(path, "_RF52") {
 		proj = HeresphereProjectionFisheye
 		fov = 190
 	}
-	if strings.Index(path, "_VRCA220") != -1 {
+	if strings.Contains(path, "_VRCA220") {
 		proj = HeresphereProjectionFisheye
 		fov = 220
+		lens = HeresphereLensVRCA220
 	}
 
 	return
@@ -696,7 +700,10 @@ func (rs heresphereRoutes) HeresphereCtx(next http.Handler) http.Handler {
 		w.Header()["HereSphere-JSON-Version"] = []string{strconv.Itoa(HeresphereJsonVersion)}
 
 		user := HeresphereAuthReq{NeedsMediaSource: true}
-		json.NewDecoder(r.Body).Decode(&user)
+		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
 		if config.GetInstance().HasCredentials() &&
 			!HeresphereHasValidToken(r) &&
