@@ -2372,6 +2372,8 @@ func TestGalleryQueryStudioDepth(t *testing.T) {
 }
 
 func TestGalleryQueryPerformerTags(t *testing.T) {
+	allDepth := -1
+
 	tests := []struct {
 		name        string
 		findFilter  *models.FindFilterType
@@ -2403,7 +2405,30 @@ func TestGalleryQueryPerformerTags(t *testing.T) {
 			false,
 		},
 		{
-			"includes alls",
+			"includes sub-tags",
+			nil,
+			&models.GalleryFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdxWithParentAndChild]),
+					},
+					Depth:    &allDepth,
+					Modifier: models.CriterionModifierIncludes,
+				},
+			},
+			[]int{
+				galleryIdxWithPerformerParentTag,
+			},
+			[]int{
+				galleryIdxWithPerformer,
+				galleryIdxWithPerformerTag,
+				galleryIdxWithPerformerTwoTags,
+				galleryIdxWithTwoPerformerTag,
+			},
+			false,
+		},
+		{
+			"includes all",
 			nil,
 			&models.GalleryFilterType{
 				PerformerTags: &models.HierarchicalMultiCriterionInput{
@@ -2435,6 +2460,29 @@ func TestGalleryQueryPerformerTags(t *testing.T) {
 			},
 			nil,
 			[]int{galleryIdxWithTwoPerformerTag},
+			false,
+		},
+		{
+			"excludes sub-tags",
+			nil,
+			&models.GalleryFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdxWithParentAndChild]),
+					},
+					Depth:    &allDepth,
+					Modifier: models.CriterionModifierExcludes,
+				},
+			},
+			[]int{
+				galleryIdxWithPerformer,
+				galleryIdxWithPerformerTag,
+				galleryIdxWithPerformerTwoTags,
+				galleryIdxWithTwoPerformerTag,
+			},
+			[]int{
+				galleryIdxWithPerformerParentTag,
+			},
 			false,
 		},
 		{
@@ -2505,8 +2553,8 @@ func TestGalleryQueryPerformerTags(t *testing.T) {
 
 			ids := galleriesToIDs(results)
 
-			include := indexesToIDs(imageIDs, tt.includeIdxs)
-			exclude := indexesToIDs(imageIDs, tt.excludeIdxs)
+			include := indexesToIDs(galleryIDs, tt.includeIdxs)
+			exclude := indexesToIDs(galleryIDs, tt.excludeIdxs)
 
 			for _, i := range include {
 				assert.Contains(ids, i)

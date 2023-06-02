@@ -3614,6 +3614,8 @@ func TestSceneQueryTags(t *testing.T) {
 }
 
 func TestSceneQueryPerformerTags(t *testing.T) {
+	allDepth := -1
+
 	tests := []struct {
 		name        string
 		findFilter  *models.FindFilterType
@@ -3641,6 +3643,29 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 			},
 			[]int{
 				sceneIdxWithPerformer,
+			},
+			false,
+		},
+		{
+			"includes sub-tags",
+			nil,
+			&models.SceneFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdxWithParentAndChild]),
+					},
+					Depth:    &allDepth,
+					Modifier: models.CriterionModifierIncludes,
+				},
+			},
+			[]int{
+				sceneIdxWithPerformerParentTag,
+			},
+			[]int{
+				sceneIdxWithPerformer,
+				sceneIdxWithPerformerTag,
+				sceneIdxWithPerformerTwoTags,
+				sceneIdxWithTwoPerformerTag,
 			},
 			false,
 		},
@@ -3677,6 +3702,29 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 			},
 			nil,
 			[]int{sceneIdxWithTwoPerformerTag},
+			false,
+		},
+		{
+			"excludes sub-tags",
+			nil,
+			&models.SceneFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdxWithParentAndChild]),
+					},
+					Depth:    &allDepth,
+					Modifier: models.CriterionModifierExcludes,
+				},
+			},
+			[]int{
+				sceneIdxWithPerformer,
+				sceneIdxWithPerformerTag,
+				sceneIdxWithPerformerTwoTags,
+				sceneIdxWithTwoPerformerTag,
+			},
+			[]int{
+				sceneIdxWithPerformerParentTag,
+			},
 			false,
 		},
 		{

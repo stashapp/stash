@@ -77,6 +77,7 @@ const (
 	sceneIdxWithStudioPerformer
 	sceneIdxWithGrandChildStudio
 	sceneIdxMissingPhash
+	sceneIdxWithPerformerParentTag
 	// new indexes above
 	lastSceneIdx
 
@@ -107,6 +108,7 @@ const (
 	imageIdxWithTwoPerformerTag
 	imageIdxWithPerformerTwoTags
 	imageIdxWithGrandChildStudio
+	imageIdxWithPerformerParentTag
 	// new indexes above
 	totalImages
 )
@@ -133,6 +135,7 @@ const (
 	performerIdxWithSceneStudio
 	performerIdxWithImageStudio
 	performerIdxWithGalleryStudio
+	performerIdxWithParentTag
 	// new indexes above
 	// performers with dup names start from the end
 	performerIdx1WithDupName
@@ -179,6 +182,7 @@ const (
 	galleryIdxWithStudioPerformer
 	galleryIdxWithGrandChildStudio
 	galleryIdxWithoutFile
+	galleryIdxWithPerformerParentTag
 	// new indexes above
 	lastGalleryIdx
 
@@ -356,15 +360,16 @@ var (
 	}
 
 	scenePerformers = linkMap{
-		sceneIdxWithPerformer:        {performerIdxWithScene},
-		sceneIdxWithTwoPerformers:    {performerIdx1WithScene, performerIdx2WithScene},
-		sceneIdxWithThreePerformers:  {performerIdx1WithScene, performerIdx2WithScene, performerIdx3WithScene},
-		sceneIdxWithPerformerTag:     {performerIdxWithTag},
-		sceneIdxWithTwoPerformerTag:  {performerIdxWithTag, performerIdx2WithTag},
-		sceneIdxWithPerformerTwoTags: {performerIdxWithTwoTags},
-		sceneIdx1WithPerformer:       {performerIdxWithTwoScenes},
-		sceneIdx2WithPerformer:       {performerIdxWithTwoScenes},
-		sceneIdxWithStudioPerformer:  {performerIdxWithSceneStudio},
+		sceneIdxWithPerformer:          {performerIdxWithScene},
+		sceneIdxWithTwoPerformers:      {performerIdx1WithScene, performerIdx2WithScene},
+		sceneIdxWithThreePerformers:    {performerIdx1WithScene, performerIdx2WithScene, performerIdx3WithScene},
+		sceneIdxWithPerformerTag:       {performerIdxWithTag},
+		sceneIdxWithTwoPerformerTag:    {performerIdxWithTag, performerIdx2WithTag},
+		sceneIdxWithPerformerTwoTags:   {performerIdxWithTwoTags},
+		sceneIdx1WithPerformer:         {performerIdxWithTwoScenes},
+		sceneIdx2WithPerformer:         {performerIdxWithTwoScenes},
+		sceneIdxWithStudioPerformer:    {performerIdxWithSceneStudio},
+		sceneIdxWithPerformerParentTag: {performerIdxWithParentTag},
 	}
 
 	sceneGalleries = linkMap{
@@ -433,29 +438,31 @@ var (
 		imageIdxWithThreeTags: {tagIdx1WithImage, tagIdx2WithImage, tagIdx3WithImage},
 	}
 	imagePerformers = linkMap{
-		imageIdxWithPerformer:        {performerIdxWithImage},
-		imageIdxWithTwoPerformers:    {performerIdx1WithImage, performerIdx2WithImage},
-		imageIdxWithThreePerformers:  {performerIdx1WithImage, performerIdx2WithImage, performerIdx3WithImage},
-		imageIdxWithPerformerTag:     {performerIdxWithTag},
-		imageIdxWithTwoPerformerTag:  {performerIdxWithTag, performerIdx2WithTag},
-		imageIdxWithPerformerTwoTags: {performerIdxWithTwoTags},
-		imageIdx1WithPerformer:       {performerIdxWithTwoImages},
-		imageIdx2WithPerformer:       {performerIdxWithTwoImages},
-		imageIdxWithStudioPerformer:  {performerIdxWithImageStudio},
+		imageIdxWithPerformer:          {performerIdxWithImage},
+		imageIdxWithTwoPerformers:      {performerIdx1WithImage, performerIdx2WithImage},
+		imageIdxWithThreePerformers:    {performerIdx1WithImage, performerIdx2WithImage, performerIdx3WithImage},
+		imageIdxWithPerformerTag:       {performerIdxWithTag},
+		imageIdxWithTwoPerformerTag:    {performerIdxWithTag, performerIdx2WithTag},
+		imageIdxWithPerformerTwoTags:   {performerIdxWithTwoTags},
+		imageIdx1WithPerformer:         {performerIdxWithTwoImages},
+		imageIdx2WithPerformer:         {performerIdxWithTwoImages},
+		imageIdxWithStudioPerformer:    {performerIdxWithImageStudio},
+		imageIdxWithPerformerParentTag: {performerIdxWithParentTag},
 	}
 )
 
 var (
 	galleryPerformers = linkMap{
-		galleryIdxWithPerformer:        {performerIdxWithGallery},
-		galleryIdxWithTwoPerformers:    {performerIdx1WithGallery, performerIdx2WithGallery},
-		galleryIdxWithThreePerformers:  {performerIdx1WithGallery, performerIdx2WithGallery, performerIdx3WithGallery},
-		galleryIdxWithPerformerTag:     {performerIdxWithTag},
-		galleryIdxWithTwoPerformerTag:  {performerIdxWithTag, performerIdx2WithTag},
-		galleryIdxWithPerformerTwoTags: {performerIdxWithTwoTags},
-		galleryIdx1WithPerformer:       {performerIdxWithTwoGalleries},
-		galleryIdx2WithPerformer:       {performerIdxWithTwoGalleries},
-		galleryIdxWithStudioPerformer:  {performerIdxWithGalleryStudio},
+		galleryIdxWithPerformer:          {performerIdxWithGallery},
+		galleryIdxWithTwoPerformers:      {performerIdx1WithGallery, performerIdx2WithGallery},
+		galleryIdxWithThreePerformers:    {performerIdx1WithGallery, performerIdx2WithGallery, performerIdx3WithGallery},
+		galleryIdxWithPerformerTag:       {performerIdxWithTag},
+		galleryIdxWithTwoPerformerTag:    {performerIdxWithTag, performerIdx2WithTag},
+		galleryIdxWithPerformerTwoTags:   {performerIdxWithTwoTags},
+		galleryIdx1WithPerformer:         {performerIdxWithTwoGalleries},
+		galleryIdx2WithPerformer:         {performerIdxWithTwoGalleries},
+		galleryIdxWithStudioPerformer:    {performerIdxWithGalleryStudio},
+		galleryIdxWithPerformerParentTag: {performerIdxWithParentTag},
 	}
 
 	galleryStudios = map[int]int{
@@ -489,9 +496,10 @@ var (
 
 var (
 	performerTags = linkMap{
-		performerIdxWithTag:     {tagIdxWithPerformer},
-		performerIdx2WithTag:    {tagIdx2WithPerformer},
-		performerIdxWithTwoTags: {tagIdx1WithPerformer, tagIdx2WithPerformer},
+		performerIdxWithTag:       {tagIdxWithPerformer},
+		performerIdx2WithTag:      {tagIdx2WithPerformer},
+		performerIdxWithTwoTags:   {tagIdx1WithPerformer, tagIdx2WithPerformer},
+		performerIdxWithParentTag: {tagIdxWithParentAndChild},
 	}
 )
 

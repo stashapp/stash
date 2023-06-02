@@ -209,7 +209,11 @@ func sceneMarkerTagsCriterionHandler(qb *sceneMarkerQueryBuilder, tags *models.H
 			if len(tags.Value) == 0 {
 				return
 			}
-			valuesClause := getHierarchicalValues(ctx, qb.tx, tags.Value, tagTable, "tags_relations", "parent_id", "child_id", tags.Depth)
+			valuesClause, err := getHierarchicalValues(ctx, qb.tx, tags.Value, tagTable, "tags_relations", "parent_id", "child_id", tags.Depth)
+			if err != nil {
+				f.setError(err)
+				return
+			}
 
 			f.addWith(`marker_tags AS (
 SELECT mt.scene_marker_id, t.column1 AS root_tag_id FROM scene_markers_tags mt

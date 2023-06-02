@@ -2560,6 +2560,8 @@ func queryImages(ctx context.Context, t *testing.T, sqb models.ImageReader, imag
 }
 
 func TestImageQueryPerformerTags(t *testing.T) {
+	allDepth := -1
+
 	tests := []struct {
 		name        string
 		findFilter  *models.FindFilterType
@@ -2591,7 +2593,30 @@ func TestImageQueryPerformerTags(t *testing.T) {
 			false,
 		},
 		{
-			"includes alls",
+			"includes sub-tags",
+			nil,
+			&models.ImageFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdxWithParentAndChild]),
+					},
+					Depth:    &allDepth,
+					Modifier: models.CriterionModifierIncludes,
+				},
+			},
+			[]int{
+				imageIdxWithPerformerParentTag,
+			},
+			[]int{
+				imageIdxWithPerformer,
+				imageIdxWithPerformerTag,
+				imageIdxWithPerformerTwoTags,
+				imageIdxWithTwoPerformerTag,
+			},
+			false,
+		},
+		{
+			"includes all",
 			nil,
 			&models.ImageFilterType{
 				PerformerTags: &models.HierarchicalMultiCriterionInput{
@@ -2623,6 +2648,29 @@ func TestImageQueryPerformerTags(t *testing.T) {
 			},
 			nil,
 			[]int{imageIdxWithTwoPerformerTag},
+			false,
+		},
+		{
+			"excludes sub-tags",
+			nil,
+			&models.ImageFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdxWithParentAndChild]),
+					},
+					Depth:    &allDepth,
+					Modifier: models.CriterionModifierExcludes,
+				},
+			},
+			[]int{
+				imageIdxWithPerformer,
+				imageIdxWithPerformerTag,
+				imageIdxWithPerformerTwoTags,
+				imageIdxWithTwoPerformerTag,
+			},
+			[]int{
+				imageIdxWithPerformerParentTag,
+			},
 			false,
 		},
 		{
@@ -2825,7 +2873,7 @@ func TestImageQuerySorting(t *testing.T) {
 			"date",
 			models.SortDirectionEnumDesc,
 			imageIdxWithTwoGalleries,
-			imageIdxWithGrandChildStudio,
+			imageIdxWithPerformerParentTag,
 		},
 	}
 
