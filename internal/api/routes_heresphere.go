@@ -469,6 +469,57 @@ func (rs heresphereRoutes) HeresphereIndex(w http.ResponseWriter, r *http.Reques
 	}
 }*/
 
+func FindProjection(path string) (proj HeresphereProjection, stereo HeresphereStereo, eyeswap bool, fov float32, lens HeresphereLens, ipd float32) {
+	proj, stereo, eyeswap, fov, lens, ipd = HeresphereProjectionPerspective, HeresphereStereoMono, false, 180, HeresphereLensLinear, 6.5
+
+	path = strings.ToUpper(path)
+
+	if strings.Index(path, "_LR") != -1 || strings.Index(path, "_3DH") != -1 {
+		stereo = HeresphereStereoSbs
+	}
+	if strings.Index(path, "_RL") != -1 {
+		stereo = HeresphereStereoSbs
+		eyeswap = true
+	}
+	if strings.Index(path, "_TB") != -1 || strings.Index(path, "_3DV") != -1 {
+		stereo = HeresphereStereoTB
+	}
+	if strings.Index(path, "_BT") != -1 {
+		stereo = HeresphereStereoTB
+		eyeswap = true
+	}
+
+	if strings.Index(path, "_EAC360") != -1 || strings.Index(path, "_360EAC") != -1 {
+		proj = HeresphereProjectionEquirectangularCubemap
+	}
+	if strings.Index(path, "_360") != -1 {
+		proj = HeresphereProjectionEquirectangular360
+	}
+	if strings.Index(path, "_F180") != -1 || strings.Index(path, "_180F") != -1 {
+		proj = HeresphereProjectionFisheye
+	} else if strings.Index(path, "_180") != -1 {
+		proj = HeresphereProjectionEquirectangular
+	}
+	if strings.Index(path, "_MKX200") != -1 {
+		proj = HeresphereProjectionFisheye
+		fov = 200
+	}
+	if strings.Index(path, "_MKX220") != -1 {
+		proj = HeresphereProjectionFisheye
+		fov = 220
+	}
+	if strings.Index(path, "_RF52") != -1 {
+		proj = HeresphereProjectionFisheye
+		fov = 190
+	}
+	if strings.Index(path, "_VRCA220") != -1 {
+		proj = HeresphereProjectionFisheye
+		fov = 220
+	}
+
+	return
+}
+
 func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Request) {
 	// This endpoint can receive 2 types of requests
 	// One is a video request (HeresphereAuthReq)
@@ -481,6 +532,7 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 	}
 
 	scene := r.Context().Value(heresphereKey).(*models.Scene)
+	proj, stereo, isEyeSwapped, fov, lens, ipd := FindProjection(scene.Files.Primary().Basename)
 	processedScene := HeresphereVideoEntry{
 		Access:         HeresphereMember,
 		Title:          scene.GetTitle(),
@@ -494,12 +546,12 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		Favorites:      0,
 		Comments:       scene.OCounter,
 		IsFavorite:     false,
-		Projection:     HeresphereProjectionPerspective, // Default to flat cause i have no idea
-		Stereo:         HeresphereStereoMono,            // Default to flat cause i have no idea
-		IsEyeSwapped:   false,
-		Fov:            180,
-		Lens:           HeresphereLensLinear,
-		CameraIPD:      6.5,
+		Projection:     proj,
+		Stereo:         stereo,
+		IsEyeSwapped:   isEyeSwapped,
+		Fov:            fov,
+		Lens:           lens,
+		CameraIPD:      ipd,
 		/*Hsp:            relUrlToAbs(r, fmt.Sprintf("/heresphere/%v/hsp", scene.ID)),
 		EventServer:    relUrlToAbs(r, "/heresphere/event"),*/
 		Scripts:       rs.getVideoScripts(r.Context(), r, scene),
