@@ -210,8 +210,8 @@ export const SettingsInterfacePanel: React.FC = () => {
           id="redirect-heresphere"
           headingID="config.ui.redirect_heresphere.heading"
           subHeadingID="config.ui.redirect_heresphere.description"
-          checked={iface.heresphereRedirect ?? undefined}
-          onChange={(v) => saveInterface({ heresphereRedirect: v })}
+          checked={iface.redirectHeresphere ?? undefined}
+          onChange={(v) => saveInterface({ redirectHeresphere: v })}
         />
       </SettingSection>
 
