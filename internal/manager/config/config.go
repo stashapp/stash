@@ -99,6 +99,9 @@ const (
 	CreateImageClipsFromVideos        = "create_image_clip_from_videos"
 	createImageClipsFromVideosDefault = false
 
+	RedirectHeresphere        = "redirect_heresphere"
+	redirectHeresphereDefault = false
+
 	Host        = "host"
 	hostDefault = "0.0.0.0"
 
@@ -872,6 +875,10 @@ func (i *Instance) IsCreateImageClipsFromVideos() bool {
 	return i.getBool(CreateImageClipsFromVideos)
 }
 
+func (i *Instance) GetRedirectHeresphere() bool {
+	return i.getBool(RedirectHeresphere)
+}
+
 func (i *Instance) GetAPIKey() string {
 	return i.getString(ApiKey)
 }
@@ -1521,6 +1528,8 @@ func (i *Instance) setDefaultValues(write bool) error {
 
 	i.main.SetDefault(WriteImageThumbnails, writeImageThumbnailsDefault)
 	i.main.SetDefault(CreateImageClipsFromVideos, createImageClipsFromVideosDefault)
+
+	i.main.SetDefault(RedirectHeresphere, redirectHeresphereDefault)
 
 	i.main.SetDefault(Database, defaultDatabaseFilePath)
 

@@ -609,7 +609,11 @@
       "language": {
         "heading": "Language"
       },
-      "max_loop_duration": {
+      "redirect_heresphere": {
+        "description": "Redirect Heresphere from the interface to its own API",
+        "heading": "Redirect Heresphere"
+      },
+	  "max_loop_duration": {
         "description": "Maximum scene duration where scene player will loop the video - 0 to disable",
         "heading": "Maximum loop duration"
       },

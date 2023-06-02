@@ -60,6 +60,7 @@ func Start() error {
 
 	r.Use(middleware.Heartbeat("/healthz"))
 	r.Use(cors.AllowAll().Handler)
+	r.Use(heresphereHandler())
 	r.Use(authenticateHandler())
 	visitedPluginHandler := manager.GetInstance().SessionStore.VisitedPluginHandler()
 	r.Use(visitedPluginHandler)

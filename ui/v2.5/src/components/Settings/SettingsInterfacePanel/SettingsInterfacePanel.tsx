@@ -206,6 +206,13 @@ export const SettingsInterfacePanel: React.FC = () => {
           checked={ui.abbreviateCounters ?? undefined}
           onChange={(v) => saveUI({ abbreviateCounters: v })}
         />
+        <BooleanSetting
+          id="redirect-heresphere"
+          headingID="config.ui.redirect_heresphere.heading"
+          subHeadingID="config.ui.redirect_heresphere.description"
+          checked={iface.heresphereRedirect ?? undefined}
+          onChange={(v) => saveInterface({ heresphereRedirect: v })}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.ui.desktop_integration.desktop_integration">

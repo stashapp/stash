@@ -189,7 +189,7 @@ func (rs heresphereRoutes) Routes() chi.Router {
 		r.Head("/", rs.HeresphereIndex)
 
 		r.Post("/auth", rs.HeresphereLoginToken)
-		// r.Post("/scan", rs.HeresphereScan)
+		r.Post("/scan", rs.HeresphereScan)
 		r.Post("/event", rs.HeresphereVideoEvent)
 		r.Route("/{sceneId}", func(r chi.Router) {
 			r.Use(rs.HeresphereSceneCtx)
@@ -218,6 +218,21 @@ func relUrlToAbs(r *http.Request, rel string) string {
 
 	// Combine the scheme, host, and relative path to form the absolute URL
 	return fmt.Sprintf("%s://%s%s", scheme, host, rel)
+}
+
+func heresphereHandler() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			c := config.GetInstance()
+
+			if strings.Contains(r.UserAgent(), "HereSphere") && c.GetRedirectHeresphere() && !strings.HasPrefix(r.URL.Path, "/heresphere") {
+				http.Redirect(w, r, "/heresphere", http.StatusSeeOther)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
 }
 
 func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
@@ -317,6 +332,7 @@ func (rs heresphereRoutes) getVideoTags(ctx context.Context, r *http.Request, sc
 func (rs heresphereRoutes) getVideoScripts(ctx context.Context, r *http.Request, scene *models.Scene) []HeresphereVideoScript {
 	processedScripts := []HeresphereVideoScript{}
 
+	// TODO: Use urlbuilders
 	exists, err := rs.resolver.Scene().Interactive(ctx, scene)
 	if err == nil && exists {
 		processedScript := HeresphereVideoScript{
@@ -416,7 +432,7 @@ func (rs heresphereRoutes) HeresphereIndex(w http.ResponseWriter, r *http.Reques
 }
 
 // TODO: Consider removing, manual scan is faster
-/*func (rs heresphereRoutes) HeresphereScan(w http.ResponseWriter, r *http.Request) {
+func (rs heresphereRoutes) HeresphereScan(w http.ResponseWriter, r *http.Request) {
 	var scenes []*models.Scene
 	if err := rs.repository.WithTxn(r.Context(), func(ctx context.Context) error {
 		var err error
@@ -456,6 +472,7 @@ func (rs heresphereRoutes) HeresphereIndex(w http.ResponseWriter, r *http.Reques
 		if err == nil && len(file_ids) > 0 {
 			processedScene.Duration = handleFloat64Value(file_ids[0].Duration * 1000.0)
 		}
+		//fmt.Printf("Done scene: %v\n", idx)
 		processedScenes[idx] = processedScene
 	}
 
@@ -467,8 +484,9 @@ func (rs heresphereRoutes) HeresphereIndex(w http.ResponseWriter, r *http.Reques
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-}*/
+}
 
+// Check against filename for vr modes
 func FindProjection(path string) (proj HeresphereProjection, stereo HeresphereStereo, eyeswap bool, fov float32, lens HeresphereLens, ipd float32) {
 	proj, stereo, eyeswap, fov, lens, ipd = HeresphereProjectionPerspective, HeresphereStereoMono, false, 180, HeresphereLensLinear, 6.5
 
@@ -524,6 +542,29 @@ func FindProjection(path string) (proj HeresphereProjection, stereo HeresphereSt
 	return
 }
 
+// Check against stashdb tags for vr modes
+func FindProjectionTags(scene *HeresphereVideoEntry) {
+	for _, tag := range scene.Tags {
+		if strings.Contains(tag.Name, "°") {
+			deg := strings.Replace(tag.Name, "°", "", 0)
+			if s, err := strconv.ParseFloat(deg, 32); err == nil {
+				scene.Fov = float32(s)
+			}
+		}
+		if strings.Contains(tag.Name, "Virtual Reality") || strings.Contains(tag.Name, "JAVR") {
+			if scene.Projection == HeresphereProjectionPerspective {
+				scene.Projection = HeresphereProjectionEquirectangular
+			}
+			if scene.Stereo == HeresphereStereoMono {
+				scene.Stereo = HeresphereStereoSbs
+			}
+		}
+		if strings.Contains(tag.Name, "Fisheye") {
+			scene.Projection = HeresphereProjectionFisheye
+		}
+	}
+}
+
 func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Request) {
 	// This endpoint can receive 2 types of requests
 	// One is a video request (HeresphereAuthReq)
@@ -567,6 +608,7 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		WriteTags:     false,
 		WriteHSP:      false,
 	}
+	FindProjectionTags(&processedScene)
 
 	if user.NeedsMediaSource {
 		processedScene.Media = rs.getVideoMedia(r.Context(), r, scene)
@@ -700,7 +742,7 @@ func (rs heresphereRoutes) HeresphereCtx(next http.Handler) http.Handler {
 		w.Header()["HereSphere-JSON-Version"] = []string{strconv.Itoa(HeresphereJsonVersion)}
 
 		user := HeresphereAuthReq{NeedsMediaSource: true}
-		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		if err := json.NewDecoder(r.Body).Decode(&user); err != nil && config.GetInstance().HasCredentials() {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
