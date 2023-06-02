@@ -23,6 +23,7 @@ import { defineMessages, MessageDescriptor, useIntl } from "react-intl";
 import { CriterionModifier } from "src/core/generated-graphql";
 import { keyboardClickHandler } from "src/utils/keyboard";
 import { useDebouncedSetState } from "src/hooks/debounce";
+import useFocus from "src/utils/focus";
 
 interface ISelectedItem {
   item: ILabeledId;
@@ -80,6 +81,7 @@ interface ISelectableFilter {
   query: string;
   onQueryChange: (query: string) => void;
   modifier: CriterionModifier;
+  inputFocus: ReturnType<typeof useFocus>;
   canExclude: boolean;
   queryResults: ILabeledId[];
   selected: ILabeledId[];
@@ -92,6 +94,7 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
   query,
   onQueryChange,
   modifier,
+  inputFocus,
   canExclude,
   queryResults,
   selected,
@@ -117,7 +120,11 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
 
   return (
     <div className="selectable-filter">
-      <ClearableInput value={query} setValue={(v) => onQueryChange(v)} />
+      <ClearableInput
+        focus={inputFocus}
+        value={query}
+        setValue={(v) => onQueryChange(v)}
+      />
       <ul>
         {selected.map((p) => (
           <li key={p.id} className="selected-object">
@@ -202,6 +209,9 @@ export const ObjectsFilter = <
     }
   }, [results, resultsLoading]);
 
+  const inputFocus = useFocus();
+  const [, setInputFocus] = inputFocus;
+
   function onSelect(value: ILabeledId, newExclude: boolean) {
     let newCriterion: T = cloneDeep(criterion);
 
@@ -221,6 +231,9 @@ export const ObjectsFilter = <
     debouncedSetQuery.cancel();
     setQuery("");
     setDisplayQuery("");
+
+    // focus the input box
+    setInputFocus();
   }
 
   const onUnselect = useCallback(
@@ -237,8 +250,11 @@ export const ObjectsFilter = <
       );
 
       setCriterion(newCriterion);
+
+      // focus the input box
+      setInputFocus();
     },
-    [criterion, setCriterion]
+    [criterion, setCriterion, setInputFocus]
   );
 
   const sortedSelected = useMemo(() => {
@@ -265,6 +281,7 @@ export const ObjectsFilter = <
       query={displayQuery}
       onQueryChange={onQueryChange}
       modifier={criterion.modifier}
+      inputFocus={inputFocus}
       canExclude={canExclude}
       selected={sortedSelected}
       queryResults={queryResults}
