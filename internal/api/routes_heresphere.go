@@ -578,7 +578,7 @@ func FindProjection(path string) (proj HeresphereProjection, stereo HeresphereSt
 func FindProjectionTags(scene *HeresphereVideoEntry) {
 	for _, tag := range scene.Tags {
 		if strings.Contains(tag.Name, "°") {
-			deg := strings.Replace(tag.Name, "°", "", -1)
+			deg := strings.ReplaceAll(tag.Name, "°", "")
 			if s, err := strconv.ParseFloat(deg, 32); err == nil {
 				scene.Fov = float32(s)
 			}
