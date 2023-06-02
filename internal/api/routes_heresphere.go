@@ -120,7 +120,7 @@ type HeresphereVideoEntry struct {
 	DateAdded      string                    `json:"dateAdded"`
 	Duration       float64                   `json:"duration,omitempty"`
 	Rating         float32                   `json:"rating,omitempty"`
-	Favorites      float32                   `json:"favorites,omitempty"`
+	Favorites      int                       `json:"favorites,omitempty"`
 	Comments       int                       `json:"comments"`
 	IsFavorite     bool                      `json:"isFavorite"`
 	Projection     HeresphereProjection      `json:"projection"`
@@ -266,22 +266,25 @@ func (rs heresphereRoutes) HeresphereVideoHsp(w http.ResponseWriter, r *http.Req
 }
 
 func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *http.Request) {
-	// TODO: This
+	scene := r.Context().Value(heresphereKey).(*models.Scene)
+	user := r.Context().Value(heresphereUserKey).(HeresphereAuthReq)
 
-	/*
+	if err := txn.WithTxn(r.Context(), rs.repository.TxnManager, func(ctx context.Context) error {
+		qb := rs.repository.Scene
 
-		if err := r.withTxn(ctx, func(ctx context.Context) error {
-			qb := r.repository.Scene
+		rating := int((user.Rating / 5.0) * 100.0)
+		scene.Rating = &rating
+		// TODO: user.Hsp
+		// TODO: user.DeleteFile
 
-			ret, err = qb.SaveActivity(ctx, sceneID, resumeTime, playDuration)
-			return err
-		}); err != nil {
-			return false, err
-		}
+		err := qb.Update(ctx, scene)
+		return err
+	}); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
-	*/
-
-	w.WriteHeader(http.StatusNotImplemented)
+	w.WriteHeader(http.StatusOK)
 }
 
 func (rs heresphereRoutes) getVideoTags(ctx context.Context, r *http.Request, scene *models.Scene) []HeresphereVideoTag {
@@ -454,9 +457,16 @@ func (rs heresphereRoutes) HeresphereIndex(w http.ResponseWriter, r *http.Reques
 	}
 	// TODO: A very helpful feature would be to create multiple libraries from the saved filters: Every saved filter scene should become a separate library, the "All"-Library should remain as well.
 
+	filters, err := rs.repository.SavedFilter.All(r.Context())
+	if err == nil {
+		for _, filter := range filters {
+			fmt.Printf("Filter: %v -> %v\n", filter.Name, filter.Filter)
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	err := json.NewEncoder(w).Encode(idx)
+	err = json.NewEncoder(w).Encode(idx)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -487,8 +497,8 @@ func (rs heresphereRoutes) HeresphereScan(w http.ResponseWriter, r *http.Request
 			DateAdded:    scene.CreatedAt.Format("2006-01-02"),
 			Duration:     60000.0,
 			Rating:       0.0,
-			Favorites:    0,
-			Comments:     scene.OCounter,
+			Favorites:    scene.OCounter,
+			Comments:     0,
 			IsFavorite:   false,
 			Tags:         rs.getVideoTags(r.Context(), r, scene),
 		}
@@ -598,10 +608,6 @@ func FindProjectionTags(scene *HeresphereVideoEntry) {
 }
 
 func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Request) {
-	// This endpoint can receive 2 types of requests
-	// One is a video request (HeresphereAuthReq)
-	// Other is an update (HeresphereVideoEntryUpdate)
-
 	user := r.Context().Value(heresphereUserKey).(HeresphereAuthReq)
 	if user.Tags != nil {
 		rs.HeresphereVideoDataUpdate(w, r)
@@ -620,8 +626,8 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		DateAdded:      scene.CreatedAt.Format("2006-01-02"),
 		Duration:       60000.0,
 		Rating:         0.0,
-		Favorites:      0,
-		Comments:       scene.OCounter,
+		Favorites:      scene.OCounter,
+		Comments:       0,
 		IsFavorite:     false,
 		Projection:     proj,
 		Stereo:         stereo,
