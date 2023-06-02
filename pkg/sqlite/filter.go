@@ -1224,19 +1224,18 @@ func (h *joinedPerformerTagsHandler) handle(ctx context.Context, f *filterBuilde
 				return
 			}
 
-			f.addLeftJoin(h.joinTable, "", utils.StrFormat("{primaryTable}.id = {joinTable}.{joinPrimaryKey}", strFormatMap))
-			f.addLeftJoin("performers_tags", "", utils.StrFormat("{joinTable}.performer_id = performers_tags.performer_id", strFormatMap))
+			f.addWith(utils.StrFormat(`performer_tags AS (
+SELECT ps.{joinPrimaryKey} as primaryID, t.column1 AS root_tag_id FROM {joinTable} ps
+INNER JOIN performers_tags pt ON pt.performer_id = ps.performer_id
+INNER JOIN (`+valuesClause+`) t ON t.column2 = pt.tag_id
+)`, strFormatMap))
 
-			switch criterion.Modifier {
-			case models.CriterionModifierIncludes:
-				f.addWhere(fmt.Sprintf("performers_tags.tag_id IN (SELECT column2 FROM (%s))", valuesClause))
-			case models.CriterionModifierIncludesAll:
-				f.addWhere(fmt.Sprintf("performers_tags.tag_id IN (SELECT column2 FROM (%s))", valuesClause))
-				f.addHaving(fmt.Sprintf("COUNT(DISTINCT performers_tags.tag_id) = %d", len(criterion.Value)))
-			}
+			f.addLeftJoin("performer_tags", "", utils.StrFormat("performer_tags.primaryID = {primaryTable}.id", strFormatMap))
+
+			addHierarchicalConditionClauses(f, criterion, "performer_tags", "root_tag_id")
 		}
 
-		if criterion.Modifier != models.CriterionModifierEquals && len(criterion.Excludes) > 0 {
+		if len(criterion.Excludes) > 0 {
 			valuesClause, err := getHierarchicalValues(ctx, dbWrapper{}, criterion.Excludes, tagTable, "tags_relations", "", "", criterion.Depth)
 			if err != nil {
 				f.setError(err)
