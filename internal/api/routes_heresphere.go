@@ -88,11 +88,11 @@ type HeresphereVideoSubtitle struct {
 }
 type HeresphereVideoTag struct {
 	// Should start with any of the following: "Scene:", "Category:", "Talent:", "Studio:", "Position:"
-	Name string `json:"name"`
-	/*Start  float64 `json:"start,omitempty"`
+	Name   string  `json:"name"`
+	Start  float64 `json:"start,omitempty"`
 	End    float64 `json:"end,omitempty"`
 	Track  int     `json:"track,omitempty"`
-	Rating float32 `json:"rating,omitempty"`*/
+	Rating float32 `json:"rating,omitempty"`
 }
 type HeresphereVideoMediaSource struct {
 	Resolution int `json:"resolution"`
@@ -165,9 +165,9 @@ type HeresphereVideoEvent struct {
 	Id            string  `json:"id"`
 	Title         string  `json:"title"`
 	Event         int     `json:"event"`
-	Time          float64 `json:"time,omitempty"`
-	Speed         float32 `json:"speed,omitempty"`
-	Utc           float64 `json:"utc,omitempty"`
+	Time          float64 `json:"time"`
+	Speed         float32 `json:"speed"`
+	Utc           float64 `json:"utc"`
 	ConnectionKey string  `json:"connectionKey"`
 }
 
@@ -190,7 +190,6 @@ func (rs heresphereRoutes) Routes() chi.Router {
 
 		r.Post("/auth", rs.HeresphereLoginToken)
 		r.Post("/scan", rs.HeresphereScan)
-		r.Post("/event", rs.HeresphereVideoEvent)
 		r.Route("/{sceneId}", func(r chi.Router) {
 			r.Use(rs.HeresphereSceneCtx)
 
@@ -198,6 +197,7 @@ func (rs heresphereRoutes) Routes() chi.Router {
 			r.Get("/", rs.HeresphereVideoData)
 
 			r.Get("/hsp", rs.HeresphereVideoHsp)
+			r.Post("/event", rs.HeresphereVideoEvent)
 		})
 	})
 
@@ -236,13 +236,25 @@ func heresphereHandler() func(http.Handler) http.Handler {
 }
 
 func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
-	// TODO: This
+	event := HeresphereVideoEvent{}
+	if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	scene := r.Context().Value(heresphereKey).(*models.Scene)
 
-	// Only accessible with auth-key
-	// Seems we need to trust the Username, or get a user specific auth key
-	// To have any sort of safety on this endpoint
+	newTime := event.Time / 1000
+	newDuration := scene.PlayDuration
+	if newTime > scene.ResumeTime {
+		newDuration += (newTime - scene.ResumeTime)
+	}
 
-	w.WriteHeader(http.StatusNotImplemented)
+	if _, err := rs.resolver.Mutation().SceneSaveActivity(r.Context(), strconv.Itoa(scene.ID), &newTime, &newDuration); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func (rs heresphereRoutes) HeresphereVideoHsp(w http.ResponseWriter, r *http.Request) {
@@ -252,6 +264,20 @@ func (rs heresphereRoutes) HeresphereVideoHsp(w http.ResponseWriter, r *http.Req
 
 func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *http.Request) {
 	// TODO: This
+
+	/*
+
+		if err := r.withTxn(ctx, func(ctx context.Context) error {
+			qb := r.repository.Scene
+
+			ret, err = qb.SaveActivity(ctx, sceneID, resumeTime, playDuration)
+			return err
+		}); err != nil {
+			return false, err
+		}
+
+	*/
+
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -268,7 +294,9 @@ func (rs heresphereRoutes) getVideoTags(ctx context.Context, r *http.Request, sc
 	if err == nil {
 		for _, mark := range mark_ids {
 			genTag := HeresphereVideoTag{
-				Name: fmt.Sprintf("Marker:%v", mark.Title),
+				Name:  fmt.Sprintf("Marker:%v", mark.Title),
+				Start: mark.Seconds * 1000,
+				End:   (mark.Seconds + 60) * 1000,
 			}
 			processedTags = append(processedTags, genTag)
 		}
@@ -421,6 +449,7 @@ func (rs heresphereRoutes) HeresphereIndex(w http.ResponseWriter, r *http.Reques
 		Banner:  banner,
 		Library: []HeresphereIndexEntry{library},
 	}
+	// TODO: A very helpful feature would be to create multiple libraries from the saved filters: Every saved filter scene should become a separate library, the "All"-Library should remain as well.
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -597,8 +626,8 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		Fov:            fov,
 		Lens:           lens,
 		CameraIPD:      ipd,
-		/*Hsp:            relUrlToAbs(r, fmt.Sprintf("/heresphere/%v/hsp", scene.ID)),
-		EventServer:    relUrlToAbs(r, "/heresphere/event"),*/
+		// Hsp:            relUrlToAbs(r, fmt.Sprintf("/heresphere/%v/hsp", scene.ID)),
+		EventServer:   relUrlToAbs(r, fmt.Sprintf("/heresphere/%v/event", scene.ID)),
 		Scripts:       rs.getVideoScripts(r.Context(), r, scene),
 		Subtitles:     rs.getVideoSubtitles(r.Context(), r, scene),
 		Tags:          rs.getVideoTags(r.Context(), r, scene),
@@ -742,9 +771,11 @@ func (rs heresphereRoutes) HeresphereCtx(next http.Handler) http.Handler {
 		w.Header()["HereSphere-JSON-Version"] = []string{strconv.Itoa(HeresphereJsonVersion)}
 
 		user := HeresphereAuthReq{NeedsMediaSource: true}
-		if err := json.NewDecoder(r.Body).Decode(&user); err != nil && config.GetInstance().HasCredentials() {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
+		if !strings.HasSuffix(r.URL.Path, "/event") {
+			if err := json.NewDecoder(r.Body).Decode(&user); err != nil && config.GetInstance().HasCredentials() {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
 		}
 
 		if config.GetInstance().HasCredentials() &&
