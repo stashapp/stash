@@ -14,4 +14,5 @@ const (
 	downloadKey
 	imageKey
 	heresphereKey
+	heresphereUserKey
 )

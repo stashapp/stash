@@ -62,6 +62,13 @@ func NewStore(c SessionConfig) *Store {
 	return ret
 }
 
+func (s *Store) LoginPlain(username string, password string) error {
+	if !s.config.ValidateCredentials(username, password) {
+		return &InvalidCredentialsError{Username: username}
+	}
+	return nil
+}
+
 func (s *Store) Login(w http.ResponseWriter, r *http.Request) error {
 	// ignore error - we want a new session regardless
 	newSession, _ := s.sessionStore.Get(r, cookieName)
