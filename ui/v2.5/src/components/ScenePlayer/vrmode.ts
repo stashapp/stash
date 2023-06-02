@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import videojs, { VideoJsPlayer } from "video.js";
 import "videojs-vr";
+// separate type import, otherwise typescript elides the above import
+// and the plugin does not get initialized
+import type { ProjectionType, Plugin as VideoJsVRPlugin } from "videojs-vr";
 
 export interface VRMenuOptions {
   /**
@@ -15,7 +18,7 @@ enum VRType {
   Off = "Off",
 }
 
-const vrTypeProjection = {
+const vrTypeProjection: Record<VRType, ProjectionType> = {
   [VRType.Spherical]: "360",
   [VRType.Off]: "NONE",
 };
@@ -29,7 +32,7 @@ class VRMenuItem extends videojs.getComponent("MenuItem") {
   public isSelected = false;
 
   constructor(parent: VRMenuButton, type: VRType) {
-    const options = {} as videojs.MenuItemOptions;
+    const options: videojs.MenuItemOptions = {};
     options.selectable = true;
     options.multiSelectable = false;
     options.label = type;
@@ -105,26 +108,60 @@ class VRMenuButton extends videojs.getComponent("MenuButton") {
 
 class VRMenuPlugin extends videojs.getPlugin("plugin") {
   private menu: VRMenuButton;
+  private showButton: boolean;
+  private vr?: VideoJsVRPlugin;
 
   constructor(player: VideoJsPlayer, options: VRMenuOptions) {
     super(player);
 
     this.menu = new VRMenuButton(player);
+    this.showButton = options.showButton ?? false;
 
-    if (isVrDevice() || !options.showButton) return;
+    if (isVrDevice()) return;
+
+    this.vr = this.player.vr();
 
     this.menu.on("typeselected", (_, type: VRType) => {
-      const projection = vrTypeProjection[type];
-      player.vr({ projection });
-      player.load();
+      this.loadVR(type);
     });
 
     player.on("ready", () => {
-      const { controlBar } = player;
-      const fullscreenToggle = controlBar.getChild("fullscreenToggle")!.el();
-      controlBar.addChild(this.menu);
-      controlBar.el().insertBefore(this.menu.el(), fullscreenToggle);
+      if (this.showButton) {
+        this.addButton();
+      }
     });
+  }
+
+  private loadVR(type: VRType) {
+    const projection = vrTypeProjection[type];
+    this.vr?.setProjection(projection);
+    this.vr?.init();
+  }
+
+  private addButton() {
+    const { controlBar } = this.player;
+    const fullscreenToggle = controlBar.getChild("fullscreenToggle")!.el();
+    controlBar.addChild(this.menu);
+    controlBar.el().insertBefore(this.menu.el(), fullscreenToggle);
+  }
+
+  private removeButton() {
+    const { controlBar } = this.player;
+    controlBar.removeChild(this.menu);
+  }
+
+  public setShowButton(showButton: boolean) {
+    if (isVrDevice()) return;
+
+    if (showButton === this.showButton) return;
+
+    this.showButton = showButton;
+    if (showButton) {
+      this.addButton();
+    } else {
+      this.removeButton();
+      this.loadVR(VRType.Off);
+    }
   }
 }
 
@@ -136,7 +173,6 @@ videojs.registerPlugin("vrMenu", VRMenuPlugin);
 declare module "video.js" {
   interface VideoJsPlayer {
     vrMenu: () => VRMenuPlugin;
-    vr: (options: Object) => void;
   }
   interface VideoJsPlayerPluginOptions {
     vrMenu?: VRMenuOptions;
