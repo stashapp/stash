@@ -2,7 +2,6 @@ enum RoleEnum {
   ADMIN
   READ
   MODIFY
-  DELETE
 }
 
 directive @hasRole(role: RoleEnum!) on FIELD_DEFINITION
