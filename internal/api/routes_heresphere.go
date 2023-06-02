@@ -1,10 +1,12 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -757,7 +759,7 @@ func writeNotAuthorized(w http.ResponseWriter, r *http.Request, msg string) {
 	}
 	library := HeresphereIndexEntry{
 		Name: msg,
-		List: []string{relUrlToAbs(r, "/")},
+		List: []string{relUrlToAbs(r, "/heresphere/doesnt-exist")},
 	}
 	idx := HeresphereIndex{
 		Access:  HeresphereBadLogin,
@@ -778,20 +780,25 @@ func (rs heresphereRoutes) HeresphereCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header()["HereSphere-JSON-Version"] = []string{strconv.Itoa(HeresphereJsonVersion)}
 
-		user := HeresphereAuthReq{NeedsMediaSource: true}
-		if !strings.HasSuffix(r.URL.Path, "/event") && !strings.HasSuffix(r.URL.Path, "/hsp") {
-			if err := json.NewDecoder(r.Body).Decode(&user); err != nil && config.GetInstance().HasCredentials() {
-				writeNotAuthorized(w, r, "Not logged in!")
-				return
-			}
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, "can't read body", http.StatusBadRequest)
+			return
 		}
 
-		if config.GetInstance().HasCredentials() &&
-			!HeresphereHasValidToken(r) &&
-			!strings.HasPrefix(r.URL.Path, "/heresphere/auth") {
+		isAuth := config.GetInstance().HasCredentials() && !HeresphereHasValidToken(r)
+		user := HeresphereAuthReq{NeedsMediaSource: true}
+		if err := json.Unmarshal(body, &user); err != nil && isAuth {
+			writeNotAuthorized(w, r, "Not logged in!")
+			return
+		}
+
+		if isAuth && !strings.HasPrefix(r.URL.Path, "/heresphere/auth") {
 			writeNotAuthorized(w, r, "Unauthorized!")
 			return
 		}
+
+		r.Body = io.NopCloser(bytes.NewBuffer(body))
 
 		ctx := context.WithValue(r.Context(), heresphereUserKey, user)
 		next.ServeHTTP(w, r.WithContext(ctx))
