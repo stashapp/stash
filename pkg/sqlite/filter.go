@@ -977,6 +977,12 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(c *models.Hierarchica
 			// make a copy so we don't modify the original
 			criterion := *c
 
+			// don't support equals/not equals
+			if criterion.Modifier == models.CriterionModifierEquals || criterion.Modifier == models.CriterionModifierNotEquals {
+				f.setError(fmt.Errorf("modifier %s is not supported for hierarchical multi criterion", criterion.Modifier))
+				return
+			}
+
 			if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotNull {
 				var notClause string
 				if criterion.Modifier == models.CriterionModifierNotNull {
