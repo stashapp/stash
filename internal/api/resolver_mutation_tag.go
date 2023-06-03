@@ -128,7 +128,6 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 }
 
 func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) (*models.Tag, error) {
-	// Populate tag from the input
 	tagID, err := strconv.Atoi(input.ID)
 	if err != nil {
 		return nil, err
@@ -138,17 +137,11 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 		inputMap: getUpdateInputMap(ctx),
 	}
 
+	// Populate tag from the input
 	updatedTag := models.NewTagPartial()
 
-	var imageData []byte
-	imageIncluded := translator.hasField("image")
-	if input.Image != nil {
-		imageData, err = utils.ProcessImageInput(ctx, *input.Image)
-
-		if err != nil {
-			return nil, err
-		}
-	}
+	updatedTag.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
+	updatedTag.Description = translator.optionalString(input.Description, "description")
 
 	var parentIDs []int
 	if translator.hasField("parent_ids") {
@@ -166,8 +159,14 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 		}
 	}
 
-	updatedTag.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
-	updatedTag.Description = translator.optionalString(input.Description, "description")
+	var imageData []byte
+	imageIncluded := translator.hasField("image")
+	if input.Image != nil {
+		imageData, err = utils.ProcessImageInput(ctx, *input.Image)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	// Start the transaction and save the tag
 	var t *models.Tag

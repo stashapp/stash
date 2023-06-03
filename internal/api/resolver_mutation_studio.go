@@ -108,7 +108,6 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input StudioCreateI
 }
 
 func (r *mutationResolver) StudioUpdate(ctx context.Context, input StudioUpdateInput) (*models.Studio, error) {
-	// Populate studio from the input
 	studioID, err := strconv.Atoi(input.ID)
 	if err != nil {
 		return nil, err
@@ -118,17 +117,9 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input StudioUpdateI
 		inputMap: getUpdateInputMap(ctx),
 	}
 
+	// Populate studio from the input
 	updatedStudio := models.NewStudioPartial()
 
-	var imageData []byte
-	imageIncluded := translator.hasField("image")
-	if input.Image != nil {
-		var err error
-		imageData, err = utils.ProcessImageInput(ctx, *input.Image)
-		if err != nil {
-			return nil, err
-		}
-	}
 	if input.Name != nil {
 		// generate checksum from studio name rather than image
 		checksum := md5.FromString(*input.Name)
@@ -143,6 +134,15 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input StudioUpdateI
 	updatedStudio.ParentID, err = translator.optionalIntFromString(input.ParentID, "parent_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting parent id: %w", err)
+	}
+
+	var imageData []byte
+	imageIncluded := translator.hasField("image")
+	if input.Image != nil {
+		imageData, err = utils.ProcessImageInput(ctx, *input.Image)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Start the transaction and save the studio

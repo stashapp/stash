@@ -55,9 +55,6 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 
-	var frontimageData []byte
-	var backimageData []byte
-
 	// HACK: if back image is being set, set the front image to the default.
 	// This is because we can't have a null front image with a non-null back image.
 	if input.FrontImage == nil && input.BackImage != nil {
@@ -65,6 +62,7 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 	}
 
 	// Process the base 64 encoded image string
+	var frontimageData []byte
 	if input.FrontImage != nil {
 		frontimageData, err = utils.ProcessImageInput(ctx, *input.FrontImage)
 		if err != nil {
@@ -73,6 +71,7 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 	}
 
 	// Process the base 64 encoded image string
+	var backimageData []byte
 	if input.BackImage != nil {
 		backimageData, err = utils.ProcessImageInput(ctx, *input.BackImage)
 		if err != nil {
@@ -112,7 +111,6 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 }
 
 func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInput) (*models.Movie, error) {
-	// Populate movie from the input
 	movieID, err := strconv.Atoi(input.ID)
 	if err != nil {
 		return nil, err
@@ -122,25 +120,8 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 		inputMap: getUpdateInputMap(ctx),
 	}
 
+	// Populate movie from the input
 	updatedMovie := models.NewMoviePartial()
-
-	var frontimageData []byte
-	frontImageIncluded := translator.hasField("front_image")
-	if input.FrontImage != nil {
-		frontimageData, err = utils.ProcessImageInput(ctx, *input.FrontImage)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	var backimageData []byte
-	backImageIncluded := translator.hasField("back_image")
-	if input.BackImage != nil {
-		backimageData, err = utils.ProcessImageInput(ctx, *input.BackImage)
-		if err != nil {
-			return nil, err
-		}
-	}
 
 	if input.Name != nil {
 		// generate checksum from movie name rather than image
@@ -159,6 +140,24 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	updatedMovie.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
+	}
+
+	var frontimageData []byte
+	frontImageIncluded := translator.hasField("front_image")
+	if input.FrontImage != nil {
+		frontimageData, err = utils.ProcessImageInput(ctx, *input.FrontImage)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var backimageData []byte
+	backImageIncluded := translator.hasField("back_image")
+	if input.BackImage != nil {
+		backimageData, err = utils.ProcessImageInput(ctx, *input.BackImage)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Start the transaction and save the movie
@@ -198,12 +197,13 @@ func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieU
 		return nil, err
 	}
 
-	// populate movie from the input
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
 
+	// populate movie from the input
 	updatedMovie := models.NewMoviePartial()
+
 	updatedMovie.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
 	updatedMovie.Director = translator.optionalString(input.Director, "director")
 	updatedMovie.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")

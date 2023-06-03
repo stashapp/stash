@@ -61,6 +61,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input SceneCreateInp
 		fileIDs[i] = file.ID(v)
 	}
 
+	// Populate a new scene from the input
 	newScene := models.Scene{
 		Title:        translator.string(input.Title, "title"),
 		Code:         translator.string(input.Code, "code"),
@@ -121,7 +122,7 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.SceneUpdateInput) (ret []*models.Scene, err error) {
 	inputMaps := getUpdateInputMaps(ctx)
 
-	// Start the transaction and save the scene
+	// Start the transaction and save the scenes
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		for i, scene := range input {
 			translator := changesetTranslator{
@@ -129,11 +130,11 @@ func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.Sce
 			}
 
 			thisScene, err := r.sceneUpdate(ctx, *scene, translator)
-			ret = append(ret, thisScene)
-
 			if err != nil {
 				return err
 			}
+
+			ret = append(ret, thisScene)
 		}
 
 		return nil
@@ -232,7 +233,6 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 }
 
 func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUpdateInput, translator changesetTranslator) (*models.Scene, error) {
-	// Populate scene from the input
 	sceneID, err := strconv.Atoi(input.ID)
 	if err != nil {
 		return nil, err
@@ -240,17 +240,16 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 
 	qb := r.repository.Scene
 
-	s, err := qb.Find(ctx, sceneID)
+	originalScene, err := qb.Find(ctx, sceneID)
 	if err != nil {
 		return nil, err
 	}
 
-	if s == nil {
+	if originalScene == nil {
 		return nil, fmt.Errorf("scene with id %d not found", sceneID)
 	}
 
-	var coverImageData []byte
-
+	// Populate scene from the input
 	updatedScene, err := scenePartialFromInput(input, translator)
 	if err != nil {
 		return nil, err
@@ -258,11 +257,11 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 
 	// ensure that title is set where scene has no file
 	if updatedScene.Title.Set && updatedScene.Title.Value == "" {
-		if err := s.LoadFiles(ctx, r.repository.Scene); err != nil {
+		if err := originalScene.LoadFiles(ctx, r.repository.Scene); err != nil {
 			return nil, err
 		}
 
-		if len(s.Files.List()) == 0 {
+		if len(originalScene.Files.List()) == 0 {
 			return nil, errors.New("title must be set if scene has no files")
 		}
 	}
@@ -272,13 +271,13 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 
 		// if file hash has changed, we should migrate generated files
 		// after commit
-		if err := s.LoadFiles(ctx, r.repository.Scene); err != nil {
+		if err := originalScene.LoadFiles(ctx, r.repository.Scene); err != nil {
 			return nil, err
 		}
 
 		// ensure that new primary file is associated with scene
 		var f *file.VideoFile
-		for _, ff := range s.Files.List() {
+		for _, ff := range originalScene.Files.List() {
 			if ff.ID == newPrimaryFileID {
 				f = ff
 			}
@@ -289,7 +288,8 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		}
 	}
 
-	if input.CoverImage != nil && *input.CoverImage != "" {
+	var coverImageData []byte
+	if input.CoverImage != nil {
 		var err error
 		coverImageData, err = utils.ProcessImageInput(ctx, *input.CoverImage)
 		if err != nil {
@@ -297,16 +297,16 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		}
 	}
 
-	s, err = qb.UpdatePartial(ctx, sceneID, *updatedScene)
+	scene, err := qb.UpdatePartial(ctx, sceneID, *updatedScene)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := r.sceneUpdateCoverImage(ctx, s, coverImageData); err != nil {
+	if err := r.sceneUpdateCoverImage(ctx, scene, coverImageData); err != nil {
 		return nil, err
 	}
 
-	return s, nil
+	return scene, nil
 }
 
 func (r *mutationResolver) sceneUpdateCoverImage(ctx context.Context, s *models.Scene, coverImageData []byte) error {
@@ -328,12 +328,13 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 		return nil, err
 	}
 
-	// Populate scene from the input
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
 
+	// Populate scene from the input
 	updatedScene := models.NewScenePartial()
+
 	updatedScene.Title = translator.optionalString(input.Title, "title")
 	updatedScene.Code = translator.optionalString(input.Code, "code")
 	updatedScene.Details = translator.optionalString(input.Details, "details")
@@ -379,7 +380,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 
 	ret := []*models.Scene{}
 
-	// Start the transaction and save the scene marker
+	// Start the transaction and save the scenes
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
@@ -574,7 +575,6 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 	}
 
 	var coverImageData []byte
-
 	if input.Values.CoverImage != nil && *input.Values.CoverImage != "" {
 		var err error
 		coverImageData, err = utils.ProcessImageInput(ctx, *input.Values.CoverImage)
