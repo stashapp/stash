@@ -31,14 +31,14 @@ type imageRow struct {
 	ID    int         `db:"id" goqu:"skipinsert"`
 	Title zero.String `db:"title"`
 	// expressed as 1-100
-	Rating    null.Int               `db:"rating"`
-	URL       zero.String            `db:"url"`
-	Date      models.SQLiteDate      `db:"date"`
-	Organized bool                   `db:"organized"`
-	OCounter  int                    `db:"o_counter"`
-	StudioID  null.Int               `db:"studio_id,omitempty"`
-	CreatedAt models.SQLiteTimestamp `db:"created_at"`
-	UpdatedAt models.SQLiteTimestamp `db:"updated_at"`
+	Rating    null.Int    `db:"rating"`
+	URL       zero.String `db:"url"`
+	Date      NullDate    `db:"date"`
+	Organized bool        `db:"organized"`
+	OCounter  int         `db:"o_counter"`
+	StudioID  null.Int    `db:"studio_id,omitempty"`
+	CreatedAt Timestamp   `db:"created_at"`
+	UpdatedAt Timestamp   `db:"updated_at"`
 }
 
 func (r *imageRow) fromImage(i models.Image) {
@@ -46,14 +46,12 @@ func (r *imageRow) fromImage(i models.Image) {
 	r.Title = zero.StringFrom(i.Title)
 	r.Rating = intFromPtr(i.Rating)
 	r.URL = zero.StringFrom(i.URL)
-	if i.Date != nil {
-		_ = r.Date.Scan(i.Date.Time)
-	}
+	r.Date = NullDateFromDatePtr(i.Date)
 	r.Organized = i.Organized
 	r.OCounter = i.OCounter
 	r.StudioID = intFromPtr(i.StudioID)
-	r.CreatedAt = models.SQLiteTimestamp{Timestamp: i.CreatedAt}
-	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: i.UpdatedAt}
+	r.CreatedAt = Timestamp{Timestamp: i.CreatedAt}
+	r.UpdatedAt = Timestamp{Timestamp: i.UpdatedAt}
 }
 
 type imageQueryRow struct {
@@ -97,12 +95,12 @@ func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
 	r.setNullString("title", i.Title)
 	r.setNullInt("rating", i.Rating)
 	r.setNullString("url", i.URL)
-	r.setSQLiteDate("date", i.Date)
+	r.setNullDate("date", i.Date)
 	r.setBool("organized", i.Organized)
 	r.setInt("o_counter", i.OCounter)
 	r.setNullInt("studio_id", i.StudioID)
-	r.setSQLiteTimestamp("created_at", i.CreatedAt)
-	r.setSQLiteTimestamp("updated_at", i.UpdatedAt)
+	r.setTimestamp("created_at", i.CreatedAt)
+	r.setTimestamp("updated_at", i.UpdatedAt)
 }
 
 type ImageStore struct {

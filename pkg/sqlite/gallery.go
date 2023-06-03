@@ -30,34 +30,32 @@ const (
 )
 
 type galleryRow struct {
-	ID      int               `db:"id" goqu:"skipinsert"`
-	Title   zero.String       `db:"title"`
-	URL     zero.String       `db:"url"`
-	Date    models.SQLiteDate `db:"date"`
-	Details zero.String       `db:"details"`
+	ID      int         `db:"id" goqu:"skipinsert"`
+	Title   zero.String `db:"title"`
+	URL     zero.String `db:"url"`
+	Date    NullDate    `db:"date"`
+	Details zero.String `db:"details"`
 	// expressed as 1-100
-	Rating    null.Int               `db:"rating"`
-	Organized bool                   `db:"organized"`
-	StudioID  null.Int               `db:"studio_id,omitempty"`
-	FolderID  null.Int               `db:"folder_id,omitempty"`
-	CreatedAt models.SQLiteTimestamp `db:"created_at"`
-	UpdatedAt models.SQLiteTimestamp `db:"updated_at"`
+	Rating    null.Int  `db:"rating"`
+	Organized bool      `db:"organized"`
+	StudioID  null.Int  `db:"studio_id,omitempty"`
+	FolderID  null.Int  `db:"folder_id,omitempty"`
+	CreatedAt Timestamp `db:"created_at"`
+	UpdatedAt Timestamp `db:"updated_at"`
 }
 
 func (r *galleryRow) fromGallery(o models.Gallery) {
 	r.ID = o.ID
 	r.Title = zero.StringFrom(o.Title)
 	r.URL = zero.StringFrom(o.URL)
-	if o.Date != nil {
-		_ = r.Date.Scan(o.Date.Time)
-	}
+	r.Date = NullDateFromDatePtr(o.Date)
 	r.Details = zero.StringFrom(o.Details)
 	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
 	r.StudioID = intFromPtr(o.StudioID)
 	r.FolderID = nullIntFromFolderIDPtr(o.FolderID)
-	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
-	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
+	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
+	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
 }
 
 type galleryQueryRow struct {
@@ -101,13 +99,13 @@ type galleryRowRecord struct {
 func (r *galleryRowRecord) fromPartial(o models.GalleryPartial) {
 	r.setNullString("title", o.Title)
 	r.setNullString("url", o.URL)
-	r.setSQLiteDate("date", o.Date)
+	r.setNullDate("date", o.Date)
 	r.setNullString("details", o.Details)
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
 	r.setNullInt("studio_id", o.StudioID)
-	r.setSQLiteTimestamp("created_at", o.CreatedAt)
-	r.setSQLiteTimestamp("updated_at", o.UpdatedAt)
+	r.setTimestamp("created_at", o.CreatedAt)
+	r.setTimestamp("updated_at", o.UpdatedAt)
 }
 
 type GalleryStore struct {

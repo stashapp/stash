@@ -19,12 +19,12 @@ const (
 )
 
 type galleryChapterRow struct {
-	ID         int                    `db:"id" goqu:"skipinsert"`
-	Title      string                 `db:"title"`
-	ImageIndex int                    `db:"image_index"`
-	GalleryID  int                    `db:"gallery_id"`
-	CreatedAt  models.SQLiteTimestamp `db:"created_at"`
-	UpdatedAt  models.SQLiteTimestamp `db:"updated_at"`
+	ID         int       `db:"id" goqu:"skipinsert"`
+	Title      string    `db:"title"`
+	ImageIndex int       `db:"image_index"`
+	GalleryID  int       `db:"gallery_id"`
+	CreatedAt  Timestamp `db:"created_at"`
+	UpdatedAt  Timestamp `db:"updated_at"`
 }
 
 func (r *galleryChapterRow) fromGalleryChapter(o models.GalleryChapter) {
@@ -32,8 +32,8 @@ func (r *galleryChapterRow) fromGalleryChapter(o models.GalleryChapter) {
 	r.Title = o.Title
 	r.ImageIndex = o.ImageIndex
 	r.GalleryID = o.GalleryID
-	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
-	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
+	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
+	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
 }
 
 func (r *galleryChapterRow) resolve() *models.GalleryChapter {

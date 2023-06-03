@@ -27,13 +27,13 @@ const (
 )
 
 type studioRow struct {
-	ID        int                    `db:"id" goqu:"skipinsert"`
-	Checksum  string                 `db:"checksum"`
-	Name      zero.String            `db:"name"`
-	URL       zero.String            `db:"url"`
-	ParentID  null.Int               `db:"parent_id,omitempty"`
-	CreatedAt models.SQLiteTimestamp `db:"created_at"`
-	UpdatedAt models.SQLiteTimestamp `db:"updated_at"`
+	ID        int         `db:"id" goqu:"skipinsert"`
+	Checksum  string      `db:"checksum"`
+	Name      zero.String `db:"name"`
+	URL       zero.String `db:"url"`
+	ParentID  null.Int    `db:"parent_id,omitempty"`
+	CreatedAt Timestamp   `db:"created_at"`
+	UpdatedAt Timestamp   `db:"updated_at"`
 	// expressed as 1-100
 	Rating        null.Int    `db:"rating"`
 	Details       zero.String `db:"details"`
@@ -49,8 +49,8 @@ func (r *studioRow) fromStudio(o models.Studio) {
 	r.Name = zero.StringFrom(o.Name)
 	r.URL = zero.StringFrom(o.URL)
 	r.ParentID = intFromPtr(o.ParentID)
-	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
-	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
+	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
+	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
 	r.Rating = intFromPtr(o.Rating)
 	r.Details = zero.StringFrom(o.Details)
 	r.IgnoreAutoTag = o.IgnoreAutoTag
@@ -82,8 +82,8 @@ func (r *studioRowRecord) fromPartial(o models.StudioPartial) {
 	r.setNullString("name", o.Name)
 	r.setNullString("url", o.URL)
 	r.setNullInt("parent_id", o.ParentID)
-	r.setSQLiteTimestamp("created_at", o.CreatedAt)
-	r.setSQLiteTimestamp("updated_at", o.UpdatedAt)
+	r.setTimestamp("created_at", o.CreatedAt)
+	r.setTimestamp("updated_at", o.UpdatedAt)
 	r.setNullInt("rating", o.Rating)
 	r.setNullString("details", o.Details)
 	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)

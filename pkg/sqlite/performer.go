@@ -29,35 +29,35 @@ const (
 )
 
 type performerRow struct {
-	ID            int                    `db:"id" goqu:"skipinsert"`
-	Name          string                 `db:"name"`
-	Disambigation zero.String            `db:"disambiguation"`
-	Gender        zero.String            `db:"gender"`
-	URL           zero.String            `db:"url"`
-	Twitter       zero.String            `db:"twitter"`
-	Instagram     zero.String            `db:"instagram"`
-	Birthdate     models.SQLiteDate      `db:"birthdate"`
-	Ethnicity     zero.String            `db:"ethnicity"`
-	Country       zero.String            `db:"country"`
-	EyeColor      zero.String            `db:"eye_color"`
-	Height        null.Int               `db:"height"`
-	Measurements  zero.String            `db:"measurements"`
-	FakeTits      zero.String            `db:"fake_tits"`
-	PenisLength   null.Float             `db:"penis_length"`
-	Circumcised   zero.String            `db:"circumcised"`
-	CareerLength  zero.String            `db:"career_length"`
-	Tattoos       zero.String            `db:"tattoos"`
-	Piercings     zero.String            `db:"piercings"`
-	Favorite      bool                   `db:"favorite"`
-	CreatedAt     models.SQLiteTimestamp `db:"created_at"`
-	UpdatedAt     models.SQLiteTimestamp `db:"updated_at"`
+	ID            int         `db:"id" goqu:"skipinsert"`
+	Name          string      `db:"name"`
+	Disambigation zero.String `db:"disambiguation"`
+	Gender        zero.String `db:"gender"`
+	URL           zero.String `db:"url"`
+	Twitter       zero.String `db:"twitter"`
+	Instagram     zero.String `db:"instagram"`
+	Birthdate     NullDate    `db:"birthdate"`
+	Ethnicity     zero.String `db:"ethnicity"`
+	Country       zero.String `db:"country"`
+	EyeColor      zero.String `db:"eye_color"`
+	Height        null.Int    `db:"height"`
+	Measurements  zero.String `db:"measurements"`
+	FakeTits      zero.String `db:"fake_tits"`
+	PenisLength   null.Float  `db:"penis_length"`
+	Circumcised   zero.String `db:"circumcised"`
+	CareerLength  zero.String `db:"career_length"`
+	Tattoos       zero.String `db:"tattoos"`
+	Piercings     zero.String `db:"piercings"`
+	Favorite      bool        `db:"favorite"`
+	CreatedAt     Timestamp   `db:"created_at"`
+	UpdatedAt     Timestamp   `db:"updated_at"`
 	// expressed as 1-100
-	Rating        null.Int          `db:"rating"`
-	Details       zero.String       `db:"details"`
-	DeathDate     models.SQLiteDate `db:"death_date"`
-	HairColor     zero.String       `db:"hair_color"`
-	Weight        null.Int          `db:"weight"`
-	IgnoreAutoTag bool              `db:"ignore_auto_tag"`
+	Rating        null.Int    `db:"rating"`
+	Details       zero.String `db:"details"`
+	DeathDate     NullDate    `db:"death_date"`
+	HairColor     zero.String `db:"hair_color"`
+	Weight        null.Int    `db:"weight"`
+	IgnoreAutoTag bool        `db:"ignore_auto_tag"`
 
 	// not used in resolution or updates
 	ImageBlob zero.String `db:"image_blob"`
@@ -73,9 +73,7 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	r.URL = zero.StringFrom(o.URL)
 	r.Twitter = zero.StringFrom(o.Twitter)
 	r.Instagram = zero.StringFrom(o.Instagram)
-	if o.Birthdate != nil {
-		_ = r.Birthdate.Scan(o.Birthdate.Time)
-	}
+	r.Birthdate = NullDateFromDatePtr(o.Birthdate)
 	r.Ethnicity = zero.StringFrom(o.Ethnicity)
 	r.Country = zero.StringFrom(o.Country)
 	r.EyeColor = zero.StringFrom(o.EyeColor)
@@ -90,13 +88,11 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	r.Tattoos = zero.StringFrom(o.Tattoos)
 	r.Piercings = zero.StringFrom(o.Piercings)
 	r.Favorite = o.Favorite
-	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
-	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
+	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
+	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
 	r.Rating = intFromPtr(o.Rating)
 	r.Details = zero.StringFrom(o.Details)
-	if o.DeathDate != nil {
-		_ = r.DeathDate.Scan(o.DeathDate.Time)
-	}
+	r.DeathDate = NullDateFromDatePtr(o.DeathDate)
 	r.HairColor = zero.StringFrom(o.HairColor)
 	r.Weight = intFromPtr(o.Weight)
 	r.IgnoreAutoTag = o.IgnoreAutoTag
@@ -157,7 +153,7 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setNullString("url", o.URL)
 	r.setNullString("twitter", o.Twitter)
 	r.setNullString("instagram", o.Instagram)
-	r.setSQLiteDate("birthdate", o.Birthdate)
+	r.setNullDate("birthdate", o.Birthdate)
 	r.setNullString("ethnicity", o.Ethnicity)
 	r.setNullString("country", o.Country)
 	r.setNullString("eye_color", o.EyeColor)
@@ -170,11 +166,11 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setNullString("tattoos", o.Tattoos)
 	r.setNullString("piercings", o.Piercings)
 	r.setBool("favorite", o.Favorite)
-	r.setSQLiteTimestamp("created_at", o.CreatedAt)
-	r.setSQLiteTimestamp("updated_at", o.UpdatedAt)
+	r.setTimestamp("created_at", o.CreatedAt)
+	r.setTimestamp("updated_at", o.UpdatedAt)
 	r.setNullInt("rating", o.Rating)
 	r.setNullString("details", o.Details)
-	r.setSQLiteDate("death_date", o.DeathDate)
+	r.setNullDate("death_date", o.DeathDate)
 	r.setNullString("hair_color", o.HairColor)
 	r.setNullInt("weight", o.Weight)
 	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)

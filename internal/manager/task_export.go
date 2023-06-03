@@ -29,7 +29,6 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type ExportTask struct {
@@ -1155,8 +1154,8 @@ func (t *ExportTask) ExportScrapedItems(ctx context.Context, repo Repository) {
 		if scrapedItem.URL.Valid {
 			newScrapedItemJSON.URL = scrapedItem.URL.String
 		}
-		if scrapedItem.Date.Valid {
-			newScrapedItemJSON.Date = utils.GetYMDFromDatabaseDate(scrapedItem.Date.String)
+		if scrapedItem.Date != nil {
+			newScrapedItemJSON.Date = scrapedItem.Date.String()
 		}
 		if scrapedItem.Rating.Valid {
 			newScrapedItemJSON.Rating = scrapedItem.Rating.String
@@ -1184,7 +1183,7 @@ func (t *ExportTask) ExportScrapedItems(ctx context.Context, repo Repository) {
 		}
 
 		newScrapedItemJSON.Studio = studioName
-		updatedAt := json.JSONTime{Time: scrapedItem.UpdatedAt.Timestamp} // TODO keeping ruby format
+		updatedAt := json.JSONTime{Time: scrapedItem.UpdatedAt} // TODO keeping ruby format
 		newScrapedItemJSON.UpdatedAt = updatedAt
 
 		scraped = append(scraped, newScrapedItemJSON)

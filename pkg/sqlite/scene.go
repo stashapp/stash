@@ -71,24 +71,24 @@ ORDER BY files.size DESC;
 `
 
 type sceneRow struct {
-	ID       int               `db:"id" goqu:"skipinsert"`
-	Title    zero.String       `db:"title"`
-	Code     zero.String       `db:"code"`
-	Details  zero.String       `db:"details"`
-	Director zero.String       `db:"director"`
-	URL      zero.String       `db:"url"`
-	Date     models.SQLiteDate `db:"date"`
+	ID       int         `db:"id" goqu:"skipinsert"`
+	Title    zero.String `db:"title"`
+	Code     zero.String `db:"code"`
+	Details  zero.String `db:"details"`
+	Director zero.String `db:"director"`
+	URL      zero.String `db:"url"`
+	Date     NullDate    `db:"date"`
 	// expressed as 1-100
-	Rating       null.Int                   `db:"rating"`
-	Organized    bool                       `db:"organized"`
-	OCounter     int                        `db:"o_counter"`
-	StudioID     null.Int                   `db:"studio_id,omitempty"`
-	CreatedAt    models.SQLiteTimestamp     `db:"created_at"`
-	UpdatedAt    models.SQLiteTimestamp     `db:"updated_at"`
-	LastPlayedAt models.NullSQLiteTimestamp `db:"last_played_at"`
-	ResumeTime   float64                    `db:"resume_time"`
-	PlayDuration float64                    `db:"play_duration"`
-	PlayCount    int                        `db:"play_count"`
+	Rating       null.Int      `db:"rating"`
+	Organized    bool          `db:"organized"`
+	OCounter     int           `db:"o_counter"`
+	StudioID     null.Int      `db:"studio_id,omitempty"`
+	CreatedAt    Timestamp     `db:"created_at"`
+	UpdatedAt    Timestamp     `db:"updated_at"`
+	LastPlayedAt NullTimestamp `db:"last_played_at"`
+	ResumeTime   float64       `db:"resume_time"`
+	PlayDuration float64       `db:"play_duration"`
+	PlayCount    int           `db:"play_count"`
 
 	// not used in resolutions or updates
 	CoverBlob zero.String `db:"cover_blob"`
@@ -101,21 +101,14 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.Details = zero.StringFrom(o.Details)
 	r.Director = zero.StringFrom(o.Director)
 	r.URL = zero.StringFrom(o.URL)
-	if o.Date != nil {
-		_ = r.Date.Scan(o.Date.Time)
-	}
+	r.Date = NullDateFromDatePtr(o.Date)
 	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
 	r.OCounter = o.OCounter
 	r.StudioID = intFromPtr(o.StudioID)
-	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
-	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
-	if o.LastPlayedAt != nil {
-		r.LastPlayedAt = models.NullSQLiteTimestamp{
-			Timestamp: *o.LastPlayedAt,
-			Valid:     true,
-		}
-	}
+	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
+	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
+	r.LastPlayedAt = NullTimestampFromTimePtr(o.LastPlayedAt)
 	r.ResumeTime = o.ResumeTime
 	r.PlayDuration = o.PlayDuration
 	r.PlayCount = o.PlayCount
@@ -151,6 +144,7 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		CreatedAt: r.CreatedAt.Timestamp,
 		UpdatedAt: r.UpdatedAt.Timestamp,
 
+		LastPlayedAt: r.LastPlayedAt.TimePtr(),
 		ResumeTime:   r.ResumeTime,
 		PlayDuration: r.PlayDuration,
 		PlayCount:    r.PlayCount,
@@ -158,10 +152,6 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 
 	if r.PrimaryFileFolderPath.Valid && r.PrimaryFileBasename.Valid {
 		ret.Path = filepath.Join(r.PrimaryFileFolderPath.String, r.PrimaryFileBasename.String)
-	}
-
-	if r.LastPlayedAt.Valid {
-		ret.LastPlayedAt = &r.LastPlayedAt.Timestamp
 	}
 
 	return ret
@@ -177,14 +167,14 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setNullString("details", o.Details)
 	r.setNullString("director", o.Director)
 	r.setNullString("url", o.URL)
-	r.setSQLiteDate("date", o.Date)
+	r.setNullDate("date", o.Date)
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
 	r.setInt("o_counter", o.OCounter)
 	r.setNullInt("studio_id", o.StudioID)
-	r.setSQLiteTimestamp("created_at", o.CreatedAt)
-	r.setSQLiteTimestamp("updated_at", o.UpdatedAt)
-	r.setSQLiteTimestamp("last_played_at", o.LastPlayedAt)
+	r.setTimestamp("created_at", o.CreatedAt)
+	r.setTimestamp("updated_at", o.UpdatedAt)
+	r.setNullTimestamp("last_played_at", o.LastPlayedAt)
 	r.setFloat64("resume_time", o.ResumeTime)
 	r.setFloat64("play_duration", o.PlayDuration)
 	r.setInt("play_count", o.PlayCount)

@@ -26,12 +26,12 @@ const (
 )
 
 type tagRow struct {
-	ID            int                    `db:"id" goqu:"skipinsert"`
-	Name          string                 `db:"name"`
-	Description   zero.String            `db:"description"`
-	IgnoreAutoTag bool                   `db:"ignore_auto_tag"`
-	CreatedAt     models.SQLiteTimestamp `db:"created_at"`
-	UpdatedAt     models.SQLiteTimestamp `db:"updated_at"`
+	ID            int         `db:"id" goqu:"skipinsert"`
+	Name          string      `db:"name"`
+	Description   zero.String `db:"description"`
+	IgnoreAutoTag bool        `db:"ignore_auto_tag"`
+	CreatedAt     Timestamp   `db:"created_at"`
+	UpdatedAt     Timestamp   `db:"updated_at"`
 
 	// not used in resolutions or updates
 	ImageBlob zero.String `db:"image_blob"`
@@ -42,8 +42,8 @@ func (r *tagRow) fromTag(o models.Tag) {
 	r.Name = o.Name
 	r.Description = zero.StringFrom(o.Description)
 	r.IgnoreAutoTag = o.IgnoreAutoTag
-	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
-	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
+	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
+	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
 }
 
 func (r *tagRow) resolve() *models.Tag {
@@ -81,8 +81,8 @@ func (r *tagRowRecord) fromPartial(o models.TagPartial) {
 	r.setString("name", o.Name)
 	r.setNullString("description", o.Description)
 	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)
-	r.setSQLiteTimestamp("created_at", o.CreatedAt)
-	r.setSQLiteTimestamp("updated_at", o.UpdatedAt)
+	r.setTimestamp("created_at", o.CreatedAt)
+	r.setTimestamp("updated_at", o.UpdatedAt)
 }
 
 type TagStore struct {

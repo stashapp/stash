@@ -25,13 +25,13 @@ GROUP BY scene_markers.id
 `
 
 type sceneMarkerRow struct {
-	ID           int                    `db:"id" goqu:"skipinsert"`
-	Title        string                 `db:"title"`
-	Seconds      float64                `db:"seconds"`
-	PrimaryTagID int                    `db:"primary_tag_id"`
-	SceneID      zero.Int               `db:"scene_id,omitempty"` // TODO: make schema non-nullable
-	CreatedAt    models.SQLiteTimestamp `db:"created_at"`
-	UpdatedAt    models.SQLiteTimestamp `db:"updated_at"`
+	ID           int       `db:"id" goqu:"skipinsert"`
+	Title        string    `db:"title"`
+	Seconds      float64   `db:"seconds"`
+	PrimaryTagID int       `db:"primary_tag_id"`
+	SceneID      zero.Int  `db:"scene_id,omitempty"` // TODO: make schema non-nullable
+	CreatedAt    Timestamp `db:"created_at"`
+	UpdatedAt    Timestamp `db:"updated_at"`
 }
 
 func (r *sceneMarkerRow) fromSceneMarker(o models.SceneMarker) {
@@ -40,8 +40,8 @@ func (r *sceneMarkerRow) fromSceneMarker(o models.SceneMarker) {
 	r.Seconds = o.Seconds
 	r.PrimaryTagID = o.PrimaryTagID
 	r.SceneID = zero.IntFrom(int64(o.SceneID))
-	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
-	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
+	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
+	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
 }
 
 func (r *sceneMarkerRow) resolve() *models.SceneMarker {

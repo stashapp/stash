@@ -25,20 +25,20 @@ const (
 )
 
 type movieRow struct {
-	ID       int               `db:"id" goqu:"skipinsert"`
-	Checksum string            `db:"checksum"`
-	Name     zero.String       `db:"name"`
-	Aliases  zero.String       `db:"aliases"`
-	Duration null.Int          `db:"duration"`
-	Date     models.SQLiteDate `db:"date"`
+	ID       int         `db:"id" goqu:"skipinsert"`
+	Checksum string      `db:"checksum"`
+	Name     zero.String `db:"name"`
+	Aliases  zero.String `db:"aliases"`
+	Duration null.Int    `db:"duration"`
+	Date     NullDate    `db:"date"`
 	// expressed as 1-100
-	Rating    null.Int               `db:"rating"`
-	StudioID  null.Int               `db:"studio_id,omitempty"`
-	Director  zero.String            `db:"director"`
-	Synopsis  zero.String            `db:"synopsis"`
-	URL       zero.String            `db:"url"`
-	CreatedAt models.SQLiteTimestamp `db:"created_at"`
-	UpdatedAt models.SQLiteTimestamp `db:"updated_at"`
+	Rating    null.Int    `db:"rating"`
+	StudioID  null.Int    `db:"studio_id,omitempty"`
+	Director  zero.String `db:"director"`
+	Synopsis  zero.String `db:"synopsis"`
+	URL       zero.String `db:"url"`
+	CreatedAt Timestamp   `db:"created_at"`
+	UpdatedAt Timestamp   `db:"updated_at"`
 
 	// not used in resolutions or updates
 	FrontImageBlob zero.String `db:"front_image_blob"`
@@ -51,16 +51,14 @@ func (r *movieRow) fromMovie(o models.Movie) {
 	r.Name = zero.StringFrom(o.Name)
 	r.Aliases = zero.StringFrom(o.Aliases)
 	r.Duration = intFromPtr(o.Duration)
-	if o.Date != nil {
-		_ = r.Date.Scan(o.Date.Time)
-	}
+	r.Date = NullDateFromDatePtr(o.Date)
 	r.Rating = intFromPtr(o.Rating)
 	r.StudioID = intFromPtr(o.StudioID)
 	r.Director = zero.StringFrom(o.Director)
 	r.Synopsis = zero.StringFrom(o.Synopsis)
 	r.URL = zero.StringFrom(o.URL)
-	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
-	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
+	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
+	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
 }
 
 func (r *movieRow) resolve() *models.Movie {
@@ -92,14 +90,14 @@ func (r *movieRowRecord) fromPartial(o models.MoviePartial) {
 	r.setNullString("name", o.Name)
 	r.setNullString("aliases", o.Aliases)
 	r.setNullInt("duration", o.Duration)
-	r.setSQLiteDate("date", o.Date)
+	r.setNullDate("date", o.Date)
 	r.setNullInt("rating", o.Rating)
 	r.setNullInt("studio_id", o.StudioID)
 	r.setNullString("director", o.Director)
 	r.setNullString("synopsis", o.Synopsis)
 	r.setNullString("url", o.URL)
-	r.setSQLiteTimestamp("created_at", o.CreatedAt)
-	r.setSQLiteTimestamp("updated_at", o.UpdatedAt)
+	r.setTimestamp("created_at", o.CreatedAt)
+	r.setTimestamp("updated_at", o.UpdatedAt)
 }
 
 type MovieStore struct {
