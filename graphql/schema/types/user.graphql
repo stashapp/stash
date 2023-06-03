@@ -5,3 +5,37 @@ enum RoleEnum {
 }
 
 directive @hasRole(role: RoleEnum!) on FIELD_DEFINITION
+directive @isUserOwner on FIELD_DEFINITION
+
+type User {
+  name: String!
+  """Should not be visible to other users"""
+  roles: [RoleEnum!] @isUserOwner
+  """Should not be visible to other users"""
+  api_key: String @isUserOwner
+}
+
+input UserCreateInput {
+  name: String!
+  """Password in plain text"""
+  password: String!
+  roles: [RoleEnum!]!
+}
+
+input UserUpdateInput {
+  name: String
+  """Password in plain text"""
+  password: String
+  roles: [RoleEnum!]
+}
+
+input UserDestroyInput {
+    id: ID!
+}
+
+input UserChangePasswordInput {
+  """Password in plain text"""
+  existing_password: String
+  new_password: String!
+  reset_key: String
+}

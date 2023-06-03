@@ -269,7 +269,8 @@ type Query {
   allStudios: [Studio!]! @deprecated(reason: "Use findStudios instead")
   allMovies: [Movie!]! @deprecated(reason: "Use findGroups instead")
 
-  # Get everything with minimal metadata
+  """Returns currently authenticated user"""
+  me: User
 
   # Version
   version: Version!
@@ -594,6 +595,11 @@ type Mutation {
   addTempDLNAIP(input: AddTempDLNAIPInput!): Boolean! @hasRole(role: ADMIN)
   "Removes an IP address from the temporary DLNA whitelist"
   removeTempDLNAIP(input: RemoveTempDLNAIPInput!): Boolean! @hasRole(role: ADMIN)
+
+  userCreate(input: UserCreateInput!): User @hasRole(role: ADMIN)
+  userUpdate(input: UserUpdateInput!): User @hasRole(role: ADMIN)
+  userDestroy(input: UserDestroyInput!): Boolean! @hasRole(role: ADMIN)
+  changePassword(input: UserChangePasswordInput!): Boolean!
 }
 
 type Subscription {
