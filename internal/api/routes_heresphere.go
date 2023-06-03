@@ -120,7 +120,7 @@ type HeresphereVideoEntry struct {
 	DateAdded      string                    `json:"dateAdded"`
 	Duration       float64                   `json:"duration,omitempty"`
 	Rating         float32                   `json:"rating,omitempty"`
-	Favorites      int                       `json:"favorites,omitempty"`
+	Favorites      int                       `json:"favorites"`
 	Comments       int                       `json:"comments"`
 	IsFavorite     bool                      `json:"isFavorite"`
 	Projection     HeresphereProjection      `json:"projection"`
@@ -228,7 +228,7 @@ func heresphereHandler() func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			c := config.GetInstance()
 
-			if strings.Contains(r.UserAgent(), "HereSphere") && c.GetRedirectHeresphere() && !strings.HasPrefix(r.URL.Path, "/heresphere") {
+			if strings.Contains(r.UserAgent(), "HereSphere") && c.GetRedirectHeresphere() && (r.URL.Path == "/" || strings.HasPrefix(r.URL.Path, "/login")) {
 				http.Redirect(w, r, "/heresphere", http.StatusSeeOther)
 				return
 			}
@@ -360,6 +360,24 @@ func (rs heresphereRoutes) getVideoTags(ctx context.Context, r *http.Request, sc
 		processedTags = append(processedTags, genTag)
 	}
 
+	exists, err := rs.resolver.Scene().Interactive(ctx, scene)
+	if err == nil && exists {
+		shouldAdd := true
+		for _, tag := range processedTags {
+			if strings.Contains(tag.Name, "Tag:Interactive") {
+				shouldAdd = false
+				break
+			}
+		}
+
+		if shouldAdd {
+			genTag := HeresphereVideoTag{
+				Name: "Tag:Interactive",
+			}
+			processedTags = append(processedTags, genTag)
+		}
+	}
+
 	return processedTags
 }
 
@@ -376,6 +394,7 @@ func (rs heresphereRoutes) getVideoScripts(ctx context.Context, r *http.Request,
 		}
 		processedScripts = append(processedScripts, processedScript)
 	}
+
 	return processedScripts
 }
 func (rs heresphereRoutes) getVideoSubtitles(ctx context.Context, r *http.Request, scene *models.Scene) []HeresphereVideoSubtitle {
@@ -491,16 +510,16 @@ func (rs heresphereRoutes) HeresphereScan(w http.ResponseWriter, r *http.Request
 	for idx, scene := range scenes {
 		// Perform the necessary processing on each scene
 		processedScene := HeresphereVideoEntryShort{
-			Link:         relUrlToAbs(r, fmt.Sprintf("/heresphere/%v", scene.ID)),
-			Title:        scene.GetTitle(),
-			DateReleased: scene.CreatedAt.Format("2006-01-02"),
-			DateAdded:    scene.CreatedAt.Format("2006-01-02"),
-			Duration:     60000.0,
-			Rating:       0.0,
-			Favorites:    scene.OCounter,
-			Comments:     0,
-			IsFavorite:   false,
-			Tags:         rs.getVideoTags(r.Context(), r, scene),
+			Link:  relUrlToAbs(r, fmt.Sprintf("/heresphere/%v", scene.ID)),
+			Title: scene.GetTitle(),
+			// DateReleased: scene.CreatedAt.Format("2006-01-02"),
+			DateAdded:  scene.CreatedAt.Format("2006-01-02"),
+			Duration:   60000.0,
+			Rating:     0.0,
+			Favorites:  scene.OCounter,
+			Comments:   0,
+			IsFavorite: false,
+			Tags:       rs.getVideoTags(r.Context(), r, scene),
 		}
 		if scene.Date != nil {
 			processedScene.DateReleased = scene.Date.Format("2006-01-02")
@@ -603,6 +622,9 @@ func FindProjectionTags(scene *HeresphereVideoEntry) {
 		}
 		if strings.Contains(tag.Name, "Fisheye") {
 			scene.Projection = HeresphereProjectionFisheye
+			if scene.Stereo == HeresphereStereoMono {
+				scene.Stereo = HeresphereStereoSbs
+			}
 		}
 	}
 }
@@ -622,19 +644,19 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		Description:    scene.Details,
 		ThumbnailImage: relUrlToAbs(r, fmt.Sprintf("/scene/%v/screenshot?apikey=%v", scene.ID, config.GetInstance().GetAPIKey())),
 		ThumbnailVideo: relUrlToAbs(r, fmt.Sprintf("/scene/%v/preview?apikey=%v", scene.ID, config.GetInstance().GetAPIKey())),
-		DateReleased:   scene.CreatedAt.Format("2006-01-02"),
-		DateAdded:      scene.CreatedAt.Format("2006-01-02"),
-		Duration:       60000.0,
-		Rating:         0.0,
-		Favorites:      scene.OCounter,
-		Comments:       0,
-		IsFavorite:     false,
-		Projection:     proj,
-		Stereo:         stereo,
-		IsEyeSwapped:   isEyeSwapped,
-		Fov:            fov,
-		Lens:           lens,
-		CameraIPD:      ipd,
+		// DateReleased:   scene.CreatedAt.Format("2006-01-02"),
+		DateAdded:    scene.CreatedAt.Format("2006-01-02"),
+		Duration:     60000.0,
+		Rating:       0.0,
+		Favorites:    scene.OCounter,
+		Comments:     0,
+		IsFavorite:   false,
+		Projection:   proj,
+		Stereo:       stereo,
+		IsEyeSwapped: isEyeSwapped,
+		Fov:          fov,
+		Lens:         lens,
+		CameraIPD:    ipd,
 		// Hsp:            relUrlToAbs(r, fmt.Sprintf("/heresphere/%v/hsp?apikey=%v", scene.ID, config.GetInstance().GetAPIKey())),
 		EventServer:   relUrlToAbs(r, fmt.Sprintf("/heresphere/%v/event?apikey=%v", scene.ID, config.GetInstance().GetAPIKey())),
 		Scripts:       rs.getVideoScripts(r.Context(), r, scene),
