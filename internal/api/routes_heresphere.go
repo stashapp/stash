@@ -547,83 +547,80 @@ func (rs heresphereRoutes) HeresphereScan(w http.ResponseWriter, r *http.Request
 	}
 }
 
-// Check against filename for vr modes
-func FindProjection(path string) (proj HeresphereProjection, stereo HeresphereStereo, eyeswap bool, fov float32, lens HeresphereLens, ipd float32) {
-	proj, stereo, eyeswap, fov, lens, ipd = HeresphereProjectionPerspective, HeresphereStereoMono, false, 180, HeresphereLensLinear, 6.5
+// Find VR modes from scene
+func FindProjectionTags(scene *models.Scene, processedScene *HeresphereVideoEntry) {
+	// Detect VR modes from filename
+	file := scene.Files.Primary()
+	if file != nil {
+		path := strings.ToUpper(file.Basename)
 
-	path = strings.ToUpper(path)
-	// TODO: Detect video tags
+		if strings.Contains(path, "_LR") || strings.Contains(path, "_3DH") {
+			processedScene.Stereo = HeresphereStereoSbs
+		}
+		if strings.Contains(path, "_RL") {
+			processedScene.Stereo = HeresphereStereoSbs
+			processedScene.IsEyeSwapped = true
+		}
+		if strings.Contains(path, "_TB") || strings.Contains(path, "_3DV") {
+			processedScene.Stereo = HeresphereStereoTB
+		}
+		if strings.Contains(path, "_BT") {
+			processedScene.Stereo = HeresphereStereoTB
+			processedScene.IsEyeSwapped = true
+		}
 
-	if strings.Contains(path, "_LR") || strings.Contains(path, "_3DH") {
-		stereo = HeresphereStereoSbs
-	}
-	if strings.Contains(path, "_RL") {
-		stereo = HeresphereStereoSbs
-		eyeswap = true
-	}
-	if strings.Contains(path, "_TB") || strings.Contains(path, "_3DV") {
-		stereo = HeresphereStereoTB
-	}
-	if strings.Contains(path, "_BT") {
-		stereo = HeresphereStereoTB
-		eyeswap = true
-	}
-
-	if strings.Contains(path, "_EAC360") || strings.Contains(path, "_360EAC") {
-		proj = HeresphereProjectionEquirectangularCubemap
-	}
-	if strings.Contains(path, "_360") {
-		proj = HeresphereProjectionEquirectangular360
-	}
-	if strings.Contains(path, "_F180") || strings.Contains(path, "_180F") || strings.Contains(path, "_VR180") {
-		proj = HeresphereProjectionFisheye
-	} else if strings.Contains(path, "_180") {
-		proj = HeresphereProjectionEquirectangular
-	}
-	if strings.Contains(path, "_MKX200") {
-		proj = HeresphereProjectionFisheye
-		fov = 200
-		lens = HeresphereLensMKX200
-	}
-	if strings.Contains(path, "_MKX220") {
-		proj = HeresphereProjectionFisheye
-		fov = 220
-		lens = HeresphereLensMKX220
-	}
-	if strings.Contains(path, "_RF52") {
-		proj = HeresphereProjectionFisheye
-		fov = 190
-	}
-	if strings.Contains(path, "_VRCA220") {
-		proj = HeresphereProjectionFisheye
-		fov = 220
-		lens = HeresphereLensVRCA220
+		if strings.Contains(path, "_EAC360") || strings.Contains(path, "_360EAC") {
+			processedScene.Projection = HeresphereProjectionEquirectangularCubemap
+		}
+		if strings.Contains(path, "_360") {
+			processedScene.Projection = HeresphereProjectionEquirectangular360
+		}
+		if strings.Contains(path, "_F180") || strings.Contains(path, "_180F") || strings.Contains(path, "_VR180") {
+			processedScene.Projection = HeresphereProjectionFisheye
+		} else if strings.Contains(path, "_180") {
+			processedScene.Projection = HeresphereProjectionEquirectangular
+		}
+		if strings.Contains(path, "_MKX200") {
+			processedScene.Projection = HeresphereProjectionFisheye
+			processedScene.Fov = 200.0
+			processedScene.Lens = HeresphereLensMKX200
+		}
+		if strings.Contains(path, "_MKX220") {
+			processedScene.Projection = HeresphereProjectionFisheye
+			processedScene.Fov = 220.0
+			processedScene.Lens = HeresphereLensMKX220
+		}
+		if strings.Contains(path, "_RF52") {
+			processedScene.Projection = HeresphereProjectionFisheye
+			processedScene.Fov = 190.0
+		}
+		if strings.Contains(path, "_VRCA220") {
+			processedScene.Projection = HeresphereProjectionFisheye
+			processedScene.Fov = 220.0
+			processedScene.Lens = HeresphereLensVRCA220
+		}
 	}
 
-	return
-}
-
-// Check against stashdb tags for vr modes
-func FindProjectionTags(scene *HeresphereVideoEntry) {
-	for _, tag := range scene.Tags {
+	// Detect VR modes from tags
+	for _, tag := range processedScene.Tags {
 		if strings.Contains(tag.Name, "°") {
 			deg := strings.ReplaceAll(tag.Name, "°", "")
 			if s, err := strconv.ParseFloat(deg, 32); err == nil {
-				scene.Fov = float32(s)
+				processedScene.Fov = float32(s)
 			}
 		}
 		if strings.Contains(tag.Name, "Virtual Reality") || strings.Contains(tag.Name, "JAVR") {
-			if scene.Projection == HeresphereProjectionPerspective {
-				scene.Projection = HeresphereProjectionEquirectangular
+			if processedScene.Projection == HeresphereProjectionPerspective {
+				processedScene.Projection = HeresphereProjectionEquirectangular
 			}
-			if scene.Stereo == HeresphereStereoMono {
-				scene.Stereo = HeresphereStereoSbs
+			if processedScene.Stereo == HeresphereStereoMono {
+				processedScene.Stereo = HeresphereStereoSbs
 			}
 		}
 		if strings.Contains(tag.Name, "Fisheye") {
-			scene.Projection = HeresphereProjectionFisheye
-			if scene.Stereo == HeresphereStereoMono {
-				scene.Stereo = HeresphereStereoSbs
+			processedScene.Projection = HeresphereProjectionFisheye
+			if processedScene.Stereo == HeresphereStereoMono {
+				processedScene.Stereo = HeresphereStereoSbs
 			}
 		}
 	}
@@ -637,7 +634,6 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 	}
 
 	scene := r.Context().Value(heresphereKey).(*models.Scene)
-	proj, stereo, isEyeSwapped, fov, lens, ipd := FindProjection(scene.Files.Primary().Basename)
 	processedScene := HeresphereVideoEntry{
 		Access:         HeresphereMember,
 		Title:          scene.GetTitle(),
@@ -651,12 +647,12 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		Favorites:    scene.OCounter,
 		Comments:     0,
 		IsFavorite:   false,
-		Projection:   proj,
-		Stereo:       stereo,
-		IsEyeSwapped: isEyeSwapped,
-		Fov:          fov,
-		Lens:         lens,
-		CameraIPD:    ipd,
+		Projection:   HeresphereProjectionPerspective,
+		Stereo:       HeresphereStereoMono,
+		IsEyeSwapped: false,
+		Fov:          180.0,
+		Lens:         HeresphereLensLinear,
+		CameraIPD:    6.5,
 		// Hsp:            relUrlToAbs(r, fmt.Sprintf("/heresphere/%v/hsp?apikey=%v", scene.ID, config.GetInstance().GetAPIKey())),
 		EventServer:   relUrlToAbs(r, fmt.Sprintf("/heresphere/%v/event?apikey=%v", scene.ID, config.GetInstance().GetAPIKey())),
 		Scripts:       rs.getVideoScripts(r.Context(), r, scene),
@@ -668,7 +664,7 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		WriteTags:     false,
 		WriteHSP:      false,
 	}
-	FindProjectionTags(&processedScene)
+	FindProjectionTags(scene, &processedScene)
 
 	if user.NeedsMediaSource {
 		processedScene.Media = rs.getVideoMedia(r.Context(), r, scene)
