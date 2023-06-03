@@ -951,22 +951,15 @@ func getWidth(index int) int {
 	return height * 2
 }
 
-func getObjectDate(index int) models.SQLiteDate {
+func getObjectDate(index int) *models.Date {
 	dates := []string{"null", "", "0001-01-01", "2001-02-03"}
 	date := dates[index%len(dates)]
-	return models.SQLiteDate{
-		String: date,
-		Valid:  date != "null",
-	}
-}
 
-func getObjectDateObject(index int, fromDB bool) *models.Date {
-	d := getObjectDate(index)
-	if !d.Valid || (fromDB && (d.String == "" || d.String == "0001-01-01")) {
+	if date == "null" {
 		return nil
 	}
 
-	ret := models.NewDate(d.String)
+	ret := models.NewDate(date)
 	return &ret
 }
 
@@ -1073,7 +1066,7 @@ func makeScene(i int) *models.Scene {
 		URL:          getSceneEmptyString(i, urlField),
 		Rating:       getIntPtr(rating),
 		OCounter:     getOCounter(i),
-		Date:         getObjectDateObject(i, false),
+		Date:         getObjectDate(i),
 		StudioID:     studioID,
 		GalleryIDs:   models.NewRelatedIDs(gids),
 		PerformerIDs: models.NewRelatedIDs(pids),
@@ -1138,7 +1131,7 @@ func makeImageFile(i int) *file.ImageFile {
 	}
 }
 
-func makeImage(i int, fromDB bool) *models.Image {
+func makeImage(i int) *models.Image {
 	title := getImageStringValue(i, titleField)
 	var studioID *int
 	if _, ok := imageStudios[i]; ok {
@@ -1153,7 +1146,7 @@ func makeImage(i int, fromDB bool) *models.Image {
 	return &models.Image{
 		Title:        title,
 		Rating:       getIntPtr(getRating(i)),
-		Date:         getObjectDateObject(i, fromDB),
+		Date:         getObjectDate(i),
 		URL:          getImageStringValue(i, urlField),
 		OCounter:     getOCounter(i),
 		StudioID:     studioID,
@@ -1178,7 +1171,7 @@ func createImages(ctx context.Context, n int) error {
 		}
 		imageFileIDs = append(imageFileIDs, f.ID)
 
-		image := makeImage(i, false)
+		image := makeImage(i)
 
 		err := qb.Create(ctx, &models.ImageCreateInput{
 			Image:   image,
@@ -1239,7 +1232,7 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 		Title:        getGalleryStringValue(i, titleField),
 		URL:          getGalleryNullStringValue(i, urlField).String,
 		Rating:       getIntPtr(getRating(i)),
-		Date:         getObjectDateObject(i, false),
+		Date:         getObjectDate(i),
 		StudioID:     studioID,
 		PerformerIDs: models.NewRelatedIDs(pids),
 		TagIDs:       models.NewRelatedIDs(tids),
