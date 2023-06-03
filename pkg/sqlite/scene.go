@@ -221,6 +221,47 @@ func (qb *SceneStore) table() exp.IdentifierExpression {
 	return qb.tableMgr.table
 }
 
+func (qb *SceneStore) selectDataset() *goqu.SelectDataset {
+	table := qb.table()
+	files := fileTableMgr.table
+	folders := folderTableMgr.table
+	checksum := fingerprintTableMgr.table.As("fingerprint_md5")
+	oshash := fingerprintTableMgr.table.As("fingerprint_oshash")
+
+	return dialect.From(table).LeftJoin(
+		scenesFilesJoinTable,
+		goqu.On(
+			scenesFilesJoinTable.Col(sceneIDColumn).Eq(table.Col(idColumn)),
+			scenesFilesJoinTable.Col("primary").Eq(1),
+		),
+	).LeftJoin(
+		files,
+		goqu.On(files.Col(idColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn))),
+	).LeftJoin(
+		folders,
+		goqu.On(folders.Col(idColumn).Eq(files.Col("parent_folder_id"))),
+	).LeftJoin(
+		checksum,
+		goqu.On(
+			checksum.Col(fileIDColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn)),
+			checksum.Col("type").Eq(file.FingerprintTypeMD5),
+		),
+	).LeftJoin(
+		oshash,
+		goqu.On(
+			oshash.Col(fileIDColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn)),
+			oshash.Col("type").Eq(file.FingerprintTypeOshash),
+		),
+	).Select(
+		qb.table().All(),
+		scenesFilesJoinTable.Col(fileIDColumn).As("primary_file_id"),
+		folders.Col("path").As("primary_file_folder_path"),
+		files.Col("basename").As("primary_file_basename"),
+		checksum.Col("fingerprint").As("primary_file_checksum"),
+		oshash.Col("fingerprint").As("primary_file_oshash"),
+	)
+}
+
 func (qb *SceneStore) Create(ctx context.Context, newObject *models.Scene, fileIDs []file.ID) error {
 	var r sceneRow
 	r.fromScene(*newObject)
@@ -423,45 +464,27 @@ func (qb *SceneStore) FindMany(ctx context.Context, ids []int) ([]*models.Scene,
 	return scenes, nil
 }
 
-func (qb *SceneStore) selectDataset() *goqu.SelectDataset {
-	table := qb.table()
-	files := fileTableMgr.table
-	folders := folderTableMgr.table
-	checksum := fingerprintTableMgr.table.As("fingerprint_md5")
-	oshash := fingerprintTableMgr.table.As("fingerprint_oshash")
+func (qb *SceneStore) find(ctx context.Context, id int) (*models.Scene, error) {
+	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
 
-	return dialect.From(table).LeftJoin(
-		scenesFilesJoinTable,
-		goqu.On(
-			scenesFilesJoinTable.Col(sceneIDColumn).Eq(table.Col(idColumn)),
-			scenesFilesJoinTable.Col("primary").Eq(1),
+	ret, err := qb.get(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("getting scene by id %d: %w", id, err)
+	}
+
+	return ret, nil
+}
+
+func (qb *SceneStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Scene, error) {
+	table := qb.table()
+
+	q := qb.selectDataset().Where(
+		table.Col(idColumn).Eq(
+			sq,
 		),
-	).LeftJoin(
-		files,
-		goqu.On(files.Col(idColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn))),
-	).LeftJoin(
-		folders,
-		goqu.On(folders.Col(idColumn).Eq(files.Col("parent_folder_id"))),
-	).LeftJoin(
-		checksum,
-		goqu.On(
-			checksum.Col(fileIDColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn)),
-			checksum.Col("type").Eq(file.FingerprintTypeMD5),
-		),
-	).LeftJoin(
-		oshash,
-		goqu.On(
-			oshash.Col(fileIDColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn)),
-			oshash.Col("type").Eq(file.FingerprintTypeOshash),
-		),
-	).Select(
-		qb.table().All(),
-		scenesFilesJoinTable.Col(fileIDColumn).As("primary_file_id"),
-		folders.Col("path").As("primary_file_folder_path"),
-		files.Col("basename").As("primary_file_basename"),
-		checksum.Col("fingerprint").As("primary_file_checksum"),
-		oshash.Col("fingerprint").As("primary_file_oshash"),
 	)
+
+	return qb.getMany(ctx, q)
 }
 
 func (qb *SceneStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Scene, error) {
@@ -529,17 +552,6 @@ func (qb *SceneStore) GetFiles(ctx context.Context, id int) ([]*file.VideoFile, 
 func (qb *SceneStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error) {
 	const primaryOnly = false
 	return qb.filesRepository().getMany(ctx, ids, primaryOnly)
-}
-
-func (qb *SceneStore) find(ctx context.Context, id int) (*models.Scene, error) {
-	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
-
-	ret, err := qb.get(ctx, q)
-	if err != nil {
-		return nil, fmt.Errorf("getting scene by id %d: %w", id, err)
-	}
-
-	return ret, nil
 }
 
 func (qb *SceneStore) FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Scene, error) {
@@ -648,18 +660,6 @@ func (qb *SceneStore) FindByPath(ctx context.Context, p string) ([]*models.Scene
 	}
 
 	return ret, nil
-}
-
-func (qb *SceneStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Scene, error) {
-	table := qb.table()
-
-	q := qb.selectDataset().Where(
-		table.Col(idColumn).Eq(
-			sq,
-		),
-	)
-
-	return qb.getMany(ctx, q)
 }
 
 func (qb *SceneStore) FindByPerformerID(ctx context.Context, performerID int) ([]*models.Scene, error) {

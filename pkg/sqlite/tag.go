@@ -33,8 +33,8 @@ type tagRow struct {
 	CreatedAt     models.SQLiteTimestamp `db:"created_at"`
 	UpdatedAt     models.SQLiteTimestamp `db:"updated_at"`
 
-	// not used for resolution
-	ImageBlob sql.NullString `db:"image_blob"`
+	// not used in resolutions or updates
+	ImageBlob zero.String `db:"image_blob"`
 }
 
 func (r *tagRow) fromTag(o models.Tag) {

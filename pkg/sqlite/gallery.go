@@ -135,6 +135,36 @@ func (qb *GalleryStore) table() exp.IdentifierExpression {
 	return qb.tableMgr.table
 }
 
+func (qb *GalleryStore) selectDataset() *goqu.SelectDataset {
+	table := qb.table()
+	files := fileTableMgr.table
+	folders := folderTableMgr.table
+	galleryFolder := folderTableMgr.table.As("gallery_folder")
+
+	return dialect.From(table).LeftJoin(
+		galleriesFilesJoinTable,
+		goqu.On(
+			galleriesFilesJoinTable.Col(galleryIDColumn).Eq(table.Col(idColumn)),
+			galleriesFilesJoinTable.Col("primary").Eq(1),
+		),
+	).LeftJoin(
+		files,
+		goqu.On(files.Col(idColumn).Eq(galleriesFilesJoinTable.Col(fileIDColumn))),
+	).LeftJoin(
+		folders,
+		goqu.On(folders.Col(idColumn).Eq(files.Col("parent_folder_id"))),
+	).LeftJoin(
+		galleryFolder,
+		goqu.On(galleryFolder.Col(idColumn).Eq(table.Col("folder_id"))),
+	).Select(
+		qb.table().All(),
+		galleriesFilesJoinTable.Col(fileIDColumn).As("primary_file_id"),
+		folders.Col("path").As("primary_file_folder_path"),
+		files.Col("basename").As("primary_file_basename"),
+		galleryFolder.Col("path").As("folder_path"),
+	)
+}
+
 func (qb *GalleryStore) Create(ctx context.Context, newObject *models.Gallery, fileIDs []file.ID) error {
 	var r galleryRow
 	r.fromGallery(*newObject)
@@ -259,75 +289,6 @@ func (qb *GalleryStore) Destroy(ctx context.Context, id int) error {
 	return qb.tableMgr.destroyExisting(ctx, []int{id})
 }
 
-func (qb *GalleryStore) selectDataset() *goqu.SelectDataset {
-	table := qb.table()
-	files := fileTableMgr.table
-	folders := folderTableMgr.table
-	galleryFolder := folderTableMgr.table.As("gallery_folder")
-
-	return dialect.From(table).LeftJoin(
-		galleriesFilesJoinTable,
-		goqu.On(
-			galleriesFilesJoinTable.Col(galleryIDColumn).Eq(table.Col(idColumn)),
-			galleriesFilesJoinTable.Col("primary").Eq(1),
-		),
-	).LeftJoin(
-		files,
-		goqu.On(files.Col(idColumn).Eq(galleriesFilesJoinTable.Col(fileIDColumn))),
-	).LeftJoin(
-		folders,
-		goqu.On(folders.Col(idColumn).Eq(files.Col("parent_folder_id"))),
-	).LeftJoin(
-		galleryFolder,
-		goqu.On(galleryFolder.Col(idColumn).Eq(table.Col("folder_id"))),
-	).Select(
-		qb.table().All(),
-		galleriesFilesJoinTable.Col(fileIDColumn).As("primary_file_id"),
-		folders.Col("path").As("primary_file_folder_path"),
-		files.Col("basename").As("primary_file_basename"),
-		galleryFolder.Col("path").As("folder_path"),
-	)
-}
-
-func (qb *GalleryStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Gallery, error) {
-	ret, err := qb.getMany(ctx, q)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(ret) == 0 {
-		return nil, sql.ErrNoRows
-	}
-
-	return ret[0], nil
-}
-
-func (qb *GalleryStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.Gallery, error) {
-	const single = false
-	var ret []*models.Gallery
-	var lastID int
-	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
-		var f galleryQueryRow
-		if err := r.StructScan(&f); err != nil {
-			return err
-		}
-
-		s := f.resolve()
-
-		if s.ID == lastID {
-			return fmt.Errorf("internal error: multiple rows returned for single gallery id %d", s.ID)
-		}
-		lastID = s.ID
-
-		ret = append(ret, s)
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-
-	return ret, nil
-}
-
 func (qb *GalleryStore) GetFiles(ctx context.Context, id int) ([]file.File, error) {
 	fileIDs, err := qb.filesRepository().get(ctx, id)
 	if err != nil {
@@ -401,6 +362,45 @@ func (qb *GalleryStore) findBySubquery(ctx context.Context, sq *goqu.SelectDatas
 	)
 
 	return qb.getMany(ctx, q)
+}
+
+func (qb *GalleryStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Gallery, error) {
+	ret, err := qb.getMany(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ret) == 0 {
+		return nil, sql.ErrNoRows
+	}
+
+	return ret[0], nil
+}
+
+func (qb *GalleryStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.Gallery, error) {
+	const single = false
+	var ret []*models.Gallery
+	var lastID int
+	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
+		var f galleryQueryRow
+		if err := r.StructScan(&f); err != nil {
+			return err
+		}
+
+		s := f.resolve()
+
+		if s.ID == lastID {
+			return fmt.Errorf("internal error: multiple rows returned for single gallery id %d", s.ID)
+		}
+		lastID = s.ID
+
+		ret = append(ret, s)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
 func (qb *GalleryStore) FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Gallery, error) {

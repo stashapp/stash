@@ -47,7 +47,7 @@ type performerRow struct {
 	CareerLength  zero.String            `db:"career_length"`
 	Tattoos       zero.String            `db:"tattoos"`
 	Piercings     zero.String            `db:"piercings"`
-	Favorite      sql.NullBool           `db:"favorite"`
+	Favorite      bool                   `db:"favorite"`
 	CreatedAt     models.SQLiteTimestamp `db:"created_at"`
 	UpdatedAt     models.SQLiteTimestamp `db:"updated_at"`
 	// expressed as 1-100
@@ -58,7 +58,7 @@ type performerRow struct {
 	Weight        null.Int          `db:"weight"`
 	IgnoreAutoTag bool              `db:"ignore_auto_tag"`
 
-	// not used for resolution
+	// not used in resolution or updates
 	ImageBlob zero.String `db:"image_blob"`
 }
 
@@ -88,7 +88,7 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	r.CareerLength = zero.StringFrom(o.CareerLength)
 	r.Tattoos = zero.StringFrom(o.Tattoos)
 	r.Piercings = zero.StringFrom(o.Piercings)
-	r.Favorite = sql.NullBool{Bool: o.Favorite, Valid: true}
+	r.Favorite = o.Favorite
 	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
 	r.Rating = intFromPtr(o.Rating)
@@ -120,7 +120,7 @@ func (r *performerRow) resolve() *models.Performer {
 		CareerLength:   r.CareerLength.String,
 		Tattoos:        r.Tattoos.String,
 		Piercings:      r.Piercings.String,
-		Favorite:       r.Favorite.Bool,
+		Favorite:       r.Favorite,
 		CreatedAt:      r.CreatedAt.Timestamp,
 		UpdatedAt:      r.UpdatedAt.Timestamp,
 		// expressed as 1-100
@@ -198,6 +198,14 @@ func NewPerformerStore(blobStore *BlobStore) *PerformerStore {
 		},
 		tableMgr: performerTableMgr,
 	}
+}
+
+func (qb *PerformerStore) table() exp.IdentifierExpression {
+	return qb.tableMgr.table
+}
+
+func (qb *PerformerStore) selectDataset() *goqu.SelectDataset {
+	return dialect.From(qb.table()).Select(qb.table().All())
 }
 
 func (qb *PerformerStore) Create(ctx context.Context, newObject *models.Performer) error {
@@ -310,14 +318,6 @@ func (qb *PerformerStore) Destroy(ctx context.Context, id int) error {
 	return qb.destroyExisting(ctx, []int{id})
 }
 
-func (qb *PerformerStore) table() exp.IdentifierExpression {
-	return qb.tableMgr.table
-}
-
-func (qb *PerformerStore) selectDataset() *goqu.SelectDataset {
-	return dialect.From(qb.table()).Select(qb.table().All())
-}
-
 func (qb *PerformerStore) Find(ctx context.Context, id int) (*models.Performer, error) {
 	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
 
@@ -359,6 +359,18 @@ func (qb *PerformerStore) FindMany(ctx context.Context, ids []int) ([]*models.Pe
 	return ret, nil
 }
 
+func (qb *PerformerStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Performer, error) {
+	table := qb.table()
+
+	q := qb.selectDataset().Where(
+		table.Col(idColumn).Eq(
+			sq,
+		),
+	)
+
+	return qb.getMany(ctx, q)
+}
+
 func (qb *PerformerStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Performer, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
@@ -390,18 +402,6 @@ func (qb *PerformerStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([
 	}
 
 	return ret, nil
-}
-
-func (qb *PerformerStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Performer, error) {
-	table := qb.table()
-
-	q := qb.selectDataset().Where(
-		table.Col(idColumn).Eq(
-			sq,
-		),
-	)
-
-	return qb.getMany(ctx, q)
 }
 
 func (qb *PerformerStore) FindBySceneID(ctx context.Context, sceneID int) ([]*models.Performer, error) {

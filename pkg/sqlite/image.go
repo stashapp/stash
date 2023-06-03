@@ -129,6 +129,39 @@ func (qb *ImageStore) table() exp.IdentifierExpression {
 	return qb.tableMgr.table
 }
 
+func (qb *ImageStore) selectDataset() *goqu.SelectDataset {
+	table := qb.table()
+	files := fileTableMgr.table
+	folders := folderTableMgr.table
+	checksum := fingerprintTableMgr.table
+
+	return dialect.From(table).LeftJoin(
+		imagesFilesJoinTable,
+		goqu.On(
+			imagesFilesJoinTable.Col(imageIDColumn).Eq(table.Col(idColumn)),
+			imagesFilesJoinTable.Col("primary").Eq(1),
+		),
+	).LeftJoin(
+		files,
+		goqu.On(files.Col(idColumn).Eq(imagesFilesJoinTable.Col(fileIDColumn))),
+	).LeftJoin(
+		folders,
+		goqu.On(folders.Col(idColumn).Eq(files.Col("parent_folder_id"))),
+	).LeftJoin(
+		checksum,
+		goqu.On(
+			checksum.Col(fileIDColumn).Eq(imagesFilesJoinTable.Col(fileIDColumn)),
+			checksum.Col("type").Eq(file.FingerprintTypeMD5),
+		),
+	).Select(
+		qb.table().All(),
+		imagesFilesJoinTable.Col(fileIDColumn).As("primary_file_id"),
+		folders.Col("path").As("primary_file_folder_path"),
+		files.Col("basename").As("primary_file_basename"),
+		checksum.Col("fingerprint").As("primary_file_checksum"),
+	)
+}
+
 func (qb *ImageStore) Create(ctx context.Context, newObject *models.ImageCreateInput) error {
 	var r imageRow
 	r.fromImage(*newObject.Image)
@@ -288,37 +321,27 @@ func (qb *ImageStore) FindMany(ctx context.Context, ids []int) ([]*models.Image,
 	return images, nil
 }
 
-func (qb *ImageStore) selectDataset() *goqu.SelectDataset {
-	table := qb.table()
-	files := fileTableMgr.table
-	folders := folderTableMgr.table
-	checksum := fingerprintTableMgr.table
+func (qb *ImageStore) find(ctx context.Context, id int) (*models.Image, error) {
+	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
 
-	return dialect.From(table).LeftJoin(
-		imagesFilesJoinTable,
-		goqu.On(
-			imagesFilesJoinTable.Col(imageIDColumn).Eq(table.Col(idColumn)),
-			imagesFilesJoinTable.Col("primary").Eq(1),
+	ret, err := qb.get(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("getting image by id %d: %w", id, err)
+	}
+
+	return ret, nil
+}
+
+func (qb *ImageStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Image, error) {
+	table := qb.table()
+
+	q := qb.selectDataset().Prepared(true).Where(
+		table.Col(idColumn).Eq(
+			sq,
 		),
-	).LeftJoin(
-		files,
-		goqu.On(files.Col(idColumn).Eq(imagesFilesJoinTable.Col(fileIDColumn))),
-	).LeftJoin(
-		folders,
-		goqu.On(folders.Col(idColumn).Eq(files.Col("parent_folder_id"))),
-	).LeftJoin(
-		checksum,
-		goqu.On(
-			checksum.Col(fileIDColumn).Eq(imagesFilesJoinTable.Col(fileIDColumn)),
-			checksum.Col("type").Eq(file.FingerprintTypeMD5),
-		),
-	).Select(
-		qb.table().All(),
-		imagesFilesJoinTable.Col(fileIDColumn).As("primary_file_id"),
-		folders.Col("path").As("primary_file_folder_path"),
-		files.Col("basename").As("primary_file_basename"),
-		checksum.Col("fingerprint").As("primary_file_checksum"),
 	)
+
+	return qb.getMany(ctx, q)
 }
 
 func (qb *ImageStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Image, error) {
@@ -378,29 +401,6 @@ func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]file.File, error)
 func (qb *ImageStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error) {
 	const primaryOnly = false
 	return qb.filesRepository().getMany(ctx, ids, primaryOnly)
-}
-
-func (qb *ImageStore) find(ctx context.Context, id int) (*models.Image, error) {
-	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
-
-	ret, err := qb.get(ctx, q)
-	if err != nil {
-		return nil, fmt.Errorf("getting image by id %d: %w", id, err)
-	}
-
-	return ret, nil
-}
-
-func (qb *ImageStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Image, error) {
-	table := qb.table()
-
-	q := qb.selectDataset().Prepared(true).Where(
-		table.Col(idColumn).Eq(
-			sq,
-		),
-	)
-
-	return qb.getMany(ctx, q)
 }
 
 func (qb *ImageStore) FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Image, error) {
