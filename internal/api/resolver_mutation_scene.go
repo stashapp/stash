@@ -89,7 +89,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input SceneCreateInp
 	}
 
 	var coverImageData []byte
-	if input.CoverImage != nil && *input.CoverImage != "" {
+	if input.CoverImage != nil {
 		var err error
 		coverImageData, err = utils.ProcessImageInput(ctx, *input.CoverImage)
 		if err != nil {
@@ -602,7 +602,7 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 	}
 
 	var coverImageData []byte
-	if input.Values.CoverImage != nil && *input.Values.CoverImage != "" {
+	if input.Values.CoverImage != nil {
 		var err error
 		coverImageData, err = utils.ProcessImageInput(ctx, *input.Values.CoverImage)
 		if err != nil {

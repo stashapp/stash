@@ -57,7 +57,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input StudioCreateI
 
 	// Process the base 64 encoded image string
 	var imageData []byte
-	if input.Image != nil && *input.Image != "" {
+	if input.Image != nil {
 		imageData, err = utils.ProcessImageInput(ctx, *input.Image)
 		if err != nil {
 			return nil, err
