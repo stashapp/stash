@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/stashapp/stash/pkg/utils"
+)
 
 // Date wraps a time.Time with a format of "YYYY-MM-DD"
 type Date struct {
@@ -13,7 +17,11 @@ func (d Date) String() string {
 	return d.Format(dateFormat)
 }
 
-func NewDate(s string) Date {
-	t, _ := time.Parse(dateFormat, s)
-	return Date{t}
+// ParseDate uses utils.ParseDateStringAsTime to parse a string into a date.
+func ParseDate(s string) (Date, error) {
+	ret, err := utils.ParseDateStringAsTime(s)
+	if err != nil {
+		return Date{}, err
+	}
+	return Date{Time: ret}, nil
 }

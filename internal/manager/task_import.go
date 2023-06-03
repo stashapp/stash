@@ -25,7 +25,6 @@ import (
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type ImportTask struct {
@@ -642,9 +641,9 @@ func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
 				UpdatedAt:       t.getTimeFromJSONTime(mappingJSON.UpdatedAt),
 			}
 
-			time, err := utils.ParseDateStringAsTime(mappingJSON.Date)
+			date, err := models.ParseDate(mappingJSON.Date)
 			if err == nil {
-				newScrapedItem.Date = &models.Date{Time: time}
+				newScrapedItem.Date = &date
 			}
 
 			studio, err := sqb.FindByName(ctx, mappingJSON.Studio, false)

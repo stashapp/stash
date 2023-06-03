@@ -107,28 +107,36 @@ func (t changesetTranslator) optionalString(value *string, field string) models.
 	return models.NewOptionalStringPtr(value)
 }
 
-func (t changesetTranslator) optionalDate(value *string, field string) models.OptionalDate {
+func (t changesetTranslator) optionalDate(value *string, field string) (models.OptionalDate, error) {
 	if !t.hasField(field) {
-		return models.OptionalDate{}
+		return models.OptionalDate{}, nil
 	}
 
 	if value == nil || *value == "" {
 		return models.OptionalDate{
 			Set:  true,
 			Null: true,
-		}
+		}, nil
 	}
 
-	return models.NewOptionalDate(models.NewDate(*value))
+	date, err := models.ParseDate(*value)
+	if err != nil {
+		return models.OptionalDate{}, err
+	}
+
+	return models.NewOptionalDate(date), nil
 }
 
-func (t changesetTranslator) datePtr(value *string, field string) *models.Date {
-	if value == nil {
-		return nil
+func (t changesetTranslator) datePtr(value *string, field string) (*models.Date, error) {
+	if value == nil || *value == "" {
+		return nil, nil
 	}
 
-	d := models.NewDate(*value)
-	return &d
+	date, err := models.ParseDate(*value)
+	if err != nil {
+		return nil, err
+	}
+	return &date, nil
 }
 
 func (t changesetTranslator) intPtrFromString(value *string, field string) (*int, error) {

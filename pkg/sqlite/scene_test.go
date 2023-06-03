@@ -97,7 +97,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 		stashID1     = "stashid1"
 		stashID2     = "stashid2"
 
-		date = models.NewDate("2003-02-01")
+		date, _ = models.ParseDate("2003-02-01")
 
 		videoFile = makeFileWithID(fileIdxStartVideoFiles)
 	)
@@ -336,7 +336,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 		stashID1     = "stashid1"
 		stashID2     = "stashid2"
 
-		date = models.NewDate("2003-02-01")
+		date, _ = models.ParseDate("2003-02-01")
 	)
 
 	tests := []struct {
@@ -552,7 +552,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 		stashID1     = "stashid1"
 		stashID2     = "stashid2"
 
-		date = models.NewDate("2003-02-01")
+		date, _ = models.ParseDate("2003-02-01")
 	)
 
 	tests := []struct {

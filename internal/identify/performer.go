@@ -80,12 +80,16 @@ func scrapedToPerformerInput(performer *models.ScrapedPerformer) models.Performe
 		ret.Disambiguation = *performer.Disambiguation
 	}
 	if performer.Birthdate != nil {
-		d := models.NewDate(*performer.Birthdate)
-		ret.Birthdate = &d
+		d, err := models.ParseDate(*performer.Birthdate)
+		if err == nil {
+			ret.Birthdate = &d
+		}
 	}
 	if performer.DeathDate != nil {
-		d := models.NewDate(*performer.DeathDate)
-		ret.DeathDate = &d
+		d, err := models.ParseDate(*performer.DeathDate)
+		if err == nil {
+			ret.DeathDate = &d
+		}
 	}
 	if performer.Gender != nil {
 		v := models.GenderEnum(*performer.Gender)

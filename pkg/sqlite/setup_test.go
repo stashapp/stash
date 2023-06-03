@@ -963,7 +963,7 @@ func getObjectDate(index int) *models.Date {
 		return nil
 	}
 
-	ret := models.NewDate(date)
+	ret, _ := models.ParseDate(date)
 	return &ret
 }
 

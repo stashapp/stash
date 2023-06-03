@@ -62,7 +62,7 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 		galleryFile = makeFileWithID(fileIdxStartGalleryFiles)
 	)
 
-	date := models.NewDate("2003-02-01")
+	date, _ := models.ParseDate("2003-02-01")
 
 	tests := []struct {
 		name      string
@@ -211,7 +211,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 	)
 
-	date := models.NewDate("2003-02-01")
+	date, _ := models.ParseDate("2003-02-01")
 
 	tests := []struct {
 		name          string
@@ -403,7 +403,7 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		date = models.NewDate("2003-02-01")
+		date, _ = models.ParseDate("2003-02-01")
 	)
 
 	tests := []struct {
