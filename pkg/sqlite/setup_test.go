@@ -956,7 +956,7 @@ func getWidth(index int) int {
 }
 
 func getObjectDate(index int) *models.Date {
-	dates := []string{"null", "", "0001-01-01", "2001-02-03"}
+	dates := []string{"null", "2000-01-01", "0001-01-01", "2001-02-03"}
 	date := dates[index%len(dates)]
 
 	if date == "null" {

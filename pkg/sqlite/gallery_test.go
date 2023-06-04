@@ -1932,12 +1932,12 @@ func TestGalleryQueryIsMissingDate(t *testing.T) {
 
 		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
-		// three in four scenes have no date
-		assert.Len(t, galleries, int(math.Ceil(float64(totalGalleries)/4*3)))
+		// two in four galleries have no date
+		assert.Len(t, galleries, int(math.Ceil(float64(totalGalleries)/4*2)))
 
-		// ensure date is null, empty or "0001-01-01"
+		// ensure date is null
 		for _, g := range galleries {
-			assert.True(t, g.Date == nil || g.Date.Time == time.Time{})
+			assert.Nil(t, g.Date)
 		}
 
 		return nil

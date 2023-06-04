@@ -3243,12 +3243,12 @@ func TestSceneQueryIsMissingDate(t *testing.T) {
 
 		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
-		// three in four scenes have no date
-		assert.Len(t, scenes, int(math.Ceil(float64(totalScenes)/4*3)))
+		// two in four scenes have no date
+		assert.Len(t, scenes, int(math.Ceil(float64(totalScenes)/4*2)))
 
-		// ensure date is null, empty or "0001-01-01"
+		// ensure date is null
 		for _, scene := range scenes {
-			assert.True(t, scene.Date == nil || scene.Date.Time == time.Time{})
+			assert.Nil(t, scene.Date)
 		}
 
 		return nil

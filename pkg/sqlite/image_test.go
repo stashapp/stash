@@ -2877,7 +2877,7 @@ func TestImageQuerySorting(t *testing.T) {
 			"date",
 			models.SortDirectionEnumDesc,
 			imageIdxWithTwoGalleries,
-			imageIdxWithPerformerParentTag,
+			imageIdxWithGrandChildStudio,
 		},
 	}
 
