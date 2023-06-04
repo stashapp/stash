@@ -308,7 +308,7 @@ func (qb *PerformerStore) Update(ctx context.Context, updatedObject *models.Perf
 
 func (qb *PerformerStore) Destroy(ctx context.Context, id int) error {
 	// must handle image checksums manually
-	if err := qb.DestroyImage(ctx, id); err != nil {
+	if err := qb.destroyImage(ctx, id); err != nil {
 		return err
 	}
 
@@ -1054,7 +1054,7 @@ func (qb *PerformerStore) UpdateImage(ctx context.Context, performerID int, imag
 	return qb.blobJoinQueryBuilder.UpdateImage(ctx, performerID, performerImageBlobColumn, image)
 }
 
-func (qb *PerformerStore) DestroyImage(ctx context.Context, performerID int) error {
+func (qb *PerformerStore) destroyImage(ctx context.Context, performerID int) error {
 	return qb.blobJoinQueryBuilder.DestroyImage(ctx, performerID, performerImageBlobColumn)
 }
 
