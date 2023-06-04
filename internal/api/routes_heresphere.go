@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi"
+	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/file"
@@ -81,8 +82,6 @@ type HeresphereVideoScript struct {
 	Name   string  `json:"name"`
 	Url    string  `json:"url"`
 	Rating float32 `json:"rating,omitempty"`
-	// TODO: Floats become null, same with lists, should have default value instead
-	// This is technically an api violation
 }
 type HeresphereVideoSubtitle struct {
 	Name     string `json:"name"`
@@ -90,7 +89,6 @@ type HeresphereVideoSubtitle struct {
 	Url      string `json:"url"`
 }
 type HeresphereVideoTag struct {
-	// Should start with any of the following: "Scene:", "Category:", "Talent:", "Studio:", "Position:"
 	Name   string  `json:"name"`
 	Start  float64 `json:"start,omitempty"`
 	End    float64 `json:"end,omitempty"`
@@ -192,7 +190,7 @@ func (rs heresphereRoutes) Routes() chi.Router {
 		r.Head("/", rs.HeresphereIndex)
 
 		r.Post("/auth", rs.HeresphereLoginToken)
-		r.Post("/scan", rs.HeresphereScan)
+		//r.Post("/scan", rs.HeresphereScan)
 		r.Route("/{sceneId}", func(r chi.Router) {
 			r.Use(rs.HeresphereSceneCtx)
 
@@ -205,22 +203,6 @@ func (rs heresphereRoutes) Routes() chi.Router {
 	})
 
 	return r
-}
-
-func relUrlToAbs(r *http.Request, rel string) string {
-	// Get the scheme (http or https) from the request
-	scheme := "http"
-	if r.TLS != nil {
-		scheme = "https"
-	}
-
-	// Get the host from the request
-	host := r.Host
-
-	// TODO: Support Forwarded standard
-
-	// Combine the scheme, host, and relative path to form the absolute URL
-	return fmt.Sprintf("%s://%s%s", scheme, host, rel)
 }
 
 func heresphereHandler() func(http.Handler) http.Handler {
@@ -268,6 +250,7 @@ func (rs heresphereRoutes) HeresphereVideoHsp(w http.ResponseWriter, r *http.Req
 func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(heresphereKey).(*models.Scene)
 	user := r.Context().Value(heresphereUserKey).(HeresphereAuthReq)
+	fileDeleter := file.NewDeleter()
 
 	if err := txn.WithTxn(r.Context(), rs.repository.TxnManager, func(ctx context.Context) error {
 		qb := rs.repository.Scene
@@ -275,15 +258,28 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 		rating := int((user.Rating / 5.0) * 100.0)
 		scene.Rating = &rating
 		// TODO: user.Hsp
-		// TODO: user.DeleteFile
+
+		/*if user.DeleteFile {
+			qe := rs.repository.File
+			if err := scene.LoadPrimaryFile(r.Context(), qe); err != nil {
+				ff := scene.Files.Primary()
+				if ff != nil {
+					if err := file.Destroy(ctx, qe, ff, fileDeleter, true); err != nil {
+						return fmt.Errorf("destroying file %s: %w", ff.Base().Path, err)
+					}
+				}
+			}
+		}*/
 
 		err := qb.Update(ctx, scene)
 		return err
 	}); err != nil {
+		fileDeleter.Rollback()
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
+	fileDeleter.Commit()
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -388,8 +384,11 @@ func (rs heresphereRoutes) getVideoScripts(ctx context.Context, r *http.Request,
 	exists, err := rs.resolver.Scene().Interactive(ctx, scene)
 	if err == nil && exists {
 		processedScript := HeresphereVideoScript{
-			Name:   "Default script",
-			Url:    relUrlToAbs(r, fmt.Sprintf("/scene/%v/funscript?apikey=%v", scene.ID, config.GetInstance().GetAPIKey())),
+			Name: "Default script",
+			Url: fmt.Sprintf("%s?apikey=%v",
+				urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetFunscriptURL(),
+				config.GetInstance().GetAPIKey(),
+			),
 			Rating: 4.2,
 		}
 		processedScripts = append(processedScripts, processedScript)
@@ -406,7 +405,12 @@ func (rs heresphereRoutes) getVideoSubtitles(ctx context.Context, r *http.Reques
 			processedCaption := HeresphereVideoSubtitle{
 				Name:     caption.Filename,
 				Language: caption.LanguageCode,
-				Url:      relUrlToAbs(r, fmt.Sprintf("/scene/%v/caption?lang=%v&type=%v&apikey=%v", scene.ID, caption.LanguageCode, caption.CaptionType, config.GetInstance().GetAPIKey())),
+				Url: fmt.Sprintf("%s?lang=%v&type=%v&apikey=%v",
+					urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetCaptionURL(),
+					caption.LanguageCode,
+					caption.CaptionType,
+					config.GetInstance().GetAPIKey(),
+				),
 			}
 			processedSubtitles = append(processedSubtitles, processedCaption)
 		}
@@ -427,7 +431,7 @@ func (rs heresphereRoutes) getVideoMedia(ctx context.Context, r *http.Request, s
 				Height:     mediaFile.Height,
 				Width:      mediaFile.Width,
 				Size:       mediaFile.Size,
-				Url:        relUrlToAbs(r, fmt.Sprintf("/scene/%v/stream?apikey=%v", scene.ID, config.GetInstance().GetAPIKey())),
+				Url:        urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetStreamURL(config.GetInstance().GetAPIKey()).String(),
 			}
 			mediaTypes[mediaFile.Format] = append(mediaTypes[mediaFile.Format], processedEntry)
 		}
@@ -446,8 +450,14 @@ func (rs heresphereRoutes) getVideoMedia(ctx context.Context, r *http.Request, s
 
 func (rs heresphereRoutes) HeresphereIndex(w http.ResponseWriter, r *http.Request) {
 	banner := HeresphereBanner{
-		Image: relUrlToAbs(r, "/apple-touch-icon.png"),
-		Link:  relUrlToAbs(r, "/"),
+		Image: fmt.Sprintf("%s%s",
+			GetBaseURL(r),
+			"/apple-touch-icon.png",
+		),
+		Link: fmt.Sprintf("%s%s",
+			GetBaseURL(r),
+			"/",
+		),
 	}
 
 	var scenes []*models.Scene
@@ -462,7 +472,10 @@ func (rs heresphereRoutes) HeresphereIndex(w http.ResponseWriter, r *http.Reques
 
 	sceneUrls := make([]string, len(scenes))
 	for idx, scene := range scenes {
-		sceneUrls[idx] = relUrlToAbs(r, fmt.Sprintf("/heresphere/%v", scene.ID))
+		sceneUrls[idx] = fmt.Sprintf("%s/heresphere/%v",
+			GetBaseURL(r),
+			scene.ID,
+		)
 	}
 
 	library := HeresphereIndexEntry{
@@ -474,18 +487,10 @@ func (rs heresphereRoutes) HeresphereIndex(w http.ResponseWriter, r *http.Reques
 		Banner:  banner,
 		Library: []HeresphereIndexEntry{library},
 	}
-	// TODO: A very helpful feature would be to create multiple libraries from the saved filters: Every saved filter scene should become a separate library, the "All"-Library should remain as well.
-
-	filters, err := rs.repository.SavedFilter.All(r.Context())
-	if err == nil {
-		for _, filter := range filters {
-			fmt.Printf("Filter: %v -> %v\n", filter.Name, filter.Filter)
-		}
-	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(idx)
+	err := json.NewEncoder(w).Encode(idx)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -493,7 +498,7 @@ func (rs heresphereRoutes) HeresphereIndex(w http.ResponseWriter, r *http.Reques
 }
 
 // TODO: Consider removing, manual scan is faster
-func (rs heresphereRoutes) HeresphereScan(w http.ResponseWriter, r *http.Request) {
+/*func (rs heresphereRoutes) HeresphereScan(w http.ResponseWriter, r *http.Request) {
 	var scenes []*models.Scene
 	if err := rs.repository.WithTxn(r.Context(), func(ctx context.Context) error {
 		var err error
@@ -545,7 +550,7 @@ func (rs heresphereRoutes) HeresphereScan(w http.ResponseWriter, r *http.Request
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-}
+}*/
 
 // Find VR modes from scene
 func FindProjectionTags(scene *models.Scene, processedScene *HeresphereVideoEntry) {
@@ -635,11 +640,17 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 
 	scene := r.Context().Value(heresphereKey).(*models.Scene)
 	processedScene := HeresphereVideoEntry{
-		Access:         HeresphereMember,
-		Title:          scene.GetTitle(),
-		Description:    scene.Details,
-		ThumbnailImage: relUrlToAbs(r, fmt.Sprintf("/scene/%v/screenshot?apikey=%v", scene.ID, config.GetInstance().GetAPIKey())),
-		ThumbnailVideo: relUrlToAbs(r, fmt.Sprintf("/scene/%v/preview?apikey=%v", scene.ID, config.GetInstance().GetAPIKey())),
+		Access:      HeresphereMember,
+		Title:       scene.GetTitle(),
+		Description: scene.Details,
+		ThumbnailImage: fmt.Sprintf("%s?apikey=%v",
+			urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetScreenshotURL(),
+			config.GetInstance().GetAPIKey(),
+		),
+		ThumbnailVideo: fmt.Sprintf("%s?apikey=%v",
+			urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetStreamPreviewURL(),
+			config.GetInstance().GetAPIKey(),
+		),
 		// DateReleased:   scene.CreatedAt.Format("2006-01-02"),
 		DateAdded:    scene.CreatedAt.Format("2006-01-02"),
 		Duration:     60000.0,
@@ -653,8 +664,16 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		Fov:          180.0,
 		Lens:         HeresphereLensLinear,
 		CameraIPD:    6.5,
-		// Hsp:            relUrlToAbs(r, fmt.Sprintf("/heresphere/%v/hsp?apikey=%v", scene.ID, config.GetInstance().GetAPIKey())),
-		EventServer:   relUrlToAbs(r, fmt.Sprintf("/heresphere/%v/event?apikey=%v", scene.ID, config.GetInstance().GetAPIKey())),
+		/*Hsp: fmt.Sprintf("%s/heresphere/%v/hsp?apikey=%v",
+			GetBaseURL(r),
+			scene.ID,
+			config.GetInstance().GetAPIKey(),
+		),*/
+		EventServer: fmt.Sprintf("%s/heresphere/%v/event?apikey=%v",
+			GetBaseURL(r),
+			scene.ID,
+			config.GetInstance().GetAPIKey(),
+		),
 		Scripts:       rs.getVideoScripts(r.Context(), r, scene),
 		Subtitles:     rs.getVideoSubtitles(r.Context(), r, scene),
 		Tags:          rs.getVideoTags(r.Context(), r, scene),
@@ -778,12 +797,18 @@ func HeresphereHasValidToken(r *http.Request) bool {
 
 func writeNotAuthorized(w http.ResponseWriter, r *http.Request, msg string) {
 	banner := HeresphereBanner{
-		Image: relUrlToAbs(r, "/apple-touch-icon.png"),
-		Link:  relUrlToAbs(r, "/"),
+		Image: fmt.Sprintf("%s%s",
+			GetBaseURL(r),
+			"/apple-touch-icon.png",
+		),
+		Link: fmt.Sprintf("%s%s",
+			GetBaseURL(r),
+			"/",
+		),
 	}
 	library := HeresphereIndexEntry{
 		Name: msg,
-		List: []string{relUrlToAbs(r, "/heresphere/doesnt-exist")},
+		List: []string{fmt.Sprintf("%s/heresphere/doesnt-exist", GetBaseURL(r))},
 	}
 	idx := HeresphereIndex{
 		Access:  HeresphereBadLogin,

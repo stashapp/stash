@@ -530,23 +530,28 @@ var (
 	BaseURLCtxKey = &contextKey{"BaseURL"}
 )
 
+func GetBaseURL(r *http.Request) string {
+	scheme := "http"
+	if strings.Compare("https", r.URL.Scheme) == 0 || r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https" {
+		scheme = "https"
+	}
+	prefix := getProxyPrefix(r)
+
+	baseURL := scheme + "://" + r.Host + prefix
+
+	externalHost := config.GetInstance().GetExternalHost()
+	if externalHost != "" {
+		baseURL = externalHost + prefix
+	}
+
+	return baseURL
+}
+
 func BaseURLMiddleware(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		scheme := "http"
-		if strings.Compare("https", r.URL.Scheme) == 0 || r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https" {
-			scheme = "https"
-		}
-		prefix := getProxyPrefix(r)
-
-		baseURL := scheme + "://" + r.Host + prefix
-
-		externalHost := config.GetInstance().GetExternalHost()
-		if externalHost != "" {
-			baseURL = externalHost + prefix
-		}
-
+		baseURL := GetBaseURL(r)
 		r = r.WithContext(context.WithValue(ctx, BaseURLCtxKey, baseURL))
 
 		next.ServeHTTP(w, r)
