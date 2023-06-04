@@ -844,10 +844,6 @@ func makeGalleryWithID(index int) *models.Gallery {
 	ret := makeGallery(index, includeScenes)
 	ret.ID = galleryIDs[index]
 
-	if ret.Date != nil && ret.Date.IsZero() {
-		ret.Date = nil
-	}
-
 	ret.Files = models.NewRelatedFiles([]file.File{makeGalleryFile(index)})
 
 	return ret
@@ -1932,8 +1928,8 @@ func TestGalleryQueryIsMissingDate(t *testing.T) {
 
 		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
-		// two in four galleries have no date
-		assert.Len(t, galleries, int(math.Ceil(float64(totalGalleries)/4*2)))
+		// one in four galleries have no date
+		assert.Len(t, galleries, int(math.Ceil(float64(totalGalleries)/4)))
 
 		// ensure date is null
 		for _, g := range galleries {

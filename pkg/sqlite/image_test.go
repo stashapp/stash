@@ -965,10 +965,6 @@ func makeImageWithID(index int) *models.Image {
 	ret := makeImage(index)
 	ret.ID = imageIDs[index]
 
-	if ret.Date != nil && ret.Date.IsZero() {
-		ret.Date = nil
-	}
-
 	ret.Files = models.NewRelatedFiles([]file.File{makeImageFile(index)})
 
 	return ret

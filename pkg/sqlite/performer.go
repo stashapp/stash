@@ -766,7 +766,7 @@ func performerAgeFilterCriterionHandler(age *models.IntCriterionInput) criterion
 	return func(ctx context.Context, f *filterBuilder) {
 		if age != nil && age.Modifier.IsValid() {
 			clause, args := getIntCriterionWhereClause(
-				"cast(strftime('%Y.%m%d',CASE WHEN performers.death_date IS NULL OR performers.death_date = '0001-01-01' OR performers.death_date = '' THEN 'now' ELSE performers.death_date END) - strftime('%Y.%m%d', performers.birthdate) as int)",
+				"cast(IFNULL(strftime('%Y.%m%d', performers.death_date), strftime('%Y.%m%d', 'now')) - strftime('%Y.%m%d', performers.birthdate) as int)",
 				*age,
 			)
 			f.addWhere(clause, args...)
