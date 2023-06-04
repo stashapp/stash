@@ -492,7 +492,7 @@ func (rs heresphereRoutes) HeresphereScan(w http.ResponseWriter, r *http.Request
 		}
 
 		// Processing each scene and creating a new list
-		for idx, scene := range scenes {
+		for _, scene := range scenes {
 			if err = scene.LoadRelationships(ctx, rs.repository.Scene); err != nil {
 				continue
 			}
@@ -632,14 +632,14 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 
 	scene := r.Context().Value(heresphereKey).(*models.Scene)
 
-	var err error
 	processedScene := HeresphereVideoEntry{}
 	if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		var err error
 		if err = scene.LoadRelationships(ctx, rs.repository.Scene); err != nil {
 			return err
 		}
 
-		processedScene := HeresphereVideoEntry{
+		processedScene = HeresphereVideoEntry{
 			Access:      HeresphereMember,
 			Title:       scene.GetTitle(),
 			Description: scene.Details,
@@ -709,7 +709,7 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 	// Create a JSON encoder for the response writer
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(processedScene)
+	err := json.NewEncoder(w).Encode(processedScene)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
