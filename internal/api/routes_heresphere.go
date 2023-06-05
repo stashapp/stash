@@ -415,7 +415,7 @@ func (rs heresphereRoutes) getVideoMedia(r *http.Request, scene *models.Scene) [
 			// for _, mediaFile := range file_ids {
 
 			sourceUrl := urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetStreamURL("").String()
-			processedEntry := &HeresphereVideoMediaSource{
+			processedEntry := HeresphereVideoMediaSource{
 				Resolution: mediaFile.Height,
 				Height:     mediaFile.Height,
 				Width:      mediaFile.Width,
@@ -424,7 +424,7 @@ func (rs heresphereRoutes) getVideoMedia(r *http.Request, scene *models.Scene) [
 			}
 			processedMedia = append(processedMedia, HeresphereVideoMedia{
 				Name:    "direct stream",
-				Sources: []HeresphereVideoMediaSource{*processedEntry},
+				Sources: []HeresphereVideoMediaSource{processedEntry},
 			})
 
 			resRatio := mediaFile.Width / mediaFile.Height
@@ -448,7 +448,7 @@ func (rs heresphereRoutes) getVideoMedia(r *http.Request, scene *models.Scene) [
 
 						// typeName := fmt.Sprintf("%s %s (%vp)", transNames[i], strings.ToLower(res.String()), height)
 						typeName := transNames[i]
-						mediaTypes[typeName] = append(mediaTypes[typeName], *processedEntry)
+						mediaTypes[typeName] = append(mediaTypes[typeName], processedEntry)
 					}
 				}
 			}
