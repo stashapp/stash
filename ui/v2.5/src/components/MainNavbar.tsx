@@ -296,7 +296,7 @@ export const MainNavbar: React.FC = () => {
             onClick={handleDismiss}
           >
             <Button
-              className="minimal"
+              className="minimal d-flex align-items-center h-100"
               title={intl.formatMessage({ id: "heresphere" })}
             >
               <Icon icon={faHelmetSafety} />
