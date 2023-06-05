@@ -438,7 +438,7 @@ func (rs heresphereRoutes) getVideoMedia(r *http.Request, scene *models.Scene) [
 						processedEntry.Height = height
 						processedEntry.Width = resRatio * height
 						processedEntry.Size = 80085
-						if maxTrans == 0 {
+						if height == 0 {
 							processedEntry.Resolution = mediaFile.Height
 							processedEntry.Height = mediaFile.Height
 							processedEntry.Width = mediaFile.Width
