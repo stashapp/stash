@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -375,11 +376,8 @@ func (rs heresphereRoutes) getVideoScripts(r *http.Request, scene *models.Scene)
 
 	if interactive, err := rs.resolver.Scene().Interactive(r.Context(), scene); err == nil && interactive {
 		processedScript := HeresphereVideoScript{
-			Name: "Default script",
-			Url: fmt.Sprintf("%s?apikey=%v",
-				urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetFunscriptURL(),
-				config.GetInstance().GetAPIKey(),
-			),
+			Name:   "Default script",
+			Url:    addApiKey(urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetFunscriptURL()),
 			Rating: 5,
 		}
 		processedScripts = append(processedScripts, processedScript)
@@ -399,12 +397,11 @@ func (rs heresphereRoutes) getVideoSubtitles(r *http.Request, scene *models.Scen
 			processedCaption := HeresphereVideoSubtitle{
 				Name:     caption.Filename,
 				Language: caption.LanguageCode,
-				Url: fmt.Sprintf("%s?lang=%v&type=%v&apikey=%v",
+				Url: addApiKey(fmt.Sprintf("%s?lang=%v&type=%v",
 					urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetCaptionURL(),
 					caption.LanguageCode,
 					caption.CaptionType,
-					config.GetInstance().GetAPIKey(),
-				),
+				)),
 			}
 			processedSubtitles = append(processedSubtitles, processedCaption)
 		}
@@ -430,7 +427,7 @@ func (rs heresphereRoutes) getVideoMedia(r *http.Request, scene *models.Scene) [
 					Height:     mediaFile.Height,
 					Width:      mediaFile.Width,
 					Size:       mediaFile.Size,
-					Url:        fmt.Sprintf("%s?apikey=%s", sourceUrl, config.GetInstance().GetAPIKey()),
+					Url:        addApiKey(sourceUrl),
 				}
 				processedMedia = append(processedMedia, HeresphereVideoMedia{
 					Name:    "direct stream",
@@ -454,7 +451,7 @@ func (rs heresphereRoutes) getVideoMedia(r *http.Request, scene *models.Scene) [
 								processedEntry.Width = mediaFile.Width
 								processedEntry.Size = mediaFile.Size
 							}
-							processedEntry.Url = fmt.Sprintf("%s%s?resolution=%s&apikey=%s", sourceUrl, trans, res.String(), config.GetInstance().GetAPIKey())
+							processedEntry.Url = addApiKey(fmt.Sprintf("%s%s?resolution=%s", sourceUrl, trans, res.String()))
 
 							typeName := transNames[i]
 							mediaTypes[typeName] = append(mediaTypes[typeName], processedEntry)
@@ -629,39 +626,31 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 	}
 
 	processedScene = HeresphereVideoEntry{
-		Access:      HeresphereMember,
-		Title:       scene.GetTitle(),
-		Description: scene.Details,
-		ThumbnailImage: fmt.Sprintf("%s?apikey=%v",
-			urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetScreenshotURL(),
-			config.GetInstance().GetAPIKey(),
-		),
-		ThumbnailVideo: fmt.Sprintf("%s?apikey=%v",
-			urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetStreamPreviewURL(),
-			config.GetInstance().GetAPIKey(),
-		),
-		DateAdded:    scene.CreatedAt.Format("2006-01-02"),
-		Duration:     60000.0,
-		Rating:       0,
-		Favorites:    scene.OCounter,
-		Comments:     0,
-		IsFavorite:   false,
-		Projection:   HeresphereProjectionPerspective,
-		Stereo:       HeresphereStereoMono,
-		IsEyeSwapped: false,
-		Fov:          180.0,
-		Lens:         HeresphereLensLinear,
-		CameraIPD:    6.5,
-		Hsp: fmt.Sprintf("%s/heresphere/%v/hsp?apikey=%v",
+		Access:         HeresphereMember,
+		Title:          scene.GetTitle(),
+		Description:    scene.Details,
+		ThumbnailImage: addApiKey(urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetScreenshotURL()),
+		ThumbnailVideo: addApiKey(urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetStreamPreviewURL()),
+		DateAdded:      scene.CreatedAt.Format("2006-01-02"),
+		Duration:       60000.0,
+		Rating:         0,
+		Favorites:      scene.OCounter,
+		Comments:       0,
+		IsFavorite:     false,
+		Projection:     HeresphereProjectionPerspective,
+		Stereo:         HeresphereStereoMono,
+		IsEyeSwapped:   false,
+		Fov:            180.0,
+		Lens:           HeresphereLensLinear,
+		CameraIPD:      6.5,
+		Hsp: addApiKey(fmt.Sprintf("%s/heresphere/%v/hsp",
 			GetBaseURL(r),
 			scene.ID,
-			config.GetInstance().GetAPIKey(),
-		),
-		EventServer: fmt.Sprintf("%s/heresphere/%v/event?apikey=%v",
+		)),
+		EventServer: addApiKey(fmt.Sprintf("%s/heresphere/%v/event",
 			GetBaseURL(r),
 			scene.ID,
-			config.GetInstance().GetAPIKey(),
-		),
+		)),
 		Scripts:       rs.getVideoScripts(r, scene),
 		Subtitles:     rs.getVideoSubtitles(r, scene),
 		Tags:          rs.getVideoTags(r, scene),
@@ -754,6 +743,25 @@ func HeresphereHasValidToken(r *http.Request) bool {
 	}
 
 	return len(apiKey) > 0 && apiKey == config.GetInstance().GetAPIKey()
+}
+
+/*
+ * This auxiliary function adds an auth token to a url
+ */
+func addApiKey(urlS string) string {
+	u, err := url.Parse(urlS)
+	if err != nil {
+		// shouldn't happen
+		panic(err)
+	}
+
+	if config.GetInstance().GetAPIKey() != "" {
+		v := u.Query()
+		v.Set("apikey", config.GetInstance().GetAPIKey())
+		u.RawQuery = v.Encode()
+	}
+
+	return u.String()
 }
 
 /*
