@@ -541,6 +541,7 @@ func FindProjectionTags(scene *models.Scene, processedScene *HeresphereVideoEntr
 	for _, tag := range processedScene.Tags {
 		if strings.Contains(tag.Name, "°") {
 			deg := strings.ReplaceAll(tag.Name, "°", "")
+			deg = strings.ReplaceAll(tag.Name, "Tag:", "")
 			if s, err := strconv.ParseFloat(deg, 32); err == nil {
 				processedScene.Fov = float32(s)
 			}
