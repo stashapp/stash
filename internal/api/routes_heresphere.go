@@ -182,6 +182,9 @@ type heresphereRoutes struct {
 	resolver    ResolverRoot
 }
 
+/*
+ * This function provides the possible routes for this api.
+ */
 func (rs heresphereRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
 
@@ -206,6 +209,11 @@ func (rs heresphereRoutes) Routes() chi.Router {
 	return r
 }
 
+/*
+ * This is a video playback event
+ * Intended for server-sided script playback.
+ * But since we dont need that, we just use it for timestamps.
+ */
 func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
 	event := HeresphereVideoEvent{}
 	if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
@@ -228,10 +236,17 @@ func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.R
 	w.WriteHeader(http.StatusOK)
 }
 
+/*
+ * HSP is a HereSphere config file
+ * It stores the players local config such as projection or color settings etc.
+ */
 func (rs heresphereRoutes) HeresphereVideoHsp(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+/*
+ * This endpoint is for letting the user update scene data
+ */
 func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(heresphereKey).(*models.Scene)
 	user := r.Context().Value(heresphereUserKey).(HeresphereAuthReq)
@@ -267,6 +282,9 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 	w.WriteHeader(http.StatusOK)
 }
 
+/*
+ * This auxillary function gathers various tags from the scene to feed the api.
+ */
 func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []HeresphereVideoTag {
 	processedTags := []HeresphereVideoTag{}
 
@@ -343,6 +361,9 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 	return processedTags
 }
 
+/*
+ * This auxillary function gathers a script if applicable
+ */
 func (rs heresphereRoutes) getVideoScripts(r *http.Request, scene *models.Scene) []HeresphereVideoScript {
 	processedScripts := []HeresphereVideoScript{}
 
@@ -360,6 +381,10 @@ func (rs heresphereRoutes) getVideoScripts(r *http.Request, scene *models.Scene)
 
 	return processedScripts
 }
+
+/*
+ * This auxillary function gathers subtitles if applicable
+ */
 func (rs heresphereRoutes) getVideoSubtitles(r *http.Request, scene *models.Scene) []HeresphereVideoSubtitle {
 	processedSubtitles := []HeresphereVideoSubtitle{}
 
@@ -381,58 +406,57 @@ func (rs heresphereRoutes) getVideoSubtitles(r *http.Request, scene *models.Scen
 
 	return processedSubtitles
 }
+
+/*
+ * This auxillary function gathers media information + transcoding options.
+ */
 func (rs heresphereRoutes) getVideoMedia(r *http.Request, scene *models.Scene) []HeresphereVideoMedia {
 	processedMedia := []HeresphereVideoMedia{}
 
 	mediaTypes := make(map[string][]HeresphereVideoMediaSource)
 
-	// if file_ids, err := rs.resolver.Scene().Files(r.Context(), scene); err == nil {
-	if err := scene.LoadPrimaryFile(r.Context(), rs.repository.File); err == nil {
-		if mediaFile := scene.Files.Primary(); mediaFile != nil {
+	if file_ids, err := rs.resolver.Scene().Files(r.Context(), scene); err == nil {
+		for _, mediaFile := range file_ids {
+			if mediaFile.ID == scene.PrimaryFileID.String() {
+				sourceUrl := urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetStreamURL("").String()
+				processedEntry := HeresphereVideoMediaSource{
+					Resolution: mediaFile.Height,
+					Height:     mediaFile.Height,
+					Width:      mediaFile.Width,
+					Size:       mediaFile.Size,
+					Url:        fmt.Sprintf("%s?apikey=%s", sourceUrl, config.GetInstance().GetAPIKey()),
+				}
+				processedMedia = append(processedMedia, HeresphereVideoMedia{
+					Name:    "direct stream",
+					Sources: []HeresphereVideoMediaSource{processedEntry},
+				})
 
-			// for _, mediaFile := range file_ids {
+				resRatio := mediaFile.Width / mediaFile.Height
+				transcodeSize := config.GetInstance().GetMaxStreamingTranscodeSize()
+				transNames := []string{"HLS", "DASH"}
+				for i, trans := range []string{".m3u8", ".mpd"} {
+					for _, res := range models.AllStreamingResolutionEnum {
+						maxTrans := transcodeSize.GetMaxResolution()
+						if height := res.GetMaxResolution(); (maxTrans == 0 || maxTrans >= height) && height <= mediaFile.Height {
+							processedEntry.Resolution = height
+							processedEntry.Height = height
+							processedEntry.Width = resRatio * height
+							processedEntry.Size = 0
+							if height == 0 {
+								processedEntry.Resolution = mediaFile.Height
+								processedEntry.Height = mediaFile.Height
+								processedEntry.Width = mediaFile.Width
+								processedEntry.Size = mediaFile.Size
+							}
+							processedEntry.Url = fmt.Sprintf("%s%s?resolution=%s&apikey=%s", sourceUrl, trans, res.String(), config.GetInstance().GetAPIKey())
 
-			sourceUrl := urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetStreamURL("").String()
-			processedEntry := HeresphereVideoMediaSource{
-				Resolution: mediaFile.Height,
-				Height:     mediaFile.Height,
-				Width:      mediaFile.Width,
-				Size:       mediaFile.Size,
-				Url:        fmt.Sprintf("%s?apikey=%s", sourceUrl, config.GetInstance().GetAPIKey()),
-			}
-			processedMedia = append(processedMedia, HeresphereVideoMedia{
-				Name:    "direct stream",
-				Sources: []HeresphereVideoMediaSource{processedEntry},
-			})
-
-			resRatio := mediaFile.Width / mediaFile.Height
-			transcodeSize := config.GetInstance().GetMaxStreamingTranscodeSize()
-			transNames := []string{"MP4", "VP9", "HLS", "DASH"}
-			for i, trans := range []string{".mp4", ".webm", ".m3u8", ".mpd"} {
-				for _, res := range models.AllStreamingResolutionEnum {
-					maxTrans := transcodeSize.GetMaxResolution()
-					if height := res.GetMaxResolution(); (maxTrans == 0 || maxTrans >= height) && height <= mediaFile.Height {
-						processedEntry.Resolution = height
-						processedEntry.Height = height
-						processedEntry.Width = resRatio * height
-						processedEntry.Size = 80085
-						if height == 0 {
-							processedEntry.Resolution = mediaFile.Height
-							processedEntry.Height = mediaFile.Height
-							processedEntry.Width = mediaFile.Width
-							processedEntry.Size = mediaFile.Size
+							typeName := transNames[i]
+							mediaTypes[typeName] = append(mediaTypes[typeName], processedEntry)
 						}
-						processedEntry.Url = fmt.Sprintf("%s%s?resolution=%s&apikey=%s", sourceUrl, trans, res.String(), config.GetInstance().GetAPIKey())
-
-						// typeName := fmt.Sprintf("%s %s (%vp)", transNames[i], strings.ToLower(res.String()), height)
-						typeName := transNames[i]
-						mediaTypes[typeName] = append(mediaTypes[typeName], processedEntry)
 					}
 				}
 			}
 		}
-
-		// }
 	}
 
 	for codec, sources := range mediaTypes {
@@ -445,6 +469,9 @@ func (rs heresphereRoutes) getVideoMedia(r *http.Request, scene *models.Scene) [
 	return processedMedia
 }
 
+/*
+ * This endpoint provides the main libraries that are available to browse.
+ */
 func (rs heresphereRoutes) HeresphereIndex(w http.ResponseWriter, r *http.Request) {
 	banner := HeresphereBanner{
 		Image: fmt.Sprintf("%s%s",
@@ -458,7 +485,7 @@ func (rs heresphereRoutes) HeresphereIndex(w http.ResponseWriter, r *http.Reques
 	}
 
 	var scenes []*models.Scene
-	if err := rs.repository.WithTxn(r.Context(), func(ctx context.Context) error {
+	if err := txn.WithReadTxn(r.Context(), rs.repository.TxnManager, func(ctx context.Context) error {
 		var err error
 		scenes, err = rs.repository.Scene.All(ctx)
 		return err
@@ -494,7 +521,9 @@ func (rs heresphereRoutes) HeresphereIndex(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-// Find VR modes from scene
+/*
+ * This auxillary function finds vr projection modes from tags and the filename.
+ */
 func FindProjectionTags(scene *models.Scene, processedScene *HeresphereVideoEntry) {
 	// Detect VR modes from tags
 	for _, tag := range processedScene.Tags {
@@ -573,6 +602,9 @@ func FindProjectionTags(scene *models.Scene, processedScene *HeresphereVideoEntr
 	}
 }
 
+/*
+ * This endpoint provides a single scenes full information.
+ */
 func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value(heresphereUserKey).(HeresphereAuthReq)
 	if user.Tags != nil {
@@ -614,11 +646,11 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		Fov:          180.0,
 		Lens:         HeresphereLensLinear,
 		CameraIPD:    6.5,
-		/*Hsp: fmt.Sprintf("%s/heresphere/%v/hsp?apikey=%v",
+		Hsp: fmt.Sprintf("%s/heresphere/%v/hsp?apikey=%v",
 			GetBaseURL(r),
 			scene.ID,
 			config.GetInstance().GetAPIKey(),
-		),*/
+		),
 		EventServer: fmt.Sprintf("%s/heresphere/%v/event?apikey=%v",
 			GetBaseURL(r),
 			scene.ID,
@@ -662,6 +694,9 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 	}
 }
 
+/*
+ * This auxillary function finds if a login is needed, and auth is correct.
+ */
 func basicLogin(username string, password string) bool {
 	if config.GetInstance().HasCredentials() {
 		err := manager.GetInstance().SessionStore.LoginPlain(username, password)
@@ -670,6 +705,9 @@ func basicLogin(username string, password string) bool {
 	return false
 }
 
+/*
+ * This endpoint function allows the user to login and receive a token if successful.
+ */
 func (rs heresphereRoutes) HeresphereLoginToken(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value(heresphereUserKey).(HeresphereAuthReq)
 
@@ -699,6 +737,9 @@ func (rs heresphereRoutes) HeresphereLoginToken(w http.ResponseWriter, r *http.R
 	}
 }
 
+/*
+ * This auxillary function finds if the request has a valid auth token.
+ */
 func HeresphereHasValidToken(r *http.Request) bool {
 	apiKey := r.Header.Get(HeresphereAuthHeader)
 
@@ -709,6 +750,9 @@ func HeresphereHasValidToken(r *http.Request) bool {
 	return len(apiKey) > 0 && apiKey == config.GetInstance().GetAPIKey()
 }
 
+/*
+ * This auxillary writes a library with a fake name upon auth failure
+ */
 func writeNotAuthorized(w http.ResponseWriter, r *http.Request, msg string) {
 	banner := HeresphereBanner{
 		Image: fmt.Sprintf("%s%s",
@@ -739,6 +783,27 @@ func writeNotAuthorized(w http.ResponseWriter, r *http.Request, msg string) {
 	}
 }
 
+/*
+ * This http handler redirects HereSphere if enabled
+ */
+func heresphereHandler() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			c := config.GetInstance()
+
+			if strings.Contains(r.UserAgent(), "HereSphere") && c.GetRedirectHeresphere() && (r.URL.Path == "/" || strings.HasPrefix(r.URL.Path, "/login")) {
+				http.Redirect(w, r, "/heresphere", http.StatusSeeOther)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+/*
+ * This context function finds the applicable scene from the request and stores it.
+ */
 func (rs heresphereRoutes) HeresphereSceneCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sceneID, err := strconv.Atoi(chi.URLParam(r, "sceneId"))
@@ -774,21 +839,9 @@ func (rs heresphereRoutes) HeresphereSceneCtx(next http.Handler) http.Handler {
 	})
 }
 
-func heresphereHandler() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			c := config.GetInstance()
-
-			if strings.Contains(r.UserAgent(), "HereSphere") && c.GetRedirectHeresphere() && (r.URL.Path == "/" || strings.HasPrefix(r.URL.Path, "/login")) {
-				http.Redirect(w, r, "/heresphere", http.StatusSeeOther)
-				return
-			}
-
-			next.ServeHTTP(w, r)
-		})
-	}
-}
-
+/*
+ * This context function finds if the authentication is correct, otherwise rejects the request.
+ */
 func (rs heresphereRoutes) HeresphereCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header()["HereSphere-JSON-Version"] = []string{strconv.Itoa(HeresphereJsonVersion)}
