@@ -194,6 +194,7 @@ func (rs heresphereRoutes) Routes() chi.Router {
 		r.Get("/", rs.HeresphereIndex)
 		r.Head("/", rs.HeresphereIndex)
 
+		r.Post("/scan", rs.HeresphereScan)
 		r.Post("/auth", rs.HeresphereLoginToken)
 		r.Route("/{sceneId}", func(r chi.Router) {
 			r.Use(rs.HeresphereSceneCtx)
@@ -241,6 +242,13 @@ func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.R
  * It stores the players local config such as projection or color settings etc.
  */
 func (rs heresphereRoutes) HeresphereVideoHsp(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+/*
+ * This endpoint provides a list of all videos in a short format
+ */
+func (rs heresphereRoutes) HeresphereScan(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -347,8 +355,6 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 			}
 		}
 	}
-
-	// stash_ids, err := rs.resolver.Scene().StashIds(r.Context(), scene)
 
 	studio_id, err := rs.resolver.Scene().Studio(r.Context(), scene)
 	if err == nil && studio_id != nil {
