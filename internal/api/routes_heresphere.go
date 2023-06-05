@@ -261,6 +261,7 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 		rating := int((user.Rating / 5.0) * 100.0)
 		scene.Rating = &rating
 		// TODO: user.Hsp
+		// TODO: user.Tags crosscheck
 
 		if user.DeleteFile {
 			qe := rs.repository.File
@@ -407,18 +408,53 @@ func (rs heresphereRoutes) getVideoMedia(r *http.Request, scene *models.Scene) [
 
 	mediaTypes := make(map[string][]HeresphereVideoMediaSource)
 
-	if file_ids, err := rs.resolver.Scene().Files(r.Context(), scene); err == nil {
-		for _, mediaFile := range file_ids {
-			processedEntry := HeresphereVideoMediaSource{
+	// if file_ids, err := rs.resolver.Scene().Files(r.Context(), scene); err == nil {
+	if err := scene.LoadPrimaryFile(r.Context(), rs.repository.File); err == nil {
+		if mediaFile := scene.Files.Primary(); mediaFile != nil {
+
+			// for _, mediaFile := range file_ids {
+
+			sourceUrl := urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetStreamURL("").String()
+			processedEntry := &HeresphereVideoMediaSource{
 				Resolution: mediaFile.Height,
 				Height:     mediaFile.Height,
 				Width:      mediaFile.Width,
 				Size:       mediaFile.Size,
-				Url:        urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetStreamURL(config.GetInstance().GetAPIKey()).String(),
+				Url:        fmt.Sprintf("%s?apikey=%s", sourceUrl, config.GetInstance().GetAPIKey()),
 			}
-			typeName := fmt.Sprintf("%s %s", mediaFile.Format, mediaFile.VideoCodec)
-			mediaTypes[typeName] = append(mediaTypes[typeName], processedEntry)
+			processedMedia = append(processedMedia, HeresphereVideoMedia{
+				Name:    "direct stream",
+				Sources: []HeresphereVideoMediaSource{*processedEntry},
+			})
+
+			resRatio := mediaFile.Width / mediaFile.Height
+			transcodeSize := config.GetInstance().GetMaxStreamingTranscodeSize()
+			transNames := []string{"MP4", "VP9", "HLS", "DASH"}
+			for i, trans := range []string{".mp4", ".webm", ".m3u8", ".mpd"} {
+				for _, res := range models.AllStreamingResolutionEnum {
+					maxTrans := transcodeSize.GetMaxResolution()
+					if height := res.GetMaxResolution(); (maxTrans == 0 || maxTrans >= height) && height <= mediaFile.Height {
+						processedEntry.Resolution = height
+						processedEntry.Height = height
+						processedEntry.Width = resRatio * height
+						processedEntry.Size = 80085
+						if maxTrans == 0 {
+							processedEntry.Resolution = mediaFile.Height
+							processedEntry.Height = mediaFile.Height
+							processedEntry.Width = mediaFile.Width
+							processedEntry.Size = mediaFile.Size
+						}
+						processedEntry.Url = fmt.Sprintf("%s%s?resolution=%s&apikey=%s", sourceUrl, trans, res.String(), config.GetInstance().GetAPIKey())
+
+						// typeName := fmt.Sprintf("%s %s (%vp)", transNames[i], strings.ToLower(res.String()), height)
+						typeName := transNames[i]
+						mediaTypes[typeName] = append(mediaTypes[typeName], *processedEntry)
+					}
+				}
+			}
 		}
+
+		// }
 	}
 
 	for codec, sources := range mediaTypes {
