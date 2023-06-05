@@ -21,8 +21,10 @@ var resolutionRanges = map[ResolutionEnum]ResolutionRange{
 	ResolutionEnum("QUAD_HD"):     {1440, 1919},
 	ResolutionEnum("FOUR_K"):      {1920, 2559},
 	ResolutionEnum("FIVE_K"):      {2560, 3071},
-	ResolutionEnum("SIX_K"):       {3072, 3839},
-	ResolutionEnum("EIGHT_K"):     {3840, 8639},
+	ResolutionEnum("SIX_K"):       {3072, 3583},
+	ResolutionEnum("SEVEN_K"):     {3584, 3839},
+	ResolutionEnum("EIGHT_K"):     {3840, 6143},
+	ResolutionEnum("HUGE"):        {6144, 9999},
 }
 
 type ResolutionEnum string
@@ -50,8 +52,12 @@ const (
 	ResolutionEnumFiveK ResolutionEnum = "FIVE_K"
 	// 6k
 	ResolutionEnumSixK ResolutionEnum = "SIX_K"
+	// 7k
+	ResolutionEnumSevenK ResolutionEnum = "SEVEN_K"
 	// 8k
 	ResolutionEnumEightK ResolutionEnum = "EIGHT_K"
+	// 8K+
+	ResolutionEnumHuge ResolutionEnum = "HUGE"
 )
 
 var AllResolutionEnum = []ResolutionEnum{
@@ -66,12 +72,14 @@ var AllResolutionEnum = []ResolutionEnum{
 	ResolutionEnumFourK,
 	ResolutionEnumFiveK,
 	ResolutionEnumSixK,
+	ResolutionEnumSevenK,
 	ResolutionEnumEightK,
+	ResolutionEnumHuge,
 }
 
 func (e ResolutionEnum) IsValid() bool {
 	switch e {
-	case ResolutionEnumVeryLow, ResolutionEnumLow, ResolutionEnumR360p, ResolutionEnumStandard, ResolutionEnumWebHd, ResolutionEnumStandardHd, ResolutionEnumFullHd, ResolutionEnumQuadHd, ResolutionEnumFourK, ResolutionEnumFiveK, ResolutionEnumSixK, ResolutionEnumEightK:
+	case ResolutionEnumVeryLow, ResolutionEnumLow, ResolutionEnumR360p, ResolutionEnumStandard, ResolutionEnumWebHd, ResolutionEnumStandardHd, ResolutionEnumFullHd, ResolutionEnumQuadHd, ResolutionEnumFourK, ResolutionEnumFiveK, ResolutionEnumSixK, ResolutionEnumSevenK, ResolutionEnumEightK, ResolutionEnumHuge:
 		return true
 	}
 	return false
