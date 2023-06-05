@@ -658,7 +658,11 @@
             "heading": "Continue playlist by default"
           },
           "show_scrubber": "Show Scrubber",
-          "track_activity": "Track Activity"
+          "track_activity": "Track Activity",
+          "vr_tag": {
+            "description": "The VR button will only be displayed for scenes with this tag.",
+            "heading": "VR Tag"
+          }
         }
       },
       "scene_wall": {

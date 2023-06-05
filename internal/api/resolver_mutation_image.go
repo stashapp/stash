@@ -10,6 +10,7 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -138,6 +139,8 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 		}
 	}
 
+	var updatedGalleryIDs []int
+
 	if translator.hasField("gallery_ids") {
 		updatedImage.GalleryIDs, err = translateUpdateIDs(input.GalleryIds, models.RelationshipUpdateModeSet)
 		if err != nil {
@@ -152,6 +155,8 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 		if err := r.galleryService.ValidateImageGalleryChange(ctx, i, *updatedImage.GalleryIDs); err != nil {
 			return nil, err
 		}
+
+		updatedGalleryIDs = updatedImage.GalleryIDs.ImpactedIDs(i.GalleryIDs.List())
 	}
 
 	if translator.hasField("performer_ids") {
@@ -172,6 +177,13 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 	image, err := qb.UpdatePartial(ctx, imageID, updatedImage)
 	if err != nil {
 		return nil, err
+	}
+
+	// #3759 - update all impacted galleries
+	for _, galleryID := range updatedGalleryIDs {
+		if err := r.galleryService.Updated(ctx, galleryID); err != nil {
+			return nil, fmt.Errorf("updating gallery %d: %w", galleryID, err)
+		}
 	}
 
 	return image, nil
@@ -223,6 +235,7 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 
 	// Start the transaction and save the image marker
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		var updatedGalleryIDs []int
 		qb := r.repository.Image
 
 		for _, imageID := range imageIDs {
@@ -244,6 +257,9 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 				if err := r.galleryService.ValidateImageGalleryChange(ctx, i, *updatedImage.GalleryIDs); err != nil {
 					return err
 				}
+
+				thisUpdatedGalleryIDs := updatedImage.GalleryIDs.ImpactedIDs(i.GalleryIDs.List())
+				updatedGalleryIDs = intslice.IntAppendUniques(updatedGalleryIDs, thisUpdatedGalleryIDs)
 			}
 
 			image, err := qb.UpdatePartial(ctx, imageID, updatedImage)
@@ -252,6 +268,13 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 			}
 
 			ret = append(ret, image)
+		}
+
+		// #3759 - update all impacted galleries
+		for _, galleryID := range updatedGalleryIDs {
+			if err := r.galleryService.Updated(ctx, galleryID); err != nil {
+				return fmt.Errorf("updating gallery %d: %w", galleryID, err)
+			}
 		}
 
 		return nil

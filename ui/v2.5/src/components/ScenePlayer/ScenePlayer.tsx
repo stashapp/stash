@@ -11,6 +11,7 @@ import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
 import "videojs-contrib-dash";
 import "videojs-mobile-ui";
 import "videojs-seek-buttons";
+import { UAParser } from "ua-parser-js";
 import "./live";
 import "./PlaylistButtons";
 import "./source-selector";
@@ -19,6 +20,7 @@ import "./markers";
 import "./vtt-thumbnails";
 import "./big-buttons";
 import "./track-activity";
+import "./vrmode";
 import cx from "classnames";
 import {
   useSceneSaveActivity,
@@ -212,6 +214,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   const minimumPlayPercent = uiConfig?.minimumPlayPercent ?? 0;
   const trackActivity = uiConfig?.trackActivity ?? false;
+  const vrTag = uiConfig?.vrTag ?? undefined;
 
   const file = useMemo(
     () => ((scene?.files.length ?? 0) > 0 ? scene?.files[0] : undefined),
@@ -317,11 +320,13 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         },
         skipButtons: {},
         trackActivity: {},
+        vrMenu: {},
       },
     };
 
     const videoEl = document.createElement("video-js");
     videoEl.setAttribute("data-vjs-player", "true");
+    videoEl.setAttribute("crossorigin", "anonymous");
     videoEl.classList.add("vjs-big-play-centered");
     videoRef.current!.appendChild(videoEl);
 
@@ -347,6 +352,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       // reset sceneId to force reload sources
       sceneId.current = undefined;
     };
+    // empty deps - only init once
   }, []);
 
   useEffect(() => {
@@ -370,6 +376,21 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     scene?.interactive,
     scene?.paths.funscript,
   ]);
+
+  useEffect(() => {
+    const player = getPlayer();
+    if (!player) return;
+
+    const vrMenu = player.vrMenu();
+
+    let showButton = false;
+
+    if (scene && vrTag) {
+      showButton = scene.tags.some((tag) => vrTag === tag.name);
+    }
+
+    vrMenu.setShowButton(showButton);
+  }, [getPlayer, scene, vrTag]);
 
   // Player event handlers
   useEffect(() => {
@@ -487,24 +508,36 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     };
     player.mobileUi(mobileUiOptions);
 
+    function isDirect(src: URL) {
+      return (
+        src.pathname.endsWith("/stream") ||
+        src.pathname.endsWith("/stream.mpd") ||
+        src.pathname.endsWith("/stream.m3u8")
+      );
+    }
+
     const { duration } = file;
     const sourceSelector = player.sourceSelector();
+    const isSafari = UAParser().browser.name?.includes("Safari");
     sourceSelector.setSources(
-      scene.sceneStreams.map((stream) => {
-        const src = new URL(stream.url);
-        const isDirect =
-          src.pathname.endsWith("/stream") ||
-          src.pathname.endsWith("/stream.mpd") ||
-          src.pathname.endsWith("/stream.m3u8");
+      scene.sceneStreams
+        .filter((stream) => {
+          const src = new URL(stream.url);
+          const isFileTranscode = !isDirect(src);
 
-        return {
-          src: stream.url,
-          type: stream.mime_type ?? undefined,
-          label: stream.label ?? undefined,
-          offset: !isDirect,
-          duration,
-        };
-      })
+          return !(isFileTranscode && isSafari);
+        })
+        .map((stream) => {
+          const src = new URL(stream.url);
+
+          return {
+            src: stream.url,
+            type: stream.mime_type ?? undefined,
+            label: stream.label ?? undefined,
+            offset: !isDirect(src),
+            duration,
+          };
+        })
     );
 
     function getDefaultLanguageCode() {
@@ -649,6 +682,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   }, [
     getPlayer,
     scene,
+    vrTag,
     trackActivity,
     minimumPlayPercent,
     sceneIncrementPlayCount,

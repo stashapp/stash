@@ -83,7 +83,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
 
   // set up hotkeys
   useEffect(() => {
-    Mousetrap.bind("e", () => setIsEditing(true));
+    Mousetrap.bind("e", () => toggleEditing());
     Mousetrap.bind("d d", () => {
       onDelete();
     });
@@ -95,22 +95,21 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   });
 
   async function onSave(input: GQL.MovieCreateInput) {
-    try {
-      const result = await updateMovie({
-        variables: {
-          input: {
-            id: movie.id,
-            ...input,
-          },
+    await updateMovie({
+      variables: {
+        input: {
+          id: movie.id,
+          ...input,
         },
-      });
-      if (result.data?.movieUpdate) {
-        setIsEditing(false);
-        history.push(`/movies/${result.data.movieUpdate.id}`);
-      }
-    } catch (e) {
-      Toast.error(e);
-    }
+      },
+    });
+    toggleEditing(false);
+    Toast.success({
+      content: intl.formatMessage(
+        { id: "toast.updated_entity" },
+        { entity: intl.formatMessage({ id: "movie" }).toLocaleLowerCase() }
+      ),
+    });
   }
 
   async function onDelete() {
@@ -124,8 +123,12 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
     history.push(`/movies`);
   }
 
-  function onToggleEdit() {
-    setIsEditing(!isEditing);
+  function toggleEditing(value?: boolean) {
+    if (value !== undefined) {
+      setIsEditing(value);
+    } else {
+      setIsEditing((e) => !e);
+    }
     setFrontImage(undefined);
     setBackImage(undefined);
   }
@@ -239,7 +242,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
               objectName={movie.name}
               isNew={false}
               isEditing={isEditing}
-              onToggleEdit={onToggleEdit}
+              onToggleEdit={() => toggleEditing()}
               onSave={() => {}}
               onImageChange={() => {}}
               onDelete={onDelete}
@@ -249,7 +252,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
           <MovieEditPanel
             movie={movie}
             onSubmit={onSave}
-            onCancel={onToggleEdit}
+            onCancel={() => toggleEditing()}
             onDelete={onDelete}
             setFrontImage={setFrontImage}
             setBackImage={setBackImage}
