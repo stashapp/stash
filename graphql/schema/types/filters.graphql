@@ -21,10 +21,12 @@ enum ResolutionEnum {
   "720p", STANDARD_HD
   "1080p", FULL_HD
   "1440p", QUAD_HD
-  "4k", FOUR_K
-  "5k", FIVE_K
-  "6k", SIX_K
-  "8k", EIGHT_K
+  "4K", FOUR_K
+  "5K", FIVE_K
+  "6K", SIX_K
+  "7K", SEVEN_K
+  "8K", EIGHT_K
+  "8K+", HUGE
 }
 
 input ResolutionCriterionInput {
