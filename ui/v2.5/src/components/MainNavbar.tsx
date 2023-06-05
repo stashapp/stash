@@ -288,7 +288,7 @@ export const MainNavbar: React.FC = () => {
             </span>
           </Button>
         </Nav.Link>
-        {configuration?.interface.showHeresphereButton &&  
+        {configuration?.interface.showHeresphereButton && (
           <Nav.Link
             className="nav-utility"
             href="/heresphere"
@@ -302,7 +302,7 @@ export const MainNavbar: React.FC = () => {
               <Icon icon={faHelmetSafety} />
             </Button>
           </Nav.Link>
-        }
+        )}
         <NavLink
           className="nav-utility"
           exact
