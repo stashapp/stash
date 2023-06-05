@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi"
-	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
@@ -193,7 +192,6 @@ func (rs heresphereRoutes) Routes() chi.Router {
 		r.Head("/", rs.HeresphereIndex)
 
 		r.Post("/auth", rs.HeresphereLoginToken)
-		// r.Post("/scan", rs.HeresphereScan)
 		r.Route("/{sceneId}", func(r chi.Router) {
 			r.Use(rs.HeresphereSceneCtx)
 
@@ -290,7 +288,13 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []HeresphereVideoTag {
 	processedTags := []HeresphereVideoTag{}
 
-	mark_ids, err := rs.repository.SceneMarker.FindBySceneID(r.Context(), scene.ID)
+	if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		return scene.LoadRelationships(ctx, rs.repository.Scene)
+	}); err != nil {
+		return processedTags
+	}
+
+	mark_ids, err := rs.resolver.Scene().SceneMarkers(r.Context(), scene)
 	if err == nil {
 		for _, mark := range mark_ids {
 			genTag := HeresphereVideoTag{
@@ -302,43 +306,37 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 		}
 	}
 
-	if scene.GalleryIDs.Loaded() {
-		gallery_ids, errs := loaders.From(r.Context()).GalleryByID.LoadAll(scene.GalleryIDs.List())
-		if firstError(errs) == nil {
-			for _, gal := range gallery_ids {
-				genTag := HeresphereVideoTag{
-					Name: fmt.Sprintf("Gallery:%v", gal.GetTitle()),
-				}
-				processedTags = append(processedTags, genTag)
+	gallery_ids, err := rs.resolver.Scene().Galleries(r.Context(), scene)
+	if err == nil {
+		for _, gal := range gallery_ids {
+			genTag := HeresphereVideoTag{
+				Name: fmt.Sprintf("Gallery:%v", gal.GetTitle()),
 			}
+			processedTags = append(processedTags, genTag)
 		}
 	}
 
-	if scene.TagIDs.Loaded() {
-		tag_ids, errs := loaders.From(r.Context()).TagByID.LoadAll(scene.TagIDs.List())
-		if firstError(errs) == nil {
-			for _, tag := range tag_ids {
-				genTag := HeresphereVideoTag{
-					Name: fmt.Sprintf("Tag:%v", tag.Name),
-				}
-				processedTags = append(processedTags, genTag)
+	tag_ids, err := rs.resolver.Scene().Tags(r.Context(), scene)
+	if err == nil {
+		for _, tag := range tag_ids {
+			genTag := HeresphereVideoTag{
+				Name: fmt.Sprintf("Tag:%v", tag.Name),
 			}
+			processedTags = append(processedTags, genTag)
 		}
 	}
 
-	if scene.PerformerIDs.Loaded() {
-		perf_ids, errs := loaders.From(r.Context()).PerformerByID.LoadAll(scene.PerformerIDs.List())
-		if firstError(errs) == nil {
-			for _, perf := range perf_ids {
-				genTag := HeresphereVideoTag{
-					Name: fmt.Sprintf("Talent:%s", perf.Name),
-				}
-				processedTags = append(processedTags, genTag)
+	perf_ids, err := rs.resolver.Scene().Performers(r.Context(), scene)
+	if err == nil {
+		for _, perf := range perf_ids {
+			genTag := HeresphereVideoTag{
+				Name: fmt.Sprintf("Talent:%s", perf.Name),
 			}
+			processedTags = append(processedTags, genTag)
 		}
 	}
 
-	/*movie_ids, err := rs.resolver.Scene().Movies(r.Context(), scene)
+	movie_ids, err := rs.resolver.Scene().Movies(r.Context(), scene)
 	if err == nil {
 		for _, movie := range movie_ids {
 			if movie.Movie != nil {
@@ -348,15 +346,31 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 				processedTags = append(processedTags, genTag)
 			}
 		}
-	}*/
+	}
 
 	// stash_ids, err := rs.resolver.Scene().StashIds(r.Context(), scene)
 
-	if scene.StudioID != nil {
-		studio_id, err := loaders.From(r.Context()).StudioByID.Load(*scene.StudioID)
-		if err == nil && studio_id != nil {
+	studio_id, err := rs.resolver.Scene().Studio(r.Context(), scene)
+	if err == nil && studio_id != nil {
+		genTag := HeresphereVideoTag{
+			Name: fmt.Sprintf("Studio:%v", studio_id.Name.String),
+		}
+		processedTags = append(processedTags, genTag)
+	}
+
+	exists, err := rs.resolver.Scene().Interactive(r.Context(), scene)
+	if err == nil && exists {
+		shouldAdd := true
+		for _, tag := range processedTags {
+			if strings.Contains(tag.Name, "Tag:Interactive") {
+				shouldAdd = false
+				break
+			}
+		}
+
+		if shouldAdd {
 			genTag := HeresphereVideoTag{
-				Name: fmt.Sprintf("Studio:%v", studio_id.Name.String),
+				Name: "Tag:Interactive",
 			}
 			processedTags = append(processedTags, genTag)
 		}
@@ -516,70 +530,6 @@ func (rs heresphereRoutes) HeresphereIndex(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-// TODO: Consider removing, manual scan is faster
-func (rs heresphereRoutes) HeresphereScan(w http.ResponseWriter, r *http.Request) {
-	var scenes []*models.Scene
-	processedScenes := []HeresphereVideoEntryShort{}
-	if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
-		var err error
-
-		if scenes, err = rs.repository.Scene.All(ctx); err != nil {
-			return err
-		}
-
-		// Processing each scene and creating a new list
-		for _, scene := range scenes {
-			if err = scene.LoadRelationships(ctx, rs.repository.Scene); err != nil {
-				continue
-			}
-
-			// Perform the necessary processing on each scene
-			processedScene := HeresphereVideoEntryShort{
-				Link: fmt.Sprintf("%s/heresphere/%v",
-					GetBaseURL(r),
-					scene.ID,
-				),
-				Title:      scene.GetTitle(),
-				DateAdded:  scene.CreatedAt.Format("2006-01-02"),
-				Duration:   60000.0,
-				Rating:     0.0,
-				Favorites:  scene.OCounter,
-				Comments:   0,
-				IsFavorite: false,
-				Tags:       rs.getVideoTags(r, scene),
-			}
-			if scene.Date != nil {
-				processedScene.DateReleased = scene.Date.Format("2006-01-02")
-			}
-			if scene.Rating != nil {
-				isFavorite := *scene.Rating > 85
-				processedScene.Rating = float32(*scene.Rating) * 0.05 // 0-5
-				processedScene.IsFavorite = isFavorite
-			}
-			file := scene.Files.Primary()
-			if file != nil {
-				processedScene.Duration = handleFloat64Value(file.Duration * 1000.0)
-			}
-
-			processedScenes = append(processedScenes, processedScene)
-		}
-
-		return err
-	}); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Create a JSON encoder for the response writer
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	err := json.NewEncoder(w).Encode(processedScenes)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-}
-
 // Find VR modes from scene
 func FindProjectionTags(scene *models.Scene, processedScene *HeresphereVideoEntry) {
 	// Detect VR modes from tags
@@ -671,81 +621,78 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 	processedScene := HeresphereVideoEntry{}
 	if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 		var err error
-		if err = scene.LoadRelationships(ctx, rs.repository.Scene); err != nil {
-			return err
-		}
-
-		processedScene = HeresphereVideoEntry{
-			Access:      HeresphereMember,
-			Title:       scene.GetTitle(),
-			Description: scene.Details,
-			ThumbnailImage: fmt.Sprintf("%s?apikey=%v",
-				urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetScreenshotURL(),
-				config.GetInstance().GetAPIKey(),
-			),
-			ThumbnailVideo: fmt.Sprintf("%s?apikey=%v",
-				urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetStreamPreviewURL(),
-				config.GetInstance().GetAPIKey(),
-			),
-			DateAdded:    scene.CreatedAt.Format("2006-01-02"),
-			Duration:     60000.0,
-			Rating:       0.0,
-			Favorites:    scene.OCounter,
-			Comments:     0,
-			IsFavorite:   false,
-			Projection:   HeresphereProjectionPerspective,
-			Stereo:       HeresphereStereoMono,
-			IsEyeSwapped: false,
-			Fov:          180.0,
-			Lens:         HeresphereLensLinear,
-			CameraIPD:    6.5,
-			/*Hsp: fmt.Sprintf("%s/heresphere/%v/hsp?apikey=%v",
-				GetBaseURL(r),
-				scene.ID,
-				config.GetInstance().GetAPIKey(),
-			),*/
-			EventServer: fmt.Sprintf("%s/heresphere/%v/event?apikey=%v",
-				GetBaseURL(r),
-				scene.ID,
-				config.GetInstance().GetAPIKey(),
-			),
-			Scripts:       rs.getVideoScripts(r, scene),
-			Subtitles:     rs.getVideoSubtitles(r, scene),
-			Tags:          rs.getVideoTags(r, scene),
-			Media:         []HeresphereVideoMedia{},
-			WriteFavorite: false,
-			WriteRating:   false,
-			WriteTags:     false,
-			WriteHSP:      false,
-		}
-		FindProjectionTags(scene, &processedScene)
-
-		if user.NeedsMediaSource {
-			processedScene.Media = rs.getVideoMedia(r, scene)
-		}
-		if scene.Date != nil {
-			processedScene.DateReleased = scene.Date.Format("2006-01-02")
-		}
-		if scene.Rating != nil {
-			isFavorite := *scene.Rating > 85
-			processedScene.Rating = float32(*scene.Rating) * 0.05 // 0-5
-			processedScene.IsFavorite = isFavorite
-		}
-		file_ids, err := rs.resolver.Scene().Files(r.Context(), scene)
-		if err == nil && len(file_ids) > 0 {
-			processedScene.Duration = handleFloat64Value(file_ids[0].Duration * 1000.0)
-		}
-
+		err = scene.LoadRelationships(ctx, rs.repository.Scene)
 		return err
 	}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	processedScene = HeresphereVideoEntry{
+		Access:      HeresphereMember,
+		Title:       scene.GetTitle(),
+		Description: scene.Details,
+		ThumbnailImage: fmt.Sprintf("%s?apikey=%v",
+			urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetScreenshotURL(),
+			config.GetInstance().GetAPIKey(),
+		),
+		ThumbnailVideo: fmt.Sprintf("%s?apikey=%v",
+			urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetStreamPreviewURL(),
+			config.GetInstance().GetAPIKey(),
+		),
+		DateAdded:    scene.CreatedAt.Format("2006-01-02"),
+		Duration:     60000.0,
+		Rating:       0.0,
+		Favorites:    scene.OCounter,
+		Comments:     0,
+		IsFavorite:   false,
+		Projection:   HeresphereProjectionPerspective,
+		Stereo:       HeresphereStereoMono,
+		IsEyeSwapped: false,
+		Fov:          180.0,
+		Lens:         HeresphereLensLinear,
+		CameraIPD:    6.5,
+		/*Hsp: fmt.Sprintf("%s/heresphere/%v/hsp?apikey=%v",
+			GetBaseURL(r),
+			scene.ID,
+			config.GetInstance().GetAPIKey(),
+		),*/
+		EventServer: fmt.Sprintf("%s/heresphere/%v/event?apikey=%v",
+			GetBaseURL(r),
+			scene.ID,
+			config.GetInstance().GetAPIKey(),
+		),
+		Scripts:       rs.getVideoScripts(r, scene),
+		Subtitles:     rs.getVideoSubtitles(r, scene),
+		Tags:          rs.getVideoTags(r, scene),
+		Media:         []HeresphereVideoMedia{},
+		WriteFavorite: false,
+		WriteRating:   false,
+		WriteTags:     false,
+		WriteHSP:      false,
+	}
+	FindProjectionTags(scene, &processedScene)
+
+	if user.NeedsMediaSource {
+		processedScene.Media = rs.getVideoMedia(r, scene)
+	}
+	if scene.Date != nil {
+		processedScene.DateReleased = scene.Date.Format("2006-01-02")
+	}
+	if scene.Rating != nil {
+		isFavorite := *scene.Rating > 85
+		processedScene.Rating = float32(*scene.Rating) * 0.05 // 0-5
+		processedScene.IsFavorite = isFavorite
+	}
+	file_ids, err := rs.resolver.Scene().Files(r.Context(), scene)
+	if err == nil && len(file_ids) > 0 {
+		processedScene.Duration = handleFloat64Value(file_ids[0].Duration * 1000.0)
+	}
+
 	// Create a JSON encoder for the response writer
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	err := json.NewEncoder(w).Encode(processedScene)
+	err = json.NewEncoder(w).Encode(processedScene)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
