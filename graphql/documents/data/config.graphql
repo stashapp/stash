@@ -93,7 +93,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   }
   handyKey
   funscriptOffset
-  redirectHeresphere
+  showHeresphereButton
 }
 
 fragment ConfigDLNAData on ConfigDLNAResult {

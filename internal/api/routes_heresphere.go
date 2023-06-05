@@ -803,24 +803,6 @@ func writeNotAuthorized(w http.ResponseWriter, r *http.Request, msg string) {
 }
 
 /*
- * This http handler redirects HereSphere if enabled
- */
-func heresphereHandler() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			c := config.GetInstance()
-
-			if strings.Contains(r.UserAgent(), "HereSphere") && c.GetRedirectHeresphere() && (r.URL.Path == "/" || strings.HasPrefix(r.URL.Path, "/login")) {
-				http.Redirect(w, r, "/heresphere", http.StatusSeeOther)
-				return
-			}
-
-			next.ServeHTTP(w, r)
-		})
-	}
-}
-
-/*
  * This context function finds the applicable scene from the request and stores it.
  */
 func (rs heresphereRoutes) HeresphereSceneCtx(next http.Handler) http.Handler {

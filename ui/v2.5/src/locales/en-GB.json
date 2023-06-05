@@ -609,9 +609,9 @@
       "language": {
         "heading": "Language"
       },
-      "redirect_heresphere": {
-        "description": "Redirect Heresphere from the interface to its own API",
-        "heading": "Redirect Heresphere"
+      "show_heresphere_button": {
+        "description": "Show a button to open to the HereSphere API",
+        "heading": "Show HereSphere button"
       },
 	  "max_loop_duration": {
         "description": "Maximum scene duration where scene player will loop the video - 0 to disable",

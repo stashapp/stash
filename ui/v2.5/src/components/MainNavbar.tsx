@@ -31,6 +31,7 @@ import {
   faTimes,
   faUser,
   faVideo,
+  faHelmetSafety,
 } from "@fortawesome/free-solid-svg-icons";
 import { baseURL } from "src/core/createClient";
 
@@ -287,6 +288,21 @@ export const MainNavbar: React.FC = () => {
             </span>
           </Button>
         </Nav.Link>
+        {configuration?.interface.showHeresphereButton &&  
+          <Nav.Link
+            className="nav-utility"
+            href="/heresphere"
+            target="_blank"
+            onClick={handleDismiss}
+          >
+            <Button
+              className="minimal"
+              title={intl.formatMessage({ id: "heresphere" })}
+            >
+              <Icon icon={faHelmetSafety} />
+            </Button>
+          </Nav.Link>
+        }
         <NavLink
           className="nav-utility"
           exact
