@@ -193,7 +193,7 @@ func (rs heresphereRoutes) Routes() chi.Router {
 		r.Head("/", rs.HeresphereIndex)
 
 		r.Post("/auth", rs.HeresphereLoginToken)
-		r.Post("/scan", rs.HeresphereScan)
+		// r.Post("/scan", rs.HeresphereScan)
 		r.Route("/{sceneId}", func(r chi.Router) {
 			r.Use(rs.HeresphereSceneCtx)
 
