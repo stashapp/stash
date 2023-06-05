@@ -726,6 +726,7 @@
     "equals": "är",
     "excludes": "exkluderar",
     "format_string": "{criterion} {modifierString} {valueString}",
+    "format_string_excludes": "{criterion} {modifierString} {valueString} (excludes {excludedString})",
     "greater_than": "är större än",
     "includes": "inkluderar",
     "includes_all": "inkluderar allt",
