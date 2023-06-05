@@ -283,7 +283,7 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 }
 
 /*
- * This auxillary function gathers various tags from the scene to feed the api.
+ * This auxiliary function gathers various tags from the scene to feed the api.
  */
 func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []HeresphereVideoTag {
 	processedTags := []HeresphereVideoTag{}
@@ -362,7 +362,7 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 }
 
 /*
- * This auxillary function gathers a script if applicable
+ * This auxiliary function gathers a script if applicable
  */
 func (rs heresphereRoutes) getVideoScripts(r *http.Request, scene *models.Scene) []HeresphereVideoScript {
 	processedScripts := []HeresphereVideoScript{}
@@ -383,7 +383,7 @@ func (rs heresphereRoutes) getVideoScripts(r *http.Request, scene *models.Scene)
 }
 
 /*
- * This auxillary function gathers subtitles if applicable
+ * This auxiliary function gathers subtitles if applicable
  */
 func (rs heresphereRoutes) getVideoSubtitles(r *http.Request, scene *models.Scene) []HeresphereVideoSubtitle {
 	processedSubtitles := []HeresphereVideoSubtitle{}
@@ -408,7 +408,7 @@ func (rs heresphereRoutes) getVideoSubtitles(r *http.Request, scene *models.Scen
 }
 
 /*
- * This auxillary function gathers media information + transcoding options.
+ * This auxiliary function gathers media information + transcoding options.
  */
 func (rs heresphereRoutes) getVideoMedia(r *http.Request, scene *models.Scene) []HeresphereVideoMedia {
 	processedMedia := []HeresphereVideoMedia{}
@@ -522,7 +522,7 @@ func (rs heresphereRoutes) HeresphereIndex(w http.ResponseWriter, r *http.Reques
 }
 
 /*
- * This auxillary function finds vr projection modes from tags and the filename.
+ * This auxiliary function finds vr projection modes from tags and the filename.
  */
 func FindProjectionTags(scene *models.Scene, processedScene *HeresphereVideoEntry) {
 	// Detect VR modes from tags
@@ -695,7 +695,7 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 }
 
 /*
- * This auxillary function finds if a login is needed, and auth is correct.
+ * This auxiliary function finds if a login is needed, and auth is correct.
  */
 func basicLogin(username string, password string) bool {
 	if config.GetInstance().HasCredentials() {
@@ -738,7 +738,7 @@ func (rs heresphereRoutes) HeresphereLoginToken(w http.ResponseWriter, r *http.R
 }
 
 /*
- * This auxillary function finds if the request has a valid auth token.
+ * This auxiliary function finds if the request has a valid auth token.
  */
 func HeresphereHasValidToken(r *http.Request) bool {
 	apiKey := r.Header.Get(HeresphereAuthHeader)
@@ -751,7 +751,7 @@ func HeresphereHasValidToken(r *http.Request) bool {
 }
 
 /*
- * This auxillary writes a library with a fake name upon auth failure
+ * This auxiliary writes a library with a fake name upon auth failure
  */
 func writeNotAuthorized(w http.ResponseWriter, r *http.Request, msg string) {
 	banner := HeresphereBanner{
