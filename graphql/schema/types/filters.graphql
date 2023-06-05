@@ -21,7 +21,6 @@ enum ResolutionEnum {
   "720p", STANDARD_HD
   "1080p", FULL_HD
   "1440p", QUAD_HD
-  "1920p", VR_HD
   "4k", FOUR_K
   "5k", FIVE_K
   "6k", SIX_K
