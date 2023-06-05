@@ -280,8 +280,14 @@ const bitRate = (bitrate: number) => {
 
 const resolution = (width: number, height: number) => {
   const number = width > height ? height : width;
+  if (number >= 6144) {
+    return "HUGE";
+  }
   if (number >= 3840) {
     return "8K";
+  }
+  if (number >= 3584) {
+    return "7K";
   }
   if (number >= 3072) {
     return "6K";
