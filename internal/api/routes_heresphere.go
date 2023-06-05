@@ -256,6 +256,7 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 	if err := txn.WithTxn(r.Context(), rs.repository.TxnManager, func(ctx context.Context) error {
 		qb := rs.repository.Scene
 
+		// TODO: Broken
 		rating := int((user.Rating / 5.0) * 100.0)
 		scene.Rating = &rating
 		// TODO: user.Hsp
