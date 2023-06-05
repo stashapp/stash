@@ -117,8 +117,8 @@ type HeresphereVideoEntry struct {
 	Description    string                    `json:"description"`
 	ThumbnailImage string                    `json:"thumbnailImage"`
 	ThumbnailVideo string                    `json:"thumbnailVideo,omitempty"`
-	DateReleased   string                    `json:"dateReleased"`
-	DateAdded      string                    `json:"dateAdded"`
+	DateReleased   string                    `json:"dateReleased,omitempty"`
+	DateAdded      string                    `json:"dateAdded,omitempty"`
 	Duration       float64                   `json:"duration,omitempty"`
 	Rating         float32                   `json:"rating,omitempty"`
 	Favorites      int                       `json:"favorites"`
@@ -144,8 +144,8 @@ type HeresphereVideoEntry struct {
 type HeresphereVideoEntryShort struct {
 	Link         string               `json:"link"`
 	Title        string               `json:"title"`
-	DateReleased string               `json:"dateReleased"`
-	DateAdded    string               `json:"dateAdded"`
+	DateReleased string               `json:"dateReleased,omitempty"`
+	DateAdded    string               `json:"dateAdded,omitempty"`
 	Duration     float64              `json:"duration,omitempty"`
 	Rating       float32              `json:"rating,omitempty"`
 	Favorites    int                  `json:"favorites"`
@@ -195,7 +195,7 @@ func (rs heresphereRoutes) Routes() chi.Router {
 		r.Get("/", rs.HeresphereIndex)
 		r.Head("/", rs.HeresphereIndex)
 
-		r.Post("/scan", rs.HeresphereScan)
+		// r.Post("/scan", rs.HeresphereScan)
 		r.Post("/auth", rs.HeresphereLoginToken)
 		r.Route("/{sceneId}", func(r chi.Router) {
 			r.Use(rs.HeresphereSceneCtx)
@@ -203,7 +203,7 @@ func (rs heresphereRoutes) Routes() chi.Router {
 			r.Post("/", rs.HeresphereVideoData)
 			r.Get("/", rs.HeresphereVideoData)
 
-			r.Get("/hsp", rs.HeresphereVideoHsp)
+			// r.Get("/hsp", rs.HeresphereVideoHsp)
 			r.Post("/event", rs.HeresphereVideoEvent)
 		})
 	})
@@ -365,6 +365,14 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 		processedTags = append(processedTags, genTag)
 	}
 
+	interactive, err := rs.resolver.Scene().Interactive(r.Context(), scene)
+	if err == nil && interactive {
+		genTag := HeresphereVideoTag{
+			Name: "Interactive",
+		}
+		processedTags = append(processedTags, genTag)
+	}
+
 	return processedTags
 }
 
@@ -418,45 +426,46 @@ func (rs heresphereRoutes) getVideoMedia(r *http.Request, scene *models.Scene) [
 
 	mediaTypes := make(map[string][]HeresphereVideoMediaSource)
 
-	if file_ids, err := rs.resolver.Scene().Files(r.Context(), scene); err == nil {
-		for _, mediaFile := range file_ids {
-			if mediaFile.ID == scene.PrimaryFileID.String() {
-				sourceUrl := urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetStreamURL("").String()
-				processedEntry := HeresphereVideoMediaSource{
-					Resolution: mediaFile.Height,
-					Height:     mediaFile.Height,
-					Width:      mediaFile.Width,
-					Size:       mediaFile.Size,
-					Url:        addApiKey(sourceUrl),
-				}
-				processedMedia = append(processedMedia, HeresphereVideoMedia{
-					Name:    "direct stream",
-					Sources: []HeresphereVideoMediaSource{processedEntry},
-				})
+	if err := txn.WithTxn(r.Context(), rs.repository.TxnManager, func(ctx context.Context) error {
+		return scene.LoadPrimaryFile(r.Context(), rs.repository.File)
+	}); err != nil {
+		return processedMedia
+	}
 
-				resRatio := mediaFile.Width / mediaFile.Height
-				transcodeSize := config.GetInstance().GetMaxStreamingTranscodeSize()
-				transNames := []string{"HLS", "DASH"}
-				for i, trans := range []string{".m3u8", ".mpd"} {
-					for _, res := range models.AllStreamingResolutionEnum {
-						maxTrans := transcodeSize.GetMaxResolution()
-						if height := res.GetMaxResolution(); (maxTrans == 0 || maxTrans >= height) && height <= mediaFile.Height {
-							processedEntry.Resolution = height
-							processedEntry.Height = height
-							processedEntry.Width = resRatio * height
-							processedEntry.Size = 0
-							if height == 0 {
-								processedEntry.Resolution = mediaFile.Height
-								processedEntry.Height = mediaFile.Height
-								processedEntry.Width = mediaFile.Width
-								processedEntry.Size = mediaFile.Size
-							}
-							processedEntry.Url = addApiKey(fmt.Sprintf("%s%s?resolution=%s", sourceUrl, trans, res.String()))
+	if mediaFile := scene.Files.Primary(); mediaFile != nil {
+		sourceUrl := urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetStreamURL("").String()
+		processedEntry := HeresphereVideoMediaSource{
+			Resolution: mediaFile.Height,
+			Height:     mediaFile.Height,
+			Width:      mediaFile.Width,
+			Size:       mediaFile.Size,
+			Url:        addApiKey(sourceUrl),
+		}
+		processedMedia = append(processedMedia, HeresphereVideoMedia{
+			Name:    "direct stream",
+			Sources: []HeresphereVideoMediaSource{processedEntry},
+		})
 
-							typeName := transNames[i]
-							mediaTypes[typeName] = append(mediaTypes[typeName], processedEntry)
-						}
+		resRatio := mediaFile.Width / mediaFile.Height
+		transcodeSize := config.GetInstance().GetMaxStreamingTranscodeSize()
+		transNames := []string{"HLS", "DASH"}
+		for i, trans := range []string{".m3u8", ".mpd"} {
+			for _, res := range models.AllStreamingResolutionEnum {
+				maxTrans := transcodeSize.GetMaxResolution()
+				if height := res.GetMaxResolution(); (maxTrans == 0 || maxTrans >= height) && height <= mediaFile.Height {
+					processedEntry.Resolution = height
+					processedEntry.Height = height
+					processedEntry.Width = resRatio * height
+					processedEntry.Size = 0
+					if height == 0 {
+						processedEntry.Resolution = mediaFile.Height
+						processedEntry.Height = mediaFile.Height
+						processedEntry.Width = mediaFile.Width
 					}
+					processedEntry.Url = addApiKey(fmt.Sprintf("%s%s?resolution=%s", sourceUrl, trans, res.String()))
+
+					typeName := transNames[i]
+					mediaTypes[typeName] = append(mediaTypes[typeName], processedEntry)
 				}
 			}
 		}
@@ -643,10 +652,6 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		Fov:            180.0,
 		Lens:           HeresphereLensLinear,
 		CameraIPD:      6.5,
-		Hsp: addApiKey(fmt.Sprintf("%s/heresphere/%v/hsp",
-			GetBaseURL(r),
-			scene.ID,
-		)),
 		EventServer: addApiKey(fmt.Sprintf("%s/heresphere/%v/event",
 			GetBaseURL(r),
 			scene.ID,
