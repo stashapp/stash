@@ -206,21 +206,6 @@ func (rs heresphereRoutes) Routes() chi.Router {
 	return r
 }
 
-func heresphereHandler() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			c := config.GetInstance()
-
-			if strings.Contains(r.UserAgent(), "HereSphere") && c.GetRedirectHeresphere() && (r.URL.Path == "/" || strings.HasPrefix(r.URL.Path, "/login")) {
-				http.Redirect(w, r, "/heresphere", http.StatusSeeOther)
-				return
-			}
-
-			next.ServeHTTP(w, r)
-		})
-	}
-}
-
 func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
 	event := HeresphereVideoEvent{}
 	if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
@@ -244,7 +229,6 @@ func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.R
 }
 
 func (rs heresphereRoutes) HeresphereVideoHsp(w http.ResponseWriter, r *http.Request) {
-	// TODO: This
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -256,11 +240,8 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 	if err := txn.WithTxn(r.Context(), rs.repository.TxnManager, func(ctx context.Context) error {
 		qb := rs.repository.Scene
 
-		// TODO: Broken
-		rating := int((user.Rating / 5.0) * 100.0)
+		rating := models.Rating5To100F(user.Rating)
 		scene.Rating = &rating
-		// TODO: user.Hsp
-		// TODO: user.Tags crosscheck
 
 		if user.DeleteFile {
 			qe := rs.repository.File
@@ -359,24 +340,6 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 		processedTags = append(processedTags, genTag)
 	}
 
-	exists, err := rs.resolver.Scene().Interactive(r.Context(), scene)
-	if err == nil && exists {
-		shouldAdd := true
-		for _, tag := range processedTags {
-			if strings.Contains(tag.Name, "Tag:Interactive") {
-				shouldAdd = false
-				break
-			}
-		}
-
-		if shouldAdd {
-			genTag := HeresphereVideoTag{
-				Name: "Tag:Interactive",
-			}
-			processedTags = append(processedTags, genTag)
-		}
-	}
-
 	return processedTags
 }
 
@@ -390,7 +353,7 @@ func (rs heresphereRoutes) getVideoScripts(r *http.Request, scene *models.Scene)
 				urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetFunscriptURL(),
 				config.GetInstance().GetAPIKey(),
 			),
-			Rating: 4.2,
+			Rating: 5,
 		}
 		processedScripts = append(processedScripts, processedScript)
 	}
@@ -621,9 +584,7 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 
 	processedScene := HeresphereVideoEntry{}
 	if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
-		var err error
-		err = scene.LoadRelationships(ctx, rs.repository.Scene)
-		return err
+		return scene.LoadRelationships(ctx, rs.repository.Scene)
 	}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -643,7 +604,7 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		),
 		DateAdded:    scene.CreatedAt.Format("2006-01-02"),
 		Duration:     60000.0,
-		Rating:       0.0,
+		Rating:       0,
 		Favorites:    scene.OCounter,
 		Comments:     0,
 		IsFavorite:   false,
@@ -668,7 +629,7 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		Tags:          rs.getVideoTags(r, scene),
 		Media:         []HeresphereVideoMedia{},
 		WriteFavorite: false,
-		WriteRating:   false,
+		WriteRating:   true,
 		WriteTags:     false,
 		WriteHSP:      false,
 	}
@@ -681,19 +642,20 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		processedScene.DateReleased = scene.Date.Format("2006-01-02")
 	}
 	if scene.Rating != nil {
-		isFavorite := *scene.Rating > 85
-		processedScene.Rating = float32(*scene.Rating) * 0.05 // 0-5
-		processedScene.IsFavorite = isFavorite
+		fiveScale := models.Rating100To5F(*scene.Rating)
+		processedScene.Rating = fiveScale
+		processedScene.IsFavorite = fiveScale >= 4
 	}
-	file_ids, err := rs.resolver.Scene().Files(r.Context(), scene)
-	if err == nil && len(file_ids) > 0 {
-		processedScene.Duration = handleFloat64Value(file_ids[0].Duration * 1000.0)
+
+	file_ids := scene.Files.Primary()
+	if file_ids != nil {
+		processedScene.Duration = handleFloat64Value(file_ids.Duration * 1000.0)
 	}
 
 	// Create a JSON encoder for the response writer
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(processedScene)
+	err := json.NewEncoder(w).Encode(processedScene)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -737,43 +699,6 @@ func (rs heresphereRoutes) HeresphereLoginToken(w http.ResponseWriter, r *http.R
 	}
 }
 
-// TODO: This is a copy of the Ctx from routes_scene
-// Create a general version
-func (rs heresphereRoutes) HeresphereSceneCtx(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		sceneID, err := strconv.Atoi(chi.URLParam(r, "sceneId"))
-		if err != nil {
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			return
-		}
-
-		var scene *models.Scene
-		_ = txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
-			qb := rs.sceneFinder
-			scene, _ = qb.Find(ctx, sceneID)
-
-			if scene != nil {
-				if err := scene.LoadPrimaryFile(ctx, rs.fileFinder); err != nil {
-					if !errors.Is(err, context.Canceled) {
-						logger.Errorf("error loading primary file for scene %d: %v", sceneID, err)
-					}
-					// set scene to nil so that it doesn't try to use the primary file
-					scene = nil
-				}
-			}
-
-			return nil
-		})
-		if scene == nil {
-			http.Error(w, http.StatusText(404), 404)
-			return
-		}
-
-		ctx := context.WithValue(r.Context(), heresphereKey, scene)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
-
 func HeresphereHasValidToken(r *http.Request) bool {
 	apiKey := r.Header.Get(HeresphereAuthHeader)
 
@@ -811,6 +736,56 @@ func writeNotAuthorized(w http.ResponseWriter, r *http.Request, msg string) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+}
+
+func (rs heresphereRoutes) HeresphereSceneCtx(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sceneID, err := strconv.Atoi(chi.URLParam(r, "sceneId"))
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+
+		var scene *models.Scene
+		_ = txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+			qb := rs.sceneFinder
+			scene, _ = qb.Find(ctx, sceneID)
+
+			if scene != nil {
+				if err := scene.LoadPrimaryFile(ctx, rs.fileFinder); err != nil {
+					if !errors.Is(err, context.Canceled) {
+						logger.Errorf("error loading primary file for scene %d: %v", sceneID, err)
+					}
+					// set scene to nil so that it doesn't try to use the primary file
+					scene = nil
+				}
+			}
+
+			return nil
+		})
+		if scene == nil {
+			http.Error(w, http.StatusText(404), 404)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), heresphereKey, scene)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func heresphereHandler() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			c := config.GetInstance()
+
+			if strings.Contains(r.UserAgent(), "HereSphere") && c.GetRedirectHeresphere() && (r.URL.Path == "/" || strings.HasPrefix(r.URL.Path, "/login")) {
+				http.Redirect(w, r, "/heresphere", http.StatusSeeOther)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
 	}
 }
 
