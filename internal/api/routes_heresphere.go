@@ -458,7 +458,7 @@ func (rs heresphereRoutes) getVideoMedia(r *http.Request, scene *models.Scene) [
 			Sources: []HeresphereVideoMediaSource{processedEntry},
 		})
 
-		resRatio := mediaFile.Width / mediaFile.Height
+		resRatio := float32(mediaFile.Width) / float32(mediaFile.Height)
 		transcodeSize := config.GetInstance().GetMaxStreamingTranscodeSize()
 		transNames := []string{"HLS", "DASH"}
 		for i, trans := range []string{".m3u8", ".mpd"} {
@@ -467,7 +467,7 @@ func (rs heresphereRoutes) getVideoMedia(r *http.Request, scene *models.Scene) [
 				if height := res.GetMaxResolution(); (maxTrans == 0 || maxTrans >= height) && height <= mediaFile.Height {
 					processedEntry.Resolution = height
 					processedEntry.Height = height
-					processedEntry.Width = resRatio * height
+					processedEntry.Width = int(resRatio * float32(height))
 					processedEntry.Size = 0
 					if height == 0 {
 						processedEntry.Resolution = mediaFile.Height
