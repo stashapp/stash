@@ -373,6 +373,18 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 		processedTags = append(processedTags, genTag)
 	}
 
+	if scene.PlayCount > 0 {
+		genTag := HeresphereVideoTag{
+			Name: "Watched",
+		}
+		processedTags = append(processedTags, genTag)
+	} else {
+		genTag := HeresphereVideoTag{
+			Name: "Unwatched",
+		}
+		processedTags = append(processedTags, genTag)
+	}
+
 	return processedTags
 }
 
@@ -644,8 +656,8 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		DateAdded:      scene.CreatedAt.Format("2006-01-02"),
 		Duration:       60000.0,
 		Rating:         0,
-		Favorites:      scene.OCounter,
-		Comments:       0,
+		Favorites:      scene.PlayCount,
+		Comments:       scene.OCounter,
 		IsFavorite:     false,
 		Projection:     HeresphereProjectionPerspective,
 		Stereo:         HeresphereStereoMono,
@@ -678,6 +690,9 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		fiveScale := models.Rating100To5F(*scene.Rating)
 		processedScene.Rating = fiveScale
 		processedScene.IsFavorite = fiveScale >= 4
+		if processedScene.IsFavorite {
+			processedScene.Favorites += 1
+		}
 	}
 
 	file_ids := scene.Files.Primary()
