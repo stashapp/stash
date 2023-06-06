@@ -289,7 +289,7 @@ const resolution = (width: number, height: number) => {
   if (number >= 3584) {
     return "7K";
   }
-  if (number >= 3072) {
+  if (number >= 3000) {
     return "6K";
   }
   if (number >= 2560) {
