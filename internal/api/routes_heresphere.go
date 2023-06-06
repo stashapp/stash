@@ -153,6 +153,9 @@ type HeresphereVideoEntryShort struct {
 	IsFavorite   bool                 `json:"isFavorite"`
 	Tags         []HeresphereVideoTag `json:"tags"`
 }
+type HeresphereScanIndex struct {
+	ScanData []HeresphereVideoEntryShort `json:"scanData"`
+}
 type HeresphereAuthReq struct {
 	Username         string               `json:"username"`
 	Password         string               `json:"password"`
