@@ -8,8 +8,6 @@ import {
   useListPerformerScrapers,
   queryScrapePerformer,
   mutateReloadScrapers,
-  usePerformerUpdate,
-  usePerformerCreate,
   useTagCreate,
   queryScrapePerformerURL,
 } from "src/core/StashService";
@@ -24,7 +22,7 @@ import ImageUtils from "src/utils/image";
 import { getStashIDs } from "src/utils/stashIds";
 import { stashboxDisplayName } from "src/utils/stashbox";
 import { useToast } from "src/hooks/Toast";
-import { Prompt, useHistory } from "react-router-dom";
+import { Prompt } from "react-router-dom";
 import { useFormik } from "formik";
 import {
   genderToString,
@@ -57,6 +55,7 @@ const isScraper = (
 interface IPerformerDetails {
   performer: Partial<GQL.PerformerDataFragment>;
   isVisible: boolean;
+  onSubmit: (performer: GQL.PerformerCreateInput) => Promise<void>;
   onCancel?: () => void;
   setImage: (image?: string | null) => void;
   setEncodingImage: (loading: boolean) => void;
@@ -65,12 +64,12 @@ interface IPerformerDetails {
 export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   performer,
   isVisible,
+  onSubmit,
   onCancel,
   setImage,
   setEncodingImage,
 }) => {
   const Toast = useToast();
-  const history = useHistory();
 
   const isNew = performer.id === undefined;
 
@@ -81,9 +80,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
-
-  const [updatePerformer] = usePerformerUpdate();
-  const [createPerformer] = usePerformerCreate();
 
   const Scrapers = useListPerformerScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
@@ -454,61 +450,35 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
+  function valuesToInput(input: InputValues): GQL.PerformerCreateInput {
+    return {
+      ...input,
+      gender: input.gender || null,
+      height_cm: input.height_cm || null,
+      weight: input.weight || null,
+      penis_length: input.penis_length || null,
+      circumcised: input.circumcised || null,
+    };
+  }
+
   async function onSave(input: InputValues) {
     setIsLoading(true);
     try {
-      if (isNew) {
-        const result = await createPerformer({
-          variables: {
-            input: {
-              ...input,
-              gender: input.gender || null,
-              height_cm: input.height_cm || null,
-              weight: input.weight || null,
-              penis_length: input.penis_length || null,
-              circumcised: input.circumcised || null,
-            },
-          },
-        });
-        if (result.data?.performerCreate) {
-          history.push(`/performers/${result.data.performerCreate.id}`);
-        }
-      } else {
-        await updatePerformer({
-          variables: {
-            input: {
-              id: performer.id!,
-              ...input,
-              gender: input.gender || null,
-              height_cm: input.height_cm || null,
-              weight: input.weight || null,
-              penis_length: input.penis_length || null,
-              circumcised: input.circumcised || null,
-            },
-          },
-        });
-      }
+      await onSubmit(valuesToInput(input));
+      formik.resetForm();
     } catch (e) {
       Toast.error(e);
-      setIsLoading(false);
-      return;
-    }
-    if (!isNew && onCancel) {
-      onCancel();
     }
     setIsLoading(false);
-  }
-
-  function onCancelEditing() {
-    setImage(undefined);
-    onCancel?.();
   }
 
   // set up hotkeys
   useEffect(() => {
     if (isVisible) {
       Mousetrap.bind("s s", () => {
-        onSave?.(formik.values);
+        if (formik.dirty) {
+          formik.submitForm();
+        }
       });
 
       return () => {
@@ -699,9 +669,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
 
     const currentPerformer = {
-      ...formik.values,
-      gender: formik.values.gender || null,
-      circumcised: formik.values.circumcised || null,
+      ...valuesToInput(formik.values),
       image: formik.values.image ?? performer.image_path,
     };
 
@@ -729,7 +697,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return (
       <div className={cx("details-edit", "col-xl-9", classNames)}>
         {!isNew && onCancel ? (
-          <Button className="mr-2" variant="primary" onClick={onCancelEditing}>
+          <Button className="mr-2" variant="primary" onClick={onCancel}>
             <FormattedMessage id="actions.cancel" />
           </Button>
         ) : null}

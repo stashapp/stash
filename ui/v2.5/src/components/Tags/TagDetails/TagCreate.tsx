@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useHistory, useLocation } from "react-router-dom";
-
+import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { useTagCreate } from "src/core/StashService";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
@@ -9,10 +9,11 @@ import { tagRelationHook } from "src/core/tags";
 import { TagEditPanel } from "./TagEditPanel";
 
 const TagCreate: React.FC = () => {
+  const intl = useIntl();
   const history = useHistory();
-  const location = useLocation();
   const Toast = useToast();
 
+  const location = useLocation();
   const query = useMemo(() => new URLSearchParams(location.search), [location]);
   const tag = {
     name: query.get("q") ?? undefined,
@@ -25,24 +26,26 @@ const TagCreate: React.FC = () => {
   const [createTag] = useTagCreate();
 
   async function onSave(input: GQL.TagCreateInput) {
-    try {
-      const oldRelations = {
-        parents: [],
-        children: [],
-      };
-      const result = await createTag({
-        variables: { input },
+    const oldRelations = {
+      parents: [],
+      children: [],
+    };
+    const result = await createTag({
+      variables: { input },
+    });
+    if (result.data?.tagCreate?.id) {
+      const created = result.data.tagCreate;
+      tagRelationHook(created, oldRelations, {
+        parents: created.parents,
+        children: created.children,
       });
-      if (result.data?.tagCreate?.id) {
-        const created = result.data.tagCreate;
-        tagRelationHook(created, oldRelations, {
-          parents: created.parents,
-          children: created.children,
-        });
-        history.push(`/tags/${result.data.tagCreate.id}`);
-      }
-    } catch (e) {
-      Toast.error(e);
+      history.push(`/tags/${created.id}`);
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "toast.created_entity" },
+          { entity: intl.formatMessage({ id: "tag" }).toLocaleLowerCase() }
+        ),
+      });
     }
   }
 

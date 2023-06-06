@@ -69,7 +69,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
 
   // set up hotkeys
   useEffect(() => {
-    Mousetrap.bind("e", () => setIsEditing(true));
+    Mousetrap.bind("e", () => toggleEditing());
     Mousetrap.bind("d d", () => {
       onDelete();
     });
@@ -83,21 +83,21 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
   });
 
   async function onSave(input: GQL.StudioCreateInput) {
-    try {
-      const result = await updateStudio({
-        variables: {
-          input: {
-            id: studio.id,
-            ...input,
-          },
+    await updateStudio({
+      variables: {
+        input: {
+          id: studio.id,
+          ...input,
         },
-      });
-      if (result.data?.studioUpdate) {
-        setIsEditing(false);
-      }
-    } catch (e) {
-      Toast.error(e);
-    }
+      },
+    });
+    toggleEditing(false);
+    Toast.success({
+      content: intl.formatMessage(
+        { id: "toast.updated_entity" },
+        { entity: intl.formatMessage({ id: "studio" }).toLocaleLowerCase() }
+      ),
+    });
   }
 
   async function onAutoTag() {
@@ -149,8 +149,13 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     );
   }
 
-  function onToggleEdit() {
-    setIsEditing(!isEditing);
+  function toggleEditing(value?: boolean) {
+    if (value !== undefined) {
+      setIsEditing(value);
+    } else {
+      setIsEditing((e) => !e);
+    }
+    setImage(undefined);
   }
 
   function renderImage() {
@@ -213,7 +218,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               objectName={studio.name ?? intl.formatMessage({ id: "studio" })}
               isNew={false}
               isEditing={isEditing}
-              onToggleEdit={onToggleEdit}
+              onToggleEdit={() => toggleEditing()}
               onSave={() => {}}
               onImageChange={() => {}}
               onClearImage={() => {}}
@@ -225,7 +230,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           <StudioEditPanel
             studio={studio}
             onSubmit={onSave}
-            onCancel={onToggleEdit}
+            onCancel={() => toggleEditing()}
             onDelete={onDelete}
             setImage={setImage}
             setEncodingImage={setEncodingImage}

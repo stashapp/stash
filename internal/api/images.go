@@ -102,9 +102,9 @@ func getRandomPerformerImageUsingName(name string, gender *models.GenderEnum, cu
 
 	if box == nil {
 		switch g {
-		case models.GenderEnumFemale:
+		case models.GenderEnumFemale, models.GenderEnumTransgenderFemale:
 			box = performerBox
-		case models.GenderEnumMale:
+		case models.GenderEnumMale, models.GenderEnumTransgenderMale:
 			box = performerBoxMale
 		default:
 			box = performerBox

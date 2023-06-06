@@ -222,8 +222,10 @@ export const useFindGallery = (id: string) => {
   const skip = id === "new";
   return GQL.useFindGalleryQuery({ variables: { id }, skip });
 };
-export const useFindScene = (id: string) =>
-  GQL.useFindSceneQuery({ variables: { id } });
+export const useFindScene = (id: string) => {
+  const skip = id === "new";
+  return GQL.useFindSceneQuery({ variables: { id }, skip });
+};
 export const useSceneStreams = (id: string) =>
   GQL.useSceneStreamsQuery({ variables: { id } });
 
@@ -732,6 +734,7 @@ export const mutateAddGalleryImages = (input: GQL.GalleryAddInput) =>
     mutation: GQL.AddGalleryImagesDocument,
     variables: input,
     update: deleteCache(galleryMutationImpactedQueries),
+    refetchQueries: getQueryNames([GQL.FindGalleryDocument]),
   });
 
 export const mutateRemoveGalleryImages = (input: GQL.GalleryRemoveInput) =>
@@ -739,6 +742,7 @@ export const mutateRemoveGalleryImages = (input: GQL.GalleryRemoveInput) =>
     mutation: GQL.RemoveGalleryImagesDocument,
     variables: input,
     update: deleteCache(galleryMutationImpactedQueries),
+    refetchQueries: getQueryNames([GQL.FindGalleryDocument]),
   });
 
 export const mutateGallerySetPrimaryFile = (id: string, fileID: string) =>

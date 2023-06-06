@@ -610,6 +610,11 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
 
   protected toCriterionInput(): HierarchicalMultiCriterionInput {
     let excludes: string[] = [];
+
+    // if modifier is equals, depth must be 0
+    const depth =
+      this.modifier === CriterionModifier.Equals ? 0 : this.value.depth;
+
     if (this.value.excluded) {
       excludes = this.value.excluded.map((v) => v.id);
     }
@@ -617,7 +622,7 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
       value: this.value.items.map((v) => v.id),
       excludes: excludes,
       modifier: this.modifier,
-      depth: this.value.depth,
+      depth,
     };
   }
 

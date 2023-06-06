@@ -758,7 +758,7 @@ func performerAgeFilterCriterionHandler(age *models.IntCriterionInput) criterion
 	return func(ctx context.Context, f *filterBuilder) {
 		if age != nil && age.Modifier.IsValid() {
 			clause, args := getIntCriterionWhereClause(
-				"cast(IFNULL(strftime('%Y.%m%d', performers.death_date), strftime('%Y.%m%d', 'now')) - strftime('%Y.%m%d', performers.birthdate) as int)",
+				"cast(strftime('%Y.%m%d',CASE WHEN performers.death_date IS NULL OR performers.death_date = '0001-01-01' OR performers.death_date = '' THEN 'now' ELSE performers.death_date END) - strftime('%Y.%m%d', performers.birthdate) as int)",
 				*age,
 			)
 			f.addWhere(clause, args...)
@@ -908,7 +908,11 @@ func performerStudiosCriterionHandler(qb *PerformerStore, studios *models.Hierar
 			}
 
 			const derivedPerformerStudioTable = "performer_studio"
-			valuesClause := getHierarchicalValues(ctx, qb.tx, studios.Value, studioTable, "", "parent_id", studios.Depth)
+			valuesClause, err := getHierarchicalValues(ctx, qb.tx, studios.Value, studioTable, "", "parent_id", "child_id", studios.Depth)
+			if err != nil {
+				f.setError(err)
+				return
+			}
 			f.addWith("studio(root_id, item_id) AS (" + valuesClause + ")")
 
 			templStr := `SELECT performer_id FROM {primaryTable}
