@@ -4,7 +4,6 @@ import { CriterionOption, StringCriterion, Option } from "./criterion";
 
 export class IsMissingCriterion extends StringCriterion {
   public modifierOptions = [];
-  public modifier = CriterionModifier.Equals;
 
   protected toCriterionInput(): string {
     return this.value;
@@ -23,6 +22,7 @@ class IsMissingCriterionOptionClass extends CriterionOption {
       type: value,
       parameterName,
       options,
+      defaultModifier: CriterionModifier.Equals,
     });
   }
 }

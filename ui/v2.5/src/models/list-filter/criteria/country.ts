@@ -14,7 +14,7 @@ export class CountryCriterion extends StringCriterion {
     super(countryCriterionOption);
   }
 
-  public getLabelValue(intl: IntlShape) {
+  protected getLabelValue(intl: IntlShape) {
     if (
       this.modifier === CriterionModifier.Equals ||
       this.modifier === CriterionModifier.NotEquals
