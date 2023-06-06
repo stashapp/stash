@@ -4,14 +4,24 @@ import { CriterionOption, IHierarchicalLabeledIdCriterion } from "./criterion";
 
 export class TagsCriterion extends IHierarchicalLabeledIdCriterion {}
 
-class tagsCriterionOption extends CriterionOption {
-  constructor(messageID: string, value: CriterionType, parameterName: string) {
-    const modifierOptions = [
-      CriterionModifier.Includes,
-      CriterionModifier.IncludesAll,
-      CriterionModifier.Equals,
-    ];
+const tagsModifierOptions = [
+  CriterionModifier.Includes,
+  CriterionModifier.IncludesAll,
+  CriterionModifier.Equals,
+];
 
+const withoutEqualsModifierOptions = [
+  CriterionModifier.Includes,
+  CriterionModifier.IncludesAll,
+];
+
+class tagsCriterionOption extends CriterionOption {
+  constructor(
+    messageID: string,
+    value: CriterionType,
+    parameterName: string,
+    modifierOptions: CriterionModifier[]
+  ) {
     let defaultModifier = CriterionModifier.IncludesAll;
 
     super({
@@ -27,25 +37,30 @@ class tagsCriterionOption extends CriterionOption {
 export const TagsCriterionOption = new tagsCriterionOption(
   "tags",
   "tags",
-  "tags"
+  "tags",
+  tagsModifierOptions
 );
 export const SceneTagsCriterionOption = new tagsCriterionOption(
   "sceneTags",
   "sceneTags",
-  "scene_tags"
+  "scene_tags",
+  tagsModifierOptions
 );
 export const PerformerTagsCriterionOption = new tagsCriterionOption(
   "performerTags",
   "performerTags",
-  "performer_tags"
+  "performer_tags",
+  withoutEqualsModifierOptions
 );
 export const ParentTagsCriterionOption = new tagsCriterionOption(
   "parent_tags",
   "parentTags",
-  "parents"
+  "parents",
+  withoutEqualsModifierOptions
 );
 export const ChildTagsCriterionOption = new tagsCriterionOption(
   "sub_tags",
   "childTags",
-  "children"
+  "children",
+  withoutEqualsModifierOptions
 );

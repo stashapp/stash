@@ -309,14 +309,18 @@ export const HierarchicalObjectsFilter = <
 
   return (
     <Form>
-      <Form.Group>
-        <Form.Check
-          id={criterionOptionTypeToIncludeID()}
-          checked={criterion.value.depth !== 0}
-          label={intl.formatMessage(criterionOptionTypeToIncludeUIString())}
-          onChange={() => onDepthChanged(criterion.value.depth !== 0 ? 0 : -1)}
-        />
-      </Form.Group>
+      {criterion.modifier !== CriterionModifier.Equals && (
+        <Form.Group>
+          <Form.Check
+            id={criterionOptionTypeToIncludeID()}
+            checked={criterion.value.depth !== 0}
+            label={intl.formatMessage(criterionOptionTypeToIncludeUIString())}
+            onChange={() =>
+              onDepthChanged(criterion.value.depth !== 0 ? 0 : -1)
+            }
+          />
+        </Form.Group>
+      )}
 
       {criterion.value.depth !== 0 && (
         <Form.Group>
