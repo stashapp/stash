@@ -1089,6 +1089,11 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(c *models.Hiera
 				primaryKey = "id"
 			}
 
+			if criterion.Modifier == models.CriterionModifierEquals && criterion.Depth != nil && *criterion.Depth != 0 {
+				f.setError(fmt.Errorf("depth is not supported for equals modifier in hierarchical multi criterion input"))
+				return
+			}
+
 			if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotNull {
 				var notClause string
 				if criterion.Modifier == models.CriterionModifierNotNull {
