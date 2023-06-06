@@ -8,15 +8,17 @@ import useFocus from "src/utils/focus";
 interface IClearableInput {
   value: string;
   setValue: (value: string) => void;
+  focus: ReturnType<typeof useFocus>;
 }
 
 export const ClearableInput: React.FC<IClearableInput> = ({
   value,
   setValue,
+  focus,
 }) => {
   const intl = useIntl();
 
-  const [queryRef, setQueryFocus] = useFocus();
+  const [queryRef, setQueryFocus] = focus;
   const queryClearShowing = !!value;
 
   function onChangeQuery(event: React.FormEvent<HTMLInputElement>) {

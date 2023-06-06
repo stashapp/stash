@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
 import { useFindPerformersQuery } from "src/core/generated-graphql";
 import { ObjectsFilter } from "./SelectableFilter";
@@ -9,7 +9,7 @@ interface IPerformersFilter {
 }
 
 function usePerformerQuery(query: string) {
-  const results = useFindPerformersQuery({
+  const { data, loading } = useFindPerformersQuery({
     variables: {
       filter: {
         q: query,
@@ -18,14 +18,18 @@ function usePerformerQuery(query: string) {
     },
   });
 
-  return (
-    results.data?.findPerformers.performers.map((p) => {
-      return {
-        id: p.id,
-        label: p.name,
-      };
-    }) ?? []
+  const results = useMemo(
+    () =>
+      data?.findPerformers.performers.map((p) => {
+        return {
+          id: p.id,
+          label: p.name,
+        };
+      }) ?? [],
+    [data]
   );
+
+  return { results, loading };
 }
 
 const PerformersFilter: React.FC<IPerformersFilter> = ({
@@ -36,7 +40,7 @@ const PerformersFilter: React.FC<IPerformersFilter> = ({
     <ObjectsFilter
       criterion={criterion}
       setCriterion={setCriterion}
-      queryHook={usePerformerQuery}
+      useResults={usePerformerQuery}
     />
   );
 };

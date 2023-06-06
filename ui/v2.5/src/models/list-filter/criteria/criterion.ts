@@ -16,7 +16,6 @@ import {
   CriterionType,
   IHierarchicalLabelValue,
   ILabeledId,
-  ILabeledValue,
   INumberValue,
   IOptionType,
   IStashIDValue,
@@ -39,6 +38,11 @@ export type CriterionValue =
   | ITimestampValue
   | IPhashDistanceValue;
 
+export interface IEncodedCriterion<T extends CriterionValue> {
+  modifier: CriterionModifier;
+  value: T | undefined;
+}
+
 const modifierMessageIDs = {
   [CriterionModifier.Equals]: "criterion_modifier.equals",
   [CriterionModifier.NotEquals]: "criterion_modifier.not_equals",
@@ -57,15 +61,15 @@ const modifierMessageIDs = {
 
 // V = criterion value type
 export abstract class Criterion<V extends CriterionValue> {
-  public static getModifierOption(
-    modifier: CriterionModifier = CriterionModifier.Equals
-  ): ILabeledValue {
-    const messageID = modifierMessageIDs[modifier];
-    return { value: modifier, label: messageID };
-  }
-
   public criterionOption: CriterionOption;
-  public modifier: CriterionModifier;
+
+  protected _modifier!: CriterionModifier;
+  public get modifier(): CriterionModifier {
+    return this._modifier;
+  }
+  public set modifier(value: CriterionModifier) {
+    this._modifier = value;
+  }
 
   protected _value!: V;
   public get value(): V {
@@ -79,7 +83,7 @@ export abstract class Criterion<V extends CriterionValue> {
     return true;
   }
 
-  public abstract getLabelValue(intl: IntlShape): string;
+  protected abstract getLabelValue(intl: IntlShape): string;
 
   constructor(type: CriterionOption, value: V) {
     this.criterionOption = type;
@@ -140,8 +144,11 @@ export abstract class Criterion<V extends CriterionValue> {
     return JSON.stringify(encodedCriterion);
   }
 
-  public setValueFromQueryString(v: V) {
-    this.value = v;
+  public setFromEncodedCriterion(encodedCriterion: IEncodedCriterion<V>) {
+    if (encodedCriterion.value !== undefined) {
+      this.value = encodedCriterion.value;
+    }
+    this.modifier = encodedCriterion.modifier;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -174,7 +181,7 @@ export class CriterionOption {
   public readonly messageID: string;
   public readonly type: CriterionType;
   public readonly parameterName: string;
-  public readonly modifierOptions: ILabeledValue[];
+  public readonly modifierOptions: CriterionModifier[];
   public readonly defaultModifier: CriterionModifier;
   public readonly options: Option[] | undefined;
   public readonly inputType: InputType;
@@ -183,9 +190,7 @@ export class CriterionOption {
     this.messageID = options.messageID;
     this.type = options.type;
     this.parameterName = options.parameterName ?? options.type;
-    this.modifierOptions = (options.modifierOptions ?? []).map((o) =>
-      Criterion.getModifierOption(o)
-    );
+    this.modifierOptions = options.modifierOptions ?? [];
     this.defaultModifier = options.defaultModifier ?? CriterionModifier.Equals;
     this.options = options.options;
     this.inputType = options.inputType;
@@ -237,7 +242,7 @@ export class StringCriterion extends Criterion<string> {
     super(type, "");
   }
 
-  public getLabelValue(_intl: IntlShape) {
+  protected getLabelValue(_intl: IntlShape) {
     return this.value;
   }
 
@@ -255,7 +260,7 @@ export class MultiStringCriterion extends Criterion<string[]> {
     super(type, []);
   }
 
-  public getLabelValue(_intl: IntlShape) {
+  protected getLabelValue(_intl: IntlShape) {
     return this.value.join(", ");
   }
 
@@ -437,7 +442,7 @@ export class NumberCriterion extends Criterion<INumberValue> {
     };
   }
 
-  public getLabelValue(_intl: IntlShape) {
+  protected getLabelValue(_intl: IntlShape) {
     const { value, value2 } = this.value;
     if (
       this.modifier === CriterionModifier.Between ||
@@ -509,7 +514,7 @@ export class ILabeledIdCriterionOption extends CriterionOption {
 }
 
 export class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
-  public getLabelValue(_intl: IntlShape): string {
+  protected getLabelValue(_intl: IntlShape): string {
     return this.value.map((v) => v.label).join(", ");
   }
 
@@ -547,15 +552,53 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
     super(type, value);
   }
 
-  public setValueFromQueryString(v: IHierarchicalLabelValue) {
-    this.value = {
-      items: v.items || [],
-      excluded: v.excluded || [],
-      depth: v.depth || 0,
-    };
+  override get modifier(): CriterionModifier {
+    return this._modifier;
+  }
+  override set modifier(value: CriterionModifier) {
+    this._modifier = value;
+
+    // excluded only makes sense for includes and includes all
+    // so reset it for other modifiers
+    if (
+      value !== CriterionModifier.Includes &&
+      value !== CriterionModifier.IncludesAll
+    ) {
+      this.value.excluded = [];
+    }
   }
 
-  public getLabelValue(_intl: IntlShape): string {
+  public setFromEncodedCriterion(
+    encodedCriterion: IEncodedCriterion<IHierarchicalLabelValue>
+  ) {
+    const { modifier, value } = encodedCriterion;
+
+    if (value !== undefined) {
+      this.value = {
+        items: value.items || [],
+        excluded: value.excluded || [],
+        depth: value.depth || 0,
+      };
+    }
+
+    // if the previous modifier was excludes, replace it with the equivalent includes criterion
+    // this is what is done on the backend
+    // only replace if excludes is not a valid modifierOption
+    if (
+      modifier === CriterionModifier.Excludes &&
+      this.criterionOption.modifierOptions.find(
+        (m) => m === CriterionModifier.Excludes
+      ) === undefined
+    ) {
+      this.modifier = CriterionModifier.Includes;
+      this.value.excluded = [...this.value.excluded, ...this.value.items];
+      this.value.items = [];
+    } else {
+      this.modifier = modifier;
+    }
+  }
+
+  protected getLabelValue(_intl: IntlShape): string {
     const labels = (this.value.items ?? []).map((v) => v.label).join(", ");
 
     if (this.value.depth === 0) {
@@ -567,6 +610,11 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
 
   protected toCriterionInput(): HierarchicalMultiCriterionInput {
     let excludes: string[] = [];
+
+    // if modifier is equals, depth must be 0
+    const depth =
+      this.modifier === CriterionModifier.Equals ? 0 : this.value.depth;
+
     if (this.value.excluded) {
       excludes = this.value.excluded.map((v) => v.id);
     }
@@ -574,15 +622,14 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
       value: this.value.items.map((v) => v.id),
       excludes: excludes,
       modifier: this.modifier,
-      depth: this.value.depth,
+      depth,
     };
   }
 
   public isValid(): boolean {
     if (
       this.modifier === CriterionModifier.IsNull ||
-      this.modifier === CriterionModifier.NotNull ||
-      this.modifier === CriterionModifier.Equals
+      this.modifier === CriterionModifier.NotNull
     ) {
       return true;
     }
@@ -594,22 +641,33 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
   }
 
   public getLabel(intl: IntlShape): string {
-    const modifierString = Criterion.getModifierLabel(intl, this.modifier);
+    let id = "criterion_modifier.format_string";
+    let modifierString = Criterion.getModifierLabel(intl, this.modifier);
     let valueString = "";
+    let excludedString = "";
 
     if (
       this.modifier !== CriterionModifier.IsNull &&
       this.modifier !== CriterionModifier.NotNull
     ) {
       valueString = this.value.items.map((v) => v.label).join(", ");
-    }
 
-    let id = "criterion_modifier.format_string";
-    let excludedString = "";
+      if (this.value.excluded && this.value.excluded.length > 0) {
+        if (this.value.items.length === 0) {
+          modifierString = Criterion.getModifierLabel(
+            intl,
+            CriterionModifier.Excludes
+          );
+          valueString = this.value.excluded.map((v) => v.label).join(", ");
+        } else {
+          id = "criterion_modifier.format_string_excludes";
+          excludedString = this.value.excluded.map((v) => v.label).join(", ");
+        }
+      }
 
-    if (this.value.excluded && this.value.excluded.length > 0) {
-      id = "criterion_modifier.format_string_excludes";
-      excludedString = this.value.excluded.map((v) => v.label).join(", ");
+      if (this.value.depth !== 0) {
+        id += "_depth";
+      }
     }
 
     return intl.formatMessage(
@@ -619,6 +677,7 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
         modifierString,
         valueString,
         excludedString,
+        depth: this.value.depth,
       }
     );
   }
@@ -664,7 +723,7 @@ export class DurationCriterion extends Criterion<INumberValue> {
     };
   }
 
-  public getLabelValue(_intl: IntlShape) {
+  protected getLabelValue(_intl: IntlShape) {
     return this.modifier === CriterionModifier.Between ||
       this.modifier === CriterionModifier.NotBetween
       ? `${DurationUtils.secondsToString(
@@ -759,7 +818,7 @@ export class DateCriterion extends Criterion<IDateValue> {
     };
   }
 
-  public getLabelValue() {
+  protected getLabelValue() {
     const { value } = this.value;
     return this.modifier === CriterionModifier.Between ||
       this.modifier === CriterionModifier.NotBetween
@@ -844,7 +903,7 @@ export class TimestampCriterion extends Criterion<ITimestampValue> {
     };
   }
 
-  public getLabelValue() {
+  protected getLabelValue() {
     const { value } = this.value;
     return this.modifier === CriterionModifier.Between ||
       this.modifier === CriterionModifier.NotBetween

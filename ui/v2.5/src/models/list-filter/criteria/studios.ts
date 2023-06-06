@@ -6,7 +6,11 @@ import {
   ILabeledIdCriterionOption,
 } from "./criterion";
 
-const modifierOptions = [CriterionModifier.Includes];
+const modifierOptions = [
+  CriterionModifier.Includes,
+  CriterionModifier.IsNull,
+  CriterionModifier.NotNull,
+];
 
 const defaultModifier = CriterionModifier.Includes;
 

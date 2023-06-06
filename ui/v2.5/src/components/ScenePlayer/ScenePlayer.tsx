@@ -278,7 +278,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         chaptersButton: false,
       },
       html5: {
-        nativeTextTracks: false,
         dash: {
           updateSettings: [
             {
