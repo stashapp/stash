@@ -691,7 +691,7 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		processedScene.Rating = fiveScale
 		processedScene.IsFavorite = fiveScale >= 4
 		if processedScene.IsFavorite {
-			processedScene.Favorites += 1
+			processedScene.Favorites++
 		}
 	}
 
