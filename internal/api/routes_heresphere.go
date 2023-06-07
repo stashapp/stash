@@ -309,7 +309,7 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 	}
 
 	if user.DeleteFile != nil && *user.DeleteFile {
-		if err := txn.WithTxn(r.Context(), rs.repository.TxnManager, func(ctx context.Context) error {
+		if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 			qe := rs.repository.File
 
 			if err := scene.LoadPrimaryFile(r.Context(), qe); err != nil {
@@ -343,8 +343,6 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 		}
 
 		// TODO: Remove is broken
-		// WRN Response: 0 Unknown - list has not been loaded
-		// Panic: runtime error: slice bounds out of range [-1:]
 		for _, tagI := range tag_ids {
 			name := fmt.Sprintf("Tag:%v", tagI.Name)
 			if !tagExistsInReq(name, user.Tags) {
@@ -364,14 +362,17 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 				tagName := strings.TrimPrefix(tagI.Name, "Tag:")
 
 				var tagMod *models.Tag
-				if err := txn.WithTxn(r.Context(), rs.repository.TxnManager, func(ctx context.Context) error {
+				if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 					// TODO: Fails to find tags
 					if tagMod, err = tag.ByName(r.Context(), rs.repository.Tag, tagName); err != nil {
+						fmt.Printf("Err1\n")
 						if tagMod, err = tag.ByAlias(r.Context(), rs.repository.Tag, tagName); err != nil {
+							fmt.Printf("Err2\n")
 							newTag := TagCreateInput{
 								Name: tagName,
 							}
 							if tagMod, err = rs.resolver.Mutation().TagCreate(r.Context(), newTag); err != nil {
+								fmt.Printf("Err3\n")
 								return err
 							}
 						}
@@ -393,7 +394,7 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 
 	// TODO: Do something with isFavorite?
 
-	if err := txn.WithTxn(r.Context(), rs.repository.TxnManager, func(ctx context.Context) error {
+	if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 		err := rs.repository.Scene.Update(ctx, scene)
 		return err
 	}); err != nil {
