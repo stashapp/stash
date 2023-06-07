@@ -20,6 +20,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/session"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/txn"
 )
@@ -175,7 +176,6 @@ type HeresphereAuthReq struct {
 	Tags             *[]HeresphereVideoTag `json:"tags,omitempty"`
 	HspBase64        *string               `json:"hsp,omitempty"`
 	DeleteFile       *bool                 `json:"deleteFile,omitempty"`
-	req              []byte
 }
 type HeresphereVideoEvent struct {
 	Username      string              `json:"username"`
@@ -303,88 +303,101 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 	user := r.Context().Value(heresphereUserKey).(HeresphereAuthReq)
 	fileDeleter := file.NewDeleter()
 
-	if err := txn.WithTxn(r.Context(), rs.repository.TxnManager, func(ctx context.Context) error {
-		if user.Rating != nil {
-			rating := models.Rating5To100F(*user.Rating)
-			scene.Rating = &rating
-		}
+	if user.Rating != nil {
+		rating := models.Rating5To100F(*user.Rating)
+		scene.Rating = &rating
+	}
 
-		if user.DeleteFile != nil && *user.DeleteFile {
+	if user.DeleteFile != nil && *user.DeleteFile {
+		if err := txn.WithTxn(r.Context(), rs.repository.TxnManager, func(ctx context.Context) error {
 			qe := rs.repository.File
+
 			if err := scene.LoadPrimaryFile(r.Context(), qe); err != nil {
-				ff := scene.Files.Primary()
-				if ff != nil {
-					if err := file.Destroy(ctx, qe, ff, fileDeleter, true); err != nil {
-						return fmt.Errorf("destroying file %s: %w", ff.Base().Path, err)
-					}
+				return err
+			}
+
+			ff := scene.Files.Primary()
+			if ff != nil {
+				if err := file.Destroy(r.Context(), qe, ff, fileDeleter, true); err != nil {
+					return err
 				}
+			}
+
+			return nil
+		}); err != nil {
+			fileDeleter.Rollback()
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// TODO: Performers
+	// TODO: Markers
+
+	if user.Tags != nil {
+		// Search the scene tags for any removed tags
+		tag_ids, err := rs.resolver.Scene().Tags(r.Context(), scene)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// TODO: Remove is broken
+		// WRN Response: 0 Unknown - list has not been loaded
+		// Panic: runtime error: slice bounds out of range [-1:]
+		for _, tagI := range tag_ids {
+			name := fmt.Sprintf("Tag:%v", tagI.Name)
+			if !tagExistsInReq(name, user.Tags) {
+				scene.TagIDs.Remove(tagI.ID)
 			}
 		}
 
-		// TODO: Performers
-		// TODO: Markers
+		// Search input tags and add/create any new ones
+		for _, tagI := range *user.Tags {
+			fmt.Printf("Tag name: %v\n", tagI.Name)
 
-		if user.Tags != nil {
-			if err := scene.LoadTagIDs(r.Context(), rs.repository.Scene); err != nil {
-				return err
+			if len(tagI.Name) == 0 {
+				continue
 			}
 
-			// Search the scene tags for any removed tags
-			tag_ids, err := rs.resolver.Scene().Tags(r.Context(), scene)
-			if err != nil {
-				return err
-			}
+			if strings.HasPrefix(tagI.Name, "Tag:") {
+				tagName := strings.TrimPrefix(tagI.Name, "Tag:")
 
-			// TODO: Remove is broken
-			// WRN Response: 0 Unknown - list has not been loaded
-			// Panic: runtime error: slice bounds out of range [-1:]
-			for _, tagI := range tag_ids {
-				name := fmt.Sprintf("Tag:%v", tagI.Name)
-				if !tagExistsInReq(name, user.Tags) {
-					scene.TagIDs.Remove(tagI.ID)
-				}
-			}
-
-			// Search input tags and add/create any new ones
-			for _, tagI := range *user.Tags {
-				fmt.Printf("Tag name: %v\n", tagI.Name)
-
-				if len(tagI.Name) <= 0 {
-					continue
-				}
-
-				if strings.HasPrefix(tagI.Name, "Tag:") {
-					tagName := strings.TrimPrefix(tagI.Name, "Tag:")
-
-					var tagMod *models.Tag
-					if err := tag.EnsureTagNameUnique(ctx, 0, tagName, rs.repository.Tag); err == nil {
-						newTag := TagCreateInput{
-							Name: tagName,
-						}
-						if tagMod, err = rs.resolver.Mutation().TagCreate(r.Context(), newTag); err != nil {
-							return err
-						}
-					} else {
-						if tagMod, err = tag.ByName(ctx, rs.repository.Tag, tagName); err != nil {
-							if tagMod, err = tag.ByAlias(ctx, rs.repository.Tag, tagName); err != nil {
+				var tagMod *models.Tag
+				if err := txn.WithTxn(r.Context(), rs.repository.TxnManager, func(ctx context.Context) error {
+					// TODO: Fails to find tags
+					if tagMod, err = tag.ByName(r.Context(), rs.repository.Tag, tagName); err != nil {
+						if tagMod, err = tag.ByAlias(r.Context(), rs.repository.Tag, tagName); err != nil {
+							newTag := TagCreateInput{
+								Name: tagName,
+							}
+							if tagMod, err = rs.resolver.Mutation().TagCreate(r.Context(), newTag); err != nil {
 								return err
 							}
 						}
 					}
 
+					return nil
+				}); err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+
+				if intslice.IntIndex(scene.TagIDs.List(), tagMod.ID) == -1 {
 					scene.TagIDs.Add(tagMod.ID)
 				}
 			}
-
 		}
 
-		// TODO: Do something with isFavorite?
+	}
 
+	// TODO: Do something with isFavorite?
+
+	if err := txn.WithTxn(r.Context(), rs.repository.TxnManager, func(ctx context.Context) error {
 		err := rs.repository.Scene.Update(ctx, scene)
 		return err
 	}); err != nil {
-		fileDeleter.Rollback()
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
