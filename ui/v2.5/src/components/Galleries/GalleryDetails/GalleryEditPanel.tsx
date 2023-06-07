@@ -364,14 +364,24 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     );
   }
 
+  function handlePrompt(location: { pathname: string }) {
+    if (!formik.dirty) {
+      return true;
+    }
+
+    // #2291 - don't prompt if we're navigating within the gallery being edited
+    if (location.pathname === `/galleries/${gallery.id}`) {
+      return true;
+    }
+
+    return intl.formatMessage({ id: "dialogs.unsaved_changes" });
+  }
+
   if (isLoading) return <LoadingIndicator />;
 
   return (
     <div id="gallery-edit-details">
-      <Prompt
-        when={formik.dirty}
-        message={intl.formatMessage({ id: "dialogs.unsaved_changes" })}
-      />
+      <Prompt when={formik.dirty} message={handlePrompt} />
 
       {maybeRenderScrapeDialog()}
       <Form noValidate onSubmit={formik.handleSubmit}>
