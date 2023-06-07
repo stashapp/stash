@@ -20,6 +20,7 @@ import { useRatingKeybinds } from "src/hooks/keybinds";
 import { ConfigurationContext } from "src/hooks/Config";
 import isEqual from "lodash-es/isEqual";
 import { useToast } from "src/hooks/Toast";
+import { handleUnsavedChanges } from "src/utils/navigation";
 
 interface IStudioEditPanel {
   studio: Partial<GQL.StudioDataFragment>;
@@ -227,7 +228,8 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
           // Check if it's a redirect after studio creation
           if (action === "PUSH" && location.pathname.startsWith("/studios/"))
             return true;
-          return intl.formatMessage({ id: "dialogs.unsaved_changes" });
+
+          return handleUnsavedChanges(intl, "studios", studio.id)(location);
         }}
       />
 

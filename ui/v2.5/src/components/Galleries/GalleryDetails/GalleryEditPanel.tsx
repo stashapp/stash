@@ -38,6 +38,7 @@ import { useRatingKeybinds } from "src/hooks/keybinds";
 import { ConfigurationContext } from "src/hooks/Config";
 import isEqual from "lodash-es/isEqual";
 import { DateInput } from "src/components/Shared/DateInput";
+import { handleUnsavedChanges } from "src/utils/navigation";
 
 interface IProps {
   gallery: Partial<GQL.GalleryDataFragment>;
@@ -364,24 +365,14 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     );
   }
 
-  function handlePrompt(location: { pathname: string }) {
-    if (!formik.dirty) {
-      return true;
-    }
-
-    // #2291 - don't prompt if we're navigating within the gallery being edited
-    if (location.pathname === `/galleries/${gallery.id}`) {
-      return true;
-    }
-
-    return intl.formatMessage({ id: "dialogs.unsaved_changes" });
-  }
-
   if (isLoading) return <LoadingIndicator />;
 
   return (
     <div id="gallery-edit-details">
-      <Prompt when={formik.dirty} message={handlePrompt} />
+      <Prompt
+        when={formik.dirty}
+        message={handleUnsavedChanges(intl, "galleries", gallery?.id)}
+      />
 
       {maybeRenderScrapeDialog()}
       <Form noValidate onSubmit={formik.handleSubmit}>
