@@ -20,6 +20,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/session"
+	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -59,6 +60,15 @@ const (
 	HeresphereLensMKX220  HeresphereLens = "MKX220"
 	HeresphereLensMKX200  HeresphereLens = "MKX200"
 	HeresphereLensVRCA220 HeresphereLens = "VRCA220"
+)
+
+type HeresphereEventType int
+
+const (
+	HeresphereEventOpen  HeresphereEventType = 0
+	HeresphereEventPlay  HeresphereEventType = 1
+	HeresphereEventPause HeresphereEventType = 2
+	HeresphereEventClose HeresphereEventType = 3
 )
 
 const HeresphereAuthHeader = "auth-token"
@@ -157,25 +167,25 @@ type HeresphereScanIndex struct {
 	ScanData []HeresphereVideoEntryShort `json:"scanData"`
 }
 type HeresphereAuthReq struct {
-	Username         string               `json:"username"`
-	Password         string               `json:"password"`
-	NeedsMediaSource bool                 `json:"needsMediaSource,omitempty"`
-	IsFavorite       bool                 `json:"isFavorite,omitempty"`
-	Rating           float32              `json:"rating,omitempty"`
-	Tags             []HeresphereVideoTag `json:"tags,omitempty"`
-	// In base64
-	Hsp        string `json:"hsp,omitempty"`
-	DeleteFile bool   `json:"deleteFile,omitempty"`
+	Username         string                `json:"username"`
+	Password         string                `json:"password"`
+	NeedsMediaSource *bool                 `json:"needsMediaSource,omitempty"`
+	IsFavorite       *bool                 `json:"isFavorite,omitempty"`
+	Rating           *float32              `json:"rating,omitempty"`
+	Tags             *[]HeresphereVideoTag `json:"tags,omitempty"`
+	HspBase64        *string               `json:"hsp,omitempty"`
+	DeleteFile       *bool                 `json:"deleteFile,omitempty"`
+	req              []byte
 }
 type HeresphereVideoEvent struct {
-	Username      string  `json:"username"`
-	Id            string  `json:"id"`
-	Title         string  `json:"title"`
-	Event         int     `json:"event"`
-	Time          float64 `json:"time"`
-	Speed         float32 `json:"speed"`
-	Utc           float64 `json:"utc"`
-	ConnectionKey string  `json:"connectionKey"`
+	Username      string              `json:"username"`
+	Id            string              `json:"id"`
+	Title         string              `json:"title"`
+	Event         HeresphereEventType `json:"event"`
+	Time          float64             `json:"time"`
+	Speed         float32             `json:"speed"`
+	Utc           float64             `json:"utc"`
+	ConnectionKey string              `json:"connectionKey"`
 }
 
 type heresphereRoutes struct {
@@ -214,24 +224,40 @@ func (rs heresphereRoutes) Routes() chi.Router {
 	return r
 }
 
+func getVrTag() string {
+	varTag := "Virtual Reality"
+	cfgMap := config.GetInstance().GetUIConfiguration()
+	if val, ok := cfgMap["vrTag"]; ok {
+		rval := val.(string)
+		if len(rval) > 0 {
+			varTag = rval
+		}
+	}
+	return varTag
+}
+
 /*
  * This is a video playback event
  * Intended for server-sided script playback.
  * But since we dont need that, we just use it for timestamps.
  */
 func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
-	event := HeresphereVideoEvent{}
-	if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
+	scene := r.Context().Value(heresphereKey).(*models.Scene)
+
+	var event HeresphereVideoEvent
+	err := json.NewDecoder(r.Body).Decode(&event)
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	scene := r.Context().Value(heresphereKey).(*models.Scene)
 
 	newTime := event.Time / 1000
 	newDuration := scene.PlayDuration
 	if newTime > scene.ResumeTime {
 		newDuration += (newTime - scene.ResumeTime)
 	}
+
+	// TODO: Unless we track playing, we cant increment playcount (also check minimumPlayPercent)
 
 	if _, err := rs.resolver.Mutation().SceneSaveActivity(r.Context(), strconv.Itoa(scene.ID), &newTime, &newDuration); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -257,6 +283,19 @@ func (rs heresphereRoutes) HeresphereScan(w http.ResponseWriter, r *http.Request
 }
 
 /*
+ * Check if scene tag exists in request tags
+ */
+func tagExistsInReq(hereName string, reqTags *[]HeresphereVideoTag) bool {
+	for _, tag := range *reqTags {
+		if tag.Name == hereName {
+			return true
+		}
+	}
+
+	return false
+}
+
+/*
  * This endpoint is for letting the user update scene data
  */
 func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *http.Request) {
@@ -265,12 +304,12 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 	fileDeleter := file.NewDeleter()
 
 	if err := txn.WithTxn(r.Context(), rs.repository.TxnManager, func(ctx context.Context) error {
-		qb := rs.repository.Scene
+		if user.Rating != nil {
+			rating := models.Rating5To100F(*user.Rating)
+			scene.Rating = &rating
+		}
 
-		rating := models.Rating5To100F(user.Rating)
-		scene.Rating = &rating
-
-		if user.DeleteFile {
+		if user.DeleteFile != nil && *user.DeleteFile {
 			qe := rs.repository.File
 			if err := scene.LoadPrimaryFile(r.Context(), qe); err != nil {
 				ff := scene.Files.Primary()
@@ -282,7 +321,66 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 			}
 		}
 
-		err := qb.Update(ctx, scene)
+		// TODO: Performers
+		// TODO: Markers
+
+		if user.Tags != nil {
+			if err := scene.LoadTagIDs(r.Context(), rs.repository.Scene); err != nil {
+				return err
+			}
+
+			// Search the scene tags for any removed tags
+			tag_ids, err := rs.resolver.Scene().Tags(r.Context(), scene)
+			if err != nil {
+				return err
+			}
+
+			// TODO: Remove is broken
+			// WRN Response: 0 Unknown - list has not been loaded
+			// Panic: runtime error: slice bounds out of range [-1:]
+			for _, tagI := range tag_ids {
+				name := fmt.Sprintf("Tag:%v", tagI.Name)
+				if !tagExistsInReq(name, user.Tags) {
+					scene.TagIDs.Remove(tagI.ID)
+				}
+			}
+
+			// Search input tags and add/create any new ones
+			for _, tagI := range *user.Tags {
+				fmt.Printf("Tag name: %v\n", tagI.Name)
+
+				if len(tagI.Name) <= 0 {
+					continue
+				}
+
+				if strings.HasPrefix(tagI.Name, "Tag:") {
+					tagName := strings.TrimPrefix(tagI.Name, "Tag:")
+
+					var tagMod *models.Tag
+					if err := tag.EnsureTagNameUnique(ctx, 0, tagName, rs.repository.Tag); err == nil {
+						newTag := TagCreateInput{
+							Name: tagName,
+						}
+						if tagMod, err = rs.resolver.Mutation().TagCreate(r.Context(), newTag); err != nil {
+							return err
+						}
+					} else {
+						if tagMod, err = tag.ByName(ctx, rs.repository.Tag, tagName); err != nil {
+							if tagMod, err = tag.ByAlias(ctx, rs.repository.Tag, tagName); err != nil {
+								return err
+							}
+						}
+					}
+
+					scene.TagIDs.Add(tagMod.ID)
+				}
+			}
+
+		}
+
+		// TODO: Do something with isFavorite?
+
+		err := rs.repository.Scene.Update(ctx, scene)
 		return err
 	}); err != nil {
 		fileDeleter.Rollback()
@@ -540,7 +638,6 @@ func (rs heresphereRoutes) HeresphereIndex(w http.ResponseWriter, r *http.Reques
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
 	err := json.NewEncoder(w).Encode(idx)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -561,7 +658,7 @@ func FindProjectionTags(scene *models.Scene, processedScene *HeresphereVideoEntr
 				processedScene.Fov = float32(s)
 			}
 		}
-		if strings.Contains(tag.Name, "Virtual Reality") || strings.Contains(tag.Name, "JAVR") {
+		if strings.Contains(tag.Name, getVrTag()) || strings.Contains(tag.Name, "JAVR") {
 			if processedScene.Projection == HeresphereProjectionPerspective {
 				processedScene.Projection = HeresphereProjectionEquirectangular
 			}
@@ -635,9 +732,9 @@ func FindProjectionTags(scene *models.Scene, processedScene *HeresphereVideoEntr
  */
 func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value(heresphereUserKey).(HeresphereAuthReq)
-	if user.Tags != nil {
+
+	if user.DeleteFile != nil || user.Rating != nil || user.Tags != nil {
 		rs.HeresphereVideoDataUpdate(w, r)
-		return
 	}
 
 	scene := r.Context().Value(heresphereKey).(*models.Scene)
@@ -678,12 +775,12 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		Media:         []HeresphereVideoMedia{},
 		WriteFavorite: false,
 		WriteRating:   true,
-		WriteTags:     false,
+		WriteTags:     true,
 		WriteHSP:      false,
 	}
 	FindProjectionTags(scene, &processedScene)
 
-	if user.NeedsMediaSource {
+	if user.NeedsMediaSource != nil && *user.NeedsMediaSource {
 		processedScene.Media = rs.getVideoMedia(r, scene)
 	}
 	if scene.Date != nil {
@@ -692,7 +789,7 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 	if scene.Rating != nil {
 		fiveScale := models.Rating100To5F(*scene.Rating)
 		processedScene.Rating = fiveScale
-		processedScene.IsFavorite = fiveScale >= 4
+		// processedScene.IsFavorite = fiveScale >= 4
 		if processedScene.IsFavorite {
 			processedScene.Favorites++
 		}
@@ -705,7 +802,6 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 
 	// Create a JSON encoder for the response writer
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
 	err := json.NewEncoder(w).Encode(processedScene)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -748,7 +844,6 @@ func (rs heresphereRoutes) HeresphereLoginToken(w http.ResponseWriter, r *http.R
 
 	// Create a JSON encoder for the response writer
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
 	err := json.NewEncoder(w).Encode(auth)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -813,7 +908,6 @@ func writeNotAuthorized(w http.ResponseWriter, r *http.Request, msg string) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
 	err := json.NewEncoder(w).Encode(idx)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -871,9 +965,11 @@ func (rs heresphereRoutes) HeresphereCtx(next http.Handler) http.Handler {
 			http.Error(w, "can't read body", http.StatusBadRequest)
 			return
 		}
+		r.Body = io.NopCloser(bytes.NewBuffer(body))
 
 		isAuth := config.GetInstance().HasCredentials() && !HeresphereHasValidToken(r)
-		user := HeresphereAuthReq{NeedsMediaSource: true, DeleteFile: false}
+		needsMedia := true
+		user := HeresphereAuthReq{NeedsMediaSource: &needsMedia}
 		if err := json.Unmarshal(body, &user); err != nil && isAuth {
 			writeNotAuthorized(w, r, "Not logged in!")
 			return
@@ -883,8 +979,6 @@ func (rs heresphereRoutes) HeresphereCtx(next http.Handler) http.Handler {
 			writeNotAuthorized(w, r, "Unauthorized!")
 			return
 		}
-
-		r.Body = io.NopCloser(bytes.NewBuffer(body))
 
 		ctx := context.WithValue(r.Context(), heresphereUserKey, user)
 		next.ServeHTTP(w, r.WithContext(ctx))

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
 type SceneIDLoader interface {
@@ -79,6 +80,13 @@ func (r *RelatedIDs) Add(ids ...int) {
 	r.mustLoaded()
 
 	r.list = append(r.list, ids...)
+}
+
+// Remove removes the provided ids to the list. Panics if the relationship has not been loaded.
+func (r *RelatedIDs) Remove(ids ...int) {
+	r.mustLoaded()
+
+	r.list = intslice.IntExclude(r.list, ids)
 }
 
 func (r *RelatedIDs) load(fn func() ([]int, error)) error {
