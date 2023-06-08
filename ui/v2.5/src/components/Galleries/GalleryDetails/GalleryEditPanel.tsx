@@ -38,6 +38,7 @@ import { useRatingKeybinds } from "src/hooks/keybinds";
 import { ConfigurationContext } from "src/hooks/Config";
 import isEqual from "lodash-es/isEqual";
 import { DateInput } from "src/components/Shared/DateInput";
+import { handleUnsavedChanges } from "src/utils/navigation";
 
 interface IProps {
   gallery: Partial<GQL.GalleryDataFragment>;
@@ -370,7 +371,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     <div id="gallery-edit-details">
       <Prompt
         when={formik.dirty}
-        message={intl.formatMessage({ id: "dialogs.unsaved_changes" })}
+        message={handleUnsavedChanges(intl, "galleries", gallery?.id)}
       />
 
       {maybeRenderScrapeDialog()}

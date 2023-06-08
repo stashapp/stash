@@ -14,6 +14,7 @@ import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { StringListInput } from "src/components/Shared/StringListInput";
 import isEqual from "lodash-es/isEqual";
 import { useToast } from "src/hooks/Toast";
+import { handleUnsavedChanges } from "src/utils/navigation";
 
 interface ITagEditPanel {
   tag: Partial<GQL.TagDataFragment>;
@@ -161,11 +162,12 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
       <Prompt
         when={formik.dirty}
         message={(location, action) => {
-          // Check if it's a redirect after movie creation
+          // Check if it's a redirect after tag creation
           if (action === "PUSH" && location.pathname.startsWith("/tags/")) {
             return true;
           }
-          return intl.formatMessage({ id: "dialogs.unsaved_changes" });
+
+          return handleUnsavedChanges(intl, "tags", tag.id)(location);
         }}
       />
 
