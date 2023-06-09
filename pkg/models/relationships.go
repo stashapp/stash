@@ -79,7 +79,7 @@ func (r RelatedIDs) List() []int {
 func (r *RelatedIDs) Add(ids ...int) {
 	r.mustLoaded()
 
-	r.list = append(r.list, ids...)
+	r.list = intslice.IntAppendUniques(r.list, ids)
 }
 
 // Remove removes the provided ids to the list. Panics if the relationship has not been loaded.

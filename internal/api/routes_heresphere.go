@@ -19,9 +19,8 @@ import (
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/session"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
-	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -70,6 +69,16 @@ const (
 	HeresphereEventPlay  HeresphereEventType = 1
 	HeresphereEventPause HeresphereEventType = 2
 	HeresphereEventClose HeresphereEventType = 3
+)
+
+type HeresphereCustomTag string
+
+const (
+	HeresphereCustomTagInteractive HeresphereCustomTag = "Interactive"
+	HeresphereCustomTagUnwatched   HeresphereCustomTag = "Unwatched"
+	HeresphereCustomTagWatched     HeresphereCustomTag = "Watched"
+	HeresphereCustomTagUnorganized HeresphereCustomTag = "Unorganized"
+	HeresphereCustomTagOrganized   HeresphereCustomTag = "Organized"
 )
 
 const HeresphereAuthHeader = "auth-token"
@@ -208,7 +217,7 @@ func (rs heresphereRoutes) Routes() chi.Router {
 		r.Get("/", rs.HeresphereIndex)
 		r.Head("/", rs.HeresphereIndex)
 
-		// r.Post("/scan", rs.HeresphereScan)
+		r.Post("/scan", rs.HeresphereScan)
 		r.Post("/auth", rs.HeresphereLoginToken)
 		r.Route("/{sceneId}", func(r chi.Router) {
 			r.Use(rs.HeresphereSceneCtx)
@@ -233,6 +242,11 @@ func getVrTag() string {
 			varTag = rval
 		}
 	}
+	return varTag
+}
+func getFavoriteTag() string {
+	varTag := "Favorite"
+	// TODO: This
 	return varTag
 }
 
@@ -279,7 +293,67 @@ func (rs heresphereRoutes) HeresphereVideoHsp(w http.ResponseWriter, r *http.Req
  * This endpoint provides a list of all videos in a short format
  */
 func (rs heresphereRoutes) HeresphereScan(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotImplemented)
+	processedScenes := []HeresphereVideoEntryShort{}
+
+	if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		var err error
+
+		var scenes []*models.Scene
+		if scenes, err = rs.repository.Scene.All(ctx); err != nil {
+			return err
+		}
+
+		// Processing each scene and creating a new list
+		for _, scene := range scenes {
+			// Perform the necessary processing on each scene
+			processedScene := HeresphereVideoEntryShort{
+				Link: fmt.Sprintf("%s/heresphere/%v",
+					GetBaseURL(r),
+					scene.ID,
+				),
+				Title:      scene.GetTitle(),
+				DateAdded:  scene.CreatedAt.Format("2006-01-02"),
+				Duration:   60000.0,
+				Rating:     0,
+				Favorites:  scene.PlayCount, // TODO: Other behaviour
+				Comments:   scene.OCounter,
+				IsFavorite: false,
+				Tags:       rs.getVideoTags(r, scene),
+			}
+			if scene.Date != nil {
+				processedScene.DateReleased = scene.Date.Format("2006-01-02")
+			}
+			if scene.Rating != nil {
+				fiveScale := models.Rating100To5F(*scene.Rating)
+				processedScene.Rating = fiveScale
+				if processedScene.IsFavorite {
+					processedScene.Favorites++
+				}
+			}
+
+			if scene.Files.PrimaryLoaded() {
+				file_ids := scene.Files.Primary()
+				if file_ids != nil {
+					processedScene.Duration = handleFloat64Value(file_ids.Duration * 1000.0)
+				}
+			}
+
+			processedScenes = append(processedScenes, processedScene)
+		}
+
+		return err
+	}); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Create a JSON encoder for the response writer
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewEncoder(w).Encode(processedScenes)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 /*
@@ -299,26 +373,31 @@ func tagExistsInReq(hereName string, reqTags *[]HeresphereVideoTag) bool {
  * This endpoint is for letting the user update scene data
  */
 func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *http.Request) {
-	scene := r.Context().Value(heresphereKey).(*models.Scene)
+	scn := r.Context().Value(heresphereKey).(*models.Scene)
 	user := r.Context().Value(heresphereUserKey).(HeresphereAuthReq)
 	fileDeleter := file.NewDeleter()
 
+	ret := &scene.UpdateSet{
+		ID: scn.ID,
+	}
+	ret.Partial = models.NewScenePartial()
+
 	if user.Rating != nil {
 		rating := models.Rating5To100F(*user.Rating)
-		scene.Rating = &rating
+		ret.Partial.Rating = models.NewOptionalInt(rating)
 	}
 
 	if user.DeleteFile != nil && *user.DeleteFile {
 		if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
-			qe := rs.repository.File
+			fqb := rs.repository.File
 
-			if err := scene.LoadPrimaryFile(r.Context(), qe); err != nil {
+			if err := scn.LoadPrimaryFile(ctx, fqb); err != nil {
 				return err
 			}
 
-			ff := scene.Files.Primary()
+			ff := scn.Files.Primary()
 			if ff != nil {
-				if err := file.Destroy(r.Context(), qe, ff, fileDeleter, true); err != nil {
+				if err := file.Destroy(ctx, fqb, ff, fileDeleter, true); err != nil {
 					return err
 				}
 			}
@@ -331,26 +410,11 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 		}
 	}
 
-	// TODO: Performers
-	// TODO: Markers
-
 	if user.Tags != nil {
-		// Search the scene tags for any removed tags
-		tag_ids, err := rs.resolver.Scene().Tags(r.Context(), scene)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// TODO: Remove is broken
-		for _, tagI := range tag_ids {
-			name := fmt.Sprintf("Tag:%v", tagI.Name)
-			if !tagExistsInReq(name, user.Tags) {
-				scene.TagIDs.Remove(tagI.ID)
-			}
-		}
-
 		// Search input tags and add/create any new ones
+		var tagIDs []int
+		var perfIDs []int
+
 		for _, tagI := range *user.Tags {
 			fmt.Printf("Tag name: %v\n", tagI.Name)
 
@@ -361,41 +425,80 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 			if strings.HasPrefix(tagI.Name, "Tag:") {
 				tagName := strings.TrimPrefix(tagI.Name, "Tag:")
 
+				// TODO: How to increment
+				if tagName == string(HeresphereCustomTagWatched) && scn.PlayCount == 0 {
+					scn.PlayCount++
+					break
+				}
+				if tagName == string(HeresphereCustomTagUnwatched) {
+					scn.PlayCount = 0
+					break
+				}
+				if tagName == string(HeresphereCustomTagOrganized) {
+					scn.Organized = true
+					break
+				}
+				if tagName == string(HeresphereCustomTagUnorganized) {
+					scn.Organized = false
+					break
+				}
+
+				var err error
 				var tagMod *models.Tag
-				if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
-					// TODO: Fails to find tags
-					if tagMod, err = tag.ByName(r.Context(), rs.repository.Tag, tagName); err != nil {
-						fmt.Printf("Err1\n")
-						if tagMod, err = tag.ByAlias(r.Context(), rs.repository.Tag, tagName); err != nil {
-							fmt.Printf("Err2\n")
-							newTag := TagCreateInput{
-								Name: tagName,
-							}
-							if tagMod, err = rs.resolver.Mutation().TagCreate(r.Context(), newTag); err != nil {
-								fmt.Printf("Err3\n")
-								return err
-							}
-						}
+				if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+					tagMod, err = rs.repository.Tag.FindByName(ctx, tagName, true)
+					return err
+				}); err != nil || tagMod == nil {
+					newTag := TagCreateInput{
+						Name: tagName,
 					}
-
-					return nil
-				}); err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
+					if tagMod, err = rs.resolver.Mutation().TagCreate(r.Context(), newTag); err != nil {
+						http.Error(w, err.Error(), http.StatusInternalServerError)
+						return
+					}
 				}
 
-				if intslice.IntIndex(scene.TagIDs.List(), tagMod.ID) == -1 {
-					scene.TagIDs.Add(tagMod.ID)
+				tagIDs = append(tagIDs, tagMod.ID)
+			}
+			if strings.HasPrefix(tagI.Name, "Performer:") {
+				tagName := strings.TrimPrefix(tagI.Name, "Performer:")
+
+				var err error
+				var tagMod *models.Performer
+				if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+					var tagMods []*models.Performer
+					if tagMods, err = rs.repository.Performer.FindByNames(ctx, []string{tagName}, true); err == nil && len(tagMods) > 0 {
+						tagMod = tagMods[0]
+					}
+					return err
+				}); err != nil || tagMod == nil {
+					newTag := PerformerCreateInput{
+						Name: tagName,
+					}
+					if tagMod, err = rs.resolver.Mutation().PerformerCreate(r.Context(), newTag); err != nil {
+						http.Error(w, err.Error(), http.StatusInternalServerError)
+						return
+					}
 				}
+
+				perfIDs = append(perfIDs, tagMod.ID)
 			}
 		}
 
+		ret.Partial.TagIDs = &models.UpdateIDs{
+			IDs:  tagIDs,
+			Mode: models.RelationshipUpdateModeSet,
+		}
+		ret.Partial.PerformerIDs = &models.UpdateIDs{
+			IDs:  perfIDs,
+			Mode: models.RelationshipUpdateModeSet,
+		}
 	}
 
 	// TODO: Do something with isFavorite?
 
 	if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
-		err := rs.repository.Scene.Update(ctx, scene)
+		_, err := ret.Update(ctx, rs.repository.Scene)
 		return err
 	}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -454,7 +557,7 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 	if err == nil {
 		for _, perf := range perf_ids {
 			genTag := HeresphereVideoTag{
-				Name: fmt.Sprintf("Talent:%s", perf.Name),
+				Name: fmt.Sprintf("Performer:%s", perf.Name),
 			}
 			processedTags = append(processedTags, genTag)
 		}
@@ -483,22 +586,38 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 	interactive, err := rs.resolver.Scene().Interactive(r.Context(), scene)
 	if err == nil && interactive {
 		genTag := HeresphereVideoTag{
-			Name: "Interactive",
+			Name: string(HeresphereCustomTagInteractive),
 		}
 		processedTags = append(processedTags, genTag)
 	}
 
 	if scene.PlayCount > 0 {
 		genTag := HeresphereVideoTag{
-			Name: "Watched",
+			Name: string(HeresphereCustomTagWatched),
 		}
 		processedTags = append(processedTags, genTag)
 	} else {
 		genTag := HeresphereVideoTag{
-			Name: "Unwatched",
+			Name: string(HeresphereCustomTagUnwatched),
 		}
 		processedTags = append(processedTags, genTag)
 	}
+
+	if scene.Organized {
+		genTag := HeresphereVideoTag{
+			Name: string(HeresphereCustomTagOrganized),
+		}
+		processedTags = append(processedTags, genTag)
+	} else {
+		genTag := HeresphereVideoTag{
+			Name: string(HeresphereCustomTagUnorganized),
+		}
+		processedTags = append(processedTags, genTag)
+	}
+
+	// TODO: PlayCount tag (replace watch/unwatched?)
+	// TODO: OCount tag
+	// TODO: More?
 
 	return processedTags
 }
@@ -554,7 +673,7 @@ func (rs heresphereRoutes) getVideoMedia(r *http.Request, scene *models.Scene) [
 	mediaTypes := make(map[string][]HeresphereVideoMediaSource)
 
 	if err := txn.WithTxn(r.Context(), rs.repository.TxnManager, func(ctx context.Context) error {
-		return scene.LoadPrimaryFile(r.Context(), rs.repository.File)
+		return scene.LoadPrimaryFile(ctx, rs.repository.File)
 	}); err != nil {
 		return processedMedia
 	}
@@ -761,6 +880,7 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	// TODO: Use image lib to overlay heatmap?
 	processedScene = HeresphereVideoEntry{
 		Access:         HeresphereMember,
 		Title:          scene.GetTitle(),
@@ -770,7 +890,7 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		DateAdded:      scene.CreatedAt.Format("2006-01-02"),
 		Duration:       60000.0,
 		Rating:         0,
-		Favorites:      scene.PlayCount,
+		Favorites:      scene.PlayCount, // TODO: Other behaviour
 		Comments:       scene.OCounter,
 		IsFavorite:     false,
 		Projection:     HeresphereProjectionPerspective,
@@ -809,9 +929,11 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		}
 	}
 
-	file_ids := scene.Files.Primary()
-	if file_ids != nil {
-		processedScene.Duration = handleFloat64Value(file_ids.Duration * 1000.0)
+	if scene.Files.PrimaryLoaded() {
+		file_ids := scene.Files.Primary()
+		if file_ids != nil {
+			processedScene.Duration = handleFloat64Value(file_ids.Duration * 1000.0)
+		}
 	}
 
 	// Create a JSON encoder for the response writer
