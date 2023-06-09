@@ -317,7 +317,7 @@ func (rs heresphereRoutes) HeresphereScan(w http.ResponseWriter, r *http.Request
 				Rating:     0,
 				Favorites:  scene.PlayCount, // TODO: Other behaviour
 				Comments:   scene.OCounter,
-				IsFavorite: false,
+				IsFavorite: rs.getVideoFavorite(r, scene),
 				Tags:       rs.getVideoTags(r, scene),
 			}
 			if scene.Date != nil {
@@ -326,9 +326,9 @@ func (rs heresphereRoutes) HeresphereScan(w http.ResponseWriter, r *http.Request
 			if scene.Rating != nil {
 				fiveScale := models.Rating100To5F(*scene.Rating)
 				processedScene.Rating = fiveScale
-				if processedScene.IsFavorite {
-					processedScene.Favorites++
-				}
+			}
+			if processedScene.IsFavorite {
+				processedScene.Favorites++
 			}
 
 			if scene.Files.PrimaryLoaded() {
@@ -354,19 +354,6 @@ func (rs heresphereRoutes) HeresphereScan(w http.ResponseWriter, r *http.Request
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-}
-
-/*
- * Check if scene tag exists in request tags
- */
-func tagExistsInReq(hereName string, reqTags *[]HeresphereVideoTag) bool {
-	for _, tag := range *reqTags {
-		if tag.Name == hereName {
-			return true
-		}
-	}
-
-	return false
 }
 
 /*
@@ -410,6 +397,25 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 		}
 	}
 
+	favName := getFavoriteTag()
+	if user.IsFavorite != nil {
+		favtag := HeresphereVideoTag{Name: fmt.Sprintf("Tag:%v", favName)}
+		if *user.IsFavorite {
+			if user.Tags == nil {
+				user.Tags = &[]HeresphereVideoTag{favtag}
+			} else {
+				*user.Tags = append(*user.Tags, favtag)
+			}
+		} else if user.Tags != nil {
+			for i, tag := range *user.Tags {
+				if tag.Name == favtag.Name {
+					*user.Tags = append((*user.Tags)[:i], (*user.Tags)[i+1:]...)
+					break
+				}
+			}
+		}
+	}
+
 	if user.Tags != nil {
 		// Search input tags and add/create any new ones
 		var tagIDs []int
@@ -428,19 +434,22 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 				// TODO: How to increment
 				if tagName == string(HeresphereCustomTagWatched) && scn.PlayCount == 0 {
 					scn.PlayCount++
-					break
+					continue
 				}
 				if tagName == string(HeresphereCustomTagUnwatched) {
 					scn.PlayCount = 0
-					break
+					continue
 				}
 				if tagName == string(HeresphereCustomTagOrganized) {
 					scn.Organized = true
-					break
+					continue
 				}
 				if tagName == string(HeresphereCustomTagUnorganized) {
 					scn.Organized = false
-					break
+					continue
+				}
+				if tagName == favName {
+					continue
 				}
 
 				var err error
@@ -495,8 +504,6 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 		}
 	}
 
-	// TODO: Do something with isFavorite?
-
 	if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 		_, err := ret.Update(ctx, rs.repository.Scene)
 		return err
@@ -546,6 +553,10 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 	tag_ids, err := rs.resolver.Scene().Tags(r.Context(), scene)
 	if err == nil {
 		for _, tag := range tag_ids {
+			if tag.Name == getFavoriteTag() {
+				continue
+			}
+
 			genTag := HeresphereVideoTag{
 				Name: fmt.Sprintf("Tag:%v", tag.Name),
 			}
@@ -662,6 +673,23 @@ func (rs heresphereRoutes) getVideoSubtitles(r *http.Request, scene *models.Scen
 	}
 
 	return processedSubtitles
+}
+
+/*
+ * This auxiliary function searches for the "favorite" tag
+ */
+func (rs heresphereRoutes) getVideoFavorite(r *http.Request, scene *models.Scene) bool {
+	tag_ids, err := rs.resolver.Scene().Tags(r.Context(), scene)
+	if err == nil {
+		favTag := getFavoriteTag()
+		for _, tag := range tag_ids {
+			if tag.Name == favTag {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 /*
@@ -892,7 +920,7 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		Rating:         0,
 		Favorites:      scene.PlayCount, // TODO: Other behaviour
 		Comments:       scene.OCounter,
-		IsFavorite:     false,
+		IsFavorite:     rs.getVideoFavorite(r, scene),
 		Projection:     HeresphereProjectionPerspective,
 		Stereo:         HeresphereStereoMono,
 		IsEyeSwapped:   false,
@@ -924,9 +952,9 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		fiveScale := models.Rating100To5F(*scene.Rating)
 		processedScene.Rating = fiveScale
 		// processedScene.IsFavorite = fiveScale >= 4
-		if processedScene.IsFavorite {
-			processedScene.Favorites++
-		}
+	}
+	if processedScene.IsFavorite {
+		processedScene.Favorites++
 	}
 
 	if scene.Files.PrimaryLoaded() {
