@@ -54,12 +54,6 @@ models:
     model:  github.com/stashapp/stash/internal/manager/config.ScanMetadataOptions
   AutoTagMetadataOptions:
     model: github.com/stashapp/stash/internal/manager/config.AutoTagMetadataOptions
-  SceneParserInput:
-    model: github.com/stashapp/stash/internal/manager.SceneParserInput
-  SceneParserResult:
-    model: github.com/stashapp/stash/internal/manager.SceneParserResult
-  SceneMovieID:
-    model: github.com/stashapp/stash/internal/manager.SceneMovieID
   SystemStatus:
     model: github.com/stashapp/stash/internal/manager.SystemStatus
   SystemStatusEnum:
