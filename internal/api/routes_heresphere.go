@@ -233,6 +233,7 @@ func (rs heresphereRoutes) Routes() chi.Router {
 	return r
 }
 
+// TODO: Move these to be more generic functions
 func getVrTag() string {
 	varTag := "Virtual Reality"
 	cfgMap := config.GetInstance().GetUIConfiguration()
@@ -287,6 +288,7 @@ func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.R
  */
 func (rs heresphereRoutes) HeresphereVideoHsp(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
+	// TODO: Need an SQL entry, either link to file (annoying path, needs cleanup etc.), or just put binary in SQL
 }
 
 /*
@@ -622,8 +624,9 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 		processedTags = append(processedTags, genTag)
 	}
 
-	// TODO: PlayCount tag (replace watch/unwatched?)
+	// TODO: PlayCount tag (replace watch/unwatched?, just set to number like PlayCount:5 and let user edit)
 	// TODO: OCount tag
+	// TODO: Director
 	// TODO: More?
 
 	return processedTags
@@ -810,13 +813,13 @@ func FindProjectionTags(scene *models.Scene, processedScene *HeresphereVideoEntr
 	// Detect VR modes from tags
 	for _, tag := range processedScene.Tags {
 		if strings.Contains(tag.Name, "°") {
-			deg := strings.ReplaceAll(tag.Name, "°", "")
-			deg = strings.ReplaceAll(deg, "Tag:", "")
+			deg := strings.TrimSuffix(tag.Name, "°")
+			deg = strings.TrimPrefix(deg, "Tag:")
 			if s, err := strconv.ParseFloat(deg, 32); err == nil {
 				processedScene.Fov = float32(s)
 			}
 		}
-		if strings.Contains(tag.Name, getVrTag()) || strings.Contains(tag.Name, "JAVR") {
+		if strings.Contains(tag.Name, getVrTag()) {
 			if processedScene.Projection == HeresphereProjectionPerspective {
 				processedScene.Projection = HeresphereProjectionEquirectangular
 			}
@@ -873,7 +876,10 @@ func FindProjectionTags(scene *models.Scene, processedScene *HeresphereVideoEntr
 			processedScene.Fov = 220.0
 			processedScene.Lens = HeresphereLensMKX220
 		}
-		if strings.Contains(path, "_RF52") {
+		if strings.Contains(path, "_FISHEYE") {
+			processedScene.Projection = HeresphereProjectionFisheye
+		}
+		if strings.Contains(path, "_RF52") || strings.Contains(path, "_FISHEYE190") {
 			processedScene.Projection = HeresphereProjectionFisheye
 			processedScene.Fov = 190.0
 		}
@@ -932,7 +938,7 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		Subtitles:     rs.getVideoSubtitles(r, scene),
 		Tags:          rs.getVideoTags(r, scene),
 		Media:         []HeresphereVideoMedia{},
-		WriteFavorite: false,
+		WriteFavorite: true,
 		WriteRating:   true,
 		WriteTags:     true,
 		WriteHSP:      false,
