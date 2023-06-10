@@ -294,57 +294,53 @@ func (rs heresphereRoutes) HeresphereVideoHsp(w http.ResponseWriter, r *http.Req
  */
 func (rs heresphereRoutes) HeresphereScan(w http.ResponseWriter, r *http.Request) {
 	processedScenes := []HeresphereVideoEntryShort{}
+	var scenes []*models.Scene
 
 	if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 		var err error
-
-		var scenes []*models.Scene
-		if scenes, err = rs.repository.Scene.All(ctx); err != nil {
-			return err
-		}
-
-		// Processing each scene and creating a new list
-		for _, scene := range scenes {
-			// Perform the necessary processing on each scene
-			processedScene := HeresphereVideoEntryShort{
-				Link: fmt.Sprintf("%s/heresphere/%v",
-					GetBaseURL(r),
-					scene.ID,
-				),
-				Title:      scene.GetTitle(),
-				DateAdded:  scene.CreatedAt.Format("2006-01-02"),
-				Duration:   60000.0,
-				Rating:     0,
-				Favorites:  scene.PlayCount, // TODO: Other behaviour
-				Comments:   scene.OCounter,
-				IsFavorite: rs.getVideoFavorite(r, scene),
-				Tags:       rs.getVideoTags(r, scene),
-			}
-			if scene.Date != nil {
-				processedScene.DateReleased = scene.Date.Format("2006-01-02")
-			}
-			if scene.Rating != nil {
-				fiveScale := models.Rating100To5F(*scene.Rating)
-				processedScene.Rating = fiveScale
-			}
-			if processedScene.IsFavorite {
-				processedScene.Favorites++
-			}
-
-			if scene.Files.PrimaryLoaded() {
-				file_ids := scene.Files.Primary()
-				if file_ids != nil {
-					processedScene.Duration = handleFloat64Value(file_ids.Duration * 1000.0)
-				}
-			}
-
-			processedScenes = append(processedScenes, processedScene)
-		}
-
+		scenes, err = rs.repository.Scene.All(ctx)
 		return err
 	}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	// Processing each scene and creating a new list
+	for _, scene := range scenes {
+		// Perform the necessary processing on each scene
+		processedScene := HeresphereVideoEntryShort{
+			Link: fmt.Sprintf("%s/heresphere/%v",
+				GetBaseURL(r),
+				scene.ID,
+			),
+			Title:      scene.GetTitle(),
+			DateAdded:  scene.CreatedAt.Format("2006-01-02"),
+			Duration:   60000.0,
+			Rating:     0,
+			Favorites:  0,
+			Comments:   scene.OCounter,
+			IsFavorite: rs.getVideoFavorite(r, scene),
+			Tags:       rs.getVideoTags(r, scene),
+		}
+		if scene.Date != nil {
+			processedScene.DateReleased = scene.Date.Format("2006-01-02")
+		}
+		if scene.Rating != nil {
+			fiveScale := models.Rating100To5F(*scene.Rating)
+			processedScene.Rating = fiveScale
+		}
+		if processedScene.IsFavorite {
+			processedScene.Favorites++
+		}
+
+		if scene.Files.PrimaryLoaded() {
+			file_ids := scene.Files.Primary()
+			if file_ids != nil {
+				processedScene.Duration = handleFloat64Value(file_ids.Duration * 1000.0)
+			}
+		}
+
+		processedScenes = append(processedScenes, processedScene)
 	}
 
 	// Create a JSON encoder for the response writer
@@ -657,6 +653,7 @@ func (rs heresphereRoutes) getVideoScripts(r *http.Request, scene *models.Scene)
 func (rs heresphereRoutes) getVideoSubtitles(r *http.Request, scene *models.Scene) []HeresphereVideoSubtitle {
 	processedSubtitles := []HeresphereVideoSubtitle{}
 
+	// TODO: Seemingly broken in heresphere
 	if captions_id, err := rs.resolver.Scene().Captions(r.Context(), scene); err == nil {
 		for _, caption := range captions_id {
 			processedCaption := HeresphereVideoSubtitle{
@@ -918,7 +915,7 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		DateAdded:      scene.CreatedAt.Format("2006-01-02"),
 		Duration:       60000.0,
 		Rating:         0,
-		Favorites:      scene.PlayCount, // TODO: Other behaviour
+		Favorites:      0,
 		Comments:       scene.OCounter,
 		IsFavorite:     rs.getVideoFavorite(r, scene),
 		Projection:     HeresphereProjectionPerspective,
@@ -951,7 +948,6 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 	if scene.Rating != nil {
 		fiveScale := models.Rating100To5F(*scene.Rating)
 		processedScene.Rating = fiveScale
-		// processedScene.IsFavorite = fiveScale >= 4
 	}
 	if processedScene.IsFavorite {
 		processedScene.Favorites++
