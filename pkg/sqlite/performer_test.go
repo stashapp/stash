@@ -513,12 +513,13 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 			performerIDs[performerIdxWithTwoTags],
 			clearPerformerPartial(),
 			models.Performer{
-				ID:       performerIDs[performerIdxWithTwoTags],
-				Name:     getPerformerStringValue(performerIdxWithTwoTags, "Name"),
-				Favorite: true,
-				Aliases:  models.NewRelatedStrings([]string{}),
-				TagIDs:   models.NewRelatedIDs([]int{}),
-				StashIDs: models.NewRelatedStashIDs([]models.StashID{}),
+				ID:            performerIDs[performerIdxWithTwoTags],
+				Name:          getPerformerStringValue(performerIdxWithTwoTags, "Name"),
+				Favorite:      getPerformerBoolValue(performerIdxWithTwoTags),
+				Aliases:       models.NewRelatedStrings([]string{}),
+				TagIDs:        models.NewRelatedIDs([]int{}),
+				StashIDs:      models.NewRelatedStashIDs([]models.StashID{}),
+				IgnoreAutoTag: getIgnoreAutoTag(performerIdxWithTwoTags),
 			},
 			false,
 		},
@@ -1904,10 +1905,10 @@ func TestPerformerQuerySortScenesCount(t *testing.T) {
 
 		assert.True(t, len(performers) > 0)
 
-		// first performer should be performerIdxWithTwoScenes
+		// first performer should be performerIdx1WithScene
 		firstPerformer := performers[0]
 
-		assert.Equal(t, performerIDs[performerIdxWithTwoScenes], firstPerformer.ID)
+		assert.Equal(t, performerIDs[performerIdx1WithScene], firstPerformer.ID)
 
 		// sort in ascending order
 		direction = models.SortDirectionEnumAsc
@@ -1920,7 +1921,7 @@ func TestPerformerQuerySortScenesCount(t *testing.T) {
 		assert.True(t, len(performers) > 0)
 		lastPerformer := performers[len(performers)-1]
 
-		assert.Equal(t, performerIDs[performerIdxWithTwoScenes], lastPerformer.ID)
+		assert.Equal(t, performerIDs[performerIdxWithTag], lastPerformer.ID)
 
 		return nil
 	})
@@ -2060,7 +2061,7 @@ func TestPerformerStore_FindByStashIDStatus(t *testing.T) {
 			name:             "!hasStashID",
 			hasStashID:       false,
 			stashboxEndpoint: getPerformerStringValue(performerIdxWithScene, "endpoint"),
-			include:          []int{performerIdxWithImage},
+			include:          []int{performerIdxWithTwoScenes},
 			exclude:          []int{performerIdx2WithScene},
 			wantErr:          false,
 		},

@@ -959,7 +959,7 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 	query.handleCriterion(ctx, sceneTagCountCriterionHandler(qb, sceneFilter.TagCount))
 	query.handleCriterion(ctx, scenePerformersCriterionHandler(qb, sceneFilter.Performers))
 	query.handleCriterion(ctx, scenePerformerCountCriterionHandler(qb, sceneFilter.PerformerCount))
-	query.handleCriterion(ctx, sceneStudioCriterionHandler(qb, sceneFilter.Studios))
+	query.handleCriterion(ctx, studioCriterionHandler(sceneTable, sceneFilter.Studios))
 	query.handleCriterion(ctx, sceneMoviesCriterionHandler(qb, sceneFilter.Movies))
 	query.handleCriterion(ctx, scenePerformerTagsCriterionHandler(qb, sceneFilter.PerformerTags))
 	query.handleCriterion(ctx, scenePerformerFavoriteCriterionHandler(sceneFilter.PerformerFavorite))
@@ -1352,19 +1352,6 @@ func scenePerformerAgeCriterionHandler(performerAge *models.IntCriterionInput) c
 	}
 }
 
-func sceneStudioCriterionHandler(qb *SceneStore, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	h := hierarchicalMultiCriterionHandlerBuilder{
-		tx: qb.tx,
-
-		primaryTable: sceneTable,
-		foreignTable: studioTable,
-		foreignFK:    studioIDColumn,
-		parentFK:     "parent_id",
-	}
-
-	return h.handler(studios)
-}
-
 func sceneMoviesCriterionHandler(qb *SceneStore, movies *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
 		qb.moviesRepository().join(f, "", "scenes.id")
@@ -1374,38 +1361,12 @@ func sceneMoviesCriterionHandler(qb *SceneStore, movies *models.MultiCriterionIn
 	return h.handler(movies)
 }
 
-func scenePerformerTagsCriterionHandler(qb *SceneStore, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if tags != nil {
-			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
-				var notClause string
-				if tags.Modifier == models.CriterionModifierNotNull {
-					notClause = "NOT"
-				}
-
-				f.addLeftJoin("performers_scenes", "", "scenes.id = performers_scenes.scene_id")
-				f.addLeftJoin("performers_tags", "", "performers_scenes.performer_id = performers_tags.performer_id")
-
-				f.addWhere(fmt.Sprintf("performers_tags.tag_id IS %s NULL", notClause))
-				return
-			}
-
-			if len(tags.Value) == 0 {
-				return
-			}
-
-			valuesClause := getHierarchicalValues(ctx, qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
-
-			f.addWith(`performer_tags AS (
-SELECT ps.scene_id, t.column1 AS root_tag_id FROM performers_scenes ps
-INNER JOIN performers_tags pt ON pt.performer_id = ps.performer_id
-INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
-)`)
-
-			f.addLeftJoin("performer_tags", "", "performer_tags.scene_id = scenes.id")
-
-			addHierarchicalConditionClauses(f, *tags, "performer_tags", "root_tag_id")
-		}
+func scenePerformerTagsCriterionHandler(qb *SceneStore, tags *models.HierarchicalMultiCriterionInput) criterionHandler {
+	return &joinedPerformerTagsHandler{
+		criterion:      tags,
+		primaryTable:   sceneTable,
+		joinTable:      performersScenesTable,
+		joinPrimaryKey: sceneIDColumn,
 	}
 }
 

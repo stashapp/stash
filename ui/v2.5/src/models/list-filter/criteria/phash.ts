@@ -28,7 +28,7 @@ export class PhashCriterion extends Criterion<IPhashDistanceValue> {
     super(PhashCriterionOption, { value: "", distance: 0 });
   }
 
-  public getLabelValue() {
+  protected getLabelValue() {
     const { value, distance } = this.value;
     if (
       (this.modifier === CriterionModifier.Equals ||

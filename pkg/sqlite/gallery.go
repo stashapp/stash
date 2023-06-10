@@ -670,7 +670,7 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 	query.handleCriterion(ctx, galleryPerformersCriterionHandler(qb, galleryFilter.Performers))
 	query.handleCriterion(ctx, galleryPerformerCountCriterionHandler(qb, galleryFilter.PerformerCount))
 	query.handleCriterion(ctx, hasChaptersCriterionHandler(galleryFilter.HasChapters))
-	query.handleCriterion(ctx, galleryStudioCriterionHandler(qb, galleryFilter.Studios))
+	query.handleCriterion(ctx, studioCriterionHandler(galleryTable, galleryFilter.Studios))
 	query.handleCriterion(ctx, galleryPerformerTagsCriterionHandler(qb, galleryFilter.PerformerTags))
 	query.handleCriterion(ctx, galleryAverageResolutionCriterionHandler(qb, galleryFilter.AverageResolution))
 	query.handleCriterion(ctx, galleryImageCountCriterionHandler(qb, galleryFilter.ImageCount))
@@ -968,51 +968,12 @@ func hasChaptersCriterionHandler(hasChapters *string) criterionHandlerFunc {
 	}
 }
 
-func galleryStudioCriterionHandler(qb *GalleryStore, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	h := hierarchicalMultiCriterionHandlerBuilder{
-		tx: qb.tx,
-
-		primaryTable: galleryTable,
-		foreignTable: studioTable,
-		foreignFK:    studioIDColumn,
-		parentFK:     "parent_id",
-	}
-
-	return h.handler(studios)
-}
-
-func galleryPerformerTagsCriterionHandler(qb *GalleryStore, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if tags != nil {
-			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
-				var notClause string
-				if tags.Modifier == models.CriterionModifierNotNull {
-					notClause = "NOT"
-				}
-
-				f.addLeftJoin("performers_galleries", "", "galleries.id = performers_galleries.gallery_id")
-				f.addLeftJoin("performers_tags", "", "performers_galleries.performer_id = performers_tags.performer_id")
-
-				f.addWhere(fmt.Sprintf("performers_tags.tag_id IS %s NULL", notClause))
-				return
-			}
-
-			if len(tags.Value) == 0 {
-				return
-			}
-
-			valuesClause := getHierarchicalValues(ctx, qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
-
-			f.addWith(`performer_tags AS (
-SELECT pg.gallery_id, t.column1 AS root_tag_id FROM performers_galleries pg
-INNER JOIN performers_tags pt ON pt.performer_id = pg.performer_id
-INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
-)`)
-
-			f.addLeftJoin("performer_tags", "", "performer_tags.gallery_id = galleries.id")
-
-			addHierarchicalConditionClauses(f, *tags, "performer_tags", "root_tag_id")
-		}
+func galleryPerformerTagsCriterionHandler(qb *GalleryStore, tags *models.HierarchicalMultiCriterionInput) criterionHandler {
+	return &joinedPerformerTagsHandler{
+		criterion:      tags,
+		primaryTable:   galleryTable,
+		joinTable:      performersGalleriesTable,
+		joinPrimaryKey: galleryIDColumn,
 	}
 }
 

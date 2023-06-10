@@ -267,16 +267,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   // Initialize VideoJS player
   useEffect(() => {
-    function isVrScene() {
-      if (!scene?.id || !vrTag) return false;
-
-      return scene?.tags.some((tag) => {
-        if (vrTag == tag.name) {
-          return true;
-        }
-      });
-    }
-
     const options: VideoJsPlayerOptions = {
       id: VIDEO_PLAYER_ID,
       controls: true,
@@ -288,7 +278,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         chaptersButton: false,
       },
       html5: {
-        nativeTextTracks: false,
         dash: {
           updateSettings: [
             {
@@ -330,9 +319,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         },
         skipButtons: {},
         trackActivity: {},
-        vrMenu: {
-          showButton: isVrScene(),
-        },
+        vrMenu: {},
       },
     };
 
@@ -364,7 +351,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       // reset sceneId to force reload sources
       sceneId.current = undefined;
     };
-  }, [scene, vrTag]);
+    // empty deps - only init once
+  }, []);
 
   useEffect(() => {
     const player = getPlayer();
@@ -387,6 +375,21 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     scene?.interactive,
     scene?.paths.funscript,
   ]);
+
+  useEffect(() => {
+    const player = getPlayer();
+    if (!player) return;
+
+    const vrMenu = player.vrMenu();
+
+    let showButton = false;
+
+    if (scene && vrTag) {
+      showButton = scene.tags.some((tag) => vrTag === tag.name);
+    }
+
+    vrMenu.setShowButton(showButton);
+  }, [getPlayer, scene, vrTag]);
 
   // Player event handlers
   useEffect(() => {
