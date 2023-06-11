@@ -18,8 +18,14 @@ export interface ILabeledValue {
   value: string;
 }
 
+export interface ILabeledValueListValue {
+  items: ILabeledId[];
+  excluded: ILabeledId[];
+}
+
 export interface IHierarchicalLabelValue {
   items: ILabeledId[];
+  excluded: ILabeledId[];
   depth: number;
 }
 
@@ -134,6 +140,8 @@ export type CriterionType =
   | "weight"
   | "measurements"
   | "fake_tits"
+  | "penis_length"
+  | "circumcised"
   | "career_length"
   | "tattoos"
   | "piercings"

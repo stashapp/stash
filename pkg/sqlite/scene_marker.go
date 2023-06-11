@@ -209,7 +209,11 @@ func sceneMarkerTagsCriterionHandler(qb *sceneMarkerQueryBuilder, tags *models.H
 			if len(tags.Value) == 0 {
 				return
 			}
-			valuesClause := getHierarchicalValues(ctx, qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
+			valuesClause, err := getHierarchicalValues(ctx, qb.tx, tags.Value, tagTable, "tags_relations", "parent_id", "child_id", tags.Depth)
+			if err != nil {
+				f.setError(err)
+				return
+			}
 
 			f.addWith(`marker_tags AS (
 SELECT mt.scene_marker_id, t.column1 AS root_tag_id FROM scene_markers_tags mt
@@ -221,7 +225,7 @@ INNER JOIN (` + valuesClause + `) t ON t.column2 = m.primary_tag_id
 
 			f.addLeftJoin("marker_tags", "", "marker_tags.scene_marker_id = scene_markers.id")
 
-			addHierarchicalConditionClauses(f, tags, "marker_tags", "root_tag_id")
+			addHierarchicalConditionClauses(f, *tags, "marker_tags", "root_tag_id")
 		}
 	}
 }
@@ -229,32 +233,23 @@ INNER JOIN (` + valuesClause + `) t ON t.column2 = m.primary_tag_id
 func sceneMarkerSceneTagsCriterionHandler(qb *sceneMarkerQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if tags != nil {
-			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
-				var notClause string
-				if tags.Modifier == models.CriterionModifierNotNull {
-					notClause = "NOT"
-				}
+			f.addLeftJoin("scenes_tags", "", "scene_markers.scene_id = scenes_tags.scene_id")
 
-				f.addLeftJoin("scenes_tags", "", "scene_markers.scene_id = scenes_tags.scene_id")
+			h := joinedHierarchicalMultiCriterionHandlerBuilder{
+				tx: qb.tx,
 
-				f.addWhere(fmt.Sprintf("scenes_tags.tag_id IS %s NULL", notClause))
-				return
+				primaryTable: "scene_markers",
+				primaryKey:   sceneIDColumn,
+				foreignTable: tagTable,
+				foreignFK:    tagIDColumn,
+
+				relationsTable: "tags_relations",
+				joinTable:      "scenes_tags",
+				joinAs:         "marker_scenes_tags",
+				primaryFK:      sceneIDColumn,
 			}
 
-			if len(tags.Value) == 0 {
-				return
-			}
-
-			valuesClause := getHierarchicalValues(ctx, qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
-
-			f.addWith(`scene_tags AS (
-SELECT st.scene_id, t.column1 AS root_tag_id FROM scenes_tags st
-INNER JOIN (` + valuesClause + `) t ON t.column2 = st.tag_id
-)`)
-
-			f.addLeftJoin("scene_tags", "", "scene_tags.scene_id = scene_markers.scene_id")
-
-			addHierarchicalConditionClauses(f, tags, "scene_tags", "root_tag_id")
+			h.handler(tags).handle(ctx, f)
 		}
 	}
 }

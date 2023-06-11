@@ -474,9 +474,19 @@ func tagMarkerCountCriterionHandler(qb *tagQueryBuilder, markerCount *models.Int
 	}
 }
 
-func tagParentsCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func tagParentsCriterionHandler(qb *tagQueryBuilder, criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
-		if tags != nil {
+		if criterion != nil {
+			tags := criterion.CombineExcludes()
+
+			// validate the modifier
+			switch tags.Modifier {
+			case models.CriterionModifierIncludesAll, models.CriterionModifierIncludes, models.CriterionModifierExcludes, models.CriterionModifierIsNull, models.CriterionModifierNotNull:
+				// valid
+			default:
+				f.setError(fmt.Errorf("invalid modifier %s for tag parent/children", criterion.Modifier))
+			}
+
 			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
 				var notClause string
 				if tags.Modifier == models.CriterionModifierNotNull {
@@ -489,43 +499,88 @@ func tagParentsCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalMu
 				return
 			}
 
-			if len(tags.Value) == 0 {
+			if len(tags.Value) == 0 && len(tags.Excludes) == 0 {
 				return
 			}
 
-			var args []interface{}
-			for _, val := range tags.Value {
-				args = append(args, val)
+			if len(tags.Value) > 0 {
+				var args []interface{}
+				for _, val := range tags.Value {
+					args = append(args, val)
+				}
+
+				depthVal := 0
+				if tags.Depth != nil {
+					depthVal = *tags.Depth
+				}
+
+				var depthCondition string
+				if depthVal != -1 {
+					depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
+				}
+
+				query := `parents AS (
+		SELECT parent_id AS root_id, child_id AS item_id, 0 AS depth FROM tags_relations WHERE parent_id IN` + getInBinding(len(tags.Value)) + `
+		UNION
+		SELECT root_id, child_id, depth + 1 FROM tags_relations INNER JOIN parents ON item_id = parent_id ` + depthCondition + `
+	)`
+
+				f.addRecursiveWith(query, args...)
+
+				f.addLeftJoin("parents", "", "parents.item_id = tags.id")
+
+				addHierarchicalConditionClauses(f, tags, "parents", "root_id")
 			}
 
-			depthVal := 0
-			if tags.Depth != nil {
-				depthVal = *tags.Depth
+			if len(tags.Excludes) > 0 {
+				var args []interface{}
+				for _, val := range tags.Excludes {
+					args = append(args, val)
+				}
+
+				depthVal := 0
+				if tags.Depth != nil {
+					depthVal = *tags.Depth
+				}
+
+				var depthCondition string
+				if depthVal != -1 {
+					depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
+				}
+
+				query := `parents2 AS (
+		SELECT parent_id AS root_id, child_id AS item_id, 0 AS depth FROM tags_relations WHERE parent_id IN` + getInBinding(len(tags.Excludes)) + `
+		UNION
+		SELECT root_id, child_id, depth + 1 FROM tags_relations INNER JOIN parents2 ON item_id = parent_id ` + depthCondition + `
+	)`
+
+				f.addRecursiveWith(query, args...)
+
+				f.addLeftJoin("parents2", "", "parents2.item_id = tags.id")
+
+				addHierarchicalConditionClauses(f, models.HierarchicalMultiCriterionInput{
+					Value:    tags.Excludes,
+					Depth:    tags.Depth,
+					Modifier: models.CriterionModifierExcludes,
+				}, "parents2", "root_id")
 			}
-
-			var depthCondition string
-			if depthVal != -1 {
-				depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
-			}
-
-			query := `parents AS (
-	SELECT parent_id AS root_id, child_id AS item_id, 0 AS depth FROM tags_relations WHERE parent_id IN` + getInBinding(len(tags.Value)) + `
-	UNION
-	SELECT root_id, child_id, depth + 1 FROM tags_relations INNER JOIN parents ON item_id = parent_id ` + depthCondition + `
-)`
-
-			f.addRecursiveWith(query, args...)
-
-			f.addLeftJoin("parents", "", "parents.item_id = tags.id")
-
-			addHierarchicalConditionClauses(f, tags, "parents", "root_id")
 		}
 	}
 }
 
-func tagChildrenCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func tagChildrenCriterionHandler(qb *tagQueryBuilder, criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
-		if tags != nil {
+		if criterion != nil {
+			tags := criterion.CombineExcludes()
+
+			// validate the modifier
+			switch tags.Modifier {
+			case models.CriterionModifierIncludesAll, models.CriterionModifierIncludes, models.CriterionModifierExcludes, models.CriterionModifierIsNull, models.CriterionModifierNotNull:
+				// valid
+			default:
+				f.setError(fmt.Errorf("invalid modifier %s for tag parent/children", criterion.Modifier))
+			}
+
 			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
 				var notClause string
 				if tags.Modifier == models.CriterionModifierNotNull {
@@ -538,36 +593,71 @@ func tagChildrenCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalM
 				return
 			}
 
-			if len(tags.Value) == 0 {
+			if len(tags.Value) == 0 && len(tags.Excludes) == 0 {
 				return
 			}
 
-			var args []interface{}
-			for _, val := range tags.Value {
-				args = append(args, val)
+			if len(tags.Value) > 0 {
+				var args []interface{}
+				for _, val := range tags.Value {
+					args = append(args, val)
+				}
+
+				depthVal := 0
+				if tags.Depth != nil {
+					depthVal = *tags.Depth
+				}
+
+				var depthCondition string
+				if depthVal != -1 {
+					depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
+				}
+
+				query := `children AS (
+		SELECT child_id AS root_id, parent_id AS item_id, 0 AS depth FROM tags_relations WHERE child_id IN` + getInBinding(len(tags.Value)) + `
+		UNION
+		SELECT root_id, parent_id, depth + 1 FROM tags_relations INNER JOIN children ON item_id = child_id ` + depthCondition + `
+	)`
+
+				f.addRecursiveWith(query, args...)
+
+				f.addLeftJoin("children", "", "children.item_id = tags.id")
+
+				addHierarchicalConditionClauses(f, tags, "children", "root_id")
 			}
 
-			depthVal := 0
-			if tags.Depth != nil {
-				depthVal = *tags.Depth
+			if len(tags.Excludes) > 0 {
+				var args []interface{}
+				for _, val := range tags.Excludes {
+					args = append(args, val)
+				}
+
+				depthVal := 0
+				if tags.Depth != nil {
+					depthVal = *tags.Depth
+				}
+
+				var depthCondition string
+				if depthVal != -1 {
+					depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
+				}
+
+				query := `children2 AS (
+		SELECT child_id AS root_id, parent_id AS item_id, 0 AS depth FROM tags_relations WHERE child_id IN` + getInBinding(len(tags.Excludes)) + `
+		UNION
+		SELECT root_id, parent_id, depth + 1 FROM tags_relations INNER JOIN children2 ON item_id = child_id ` + depthCondition + `
+	)`
+
+				f.addRecursiveWith(query, args...)
+
+				f.addLeftJoin("children2", "", "children2.item_id = tags.id")
+
+				addHierarchicalConditionClauses(f, models.HierarchicalMultiCriterionInput{
+					Value:    tags.Excludes,
+					Depth:    tags.Depth,
+					Modifier: models.CriterionModifierExcludes,
+				}, "children2", "root_id")
 			}
-
-			var depthCondition string
-			if depthVal != -1 {
-				depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
-			}
-
-			query := `children AS (
-	SELECT child_id AS root_id, parent_id AS item_id, 0 AS depth FROM tags_relations WHERE child_id IN` + getInBinding(len(tags.Value)) + `
-	UNION
-	SELECT root_id, parent_id, depth + 1 FROM tags_relations INNER JOIN children ON item_id = child_id ` + depthCondition + `
-)`
-
-			f.addRecursiveWith(query, args...)
-
-			f.addLeftJoin("children", "", "children.item_id = tags.id")
-
-			addHierarchicalConditionClauses(f, tags, "children", "root_id")
 		}
 	}
 }

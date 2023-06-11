@@ -664,7 +664,7 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 
 func getFirstImage(ctx context.Context, client *http.Client, images []*graphql.ImageFragment) *string {
 	ret, err := fetchImage(ctx, client, images[0].URL)
-	if err != nil {
+	if err != nil && !errors.Is(err, context.Canceled) {
 		logger.Warnf("Error fetching image %s: %s", images[0].URL, err.Error())
 	}
 
@@ -1009,7 +1009,7 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 	if performer.FakeTits != "" {
 		draft.BreastType = &performer.FakeTits
 	}
-	if performer.Gender.IsValid() {
+	if performer.Gender != nil && performer.Gender.IsValid() {
 		v := performer.Gender.String()
 		draft.Gender = &v
 	}

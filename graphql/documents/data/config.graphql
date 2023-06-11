@@ -25,6 +25,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   maxTranscodeSize
   maxStreamingTranscodeSize
   writeImageThumbnails
+  createImageClipsFromVideos
   apiKey
   username
   password
@@ -100,6 +101,7 @@ fragment ConfigDLNAData on ConfigDLNAResult {
   enabled
   whitelistedIPs
   interfaces
+  videoSortOrder
 }
 
 fragment ConfigScrapingData on ConfigScrapingResult {
@@ -140,6 +142,7 @@ fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
     scanGenerateSprites
     scanGeneratePhashes
     scanGenerateThumbnails
+    scanGenerateClipPreviews
   }
   
   identify {
@@ -180,6 +183,7 @@ fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
     transcodes
     phashes
     interactiveHeatmapsSpeeds
+    clipPreviews
   }
 
   deleteFile

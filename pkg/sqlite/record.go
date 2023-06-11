@@ -3,6 +3,7 @@ package sqlite
 import (
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/stashapp/stash/pkg/models"
+	"gopkg.in/guregu/null.v4"
 	"gopkg.in/guregu/null.v4/zero"
 )
 
@@ -77,11 +78,11 @@ func (r *updateRecord) setFloat64(destField string, v models.OptionalFloat64) {
 	}
 }
 
-// func (r *updateRecord) setNullFloat64(destField string, v models.OptionalFloat64) {
-// 	if v.Set {
-// 		r.set(destField, null.FloatFromPtr(v.Ptr()))
-// 	}
-// }
+func (r *updateRecord) setNullFloat64(destField string, v models.OptionalFloat64) {
+	if v.Set {
+		r.set(destField, null.FloatFromPtr(v.Ptr()))
+	}
+}
 
 func (r *updateRecord) setSQLiteTimestamp(destField string, v models.OptionalTime) {
 	if v.Set {

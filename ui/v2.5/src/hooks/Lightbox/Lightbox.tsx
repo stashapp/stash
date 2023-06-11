@@ -47,6 +47,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { useDebounce } from "../debounce";
+import { isVideo } from "src/utils/visualFile";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
@@ -425,20 +426,25 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
   }
 
-  const navItems = images.map((image, i) => (
-    <img
-      src={image.paths.thumbnail ?? ""}
-      alt=""
-      className={cx(CLASSNAME_NAVIMAGE, {
+  const navItems = images.map((image, i) =>
+    React.createElement(image.paths.preview != "" ? "video" : "img", {
+      loop: image.paths.preview != "",
+      autoPlay: image.paths.preview != "",
+      src:
+        image.paths.preview != ""
+          ? image.paths.preview ?? ""
+          : image.paths.thumbnail ?? "",
+      alt: "",
+      className: cx(CLASSNAME_NAVIMAGE, {
         [CLASSNAME_NAVSELECTED]: i === index,
-      })}
-      onClick={(e: React.MouseEvent) => selectIndex(e, i)}
-      role="presentation"
-      loading="lazy"
-      key={image.paths.thumbnail}
-      onLoad={imageLoaded}
-    />
-  ));
+      }),
+      onClick: (e: React.MouseEvent) => selectIndex(e, i),
+      role: "presentation",
+      loading: "lazy",
+      key: image.paths.thumbnail,
+      onLoad: imageLoaded,
+    })
+  );
 
   const onDelayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let numberValue = Number.parseInt(e.currentTarget.value, 10);
@@ -466,7 +472,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   function gotoPage(imageIndex: number) {
     const indexInPage = (imageIndex - 1) % pageSize;
     if (pageCallback) {
-      let jumppage = Math.floor(imageIndex / pageSize) + 1;
+      let jumppage = Math.floor((imageIndex - 1) / pageSize) + 1;
       if (page !== jumppage) {
         pageCallback({ page: jumppage });
         oldImages.current = images;
@@ -845,6 +851,7 @@ export const LightboxComponent: React.FC<IProps> = ({
                   scrollAttemptsBeforeChange={scrollAttemptsBeforeChange}
                   setZoom={(v) => setZoom(v)}
                   resetPosition={resetPosition}
+                  isVideo={isVideo(image.visual_files?.[0] ?? {})}
                 />
               ) : undefined}
             </div>

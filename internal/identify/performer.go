@@ -65,7 +65,8 @@ func scrapedToPerformerInput(performer *models.ScrapedPerformer) models.Performe
 		ret.DeathDate = &d
 	}
 	if performer.Gender != nil {
-		ret.Gender = models.GenderEnum(*performer.Gender)
+		v := models.GenderEnum(*performer.Gender)
+		ret.Gender = &v
 	}
 	if performer.Ethnicity != nil {
 		ret.Ethnicity = *performer.Ethnicity
@@ -96,6 +97,16 @@ func scrapedToPerformerInput(performer *models.ScrapedPerformer) models.Performe
 	}
 	if performer.FakeTits != nil {
 		ret.FakeTits = *performer.FakeTits
+	}
+	if performer.PenisLength != nil {
+		h, err := strconv.ParseFloat(*performer.PenisLength, 64)
+		if err == nil {
+			ret.PenisLength = &h
+		}
+	}
+	if performer.Circumcised != nil {
+		v := models.CircumisedEnum(*performer.Circumcised)
+		ret.Circumcised = &v
 	}
 	if performer.CareerLength != nil {
 		ret.CareerLength = *performer.CareerLength

@@ -10,7 +10,11 @@ const sourcemap = process.env.VITE_APP_SOURCEMAPS === "true";
 // https://vitejs.dev/config/
 export default defineConfig(() => {
   let plugins = [
-    react(),
+    react({
+      babel: {
+        compact: true,
+      },
+    }),
     tsconfigPaths(),
     viteCompression({
       algorithm: "gzip",

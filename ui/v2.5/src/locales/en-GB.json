@@ -127,6 +127,7 @@
   "aliases": "Aliases",
   "all": "all",
   "also_known_as": "Also known as",
+  "appears_with": "Appears With",
   "ascending": "Ascending",
   "average_resolution": "Average Resolution",
   "between_and": "and",
@@ -140,6 +141,11 @@
   "captions": "Captions",
   "career_length": "Career Length",
   "chapters": "Chapters",
+  "circumcised": "Circumcised",
+  "circumcised_types": {
+    "UNCUT": "Uncut",
+    "CUT": "Cut"
+  },
   "component_tagger": {
     "config": {
       "active_instance": "Active stash-box instance:",
@@ -233,7 +239,9 @@
       "server_display_name": "Server Display Name",
       "server_display_name_desc": "Display name for the DLNA server. Defaults to {server_name} if empty.",
       "successfully_cancelled_temporary_behaviour": "Successfully cancelled temporary behaviour",
-      "until_restart": "until restart"
+      "until_restart": "until restart",
+      "video_sort_order": "Default Video Sort Order",
+      "video_sort_order_desc": "Order to sort videos by default."
     },
     "general": {
       "auth": {
@@ -280,7 +288,7 @@
       "check_for_insecure_certificates_desc": "Some sites use insecure ssl certificates. When unticked the scraper skips the insecure certificates check and allows scraping of those sites. If you get a certificate error when scraping untick this.",
       "chrome_cdp_path": "Chrome CDP path",
       "chrome_cdp_path_desc": "File path to the Chrome executable, or a remote address (starting with http:// or https://, for example http://localhost:9222/json/version) to a Chrome instance.",
-      "create_galleries_from_folders_desc": "If true, creates galleries from folders containing images.",
+      "create_galleries_from_folders_desc": "If true, creates galleries from folders containing images by default. Create a File called .forcegallery or .nogallery in a folder to enforce/prevent this.",
       "create_galleries_from_folders_label": "Create galleries from folders containing images",
       "database": "Database",
       "db_path_head": "Database Path",
@@ -404,7 +412,7 @@
         "auto_tagging_all_paths": "Auto Tagging all paths",
         "auto_tagging_paths": "Auto Tagging the following paths"
       },
-      "auto_tag_based_on_filenames": "Auto-tag content based on filenames.",
+      "auto_tag_based_on_filenames": "Auto-tag content based on file paths.",
       "auto_tagging": "Auto Tagging",
       "backing_up_database": "Backing up database",
       "backup_and_download": "Performs a backup of the database and downloads the resulting file.",
@@ -419,6 +427,7 @@
         "generating_from_paths": "Generating for scenes from the following paths",
         "generating_scenes": "Generating for {num} {scene}"
       },
+      "generate_clip_previews_during_scan": "Generate previews for image clips",
       "generate_desc": "Generate supporting image, sprite, video, vtt and other files.",
       "generate_phashes_during_scan": "Generate perceptual hashes",
       "generate_phashes_during_scan_tooltip": "For deduplication and scene identification.",
@@ -589,6 +598,10 @@
           "write_image_thumbnails": {
             "description": "Write image thumbnails to disk when generated on-the-fly",
             "heading": "Write image thumbnails"
+          },
+          "create_image_clips_from_videos": {
+            "description": "When a library has Videos disabled, Video Files (files ending with Video Extension) will be scanned as Image Clip",
+            "heading": "Scan Video Extensions as Image Clip"
           }
         }
       },
@@ -645,7 +658,11 @@
             "heading": "Continue playlist by default"
           },
           "show_scrubber": "Show Scrubber",
-          "track_activity": "Track Activity"
+          "track_activity": "Track Activity",
+          "vr_tag": {
+            "description": "The VR button will only be displayed for scenes with this tag.",
+            "heading": "VR Tag"
+          }
         }
       },
       "scene_wall": {
@@ -713,6 +730,9 @@
     "equals": "is",
     "excludes": "excludes",
     "format_string": "{criterion} {modifierString} {valueString}",
+    "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {all} other {{depth}}})",
+    "format_string_excludes": "{criterion} {modifierString} {valueString} (excludes {excludedString})",
+    "format_string_excludes_depth": "{criterion} {modifierString} {valueString} (excludes {excludedString}) (+{depth, plural, =-1 {all} other {{depth}}})",
     "greater_than": "is greater than",
     "includes": "includes",
     "includes_all": "includes all",
@@ -796,6 +816,7 @@
       "destination": "Reassign to"
     },
     "scene_gen": {
+      "clip_previews": "Image Clip Previews",
       "covers": "Scene covers",
       "force_transcodes": "Force Transcode generation",
       "force_transcodes_tooltip": "By default, transcodes are only generated when the video file is not supported in the browser. When enabled, transcodes will be generated even when the video file appears to be supported in the browser.",
@@ -810,7 +831,7 @@
       "markers_tooltip": "20 second videos which begin at the given timecode.",
       "override_preview_generation_options": "Override Preview Generation Options",
       "override_preview_generation_options_desc": "Override Preview Generation Options for this operation. Defaults are set in System -> Preview Generation.",
-      "overwrite": "Overwrite existing generated files",
+      "overwrite": "Overwrite existing files",
       "phash": "Perceptual hashes (for deduplication)",
       "preview_exclude_end_time_desc": "Exclude the last x seconds from scene previews. This can be a value in seconds, or a percentage (eg 2%) of the total scene duration.",
       "preview_exclude_end_time_head": "Exclude end time",
@@ -852,6 +873,11 @@
   "donate": "Donate",
   "dupe_check": {
     "description": "Levels below 'Exact' can take longer to calculate. False positives might also be returned on lower accuracy levels.",
+    "duration_diff": "Maximum Duration Difference",
+    "duration_options": {
+      "any": "Any",
+      "equal": "Equal"
+    },
     "found_sets": "{setCount, plural, one{# set of duplicates found.} other {# sets of duplicates found.}}",
     "options": {
       "exact": "Exact",
@@ -1002,6 +1028,9 @@
   "parent_tags": "Parent Tags",
   "part_of": "Part of {parent}",
   "path": "Path",
+  "penis": "Penis",
+  "penis_length": "Penis Length",
+  "penis_length_cm": "Penis Length (cm)",
   "perceptual_similarity": "Perceptual Similarity (phash)",
   "performer": "Performer",
   "performerTags": "Performer Tags",
@@ -1074,6 +1103,7 @@
     "saved_filters": "Saved filters",
     "update_filter": "Update Filter"
   },
+  "second": "Second",
   "seconds": "Seconds",
   "settings": "Settings",
   "setup": {

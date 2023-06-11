@@ -241,7 +241,7 @@ func (qb *ImageStore) Update(ctx context.Context, updatedObject *models.Image) e
 	if updatedObject.Files.Loaded() {
 		fileIDs := make([]file.ID, len(updatedObject.Files.List()))
 		for i, f := range updatedObject.Files.List() {
-			fileIDs[i] = f.ID
+			fileIDs[i] = f.Base().ID
 		}
 
 		if err := imagesFilesTableMgr.replaceJoins(ctx, updatedObject.ID, fileIDs); err != nil {
@@ -360,7 +360,7 @@ func (qb *ImageStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*mo
 	return ret, nil
 }
 
-func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]*file.ImageFile, error) {
+func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]file.File, error) {
 	fileIDs, err := qb.filesRepository().get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -372,16 +372,7 @@ func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]*file.ImageFile, 
 		return nil, err
 	}
 
-	ret := make([]*file.ImageFile, len(files))
-	for i, f := range files {
-		var ok bool
-		ret[i], ok = f.(*file.ImageFile)
-		if !ok {
-			return nil, fmt.Errorf("expected file to be *file.ImageFile not %T", f)
-		}
-	}
-
-	return ret, nil
+	return files, nil
 }
 
 func (qb *ImageStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error) {
@@ -511,6 +502,19 @@ func (qb *ImageStore) CountByGalleryID(ctx context.Context, galleryID int) (int,
 
 	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col("gallery_id").Eq(galleryID))
 	return count(ctx, q)
+}
+
+func (qb *ImageStore) OCountByPerformerID(ctx context.Context, performerID int) (int, error) {
+	table := qb.table()
+	joinTable := performersImagesJoinTable
+	q := dialect.Select(goqu.COALESCE(goqu.SUM("o_counter"), 0)).From(table).InnerJoin(joinTable, goqu.On(table.Col(idColumn).Eq(joinTable.Col(imageIDColumn)))).Where(joinTable.Col(performerIDColumn).Eq(performerID))
+
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
 }
 
 func (qb *ImageStore) FindByFolderID(ctx context.Context, folderID file.FolderID) ([]*models.Image, error) {
@@ -665,7 +669,7 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 	query.handleCriterion(ctx, imageGalleriesCriterionHandler(qb, imageFilter.Galleries))
 	query.handleCriterion(ctx, imagePerformersCriterionHandler(qb, imageFilter.Performers))
 	query.handleCriterion(ctx, imagePerformerCountCriterionHandler(qb, imageFilter.PerformerCount))
-	query.handleCriterion(ctx, imageStudioCriterionHandler(qb, imageFilter.Studios))
+	query.handleCriterion(ctx, studioCriterionHandler(imageTable, imageFilter.Studios))
 	query.handleCriterion(ctx, imagePerformerTagsCriterionHandler(qb, imageFilter.PerformerTags))
 	query.handleCriterion(ctx, imagePerformerFavoriteCriterionHandler(imageFilter.PerformerFavorite))
 	query.handleCriterion(ctx, timestampCriterionHandler(imageFilter.CreatedAt, "images.created_at"))
@@ -942,51 +946,12 @@ GROUP BY performers_images.image_id HAVING SUM(performers.favorite) = 0)`, "nofa
 	}
 }
 
-func imageStudioCriterionHandler(qb *ImageStore, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	h := hierarchicalMultiCriterionHandlerBuilder{
-		tx: qb.tx,
-
-		primaryTable: imageTable,
-		foreignTable: studioTable,
-		foreignFK:    studioIDColumn,
-		parentFK:     "parent_id",
-	}
-
-	return h.handler(studios)
-}
-
-func imagePerformerTagsCriterionHandler(qb *ImageStore, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if tags != nil {
-			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
-				var notClause string
-				if tags.Modifier == models.CriterionModifierNotNull {
-					notClause = "NOT"
-				}
-
-				f.addLeftJoin("performers_images", "", "images.id = performers_images.image_id")
-				f.addLeftJoin("performers_tags", "", "performers_images.performer_id = performers_tags.performer_id")
-
-				f.addWhere(fmt.Sprintf("performers_tags.tag_id IS %s NULL", notClause))
-				return
-			}
-
-			if len(tags.Value) == 0 {
-				return
-			}
-
-			valuesClause := getHierarchicalValues(ctx, qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
-
-			f.addWith(`performer_tags AS (
-SELECT pi.image_id, t.column1 AS root_tag_id FROM performers_images pi
-INNER JOIN performers_tags pt ON pt.performer_id = pi.performer_id
-INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
-)`)
-
-			f.addLeftJoin("performer_tags", "", "performer_tags.image_id = images.id")
-
-			addHierarchicalConditionClauses(f, tags, "performer_tags", "root_tag_id")
-		}
+func imagePerformerTagsCriterionHandler(qb *ImageStore, tags *models.HierarchicalMultiCriterionInput) criterionHandler {
+	return &joinedPerformerTagsHandler{
+		criterion:      tags,
+		primaryTable:   imageTable,
+		joinTable:      performersImagesTable,
+		joinPrimaryKey: imageIDColumn,
 	}
 }
 

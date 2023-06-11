@@ -58,6 +58,9 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
   const [title, setTitle] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(dest.title)
   );
+  const [code, setCode] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(dest.code)
+  );
   const [url, setURL] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(dest.url)
   );
@@ -156,6 +159,9 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
         sources.find((s) => s.title)?.title,
         !dest.title
       )
+    );
+    setCode(
+      new ScrapeResult(dest.code, sources.find((s) => s.code)?.code, !dest.code)
     );
     setURL(
       new ScrapeResult(dest.url, sources.find((s) => s.url)?.url, !dest.url)
@@ -290,6 +296,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
   const hasValues = useMemo(() => {
     return hasScrapedValues([
       title,
+      code,
       url,
       date,
       rating,
@@ -306,6 +313,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     ]);
   }, [
     title,
+    code,
     url,
     date,
     rating,
@@ -347,6 +355,11 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           title={intl.formatMessage({ id: "title" })}
           result={title}
           onChange={(value) => setTitle(value)}
+        />
+        <ScrapedInputGroupRow
+          title={intl.formatMessage({ id: "scene_code" })}
+          result={code}
+          onChange={(value) => setCode(value)}
         />
         <ScrapedInputGroupRow
           title={intl.formatMessage({ id: "url" })}
@@ -532,6 +545,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     return {
       id: dest.id,
       title: title.getNewValue(),
+      code: code.getNewValue(),
       url: url.getNewValue(),
       date: date.getNewValue(),
       rating100: rating.getNewValue(),

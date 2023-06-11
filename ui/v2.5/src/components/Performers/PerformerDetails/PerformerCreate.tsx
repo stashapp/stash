@@ -2,9 +2,16 @@ import React, { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { PerformerEditPanel } from "./PerformerEditPanel";
-import { useLocation } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
+import { useToast } from "src/hooks/Toast";
+import * as GQL from "src/core/generated-graphql";
+import { usePerformerCreate } from "src/core/StashService";
 
 const PerformerCreate: React.FC = () => {
+  const Toast = useToast();
+  const history = useHistory();
+  const intl = useIntl();
+
   const [image, setImage] = useState<string | null>();
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
@@ -14,7 +21,24 @@ const PerformerCreate: React.FC = () => {
     name: query.get("q") ?? undefined,
   };
 
-  const intl = useIntl();
+  const [createPerformer] = usePerformerCreate();
+
+  async function onSave(input: GQL.PerformerCreateInput) {
+    const result = await createPerformer({
+      variables: { input },
+    });
+    if (result.data?.performerCreate) {
+      history.push(`/performers/${result.data.performerCreate.id}`);
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "toast.created_entity" },
+          {
+            entity: intl.formatMessage({ id: "performer" }).toLocaleLowerCase(),
+          }
+        ),
+      });
+    }
+  }
 
   function renderPerformerImage() {
     if (encodingImage) {
@@ -46,6 +70,7 @@ const PerformerCreate: React.FC = () => {
         <PerformerEditPanel
           performer={performer}
           isVisible
+          onSubmit={onSave}
           setImage={setImage}
           setEncodingImage={setEncodingImage}
         />

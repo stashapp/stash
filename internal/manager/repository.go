@@ -15,7 +15,6 @@ import (
 type ImageReaderWriter interface {
 	models.ImageReaderWriter
 	image.FinderCreatorUpdater
-	models.ImageFileLoader
 	GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error)
 }
 
@@ -114,4 +113,6 @@ type GalleryService interface {
 	Destroy(ctx context.Context, i *models.Gallery, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) ([]*models.Image, error)
 
 	ValidateImageGalleryChange(ctx context.Context, i *models.Image, updateIDs models.UpdateIDs) error
+
+	Updated(ctx context.Context, galleryID int) error
 }

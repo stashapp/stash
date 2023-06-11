@@ -96,6 +96,9 @@ const (
 	WriteImageThumbnails        = "write_image_thumbnails"
 	writeImageThumbnailsDefault = true
 
+	CreateImageClipsFromVideos        = "create_image_clip_from_videos"
+	createImageClipsFromVideosDefault = false
+
 	Host        = "host"
 	hostDefault = "0.0.0.0"
 
@@ -210,6 +213,9 @@ const (
 	DLNADefaultEnabled     = "dlna.default_enabled"
 	DLNADefaultIPWhitelist = "dlna.default_whitelist"
 	DLNAInterfaces         = "dlna.interfaces"
+
+	DLNAVideoSortOrder        = "dlna.video_sort_order"
+	dlnaVideoSortOrderDefault = "title"
 
 	// Logging options
 	LogFile          = "logFile"
@@ -863,6 +869,10 @@ func (i *Instance) IsWriteImageThumbnails() bool {
 	return i.getBool(WriteImageThumbnails)
 }
 
+func (i *Instance) IsCreateImageClipsFromVideos() bool {
+	return i.getBool(CreateImageClipsFromVideos)
+}
+
 func (i *Instance) GetAPIKey() string {
 	return i.getString(ApiKey)
 }
@@ -1372,6 +1382,17 @@ func (i *Instance) GetDLNAInterfaces() []string {
 	return i.getStringSlice(DLNAInterfaces)
 }
 
+// GetVideoSortOrder returns the sort order to display videos. If
+// empty, videos will be sorted by titles.
+func (i *Instance) GetVideoSortOrder() string {
+	ret := i.getString(DLNAVideoSortOrder)
+	if ret == "" {
+		ret = dlnaVideoSortOrderDefault
+	}
+
+	return ret
+}
+
 // GetLogFile returns the filename of the file to output logs to.
 // An empty string means that file logging will be disabled.
 func (i *Instance) GetLogFile() string {
@@ -1501,6 +1522,7 @@ func (i *Instance) setDefaultValues(write bool) error {
 	i.main.SetDefault(ThemeColor, DefaultThemeColor)
 
 	i.main.SetDefault(WriteImageThumbnails, writeImageThumbnailsDefault)
+	i.main.SetDefault(CreateImageClipsFromVideos, createImageClipsFromVideosDefault)
 
 	i.main.SetDefault(Database, defaultDatabaseFilePath)
 

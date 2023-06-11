@@ -60,19 +60,24 @@ const (
 	sceneIdx1WithPerformer
 	sceneIdx2WithPerformer
 	sceneIdxWithTwoPerformers
+	sceneIdxWithThreePerformers
 	sceneIdxWithTag
 	sceneIdxWithTwoTags
+	sceneIdxWithThreeTags
 	sceneIdxWithMarkerAndTag
+	sceneIdxWithMarkerTwoTags
 	sceneIdxWithStudio
 	sceneIdx1WithStudio
 	sceneIdx2WithStudio
 	sceneIdxWithMarkers
 	sceneIdxWithPerformerTag
+	sceneIdxWithTwoPerformerTag
 	sceneIdxWithPerformerTwoTags
 	sceneIdxWithSpacedName
 	sceneIdxWithStudioPerformer
 	sceneIdxWithGrandChildStudio
 	sceneIdxMissingPhash
+	sceneIdxWithPerformerParentTag
 	// new indexes above
 	lastSceneIdx
 
@@ -90,16 +95,20 @@ const (
 	imageIdx1WithPerformer
 	imageIdx2WithPerformer
 	imageIdxWithTwoPerformers
+	imageIdxWithThreePerformers
 	imageIdxWithTag
 	imageIdxWithTwoTags
+	imageIdxWithThreeTags
 	imageIdxWithStudio
 	imageIdx1WithStudio
 	imageIdx2WithStudio
 	imageIdxWithStudioPerformer
 	imageIdxInZip
 	imageIdxWithPerformerTag
+	imageIdxWithTwoPerformerTag
 	imageIdxWithPerformerTwoTags
 	imageIdxWithGrandChildStudio
+	imageIdxWithPerformerParentTag
 	// new indexes above
 	totalImages
 )
@@ -108,20 +117,25 @@ const (
 	performerIdxWithScene = iota
 	performerIdx1WithScene
 	performerIdx2WithScene
+	performerIdx3WithScene
 	performerIdxWithTwoScenes
 	performerIdxWithImage
 	performerIdxWithTwoImages
 	performerIdx1WithImage
 	performerIdx2WithImage
+	performerIdx3WithImage
 	performerIdxWithTag
+	performerIdx2WithTag
 	performerIdxWithTwoTags
 	performerIdxWithGallery
 	performerIdxWithTwoGalleries
 	performerIdx1WithGallery
 	performerIdx2WithGallery
+	performerIdx3WithGallery
 	performerIdxWithSceneStudio
 	performerIdxWithImageStudio
 	performerIdxWithGalleryStudio
+	performerIdxWithParentTag
 	// new indexes above
 	// performers with dup names start from the end
 	performerIdx1WithDupName
@@ -155,16 +169,20 @@ const (
 	galleryIdx1WithPerformer
 	galleryIdx2WithPerformer
 	galleryIdxWithTwoPerformers
+	galleryIdxWithThreePerformers
 	galleryIdxWithTag
 	galleryIdxWithTwoTags
+	galleryIdxWithThreeTags
 	galleryIdxWithStudio
 	galleryIdx1WithStudio
 	galleryIdx2WithStudio
 	galleryIdxWithPerformerTag
+	galleryIdxWithTwoPerformerTag
 	galleryIdxWithPerformerTwoTags
 	galleryIdxWithStudioPerformer
 	galleryIdxWithGrandChildStudio
 	galleryIdxWithoutFile
+	galleryIdxWithPerformerParentTag
 	// new indexes above
 	lastGalleryIdx
 
@@ -182,12 +200,14 @@ const (
 	tagIdxWithImage
 	tagIdx1WithImage
 	tagIdx2WithImage
+	tagIdx3WithImage
 	tagIdxWithPerformer
 	tagIdx1WithPerformer
 	tagIdx2WithPerformer
 	tagIdxWithGallery
 	tagIdx1WithGallery
 	tagIdx2WithGallery
+	tagIdx3WithGallery
 	tagIdxWithChildTag
 	tagIdxWithParentTag
 	tagIdxWithGrandChild
@@ -332,19 +352,24 @@ var (
 
 var (
 	sceneTags = linkMap{
-		sceneIdxWithTag:          {tagIdxWithScene},
-		sceneIdxWithTwoTags:      {tagIdx1WithScene, tagIdx2WithScene},
-		sceneIdxWithMarkerAndTag: {tagIdx3WithScene},
+		sceneIdxWithTag:           {tagIdxWithScene},
+		sceneIdxWithTwoTags:       {tagIdx1WithScene, tagIdx2WithScene},
+		sceneIdxWithThreeTags:     {tagIdx1WithScene, tagIdx2WithScene, tagIdx3WithScene},
+		sceneIdxWithMarkerAndTag:  {tagIdx3WithScene},
+		sceneIdxWithMarkerTwoTags: {tagIdx2WithScene, tagIdx3WithScene},
 	}
 
 	scenePerformers = linkMap{
-		sceneIdxWithPerformer:        {performerIdxWithScene},
-		sceneIdxWithTwoPerformers:    {performerIdx1WithScene, performerIdx2WithScene},
-		sceneIdxWithPerformerTag:     {performerIdxWithTag},
-		sceneIdxWithPerformerTwoTags: {performerIdxWithTwoTags},
-		sceneIdx1WithPerformer:       {performerIdxWithTwoScenes},
-		sceneIdx2WithPerformer:       {performerIdxWithTwoScenes},
-		sceneIdxWithStudioPerformer:  {performerIdxWithSceneStudio},
+		sceneIdxWithPerformer:          {performerIdxWithScene},
+		sceneIdxWithTwoPerformers:      {performerIdx1WithScene, performerIdx2WithScene},
+		sceneIdxWithThreePerformers:    {performerIdx1WithScene, performerIdx2WithScene, performerIdx3WithScene},
+		sceneIdxWithPerformerTag:       {performerIdxWithTag},
+		sceneIdxWithTwoPerformerTag:    {performerIdxWithTag, performerIdx2WithTag},
+		sceneIdxWithPerformerTwoTags:   {performerIdxWithTwoTags},
+		sceneIdx1WithPerformer:         {performerIdxWithTwoScenes},
+		sceneIdx2WithPerformer:         {performerIdxWithTwoScenes},
+		sceneIdxWithStudioPerformer:    {performerIdxWithSceneStudio},
+		sceneIdxWithPerformerParentTag: {performerIdxWithParentTag},
 	}
 
 	sceneGalleries = linkMap{
@@ -376,6 +401,7 @@ var (
 		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, nil},
 		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, []int{tagIdxWithMarkers}},
 		{sceneIdxWithMarkerAndTag, tagIdxWithPrimaryMarkers, nil},
+		{sceneIdxWithMarkerTwoTags, tagIdxWithPrimaryMarkers, nil},
 	}
 )
 
@@ -407,29 +433,36 @@ var (
 		imageIdxWithGrandChildStudio: studioIdxWithGrandParent,
 	}
 	imageTags = linkMap{
-		imageIdxWithTag:     {tagIdxWithImage},
-		imageIdxWithTwoTags: {tagIdx1WithImage, tagIdx2WithImage},
+		imageIdxWithTag:       {tagIdxWithImage},
+		imageIdxWithTwoTags:   {tagIdx1WithImage, tagIdx2WithImage},
+		imageIdxWithThreeTags: {tagIdx1WithImage, tagIdx2WithImage, tagIdx3WithImage},
 	}
 	imagePerformers = linkMap{
-		imageIdxWithPerformer:        {performerIdxWithImage},
-		imageIdxWithTwoPerformers:    {performerIdx1WithImage, performerIdx2WithImage},
-		imageIdxWithPerformerTag:     {performerIdxWithTag},
-		imageIdxWithPerformerTwoTags: {performerIdxWithTwoTags},
-		imageIdx1WithPerformer:       {performerIdxWithTwoImages},
-		imageIdx2WithPerformer:       {performerIdxWithTwoImages},
-		imageIdxWithStudioPerformer:  {performerIdxWithImageStudio},
+		imageIdxWithPerformer:          {performerIdxWithImage},
+		imageIdxWithTwoPerformers:      {performerIdx1WithImage, performerIdx2WithImage},
+		imageIdxWithThreePerformers:    {performerIdx1WithImage, performerIdx2WithImage, performerIdx3WithImage},
+		imageIdxWithPerformerTag:       {performerIdxWithTag},
+		imageIdxWithTwoPerformerTag:    {performerIdxWithTag, performerIdx2WithTag},
+		imageIdxWithPerformerTwoTags:   {performerIdxWithTwoTags},
+		imageIdx1WithPerformer:         {performerIdxWithTwoImages},
+		imageIdx2WithPerformer:         {performerIdxWithTwoImages},
+		imageIdxWithStudioPerformer:    {performerIdxWithImageStudio},
+		imageIdxWithPerformerParentTag: {performerIdxWithParentTag},
 	}
 )
 
 var (
 	galleryPerformers = linkMap{
-		galleryIdxWithPerformer:        {performerIdxWithGallery},
-		galleryIdxWithTwoPerformers:    {performerIdx1WithGallery, performerIdx2WithGallery},
-		galleryIdxWithPerformerTag:     {performerIdxWithTag},
-		galleryIdxWithPerformerTwoTags: {performerIdxWithTwoTags},
-		galleryIdx1WithPerformer:       {performerIdxWithTwoGalleries},
-		galleryIdx2WithPerformer:       {performerIdxWithTwoGalleries},
-		galleryIdxWithStudioPerformer:  {performerIdxWithGalleryStudio},
+		galleryIdxWithPerformer:          {performerIdxWithGallery},
+		galleryIdxWithTwoPerformers:      {performerIdx1WithGallery, performerIdx2WithGallery},
+		galleryIdxWithThreePerformers:    {performerIdx1WithGallery, performerIdx2WithGallery, performerIdx3WithGallery},
+		galleryIdxWithPerformerTag:       {performerIdxWithTag},
+		galleryIdxWithTwoPerformerTag:    {performerIdxWithTag, performerIdx2WithTag},
+		galleryIdxWithPerformerTwoTags:   {performerIdxWithTwoTags},
+		galleryIdx1WithPerformer:         {performerIdxWithTwoGalleries},
+		galleryIdx2WithPerformer:         {performerIdxWithTwoGalleries},
+		galleryIdxWithStudioPerformer:    {performerIdxWithGalleryStudio},
+		galleryIdxWithPerformerParentTag: {performerIdxWithParentTag},
 	}
 
 	galleryStudios = map[int]int{
@@ -441,8 +474,9 @@ var (
 	}
 
 	galleryTags = linkMap{
-		galleryIdxWithTag:     {tagIdxWithGallery},
-		galleryIdxWithTwoTags: {tagIdx1WithGallery, tagIdx2WithGallery},
+		galleryIdxWithTag:       {tagIdxWithGallery},
+		galleryIdxWithTwoTags:   {tagIdx1WithGallery, tagIdx2WithGallery},
+		galleryIdxWithThreeTags: {tagIdx1WithGallery, tagIdx2WithGallery, tagIdx3WithGallery},
 	}
 )
 
@@ -462,8 +496,10 @@ var (
 
 var (
 	performerTags = linkMap{
-		performerIdxWithTag:     {tagIdxWithPerformer},
-		performerIdxWithTwoTags: {tagIdx1WithPerformer, tagIdx2WithPerformer},
+		performerIdxWithTag:       {tagIdxWithPerformer},
+		performerIdx2WithTag:      {tagIdx2WithPerformer},
+		performerIdxWithTwoTags:   {tagIdx1WithPerformer, tagIdx2WithPerformer},
+		performerIdxWithParentTag: {tagIdxWithParentAndChild},
 	}
 )
 
@@ -482,6 +518,16 @@ func indexesToIDs(ids []int, indexes []int) []int {
 	}
 
 	return ret
+}
+
+func indexFromID(ids []int, id int) int {
+	for i, v := range ids {
+		if v == id {
+			return i
+		}
+	}
+
+	return -1
 }
 
 var db *sqlite.Database
@@ -1331,6 +1377,29 @@ func getPerformerCareerLength(index int) *string {
 	return &ret
 }
 
+func getPerformerPenisLength(index int) *float64 {
+	if index%5 == 0 {
+		return nil
+	}
+
+	ret := float64(index)
+	return &ret
+}
+
+func getPerformerCircumcised(index int) *models.CircumisedEnum {
+	var ret models.CircumisedEnum
+	switch {
+	case index%3 == 0:
+		return nil
+	case index%3 == 1:
+		ret = models.CircumisedEnumCut
+	default:
+		ret = models.CircumisedEnumUncut
+	}
+
+	return &ret
+}
+
 func getIgnoreAutoTag(index int) bool {
 	return index%5 == 0
 }
@@ -1372,6 +1441,8 @@ func createPerformers(ctx context.Context, n int, o int) error {
 			DeathDate:      getPerformerDeathDate(i),
 			Details:        getPerformerStringValue(i, "Details"),
 			Ethnicity:      getPerformerStringValue(i, "Ethnicity"),
+			PenisLength:    getPerformerPenisLength(i),
+			Circumcised:    getPerformerCircumcised(i),
 			Rating:         getIntPtr(getRating(i)),
 			IgnoreAutoTag:  getIgnoreAutoTag(i),
 			TagIDs:         models.NewRelatedIDs(tids),
@@ -1406,11 +1477,8 @@ func getTagStringValue(index int, field string) string {
 }
 
 func getTagSceneCount(id int) int {
-	if id == tagIDs[tagIdx1WithScene] || id == tagIDs[tagIdx2WithScene] || id == tagIDs[tagIdxWithScene] || id == tagIDs[tagIdx3WithScene] {
-		return 1
-	}
-
-	return 0
+	idx := indexFromID(tagIDs, id)
+	return len(sceneTags.reverseLookup(idx))
 }
 
 func getTagMarkerCount(id int) int {
@@ -1426,27 +1494,18 @@ func getTagMarkerCount(id int) int {
 }
 
 func getTagImageCount(id int) int {
-	if id == tagIDs[tagIdx1WithImage] || id == tagIDs[tagIdx2WithImage] || id == tagIDs[tagIdxWithImage] {
-		return 1
-	}
-
-	return 0
+	idx := indexFromID(tagIDs, id)
+	return len(imageTags.reverseLookup(idx))
 }
 
 func getTagGalleryCount(id int) int {
-	if id == tagIDs[tagIdx1WithGallery] || id == tagIDs[tagIdx2WithGallery] || id == tagIDs[tagIdxWithGallery] {
-		return 1
-	}
-
-	return 0
+	idx := indexFromID(tagIDs, id)
+	return len(galleryTags.reverseLookup(idx))
 }
 
 func getTagPerformerCount(id int) int {
-	if id == tagIDs[tagIdx1WithPerformer] || id == tagIDs[tagIdx2WithPerformer] || id == tagIDs[tagIdxWithPerformer] {
-		return 1
-	}
-
-	return 0
+	idx := indexFromID(tagIDs, id)
+	return len(performerTags.reverseLookup(idx))
 }
 
 func getTagParentCount(id int) int {

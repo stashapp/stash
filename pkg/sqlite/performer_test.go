@@ -52,6 +52,8 @@ func Test_PerformerStore_Create(t *testing.T) {
 		height         = 134
 		measurements   = "measurements"
 		fakeTits       = "fakeTits"
+		penisLength    = 1.23
+		circumcised    = models.CircumisedEnumCut
 		careerLength   = "careerLength"
 		tattoos        = "tattoos"
 		piercings      = "piercings"
@@ -81,7 +83,7 @@ func Test_PerformerStore_Create(t *testing.T) {
 			models.Performer{
 				Name:           name,
 				Disambiguation: disambiguation,
-				Gender:         gender,
+				Gender:         &gender,
 				URL:            url,
 				Twitter:        twitter,
 				Instagram:      instagram,
@@ -92,6 +94,8 @@ func Test_PerformerStore_Create(t *testing.T) {
 				Height:         &height,
 				Measurements:   measurements,
 				FakeTits:       fakeTits,
+				PenisLength:    &penisLength,
+				Circumcised:    &circumcised,
 				CareerLength:   careerLength,
 				Tattoos:        tattoos,
 				Piercings:      piercings,
@@ -196,6 +200,8 @@ func Test_PerformerStore_Update(t *testing.T) {
 		height         = 134
 		measurements   = "measurements"
 		fakeTits       = "fakeTits"
+		penisLength    = 1.23
+		circumcised    = models.CircumisedEnumCut
 		careerLength   = "careerLength"
 		tattoos        = "tattoos"
 		piercings      = "piercings"
@@ -226,7 +232,7 @@ func Test_PerformerStore_Update(t *testing.T) {
 				ID:             performerIDs[performerIdxWithGallery],
 				Name:           name,
 				Disambiguation: disambiguation,
-				Gender:         gender,
+				Gender:         &gender,
 				URL:            url,
 				Twitter:        twitter,
 				Instagram:      instagram,
@@ -237,6 +243,8 @@ func Test_PerformerStore_Update(t *testing.T) {
 				Height:         &height,
 				Measurements:   measurements,
 				FakeTits:       fakeTits,
+				PenisLength:    &penisLength,
+				Circumcised:    &circumcised,
 				CareerLength:   careerLength,
 				Tattoos:        tattoos,
 				Piercings:      piercings,
@@ -327,6 +335,7 @@ func clearPerformerPartial() models.PerformerPartial {
 	nullString := models.OptionalString{Set: true, Null: true}
 	nullDate := models.OptionalDate{Set: true, Null: true}
 	nullInt := models.OptionalInt{Set: true, Null: true}
+	nullFloat := models.OptionalFloat64{Set: true, Null: true}
 
 	// leave mandatory fields
 	return models.PerformerPartial{
@@ -342,6 +351,8 @@ func clearPerformerPartial() models.PerformerPartial {
 		Height:         nullInt,
 		Measurements:   nullString,
 		FakeTits:       nullString,
+		PenisLength:    nullFloat,
+		Circumcised:    nullString,
 		CareerLength:   nullString,
 		Tattoos:        nullString,
 		Piercings:      nullString,
@@ -372,6 +383,8 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 		height         = 143
 		measurements   = "measurements"
 		fakeTits       = "fakeTits"
+		penisLength    = 1.23
+		circumcised    = models.CircumisedEnumCut
 		careerLength   = "careerLength"
 		tattoos        = "tattoos"
 		piercings      = "piercings"
@@ -415,6 +428,8 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 				Height:         models.NewOptionalInt(height),
 				Measurements:   models.NewOptionalString(measurements),
 				FakeTits:       models.NewOptionalString(fakeTits),
+				PenisLength:    models.NewOptionalFloat64(penisLength),
+				Circumcised:    models.NewOptionalString(circumcised.String()),
 				CareerLength:   models.NewOptionalString(careerLength),
 				Tattoos:        models.NewOptionalString(tattoos),
 				Piercings:      models.NewOptionalString(piercings),
@@ -453,7 +468,7 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 				ID:             performerIDs[performerIdxWithDupName],
 				Name:           name,
 				Disambiguation: disambiguation,
-				Gender:         gender,
+				Gender:         &gender,
 				URL:            url,
 				Twitter:        twitter,
 				Instagram:      instagram,
@@ -464,6 +479,8 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 				Height:         &height,
 				Measurements:   measurements,
 				FakeTits:       fakeTits,
+				PenisLength:    &penisLength,
+				Circumcised:    &circumcised,
 				CareerLength:   careerLength,
 				Tattoos:        tattoos,
 				Piercings:      piercings,
@@ -496,12 +513,13 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 			performerIDs[performerIdxWithTwoTags],
 			clearPerformerPartial(),
 			models.Performer{
-				ID:       performerIDs[performerIdxWithTwoTags],
-				Name:     getPerformerStringValue(performerIdxWithTwoTags, "Name"),
-				Favorite: true,
-				Aliases:  models.NewRelatedStrings([]string{}),
-				TagIDs:   models.NewRelatedIDs([]int{}),
-				StashIDs: models.NewRelatedStashIDs([]models.StashID{}),
+				ID:            performerIDs[performerIdxWithTwoTags],
+				Name:          getPerformerStringValue(performerIdxWithTwoTags, "Name"),
+				Favorite:      getPerformerBoolValue(performerIdxWithTwoTags),
+				Aliases:       models.NewRelatedStrings([]string{}),
+				TagIDs:        models.NewRelatedIDs([]int{}),
+				StashIDs:      models.NewRelatedStashIDs([]models.StashID{}),
+				IgnoreAutoTag: getIgnoreAutoTag(performerIdxWithTwoTags),
 			},
 			false,
 		},
@@ -957,16 +975,30 @@ func TestPerformerQuery(t *testing.T) {
 			false,
 		},
 		{
-			"alias",
+			"circumcised (cut)",
 			nil,
 			&models.PerformerFilterType{
-				Aliases: &models.StringCriterionInput{
-					Value:    getPerformerStringValue(performerIdxWithGallery, "alias"),
-					Modifier: models.CriterionModifierEquals,
+				Circumcised: &models.CircumcisionCriterionInput{
+					Value:    []models.CircumisedEnum{models.CircumisedEnumCut},
+					Modifier: models.CriterionModifierIncludes,
 				},
 			},
-			[]int{performerIdxWithGallery},
-			[]int{performerIdxWithScene},
+			[]int{performerIdx1WithScene},
+			[]int{performerIdxWithScene, performerIdx2WithScene},
+			false,
+		},
+		{
+			"circumcised (excludes cut)",
+			nil,
+			&models.PerformerFilterType{
+				Circumcised: &models.CircumcisionCriterionInput{
+					Value:    []models.CircumisedEnum{models.CircumisedEnumCut},
+					Modifier: models.CriterionModifierExcludes,
+				},
+			},
+			[]int{performerIdx2WithScene},
+			// performerIdxWithScene has null value
+			[]int{performerIdx1WithScene, performerIdxWithScene},
 			false,
 		},
 	}
@@ -993,6 +1025,107 @@ func TestPerformerQuery(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPerformerQueryPenisLength(t *testing.T) {
+	var upper = 4.0
+
+	tests := []struct {
+		name     string
+		modifier models.CriterionModifier
+		value    float64
+		value2   *float64
+	}{
+		{
+			"equals",
+			models.CriterionModifierEquals,
+			1,
+			nil,
+		},
+		{
+			"not equals",
+			models.CriterionModifierNotEquals,
+			1,
+			nil,
+		},
+		{
+			"greater than",
+			models.CriterionModifierGreaterThan,
+			1,
+			nil,
+		},
+		{
+			"between",
+			models.CriterionModifierBetween,
+			2,
+			&upper,
+		},
+		{
+			"greater than",
+			models.CriterionModifierNotBetween,
+			2,
+			&upper,
+		},
+		{
+			"null",
+			models.CriterionModifierIsNull,
+			0,
+			nil,
+		},
+		{
+			"not null",
+			models.CriterionModifierNotNull,
+			0,
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			filter := &models.PerformerFilterType{
+				PenisLength: &models.FloatCriterionInput{
+					Modifier: tt.modifier,
+					Value:    tt.value,
+					Value2:   tt.value2,
+				},
+			}
+
+			performers, _, err := db.Performer.Query(ctx, filter, nil)
+			if err != nil {
+				t.Errorf("PerformerStore.Query() error = %v", err)
+				return
+			}
+
+			for _, p := range performers {
+				verifyFloat(t, p.PenisLength, *filter.PenisLength)
+			}
+		})
+	}
+}
+
+func verifyFloat(t *testing.T, value *float64, criterion models.FloatCriterionInput) bool {
+	t.Helper()
+	assert := assert.New(t)
+	switch criterion.Modifier {
+	case models.CriterionModifierEquals:
+		return assert.NotNil(value) && assert.Equal(criterion.Value, *value)
+	case models.CriterionModifierNotEquals:
+		return assert.NotNil(value) && assert.NotEqual(criterion.Value, *value)
+	case models.CriterionModifierGreaterThan:
+		return assert.NotNil(value) && assert.Greater(*value, criterion.Value)
+	case models.CriterionModifierLessThan:
+		return assert.NotNil(value) && assert.Less(*value, criterion.Value)
+	case models.CriterionModifierBetween:
+		return assert.NotNil(value) && assert.GreaterOrEqual(*value, criterion.Value) && assert.LessOrEqual(*value, *criterion.Value2)
+	case models.CriterionModifierNotBetween:
+		return assert.NotNil(value) && assert.True(*value < criterion.Value || *value > *criterion.Value2)
+	case models.CriterionModifierIsNull:
+		return assert.Nil(value)
+	case models.CriterionModifierNotNull:
+		return assert.NotNil(value)
+	}
+
+	return false
 }
 
 func TestPerformerQueryForAutoTag(t *testing.T) {
@@ -1772,10 +1905,10 @@ func TestPerformerQuerySortScenesCount(t *testing.T) {
 
 		assert.True(t, len(performers) > 0)
 
-		// first performer should be performerIdxWithTwoScenes
+		// first performer should be performerIdx1WithScene
 		firstPerformer := performers[0]
 
-		assert.Equal(t, performerIDs[performerIdxWithTwoScenes], firstPerformer.ID)
+		assert.Equal(t, performerIDs[performerIdx1WithScene], firstPerformer.ID)
 
 		// sort in ascending order
 		direction = models.SortDirectionEnumAsc
@@ -1788,7 +1921,7 @@ func TestPerformerQuerySortScenesCount(t *testing.T) {
 		assert.True(t, len(performers) > 0)
 		lastPerformer := performers[len(performers)-1]
 
-		assert.Equal(t, performerIDs[performerIdxWithTwoScenes], lastPerformer.ID)
+		assert.Equal(t, performerIDs[performerIdxWithTag], lastPerformer.ID)
 
 		return nil
 	})
@@ -1928,7 +2061,7 @@ func TestPerformerStore_FindByStashIDStatus(t *testing.T) {
 			name:             "!hasStashID",
 			hasStashID:       false,
 			stashboxEndpoint: getPerformerStringValue(performerIdxWithScene, "endpoint"),
-			include:          []int{performerIdxWithImage},
+			include:          []int{performerIdxWithTwoScenes},
 			exclude:          []int{performerIdx2WithScene},
 			wantErr:          false,
 		},

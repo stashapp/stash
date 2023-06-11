@@ -8,8 +8,6 @@ import {
   useListPerformerScrapers,
   queryScrapePerformer,
   mutateReloadScrapers,
-  usePerformerUpdate,
-  usePerformerCreate,
   useTagCreate,
   queryScrapePerformerURL,
 } from "src/core/StashService";
@@ -24,13 +22,18 @@ import ImageUtils from "src/utils/image";
 import { getStashIDs } from "src/utils/stashIds";
 import { stashboxDisplayName } from "src/utils/stashbox";
 import { useToast } from "src/hooks/Toast";
-import { Prompt, useHistory } from "react-router-dom";
+import { Prompt } from "react-router-dom";
 import { useFormik } from "formik";
 import {
   genderToString,
   stringGenderMap,
   stringToGender,
 } from "src/utils/gender";
+import {
+  circumcisedToString,
+  stringCircumMap,
+  stringToCircumcised,
+} from "src/utils/circumcised";
 import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 import PerformerScrapeModal from "./PerformerScrapeModal";
@@ -52,6 +55,7 @@ const isScraper = (
 interface IPerformerDetails {
   performer: Partial<GQL.PerformerDataFragment>;
   isVisible: boolean;
+  onSubmit: (performer: GQL.PerformerCreateInput) => Promise<void>;
   onCancel?: () => void;
   setImage: (image?: string | null) => void;
   setEncodingImage: (loading: boolean) => void;
@@ -60,12 +64,12 @@ interface IPerformerDetails {
 export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   performer,
   isVisible,
+  onSubmit,
   onCancel,
   setImage,
   setEncodingImage,
 }) => {
   const Toast = useToast();
-  const history = useHistory();
 
   const isNew = performer.id === undefined;
 
@@ -76,9 +80,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
-
-  const [updatePerformer] = usePerformerUpdate();
-  const [createPerformer] = usePerformerCreate();
 
   const Scrapers = useListPerformerScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
@@ -104,14 +105,19 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       .test({
         name: "unique",
         test: (value, context) => {
-          if (!value) return true;
-          const aliases = new Set(value);
-          aliases.add(context.parent.name);
-          return value.length + 1 === aliases.size;
+          const aliases = [context.parent.name, ...value];
+          const dupes = aliases
+            .map((e, i, a) => {
+              if (a.indexOf(e) !== i) {
+                return String(i - 1);
+              } else {
+                return null;
+              }
+            })
+            .filter((e) => e !== null) as string[];
+          if (dupes.length === 0) return true;
+          return new yup.ValidationError(dupes.join(" "), value, "alias_list");
         },
-        message: intl.formatMessage({
-          id: "validation.aliases_must_be_unique",
-        }),
       }),
     gender: yup.string<GQL.GenderEnum | "">().ensure(),
     birthdate: yup
@@ -148,6 +154,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     weight: yup.number().nullable().defined().default(null),
     measurements: yup.string().ensure(),
     fake_tits: yup.string().ensure(),
+    penis_length: yup.number().nullable().defined().default(null),
+    circumcised: yup.string<GQL.CircumisedEnum | "">().ensure(),
     tattoos: yup.string().ensure(),
     piercings: yup.string().ensure(),
     career_length: yup.string().ensure(),
@@ -176,6 +184,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     weight: performer.weight ?? null,
     measurements: performer.measurements ?? "",
     fake_tits: performer.fake_tits ?? "",
+    penis_length: performer.penis_length ?? null,
+    circumcised: (performer.circumcised as GQL.CircumisedEnum) ?? "",
     tattoos: performer.tattoos ?? "",
     piercings: performer.piercings ?? "",
     career_length: performer.career_length ?? "",
@@ -211,6 +221,21 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       // try to match against gender strings
       const caseInsensitive = true;
       return stringToGender(scrapedGender, caseInsensitive);
+    }
+  }
+
+  function translateScrapedCircumcised(scrapedCircumcised?: string) {
+    if (!scrapedCircumcised) {
+      return;
+    }
+
+    const upperCircumcised = scrapedCircumcised.toUpperCase();
+    const asEnum = circumcisedToString(upperCircumcised);
+    if (asEnum) {
+      return stringToCircumcised(asEnum);
+    } else {
+      const caseInsensitive = true;
+      return stringToCircumcised(scrapedCircumcised, caseInsensitive);
     }
   }
 
@@ -350,6 +375,13 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         formik.setFieldValue("gender", newGender);
       }
     }
+    if (state.circumcised) {
+      // circumcised is a string in the scraper data
+      const newCircumcised = translateScrapedCircumcised(state.circumcised);
+      if (newCircumcised) {
+        formik.setFieldValue("circumcised", newCircumcised);
+      }
+    }
     if (state.tags) {
       // map tags to their ids and filter out those not found
       const newTagIds = state.tags.map((t) => t.stored_id).filter((t) => t);
@@ -381,6 +413,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
     if (state.weight) {
       formik.setFieldValue("weight", state.weight);
+    }
+    if (state.penis_length) {
+      formik.setFieldValue("penis_length", state.penis_length);
     }
 
     const remoteSiteID = state.remote_site_id;
@@ -415,57 +450,35 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
+  function valuesToInput(input: InputValues): GQL.PerformerCreateInput {
+    return {
+      ...input,
+      gender: input.gender || null,
+      height_cm: input.height_cm || null,
+      weight: input.weight || null,
+      penis_length: input.penis_length || null,
+      circumcised: input.circumcised || null,
+    };
+  }
+
   async function onSave(input: InputValues) {
     setIsLoading(true);
     try {
-      if (isNew) {
-        const result = await createPerformer({
-          variables: {
-            input: {
-              ...input,
-              gender: input.gender || null,
-              height_cm: input.height_cm || null,
-              weight: input.weight || null,
-            },
-          },
-        });
-        if (result.data?.performerCreate) {
-          history.push(`/performers/${result.data.performerCreate.id}`);
-        }
-      } else {
-        await updatePerformer({
-          variables: {
-            input: {
-              id: performer.id!,
-              ...input,
-              gender: input.gender || null,
-              height_cm: input.height_cm || null,
-              weight: input.weight || null,
-            },
-          },
-        });
-      }
+      await onSubmit(valuesToInput(input));
+      formik.resetForm();
     } catch (e) {
       Toast.error(e);
-      setIsLoading(false);
-      return;
-    }
-    if (!isNew && onCancel) {
-      onCancel();
     }
     setIsLoading(false);
-  }
-
-  function onCancelEditing() {
-    setImage(undefined);
-    onCancel?.();
   }
 
   // set up hotkeys
   useEffect(() => {
     if (isVisible) {
       Mousetrap.bind("s s", () => {
-        onSave?.(formik.values);
+        if (formik.dirty) {
+          formik.submitForm();
+        }
       });
 
       return () => {
@@ -656,8 +669,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
 
     const currentPerformer = {
-      ...formik.values,
-      gender: formik.values.gender || null,
+      ...valuesToInput(formik.values),
       image: formik.values.image ?? performer.image_path,
     };
 
@@ -685,7 +697,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return (
       <div className={cx("details-edit", "col-xl-9", classNames)}>
         {!isNew && onCancel ? (
-          <Button className="mr-2" variant="primary" onClick={onCancelEditing}>
+          <Button className="mr-2" variant="primary" onClick={onCancel}>
             <FormattedMessage id="actions.cancel" />
           </Button>
         ) : null}
@@ -845,6 +857,14 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     );
   }
 
+  const aliasErrors = Array.isArray(formik.errors.alias_list)
+    ? formik.errors.alias_list[0]
+    : formik.errors.alias_list;
+  const aliasErrorMsg = aliasErrors
+    ? intl.formatMessage({ id: "validation.aliases_must_be_unique" })
+    : undefined;
+  const aliasErrorIdx = aliasErrors?.split(" ").map((e) => parseInt(e));
+
   return (
     <>
       {renderScrapeModal()}
@@ -899,11 +919,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             <StringListInput
               value={formik.values.alias_list ?? []}
               setValue={(value) => formik.setFieldValue("alias_list", value)}
-              errors={
-                Array.isArray(formik.errors.alias_list)
-                  ? formik.errors.alias_list[0]
-                  : formik.errors.alias_list
-              }
+              errors={aliasErrorMsg}
+              errorIdx={aliasErrorIdx}
             />
           </Col>
         </Form.Group>
@@ -980,6 +997,31 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           type: "number",
           messageID: "weight_kg",
         })}
+        {renderField("penis_length", {
+          type: "number",
+          messageID: "penis_length_cm",
+        })}
+
+        <Form.Group as={Row}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            <FormattedMessage id="circumcised" />
+          </Form.Label>
+          <Col xs="auto">
+            <Form.Control
+              as="select"
+              className="input-control"
+              {...formik.getFieldProps("circumcised")}
+            >
+              <option value="" key=""></option>
+              {Array.from(stringCircumMap.entries()).map(([name, value]) => (
+                <option value={value} key={value}>
+                  {name}
+                </option>
+              ))}
+            </Form.Control>
+          </Col>
+        </Form.Group>
+
         {renderField("measurements")}
         {renderField("fake_tits")}
 

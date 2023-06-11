@@ -61,6 +61,52 @@ type GenderCriterionInput struct {
 	Modifier CriterionModifier `json:"modifier"`
 }
 
+type CircumisedEnum string
+
+const (
+	CircumisedEnumCut   CircumisedEnum = "CUT"
+	CircumisedEnumUncut CircumisedEnum = "UNCUT"
+)
+
+var AllCircumcisionEnum = []CircumisedEnum{
+	CircumisedEnumCut,
+	CircumisedEnumUncut,
+}
+
+func (e CircumisedEnum) IsValid() bool {
+	switch e {
+	case CircumisedEnumCut, CircumisedEnumUncut:
+		return true
+	}
+	return false
+}
+
+func (e CircumisedEnum) String() string {
+	return string(e)
+}
+
+func (e *CircumisedEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = CircumisedEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid CircumisedEnum", str)
+	}
+	return nil
+}
+
+func (e CircumisedEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type CircumcisionCriterionInput struct {
+	Value    []CircumisedEnum  `json:"value"`
+	Modifier CriterionModifier `json:"modifier"`
+}
+
 type PerformerFilterType struct {
 	And            *PerformerFilterType  `json:"AND"`
 	Or             *PerformerFilterType  `json:"OR"`
@@ -88,6 +134,10 @@ type PerformerFilterType struct {
 	Measurements *StringCriterionInput `json:"measurements"`
 	// Filter by fake tits value
 	FakeTits *StringCriterionInput `json:"fake_tits"`
+	// Filter by penis length value
+	PenisLength *FloatCriterionInput `json:"penis_length"`
+	// Filter by circumcision
+	Circumcised *CircumcisionCriterionInput `json:"circumcised"`
 	// Filter by career length
 	CareerLength *StringCriterionInput `json:"career_length"`
 	// Filter by tattoos
@@ -110,6 +160,8 @@ type PerformerFilterType struct {
 	ImageCount *IntCriterionInput `json:"image_count"`
 	// Filter by gallery count
 	GalleryCount *IntCriterionInput `json:"gallery_count"`
+	// Filter by O count
+	OCounter *IntCriterionInput `json:"o_counter"`
 	// Filter by StashID
 	StashID *StringCriterionInput `json:"stash_id"`
 	// Filter by StashID Endpoint
@@ -128,6 +180,8 @@ type PerformerFilterType struct {
 	DeathYear *IntCriterionInput `json:"death_year"`
 	// Filter by studios where performer appears in scene/image/gallery
 	Studios *HierarchicalMultiCriterionInput `json:"studios"`
+	// Filter by performers where performer appears with another performer in scene/image/gallery
+	Performers *MultiCriterionInput `json:"performers"`
 	// Filter by autotag ignore value
 	IgnoreAutoTag *bool `json:"ignore_auto_tag"`
 	// Filter by birthdate

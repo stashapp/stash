@@ -16,6 +16,8 @@ fragment SlimPerformerData on Performer {
   eye_color
   height_cm
   fake_tits
+  penis_length
+  circumcised
   career_length
   tattoos
   piercings

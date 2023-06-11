@@ -42,6 +42,8 @@ type performerRow struct {
 	Height        null.Int               `db:"height"`
 	Measurements  zero.String            `db:"measurements"`
 	FakeTits      zero.String            `db:"fake_tits"`
+	PenisLength   null.Float             `db:"penis_length"`
+	Circumcised   zero.String            `db:"circumcised"`
 	CareerLength  zero.String            `db:"career_length"`
 	Tattoos       zero.String            `db:"tattoos"`
 	Piercings     zero.String            `db:"piercings"`
@@ -64,7 +66,7 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	r.ID = o.ID
 	r.Name = o.Name
 	r.Disambigation = zero.StringFrom(o.Disambiguation)
-	if o.Gender.IsValid() {
+	if o.Gender != nil && o.Gender.IsValid() {
 		r.Gender = zero.StringFrom(o.Gender.String())
 	}
 	r.URL = zero.StringFrom(o.URL)
@@ -79,6 +81,10 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	r.Height = intFromPtr(o.Height)
 	r.Measurements = zero.StringFrom(o.Measurements)
 	r.FakeTits = zero.StringFrom(o.FakeTits)
+	r.PenisLength = null.FloatFromPtr(o.PenisLength)
+	if o.Circumcised != nil && o.Circumcised.IsValid() {
+		r.Circumcised = zero.StringFrom(o.Circumcised.String())
+	}
 	r.CareerLength = zero.StringFrom(o.CareerLength)
 	r.Tattoos = zero.StringFrom(o.Tattoos)
 	r.Piercings = zero.StringFrom(o.Piercings)
@@ -100,7 +106,6 @@ func (r *performerRow) resolve() *models.Performer {
 		ID:             r.ID,
 		Name:           r.Name,
 		Disambiguation: r.Disambigation.String,
-		Gender:         models.GenderEnum(r.Gender.String),
 		URL:            r.URL.String,
 		Twitter:        r.Twitter.String,
 		Instagram:      r.Instagram.String,
@@ -111,6 +116,7 @@ func (r *performerRow) resolve() *models.Performer {
 		Height:         nullIntPtr(r.Height),
 		Measurements:   r.Measurements.String,
 		FakeTits:       r.FakeTits.String,
+		PenisLength:    nullFloatPtr(r.PenisLength),
 		CareerLength:   r.CareerLength.String,
 		Tattoos:        r.Tattoos.String,
 		Piercings:      r.Piercings.String,
@@ -124,6 +130,16 @@ func (r *performerRow) resolve() *models.Performer {
 		HairColor:     r.HairColor.String,
 		Weight:        nullIntPtr(r.Weight),
 		IgnoreAutoTag: r.IgnoreAutoTag,
+	}
+
+	if r.Gender.ValueOrZero() != "" {
+		v := models.GenderEnum(r.Gender.String)
+		ret.Gender = &v
+	}
+
+	if r.Circumcised.ValueOrZero() != "" {
+		v := models.CircumisedEnum(r.Circumcised.String)
+		ret.Circumcised = &v
 	}
 
 	return ret
@@ -147,6 +163,8 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setNullInt("height", o.Height)
 	r.setNullString("measurements", o.Measurements)
 	r.setNullString("fake_tits", o.FakeTits)
+	r.setNullFloat64("penis_length", o.PenisLength)
+	r.setNullString("circumcised", o.Circumcised)
 	r.setNullString("career_length", o.CareerLength)
 	r.setNullString("tattoos", o.Tattoos)
 	r.setNullString("piercings", o.Piercings)
@@ -597,6 +615,15 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Measurements, tableName+".measurements"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.FakeTits, tableName+".fake_tits"))
+	query.handleCriterion(ctx, floatCriterionHandler(filter.PenisLength, tableName+".penis_length", nil))
+
+	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
+		if circumcised := filter.Circumcised; circumcised != nil {
+			v := utils.StringerSliceToStringSlice(circumcised.Value)
+			enumCriterionHandler(circumcised.Modifier, v, tableName+".circumcised")(ctx, f)
+		}
+	}))
+
 	query.handleCriterion(ctx, stringCriterionHandler(filter.CareerLength, tableName+".career_length"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Tattoos, tableName+".tattoos"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Piercings, tableName+".piercings"))
@@ -625,10 +652,13 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 
 	query.handleCriterion(ctx, performerStudiosCriterionHandler(qb, filter.Studios))
 
+	query.handleCriterion(ctx, performerAppearsWithCriterionHandler(qb, filter.Performers))
+
 	query.handleCriterion(ctx, performerTagCountCriterionHandler(qb, filter.TagCount))
 	query.handleCriterion(ctx, performerSceneCountCriterionHandler(qb, filter.SceneCount))
 	query.handleCriterion(ctx, performerImageCountCriterionHandler(qb, filter.ImageCount))
 	query.handleCriterion(ctx, performerGalleryCountCriterionHandler(qb, filter.GalleryCount))
+	query.handleCriterion(ctx, performerOCounterCriterionHandler(qb, filter.OCounter))
 	query.handleCriterion(ctx, dateCriterionHandler(filter.Birthdate, tableName+".birthdate"))
 	query.handleCriterion(ctx, dateCriterionHandler(filter.DeathDate, tableName+".death_date"))
 	query.handleCriterion(ctx, timestampCriterionHandler(filter.CreatedAt, tableName+".created_at"))
@@ -728,7 +758,7 @@ func performerAgeFilterCriterionHandler(age *models.IntCriterionInput) criterion
 	return func(ctx context.Context, f *filterBuilder) {
 		if age != nil && age.Modifier.IsValid() {
 			clause, args := getIntCriterionWhereClause(
-				"cast(IFNULL(strftime('%Y.%m%d', performers.death_date), strftime('%Y.%m%d', 'now')) - strftime('%Y.%m%d', performers.birthdate) as int)",
+				"cast(strftime('%Y.%m%d',CASE WHEN performers.death_date IS NULL OR performers.death_date = '0001-01-01' OR performers.death_date = '' THEN 'now' ELSE performers.death_date END) - strftime('%Y.%m%d', performers.birthdate) as int)",
 				*age,
 			)
 			f.addWhere(clause, args...)
@@ -805,6 +835,22 @@ func performerGalleryCountCriterionHandler(qb *PerformerStore, count *models.Int
 	return h.handler(count)
 }
 
+func performerOCounterCriterionHandler(qb *PerformerStore, count *models.IntCriterionInput) criterionHandlerFunc {
+	h := joinedMultiSumCriterionHandlerBuilder{
+		primaryTable:  performerTable,
+		foreignTable1: sceneTable,
+		joinTable1:    performersScenesTable,
+		foreignTable2: imageTable,
+		joinTable2:    performersImagesTable,
+		primaryFK:     performerIDColumn,
+		foreignFK1:    sceneIDColumn,
+		foreignFK2:    imageIDColumn,
+		sum:           "o_counter",
+	}
+
+	return h.handler(count)
+}
+
 func performerStudiosCriterionHandler(qb *PerformerStore, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if studios != nil {
@@ -862,7 +908,11 @@ func performerStudiosCriterionHandler(qb *PerformerStore, studios *models.Hierar
 			}
 
 			const derivedPerformerStudioTable = "performer_studio"
-			valuesClause := getHierarchicalValues(ctx, qb.tx, studios.Value, studioTable, "", "parent_id", studios.Depth)
+			valuesClause, err := getHierarchicalValues(ctx, qb.tx, studios.Value, studioTable, "", "parent_id", "child_id", studios.Depth)
+			if err != nil {
+				f.setError(err)
+				return
+			}
 			f.addWith("studio(root_id, item_id) AS (" + valuesClause + ")")
 
 			templStr := `SELECT performer_id FROM {primaryTable}
@@ -878,6 +928,60 @@ func performerStudiosCriterionHandler(qb *PerformerStore, studios *models.Hierar
 
 			f.addLeftJoin(derivedPerformerStudioTable, "", fmt.Sprintf("performers.id = %s.performer_id", derivedPerformerStudioTable))
 			f.addWhere(fmt.Sprintf("%s.performer_id IS %s NULL", derivedPerformerStudioTable, clauseCondition))
+		}
+	}
+}
+
+func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models.MultiCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if performers != nil {
+			formatMaps := []utils.StrFormatMap{
+				{
+					"primaryTable": performersScenesTable,
+					"joinTable":    performersScenesTable,
+					"primaryFK":    sceneIDColumn,
+				},
+				{
+					"primaryTable": performersImagesTable,
+					"joinTable":    performersImagesTable,
+					"primaryFK":    imageIDColumn,
+				},
+				{
+					"primaryTable": performersGalleriesTable,
+					"joinTable":    performersGalleriesTable,
+					"primaryFK":    galleryIDColumn,
+				},
+			}
+
+			if len(performers.Value) == '0' {
+				return
+			}
+
+			const derivedPerformerPerformersTable = "performer_performers"
+
+			valuesClause := strings.Join(performers.Value, "),(")
+
+			f.addWith("performer(id) AS (VALUES(" + valuesClause + "))")
+
+			templStr := `SELECT {primaryTable}2.performer_id FROM {primaryTable}
+			INNER JOIN {primaryTable} AS {primaryTable}2 ON {primaryTable}.{primaryFK} = {primaryTable}2.{primaryFK}
+			INNER JOIN performer ON {primaryTable}.performer_id = performer.id
+			WHERE {primaryTable}2.performer_id != performer.id`
+
+			if performers.Modifier == models.CriterionModifierIncludesAll && len(performers.Value) > 1 {
+				templStr += `
+							GROUP BY {primaryTable}2.performer_id
+							HAVING(count(distinct {primaryTable}.performer_id) IS ` + strconv.Itoa(len(performers.Value)) + `)`
+			}
+
+			var unions []string
+			for _, c := range formatMaps {
+				unions = append(unions, utils.StrFormat(templStr, c))
+			}
+
+			f.addWith(fmt.Sprintf("%s AS (%s)", derivedPerformerPerformersTable, strings.Join(unions, " UNION ")))
+
+			f.addInnerJoin(derivedPerformerPerformersTable, "", fmt.Sprintf("performers.id = %s.performer_id", derivedPerformerPerformersTable))
 		}
 	}
 }
@@ -905,6 +1009,9 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) st
 		sortQuery += getCountSort(performerTable, performersGalleriesTable, performerIDColumn, direction)
 	default:
 		sortQuery += getSort(sort, direction, "performers")
+	}
+	if sort == "o_counter" {
+		return getMultiSumSort("o_counter", performerTable, sceneTable, performersScenesTable, imageTable, performersImagesTable, performerIDColumn, sceneIDColumn, imageIDColumn, direction)
 	}
 
 	// Whatever the sorting, always use name/id as a final sort

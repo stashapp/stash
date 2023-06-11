@@ -33,6 +33,8 @@ import {
   faSignInAlt,
   faSignOutAlt,
   faTrashAlt,
+  faChevronRight,
+  faChevronLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import { IUIConfig } from "src/core/config";
 
@@ -86,7 +88,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
 
   // set up hotkeys
   useEffect(() => {
-    Mousetrap.bind("e", () => setIsEditing(true));
+    Mousetrap.bind("e", () => toggleEditing());
     Mousetrap.bind("d d", () => {
       onDelete();
     });
@@ -104,30 +106,31 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
   });
 
   async function onSave(input: GQL.TagCreateInput) {
-    try {
-      const oldRelations = {
-        parents: tag.parents ?? [],
-        children: tag.children ?? [],
-      };
-      const result = await updateTag({
-        variables: {
-          input: {
-            id: tag.id,
-            ...input,
-          },
+    const oldRelations = {
+      parents: tag.parents ?? [],
+      children: tag.children ?? [],
+    };
+    const result = await updateTag({
+      variables: {
+        input: {
+          id: tag.id,
+          ...input,
         },
+      },
+    });
+    if (result.data?.tagUpdate) {
+      toggleEditing(false);
+      const updated = result.data.tagUpdate;
+      tagRelationHook(updated, oldRelations, {
+        parents: updated.parents,
+        children: updated.children,
       });
-      if (result.data?.tagUpdate) {
-        setIsEditing(false);
-        const updated = result.data.tagUpdate;
-        tagRelationHook(updated, oldRelations, {
-          parents: updated.parents,
-          children: updated.children,
-        });
-        return updated.id;
-      }
-    } catch (e) {
-      Toast.error(e);
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "toast.updated_entity" },
+          { entity: intl.formatMessage({ id: "tag" }).toLocaleLowerCase() }
+        ),
+      });
     }
   }
 
@@ -188,8 +191,12 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
     );
   }
 
-  function onToggleEdit() {
-    setIsEditing(!isEditing);
+  function toggleEditing(value?: boolean) {
+    if (value !== undefined) {
+      setIsEditing(value);
+    } else {
+      setIsEditing((e) => !e);
+    }
     setImage(undefined);
   }
 
@@ -251,8 +258,8 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
     );
   }
 
-  function getCollapseButtonText() {
-    return collapsed ? ">" : "<";
+  function getCollapseButtonIcon() {
+    return collapsed ? faChevronRight : faChevronLeft;
   }
 
   return (
@@ -281,7 +288,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 objectName={tag.name}
                 isNew={false}
                 isEditing={isEditing}
-                onToggleEdit={onToggleEdit}
+                onToggleEdit={() => toggleEditing()}
                 onSave={() => {}}
                 onImageChange={() => {}}
                 onClearImage={() => {}}
@@ -295,7 +302,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
             <TagEditPanel
               tag={tag}
               onSubmit={onSave}
-              onCancel={onToggleEdit}
+              onCancel={() => toggleEditing()}
               onDelete={onDelete}
               setImage={setImage}
               setEncodingImage={setEncodingImage}
@@ -304,7 +311,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
         </div>
         <div className="details-divider d-none d-xl-block">
           <Button onClick={() => setCollapsed(!collapsed)}>
-            {getCollapseButtonText()}
+            <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
           </Button>
         </div>
         <div className={`col content-container ${collapsed ? "expanded" : ""}`}>

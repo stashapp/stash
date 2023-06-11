@@ -31,8 +31,8 @@
 }
 
 .details-edit {
-  /* 
-    The penultimate button should be wrapped in an unstyled div. 
+  /*
+    The penultimate button should be wrapped in an unstyled div.
     This allows the div to expand, to right-justify the last (save / delete) button.
   */
 
@@ -285,8 +285,8 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
   opacity: 0.5;
 }
 
-.string-list-input .text-input {
-  margin-bottom: 0.25rem;
+.string-list-input .input-group {
+  margin-bottom: 0.35rem;
 }
 
 .bulk-update-text-input {
@@ -316,14 +316,6 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
   }
 }
 
-.CountrySelect {
-  /* stylelint-disable */
-  .react-select__control:hover {
-    border: none;
-  }
-  /* stylelint-enable */
-}
-
 .date-input.form-control:focus {
   // z-index gets set to 3 in input groups
   z-index: inherit;
@@ -339,6 +331,11 @@ div.react-datepicker {
   .react-datepicker-time__header {
     background-color: $secondary;
     color: $text-color;
+    padding-top: 0.4rem;
+  }
+
+  .react-datepicker__navigation {
+    top: 0.4rem;
   }
 
   .react-datepicker__day {
@@ -376,11 +373,11 @@ div.react-datepicker {
 
   .react-datepicker__month-dropdown-container {
     margin-left: 0;
-    margin-right: 0.25rem;
+    margin-right: 0.1rem;
   }
 
   .react-datepicker__year-dropdown-container {
-    margin-left: 0.25rem;
+    margin-left: 0.1rem;
     margin-right: 0;
   }
 
@@ -416,4 +413,31 @@ div.react-datepicker {
 
 #date-picker-portal .react-datepicker-popper {
   z-index: 1600;
+}
+
+.clearable-input-group {
+  align-items: stretch;
+  display: flex;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.clearable-text-field,
+.clearable-text-field:active,
+.clearable-text-field:focus {
+  background-color: #394b59;
+  border: 0;
+  border-color: #394b59;
+  color: #fff;
+}
+
+.clearable-text-field-clear {
+  background-color: #394b59;
+  color: #bfccd6;
+  font-size: 0.875rem;
+  margin: 0.375rem 0.75rem;
+  padding: 0;
+  position: absolute;
+  right: 0;
+  z-index: 4;
 }

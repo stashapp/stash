@@ -130,6 +130,14 @@ export const SettingsLibraryPanel: React.FC = () => {
           onChange={(v) => saveGeneral({ writeImageThumbnails: v })}
         />
 
+        <BooleanSetting
+          id="create-image-clips-from-videos"
+          headingID="config.ui.images.options.create_image_clips_from_videos.heading"
+          subHeadingID="config.ui.images.options.create_image_clips_from_videos.description"
+          checked={general.createImageClipsFromVideos ?? false}
+          onChange={(v) => saveGeneral({ createImageClipsFromVideos: v })}
+        />
+
         <StringSetting
           id="gallery-cover-regex"
           headingID="config.general.gallery_cover_regex_label"

@@ -240,8 +240,10 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
     );
   };
 
+  const precisionClassName = `rating-stars-precision-${props.precision}`;
+
   return (
-    <div className="rating-stars">
+    <div className={`rating-stars ${precisionClassName}`}>
       {Array.from(Array(max)).map((value, index) =>
         renderRatingButton(index + 1)
       )}

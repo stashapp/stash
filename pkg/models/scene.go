@@ -153,7 +153,7 @@ type SceneReader interface {
 	FindByPath(ctx context.Context, path string) ([]*Scene, error)
 	FindByPerformerID(ctx context.Context, performerID int) ([]*Scene, error)
 	FindByGalleryID(ctx context.Context, performerID int) ([]*Scene, error)
-	FindDuplicates(ctx context.Context, distance int) ([][]*Scene, error)
+	FindDuplicates(ctx context.Context, distance int, durationDiff float64) ([][]*Scene, error)
 
 	GalleryIDLoader
 	PerformerIDLoader
@@ -163,6 +163,7 @@ type SceneReader interface {
 	VideoFileLoader
 
 	CountByPerformerID(ctx context.Context, performerID int) (int, error)
+	OCountByPerformerID(ctx context.Context, performerID int) (int, error)
 	// FindByStudioID(studioID int) ([]*Scene, error)
 	FindByMovieID(ctx context.Context, movieID int) ([]*Scene, error)
 	CountByMovieID(ctx context.Context, movieID int) (int, error)

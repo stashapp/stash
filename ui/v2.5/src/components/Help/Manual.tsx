@@ -6,7 +6,7 @@ import AutoTagging from "src/docs/en/Manual/AutoTagging.md";
 import JSONSpec from "src/docs/en/Manual/JSONSpec.md";
 import Configuration from "src/docs/en/Manual/Configuration.md";
 import Interface from "src/docs/en/Manual/Interface.md";
-import Galleries from "src/docs/en/Manual/Galleries.md";
+import Images from "src/docs/en/Manual/Images.md";
 import Scraping from "src/docs/en/Manual/Scraping.md";
 import ScraperDevelopment from "src/docs/en/Manual/ScraperDevelopment.md";
 import Plugins from "src/docs/en/Manual/Plugins.md";
@@ -88,9 +88,9 @@ export const Manual: React.FC<IManualProps> = ({
       content: Browsing,
     },
     {
-      key: "Galleries.md",
-      title: "Image Galleries",
-      content: Galleries,
+      key: "Images.md",
+      title: "Images and Galleries",
+      content: Images,
     },
     {
       key: "Scraping.md",

@@ -106,6 +106,8 @@ input ConfigGeneralInput {
 
   """Write image thumbnails to disk when generating on the fly"""
   writeImageThumbnails: Boolean
+  """Create Image Clips from Video extensions when Videos are disabled in Library"""
+  createImageClipsFromVideos: Boolean
   """Username"""
   username: String
   """Password"""
@@ -215,6 +217,8 @@ type ConfigGeneralResult {
 
   """Write image thumbnails to disk when generating on the fly"""
   writeImageThumbnails: Boolean!
+  """Create Image Clips from Video extensions when Videos are disabled in Library"""
+  createImageClipsFromVideos: Boolean!
   """API Key"""
   apiKey: String!
   """Username"""
@@ -433,6 +437,8 @@ input ConfigDLNAInput {
   whitelistedIPs: [String!]
   """List of interfaces to run DLNA on. Empty for all"""
   interfaces: [String!]
+  """Order to sort videos"""
+  videoSortOrder: String
 }
 
 type ConfigDLNAResult {
@@ -443,6 +449,8 @@ type ConfigDLNAResult {
   whitelistedIPs: [String!]!
   """List of interfaces to run DLNA on. Empty for all"""
   interfaces: [String!]!
+  """Order to sort videos"""
+  videoSortOrder: String!
 }
 
 input ConfigScrapingInput {
