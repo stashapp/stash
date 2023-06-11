@@ -347,7 +347,7 @@ func (rs heresphereRoutes) HeresphereThumbnail(w http.ResponseWriter, r *http.Re
 	}
 
 	// Calculate the height for pasting heatMapDec onto coverDec
-	pasteHeight := int(float64(coverDec.Bounds().Dy()) * 0.15)
+	pasteHeight := int(float64(coverDec.Bounds().Dy()) * 0.10)
 
 	// Calculate the new width and height based on the desired ratio
 	newWidth := models.DefaultGthumbWidth
