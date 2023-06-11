@@ -70,7 +70,6 @@ export const Stats: React.FC = () => {
             <FormattedMessage id="performers" />
           </p>
         </div>
-        
       </div>
       <div className="col col-sm-8 m-sm-auto row stats">
         <div className="stats-element">
