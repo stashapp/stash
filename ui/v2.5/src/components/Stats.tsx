@@ -18,6 +18,11 @@ export const Stats: React.FC = () => {
     3
   );
 
+  const scenesPlayDuration = TextUtils.secondsAsTimeString(
+    data.stats.play_duration,
+    3
+  );
+
   return (
     <div className="mt-5">
       <div className="col col-sm-8 m-sm-auto row stats">
@@ -65,6 +70,7 @@ export const Stats: React.FC = () => {
             <FormattedMessage id="performers" />
           </p>
         </div>
+        
       </div>
       <div className="col col-sm-8 m-sm-auto row stats">
         <div className="stats-element">
@@ -111,6 +117,38 @@ export const Stats: React.FC = () => {
           </p>
           <p className="heading">
             <FormattedMessage id="tags" />
+          </p>
+        </div>
+      </div>
+      <div className="col col-sm-8 m-sm-auto row stats">
+        <div className="stats-element">
+          <p className="title">
+            <FormattedNumber value={data.stats.o_counter} />
+          </p>
+          <p className="heading">
+            <FormattedMessage id="o_counter" />
+          </p>
+        </div>
+        <div className="stats-element">
+          <p className="title">
+            <FormattedNumber value={data.stats.play_count} />
+          </p>
+          <p className="heading">
+            <FormattedMessage id="play_count" />
+          </p>
+        </div>
+        <div className="stats-element">
+          <p className="title">
+            <FormattedNumber value={data.stats.unique_play_count} />
+          </p>
+          <p className="heading">
+            <FormattedMessage id="stats.unique_play_count" />
+          </p>
+        </div>
+        <div className="stats-element">
+          <p className="title">{scenesPlayDuration || "-"}</p>
+          <p className="heading">
+            <FormattedMessage id="play_duration" />
           </p>
         </div>
       </div>

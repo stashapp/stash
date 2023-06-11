@@ -49,7 +49,11 @@ query Stats {
     performer_count,
     studio_count,
     movie_count,
-    tag_count
+    tag_count,
+    o_counter,
+    play_duration,
+    play_count,
+    unique_play_count
   }
 }
 

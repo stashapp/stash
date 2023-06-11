@@ -9,4 +9,8 @@ type StatsResultType {
   studio_count: Int!
   movie_count: Int!
   tag_count: Int!
+  o_counter: Int!
+  play_duration: Float!
+  play_count: Int!
+  unique_play_count: Int!
 }

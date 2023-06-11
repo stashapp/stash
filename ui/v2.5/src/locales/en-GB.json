@@ -1212,7 +1212,8 @@
   "stats": {
     "image_size": "Images size",
     "scenes_duration": "Scenes duration",
-    "scenes_size": "Scenes size"
+    "scenes_size": "Scenes size",
+    "unique_play_count": "Unique Play Count"
   },
   "status": "Status: {statusText}",
   "studio": "Studio",

@@ -156,18 +156,26 @@ func (r *queryResolver) Stats(ctx context.Context) (*StatsResultType, error) {
 		studiosCount, _ := studiosQB.Count(ctx)
 		moviesCount, _ := moviesQB.Count(ctx)
 		tagsCount, _ := tagsQB.Count(ctx)
+		oCounter, _ := scenesQB.OCount(ctx)
+		scenesPlayDuration, _ := scenesQB.PlayDuration(ctx)
+		scenesPlayCount, _ := scenesQB.PlayCount(ctx)
+		uniqueScenePlayCount, _ := scenesQB.UniqueScenePlayCount(ctx)
 
 		ret = StatsResultType{
-			SceneCount:     scenesCount,
-			ScenesSize:     scenesSize,
-			ScenesDuration: scenesDuration,
-			ImageCount:     imageCount,
-			ImagesSize:     imageSize,
-			GalleryCount:   galleryCount,
-			PerformerCount: performersCount,
-			StudioCount:    studiosCount,
-			MovieCount:     moviesCount,
-			TagCount:       tagsCount,
+			SceneCount:      scenesCount,
+			ScenesSize:      scenesSize,
+			ScenesDuration:  scenesDuration,
+			ImageCount:      imageCount,
+			ImagesSize:      imageSize,
+			GalleryCount:    galleryCount,
+			PerformerCount:  performersCount,
+			StudioCount:     studiosCount,
+			MovieCount:      moviesCount,
+			TagCount:        tagsCount,
+			OCounter:        oCounter,
+			PlayDuration:    scenesPlayDuration,
+			PlayCount:       scenesPlayCount,
+			UniquePlayCount: uniqueScenePlayCount,
 		}
 
 		return nil
