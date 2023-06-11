@@ -1,14 +1,20 @@
 package api
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"image"
+	"image/jpeg"
+	"image/png"
 	"io"
+	"math"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 
@@ -22,6 +28,9 @@ import (
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/txn"
+	"github.com/stashapp/stash/pkg/utils"
+
+	"golang.org/x/image/draw"
 )
 
 // Based on HereSphere_JSON_API_Version_1.txt
@@ -227,6 +236,7 @@ func (rs heresphereRoutes) Routes() chi.Router {
 
 			// r.Get("/hsp", rs.HeresphereVideoHsp)
 			r.Post("/event", rs.HeresphereVideoEvent)
+			r.Get("/thumbnail", rs.HeresphereThumbnail)
 		})
 	})
 
@@ -247,8 +257,12 @@ func getVrTag() string {
 }
 func getFavoriteTag() string {
 	varTag := "Favorite"
-	// TODO: This
+	// TODO: .
 	return varTag
+}
+func getHeatmapOverlayEnabled() bool {
+	// TODO: .
+	return true
 }
 
 /*
@@ -280,6 +294,113 @@ func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.R
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (rs heresphereRoutes) HeresphereThumbnail(w http.ResponseWriter, r *http.Request) {
+	scene := r.Context().Value(heresphereKey).(*models.Scene)
+	defaultUrl := addApiKey(urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetScreenshotURL())
+
+	if !getHeatmapOverlayEnabled() {
+		http.Redirect(w, r, defaultUrl, http.StatusSeeOther)
+		return
+	}
+
+	sceneHash := scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
+	filePath := manager.GetInstance().Paths.Scene.GetInteractiveHeatmapPath(sceneHash)
+
+	// Get cover image
+	var cover []byte
+	if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		sceneCoverGetter := (rs.sceneFinder).(manager.SceneCoverGetter)
+		var err error
+		cover, err = sceneCoverGetter.GetCover(ctx, scene.ID)
+		return err
+	}); err != nil {
+		logger.Debugf("Scene %v failed to get cover\n", scene.ID)
+		http.Redirect(w, r, defaultUrl, http.StatusSeeOther)
+		return
+	}
+
+	// Heatmap open
+	f, err := os.Open(filePath)
+	if err != nil {
+		logger.Debugf("Scene %v failed to open heatmap\n", scene.ID)
+		utils.ServeImage(w, r, cover)
+		return
+	}
+	defer f.Close()
+
+	// Cover decode
+	coverDec, err := jpeg.Decode(bytes.NewBuffer(cover))
+	if err != nil {
+		logger.Debugf("Scene %v failed to decode cover\n", scene.ID)
+		utils.ServeImage(w, r, cover)
+		return
+	}
+
+	// Heatmap decode
+	heatMapDec, err := png.Decode(f)
+	if err != nil {
+		logger.Debugf("Scene %v failed to decode heatmap\n", scene.ID)
+		utils.ServeImage(w, r, cover)
+		return
+	}
+
+	// Calculate the height for pasting heatMapDec onto coverDec
+	pasteHeight := int(float64(coverDec.Bounds().Dy()) * 0.15)
+
+	// Calculate the new width and height based on the desired ratio
+	newWidth := models.DefaultGthumbWidth
+	newHeight := int(float64(newWidth) * 9.0 / 16.0)
+
+	// Calculate the scaled dimensions of the coverDec image
+	// TODO: The ignores segment the image
+	// Consider adding back
+	scale := math.Min(float64(newWidth)/float64(coverDec.Bounds().Dx()), float64(newHeight /*-pasteHeight*/)/float64(coverDec.Bounds().Dy()))
+	scaledWidth := int(float64(coverDec.Bounds().Dx()) * scale)
+	scaledHeight := int(float64(coverDec.Bounds().Dy()) * scale)
+
+	// Calculate the position to center the scaled coverDec image
+	x := (newWidth - scaledWidth) / 2
+	y := (newHeight /*- pasteHeight*/ - scaledHeight) / 2
+
+	// Create a new image with the specified width and height
+	newImage := image.NewRGBA(image.Rect(0, 0, newWidth, newHeight))
+
+	// Resize and draw coverDec onto the new image
+	coverResized := image.NewRGBA(image.Rect(0, 0, scaledWidth, scaledHeight))
+	draw.CatmullRom.Scale(coverResized, coverResized.Bounds(), coverDec, coverDec.Bounds(), draw.Src, nil)
+
+	// Paste the resized coverDec onto the new image
+	draw.Draw(newImage, image.Rect(x, y, x+scaledWidth, y+scaledHeight), coverResized, coverResized.Bounds().Min, draw.Src)
+
+	// Calculate the destination rectangle for pasting heatMapDec
+	pasteRect := image.Rect(0, newHeight-pasteHeight, newWidth, newHeight)
+
+	// Resize heatMapDec to fit the paste rectangle
+	resizedHeatMap := image.NewRGBA(pasteRect)
+	draw.CatmullRom.Scale(resizedHeatMap, resizedHeatMap.Bounds(), heatMapDec, heatMapDec.Bounds(), draw.Over, nil)
+
+	// Paste heatMapDec onto the new image
+	draw.Draw(newImage, pasteRect, resizedHeatMap, resizedHeatMap.Bounds().Min, draw.Over)
+
+	// Encode overlayed image
+	var b bytes.Buffer
+	iw := bufio.NewWriter(&b)
+	if err := jpeg.Encode(iw, newImage, &jpeg.Options{Quality: 90}); err != nil {
+		logger.Debugf("Scene %v failed to encode image with heatmap overlaid\n", scene.ID)
+		utils.ServeImage(w, r, cover)
+		return
+	}
+
+	// Flush buffer
+	if err := iw.Flush(); err != nil {
+		logger.Debugf("Scene %v failed to flush encoded heatmap overlay\n", scene.ID)
+		utils.ServeImage(w, r, cover)
+		return
+	}
+
+	utils.ServeImage(w, r, b.Bytes())
 }
 
 /*
@@ -347,7 +468,7 @@ func (rs heresphereRoutes) HeresphereScan(w http.ResponseWriter, r *http.Request
 
 	// Create a JSON encoder for the response writer
 	w.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(processedScenes)
+	err := json.NewEncoder(w).Encode(HeresphereScanIndex{ScanData: processedScenes})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -600,6 +721,13 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 		processedTags = append(processedTags, genTag)
 	}
 
+	if len(scene.Director) > 0 {
+		genTag := HeresphereVideoTag{
+			Name: fmt.Sprintf("Director:%v", scene.Director),
+		}
+		processedTags = append(processedTags, genTag)
+	}
+
 	if scene.PlayCount > 0 {
 		genTag := HeresphereVideoTag{
 			Name: string(HeresphereCustomTagWatched),
@@ -626,7 +754,6 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 
 	// TODO: PlayCount tag (replace watch/unwatched?, just set to number like PlayCount:5 and let user edit)
 	// TODO: OCount tag
-	// TODO: Director
 	// TODO: More?
 
 	return processedTags
@@ -913,10 +1040,13 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 
 	// TODO: Use image lib to overlay heatmap?
 	processedScene = HeresphereVideoEntry{
-		Access:         HeresphereMember,
-		Title:          scene.GetTitle(),
-		Description:    scene.Details,
-		ThumbnailImage: addApiKey(urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetScreenshotURL()),
+		Access:      HeresphereMember,
+		Title:       scene.GetTitle(),
+		Description: scene.Details,
+		ThumbnailImage: addApiKey(fmt.Sprintf("%s/heresphere/%v/thumbnail",
+			GetBaseURL(r),
+			scene.ID,
+		)),
 		ThumbnailVideo: addApiKey(urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetStreamPreviewURL()),
 		DateAdded:      scene.CreatedAt.Format("2006-01-02"),
 		Duration:       60000.0,
@@ -978,6 +1108,7 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 /*
  * This auxiliary function finds if a login is needed, and auth is correct.
  */
+// TODO: Move to utils?
 func basicLogin(username string, password string) bool {
 	if config.GetInstance().HasCredentials() {
 		err := manager.GetInstance().SessionStore.LoginPlain(username, password)
@@ -1033,6 +1164,7 @@ func HeresphereHasValidToken(r *http.Request) bool {
 /*
  * This auxiliary function adds an auth token to a url
  */
+// TODO: Move this to utils
 func addApiKey(urlS string) string {
 	u, err := url.Parse(urlS)
 	if err != nil {
@@ -1042,7 +1174,9 @@ func addApiKey(urlS string) string {
 
 	if config.GetInstance().GetAPIKey() != "" {
 		v := u.Query()
-		v.Set("apikey", config.GetInstance().GetAPIKey())
+		if !v.Has("apikey") {
+			v.Set("apikey", config.GetInstance().GetAPIKey())
+		}
 		u.RawQuery = v.Encode()
 	}
 
