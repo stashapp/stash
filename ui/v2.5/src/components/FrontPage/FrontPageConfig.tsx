@@ -36,7 +36,6 @@ const FilterModeToMessageID = {
 };
 
 function filterTitle(intl: IntlShape, f: Pick<SavedFilter, "mode" | "name">) {
-  console.log(f.mode);
   return `${intl.formatMessage({ id: FilterModeToMessageID[f.mode] })}: ${
     f.name
   }`;
