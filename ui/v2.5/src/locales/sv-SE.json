@@ -596,7 +596,7 @@
         "heading": "Bilder",
         "options": {
           "create_image_clips_from_videos": {
-            "description": "När ett bibliotek har Videor avstängt kommer Videofiler (filer som slutar med Videofiltillägg) att skannas som Bildklipp",
+            "description": "När ett bibliotek har Videor avstängt kommer Videofiler (filer som slutar med Videofiltillägg) att skannas som Bildklipp.",
             "heading": "Skanna Videofiltillägg som Bildklipp"
           },
           "write_image_thumbnails": {
