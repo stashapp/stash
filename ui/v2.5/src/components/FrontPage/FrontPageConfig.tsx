@@ -32,10 +32,11 @@ const FilterModeToMessageID = {
   [FilterMode.Scenes]: "scenes",
   [FilterMode.Studios]: "studios",
   [FilterMode.Tags]: "tags",
-  [FilterMode.AppearsWith]: "performers",
+  [FilterMode.AppearsWith]: "appears_with",
 };
 
 function filterTitle(intl: IntlShape, f: Pick<SavedFilter, "mode" | "name">) {
+  console.log(f.mode);
   return `${intl.formatMessage({ id: FilterModeToMessageID[f.mode] })}: ${
     f.name
   }`;
@@ -97,7 +98,9 @@ const AddContentModal: React.FC<IAddSavedFilterModalProps> = ({
       candidates.findSavedFilters
         .filter((f) => {
           // markers not currently supported
+          // also remove appears with
           return (
+            f.mode !== FilterMode.AppearsWith &&
             f.mode !== FilterMode.SceneMarkers &&
             !existingSavedFilterIDs.includes(f.id)
           );

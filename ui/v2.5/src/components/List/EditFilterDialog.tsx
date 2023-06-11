@@ -200,7 +200,7 @@ const FilterModeToConfigKey = {
   [FilterMode.Scenes]: "scenes",
   [FilterMode.Studios]: "studios",
   [FilterMode.Tags]: "tags",
-  [FilterMode.AppearsWith]: "performers",
+  [FilterMode.AppearsWith]: "appearsWith",
 };
 
 function filterModeToConfigKey(filterMode: FilterMode) {
