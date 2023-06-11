@@ -9,11 +9,11 @@ import {
 import { StudioIsMissingCriterionOption } from "./criteria/is-missing";
 import { StashIDCriterionOption } from "./criteria/stash-ids";
 import { ParentStudiosCriterionOption } from "./criteria/studios";
-import { ListFilterOptions } from "./filter-options";
+import { ListFilterOptions, CreatedSortByOptions } from "./filter-options";
 import { DisplayMode } from "./types";
 
 const defaultSortBy = "name";
-const sortByOptions = ["name", "random", "rating"]
+const sortByOptions = ["name", "random", "rating", ...CreatedSortByOptions]
   .map(ListFilterOptions.createSortBy)
   .concat([
     {

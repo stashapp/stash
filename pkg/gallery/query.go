@@ -35,6 +35,17 @@ func CountByPerformerID(ctx context.Context, r CountQueryer, id int) (int, error
 	return r.QueryCount(ctx, filter, nil)
 }
 
+func CountByPerformers(ctx context.Context, r CountQueryer, ids []string) (int, error) {
+	filter := &models.GalleryFilterType{
+		Performers: &models.MultiCriterionInput{
+			Value:    ids,
+			Modifier: models.CriterionModifierIncludesAll,
+		},
+	}
+
+	return r.QueryCount(ctx, filter, nil)
+}
+
 func CountByStudioID(ctx context.Context, r CountQueryer, id int) (int, error) {
 	filter := &models.GalleryFilterType{
 		Studios: &models.HierarchicalMultiCriterionInput{

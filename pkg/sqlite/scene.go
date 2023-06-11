@@ -695,6 +695,25 @@ func (qb *SceneStore) CountByPerformerID(ctx context.Context, performerID int) (
 	return count(ctx, q)
 }
 
+func (qb *SceneStore) CountByPerformers(ctx context.Context, performers models.MultiCriterionInput) (int, error) {
+	query := `SELECT COUNT(1) AS count FROM (
+		SELECT performers_scenes.scene_id
+		FROM performers_scenes
+		WHERE performers_scenes.performer_id IN(?,?)
+		GROUP BY performers_scenes.scene_id
+		HAVING (COUNT(DISTINCT performers_scenes.performer_id) = ?)
+	)`
+
+	var args []interface{}
+	for _, arg := range performers.Value {
+		args = append(args, arg)
+	}
+
+	args = append(args, len(performers.Value))
+
+	return qb.runCountQuery(ctx, query, args)
+}
+
 func (qb *SceneStore) OCountByPerformerID(ctx context.Context, performerID int) (int, error) {
 	table := qb.table()
 	joinTable := scenesPerformersJoinTable

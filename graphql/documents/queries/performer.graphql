@@ -12,3 +12,13 @@ query FindPerformer($id: ID!) {
     ...PerformerData
   }
 }
+
+query FindPerformersAppearsWith($filter: FindFilterType, $performer_filter: PerformerFilterType) {
+  findPerformers(filter: $filter, performer_filter: $performer_filter) {
+    count
+    performers {
+      ...PerformerData
+      ...PerformerAppearsWithData
+    }
+  }
+}

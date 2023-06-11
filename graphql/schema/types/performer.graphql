@@ -60,6 +60,10 @@ type Performer {
   updated_at: Time!
   movie_count: Int
   movies: [Movie!]!
+  appears_with_scene_count: Int # Resolver
+  appears_with_image_count: Int # Resolver
+  appears_with_gallery_count: Int # Resolver
+  appears_with_movie_count: Int # Resolver
 }
 
 input PerformerCreateInput {

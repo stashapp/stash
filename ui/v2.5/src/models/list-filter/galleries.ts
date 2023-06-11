@@ -17,12 +17,12 @@ import {
   PerformerTagsCriterionOption,
   TagsCriterionOption,
 } from "./criteria/tags";
-import { ListFilterOptions, MediaSortByOptions } from "./filter-options";
+import { ListFilterOptions, MediaSortByOptions, CreatedSortByOptions } from "./filter-options";
 import { DisplayMode } from "./types";
 
 const defaultSortBy = "path";
 
-const sortByOptions = ["date", ...MediaSortByOptions]
+const sortByOptions = ["date", ...MediaSortByOptions, ...CreatedSortByOptions]
   .map(ListFilterOptions.createSortBy)
   .concat([
     {

@@ -383,6 +383,26 @@ WHERE performers_scenes.performer_id = ?
 	return qb.runCountQuery(ctx, query, args)
 }
 
+func (qb *movieQueryBuilder) CountByPerformers(ctx context.Context, performers models.MultiCriterionInput) (int, error) {
+	query := `SELECT COUNT(1) AS count FROM (
+		SELECT movies_scenes.movie_id
+		FROM movies_scenes
+		INNER JOIN performers_scenes ON movies_scenes.scene_id = performers_scenes.scene_id
+		WHERE performers_scenes.performer_id IN(?,?)
+		GROUP BY movies_scenes.movie_id
+		HAVING (COUNT(DISTINCT performers_scenes.performer_id) = ?)
+	)`
+
+	var args []interface{}
+	for _, arg := range performers.Value {
+		args = append(args, arg)
+	}
+
+	args = append(args, len(performers.Value))
+
+	return qb.runCountQuery(ctx, query, args)
+}
+
 func (qb *movieQueryBuilder) FindByStudioID(ctx context.Context, studioID int) ([]*models.Movie, error) {
 	query := `SELECT movies.*
 FROM movies

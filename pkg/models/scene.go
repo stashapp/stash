@@ -163,6 +163,7 @@ type SceneReader interface {
 	VideoFileLoader
 
 	CountByPerformerID(ctx context.Context, performerID int) (int, error)
+	CountByPerformers(ctx context.Context, performers MultiCriterionInput) (int, error)
 	OCountByPerformerID(ctx context.Context, performerID int) (int, error)
 	// FindByStudioID(studioID int) ([]*Scene, error)
 	FindByMovieID(ctx context.Context, movieID int) ([]*Scene, error)

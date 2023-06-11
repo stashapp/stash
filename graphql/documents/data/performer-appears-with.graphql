@@ -1,0 +1,6 @@
+fragment PerformerAppearsWithData on Performer {
+  appears_with_scene_count
+  appears_with_image_count
+  appears_with_gallery_count
+  appears_with_movie_count
+}

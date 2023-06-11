@@ -7,7 +7,7 @@ import {
   createMandatoryTimestampCriterionOption,
 } from "./criteria/criterion";
 import { TagIsMissingCriterionOption } from "./criteria/is-missing";
-import { ListFilterOptions } from "./filter-options";
+import { ListFilterOptions, CreatedSortByOptions } from "./filter-options";
 import { DisplayMode } from "./types";
 import {
   ChildTagsCriterionOption,
@@ -15,7 +15,7 @@ import {
 } from "./criteria/tags";
 
 const defaultSortBy = "name";
-const sortByOptions = ["name", "random"]
+const sortByOptions = ["name", "random", ...CreatedSortByOptions]
   .map(ListFilterOptions.createSortBy)
   .concat([
     {

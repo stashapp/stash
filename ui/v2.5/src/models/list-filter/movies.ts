@@ -8,12 +8,12 @@ import {
 import { MovieIsMissingCriterionOption } from "./criteria/is-missing";
 import { StudiosCriterionOption } from "./criteria/studios";
 import { PerformersCriterionOption } from "./criteria/performers";
-import { ListFilterOptions } from "./filter-options";
+import { ListFilterOptions, CreatedSortByOptions } from "./filter-options";
 import { DisplayMode } from "./types";
 
 const defaultSortBy = "name";
 
-const sortByOptions = ["name", "random", "date", "duration", "rating"]
+const sortByOptions = ["name", "random", "date", "duration", "rating", ...CreatedSortByOptions,]
   .map(ListFilterOptions.createSortBy)
   .concat([
     {

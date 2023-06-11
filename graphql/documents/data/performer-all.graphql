@@ -1,0 +1,4 @@
+fragment PerformerAllData on Performer {
+  ...PerformerData
+  ...PerformerAppearsWithData
+}

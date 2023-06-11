@@ -15,7 +15,7 @@ import { PerformerIsMissingCriterionOption } from "./criteria/is-missing";
 import { StashIDCriterionOption } from "./criteria/stash-ids";
 import { StudiosCriterionOption } from "./criteria/studios";
 import { TagsCriterionOption } from "./criteria/tags";
-import { ListFilterOptions } from "./filter-options";
+import { ListFilterOptions, CreatedSortByOptions } from "./filter-options";
 import { CriterionType, DisplayMode } from "./types";
 
 const defaultSortBy = "name";
@@ -27,6 +27,7 @@ const sortByOptions = [
   "random",
   "rating",
   "penis_length",
+  ...CreatedSortByOptions,
 ]
   .map(ListFilterOptions.createSortBy)
   .concat([

@@ -935,43 +935,51 @@ func performerStudiosCriterionHandler(qb *PerformerStore, studios *models.Hierar
 func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models.MultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if performers != nil {
-			formatMaps := []utils.StrFormatMap{
-				{
-					"primaryTable": performersScenesTable,
-					"joinTable":    performersScenesTable,
-					"primaryFK":    sceneIDColumn,
-				},
-				{
-					"primaryTable": performersImagesTable,
-					"joinTable":    performersImagesTable,
-					"primaryFK":    imageIDColumn,
-				},
-				{
-					"primaryTable": performersGalleriesTable,
-					"joinTable":    performersGalleriesTable,
-					"primaryFK":    galleryIDColumn,
-				},
-			}
 
 			if len(performers.Value) == '0' {
 				return
 			}
 
-			const derivedPerformerPerformersTable = "performer_performers"
+			formatMaps := []utils.StrFormatMap{
+				{
+					"table":         performersScenesTable,
+					"key":           sceneIDColumn,
+					"sceneColumn":   "COUNT(DISTINCT " + performersScenesTable + "." + sceneIDColumn + ")",
+					"imageColumn":   "NULL",
+					"galleryColumn": "NULL",
+				},
+				{
+					"table":         performersImagesTable,
+					"key":           imageIDColumn,
+					"sceneColumn":   "NULL",
+					"imageColumn":   "COUNT(DISTINCT " + performersImagesTable + "." + imageIDColumn + ")",
+					"galleryColumn": "NULL",
+				},
+				{
+					"table":         performersGalleriesTable,
+					"key":           galleryIDColumn,
+					"sceneColumn":   "NULL",
+					"imageColumn":   "NULL",
+					"galleryColumn": "COUNT(DISTINCT " + performersGalleriesTable + "." + galleryIDColumn + ")",
+				},
+			}
+
+			const derivedPerformerPerformersTable = "all_performers"
 
 			valuesClause := strings.Join(performers.Value, "),(")
 
 			f.addWith("performer(id) AS (VALUES(" + valuesClause + "))")
 
-			templStr := `SELECT {primaryTable}2.performer_id FROM {primaryTable}
-			INNER JOIN {primaryTable} AS {primaryTable}2 ON {primaryTable}.{primaryFK} = {primaryTable}2.{primaryFK}
-			INNER JOIN performer ON {primaryTable}.performer_id = performer.id
-			WHERE {primaryTable}2.performer_id != performer.id`
+			templStr :=
+				`SELECT {table}2.performer_id, {sceneColumn} AS scene_count, {imageColumn} AS image_count, {galleryColumn} AS gallery_count
+				FROM {table}
+				INNER JOIN {table} AS {table}2 ON {table}.{key} = {table}2.{key} 
+				INNER JOIN performer ON {table}.performer_id = performer.id
+				WHERE {table}2.performer_id != performer.id
+				GROUP BY {table}2.performer_id`
 
 			if performers.Modifier == models.CriterionModifierIncludesAll && len(performers.Value) > 1 {
-				templStr += `
-							GROUP BY {primaryTable}2.performer_id
-							HAVING(count(distinct {primaryTable}.performer_id) IS ` + strconv.Itoa(len(performers.Value)) + `)`
+				templStr += `HAVING(count(distinct {table}.performer_id) IS ` + strconv.Itoa(len(performers.Value)) + `)`
 			}
 
 			var unions []string
@@ -979,8 +987,10 @@ func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models
 				unions = append(unions, utils.StrFormat(templStr, c))
 			}
 
-			f.addWith(fmt.Sprintf("%s AS (%s)", derivedPerformerPerformersTable, strings.Join(unions, " UNION ")))
+			sel := "SELECT performer_id, GROUP_CONCAT(scene_count) AS scene_sum, GROUP_CONCAT(image_count) AS image_sum, GROUP_CONCAT(gallery_count) AS gallery_sum FROM ("
+			grp := ") GROUP BY performer_id"
 
+			f.addWith(fmt.Sprintf("%s AS (%s %s %s)", derivedPerformerPerformersTable, sel, strings.Join(unions, " UNION "), grp))
 			f.addInnerJoin(derivedPerformerPerformersTable, "", fmt.Sprintf("performers.id = %s.performer_id", derivedPerformerPerformersTable))
 		}
 	}
@@ -1007,11 +1017,16 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) st
 		sortQuery += getCountSort(performerTable, performersImagesTable, performerIDColumn, direction)
 	case "galleries_count":
 		sortQuery += getCountSort(performerTable, performersGalleriesTable, performerIDColumn, direction)
+	case "o_counter":
+		sortQuery += getMultiSumSort("o_counter", performerTable, sceneTable, performersScenesTable, imageTable, performersImagesTable, performerIDColumn, sceneIDColumn, imageIDColumn, direction)
+	case "appears_with_scenes":
+		sortQuery += getSort("all_performers.scene_sum", direction, "performers")
+	case "appears_with_images":
+		sortQuery += getSort("all_performers.image_sum", direction, "performers")
+	case "appears_with_galleries":
+		sortQuery += getSort("all_performers.gallery_sum", direction, "performers")
 	default:
 		sortQuery += getSort(sort, direction, "performers")
-	}
-	if sort == "o_counter" {
-		return getMultiSumSort("o_counter", performerTable, sceneTable, performersScenesTable, imageTable, performersImagesTable, performerIDColumn, sceneIDColumn, imageIDColumn, direction)
 	}
 
 	// Whatever the sorting, always use name/id as a final sort

@@ -32,7 +32,7 @@ export interface IPerformerCardExtraCriteria {
 }
 
 interface IPerformerCardProps {
-  performer: GQL.PerformerDataFragment;
+  performer: GQL.PerformerAllDataFragment;
   ageFromDate?: string;
   selecting?: boolean;
   selected?: boolean;
@@ -64,6 +64,11 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     { id: ageL10nId },
     { age, years_old: ageL10String }
   );
+
+  const scene_count = performer.appears_with_scene_count == null ? performer.scene_count : performer.appears_with_scene_count;
+  const image_count = performer.appears_with_image_count == null ? performer.image_count : performer.appears_with_image_count;
+  const gallery_count = performer.appears_with_gallery_count == null ? performer.gallery_count :performer.appears_with_gallery_count;
+  const movie_count = performer.appears_with_movie_count == null ? performer.movie_count : performer.appears_with_movie_count;
 
   const [updatePerformer] = usePerformerUpdate();
 
@@ -99,13 +104,13 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   }
 
   function maybeRenderScenesPopoverButton() {
-    if (!performer.scene_count) return;
+    if (!scene_count) return;
 
     return (
       <PopoverCountButton
         className="scene-count"
         type="scene"
-        count={performer.scene_count}
+        count={scene_count}
         url={NavUtils.makePerformerScenesUrl(
           performer,
           extraCriteria?.performer,
@@ -116,13 +121,13 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   }
 
   function maybeRenderImagesPopoverButton() {
-    if (!performer.image_count) return;
+    if (!image_count) return;
 
     return (
       <PopoverCountButton
         className="image-count"
         type="image"
-        count={performer.image_count}
+        count={image_count}
         url={NavUtils.makePerformerImagesUrl(
           performer,
           extraCriteria?.performer,
@@ -133,13 +138,13 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   }
 
   function maybeRenderGalleriesPopoverButton() {
-    if (!performer.gallery_count) return;
+    if (!gallery_count) return;
 
     return (
       <PopoverCountButton
         className="gallery-count"
         type="gallery"
-        count={performer.gallery_count}
+        count={gallery_count}
         url={NavUtils.makePerformerGalleriesUrl(
           performer,
           extraCriteria?.performer,
@@ -182,13 +187,13 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   }
 
   function maybeRenderMoviesPopoverButton() {
-    if (!performer.movie_count) return;
+    if (!movie_count) return;
 
     return (
       <PopoverCountButton
         className="movie-count"
         type="movie"
-        count={performer.movie_count}
+        count={movie_count}
         url={NavUtils.makePerformerMoviesUrl(
           performer,
           extraCriteria?.performer,

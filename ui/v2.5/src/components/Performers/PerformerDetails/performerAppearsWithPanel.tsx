@@ -28,6 +28,7 @@ export const PerformerAppearsWithPanel: React.FC<IPerformerDetailsProps> = ({
       filterHook={filterHook}
       extraCriteria={extraCriteria}
       alterQuery={active}
+      filterMode={GQL.FilterMode.AppearsWith}
     />
   );
 };

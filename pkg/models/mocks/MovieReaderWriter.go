@@ -79,6 +79,27 @@ func (_m *MovieReaderWriter) CountByPerformerID(ctx context.Context, performerID
 	return r0, r1
 }
 
+// CountByPerformers provides a mock function with given fields: ctx, performers
+func (_m *MovieReaderWriter) CountByPerformers(ctx context.Context, performers models.MultiCriterionInput) (int, error) {
+	ret := _m.Called(ctx, performers)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, models.MultiCriterionInput) int); ok {
+		r0 = rf(ctx, performers)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, models.MultiCriterionInput) error); ok {
+		r1 = rf(ctx, performers)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CountByStudioID provides a mock function with given fields: ctx, studioID
 func (_m *MovieReaderWriter) CountByStudioID(ctx context.Context, studioID int) (int, error) {
 	ret := _m.Called(ctx, studioID)

@@ -43,6 +43,7 @@ type MovieReader interface {
 	HasBackImage(ctx context.Context, movieID int) (bool, error)
 	FindByPerformerID(ctx context.Context, performerID int) ([]*Movie, error)
 	CountByPerformerID(ctx context.Context, performerID int) (int, error)
+	CountByPerformers(ctx context.Context, performers MultiCriterionInput) (int, error)
 	FindByStudioID(ctx context.Context, studioID int) ([]*Movie, error)
 	CountByStudioID(ctx context.Context, studioID int) (int, error)
 }

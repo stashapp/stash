@@ -16,6 +16,11 @@ export const MediaSortByOptions = [
   "random",
 ];
 
+export const CreatedSortByOptions = [
+  "created_at",
+  "updated_at",
+];
+
 export class ListFilterOptions {
   public readonly defaultSortBy: string = "";
   public readonly sortByOptions: ISortByOption[] = [];
@@ -36,11 +41,7 @@ export class ListFilterOptions {
     criterionOptions: CriterionOption[]
   ) {
     this.defaultSortBy = defaultSortBy;
-    this.sortByOptions = [
-      ...sortByOptions,
-      ListFilterOptions.createSortBy("created_at"),
-      ListFilterOptions.createSortBy("updated_at"),
-    ];
+    this.sortByOptions = sortByOptions;
     this.displayModeOptions = displayModeOptions;
     this.criterionOptions = criterionOptions;
   }

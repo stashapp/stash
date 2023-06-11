@@ -1,6 +1,6 @@
 import { PerformersCriterionOption } from "./criteria/performers";
 import { SceneTagsCriterionOption, TagsCriterionOption } from "./criteria/tags";
-import { ListFilterOptions } from "./filter-options";
+import { ListFilterOptions, CreatedSortByOptions } from "./filter-options";
 import { DisplayMode } from "./types";
 import {
   createDateCriterionOption,
@@ -14,6 +14,7 @@ const sortByOptions = [
   "scene_id",
   "random",
   "scenes_updated_at",
+  ...CreatedSortByOptions,
 ].map(ListFilterOptions.createSortBy);
 const displayModeOptions = [DisplayMode.Wall];
 const criterionOptions = [

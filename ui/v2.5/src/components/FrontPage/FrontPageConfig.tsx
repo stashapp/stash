@@ -32,6 +32,7 @@ const FilterModeToMessageID = {
   [FilterMode.Scenes]: "scenes",
   [FilterMode.Studios]: "studios",
   [FilterMode.Tags]: "tags",
+  [FilterMode.AppearsWith]: "performers",
 };
 
 function filterTitle(intl: IntlShape, f: Pick<SavedFilter, "mode" | "name">) {
