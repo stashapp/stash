@@ -596,7 +596,7 @@
         "heading": "Images",
         "options": {
           "create_image_clips_from_videos": {
-            "description": "Lorsqu'une bibliothèque a des vidéos désactivées, les fichiers vidéo (fichiers se terminant par une extension vidéo) seront analysés comme séquences d'images",
+            "description": "Lorsqu'une bibliothèque a des vidéos désactivées, les fichiers vidéo (fichiers se terminant par une extension vidéo) seront analysés comme séquences d'images.",
             "heading": "Analyser les extensions vidéo comme séquences d'images"
           },
           "write_image_thumbnails": {
