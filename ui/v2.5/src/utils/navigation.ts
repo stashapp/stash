@@ -20,6 +20,7 @@ import {
 import { GalleriesCriterion } from "src/models/list-filter/criteria/galleries";
 import { PhashCriterion } from "src/models/list-filter/criteria/phash";
 import { ILabeledId } from "src/models/list-filter/types";
+import { IntlShape } from "react-intl";
 
 function addExtraCriteria(
   dest: Criterion<CriterionValue>[],
@@ -345,6 +346,21 @@ const makeGalleryImagesUrl = (
   addExtraCriteria(filter.criteria, extraCriteria);
   return `/images?${filter.makeQueryParameters()}`;
 };
+
+export function handleUnsavedChanges(
+  intl: IntlShape,
+  basepath: string,
+  id?: string
+) {
+  return function (location: { pathname: string }) {
+    // #2291 - don't prompt if we're navigating within the gallery being edited
+    if (id !== undefined && location.pathname === `/${basepath}/${id}`) {
+      return true;
+    }
+
+    return intl.formatMessage({ id: "dialogs.unsaved_changes" });
+  };
+}
 
 const NavUtils = {
   makePerformerScenesUrl,
