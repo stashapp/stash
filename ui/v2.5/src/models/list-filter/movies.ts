@@ -13,7 +13,14 @@ import { DisplayMode } from "./types";
 
 const defaultSortBy = "name";
 
-const sortByOptions = ["name", "random", "date", "duration", "rating", ...CreatedSortByOptions,]
+const sortByOptions = [
+  "name",
+  "random",
+  "date",
+  "duration",
+  "rating",
+  ...CreatedSortByOptions,
+]
   .map(ListFilterOptions.createSortBy)
   .concat([
     {

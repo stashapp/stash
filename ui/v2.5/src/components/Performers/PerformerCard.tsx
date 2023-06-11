@@ -65,10 +65,22 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     { age, years_old: ageL10String }
   );
 
-  const scene_count = performer.appears_with_scene_count == null ? performer.scene_count : performer.appears_with_scene_count;
-  const image_count = performer.appears_with_image_count == null ? performer.image_count : performer.appears_with_image_count;
-  const gallery_count = performer.appears_with_gallery_count == null ? performer.gallery_count :performer.appears_with_gallery_count;
-  const movie_count = performer.appears_with_movie_count == null ? performer.movie_count : performer.appears_with_movie_count;
+  const scene_count =
+    performer.appears_with_scene_count == null
+      ? performer.scene_count
+      : performer.appears_with_scene_count;
+  const image_count =
+    performer.appears_with_image_count == null
+      ? performer.image_count
+      : performer.appears_with_image_count;
+  const gallery_count =
+    performer.appears_with_gallery_count == null
+      ? performer.gallery_count
+      : performer.appears_with_gallery_count;
+  const movie_count =
+    performer.appears_with_movie_count == null
+      ? performer.movie_count
+      : performer.appears_with_movie_count;
 
   const [updatePerformer] = usePerformerUpdate();
 

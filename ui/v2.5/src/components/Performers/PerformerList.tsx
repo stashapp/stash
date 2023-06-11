@@ -213,8 +213,8 @@ export const PerformerList: React.FC<IPerformerList> = ({
       />
     );
   }
-  
-  if (filterMode == GQL.FilterMode.AppearsWith){
+
+  if (filterMode == GQL.FilterMode.AppearsWith) {
     return (
       <AppearsWithPerformerItemList
         selectable
@@ -228,7 +228,7 @@ export const PerformerList: React.FC<IPerformerList> = ({
         renderDeleteDialog={renderDeleteDialog}
       />
     );
-  }else{
+  } else {
     return (
       <PerformerItemList
         selectable

@@ -17,7 +17,11 @@ import {
   PerformerTagsCriterionOption,
   TagsCriterionOption,
 } from "./criteria/tags";
-import { ListFilterOptions, MediaSortByOptions, CreatedSortByOptions } from "./filter-options";
+import {
+  ListFilterOptions,
+  MediaSortByOptions,
+  CreatedSortByOptions,
+} from "./filter-options";
 import { DisplayMode } from "./types";
 
 const defaultSortBy = "path";

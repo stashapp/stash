@@ -16,10 +16,7 @@ export const MediaSortByOptions = [
   "random",
 ];
 
-export const CreatedSortByOptions = [
-  "created_at",
-  "updated_at",
-];
+export const CreatedSortByOptions = ["created_at", "updated_at"];
 
 export class ListFilterOptions {
   public readonly defaultSortBy: string = "";

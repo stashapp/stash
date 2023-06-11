@@ -51,7 +51,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
     );
   };
 
-  const renderPerformerRow = (performer: GQL.PerformerAllDataFragment) => (    
+  const renderPerformerRow = (performer: GQL.PerformerAllDataFragment) => (
     <tr key={performer.id}>
       <td>
         <Link to={`/performers/${performer.id}`}>
@@ -84,17 +84,29 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
       </td>
       <td>
         <Link to={NavUtils.makePerformerScenesUrl(performer)}>
-          <h6>{performer.appears_with_scene_count == null ? performer.scene_count : performer.appears_with_scene_count}</h6>
+          <h6>
+            {performer.appears_with_scene_count == null
+              ? performer.scene_count
+              : performer.appears_with_scene_count}
+          </h6>
         </Link>
       </td>
       <td>
         <Link to={NavUtils.makePerformerImagesUrl(performer)}>
-          <h6>{performer.appears_with_image_count == null ? performer.image_count : performer.appears_with_image_count}</h6>
+          <h6>
+            {performer.appears_with_image_count == null
+              ? performer.image_count
+              : performer.appears_with_image_count}
+          </h6>
         </Link>
       </td>
       <td>
         <Link to={NavUtils.makePerformerGalleriesUrl(performer)}>
-          <h6>{performer.appears_with_gallery_count == null ? performer.gallery_count : performer.appears_with_gallery_count}</h6>
+          <h6>
+            {performer.appears_with_gallery_count == null
+              ? performer.gallery_count
+              : performer.appears_with_gallery_count}
+          </h6>
         </Link>
       </td>
       <td>

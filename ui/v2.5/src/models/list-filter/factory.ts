@@ -8,7 +8,7 @@ import { SceneMarkerListFilterOptions } from "./scene-markers";
 import { SceneListFilterOptions } from "./scenes";
 import { StudioListFilterOptions } from "./studios";
 import { TagListFilterOptions } from "./tags";
-import { AppearsWithListFilterOptions } from "./appears-with"
+import { AppearsWithListFilterOptions } from "./appears-with";
 
 export function getFilterOptions(mode: FilterMode): ListFilterOptions {
   switch (mode) {
