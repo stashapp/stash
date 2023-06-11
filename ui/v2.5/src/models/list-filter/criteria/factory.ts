@@ -84,6 +84,9 @@ export function makeCriteria(
     case "o_counter":
     case "interactive_speed":
     case "scene_count":
+    case "appears_with_scene_count":
+    case "appears_with_gallery_count":
+    case "appears_with_image_count":
     case "marker_count":
     case "image_count":
     case "gallery_count":

@@ -192,6 +192,12 @@ type PerformerFilterType struct {
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at
 	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
+	// Filter by scene count where performer appears with another performer
+	AppearsWithSceneCount *IntCriterionInput `json:"appears_with_scene_count"`
+	// Filter by image count where performer appears with another performer
+	AppearsWithImageCount *IntCriterionInput `json:"appears_with_image_count"`
+	// Filter by gallery count where performer appears with another performer
+	AppearsWithGalleryCount *IntCriterionInput `json:"appears_with_gallery_count"`
 }
 
 type PerformerFinder interface {

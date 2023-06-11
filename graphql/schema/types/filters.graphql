@@ -134,6 +134,12 @@ input PerformerFilterType {
   created_at: TimestampCriterionInput
   """Filter by last update time"""
   updated_at: TimestampCriterionInput
+  """Filter by appears with Scene count"""
+  appears_with_scene_count: IntCriterionInput
+  """Filter by appears with Image count"""
+  appears_with_image_count: IntCriterionInput
+  """Filter by appears with Gallery count"""
+  appears_with_gallery_count: IntCriterionInput
 }
 
 input SceneMarkerFilterType {

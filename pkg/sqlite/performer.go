@@ -653,6 +653,9 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 	query.handleCriterion(ctx, performerStudiosCriterionHandler(qb, filter.Studios))
 
 	query.handleCriterion(ctx, performerAppearsWithCriterionHandler(qb, filter.Performers))
+	query.handleCriterion(ctx, intCriterionHandler(filter.AppearsWithSceneCount, "all_performers.scene_sum", nil))
+	query.handleCriterion(ctx, intCriterionHandler(filter.AppearsWithImageCount, "all_performers.image_sum", nil))
+	query.handleCriterion(ctx, intCriterionHandler(filter.AppearsWithGalleryCount, "all_performers.gallery_sum", nil))
 
 	query.handleCriterion(ctx, performerTagCountCriterionHandler(qb, filter.TagCount))
 	query.handleCriterion(ctx, performerSceneCountCriterionHandler(qb, filter.SceneCount))
@@ -987,7 +990,7 @@ func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models
 				unions = append(unions, utils.StrFormat(templStr, c))
 			}
 
-			sel := "SELECT performer_id, GROUP_CONCAT(scene_count) AS scene_sum, GROUP_CONCAT(image_count) AS image_sum, GROUP_CONCAT(gallery_count) AS gallery_sum FROM ("
+			sel := "SELECT performer_id, CAST(GROUP_CONCAT(scene_count) AS INTEGER) AS scene_sum, CAST(GROUP_CONCAT(image_count) AS INTEGER) AS image_sum, CAST(GROUP_CONCAT(gallery_count) AS INTEGER) AS gallery_sum FROM ("
 			grp := ") GROUP BY performer_id"
 
 			f.addWith(fmt.Sprintf("%s AS (%s %s %s)", derivedPerformerPerformersTable, sel, strings.Join(unions, " UNION "), grp))
