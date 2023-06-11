@@ -264,6 +264,10 @@ func getHeatmapOverlayEnabled() bool {
 	// TODO: .
 	return true
 }
+func getHeatmapOverlayPercent() float32 {
+	// TODO: .
+	return 0.12
+}
 
 /*
  * This is a video playback event
@@ -348,10 +352,10 @@ func (rs heresphereRoutes) HeresphereThumbnail(w http.ResponseWriter, r *http.Re
 
 	// Calculate the new width and height based on the desired ratio
 	newWidth := models.DefaultGthumbWidth
-	newHeight := int(float64(newWidth) / 16.0 * 9.0)
+	newHeight := int(float32(newWidth) / 16.0 * 9.0)
 
 	// Calculate the height for pasting heatMapDec onto coverDec
-	pasteHeight := int(float64(newHeight) * 0.10)
+	pasteHeight := int(float32(newHeight) * getHeatmapOverlayPercent())
 
 	// Calculate the scaled dimensions of the coverDec image
 	// TODO: The ignores segment the image
