@@ -72,6 +72,18 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
   const [updateTag] = useTagUpdate();
   const [deleteTag] = useTagDestroy({ id: tag.id });
 
+  const showAllCounts = (configuration?.ui as IUIConfig)?.showChildTagContent;
+  const sceneCount =
+    (showAllCounts ? tag.scene_count_all : tag.scene_count) ?? 0;
+  const imageCount =
+    (showAllCounts ? tag.image_count_all : tag.image_count) ?? 0;
+  const galleryCount =
+    (showAllCounts ? tag.gallery_count_all : tag.gallery_count) ?? 0;
+  const sceneMarkerCount =
+    (showAllCounts ? tag.scene_marker_count_all : tag.scene_marker_count) ?? 0;
+  const performerCount =
+    (showAllCounts ? tag.performer_count_all : tag.performer_count) ?? 0;
+
   const activeTabKey =
     tab === "markers" ||
     tab === "images" ||
@@ -329,7 +341,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                   {intl.formatMessage({ id: "scenes" })}
                   <Counter
                     abbreviateCounter={abbreviateCounter}
-                    count={tag.scene_count ?? 0}
+                    count={sceneCount}
                   />
                 </React.Fragment>
               }
@@ -343,7 +355,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                   {intl.formatMessage({ id: "images" })}
                   <Counter
                     abbreviateCounter={abbreviateCounter}
-                    count={tag.image_count ?? 0}
+                    count={imageCount}
                   />
                 </React.Fragment>
               }
@@ -357,7 +369,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                   {intl.formatMessage({ id: "galleries" })}
                   <Counter
                     abbreviateCounter={abbreviateCounter}
-                    count={tag.gallery_count ?? 0}
+                    count={galleryCount}
                   />
                 </React.Fragment>
               }
@@ -374,7 +386,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                   {intl.formatMessage({ id: "markers" })}
                   <Counter
                     abbreviateCounter={abbreviateCounter}
-                    count={tag.scene_marker_count ?? 0}
+                    count={sceneMarkerCount}
                   />
                 </React.Fragment>
               }
@@ -388,7 +400,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                   {intl.formatMessage({ id: "performers" })}
                   <Counter
                     abbreviateCounter={abbreviateCounter}
-                    count={tag.performer_count ?? 0}
+                    count={performerCount}
                   />
                 </React.Fragment>
               }

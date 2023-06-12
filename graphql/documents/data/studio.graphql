@@ -17,10 +17,15 @@ fragment StudioData on Studio {
   ignore_auto_tag
   image_path
   scene_count
+  scene_count_all
   image_count
+  image_count_all
   gallery_count
+  gallery_count_all
   performer_count
+  performer_count_all
   movie_count
+  movie_count_all
   stash_ids {
     stash_id
     endpoint

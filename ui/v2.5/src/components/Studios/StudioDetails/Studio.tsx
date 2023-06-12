@@ -67,6 +67,19 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
   const [updateStudio] = useStudioUpdate();
   const [deleteStudio] = useStudioDestroy({ id: studio.id });
 
+  const showAllCounts = (configuration?.ui as IUIConfig)
+    ?.showChildStudioContent;
+  const sceneCount =
+    (showAllCounts ? studio.scene_count_all : studio.scene_count) ?? 0;
+  const galleryCount =
+    (showAllCounts ? studio.gallery_count_all : studio.gallery_count) ?? 0;
+  const imageCount =
+    (showAllCounts ? studio.image_count_all : studio.image_count) ?? 0;
+  const performerCount =
+    (showAllCounts ? studio.performer_count_all : studio.performer_count) ?? 0;
+  const movieCount =
+    (showAllCounts ? studio.movie_count_all : studio.movie_count) ?? 0;
+
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("e", () => toggleEditing());
@@ -257,7 +270,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
                 {intl.formatMessage({ id: "scenes" })}
                 <Counter
                   abbreviateCounter={abbreviateCounter}
-                  count={studio.scene_count ?? 0}
+                  count={sceneCount}
                 />
               </React.Fragment>
             }
@@ -274,7 +287,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
                 {intl.formatMessage({ id: "galleries" })}
                 <Counter
                   abbreviateCounter={abbreviateCounter}
-                  count={studio.gallery_count ?? 0}
+                  count={galleryCount}
                 />
               </React.Fragment>
             }
@@ -291,7 +304,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
                 {intl.formatMessage({ id: "images" })}
                 <Counter
                   abbreviateCounter={abbreviateCounter}
-                  count={studio.image_count ?? 0}
+                  count={imageCount}
                 />
               </React.Fragment>
             }
@@ -308,7 +321,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
                 {intl.formatMessage({ id: "performers" })}
                 <Counter
                   abbreviateCounter={abbreviateCounter}
-                  count={studio.performer_count ?? 0}
+                  count={performerCount}
                 />
               </React.Fragment>
             }
@@ -325,7 +338,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
                 {intl.formatMessage({ id: "movies" })}
                 <Counter
                   abbreviateCounter={abbreviateCounter}
-                  count={studio.movie_count ?? 0}
+                  count={movieCount}
                 />
               </React.Fragment>
             }
