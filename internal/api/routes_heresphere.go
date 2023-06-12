@@ -226,7 +226,7 @@ func (rs heresphereRoutes) Routes() chi.Router {
 		r.Get("/", rs.HeresphereIndex)
 		r.Head("/", rs.HeresphereIndex)
 
-		r.Post("/scan", rs.HeresphereScan)
+		// r.Post("/scan", rs.HeresphereScan)
 		r.Post("/auth", rs.HeresphereLoginToken)
 		r.Route("/{sceneId}", func(r chi.Router) {
 			r.Use(rs.HeresphereSceneCtx)
@@ -236,7 +236,7 @@ func (rs heresphereRoutes) Routes() chi.Router {
 
 			// r.Get("/hsp", rs.HeresphereVideoHsp)
 			r.Post("/event", rs.HeresphereVideoEvent)
-			r.Get("/thumbnail", rs.HeresphereThumbnail)
+			// r.Get("/thumbnail", rs.HeresphereThumbnail)
 		})
 	})
 
@@ -300,6 +300,10 @@ func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.R
 	w.WriteHeader(http.StatusOK)
 }
 
+// While this function works well enough
+// Heresphere likes to request a shitton of images
+// freezing the entire app
+// TODO: Fix that
 func (rs heresphereRoutes) HeresphereThumbnail(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(heresphereKey).(*models.Scene)
 	defaultUrl := addApiKey(urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetScreenshotURL())
@@ -1047,10 +1051,11 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		Access:      HeresphereMember,
 		Title:       scene.GetTitle(),
 		Description: scene.Details,
-		ThumbnailImage: addApiKey(fmt.Sprintf("%s/heresphere/%v/thumbnail",
+		/*ThumbnailImage: addApiKey(fmt.Sprintf("%s/heresphere/%v/thumbnail",
 			GetBaseURL(r),
 			scene.ID,
-		)),
+		)),*/
+		ThumbnailImage: addApiKey(urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetScreenshotURL()),
 		ThumbnailVideo: addApiKey(urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetStreamPreviewURL()),
 		DateAdded:      scene.CreatedAt.Format("2006-01-02"),
 		Duration:       60000.0,
