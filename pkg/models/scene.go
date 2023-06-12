@@ -178,6 +178,7 @@ type SceneReader interface {
 	Wall(ctx context.Context, q *string) ([]*Scene, error)
 	All(ctx context.Context) ([]*Scene, error)
 	Query(ctx context.Context, options SceneQueryOptions) (*SceneQueryResult, error)
+	QueryCount(ctx context.Context, sceneFilter *SceneFilterType, findFilter *FindFilterType) (int, error)
 	GetCover(ctx context.Context, sceneID int) ([]byte, error)
 	HasCover(ctx context.Context, sceneID int) (bool, error)
 }

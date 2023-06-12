@@ -15,11 +15,34 @@ type CountQueryer interface {
 	QueryCount(ctx context.Context, galleryFilter *models.PerformerFilterType, findFilter *models.FindFilterType) (int, error)
 }
 
-func CountByStudioID(ctx context.Context, r CountQueryer, id int) (int, error) {
+func CountByStudioID(ctx context.Context, r CountQueryer, id int, all bool) (int, error) {
+	depth := 0
+	if all {
+		depth = -1
+	}
+
 	filter := &models.PerformerFilterType{
 		Studios: &models.HierarchicalMultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
 			Modifier: models.CriterionModifierIncludes,
+			Depth:    &depth,
+		},
+	}
+
+	return r.QueryCount(ctx, filter, nil)
+}
+
+func CountByTagID(ctx context.Context, r CountQueryer, id int, all bool) (int, error) {
+	depth := 0
+	if all {
+		depth = -1
+	}
+
+	filter := &models.PerformerFilterType{
+		Tags: &models.HierarchicalMultiCriterionInput{
+			Value:    []string{strconv.Itoa(id)},
+			Modifier: models.CriterionModifierIncludes,
+			Depth:    &depth,
 		},
 	}
 

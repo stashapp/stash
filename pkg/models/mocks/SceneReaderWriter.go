@@ -731,6 +731,27 @@ func (_m *SceneReaderWriter) Query(ctx context.Context, options models.SceneQuer
 	return r0, r1
 }
 
+// QueryCount provides a mock function with given fields: ctx, sceneFilter, findFilter
+func (_m *SceneReaderWriter) QueryCount(ctx context.Context, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) (int, error) {
+	ret := _m.Called(ctx, sceneFilter, findFilter)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, *models.SceneFilterType, *models.FindFilterType) int); ok {
+		r0 = rf(ctx, sceneFilter, findFilter)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *models.SceneFilterType, *models.FindFilterType) error); ok {
+		r1 = rf(ctx, sceneFilter, findFilter)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ResetOCounter provides a mock function with given fields: ctx, id
 func (_m *SceneReaderWriter) ResetOCounter(ctx context.Context, id int) (int, error) {
 	ret := _m.Called(ctx, id)

@@ -252,8 +252,7 @@ func (qb *SceneMarkerStore) makeFilter(ctx context.Context, sceneMarkerFilter *m
 
 	return query
 }
-
-func (qb *SceneMarkerStore) Query(ctx context.Context, sceneMarkerFilter *models.SceneMarkerFilterType, findFilter *models.FindFilterType) ([]*models.SceneMarker, int, error) {
+func (qb *SceneMarkerStore) makeQuery(ctx context.Context, sceneMarkerFilter *models.SceneMarkerFilterType, findFilter *models.FindFilterType) (*queryBuilder, error) {
 	if sceneMarkerFilter == nil {
 		sceneMarkerFilter = &models.SceneMarkerFilterType{}
 	}
@@ -272,10 +271,20 @@ func (qb *SceneMarkerStore) Query(ctx context.Context, sceneMarkerFilter *models
 	filter := qb.makeFilter(ctx, sceneMarkerFilter)
 
 	if err := query.addFilter(filter); err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
 	query.sortAndPagination = qb.getSceneMarkerSort(&query, findFilter) + getPagination(findFilter)
+
+	return &query, nil
+}
+
+func (qb *SceneMarkerStore) Query(ctx context.Context, sceneMarkerFilter *models.SceneMarkerFilterType, findFilter *models.FindFilterType) ([]*models.SceneMarker, int, error) {
+	query, err := qb.makeQuery(ctx, sceneMarkerFilter, findFilter)
+	if err != nil {
+		return nil, 0, err
+	}
+
 	idsResult, countResult, err := query.executeFind(ctx)
 	if err != nil {
 		return nil, 0, err
@@ -287,6 +296,15 @@ func (qb *SceneMarkerStore) Query(ctx context.Context, sceneMarkerFilter *models
 	}
 
 	return sceneMarkers, countResult, nil
+}
+
+func (qb *SceneMarkerStore) QueryCount(ctx context.Context, sceneMarkerFilter *models.SceneMarkerFilterType, findFilter *models.FindFilterType) (int, error) {
+	query, err := qb.makeQuery(ctx, sceneMarkerFilter, findFilter)
+	if err != nil {
+		return 0, err
+	}
+
+	return query.executeCount(ctx)
 }
 
 func sceneMarkerTagIDCriterionHandler(qb *SceneMarkerStore, tagID *string) criterionHandlerFunc {
