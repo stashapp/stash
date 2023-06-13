@@ -394,9 +394,7 @@ const ScenePage: React.FC<IProps> = ({
           <Nav.Item>
             <Nav.Link eventKey="scene-file-info-panel">
               <FormattedMessage id="file_info" />
-              {scene.files.length > 1 && (
-                <Counter count={scene.files.length ?? 0} />
-              )}
+              <Counter count={scene.files.length} hideZero hideOne />
             </Nav.Link>
           </Nav.Item>
           <Nav.Item>

@@ -266,13 +266,14 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           <Tab
             eventKey="scenes"
             title={
-              <React.Fragment>
+              <>
                 {intl.formatMessage({ id: "scenes" })}
                 <Counter
                   abbreviateCounter={abbreviateCounter}
                   count={sceneCount}
+                  hideZero
                 />
-              </React.Fragment>
+              </>
             }
           >
             <StudioScenesPanel
@@ -283,13 +284,14 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           <Tab
             eventKey="galleries"
             title={
-              <React.Fragment>
+              <>
                 {intl.formatMessage({ id: "galleries" })}
                 <Counter
                   abbreviateCounter={abbreviateCounter}
                   count={galleryCount}
+                  hideZero
                 />
-              </React.Fragment>
+              </>
             }
           >
             <StudioGalleriesPanel
@@ -300,13 +302,14 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           <Tab
             eventKey="images"
             title={
-              <React.Fragment>
+              <>
                 {intl.formatMessage({ id: "images" })}
                 <Counter
                   abbreviateCounter={abbreviateCounter}
                   count={imageCount}
+                  hideZero
                 />
-              </React.Fragment>
+              </>
             }
           >
             <StudioImagesPanel
@@ -317,13 +320,14 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           <Tab
             eventKey="performers"
             title={
-              <React.Fragment>
+              <>
                 {intl.formatMessage({ id: "performers" })}
                 <Counter
                   abbreviateCounter={abbreviateCounter}
                   count={performerCount}
+                  hideZero
                 />
-              </React.Fragment>
+              </>
             }
           >
             <StudioPerformersPanel
@@ -334,13 +338,14 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           <Tab
             eventKey="movies"
             title={
-              <React.Fragment>
+              <>
                 {intl.formatMessage({ id: "movies" })}
                 <Counter
                   abbreviateCounter={abbreviateCounter}
                   count={movieCount}
+                  hideZero
                 />
-              </React.Fragment>
+              </>
             }
           >
             <StudioMoviesPanel
@@ -351,13 +356,14 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           <Tab
             eventKey="childstudios"
             title={
-              <React.Fragment>
+              <>
                 {intl.formatMessage({ id: "subsidiary_studios" })}
                 <Counter
                   abbreviateCounter={false}
-                  count={studio.child_studios?.length ?? 0}
+                  count={studio.child_studios.length}
+                  hideZero
                 />
-              </React.Fragment>
+              </>
             }
           >
             <StudioChildrenPanel

@@ -337,13 +337,14 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
             <Tab
               eventKey="scenes"
               title={
-                <React.Fragment>
+                <>
                   {intl.formatMessage({ id: "scenes" })}
                   <Counter
                     abbreviateCounter={abbreviateCounter}
                     count={sceneCount}
+                    hideZero
                   />
-                </React.Fragment>
+                </>
               }
             >
               <TagScenesPanel active={activeTabKey == "scenes"} tag={tag} />
@@ -351,13 +352,14 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
             <Tab
               eventKey="images"
               title={
-                <React.Fragment>
+                <>
                   {intl.formatMessage({ id: "images" })}
                   <Counter
                     abbreviateCounter={abbreviateCounter}
                     count={imageCount}
+                    hideZero
                   />
-                </React.Fragment>
+                </>
               }
             >
               <TagImagesPanel active={activeTabKey == "images"} tag={tag} />
@@ -365,13 +367,14 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
             <Tab
               eventKey="galleries"
               title={
-                <React.Fragment>
+                <>
                   {intl.formatMessage({ id: "galleries" })}
                   <Counter
                     abbreviateCounter={abbreviateCounter}
                     count={galleryCount}
+                    hideZero
                   />
-                </React.Fragment>
+                </>
               }
             >
               <TagGalleriesPanel
@@ -382,13 +385,14 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
             <Tab
               eventKey="markers"
               title={
-                <React.Fragment>
+                <>
                   {intl.formatMessage({ id: "markers" })}
                   <Counter
                     abbreviateCounter={abbreviateCounter}
                     count={sceneMarkerCount}
+                    hideZero
                   />
-                </React.Fragment>
+                </>
               }
             >
               <TagMarkersPanel active={activeTabKey == "markers"} tag={tag} />
@@ -396,13 +400,14 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
             <Tab
               eventKey="performers"
               title={
-                <React.Fragment>
+                <>
                   {intl.formatMessage({ id: "performers" })}
                   <Counter
                     abbreviateCounter={abbreviateCounter}
                     count={performerCount}
+                    hideZero
                   />
-                </React.Fragment>
+                </>
               }
             >
               <TagPerformersPanel
