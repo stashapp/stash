@@ -14,13 +14,13 @@ The scan task accepts the following options:
 
 | Option | Description |
 |--------|-------------|
+| Generate scene covers | Generates scene covers for video files. |
 | Generate previews | Generates video previews which play when hovering over a scene. |
 | Generate animated image previews | Generates animated webp previews. Only required if the Preview Type is set to Animated Image. Requires Generate previews to be enabled. |
-| Generate sprites | Generates sprites for the scene scrubber. |
+| Generate scrubber sprites | Generates sprites for the scene scrubber. |
 | Generate perceptual hashes | Generates perceptual hashes for scene deduplication and identification. |
 | Generate thumbnails for images | Generates thumbnails for image files. | 
-| Don't include file extension in title | By default, scenes, images and galleries have their title created using the file basename. When the flag is enabled, the file extension is stripped when setting the title. |
-| Set name, date, details from embedded file metadata. | Parse the video file metadata (where supported) and set the scene attributes accordingly. It has previously been noted that this information is frequently incorrect, so only use this option where you are certain that the metadata is correct in the files. |
+| Generate previews for image clips | Generates a gif/looping video as thumbnail for image clips/gifs. |
 
 # Auto Tagging
 See the [Auto Tagging](/help/AutoTagging.md) page.
@@ -42,6 +42,7 @@ The generate task accepts the following options:
 
 | Option | Description |
 |--------|-------------|
+| Scene covers | Generates scene covers for video files. |
 | Previews | Generates video previews which play when hovering over a scene. |
 | Animated image previews | Generates animated webp previews. Only required if the Preview Type is set to Animated Image. Requires Generate previews to be enabled. |
 | Scene Scrubber Sprites | Generates sprites for the scene scrubber. |
@@ -49,7 +50,9 @@ The generate task accepts the following options:
 | Marker Animated Image Previews | Generates animated webp previews for markers. Only required if the Preview Type is set to Animated Image. Requires Markers to be enabled. |
 | Marker Screenshots | Generates static JPG images for markers. Only required if Preview Type is set to Static Image. Requires Marker Previews to be enabled. | 
 | Transcodes | MP4 conversions of unsupported video formats. Allows direct streaming instead of live transcoding. |
-| Perceptual hashes | Generates perceptual hashes for scene deduplication and identification. |
+| Perceptual hashes (for deduplication) | Generates perceptual hashes for scene deduplication and identification. |
+| Generate heatmaps and speeds for interactive scenes | Generates heatmaps and speeds for interactive scenes. |
+| Image Clip Previews | Generates a gif/looping video as thumbnail for image clips/gifs. |
 | Overwrite existing generated files | By default, where a generated file exists, it is not regenerated. When this flag is enabled, then the generated files are regenerated. |
 
 ## Transcodes

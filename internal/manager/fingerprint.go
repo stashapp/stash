@@ -63,7 +63,7 @@ func (c *fingerprintCalculator) CalculateFingerprints(f *file.BaseFile, o file.O
 	var ret []file.Fingerprint
 	calculateMD5 := true
 
-	if isVideo(f.Basename) {
+	if useAsVideo(f.Path) {
 		var (
 			fp  *file.Fingerprint
 			err error

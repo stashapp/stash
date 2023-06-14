@@ -10,7 +10,7 @@ import TextUtils from "src/utils/text";
 import { TextField, URLField } from "src/utils/field";
 
 interface IFileInfoPanelProps {
-  file: GQL.ImageFileDataFragment;
+  file: GQL.ImageFileDataFragment | GQL.VideoFileDataFragment;
   primary?: boolean;
   ofMany?: boolean;
   onSetPrimaryFile?: () => void;
@@ -110,17 +110,17 @@ export const ImageFileInfoPanel: React.FC<IImageFileInfoPanelProps> = (
 
   const [loading, setLoading] = useState(false);
   const [deletingFile, setDeletingFile] = useState<
-    GQL.ImageFileDataFragment | undefined
+    GQL.ImageFileDataFragment | GQL.VideoFileDataFragment | undefined
   >();
 
-  if (props.image.files.length === 0) {
+  if (props.image.visual_files.length === 0) {
     return <></>;
   }
 
-  if (props.image.files.length === 1) {
+  if (props.image.visual_files.length === 1) {
     return (
       <>
-        <FileInfoPanel file={props.image.files[0]} />
+        <FileInfoPanel file={props.image.visual_files[0]} />
 
         {props.image.url ? (
           <dl className="container image-file-info details-list">
@@ -150,14 +150,14 @@ export const ImageFileInfoPanel: React.FC<IImageFileInfoPanelProps> = (
   }
 
   return (
-    <Accordion defaultActiveKey={props.image.files[0].id}>
+    <Accordion defaultActiveKey={props.image.visual_files[0].id}>
       {deletingFile && (
         <DeleteFilesDialog
           onClose={() => setDeletingFile(undefined)}
           selected={[deletingFile]}
         />
       )}
-      {props.image.files.map((file, index) => (
+      {props.image.visual_files.map((file, index) => (
         <Card key={file.id} className="image-file-card">
           <Accordion.Toggle as={Card.Header} eventKey={file.id}>
             <TruncatedText text={TextUtils.fileNameFromPath(file.path)} />

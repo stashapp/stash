@@ -78,3 +78,8 @@ func (gp *generatedPaths) GetThumbnailPath(checksum string, width int) string {
 	fname := fmt.Sprintf("%s_%d.jpg", checksum, width)
 	return filepath.Join(gp.Thumbnails, fsutil.GetIntraDir(checksum, thumbDirDepth, thumbDirLength), fname)
 }
+
+func (gp *generatedPaths) GetClipPreviewPath(checksum string, width int) string {
+	fname := fmt.Sprintf("%s_%d.webm", checksum, width)
+	return filepath.Join(gp.Thumbnails, fsutil.GetIntraDir(checksum, thumbDirDepth, thumbDirLength), fname)
+}

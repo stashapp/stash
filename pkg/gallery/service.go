@@ -18,6 +18,11 @@ type Repository interface {
 	Destroy(ctx context.Context, id int) error
 	models.FileLoader
 	ImageUpdater
+	PartialUpdater
+}
+
+type PartialUpdater interface {
+	UpdatePartial(ctx context.Context, id int, updatedGallery models.GalleryPartial) (*models.Gallery, error)
 }
 
 type ImageFinder interface {

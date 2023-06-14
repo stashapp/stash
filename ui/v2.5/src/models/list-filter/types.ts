@@ -18,8 +18,14 @@ export interface ILabeledValue {
   value: string;
 }
 
+export interface ILabeledValueListValue {
+  items: ILabeledId[];
+  excluded: ILabeledId[];
+}
+
 export interface IHierarchicalLabelValue {
   items: ILabeledId[];
+  excluded: ILabeledId[];
   depth: number;
 }
 
@@ -46,6 +52,11 @@ export interface IDateValue {
 export interface ITimestampValue {
   value: string;
   value2: string | undefined;
+}
+
+export interface IPhashDistanceValue {
+  value: string;
+  distance?: number;
 }
 
 export function criterionIsHierarchicalLabelValue(
@@ -129,6 +140,8 @@ export type CriterionType =
   | "weight"
   | "measurements"
   | "fake_tits"
+  | "penis_length"
+  | "circumcised"
   | "career_length"
   | "tattoos"
   | "piercings"

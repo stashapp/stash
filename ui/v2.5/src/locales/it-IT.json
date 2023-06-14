@@ -21,6 +21,7 @@
     "confirm": "Conferma",
     "continue": "Continua",
     "create": "Crea",
+    "create_chapters": "Crea Capitolo",
     "create_entity": "Crea {entityType}",
     "create_marker": "Crea Marker",
     "created_entity": "Creata/o {entity_type}: {entity_name}",
@@ -124,14 +125,20 @@
   "aliases": "Alias",
   "all": "tutto",
   "also_known_as": "Anche conosciuto/a come",
+  "appears_with": "Appare Con",
   "ascending": "Ascendente",
   "average_resolution": "Risoluzione Media",
   "between_and": "e",
   "birth_year": "Anno di Nascita",
   "birthdate": "Compleanno",
   "bitrate": "Bit Rate",
+  "blobs_storage_type": {
+    "database": "Database",
+    "filesystem": "Filesystem"
+  },
   "captions": "Sottotitoli",
   "career_length": "Lunghezza Carriera",
+  "chapters": "Capitoli",
   "component_tagger": {
     "config": {
       "active_instance": "Istanza stash-box Attiva:",
@@ -185,6 +192,7 @@
       "latest_version": "Ultima Versione",
       "latest_version_build_hash": "Hash dell'ultima Versione:",
       "new_version_notice": "[NUOVA]",
+      "release_date": "Data di rilascio:",
       "stash_discord": "Unisciti al nostro canale {url}",
       "stash_home": "Stash homepage su {url}",
       "stash_open_collective": "Supportaci attraverso {url}",
@@ -224,7 +232,8 @@
       "server_display_name": "Nome del Server",
       "server_display_name_desc": "Nome visualizzato per il server DLNA. Predefinito come {server_name} se lasciato vuoto.",
       "successfully_cancelled_temporary_behaviour": "Funzionamento temporaneo cancellato con successo",
-      "until_restart": "fino al riavvio"
+      "until_restart": "fino al riavvio",
+      "video_sort_order": "Ordinamento dei video di default"
     },
     "general": {
       "auth": {
@@ -254,6 +263,9 @@
       "backup_directory_path": {
         "description": "Percorso della directory per i file di backup del database SQLite",
         "heading": "Percorso Directory di Backup"
+      },
+      "blobs_path": {
+        "heading": "Percorso dei dati binari"
       },
       "cache_location": "Percorso della Cartella cache",
       "cache_path_head": "Percorso Cache",

@@ -290,6 +290,13 @@ export const SettingsInterfacePanel: React.FC = () => {
           checked={ui.trackActivity ?? undefined}
           onChange={(v) => saveUI({ trackActivity: v })}
         />
+        <StringSetting
+          id="vr-tag"
+          headingID="config.ui.scene_player.options.vr_tag.heading"
+          subHeadingID="config.ui.scene_player.options.vr_tag.description"
+          value={ui.vrTag ?? undefined}
+          onChange={(v) => saveUI({ vrTag: v })}
+        />
         <ModalSetting<number>
           id="ignore-interval"
           headingID="config.ui.minimum_play_percent.heading"

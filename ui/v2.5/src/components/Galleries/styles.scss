@@ -26,6 +26,10 @@
     overflow: hidden;
     padding: 0;
     padding-bottom: 1rem;
+
+    @media (max-width: 576px) {
+      width: 100%;
+    }
   }
 
   .card-section {

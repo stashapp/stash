@@ -176,7 +176,7 @@ func (qb *movieQueryBuilder) makeFilter(ctx context.Context, movieFilter *models
 	query.handleCriterion(ctx, floatIntCriterionHandler(movieFilter.Duration, "movies.duration", nil))
 	query.handleCriterion(ctx, movieIsMissingCriterionHandler(qb, movieFilter.IsMissing))
 	query.handleCriterion(ctx, stringCriterionHandler(movieFilter.URL, "movies.url"))
-	query.handleCriterion(ctx, movieStudioCriterionHandler(qb, movieFilter.Studios))
+	query.handleCriterion(ctx, studioCriterionHandler(movieTable, movieFilter.Studios))
 	query.handleCriterion(ctx, moviePerformersCriterionHandler(qb, movieFilter.Performers))
 	query.handleCriterion(ctx, dateCriterionHandler(movieFilter.Date, "movies.date"))
 	query.handleCriterion(ctx, timestampCriterionHandler(movieFilter.CreatedAt, "movies.created_at"))
@@ -239,19 +239,6 @@ func movieIsMissingCriterionHandler(qb *movieQueryBuilder, isMissing *string) cr
 	}
 }
 
-func movieStudioCriterionHandler(qb *movieQueryBuilder, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	h := hierarchicalMultiCriterionHandlerBuilder{
-		tx: qb.tx,
-
-		primaryTable: movieTable,
-		foreignTable: studioTable,
-		foreignFK:    studioIDColumn,
-		parentFK:     "parent_id",
-	}
-
-	return h.handler(studios)
-}
-
 func moviePerformersCriterionHandler(qb *movieQueryBuilder, performers *models.MultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if performers != nil {
@@ -310,14 +297,17 @@ func (qb *movieQueryBuilder) getMovieSort(findFilter *models.FindFilterType) str
 		direction = findFilter.GetDirection()
 	}
 
+	sortQuery := ""
 	switch sort {
-	case "name": // #943 - override name sorting to use natural sort
-		return " ORDER BY " + getColumn("movies", sort) + " COLLATE NATURAL_CS " + direction
 	case "scenes_count": // generic getSort won't work for this
-		return getCountSort(movieTable, moviesScenesTable, movieIDColumn, direction)
+		sortQuery += getCountSort(movieTable, moviesScenesTable, movieIDColumn, direction)
 	default:
-		return getSort(sort, direction, "movies")
+		sortQuery += getSort(sort, direction, "movies")
 	}
+
+	// Whatever the sorting, always use name/id as a final sort
+	sortQuery += ", COALESCE(movies.name, movies.id) COLLATE NATURAL_CI ASC"
+	return sortQuery
 }
 
 func (qb *movieQueryBuilder) queryMovie(ctx context.Context, query string, args []interface{}) (*models.Movie, error) {
@@ -358,6 +348,10 @@ func (qb *movieQueryBuilder) destroyImages(ctx context.Context, movieID int) err
 
 func (qb *movieQueryBuilder) GetFrontImage(ctx context.Context, movieID int) ([]byte, error) {
 	return qb.GetImage(ctx, movieID, movieFrontImageBlobColumn)
+}
+
+func (qb *movieQueryBuilder) HasFrontImage(ctx context.Context, movieID int) (bool, error) {
+	return qb.HasImage(ctx, movieID, movieFrontImageBlobColumn)
 }
 
 func (qb *movieQueryBuilder) GetBackImage(ctx context.Context, movieID int) ([]byte, error) {

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { Button } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
 import Mousetrap from "mousetrap";
@@ -12,6 +13,7 @@ import { useParams, useHistory } from "react-router-dom";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { useLightbox } from "src/hooks/Lightbox/hooks";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { useToast } from "src/hooks/Toast";
 import { MovieScenesPanel } from "./MovieScenesPanel";
@@ -37,6 +39,43 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   const [backImage, setBackImage] = useState<string | null>();
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
+  const defaultImage =
+    movie.front_image_path && movie.front_image_path.includes("default=true")
+      ? true
+      : false;
+
+  const lightboxImages = useMemo(() => {
+    const covers = [
+      ...(movie.front_image_path && !defaultImage
+        ? [
+            {
+              paths: {
+                thumbnail: movie.front_image_path,
+                image: movie.front_image_path,
+              },
+            },
+          ]
+        : []),
+      ...(movie.back_image_path
+        ? [
+            {
+              paths: {
+                thumbnail: movie.back_image_path,
+                image: movie.back_image_path,
+              },
+            },
+          ]
+        : []),
+    ];
+    return covers;
+  }, [movie.front_image_path, movie.back_image_path, defaultImage]);
+
+  const index = lightboxImages.length;
+
+  const showLightbox = useLightbox({
+    images: lightboxImages,
+  });
+
   const [updateMovie, { loading: updating }] = useMovieUpdate();
   const [deleteMovie, { loading: deleting }] = useMovieDestroy({
     id: movie.id,
@@ -44,7 +83,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
 
   // set up hotkeys
   useEffect(() => {
-    Mousetrap.bind("e", () => setIsEditing(true));
+    Mousetrap.bind("e", () => toggleEditing());
     Mousetrap.bind("d d", () => {
       onDelete();
     });
@@ -56,22 +95,21 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   });
 
   async function onSave(input: GQL.MovieCreateInput) {
-    try {
-      const result = await updateMovie({
-        variables: {
-          input: {
-            id: movie.id,
-            ...input,
-          },
+    await updateMovie({
+      variables: {
+        input: {
+          id: movie.id,
+          ...input,
         },
-      });
-      if (result.data?.movieUpdate) {
-        setIsEditing(false);
-        history.push(`/movies/${result.data.movieUpdate.id}`);
-      }
-    } catch (e) {
-      Toast.error(e);
-    }
+      },
+    });
+    toggleEditing(false);
+    Toast.success({
+      content: intl.formatMessage(
+        { id: "toast.updated_entity" },
+        { entity: intl.formatMessage({ id: "movie" }).toLocaleLowerCase() }
+      ),
+    });
   }
 
   async function onDelete() {
@@ -85,8 +123,12 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
     history.push(`/movies`);
   }
 
-  function onToggleEdit() {
-    setIsEditing(!isEditing);
+  function toggleEditing(value?: boolean) {
+    if (value !== undefined) {
+      setIsEditing(value);
+    } else {
+      setIsEditing((e) => !e);
+    }
     setFrontImage(undefined);
     setBackImage(undefined);
   }
@@ -120,18 +162,30 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   function renderFrontImage() {
     let image = movie.front_image_path;
     if (isEditing) {
-      if (frontImage === null) {
-        image = `${image}&default=true`;
+      if (frontImage === null && image) {
+        const imageURL = new URL(image);
+        imageURL.searchParams.set("default", "true");
+        image = imageURL.toString();
       } else if (frontImage) {
         image = frontImage;
       }
     }
 
-    if (image) {
+    if (image && defaultImage) {
       return (
         <div className="movie-image-container">
           <img alt="Front Cover" src={image} />
         </div>
+      );
+    } else if (image) {
+      return (
+        <Button
+          className="movie-image-container"
+          variant="link"
+          onClick={() => showLightbox()}
+        >
+          <img alt="Front Cover" src={image} />
+        </Button>
       );
     }
   }
@@ -148,9 +202,13 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
 
     if (image) {
       return (
-        <div className="movie-image-container">
+        <Button
+          className="movie-image-container"
+          variant="link"
+          onClick={() => showLightbox(index - 1)}
+        >
           <img alt="Back Cover" src={image} />
-        </div>
+        </Button>
       );
     }
   }
@@ -184,7 +242,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
               objectName={movie.name}
               isNew={false}
               isEditing={isEditing}
-              onToggleEdit={onToggleEdit}
+              onToggleEdit={() => toggleEditing()}
               onSave={() => {}}
               onImageChange={() => {}}
               onDelete={onDelete}
@@ -194,7 +252,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
           <MovieEditPanel
             movie={movie}
             onSubmit={onSave}
-            onCancel={onToggleEdit}
+            onCancel={() => toggleEditing()}
             onDelete={onDelete}
             setFrontImage={setFrontImage}
             setBackImage={setBackImage}

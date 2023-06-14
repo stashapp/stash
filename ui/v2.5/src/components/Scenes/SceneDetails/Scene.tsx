@@ -28,7 +28,11 @@ import { OCounterButton } from "./OCounterButton";
 import { OrganizedButton } from "./OrganizedButton";
 import { ConfigurationContext } from "src/hooks/Config";
 import { getPlayerPosition } from "src/components/ScenePlayer/util";
-import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
+import {
+  faEllipsisV,
+  faChevronRight,
+  faChevronLeft,
+} from "@fortawesome/free-solid-svg-icons";
 import { lazyComponent } from "src/utils/lazyComponent";
 
 const SubmitStashBoxDraft = lazyComponent(
@@ -164,6 +168,23 @@ const ScenePage: React.FC<IProps> = ({
       Mousetrap.unbind(",");
     };
   });
+
+  async function onSave(input: GQL.SceneCreateInput) {
+    await updateScene({
+      variables: {
+        input: {
+          id: scene.id,
+          ...input,
+        },
+      },
+    });
+    Toast.success({
+      content: intl.formatMessage(
+        { id: "toast.updated_entity" },
+        { entity: intl.formatMessage({ id: "scene" }).toLocaleLowerCase() }
+      ),
+    });
+  }
 
   const onOrganizedClick = async () => {
     try {
@@ -457,6 +478,7 @@ const ScenePage: React.FC<IProps> = ({
           <SceneEditPanel
             isVisible={activeTabKey === "scene-edit-panel"}
             scene={scene}
+            onSubmit={onSave}
             onDelete={() => setIsDeleteAlertOpen(true)}
           />
         </Tab.Pane>
@@ -464,8 +486,8 @@ const ScenePage: React.FC<IProps> = ({
     </Tab.Container>
   );
 
-  function getCollapseButtonText() {
-    return collapsed ? ">" : "<";
+  function getCollapseButtonIcon() {
+    return collapsed ? faChevronRight : faChevronLeft;
   }
 
   const title = objectTitle(scene);
@@ -500,7 +522,7 @@ const ScenePage: React.FC<IProps> = ({
       </div>
       <div className="scene-divider d-none d-xl-block">
         <Button onClick={() => setCollapsed(!collapsed)}>
-          {getCollapseButtonText()}
+          <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
         </Button>
       </div>
       <SubmitStashBoxDraft
@@ -761,7 +783,6 @@ const SceneLoader: React.FC = () => {
       <div className={`scene-player-container ${collapsed ? "expanded" : ""}`}>
         <ScenePlayer
           key="ScenePlayer"
-          className="w-100 m-sm-auto no-gutter"
           scene={scene}
           hideScrubberOverride={hideScrubber}
           autoplay={autoplay}

@@ -474,9 +474,19 @@ func tagMarkerCountCriterionHandler(qb *tagQueryBuilder, markerCount *models.Int
 	}
 }
 
-func tagParentsCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func tagParentsCriterionHandler(qb *tagQueryBuilder, criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
-		if tags != nil {
+		if criterion != nil {
+			tags := criterion.CombineExcludes()
+
+			// validate the modifier
+			switch tags.Modifier {
+			case models.CriterionModifierIncludesAll, models.CriterionModifierIncludes, models.CriterionModifierExcludes, models.CriterionModifierIsNull, models.CriterionModifierNotNull:
+				// valid
+			default:
+				f.setError(fmt.Errorf("invalid modifier %s for tag parent/children", criterion.Modifier))
+			}
+
 			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
 				var notClause string
 				if tags.Modifier == models.CriterionModifierNotNull {
@@ -489,43 +499,88 @@ func tagParentsCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalMu
 				return
 			}
 
-			if len(tags.Value) == 0 {
+			if len(tags.Value) == 0 && len(tags.Excludes) == 0 {
 				return
 			}
 
-			var args []interface{}
-			for _, val := range tags.Value {
-				args = append(args, val)
+			if len(tags.Value) > 0 {
+				var args []interface{}
+				for _, val := range tags.Value {
+					args = append(args, val)
+				}
+
+				depthVal := 0
+				if tags.Depth != nil {
+					depthVal = *tags.Depth
+				}
+
+				var depthCondition string
+				if depthVal != -1 {
+					depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
+				}
+
+				query := `parents AS (
+		SELECT parent_id AS root_id, child_id AS item_id, 0 AS depth FROM tags_relations WHERE parent_id IN` + getInBinding(len(tags.Value)) + `
+		UNION
+		SELECT root_id, child_id, depth + 1 FROM tags_relations INNER JOIN parents ON item_id = parent_id ` + depthCondition + `
+	)`
+
+				f.addRecursiveWith(query, args...)
+
+				f.addLeftJoin("parents", "", "parents.item_id = tags.id")
+
+				addHierarchicalConditionClauses(f, tags, "parents", "root_id")
 			}
 
-			depthVal := 0
-			if tags.Depth != nil {
-				depthVal = *tags.Depth
+			if len(tags.Excludes) > 0 {
+				var args []interface{}
+				for _, val := range tags.Excludes {
+					args = append(args, val)
+				}
+
+				depthVal := 0
+				if tags.Depth != nil {
+					depthVal = *tags.Depth
+				}
+
+				var depthCondition string
+				if depthVal != -1 {
+					depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
+				}
+
+				query := `parents2 AS (
+		SELECT parent_id AS root_id, child_id AS item_id, 0 AS depth FROM tags_relations WHERE parent_id IN` + getInBinding(len(tags.Excludes)) + `
+		UNION
+		SELECT root_id, child_id, depth + 1 FROM tags_relations INNER JOIN parents2 ON item_id = parent_id ` + depthCondition + `
+	)`
+
+				f.addRecursiveWith(query, args...)
+
+				f.addLeftJoin("parents2", "", "parents2.item_id = tags.id")
+
+				addHierarchicalConditionClauses(f, models.HierarchicalMultiCriterionInput{
+					Value:    tags.Excludes,
+					Depth:    tags.Depth,
+					Modifier: models.CriterionModifierExcludes,
+				}, "parents2", "root_id")
 			}
-
-			var depthCondition string
-			if depthVal != -1 {
-				depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
-			}
-
-			query := `parents AS (
-	SELECT parent_id AS root_id, child_id AS item_id, 0 AS depth FROM tags_relations WHERE parent_id IN` + getInBinding(len(tags.Value)) + `
-	UNION
-	SELECT root_id, child_id, depth + 1 FROM tags_relations INNER JOIN parents ON item_id = parent_id ` + depthCondition + `
-)`
-
-			f.addRecursiveWith(query, args...)
-
-			f.addLeftJoin("parents", "", "parents.item_id = tags.id")
-
-			addHierarchicalConditionClauses(f, tags, "parents", "root_id")
 		}
 	}
 }
 
-func tagChildrenCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func tagChildrenCriterionHandler(qb *tagQueryBuilder, criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
-		if tags != nil {
+		if criterion != nil {
+			tags := criterion.CombineExcludes()
+
+			// validate the modifier
+			switch tags.Modifier {
+			case models.CriterionModifierIncludesAll, models.CriterionModifierIncludes, models.CriterionModifierExcludes, models.CriterionModifierIsNull, models.CriterionModifierNotNull:
+				// valid
+			default:
+				f.setError(fmt.Errorf("invalid modifier %s for tag parent/children", criterion.Modifier))
+			}
+
 			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
 				var notClause string
 				if tags.Modifier == models.CriterionModifierNotNull {
@@ -538,36 +593,71 @@ func tagChildrenCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalM
 				return
 			}
 
-			if len(tags.Value) == 0 {
+			if len(tags.Value) == 0 && len(tags.Excludes) == 0 {
 				return
 			}
 
-			var args []interface{}
-			for _, val := range tags.Value {
-				args = append(args, val)
+			if len(tags.Value) > 0 {
+				var args []interface{}
+				for _, val := range tags.Value {
+					args = append(args, val)
+				}
+
+				depthVal := 0
+				if tags.Depth != nil {
+					depthVal = *tags.Depth
+				}
+
+				var depthCondition string
+				if depthVal != -1 {
+					depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
+				}
+
+				query := `children AS (
+		SELECT child_id AS root_id, parent_id AS item_id, 0 AS depth FROM tags_relations WHERE child_id IN` + getInBinding(len(tags.Value)) + `
+		UNION
+		SELECT root_id, parent_id, depth + 1 FROM tags_relations INNER JOIN children ON item_id = child_id ` + depthCondition + `
+	)`
+
+				f.addRecursiveWith(query, args...)
+
+				f.addLeftJoin("children", "", "children.item_id = tags.id")
+
+				addHierarchicalConditionClauses(f, tags, "children", "root_id")
 			}
 
-			depthVal := 0
-			if tags.Depth != nil {
-				depthVal = *tags.Depth
+			if len(tags.Excludes) > 0 {
+				var args []interface{}
+				for _, val := range tags.Excludes {
+					args = append(args, val)
+				}
+
+				depthVal := 0
+				if tags.Depth != nil {
+					depthVal = *tags.Depth
+				}
+
+				var depthCondition string
+				if depthVal != -1 {
+					depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
+				}
+
+				query := `children2 AS (
+		SELECT child_id AS root_id, parent_id AS item_id, 0 AS depth FROM tags_relations WHERE child_id IN` + getInBinding(len(tags.Excludes)) + `
+		UNION
+		SELECT root_id, parent_id, depth + 1 FROM tags_relations INNER JOIN children2 ON item_id = child_id ` + depthCondition + `
+	)`
+
+				f.addRecursiveWith(query, args...)
+
+				f.addLeftJoin("children2", "", "children2.item_id = tags.id")
+
+				addHierarchicalConditionClauses(f, models.HierarchicalMultiCriterionInput{
+					Value:    tags.Excludes,
+					Depth:    tags.Depth,
+					Modifier: models.CriterionModifierExcludes,
+				}, "children2", "root_id")
 			}
-
-			var depthCondition string
-			if depthVal != -1 {
-				depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
-			}
-
-			query := `children AS (
-	SELECT child_id AS root_id, parent_id AS item_id, 0 AS depth FROM tags_relations WHERE child_id IN` + getInBinding(len(tags.Value)) + `
-	UNION
-	SELECT root_id, parent_id, depth + 1 FROM tags_relations INNER JOIN children ON item_id = child_id ` + depthCondition + `
-)`
-
-			f.addRecursiveWith(query, args...)
-
-			f.addLeftJoin("children", "", "children.item_id = tags.id")
-
-			addHierarchicalConditionClauses(f, tags, "children", "root_id")
 		}
 	}
 }
@@ -609,22 +699,25 @@ func (qb *tagQueryBuilder) getTagSort(query *queryBuilder, findFilter *models.Fi
 		direction = findFilter.GetDirection()
 	}
 
-	if findFilter.Sort != nil {
-		switch *findFilter.Sort {
-		case "scenes_count":
-			return getCountSort(tagTable, scenesTagsTable, tagIDColumn, direction)
-		case "scene_markers_count":
-			return fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM scene_markers_tags WHERE tags.id = scene_markers_tags.tag_id)+(SELECT COUNT(*) FROM scene_markers WHERE tags.id = scene_markers.primary_tag_id) %s", getSortDirection(direction))
-		case "images_count":
-			return getCountSort(tagTable, imagesTagsTable, tagIDColumn, direction)
-		case "galleries_count":
-			return getCountSort(tagTable, galleriesTagsTable, tagIDColumn, direction)
-		case "performers_count":
-			return getCountSort(tagTable, performersTagsTable, tagIDColumn, direction)
-		}
+	sortQuery := ""
+	switch sort {
+	case "scenes_count":
+		sortQuery += getCountSort(tagTable, scenesTagsTable, tagIDColumn, direction)
+	case "scene_markers_count":
+		sortQuery += fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM scene_markers_tags WHERE tags.id = scene_markers_tags.tag_id)+(SELECT COUNT(*) FROM scene_markers WHERE tags.id = scene_markers.primary_tag_id) %s", getSortDirection(direction))
+	case "images_count":
+		sortQuery += getCountSort(tagTable, imagesTagsTable, tagIDColumn, direction)
+	case "galleries_count":
+		sortQuery += getCountSort(tagTable, galleriesTagsTable, tagIDColumn, direction)
+	case "performers_count":
+		sortQuery += getCountSort(tagTable, performersTagsTable, tagIDColumn, direction)
+	default:
+		sortQuery += getSort(sort, direction, "tags")
 	}
 
-	return getSort(sort, direction, "tags")
+	// Whatever the sorting, always use name/id as a final sort
+	sortQuery += ", COALESCE(tags.name, tags.id) COLLATE NATURAL_CI ASC"
+	return sortQuery
 }
 
 func (qb *tagQueryBuilder) queryTag(ctx context.Context, query string, args []interface{}) (*models.Tag, error) {
@@ -646,6 +739,10 @@ func (qb *tagQueryBuilder) queryTags(ctx context.Context, query string, args []i
 
 func (qb *tagQueryBuilder) GetImage(ctx context.Context, tagID int) ([]byte, error) {
 	return qb.blobJoinQueryBuilder.GetImage(ctx, tagID, tagImageBlobColumn)
+}
+
+func (qb *tagQueryBuilder) HasImage(ctx context.Context, tagID int) (bool, error) {
+	return qb.blobJoinQueryBuilder.HasImage(ctx, tagID, tagImageBlobColumn)
 }
 
 func (qb *tagQueryBuilder) UpdateImage(ctx context.Context, tagID int, image []byte) error {

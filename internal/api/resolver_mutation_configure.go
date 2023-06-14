@@ -218,6 +218,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.WriteImageThumbnails, *input.WriteImageThumbnails)
 	}
 
+	if input.CreateImageClipsFromVideos != nil {
+		c.Set(config.CreateImageClipsFromVideos, *input.CreateImageClipsFromVideos)
+	}
+
 	if input.GalleryCoverRegex != nil {
 
 		_, err := regexp.Compile(*input.GalleryCoverRegex)
@@ -228,8 +232,13 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.GalleryCoverRegex, *input.GalleryCoverRegex)
 	}
 
-	if input.Username != nil {
+	if input.Username != nil && *input.Username != c.GetUsername() {
 		c.Set(config.Username, input.Username)
+		if *input.Password == "" {
+			logger.Info("Username cleared")
+		} else {
+			logger.Info("Username changed")
+		}
 	}
 
 	if input.Password != nil {
@@ -238,6 +247,11 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		currentPWHash := c.GetPasswordHash()
 
 		if *input.Password != currentPWHash {
+			if *input.Password == "" {
+				logger.Info("Password cleared")
+			} else {
+				logger.Info("Password changed")
+			}
 			c.SetPassword(*input.Password)
 		}
 	}
@@ -481,6 +495,10 @@ func (r *mutationResolver) ConfigureDlna(ctx context.Context, input ConfigDLNAIn
 
 	if input.WhitelistedIPs != nil {
 		c.Set(config.DLNADefaultIPWhitelist, input.WhitelistedIPs)
+	}
+
+	if input.VideoSortOrder != nil {
+		c.Set(config.DLNAVideoSortOrder, input.VideoSortOrder)
 	}
 
 	currentDLNAEnabled := c.GetDLNADefaultEnabled()

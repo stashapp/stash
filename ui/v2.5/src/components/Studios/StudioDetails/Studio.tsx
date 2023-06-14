@@ -19,6 +19,7 @@ import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { useToast } from "src/hooks/Toast";
 import { ConfigurationContext } from "src/hooks/Config";
+import { Icon } from "src/components/Shared/Icon";
 import { StudioScenesPanel } from "./StudioScenesPanel";
 import { StudioGalleriesPanel } from "./StudioGalleriesPanel";
 import { StudioImagesPanel } from "./StudioImagesPanel";
@@ -27,7 +28,11 @@ import { StudioPerformersPanel } from "./StudioPerformersPanel";
 import { StudioEditPanel } from "./StudioEditPanel";
 import { StudioDetailsPanel } from "./StudioDetailsPanel";
 import { StudioMoviesPanel } from "./StudioMoviesPanel";
-import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import {
+  faTrashAlt,
+  faChevronRight,
+  faChevronLeft,
+} from "@fortawesome/free-solid-svg-icons";
 import { IUIConfig } from "src/core/config";
 
 interface IProps {
@@ -64,7 +69,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
 
   // set up hotkeys
   useEffect(() => {
-    Mousetrap.bind("e", () => setIsEditing(true));
+    Mousetrap.bind("e", () => toggleEditing());
     Mousetrap.bind("d d", () => {
       onDelete();
     });
@@ -78,21 +83,21 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
   });
 
   async function onSave(input: GQL.StudioCreateInput) {
-    try {
-      const result = await updateStudio({
-        variables: {
-          input: {
-            id: studio.id,
-            ...input,
-          },
+    await updateStudio({
+      variables: {
+        input: {
+          id: studio.id,
+          ...input,
         },
-      });
-      if (result.data?.studioUpdate) {
-        setIsEditing(false);
-      }
-    } catch (e) {
-      Toast.error(e);
-    }
+      },
+    });
+    toggleEditing(false);
+    Toast.success({
+      content: intl.formatMessage(
+        { id: "toast.updated_entity" },
+        { entity: intl.formatMessage({ id: "studio" }).toLocaleLowerCase() }
+      ),
+    });
   }
 
   async function onAutoTag() {
@@ -144,15 +149,22 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     );
   }
 
-  function onToggleEdit() {
-    setIsEditing(!isEditing);
+  function toggleEditing(value?: boolean) {
+    if (value !== undefined) {
+      setIsEditing(value);
+    } else {
+      setIsEditing((e) => !e);
+    }
+    setImage(undefined);
   }
 
   function renderImage() {
     let studioImage = studio.image_path;
     if (isEditing) {
-      if (image === null) {
-        studioImage = `${studioImage}&default=true`;
+      if (image === null && studioImage) {
+        const studioImageURL = new URL(studioImage);
+        studioImageURL.searchParams.set("default", "true");
+        studioImage = studioImageURL.toString();
       } else if (image) {
         studioImage = image;
       }
@@ -178,8 +190,8 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     }
   };
 
-  function getCollapseButtonText() {
-    return collapsed ? ">" : "<";
+  function getCollapseButtonIcon() {
+    return collapsed ? faChevronRight : faChevronLeft;
   }
 
   return (
@@ -206,7 +218,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               objectName={studio.name ?? intl.formatMessage({ id: "studio" })}
               isNew={false}
               isEditing={isEditing}
-              onToggleEdit={onToggleEdit}
+              onToggleEdit={() => toggleEditing()}
               onSave={() => {}}
               onImageChange={() => {}}
               onClearImage={() => {}}
@@ -218,7 +230,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           <StudioEditPanel
             studio={studio}
             onSubmit={onSave}
-            onCancel={onToggleEdit}
+            onCancel={() => toggleEditing()}
             onDelete={onDelete}
             setImage={setImage}
             setEncodingImage={setEncodingImage}
@@ -227,7 +239,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
       </div>
       <div className="details-divider d-none d-xl-block">
         <Button onClick={() => setCollapsed(!collapsed)}>
-          {getCollapseButtonText()}
+          <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
         </Button>
       </div>
       <div className={`col content-container ${collapsed ? "expanded" : ""}`}>

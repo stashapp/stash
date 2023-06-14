@@ -14,8 +14,17 @@ import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { ModalComponent } from "../Shared/Modal";
 import { SettingSection } from "./SettingSection";
-import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";
+import {
+  BooleanSetting,
+  StringListSetting,
+  StringSetting,
+  SelectSetting,
+} from "./Inputs";
 import { SettingStateContext } from "./context";
+import {
+  videoSortOrderIntlMap,
+  defaultVideoSort,
+} from "src/utils/dlnaVideoSort";
 import {
   faClock,
   faTimes,
@@ -445,6 +454,22 @@ export const SettingsServicesPanel: React.FC = () => {
             value={dlna.whitelistedIPs ?? undefined}
             onChange={(v) => saveDLNA({ whitelistedIPs: v })}
           />
+
+          <SelectSetting
+            id="video-sort-order"
+            headingID="config.dlna.video_sort_order"
+            subHeadingID="config.dlna.video_sort_order_desc"
+            value={dlna.videoSortOrder ?? defaultVideoSort}
+            onChange={(v) => saveDLNA({ videoSortOrder: v })}
+          >
+            {Array.from(videoSortOrderIntlMap.entries()).map((v) => (
+              <option key={v[0]} value={v[0]}>
+                {intl.formatMessage({
+                  id: v[1],
+                })}
+              </option>
+            ))}
+          </SelectSetting>
         </SettingSection>
       </>
     );

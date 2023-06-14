@@ -88,14 +88,15 @@ const typePolicies: TypePolicies = {
   },
 };
 
-export const getBaseURL = () => {
-  const baseURL = window.STASH_BASE_URL;
-  if (baseURL === "/%BASE_URL%/") return "/";
-  return baseURL;
+const possibleTypes = {
+  VisualFile: ["VideoFile", "ImageFile"],
 };
 
+export const baseURL =
+  document.querySelector("base")?.getAttribute("href") ?? "/";
+
 export const getPlatformURL = (ws?: boolean) => {
-  const platformUrl = new URL(window.location.origin + getBaseURL());
+  const platformUrl = new URL(window.location.origin + baseURL);
 
   if (import.meta.env.DEV) {
     platformUrl.port = import.meta.env.VITE_APP_PLATFORM_PORT ?? "9999";
@@ -139,10 +140,7 @@ export const createClient = () => {
     // handle unauthorized error by redirecting to the login page
     if (networkError && (networkError as ServerError).statusCode === 401) {
       // redirect to login page
-      const newURL = new URL(
-        `${getBaseURL()}login`,
-        window.location.toString()
-      );
+      const newURL = new URL(`${baseURL}login`, window.location.toString());
       newURL.searchParams.append("returnURL", window.location.href);
       window.location.href = newURL.toString();
     }
@@ -162,7 +160,10 @@ export const createClient = () => {
 
   const link = from([errorLink, splitLink]);
 
-  const cache = new InMemoryCache({ typePolicies });
+  const cache = new InMemoryCache({
+    typePolicies,
+    possibleTypes: possibleTypes,
+  });
   const client = new ApolloClient({
     link,
     cache,

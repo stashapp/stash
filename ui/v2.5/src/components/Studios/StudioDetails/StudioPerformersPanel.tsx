@@ -16,6 +16,7 @@ export const StudioPerformersPanel: React.FC<IStudioPerformersPanel> = ({
   const studioCriterion = new StudiosCriterion();
   studioCriterion.value = {
     items: [{ id: studio.id!, label: studio.name || `Studio ${studio.id}` }],
+    excluded: [],
     depth: 0,
   };
 

@@ -76,6 +76,10 @@ input PerformerFilterType {
   measurements: StringCriterionInput
   """Filter by fake tits value"""
   fake_tits: StringCriterionInput
+  """Filter by penis length value"""
+  penis_length: FloatCriterionInput
+  """Filter by ciricumcision"""
+  circumcised: CircumcisionCriterionInput
   """Filter by career length"""
   career_length: StringCriterionInput
   """Filter by tattoos"""
@@ -98,6 +102,8 @@ input PerformerFilterType {
   image_count: IntCriterionInput
   """Filter by gallery count"""
   gallery_count: IntCriterionInput
+  """Filter by o count"""
+  o_counter: IntCriterionInput
   """Filter by StashID"""
   stash_id: StringCriterionInput @deprecated(reason: "Use stash_id_endpoint instead") 
   """Filter by StashID"""
@@ -116,6 +122,8 @@ input PerformerFilterType {
   death_year: IntCriterionInput
   """Filter by studios where performer appears in scene/image/gallery"""
   studios: HierarchicalMultiCriterionInput
+	"""Filter by performers where performer appears with another performer in scene/image/gallery"""
+	performers: MultiCriterionInput
   """Filter by autotag ignore value"""
   ignore_auto_tag: Boolean
   """Filter by birthdate"""
@@ -165,7 +173,9 @@ input SceneFilterType {
   """Filter by file checksum"""
   checksum: StringCriterionInput
   """Filter by file phash"""
-  phash: StringCriterionInput
+  phash: StringCriterionInput @deprecated(reason: "Use phash_distance instead")
+  """Filter by file phash distance"""
+  phash_distance: PhashDistanceCriterionInput
   """Filter by path"""
   path: StringCriterionInput
   """Filter by file count"""
@@ -499,13 +509,25 @@ input IntCriterionInput {
   modifier: CriterionModifier!
 }
 
+input FloatCriterionInput {
+  value: Float!
+  value2: Float
+  modifier: CriterionModifier!
+}
+
 input MultiCriterionInput {
   value: [ID!]
   modifier: CriterionModifier!
+  excludes: [ID!]
 }
 
 input GenderCriterionInput {
   value: GenderEnum
+  modifier: CriterionModifier!
+}
+ 
+input CircumcisionCriterionInput {
+  value: [CircumisedEnum!]
   modifier: CriterionModifier!
 }
 
@@ -513,6 +535,7 @@ input HierarchicalMultiCriterionInput {
   value: [ID!]
   modifier: CriterionModifier!
   depth: Int
+  excludes: [ID!]
 }
 
 input DateCriterionInput {
@@ -525,6 +548,12 @@ input TimestampCriterionInput {
   value: String!
   value2: String
   modifier: CriterionModifier!
+}
+
+input PhashDistanceCriterionInput {
+  value: String!
+  modifier: CriterionModifier!
+  distance: Int
 }
 
 enum FilterMode {

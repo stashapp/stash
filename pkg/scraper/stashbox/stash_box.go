@@ -10,6 +10,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -663,7 +664,7 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 
 func getFirstImage(ctx context.Context, client *http.Client, images []*graphql.ImageFragment) *string {
 	ret, err := fetchImage(ctx, client, images[0].URL)
-	if err != nil {
+	if err != nil && !errors.Is(err, context.Canceled) {
 		logger.Warnf("Error fetching image %s: %s", images[0].URL, err.Error())
 	}
 
@@ -1008,7 +1009,7 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 	if performer.FakeTits != "" {
 		draft.BreastType = &performer.FakeTits
 	}
-	if performer.Gender.IsValid() {
+	if performer.Gender != nil && performer.Gender.IsValid() {
 		v := performer.Gender.String()
 		draft.Gender = &v
 	}
@@ -1046,10 +1047,20 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 
 	var urls []string
 	if len(strings.TrimSpace(performer.Twitter)) > 0 {
-		urls = append(urls, "https://twitter.com/"+strings.TrimSpace(performer.Twitter))
+		reg := regexp.MustCompile(`https?:\/\/(?:www\.)?twitter\.com`)
+		if reg.MatchString(performer.Twitter) {
+			urls = append(urls, strings.TrimSpace(performer.Twitter))
+		} else {
+			urls = append(urls, "https://twitter.com/"+strings.TrimSpace(performer.Twitter))
+		}
 	}
 	if len(strings.TrimSpace(performer.Instagram)) > 0 {
-		urls = append(urls, "https://instagram.com/"+strings.TrimSpace(performer.Instagram))
+		reg := regexp.MustCompile(`https?:\/\/(?:www\.)?instagram\.com`)
+		if reg.MatchString(performer.Instagram) {
+			urls = append(urls, strings.TrimSpace(performer.Instagram))
+		} else {
+			urls = append(urls, "https://instagram.com/"+strings.TrimSpace(performer.Instagram))
+		}
 	}
 	if len(strings.TrimSpace(performer.URL)) > 0 {
 		urls = append(urls, strings.TrimSpace(performer.URL))

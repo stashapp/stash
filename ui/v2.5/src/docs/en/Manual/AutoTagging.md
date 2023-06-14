@@ -2,7 +2,7 @@
 
 This task matches your Performers, Studios, and Tags against your media, based on names only. It finds Scenes, Images, and Galleries where the path or filename contains the Performer/Studio/Tag. 
 
-For each scene it finds that matches, it sets the applicable field. It will **only** tag based on performers, studios, and tags that already exist in your database. In order to completely identify and gather information about the scenes in your collection, you will need to use the Tagger view and/or Scraping tools.
+For each scene it finds that matches, it sets the applicable field. It will **only** tag based on performers, studios, and tags that already exist in your database.
 
 When the Performer/Studio/Tag name has multiple words, the search will include paths/filenames where the Performer/Studio/Tag name is separated with `.`, `-` or `_` characters, as well as whitespace.
 

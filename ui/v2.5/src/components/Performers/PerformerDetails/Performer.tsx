@@ -28,10 +28,16 @@ import { PerformerScenesPanel } from "./PerformerScenesPanel";
 import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";
 import { PerformerMoviesPanel } from "./PerformerMoviesPanel";
 import { PerformerImagesPanel } from "./PerformerImagesPanel";
+import { PerformerAppearsWithPanel } from "./performerAppearsWithPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
 import { PerformerSubmitButton } from "./PerformerSubmitButton";
 import GenderIcon from "../GenderIcon";
-import { faHeart, faLink } from "@fortawesome/free-solid-svg-icons";
+import {
+  faHeart,
+  faLink,
+  faChevronRight,
+  faChevronLeft,
+} from "@fortawesome/free-solid-svg-icons";
 import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { IUIConfig } from "src/core/config";
 import { useRatingKeybinds } from "src/hooks/keybinds";
@@ -60,13 +66,20 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const [image, setImage] = useState<string | null>();
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
-  // if undefined then get the existing image
-  // if null then get the default (no) image
-  // otherwise get the set image
-  const activeImage =
-    image === undefined
-      ? performer.image_path ?? ""
-      : image ?? `${performer.image_path}&default=true`;
+  const activeImage = useMemo(() => {
+    const performerImage = performer.image_path;
+    if (isEditing) {
+      if (image === null && performerImage) {
+        const performerImageURL = new URL(performerImage);
+        performerImageURL.searchParams.set("default", "true");
+        return performerImageURL.toString();
+      } else if (image) {
+        return image;
+      }
+    }
+    return performerImage;
+  }, [image, isEditing, performer.image_path]);
+
   const lightboxImages = useMemo(
     () => [{ paths: { thumbnail: activeImage, image: activeImage } }],
     [activeImage]
@@ -83,7 +96,8 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     tab === "scenes" ||
     tab === "galleries" ||
     tab === "images" ||
-    tab === "movies"
+    tab === "movies" ||
+    tab == "appearswith"
       ? tab
       : "details";
   const setActiveTabKey = (newTab: string | null) => {
@@ -113,7 +127,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("a", () => setActiveTabKey("details"));
-    Mousetrap.bind("e", () => setIsEditing(!isEditing));
+    Mousetrap.bind("e", () => toggleEditing());
     Mousetrap.bind("c", () => setActiveTabKey("scenes"));
     Mousetrap.bind("g", () => setActiveTabKey("galleries"));
     Mousetrap.bind("m", () => setActiveTabKey("movies"));
@@ -130,6 +144,24 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     };
   });
 
+  async function onSave(input: GQL.PerformerCreateInput) {
+    await updatePerformer({
+      variables: {
+        input: {
+          id: performer.id,
+          ...input,
+        },
+      },
+    });
+    toggleEditing(false);
+    Toast.success({
+      content: intl.formatMessage(
+        { id: "toast.updated_entity" },
+        { entity: intl.formatMessage({ id: "performer" }).toLocaleLowerCase() }
+      ),
+    });
+  }
+
   async function onDelete() {
     try {
       await deletePerformer({ variables: { id: performer.id } });
@@ -141,6 +173,24 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     history.push("/performers");
   }
 
+  function toggleEditing(value?: boolean) {
+    if (value !== undefined) {
+      setIsEditing(value);
+    } else {
+      setIsEditing((e) => !e);
+    }
+    setImage(undefined);
+  }
+
+  function renderImage() {
+    if (activeImage) {
+      return (
+        <Button variant="link" onClick={() => showLightbox()}>
+          <img className="performer" src={activeImage} alt={performer.name} />
+        </Button>
+      );
+    }
+  }
   const renderTabs = () => (
     <React.Fragment>
       <Col>
@@ -149,9 +199,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             objectName={
               performer?.name ?? intl.formatMessage({ id: "performer" })
             }
-            onToggleEdit={() => {
-              setIsEditing(!isEditing);
-            }}
+            onToggleEdit={() => toggleEditing()}
             onDelete={onDelete}
             onAutoTag={onAutoTag}
             isNew={false}
@@ -244,6 +292,23 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             performer={performer}
           />
         </Tab>
+        <Tab
+          eventKey="appearswith"
+          title={
+            <React.Fragment>
+              {intl.formatMessage({ id: "appears_with" })}
+              <Counter
+                abbreviateCounter={abbreviateCounter}
+                count={performer.performer_count ?? 0}
+              />
+            </React.Fragment>
+          }
+        >
+          <PerformerAppearsWithPanel
+            active={activeTabKey == "appearswith"}
+            performer={performer}
+          />
+        </Tab>
       </Tabs>
     </React.Fragment>
   );
@@ -254,7 +319,8 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <PerformerEditPanel
           performer={performer}
           isVisible={isEditing}
-          onCancel={() => setIsEditing(false)}
+          onSubmit={onSave}
+          onCancel={() => toggleEditing()}
           setImage={setImage}
           setEncodingImage={setEncodingImage}
         />
@@ -384,8 +450,8 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       />
     );
 
-  function getCollapseButtonText() {
-    return collapsed ? ">" : "<";
+  function getCollapseButtonIcon() {
+    return collapsed ? faChevronRight : faChevronLeft;
   }
 
   return (
@@ -402,18 +468,12 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         {encodingImage ? (
           <LoadingIndicator message="Encoding image..." />
         ) : (
-          <Button variant="link" onClick={() => showLightbox()}>
-            <img
-              className="performer"
-              src={activeImage}
-              alt={intl.formatMessage({ id: "performer" })}
-            />
-          </Button>
+          renderImage()
         )}
       </div>
       <div className="details-divider d-none d-xl-block">
         <Button onClick={() => setCollapsed(!collapsed)}>
-          {getCollapseButtonText()}
+          <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
         </Button>
       </div>
       <div className={`content-container ${collapsed ? "expanded" : ""}`}>

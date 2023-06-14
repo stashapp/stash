@@ -3,7 +3,7 @@ import { Button } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
-import { WallPanel } from "src/components/Wall/WallPanel";
+import { MarkerWallPanel } from "src/components/Wall/WallPanel";
 import { PrimaryTags } from "./PrimaryTags";
 import { SceneMarkerForm } from "./SceneMarkerForm";
 
@@ -77,11 +77,12 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (
           onEdit={onOpenEditor}
         />
       </div>
-      <WallPanel
-        sceneMarkers={sceneMarkers}
-        clickHandler={(marker) => {
+      <MarkerWallPanel
+        markers={sceneMarkers}
+        clickHandler={(e, marker) => {
+          e.preventDefault();
           window.scrollTo(0, 0);
-          onClickMarker(marker as GQL.SceneMarkerDataFragment);
+          onClickMarker(marker);
         }}
       />
     </div>

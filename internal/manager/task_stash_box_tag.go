@@ -119,24 +119,27 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 				aliases = []string{}
 			}
 			newPerformer := models.Performer{
-				Aliases:      models.NewRelatedStrings(aliases),
-				Birthdate:    getDate(performer.Birthdate),
-				CareerLength: getString(performer.CareerLength),
-				Country:      getString(performer.Country),
-				CreatedAt:    currentTime,
-				Ethnicity:    getString(performer.Ethnicity),
-				EyeColor:     getString(performer.EyeColor),
-				FakeTits:     getString(performer.FakeTits),
-				Gender:       models.GenderEnum(getString(performer.Gender)),
-				Height:       getIntPtr(performer.Height),
-				Weight:       getIntPtr(performer.Weight),
-				Instagram:    getString(performer.Instagram),
-				Measurements: getString(performer.Measurements),
-				Name:         *performer.Name,
-				Piercings:    getString(performer.Piercings),
-				Tattoos:      getString(performer.Tattoos),
-				Twitter:      getString(performer.Twitter),
-				URL:          getString(performer.URL),
+				Aliases:        models.NewRelatedStrings(aliases),
+				Disambiguation: getString(performer.Disambiguation),
+				Details:        getString(performer.Details),
+				Birthdate:      getDate(performer.Birthdate),
+				DeathDate:      getDate(performer.DeathDate),
+				CareerLength:   getString(performer.CareerLength),
+				Country:        getString(performer.Country),
+				CreatedAt:      currentTime,
+				Ethnicity:      getString(performer.Ethnicity),
+				EyeColor:       getString(performer.EyeColor),
+				HairColor:      getString(performer.HairColor),
+				FakeTits:       getString(performer.FakeTits),
+				Height:         getIntPtr(performer.Height),
+				Weight:         getIntPtr(performer.Weight),
+				Instagram:      getString(performer.Instagram),
+				Measurements:   getString(performer.Measurements),
+				Name:           *performer.Name,
+				Piercings:      getString(performer.Piercings),
+				Tattoos:        getString(performer.Tattoos),
+				Twitter:        getString(performer.Twitter),
+				URL:            getString(performer.URL),
 				StashIDs: models.NewRelatedStashIDs([]models.StashID{
 					{
 						Endpoint: t.box.Endpoint,
@@ -144,6 +147,11 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 					},
 				}),
 				UpdatedAt: currentTime,
+			}
+
+			if performer.Gender != nil {
+				v := models.GenderEnum(getString(performer.Gender))
+				newPerformer.Gender = &v
 			}
 
 			err := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
@@ -192,6 +200,10 @@ func (t *StashBoxPerformerTagTask) getPartial(performer *models.ScrapedPerformer
 		value := getDate(performer.Birthdate)
 		partial.Birthdate = models.NewOptionalDate(*value)
 	}
+	if performer.DeathDate != nil && *performer.DeathDate != "" && !excluded["deathdate"] {
+		value := getDate(performer.DeathDate)
+		partial.Birthdate = models.NewOptionalDate(*value)
+	}
 	if performer.CareerLength != nil && !excluded["career_length"] {
 		partial.CareerLength = models.NewOptionalString(*performer.CareerLength)
 	}
@@ -203,6 +215,9 @@ func (t *StashBoxPerformerTagTask) getPartial(performer *models.ScrapedPerformer
 	}
 	if performer.EyeColor != nil && !excluded["eye_color"] {
 		partial.EyeColor = models.NewOptionalString(*performer.EyeColor)
+	}
+	if performer.HairColor != nil && !excluded["hair_color"] {
+		partial.HairColor = models.NewOptionalString(*performer.HairColor)
 	}
 	if performer.FakeTits != nil && !excluded["fake_tits"] {
 		partial.FakeTits = models.NewOptionalString(*performer.FakeTits)
@@ -230,6 +245,9 @@ func (t *StashBoxPerformerTagTask) getPartial(performer *models.ScrapedPerformer
 	}
 	if excluded["name"] && performer.Name != nil {
 		partial.Name = models.NewOptionalString(*performer.Name)
+	}
+	if performer.Disambiguation != nil && !excluded["disambiguation"] {
+		partial.Disambiguation = models.NewOptionalString(*performer.Disambiguation)
 	}
 	if performer.Piercings != nil && !excluded["piercings"] {
 		partial.Piercings = models.NewOptionalString(*performer.Piercings)
