@@ -217,12 +217,12 @@ func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieU
 		qb := r.repository.Movie
 
 		for _, movieID := range movieIDs {
-			scene, err := qb.UpdatePartial(ctx, movieID, updatedMovie)
+			movie, err := qb.UpdatePartial(ctx, movieID, updatedMovie)
 			if err != nil {
 				return err
 			}
 
-			ret = append(ret, scene)
+			ret = append(ret, movie)
 		}
 
 		return nil
