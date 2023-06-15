@@ -107,20 +107,6 @@ func (_m *PerformerReaderWriter) Destroy(ctx context.Context, id int) error {
 	return r0
 }
 
-// DestroyImage provides a mock function with given fields: ctx, performerID
-func (_m *PerformerReaderWriter) DestroyImage(ctx context.Context, performerID int) error {
-	ret := _m.Called(ctx, performerID)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
-		r0 = rf(ctx, performerID)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // Find provides a mock function with given fields: ctx, id
 func (_m *PerformerReaderWriter) Find(ctx context.Context, id int) (*models.Performer, error) {
 	ret := _m.Called(ctx, id)

@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"strconv"
@@ -62,6 +61,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input SceneCreateInp
 		fileIDs[i] = file.ID(v)
 	}
 
+	// Populate a new scene from the input
 	newScene := models.Scene{
 		Title:        translator.string(input.Title, "title"),
 		Code:         translator.string(input.Code, "code"),
@@ -122,7 +122,7 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.SceneUpdateInput) (ret []*models.Scene, err error) {
 	inputMaps := getUpdateInputMaps(ctx)
 
-	// Start the transaction and save the scene
+	// Start the transaction and save the scenes
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		for i, scene := range input {
 			translator := changesetTranslator{
@@ -130,11 +130,11 @@ func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.Sce
 			}
 
 			thisScene, err := r.sceneUpdate(ctx, *scene, translator)
-			ret = append(ret, thisScene)
-
 			if err != nil {
 				return err
 			}
+
+			ret = append(ret, thisScene)
 		}
 
 		return nil
@@ -233,7 +233,6 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 }
 
 func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUpdateInput, translator changesetTranslator) (*models.Scene, error) {
-	// Populate scene from the input
 	sceneID, err := strconv.Atoi(input.ID)
 	if err != nil {
 		return nil, err
@@ -241,17 +240,16 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 
 	qb := r.repository.Scene
 
-	s, err := qb.Find(ctx, sceneID)
+	originalScene, err := qb.Find(ctx, sceneID)
 	if err != nil {
 		return nil, err
 	}
 
-	if s == nil {
+	if originalScene == nil {
 		return nil, fmt.Errorf("scene with id %d not found", sceneID)
 	}
 
-	var coverImageData []byte
-
+	// Populate scene from the input
 	updatedScene, err := scenePartialFromInput(input, translator)
 	if err != nil {
 		return nil, err
@@ -259,11 +257,11 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 
 	// ensure that title is set where scene has no file
 	if updatedScene.Title.Set && updatedScene.Title.Value == "" {
-		if err := s.LoadFiles(ctx, r.repository.Scene); err != nil {
+		if err := originalScene.LoadFiles(ctx, r.repository.Scene); err != nil {
 			return nil, err
 		}
 
-		if len(s.Files.List()) == 0 {
+		if len(originalScene.Files.List()) == 0 {
 			return nil, errors.New("title must be set if scene has no files")
 		}
 	}
@@ -273,13 +271,13 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 
 		// if file hash has changed, we should migrate generated files
 		// after commit
-		if err := s.LoadFiles(ctx, r.repository.Scene); err != nil {
+		if err := originalScene.LoadFiles(ctx, r.repository.Scene); err != nil {
 			return nil, err
 		}
 
 		// ensure that new primary file is associated with scene
 		var f *file.VideoFile
-		for _, ff := range s.Files.List() {
+		for _, ff := range originalScene.Files.List() {
 			if ff.ID == newPrimaryFileID {
 				f = ff
 			}
@@ -290,7 +288,8 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		}
 	}
 
-	if input.CoverImage != nil && *input.CoverImage != "" {
+	var coverImageData []byte
+	if input.CoverImage != nil {
 		var err error
 		coverImageData, err = utils.ProcessImageInput(ctx, *input.CoverImage)
 		if err != nil {
@@ -298,16 +297,16 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		}
 	}
 
-	s, err = qb.UpdatePartial(ctx, sceneID, *updatedScene)
+	scene, err := qb.UpdatePartial(ctx, sceneID, *updatedScene)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := r.sceneUpdateCoverImage(ctx, s, coverImageData); err != nil {
+	if err := r.sceneUpdateCoverImage(ctx, scene, coverImageData); err != nil {
 		return nil, err
 	}
 
-	return s, nil
+	return scene, nil
 }
 
 func (r *mutationResolver) sceneUpdateCoverImage(ctx context.Context, s *models.Scene, coverImageData []byte) error {
@@ -329,12 +328,13 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 		return nil, err
 	}
 
-	// Populate scene from the input
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
 
+	// Populate scene from the input
 	updatedScene := models.NewScenePartial()
+
 	updatedScene.Title = translator.optionalString(input.Title, "title")
 	updatedScene.Code = translator.optionalString(input.Code, "code")
 	updatedScene.Details = translator.optionalString(input.Details, "details")
@@ -380,7 +380,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 
 	ret := []*models.Scene{}
 
-	// Start the transaction and save the scene marker
+	// Start the transaction and save the scenes
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
@@ -490,9 +490,11 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 			if err != nil {
 				return err
 			}
-			if s != nil {
-				scenes = append(scenes, s)
+			if s == nil {
+				return fmt.Errorf("scene with id %d not found", sceneID)
 			}
+
+			scenes = append(scenes, s)
 
 			// kill any running encoders
 			manager.KillRunningStreams(s, fileNamingAlgo)
@@ -573,7 +575,6 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 	}
 
 	var coverImageData []byte
-
 	if input.Values.CoverImage != nil && *input.Values.CoverImage != "" {
 		var err error
 		coverImageData, err = utils.ProcessImageInput(ctx, *input.Values.CoverImage)
@@ -589,12 +590,14 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 		}
 
 		ret, err = r.Resolver.repository.Scene.Find(ctx, destID)
-
-		if err == nil && ret != nil {
-			err = r.sceneUpdateCoverImage(ctx, ret, coverImageData)
+		if err != nil {
+			return err
+		}
+		if ret == nil {
+			return fmt.Errorf("scene with id %d not found", destID)
 		}
 
-		return err
+		return r.sceneUpdateCoverImage(ctx, ret, coverImageData)
 	}); err != nil {
 		return nil, err
 	}
@@ -629,9 +632,9 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input SceneMar
 		Title:        input.Title,
 		Seconds:      input.Seconds,
 		PrimaryTagID: primaryTagID,
-		SceneID:      sql.NullInt64{Int64: int64(sceneID), Valid: sceneID != 0},
-		CreatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
+		SceneID:      sceneID,
+		CreatedAt:    currentTime,
+		UpdatedAt:    currentTime,
 	}
 
 	tagIDs, err := stringslice.StringSliceToIntSlice(input.TagIds)
@@ -639,13 +642,13 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input SceneMar
 		return nil, err
 	}
 
-	ret, err := r.changeMarker(ctx, create, newSceneMarker, tagIDs)
+	err = r.changeMarker(ctx, create, &newSceneMarker, tagIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, ret.ID, plugin.SceneMarkerCreatePost, input, nil)
-	return r.getSceneMarker(ctx, ret.ID)
+	r.hookExecutor.ExecutePostHooks(ctx, newSceneMarker.ID, plugin.SceneMarkerCreatePost, input, nil)
+	return r.getSceneMarker(ctx, newSceneMarker.ID)
 }
 
 func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMarkerUpdateInput) (*models.SceneMarker, error) {
@@ -669,9 +672,9 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 		ID:           sceneMarkerID,
 		Title:        input.Title,
 		Seconds:      input.Seconds,
-		SceneID:      sql.NullInt64{Int64: int64(sceneID), Valid: sceneID != 0},
+		SceneID:      sceneID,
 		PrimaryTagID: primaryTagID,
-		UpdatedAt:    models.SQLiteTimestamp{Timestamp: time.Now()},
+		UpdatedAt:    time.Now(),
 	}
 
 	tagIDs, err := stringslice.StringSliceToIntSlice(input.TagIds)
@@ -679,7 +682,7 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 		return nil, err
 	}
 
-	ret, err := r.changeMarker(ctx, update, updatedSceneMarker, tagIDs)
+	err = r.changeMarker(ctx, update, &updatedSceneMarker, tagIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -687,8 +690,8 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
-	r.hookExecutor.ExecutePostHooks(ctx, ret.ID, plugin.SceneMarkerUpdatePost, input, translator.getFields())
-	return r.getSceneMarker(ctx, ret.ID)
+	r.hookExecutor.ExecutePostHooks(ctx, updatedSceneMarker.ID, plugin.SceneMarkerUpdatePost, input, translator.getFields())
+	return r.getSceneMarker(ctx, updatedSceneMarker.ID)
 }
 
 func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (bool, error) {
@@ -719,9 +722,13 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 			return fmt.Errorf("scene marker with id %d not found", markerID)
 		}
 
-		s, err := sqb.Find(ctx, int(marker.SceneID.Int64))
+		s, err := sqb.Find(ctx, marker.SceneID)
 		if err != nil {
 			return err
+		}
+
+		if s == nil {
+			return fmt.Errorf("scene with id %d not found", marker.SceneID)
 		}
 
 		return scene.DestroyMarker(ctx, s, marker, qb, fileDeleter)
@@ -738,11 +745,7 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 	return true, nil
 }
 
-func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, changedMarker models.SceneMarker, tagIDs []int) (*models.SceneMarker, error) {
-	var existingMarker *models.SceneMarker
-	var sceneMarker *models.SceneMarker
-	var s *models.Scene
-
+func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, changedMarker *models.SceneMarker, tagIDs []int) error {
 	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
 
 	fileDeleter := &scene.FileDeleter{
@@ -756,47 +759,56 @@ func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, cha
 		qb := r.repository.SceneMarker
 		sqb := r.repository.Scene
 
-		var err error
 		switch changeType {
 		case create:
-			sceneMarker, err = qb.Create(ctx, changedMarker)
+			err := qb.Create(ctx, changedMarker)
+			if err != nil {
+				return err
+			}
 		case update:
 			// check to see if timestamp was changed
-			existingMarker, err = qb.Find(ctx, changedMarker.ID)
+			existingMarker, err := qb.Find(ctx, changedMarker.ID)
 			if err != nil {
 				return err
 			}
-			sceneMarker, err = qb.Update(ctx, changedMarker)
+			if existingMarker == nil {
+				return fmt.Errorf("scene marker with id %d not found", changedMarker.ID)
+			}
+
+			err = qb.Update(ctx, changedMarker)
 			if err != nil {
 				return err
 			}
 
-			s, err = sqb.Find(ctx, int(existingMarker.SceneID.Int64))
-		}
-		if err != nil {
-			return err
-		}
-
-		// remove the marker preview if the timestamp was changed
-		if s != nil && existingMarker != nil && existingMarker.Seconds != changedMarker.Seconds {
-			seconds := int(existingMarker.Seconds)
-			if err := fileDeleter.MarkMarkerFiles(s, seconds); err != nil {
+			s, err := sqb.Find(ctx, existingMarker.SceneID)
+			if err != nil {
 				return err
+			}
+			if s == nil {
+				return fmt.Errorf("scene with id %d not found", existingMarker.ID)
+			}
+
+			// remove the marker preview if the timestamp was changed
+			if existingMarker.Seconds != changedMarker.Seconds {
+				seconds := int(existingMarker.Seconds)
+				if err := fileDeleter.MarkMarkerFiles(s, seconds); err != nil {
+					return err
+				}
 			}
 		}
 
 		// Save the marker tags
 		// If this tag is the primary tag, then let's not add it.
 		tagIDs = intslice.IntExclude(tagIDs, []int{changedMarker.PrimaryTagID})
-		return qb.UpdateTags(ctx, sceneMarker.ID, tagIDs)
+		return qb.UpdateTags(ctx, changedMarker.ID, tagIDs)
 	}); err != nil {
 		fileDeleter.Rollback()
-		return nil, err
+		return err
 	}
 
 	// perform the post-commit actions
 	fileDeleter.Commit()
-	return sceneMarker, nil
+	return nil
 }
 
 func (r *mutationResolver) SceneSaveActivity(ctx context.Context, id string, resumeTime *float64, playDuration *float64) (ret bool, err error) {

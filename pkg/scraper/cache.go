@@ -353,7 +353,15 @@ func (c Cache) getScene(ctx context.Context, sceneID int) (*models.Scene, error)
 	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
 		var err error
 		ret, err = c.repository.SceneFinder.Find(ctx, sceneID)
-		return err
+		if err != nil {
+			return err
+		}
+
+		if ret == nil {
+			return fmt.Errorf("scene with id %d not found", sceneID)
+		}
+
+		return nil
 	}); err != nil {
 		return nil, err
 	}
@@ -365,12 +373,15 @@ func (c Cache) getGallery(ctx context.Context, galleryID int) (*models.Gallery, 
 	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
 		var err error
 		ret, err = c.repository.GalleryFinder.Find(ctx, galleryID)
-
-		if ret != nil {
-			err = ret.LoadFiles(ctx, c.repository.GalleryFinder)
+		if err != nil {
+			return err
 		}
 
-		return err
+		if ret == nil {
+			return fmt.Errorf("gallery with id %d not found", galleryID)
+		}
+
+		return ret.LoadFiles(ctx, c.repository.GalleryFinder)
 	}); err != nil {
 		return nil, err
 	}

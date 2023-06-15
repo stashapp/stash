@@ -11,13 +11,12 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMarkerFindBySceneID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		mqb := sqlite.SceneMarkerReaderWriter
+		mqb := db.SceneMarker
 
 		sceneID := sceneIDs[sceneIdxWithMarkers]
 		markers, err := mqb.FindBySceneID(ctx, sceneID)
@@ -28,7 +27,7 @@ func TestMarkerFindBySceneID(t *testing.T) {
 
 		assert.Greater(t, len(markers), 0)
 		for _, marker := range markers {
-			assert.Equal(t, sceneIDs[sceneIdxWithMarkers], int(marker.SceneID.Int64))
+			assert.Equal(t, sceneIDs[sceneIdxWithMarkers], marker.SceneID)
 		}
 
 		markers, err = mqb.FindBySceneID(ctx, 0)
@@ -45,7 +44,7 @@ func TestMarkerFindBySceneID(t *testing.T) {
 
 func TestMarkerCountByTagID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		mqb := sqlite.SceneMarkerReaderWriter
+		mqb := db.SceneMarker
 
 		markerCount, err := mqb.CountByTagID(ctx, tagIDs[tagIdxWithPrimaryMarkers])
 
@@ -78,7 +77,7 @@ func TestMarkerCountByTagID(t *testing.T) {
 func TestMarkerQuerySortBySceneUpdated(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		sort := "scenes_updated_at"
-		_, _, err := sqlite.SceneMarkerReaderWriter.Query(ctx, nil, &models.FindFilterType{
+		_, _, err := db.SceneMarker.Query(ctx, nil, &models.FindFilterType{
 			Sort: &sort,
 		})
 
@@ -99,7 +98,7 @@ func TestMarkerQueryTags(t *testing.T) {
 
 	withTxn(func(ctx context.Context) error {
 		testTags := func(m *models.SceneMarker, markerFilter *models.SceneMarkerFilterType) {
-			tagIDs, err := sqlite.SceneMarkerReaderWriter.GetTagIDs(ctx, m.ID)
+			tagIDs, err := db.SceneMarker.GetTagIDs(ctx, m.ID)
 			if err != nil {
 				t.Errorf("error getting marker tag ids: %v", err)
 			}
@@ -134,7 +133,7 @@ func TestMarkerQueryTags(t *testing.T) {
 
 		for _, tc := range cases {
 			t.Run(tc.name, func(t *testing.T) {
-				markers := queryMarkers(ctx, t, sqlite.SceneMarkerReaderWriter, tc.markerFilter, tc.findFilter)
+				markers := queryMarkers(ctx, t, db.SceneMarker, tc.markerFilter, tc.findFilter)
 				assert.Greater(t, len(markers), 0)
 				for _, m := range markers {
 					testTags(m, tc.markerFilter)
@@ -155,7 +154,7 @@ func TestMarkerQuerySceneTags(t *testing.T) {
 
 	withTxn(func(ctx context.Context) error {
 		testTags := func(t *testing.T, m *models.SceneMarker, markerFilter *models.SceneMarkerFilterType) {
-			s, err := db.Scene.Find(ctx, int(m.SceneID.Int64))
+			s, err := db.Scene.Find(ctx, m.SceneID)
 			if err != nil {
 				t.Errorf("error getting marker tag ids: %v", err)
 				return
@@ -291,7 +290,7 @@ func TestMarkerQuerySceneTags(t *testing.T) {
 
 		for _, tc := range cases {
 			t.Run(tc.name, func(t *testing.T) {
-				markers := queryMarkers(ctx, t, sqlite.SceneMarkerReaderWriter, tc.markerFilter, tc.findFilter)
+				markers := queryMarkers(ctx, t, db.SceneMarker, tc.markerFilter, tc.findFilter)
 				assert.Greater(t, len(markers), 0)
 				for _, m := range markers {
 					testTags(t, m, tc.markerFilter)

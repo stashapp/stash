@@ -2,7 +2,6 @@ package gallery
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -10,8 +9,8 @@ import (
 )
 
 type ChapterCreatorUpdater interface {
-	Create(ctx context.Context, newGalleryChapter models.GalleryChapter) (*models.GalleryChapter, error)
-	Update(ctx context.Context, updatedGalleryChapter models.GalleryChapter) (*models.GalleryChapter, error)
+	Create(ctx context.Context, newGalleryChapter *models.GalleryChapter) error
+	Update(ctx context.Context, updatedGalleryChapter *models.GalleryChapter) error
 	FindByGalleryID(ctx context.Context, galleryID int) ([]*models.GalleryChapter, error)
 }
 
@@ -28,9 +27,9 @@ func (i *ChapterImporter) PreImport(ctx context.Context) error {
 	i.chapter = models.GalleryChapter{
 		Title:      i.Input.Title,
 		ImageIndex: i.Input.ImageIndex,
-		GalleryID:  sql.NullInt64{Int64: int64(i.GalleryID), Valid: true},
-		CreatedAt:  models.SQLiteTimestamp{Timestamp: i.Input.CreatedAt.GetTime()},
-		UpdatedAt:  models.SQLiteTimestamp{Timestamp: i.Input.UpdatedAt.GetTime()},
+		GalleryID:  i.GalleryID,
+		CreatedAt:  i.Input.CreatedAt.GetTime(),
+		UpdatedAt:  i.Input.UpdatedAt.GetTime(),
 	}
 
 	return nil
@@ -62,19 +61,19 @@ func (i *ChapterImporter) FindExistingID(ctx context.Context) (*int, error) {
 }
 
 func (i *ChapterImporter) Create(ctx context.Context) (*int, error) {
-	created, err := i.ReaderWriter.Create(ctx, i.chapter)
+	err := i.ReaderWriter.Create(ctx, &i.chapter)
 	if err != nil {
 		return nil, fmt.Errorf("error creating chapter: %v", err)
 	}
 
-	id := created.ID
+	id := i.chapter.ID
 	return &id, nil
 }
 
 func (i *ChapterImporter) Update(ctx context.Context, id int) error {
 	chapter := i.chapter
 	chapter.ID = id
-	_, err := i.ReaderWriter.Update(ctx, chapter)
+	err := i.ReaderWriter.Update(ctx, &chapter)
 	if err != nil {
 		return fmt.Errorf("error updating existing chapter: %v", err)
 	}

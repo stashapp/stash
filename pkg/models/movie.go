@@ -48,9 +48,9 @@ type MovieReader interface {
 }
 
 type MovieWriter interface {
-	Create(ctx context.Context, newMovie Movie) (*Movie, error)
-	Update(ctx context.Context, updatedMovie MoviePartial) (*Movie, error)
-	UpdateFull(ctx context.Context, updatedMovie Movie) (*Movie, error)
+	Create(ctx context.Context, newMovie *Movie) error
+	UpdatePartial(ctx context.Context, id int, updatedMovie MoviePartial) (*Movie, error)
+	Update(ctx context.Context, updatedMovie *Movie) error
 	Destroy(ctx context.Context, id int) error
 	UpdateFrontImage(ctx context.Context, movieID int, frontImage []byte) error
 	UpdateBackImage(ctx context.Context, movieID int, backImage []byte) error

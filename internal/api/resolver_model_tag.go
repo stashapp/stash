@@ -2,20 +2,12 @@ package api
 
 import (
 	"context"
-	"time"
 
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 )
-
-func (r *tagResolver) Description(ctx context.Context, obj *models.Tag) (*string, error) {
-	if obj.Description.Valid {
-		return &obj.Description.String, nil
-	}
-	return nil, nil
-}
 
 func (r *tagResolver) Parents(ctx context.Context, obj *models.Tag) (ret []*models.Tag, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
@@ -123,12 +115,4 @@ func (r *tagResolver) ImagePath(ctx context.Context, obj *models.Tag) (*string, 
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	imagePath := urlbuilders.NewTagURLBuilder(baseURL, obj).GetTagImageURL(hasImage)
 	return &imagePath, nil
-}
-
-func (r *tagResolver) CreatedAt(ctx context.Context, obj *models.Tag) (*time.Time, error) {
-	return &obj.CreatedAt.Timestamp, nil
-}
-
-func (r *tagResolver) UpdatedAt(ctx context.Context, obj *models.Tag) (*time.Time, error) {
-	return &obj.UpdatedAt.Timestamp, nil
 }

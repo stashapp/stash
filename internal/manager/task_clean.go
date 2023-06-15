@@ -117,7 +117,7 @@ func (j *cleanJob) deleteGallery(ctx context.Context, id int) {
 		}
 
 		if g == nil {
-			return fmt.Errorf("gallery not found: %d", id)
+			return fmt.Errorf("gallery with id %d not found", id)
 		}
 
 		if err := g.LoadPrimaryFile(ctx, j.txnManager.File); err != nil {

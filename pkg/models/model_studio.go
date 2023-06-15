@@ -1,49 +1,52 @@
 package models
 
 import (
-	"database/sql"
 	"time"
 
 	"github.com/stashapp/stash/pkg/hash/md5"
 )
 
 type Studio struct {
-	ID        int             `db:"id" json:"id"`
-	Checksum  string          `db:"checksum" json:"checksum"`
-	Name      sql.NullString  `db:"name" json:"name"`
-	URL       sql.NullString  `db:"url" json:"url"`
-	ParentID  sql.NullInt64   `db:"parent_id,omitempty" json:"parent_id"`
-	CreatedAt SQLiteTimestamp `db:"created_at" json:"created_at"`
-	UpdatedAt SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	ID        int       `json:"id"`
+	Checksum  string    `json:"checksum"`
+	Name      string    `json:"name"`
+	URL       string    `json:"url"`
+	ParentID  *int      `json:"parent_id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 	// Rating expressed in 1-100 scale
-	Rating        sql.NullInt64  `db:"rating" json:"rating"`
-	Details       sql.NullString `db:"details" json:"details"`
-	IgnoreAutoTag bool           `db:"ignore_auto_tag" json:"ignore_auto_tag"`
-	// TODO - this is only here because of database code in the models package
-	ImageBlob sql.NullString `db:"image_blob" json:"-"`
+	Rating        *int   `json:"rating"`
+	Details       string `json:"details"`
+	IgnoreAutoTag bool   `json:"ignore_auto_tag"`
 }
 
 type StudioPartial struct {
-	ID        int              `db:"id" json:"id"`
-	Checksum  *string          `db:"checksum" json:"checksum"`
-	Name      *sql.NullString  `db:"name" json:"name"`
-	URL       *sql.NullString  `db:"url" json:"url"`
-	ParentID  *sql.NullInt64   `db:"parent_id,omitempty" json:"parent_id"`
-	CreatedAt *SQLiteTimestamp `db:"created_at" json:"created_at"`
-	UpdatedAt *SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	Checksum  OptionalString
+	Name      OptionalString
+	URL       OptionalString
+	ParentID  OptionalInt
+	CreatedAt OptionalTime
+	UpdatedAt OptionalTime
 	// Rating expressed in 1-100 scale
-	Rating        *sql.NullInt64  `db:"rating" json:"rating"`
-	Details       *sql.NullString `db:"details" json:"details"`
-	IgnoreAutoTag *bool           `db:"ignore_auto_tag" json:"ignore_auto_tag"`
+	Rating        OptionalInt
+	Details       OptionalString
+	IgnoreAutoTag OptionalBool
 }
 
 func NewStudio(name string) *Studio {
 	currentTime := time.Now()
 	return &Studio{
 		Checksum:  md5.FromString(name),
-		Name:      sql.NullString{String: name, Valid: true},
-		CreatedAt: SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt: SQLiteTimestamp{Timestamp: currentTime},
+		Name:      name,
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
+	}
+}
+
+func NewStudioPartial() StudioPartial {
+	updatedTime := time.Now()
+	return StudioPartial{
+		UpdatedAt: NewOptionalTime(updatedTime),
 	}
 }
 

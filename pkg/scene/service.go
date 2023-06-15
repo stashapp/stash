@@ -46,7 +46,7 @@ type MarkerRepository interface {
 	MarkerFinder
 	MarkerDestroyer
 
-	Update(ctx context.Context, updatedObject models.SceneMarker) (*models.SceneMarker, error)
+	Update(ctx context.Context, updatedObject *models.SceneMarker) error
 }
 
 type Service struct {

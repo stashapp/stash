@@ -27,7 +27,7 @@ const (
 	errParentStudioID = 12
 )
 
-const (
+var (
 	studioName       = "testStudio"
 	url              = "url"
 	details          = "details"
@@ -37,7 +37,7 @@ const (
 )
 
 var parentStudio models.Studio = models.Studio{
-	Name: models.NullString(parentStudioName),
+	Name: parentStudioName,
 }
 
 var imageBytes = []byte("imageBytes")
@@ -59,22 +59,18 @@ var (
 
 func createFullStudio(id int, parentID int) models.Studio {
 	ret := models.Studio{
-		ID:      id,
-		Name:    models.NullString(studioName),
-		URL:     models.NullString(url),
-		Details: models.NullString(details),
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
-		Rating:        models.NullInt64(rating),
+		ID:            id,
+		Name:          studioName,
+		URL:           url,
+		Details:       details,
+		CreatedAt:     createTime,
+		UpdatedAt:     updateTime,
+		Rating:        &rating,
 		IgnoreAutoTag: autoTagIgnored,
 	}
 
 	if parentID != 0 {
-		ret.ParentID = models.NullInt64(int64(parentID))
+		ret.ParentID = &parentID
 	}
 
 	return ret
@@ -82,13 +78,9 @@ func createFullStudio(id int, parentID int) models.Studio {
 
 func createEmptyStudio(id int) models.Studio {
 	return models.Studio{
-		ID: id,
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
+		ID:        id,
+		CreatedAt: createTime,
+		UpdatedAt: updateTime,
 	}
 }
 

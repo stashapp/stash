@@ -43,8 +43,8 @@ type SceneMarkerReader interface {
 }
 
 type SceneMarkerWriter interface {
-	Create(ctx context.Context, newSceneMarker SceneMarker) (*SceneMarker, error)
-	Update(ctx context.Context, updatedSceneMarker SceneMarker) (*SceneMarker, error)
+	Create(ctx context.Context, newSceneMarker *SceneMarker) error
+	Update(ctx context.Context, updatedSceneMarker *SceneMarker) error
 	Destroy(ctx context.Context, id int) error
 	UpdateTags(ctx context.Context, markerID int, tagIDs []int) error
 }
