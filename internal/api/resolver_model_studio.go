@@ -39,9 +39,9 @@ func (r *studioResolver) Aliases(ctx context.Context, obj *models.Studio) (ret [
 	return ret, err
 }
 
-func (r *studioResolver) SceneCount(ctx context.Context, obj *models.Studio) (ret int, err error) {
+func (r *studioResolver) SceneCount(ctx context.Context, obj *models.Studio, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = scene.CountByStudioID(ctx, r.repository.Scene, obj.ID, false)
+		ret, err = scene.CountByStudioID(ctx, r.repository.Scene, obj.ID, depth)
 		return err
 	}); err != nil {
 		return 0, err
@@ -50,9 +50,9 @@ func (r *studioResolver) SceneCount(ctx context.Context, obj *models.Studio) (re
 	return ret, nil
 }
 
-func (r *studioResolver) SceneCountAll(ctx context.Context, obj *models.Studio) (ret int, err error) {
+func (r *studioResolver) ImageCount(ctx context.Context, obj *models.Studio, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = scene.CountByStudioID(ctx, r.repository.Scene, obj.ID, true)
+		ret, err = image.CountByStudioID(ctx, r.repository.Image, obj.ID, depth)
 		return err
 	}); err != nil {
 		return 0, err
@@ -61,9 +61,9 @@ func (r *studioResolver) SceneCountAll(ctx context.Context, obj *models.Studio) 
 	return ret, nil
 }
 
-func (r *studioResolver) ImageCount(ctx context.Context, obj *models.Studio) (ret int, err error) {
+func (r *studioResolver) GalleryCount(ctx context.Context, obj *models.Studio, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = image.CountByStudioID(ctx, r.repository.Image, obj.ID, false)
+		ret, err = gallery.CountByStudioID(ctx, r.repository.Gallery, obj.ID, depth)
 		return err
 	}); err != nil {
 		return 0, err
@@ -72,9 +72,9 @@ func (r *studioResolver) ImageCount(ctx context.Context, obj *models.Studio) (re
 	return ret, nil
 }
 
-func (r *studioResolver) ImageCountAll(ctx context.Context, obj *models.Studio) (ret int, err error) {
+func (r *studioResolver) PerformerCount(ctx context.Context, obj *models.Studio, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = image.CountByStudioID(ctx, r.repository.Image, obj.ID, true)
+		ret, err = performer.CountByStudioID(ctx, r.repository.Performer, obj.ID, depth)
 		return err
 	}); err != nil {
 		return 0, err
@@ -83,64 +83,9 @@ func (r *studioResolver) ImageCountAll(ctx context.Context, obj *models.Studio) 
 	return ret, nil
 }
 
-func (r *studioResolver) GalleryCount(ctx context.Context, obj *models.Studio) (ret int, err error) {
+func (r *studioResolver) MovieCount(ctx context.Context, obj *models.Studio, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = gallery.CountByStudioID(ctx, r.repository.Gallery, obj.ID, false)
-		return err
-	}); err != nil {
-		return 0, err
-	}
-
-	return ret, nil
-}
-
-func (r *studioResolver) GalleryCountAll(ctx context.Context, obj *models.Studio) (ret int, err error) {
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = gallery.CountByStudioID(ctx, r.repository.Gallery, obj.ID, true)
-		return err
-	}); err != nil {
-		return 0, err
-	}
-
-	return ret, nil
-}
-
-func (r *studioResolver) PerformerCount(ctx context.Context, obj *models.Studio) (ret int, err error) {
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = performer.CountByStudioID(ctx, r.repository.Performer, obj.ID, false)
-		return err
-	}); err != nil {
-		return 0, err
-	}
-
-	return ret, nil
-}
-
-func (r *studioResolver) PerformerCountAll(ctx context.Context, obj *models.Studio) (ret int, err error) {
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = performer.CountByStudioID(ctx, r.repository.Performer, obj.ID, true)
-		return err
-	}); err != nil {
-		return 0, err
-	}
-
-	return ret, nil
-}
-
-func (r *studioResolver) MovieCount(ctx context.Context, obj *models.Studio) (ret int, err error) {
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = movie.CountByStudioID(ctx, r.repository.Movie, obj.ID, false)
-		return err
-	}); err != nil {
-		return 0, err
-	}
-
-	return ret, nil
-}
-
-func (r *studioResolver) MovieCountAll(ctx context.Context, obj *models.Studio) (ret int, err error) {
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = movie.CountByStudioID(ctx, r.repository.Movie, obj.ID, true)
+		ret, err = movie.CountByStudioID(ctx, r.repository.Movie, obj.ID, depth)
 		return err
 	}); err != nil {
 		return 0, err

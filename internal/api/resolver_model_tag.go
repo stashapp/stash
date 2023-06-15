@@ -44,9 +44,9 @@ func (r *tagResolver) Aliases(ctx context.Context, obj *models.Tag) (ret []strin
 	return ret, err
 }
 
-func (r *tagResolver) SceneCount(ctx context.Context, obj *models.Tag) (ret int, err error) {
+func (r *tagResolver) SceneCount(ctx context.Context, obj *models.Tag, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = scene.CountByTagID(ctx, r.repository.Scene, obj.ID, false)
+		ret, err = scene.CountByTagID(ctx, r.repository.Scene, obj.ID, depth)
 		return err
 	}); err != nil {
 		return 0, err
@@ -55,9 +55,9 @@ func (r *tagResolver) SceneCount(ctx context.Context, obj *models.Tag) (ret int,
 	return ret, nil
 }
 
-func (r *tagResolver) SceneCountAll(ctx context.Context, obj *models.Tag) (ret int, err error) {
+func (r *tagResolver) SceneMarkerCount(ctx context.Context, obj *models.Tag, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = scene.CountByTagID(ctx, r.repository.Scene, obj.ID, true)
+		ret, err = scene.MarkerCountByTagID(ctx, r.repository.SceneMarker, obj.ID, depth)
 		return err
 	}); err != nil {
 		return 0, err
@@ -66,9 +66,9 @@ func (r *tagResolver) SceneCountAll(ctx context.Context, obj *models.Tag) (ret i
 	return ret, nil
 }
 
-func (r *tagResolver) SceneMarkerCount(ctx context.Context, obj *models.Tag) (ret int, err error) {
+func (r *tagResolver) ImageCount(ctx context.Context, obj *models.Tag, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = scene.MarkerCountByTagID(ctx, r.repository.SceneMarker, obj.ID, false)
+		ret, err = image.CountByTagID(ctx, r.repository.Image, obj.ID, depth)
 		return err
 	}); err != nil {
 		return 0, err
@@ -77,9 +77,9 @@ func (r *tagResolver) SceneMarkerCount(ctx context.Context, obj *models.Tag) (re
 	return ret, nil
 }
 
-func (r *tagResolver) SceneMarkerCountAll(ctx context.Context, obj *models.Tag) (ret int, err error) {
+func (r *tagResolver) GalleryCount(ctx context.Context, obj *models.Tag, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = scene.MarkerCountByTagID(ctx, r.repository.SceneMarker, obj.ID, true)
+		ret, err = gallery.CountByTagID(ctx, r.repository.Gallery, obj.ID, depth)
 		return err
 	}); err != nil {
 		return 0, err
@@ -88,64 +88,9 @@ func (r *tagResolver) SceneMarkerCountAll(ctx context.Context, obj *models.Tag) 
 	return ret, nil
 }
 
-func (r *tagResolver) ImageCount(ctx context.Context, obj *models.Tag) (ret int, err error) {
+func (r *tagResolver) PerformerCount(ctx context.Context, obj *models.Tag, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = image.CountByTagID(ctx, r.repository.Image, obj.ID, false)
-		return err
-	}); err != nil {
-		return 0, err
-	}
-
-	return ret, nil
-}
-
-func (r *tagResolver) ImageCountAll(ctx context.Context, obj *models.Tag) (ret int, err error) {
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = image.CountByTagID(ctx, r.repository.Image, obj.ID, true)
-		return err
-	}); err != nil {
-		return 0, err
-	}
-
-	return ret, nil
-}
-
-func (r *tagResolver) GalleryCount(ctx context.Context, obj *models.Tag) (ret int, err error) {
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = gallery.CountByTagID(ctx, r.repository.Gallery, obj.ID, false)
-		return err
-	}); err != nil {
-		return 0, err
-	}
-
-	return ret, nil
-}
-
-func (r *tagResolver) GalleryCountAll(ctx context.Context, obj *models.Tag) (ret int, err error) {
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = gallery.CountByTagID(ctx, r.repository.Gallery, obj.ID, true)
-		return err
-	}); err != nil {
-		return 0, err
-	}
-
-	return ret, nil
-}
-
-func (r *tagResolver) PerformerCount(ctx context.Context, obj *models.Tag) (ret int, err error) {
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = performer.CountByTagID(ctx, r.repository.Performer, obj.ID, false)
-		return err
-	}); err != nil {
-		return 0, err
-	}
-
-	return ret, nil
-}
-
-func (r *tagResolver) PerformerCountAll(ctx context.Context, obj *models.Tag) (ret int, err error) {
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = performer.CountByTagID(ctx, r.repository.Performer, obj.ID, true)
+		ret, err = performer.CountByTagID(ctx, r.repository.Performer, obj.ID, depth)
 		return err
 	}); err != nil {
 		return 0, err

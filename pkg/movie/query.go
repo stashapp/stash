@@ -15,17 +15,12 @@ type CountQueryer interface {
 	QueryCount(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) (int, error)
 }
 
-func CountByStudioID(ctx context.Context, r CountQueryer, id int, all bool) (int, error) {
-	depth := 0
-	if all {
-		depth = -1
-	}
-
+func CountByStudioID(ctx context.Context, r CountQueryer, id int, depth *int) (int, error) {
 	filter := &models.MovieFilterType{
 		Studios: &models.HierarchicalMultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
 			Modifier: models.CriterionModifierIncludes,
-			Depth:    &depth,
+			Depth:    depth,
 		},
 	}
 

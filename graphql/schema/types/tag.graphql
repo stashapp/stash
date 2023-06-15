@@ -8,16 +8,11 @@ type Tag {
   updated_at: Time!
 
   image_path: String # Resolver
-  scene_count: Int! # Resolver
-  scene_count_all: Int! # Resolver
-  scene_marker_count: Int! # Resolver
-  scene_marker_count_all: Int! # Resolver
-  image_count: Int! # Resolver
-  image_count_all: Int! # Resolver
-  gallery_count: Int! # Resolver
-  gallery_count_all: Int! # Resolver
-  performer_count: Int! # Resolver
-  performer_count_all: Int! # Resolver
+  scene_count(depth: Int): Int! # Resolver
+  scene_marker_count(depth: Int): Int! # Resolver
+  image_count(depth: Int): Int! # Resolver
+  gallery_count(depth: Int): Int! # Resolver
+  performer_count(depth: Int): Int! # Resolver
 
   parents: [Tag!]!
   children: [Tag!]!

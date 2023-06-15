@@ -52,34 +52,24 @@ func CountByPerformerID(ctx context.Context, r CountQueryer, id int) (int, error
 	return r.QueryCount(ctx, filter, nil)
 }
 
-func CountByStudioID(ctx context.Context, r CountQueryer, id int, all bool) (int, error) {
-	depth := 0
-	if all {
-		depth = -1
-	}
-
+func CountByStudioID(ctx context.Context, r CountQueryer, id int, depth *int) (int, error) {
 	filter := &models.ImageFilterType{
 		Studios: &models.HierarchicalMultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
 			Modifier: models.CriterionModifierIncludes,
-			Depth:    &depth,
+			Depth:    depth,
 		},
 	}
 
 	return r.QueryCount(ctx, filter, nil)
 }
 
-func CountByTagID(ctx context.Context, r CountQueryer, id int, all bool) (int, error) {
-	depth := 0
-	if all {
-		depth = -1
-	}
-
+func CountByTagID(ctx context.Context, r CountQueryer, id int, depth *int) (int, error) {
 	filter := &models.ImageFilterType{
 		Tags: &models.HierarchicalMultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
 			Modifier: models.CriterionModifierIncludes,
-			Depth:    &depth,
+			Depth:    depth,
 		},
 	}
 
