@@ -71,6 +71,8 @@ github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3
 github.com/Microsoft/go-winio v0.4.16/go.mod h1:XB6nPKklQyQ7GC9LdcBEcBl8PF76WugXOPRXwdLnMv0=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/RoaringBitmap/roaring v0.4.7/go.mod h1:8khRDP4HmeXns4xIj9oGrKSz7XTQiJx2zgh7AcNke4w=
+github.com/WithoutPants/sortorder v0.0.0-20230615063600-b6624643cf26 h1:eO5EQKaZYcvGVtyPTijibLtdRxeFPe0UWRa4OANhvlU=
+github.com/WithoutPants/sortorder v0.0.0-20230615063600-b6624643cf26/go.mod h1:LKbO1i6L1lSlwWx4NHWVECxubHNKFz2YQoEMGXAFVy8=
 github.com/Yamashou/gqlgenc v0.0.6 h1:wfMTtuVSrX2N1z5/ssecxx+E7l1fa0FOq5mwFW47oY4=
 github.com/Yamashou/gqlgenc v0.0.6/go.mod h1:WOXjogecRGpD1WKgxnnyHJo0/Dxn44p/LNRoE6mtFQo=
 github.com/agnivade/levenshtein v1.0.1/go.mod h1:CURSv5d9Uaml+FovSIICkLbAUZ9S4RqaHDIsdSBg7lM=
