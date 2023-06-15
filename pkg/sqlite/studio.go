@@ -173,13 +173,6 @@ func (qb *StudioStore) Destroy(ctx context.Context, id int) error {
 		return err
 	}
 
-	// TODO - set null on foreign key in scraped items
-	// remove studio from scraped items
-	_, err := qb.tx.Exec(ctx, "UPDATE scraped_items SET studio_id = null WHERE studio_id = ?", id)
-	if err != nil {
-		return err
-	}
-
 	return qb.destroyExisting(ctx, []int{id})
 }
 

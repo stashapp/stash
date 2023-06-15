@@ -173,10 +173,6 @@ func (t *ExportTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 		t.ExportStudios(ctx, workerCount, r)
 		t.ExportTags(ctx, workerCount, r)
 
-		if t.full {
-			t.ExportScrapedItems(ctx, r)
-		}
-
 		return nil
 	})
 	if txnErr != nil {
@@ -1117,87 +1113,4 @@ func (t *ExportTask) exportMovie(ctx context.Context, wg *sync.WaitGroup, jobCha
 			logger.Errorf("[movies] <%s> failed to save json: %s", fn, err.Error())
 		}
 	}
-}
-
-func (t *ExportTask) ExportScrapedItems(ctx context.Context, repo Repository) {
-	qb := repo.ScrapedItem
-	sqb := repo.Studio
-	scrapedItems, err := qb.All(ctx)
-	if err != nil {
-		logger.Errorf("[scraped sites] failed to fetch all items: %s", err.Error())
-	}
-
-	logger.Info("[scraped sites] exporting")
-
-	scraped := []jsonschema.ScrapedItem{}
-
-	for i, scrapedItem := range scrapedItems {
-		index := i + 1
-		logger.Progressf("[scraped sites] %d of %d", index, len(scrapedItems))
-
-		var studioName string
-		if scrapedItem.StudioID.Valid {
-			studio, _ := sqb.Find(ctx, int(scrapedItem.StudioID.Int64))
-			if studio != nil {
-				studioName = studio.Name
-			}
-		}
-
-		newScrapedItemJSON := jsonschema.ScrapedItem{}
-
-		if scrapedItem.Title.Valid {
-			newScrapedItemJSON.Title = scrapedItem.Title.String
-		}
-		if scrapedItem.Description.Valid {
-			newScrapedItemJSON.Description = scrapedItem.Description.String
-		}
-		if scrapedItem.URL.Valid {
-			newScrapedItemJSON.URL = scrapedItem.URL.String
-		}
-		if scrapedItem.Date != nil {
-			newScrapedItemJSON.Date = scrapedItem.Date.String()
-		}
-		if scrapedItem.Rating.Valid {
-			newScrapedItemJSON.Rating = scrapedItem.Rating.String
-		}
-		if scrapedItem.Tags.Valid {
-			newScrapedItemJSON.Tags = scrapedItem.Tags.String
-		}
-		if scrapedItem.Models.Valid {
-			newScrapedItemJSON.Models = scrapedItem.Models.String
-		}
-		if scrapedItem.Episode.Valid {
-			newScrapedItemJSON.Episode = int(scrapedItem.Episode.Int64)
-		}
-		if scrapedItem.GalleryFilename.Valid {
-			newScrapedItemJSON.GalleryFilename = scrapedItem.GalleryFilename.String
-		}
-		if scrapedItem.GalleryURL.Valid {
-			newScrapedItemJSON.GalleryURL = scrapedItem.GalleryURL.String
-		}
-		if scrapedItem.VideoFilename.Valid {
-			newScrapedItemJSON.VideoFilename = scrapedItem.VideoFilename.String
-		}
-		if scrapedItem.VideoURL.Valid {
-			newScrapedItemJSON.VideoURL = scrapedItem.VideoURL.String
-		}
-
-		newScrapedItemJSON.Studio = studioName
-		updatedAt := json.JSONTime{Time: scrapedItem.UpdatedAt} // TODO keeping ruby format
-		newScrapedItemJSON.UpdatedAt = updatedAt
-
-		scraped = append(scraped, newScrapedItemJSON)
-	}
-
-	scrapedJSON, err := t.json.getScraped()
-	if err != nil {
-		logger.Debugf("[scraped sites] error reading json: %s", err.Error())
-	}
-	if !jsonschema.CompareJSON(scrapedJSON, scraped) {
-		if err := t.json.saveScaped(scraped); err != nil {
-			logger.Errorf("[scraped sites] failed to save json: %s", err.Error())
-		}
-	}
-
-	logger.Infof("[scraped sites] export complete")
 }

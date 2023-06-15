@@ -28,3 +28,6 @@ ALTER TABLE `scene_markers_new` RENAME TO `scene_markers`;
 
 CREATE INDEX `index_scene_markers_on_primary_tag_id` ON `scene_markers`(`primary_tag_id`);
 CREATE INDEX `index_scene_markers_on_scene_id` ON `scene_markers`(`scene_id`);
+
+-- drop unused scraped items table
+DROP TABLE IF EXISTS `scraped_items`;
