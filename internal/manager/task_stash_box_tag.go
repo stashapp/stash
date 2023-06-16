@@ -421,7 +421,7 @@ func studioFromScrapedStudio(ctx context.Context, input *models.ScrapedStudio, e
 
 // Duplicated in internal/identify/studio.go
 func studioPartialFromScrapedStudio(ctx context.Context, input *models.ScrapedStudio, id *string, endpoint string, excluded map[string]bool) (*models.StudioPartial, error) {
-	partial := models.NewStudioPartial()
+	partial := models.StudioPartial{}
 	partial.ID, _ = strconv.Atoi(*id)
 
 	if input.Name != "" && !excluded["name"] {

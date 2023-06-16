@@ -118,7 +118,7 @@ func (i *Importer) populateStudio(ctx context.Context) error {
 
 func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
 	var dbInput models.StudioDBInput
-	dbInput.StudioCreate = models.NewStudio(name)
+	dbInput.StudioCreate = &models.Studio{Name: name}
 
 	studioID, err := i.StudioWriter.Create(ctx, dbInput)
 	if err != nil {

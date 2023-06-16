@@ -80,7 +80,7 @@ func (i *Importer) populateParentStudio(ctx context.Context) error {
 
 func (i *Importer) createParentStudio(ctx context.Context, name string) (int, error) {
 	var dbInput models.StudioDBInput
-	dbInput.StudioCreate = models.NewStudio(name)
+	dbInput.StudioCreate = &models.Studio{Name: name}
 
 	stuiodID, err := i.ReaderWriter.Create(ctx, dbInput)
 	if err != nil {

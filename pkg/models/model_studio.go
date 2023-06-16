@@ -3,8 +3,6 @@ package models
 import (
 	"context"
 	"time"
-
-	"github.com/stashapp/stash/pkg/hash/md5"
 )
 
 type Studio struct {
@@ -71,23 +69,6 @@ type StudioPartial struct {
 
 	Aliases  *UpdateStrings
 	StashIDs *UpdateStashIDs
-}
-
-func NewStudio(name string) *Studio {
-	currentTime := time.Now()
-	return &Studio{
-		Checksum:  md5.FromString(name),
-		Name:      name,
-		CreatedAt: currentTime,
-		UpdatedAt: currentTime,
-	}
-}
-
-func NewStudioPartial() StudioPartial {
-	updatedTime := time.Now()
-	return StudioPartial{
-		UpdatedAt: NewOptionalTime(updatedTime),
-	}
 }
 
 type Studios []*Studio

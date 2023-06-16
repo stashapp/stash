@@ -81,7 +81,7 @@ func studioFromScrapedStudio(ctx context.Context, input *models.ScrapedStudio, e
 
 // Duplicated in task_stash_box_tag.go
 func studioPartialFromScrapedStudio(ctx context.Context, input *models.ScrapedStudio, id *string, endpoint string) (*models.StudioPartial, error) {
-	partial := models.NewStudioPartial()
+	partial := models.StudioPartial{}
 	partial.ID, _ = strconv.Atoi(*id)
 
 	if input.Name != "" {

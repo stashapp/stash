@@ -56,6 +56,18 @@ func (r *studioRow) fromStudio(o models.Studio) {
 	r.Rating = intFromPtr(o.Rating)
 	r.Details = zero.StringFrom(o.Details)
 	r.IgnoreAutoTag = o.IgnoreAutoTag
+
+	if o.CreatedAt.IsZero() {
+		r.CreatedAt = Timestamp{Timestamp: time.Now()}
+	} else {
+		r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
+	}
+
+	if o.UpdatedAt.IsZero() {
+		r.UpdatedAt = Timestamp{Timestamp: time.Now()}
+	} else {
+		r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
+	}
 }
 
 func (r *studioRow) resolve() *models.Studio {
@@ -136,9 +148,6 @@ func (qb *StudioStore) Create(ctx context.Context, input models.StudioDBInput) (
 	// Create the main studio
 	var r studioRow
 	r.fromStudio(*input.StudioCreate)
-	time := time.Now()
-	r.CreatedAt = Timestamp{Timestamp: time}
-	r.UpdatedAt = Timestamp{Timestamp: time}
 
 	id, err := qb.tableMgr.insertID(ctx, r)
 	if err != nil {

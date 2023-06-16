@@ -83,28 +83,23 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input StudioCreateI
 }
 
 func studioFromStudioCreateInput(ctx context.Context, input StudioCreateInput) (*models.Studio, error) {
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+
 	// Populate a new studio from the input
 	newStudio := models.Studio{
-		Name: input.Name,
+		Name:          input.Name,
+		URL:           translator.string(input.URL, "url"),
+		Rating:        translator.ratingConversionInt(input.Rating, input.Rating100),
+		Details:       translator.string(input.Details, "details"),
+		IgnoreAutoTag: translator.bool(input.IgnoreAutoTag, "ignore_auto_tag"),
 	}
-	if input.URL != nil {
-		newStudio.URL = *input.URL
-	}
-	if input.ParentID != nil {
-		parentID, _ := strconv.Atoi(*input.ParentID)
-		newStudio.ParentID = &parentID
-	}
-	if input.Details != nil {
-		newStudio.Details = *input.Details
-	}
-	if input.Rating100 != nil {
-		newStudio.Rating = input.Rating100
-	} else if input.Rating != nil {
-		rating := models.Rating5To100(*input.Rating)
-		newStudio.Rating = &rating
-	}
-	if input.IgnoreAutoTag != nil {
-		newStudio.IgnoreAutoTag = *input.IgnoreAutoTag
+
+	var err error
+	newStudio.ParentID, err = translator.intPtrFromString(input.ParentID, "parent_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting parent id: %w", err)
 	}
 
 	// Process the base 64 encoded image string
@@ -128,14 +123,17 @@ func studioFromStudioCreateInput(ctx context.Context, input StudioCreateInput) (
 
 func studioPartialFromStudioCreateInput(ctx context.Context, input StudioCreateInput, id *string, translator changesetTranslator) (*models.StudioPartial, error) {
 	// Populate studio from the input
-	updatedStudio := models.NewStudioPartial()
+	updatedStudio := models.StudioPartial{
+		URL:           translator.optionalString(input.URL, "url"),
+		Details:       translator.optionalString(input.Details, "details"),
+		Rating:        translator.ratingConversionOptional(input.Rating, input.Rating100),
+		IgnoreAutoTag: translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag"),
+	}
 	updatedStudio.ID, _ = strconv.Atoi(*id)
 
 	if input.Name != "" {
 		updatedStudio.Name = translator.optionalString(&input.Name, "name")
 	}
-
-	updatedStudio.URL = translator.optionalString(input.URL, "url")
 
 	if input.ParentID != nil {
 		parentID, _ := strconv.Atoi(*input.ParentID)
@@ -146,10 +144,6 @@ func studioPartialFromStudioCreateInput(ctx context.Context, input StudioCreateI
 	} else {
 		updatedStudio.ParentID = translator.optionalInt(nil, "parent_id")
 	}
-
-	updatedStudio.Details = translator.optionalString(input.Details, "details")
-	updatedStudio.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
-	updatedStudio.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
 
 	// Process the base 64 encoded image string
 	updatedStudio.ImageIncluded = translator.hasField("image")
@@ -244,14 +238,18 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input StudioUpdateI
 // and ImageIncluded is not hardcoded to true
 func studioPartialFromStudioUpdateInput(ctx context.Context, input StudioUpdateInput, id *string, translator changesetTranslator) (*models.StudioPartial, error) {
 	// Populate studio from the input
-	updatedStudio := models.NewStudioPartial()
+	updatedStudio := models.StudioPartial{
+		URL:           translator.optionalString(input.URL, "url"),
+		Details:       translator.optionalString(input.Details, "details"),
+		Rating:        translator.ratingConversionOptional(input.Rating, input.Rating100),
+		IgnoreAutoTag: translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag"),
+	}
+
 	updatedStudio.ID, _ = strconv.Atoi(*id)
 
 	if input.Name != nil && *input.Name != "" {
 		updatedStudio.Name = translator.optionalString(input.Name, "name")
 	}
-
-	updatedStudio.URL = translator.optionalString(input.URL, "url")
 
 	if input.ParentID != nil {
 		parentID, _ := strconv.Atoi(*input.ParentID)
@@ -262,10 +260,6 @@ func studioPartialFromStudioUpdateInput(ctx context.Context, input StudioUpdateI
 	} else {
 		updatedStudio.ParentID = translator.optionalInt(nil, "parent_id")
 	}
-
-	updatedStudio.Details = translator.optionalString(input.Details, "details")
-	updatedStudio.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
-	updatedStudio.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
 
 	// Process the base 64 encoded image string
 	updatedStudio.ImageIncluded = translator.hasField("image")

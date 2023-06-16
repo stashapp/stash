@@ -1614,7 +1614,6 @@ func createStudios(ctx context.Context, n int, o int) error {
 		name = getStudioStringValue(index, name)
 		studio := models.Studio{
 			Name:          name,
-			Checksum:      md5.FromString(name),
 			URL:           getStudioStringValue(index, urlField),
 			IgnoreAutoTag: getIgnoreAutoTag(i),
 		}
