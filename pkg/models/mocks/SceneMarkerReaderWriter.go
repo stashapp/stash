@@ -252,6 +252,27 @@ func (_m *SceneMarkerReaderWriter) Query(ctx context.Context, sceneMarkerFilter 
 	return r0, r1, r2
 }
 
+// QueryCount provides a mock function with given fields: ctx, sceneMarkerFilter, findFilter
+func (_m *SceneMarkerReaderWriter) QueryCount(ctx context.Context, sceneMarkerFilter *models.SceneMarkerFilterType, findFilter *models.FindFilterType) (int, error) {
+	ret := _m.Called(ctx, sceneMarkerFilter, findFilter)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, *models.SceneMarkerFilterType, *models.FindFilterType) int); ok {
+		r0 = rf(ctx, sceneMarkerFilter, findFilter)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *models.SceneMarkerFilterType, *models.FindFilterType) error); ok {
+		r1 = rf(ctx, sceneMarkerFilter, findFilter)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Update provides a mock function with given fields: ctx, updatedSceneMarker
 func (_m *SceneMarkerReaderWriter) Update(ctx context.Context, updatedSceneMarker *models.SceneMarker) error {
 	ret := _m.Called(ctx, updatedSceneMarker)

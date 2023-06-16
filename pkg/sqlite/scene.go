@@ -988,10 +988,7 @@ func (qb *SceneStore) addVideoFilesTable(f *filterBuilder) {
 	f.addLeftJoin(videoFileTable, "", "video_files.file_id = scenes_files.file_id")
 }
 
-func (qb *SceneStore) Query(ctx context.Context, options models.SceneQueryOptions) (*models.SceneQueryResult, error) {
-	sceneFilter := options.SceneFilter
-	findFilter := options.FindFilter
-
+func (qb *SceneStore) makeQuery(ctx context.Context, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) (*queryBuilder, error) {
 	if sceneFilter == nil {
 		sceneFilter = &models.SceneFilterType{}
 	}
@@ -1043,7 +1040,16 @@ func (qb *SceneStore) Query(ctx context.Context, options models.SceneQueryOption
 	qb.setSceneSort(&query, findFilter)
 	query.sortAndPagination += getPagination(findFilter)
 
-	result, err := qb.queryGroupedFields(ctx, options, query)
+	return &query, nil
+}
+
+func (qb *SceneStore) Query(ctx context.Context, options models.SceneQueryOptions) (*models.SceneQueryResult, error) {
+	query, err := qb.makeQuery(ctx, options.SceneFilter, options.FindFilter)
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := qb.queryGroupedFields(ctx, options, *query)
 	if err != nil {
 		return nil, fmt.Errorf("error querying aggregate fields: %w", err)
 	}
@@ -1116,6 +1122,15 @@ func (qb *SceneStore) queryGroupedFields(ctx context.Context, options models.Sce
 	ret.TotalDuration = out.Duration.Float64
 	ret.TotalSize = out.Size.Float64
 	return ret, nil
+}
+
+func (qb *SceneStore) QueryCount(ctx context.Context, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) (int, error) {
+	query, err := qb.makeQuery(ctx, sceneFilter, findFilter)
+	if err != nil {
+		return 0, err
+	}
+
+	return query.executeCount(ctx)
 }
 
 func sceneFileCountCriterionHandler(qb *SceneStore, fileCount *models.IntCriterionInput) criterionHandlerFunc {

@@ -7,6 +7,8 @@ import (
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/performer"
+	"github.com/stashapp/stash/pkg/scene"
 )
 
 func (r *tagResolver) Parents(ctx context.Context, obj *models.Tag) (ret []*models.Tag, err error) {
@@ -42,64 +44,59 @@ func (r *tagResolver) Aliases(ctx context.Context, obj *models.Tag) (ret []strin
 	return ret, err
 }
 
-func (r *tagResolver) SceneCount(ctx context.Context, obj *models.Tag) (ret *int, err error) {
-	var count int
+func (r *tagResolver) SceneCount(ctx context.Context, obj *models.Tag, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		count, err = r.repository.Scene.CountByTagID(ctx, obj.ID)
+		ret, err = scene.CountByTagID(ctx, r.repository.Scene, obj.ID, depth)
 		return err
 	}); err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	return &count, err
+	return ret, nil
 }
 
-func (r *tagResolver) SceneMarkerCount(ctx context.Context, obj *models.Tag) (ret *int, err error) {
-	var count int
+func (r *tagResolver) SceneMarkerCount(ctx context.Context, obj *models.Tag, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		count, err = r.repository.SceneMarker.CountByTagID(ctx, obj.ID)
+		ret, err = scene.MarkerCountByTagID(ctx, r.repository.SceneMarker, obj.ID, depth)
 		return err
 	}); err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	return &count, err
+	return ret, nil
 }
 
-func (r *tagResolver) ImageCount(ctx context.Context, obj *models.Tag) (ret *int, err error) {
-	var res int
+func (r *tagResolver) ImageCount(ctx context.Context, obj *models.Tag, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		res, err = image.CountByTagID(ctx, r.repository.Image, obj.ID)
+		ret, err = image.CountByTagID(ctx, r.repository.Image, obj.ID, depth)
 		return err
 	}); err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	return &res, nil
+	return ret, nil
 }
 
-func (r *tagResolver) GalleryCount(ctx context.Context, obj *models.Tag) (ret *int, err error) {
-	var res int
+func (r *tagResolver) GalleryCount(ctx context.Context, obj *models.Tag, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		res, err = gallery.CountByTagID(ctx, r.repository.Gallery, obj.ID)
+		ret, err = gallery.CountByTagID(ctx, r.repository.Gallery, obj.ID, depth)
 		return err
 	}); err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	return &res, nil
+	return ret, nil
 }
 
-func (r *tagResolver) PerformerCount(ctx context.Context, obj *models.Tag) (ret *int, err error) {
-	var count int
+func (r *tagResolver) PerformerCount(ctx context.Context, obj *models.Tag, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		count, err = r.repository.Performer.CountByTagID(ctx, obj.ID)
+		ret, err = performer.CountByTagID(ctx, r.repository.Performer, obj.ID, depth)
 		return err
 	}); err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	return &count, err
+	return ret, nil
 }
 
 func (r *tagResolver) ImagePath(ctx context.Context, obj *models.Tag) (*string, error) {

@@ -384,6 +384,27 @@ func (_m *MovieReaderWriter) Query(ctx context.Context, movieFilter *models.Movi
 	return r0, r1, r2
 }
 
+// QueryCount provides a mock function with given fields: ctx, movieFilter, findFilter
+func (_m *MovieReaderWriter) QueryCount(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) (int, error) {
+	ret := _m.Called(ctx, movieFilter, findFilter)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, *models.MovieFilterType, *models.FindFilterType) int); ok {
+		r0 = rf(ctx, movieFilter, findFilter)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *models.MovieFilterType, *models.FindFilterType) error); ok {
+		r1 = rf(ctx, movieFilter, findFilter)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Update provides a mock function with given fields: ctx, updatedMovie
 func (_m *MovieReaderWriter) Update(ctx context.Context, updatedMovie *models.Movie) error {
 	ret := _m.Called(ctx, updatedMovie)
