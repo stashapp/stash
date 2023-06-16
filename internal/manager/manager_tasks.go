@@ -15,6 +15,20 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
+func useAsVideo(pathname string) bool {
+	if instance.Config.IsCreateImageClipsFromVideos() && config.StashConfigs.GetStashFromDirPath(instance.Config.GetStashPaths(), pathname).ExcludeVideo {
+		return false
+	}
+	return isVideo(pathname)
+}
+
+func useAsImage(pathname string) bool {
+	if instance.Config.IsCreateImageClipsFromVideos() && config.StashConfigs.GetStashFromDirPath(instance.Config.GetStashPaths(), pathname).ExcludeVideo {
+		return isImage(pathname) || isVideo(pathname)
+	}
+	return isImage(pathname)
+}
+
 func isZip(pathname string) bool {
 	gExt := config.GetInstance().GetGalleryExtensions()
 	return fsutil.MatchExtension(pathname, gExt)
@@ -177,20 +191,23 @@ func (s *Manager) generateScreenshot(ctx context.Context, sceneId string, at *fl
 	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
 		sceneIdInt, err := strconv.Atoi(sceneId)
 		if err != nil {
-			logger.Errorf("Error parsing scene id %s: %s", sceneId, err.Error())
+			logger.Errorf("Error parsing scene id %s: %v", sceneId, err)
 			return
 		}
 
 		var scene *models.Scene
 		if err := s.Repository.WithTxn(ctx, func(ctx context.Context) error {
-			var err error
 			scene, err = s.Repository.Scene.Find(ctx, sceneIdInt)
-			if scene != nil {
-				err = scene.LoadPrimaryFile(ctx, s.Repository.File)
+			if err != nil {
+				return err
 			}
-			return err
-		}); err != nil || scene == nil {
-			logger.Errorf("failed to get scene for generate: %s", err.Error())
+			if scene == nil {
+				return fmt.Errorf("scene with id %s not found", sceneId)
+			}
+
+			return scene.LoadPrimaryFile(ctx, s.Repository.File)
+		}); err != nil {
+			logger.Errorf("error finding scene for screenshot generation: %v", err)
 			return
 		}
 

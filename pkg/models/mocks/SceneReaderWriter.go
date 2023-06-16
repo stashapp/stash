@@ -102,27 +102,6 @@ func (_m *SceneReaderWriter) CountByPerformerID(ctx context.Context, performerID
 	return r0, r1
 }
 
-// OCountByPerformerID provides a mock function with given fields: ctx, performerID
-func (_m *SceneReaderWriter) OCountByPerformerID(ctx context.Context, performerID int) (int, error) {
-	ret := _m.Called(ctx, performerID)
-
-	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
-		r0 = rf(ctx, performerID)
-	} else {
-		r0 = ret.Get(0).(int)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, performerID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // CountByStudioID provides a mock function with given fields: ctx, studioID
 func (_m *SceneReaderWriter) CountByStudioID(ctx context.Context, studioID int) (int, error) {
 	ret := _m.Called(ctx, studioID)
@@ -438,13 +417,13 @@ func (_m *SceneReaderWriter) FindByPerformerID(ctx context.Context, performerID 
 	return r0, r1
 }
 
-// FindDuplicates provides a mock function with given fields: ctx, distance
-func (_m *SceneReaderWriter) FindDuplicates(ctx context.Context, distance int) ([][]*models.Scene, error) {
-	ret := _m.Called(ctx, distance)
+// FindDuplicates provides a mock function with given fields: ctx, distance, durationDiff
+func (_m *SceneReaderWriter) FindDuplicates(ctx context.Context, distance int, durationDiff float64) ([][]*models.Scene, error) {
+	ret := _m.Called(ctx, distance, durationDiff)
 
 	var r0 [][]*models.Scene
-	if rf, ok := ret.Get(0).(func(context.Context, int) [][]*models.Scene); ok {
-		r0 = rf(ctx, distance)
+	if rf, ok := ret.Get(0).(func(context.Context, int, float64) [][]*models.Scene); ok {
+		r0 = rf(ctx, distance, durationDiff)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([][]*models.Scene)
@@ -452,8 +431,8 @@ func (_m *SceneReaderWriter) FindDuplicates(ctx context.Context, distance int) (
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, distance)
+	if rf, ok := ret.Get(1).(func(context.Context, int, float64) error); ok {
+		r1 = rf(ctx, distance, durationDiff)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -708,6 +687,27 @@ func (_m *SceneReaderWriter) IncrementWatchCount(ctx context.Context, id int) (i
 	return r0, r1
 }
 
+// OCountByPerformerID provides a mock function with given fields: ctx, performerID
+func (_m *SceneReaderWriter) OCountByPerformerID(ctx context.Context, performerID int) (int, error) {
+	ret := _m.Called(ctx, performerID)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
+		r0 = rf(ctx, performerID)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, performerID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Query provides a mock function with given fields: ctx, options
 func (_m *SceneReaderWriter) Query(ctx context.Context, options models.SceneQueryOptions) (*models.SceneQueryResult, error) {
 	ret := _m.Called(ctx, options)
@@ -724,6 +724,27 @@ func (_m *SceneReaderWriter) Query(ctx context.Context, options models.SceneQuer
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, models.SceneQueryOptions) error); ok {
 		r1 = rf(ctx, options)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// QueryCount provides a mock function with given fields: ctx, sceneFilter, findFilter
+func (_m *SceneReaderWriter) QueryCount(ctx context.Context, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) (int, error) {
+	ret := _m.Called(ctx, sceneFilter, findFilter)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, *models.SceneFilterType, *models.FindFilterType) int); ok {
+		r0 = rf(ctx, sceneFilter, findFilter)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *models.SceneFilterType, *models.FindFilterType) error); ok {
+		r1 = rf(ctx, sceneFilter, findFilter)
 	} else {
 		r1 = ret.Error(1)
 	}

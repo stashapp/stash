@@ -72,11 +72,11 @@ func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
 			var err error
 			scene, err := instance.Repository.Scene.Find(ctx, id)
 			if err != nil {
-				return fmt.Errorf("error finding scene with id %d: %w", id, err)
+				return fmt.Errorf("finding scene id %d: %w", id, err)
 			}
 
 			if scene == nil {
-				return fmt.Errorf("%w: scene with id %d", models.ErrNotFound, id)
+				return fmt.Errorf("scene with id %d not found", id)
 			}
 
 			j.identifyScene(ctx, scene, sources)

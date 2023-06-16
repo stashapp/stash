@@ -130,10 +130,7 @@ export class ListFilterModel {
           const criterion = makeCriteria(this.config, encodedCriterion.type);
           // it's possible that we have unsupported criteria. Just skip if so.
           if (criterion) {
-            if (encodedCriterion.value !== undefined) {
-              criterion.value = encodedCriterion.value;
-            }
-            criterion.modifier = encodedCriterion.modifier;
+            criterion.setFromEncodedCriterion(encodedCriterion);
             this.criteria.push(criterion);
           }
         } catch (err) {

@@ -5,7 +5,6 @@ package sqlite_test
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"math"
 	"path/filepath"
@@ -668,7 +667,8 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 			sceneIDs[sceneIdxWithSpacedName],
 			clearScenePartial(),
 			models.Scene{
-				ID: sceneIDs[sceneIdxWithSpacedName],
+				ID:       sceneIDs[sceneIdxWithSpacedName],
+				OCounter: getOCounter(sceneIdxWithSpacedName),
 				Files: models.NewRelatedVideoFiles([]*file.VideoFile{
 					makeSceneFile(sceneIdxWithSpacedName),
 				}),
@@ -677,6 +677,10 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				PerformerIDs: models.NewRelatedIDs([]int{}),
 				Movies:       models.NewRelatedMovies([]models.MoviesScenes{}),
 				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+				PlayCount:    getScenePlayCount(sceneIdxWithSpacedName),
+				PlayDuration: getScenePlayDuration(sceneIdxWithSpacedName),
+				LastPlayedAt: getSceneLastPlayed(sceneIdxWithSpacedName),
+				ResumeTime:   getSceneResumeTime(sceneIdxWithSpacedName),
 			},
 			false,
 		},
@@ -1437,7 +1441,7 @@ func Test_sceneQueryBuilder_Destroy(t *testing.T) {
 			// ensure cannot be found
 			i, err := qb.Find(ctx, tt.id)
 
-			assert.NotNil(err)
+			assert.Nil(err)
 			assert.Nil(i)
 		})
 	}
@@ -1473,7 +1477,7 @@ func Test_sceneQueryBuilder_Find(t *testing.T) {
 			"invalid",
 			invalidID,
 			nil,
-			true,
+			false,
 		},
 		{
 			"with galleries",
@@ -2101,6 +2105,8 @@ func sceneQueryQ(ctx context.Context, t *testing.T, sqb models.SceneReader, q st
 
 	// no Q should return all results
 	filter.Q = nil
+	pp := totalScenes
+	filter.PerPage = &pp
 	scenes = queryScene(ctx, t, sqb, nil, &filter)
 
 	assert.Len(t, scenes, totalScenes)
@@ -2230,8 +2236,8 @@ func TestSceneQuery(t *testing.T) {
 				return
 			}
 
-			include := indexesToIDs(performerIDs, tt.includeIdxs)
-			exclude := indexesToIDs(performerIDs, tt.excludeIdxs)
+			include := indexesToIDs(sceneIDs, tt.includeIdxs)
+			exclude := indexesToIDs(sceneIDs, tt.excludeIdxs)
 
 			for _, i := range include {
 				assert.Contains(results.IDs, i)
@@ -2582,39 +2588,6 @@ func verifyScenesPath(t *testing.T, pathCriterion models.StringCriterionInput) {
 	})
 }
 
-func verifyNullString(t *testing.T, value sql.NullString, criterion models.StringCriterionInput) {
-	t.Helper()
-	assert := assert.New(t)
-	if criterion.Modifier == models.CriterionModifierIsNull {
-		if value.Valid && value.String == "" {
-			// correct
-			return
-		}
-		assert.False(value.Valid, "expect is null values to be null")
-	}
-	if criterion.Modifier == models.CriterionModifierNotNull {
-		assert.True(value.Valid, "expect is null values to be null")
-		assert.Greater(len(value.String), 0)
-	}
-	if criterion.Modifier == models.CriterionModifierEquals {
-		assert.Equal(criterion.Value, value.String)
-	}
-	if criterion.Modifier == models.CriterionModifierNotEquals {
-		assert.NotEqual(criterion.Value, value.String)
-	}
-	if criterion.Modifier == models.CriterionModifierMatchesRegex {
-		assert.True(value.Valid)
-		assert.Regexp(regexp.MustCompile(criterion.Value), value)
-	}
-	if criterion.Modifier == models.CriterionModifierNotMatchesRegex {
-		if !value.Valid {
-			// correct
-			return
-		}
-		assert.NotRegexp(regexp.MustCompile(criterion.Value), value)
-	}
-}
-
 func verifyStringPtr(t *testing.T, value *string, criterion models.StringCriterionInput) {
 	t.Helper()
 	assert := assert.New(t)
@@ -2752,29 +2725,6 @@ func verifyScenesRating100(t *testing.T, ratingCriterion models.IntCriterionInpu
 
 		return nil
 	})
-}
-
-func verifyInt64(t *testing.T, value sql.NullInt64, criterion models.IntCriterionInput) {
-	t.Helper()
-	assert := assert.New(t)
-	if criterion.Modifier == models.CriterionModifierIsNull {
-		assert.False(value.Valid, "expect is null values to be null")
-	}
-	if criterion.Modifier == models.CriterionModifierNotNull {
-		assert.True(value.Valid, "expect is null values to be null")
-	}
-	if criterion.Modifier == models.CriterionModifierEquals {
-		assert.Equal(int64(criterion.Value), value.Int64)
-	}
-	if criterion.Modifier == models.CriterionModifierNotEquals {
-		assert.NotEqual(int64(criterion.Value), value.Int64)
-	}
-	if criterion.Modifier == models.CriterionModifierGreaterThan {
-		assert.True(value.Int64 > int64(criterion.Value))
-	}
-	if criterion.Modifier == models.CriterionModifierLessThan {
-		assert.True(value.Int64 < int64(criterion.Value))
-	}
 }
 
 func verifyIntPtr(t *testing.T, value *int, criterion models.IntCriterionInput) {
@@ -3057,7 +3007,13 @@ func queryScenes(ctx context.Context, t *testing.T, queryBuilder models.SceneRea
 		},
 	}
 
-	return queryScene(ctx, t, queryBuilder, &sceneFilter, nil)
+	// needed so that we don't hit the default limit of 25 scenes
+	pp := 1000
+	findFilter := &models.FindFilterType{
+		PerPage: &pp,
+	}
+
+	return queryScene(ctx, t, queryBuilder, &sceneFilter, findFilter)
 }
 
 func createScene(ctx context.Context, width int, height int) (*models.Scene, error) {
@@ -3329,192 +3285,473 @@ func TestSceneQueryIsMissingPhash(t *testing.T) {
 }
 
 func TestSceneQueryPerformers(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
-		performerCriterion := models.MultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(performerIDs[performerIdxWithScene]),
-				strconv.Itoa(performerIDs[performerIdx1WithScene]),
+	tests := []struct {
+		name        string
+		filter      models.MultiCriterionInput
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"includes",
+			models.MultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(performerIDs[performerIdxWithScene]),
+					strconv.Itoa(performerIDs[performerIdx1WithScene]),
+				},
+				Modifier: models.CriterionModifierIncludes,
 			},
-			Modifier: models.CriterionModifierIncludes,
-		}
-
-		sceneFilter := models.SceneFilterType{
-			Performers: &performerCriterion,
-		}
-
-		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
-
-		assert.Len(t, scenes, 2)
-
-		// ensure ids are correct
-		for _, scene := range scenes {
-			assert.True(t, scene.ID == sceneIDs[sceneIdxWithPerformer] || scene.ID == sceneIDs[sceneIdxWithTwoPerformers])
-		}
-
-		performerCriterion = models.MultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(performerIDs[performerIdx1WithScene]),
-				strconv.Itoa(performerIDs[performerIdx2WithScene]),
+			[]int{
+				sceneIdxWithPerformer,
+				sceneIdxWithTwoPerformers,
 			},
-			Modifier: models.CriterionModifierIncludesAll,
-		}
-
-		scenes = queryScene(ctx, t, sqb, &sceneFilter, nil)
-
-		assert.Len(t, scenes, 1)
-		assert.Equal(t, sceneIDs[sceneIdxWithTwoPerformers], scenes[0].ID)
-
-		performerCriterion = models.MultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(performerIDs[performerIdx1WithScene]),
+			[]int{
+				sceneIdxWithGallery,
 			},
-			Modifier: models.CriterionModifierExcludes,
-		}
+			false,
+		},
+		{
+			"includes all",
+			models.MultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(performerIDs[performerIdx1WithScene]),
+					strconv.Itoa(performerIDs[performerIdx2WithScene]),
+				},
+				Modifier: models.CriterionModifierIncludesAll,
+			},
+			[]int{
+				sceneIdxWithTwoPerformers,
+			},
+			[]int{
+				sceneIdxWithPerformer,
+			},
+			false,
+		},
+		{
+			"excludes",
+			models.MultiCriterionInput{
+				Modifier: models.CriterionModifierExcludes,
+				Value:    []string{strconv.Itoa(tagIDs[performerIdx1WithScene])},
+			},
+			nil,
+			[]int{sceneIdxWithTwoPerformers},
+			false,
+		},
+		{
+			"is null",
+			models.MultiCriterionInput{
+				Modifier: models.CriterionModifierIsNull,
+			},
+			[]int{sceneIdxWithTag},
+			[]int{
+				sceneIdxWithPerformer,
+				sceneIdxWithTwoPerformers,
+				sceneIdxWithPerformerTwoTags,
+			},
+			false,
+		},
+		{
+			"not null",
+			models.MultiCriterionInput{
+				Modifier: models.CriterionModifierNotNull,
+			},
+			[]int{
+				sceneIdxWithPerformer,
+				sceneIdxWithTwoPerformers,
+				sceneIdxWithPerformerTwoTags,
+			},
+			[]int{sceneIdxWithTag},
+			false,
+		},
+		{
+			"equals",
+			models.MultiCriterionInput{
+				Modifier: models.CriterionModifierEquals,
+				Value: []string{
+					strconv.Itoa(tagIDs[performerIdx1WithScene]),
+					strconv.Itoa(tagIDs[performerIdx2WithScene]),
+				},
+			},
+			[]int{sceneIdxWithTwoPerformers},
+			[]int{
+				sceneIdxWithThreePerformers,
+			},
+			false,
+		},
+		{
+			"not equals",
+			models.MultiCriterionInput{
+				Modifier: models.CriterionModifierNotEquals,
+				Value: []string{
+					strconv.Itoa(tagIDs[performerIdx1WithScene]),
+					strconv.Itoa(tagIDs[performerIdx2WithScene]),
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+	}
 
-		q := getSceneStringValue(sceneIdxWithTwoPerformers, titleField)
-		findFilter := models.FindFilterType{
-			Q: &q,
-		}
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 
-		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
-		assert.Len(t, scenes, 0)
+			results, err := db.Scene.Query(ctx, models.SceneQueryOptions{
+				SceneFilter: &models.SceneFilterType{
+					Performers: &tt.filter,
+				},
+			})
+			if (err != nil) != tt.wantErr {
+				t.Errorf("SceneStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
-		return nil
-	})
+			include := indexesToIDs(sceneIDs, tt.includeIdxs)
+			exclude := indexesToIDs(sceneIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(results.IDs, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(results.IDs, e)
+			}
+		})
+	}
 }
 
 func TestSceneQueryTags(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
-		tagCriterion := models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(tagIDs[tagIdxWithScene]),
-				strconv.Itoa(tagIDs[tagIdx1WithScene]),
+	tests := []struct {
+		name        string
+		filter      models.HierarchicalMultiCriterionInput
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"includes",
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(tagIDs[tagIdxWithScene]),
+					strconv.Itoa(tagIDs[tagIdx1WithScene]),
+				},
+				Modifier: models.CriterionModifierIncludes,
 			},
-			Modifier: models.CriterionModifierIncludes,
-		}
-
-		sceneFilter := models.SceneFilterType{
-			Tags: &tagCriterion,
-		}
-
-		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
-		assert.Len(t, scenes, 2)
-
-		// ensure ids are correct
-		for _, scene := range scenes {
-			assert.True(t, scene.ID == sceneIDs[sceneIdxWithTag] || scene.ID == sceneIDs[sceneIdxWithTwoTags])
-		}
-
-		tagCriterion = models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(tagIDs[tagIdx1WithScene]),
-				strconv.Itoa(tagIDs[tagIdx2WithScene]),
+			[]int{
+				sceneIdxWithTag,
+				sceneIdxWithTwoTags,
 			},
-			Modifier: models.CriterionModifierIncludesAll,
-		}
-
-		scenes = queryScene(ctx, t, sqb, &sceneFilter, nil)
-
-		assert.Len(t, scenes, 1)
-		assert.Equal(t, sceneIDs[sceneIdxWithTwoTags], scenes[0].ID)
-
-		tagCriterion = models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(tagIDs[tagIdx1WithScene]),
+			[]int{
+				sceneIdxWithGallery,
 			},
-			Modifier: models.CriterionModifierExcludes,
-		}
+			false,
+		},
+		{
+			"includes all",
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(tagIDs[tagIdx1WithScene]),
+					strconv.Itoa(tagIDs[tagIdx2WithScene]),
+				},
+				Modifier: models.CriterionModifierIncludesAll,
+			},
+			[]int{
+				sceneIdxWithTwoTags,
+			},
+			[]int{
+				sceneIdxWithTag,
+			},
+			false,
+		},
+		{
+			"excludes",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierExcludes,
+				Value:    []string{strconv.Itoa(tagIDs[tagIdx1WithScene])},
+			},
+			nil,
+			[]int{sceneIdxWithTwoTags},
+			false,
+		},
+		{
+			"is null",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierIsNull,
+			},
+			[]int{sceneIdx1WithPerformer},
+			[]int{
+				sceneIdxWithTag,
+				sceneIdxWithTwoTags,
+				sceneIdxWithMarkerAndTag,
+			},
+			false,
+		},
+		{
+			"not null",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierNotNull,
+			},
+			[]int{
+				sceneIdxWithTag,
+				sceneIdxWithTwoTags,
+				sceneIdxWithMarkerAndTag,
+			},
+			[]int{sceneIdx1WithPerformer},
+			false,
+		},
+		{
+			"equals",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierEquals,
+				Value: []string{
+					strconv.Itoa(tagIDs[tagIdx1WithScene]),
+					strconv.Itoa(tagIDs[tagIdx2WithScene]),
+				},
+			},
+			[]int{sceneIdxWithTwoTags},
+			[]int{
+				sceneIdxWithThreeTags,
+			},
+			false,
+		},
+		{
+			"not equals",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierNotEquals,
+				Value: []string{
+					strconv.Itoa(tagIDs[tagIdx1WithScene]),
+					strconv.Itoa(tagIDs[tagIdx2WithScene]),
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+	}
 
-		q := getSceneStringValue(sceneIdxWithTwoTags, titleField)
-		findFilter := models.FindFilterType{
-			Q: &q,
-		}
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 
-		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
-		assert.Len(t, scenes, 0)
+			results, err := db.Scene.Query(ctx, models.SceneQueryOptions{
+				SceneFilter: &models.SceneFilterType{
+					Tags: &tt.filter,
+				},
+			})
+			if (err != nil) != tt.wantErr {
+				t.Errorf("SceneStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
-		return nil
-	})
+			include := indexesToIDs(sceneIDs, tt.includeIdxs)
+			exclude := indexesToIDs(sceneIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(results.IDs, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(results.IDs, e)
+			}
+		})
+	}
 }
 
 func TestSceneQueryPerformerTags(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
-		tagCriterion := models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
-				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+	allDepth := -1
+
+	tests := []struct {
+		name        string
+		findFilter  *models.FindFilterType
+		filter      *models.SceneFilterType
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"includes",
+			nil,
+			&models.SceneFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdxWithPerformer]),
+						strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+					},
+					Modifier: models.CriterionModifierIncludes,
+				},
 			},
-			Modifier: models.CriterionModifierIncludes,
-		}
-
-		sceneFilter := models.SceneFilterType{
-			PerformerTags: &tagCriterion,
-		}
-
-		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
-		assert.Len(t, scenes, 2)
-
-		// ensure ids are correct
-		for _, scene := range scenes {
-			assert.True(t, scene.ID == sceneIDs[sceneIdxWithPerformerTag] || scene.ID == sceneIDs[sceneIdxWithPerformerTwoTags])
-		}
-
-		tagCriterion = models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
-				strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
+			[]int{
+				sceneIdxWithPerformerTag,
+				sceneIdxWithPerformerTwoTags,
+				sceneIdxWithTwoPerformerTag,
 			},
-			Modifier: models.CriterionModifierIncludesAll,
-		}
-
-		scenes = queryScene(ctx, t, sqb, &sceneFilter, nil)
-
-		assert.Len(t, scenes, 1)
-		assert.Equal(t, sceneIDs[sceneIdxWithPerformerTwoTags], scenes[0].ID)
-
-		tagCriterion = models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+			[]int{
+				sceneIdxWithPerformer,
 			},
-			Modifier: models.CriterionModifierExcludes,
-		}
+			false,
+		},
+		{
+			"includes sub-tags",
+			nil,
+			&models.SceneFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdxWithParentAndChild]),
+					},
+					Depth:    &allDepth,
+					Modifier: models.CriterionModifierIncludes,
+				},
+			},
+			[]int{
+				sceneIdxWithPerformerParentTag,
+			},
+			[]int{
+				sceneIdxWithPerformer,
+				sceneIdxWithPerformerTag,
+				sceneIdxWithPerformerTwoTags,
+				sceneIdxWithTwoPerformerTag,
+			},
+			false,
+		},
+		{
+			"includes all",
+			nil,
+			&models.SceneFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+						strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
+					},
+					Modifier: models.CriterionModifierIncludesAll,
+				},
+			},
+			[]int{
+				sceneIdxWithPerformerTwoTags,
+			},
+			[]int{
+				sceneIdxWithPerformer,
+				sceneIdxWithPerformerTag,
+				sceneIdxWithTwoPerformerTag,
+			},
+			false,
+		},
+		{
+			"excludes performer tag tagIdx2WithPerformer",
+			nil,
+			&models.SceneFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierExcludes,
+					Value:    []string{strconv.Itoa(tagIDs[tagIdx2WithPerformer])},
+				},
+			},
+			nil,
+			[]int{sceneIdxWithTwoPerformerTag},
+			false,
+		},
+		{
+			"excludes sub-tags",
+			nil,
+			&models.SceneFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdxWithParentAndChild]),
+					},
+					Depth:    &allDepth,
+					Modifier: models.CriterionModifierExcludes,
+				},
+			},
+			[]int{
+				sceneIdxWithPerformer,
+				sceneIdxWithPerformerTag,
+				sceneIdxWithPerformerTwoTags,
+				sceneIdxWithTwoPerformerTag,
+			},
+			[]int{
+				sceneIdxWithPerformerParentTag,
+			},
+			false,
+		},
+		{
+			"is null",
+			nil,
+			&models.SceneFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierIsNull,
+				},
+			},
+			[]int{sceneIdx1WithPerformer},
+			[]int{sceneIdxWithPerformerTag},
+			false,
+		},
+		{
+			"not null",
+			nil,
+			&models.SceneFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierNotNull,
+				},
+			},
+			[]int{sceneIdxWithPerformerTag},
+			[]int{sceneIdx1WithPerformer},
+			false,
+		},
+		{
+			"equals",
+			nil,
+			&models.SceneFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierEquals,
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+		{
+			"not equals",
+			nil,
+			&models.SceneFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierNotEquals,
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+	}
 
-		q := getSceneStringValue(sceneIdxWithPerformerTwoTags, titleField)
-		findFilter := models.FindFilterType{
-			Q: &q,
-		}
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 
-		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
-		assert.Len(t, scenes, 0)
+			results, err := db.Scene.Query(ctx, models.SceneQueryOptions{
+				SceneFilter: tt.filter,
+				QueryOptions: models.QueryOptions{
+					FindFilter: tt.findFilter,
+				},
+			})
+			if (err != nil) != tt.wantErr {
+				t.Errorf("SceneStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
-		tagCriterion = models.HierarchicalMultiCriterionInput{
-			Modifier: models.CriterionModifierIsNull,
-		}
-		q = getSceneStringValue(sceneIdx1WithPerformer, titleField)
+			include := indexesToIDs(sceneIDs, tt.includeIdxs)
+			exclude := indexesToIDs(sceneIDs, tt.excludeIdxs)
 
-		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
-		assert.Len(t, scenes, 1)
-		assert.Equal(t, sceneIDs[sceneIdx1WithPerformer], scenes[0].ID)
-
-		q = getSceneStringValue(sceneIdxWithPerformerTag, titleField)
-		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
-		assert.Len(t, scenes, 0)
-
-		tagCriterion.Modifier = models.CriterionModifierNotNull
-
-		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
-		assert.Len(t, scenes, 1)
-		assert.Equal(t, sceneIDs[sceneIdxWithPerformerTag], scenes[0].ID)
-
-		q = getSceneStringValue(sceneIdx1WithPerformer, titleField)
-		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
-		assert.Len(t, scenes, 0)
-
-		return nil
-	})
+			for _, i := range include {
+				assert.Contains(results.IDs, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(results.IDs, e)
+			}
+		})
+	}
 }
 
 func TestSceneQueryStudio(t *testing.T) {
@@ -3559,6 +3796,30 @@ func TestSceneQueryStudio(t *testing.T) {
 				Modifier: models.CriterionModifierExcludes,
 			},
 			[]int{sceneIDs[sceneIdxWithGallery]},
+			false,
+		},
+		{
+			"equals",
+			"",
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[studioIdxWithScene]),
+				},
+				Modifier: models.CriterionModifierEquals,
+			},
+			[]int{sceneIDs[sceneIdxWithStudio]},
+			false,
+		},
+		{
+			"not equals",
+			getSceneStringValue(sceneIdxWithStudio, titleField),
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[studioIdxWithScene]),
+				},
+				Modifier: models.CriterionModifierNotEquals,
+			},
+			[]int{},
 			false,
 		},
 	}
@@ -4237,7 +4498,8 @@ func TestSceneStore_FindDuplicates(t *testing.T) {
 
 	withRollbackTxn(func(ctx context.Context) error {
 		distance := 0
-		got, err := qb.FindDuplicates(ctx, distance)
+		durationDiff := -1.
+		got, err := qb.FindDuplicates(ctx, distance, durationDiff)
 		if err != nil {
 			t.Errorf("SceneStore.FindDuplicates() error = %v", err)
 			return nil
@@ -4246,7 +4508,8 @@ func TestSceneStore_FindDuplicates(t *testing.T) {
 		assert.Len(t, got, dupeScenePhashes)
 
 		distance = 1
-		got, err = qb.FindDuplicates(ctx, distance)
+		durationDiff = -1.
+		got, err = qb.FindDuplicates(ctx, distance, durationDiff)
 		if err != nil {
 			t.Errorf("SceneStore.FindDuplicates() error = %v", err)
 			return nil

@@ -16,19 +16,25 @@ $sceneTabWidth: 450px;
     height: 100vh;
   }
 
-  &.portrait .video-js {
+  &.portrait .video-wrapper {
     height: 177.78vw;
   }
 }
 
-.video-js {
+.video-wrapper {
   height: 56.25vw;
+  max-height: calc(100vh - #{$menuHeight});
   overflow: hidden;
   width: 100%;
 
   @media (min-width: 1200px) {
     height: 100%;
   }
+}
+
+.video-js {
+  height: 100%;
+  width: 100%;
 
   .vjs-button {
     outline: none;
@@ -109,7 +115,7 @@ $sceneTabWidth: 450px;
     width: 100%;
 
     .vjs-progress-holder {
-      margin: 0 1rem;
+      margin: 0 15px;
     }
   }
 
@@ -181,6 +187,17 @@ $sceneTabWidth: 450px;
     .vjs-button > .vjs-icon-placeholder::before {
       content: "\f110";
       font-family: VideoJS;
+    }
+  }
+
+  .vjs-vr-selector {
+    .vjs-menu li {
+      font-size: 0.8em;
+    }
+
+    .vjs-button {
+      background: url("/vr.svg") center center no-repeat;
+      width: 50%;
     }
   }
 

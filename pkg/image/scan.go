@@ -29,25 +29,29 @@ type FinderCreatorUpdater interface {
 	UpdatePartial(ctx context.Context, id int, updatedImage models.ImagePartial) (*models.Image, error)
 	AddFileID(ctx context.Context, id int, fileID file.ID) error
 	models.GalleryIDLoader
-	models.ImageFileLoader
+	models.FileLoader
 }
 
 type GalleryFinderCreator interface {
 	FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Gallery, error)
 	FindByFolderID(ctx context.Context, folderID file.FolderID) ([]*models.Gallery, error)
 	Create(ctx context.Context, newObject *models.Gallery, fileIDs []file.ID) error
+	UpdatePartial(ctx context.Context, id int, updatedGallery models.GalleryPartial) (*models.Gallery, error)
 }
 
 type ScanConfig interface {
 	GetCreateGalleriesFromFolders() bool
-	IsGenerateThumbnails() bool
+}
+
+type ScanGenerator interface {
+	Generate(ctx context.Context, i *models.Image, f file.File) error
 }
 
 type ScanHandler struct {
 	CreatorUpdater FinderCreatorUpdater
 	GalleryFinder  GalleryFinderCreator
 
-	ThumbnailGenerator ThumbnailGenerator
+	ScanGenerator ScanGenerator
 
 	ScanConfig ScanConfig
 
@@ -59,6 +63,9 @@ type ScanHandler struct {
 func (h *ScanHandler) validate() error {
 	if h.CreatorUpdater == nil {
 		return errors.New("CreatorUpdater is required")
+	}
+	if h.ScanGenerator == nil {
+		return errors.New("ScanGenerator is required")
 	}
 	if h.GalleryFinder == nil {
 		return errors.New("GalleryFinder is required")
@@ -78,10 +85,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File
 		return err
 	}
 
-	imageFile, ok := f.(*file.ImageFile)
-	if !ok {
-		return ErrNotImageFile
-	}
+	imageFile := f.Base()
 
 	// try to match the file to an image
 	existing, err := h.CreatorUpdater.FindByFileID(ctx, imageFile.ID)
@@ -114,8 +118,14 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File
 
 		logger.Infof("%s doesn't exist. Creating new image...", f.Base().Path)
 
-		if _, err := h.associateGallery(ctx, newImage, imageFile); err != nil {
+		g, err := h.getGalleryToAssociate(ctx, newImage, f)
+		if err != nil {
 			return err
+		}
+
+		if g != nil {
+			newImage.GalleryIDs.Add(g.ID)
+			logger.Infof("Adding %s to gallery %s", f.Base().Path, g.Path)
 		}
 
 		if err := h.CreatorUpdater.Create(ctx, &models.ImageCreateInput{
@@ -123,6 +133,15 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File
 			FileIDs: []file.ID{imageFile.ID},
 		}); err != nil {
 			return fmt.Errorf("creating new image: %w", err)
+		}
+
+		// update the gallery updated at timestamp if applicable
+		if g != nil {
+			if _, err := h.GalleryFinder.UpdatePartial(ctx, g.ID, models.GalleryPartial{
+				UpdatedAt: models.NewOptionalTime(time.Now()),
+			}); err != nil {
+				return fmt.Errorf("updating gallery updated at timestamp: %w", err)
+			}
 		}
 
 		h.PluginCache.RegisterPostHooks(ctx, newImage.ID, plugin.ImageCreatePost, nil, nil)
@@ -141,22 +160,20 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File
 		}
 	}
 
-	if h.ScanConfig.IsGenerateThumbnails() {
-		// do this after the commit so that the transaction isn't held up
-		txn.AddPostCommitHook(ctx, func(ctx context.Context) {
-			for _, s := range existing {
-				if err := h.ThumbnailGenerator.GenerateThumbnail(ctx, s, imageFile); err != nil {
-					// just log if cover generation fails. We can try again on rescan
-					logger.Errorf("Error generating thumbnail for %s: %v", imageFile.Path, err)
-				}
+	// do this after the commit so that generation doesn't hold up the transaction
+	txn.AddPostCommitHook(ctx, func(ctx context.Context) {
+		for _, s := range existing {
+			if err := h.ScanGenerator.Generate(ctx, s, f); err != nil {
+				// just log if cover generation fails. We can try again on rescan
+				logger.Errorf("Error generating content for %s: %v", imageFile.Path, err)
 			}
-		})
-	}
+		}
+	})
 
 	return nil
 }
 
-func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Image, f *file.ImageFile, updateExisting bool) error {
+func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Image, f *file.BaseFile, updateExisting bool) error {
 	for _, i := range existing {
 		if err := i.LoadFiles(ctx, h.CreatorUpdater); err != nil {
 			return err
@@ -164,23 +181,25 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 
 		found := false
 		for _, sf := range i.Files.List() {
-			if sf.ID == f.Base().ID {
+			if sf.Base().ID == f.Base().ID {
 				found = true
 				break
 			}
 		}
 
 		// associate with gallery if applicable
-		changed, err := h.associateGallery(ctx, i, f)
+		g, err := h.getGalleryToAssociate(ctx, i, f)
 		if err != nil {
 			return err
 		}
 
 		var galleryIDs *models.UpdateIDs
-		if changed {
+		changed := false
+		if g != nil {
+			changed = true
 			galleryIDs = &models.UpdateIDs{
-				IDs:  i.GalleryIDs.List(),
-				Mode: models.RelationshipUpdateModeSet,
+				IDs:  []int{g.ID},
+				Mode: models.RelationshipUpdateModeAdd,
 			}
 		}
 
@@ -201,6 +220,14 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 				UpdatedAt:  models.NewOptionalTime(time.Now()),
 			}); err != nil {
 				return fmt.Errorf("updating image: %w", err)
+			}
+
+			if g != nil {
+				if _, err := h.GalleryFinder.UpdatePartial(ctx, g.ID, models.GalleryPartial{
+					UpdatedAt: models.NewOptionalTime(time.Now()),
+				}); err != nil {
+					return fmt.Errorf("updating gallery updated at timestamp: %w", err)
+				}
 			}
 		}
 
@@ -307,29 +334,42 @@ func (h *ScanHandler) getOrCreateGallery(ctx context.Context, f file.File) (*mod
 		return h.getOrCreateZipBasedGallery(ctx, f.Base().ZipFile)
 	}
 
-	if h.ScanConfig.GetCreateGalleriesFromFolders() {
+	// Look for specific filename in Folder to find out if the Folder is marked to be handled differently as the setting
+	folderPath := filepath.Dir(f.Base().Path)
+
+	forceGallery := false
+	if _, err := os.Stat(filepath.Join(folderPath, ".forcegallery")); err == nil {
+		forceGallery = true
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return nil, fmt.Errorf("Could not test Path %s: %w", folderPath, err)
+	}
+	exemptGallery := false
+	if _, err := os.Stat(filepath.Join(folderPath, ".nogallery")); err == nil {
+		exemptGallery = true
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return nil, fmt.Errorf("Could not test Path %s: %w", folderPath, err)
+	}
+
+	if forceGallery || (h.ScanConfig.GetCreateGalleriesFromFolders() && !exemptGallery) {
 		return h.getOrCreateFolderBasedGallery(ctx, f)
 	}
 
 	return nil, nil
 }
 
-func (h *ScanHandler) associateGallery(ctx context.Context, newImage *models.Image, f file.File) (bool, error) {
+func (h *ScanHandler) getGalleryToAssociate(ctx context.Context, newImage *models.Image, f file.File) (*models.Gallery, error) {
 	g, err := h.getOrCreateGallery(ctx, f)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
 	if err := newImage.LoadGalleryIDs(ctx, h.CreatorUpdater); err != nil {
-		return false, err
+		return nil, err
 	}
 
-	ret := false
 	if g != nil && !intslice.IntInclude(newImage.GalleryIDs.List(), g.ID) {
-		ret = true
-		newImage.GalleryIDs.Add(g.ID)
-		logger.Infof("Adding %s to gallery %s", f.Base().Path, g.Path)
+		return g, nil
 	}
 
-	return ret, nil
+	return nil, nil
 }

@@ -59,6 +59,7 @@ export interface IUIConfig {
 
   lastNoteSeen?: number;
 
+  vrTag?: string;
   pinnedFilters?: PinnedFilters;
 }
 

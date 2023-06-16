@@ -8,13 +8,12 @@ import (
 	"testing"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSavedFilterFind(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		savedFilter, err := sqlite.SavedFilterReaderWriter.Find(ctx, savedFilterIDs[savedFilterIdxImage])
+		savedFilter, err := db.SavedFilter.Find(ctx, savedFilterIDs[savedFilterIdxImage])
 
 		if err != nil {
 			t.Errorf("Error finding saved filter: %s", err.Error())
@@ -28,7 +27,7 @@ func TestSavedFilterFind(t *testing.T) {
 
 func TestSavedFilterFindByMode(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		savedFilters, err := sqlite.SavedFilterReaderWriter.FindByMode(ctx, models.FilterModeScenes)
+		savedFilters, err := db.SavedFilter.FindByMode(ctx, models.FilterModeScenes)
 
 		if err != nil {
 			t.Errorf("Error finding saved filters: %s", err.Error())
@@ -48,28 +47,27 @@ func TestSavedFilterDestroy(t *testing.T) {
 
 	// create the saved filter to destroy
 	withTxn(func(ctx context.Context) error {
-		created, err := sqlite.SavedFilterReaderWriter.Create(ctx, models.SavedFilter{
+		newFilter := models.SavedFilter{
 			Name:   filterName,
 			Mode:   models.FilterModeScenes,
 			Filter: testFilter,
-		})
+		}
+		err := db.SavedFilter.Create(ctx, &newFilter)
 
 		if err == nil {
-			id = created.ID
+			id = newFilter.ID
 		}
 
 		return err
 	})
 
 	withTxn(func(ctx context.Context) error {
-		qb := sqlite.SavedFilterReaderWriter
-
-		return qb.Destroy(ctx, id)
+		return db.SavedFilter.Destroy(ctx, id)
 	})
 
 	// now try to find it
 	withTxn(func(ctx context.Context) error {
-		found, err := sqlite.SavedFilterReaderWriter.Find(ctx, id)
+		found, err := db.SavedFilter.Find(ctx, id)
 		if err == nil {
 			assert.Nil(t, found)
 		}
@@ -80,7 +78,7 @@ func TestSavedFilterDestroy(t *testing.T) {
 
 func TestSavedFilterFindDefault(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		def, err := sqlite.SavedFilterReaderWriter.FindDefault(ctx, models.FilterModeScenes)
+		def, err := db.SavedFilter.FindDefault(ctx, models.FilterModeScenes)
 		if err == nil {
 			assert.Equal(t, savedFilterIDs[savedFilterIdxDefaultScene], def.ID)
 		}
@@ -93,7 +91,7 @@ func TestSavedFilterSetDefault(t *testing.T) {
 	const newFilter = "foo"
 
 	withTxn(func(ctx context.Context) error {
-		_, err := sqlite.SavedFilterReaderWriter.SetDefault(ctx, models.SavedFilter{
+		err := db.SavedFilter.SetDefault(ctx, &models.SavedFilter{
 			Mode:   models.FilterModeMovies,
 			Filter: newFilter,
 		})
@@ -103,7 +101,7 @@ func TestSavedFilterSetDefault(t *testing.T) {
 
 	var defID int
 	withTxn(func(ctx context.Context) error {
-		def, err := sqlite.SavedFilterReaderWriter.FindDefault(ctx, models.FilterModeMovies)
+		def, err := db.SavedFilter.FindDefault(ctx, models.FilterModeMovies)
 		if err == nil {
 			defID = def.ID
 			assert.Equal(t, newFilter, def.Filter)
@@ -114,7 +112,7 @@ func TestSavedFilterSetDefault(t *testing.T) {
 
 	// destroy it again
 	withTxn(func(ctx context.Context) error {
-		return sqlite.SavedFilterReaderWriter.Destroy(ctx, defID)
+		return db.SavedFilter.Destroy(ctx, defID)
 	})
 }
 

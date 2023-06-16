@@ -1081,7 +1081,7 @@
   dependencies:
     regenerator-runtime "^0.13.11"
 
-"@babel/runtime@^7.8.4":
+"@babel/runtime@^7.14.5", "@babel/runtime@^7.8.4":
   version "7.21.0"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.21.0.tgz#5b55c9d394e5fcf304909a8b00c07dc217b56673"
   integrity sha512-xwII0//EObnq89Ji5AKYQaRYiW/nZ3llSv29d49IuxPhKbtJoLP+9QUUZ4nVragQVtaVGeZrpB+ZtG/Pdy/POw==
@@ -2430,6 +2430,11 @@
   resolved "https://registry.yarnpkg.com/@types/semver/-/semver-7.3.13.tgz#da4bfd73f49bd541d28920ab0e2bf0ee80f71c91"
   integrity sha512-21cFJr9z3g5dW8B0CVI9g2O9beqaThGQ6ZFBqHfwhzLDKUxaqTIy3vnfah/UPkfOiF2pLq+tGz+W8RyCskuslw==
 
+"@types/ua-parser-js@^0.7.36":
+  version "0.7.36"
+  resolved "https://registry.npmjs.org/@types/ua-parser-js/-/ua-parser-js-0.7.36.tgz"
+  integrity sha512-N1rW+njavs70y2cApeIw1vLMYXRwfBy+7trgavGuuTfOd7j1Yh7QTRc/yqsPl6ncokt72ZXuxEU0PiCp9bSwNQ==
+
 "@types/unist@*", "@types/unist@^2.0.0", "@types/unist@^2.0.2", "@types/unist@^2.0.3":
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/@types/unist/-/unist-2.0.6.tgz#250a7b16c3b91f672a24552ec64678eeb1d3a08d"
@@ -2440,10 +2445,10 @@
   resolved "https://registry.yarnpkg.com/@types/video.js/-/video.js-7.3.51.tgz#ce69e02681ed6ed8abe61bb3802dd032a74d63e8"
   integrity sha512-xLlt/ZfCuWYBvG2MRn018RvaEplcK6dI63aOiVUeeAWFyjx3Br1hL749ndFgbrvNdY4m9FoHG1FQ/PB6IpfSAQ==
 
-"@types/videojs-mobile-ui@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@types/videojs-mobile-ui/-/videojs-mobile-ui-0.5.0.tgz#66934b140fd437fda361986f8e7e87b01dc39138"
-  integrity sha512-wqeapTB35qpLfERxvL5mZGoexf5bA2TreDpFgc3zyCdr7Acf86VItvo9oTclFeUc11wOo7W7/4ueZZAEYmlTaA==
+"@types/videojs-mobile-ui@^0.8.0":
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/@types/videojs-mobile-ui/-/videojs-mobile-ui-0.8.0.tgz#0fb82810155f3dee9620ea411c8b9bd17e1ac645"
+  integrity sha512-Q8p7ezQLZzf8pnvYd8GZ/6tcg2oX0269Q94dDoqNnq2QMmqWp1sj8npU3gGnTaLkYvvdrO8UjBOIzX68RkQLew==
   dependencies:
     "@types/video.js" "*"
 
@@ -3205,6 +3210,15 @@ capital-case@^1.0.4:
     no-case "^3.0.4"
     tslib "^2.0.3"
     upper-case-first "^2.0.2"
+
+cardboard-vr-display@^1.0.19:
+  version "1.0.19"
+  resolved "https://registry.yarnpkg.com/cardboard-vr-display/-/cardboard-vr-display-1.0.19.tgz#81dcde1804b329b8228b757ac00e1fd2afa9d748"
+  integrity sha512-+MjcnWKAkb95p68elqZLDPzoiF/dGncQilLGvPBM5ZorABp/ao3lCs7nnRcYBckmuNkg1V/5rdGDKoUaCVsHzQ==
+  dependencies:
+    gl-preserve-state "^1.0.0"
+    nosleep.js "^0.7.0"
+    webvr-polyfill-dpdb "^1.0.17"
 
 ccount@^1.0.0:
   version "1.1.0"
@@ -4449,6 +4463,11 @@ get-symbol-description@^1.0.0:
   dependencies:
     call-bind "^1.0.2"
     get-intrinsic "^1.1.1"
+
+gl-preserve-state@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/gl-preserve-state/-/gl-preserve-state-1.0.0.tgz#4ef710d62873f1470ed015c6546c37dacddd4198"
+  integrity sha512-zQZ25l3haD4hvgJZ6C9+s0ebdkW9y+7U2qxvGu1uWOJh8a4RU+jURIKEQhf8elIlFpMH6CrAY2tH0mYrRjet3Q==
 
 glob-parent@^5.1.2, glob-parent@~5.1.2:
   version "5.1.2"
@@ -5997,6 +6016,11 @@ normalize-url@^4.5.1:
   resolved "https://registry.yarnpkg.com/normalize-url/-/normalize-url-4.5.1.tgz#0dd90cf1288ee1d1313b87081c9a5932ee48518a"
   integrity sha512-9UZCFRHQdNrfTpGg8+1INIg93B6zE0aXMVFkw1WFwvO4SlZywU6aLg5Of0Ap/PgcbSw4LNxvMWXMeugwMCX0AA==
 
+nosleep.js@^0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/nosleep.js/-/nosleep.js-0.7.0.tgz#cfd919c25523ca0d0f4a69fb3305c083adaee289"
+  integrity sha512-Z4B1HgvzR+en62ghwZf6BwAR6x4/pjezsiMcbF9KMLh7xoscpoYhaSXfY3lLkqC68AtW+/qLJ1lzvBIj0FGaTA==
+
 nullthrows@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/nullthrows/-/nullthrows-1.1.1.tgz#7818258843856ae971eae4208ad7d7eb19a431b1"
@@ -7466,6 +7490,11 @@ thehandy@^1.0.3:
   resolved "https://registry.yarnpkg.com/thehandy/-/thehandy-1.0.3.tgz#51c5e9bae5932a6e5c563203711d78610b99d402"
   integrity sha512-zuuyWKBx/jqku9+MZkdkoK2oLM2mS8byWVR/vkQYq/ygAT6gPAXwiT94rfGuqv+1BLmsyJxm69nhVIzOZjfyIg==
 
+three@0.125.2:
+  version "0.125.2"
+  resolved "https://registry.yarnpkg.com/three/-/three-0.125.2.tgz#dcba12749a2eb41522e15212b919cd3fbf729b12"
+  integrity sha512-7rIRO23jVKWcAPFdW/HREU2NZMGWPBZ4XwEMt0Ak0jwLUKVJhcKM55eCBWyGZq/KiQbeo1IeuAoo/9l2dzhTXA==
+
 throttle-debounce@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/throttle-debounce/-/throttle-debounce-5.0.0.tgz#a17a4039e82a2ed38a5e7268e4132d6960d41933"
@@ -7677,6 +7706,11 @@ ua-parser-js@^1.0.2:
   version "1.0.33"
   resolved "https://registry.yarnpkg.com/ua-parser-js/-/ua-parser-js-1.0.33.tgz#f21f01233e90e7ed0f059ceab46eb190ff17f8f4"
   integrity sha512-RqshF7TPTE0XLYAqmjlu5cLLuGdKrNu9O1KLA/qp39QtbZwuzwv1dT46DZSopoUMsYgXpB3Cv8a03FI8b74oFQ==
+
+ua-parser-js@^1.0.34:
+  version "1.0.34"
+  resolved "https://registry.yarnpkg.com/ua-parser-js/-/ua-parser-js-1.0.34.tgz#b33f41c415325839f354005d25a2f588be296976"
+  integrity sha512-K9mwJm/DaB6mRLZfw6q8IMXipcrmuT6yfhYmwhAkuh+81sChuYstYA+znlgaflUPaYUa3odxKPKGw6Vw/lANew==
 
 unbox-primitive@^1.0.2:
   version "1.0.2"
@@ -7965,6 +7999,17 @@ videojs-seek-buttons@^3.0.1:
   dependencies:
     global "^4.4.0"
 
+videojs-vr@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/videojs-vr/-/videojs-vr-2.0.0.tgz#3d86e3fececf7373cfb89b950ed6ab77ca783d2b"
+  integrity sha512-ix4iN8XHaDSEe89Jqybj9DuLKYuK33EIzcSI0IEdnv1KJuH8bd0PYlQEgqIZTOmWruFpW/+rjYFCVUQ9PTypJw==
+  dependencies:
+    "@babel/runtime" "^7.14.5"
+    global "^4.4.0"
+    three "0.125.2"
+    video.js "^6 || ^7"
+    webvr-polyfill "0.10.12"
+
 videojs-vtt.js@^0.15.4:
   version "0.15.4"
   resolved "https://registry.yarnpkg.com/videojs-vtt.js/-/videojs-vtt.js-0.15.4.tgz#5dc5aabcd82ba40c5595469bd855ea8230ca152c"
@@ -7990,10 +8035,10 @@ vite-tsconfig-paths@^4.0.5:
     globrex "^0.1.2"
     tsconfck "^2.0.1"
 
-vite@^4.1.1:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/vite/-/vite-4.1.1.tgz#3b18b81a4e85ce3df5cbdbf4c687d93ebf402e6b"
-  integrity sha512-LM9WWea8vsxhr782r9ntg+bhSFS06FJgCvvB0+8hf8UWtvaiDagKYWXndjfX6kGl74keHJUcpzrQliDXZlF5yg==
+vite@^4.1.5:
+  version "4.1.5"
+  resolved "https://registry.yarnpkg.com/vite/-/vite-4.1.5.tgz#9c93d579f62179ab99c4182fa37acf1b380a374b"
+  integrity sha512-zJ0RiVkf61kpd7O+VtU6r766xgnTaIknP/lR6sJTZq3HtVJ3HGnTo5DaJhTUtYoTyS/CQwZ6yEVdc/lrmQT7dQ==
   dependencies:
     esbuild "^0.16.14"
     postcss "^8.4.21"
@@ -8041,6 +8086,18 @@ webidl-conversions@^3.0.0:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-3.0.1.tgz#24534275e2a7bc6be7bc86611cc16ae0a5654871"
   integrity sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==
+
+webvr-polyfill-dpdb@^1.0.17:
+  version "1.0.18"
+  resolved "https://registry.yarnpkg.com/webvr-polyfill-dpdb/-/webvr-polyfill-dpdb-1.0.18.tgz#258484ce06b057bf18898acc911bd173847bce11"
+  integrity sha512-O0S1ZGEWyPvyZEkS2VbyV7mtir/NM9MNK3EuhbHPoJ8EHTky2pTXehjIl+IiDPr+Lldgx129QGt3NGly7rwRPw==
+
+webvr-polyfill@0.10.12:
+  version "0.10.12"
+  resolved "https://registry.yarnpkg.com/webvr-polyfill/-/webvr-polyfill-0.10.12.tgz#47ea0b0d558f09e089bc49fa7b47a4ee7e4b8148"
+  integrity sha512-trDJEVUQnRIVAnmImjEQ0BlL1NfuWl8+eaEdu+bs4g59c7OtETi/5tFkgEFDRaWEYwHntXs/uFF3OXZuutNGGA==
+  dependencies:
+    cardboard-vr-display "^1.0.19"
 
 whatwg-fetch@^3.4.1:
   version "3.6.2"

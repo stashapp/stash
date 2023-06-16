@@ -41,7 +41,7 @@ func autotagMatchPerformers(ctx context.Context, path string, performerReader ma
 			Name:     &pp.Name,
 			StoredID: &id,
 		}
-		if pp.Gender.IsValid() {
+		if pp.Gender != nil && pp.Gender.IsValid() {
 			v := pp.Gender.String()
 			sp.Gender = &v
 		}
@@ -61,7 +61,7 @@ func autotagMatchStudio(ctx context.Context, path string, studioReader match.Stu
 	if studio != nil {
 		id := strconv.Itoa(studio.ID)
 		return &models.ScrapedStudio{
-			Name:     studio.Name.String,
+			Name:     studio.Name,
 			StoredID: &id,
 		}, nil
 	}

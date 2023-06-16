@@ -107,7 +107,7 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 
 	studio := models.Studio{
 		ID:   studioID,
-		Name: models.NullString(studioName),
+		Name: studioName,
 	}
 
 	organized := false
@@ -206,7 +206,7 @@ func testStudioImages(t *testing.T, tc testStudioCase) {
 
 	studio := models.Studio{
 		ID:   studioID,
-		Name: models.NullString(studioName),
+		Name: studioName,
 	}
 
 	organized := false
@@ -304,7 +304,7 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 
 	studio := models.Studio{
 		ID:   studioID,
-		Name: models.NullString(studioName),
+		Name: studioName,
 	}
 
 	organized := false

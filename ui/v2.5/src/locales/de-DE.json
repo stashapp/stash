@@ -127,6 +127,7 @@
   "aliases": "Aliase",
   "all": "Alle",
   "also_known_as": "Auch bekannt unter",
+  "appears_with": "Tritt auf mit",
   "ascending": "Aufsteigend",
   "average_resolution": "Durchschnittliche Auflösung",
   "between_and": "und",
@@ -140,6 +141,11 @@
   "captions": "Untertitel",
   "career_length": "Karrierelänge",
   "chapters": "Kapitel",
+  "circumcised": "Beschnitten",
+  "circumcised_types": {
+    "CUT": "Beschnitten",
+    "UNCUT": "Unbeschnitten"
+  },
   "component_tagger": {
     "config": {
       "active_instance": "Aktive stash-box Instanz:",
@@ -233,7 +239,9 @@
       "server_display_name": "Server Anzeigename",
       "server_display_name_desc": "Anzeigename des DLNA-Servers. Standardmäßig {server_name} bei leerem Feld.",
       "successfully_cancelled_temporary_behaviour": "Erfolgreich temporäres Verhalten aufgehoben",
-      "until_restart": "bis Neustart"
+      "until_restart": "bis Neustart",
+      "video_sort_order": "Standard-Videosortierreihenfolge",
+      "video_sort_order_desc": "Reihenfolge, in der Videos standardmäßig sortiert werden."
     },
     "general": {
       "auth": {
@@ -280,7 +288,7 @@
       "check_for_insecure_certificates_desc": "Manche Seiten nutzen unsichere SSL Zertifikate. Wenn diese Option nicht ausgewählt ist, überspringt der Scraper die Überprüfung und erlaubt das Scrapen dieser Seiten. Entfernen Sie das Häkchen, falls Sie Zertifikatsfehler beim Scrapen erhalten.",
       "chrome_cdp_path": "Chrome CDP Pfad",
       "chrome_cdp_path_desc": "Dateipfad zur Chrome Executable oder einer externen Adresse (beginnend mit http:// oder https://, bspw. http://localhost:9222/json/version) die auf eine Chrome Instanz zeigt.",
-      "create_galleries_from_folders_desc": "Wenn ausgewählt, erzeuge Galerien aus Verzeichnissen, welche Bilder enthalten.",
+      "create_galleries_from_folders_desc": "Wenn ausgewählt, erzeuge standardmäßig Galerien aus Verzeichnissen, welche Bilder enthalten. Erstellen Sie eine Datei .forcegallery oder .nogallery in dem Ordner, um das Verhalten für diesen zu erzwingen/unterdrücken.",
       "create_galleries_from_folders_label": "Erzeuge Galerien aus Verzeichnissen mit Bilder darin",
       "database": "Datenbank",
       "db_path_head": "Datenbank Pfad",
@@ -306,8 +314,8 @@
         },
         "transcode": {
           "input_args": {
-            "desc": "Erweitert: Zusätzliche Parameter für die Live-Transkodierung mit ffmpeg, welche vor dem Eingabefeld übergeben werden können.",
-            "heading": "FFmpeg Live-Transkodierung Eingangsparameter"
+            "desc": "Erweitert: Zusätzliche Parameter für die Video-Generierung mit ffmpeg, welche vor dem Eingabefeld übergeben werden können.",
+            "heading": "FFmpeg Transkodierung Eingangsparameter"
           },
           "output_args": {
             "desc": "Erweitert: Zusätzliche Parameter für die Videogenerierung mit ffmpeg, welche vor dem Ausgabefeld übergeben werden können.",
@@ -404,7 +412,7 @@
         "auto_tagging_all_paths": "Automatisches Taggen aller Pfade",
         "auto_tagging_paths": "Automatisches Taggen der folgenden Pfade"
       },
-      "auto_tag_based_on_filenames": "Inhalte basierend auf Dateinamen automatisch taggen.",
+      "auto_tag_based_on_filenames": "Inhalte basierend auf Dateipfaden automatisch taggen.",
       "auto_tagging": "Automatisches Tagging",
       "backing_up_database": "Datenbank sichern",
       "backup_and_download": "Führt eine Sicherung der Datenbank durch und lädt die resultierende Datei herunter.",
@@ -419,6 +427,7 @@
         "generating_from_paths": "Generieren der Szenen aus den folgenden Pfaden",
         "generating_scenes": "Generieren für {num} {scene}"
       },
+      "generate_clip_previews_during_scan": "Erstelle Previews für Bild-Clips",
       "generate_desc": "Generiere unterstützende Bild-, Sprite-, Video-, VTT- und andere Dateien.",
       "generate_phashes_during_scan": "Generiere Wahrnehmungshashwerte",
       "generate_phashes_during_scan_tooltip": "Zur Deduplizierung und Szenenerkennung.",
@@ -586,6 +595,10 @@
       "images": {
         "heading": "Bilder",
         "options": {
+          "create_image_clips_from_videos": {
+            "description": "Wenn für die Bibliothek Videos deaktiviert wurden, können Videodateien (Dateien mit Videodateiendungen) als Bild-Clips eingescannt werden.",
+            "heading": "Scannen von Videoerweiterungen als Bild-Clip"
+          },
           "write_image_thumbnails": {
             "description": "Speichere eilig erstellte Bild-Thumbnails ab",
             "heading": "Speichere Bild-Thumbnails"
@@ -645,7 +658,11 @@
             "heading": "Standardmäßig die Wiedergabeliste fortsetzen"
           },
           "show_scrubber": "Scrubber anzeigen",
-          "track_activity": "Aktivität verfolgen"
+          "track_activity": "Aktivität verfolgen",
+          "vr_tag": {
+            "description": "Der VR-Knopf wird nur für Szenen mit diesem Tag angezeigt.",
+            "heading": "VR Tag"
+          }
         }
       },
       "scene_wall": {
@@ -713,6 +730,9 @@
     "equals": "ist",
     "excludes": "schließt aus",
     "format_string": "{criterion} {modifierString} {valueString}",
+    "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {Alle} other {{Tiefe}}})",
+    "format_string_excludes": "{criterion} {modifierString} {valueString} (ausgenommen {excludedString})",
+    "format_string_excludes_depth": "{criterion} {modifierString} {valueString} (ausgenommen {excludedString}) (+{depth, plural, =-1 {Alle} other {{Tiefe}}})",
     "greater_than": "ist größer als",
     "includes": "beinhaltet",
     "includes_all": "beinhaltet alles",
@@ -796,6 +816,7 @@
       "destination": "Neu zuweisen an"
     },
     "scene_gen": {
+      "clip_previews": "Bild-Clip Vorschau",
       "covers": "Szene-Cover",
       "force_transcodes": "Transcode Erzeugung erzwingen",
       "force_transcodes_tooltip": "Standardmäßig werden Transkodierungen nur erzeugt, wenn die Videodatei im Browser nicht unterstützt wird. Wenn diese Option aktiviert ist, werden Transkodierungen auch dann erstellt, wenn die Videodatei vom Browser unterstützt zu werden scheint.",
@@ -810,7 +831,7 @@
       "markers_tooltip": "20-Sekunden-Videos, die zum angegebenen Zeitpunkt beginnen.",
       "override_preview_generation_options": "Überschreibe Optionen zur Erstellung von Vorschauen",
       "override_preview_generation_options_desc": "Überschreibe die Optionen zur Erstellung von Vorschauen für diesen Vorgang. Die Standardeinstellungen werden unter System -> \tVorschau-Generierung festgelegt.",
-      "overwrite": "Vorhandene generierte Dateien überschreiben",
+      "overwrite": "Vorhandene Dateien überschreiben",
       "phash": "Perzeptuelle Hashes (zur Deduplizierung)",
       "preview_exclude_end_time_desc": "Schließen Sie die letzten x Sekunden von der Szenenvorschau aus. Dies kann ein Wert in Sekunden oder ein Prozentsatz (zB 2%) der gesamten Szenendauer sein.",
       "preview_exclude_end_time_head": "Endzeit ausschließen",
@@ -852,6 +873,11 @@
   "donate": "Spenden",
   "dupe_check": {
     "description": "Bei Levels unterhalb von 'Exact' kann die Berechnung länger dauern. Bei niedrigeren Genauigkeitsstufen können auch falsch positive Ergebnisse zurückgegeben werden.",
+    "duration_diff": "Maximale Laufzeitdifferenz",
+    "duration_options": {
+      "any": "Jede",
+      "equal": "Gleich"
+    },
     "found_sets": "{setCount, plural, one{# Satz von Duplikaten gefunden.} other {# Sätze von Duplikaten gefunden.}}",
     "options": {
       "exact": "Genau",
@@ -1002,6 +1028,9 @@
   "parent_tags": "Übergeordnete Tags",
   "part_of": "Übergeordnet von {parent}",
   "path": "Pfad",
+  "penis": "Penis",
+  "penis_length": "Penislänge",
+  "penis_length_cm": "Penislänge (cm)",
   "perceptual_similarity": "Wahrnehmungsähnlichkeit (phash)",
   "performer": "Darsteller",
   "performerTags": "Darsteller-Tags",
@@ -1074,6 +1103,7 @@
     "saved_filters": "Gespeicherte Filter",
     "update_filter": "Filter aktualisieren"
   },
+  "second": "Sekunde",
   "seconds": "Sekunden",
   "settings": "Einstellungen",
   "setup": {

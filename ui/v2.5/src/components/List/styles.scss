@@ -108,7 +108,7 @@ input[type="range"].zoom-slider {
   }
 }
 
-.add-filter-dialog .rating-stars {
+.edit-filter-dialog .rating-stars {
   font-size: 1.3em;
   margin-left: 0.25em;
 }
@@ -118,6 +118,15 @@ input[type="range"].zoom-slider {
 }
 
 .edit-filter-dialog {
+  .modal-header {
+    align-items: center;
+    padding: 0.5rem 1rem;
+
+    .search-input {
+      width: auto;
+    }
+  }
+
   .modal-body {
     padding-left: 0;
     padding-right: 0;
@@ -148,13 +157,26 @@ input[type="range"].zoom-slider {
         margin-left: 0;
       }
 
-      .card-header {
+      .filter-item-header {
+        background-color: $card-cap-bg;
+        border: none;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+        color: inherit;
         cursor: pointer;
         display: flex;
+        margin-bottom: 0;
+        padding: 0.75rem 1.25rem;
+
+        &:focus {
+          border-color: $primary;
+          border-radius: calc(0.375rem - 1px);
+          box-shadow: inset 0 0 0 0.1rem rgba(19, 124, 189);
+          outline: 0;
+        }
       }
     }
 
-    .btn {
+    .filter-item-header .btn {
       border: 0;
       padding-bottom: 0;
       padding-top: 0;
@@ -183,11 +205,33 @@ input[type="range"].zoom-slider {
   }
 }
 
-.modifier-selector {
-  margin-bottom: 1rem;
+.modifier-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
 
-  // to accommodate for caret
-  padding-right: 2rem;
+.modifier-options .modifier-option {
+  background-color: $secondary;
+  border: none;
+  border-radius: 10rem;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 100%;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+  margin-right: 0.25rem;
+  padding: 0.25em 0.6em;
+  text-align: center;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  vertical-align: baseline;
+  white-space: nowrap;
+
+  &.selected {
+    background-color: $primary;
+  }
 }
 
 .filter-tags .clear-all-button {
@@ -208,6 +252,107 @@ input[type="range"].zoom-slider {
 
     // button group has a z-index of 1
     z-index: 2;
+  }
+}
+
+.filter-visible-button {
+  padding-left: 0.3rem;
+  padding-right: 0.3rem;
+
+  &:focus:not(.active):not(:hover) {
+    background: none;
+  }
+
+  &:focus,
+  &.active:focus {
+    box-shadow: none;
+  }
+}
+
+.selectable-filter ul {
+  list-style-type: none;
+  margin-top: 0.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+  // to prevent unnecessary vertical scrollbar
+  padding-bottom: 0.15rem;
+  padding-inline-start: 0;
+
+  .unselected-object {
+    opacity: 0.8;
+  }
+
+  .selected-object,
+  .excluded-object,
+  .unselected-object {
+    cursor: pointer;
+    height: 2em;
+    margin-bottom: 0.25rem;
+
+    a {
+      align-items: center;
+      display: flex;
+      height: 2em;
+      justify-content: space-between;
+      outline: none;
+
+      &:hover,
+      &:focus-visible {
+        background-color: rgba(138, 155, 168, 0.15);
+      }
+
+      .selected-object-label,
+      .excluded-object-label {
+        font-size: 16px;
+      }
+    }
+
+    .include-button {
+      color: $success;
+    }
+
+    .exclude-icon {
+      color: $danger;
+    }
+
+    .exclude-button {
+      align-items: center;
+      display: flex;
+      margin-left: 0.25rem;
+      padding-left: 0.25rem;
+      padding-right: 0.25rem;
+
+      .exclude-button-text {
+        color: $danger;
+        display: none;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      &:hover {
+        background-color: inherit;
+      }
+
+      &:hover .exclude-button-text,
+      &:focus .exclude-button-text {
+        display: inline;
+      }
+    }
+
+    .object-count {
+      color: $text-muted;
+      font-size: 12px;
+    }
+  }
+
+  .selected-object:hover,
+  .selected-object a:focus-visible,
+  .excluded-object:hover,
+  .excluded-object a:focus-visible {
+    .include-button,
+    .exclude-icon {
+      color: #fff;
+    }
   }
 }
 

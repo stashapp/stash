@@ -25,7 +25,7 @@ type SceneReaderUpdater interface {
 }
 
 type TagCreator interface {
-	Create(ctx context.Context, newTag models.Tag) (*models.Tag, error)
+	Create(ctx context.Context, newTag *models.Tag) error
 }
 
 type sceneRelationships struct {
@@ -152,16 +152,17 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 			tagIDs = intslice.IntAppendUnique(tagIDs, int(tagID))
 		} else if createMissing {
 			now := time.Now()
-			created, err := g.tagCreator.Create(ctx, models.Tag{
+			newTag := models.Tag{
 				Name:      t.Name,
-				CreatedAt: models.SQLiteTimestamp{Timestamp: now},
-				UpdatedAt: models.SQLiteTimestamp{Timestamp: now},
-			})
+				CreatedAt: now,
+				UpdatedAt: now,
+			}
+			err := g.tagCreator.Create(ctx, &newTag)
 			if err != nil {
 				return nil, fmt.Errorf("error creating tag: %w", err)
 			}
 
-			tagIDs = append(tagIDs, created.ID)
+			tagIDs = append(tagIDs, newTag.ID)
 		}
 	}
 

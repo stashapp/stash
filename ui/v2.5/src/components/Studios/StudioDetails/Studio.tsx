@@ -67,9 +67,22 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
   const [updateStudio] = useStudioUpdate();
   const [deleteStudio] = useStudioDestroy({ id: studio.id });
 
+  const showAllCounts = (configuration?.ui as IUIConfig)
+    ?.showChildStudioContent;
+  const sceneCount =
+    (showAllCounts ? studio.scene_count_all : studio.scene_count) ?? 0;
+  const galleryCount =
+    (showAllCounts ? studio.gallery_count_all : studio.gallery_count) ?? 0;
+  const imageCount =
+    (showAllCounts ? studio.image_count_all : studio.image_count) ?? 0;
+  const performerCount =
+    (showAllCounts ? studio.performer_count_all : studio.performer_count) ?? 0;
+  const movieCount =
+    (showAllCounts ? studio.movie_count_all : studio.movie_count) ?? 0;
+
   // set up hotkeys
   useEffect(() => {
-    Mousetrap.bind("e", () => setIsEditing(true));
+    Mousetrap.bind("e", () => toggleEditing());
     Mousetrap.bind("d d", () => {
       onDelete();
     });
@@ -83,21 +96,21 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
   });
 
   async function onSave(input: GQL.StudioCreateInput) {
-    try {
-      const result = await updateStudio({
-        variables: {
-          input: {
-            id: studio.id,
-            ...input,
-          },
+    await updateStudio({
+      variables: {
+        input: {
+          id: studio.id,
+          ...input,
         },
-      });
-      if (result.data?.studioUpdate) {
-        setIsEditing(false);
-      }
-    } catch (e) {
-      Toast.error(e);
-    }
+      },
+    });
+    toggleEditing(false);
+    Toast.success({
+      content: intl.formatMessage(
+        { id: "toast.updated_entity" },
+        { entity: intl.formatMessage({ id: "studio" }).toLocaleLowerCase() }
+      ),
+    });
   }
 
   async function onAutoTag() {
@@ -149,8 +162,13 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     );
   }
 
-  function onToggleEdit() {
-    setIsEditing(!isEditing);
+  function toggleEditing(value?: boolean) {
+    if (value !== undefined) {
+      setIsEditing(value);
+    } else {
+      setIsEditing((e) => !e);
+    }
+    setImage(undefined);
   }
 
   function renderImage() {
@@ -213,7 +231,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               objectName={studio.name ?? intl.formatMessage({ id: "studio" })}
               isNew={false}
               isEditing={isEditing}
-              onToggleEdit={onToggleEdit}
+              onToggleEdit={() => toggleEditing()}
               onSave={() => {}}
               onImageChange={() => {}}
               onClearImage={() => {}}
@@ -225,7 +243,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           <StudioEditPanel
             studio={studio}
             onSubmit={onSave}
-            onCancel={onToggleEdit}
+            onCancel={() => toggleEditing()}
             onDelete={onDelete}
             setImage={setImage}
             setEncodingImage={setEncodingImage}
@@ -248,13 +266,14 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           <Tab
             eventKey="scenes"
             title={
-              <React.Fragment>
+              <>
                 {intl.formatMessage({ id: "scenes" })}
                 <Counter
                   abbreviateCounter={abbreviateCounter}
-                  count={studio.scene_count ?? 0}
+                  count={sceneCount}
+                  hideZero
                 />
-              </React.Fragment>
+              </>
             }
           >
             <StudioScenesPanel
@@ -265,13 +284,14 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           <Tab
             eventKey="galleries"
             title={
-              <React.Fragment>
+              <>
                 {intl.formatMessage({ id: "galleries" })}
                 <Counter
                   abbreviateCounter={abbreviateCounter}
-                  count={studio.gallery_count ?? 0}
+                  count={galleryCount}
+                  hideZero
                 />
-              </React.Fragment>
+              </>
             }
           >
             <StudioGalleriesPanel
@@ -282,13 +302,14 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           <Tab
             eventKey="images"
             title={
-              <React.Fragment>
+              <>
                 {intl.formatMessage({ id: "images" })}
                 <Counter
                   abbreviateCounter={abbreviateCounter}
-                  count={studio.image_count ?? 0}
+                  count={imageCount}
+                  hideZero
                 />
-              </React.Fragment>
+              </>
             }
           >
             <StudioImagesPanel
@@ -299,13 +320,14 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           <Tab
             eventKey="performers"
             title={
-              <React.Fragment>
+              <>
                 {intl.formatMessage({ id: "performers" })}
                 <Counter
                   abbreviateCounter={abbreviateCounter}
-                  count={studio.performer_count ?? 0}
+                  count={performerCount}
+                  hideZero
                 />
-              </React.Fragment>
+              </>
             }
           >
             <StudioPerformersPanel
@@ -316,13 +338,14 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           <Tab
             eventKey="movies"
             title={
-              <React.Fragment>
+              <>
                 {intl.formatMessage({ id: "movies" })}
                 <Counter
                   abbreviateCounter={abbreviateCounter}
-                  count={studio.movie_count ?? 0}
+                  count={movieCount}
+                  hideZero
                 />
-              </React.Fragment>
+              </>
             }
           >
             <StudioMoviesPanel
@@ -333,13 +356,14 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           <Tab
             eventKey="childstudios"
             title={
-              <React.Fragment>
+              <>
                 {intl.formatMessage({ id: "subsidiary_studios" })}
                 <Counter
                   abbreviateCounter={false}
-                  count={studio.child_studios?.length ?? 0}
+                  count={studio.child_studios.length}
+                  hideZero
                 />
-              </React.Fragment>
+              </>
             }
           >
             <StudioChildrenPanel

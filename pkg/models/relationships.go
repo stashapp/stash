@@ -34,10 +34,6 @@ type VideoFileLoader interface {
 	GetFiles(ctx context.Context, relatedID int) ([]*file.VideoFile, error)
 }
 
-type ImageFileLoader interface {
-	GetFiles(ctx context.Context, relatedID int) ([]*file.ImageFile, error)
-}
-
 type FileLoader interface {
 	GetFiles(ctx context.Context, relatedID int) ([]file.File, error)
 }
@@ -305,89 +301,6 @@ func (r *RelatedVideoFiles) load(fn func() ([]*file.VideoFile, error)) error {
 }
 
 func (r *RelatedVideoFiles) loadPrimary(fn func() (*file.VideoFile, error)) error {
-	if r.PrimaryLoaded() {
-		return nil
-	}
-
-	var err error
-	r.primaryFile, err = fn()
-	if err != nil {
-		return err
-	}
-
-	r.primaryLoaded = true
-
-	return nil
-}
-
-type RelatedImageFiles struct {
-	primaryFile   *file.ImageFile
-	files         []*file.ImageFile
-	primaryLoaded bool
-}
-
-func NewRelatedImageFiles(files []*file.ImageFile) RelatedImageFiles {
-	ret := RelatedImageFiles{
-		files:         files,
-		primaryLoaded: true,
-	}
-
-	if len(files) > 0 {
-		ret.primaryFile = files[0]
-	}
-
-	return ret
-}
-
-// Loaded returns true if the relationship has been loaded.
-func (r RelatedImageFiles) Loaded() bool {
-	return r.files != nil
-}
-
-// Loaded returns true if the primary file relationship has been loaded.
-func (r RelatedImageFiles) PrimaryLoaded() bool {
-	return r.primaryLoaded
-}
-
-// List returns the related files. Panics if the relationship has not been loaded.
-func (r RelatedImageFiles) List() []*file.ImageFile {
-	if !r.Loaded() {
-		panic("relationship has not been loaded")
-	}
-
-	return r.files
-}
-
-// Primary returns the primary file. Panics if the relationship has not been loaded.
-func (r RelatedImageFiles) Primary() *file.ImageFile {
-	if !r.PrimaryLoaded() {
-		panic("relationship has not been loaded")
-	}
-
-	return r.primaryFile
-}
-
-func (r *RelatedImageFiles) load(fn func() ([]*file.ImageFile, error)) error {
-	if r.Loaded() {
-		return nil
-	}
-
-	var err error
-	r.files, err = fn()
-	if err != nil {
-		return err
-	}
-
-	if len(r.files) > 0 {
-		r.primaryFile = r.files[0]
-	}
-
-	r.primaryLoaded = true
-
-	return nil
-}
-
-func (r *RelatedImageFiles) loadPrimary(fn func() (*file.ImageFile, error)) error {
 	if r.PrimaryLoaded() {
 		return nil
 	}

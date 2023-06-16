@@ -4,7 +4,6 @@ import { FormattedMessage, useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
-import { useImageUpdate } from "src/core/StashService";
 import {
   PerformerSelect,
   TagSelect,
@@ -25,12 +24,14 @@ import { DateInput } from "src/components/Shared/DateInput";
 interface IProps {
   image: GQL.ImageDataFragment;
   isVisible: boolean;
+  onSubmit: (input: GQL.ImageUpdateInput) => Promise<void>;
   onDelete: () => void;
 }
 
 export const ImageEditPanel: React.FC<IProps> = ({
   image,
   isVisible,
+  onSubmit,
   onDelete,
 }) => {
   const intl = useIntl();
@@ -40,8 +41,6 @@ export const ImageEditPanel: React.FC<IProps> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   const { configuration } = React.useContext(ConfigurationContext);
-
-  const [updateImage] = useImageUpdate();
 
   const schema = yup.object({
     title: yup.string().ensure(),
@@ -97,7 +96,9 @@ export const ImageEditPanel: React.FC<IProps> = ({
   useEffect(() => {
     if (isVisible) {
       Mousetrap.bind("s s", () => {
-        formik.handleSubmit();
+        if (formik.dirty) {
+          formik.submitForm();
+        }
       });
       Mousetrap.bind("d d", () => {
         onDelete();
@@ -113,23 +114,11 @@ export const ImageEditPanel: React.FC<IProps> = ({
   async function onSave(input: InputValues) {
     setIsLoading(true);
     try {
-      const result = await updateImage({
-        variables: {
-          input: {
-            id: image.id,
-            ...input,
-          },
-        },
+      await onSubmit({
+        id: image.id,
+        ...input,
       });
-      if (result.data?.imageUpdate) {
-        Toast.success({
-          content: intl.formatMessage(
-            { id: "toast.updated_entity" },
-            { entity: intl.formatMessage({ id: "image" }).toLocaleLowerCase() }
-          ),
-        });
-        formik.resetForm();
-      }
+      formik.resetForm();
     } catch (e) {
       Toast.error(e);
     }

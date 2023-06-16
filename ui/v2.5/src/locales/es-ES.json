@@ -6,6 +6,7 @@
     "add_to_entity": "Añadir a {entityType}",
     "allow": "Permitir",
     "allow_temporarily": "Permitir temporalmente",
+    "anonymise": "Anonimizar",
     "apply": "Aplicar",
     "auto_tag": "Etiquetado automático",
     "backup": "Copia de seguridad",
@@ -20,6 +21,7 @@
     "confirm": "Confirmar",
     "continue": "Continuar",
     "create": "Crear",
+    "create_chapters": "Crear capítulo",
     "create_entity": "Crear {entityType}",
     "create_marker": "Crear marcador",
     "created_entity": "{entity_type} creado: {entity_name}",
@@ -32,6 +34,7 @@
     "delete_stashid": "Eliminar StashID",
     "disallow": "No permitir/Denegar",
     "download": "Descargar",
+    "download_anonymised": "Descargar anonimizado",
     "download_backup": "Descargar copia de seguridad",
     "edit": "Editar",
     "edit_entity": "Editar {entityType}",
@@ -54,9 +57,12 @@
     "import": "Importar…",
     "import_from_file": "Importar desde archivo",
     "logout": "Cerrar sesión",
+    "make_primary": "Establecer como primario",
     "merge": "Unir",
     "merge_from": "Fusionar desde (origen)",
     "merge_into": "Fusionar en (destino)",
+    "migrate_blobs": "Migrar blobs",
+    "migrate_scene_screenshots": "Migrar capturas de pantalla",
     "next_action": "Próximo",
     "not_running": "Apagado",
     "open_in_external_player": "Abrir en reproductor externo",
@@ -127,8 +133,13 @@
   "birth_year": "Año de nacimiento",
   "birthdate": "Cumpleaños",
   "bitrate": "Tasa de bits",
+  "blobs_storage_type": {
+    "database": "Base de datos",
+    "filesystem": "Sistema de ficheros"
+  },
   "captions": "Subtítulos",
   "career_length": "Años en activo",
+  "chapters": "Capítulos",
   "component_tagger": {
     "config": {
       "active_instance": "Instancia activa de stash-box:",
@@ -159,7 +170,7 @@
       "duration_unknown": "Duración desconocida",
       "fp_found": "{fpCount, plural, =0 {No se han encontrado nuevas huellas dactilares} other {# resultados de huellas dactilares encontrados}}",
       "fp_matches": "La duración coincide",
-      "fp_matches_multi": "La duración coincide {matchCount}/{durationsLength} huella(s) dactilar(es)",
+      "fp_matches_multi": "{matchCount}/{durationsLength} cincidencias de fingerprint(s)",
       "hash_matches": "{hash_type} coincide",
       "match_failed_already_tagged": "Escena ya etiquetada",
       "match_failed_no_result": "No se han encontrado resultados",
@@ -182,6 +193,7 @@
       "latest_version": "Última Versión",
       "latest_version_build_hash": "Hash de la última versión:",
       "new_version_notice": "[NUEVA]",
+      "release_date": "Fecha de publicación:",
       "stash_discord": "Únete a nuestro canal {url}",
       "stash_home": "Página principal del proyecto en {url}",
       "stash_open_collective": "Donaciones al proyecto a través de {url}",
@@ -252,7 +264,15 @@
         "description": "Ubicación del directorio para copias de seguridad de archivos de bases de datos SQLite",
         "heading": "Ruta del directorio de la copia de seguridad"
       },
-      "cache_location": "Ruta relativa del directorio donde se almacenarán los ficheros de la caché",
+      "blobs_path": {
+        "description": "Donde almacenar ficheros binarios. Solo aplicable cuando el sistema de archivos es del tipo \"blob\". AVISO: Cambiar este parámetro requiere mover manualmente los ficheros.",
+        "heading": "Ruta de sistema de archivos binario"
+      },
+      "blobs_storage": {
+        "description": "Donde almacenar información binaria como por ejemplo imágenes de escenas, actores, estudios y etiquetas. Tras cambiar este valor, los datos existentes tienen que ser migrados usando la tarea \"Migrar blobs\". Ver la página \"Tareas\" para la migración.",
+        "heading": "Almacenamiento de datos binario"
+      },
+      "cache_location": "Ruta de la caché. Requerido para utilizar streaming mediante HLS (por ejemplo dispositivos Apple) o DASH.",
       "cache_path_head": "Ruta relative para la caché",
       "calculate_md5_and_ohash_desc": "Calcular comprobación MD5 en adición a oshash. Habilitar esta opción puede provocar que los escaneos iniciales resulten más lentos. El cálculo de hash del nombre del fichero debe establecerse en oshash para deshabilitar el cálculo MD5.",
       "calculate_md5_and_ohash_label": "Calcular MD5 para los vídeos",
@@ -262,12 +282,43 @@
       "chrome_cdp_path_desc": "Ruta del archivo del ejecutable Chrome o una dirección remota (comenzando por http:// o https://, por ejemplo, http://localhost:9222/json/version) para una instancia Chrome.",
       "create_galleries_from_folders_desc": "Si esta opción está marcada se crearán automáticamente galerías de aquellos directorios que contienen imágenes.",
       "create_galleries_from_folders_label": "Crear galerías desde directorios con imágenes",
+      "database": "Base de datos",
       "db_path_head": "Ruta de la base de datos",
       "directory_locations_to_your_content": "Ruta relativa de los directorios que almacenan el contenido",
       "excluded_image_gallery_patterns_desc": "Expresiones regulares de archivos/rutas de imágenes que serán excluidos del escaneo y que serán añadidos a la tarea de depuración/limpieza",
       "excluded_image_gallery_patterns_head": "Patrones de imágenes/galerías excluidos",
       "excluded_video_patterns_desc": "Expresiones regulares de archivos/rutas de vídeos que serán excluidos del escaneo y que serán añadidos a la tarea de depuración/limpieza",
       "excluded_video_patterns_head": "Patrones de vídeo excluidos",
+      "ffmpeg": {
+        "hardware_acceleration": {
+          "desc": "Utiliza el hardware disponible para encodificar el video en tiempo real.",
+          "heading": "Encodificación hardware FFmpeg"
+        },
+        "live_transcode": {
+          "input_args": {
+            "desc": "Avanzado: Argumentos adicionales para ffmpeg antes del campo de entrada al transcodificar vídeos en tiempo real.",
+            "heading": "Argumentos entrada transcodificación FFmpeg en tiempo real"
+          },
+          "output_args": {
+            "desc": "Avanzado: Argumentos adicionales para ffmpeg antes del campo de salida al transcodificar vídeos en tiempo real.",
+            "heading": "Argumentos salida transcodificación FFmpeg en tiempo real"
+          }
+        },
+        "transcode": {
+          "input_args": {
+            "desc": "Avanzado: Argumentos adicionales para ffmpeg antes del campo de entrada al generar vídeos.",
+            "heading": "Argumentos entrada transcodificación FFmpeg"
+          },
+          "output_args": {
+            "desc": "Avanzado: Argumentos adicionales para ffmpeg antes del campo de salida al generar vídeos.",
+            "heading": "Argumentos salida transcodificación FFmpeg"
+          }
+        }
+      },
+      "funscript_heatmap_draw_range": "Inluir rango en los mapas de calor generados",
+      "funscript_heatmap_draw_range_desc": "Dibujar rango de movimiento en el eje \"y\" del mapa de calor generado. Los mapas de calor existentes tendrán que ser generados de nuevo tras el cambio.",
+      "gallery_cover_regex_desc": "Expresión regular utilizada para identificar una imagen como carátula de una galería",
+      "gallery_cover_regex_label": "Patrón carátula galería",
       "gallery_ext_desc": "Lista delimitada por comas de extensiones de archivo que serán identificados como archivos de galería en formato zip.",
       "gallery_ext_head": "Extensiones de galería zip",
       "generated_file_naming_hash_desc": "Usar MD5 o oshash para la los nombres de archivo generados. Cambiar esta opción requiere que todas las escenas tengan relleno el correspondiente valor MD5/oshash. Después de cambiar este valor los ficheros generados existentes tendrán que ser migrados o regenerados. Ver la página de tareas para llevar a cabo la migración.",
@@ -275,6 +326,7 @@
       "generated_files_location": "Ruta relativa del directorio para los ficheros generados (marcadores de escena, vistas previas de escena, conjuntos de imágenes o “sprites”, etc)",
       "generated_path_head": "Ruta relativa para el directorio de arvhivos generados",
       "hashing": "Hashing",
+      "heatmap_generation": "Generación mapa de calor Funscript",
       "image_ext_desc": "Lista delimitada por comas de las extensiones de archivo que serán identificadas como imágenes.",
       "image_ext_head": "Extensiones de imagen",
       "include_audio_desc": "Incluye flujo de audio cuando se generen vistas previas.",
@@ -303,7 +355,7 @@
         "heading": "Ruta de Rastreadores"
       },
       "scraping": "Rastreo",
-      "sqlite_location": "Ruta relativa para la base de datos SQLite (requiere reinicio)",
+      "sqlite_location": "Ruta relativa para la base de datos SQLite (requiere reinicio). AVISO: Almacenar la base de datos en un sistema distinto al servidor Stash (por ejemplo a través de la red) no está soportado!",
       "video_ext_desc": "Lista delimitada por comas de las extensiones de archivo que serán identificadas como vídeos.",
       "video_ext_head": "Extensiones de vídeo",
       "video_head": "Vídeo"
@@ -345,6 +397,9 @@
     },
     "tasks": {
       "added_job_to_queue": "Añadido/a {operation_name} a la cola de trabajo",
+      "anonymise_and_download": "Realiza una copia aninimizada de la base de datos y descarga el fichero resultante.",
+      "anonymise_database": "Hace una copia de la base de datos al directorio de copias de seguridad anonimizando toda la información sensible. Esta copia se puede proveer a terceros para solucionar y depurar problemas. La base de datos original no es modificada. La base de datos anonimizada se almacena con el formato {filename_format}.",
+      "anonymising_database": "Aninimizando base de datos",
       "auto_tag": {
         "auto_tagging_all_paths": "Etiquetar automáticamente todas las rutas",
         "auto_tagging_paths": "Etiquetar automáticamente las siguientes rutas"
@@ -353,7 +408,7 @@
       "auto_tagging": "Auto-Etiquetado",
       "backing_up_database": "Guardando respaldo de la base de datos",
       "backup_and_download": "Lleva a cabo una copia de seguridad de la base de datos y la guarda en un fichero de respaldo.",
-      "backup_database": "Lleva a cabo una copia de seguridad de la base de datos en el mismo directorio en que se encuentre ésta. El formato de nombre del fichero generado es {filename_format}",
+      "backup_database": "Realiza una copia de seguridad de la base de datos en el directorio de copias de seguridad. La copia se almacena con el formato {filename_format}.",
       "cleanup_desc": "Buscar ficheros eliminados del sistema de archivos y eliminarlos de la base de datos. PRECAUCIÓN: esta es una acción destructiva.",
       "data_management": "Gestión de datos",
       "defaults_set": "Las opciones por defecto se han guardado y serán usadas cada vez que pulses el botoón de {action} en la página de Tareas.",
@@ -371,6 +426,7 @@
       "generate_previews_during_scan_tooltip": "Generar vistas previas animadas WebP, solo requerido si Tipo de Vista Previa es Imagen Animada.",
       "generate_sprites_during_scan": "Generar conjunto de imágenes o “sprites” de depuración",
       "generate_thumbnails_during_scan": "Generar miniaturas de las imágenes",
+      "generate_video_covers_during_scan": "Generar carátulas de escenas",
       "generate_video_previews_during_scan": "Generar vistas previas",
       "generate_video_previews_during_scan_tooltip": "Generar vistas previas en vídeo que se reproducen al pasar el ratón por encima de una escena",
       "generated_content": "Contenido generado",
@@ -398,7 +454,16 @@
       "incremental_import": "Importación gradual o progresiva desde un archivo zip de exportación aportado por el usuario.",
       "job_queue": "Cola de tareas",
       "maintenance": "Mantenimiento",
+      "migrate_blobs": {
+        "delete_old": "Borrar datos antiguos",
+        "description": "Migrar blobs al sistema de almacenamiento de blobs actual. Esta migración debería ejecutarse tras cambiar el sistema de almacenamiento de blobs. Opcionalmente se pueden borrar los datos antiguos tras la migración."
+      },
       "migrate_hash_files": "Se ejecutará tras realizar un cambio de tipo de hash para renombrar los ficheros generados al nuevo formato hash.",
+      "migrate_scene_screenshots": {
+        "delete_files": "Borrar ficheros de capturas de pantalla",
+        "description": "Migrar capturas de pantalla de escenas al nuevo sistema de almacenamiento blob. Esta migración debería ejecutarse migrar un sistema existente a la versión 0.20. Opcionalmente se pueden borrar las capturas de pantalla antiguas tras la migración.",
+        "overwrite_existing": "Sobreescribir blobs existentes con datos de capturas de pantalla"
+      },
       "migrations": "Migraciones",
       "only_dry_run": "Marca esta casilla para ejecutar en MODO DE SIMULACIÓN. No se eliminará información alguna, solo se mostrarán en el registro las acciones a realizar",
       "plugin_tasks": "Tareas de plugins",
@@ -435,14 +500,19 @@
       },
       "basic_settings": "Ajustes básicos",
       "custom_css": {
-        "description": "La página debe ser recargada para que se lleven a cabo los cambios realizados.",
+        "description": "La página debe ser recargada para que se lleven a cabo los cambios realizados. Futuras versiones de Stash pueden no ser compatibles con CSS personalizados.",
         "heading": "CSS personalizado",
         "option_label": "Habilitar CSS personalizado"
       },
       "custom_javascript": {
-        "description": "La página debe ser refrescada para que los cambios tomen efecto.",
+        "description": "La página debe ser refrescada para que los cambios tomen efecto. Futuras versiones de Stash pueden no ser compatibles con Javascripts personalizados.",
         "heading": "JavaScript personalizada",
         "option_label": "JavaScript personalizada activada"
+      },
+      "custom_locales": {
+        "description": "Sobreescribir traducciones individuales. El listado original se puede encontrar aquí: https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json. La página debe ser refrescada para reflejar los cambios realizados.",
+        "heading": "Traducciones personalizadas",
+        "option_label": "Traducción personalizada activada"
       },
       "delete_options": {
         "description": "Opciones por defecto al borrar escenas, imágenes y galerías.",
@@ -465,8 +535,21 @@
           "heading": "Deshabilitar creación en menú desplegable"
         },
         "heading": "Edición",
+        "max_options_shown": {
+          "label": "Número máximo de elementos a mostrar en menús desplegables"
+        },
         "rating_system": {
+          "star_precision": {
+            "label": "Precisión estrellas valoraciones",
+            "options": {
+              "full": "Lleno",
+              "half": "Medias",
+              "quarter": "Cuartos",
+              "tenth": "Décimas"
+            }
+          },
           "type": {
+            "label": "Sistema de valoración",
             "options": {
               "decimal": "Decimal",
               "stars": "Estrellas"
@@ -480,6 +563,12 @@
       },
       "handy_connection": {
         "connect": "Conectar",
+        "server_offset": {
+          "heading": "Tiempo compensación servidor"
+        },
+        "status": {
+          "heading": "Estado conexión móvil"
+        },
         "sync": "Sincronizar"
       },
       "handy_connection_key": {
@@ -488,6 +577,11 @@
       },
       "image_lightbox": {
         "heading": "Lightbox para imágenes"
+      },
+      "image_wall": {
+        "direction": "Dirección",
+        "heading": "Imagen de fondo",
+        "margin": "Margen (píxeles)"
       },
       "images": {
         "heading": "Imágenes",
@@ -509,6 +603,10 @@
       "menu_items": {
         "description": "Mostrar u ocultar los diferentes tipos de contenido del menú de navegación",
         "heading": "Elementos del menú"
+      },
+      "minimum_play_percent": {
+        "description": "Porcentaje de tiempo a reproducir una escena antes de incrementar su contador de visionados.",
+        "heading": "Porcentaje mínimo de reproducción"
       },
       "performers": {
         "options": {
@@ -536,6 +634,7 @@
       "scene_player": {
         "heading": "Reproductor de vídeo",
         "options": {
+          "always_start_from_beginning": "Siempre iniciar vídeo desde el inicio",
           "auto_start_video": "Iniciar vídeo automáticamente",
           "auto_start_video_on_play_selected": {
             "description": "Comenzar automáticamente la reproducción del vídeo de la escena cuando \"reproducir\" esté seleccionado o se seleccione una escena aleatoria desde la página de escenas",
@@ -545,7 +644,8 @@
             "description": "Reproducir la siguiente escena cuando el fichero en reproducción finalice",
             "heading": "(Por defecto) Continuar lista de reproducción"
           },
-          "show_scrubber": "Mostrar depurador"
+          "show_scrubber": "Mostrar depurador",
+          "track_activity": "Registrar actividad"
         }
       },
       "scene_wall": {

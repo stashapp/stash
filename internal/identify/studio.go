@@ -2,7 +2,6 @@ package identify
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"time"
 
@@ -12,13 +11,14 @@ import (
 )
 
 type StudioCreator interface {
-	Create(ctx context.Context, newStudio models.Studio) (*models.Studio, error)
+	Create(ctx context.Context, newStudio *models.Studio) error
 	UpdateStashIDs(ctx context.Context, studioID int, stashIDs []models.StashID) error
 	UpdateImage(ctx context.Context, studioID int, image []byte) error
 }
 
 func createMissingStudio(ctx context.Context, endpoint string, w StudioCreator, studio *models.ScrapedStudio) (*int, error) {
-	created, err := w.Create(ctx, scrapedToStudioInput(studio))
+	studioInput := scrapedToStudioInput(studio)
+	err := w.Create(ctx, &studioInput)
 	if err != nil {
 		return nil, fmt.Errorf("error creating studio: %w", err)
 	}
@@ -37,7 +37,7 @@ func createMissingStudio(ctx context.Context, endpoint string, w StudioCreator, 
 	}
 
 	if endpoint != "" && studio.RemoteSiteID != nil {
-		if err := w.UpdateStashIDs(ctx, created.ID, []models.StashID{
+		if err := w.UpdateStashIDs(ctx, studioInput.ID, []models.StashID{
 			{
 				Endpoint: endpoint,
 				StashID:  *studio.RemoteSiteID,
@@ -47,20 +47,20 @@ func createMissingStudio(ctx context.Context, endpoint string, w StudioCreator, 
 		}
 	}
 
-	return &created.ID, nil
+	return &studioInput.ID, nil
 }
 
 func scrapedToStudioInput(studio *models.ScrapedStudio) models.Studio {
 	currentTime := time.Now()
 	ret := models.Studio{
-		Name:      sql.NullString{String: studio.Name, Valid: true},
+		Name:      studio.Name,
 		Checksum:  md5.FromString(studio.Name),
-		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
 	}
 
 	if studio.URL != nil {
-		ret.URL = sql.NullString{String: *studio.URL, Valid: true}
+		ret.URL = *studio.URL
 	}
 
 	return ret

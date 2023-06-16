@@ -153,7 +153,7 @@ type SceneReader interface {
 	FindByPath(ctx context.Context, path string) ([]*Scene, error)
 	FindByPerformerID(ctx context.Context, performerID int) ([]*Scene, error)
 	FindByGalleryID(ctx context.Context, performerID int) ([]*Scene, error)
-	FindDuplicates(ctx context.Context, distance int) ([][]*Scene, error)
+	FindDuplicates(ctx context.Context, distance int, durationDiff float64) ([][]*Scene, error)
 
 	GalleryIDLoader
 	PerformerIDLoader
@@ -178,6 +178,7 @@ type SceneReader interface {
 	Wall(ctx context.Context, q *string) ([]*Scene, error)
 	All(ctx context.Context) ([]*Scene, error)
 	Query(ctx context.Context, options SceneQueryOptions) (*SceneQueryResult, error)
+	QueryCount(ctx context.Context, sceneFilter *SceneFilterType, findFilter *FindFilterType) (int, error)
 	GetCover(ctx context.Context, sceneID int) ([]byte, error)
 	HasCover(ctx context.Context, sceneID int) (bool, error)
 }

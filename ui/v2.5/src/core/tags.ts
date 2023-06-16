@@ -42,6 +42,7 @@ export const useTagFilterHook = (tag: GQL.TagDataFragment) => {
       tagCriterion = new TagsCriterion(TagsCriterionOption);
       tagCriterion.value = {
         items: [tagValue],
+        excluded: [],
         depth: (config?.configuration?.ui as IUIConfig)?.showChildTagContent
           ? -1
           : 0,

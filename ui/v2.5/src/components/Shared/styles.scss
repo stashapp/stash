@@ -414,3 +414,30 @@ div.react-datepicker {
 #date-picker-portal .react-datepicker-popper {
   z-index: 1600;
 }
+
+.clearable-input-group {
+  align-items: stretch;
+  display: flex;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.clearable-text-field,
+.clearable-text-field:active,
+.clearable-text-field:focus {
+  background-color: #394b59;
+  border: 0;
+  border-color: #394b59;
+  color: #fff;
+}
+
+.clearable-text-field-clear {
+  background-color: #394b59;
+  color: #bfccd6;
+  font-size: 0.875rem;
+  margin: 0.375rem 0.75rem;
+  padding: 0;
+  position: absolute;
+  right: 0;
+  z-index: 4;
+}

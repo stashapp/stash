@@ -45,11 +45,9 @@ var (
 func createFullImage(id int) models.Image {
 	return models.Image{
 		ID: id,
-		Files: models.NewRelatedImageFiles([]*file.ImageFile{
-			{
-				BaseFile: &file.BaseFile{
-					Path: path,
-				},
+		Files: models.NewRelatedFiles([]file.File{
+			&file.BaseFile{
+				Path: path,
 			},
 		}),
 		Title:     title,
@@ -138,7 +136,7 @@ func TestGetStudioName(t *testing.T) {
 	studioErr := errors.New("error getting image")
 
 	mockStudioReader.On("Find", testCtx, studioID).Return(&models.Studio{
-		Name: models.NullString(studioName),
+		Name: studioName,
 	}, nil).Once()
 	mockStudioReader.On("Find", testCtx, missingStudioID).Return(nil, nil).Once()
 	mockStudioReader.On("Find", testCtx, errStudioID).Return(nil, studioErr).Once()

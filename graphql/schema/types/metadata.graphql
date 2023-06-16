@@ -14,6 +14,7 @@ input GenerateMetadataInput {
   forceTranscodes: Boolean
   phashes: Boolean
   interactiveHeatmapsSpeeds: Boolean
+  clipPreviews: Boolean
 
   """scene ids to generate for"""
   sceneIDs: [ID!]
@@ -49,6 +50,7 @@ type GenerateMetadataOptions {
   transcodes: Boolean
   phashes: Boolean
   interactiveHeatmapsSpeeds: Boolean
+  clipPreviews: Boolean
 }
 
 type GeneratePreviewOptions {
@@ -98,6 +100,8 @@ input ScanMetadataInput {
   scanGeneratePhashes: Boolean
   """Generate image thumbnails during scan"""
   scanGenerateThumbnails: Boolean
+  """Generate image clip previews during scan"""
+  scanGenerateClipPreviews: Boolean
 
   "Filter options for the scan"
   filter: ScanMetaDataFilterInput
@@ -120,6 +124,8 @@ type ScanMetadataOptions {
   scanGeneratePhashes: Boolean!
   """Generate image thumbnails during scan"""
   scanGenerateThumbnails: Boolean!
+  """Generate image clip previews during scan"""
+  scanGenerateClipPreviews: Boolean!
 }
 
 input CleanMetadataInput {

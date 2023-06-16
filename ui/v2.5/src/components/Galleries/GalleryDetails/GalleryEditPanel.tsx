@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useHistory, Prompt } from "react-router-dom";
+import { Prompt } from "react-router-dom";
 import {
   Button,
   Dropdown,
@@ -15,8 +15,6 @@ import * as yup from "yup";
 import {
   queryScrapeGallery,
   queryScrapeGalleryURL,
-  useGalleryCreate,
-  useGalleryUpdate,
   useListGalleryScrapers,
   mutateReloadScrapers,
 } from "src/core/StashService";
@@ -40,21 +38,23 @@ import { useRatingKeybinds } from "src/hooks/keybinds";
 import { ConfigurationContext } from "src/hooks/Config";
 import isEqual from "lodash-es/isEqual";
 import { DateInput } from "src/components/Shared/DateInput";
+import { handleUnsavedChanges } from "src/utils/navigation";
 
 interface IProps {
   gallery: Partial<GQL.GalleryDataFragment>;
   isVisible: boolean;
+  onSubmit: (input: GQL.GalleryCreateInput) => Promise<void>;
   onDelete: () => void;
 }
 
 export const GalleryEditPanel: React.FC<IProps> = ({
   gallery,
   isVisible,
+  onSubmit,
   onDelete,
 }) => {
   const intl = useIntl();
   const Toast = useToast();
-  const history = useHistory();
   const [scenes, setScenes] = useState<{ id: string; title: string }[]>(
     (gallery?.scenes ?? []).map((s) => ({
       id: s.id,
@@ -73,9 +73,6 @@ export const GalleryEditPanel: React.FC<IProps> = ({
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
-
-  const [createGallery] = useGalleryCreate();
-  const [updateGallery] = useGalleryUpdate();
 
   const titleRequired =
     isNew || (gallery?.files?.length === 0 && !gallery?.folder);
@@ -151,7 +148,9 @@ export const GalleryEditPanel: React.FC<IProps> = ({
   useEffect(() => {
     if (isVisible) {
       Mousetrap.bind("s s", () => {
-        formik.handleSubmit();
+        if (formik.dirty) {
+          formik.submitForm();
+        }
       });
       Mousetrap.bind("d d", () => {
         onDelete();
@@ -174,51 +173,11 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     setQueryableScrapers(newQueryableScrapers);
   }, [Scrapers]);
 
-  async function onSave(input: GQL.GalleryCreateInput) {
+  async function onSave(input: InputValues) {
     setIsLoading(true);
     try {
-      if (isNew) {
-        const result = await createGallery({
-          variables: {
-            input,
-          },
-        });
-        if (result.data?.galleryCreate) {
-          history.push(`/galleries/${result.data.galleryCreate.id}`);
-          Toast.success({
-            content: intl.formatMessage(
-              { id: "toast.created_entity" },
-              {
-                entity: intl
-                  .formatMessage({ id: "gallery" })
-                  .toLocaleLowerCase(),
-              }
-            ),
-          });
-        }
-      } else {
-        const result = await updateGallery({
-          variables: {
-            input: {
-              id: gallery.id!,
-              ...input,
-            },
-          },
-        });
-        if (result.data?.galleryUpdate) {
-          Toast.success({
-            content: intl.formatMessage(
-              { id: "toast.updated_entity" },
-              {
-                entity: intl
-                  .formatMessage({ id: "gallery" })
-                  .toLocaleLowerCase(),
-              }
-            ),
-          });
-          formik.resetForm();
-        }
-      }
+      await onSubmit(input);
+      formik.resetForm();
     } catch (e) {
       Toast.error(e);
     }
@@ -412,7 +371,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     <div id="gallery-edit-details">
       <Prompt
         when={formik.dirty}
-        message={intl.formatMessage({ id: "dialogs.unsaved_changes" })}
+        message={handleUnsavedChanges(intl, "galleries", gallery?.id)}
       />
 
       {maybeRenderScrapeDialog()}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/remeh/sizedwaitgroup"
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -29,6 +30,7 @@ type GenerateMetadataInput struct {
 	ForceTranscodes           bool `json:"forceTranscodes"`
 	Phashes                   bool `json:"phashes"`
 	InteractiveHeatmapsSpeeds bool `json:"interactiveHeatmapsSpeeds"`
+	ClipPreviews              bool `json:"clipPreviews"`
 	// scene ids to generate for
 	SceneIDs []string `json:"sceneIDs"`
 	// marker ids to generate for
@@ -69,6 +71,7 @@ type totalsGenerate struct {
 	transcodes               int64
 	phashes                  int64
 	interactiveHeatmapSpeeds int64
+	clipPreviews             int64
 
 	tasks int
 }
@@ -142,7 +145,38 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 			return
 		}
 
-		logger.Infof("Generating %d covers %d sprites %d previews %d image previews %d markers %d transcodes %d phashes %d heatmaps & speeds", totals.covers, totals.sprites, totals.previews, totals.imagePreviews, totals.markers, totals.transcodes, totals.phashes, totals.interactiveHeatmapSpeeds)
+		logMsg := "Generating"
+		if j.input.Covers {
+			logMsg += fmt.Sprintf(" %d covers", totals.covers)
+		}
+		if j.input.Sprites {
+			logMsg += fmt.Sprintf(" %d sprites", totals.sprites)
+		}
+		if j.input.Previews {
+			logMsg += fmt.Sprintf(" %d previews", totals.previews)
+		}
+		if j.input.ImagePreviews {
+			logMsg += fmt.Sprintf(" %d image previews", totals.imagePreviews)
+		}
+		if j.input.Markers {
+			logMsg += fmt.Sprintf(" %d markers", totals.markers)
+		}
+		if j.input.Transcodes {
+			logMsg += fmt.Sprintf(" %d transcodes", totals.transcodes)
+		}
+		if j.input.Phashes {
+			logMsg += fmt.Sprintf(" %d phashes", totals.phashes)
+		}
+		if j.input.InteractiveHeatmapsSpeeds {
+			logMsg += fmt.Sprintf(" %d heatmaps & speeds", totals.interactiveHeatmapSpeeds)
+		}
+		if j.input.ClipPreviews {
+			logMsg += fmt.Sprintf(" %d Image Clip Previews", totals.clipPreviews)
+		}
+		if logMsg == "Generating" {
+			logMsg = "Nothing selected to generate"
+		}
+		logger.Infof(logMsg)
 
 		progress.SetTotal(int(totals.tasks))
 	}()
@@ -226,6 +260,38 @@ func (j *GenerateJob) queueTasks(ctx context.Context, g *generate.Generator, que
 		}
 	}
 
+	*findFilter.Page = 1
+	for more := j.input.ClipPreviews; more; {
+		if job.IsCancelled(ctx) {
+			return totals
+		}
+
+		images, err := image.Query(ctx, j.txnManager.Image, nil, findFilter)
+		if err != nil {
+			logger.Errorf("Error encountered queuing files to scan: %s", err.Error())
+			return totals
+		}
+
+		for _, ss := range images {
+			if job.IsCancelled(ctx) {
+				return totals
+			}
+
+			if err := ss.LoadFiles(ctx, j.txnManager.Image); err != nil {
+				logger.Errorf("Error encountered queuing files to scan: %s", err.Error())
+				return totals
+			}
+
+			j.queueImageJob(g, ss, queue, &totals)
+		}
+
+		if len(images) != batchSize {
+			more = false
+		} else {
+			*findFilter.Page++
+		}
+	}
+
 	return totals
 }
 
@@ -269,9 +335,10 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 		task := &GenerateCoverTask{
 			txnManager: j.txnManager,
 			Scene:      *scene,
+			Overwrite:  j.overwrite,
 		}
 
-		if j.overwrite || task.required(ctx) {
+		if task.required(ctx) {
 			totals.covers++
 			totals.tasks++
 			queue <- task
@@ -285,7 +352,7 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 			fileNamingAlgorithm: j.fileNamingAlgo,
 		}
 
-		if j.overwrite || task.required() {
+		if task.required() {
 			totals.sprites++
 			totals.tasks++
 			queue <- task
@@ -309,21 +376,15 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 		}
 
 		if task.required() {
-			addTask := false
-			if j.overwrite || !task.doesVideoPreviewExist() {
+			if task.videoPreviewRequired() {
 				totals.previews++
-				addTask = true
 			}
-
-			if j.input.ImagePreviews && (j.overwrite || !task.doesImagePreviewExist()) {
+			if task.imagePreviewRequired() {
 				totals.imagePreviews++
-				addTask = true
 			}
 
-			if addTask {
-				totals.tasks++
-				queue <- task
-			}
+			totals.tasks++
+			queue <- task
 		}
 	}
 
@@ -357,7 +418,7 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 			fileNamingAlgorithm: j.fileNamingAlgo,
 			g:                   g,
 		}
-		if task.isTranscodeNeeded() {
+		if task.required() {
 			totals.transcodes++
 			totals.tasks++
 			queue <- task
@@ -375,7 +436,7 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 				Overwrite:           j.overwrite,
 			}
 
-			if task.shouldGenerate() {
+			if task.required() {
 				totals.phashes++
 				totals.tasks++
 				queue <- task
@@ -391,7 +452,7 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 			TxnManager:          j.txnManager,
 		}
 
-		if task.shouldGenerate() {
+		if task.required() {
 			totals.interactiveHeatmapSpeeds++
 			totals.tasks++
 			queue <- task
@@ -410,4 +471,17 @@ func (j *GenerateJob) queueMarkerJob(g *generate.Generator, marker *models.Scene
 	totals.markers++
 	totals.tasks++
 	queue <- task
+}
+
+func (j *GenerateJob) queueImageJob(g *generate.Generator, image *models.Image, queue chan<- Task, totals *totalsGenerate) {
+	task := &GenerateClipPreviewTask{
+		Image:     *image,
+		Overwrite: j.overwrite,
+	}
+
+	if task.required() {
+		totals.clipPreviews++
+		totals.tasks++
+		queue <- task
+	}
 }

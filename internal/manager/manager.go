@@ -192,7 +192,7 @@ func initialize() error {
 	instance.SceneService = &scene.Service{
 		File:             db.File,
 		Repository:       db.Scene,
-		MarkerRepository: instance.Repository.SceneMarker,
+		MarkerRepository: db.SceneMarker,
 		PluginCache:      instance.PluginCache,
 		Paths:            instance.Paths,
 		Config:           cfg,
@@ -279,11 +279,11 @@ func initialize() error {
 }
 
 func videoFileFilter(ctx context.Context, f file.File) bool {
-	return isVideo(f.Base().Basename)
+	return useAsVideo(f.Base().Path)
 }
 
 func imageFileFilter(ctx context.Context, f file.File) bool {
-	return isImage(f.Base().Basename)
+	return useAsImage(f.Base().Path)
 }
 
 func galleryFileFilter(ctx context.Context, f file.File) bool {
@@ -306,8 +306,10 @@ func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
 				Filter: file.FilterFunc(videoFileFilter),
 			},
 			&file.FilteredDecorator{
-				Decorator: &file_image.Decorator{},
-				Filter:    file.FilterFunc(imageFileFilter),
+				Decorator: &file_image.Decorator{
+					FFProbe: instance.FFProbe,
+				},
+				Filter: file.FilterFunc(imageFileFilter),
 			},
 		},
 		FingerprintCalculator: &fingerprintCalculator{instance.Config},

@@ -68,15 +68,17 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
 
   const activeImage = useMemo(() => {
     const performerImage = performer.image_path;
-    if (image === null && performerImage) {
-      const performerImageURL = new URL(performerImage);
-      performerImageURL.searchParams.set("default", "true");
-      return performerImageURL.toString();
-    } else if (image) {
-      return image;
+    if (isEditing) {
+      if (image === null && performerImage) {
+        const performerImageURL = new URL(performerImage);
+        performerImageURL.searchParams.set("default", "true");
+        return performerImageURL.toString();
+      } else if (image) {
+        return image;
+      }
     }
     return performerImage;
-  }, [image, performer.image_path]);
+  }, [image, isEditing, performer.image_path]);
 
   const lightboxImages = useMemo(
     () => [{ paths: { thumbnail: activeImage, image: activeImage } }],
@@ -125,7 +127,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("a", () => setActiveTabKey("details"));
-    Mousetrap.bind("e", () => setIsEditing(!isEditing));
+    Mousetrap.bind("e", () => toggleEditing());
     Mousetrap.bind("c", () => setActiveTabKey("scenes"));
     Mousetrap.bind("g", () => setActiveTabKey("galleries"));
     Mousetrap.bind("m", () => setActiveTabKey("movies"));
@@ -142,6 +144,24 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     };
   });
 
+  async function onSave(input: GQL.PerformerCreateInput) {
+    await updatePerformer({
+      variables: {
+        input: {
+          id: performer.id,
+          ...input,
+        },
+      },
+    });
+    toggleEditing(false);
+    Toast.success({
+      content: intl.formatMessage(
+        { id: "toast.updated_entity" },
+        { entity: intl.formatMessage({ id: "performer" }).toLocaleLowerCase() }
+      ),
+    });
+  }
+
   async function onDelete() {
     try {
       await deletePerformer({ variables: { id: performer.id } });
@@ -151,6 +171,15 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
 
     // redirect to performers page
     history.push("/performers");
+  }
+
+  function toggleEditing(value?: boolean) {
+    if (value !== undefined) {
+      setIsEditing(value);
+    } else {
+      setIsEditing((e) => !e);
+    }
+    setImage(undefined);
   }
 
   function renderImage() {
@@ -170,9 +199,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             objectName={
               performer?.name ?? intl.formatMessage({ id: "performer" })
             }
-            onToggleEdit={() => {
-              setIsEditing(!isEditing);
-            }}
+            onToggleEdit={() => toggleEditing()}
             onDelete={onDelete}
             onAutoTag={onAutoTag}
             isNew={false}
@@ -200,13 +227,14 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <Tab
           eventKey="scenes"
           title={
-            <React.Fragment>
+            <>
               {intl.formatMessage({ id: "scenes" })}
               <Counter
                 abbreviateCounter={abbreviateCounter}
-                count={performer.scene_count ?? 0}
+                count={performer.scene_count}
+                hideZero
               />
-            </React.Fragment>
+            </>
           }
         >
           <PerformerScenesPanel
@@ -217,13 +245,14 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <Tab
           eventKey="galleries"
           title={
-            <React.Fragment>
+            <>
               {intl.formatMessage({ id: "galleries" })}
               <Counter
                 abbreviateCounter={abbreviateCounter}
-                count={performer.gallery_count ?? 0}
+                count={performer.gallery_count}
+                hideZero
               />
-            </React.Fragment>
+            </>
           }
         >
           <PerformerGalleriesPanel
@@ -234,13 +263,14 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <Tab
           eventKey="images"
           title={
-            <React.Fragment>
+            <>
               {intl.formatMessage({ id: "images" })}
               <Counter
                 abbreviateCounter={abbreviateCounter}
-                count={performer.image_count ?? 0}
+                count={performer.image_count}
+                hideZero
               />
-            </React.Fragment>
+            </>
           }
         >
           <PerformerImagesPanel
@@ -251,13 +281,14 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <Tab
           eventKey="movies"
           title={
-            <React.Fragment>
+            <>
               {intl.formatMessage({ id: "movies" })}
               <Counter
                 abbreviateCounter={abbreviateCounter}
-                count={performer.movie_count ?? 0}
+                count={performer.movie_count}
+                hideZero
               />
-            </React.Fragment>
+            </>
           }
         >
           <PerformerMoviesPanel
@@ -268,13 +299,14 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <Tab
           eventKey="appearswith"
           title={
-            <React.Fragment>
+            <>
               {intl.formatMessage({ id: "appears_with" })}
               <Counter
                 abbreviateCounter={abbreviateCounter}
-                count={performer.performer_count ?? 0}
+                count={performer.performer_count}
+                hideZero
               />
-            </React.Fragment>
+            </>
           }
         >
           <PerformerAppearsWithPanel
@@ -292,7 +324,8 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <PerformerEditPanel
           performer={performer}
           isVisible={isEditing}
-          onCancel={() => setIsEditing(false)}
+          onSubmit={onSave}
+          onCancel={() => toggleEditing()}
           setImage={setImage}
           setEncodingImage={setEncodingImage}
         />

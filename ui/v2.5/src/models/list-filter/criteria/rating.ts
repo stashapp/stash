@@ -36,7 +36,7 @@ export class RatingCriterion extends Criterion<INumberValue> {
     };
   }
 
-  public getLabelValue() {
+  protected getLabelValue() {
     const { value, value2 } = this.value;
     if (
       this.modifier === CriterionModifier.Between ||

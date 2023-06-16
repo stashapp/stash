@@ -375,9 +375,8 @@ div.dropdown-menu {
     color: $dark-text;
     font-size: 12px;
     line-height: 1rem;
-    margin-left: 0.5rem;
     opacity: 0.5;
-    padding: 0;
+    padding: 0 0 0 0.5rem;
     position: relative;
 
     &:active,

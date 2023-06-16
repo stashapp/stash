@@ -59,6 +59,7 @@ interface IProps {
   setZoom: (v: number) => void;
   onLeft: () => void;
   onRight: () => void;
+  isVideo: boolean;
 }
 
 export const LightboxImage: React.FC<IProps> = ({
@@ -74,6 +75,7 @@ export const LightboxImage: React.FC<IProps> = ({
   current,
   setZoom,
   resetPosition,
+  isVideo,
 }) => {
   const [defaultZoom, setDefaultZoom] = useState(1);
   const [moving, setMoving] = useState(false);
@@ -89,7 +91,7 @@ export const LightboxImage: React.FC<IProps> = ({
 
   const container = React.createRef<HTMLDivElement>();
   const startPoints = useRef<number[]>([0, 0]);
-  const pointerCache = useRef<React.PointerEvent<HTMLDivElement>[]>([]);
+  const pointerCache = useRef<React.PointerEvent[]>([]);
   const prevDiff = useRef<number | undefined>();
 
   const scrollAttempts = useRef(0);
@@ -100,6 +102,24 @@ export const LightboxImage: React.FC<IProps> = ({
       setBoxWidth(box.offsetWidth);
       setBoxHeight(box.offsetHeight);
     }
+
+    function toggleVideoPlay() {
+      if (container.current) {
+        let openVideo = container.current.getElementsByTagName("video");
+        if (openVideo.length > 0) {
+          let rect = openVideo[0].getBoundingClientRect();
+          if (Math.abs(rect.x) < document.body.clientWidth / 2) {
+            openVideo[0].play();
+          } else {
+            openVideo[0].pause();
+          }
+        }
+      }
+    }
+
+    setTimeout(() => {
+      toggleVideoPlay();
+    }, 250);
   }, [container]);
 
   useEffect(() => {
@@ -233,7 +253,12 @@ export const LightboxImage: React.FC<IProps> = ({
     calculateInitialPosition,
   ]);
 
-  function getScrollMode(ev: React.WheelEvent<HTMLDivElement>) {
+  function getScrollMode(
+    ev:
+      | React.WheelEvent<HTMLImageElement>
+      | React.WheelEvent<HTMLVideoElement>
+      | React.WheelEvent<HTMLDivElement>
+  ) {
     if (ev.shiftKey) {
       switch (scrollMode) {
         case GQL.ImageLightboxScrollMode.Zoom:
@@ -246,14 +271,24 @@ export const LightboxImage: React.FC<IProps> = ({
     return scrollMode;
   }
 
-  function onContainerScroll(ev: React.WheelEvent<HTMLDivElement>) {
+  function onContainerScroll(
+    ev:
+      | React.WheelEvent<HTMLImageElement>
+      | React.WheelEvent<HTMLVideoElement>
+      | React.WheelEvent<HTMLDivElement>
+  ) {
     // don't zoom if mouse isn't over image
     if (getScrollMode(ev) === GQL.ImageLightboxScrollMode.PanY) {
       onImageScroll(ev);
     }
   }
 
-  function onImageScrollPanY(ev: React.WheelEvent<HTMLDivElement>) {
+  function onImageScrollPanY(
+    ev:
+      | React.WheelEvent<HTMLImageElement>
+      | React.WheelEvent<HTMLVideoElement>
+      | React.WheelEvent<HTMLDivElement>
+  ) {
     if (current) {
       const [minY, maxY] = minMaxY(zoom * defaultZoom);
 
@@ -298,7 +333,12 @@ export const LightboxImage: React.FC<IProps> = ({
     }
   }
 
-  function onImageScroll(ev: React.WheelEvent<HTMLDivElement>) {
+  function onImageScroll(
+    ev:
+      | React.WheelEvent<HTMLImageElement>
+      | React.WheelEvent<HTMLVideoElement>
+      | React.WheelEvent<HTMLDivElement>
+  ) {
     const percent = ev.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP;
 
     switch (getScrollMode(ev)) {
@@ -311,7 +351,11 @@ export const LightboxImage: React.FC<IProps> = ({
     }
   }
 
-  function onImageMouseOver(ev: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+  function onImageMouseOver(
+    ev:
+      | React.MouseEvent<HTMLImageElement, MouseEvent>
+      | React.MouseEvent<HTMLVideoElement, MouseEvent>
+  ) {
     if (!moving) return;
 
     if (!ev.buttons) {
@@ -327,14 +371,22 @@ export const LightboxImage: React.FC<IProps> = ({
     setPositionY(positionY + posY);
   }
 
-  function onImageMouseDown(ev: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+  function onImageMouseDown(
+    ev:
+      | React.MouseEvent<HTMLImageElement, MouseEvent>
+      | React.MouseEvent<HTMLVideoElement, MouseEvent>
+  ) {
     startPoints.current = [ev.pageX, ev.pageY];
     setMoving(true);
 
     mouseDownEvent.current = ev.nativeEvent;
   }
 
-  function onImageMouseUp(ev: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+  function onImageMouseUp(
+    ev:
+      | React.MouseEvent<HTMLImageElement, MouseEvent>
+      | React.MouseEvent<HTMLVideoElement, MouseEvent>
+  ) {
     if (ev.button !== 0) return;
 
     if (
@@ -360,7 +412,12 @@ export const LightboxImage: React.FC<IProps> = ({
     }
   }
 
-  function onTouchStart(ev: React.TouchEvent<HTMLDivElement>) {
+  function onTouchStart(
+    ev:
+      | React.TouchEvent<HTMLImageElement>
+      | React.TouchEvent<HTMLVideoElement>
+      | React.TouchEvent<HTMLDivElement>
+  ) {
     ev.preventDefault();
     if (ev.touches.length === 1) {
       startPoints.current = [ev.touches[0].pageX, ev.touches[0].pageY];
@@ -368,7 +425,12 @@ export const LightboxImage: React.FC<IProps> = ({
     }
   }
 
-  function onTouchMove(ev: React.TouchEvent<HTMLDivElement>) {
+  function onTouchMove(
+    ev:
+      | React.TouchEvent<HTMLImageElement>
+      | React.TouchEvent<HTMLVideoElement>
+      | React.TouchEvent<HTMLDivElement>
+  ) {
     if (!moving) return;
 
     if (ev.touches.length === 1) {
@@ -381,7 +443,12 @@ export const LightboxImage: React.FC<IProps> = ({
     }
   }
 
-  function onPointerDown(ev: React.PointerEvent<HTMLDivElement>) {
+  function onPointerDown(
+    ev:
+      | React.PointerEvent<HTMLImageElement>
+      | React.PointerEvent<HTMLVideoElement>
+      | React.PointerEvent<HTMLDivElement>
+  ) {
     // replace pointer event with the same id, if applicable
     pointerCache.current = pointerCache.current.filter(
       (e) => e.pointerId !== ev.pointerId
@@ -391,7 +458,12 @@ export const LightboxImage: React.FC<IProps> = ({
     prevDiff.current = undefined;
   }
 
-  function onPointerUp(ev: React.PointerEvent<HTMLDivElement>) {
+  function onPointerUp(
+    ev:
+      | React.PointerEvent<HTMLImageElement>
+      | React.PointerEvent<HTMLVideoElement>
+      | React.PointerEvent<HTMLDivElement>
+  ) {
     for (let i = 0; i < pointerCache.current.length; i++) {
       if (pointerCache.current[i].pointerId === ev.pointerId) {
         pointerCache.current.splice(i, 1);
@@ -400,7 +472,12 @@ export const LightboxImage: React.FC<IProps> = ({
     }
   }
 
-  function onPointerMove(ev: React.PointerEvent<HTMLDivElement>) {
+  function onPointerMove(
+    ev:
+      | React.PointerEvent<HTMLImageElement>
+      | React.PointerEvent<HTMLVideoElement>
+      | React.PointerEvent<HTMLDivElement>
+  ) {
     // find the event in the cache
     const cachedIndex = pointerCache.current.findIndex(
       (c) => c.pointerId === ev.pointerId
@@ -432,6 +509,17 @@ export const LightboxImage: React.FC<IProps> = ({
     }
   }
 
+  const ImageView = isVideo ? "video" : "img";
+  const customStyle = isVideo
+    ? {
+        touchAction: "none",
+        display: "flex",
+        margin: "auto",
+        width: "100%",
+        "max-height": "90vh",
+      }
+    : { touchAction: "none" };
+
   return (
     <div
       ref={container}
@@ -448,11 +536,12 @@ export const LightboxImage: React.FC<IProps> = ({
         >
           <source srcSet={src} media="(min-width: 800px)" />
           {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
-          <img
+          <ImageView
+            loop={isVideo}
             src={src}
             alt=""
             draggable={false}
-            style={{ touchAction: "none" }}
+            style={customStyle}
             onWheel={current ? (e) => onImageScroll(e) : undefined}
             onMouseDown={(e) => onImageMouseDown(e)}
             onMouseUp={(e) => onImageMouseUp(e)}

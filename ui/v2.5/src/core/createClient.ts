@@ -88,6 +88,10 @@ const typePolicies: TypePolicies = {
   },
 };
 
+const possibleTypes = {
+  VisualFile: ["VideoFile", "ImageFile"],
+};
+
 export const baseURL =
   document.querySelector("base")?.getAttribute("href") ?? "/";
 
@@ -156,7 +160,10 @@ export const createClient = () => {
 
   const link = from([errorLink, splitLink]);
 
-  const cache = new InMemoryCache({ typePolicies });
+  const cache = new InMemoryCache({
+    typePolicies,
+    possibleTypes: possibleTypes,
+  });
   const client = new ApolloClient({
     link,
     cache,

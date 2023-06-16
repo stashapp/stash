@@ -40,6 +40,7 @@ func (rs imageRoutes) Routes() chi.Router {
 
 		r.Get("/image", rs.Image)
 		r.Get("/thumbnail", rs.Thumbnail)
+		r.Get("/preview", rs.Preview)
 	})
 
 	return r
@@ -64,13 +65,19 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		encoder := image.NewThumbnailEncoder(manager.GetInstance().FFMPEG)
+		clipPreviewOptions := image.ClipPreviewOptions{
+			InputArgs:  manager.GetInstance().Config.GetTranscodeInputArgs(),
+			OutputArgs: manager.GetInstance().Config.GetTranscodeOutputArgs(),
+			Preset:     manager.GetInstance().Config.GetPreviewPreset().String(),
+		}
+
+		encoder := image.NewThumbnailEncoder(manager.GetInstance().FFMPEG, manager.GetInstance().FFProbe, clipPreviewOptions)
 		data, err := encoder.GetThumbnail(f, models.DefaultGthumbWidth)
 		if err != nil {
 			// don't log for unsupported image format
 			// don't log for file not found - can optionally be logged in serveImage
 			if !errors.Is(err, image.ErrNotSupportedForThumbnail) && !errors.Is(err, fs.ErrNotExist) {
-				logger.Errorf("error generating thumbnail for %s: %v", f.Path, err)
+				logger.Errorf("error generating thumbnail for %s: %v", f.Base().Path, err)
 
 				var exitErr *exec.ExitError
 				if errors.As(err, &exitErr) {
@@ -96,6 +103,14 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (rs imageRoutes) Preview(w http.ResponseWriter, r *http.Request) {
+	img := r.Context().Value(imageKey).(*models.Image)
+	filepath := manager.GetInstance().Paths.Generated.GetClipPreviewPath(img.Checksum, models.DefaultGthumbWidth)
+
+	// don't check if the preview exists - we'll just return a 404 if it doesn't
+	utils.ServeStaticFile(w, r, filepath)
+}
+
 func (rs imageRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	i := r.Context().Value(imageKey).(*models.Image)
 
@@ -107,7 +122,7 @@ func (rs imageRoutes) serveImage(w http.ResponseWriter, r *http.Request, i *mode
 	const defaultImageImage = "image/image.svg"
 
 	if i.Files.Primary() != nil {
-		err := i.Files.Primary().Serve(&file.OsFS{}, w, r)
+		err := i.Files.Primary().Base().Serve(&file.OsFS{}, w, r)
 		if err == nil {
 			return
 		}

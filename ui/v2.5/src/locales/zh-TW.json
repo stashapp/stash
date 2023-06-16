@@ -193,7 +193,7 @@
       "latest_version": "最新版本",
       "latest_version_build_hash": "最新版本的雜湊值：",
       "new_version_notice": "[新版本]",
-      "release_date": "上映日期:",
+      "release_date": "發布日期：",
       "stash_discord": "加入我們的 {url} 頻道",
       "stash_home": "Stash 的 {url} 專案",
       "stash_open_collective": "透過 {url} 來支持本計畫的開發",
@@ -486,8 +486,8 @@
       },
       "custom_javascript": {
         "description": "必須重新整理頁面才能使更改生效。",
-        "heading": "自定義 JavaScript",
-        "option_label": "已啟用自定義 JavaScript"
+        "heading": "自訂 JavaScript",
+        "option_label": "已啟用自訂 JavaScript"
       },
       "custom_locales": {
         "description": "強制使用特定翻譯字串。主列表請參閱 https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json。必須重新整理頁面才能使更改生效。",

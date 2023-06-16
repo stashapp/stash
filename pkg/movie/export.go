@@ -20,46 +20,33 @@ type ImageGetter interface {
 // ToJSON converts a Movie into its JSON equivalent.
 func ToJSON(ctx context.Context, reader ImageGetter, studioReader studio.Finder, movie *models.Movie) (*jsonschema.Movie, error) {
 	newMovieJSON := jsonschema.Movie{
-		CreatedAt: json.JSONTime{Time: movie.CreatedAt.Timestamp},
-		UpdatedAt: json.JSONTime{Time: movie.UpdatedAt.Timestamp},
+		Name:      movie.Name,
+		Aliases:   movie.Aliases,
+		Director:  movie.Director,
+		Synopsis:  movie.Synopsis,
+		URL:       movie.URL,
+		CreatedAt: json.JSONTime{Time: movie.CreatedAt},
+		UpdatedAt: json.JSONTime{Time: movie.UpdatedAt},
 	}
 
-	if movie.Name.Valid {
-		newMovieJSON.Name = movie.Name.String
+	if movie.Date != nil {
+		newMovieJSON.Date = movie.Date.String()
 	}
-	if movie.Aliases.Valid {
-		newMovieJSON.Aliases = movie.Aliases.String
+	if movie.Rating != nil {
+		newMovieJSON.Rating = *movie.Rating
 	}
-	if movie.Date.Valid {
-		newMovieJSON.Date = utils.GetYMDFromDatabaseDate(movie.Date.String)
-	}
-	if movie.Rating.Valid {
-		newMovieJSON.Rating = int(movie.Rating.Int64)
-	}
-	if movie.Duration.Valid {
-		newMovieJSON.Duration = int(movie.Duration.Int64)
+	if movie.Duration != nil {
+		newMovieJSON.Duration = *movie.Duration
 	}
 
-	if movie.Director.Valid {
-		newMovieJSON.Director = movie.Director.String
-	}
-
-	if movie.Synopsis.Valid {
-		newMovieJSON.Synopsis = movie.Synopsis.String
-	}
-
-	if movie.URL.Valid {
-		newMovieJSON.URL = movie.URL.String
-	}
-
-	if movie.StudioID.Valid {
-		studio, err := studioReader.Find(ctx, int(movie.StudioID.Int64))
+	if movie.StudioID != nil {
+		studio, err := studioReader.Find(ctx, *movie.StudioID)
 		if err != nil {
 			return nil, fmt.Errorf("error getting movie studio: %v", err)
 		}
 
 		if studio != nil {
-			newMovieJSON.Studio = studio.Name.String
+			newMovieJSON.Studio = studio.Name
 		}
 	}
 
