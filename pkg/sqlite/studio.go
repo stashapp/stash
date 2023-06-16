@@ -52,7 +52,6 @@ func (r *studioRow) fromStudio(o models.Studio) {
 	r.Name = zero.StringFrom(o.Name)
 	r.URL = zero.StringFrom(o.URL)
 	r.ParentID = intFromPtr(o.ParentID)
-	r.UpdatedAt = Timestamp{Timestamp: time.Now()}
 	r.Rating = intFromPtr(o.Rating)
 	r.Details = zero.StringFrom(o.Details)
 	r.IgnoreAutoTag = o.IgnoreAutoTag
