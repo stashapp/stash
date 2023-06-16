@@ -44,6 +44,7 @@ require (
 )
 
 require (
+	github.com/WithoutPants/sortorder v0.0.0-20230616003020-921c9ef69552
 	github.com/asticode/go-astisub v0.20.0
 	github.com/doug-martin/goqu/v9 v9.18.0
 	github.com/go-chi/cors v1.2.1
@@ -63,7 +64,6 @@ require (
 )
 
 require (
-	github.com/WithoutPants/sortorder v0.0.0-20230615063600-b6624643cf26 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/antchfx/xpath v1.2.0 // indirect
 	github.com/asticode/go-astikit v0.20.0 // indirect

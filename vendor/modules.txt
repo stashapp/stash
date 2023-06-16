@@ -24,7 +24,7 @@ github.com/99designs/gqlgen/plugin/federation/fieldset
 github.com/99designs/gqlgen/plugin/modelgen
 github.com/99designs/gqlgen/plugin/resolvergen
 github.com/99designs/gqlgen/plugin/servergen
-# github.com/WithoutPants/sortorder v0.0.0-20230615063600-b6624643cf26
+# github.com/WithoutPants/sortorder v0.0.0-20230616003020-921c9ef69552
 ## explicit; go 1.13
 github.com/WithoutPants/sortorder/casefolded
 # github.com/Yamashou/gqlgenc v0.0.6
