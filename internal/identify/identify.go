@@ -8,6 +8,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/scraper"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -193,6 +194,9 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager txn.Manage
 	var updater *scene.UpdateSet
 	if err := txn.WithTxn(ctx, txnManager, func(ctx context.Context) error {
 		// load scene relationships
+		if err := s.LoadURLs(ctx, t.SceneReaderUpdater); err != nil {
+			return err
+		}
 		if err := s.LoadPerformerIDs(ctx, t.SceneReaderUpdater); err != nil {
 			return err
 		}
@@ -274,9 +278,23 @@ func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOp
 			partial.Details = models.NewOptionalString(*scraped.Details)
 		}
 	}
-	if scraped.URL != nil && (scene.URL != *scraped.URL) {
-		if shouldSetSingleValueField(fieldOptions["url"], scene.URL != "") {
-			partial.URL = models.NewOptionalString(*scraped.URL)
+	// TODO
+	if scraped.URL != nil && shouldSetSingleValueField(fieldOptions["url"], false) {
+		// if overwrite, then set over the top
+		switch getFieldStrategy(fieldOptions["url"]) {
+		case FieldStrategyOverwrite:
+			partial.URLs = &models.UpdateStrings{
+				Values: []string{*scraped.URL},
+				Mode:   models.RelationshipUpdateModeSet,
+			}
+		case FieldStrategyMerge:
+			// if merge, add if not already present
+			if !sliceutil.Include(scene.URLs.List(), *scraped.URL) {
+				partial.URLs = &models.UpdateStrings{
+					Values: []string{*scraped.URL},
+					Mode:   models.RelationshipUpdateModeAdd,
+				}
+			}
 		}
 	}
 	if scraped.Director != nil && (scene.Director != *scraped.Director) {
@@ -298,13 +316,20 @@ func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOp
 	return partial
 }
 
-func shouldSetSingleValueField(strategy *FieldOptions, hasExistingValue bool) bool {
+func getFieldStrategy(strategy *FieldOptions) FieldStrategy {
 	// if unset then default to MERGE
 	fs := FieldStrategyMerge
 
 	if strategy != nil && strategy.Strategy.IsValid() {
 		fs = strategy.Strategy
 	}
+
+	return fs
+}
+
+func shouldSetSingleValueField(strategy *FieldOptions, hasExistingValue bool) bool {
+	// if unset then default to MERGE
+	fs := getFieldStrategy(strategy)
 
 	if fs == FieldStrategyIgnore {
 		return false

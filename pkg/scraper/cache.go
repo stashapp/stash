@@ -52,6 +52,11 @@ func isCDPPathWS(c GlobalConfig) bool {
 	return strings.HasPrefix(c.GetScraperCDPPath(), "ws://")
 }
 
+type SceneFinder interface {
+	scene.IDFinder
+	models.URLLoader
+}
+
 type PerformerFinder interface {
 	match.PerformerAutoTagQueryer
 	match.PerformerFinder
@@ -73,7 +78,7 @@ type GalleryFinder interface {
 }
 
 type Repository struct {
-	SceneFinder     scene.IDFinder
+	SceneFinder     SceneFinder
 	GalleryFinder   GalleryFinder
 	TagFinder       TagFinder
 	PerformerFinder PerformerFinder
@@ -361,7 +366,7 @@ func (c Cache) getScene(ctx context.Context, sceneID int) (*models.Scene, error)
 			return fmt.Errorf("scene with id %d not found", sceneID)
 		}
 
-		return nil
+		return ret.LoadURLs(ctx, c.repository.SceneFinder)
 	}); err != nil {
 		return nil, err
 	}

@@ -22,6 +22,7 @@ type SceneReaderUpdater interface {
 	models.PerformerIDLoader
 	models.TagIDLoader
 	models.StashIDLoader
+	models.URLLoader
 }
 
 type TagCreator interface {

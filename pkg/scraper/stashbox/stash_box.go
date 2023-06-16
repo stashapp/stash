@@ -820,8 +820,9 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 	if scene.Director != "" {
 		draft.Director = &scene.Director
 	}
-	if scene.URL != "" && len(strings.TrimSpace(scene.URL)) > 0 {
-		url := strings.TrimSpace(scene.URL)
+	// TODO - draft does not accept multiple URLs. Use single URL for now.
+	if len(scene.URLs.List()) > 0 {
+		url := strings.TrimSpace(scene.URLs.List()[0])
 		draft.URL = &url
 	}
 	if scene.Date != nil {

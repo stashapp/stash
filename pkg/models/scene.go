@@ -155,6 +155,7 @@ type SceneReader interface {
 	FindByGalleryID(ctx context.Context, performerID int) ([]*Scene, error)
 	FindDuplicates(ctx context.Context, distance int, durationDiff float64) ([][]*Scene, error)
 
+	URLLoader
 	GalleryIDLoader
 	PerformerIDLoader
 	TagIDLoader
