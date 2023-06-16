@@ -2,15 +2,17 @@ import React, { useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { useMovieCreate } from "src/core/StashService";
 import { useHistory, useLocation } from "react-router-dom";
+import { useIntl } from "react-intl";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
 import { MovieEditPanel } from "./MovieEditPanel";
 
 const MovieCreate: React.FC = () => {
   const history = useHistory();
-  const location = useLocation();
+  const intl = useIntl();
   const Toast = useToast();
 
+  const location = useLocation();
   const query = useMemo(() => new URLSearchParams(location.search), [location]);
   const movie = {
     name: query.get("q") ?? undefined,
@@ -24,15 +26,17 @@ const MovieCreate: React.FC = () => {
   const [createMovie] = useMovieCreate();
 
   async function onSave(input: GQL.MovieCreateInput) {
-    try {
-      const result = await createMovie({
-        variables: input,
+    const result = await createMovie({
+      variables: { input },
+    });
+    if (result.data?.movieCreate?.id) {
+      history.push(`/movies/${result.data.movieCreate.id}`);
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "toast.created_entity" },
+          { entity: intl.formatMessage({ id: "gallery" }).toLocaleLowerCase() }
+        ),
       });
-      if (result.data?.movieCreate?.id) {
-        history.push(`/movies/${result.data.movieCreate.id}`);
-      }
-    } catch (e) {
-      Toast.error(e);
     }
   }
 

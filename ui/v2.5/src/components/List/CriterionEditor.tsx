@@ -36,8 +36,14 @@ import { StashIDFilter } from "./Filters/StashIDFilter";
 import { RatingCriterion } from "../../models/list-filter/criteria/rating";
 import { RatingFilter } from "./Filters/RatingFilter";
 import { BooleanFilter } from "./Filters/BooleanFilter";
-import { OptionsListFilter } from "./Filters/OptionsListFilter";
+import { OptionFilter, OptionListFilter } from "./Filters/OptionFilter";
 import { PathFilter } from "./Filters/PathFilter";
+import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
+import PerformersFilter from "./Filters/PerformersFilter";
+import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
+import StudiosFilter from "./Filters/StudiosFilter";
+import { TagsCriterion } from "src/models/list-filter/criteria/tags";
+import TagsFilter from "./Filters/TagsFilter";
 import { PhashCriterion } from "src/models/list-filter/criteria/phash";
 import { PhashFilter } from "./Filters/PhashFilter";
 import cx from "classnames";
@@ -71,17 +77,15 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
 
     return (
       <Form.Group className="modifier-options">
-        {modifierOptions.map((c) => (
+        {modifierOptions.map((m) => (
           <Button
             className={cx("modifier-option", {
-              selected: criterion.modifier === c.value,
+              selected: criterion.modifier === m,
             })}
-            key={c.value}
-            onClick={() =>
-              onChangedModifierSelect(c.value as CriterionModifier)
-            }
+            key={m}
+            onClick={() => onChangedModifierSelect(m)}
           >
-            {c.label ? intl.formatMessage({ id: c.label }) : ""}
+            {Criterion.getModifierLabel(intl, m)}
           </Button>
         ))}
       </Form.Group>
@@ -110,6 +114,33 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
       return;
     }
 
+    if (criterion instanceof PerformersCriterion) {
+      return (
+        <PerformersFilter
+          criterion={criterion}
+          setCriterion={(c) => setCriterion(c)}
+        />
+      );
+    }
+
+    if (criterion instanceof StudiosCriterion) {
+      return (
+        <StudiosFilter
+          criterion={criterion}
+          setCriterion={(c) => setCriterion(c)}
+        />
+      );
+    }
+
+    if (criterion instanceof TagsCriterion) {
+      return (
+        <TagsFilter
+          criterion={criterion}
+          setCriterion={(c) => setCriterion(c)}
+        />
+      );
+    }
+
     if (criterion instanceof ILabeledIdCriterion) {
       return (
         <LabeledIdFilter
@@ -132,18 +163,17 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
       !criterionIsNumberValue(criterion.value) &&
       !criterionIsStashIDValue(criterion.value) &&
       !criterionIsDateValue(criterion.value) &&
-      !criterionIsTimestampValue(criterion.value) &&
-      !Array.isArray(criterion.value)
+      !criterionIsTimestampValue(criterion.value)
     ) {
-      // if (!modifierOptions || modifierOptions.length === 0) {
-      return (
-        <OptionsListFilter criterion={criterion} setCriterion={setCriterion} />
-      );
-      // }
-
-      // return (
-      //   <OptionsFilter criterion={criterion} onValueChanged={onValueChanged} />
-      // );
+      if (!Array.isArray(criterion.value)) {
+        return (
+          <OptionFilter criterion={criterion} setCriterion={setCriterion} />
+        );
+      } else {
+        return (
+          <OptionListFilter criterion={criterion} setCriterion={setCriterion} />
+        );
+      }
     }
     if (criterion.criterionOption instanceof PathCriterionOption) {
       return (

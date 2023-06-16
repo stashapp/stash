@@ -158,7 +158,6 @@ func (t *StashBoxBatchTagTask) stashBoxPerformerTag(ctx context.Context) {
 				EyeColor:       getString(performer.EyeColor),
 				HairColor:      getString(performer.HairColor),
 				FakeTits:       getString(performer.FakeTits),
-				Gender:         models.GenderEnum(getString(performer.Gender)),
 				Height:         getIntPtr(performer.Height),
 				Weight:         getIntPtr(performer.Weight),
 				Instagram:      getString(performer.Instagram),
@@ -175,6 +174,11 @@ func (t *StashBoxBatchTagTask) stashBoxPerformerTag(ctx context.Context) {
 					},
 				}),
 				UpdatedAt: currentTime,
+			}
+
+			if performer.Gender != nil {
+				v := models.GenderEnum(getString(performer.Gender))
+				newPerformer.Gender = &v
 			}
 
 			err := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
@@ -479,7 +483,7 @@ func (t *StashBoxBatchTagTask) getPartial(performer *models.ScrapedPerformer, ex
 	}
 	if performer.DeathDate != nil && *performer.DeathDate != "" && !excluded["deathdate"] {
 		value := getDate(performer.DeathDate)
-		partial.Birthdate = models.NewOptionalDate(*value)
+		partial.DeathDate = models.NewOptionalDate(*value)
 	}
 	if performer.CareerLength != nil && !excluded["career_length"] {
 		partial.CareerLength = models.NewOptionalString(*performer.CareerLength)

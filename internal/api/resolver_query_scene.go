@@ -2,7 +2,7 @@ package api
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/stashapp/stash/internal/api/urlbuilders"
@@ -11,12 +11,16 @@ import (
 )
 
 func (r *queryResolver) SceneStreams(ctx context.Context, id *string) ([]*manager.SceneStreamEndpoint, error) {
+	sceneID, err := strconv.Atoi(*id)
+	if err != nil {
+		return nil, err
+	}
+
 	// find the scene
 	var scene *models.Scene
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		idInt, _ := strconv.Atoi(*id)
 		var err error
-		scene, err = r.repository.Scene.Find(ctx, idInt)
+		scene, err = r.repository.Scene.Find(ctx, sceneID)
 
 		if scene != nil {
 			err = scene.LoadPrimaryFile(ctx, r.repository.File)
@@ -28,7 +32,7 @@ func (r *queryResolver) SceneStreams(ctx context.Context, id *string) ([]*manage
 	}
 
 	if scene == nil {
-		return nil, errors.New("nil scene")
+		return nil, fmt.Errorf("scene with id %d not found", sceneID)
 	}
 
 	config := manager.GetInstance().Config

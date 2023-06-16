@@ -35,7 +35,7 @@ func ValidateModifyStudio(ctx context.Context, studio models.StudioPartial, qb s
 	}
 
 	parentStudio, err := qb.Find(ctx, currentParentID.Value)
-	if err != nil {
+	if err != nil || parentStudio == nil {
 		return fmt.Errorf("error finding parent studio: %v", err)
 	} else if parentStudio.ParentID == &thisID {
 		return errors.New("studio is already parent studio of the new parent studio")

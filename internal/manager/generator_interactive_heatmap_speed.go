@@ -73,10 +73,11 @@ func (g *InteractiveHeatmapSpeedGenerator) Generate(funscriptPath string, heatma
 		return fmt.Errorf("no valid actions in funscript")
 	}
 
+	sceneDurationMilli := int64(sceneDuration * 1000)
 	g.Funscript = funscript
 	g.Funscript.UpdateIntensityAndSpeed()
 
-	err = g.RenderHeatmap(heatmapPath)
+	err = g.RenderHeatmap(heatmapPath, sceneDurationMilli)
 
 	if err != nil {
 		return err
@@ -155,8 +156,8 @@ func (funscript *Script) UpdateIntensityAndSpeed() {
 }
 
 // funscript needs to have intensity updated first
-func (g *InteractiveHeatmapSpeedGenerator) RenderHeatmap(heatmapPath string) error {
-	gradient := g.Funscript.getGradientTable(g.NumSegments)
+func (g *InteractiveHeatmapSpeedGenerator) RenderHeatmap(heatmapPath string, sceneDurationMilli int64) error {
+	gradient := g.Funscript.getGradientTable(g.NumSegments, sceneDurationMilli)
 
 	img := image.NewRGBA(image.Rect(0, 0, g.Width, g.Height))
 	for x := 0; x < g.Width; x++ {
@@ -179,7 +180,7 @@ func (g *InteractiveHeatmapSpeedGenerator) RenderHeatmap(heatmapPath string) err
 	}
 
 	// add 10 minute marks
-	maxts := g.Funscript.Actions[len(g.Funscript.Actions)-1].At
+	maxts := sceneDurationMilli
 	const tick = 600000
 	var ts int64 = tick
 	c, _ := colorful.Hex("#000000")
@@ -242,7 +243,7 @@ func (gt GradientTable) GetYRange(t float64) [2]float64 {
 	return gt[len(gt)-1].YRange
 }
 
-func (funscript Script) getGradientTable(numSegments int) GradientTable {
+func (funscript Script) getGradientTable(numSegments int, sceneDurationMilli int64) GradientTable {
 	const windowSize = 15
 	const backfillThreshold = 500
 
@@ -255,7 +256,7 @@ func (funscript Script) getGradientTable(numSegments int) GradientTable {
 	gradient := make(GradientTable, numSegments)
 	posList := []int{}
 
-	maxts := funscript.Actions[len(funscript.Actions)-1].At
+	maxts := sceneDurationMilli
 
 	for _, a := range funscript.Actions {
 		posList = append(posList, a.Pos)

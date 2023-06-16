@@ -28,6 +28,8 @@ fragment ScrapedPerformerData on ScrapedPerformer {
   height
   measurements
   fake_tits
+  penis_length
+  circumcised
   career_length
   tattoos
   piercings
@@ -58,6 +60,8 @@ fragment ScrapedScenePerformerData on ScrapedPerformer {
   height
   measurements
   fake_tits
+  penis_length
+  circumcised
   career_length
   tattoos
   piercings

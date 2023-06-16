@@ -23,6 +23,7 @@ $sceneTabWidth: 450px;
 
 .video-wrapper {
   height: 56.25vw;
+  max-height: calc(100vh - #{$menuHeight});
   overflow: hidden;
   width: 100%;
 
@@ -186,6 +187,17 @@ $sceneTabWidth: 450px;
     .vjs-button > .vjs-icon-placeholder::before {
       content: "\f110";
       font-family: VideoJS;
+    }
+  }
+
+  .vjs-vr-selector {
+    .vjs-menu li {
+      font-size: 0.8em;
+    }
+
+    .vjs-button {
+      background: url("/vr.svg") center center no-repeat;
+      width: 50%;
     }
   }
 

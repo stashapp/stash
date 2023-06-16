@@ -6,12 +6,14 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"sync"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/ffmpeg/transcoder"
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/fsutil"
 )
 
 const ffmpegImageQuality = 5
@@ -110,24 +112,11 @@ func (e *ThumbnailEncoder) GetThumbnail(f file.File, maxSize int) ([]byte, error
 
 // GetPreview returns the preview clip of the provided image clip resized to
 // the provided max size. It resizes based on the largest X/Y direction.
-// It returns nil and an error if an error occurs reading, decoding or encoding
-// the image, or if the image is not suitable for thumbnails.
 // It is hardcoded to 30 seconds maximum right now
-func (e *ThumbnailEncoder) GetPreview(f file.File, maxSize int) ([]byte, error) {
-	reader, err := f.Open(&file.OsFS{})
+func (e *ThumbnailEncoder) GetPreview(inPath string, outPath string, maxSize int) error {
+	fileData, err := e.FFProbe.NewVideoFile(inPath)
 	if err != nil {
-		return nil, err
-	}
-	defer reader.Close()
-
-	buf := new(bytes.Buffer)
-	if _, err := buf.ReadFrom(reader); err != nil {
-		return nil, err
-	}
-
-	fileData, err := e.FFProbe.NewVideoFile(f.Base().Path)
-	if err != nil {
-		return nil, err
+		return err
 	}
 	if fileData.Width <= maxSize {
 		maxSize = fileData.Width
@@ -136,7 +125,7 @@ func (e *ThumbnailEncoder) GetPreview(f file.File, maxSize int) ([]byte, error) 
 	if clipDuration > 30.0 {
 		clipDuration = 30.0
 	}
-	return e.getClipPreview(buf, maxSize, clipDuration, fileData.FrameRate)
+	return e.getClipPreview(inPath, outPath, maxSize, clipDuration, fileData.FrameRate)
 }
 
 func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, maxSize int) ([]byte, error) {
@@ -150,7 +139,7 @@ func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, maxSize int
 	return e.FFMpeg.GenerateOutput(context.TODO(), args, image)
 }
 
-func (e *ThumbnailEncoder) getClipPreview(image *bytes.Buffer, maxSize int, clipDuration float64, frameRate float64) ([]byte, error) {
+func (e *ThumbnailEncoder) getClipPreview(inPath string, outPath string, maxSize int, clipDuration float64, frameRate float64) error {
 	var thumbFilter ffmpeg.VideoFilter
 	thumbFilter = thumbFilter.ScaleMaxSize(maxSize)
 
@@ -173,7 +162,7 @@ func (e *ThumbnailEncoder) getClipPreview(image *bytes.Buffer, maxSize int, clip
 	}
 
 	thumbOptions := transcoder.TranscodeOptions{
-		OutputPath: "-",
+		OutputPath: outPath,
 		StartTime:  0,
 		Duration:   clipDuration,
 
@@ -187,6 +176,9 @@ func (e *ThumbnailEncoder) getClipPreview(image *bytes.Buffer, maxSize int, clip
 		ExtraOutputArgs: o.OutputArgs,
 	}
 
-	args := transcoder.Transcode("-", thumbOptions)
-	return e.FFMpeg.GenerateOutput(context.TODO(), args, image)
+	if err := fsutil.EnsureDirAll(filepath.Dir(outPath)); err != nil {
+		return err
+	}
+	args := transcoder.Transcode(inPath, thumbOptions)
+	return e.FFMpeg.Generate(context.TODO(), args)
 }

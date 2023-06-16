@@ -103,14 +103,14 @@ func importTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []st
 func createTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []string) ([]*models.Tag, error) {
 	var ret []*models.Tag
 	for _, name := range names {
-		newTag := *models.NewTag(name)
+		newTag := models.NewTag(name)
 
-		created, err := tagWriter.Create(ctx, newTag)
+		err := tagWriter.Create(ctx, newTag)
 		if err != nil {
 			return nil, err
 		}
 
-		ret = append(ret, created)
+		ret = append(ret, newTag)
 	}
 
 	return ret, nil
@@ -189,7 +189,6 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 	newPerformer := models.Performer{
 		Name:           performerJSON.Name,
 		Disambiguation: performerJSON.Disambiguation,
-		Gender:         models.GenderEnum(performerJSON.Gender),
 		URL:            performerJSON.URL,
 		Ethnicity:      performerJSON.Ethnicity,
 		Country:        performerJSON.Country,
@@ -211,6 +210,16 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 
 		TagIDs:   models.NewRelatedIDs([]int{}),
 		StashIDs: models.NewRelatedStashIDs(performerJSON.StashIDs),
+	}
+
+	if performerJSON.Gender != "" {
+		v := models.GenderEnum(performerJSON.Gender)
+		newPerformer.Gender = &v
+	}
+
+	if performerJSON.Circumcised != "" {
+		v := models.CircumisedEnum(performerJSON.Circumcised)
+		newPerformer.Circumcised = &v
 	}
 
 	if performerJSON.Birthdate != "" {
@@ -235,6 +244,10 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 
 	if performerJSON.Weight != 0 {
 		newPerformer.Weight = &performerJSON.Weight
+	}
+
+	if performerJSON.PenisLength != 0 {
+		newPerformer.PenisLength = &performerJSON.PenisLength
 	}
 
 	if performerJSON.Height != "" {

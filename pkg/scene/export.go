@@ -221,9 +221,9 @@ func GetSceneMoviesJSON(ctx context.Context, movieReader MovieFinder, scene *mod
 			return nil, fmt.Errorf("error getting movie: %v", err)
 		}
 
-		if movie.Name.Valid {
+		if movie != nil {
 			sceneMovieJSON := jsonschema.SceneMovie{
-				MovieName: movie.Name.String,
+				MovieName: movie.Name,
 			}
 			if sceneMovie.SceneIndex != nil {
 				sceneMovieJSON.SceneIndex = *sceneMovie.SceneIndex
@@ -273,8 +273,8 @@ func GetSceneMarkersJSON(ctx context.Context, markerReader MarkerFinder, tagRead
 			Seconds:    getDecimalString(sceneMarker.Seconds),
 			PrimaryTag: primaryTag.Name,
 			Tags:       getTagNames(sceneMarkerTags),
-			CreatedAt:  json.JSONTime{Time: sceneMarker.CreatedAt.Timestamp},
-			UpdatedAt:  json.JSONTime{Time: sceneMarker.UpdatedAt.Timestamp},
+			CreatedAt:  json.JSONTime{Time: sceneMarker.CreatedAt},
+			UpdatedAt:  json.JSONTime{Time: sceneMarker.UpdatedAt},
 		}
 
 		results = append(results, sceneMarkerJSON)

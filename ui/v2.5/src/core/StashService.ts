@@ -6,6 +6,7 @@ import {
   getOperationName,
 } from "@apollo/client/utilities";
 import { stringToGender } from "src/utils/gender";
+import { stringToCircumcised } from "src/utils/circumcised";
 import { filterData } from "../utils/data";
 import { ListFilterModel } from "../models/list-filter/filter";
 import * as GQL from "./generated-graphql";
@@ -221,8 +222,10 @@ export const useFindGallery = (id: string) => {
   const skip = id === "new";
   return GQL.useFindGalleryQuery({ variables: { id }, skip });
 };
-export const useFindScene = (id: string) =>
-  GQL.useFindSceneQuery({ variables: { id } });
+export const useFindScene = (id: string) => {
+  const skip = id === "new";
+  return GQL.useFindSceneQuery({ variables: { id }, skip });
+};
 export const useSceneStreams = (id: string) =>
   GQL.useSceneStreamsQuery({ variables: { id } });
 
@@ -731,6 +734,7 @@ export const mutateAddGalleryImages = (input: GQL.GalleryAddInput) =>
     mutation: GQL.AddGalleryImagesDocument,
     variables: input,
     update: deleteCache(galleryMutationImpactedQueries),
+    refetchQueries: getQueryNames([GQL.FindGalleryDocument]),
   });
 
 export const mutateRemoveGalleryImages = (input: GQL.GalleryRemoveInput) =>
@@ -738,6 +742,7 @@ export const mutateRemoveGalleryImages = (input: GQL.GalleryRemoveInput) =>
     mutation: GQL.RemoveGalleryImagesDocument,
     variables: input,
     update: deleteCache(galleryMutationImpactedQueries),
+    refetchQueries: getQueryNames([GQL.FindGalleryDocument]),
   });
 
 export const mutateGallerySetPrimaryFile = (id: string, fileID: string) =>
@@ -1322,6 +1327,10 @@ export const makePerformerCreateInput = (toCreate: GQL.ScrapedPerformer) => {
     death_date: toCreate.death_date,
     hair_color: toCreate.hair_color,
     weight: toCreate.weight ? Number(toCreate.weight) : undefined,
+    penis_length: toCreate.penis_length
+      ? Number(toCreate.penis_length)
+      : undefined,
+    circumcised: stringToCircumcised(toCreate.circumcised),
   };
   return input;
 };

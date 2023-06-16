@@ -109,6 +109,20 @@ func (i IntCriterionInput) ValidModifier() bool {
 	return false
 }
 
+type FloatCriterionInput struct {
+	Value    float64           `json:"value"`
+	Value2   *float64          `json:"value2"`
+	Modifier CriterionModifier `json:"modifier"`
+}
+
+func (i FloatCriterionInput) ValidModifier() bool {
+	switch i.Modifier {
+	case CriterionModifierEquals, CriterionModifierNotEquals, CriterionModifierGreaterThan, CriterionModifierLessThan, CriterionModifierIsNull, CriterionModifierNotNull, CriterionModifierBetween, CriterionModifierNotBetween:
+		return true
+	}
+	return false
+}
+
 type ResolutionCriterionInput struct {
 	Value    ResolutionEnum    `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
@@ -118,11 +132,24 @@ type HierarchicalMultiCriterionInput struct {
 	Value    []string          `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
 	Depth    *int              `json:"depth"`
+	Excludes []string          `json:"excludes"`
+}
+
+func (i HierarchicalMultiCriterionInput) CombineExcludes() HierarchicalMultiCriterionInput {
+	ii := i
+	if ii.Modifier == CriterionModifierExcludes {
+		ii.Modifier = CriterionModifierIncludesAll
+		ii.Excludes = append(ii.Excludes, ii.Value...)
+		ii.Value = nil
+	}
+
+	return ii
 }
 
 type MultiCriterionInput struct {
 	Value    []string          `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
+	Excludes []string          `json:"excludes"`
 }
 
 type DateCriterionInput struct {

@@ -12,6 +12,7 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/file/video"
+	"github.com/stashapp/stash/pkg/logger"
 	_ "golang.org/x/image/webp"
 )
 
@@ -22,15 +23,14 @@ type Decorator struct {
 
 func (d *Decorator) Decorate(ctx context.Context, fs file.FS, f file.File) (file.File, error) {
 	base := f.Base()
-	r, err := fs.Open(base.Path)
-	if err != nil {
-		return f, fmt.Errorf("reading image file %q: %w", base.Path, err)
-	}
-	defer r.Close()
 
-	probe, err := d.FFProbe.NewVideoFile(base.Path)
-	if err != nil {
-		fmt.Printf("Warning: File %q could not be read with ffprobe: %s, assuming ImageFile", base.Path, err)
+	decorateFallback := func() (file.File, error) {
+		r, err := fs.Open(base.Path)
+		if err != nil {
+			return f, fmt.Errorf("reading image file %q: %w", base.Path, err)
+		}
+		defer r.Close()
+
 		c, format, err := image.DecodeConfig(r)
 		if err != nil {
 			return f, fmt.Errorf("decoding image file %q: %w", base.Path, err)
@@ -41,6 +41,19 @@ func (d *Decorator) Decorate(ctx context.Context, fs file.FS, f file.File) (file
 			Width:    c.Width,
 			Height:   c.Height,
 		}, nil
+	}
+
+	// ignore clips in non-OsFS filesystems as ffprobe cannot read them
+	// TODO - copy to temp file if not an OsFS
+	if _, isOs := fs.(*file.OsFS); !isOs {
+		logger.Debugf("assuming ImageFile for non-OsFS file %q", base.Path)
+		return decorateFallback()
+	}
+
+	probe, err := d.FFProbe.NewVideoFile(base.Path)
+	if err != nil {
+		logger.Warnf("File %q could not be read with ffprobe: %s, assuming ImageFile", base.Path, err)
+		return decorateFallback()
 	}
 
 	isClip := true
@@ -69,10 +82,16 @@ func (d *Decorator) IsMissingMetadata(ctx context.Context, fs file.FS, f file.Fi
 		unsetNumber = -1
 	)
 
-	imf, ok := f.(*file.ImageFile)
-	if !ok {
+	imf, isImage := f.(*file.ImageFile)
+	vf, isVideo := f.(*file.VideoFile)
+
+	switch {
+	case isImage:
+		return imf.Format == unsetString || imf.Width == unsetNumber || imf.Height == unsetNumber
+	case isVideo:
+		videoFileDecorator := video.Decorator{FFProbe: d.FFProbe}
+		return videoFileDecorator.IsMissingMetadata(ctx, fs, vf)
+	default:
 		return true
 	}
-
-	return imf.Format == unsetString || imf.Width == unsetNumber || imf.Height == unsetNumber
 }

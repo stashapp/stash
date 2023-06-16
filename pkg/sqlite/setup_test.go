@@ -60,19 +60,24 @@ const (
 	sceneIdx1WithPerformer
 	sceneIdx2WithPerformer
 	sceneIdxWithTwoPerformers
+	sceneIdxWithThreePerformers
 	sceneIdxWithTag
 	sceneIdxWithTwoTags
+	sceneIdxWithThreeTags
 	sceneIdxWithMarkerAndTag
+	sceneIdxWithMarkerTwoTags
 	sceneIdxWithStudio
 	sceneIdx1WithStudio
 	sceneIdx2WithStudio
 	sceneIdxWithMarkers
 	sceneIdxWithPerformerTag
+	sceneIdxWithTwoPerformerTag
 	sceneIdxWithPerformerTwoTags
 	sceneIdxWithSpacedName
 	sceneIdxWithStudioPerformer
 	sceneIdxWithGrandChildStudio
 	sceneIdxMissingPhash
+	sceneIdxWithPerformerParentTag
 	// new indexes above
 	lastSceneIdx
 
@@ -90,16 +95,20 @@ const (
 	imageIdx1WithPerformer
 	imageIdx2WithPerformer
 	imageIdxWithTwoPerformers
+	imageIdxWithThreePerformers
 	imageIdxWithTag
 	imageIdxWithTwoTags
+	imageIdxWithThreeTags
 	imageIdxWithStudio
 	imageIdx1WithStudio
 	imageIdx2WithStudio
 	imageIdxWithStudioPerformer
 	imageIdxInZip
 	imageIdxWithPerformerTag
+	imageIdxWithTwoPerformerTag
 	imageIdxWithPerformerTwoTags
 	imageIdxWithGrandChildStudio
+	imageIdxWithPerformerParentTag
 	// new indexes above
 	totalImages
 )
@@ -108,20 +117,25 @@ const (
 	performerIdxWithScene = iota
 	performerIdx1WithScene
 	performerIdx2WithScene
+	performerIdx3WithScene
 	performerIdxWithTwoScenes
 	performerIdxWithImage
 	performerIdxWithTwoImages
 	performerIdx1WithImage
 	performerIdx2WithImage
+	performerIdx3WithImage
 	performerIdxWithTag
+	performerIdx2WithTag
 	performerIdxWithTwoTags
 	performerIdxWithGallery
 	performerIdxWithTwoGalleries
 	performerIdx1WithGallery
 	performerIdx2WithGallery
+	performerIdx3WithGallery
 	performerIdxWithSceneStudio
 	performerIdxWithImageStudio
 	performerIdxWithGalleryStudio
+	performerIdxWithParentTag
 	// new indexes above
 	// performers with dup names start from the end
 	performerIdx1WithDupName
@@ -155,16 +169,20 @@ const (
 	galleryIdx1WithPerformer
 	galleryIdx2WithPerformer
 	galleryIdxWithTwoPerformers
+	galleryIdxWithThreePerformers
 	galleryIdxWithTag
 	galleryIdxWithTwoTags
+	galleryIdxWithThreeTags
 	galleryIdxWithStudio
 	galleryIdx1WithStudio
 	galleryIdx2WithStudio
 	galleryIdxWithPerformerTag
+	galleryIdxWithTwoPerformerTag
 	galleryIdxWithPerformerTwoTags
 	galleryIdxWithStudioPerformer
 	galleryIdxWithGrandChildStudio
 	galleryIdxWithoutFile
+	galleryIdxWithPerformerParentTag
 	// new indexes above
 	lastGalleryIdx
 
@@ -182,12 +200,14 @@ const (
 	tagIdxWithImage
 	tagIdx1WithImage
 	tagIdx2WithImage
+	tagIdx3WithImage
 	tagIdxWithPerformer
 	tagIdx1WithPerformer
 	tagIdx2WithPerformer
 	tagIdxWithGallery
 	tagIdx1WithGallery
 	tagIdx2WithGallery
+	tagIdx3WithGallery
 	tagIdxWithChildTag
 	tagIdxWithParentTag
 	tagIdxWithGrandChild
@@ -332,19 +352,24 @@ var (
 
 var (
 	sceneTags = linkMap{
-		sceneIdxWithTag:          {tagIdxWithScene},
-		sceneIdxWithTwoTags:      {tagIdx1WithScene, tagIdx2WithScene},
-		sceneIdxWithMarkerAndTag: {tagIdx3WithScene},
+		sceneIdxWithTag:           {tagIdxWithScene},
+		sceneIdxWithTwoTags:       {tagIdx1WithScene, tagIdx2WithScene},
+		sceneIdxWithThreeTags:     {tagIdx1WithScene, tagIdx2WithScene, tagIdx3WithScene},
+		sceneIdxWithMarkerAndTag:  {tagIdx3WithScene},
+		sceneIdxWithMarkerTwoTags: {tagIdx2WithScene, tagIdx3WithScene},
 	}
 
 	scenePerformers = linkMap{
-		sceneIdxWithPerformer:        {performerIdxWithScene},
-		sceneIdxWithTwoPerformers:    {performerIdx1WithScene, performerIdx2WithScene},
-		sceneIdxWithPerformerTag:     {performerIdxWithTag},
-		sceneIdxWithPerformerTwoTags: {performerIdxWithTwoTags},
-		sceneIdx1WithPerformer:       {performerIdxWithTwoScenes},
-		sceneIdx2WithPerformer:       {performerIdxWithTwoScenes},
-		sceneIdxWithStudioPerformer:  {performerIdxWithSceneStudio},
+		sceneIdxWithPerformer:          {performerIdxWithScene},
+		sceneIdxWithTwoPerformers:      {performerIdx1WithScene, performerIdx2WithScene},
+		sceneIdxWithThreePerformers:    {performerIdx1WithScene, performerIdx2WithScene, performerIdx3WithScene},
+		sceneIdxWithPerformerTag:       {performerIdxWithTag},
+		sceneIdxWithTwoPerformerTag:    {performerIdxWithTag, performerIdx2WithTag},
+		sceneIdxWithPerformerTwoTags:   {performerIdxWithTwoTags},
+		sceneIdx1WithPerformer:         {performerIdxWithTwoScenes},
+		sceneIdx2WithPerformer:         {performerIdxWithTwoScenes},
+		sceneIdxWithStudioPerformer:    {performerIdxWithSceneStudio},
+		sceneIdxWithPerformerParentTag: {performerIdxWithParentTag},
 	}
 
 	sceneGalleries = linkMap{
@@ -376,6 +401,7 @@ var (
 		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, nil},
 		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, []int{tagIdxWithMarkers}},
 		{sceneIdxWithMarkerAndTag, tagIdxWithPrimaryMarkers, nil},
+		{sceneIdxWithMarkerTwoTags, tagIdxWithPrimaryMarkers, nil},
 	}
 )
 
@@ -407,29 +433,36 @@ var (
 		imageIdxWithGrandChildStudio: studioIdxWithGrandParent,
 	}
 	imageTags = linkMap{
-		imageIdxWithTag:     {tagIdxWithImage},
-		imageIdxWithTwoTags: {tagIdx1WithImage, tagIdx2WithImage},
+		imageIdxWithTag:       {tagIdxWithImage},
+		imageIdxWithTwoTags:   {tagIdx1WithImage, tagIdx2WithImage},
+		imageIdxWithThreeTags: {tagIdx1WithImage, tagIdx2WithImage, tagIdx3WithImage},
 	}
 	imagePerformers = linkMap{
-		imageIdxWithPerformer:        {performerIdxWithImage},
-		imageIdxWithTwoPerformers:    {performerIdx1WithImage, performerIdx2WithImage},
-		imageIdxWithPerformerTag:     {performerIdxWithTag},
-		imageIdxWithPerformerTwoTags: {performerIdxWithTwoTags},
-		imageIdx1WithPerformer:       {performerIdxWithTwoImages},
-		imageIdx2WithPerformer:       {performerIdxWithTwoImages},
-		imageIdxWithStudioPerformer:  {performerIdxWithImageStudio},
+		imageIdxWithPerformer:          {performerIdxWithImage},
+		imageIdxWithTwoPerformers:      {performerIdx1WithImage, performerIdx2WithImage},
+		imageIdxWithThreePerformers:    {performerIdx1WithImage, performerIdx2WithImage, performerIdx3WithImage},
+		imageIdxWithPerformerTag:       {performerIdxWithTag},
+		imageIdxWithTwoPerformerTag:    {performerIdxWithTag, performerIdx2WithTag},
+		imageIdxWithPerformerTwoTags:   {performerIdxWithTwoTags},
+		imageIdx1WithPerformer:         {performerIdxWithTwoImages},
+		imageIdx2WithPerformer:         {performerIdxWithTwoImages},
+		imageIdxWithStudioPerformer:    {performerIdxWithImageStudio},
+		imageIdxWithPerformerParentTag: {performerIdxWithParentTag},
 	}
 )
 
 var (
 	galleryPerformers = linkMap{
-		galleryIdxWithPerformer:        {performerIdxWithGallery},
-		galleryIdxWithTwoPerformers:    {performerIdx1WithGallery, performerIdx2WithGallery},
-		galleryIdxWithPerformerTag:     {performerIdxWithTag},
-		galleryIdxWithPerformerTwoTags: {performerIdxWithTwoTags},
-		galleryIdx1WithPerformer:       {performerIdxWithTwoGalleries},
-		galleryIdx2WithPerformer:       {performerIdxWithTwoGalleries},
-		galleryIdxWithStudioPerformer:  {performerIdxWithGalleryStudio},
+		galleryIdxWithPerformer:          {performerIdxWithGallery},
+		galleryIdxWithTwoPerformers:      {performerIdx1WithGallery, performerIdx2WithGallery},
+		galleryIdxWithThreePerformers:    {performerIdx1WithGallery, performerIdx2WithGallery, performerIdx3WithGallery},
+		galleryIdxWithPerformerTag:       {performerIdxWithTag},
+		galleryIdxWithTwoPerformerTag:    {performerIdxWithTag, performerIdx2WithTag},
+		galleryIdxWithPerformerTwoTags:   {performerIdxWithTwoTags},
+		galleryIdx1WithPerformer:         {performerIdxWithTwoGalleries},
+		galleryIdx2WithPerformer:         {performerIdxWithTwoGalleries},
+		galleryIdxWithStudioPerformer:    {performerIdxWithGalleryStudio},
+		galleryIdxWithPerformerParentTag: {performerIdxWithParentTag},
 	}
 
 	galleryStudios = map[int]int{
@@ -441,8 +474,9 @@ var (
 	}
 
 	galleryTags = linkMap{
-		galleryIdxWithTag:     {tagIdxWithGallery},
-		galleryIdxWithTwoTags: {tagIdx1WithGallery, tagIdx2WithGallery},
+		galleryIdxWithTag:       {tagIdxWithGallery},
+		galleryIdxWithTwoTags:   {tagIdx1WithGallery, tagIdx2WithGallery},
+		galleryIdxWithThreeTags: {tagIdx1WithGallery, tagIdx2WithGallery, tagIdx3WithGallery},
 	}
 )
 
@@ -462,8 +496,10 @@ var (
 
 var (
 	performerTags = linkMap{
-		performerIdxWithTag:     {tagIdxWithPerformer},
-		performerIdxWithTwoTags: {tagIdx1WithPerformer, tagIdx2WithPerformer},
+		performerIdxWithTag:       {tagIdxWithPerformer},
+		performerIdx2WithTag:      {tagIdx2WithPerformer},
+		performerIdxWithTwoTags:   {tagIdx1WithPerformer, tagIdx2WithPerformer},
+		performerIdxWithParentTag: {tagIdxWithParentAndChild},
 	}
 )
 
@@ -482,6 +518,16 @@ func indexesToIDs(ids []int, indexes []int) []int {
 	}
 
 	return ret
+}
+
+func indexFromID(ids []int, id int) int {
+	for i, v := range ids {
+		if v == id {
+			return i
+		}
+	}
+
+	return -1
 }
 
 var db *sqlite.Database
@@ -602,7 +648,7 @@ func populateDB() error {
 			return fmt.Errorf("error adding tag image: %s", err.Error())
 		}
 
-		if err := createSavedFilters(ctx, sqlite.SavedFilterReaderWriter, totalSavedFilters); err != nil {
+		if err := createSavedFilters(ctx, db.SavedFilter, totalSavedFilters); err != nil {
 			return fmt.Errorf("error creating saved filters: %s", err.Error())
 		}
 
@@ -619,12 +665,12 @@ func populateDB() error {
 		}
 
 		for _, ms := range markerSpecs {
-			if err := createMarker(ctx, sqlite.SceneMarkerReaderWriter, ms); err != nil {
+			if err := createMarker(ctx, db.SceneMarker, ms); err != nil {
 				return fmt.Errorf("error creating scene marker: %s", err.Error())
 			}
 		}
 		for _, cs := range chapterSpecs {
-			if err := createChapter(ctx, sqlite.GalleryChapterReaderWriter, cs); err != nil {
+			if err := createChapter(ctx, db.GalleryChapter, cs); err != nil {
 				return fmt.Errorf("error creating gallery chapter: %s", err.Error())
 			}
 		}
@@ -905,22 +951,15 @@ func getWidth(index int) int {
 	return height * 2
 }
 
-func getObjectDate(index int) models.SQLiteDate {
+func getObjectDate(index int) *models.Date {
 	dates := []string{"null", "", "0001-01-01", "2001-02-03"}
 	date := dates[index%len(dates)]
-	return models.SQLiteDate{
-		String: date,
-		Valid:  date != "null",
-	}
-}
 
-func getObjectDateObject(index int, fromDB bool) *models.Date {
-	d := getObjectDate(index)
-	if !d.Valid || (fromDB && (d.String == "" || d.String == "0001-01-01")) {
+	if date == "null" {
 		return nil
 	}
 
-	ret := models.NewDate(d.String)
+	ret := models.NewDate(date)
 	return &ret
 }
 
@@ -1027,7 +1066,7 @@ func makeScene(i int) *models.Scene {
 		URL:          getSceneEmptyString(i, urlField),
 		Rating:       getIntPtr(rating),
 		OCounter:     getOCounter(i),
-		Date:         getObjectDateObject(i, false),
+		Date:         getObjectDate(i),
 		StudioID:     studioID,
 		GalleryIDs:   models.NewRelatedIDs(gids),
 		PerformerIDs: models.NewRelatedIDs(pids),
@@ -1092,7 +1131,7 @@ func makeImageFile(i int) *file.ImageFile {
 	}
 }
 
-func makeImage(i int, fromDB bool) *models.Image {
+func makeImage(i int) *models.Image {
 	title := getImageStringValue(i, titleField)
 	var studioID *int
 	if _, ok := imageStudios[i]; ok {
@@ -1107,7 +1146,7 @@ func makeImage(i int, fromDB bool) *models.Image {
 	return &models.Image{
 		Title:        title,
 		Rating:       getIntPtr(getRating(i)),
-		Date:         getObjectDateObject(i, fromDB),
+		Date:         getObjectDate(i),
 		URL:          getImageStringValue(i, urlField),
 		OCounter:     getOCounter(i),
 		StudioID:     studioID,
@@ -1132,7 +1171,7 @@ func createImages(ctx context.Context, n int) error {
 		}
 		imageFileIDs = append(imageFileIDs, f.ID)
 
-		image := makeImage(i, false)
+		image := makeImage(i)
 
 		err := qb.Create(ctx, &models.ImageCreateInput{
 			Image:   image,
@@ -1193,7 +1232,7 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 		Title:        getGalleryStringValue(i, titleField),
 		URL:          getGalleryNullStringValue(i, urlField).String,
 		Rating:       getIntPtr(getRating(i)),
-		Date:         getObjectDateObject(i, false),
+		Date:         getObjectDate(i),
 		StudioID:     studioID,
 		PerformerIDs: models.NewRelatedIDs(pids),
 		TagIDs:       models.NewRelatedIDs(tids),
@@ -1243,8 +1282,10 @@ func getMovieStringValue(index int, field string) string {
 	return getPrefixedStringValue("movie", index, field)
 }
 
-func getMovieNullStringValue(index int, field string) sql.NullString {
-	return getPrefixedNullStringValue("movie", index, field)
+func getMovieNullStringValue(index int, field string) string {
+	ret := getPrefixedNullStringValue("movie", index, field)
+
+	return ret.String
 }
 
 // createMoviees creates n movies with plain Name and o movies with camel cased NaMe included
@@ -1264,19 +1305,19 @@ func createMovies(ctx context.Context, mqb models.MovieReaderWriter, n int, o in
 
 		name = getMovieStringValue(index, name)
 		movie := models.Movie{
-			Name:     sql.NullString{String: name, Valid: true},
+			Name:     name,
 			URL:      getMovieNullStringValue(index, urlField),
 			Checksum: md5.FromString(name),
 		}
 
-		created, err := mqb.Create(ctx, movie)
+		err := mqb.Create(ctx, &movie)
 
 		if err != nil {
 			return fmt.Errorf("Error creating movie [%d] %v+: %s", i, movie, err.Error())
 		}
 
-		movieIDs = append(movieIDs, created.ID)
-		movieNames = append(movieNames, created.Name.String)
+		movieIDs = append(movieIDs, movie.ID)
+		movieNames = append(movieNames, movie.Name)
 	}
 
 	return nil
@@ -1331,6 +1372,29 @@ func getPerformerCareerLength(index int) *string {
 	return &ret
 }
 
+func getPerformerPenisLength(index int) *float64 {
+	if index%5 == 0 {
+		return nil
+	}
+
+	ret := float64(index)
+	return &ret
+}
+
+func getPerformerCircumcised(index int) *models.CircumisedEnum {
+	var ret models.CircumisedEnum
+	switch {
+	case index%3 == 0:
+		return nil
+	case index%3 == 1:
+		ret = models.CircumisedEnumCut
+	default:
+		ret = models.CircumisedEnumUncut
+	}
+
+	return &ret
+}
+
 func getIgnoreAutoTag(index int) bool {
 	return index%5 == 0
 }
@@ -1372,6 +1436,8 @@ func createPerformers(ctx context.Context, n int, o int) error {
 			DeathDate:      getPerformerDeathDate(i),
 			Details:        getPerformerStringValue(i, "Details"),
 			Ethnicity:      getPerformerStringValue(i, "Ethnicity"),
+			PenisLength:    getPerformerPenisLength(i),
+			Circumcised:    getPerformerCircumcised(i),
 			Rating:         getIntPtr(getRating(i)),
 			IgnoreAutoTag:  getIgnoreAutoTag(i),
 			TagIDs:         models.NewRelatedIDs(tids),
@@ -1406,11 +1472,8 @@ func getTagStringValue(index int, field string) string {
 }
 
 func getTagSceneCount(id int) int {
-	if id == tagIDs[tagIdx1WithScene] || id == tagIDs[tagIdx2WithScene] || id == tagIDs[tagIdxWithScene] || id == tagIDs[tagIdx3WithScene] {
-		return 1
-	}
-
-	return 0
+	idx := indexFromID(tagIDs, id)
+	return len(sceneTags.reverseLookup(idx))
 }
 
 func getTagMarkerCount(id int) int {
@@ -1426,27 +1489,18 @@ func getTagMarkerCount(id int) int {
 }
 
 func getTagImageCount(id int) int {
-	if id == tagIDs[tagIdx1WithImage] || id == tagIDs[tagIdx2WithImage] || id == tagIDs[tagIdxWithImage] {
-		return 1
-	}
-
-	return 0
+	idx := indexFromID(tagIDs, id)
+	return len(imageTags.reverseLookup(idx))
 }
 
 func getTagGalleryCount(id int) int {
-	if id == tagIDs[tagIdx1WithGallery] || id == tagIDs[tagIdx2WithGallery] || id == tagIDs[tagIdxWithGallery] {
-		return 1
-	}
-
-	return 0
+	idx := indexFromID(tagIDs, id)
+	return len(galleryTags.reverseLookup(idx))
 }
 
 func getTagPerformerCount(id int) int {
-	if id == tagIDs[tagIdx1WithPerformer] || id == tagIDs[tagIdx2WithPerformer] || id == tagIDs[tagIdxWithPerformer] {
-		return 1
-	}
-
-	return 0
+	idx := indexFromID(tagIDs, id)
+	return len(performerTags.reverseLookup(idx))
 }
 
 func getTagParentCount(id int) int {
@@ -1486,7 +1540,7 @@ func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) e
 			IgnoreAutoTag: getIgnoreAutoTag(i),
 		}
 
-		created, err := tqb.Create(ctx, tag)
+		err := tqb.Create(ctx, &tag)
 
 		if err != nil {
 			return fmt.Errorf("Error creating tag %v+: %s", tag, err.Error())
@@ -1494,12 +1548,12 @@ func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) e
 
 		// add alias
 		alias := getTagStringValue(i, "Alias")
-		if err := tqb.UpdateAliases(ctx, created.ID, []string{alias}); err != nil {
+		if err := tqb.UpdateAliases(ctx, tag.ID, []string{alias}); err != nil {
 			return fmt.Errorf("error setting tag alias: %s", err.Error())
 		}
 
-		tagIDs = append(tagIDs, created.ID)
-		tagNames = append(tagNames, created.Name)
+		tagIDs = append(tagIDs, tag.ID)
+		tagNames = append(tagNames, tag.Name)
 	}
 
 	return nil
@@ -1509,8 +1563,10 @@ func getStudioStringValue(index int, field string) string {
 	return getPrefixedStringValue("studio", index, field)
 }
 
-func getStudioNullStringValue(index int, field string) sql.NullString {
-	return getPrefixedNullStringValue("studio", index, field)
+func getStudioNullStringValue(index int, field string) string {
+	ret := getPrefixedNullStringValue("studio", index, field)
+
+	return ret.String
 }
 
 func createStudio(ctx context.Context, sqb models.StudioReaderWriter, name string, parentID *int) (*int, error) {
@@ -1582,17 +1638,17 @@ func createStudios(ctx context.Context, n int, o int) error {
 
 func createMarker(ctx context.Context, mqb models.SceneMarkerReaderWriter, markerSpec markerSpec) error {
 	marker := models.SceneMarker{
-		SceneID:      sql.NullInt64{Int64: int64(sceneIDs[markerSpec.sceneIdx]), Valid: true},
+		SceneID:      sceneIDs[markerSpec.sceneIdx],
 		PrimaryTagID: tagIDs[markerSpec.primaryTagIdx],
 	}
 
-	created, err := mqb.Create(ctx, marker)
+	err := mqb.Create(ctx, &marker)
 
 	if err != nil {
 		return fmt.Errorf("error creating marker %v+: %w", marker, err)
 	}
 
-	markerIDs = append(markerIDs, created.ID)
+	markerIDs = append(markerIDs, marker.ID)
 
 	if len(markerSpec.tagIdxs) > 0 {
 		newTagIDs := []int{}
@@ -1601,7 +1657,7 @@ func createMarker(ctx context.Context, mqb models.SceneMarkerReaderWriter, marke
 			newTagIDs = append(newTagIDs, tagIDs[tagIdx])
 		}
 
-		if err := mqb.UpdateTags(ctx, created.ID, newTagIDs); err != nil {
+		if err := mqb.UpdateTags(ctx, marker.ID, newTagIDs); err != nil {
 			return fmt.Errorf("error creating marker/tag join: %w", err)
 		}
 	}
@@ -1611,18 +1667,18 @@ func createMarker(ctx context.Context, mqb models.SceneMarkerReaderWriter, marke
 
 func createChapter(ctx context.Context, mqb models.GalleryChapterReaderWriter, chapterSpec chapterSpec) error {
 	chapter := models.GalleryChapter{
-		GalleryID:  sql.NullInt64{Int64: int64(sceneIDs[chapterSpec.galleryIdx]), Valid: true},
+		GalleryID:  sceneIDs[chapterSpec.galleryIdx],
 		Title:      chapterSpec.title,
 		ImageIndex: chapterSpec.imageIndex,
 	}
 
-	created, err := mqb.Create(ctx, chapter)
+	err := mqb.Create(ctx, &chapter)
 
 	if err != nil {
 		return fmt.Errorf("error creating chapter %v+: %w", chapter, err)
 	}
 
-	chapterIDs = append(chapterIDs, created.ID)
+	chapterIDs = append(chapterIDs, chapter.ID)
 
 	return nil
 }
@@ -1660,13 +1716,13 @@ func createSavedFilters(ctx context.Context, qb models.SavedFilterReaderWriter, 
 			Filter: getPrefixedStringValue("savedFilter", i, "Filter"),
 		}
 
-		created, err := qb.Create(ctx, savedFilter)
+		err := qb.Create(ctx, &savedFilter)
 
 		if err != nil {
 			return fmt.Errorf("Error creating saved filter %v+: %s", savedFilter, err.Error())
 		}
 
-		savedFilterIDs = append(savedFilterIDs, created.ID)
+		savedFilterIDs = append(savedFilterIDs, savedFilter.ID)
 	}
 
 	return nil
@@ -1685,10 +1741,9 @@ func doLinks(links [][2]int, fn func(idx1, idx2 int) error) error {
 func linkMovieStudios(ctx context.Context, mqb models.MovieWriter) error {
 	return doLinks(movieStudioLinks, func(movieIndex, studioIndex int) error {
 		movie := models.MoviePartial{
-			ID:       movieIDs[movieIndex],
-			StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
+			StudioID: models.NewOptionalInt(studioIDs[studioIndex]),
 		}
-		_, err := mqb.Update(ctx, movie)
+		_, err := mqb.UpdatePartial(ctx, movieIDs[movieIndex], movie)
 
 		return err
 	})

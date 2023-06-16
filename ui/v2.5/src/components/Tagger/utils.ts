@@ -108,7 +108,7 @@ export function prepareQueryString(
     s = s.replace(new RegExp(b, "gi"), " ");
   });
   s = parseDate(s);
-  return s.replace(/\./g, " ");
+  return s.replace(/\./g, " ").replace(/ +/g, " ");
 }
 
 export const parsePath = (filePath: string) => {
@@ -121,10 +121,10 @@ export const parsePath = (filePath: string) => {
   }
 
   const path = filePath.toLowerCase();
-  const isWin = /^([a-z]:|\\\\)/.test(path);
-  const normalizedPath = isWin
-    ? path.replace(/^[a-z]:/, "").replace(/\\/g, "/")
-    : path;
+  // Absolute paths on Windows start with a drive letter (e.g. C:\)
+  // Alternatively, they may start with a UNC path (e.g. \\server\share)
+  // Remove the drive letter/UNC and replace backslashes with forward slashes
+  const normalizedPath = path.replace(/^[a-z]:|\\\\/, "").replace(/\\/g, "/");
   const pathComponents = normalizedPath
     .split("/")
     .filter((component) => component.trim().length > 0);
@@ -132,10 +132,13 @@ export const parsePath = (filePath: string) => {
 
   const ext = fileName.match(/\.[a-z0-9]*$/)?.[0] ?? "";
   const file = fileName.slice(0, ext.length * -1);
-  const paths =
-    pathComponents.length >= 2
-      ? pathComponents.slice(0, pathComponents.length - 2)
-      : [];
+
+  // remove any .. or . paths
+  const paths = (
+    pathComponents.length >= 1
+      ? pathComponents.slice(0, pathComponents.length - 1)
+      : []
+  ).filter((p) => p !== ".." && p !== ".");
 
   return { paths, file, ext };
 };

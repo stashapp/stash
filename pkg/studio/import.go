@@ -13,7 +13,6 @@ import (
 
 type NameFinderCreatorUpdater interface {
 	NameFinderCreator
-	FindByName(ctx context.Context, name string, nocase bool) (*models.Studio, error)
 	Update(ctx context.Context, updatedStudio *models.Studio) error
 	UpdateImage(ctx context.Context, studioID int, image []byte) error
 }

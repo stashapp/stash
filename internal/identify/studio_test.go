@@ -19,8 +19,7 @@ func Test_createMissingStudio(t *testing.T) {
 	invalidName := "invalidName"
 	createdID := 1
 
-	repo := mocks.NewTxnRepository()
-	mockStudioReaderWriter := repo.Studio.(*mocks.StudioReaderWriter)
+	mockStudioReaderWriter := &mocks.StudioReaderWriter{}
 	mockStudioReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p models.StudioDBInput) bool {
 		return p.StudioCreate.Name == validName
 	})).Return(&createdID, nil)

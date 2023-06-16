@@ -7,7 +7,11 @@ import (
 	"fmt"
 
 	"github.com/doug-martin/goqu/v9"
+	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
+	"gopkg.in/guregu/null.v4"
+	"gopkg.in/guregu/null.v4/zero"
+
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
@@ -20,52 +24,161 @@ const (
 	movieBackImageBlobColumn  = "back_image_blob"
 )
 
-type movieQueryBuilder struct {
-	repository
-	blobJoinQueryBuilder
+type movieRow struct {
+	ID       int         `db:"id" goqu:"skipinsert"`
+	Checksum string      `db:"checksum"`
+	Name     zero.String `db:"name"`
+	Aliases  zero.String `db:"aliases"`
+	Duration null.Int    `db:"duration"`
+	Date     NullDate    `db:"date"`
+	// expressed as 1-100
+	Rating    null.Int    `db:"rating"`
+	StudioID  null.Int    `db:"studio_id,omitempty"`
+	Director  zero.String `db:"director"`
+	Synopsis  zero.String `db:"synopsis"`
+	URL       zero.String `db:"url"`
+	CreatedAt Timestamp   `db:"created_at"`
+	UpdatedAt Timestamp   `db:"updated_at"`
+
+	// not used in resolutions or updates
+	FrontImageBlob zero.String `db:"front_image_blob"`
+	BackImageBlob  zero.String `db:"back_image_blob"`
 }
 
-func NewMovieReaderWriter(blobStore *BlobStore) *movieQueryBuilder {
-	return &movieQueryBuilder{
-		repository{
+func (r *movieRow) fromMovie(o models.Movie) {
+	r.ID = o.ID
+	r.Checksum = o.Checksum
+	r.Name = zero.StringFrom(o.Name)
+	r.Aliases = zero.StringFrom(o.Aliases)
+	r.Duration = intFromPtr(o.Duration)
+	r.Date = NullDateFromDatePtr(o.Date)
+	r.Rating = intFromPtr(o.Rating)
+	r.StudioID = intFromPtr(o.StudioID)
+	r.Director = zero.StringFrom(o.Director)
+	r.Synopsis = zero.StringFrom(o.Synopsis)
+	r.URL = zero.StringFrom(o.URL)
+	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
+	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
+}
+
+func (r *movieRow) resolve() *models.Movie {
+	ret := &models.Movie{
+		ID:        r.ID,
+		Checksum:  r.Checksum,
+		Name:      r.Name.String,
+		Aliases:   r.Aliases.String,
+		Duration:  nullIntPtr(r.Duration),
+		Date:      r.Date.DatePtr(),
+		Rating:    nullIntPtr(r.Rating),
+		StudioID:  nullIntPtr(r.StudioID),
+		Director:  r.Director.String,
+		Synopsis:  r.Synopsis.String,
+		URL:       r.URL.String,
+		CreatedAt: r.CreatedAt.Timestamp,
+		UpdatedAt: r.UpdatedAt.Timestamp,
+	}
+
+	return ret
+}
+
+type movieRowRecord struct {
+	updateRecord
+}
+
+func (r *movieRowRecord) fromPartial(o models.MoviePartial) {
+	r.setString("checksum", o.Checksum)
+	r.setNullString("name", o.Name)
+	r.setNullString("aliases", o.Aliases)
+	r.setNullInt("duration", o.Duration)
+	r.setNullDate("date", o.Date)
+	r.setNullInt("rating", o.Rating)
+	r.setNullInt("studio_id", o.StudioID)
+	r.setNullString("director", o.Director)
+	r.setNullString("synopsis", o.Synopsis)
+	r.setNullString("url", o.URL)
+	r.setTimestamp("created_at", o.CreatedAt)
+	r.setTimestamp("updated_at", o.UpdatedAt)
+}
+
+type MovieStore struct {
+	repository
+	blobJoinQueryBuilder
+
+	tableMgr *table
+}
+
+func NewMovieStore(blobStore *BlobStore) *MovieStore {
+	return &MovieStore{
+		repository: repository{
 			tableName: movieTable,
 			idColumn:  idColumn,
 		},
-		blobJoinQueryBuilder{
+		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: movieTable,
 		},
+
+		tableMgr: movieTableMgr,
 	}
 }
 
-func (qb *movieQueryBuilder) Create(ctx context.Context, newObject models.Movie) (*models.Movie, error) {
-	var ret models.Movie
-	if err := qb.insertObject(ctx, newObject, &ret); err != nil {
-		return nil, err
-	}
-
-	return &ret, nil
+func (qb *MovieStore) table() exp.IdentifierExpression {
+	return qb.tableMgr.table
 }
 
-func (qb *movieQueryBuilder) Update(ctx context.Context, updatedObject models.MoviePartial) (*models.Movie, error) {
-	const partial = true
-	if err := qb.update(ctx, updatedObject.ID, updatedObject, partial); err != nil {
-		return nil, err
-	}
-
-	return qb.Find(ctx, updatedObject.ID)
+func (qb *MovieStore) selectDataset() *goqu.SelectDataset {
+	return dialect.From(qb.table()).Select(qb.table().All())
 }
 
-func (qb *movieQueryBuilder) UpdateFull(ctx context.Context, updatedObject models.Movie) (*models.Movie, error) {
-	const partial = false
-	if err := qb.update(ctx, updatedObject.ID, updatedObject, partial); err != nil {
-		return nil, err
+func (qb *MovieStore) Create(ctx context.Context, newObject *models.Movie) error {
+	var r movieRow
+	r.fromMovie(*newObject)
+
+	id, err := qb.tableMgr.insertID(ctx, r)
+	if err != nil {
+		return err
 	}
 
-	return qb.Find(ctx, updatedObject.ID)
+	updated, err := qb.find(ctx, id)
+	if err != nil {
+		return fmt.Errorf("finding after create: %w", err)
+	}
+
+	*newObject = *updated
+
+	return nil
 }
 
-func (qb *movieQueryBuilder) Destroy(ctx context.Context, id int) error {
+func (qb *MovieStore) UpdatePartial(ctx context.Context, id int, partial models.MoviePartial) (*models.Movie, error) {
+	r := movieRowRecord{
+		updateRecord{
+			Record: make(exp.Record),
+		},
+	}
+
+	r.fromPartial(partial)
+
+	if len(r.Record) > 0 {
+		if err := qb.tableMgr.updateByID(ctx, id, r.Record); err != nil {
+			return nil, err
+		}
+	}
+
+	return qb.find(ctx, id)
+}
+
+func (qb *MovieStore) Update(ctx context.Context, updatedObject *models.Movie) error {
+	var r movieRow
+	r.fromMovie(*updatedObject)
+
+	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (qb *MovieStore) Destroy(ctx context.Context, id int) error {
 	// must handle image checksums manually
 	if err := qb.destroyImages(ctx, id); err != nil {
 		return err
@@ -74,23 +187,21 @@ func (qb *movieQueryBuilder) Destroy(ctx context.Context, id int) error {
 	return qb.destroyExisting(ctx, []int{id})
 }
 
-func (qb *movieQueryBuilder) Find(ctx context.Context, id int) (*models.Movie, error) {
-	var ret models.Movie
-	if err := qb.getByID(ctx, id, &ret); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
-		}
-		return nil, err
+// returns nil, nil if not found
+func (qb *MovieStore) Find(ctx context.Context, id int) (*models.Movie, error) {
+	ret, err := qb.find(ctx, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
 	}
-	return &ret, nil
+	return ret, err
 }
 
-func (qb *movieQueryBuilder) FindMany(ctx context.Context, ids []int) ([]*models.Movie, error) {
-	tableMgr := movieTableMgr
+func (qb *MovieStore) FindMany(ctx context.Context, ids []int) ([]*models.Movie, error) {
 	ret := make([]*models.Movie, len(ids))
 
+	table := qb.table()
 	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
-		q := goqu.Select("*").From(tableMgr.table).Where(tableMgr.byIDInts(batch...))
+		q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(batch))
 		unsorted, err := qb.getMany(ctx, q)
 		if err != nil {
 			return err
@@ -115,16 +226,44 @@ func (qb *movieQueryBuilder) FindMany(ctx context.Context, ids []int) ([]*models
 	return ret, nil
 }
 
-func (qb *movieQueryBuilder) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.Movie, error) {
+// returns nil, sql.ErrNoRows if not found
+func (qb *MovieStore) find(ctx context.Context, id int) (*models.Movie, error) {
+	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
+
+	ret, err := qb.get(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+// returns nil, sql.ErrNoRows if not found
+func (qb *MovieStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Movie, error) {
+	ret, err := qb.getMany(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ret) == 0 {
+		return nil, sql.ErrNoRows
+	}
+
+	return ret[0], nil
+}
+
+func (qb *MovieStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.Movie, error) {
 	const single = false
 	var ret []*models.Movie
 	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
-		var f models.Movie
+		var f movieRow
 		if err := r.StructScan(&f); err != nil {
 			return err
 		}
 
-		ret = append(ret, &f)
+		s := f.resolve()
+
+		ret = append(ret, s)
 		return nil
 	}); err != nil {
 		return nil, err
@@ -133,38 +272,66 @@ func (qb *movieQueryBuilder) getMany(ctx context.Context, q *goqu.SelectDataset)
 	return ret, nil
 }
 
-func (qb *movieQueryBuilder) FindByName(ctx context.Context, name string, nocase bool) (*models.Movie, error) {
-	query := "SELECT * FROM movies WHERE name = ?"
+func (qb *MovieStore) FindByName(ctx context.Context, name string, nocase bool) (*models.Movie, error) {
+	// query := "SELECT * FROM movies WHERE name = ?"
+	// if nocase {
+	// 	query += " COLLATE NOCASE"
+	// }
+	// query += " LIMIT 1"
+	where := "name = ?"
 	if nocase {
-		query += " COLLATE NOCASE"
+		where += " COLLATE NOCASE"
 	}
-	query += " LIMIT 1"
-	args := []interface{}{name}
-	return qb.queryMovie(ctx, query, args)
+	sq := qb.selectDataset().Prepared(true).Where(goqu.L(where, name)).Limit(1)
+	ret, err := qb.get(ctx, sq)
+
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
-func (qb *movieQueryBuilder) FindByNames(ctx context.Context, names []string, nocase bool) ([]*models.Movie, error) {
-	query := "SELECT * FROM movies WHERE name"
+func (qb *MovieStore) FindByNames(ctx context.Context, names []string, nocase bool) ([]*models.Movie, error) {
+	// query := "SELECT * FROM movies WHERE name"
+	// if nocase {
+	// 	query += " COLLATE NOCASE"
+	// }
+	// query += " IN " + getInBinding(len(names))
+	where := "name"
 	if nocase {
-		query += " COLLATE NOCASE"
+		where += " COLLATE NOCASE"
 	}
-	query += " IN " + getInBinding(len(names))
+	where += " IN " + getInBinding(len(names))
 	var args []interface{}
 	for _, name := range names {
 		args = append(args, name)
 	}
-	return qb.queryMovies(ctx, query, args)
+	sq := qb.selectDataset().Prepared(true).Where(goqu.L(where, args...))
+	ret, err := qb.getMany(ctx, sq)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
-func (qb *movieQueryBuilder) Count(ctx context.Context) (int, error) {
-	return qb.runCountQuery(ctx, qb.buildCountQuery("SELECT movies.id FROM movies"), nil)
+func (qb *MovieStore) Count(ctx context.Context) (int, error) {
+	q := dialect.Select(goqu.COUNT("*")).From(qb.table())
+	return count(ctx, q)
 }
 
-func (qb *movieQueryBuilder) All(ctx context.Context) ([]*models.Movie, error) {
-	return qb.queryMovies(ctx, selectAll("movies")+qb.getMovieSort(nil), nil)
+func (qb *MovieStore) All(ctx context.Context) ([]*models.Movie, error) {
+	table := qb.table()
+
+	return qb.getMany(ctx, qb.selectDataset().Order(
+		table.Col("name").Asc(),
+		table.Col(idColumn).Asc(),
+	))
 }
 
-func (qb *movieQueryBuilder) makeFilter(ctx context.Context, movieFilter *models.MovieFilterType) *filterBuilder {
+func (qb *MovieStore) makeFilter(ctx context.Context, movieFilter *models.MovieFilterType) *filterBuilder {
 	query := &filterBuilder{}
 
 	query.handleCriterion(ctx, stringCriterionHandler(movieFilter.Name, "movies.name"))
@@ -176,7 +343,7 @@ func (qb *movieQueryBuilder) makeFilter(ctx context.Context, movieFilter *models
 	query.handleCriterion(ctx, floatIntCriterionHandler(movieFilter.Duration, "movies.duration", nil))
 	query.handleCriterion(ctx, movieIsMissingCriterionHandler(qb, movieFilter.IsMissing))
 	query.handleCriterion(ctx, stringCriterionHandler(movieFilter.URL, "movies.url"))
-	query.handleCriterion(ctx, movieStudioCriterionHandler(qb, movieFilter.Studios))
+	query.handleCriterion(ctx, studioCriterionHandler(movieTable, movieFilter.Studios))
 	query.handleCriterion(ctx, moviePerformersCriterionHandler(qb, movieFilter.Performers))
 	query.handleCriterion(ctx, dateCriterionHandler(movieFilter.Date, "movies.date"))
 	query.handleCriterion(ctx, timestampCriterionHandler(movieFilter.CreatedAt, "movies.created_at"))
@@ -185,7 +352,7 @@ func (qb *movieQueryBuilder) makeFilter(ctx context.Context, movieFilter *models
 	return query
 }
 
-func (qb *movieQueryBuilder) Query(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) ([]*models.Movie, int, error) {
+func (qb *MovieStore) makeQuery(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) (*queryBuilder, error) {
 	if findFilter == nil {
 		findFilter = &models.FindFilterType{}
 	}
@@ -204,10 +371,20 @@ func (qb *movieQueryBuilder) Query(ctx context.Context, movieFilter *models.Movi
 	filter := qb.makeFilter(ctx, movieFilter)
 
 	if err := query.addFilter(filter); err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
 	query.sortAndPagination = qb.getMovieSort(findFilter) + getPagination(findFilter)
+
+	return &query, nil
+}
+
+func (qb *MovieStore) Query(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) ([]*models.Movie, int, error) {
+	query, err := qb.makeQuery(ctx, movieFilter, findFilter)
+	if err != nil {
+		return nil, 0, err
+	}
+
 	idsResult, countResult, err := query.executeFind(ctx)
 	if err != nil {
 		return nil, 0, err
@@ -221,7 +398,16 @@ func (qb *movieQueryBuilder) Query(ctx context.Context, movieFilter *models.Movi
 	return movies, countResult, nil
 }
 
-func movieIsMissingCriterionHandler(qb *movieQueryBuilder, isMissing *string) criterionHandlerFunc {
+func (qb *MovieStore) QueryCount(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) (int, error) {
+	query, err := qb.makeQuery(ctx, movieFilter, findFilter)
+	if err != nil {
+		return 0, err
+	}
+
+	return query.executeCount(ctx)
+}
+
+func movieIsMissingCriterionHandler(qb *MovieStore, isMissing *string) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
@@ -239,20 +425,7 @@ func movieIsMissingCriterionHandler(qb *movieQueryBuilder, isMissing *string) cr
 	}
 }
 
-func movieStudioCriterionHandler(qb *movieQueryBuilder, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	h := hierarchicalMultiCriterionHandlerBuilder{
-		tx: qb.tx,
-
-		primaryTable: movieTable,
-		foreignTable: studioTable,
-		foreignFK:    studioIDColumn,
-		parentFK:     "parent_id",
-	}
-
-	return h.handler(studios)
-}
-
-func moviePerformersCriterionHandler(qb *movieQueryBuilder, performers *models.MultiCriterionInput) criterionHandlerFunc {
+func moviePerformersCriterionHandler(qb *MovieStore, performers *models.MultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if performers != nil {
 			if performers.Modifier == models.CriterionModifierIsNull || performers.Modifier == models.CriterionModifierNotNull {
@@ -299,7 +472,7 @@ func moviePerformersCriterionHandler(qb *movieQueryBuilder, performers *models.M
 	}
 }
 
-func (qb *movieQueryBuilder) getMovieSort(findFilter *models.FindFilterType) string {
+func (qb *MovieStore) getMovieSort(findFilter *models.FindFilterType) string {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -323,32 +496,35 @@ func (qb *movieQueryBuilder) getMovieSort(findFilter *models.FindFilterType) str
 	return sortQuery
 }
 
-func (qb *movieQueryBuilder) queryMovie(ctx context.Context, query string, args []interface{}) (*models.Movie, error) {
-	results, err := qb.queryMovies(ctx, query, args)
-	if err != nil || len(results) < 1 {
+func (qb *MovieStore) queryMovies(ctx context.Context, query string, args []interface{}) ([]*models.Movie, error) {
+	const single = false
+	var ret []*models.Movie
+	if err := qb.queryFunc(ctx, query, args, single, func(r *sqlx.Rows) error {
+		var f movieRow
+		if err := r.StructScan(&f); err != nil {
+			return err
+		}
+
+		s := f.resolve()
+
+		ret = append(ret, s)
+		return nil
+	}); err != nil {
 		return nil, err
 	}
-	return results[0], nil
+
+	return ret, nil
 }
 
-func (qb *movieQueryBuilder) queryMovies(ctx context.Context, query string, args []interface{}) ([]*models.Movie, error) {
-	var ret models.Movies
-	if err := qb.query(ctx, query, args, &ret); err != nil {
-		return nil, err
-	}
-
-	return []*models.Movie(ret), nil
-}
-
-func (qb *movieQueryBuilder) UpdateFrontImage(ctx context.Context, movieID int, frontImage []byte) error {
+func (qb *MovieStore) UpdateFrontImage(ctx context.Context, movieID int, frontImage []byte) error {
 	return qb.UpdateImage(ctx, movieID, movieFrontImageBlobColumn, frontImage)
 }
 
-func (qb *movieQueryBuilder) UpdateBackImage(ctx context.Context, movieID int, backImage []byte) error {
+func (qb *MovieStore) UpdateBackImage(ctx context.Context, movieID int, backImage []byte) error {
 	return qb.UpdateImage(ctx, movieID, movieBackImageBlobColumn, backImage)
 }
 
-func (qb *movieQueryBuilder) destroyImages(ctx context.Context, movieID int) error {
+func (qb *MovieStore) destroyImages(ctx context.Context, movieID int) error {
 	if err := qb.DestroyImage(ctx, movieID, movieFrontImageBlobColumn); err != nil {
 		return err
 	}
@@ -359,23 +535,23 @@ func (qb *movieQueryBuilder) destroyImages(ctx context.Context, movieID int) err
 	return nil
 }
 
-func (qb *movieQueryBuilder) GetFrontImage(ctx context.Context, movieID int) ([]byte, error) {
+func (qb *MovieStore) GetFrontImage(ctx context.Context, movieID int) ([]byte, error) {
 	return qb.GetImage(ctx, movieID, movieFrontImageBlobColumn)
 }
 
-func (qb *movieQueryBuilder) HasFrontImage(ctx context.Context, movieID int) (bool, error) {
+func (qb *MovieStore) HasFrontImage(ctx context.Context, movieID int) (bool, error) {
 	return qb.HasImage(ctx, movieID, movieFrontImageBlobColumn)
 }
 
-func (qb *movieQueryBuilder) GetBackImage(ctx context.Context, movieID int) ([]byte, error) {
+func (qb *MovieStore) GetBackImage(ctx context.Context, movieID int) ([]byte, error) {
 	return qb.GetImage(ctx, movieID, movieBackImageBlobColumn)
 }
 
-func (qb *movieQueryBuilder) HasBackImage(ctx context.Context, movieID int) (bool, error) {
+func (qb *MovieStore) HasBackImage(ctx context.Context, movieID int) (bool, error) {
 	return qb.HasImage(ctx, movieID, movieBackImageBlobColumn)
 }
 
-func (qb *movieQueryBuilder) FindByPerformerID(ctx context.Context, performerID int) ([]*models.Movie, error) {
+func (qb *MovieStore) FindByPerformerID(ctx context.Context, performerID int) ([]*models.Movie, error) {
 	query := `SELECT DISTINCT movies.*
 FROM movies
 INNER JOIN movies_scenes ON movies.id = movies_scenes.movie_id
@@ -386,7 +562,7 @@ WHERE performers_scenes.performer_id = ?
 	return qb.queryMovies(ctx, query, args)
 }
 
-func (qb *movieQueryBuilder) CountByPerformerID(ctx context.Context, performerID int) (int, error) {
+func (qb *MovieStore) CountByPerformerID(ctx context.Context, performerID int) (int, error) {
 	query := `SELECT COUNT(DISTINCT movies_scenes.movie_id) AS count
 FROM movies_scenes
 INNER JOIN performers_scenes ON performers_scenes.scene_id = movies_scenes.scene_id
@@ -396,7 +572,7 @@ WHERE performers_scenes.performer_id = ?
 	return qb.runCountQuery(ctx, query, args)
 }
 
-func (qb *movieQueryBuilder) FindByStudioID(ctx context.Context, studioID int) ([]*models.Movie, error) {
+func (qb *MovieStore) FindByStudioID(ctx context.Context, studioID int) ([]*models.Movie, error) {
 	query := `SELECT movies.*
 FROM movies
 WHERE movies.studio_id = ?
@@ -405,7 +581,7 @@ WHERE movies.studio_id = ?
 	return qb.queryMovies(ctx, query, args)
 }
 
-func (qb *movieQueryBuilder) CountByStudioID(ctx context.Context, studioID int) (int, error) {
+func (qb *MovieStore) CountByStudioID(ctx context.Context, studioID int) (int, error) {
 	query := `SELECT COUNT(1) AS count
 FROM movies
 WHERE movies.studio_id = ?

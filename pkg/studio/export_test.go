@@ -25,7 +25,7 @@ const (
 	errParentStudioID = 12
 )
 
-const (
+var (
 	studioName       = "testStudio"
 	url              = "url"
 	details          = "details"

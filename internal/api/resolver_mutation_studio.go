@@ -152,8 +152,8 @@ func studioPartialFromStudioCreateInput(ctx context.Context, input StudioCreateI
 	updatedStudio.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
 
 	// Process the base 64 encoded image string
-	if input.Parent.Image != nil {
-		updatedStudio.ImageIncluded = true
+	updatedStudio.ImageIncluded = translator.hasField("image")
+	if input.Image != nil {
 		var err error
 		updatedStudio.ImageBytes, err = utils.ProcessImageInput(ctx, *input.Image)
 		if err != nil {
@@ -172,16 +172,6 @@ func studioPartialFromStudioCreateInput(ctx context.Context, input StudioCreateI
 		updatedStudio.StashIDs = &models.UpdateStashIDs{
 			StashIDs: stashIDPtrSliceToSlice(input.StashIds),
 			Mode:     models.RelationshipUpdateModeSet,
-		}
-	}
-
-	// Process the base 64 encoded image string
-	updatedStudio.ImageIncluded = translator.hasField("image")
-	if input.Image != nil {
-		var err error
-		updatedStudio.ImageBytes, err = utils.ProcessImageInput(ctx, *input.Image)
-		if err != nil {
-			return nil, err
 		}
 	}
 

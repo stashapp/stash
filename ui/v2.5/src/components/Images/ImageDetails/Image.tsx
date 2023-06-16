@@ -17,6 +17,7 @@ import { Icon } from "src/components/Shared/Icon";
 import { Counter } from "src/components/Shared/Counter";
 import { useToast } from "src/hooks/Toast";
 import * as Mousetrap from "mousetrap";
+import * as GQL from "src/core/generated-graphql";
 import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButton";
 import { OrganizedButton } from "src/components/Scenes/SceneDetails/OrganizedButton";
 import { ImageFileInfoPanel } from "./ImageFileInfoPanel";
@@ -25,6 +26,7 @@ import { ImageDetailPanel } from "./ImageDetailPanel";
 import { DeleteImagesDialog } from "../DeleteImagesDialog";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 import { objectPath, objectTitle } from "src/core/files";
+import { isVideo } from "src/utils/visualFile";
 
 interface IImageParams {
   id?: string;
@@ -49,6 +51,18 @@ export const Image: React.FC = () => {
   const [activeTabKey, setActiveTabKey] = useState("image-details-panel");
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+
+  async function onSave(input: GQL.ImageUpdateInput) {
+    await updateImage({
+      variables: { input },
+    });
+    Toast.success({
+      content: intl.formatMessage(
+        { id: "toast.updated_entity" },
+        { entity: intl.formatMessage({ id: "image" }).toLocaleLowerCase() }
+      ),
+    });
+  }
 
   async function onRescan() {
     if (!image || !image.visual_files.length) {
@@ -181,9 +195,7 @@ export const Image: React.FC = () => {
             <Nav.Item>
               <Nav.Link eventKey="image-file-info-panel">
                 <FormattedMessage id="file_info" />
-                {image.visual_files.length > 1 && (
-                  <Counter count={image.visual_files.length ?? 0} />
-                )}
+                <Counter count={image.visual_files.length} hideZero hideOne />
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>
@@ -224,6 +236,7 @@ export const Image: React.FC = () => {
             <ImageEditPanel
               isVisible={activeTabKey === "image-edit-panel"}
               image={image}
+              onSubmit={onSave}
               onDelete={() => setIsDeleteAlertOpen(true)}
             />
           </Tab.Pane>
@@ -260,8 +273,7 @@ export const Image: React.FC = () => {
   }
 
   const title = objectTitle(image);
-  const ImageView =
-    image.visual_files[0].__typename == "VideoFile" ? "video" : "img";
+  const ImageView = isVideo(image.visual_files[0]) ? "video" : "img";
 
   return (
     <div className="row">

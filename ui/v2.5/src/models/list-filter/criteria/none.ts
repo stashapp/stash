@@ -10,8 +10,7 @@ export class NoneCriterion extends Criterion<string> {
     super(NoneCriterionOption, "none");
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  public getLabelValue(): string {
+  protected getLabelValue(): string {
     return "";
   }
 }

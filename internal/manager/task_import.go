@@ -25,6 +25,7 @@ import (
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type ImportTask struct {
@@ -629,7 +630,6 @@ func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
 				Title:           sql.NullString{String: mappingJSON.Title, Valid: true},
 				Description:     sql.NullString{String: mappingJSON.Description, Valid: true},
 				URL:             sql.NullString{String: mappingJSON.URL, Valid: true},
-				Date:            models.SQLiteDate{String: mappingJSON.Date, Valid: true},
 				Rating:          sql.NullString{String: mappingJSON.Rating, Valid: true},
 				Tags:            sql.NullString{String: mappingJSON.Tags, Valid: true},
 				Models:          sql.NullString{String: mappingJSON.Models, Valid: true},
@@ -638,8 +638,13 @@ func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
 				GalleryURL:      sql.NullString{String: mappingJSON.GalleryURL, Valid: true},
 				VideoFilename:   sql.NullString{String: mappingJSON.VideoFilename, Valid: true},
 				VideoURL:        sql.NullString{String: mappingJSON.VideoURL, Valid: true},
-				CreatedAt:       models.SQLiteTimestamp{Timestamp: currentTime},
-				UpdatedAt:       models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(mappingJSON.UpdatedAt)},
+				CreatedAt:       currentTime,
+				UpdatedAt:       t.getTimeFromJSONTime(mappingJSON.UpdatedAt),
+			}
+
+			time, err := utils.ParseDateStringAsTime(mappingJSON.Date)
+			if err == nil {
+				newScrapedItem.Date = &models.Date{Time: time}
 			}
 
 			studio, err := sqb.FindByName(ctx, mappingJSON.Studio, false)

@@ -29,14 +29,14 @@ const (
 )
 
 type basicFileRow struct {
-	ID             file.ID                `db:"id" goqu:"skipinsert"`
-	Basename       string                 `db:"basename"`
-	ZipFileID      null.Int               `db:"zip_file_id"`
-	ParentFolderID file.FolderID          `db:"parent_folder_id"`
-	Size           int64                  `db:"size"`
-	ModTime        models.SQLiteTimestamp `db:"mod_time"`
-	CreatedAt      models.SQLiteTimestamp `db:"created_at"`
-	UpdatedAt      models.SQLiteTimestamp `db:"updated_at"`
+	ID             file.ID       `db:"id" goqu:"skipinsert"`
+	Basename       string        `db:"basename"`
+	ZipFileID      null.Int      `db:"zip_file_id"`
+	ParentFolderID file.FolderID `db:"parent_folder_id"`
+	Size           int64         `db:"size"`
+	ModTime        Timestamp     `db:"mod_time"`
+	CreatedAt      Timestamp     `db:"created_at"`
+	UpdatedAt      Timestamp     `db:"updated_at"`
 }
 
 func (r *basicFileRow) fromBasicFile(o file.BaseFile) {
@@ -45,9 +45,9 @@ func (r *basicFileRow) fromBasicFile(o file.BaseFile) {
 	r.ZipFileID = nullIntFromFileIDPtr(o.ZipFileID)
 	r.ParentFolderID = o.ParentFolderID
 	r.Size = o.Size
-	r.ModTime = models.SQLiteTimestamp{Timestamp: o.ModTime}
-	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
-	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
+	r.ModTime = Timestamp{Timestamp: o.ModTime}
+	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
+	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
 }
 
 type videoFileRow struct {
@@ -166,14 +166,14 @@ func (f *imageFileQueryRow) resolve() *file.ImageFile {
 }
 
 type fileQueryRow struct {
-	FileID         null.Int                   `db:"file_id"`
-	Basename       null.String                `db:"basename"`
-	ZipFileID      null.Int                   `db:"zip_file_id"`
-	ParentFolderID null.Int                   `db:"parent_folder_id"`
-	Size           null.Int                   `db:"size"`
-	ModTime        models.NullSQLiteTimestamp `db:"mod_time"`
-	CreatedAt      models.NullSQLiteTimestamp `db:"file_created_at"`
-	UpdatedAt      models.NullSQLiteTimestamp `db:"file_updated_at"`
+	FileID         null.Int      `db:"file_id"`
+	Basename       null.String   `db:"basename"`
+	ZipFileID      null.Int      `db:"zip_file_id"`
+	ParentFolderID null.Int      `db:"parent_folder_id"`
+	Size           null.Int      `db:"size"`
+	ModTime        NullTimestamp `db:"mod_time"`
+	CreatedAt      NullTimestamp `db:"file_created_at"`
+	UpdatedAt      NullTimestamp `db:"file_updated_at"`
 
 	ZipBasename   null.String `db:"zip_basename"`
 	ZipFolderPath null.String `db:"zip_folder_path"`

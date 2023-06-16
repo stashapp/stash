@@ -87,7 +87,7 @@ func initialiseCustomImages() {
 	}
 }
 
-func getRandomPerformerImageUsingName(name string, gender models.GenderEnum, customPath string) ([]byte, error) {
+func getRandomPerformerImageUsingName(name string, gender *models.GenderEnum, customPath string) ([]byte, error) {
 	var box *imageBox
 
 	// If we have a custom path, we should return a new box in the given path.
@@ -95,11 +95,16 @@ func getRandomPerformerImageUsingName(name string, gender models.GenderEnum, cus
 		box = performerBoxCustom
 	}
 
+	var g models.GenderEnum
+	if gender != nil {
+		g = *gender
+	}
+
 	if box == nil {
-		switch gender {
-		case models.GenderEnumFemale:
+		switch g {
+		case models.GenderEnumFemale, models.GenderEnumTransgenderFemale:
 			box = performerBox
-		case models.GenderEnumMale:
+		case models.GenderEnumMale, models.GenderEnumTransgenderMale:
 			box = performerBoxMale
 		default:
 			box = performerBox

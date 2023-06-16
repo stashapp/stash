@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
@@ -10,13 +10,15 @@ import ImageUtils from "src/utils/image";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import Mousetrap from "mousetrap";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { StringListInput } from "src/components/Shared/StringListInput";
 import isEqual from "lodash-es/isEqual";
+import { useToast } from "src/hooks/Toast";
+import { handleUnsavedChanges } from "src/utils/navigation";
 
 interface ITagEditPanel {
   tag: Partial<GQL.TagDataFragment>;
-  // returns id
-  onSubmit: (tag: GQL.TagCreateInput) => void;
+  onSubmit: (tag: GQL.TagCreateInput) => Promise<void>;
   onCancel: () => void;
   onDelete: () => void;
   setImage: (image?: string | null) => void;
@@ -32,8 +34,12 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
   setEncodingImage,
 }) => {
   const intl = useIntl();
+  const Toast = useToast();
 
   const isNew = tag.id === undefined;
+
+  // Network state
+  const [isLoading, setIsLoading] = useState(false);
 
   const labelXS = 3;
   const labelXL = 3;
@@ -84,22 +90,32 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     initialValues,
     validationSchema: schema,
     enableReinitialize: true,
-    onSubmit: (values) => onSubmit(values),
+    onSubmit: (values) => onSave(values),
   });
-
-  function onCancelEditing() {
-    setImage(undefined);
-    onCancel?.();
-  }
 
   // set up hotkeys
   useEffect(() => {
-    Mousetrap.bind("s s", () => formik.handleSubmit());
+    Mousetrap.bind("s s", () => {
+      if (formik.dirty) {
+        formik.submitForm();
+      }
+    });
 
     return () => {
       Mousetrap.unbind("s s");
     };
   });
+
+  async function onSave(input: InputValues) {
+    setIsLoading(true);
+    try {
+      await onSubmit(input);
+      formik.resetForm();
+    } catch (e) {
+      Toast.error(e);
+    }
+    setIsLoading(false);
+  }
 
   const encodingImage = ImageUtils.usePasteImage(onImageLoad);
 
@@ -127,6 +143,8 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     : undefined;
   const aliasErrorIdx = aliasErrors?.split(" ").map((e) => parseInt(e));
 
+  if (isLoading) return <LoadingIndicator />;
+
   const isEditing = true;
 
   // TODO: CSS class
@@ -144,11 +162,12 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
       <Prompt
         when={formik.dirty}
         message={(location, action) => {
-          // Check if it's a redirect after movie creation
+          // Check if it's a redirect after tag creation
           if (action === "PUSH" && location.pathname.startsWith("/tags/")) {
             return true;
           }
-          return intl.formatMessage({ id: "dialogs.unsaved_changes" });
+
+          return handleUnsavedChanges(intl, "tags", tag.id)(location);
         }}
       />
 
@@ -275,7 +294,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
         objectName={tag?.name ?? intl.formatMessage({ id: "tag" })}
         isNew={isNew}
         isEditing={isEditing}
-        onToggleEdit={onCancelEditing}
+        onToggleEdit={onCancel}
         onSave={formik.handleSubmit}
         saveDisabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}
         onImageChange={onImageChange}

@@ -53,6 +53,11 @@ export const ImageInput: React.FC<IImageInput> = ({
     );
   }
 
+  function showDialog() {
+    setURL("");
+    setIsShowDialog(true);
+  }
+
   function onConfirmURL() {
     if (!onImageURL) {
       return;
@@ -112,7 +117,7 @@ export const ImageInput: React.FC<IImageInput> = ({
             </Form.Label>
           </div>
           <div>
-            <Button className="minimal" onClick={() => setIsShowDialog(true)}>
+            <Button className="minimal" onClick={showDialog}>
               <Icon icon={faLink} className="fa-fw" />
               <span>{intl.formatMessage({ id: "actions.from_url" })}</span>
             </Button>

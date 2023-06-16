@@ -92,7 +92,7 @@ func TestStudioQueryNameAndUrl(t *testing.T) {
 		},
 		And: &models.StudioFilterType{
 			URL: &models.StringCriterionInput{
-				Value:    studioUrl.String,
+				Value:    studioUrl,
 				Modifier: models.CriterionModifierEquals,
 			},
 		},
@@ -105,7 +105,7 @@ func TestStudioQueryNameAndUrl(t *testing.T) {
 
 		assert.Len(t, studios, 1)
 		assert.Equal(t, studioName, studios[0].Name)
-		assert.Equal(t, studioUrl.String, studios[0].URL)
+		assert.Equal(t, studioUrl, studios[0].URL)
 
 		return nil
 	})
@@ -122,7 +122,7 @@ func TestStudioQueryNameNotUrl(t *testing.T) {
 	}
 
 	urlCriterion := models.StringCriterionInput{
-		Value:    studioUrl.String,
+		Value:    studioUrl,
 		Modifier: models.CriterionModifierEquals,
 	}
 

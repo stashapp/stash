@@ -108,9 +108,10 @@ func TestImporterPreImportWithMissingTag(t *testing.T) {
 	}
 
 	tagReaderWriter.On("FindByNames", testCtx, []string{missingTagName}, false).Return(nil, nil).Times(3)
-	tagReaderWriter.On("Create", testCtx, mock.AnythingOfType("models.Tag")).Return(&models.Tag{
-		ID: existingTagID,
-	}, nil)
+	tagReaderWriter.On("Create", testCtx, mock.AnythingOfType("*models.Tag")).Run(func(args mock.Arguments) {
+		t := args.Get(1).(*models.Tag)
+		t.ID = existingTagID
+	}).Return(nil)
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
@@ -141,7 +142,7 @@ func TestImporterPreImportWithMissingTagCreateErr(t *testing.T) {
 	}
 
 	tagReaderWriter.On("FindByNames", testCtx, []string{missingTagName}, false).Return(nil, nil).Once()
-	tagReaderWriter.On("Create", testCtx, mock.AnythingOfType("models.Tag")).Return(nil, errors.New("Create error"))
+	tagReaderWriter.On("Create", testCtx, mock.AnythingOfType("*models.Tag")).Return(errors.New("Create error"))
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)

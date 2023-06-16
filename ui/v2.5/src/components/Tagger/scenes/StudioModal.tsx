@@ -55,14 +55,16 @@ const StudioModal: React.FC<IStudioModalProps> = ({
   );
 
   let sendParentStudio = true;
-  // The parent studio exists, need to check if it has a Stash ID.
-  const queryResult = useFindStudio(studio.parent?.stored_id ?? "");
-  if (
-    queryResult.data?.findStudio?.stash_ids?.length &&
-    queryResult.data?.findStudio?.stash_ids?.length > 0
-  ) {
-    // It already has a Stash ID, so we can skip worrying about it
-    sendParentStudio = false;
+  if (studio.parent?.stored_id) {
+    // The parent studio exists, need to check if it has a Stash ID.
+    const queryResult = useFindStudio(studio.parent?.stored_id);
+    if (
+      queryResult.data?.findStudio?.stash_ids?.length &&
+      queryResult.data?.findStudio?.stash_ids?.length > 0
+    ) {
+      // It already has a Stash ID, so we can skip worrying about it
+      sendParentStudio = false;
+    }
   }
 
   const parentStudioCreateText = () => {

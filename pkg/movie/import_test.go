@@ -90,7 +90,7 @@ func TestImporterPreImportWithStudio(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, int64(existingStudioID), i.movie.StudioID.Int64)
+	assert.Equal(t, existingStudioID, *i.movie.StudioID)
 
 	i.Input.Studio = existingStudioErr
 	err = i.PreImport(testCtx)
@@ -125,7 +125,7 @@ func TestImporterPreImportWithMissingStudio(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, int64(existingStudioID), i.movie.StudioID.Int64)
+	assert.Equal(t, existingStudioID, *i.movie.StudioID)
 
 	studioReaderWriter.AssertExpectations(t)
 }
@@ -212,11 +212,11 @@ func TestCreate(t *testing.T) {
 	readerWriter := &mocks.MovieReaderWriter{}
 
 	movie := models.Movie{
-		Name: models.NullString(movieName),
+		Name: movieName,
 	}
 
 	movieErr := models.Movie{
-		Name: models.NullString(movieNameErr),
+		Name: movieNameErr,
 	}
 
 	i := Importer{
@@ -225,10 +225,11 @@ func TestCreate(t *testing.T) {
 	}
 
 	errCreate := errors.New("Create error")
-	readerWriter.On("Create", testCtx, movie).Return(&models.Movie{
-		ID: movieID,
-	}, nil).Once()
-	readerWriter.On("Create", testCtx, movieErr).Return(nil, errCreate).Once()
+	readerWriter.On("Create", testCtx, &movie).Run(func(args mock.Arguments) {
+		m := args.Get(1).(*models.Movie)
+		m.ID = movieID
+	}).Return(nil).Once()
+	readerWriter.On("Create", testCtx, &movieErr).Return(errCreate).Once()
 
 	id, err := i.Create(testCtx)
 	assert.Equal(t, movieID, *id)
@@ -246,11 +247,11 @@ func TestUpdate(t *testing.T) {
 	readerWriter := &mocks.MovieReaderWriter{}
 
 	movie := models.Movie{
-		Name: models.NullString(movieName),
+		Name: movieName,
 	}
 
 	movieErr := models.Movie{
-		Name: models.NullString(movieNameErr),
+		Name: movieNameErr,
 	}
 
 	i := Importer{
@@ -262,7 +263,7 @@ func TestUpdate(t *testing.T) {
 
 	// id needs to be set for the mock input
 	movie.ID = movieID
-	readerWriter.On("UpdateFull", testCtx, movie).Return(nil, nil).Once()
+	readerWriter.On("Update", testCtx, &movie).Return(nil).Once()
 
 	err := i.Update(testCtx, movieID)
 	assert.Nil(t, err)
@@ -271,7 +272,7 @@ func TestUpdate(t *testing.T) {
 
 	// need to set id separately
 	movieErr.ID = errImageID
-	readerWriter.On("UpdateFull", testCtx, movieErr).Return(nil, errUpdate).Once()
+	readerWriter.On("Update", testCtx, &movieErr).Return(errUpdate).Once()
 
 	err = i.Update(testCtx, errImageID)
 	assert.NotNil(t, err)

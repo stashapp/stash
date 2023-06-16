@@ -23,14 +23,10 @@ func ToJSON(ctx context.Context, reader FinderImageAliasStashIDGetter, studio *m
 	newStudioJSON := jsonschema.Studio{
 		Name:          studio.Name,
 		URL:           studio.URL,
+		Details:       studio.Details,
 		IgnoreAutoTag: studio.IgnoreAutoTag,
 		CreatedAt:     json.JSONTime{Time: studio.CreatedAt},
 		UpdatedAt:     json.JSONTime{Time: studio.UpdatedAt},
-		Details:       studio.Details,
-	}
-
-	if studio.Rating != nil {
-		newStudioJSON.Rating = *studio.Rating
 	}
 
 	if studio.ParentID != nil {
@@ -42,6 +38,10 @@ func ToJSON(ctx context.Context, reader FinderImageAliasStashIDGetter, studio *m
 		if parent != nil {
 			newStudioJSON.ParentStudio = parent.Name
 		}
+	}
+
+	if studio.Rating != nil {
+		newStudioJSON.Rating = *studio.Rating
 	}
 
 	if err := studio.LoadAliases(ctx, reader); err != nil {

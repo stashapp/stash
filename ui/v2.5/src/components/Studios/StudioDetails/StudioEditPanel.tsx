@@ -1,9 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import Mousetrap from "mousetrap";
 import { Icon } from "src/components/Shared/Icon";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { StudioSelect } from "src/components/Shared/Select";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { Button, Form, Col, Row } from "react-bootstrap";
@@ -18,10 +19,12 @@ import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { ConfigurationContext } from "src/hooks/Config";
 import isEqual from "lodash-es/isEqual";
+import { useToast } from "src/hooks/Toast";
+import { handleUnsavedChanges } from "src/utils/navigation";
 
 interface IStudioEditPanel {
   studio: Partial<GQL.StudioDataFragment>;
-  onSubmit: (studio: GQL.StudioCreateInput) => void;
+  onSubmit: (studio: GQL.StudioCreateInput) => Promise<void>;
   onCancel: () => void;
   onDelete: () => void;
   setImage: (image?: string | null) => void;
@@ -37,9 +40,13 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
   setEncodingImage,
 }) => {
   const intl = useIntl();
+  const Toast = useToast();
 
   const isNew = studio.id === undefined;
   const { configuration } = React.useContext(ConfigurationContext);
+
+  // Network state
+  const [isLoading, setIsLoading] = useState(false);
 
   const schema = yup.object({
     name: yup.string().required(),
@@ -73,6 +80,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
   });
 
   const initialValues = {
+    id: studio.id,
     name: studio.name ?? "",
     url: studio.url ?? "",
     details: studio.details ?? "",
@@ -89,7 +97,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     initialValues,
     enableReinitialize: true,
     validationSchema: schema,
-    onSubmit: (values) => onSubmit(values),
+    onSubmit: (values) => onSave(values),
   });
 
   const encodingImage = ImageUtils.usePasteImage((imageData) =>
@@ -114,19 +122,29 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     setRating
   );
 
-  function onCancelEditing() {
-    setImage(undefined);
-    onCancel?.();
-  }
-
   // set up hotkeys
   useEffect(() => {
-    Mousetrap.bind("s s", () => formik.handleSubmit());
+    Mousetrap.bind("s s", () => {
+      if (formik.dirty) {
+        formik.submitForm();
+      }
+    });
 
     return () => {
       Mousetrap.unbind("s s");
     };
   });
+
+  async function onSave(input: InputValues) {
+    setIsLoading(true);
+    try {
+      await onSubmit(input);
+      formik.resetForm();
+    } catch (e) {
+      Toast.error(e);
+    }
+    setIsLoading(false);
+  }
 
   function onImageLoad(imageData: string | null) {
     formik.setFieldValue("image", imageData);
@@ -200,6 +218,8 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     : undefined;
   const aliasErrorIdx = aliasErrors?.split(" ").map((e) => parseInt(e));
 
+  if (isLoading) return <LoadingIndicator />;
+
   return (
     <>
       <Prompt
@@ -208,7 +228,8 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
           // Check if it's a redirect after studio creation
           if (action === "PUSH" && location.pathname.startsWith("/studios/"))
             return true;
-          return intl.formatMessage({ id: "dialogs.unsaved_changes" });
+
+          return handleUnsavedChanges(intl, "studios", studio.id)(location);
         }}
       />
 
@@ -331,7 +352,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         objectName={studio?.name ?? intl.formatMessage({ id: "studio" })}
         isNew={isNew}
         isEditing
-        onToggleEdit={onCancelEditing}
+        onToggleEdit={onCancel}
         onSave={formik.handleSubmit}
         saveDisabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}
         onImageChange={onImageChange}

@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -28,35 +29,37 @@ const (
 )
 
 type performerRow struct {
-	ID            int                    `db:"id" goqu:"skipinsert"`
-	Name          string                 `db:"name"`
-	Disambigation zero.String            `db:"disambiguation"`
-	Gender        zero.String            `db:"gender"`
-	URL           zero.String            `db:"url"`
-	Twitter       zero.String            `db:"twitter"`
-	Instagram     zero.String            `db:"instagram"`
-	Birthdate     models.SQLiteDate      `db:"birthdate"`
-	Ethnicity     zero.String            `db:"ethnicity"`
-	Country       zero.String            `db:"country"`
-	EyeColor      zero.String            `db:"eye_color"`
-	Height        null.Int               `db:"height"`
-	Measurements  zero.String            `db:"measurements"`
-	FakeTits      zero.String            `db:"fake_tits"`
-	CareerLength  zero.String            `db:"career_length"`
-	Tattoos       zero.String            `db:"tattoos"`
-	Piercings     zero.String            `db:"piercings"`
-	Favorite      sql.NullBool           `db:"favorite"`
-	CreatedAt     models.SQLiteTimestamp `db:"created_at"`
-	UpdatedAt     models.SQLiteTimestamp `db:"updated_at"`
+	ID            int         `db:"id" goqu:"skipinsert"`
+	Name          string      `db:"name"`
+	Disambigation zero.String `db:"disambiguation"`
+	Gender        zero.String `db:"gender"`
+	URL           zero.String `db:"url"`
+	Twitter       zero.String `db:"twitter"`
+	Instagram     zero.String `db:"instagram"`
+	Birthdate     NullDate    `db:"birthdate"`
+	Ethnicity     zero.String `db:"ethnicity"`
+	Country       zero.String `db:"country"`
+	EyeColor      zero.String `db:"eye_color"`
+	Height        null.Int    `db:"height"`
+	Measurements  zero.String `db:"measurements"`
+	FakeTits      zero.String `db:"fake_tits"`
+	PenisLength   null.Float  `db:"penis_length"`
+	Circumcised   zero.String `db:"circumcised"`
+	CareerLength  zero.String `db:"career_length"`
+	Tattoos       zero.String `db:"tattoos"`
+	Piercings     zero.String `db:"piercings"`
+	Favorite      bool        `db:"favorite"`
+	CreatedAt     Timestamp   `db:"created_at"`
+	UpdatedAt     Timestamp   `db:"updated_at"`
 	// expressed as 1-100
-	Rating        null.Int          `db:"rating"`
-	Details       zero.String       `db:"details"`
-	DeathDate     models.SQLiteDate `db:"death_date"`
-	HairColor     zero.String       `db:"hair_color"`
-	Weight        null.Int          `db:"weight"`
-	IgnoreAutoTag bool              `db:"ignore_auto_tag"`
+	Rating        null.Int    `db:"rating"`
+	Details       zero.String `db:"details"`
+	DeathDate     NullDate    `db:"death_date"`
+	HairColor     zero.String `db:"hair_color"`
+	Weight        null.Int    `db:"weight"`
+	IgnoreAutoTag bool        `db:"ignore_auto_tag"`
 
-	// not used for resolution
+	// not used in resolution or updates
 	ImageBlob zero.String `db:"image_blob"`
 }
 
@@ -64,32 +67,32 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	r.ID = o.ID
 	r.Name = o.Name
 	r.Disambigation = zero.StringFrom(o.Disambiguation)
-	if o.Gender.IsValid() {
+	if o.Gender != nil && o.Gender.IsValid() {
 		r.Gender = zero.StringFrom(o.Gender.String())
 	}
 	r.URL = zero.StringFrom(o.URL)
 	r.Twitter = zero.StringFrom(o.Twitter)
 	r.Instagram = zero.StringFrom(o.Instagram)
-	if o.Birthdate != nil {
-		_ = r.Birthdate.Scan(o.Birthdate.Time)
-	}
+	r.Birthdate = NullDateFromDatePtr(o.Birthdate)
 	r.Ethnicity = zero.StringFrom(o.Ethnicity)
 	r.Country = zero.StringFrom(o.Country)
 	r.EyeColor = zero.StringFrom(o.EyeColor)
 	r.Height = intFromPtr(o.Height)
 	r.Measurements = zero.StringFrom(o.Measurements)
 	r.FakeTits = zero.StringFrom(o.FakeTits)
+	r.PenisLength = null.FloatFromPtr(o.PenisLength)
+	if o.Circumcised != nil && o.Circumcised.IsValid() {
+		r.Circumcised = zero.StringFrom(o.Circumcised.String())
+	}
 	r.CareerLength = zero.StringFrom(o.CareerLength)
 	r.Tattoos = zero.StringFrom(o.Tattoos)
 	r.Piercings = zero.StringFrom(o.Piercings)
-	r.Favorite = sql.NullBool{Bool: o.Favorite, Valid: true}
-	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
-	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
+	r.Favorite = o.Favorite
+	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
+	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
 	r.Rating = intFromPtr(o.Rating)
 	r.Details = zero.StringFrom(o.Details)
-	if o.DeathDate != nil {
-		_ = r.DeathDate.Scan(o.DeathDate.Time)
-	}
+	r.DeathDate = NullDateFromDatePtr(o.DeathDate)
 	r.HairColor = zero.StringFrom(o.HairColor)
 	r.Weight = intFromPtr(o.Weight)
 	r.IgnoreAutoTag = o.IgnoreAutoTag
@@ -100,7 +103,6 @@ func (r *performerRow) resolve() *models.Performer {
 		ID:             r.ID,
 		Name:           r.Name,
 		Disambiguation: r.Disambigation.String,
-		Gender:         models.GenderEnum(r.Gender.String),
 		URL:            r.URL.String,
 		Twitter:        r.Twitter.String,
 		Instagram:      r.Instagram.String,
@@ -111,10 +113,11 @@ func (r *performerRow) resolve() *models.Performer {
 		Height:         nullIntPtr(r.Height),
 		Measurements:   r.Measurements.String,
 		FakeTits:       r.FakeTits.String,
+		PenisLength:    nullFloatPtr(r.PenisLength),
 		CareerLength:   r.CareerLength.String,
 		Tattoos:        r.Tattoos.String,
 		Piercings:      r.Piercings.String,
-		Favorite:       r.Favorite.Bool,
+		Favorite:       r.Favorite,
 		CreatedAt:      r.CreatedAt.Timestamp,
 		UpdatedAt:      r.UpdatedAt.Timestamp,
 		// expressed as 1-100
@@ -124,6 +127,16 @@ func (r *performerRow) resolve() *models.Performer {
 		HairColor:     r.HairColor.String,
 		Weight:        nullIntPtr(r.Weight),
 		IgnoreAutoTag: r.IgnoreAutoTag,
+	}
+
+	if r.Gender.ValueOrZero() != "" {
+		v := models.GenderEnum(r.Gender.String)
+		ret.Gender = &v
+	}
+
+	if r.Circumcised.ValueOrZero() != "" {
+		v := models.CircumisedEnum(r.Circumcised.String)
+		ret.Circumcised = &v
 	}
 
 	return ret
@@ -140,22 +153,24 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setNullString("url", o.URL)
 	r.setNullString("twitter", o.Twitter)
 	r.setNullString("instagram", o.Instagram)
-	r.setSQLiteDate("birthdate", o.Birthdate)
+	r.setNullDate("birthdate", o.Birthdate)
 	r.setNullString("ethnicity", o.Ethnicity)
 	r.setNullString("country", o.Country)
 	r.setNullString("eye_color", o.EyeColor)
 	r.setNullInt("height", o.Height)
 	r.setNullString("measurements", o.Measurements)
 	r.setNullString("fake_tits", o.FakeTits)
+	r.setNullFloat64("penis_length", o.PenisLength)
+	r.setNullString("circumcised", o.Circumcised)
 	r.setNullString("career_length", o.CareerLength)
 	r.setNullString("tattoos", o.Tattoos)
 	r.setNullString("piercings", o.Piercings)
 	r.setBool("favorite", o.Favorite)
-	r.setSQLiteTimestamp("created_at", o.CreatedAt)
-	r.setSQLiteTimestamp("updated_at", o.UpdatedAt)
+	r.setTimestamp("created_at", o.CreatedAt)
+	r.setTimestamp("updated_at", o.UpdatedAt)
 	r.setNullInt("rating", o.Rating)
 	r.setNullString("details", o.Details)
-	r.setSQLiteDate("death_date", o.DeathDate)
+	r.setNullDate("death_date", o.DeathDate)
 	r.setNullString("hair_color", o.HairColor)
 	r.setNullInt("weight", o.Weight)
 	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)
@@ -180,6 +195,14 @@ func NewPerformerStore(blobStore *BlobStore) *PerformerStore {
 		},
 		tableMgr: performerTableMgr,
 	}
+}
+
+func (qb *PerformerStore) table() exp.IdentifierExpression {
+	return qb.tableMgr.table
+}
+
+func (qb *PerformerStore) selectDataset() *goqu.SelectDataset {
+	return dialect.From(qb.table()).Select(qb.table().All())
 }
 
 func (qb *PerformerStore) Create(ctx context.Context, newObject *models.Performer) error {
@@ -209,7 +232,7 @@ func (qb *PerformerStore) Create(ctx context.Context, newObject *models.Performe
 		}
 	}
 
-	updated, err := qb.Find(ctx, id)
+	updated, err := qb.find(ctx, id)
 	if err != nil {
 		return fmt.Errorf("finding after create: %w", err)
 	}
@@ -251,7 +274,7 @@ func (qb *PerformerStore) UpdatePartial(ctx context.Context, id int, partial mod
 		}
 	}
 
-	return qb.Find(ctx, id)
+	return qb.find(ctx, id)
 }
 
 func (qb *PerformerStore) Update(ctx context.Context, updatedObject *models.Performer) error {
@@ -285,30 +308,20 @@ func (qb *PerformerStore) Update(ctx context.Context, updatedObject *models.Perf
 
 func (qb *PerformerStore) Destroy(ctx context.Context, id int) error {
 	// must handle image checksums manually
-	if err := qb.DestroyImage(ctx, id); err != nil {
+	if err := qb.destroyImage(ctx, id); err != nil {
 		return err
 	}
 
 	return qb.destroyExisting(ctx, []int{id})
 }
 
-func (qb *PerformerStore) table() exp.IdentifierExpression {
-	return qb.tableMgr.table
-}
-
-func (qb *PerformerStore) selectDataset() *goqu.SelectDataset {
-	return dialect.From(qb.table()).Select(qb.table().All())
-}
-
+// returns nil, nil if not found
 func (qb *PerformerStore) Find(ctx context.Context, id int) (*models.Performer, error) {
-	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
-
-	ret, err := qb.get(ctx, q)
-	if err != nil {
-		return nil, fmt.Errorf("getting scene by id %d: %w", id, err)
+	ret, err := qb.find(ctx, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
 	}
-
-	return ret, nil
+	return ret, err
 }
 
 func (qb *PerformerStore) FindMany(ctx context.Context, ids []int) ([]*models.Performer, error) {
@@ -341,6 +354,31 @@ func (qb *PerformerStore) FindMany(ctx context.Context, ids []int) ([]*models.Pe
 	return ret, nil
 }
 
+// returns nil, sql.ErrNoRows if not found
+func (qb *PerformerStore) find(ctx context.Context, id int) (*models.Performer, error) {
+	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
+
+	ret, err := qb.get(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (qb *PerformerStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Performer, error) {
+	table := qb.table()
+
+	q := qb.selectDataset().Where(
+		table.Col(idColumn).Eq(
+			sq,
+		),
+	)
+
+	return qb.getMany(ctx, q)
+}
+
+// returns nil, sql.ErrNoRows if not found
 func (qb *PerformerStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Performer, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
@@ -372,18 +410,6 @@ func (qb *PerformerStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([
 	}
 
 	return ret, nil
-}
-
-func (qb *PerformerStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Performer, error) {
-	table := qb.table()
-
-	q := qb.selectDataset().Where(
-		table.Col(idColumn).Eq(
-			sq,
-		),
-	)
-
-	return qb.getMany(ctx, q)
 }
 
 func (qb *PerformerStore) FindBySceneID(ctx context.Context, sceneID int) ([]*models.Performer, error) {
@@ -597,6 +623,15 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Measurements, tableName+".measurements"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.FakeTits, tableName+".fake_tits"))
+	query.handleCriterion(ctx, floatCriterionHandler(filter.PenisLength, tableName+".penis_length", nil))
+
+	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
+		if circumcised := filter.Circumcised; circumcised != nil {
+			v := utils.StringerSliceToStringSlice(circumcised.Value)
+			enumCriterionHandler(circumcised.Modifier, v, tableName+".circumcised")(ctx, f)
+		}
+	}))
+
 	query.handleCriterion(ctx, stringCriterionHandler(filter.CareerLength, tableName+".career_length"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Tattoos, tableName+".tattoos"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Piercings, tableName+".piercings"))
@@ -731,7 +766,7 @@ func performerAgeFilterCriterionHandler(age *models.IntCriterionInput) criterion
 	return func(ctx context.Context, f *filterBuilder) {
 		if age != nil && age.Modifier.IsValid() {
 			clause, args := getIntCriterionWhereClause(
-				"cast(IFNULL(strftime('%Y.%m%d', performers.death_date), strftime('%Y.%m%d', 'now')) - strftime('%Y.%m%d', performers.birthdate) as int)",
+				"cast(strftime('%Y.%m%d',CASE WHEN performers.death_date IS NULL OR performers.death_date = '0001-01-01' OR performers.death_date = '' THEN 'now' ELSE performers.death_date END) - strftime('%Y.%m%d', performers.birthdate) as int)",
 				*age,
 			)
 			f.addWhere(clause, args...)
@@ -881,7 +916,11 @@ func performerStudiosCriterionHandler(qb *PerformerStore, studios *models.Hierar
 			}
 
 			const derivedPerformerStudioTable = "performer_studio"
-			valuesClause := getHierarchicalValues(ctx, qb.tx, studios.Value, studioTable, "", "parent_id", studios.Depth)
+			valuesClause, err := getHierarchicalValues(ctx, qb.tx, studios.Value, studioTable, "", "parent_id", "child_id", studios.Depth)
+			if err != nil {
+				f.setError(err)
+				return
+			}
 			f.addWith("studio(root_id, item_id) AS (" + valuesClause + ")")
 
 			templStr := `SELECT performer_id FROM {primaryTable}
@@ -1015,7 +1054,7 @@ func (qb *PerformerStore) UpdateImage(ctx context.Context, performerID int, imag
 	return qb.blobJoinQueryBuilder.UpdateImage(ctx, performerID, performerImageBlobColumn, image)
 }
 
-func (qb *PerformerStore) DestroyImage(ctx context.Context, performerID int) error {
+func (qb *PerformerStore) destroyImage(ctx context.Context, performerID int) error {
 	return qb.blobJoinQueryBuilder.DestroyImage(ctx, performerID, performerImageBlobColumn)
 }
 

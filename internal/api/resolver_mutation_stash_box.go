@@ -102,6 +102,10 @@ func (r *mutationResolver) SubmitStashBoxPerformerDraft(ctx context.Context, inp
 			return err
 		}
 
+		if performer == nil {
+			return fmt.Errorf("performer with id %d not found", id)
+		}
+
 		res, err = client.SubmitPerformerDraft(ctx, performer, boxes[input.StashBoxIndex].Endpoint)
 		return err
 	})

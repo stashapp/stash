@@ -143,6 +143,11 @@
   "captions": "Captions",
   "career_length": "Career Length",
   "chapters": "Chapters",
+  "circumcised": "Circumcised",
+  "circumcised_types": {
+    "CUT": "Cut",
+    "UNCUT": "Uncut"
+  },
   "component_tagger": {
     "config": {
       "active_instance": "Active stash-box instance:",
@@ -409,7 +414,7 @@
         "auto_tagging_all_paths": "Auto Tagging all paths",
         "auto_tagging_paths": "Auto Tagging the following paths"
       },
-      "auto_tag_based_on_filenames": "Auto-tag content based on filenames.",
+      "auto_tag_based_on_filenames": "Auto-tag content based on file paths.",
       "auto_tagging": "Auto Tagging",
       "backing_up_database": "Backing up database",
       "backup_and_download": "Performs a backup of the database and downloads the resulting file.",
@@ -592,13 +597,13 @@
       "images": {
         "heading": "Images",
         "options": {
+          "create_image_clips_from_videos": {
+            "description": "When a library has Videos disabled, Video Files (files ending with Video Extension) will be scanned as Image Clip.",
+            "heading": "Scan Video Extensions as Image Clip"
+          },
           "write_image_thumbnails": {
             "description": "Write image thumbnails to disk when generated on-the-fly",
             "heading": "Write image thumbnails"
-          },
-          "create_image_clips_from_videos": {
-            "description": "When a library has Videos disabled, Video Files (files ending with Video Extension) will be scanned as Image Clip",
-            "heading": "Scan Video Extensions as Image Clip"
           }
         }
       },
@@ -655,7 +660,11 @@
             "heading": "Continue playlist by default"
           },
           "show_scrubber": "Show Scrubber",
-          "track_activity": "Track Activity"
+          "track_activity": "Track Activity",
+          "vr_tag": {
+            "description": "The VR button will only be displayed for scenes with this tag.",
+            "heading": "VR Tag"
+          }
         }
       },
       "scene_wall": {
@@ -723,6 +732,9 @@
     "equals": "is",
     "excludes": "excludes",
     "format_string": "{criterion} {modifierString} {valueString}",
+    "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {all} other {{depth}}})",
+    "format_string_excludes": "{criterion} {modifierString} {valueString} (excludes {excludedString})",
+    "format_string_excludes_depth": "{criterion} {modifierString} {valueString} (excludes {excludedString}) (+{depth, plural, =-1 {all} other {{depth}}})",
     "greater_than": "is greater than",
     "includes": "includes",
     "includes_all": "includes all",
@@ -1019,6 +1031,9 @@
   "parent_tags": "Parent Tags",
   "part_of": "Part of {parent}",
   "path": "Path",
+  "penis": "Penis",
+  "penis_length": "Penis Length",
+  "penis_length_cm": "Penis Length (cm)",
   "perceptual_similarity": "Perceptual Similarity (phash)",
   "performer": "Performer",
   "performerTags": "Performer Tags",

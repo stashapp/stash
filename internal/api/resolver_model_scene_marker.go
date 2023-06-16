@@ -2,20 +2,14 @@ package api
 
 import (
 	"context"
-	"time"
 
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/models"
 )
 
 func (r *sceneMarkerResolver) Scene(ctx context.Context, obj *models.SceneMarker) (ret *models.Scene, err error) {
-	if !obj.SceneID.Valid {
-		panic("Invalid scene id")
-	}
-
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		sceneID := int(obj.SceneID.Int64)
-		ret, err = r.repository.Scene.Find(ctx, sceneID)
+		ret, err = r.repository.Scene.Find(ctx, obj.SceneID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -59,12 +53,4 @@ func (r *sceneMarkerResolver) Preview(ctx context.Context, obj *models.SceneMark
 func (r *sceneMarkerResolver) Screenshot(ctx context.Context, obj *models.SceneMarker) (string, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	return urlbuilders.NewSceneMarkerURLBuilder(baseURL, obj).GetScreenshotURL(), nil
-}
-
-func (r *sceneMarkerResolver) CreatedAt(ctx context.Context, obj *models.SceneMarker) (*time.Time, error) {
-	return &obj.CreatedAt.Timestamp, nil
-}
-
-func (r *sceneMarkerResolver) UpdatedAt(ctx context.Context, obj *models.SceneMarker) (*time.Time, error) {
-	return &obj.UpdatedAt.Timestamp, nil
 }
