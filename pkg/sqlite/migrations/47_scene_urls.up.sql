@@ -89,6 +89,6 @@ DROP INDEX `index_scenes_on_studio_id`;
 DROP TABLE `scenes`;
 ALTER TABLE `scenes_new` rename to `scenes`;
 
-CREATE INDEX `index_scenes_on_studio_id` on `scenes` (`studio_id`)
+CREATE INDEX `index_scenes_on_studio_id` on `scenes` (`studio_id`);
 
 PRAGMA foreign_keys=ON;

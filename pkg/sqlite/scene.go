@@ -31,7 +31,7 @@ const (
 	scenesTagsTable       = "scenes_tags"
 	scenesGalleriesTable  = "scenes_galleries"
 	moviesScenesTable     = "movies_scenes"
-	scenesURLsTable       = "scenes_urls"
+	scenesURLsTable       = "scene_urls"
 	sceneURLColumn        = "url"
 
 	sceneCoverBlobColumn = "cover_blob"

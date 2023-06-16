@@ -242,7 +242,6 @@ func (db *Anonymiser) anonymiseScenes(ctx context.Context) error {
 					id       int
 					title    sql.NullString
 					details  sql.NullString
-					url      sql.NullString
 					code     sql.NullString
 					director sql.NullString
 				)
@@ -251,7 +250,6 @@ func (db *Anonymiser) anonymiseScenes(ctx context.Context) error {
 					&id,
 					&title,
 					&details,
-					&url,
 					&code,
 					&director,
 				); err != nil {
@@ -263,7 +261,6 @@ func (db *Anonymiser) anonymiseScenes(ctx context.Context) error {
 				// if title set set new title
 				db.obfuscateNullString(set, "title", title)
 				db.obfuscateNullString(set, "details", details)
-				db.obfuscateNullString(set, "url", url)
 
 				if len(set) > 0 {
 					stmt := dialect.Update(table).Set(set).Where(table.Col(idColumn).Eq(id))
