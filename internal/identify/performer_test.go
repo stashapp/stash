@@ -22,7 +22,6 @@ func Test_getPerformerID(t *testing.T) {
 	invalidStoredID := "invalidStoredID"
 	validStoredIDStr := "1"
 	validStoredID := 1
-	singleNameStoredID := -1
 	name := "name"
 
 	mockPerformerReaderWriter := mocks.PerformerReaderWriter{}
@@ -114,8 +113,8 @@ func Test_getPerformerID(t *testing.T) {
 				true,
 				true,
 			},
-			&singleNameStoredID,
-			false,
+			nil,
+			true,
 		},
 		{
 			"valid name creating",
