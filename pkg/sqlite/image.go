@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"path/filepath"
 
@@ -30,14 +31,14 @@ type imageRow struct {
 	ID    int         `db:"id" goqu:"skipinsert"`
 	Title zero.String `db:"title"`
 	// expressed as 1-100
-	Rating    null.Int               `db:"rating"`
-	URL       zero.String            `db:"url"`
-	Date      models.SQLiteDate      `db:"date"`
-	Organized bool                   `db:"organized"`
-	OCounter  int                    `db:"o_counter"`
-	StudioID  null.Int               `db:"studio_id,omitempty"`
-	CreatedAt models.SQLiteTimestamp `db:"created_at"`
-	UpdatedAt models.SQLiteTimestamp `db:"updated_at"`
+	Rating    null.Int    `db:"rating"`
+	URL       zero.String `db:"url"`
+	Date      NullDate    `db:"date"`
+	Organized bool        `db:"organized"`
+	OCounter  int         `db:"o_counter"`
+	StudioID  null.Int    `db:"studio_id,omitempty"`
+	CreatedAt Timestamp   `db:"created_at"`
+	UpdatedAt Timestamp   `db:"updated_at"`
 }
 
 func (r *imageRow) fromImage(i models.Image) {
@@ -45,14 +46,12 @@ func (r *imageRow) fromImage(i models.Image) {
 	r.Title = zero.StringFrom(i.Title)
 	r.Rating = intFromPtr(i.Rating)
 	r.URL = zero.StringFrom(i.URL)
-	if i.Date != nil {
-		_ = r.Date.Scan(i.Date.Time)
-	}
+	r.Date = NullDateFromDatePtr(i.Date)
 	r.Organized = i.Organized
 	r.OCounter = i.OCounter
 	r.StudioID = intFromPtr(i.StudioID)
-	r.CreatedAt = models.SQLiteTimestamp{Timestamp: i.CreatedAt}
-	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: i.UpdatedAt}
+	r.CreatedAt = Timestamp{Timestamp: i.CreatedAt}
+	r.UpdatedAt = Timestamp{Timestamp: i.UpdatedAt}
 }
 
 type imageQueryRow struct {
@@ -96,12 +95,12 @@ func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
 	r.setNullString("title", i.Title)
 	r.setNullInt("rating", i.Rating)
 	r.setNullString("url", i.URL)
-	r.setSQLiteDate("date", i.Date)
+	r.setNullDate("date", i.Date)
 	r.setBool("organized", i.Organized)
 	r.setInt("o_counter", i.OCounter)
 	r.setNullInt("studio_id", i.StudioID)
-	r.setSQLiteTimestamp("created_at", i.CreatedAt)
-	r.setSQLiteTimestamp("updated_at", i.UpdatedAt)
+	r.setTimestamp("created_at", i.CreatedAt)
+	r.setTimestamp("updated_at", i.UpdatedAt)
 }
 
 type ImageStore struct {
@@ -127,6 +126,39 @@ func NewImageStore(fileStore *FileStore) *ImageStore {
 
 func (qb *ImageStore) table() exp.IdentifierExpression {
 	return qb.tableMgr.table
+}
+
+func (qb *ImageStore) selectDataset() *goqu.SelectDataset {
+	table := qb.table()
+	files := fileTableMgr.table
+	folders := folderTableMgr.table
+	checksum := fingerprintTableMgr.table
+
+	return dialect.From(table).LeftJoin(
+		imagesFilesJoinTable,
+		goqu.On(
+			imagesFilesJoinTable.Col(imageIDColumn).Eq(table.Col(idColumn)),
+			imagesFilesJoinTable.Col("primary").Eq(1),
+		),
+	).LeftJoin(
+		files,
+		goqu.On(files.Col(idColumn).Eq(imagesFilesJoinTable.Col(fileIDColumn))),
+	).LeftJoin(
+		folders,
+		goqu.On(folders.Col(idColumn).Eq(files.Col("parent_folder_id"))),
+	).LeftJoin(
+		checksum,
+		goqu.On(
+			checksum.Col(fileIDColumn).Eq(imagesFilesJoinTable.Col(fileIDColumn)),
+			checksum.Col("type").Eq(file.FingerprintTypeMD5),
+		),
+	).Select(
+		qb.table().All(),
+		imagesFilesJoinTable.Col(fileIDColumn).As("primary_file_id"),
+		folders.Col("path").As("primary_file_folder_path"),
+		files.Col("basename").As("primary_file_basename"),
+		checksum.Col("fingerprint").As("primary_file_checksum"),
+	)
 }
 
 func (qb *ImageStore) Create(ctx context.Context, newObject *models.ImageCreateInput) error {
@@ -162,7 +194,7 @@ func (qb *ImageStore) Create(ctx context.Context, newObject *models.ImageCreateI
 		}
 	}
 
-	updated, err := qb.Find(ctx, id)
+	updated, err := qb.find(ctx, id)
 	if err != nil {
 		return fmt.Errorf("finding after create: %w", err)
 	}
@@ -255,8 +287,13 @@ func (qb *ImageStore) Destroy(ctx context.Context, id int) error {
 	return qb.tableMgr.destroyExisting(ctx, []int{id})
 }
 
+// returns nil, nil if not found
 func (qb *ImageStore) Find(ctx context.Context, id int) (*models.Image, error) {
-	return qb.find(ctx, id)
+	ret, err := qb.find(ctx, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	return ret, err
 }
 
 func (qb *ImageStore) FindMany(ctx context.Context, ids []int) ([]*models.Image, error) {
@@ -288,39 +325,31 @@ func (qb *ImageStore) FindMany(ctx context.Context, ids []int) ([]*models.Image,
 	return images, nil
 }
 
-func (qb *ImageStore) selectDataset() *goqu.SelectDataset {
-	table := qb.table()
-	files := fileTableMgr.table
-	folders := folderTableMgr.table
-	checksum := fingerprintTableMgr.table
+// returns nil, sql.ErrNoRows if not found
+func (qb *ImageStore) find(ctx context.Context, id int) (*models.Image, error) {
+	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
 
-	return dialect.From(table).LeftJoin(
-		imagesFilesJoinTable,
-		goqu.On(
-			imagesFilesJoinTable.Col(imageIDColumn).Eq(table.Col(idColumn)),
-			imagesFilesJoinTable.Col("primary").Eq(1),
-		),
-	).LeftJoin(
-		files,
-		goqu.On(files.Col(idColumn).Eq(imagesFilesJoinTable.Col(fileIDColumn))),
-	).LeftJoin(
-		folders,
-		goqu.On(folders.Col(idColumn).Eq(files.Col("parent_folder_id"))),
-	).LeftJoin(
-		checksum,
-		goqu.On(
-			checksum.Col(fileIDColumn).Eq(imagesFilesJoinTable.Col(fileIDColumn)),
-			checksum.Col("type").Eq(file.FingerprintTypeMD5),
-		),
-	).Select(
-		qb.table().All(),
-		imagesFilesJoinTable.Col(fileIDColumn).As("primary_file_id"),
-		folders.Col("path").As("primary_file_folder_path"),
-		files.Col("basename").As("primary_file_basename"),
-		checksum.Col("fingerprint").As("primary_file_checksum"),
-	)
+	ret, err := qb.get(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
+func (qb *ImageStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Image, error) {
+	table := qb.table()
+
+	q := qb.selectDataset().Prepared(true).Where(
+		table.Col(idColumn).Eq(
+			sq,
+		),
+	)
+
+	return qb.getMany(ctx, q)
+}
+
+// returns nil, sql.ErrNoRows if not found
 func (qb *ImageStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Image, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
@@ -378,29 +407,6 @@ func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]file.File, error)
 func (qb *ImageStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error) {
 	const primaryOnly = false
 	return qb.filesRepository().getMany(ctx, ids, primaryOnly)
-}
-
-func (qb *ImageStore) find(ctx context.Context, id int) (*models.Image, error) {
-	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
-
-	ret, err := qb.get(ctx, q)
-	if err != nil {
-		return nil, fmt.Errorf("getting image by id %d: %w", id, err)
-	}
-
-	return ret, nil
-}
-
-func (qb *ImageStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Image, error) {
-	table := qb.table()
-
-	q := qb.selectDataset().Prepared(true).Where(
-		table.Col(idColumn).Eq(
-			sq,
-		),
-	)
-
-	return qb.getMany(ctx, q)
 }
 
 func (qb *ImageStore) FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Image, error) {

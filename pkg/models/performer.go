@@ -228,7 +228,6 @@ type PerformerWriter interface {
 	Update(ctx context.Context, updatedPerformer *Performer) error
 	Destroy(ctx context.Context, id int) error
 	UpdateImage(ctx context.Context, performerID int, image []byte) error
-	DestroyImage(ctx context.Context, performerID int) error
 }
 
 type PerformerReaderWriter interface {

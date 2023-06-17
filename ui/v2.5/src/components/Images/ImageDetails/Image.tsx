@@ -195,9 +195,7 @@ export const Image: React.FC = () => {
             <Nav.Item>
               <Nav.Link eventKey="image-file-info-panel">
                 <FormattedMessage id="file_info" />
-                {image.visual_files.length > 1 && (
-                  <Counter count={image.visual_files.length ?? 0} />
-                )}
+                <Counter count={image.visual_files.length} hideZero hideOne />
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>

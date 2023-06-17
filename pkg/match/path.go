@@ -226,7 +226,7 @@ func PathToStudio(ctx context.Context, path string, reader StudioAutoTagQueryer,
 	var ret *models.Studio
 	index := -1
 	for _, c := range candidates {
-		matchIndex := nameMatchesPath(c.Name.String, path)
+		matchIndex := nameMatchesPath(c.Name, path)
 		if matchIndex != -1 && matchIndex > index {
 			ret = c
 			index = matchIndex
