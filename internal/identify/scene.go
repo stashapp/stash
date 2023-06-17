@@ -3,6 +3,7 @@ package identify
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -94,6 +95,8 @@ func (g sceneRelationships) performers(ctx context.Context, ignoreMale bool) ([]
 		performerIDs = originalPerformerIDs
 	}
 
+	singleNamePerformerSkipped := false
+
 	for _, p := range scraped {
 		if ignoreMale && p.Gender != nil && strings.EqualFold(*p.Gender, models.GenderEnumMale.String()) {
 			continue
@@ -101,6 +104,11 @@ func (g sceneRelationships) performers(ctx context.Context, ignoreMale bool) ([]
 
 		performerID, err := getPerformerID(ctx, endpoint, g.performerCreator, p, createMissing, g.skipSingleNamePerformers)
 		if err != nil {
+			var singleErr *ErrSkipSingleNamePerformer
+			if errors.As(err, &singleErr) {
+				singleNamePerformerSkipped = true
+				continue
+			}
 			return nil, err
 		}
 
@@ -111,9 +119,15 @@ func (g sceneRelationships) performers(ctx context.Context, ignoreMale bool) ([]
 
 	// don't return if nothing was added
 	if sliceutil.SliceSame(originalPerformerIDs, performerIDs) {
+		if singleNamePerformerSkipped {
+			return nil, &ErrSkipSingleNamePerformer{}
+		}
 		return nil, nil
 	}
 
+	if singleNamePerformerSkipped {
+		return performerIDs, &ErrSkipSingleNamePerformer{}
+	}
 	return performerIDs, nil
 }
 

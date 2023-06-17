@@ -416,10 +416,6 @@ go.uber.org/atomic
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/exp v0.0.0-20230425010034-47ecfdc1ba53
-## explicit; go 1.20
-golang.org/x/exp/constraints
-golang.org/x/exp/slices
 # golang.org/x/image v0.5.0
 ## explicit; go 1.12
 golang.org/x/image/bmp

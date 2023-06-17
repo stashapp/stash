@@ -2,16 +2,14 @@ package identify
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
-
-	"golang.org/x/exp/slices"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/scraper"
-	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
@@ -79,7 +77,7 @@ func (t *SceneIdentifier) scrapeScene(ctx context.Context, txnManager txn.Manage
 
 		if len(results) > 0 {
 			options := t.getOptions(&source)
-			if len(results) > 1 && *options.SkipMultipleMatches {
+			if len(results) > 1 && options.SkipMultipleMatches != nil && *options.SkipMultipleMatches {
 				if options.SkipMultipleMatchTag != nil && len(*options.SkipMultipleMatchTag) > 0 {
 					// Tag it with the multiple results tag and ignore
 					err := t.addTagToScene(ctx, txnManager, scene, options.SkipMultipleMatchTag)
@@ -103,18 +101,15 @@ func (t *SceneIdentifier) scrapeScene(ctx context.Context, txnManager txn.Manage
 
 // Returns a MetadataOptions object with any default options overwritten by source specific options
 func (t *SceneIdentifier) getOptions(source *ScraperSource) MetadataOptions {
-	options := t.DefaultOptions
+	options := *t.DefaultOptions
 	if source.Options == nil {
-		return *options
+		return options
 	}
 	if source.Options.SetCoverImage != nil {
 		options.SetCoverImage = source.Options.SetCoverImage
 	}
 	if source.Options.SetOrganized != nil {
 		options.SetOrganized = source.Options.SetOrganized
-	}
-	if source.Options.IncludeMalePerformers != nil {
-		options.IncludeMalePerformers = source.Options.IncludeMalePerformers
 	}
 	if source.Options.IncludeMalePerformers != nil {
 		options.IncludeMalePerformers = source.Options.IncludeMalePerformers
@@ -131,7 +126,13 @@ func (t *SceneIdentifier) getOptions(source *ScraperSource) MetadataOptions {
 	if source.Options.SkipSingleNamePerformerTag != nil && len(*source.Options.SkipSingleNamePerformerTag) > 0 {
 		options.SkipSingleNamePerformerTag = source.Options.SkipSingleNamePerformerTag
 	}
-	return *options
+	return options
+}
+
+type ErrSkipSingleNamePerformer struct{}
+
+func (m *ErrSkipSingleNamePerformer) Error() string {
+	return "A performer was skipped because they only had a single name and no disambiguation"
 }
 
 func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, result *scrapeResult) (*scene.UpdateSet, error) {
@@ -163,7 +164,11 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		skipSingleNamePerformers: *options.SkipSingleNamePerformers,
 	}
 
-	ret.Partial = getScenePartial(s, scraped, fieldOptions, *options.SetOrganized)
+	setOrganized := false
+	if options.SetOrganized != nil {
+		setOrganized = *options.SetOrganized
+	}
+	ret.Partial = getScenePartial(s, scraped, fieldOptions, setOrganized)
 
 	studioID, err := rel.studio(ctx)
 	if err != nil {
@@ -174,22 +179,22 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		ret.Partial.StudioID = models.NewOptionalInt(*studioID)
 	}
 
-	performerIDs, err := rel.performers(ctx, !*options.IncludeMalePerformers)
-	if err != nil {
-		return nil, err
+	includeMalePerformers := true
+	if options.IncludeMalePerformers != nil {
+		includeMalePerformers = *options.IncludeMalePerformers
 	}
-	addSkipSingleNamePerformerTag := false
-	if performerIDs != nil {
-		// If there is a -1 id, that means a performer was skipped due to SkipSingleNamePerformers
-		i := slices.Index(performerIDs, -1)
-		if i >= 0 {
-			performerIDs = slices.Delete(performerIDs, i, i+1)
 
-			if options.SkipSingleNamePerformerTag != nil && len(*options.SkipSingleNamePerformerTag) > 0 {
-				// Tag it with the skipped single name performers tag
-				addSkipSingleNamePerformerTag = true
-			}
+	addSkipSingleNamePerformerTag := false
+	performerIDs, err := rel.performers(ctx, !includeMalePerformers)
+	if err != nil {
+		var singleErr *ErrSkipSingleNamePerformer
+		if errors.As(err, &singleErr) {
+			addSkipSingleNamePerformerTag = true
+		} else {
+			return nil, err
 		}
+	}
+	if performerIDs != nil {
 		ret.Partial.PerformerIDs = &models.UpdateIDs{
 			IDs:  performerIDs,
 			Mode: models.RelationshipUpdateModeSet,
@@ -226,7 +231,7 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		}
 	}
 
-	if *options.SetCoverImage {
+	if options.SetCoverImage != nil && *options.SetCoverImage {
 		ret.CoverImage, err = rel.cover(ctx)
 		if err != nil {
 			return nil, err
@@ -290,38 +295,23 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager txn.Manage
 
 func (t *SceneIdentifier) addTagToScene(ctx context.Context, txnManager txn.Manager, s *models.Scene, tagToAdd *string) error {
 	if err := txn.WithTxn(ctx, txnManager, func(ctx context.Context) error {
+		tagID, err := strconv.ParseInt(*tagToAdd, 10, 64)
+		if err != nil {
+			return fmt.Errorf("error converting tag ID %s: %w", *tagToAdd, err)
+		}
+
 		if err := s.LoadTagIDs(ctx, t.SceneReaderUpdater); err != nil {
 			return err
 		}
+		existing := s.TagIDs.List()
 
-		ret := &scene.UpdateSet{
-			ID: s.ID,
-		}
-		ret.Partial = models.NewScenePartial()
-
-		// add to the existing tags
-		originalTagIDs := s.TagIDs.List()
-		var tagIDs []int
-		tagIDs = originalTagIDs
-
-		tagID, err2 := strconv.ParseInt(*tagToAdd, 10, 64)
-		if err2 != nil {
-			return fmt.Errorf("error converting tag ID %s: %w", *tagToAdd, err2)
-		}
-		tagIDs = intslice.IntAppendUnique(tagIDs, int(tagID))
-
-		// skip if the scene was already tagged
-		if sliceutil.SliceSame(originalTagIDs, tagIDs) {
+		if intslice.IntInclude(existing, int(tagID)) {
+			// skip if the scene was already tagged
 			return nil
 		}
 
-		ret.Partial.TagIDs = &models.UpdateIDs{
-			IDs:  tagIDs,
-			Mode: models.RelationshipUpdateModeSet,
-		}
-
-		if _, err := ret.Update(ctx, t.SceneReaderUpdater); err != nil {
-			return fmt.Errorf("error updating scene: %w", err)
+		if err := scene.AddTag(ctx, t.SceneReaderUpdater, s, int(tagID)); err != nil {
+			return err
 		}
 
 		logger.Infof("Added tag %s to skipped scene %s", *tagToAdd, s.Path)

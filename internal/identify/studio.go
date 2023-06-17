@@ -30,7 +30,7 @@ func createMissingStudio(ctx context.Context, endpoint string, w StudioCreator, 
 			return nil, err
 		}
 
-		err = w.UpdateImage(ctx, created.ID, imageData)
+		err = w.UpdateImage(ctx, studioInput.ID, imageData)
 		if err != nil {
 			return nil, err
 		}
