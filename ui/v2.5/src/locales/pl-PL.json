@@ -593,7 +593,7 @@
         "margin": "Margines (w pikselach)"
       },
       "images": {
-        "heading": "Zdjęcia",
+        "heading": "Obrazy",
         "options": {
           "create_image_clips_from_videos": {
             "description": "Gdy biblioteka ma wyłączone pliki wideo, pliki wideo (pliki kończące się rozszerzeniem wideo) będą skanowane jako klipy obrazów.",
@@ -707,15 +707,15 @@
   },
   "configuration": "Konfiguracja",
   "countables": {
-    "files": "{count, plural, one {Plik} other {Pliki}}",
-    "galleries": "{count, plural, one {Galeria} other {Galerie}}",
-    "images": "{count, plural, one {Obraz} other {Obrazy}}",
-    "markers": "{count, plural, one {Znacznik} other {Znaczniki}}",
-    "movies": "{count, plural, one {Film} other {Filmy}}",
-    "performers": "{count, plural, one {Aktor} other {Aktorzy}}",
-    "scenes": "{count, plural, one {Scena} other {Sceny}}",
-    "studios": "{count, plural, one {Studio} other {Studia}}",
-    "tags": "{count, plural, one {Tag} other {Tagi}}"
+    "files": "{count, plural, one {Plik} few {Pliki} other {Plików}}",
+    "galleries": "{count, plural, one {Galeria} few {Galerie} other {Galerii}}",
+    "images": "{count, plural, one {Obraz} few {Obrazy} other {Obrazów}}",
+    "markers": "{count, plural, one {Znacznik} few {Znaczniki} other {Znaczników}}",
+    "movies": "{count, plural, one {Film} few {Filmy} other {Filmów}}",
+    "performers": "{count, plural, one {Aktor} few {Aktorów} other {Aktorów}}",
+    "scenes": "{count, plural, one {Scena} few {Sceny} other {Scen}}",
+    "studios": "{count, plural, one {Studio} few {Studia} other {Studiów}}",
+    "tags": "{count, plural, one {Tag} few {Tagi} other {Tagów}}"
   },
   "country": "Kraj",
   "cover_image": "Okładka",
@@ -762,7 +762,7 @@
     "delete_galleries_extra": "…oraz wszystkie pliki obrazów, które nie są dołączone do żadnej innej galerii.",
     "delete_gallery_files": "Usuń folder galerii/plik zip i wszystkie obrazy, które nie są dołączone do żadnej innej galerii..",
     "delete_object_desc": "Czy na pewno chcesz usunąć {count, plural, one {{singularEntity}} other {{pluralEntity}}}?",
-    "delete_object_overflow": "…i {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
+    "delete_object_overflow": "…i jeszcze {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Usuń {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "dont_show_until_updated": "Nie pokazuj do następnej aktualizacji",
     "edit_entity_title": "Edytuj {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
@@ -808,7 +808,7 @@
       "source": "Źródło"
     },
     "overwrite_filter_confirm": "Czy na pewno chcesz nadpisać istniejące zapisane zapytanie {entityName}?",
-    "reassign_entity_title": "{count, plural, one {Przypisz {singularEntity}} other {Przypisz {pluralEntity}}}",
+    "reassign_entity_title": "Przypisz {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "reassign_files": {
       "destination": "Przypisz ponownie do"
     },
@@ -875,7 +875,7 @@
       "any": "Dowolna",
       "equal": "Brak (takiej samej długości)"
     },
-    "found_sets": "{setCount, plural, one{Znaleziono # zestaw duplikatów.} few {Znaleziono # zestawy duplikatów.} other {Znaleziono # zestawów duplikatów.}}",
+    "found_sets": "Znaleziono {setCount, plural, one{# zestaw} few {# zestawy} other {# zestawów}} duplikatów.",
     "options": {
       "exact": "Dokładna",
       "high": "Wysoka",
@@ -970,7 +970,7 @@
   "image": "Obraz",
   "image_count": "Liczba obrazów",
   "image_index": "Obraz nr",
-  "images": "Zdjęcia",
+  "images": "Obrazy",
   "include_parent_tags": "Uwzględnij tagi nadrzędne",
   "include_sub_studios": "Uwzględnić studia zależne",
   "include_sub_tags": "Uwzględnij podtagi",
