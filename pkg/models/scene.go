@@ -192,6 +192,8 @@ type SceneWriter interface {
 	ResetOCounter(ctx context.Context, id int) (int, error)
 	SaveActivity(ctx context.Context, id int, resumeTime *float64, playDuration *float64) (bool, error)
 	IncrementWatchCount(ctx context.Context, id int) (int, error)
+	DecrementWatchCount(ctx context.Context, id int) (int, error)
+	ResetWatchCount(ctx context.Context, id int) (int, error)
 	Destroy(ctx context.Context, id int) error
 	UpdateCover(ctx context.Context, sceneID int, cover []byte) error
 }

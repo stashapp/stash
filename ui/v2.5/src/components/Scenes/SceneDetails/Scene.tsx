@@ -10,6 +10,9 @@ import {
   useSceneIncrementO,
   useSceneDecrementO,
   useSceneResetO,
+  useSceneIncrementPlay,
+  useSceneDecrementPlay,
+  useSceneResetPlays,
   useSceneGenerateScreenshot,
   useSceneUpdate,
   queryFindScenes,
@@ -25,6 +28,7 @@ import SceneQueue, { QueuedScene } from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import Mousetrap from "mousetrap";
 import { OCounterButton } from "./OCounterButton";
+import { PlayCounterButton } from "./PlayCounterButton";
 import { OrganizedButton } from "./OrganizedButton";
 import { ConfigurationContext } from "src/hooks/Config";
 import { getPlayerPosition } from "src/components/ScenePlayer/util";
@@ -117,6 +121,10 @@ const ScenePage: React.FC<IProps> = ({
   const [decrementO] = useSceneDecrementO(scene.id);
   const [resetO] = useSceneResetO(scene.id);
 
+  const [incrementPlay] = useSceneIncrementPlay(scene.id);
+  const [decrementPlay] = useSceneDecrementPlay(scene.id);
+  const [resetPlays] = useSceneResetPlays(scene.id);
+
   const [organizedLoading, setOrganizedLoading] = useState(false);
 
   const [activeTabKey, setActiveTabKey] = useState("scene-details-panel");
@@ -140,6 +148,22 @@ const ScenePage: React.FC<IProps> = ({
     }
   };
 
+  const onPlayIncrementClick = async () => {
+    try {
+      await incrementPlay();
+    } catch (e) {
+      Toast.error(e);
+    }
+  };
+
+  const onPlayDecrementClick = async () => {
+    try {
+      await decrementPlay();
+    } catch (e) {
+      Toast.error(e);
+    }
+  };
+
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("a", () => setActiveTabKey("scene-details-panel"));
@@ -147,6 +171,7 @@ const ScenePage: React.FC<IProps> = ({
     Mousetrap.bind("e", () => setActiveTabKey("scene-edit-panel"));
     Mousetrap.bind("k", () => setActiveTabKey("scene-markers-panel"));
     Mousetrap.bind("i", () => setActiveTabKey("scene-file-info-panel"));
+    Mousetrap.bind("h", () => setActiveTabKey("scene-history-panel"));
     Mousetrap.bind("o", () => {
       onIncrementClick();
     });
@@ -161,6 +186,7 @@ const ScenePage: React.FC<IProps> = ({
       Mousetrap.unbind("e");
       Mousetrap.unbind("k");
       Mousetrap.unbind("i");
+      Mousetrap.unbind("h");
       Mousetrap.unbind("o");
       Mousetrap.unbind("p n");
       Mousetrap.unbind("p p");
@@ -207,6 +233,14 @@ const ScenePage: React.FC<IProps> = ({
   const onResetClick = async () => {
     try {
       await resetO();
+    } catch (e) {
+      Toast.error(e);
+    }
+  };
+
+  const onPlayResetClick = async () => {
+    try {
+      await resetPlays();
     } catch (e) {
       Toast.error(e);
     }
@@ -398,6 +432,11 @@ const ScenePage: React.FC<IProps> = ({
             </Nav.Link>
           </Nav.Item>
           <Nav.Item>
+            <Nav.Link eventKey="scene-history-panel">
+              <FormattedMessage id="History" />
+          </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
             <Nav.Link eventKey="scene-edit-panel">
               <FormattedMessage id="actions.edit" />
             </Nav.Link>
@@ -405,6 +444,14 @@ const ScenePage: React.FC<IProps> = ({
           <ButtonGroup className="ml-auto">
             <Nav.Item className="ml-auto">
               <ExternalPlayerButton scene={scene} />
+            </Nav.Item>
+            <Nav.Item className="ml-auto">
+              <PlayCounterButton
+                value={scene.play_count || 0}
+                onPlayIncrement={onPlayIncrementClick}
+                onPlayDecrement={onPlayDecrementClick}
+                onPlayReset={onPlayResetClick}
+              />
             </Nav.Item>
             <Nav.Item className="ml-auto">
               <OCounterButton

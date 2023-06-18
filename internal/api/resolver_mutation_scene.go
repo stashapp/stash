@@ -847,6 +847,42 @@ func (r *mutationResolver) SceneIncrementPlayCount(ctx context.Context, id strin
 	return ret, nil
 }
 
+func (r *mutationResolver) SceneDecrementPlayCount(ctx context.Context, id string) (ret int, err error) {
+	sceneID, err := strconv.Atoi(id)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Scene
+
+		ret, err = qb.DecrementWatchCount(ctx, sceneID)
+		return err
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (r *mutationResolver) SceneResetPlayCount(ctx context.Context, id string) (ret int, err error) {
+	sceneID, err := strconv.Atoi(id)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Scene
+
+		ret, err = qb.ResetWatchCount(ctx, sceneID)
+		return err
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
 func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {

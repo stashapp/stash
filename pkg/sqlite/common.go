@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/jmoiron/sqlx"
@@ -11,9 +12,29 @@ import (
 type oCounterManager struct {
 	tableMgr *table
 }
+type playCounterManager struct {
+	tableMgr *table
+}
 
 func (qb *oCounterManager) getOCounter(ctx context.Context, id int) (int, error) {
 	q := dialect.From(qb.tableMgr.table).Select("o_counter").Where(goqu.Ex{"id": id})
+
+	const single = true
+	var ret int
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		if err := rows.Scan(&ret); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (qb *playCounterManager) getPlayCounter(ctx context.Context, id int) (int, error) {
+	q := dialect.From(qb.tableMgr.table).Select("play_count").Where(goqu.Ex{"id": id})
 
 	const single = true
 	var ret int
@@ -72,4 +93,52 @@ func (qb *oCounterManager) ResetOCounter(ctx context.Context, id int) (int, erro
 	}
 
 	return qb.getOCounter(ctx, id)
+}
+
+func (qb *playCounterManager) IncrementWatchCount(ctx context.Context, id int) (int, error) {
+	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
+		return 0, err
+	}
+
+	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
+		"play_count":     goqu.L("play_count + 1"),
+		"last_played_at": time.Now(),
+	}); err != nil {
+		return 0, err
+	}
+
+	return qb.getPlayCounter(ctx, id)
+}
+
+func (qb *playCounterManager) DecrementWatchCount(ctx context.Context, id int) (int, error) {
+	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
+		return 0, err
+	}
+
+	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
+		"play_count":     goqu.L("play_count - 1"),
+		"resume_time":    0.0,
+		"last_played_at": goqu.L("last_played_at == null"),
+	}); err != nil {
+		return 0, err
+	}
+
+	return qb.getPlayCounter(ctx, id)
+}
+
+func (qb *playCounterManager) ResetWatchCount(ctx context.Context, id int) (int, error) {
+	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
+		return 0, err
+	}
+
+	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
+		"play_count":     0,
+		"resume_time":    0.0,
+		"last_played_at": goqu.L("last_played_at == null"),
+		"play_duration":  0.0,
+	}); err != nil {
+		return 0, err
+	}
+
+	return qb.getPlayCounter(ctx, id)
 }

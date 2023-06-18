@@ -457,6 +457,49 @@ const updateSceneO = (
   });
 };
 
+type ScenePlayMutation =
+  | GQL.SceneIncrementPlayCountMutation
+  | GQL.SceneDecrementPlayCountMutation
+  | GQL.SceneResetPlayCountMutation;
+const updateScenePlays = (
+  id: string,
+  cache: ApolloCache<ScenePlayMutation>,
+  updatedPlayCount?: number
+) => {
+  if (updatedPlayCount === undefined) return;
+
+  cache.modify({
+    id: cache.identify({ __typename: "Scene", id }),
+    fields: {
+      play_count() {
+        return updatedPlayCount;
+      },
+    },
+  });
+};
+
+export const useSceneIncrementPlay = (id: string) =>
+  GQL.useSceneIncrementPlayCountMutation({
+    variables: { id },
+    update: (cache, data) =>
+      updateScenePlays(id, cache, data.data?.sceneIncrementPlayCount),
+  });
+
+export const useSceneDecrementPlay = (id: string) =>
+  GQL.useSceneDecrementPlayCountMutation({
+    variables: { id },
+    update: (cache, data) =>
+      updateScenePlays(id, cache, data.data?.sceneDecrementPlayCount),
+  });
+
+export const useSceneResetPlays = (id: string) =>
+  GQL.useSceneResetPlayCountMutation({
+    variables: { id },
+    update: (cache, data) => 
+      updateScenePlays(id, cache, data.data?.sceneResetPlayCount),
+  });
+
+
 export const useSceneIncrementO = (id: string) =>
   GQL.useSceneIncrementOMutation({
     variables: { id },
