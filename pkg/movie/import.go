@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/studio"
@@ -58,10 +57,7 @@ func (i *Importer) PreImport(ctx context.Context) error {
 }
 
 func (i *Importer) movieJSONToMovie(movieJSON jsonschema.Movie) models.Movie {
-	checksum := md5.FromString(movieJSON.Name)
-
 	newMovie := models.Movie{
-		Checksum:  checksum,
 		Name:      movieJSON.Name,
 		Aliases:   movieJSON.Aliases,
 		Director:  movieJSON.Director,

@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
@@ -30,12 +29,10 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 	}
 
 	// generate checksum from movie name rather than image
-	checksum := md5.FromString(input.Name)
 
 	// Populate a new movie from the input
 	currentTime := time.Now()
 	newMovie := models.Movie{
-		Checksum:  checksum,
 		Name:      input.Name,
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,
@@ -126,13 +123,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	// Populate movie from the input
 	updatedMovie := models.NewMoviePartial()
 
-	if input.Name != nil {
-		// generate checksum from movie name rather than image
-		checksum := md5.FromString(*input.Name)
-		updatedMovie.Name = models.NewOptionalString(*input.Name)
-		updatedMovie.Checksum = models.NewOptionalString(checksum)
-	}
-
+	updatedMovie.Name = translator.optionalString(input.Name, "name")
 	updatedMovie.Aliases = translator.optionalString(input.Aliases, "aliases")
 	updatedMovie.Duration = translator.optionalInt(input.Duration, "duration")
 	updatedMovie.Date, err = translator.optionalDate(input.Date, "date")

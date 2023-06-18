@@ -31,3 +31,31 @@ CREATE INDEX `index_scene_markers_on_scene_id` ON `scene_markers`(`scene_id`);
 
 -- drop unused scraped items table
 DROP TABLE IF EXISTS `scraped_items`;
+
+DROP INDEX `movies_checksum_unique`;
+DROP INDEX `movies_name_unique`;
+ALTER TABLE `movies` DROP COLUMN `checksum`;
+CREATE UNIQUE INDEX `index_movies_on_name_unique` ON `movies`(`name`);
+
+DROP INDEX `index_studios_on_checksum`;
+DROP INDEX `index_studios_on_name`;
+DROP INDEX `studios_checksum_unique`;
+
+CREATE TABLE `studios_new` (
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  `name` VARCHAR(255) NOT NULL,
+  `url` VARCHAR(255),
+  `parent_id` INTEGER DEFAULT NULL CHECK (`id` IS NOT `parent_id`) REFERENCES `studios`(`id`) ON DELETE SET NULL,
+  `created_at` DATETIME NOT NULL,
+  `updated_at` DATETIME NOT NULL,
+  `details` TEXT,
+  `rating` TINYINT,
+  `ignore_auto_tag` BOOLEAN NOT NULL DEFAULT FALSE,
+  `image_blob` VARCHAR(255) REFERENCES `blobs`(`checksum`)
+);
+INSERT INTO `studios_new` SELECT `id`, `name`, `url`, `parent_id`, `created_at`, `updated_at`, `details`, `rating`, `ignore_auto_tag`, `image_blob` FROM `studios`;
+
+DROP TABLE `studios`;
+ALTER TABLE `studios_new` RENAME TO `studios`;
+
+CREATE UNIQUE INDEX `index_studios_on_name_unique` ON `studios`(`name`);

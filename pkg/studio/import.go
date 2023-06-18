@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/utils"
@@ -31,10 +30,7 @@ type Importer struct {
 }
 
 func (i *Importer) PreImport(ctx context.Context) error {
-	checksum := md5.FromString(i.Input.Name)
-
 	i.studio = models.Studio{
-		Checksum:      checksum,
 		Name:          i.Input.Name,
 		URL:           i.Input.URL,
 		Details:       i.Input.Details,

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -54,7 +53,6 @@ func scrapedToStudioInput(studio *models.ScrapedStudio) models.Studio {
 	currentTime := time.Now()
 	ret := models.Studio{
 		Name:      studio.Name,
-		Checksum:  md5.FromString(studio.Name),
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,
 	}

@@ -99,7 +99,6 @@ func createPerformer(ctx context.Context, pqb models.PerformerWriter) error {
 func createStudio(ctx context.Context, qb models.StudioWriter, name string) (*models.Studio, error) {
 	// create the studio
 	studio := models.Studio{
-		Checksum: name,
 		Name:     name,
 	}
 

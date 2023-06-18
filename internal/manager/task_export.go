@@ -292,13 +292,13 @@ func (t *ExportTask) populateMovieScenes(ctx context.Context, repo Repository) {
 	}
 
 	if err != nil {
-		logger.Errorf("[movies] failed to fetch movies: %s", err.Error())
+		logger.Errorf("[movies] failed to fetch movies: %v", err)
 	}
 
 	for _, m := range movies {
 		scenes, err := sceneReader.FindByMovieID(ctx, m.ID)
 		if err != nil {
-			logger.Errorf("[movies] <%s> failed to fetch scenes for movie: %s", m.Checksum, err.Error())
+			logger.Errorf("[movies] <%s> failed to fetch scenes for movie: %v", m.Name, err)
 			continue
 		}
 
@@ -974,14 +974,14 @@ func (t *ExportTask) exportStudio(ctx context.Context, wg *sync.WaitGroup, jobCh
 		newStudioJSON, err := studio.ToJSON(ctx, studioReader, s)
 
 		if err != nil {
-			logger.Errorf("[studios] <%s> error getting studio JSON: %s", s.Checksum, err.Error())
+			logger.Errorf("[studios] <%s> error getting studio JSON: %v", s.Name, err)
 			continue
 		}
 
 		fn := newStudioJSON.Filename()
 
 		if err := t.json.saveStudio(fn, newStudioJSON); err != nil {
-			logger.Errorf("[studios] <%s> failed to save json: %s", s.Checksum, err.Error())
+			logger.Errorf("[studios] <%s> failed to save json: %v", s.Name, err)
 		}
 	}
 }
@@ -1097,7 +1097,7 @@ func (t *ExportTask) exportMovie(ctx context.Context, wg *sync.WaitGroup, jobCha
 		newMovieJSON, err := movie.ToJSON(ctx, movieReader, studioReader, m)
 
 		if err != nil {
-			logger.Errorf("[movies] <%s> error getting tag JSON: %s", m.Checksum, err.Error())
+			logger.Errorf("[movies] <%s> error getting tag JSON: %v", m.Name, err)
 			continue
 		}
 
@@ -1110,7 +1110,7 @@ func (t *ExportTask) exportMovie(ctx context.Context, wg *sync.WaitGroup, jobCha
 		fn := newMovieJSON.Filename()
 
 		if err := t.json.saveMovie(fn, newMovieJSON); err != nil {
-			logger.Errorf("[movies] <%s> failed to save json: %s", fn, err.Error())
+			logger.Errorf("[movies] <%s> failed to save json: %v", m.Name, err)
 		}
 	}
 }
