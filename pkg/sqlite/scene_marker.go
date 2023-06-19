@@ -320,38 +320,20 @@ func sceneMarkerTagIDCriterionHandler(qb *SceneMarkerStore, tagID *string) crite
 func sceneMarkerTagsCriterionHandler(qb *SceneMarkerStore, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if tags != nil {
-			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
-				var notClause string
-				if tags.Modifier == models.CriterionModifierNotNull {
-					notClause = "NOT"
-				}
+			h := joinedHierarchicalMultiCriterionHandlerBuilder{
+				tx: qb.tx,
 
-				f.addLeftJoin("scene_markers_tags", "", "scene_markers.id = scene_markers_tags.scene_marker_id")
+				primaryTable: sceneMarkerTable,
+				foreignTable: tagTable,
+				foreignFK:    "tag_id",
 
-				f.addWhere(fmt.Sprintf("%s scene_markers_tags.tag_id IS NULL", notClause))
-				return
+				relationsTable: "tags_relations",
+				joinAs:         "marker_tag",
+				joinTable:      "scene_markers_tags",
+				primaryFK:      "scene_marker_id",
 			}
 
-			if len(tags.Value) == 0 {
-				return
-			}
-			valuesClause, err := getHierarchicalValues(ctx, qb.tx, tags.Value, tagTable, "tags_relations", "parent_id", "child_id", tags.Depth)
-			if err != nil {
-				f.setError(err)
-				return
-			}
-
-			f.addWith(`marker_tags AS (
-SELECT mt.scene_marker_id, t.column1 AS root_tag_id FROM scene_markers_tags mt
-INNER JOIN (` + valuesClause + `) t ON t.column2 = mt.tag_id
-UNION
-SELECT m.id, t.column1 FROM scene_markers m
-INNER JOIN (` + valuesClause + `) t ON t.column2 = m.primary_tag_id
-)`)
-
-			f.addLeftJoin("marker_tags", "", "marker_tags.scene_marker_id = scene_markers.id")
-
-			addHierarchicalConditionClauses(f, *tags, "marker_tags", "root_tag_id")
+			h.handler(tags).handle(ctx, f)
 		}
 	}
 }
