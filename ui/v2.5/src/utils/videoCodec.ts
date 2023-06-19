@@ -4,6 +4,8 @@ const stringVideoCodecMap = new Map<string, VideoCodecEnum>([
   ["h264", VideoCodecEnum.H264],
   ["hevc", VideoCodecEnum.Hevc],
   ["av1", VideoCodecEnum.Av1],
+  ["wmv3", VideoCodecEnum.Wmv3],
+  ["vc1", VideoCodecEnum.Vc1],
 ]);
 
 export const stringToVideoCodec = (

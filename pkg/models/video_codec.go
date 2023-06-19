@@ -10,6 +10,8 @@ var videoCodecOptions = map[VideoCodecEnum]string{
 	VideoCodecEnum("H264"): "h264",
 	VideoCodecEnum("HEVC"): "hevc",
 	VideoCodecEnum("AV1"):  "av1",
+	VideoCodecEnum("WMV3"): "wmv3",
+	VideoCodecEnum("VC1"):  "vc1",
 }
 
 type VideoCodecEnum string
@@ -21,17 +23,23 @@ const (
 	VideoCodecEnumHevc VideoCodecEnum = "HEVC"
 	// av1
 	VideoCodecEnumAv1 VideoCodecEnum = "AV1"
+	// wmv3
+	VideoCodecEnumWmv3 VideoCodecEnum = "WMV3"
+	// vc1
+	VideoCodecEnumVc1 VideoCodecEnum = "VC1"
 )
 
 var AllVideoCodecEnum = []VideoCodecEnum{
 	VideoCodecEnumH264,
 	VideoCodecEnumHevc,
 	VideoCodecEnumAv1,
+	VideoCodecEnumWmv3,
+	VideoCodecEnumVc1,
 }
 
 func (e VideoCodecEnum) IsValid() bool {
 	switch e {
-	case VideoCodecEnumH264, VideoCodecEnumHevc, VideoCodecEnumAv1:
+	case VideoCodecEnumH264, VideoCodecEnumHevc, VideoCodecEnumAv1, VideoCodecEnumWmv3, VideoCodecEnumVc1:
 		return true
 	}
 	return false
