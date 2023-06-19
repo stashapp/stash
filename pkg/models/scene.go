@@ -45,6 +45,10 @@ type SceneFilterType struct {
 	Duplicated *PHashDuplicationCriterionInput `json:"duplicated"`
 	// Filter by resolution
 	Resolution *ResolutionCriterionInput `json:"resolution"`
+	// Filter by video codec
+	VideoCodec *VideoCodecCriterionInput `json:"video_codec"`
+	// Filter by audio codec
+	AudioCodec *AudioCodecCriterionInput `json:"audio_codec"`
 	// Filter by duration (in seconds)
 	Duration *IntCriterionInput `json:"duration"`
 	// Filter to only include scenes which have markers. `true` or `false`

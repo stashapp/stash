@@ -127,6 +127,15 @@ type ResolutionCriterionInput struct {
 	Value    ResolutionEnum    `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
 }
+type VideoCodecCriterionInput struct {
+	Value    VideoCodecEnum    `json:"value"`
+	Modifier CriterionModifier `json:"modifier"`
+}
+
+type AudioCodecCriterionInput struct {
+	Value    AudioCodecEnum    `json:"value"`
+	Modifier CriterionModifier `json:"modifier"`
+}
 
 type HierarchicalMultiCriterionInput struct {
 	Value    []string          `json:"value"`
