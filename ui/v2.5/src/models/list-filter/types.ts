@@ -109,6 +109,10 @@ export type CriterionType =
   | "o_counter"
   | "resolution"
   | "average_resolution"
+  
+  | "video_codec"
+  | "audio_codec"
+
   | "duration"
   | "favorite"
   | "hasMarkers"

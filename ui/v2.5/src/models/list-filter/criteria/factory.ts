@@ -57,6 +57,8 @@ import { StashIDCriterion } from "./stash-ids";
 import * as GQL from "src/core/generated-graphql";
 import { IUIConfig } from "src/core/config";
 import { defaultRatingSystemOptions } from "src/utils/rating";
+import { VideoCodecCriterion } from "./video-codec";
+import { AudioCodecCriterion } from "./audio-codec";
 
 export function makeCriteria(
   config: GQL.ConfigDataFragment | undefined,
@@ -107,6 +109,10 @@ export function makeCriteria(
       return new ResolutionCriterion();
     case "average_resolution":
       return new AverageResolutionCriterion();
+    case "video_codec":
+      return new VideoCodecCriterion();
+    case "audio_codec":
+      return new AudioCodecCriterion();
     case "resume_time":
     case "duration":
     case "play_duration":
