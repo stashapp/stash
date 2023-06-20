@@ -807,11 +807,6 @@ type ProcessEnv struct {
 	ModFlag    string
 	ModFile    string
 
-	// SkipPathInScan returns true if the path should be skipped from scans of
-	// the RootCurrentModule root type. The function argument is a clean,
-	// absolute path.
-	SkipPathInScan func(string) bool
-
 	// Env overrides the OS environment, and can be used to specify
 	// GOPROXY, GO111MODULE, etc. PATH cannot be set here, because
 	// exec.Command will not honor it.
@@ -1372,9 +1367,9 @@ func (r *gopathResolver) scan(ctx context.Context, callback *scanCallback) error
 		return err
 	}
 	var roots []gopathwalk.Root
-	roots = append(roots, gopathwalk.Root{Path: filepath.Join(goenv["GOROOT"], "src"), Type: gopathwalk.RootGOROOT})
+	roots = append(roots, gopathwalk.Root{filepath.Join(goenv["GOROOT"], "src"), gopathwalk.RootGOROOT})
 	for _, p := range filepath.SplitList(goenv["GOPATH"]) {
-		roots = append(roots, gopathwalk.Root{Path: filepath.Join(p, "src"), Type: gopathwalk.RootGOPATH})
+		roots = append(roots, gopathwalk.Root{filepath.Join(p, "src"), gopathwalk.RootGOPATH})
 	}
 	// The callback is not necessarily safe to use in the goroutine below. Process roots eagerly.
 	roots = filterRoots(roots, callback.rootFound)
