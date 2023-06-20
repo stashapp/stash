@@ -25,10 +25,7 @@ class AudioCodecCriterionOptionType extends CriterionOption {
       messageID: value,
       type: value,
       parameterName: value,
-      modifierOptions: [
-        CriterionModifier.Equals,
-        CriterionModifier.NotEquals,
-      ],
+      modifierOptions: [CriterionModifier.Equals, CriterionModifier.NotEquals],
       options: audioCodecStrings,
     });
   }
