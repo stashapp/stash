@@ -3,7 +3,10 @@ import { AudioCodecEnum } from "src/core/generated-graphql";
 const stringAudioCodecMap = new Map<string, AudioCodecEnum>([
   ["aac", AudioCodecEnum.Aac],
   ["ac3", AudioCodecEnum.Ac3],
+  ["adpcm_ima_wav", AudioCodecEnum.AdpcmImaWav],
   ["mp3", AudioCodecEnum.Mp3],
+  ["pcm_s16le", AudioCodecEnum.PcmS16Le],
+  ["wmapro", AudioCodecEnum.Wmapro],
   ["wmav2", AudioCodecEnum.Wmav2],
 ]);
 

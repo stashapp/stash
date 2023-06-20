@@ -7,10 +7,13 @@ import (
 )
 
 var audioCodecOptions = map[AudioCodecEnum]string{
-	AudioCodecEnum("AAC"):   "aac",
-	AudioCodecEnum("AC3"):   "ac3",
-	AudioCodecEnum("MP3"):   "mp3",
-	AudioCodecEnum("WMAV2"): "wmav2",
+	AudioCodecEnum("AAC"):           "aac",
+	AudioCodecEnum("AC3"):           "ac3",
+	AudioCodecEnum("ADPCM_IMA_WAV"): "adpcm_ima_wav",
+	AudioCodecEnum("MP3"):           "mp3",
+	AudioCodecEnum("PCM_S16LE"):     "pcm_s16le",
+	AudioCodecEnum("WMAPRO"):        "wmapro",
+	AudioCodecEnum("WMAV2"):         "wmav2",
 }
 
 type AudioCodecEnum string
@@ -20,8 +23,14 @@ const (
 	AudioCodecEnumAac AudioCodecEnum = "AAC"
 	// ac3
 	AudioCodecEnumAc3 AudioCodecEnum = "AC3"
+	// adpcm_ima_wav
+	AudioCodecEnumAdpcmImaWav AudioCodecEnum = "ADPCM_IMA_WAV"
 	// mp3
 	AudioCodecEnumMp3 AudioCodecEnum = "MP3"
+	// pcm_s16le
+	AudioCodecEnumPcmS16le AudioCodecEnum = "PCM_S16LE"
+	// wmapro
+	AudioCodecEnumWmaPro AudioCodecEnum = "WMAPRO"
 	// wmav2
 	AudioCodecEnumWmav2 AudioCodecEnum = "WMAV2"
 )
@@ -29,13 +38,22 @@ const (
 var AllAudioCodecEnum = []AudioCodecEnum{
 	AudioCodecEnumAac,
 	AudioCodecEnumAc3,
+	AudioCodecEnumAdpcmImaWav,
 	AudioCodecEnumMp3,
+	AudioCodecEnumPcmS16le,
+	AudioCodecEnumWmaPro,
 	AudioCodecEnumWmav2,
 }
 
 func (e AudioCodecEnum) IsValid() bool {
 	switch e {
-	case AudioCodecEnumAac, AudioCodecEnumAc3, AudioCodecEnumMp3, AudioCodecEnumWmav2:
+	case AudioCodecEnumAac,
+		AudioCodecEnumAc3,
+		AudioCodecEnumAdpcmImaWav,
+		AudioCodecEnumMp3,
+		AudioCodecEnumPcmS16le,
+		AudioCodecEnumWmaPro,
+		AudioCodecEnumWmav2:
 		return true
 	}
 	return false

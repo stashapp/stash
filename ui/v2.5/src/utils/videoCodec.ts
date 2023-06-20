@@ -1,11 +1,16 @@
 import { VideoCodecEnum } from "src/core/generated-graphql";
 
 const stringVideoCodecMap = new Map<string, VideoCodecEnum>([
+  ["av1", VideoCodecEnum.Av1],
   ["h264", VideoCodecEnum.H264],
   ["hevc", VideoCodecEnum.Hevc],
-  ["av1", VideoCodecEnum.Av1],
-  ["wmv3", VideoCodecEnum.Wmv3],
+  ["mpeg2video", VideoCodecEnum.Mpeg2Video],
+  ["mpeg4", VideoCodecEnum.Mpeg4],
   ["vc1", VideoCodecEnum.Vc1],
+  ["vp6f", VideoCodecEnum.Vp6F],
+  ["wmv1", VideoCodecEnum.Wmv1],
+  ["wmv2", VideoCodecEnum.Wmv2],
+  ["wmv3", VideoCodecEnum.Wmv3],
 ]);
 
 export const stringToVideoCodec = (
