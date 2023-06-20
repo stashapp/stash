@@ -291,16 +291,13 @@ func (qb *StudioStore) Destroy(ctx context.Context, id int) error {
 	return qb.destroyExisting(ctx, []int{id})
 }
 
-// returns nil, sql.ErrNoRows if not found
+// returns nil, nil if not found
 func (qb *StudioStore) Find(ctx context.Context, id int) (*models.Studio, error) {
-	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
-
-	ret, err := qb.get(ctx, q)
-	if err != nil {
-		return nil, fmt.Errorf("getting studio by id %d: %w", id, err)
+	ret, err := qb.find(ctx, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
 	}
-
-	return ret, nil
+	return ret, err
 }
 
 func (qb *StudioStore) FindMany(ctx context.Context, ids []int) ([]*models.Studio, error) {
@@ -328,6 +325,18 @@ func (qb *StudioStore) FindMany(ctx context.Context, ids []int) ([]*models.Studi
 		if ret[i] == nil {
 			return nil, fmt.Errorf("studio with id %d not found", ids[i])
 		}
+	}
+
+	return ret, nil
+}
+
+// returns nil, sql.ErrNoRows if not found
+func (qb *StudioStore) find(ctx context.Context, id int) (*models.Studio, error) {
+	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
+
+	ret, err := qb.get(ctx, q)
+	if err != nil {
+		return nil, err
 	}
 
 	return ret, nil
