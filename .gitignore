@@ -64,3 +64,6 @@ node_modules
 dist
 .DS_Store
 /.local
+
+tsconfig.json
+!ui/v2.5/tsconfig.json
