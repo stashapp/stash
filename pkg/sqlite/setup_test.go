@@ -17,6 +17,7 @@ import (
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
 
@@ -213,6 +214,7 @@ const (
 	tagIdxWithGrandChild
 	tagIdxWithParentAndChild
 	tagIdxWithGrandParent
+	tagIdx2WithMarkers
 	// new indexes above
 	// tags with dup names start from the end
 	tagIdx1WithDupName
@@ -400,6 +402,8 @@ var (
 	markerSpecs = []markerSpec{
 		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, nil},
 		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, []int{tagIdxWithMarkers}},
+		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, []int{tagIdx2WithMarkers}},
+		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, []int{tagIdxWithMarkers, tagIdx2WithMarkers}},
 		{sceneIdxWithMarkerAndTag, tagIdxWithPrimaryMarkers, nil},
 		{sceneIdxWithMarkerTwoTags, tagIdxWithPrimaryMarkers, nil},
 	}
@@ -1477,15 +1481,15 @@ func getTagSceneCount(id int) int {
 }
 
 func getTagMarkerCount(id int) int {
-	if id == tagIDs[tagIdxWithPrimaryMarkers] {
-		return 3
+	count := 0
+	idx := indexFromID(tagIDs, id)
+	for _, s := range markerSpecs {
+		if s.primaryTagIdx == idx || intslice.IntInclude(s.tagIdxs, idx) {
+			count++
+		}
 	}
 
-	if id == tagIDs[tagIdxWithMarkers] {
-		return 1
-	}
-
-	return 0
+	return count
 }
 
 func getTagImageCount(id int) int {
