@@ -20,6 +20,14 @@ type SceneMarker struct {
 	UpdatedAt  json.JSONTime `json:"updated_at,omitempty"`
 }
 
+type ScenePlayDate struct {
+	PlayDate json.JSONTime `json:"playdate,omitempty"`
+}
+
+type SceneODate struct {
+	ODate json.JSONTime `json:"odate,omitempty"`
+}
+
 type SceneFile struct {
 	ModTime    json.JSONTime `json:"mod_time,omitempty"`
 	Size       string        `json:"size"`

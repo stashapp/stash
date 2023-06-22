@@ -122,6 +122,16 @@ var (
 		idColumn: goqu.T(sceneMarkerTable).Col(idColumn),
 	}
 
+	scenePlayDateTableMgr = &table{
+		table:    goqu.T(scenePlayDateTable),
+		idColumn: goqu.T(scenePlayDateTable).Col(idColumn),
+	}
+
+	sceneODateTableMgr = &table{
+		table:    goqu.T(sceneODateTable),
+		idColumn: goqu.T(sceneODateTable).Col(idColumn),
+	}
+
 	scenesFilesTableMgr = &relatedFilesTable{
 		table: table{
 			table:    scenesFilesJoinTable,
