@@ -29,7 +29,7 @@ func getPerformerID(ctx context.Context, endpoint string, w PerformerCreator, p 
 	} else if createMissing && p.Name != nil { // name is mandatory
 		// skip single name performers with no disambiguation
 		if skipSingleNamePerformers && !strings.Contains(*p.Name, " ") && (p.Disambiguation == nil || len(*p.Disambiguation) == 0) {
-			return nil, &ErrSkipSingleNamePerformer{}
+			return nil, ErrSkipSingleNamePerformer
 		}
 		return createMissingPerformer(ctx, endpoint, w, p)
 	}

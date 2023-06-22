@@ -34,7 +34,7 @@ type SceneIdentifier struct {
 	SceneReaderUpdater SceneReaderUpdater
 	StudioCreator      StudioCreator
 	PerformerCreator   PerformerCreator
-	TagCreator         TagCreator
+	TagCreatorFinder   TagCreatorFinder
 
 	DefaultOptions              *MetadataOptions
 	Sources                     []ScraperSource
@@ -42,13 +42,36 @@ type SceneIdentifier struct {
 }
 
 func (t *SceneIdentifier) Identify(ctx context.Context, txnManager txn.Manager, scene *models.Scene) error {
+	multipleResultsFoundAndIgnored := false
+
 	result, err := t.scrapeScene(ctx, txnManager, scene)
 	if err != nil {
-		return err
+		if errors.Is(err, ErrSkipMultipleMatches) {
+			multipleResultsFoundAndIgnored = true
+		} else {
+			return err
+		}
 	}
 
 	if result == nil {
-		logger.Debugf("Unable to identify %s", scene.Path)
+		if multipleResultsFoundAndIgnored {
+			logger.Debugf("Identify skipped because multiple results returned for %s", scene.Path)
+
+			// Go through the sources to find if the scene should be tagged for multiple results
+			for _, source := range t.Sources {
+				options := t.getOptions(&source)
+				if options.SkipMultipleMatchTag != nil && len(*options.SkipMultipleMatchTag) > 0 {
+					// Tag it with the multiple results tag
+					err := t.addTagToScene(ctx, txnManager, scene, options.SkipMultipleMatchTag)
+					if err != nil {
+						return err
+					}
+					return nil
+				}
+			}
+		} else {
+			logger.Debugf("Unable to identify %s", scene.Path)
+		}
 		return nil
 	}
 
@@ -65,6 +88,8 @@ type scrapeResult struct {
 	source ScraperSource
 }
 
+var ErrSkipMultipleMatches = errors.New("Multiple results were found for this scene")
+
 func (t *SceneIdentifier) scrapeScene(ctx context.Context, txnManager txn.Manager, scene *models.Scene) (*scrapeResult, error) {
 	// iterate through the input sources
 	for _, source := range t.Sources {
@@ -78,14 +103,7 @@ func (t *SceneIdentifier) scrapeScene(ctx context.Context, txnManager txn.Manage
 		if len(results) > 0 {
 			options := t.getOptions(&source)
 			if len(results) > 1 && options.SkipMultipleMatches != nil && *options.SkipMultipleMatches {
-				if options.SkipMultipleMatchTag != nil && len(*options.SkipMultipleMatchTag) > 0 {
-					// Tag it with the multiple results tag and ignore
-					err := t.addTagToScene(ctx, txnManager, scene, options.SkipMultipleMatchTag)
-					if err != nil {
-						return nil, err
-					}
-					return nil, nil
-				}
+				return nil, ErrSkipMultipleMatches
 			} else {
 				// if results were found then return
 				return &scrapeResult{
@@ -129,11 +147,7 @@ func (t *SceneIdentifier) getOptions(source *ScraperSource) MetadataOptions {
 	return options
 }
 
-type ErrSkipSingleNamePerformer struct{}
-
-func (m *ErrSkipSingleNamePerformer) Error() string {
-	return "A performer was skipped because they only had a single name and no disambiguation"
-}
+var ErrSkipSingleNamePerformer = errors.New("A performer was skipped because they only had a single name and no disambiguation")
 
 func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, result *scrapeResult) (*scene.UpdateSet, error) {
 	ret := &scene.UpdateSet{
@@ -157,7 +171,7 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		sceneReader:              t.SceneReaderUpdater,
 		studioCreator:            t.StudioCreator,
 		performerCreator:         t.PerformerCreator,
-		tagCreator:               t.TagCreator,
+		tagCreatorFinder:         t.TagCreatorFinder,
 		scene:                    s,
 		result:                   result,
 		fieldOptions:             fieldOptions,
@@ -187,8 +201,7 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	addSkipSingleNamePerformerTag := false
 	performerIDs, err := rel.performers(ctx, !includeMalePerformers)
 	if err != nil {
-		var singleErr *ErrSkipSingleNamePerformer
-		if errors.As(err, &singleErr) {
+		if errors.Is(err, ErrSkipSingleNamePerformer) {
 			addSkipSingleNamePerformerTag = true
 		} else {
 			return nil, err
@@ -295,7 +308,7 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager txn.Manage
 
 func (t *SceneIdentifier) addTagToScene(ctx context.Context, txnManager txn.Manager, s *models.Scene, tagToAdd *string) error {
 	if err := txn.WithTxn(ctx, txnManager, func(ctx context.Context) error {
-		tagID, err := strconv.ParseInt(*tagToAdd, 10, 64)
+		tagID, err := strconv.Atoi(*tagToAdd)
 		if err != nil {
 			return fmt.Errorf("error converting tag ID %s: %w", *tagToAdd, err)
 		}
@@ -305,16 +318,21 @@ func (t *SceneIdentifier) addTagToScene(ctx context.Context, txnManager txn.Mana
 		}
 		existing := s.TagIDs.List()
 
-		if intslice.IntInclude(existing, int(tagID)) {
+		if intslice.IntInclude(existing, tagID) {
 			// skip if the scene was already tagged
 			return nil
 		}
 
-		if err := scene.AddTag(ctx, t.SceneReaderUpdater, s, int(tagID)); err != nil {
+		if err := scene.AddTag(ctx, t.SceneReaderUpdater, s, tagID); err != nil {
 			return err
 		}
 
-		logger.Infof("Added tag %s to skipped scene %s", *tagToAdd, s.Path)
+		ret, err := t.TagCreatorFinder.Find(ctx, tagID)
+		if err != nil {
+			logger.Infof("Added tag id %s to skipped scene %s", *tagToAdd, s.Path)
+		} else {
+			logger.Infof("Added tag %s to skipped scene %s", ret.Name, s.Path)
+		}
 
 		return nil
 	}); err != nil {
