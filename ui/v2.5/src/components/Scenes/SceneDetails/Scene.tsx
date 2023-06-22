@@ -21,6 +21,7 @@ import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { Icon } from "src/components/Shared/Icon";
 import { Counter } from "src/components/Shared/Counter";
 import { useToast } from "src/hooks/Toast";
+import { usePrevious } from "src/hooks/state";
 import SceneQueue, { QueuedScene } from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import Mousetrap from "mousetrap";
@@ -633,6 +634,16 @@ const SceneLoader: React.FC = () => {
     }
   }, [sceneQueue]);
 
+  // TODO: Find a better way to compare the needs to load next scene after adding more scenes to the queue.
+  // Having the entire previous queue feels bad.
+  const prevQueueScenes = usePrevious(queueScenes)
+
+  useEffect(() => {
+    if(prevQueueScenes?.length == currentQueueIndex+1 && queueScenes?.length > prevQueueScenes?.length) {
+      loadNextSceneOrQueueNextPage(continuePlaylist)
+    }
+  }, [queueScenes]);
+
   async function onQueueLessScenes() {
     if (!sceneQueue.query || queueStart <= 1) {
       return;
@@ -687,7 +698,7 @@ const SceneLoader: React.FC = () => {
       currentQueueIndex >= 0 &&
       currentQueueIndex < queueScenes.length - 1
     ) {
-      loadScene(queueScenes[currentQueueIndex + 1].id);
+      loadNextSceneOrQueueNextPage()
     } else {
       history.push("/scenes");
     }
@@ -696,9 +707,7 @@ const SceneLoader: React.FC = () => {
   function onQueueNext() {
     if (!queueScenes) return;
 
-    if (currentQueueIndex >= 0 && currentQueueIndex < queueScenes.length - 1) {
-      loadScene(queueScenes[currentQueueIndex + 1].id);
-    }
+    loadNextSceneOrQueueNextPage()
   }
 
   function onQueuePrevious() {
@@ -733,26 +742,30 @@ const SceneLoader: React.FC = () => {
     }
   }
 
+  function loadNextSceneOrQueueNextPage(autoPlay?: boolean | undefined, newPage?: number | undefined) {
+    if (
+      currentQueueIndex >= 0 &&
+      currentQueueIndex < queueScenes.length - 1
+    ) {
+      loadScene(queueScenes[currentQueueIndex + 1].id, autoPlay, newPage);
+    } else {
+      onQueueMoreScenes()
+    }
+  }
+
   function onComplete() {
     if (!queueScenes) return;
 
     // load the next scene if we're continuing
     if (continuePlaylist) {
-      if (
-        currentQueueIndex >= 0 &&
-        currentQueueIndex < queueScenes.length - 1
-      ) {
-        loadScene(queueScenes[currentQueueIndex + 1].id, true);
-      }
+      loadNextSceneOrQueueNextPage(true)
     }
   }
 
   function onNext() {
     if (!queueScenes) return;
 
-    if (currentQueueIndex >= 0 && currentQueueIndex < queueScenes.length - 1) {
-      loadScene(queueScenes[currentQueueIndex + 1].id, true);
-    }
+    loadNextSceneOrQueueNextPage()
   }
 
   function onPrevious() {
