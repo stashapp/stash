@@ -352,7 +352,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
         director: fragment.director,
         remote_site_id: fragment.remote_site_id,
         title: fragment.title,
-        url: fragment.url,
+        urls: fragment.urls,
       };
 
       const result = await queryScrapeSceneQueryFragment(s, input);
@@ -568,8 +568,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
       formik.setFieldValue("date", updatedScene.date);
     }
 
-    if (updatedScene.url) {
-      formik.setFieldValue("url", updatedScene.url);
+    if (updatedScene.urls) {
+      formik.setFieldValue("urls", updatedScene.urls);
     }
 
     if (updatedScene.studio && updatedScene.studio.stored_id) {

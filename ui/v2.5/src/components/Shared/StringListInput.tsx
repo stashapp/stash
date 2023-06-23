@@ -8,6 +8,7 @@ interface IListInputComponentProps {
   setValue: (value: string) => void;
   placeholder?: string;
   className?: string;
+  readOnly?: boolean;
 }
 
 interface IListInputAppendProps {
@@ -23,6 +24,7 @@ export interface IStringListInputProps {
   className?: string;
   errors?: string;
   errorIdx?: number[];
+  readOnly?: boolean;
 }
 
 export const StringInput: React.FC<IListInputComponentProps> = ({
@@ -30,6 +32,7 @@ export const StringInput: React.FC<IListInputComponentProps> = ({
   placeholder,
   value,
   setValue,
+  readOnly = false,
 }) => {
   return (
     <Form.Control
@@ -39,6 +42,7 @@ export const StringInput: React.FC<IListInputComponentProps> = ({
         setValue(e.currentTarget.value)
       }
       placeholder={placeholder}
+      readOnly={readOnly}
     />
   );
 };
@@ -75,16 +79,19 @@ export const StringListInput: React.FC<IStringListInputProps> = (props) => {
                 setValue={(value) => valueChanged(i, value)}
                 placeholder={props.placeholder}
                 className={props.errorIdx?.includes(i) ? "is-invalid" : ""}
+                readOnly={props.readOnly}
               />
               <InputGroup.Append>
                 {AppendComponent && <AppendComponent value={v} />}
-                <Button
-                  variant="danger"
-                  onClick={() => removeValue(i)}
-                  disabled={i === values.length - 1}
-                >
-                  <Icon icon={faMinus} />
-                </Button>
+                {!props.readOnly && (
+                  <Button
+                    variant="danger"
+                    onClick={() => removeValue(i)}
+                    disabled={i === values.length - 1}
+                  >
+                    <Icon icon={faMinus} />
+                  </Button>
+                )}
               </InputGroup.Append>
             </InputGroup>
           ))}
