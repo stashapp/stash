@@ -167,7 +167,11 @@ func (qb *StudioStore) Create(ctx context.Context, newObject *models.Studio) err
 		}
 	}
 
-	updated, err := qb.find(ctx, id)
+	updated, _ := qb.find(ctx, id)
+	if err != nil {
+		return fmt.Errorf("finding after create: %w", err)
+	}
+
 	*newObject = *updated
 	return nil
 }
