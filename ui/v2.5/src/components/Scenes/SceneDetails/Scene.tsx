@@ -58,6 +58,7 @@ const SceneMarkersPanel = lazyComponent(() => import("./SceneMarkersPanel"));
 const SceneFileInfoPanel = lazyComponent(() => import("./SceneFileInfoPanel"));
 const SceneEditPanel = lazyComponent(() => import("./SceneEditPanel"));
 const SceneDetailPanel = lazyComponent(() => import("./SceneDetailPanel"));
+const SceneHistoryPanel = lazyComponent(() => import("./SceneHistoryPanel"));
 const SceneMoviePanel = lazyComponent(() => import("./SceneMoviePanel"));
 const SceneGalleriesPanel = lazyComponent(
   () => import("./SceneGalleriesPanel")
@@ -433,7 +434,7 @@ const ScenePage: React.FC<IProps> = ({
           </Nav.Item>
           <Nav.Item>
             <Nav.Link eventKey="scene-history-panel">
-              <FormattedMessage id="History" />
+              <FormattedMessage id="history" />
           </Nav.Link>
           </Nav.Item>
           <Nav.Item>
@@ -525,6 +526,14 @@ const ScenePage: React.FC<IProps> = ({
             scene={scene}
             onSubmit={onSave}
             onDelete={() => setIsDeleteAlertOpen(true)}
+          />
+        </Tab.Pane>
+        <Tab.Pane eventKey="scene-history-panel">
+          <SceneHistoryPanel
+             isVisible={activeTabKey === "scene-history-panel"} // needed??
+             scene={scene}
+             onSubmit={onSave}
+             onDelete={() => setIsDeleteAlertOpen(true)} // needed??         
           />
         </Tab.Pane>
       </Tab.Content>
