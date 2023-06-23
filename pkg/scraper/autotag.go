@@ -61,7 +61,7 @@ func autotagMatchStudio(ctx context.Context, path string, studioReader match.Stu
 	if studio != nil {
 		id := strconv.Itoa(studio.ID)
 		return &models.ScrapedStudio{
-			Name:     studio.Name.String,
+			Name:     studio.Name,
 			StoredID: &id,
 		}, nil
 	}

@@ -21,6 +21,7 @@
     "confirm": "Vahvista",
     "continue": "Jatka",
     "create": "Luo",
+    "create_chapters": "Luo kappale",
     "create_entity": "Luo {entityType}",
     "create_marker": "Luo Merkkaus",
     "created_entity": "Luotu: {entityType}: {entity_name}",
@@ -124,14 +125,25 @@
   "aliases": "Aliakset",
   "all": "kaikki",
   "also_known_as": "Esiintyy myös nimillä",
+  "appears_with": "Esiintyy yhdessä",
   "ascending": "Nouseva",
   "average_resolution": "Keskimääräinen resoluutio",
   "between_and": "ja",
   "birth_year": "Syntymävuosi",
   "birthdate": "Syntymäpäivä",
   "bitrate": "Bittinopeus",
+  "blobs_storage_type": {
+    "database": "Tietokanta",
+    "filesystem": "Tiedostojärjestelmä"
+  },
   "captions": "Tekstitykset",
   "career_length": "Uran pituus",
+  "chapters": "Kappaleet",
+  "circumcised": "Ympärileikattu",
+  "circumcised_types": {
+    "CUT": "Leikattu",
+    "UNCUT": "Ympäreileikkaamaton"
+  },
   "component_tagger": {
     "config": {
       "active_instance": "Aktiivinen stash-box -instanssi:",
@@ -162,7 +174,7 @@
       "duration_unknown": "Tuntematon kesto",
       "fp_found": "{fpCount, plural, =0 {Uusia sormenjälkiä ei löytynyt} other {Löytyi # uutta sormenjälkeä}}",
       "fp_matches": "Kesto täsmää",
-      "fp_matches_multi": "Kesto täsmää {matchCount}/{durationsLength} sormenjälkeen",
+      "fp_matches_multi": "Kesto täsmää {matchCount}/{durationsLength} sormenjälkiin",
       "hash_matches": "{hash_type} täsmää",
       "match_failed_already_tagged": "Kohtaukselle on jo asetettu tunnisteet",
       "match_failed_no_result": "Ei tuloksia",
@@ -255,7 +267,7 @@
         "description": "SQLite -tietokannan varmuuskopiokansion sijainti",
         "heading": "Varmuuskopiokansion polku"
       },
-      "cache_location": "Välimuistin kansion sijainti",
+      "cache_location": "Välimuistin kansion sijainti. Vaadittu kun suoratoistossa käytetään HLS:ää (kuten Apple -laitteissa) tai DASH:iä.",
       "cache_path_head": "Välimuistin polku",
       "calculate_md5_and_ohash_desc": "Laske MD5 -tarkistussumma oshashin lisäksi. Jos laitat tämän päälle, se tekee skannauksista hitaampia. Tiedostojen nimien tiivisteeksi pitää valita oshash MD5:n laskemisen laittamiseksi pois päältä.",
       "calculate_md5_and_ohash_label": "Laske MD5 videoille",
@@ -265,6 +277,7 @@
       "chrome_cdp_path_desc": "Tiedostopolku Chromeen, tai etäpolku (alkaa http:// tai https://, esimerkiksi http://localhost:9222/json/version) Chrome -instanssiin.",
       "create_galleries_from_folders_desc": "Jos valittu, luodaan galleria kansion sisältämistä kuvista.",
       "create_galleries_from_folders_label": "Luo galleria kansion kuvista",
+      "database": "Tietokanta",
       "db_path_head": "Tietokannan polku",
       "directory_locations_to_your_content": "Kansiot, joissa sisältösi sijaitsee",
       "excluded_image_gallery_patterns_desc": "Säännöllinen lauseke kuvien ja gallerioiden nimille/poluille, jotka jätetään huomioimatta skannauksessa",
@@ -305,7 +318,7 @@
         "heading": "Kaapijoiden polku"
       },
       "scraping": "Kaapiminen",
-      "sqlite_location": "SQLite -tietokannan tiedostosijainti (vaatii uudelleenkäynnistyksen)",
+      "sqlite_location": "SQLite -tietokannan tiedostosijainti (vaatii uudelleenkäynnistyksen) VAROITUS: tietokannan tallentaminen eri järjestelmään kuin missä Stash on käynnissä (kuten verkon yli) ei ole tuettu!",
       "video_ext_desc": "Pilkuilla erotettu lista tiedostopäätteistä, jotka tulkitaan videoiksi.",
       "video_ext_head": "Videoiden päätteet",
       "video_head": "Video"
@@ -348,7 +361,7 @@
         "auto_tagging_all_paths": "Asetetaan tunnisteet automaattisesti kaikkiin polkuihin",
         "auto_tagging_paths": "Asetetaan tunnisteet automaattisesti seuraaviin polkuihin"
       },
-      "auto_tag_based_on_filenames": "Aseta tunnisteet automaattisesti tiedostonimien perusteella.",
+      "auto_tag_based_on_filenames": "Aseta tunnisteet automaattisesti tiedostopolkujen perusteella.",
       "auto_tagging": "Automaattinen tunnisteiden asetus",
       "backing_up_database": "Varmuuskopioidaan tietokantaa",
       "backup_and_download": "Suorittaa tietokannan varmuuskopioinnin ja lataa luodun tiedoston.",
@@ -396,6 +409,9 @@
       "incremental_import": "Lisäävä tuonti valitusta zip -tiedostosta.",
       "job_queue": "Tehtäväjono",
       "maintenance": "Ylläpito",
+      "migrate_blobs": {
+        "delete_old": "Poista vanhat tiedot"
+      },
       "migrate_hash_files": "Käytetään kun muutetaan generoitua tiedoston nimeämistiivistettä jo generoitujen tiedostojen uudelleennimeämiseen uuteen muotoon.",
       "migrations": "Migraatiot",
       "only_dry_run": "Suorita kuivaharjoittelu. Elä poista mitään",
@@ -424,12 +440,12 @@
     "ui": {
       "basic_settings": "Perusasetukset",
       "custom_css": {
-        "description": "Sivu täytyy ladata uudelleen, jotta muutokset tulevat voimaan.",
+        "description": "Sivu täytyy ladata uudelleen, jotta muutokset tulevat voimaan. Yhteensopivuutta muokatun CSS:n ja tulevien Stash -versioiden kanssa ei voida taata.",
         "heading": "Mukautettu CSS",
         "option_label": "Mukautettu CSS käytössä"
       },
       "custom_javascript": {
-        "description": "Sivu täytyy ladata uudelleen, jotta muutokset astuvat voimaan.",
+        "description": "Sivu täytyy ladata uudelleen, jotta muutokset astuvat voimaan. Yhteensopivuutta muokatun JavaScriptin ja tulevien Stash -versioiden kanssa ei voida taata.",
         "heading": "Mukautettu Javascript",
         "option_label": "Mukautettu Javascript käytössä"
       },
@@ -468,6 +484,7 @@
             }
           },
           "type": {
+            "label": "Arvostelujärjestelmä",
             "options": {
               "decimal": "Desimaalit",
               "stars": "Tähdet"
@@ -481,6 +498,10 @@
       "handy_connection": {
         "connect": "Yhdistä",
         "sync": "Synkronoi"
+      },
+      "image_wall": {
+        "direction": "Suunta",
+        "heading": "Kuvaseinä"
       },
       "images": {
         "heading": "Kuvat",
@@ -672,7 +693,7 @@
       "markers_tooltip": "20 sekunnin video jokaisen aikakoodin alusta.",
       "override_preview_generation_options": "Ohita Esikatselun generoinnin asetukset",
       "override_preview_generation_options_desc": "Ohita Esikatselun generoinnin asetukset tälle tehtävälle. Oletukset voi asettaa Järjestelmä -> Esikatselun generointi.",
-      "overwrite": "Ylikirjoita olemassaolevat generoidut tiedostot",
+      "overwrite": "Ylikirjoita olemassaolevat tiedostot",
       "phash": "Tiiviste (kaksoiskappaileiden tunnistamiseen)",
       "preview_exclude_end_time_desc": "Jätä viimeiset x sekuntia pois esikatseluista. Arvo voi olla sekunneissa tai prosenteissa (esim. 2%) kohtauksen kestosta.",
       "preview_exclude_end_time_head": "Lopusta poisjätettävä aika",
@@ -948,7 +969,7 @@
     },
     "paths": {
       "database_filename_empty_for_default": "tietokannan tiedostonimi (oletus jos tyhjä)",
-      "description": "Seuraavaksi meidän pitää tietää mistä etsiä pornokokoelmaasi ja mihin tallennetaan tietokanta ja generoidut tiedostot. Nämä asetukset ovat muutettavissa myöhemmin.",
+      "description": "Seuraavaksi meidän pitää tietää mistä etsiä pornokokoelmaasi ja mihin tallennetaan tietokanta, välimuisti ja generoidut tiedostot. Nämä asetukset ovat muutettavissa myöhemmin.",
       "path_to_generated_directory_empty_for_default": "polku generated -kansioon (käytetään oletussijaintia jos tyhjä)",
       "set_up_your_paths": "Aseta polut",
       "stash_alert": "Et ole valinnut yhtään polkua kirjastoon. Mediaa ei voida skannata Stashiin. Oletko aivan varma?",

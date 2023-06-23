@@ -20,10 +20,12 @@ var resolutionRanges = map[ResolutionEnum]ResolutionRange{
 	ResolutionEnum("FULL_HD"):     {1080, 1439},
 	ResolutionEnum("QUAD_HD"):     {1440, 1919},
 	ResolutionEnum("VR_HD"):       {1920, 2159},
-	ResolutionEnum("FOUR_K"):      {2160, 2879},
-	ResolutionEnum("FIVE_K"):      {2880, 3383},
-	ResolutionEnum("SIX_K"):       {3384, 4319},
-	ResolutionEnum("EIGHT_K"):     {4320, 8639},
+	ResolutionEnum("FOUR_K"):      {1920, 2559},
+	ResolutionEnum("FIVE_K"):      {2560, 2999},
+	ResolutionEnum("SIX_K"):       {3000, 3583},
+	ResolutionEnum("SEVEN_K"):     {3584, 3839},
+	ResolutionEnum("EIGHT_K"):     {3840, 6143},
+	ResolutionEnum("HUGE"):        {6144, 9999},
 }
 
 type ResolutionEnum string
@@ -45,7 +47,7 @@ const (
 	ResolutionEnumFullHd ResolutionEnum = "FULL_HD"
 	// 1440p
 	ResolutionEnumQuadHd ResolutionEnum = "QUAD_HD"
-	// 1920p
+	// 1920p - deprecated
 	ResolutionEnumVrHd ResolutionEnum = "VR_HD"
 	// 4k
 	ResolutionEnumFourK ResolutionEnum = "FOUR_K"
@@ -53,8 +55,12 @@ const (
 	ResolutionEnumFiveK ResolutionEnum = "FIVE_K"
 	// 6k
 	ResolutionEnumSixK ResolutionEnum = "SIX_K"
+	// 7k
+	ResolutionEnumSevenK ResolutionEnum = "SEVEN_K"
 	// 8k
 	ResolutionEnumEightK ResolutionEnum = "EIGHT_K"
+	// 8K+
+	ResolutionEnumHuge ResolutionEnum = "HUGE"
 )
 
 var AllResolutionEnum = []ResolutionEnum{
@@ -70,12 +76,14 @@ var AllResolutionEnum = []ResolutionEnum{
 	ResolutionEnumFourK,
 	ResolutionEnumFiveK,
 	ResolutionEnumSixK,
+	ResolutionEnumSevenK,
 	ResolutionEnumEightK,
+	ResolutionEnumHuge,
 }
 
 func (e ResolutionEnum) IsValid() bool {
 	switch e {
-	case ResolutionEnumVeryLow, ResolutionEnumLow, ResolutionEnumR360p, ResolutionEnumStandard, ResolutionEnumWebHd, ResolutionEnumStandardHd, ResolutionEnumFullHd, ResolutionEnumQuadHd, ResolutionEnumVrHd, ResolutionEnumFourK, ResolutionEnumFiveK, ResolutionEnumSixK, ResolutionEnumEightK:
+	case ResolutionEnumVeryLow, ResolutionEnumLow, ResolutionEnumR360p, ResolutionEnumStandard, ResolutionEnumWebHd, ResolutionEnumStandardHd, ResolutionEnumFullHd, ResolutionEnumQuadHd, ResolutionEnumVrHd, ResolutionEnumFourK, ResolutionEnumFiveK, ResolutionEnumSixK, ResolutionEnumSevenK, ResolutionEnumEightK, ResolutionEnumHuge:
 		return true
 	}
 	return false

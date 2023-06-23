@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sort"
 	"strconv"
 
@@ -228,6 +229,11 @@ func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([
 			if err != nil {
 				return err
 			}
+
+			if markerPrimaryTag == nil {
+				return fmt.Errorf("tag with id %d not found", sceneMarker.PrimaryTagID)
+			}
+
 			_, hasKey := tags[markerPrimaryTag.ID]
 			if !hasKey {
 				sceneMarkerTag := &SceneMarkerTag{Tag: markerPrimaryTag}

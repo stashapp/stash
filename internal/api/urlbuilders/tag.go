@@ -15,7 +15,7 @@ func NewTagURLBuilder(baseURL string, tag *models.Tag) TagURLBuilder {
 	return TagURLBuilder{
 		BaseURL:   baseURL,
 		TagID:     strconv.Itoa(tag.ID),
-		UpdatedAt: strconv.FormatInt(tag.UpdatedAt.Timestamp.Unix(), 10),
+		UpdatedAt: strconv.FormatInt(tag.UpdatedAt.Unix(), 10),
 	}
 }
 

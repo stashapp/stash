@@ -92,40 +92,59 @@ func (r *performerResolver) Tags(ctx context.Context, obj *models.Performer) (re
 	return ret, firstError(errs)
 }
 
-func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
-	var res int
+func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		res, err = r.repository.Scene.CountByPerformerID(ctx, obj.ID)
+		ret, err = r.repository.Scene.CountByPerformerID(ctx, obj.ID)
 		return err
 	}); err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	return &res, nil
+	return ret, nil
 }
 
-func (r *performerResolver) ImageCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
-	var res int
+func (r *performerResolver) ImageCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		res, err = image.CountByPerformerID(ctx, r.repository.Image, obj.ID)
+		ret, err = image.CountByPerformerID(ctx, r.repository.Image, obj.ID)
 		return err
 	}); err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	return &res, nil
+	return ret, nil
 }
 
-func (r *performerResolver) GalleryCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
-	var res int
+func (r *performerResolver) GalleryCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		res, err = gallery.CountByPerformerID(ctx, r.repository.Gallery, obj.ID)
+		ret, err = gallery.CountByPerformerID(ctx, r.repository.Gallery, obj.ID)
 		return err
 	}); err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	return &res, nil
+	return ret, nil
+}
+
+func (r *performerResolver) MovieCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Movie.CountByPerformerID(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (r *performerResolver) PerformerCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		ret, err = performer.CountByAppearsWith(ctx, r.repository.Performer, obj.ID)
+		return err
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
 }
 
 func (r *performerResolver) OCounter(ctx context.Context, obj *models.Performer) (ret *int, err error) {
@@ -196,28 +215,4 @@ func (r *performerResolver) Movies(ctx context.Context, obj *models.Performer) (
 	}
 
 	return ret, nil
-}
-
-func (r *performerResolver) MovieCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
-	var res int
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		res, err = r.repository.Movie.CountByPerformerID(ctx, obj.ID)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-func (r *performerResolver) PerformerCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
-	var res int
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		res, err = performer.CountByAppearsWith(ctx, r.repository.Performer, obj.ID)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
 }

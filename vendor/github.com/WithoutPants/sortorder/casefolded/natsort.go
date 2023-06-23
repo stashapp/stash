@@ -73,9 +73,7 @@ func NaturalLess(str1, str2 string) bool {
 
 		dig1, dig2 := isDigit(c1), isDigit(c2)
 		switch {
-		case dig1 != dig2: // Digits before other characters.
-			return dig1 // True if LHS is a digit, false if the RHS is one.
-		case !dig1: // && !dig2, because dig1 == dig2
+		case !dig1 || !dig2:
 			// For ASCII it suffices to normalize letters to upper-case,
 			// because upper-cased ASCII compares lexicographically.
 			// Note: this does not account for regional special cases
@@ -132,9 +130,7 @@ hasUnicode:
 
 		dig1, dig2 := isDigit(c1), isDigit(c2)
 		switch {
-		case dig1 != dig2: // Digits before other characters.
-			return dig1 // True if LHS is a digit, false if the RHS is one.
-		case !dig1: // && !dig2, because dig1 == dig2
+		case !dig1 || !dig2:
 			idx1 += delta1
 			idx2 += delta2
 			// Fast path: identical runes are equal.

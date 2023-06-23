@@ -5,7 +5,6 @@ package sqlite_test
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"math"
 	"path/filepath"
@@ -1442,7 +1441,7 @@ func Test_sceneQueryBuilder_Destroy(t *testing.T) {
 			// ensure cannot be found
 			i, err := qb.Find(ctx, tt.id)
 
-			assert.NotNil(err)
+			assert.Nil(err)
 			assert.Nil(i)
 		})
 	}
@@ -1478,7 +1477,7 @@ func Test_sceneQueryBuilder_Find(t *testing.T) {
 			"invalid",
 			invalidID,
 			nil,
-			true,
+			false,
 		},
 		{
 			"with galleries",
@@ -2117,6 +2116,8 @@ func TestSceneQuery(t *testing.T) {
 	var (
 		endpoint = sceneStashID(sceneIdxWithGallery).Endpoint
 		stashID  = sceneStashID(sceneIdxWithGallery).StashID
+
+		depth = -1
 	)
 
 	tests := []struct {
@@ -2217,6 +2218,20 @@ func TestSceneQuery(t *testing.T) {
 				},
 			},
 			[]int{sceneIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"with studio id 0 including child studios",
+			nil,
+			&models.SceneFilterType{
+				Studios: &models.HierarchicalMultiCriterionInput{
+					Value:    []string{"0"},
+					Modifier: models.CriterionModifierIncludes,
+					Depth:    &depth,
+				},
+			},
+			nil,
 			nil,
 			false,
 		},
@@ -2589,39 +2604,6 @@ func verifyScenesPath(t *testing.T, pathCriterion models.StringCriterionInput) {
 	})
 }
 
-func verifyNullString(t *testing.T, value sql.NullString, criterion models.StringCriterionInput) {
-	t.Helper()
-	assert := assert.New(t)
-	if criterion.Modifier == models.CriterionModifierIsNull {
-		if value.Valid && value.String == "" {
-			// correct
-			return
-		}
-		assert.False(value.Valid, "expect is null values to be null")
-	}
-	if criterion.Modifier == models.CriterionModifierNotNull {
-		assert.True(value.Valid, "expect is null values to be null")
-		assert.Greater(len(value.String), 0)
-	}
-	if criterion.Modifier == models.CriterionModifierEquals {
-		assert.Equal(criterion.Value, value.String)
-	}
-	if criterion.Modifier == models.CriterionModifierNotEquals {
-		assert.NotEqual(criterion.Value, value.String)
-	}
-	if criterion.Modifier == models.CriterionModifierMatchesRegex {
-		assert.True(value.Valid)
-		assert.Regexp(regexp.MustCompile(criterion.Value), value)
-	}
-	if criterion.Modifier == models.CriterionModifierNotMatchesRegex {
-		if !value.Valid {
-			// correct
-			return
-		}
-		assert.NotRegexp(regexp.MustCompile(criterion.Value), value)
-	}
-}
-
 func verifyStringPtr(t *testing.T, value *string, criterion models.StringCriterionInput) {
 	t.Helper()
 	assert := assert.New(t)
@@ -2759,29 +2741,6 @@ func verifyScenesRating100(t *testing.T, ratingCriterion models.IntCriterionInpu
 
 		return nil
 	})
-}
-
-func verifyInt64(t *testing.T, value sql.NullInt64, criterion models.IntCriterionInput) {
-	t.Helper()
-	assert := assert.New(t)
-	if criterion.Modifier == models.CriterionModifierIsNull {
-		assert.False(value.Valid, "expect is null values to be null")
-	}
-	if criterion.Modifier == models.CriterionModifierNotNull {
-		assert.True(value.Valid, "expect is null values to be null")
-	}
-	if criterion.Modifier == models.CriterionModifierEquals {
-		assert.Equal(int64(criterion.Value), value.Int64)
-	}
-	if criterion.Modifier == models.CriterionModifierNotEquals {
-		assert.NotEqual(int64(criterion.Value), value.Int64)
-	}
-	if criterion.Modifier == models.CriterionModifierGreaterThan {
-		assert.True(value.Int64 > int64(criterion.Value))
-	}
-	if criterion.Modifier == models.CriterionModifierLessThan {
-		assert.True(value.Int64 < int64(criterion.Value))
-	}
 }
 
 func verifyIntPtr(t *testing.T, value *int, criterion models.IntCriterionInput) {

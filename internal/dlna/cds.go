@@ -547,7 +547,7 @@ func (me *contentDirectoryService) getStudios() []interface{} {
 		}
 
 		for _, s := range studios {
-			objs = append(objs, makeStorageFolder("studios/"+strconv.Itoa(s.ID), s.Name.String, "studios"))
+			objs = append(objs, makeStorageFolder("studios/"+strconv.Itoa(s.ID), s.Name, "studios"))
 		}
 
 		return nil
@@ -664,7 +664,7 @@ func (me *contentDirectoryService) getMovies() []interface{} {
 		}
 
 		for _, s := range movies {
-			objs = append(objs, makeStorageFolder("movies/"+strconv.Itoa(s.ID), s.Name.String, "movies"))
+			objs = append(objs, makeStorageFolder("movies/"+strconv.Itoa(s.ID), s.Name, "movies"))
 		}
 
 		return nil

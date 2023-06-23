@@ -1168,44 +1168,6 @@ func TestPerformerUpdatePerformerImage(t *testing.T) {
 	}
 }
 
-func TestPerformerDestroyPerformerImage(t *testing.T) {
-	if err := withRollbackTxn(func(ctx context.Context) error {
-		qb := db.Performer
-
-		// create performer to test against
-		const name = "TestPerformerDestroyPerformerImage"
-		performer := models.Performer{
-			Name: name,
-		}
-		err := qb.Create(ctx, &performer)
-		if err != nil {
-			return fmt.Errorf("Error creating performer: %s", err.Error())
-		}
-
-		image := []byte("image")
-		err = qb.UpdateImage(ctx, performer.ID, image)
-		if err != nil {
-			return fmt.Errorf("Error updating performer image: %s", err.Error())
-		}
-
-		err = qb.DestroyImage(ctx, performer.ID)
-		if err != nil {
-			return fmt.Errorf("Error destroying performer image: %s", err.Error())
-		}
-
-		// image should be nil
-		storedImage, err := qb.GetImage(ctx, performer.ID)
-		if err != nil {
-			return fmt.Errorf("Error getting image: %s", err.Error())
-		}
-		assert.Nil(t, storedImage)
-
-		return nil
-	}); err != nil {
-		t.Error(err.Error())
-	}
-}
-
 func TestPerformerQueryAge(t *testing.T) {
 	const age = 19
 	ageCriterion := models.IntCriterionInput{
