@@ -15,6 +15,11 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+var (
+	ErrSkipSingleNamePerformer = errors.New("A performer was skipped because they only had a single name and no disambiguation")
+	ErrSkipMultipleMatches     = errors.New("Multiple results were found for this scene")
+)
+
 type SceneScraper interface {
 	ScrapeScenes(ctx context.Context, sceneID int) ([]*scraper.ScrapedScene, error)
 }
@@ -88,8 +93,6 @@ type scrapeResult struct {
 	source ScraperSource
 }
 
-var ErrSkipMultipleMatches = errors.New("Multiple results were found for this scene")
-
 func (t *SceneIdentifier) scrapeScene(ctx context.Context, txnManager txn.Manager, scene *models.Scene) (*scrapeResult, error) {
 	// iterate through the input sources
 	for _, source := range t.Sources {
@@ -146,8 +149,6 @@ func (t *SceneIdentifier) getOptions(source *ScraperSource) MetadataOptions {
 	}
 	return options
 }
-
-var ErrSkipSingleNamePerformer = errors.New("A performer was skipped because they only had a single name and no disambiguation")
 
 func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, result *scrapeResult) (*scene.UpdateSet, error) {
 	ret := &scene.UpdateSet{
