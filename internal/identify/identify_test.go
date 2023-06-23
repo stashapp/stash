@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"strconv"
 	"testing"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -17,20 +18,14 @@ var testCtx = context.Background()
 
 type mockSceneScraper struct {
 	errIDs  []int
-	results map[int]*scraper.ScrapedScene
+	results map[int][]*scraper.ScrapedScene
 }
 
 func (s mockSceneScraper) ScrapeScenes(ctx context.Context, sceneID int) ([]*scraper.ScrapedScene, error) {
 	if intslice.IntInclude(s.errIDs, sceneID) {
 		return nil, errors.New("scrape scene error")
 	}
-	output := []*scraper.ScrapedScene{}
-	output = append(output, s.results[sceneID])
-
-	if len(output) == 0 || (len(output) > 0 && output[0] == nil) {
-		return nil, nil
-	}
-	return output, nil
+	return s.results[sceneID], nil
 }
 
 type mockHookExecutor struct {
@@ -46,47 +41,74 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 		missingID
 		found1ID
 		found2ID
+		multiFoundID
+		multiFound2ID
 		errUpdateID
 	)
 
-	var scrapedTitle = "scrapedTitle"
-	var bool_false = false
+	var (
+		skipMultipleTagID    = 1
+		skipMultipleTagIDStr = strconv.Itoa(skipMultipleTagID)
+	)
+
+	var (
+		scrapedTitle  = "scrapedTitle"
+		scrapedTitle2 = "scrapedTitle2"
+
+		boolFalse = false
+		boolTrue  = true
+	)
 
 	defaultOptions := &MetadataOptions{
-		SetOrganized:             &bool_false,
-		SetCoverImage:            &bool_false,
-		IncludeMalePerformers:    &bool_false,
-		SkipSingleNamePerformers: &bool_false,
+		SetOrganized:             &boolFalse,
+		SetCoverImage:            &boolFalse,
+		IncludeMalePerformers:    &boolFalse,
+		SkipSingleNamePerformers: &boolFalse,
 	}
 	sources := []ScraperSource{
 		{
 			Scraper: mockSceneScraper{
 				errIDs: []int{errID1},
-				results: map[int]*scraper.ScrapedScene{
-					found1ID: {
+				results: map[int][]*scraper.ScrapedScene{
+					found1ID: {{
 						Title: &scrapedTitle,
-					},
+					}},
 				},
 			},
-			Options: defaultOptions,
 		},
 		{
 			Scraper: mockSceneScraper{
 				errIDs: []int{errID2},
-				results: map[int]*scraper.ScrapedScene{
-					found2ID: {
+				results: map[int][]*scraper.ScrapedScene{
+					found2ID: {{
 						Title: &scrapedTitle,
+					}},
+					errUpdateID: {{
+						Title: &scrapedTitle,
+					}},
+					multiFoundID: {
+						{
+							Title: &scrapedTitle,
+						},
+						{
+							Title: &scrapedTitle2,
+						},
 					},
-					errUpdateID: {
-						Title: &scrapedTitle,
+					multiFound2ID: {
+						{
+							Title: &scrapedTitle,
+						},
+						{
+							Title: &scrapedTitle2,
+						},
 					},
 				},
 			},
-			Options: defaultOptions,
 		},
 	}
 
 	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
+	mockTagFinderCreator := &mocks.TagReaderWriter{}
 
 	mockSceneReaderWriter.On("UpdatePartial", mock.Anything, mock.MatchedBy(func(id int) bool {
 		return id == errUpdateID
@@ -95,52 +117,84 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 		return id != errUpdateID
 	}), mock.Anything).Return(nil, nil)
 
+	mockTagFinderCreator.On("Find", mock.Anything, skipMultipleTagID).Return(&models.Tag{
+		ID:   skipMultipleTagID,
+		Name: skipMultipleTagIDStr,
+	}, nil)
+
 	tests := []struct {
 		name    string
 		sceneID int
+		options *MetadataOptions
 		wantErr bool
 	}{
 		{
 			"error scraping",
 			errID1,
+			nil,
 			false,
 		},
 		{
 			"error scraping from second",
 			errID2,
+			nil,
 			false,
 		},
 		{
 			"found in first scraper",
 			found1ID,
+			nil,
 			false,
 		},
 		{
 			"found in second scraper",
 			found2ID,
+			nil,
 			false,
 		},
 		{
 			"not found",
 			missingID,
+			nil,
 			false,
 		},
 		{
 			"error modifying",
 			errUpdateID,
+			nil,
 			true,
 		},
-	}
-
-	identifier := SceneIdentifier{
-		SceneReaderUpdater:          mockSceneReaderWriter,
-		DefaultOptions:              defaultOptions,
-		Sources:                     sources,
-		SceneUpdatePostHookExecutor: mockHookExecutor{},
+		{
+			"multiple found",
+			multiFoundID,
+			nil,
+			false,
+		},
+		{
+			"multiple found - set tag",
+			multiFound2ID,
+			&MetadataOptions{
+				SkipMultipleMatches:  &boolTrue,
+				SkipMultipleMatchTag: &skipMultipleTagIDStr,
+			},
+			false,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			identifier := SceneIdentifier{
+				SceneReaderUpdater:          mockSceneReaderWriter,
+				TagCreatorFinder:            mockTagFinderCreator,
+				DefaultOptions:              defaultOptions,
+				Sources:                     sources,
+				SceneUpdatePostHookExecutor: mockHookExecutor{},
+			}
+
+			if tt.options != nil {
+				identifier.DefaultOptions = tt.options
+			}
+
 			scene := &models.Scene{
 				ID:           tt.sceneID,
 				PerformerIDs: models.NewRelatedIDs([]int{}),
@@ -158,12 +212,12 @@ func TestSceneIdentifier_modifyScene(t *testing.T) {
 	repo := models.Repository{
 		TxnManager: &mocks.TxnManager{},
 	}
-	bool_false := false
+	boolFalse := false
 	defaultOptions := &MetadataOptions{
-		SetOrganized:             &bool_false,
-		SetCoverImage:            &bool_false,
-		IncludeMalePerformers:    &bool_false,
-		SkipSingleNamePerformers: &bool_false,
+		SetOrganized:             &boolFalse,
+		SetCoverImage:            &boolFalse,
+		IncludeMalePerformers:    &boolFalse,
+		SkipSingleNamePerformers: &boolFalse,
 	}
 	tr := &SceneIdentifier{
 		DefaultOptions: defaultOptions,

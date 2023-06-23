@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	ErrSkipSingleNamePerformer = errors.New("A performer was skipped because they only had a single name and no disambiguation")
+	ErrSkipSingleNamePerformer = errors.New("a performer was skipped because they only had a single name and no disambiguation")
 )
 
 type MultipleMatchesFoundError struct {
@@ -107,7 +107,7 @@ func (t *SceneIdentifier) scrapeScene(ctx context.Context, txnManager txn.Manage
 
 		if len(results) > 0 {
 			options := t.getOptions(source)
-			if len(results) > 1 && options.SkipMultipleMatches != nil && *options.SkipMultipleMatches {
+			if len(results) > 1 && utils.IsTrue(options.SkipMultipleMatches) {
 				return nil, &MultipleMatchesFoundError{
 					Source: source,
 				}
