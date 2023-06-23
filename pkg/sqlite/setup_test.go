@@ -1569,7 +1569,7 @@ func getStudioNullStringValue(index int, field string) string {
 	return ret.String
 }
 
-func createStudio(ctx context.Context, sqb models.StudioReaderWriter, name string, parentID *int) (*int, error) {
+func createStudio(ctx context.Context, sqb *sqlite.StudioStore, name string, parentID *int) (*models.Studio, error) {
 	studio := models.Studio{
 		Name:     name,
 		Checksum: md5.FromString(name),
@@ -1579,20 +1579,22 @@ func createStudio(ctx context.Context, sqb models.StudioReaderWriter, name strin
 		studio.ParentID = parentID
 	}
 
-	return createStudioFromModel(ctx, sqb, studio)
+	err := createStudioFromModel(ctx, sqb, &studio)
+	if err != nil {
+		return nil, err
+	}
+
+	return &studio, nil
 }
 
-func createStudioFromModel(ctx context.Context, sqb models.StudioReaderWriter, studio models.Studio) (*int, error) {
-	input := models.StudioDBInput{
-		StudioCreate: &studio,
-	}
-	created, err := sqb.Create(ctx, input)
+func createStudioFromModel(ctx context.Context, sqb *sqlite.StudioStore, studio *models.Studio) error {
+	err := sqb.Create(ctx, studio)
 
 	if err != nil {
-		return nil, fmt.Errorf("Error creating studio %v+: %s", studio, err.Error())
+		return fmt.Errorf("Error creating studio %v+: %s", studio, err.Error())
 	}
 
-	return created, nil
+	return nil
 }
 
 // createStudios creates n studios with plain Name and o studios with camel cased NaMe included
@@ -1622,14 +1624,14 @@ func createStudios(ctx context.Context, n int, o int) error {
 			alias := getStudioStringValue(i, "Alias")
 			studio.Aliases = models.NewRelatedStrings([]string{alias})
 		}
-		id, err := createStudioFromModel(ctx, sqb, studio)
+		err := createStudioFromModel(ctx, sqb, &studio)
 
 		if err != nil {
 			return err
 		}
 
-		studioIDs = append(studioIDs, *id)
-		studioNames = append(studioNames, name)
+		studioIDs = append(studioIDs, studio.ID)
+		studioNames = append(studioNames, studio.Name)
 	}
 
 	return nil
@@ -1751,13 +1753,11 @@ func linkMovieStudios(ctx context.Context, mqb models.MovieWriter) error {
 func linkStudiosParent(ctx context.Context) error {
 	qb := db.Studio
 	return doLinks(studioParentLinks, func(parentIndex, childIndex int) error {
-		input := models.StudioDBInput{
-			StudioUpdate: &models.StudioPartial{
-				ID:       studioIDs[childIndex],
-				ParentID: models.NewOptionalInt(studioIDs[parentIndex]),
-			},
+		input := &models.StudioPartial{
+			ID:       studioIDs[childIndex],
+			ParentID: models.NewOptionalInt(studioIDs[parentIndex]),
 		}
-		_, err := qb.UpdatePartial(ctx, input)
+		_, err := qb.UpdatePartial(ctx, *input)
 
 		return err
 	})

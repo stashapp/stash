@@ -9,7 +9,7 @@ import (
 
 type NameFinderCreator interface {
 	FindByName(ctx context.Context, name string, nocase bool) (*models.Studio, error)
-	Create(ctx context.Context, input models.StudioDBInput) (*int, error)
+	Create(ctx context.Context, newStudio *models.Studio) error
 }
 
 type NameExistsError struct {

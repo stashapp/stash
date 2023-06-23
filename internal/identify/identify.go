@@ -29,7 +29,7 @@ type ScraperSource struct {
 
 type SceneIdentifier struct {
 	SceneReaderUpdater SceneReaderUpdater
-	StudioCreator      StudioCreator
+	StudioReaderWriter models.StudioReaderWriter
 	PerformerCreator   PerformerCreator
 	TagCreator         TagCreator
 
@@ -110,13 +110,13 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	scraped := result.result
 
 	rel := sceneRelationships{
-		sceneReader:      t.SceneReaderUpdater,
-		studioCreator:    t.StudioCreator,
-		performerCreator: t.PerformerCreator,
-		tagCreator:       t.TagCreator,
-		scene:            s,
-		result:           result,
-		fieldOptions:     fieldOptions,
+		sceneReader:        t.SceneReaderUpdater,
+		studioReaderWriter: t.StudioReaderWriter,
+		performerCreator:   t.PerformerCreator,
+		tagCreator:         t.TagCreator,
+		scene:              s,
+		result:             result,
+		fieldOptions:       fieldOptions,
 	}
 
 	ret.Partial = getScenePartial(s, scraped, fieldOptions, setOrganized)

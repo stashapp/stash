@@ -96,16 +96,19 @@ func createPerformer(ctx context.Context, pqb models.PerformerWriter) error {
 	return nil
 }
 
-func createStudio(ctx context.Context, qb models.StudioWriter, name string) (*int, error) {
+func createStudio(ctx context.Context, qb models.StudioWriter, name string) (*models.Studio, error) {
 	// create the studio
-	studioDBInput := models.StudioDBInput{
-		StudioCreate: &models.Studio{
-			Checksum: name,
-			Name:     name,
-		},
+	studio := models.Studio{
+		Checksum: name,
+		Name:     name,
 	}
 
-	return qb.Create(ctx, studioDBInput)
+	err := qb.Create(ctx, &studio)
+	if err != nil {
+		return nil, err
+	}
+
+	return &studio, nil
 }
 
 func createTag(ctx context.Context, qb models.TagWriter) error {
@@ -496,11 +499,11 @@ func populateDB() error {
 		}
 
 		// create existing studio
-		createdID, err := createStudio(ctx, r.Studio, existingStudioName)
+		existingStudio, err := createStudio(ctx, r.Studio, existingStudioName)
 		if err != nil {
 			return err
 		}
-		existingStudioID = *createdID
+		existingStudioID = existingStudio.ID
 
 		err = createTag(ctx, r.Tag)
 		if err != nil {

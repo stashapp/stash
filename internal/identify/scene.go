@@ -29,13 +29,13 @@ type TagCreator interface {
 }
 
 type sceneRelationships struct {
-	sceneReader      SceneReaderUpdater
-	studioCreator    StudioCreator
-	performerCreator PerformerCreator
-	tagCreator       TagCreator
-	scene            *models.Scene
-	result           *scrapeResult
-	fieldOptions     map[string]*FieldOptions
+	sceneReader        SceneReaderUpdater
+	studioReaderWriter models.StudioReaderWriter
+	performerCreator   PerformerCreator
+	tagCreator         TagCreator
+	scene              *models.Scene
+	result             *scrapeResult
+	fieldOptions       map[string]*FieldOptions
 }
 
 func (g sceneRelationships) studio(ctx context.Context) (*int, error) {
@@ -62,7 +62,7 @@ func (g sceneRelationships) studio(ctx context.Context) (*int, error) {
 			return &studioID, nil
 		}
 	} else if createMissing {
-		return createMissingStudio(ctx, endpoint, g.studioCreator, scraped)
+		return createMissingStudio(ctx, endpoint, g.studioReaderWriter, scraped)
 	}
 
 	return nil, nil

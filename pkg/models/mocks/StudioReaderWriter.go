@@ -59,26 +59,17 @@ func (_m *StudioReaderWriter) Count(ctx context.Context) (int, error) {
 }
 
 // Create provides a mock function with given fields: ctx, input
-func (_m *StudioReaderWriter) Create(ctx context.Context, input models.StudioDBInput) (*int, error) {
+func (_m *StudioReaderWriter) Create(ctx context.Context, input *models.Studio) error {
 	ret := _m.Called(ctx, input)
 
-	var r0 *int
-	if rf, ok := ret.Get(0).(func(context.Context, models.StudioDBInput) *int); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *models.Studio) error); ok {
 		r0 = rf(ctx, input)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*int)
-		}
+		r0 = ret.Error(0)
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, models.StudioDBInput) error); ok {
-		r1 = rf(ctx, input)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // Destroy provides a mock function with given fields: ctx, id
@@ -405,11 +396,11 @@ func (_m *StudioReaderWriter) UpdateImage(ctx context.Context, studioID int, ima
 }
 
 // UpdatePartial provides a mock function with given fields: ctx, input
-func (_m *StudioReaderWriter) UpdatePartial(ctx context.Context, input models.StudioDBInput) (*models.Studio, error) {
+func (_m *StudioReaderWriter) UpdatePartial(ctx context.Context, input models.StudioPartial) (*models.Studio, error) {
 	ret := _m.Called(ctx, input)
 
 	var r0 *models.Studio
-	if rf, ok := ret.Get(0).(func(context.Context, models.StudioDBInput) *models.Studio); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, models.StudioPartial) *models.Studio); ok {
 		r0 = rf(ctx, input)
 	} else {
 		if ret.Get(0) != nil {
@@ -418,7 +409,7 @@ func (_m *StudioReaderWriter) UpdatePartial(ctx context.Context, input models.St
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, models.StudioDBInput) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, models.StudioPartial) error); ok {
 		r1 = rf(ctx, input)
 	} else {
 		r1 = ret.Error(1)

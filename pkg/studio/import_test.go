@@ -112,7 +112,10 @@ func TestImporterPreImportWithMissingParent(t *testing.T) {
 	}
 
 	readerWriter.On("FindByName", ctx, missingParentStudioName, false).Return(nil, nil).Times(3)
-	readerWriter.On("Create", ctx, mock.AnythingOfType("models.StudioDBInput")).Return(&existingStudioID, nil)
+	readerWriter.On("Create", ctx, mock.AnythingOfType("*models.Studio")).Run(func(args mock.Arguments) {
+		s := args.Get(1).(*models.Studio)
+		s.ID = existingStudioID
+	}).Return(nil)
 
 	err := i.PreImport(ctx)
 	assert.NotNil(t, err)
@@ -144,7 +147,7 @@ func TestImporterPreImportWithMissingParentCreateErr(t *testing.T) {
 	}
 
 	readerWriter.On("FindByName", ctx, missingParentStudioName, false).Return(nil, nil).Once()
-	readerWriter.On("Create", ctx, mock.AnythingOfType("models.StudioDBInput")).Return(nil, errors.New("Create error"))
+	readerWriter.On("Create", ctx, mock.AnythingOfType("*models.Studio")).Return(errors.New("Create error"))
 
 	err := i.PreImport(ctx)
 	assert.NotNil(t, err)
@@ -219,16 +222,8 @@ func TestCreate(t *testing.T) {
 		Name: studioName,
 	}
 
-	input := models.StudioDBInput{
-		StudioCreate: &studio,
-	}
-
 	studioErr := models.Studio{
 		Name: studioNameErr,
-	}
-
-	inputErr := models.StudioDBInput{
-		StudioCreate: &studioErr,
 	}
 
 	i := Importer{
@@ -237,8 +232,11 @@ func TestCreate(t *testing.T) {
 	}
 
 	errCreate := errors.New("Create error")
-	readerWriter.On("Create", ctx, input).Return(&studioID, nil).Once()
-	readerWriter.On("Create", ctx, inputErr).Return(nil, errCreate).Once()
+	readerWriter.On("Create", ctx, &studio).Run(func(args mock.Arguments) {
+		s := args.Get(1).(*models.Studio)
+		s.ID = studioID
+	}).Return(nil).Once()
+	readerWriter.On("Create", ctx, &studioErr).Return(errCreate).Once()
 
 	id, err := i.Create(ctx)
 	assert.Equal(t, studioID, *id)

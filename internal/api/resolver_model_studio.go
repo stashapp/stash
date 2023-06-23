@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 
+	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
@@ -99,14 +100,7 @@ func (r *studioResolver) ParentStudio(ctx context.Context, obj *models.Studio) (
 		return nil, nil
 	}
 
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Studio.Find(ctx, *obj.ParentID)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
-	return ret, nil
+	return loaders.From(ctx).StudioByID.Load(*obj.ParentID)
 }
 
 func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) (ret []*models.Studio, err error) {

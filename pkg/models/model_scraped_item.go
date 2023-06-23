@@ -1,8 +1,12 @@
 package models
 
 import (
+	"context"
 	"database/sql"
+	"strconv"
 	"time"
+
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type ScrapedStudio struct {
@@ -17,6 +21,87 @@ type ScrapedStudio struct {
 }
 
 func (ScrapedStudio) IsScrapedContent() {}
+
+func (s *ScrapedStudio) ToStudio(ctx context.Context, endpoint string, excluded map[string]bool) (*Studio, error) {
+	// Populate a new studio from the input
+	newStudio := Studio{
+		Name: s.Name,
+		StashIDs: NewRelatedStashIDs([]StashID{
+			{
+				Endpoint: endpoint,
+				StashID:  *s.RemoteSiteID,
+			},
+		}),
+	}
+
+	if s.URL != nil && !excluded["url"] {
+		newStudio.URL = *s.URL
+	}
+
+	if s.Parent != nil && s.Parent.StoredID != nil && !excluded["parent"] {
+		parentId, _ := strconv.Atoi(*s.Parent.StoredID)
+		newStudio.ParentID = &parentId
+	}
+
+	// Process the base 64 encoded image string
+	if s.Image != nil && !excluded["image"] {
+		var err error
+		newStudio.ImageBytes, err = utils.ProcessImageInput(ctx, *s.Image)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &newStudio, nil
+}
+
+func (s *ScrapedStudio) ToPartial(ctx context.Context, id *string, endpoint string, excluded map[string]bool, existingStashIDs []StashID) (*StudioPartial, error) {
+	partial := StudioPartial{}
+	partial.ID, _ = strconv.Atoi(*id)
+
+	if s.Name != "" && !excluded["name"] {
+		partial.Name = NewOptionalString(s.Name)
+
+	}
+
+	if s.URL != nil && !excluded["url"] {
+		partial.URL = NewOptionalString(*s.URL)
+	}
+
+	if s.Parent != nil && !excluded["parent"] {
+		if s.Parent.StoredID != nil {
+			parentID, _ := strconv.Atoi(*s.Parent.StoredID)
+			if parentID > 0 {
+				// This is to be set directly as we know it has a value and the translator won't have the field
+				partial.ParentID = NewOptionalInt(parentID)
+			}
+		}
+	} else {
+		partial.ParentID = NewOptionalIntPtr(nil)
+	}
+
+	// Process the base 64 encoded image string
+	if len(s.Images) > 0 && !excluded["image"] {
+		partial.ImageIncluded = true
+		var err error
+		partial.ImageBytes, err = utils.ProcessImageInput(ctx, s.Images[0])
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	partial.StashIDs = &UpdateStashIDs{
+		StashIDs: existingStashIDs,
+		Mode:     RelationshipUpdateModeSet,
+	}
+
+	partial.StashIDs.Set(StashID{
+		Endpoint: endpoint,
+		StashID:  *s.RemoteSiteID,
+	})
+
+	return &partial, nil
+}
 
 // A performer from a scraping operation...
 type ScrapedPerformer struct {

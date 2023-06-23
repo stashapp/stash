@@ -133,125 +133,87 @@ func (qb *StudioStore) selectDataset() *goqu.SelectDataset {
 	return dialect.From(qb.table()).Select(qb.table().All())
 }
 
-func (qb *StudioStore) Create(ctx context.Context, input models.StudioDBInput) (*int, error) {
+func (qb *StudioStore) Create(ctx context.Context, newObject *models.Studio) error {
 	var err error
-	var parentID *int
-	parentID, err = qb.handleParentStudio(ctx, input)
-	if err != nil {
-		return nil, err
-	}
-	if parentID != nil {
-		input.StudioCreate.ParentID = parentID
-	}
 
-	// Create the main studio
 	var r studioRow
-	r.fromStudio(*input.StudioCreate)
+	r.fromStudio(*newObject)
 
 	id, err := qb.tableMgr.insertID(ctx, r)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Update image table
-	if len(input.StudioCreate.ImageBytes) > 0 {
-		if err := qb.UpdateImage(ctx, id, input.StudioCreate.ImageBytes); err != nil {
-			return nil, err
+	if len(newObject.ImageBytes) > 0 {
+		if err := qb.UpdateImage(ctx, id, newObject.ImageBytes); err != nil {
+			return err
 		}
 	}
 
-	if input.StudioCreate.Aliases.Loaded() {
-		if err := studio.EnsureAliasesUnique(ctx, id, input.StudioCreate.Aliases.List(), qb); err != nil {
-			return nil, err
+	if newObject.Aliases.Loaded() {
+		if err := studio.EnsureAliasesUnique(ctx, id, newObject.Aliases.List(), qb); err != nil {
+			return err
 		}
 
-		if err := studiosAliasesTableMgr.insertJoins(ctx, id, input.StudioCreate.Aliases.List()); err != nil {
-			return nil, err
-		}
-	}
-
-	if input.StudioCreate.StashIDs.Loaded() {
-		if err := studiosStashIDsTableMgr.insertJoins(ctx, id, input.StudioCreate.StashIDs.List()); err != nil {
-			return nil, err
+		if err := studiosAliasesTableMgr.insertJoins(ctx, id, newObject.Aliases.List()); err != nil {
+			return err
 		}
 	}
 
-	return &id, nil
+	if newObject.StashIDs.Loaded() {
+		if err := studiosStashIDsTableMgr.insertJoins(ctx, id, newObject.StashIDs.List()); err != nil {
+			return err
+		}
+	}
+
+	updated, err := qb.find(ctx, id)
+	*newObject = *updated
+	return nil
 }
 
-func (qb *StudioStore) UpdatePartial(ctx context.Context, input models.StudioDBInput) (*models.Studio, error) {
-	var err error
-	var parentID *int
-	parentID, err = qb.handleParentStudio(ctx, input)
-	if err != nil {
-		return nil, err
-	} else if parentID != nil {
-		input.StudioUpdate.ParentID = models.NewOptionalIntPtr(parentID)
-	}
-
+func (qb *StudioStore) UpdatePartial(ctx context.Context, input models.StudioPartial) (*models.Studio, error) {
 	r := studioRowRecord{
 		updateRecord{
 			Record: make(exp.Record),
 		},
 	}
 
-	r.fromPartial(*input.StudioUpdate)
+	r.fromPartial(input)
 
 	if len(r.Record) > 0 {
-		if err := qb.tableMgr.updateByID(ctx, input.StudioUpdate.ID, r.Record); err != nil {
+		if err := qb.tableMgr.updateByID(ctx, input.ID, r.Record); err != nil {
 			return nil, err
 		}
 	}
 
 	// Update image table
-	if input.StudioUpdate.ImageIncluded {
-		if err := qb.UpdateImage(ctx, input.StudioUpdate.ID, input.StudioUpdate.ImageBytes); err != nil {
+	if input.ImageIncluded {
+		if err := qb.UpdateImage(ctx, input.ID, input.ImageBytes); err != nil {
 			return nil, err
 		}
 	}
 
-	if input.StudioUpdate.Aliases != nil {
-		if err := studio.EnsureAliasesUnique(ctx, input.StudioUpdate.ID, input.StudioUpdate.Aliases.Values, qb); err != nil {
+	if input.Aliases != nil {
+		if err := studio.EnsureAliasesUnique(ctx, input.ID, input.Aliases.Values, qb); err != nil {
 			return nil, err
 		}
 
-		if err := studiosAliasesTableMgr.modifyJoins(ctx, input.StudioUpdate.ID, input.StudioUpdate.Aliases.Values, input.StudioUpdate.Aliases.Mode); err != nil {
-			return nil, err
-		}
-	}
-
-	if input.StudioUpdate.StashIDs != nil {
-		if err := studiosStashIDsTableMgr.modifyJoins(ctx, input.StudioUpdate.ID, input.StudioUpdate.StashIDs.StashIDs, input.StudioUpdate.StashIDs.Mode); err != nil {
+		if err := studiosAliasesTableMgr.modifyJoins(ctx, input.ID, input.Aliases.Values, input.Aliases.Mode); err != nil {
 			return nil, err
 		}
 	}
 
-	return qb.Find(ctx, input.StudioUpdate.ID)
+	if input.StashIDs != nil {
+		if err := studiosStashIDsTableMgr.modifyJoins(ctx, input.ID, input.StashIDs.StashIDs, input.StashIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
+
+	return qb.Find(ctx, input.ID)
 }
 
-// Returns a studio ID if a new one was created
-func (qb *StudioStore) handleParentStudio(ctx context.Context, input models.StudioDBInput) (*int, error) {
-	var err error
-	var id *int
-	var parentDBInput models.StudioDBInput
-
-	if input.ParentCreate != nil {
-		parentDBInput.StudioCreate = input.ParentCreate
-		id, err = qb.Create(ctx, parentDBInput)
-		if err != nil {
-			return nil, err
-		}
-	} else if input.ParentUpdate != nil {
-		parentDBInput.StudioUpdate = input.ParentUpdate
-		_, err := qb.UpdatePartial(ctx, parentDBInput)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return id, nil
-}
-
-// This is only used by the Import/Export functionality, which already handles parent/child studios
+// This is only used by the Import/Export functionality
 func (qb *StudioStore) Update(ctx context.Context, updatedObject *models.Studio) error {
 	var r studioRow
 	r.fromStudio(*updatedObject)

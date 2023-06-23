@@ -62,8 +62,8 @@ type StudioReader interface {
 }
 
 type StudioWriter interface {
-	Create(ctx context.Context, input StudioDBInput) (*int, error)
-	UpdatePartial(ctx context.Context, input StudioDBInput) (*Studio, error)
+	Create(ctx context.Context, newStudio *Studio) error
+	UpdatePartial(ctx context.Context, input StudioPartial) (*Studio, error)
 	Update(ctx context.Context, updatedStudio *Studio) error
 	Destroy(ctx context.Context, id int) error
 	UpdateImage(ctx context.Context, studioID int, image []byte) error

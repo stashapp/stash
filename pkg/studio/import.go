@@ -79,15 +79,16 @@ func (i *Importer) populateParentStudio(ctx context.Context) error {
 }
 
 func (i *Importer) createParentStudio(ctx context.Context, name string) (int, error) {
-	var dbInput models.StudioDBInput
-	dbInput.StudioCreate = &models.Studio{Name: name}
+	newStudio := &models.Studio{
+		Name: name,
+	}
 
-	stuiodID, err := i.ReaderWriter.Create(ctx, dbInput)
+	err := i.ReaderWriter.Create(ctx, newStudio)
 	if err != nil {
 		return 0, err
 	}
 
-	return *stuiodID, nil
+	return newStudio.ID, nil
 }
 
 func (i *Importer) PostImport(ctx context.Context, id int) error {
@@ -120,15 +121,13 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	var dbInput models.StudioDBInput
-	dbInput.StudioCreate = &i.studio
-
-	studioID, err := i.ReaderWriter.Create(ctx, dbInput)
+	err := i.ReaderWriter.Create(ctx, &i.studio)
 	if err != nil {
 		return nil, fmt.Errorf("error creating studio: %v", err)
 	}
 
-	return studioID, nil
+	id := i.studio.ID
+	return &id, nil
 }
 
 func (i *Importer) Update(ctx context.Context, id int) error {

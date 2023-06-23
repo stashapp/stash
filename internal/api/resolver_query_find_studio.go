@@ -8,10 +8,6 @@ import (
 )
 
 func (r *queryResolver) FindStudio(ctx context.Context, id string) (ret *models.Studio, err error) {
-	if id == "" {
-		return nil, nil
-	}
-
 	idInt, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, err

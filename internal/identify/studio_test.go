@@ -20,39 +20,38 @@ func Test_createMissingStudio(t *testing.T) {
 	createdID := 1
 
 	mockStudioReaderWriter := &mocks.StudioReaderWriter{}
-	mockStudioReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p models.StudioDBInput) bool {
-		return p.StudioCreate.Name == validName
-	})).Return(&createdID, nil)
-	mockStudioReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p models.StudioDBInput) bool {
-		return p.StudioCreate.Name == invalidName
-	})).Return(nil, errors.New("error creating studio"))
+	mockStudioReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p *models.Studio) bool {
+		return p.Name == validName
+	})).Run(func(args mock.Arguments) {
+		s := args.Get(1).(*models.Studio)
+		s.ID = createdID
+	}).Return(nil)
+	mockStudioReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p *models.Studio) bool {
+		return p.Name == invalidName
+	})).Return(errors.New("error creating studio"))
 
-	mockStudioReaderWriter.On("UpdatePartial", testCtx, models.StudioDBInput{
-		StudioUpdate: &models.StudioPartial{
-			ID: createdID,
-			StashIDs: &models.UpdateStashIDs{
-				StashIDs: []models.StashID{
-					{
-						Endpoint: invalidEndpoint,
-						StashID:  remoteSiteID,
-					},
+	mockStudioReaderWriter.On("UpdatePartial", testCtx, models.StudioPartial{
+		ID: createdID,
+		StashIDs: &models.UpdateStashIDs{
+			StashIDs: []models.StashID{
+				{
+					Endpoint: invalidEndpoint,
+					StashID:  remoteSiteID,
 				},
-				Mode: models.RelationshipUpdateModeSet,
 			},
+			Mode: models.RelationshipUpdateModeSet,
 		},
 	}).Return(nil, errors.New("error updating stash ids"))
-	mockStudioReaderWriter.On("UpdatePartial", testCtx, models.StudioDBInput{
-		StudioUpdate: &models.StudioPartial{
-			ID: createdID,
-			StashIDs: &models.UpdateStashIDs{
-				StashIDs: []models.StashID{
-					{
-						Endpoint: validEndpoint,
-						StashID:  remoteSiteID,
-					},
+	mockStudioReaderWriter.On("UpdatePartial", testCtx, models.StudioPartial{
+		ID: createdID,
+		StashIDs: &models.UpdateStashIDs{
+			StashIDs: []models.StashID{
+				{
+					Endpoint: validEndpoint,
+					StashID:  remoteSiteID,
 				},
-				Mode: models.RelationshipUpdateModeSet,
 			},
+			Mode: models.RelationshipUpdateModeSet,
 		},
 	}).Return(models.Studio{
 		ID: createdID,
@@ -164,7 +163,7 @@ func Test_scrapedToStudioInput(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := studioFromScrapedStudio(testCtx, tt.studio, "")
+			got, _ := tt.studio.ToStudio(testCtx, "", nil)
 
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("%s, scrapedToStudioInput() = %v, want %v", tt.name, got, tt.want)

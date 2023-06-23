@@ -286,13 +286,13 @@ func TestStudioDestroyParent(t *testing.T) {
 
 	// create parent and child studios
 	if err := withTxn(func(ctx context.Context) error {
-		createdParentID, err := createStudio(ctx, db.Studio, parentName, nil)
+		createdParent, err := createStudio(ctx, db.Studio, parentName, nil)
 		if err != nil {
 			return fmt.Errorf("Error creating parent studio: %s", err.Error())
 		}
 
-		parentID := createdParentID
-		createdChildID, err := createStudio(ctx, db.Studio, childName, parentID)
+		parentID := createdParent.ID
+		createdChild, err := createStudio(ctx, db.Studio, childName, &parentID)
 		if err != nil {
 			return fmt.Errorf("Error creating child studio: %s", err.Error())
 		}
@@ -300,13 +300,13 @@ func TestStudioDestroyParent(t *testing.T) {
 		sqb := db.Studio
 
 		// destroy the parent
-		err = sqb.Destroy(ctx, *createdParentID)
+		err = sqb.Destroy(ctx, createdParent.ID)
 		if err != nil {
 			return fmt.Errorf("Error destroying parent studio: %s", err.Error())
 		}
 
 		// destroy the child
-		err = sqb.Destroy(ctx, *createdChildID)
+		err = sqb.Destroy(ctx, createdChild.ID)
 		if err != nil {
 			return fmt.Errorf("Error destroying child studio: %s", err.Error())
 		}
@@ -348,13 +348,13 @@ func TestStudioUpdateClearParent(t *testing.T) {
 
 	// create parent and child studios
 	if err := withTxn(func(ctx context.Context) error {
-		createdParentID, err := createStudio(ctx, db.Studio, parentName, nil)
+		createdParent, err := createStudio(ctx, db.Studio, parentName, nil)
 		if err != nil {
 			return fmt.Errorf("Error creating parent studio: %s", err.Error())
 		}
 
-		parentID := createdParentID
-		createdChildID, err := createStudio(ctx, db.Studio, childName, parentID)
+		parentID := createdParent.ID
+		createdChild, err := createStudio(ctx, db.Studio, childName, &parentID)
 		if err != nil {
 			return fmt.Errorf("Error creating child studio: %s", err.Error())
 		}
@@ -362,11 +362,9 @@ func TestStudioUpdateClearParent(t *testing.T) {
 		sqb := db.Studio
 
 		// clear the parent id from the child
-		input := models.StudioDBInput{
-			StudioUpdate: &models.StudioPartial{
-				ID:       *createdChildID,
-				ParentID: models.NewOptionalIntPtr(nil),
-			},
+		input := models.StudioPartial{
+			ID:       createdChild.ID,
+			ParentID: models.NewOptionalIntPtr(nil),
 		}
 
 		updatedStudio, err := sqb.UpdatePartial(ctx, input)
@@ -391,12 +389,12 @@ func TestStudioUpdateStudioImage(t *testing.T) {
 
 		// create studio to test against
 		const name = "TestStudioUpdateStudioImage"
-		createdID, err := createStudio(ctx, db.Studio, name, nil)
+		created, err := createStudio(ctx, db.Studio, name, nil)
 		if err != nil {
 			return fmt.Errorf("Error creating studio: %s", err.Error())
 		}
 
-		return testUpdateImage(t, ctx, *createdID, qb.UpdateImage, qb.GetImage)
+		return testUpdateImage(t, ctx, created.ID, qb.UpdateImage, qb.GetImage)
 	}); err != nil {
 		t.Error(err.Error())
 	}
@@ -555,12 +553,12 @@ func TestStudioStashIDs(t *testing.T) {
 
 		// create studio to test against
 		const name = "TestStudioStashIDs"
-		createdID, err := createStudio(ctx, db.Studio, name, nil)
+		created, err := createStudio(ctx, db.Studio, name, nil)
 		if err != nil {
 			return fmt.Errorf("Error creating studio: %s", err.Error())
 		}
 
-		studio, err := qb.Find(ctx, *createdID)
+		studio, err := qb.Find(ctx, created.ID)
 		if err != nil {
 			return fmt.Errorf("Error getting studio: %s", err.Error())
 		}
@@ -596,13 +594,11 @@ func testStudioStashIDs(ctx context.Context, t *testing.T, s *models.Studio) {
 	}
 
 	// update stash ids and ensure was updated
-	input := models.StudioDBInput{
-		StudioUpdate: &models.StudioPartial{
-			ID: s.ID,
-			StashIDs: &models.UpdateStashIDs{
-				StashIDs: []models.StashID{stashID},
-				Mode:     models.RelationshipUpdateModeSet,
-			},
+	input := models.StudioPartial{
+		ID: s.ID,
+		StashIDs: &models.UpdateStashIDs{
+			StashIDs: []models.StashID{stashID},
+			Mode:     models.RelationshipUpdateModeSet,
 		},
 	}
 	var err error
@@ -619,13 +615,11 @@ func testStudioStashIDs(ctx context.Context, t *testing.T, s *models.Studio) {
 	assert.Equal(t, []models.StashID{stashID}, s.StashIDs.List())
 
 	// remove stash ids and ensure was updated
-	input = models.StudioDBInput{
-		StudioUpdate: &models.StudioPartial{
-			ID: s.ID,
-			StashIDs: &models.UpdateStashIDs{
-				StashIDs: []models.StashID{stashID},
-				Mode:     models.RelationshipUpdateModeRemove,
-			},
+	input = models.StudioPartial{
+		ID: s.ID,
+		StashIDs: &models.UpdateStashIDs{
+			StashIDs: []models.StashID{stashID},
+			Mode:     models.RelationshipUpdateModeRemove,
 		},
 	}
 	s, err = qb.UpdatePartial(ctx, input)
@@ -860,12 +854,12 @@ func TestStudioAlias(t *testing.T) {
 
 		// create studio to test against
 		const name = "TestStudioAlias"
-		createdID, err := createStudio(ctx, db.Studio, name, nil)
+		created, err := createStudio(ctx, db.Studio, name, nil)
 		if err != nil {
 			return fmt.Errorf("Error creating studio: %s", err.Error())
 		}
 
-		studio, err := qb.Find(ctx, *createdID)
+		studio, err := qb.Find(ctx, created.ID)
 		if err != nil {
 			return fmt.Errorf("Error getting studio: %s", err.Error())
 		}
@@ -894,13 +888,11 @@ func testStudioAlias(ctx context.Context, t *testing.T, s *models.Studio) {
 	aliases := []string{"alias1", "alias2"}
 
 	// update alias and ensure was updated
-	input := models.StudioDBInput{
-		StudioUpdate: &models.StudioPartial{
-			ID: s.ID,
-			Aliases: &models.UpdateStrings{
-				Values: aliases,
-				Mode:   models.RelationshipUpdateModeSet,
-			},
+	input := models.StudioPartial{
+		ID: s.ID,
+		Aliases: &models.UpdateStrings{
+			Values: aliases,
+			Mode:   models.RelationshipUpdateModeSet,
 		},
 	}
 	var err error
@@ -917,13 +909,11 @@ func testStudioAlias(ctx context.Context, t *testing.T, s *models.Studio) {
 	assert.Equal(t, aliases, s.Aliases.List())
 
 	// remove alias and ensure was updated
-	input = models.StudioDBInput{
-		StudioUpdate: &models.StudioPartial{
-			ID: s.ID,
-			Aliases: &models.UpdateStrings{
-				Values: aliases,
-				Mode:   models.RelationshipUpdateModeRemove,
-			},
+	input = models.StudioPartial{
+		ID: s.ID,
+		Aliases: &models.UpdateStrings{
+			Values: aliases,
+			Mode:   models.RelationshipUpdateModeRemove,
 		},
 	}
 	s, err = qb.UpdatePartial(ctx, input)
