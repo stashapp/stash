@@ -1253,10 +1253,12 @@
   "type": "Type",
   "updated_at": "Updated At",
   "url": "URL",
+  "urls": "URLs",
   "validation": {
     "aliases_must_be_unique": "aliases must be unique",
     "date_invalid_form": "${path} must be in YYYY-MM-DD form",
-    "required": "${path} is a required field"
+    "required": "${path} is a required field",
+    "urls_must_be_unique": "URLs must be unique"
   },
   "videos": "Videos",
   "view_all": "View All",
