@@ -65,7 +65,7 @@ func (qb *oDateManager) AddODate(ctx context.Context, id int) error {
 
 	if err := qb.tableMgr.addODateByID(ctx, id, goqu.Record{
 		"scene_id": id,
-		"odate":    time.Now(),
+		"odate":    time.Now().Local().Format(time.RFC3339Nano),
 	}); err != nil {
 		return err
 	}
@@ -104,7 +104,7 @@ func (qb *playDateManager) AddPlayDate(ctx context.Context, id int) error {
 
 	if err := qb.tableMgr.addPlayDateByID(ctx, id, goqu.Record{
 		"scene_id": id,
-		"playdate": time.Now(),
+		"playdate": time.Now().Local().Format(time.RFC3339Nano),
 	}); err != nil {
 		return err
 	}

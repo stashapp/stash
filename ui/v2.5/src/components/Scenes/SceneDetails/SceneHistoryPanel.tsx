@@ -1,87 +1,54 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { FormattedMessage, useIntl } from "react-intl";
-import { Button, Dropdown, DropdownButton, Form, Col, Row, ButtonGroup } from "react-bootstrap";
+import React, { useMemo } from "react";
+import { Link } from "react-router-dom";
+import { FormattedTime, FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
-import * as yup from "yup";
-import FormUtils from "src/utils/form";
-import { DateInput } from "src/components/Shared/DateInput";
-import { useToast } from "src/hooks/Toast";
-
-import { useFormik } from "formik";
+import TextUtils from "src/utils/text";
+import { TextField, URLField } from "src/utils/field";
 
 interface ISceneHistoryProps {
-  scene: GQL.SceneDataFragment; //Partial<GQL.SceneDataFragment>;
-  onSubmit: (input: GQL.SceneCreateInput) => Promise<void>;
+  scene: GQL.SceneDataFragment;
 }
 
-const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({
-  scene,
-  onSubmit,
-}) => {
+
+export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = (props) => {
   const intl = useIntl();
-  const Toast = useToast();
 
-  // Network state
-  const [isLoading, setIsLoading] = useState(false);
-
-  const schema = yup.object({
-    date: yup
-      .string()
-      .ensure()
-      .test({
-        name: "date",
-        test: (value) => {
-          if (!value) return true;
-          if (!value.match(/^\d{4}-\d{2}-\d{2}$/)) return false;
-          if (Number.isNaN(Date.parse(value))) return false;
-          return true;
-        },
-        message: intl.formatMessage({ id: "validation.date_invalid_form" }),
-      }),
-    cover_image: yup.string().nullable().optional(),
-  });
-
-  const initialValues = useMemo(
-    () => ({
-      date: scene.date ?? "",
-    }),
-    [scene]
+  const file = useMemo(
+    () => (props.scene.files.length > 0 ? props.scene.files[0] : undefined),
+    [props.scene]
   );
 
-  const formik = useFormik<InputValues>({
-    initialValues,
-    enableReinitialize: true,
-    validationSchema: schema,
-    onSubmit: (values) => onSave(values),
-  });
-
-  async function onSave(input: InputValues) {
-    setIsLoading(true);
-    try {
-      await onSubmit(input);
-      formik.resetForm();
-    } catch (e) {
-      Toast.error(e);
-    }
-    setIsLoading(false);
-  }
-
-  type InputValues = yup.InferType<typeof schema>;
-
   return (
-    <Form.Group controlId="date" as={Row}>
-      {FormUtils.renderLabel({
-        title: intl.formatMessage({ id: "date" }),
-      })}
-
-      <Col xs={9}>
-        <DateInput
-          value={formik.values.date}
-          onValueChange={(value) => formik.setFieldValue("date", value)}
-          error={formik.errors.date}
-        />
-      </Col>
-    </Form.Group>
+    <>
+      <div className="row">
+        <div className="col-12">
+          <h5>
+            <FormattedMessage id="file_history" />{" "}
+          </h5>
+          <h6>
+            <FormattedMessage id="created_at" />:{" "}
+            {TextUtils.formatDateTime(intl, props.scene.created_at)}{" "}
+          </h6>
+          <h6>
+            <FormattedMessage id="updated_at" />:{" "}
+            {TextUtils.formatDateTime(intl, props.scene.updated_at)}{" "}
+          </h6>
+          {/* <h6>
+            <TextField id="file_mod_time">
+            <FormattedTime
+              dateStyle="medium"
+              timeStyle="medium"
+              value={props.file.mod_time ?? 0}
+            />
+          </TextField>
+          </h6> */}
+        </div>
+      </div>
+      <div className="row">
+        <div className="col-12">
+        </div>
+      </div>
+    </>
   );
 };
 

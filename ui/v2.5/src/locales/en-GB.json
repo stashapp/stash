@@ -925,6 +925,7 @@
   "favourite": "Favourite",
   "file": "file",
   "file_count": "File Count",
+  "file_history": "File History",
   "file_info": "File Info",
   "file_mod_time": "File Modification Time",
   "files": "files",
@@ -953,7 +954,7 @@
     "NON_BINARY": "Non-Binary",
     "TRANSGENDER_FEMALE": "Transgender Female",
     "TRANSGENDER_MALE": "Transgender Male"
-  },
+  },  
   "hair_color": "Hair Colour",
   "handy_connection_status": {
     "connecting": "Connecting",
