@@ -754,7 +754,7 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 		for _, movie := range movie_ids {
 			if movie.Movie != nil {
 				genTag := HeresphereVideoTag{
-					Name: fmt.Sprintf("Movie:%v", movie.Movie.Name.String),
+					Name: fmt.Sprintf("Movie:%v", movie.Movie.Name),
 				}
 				processedTags = append(processedTags, genTag)
 			}
@@ -764,7 +764,7 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 	studio_id, err := rs.resolver.Scene().Studio(r.Context(), scene)
 	if err == nil && studio_id != nil {
 		genTag := HeresphereVideoTag{
-			Name: fmt.Sprintf("Studio:%v", studio_id.Name.String),
+			Name: fmt.Sprintf("Studio:%v", studio_id.Name),
 		}
 		processedTags = append(processedTags, genTag)
 	}
@@ -820,7 +820,7 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 		processedTags = append(processedTags, genTag)
 	}
 
-	// TODO: OCounted?
+	// TODO: OCounted, Orgasmed?
 
 	{
 		genTag := HeresphereVideoTag{
@@ -1044,6 +1044,7 @@ func FindProjectionTags(scene *models.Scene, processedScene *HeresphereVideoEntr
 		// Has VR tag (TODO: stashdb says Virtual Reality, should i check against it?)
 		// TODO: err .
 		vrTag, _ := getVrTag()
+		// TODO: If vrTag is empty, will this cause always true?
 		if strings.Contains(tag.Name, vrTag) {
 			if processedScene.Projection == HeresphereProjectionPerspective {
 				processedScene.Projection = HeresphereProjectionEquirectangular
