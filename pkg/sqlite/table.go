@@ -76,8 +76,9 @@ func (t *table) addODateByID(ctx context.Context, id interface{}, o interface{})
 	return nil
 }
 
-func (t *table) deleteODateByID(ctx context.Context, id interface{}) error {
-	q := dialect.Delete("scenes_odates").Where(goqu.I("id").Eq(id))
+func (t *table) deleteODateByID(ctx context.Context, sceneID interface{}) error {
+	subquery := dialect.Select("id").From("scenes_odates").Where(goqu.I("scene_id").Eq(sceneID)).Order(goqu.I("id").Desc()).Limit(1)
+	q := dialect.Delete("scenes_odates").Where(goqu.I("id").Eq(subquery))
 
 	if _, err := exec(ctx, q); err != nil {
 		return fmt.Errorf("deleting from %s: %w", "scenes_odates", err)
@@ -96,8 +97,9 @@ func (t *table) addPlayDateByID(ctx context.Context, id interface{}, o interface
 	return nil
 }
 
-func (t *table) deletePlayDateByID(ctx context.Context, id interface{}) error {
-	q := dialect.Delete("scenes_playdates").Where(goqu.I("id").Eq(id))
+func (t *table) deletePlayDateByID(ctx context.Context, sceneID interface{}) error {
+	subquery := dialect.Select("id").From("scenes_playdates").Where(goqu.I("scene_id").Eq(sceneID)).Order(goqu.I("id").Desc()).Limit(1)
+	q := dialect.Delete("scenes_playdates").Where(goqu.I("id").Eq(subquery))
 
 	if _, err := exec(ctx, q); err != nil {
 		return fmt.Errorf("deleting from %s: %w", "scenes_playdates", err)
