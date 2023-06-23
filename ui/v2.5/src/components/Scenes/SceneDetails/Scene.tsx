@@ -626,6 +626,9 @@ const SceneLoader: React.FC = () => {
     setQueueStart(1);
   }
 
+  // TODO: Find a better way to compare the needs to load next scene after adding more scenes to the queue.
+  // Having the entire previous queue saved feels bad.
+  const prevQueueScenes = usePrevious(queueScenes);
   useEffect(() => {
     if (prevQueueScenes != undefined) return;
 
@@ -635,10 +638,6 @@ const SceneLoader: React.FC = () => {
       getQueueScenes(sceneQueue.sceneIDs);
     }
   }, [sceneQueue]);
-
-  // TODO: Find a better way to compare the needs to load next scene after adding more scenes to the queue.
-  // Having the entire previous queue saved feels bad.
-  const prevQueueScenes = usePrevious(queueScenes);
 
   useEffect(() => {
     if (
