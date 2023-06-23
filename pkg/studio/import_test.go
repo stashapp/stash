@@ -19,12 +19,12 @@ const (
 	studioNameErr      = "studioNameErr"
 	existingStudioName = "existingTagName"
 
+	existingStudioID = 100
+
 	existingParentStudioName = "existingParentStudioName"
 	existingParentStudioErr  = "existingParentStudioErr"
 	missingParentStudioName  = "existingParentStudioName"
 )
-
-var existingStudioID = 100
 
 func TestImporterName(t *testing.T) {
 	i := Importer{

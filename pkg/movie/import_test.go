@@ -18,7 +18,8 @@ const (
 	movieNameErr      = "movieNameErr"
 	existingMovieName = "existingMovieName"
 
-	existingMovieID = 100
+	existingMovieID  = 100
+	existingStudioID = 101
 
 	existingStudioName = "existingStudioName"
 	existingStudioErr  = "existingStudioErr"
@@ -26,8 +27,6 @@ const (
 
 	errImageID = 3
 )
-
-var existingStudioID = 101
 
 var testCtx = context.Background()
 

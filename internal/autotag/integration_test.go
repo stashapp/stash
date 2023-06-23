@@ -503,6 +503,7 @@ func populateDB() error {
 		if err != nil {
 			return err
 		}
+
 		existingStudioID = existingStudio.ID
 
 		err = createTag(ctx, r.Tag)
