@@ -627,7 +627,7 @@ const SceneLoader: React.FC = () => {
   }
 
   useEffect(() => {
-    if(prevQueueScenes != undefined) return;
+    if (prevQueueScenes != undefined) return;
 
     if (sceneQueue.query) {
       getQueueFilterScenes(sceneQueue.query);
@@ -638,17 +638,19 @@ const SceneLoader: React.FC = () => {
 
   // TODO: Find a better way to compare the needs to load next scene after adding more scenes to the queue.
   // Having the entire previous queue saved feels bad.
-  const prevQueueScenes = usePrevious(queueScenes)
+  const prevQueueScenes = usePrevious(queueScenes);
 
   useEffect(() => {
-
-    if(prevQueueScenes?.length == currentQueueIndex+1 && queueScenes?.length > prevQueueScenes?.length) {
-      loadNextScene(continuePlaylist)
+    if (
+      prevQueueScenes?.length == currentQueueIndex + 1 &&
+      queueScenes?.length > prevQueueScenes?.length
+    ) {
+      loadNextScene(continuePlaylist);
     }
   }, [queueScenes]);
 
   function loadNextScene(autoPlay?: boolean | undefined) {
-    const nextQueueIndex = currentQueueIndex + 1; 
+    const nextQueueIndex = currentQueueIndex + 1;
     if (nextQueueIndex < 1) return;
 
     if (nextQueueIndex < queueScenes.length) {
@@ -713,7 +715,7 @@ const SceneLoader: React.FC = () => {
       currentQueueIndex >= 0 &&
       currentQueueIndex < queueScenes.length - 1
     ) {
-      loadNextScene()
+      loadNextScene();
     } else {
       history.push("/scenes");
     }
@@ -722,7 +724,7 @@ const SceneLoader: React.FC = () => {
   function onQueueNext() {
     if (!queueScenes) return;
 
-    loadNextScene()
+    loadNextScene();
   }
 
   function onQueuePrevious() {
@@ -762,14 +764,14 @@ const SceneLoader: React.FC = () => {
 
     // load the next scene if we're continuing
     if (continuePlaylist) {
-      loadNextScene(true)
+      loadNextScene(true);
     }
   }
 
   function onNext() {
     if (!queueScenes) return;
 
-    loadNextScene()
+    loadNextScene();
   }
 
   function onPrevious() {
