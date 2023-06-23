@@ -713,7 +713,7 @@ const SceneLoader: React.FC = () => {
     const { scenes } = query.data.findScenes;
 
     // append scenes to scene list
-    const newScenes = (scenes as QueuedScene[]).concat(queueScenes);
+    const newScenes = queueScenes.concat(scenes as QueuedScene[]);
     setQueueScenes(newScenes);
     // don't change queue start
   }
