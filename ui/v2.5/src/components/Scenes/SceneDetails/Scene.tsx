@@ -627,6 +627,8 @@ const SceneLoader: React.FC = () => {
   }
 
   useEffect(() => {
+    if(prevQueueScenes != undefined) return;
+
     if (sceneQueue.query) {
       getQueueFilterScenes(sceneQueue.query);
     } else if (sceneQueue.sceneIDs) {
@@ -635,14 +637,27 @@ const SceneLoader: React.FC = () => {
   }, [sceneQueue]);
 
   // TODO: Find a better way to compare the needs to load next scene after adding more scenes to the queue.
-  // Having the entire previous queue feels bad.
+  // Having the entire previous queue saved feels bad.
   const prevQueueScenes = usePrevious(queueScenes)
 
   useEffect(() => {
+
     if(prevQueueScenes?.length == currentQueueIndex+1 && queueScenes?.length > prevQueueScenes?.length) {
-      loadNextSceneOrQueueNextPage(continuePlaylist)
+      loadNextScene(continuePlaylist)
     }
   }, [queueScenes]);
+
+  function loadNextScene(autoPlay?: boolean | undefined) {
+    const nextQueueIndex = currentQueueIndex + 1; 
+    if (nextQueueIndex < 1) return;
+
+    if (nextQueueIndex < queueScenes.length) {
+      const nextPage = (sceneQueue.query?.currentPage ?? 1) + 1;
+      loadScene(queueScenes[nextQueueIndex].id, autoPlay, nextPage);
+    } else {
+      onQueueMoreScenes();
+    }
+  }
 
   async function onQueueLessScenes() {
     if (!sceneQueue.query || queueStart <= 1) {
@@ -698,7 +713,7 @@ const SceneLoader: React.FC = () => {
       currentQueueIndex >= 0 &&
       currentQueueIndex < queueScenes.length - 1
     ) {
-      loadNextSceneOrQueueNextPage()
+      loadNextScene()
     } else {
       history.push("/scenes");
     }
@@ -707,7 +722,7 @@ const SceneLoader: React.FC = () => {
   function onQueueNext() {
     if (!queueScenes) return;
 
-    loadNextSceneOrQueueNextPage()
+    loadNextScene()
   }
 
   function onQueuePrevious() {
@@ -742,30 +757,19 @@ const SceneLoader: React.FC = () => {
     }
   }
 
-  function loadNextSceneOrQueueNextPage(autoPlay?: boolean | undefined, newPage?: number | undefined) {
-    if (
-      currentQueueIndex >= 0 &&
-      currentQueueIndex < queueScenes.length - 1
-    ) {
-      loadScene(queueScenes[currentQueueIndex + 1].id, autoPlay, newPage);
-    } else {
-      onQueueMoreScenes()
-    }
-  }
-
   function onComplete() {
     if (!queueScenes) return;
 
     // load the next scene if we're continuing
     if (continuePlaylist) {
-      loadNextSceneOrQueueNextPage(true)
+      loadNextScene(true)
     }
   }
 
   function onNext() {
     if (!queueScenes) return;
 
-    loadNextSceneOrQueueNextPage()
+    loadNextScene()
   }
 
   function onPrevious() {
