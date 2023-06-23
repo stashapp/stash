@@ -37,7 +37,11 @@ func queryURLParametersFromScrapedScene(scene ScrapedSceneInput) queryURLParamet
 
 	setField("title", scene.Title)
 	setField("code", scene.Code)
-	setField("url", scene.URL)
+	if len(scene.URLs) > 0 {
+		setField("url", &scene.URLs[0])
+	} else {
+		setField("url", scene.URL)
+	}
 	setField("date", scene.Date)
 	setField("details", scene.Details)
 	setField("director", scene.Director)

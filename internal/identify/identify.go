@@ -278,12 +278,12 @@ func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOp
 			partial.Details = models.NewOptionalString(*scraped.Details)
 		}
 	}
-	if scraped.URL != nil && shouldSetSingleValueField(fieldOptions["url"], false) {
+	if len(scraped.URLs) > 0 && shouldSetSingleValueField(fieldOptions["url"], false) {
 		// if overwrite, then set over the top
 		switch getFieldStrategy(fieldOptions["url"]) {
 		case FieldStrategyOverwrite:
 			// only overwrite if not equal
-			if len(sliceutil.Exclude(scene.URLs.List(), []string{*scraped.URL})) != 0 {
+			if len(sliceutil.Exclude(scene.URLs.List(), scraped.URLs)) != 0 {
 				partial.URLs = &models.UpdateStrings{
 					Values: []string{*scraped.URL},
 					Mode:   models.RelationshipUpdateModeSet,
@@ -291,10 +291,12 @@ func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOp
 			}
 		case FieldStrategyMerge:
 			// if merge, add if not already present
-			if !sliceutil.Include(scene.URLs.List(), *scraped.URL) {
+			urls := sliceutil.AppendUniques(scene.URLs.List(), scraped.URLs)
+
+			if len(urls) != len(scene.URLs.List()) {
 				partial.URLs = &models.UpdateStrings{
-					Values: []string{*scraped.URL},
-					Mode:   models.RelationshipUpdateModeAdd,
+					Values: urls,
+					Mode:   models.RelationshipUpdateModeSet,
 				}
 			}
 		}

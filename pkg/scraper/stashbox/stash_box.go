@@ -684,6 +684,7 @@ func getFingerprints(scene *graphql.SceneFragment) []*models.StashBoxFingerprint
 
 func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.SceneFragment) (*scraper.ScrapedScene, error) {
 	stashID := s.ID
+
 	ss := &scraper.ScrapedScene{
 		Title:        s.Title,
 		Code:         s.Code,
@@ -696,6 +697,14 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 		Fingerprints: getFingerprints(s),
 		// Image
 		// stash_id
+	}
+
+	for _, u := range s.Urls {
+		ss.URLs = append(ss.URLs, u.URL)
+	}
+
+	if len(ss.URLs) > 0 {
+		ss.URL = &ss.URLs[0]
 	}
 
 	if len(s.Images) > 0 {
