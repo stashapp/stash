@@ -4,6 +4,7 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -14,6 +15,11 @@ func createMissingStudio(ctx context.Context, endpoint string, w models.StudioRe
 		if studio.Parent.StoredID == nil {
 			// The parent needs to be created
 			newParentStudio, err := studio.Parent.ToStudio(ctx, endpoint, nil)
+			if err != nil {
+				logger.Errorf("Failed to make parent studio from scraped studio %s: %s", studio.Parent.Name, err.Error())
+				return nil, err
+			}
+
 			// Create the studio
 			err = w.Create(ctx, newParentStudio)
 			if err != nil {

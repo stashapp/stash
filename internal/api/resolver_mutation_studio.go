@@ -35,6 +35,11 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input StudioCreateI
 		if input.ParentID == nil {
 			// The parent needs to be created
 			newStudio, err := studioFromStudioCreateInput(ctx, *input.Parent)
+			if err != nil {
+				logger.Errorf("Failed to make parent studio from studio input %s: %s", input.Parent.Name, err.Error())
+				return nil, err
+			}
+
 			// Start the transaction and save the studio
 			err = txn.WithTxn(ctx, r.repository, func(ctx context.Context) error {
 				qb := r.repository.Studio
@@ -209,6 +214,11 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input StudioUpdateI
 		if input.ParentID == nil {
 			// The parent needs to be created
 			newStudio, err := studioFromStudioCreateInput(ctx, *input.Parent)
+			if err != nil {
+				logger.Errorf("Failed to make parent studio from studio input %s: %s", input.Parent.Name, err.Error())
+				return nil, err
+			}
+
 			// Start the transaction and save the studio
 			err = txn.WithTxn(ctx, r.repository, func(ctx context.Context) error {
 				qb := r.repository.Studio
