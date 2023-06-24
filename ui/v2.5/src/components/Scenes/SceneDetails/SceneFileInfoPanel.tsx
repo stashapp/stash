@@ -317,7 +317,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
         {renderFunscript()}
         {renderInteractiveSpeed()}
         <URLsField
-          id="media_info.downloaded_from"
+          id="urls"
           urls={props.scene.urls}
           truncate
         />
