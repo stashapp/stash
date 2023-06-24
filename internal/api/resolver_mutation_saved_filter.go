@@ -42,6 +42,7 @@ func (r *mutationResolver) SaveFilter(ctx context.Context, input SaveFilterInput
 	}); err != nil {
 		return nil, err
 	}
+	ret = &newFilter
 	return ret, err
 }
 
