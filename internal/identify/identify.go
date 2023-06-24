@@ -285,7 +285,7 @@ func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOp
 			// only overwrite if not equal
 			if len(sliceutil.Exclude(scene.URLs.List(), scraped.URLs)) != 0 {
 				partial.URLs = &models.UpdateStrings{
-					Values: []string{*scraped.URL},
+					Values: scraped.URLs,
 					Mode:   models.RelationshipUpdateModeSet,
 				}
 			}

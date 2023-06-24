@@ -296,21 +296,21 @@ func Test_getScenePartial(t *testing.T) {
 	postPartialMerge := postPartial
 	postPartialMerge.URLs = &models.UpdateStrings{
 		Values: []string{scrapedURL},
-		Mode:   models.RelationshipUpdateModeAdd,
+		Mode:   models.RelationshipUpdateModeSet,
 	}
 
 	scrapedScene := &scraper.ScrapedScene{
 		Title:   &scrapedTitle,
 		Date:    &scrapedDate,
 		Details: &scrapedDetails,
-		URL:     &scrapedURL,
+		URLs:    []string{scrapedURL},
 	}
 
 	scrapedUnchangedScene := &scraper.ScrapedScene{
 		Title:   &originalTitle,
 		Date:    &originalDate,
 		Details: &originalDetails,
-		URL:     &originalURL,
+		URLs:    []string{originalURL},
 	}
 
 	makeFieldOptions := func(input *FieldOptions) map[string]*FieldOptions {
@@ -375,8 +375,8 @@ func Test_getScenePartial(t *testing.T) {
 			},
 			models.ScenePartial{
 				URLs: &models.UpdateStrings{
-					Values: []string{scrapedURL},
-					Mode:   models.RelationshipUpdateModeAdd,
+					Values: []string{originalURL, scrapedURL},
+					Mode:   models.RelationshipUpdateModeSet,
 				},
 			},
 		},
