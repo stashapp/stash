@@ -94,13 +94,13 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
           truncate
         />
         {renderFileSize()}
-        <TextField id="file_mod_time">
+        {/* <TextField id="file_mod_time">
           <FormattedTime
             dateStyle="medium"
             timeStyle="medium"
             value={props.file.mod_time ?? 0}
           />
-        </TextField>
+        </TextField> */}
         <TextField
           id="duration"
           value={TextUtils.secondsToTimestamp(props.file.duration ?? 0)}
@@ -323,7 +323,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
           truncate
         />
         {renderStashIDs()}
-        <TextField
+        {/* <TextField
           id="media_info.play_count"
           value={(props.scene.play_count ?? 0).toString()}
           truncate
@@ -332,7 +332,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
           id="media_info.play_duration"
           value={TextUtils.secondsToTimestamp(props.scene.play_duration ?? 0)}
           truncate
-        />
+        /> */}
       </dl>
 
       {filesPanel}

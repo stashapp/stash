@@ -925,7 +925,6 @@
   "favourite": "Favourite",
   "file": "file",
   "file_count": "File Count",
-  "file_history": "File History",
   "file_info": "File Info",
   "file_mod_time": "File Modification Time",
   "files": "files",
@@ -997,6 +996,7 @@
     "downloaded_from": "Downloaded From",
     "hash": "Hash",
     "interactive_speed": "Interactive speed",
+    "o_count": "O Count",
     "performer_card": {
       "age": "{age} {years_old}",
       "age_context": "{age} {years_old} in this scene"
@@ -1016,6 +1016,7 @@
   "new": "New",
   "none": "None",
   "o_counter": "O-Counter",
+  "o_history": "O History",
   "operations": "Operations",
   "organized": "Organised",
   "pagination": {
@@ -1080,6 +1081,7 @@
   "play_count": "Play Count",
   "play_counter": "Play Counter",
   "play_duration": "Play Duration",
+  "play_history": "Play History",
   "primary_file": "Primary file",
   "queue": "Queue",
   "random": "Random",
@@ -1087,6 +1089,7 @@
   "recently_added_objects": "Recently Added {objects}",
   "recently_released_objects": "Recently Released {objects}",
   "release_notes": "Release Notes",
+  "release_date" : "Release Date",
   "resolution": "Resolution",
   "resume_time": "Resume Time",
   "scene": "Scene",
@@ -1096,6 +1099,7 @@
   "scene_count": "Scene Count",
   "scene_created_at": "Scene Created At",
   "scene_date": "Date of Scene",
+  "scene_history": "Scene History",
   "scene_id": "Scene ID",
   "scene_updated_at": "Scene Updated At",
   "scenes": "Scenes",
