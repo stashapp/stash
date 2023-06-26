@@ -15,6 +15,7 @@ import {
   faSquare,
   faTags,
   faThLarge,
+  faEye,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface IListViewOptionsProps {
@@ -23,6 +24,8 @@ interface IListViewOptionsProps {
   displayMode: DisplayMode;
   onSetDisplayMode: (m: DisplayMode) => void;
   displayModeOptions: DisplayMode[];
+  useFilteredCounts?: boolean;
+  onSetFilteredCounts?: () => void;
 }
 
 export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
@@ -31,6 +34,8 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
   displayMode,
   onSetDisplayMode,
   displayModeOptions,
+  onSetFilteredCounts,
+  useFilteredCounts,
 }) => {
   const minZoom = 0;
   const maxZoom = 3;
@@ -72,6 +77,22 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
       Mousetrap.unbind("-");
     };
   });
+
+  function maybeRenderFilteredCounts() {
+    if (useFilteredCounts != null) {
+      return (
+        <div className="mb-2 mr-2">
+          <Button
+            variant="secondary"
+            active={useFilteredCounts === true}
+            onClick={() => onSetFilteredCounts && onSetFilteredCounts()}
+          >
+            <Icon icon={faEye} />
+          </Button>
+        </div>
+      );
+    }
+  }
 
   function maybeRenderDisplayModeOptions() {
     function getIcon(option: DisplayMode) {
@@ -158,6 +179,7 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
 
   return (
     <>
+      {maybeRenderFilteredCounts()}
       {maybeRenderDisplayModeOptions()}
       {maybeRenderZoom()}
     </>

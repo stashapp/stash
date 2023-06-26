@@ -21,14 +21,13 @@ import { faHeart, faTag } from "@fortawesome/free-solid-svg-icons";
 import { RatingBanner } from "../Shared/RatingBanner";
 import cx from "classnames";
 import { usePerformerUpdate } from "src/core/StashService";
-import { ILabeledId } from "src/models/list-filter/types";
+import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
 
 export interface IPerformerCardExtraCriteria {
   scenes?: Criterion<CriterionValue>[];
   images?: Criterion<CriterionValue>[];
   galleries?: Criterion<CriterionValue>[];
   movies?: Criterion<CriterionValue>[];
-  performer?: ILabeledId;
 }
 
 interface IPerformerCardProps {
@@ -38,6 +37,9 @@ interface IPerformerCardProps {
   selected?: boolean;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
   extraCriteria?: IPerformerCardExtraCriteria;
+  extraPerformerFilter?: PerformersCriterion;
+  useFilteredCounts?: boolean;
+  filteredCounts?: GQL.FilteredCountsDataFragment;
 }
 
 export const PerformerCard: React.FC<IPerformerCardProps> = ({
@@ -47,6 +49,9 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   selected,
   onSelectedChanged,
   extraCriteria,
+  extraPerformerFilter,
+  useFilteredCounts,
+  filteredCounts,
 }) => {
   const intl = useIntl();
   const age = TextUtils.age(
@@ -64,6 +69,23 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     { id: ageL10nId },
     { age, years_old: ageL10String }
   );
+
+  const scene_count =
+    !useFilteredCounts || filteredCounts?.scene_count_filtered == null
+      ? performer.scene_count
+      : filteredCounts.scene_count_filtered;
+  const image_count =
+    !useFilteredCounts || filteredCounts?.image_count_filtered == null
+      ? performer.image_count
+      : filteredCounts.image_count_filtered;
+  const gallery_count =
+    !useFilteredCounts || filteredCounts?.gallery_count_filtered == null
+      ? performer.gallery_count
+      : filteredCounts.gallery_count_filtered;
+  const movie_count =
+    !useFilteredCounts || filteredCounts?.movie_count_filtered == null
+      ? performer.movie_count
+      : filteredCounts.movie_count_filtered;
 
   const [updatePerformer] = usePerformerUpdate();
 
@@ -99,51 +121,49 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   }
 
   function maybeRenderScenesPopoverButton() {
-    if (!performer.scene_count) return;
-
+    if (!scene_count) return;
     return (
       <PopoverCountButton
         className="scene-count"
         type="scene"
-        count={performer.scene_count}
+        count={scene_count}
         url={NavUtils.makePerformerScenesUrl(
           performer,
-          extraCriteria?.performer,
-          extraCriteria?.scenes
+          extraCriteria?.scenes,
+          useFilteredCounts ? extraPerformerFilter : undefined
         )}
       />
     );
   }
 
   function maybeRenderImagesPopoverButton() {
-    if (!performer.image_count) return;
-
+    if (!image_count) return;
     return (
       <PopoverCountButton
         className="image-count"
         type="image"
-        count={performer.image_count}
+        count={image_count}
         url={NavUtils.makePerformerImagesUrl(
           performer,
-          extraCriteria?.performer,
-          extraCriteria?.images
+          extraCriteria?.images,
+          useFilteredCounts ? extraPerformerFilter : undefined
         )}
       />
     );
   }
 
   function maybeRenderGalleriesPopoverButton() {
-    if (!performer.gallery_count) return;
+    if (!gallery_count) return;
 
     return (
       <PopoverCountButton
         className="gallery-count"
         type="gallery"
-        count={performer.gallery_count}
+        count={gallery_count}
         url={NavUtils.makePerformerGalleriesUrl(
           performer,
-          extraCriteria?.performer,
-          extraCriteria?.galleries
+          extraCriteria?.galleries,
+          useFilteredCounts ? extraPerformerFilter : undefined
         )}
       />
     );
@@ -182,17 +202,17 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   }
 
   function maybeRenderMoviesPopoverButton() {
-    if (!performer.movie_count) return;
+    if (!movie_count) return;
 
     return (
       <PopoverCountButton
         className="movie-count"
         type="movie"
-        count={performer.movie_count}
+        count={movie_count}
         url={NavUtils.makePerformerMoviesUrl(
           performer,
-          extraCriteria?.performer,
-          extraCriteria?.movies
+          extraCriteria?.movies,
+          useFilteredCounts ? extraPerformerFilter : undefined
         )}
       />
     );

@@ -41,6 +41,7 @@ export const useUpdatePerformerStashID = () => {
             findPerformers: {
               count: 1,
               performers: [updatedPerformer.data.performerUpdate],
+              filteredCounts: [],
               __typename: "FindPerformersResultType",
             },
           },
@@ -83,6 +84,7 @@ export const useUpdatePerformer = () => {
               findPerformers: {
                 count: 1,
                 performers: [updatedPerformer.data!.performerUpdate!],
+                filteredCounts: [],
                 __typename: "FindPerformersResultType",
               },
             },
@@ -147,6 +149,7 @@ export const useCreatePerformer = () => {
             findPerformers: {
               count: 1,
               performers: [newPerformer.data.performerCreate],
+              filteredCounts: [],
               __typename: "FindPerformersResultType",
             },
           },

@@ -465,6 +465,12 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       setEditingCriterion(undefined);
     }
 
+    function onChangeFilteredCounts() {
+      const newFilter = cloneDeep(filter);
+      newFilter.useFilteredCounts = !filter.useFilteredCounts;
+      updateFilter(newFilter);
+    }
+
     return (
       <div>
         <ButtonToolbar className="justify-content-center">
@@ -489,6 +495,8 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
             onSetDisplayMode={onChangeDisplayMode}
             zoomIndex={zoomable ? filter.zoomIndex : undefined}
             onSetZoom={zoomable ? onChangeZoom : undefined}
+            onSetFilteredCounts={onChangeFilteredCounts}
+            useFilteredCounts={filter.useFilteredCounts}
           />
         </ButtonToolbar>
         <FilterTags

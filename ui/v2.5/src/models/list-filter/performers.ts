@@ -11,6 +11,7 @@ import {
 import { FavoriteCriterionOption } from "./criteria/favorite";
 import { GenderCriterionOption } from "./criteria/gender";
 import { CircumcisedCriterionOption } from "./criteria/circumcised";
+import { PerformersCriterionOption } from "./criteria/performers";
 import { PerformerIsMissingCriterionOption } from "./criteria/is-missing";
 import { StashIDCriterionOption } from "./criteria/stash-ids";
 import { StudiosCriterionOption } from "./criteria/studios";
@@ -45,6 +46,18 @@ const sortByOptions = [
     {
       messageID: "o_counter",
       value: "o_counter",
+    },
+    {
+      messageID: "scene_count_filtered",
+      value: "scenes_count_filtered",
+    },
+    {
+      messageID: "image_count_filtered",
+      value: "images_count_filtered",
+    },
+    {
+      messageID: "gallery_count_filtered",
+      value: "galleries_count_filtered",
     },
   ]);
 
@@ -101,6 +114,7 @@ const criterionOptions = [
   createDateCriterionOption("death_date"),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),
+  PerformersCriterionOption,
 ];
 export const PerformerListFilterOptions = new ListFilterOptions(
   defaultSortBy,

@@ -945,6 +945,7 @@
   "galleries": "Galleries",
   "gallery": "Gallery",
   "gallery_count": "Gallery Count",
+  "gallery_count_filtered": "Gallery Count Filtered",
   "gender": "Gender",
   "gender_types": {
     "FEMALE": "Female",
@@ -972,6 +973,7 @@
   "ignore_auto_tag": "Ignore Auto Tag",
   "image": "Image",
   "image_count": "Image Count",
+  "image_count_filtered": "Image Count Filtered",
   "image_index": "Image #",
   "images": "Images",
   "include_parent_tags": "Include parent tags",
@@ -1091,6 +1093,7 @@
   "sceneTags": "Scene Tags",
   "scene_code": "Studio Code",
   "scene_count": "Scene Count",
+  "scene_count_filtered": "Scene Count Filtered",
   "scene_created_at": "Scene Created At",
   "scene_date": "Date of Scene",
   "scene_id": "Scene ID",

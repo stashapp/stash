@@ -51,6 +51,7 @@ export class ListFilterModel {
   public criteria: Array<Criterion<CriterionValue>> = [];
   public randomSeed = -1;
   private defaultZoomIndex: number = 1;
+  public useFilteredCounts?: boolean;
 
   public constructor(
     mode: FilterMode,
@@ -71,6 +72,9 @@ export class ListFilterModel {
     if (defaultZoomIndex !== undefined) {
       this.defaultZoomIndex = defaultZoomIndex;
       this.zoomIndex = defaultZoomIndex;
+    }
+    if (mode === "PERFORMERS") {
+      this.useFilteredCounts = false;
     }
   }
 

@@ -12,22 +12,7 @@ export const PerformerAppearsWithPanel: React.FC<IPerformerDetailsProps> = ({
   active,
   performer,
 }) => {
-  const performerValue = {
-    id: performer.id,
-    label: performer.name ?? `Performer ${performer.id}`,
-  };
-
-  const extraCriteria = {
-    performer: performerValue,
-  };
-
   const filterHook = usePerformerFilterHook(performer);
 
-  return (
-    <PerformerList
-      filterHook={filterHook}
-      extraCriteria={extraCriteria}
-      alterQuery={active}
-    />
-  );
+  return <PerformerList filterHook={filterHook} alterQuery={active} />;
 };

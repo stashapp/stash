@@ -22,6 +22,7 @@ import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { IPerformerCardExtraCriteria, PerformerCard } from "./PerformerCard";
 import { PerformerListTable } from "./PerformerListTable";
 import { EditPerformersDialog } from "./EditPerformersDialog";
+import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
 
 const PerformerItemList = makeItemList({
   filterMode: GQL.FilterMode.Performers,
@@ -135,6 +136,9 @@ export const PerformerList: React.FC<IPerformerList> = ({
 
     function renderPerformers() {
       if (!result.data?.findPerformers) return;
+      const performerFilter = filter.criteria.filter(
+        (obj) => obj.criterionOption.type === "performers"
+      )[0] as PerformersCriterion;
 
       if (filter.displayMode === DisplayMode.Grid) {
         return (
@@ -149,6 +153,11 @@ export const PerformerList: React.FC<IPerformerList> = ({
                   onSelectChange(p.id, selected, shiftKey)
                 }
                 extraCriteria={extraCriteria}
+                extraPerformerFilter={performerFilter}
+                useFilteredCounts={filter.useFilteredCounts}
+                filteredCounts={result.data?.findPerformers.filteredCounts.find(
+                  (c) => c.id === p.id
+                )}
               />
             ))}
           </div>
