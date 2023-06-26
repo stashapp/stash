@@ -4,6 +4,9 @@ query FindPerformers($filter: FindFilterType, $performer_filter: PerformerFilter
     performers {
       ...PerformerData
     }
+    filteredCounts {
+      ...FilteredCountsData
+    }
   }
 }
 

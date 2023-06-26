@@ -1,0 +1,7 @@
+fragment FilteredCountsData on FilteredCounts{
+    id
+    scene_count_filtered
+    image_count_filtered
+    gallery_count_filtered
+    movie_count_filtered
+}
