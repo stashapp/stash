@@ -478,6 +478,29 @@ func (_m *PerformerReaderWriter) QueryForAutoTag(ctx context.Context, words []st
 	return r0, r1
 }
 
+// QueryWithOptions provides a mock function with given fields: ctx, options
+func (_m *PerformerReaderWriter) QueryWithOptions(ctx context.Context, options models.PerformerQueryOptions) (*models.PerformerQueryResult, error) {
+	ret := _m.Called(ctx, options)
+
+	var r0 *models.PerformerQueryResult
+	if rf, ok := ret.Get(0).(func(context.Context, models.PerformerQueryOptions) *models.PerformerQueryResult); ok {
+		r0 = rf(ctx, options)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.PerformerQueryResult)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, models.PerformerQueryOptions) error); ok {
+		r1 = rf(ctx, options)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Update provides a mock function with given fields: ctx, updatedPerformer
 func (_m *PerformerReaderWriter) Update(ctx context.Context, updatedPerformer *models.Performer) error {
 	ret := _m.Called(ctx, updatedPerformer)

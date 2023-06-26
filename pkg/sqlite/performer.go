@@ -63,6 +63,14 @@ type performerRow struct {
 	ImageBlob zero.String `db:"image_blob"`
 }
 
+type filteredCountsRow struct {
+	ID                   int  `db:"id"`
+	SceneCountFiltered   *int `db:"scene_sum"`
+	ImageCountFiltered   *int `db:"image_sum"`
+	GalleryCountFiltered *int `db:"gallery_sum"`
+	MovieCountFiltered   *int `db:"movie_sum"`
+}
+
 func (r *performerRow) fromPerformer(o models.Performer) {
 	r.ID = o.ID
 	r.Name = o.Name
@@ -137,6 +145,18 @@ func (r *performerRow) resolve() *models.Performer {
 	if r.Circumcised.ValueOrZero() != "" {
 		v := models.CircumisedEnum(r.Circumcised.String)
 		ret.Circumcised = &v
+	}
+
+	return ret
+}
+
+func (r *filteredCountsRow) resolve() *models.FilteredCounts {
+	ret := &models.FilteredCounts{
+		ID:                   r.ID,
+		SceneCountFiltered:   r.SceneCountFiltered,
+		ImageCountFiltered:   r.ImageCountFiltered,
+		GalleryCountFiltered: r.GalleryCountFiltered,
+		MovieCountFiltered:   r.MovieCountFiltered,
 	}
 
 	return ret
@@ -661,6 +681,9 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 	query.handleCriterion(ctx, performerStudiosCriterionHandler(qb, filter.Studios))
 
 	query.handleCriterion(ctx, performerAppearsWithCriterionHandler(qb, filter.Performers))
+	//query.handleCriterion(ctx, intCriterionHandler(filter.SceneCountFiltered, "all_performers.scene_sum", nil))
+	//query.handleCriterion(ctx, intCriterionHandler(filter.ImageCountFiltered, "all_performers.image_sum", nil))
+	//query.handleCriterion(ctx, intCriterionHandler(filter.GalleryCountFiltered, "all_performers.gallery_sum", nil))
 
 	query.handleCriterion(ctx, performerTagCountCriterionHandler(qb, filter.TagCount))
 	query.handleCriterion(ctx, performerSceneCountCriterionHandler(qb, filter.SceneCount))
@@ -701,7 +724,7 @@ func (qb *PerformerStore) makeQuery(ctx context.Context, performerFilter *models
 		return nil, err
 	}
 
-	query.sortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
+	query.sortAndPagination = qb.getPerformerSort(performerFilter, findFilter) + getPagination(findFilter)
 
 	return &query, nil
 }
@@ -723,6 +746,73 @@ func (qb *PerformerStore) Query(ctx context.Context, performerFilter *models.Per
 	}
 
 	return performers, countResult, nil
+}
+
+func (qb *PerformerStore) QueryWithOptions(ctx context.Context, options models.PerformerQueryOptions) (*models.PerformerQueryResult, error) {
+	query, err := qb.makeQuery(ctx, options.PerformerFilter, options.FindFilter)
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := qb.queryGroupedFields(ctx, options, *query)
+	if err != nil {
+		return nil, fmt.Errorf("error querying aggregate fields: %w", err)
+	}
+
+	idsResult, countResult, err := query.executeFind(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result.Count = countResult
+	result.IDs = idsResult
+
+	return result, nil
+}
+
+func (qb *PerformerStore) queryFilteredCounts(ctx context.Context, q string) ([]*models.FilteredCounts, error) {
+	const single = false
+	var ret []*models.FilteredCounts
+	if err := qb.queryFunc(ctx, q, nil, single, func(r *sqlx.Rows) error {
+		var f filteredCountsRow
+		if err := r.StructScan(&f); err != nil {
+			return err
+		}
+
+		s := f.resolve()
+
+		ret = append(ret, s)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (qb *PerformerStore) queryGroupedFields(ctx context.Context, options models.PerformerQueryOptions, query queryBuilder) (*models.PerformerQueryResult, error) {
+	if !options.FilteredCounts {
+		// nothing to do - return empty result
+		return models.NewPerformerQueryResult(qb, nil), nil
+	}
+
+	if options.FilteredCounts {
+		query.addColumn("scene_sum")
+		query.addColumn("image_sum")
+		query.addColumn("gallery_sum")
+		query.addColumn("movie_sum")
+	}
+
+	const includeSortPagination = true
+
+	result, err := qb.queryFilteredCounts(ctx, query.toSQL(includeSortPagination))
+	if err != nil {
+		return nil, err
+	}
+
+	ret := models.NewPerformerQueryResult(qb, result)
+
+	return ret, nil
 }
 
 func (qb *PerformerStore) QueryCount(ctx context.Context, performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) (int, error) {
@@ -943,58 +1033,88 @@ func performerStudiosCriterionHandler(qb *PerformerStore, studios *models.Hierar
 func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models.MultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if performers != nil {
-			formatMaps := []utils.StrFormatMap{
-				{
-					"primaryTable": performersScenesTable,
-					"joinTable":    performersScenesTable,
-					"primaryFK":    sceneIDColumn,
-				},
-				{
-					"primaryTable": performersImagesTable,
-					"joinTable":    performersImagesTable,
-					"primaryFK":    imageIDColumn,
-				},
-				{
-					"primaryTable": performersGalleriesTable,
-					"joinTable":    performersGalleriesTable,
-					"primaryFK":    galleryIDColumn,
-				},
-			}
-
 			if len(performers.Value) == '0' {
 				return
 			}
 
-			const derivedPerformerPerformersTable = "performer_performers"
+			formatMaps := []utils.StrFormatMap{
+				{
+					"table":         performersScenesTable,
+					"key":           sceneIDColumn,
+					"sceneColumn":   "COUNT(" + performerIDColumn + ") AS scene_count",
+					"imageColumn":   "NULL AS image_count",
+					"galleryColumn": "NULL AS gallery_count",
+					"movieColumn":   "NULL AS movie_count",
+					"movieJoin":     "",
+				},
+				{
+					"table":         performersImagesTable,
+					"key":           imageIDColumn,
+					"sceneColumn":   "NULL AS scene_count",
+					"imageColumn":   "COUNT(" + performerIDColumn + ") AS image_count",
+					"galleryColumn": "NULL AS gallery_count",
+					"movieColumn":   "NULL AS movie_count",
+					"movieJoin":     "",
+				},
+				{
+					"table":         performersGalleriesTable,
+					"key":           galleryIDColumn,
+					"sceneColumn":   "NULL AS scene_count",
+					"imageColumn":   "NULL AS image_count",
+					"galleryColumn": "COUNT(" + performerIDColumn + ") AS gallery_count",
+					"movieColumn":   "NULL AS movie_count",
+					"movieJoin":     "",
+				},
+				{
+					"table":         performersScenesTable,
+					"key":           sceneIDColumn,
+					"sceneColumn":   "NULL AS scene_count",
+					"imageColumn":   "NULL AS image_count",
+					"galleryColumn": "NULL AS gallery_count",
+					"movieColumn":   "COUNT(" + performerIDColumn + ") AS movie_count",
+					"movieJoin":     "INNER JOIN movies_scenes ON " + performersScenesTable + "2." + sceneIDColumn + " = " + moviesScenesTable + "." + sceneIDColumn,
+				},
+			}
+
+			const derivedPerformerPerformersTable = "all_performers"
 
 			valuesClause := strings.Join(performers.Value, "),(")
 
 			f.addWith("performer(id) AS (VALUES(" + valuesClause + "))")
 
-			templStr := `SELECT {primaryTable}2.performer_id FROM {primaryTable}
-			INNER JOIN {primaryTable} AS {primaryTable}2 ON {primaryTable}.{primaryFK} = {primaryTable}2.{primaryFK}
-			INNER JOIN performer ON {primaryTable}.performer_id = performer.id
-			WHERE {primaryTable}2.performer_id != performer.id`
+			templStr :=
+				`SELECT performer_id, {sceneColumn}, {imageColumn}, {galleryColumn}, {movieColumn}
+				FROM (
+				SELECT {table}2.performer_id
+				FROM {table}
+				INNER JOIN {table} AS {table}2 ON {table}.{key} = {table}2.{key}
+				{movieJoin}
+				INNER JOIN performer ON {table}.performer_id = performer.id
+				WHERE {table}2.performer_id != performer.id`
 
 			if performers.Modifier == models.CriterionModifierIncludesAll && len(performers.Value) > 1 {
 				templStr += `
-							GROUP BY {primaryTable}2.performer_id
-							HAVING(count(distinct {primaryTable}.performer_id) IS ` + strconv.Itoa(len(performers.Value)) + `)`
+					GROUP BY {table}.{key}, {table}2.performer_id
+					HAVING(COUNT(DISTINCT {table}.performer_id) IS ` + strconv.Itoa(len(performers.Value)) + `)`
 			}
+
+			templStr += `) GROUP BY performer_id`
 
 			var unions []string
 			for _, c := range formatMaps {
 				unions = append(unions, utils.StrFormat(templStr, c))
 			}
 
-			f.addWith(fmt.Sprintf("%s AS (%s)", derivedPerformerPerformersTable, strings.Join(unions, " UNION ")))
+			sel := "SELECT performer_id, COALESCE(CAST(GROUP_CONCAT(scene_count) AS INTEGER),0) AS scene_sum, CAST(COALESCE(GROUP_CONCAT(image_count),0) AS INTEGER) AS image_sum, CAST(COALESCE(GROUP_CONCAT(gallery_count),0) AS INTEGER) AS gallery_sum, CAST(COALESCE(GROUP_CONCAT(movie_count),0) AS INTEGER) AS movie_sum FROM ("
+			grp := ") GROUP BY performer_id HAVING performer_id NOT IN performer"
 
+			f.addWith(fmt.Sprintf("%s AS (%s %s %s)", derivedPerformerPerformersTable, sel, strings.Join(unions, " UNION "), grp))
 			f.addInnerJoin(derivedPerformerPerformersTable, "", fmt.Sprintf("performers.id = %s.performer_id", derivedPerformerPerformersTable))
 		}
 	}
 }
 
-func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) string {
+func (qb *PerformerStore) getPerformerSort(performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) string {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -1015,11 +1135,28 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) st
 		sortQuery += getCountSort(performerTable, performersImagesTable, performerIDColumn, direction)
 	case "galleries_count":
 		sortQuery += getCountSort(performerTable, performersGalleriesTable, performerIDColumn, direction)
+	case "o_counter":
+		sortQuery += getMultiSumSort("o_counter", performerTable, sceneTable, performersScenesTable, imageTable, performersImagesTable, performerIDColumn, sceneIDColumn, imageIDColumn, direction)
+	case "scenes_count_filtered":
+		if performerFilter.Performers != nil {
+			sortQuery += getSort("all_performers.scene_sum", direction, "performers")
+		} else {
+			sortQuery += getCountSort(performerTable, performersScenesTable, performerIDColumn, direction)
+		}
+	case "images_count_filtered":
+		if performerFilter.Performers != nil {
+			sortQuery += getSort("all_performers.image_sum", direction, "performers")
+		} else {
+			sortQuery += getCountSort(performerTable, performersImagesTable, performerIDColumn, direction)
+		}
+	case "galleries_count_filtered":
+		if performerFilter.Performers != nil {
+			sortQuery += getSort("all_performers.gallery_sum", direction, "performers")
+		} else {
+			sortQuery += getCountSort(performerTable, performersGalleriesTable, performerIDColumn, direction)
+		}
 	default:
 		sortQuery += getSort(sort, direction, "performers")
-	}
-	if sort == "o_counter" {
-		return getMultiSumSort("o_counter", performerTable, sceneTable, performersScenesTable, imageTable, performersImagesTable, performerIDColumn, sceneIDColumn, imageIDColumn, direction)
 	}
 
 	// Whatever the sorting, always use name/id as a final sort

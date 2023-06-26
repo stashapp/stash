@@ -214,6 +214,7 @@ type PerformerReader interface {
 	// support the query needed
 	QueryForAutoTag(ctx context.Context, words []string) ([]*Performer, error)
 	Query(ctx context.Context, performerFilter *PerformerFilterType, findFilter *FindFilterType) ([]*Performer, int, error)
+	QueryWithOptions(ctx context.Context, options PerformerQueryOptions) (*PerformerQueryResult, error)
 	QueryCount(ctx context.Context, galleryFilter *PerformerFilterType, findFilter *FindFilterType) (int, error)
 	AliasLoader
 	GetImage(ctx context.Context, performerID int) ([]byte, error)
@@ -233,4 +234,42 @@ type PerformerWriter interface {
 type PerformerReaderWriter interface {
 	PerformerReader
 	PerformerWriter
+}
+
+type PerformerQueryOptions struct {
+	QueryOptions
+	PerformerFilter *PerformerFilterType
+	FilteredCounts  bool
+}
+
+type FilteredCounts struct {
+	ID                   int  `json:"id"`
+	SceneCountFiltered   *int `json:"scene_count_filtered"`
+	ImageCountFiltered   *int `json:"image_count_filtered"`
+	GalleryCountFiltered *int `json:"gallery_count_filtered"`
+	MovieCountFiltered   *int `json:"movie_count_filtered"`
+}
+
+type PerformerQueryResult struct {
+	QueryResult
+
+	finder         PerformerFinder
+	performers     []*Performer
+	filteredCounts []*FilteredCounts
+	resolveErr     error
+}
+
+func NewPerformerQueryResult(finder PerformerFinder, filteredCounts []*FilteredCounts) *PerformerQueryResult {
+	return &PerformerQueryResult{
+		finder:         finder,
+		filteredCounts: filteredCounts,
+	}
+}
+
+func (r *PerformerQueryResult) Resolve(ctx context.Context) ([]*Performer, []*FilteredCounts, error) {
+	// cache results
+	if r.performers == nil && r.resolveErr == nil {
+		r.performers, r.resolveErr = r.finder.FindMany(ctx, r.IDs)
+	}
+	return r.performers, r.filteredCounts, r.resolveErr
 }
