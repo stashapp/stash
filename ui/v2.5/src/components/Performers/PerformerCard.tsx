@@ -11,10 +11,6 @@ import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
 import { TagLink } from "../Shared/TagLink";
 import { Button, ButtonGroup } from "react-bootstrap";
-import {
-  Criterion,
-  CriterionValue,
-} from "src/models/list-filter/criteria/criterion";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import GenderIcon from "./GenderIcon";
 import { faHeart, faTag } from "@fortawesome/free-solid-svg-icons";
@@ -22,13 +18,7 @@ import { RatingBanner } from "../Shared/RatingBanner";
 import cx from "classnames";
 import { usePerformerUpdate } from "src/core/StashService";
 import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
-
-export interface IPerformerCardExtraCriteria {
-  scenes?: Criterion<CriterionValue>[];
-  images?: Criterion<CriterionValue>[];
-  galleries?: Criterion<CriterionValue>[];
-  movies?: Criterion<CriterionValue>[];
-}
+import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
 
 interface IPerformerCardProps {
   performer: GQL.PerformerDataFragment;
@@ -36,7 +26,7 @@ interface IPerformerCardProps {
   selecting?: boolean;
   selected?: boolean;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
-  extraCriteria?: IPerformerCardExtraCriteria;
+  extraCriteria?: StudiosCriterion;
   extraPerformerFilter?: PerformersCriterion;
   useFilteredCounts?: boolean;
   filteredCounts?: GQL.FilteredCountsDataFragment;
@@ -129,7 +119,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
         count={scene_count}
         url={NavUtils.makePerformerScenesUrl(
           performer,
-          extraCriteria?.scenes,
+          useFilteredCounts ? extraCriteria : undefined,
           useFilteredCounts ? extraPerformerFilter : undefined
         )}
       />
@@ -145,7 +135,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
         count={image_count}
         url={NavUtils.makePerformerImagesUrl(
           performer,
-          extraCriteria?.images,
+          useFilteredCounts ? extraCriteria : undefined,
           useFilteredCounts ? extraPerformerFilter : undefined
         )}
       />
@@ -162,7 +152,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
         count={gallery_count}
         url={NavUtils.makePerformerGalleriesUrl(
           performer,
-          extraCriteria?.galleries,
+          useFilteredCounts ? extraCriteria : undefined,
           useFilteredCounts ? extraPerformerFilter : undefined
         )}
       />
@@ -211,7 +201,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
         count={movie_count}
         url={NavUtils.makePerformerMoviesUrl(
           performer,
-          extraCriteria?.movies,
+          useFilteredCounts ? extraCriteria : undefined,
           useFilteredCounts ? extraPerformerFilter : undefined
         )}
       />

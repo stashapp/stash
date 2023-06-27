@@ -19,10 +19,11 @@ import { DisplayMode } from "src/models/list-filter/types";
 import { PerformerTagger } from "../Tagger/performers/PerformerTagger";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
-import { IPerformerCardExtraCriteria, PerformerCard } from "./PerformerCard";
+import { PerformerCard } from "./PerformerCard";
 import { PerformerListTable } from "./PerformerListTable";
 import { EditPerformersDialog } from "./EditPerformersDialog";
 import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
+import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
 
 const PerformerItemList = makeItemList({
   filterMode: GQL.FilterMode.Performers,
@@ -39,14 +40,12 @@ interface IPerformerList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   persistState?: PersistanceLevel;
   alterQuery?: boolean;
-  extraCriteria?: IPerformerCardExtraCriteria;
 }
 
 export const PerformerList: React.FC<IPerformerList> = ({
   filterHook,
   persistState,
   alterQuery,
-  extraCriteria,
 }) => {
   const intl = useIntl();
   const history = useHistory();
@@ -140,6 +139,10 @@ export const PerformerList: React.FC<IPerformerList> = ({
         (obj) => obj.criterionOption.type === "performers"
       )[0] as PerformersCriterion;
 
+      const studioFilter = filter.criteria.filter(
+        (obj) => obj.criterionOption.type === "studios"
+      )[0] as StudiosCriterion;
+
       if (filter.displayMode === DisplayMode.Grid) {
         return (
           <div className="row justify-content-center">
@@ -152,7 +155,7 @@ export const PerformerList: React.FC<IPerformerList> = ({
                 onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
                   onSelectChange(p.id, selected, shiftKey)
                 }
-                extraCriteria={extraCriteria}
+                extraCriteria={studioFilter}
                 extraPerformerFilter={performerFilter}
                 useFilteredCounts={filter.useFilteredCounts}
                 filteredCounts={result.data?.findPerformers.filteredCounts.find(

@@ -32,7 +32,7 @@ function addExtraCriteria(
 
 const makePerformerScenesUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
-  extraCriteria?: Criterion<CriterionValue>[],
+  extraCriteria?: StudiosCriterion,
   performerFilter?: PerformersCriterion
 ) => {
   if (!performer.id) return "#";
@@ -47,13 +47,17 @@ const makePerformerScenesUrl = (
   }
 
   filter.criteria.push(criterion);
-  addExtraCriteria(filter.criteria, extraCriteria);
+
+  if (extraCriteria) {
+    filter.criteria.push(extraCriteria);
+  }
+
   return `/scenes?${filter.makeQueryParameters()}`;
 };
 
 const makePerformerImagesUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
-  extraCriteria?: Criterion<CriterionValue>[],
+  extraCriteria?: StudiosCriterion,
   performerFilter?: PerformersCriterion
 ) => {
   if (!performer.id) return "#";
@@ -68,13 +72,17 @@ const makePerformerImagesUrl = (
   }
 
   filter.criteria.push(criterion);
-  addExtraCriteria(filter.criteria, extraCriteria);
+
+  if (extraCriteria) {
+    filter.criteria.push(extraCriteria);
+  }
+
   return `/images?${filter.makeQueryParameters()}`;
 };
 
 const makePerformerGalleriesUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
-  extraCriteria?: Criterion<CriterionValue>[],
+  extraCriteria?: StudiosCriterion,
   performerFilter?: PerformersCriterion
 ) => {
   if (!performer.id) return "#";
@@ -89,13 +97,17 @@ const makePerformerGalleriesUrl = (
   }
 
   filter.criteria.push(criterion);
-  addExtraCriteria(filter.criteria, extraCriteria);
+
+  if (extraCriteria) {
+    filter.criteria.push(extraCriteria);
+  }
+
   return `/galleries?${filter.makeQueryParameters()}`;
 };
 
 const makePerformerMoviesUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
-  extraCriteria?: Criterion<CriterionValue>[],
+  extraCriteria?: StudiosCriterion,
   performerFilter?: PerformersCriterion
 ) => {
   if (!performer.id) return "#";
@@ -110,7 +122,11 @@ const makePerformerMoviesUrl = (
   }
 
   filter.criteria.push(criterion);
-  addExtraCriteria(filter.criteria, extraCriteria);
+
+  if (extraCriteria) {
+    filter.criteria.push(extraCriteria);
+  }
+
   return `/movies?${filter.makeQueryParameters()}`;
 };
 
