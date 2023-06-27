@@ -39,7 +39,7 @@ func (r *queryResolver) FindPerformers(ctx context.Context, performerFilter *mod
 				FindFilter: filter,
 			},
 			PerformerFilter: performerFilter,
-			FilteredCounts:  performerFilter != nil && performerFilter.Performers != nil && stringslice.StrInclude(fields, "filteredCounts"),
+			FilteredCounts:  performerFilter != nil && performerFilter.Performers != nil || performerFilter.Studios != nil && stringslice.StrInclude(fields, "filteredCounts"),
 		})
 		if err == nil {
 			performers, filteredCounts, err = result.Resolve(ctx)

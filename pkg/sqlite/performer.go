@@ -678,9 +678,9 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 
 	query.handleCriterion(ctx, performerTagsCriterionHandler(qb, filter.Tags))
 
-	query.handleCriterion(ctx, performerStudiosCriterionHandler(qb, filter.Studios))
-
-	query.handleCriterion(ctx, performerAppearsWithCriterionHandler(qb, filter.Performers))
+	//query.handleCriterion(ctx, performerStudiosCriterionHandler(qb, filter.Studios))
+	// performerAppearsWithCriterionHandler now handles performers and studios
+	query.handleCriterion(ctx, performerAppearsWithCriterionHandler(qb, filter.Performers, filter.Studios))
 	//query.handleCriterion(ctx, intCriterionHandler(filter.SceneCountFiltered, "all_performers.scene_sum", nil))
 	//query.handleCriterion(ctx, intCriterionHandler(filter.ImageCountFiltered, "all_performers.image_sum", nil))
 	//query.handleCriterion(ctx, intCriterionHandler(filter.GalleryCountFiltered, "all_performers.gallery_sum", nil))
@@ -770,10 +770,11 @@ func (qb *PerformerStore) QueryWithOptions(ctx context.Context, options models.P
 	return result, nil
 }
 
-func (qb *PerformerStore) queryFilteredCounts(ctx context.Context, q string) ([]*models.FilteredCounts, error) {
+func (qb *PerformerStore) queryFilteredCounts(ctx context.Context, query string, args []interface{}) ([]*models.FilteredCounts, error) {
+
 	const single = false
 	var ret []*models.FilteredCounts
-	if err := qb.queryFunc(ctx, q, nil, single, func(r *sqlx.Rows) error {
+	if err := qb.queryFunc(ctx, query, args, single, func(r *sqlx.Rows) error {
 		var f filteredCountsRow
 		if err := r.StructScan(&f); err != nil {
 			return err
@@ -805,7 +806,7 @@ func (qb *PerformerStore) queryGroupedFields(ctx context.Context, options models
 
 	const includeSortPagination = true
 
-	result, err := qb.queryFilteredCounts(ctx, query.toSQL(includeSortPagination))
+	result, err := qb.queryFilteredCounts(ctx, query.toSQL(includeSortPagination), query.args)
 	if err != nil {
 		return nil, err
 	}
@@ -1030,85 +1031,137 @@ func performerStudiosCriterionHandler(qb *PerformerStore, studios *models.Hierar
 	}
 }
 
-func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models.MultiCriterionInput) criterionHandlerFunc {
+func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models.MultiCriterionInput, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
-		if performers != nil {
-			if len(performers.Value) == '0' {
+
+		formatMaps := []utils.StrFormatMap{
+			{
+				"joinTable":     performersScenesTable,
+				"primaryTable":  sceneTable,
+				"key":           sceneIDColumn,
+				"sceneColumn":   "COUNT(" + performerIDColumn + ") AS scene_count",
+				"imageColumn":   "NULL AS image_count",
+				"galleryColumn": "NULL AS gallery_count",
+				"movieColumn":   "NULL AS movie_count",
+				"movieJoin":     "",
+			},
+			{
+				"joinTable":     performersImagesTable,
+				"primaryTable":  imageTable,
+				"key":           imageIDColumn,
+				"sceneColumn":   "NULL AS scene_count",
+				"imageColumn":   "COUNT(" + performerIDColumn + ") AS image_count",
+				"galleryColumn": "NULL AS gallery_count",
+				"movieColumn":   "NULL AS movie_count",
+				"movieJoin":     "",
+			},
+			{
+				"joinTable":     performersGalleriesTable,
+				"primaryTable":  galleryTable,
+				"key":           galleryIDColumn,
+				"sceneColumn":   "NULL AS scene_count",
+				"imageColumn":   "NULL AS image_count",
+				"galleryColumn": "COUNT(" + performerIDColumn + ") AS gallery_count",
+				"movieColumn":   "NULL AS movie_count",
+				"movieJoin":     "",
+			},
+			{
+				"joinTable":     performersScenesTable,
+				"primaryTable":  sceneTable,
+				"key":           sceneIDColumn,
+				"sceneColumn":   "NULL AS scene_count",
+				"imageColumn":   "NULL AS image_count",
+				"galleryColumn": "NULL AS gallery_count",
+				"movieColumn":   "COUNT(" + performerIDColumn + ") AS movie_count",
+				"movieJoin":     "INNER JOIN movies_scenes ON " + performersScenesTable + "2." + sceneIDColumn + " = " + moviesScenesTable + "." + sceneIDColumn,
+			},
+		}
+
+		var performerUnions []string
+		var studioUnions []string
+
+		if studios != nil && len(studios.Value) != '0' {
+
+			studioValuesClause, err := getHierarchicalValues(ctx, qb.tx, studios.Value, studioTable, "", "parent_id", "child_id", studios.Depth)
+			if err != nil {
+				f.setError(err)
 				return
 			}
 
-			formatMaps := []utils.StrFormatMap{
-				{
-					"table":         performersScenesTable,
-					"key":           sceneIDColumn,
-					"sceneColumn":   "COUNT(" + performerIDColumn + ") AS scene_count",
-					"imageColumn":   "NULL AS image_count",
-					"galleryColumn": "NULL AS gallery_count",
-					"movieColumn":   "NULL AS movie_count",
-					"movieJoin":     "",
-				},
-				{
-					"table":         performersImagesTable,
-					"key":           imageIDColumn,
-					"sceneColumn":   "NULL AS scene_count",
-					"imageColumn":   "COUNT(" + performerIDColumn + ") AS image_count",
-					"galleryColumn": "NULL AS gallery_count",
-					"movieColumn":   "NULL AS movie_count",
-					"movieJoin":     "",
-				},
-				{
-					"table":         performersGalleriesTable,
-					"key":           galleryIDColumn,
-					"sceneColumn":   "NULL AS scene_count",
-					"imageColumn":   "NULL AS image_count",
-					"galleryColumn": "COUNT(" + performerIDColumn + ") AS gallery_count",
-					"movieColumn":   "NULL AS movie_count",
-					"movieJoin":     "",
-				},
-				{
-					"table":         performersScenesTable,
-					"key":           sceneIDColumn,
-					"sceneColumn":   "NULL AS scene_count",
-					"imageColumn":   "NULL AS image_count",
-					"galleryColumn": "NULL AS gallery_count",
-					"movieColumn":   "COUNT(" + performerIDColumn + ") AS movie_count",
-					"movieJoin":     "INNER JOIN movies_scenes ON " + performersScenesTable + "2." + sceneIDColumn + " = " + moviesScenesTable + "." + sceneIDColumn,
-				},
+			f.addWith("studio(root_id, item_id) AS (" + studioValuesClause + ")")
+
+			studioTemplStr := `SELECT performer_id,{primaryTable}.id FROM {primaryTable}
+				INNER JOIN {joinTable} ON {primaryTable}.id = {joinTable}.{key}
+				INNER JOIN studio ON {primaryTable}.studio_id = studio.item_id`
+
+			for _, c := range formatMaps {
+				studioUnions = append(studioUnions, utils.StrFormat(studioTemplStr, c))
+			}
+		}
+
+		if performers != nil && len(performers.Value) != '0' {
+			performerValuesClause := strings.Join(performers.Value, "),(")
+
+			f.addWith("performer(id) AS (VALUES(" + performerValuesClause + "))")
+
+			performerTemplStr :=
+				`SELECT {joinTable}2.performer_id,{joinTable}2.{key}
+				FROM {joinTable}
+				INNER JOIN {joinTable} AS {joinTable}2 ON {joinTable}.{key} = {joinTable}2.{key}
+				{movieJoin}
+				INNER JOIN performer ON {joinTable}.performer_id = performer.id
+				WHERE {joinTable}2.performer_id != performer.id`
+
+			if performers.Modifier == models.CriterionModifierIncludesAll && len(performers.Value) > 1 {
+				performerTemplStr += `
+					GROUP BY {joinTable}.{key}, {joinTable}2.performer_id
+					HAVING(COUNT(DISTINCT {joinTable}.performer_id) IS ` + strconv.Itoa(len(performers.Value)) + `)`
+			}
+
+			for _, c := range formatMaps {
+				performerUnions = append(performerUnions, utils.StrFormat(performerTemplStr, c))
+			}
+		}
+
+		if performers != nil && len(performers.Value) != '0' || studios != nil && len(studios.Value) != '0' {
+
+			var selects []string
+
+			selectsTemplStr := `SELECT performer_id, {sceneColumn}, {imageColumn}, {galleryColumn}, {movieColumn}`
+
+			for _, c := range formatMaps {
+				selects = append(selects, utils.StrFormat(selectsTemplStr, c))
+			}
+
+			var intersects []string
+
+			if performers != nil && studios != nil && len(studios.Value) != '0' && len(performers.Value) != '0' {
+				for i := range performerUnions {
+					intersects = append(intersects, fmt.Sprintf("%s FROM (%s) GROUP BY performer_id", selects[i], strings.Join([]string{performerUnions[i], studioUnions[i]}, " INTERSECT ")))
+				}
+
+			} else if performers != nil && len(performers.Value) != '0' {
+				for i := range performerUnions {
+					intersects = append(intersects, fmt.Sprintf("%s FROM (%s) GROUP BY performer_id", selects[i], performerUnions[i]))
+				}
+
+			} else if studios != nil && len(studios.Value) != '0' {
+				for i := range studioUnions {
+					intersects = append(intersects, fmt.Sprintf("%s FROM (%s) GROUP BY performer_id", selects[i], studioUnions[i]))
+				}
 			}
 
 			const derivedPerformerPerformersTable = "all_performers"
 
-			valuesClause := strings.Join(performers.Value, "),(")
-
-			f.addWith("performer(id) AS (VALUES(" + valuesClause + "))")
-
-			templStr :=
-				`SELECT performer_id, {sceneColumn}, {imageColumn}, {galleryColumn}, {movieColumn}
-				FROM (
-				SELECT {table}2.performer_id
-				FROM {table}
-				INNER JOIN {table} AS {table}2 ON {table}.{key} = {table}2.{key}
-				{movieJoin}
-				INNER JOIN performer ON {table}.performer_id = performer.id
-				WHERE {table}2.performer_id != performer.id`
-
-			if performers.Modifier == models.CriterionModifierIncludesAll && len(performers.Value) > 1 {
-				templStr += `
-					GROUP BY {table}.{key}, {table}2.performer_id
-					HAVING(COUNT(DISTINCT {table}.performer_id) IS ` + strconv.Itoa(len(performers.Value)) + `)`
-			}
-
-			templStr += `) GROUP BY performer_id`
-
-			var unions []string
-			for _, c := range formatMaps {
-				unions = append(unions, utils.StrFormat(templStr, c))
-			}
-
 			sel := "SELECT performer_id, COALESCE(CAST(GROUP_CONCAT(scene_count) AS INTEGER),0) AS scene_sum, CAST(COALESCE(GROUP_CONCAT(image_count),0) AS INTEGER) AS image_sum, CAST(COALESCE(GROUP_CONCAT(gallery_count),0) AS INTEGER) AS gallery_sum, CAST(COALESCE(GROUP_CONCAT(movie_count),0) AS INTEGER) AS movie_sum FROM ("
-			grp := ") GROUP BY performer_id HAVING performer_id NOT IN performer"
+			grp := ") GROUP BY performer_id"
 
-			f.addWith(fmt.Sprintf("%s AS (%s %s %s)", derivedPerformerPerformersTable, sel, strings.Join(unions, " UNION "), grp))
+			if performers != nil && len(performers.Value) != '0' {
+				grp += " HAVING performer_id NOT IN performer"
+			}
+
+			f.addWith(fmt.Sprintf("%s AS (%s %s %s)", derivedPerformerPerformersTable, sel, strings.Join(intersects, " UNION "), grp))
+
 			f.addInnerJoin(derivedPerformerPerformersTable, "", fmt.Sprintf("performers.id = %s.performer_id", derivedPerformerPerformersTable))
 		}
 	}
@@ -1138,19 +1191,19 @@ func (qb *PerformerStore) getPerformerSort(performerFilter *models.PerformerFilt
 	case "o_counter":
 		sortQuery += getMultiSumSort("o_counter", performerTable, sceneTable, performersScenesTable, imageTable, performersImagesTable, performerIDColumn, sceneIDColumn, imageIDColumn, direction)
 	case "scenes_count_filtered":
-		if performerFilter.Performers != nil {
+		if performerFilter.Performers != nil || performerFilter.Studios != nil {
 			sortQuery += getSort("all_performers.scene_sum", direction, "performers")
 		} else {
 			sortQuery += getCountSort(performerTable, performersScenesTable, performerIDColumn, direction)
 		}
 	case "images_count_filtered":
-		if performerFilter.Performers != nil {
+		if performerFilter.Performers != nil || performerFilter.Studios != nil {
 			sortQuery += getSort("all_performers.image_sum", direction, "performers")
 		} else {
 			sortQuery += getCountSort(performerTable, performersImagesTable, performerIDColumn, direction)
 		}
 	case "galleries_count_filtered":
-		if performerFilter.Performers != nil {
+		if performerFilter.Performers != nil || performerFilter.Studios != nil {
 			sortQuery += getSort("all_performers.gallery_sum", direction, "performers")
 		} else {
 			sortQuery += getCountSort(performerTable, performersGalleriesTable, performerIDColumn, direction)
