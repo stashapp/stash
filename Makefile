@@ -64,7 +64,7 @@ build-flags: pre-build
 ifndef GO_BUILD_TAGS
 	$(eval GO_BUILD_TAGS := $(GO_BUILD_TAGS_DEFAULT))
 endif
-	$(eval BUILD_FLAGS := -mod=vendor -v -tags "$(GO_BUILD_TAGS)" $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)")
+	$(eval BUILD_FLAGS := -mod=vendor -v -tags "$(GO_BUILD_TAGS)" $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)" -buildmode=pie)
 
 # NOTE: the build target still includes netgo because we cannot detect
 # Windows easily from the Makefile.
