@@ -1001,7 +1001,7 @@ func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models
 				INNER JOIN studio ON {primaryTable}.studio_id = studio.item_id`
 
 			studioMovieStr := `
-				SELECT performer_id, movies.id
+				SELECT performer_id, movies.id AS movie_id
 				FROM scenes
 				INNER JOIN performers_scenes ON scenes.id = performers_scenes.scene_id
 				INNER JOIN movies_scenes ON performers_scenes.scene_id  = movies_scenes.scene_id
