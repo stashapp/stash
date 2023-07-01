@@ -931,6 +931,7 @@
   "files_amount": "{value} files",
   "filesize": "File Size",
   "filter": "Filter",
+  "filter_counts": "Filter Counts",
   "filter_name": "Filter name",
   "filters": "Filters",
   "folder": "Folder",
