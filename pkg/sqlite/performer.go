@@ -1034,16 +1034,17 @@ func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models
 			}
 
 			performerMovieStr := `
-				SELECT performers_scenes2.performer_id, movies_scenes.movie_id
+				SELECT performers_scenes2.performer_id, movies_scenes2.movie_id
 				FROM performers_scenes
-				INNER JOIN performers_scenes AS performers_scenes2 ON performers_scenes.scene_id = performers_scenes2.scene_id
-				INNER JOIN movies_scenes ON performers_scenes2.scene_id = movies_scenes.scene_id
+				INNER JOIN movies_scenes ON performers_scenes.scene_id = movies_scenes.scene_id
+				INNER JOIN movies_scenes AS movies_scenes2 ON movies_scenes.movie_id = movies_scenes2.movie_id
+				INNER JOIN performers_scenes AS performers_scenes2 ON movies_scenes2.scene_id = performers_scenes2.scene_id 
 				INNER JOIN performer ON performers_scenes.performer_id = performer.id
-				WHERE performers_scenes2.performer_id != performer.id`
+				WHERE performers_scenes2.performer_id != performer.id `
 
 			if performers.Modifier == models.CriterionModifierIncludesAll && len(performers.Value) > 1 {
 				performerMovieStr += `
-					GROUP BY performers_scenes.scene_id, performers_scenes2.performer_id
+					GROUP BY movies_scenes2.movie_id, performers_scenes2.performer_id
 					HAVING(COUNT(DISTINCT performers_scenes.performer_id) IS ` + strconv.Itoa(len(performers.Value)) + `)`
 			}
 
@@ -1064,7 +1065,7 @@ func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models
 				selects = append(selects, utils.StrFormat(selectsTemplStr, c))
 			}
 
-			selects = append(selects, "SELECT performer_id, NULL AS scene_count, NULL AS image_count, NULL AS gallery_count, COUNT(performer_id) AS movie_count")
+			selects = append(selects, "SELECT performer_id, NULL AS scene_count, NULL AS image_count, NULL AS gallery_count, COUNT(DISTINCT movie_id) AS movie_count")
 
 			var intersects []string
 
@@ -1087,10 +1088,11 @@ func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models
 			const derivedPerformerPerformersTable = "all_performers"
 
 			sel := "SELECT performer_id, COALESCE(CAST(GROUP_CONCAT(scene_count) AS INTEGER),0) AS scene_sum, CAST(COALESCE(GROUP_CONCAT(image_count),0) AS INTEGER) AS image_sum, CAST(COALESCE(GROUP_CONCAT(gallery_count),0) AS INTEGER) AS gallery_sum, CAST(COALESCE(GROUP_CONCAT(movie_count),0) AS INTEGER) AS movie_sum FROM ("
-			grp := ") GROUP BY performer_id"
+			// remove performers who only appear in the same movie without sharing a scene
+			grp := ") GROUP BY performer_id HAVING scene_sum > 0 OR image_sum > 0 OR gallery_sum > 0"
 
 			if performers != nil && len(performers.Value) != '0' {
-				grp += " HAVING performer_id NOT IN performer"
+				grp += " AND performer_id NOT IN performer"
 			}
 
 			f.addWith(fmt.Sprintf("%s AS (%s %s %s)", derivedPerformerPerformersTable, sel, strings.Join(intersects, " UNION "), grp))

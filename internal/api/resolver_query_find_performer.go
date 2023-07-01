@@ -27,7 +27,6 @@ func (r *queryResolver) FindPerformer(ctx context.Context, id string) (ret *mode
 
 func (r *queryResolver) FindPerformers(ctx context.Context, performerFilter *models.PerformerFilterType, filter *models.FindFilterType) (ret *FindPerformersResultType, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-
 		var performers []*models.Performer
 		var filteredCounts []*models.FilteredCounts
 
@@ -39,10 +38,14 @@ func (r *queryResolver) FindPerformers(ctx context.Context, performerFilter *mod
 				FindFilter: filter,
 			},
 			PerformerFilter: performerFilter,
-			FilteredCounts:  performerFilter != nil && performerFilter.Performers != nil || performerFilter.Studios != nil && stringslice.StrInclude(fields, "filteredCounts"),
+			FilteredCounts:  (performerFilter != nil && performerFilter.Performers != nil || performerFilter != nil && performerFilter.Studios != nil) && stringslice.StrInclude(fields, "filteredCounts"),
 		})
 		if err == nil {
 			performers, filteredCounts, err = result.Resolve(ctx)
+		}
+
+		if err != nil {
+			return err
 		}
 
 		ret = &FindPerformersResultType{
