@@ -82,13 +82,21 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
     if (useFilteredCounts != null) {
       return (
         <div className="mb-2 mr-2">
-          <Button
-            variant="secondary"
-            active={useFilteredCounts === true}
-            onClick={() => onSetFilteredCounts && onSetFilteredCounts()}
+          <OverlayTrigger
+            overlay={
+              <Tooltip id="display-mode-tooltip">
+                {intl.formatMessage({ id: "filter_counts" })}
+              </Tooltip>
+            }
           >
-            <Icon icon={faEye} />
-          </Button>
+            <Button
+              variant="secondary"
+              active={useFilteredCounts === true}
+              onClick={() => onSetFilteredCounts && onSetFilteredCounts()}
+            >
+              <Icon icon={faEye} />
+            </Button>
+          </OverlayTrigger>
         </div>
       );
     }
