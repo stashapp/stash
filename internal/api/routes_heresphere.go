@@ -245,7 +245,7 @@ func getVrTag() (varTag string, err error) {
 	// Find setting
 	varTag = config.GetInstance().GetUIVRTag()
 	if len(varTag) == 0 {
-		err = fmt.Errorf("Zero length VR Tag!")
+		err = fmt.Errorf("zero length vr tag")
 	}
 	return
 }
