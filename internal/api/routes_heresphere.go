@@ -965,7 +965,6 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 /*
  * This auxiliary function finds if a login is needed, and auth is correct.
  */
-// TODO: Move to utils?
 func basicLogin(username string, password string) bool {
 	// If needs creds, try login
 	if config.GetInstance().HasCredentials() {
@@ -1027,7 +1026,6 @@ func HeresphereHasValidToken(r *http.Request) bool {
 /*
  * This auxiliary function adds an auth token to a url
  */
-// TODO: Move this to utils
 func addApiKey(urlS string) string {
 	// Parse URL
 	u, err := url.Parse(urlS)
