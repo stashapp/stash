@@ -784,17 +784,18 @@ func (rs heresphereRoutes) HeresphereIndex(w http.ResponseWriter, r *http.Reques
 func FindProjectionTags(scene *models.Scene, processedScene *HeresphereVideoEntry) {
 	// Detect VR modes from tags
 	for _, tag := range processedScene.Tags {
+		tagPre := strings.TrimPrefix(tag.Name, "Tag:")
+
 		// Has degrees tag
-		if strings.HasSuffix(tag.Name, "°") {
-			deg := strings.TrimSuffix(tag.Name, "°")
-			deg = strings.TrimPrefix(deg, "Tag:")
+		if strings.HasSuffix(tagPre, "°") {
+			deg := strings.TrimSuffix(tagPre, "°")
 			if s, err := strconv.ParseFloat(deg, 32); err == nil {
 				processedScene.Fov = float32(s)
 			}
 		}
 		// Has VR tag
 		vrTag, err := getVrTag()
-		if err == nil && strings.Contains(tag.Name, vrTag) {
+		if err == nil && tagPre == vrTag {
 			if processedScene.Projection == HeresphereProjectionPerspective {
 				processedScene.Projection = HeresphereProjectionEquirectangular
 			}
@@ -803,7 +804,7 @@ func FindProjectionTags(scene *models.Scene, processedScene *HeresphereVideoEntr
 			}
 		}
 		// Has Fisheye tag
-		if strings.Contains(tag.Name, "Fisheye") {
+		if tagPre == "Fisheye" {
 			processedScene.Projection = HeresphereProjectionFisheye
 			if processedScene.Stereo == HeresphereStereoMono {
 				processedScene.Stereo = HeresphereStereoSbs
