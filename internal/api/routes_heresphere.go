@@ -792,7 +792,7 @@ func FindProjectionTags(scene *models.Scene, processedScene *HeresphereVideoEntr
 				processedScene.Fov = float32(s)
 			}
 		}
-		// Has VR tag (TODO: stashdb says Virtual Reality, should i check against it?)
+		// Has VR tag
 		vrTag, err := getVrTag()
 		if err == nil && strings.Contains(tag.Name, vrTag) {
 			if processedScene.Projection == HeresphereProjectionPerspective {
