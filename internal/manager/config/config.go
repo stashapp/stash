@@ -1121,6 +1121,15 @@ func (i *Instance) GetUIConfiguration() map[string]interface{} {
 	return fromSnakeCaseMap(v)
 }
 
+func (i *Instance) GetUIVRTag() string {
+	cfgMap := i.GetUIConfiguration()
+	if val, ok := cfgMap["vrTag"]; ok {
+		return val.(string)
+	}
+
+	return ""
+}
+
 func (i *Instance) SetUIConfiguration(v map[string]interface{}) {
 	i.RLock()
 	defer i.RUnlock()

@@ -1,20 +1,14 @@
 package api
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"image"
-	"image/jpeg"
-	"image/png"
 	"io"
-	"math"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
 
@@ -28,9 +22,6 @@ import (
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/txn"
-	"github.com/stashapp/stash/pkg/utils"
-
-	"golang.org/x/image/draw"
 )
 
 // Based on HereSphere_JSON_API_Version_1.txt
@@ -84,14 +75,20 @@ type HeresphereCustomTag string
 
 const (
 	HeresphereCustomTagInteractive HeresphereCustomTag = "Interactive"
-	HeresphereCustomTagUnwatched   HeresphereCustomTag = "Unwatched"
-	HeresphereCustomTagWatched     HeresphereCustomTag = "Watched"
+
+	HeresphereCustomTagPlayCount HeresphereCustomTag = "PlayCount"
+	HeresphereCustomTagUnwatched HeresphereCustomTag = "Unwatched"
+	HeresphereCustomTagWatched   HeresphereCustomTag = "Watched"
+
 	HeresphereCustomTagUnorganized HeresphereCustomTag = "Unorganized"
 	HeresphereCustomTagOrganized   HeresphereCustomTag = "Organized"
-	HeresphereCustomTagPlayCount   HeresphereCustomTag = "PlayCount"
-	HeresphereCustomTagOCounter    HeresphereCustomTag = "OCounter"
-	HeresphereCustomTagUnrated     HeresphereCustomTag = "Unrated"
-	HeresphereCustomTagRated       HeresphereCustomTag = "Rated"
+
+	HeresphereCustomTagOCounter   HeresphereCustomTag = "OCounter"
+	HeresphereCustomTagOrgasmed   HeresphereCustomTag = "Orgasmed"
+	HeresphereCustomTagUnorgasmed HeresphereCustomTag = "Nogasm"
+
+	HeresphereCustomTagUnrated HeresphereCustomTag = "Unrated"
+	HeresphereCustomTagRated   HeresphereCustomTag = "Rated"
 )
 
 const HeresphereAuthHeader = "auth-token"
@@ -230,7 +227,6 @@ func (rs heresphereRoutes) Routes() chi.Router {
 		r.Get("/", rs.HeresphereIndex)
 		r.Head("/", rs.HeresphereIndex)
 
-		// r.Post("/scan", rs.HeresphereScan)
 		r.Post("/auth", rs.HeresphereLoginToken)
 		r.Route("/{sceneId}", func(r chi.Router) {
 			r.Use(rs.HeresphereSceneCtx)
@@ -238,44 +234,20 @@ func (rs heresphereRoutes) Routes() chi.Router {
 			r.Post("/", rs.HeresphereVideoData)
 			r.Get("/", rs.HeresphereVideoData)
 
-			// r.Get("/hsp", rs.HeresphereVideoHsp)
 			r.Post("/event", rs.HeresphereVideoEvent)
-			// r.Get("/thumbnail", rs.HeresphereThumbnail)
 		})
 	})
 
 	return r
 }
 
-// TODO: Move these to be more generic functions
 func getVrTag() (varTag string, err error) {
-	// Default to stashdb tag (TODO: Consider this)
-	varTag = "Virtual Reality"
-
 	// Find setting
-	cfgMap := config.GetInstance().GetUIConfiguration()
-	if val, ok := cfgMap["vrTag"]; ok {
-		rval := val.(string)
-		if len(rval) > 0 {
-			varTag = rval
-		}
+	varTag = config.GetInstance().GetUIVRTag()
+	if len(varTag) == 0 {
+		err = fmt.Errorf("Zero length VR Tag!")
 	}
-
 	return
-}
-func getFavoriteTag() (varTag string, err error) {
-	// TODO: Heresphere settings section (with favorite tag, enabled, etc.)
-	varTag = "Favorite"
-	// TODO: .
-	return
-}
-func getHeatmapOverlayEnabled() bool {
-	// TODO: .
-	return true
-}
-func getHeatmapOverlayPercent() float32 {
-	// TODO: .
-	return 0.12
 }
 
 /*
@@ -284,7 +256,7 @@ func getHeatmapOverlayPercent() float32 {
  * But since we dont need that, we just use it for timestamps.
  */
 func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
-	// scene := r.Context().Value(heresphereKey).(*models.Scene)
+	scene := r.Context().Value(heresphereKey).(*models.Scene)
 
 	// Decode event
 	var event HeresphereVideoEvent
@@ -294,204 +266,20 @@ func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	// Add playDuration (TODO: can we detect skipping?)
-	// TODO: Huge value bug
-	/*newTime := event.Time / 1000
+	// Add playDuration
+	newTime := event.Time / 1000
 	newDuration := scene.PlayDuration
-	if newTime > scene.ResumeTime {
+	// TODO: Huge value bug
+	/*if newTime > scene.ResumeTime {
 		newDuration += (newTime - scene.ResumeTime)
-	}
-
-	// TODO: Unless we track playing, we cant increment playcount (also check minimumPlayPercent)
+	}*/
 
 	if _, err := rs.resolver.Mutation().SceneSaveActivity(r.Context(), strconv.Itoa(scene.ID), &newTime, &newDuration); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	}*/
+	}
 
 	w.WriteHeader(http.StatusOK)
-}
-
-// While this function works well enough
-// Heresphere likes to request a shitton of images
-// freezing the entire app
-// TODO: Fix that
-func (rs heresphereRoutes) HeresphereThumbnail(w http.ResponseWriter, r *http.Request) {
-	scene := r.Context().Value(heresphereKey).(*models.Scene)
-	defaultUrl := addApiKey(urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetScreenshotURL())
-
-	if !getHeatmapOverlayEnabled() {
-		http.Redirect(w, r, defaultUrl, http.StatusSeeOther)
-		return
-	}
-
-	sceneHash := scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
-	filePath := manager.GetInstance().Paths.Scene.GetInteractiveHeatmapPath(sceneHash)
-
-	// Get cover image
-	var cover []byte
-	if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
-		sceneCoverGetter := (rs.sceneFinder).(manager.SceneCoverGetter)
-		var err error
-		cover, err = sceneCoverGetter.GetCover(ctx, scene.ID)
-		return err
-	}); err != nil {
-		logger.Debugf("Scene %v failed to get cover\n", scene.ID)
-		http.Redirect(w, r, defaultUrl, http.StatusSeeOther)
-		return
-	}
-
-	// Heatmap open
-	f, err := os.Open(filePath)
-	if err != nil {
-		logger.Debugf("Scene %v failed to open heatmap\n", scene.ID)
-		utils.ServeImage(w, r, cover)
-		return
-	}
-	defer f.Close()
-
-	// Cover decode
-	coverDec, err := jpeg.Decode(bytes.NewBuffer(cover))
-	if err != nil {
-		logger.Debugf("Scene %v failed to decode cover\n", scene.ID)
-		utils.ServeImage(w, r, cover)
-		return
-	}
-
-	// Heatmap decode
-	heatMapDec, err := png.Decode(f)
-	if err != nil {
-		logger.Debugf("Scene %v failed to decode heatmap\n", scene.ID)
-		utils.ServeImage(w, r, cover)
-		return
-	}
-
-	// Calculate the new width and height based on the desired ratio
-	newWidth := models.DefaultGthumbWidth
-	newHeight := int(float32(newWidth) / 16.0 * 9.0)
-
-	// Calculate the height for pasting heatMapDec onto coverDec
-	pasteHeight := int(float32(newHeight) * getHeatmapOverlayPercent())
-
-	// Calculate the scaled dimensions of the coverDec image
-	// TODO: The ignores segment the image, consider adding back
-	scale := math.Min(float64(newWidth)/float64(coverDec.Bounds().Dx()), float64(newHeight /*-pasteHeight*/)/float64(coverDec.Bounds().Dy()))
-	scaledWidth := int(float64(coverDec.Bounds().Dx()) * scale)
-	scaledHeight := int(float64(coverDec.Bounds().Dy()) * scale)
-
-	// Calculate the position to center the scaled coverDec image
-	x := (newWidth - scaledWidth) / 2
-	y := (newHeight /*- pasteHeight*/ - scaledHeight) / 2
-
-	// Create a new image with the specified width and height
-	newImage := image.NewRGBA(image.Rect(0, 0, newWidth, newHeight))
-
-	// Resize and draw coverDec onto the new image
-	coverResized := image.NewRGBA(image.Rect(0, 0, scaledWidth, scaledHeight))
-	draw.CatmullRom.Scale(coverResized, coverResized.Bounds(), coverDec, coverDec.Bounds(), draw.Src, nil)
-
-	// Paste the resized coverDec onto the new image
-	draw.Draw(newImage, image.Rect(x, y, x+scaledWidth, y+scaledHeight), coverResized, coverResized.Bounds().Min, draw.Src)
-
-	// Calculate the destination rectangle for pasting heatMapDec
-	pasteRect := image.Rect(0, newHeight-pasteHeight, newWidth, newHeight)
-
-	// Resize heatMapDec to fit the paste rectangle
-	resizedHeatMap := image.NewRGBA(pasteRect)
-	draw.CatmullRom.Scale(resizedHeatMap, resizedHeatMap.Bounds(), heatMapDec, heatMapDec.Bounds(), draw.Over, nil)
-
-	// Paste heatMapDec onto the new image
-	draw.Draw(newImage, pasteRect, resizedHeatMap, resizedHeatMap.Bounds().Min, draw.Over)
-
-	// Encode overlayed image
-	var b bytes.Buffer
-	iw := bufio.NewWriter(&b)
-	if err := jpeg.Encode(iw, newImage, &jpeg.Options{Quality: 90}); err != nil {
-		logger.Debugf("Scene %v failed to encode image with heatmap overlaid\n", scene.ID)
-		utils.ServeImage(w, r, cover)
-		return
-	}
-
-	// Flush buffer
-	if err := iw.Flush(); err != nil {
-		logger.Debugf("Scene %v failed to flush encoded heatmap overlay\n", scene.ID)
-		utils.ServeImage(w, r, cover)
-		return
-	}
-
-	utils.ServeImage(w, r, b.Bytes())
-}
-
-/*
- * HSP is a HereSphere config file
- * It stores the players local config such as projection or color settings etc.
- */
-func (rs heresphereRoutes) HeresphereVideoHsp(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotImplemented)
-	// TODO: Need an SQL entry, either link to file (annoying path, needs cleanup etc.), or just put binary in SQL
-}
-
-/*
- * This endpoint provides a list of all videos in a short format
- */
-func (rs heresphereRoutes) HeresphereScan(w http.ResponseWriter, r *http.Request) {
-	processedScenes := []HeresphereVideoEntryShort{}
-	var scenes []*models.Scene
-
-	if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
-		var err error
-		scenes, err = rs.repository.Scene.All(ctx)
-		return err
-	}); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Processing each scene and creating a new list
-	for _, scene := range scenes {
-		// Perform the necessary processing on each scene
-		processedScene := HeresphereVideoEntryShort{
-			Link: fmt.Sprintf("%s/heresphere/%v",
-				GetBaseURL(r),
-				scene.ID,
-			),
-			Title:      scene.GetTitle(),
-			DateAdded:  scene.CreatedAt.Format("2006-01-02"),
-			Duration:   60000.0,
-			Rating:     0,
-			Favorites:  0,
-			Comments:   scene.OCounter,
-			IsFavorite: rs.getVideoFavorite(r, scene),
-			Tags:       rs.getVideoTags(r, scene),
-		}
-		if scene.Date != nil {
-			processedScene.DateReleased = scene.Date.Format("2006-01-02")
-		}
-		if scene.Rating != nil {
-			fiveScale := models.Rating100To5F(*scene.Rating)
-			processedScene.Rating = fiveScale
-		}
-		if processedScene.IsFavorite {
-			processedScene.Favorites++
-		}
-
-		if scene.Files.PrimaryLoaded() {
-			file_ids := scene.Files.Primary()
-			if file_ids != nil {
-				processedScene.Duration = handleFloat64Value(file_ids.Duration * 1000.0)
-			}
-		}
-
-		processedScenes = append(processedScenes, processedScene)
-	}
-
-	// Create a JSON encoder for the response writer
-	w.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(HeresphereScanIndex{ScanData: processedScenes})
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
 }
 
 /*
@@ -534,28 +322,6 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 		}); err != nil {
 			fileDeleter.Rollback()
 			return err
-		}
-	}
-
-	// Favorite
-	// TODO: Not working
-	// TODO: err .
-	favName, _ := getFavoriteTag()
-	if user.IsFavorite != nil {
-		favtag := HeresphereVideoTag{Name: fmt.Sprintf("Tag:%v", favName)}
-		if *user.IsFavorite {
-			if user.Tags == nil {
-				user.Tags = &[]HeresphereVideoTag{favtag}
-			} else {
-				*user.Tags = append(*user.Tags, favtag)
-			}
-		} else if user.Tags != nil {
-			for i, tag := range *user.Tags {
-				if tag.Name == favtag.Name {
-					*user.Tags = append((*user.Tags)[:i], (*user.Tags)[i+1:]...)
-					break
-				}
-			}
 		}
 	}
 
@@ -620,7 +386,6 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 			{
 				tagName := tagI.Name
 
-				// TODO: Filter contradictory tags?
 				if tagName == string(HeresphereCustomTagWatched) && scn.PlayCount == 0 {
 					scn.PlayCount++
 					continue
@@ -637,11 +402,11 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 					scn.Organized = false
 					continue
 				}
-				if tagName == string(HeresphereCustomTagRated) ||
-					tagName == string(HeresphereCustomTagUnrated) {
+				if tagName == string(HeresphereCustomTagRated) {
 					continue
 				}
-				if tagName == favName {
+				if tagName == string(HeresphereCustomTagUnrated) {
+					scn.Rating = nil
 					continue
 				}
 
@@ -726,12 +491,6 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 	tag_ids, err := rs.resolver.Scene().Tags(r.Context(), scene)
 	if err == nil {
 		for _, tag := range tag_ids {
-			// TODO: err .
-			favTag, _ := getFavoriteTag()
-			if tag.Name == favTag {
-				continue
-			}
-
 			genTag := HeresphereVideoTag{
 				Name: fmt.Sprintf("Tag:%v", tag.Name),
 			}
@@ -820,7 +579,17 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 		processedTags = append(processedTags, genTag)
 	}
 
-	// TODO: OCounted, Orgasmed?
+	if scene.OCounter > 0 {
+		genTag := HeresphereVideoTag{
+			Name: string(HeresphereCustomTagOrgasmed),
+		}
+		processedTags = append(processedTags, genTag)
+	} else {
+		genTag := HeresphereVideoTag{
+			Name: string(HeresphereCustomTagUnorgasmed),
+		}
+		processedTags = append(processedTags, genTag)
+	}
 
 	{
 		genTag := HeresphereVideoTag{
@@ -879,24 +648,6 @@ func (rs heresphereRoutes) getVideoSubtitles(r *http.Request, scene *models.Scen
 	}
 
 	return processedSubtitles
-}
-
-/*
- * This auxiliary function searches for the "favorite" tag
- */
-func (rs heresphereRoutes) getVideoFavorite(r *http.Request, scene *models.Scene) bool {
-	tag_ids, err := rs.resolver.Scene().Tags(r.Context(), scene)
-	if err == nil {
-		// TODO: err .
-		favTag, _ := getFavoriteTag()
-		for _, tag := range tag_ids {
-			if tag.Name == favTag {
-				return true
-			}
-		}
-	}
-
-	return false
 }
 
 /*
@@ -1042,10 +793,8 @@ func FindProjectionTags(scene *models.Scene, processedScene *HeresphereVideoEntr
 			}
 		}
 		// Has VR tag (TODO: stashdb says Virtual Reality, should i check against it?)
-		// TODO: err .
-		vrTag, _ := getVrTag()
-		// TODO: If vrTag is empty, will this cause always true?
-		if strings.Contains(tag.Name, vrTag) {
+		vrTag, err := getVrTag()
+		if err == nil && strings.Contains(tag.Name, vrTag) {
 			if processedScene.Projection == HeresphereProjectionPerspective {
 				processedScene.Projection = HeresphereProjectionEquirectangular
 			}
@@ -1148,13 +897,9 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 
 	// Create scene
 	processedScene = HeresphereVideoEntry{
-		Access:      HeresphereMember,
-		Title:       scene.GetTitle(),
-		Description: scene.Details,
-		/*ThumbnailImage: addApiKey(fmt.Sprintf("%s/heresphere/%v/thumbnail",
-			GetBaseURL(r),
-			scene.ID,
-		)),*/
+		Access:         HeresphereMember,
+		Title:          scene.GetTitle(),
+		Description:    scene.Details,
 		ThumbnailImage: addApiKey(urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetScreenshotURL()),
 		ThumbnailVideo: addApiKey(urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetStreamPreviewURL()),
 		DateAdded:      scene.CreatedAt.Format("2006-01-02"),
@@ -1162,7 +907,7 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		Rating:         0,
 		Favorites:      0,
 		Comments:       scene.OCounter,
-		IsFavorite:     rs.getVideoFavorite(r, scene),
+		IsFavorite:     false,
 		Projection:     HeresphereProjectionPerspective,
 		Stereo:         HeresphereStereoMono,
 		IsEyeSwapped:   false,
@@ -1182,6 +927,7 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		WriteTags:     true,
 		WriteHSP:      false,
 	}
+
 	// Find projection options
 	FindProjectionTags(scene, &processedScene)
 
