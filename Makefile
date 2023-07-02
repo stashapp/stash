@@ -71,10 +71,13 @@ endif
 .PHONY: build
 build: build-flags
 build:
-	# TODO: Cleanly separate building of stash and phasher into their own make targets.
-	# TODO: Does phasher need cross-compile make targets?
 	go build $(OUTPUT) $(BUILD_FLAGS) ./cmd/stash
-	go build $(BUILD_FLAGS) ./phasher.go
+
+# TODO: Integrate the phasher target with the rest of the Makefile,
+# TODO: so it can be built as part of normal releases.
+.PHONY: phasher
+phasher:
+	go build -o $@ -trimpath -buildmode=pie -ldflags '-s -w' ./cmd/phasher
 
 # strips debug symbols from the release build
 .PHONY: build-release
