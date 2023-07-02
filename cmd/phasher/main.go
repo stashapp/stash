@@ -6,17 +6,37 @@ import (
 	"fmt"
 	"os"
 
+	flag "github.com/spf13/pflag"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/hash/videophash"
 )
 
+func customusage() {
+	fmt.Fprintf(os.Stderr, "Usage:\n")
+	fmt.Fprintf(os.Stderr, "%s [OPTIONS] VIDEOFILE\n\nOptions:\n", os.Args[0])
+	flag.PrintDefaults()
+}
+
 func main() {
-	// TODO: Tidier argument handling (spf13/cobra?) and print usage info.
-	if len(os.Args) < 2 {
-		panic("missing argument")
+	flag.Usage = customusage
+	quiet := flag.BoolP("quiet", "q", false, "print only the phash")
+	help := flag.BoolP("help", "h", false, "print this help output")
+	flag.Parse()
+
+	if *help {
+		flag.Usage()
+		os.Exit(2)
 	}
-	inputfile := os.Args[1]
+
+	args := flag.Args()
+
+	if len(args) < 1 {
+		fmt.Fprintf(os.Stderr, "Missing VIDEOFILE argument.\n")
+		flag.Usage()
+		os.Exit(2)
+	}
+	inputfile := args[0]
 
 	ffmpegPath, ffprobePath := ffmpeg.GetPaths(nil)
 	FFMPEG := ffmpeg.NewEncoder(ffmpegPath)
@@ -41,5 +61,10 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Printf("%x %v\n", *phash, vf.Path)
+
+	if *quiet {
+		fmt.Printf("%x\n", *phash)
+	} else {
+		fmt.Printf("%x %v\n", *phash, vf.Path)
+	}
 }
