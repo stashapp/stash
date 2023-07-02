@@ -948,6 +948,9 @@ func performerOCounterCriterionHandler(qb *PerformerStore, count *models.IntCrit
 
 func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models.MultiCriterionInput, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
+		if performers == nil && studios == nil {
+			return
+		}
 
 		formatMaps := []utils.StrFormatMap{
 			{
@@ -985,29 +988,46 @@ func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models
 		var performerUnions []string
 		var studioUnions []string
 
-		if studios != nil && len(studios.Value) != '0' {
-
-			studioValuesClause, err := getHierarchicalValues(ctx, qb.tx, studios.Value, studioTable, "", "parent_id", "child_id", studios.Depth)
-			if err != nil {
-				f.setError(err)
-				return
-			}
-
-			f.addWith("studio(root_id, item_id) AS (" + studioValuesClause + ")")
-
-			studioTemplStr := `SELECT performer_id, {primaryTable}.id 
-				FROM {primaryTable}
-				INNER JOIN {joinTable} ON {primaryTable}.id = {joinTable}.{key}
-				INNER JOIN studio ON {primaryTable}.studio_id = studio.item_id`
+		if studios != nil {
+			// studios filter, start building studio query
+			studioTemplStr := `
+			SELECT performer_id, {primaryTable}.id 
+			FROM {primaryTable}
+			INNER JOIN {joinTable} ON {primaryTable}.id = {joinTable}.{key}`
 
 			studioMovieStr := `
-				SELECT performer_id, movies.id AS movie_id
-				FROM scenes
-				INNER JOIN performers_scenes ON scenes.id = performers_scenes.scene_id
-				INNER JOIN movies_scenes ON performers_scenes.scene_id  = movies_scenes.scene_id
-				INNER JOIN movies ON movies_scenes.movie_id = movies.id
-				INNER JOIN studio ON movies.studio_id = studio.item_id`
+			SELECT performer_id, movies.id AS movie_id
+			FROM scenes
+			INNER JOIN performers_scenes ON scenes.id = performers_scenes.scene_id
+			INNER JOIN movies_scenes ON performers_scenes.scene_id  = movies_scenes.scene_id
+			INNER JOIN movies ON movies_scenes.movie_id = movies.id`
 
+			if len(studios.Value) > 0 {
+				// at least one studio value
+				studioValuesClause, err := getHierarchicalValues(ctx, qb.tx, studios.Value, studioTable, "", "parent_id", "child_id", studios.Depth)
+				if err != nil {
+					f.setError(err)
+					return
+				}
+
+				f.addWith("studio(root_id, item_id) AS (" + studioValuesClause + ")")
+
+				studioTemplStr += " INNER JOIN studio ON {primaryTable}.studio_id = studio.item_id"
+				studioMovieStr += " INNER JOIN studio ON movies.studio_id = studio.item_id"
+
+			} else {
+				// no studios to query
+				if studios.Modifier == models.CriterionModifierIsNull {
+					studioTemplStr += " WHERE {primaryTable}.studio_id IS NULL"
+					studioMovieStr += " WHERE movies.studio_id IS NULL"
+
+				} else if studios.Modifier == models.CriterionModifierNotNull {
+					studioTemplStr += " WHERE {primaryTable}.studio_id IS NOT NULL"
+					studioMovieStr += " WHERE movies.studio_id IS NOT NULL"
+				}
+			}
+
+			// build studio queries
 			for _, c := range formatMaps {
 				studioUnions = append(studioUnions, utils.StrFormat(studioTemplStr, c))
 			}
@@ -1015,37 +1035,61 @@ func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models
 			studioUnions = append(studioUnions, studioMovieStr)
 		}
 
-		if performers != nil && len(performers.Value) != '0' {
-			performerValuesClause := strings.Join(performers.Value, "),(")
-
-			f.addWith("performer(id) AS (VALUES(" + performerValuesClause + "))")
-
-			performerTemplStr :=
-				`SELECT {joinTable}2.performer_id, {joinTable}2.{key}
+		if performers != nil {
+			// performers filter, start building performer query
+			performerTemplStr := `
+				SELECT {joinTable}2.performer_id, {joinTable}2.{key}
 				FROM {joinTable}
-				INNER JOIN {joinTable} AS {joinTable}2 ON {joinTable}.{key} = {joinTable}2.{key}
-				INNER JOIN performer ON {joinTable}.performer_id = performer.id
-				WHERE {joinTable}2.performer_id != performer.id`
-
-			if performers.Modifier == models.CriterionModifierIncludesAll && len(performers.Value) > 1 {
-				performerTemplStr += `
-					GROUP BY {joinTable}.{key}, {joinTable}2.performer_id
-					HAVING(COUNT(DISTINCT {joinTable}.performer_id) IS ` + strconv.Itoa(len(performers.Value)) + `)`
-			}
+				INNER JOIN {joinTable} AS {joinTable}2 ON {joinTable}.{key} = {joinTable}2.{key}`
 
 			performerMovieStr := `
 				SELECT performers_scenes2.performer_id, movies_scenes2.movie_id
 				FROM performers_scenes
 				INNER JOIN movies_scenes ON performers_scenes.scene_id = movies_scenes.scene_id
 				INNER JOIN movies_scenes AS movies_scenes2 ON movies_scenes.movie_id = movies_scenes2.movie_id
-				INNER JOIN performers_scenes AS performers_scenes2 ON movies_scenes2.scene_id = performers_scenes2.scene_id 
-				INNER JOIN performer ON performers_scenes.performer_id = performer.id
-				WHERE performers_scenes2.performer_id != performer.id `
+				INNER JOIN performers_scenes AS performers_scenes2 ON movies_scenes2.scene_id = performers_scenes2.scene_id`
 
-			if performers.Modifier == models.CriterionModifierIncludesAll && len(performers.Value) > 1 {
+			if len(performers.Value) > 0 {
+				// at least one performer value
+				performerValuesClause := strings.Join(performers.Value, "),(")
+
+				f.addWith("performer(id) AS (VALUES(" + performerValuesClause + "))")
+
+				performerTemplStr += `
+					INNER JOIN performer ON {joinTable}.performer_id = performer.id`
+
+				performerMovieStr += ` 
+					INNER JOIN performer ON performers_scenes.performer_id = performer.id`
+
+				if performers.Modifier == models.CriterionModifierIncludesAll && len(performers.Value) > 1 {
+					performerTemplStr += `
+						GROUP BY {joinTable}.{key}, {joinTable}2.performer_id
+						HAVING(COUNT(DISTINCT {joinTable}.performer_id) IS ` + strconv.Itoa(len(performers.Value)) + `)`
+
+					performerMovieStr += `
+						GROUP BY movies_scenes2.movie_id, performers_scenes2.performer_id
+						HAVING(COUNT(DISTINCT performers_scenes.performer_id) IS ` + strconv.Itoa(len(performers.Value)) + `)`
+
+				}
+
+			} else if performers.Modifier == models.CriterionModifierIsNull {
+				// no performers to query. returns scenes etc where there is 1 credited performer.
+				performerTemplStr += `
+					GROUP BY {joinTable}.{key}, {joinTable}2.performer_id
+					HAVING(COUNT(DISTINCT {joinTable}.performer_id) IS 1)`
+
 				performerMovieStr += `
 					GROUP BY movies_scenes2.movie_id, performers_scenes2.performer_id
-					HAVING(COUNT(DISTINCT performers_scenes.performer_id) IS ` + strconv.Itoa(len(performers.Value)) + `)`
+					HAVING(COUNT(DISTINCT performers_scenes.performer_id) IS 1)`
+			} else if performers.Modifier == models.CriterionModifierNotNull {
+				// no performers to query. returns scenes etc where there is more than 1 credited performer.
+				performerTemplStr += `
+					GROUP BY {joinTable}.{key}, {joinTable}2.performer_id
+					HAVING(COUNT(DISTINCT {joinTable}.performer_id) > 1)`
+
+				performerMovieStr += `
+					GROUP BY movies_scenes2.movie_id, performers_scenes2.performer_id
+					HAVING(COUNT(DISTINCT performers_scenes.performer_id) > 1)`
 			}
 
 			for _, c := range formatMaps {
@@ -1055,50 +1099,46 @@ func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models
 			performerUnions = append(performerUnions, performerMovieStr)
 		}
 
-		if performers != nil && len(performers.Value) != '0' || studios != nil && len(studios.Value) != '0' {
+		var selects []string
+		selectsTemplStr := "SELECT performer_id, {sceneColumn}, {imageColumn}, {galleryColumn}, NULL AS movie_count"
 
-			var selects []string
-
-			selectsTemplStr := `SELECT performer_id, {sceneColumn}, {imageColumn}, {galleryColumn}, NULL AS movie_count`
-
-			for _, c := range formatMaps {
-				selects = append(selects, utils.StrFormat(selectsTemplStr, c))
-			}
-
-			selects = append(selects, "SELECT performer_id, NULL AS scene_count, NULL AS image_count, NULL AS gallery_count, COUNT(DISTINCT movie_id) AS movie_count")
-
-			var intersects []string
-
-			if performers != nil && studios != nil && len(studios.Value) != '0' && len(performers.Value) != '0' {
-				for i := range performerUnions {
-					intersects = append(intersects, fmt.Sprintf("%s FROM (%s) GROUP BY performer_id", selects[i], strings.Join([]string{performerUnions[i], studioUnions[i]}, " INTERSECT ")))
-				}
-
-			} else if performers != nil && len(performers.Value) != '0' {
-				for i := range performerUnions {
-					intersects = append(intersects, fmt.Sprintf("%s FROM (%s) GROUP BY performer_id", selects[i], performerUnions[i]))
-				}
-
-			} else if studios != nil && len(studios.Value) != '0' {
-				for i := range studioUnions {
-					intersects = append(intersects, fmt.Sprintf("%s FROM (%s) GROUP BY performer_id", selects[i], studioUnions[i]))
-				}
-			}
-
-			const derivedPerformerPerformersTable = "all_performers"
-
-			sel := "SELECT performer_id, COALESCE(CAST(GROUP_CONCAT(scene_count) AS INTEGER),0) AS scene_sum, CAST(COALESCE(GROUP_CONCAT(image_count),0) AS INTEGER) AS image_sum, CAST(COALESCE(GROUP_CONCAT(gallery_count),0) AS INTEGER) AS gallery_sum, CAST(COALESCE(GROUP_CONCAT(movie_count),0) AS INTEGER) AS movie_sum FROM ("
-			// remove performers who only appear in the same movie without sharing a scene
-			grp := ") GROUP BY performer_id HAVING scene_sum > 0 OR image_sum > 0 OR gallery_sum > 0"
-
-			if performers != nil && len(performers.Value) != '0' {
-				grp += " AND performer_id NOT IN performer"
-			}
-
-			f.addWith(fmt.Sprintf("%s AS (%s %s %s)", derivedPerformerPerformersTable, sel, strings.Join(intersects, " UNION "), grp))
-
-			f.addInnerJoin(derivedPerformerPerformersTable, "", fmt.Sprintf("performers.id = %s.performer_id", derivedPerformerPerformersTable))
+		for _, c := range formatMaps {
+			selects = append(selects, utils.StrFormat(selectsTemplStr, c))
 		}
+
+		selects = append(selects, "SELECT performer_id, NULL AS scene_count, NULL AS image_count, NULL AS gallery_count, COUNT(DISTINCT movie_id) AS movie_count")
+
+		var intersects []string
+		if performers != nil && studios != nil {
+			for i := range performerUnions {
+				intersects = append(intersects, fmt.Sprintf("%s FROM (%s) GROUP BY performer_id", selects[i], strings.Join([]string{performerUnions[i], studioUnions[i]}, " INTERSECT ")))
+			}
+
+		} else if performers != nil {
+			for i := range performerUnions {
+				intersects = append(intersects, fmt.Sprintf("%s FROM (%s) GROUP BY performer_id", selects[i], performerUnions[i]))
+			}
+
+		} else if studios != nil {
+			for i := range studioUnions {
+				intersects = append(intersects, fmt.Sprintf("%s FROM (%s) GROUP BY performer_id", selects[i], studioUnions[i]))
+			}
+		}
+
+		const derivedPerformerPerformersTable = "all_performers"
+
+		sel := "SELECT performer_id, COALESCE(CAST(GROUP_CONCAT(scene_count) AS INTEGER),0) AS scene_sum, CAST(COALESCE(GROUP_CONCAT(image_count),0) AS INTEGER) AS image_sum, CAST(COALESCE(GROUP_CONCAT(gallery_count),0) AS INTEGER) AS gallery_sum, CAST(COALESCE(GROUP_CONCAT(movie_count),0) AS INTEGER) AS movie_sum FROM ("
+		// remove performers who only appear in the same movie without sharing a scene
+		grp := ") GROUP BY performer_id HAVING scene_sum > 0 OR image_sum > 0 OR gallery_sum > 0"
+
+		if performers != nil && len(performers.Value) > 0 {
+			grp += " AND performer_id NOT IN performer"
+		}
+
+		f.addWith(fmt.Sprintf("%s AS (%s %s %s)", derivedPerformerPerformersTable, sel, strings.Join(intersects, " UNION "), grp))
+
+		f.addInnerJoin(derivedPerformerPerformersTable, "", fmt.Sprintf("performers.id = %s.performer_id", derivedPerformerPerformersTable))
+
 	}
 }
 
