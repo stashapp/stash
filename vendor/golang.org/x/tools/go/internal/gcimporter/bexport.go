@@ -12,6 +12,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"go/ast"
 	"go/constant"
 	"go/token"
 	"go/types"
@@ -144,7 +145,7 @@ func BExportData(fset *token.FileSet, pkg *types.Package) (b []byte, err error) 
 	objcount := 0
 	scope := pkg.Scope()
 	for _, name := range scope.Names() {
-		if !token.IsExported(name) {
+		if !ast.IsExported(name) {
 			continue
 		}
 		if trace {
@@ -481,7 +482,7 @@ func (p *exporter) method(m *types.Func) {
 
 	p.pos(m)
 	p.string(m.Name())
-	if m.Name() != "_" && !token.IsExported(m.Name()) {
+	if m.Name() != "_" && !ast.IsExported(m.Name()) {
 		p.pkg(m.Pkg(), false)
 	}
 
@@ -500,7 +501,7 @@ func (p *exporter) fieldName(f *types.Var) {
 		// 3) field name doesn't match base type name (alias name)
 		bname := basetypeName(f.Type())
 		if name == bname {
-			if token.IsExported(name) {
+			if ast.IsExported(name) {
 				name = "" // 1) we don't need to know the field name or package
 			} else {
 				name = "?" // 2) use unexported name "?" to force package export
@@ -513,7 +514,7 @@ func (p *exporter) fieldName(f *types.Var) {
 	}
 
 	p.string(name)
-	if name != "" && !token.IsExported(name) {
+	if name != "" && !ast.IsExported(name) {
 		p.pkg(f.Pkg(), false)
 	}
 }

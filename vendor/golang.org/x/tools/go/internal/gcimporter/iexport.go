@@ -12,6 +12,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"go/ast"
 	"go/constant"
 	"go/token"
 	"go/types"
@@ -22,44 +23,8 @@ import (
 	"strconv"
 	"strings"
 
-	"golang.org/x/tools/internal/tokeninternal"
 	"golang.org/x/tools/internal/typeparams"
 )
-
-// IExportShallow encodes "shallow" export data for the specified package.
-//
-// No promises are made about the encoding other than that it can be
-// decoded by the same version of IIExportShallow. If you plan to save
-// export data in the file system, be sure to include a cryptographic
-// digest of the executable in the key to avoid version skew.
-func IExportShallow(fset *token.FileSet, pkg *types.Package) ([]byte, error) {
-	// In principle this operation can only fail if out.Write fails,
-	// but that's impossible for bytes.Buffer---and as a matter of
-	// fact iexportCommon doesn't even check for I/O errors.
-	// TODO(adonovan): handle I/O errors properly.
-	// TODO(adonovan): use byte slices throughout, avoiding copying.
-	const bundle, shallow = false, true
-	var out bytes.Buffer
-	err := iexportCommon(&out, fset, bundle, shallow, iexportVersion, []*types.Package{pkg})
-	return out.Bytes(), err
-}
-
-// IImportShallow decodes "shallow" types.Package data encoded by IExportShallow
-// in the same executable. This function cannot import data from
-// cmd/compile or gcexportdata.Write.
-func IImportShallow(fset *token.FileSet, imports map[string]*types.Package, data []byte, path string, insert InsertType) (*types.Package, error) {
-	const bundle = false
-	pkgs, err := iimportCommon(fset, imports, data, bundle, path, insert)
-	if err != nil {
-		return nil, err
-	}
-	return pkgs[0], nil
-}
-
-// InsertType is the type of a function that creates a types.TypeName
-// object for a named type and inserts it into the scope of the
-// specified Package.
-type InsertType = func(pkg *types.Package, name string)
 
 // Current bundled export format version. Increase with each format change.
 // 0: initial implementation
@@ -71,17 +36,15 @@ const bundleVersion = 0
 // The package path of the top-level package will not be recorded,
 // so that calls to IImportData can override with a provided package path.
 func IExportData(out io.Writer, fset *token.FileSet, pkg *types.Package) error {
-	const bundle, shallow = false, false
-	return iexportCommon(out, fset, bundle, shallow, iexportVersion, []*types.Package{pkg})
+	return iexportCommon(out, fset, false, iexportVersion, []*types.Package{pkg})
 }
 
 // IExportBundle writes an indexed export bundle for pkgs to out.
 func IExportBundle(out io.Writer, fset *token.FileSet, pkgs []*types.Package) error {
-	const bundle, shallow = true, false
-	return iexportCommon(out, fset, bundle, shallow, iexportVersion, pkgs)
+	return iexportCommon(out, fset, true, iexportVersion, pkgs)
 }
 
-func iexportCommon(out io.Writer, fset *token.FileSet, bundle, shallow bool, version int, pkgs []*types.Package) (err error) {
+func iexportCommon(out io.Writer, fset *token.FileSet, bundle bool, version int, pkgs []*types.Package) (err error) {
 	if !debug {
 		defer func() {
 			if e := recover(); e != nil {
@@ -98,7 +61,6 @@ func iexportCommon(out io.Writer, fset *token.FileSet, bundle, shallow bool, ver
 	p := iexporter{
 		fset:        fset,
 		version:     version,
-		shallow:     shallow,
 		allPkgs:     map[*types.Package]bool{},
 		stringIndex: map[string]uint64{},
 		declIndex:   map[types.Object]uint64{},
@@ -120,7 +82,7 @@ func iexportCommon(out io.Writer, fset *token.FileSet, bundle, shallow bool, ver
 	for _, pkg := range pkgs {
 		scope := pkg.Scope()
 		for _, name := range scope.Names() {
-			if token.IsExported(name) {
+			if ast.IsExported(name) {
 				p.pushDecl(scope.Lookup(name))
 			}
 		}
@@ -137,17 +99,6 @@ func iexportCommon(out io.Writer, fset *token.FileSet, bundle, shallow bool, ver
 	// Loop until no more work.
 	for !p.declTodo.empty() {
 		p.doDecl(p.declTodo.popHead())
-	}
-
-	// Produce index of offset of each file record in files.
-	var files intWriter
-	var fileOffset []uint64 // fileOffset[i] is offset in files of file encoded as i
-	if p.shallow {
-		fileOffset = make([]uint64, len(p.fileInfos))
-		for i, info := range p.fileInfos {
-			fileOffset[i] = uint64(files.Len())
-			p.encodeFile(&files, info.file, info.needed)
-		}
 	}
 
 	// Append indices to data0 section.
@@ -175,73 +126,14 @@ func iexportCommon(out io.Writer, fset *token.FileSet, bundle, shallow bool, ver
 	}
 	hdr.uint64(uint64(p.version))
 	hdr.uint64(uint64(p.strings.Len()))
-	if p.shallow {
-		hdr.uint64(uint64(files.Len()))
-		hdr.uint64(uint64(len(fileOffset)))
-		for _, offset := range fileOffset {
-			hdr.uint64(offset)
-		}
-	}
 	hdr.uint64(dataLen)
 
 	// Flush output.
 	io.Copy(out, &hdr)
 	io.Copy(out, &p.strings)
-	if p.shallow {
-		io.Copy(out, &files)
-	}
 	io.Copy(out, &p.data0)
 
 	return nil
-}
-
-// encodeFile writes to w a representation of the file sufficient to
-// faithfully restore position information about all needed offsets.
-// Mutates the needed array.
-func (p *iexporter) encodeFile(w *intWriter, file *token.File, needed []uint64) {
-	_ = needed[0] // precondition: needed is non-empty
-
-	w.uint64(p.stringOff(file.Name()))
-
-	size := uint64(file.Size())
-	w.uint64(size)
-
-	// Sort the set of needed offsets. Duplicates are harmless.
-	sort.Slice(needed, func(i, j int) bool { return needed[i] < needed[j] })
-
-	lines := tokeninternal.GetLines(file) // byte offset of each line start
-	w.uint64(uint64(len(lines)))
-
-	// Rather than record the entire array of line start offsets,
-	// we save only a sparse list of (index, offset) pairs for
-	// the start of each line that contains a needed position.
-	var sparse [][2]int // (index, offset) pairs
-outer:
-	for i, lineStart := range lines {
-		lineEnd := size
-		if i < len(lines)-1 {
-			lineEnd = uint64(lines[i+1])
-		}
-		// Does this line contains a needed offset?
-		if needed[0] < lineEnd {
-			sparse = append(sparse, [2]int{i, lineStart})
-			for needed[0] < lineEnd {
-				needed = needed[1:]
-				if len(needed) == 0 {
-					break outer
-				}
-			}
-		}
-	}
-
-	// Delta-encode the columns.
-	w.uint64(uint64(len(sparse)))
-	var prev [2]int
-	for _, pair := range sparse {
-		w.uint64(uint64(pair[0] - prev[0]))
-		w.uint64(uint64(pair[1] - prev[1]))
-		prev = pair
-	}
 }
 
 // writeIndex writes out an object index. mainIndex indicates whether
@@ -313,8 +205,7 @@ type iexporter struct {
 	out     *bytes.Buffer
 	version int
 
-	shallow  bool           // don't put types from other packages in the index
-	localpkg *types.Package // (nil in bundle mode)
+	localpkg *types.Package
 
 	// allPkgs tracks all packages that have been referenced by
 	// the export data, so we can ensure to include them in the
@@ -326,23 +217,12 @@ type iexporter struct {
 	strings     intWriter
 	stringIndex map[string]uint64
 
-	// In shallow mode, object positions are encoded as (file, offset).
-	// Each file is recorded as a line-number table.
-	// Only the lines of needed positions are saved faithfully.
-	fileInfo  map[*token.File]uint64 // value is index in fileInfos
-	fileInfos []*filePositions
-
 	data0       intWriter
 	declIndex   map[types.Object]uint64
 	tparamNames map[types.Object]string // typeparam->exported name
 	typIndex    map[types.Type]uint64
 
 	indent int // for tracing support
-}
-
-type filePositions struct {
-	file   *token.File
-	needed []uint64 // unordered list of needed file offsets
 }
 
 func (p *iexporter) trace(format string, args ...interface{}) {
@@ -368,36 +248,12 @@ func (p *iexporter) stringOff(s string) uint64 {
 	return off
 }
 
-// fileIndexAndOffset returns the index of the token.File and the byte offset of pos within it.
-func (p *iexporter) fileIndexAndOffset(file *token.File, pos token.Pos) (uint64, uint64) {
-	index, ok := p.fileInfo[file]
-	if !ok {
-		index = uint64(len(p.fileInfo))
-		p.fileInfos = append(p.fileInfos, &filePositions{file: file})
-		if p.fileInfo == nil {
-			p.fileInfo = make(map[*token.File]uint64)
-		}
-		p.fileInfo[file] = index
-	}
-	// Record each needed offset.
-	info := p.fileInfos[index]
-	offset := uint64(file.Offset(pos))
-	info.needed = append(info.needed, offset)
-
-	return index, offset
-}
-
 // pushDecl adds n to the declaration work queue, if not already present.
 func (p *iexporter) pushDecl(obj types.Object) {
 	// Package unsafe is known to the compiler and predeclared.
 	// Caller should not ask us to do export it.
 	if obj.Pkg() == types.Unsafe {
 		panic("cannot export package unsafe")
-	}
-
-	// Shallow export data: don't index decls from other packages.
-	if p.shallow && obj.Pkg() != p.localpkg {
-		return
 	}
 
 	if _, ok := p.declIndex[obj]; ok {
@@ -447,13 +303,7 @@ func (p *iexporter) doDecl(obj types.Object) {
 	case *types.Func:
 		sig, _ := obj.Type().(*types.Signature)
 		if sig.Recv() != nil {
-			// We shouldn't see methods in the package scope,
-			// but the type checker may repair "func () F() {}"
-			// to "func (Invalid) F()" and then treat it like "func F()",
-			// so allow that. See golang/go#57729.
-			if sig.Recv().Type() != types.Typ[types.Invalid] {
-				panic(internalErrorf("unexpected method: %v", sig))
-			}
+			panic(internalErrorf("unexpected method: %v", sig))
 		}
 
 		// Function.
@@ -565,28 +415,11 @@ func (w *exportWriter) tag(tag byte) {
 }
 
 func (w *exportWriter) pos(pos token.Pos) {
-	if w.p.shallow {
-		w.posV2(pos)
-	} else if w.p.version >= iexportVersionPosCol {
+	if w.p.version >= iexportVersionPosCol {
 		w.posV1(pos)
 	} else {
 		w.posV0(pos)
 	}
-}
-
-// posV2 encoding (used only in shallow mode) records positions as
-// (file, offset), where file is the index in the token.File table
-// (which records the file name and newline offsets) and offset is a
-// byte offset. It effectively ignores //line directives.
-func (w *exportWriter) posV2(pos token.Pos) {
-	if pos == token.NoPos {
-		w.uint64(0)
-		return
-	}
-	file := w.p.fset.File(pos) // fset must be non-nil
-	index, offset := w.p.fileIndexAndOffset(file, pos)
-	w.uint64(1 + index)
-	w.uint64(offset)
 }
 
 func (w *exportWriter) posV1(pos token.Pos) {
@@ -664,7 +497,7 @@ func (w *exportWriter) pkg(pkg *types.Package) {
 	w.string(w.exportPath(pkg))
 }
 
-func (w *exportWriter) qualifiedType(obj *types.TypeName) {
+func (w *exportWriter) qualifiedIdent(obj types.Object) {
 	name := w.p.exportName(obj)
 
 	// Ensure any referenced declarations are written out too.
@@ -723,11 +556,11 @@ func (w *exportWriter) doTyp(t types.Type, pkg *types.Package) {
 			return
 		}
 		w.startType(definedType)
-		w.qualifiedType(t.Obj())
+		w.qualifiedIdent(t.Obj())
 
 	case *typeparams.TypeParam:
 		w.startType(typeParamType)
-		w.qualifiedType(t.Obj())
+		w.qualifiedIdent(t.Obj())
 
 	case *types.Pointer:
 		w.startType(pointerType)
@@ -769,17 +602,14 @@ func (w *exportWriter) doTyp(t types.Type, pkg *types.Package) {
 
 	case *types.Struct:
 		w.startType(structType)
+		w.setPkg(pkg, true)
+
 		n := t.NumFields()
-		if n > 0 {
-			w.setPkg(t.Field(0).Pkg(), true) // qualifying package for field objects
-		} else {
-			w.setPkg(pkg, true)
-		}
 		w.uint64(uint64(n))
 		for i := 0; i < n; i++ {
 			f := t.Field(i)
 			w.pos(f.Pos())
-			w.string(f.Name()) // unexported fields implicitly qualified by prior setPkg
+			w.string(f.Name())
 			w.typ(f.Type(), pkg)
 			w.bool(f.Anonymous())
 			w.string(t.Tag(i)) // note (or tag)

@@ -31,12 +31,6 @@ type ErrorCode int
 // problem with types.
 
 const (
-	// InvalidSyntaxTree occurs if an invalid syntax tree is provided
-	// to the type checker. It should never happen.
-	InvalidSyntaxTree ErrorCode = -1
-)
-
-const (
 	_ ErrorCode = iota
 
 	// Test is reserved for errors that only apply while in self-test mode.
@@ -159,12 +153,12 @@ const (
 
 	/* decls > var (+ other variable assignment codes) */
 
-	// UntypedNilUse occurs when the predeclared (untyped) value nil is used to
+	// UntypedNil occurs when the predeclared (untyped) value nil is used to
 	// initialize a variable declared without an explicit type.
 	//
 	// Example:
 	//  var x = nil
-	UntypedNilUse
+	UntypedNil
 
 	// WrongAssignCount occurs when the number of values on the right-hand side
 	// of an assignment or or initialization expression does not match the number
@@ -1529,32 +1523,4 @@ const (
 	// Example:
 	//  type T[P any] struct{ *P }
 	MisplacedTypeParam
-
-	// InvalidUnsafeSliceData occurs when unsafe.SliceData is called with
-	// an argument that is not of slice type. It also occurs if it is used
-	// in a package compiled for a language version before go1.20.
-	//
-	// Example:
-	//  import "unsafe"
-	//
-	//  var x int
-	//  var _ = unsafe.SliceData(x)
-	InvalidUnsafeSliceData
-
-	// InvalidUnsafeString occurs when unsafe.String is called with
-	// a length argument that is not of integer type, negative, or
-	// out of bounds. It also occurs if it is used in a package
-	// compiled for a language version before go1.20.
-	//
-	// Example:
-	//  import "unsafe"
-	//
-	//  var b [10]byte
-	//  var _ = unsafe.String(&b[0], -1)
-	InvalidUnsafeString
-
-	// InvalidUnsafeStringData occurs if it is used in a package
-	// compiled for a language version before go1.20.
-	_ // not used anymore
-
 )
