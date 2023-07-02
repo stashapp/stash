@@ -13,6 +13,7 @@ import {
 } from "src/models/list-filter/criteria/tags";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { MoviesCriterion } from "src/models/list-filter/criteria/movies";
+import { PerformerCountCriterion } from "src/models/list-filter/criteria/performer-count";
 import {
   Criterion,
   CriterionValue,
@@ -43,6 +44,17 @@ const makePerformerScenesUrl = (
   ];
 
   if (performerFilter) {
+    if (performerFilter.modifier == GQL.CriterionModifier.IsNull) {
+      criterion.modifier = GQL.CriterionModifier.Equals;
+    } else if (performerFilter.modifier == GQL.CriterionModifier.NotNull) {
+      criterion.modifier = GQL.CriterionModifier.IncludesAll;
+      const performerCount = new PerformerCountCriterion();
+      performerCount.value = 1;
+      performerCount.modifier = GQL.CriterionModifier.GreaterThan;
+      filter.criteria.push(performerCount);
+    } else {
+      criterion.modifier = performerFilter.modifier;
+    }
     criterion.value.items.push(...performerFilter?.value.items);
   }
 
@@ -68,6 +80,17 @@ const makePerformerImagesUrl = (
   ];
 
   if (performerFilter) {
+    if (performerFilter.modifier == GQL.CriterionModifier.IsNull) {
+      criterion.modifier = GQL.CriterionModifier.Equals;
+    } else if (performerFilter.modifier == GQL.CriterionModifier.NotNull) {
+      criterion.modifier = GQL.CriterionModifier.IncludesAll;
+      const performerCount = new PerformerCountCriterion();
+      performerCount.value = 1;
+      performerCount.modifier = GQL.CriterionModifier.GreaterThan;
+      filter.criteria.push(performerCount);
+    } else {
+      criterion.modifier = performerFilter.modifier;
+    }
     criterion.value.items.push(...performerFilter?.value.items);
   }
 
@@ -93,6 +116,17 @@ const makePerformerGalleriesUrl = (
   ];
 
   if (performerFilter) {
+    if (performerFilter.modifier == GQL.CriterionModifier.IsNull) {
+      criterion.modifier = GQL.CriterionModifier.Equals;
+    } else if (performerFilter.modifier == GQL.CriterionModifier.NotNull) {
+      criterion.modifier = GQL.CriterionModifier.IncludesAll;
+      const performerCount = new PerformerCountCriterion();
+      performerCount.value = 1;
+      performerCount.modifier = GQL.CriterionModifier.GreaterThan;
+      filter.criteria.push(performerCount);
+    } else {
+      criterion.modifier = performerFilter.modifier;
+    }
     criterion.value.items.push(...performerFilter?.value.items);
   }
 
@@ -118,6 +152,17 @@ const makePerformerMoviesUrl = (
   ];
 
   if (performerFilter) {
+    if (performerFilter.modifier == GQL.CriterionModifier.IsNull) {
+      criterion.modifier = GQL.CriterionModifier.Equals;
+    } else if (performerFilter.modifier == GQL.CriterionModifier.NotNull) {
+      criterion.modifier = GQL.CriterionModifier.IncludesAll;
+      const performerCount = new PerformerCountCriterion();
+      performerCount.value = 1;
+      performerCount.modifier = GQL.CriterionModifier.GreaterThan;
+      filter.criteria.push(performerCount);
+    } else {
+      criterion.modifier = performerFilter.modifier;
+    }
     criterion.value.items.push(...performerFilter?.value.items);
   }
 
