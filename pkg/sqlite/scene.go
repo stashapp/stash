@@ -926,8 +926,8 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 	query.handleCriterion(ctx, floatIntCriterionHandler(sceneFilter.Duration, "video_files.duration", qb.addVideoFilesTable))
 	query.handleCriterion(ctx, resolutionCriterionHandler(sceneFilter.Resolution, "video_files.height", "video_files.width", qb.addVideoFilesTable))
 
-	query.handleCriterion(ctx, videoCodecCriterionHandler(sceneFilter.VideoCodec, "video_files.video_codec", qb.addVideoFilesTable))
-	query.handleCriterion(ctx, audioCodecCriterionHandler(sceneFilter.AudioCodec, "video_files.audio_codec", qb.addVideoFilesTable))
+	query.handleCriterion(ctx, codecCriterionHandler(sceneFilter.VideoCodec, "video_files.video_codec", qb.addVideoFilesTable))
+	query.handleCriterion(ctx, codecCriterionHandler(sceneFilter.AudioCodec, "video_files.audio_codec", qb.addVideoFilesTable))
 
 	query.handleCriterion(ctx, hasMarkersCriterionHandler(sceneFilter.HasMarkers))
 	query.handleCriterion(ctx, sceneIsMissingCriterionHandler(qb, sceneFilter.IsMissing))
@@ -1204,40 +1204,14 @@ func resolutionCriterionHandler(resolution *models.ResolutionCriterionInput, hei
 	}
 }
 
-func videoCodecCriterionHandler(videoCodec *models.VideoCodecCriterionInput, codecColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+func codecCriterionHandler(codec *models.StringCriterionInput, codecColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
-		if videoCodec != nil && videoCodec.Value.IsValid() {
+		if codec != nil {
 			if addJoinFn != nil {
 				addJoinFn(f)
 			}
 
-			codecValue := videoCodec.Value.GetCodecValue()
-
-			switch videoCodec.Modifier {
-			case models.CriterionModifierEquals:
-				f.addWhere(fmt.Sprintf("%s = '%s'", codecColumn, codecValue))
-			case models.CriterionModifierNotEquals:
-				f.addWhere(fmt.Sprintf("%s != '%s'", codecColumn, codecValue))
-			}
-		}
-	}
-}
-
-func audioCodecCriterionHandler(audioCodec *models.AudioCodecCriterionInput, codecColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if audioCodec != nil && audioCodec.Value.IsValid() {
-			if addJoinFn != nil {
-				addJoinFn(f)
-			}
-
-			codecValue := audioCodec.Value.GetCodecValue()
-
-			switch audioCodec.Modifier {
-			case models.CriterionModifierEquals:
-				f.addWhere(fmt.Sprintf("%s = '%s'", codecColumn, codecValue))
-			case models.CriterionModifierNotEquals:
-				f.addWhere(fmt.Sprintf("%s != '%s'", codecColumn, codecValue))
-			}
+			stringCriterionHandler(codec, codecColumn)(ctx, f)
 		}
 	}
 }

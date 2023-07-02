@@ -13,8 +13,6 @@ import { MoviesCriterionOption } from "./criteria/movies";
 import { OrganizedCriterionOption } from "./criteria/organized";
 import { PerformersCriterionOption } from "./criteria/performers";
 import { ResolutionCriterionOption } from "./criteria/resolution";
-import { VideoCodecCriterionOption } from "./criteria/video-codec";
-import { AudioCodecCriterionOption } from "./criteria/audio-codec";
 import { StudiosCriterionOption } from "./criteria/studios";
 import { InteractiveCriterionOption } from "./criteria/interactive";
 import {
@@ -77,8 +75,8 @@ const criterionOptions = [
   new NullNumberCriterionOption("rating", "rating100"),
   createMandatoryNumberCriterionOption("o_counter"),
   ResolutionCriterionOption,
-  VideoCodecCriterionOption,
-  AudioCodecCriterionOption,
+  createStringCriterionOption("video_codec"),
+  createStringCriterionOption("audio_codec"),
   createMandatoryNumberCriterionOption("duration"),
   createMandatoryNumberCriterionOption("resume_time"),
   createMandatoryNumberCriterionOption("play_duration"),

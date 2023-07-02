@@ -35,39 +35,6 @@ input ResolutionCriterionInput {
   modifier: CriterionModifier!
 }
 
-enum VideoCodecEnum {
-  "av1", AV1
-  "h264", H264
-  "hevc", HEVC
-  "mpeg2video", MPEG2_VIDEO
-  "mpeg4", MPEG4
-  "vc1", VC1
-  "vp6f", VP6F
-  "wmv1", WMV1
-  "wmv2", WMV2
-  "wmv3", WMV3
-}
-
-input VideoCodecCriterionInput {
-  value: VideoCodecEnum!
-  modifier: CriterionModifier!
-}
-
-enum AudioCodecEnum {
-  "aac", AAC
-  "ac3", AC3
-  "adpcm_ima_wav", ADPCM_IMA_WAV
-  "mp3", MP3
-  "pcm_s16le", PCM_S16LE
-  "wmapro", WMAPRO
-  "wmav2", WMAV2
-}
-
-input AudioCodecCriterionInput {
-  value: AudioCodecEnum!
-  modifier: CriterionModifier!
-}
-
 input PHashDuplicationCriterionInput {
   duplicated: Boolean
   """Currently unimplemented"""
@@ -228,9 +195,9 @@ input SceneFilterType {
   """Filter by resolution"""
   resolution: ResolutionCriterionInput
   """Filter by video codec"""
-  video_codec: VideoCodecCriterionInput
+  video_codec: StringCriterionInput
   """Filter by audio codec"""
-  audio_codec: AudioCodecCriterionInput
+  audio_codec: StringCriterionInput
   """Filter by duration (in seconds)"""
   duration: IntCriterionInput
   """Filter to only include scenes which have markers. `true` or `false`"""
