@@ -12,13 +12,13 @@ import (
 	"github.com/stashapp/stash/pkg/hash/videophash"
 )
 
-func customusage() {
+func customUsage() {
 	fmt.Fprintf(os.Stderr, "Usage:\n")
 	fmt.Fprintf(os.Stderr, "%s [OPTIONS] VIDEOFILE...\n\nOptions:\n", os.Args[0])
 	flag.PrintDefaults()
 }
 
-func printphash(inputfile string, quiet *bool) error {
+func printPhash(inputfile string, quiet *bool) error {
 	ffmpegPath, ffprobePath := ffmpeg.GetPaths(nil)
 	FFMPEG := ffmpeg.NewEncoder(ffmpegPath)
 	FFMPEG.InitHWSupport(context.TODO())
@@ -52,7 +52,7 @@ func printphash(inputfile string, quiet *bool) error {
 }
 
 func main() {
-	flag.Usage = customusage
+	flag.Usage = customUsage
 	quiet := flag.BoolP("quiet", "q", false, "print only the phash")
 	help := flag.BoolP("help", "h", false, "print this help output")
 	flag.Parse()
@@ -76,7 +76,7 @@ func main() {
 	}
 
 	for _, item := range args {
-		if err := printphash(item, quiet); err != nil {
+		if err := printPhash(item, quiet); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 		}
 	}
