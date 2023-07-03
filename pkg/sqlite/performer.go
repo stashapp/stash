@@ -1131,13 +1131,14 @@ func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models
 		// remove performers who only appear in the same movie without sharing a scene
 		grp := ") GROUP BY performer_id HAVING scene_sum > 0 OR image_sum > 0 OR gallery_sum > 0"
 
-		if performers != nil && len(performers.Value) > 0 {
-			grp += " AND performer_id NOT IN performer"
-		}
-
 		f.addWith(fmt.Sprintf("%s AS (%s %s %s)", derivedPerformerPerformersTable, sel, strings.Join(intersects, " UNION "), grp))
 
 		f.addInnerJoin(derivedPerformerPerformersTable, "", fmt.Sprintf("performers.id = %s.performer_id", derivedPerformerPerformersTable))
+
+		// remove performers from their own results
+		if performers != nil && len(performers.Value) > 0 {
+			f.addWhere("performer_id NOT IN (SELECT id from performer)")
+		}
 
 	}
 }
