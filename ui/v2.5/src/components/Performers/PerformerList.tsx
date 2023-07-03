@@ -170,6 +170,10 @@ export const PerformerList: React.FC<IPerformerList> = ({
         return (
           <PerformerListTable
             performers={result.data.findPerformers.performers}
+            extraCriteria={studioFilter}
+            extraPerformerFilter={performerFilter}
+            useFilteredCounts={filter.useFilteredCounts}
+            filteredCounts={result.data?.findPerformers.filteredCounts}
           />
         );
       }
