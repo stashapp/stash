@@ -280,8 +280,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   useEffect(() => {
     airplay(videojs);
     chromecast(videojs);
-    airplay(videojs);
-    chromecast(videojs);
     const options: VideoJsPlayerOptions = {
       id: VIDEO_PLAYER_ID,
       controls: true,
