@@ -42,8 +42,9 @@ func (rs movieRoutes) FrontImage(w http.ResponseWriter, r *http.Request) {
 	var image []byte
 	if defaultParam != "true" {
 		readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
-			image, _ = rs.movieFinder.GetFrontImage(ctx, movie.ID)
-			return nil
+			var err error
+			image, err = rs.movieFinder.GetFrontImage(ctx, movie.ID)
+			return err
 		})
 		if errors.Is(readTxnErr, context.Canceled) {
 			return
@@ -57,9 +58,7 @@ func (rs movieRoutes) FrontImage(w http.ResponseWriter, r *http.Request) {
 		image, _ = utils.ProcessBase64Image(models.DefaultMovieImage)
 	}
 
-	if err := utils.ServeImage(image, w, r); err != nil {
-		logger.Warnf("error serving movie front image: %v", err)
-	}
+	utils.ServeImage(w, r, image)
 }
 
 func (rs movieRoutes) BackImage(w http.ResponseWriter, r *http.Request) {
@@ -68,8 +67,9 @@ func (rs movieRoutes) BackImage(w http.ResponseWriter, r *http.Request) {
 	var image []byte
 	if defaultParam != "true" {
 		readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
-			image, _ = rs.movieFinder.GetBackImage(ctx, movie.ID)
-			return nil
+			var err error
+			image, err = rs.movieFinder.GetBackImage(ctx, movie.ID)
+			return err
 		})
 		if errors.Is(readTxnErr, context.Canceled) {
 			return
@@ -83,9 +83,7 @@ func (rs movieRoutes) BackImage(w http.ResponseWriter, r *http.Request) {
 		image, _ = utils.ProcessBase64Image(models.DefaultMovieImage)
 	}
 
-	if err := utils.ServeImage(image, w, r); err != nil {
-		logger.Warnf("error serving movie back image: %v", err)
-	}
+	utils.ServeImage(w, r, image)
 }
 
 func (rs movieRoutes) MovieCtx(next http.Handler) http.Handler {

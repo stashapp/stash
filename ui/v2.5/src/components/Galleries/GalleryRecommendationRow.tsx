@@ -1,6 +1,7 @@
-import React, { FunctionComponent } from "react";
+import React from "react";
+import { Link } from "react-router-dom";
 import { useFindGalleries } from "src/core/StashService";
-import Slider from "react-slick";
+import Slider from "@ant-design/react-slick";
 import { GalleryCard } from "./GalleryCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { getSlickSliderSettings } from "src/core/recommendations";
@@ -13,9 +14,7 @@ interface IProps {
   header: string;
 }
 
-export const GalleryRecommendationRow: FunctionComponent<IProps> = (
-  props: IProps
-) => {
+export const GalleryRecommendationRow: React.FC<IProps> = (props) => {
   const result = useFindGalleries(props.filter);
   const cardCount = result.data?.findGalleries.count;
 
@@ -28,9 +27,9 @@ export const GalleryRecommendationRow: FunctionComponent<IProps> = (
       className="gallery-recommendations"
       header={props.header}
       link={
-        <a href={`/galleries?${props.filter.makeQueryParameters()}`}>
+        <Link to={`/galleries?${props.filter.makeQueryParameters()}`}>
           <FormattedMessage id="view_all" />
-        </a>
+        </Link>
       }
     >
       <Slider

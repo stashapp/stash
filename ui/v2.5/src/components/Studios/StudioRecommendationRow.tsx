@@ -1,6 +1,7 @@
-import React, { FunctionComponent } from "react";
+import React from "react";
+import { Link } from "react-router-dom";
 import { useFindStudios } from "src/core/StashService";
-import Slider from "react-slick";
+import Slider from "@ant-design/react-slick";
 import { StudioCard } from "./StudioCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { getSlickSliderSettings } from "src/core/recommendations";
@@ -13,9 +14,7 @@ interface IProps {
   header: string;
 }
 
-export const StudioRecommendationRow: FunctionComponent<IProps> = (
-  props: IProps
-) => {
+export const StudioRecommendationRow: React.FC<IProps> = (props) => {
   const result = useFindStudios(props.filter);
   const cardCount = result.data?.findStudios.count;
 
@@ -28,9 +27,9 @@ export const StudioRecommendationRow: FunctionComponent<IProps> = (
       className="studio-recommendations"
       header={props.header}
       link={
-        <a href={`/studios?${props.filter.makeQueryParameters()}`}>
+        <Link to={`/studios?${props.filter.makeQueryParameters()}`}>
           <FormattedMessage id="view_all" />
-        </a>
+        </Link>
       }
     >
       <Slider

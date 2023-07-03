@@ -1,10 +1,12 @@
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { TagLink } from "src/components/Shared";
+import { TagLink } from "src/components/Shared/TagLink";
 import * as GQL from "src/core/generated-graphql";
-import { TextUtils, getStashboxBase, getCountryByISO } from "src/utils";
+import TextUtils from "src/utils/text";
+import { getStashboxBase } from "src/utils/stashbox";
+import { getCountryByISO } from "src/utils/country";
 import { TextField, URLField } from "src/utils/field";
-import { cmToImperial, kgToLbs } from "src/utils/units";
+import { cmToImperial, cmToInches, kgToLbs } from "src/utils/units";
 
 interface IPerformerDetails {
   performer: GQL.PerformerDataFragment;
@@ -131,6 +133,49 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     );
   };
 
+  const formatPenisLength = (penis_length?: number | null) => {
+    if (!penis_length) {
+      return "";
+    }
+
+    const inches = cmToInches(penis_length);
+
+    return (
+      <span className="performer-penis-length">
+        <span className="penis-length-metric">
+          {intl.formatNumber(penis_length, {
+            style: "unit",
+            unit: "centimeter",
+            unitDisplay: "short",
+            maximumFractionDigits: 2,
+          })}
+        </span>
+        <span className="penis-length-imperial">
+          {intl.formatNumber(inches, {
+            style: "unit",
+            unit: "inch",
+            unitDisplay: "narrow",
+            maximumFractionDigits: 2,
+          })}
+        </span>
+      </span>
+    );
+  };
+
+  const formatCircumcised = (circumcised?: GQL.CircumisedEnum | null) => {
+    if (!circumcised) {
+      return "";
+    }
+
+    return (
+      <span className="penis-circumcised">
+        {intl.formatMessage({
+          id: "circumcised_types." + performer.circumcised,
+        })}
+      </span>
+    );
+  };
+
   return (
     <dl className="details-list">
       <TextField
@@ -177,6 +222,17 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         </>
       )}
 
+      {(performer.penis_length || performer.circumcised) && (
+        <>
+          <dt>
+            <FormattedMessage id="penis" />:
+          </dt>
+          <dd>
+            {formatPenisLength(performer.penis_length)}
+            {formatCircumcised(performer.circumcised)}
+          </dd>
+        </>
+      )}
       <TextField id="measurements" value={performer.measurements} />
       <TextField id="fake_tits" value={performer.fake_tits} />
       <TextField id="career_length" value={performer.career_length} />

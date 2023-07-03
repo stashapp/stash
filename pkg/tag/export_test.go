@@ -2,7 +2,6 @@ package tag
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -37,19 +36,12 @@ var (
 
 func createTag(id int) models.Tag {
 	return models.Tag{
-		ID:   id,
-		Name: tagName,
-		Description: sql.NullString{
-			String: description,
-			Valid:  true,
-		},
+		ID:            id,
+		Name:          tagName,
+		Description:   description,
 		IgnoreAutoTag: autoTagIgnored,
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
+		CreatedAt:     createTime,
+		UpdatedAt:     updateTime,
 	}
 }
 
@@ -92,8 +84,9 @@ func initTestTable() {
 		},
 		{
 			createTag(errImageID),
-			nil,
-			true,
+			createJSONTag(nil, "", nil),
+			// getting the image should not cause an error
+			false,
 		},
 		{
 			createTag(errAliasID),
@@ -140,6 +133,7 @@ func TestToJSON(t *testing.T) {
 	mockTagReader.On("FindByChildTagID", ctx, noImageID).Return(nil, nil).Once()
 	mockTagReader.On("FindByChildTagID", ctx, withParentsID).Return([]*models.Tag{{Name: "parent"}}, nil).Once()
 	mockTagReader.On("FindByChildTagID", ctx, errParentsID).Return(nil, parentsErr).Once()
+	mockTagReader.On("FindByChildTagID", ctx, errImageID).Return(nil, nil).Once()
 
 	for i, s := range scenarios {
 		tag := s.tag

@@ -1,4 +1,4 @@
-import { Tabs, Tab, Dropdown } from "react-bootstrap";
+import { Button, Tabs, Tab, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -12,16 +12,13 @@ import {
   useTagDestroy,
   mutateMetadataAutoTag,
 } from "src/core/StashService";
-import { ImageUtils } from "src/utils";
-import {
-  Counter,
-  DetailsEditNavbar,
-  ErrorMessage,
-  Modal,
-  LoadingIndicator,
-  Icon,
-} from "src/components/Shared";
-import { useToast } from "src/hooks";
+import { Counter } from "src/components/Shared/Counter";
+import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
+import { ErrorMessage } from "src/components/Shared/ErrorMessage";
+import { ModalComponent } from "src/components/Shared/Modal";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { Icon } from "src/components/Shared/Icon";
+import { useToast } from "src/hooks/Toast";
 import { ConfigurationContext } from "src/hooks/Config";
 import { tagRelationHook } from "src/core/tags";
 import { TagScenesPanel } from "./TagScenesPanel";
@@ -36,6 +33,8 @@ import {
   faSignInAlt,
   faSignOutAlt,
   faTrashAlt,
+  faChevronRight,
+  faChevronLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import { IUIConfig } from "src/core/config";
 
@@ -52,6 +51,8 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
   const Toast = useToast();
   const intl = useIntl();
 
+  const [collapsed, setCollapsed] = useState(false);
+
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
   const abbreviateCounter =
@@ -66,9 +67,22 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
 
   // Editing tag state
   const [image, setImage] = useState<string | null>();
+  const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
   const [updateTag] = useTagUpdate();
   const [deleteTag] = useTagDestroy({ id: tag.id });
+
+  const showAllCounts = (configuration?.ui as IUIConfig)?.showChildTagContent;
+  const sceneCount =
+    (showAllCounts ? tag.scene_count_all : tag.scene_count) ?? 0;
+  const imageCount =
+    (showAllCounts ? tag.image_count_all : tag.image_count) ?? 0;
+  const galleryCount =
+    (showAllCounts ? tag.gallery_count_all : tag.gallery_count) ?? 0;
+  const sceneMarkerCount =
+    (showAllCounts ? tag.scene_marker_count_all : tag.scene_marker_count) ?? 0;
+  const performerCount =
+    (showAllCounts ? tag.performer_count_all : tag.performer_count) ?? 0;
 
   const activeTabKey =
     tab === "markers" ||
@@ -86,8 +100,11 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
 
   // set up hotkeys
   useEffect(() => {
-    Mousetrap.bind("e", () => setIsEditing(true));
-    Mousetrap.bind("d d", () => onDelete());
+    Mousetrap.bind("e", () => toggleEditing());
+    Mousetrap.bind("d d", () => {
+      onDelete();
+    });
+    Mousetrap.bind(",", () => setCollapsed(!collapsed));
 
     return () => {
       if (isEditing) {
@@ -96,51 +113,36 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
 
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");
+      Mousetrap.unbind(",");
     };
   });
 
-  function onImageLoad(imageData: string) {
-    setImage(imageData);
-  }
-
-  const imageEncoding = ImageUtils.usePasteImage(onImageLoad, isEditing);
-
-  function getTagInput(
-    input: Partial<GQL.TagCreateInput | GQL.TagUpdateInput>
-  ) {
-    const ret: Partial<GQL.TagCreateInput | GQL.TagUpdateInput> = {
-      ...input,
-      image,
-      id: tag.id,
+  async function onSave(input: GQL.TagCreateInput) {
+    const oldRelations = {
+      parents: tag.parents ?? [],
+      children: tag.children ?? [],
     };
-
-    return ret;
-  }
-
-  async function onSave(
-    input: Partial<GQL.TagCreateInput | GQL.TagUpdateInput>
-  ) {
-    try {
-      const oldRelations = {
-        parents: tag.parents ?? [],
-        children: tag.children ?? [],
-      };
-      const result = await updateTag({
-        variables: {
-          input: getTagInput(input) as GQL.TagUpdateInput,
+    const result = await updateTag({
+      variables: {
+        input: {
+          id: tag.id,
+          ...input,
         },
+      },
+    });
+    if (result.data?.tagUpdate) {
+      toggleEditing(false);
+      const updated = result.data.tagUpdate;
+      tagRelationHook(updated, oldRelations, {
+        parents: updated.parents,
+        children: updated.children,
       });
-      if (result.data?.tagUpdate) {
-        setIsEditing(false);
-        const updated = result.data.tagUpdate;
-        tagRelationHook(updated, oldRelations, {
-          parents: updated.parents,
-          children: updated.children,
-        });
-        return updated.id;
-      }
-    } catch (e) {
-      Toast.error(e);
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "toast.updated_entity" },
+          { entity: intl.formatMessage({ id: "tag" }).toLocaleLowerCase() }
+        ),
+      });
     }
   }
 
@@ -177,7 +179,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
 
   function renderDeleteAlert() {
     return (
-      <Modal
+      <ModalComponent
         show={isDeleteAlertOpen}
         icon={faTrashAlt}
         accept={{
@@ -197,20 +199,26 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
             }}
           />
         </p>
-      </Modal>
+      </ModalComponent>
     );
   }
 
-  function onToggleEdit() {
-    setIsEditing(!isEditing);
+  function toggleEditing(value?: boolean) {
+    if (value !== undefined) {
+      setIsEditing(value);
+    } else {
+      setIsEditing((e) => !e);
+    }
     setImage(undefined);
   }
 
   function renderImage() {
     let tagImage = tag.image_path;
     if (isEditing) {
-      if (image === null) {
-        tagImage = `${tagImage}&default=true`;
+      if (image === null && tagImage) {
+        const tagImageURL = new URL(tagImage);
+        tagImageURL.searchParams.set("default", "true");
+        tagImage = tagImageURL.toString();
       } else if (image) {
         tagImage = image;
       }
@@ -262,15 +270,21 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
     );
   }
 
+  function getCollapseButtonIcon() {
+    return collapsed ? faChevronRight : faChevronLeft;
+  }
+
   return (
     <>
       <Helmet>
         <title>{tag.name}</title>
       </Helmet>
       <div className="row">
-        <div className="tag-details col-md-4">
+        <div
+          className={`tag-details details-tab ${collapsed ? "collapsed" : ""}`}
+        >
           <div className="text-center logo-container">
-            {imageEncoding ? (
+            {encodingImage ? (
               <LoadingIndicator message="Encoding image..." />
             ) : (
               renderImage()
@@ -286,7 +300,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 objectName={tag.name}
                 isNew={false}
                 isEditing={isEditing}
-                onToggleEdit={onToggleEdit}
+                onToggleEdit={() => toggleEditing()}
                 onSave={() => {}}
                 onImageChange={() => {}}
                 onClearImage={() => {}}
@@ -300,88 +314,106 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
             <TagEditPanel
               tag={tag}
               onSubmit={onSave}
-              onCancel={onToggleEdit}
+              onCancel={() => toggleEditing()}
               onDelete={onDelete}
               setImage={setImage}
+              setEncodingImage={setEncodingImage}
             />
           )}
         </div>
-        <div className="col col-md-8">
+        <div className="details-divider d-none d-xl-block">
+          <Button onClick={() => setCollapsed(!collapsed)}>
+            <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
+          </Button>
+        </div>
+        <div className={`col content-container ${collapsed ? "expanded" : ""}`}>
           <Tabs
             id="tag-tabs"
             mountOnEnter
+            unmountOnExit
             activeKey={activeTabKey}
             onSelect={setActiveTabKey}
           >
             <Tab
               eventKey="scenes"
               title={
-                <React.Fragment>
+                <>
                   {intl.formatMessage({ id: "scenes" })}
                   <Counter
                     abbreviateCounter={abbreviateCounter}
-                    count={tag.scene_count ?? 0}
+                    count={sceneCount}
+                    hideZero
                   />
-                </React.Fragment>
+                </>
               }
             >
-              <TagScenesPanel tag={tag} />
+              <TagScenesPanel active={activeTabKey == "scenes"} tag={tag} />
             </Tab>
             <Tab
               eventKey="images"
               title={
-                <React.Fragment>
+                <>
                   {intl.formatMessage({ id: "images" })}
                   <Counter
                     abbreviateCounter={abbreviateCounter}
-                    count={tag.image_count ?? 0}
+                    count={imageCount}
+                    hideZero
                   />
-                </React.Fragment>
+                </>
               }
             >
-              <TagImagesPanel tag={tag} />
+              <TagImagesPanel active={activeTabKey == "images"} tag={tag} />
             </Tab>
             <Tab
               eventKey="galleries"
               title={
-                <React.Fragment>
+                <>
                   {intl.formatMessage({ id: "galleries" })}
                   <Counter
                     abbreviateCounter={abbreviateCounter}
-                    count={tag.gallery_count ?? 0}
+                    count={galleryCount}
+                    hideZero
                   />
-                </React.Fragment>
+                </>
               }
             >
-              <TagGalleriesPanel tag={tag} />
+              <TagGalleriesPanel
+                active={activeTabKey == "galleries"}
+                tag={tag}
+              />
             </Tab>
             <Tab
               eventKey="markers"
               title={
-                <React.Fragment>
+                <>
                   {intl.formatMessage({ id: "markers" })}
                   <Counter
                     abbreviateCounter={abbreviateCounter}
-                    count={tag.scene_marker_count ?? 0}
+                    count={sceneMarkerCount}
+                    hideZero
                   />
-                </React.Fragment>
+                </>
               }
             >
-              <TagMarkersPanel tag={tag} />
+              <TagMarkersPanel active={activeTabKey == "markers"} tag={tag} />
             </Tab>
             <Tab
               eventKey="performers"
               title={
-                <React.Fragment>
+                <>
                   {intl.formatMessage({ id: "performers" })}
                   <Counter
                     abbreviateCounter={abbreviateCounter}
-                    count={tag.performer_count ?? 0}
+                    count={performerCount}
+                    hideZero
                   />
-                </React.Fragment>
+                </>
               }
             >
-              <TagPerformersPanel tag={tag} />
+              <TagPerformersPanel
+                active={activeTabKey == "performers"}
+                tag={tag}
+              />
             </Tab>
           </Tabs>
         </div>

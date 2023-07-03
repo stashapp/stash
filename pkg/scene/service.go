@@ -22,6 +22,7 @@ type Creator interface {
 }
 
 type CoverUpdater interface {
+	HasCover(ctx context.Context, sceneID int) (bool, error)
 	UpdateCover(ctx context.Context, sceneID int, cover []byte) error
 }
 
@@ -45,7 +46,7 @@ type MarkerRepository interface {
 	MarkerFinder
 	MarkerDestroyer
 
-	Update(ctx context.Context, updatedObject models.SceneMarker) (*models.SceneMarker, error)
+	Update(ctx context.Context, updatedObject *models.SceneMarker) error
 }
 
 type Service struct {

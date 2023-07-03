@@ -15,7 +15,6 @@ import (
 type ImageReaderWriter interface {
 	models.ImageReaderWriter
 	image.FinderCreatorUpdater
-	models.ImageFileLoader
 	GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error)
 }
 
@@ -35,7 +34,6 @@ type SceneReaderWriter interface {
 
 type FileReaderWriter interface {
 	file.Store
-	file.Finder
 	Query(ctx context.Context, options models.FileQueryOptions) (*models.FileQueryResult, error)
 	GetCaptions(ctx context.Context, fileID file.ID) ([]*models.VideoCaption, error)
 	IsPrimary(ctx context.Context, fileID file.ID) (bool, error)
@@ -43,24 +41,24 @@ type FileReaderWriter interface {
 
 type FolderReaderWriter interface {
 	file.FolderStore
-	Find(ctx context.Context, id file.FolderID) (*file.Folder, error)
 }
 
 type Repository struct {
 	models.TxnManager
 
-	File        FileReaderWriter
-	Folder      FolderReaderWriter
-	Gallery     GalleryReaderWriter
-	Image       ImageReaderWriter
-	Movie       models.MovieReaderWriter
-	Performer   models.PerformerReaderWriter
-	Scene       SceneReaderWriter
-	SceneMarker models.SceneMarkerReaderWriter
-	ScrapedItem models.ScrapedItemReaderWriter
-	Studio      models.StudioReaderWriter
-	Tag         models.TagReaderWriter
-	SavedFilter models.SavedFilterReaderWriter
+	File           FileReaderWriter
+	Folder         FolderReaderWriter
+	Gallery        GalleryReaderWriter
+	GalleryChapter models.GalleryChapterReaderWriter
+	Image          ImageReaderWriter
+	Movie          models.MovieReaderWriter
+	Performer      models.PerformerReaderWriter
+	Scene          SceneReaderWriter
+	SceneMarker    models.SceneMarkerReaderWriter
+	ScrapedItem    models.ScrapedItemReaderWriter
+	Studio         models.StudioReaderWriter
+	Tag            models.TagReaderWriter
+	SavedFilter    models.SavedFilterReaderWriter
 }
 
 func (r *Repository) WithTxn(ctx context.Context, fn txn.TxnFunc) error {
@@ -79,19 +77,20 @@ func sqliteRepository(d *sqlite.Database) Repository {
 	txnRepo := d.TxnRepository()
 
 	return Repository{
-		TxnManager:  txnRepo,
-		File:        d.File,
-		Folder:      d.Folder,
-		Gallery:     d.Gallery,
-		Image:       d.Image,
-		Movie:       txnRepo.Movie,
-		Performer:   txnRepo.Performer,
-		Scene:       d.Scene,
-		SceneMarker: txnRepo.SceneMarker,
-		ScrapedItem: txnRepo.ScrapedItem,
-		Studio:      txnRepo.Studio,
-		Tag:         txnRepo.Tag,
-		SavedFilter: txnRepo.SavedFilter,
+		TxnManager:     txnRepo,
+		File:           d.File,
+		Folder:         d.Folder,
+		Gallery:        d.Gallery,
+		GalleryChapter: txnRepo.GalleryChapter,
+		Image:          d.Image,
+		Movie:          txnRepo.Movie,
+		Performer:      txnRepo.Performer,
+		Scene:          d.Scene,
+		SceneMarker:    txnRepo.SceneMarker,
+		ScrapedItem:    txnRepo.ScrapedItem,
+		Studio:         txnRepo.Studio,
+		Tag:            txnRepo.Tag,
+		SavedFilter:    txnRepo.SavedFilter,
 	}
 }
 
@@ -114,4 +113,6 @@ type GalleryService interface {
 	Destroy(ctx context.Context, i *models.Gallery, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) ([]*models.Image, error)
 
 	ValidateImageGalleryChange(ctx context.Context, i *models.Image, updateIDs models.UpdateIDs) error
+
+	Updated(ctx context.Context, galleryID int) error
 }

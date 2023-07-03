@@ -1,36 +1,54 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { LoadingIndicator } from "src/components/Shared";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { PerformerEditPanel } from "./PerformerEditPanel";
-import { useLocation } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
+import { useToast } from "src/hooks/Toast";
+import * as GQL from "src/core/generated-graphql";
+import { usePerformerCreate } from "src/core/StashService";
 
 const PerformerCreate: React.FC = () => {
-  const [imagePreview, setImagePreview] = useState<string | null>();
-  const [imageEncoding, setImageEncoding] = useState<boolean>(false);
-
-  function useQuery() {
-    const { search } = useLocation();
-    return React.useMemo(() => new URLSearchParams(search), [search]);
-  }
-
-  const query = useQuery();
-  const nameQuery = query.get("name");
-
-  const activeImage = imagePreview ?? "";
+  const Toast = useToast();
+  const history = useHistory();
   const intl = useIntl();
 
-  const onImageChange = (image?: string | null) => setImagePreview(image);
-  const onImageEncoding = (isEncoding = false) => setImageEncoding(isEncoding);
+  const [image, setImage] = useState<string | null>();
+  const [encodingImage, setEncodingImage] = useState<boolean>(false);
+
+  const location = useLocation();
+  const query = useMemo(() => new URLSearchParams(location.search), [location]);
+  const performer = {
+    name: query.get("q") ?? undefined,
+  };
+
+  const [createPerformer] = usePerformerCreate();
+
+  async function onSave(input: GQL.PerformerCreateInput) {
+    const result = await createPerformer({
+      variables: { input },
+    });
+    if (result.data?.performerCreate) {
+      history.push(`/performers/${result.data.performerCreate.id}`);
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "toast.created_entity" },
+          {
+            entity: intl.formatMessage({ id: "performer" }).toLocaleLowerCase(),
+          }
+        ),
+      });
+    }
+  }
 
   function renderPerformerImage() {
-    if (imageEncoding) {
+    if (encodingImage) {
       return <LoadingIndicator message="Encoding image..." />;
     }
-    if (activeImage) {
+    if (image) {
       return (
         <img
           className="performer"
-          src={activeImage}
+          src={image}
           alt={intl.formatMessage({ id: "performer" })}
         />
       );
@@ -50,11 +68,11 @@ const PerformerCreate: React.FC = () => {
           />
         </h2>
         <PerformerEditPanel
-          performer={{ name: nameQuery ?? "" }}
+          performer={performer}
           isVisible
-          isNew
-          onImageChange={onImageChange}
-          onImageEncoding={onImageEncoding}
+          onSubmit={onSave}
+          setImage={setImage}
+          setEncodingImage={setEncodingImage}
         />
       </div>
     </div>

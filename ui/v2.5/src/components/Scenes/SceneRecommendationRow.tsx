@@ -1,6 +1,7 @@
-import React, { FunctionComponent, useMemo } from "react";
+import React, { useMemo } from "react";
+import { Link } from "react-router-dom";
 import { useFindScenes } from "src/core/StashService";
-import Slider from "react-slick";
+import Slider from "@ant-design/react-slick";
 import { SceneCard } from "./SceneCard";
 import { SceneQueue } from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -14,9 +15,7 @@ interface IProps {
   header: string;
 }
 
-export const SceneRecommendationRow: FunctionComponent<IProps> = (
-  props: IProps
-) => {
+export const SceneRecommendationRow: React.FC<IProps> = (props) => {
   const result = useFindScenes(props.filter);
   const cardCount = result.data?.findScenes.count;
 
@@ -33,9 +32,9 @@ export const SceneRecommendationRow: FunctionComponent<IProps> = (
       className="scene-recommendations"
       header={props.header}
       link={
-        <a href={`/scenes?${props.filter.makeQueryParameters()}`}>
+        <Link to={`/scenes?${props.filter.makeQueryParameters()}`}>
           <FormattedMessage id="view_all" />
-        </a>
+        </Link>
       }
     >
       <Slider

@@ -1,11 +1,9 @@
 import React from "react";
 import { Button, Form } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
-import {
-  DurationInput,
-  PercentInput,
-  LoadingIndicator,
-} from "src/components/Shared";
+import { DurationInput } from "src/components/Shared/DurationInput";
+import { PercentInput } from "src/components/Shared/PercentInput";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { CheckboxGroup } from "./CheckboxGroup";
 import { SettingSection } from "../SettingSection";
 import {
@@ -16,13 +14,13 @@ import {
   StringSetting,
 } from "../Inputs";
 import { SettingStateContext } from "../context";
-import { DurationUtils } from "src/utils";
+import DurationUtils from "src/utils/duration";
 import * as GQL from "src/core/generated-graphql";
 import {
   imageLightboxDisplayModeIntlMap,
   imageLightboxScrollModeIntlMap,
 } from "src/core/enums";
-import { useInterfaceLocalForage } from "src/hooks";
+import { useInterfaceLocalForage } from "src/hooks/LocalForage";
 import {
   ConnectionState,
   connectionStateLabel,
@@ -37,6 +35,14 @@ import {
   ratingSystemIntlMap,
   RatingSystemType,
 } from "src/utils/rating";
+import {
+  imageWallDirectionIntlMap,
+  ImageWallDirection,
+  defaultImageWallOptions,
+  defaultImageWallDirection,
+  defaultImageWallMargin,
+} from "src/utils/imageWall";
+import { defaultMaxOptionsShown } from "src/core/config";
 
 const allMenuItems = [
   { id: "scenes", headingID: "scenes" },
@@ -89,6 +95,24 @@ export const SettingsInterfacePanel: React.FC = () => {
       imageLightbox: {
         ...iface.imageLightbox,
         ...v,
+      },
+    });
+  }
+
+  function saveImageWallMargin(m: number) {
+    saveUI({
+      imageWallOptions: {
+        ...(ui.imageWallOptions ?? defaultImageWallOptions),
+        margin: m,
+      },
+    });
+  }
+
+  function saveImageWallDirection(d: ImageWallDirection) {
+    saveUI({
+      imageWallOptions: {
+        ...(ui.imageWallOptions ?? defaultImageWallOptions),
+        direction: d,
       },
     });
   }
@@ -272,6 +296,13 @@ export const SettingsInterfacePanel: React.FC = () => {
           checked={ui.trackActivity ?? undefined}
           onChange={(v) => saveUI({ trackActivity: v })}
         />
+        <StringSetting
+          id="vr-tag"
+          headingID="config.ui.scene_player.options.vr_tag.heading"
+          subHeadingID="config.ui.scene_player.options.vr_tag.description"
+          value={ui.vrTag ?? undefined}
+          onChange={(v) => saveUI({ vrTag: v })}
+        />
         <ModalSetting<number>
           id="ignore-interval"
           headingID="config.ui.minimum_play_percent.heading"
@@ -358,6 +389,31 @@ export const SettingsInterfacePanel: React.FC = () => {
           checked={ui.showChildStudioContent ?? undefined}
           onChange={(v) => saveUI({ showChildStudioContent: v })}
         />
+      </SettingSection>
+
+      <SettingSection headingID="config.ui.image_wall.heading">
+        <NumberSetting
+          headingID="config.ui.image_wall.margin"
+          subHeadingID="dialogs.imagewall.margin_desc"
+          value={ui.imageWallOptions?.margin ?? defaultImageWallMargin}
+          onChange={(v) => saveImageWallMargin(v)}
+        />
+
+        <SelectSetting
+          id="image_wall_direction"
+          headingID="config.ui.image_wall.direction"
+          subHeadingID="dialogs.imagewall.direction.description"
+          value={ui.imageWallOptions?.direction ?? defaultImageWallDirection}
+          onChange={(v) => saveImageWallDirection(v as ImageWallDirection)}
+        >
+          {Array.from(imageWallDirectionIntlMap.entries()).map((v) => (
+            <option key={v[0]} value={v[0]}>
+              {intl.formatMessage({
+                id: v[1],
+              })}
+            </option>
+          ))}
+        </SelectSetting>
       </SettingSection>
 
       <SettingSection headingID="config.ui.image_lightbox.heading">
@@ -494,6 +550,12 @@ export const SettingsInterfacePanel: React.FC = () => {
             }
           />
         </div>
+        <NumberSetting
+          id="max_options_shown"
+          headingID="config.ui.editing.max_options_shown.label"
+          value={ui.maxOptionsShown ?? defaultMaxOptionsShown}
+          onChange={(v) => saveUI({ maxOptionsShown: v })}
+        />
         <SelectSetting
           id="rating_system"
           headingID="config.ui.editing.rating_system.type.label"

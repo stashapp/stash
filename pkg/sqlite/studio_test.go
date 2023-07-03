@@ -5,7 +5,6 @@ package sqlite_test
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"math"
@@ -14,13 +13,12 @@ import (
 	"testing"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestStudioFindByName(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.StudioReaderWriter
+		sqb := db.Studio
 
 		name := studioNames[studioIdxWithScene] // find a studio by name
 
@@ -30,7 +28,7 @@ func TestStudioFindByName(t *testing.T) {
 			t.Errorf("Error finding studios: %s", err.Error())
 		}
 
-		assert.Equal(t, studioNames[studioIdxWithScene], studio.Name.String)
+		assert.Equal(t, studioNames[studioIdxWithScene], studio.Name)
 
 		name = studioNames[studioIdxWithDupName] // find a studio by name nocase
 
@@ -41,9 +39,9 @@ func TestStudioFindByName(t *testing.T) {
 		}
 		// studioIdxWithDupName and studioIdxWithScene should have similar names ( only diff should be Name vs NaMe)
 		//studio.Name should match with studioIdxWithScene since its ID is before studioIdxWithDupName
-		assert.Equal(t, studioNames[studioIdxWithScene], studio.Name.String)
+		assert.Equal(t, studioNames[studioIdxWithScene], studio.Name)
 		//studio.Name should match with studioIdxWithDupName if the check is not case sensitive
-		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithDupName]), strings.ToLower(studio.Name.String))
+		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithDupName]), strings.ToLower(studio.Name))
 
 		return nil
 	})
@@ -70,13 +68,13 @@ func TestStudioQueryNameOr(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.StudioReaderWriter
+		sqb := db.Studio
 
 		studios := queryStudio(ctx, t, sqb, &studioFilter, nil)
 
 		assert.Len(t, studios, 2)
-		assert.Equal(t, studio1Name, studios[0].Name.String)
-		assert.Equal(t, studio2Name, studios[1].Name.String)
+		assert.Equal(t, studio1Name, studios[0].Name)
+		assert.Equal(t, studio2Name, studios[1].Name)
 
 		return nil
 	})
@@ -94,20 +92,20 @@ func TestStudioQueryNameAndUrl(t *testing.T) {
 		},
 		And: &models.StudioFilterType{
 			URL: &models.StringCriterionInput{
-				Value:    studioUrl.String,
+				Value:    studioUrl,
 				Modifier: models.CriterionModifierEquals,
 			},
 		},
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.StudioReaderWriter
+		sqb := db.Studio
 
 		studios := queryStudio(ctx, t, sqb, &studioFilter, nil)
 
 		assert.Len(t, studios, 1)
-		assert.Equal(t, studioName, studios[0].Name.String)
-		assert.Equal(t, studioUrl.String, studios[0].URL.String)
+		assert.Equal(t, studioName, studios[0].Name)
+		assert.Equal(t, studioUrl, studios[0].URL)
 
 		return nil
 	})
@@ -124,7 +122,7 @@ func TestStudioQueryNameNotUrl(t *testing.T) {
 	}
 
 	urlCriterion := models.StringCriterionInput{
-		Value:    studioUrl.String,
+		Value:    studioUrl,
 		Modifier: models.CriterionModifierEquals,
 	}
 
@@ -136,14 +134,14 @@ func TestStudioQueryNameNotUrl(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.StudioReaderWriter
+		sqb := db.Studio
 
 		studios := queryStudio(ctx, t, sqb, &studioFilter, nil)
 
 		for _, studio := range studios {
-			verifyString(t, studio.Name.String, nameCriterion)
+			verifyString(t, studio.Name, nameCriterion)
 			urlCriterion.Modifier = models.CriterionModifierNotEquals
-			verifyNullString(t, studio.URL, urlCriterion)
+			verifyString(t, studio.URL, urlCriterion)
 		}
 
 		return nil
@@ -167,7 +165,7 @@ func TestStudioIllegalQuery(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.StudioReaderWriter
+		sqb := db.Studio
 
 		_, _, err := sqb.Query(ctx, studioFilter, nil)
 		assert.NotNil(err)
@@ -193,7 +191,7 @@ func TestStudioQueryIgnoreAutoTag(t *testing.T) {
 			IgnoreAutoTag: &ignoreAutoTag,
 		}
 
-		sqb := sqlite.StudioReaderWriter
+		sqb := db.Studio
 
 		studios := queryStudio(ctx, t, sqb, &studioFilter, nil)
 
@@ -208,7 +206,7 @@ func TestStudioQueryIgnoreAutoTag(t *testing.T) {
 
 func TestStudioQueryForAutoTag(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		tqb := sqlite.StudioReaderWriter
+		tqb := db.Studio
 
 		name := studioNames[studioIdxWithMovie] // find a studio by name
 
@@ -219,7 +217,7 @@ func TestStudioQueryForAutoTag(t *testing.T) {
 		}
 
 		assert.Len(t, studios, 1)
-		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithMovie]), strings.ToLower(studios[0].Name.String))
+		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithMovie]), strings.ToLower(studios[0].Name))
 
 		// find by alias
 		name = getStudioStringValue(studioIdxWithMovie, "Alias")
@@ -239,7 +237,7 @@ func TestStudioQueryForAutoTag(t *testing.T) {
 
 func TestStudioQueryParent(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.StudioReaderWriter
+		sqb := db.Studio
 		studioCriterion := models.MultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithChildStudio]),
@@ -289,18 +287,18 @@ func TestStudioDestroyParent(t *testing.T) {
 
 	// create parent and child studios
 	if err := withTxn(func(ctx context.Context) error {
-		createdParent, err := createStudio(ctx, sqlite.StudioReaderWriter, parentName, nil)
+		createdParent, err := createStudio(ctx, db.Studio, parentName, nil)
 		if err != nil {
 			return fmt.Errorf("Error creating parent studio: %s", err.Error())
 		}
 
-		parentID := int64(createdParent.ID)
-		createdChild, err := createStudio(ctx, sqlite.StudioReaderWriter, childName, &parentID)
+		parentID := createdParent.ID
+		createdChild, err := createStudio(ctx, db.Studio, childName, &parentID)
 		if err != nil {
 			return fmt.Errorf("Error creating child studio: %s", err.Error())
 		}
 
-		sqb := sqlite.StudioReaderWriter
+		sqb := db.Studio
 
 		// destroy the parent
 		err = sqb.Destroy(ctx, createdParent.ID)
@@ -322,7 +320,7 @@ func TestStudioDestroyParent(t *testing.T) {
 
 func TestStudioFindChildren(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.StudioReaderWriter
+		sqb := db.Studio
 
 		studios, err := sqb.FindChildren(ctx, studioIDs[studioIdxWithChildStudio])
 
@@ -351,32 +349,31 @@ func TestStudioUpdateClearParent(t *testing.T) {
 
 	// create parent and child studios
 	if err := withTxn(func(ctx context.Context) error {
-		createdParent, err := createStudio(ctx, sqlite.StudioReaderWriter, parentName, nil)
+		createdParent, err := createStudio(ctx, db.Studio, parentName, nil)
 		if err != nil {
 			return fmt.Errorf("Error creating parent studio: %s", err.Error())
 		}
 
-		parentID := int64(createdParent.ID)
-		createdChild, err := createStudio(ctx, sqlite.StudioReaderWriter, childName, &parentID)
+		parentID := createdParent.ID
+		createdChild, err := createStudio(ctx, db.Studio, childName, &parentID)
 		if err != nil {
 			return fmt.Errorf("Error creating child studio: %s", err.Error())
 		}
 
-		sqb := sqlite.StudioReaderWriter
+		sqb := db.Studio
 
 		// clear the parent id from the child
 		updatePartial := models.StudioPartial{
-			ID:       createdChild.ID,
-			ParentID: &sql.NullInt64{Valid: false},
+			ParentID: models.NewOptionalIntPtr(nil),
 		}
 
-		updatedStudio, err := sqb.Update(ctx, updatePartial)
+		updatedStudio, err := sqb.UpdatePartial(ctx, createdChild.ID, updatePartial)
 
 		if err != nil {
 			return fmt.Errorf("Error updated studio: %s", err.Error())
 		}
 
-		if updatedStudio.ParentID.Valid {
+		if updatedStudio.ParentID != nil {
 			return errors.New("updated studio has parent ID set")
 		}
 
@@ -388,70 +385,16 @@ func TestStudioUpdateClearParent(t *testing.T) {
 
 func TestStudioUpdateStudioImage(t *testing.T) {
 	if err := withTxn(func(ctx context.Context) error {
-		qb := sqlite.StudioReaderWriter
+		qb := db.Studio
 
-		// create performer to test against
+		// create studio to test against
 		const name = "TestStudioUpdateStudioImage"
-		created, err := createStudio(ctx, sqlite.StudioReaderWriter, name, nil)
+		created, err := createStudio(ctx, db.Studio, name, nil)
 		if err != nil {
 			return fmt.Errorf("Error creating studio: %s", err.Error())
 		}
 
-		image := []byte("image")
-		err = qb.UpdateImage(ctx, created.ID, image)
-		if err != nil {
-			return fmt.Errorf("Error updating studio image: %s", err.Error())
-		}
-
-		// ensure image set
-		storedImage, err := qb.GetImage(ctx, created.ID)
-		if err != nil {
-			return fmt.Errorf("Error getting image: %s", err.Error())
-		}
-		assert.Equal(t, storedImage, image)
-
-		// set nil image
-		err = qb.UpdateImage(ctx, created.ID, nil)
-		if err == nil {
-			return fmt.Errorf("Expected error setting nil image")
-		}
-
-		return nil
-	}); err != nil {
-		t.Error(err.Error())
-	}
-}
-
-func TestStudioDestroyStudioImage(t *testing.T) {
-	if err := withTxn(func(ctx context.Context) error {
-		qb := sqlite.StudioReaderWriter
-
-		// create performer to test against
-		const name = "TestStudioDestroyStudioImage"
-		created, err := createStudio(ctx, sqlite.StudioReaderWriter, name, nil)
-		if err != nil {
-			return fmt.Errorf("Error creating studio: %s", err.Error())
-		}
-
-		image := []byte("image")
-		err = qb.UpdateImage(ctx, created.ID, image)
-		if err != nil {
-			return fmt.Errorf("Error updating studio image: %s", err.Error())
-		}
-
-		err = qb.DestroyImage(ctx, created.ID)
-		if err != nil {
-			return fmt.Errorf("Error destroying studio image: %s", err.Error())
-		}
-
-		// image should be nil
-		storedImage, err := qb.GetImage(ctx, created.ID)
-		if err != nil {
-			return fmt.Errorf("Error getting image: %s", err.Error())
-		}
-		assert.Nil(t, storedImage)
-
-		return nil
+		return testUpdateImage(t, ctx, created.ID, qb.UpdateImage, qb.GetImage)
 	}); err != nil {
 		t.Error(err.Error())
 	}
@@ -478,7 +421,7 @@ func TestStudioQuerySceneCount(t *testing.T) {
 
 func verifyStudiosSceneCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.StudioReaderWriter
+		sqb := db.Studio
 		studioFilter := models.StudioFilterType{
 			SceneCount: &sceneCountCriterion,
 		}
@@ -519,7 +462,7 @@ func TestStudioQueryImageCount(t *testing.T) {
 
 func verifyStudiosImageCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.StudioReaderWriter
+		sqb := db.Studio
 		studioFilter := models.StudioFilterType{
 			ImageCount: &imageCountCriterion,
 		}
@@ -575,7 +518,7 @@ func TestStudioQueryGalleryCount(t *testing.T) {
 
 func verifyStudiosGalleryCount(t *testing.T, galleryCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.StudioReaderWriter
+		sqb := db.Studio
 		studioFilter := models.StudioFilterType{
 			GalleryCount: &galleryCountCriterion,
 		}
@@ -606,11 +549,11 @@ func verifyStudiosGalleryCount(t *testing.T, galleryCountCriterion models.IntCri
 
 func TestStudioStashIDs(t *testing.T) {
 	if err := withTxn(func(ctx context.Context) error {
-		qb := sqlite.StudioReaderWriter
+		qb := db.Studio
 
 		// create studio to test against
 		const name = "TestStudioStashIDs"
-		created, err := createStudio(ctx, sqlite.StudioReaderWriter, name, nil)
+		created, err := createStudio(ctx, db.Studio, name, nil)
 		if err != nil {
 			return fmt.Errorf("Error creating studio: %s", err.Error())
 		}
@@ -637,7 +580,7 @@ func TestStudioQueryURL(t *testing.T) {
 
 	verifyFn := func(ctx context.Context, g *models.Studio) {
 		t.Helper()
-		verifyNullString(t, g.URL, urlCriterion)
+		verifyString(t, g.URL, urlCriterion)
 	}
 
 	verifyStudioQuery(t, filter, verifyFn)
@@ -688,7 +631,7 @@ func TestStudioQueryRating(t *testing.T) {
 func verifyStudioQuery(t *testing.T, filter models.StudioFilterType, verifyFn func(ctx context.Context, s *models.Studio)) {
 	withTxn(func(ctx context.Context) error {
 		t.Helper()
-		sqb := sqlite.StudioReaderWriter
+		sqb := db.Studio
 
 		studios := queryStudio(ctx, t, sqb, &filter, nil)
 
@@ -705,7 +648,7 @@ func verifyStudioQuery(t *testing.T, filter models.StudioFilterType, verifyFn fu
 
 func verifyStudiosRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.StudioReaderWriter
+		sqb := db.Studio
 		studioFilter := models.StudioFilterType{
 			Rating: &ratingCriterion,
 		}
@@ -717,7 +660,7 @@ func verifyStudiosRating(t *testing.T, ratingCriterion models.IntCriterionInput)
 		}
 
 		for _, studio := range studios {
-			verifyInt64(t, studio.Rating, ratingCriterion)
+			verifyIntPtr(t, studio.Rating, ratingCriterion)
 		}
 
 		return nil
@@ -726,7 +669,7 @@ func verifyStudiosRating(t *testing.T, ratingCriterion models.IntCriterionInput)
 
 func TestStudioQueryIsMissingRating(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.StudioReaderWriter
+		sqb := db.Studio
 		isMissing := "rating"
 		studioFilter := models.StudioFilterType{
 			IsMissing: &isMissing,
@@ -741,7 +684,7 @@ func TestStudioQueryIsMissingRating(t *testing.T) {
 		assert.True(t, len(studios) > 0)
 
 		for _, studio := range studios {
-			assert.True(t, !studio.Rating.Valid)
+			assert.True(t, studio.Rating == nil)
 		}
 
 		return nil
@@ -771,7 +714,7 @@ func TestStudioQueryName(t *testing.T) {
 	}
 
 	verifyFn := func(ctx context.Context, studio *models.Studio) {
-		verifyNullString(t, studio.Name, *nameCriterion)
+		verifyString(t, studio.Name, *nameCriterion)
 	}
 
 	verifyStudioQuery(t, studioFilter, verifyFn)
@@ -802,7 +745,7 @@ func TestStudioQueryAlias(t *testing.T) {
 
 	verifyFn := func(ctx context.Context, studio *models.Studio) {
 		t.Helper()
-		aliases, err := sqlite.StudioReaderWriter.GetAliases(ctx, studio.ID)
+		aliases, err := db.Studio.GetAliases(ctx, studio.ID)
 		if err != nil {
 			t.Errorf("Error querying studios: %s", err.Error())
 		}
@@ -837,7 +780,7 @@ func TestStudioQueryAlias(t *testing.T) {
 
 func TestStudioUpdateAlias(t *testing.T) {
 	if err := withTxn(func(ctx context.Context) error {
-		qb := sqlite.StudioReaderWriter
+		qb := db.Studio
 
 		// create studio to test against
 		const name = "TestStudioUpdateAlias"
@@ -934,7 +877,7 @@ func TestStudioQueryFast(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.StudioReaderWriter
+		sqb := db.Studio
 		for _, f := range filters {
 			for _, ff := range findFilters {
 				_, _, err := sqb.Query(ctx, &f, &ff)

@@ -2,6 +2,7 @@ database: generated.sqlite
 scenes: 30000
 images: 4000000
 galleries: 1500
+chapters: 3000
 markers: 3000
 performers: 10000
 studios: 1500

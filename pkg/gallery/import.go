@@ -24,6 +24,7 @@ type Importer struct {
 	Input               jsonschema.Gallery
 	MissingRefBehaviour models.ImportMissingRefEnum
 
+	ID      int
 	gallery models.Gallery
 }
 
@@ -116,14 +117,14 @@ func (i *Importer) populateStudio(ctx context.Context) error {
 }
 
 func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
-	newStudio := *models.NewStudio(name)
+	newStudio := models.NewStudio(name)
 
-	created, err := i.StudioWriter.Create(ctx, newStudio)
+	err := i.StudioWriter.Create(ctx, newStudio)
 	if err != nil {
 		return 0, err
 	}
 
-	return created.ID, nil
+	return newStudio.ID, nil
 }
 
 func (i *Importer) populatePerformers(ctx context.Context) error {
@@ -232,14 +233,14 @@ func (i *Importer) populateTags(ctx context.Context) error {
 func (i *Importer) createTags(ctx context.Context, names []string) ([]*models.Tag, error) {
 	var ret []*models.Tag
 	for _, name := range names {
-		newTag := *models.NewTag(name)
+		newTag := models.NewTag(name)
 
-		created, err := i.TagWriter.Create(ctx, newTag)
+		err := i.TagWriter.Create(ctx, newTag)
 		if err != nil {
 			return nil, err
 		}
 
-		ret = append(ret, created)
+		ret = append(ret, newTag)
 	}
 
 	return ret, nil

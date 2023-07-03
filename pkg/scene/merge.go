@@ -99,9 +99,9 @@ func (s *Service) mergeSceneMarkers(ctx context.Context, dest *models.Scene, src
 		srcHash := src.GetHash(s.Config.GetVideoFileNamingAlgorithm())
 
 		// updated the scene id
-		m.SceneID.Int64 = int64(dest.ID)
+		m.SceneID = dest.ID
 
-		if _, err := s.MarkerRepository.Update(ctx, *m); err != nil {
+		if err := s.MarkerRepository.Update(ctx, m); err != nil {
 			return fmt.Errorf("updating scene marker %d: %w", m.ID, err)
 		}
 
@@ -123,7 +123,7 @@ func (s *Service) mergeSceneMarkers(ctx context.Context, dest *models.Scene, src
 	}
 
 	if len(toRename) > 0 {
-		txn.AddPostCommitHook(ctx, func(ctx context.Context) error {
+		txn.AddPostCommitHook(ctx, func(ctx context.Context) {
 			// rename the files if they exist
 			for _, e := range toRename {
 				srcExists, _ := fsutil.FileExists(e.src)
@@ -135,8 +135,6 @@ func (s *Service) mergeSceneMarkers(ctx context.Context, dest *models.Scene, src
 					}
 				}
 			}
-
-			return nil
 		})
 	}
 

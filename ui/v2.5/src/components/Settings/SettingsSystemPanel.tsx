@@ -1,12 +1,13 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { LoadingIndicator } from "src/components/Shared";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { SettingSection } from "./SettingSection";
 import {
   BooleanSetting,
   ModalSetting,
   NumberSetting,
   SelectSetting,
+  StringListSetting,
   StringSetting,
 } from "./Inputs";
 import { SettingStateContext } from "./context";
@@ -14,11 +15,13 @@ import {
   VideoPreviewInput,
   VideoPreviewSettingsInput,
 } from "./GeneratePreviewOptions";
+import { useIntl } from "react-intl";
 
 export const SettingsConfigurationPanel: React.FC = () => {
-  const { general, loading, error, saveGeneral } = React.useContext(
-    SettingStateContext
-  );
+  const intl = useIntl();
+
+  const { general, loading, error, saveGeneral } =
+    React.useContext(SettingStateContext);
 
   const transcodeQualities = [
     GQL.StreamingResolutionEnum.Low,
@@ -94,6 +97,17 @@ export const SettingsConfigurationPanel: React.FC = () => {
     return GQL.HashAlgorithm.Md5;
   }
 
+  function blobStorageTypeToID(value: GQL.BlobsStorageType | undefined) {
+    switch (value) {
+      case GQL.BlobsStorageType.Database:
+        return "blobs_storage_type.database";
+      case GQL.BlobsStorageType.Filesystem:
+        return "blobs_storage_type.filesystem";
+    }
+
+    return "blobs_storage_type.database";
+  }
+
   if (error) return <h1>{error.message}</h1>;
   if (loading) return <LoadingIndicator />;
 
@@ -101,19 +115,19 @@ export const SettingsConfigurationPanel: React.FC = () => {
     <>
       <SettingSection headingID="config.application_paths.heading">
         <StringSetting
-          id="database-path"
-          headingID="config.general.db_path_head"
-          subHeadingID="config.general.sqlite_location"
-          value={general.databasePath ?? undefined}
-          onChange={(v) => saveGeneral({ databasePath: v })}
-        />
-
-        <StringSetting
           id="generated-path"
           headingID="config.general.generated_path_head"
           subHeadingID="config.general.generated_files_location"
           value={general.generatedPath ?? undefined}
           onChange={(v) => saveGeneral({ generatedPath: v })}
+        />
+
+        <StringSetting
+          id="cache-path"
+          headingID="config.general.cache_path_head"
+          subHeadingID="config.general.cache_location"
+          value={general.cachePath ?? undefined}
+          onChange={(v) => saveGeneral({ cachePath: v })}
         />
 
         <StringSetting
@@ -130,14 +144,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
           subHeadingID="config.general.metadata_path.description"
           value={general.metadataPath ?? undefined}
           onChange={(v) => saveGeneral({ metadataPath: v })}
-        />
-
-        <StringSetting
-          id="cache-path"
-          headingID="config.general.cache_path_head"
-          subHeadingID="config.general.cache_location"
-          value={general.cachePath ?? undefined}
-          onChange={(v) => saveGeneral({ cachePath: v })}
         />
 
         <StringSetting
@@ -162,6 +168,38 @@ export const SettingsConfigurationPanel: React.FC = () => {
           subHeadingID="config.general.backup_directory_path.description"
           value={general.backupDirectoryPath ?? undefined}
           onChange={(v) => saveGeneral({ backupDirectoryPath: v })}
+        />
+      </SettingSection>
+
+      <SettingSection headingID="config.general.database">
+        <StringSetting
+          id="database-path"
+          headingID="config.general.db_path_head"
+          subHeadingID="config.general.sqlite_location"
+          value={general.databasePath ?? undefined}
+          onChange={(v) => saveGeneral({ databasePath: v })}
+        />
+        <SelectSetting
+          id="blobs-storage"
+          headingID="config.general.blobs_storage.heading"
+          subHeadingID="config.general.blobs_storage.description"
+          value={general.blobsStorage ?? GQL.BlobsStorageType.Database}
+          onChange={(v) =>
+            saveGeneral({ blobsStorage: v as GQL.BlobsStorageType })
+          }
+        >
+          {Object.values(GQL.BlobsStorageType).map((q) => (
+            <option key={q} value={q}>
+              {intl.formatMessage({ id: blobStorageTypeToID(q) })}
+            </option>
+          ))}
+        </SelectSetting>
+        <StringSetting
+          id="blobs-path"
+          headingID="config.general.blobs_path.heading"
+          subHeadingID="config.general.blobs_path.description"
+          value={general.blobsPath ?? ""}
+          onChange={(v) => saveGeneral({ blobsPath: v })}
         />
       </SettingSection>
 
@@ -227,6 +265,44 @@ export const SettingsConfigurationPanel: React.FC = () => {
             </option>
           ))}
         </SelectSetting>
+
+        <BooleanSetting
+          id="hardware-encoding"
+          headingID="config.general.ffmpeg.hardware_acceleration.heading"
+          subHeadingID="config.general.ffmpeg.hardware_acceleration.desc"
+          checked={general.transcodeHardwareAcceleration ?? false}
+          onChange={(v) => saveGeneral({ transcodeHardwareAcceleration: v })}
+        />
+
+        <StringListSetting
+          id="transcode-input-args"
+          headingID="config.general.ffmpeg.transcode.input_args.heading"
+          subHeadingID="config.general.ffmpeg.transcode.input_args.desc"
+          onChange={(v) => saveGeneral({ transcodeInputArgs: v })}
+          value={general.transcodeInputArgs ?? []}
+        />
+        <StringListSetting
+          id="transcode-output-args"
+          headingID="config.general.ffmpeg.transcode.output_args.heading"
+          subHeadingID="config.general.ffmpeg.transcode.output_args.desc"
+          onChange={(v) => saveGeneral({ transcodeOutputArgs: v })}
+          value={general.transcodeOutputArgs ?? []}
+        />
+
+        <StringListSetting
+          id="live-transcode-input-args"
+          headingID="config.general.ffmpeg.live_transcode.input_args.heading"
+          subHeadingID="config.general.ffmpeg.live_transcode.input_args.desc"
+          onChange={(v) => saveGeneral({ liveTranscodeInputArgs: v })}
+          value={general.liveTranscodeInputArgs ?? []}
+        />
+        <StringListSetting
+          id="live-transcode-output-args"
+          headingID="config.general.ffmpeg.live_transcode.output_args.heading"
+          subHeadingID="config.general.ffmpeg.live_transcode.output_args.desc"
+          onChange={(v) => saveGeneral({ liveTranscodeOutputArgs: v })}
+          value={general.liveTranscodeOutputArgs ?? []}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.general.parallel_scan_head">
@@ -282,6 +358,16 @@ export const SettingsConfigurationPanel: React.FC = () => {
           renderValue={() => {
             return <></>;
           }}
+        />
+      </SettingSection>
+
+      <SettingSection headingID="config.general.heatmap_generation">
+        <BooleanSetting
+          id="heatmap-draw-range"
+          headingID="config.general.funscript_heatmap_draw_range"
+          subHeadingID="config.general.funscript_heatmap_draw_range_desc"
+          checked={general.drawFunscriptHeatmapRange ?? true}
+          onChange={(v) => saveGeneral({ drawFunscriptHeatmapRange: v })}
         />
       </SettingSection>
 

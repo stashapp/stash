@@ -31,12 +31,12 @@ export class RatingCriterion extends Criterion<INumberValue> {
   protected toCriterionInput(): IntCriterionInput {
     return {
       modifier: this.modifier,
-      value: this.value.value,
+      value: this.value.value ?? 0,
       value2: this.value.value2,
     };
   }
 
-  public getLabelValue() {
+  protected getLabelValue() {
     const { value, value2 } = this.value;
     if (
       this.modifier === CriterionModifier.Between ||

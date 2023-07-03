@@ -1,11 +1,17 @@
 #performer-page {
-  flex-direction: row;
-  margin: 10px auto;
-  overflow: hidden;
+  .performer-image-container {
+    .btn {
+      box-shadow: none;
+    }
 
-  .performer-image-container .performer {
-    max-height: calc(100vh - 6rem);
-    max-width: 100%;
+    .performer {
+      max-height: calc(100vh - 6rem);
+      max-width: 100%;
+    }
+  }
+
+  .content-container {
+    padding-bottom: 10px;
   }
 
   .performer-head {
@@ -64,6 +70,10 @@
 .performer-card {
   width: 20rem;
 
+  @media (max-width: 576px) {
+    width: 100%;
+  }
+
   .thumbnail-section {
     position: relative;
   }
@@ -76,7 +86,7 @@
     width: 100%;
   }
 
-  .flag-icon {
+  .fi {
     bottom: 1rem;
     filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
     height: 2rem;
@@ -85,12 +95,41 @@
     width: 3rem;
   }
 
-  .favorite {
-    color: #ff7373;
-    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
+  button.btn.favorite-button {
+    opacity: 1;
+    padding: 0;
     position: absolute;
     right: 5px;
     top: 10px;
+    transition: opacity 0.5s;
+
+    svg.fa-icon {
+      margin-left: 0.4rem;
+      margin-right: 0.4rem;
+    }
+
+    &.not-favorite {
+      color: rgba(191, 204, 214, 0.5);
+      filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
+      opacity: 0;
+    }
+
+    &.favorite {
+      color: #ff7373;
+      filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
+    }
+
+    &:hover,
+    &:active,
+    &:focus,
+    &:active:focus {
+      background: none;
+      box-shadow: none;
+    }
+  }
+
+  &:hover button.btn.favorite-button.not-favorite {
+    opacity: 1;
   }
 
   &__age {
@@ -151,27 +190,21 @@
   color: #c8a2c8;
 }
 
-.performer-height {
-  .height-imperial {
-    &::before {
-      content: " (";
-    }
+.performer-height .height-imperial,
+.performer-weight .weight-imperial,
+.performer-penis-length .penis-length-imperial {
+  &::before {
+    content: " (";
+  }
 
-    &::after {
-      content: ")";
-    }
+  &::after {
+    content: ")";
   }
 }
 
-.performer-weight {
-  .weight-imperial {
-    &::before {
-      content: " (";
-    }
-
-    &::after {
-      content: ")";
-    }
+.penis-circumcised {
+  &::before {
+    content: " ";
   }
 }
 

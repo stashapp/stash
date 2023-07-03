@@ -5,6 +5,7 @@ import {
   NullNumberCriterionOption,
   createDateCriterionOption,
   createMandatoryTimestampCriterionOption,
+  createPathCriterionOption,
 } from "./criteria/criterion";
 import { HasMarkersCriterionOption } from "./criteria/has-markers";
 import { SceneIsMissingCriterionOption } from "./criteria/is-missing";
@@ -59,7 +60,7 @@ const displayModeOptions = [
 const criterionOptions = [
   createStringCriterionOption("title"),
   createStringCriterionOption("scene_code"),
-  createMandatoryStringCriterionOption("path"),
+  createPathCriterionOption("path"),
   createStringCriterionOption("details"),
   createStringCriterionOption("director"),
   createMandatoryStringCriterionOption("oshash", "media_info.hash"),

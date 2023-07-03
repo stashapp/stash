@@ -63,18 +63,18 @@ type TagReader interface {
 	QueryForAutoTag(ctx context.Context, words []string) ([]*Tag, error)
 	Query(ctx context.Context, tagFilter *TagFilterType, findFilter *FindFilterType) ([]*Tag, int, error)
 	GetImage(ctx context.Context, tagID int) ([]byte, error)
+	HasImage(ctx context.Context, tagID int) (bool, error)
 	GetAliases(ctx context.Context, tagID int) ([]string, error)
 	FindAllAncestors(ctx context.Context, tagID int, excludeIDs []int) ([]*TagPath, error)
 	FindAllDescendants(ctx context.Context, tagID int, excludeIDs []int) ([]*TagPath, error)
 }
 
 type TagWriter interface {
-	Create(ctx context.Context, newTag Tag) (*Tag, error)
-	Update(ctx context.Context, updateTag TagPartial) (*Tag, error)
-	UpdateFull(ctx context.Context, updatedTag Tag) (*Tag, error)
+	Create(ctx context.Context, newTag *Tag) error
+	UpdatePartial(ctx context.Context, id int, updateTag TagPartial) (*Tag, error)
+	Update(ctx context.Context, updatedTag *Tag) error
 	Destroy(ctx context.Context, id int) error
 	UpdateImage(ctx context.Context, tagID int, image []byte) error
-	DestroyImage(ctx context.Context, tagID int) error
 	UpdateAliases(ctx context.Context, tagID int, aliases []string) error
 	Merge(ctx context.Context, source []int, destination int) error
 	UpdateParentTags(ctx context.Context, tagID int, parentIDs []int) error

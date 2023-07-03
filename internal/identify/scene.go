@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil"
@@ -24,7 +25,7 @@ type SceneReaderUpdater interface {
 }
 
 type TagCreator interface {
-	Create(ctx context.Context, newTag models.Tag) (*models.Tag, error)
+	Create(ctx context.Context, newTag *models.Tag) error
 }
 
 type sceneRelationships struct {
@@ -150,16 +151,17 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 			tagIDs = intslice.IntAppendUnique(tagIDs, int(tagID))
 		} else if createMissing {
 			now := time.Now()
-			created, err := g.tagCreator.Create(ctx, models.Tag{
+			newTag := models.Tag{
 				Name:      t.Name,
-				CreatedAt: models.SQLiteTimestamp{Timestamp: now},
-				UpdatedAt: models.SQLiteTimestamp{Timestamp: now},
-			})
+				CreatedAt: now,
+				UpdatedAt: now,
+			}
+			err := g.tagCreator.Create(ctx, &newTag)
 			if err != nil {
 				return nil, fmt.Errorf("error creating tag: %w", err)
 			}
 
-			tagIDs = append(tagIDs, created.ID)
+			tagIDs = append(tagIDs, newTag.ID)
 		}
 	}
 
@@ -234,7 +236,7 @@ func (g sceneRelationships) cover(ctx context.Context) ([]byte, error) {
 	// always overwrite if present
 	existingCover, err := g.sceneReader.GetCover(ctx, g.scene.ID)
 	if err != nil {
-		return nil, fmt.Errorf("error getting scene cover: %w", err)
+		logger.Errorf("Error getting scene cover: %v", err)
 	}
 
 	data, err := utils.ProcessImageInput(ctx, *scraped)

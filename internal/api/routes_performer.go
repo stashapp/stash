@@ -42,8 +42,9 @@ func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	var image []byte
 	if defaultParam != "true" {
 		readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
-			image, _ = rs.performerFinder.GetImage(ctx, performer.ID)
-			return nil
+			var err error
+			image, err = rs.performerFinder.GetImage(ctx, performer.ID)
+			return err
 		})
 		if errors.Is(readTxnErr, context.Canceled) {
 			return
@@ -53,13 +54,11 @@ func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if len(image) == 0 || defaultParam == "true" {
+	if len(image) == 0 {
 		image, _ = getRandomPerformerImageUsingName(performer.Name, performer.Gender, config.GetInstance().GetCustomPerformerImageLocation())
 	}
 
-	if err := utils.ServeImage(image, w, r); err != nil {
-		logger.Warnf("error serving performer image: %v", err)
-	}
+	utils.ServeImage(w, r, image)
 }
 
 func (rs performerRoutes) PerformerCtx(next http.Handler) http.Handler {

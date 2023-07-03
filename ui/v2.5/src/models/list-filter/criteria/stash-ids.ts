@@ -74,7 +74,7 @@ export class StashIDCriterion extends Criterion<IStashIDValue> {
     );
   }
 
-  public getLabelValue(_intl: IntlShape) {
+  protected getLabelValue(_intl: IntlShape) {
     let ret = this.value.stashID;
     if (this.value.endpoint) {
       ret += " (" + this.value.endpoint + ")";
@@ -102,5 +102,13 @@ export class StashIDCriterion extends Criterion<IStashIDValue> {
       };
     }
     return JSON.stringify(encodedCriterion);
+  }
+
+  public isValid(): boolean {
+    return (
+      this.modifier === CriterionModifier.IsNull ||
+      this.modifier === CriterionModifier.NotNull ||
+      this.value.stashID.length > 0
+    );
   }
 }

@@ -35,7 +35,7 @@
     "download_backup": "Download Backup",
     "edit": "Bewerk",
     "edit_entity": "Wijzig {entityType}",
-    "export": "Exporteer…",
+    "export": "Exporteer",
     "export_all": "Exporteer Alles…",
     "find": "Zoek",
     "finish": "Klaar",
@@ -590,7 +590,6 @@
   "details": "Details",
   "developmentVersion": "Ontwikkelingsversie",
   "dialogs": {
-    "aliases_must_be_unique": "aliases moeten uniek zijn",
     "delete_alert": "De volgende {count, plural, one {{singularEntity}} other {{pluralEntity}}} zal permanent verwijderd worden:",
     "delete_confirm": "Weet je zeker dat je {entityName} wilt verwijderen?",
     "delete_entity_desc": "{count, plural, one {Weet u zeker dat u deze {singularEntity} wilt verwijderen? Tenzij het bestand ook wordt verwijderd, wordt deze {singularEntity} opnieuw toegevoegd wanneer de scan wordt uitgevoerd.} other {Weet u zeker dat u deze {pluralEntity} wilt verwijderen? Tenzij de bestanden ook worden verwijderd, worden deze {pluralEntity} opnieuw toegevoegd wanneer de scan wordt uitgevoerd.}}",
@@ -862,7 +861,6 @@
   "scenes": "Scènes",
   "scenes_updated_at": "Scène geüpdatet op",
   "search_filter": {
-    "add_filter": "Filter Toevoegen",
     "name": "Filter",
     "saved_filters": "Opgeslagen filters",
     "update_filter": "Filter Updaten"
@@ -932,7 +930,7 @@
       "your_system_has_been_created": "Succes! Uw systeem is aangemaakt!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash probeert eerst zijn configuratiebestand (<code>config.yml</code>) uit de huidige werkdirectory te vinden, en als het daar niet gevonden wordt, valt het terug naar <code>$HOME/.stash/config. yml</code> (in Windows is dit <code>%USERPROFILE%\\.stash\\config.yml</code>). Je kunt Stash ook laten lezen uit een specifiek configuratiebestand door het uit te voeren met de opties <code>-c <pad naar configuratie bestand></code> of <code>--config <pad naar configuratie bestand></code>.",
+      "config_path_logic_explained": "Stash probeert eerst zijn configuratiebestand (<code>config.yml</code>) uit de huidige werkdirectory te vinden, en als het daar niet gevonden wordt, valt het terug naar <code>$HOME/.stash/config. yml</code> (in Windows is dit <code>%USERPROFILE%\\.stash\\config.yml</code>). Je kunt Stash ook laten lezen uit een specifiek configuratiebestand door het uit te voeren met de opties <code>-c '<pad naar configuratie bestand>'</code> of <code>--config '<pad naar configuratie bestand>'</code>.",
       "in_current_stash_directory": "In de <code>$HOME/.stash</code> map",
       "in_the_current_working_directory": "In de huidige werkdirectory",
       "next_step": "Met dat alles uit de weg, als u klaar bent om door te gaan met het opzetten van een nieuw systeem, kiest u waar u uw configuratiebestand wilt opslaan en klikt u op Volgende.",
@@ -988,6 +986,9 @@
   "twitter": "Twitter",
   "updated_at": "Bijgewerkt op",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "aliases moeten uniek zijn"
+  },
   "videos": "Video's",
   "view_all": "Alles weergeven",
   "weight": "Gewicht",

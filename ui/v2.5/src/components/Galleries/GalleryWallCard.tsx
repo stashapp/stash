@@ -2,9 +2,9 @@ import React from "react";
 import { useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { TruncatedText } from "src/components/Shared";
-import { TextUtils } from "src/utils";
-import { useGalleryLightbox } from "src/hooks";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
+import TextUtils from "src/utils/text";
+import { useGalleryLightbox } from "src/hooks/Lightbox/hooks";
 import { galleryTitle } from "src/core/galleries";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 
@@ -19,7 +19,7 @@ interface IProps {
 
 const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
   const intl = useIntl();
-  const showLightbox = useGalleryLightbox(gallery.id);
+  const showLightbox = useGalleryLightbox(gallery.id, gallery.chapters);
 
   const coverFile = gallery?.cover?.files.length
     ? gallery.cover.files[0]
@@ -37,12 +37,16 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
       ? [...performerNames.slice(0, -2), performerNames.slice(-2).join(" & ")]
       : performerNames;
 
+  async function showLightboxStart() {
+    showLightbox(0);
+  }
+
   return (
     <>
       <section
         className={`${CLASSNAME} ${CLASSNAME}-${orientation}`}
-        onClick={showLightbox}
-        onKeyPress={showLightbox}
+        onClick={showLightboxStart}
+        onKeyPress={showLightboxStart}
         role="button"
         tabIndex={0}
       >

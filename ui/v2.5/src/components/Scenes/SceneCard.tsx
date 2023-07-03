@@ -3,14 +3,13 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
-import {
-  Icon,
-  TagLink,
-  HoverPopover,
-  SweatDrops,
-  TruncatedText,
-} from "src/components/Shared";
-import { NavUtils, TextUtils } from "src/utils";
+import { Icon } from "../Shared/Icon";
+import { TagLink } from "../Shared/TagLink";
+import { HoverPopover } from "../Shared/HoverPopover";
+import { SweatDrops } from "../Shared/SweatDrops";
+import { TruncatedText } from "../Shared/TruncatedText";
+import NavUtils from "src/utils/navigation";
+import TextUtils from "src/utils/text";
 import { SceneQueue } from "src/models/sceneQueue";
 import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
@@ -98,13 +97,6 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     [props.scene]
   );
 
-  // studio image is missing if it uses the default
-  const missingStudioImage = props.scene.studio?.image_path?.endsWith(
-    "?default=true"
-  );
-  const showStudioAsText =
-    missingStudioImage || (configuration?.interface.showStudioAsText ?? false);
-
   function maybeRenderSceneSpecsOverlay() {
     let sizeObj = null;
     if (file?.size) {
@@ -148,21 +140,31 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     );
   }
 
+  function renderStudioThumbnail() {
+    const studioImage = props.scene.studio?.image_path;
+    const studioName = props.scene.studio?.name;
+
+    if (configuration?.interface.showStudioAsText || !studioImage) {
+      return studioName;
+    }
+
+    const studioImageURL = new URL(studioImage);
+    if (studioImageURL.searchParams.get("default") === "true") {
+      return studioName;
+    }
+
+    return (
+      <img className="image-thumbnail" alt={studioName} src={studioImage} />
+    );
+  }
+
   function maybeRenderSceneStudioOverlay() {
     if (!props.scene.studio) return;
 
     return (
       <div className="scene-studio-overlay">
         <Link to={`/studios/${props.scene.studio.id}`}>
-          {showStudioAsText ? (
-            props.scene.studio.name
-          ) : (
-            <img
-              className="image-thumbnail"
-              alt={props.scene.studio.name}
-              src={props.scene.studio.image_path ?? ""}
-            />
-          )}
+          {renderStudioThumbnail()}
         </Link>
       </div>
     );

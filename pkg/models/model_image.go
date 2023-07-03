@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-	"errors"
 	"path/filepath"
 	"strconv"
 	"time"
@@ -16,13 +15,15 @@ type Image struct {
 
 	Title string `json:"title"`
 	// Rating expressed in 1-100 scale
-	Rating    *int `json:"rating"`
-	Organized bool `json:"organized"`
-	OCounter  int  `json:"o_counter"`
-	StudioID  *int `json:"studio_id"`
+	Rating    *int   `json:"rating"`
+	Organized bool   `json:"organized"`
+	OCounter  int    `json:"o_counter"`
+	StudioID  *int   `json:"studio_id"`
+	URL       string `json:"url"`
+	Date      *Date  `json:"date"`
 
 	// transient - not persisted
-	Files         RelatedImageFiles
+	Files         RelatedFiles
 	PrimaryFileID *file.ID
 	// transient - path of primary file - empty if no files
 	Path string
@@ -37,14 +38,14 @@ type Image struct {
 	PerformerIDs RelatedIDs `json:"performer_ids"`
 }
 
-func (i *Image) LoadFiles(ctx context.Context, l ImageFileLoader) error {
-	return i.Files.load(func() ([]*file.ImageFile, error) {
+func (i *Image) LoadFiles(ctx context.Context, l FileLoader) error {
+	return i.Files.load(func() ([]file.File, error) {
 		return l.GetFiles(ctx, i.ID)
 	})
 }
 
 func (i *Image) LoadPrimaryFile(ctx context.Context, l file.Finder) error {
-	return i.Files.loadPrimary(func() (*file.ImageFile, error) {
+	return i.Files.loadPrimary(func() (file.File, error) {
 		if i.PrimaryFileID == nil {
 			return nil, nil
 		}
@@ -54,15 +55,11 @@ func (i *Image) LoadPrimaryFile(ctx context.Context, l file.Finder) error {
 			return nil, err
 		}
 
-		var vf *file.ImageFile
 		if len(f) > 0 {
-			var ok bool
-			vf, ok = f[0].(*file.ImageFile)
-			if !ok {
-				return nil, errors.New("not an image file")
-			}
+			return f[0], nil
 		}
-		return vf, nil
+
+		return nil, nil
 	})
 }
 
@@ -117,6 +114,8 @@ type ImagePartial struct {
 	Title OptionalString
 	// Rating expressed in 1-100 scale
 	Rating    OptionalInt
+	URL       OptionalString
+	Date      OptionalDate
 	Organized OptionalBool
 	OCounter  OptionalInt
 	StudioID  OptionalInt

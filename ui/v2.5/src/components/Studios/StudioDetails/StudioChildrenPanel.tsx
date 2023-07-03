@@ -5,10 +5,12 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { StudioList } from "../StudioList";
 
 interface IStudioChildrenPanel {
+  active: boolean;
   studio: GQL.StudioDataFragment;
 }
 
 export const StudioChildrenPanel: React.FC<IStudioChildrenPanel> = ({
+  active,
   studio,
 }) => {
   function filterHook(filter: ListFilterModel) {
@@ -43,5 +45,5 @@ export const StudioChildrenPanel: React.FC<IStudioChildrenPanel> = ({
     return filter;
   }
 
-  return <StudioList fromParent filterHook={filterHook} />;
+  return <StudioList fromParent filterHook={filterHook} alterQuery={active} />;
 };

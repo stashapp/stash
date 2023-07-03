@@ -26,11 +26,9 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/scene/generate"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/sqlite"
@@ -100,6 +98,10 @@ type SetupInput struct {
 	DatabaseFile string `json:"databaseFile"`
 	// Empty to indicate default
 	GeneratedLocation string `json:"generatedLocation"`
+	// Empty to indicate default
+	CacheLocation string `json:"cacheLocation"`
+	// Empty to indicate database storage for blobs
+	BlobsLocation string `json:"blobsLocation"`
 }
 
 type Manager struct {
@@ -108,8 +110,9 @@ type Manager struct {
 
 	Paths *paths.Paths
 
-	FFMPEG  ffmpeg.FFMpeg
-	FFProbe ffmpeg.FFProbe
+	FFMPEG        *ffmpeg.FFMpeg
+	FFProbe       ffmpeg.FFProbe
+	StreamManager *ffmpeg.StreamManager
 
 	ReadLockManager *fsutil.ReadLockManager
 
@@ -189,7 +192,7 @@ func initialize() error {
 	instance.SceneService = &scene.Service{
 		File:             db.File,
 		Repository:       db.Scene,
-		MarkerRepository: instance.Repository.SceneMarker,
+		MarkerRepository: db.SceneMarker,
 		PluginCache:      instance.PluginCache,
 		Paths:            instance.Paths,
 		Config:           cfg,
@@ -276,28 +279,15 @@ func initialize() error {
 }
 
 func videoFileFilter(ctx context.Context, f file.File) bool {
-	return isVideo(f.Base().Basename)
+	return useAsVideo(f.Base().Path)
 }
 
 func imageFileFilter(ctx context.Context, f file.File) bool {
-	return isImage(f.Base().Basename)
+	return useAsImage(f.Base().Path)
 }
 
 func galleryFileFilter(ctx context.Context, f file.File) bool {
 	return isZip(f.Base().Basename)
-}
-
-type coverGenerator struct {
-}
-
-func (g *coverGenerator) GenerateCover(ctx context.Context, scene *models.Scene, f *file.VideoFile) error {
-	gg := generate.Generator{
-		Encoder:     instance.FFMPEG,
-		LockManager: instance.ReadLockManager,
-		ScenePaths:  instance.Paths.Scene,
-	}
-
-	return gg.Screenshot(ctx, f.Path, scene.GetHash(instance.Config.GetVideoFileNamingAlgorithm()), f.Width, f.Duration, generate.ScreenshotOptions{})
 }
 
 func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
@@ -316,8 +306,10 @@ func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
 				Filter: file.FilterFunc(videoFileFilter),
 			},
 			&file.FilteredDecorator{
-				Decorator: &file_image.Decorator{},
-				Filter:    file.FilterFunc(imageFileFilter),
+				Decorator: &file_image.Decorator{
+					FFProbe: instance.FFProbe,
+				},
+				Filter: file.FilterFunc(imageFileFilter),
 			},
 		},
 		FingerprintCalculator: &fingerprintCalculator{instance.Config},
@@ -427,8 +419,11 @@ func initFFMPEG(ctx context.Context) error {
 			}
 		}
 
-		instance.FFMPEG = ffmpeg.FFMpeg(ffmpegPath)
+		instance.FFMPEG = ffmpeg.NewEncoder(ffmpegPath)
 		instance.FFProbe = ffmpeg.FFProbe(ffprobePath)
+
+		instance.FFMPEG.InitHWSupport(ctx)
+		instance.RefreshStreamManager()
 	}
 
 	return nil
@@ -451,7 +446,7 @@ func (s *Manager) PostInit(ctx context.Context) error {
 		logger.Warnf("could not set initial configuration: %v", err)
 	}
 
-	*s.Paths = paths.NewPaths(s.Config.GetGeneratedPath())
+	*s.Paths = paths.NewPaths(s.Config.GetGeneratedPath(), s.Config.GetBlobsPath())
 	s.RefreshConfig()
 	s.SessionStore = session.NewStore(s.Config)
 	s.PluginCache.RegisterSessionStore(s.SessionStore)
@@ -459,6 +454,8 @@ func (s *Manager) PostInit(ctx context.Context) error {
 	if err := s.PluginCache.LoadPlugins(); err != nil {
 		logger.Errorf("Error reading plugin configs: %s", err.Error())
 	}
+
+	s.SetBlobStoreOptions()
 
 	s.ScraperCache = instance.initScraperCache()
 	writeStashIcon()
@@ -491,16 +488,31 @@ func (s *Manager) PostInit(ctx context.Context) error {
 		return err
 	}
 
+	// Set the proxy if defined in config
+	if s.Config.GetProxy() != "" {
+		os.Setenv("HTTP_PROXY", s.Config.GetProxy())
+		os.Setenv("HTTPS_PROXY", s.Config.GetProxy())
+		os.Setenv("NO_PROXY", s.Config.GetNoProxy())
+		logger.Info("Using HTTP Proxy")
+	}
+
 	return nil
 }
 
-func writeStashIcon() {
-	p := FaviconProvider{
-		UIBox: ui.UIBox,
-	}
+func (s *Manager) SetBlobStoreOptions() {
+	storageType := s.Config.GetBlobsStorage()
+	blobsPath := s.Config.GetBlobsPath()
 
+	s.Database.SetBlobStoreOptions(sqlite.BlobStoreOptions{
+		UseFilesystem: storageType == config.BlobStorageTypeFilesystem,
+		UseDatabase:   storageType == config.BlobStorageTypeDatabase,
+		Path:          blobsPath,
+	})
+}
+
+func writeStashIcon() {
 	iconPath := filepath.Join(instance.Config.GetConfigPath(), "icon.png")
-	err := os.WriteFile(iconPath, p.GetFaviconPng(), 0644)
+	err := os.WriteFile(iconPath, ui.FaviconProvider.GetFaviconPng(), 0644)
 	if err != nil {
 		logger.Errorf("Couldn't write icon file: %s", err.Error())
 	}
@@ -525,7 +537,7 @@ func (s *Manager) initScraperCache() *scraper.Cache {
 }
 
 func (s *Manager) RefreshConfig() {
-	*s.Paths = paths.NewPaths(s.Config.GetGeneratedPath())
+	*s.Paths = paths.NewPaths(s.Config.GetGeneratedPath(), s.Config.GetBlobsPath())
 	config := s.Config
 	if config.Validate() == nil {
 		if err := fsutil.EnsureDir(s.Paths.Generated.Screenshots); err != nil {
@@ -555,6 +567,19 @@ func (s *Manager) RefreshScraperCache() {
 	s.ScraperCache = s.initScraperCache()
 }
 
+// RefreshStreamManager refreshes the stream manager. Call this when cache directory
+// changes.
+func (s *Manager) RefreshStreamManager() {
+	// shutdown existing manager if needed
+	if s.StreamManager != nil {
+		s.StreamManager.Shutdown()
+		s.StreamManager = nil
+	}
+
+	cacheDir := s.Config.GetCachePath()
+	s.StreamManager = ffmpeg.NewStreamManager(cacheDir, s.FFMPEG, s.FFProbe, s.Config, s.ReadLockManager)
+}
+
 func setSetupDefaults(input *SetupInput) {
 	if input.ConfigLocation == "" {
 		input.ConfigLocation = filepath.Join(fsutil.GetHomeDirectory(), ".stash", "config.yml")
@@ -563,6 +588,9 @@ func setSetupDefaults(input *SetupInput) {
 	configDir := filepath.Dir(input.ConfigLocation)
 	if input.GeneratedLocation == "" {
 		input.GeneratedLocation = filepath.Join(configDir, "generated")
+	}
+	if input.CacheLocation == "" {
+		input.CacheLocation = filepath.Join(configDir, "cache")
 	}
 
 	if input.DatabaseFile == "" {
@@ -577,29 +605,63 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 	// create the config directory if it does not exist
 	// don't do anything if config is already set in the environment
 	if !config.FileEnvSet() {
-		configDir := filepath.Dir(input.ConfigLocation)
+		// #3304 - if config path is relative, it breaks the ffmpeg/ffprobe
+		// paths since they must not be relative. The config file property is
+		// resolved to an absolute path when stash is run normally, so convert
+		// relative paths to absolute paths during setup.
+		configFile, _ := filepath.Abs(input.ConfigLocation)
+
+		configDir := filepath.Dir(configFile)
+
 		if exists, _ := fsutil.DirExists(configDir); !exists {
-			if err := os.Mkdir(configDir, 0755); err != nil {
+			if err := os.MkdirAll(configDir, 0755); err != nil {
 				return fmt.Errorf("error creating config directory: %v", err)
 			}
 		}
 
-		if err := fsutil.Touch(input.ConfigLocation); err != nil {
+		if err := fsutil.Touch(configFile); err != nil {
 			return fmt.Errorf("error creating config file: %v", err)
 		}
 
-		s.Config.SetConfigFile(input.ConfigLocation)
+		s.Config.SetConfigFile(configFile)
 	}
 
 	// create the generated directory if it does not exist
 	if !c.HasOverride(config.Generated) {
 		if exists, _ := fsutil.DirExists(input.GeneratedLocation); !exists {
-			if err := os.Mkdir(input.GeneratedLocation, 0755); err != nil {
+			if err := os.MkdirAll(input.GeneratedLocation, 0755); err != nil {
 				return fmt.Errorf("error creating generated directory: %v", err)
 			}
 		}
 
 		s.Config.Set(config.Generated, input.GeneratedLocation)
+	}
+
+	// create the cache directory if it does not exist
+	if !c.HasOverride(config.Cache) {
+		if exists, _ := fsutil.DirExists(input.CacheLocation); !exists {
+			if err := os.MkdirAll(input.CacheLocation, 0755); err != nil {
+				return fmt.Errorf("error creating cache directory: %v", err)
+			}
+		}
+
+		s.Config.Set(config.Cache, input.CacheLocation)
+	}
+
+	// if blobs path was provided then use filesystem based blob storage
+	if input.BlobsLocation != "" {
+		if !c.HasOverride(config.BlobsPath) {
+			if exists, _ := fsutil.DirExists(input.BlobsLocation); !exists {
+				if err := os.MkdirAll(input.BlobsLocation, 0755); err != nil {
+					return fmt.Errorf("error creating blobs directory: %v", err)
+				}
+			}
+		}
+
+		s.Config.Set(config.BlobsPath, input.BlobsLocation)
+		s.Config.Set(config.BlobsStorage, config.BlobStorageTypeFilesystem)
+	} else {
+		s.Config.Set(config.BlobsStorage, config.BlobStorageTypeDatabase)
 	}
 
 	// set the configuration
@@ -634,7 +696,7 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 }
 
 func (s *Manager) validateFFMPEG() error {
-	if s.FFMPEG == "" || s.FFProbe == "" {
+	if s.FFMPEG == nil || s.FFProbe == "" {
 		return errors.New("missing ffmpeg and/or ffprobe")
 	}
 
@@ -718,6 +780,11 @@ func (s *Manager) GetSystemStatus() *SystemStatus {
 func (s *Manager) Shutdown(code int) {
 	// stop any profiling at exit
 	pprof.StopCPUProfile()
+
+	if s.StreamManager != nil {
+		s.StreamManager.Shutdown()
+		s.StreamManager = nil
+	}
 
 	// TODO: Each part of the manager needs to gracefully stop at some point
 	// for now, we just close the database.

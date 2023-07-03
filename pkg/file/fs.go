@@ -34,6 +34,26 @@ type FS interface {
 // OsFS is a file system backed by the OS.
 type OsFS struct{}
 
+func (f *OsFS) Create(name string) (*os.File, error) {
+	return os.Create(name)
+}
+
+func (f *OsFS) MkdirAll(path string, perm fs.FileMode) error {
+	return os.MkdirAll(path, perm)
+}
+
+func (f *OsFS) Remove(name string) error {
+	return os.Remove(name)
+}
+
+func (f *OsFS) Rename(oldpath, newpath string) error {
+	return os.Rename(oldpath, newpath)
+}
+
+func (f *OsFS) RemoveAll(path string) error {
+	return os.RemoveAll(path)
+}
+
 func (f *OsFS) Stat(name string) (fs.FileInfo, error) {
 	return os.Stat(name)
 }

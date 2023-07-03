@@ -25,6 +25,9 @@ const (
 var (
 	title     = "title"
 	rating    = 5
+	url       = "http://a.com"
+	date      = "2001-01-01"
+	dateObj   = models.NewDate(date)
 	organized = true
 	ocounter  = 2
 )
@@ -42,16 +45,16 @@ var (
 func createFullImage(id int) models.Image {
 	return models.Image{
 		ID: id,
-		Files: models.NewRelatedImageFiles([]*file.ImageFile{
-			{
-				BaseFile: &file.BaseFile{
-					Path: path,
-				},
+		Files: models.NewRelatedFiles([]file.File{
+			&file.BaseFile{
+				Path: path,
 			},
 		}),
 		Title:     title,
 		OCounter:  ocounter,
 		Rating:    &rating,
+		Date:      &dateObj,
+		URL:       url,
 		Organized: organized,
 		CreatedAt: createTime,
 		UpdatedAt: updateTime,
@@ -63,6 +66,8 @@ func createFullJSONImage() *jsonschema.Image {
 		Title:     title,
 		OCounter:  ocounter,
 		Rating:    rating,
+		Date:      date,
+		URL:       url,
 		Organized: organized,
 		Files:     []string{path},
 		CreatedAt: json.JSONTime{
@@ -131,7 +136,7 @@ func TestGetStudioName(t *testing.T) {
 	studioErr := errors.New("error getting image")
 
 	mockStudioReader.On("Find", testCtx, studioID).Return(&models.Studio{
-		Name: models.NullString(studioName),
+		Name: studioName,
 	}, nil).Once()
 	mockStudioReader.On("Find", testCtx, missingStudioID).Return(nil, nil).Once()
 	mockStudioReader.On("Find", testCtx, errStudioID).Return(nil, studioErr).Once()

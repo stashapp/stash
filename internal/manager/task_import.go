@@ -25,6 +25,7 @@ import (
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type ImportTask struct {
@@ -487,6 +488,7 @@ func (t *ImportTask) ImportGalleries(ctx context.Context) {
 			tagWriter := r.Tag
 			performerWriter := r.Performer
 			studioWriter := r.Studio
+			chapterWriter := r.GalleryChapter
 
 			galleryImporter := &gallery.Importer{
 				ReaderWriter:        readerWriter,
@@ -499,7 +501,25 @@ func (t *ImportTask) ImportGalleries(ctx context.Context) {
 				MissingRefBehaviour: t.MissingRefBehaviour,
 			}
 
-			return performImport(ctx, galleryImporter, t.DuplicateBehaviour)
+			if err := performImport(ctx, galleryImporter, t.DuplicateBehaviour); err != nil {
+				return err
+			}
+
+			// import the gallery chapters
+			for _, m := range galleryJSON.Chapters {
+				chapterImporter := &gallery.ChapterImporter{
+					GalleryID:           galleryImporter.ID,
+					Input:               m,
+					MissingRefBehaviour: t.MissingRefBehaviour,
+					ReaderWriter:        chapterWriter,
+				}
+
+				if err := performImport(ctx, chapterImporter, t.DuplicateBehaviour); err != nil {
+					return err
+				}
+			}
+
+			return nil
 		}); err != nil {
 			logger.Errorf("[galleries] <%s> import failed to commit: %s", fi.Name(), err.Error())
 			continue
@@ -610,7 +630,6 @@ func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
 				Title:           sql.NullString{String: mappingJSON.Title, Valid: true},
 				Description:     sql.NullString{String: mappingJSON.Description, Valid: true},
 				URL:             sql.NullString{String: mappingJSON.URL, Valid: true},
-				Date:            models.SQLiteDate{String: mappingJSON.Date, Valid: true},
 				Rating:          sql.NullString{String: mappingJSON.Rating, Valid: true},
 				Tags:            sql.NullString{String: mappingJSON.Tags, Valid: true},
 				Models:          sql.NullString{String: mappingJSON.Models, Valid: true},
@@ -619,8 +638,13 @@ func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
 				GalleryURL:      sql.NullString{String: mappingJSON.GalleryURL, Valid: true},
 				VideoFilename:   sql.NullString{String: mappingJSON.VideoFilename, Valid: true},
 				VideoURL:        sql.NullString{String: mappingJSON.VideoURL, Valid: true},
-				CreatedAt:       models.SQLiteTimestamp{Timestamp: currentTime},
-				UpdatedAt:       models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(mappingJSON.UpdatedAt)},
+				CreatedAt:       currentTime,
+				UpdatedAt:       t.getTimeFromJSONTime(mappingJSON.UpdatedAt),
+			}
+
+			time, err := utils.ParseDateStringAsTime(mappingJSON.Date)
+			if err == nil {
+				newScrapedItem.Date = &models.Date{Time: time}
 			}
 
 			studio, err := sqb.FindByName(ctx, mappingJSON.Studio, false)

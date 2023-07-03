@@ -31,7 +31,7 @@
     "download": "İndir",
     "download_backup": "Yedekleme Dosyasını İndir",
     "edit": "Düzenle",
-    "export": "Dışa Aktar…",
+    "export": "Dışa Aktar",
     "export_all": "Tümünü dışa aktar…",
     "find": "Bul",
     "finish": "Bitir",
@@ -547,7 +547,6 @@
   "details": "Ayrıntılar",
   "developmentVersion": "Geliştirme Sürümü",
   "dialogs": {
-    "aliases_must_be_unique": "takma adlar benzersiz olmalıdır",
     "delete_alert": "Bu {count, plural, one {{singularEntity}} other {{pluralEntity}}} kalıcı olarak silinecektir:",
     "delete_confirm": "Bunu silmek istediğinizden emin misiniz: {entityName}?",
     "delete_entity_desc": "{count, plural, one {Bunu silmek istediğinizden emin misiniz: {entityName}? Dosyayı bilgisayarınızdan silmediğiniz sürece, yeniden tarama işleminde bu {singularEntity} tekrar veritabanına eklenecektir.} other {Bunları silmek istediğinizden emin misiniz: {pluralEntity}? Dosyayı bilgisayarınızdan silmediğiniz sürece, yeniden tarama işleminde bu {pluralEntity} tekrar veritabanına eklenecektir.}}",
@@ -765,7 +764,6 @@
   "scenes": "Sahneler",
   "scenes_updated_at": "Sahne Güncelleme Tarihi",
   "search_filter": {
-    "add_filter": "Filtre Ekle",
     "name": "Filtre",
     "saved_filters": "Kaydedilmiş filtreler",
     "update_filter": "Filtreyi Güncelle"
@@ -835,7 +833,7 @@
       "your_system_has_been_created": "Sistem oluşturma başarılı!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash (<code>config.yml</code>) yapılandırma dosyasını ilk olarak mevcut dizinde bulmaya çalışır. Eğer bulamazsa, <code>$HOME/.stash/config.yml</code> dizinini (Windows işletim sistemi için <code>%USERPROFILE%\\.stash\\config.yml</code> dizini) araştırır. Öte yandan <code>-c <path to config file></code> veya <code>--config <path to config file></code> seçeneklerini kullanarak özelleştirilmiş bir yapılandırma dosyası da kullanabilirsiniz.",
+      "config_path_logic_explained": "Stash (<code>config.yml</code>) yapılandırma dosyasını ilk olarak mevcut dizinde bulmaya çalışır. Eğer bulamazsa, <code>$HOME/.stash/config.yml</code> dizinini (Windows işletim sistemi için <code>%USERPROFILE%\\.stash\\config.yml</code> dizini) araştırır. Öte yandan <code>-c '<path to config file>'</code> veya <code>--config '<path to config file>'</code> seçeneklerini kullanarak özelleştirilmiş bir yapılandırma dosyası da kullanabilirsiniz.",
       "in_current_stash_directory": "<code>$HOME/.stash</code> dizini altında",
       "in_the_current_working_directory": "Mevcut dizinde",
       "next_step": "Eğer yeni bir sistem oluşturmak için hazırsanız, yapılandırma dosyasının nereye kaydedileceğini seçin ve Sonraki düğmesine basın.",
@@ -891,6 +889,9 @@
   "twitter": "Twitter",
   "updated_at": "Güncellenme Zamanı",
   "url": "Internet Adresi (URL)",
+  "validation": {
+    "aliases_must_be_unique": "takma adlar benzersiz olmalıdır"
+  },
   "videos": "Videolar",
   "weight": "Kilo",
   "years_old": "yaşında"

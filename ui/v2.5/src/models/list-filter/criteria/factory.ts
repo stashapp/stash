@@ -15,10 +15,12 @@ import {
   DateCriterionOption,
   TimestampCriterion,
   MandatoryTimestampCriterionOption,
+  PathCriterionOption,
 } from "./criterion";
 import { OrganizedCriterion } from "./organized";
 import { FavoriteCriterion, PerformerFavoriteCriterion } from "./favorite";
 import { HasMarkersCriterion } from "./has-markers";
+import { HasChaptersCriterion } from "./has-chapters";
 import {
   PerformerIsMissingCriterionOption,
   ImageIsMissingCriterionOption,
@@ -42,11 +44,12 @@ import {
   TagsCriterionOption,
 } from "./tags";
 import { GenderCriterion } from "./gender";
+import { CircumcisedCriterion } from "./circumcised";
 import { MoviesCriterionOption } from "./movies";
 import { GalleriesCriterion } from "./galleries";
 import { CriterionType } from "../types";
 import { InteractiveCriterion } from "./interactive";
-import { DuplicatedCriterion, PhashCriterionOption } from "./phash";
+import { DuplicatedCriterion, PhashCriterion } from "./phash";
 import { CaptionCriterion } from "./captions";
 import { RatingCriterion } from "./rating";
 import { CountryCriterion } from "./country";
@@ -63,10 +66,11 @@ export function makeCriteria(
     case "none":
       return new NoneCriterion();
     case "name":
-    case "path":
       return new StringCriterion(
         new MandatoryStringCriterionOption(type, type)
       );
+    case "path":
+      return new StringCriterion(new PathCriterionOption(type, type));
     case "checksum":
       return new StringCriterion(
         new MandatoryStringCriterionOption("media_info.checksum", type, type)
@@ -106,11 +110,15 @@ export function makeCriteria(
     case "resume_time":
     case "duration":
     case "play_duration":
-      return new DurationCriterion(new NumberCriterionOption(type, type));
+      return new DurationCriterion(
+        new MandatoryNumberCriterionOption(type, type)
+      );
     case "favorite":
       return new FavoriteCriterion();
     case "hasMarkers":
       return new HasMarkersCriterion();
+    case "hasChapters":
+      return new HasChaptersCriterion();
     case "sceneIsMissing":
       return new IsMissingCriterion(SceneIsMissingCriterionOption);
     case "imageIsMissing":
@@ -151,19 +159,23 @@ export function makeCriteria(
     case "death_year":
     case "weight":
       return new NumberCriterion(new NumberCriterionOption(type, type));
+    case "penis_length":
+      return new NumberCriterion(new NumberCriterionOption(type, type));
     case "age":
       return new NumberCriterion(
         new MandatoryNumberCriterionOption(type, type)
       );
     case "gender":
       return new GenderCriterion();
+    case "circumcised":
+      return new CircumcisedCriterion();
     case "sceneChecksum":
     case "galleryChecksum":
       return new StringCriterion(
         new StringCriterionOption("media_info.checksum", type, "checksum")
       );
     case "phash":
-      return new StringCriterion(PhashCriterionOption);
+      return new PhashCriterion();
     case "duplicated":
       return new DuplicatedCriterion();
     case "country":

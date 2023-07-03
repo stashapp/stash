@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
@@ -22,7 +23,6 @@ func ToJSON(ctx context.Context, reader ImageAliasStashIDGetter, performer *mode
 	newPerformerJSON := jsonschema.Performer{
 		Name:           performer.Name,
 		Disambiguation: performer.Disambiguation,
-		Gender:         performer.Gender.String(),
 		URL:            performer.URL,
 		Ethnicity:      performer.Ethnicity,
 		Country:        performer.Country,
@@ -40,6 +40,14 @@ func ToJSON(ctx context.Context, reader ImageAliasStashIDGetter, performer *mode
 		IgnoreAutoTag:  performer.IgnoreAutoTag,
 		CreatedAt:      json.JSONTime{Time: performer.CreatedAt},
 		UpdatedAt:      json.JSONTime{Time: performer.UpdatedAt},
+	}
+
+	if performer.Gender != nil {
+		newPerformerJSON.Gender = performer.Gender.String()
+	}
+
+	if performer.Circumcised != nil {
+		newPerformerJSON.Circumcised = performer.Circumcised.String()
 	}
 
 	if performer.Birthdate != nil {
@@ -60,6 +68,10 @@ func ToJSON(ctx context.Context, reader ImageAliasStashIDGetter, performer *mode
 		newPerformerJSON.Weight = *performer.Weight
 	}
 
+	if performer.PenisLength != nil {
+		newPerformerJSON.PenisLength = *performer.PenisLength
+	}
+
 	if err := performer.LoadAliases(ctx, reader); err != nil {
 		return nil, fmt.Errorf("loading performer aliases: %w", err)
 	}
@@ -74,7 +86,7 @@ func ToJSON(ctx context.Context, reader ImageAliasStashIDGetter, performer *mode
 
 	image, err := reader.GetImage(ctx, performer.ID)
 	if err != nil {
-		return nil, fmt.Errorf("getting performers image: %w", err)
+		logger.Errorf("Error getting performer image: %v", err)
 	}
 
 	if len(image) > 0 {

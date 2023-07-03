@@ -6,6 +6,7 @@ import {
   getOperationName,
 } from "@apollo/client/utilities";
 import { stringToGender } from "src/utils/gender";
+import { stringToCircumcised } from "src/utils/circumcised";
 import { filterData } from "../utils/data";
 import { ListFilterModel } from "../models/list-filter/filter";
 import * as GQL from "./generated-graphql";
@@ -221,8 +222,10 @@ export const useFindGallery = (id: string) => {
   const skip = id === "new";
   return GQL.useFindGalleryQuery({ variables: { id }, skip });
 };
-export const useFindScene = (id: string) =>
-  GQL.useFindSceneQuery({ variables: { id } });
+export const useFindScene = (id: string) => {
+  const skip = id === "new";
+  return GQL.useFindSceneQuery({ variables: { id }, skip });
+};
 export const useSceneStreams = (id: string) =>
   GQL.useSceneStreamsQuery({ variables: { id } });
 
@@ -313,7 +316,6 @@ export const usePlugins = () => GQL.usePluginsQuery();
 export const usePluginTasks = () => GQL.usePluginTasksQuery();
 
 export const useMarkerStrings = () => GQL.useMarkerStringsQuery();
-export const useAllTags = () => GQL.useAllTagsQuery();
 export const useAllTagsForFilter = () => GQL.useAllTagsForFilterQuery();
 export const useAllPerformersForFilter = () =>
   GQL.useAllPerformersForFilterQuery();
@@ -332,14 +334,22 @@ export const mutateSetup = (input: GQL.SetupInput) =>
   client.mutate<GQL.SetupMutation>({
     mutation: GQL.SetupDocument,
     variables: { input },
-    refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
-    update: deleteCache([GQL.ConfigurationDocument]),
+    refetchQueries: getQueryNames([
+      GQL.ConfigurationDocument,
+      GQL.SystemStatusDocument,
+    ]),
+    update: deleteCache([GQL.ConfigurationDocument, GQL.SystemStatusDocument]),
   });
 
 export const mutateMigrate = (input: GQL.MigrateInput) =>
   client.mutate<GQL.MigrateMutation>({
     mutation: GQL.MigrateDocument,
     variables: { input },
+    refetchQueries: getQueryNames([
+      GQL.ConfigurationDocument,
+      GQL.SystemStatusDocument,
+    ]),
+    update: deleteCache([GQL.ConfigurationDocument, GQL.SystemStatusDocument]),
   });
 
 export const useDirectory = (path?: string) =>
@@ -408,7 +418,6 @@ const sceneMutationImpactedQueries = [
   GQL.FindMoviesDocument,
   GQL.FindTagDocument,
   GQL.FindTagsDocument,
-  GQL.AllTagsDocument,
 ];
 
 export const useSceneUpdate = () =>
@@ -436,23 +445,13 @@ const updateSceneO = (
   cache: ApolloCache<SceneOMutation>,
   updatedOCount?: number
 ) => {
-  const scene = cache.readQuery<
-    GQL.FindSceneQuery,
-    GQL.FindSceneQueryVariables
-  >({
-    query: GQL.FindSceneDocument,
-    variables: { id },
-  });
-  if (updatedOCount === undefined || !scene?.findScene) return;
+  if (updatedOCount === undefined) return;
 
-  cache.writeQuery<GQL.FindSceneQuery, GQL.FindSceneQueryVariables>({
-    query: GQL.FindSceneDocument,
-    variables: { id },
-    data: {
-      ...scene,
-      findScene: {
-        ...scene.findScene,
-        o_counter: updatedOCount,
+  cache.modify({
+    id: cache.identify({ __typename: "Scene", id }),
+    fields: {
+      o_counter() {
+        return updatedOCount;
       },
     },
   });
@@ -572,7 +571,6 @@ const imageMutationImpactedQueries = [
   GQL.FindStudiosDocument,
   GQL.FindTagDocument,
   GQL.FindTagsDocument,
-  GQL.AllTagsDocument,
   GQL.FindGalleryDocument,
   GQL.FindGalleriesDocument,
 ];
@@ -706,7 +704,6 @@ const galleryMutationImpactedQueries = [
   GQL.FindStudiosDocument,
   GQL.FindTagDocument,
   GQL.FindTagsDocument,
-  GQL.AllTagsDocument,
   GQL.FindGalleryDocument,
   GQL.FindGalleriesDocument,
 ];
@@ -737,6 +734,7 @@ export const mutateAddGalleryImages = (input: GQL.GalleryAddInput) =>
     mutation: GQL.AddGalleryImagesDocument,
     variables: input,
     update: deleteCache(galleryMutationImpactedQueries),
+    refetchQueries: getQueryNames([GQL.FindGalleryDocument]),
   });
 
 export const mutateRemoveGalleryImages = (input: GQL.GalleryRemoveInput) =>
@@ -744,6 +742,7 @@ export const mutateRemoveGalleryImages = (input: GQL.GalleryRemoveInput) =>
     mutation: GQL.RemoveGalleryImagesDocument,
     variables: input,
     update: deleteCache(galleryMutationImpactedQueries),
+    refetchQueries: getQueryNames([GQL.FindGalleryDocument]),
   });
 
 export const mutateGallerySetPrimaryFile = (id: string, fileID: string) =>
@@ -756,6 +755,27 @@ export const mutateGallerySetPrimaryFile = (id: string, fileID: string) =>
       },
     },
     update: deleteCache(galleryMutationImpactedQueries),
+  });
+
+const galleryChapterMutationImpactedQueries = [
+  GQL.FindGalleryDocument,
+  GQL.FindGalleriesDocument,
+];
+
+export const useGalleryChapterCreate = () =>
+  GQL.useGalleryChapterCreateMutation({
+    refetchQueries: getQueryNames([GQL.FindGalleryDocument]),
+    update: deleteCache(galleryChapterMutationImpactedQueries),
+  });
+export const useGalleryChapterUpdate = () =>
+  GQL.useGalleryChapterUpdateMutation({
+    refetchQueries: getQueryNames([GQL.FindGalleryDocument]),
+    update: deleteCache(galleryChapterMutationImpactedQueries),
+  });
+export const useGalleryChapterDestroy = () =>
+  GQL.useGalleryChapterDestroyMutation({
+    refetchQueries: getQueryNames([GQL.FindGalleryDocument]),
+    update: deleteCache(galleryChapterMutationImpactedQueries),
   });
 
 export const studioMutationImpactedQueries = [
@@ -853,7 +873,6 @@ export const tagMutationImpactedQueries = [
   GQL.FindSceneDocument,
   GQL.FindScenesDocument,
   GQL.FindSceneMarkersDocument,
-  GQL.AllTagsDocument,
   GQL.AllTagsForFilterDocument,
   GQL.FindTagsDocument,
 ];
@@ -861,15 +880,10 @@ export const tagMutationImpactedQueries = [
 export const useTagCreate = () =>
   GQL.useTagCreateMutation({
     refetchQueries: getQueryNames([
-      GQL.AllTagsDocument,
       GQL.AllTagsForFilterDocument,
       GQL.FindTagsDocument,
     ]),
-    update: deleteCache([
-      GQL.FindTagsDocument,
-      GQL.AllTagsDocument,
-      GQL.AllTagsForFilterDocument,
-    ]),
+    update: deleteCache([GQL.AllTagsForFilterDocument, GQL.FindTagsDocument]),
   });
 export const useTagUpdate = () =>
   GQL.useTagUpdateMutation({
@@ -1206,6 +1220,20 @@ export const mutateMigrateHashNaming = () =>
     mutation: GQL.MigrateHashNamingDocument,
   });
 
+export const mutateMigrateSceneScreenshots = (
+  input: GQL.MigrateSceneScreenshotsInput
+) =>
+  client.mutate<GQL.MigrateSceneScreenshotsMutation>({
+    mutation: GQL.MigrateSceneScreenshotsDocument,
+    variables: { input },
+  });
+
+export const mutateMigrateBlobs = (input: GQL.MigrateBlobsInput) =>
+  client.mutate<GQL.MigrateBlobsMutation>({
+    mutation: GQL.MigrateBlobsDocument,
+    variables: { input },
+  });
+
 export const mutateMetadataExport = () =>
   client.mutate<GQL.MetadataExportMutation>({
     mutation: GQL.MetadataExportDocument,
@@ -1231,6 +1259,12 @@ export const mutateImportObjects = (input: GQL.ImportObjectsInput) =>
 export const mutateBackupDatabase = (input: GQL.BackupDatabaseInput) =>
   client.mutate<GQL.BackupDatabaseMutation>({
     mutation: GQL.BackupDatabaseDocument,
+    variables: { input },
+  });
+
+export const mutateAnonymiseDatabase = (input: GQL.AnonymiseDatabaseInput) =>
+  client.mutate<GQL.AnonymiseDatabaseMutation>({
+    mutation: GQL.AnonymiseDatabaseDocument,
     variables: { input },
   });
 
@@ -1285,6 +1319,10 @@ export const makePerformerCreateInput = (toCreate: GQL.ScrapedPerformer) => {
     death_date: toCreate.death_date,
     hair_color: toCreate.hair_color,
     weight: toCreate.weight ? Number(toCreate.weight) : undefined,
+    penis_length: toCreate.penis_length
+      ? Number(toCreate.penis_length)
+      : undefined,
+    circumcised: stringToCircumcised(toCreate.circumcised),
   };
   return input;
 };

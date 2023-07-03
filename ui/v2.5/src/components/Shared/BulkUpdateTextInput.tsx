@@ -2,7 +2,7 @@ import { faBan } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { Button, Form, FormControlProps, InputGroup } from "react-bootstrap";
 import { useIntl } from "react-intl";
-import Icon from "./Icon";
+import { Icon } from "./Icon";
 
 interface IBulkUpdateTextInputProps extends FormControlProps {
   valueChanged: (value: string | undefined) => void;

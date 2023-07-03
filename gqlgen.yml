@@ -34,6 +34,8 @@ models:
       title:
         resolver: true
   # autobind on config causes generation issues
+  BlobsStorageType:
+    model: github.com/stashapp/stash/internal/manager/config.BlobsStorageType
   StashConfig:
     model: github.com/stashapp/stash/internal/manager/config.StashConfig
   StashConfigInput:

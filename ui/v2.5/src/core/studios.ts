@@ -14,28 +14,20 @@ export const useStudioFilterHook = (studio: GQL.StudioDataFragment) => {
       return c.criterionOption.type === "studios";
     }) as StudiosCriterion;
 
-    if (
-      studioCriterion &&
-      (studioCriterion.modifier === GQL.CriterionModifier.IncludesAll ||
-        studioCriterion.modifier === GQL.CriterionModifier.Includes)
-    ) {
+    if (studioCriterion) {
       // we should be showing studio only. Remove other values
-      studioCriterion.value.items = studioCriterion.value.items.filter(
-        (v) => v.id === studio.id
-      );
-
-      if (studioCriterion.value.items.length === 0) {
-        studioCriterion.value.items.push(studioValue);
-      }
+      studioCriterion.value.items = [studioValue];
+      studioCriterion.modifier = GQL.CriterionModifier.Includes;
     } else {
-      // overwrite
       studioCriterion = new StudiosCriterion();
       studioCriterion.value = {
         items: [studioValue],
+        excluded: [],
         depth: (config?.configuration?.ui as IUIConfig)?.showChildStudioContent
           ? -1
           : 0,
       };
+      studioCriterion.modifier = GQL.CriterionModifier.Includes;
       filter.criteria.push(studioCriterion);
     }
 

@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { useAllMoviesForFilter } from "src/core/StashService";
@@ -11,9 +11,7 @@ export interface IProps {
   onUpdate: (value: GQL.SceneMovieInput[]) => void;
 }
 
-export const SceneMovieTable: React.FunctionComponent<IProps> = (
-  props: IProps
-) => {
+export const SceneMovieTable: React.FC<IProps> = (props) => {
   const intl = useIntl();
   const { data } = useAllMoviesForFilter();
 

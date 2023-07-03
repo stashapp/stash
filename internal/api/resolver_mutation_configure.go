@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"regexp"
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
@@ -122,6 +123,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.Metadata, input.MetadataPath)
 	}
 
+	refreshStreamManager := false
 	existingCachePath := c.GetCachePath()
 	if input.CachePath != nil && existingCachePath != *input.CachePath {
 		if err := validateDir(config.Cache, *input.CachePath, true); err != nil {
@@ -129,6 +131,29 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		}
 
 		c.Set(config.Cache, input.CachePath)
+		refreshStreamManager = true
+	}
+
+	refreshBlobStorage := false
+	existingBlobsPath := c.GetBlobsPath()
+	if input.BlobsPath != nil && existingBlobsPath != *input.BlobsPath {
+		if err := validateDir(config.BlobsPath, *input.BlobsPath, true); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+
+		c.Set(config.BlobsPath, input.BlobsPath)
+		refreshBlobStorage = true
+	}
+
+	if input.BlobsStorage != nil && *input.BlobsStorage != c.GetBlobsStorage() {
+		if *input.BlobsStorage == config.BlobStorageTypeFilesystem && c.GetBlobsPath() == "" {
+			return makeConfigGeneralResult(), fmt.Errorf("blobs path must be set when using filesystem storage")
+		}
+
+		// TODO - migrate between systems
+		c.Set(config.BlobsStorage, input.BlobsStorage)
+
+		refreshBlobStorage = true
 	}
 
 	if input.VideoFileNamingAlgorithm != nil && *input.VideoFileNamingAlgorithm != c.GetVideoFileNamingAlgorithm() {
@@ -178,6 +203,9 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.PreviewPreset, input.PreviewPreset.String())
 	}
 
+	if input.TranscodeHardwareAcceleration != nil {
+		c.Set(config.TranscodeHardwareAcceleration, *input.TranscodeHardwareAcceleration)
+	}
 	if input.MaxTranscodeSize != nil {
 		c.Set(config.MaxTranscodeSize, input.MaxTranscodeSize.String())
 	}
@@ -190,8 +218,27 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.WriteImageThumbnails, *input.WriteImageThumbnails)
 	}
 
-	if input.Username != nil {
+	if input.CreateImageClipsFromVideos != nil {
+		c.Set(config.CreateImageClipsFromVideos, *input.CreateImageClipsFromVideos)
+	}
+
+	if input.GalleryCoverRegex != nil {
+
+		_, err := regexp.Compile(*input.GalleryCoverRegex)
+		if err != nil {
+			return makeConfigGeneralResult(), fmt.Errorf("Gallery cover regex '%v' invalid, '%v'", *input.GalleryCoverRegex, err.Error())
+		}
+
+		c.Set(config.GalleryCoverRegex, *input.GalleryCoverRegex)
+	}
+
+	if input.Username != nil && *input.Username != c.GetUsername() {
 		c.Set(config.Username, input.Username)
+		if *input.Password == "" {
+			logger.Info("Username cleared")
+		} else {
+			logger.Info("Username changed")
+		}
 	}
 
 	if input.Password != nil {
@@ -200,6 +247,11 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		currentPWHash := c.GetPasswordHash()
 
 		if *input.Password != currentPWHash {
+			if *input.Password == "" {
+				logger.Info("Password cleared")
+			} else {
+				logger.Info("Password changed")
+			}
 			c.SetPassword(*input.Password)
 		}
 	}
@@ -227,10 +279,22 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	}
 
 	if input.Excludes != nil {
+		for _, r := range input.Excludes {
+			_, err := regexp.Compile(r)
+			if err != nil {
+				return makeConfigGeneralResult(), fmt.Errorf("video exclusion pattern '%v' invalid: %w", r, err)
+			}
+		}
 		c.Set(config.Exclude, input.Excludes)
 	}
 
 	if input.ImageExcludes != nil {
+		for _, r := range input.ImageExcludes {
+			_, err := regexp.Compile(r)
+			if err != nil {
+				return makeConfigGeneralResult(), fmt.Errorf("image/gallery exclusion pattern '%v' invalid: %w", r, err)
+			}
+		}
 		c.Set(config.ImageExclude, input.ImageExcludes)
 	}
 
@@ -280,6 +344,23 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.PythonPath, input.PythonPath)
 	}
 
+	if input.TranscodeInputArgs != nil {
+		c.Set(config.TranscodeInputArgs, input.TranscodeInputArgs)
+	}
+	if input.TranscodeOutputArgs != nil {
+		c.Set(config.TranscodeOutputArgs, input.TranscodeOutputArgs)
+	}
+	if input.LiveTranscodeInputArgs != nil {
+		c.Set(config.LiveTranscodeInputArgs, input.LiveTranscodeInputArgs)
+	}
+	if input.LiveTranscodeOutputArgs != nil {
+		c.Set(config.LiveTranscodeOutputArgs, input.LiveTranscodeOutputArgs)
+	}
+
+	if input.DrawFunscriptHeatmapRange != nil {
+		c.Set(config.DrawFunscriptHeatmapRange, input.DrawFunscriptHeatmapRange)
+	}
+
 	if err := c.Write(); err != nil {
 		return makeConfigGeneralResult(), err
 	}
@@ -287,6 +368,12 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	manager.GetInstance().RefreshConfig()
 	if refreshScraperCache {
 		manager.GetInstance().RefreshScraperCache()
+	}
+	if refreshStreamManager {
+		manager.GetInstance().RefreshStreamManager()
+	}
+	if refreshBlobStorage {
+		manager.GetInstance().SetBlobStoreOptions()
 	}
 
 	return makeConfigGeneralResult(), nil
@@ -410,6 +497,10 @@ func (r *mutationResolver) ConfigureDlna(ctx context.Context, input ConfigDLNAIn
 		c.Set(config.DLNADefaultIPWhitelist, input.WhitelistedIPs)
 	}
 
+	if input.VideoSortOrder != nil {
+		c.Set(config.DLNAVideoSortOrder, input.VideoSortOrder)
+	}
+
 	currentDLNAEnabled := c.GetDLNADefaultEnabled()
 	if input.Enabled != nil && *input.Enabled != currentDLNAEnabled {
 		c.Set(config.DLNADefaultEnabled, *input.Enabled)
@@ -451,6 +542,12 @@ func (r *mutationResolver) ConfigureScraping(ctx context.Context, input ConfigSc
 	}
 
 	if input.ExcludeTagPatterns != nil {
+		for _, r := range input.ExcludeTagPatterns {
+			_, err := regexp.Compile(r)
+			if err != nil {
+				return makeConfigScrapingResult(), fmt.Errorf("tag exclusion pattern '%v' invalid: %w", r, err)
+			}
+		}
 		c.Set(config.ScraperExcludeTagPatterns, input.ExcludeTagPatterns)
 	}
 
@@ -476,6 +573,8 @@ func (r *mutationResolver) ConfigureDefaults(ctx context.Context, input ConfigDe
 	}
 
 	if input.Scan != nil {
+		// if input.Scan is used then ScanMetadataOptions is included in the config file
+		// this causes the values to not be read correctly
 		c.Set(config.DefaultScanSettings, input.Scan.ScanMetadataOptions)
 	}
 

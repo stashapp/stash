@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -30,47 +31,67 @@ const (
 	scenesTagsTable       = "scenes_tags"
 	scenesGalleriesTable  = "scenes_galleries"
 	moviesScenesTable     = "movies_scenes"
+
+	sceneCoverBlobColumn = "cover_blob"
 )
 
 var findExactDuplicateQuery = `
-SELECT GROUP_CONCAT(scenes.id) as ids
-FROM scenes
-INNER JOIN scenes_files ON (scenes.id = scenes_files.scene_id) 
-INNER JOIN files ON (scenes_files.file_id = files.id) 
-INNER JOIN files_fingerprints ON (scenes_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'phash')
-GROUP BY files_fingerprints.fingerprint
-HAVING COUNT(files_fingerprints.fingerprint) > 1 AND COUNT(DISTINCT scenes.id) > 1
-ORDER BY SUM(files.size) DESC;
+SELECT GROUP_CONCAT(DISTINCT scene_id) as ids
+FROM (
+	SELECT scenes.id as scene_id
+		, video_files.duration as file_duration
+		, files.size as file_size
+		, files_fingerprints.fingerprint as phash
+		, abs(max(video_files.duration) OVER (PARTITION by files_fingerprints.fingerprint) - video_files.duration) as durationDiff
+	FROM scenes
+	INNER JOIN scenes_files ON (scenes.id = scenes_files.scene_id)
+	INNER JOIN files ON (scenes_files.file_id = files.id)
+	INNER JOIN files_fingerprints ON (scenes_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'phash')
+	INNER JOIN video_files ON (files.id == video_files.file_id)
+)
+WHERE durationDiff <= ?1
+    OR ?1 < 0   --  Always TRUE if the parameter is negative.
+                --  That will disable the durationDiff checking.
+GROUP BY phash
+HAVING COUNT(phash) > 1
+	AND COUNT(DISTINCT scene_id) > 1
+ORDER BY SUM(file_size) DESC;
 `
 
 var findAllPhashesQuery = `
-SELECT scenes.id as id, files_fingerprints.fingerprint as phash
+SELECT scenes.id as id
+    , files_fingerprints.fingerprint as phash
+    , video_files.duration as duration
 FROM scenes
-INNER JOIN scenes_files ON (scenes.id = scenes_files.scene_id) 
-INNER JOIN files ON (scenes_files.file_id = files.id) 
+INNER JOIN scenes_files ON (scenes.id = scenes_files.scene_id)
+INNER JOIN files ON (scenes_files.file_id = files.id)
 INNER JOIN files_fingerprints ON (scenes_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'phash')
-ORDER BY files.size DESC
+INNER JOIN video_files ON (files.id == video_files.file_id)
+ORDER BY files.size DESC;
 `
 
 type sceneRow struct {
-	ID       int               `db:"id" goqu:"skipinsert"`
-	Title    zero.String       `db:"title"`
-	Code     zero.String       `db:"code"`
-	Details  zero.String       `db:"details"`
-	Director zero.String       `db:"director"`
-	URL      zero.String       `db:"url"`
-	Date     models.SQLiteDate `db:"date"`
+	ID       int         `db:"id" goqu:"skipinsert"`
+	Title    zero.String `db:"title"`
+	Code     zero.String `db:"code"`
+	Details  zero.String `db:"details"`
+	Director zero.String `db:"director"`
+	URL      zero.String `db:"url"`
+	Date     NullDate    `db:"date"`
 	// expressed as 1-100
-	Rating       null.Int                   `db:"rating"`
-	Organized    bool                       `db:"organized"`
-	OCounter     int                        `db:"o_counter"`
-	StudioID     null.Int                   `db:"studio_id,omitempty"`
-	CreatedAt    models.SQLiteTimestamp     `db:"created_at"`
-	UpdatedAt    models.SQLiteTimestamp     `db:"updated_at"`
-	LastPlayedAt models.NullSQLiteTimestamp `db:"last_played_at"`
-	ResumeTime   float64                    `db:"resume_time"`
-	PlayDuration float64                    `db:"play_duration"`
-	PlayCount    int                        `db:"play_count"`
+	Rating       null.Int      `db:"rating"`
+	Organized    bool          `db:"organized"`
+	OCounter     int           `db:"o_counter"`
+	StudioID     null.Int      `db:"studio_id,omitempty"`
+	CreatedAt    Timestamp     `db:"created_at"`
+	UpdatedAt    Timestamp     `db:"updated_at"`
+	LastPlayedAt NullTimestamp `db:"last_played_at"`
+	ResumeTime   float64       `db:"resume_time"`
+	PlayDuration float64       `db:"play_duration"`
+	PlayCount    int           `db:"play_count"`
+
+	// not used in resolutions or updates
+	CoverBlob zero.String `db:"cover_blob"`
 }
 
 func (r *sceneRow) fromScene(o models.Scene) {
@@ -80,21 +101,14 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.Details = zero.StringFrom(o.Details)
 	r.Director = zero.StringFrom(o.Director)
 	r.URL = zero.StringFrom(o.URL)
-	if o.Date != nil {
-		_ = r.Date.Scan(o.Date.Time)
-	}
+	r.Date = NullDateFromDatePtr(o.Date)
 	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
 	r.OCounter = o.OCounter
 	r.StudioID = intFromPtr(o.StudioID)
-	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
-	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
-	if o.LastPlayedAt != nil {
-		r.LastPlayedAt = models.NullSQLiteTimestamp{
-			Timestamp: *o.LastPlayedAt,
-			Valid:     true,
-		}
-	}
+	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
+	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
+	r.LastPlayedAt = NullTimestampFromTimePtr(o.LastPlayedAt)
 	r.ResumeTime = o.ResumeTime
 	r.PlayDuration = o.PlayDuration
 	r.PlayCount = o.PlayCount
@@ -130,6 +144,7 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		CreatedAt: r.CreatedAt.Timestamp,
 		UpdatedAt: r.UpdatedAt.Timestamp,
 
+		LastPlayedAt: r.LastPlayedAt.TimePtr(),
 		ResumeTime:   r.ResumeTime,
 		PlayDuration: r.PlayDuration,
 		PlayCount:    r.PlayCount,
@@ -137,10 +152,6 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 
 	if r.PrimaryFileFolderPath.Valid && r.PrimaryFileBasename.Valid {
 		ret.Path = filepath.Join(r.PrimaryFileFolderPath.String, r.PrimaryFileBasename.String)
-	}
-
-	if r.LastPlayedAt.Valid {
-		ret.LastPlayedAt = &r.LastPlayedAt.Timestamp
 	}
 
 	return ret
@@ -156,14 +167,14 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setNullString("details", o.Details)
 	r.setNullString("director", o.Director)
 	r.setNullString("url", o.URL)
-	r.setSQLiteDate("date", o.Date)
+	r.setNullDate("date", o.Date)
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
 	r.setInt("o_counter", o.OCounter)
 	r.setNullInt("studio_id", o.StudioID)
-	r.setSQLiteTimestamp("created_at", o.CreatedAt)
-	r.setSQLiteTimestamp("updated_at", o.UpdatedAt)
-	r.setSQLiteTimestamp("last_played_at", o.LastPlayedAt)
+	r.setTimestamp("created_at", o.CreatedAt)
+	r.setTimestamp("updated_at", o.UpdatedAt)
+	r.setNullTimestamp("last_played_at", o.LastPlayedAt)
 	r.setFloat64("resume_time", o.ResumeTime)
 	r.setFloat64("play_duration", o.PlayDuration)
 	r.setInt("play_count", o.PlayCount)
@@ -171,6 +182,7 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 
 type SceneStore struct {
 	repository
+	blobJoinQueryBuilder
 
 	tableMgr *table
 	oCounterManager
@@ -178,11 +190,15 @@ type SceneStore struct {
 	fileStore *FileStore
 }
 
-func NewSceneStore(fileStore *FileStore) *SceneStore {
+func NewSceneStore(fileStore *FileStore, blobStore *BlobStore) *SceneStore {
 	return &SceneStore{
 		repository: repository{
 			tableName: sceneTable,
 			idColumn:  idColumn,
+		},
+		blobJoinQueryBuilder: blobJoinQueryBuilder{
+			blobStore: blobStore,
+			joinTable: sceneTable,
 		},
 
 		tableMgr:        sceneTableMgr,
@@ -193,6 +209,47 @@ func NewSceneStore(fileStore *FileStore) *SceneStore {
 
 func (qb *SceneStore) table() exp.IdentifierExpression {
 	return qb.tableMgr.table
+}
+
+func (qb *SceneStore) selectDataset() *goqu.SelectDataset {
+	table := qb.table()
+	files := fileTableMgr.table
+	folders := folderTableMgr.table
+	checksum := fingerprintTableMgr.table.As("fingerprint_md5")
+	oshash := fingerprintTableMgr.table.As("fingerprint_oshash")
+
+	return dialect.From(table).LeftJoin(
+		scenesFilesJoinTable,
+		goqu.On(
+			scenesFilesJoinTable.Col(sceneIDColumn).Eq(table.Col(idColumn)),
+			scenesFilesJoinTable.Col("primary").Eq(1),
+		),
+	).LeftJoin(
+		files,
+		goqu.On(files.Col(idColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn))),
+	).LeftJoin(
+		folders,
+		goqu.On(folders.Col(idColumn).Eq(files.Col("parent_folder_id"))),
+	).LeftJoin(
+		checksum,
+		goqu.On(
+			checksum.Col(fileIDColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn)),
+			checksum.Col("type").Eq(file.FingerprintTypeMD5),
+		),
+	).LeftJoin(
+		oshash,
+		goqu.On(
+			oshash.Col(fileIDColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn)),
+			oshash.Col("type").Eq(file.FingerprintTypeOshash),
+		),
+	).Select(
+		qb.table().All(),
+		scenesFilesJoinTable.Col(fileIDColumn).As("primary_file_id"),
+		folders.Col("path").As("primary_file_folder_path"),
+		files.Col("basename").As("primary_file_basename"),
+		checksum.Col("fingerprint").As("primary_file_checksum"),
+		oshash.Col("fingerprint").As("primary_file_oshash"),
+	)
 }
 
 func (qb *SceneStore) Create(ctx context.Context, newObject *models.Scene, fileIDs []file.ID) error {
@@ -296,7 +353,7 @@ func (qb *SceneStore) UpdatePartial(ctx context.Context, id int, partial models.
 		}
 	}
 
-	return qb.Find(ctx, id)
+	return qb.find(ctx, id)
 }
 
 func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) error {
@@ -352,29 +409,45 @@ func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) e
 }
 
 func (qb *SceneStore) Destroy(ctx context.Context, id int) error {
+	// must handle image checksums manually
+	if err := qb.destroyCover(ctx, id); err != nil {
+		return err
+	}
+
 	// scene markers should be handled prior to calling destroy
 	// galleries should be handled prior to calling destroy
 
 	return qb.tableMgr.destroyExisting(ctx, []int{id})
 }
 
+// returns nil, nil if not found
 func (qb *SceneStore) Find(ctx context.Context, id int) (*models.Scene, error) {
-	return qb.find(ctx, id)
+	ret, err := qb.find(ctx, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	return ret, err
 }
 
 func (qb *SceneStore) FindMany(ctx context.Context, ids []int) ([]*models.Scene, error) {
-	table := qb.table()
-	q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(ids))
-	unsorted, err := qb.getMany(ctx, q)
-	if err != nil {
-		return nil, err
-	}
-
 	scenes := make([]*models.Scene, len(ids))
 
-	for _, s := range unsorted {
-		i := intslice.IntIndex(ids, s.ID)
-		scenes[i] = s
+	table := qb.table()
+	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
+		q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(batch))
+		unsorted, err := qb.getMany(ctx, q)
+		if err != nil {
+			return err
+		}
+
+		for _, s := range unsorted {
+			i := intslice.IntIndex(ids, s.ID)
+			scenes[i] = s
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
 	for i := range scenes {
@@ -386,47 +459,31 @@ func (qb *SceneStore) FindMany(ctx context.Context, ids []int) ([]*models.Scene,
 	return scenes, nil
 }
 
-func (qb *SceneStore) selectDataset() *goqu.SelectDataset {
-	table := qb.table()
-	files := fileTableMgr.table
-	folders := folderTableMgr.table
-	checksum := fingerprintTableMgr.table.As("fingerprint_md5")
-	oshash := fingerprintTableMgr.table.As("fingerprint_oshash")
+// returns nil, sql.ErrNoRows if not found
+func (qb *SceneStore) find(ctx context.Context, id int) (*models.Scene, error) {
+	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
 
-	return dialect.From(table).LeftJoin(
-		scenesFilesJoinTable,
-		goqu.On(
-			scenesFilesJoinTable.Col(sceneIDColumn).Eq(table.Col(idColumn)),
-			scenesFilesJoinTable.Col("primary").Eq(1),
-		),
-	).LeftJoin(
-		files,
-		goqu.On(files.Col(idColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn))),
-	).LeftJoin(
-		folders,
-		goqu.On(folders.Col(idColumn).Eq(files.Col("parent_folder_id"))),
-	).LeftJoin(
-		checksum,
-		goqu.On(
-			checksum.Col(fileIDColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn)),
-			checksum.Col("type").Eq(file.FingerprintTypeMD5),
-		),
-	).LeftJoin(
-		oshash,
-		goqu.On(
-			oshash.Col(fileIDColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn)),
-			oshash.Col("type").Eq(file.FingerprintTypeOshash),
-		),
-	).Select(
-		qb.table().All(),
-		scenesFilesJoinTable.Col(fileIDColumn).As("primary_file_id"),
-		folders.Col("path").As("primary_file_folder_path"),
-		files.Col("basename").As("primary_file_basename"),
-		checksum.Col("fingerprint").As("primary_file_checksum"),
-		oshash.Col("fingerprint").As("primary_file_oshash"),
-	)
+	ret, err := qb.get(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
+func (qb *SceneStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Scene, error) {
+	table := qb.table()
+
+	q := qb.selectDataset().Where(
+		table.Col(idColumn).Eq(
+			sq,
+		),
+	)
+
+	return qb.getMany(ctx, q)
+}
+
+// returns nil, sql.ErrNoRows if not found
 func (qb *SceneStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Scene, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
@@ -492,17 +549,6 @@ func (qb *SceneStore) GetFiles(ctx context.Context, id int) ([]*file.VideoFile, 
 func (qb *SceneStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error) {
 	const primaryOnly = false
 	return qb.filesRepository().getMany(ctx, ids, primaryOnly)
-}
-
-func (qb *SceneStore) find(ctx context.Context, id int) (*models.Scene, error) {
-	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
-
-	ret, err := qb.get(ctx, q)
-	if err != nil {
-		return nil, fmt.Errorf("getting scene by id %d: %w", id, err)
-	}
-
-	return ret, nil
 }
 
 func (qb *SceneStore) FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Scene, error) {
@@ -613,18 +659,6 @@ func (qb *SceneStore) FindByPath(ctx context.Context, p string) ([]*models.Scene
 	return ret, nil
 }
 
-func (qb *SceneStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Scene, error) {
-	table := qb.table()
-
-	q := qb.selectDataset().Where(
-		table.Col(idColumn).Eq(
-			sq,
-		),
-	)
-
-	return qb.getMany(ctx, q)
-}
-
 func (qb *SceneStore) FindByPerformerID(ctx context.Context, performerID int) ([]*models.Scene, error) {
 	sq := dialect.From(scenesPerformersJoinTable).Select(scenesPerformersJoinTable.Col(sceneIDColumn)).Where(
 		scenesPerformersJoinTable.Col(performerIDColumn).Eq(performerID),
@@ -656,6 +690,19 @@ func (qb *SceneStore) CountByPerformerID(ctx context.Context, performerID int) (
 
 	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(performerIDColumn).Eq(performerID))
 	return count(ctx, q)
+}
+
+func (qb *SceneStore) OCountByPerformerID(ctx context.Context, performerID int) (int, error) {
+	table := qb.table()
+	joinTable := scenesPerformersJoinTable
+
+	q := dialect.Select(goqu.COALESCE(goqu.SUM("o_counter"), 0)).From(table).InnerJoin(joinTable, goqu.On(table.Col(idColumn).Eq(joinTable.Col(sceneIDColumn)))).Where(joinTable.Col(performerIDColumn).Eq(performerID))
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
 }
 
 func (qb *SceneStore) FindByMovieID(ctx context.Context, movieID int) ([]*models.Scene, error) {
@@ -860,16 +907,15 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if sceneFilter.Phash != nil {
-			qb.addSceneFilesTable(f)
-			f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
-
-			value, _ := utils.StringToPhash(sceneFilter.Phash.Value)
-			intCriterionHandler(&models.IntCriterionInput{
-				Value:    int(value),
+			// backwards compatibility
+			scenePhashDistanceCriterionHandler(qb, &models.PhashDistanceCriterionInput{
+				Value:    sceneFilter.Phash.Value,
 				Modifier: sceneFilter.Phash.Modifier,
-			}, "fingerprints_phash.fingerprint", nil)(ctx, f)
+			})(ctx, f)
 		}
 	}))
+
+	query.handleCriterion(ctx, scenePhashDistanceCriterionHandler(qb, sceneFilter.PhashDistance))
 
 	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.Rating100, "scenes.rating", nil))
 	// legacy rating handler
@@ -910,7 +956,7 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 	query.handleCriterion(ctx, sceneTagCountCriterionHandler(qb, sceneFilter.TagCount))
 	query.handleCriterion(ctx, scenePerformersCriterionHandler(qb, sceneFilter.Performers))
 	query.handleCriterion(ctx, scenePerformerCountCriterionHandler(qb, sceneFilter.PerformerCount))
-	query.handleCriterion(ctx, sceneStudioCriterionHandler(qb, sceneFilter.Studios))
+	query.handleCriterion(ctx, studioCriterionHandler(sceneTable, sceneFilter.Studios))
 	query.handleCriterion(ctx, sceneMoviesCriterionHandler(qb, sceneFilter.Movies))
 	query.handleCriterion(ctx, scenePerformerTagsCriterionHandler(qb, sceneFilter.PerformerTags))
 	query.handleCriterion(ctx, scenePerformerFavoriteCriterionHandler(sceneFilter.PerformerFavorite))
@@ -942,10 +988,7 @@ func (qb *SceneStore) addVideoFilesTable(f *filterBuilder) {
 	f.addLeftJoin(videoFileTable, "", "video_files.file_id = scenes_files.file_id")
 }
 
-func (qb *SceneStore) Query(ctx context.Context, options models.SceneQueryOptions) (*models.SceneQueryResult, error) {
-	sceneFilter := options.SceneFilter
-	findFilter := options.FindFilter
-
+func (qb *SceneStore) makeQuery(ctx context.Context, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) (*queryBuilder, error) {
 	if sceneFilter == nil {
 		sceneFilter = &models.SceneFilterType{}
 	}
@@ -990,12 +1033,23 @@ func (qb *SceneStore) Query(ctx context.Context, options models.SceneQueryOption
 	}
 	filter := qb.makeFilter(ctx, sceneFilter)
 
-	query.addFilter(filter)
+	if err := query.addFilter(filter); err != nil {
+		return nil, err
+	}
 
 	qb.setSceneSort(&query, findFilter)
 	query.sortAndPagination += getPagination(findFilter)
 
-	result, err := qb.queryGroupedFields(ctx, options, query)
+	return &query, nil
+}
+
+func (qb *SceneStore) Query(ctx context.Context, options models.SceneQueryOptions) (*models.SceneQueryResult, error) {
+	query, err := qb.makeQuery(ctx, options.SceneFilter, options.FindFilter)
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := qb.queryGroupedFields(ctx, options, *query)
 	if err != nil {
 		return nil, fmt.Errorf("error querying aggregate fields: %w", err)
 	}
@@ -1068,6 +1122,15 @@ func (qb *SceneStore) queryGroupedFields(ctx context.Context, options models.Sce
 	ret.TotalDuration = out.Duration.Float64
 	ret.TotalSize = out.Size.Float64
 	return ret, nil
+}
+
+func (qb *SceneStore) QueryCount(ctx context.Context, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) (int, error) {
+	query, err := qb.makeQuery(ctx, sceneFilter, findFilter)
+	if err != nil {
+		return 0, err
+	}
+
+	return query.executeCount(ctx)
 }
 
 func sceneFileCountCriterionHandler(qb *SceneStore, fileCount *models.IntCriterionInput) criterionHandlerFunc {
@@ -1178,6 +1241,8 @@ func sceneIsMissingCriterionHandler(qb *SceneStore, isMissing *string) criterion
 				qb.addSceneFilesTable(f)
 				f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
 				f.addWhere("fingerprints_phash.fingerprint IS NULL")
+			case "cover":
+				f.addWhere("scenes.cover_blob IS NULL")
 			default:
 				f.addWhere("(scenes." + *isMissing + " IS NULL OR TRIM(scenes." + *isMissing + ") = '')")
 			}
@@ -1299,19 +1364,6 @@ func scenePerformerAgeCriterionHandler(performerAge *models.IntCriterionInput) c
 	}
 }
 
-func sceneStudioCriterionHandler(qb *SceneStore, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	h := hierarchicalMultiCriterionHandlerBuilder{
-		tx: qb.tx,
-
-		primaryTable: sceneTable,
-		foreignTable: studioTable,
-		foreignFK:    studioIDColumn,
-		parentFK:     "parent_id",
-	}
-
-	return h.handler(studios)
-}
-
 func sceneMoviesCriterionHandler(qb *SceneStore, movies *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
 		qb.moviesRepository().join(f, "", "scenes.id")
@@ -1321,37 +1373,50 @@ func sceneMoviesCriterionHandler(qb *SceneStore, movies *models.MultiCriterionIn
 	return h.handler(movies)
 }
 
-func scenePerformerTagsCriterionHandler(qb *SceneStore, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func scenePerformerTagsCriterionHandler(qb *SceneStore, tags *models.HierarchicalMultiCriterionInput) criterionHandler {
+	return &joinedPerformerTagsHandler{
+		criterion:      tags,
+		primaryTable:   sceneTable,
+		joinTable:      performersScenesTable,
+		joinPrimaryKey: sceneIDColumn,
+	}
+}
+
+func scenePhashDistanceCriterionHandler(qb *SceneStore, phashDistance *models.PhashDistanceCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
-		if tags != nil {
-			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
-				var notClause string
-				if tags.Modifier == models.CriterionModifierNotNull {
-					notClause = "NOT"
-				}
+		if phashDistance != nil {
+			qb.addSceneFilesTable(f)
+			f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
 
-				f.addLeftJoin("performers_scenes", "", "scenes.id = performers_scenes.scene_id")
-				f.addLeftJoin("performers_tags", "", "performers_scenes.performer_id = performers_tags.performer_id")
-
-				f.addWhere(fmt.Sprintf("performers_tags.tag_id IS %s NULL", notClause))
-				return
+			value, _ := utils.StringToPhash(phashDistance.Value)
+			distance := 0
+			if phashDistance.Distance != nil {
+				distance = *phashDistance.Distance
 			}
 
-			if len(tags.Value) == 0 {
-				return
+			if distance == 0 {
+				// use the default handler
+				intCriterionHandler(&models.IntCriterionInput{
+					Value:    int(value),
+					Modifier: phashDistance.Modifier,
+				}, "fingerprints_phash.fingerprint", nil)(ctx, f)
 			}
 
-			valuesClause := getHierarchicalValues(ctx, qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
-
-			f.addWith(`performer_tags AS (
-SELECT ps.scene_id, t.column1 AS root_tag_id FROM performers_scenes ps
-INNER JOIN performers_tags pt ON pt.performer_id = ps.performer_id
-INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
-)`)
-
-			f.addLeftJoin("performer_tags", "", "performer_tags.scene_id = scenes.id")
-
-			addHierarchicalConditionClauses(f, tags, "performer_tags", "root_tag_id")
+			switch {
+			case phashDistance.Modifier == models.CriterionModifierEquals && distance > 0:
+				// needed to avoid a type mismatch
+				f.addWhere("typeof(fingerprints_phash.fingerprint) = 'integer'")
+				f.addWhere("phash_distance(fingerprints_phash.fingerprint, ?) < ?", value, distance)
+			case phashDistance.Modifier == models.CriterionModifierNotEquals && distance > 0:
+				// needed to avoid a type mismatch
+				f.addWhere("typeof(fingerprints_phash.fingerprint) = 'integer'")
+				f.addWhere("phash_distance(fingerprints_phash.fingerprint, ?) > ?", value, distance)
+			default:
+				intCriterionHandler(&models.IntCriterionInput{
+					Value:    int(value),
+					Modifier: phashDistance.Modifier,
+				}, "fingerprints_phash.fingerprint", nil)(ctx, f)
+			}
 		}
 	}
 }
@@ -1409,7 +1474,7 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		// special handling for path
 		addFileTable()
 		addFolderTable()
-		query.sortAndPagination += fmt.Sprintf(" ORDER BY folders.path %s, files.basename %[1]s", direction)
+		query.sortAndPagination += fmt.Sprintf(" ORDER BY COALESCE(folders.path, '') || COALESCE(files.basename, '') COLLATE NATURAL_CI %s", direction)
 	case "perceptual_similarity":
 		// special handling for phash
 		addFileTable()
@@ -1446,24 +1511,16 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	case "title":
 		addFileTable()
 		addFolderTable()
-		query.sortAndPagination += " ORDER BY COALESCE(scenes.title, files.basename) COLLATE NATURAL_CS " + direction + ", folders.path " + direction
+		query.sortAndPagination += " ORDER BY COALESCE(scenes.title, files.basename) COLLATE NATURAL_CI " + direction + ", folders.path COLLATE NATURAL_CI " + direction
 	case "play_count":
 		// handle here since getSort has special handling for _count suffix
 		query.sortAndPagination += " ORDER BY scenes.play_count " + direction
 	default:
 		query.sortAndPagination += getSort(sort, direction, "scenes")
 	}
-}
 
-func (qb *SceneStore) imageRepository() *imageRepository {
-	return &imageRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: "scenes_cover",
-			idColumn:  sceneIDColumn,
-		},
-		imageColumn: "cover",
-	}
+	// Whatever the sorting, always use title/id as a final sort
+	query.sortAndPagination += ", COALESCE(scenes.title, scenes.id) COLLATE NATURAL_CI ASC"
 }
 
 func (qb *SceneStore) getPlayCount(ctx context.Context, id int) (int, error) {
@@ -1523,15 +1580,19 @@ func (qb *SceneStore) IncrementWatchCount(ctx context.Context, id int) (int, err
 }
 
 func (qb *SceneStore) GetCover(ctx context.Context, sceneID int) ([]byte, error) {
-	return qb.imageRepository().get(ctx, sceneID)
+	return qb.GetImage(ctx, sceneID, sceneCoverBlobColumn)
+}
+
+func (qb *SceneStore) HasCover(ctx context.Context, sceneID int) (bool, error) {
+	return qb.HasImage(ctx, sceneID, sceneCoverBlobColumn)
 }
 
 func (qb *SceneStore) UpdateCover(ctx context.Context, sceneID int, image []byte) error {
-	return qb.imageRepository().replace(ctx, sceneID, image)
+	return qb.UpdateImage(ctx, sceneID, sceneCoverBlobColumn, image)
 }
 
-func (qb *SceneStore) DestroyCover(ctx context.Context, sceneID int) error {
-	return qb.imageRepository().destroy(ctx, []int{sceneID})
+func (qb *SceneStore) destroyCover(ctx context.Context, sceneID int) error {
+	return qb.DestroyImage(ctx, sceneID, sceneCoverBlobColumn)
 }
 
 func (qb *SceneStore) AssignFiles(ctx context.Context, sceneID int, fileIDs []file.ID) error {
@@ -1656,11 +1717,11 @@ func (qb *SceneStore) GetStashIDs(ctx context.Context, sceneID int) ([]models.St
 	return qb.stashIDRepository().get(ctx, sceneID)
 }
 
-func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int) ([][]*models.Scene, error) {
+func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int, durationDiff float64) ([][]*models.Scene, error) {
 	var dupeIds [][]int
 	if distance == 0 {
 		var ids []string
-		if err := qb.tx.Select(ctx, &ids, findExactDuplicateQuery); err != nil {
+		if err := qb.tx.Select(ctx, &ids, findExactDuplicateQuery, durationDiff); err != nil {
 			return nil, err
 		}
 
@@ -1682,7 +1743,8 @@ func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int) ([][]*mo
 
 		if err := qb.queryFunc(ctx, findAllPhashesQuery, nil, false, func(rows *sqlx.Rows) error {
 			phash := utils.Phash{
-				Bucket: -1,
+				Bucket:   -1,
+				Duration: -1,
 			}
 			if err := rows.StructScan(&phash); err != nil {
 				return err
@@ -1694,7 +1756,7 @@ func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int) ([][]*mo
 			return nil, err
 		}
 
-		dupeIds = utils.FindDuplicates(hashes, distance)
+		dupeIds = utils.FindDuplicates(hashes, distance, durationDiff)
 	}
 
 	var duplicates [][]*models.Scene
@@ -1704,5 +1766,26 @@ func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int) ([][]*mo
 		}
 	}
 
+	sortByPath(duplicates)
+
 	return duplicates, nil
+}
+
+func sortByPath(scenes [][]*models.Scene) {
+	lessFunc := func(i int, j int) bool {
+		firstPathI := getFirstPath(scenes[i])
+		firstPathJ := getFirstPath(scenes[j])
+		return firstPathI < firstPathJ
+	}
+	sort.SliceStable(scenes, lessFunc)
+}
+
+func getFirstPath(scenes []*models.Scene) string {
+	var firstPath string
+	for i, scene := range scenes {
+		if i == 0 || scene.Path < firstPath {
+			firstPath = scene.Path
+		}
+	}
+	return firstPath
 }

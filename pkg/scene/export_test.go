@@ -178,8 +178,9 @@ var scenarios = []basicTestScenario{
 	},
 	{
 		createFullScene(errImageID),
-		nil,
-		true,
+		createFullJSONScene(""),
+		// failure to get image should not cause an error
+		false,
 	},
 }
 
@@ -245,7 +246,7 @@ func TestGetStudioName(t *testing.T) {
 	studioErr := errors.New("error getting image")
 
 	mockStudioReader.On("Find", testCtx, studioID).Return(&models.Studio{
-		Name: models.NullString(studioName),
+		Name: studioName,
 	}, nil).Once()
 	mockStudioReader.On("Find", testCtx, missingStudioID).Return(nil, nil).Once()
 	mockStudioReader.On("Find", testCtx, errStudioID).Return(nil, studioErr).Once()
@@ -393,10 +394,10 @@ func TestGetSceneMoviesJSON(t *testing.T) {
 	movieErr := errors.New("error getting movie")
 
 	mockMovieReader.On("Find", testCtx, validMovie1).Return(&models.Movie{
-		Name: models.NullString(movie1Name),
+		Name: movie1Name,
 	}, nil).Once()
 	mockMovieReader.On("Find", testCtx, validMovie2).Return(&models.Movie{
-		Name: models.NullString(movie2Name),
+		Name: movie2Name,
 	}, nil).Once()
 	mockMovieReader.On("Find", testCtx, invalidMovie).Return(nil, movieErr).Once()
 
@@ -512,24 +513,16 @@ var validMarkers = []*models.SceneMarker{
 		Title:        markerTitle1,
 		PrimaryTagID: validTagID1,
 		Seconds:      markerSeconds1,
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
+		CreatedAt:    createTime,
+		UpdatedAt:    updateTime,
 	},
 	{
 		ID:           validMarkerID2,
 		Title:        markerTitle2,
 		PrimaryTagID: validTagID2,
 		Seconds:      markerSeconds2,
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
+		CreatedAt:    createTime,
+		UpdatedAt:    updateTime,
 	},
 }
 

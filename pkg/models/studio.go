@@ -61,12 +61,11 @@ type StudioReader interface {
 }
 
 type StudioWriter interface {
-	Create(ctx context.Context, newStudio Studio) (*Studio, error)
-	Update(ctx context.Context, updatedStudio StudioPartial) (*Studio, error)
-	UpdateFull(ctx context.Context, updatedStudio Studio) (*Studio, error)
+	Create(ctx context.Context, newStudio *Studio) error
+	UpdatePartial(ctx context.Context, id int, updatedStudio StudioPartial) (*Studio, error)
+	Update(ctx context.Context, updatedStudio *Studio) error
 	Destroy(ctx context.Context, id int) error
 	UpdateImage(ctx context.Context, studioID int, image []byte) error
-	DestroyImage(ctx context.Context, studioID int) error
 	UpdateStashIDs(ctx context.Context, studioID int, stashIDs []StashID) error
 	UpdateAliases(ctx context.Context, studioID int, aliases []string) error
 }

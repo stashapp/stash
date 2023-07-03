@@ -117,7 +117,7 @@ func (j *cleanJob) deleteGallery(ctx context.Context, id int) {
 		}
 
 		if g == nil {
-			return fmt.Errorf("gallery not found: %d", id)
+			return fmt.Errorf("gallery with id %d not found", id)
 		}
 
 		if err := g.LoadPrimaryFile(ctx, j.txnManager.File); err != nil {
@@ -164,9 +164,9 @@ func (f *cleanFilter) Accept(ctx context.Context, path string, info fs.FileInfo)
 
 	if info.IsDir() {
 		fileOrFolder = "Folder"
-		stash = getStashFromDirPath(f.stashPaths, path)
+		stash = f.stashPaths.GetStashFromDirPath(path)
 	} else {
-		stash = getStashFromPath(f.stashPaths, path)
+		stash = f.stashPaths.GetStashFromPath(path)
 	}
 
 	if stash == nil {
@@ -201,9 +201,9 @@ func (f *cleanFilter) shouldCleanFile(path string, info fs.FileInfo, stash *conf
 	switch {
 	case info.IsDir() || fsutil.MatchExtension(path, f.zipExt):
 		return f.shouldCleanGallery(path, stash)
-	case fsutil.MatchExtension(path, f.vidExt):
+	case useAsVideo(path):
 		return f.shouldCleanVideoFile(path, stash)
-	case fsutil.MatchExtension(path, f.imgExt):
+	case useAsImage(path):
 		return f.shouldCleanImage(path, stash)
 	default:
 		logger.Infof("File extension does not match any media extensions. Marking to clean: \"%s\"", path)
@@ -447,23 +447,5 @@ func (h *cleanHandler) handleRelatedImages(ctx context.Context, fileDeleter *fil
 		}
 	}
 
-	return nil
-}
-
-func getStashFromPath(stashes []*config.StashConfig, pathToCheck string) *config.StashConfig {
-	for _, f := range stashes {
-		if fsutil.IsPathInDir(f.Path, filepath.Dir(pathToCheck)) {
-			return f
-		}
-	}
-	return nil
-}
-
-func getStashFromDirPath(stashes []*config.StashConfig, pathToCheck string) *config.StashConfig {
-	for _, f := range stashes {
-		if fsutil.IsPathInDir(f.Path, pathToCheck) {
-			return f
-		}
-	}
 	return nil
 }

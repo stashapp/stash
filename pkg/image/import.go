@@ -85,12 +85,19 @@ func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 	if imageJSON.Rating != 0 {
 		newImage.Rating = &imageJSON.Rating
 	}
+	if imageJSON.URL != "" {
+		newImage.URL = imageJSON.URL
+	}
+	if imageJSON.Date != "" {
+		d := models.NewDate(imageJSON.Date)
+		newImage.Date = &d
+	}
 
 	return newImage
 }
 
 func (i *Importer) populateFiles(ctx context.Context) error {
-	files := make([]*file.ImageFile, 0)
+	files := make([]file.File, 0)
 
 	for _, ref := range i.Input.Files {
 		path := ref
@@ -102,11 +109,11 @@ func (i *Importer) populateFiles(ctx context.Context) error {
 		if f == nil {
 			return fmt.Errorf("image file '%s' not found", path)
 		} else {
-			files = append(files, f.(*file.ImageFile))
+			files = append(files, f)
 		}
 	}
 
-	i.image.Files = models.NewRelatedImageFiles(files)
+	i.image.Files = models.NewRelatedFiles(files)
 
 	return nil
 }
@@ -143,14 +150,14 @@ func (i *Importer) populateStudio(ctx context.Context) error {
 }
 
 func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
-	newStudio := *models.NewStudio(name)
+	newStudio := models.NewStudio(name)
 
-	created, err := i.StudioWriter.Create(ctx, newStudio)
+	err := i.StudioWriter.Create(ctx, newStudio)
 	if err != nil {
 		return 0, err
 	}
 
-	return created.ID, nil
+	return newStudio.ID, nil
 }
 
 func (i *Importer) locateGallery(ctx context.Context, ref jsonschema.GalleryRef) (*models.Gallery, error) {
@@ -304,7 +311,7 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 	var err error
 
 	for _, f := range i.image.Files.List() {
-		existing, err = i.ReaderWriter.FindByFileID(ctx, f.ID)
+		existing, err = i.ReaderWriter.FindByFileID(ctx, f.Base().ID)
 		if err != nil {
 			return nil, err
 		}
@@ -387,14 +394,14 @@ func importTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []st
 func createTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []string) ([]*models.Tag, error) {
 	var ret []*models.Tag
 	for _, name := range names {
-		newTag := *models.NewTag(name)
+		newTag := models.NewTag(name)
 
-		created, err := tagWriter.Create(ctx, newTag)
+		err := tagWriter.Create(ctx, newTag)
 		if err != nil {
 			return nil, err
 		}
 
-		ret = append(ret, created)
+		ret = append(ret, newTag)
 	}
 
 	return ret, nil

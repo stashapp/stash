@@ -3,6 +3,7 @@ package sqlite
 import (
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/stashapp/stash/pkg/models"
+	"gopkg.in/guregu/null.v4"
 	"gopkg.in/guregu/null.v4/zero"
 )
 
@@ -77,36 +78,29 @@ func (r *updateRecord) setFloat64(destField string, v models.OptionalFloat64) {
 	}
 }
 
-// func (r *updateRecord) setNullFloat64(destField string, v models.OptionalFloat64) {
-// 	if v.Set {
-// 		r.set(destField, null.FloatFromPtr(v.Ptr()))
-// 	}
-// }
+func (r *updateRecord) setNullFloat64(destField string, v models.OptionalFloat64) {
+	if v.Set {
+		r.set(destField, null.FloatFromPtr(v.Ptr()))
+	}
+}
 
-func (r *updateRecord) setSQLiteTimestamp(destField string, v models.OptionalTime) {
+func (r *updateRecord) setTimestamp(destField string, v models.OptionalTime) {
 	if v.Set {
 		if v.Null {
 			panic("null value not allowed in optional time")
 		}
-		r.set(destField, models.SQLiteTimestamp{Timestamp: v.Value})
+		r.set(destField, Timestamp{Timestamp: v.Value})
 	}
 }
 
-// func (r *updateRecord) setNullTime(destField string, v models.OptionalTime) {
-// 	if v.Set {
-// 		r.set(destField, null.TimeFromPtr(v.Ptr()))
-// 	}
-// }
-
-func (r *updateRecord) setSQLiteDate(destField string, v models.OptionalDate) {
+func (r *updateRecord) setNullTimestamp(destField string, v models.OptionalTime) {
 	if v.Set {
-		if v.Null {
-			r.set(destField, models.SQLiteDate{})
-		} else {
-			r.set(destField, models.SQLiteDate{
-				String: v.Value.String(),
-				Valid:  true,
-			})
-		}
+		r.set(destField, NullTimestampFromTimePtr(v.Ptr()))
+	}
+}
+
+func (r *updateRecord) setNullDate(destField string, v models.OptionalDate) {
+	if v.Set {
+		r.set(destField, NullDateFromDatePtr(v.Ptr()))
 	}
 }

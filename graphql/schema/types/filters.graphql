@@ -21,11 +21,13 @@ enum ResolutionEnum {
   "720p", STANDARD_HD
   "1080p", FULL_HD
   "1440p", QUAD_HD
-  "1920p", VR_HD
-  "4k", FOUR_K
-  "5k", FIVE_K
-  "6k", SIX_K
-  "8k", EIGHT_K
+  "1920p", VR_HD @deprecated(reason: "Use 4K instead") 
+  "4K", FOUR_K
+  "5K", FIVE_K
+  "6K", SIX_K
+  "7K", SEVEN_K
+  "8K", EIGHT_K
+  "8K+", HUGE
 }
 
 input ResolutionCriterionInput {
@@ -76,6 +78,10 @@ input PerformerFilterType {
   measurements: StringCriterionInput
   """Filter by fake tits value"""
   fake_tits: StringCriterionInput
+  """Filter by penis length value"""
+  penis_length: FloatCriterionInput
+  """Filter by ciricumcision"""
+  circumcised: CircumcisionCriterionInput
   """Filter by career length"""
   career_length: StringCriterionInput
   """Filter by tattoos"""
@@ -98,6 +104,8 @@ input PerformerFilterType {
   image_count: IntCriterionInput
   """Filter by gallery count"""
   gallery_count: IntCriterionInput
+  """Filter by o count"""
+  o_counter: IntCriterionInput
   """Filter by StashID"""
   stash_id: StringCriterionInput @deprecated(reason: "Use stash_id_endpoint instead") 
   """Filter by StashID"""
@@ -116,6 +124,8 @@ input PerformerFilterType {
   death_year: IntCriterionInput
   """Filter by studios where performer appears in scene/image/gallery"""
   studios: HierarchicalMultiCriterionInput
+	"""Filter by performers where performer appears with another performer in scene/image/gallery"""
+	performers: MultiCriterionInput
   """Filter by autotag ignore value"""
   ignore_auto_tag: Boolean
   """Filter by birthdate"""
@@ -165,7 +175,9 @@ input SceneFilterType {
   """Filter by file checksum"""
   checksum: StringCriterionInput
   """Filter by file phash"""
-  phash: StringCriterionInput
+  phash: StringCriterionInput @deprecated(reason: "Use phash_distance instead")
+  """Filter by file phash distance"""
+  phash_distance: PhashDistanceCriterionInput
   """Filter by path"""
   path: StringCriterionInput
   """Filter by file count"""
@@ -324,6 +336,8 @@ input GalleryFilterType {
   organized: Boolean
   """Filter by average image resolution"""
   average_resolution: ResolutionCriterionInput
+  """Filter to only include galleries that have chapters. `true` or `false`"""
+  has_chapters: String
   """Filter to only include galleries with this studio"""
   studios: HierarchicalMultiCriterionInput
   """Filter to only include galleries with these tags"""
@@ -425,6 +439,10 @@ input ImageFilterType {
   rating: IntCriterionInput @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: IntCriterionInput
+  """Filter by date"""
+  date: DateCriterionInput
+  """Filter by url"""
+  url: StringCriterionInput
   """Filter by organized"""
   organized: Boolean
   """Filter by o-counter"""
@@ -493,13 +511,25 @@ input IntCriterionInput {
   modifier: CriterionModifier!
 }
 
+input FloatCriterionInput {
+  value: Float!
+  value2: Float
+  modifier: CriterionModifier!
+}
+
 input MultiCriterionInput {
   value: [ID!]
   modifier: CriterionModifier!
+  excludes: [ID!]
 }
 
 input GenderCriterionInput {
   value: GenderEnum
+  modifier: CriterionModifier!
+}
+ 
+input CircumcisionCriterionInput {
+  value: [CircumisedEnum!]
   modifier: CriterionModifier!
 }
 
@@ -507,6 +537,7 @@ input HierarchicalMultiCriterionInput {
   value: [ID!]
   modifier: CriterionModifier!
   depth: Int
+  excludes: [ID!]
 }
 
 input DateCriterionInput {
@@ -519,6 +550,12 @@ input TimestampCriterionInput {
   value: String!
   value2: String
   modifier: CriterionModifier!
+}
+
+input PhashDistanceCriterionInput {
+  value: String!
+  modifier: CriterionModifier!
+  distance: Int
 }
 
 enum FilterMode {

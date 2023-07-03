@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
@@ -20,36 +21,27 @@ type FinderImageStashIDGetter interface {
 // ToJSON converts a Studio object into its JSON equivalent.
 func ToJSON(ctx context.Context, reader FinderImageStashIDGetter, studio *models.Studio) (*jsonschema.Studio, error) {
 	newStudioJSON := jsonschema.Studio{
+		Name:          studio.Name,
+		URL:           studio.URL,
+		Details:       studio.Details,
 		IgnoreAutoTag: studio.IgnoreAutoTag,
-		CreatedAt:     json.JSONTime{Time: studio.CreatedAt.Timestamp},
-		UpdatedAt:     json.JSONTime{Time: studio.UpdatedAt.Timestamp},
+		CreatedAt:     json.JSONTime{Time: studio.CreatedAt},
+		UpdatedAt:     json.JSONTime{Time: studio.UpdatedAt},
 	}
 
-	if studio.Name.Valid {
-		newStudioJSON.Name = studio.Name.String
-	}
-
-	if studio.URL.Valid {
-		newStudioJSON.URL = studio.URL.String
-	}
-
-	if studio.Details.Valid {
-		newStudioJSON.Details = studio.Details.String
-	}
-
-	if studio.ParentID.Valid {
-		parent, err := reader.Find(ctx, int(studio.ParentID.Int64))
+	if studio.ParentID != nil {
+		parent, err := reader.Find(ctx, *studio.ParentID)
 		if err != nil {
 			return nil, fmt.Errorf("error getting parent studio: %v", err)
 		}
 
 		if parent != nil {
-			newStudioJSON.ParentStudio = parent.Name.String
+			newStudioJSON.ParentStudio = parent.Name
 		}
 	}
 
-	if studio.Rating.Valid {
-		newStudioJSON.Rating = int(studio.Rating.Int64)
+	if studio.Rating != nil {
+		newStudioJSON.Rating = *studio.Rating
 	}
 
 	aliases, err := reader.GetAliases(ctx, studio.ID)
@@ -61,7 +53,7 @@ func ToJSON(ctx context.Context, reader FinderImageStashIDGetter, studio *models
 
 	image, err := reader.GetImage(ctx, studio.ID)
 	if err != nil {
-		return nil, fmt.Errorf("error getting studio image: %v", err)
+		logger.Errorf("Error getting studio image: %v", err)
 	}
 
 	if len(image) > 0 {

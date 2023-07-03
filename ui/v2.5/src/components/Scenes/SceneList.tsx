@@ -1,20 +1,20 @@
 import React, { useState } from "react";
 import cloneDeep from "lodash-es/cloneDeep";
-import { useIntl } from "react-intl";
+import { FormattedNumber, useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
+import * as GQL from "src/core/generated-graphql";
+import { queryFindScenes, useFindScenes } from "src/core/StashService";
 import {
-  FindScenesQueryResult,
-  SlimSceneDataFragment,
-} from "src/core/generated-graphql";
-import { queryFindScenes } from "src/core/StashService";
-import { useScenesList } from "src/hooks";
+  makeItemList,
+  PersistanceLevel,
+  showWhenSelected,
+} from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
-import Tagger from "src/components/Tagger";
+import { Tagger } from "../Tagger/scenes/SceneTagger";
 import { IPlaySceneOptions, SceneQueue } from "src/models/sceneQueue";
-import { WallPanel } from "../Wall/WallPanel";
+import { SceneWallPanel } from "../Wall/WallPanel";
 import { SceneListTable } from "./SceneListTable";
 import { EditScenesDialog } from "./EditScenesDialog";
 import { DeleteScenesDialog } from "./DeleteScenesDialog";
@@ -27,25 +27,73 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { faPlay } from "@fortawesome/free-solid-svg-icons";
 import { SceneMergeModal } from "./SceneMergeDialog";
 import { objectTitle } from "src/core/files";
+import TextUtils from "src/utils/text";
+
+const SceneItemList = makeItemList({
+  filterMode: GQL.FilterMode.Scenes,
+  useResult: useFindScenes,
+  getItems(result: GQL.FindScenesQueryResult) {
+    return result?.data?.findScenes?.scenes ?? [];
+  },
+  getCount(result: GQL.FindScenesQueryResult) {
+    return result?.data?.findScenes?.count ?? 0;
+  },
+  renderMetadataByline(result: GQL.FindScenesQueryResult) {
+    const duration = result?.data?.findScenes?.duration;
+    const size = result?.data?.findScenes?.filesize;
+    const filesize = size ? TextUtils.fileSize(size) : undefined;
+
+    if (!duration && !size) {
+      return;
+    }
+
+    const separator = duration && size ? " - " : "";
+
+    return (
+      <span className="scenes-stats">
+        &nbsp;(
+        {duration ? (
+          <span className="scenes-duration">
+            {TextUtils.secondsAsTimeString(duration, 3)}
+          </span>
+        ) : undefined}
+        {separator}
+        {size && filesize ? (
+          <span className="scenes-size">
+            <FormattedNumber
+              value={filesize.size}
+              maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
+                filesize.unit
+              )}
+            />
+            {` ${TextUtils.formatFileSizeUnit(filesize.unit)}`}
+          </span>
+        ) : undefined}
+        )
+      </span>
+    );
+  },
+});
 
 interface ISceneList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   defaultSort?: string;
-  persistState?: PersistanceLevel.ALL;
+  persistState?: PersistanceLevel;
+  alterQuery?: boolean;
 }
 
 export const SceneList: React.FC<ISceneList> = ({
   filterHook,
   defaultSort,
   persistState,
+  alterQuery,
 }) => {
   const intl = useIntl();
   const history = useHistory();
   const config = React.useContext(ConfigurationContext);
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
-  const [mergeScenes, setMergeScenes] = useState<
-    { id: string; title: string }[] | undefined
-  >(undefined);
+  const [mergeScenes, setMergeScenes] =
+    useState<{ id: string; title: string }[]>();
   const [isIdentifyDialogOpen, setIsIdentifyDialogOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
@@ -63,17 +111,17 @@ export const SceneList: React.FC<ISceneList> = ({
     },
     {
       text: `${intl.formatMessage({ id: "actions.generate" })}…`,
-      onClick: generate,
+      onClick: async () => setIsGenerateDialogOpen(true),
       isDisplayed: showWhenSelected,
     },
     {
       text: `${intl.formatMessage({ id: "actions.identify" })}…`,
-      onClick: identify,
+      onClick: async () => setIsIdentifyDialogOpen(true),
       isDisplayed: showWhenSelected,
     },
     {
       text: `${intl.formatMessage({ id: "actions.merge" })}…`,
-      onClick: merge,
+      onClick: onMerge,
       isDisplayed: showWhenSelected,
     },
     {
@@ -87,10 +135,10 @@ export const SceneList: React.FC<ISceneList> = ({
     },
   ];
 
-  const addKeybinds = (
-    result: FindScenesQueryResult,
+  function addKeybinds(
+    result: GQL.FindScenesQueryResult,
     filter: ListFilterModel
-  ) => {
+  ) {
     Mousetrap.bind("p r", () => {
       playRandom(result, filter);
     });
@@ -98,25 +146,7 @@ export const SceneList: React.FC<ISceneList> = ({
     return () => {
       Mousetrap.unbind("p r");
     };
-  };
-
-  const renderDeleteDialog = (
-    selectedScenes: SlimSceneDataFragment[],
-    onClose: (confirmed: boolean) => void
-  ) => <DeleteScenesDialog selected={selectedScenes} onClose={onClose} />;
-
-  const listData = useScenesList({
-    zoomable: true,
-    selectable: true,
-    otherOperations,
-    defaultSort,
-    renderContent,
-    renderEditDialog: renderEditScenesDialog,
-    renderDeleteDialog,
-    filterHook,
-    addKeybinds,
-    persistState,
-  });
+  }
 
   function playScene(
     queue: SceneQueue,
@@ -127,7 +157,7 @@ export const SceneList: React.FC<ISceneList> = ({
   }
 
   async function playSelected(
-    result: FindScenesQueryResult,
+    result: GQL.FindScenesQueryResult,
     filter: ListFilterModel,
     selectedIds: Set<string>
   ) {
@@ -140,44 +170,35 @@ export const SceneList: React.FC<ISceneList> = ({
   }
 
   async function playRandom(
-    result: FindScenesQueryResult,
+    result: GQL.FindScenesQueryResult,
     filter: ListFilterModel
   ) {
     // query for a random scene
-    if (result.data && result.data.findScenes) {
+    if (result.data?.findScenes) {
       const { count } = result.data.findScenes;
 
       const pages = Math.ceil(count / filter.itemsPerPage);
       const page = Math.floor(Math.random() * pages) + 1;
 
-      const indexMax =
-        filter.itemsPerPage < count ? filter.itemsPerPage : count;
+      const indexMax = Math.min(filter.itemsPerPage, count);
       const index = Math.floor(Math.random() * indexMax);
       const filterCopy = cloneDeep(filter);
       filterCopy.currentPage = page;
       filterCopy.sortBy = "random";
       const queryResults = await queryFindScenes(filterCopy);
-      if (queryResults.data.findScenes.scenes.length > index) {
-        const { id } = queryResults.data.findScenes.scenes[index];
+      const scene = queryResults.data.findScenes.scenes[index];
+      if (scene) {
         // navigate to the image player page
         const queue = SceneQueue.fromListFilterModel(filterCopy);
         const autoPlay =
           config.configuration?.interface.autostartVideoOnPlaySelected ?? false;
-        playScene(queue, id, { sceneIndex: index, autoPlay });
+        playScene(queue, scene.id, { sceneIndex: index, autoPlay });
       }
     }
   }
 
-  async function generate() {
-    setIsGenerateDialogOpen(true);
-  }
-
-  async function identify() {
-    setIsIdentifyDialogOpen(true);
-  }
-
-  async function merge(
-    result: FindScenesQueryResult,
+  async function onMerge(
+    result: GQL.FindScenesQueryResult,
     filter: ListFilterModel,
     selectedIds: Set<string>
   ) {
@@ -204,40 +225,37 @@ export const SceneList: React.FC<ISceneList> = ({
     setIsExportDialogOpen(true);
   }
 
-  function maybeRenderSceneGenerateDialog(selectedIds: Set<string>) {
-    if (isGenerateDialogOpen) {
-      return (
-        <>
+  function renderContent(
+    result: GQL.FindScenesQueryResult,
+    filter: ListFilterModel,
+    selectedIds: Set<string>,
+    onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void
+  ) {
+    function maybeRenderSceneGenerateDialog() {
+      if (isGenerateDialogOpen) {
+        return (
           <GenerateDialog
             selectedIds={Array.from(selectedIds.values())}
-            onClose={() => {
-              setIsGenerateDialogOpen(false);
-            }}
+            onClose={() => setIsGenerateDialogOpen(false)}
           />
-        </>
-      );
+        );
+      }
     }
-  }
 
-  function maybeRenderSceneIdentifyDialog(selectedIds: Set<string>) {
-    if (isIdentifyDialogOpen) {
-      return (
-        <>
+    function maybeRenderSceneIdentifyDialog() {
+      if (isIdentifyDialogOpen) {
+        return (
           <IdentifyDialog
             selectedIds={Array.from(selectedIds.values())}
-            onClose={() => {
-              setIsIdentifyDialogOpen(false);
-            }}
+            onClose={() => setIsIdentifyDialogOpen(false)}
           />
-        </>
-      );
+        );
+      }
     }
-  }
 
-  function maybeRenderSceneExportDialog(selectedIds: Set<string>) {
-    if (isExportDialogOpen) {
-      return (
-        <>
+    function maybeRenderSceneExportDialog() {
+      if (isExportDialogOpen) {
+        return (
           <ExportDialog
             exportInput={{
               scenes: {
@@ -245,106 +263,110 @@ export const SceneList: React.FC<ISceneList> = ({
                 all: isExportAll,
               },
             }}
-            onClose={() => {
-              setIsExportDialogOpen(false);
-            }}
+            onClose={() => setIsExportDialogOpen(false)}
           />
-        </>
-      );
+        );
+      }
     }
+
+    function renderMergeDialog() {
+      if (mergeScenes) {
+        return (
+          <SceneMergeModal
+            scenes={mergeScenes}
+            onClose={(mergedID?: string) => {
+              setMergeScenes(undefined);
+              if (mergedID) {
+                history.push(`/scenes/${mergedID}`);
+              }
+            }}
+            show
+          />
+        );
+      }
+    }
+
+    function renderScenes() {
+      if (!result.data?.findScenes) return;
+
+      const queue = SceneQueue.fromListFilterModel(filter);
+
+      if (filter.displayMode === DisplayMode.Grid) {
+        return (
+          <SceneCardsGrid
+            scenes={result.data.findScenes.scenes}
+            queue={queue}
+            zoomIndex={filter.zoomIndex}
+            selectedIds={selectedIds}
+            onSelectChange={onSelectChange}
+          />
+        );
+      }
+      if (filter.displayMode === DisplayMode.List) {
+        return (
+          <SceneListTable
+            scenes={result.data.findScenes.scenes}
+            queue={queue}
+            selectedIds={selectedIds}
+            onSelectChange={onSelectChange}
+          />
+        );
+      }
+      if (filter.displayMode === DisplayMode.Wall) {
+        return (
+          <SceneWallPanel
+            scenes={result.data.findScenes.scenes}
+            sceneQueue={queue}
+          />
+        );
+      }
+      if (filter.displayMode === DisplayMode.Tagger) {
+        return <Tagger scenes={result.data.findScenes.scenes} queue={queue} />;
+      }
+    }
+
+    return (
+      <>
+        {maybeRenderSceneGenerateDialog()}
+        {maybeRenderSceneIdentifyDialog()}
+        {maybeRenderSceneExportDialog()}
+        {renderMergeDialog()}
+        {renderScenes()}
+      </>
+    );
   }
 
-  function renderEditScenesDialog(
-    selectedScenes: SlimSceneDataFragment[],
+  function renderEditDialog(
+    selectedScenes: GQL.SlimSceneDataFragment[],
     onClose: (applied: boolean) => void
   ) {
-    return (
-      <>
-        <EditScenesDialog selected={selectedScenes} onClose={onClose} />
-      </>
-    );
+    return <EditScenesDialog selected={selectedScenes} onClose={onClose} />;
   }
 
-  function renderMergeDialog() {
-    if (mergeScenes) {
-      return (
-        <SceneMergeModal
-          scenes={mergeScenes}
-          onClose={(mergedID?: string) => {
-            setMergeScenes(undefined);
-            if (mergedID) {
-              history.push(`/scenes/${mergedID}`);
-            }
-          }}
-          show
-        />
-      );
-    }
-  }
-
-  function renderScenes(
-    result: FindScenesQueryResult,
-    filter: ListFilterModel,
-    selectedIds: Set<string>
+  function renderDeleteDialog(
+    selectedScenes: GQL.SlimSceneDataFragment[],
+    onClose: (confirmed: boolean) => void
   ) {
-    if (!result.data || !result.data.findScenes) {
-      return;
-    }
-
-    const queue = SceneQueue.fromListFilterModel(filter);
-
-    if (filter.displayMode === DisplayMode.Grid) {
-      return (
-        <SceneCardsGrid
-          scenes={result.data.findScenes.scenes}
-          queue={queue}
-          zoomIndex={filter.zoomIndex}
-          selectedIds={selectedIds}
-          onSelectChange={(id, selected, shiftKey) =>
-            listData.onSelectChange(id, selected, shiftKey)
-          }
-        />
-      );
-    }
-    if (filter.displayMode === DisplayMode.List) {
-      return (
-        <SceneListTable
-          scenes={result.data.findScenes.scenes}
-          queue={queue}
-          selectedIds={selectedIds}
-          onSelectChange={(id, selected, shiftKey) =>
-            listData.onSelectChange(id, selected, shiftKey)
-          }
-        />
-      );
-    }
-    if (filter.displayMode === DisplayMode.Wall) {
-      return (
-        <WallPanel scenes={result.data.findScenes.scenes} sceneQueue={queue} />
-      );
-    }
-    if (filter.displayMode === DisplayMode.Tagger) {
-      return <Tagger scenes={result.data.findScenes.scenes} queue={queue} />;
-    }
+    return <DeleteScenesDialog selected={selectedScenes} onClose={onClose} />;
   }
 
-  function renderContent(
-    result: FindScenesQueryResult,
-    filter: ListFilterModel,
-    selectedIds: Set<string>
-  ) {
-    return (
-      <>
-        {maybeRenderSceneGenerateDialog(selectedIds)}
-        {maybeRenderSceneIdentifyDialog(selectedIds)}
-        {maybeRenderSceneExportDialog(selectedIds)}
-        {renderMergeDialog()}
-        {renderScenes(result, filter, selectedIds)}
-      </>
-    );
-  }
-
-  return <TaggerContext>{listData.template}</TaggerContext>;
+  return (
+    <TaggerContext>
+      <SceneItemList
+        zoomable
+        selectable
+        filterHook={filterHook}
+        persistState={persistState}
+        alterQuery={alterQuery}
+        otherOperations={otherOperations}
+        addKeybinds={addKeybinds}
+        defaultSort={defaultSort}
+        renderContent={renderContent}
+        renderEditDialog={renderEditDialog}
+        renderDeleteDialog={renderDeleteDialog}
+      />
+    </TaggerContext>
+  );
 };
 
 export default SceneList;

@@ -6,6 +6,7 @@
     "add_to_entity": "Aggiungi a {entityType}",
     "allow": "Acconsenti",
     "allow_temporarily": "Acconsenti temporaneamente",
+    "anonymise": "Anonimizza",
     "apply": "Applica",
     "auto_tag": "Tag Automatico",
     "backup": "Backup",
@@ -20,6 +21,7 @@
     "confirm": "Conferma",
     "continue": "Continua",
     "create": "Crea",
+    "create_chapters": "Crea Capitolo",
     "create_entity": "Crea {entityType}",
     "create_marker": "Crea Marker",
     "created_entity": "Creata/o {entity_type}: {entity_name}",
@@ -32,10 +34,11 @@
     "delete_stashid": "Cancellare StashID",
     "disallow": "Non Acconsentire",
     "download": "Scarica",
+    "download_anonymised": "Scarica anonimamente",
     "download_backup": "Scarica Backup",
     "edit": "Edita",
     "edit_entity": "Modifica {entityType}",
-    "export": "Esporta…",
+    "export": "Esporta",
     "export_all": "Esporta tutto…",
     "find": "Trova",
     "finish": "Finire",
@@ -122,14 +125,20 @@
   "aliases": "Alias",
   "all": "tutto",
   "also_known_as": "Anche conosciuto/a come",
+  "appears_with": "Appare Con",
   "ascending": "Ascendente",
   "average_resolution": "Risoluzione Media",
   "between_and": "e",
   "birth_year": "Anno di Nascita",
   "birthdate": "Compleanno",
   "bitrate": "Bit Rate",
+  "blobs_storage_type": {
+    "database": "Database",
+    "filesystem": "Filesystem"
+  },
   "captions": "Sottotitoli",
   "career_length": "Lunghezza Carriera",
+  "chapters": "Capitoli",
   "component_tagger": {
     "config": {
       "active_instance": "Istanza stash-box Attiva:",
@@ -137,7 +146,7 @@
       "blacklist_label": "Lista Nera",
       "query_mode_auto": "Automatico",
       "query_mode_auto_desc": "Usa metadati se presenti, o nome file",
-      "query_mode_dir": "Dir",
+      "query_mode_dir": "Elenco",
       "query_mode_dir_desc": "Usa solo la cartella che contiene il file video",
       "query_mode_filename": "Nome file",
       "query_mode_filename_desc": "Usa solo il nome file",
@@ -183,6 +192,7 @@
       "latest_version": "Ultima Versione",
       "latest_version_build_hash": "Hash dell'ultima Versione:",
       "new_version_notice": "[NUOVA]",
+      "release_date": "Data di rilascio:",
       "stash_discord": "Unisciti al nostro canale {url}",
       "stash_home": "Stash homepage su {url}",
       "stash_open_collective": "Supportaci attraverso {url}",
@@ -194,7 +204,7 @@
     },
     "categories": {
       "about": "Chi siamo",
-      "changelog": "Changelog",
+      "changelog": "Registro dei cambiamenti",
       "interface": "Interfaccia",
       "logs": "Log",
       "metadata_providers": "Provider dei Metadata",
@@ -222,7 +232,8 @@
       "server_display_name": "Nome del Server",
       "server_display_name_desc": "Nome visualizzato per il server DLNA. Predefinito come {server_name} se lasciato vuoto.",
       "successfully_cancelled_temporary_behaviour": "Funzionamento temporaneo cancellato con successo",
-      "until_restart": "fino al riavvio"
+      "until_restart": "fino al riavvio",
+      "video_sort_order": "Ordinamento dei video di default"
     },
     "general": {
       "auth": {
@@ -253,6 +264,9 @@
         "description": "Percorso della directory per i file di backup del database SQLite",
         "heading": "Percorso Directory di Backup"
       },
+      "blobs_path": {
+        "heading": "Percorso dei dati binari"
+      },
       "cache_location": "Percorso della Cartella cache",
       "cache_path_head": "Percorso Cache",
       "calculate_md5_and_ohash_desc": "Calcola l'MD5 checksum oltre l'oshash. Attivare la funzione causerà una prima scansione più lenta. L'hash dei nomi file dev'essere impostata su oshash per disabilitare il calcolo MD5.",
@@ -269,6 +283,8 @@
       "excluded_image_gallery_patterns_head": "Schema Immagini/Gallerie Escluse",
       "excluded_video_patterns_desc": "Espressioni Regolari di file/percorsi di video per escluderli dalla Scansione e aggiungerli alla Pulizia",
       "excluded_video_patterns_head": "Schema Video Esclusi",
+      "gallery_cover_regex_desc": "Espressione regolare usata per identificare un immagine come copertina di galleria",
+      "gallery_cover_regex_label": "Schema copertina di galleria",
       "gallery_ext_desc": "Lista di estensioni delimitate da Virgola che saranno identificate come gallerie in file compressi/zip.",
       "gallery_ext_head": "Estensioni Gallerie zip",
       "generated_file_naming_hash_desc": "Usa l'MD5 o oshas per i nomi dei file creati. Cambiarlo richiede che tutte le scene abbiano il valore MD5/oshash ripopolato. Dopo la modifica, i file esistenti necessiteranno di essere migrati o ricreati. Vedere la pagina Attività per la migrazione.",
@@ -346,6 +362,9 @@
     },
     "tasks": {
       "added_job_to_queue": "Aggiunto/a {operation_name} alla coda lavori",
+      "anonymise_and_download": "Crea una copia anonima del database e scarica il file creato.",
+      "anonymise_database": "Crea una copia del database nella cartella di backup, anonimizzando tutti i dati sensibili. Questo file può essere inviato ad altri come aiuto nella risoluzione dei problemi. Il database anonimizzato viene salvato in formato {filename_format}.",
+      "anonymising_database": "Anonimizzando il database",
       "auto_tag": {
         "auto_tagging_all_paths": "Taggare Automaticamente tutti i percorsi",
         "auto_tagging_paths": "Taggare Automaticamente i seguenti percorsi"
@@ -661,7 +680,6 @@
   "details": "Dettagli",
   "developmentVersion": "Versione Sviluppo",
   "dialogs": {
-    "aliases_must_be_unique": "gli alias devono essere univoci",
     "create_new_entity": "Crea nuovo/a {entity}",
     "delete_alert": "Il seguente/I seguenti {count, plural, one {{singularEntity}} other {{pluralEntity}}} sarà/saranno cancellati permanentemente:",
     "delete_confirm": "Sei sicuro di voler cancellare {entityName}?",
@@ -757,6 +775,7 @@
   },
   "dimensions": "Dimensioni",
   "director": "Regista",
+  "disambiguation": "Disambiguità",
   "display_mode": {
     "grid": "Griglia",
     "list": "Lista",
@@ -977,7 +996,6 @@
   "scenes": "Scene",
   "scenes_updated_at": "Scena Aggiornata Al",
   "search_filter": {
-    "add_filter": "Aggiungi Filtro",
     "name": "Filtro",
     "saved_filters": "Filtri Salvati",
     "update_filter": "Aggiorna Filtro"
@@ -1049,7 +1067,7 @@
       "your_system_has_been_created": "Successo! Il vostro sistema è stato creato!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash cerca di trovare il file di configurazione (<code>config.yml</code>) dall'attuale cartella di lavoro inizialmente e se non lo trova lì, cerca in <code>$HOME/.stash/config.yml</code> (sotto Windows, sarà <code>%USERPROFILE%\\.stash\\config.yml</code>). Potete far leggere a Stash un specifico file di configurazione lanciandolo con l'opzione <code>-c <percorso al file></code> o <code>--config <percorso al file></code>.",
+      "config_path_logic_explained": "Stash cerca di trovare il file di configurazione (<code>config.yml</code>) dall'attuale cartella di lavoro inizialmente e se non lo trova lì, cerca in <code>$HOME/.stash/config.yml</code> (sotto Windows, sarà <code>%USERPROFILE%\\.stash\\config.yml</code>). Potete far leggere a Stash un specifico file di configurazione lanciandolo con l'opzione <code>-c '<percorso al file>'</code> o <code>--config '<percorso al file>'</code>.",
       "in_current_stash_directory": "Nella cartella <code>$HOME/.stash</code>",
       "in_the_current_working_directory": "Nell'attuale cartella di lavoro",
       "next_step": "Dopo tutto questo, se siete pronti a procedere con la configurazione di un nuovo sistema, scegliete dove vorreste salvare il file di configurazione e premete Prossimo.",
@@ -1118,6 +1136,9 @@
   "type": "Tipo",
   "updated_at": "Aggiornato Al",
   "url": "URL",
+  "validation": {
+    "aliases_must_be_unique": "gli alias devono essere univoci"
+  },
   "videos": "Video",
   "view_all": "Vedi Tutto",
   "weight": "Peso",

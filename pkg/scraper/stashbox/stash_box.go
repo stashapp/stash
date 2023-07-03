@@ -3,14 +3,13 @@ package stashbox
 import (
 	"bytes"
 	"context"
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
-	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -20,7 +19,6 @@ import (
 
 	"github.com/Yamashou/gqlgenc/graphqljson"
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
@@ -235,7 +233,7 @@ func (c Client) findStashBoxScenesByFingerprints(ctx context.Context, scenes [][
 		}
 	}
 
-	return results, nil
+	return ret, nil
 }
 
 func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []string, endpoint string) (bool, error) {
@@ -250,9 +248,8 @@ func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []strin
 		qb := c.repository.Scene
 
 		for _, sceneID := range ids {
-			// TODO - Find should return an appropriate not found error
 			scene, err := qb.Find(ctx, sceneID)
-			if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			if err != nil {
 				return err
 			}
 
@@ -665,7 +662,7 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 
 func getFirstImage(ctx context.Context, client *http.Client, images []*graphql.ImageFragment) *string {
 	ret, err := fetchImage(ctx, client, images[0].URL)
-	if err != nil {
+	if err != nil && !errors.Is(err, context.Canceled) {
 		logger.Warnf("Error fetching image %s: %s", images[0].URL, err.Error())
 	}
 
@@ -705,6 +702,13 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 		// TODO - #454 code sorts images by aspect ratio according to a wanted
 		// orientation. I'm just grabbing the first for now
 		ss.Image = getFirstImage(ctx, c.getHTTPClient(), s.Images)
+	}
+
+	if ss.URL == nil && len(s.Urls) > 0 {
+		// The scene in Stash-box may not have a Studio URL but it does have another URL.
+		// For example it has a www.manyvids.com URL, which is auto set as type ManyVids.
+		// This should be re-visited once Stashapp can support more than one URL.
+		ss.URL = &s.Urls[0].URL
 	}
 
 	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
@@ -797,7 +801,7 @@ func appendFingerprintUnique(v []*graphql.FingerprintInput, toAdd *graphql.Finge
 	return append(v, toAdd)
 }
 
-func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpoint string, imagePath string) (*string, error) {
+func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpoint string, cover []byte) (*string, error) {
 	draft := graphql.SceneDraftInput{}
 	var image io.Reader
 	r := c.repository
@@ -807,8 +811,14 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 	if scene.Title != "" {
 		draft.Title = &scene.Title
 	}
+	if scene.Code != "" {
+		draft.Code = &scene.Code
+	}
 	if scene.Details != "" {
 		draft.Details = &scene.Details
+	}
+	if scene.Director != "" {
+		draft.Director = &scene.Director
 	}
 	if scene.URL != "" && len(strings.TrimSpace(scene.URL)) > 0 {
 		url := strings.TrimSpace(scene.URL)
@@ -820,12 +830,16 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 	}
 
 	if scene.StudioID != nil {
-		studio, err := sqb.Find(ctx, int(*scene.StudioID))
+		studio, err := sqb.Find(ctx, *scene.StudioID)
 		if err != nil {
 			return nil, err
 		}
+		if studio == nil {
+			return nil, fmt.Errorf("studio with id %d not found", *scene.StudioID)
+		}
+
 		studioDraft := graphql.DraftEntityInput{
-			Name: studio.Name.String,
+			Name: studio.Name,
 		}
 
 		stashIDs, err := sqb.GetStashIDs(ctx, studio.ID)
@@ -921,14 +935,8 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 	}
 	draft.Tags = tags
 
-	if imagePath != "" {
-		exists, _ := fsutil.FileExists(imagePath)
-		if exists {
-			file, err := os.Open(imagePath)
-			if err == nil {
-				image = file
-			}
-		}
+	if len(cover) > 0 {
+		image = bytes.NewReader(cover)
 	}
 
 	if err := scene.LoadStashIDs(ctx, r.Scene); err != nil {
@@ -1003,7 +1011,7 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 	if performer.FakeTits != "" {
 		draft.BreastType = &performer.FakeTits
 	}
-	if performer.Gender.IsValid() {
+	if performer.Gender != nil && performer.Gender.IsValid() {
 		v := performer.Gender.String()
 		draft.Gender = &v
 	}
@@ -1041,10 +1049,20 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 
 	var urls []string
 	if len(strings.TrimSpace(performer.Twitter)) > 0 {
-		urls = append(urls, "https://twitter.com/"+strings.TrimSpace(performer.Twitter))
+		reg := regexp.MustCompile(`https?:\/\/(?:www\.)?twitter\.com`)
+		if reg.MatchString(performer.Twitter) {
+			urls = append(urls, strings.TrimSpace(performer.Twitter))
+		} else {
+			urls = append(urls, "https://twitter.com/"+strings.TrimSpace(performer.Twitter))
+		}
 	}
 	if len(strings.TrimSpace(performer.Instagram)) > 0 {
-		urls = append(urls, "https://instagram.com/"+strings.TrimSpace(performer.Instagram))
+		reg := regexp.MustCompile(`https?:\/\/(?:www\.)?instagram\.com`)
+		if reg.MatchString(performer.Instagram) {
+			urls = append(urls, strings.TrimSpace(performer.Instagram))
+		} else {
+			urls = append(urls, "https://instagram.com/"+strings.TrimSpace(performer.Instagram))
+		}
 	}
 	if len(strings.TrimSpace(performer.URL)) > 0 {
 		urls = append(urls, strings.TrimSpace(performer.URL))

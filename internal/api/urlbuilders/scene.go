@@ -4,32 +4,34 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
-	"time"
+
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type SceneURLBuilder struct {
-	BaseURL string
-	SceneID string
-	APIKey  string
+	BaseURL   string
+	SceneID   string
+	UpdatedAt string
 }
 
-func NewSceneURLBuilder(baseURL string, sceneID int) SceneURLBuilder {
+func NewSceneURLBuilder(baseURL string, scene *models.Scene) SceneURLBuilder {
 	return SceneURLBuilder{
-		BaseURL: baseURL,
-		SceneID: strconv.Itoa(sceneID),
+		BaseURL:   baseURL,
+		SceneID:   strconv.Itoa(scene.ID),
+		UpdatedAt: strconv.FormatInt(scene.UpdatedAt.Unix(), 10),
 	}
 }
 
-func (b SceneURLBuilder) GetStreamURL() *url.URL {
+func (b SceneURLBuilder) GetStreamURL(apiKey string) *url.URL {
 	u, err := url.Parse(fmt.Sprintf("%s/scene/%s/stream", b.BaseURL, b.SceneID))
 	if err != nil {
 		// shouldn't happen
 		panic(err)
 	}
 
-	if b.APIKey != "" {
+	if apiKey != "" {
 		v := u.Query()
-		v.Set("apikey", b.APIKey)
+		v.Set("apikey", apiKey)
 		u.RawQuery = v.Encode()
 	}
 	return u
@@ -43,32 +45,20 @@ func (b SceneURLBuilder) GetStreamPreviewImageURL() string {
 	return b.BaseURL + "/scene/" + b.SceneID + "/webp"
 }
 
-func (b SceneURLBuilder) GetSpriteVTTURL() string {
-	return b.BaseURL + "/scene/" + b.SceneID + "_thumbs.vtt"
+func (b SceneURLBuilder) GetSpriteVTTURL(checksum string) string {
+	return b.BaseURL + "/scene/" + checksum + "_thumbs.vtt"
 }
 
-func (b SceneURLBuilder) GetSpriteURL() string {
-	return b.BaseURL + "/scene/" + b.SceneID + "_sprite.jpg"
+func (b SceneURLBuilder) GetSpriteURL(checksum string) string {
+	return b.BaseURL + "/scene/" + checksum + "_sprite.jpg"
 }
 
-func (b SceneURLBuilder) GetScreenshotURL(updateTime time.Time) string {
-	return b.BaseURL + "/scene/" + b.SceneID + "/screenshot?" + strconv.FormatInt(updateTime.Unix(), 10)
+func (b SceneURLBuilder) GetScreenshotURL() string {
+	return b.BaseURL + "/scene/" + b.SceneID + "/screenshot?t=" + b.UpdatedAt
 }
 
 func (b SceneURLBuilder) GetChaptersVTTURL() string {
 	return b.BaseURL + "/scene/" + b.SceneID + "/vtt/chapter"
-}
-
-func (b SceneURLBuilder) GetSceneMarkerStreamURL(sceneMarkerID int) string {
-	return b.BaseURL + "/scene/" + b.SceneID + "/scene_marker/" + strconv.Itoa(sceneMarkerID) + "/stream"
-}
-
-func (b SceneURLBuilder) GetSceneMarkerStreamPreviewURL(sceneMarkerID int) string {
-	return b.BaseURL + "/scene/" + b.SceneID + "/scene_marker/" + strconv.Itoa(sceneMarkerID) + "/preview"
-}
-
-func (b SceneURLBuilder) GetSceneMarkerStreamScreenshotURL(sceneMarkerID int) string {
-	return b.BaseURL + "/scene/" + b.SceneID + "/scene_marker/" + strconv.Itoa(sceneMarkerID) + "/screenshot"
 }
 
 func (b SceneURLBuilder) GetFunscriptURL() string {

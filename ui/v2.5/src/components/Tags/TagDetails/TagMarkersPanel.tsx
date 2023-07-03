@@ -8,10 +8,14 @@ import {
 import { SceneMarkerList } from "src/components/Scenes/SceneMarkerList";
 
 interface ITagMarkersPanel {
+  active: boolean;
   tag: GQL.TagDataFragment;
 }
 
-export const TagMarkersPanel: React.FC<ITagMarkersPanel> = ({ tag }) => {
+export const TagMarkersPanel: React.FC<ITagMarkersPanel> = ({
+  active,
+  tag,
+}) => {
   function filterHook(filter: ListFilterModel) {
     const tagValue = { id: tag.id, label: tag.name };
     // if tag is already present, then we modify it, otherwise add
@@ -39,6 +43,7 @@ export const TagMarkersPanel: React.FC<ITagMarkersPanel> = ({ tag }) => {
       tagCriterion = new TagsCriterion(TagsCriterionOption);
       tagCriterion.value = {
         items: [tagValue],
+        excluded: [],
         depth: 0,
       };
       filter.criteria.push(tagCriterion);
@@ -47,5 +52,5 @@ export const TagMarkersPanel: React.FC<ITagMarkersPanel> = ({ tag }) => {
     return filter;
   }
 
-  return <SceneMarkerList filterHook={filterHook} />;
+  return <SceneMarkerList filterHook={filterHook} alterQuery={active} />;
 };

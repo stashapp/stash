@@ -24,6 +24,9 @@ github.com/99designs/gqlgen/plugin/federation/fieldset
 github.com/99designs/gqlgen/plugin/modelgen
 github.com/99designs/gqlgen/plugin/resolvergen
 github.com/99designs/gqlgen/plugin/servergen
+# github.com/WithoutPants/sortorder v0.0.0-20230616003020-921c9ef69552
+## explicit; go 1.13
+github.com/WithoutPants/sortorder/casefolded
 # github.com/Yamashou/gqlgenc v0.0.6
 ## explicit; go 1.16
 github.com/Yamashou/gqlgenc
@@ -143,9 +146,6 @@ github.com/doug-martin/goqu/v9/sqlgen
 # github.com/fsnotify/fsnotify v1.5.1
 ## explicit; go 1.13
 github.com/fsnotify/fsnotify
-# github.com/fvbommel/sortorder v1.0.2
-## explicit; go 1.13
-github.com/fvbommel/sortorder
 # github.com/go-chi/chi v4.0.2+incompatible
 ## explicit
 github.com/go-chi/chi
@@ -154,6 +154,9 @@ github.com/go-chi/chi/middleware
 ## explicit; go 1.16
 github.com/go-chi/chi/v5
 github.com/go-chi/chi/v5/middleware
+# github.com/go-chi/cors v1.2.1
+## explicit; go 1.14
+github.com/go-chi/cors
 # github.com/go-chi/httplog v0.2.1
 ## explicit; go 1.14
 github.com/go-chi/httplog
@@ -195,7 +198,7 @@ github.com/gorilla/securecookie
 # github.com/gorilla/sessions v1.2.0
 ## explicit
 github.com/gorilla/sessions
-# github.com/gorilla/websocket v1.4.2
+# github.com/gorilla/websocket v1.5.0
 ## explicit; go 1.12
 github.com/gorilla/websocket
 # github.com/hashicorp/errwrap v1.0.0
@@ -254,7 +257,7 @@ github.com/mailru/easyjson
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
-# github.com/matryer/moq v0.2.6
+# github.com/matryer/moq v0.2.3
 ## explicit; go 1.14
 github.com/matryer/moq
 github.com/matryer/moq/internal/registry
@@ -266,7 +269,7 @@ github.com/mattn/go-sqlite3
 # github.com/mitchellh/go-homedir v1.1.0
 ## explicit
 github.com/mitchellh/go-homedir
-# github.com/mitchellh/mapstructure v1.4.3
+# github.com/mitchellh/mapstructure v1.5.0
 ## explicit; go 1.14
 github.com/mitchellh/mapstructure
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
@@ -308,9 +311,6 @@ github.com/robertkrimen/otto/file
 github.com/robertkrimen/otto/parser
 github.com/robertkrimen/otto/registry
 github.com/robertkrimen/otto/token
-# github.com/rs/cors v1.6.0
-## explicit
-github.com/rs/cors
 # github.com/rs/zerolog v1.26.1
 ## explicit; go 1.15
 github.com/rs/zerolog
@@ -355,7 +355,7 @@ github.com/spf13/viper/internal/encoding/yaml
 # github.com/stretchr/objx v0.2.0
 ## explicit; go 1.12
 github.com/stretchr/objx
-# github.com/stretchr/testify v1.7.0
+# github.com/stretchr/testify v1.7.1
 ## explicit; go 1.13
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/mock
@@ -371,8 +371,8 @@ github.com/tidwall/match
 # github.com/tidwall/pretty v1.2.0
 ## explicit; go 1.16
 github.com/tidwall/pretty
-# github.com/urfave/cli/v2 v2.4.0
-## explicit; go 1.11
+# github.com/urfave/cli/v2 v2.8.1
+## explicit; go 1.18
 github.com/urfave/cli/v2
 # github.com/vearutop/statigz v1.1.6
 ## explicit; go 1.16
@@ -381,7 +381,7 @@ github.com/vearutop/statigz
 ## explicit
 github.com/vektah/dataloaden
 github.com/vektah/dataloaden/pkg/generator
-# github.com/vektah/gqlparser/v2 v2.4.1
+# github.com/vektah/gqlparser/v2 v2.4.2
 ## explicit; go 1.16
 github.com/vektah/gqlparser/v2
 github.com/vektah/gqlparser/v2/ast
@@ -398,6 +398,16 @@ github.com/vektra/mockery/v2/cmd
 github.com/vektra/mockery/v2/pkg
 github.com/vektra/mockery/v2/pkg/config
 github.com/vektra/mockery/v2/pkg/logging
+# github.com/xWTF/chardet v0.0.0-20230208095535-c780f2ac244e
+## explicit; go 1.19
+github.com/xWTF/chardet
+# github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673
+## explicit
+github.com/xrash/smetrics
+# github.com/zencoder/go-dash/v3 v3.0.2
+## explicit; go 1.13
+github.com/zencoder/go-dash/v3/helpers/ptrs
+github.com/zencoder/go-dash/v3/mpd
 # go.uber.org/atomic v1.7.0
 ## explicit; go 1.13
 go.uber.org/atomic
@@ -406,7 +416,7 @@ go.uber.org/atomic
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/image v0.0.0-20210220032944-ac19c3e999fb
+# golang.org/x/image v0.5.0
 ## explicit; go 1.12
 golang.org/x/image/bmp
 golang.org/x/image/ccitt
@@ -421,7 +431,7 @@ golang.org/x/image/webp
 golang.org/x/mod/internal/lazyregexp
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20220722155237-a158d28d115b
+# golang.org/x/net v0.7.0
 ## explicit; go 1.17
 golang.org/x/net/bpf
 golang.org/x/net/context/ctxhttp
@@ -432,7 +442,7 @@ golang.org/x/net/internal/iana
 golang.org/x/net/internal/socket
 golang.org/x/net/ipv4
 golang.org/x/net/publicsuffix
-# golang.org/x/sys v0.0.0-20220808155132-1c4a2a72c664
+# golang.org/x/sys v0.5.0
 ## explicit; go 1.17
 golang.org/x/sys/cpu
 golang.org/x/sys/execabs
@@ -441,10 +451,10 @@ golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 golang.org/x/sys/windows/svc
-# golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
+# golang.org/x/term v0.5.0
 ## explicit; go 1.17
 golang.org/x/term
-# golang.org/x/text v0.3.7
+# golang.org/x/text v0.7.0
 ## explicit; go 1.17
 golang.org/x/text/cases
 golang.org/x/text/collate
@@ -502,7 +512,7 @@ gopkg.in/sourcemap.v1/base64vlq
 # gopkg.in/yaml.v2 v2.4.0
 ## explicit; go 1.15
 gopkg.in/yaml.v2
-# gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+# gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
 # git.apache.org/thrift.git => github.com/apache/thrift v0.0.0-20180902110319-2566ecd5d999

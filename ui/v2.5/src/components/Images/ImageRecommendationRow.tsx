@@ -1,6 +1,7 @@
-import React, { FunctionComponent } from "react";
+import React from "react";
+import { Link } from "react-router-dom";
 import { useFindImages } from "src/core/StashService";
-import Slider from "react-slick";
+import Slider from "@ant-design/react-slick";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { getSlickSliderSettings } from "src/core/recommendations";
 import { RecommendationRow } from "../FrontPage/RecommendationRow";
@@ -13,9 +14,7 @@ interface IProps {
   header: string;
 }
 
-export const ImageRecommendationRow: FunctionComponent<IProps> = (
-  props: IProps
-) => {
+export const ImageRecommendationRow: React.FC<IProps> = (props: IProps) => {
   const result = useFindImages(props.filter);
   const cardCount = result.data?.findImages.count;
 
@@ -28,9 +27,9 @@ export const ImageRecommendationRow: FunctionComponent<IProps> = (
       className="images-recommendations"
       header={props.header}
       link={
-        <a href={`/images?${props.filter.makeQueryParameters()}`}>
+        <Link to={`/images?${props.filter.makeQueryParameters()}`}>
           <FormattedMessage id="view_all" />
-        </a>
+        </Link>
       }
     >
       <Slider

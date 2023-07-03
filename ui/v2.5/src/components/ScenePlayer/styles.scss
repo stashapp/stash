@@ -16,19 +16,25 @@ $sceneTabWidth: 450px;
     height: 100vh;
   }
 
-  &.portrait .video-js {
+  &.portrait .video-wrapper {
     height: 177.78vw;
   }
 }
 
-.video-js {
+.video-wrapper {
   height: 56.25vw;
+  max-height: calc(100vh - #{$menuHeight});
   overflow: hidden;
   width: 100%;
 
   @media (min-width: 1200px) {
     height: 100%;
   }
+}
+
+.video-js {
+  height: 100%;
+  width: 100%;
 
   .vjs-button {
     outline: none;
@@ -115,7 +121,7 @@ $sceneTabWidth: 450px;
     width: 100%;
 
     .vjs-progress-holder {
-      margin: 0 1rem;
+      margin: 0 15px;
     }
   }
 
@@ -176,6 +182,10 @@ $sceneTabWidth: 450px;
   }
 
   .vjs-source-selector {
+    &.vjs-hover .vjs-menu {
+      display: none;
+    }
+
     .vjs-menu li {
       font-size: 0.8em;
     }
@@ -183,6 +193,17 @@ $sceneTabWidth: 450px;
     .vjs-button > .vjs-icon-placeholder::before {
       content: "\f110";
       font-family: VideoJS;
+    }
+  }
+
+  .vjs-vr-selector {
+    .vjs-menu li {
+      font-size: 0.8em;
+    }
+
+    .vjs-button {
+      background: url("/vr.svg") center center no-repeat;
+      width: 50%;
     }
   }
 
@@ -367,13 +388,13 @@ $sceneTabWidth: 450px;
   border: 1px solid #555;
   color: $link-color;
   cursor: pointer;
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   font-weight: 800;
   height: 100%;
   line-height: $scrubberHeight;
   padding: 0;
   text-align: center;
-  width: 1.3rem;
+  width: 1.8rem;
 }
 
 .scrubber-content {
@@ -394,7 +415,7 @@ $sceneTabWidth: 450px;
 }
 
 #scrubber-position-indicator {
-  background-color: #ccc;
+  background-color: rgba(255, 255, 255, 0.7);
   height: 20px;
   left: -100%;
   position: absolute;
@@ -436,6 +457,14 @@ $sceneTabWidth: 450px;
     position: absolute;
     right: 0;
   }
+}
+
+.scrubber-heatmap {
+  background-size: 100% 100%;
+  height: 20px;
+  left: 0;
+  position: absolute;
+  right: 0;
 }
 
 .scrubber-tag {

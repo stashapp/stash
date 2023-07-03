@@ -7,13 +7,16 @@ import {
   Popover,
   Form,
   Row,
+  Dropdown,
 } from "react-bootstrap";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
-import debounce from "lodash-es/debounce";
 
-import { Icon, LoadingIndicator } from "src/components/Shared";
-import { useInterval, usePageVisibility, useToast } from "src/hooks";
+import { Icon } from "src/components/Shared/Icon";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import useInterval from "../Interval";
+import usePageVisibility from "../PageVisibility";
+import { useToast } from "../Toast";
 import { FormattedMessage, useIntl } from "react-intl";
 import { LightboxImage } from "./LightboxImage";
 import { ConfigurationContext } from "../Config";
@@ -28,7 +31,7 @@ import {
 import * as GQL from "src/core/generated-graphql";
 import { useInterfaceLocalForage } from "../LocalForage";
 import { imageLightboxDisplayModeIntlMap } from "src/core/enums";
-import { ILightboxImage } from "./types";
+import { ILightboxImage, IChapter } from "./types";
 import {
   faArrowLeft,
   faArrowRight,
@@ -40,12 +43,17 @@ import {
   faPlay,
   faSearchMinus,
   faTimes,
+  faBars,
 } from "@fortawesome/free-solid-svg-icons";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
+import { useDebounce } from "../debounce";
+import { isVideo } from "src/utils/visualFile";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
 const CLASSNAME_LEFT_SPACER = `${CLASSNAME_HEADER}-left-spacer`;
+const CLASSNAME_CHAPTERS = `${CLASSNAME_HEADER}-chapters`;
+const CLASSNAME_CHAPTER_BUTTON = `${CLASSNAME_HEADER}-chapter-button`;
 const CLASSNAME_INDICATOR = `${CLASSNAME_HEADER}-indicator`;
 const CLASSNAME_OPTIONS = `${CLASSNAME_HEADER}-options`;
 const CLASSNAME_OPTIONS_ICON = `${CLASSNAME_OPTIONS}-icon`;
@@ -73,8 +81,11 @@ interface IProps {
   initialIndex?: number;
   showNavigation: boolean;
   slideshowEnabled?: boolean;
-  pageHeader?: string;
-  pageCallback?: (direction: number) => void;
+  page?: number;
+  pages?: number;
+  pageSize?: number;
+  pageCallback?: (props: { direction?: number; page?: number }) => void;
+  chapters?: IChapter[];
   hide: () => void;
 }
 
@@ -85,12 +96,16 @@ export const LightboxComponent: React.FC<IProps> = ({
   initialIndex = 0,
   showNavigation,
   slideshowEnabled = false,
-  pageHeader,
+  page,
+  pages,
+  pageSize: pageSize = 40,
   pageCallback,
+  chapters = [],
   hide,
 }) => {
   const [updateImage] = useImageUpdate();
 
+  // zero-based
   const [index, setIndex] = useState<number | null>(null);
   const [movingLeft, setMovingLeft] = useState(false);
   const oldIndex = useRef<number | null>(null);
@@ -98,6 +113,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [isSwitchingPage, setIsSwitchingPage] = useState(true);
   const [isFullscreen, setFullscreen] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
+  const [showChapters, setShowChapters] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState(0);
   const [navOffset, setNavOffset] = useState<React.CSSProperties | undefined>();
 
@@ -119,10 +135,8 @@ export const LightboxComponent: React.FC<IProps> = ({
   const Toast = useToast();
   const intl = useIntl();
   const { configuration: config } = React.useContext(ConfigurationContext);
-  const [
-    interfaceLocalForage,
-    setInterfaceLocalForage,
-  ] = useInterfaceLocalForage();
+  const [interfaceLocalForage, setInterfaceLocalForage] =
+    useInterfaceLocalForage();
 
   const lightboxSettings = interfaceLocalForage.data?.imageLightbox;
 
@@ -186,10 +200,8 @@ export const LightboxComponent: React.FC<IProps> = ({
     null
   );
 
-  const [
-    displayedSlideshowInterval,
-    setDisplayedSlideshowInterval,
-  ] = useState<string>((slideshowDelay / SECONDS_TO_MS).toString());
+  const [displayedSlideshowInterval, setDisplayedSlideshowInterval] =
+    useState<string>((slideshowDelay / SECONDS_TO_MS).toString());
 
   useEffect(() => {
     if (images !== oldImages.current && isSwitchingPage) {
@@ -198,8 +210,9 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
   }, [isSwitchingPage, images, index]);
 
-  const disableInstantTransition = debounce(
+  const disableInstantTransition = useDebounce(
     () => setInstantTransition(false),
+    [],
     400
   );
 
@@ -310,12 +323,13 @@ export const LightboxComponent: React.FC<IProps> = ({
     (isUserAction = true) => {
       if (isSwitchingPage || index === -1) return;
 
+      setShowChapters(false);
       setMovingLeft(true);
 
       if (index === 0) {
         // go to next page, or loop back if no callback is set
         if (pageCallback) {
-          pageCallback(-1);
+          pageCallback({ direction: -1 });
           setIndex(-1);
           oldImages.current = images;
           setIsSwitchingPage(true);
@@ -334,11 +348,12 @@ export const LightboxComponent: React.FC<IProps> = ({
       if (isSwitchingPage) return;
 
       setMovingLeft(false);
+      setShowChapters(false);
 
       if (index === images.length - 1) {
         // go to preview page, or loop back if no callback is set
         if (pageCallback) {
-          pageCallback(1);
+          pageCallback({ direction: 1 });
           oldImages.current = images;
           setIsSwitchingPage(true);
           setIndex(0);
@@ -411,20 +426,25 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
   }
 
-  const navItems = images.map((image, i) => (
-    <img
-      src={image.paths.thumbnail ?? ""}
-      alt=""
-      className={cx(CLASSNAME_NAVIMAGE, {
+  const navItems = images.map((image, i) =>
+    React.createElement(image.paths.preview != "" ? "video" : "img", {
+      loop: image.paths.preview != "",
+      autoPlay: image.paths.preview != "",
+      src:
+        image.paths.preview != ""
+          ? image.paths.preview ?? ""
+          : image.paths.thumbnail ?? "",
+      alt: "",
+      className: cx(CLASSNAME_NAVIMAGE, {
         [CLASSNAME_NAVSELECTED]: i === index,
-      })}
-      onClick={(e: React.MouseEvent) => selectIndex(e, i)}
-      role="presentation"
-      loading="lazy"
-      key={image.paths.thumbnail}
-      onLoad={imageLoaded}
-    />
-  ));
+      }),
+      onClick: (e: React.MouseEvent) => selectIndex(e, i),
+      role: "presentation",
+      loading: "lazy",
+      key: image.paths.thumbnail,
+      onLoad: imageLoaded,
+    })
+  );
 
   const onDelayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let numberValue = Number.parseInt(e.currentTarget.value, 10);
@@ -448,6 +468,65 @@ export const LightboxComponent: React.FC<IProps> = ({
   };
 
   const currentIndex = index === null ? initialIndex : index;
+
+  function gotoPage(imageIndex: number) {
+    const indexInPage = (imageIndex - 1) % pageSize;
+    if (pageCallback) {
+      let jumppage = Math.floor((imageIndex - 1) / pageSize) + 1;
+      if (page !== jumppage) {
+        pageCallback({ page: jumppage });
+        oldImages.current = images;
+        setIsSwitchingPage(true);
+      }
+    }
+
+    setIndex(indexInPage);
+    setShowChapters(false);
+  }
+
+  function chapterHeader() {
+    const imageNumber = (index ?? 0) + 1;
+    const globalIndex = page
+      ? (page - 1) * pageSize + imageNumber
+      : imageNumber;
+
+    let chapterTitle = "";
+    chapters.forEach(function (chapter) {
+      if (chapter.image_index > globalIndex) {
+        return;
+      }
+      chapterTitle = chapter.title;
+    });
+
+    return chapterTitle ?? "";
+  }
+
+  const renderChapterMenu = () => {
+    if (chapters.length <= 0) return;
+
+    const popoverContent = chapters.map(({ id, title, image_index }) => (
+      <Dropdown.Item key={id} onClick={() => gotoPage(image_index)}>
+        {" "}
+        {title}
+        {title.length > 0 ? " - #" : "#"}
+        {image_index}
+      </Dropdown.Item>
+    ));
+
+    return (
+      <Dropdown
+        show={showChapters}
+        onToggle={() => setShowChapters(!showChapters)}
+      >
+        <Dropdown.Toggle className={`minimal ${CLASSNAME_CHAPTER_BUTTON}`}>
+          <Icon icon={showChapters ? faTimes : faBars} />
+        </Dropdown.Toggle>
+        <Dropdown.Menu className={`${CLASSNAME_CHAPTERS}`}>
+          {popoverContent}
+        </Dropdown.Menu>
+      </Dropdown>
+    );
+  };
 
   // #2451: making OptionsForm an inline component means it
   // get re-rendered each time. This makes the text
@@ -634,6 +713,14 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
   }
 
+  const pageHeader =
+    page && pages
+      ? intl.formatMessage(
+          { id: "dialogs.lightbox.page_header" },
+          { page, total: pages }
+        )
+      : "";
+
   return (
     <div
       className={CLASSNAME}
@@ -642,9 +729,11 @@ export const LightboxComponent: React.FC<IProps> = ({
       onClick={handleClose}
     >
       <div className={CLASSNAME_HEADER}>
-        <div className={CLASSNAME_LEFT_SPACER} />
+        <div className={CLASSNAME_LEFT_SPACER}>{renderChapterMenu()}</div>
         <div className={CLASSNAME_INDICATOR}>
-          <span>{pageHeader}</span>
+          <span>
+            {chapterHeader()} {pageHeader}
+          </span>
           {images.length > 1 ? (
             <b ref={indicatorRef}>{`${currentIndex + 1} / ${images.length}`}</b>
           ) : undefined}
@@ -762,6 +851,7 @@ export const LightboxComponent: React.FC<IProps> = ({
                   scrollAttemptsBeforeChange={scrollAttemptsBeforeChange}
                   setZoom={(v) => setZoom(v)}
                   resetPosition={resetPosition}
+                  isVideo={isVideo(image.visual_files?.[0] ?? {})}
                 />
               ) : undefined}
             </div>

@@ -41,6 +41,7 @@ type GlobalConfig interface {
 	GetScraperCDPPath() string
 	GetScraperCertCheck() bool
 	GetPythonPath() string
+	GetProxy() string
 }
 
 func isCDPPathHTTP(c GlobalConfig) bool {
@@ -96,6 +97,7 @@ func newClient(gc GlobalConfig) *http.Client {
 		Transport: &http.Transport{ // ignore insecure certificates
 			TLSClientConfig:     &tls.Config{InsecureSkipVerify: !gc.GetScraperCertCheck()},
 			MaxIdleConnsPerHost: maxIdleConnsPerHost,
+			Proxy:               http.ProxyFromEnvironment,
 		},
 		Timeout: scrapeGetTimeout,
 		// defaultCheckRedirect code with max changed from 10 to maxRedirects
@@ -148,7 +150,6 @@ func (c *Cache) loadScrapers() (map[string]scraper, error) {
 
 	logger.Debugf("Reading scraper configs from %s", path)
 
-	scraperFiles := []string{}
 	err := fsutil.SymWalk(path, func(fp string, f os.FileInfo, err error) error {
 		if filepath.Ext(fp) == ".yml" {
 			conf, err := loadConfigFromYAMLFile(fp)
@@ -158,7 +159,6 @@ func (c *Cache) loadScrapers() (map[string]scraper, error) {
 				scraper := newGroupScraper(*conf, c.globalConfig)
 				scrapers[scraper.spec().ID] = scraper
 			}
-			scraperFiles = append(scraperFiles, fp)
 		}
 		return nil
 	})
@@ -185,7 +185,7 @@ func (c *Cache) ReloadScrapers() error {
 }
 
 // ListScrapers lists scrapers matching one of the given types.
-// Returns a list of scrapers, sorted by their ID.
+// Returns a list of scrapers, sorted by their name.
 func (c Cache) ListScrapers(tys []ScrapeContentType) []*Scraper {
 	var ret []*Scraper
 	for _, s := range c.scrapers {
@@ -199,7 +199,7 @@ func (c Cache) ListScrapers(tys []ScrapeContentType) []*Scraper {
 	}
 
 	sort.Slice(ret, func(i, j int) bool {
-		return ret[i].ID < ret[j].ID
+		return strings.ToLower(ret[i].Name) < strings.ToLower(ret[j].Name)
 	})
 
 	return ret
@@ -353,7 +353,15 @@ func (c Cache) getScene(ctx context.Context, sceneID int) (*models.Scene, error)
 	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
 		var err error
 		ret, err = c.repository.SceneFinder.Find(ctx, sceneID)
-		return err
+		if err != nil {
+			return err
+		}
+
+		if ret == nil {
+			return fmt.Errorf("scene with id %d not found", sceneID)
+		}
+
+		return nil
 	}); err != nil {
 		return nil, err
 	}
@@ -365,12 +373,15 @@ func (c Cache) getGallery(ctx context.Context, galleryID int) (*models.Gallery, 
 	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
 		var err error
 		ret, err = c.repository.GalleryFinder.Find(ctx, galleryID)
-
-		if ret != nil {
-			err = ret.LoadFiles(ctx, c.repository.GalleryFinder)
+		if err != nil {
+			return err
 		}
 
-		return err
+		if ret == nil {
+			return fmt.Errorf("gallery with id %d not found", galleryID)
+		}
+
+		return ret.LoadFiles(ctx, c.repository.GalleryFinder)
 	}); err != nil {
 		return nil, err
 	}

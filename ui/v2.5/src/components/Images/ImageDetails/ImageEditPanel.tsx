@@ -4,28 +4,34 @@ import { FormattedMessage, useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
-import { useImageUpdate } from "src/core/StashService";
 import {
   PerformerSelect,
   TagSelect,
   StudioSelect,
-  LoadingIndicator,
-} from "src/components/Shared";
-import { useToast } from "src/hooks";
-import { FormUtils } from "src/utils";
+} from "src/components/Shared/Select";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { URLField } from "src/components/Shared/URLField";
+import { useToast } from "src/hooks/Toast";
+import FormUtils from "src/utils/form";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
+import { useRatingKeybinds } from "src/hooks/keybinds";
+import { ConfigurationContext } from "src/hooks/Config";
+import isEqual from "lodash-es/isEqual";
+import { DateInput } from "src/components/Shared/DateInput";
 
 interface IProps {
   image: GQL.ImageDataFragment;
   isVisible: boolean;
+  onSubmit: (input: GQL.ImageUpdateInput) => Promise<void>;
   onDelete: () => void;
 }
 
 export const ImageEditPanel: React.FC<IProps> = ({
   image,
   isVisible,
+  onSubmit,
   onDelete,
 }) => {
   const intl = useIntl();
@@ -34,102 +40,85 @@ export const ImageEditPanel: React.FC<IProps> = ({
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
-  const [updateImage] = useImageUpdate();
+  const { configuration } = React.useContext(ConfigurationContext);
 
   const schema = yup.object({
-    title: yup.string().optional().nullable(),
-    rating100: yup.number().optional().nullable(),
-    studio_id: yup.string().optional().nullable(),
-    performer_ids: yup.array(yup.string().required()).optional().nullable(),
-    tag_ids: yup.array(yup.string().required()).optional().nullable(),
+    title: yup.string().ensure(),
+    url: yup.string().ensure(),
+    date: yup
+      .string()
+      .ensure()
+      .test({
+        name: "date",
+        test: (value) => {
+          if (!value) return true;
+          if (!value.match(/^\d{4}-\d{2}-\d{2}$/)) return false;
+          if (Number.isNaN(Date.parse(value))) return false;
+          return true;
+        },
+        message: intl.formatMessage({ id: "validation.date_invalid_form" }),
+      }),
+    rating100: yup.number().nullable().defined(),
+    studio_id: yup.string().required().nullable(),
+    performer_ids: yup.array(yup.string().required()).defined(),
+    tag_ids: yup.array(yup.string().required()).defined(),
   });
 
   const initialValues = {
     title: image.title ?? "",
+    url: image?.url ?? "",
+    date: image?.date ?? "",
     rating100: image.rating100 ?? null,
-    studio_id: image.studio?.id,
+    studio_id: image.studio?.id ?? null,
     performer_ids: (image.performers ?? []).map((p) => p.id),
     tag_ids: (image.tags ?? []).map((t) => t.id),
   };
 
-  type InputValues = typeof initialValues;
+  type InputValues = yup.InferType<typeof schema>;
 
-  const formik = useFormik({
+  const formik = useFormik<InputValues>({
     initialValues,
+    enableReinitialize: true,
     validationSchema: schema,
-    onSubmit: (values) => onSave(getImageInput(values)),
+    onSubmit: (values) => onSave(values),
   });
 
   function setRating(v: number) {
     formik.setFieldValue("rating100", v);
   }
 
+  useRatingKeybinds(
+    true,
+    configuration?.ui?.ratingSystemOptions?.type,
+    setRating
+  );
+
   useEffect(() => {
     if (isVisible) {
       Mousetrap.bind("s s", () => {
-        formik.handleSubmit();
+        if (formik.dirty) {
+          formik.submitForm();
+        }
       });
       Mousetrap.bind("d d", () => {
         onDelete();
       });
 
-      // numeric keypresses get caught by jwplayer, so blur the element
-      // if the rating sequence is started
-      Mousetrap.bind("r", () => {
-        if (document.activeElement instanceof HTMLElement) {
-          document.activeElement.blur();
-        }
-
-        Mousetrap.bind("0", () => setRating(NaN));
-        Mousetrap.bind("1", () => setRating(20));
-        Mousetrap.bind("2", () => setRating(40));
-        Mousetrap.bind("3", () => setRating(60));
-        Mousetrap.bind("4", () => setRating(80));
-        Mousetrap.bind("5", () => setRating(100));
-
-        setTimeout(() => {
-          Mousetrap.unbind("0");
-          Mousetrap.unbind("1");
-          Mousetrap.unbind("2");
-          Mousetrap.unbind("3");
-          Mousetrap.unbind("4");
-          Mousetrap.unbind("5");
-        }, 1000);
-      });
-
       return () => {
         Mousetrap.unbind("s s");
         Mousetrap.unbind("d d");
-
-        Mousetrap.unbind("r");
       };
     }
   });
 
-  function getImageInput(input: InputValues): GQL.ImageUpdateInput {
-    return {
-      id: image.id,
-      ...input,
-    };
-  }
-
-  async function onSave(input: GQL.ImageUpdateInput) {
+  async function onSave(input: InputValues) {
     setIsLoading(true);
     try {
-      const result = await updateImage({
-        variables: {
-          input,
-        },
+      await onSubmit({
+        id: image.id,
+        ...input,
       });
-      if (result.data?.imageUpdate) {
-        Toast.success({
-          content: intl.formatMessage(
-            { id: "toast.updated_entity" },
-            { entity: intl.formatMessage({ id: "image" }).toLocaleLowerCase() }
-          ),
-        });
-        formik.resetForm({ values: formik.values });
-      }
+      formik.resetForm();
     } catch (e) {
       Toast.error(e);
     }
@@ -138,7 +127,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
   function renderTextField(field: string, title: string, placeholder?: string) {
     return (
-      <Form.Group controlId={title} as={Row}>
+      <Form.Group controlId={field} as={Row}>
         {FormUtils.renderLabel({
           title,
         })}
@@ -172,7 +161,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
             <Button
               className="edit-button"
               variant="primary"
-              disabled={!formik.dirty}
+              disabled={!formik.dirty || !isEqual(formik.errors, {})}
               onClick={() => formik.submitForm()}
             >
               <FormattedMessage id="actions.save" />
@@ -189,6 +178,35 @@ export const ImageEditPanel: React.FC<IProps> = ({
         <div className="form-container row px-3">
           <div className="col-12 col-lg-6 col-xl-12">
             {renderTextField("title", intl.formatMessage({ id: "title" }))}
+            <Form.Group controlId="url" as={Row}>
+              <Col xs={3} className="pr-0 url-label">
+                <Form.Label className="col-form-label">
+                  <FormattedMessage id="url" />
+                </Form.Label>
+              </Col>
+              <Col xs={9}>
+                <URLField
+                  {...formik.getFieldProps("url")}
+                  onScrapeClick={() => {}}
+                  urlScrapable={() => {
+                    return false;
+                  }}
+                  isInvalid={!!formik.getFieldMeta("url").error}
+                />
+              </Col>
+            </Form.Group>
+            <Form.Group controlId="date" as={Row}>
+              {FormUtils.renderLabel({
+                title: intl.formatMessage({ id: "date" }),
+              })}
+              <Col xs={9}>
+                <DateInput
+                  value={formik.values.date}
+                  onValueChange={(value) => formik.setFieldValue("date", value)}
+                  error={formik.errors.date}
+                />
+              </Col>
+            </Form.Group>
             <Form.Group controlId="rating" as={Row}>
               {FormUtils.renderLabel({
                 title: intl.formatMessage({ id: "rating" }),

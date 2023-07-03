@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Form, Button, Table } from "react-bootstrap";
-import { Icon } from "src/components/Shared";
+import { Icon } from "src/components/Shared/Icon";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedMessage, useIntl } from "react-intl";
 import {
@@ -96,17 +96,13 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
       });
     }
 
-    if (!localOptions) {
-      return <></>;
-    }
-
     return (
       <Form.Group>
         {allowSetDefault ? (
           <Form.Check
             type="radio"
             id={`${field}-strategy-default`}
-            checked={localOptions.strategy === undefined}
+            checked={strategy === undefined}
             onChange={() =>
               setLocalOptions({
                 ...localOptions,
@@ -122,7 +118,7 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
             type="radio"
             key={f[0]}
             id={`${field}-strategy-${f[0]}`}
-            checked={localOptions.strategy === f[1]}
+            checked={strategy === f[1]}
             onChange={() =>
               setLocalOptions({
                 ...localOptions,
@@ -168,7 +164,9 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
         (f) => f.field === localOptions.field
       )?.createMissing;
 
-      if (localOptions.strategy === undefined) {
+      // if allowSetDefault is false, then strategy is considered merge
+      // if its true, then its using the default value and should not be shown here
+      if (localOptions.strategy === undefined && allowSetDefault) {
         return;
       }
 
@@ -261,9 +259,8 @@ export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
   allowSetDefault = true,
   defaultOptions,
 }) => {
-  const [localFieldOptions, setLocalFieldOptions] = useState<
-    GQL.IdentifyFieldOptions[]
-  >();
+  const [localFieldOptions, setLocalFieldOptions] =
+    useState<GQL.IdentifyFieldOptions[]>();
   const [editField, setEditField] = useState<string | undefined>();
 
   useEffect(() => {

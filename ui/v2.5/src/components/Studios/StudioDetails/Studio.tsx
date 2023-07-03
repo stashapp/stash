@@ -1,4 +1,4 @@
-import { Tabs, Tab } from "react-bootstrap";
+import { Button, Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -12,16 +12,14 @@ import {
   useStudioDestroy,
   mutateMetadataAutoTag,
 } from "src/core/StashService";
-import { ImageUtils } from "src/utils";
-import {
-  Counter,
-  DetailsEditNavbar,
-  Modal,
-  LoadingIndicator,
-  ErrorMessage,
-} from "src/components/Shared";
-import { useToast } from "src/hooks";
+import { Counter } from "src/components/Shared/Counter";
+import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
+import { ModalComponent } from "src/components/Shared/Modal";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { ErrorMessage } from "src/components/Shared/ErrorMessage";
+import { useToast } from "src/hooks/Toast";
 import { ConfigurationContext } from "src/hooks/Config";
+import { Icon } from "src/components/Shared/Icon";
 import { StudioScenesPanel } from "./StudioScenesPanel";
 import { StudioGalleriesPanel } from "./StudioGalleriesPanel";
 import { StudioImagesPanel } from "./StudioImagesPanel";
@@ -30,7 +28,11 @@ import { StudioPerformersPanel } from "./StudioPerformersPanel";
 import { StudioEditPanel } from "./StudioEditPanel";
 import { StudioDetailsPanel } from "./StudioDetailsPanel";
 import { StudioMoviesPanel } from "./StudioMoviesPanel";
-import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import {
+  faTrashAlt,
+  faChevronRight,
+  faChevronLeft,
+} from "@fortawesome/free-solid-svg-icons";
 import { IUIConfig } from "src/core/config";
 
 interface IProps {
@@ -47,6 +49,8 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
   const intl = useIntl();
   const { tab = "details" } = useParams<IStudioParams>();
 
+  const [collapsed, setCollapsed] = useState(false);
+
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
   const abbreviateCounter =
@@ -56,42 +60,57 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
-  // Studio state
+  // Editing studio state
   const [image, setImage] = useState<string | null>();
+  const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
   const [updateStudio] = useStudioUpdate();
   const [deleteStudio] = useStudioDestroy({ id: studio.id });
 
+  const showAllCounts = (configuration?.ui as IUIConfig)
+    ?.showChildStudioContent;
+  const sceneCount =
+    (showAllCounts ? studio.scene_count_all : studio.scene_count) ?? 0;
+  const galleryCount =
+    (showAllCounts ? studio.gallery_count_all : studio.gallery_count) ?? 0;
+  const imageCount =
+    (showAllCounts ? studio.image_count_all : studio.image_count) ?? 0;
+  const performerCount =
+    (showAllCounts ? studio.performer_count_all : studio.performer_count) ?? 0;
+  const movieCount =
+    (showAllCounts ? studio.movie_count_all : studio.movie_count) ?? 0;
+
   // set up hotkeys
   useEffect(() => {
-    Mousetrap.bind("e", () => setIsEditing(true));
-    Mousetrap.bind("d d", () => onDelete());
+    Mousetrap.bind("e", () => toggleEditing());
+    Mousetrap.bind("d d", () => {
+      onDelete();
+    });
+    Mousetrap.bind(",", () => setCollapsed(!collapsed));
 
     return () => {
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");
+      Mousetrap.unbind(",");
     };
   });
 
-  function onImageLoad(imageData: string) {
-    setImage(imageData);
-  }
-
-  const imageEncoding = ImageUtils.usePasteImage(onImageLoad, isEditing);
-
-  async function onSave(input: Partial<GQL.StudioUpdateInput>) {
-    try {
-      const result = await updateStudio({
-        variables: {
-          input: input as GQL.StudioUpdateInput,
+  async function onSave(input: GQL.StudioCreateInput) {
+    await updateStudio({
+      variables: {
+        input: {
+          id: studio.id,
+          ...input,
         },
-      });
-      if (result.data?.studioUpdate) {
-        setIsEditing(false);
-      }
-    } catch (e) {
-      Toast.error(e);
-    }
+      },
+    });
+    toggleEditing(false);
+    Toast.success({
+      content: intl.formatMessage(
+        { id: "toast.updated_entity" },
+        { entity: intl.formatMessage({ id: "studio" }).toLocaleLowerCase() }
+      ),
+    });
   }
 
   async function onAutoTag() {
@@ -119,7 +138,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
 
   function renderDeleteAlert() {
     return (
-      <Modal
+      <ModalComponent
         show={isDeleteAlertOpen}
         icon={faTrashAlt}
         accept={{
@@ -139,19 +158,26 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
             }}
           />
         </p>
-      </Modal>
+      </ModalComponent>
     );
   }
 
-  function onToggleEdit() {
-    setIsEditing(!isEditing);
+  function toggleEditing(value?: boolean) {
+    if (value !== undefined) {
+      setIsEditing(value);
+    } else {
+      setIsEditing((e) => !e);
+    }
+    setImage(undefined);
   }
 
   function renderImage() {
     let studioImage = studio.image_path;
     if (isEditing) {
-      if (image === null) {
-        studioImage = `${studioImage}&default=true`;
+      if (image === null && studioImage) {
+        const studioImageURL = new URL(studioImage);
+        studioImageURL.searchParams.set("default", "true");
+        studioImage = studioImageURL.toString();
       } else if (image) {
         studioImage = image;
       }
@@ -177,11 +203,17 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     }
   };
 
+  function getCollapseButtonIcon() {
+    return collapsed ? faChevronRight : faChevronLeft;
+  }
+
   return (
     <div className="row">
-      <div className="studio-details col-md-4">
+      <div
+        className={`studio-details details-tab ${collapsed ? "collapsed" : ""}`}
+      >
         <div className="text-center">
-          {imageEncoding ? (
+          {encodingImage ? (
             <LoadingIndicator message="Encoding image..." />
           ) : (
             renderImage()
@@ -199,7 +231,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               objectName={studio.name ?? intl.formatMessage({ id: "studio" })}
               isNew={false}
               isEditing={isEditing}
-              onToggleEdit={onToggleEdit}
+              onToggleEdit={() => toggleEditing()}
               onSave={() => {}}
               onImageChange={() => {}}
               onClearImage={() => {}}
@@ -211,13 +243,19 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           <StudioEditPanel
             studio={studio}
             onSubmit={onSave}
-            onCancel={onToggleEdit}
+            onCancel={() => toggleEditing()}
             onDelete={onDelete}
-            onImageChange={setImage}
+            setImage={setImage}
+            setEncodingImage={setEncodingImage}
           />
         )}
       </div>
-      <div className="col col-md-8">
+      <div className="details-divider d-none d-xl-block">
+        <Button onClick={() => setCollapsed(!collapsed)}>
+          <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
+        </Button>
+      </div>
+      <div className={`col content-container ${collapsed ? "expanded" : ""}`}>
         <Tabs
           id="studio-tabs"
           mountOnEnter
@@ -228,78 +266,110 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           <Tab
             eventKey="scenes"
             title={
-              <React.Fragment>
+              <>
                 {intl.formatMessage({ id: "scenes" })}
                 <Counter
                   abbreviateCounter={abbreviateCounter}
-                  count={studio.scene_count ?? 0}
+                  count={sceneCount}
+                  hideZero
                 />
-              </React.Fragment>
+              </>
             }
           >
-            <StudioScenesPanel studio={studio} />
+            <StudioScenesPanel
+              active={activeTabKey == "scenes"}
+              studio={studio}
+            />
           </Tab>
           <Tab
             eventKey="galleries"
             title={
-              <React.Fragment>
+              <>
                 {intl.formatMessage({ id: "galleries" })}
                 <Counter
                   abbreviateCounter={abbreviateCounter}
-                  count={studio.gallery_count ?? 0}
+                  count={galleryCount}
+                  hideZero
                 />
-              </React.Fragment>
+              </>
             }
           >
-            <StudioGalleriesPanel studio={studio} />
+            <StudioGalleriesPanel
+              active={activeTabKey == "galleries"}
+              studio={studio}
+            />
           </Tab>
           <Tab
             eventKey="images"
             title={
-              <React.Fragment>
+              <>
                 {intl.formatMessage({ id: "images" })}
                 <Counter
                   abbreviateCounter={abbreviateCounter}
-                  count={studio.image_count ?? 0}
+                  count={imageCount}
+                  hideZero
                 />
-              </React.Fragment>
+              </>
             }
           >
-            <StudioImagesPanel studio={studio} />
+            <StudioImagesPanel
+              active={activeTabKey == "images"}
+              studio={studio}
+            />
           </Tab>
           <Tab
             eventKey="performers"
-            title={intl.formatMessage({ id: "performers" })}
+            title={
+              <>
+                {intl.formatMessage({ id: "performers" })}
+                <Counter
+                  abbreviateCounter={abbreviateCounter}
+                  count={performerCount}
+                  hideZero
+                />
+              </>
+            }
           >
-            <StudioPerformersPanel studio={studio} />
+            <StudioPerformersPanel
+              active={activeTabKey == "performers"}
+              studio={studio}
+            />
           </Tab>
           <Tab
             eventKey="movies"
             title={
-              <React.Fragment>
+              <>
                 {intl.formatMessage({ id: "movies" })}
                 <Counter
                   abbreviateCounter={abbreviateCounter}
-                  count={studio.movie_count ?? 0}
+                  count={movieCount}
+                  hideZero
                 />
-              </React.Fragment>
+              </>
             }
           >
-            <StudioMoviesPanel studio={studio} />
+            <StudioMoviesPanel
+              active={activeTabKey == "movies"}
+              studio={studio}
+            />
           </Tab>
           <Tab
             eventKey="childstudios"
             title={
-              <React.Fragment>
+              <>
                 {intl.formatMessage({ id: "subsidiary_studios" })}
                 <Counter
                   abbreviateCounter={false}
-                  count={studio.child_studios?.length ?? 0}
+                  count={studio.child_studios.length}
+                  hideZero
                 />
-              </React.Fragment>
+              </>
             }
           >
-            <StudioChildrenPanel studio={studio} />
+            <StudioChildrenPanel
+              active={activeTabKey == "childstudios"}
+              studio={studio}
+            />
           </Tab>
         </Tabs>
       </div>

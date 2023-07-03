@@ -1,6 +1,7 @@
 scalar Upload
 
 input GenerateMetadataInput {
+  covers: Boolean
   sprites: Boolean
   previews: Boolean
   imagePreviews: Boolean
@@ -13,6 +14,7 @@ input GenerateMetadataInput {
   forceTranscodes: Boolean
   phashes: Boolean
   interactiveHeatmapsSpeeds: Boolean
+  clipPreviews: Boolean
 
   """scene ids to generate for"""
   sceneIDs: [ID!]
@@ -37,6 +39,7 @@ input GeneratePreviewOptionsInput {
 }
 
 type GenerateMetadataOptions {
+  covers: Boolean
   sprites: Boolean
   previews: Boolean
   imagePreviews: Boolean
@@ -47,6 +50,7 @@ type GenerateMetadataOptions {
   transcodes: Boolean
   phashes: Boolean
   interactiveHeatmapsSpeeds: Boolean
+  clipPreviews: Boolean
 }
 
 type GeneratePreviewOptions {
@@ -84,6 +88,8 @@ input ScanMetadataInput {
 
   """Strip file extension from title"""
   stripFileExtension: Boolean @deprecated(reason: "Not implemented")
+  """Generate covers during scan"""
+  scanGenerateCovers: Boolean
   """Generate previews during scan"""
   scanGeneratePreviews: Boolean
   """Generate image previews during scan"""
@@ -94,6 +100,8 @@ input ScanMetadataInput {
   scanGeneratePhashes: Boolean
   """Generate image thumbnails during scan"""
   scanGenerateThumbnails: Boolean
+  """Generate image clip previews during scan"""
+  scanGenerateClipPreviews: Boolean
 
   "Filter options for the scan"
   filter: ScanMetaDataFilterInput
@@ -101,9 +109,11 @@ input ScanMetadataInput {
 
 type ScanMetadataOptions {
   """Set name, date, details from metadata (if present)"""
-  useFileMetadata: Boolean!
+  useFileMetadata: Boolean! @deprecated(reason: "Not implemented")
   """Strip file extension from title"""
-  stripFileExtension: Boolean!
+  stripFileExtension: Boolean! @deprecated(reason: "Not implemented")
+  """Generate covers during scan"""
+  scanGenerateCovers: Boolean!
   """Generate previews during scan"""
   scanGeneratePreviews: Boolean!
   """Generate image previews during scan"""
@@ -114,6 +124,8 @@ type ScanMetadataOptions {
   scanGeneratePhashes: Boolean!
   """Generate image thumbnails during scan"""
   scanGenerateThumbnails: Boolean!
+  """Generate image clip previews during scan"""
+  scanGenerateClipPreviews: Boolean!
 }
 
 input CleanMetadataInput {
@@ -260,6 +272,10 @@ input ImportObjectsInput {
 }
 
 input BackupDatabaseInput {
+  download: Boolean
+}
+
+input AnonymiseDatabaseInput {
   download: Boolean
 }
 

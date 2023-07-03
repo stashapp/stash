@@ -94,9 +94,10 @@ func TestImporterPreImportWithMissingStudio(t *testing.T) {
 	}
 
 	studioReaderWriter.On("FindByName", testCtx, missingStudioName, false).Return(nil, nil).Times(3)
-	studioReaderWriter.On("Create", testCtx, mock.AnythingOfType("models.Studio")).Return(&models.Studio{
-		ID: existingStudioID,
-	}, nil)
+	studioReaderWriter.On("Create", testCtx, mock.AnythingOfType("*models.Studio")).Run(func(args mock.Arguments) {
+		s := args.Get(1).(*models.Studio)
+		s.ID = existingStudioID
+	}).Return(nil)
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
@@ -125,7 +126,7 @@ func TestImporterPreImportWithMissingStudioCreateErr(t *testing.T) {
 	}
 
 	studioReaderWriter.On("FindByName", testCtx, missingStudioName, false).Return(nil, nil).Once()
-	studioReaderWriter.On("Create", testCtx, mock.AnythingOfType("models.Studio")).Return(nil, errors.New("Create error"))
+	studioReaderWriter.On("Create", testCtx, mock.AnythingOfType("*models.Studio")).Return(errors.New("Create error"))
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
@@ -236,7 +237,7 @@ func TestImporterPreImportWithMovie(t *testing.T) {
 
 	movieReaderWriter.On("FindByName", testCtx, existingMovieName, false).Return(&models.Movie{
 		ID:   existingMovieID,
-		Name: models.NullString(existingMovieName),
+		Name: existingMovieName,
 	}, nil).Once()
 	movieReaderWriter.On("FindByName", testCtx, existingMovieErr, false).Return(nil, errors.New("FindByName error")).Once()
 
@@ -268,9 +269,10 @@ func TestImporterPreImportWithMissingMovie(t *testing.T) {
 	}
 
 	movieReaderWriter.On("FindByName", testCtx, missingMovieName, false).Return(nil, nil).Times(3)
-	movieReaderWriter.On("Create", testCtx, mock.AnythingOfType("models.Movie")).Return(&models.Movie{
-		ID: existingMovieID,
-	}, nil)
+	movieReaderWriter.On("Create", testCtx, mock.AnythingOfType("*models.Movie")).Run(func(args mock.Arguments) {
+		m := args.Get(1).(*models.Movie)
+		m.ID = existingMovieID
+	}).Return(nil)
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
@@ -303,7 +305,7 @@ func TestImporterPreImportWithMissingMovieCreateErr(t *testing.T) {
 	}
 
 	movieReaderWriter.On("FindByName", testCtx, missingMovieName, false).Return(nil, nil).Once()
-	movieReaderWriter.On("Create", testCtx, mock.AnythingOfType("models.Movie")).Return(nil, errors.New("Create error"))
+	movieReaderWriter.On("Create", testCtx, mock.AnythingOfType("*models.Movie")).Return(errors.New("Create error"))
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
@@ -355,9 +357,10 @@ func TestImporterPreImportWithMissingTag(t *testing.T) {
 	}
 
 	tagReaderWriter.On("FindByNames", testCtx, []string{missingTagName}, false).Return(nil, nil).Times(3)
-	tagReaderWriter.On("Create", testCtx, mock.AnythingOfType("models.Tag")).Return(&models.Tag{
-		ID: existingTagID,
-	}, nil)
+	tagReaderWriter.On("Create", testCtx, mock.AnythingOfType("*models.Tag")).Run(func(args mock.Arguments) {
+		t := args.Get(1).(*models.Tag)
+		t.ID = existingTagID
+	}).Return(nil)
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
@@ -388,7 +391,7 @@ func TestImporterPreImportWithMissingTagCreateErr(t *testing.T) {
 	}
 
 	tagReaderWriter.On("FindByNames", testCtx, []string{missingTagName}, false).Return(nil, nil).Once()
-	tagReaderWriter.On("Create", testCtx, mock.AnythingOfType("models.Tag")).Return(nil, errors.New("Create error"))
+	tagReaderWriter.On("Create", testCtx, mock.AnythingOfType("*models.Tag")).Return(errors.New("Create error"))
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)

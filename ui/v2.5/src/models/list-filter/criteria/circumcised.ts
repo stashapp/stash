@@ -1,0 +1,36 @@
+import {
+  CircumcisionCriterionInput,
+  CircumisedEnum,
+  CriterionModifier,
+} from "src/core/generated-graphql";
+import { circumcisedStrings, stringToCircumcised } from "src/utils/circumcised";
+import { CriterionOption, MultiStringCriterion } from "./criterion";
+
+export const CircumcisedCriterionOption = new CriterionOption({
+  messageID: "circumcised",
+  type: "circumcised",
+  options: circumcisedStrings,
+  modifierOptions: [
+    CriterionModifier.Includes,
+    CriterionModifier.Excludes,
+    CriterionModifier.IsNull,
+    CriterionModifier.NotNull,
+  ],
+});
+
+export class CircumcisedCriterion extends MultiStringCriterion {
+  constructor() {
+    super(CircumcisedCriterionOption);
+  }
+
+  protected toCriterionInput(): CircumcisionCriterionInput {
+    const value = this.value.map((v) =>
+      stringToCircumcised(v)
+    ) as CircumisedEnum[];
+
+    return {
+      value,
+      modifier: this.modifier,
+    };
+  }
+}

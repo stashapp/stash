@@ -9,9 +9,11 @@ type Studio {
   ignore_auto_tag: Boolean!
 
   image_path: String # Resolver
-  scene_count: Int # Resolver
-  image_count: Int # Resolver
-  gallery_count: Int # Resolver
+  scene_count(depth: Int): Int! # Resolver
+  image_count(depth: Int): Int! # Resolver
+  gallery_count(depth: Int): Int! # Resolver
+  performer_count(depth: Int): Int! # Resolver
+  movie_count(depth: Int): Int! # Resolver
   stash_ids: [StashID!]!
   # rating expressed as 1-5
   rating: Int @deprecated(reason: "Use 1-100 range with rating100")
@@ -20,7 +22,6 @@ type Studio {
   details: String
   created_at: Time!
   updated_at: Time!
-  movie_count: Int
   movies: [Movie!]!
 }
 

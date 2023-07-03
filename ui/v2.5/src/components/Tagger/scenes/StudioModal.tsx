@@ -3,7 +3,9 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 import * as GQL from "src/core/generated-graphql";
-import { Icon, Modal, TruncatedText } from "src/components/Shared";
+import { Icon } from "src/components/Shared/Icon";
+import { ModalComponent } from "src/components/Shared/Modal";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { TaggerStateContext } from "../context";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 
@@ -75,7 +77,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
   const link = base ? `${base}studios/${studio.remote_site_id}` : undefined;
 
   return (
-    <Modal
+    <ModalComponent
       show={modalVisible}
       accept={{
         text: intl.formatMessage({ id: "actions.save" }),
@@ -108,7 +110,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
           <img src={studio?.image ?? ""} alt="" />
         </span>
       </div> */}
-    </Modal>
+    </ModalComponent>
   );
 };
 

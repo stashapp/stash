@@ -2,7 +2,7 @@ import React from "react";
 import { Badge } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
-import { TextUtils } from "src/utils";
+import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { TextField, URLField } from "src/utils/field";
 

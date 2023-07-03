@@ -6,6 +6,8 @@ type Image {
   rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: Int
+  url: String
+  date: String
   o_counter: Int
   organized: Boolean!
   path: String! @deprecated(reason: "Use files.path")
@@ -14,8 +16,9 @@ type Image {
   
   file_mod_time: Time @deprecated(reason: "Use files.mod_time")
 
-  file: ImageFileType! @deprecated(reason: "Use files.mod_time")
-  files: [ImageFile!]!
+  file: ImageFileType! @deprecated(reason: "Use visual_files")
+  files: [ImageFile!]! @deprecated(reason: "Use visual_files")
+  visual_files: [VisualFile!]!
   paths: ImagePathsType! # Resolver
 
   galleries: [Gallery!]!
@@ -33,6 +36,7 @@ type ImageFileType {
 
 type ImagePathsType {
   thumbnail: String # Resolver
+  preview: String # Resolver
   image: String # Resolver
 }
 
@@ -45,6 +49,8 @@ input ImageUpdateInput {
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean
+  url: String
+  date: String
   
   studio_id: ID
   performer_ids: [ID!]
@@ -63,6 +69,8 @@ input BulkImageUpdateInput {
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean
+  url: String
+  date: String
   
   studio_id: ID
   performer_ids: BulkUpdateIds

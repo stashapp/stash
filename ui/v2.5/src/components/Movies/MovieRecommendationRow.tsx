@@ -1,6 +1,7 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { useFindMovies } from "src/core/StashService";
-import Slider from "react-slick";
+import Slider from "@ant-design/react-slick";
 import { MovieCard } from "./MovieCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { getSlickSliderSettings } from "src/core/recommendations";
@@ -26,9 +27,9 @@ export const MovieRecommendationRow: React.FC<IProps> = (props: IProps) => {
       className="movie-recommendations"
       header={props.header}
       link={
-        <a href={`/movies?${props.filter.makeQueryParameters()}`}>
+        <Link to={`/movies?${props.filter.makeQueryParameters()}`}>
           <FormattedMessage id="view_all" />
-        </a>
+        </Link>
       }
     >
       <Slider

@@ -6,7 +6,7 @@ import AutoTagging from "src/docs/en/Manual/AutoTagging.md";
 import JSONSpec from "src/docs/en/Manual/JSONSpec.md";
 import Configuration from "src/docs/en/Manual/Configuration.md";
 import Interface from "src/docs/en/Manual/Interface.md";
-import Galleries from "src/docs/en/Manual/Galleries.md";
+import Images from "src/docs/en/Manual/Images.md";
 import Scraping from "src/docs/en/Manual/Scraping.md";
 import ScraperDevelopment from "src/docs/en/Manual/ScraperDevelopment.md";
 import Plugins from "src/docs/en/Manual/Plugins.md";
@@ -88,9 +88,9 @@ export const Manual: React.FC<IManualProps> = ({
       content: Browsing,
     },
     {
-      key: "Galleries.md",
-      title: "Image Galleries",
-      content: Galleries,
+      key: "Images.md",
+      title: "Images and Galleries",
+      content: Images,
     },
     {
       key: "Scraping.md",
@@ -157,14 +157,10 @@ export const Manual: React.FC<IManualProps> = ({
     },
   ];
 
-  const [activeTab, setActiveTab] = useState(
-    defaultActiveTab ?? content[0].key
-  );
+  const [activeTab, setActiveTab] = useState<string>();
 
   useEffect(() => {
-    if (defaultActiveTab) {
-      setActiveTab(defaultActiveTab);
-    }
+    setActiveTab(defaultActiveTab);
   }, [defaultActiveTab]);
 
   // links to other manual pages are specified as "/help/page.md"
@@ -173,11 +169,9 @@ export const Manual: React.FC<IManualProps> = ({
     event: React.MouseEvent<HTMLDivElement, MouseEvent>
   ) {
     if (event.target instanceof HTMLAnchorElement) {
-      const href = (event.target as HTMLAnchorElement).getAttribute("href");
+      const href = event.target.getAttribute("href");
       if (href && href.startsWith("/help")) {
-        const newKey = (event.target as HTMLAnchorElement).pathname.substring(
-          "/help/".length
-        );
+        const newKey = event.target.pathname.substring("/help/".length);
         setActiveTab(newKey);
         event.preventDefault();
       }
@@ -197,7 +191,7 @@ export const Manual: React.FC<IManualProps> = ({
       <Modal.Body>
         <Container className="manual-container">
           <Tab.Container
-            activeKey={activeTab}
+            activeKey={activeTab ?? content[0].key}
             onSelect={(k) => k && setActiveTab(k)}
             id="manual-tabs"
           >

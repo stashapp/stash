@@ -141,8 +141,8 @@ func newHandlerRequiredFilter(c *config.Instance) *handlerRequiredFilter {
 
 func (f *handlerRequiredFilter) Accept(ctx context.Context, ff file.File) bool {
 	path := ff.Base().Path
-	isVideoFile := fsutil.MatchExtension(path, f.vidExt)
-	isImageFile := fsutil.MatchExtension(path, f.imgExt)
+	isVideoFile := useAsVideo(path)
+	isImageFile := useAsImage(path)
 	isZipFile := fsutil.MatchExtension(path, f.zipExt)
 
 	var counter fileCounter
@@ -194,22 +194,22 @@ func (f *handlerRequiredFilter) Accept(ctx context.Context, ff file.File) bool {
 	}
 
 	if isVideoFile {
-		// check if the screenshot file exists
-		hash := scene.GetHash(ff, f.videoFileNamingAlgorithm)
-		ssPath := instance.Paths.Scene.GetScreenshotPath(hash)
-		if exists, _ := fsutil.FileExists(ssPath); !exists {
-			// if not, check if the file is a primary file for a scene
-			scenes, err := f.SceneFinder.FindByPrimaryFileID(ctx, ff.Base().ID)
-			if err != nil {
-				// just ignore
-				return false
-			}
+		// TODO - check if the cover exists
+		// hash := scene.GetHash(ff, f.videoFileNamingAlgorithm)
+		// ssPath := instance.Paths.Scene.GetScreenshotPath(hash)
+		// if exists, _ := fsutil.FileExists(ssPath); !exists {
+		// 	// if not, check if the file is a primary file for a scene
+		// 	scenes, err := f.SceneFinder.FindByPrimaryFileID(ctx, ff.Base().ID)
+		// 	if err != nil {
+		// 		// just ignore
+		// 		return false
+		// 	}
 
-			if len(scenes) > 0 {
-				// if it is, then it needs to be re-generated
-				return true
-			}
-		}
+		// 	if len(scenes) > 0 {
+		// 		// if it is, then it needs to be re-generated
+		// 		return true
+		// 	}
+		// }
 
 		// clean captions - scene handler handles this as well, but
 		// unchanged files aren't processed by the scene handler
@@ -226,7 +226,7 @@ func (f *handlerRequiredFilter) Accept(ctx context.Context, ff file.File) bool {
 
 type scanFilter struct {
 	extensionConfig
-	stashPaths        []*config.StashConfig
+	stashPaths        config.StashConfigs
 	generatedPath     string
 	videoExcludeRegex []*regexp.Regexp
 	imageExcludeRegex []*regexp.Regexp
@@ -246,6 +246,7 @@ func newScanFilter(c *config.Instance, minModTime time.Time) *scanFilter {
 
 func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) bool {
 	if fsutil.IsPathInDir(f.generatedPath, path) {
+		logger.Warnf("Skipping %q as it overlaps with the generated folder", path)
 		return false
 	}
 
@@ -254,8 +255,8 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 		return false
 	}
 
-	isVideoFile := fsutil.MatchExtension(path, f.vidExt)
-	isImageFile := fsutil.MatchExtension(path, f.imgExt)
+	isVideoFile := useAsVideo(path)
+	isImageFile := useAsImage(path)
 	isZipFile := fsutil.MatchExtension(path, f.zipExt)
 
 	// handle caption files
@@ -278,7 +279,7 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 		return false
 	}
 
-	s := getStashFromDirPath(f.stashPaths, path)
+	s := f.stashPaths.GetStashFromDirPath(path)
 
 	if s == nil {
 		logger.Debugf("Skipping %s as it is not in the stash library", path)
@@ -288,7 +289,7 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 	// shortcut: skip the directory entirely if it matches both exclusion patterns
 	// add a trailing separator so that it correctly matches against patterns like path/.*
 	pathExcludeTest := path + string(filepath.Separator)
-	if (s.ExcludeVideo || matchFileRegex(pathExcludeTest, f.videoExcludeRegex)) && (s.ExcludeImage || matchFileRegex(pathExcludeTest, f.imageExcludeRegex)) {
+	if (matchFileRegex(pathExcludeTest, f.videoExcludeRegex)) && (s.ExcludeImage || matchFileRegex(pathExcludeTest, f.imageExcludeRegex)) {
 		logger.Debugf("Skipping directory %s as it matches video and image exclusion patterns", path)
 		return false
 	}
@@ -305,15 +306,12 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 }
 
 type scanConfig struct {
-	isGenerateThumbnails bool
+	isGenerateThumbnails   bool
+	isGenerateClipPreviews bool
 }
 
 func (c *scanConfig) GetCreateGalleriesFromFolders() bool {
 	return instance.Config.GetCreateGalleriesFromFolders()
-}
-
-func (c *scanConfig) IsGenerateThumbnails() bool {
-	return c.isGenerateThumbnails
 }
 
 func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progress *job.Progress) []file.Handler {
@@ -324,11 +322,16 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 		&file.FilteredHandler{
 			Filter: file.FilterFunc(imageFileFilter),
 			Handler: &image.ScanHandler{
-				CreatorUpdater:     db.Image,
-				GalleryFinder:      db.Gallery,
-				ThumbnailGenerator: &imageThumbnailGenerator{},
+				CreatorUpdater: db.Image,
+				GalleryFinder:  db.Gallery,
+				ScanGenerator: &imageGenerators{
+					input:     options,
+					taskQueue: taskQueue,
+					progress:  progress,
+				},
 				ScanConfig: &scanConfig{
-					isGenerateThumbnails: options.ScanGenerateThumbnails,
+					isGenerateThumbnails:   options.ScanGenerateThumbnails,
+					isGenerateClipPreviews: options.ScanGenerateClipPreviews,
 				},
 				PluginCache: pluginCache,
 				Paths:       instance.Paths,
@@ -349,7 +352,6 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 				CreatorUpdater: db.Scene,
 				PluginCache:    pluginCache,
 				CaptionUpdater: db.File,
-				CoverGenerator: &coverGenerator{},
 				ScanGenerator: &sceneGenerators{
 					input:     options,
 					taskQueue: taskQueue,
@@ -362,35 +364,97 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 	}
 }
 
-type imageThumbnailGenerator struct{}
+type imageGenerators struct {
+	input     ScanMetadataInput
+	taskQueue *job.TaskQueue
+	progress  *job.Progress
+}
 
-func (g *imageThumbnailGenerator) GenerateThumbnail(ctx context.Context, i *models.Image, f *file.ImageFile) error {
+func (g *imageGenerators) Generate(ctx context.Context, i *models.Image, f file.File) error {
+	const overwrite = false
+
+	progress := g.progress
+	t := g.input
+	path := f.Base().Path
+	config := instance.Config
+	sequentialScanning := config.GetSequentialScanning()
+
+	if t.ScanGenerateThumbnails {
+		// this should be quick, so always generate sequentially
+		if err := g.generateThumbnail(ctx, i, f); err != nil {
+			logger.Errorf("Error generating thumbnail for %s: %v", path, err)
+		}
+	}
+
+	// avoid adding a task if the file isn't a video file
+	_, isVideo := f.(*file.VideoFile)
+	if isVideo && t.ScanGenerateClipPreviews {
+		// this is a bit of a hack: the task requires files to be loaded, but
+		// we don't really need to since we already have the file
+		ii := *i
+		ii.Files = models.NewRelatedFiles([]file.File{f})
+
+		progress.AddTotal(1)
+		previewsFn := func(ctx context.Context) {
+			taskPreview := GenerateClipPreviewTask{
+				Image:     ii,
+				Overwrite: overwrite,
+			}
+
+			taskPreview.Start(ctx)
+			progress.Increment()
+		}
+
+		if sequentialScanning {
+			previewsFn(ctx)
+		} else {
+			g.taskQueue.Add(fmt.Sprintf("Generating preview for %s", path), previewsFn)
+		}
+	}
+
+	return nil
+}
+
+func (g *imageGenerators) generateThumbnail(ctx context.Context, i *models.Image, f file.File) error {
 	thumbPath := GetInstance().Paths.Generated.GetThumbnailPath(i.Checksum, models.DefaultGthumbWidth)
 	exists, _ := fsutil.FileExists(thumbPath)
 	if exists {
 		return nil
 	}
 
-	if f.Height <= models.DefaultGthumbWidth && f.Width <= models.DefaultGthumbWidth {
+	path := f.Base().Path
+
+	asFrame, ok := f.(file.VisualFile)
+	if !ok {
+		return fmt.Errorf("file %s does not implement Frame", path)
+	}
+
+	if asFrame.GetHeight() <= models.DefaultGthumbWidth && asFrame.GetWidth() <= models.DefaultGthumbWidth {
 		return nil
 	}
 
-	logger.Debugf("Generating thumbnail for %s", f.Path)
+	logger.Debugf("Generating thumbnail for %s", path)
 
-	encoder := image.NewThumbnailEncoder(instance.FFMPEG)
+	clipPreviewOptions := image.ClipPreviewOptions{
+		InputArgs:  instance.Config.GetTranscodeInputArgs(),
+		OutputArgs: instance.Config.GetTranscodeOutputArgs(),
+		Preset:     instance.Config.GetPreviewPreset().String(),
+	}
+
+	encoder := image.NewThumbnailEncoder(instance.FFMPEG, instance.FFProbe, clipPreviewOptions)
 	data, err := encoder.GetThumbnail(f, models.DefaultGthumbWidth)
 
 	if err != nil {
 		// don't log for animated images
 		if !errors.Is(err, image.ErrNotSupportedForThumbnail) {
-			return fmt.Errorf("getting thumbnail for image %s: %w", f.Path, err)
+			return fmt.Errorf("getting thumbnail for image %s: %w", path, err)
 		}
 		return nil
 	}
 
 	err = fsutil.WriteFile(thumbPath, data)
 	if err != nil {
-		return fmt.Errorf("writing thumbnail for image %s: %w", f.Path, err)
+		return fmt.Errorf("writing thumbnail for image %s: %w", path, err)
 	}
 
 	return nil
@@ -410,10 +474,11 @@ func (g *sceneGenerators) Generate(ctx context.Context, s *models.Scene, f *file
 	path := f.Path
 	config := instance.Config
 	fileNamingAlgorithm := config.GetVideoFileNamingAlgorithm()
+	sequentialScanning := config.GetSequentialScanning()
 
 	if t.ScanGenerateSprites {
 		progress.AddTotal(1)
-		g.taskQueue.Add(fmt.Sprintf("Generating sprites for %s", path), func(ctx context.Context) {
+		spriteFn := func(ctx context.Context) {
 			taskSprite := GenerateSpriteTask{
 				Scene:               *s,
 				Overwrite:           overwrite,
@@ -421,12 +486,18 @@ func (g *sceneGenerators) Generate(ctx context.Context, s *models.Scene, f *file
 			}
 			taskSprite.Start(ctx)
 			progress.Increment()
-		})
+		}
+
+		if sequentialScanning {
+			spriteFn(ctx)
+		} else {
+			g.taskQueue.Add(fmt.Sprintf("Generating sprites for %s", path), spriteFn)
+		}
 	}
 
 	if t.ScanGeneratePhashes {
 		progress.AddTotal(1)
-		g.taskQueue.Add(fmt.Sprintf("Generating phash for %s", path), func(ctx context.Context) {
+		phashFn := func(ctx context.Context) {
 			taskPhash := GeneratePhashTask{
 				File:                f,
 				fileNamingAlgorithm: fileNamingAlgorithm,
@@ -436,20 +507,27 @@ func (g *sceneGenerators) Generate(ctx context.Context, s *models.Scene, f *file
 			}
 			taskPhash.Start(ctx)
 			progress.Increment()
-		})
+		}
+
+		if sequentialScanning {
+			phashFn(ctx)
+		} else {
+			g.taskQueue.Add(fmt.Sprintf("Generating phash for %s", path), phashFn)
+		}
 	}
 
 	if t.ScanGeneratePreviews {
 		progress.AddTotal(1)
-		g.taskQueue.Add(fmt.Sprintf("Generating preview for %s", path), func(ctx context.Context) {
+		previewsFn := func(ctx context.Context) {
 			options := getGeneratePreviewOptions(GeneratePreviewOptionsInput{})
 
 			g := &generate.Generator{
-				Encoder:     instance.FFMPEG,
-				LockManager: instance.ReadLockManager,
-				MarkerPaths: instance.Paths.SceneMarkers,
-				ScenePaths:  instance.Paths.Scene,
-				Overwrite:   overwrite,
+				Encoder:      instance.FFMPEG,
+				FFMpegConfig: instance.Config,
+				LockManager:  instance.ReadLockManager,
+				MarkerPaths:  instance.Paths.SceneMarkers,
+				ScenePaths:   instance.Paths.Scene,
+				Overwrite:    overwrite,
 			}
 
 			taskPreview := GeneratePreviewTask{
@@ -461,6 +539,25 @@ func (g *sceneGenerators) Generate(ctx context.Context, s *models.Scene, f *file
 				generator:           g,
 			}
 			taskPreview.Start(ctx)
+			progress.Increment()
+		}
+
+		if sequentialScanning {
+			previewsFn(ctx)
+		} else {
+			g.taskQueue.Add(fmt.Sprintf("Generating preview for %s", path), previewsFn)
+		}
+	}
+
+	if t.ScanGenerateCovers {
+		progress.AddTotal(1)
+		g.taskQueue.Add(fmt.Sprintf("Generating cover for %s", path), func(ctx context.Context) {
+			taskCover := GenerateCoverTask{
+				Scene:      *s,
+				txnManager: instance.Repository,
+				Overwrite:  overwrite,
+			}
+			taskCover.Start(ctx)
 			progress.Increment()
 		})
 	}

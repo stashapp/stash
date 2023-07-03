@@ -2,14 +2,14 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
-import { NavUtils, TextUtils } from "src/utils";
-import {
-  GridCard,
-  CountryFlag,
-  HoverPopover,
-  Icon,
-  TagLink,
-} from "src/components/Shared";
+import NavUtils from "src/utils/navigation";
+import TextUtils from "src/utils/text";
+import { GridCard } from "../Shared/GridCard";
+import { CountryFlag } from "../Shared/CountryFlag";
+import { SweatDrops } from "../Shared/SweatDrops";
+import { HoverPopover } from "../Shared/HoverPopover";
+import { Icon } from "../Shared/Icon";
+import { TagLink } from "../Shared/TagLink";
 import { Button, ButtonGroup } from "react-bootstrap";
 import {
   Criterion,
@@ -19,12 +19,16 @@ import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import GenderIcon from "./GenderIcon";
 import { faHeart, faTag } from "@fortawesome/free-solid-svg-icons";
 import { RatingBanner } from "../Shared/RatingBanner";
+import cx from "classnames";
+import { usePerformerUpdate } from "src/core/StashService";
+import { ILabeledId } from "src/models/list-filter/types";
 
 export interface IPerformerCardExtraCriteria {
-  scenes: Criterion<CriterionValue>[];
-  images: Criterion<CriterionValue>[];
-  galleries: Criterion<CriterionValue>[];
-  movies: Criterion<CriterionValue>[];
+  scenes?: Criterion<CriterionValue>[];
+  images?: Criterion<CriterionValue>[];
+  galleries?: Criterion<CriterionValue>[];
+  movies?: Criterion<CriterionValue>[];
+  performer?: ILabeledId;
 }
 
 interface IPerformerCardProps {
@@ -61,15 +65,37 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     { age, years_old: ageL10String }
   );
 
-  function maybeRenderFavoriteIcon() {
-    if (performer.favorite === false) {
-      return;
-    }
+  const [updatePerformer] = usePerformerUpdate();
+
+  function renderFavoriteIcon() {
     return (
-      <div className="favorite">
-        <Icon icon={faHeart} size="2x" />
-      </div>
+      <Link to="" onClick={(e) => e.preventDefault()}>
+        <Button
+          className={cx(
+            "minimal",
+            "mousetrap",
+            "favorite-button",
+            performer.favorite ? "favorite" : "not-favorite"
+          )}
+          onClick={() => onToggleFavorite!(!performer.favorite)}
+        >
+          <Icon icon={faHeart} size="2x" />
+        </Button>
+      </Link>
     );
+  }
+
+  function onToggleFavorite(v: boolean) {
+    if (performer.id) {
+      updatePerformer({
+        variables: {
+          input: {
+            id: performer.id,
+            favorite: v,
+          },
+        },
+      });
+    }
   }
 
   function maybeRenderScenesPopoverButton() {
@@ -80,7 +106,11 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
         className="scene-count"
         type="scene"
         count={performer.scene_count}
-        url={NavUtils.makePerformerScenesUrl(performer, extraCriteria?.scenes)}
+        url={NavUtils.makePerformerScenesUrl(
+          performer,
+          extraCriteria?.performer,
+          extraCriteria?.scenes
+        )}
       />
     );
   }
@@ -93,7 +123,11 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
         className="image-count"
         type="image"
         count={performer.image_count}
-        url={NavUtils.makePerformerImagesUrl(performer, extraCriteria?.images)}
+        url={NavUtils.makePerformerImagesUrl(
+          performer,
+          extraCriteria?.performer,
+          extraCriteria?.images
+        )}
       />
     );
   }
@@ -108,9 +142,25 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
         count={performer.gallery_count}
         url={NavUtils.makePerformerGalleriesUrl(
           performer,
+          extraCriteria?.performer,
           extraCriteria?.galleries
         )}
       />
+    );
+  }
+
+  function maybeRenderOCounter() {
+    if (!performer.o_counter) return;
+
+    return (
+      <div className="o-counter">
+        <Button className="minimal">
+          <span className="fa-icon">
+            <SweatDrops />
+          </span>
+          <span>{performer.o_counter}</span>
+        </Button>
+      </div>
     );
   }
 
@@ -139,7 +189,11 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
         className="movie-count"
         type="movie"
         count={performer.movie_count}
-        url={NavUtils.makePerformerMoviesUrl(performer, extraCriteria?.movies)}
+        url={NavUtils.makePerformerMoviesUrl(
+          performer,
+          extraCriteria?.performer,
+          extraCriteria?.movies
+        )}
       />
     );
   }
@@ -150,6 +204,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       performer.image_count ||
       performer.gallery_count ||
       performer.tags.length > 0 ||
+      performer.o_counter ||
       performer.movie_count
     ) {
       return (
@@ -161,6 +216,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
             {maybeRenderImagesPopoverButton()}
             {maybeRenderGalleriesPopoverButton()}
             {maybeRenderTagPopoverButton()}
+            {maybeRenderOCounter()}
           </ButtonGroup>
         </>
       );
@@ -214,7 +270,8 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
             alt={performer.name ?? ""}
             src={performer.image_path ?? ""}
           />
-          {maybeRenderFavoriteIcon()}
+
+          {renderFavoriteIcon()}
           {maybeRenderRatingBanner()}
           {maybeRenderFlag()}
         </>

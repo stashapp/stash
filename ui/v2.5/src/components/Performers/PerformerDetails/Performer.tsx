@@ -12,33 +12,35 @@ import {
   usePerformerDestroy,
   mutateMetadataAutoTag,
 } from "src/core/StashService";
-import {
-  Counter,
-  CountryFlag,
-  DetailsEditNavbar,
-  ErrorMessage,
-  Icon,
-  LoadingIndicator,
-} from "src/components/Shared";
-import { useLightbox, useToast } from "src/hooks";
+import { Counter } from "src/components/Shared/Counter";
+import { CountryFlag } from "src/components/Shared/CountryFlag";
+import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
+import { ErrorMessage } from "src/components/Shared/ErrorMessage";
+import { Icon } from "src/components/Shared/Icon";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { useLightbox } from "src/hooks/Lightbox/hooks";
+import { useToast } from "src/hooks/Toast";
 import { ConfigurationContext } from "src/hooks/Config";
-import { TextUtils } from "src/utils";
+import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
 import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";
 import { PerformerMoviesPanel } from "./PerformerMoviesPanel";
 import { PerformerImagesPanel } from "./PerformerImagesPanel";
+import { PerformerAppearsWithPanel } from "./performerAppearsWithPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
 import { PerformerSubmitButton } from "./PerformerSubmitButton";
 import GenderIcon from "../GenderIcon";
 import {
-  faCamera,
-  faDove,
   faHeart,
   faLink,
+  faChevronRight,
+  faChevronLeft,
 } from "@fortawesome/free-solid-svg-icons";
+import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { IUIConfig } from "src/core/config";
+import { useRatingKeybinds } from "src/hooks/keybinds";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -53,22 +55,31 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const intl = useIntl();
   const { tab = "details" } = useParams<IPerformerParams>();
 
+  const [collapsed, setCollapsed] = useState(false);
+
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
   const abbreviateCounter =
     (configuration?.ui as IUIConfig)?.abbreviateCounters ?? false;
 
-  const [imagePreview, setImagePreview] = useState<string | null>();
-  const [imageEncoding, setImageEncoding] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [image, setImage] = useState<string | null>();
+  const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
-  // if undefined then get the existing image
-  // if null then get the default (no) image
-  // otherwise get the set image
-  const activeImage =
-    imagePreview === undefined
-      ? performer.image_path ?? ""
-      : imagePreview ?? `${performer.image_path}&default=true`;
+  const activeImage = useMemo(() => {
+    const performerImage = performer.image_path;
+    if (isEditing) {
+      if (image === null && performerImage) {
+        const performerImageURL = new URL(performerImage);
+        performerImageURL.searchParams.set("default", "true");
+        return performerImageURL.toString();
+      } else if (image) {
+        return image;
+      }
+    }
+    return performerImage;
+  }, [image, isEditing, performer.image_path]);
+
   const lightboxImages = useMemo(
     () => [{ paths: { thumbnail: activeImage, image: activeImage } }],
     [activeImage]
@@ -85,7 +96,8 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     tab === "scenes" ||
     tab === "galleries" ||
     tab === "images" ||
-    tab === "movies"
+    tab === "movies" ||
+    tab == "appearswith"
       ? tab
       : "details";
   const setActiveTabKey = (newTab: string | null) => {
@@ -94,10 +106,6 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       history.replace(`/performers/${performer.id}${tabParam}`);
     }
   };
-
-  const onImageChange = (image?: string | null) => setImagePreview(image);
-
-  const onImageEncoding = (isEncoding = false) => setImageEncoding(isEncoding);
 
   async function onAutoTag() {
     try {
@@ -110,38 +118,21 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     }
   }
 
+  useRatingKeybinds(
+    true,
+    configuration?.ui?.ratingSystemOptions?.type,
+    setRating
+  );
+
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("a", () => setActiveTabKey("details"));
-    Mousetrap.bind("e", () => setIsEditing(!isEditing));
+    Mousetrap.bind("e", () => toggleEditing());
     Mousetrap.bind("c", () => setActiveTabKey("scenes"));
     Mousetrap.bind("g", () => setActiveTabKey("galleries"));
     Mousetrap.bind("m", () => setActiveTabKey("movies"));
     Mousetrap.bind("f", () => setFavorite(!performer.favorite));
-
-    // numeric keypresses get caught by jwplayer, so blur the element
-    // if the rating sequence is started
-    Mousetrap.bind("r", () => {
-      if (document.activeElement instanceof HTMLElement) {
-        document.activeElement.blur();
-      }
-
-      Mousetrap.bind("0", () => setRating(NaN));
-      Mousetrap.bind("1", () => setRating(20));
-      Mousetrap.bind("2", () => setRating(40));
-      Mousetrap.bind("3", () => setRating(60));
-      Mousetrap.bind("4", () => setRating(80));
-      Mousetrap.bind("5", () => setRating(100));
-
-      setTimeout(() => {
-        Mousetrap.unbind("0");
-        Mousetrap.unbind("1");
-        Mousetrap.unbind("2");
-        Mousetrap.unbind("3");
-        Mousetrap.unbind("4");
-        Mousetrap.unbind("5");
-      }, 1000);
-    });
+    Mousetrap.bind(",", () => setCollapsed(!collapsed));
 
     return () => {
       Mousetrap.unbind("a");
@@ -149,8 +140,27 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       Mousetrap.unbind("c");
       Mousetrap.unbind("f");
       Mousetrap.unbind("o");
+      Mousetrap.unbind(",");
     };
   });
+
+  async function onSave(input: GQL.PerformerCreateInput) {
+    await updatePerformer({
+      variables: {
+        input: {
+          id: performer.id,
+          ...input,
+        },
+      },
+    });
+    toggleEditing(false);
+    Toast.success({
+      content: intl.formatMessage(
+        { id: "toast.updated_entity" },
+        { entity: intl.formatMessage({ id: "performer" }).toLocaleLowerCase() }
+      ),
+    });
+  }
 
   async function onDelete() {
     try {
@@ -163,6 +173,24 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     history.push("/performers");
   }
 
+  function toggleEditing(value?: boolean) {
+    if (value !== undefined) {
+      setIsEditing(value);
+    } else {
+      setIsEditing((e) => !e);
+    }
+    setImage(undefined);
+  }
+
+  function renderImage() {
+    if (activeImage) {
+      return (
+        <Button variant="link" onClick={() => showLightbox()}>
+          <img className="performer" src={activeImage} alt={performer.name} />
+        </Button>
+      );
+    }
+  }
   const renderTabs = () => (
     <React.Fragment>
       <Col>
@@ -171,9 +199,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             objectName={
               performer?.name ?? intl.formatMessage({ id: "performer" })
             }
-            onToggleEdit={() => {
-              setIsEditing(!isEditing);
-            }}
+            onToggleEdit={() => toggleEditing()}
             onDelete={onDelete}
             onAutoTag={onAutoTag}
             isNew={false}
@@ -201,58 +227,92 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <Tab
           eventKey="scenes"
           title={
-            <React.Fragment>
+            <>
               {intl.formatMessage({ id: "scenes" })}
               <Counter
                 abbreviateCounter={abbreviateCounter}
-                count={performer.scene_count ?? 0}
+                count={performer.scene_count}
+                hideZero
               />
-            </React.Fragment>
+            </>
           }
         >
-          <PerformerScenesPanel performer={performer} />
+          <PerformerScenesPanel
+            active={activeTabKey == "scenes"}
+            performer={performer}
+          />
         </Tab>
         <Tab
           eventKey="galleries"
           title={
-            <React.Fragment>
+            <>
               {intl.formatMessage({ id: "galleries" })}
               <Counter
                 abbreviateCounter={abbreviateCounter}
-                count={performer.gallery_count ?? 0}
+                count={performer.gallery_count}
+                hideZero
               />
-            </React.Fragment>
+            </>
           }
         >
-          <PerformerGalleriesPanel performer={performer} />
+          <PerformerGalleriesPanel
+            active={activeTabKey == "galleries"}
+            performer={performer}
+          />
         </Tab>
         <Tab
           eventKey="images"
           title={
-            <React.Fragment>
+            <>
               {intl.formatMessage({ id: "images" })}
               <Counter
                 abbreviateCounter={abbreviateCounter}
-                count={performer.image_count ?? 0}
+                count={performer.image_count}
+                hideZero
               />
-            </React.Fragment>
+            </>
           }
         >
-          <PerformerImagesPanel performer={performer} />
+          <PerformerImagesPanel
+            active={activeTabKey == "images"}
+            performer={performer}
+          />
         </Tab>
         <Tab
           eventKey="movies"
           title={
-            <React.Fragment>
+            <>
               {intl.formatMessage({ id: "movies" })}
               <Counter
                 abbreviateCounter={abbreviateCounter}
-                count={performer.movie_count ?? 0}
+                count={performer.movie_count}
+                hideZero
               />
-            </React.Fragment>
+            </>
           }
         >
-          <PerformerMoviesPanel performer={performer} />
+          <PerformerMoviesPanel
+            active={activeTabKey == "movies"}
+            performer={performer}
+          />
+        </Tab>
+        <Tab
+          eventKey="appearswith"
+          title={
+            <>
+              {intl.formatMessage({ id: "appears_with" })}
+              <Counter
+                abbreviateCounter={abbreviateCounter}
+                count={performer.performer_count}
+                hideZero
+              />
+            </>
+          }
+        >
+          <PerformerAppearsWithPanel
+            active={activeTabKey == "appearswith"}
+            performer={performer}
+          />
         </Tab>
       </Tabs>
     </React.Fragment>
@@ -264,12 +324,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <PerformerEditPanel
           performer={performer}
           isVisible={isEditing}
-          isNew={false}
-          onImageChange={onImageChange}
-          onImageEncoding={onImageEncoding}
-          onCancelEditing={() => {
-            setIsEditing(false);
-          }}
+          onSubmit={onSave}
+          onCancel={() => toggleEditing()}
+          setImage={setImage}
+          setEncodingImage={setEncodingImage}
         />
       );
     } else {
@@ -368,7 +426,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Icon icon={faDove} />
+            <Icon icon={faTwitter} />
           </a>
         </Button>
       )}
@@ -383,7 +441,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Icon icon={faCamera} />
+            <Icon icon={faInstagram} />
           </a>
         </Button>
       )}
@@ -397,32 +455,39 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       />
     );
 
+  function getCollapseButtonIcon() {
+    return collapsed ? faChevronRight : faChevronLeft;
+  }
+
   return (
     <div id="performer-page" className="row">
       <Helmet>
         <title>{performer.name}</title>
       </Helmet>
 
-      <div className="performer-image-container col-md-4 text-center">
-        {imageEncoding ? (
+      <div
+        className={`performer-image-container details-tab text-center text-center ${
+          collapsed ? "collapsed" : ""
+        }`}
+      >
+        {encodingImage ? (
           <LoadingIndicator message="Encoding image..." />
         ) : (
-          <Button variant="link" onClick={() => showLightbox()}>
-            <img
-              className="performer"
-              src={activeImage}
-              alt={intl.formatMessage({ id: "performer" })}
-            />
-          </Button>
+          renderImage()
         )}
       </div>
-      <div className="col-md-8">
+      <div className="details-divider d-none d-xl-block">
+        <Button onClick={() => setCollapsed(!collapsed)}>
+          <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
+        </Button>
+      </div>
+      <div className={`content-container ${collapsed ? "expanded" : ""}`}>
         <div className="row">
           <div className="performer-head col">
             <h2>
               <GenderIcon
                 gender={performer.gender}
-                className="gender-icon mr-2 flag-icon"
+                className="gender-icon mr-2 fi"
               />
               <CountryFlag country={performer.country} className="mr-2" />
               <span className="performer-name">{performer.name}</span>

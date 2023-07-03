@@ -22,6 +22,11 @@ fragment SlimGalleryData on Gallery {
       thumbnail
     }
   }
+  chapters {
+    id
+    title
+    image_index
+  }
   studio {
     id
     name

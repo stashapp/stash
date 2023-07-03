@@ -6,7 +6,8 @@ import {
   ServerError,
   TypePolicies,
 } from "@apollo/client";
-import { WebSocketLink } from "@apollo/client/link/ws";
+import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
+import { createClient as createWSClient } from "graphql-ws";
 import { onError } from "@apollo/client/link/error";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { createUploadLink } from "apollo-upload-client";
@@ -87,14 +88,15 @@ const typePolicies: TypePolicies = {
   },
 };
 
-export const getBaseURL = () => {
-  const baseURL = window.STASH_BASE_URL;
-  if (baseURL === "/%BASE_URL%/") return "/";
-  return baseURL;
+const possibleTypes = {
+  VisualFile: ["VideoFile", "ImageFile"],
 };
 
+export const baseURL =
+  document.querySelector("base")?.getAttribute("href") ?? "/";
+
 export const getPlatformURL = (ws?: boolean) => {
-  const platformUrl = new URL(window.location.origin + getBaseURL());
+  const platformUrl = new URL(window.location.origin + baseURL);
 
   if (import.meta.env.DEV) {
     platformUrl.port = import.meta.env.VITE_APP_PLATFORM_PORT ?? "9999";
@@ -105,7 +107,11 @@ export const getPlatformURL = (ws?: boolean) => {
   }
 
   if (ws) {
-    platformUrl.protocol = "ws:";
+    if (platformUrl.protocol === "https:") {
+      platformUrl.protocol = "wss:";
+    } else {
+      platformUrl.protocol = "ws:";
+    }
   }
 
   return platformUrl;
@@ -115,32 +121,26 @@ export const createClient = () => {
   const platformUrl = getPlatformURL();
   const wsPlatformUrl = getPlatformURL(true);
 
-  if (platformUrl.protocol === "https:") {
-    wsPlatformUrl.protocol = "wss:";
-  }
+  const url = `${platformUrl}graphql`;
+  const wsUrl = `${wsPlatformUrl}graphql`;
 
-  const url = `${platformUrl.toString()}graphql`;
-  const wsUrl = `${wsPlatformUrl.toString()}graphql`;
+  const httpLink = createUploadLink({ uri: url });
 
-  const httpLink = createUploadLink({
-    uri: url,
-  });
-
-  const wsLink = new WebSocketLink({
-    uri: wsUrl,
-    options: {
-      reconnect: true,
-    },
-  });
+  const wsLink = new GraphQLWsLink(
+    createWSClient({
+      url: wsUrl,
+      retryAttempts: Infinity,
+      shouldRetry() {
+        return true;
+      },
+    })
+  );
 
   const errorLink = onError(({ networkError }) => {
     // handle unauthorized error by redirecting to the login page
     if (networkError && (networkError as ServerError).statusCode === 401) {
       // redirect to login page
-      const newURL = new URL(
-        `${window.STASH_BASE_URL}login`,
-        window.location.toString()
-      );
+      const newURL = new URL(`${baseURL}login`, window.location.toString());
       newURL.searchParams.append("returnURL", window.location.href);
       window.location.href = newURL.toString();
     }
@@ -155,13 +155,15 @@ export const createClient = () => {
       );
     },
     wsLink,
-    // @ts-ignore
     httpLink
   );
 
   const link = from([errorLink, splitLink]);
 
-  const cache = new InMemoryCache({ typePolicies });
+  const cache = new InMemoryCache({
+    typePolicies,
+    possibleTypes: possibleTypes,
+  });
   const client = new ApolloClient({
     link,
     cache,

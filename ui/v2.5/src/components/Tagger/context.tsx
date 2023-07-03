@@ -20,7 +20,8 @@ import {
   useStudioUpdate,
   useTagCreate,
 } from "src/core/StashService";
-import { useLocalForage, useToast } from "src/hooks";
+import { useLocalForage } from "src/hooks/LocalForage";
+import { useToast } from "src/hooks/Toast";
 import { ConfigurationContext } from "src/hooks/Config";
 import { ITaggerSource, SCRAPER_PREFIX, STASH_BOX_PREFIX } from "./constants";
 
@@ -201,9 +202,8 @@ export const TaggerContext: React.FC = ({ children }) => {
     });
   }
 
-  const [
-    submitFingerprintsMutation,
-  ] = GQL.useSubmitStashBoxFingerprintsMutation();
+  const [submitFingerprintsMutation] =
+    GQL.useSubmitStashBoxFingerprintsMutation();
 
   async function submitFingerprints() {
     const endpoint = currentSource?.stashboxEndpoint;

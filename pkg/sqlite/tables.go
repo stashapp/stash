@@ -104,12 +104,22 @@ var (
 		},
 		fkColumn: galleriesScenesJoinTable.Col(sceneIDColumn),
 	}
+
+	galleriesChaptersTableMgr = &table{
+		table:    goqu.T(galleriesChaptersTable),
+		idColumn: goqu.T(galleriesChaptersTable).Col(idColumn),
+	}
 )
 
 var (
 	sceneTableMgr = &table{
 		table:    goqu.T(sceneTable),
 		idColumn: goqu.T(sceneTable).Col(idColumn),
+	}
+
+	sceneMarkerTableMgr = &table{
+		table:    goqu.T(sceneMarkerTable),
+		idColumn: goqu.T(sceneMarkerTable).Col(idColumn),
 	}
 
 	scenesFilesTableMgr = &relatedFilesTable{
@@ -227,5 +237,19 @@ var (
 	movieTableMgr = &table{
 		table:    goqu.T(movieTable),
 		idColumn: goqu.T(movieTable).Col(idColumn),
+	}
+)
+
+var (
+	blobTableMgr = &table{
+		table:    goqu.T(blobTable),
+		idColumn: goqu.T(blobTable).Col(blobChecksumColumn),
+	}
+)
+
+var (
+	savedFilterTableMgr = &table{
+		table:    goqu.T(savedFilterTable),
+		idColumn: goqu.T(savedFilterTable).Col(idColumn),
 	}
 )

@@ -7,14 +7,14 @@ import {
 import React, { useState } from "react";
 import { Button, Collapse } from "react-bootstrap";
 import { useIntl } from "react-intl";
-import { Icon } from "src/components/Shared";
+import { Icon } from "src/components/Shared/Icon";
 
 interface IShowFieldsProps {
   fields: Map<string, boolean>;
   onShowFieldsChanged: (fields: Map<string, boolean>) => void;
 }
 
-export const ShowFields = (props: IShowFieldsProps) => {
+export const ShowFields: React.FC<IShowFieldsProps> = (props) => {
   const intl = useIntl();
   const [open, setOpen] = useState(false);
 

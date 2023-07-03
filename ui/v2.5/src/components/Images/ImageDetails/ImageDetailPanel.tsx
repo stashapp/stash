@@ -1,14 +1,14 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { TextUtils } from "src/utils";
-import { TagLink, TruncatedText } from "src/components/Shared";
+import TextUtils from "src/utils/text";
+import { TagLink } from "src/components/Shared/TagLink";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { sortPerformers } from "src/core/performers";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import { objectTitle } from "src/core/files";
-
 interface IImageDetailProps {
   image: GQL.ImageDataFragment;
 }
@@ -43,7 +43,11 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
     if (props.image.performers.length === 0) return;
     const performers = sortPerformers(props.image.performers);
     const cards = performers.map((performer) => (
-      <PerformerCard key={performer.id} performer={performer} />
+      <PerformerCard
+        key={performer.id}
+        performer={performer}
+        ageFromDate={props.image.date ?? undefined}
+      />
     ));
 
     return (
@@ -91,6 +95,15 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
               <TruncatedText text={objectTitle(props.image)} />
             </h3>
           </div>
+          {props.image.date ? (
+            <h5>
+              <FormattedDate
+                value={props.image.date}
+                format="long"
+                timeZone="utc"
+              />
+            </h5>
+          ) : undefined}
           {props.image.rating100 ? (
             <h6>
               <FormattedMessage id="rating" />:{" "}
@@ -99,6 +112,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
           ) : (
             ""
           )}
+
           {renderGalleries()}
           {file?.width && file?.height ? (
             <h6>

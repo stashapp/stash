@@ -27,6 +27,8 @@ type SceneFilterType struct {
 	Checksum *StringCriterionInput `json:"checksum"`
 	// Filter by file phash
 	Phash *StringCriterionInput `json:"phash"`
+	// Filter by phash distance
+	PhashDistance *PhashDistanceCriterionInput `json:"phash_distance"`
 	// Filter by path
 	Path *StringCriterionInput `json:"path"`
 	// Filter by file count
@@ -151,7 +153,7 @@ type SceneReader interface {
 	FindByPath(ctx context.Context, path string) ([]*Scene, error)
 	FindByPerformerID(ctx context.Context, performerID int) ([]*Scene, error)
 	FindByGalleryID(ctx context.Context, performerID int) ([]*Scene, error)
-	FindDuplicates(ctx context.Context, distance int) ([][]*Scene, error)
+	FindDuplicates(ctx context.Context, distance int, durationDiff float64) ([][]*Scene, error)
 
 	GalleryIDLoader
 	PerformerIDLoader
@@ -161,6 +163,7 @@ type SceneReader interface {
 	VideoFileLoader
 
 	CountByPerformerID(ctx context.Context, performerID int) (int, error)
+	OCountByPerformerID(ctx context.Context, performerID int) (int, error)
 	// FindByStudioID(studioID int) ([]*Scene, error)
 	FindByMovieID(ctx context.Context, movieID int) ([]*Scene, error)
 	CountByMovieID(ctx context.Context, movieID int) (int, error)
@@ -175,7 +178,9 @@ type SceneReader interface {
 	Wall(ctx context.Context, q *string) ([]*Scene, error)
 	All(ctx context.Context) ([]*Scene, error)
 	Query(ctx context.Context, options SceneQueryOptions) (*SceneQueryResult, error)
+	QueryCount(ctx context.Context, sceneFilter *SceneFilterType, findFilter *FindFilterType) (int, error)
 	GetCover(ctx context.Context, sceneID int) ([]byte, error)
+	HasCover(ctx context.Context, sceneID int) (bool, error)
 }
 
 type SceneWriter interface {
@@ -189,7 +194,6 @@ type SceneWriter interface {
 	IncrementWatchCount(ctx context.Context, id int) (int, error)
 	Destroy(ctx context.Context, id int) error
 	UpdateCover(ctx context.Context, sceneID int, cover []byte) error
-	DestroyCover(ctx context.Context, sceneID int) error
 }
 
 type SceneReaderWriter interface {

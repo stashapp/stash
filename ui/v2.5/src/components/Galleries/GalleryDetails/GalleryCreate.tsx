@@ -1,18 +1,38 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useLocation } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
+import * as GQL from "src/core/generated-graphql";
+import { useGalleryCreate } from "src/core/StashService";
+import { useToast } from "src/hooks/Toast";
 import { GalleryEditPanel } from "./GalleryEditPanel";
 
 const GalleryCreate: React.FC = () => {
+  const history = useHistory();
   const intl = useIntl();
+  const Toast = useToast();
 
-  function useQuery() {
-    const { search } = useLocation();
-    return React.useMemo(() => new URLSearchParams(search), [search]);
+  const location = useLocation();
+  const query = useMemo(() => new URLSearchParams(location.search), [location]);
+  const gallery = {
+    title: query.get("q") ?? undefined,
+  };
+
+  const [createGallery] = useGalleryCreate();
+
+  async function onSave(input: GQL.GalleryCreateInput) {
+    const result = await createGallery({
+      variables: { input },
+    });
+    if (result.data?.galleryCreate) {
+      history.push(`/galleries/${result.data.galleryCreate.id}`);
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "toast.created_entity" },
+          { entity: intl.formatMessage({ id: "gallery" }).toLocaleLowerCase() }
+        ),
+      });
+    }
   }
-
-  const query = useQuery();
-  const nameQuery = query.get("name");
 
   return (
     <div className="row new-view">
@@ -24,9 +44,9 @@ const GalleryCreate: React.FC = () => {
           />
         </h2>
         <GalleryEditPanel
-          isNew
-          gallery={{ title: nameQuery ?? "" }}
+          gallery={gallery}
           isVisible
+          onSubmit={onSave}
           onDelete={() => {}}
         />
       </div>

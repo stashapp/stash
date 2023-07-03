@@ -4,6 +4,8 @@ import {
   createStringCriterionOption,
   NullNumberCriterionOption,
   createMandatoryTimestampCriterionOption,
+  createDateCriterionOption,
+  createPathCriterionOption,
 } from "./criteria/criterion";
 import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
 import { ImageIsMissingCriterionOption } from "./criteria/is-missing";
@@ -24,6 +26,7 @@ const sortByOptions = [
   "o_counter",
   "filesize",
   "file_count",
+  "date",
   ...MediaSortByOptions,
 ].map(ListFilterOptions.createSortBy);
 
@@ -31,7 +34,7 @@ const displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
 const criterionOptions = [
   createStringCriterionOption("title"),
   createMandatoryStringCriterionOption("checksum", "media_info.checksum"),
-  createMandatoryStringCriterionOption("path"),
+  createPathCriterionOption("path"),
   OrganizedCriterionOption,
   createMandatoryNumberCriterionOption("o_counter"),
   ResolutionCriterionOption,
@@ -44,6 +47,8 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("performer_count"),
   PerformerFavoriteCriterionOption,
   StudiosCriterionOption,
+  createStringCriterionOption("url"),
+  createDateCriterionOption("date"),
   createMandatoryNumberCriterionOption("file_count"),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),

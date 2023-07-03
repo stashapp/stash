@@ -101,26 +101,17 @@ func (_m *MovieReaderWriter) CountByStudioID(ctx context.Context, studioID int) 
 }
 
 // Create provides a mock function with given fields: ctx, newMovie
-func (_m *MovieReaderWriter) Create(ctx context.Context, newMovie models.Movie) (*models.Movie, error) {
+func (_m *MovieReaderWriter) Create(ctx context.Context, newMovie *models.Movie) error {
 	ret := _m.Called(ctx, newMovie)
 
-	var r0 *models.Movie
-	if rf, ok := ret.Get(0).(func(context.Context, models.Movie) *models.Movie); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *models.Movie) error); ok {
 		r0 = rf(ctx, newMovie)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.Movie)
-		}
+		r0 = ret.Error(0)
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, models.Movie) error); ok {
-		r1 = rf(ctx, newMovie)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // Destroy provides a mock function with given fields: ctx, id
@@ -130,20 +121,6 @@ func (_m *MovieReaderWriter) Destroy(ctx context.Context, id int) error {
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
 		r0 = rf(ctx, id)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// DestroyImages provides a mock function with given fields: ctx, movieID
-func (_m *MovieReaderWriter) DestroyImages(ctx context.Context, movieID int) error {
-	ret := _m.Called(ctx, movieID)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
-		r0 = rf(ctx, movieID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -335,6 +312,48 @@ func (_m *MovieReaderWriter) GetFrontImage(ctx context.Context, movieID int) ([]
 	return r0, r1
 }
 
+// HasBackImage provides a mock function with given fields: ctx, movieID
+func (_m *MovieReaderWriter) HasBackImage(ctx context.Context, movieID int) (bool, error) {
+	ret := _m.Called(ctx, movieID)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(context.Context, int) bool); ok {
+		r0 = rf(ctx, movieID)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, movieID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// HasFrontImage provides a mock function with given fields: ctx, movieID
+func (_m *MovieReaderWriter) HasFrontImage(ctx context.Context, movieID int) (bool, error) {
+	ret := _m.Called(ctx, movieID)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(context.Context, int) bool); ok {
+		r0 = rf(ctx, movieID)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, movieID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Query provides a mock function with given fields: ctx, movieFilter, findFilter
 func (_m *MovieReaderWriter) Query(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) ([]*models.Movie, int, error) {
 	ret := _m.Called(ctx, movieFilter, findFilter)
@@ -365,62 +384,88 @@ func (_m *MovieReaderWriter) Query(ctx context.Context, movieFilter *models.Movi
 	return r0, r1, r2
 }
 
+// QueryCount provides a mock function with given fields: ctx, movieFilter, findFilter
+func (_m *MovieReaderWriter) QueryCount(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) (int, error) {
+	ret := _m.Called(ctx, movieFilter, findFilter)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, *models.MovieFilterType, *models.FindFilterType) int); ok {
+		r0 = rf(ctx, movieFilter, findFilter)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *models.MovieFilterType, *models.FindFilterType) error); ok {
+		r1 = rf(ctx, movieFilter, findFilter)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Update provides a mock function with given fields: ctx, updatedMovie
-func (_m *MovieReaderWriter) Update(ctx context.Context, updatedMovie models.MoviePartial) (*models.Movie, error) {
+func (_m *MovieReaderWriter) Update(ctx context.Context, updatedMovie *models.Movie) error {
 	ret := _m.Called(ctx, updatedMovie)
-
-	var r0 *models.Movie
-	if rf, ok := ret.Get(0).(func(context.Context, models.MoviePartial) *models.Movie); ok {
-		r0 = rf(ctx, updatedMovie)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.Movie)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, models.MoviePartial) error); ok {
-		r1 = rf(ctx, updatedMovie)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// UpdateFull provides a mock function with given fields: ctx, updatedMovie
-func (_m *MovieReaderWriter) UpdateFull(ctx context.Context, updatedMovie models.Movie) (*models.Movie, error) {
-	ret := _m.Called(ctx, updatedMovie)
-
-	var r0 *models.Movie
-	if rf, ok := ret.Get(0).(func(context.Context, models.Movie) *models.Movie); ok {
-		r0 = rf(ctx, updatedMovie)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.Movie)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, models.Movie) error); ok {
-		r1 = rf(ctx, updatedMovie)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// UpdateImages provides a mock function with given fields: ctx, movieID, frontImage, backImage
-func (_m *MovieReaderWriter) UpdateImages(ctx context.Context, movieID int, frontImage []byte, backImage []byte) error {
-	ret := _m.Called(ctx, movieID, frontImage, backImage)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int, []byte, []byte) error); ok {
-		r0 = rf(ctx, movieID, frontImage, backImage)
+	if rf, ok := ret.Get(0).(func(context.Context, *models.Movie) error); ok {
+		r0 = rf(ctx, updatedMovie)
 	} else {
 		r0 = ret.Error(0)
 	}
 
 	return r0
+}
+
+// UpdateBackImage provides a mock function with given fields: ctx, movieID, backImage
+func (_m *MovieReaderWriter) UpdateBackImage(ctx context.Context, movieID int, backImage []byte) error {
+	ret := _m.Called(ctx, movieID, backImage)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, []byte) error); ok {
+		r0 = rf(ctx, movieID, backImage)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdateFrontImage provides a mock function with given fields: ctx, movieID, frontImage
+func (_m *MovieReaderWriter) UpdateFrontImage(ctx context.Context, movieID int, frontImage []byte) error {
+	ret := _m.Called(ctx, movieID, frontImage)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, []byte) error); ok {
+		r0 = rf(ctx, movieID, frontImage)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdatePartial provides a mock function with given fields: ctx, id, updatedMovie
+func (_m *MovieReaderWriter) UpdatePartial(ctx context.Context, id int, updatedMovie models.MoviePartial) (*models.Movie, error) {
+	ret := _m.Called(ctx, id, updatedMovie)
+
+	var r0 *models.Movie
+	if rf, ok := ret.Get(0).(func(context.Context, int, models.MoviePartial) *models.Movie); ok {
+		r0 = rf(ctx, id, updatedMovie)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Movie)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int, models.MoviePartial) error); ok {
+		r1 = rf(ctx, id, updatedMovie)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }

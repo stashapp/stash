@@ -45,6 +45,7 @@ type dmsConfig struct {
 	LogHeaders          bool
 	StallEventSubscribe bool
 	NotifyInterval      time.Duration
+	VideoSortOrder      string
 }
 
 type sceneServer interface {
@@ -56,6 +57,7 @@ type Config interface {
 	GetDLNAInterfaces() []string
 	GetDLNAServerName() string
 	GetDLNADefaultIPWhitelist() []string
+	GetVideoSortOrder() string
 }
 
 type Service struct {
@@ -123,6 +125,7 @@ func (s *Service) init() error {
 		FriendlyName:   friendlyName,
 		LogHeaders:     false,
 		NotifyInterval: 30 * time.Second,
+		VideoSortOrder: s.config.GetVideoSortOrder(),
 	}
 
 	interfaces, err := s.getInterfaces()
@@ -164,6 +167,7 @@ func (s *Service) init() error {
 		// },
 		StallEventSubscribe: dmsConfig.StallEventSubscribe,
 		NotifyInterval:      dmsConfig.NotifyInterval,
+		VideoSortOrder:      dmsConfig.VideoSortOrder,
 	}
 
 	return nil

@@ -15,10 +15,14 @@ func NewTagURLBuilder(baseURL string, tag *models.Tag) TagURLBuilder {
 	return TagURLBuilder{
 		BaseURL:   baseURL,
 		TagID:     strconv.Itoa(tag.ID),
-		UpdatedAt: strconv.FormatInt(tag.UpdatedAt.Timestamp.Unix(), 10),
+		UpdatedAt: strconv.FormatInt(tag.UpdatedAt.Unix(), 10),
 	}
 }
 
-func (b TagURLBuilder) GetTagImageURL() string {
-	return b.BaseURL + "/tag/" + b.TagID + "/image?" + b.UpdatedAt
+func (b TagURLBuilder) GetTagImageURL(hasImage bool) string {
+	url := b.BaseURL + "/tag/" + b.TagID + "/image?t=" + b.UpdatedAt
+	if !hasImage {
+		url += "&default=true"
+	}
+	return url
 }

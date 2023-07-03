@@ -73,11 +73,13 @@ type ImageFile implements BaseFile {
     fingerprints: [Fingerprint!]!
 
     width: Int!
-	height: Int!
+    height: Int!
 
     created_at: Time!
     updated_at: Time!
 }
+
+union VisualFile = VideoFile | ImageFile
 
 type GalleryFile implements BaseFile {
     id: ID!
@@ -94,4 +96,16 @@ type GalleryFile implements BaseFile {
 
     created_at: Time!
     updated_at: Time!
+}
+
+input MoveFilesInput {
+    ids: [ID!]!
+    """valid for single or multiple file ids"""
+    destination_folder: String
+
+    """valid for single or multiple file ids"""
+    destination_folder_id: ID
+
+    """valid only for single file id. If empty, existing basename is used"""
+    destination_basename: String
 }

@@ -34,7 +34,6 @@ func (r *queryResolver) FindMovies(ctx context.Context, movieFilter *models.Movi
 			Count:  total,
 			Movies: movies,
 		}
-
 		return nil
 	}); err != nil {
 		return nil, err

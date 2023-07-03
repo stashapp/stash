@@ -7,6 +7,8 @@ type ScanMetadataOptions struct {
 	// Strip file extension from title
 	// Deprecated: not implemented
 	StripFileExtension bool `json:"stripFileExtension"`
+	// Generate scene covers during scan
+	ScanGenerateCovers bool `json:"scanGenerateCovers"`
 	// Generate previews during scan
 	ScanGeneratePreviews bool `json:"scanGeneratePreviews"`
 	// Generate image previews during scan
@@ -17,6 +19,8 @@ type ScanMetadataOptions struct {
 	ScanGeneratePhashes bool `json:"scanGeneratePhashes"`
 	// Generate image thumbnails during scan
 	ScanGenerateThumbnails bool `json:"scanGenerateThumbnails"`
+	// Generate image thumbnails during scan
+	ScanGenerateClipPreviews bool `json:"scanGenerateClipPreviews"`
 }
 
 type AutoTagMetadataOptions struct {

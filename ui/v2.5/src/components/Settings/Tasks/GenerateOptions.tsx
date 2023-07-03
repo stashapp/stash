@@ -27,6 +27,12 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
   return (
     <>
       <BooleanSetting
+        id="covers-task"
+        headingID="dialogs.scene_gen.covers"
+        checked={options.covers ?? false}
+        onChange={(v) => setOptions({ covers: v })}
+      />
+      <BooleanSetting
         id="preview-task"
         checked={options.previews ?? false}
         headingID="dialogs.scene_gen.video_previews"
@@ -135,6 +141,12 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
         checked={options.interactiveHeatmapsSpeeds ?? false}
         headingID="dialogs.scene_gen.interactive_heatmap_speed"
         onChange={(v) => setOptions({ interactiveHeatmapsSpeeds: v })}
+      />
+      <BooleanSetting
+        id="clip-previews"
+        checked={options.clipPreviews ?? false}
+        headingID="dialogs.scene_gen.clip_previews"
+        onChange={(v) => setOptions({ clipPreviews: v })}
       />
       <BooleanSetting
         id="overwrite"

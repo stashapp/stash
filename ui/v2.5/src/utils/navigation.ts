@@ -19,6 +19,8 @@ import {
 } from "src/models/list-filter/criteria/criterion";
 import { GalleriesCriterion } from "src/models/list-filter/criteria/galleries";
 import { PhashCriterion } from "src/models/list-filter/criteria/phash";
+import { ILabeledId } from "src/models/list-filter/types";
+import { IntlShape } from "react-intl";
 
 function addExtraCriteria(
   dest: Criterion<CriterionValue>[],
@@ -31,14 +33,20 @@ function addExtraCriteria(
 
 const makePerformerScenesUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
+  extraPerformer?: ILabeledId,
   extraCriteria?: Criterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
   const criterion = new PerformersCriterion();
-  criterion.value = [
+  criterion.value.items = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
   ];
+
+  if (extraPerformer) {
+    criterion.value.items.push(extraPerformer);
+  }
+
   filter.criteria.push(criterion);
   addExtraCriteria(filter.criteria, extraCriteria);
   return `/scenes?${filter.makeQueryParameters()}`;
@@ -46,14 +54,20 @@ const makePerformerScenesUrl = (
 
 const makePerformerImagesUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
+  extraPerformer?: ILabeledId,
   extraCriteria?: Criterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Images, undefined);
   const criterion = new PerformersCriterion();
-  criterion.value = [
+  criterion.value.items = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
   ];
+
+  if (extraPerformer) {
+    criterion.value.items.push(extraPerformer);
+  }
+
   filter.criteria.push(criterion);
   addExtraCriteria(filter.criteria, extraCriteria);
   return `/images?${filter.makeQueryParameters()}`;
@@ -61,14 +75,20 @@ const makePerformerImagesUrl = (
 
 const makePerformerGalleriesUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
+  extraPerformer?: ILabeledId,
   extraCriteria?: Criterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Galleries, undefined);
   const criterion = new PerformersCriterion();
-  criterion.value = [
+  criterion.value.items = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
   ];
+
+  if (extraPerformer) {
+    criterion.value.items.push(extraPerformer);
+  }
+
   filter.criteria.push(criterion);
   addExtraCriteria(filter.criteria, extraCriteria);
   return `/galleries?${filter.makeQueryParameters()}`;
@@ -76,14 +96,20 @@ const makePerformerGalleriesUrl = (
 
 const makePerformerMoviesUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
+  extraPerformer?: ILabeledId,
   extraCriteria?: Criterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Movies, undefined);
   const criterion = new PerformersCriterion();
-  criterion.value = [
+  criterion.value.items = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
   ];
+
+  if (extraPerformer) {
+    criterion.value.items.push(extraPerformer);
+  }
+
   filter.criteria.push(criterion);
   addExtraCriteria(filter.criteria, extraCriteria);
   return `/movies?${filter.makeQueryParameters()}`;
@@ -106,6 +132,7 @@ const makeStudioScenesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   const criterion = new StudiosCriterion();
   criterion.value = {
     items: [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }],
+    excluded: [],
     depth: 0,
   };
   filter.criteria.push(criterion);
@@ -118,6 +145,7 @@ const makeStudioImagesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   const criterion = new StudiosCriterion();
   criterion.value = {
     items: [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }],
+    excluded: [],
     depth: 0,
   };
   filter.criteria.push(criterion);
@@ -130,6 +158,7 @@ const makeStudioGalleriesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   const criterion = new StudiosCriterion();
   criterion.value = {
     items: [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }],
+    excluded: [],
     depth: 0,
   };
   filter.criteria.push(criterion);
@@ -142,10 +171,24 @@ const makeStudioMoviesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   const criterion = new StudiosCriterion();
   criterion.value = {
     items: [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }],
+    excluded: [],
     depth: 0,
   };
   filter.criteria.push(criterion);
   return `/movies?${filter.makeQueryParameters()}`;
+};
+
+const makeStudioPerformersUrl = (studio: Partial<GQL.StudioDataFragment>) => {
+  if (!studio.id) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Performers, undefined);
+  const criterion = new StudiosCriterion();
+  criterion.value = {
+    items: [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }],
+    excluded: [],
+    depth: 0,
+  };
+  filter.criteria.push(criterion);
+  return `/performers?${filter.makeQueryParameters()}`;
 };
 
 const makeChildStudiosUrl = (studio: Partial<GQL.StudioDataFragment>) => {
@@ -181,6 +224,7 @@ const makeParentTagsUrl = (tag: Partial<GQL.TagDataFragment>) => {
         label: tag.name || `Tag ${tag.id}`,
       },
     ],
+    excluded: [],
     depth: 0,
   };
   filter.criteria.push(criterion);
@@ -198,6 +242,7 @@ const makeChildTagsUrl = (tag: Partial<GQL.TagDataFragment>) => {
         label: tag.name || `Tag ${tag.id}`,
       },
     ],
+    excluded: [],
     depth: 0,
   };
   filter.criteria.push(criterion);
@@ -210,6 +255,7 @@ const makeTagScenesUrl = (tag: Partial<GQL.TagDataFragment>) => {
   const criterion = new TagsCriterion(TagsCriterionOption);
   criterion.value = {
     items: [{ id: tag.id, label: tag.name || `Tag ${tag.id}` }],
+    excluded: [],
     depth: 0,
   };
   filter.criteria.push(criterion);
@@ -222,6 +268,7 @@ const makeTagPerformersUrl = (tag: Partial<GQL.TagDataFragment>) => {
   const criterion = new TagsCriterion(TagsCriterionOption);
   criterion.value = {
     items: [{ id: tag.id, label: tag.name || `Tag ${tag.id}` }],
+    excluded: [],
     depth: 0,
   };
   filter.criteria.push(criterion);
@@ -234,6 +281,7 @@ const makeTagSceneMarkersUrl = (tag: Partial<GQL.TagDataFragment>) => {
   const criterion = new TagsCriterion(TagsCriterionOption);
   criterion.value = {
     items: [{ id: tag.id, label: tag.name || `Tag ${tag.id}` }],
+    excluded: [],
     depth: 0,
   };
   filter.criteria.push(criterion);
@@ -246,6 +294,7 @@ const makeTagGalleriesUrl = (tag: Partial<GQL.TagDataFragment>) => {
   const criterion = new TagsCriterion(TagsCriterionOption);
   criterion.value = {
     items: [{ id: tag.id, label: tag.name || `Tag ${tag.id}` }],
+    excluded: [],
     depth: 0,
   };
   filter.criteria.push(criterion);
@@ -258,6 +307,7 @@ const makeTagImagesUrl = (tag: Partial<GQL.TagDataFragment>) => {
   const criterion = new TagsCriterion(TagsCriterionOption);
   criterion.value = {
     items: [{ id: tag.id, label: tag.name || `Tag ${tag.id}` }],
+    excluded: [],
     depth: 0,
   };
   filter.criteria.push(criterion);
@@ -277,7 +327,7 @@ const makeScenesPHashMatchUrl = (phash: GQL.Maybe<string> | undefined) => {
   if (!phash) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
   const criterion = new PhashCriterion();
-  criterion.value = phash;
+  criterion.value = { value: phash };
   filter.criteria.push(criterion);
   return `/scenes?${filter.makeQueryParameters()}`;
 };
@@ -297,7 +347,22 @@ const makeGalleryImagesUrl = (
   return `/images?${filter.makeQueryParameters()}`;
 };
 
-export default {
+export function handleUnsavedChanges(
+  intl: IntlShape,
+  basepath: string,
+  id?: string
+) {
+  return function (location: { pathname: string }) {
+    // #2291 - don't prompt if we're navigating within the gallery being edited
+    if (id !== undefined && location.pathname === `/${basepath}/${id}`) {
+      return true;
+    }
+
+    return intl.formatMessage({ id: "dialogs.unsaved_changes" });
+  };
+}
+
+const NavUtils = {
   makePerformerScenesUrl,
   makePerformerImagesUrl,
   makePerformerGalleriesUrl,
@@ -307,6 +372,7 @@ export default {
   makeStudioImagesUrl,
   makeStudioGalleriesUrl,
   makeStudioMoviesUrl,
+  makeStudioPerformersUrl,
   makeParentTagsUrl,
   makeChildTagsUrl,
   makeTagSceneMarkersUrl,
@@ -320,3 +386,5 @@ export default {
   makeChildStudiosUrl,
   makeGalleryImagesUrl,
 };
+
+export default NavUtils;

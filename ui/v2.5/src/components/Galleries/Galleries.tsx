@@ -2,13 +2,13 @@ import React from "react";
 import { Route, Switch } from "react-router-dom";
 import { useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
-import { TITLE_SUFFIX } from "src/components/Shared";
-import { PersistanceLevel } from "src/hooks/ListHook";
+import { TITLE_SUFFIX } from "../Shared/constants";
+import { PersistanceLevel } from "../List/ItemList";
 import Gallery from "./GalleryDetails/Gallery";
 import GalleryCreate from "./GalleryDetails/GalleryCreate";
 import { GalleryList } from "./GalleryList";
 
-const Galleries = () => {
+const Galleries: React.FC = () => {
   const intl = useIntl();
 
   const title_template = `${intl.formatMessage({

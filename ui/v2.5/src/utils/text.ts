@@ -189,6 +189,70 @@ const stringToDate = (dateString: string) => {
   return new Date(year, monthIndex, day, 0, 0, 0, 0);
 };
 
+const stringToFuzzyDate = (dateString: string) => {
+  if (!dateString) return null;
+
+  const parts = dateString.split("-");
+  // Invalid date string
+  let year = Number(parts[0]);
+  if (isNaN(year)) year = new Date().getFullYear();
+  let monthIndex = 0;
+  if (parts.length > 1) {
+    monthIndex = Math.max(0, Number(parts[1]) - 1);
+    if (monthIndex > 11 || isNaN(monthIndex)) monthIndex = 0;
+  }
+  let day = 1;
+  if (parts.length > 2) {
+    day = Number(parts[2]);
+    if (day > 31 || isNaN(day)) day = 1;
+  }
+
+  return new Date(year, monthIndex, day, 0, 0, 0, 0);
+};
+
+const stringToFuzzyDateTime = (dateString: string) => {
+  if (!dateString) return null;
+
+  const dateTime = dateString.split(" ");
+
+  let date: Date | null = null;
+  if (dateTime.length > 0) {
+    date = stringToFuzzyDate(dateTime[0]);
+  }
+
+  if (!date) {
+    date = new Date();
+  }
+
+  if (dateTime.length > 1) {
+    const timeParts = dateTime[1].split(":");
+    if (date && timeParts.length > 0) {
+      date.setHours(Number(timeParts[0]));
+    }
+    if (date && timeParts.length > 1) {
+      date.setMinutes(Number(timeParts[1]));
+    }
+    if (date && timeParts.length > 2) {
+      date.setSeconds(Number(timeParts[2]));
+    }
+  }
+
+  return date;
+};
+
+function dateToString(date: Date) {
+  return `${date.getFullYear()}-${(date.getMonth() + 1)
+    .toString()
+    .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
+}
+
+function dateTimeToString(date: Date) {
+  return `${dateToString(date)} ${date
+    .getHours()
+    .toString()
+    .padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
+}
+
 const getAge = (dateString?: string | null, fromDateString?: string | null) => {
   if (!dateString) return 0;
 
@@ -216,20 +280,23 @@ const bitRate = (bitrate: number) => {
 
 const resolution = (width: number, height: number) => {
   const number = width > height ? height : width;
-  if (number >= 4320) {
+  if (number >= 6144) {
+    return "HUGE";
+  }
+  if (number >= 3840) {
     return "8K";
   }
-  if (number >= 3384) {
+  if (number >= 3584) {
+    return "7K";
+  }
+  if (number >= 3000) {
     return "6K";
   }
-  if (number >= 2880) {
+  if (number >= 2560) {
     return "5K";
   }
-  if (number >= 2160) {
-    return "4K";
-  }
   if (number >= 1920) {
-    return "1920p";
+    return "4K";
   }
   if (number >= 1440) {
     return "1440p";
@@ -284,6 +351,26 @@ const sanitiseURL = (url?: string, siteURL?: URL) => {
   return `https://${url}`;
 };
 
+const domainFromURL = (urlString?: string, url?: URL) => {
+  if (url) {
+    return url.hostname;
+  } else if (urlString) {
+    var urlDomain = "";
+    try {
+      var sanitizedUrl = sanitiseURL(urlString);
+      if (sanitizedUrl) {
+        urlString = sanitizedUrl;
+      }
+      urlDomain = new URL(urlString).hostname;
+    } catch {
+      urlDomain = urlString; // We cant determine the hostname so we return the base string
+    }
+    return urlDomain;
+  } else {
+    return "";
+  }
+};
+
 const formatDate = (intl: IntlShape, date?: string, utc = true) => {
   if (!date) {
     return "";
@@ -335,10 +422,15 @@ const TextUtils = {
   secondsToTimestamp,
   fileNameFromPath,
   stringToDate,
+  stringToFuzzyDate,
+  stringToFuzzyDateTime,
+  dateToString,
+  dateTimeToString,
   age: getAge,
   bitRate,
   resolution,
   sanitiseURL,
+  domainFromURL,
   twitterURL,
   instagramURL,
   formatDate,

@@ -10,6 +10,7 @@ import {
 } from "./criteria/criterion";
 import { FavoriteCriterionOption } from "./criteria/favorite";
 import { GenderCriterionOption } from "./criteria/gender";
+import { CircumcisedCriterionOption } from "./criteria/circumcised";
 import { PerformerIsMissingCriterionOption } from "./criteria/is-missing";
 import { StashIDCriterionOption } from "./criteria/stash-ids";
 import { StudiosCriterionOption } from "./criteria/studios";
@@ -25,6 +26,7 @@ const sortByOptions = [
   "tag_count",
   "random",
   "rating",
+  "penis_length",
 ]
   .map(ListFilterOptions.createSortBy)
   .concat([
@@ -40,6 +42,10 @@ const sortByOptions = [
       messageID: "gallery_count",
       value: "galleries_count",
     },
+    {
+      messageID: "o_counter",
+      value: "o_counter",
+    },
   ]);
 
 const displayModeOptions = [
@@ -53,6 +59,7 @@ const numberCriteria: CriterionType[] = [
   "death_year",
   "age",
   "weight",
+  "penis_length",
 ];
 
 const stringCriteria: CriterionType[] = [
@@ -74,6 +81,7 @@ const stringCriteria: CriterionType[] = [
 const criterionOptions = [
   FavoriteCriterionOption,
   GenderCriterionOption,
+  CircumcisedCriterionOption,
   PerformerIsMissingCriterionOption,
   TagsCriterionOption,
   StudiosCriterionOption,
@@ -84,6 +92,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("scene_count"),
   createMandatoryNumberCriterionOption("image_count"),
   createMandatoryNumberCriterionOption("gallery_count"),
+  createMandatoryNumberCriterionOption("o_counter"),
   createBooleanCriterionOption("ignore_auto_tag"),
   new NumberCriterionOption("height", "height_cm", "height_cm"),
   ...numberCriteria.map((c) => createNumberCriterionOption(c)),

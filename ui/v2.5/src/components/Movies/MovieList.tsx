@@ -3,28 +3,41 @@ import { useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
 import Mousetrap from "mousetrap";
 import { useHistory } from "react-router-dom";
-import {
-  FindMoviesQueryResult,
-  SlimMovieDataFragment,
-  MovieDataFragment,
-} from "src/core/generated-graphql";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { queryFindMovies, useMoviesDestroy } from "src/core/StashService";
+import * as GQL from "src/core/generated-graphql";
 import {
-  showWhenSelected,
-  useMoviesList,
+  queryFindMovies,
+  useFindMovies,
+  useMoviesDestroy,
+} from "src/core/StashService";
+import {
+  makeItemList,
   PersistanceLevel,
-} from "src/hooks/ListHook";
-import { ExportDialog, DeleteEntityDialog } from "src/components/Shared";
+  showWhenSelected,
+} from "../List/ItemList";
+import { ExportDialog } from "../Shared/ExportDialog";
+import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { MovieCard } from "./MovieCard";
 import { EditMoviesDialog } from "./EditMoviesDialog";
 
+const MovieItemList = makeItemList({
+  filterMode: GQL.FilterMode.Movies,
+  useResult: useFindMovies,
+  getItems(result: GQL.FindMoviesQueryResult) {
+    return result?.data?.findMovies?.movies ?? [];
+  },
+  getCount(result: GQL.FindMoviesQueryResult) {
+    return result?.data?.findMovies?.count ?? 0;
+  },
+});
+
 interface IMovieList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  alterQuery?: boolean;
 }
 
-export const MovieList: React.FC<IMovieList> = ({ filterHook }) => {
+export const MovieList: React.FC<IMovieList> = ({ filterHook, alterQuery }) => {
   const intl = useIntl();
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
@@ -46,10 +59,10 @@ export const MovieList: React.FC<IMovieList> = ({ filterHook }) => {
     },
   ];
 
-  const addKeybinds = (
-    result: FindMoviesQueryResult,
+  function addKeybinds(
+    result: GQL.FindMoviesQueryResult,
     filter: ListFilterModel
-  ) => {
+  ) {
     Mousetrap.bind("p r", () => {
       viewRandom(result, filter);
     });
@@ -57,49 +70,14 @@ export const MovieList: React.FC<IMovieList> = ({ filterHook }) => {
     return () => {
       Mousetrap.unbind("p r");
     };
-  };
-
-  function renderEditDialog(
-    selectedMovies: MovieDataFragment[],
-    onClose: (applied: boolean) => void
-  ) {
-    return (
-      <>
-        <EditMoviesDialog selected={selectedMovies} onClose={onClose} />
-      </>
-    );
   }
 
-  const renderDeleteDialog = (
-    selectedMovies: SlimMovieDataFragment[],
-    onClose: (confirmed: boolean) => void
-  ) => (
-    <DeleteEntityDialog
-      selected={selectedMovies}
-      onClose={onClose}
-      singularEntity={intl.formatMessage({ id: "movie" })}
-      pluralEntity={intl.formatMessage({ id: "movies" })}
-      destroyMutation={useMoviesDestroy}
-    />
-  );
-
-  const listData = useMoviesList({
-    renderContent,
-    addKeybinds,
-    otherOperations,
-    selectable: true,
-    persistState: PersistanceLevel.ALL,
-    renderEditDialog,
-    renderDeleteDialog,
-    filterHook,
-  });
-
   async function viewRandom(
-    result: FindMoviesQueryResult,
+    result: GQL.FindMoviesQueryResult,
     filter: ListFilterModel
   ) {
     // query for a random image
-    if (result.data && result.data.findMovies) {
+    if (result.data?.findMovies) {
       const { count } = result.data.findMovies;
 
       const index = Math.floor(Math.random() * count);
@@ -107,13 +85,8 @@ export const MovieList: React.FC<IMovieList> = ({ filterHook }) => {
       filterCopy.itemsPerPage = 1;
       filterCopy.currentPage = index + 1;
       const singleResult = await queryFindMovies(filterCopy);
-      if (
-        singleResult &&
-        singleResult.data &&
-        singleResult.data.findMovies &&
-        singleResult.data.findMovies.movies.length === 1
-      ) {
-        const { id } = singleResult!.data!.findMovies!.movies[0];
+      if (singleResult.data.findMovies.movies.length === 1) {
+        const { id } = singleResult.data.findMovies.movies[0];
         // navigate to the movie page
         history.push(`/movies/${id}`);
       }
@@ -130,10 +103,15 @@ export const MovieList: React.FC<IMovieList> = ({ filterHook }) => {
     setIsExportDialogOpen(true);
   }
 
-  function maybeRenderMovieExportDialog(selectedIds: Set<string>) {
-    if (isExportDialogOpen) {
-      return (
-        <>
+  function renderContent(
+    result: GQL.FindMoviesQueryResult,
+    filter: ListFilterModel,
+    selectedIds: Set<string>,
+    onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void
+  ) {
+    function maybeRenderMovieExportDialog() {
+      if (isExportDialogOpen) {
+        return (
           <ExportDialog
             exportInput={{
               movies: {
@@ -141,27 +119,17 @@ export const MovieList: React.FC<IMovieList> = ({ filterHook }) => {
                 all: isExportAll,
               },
             }}
-            onClose={() => {
-              setIsExportDialogOpen(false);
-            }}
+            onClose={() => setIsExportDialogOpen(false)}
           />
-        </>
-      );
+        );
+      }
     }
-  }
 
-  function renderContent(
-    result: FindMoviesQueryResult,
-    filter: ListFilterModel,
-    selectedIds: Set<string>
-  ) {
-    if (!result.data?.findMovies) {
-      return;
-    }
-    if (filter.displayMode === DisplayMode.Grid) {
-      return (
-        <>
-          {maybeRenderMovieExportDialog(selectedIds)}
+    function renderMovies() {
+      if (!result.data?.findMovies) return;
+
+      if (filter.displayMode === DisplayMode.Grid) {
+        return (
           <div className="row justify-content-center">
             {result.data.findMovies.movies.map((p) => (
               <MovieCard
@@ -170,18 +138,58 @@ export const MovieList: React.FC<IMovieList> = ({ filterHook }) => {
                 selecting={selectedIds.size > 0}
                 selected={selectedIds.has(p.id)}
                 onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-                  listData.onSelectChange(p.id, selected, shiftKey)
+                  onSelectChange(p.id, selected, shiftKey)
                 }
               />
             ))}
           </div>
-        </>
-      );
+        );
+      }
+      if (filter.displayMode === DisplayMode.List) {
+        return <h1>TODO</h1>;
+      }
     }
-    if (filter.displayMode === DisplayMode.List) {
-      return <h1>TODO</h1>;
-    }
+    return (
+      <>
+        {maybeRenderMovieExportDialog()}
+        {renderMovies()}
+      </>
+    );
   }
 
-  return listData.template;
+  function renderEditDialog(
+    selectedMovies: GQL.MovieDataFragment[],
+    onClose: (applied: boolean) => void
+  ) {
+    return <EditMoviesDialog selected={selectedMovies} onClose={onClose} />;
+  }
+
+  function renderDeleteDialog(
+    selectedMovies: GQL.SlimMovieDataFragment[],
+    onClose: (confirmed: boolean) => void
+  ) {
+    return (
+      <DeleteEntityDialog
+        selected={selectedMovies}
+        onClose={onClose}
+        singularEntity={intl.formatMessage({ id: "movie" })}
+        pluralEntity={intl.formatMessage({ id: "movies" })}
+        destroyMutation={useMoviesDestroy}
+      />
+    );
+  }
+
+  return (
+    <MovieItemList
+      selectable
+      filterHook={filterHook}
+      persistState={PersistanceLevel.ALL}
+      alterQuery={alterQuery}
+      otherOperations={otherOperations}
+      addKeybinds={addKeybinds}
+      renderContent={renderContent}
+      renderEditDialog={renderEditDialog}
+      renderDeleteDialog={renderDeleteDialog}
+    />
+  );
 };

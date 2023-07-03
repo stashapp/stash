@@ -2,10 +2,13 @@ import React, { MouseEvent, useMemo } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
-import { Icon, TagLink, HoverPopover, SweatDrops } from "src/components/Shared";
-import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
-import { GridCard } from "../Shared/GridCard";
-import { RatingBanner } from "../Shared/RatingBanner";
+import { Icon } from "src/components/Shared/Icon";
+import { TagLink } from "src/components/Shared/TagLink";
+import { HoverPopover } from "src/components/Shared/HoverPopover";
+import { SweatDrops } from "src/components/Shared/SweatDrops";
+import { PerformerPopoverButton } from "src/components/Shared/PerformerPopoverButton";
+import { GridCard } from "src/components/Shared/GridCard";
+import { RatingBanner } from "src/components/Shared/RatingBanner";
 import {
   faBox,
   faImages,
@@ -27,7 +30,10 @@ export const ImageCard: React.FC<IImageCardProps> = (
   props: IImageCardProps
 ) => {
   const file = useMemo(
-    () => (props.image.files.length > 0 ? props.image.files[0] : undefined),
+    () =>
+      props.image.visual_files.length > 0
+        ? props.image.visual_files[0]
+        : undefined,
     [props.image]
   );
 
@@ -135,6 +141,13 @@ export const ImageCard: React.FC<IImageCardProps> = (
     return height > width;
   }
 
+  const source =
+    props.image.paths.preview != ""
+      ? props.image.paths.preview ?? ""
+      : props.image.paths.thumbnail ?? "";
+  const video = source.includes("preview");
+  const ImagePreview = video ? "video" : "img";
+
   return (
     <GridCard
       className={`image-card zoom-${props.zoomIndex}`}
@@ -144,10 +157,12 @@ export const ImageCard: React.FC<IImageCardProps> = (
       image={
         <>
           <div className={cx("image-card-preview", { portrait: isPortrait() })}>
-            <img
+            <ImagePreview
+              loop={video}
+              autoPlay={video}
               className="image-card-preview-image"
               alt={props.image.title ?? ""}
-              src={props.image.paths.thumbnail ?? ""}
+              src={source}
             />
             {props.onPreview ? (
               <div className="preview-button">

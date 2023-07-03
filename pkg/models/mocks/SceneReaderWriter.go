@@ -235,20 +235,6 @@ func (_m *SceneReaderWriter) Destroy(ctx context.Context, id int) error {
 	return r0
 }
 
-// DestroyCover provides a mock function with given fields: ctx, sceneID
-func (_m *SceneReaderWriter) DestroyCover(ctx context.Context, sceneID int) error {
-	ret := _m.Called(ctx, sceneID)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
-		r0 = rf(ctx, sceneID)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // Duration provides a mock function with given fields: ctx
 func (_m *SceneReaderWriter) Duration(ctx context.Context) (float64, error) {
 	ret := _m.Called(ctx)
@@ -431,13 +417,13 @@ func (_m *SceneReaderWriter) FindByPerformerID(ctx context.Context, performerID 
 	return r0, r1
 }
 
-// FindDuplicates provides a mock function with given fields: ctx, distance
-func (_m *SceneReaderWriter) FindDuplicates(ctx context.Context, distance int) ([][]*models.Scene, error) {
-	ret := _m.Called(ctx, distance)
+// FindDuplicates provides a mock function with given fields: ctx, distance, durationDiff
+func (_m *SceneReaderWriter) FindDuplicates(ctx context.Context, distance int, durationDiff float64) ([][]*models.Scene, error) {
+	ret := _m.Called(ctx, distance, durationDiff)
 
 	var r0 [][]*models.Scene
-	if rf, ok := ret.Get(0).(func(context.Context, int) [][]*models.Scene); ok {
-		r0 = rf(ctx, distance)
+	if rf, ok := ret.Get(0).(func(context.Context, int, float64) [][]*models.Scene); ok {
+		r0 = rf(ctx, distance, durationDiff)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([][]*models.Scene)
@@ -445,8 +431,8 @@ func (_m *SceneReaderWriter) FindDuplicates(ctx context.Context, distance int) (
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, distance)
+	if rf, ok := ret.Get(1).(func(context.Context, int, float64) error); ok {
+		r1 = rf(ctx, distance, durationDiff)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -638,20 +624,41 @@ func (_m *SceneReaderWriter) GetTagIDs(ctx context.Context, relatedID int) ([]in
 	return r0, r1
 }
 
-// SaveActivity provides a mock function with given fields: ctx, id, resumeTime, playDuration
-func (_m *SceneReaderWriter) SaveActivity(ctx context.Context, id int, resumeTime *float64, playDuration *float64) (bool, error) {
-	ret := _m.Called(ctx, id, resumeTime, playDuration)
+// HasCover provides a mock function with given fields: ctx, sceneID
+func (_m *SceneReaderWriter) HasCover(ctx context.Context, sceneID int) (bool, error) {
+	ret := _m.Called(ctx, sceneID)
 
 	var r0 bool
-	if rf, ok := ret.Get(0).(func(context.Context, int, *float64, *float64) bool); ok {
-		r0 = rf(ctx, id, resumeTime, playDuration)
+	if rf, ok := ret.Get(0).(func(context.Context, int) bool); ok {
+		r0 = rf(ctx, sceneID)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int, *float64, *float64) error); ok {
-		r1 = rf(ctx, id, resumeTime, playDuration)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, sceneID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// IncrementOCounter provides a mock function with given fields: ctx, id
+func (_m *SceneReaderWriter) IncrementOCounter(ctx context.Context, id int) (int, error) {
+	ret := _m.Called(ctx, id)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
+		r0 = rf(ctx, id)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -680,20 +687,20 @@ func (_m *SceneReaderWriter) IncrementWatchCount(ctx context.Context, id int) (i
 	return r0, r1
 }
 
-// IncrementOCounter provides a mock function with given fields: ctx, id
-func (_m *SceneReaderWriter) IncrementOCounter(ctx context.Context, id int) (int, error) {
-	ret := _m.Called(ctx, id)
+// OCountByPerformerID provides a mock function with given fields: ctx, performerID
+func (_m *SceneReaderWriter) OCountByPerformerID(ctx context.Context, performerID int) (int, error) {
+	ret := _m.Called(ctx, performerID)
 
 	var r0 int
 	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
-		r0 = rf(ctx, id)
+		r0 = rf(ctx, performerID)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, id)
+		r1 = rf(ctx, performerID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -724,6 +731,27 @@ func (_m *SceneReaderWriter) Query(ctx context.Context, options models.SceneQuer
 	return r0, r1
 }
 
+// QueryCount provides a mock function with given fields: ctx, sceneFilter, findFilter
+func (_m *SceneReaderWriter) QueryCount(ctx context.Context, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) (int, error) {
+	ret := _m.Called(ctx, sceneFilter, findFilter)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, *models.SceneFilterType, *models.FindFilterType) int); ok {
+		r0 = rf(ctx, sceneFilter, findFilter)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *models.SceneFilterType, *models.FindFilterType) error); ok {
+		r1 = rf(ctx, sceneFilter, findFilter)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ResetOCounter provides a mock function with given fields: ctx, id
 func (_m *SceneReaderWriter) ResetOCounter(ctx context.Context, id int) (int, error) {
 	ret := _m.Called(ctx, id)
@@ -738,6 +766,27 @@ func (_m *SceneReaderWriter) ResetOCounter(ctx context.Context, id int) (int, er
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
 		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// SaveActivity provides a mock function with given fields: ctx, id, resumeTime, playDuration
+func (_m *SceneReaderWriter) SaveActivity(ctx context.Context, id int, resumeTime *float64, playDuration *float64) (bool, error) {
+	ret := _m.Called(ctx, id, resumeTime, playDuration)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(context.Context, int, *float64, *float64) bool); ok {
+		r0 = rf(ctx, id, resumeTime, playDuration)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int, *float64, *float64) error); ok {
+		r1 = rf(ctx, id, resumeTime, playDuration)
 	} else {
 		r1 = ret.Error(1)
 	}

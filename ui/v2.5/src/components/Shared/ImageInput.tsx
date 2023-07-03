@@ -8,8 +8,8 @@ import {
   Row,
 } from "react-bootstrap";
 import { useIntl } from "react-intl";
-import Modal from "./Modal";
-import Icon from "./Icon";
+import { ModalComponent } from "./Modal";
+import { Icon } from "./Icon";
 import { faFile, faLink } from "@fortawesome/free-solid-svg-icons";
 
 interface IImageInput {
@@ -53,6 +53,11 @@ export const ImageInput: React.FC<IImageInput> = ({
     );
   }
 
+  function showDialog() {
+    setURL("");
+    setIsShowDialog(true);
+  }
+
   function onConfirmURL() {
     if (!onImageURL) {
       return;
@@ -64,7 +69,7 @@ export const ImageInput: React.FC<IImageInput> = ({
 
   function renderDialog() {
     return (
-      <Modal
+      <ModalComponent
         show={!!isShowDialog}
         onHide={() => setIsShowDialog(false)}
         header={intl.formatMessage({ id: "dialogs.set_image_url_title" })}
@@ -90,7 +95,7 @@ export const ImageInput: React.FC<IImageInput> = ({
             </Col>
           </Form.Group>
         </div>
-      </Modal>
+      </ModalComponent>
     );
   }
 
@@ -112,7 +117,7 @@ export const ImageInput: React.FC<IImageInput> = ({
             </Form.Label>
           </div>
           <div>
-            <Button className="minimal" onClick={() => setIsShowDialog(true)}>
+            <Button className="minimal" onClick={showDialog}>
               <Icon icon={faLink} className="fa-fw" />
               <span>{intl.formatMessage({ id: "actions.from_url" })}</span>
             </Button>

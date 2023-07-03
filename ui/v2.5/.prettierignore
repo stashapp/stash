@@ -1,0 +1,18 @@
+*.md
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# locales
+src/locales/**/*.json
+
+# testing
+/coverage
+
+# production
+/build
+
+# generated
+src/core/generated-graphql.tsx

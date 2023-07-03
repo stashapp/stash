@@ -6,26 +6,28 @@ import (
 )
 
 type Performer struct {
-	ID             int        `json:"id"`
-	Name           string     `json:"name"`
-	Disambiguation string     `json:"disambiguation"`
-	Gender         GenderEnum `json:"gender"`
-	URL            string     `json:"url"`
-	Twitter        string     `json:"twitter"`
-	Instagram      string     `json:"instagram"`
-	Birthdate      *Date      `json:"birthdate"`
-	Ethnicity      string     `json:"ethnicity"`
-	Country        string     `json:"country"`
-	EyeColor       string     `json:"eye_color"`
-	Height         *int       `json:"height"`
-	Measurements   string     `json:"measurements"`
-	FakeTits       string     `json:"fake_tits"`
-	CareerLength   string     `json:"career_length"`
-	Tattoos        string     `json:"tattoos"`
-	Piercings      string     `json:"piercings"`
-	Favorite       bool       `json:"favorite"`
-	CreatedAt      time.Time  `json:"created_at"`
-	UpdatedAt      time.Time  `json:"updated_at"`
+	ID             int             `json:"id"`
+	Name           string          `json:"name"`
+	Disambiguation string          `json:"disambiguation"`
+	Gender         *GenderEnum     `json:"gender"`
+	URL            string          `json:"url"`
+	Twitter        string          `json:"twitter"`
+	Instagram      string          `json:"instagram"`
+	Birthdate      *Date           `json:"birthdate"`
+	Ethnicity      string          `json:"ethnicity"`
+	Country        string          `json:"country"`
+	EyeColor       string          `json:"eye_color"`
+	Height         *int            `json:"height"`
+	Measurements   string          `json:"measurements"`
+	FakeTits       string          `json:"fake_tits"`
+	PenisLength    *float64        `json:"penis_length"`
+	Circumcised    *CircumisedEnum `json:"circumcised"`
+	CareerLength   string          `json:"career_length"`
+	Tattoos        string          `json:"tattoos"`
+	Piercings      string          `json:"piercings"`
+	Favorite       bool            `json:"favorite"`
+	CreatedAt      time.Time       `json:"created_at"`
+	UpdatedAt      time.Time       `json:"updated_at"`
 	// Rating expressed in 1-100 scale
 	Rating        *int   `json:"rating"`
 	Details       string `json:"details"`
@@ -76,7 +78,6 @@ func (s *Performer) LoadRelationships(ctx context.Context, l PerformerReader) er
 // PerformerPartial represents part of a Performer object. It is used to update
 // the database entry.
 type PerformerPartial struct {
-	ID             int
 	Name           OptionalString
 	Disambiguation OptionalString
 	Gender         OptionalString
@@ -90,6 +91,8 @@ type PerformerPartial struct {
 	Height         OptionalInt
 	Measurements   OptionalString
 	FakeTits       OptionalString
+	PenisLength    OptionalFloat64
+	Circumcised    OptionalString
 	CareerLength   OptionalString
 	Tattoos        OptionalString
 	Piercings      OptionalString

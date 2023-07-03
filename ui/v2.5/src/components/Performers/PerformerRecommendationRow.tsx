@@ -1,6 +1,7 @@
-import React, { FunctionComponent } from "react";
+import React from "react";
+import { Link } from "react-router-dom";
 import { useFindPerformers } from "src/core/StashService";
-import Slider from "react-slick";
+import Slider from "@ant-design/react-slick";
 import { PerformerCard } from "./PerformerCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { getSlickSliderSettings } from "src/core/recommendations";
@@ -13,9 +14,7 @@ interface IProps {
   header: string;
 }
 
-export const PerformerRecommendationRow: FunctionComponent<IProps> = (
-  props: IProps
-) => {
+export const PerformerRecommendationRow: React.FC<IProps> = (props) => {
   const result = useFindPerformers(props.filter);
   const cardCount = result.data?.findPerformers.count;
 
@@ -28,9 +27,9 @@ export const PerformerRecommendationRow: FunctionComponent<IProps> = (
       className="performer-recommendations"
       header={props.header}
       link={
-        <a href={`/performers?${props.filter.makeQueryParameters()}`}>
+        <Link to={`/performers?${props.filter.makeQueryParameters()}`}>
           <FormattedMessage id="view_all" />
-        </a>
+        </Link>
       }
     >
       <Slider

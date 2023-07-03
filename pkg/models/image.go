@@ -18,6 +18,10 @@ type ImageFilterType struct {
 	Rating *IntCriterionInput `json:"rating"`
 	// Filter by rating expressed as 1-100
 	Rating100 *IntCriterionInput `json:"rating100"`
+	// Filter by date
+	Date *DateCriterionInput `json:"date"`
+	// Filter by url
+	URL *StringCriterionInput `json:"url"`
 	// Filter by organized
 	Organized *bool `json:"organized"`
 	// Filter by o-counter
@@ -104,6 +108,7 @@ type ImageReader interface {
 	FindByChecksum(ctx context.Context, checksum string) ([]*Image, error)
 	FindByGalleryID(ctx context.Context, galleryID int) ([]*Image, error)
 	CountByGalleryID(ctx context.Context, galleryID int) (int, error)
+	OCountByPerformerID(ctx context.Context, performerID int) (int, error)
 	Count(ctx context.Context) (int, error)
 	Size(ctx context.Context) (float64, error)
 	All(ctx context.Context) ([]*Image, error)

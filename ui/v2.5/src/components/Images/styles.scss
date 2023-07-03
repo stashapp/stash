@@ -17,6 +17,10 @@
   &.card {
     overflow: hidden;
     padding: 0;
+
+    @media (max-width: 576px) {
+      width: 100%;
+    }
   }
 
   .rating-banner {

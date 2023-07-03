@@ -235,6 +235,13 @@ func (log *Logger) Tracef(format string, args ...interface{}) {
 	log.addLogItem(l)
 }
 
+func (log *Logger) TraceFunc(fn func() (string, []interface{})) {
+	if log.logger.Level >= logrus.TraceLevel {
+		msg, args := fn()
+		log.Tracef(msg, args...)
+	}
+}
+
 func (log *Logger) Debug(args ...interface{}) {
 	log.logger.Debug(args...)
 	l := &LogItem{
@@ -251,6 +258,17 @@ func (log *Logger) Debugf(format string, args ...interface{}) {
 		Message: fmt.Sprintf(format, args...),
 	}
 	log.addLogItem(l)
+}
+
+func (log *Logger) logFunc(level logrus.Level, logFn func(format string, args ...interface{}), fn func() (string, []interface{})) {
+	if log.logger.Level >= level {
+		msg, args := fn()
+		logFn(msg, args...)
+	}
+}
+
+func (log *Logger) DebugFunc(fn func() (string, []interface{})) {
+	log.logFunc(logrus.DebugLevel, log.logger.Debugf, fn)
 }
 
 func (log *Logger) Info(args ...interface{}) {
@@ -271,6 +289,10 @@ func (log *Logger) Infof(format string, args ...interface{}) {
 	log.addLogItem(l)
 }
 
+func (log *Logger) InfoFunc(fn func() (string, []interface{})) {
+	log.logFunc(logrus.InfoLevel, log.logger.Infof, fn)
+}
+
 func (log *Logger) Warn(args ...interface{}) {
 	log.logger.Warn(args...)
 	l := &LogItem{
@@ -289,6 +311,10 @@ func (log *Logger) Warnf(format string, args ...interface{}) {
 	log.addLogItem(l)
 }
 
+func (log *Logger) WarnFunc(fn func() (string, []interface{})) {
+	log.logFunc(logrus.WarnLevel, log.logger.Warnf, fn)
+}
+
 func (log *Logger) Error(args ...interface{}) {
 	log.logger.Error(args...)
 	l := &LogItem{
@@ -305,6 +331,10 @@ func (log *Logger) Errorf(format string, args ...interface{}) {
 		Message: fmt.Sprintf(format, args...),
 	}
 	log.addLogItem(l)
+}
+
+func (log *Logger) ErrorFunc(fn func() (string, []interface{})) {
+	log.logFunc(logrus.ErrorLevel, log.logger.Errorf, fn)
 }
 
 func (log *Logger) Fatal(args ...interface{}) {

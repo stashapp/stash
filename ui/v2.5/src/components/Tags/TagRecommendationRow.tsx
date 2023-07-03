@@ -1,6 +1,7 @@
-import React, { FunctionComponent } from "react";
+import React from "react";
+import { Link } from "react-router-dom";
 import { useFindTags } from "src/core/StashService";
-import Slider from "react-slick";
+import Slider from "@ant-design/react-slick";
 import { TagCard } from "./TagCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { getSlickSliderSettings } from "src/core/recommendations";
@@ -13,9 +14,7 @@ interface IProps {
   header: string;
 }
 
-export const TagRecommendationRow: FunctionComponent<IProps> = (
-  props: IProps
-) => {
+export const TagRecommendationRow: React.FC<IProps> = (props) => {
   const result = useFindTags(props.filter);
   const cardCount = result.data?.findTags.count;
 
@@ -28,9 +27,9 @@ export const TagRecommendationRow: FunctionComponent<IProps> = (
       className="tag-recommendations"
       header={props.header}
       link={
-        <a href={`/tags?${props.filter.makeQueryParameters()}`}>
+        <Link to={`/tags?${props.filter.makeQueryParameters()}`}>
           <FormattedMessage id="view_all" />
-        </a>
+        </Link>
       }
     >
       <Slider

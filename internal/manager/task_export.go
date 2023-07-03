@@ -29,7 +29,6 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type ExportTask struct {
@@ -765,6 +764,7 @@ func exportGallery(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *mode
 	studioReader := repo.Studio
 	performerReader := repo.Performer
 	tagReader := repo.Tag
+	galleryChapterReader := repo.GalleryChapter
 
 	for g := range jobChan {
 		if err := g.LoadFiles(ctx, repo.Gallery); err != nil {
@@ -818,6 +818,12 @@ func exportGallery(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *mode
 		tags, err := tagReader.FindByGalleryID(ctx, g.ID)
 		if err != nil {
 			logger.Errorf("[galleries] <%s> error getting gallery tag names: %s", galleryHash, err.Error())
+			continue
+		}
+
+		newGalleryJSON.Chapters, err = gallery.GetGalleryChaptersJSON(ctx, galleryChapterReader, g)
+		if err != nil {
+			logger.Errorf("[galleries] <%s> error getting gallery chapters JSON: %s", galleryHash, err.Error())
 			continue
 		}
 
@@ -1100,8 +1106,8 @@ func (t *ExportTask) exportMovie(ctx context.Context, wg *sync.WaitGroup, jobCha
 		}
 
 		if t.includeDependencies {
-			if m.StudioID.Valid {
-				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, int(m.StudioID.Int64))
+			if m.StudioID != nil {
+				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, *m.StudioID)
 			}
 		}
 
@@ -1133,7 +1139,7 @@ func (t *ExportTask) ExportScrapedItems(ctx context.Context, repo Repository) {
 		if scrapedItem.StudioID.Valid {
 			studio, _ := sqb.Find(ctx, int(scrapedItem.StudioID.Int64))
 			if studio != nil {
-				studioName = studio.Name.String
+				studioName = studio.Name
 			}
 		}
 
@@ -1148,8 +1154,8 @@ func (t *ExportTask) ExportScrapedItems(ctx context.Context, repo Repository) {
 		if scrapedItem.URL.Valid {
 			newScrapedItemJSON.URL = scrapedItem.URL.String
 		}
-		if scrapedItem.Date.Valid {
-			newScrapedItemJSON.Date = utils.GetYMDFromDatabaseDate(scrapedItem.Date.String)
+		if scrapedItem.Date != nil {
+			newScrapedItemJSON.Date = scrapedItem.Date.String()
 		}
 		if scrapedItem.Rating.Valid {
 			newScrapedItemJSON.Rating = scrapedItem.Rating.String
@@ -1177,7 +1183,7 @@ func (t *ExportTask) ExportScrapedItems(ctx context.Context, repo Repository) {
 		}
 
 		newScrapedItemJSON.Studio = studioName
-		updatedAt := json.JSONTime{Time: scrapedItem.UpdatedAt.Timestamp} // TODO keeping ruby format
+		updatedAt := json.JSONTime{Time: scrapedItem.UpdatedAt} // TODO keeping ruby format
 		newScrapedItemJSON.UpdatedAt = updatedAt
 
 		scraped = append(scraped, newScrapedItemJSON)
