@@ -1049,7 +1049,8 @@ func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models
 				INNER JOIN movies_scenes AS movies_scenes2 ON movies_scenes.movie_id = movies_scenes2.movie_id
 				INNER JOIN performers_scenes AS performers_scenes2 ON movies_scenes2.scene_id = performers_scenes2.scene_id`
 
-			if len(performers.Value) > 0 {
+			switch {
+			case len(performers.Value) > 0:
 				// at least one performer value
 				performerValuesClause := strings.Join(performers.Value, "),(")
 
@@ -1072,7 +1073,7 @@ func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models
 
 				}
 
-			} else if performers.Modifier == models.CriterionModifierIsNull {
+			case performers.Modifier == models.CriterionModifierIsNull:
 				// no performers to query. returns scenes etc where there is 1 credited performer.
 				performerTemplStr += `
 					GROUP BY {joinTable}.{key}, {joinTable}2.performer_id
@@ -1081,7 +1082,8 @@ func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models
 				performerMovieStr += `
 					GROUP BY movies_scenes2.movie_id, performers_scenes2.performer_id
 					HAVING(COUNT(DISTINCT performers_scenes.performer_id) IS 1)`
-			} else if performers.Modifier == models.CriterionModifierNotNull {
+
+			case performers.Modifier == models.CriterionModifierNotNull:
 				// no performers to query. returns scenes etc where there is more than 1 credited performer.
 				performerTemplStr += `
 					GROUP BY {joinTable}.{key}, {joinTable}2.performer_id
@@ -1109,17 +1111,18 @@ func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models
 		selects = append(selects, "SELECT performer_id, NULL AS scene_count, NULL AS image_count, NULL AS gallery_count, COUNT(DISTINCT movie_id) AS movie_count")
 
 		var intersects []string
-		if performers != nil && studios != nil {
+		switch {
+		case performers != nil && studios != nil:
 			for i := range performerUnions {
 				intersects = append(intersects, fmt.Sprintf("%s FROM (%s) GROUP BY performer_id", selects[i], strings.Join([]string{performerUnions[i], studioUnions[i]}, " INTERSECT ")))
 			}
 
-		} else if performers != nil {
+		case performers != nil:
 			for i := range performerUnions {
 				intersects = append(intersects, fmt.Sprintf("%s FROM (%s) GROUP BY performer_id", selects[i], performerUnions[i]))
 			}
 
-		} else if studios != nil {
+		case studios != nil:
 			for i := range studioUnions {
 				intersects = append(intersects, fmt.Sprintf("%s FROM (%s) GROUP BY performer_id", selects[i], studioUnions[i]))
 			}
