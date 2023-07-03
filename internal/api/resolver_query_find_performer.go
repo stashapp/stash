@@ -29,9 +29,9 @@ func (r *queryResolver) FindPerformers(ctx context.Context, performerFilter *mod
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var performers []*models.Performer
 		var filteredCounts []*models.FilteredCounts
+		var result *models.PerformerQueryResult
 
 		fields := graphql.CollectAllFields(ctx)
-		result := &models.PerformerQueryResult{}
 
 		result, err = r.repository.Performer.QueryWithOptions(ctx, models.PerformerQueryOptions{
 			QueryOptions: models.QueryOptions{
