@@ -1012,8 +1012,15 @@ func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models
 
 				f.addWith("studio(root_id, item_id) AS (" + studioValuesClause + ")")
 
-				studioTemplStr += " INNER JOIN studio ON {primaryTable}.studio_id = studio.item_id"
-				studioMovieStr += " INNER JOIN studio ON movies.studio_id = studio.item_id"
+				var clause string
+				if studios.Modifier == models.CriterionModifierExcludes {
+					clause = "!="
+				} else {
+					clause = "="
+				}
+
+				studioTemplStr += " INNER JOIN studio ON {primaryTable}.studio_id " + clause + " studio.item_id"
+				studioMovieStr += " INNER JOIN studio ON movies.studio_id " + clause + " studio.item_id"
 
 			} else {
 				// no studios to query
