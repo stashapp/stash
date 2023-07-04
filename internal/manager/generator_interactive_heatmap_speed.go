@@ -393,11 +393,11 @@ func convertRange(value int, fromLow int, fromHigh int, toLow int, toHigh int) i
 	return ((value-fromLow)*(toHigh-toLow))/(fromHigh-fromLow) + toLow
 }
 
-func ConvertFunscriptToCSV(funscriptPath string, csvPath string) error {
+func ConvertFunscriptToCSV(funscriptPath string) ([]byte, error) {
 	funscript, err := LoadFunscriptData(funscriptPath)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var buffer bytes.Buffer
@@ -414,5 +414,15 @@ func ConvertFunscriptToCSV(funscriptPath string, csvPath string) error {
 
 		buffer.WriteString(fmt.Sprintf("%d,%d\r\n", action.At, pos))
 	}
-	return fsutil.WriteFile(csvPath, buffer.Bytes())
+	return buffer.Bytes(), nil
+}
+
+func ConvertFunscriptToCSVFile(funscriptPath string, csvPath string) error {
+	csvBytes, err := ConvertFunscriptToCSV(funscriptPath)
+
+	if err != nil {
+		return err
+	}
+
+	return fsutil.WriteFile(csvPath, csvBytes)
 }
