@@ -18,13 +18,8 @@ func customUsage() {
 	flag.PrintDefaults()
 }
 
-func printPhash(inputfile string, quiet *bool) error {
-	ffmpegPath, ffprobePath := ffmpeg.GetPaths(nil)
-	FFMPEG := ffmpeg.NewEncoder(ffmpegPath)
-	FFMPEG.InitHWSupport(context.TODO())
-
-	FFPROBE := ffmpeg.FFProbe(ffprobePath)
-	ffvideoFile, err := FFPROBE.NewVideoFile(inputfile)
+func printPhash(ff *ffmpeg.FFMpeg, ffp ffmpeg.FFProbe, inputfile string, quiet *bool) error {
+	ffvideoFile, err := ffp.NewVideoFile(inputfile)
 	if err != nil {
 		return err
 	}
@@ -38,7 +33,7 @@ func printPhash(inputfile string, quiet *bool) error {
 		Duration: ffvideoFile.FileDuration,
 	}
 
-	phash, err := videophash.Generate(FFMPEG, vf)
+	phash, err := videophash.Generate(ff, vf)
 	if err != nil {
 		return err
 	}
@@ -75,8 +70,13 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Example: parallel %v ::: *.mp4\n", os.Args[0])
 	}
 
+	ffmpegPath, ffprobePath := ffmpeg.GetPaths(nil)
+	FFMPEG := ffmpeg.NewEncoder(ffmpegPath)
+	FFMPEG.InitHWSupport(context.TODO())
+	FFPROBE := ffmpeg.FFProbe(ffprobePath)
+
 	for _, item := range args {
-		if err := printPhash(item, quiet); err != nil {
+		if err := printPhash(FFMPEG, FFPROBE, item, quiet); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 		}
 	}
