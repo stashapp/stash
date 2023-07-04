@@ -146,7 +146,7 @@ export const PerformerList: React.FC<IPerformerList> = ({
       if (filter.displayMode === DisplayMode.Grid) {
         return (
           <div className="row justify-content-center">
-            {result.data.findPerformers.performers.map((p) => (
+            {result.data.findPerformers.performers.map((p, i) => (
               <PerformerCard
                 key={p.id}
                 performer={p}
@@ -158,9 +158,7 @@ export const PerformerList: React.FC<IPerformerList> = ({
                 extraCriteria={studioFilter}
                 extraPerformerFilter={performerFilter}
                 useFilteredCounts={filter.useFilteredCounts}
-                filteredCounts={result.data?.findPerformers.filteredCounts.find(
-                  (c) => c.id === p.id
-                )}
+                filteredCounts={result.data?.findPerformers.filteredCounts[i]}
               />
             ))}
           </div>

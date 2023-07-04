@@ -169,11 +169,11 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
           </tr>
         </thead>
         <tbody>
-          {props.performers.map((p) => (
+          {props.performers.map((p, i) => (
             <PerformerRow
               key={p.id}
               performer={p}
-              filteredCounts={props.filteredCounts?.find((c) => c.id === p.id)}
+              filteredCounts={props.filteredCounts?.[i]}
             />
           ))}
         </tbody>
