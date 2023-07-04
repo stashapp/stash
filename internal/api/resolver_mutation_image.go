@@ -87,7 +87,6 @@ func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*ImageUpdat
 }
 
 func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInput, translator changesetTranslator) (*models.Image, error) {
-	// Populate image from the input
 	imageID, err := strconv.Atoi(input.ID)
 	if err != nil {
 		return nil, err
@@ -99,10 +98,12 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 	}
 
 	if i == nil {
-		return nil, fmt.Errorf("image not found %d", imageID)
+		return nil, fmt.Errorf("image with id %d not found", imageID)
 	}
 
+	// Populate image from the input
 	updatedImage := models.NewImagePartial()
+
 	updatedImage.Title = translator.optionalString(input.Title, "title")
 	updatedImage.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
 	updatedImage.URL = translator.optionalString(input.URL, "url")
@@ -126,7 +127,7 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 			return nil, err
 		}
 
-		// ensure that new primary file is associated with scene
+		// ensure that new primary file is associated with image
 		var f file.File
 		for _, ff := range i.Files.List() {
 			if ff.Base().ID == converted {
@@ -195,12 +196,12 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 		return nil, err
 	}
 
-	// Populate image from the input
-	updatedImage := models.NewImagePartial()
-
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
+
+	// Populate image from the input
+	updatedImage := models.NewImagePartial()
 
 	updatedImage.Title = translator.optionalString(input.Title, "title")
 	updatedImage.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
@@ -233,7 +234,7 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 		}
 	}
 
-	// Start the transaction and save the image marker
+	// Start the transaction and save the images
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		var updatedGalleryIDs []int
 		qb := r.repository.Image
@@ -245,7 +246,7 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 			}
 
 			if i == nil {
-				return fmt.Errorf("image not found %d", imageID)
+				return fmt.Errorf("image with id %d not found", imageID)
 			}
 
 			if updatedImage.GalleryIDs != nil {

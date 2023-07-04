@@ -61,7 +61,7 @@ func GetStudioName(ctx context.Context, reader studio.Finder, image *models.Imag
 		}
 
 		if studio != nil {
-			return studio.Name.String, nil
+			return studio.Name, nil
 		}
 	}
 
