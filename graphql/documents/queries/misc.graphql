@@ -50,10 +50,10 @@ query Stats {
     studio_count,
     movie_count,
     tag_count,
-    o_counter,
-    play_duration,
-    play_count,
-    unique_play_count
+    total_o_count,
+    total_play_duration,
+    total_play_count,
+    scenes_played
   }
 }
 

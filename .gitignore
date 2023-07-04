@@ -63,4 +63,5 @@ node_modules
 /stash
 dist
 .DS_Store
-/.local
+/.local*
+/.stash*

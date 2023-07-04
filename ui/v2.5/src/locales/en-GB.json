@@ -1213,7 +1213,10 @@
     "image_size": "Images size",
     "scenes_duration": "Scenes duration",
     "scenes_size": "Scenes size",
-    "unique_play_count": "Unique Play Count"
+    "scenes_played": "Scenes Played",
+    "total_play_duration": "Total Play Duration",
+    "total_play_count": "Total Play Count",
+    "total_o_count": "Total O-Count"
   },
   "status": "Status: {statusText}",
   "studio": "Studio",
