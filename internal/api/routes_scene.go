@@ -383,8 +383,10 @@ func (rs sceneRoutes) InteractiveCSV(w http.ResponseWriter, r *http.Request) {
 	csvBytes, err := manager.ConvertFunscriptToCSV(filepath)
 
 	if err != nil {
-		utils.ServeStaticContent(w, r, csvBytes)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
+	utils.ServeStaticContent(w, r, csvBytes)
 }
 
 func (rs sceneRoutes) InteractiveHeatmap(w http.ResponseWriter, r *http.Request) {
