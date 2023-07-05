@@ -57,9 +57,9 @@ endif
 
 .PHONY: build-flags
 build-flags: pre-build
-	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/internal/api.buildstamp=$(BUILD_DATE)')
-	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/internal/api.githash=$(GITHASH)')
-	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/internal/api.version=$(STASH_VERSION)')
+	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/internal/manager/config.buildstamp=$(BUILD_DATE)')
+	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/internal/manager/config.githash=$(GITHASH)')
+	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/internal/manager/config.version=$(STASH_VERSION)')
 	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/internal/manager/config.officialBuild=$(OFFICIAL_BUILD)')
 ifndef GO_BUILD_TAGS
 	$(eval GO_BUILD_TAGS := $(GO_BUILD_TAGS_DEFAULT))
