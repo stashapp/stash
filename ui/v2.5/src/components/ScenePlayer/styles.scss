@@ -9,7 +9,6 @@ $sceneTabWidth: 450px;
 .VideoPlayer {
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - #{$menuHeight});
   padding-bottom: 0.25rem;
 
   @media (min-width: 1200px) {
@@ -23,7 +22,8 @@ $sceneTabWidth: 450px;
 
 .video-wrapper {
   height: 56.25vw;
-  overflow: hidden;
+  max-height: calc(100vh - #{$menuHeight});
+  display: flex;
   width: 100%;
 
   @media (min-width: 1200px) {
