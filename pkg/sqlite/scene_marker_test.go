@@ -5,16 +5,18 @@ package sqlite_test
 
 import (
 	"context"
+	"strconv"
 	"testing"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMarkerFindBySceneID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		mqb := sqlite.SceneMarkerReaderWriter
+		mqb := db.SceneMarker
 
 		sceneID := sceneIDs[sceneIdxWithMarkers]
 		markers, err := mqb.FindBySceneID(ctx, sceneID)
@@ -25,7 +27,7 @@ func TestMarkerFindBySceneID(t *testing.T) {
 
 		assert.Greater(t, len(markers), 0)
 		for _, marker := range markers {
-			assert.Equal(t, sceneIDs[sceneIdxWithMarkers], int(marker.SceneID.Int64))
+			assert.Equal(t, sceneIDs[sceneIdxWithMarkers], marker.SceneID)
 		}
 
 		markers, err = mqb.FindBySceneID(ctx, 0)
@@ -42,7 +44,7 @@ func TestMarkerFindBySceneID(t *testing.T) {
 
 func TestMarkerCountByTagID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		mqb := sqlite.SceneMarkerReaderWriter
+		mqb := db.SceneMarker
 
 		markerCount, err := mqb.CountByTagID(ctx, tagIDs[tagIdxWithPrimaryMarkers])
 
@@ -50,7 +52,7 @@ func TestMarkerCountByTagID(t *testing.T) {
 			t.Errorf("error calling CountByTagID: %s", err.Error())
 		}
 
-		assert.Equal(t, 3, markerCount)
+		assert.Equal(t, 6, markerCount)
 
 		markerCount, err = mqb.CountByTagID(ctx, tagIDs[tagIdxWithMarkers])
 
@@ -58,7 +60,7 @@ func TestMarkerCountByTagID(t *testing.T) {
 			t.Errorf("error calling CountByTagID: %s", err.Error())
 		}
 
-		assert.Equal(t, 1, markerCount)
+		assert.Equal(t, 2, markerCount)
 
 		markerCount, err = mqb.CountByTagID(ctx, 0)
 
@@ -75,7 +77,7 @@ func TestMarkerCountByTagID(t *testing.T) {
 func TestMarkerQuerySortBySceneUpdated(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		sort := "scenes_updated_at"
-		_, _, err := sqlite.SceneMarkerReaderWriter.Query(ctx, nil, &models.FindFilterType{
+		_, _, err := db.SceneMarker.Query(ctx, nil, &models.FindFilterType{
 			Sort: &sort,
 		})
 
@@ -87,6 +89,40 @@ func TestMarkerQuerySortBySceneUpdated(t *testing.T) {
 	})
 }
 
+func verifyIDs(t *testing.T, modifier models.CriterionModifier, values []int, results []int) {
+	t.Helper()
+	switch modifier {
+	case models.CriterionModifierIsNull:
+		assert.Len(t, results, 0)
+	case models.CriterionModifierNotNull:
+		assert.NotEqual(t, 0, len(results))
+	case models.CriterionModifierIncludes:
+		for _, v := range values {
+			assert.Contains(t, results, v)
+		}
+	case models.CriterionModifierExcludes:
+		for _, v := range values {
+			assert.NotContains(t, results, v)
+		}
+	case models.CriterionModifierEquals:
+		for _, v := range values {
+			assert.Contains(t, results, v)
+		}
+		assert.Len(t, results, len(values))
+	case models.CriterionModifierNotEquals:
+		foundAll := true
+		for _, v := range values {
+			if !intslice.IntInclude(results, v) {
+				foundAll = false
+				break
+			}
+		}
+		if foundAll && len(results) == len(values) {
+			t.Errorf("expected ids not equal to %v - found %v", values, results)
+		}
+	}
+}
+
 func TestMarkerQueryTags(t *testing.T) {
 	type test struct {
 		name         string
@@ -95,17 +131,19 @@ func TestMarkerQueryTags(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		testTags := func(m *models.SceneMarker, markerFilter *models.SceneMarkerFilterType) {
-			tagIDs, err := sqlite.SceneMarkerReaderWriter.GetTagIDs(ctx, m.ID)
+		testTags := func(t *testing.T, m *models.SceneMarker, markerFilter *models.SceneMarkerFilterType) {
+			tagIDs, err := db.SceneMarker.GetTagIDs(ctx, m.ID)
 			if err != nil {
 				t.Errorf("error getting marker tag ids: %v", err)
 			}
-			if markerFilter.Tags.Modifier == models.CriterionModifierIsNull && len(tagIDs) > 0 {
-				t.Errorf("expected marker %d to have no tags - found %d", m.ID, len(tagIDs))
+
+			// HACK - if modifier isn't null/not null, then add the primary tag id
+			if markerFilter.Tags.Modifier != models.CriterionModifierIsNull && markerFilter.Tags.Modifier != models.CriterionModifierNotNull {
+				tagIDs = append(tagIDs, m.PrimaryTagID)
 			}
-			if markerFilter.Tags.Modifier == models.CriterionModifierNotNull && len(tagIDs) == 0 {
-				t.Errorf("expected marker %d to have tags - found 0", m.ID)
-			}
+
+			values, _ := stringslice.StringSliceToIntSlice(markerFilter.Tags.Value)
+			verifyIDs(t, markerFilter.Tags.Modifier, values, tagIDs)
 		}
 
 		cases := []test{
@@ -127,14 +165,79 @@ func TestMarkerQueryTags(t *testing.T) {
 				},
 				nil,
 			},
+			{
+				"includes",
+				&models.SceneMarkerFilterType{
+					Tags: &models.HierarchicalMultiCriterionInput{
+						Modifier: models.CriterionModifierIncludes,
+						Value: []string{
+							strconv.Itoa(tagIDs[tagIdxWithMarkers]),
+						},
+					},
+				},
+				nil,
+			},
+			{
+				"includes all",
+				&models.SceneMarkerFilterType{
+					Tags: &models.HierarchicalMultiCriterionInput{
+						Modifier: models.CriterionModifierIncludesAll,
+						Value: []string{
+							strconv.Itoa(tagIDs[tagIdxWithMarkers]),
+							strconv.Itoa(tagIDs[tagIdx2WithMarkers]),
+						},
+					},
+				},
+				nil,
+			},
+			{
+				"equals",
+				&models.SceneMarkerFilterType{
+					Tags: &models.HierarchicalMultiCriterionInput{
+						Modifier: models.CriterionModifierEquals,
+						Value: []string{
+							strconv.Itoa(tagIDs[tagIdxWithPrimaryMarkers]),
+							strconv.Itoa(tagIDs[tagIdxWithMarkers]),
+							strconv.Itoa(tagIDs[tagIdx2WithMarkers]),
+						},
+					},
+				},
+				nil,
+			},
+			// not equals not supported
+			// {
+			// 	"not equals",
+			// 	&models.SceneMarkerFilterType{
+			// 		Tags: &models.HierarchicalMultiCriterionInput{
+			// 			Modifier: models.CriterionModifierNotEquals,
+			// 			Value: []string{
+			// 				strconv.Itoa(tagIDs[tagIdx2WithScene]),
+			// 				strconv.Itoa(tagIDs[tagIdx3WithScene]),
+			// 			},
+			// 		},
+			// 	},
+			// 	nil,
+			// },
+			{
+				"excludes",
+				&models.SceneMarkerFilterType{
+					Tags: &models.HierarchicalMultiCriterionInput{
+						Modifier: models.CriterionModifierIncludes,
+						Value: []string{
+							strconv.Itoa(tagIDs[tagIdx2WithMarkers]),
+						},
+					},
+				},
+				nil,
+			},
 		}
 
 		for _, tc := range cases {
 			t.Run(tc.name, func(t *testing.T) {
-				markers := queryMarkers(ctx, t, sqlite.SceneMarkerReaderWriter, tc.markerFilter, tc.findFilter)
+				markers := queryMarkers(ctx, t, db.SceneMarker, tc.markerFilter, tc.findFilter)
 				assert.Greater(t, len(markers), 0)
 				for _, m := range markers {
-					testTags(m, tc.markerFilter)
+					testTags(t, m, tc.markerFilter)
 				}
 			})
 		}
@@ -151,8 +254,8 @@ func TestMarkerQuerySceneTags(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		testTags := func(m *models.SceneMarker, markerFilter *models.SceneMarkerFilterType) {
-			s, err := db.Scene.Find(ctx, int(m.SceneID.Int64))
+		testTags := func(t *testing.T, m *models.SceneMarker, markerFilter *models.SceneMarkerFilterType) {
+			s, err := db.Scene.Find(ctx, m.SceneID)
 			if err != nil {
 				t.Errorf("error getting marker tag ids: %v", err)
 				return
@@ -164,12 +267,8 @@ func TestMarkerQuerySceneTags(t *testing.T) {
 			}
 
 			tagIDs := s.TagIDs.List()
-			if markerFilter.SceneTags.Modifier == models.CriterionModifierIsNull && len(tagIDs) > 0 {
-				t.Errorf("expected marker %d to have no scene tags - found %d", m.ID, len(tagIDs))
-			}
-			if markerFilter.SceneTags.Modifier == models.CriterionModifierNotNull && len(tagIDs) == 0 {
-				t.Errorf("expected marker %d to have scene tags - found 0", m.ID)
-			}
+			values, _ := stringslice.StringSliceToIntSlice(markerFilter.SceneTags.Value)
+			verifyIDs(t, markerFilter.SceneTags.Modifier, values, tagIDs)
 		}
 
 		cases := []test{
@@ -191,14 +290,78 @@ func TestMarkerQuerySceneTags(t *testing.T) {
 				},
 				nil,
 			},
+			{
+				"includes",
+				&models.SceneMarkerFilterType{
+					SceneTags: &models.HierarchicalMultiCriterionInput{
+						Modifier: models.CriterionModifierIncludes,
+						Value: []string{
+							strconv.Itoa(tagIDs[tagIdx3WithScene]),
+						},
+					},
+				},
+				nil,
+			},
+			{
+				"includes all",
+				&models.SceneMarkerFilterType{
+					SceneTags: &models.HierarchicalMultiCriterionInput{
+						Modifier: models.CriterionModifierIncludesAll,
+						Value: []string{
+							strconv.Itoa(tagIDs[tagIdx2WithScene]),
+							strconv.Itoa(tagIDs[tagIdx3WithScene]),
+						},
+					},
+				},
+				nil,
+			},
+			{
+				"equals",
+				&models.SceneMarkerFilterType{
+					SceneTags: &models.HierarchicalMultiCriterionInput{
+						Modifier: models.CriterionModifierEquals,
+						Value: []string{
+							strconv.Itoa(tagIDs[tagIdx2WithScene]),
+							strconv.Itoa(tagIDs[tagIdx3WithScene]),
+						},
+					},
+				},
+				nil,
+			},
+			// not equals not supported
+			// {
+			// 	"not equals",
+			// 	&models.SceneMarkerFilterType{
+			// 		SceneTags: &models.HierarchicalMultiCriterionInput{
+			// 			Modifier: models.CriterionModifierNotEquals,
+			// 			Value: []string{
+			// 				strconv.Itoa(tagIDs[tagIdx2WithScene]),
+			// 				strconv.Itoa(tagIDs[tagIdx3WithScene]),
+			// 			},
+			// 		},
+			// 	},
+			// 	nil,
+			// },
+			{
+				"excludes",
+				&models.SceneMarkerFilterType{
+					SceneTags: &models.HierarchicalMultiCriterionInput{
+						Modifier: models.CriterionModifierIncludes,
+						Value: []string{
+							strconv.Itoa(tagIDs[tagIdx2WithScene]),
+						},
+					},
+				},
+				nil,
+			},
 		}
 
 		for _, tc := range cases {
 			t.Run(tc.name, func(t *testing.T) {
-				markers := queryMarkers(ctx, t, sqlite.SceneMarkerReaderWriter, tc.markerFilter, tc.findFilter)
+				markers := queryMarkers(ctx, t, db.SceneMarker, tc.markerFilter, tc.findFilter)
 				assert.Greater(t, len(markers), 0)
 				for _, m := range markers {
-					testTags(m, tc.markerFilter)
+					testTags(t, m, tc.markerFilter)
 				}
 			})
 		}

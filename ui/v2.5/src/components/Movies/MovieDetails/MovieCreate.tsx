@@ -27,7 +27,7 @@ const MovieCreate: React.FC = () => {
 
   async function onSave(input: GQL.MovieCreateInput) {
     const result = await createMovie({
-      variables: input,
+      variables: { input },
     });
     if (result.data?.movieCreate?.id) {
       history.push(`/movies/${result.data.movieCreate.id}`);

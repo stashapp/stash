@@ -143,8 +143,8 @@
   "chapters": "Chapters",
   "circumcised": "Circumcised",
   "circumcised_types": {
-    "UNCUT": "Uncut",
-    "CUT": "Cut"
+    "CUT": "Cut",
+    "UNCUT": "Uncut"
   },
   "component_tagger": {
     "config": {
@@ -595,13 +595,13 @@
       "images": {
         "heading": "Images",
         "options": {
+          "create_image_clips_from_videos": {
+            "description": "When a library has Videos disabled, Video Files (files ending with Video Extension) will be scanned as Image Clip.",
+            "heading": "Scan Video Extensions as Image Clip"
+          },
           "write_image_thumbnails": {
             "description": "Write image thumbnails to disk when generated on-the-fly",
             "heading": "Write image thumbnails"
-          },
-          "create_image_clips_from_videos": {
-            "description": "When a library has Videos disabled, Video Files (files ending with Video Extension) will be scanned as Image Clip",
-            "heading": "Scan Video Extensions as Image Clip"
           }
         }
       },
@@ -730,7 +730,9 @@
     "equals": "is",
     "excludes": "excludes",
     "format_string": "{criterion} {modifierString} {valueString}",
+    "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {all} other {{depth}}})",
     "format_string_excludes": "{criterion} {modifierString} {valueString} (excludes {excludedString})",
+    "format_string_excludes_depth": "{criterion} {modifierString} {valueString} (excludes {excludedString}) (+{depth, plural, =-1 {all} other {{depth}}})",
     "greater_than": "is greater than",
     "includes": "includes",
     "includes_all": "includes all",

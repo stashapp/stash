@@ -513,12 +513,13 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 			performerIDs[performerIdxWithTwoTags],
 			clearPerformerPartial(),
 			models.Performer{
-				ID:       performerIDs[performerIdxWithTwoTags],
-				Name:     getPerformerStringValue(performerIdxWithTwoTags, "Name"),
-				Favorite: true,
-				Aliases:  models.NewRelatedStrings([]string{}),
-				TagIDs:   models.NewRelatedIDs([]int{}),
-				StashIDs: models.NewRelatedStashIDs([]models.StashID{}),
+				ID:            performerIDs[performerIdxWithTwoTags],
+				Name:          getPerformerStringValue(performerIdxWithTwoTags, "Name"),
+				Favorite:      getPerformerBoolValue(performerIdxWithTwoTags),
+				Aliases:       models.NewRelatedStrings([]string{}),
+				TagIDs:        models.NewRelatedIDs([]int{}),
+				StashIDs:      models.NewRelatedStashIDs([]models.StashID{}),
+				IgnoreAutoTag: getIgnoreAutoTag(performerIdxWithTwoTags),
 			},
 			false,
 		},
@@ -1162,44 +1163,6 @@ func TestPerformerUpdatePerformerImage(t *testing.T) {
 		}
 
 		return testUpdateImage(t, ctx, performer.ID, qb.UpdateImage, qb.GetImage)
-	}); err != nil {
-		t.Error(err.Error())
-	}
-}
-
-func TestPerformerDestroyPerformerImage(t *testing.T) {
-	if err := withRollbackTxn(func(ctx context.Context) error {
-		qb := db.Performer
-
-		// create performer to test against
-		const name = "TestPerformerDestroyPerformerImage"
-		performer := models.Performer{
-			Name: name,
-		}
-		err := qb.Create(ctx, &performer)
-		if err != nil {
-			return fmt.Errorf("Error creating performer: %s", err.Error())
-		}
-
-		image := []byte("image")
-		err = qb.UpdateImage(ctx, performer.ID, image)
-		if err != nil {
-			return fmt.Errorf("Error updating performer image: %s", err.Error())
-		}
-
-		err = qb.DestroyImage(ctx, performer.ID)
-		if err != nil {
-			return fmt.Errorf("Error destroying performer image: %s", err.Error())
-		}
-
-		// image should be nil
-		storedImage, err := qb.GetImage(ctx, performer.ID)
-		if err != nil {
-			return fmt.Errorf("Error getting image: %s", err.Error())
-		}
-		assert.Nil(t, storedImage)
-
-		return nil
 	}); err != nil {
 		t.Error(err.Error())
 	}
@@ -1904,10 +1867,10 @@ func TestPerformerQuerySortScenesCount(t *testing.T) {
 
 		assert.True(t, len(performers) > 0)
 
-		// first performer should be performerIdxWithTwoScenes
+		// first performer should be performerIdx1WithScene
 		firstPerformer := performers[0]
 
-		assert.Equal(t, performerIDs[performerIdxWithTwoScenes], firstPerformer.ID)
+		assert.Equal(t, performerIDs[performerIdx1WithScene], firstPerformer.ID)
 
 		// sort in ascending order
 		direction = models.SortDirectionEnumAsc
@@ -1920,7 +1883,7 @@ func TestPerformerQuerySortScenesCount(t *testing.T) {
 		assert.True(t, len(performers) > 0)
 		lastPerformer := performers[len(performers)-1]
 
-		assert.Equal(t, performerIDs[performerIdxWithTwoScenes], lastPerformer.ID)
+		assert.Equal(t, performerIDs[performerIdxWithTag], lastPerformer.ID)
 
 		return nil
 	})
@@ -2060,7 +2023,7 @@ func TestPerformerStore_FindByStashIDStatus(t *testing.T) {
 			name:             "!hasStashID",
 			hasStashID:       false,
 			stashboxEndpoint: getPerformerStringValue(performerIdxWithScene, "endpoint"),
-			include:          []int{performerIdxWithImage},
+			include:          []int{performerIdxWithTwoScenes},
 			exclude:          []int{performerIdx2WithScene},
 			wantErr:          false,
 		},

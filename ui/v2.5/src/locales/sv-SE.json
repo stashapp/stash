@@ -141,6 +141,11 @@
   "captions": "Undertexter",
   "career_length": "Karriärlängd",
   "chapters": "Kapitel",
+  "circumcised": "Omskuren",
+  "circumcised_types": {
+    "CUT": "Omskuren",
+    "UNCUT": "Ej omskuren"
+  },
   "component_tagger": {
     "config": {
       "active_instance": "Aktiv stash-box instans:",
@@ -407,7 +412,7 @@
         "auto_tagging_all_paths": "Autotagga alla sökvägar",
         "auto_tagging_paths": "Autotagga följande sökvägar"
       },
-      "auto_tag_based_on_filenames": "Tagga innehåll automatiskt baserat på filnamn.",
+      "auto_tag_based_on_filenames": "Tagga innehåll automatiskt baserat på sökvägar.",
       "auto_tagging": "Automatisk taggning",
       "backing_up_database": "Säkerhetskopierar databas",
       "backup_and_download": "Säkerhetskopierar databasen och laddar ner den resulterande filen.",
@@ -422,6 +427,7 @@
         "generating_from_paths": "Genererar för scener från följande sökvägar",
         "generating_scenes": "Genererar för {num} {scene}"
       },
+      "generate_clip_previews_during_scan": "Generera förhandsvisningar för bildklipp",
       "generate_desc": "Generera stöttande bilder, sprites, videor, vtt och andra filer.",
       "generate_phashes_during_scan": "Generera phash",
       "generate_phashes_during_scan_tooltip": "För deduplikation och identifiering av scener.",
@@ -589,6 +595,10 @@
       "images": {
         "heading": "Bilder",
         "options": {
+          "create_image_clips_from_videos": {
+            "description": "När ett bibliotek har Videor avstängt kommer Videofiler (filer som slutar med Videofiltillägg) att skannas som Bildklipp.",
+            "heading": "Skanna Videofiltillägg som Bildklipp"
+          },
           "write_image_thumbnails": {
             "description": "Skriv miniatyrer till disk när de genereras",
             "heading": "Skriv bildminiatyrer"
@@ -716,6 +726,7 @@
     "equals": "är",
     "excludes": "exkluderar",
     "format_string": "{criterion} {modifierString} {valueString}",
+    "format_string_excludes": "{criterion} {modifierString} {valueString} (excludes {excludedString})",
     "greater_than": "är större än",
     "includes": "inkluderar",
     "includes_all": "inkluderar allt",
@@ -799,6 +810,7 @@
       "destination": "Omplacera till"
     },
     "scene_gen": {
+      "clip_previews": "Bildklipp Förhandsvisning",
       "covers": "Scenomslag",
       "force_transcodes": "Tvinga omkodning",
       "force_transcodes_tooltip": "Som standard blir videofiler bara omkodade om formatet inte stöds i webbläsaren. Vid aktivering kommer alla videofiler bli omkodande, även om de antas vara stöttade i webbläsaren.",
@@ -1010,6 +1022,9 @@
   "parent_tags": "Överordnade Taggar",
   "part_of": "Del av {parent}",
   "path": "Sökväg",
+  "penis": "Penis",
+  "penis_length": "Penislängd",
+  "penis_length_cm": "Penislängd (cm)",
   "perceptual_similarity": "Perceptuell likhet (phash)",
   "performer": "Stjärna",
   "performerTags": "Stjärntagg",

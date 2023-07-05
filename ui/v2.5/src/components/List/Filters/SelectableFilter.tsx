@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { Icon } from "src/components/Shared/Icon";
 import {
@@ -14,7 +14,7 @@ import {
   ILabeledId,
   ILabeledValueListValue,
 } from "src/models/list-filter/types";
-import { cloneDeep, debounce } from "lodash-es";
+import { cloneDeep } from "lodash-es";
 import {
   Criterion,
   IHierarchicalLabeledIdCriterion,
@@ -22,6 +22,8 @@ import {
 import { defineMessages, MessageDescriptor, useIntl } from "react-intl";
 import { CriterionModifier } from "src/core/generated-graphql";
 import { keyboardClickHandler } from "src/utils/keyboard";
+import { useDebouncedSetState } from "src/hooks/debounce";
+import useFocus from "src/utils/focus";
 
 interface ISelectedItem {
   item: ILabeledId;
@@ -77,40 +79,29 @@ const SelectedItem: React.FC<ISelectedItem> = ({
 
 interface ISelectableFilter {
   query: string;
-  setQuery: (query: string) => void;
-  single: boolean;
-  includeOnly: boolean;
+  onQueryChange: (query: string) => void;
+  modifier: CriterionModifier;
+  inputFocus: ReturnType<typeof useFocus>;
+  canExclude: boolean;
   queryResults: ILabeledId[];
   selected: ILabeledId[];
   excluded: ILabeledId[];
-  onSelect: (value: ILabeledId, include: boolean) => void;
+  onSelect: (value: ILabeledId, exclude: boolean) => void;
   onUnselect: (value: ILabeledId) => void;
 }
 
 const SelectableFilter: React.FC<ISelectableFilter> = ({
   query,
-  setQuery,
-  single,
+  onQueryChange,
+  modifier,
+  inputFocus,
+  canExclude,
   queryResults,
   selected,
   excluded,
-  includeOnly,
   onSelect,
   onUnselect,
 }) => {
-  const [internalQuery, setInternalQuery] = useState(query);
-
-  const onInputChange = useMemo(() => {
-    return debounce((input: string) => {
-      setQuery(input);
-    }, 250);
-  }, [setQuery]);
-
-  function onInternalInputChange(input: string) {
-    setInternalQuery(input);
-    onInputChange(input);
-  }
-
   const objects = useMemo(() => {
     return queryResults.filter(
       (p) =>
@@ -119,8 +110,10 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
     );
   }, [queryResults, selected, excluded]);
 
-  const includingOnly = includeOnly || (selected.length > 0 && single);
-  const excludingOnly = excluded.length > 0 && single;
+  const includingOnly = modifier == CriterionModifier.Equals;
+  const excludingOnly =
+    modifier == CriterionModifier.Excludes ||
+    modifier == CriterionModifier.NotEquals;
 
   const includeIcon = <Icon className="fa-fw include-button" icon={faPlus} />;
   const excludeIcon = <Icon className="fa-fw exclude-icon" icon={faMinus} />;
@@ -128,13 +121,18 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
   return (
     <div className="selectable-filter">
       <ClearableInput
-        value={internalQuery}
-        setValue={(v) => onInternalInputChange(v)}
+        focus={inputFocus}
+        value={query}
+        setValue={(v) => onQueryChange(v)}
       />
       <ul>
         {selected.map((p) => (
           <li key={p.id} className="selected-object">
-            <SelectedItem item={p} onClick={() => onUnselect(p)} />
+            <SelectedItem
+              item={p}
+              excluded={excludingOnly}
+              onClick={() => onUnselect(p)}
+            />
           </li>
         ))}
         {excluded.map((p) => (
@@ -144,12 +142,9 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
         ))}
         {objects.map((p) => (
           <li key={p.id} className="unselected-object">
-            {/* if excluding only, clicking on an item also excludes it */}
             <a
-              onClick={() => onSelect(p, !excludingOnly)}
-              onKeyDown={keyboardClickHandler(() =>
-                onSelect(p, !excludingOnly)
-              )}
+              onClick={() => onSelect(p, false)}
+              onKeyDown={keyboardClickHandler(() => onSelect(p, false))}
               tabIndex={0}
             >
               <div>
@@ -159,11 +154,11 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
               <div>
                 {/* TODO item count */}
                 {/* <span className="object-count">{p.id}</span> */}
-                {!includingOnly && !excludingOnly && (
+                {canExclude && !includingOnly && !excludingOnly && (
                   <Button
                     onClick={(e) => {
                       e.stopPropagation();
-                      onSelect(p, false);
+                      onSelect(p, true);
                     }}
                     onKeyDown={(e) => e.stopPropagation()}
                     className="minimal exclude-button"
@@ -183,36 +178,62 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
 
 interface IObjectsFilter<T extends Criterion<ILabeledValueListValue>> {
   criterion: T;
-  single?: boolean;
   setCriterion: (criterion: T) => void;
-  queryHook: (query: string) => ILabeledId[];
+  useResults: (query: string) => { results: ILabeledId[]; loading: boolean };
 }
 
 export const ObjectsFilter = <
   T extends Criterion<ILabeledValueListValue | IHierarchicalLabelValue>
->(
-  props: IObjectsFilter<T>
-) => {
-  const { criterion, setCriterion, queryHook, single = false } = props;
-
+>({
+  criterion,
+  setCriterion,
+  useResults,
+}: IObjectsFilter<T>) => {
   const [query, setQuery] = useState("");
+  const [displayQuery, setDisplayQuery] = useState(query);
 
-  const queryResults = queryHook(query);
+  const debouncedSetQuery = useDebouncedSetState(setQuery, 250);
+  const onQueryChange = useCallback(
+    (input: string) => {
+      setDisplayQuery(input);
+      debouncedSetQuery(input);
+    },
+    [debouncedSetQuery, setDisplayQuery]
+  );
 
-  function onSelect(value: ILabeledId, newInclude: boolean) {
+  const [queryResults, setQueryResults] = useState<ILabeledId[]>([]);
+  const { results, loading: resultsLoading } = useResults(query);
+  useEffect(() => {
+    if (!resultsLoading) {
+      setQueryResults(results);
+    }
+  }, [results, resultsLoading]);
+
+  const inputFocus = useFocus();
+  const [, setInputFocus] = inputFocus;
+
+  function onSelect(value: ILabeledId, newExclude: boolean) {
     let newCriterion: T = cloneDeep(criterion);
 
-    if (newInclude) {
-      newCriterion.value.items.push(value);
-    } else {
+    if (newExclude) {
       if (newCriterion.value.excluded) {
         newCriterion.value.excluded.push(value);
       } else {
         newCriterion.value.excluded = [value];
       }
+    } else {
+      newCriterion.value.items.push(value);
     }
 
     setCriterion(newCriterion);
+
+    // reset filter query after selecting
+    debouncedSetQuery.cancel();
+    setQuery("");
+    setDisplayQuery("");
+
+    // focus the input box
+    setInputFocus();
   }
 
   const onUnselect = useCallback(
@@ -229,8 +250,11 @@ export const ObjectsFilter = <
       );
 
       setCriterion(newCriterion);
+
+      // focus the input box
+      setInputFocus();
     },
-    [criterion, setCriterion]
+    [criterion, setCriterion, setInputFocus]
   );
 
   const sortedSelected = useMemo(() => {
@@ -246,12 +270,19 @@ export const ObjectsFilter = <
     return ret;
   }, [criterion]);
 
+  // if excludes is not a valid modifierOption then we can use `value.excluded`
+  const canExclude =
+    criterion.criterionOption.modifierOptions.find(
+      (m) => m === CriterionModifier.Excludes
+    ) === undefined;
+
   return (
     <SelectableFilter
-      single={single}
-      includeOnly={criterion.modifier === CriterionModifier.Equals}
-      query={query}
-      setQuery={setQuery}
+      query={displayQuery}
+      onQueryChange={onQueryChange}
+      modifier={criterion.modifier}
+      inputFocus={inputFocus}
+      canExclude={canExclude}
       selected={sortedSelected}
       queryResults={queryResults}
       onSelect={onSelect}
@@ -309,14 +340,18 @@ export const HierarchicalObjectsFilter = <
 
   return (
     <Form>
-      <Form.Group>
-        <Form.Check
-          id={criterionOptionTypeToIncludeID()}
-          checked={criterion.value.depth !== 0}
-          label={intl.formatMessage(criterionOptionTypeToIncludeUIString())}
-          onChange={() => onDepthChanged(criterion.value.depth !== 0 ? 0 : -1)}
-        />
-      </Form.Group>
+      {criterion.modifier !== CriterionModifier.Equals && (
+        <Form.Group>
+          <Form.Check
+            id={criterionOptionTypeToIncludeID()}
+            checked={criterion.value.depth !== 0}
+            label={intl.formatMessage(criterionOptionTypeToIncludeUIString())}
+            onChange={() =>
+              onDepthChanged(criterion.value.depth !== 0 ? 0 : -1)
+            }
+          />
+        </Form.Group>
+      )}
 
       {criterion.value.depth !== 0 && (
         <Form.Group>

@@ -25,6 +25,7 @@ import { useRatingKeybinds } from "src/hooks/keybinds";
 import { ConfigurationContext } from "src/hooks/Config";
 import isEqual from "lodash-es/isEqual";
 import { DateInput } from "src/components/Shared/DateInput";
+import { handleUnsavedChanges } from "src/utils/navigation";
 
 interface IMovieEditPanel {
   movie: Partial<GQL.MovieDataFragment>;
@@ -382,7 +383,8 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
           // Check if it's a redirect after movie creation
           if (action === "PUSH" && location.pathname.startsWith("/movies/"))
             return true;
-          return intl.formatMessage({ id: "dialogs.unsaved_changes" });
+
+          return handleUnsavedChanges(intl, "movies", movie.id)(location);
         }}
       />
 

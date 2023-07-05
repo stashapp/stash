@@ -70,9 +70,9 @@ type TagReader interface {
 }
 
 type TagWriter interface {
-	Create(ctx context.Context, newTag Tag) (*Tag, error)
-	Update(ctx context.Context, updateTag TagPartial) (*Tag, error)
-	UpdateFull(ctx context.Context, updatedTag Tag) (*Tag, error)
+	Create(ctx context.Context, newTag *Tag) error
+	UpdatePartial(ctx context.Context, id int, updateTag TagPartial) (*Tag, error)
+	Update(ctx context.Context, updatedTag *Tag) error
 	Destroy(ctx context.Context, id int) error
 	UpdateImage(ctx context.Context, tagID int, image []byte) error
 	UpdateAliases(ctx context.Context, tagID int, aliases []string) error

@@ -192,7 +192,7 @@ func initialize() error {
 	instance.SceneService = &scene.Service{
 		File:             db.File,
 		Repository:       db.Scene,
-		MarkerRepository: instance.Repository.SceneMarker,
+		MarkerRepository: db.SceneMarker,
 		PluginCache:      instance.PluginCache,
 		Paths:            instance.Paths,
 		Config:           cfg,

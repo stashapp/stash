@@ -4,6 +4,7 @@ import (
 	"errors"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
@@ -19,16 +20,16 @@ func Test_createMissingStudio(t *testing.T) {
 	invalidName := "invalidName"
 	createdID := 1
 
-	repo := mocks.NewTxnRepository()
-	mockStudioReaderWriter := repo.Studio.(*mocks.StudioReaderWriter)
-	mockStudioReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p models.Studio) bool {
-		return p.Name.String == validName
-	})).Return(&models.Studio{
-		ID: createdID,
-	}, nil)
-	mockStudioReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p models.Studio) bool {
-		return p.Name.String == invalidName
-	})).Return(nil, errors.New("error creating performer"))
+	mockStudioReaderWriter := &mocks.StudioReaderWriter{}
+	mockStudioReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p *models.Studio) bool {
+		return p.Name == validName
+	})).Run(func(args mock.Arguments) {
+		s := args.Get(1).(*models.Studio)
+		s.ID = createdID
+	}).Return(nil)
+	mockStudioReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p *models.Studio) bool {
+		return p.Name == invalidName
+	})).Return(errors.New("error creating studio"))
 
 	mockStudioReaderWriter.On("UpdateStashIDs", testCtx, createdID, []models.StashID{
 		{
@@ -131,9 +132,9 @@ func Test_scrapedToStudioInput(t *testing.T) {
 				URL:  &url,
 			},
 			models.Studio{
-				Name:     models.NullString(name),
+				Name:     name,
 				Checksum: md5,
-				URL:      models.NullString(url),
+				URL:      url,
 			},
 		},
 		{
@@ -142,7 +143,7 @@ func Test_scrapedToStudioInput(t *testing.T) {
 				Name: name,
 			},
 			models.Studio{
-				Name:     models.NullString(name),
+				Name:     name,
 				Checksum: md5,
 			},
 		},
@@ -152,7 +153,7 @@ func Test_scrapedToStudioInput(t *testing.T) {
 			got := scrapedToStudioInput(tt.studio)
 
 			// clear created/updated dates
-			got.CreatedAt = models.SQLiteTimestamp{}
+			got.CreatedAt = time.Time{}
 			got.UpdatedAt = got.CreatedAt
 
 			if !reflect.DeepEqual(got, tt.want) {

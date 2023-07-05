@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/job"
@@ -12,6 +13,10 @@ import (
 
 type Queryer interface {
 	Query(ctx context.Context, options models.SceneQueryOptions) (*models.SceneQueryResult, error)
+}
+
+type CountQueryer interface {
+	QueryCount(ctx context.Context, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) (int, error)
 }
 
 type IDFinder interface {
@@ -127,4 +132,28 @@ func FilterFromPaths(paths []string) *models.SceneFilterType {
 	}
 
 	return ret
+}
+
+func CountByStudioID(ctx context.Context, r CountQueryer, id int, depth *int) (int, error) {
+	filter := &models.SceneFilterType{
+		Studios: &models.HierarchicalMultiCriterionInput{
+			Value:    []string{strconv.Itoa(id)},
+			Modifier: models.CriterionModifierIncludes,
+			Depth:    depth,
+		},
+	}
+
+	return r.QueryCount(ctx, filter, nil)
+}
+
+func CountByTagID(ctx context.Context, r CountQueryer, id int, depth *int) (int, error) {
+	filter := &models.SceneFilterType{
+		Tags: &models.HierarchicalMultiCriterionInput{
+			Value:    []string{strconv.Itoa(id)},
+			Modifier: models.CriterionModifierIncludes,
+			Depth:    depth,
+		},
+	}
+
+	return r.QueryCount(ctx, filter, nil)
 }

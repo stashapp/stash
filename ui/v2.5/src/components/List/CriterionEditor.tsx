@@ -77,17 +77,15 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
 
     return (
       <Form.Group className="modifier-options">
-        {modifierOptions.map((c) => (
+        {modifierOptions.map((m) => (
           <Button
             className={cx("modifier-option", {
-              selected: criterion.modifier === c.value,
+              selected: criterion.modifier === m,
             })}
-            key={c.value}
-            onClick={() =>
-              onChangedModifierSelect(c.value as CriterionModifier)
-            }
+            key={m}
+            onClick={() => onChangedModifierSelect(m)}
           >
-            {c.label ? intl.formatMessage({ id: c.label }) : ""}
+            {Criterion.getModifierLabel(intl, m)}
           </Button>
         ))}
       </Form.Group>
