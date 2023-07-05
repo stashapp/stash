@@ -21,9 +21,9 @@ $sceneTabWidth: 450px;
 }
 
 .video-wrapper {
+  display: flex;
   height: 56.25vw;
   max-height: calc(100vh - #{$menuHeight});
-  display: flex;
   width: 100%;
 
   @media (min-width: 1200px) {
