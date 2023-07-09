@@ -188,27 +188,6 @@ func (qb *SceneODateStore) FindBySceneID(ctx context.Context, sceneID int) ([]*m
 	return qb.querysceneODates(ctx, query, args)
 }
 
-func sceneODatePerformersCriterionHandler(qb *SceneODateStore, performers *models.MultiCriterionInput) criterionHandlerFunc {
-	h := joinedMultiCriterionHandlerBuilder{
-		primaryTable: sceneTable,
-		joinTable:    performersScenesTable,
-		joinAs:       "performers_join",
-		primaryFK:    sceneIDColumn,
-		foreignFK:    performerIDColumn,
-
-		addJoinTable: func(f *filterBuilder) {
-			f.addLeftJoin(performersScenesTable, "performers_join", "performers_join.scene_id = scenes_odates.scene_id")
-		},
-	}
-
-	handler := h.handler(performers)
-	return func(ctx context.Context, f *filterBuilder) {
-		// Make sure scenes is included, otherwise excludes filter fails
-		f.addLeftJoin(sceneTable, "", "scenes.id = scenes_odates.scene_id")
-		handler(ctx, f)
-	}
-}
-
 func (qb *SceneODateStore) querysceneODates(ctx context.Context, query string, args []interface{}) ([]*models.SceneODate, error) {
 	const single = false
 	var ret []*models.SceneODate
@@ -227,29 +206,6 @@ func (qb *SceneODateStore) querysceneODates(ctx context.Context, query string, a
 	}
 
 	return ret, nil
-}
-
-func (qb *SceneODateStore) queryMarkerStringsResultType(ctx context.Context, query string, args []interface{}) ([]*models.MarkerStringsResultType, error) {
-	rows, err := qb.tx.Queryx(ctx, query, args...)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, err
-	}
-	defer rows.Close()
-
-	markerStrings := make([]*models.MarkerStringsResultType, 0)
-	for rows.Next() {
-		markerString := models.MarkerStringsResultType{}
-		if err := rows.StructScan(&markerString); err != nil {
-			return nil, err
-		}
-		markerStrings = append(markerStrings, &markerString)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return markerStrings, nil
 }
 
 func (qb *SceneODateStore) Count(ctx context.Context) (int, error) {

@@ -1524,23 +1524,6 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	query.sortAndPagination += ", COALESCE(scenes.title, scenes.id) COLLATE NATURAL_CI ASC"
 }
 
-func (qb *SceneStore) getPlayCount(ctx context.Context, id int) (int, error) {
-	q := dialect.From(qb.tableMgr.table).Select("play_count").Where(goqu.Ex{"id": id})
-
-	const single = true
-	var ret int
-	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
-		if err := rows.Scan(&ret); err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
-		return 0, err
-	}
-
-	return ret, nil
-}
-
 func (qb *SceneStore) SaveActivity(ctx context.Context, id int, resumeTime *float64, playDuration *float64) (bool, error) {
 	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
 		return false, err
