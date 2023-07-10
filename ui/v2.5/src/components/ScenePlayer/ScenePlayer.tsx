@@ -67,6 +67,24 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
     player.currentTime(time);
   }
 
+  function toggleABLooping(){
+    const opts = player.abLoopPlugin.getOptions();
+    if (!opts.start) {
+      opts.start = player.currentTime();
+      console.log('setting start time');
+    } else if(!opts.end) {
+      opts.end = player.currentTime();
+      opts.enabled = true;
+      console.log('setting end time, looping');
+    } else {
+      opts.start = 0;
+      opts.end = 0;
+      opts.enabled = false;
+      console.log('clearing loop');
+    }
+    player.abLoopPlugin.setOptions(opts);
+  }
+
   let seekFactor = 10;
   if (event.shiftKey) {
     seekFactor = 5;
@@ -98,6 +116,9 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
     case 70: // f
       if (player.isFullscreen()) player.exitFullscreen();
       else player.requestFullscreen();
+      break;
+    case 76: // l
+      toggleABLooping();
       break;
     case 38: // up arrow
       player.volume(player.volume() + 0.1);
