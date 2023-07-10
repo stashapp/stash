@@ -8,6 +8,7 @@ import React, {
   useState,
 } from "react";
 import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
+import abLoopPlugin from "videojs-abloop";
 import "videojs-contrib-dash";
 import "videojs-mobile-ui";
 import "videojs-seek-buttons";
@@ -320,6 +321,16 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         skipButtons: {},
         trackActivity: {},
         vrMenu: {},
+        abLoopPlugin: {
+          start: 0,
+          end: false,
+          enabled: false,
+          loopIfBeforeStart: true,
+          loopIfAfterEnd: true,
+          pauseAfterLooping: false,
+          pauseBeforeLooping: false,
+          createButtons: true,
+        },
       },
     };
 
@@ -328,6 +339,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     videoEl.setAttribute("crossorigin", "anonymous");
     videoEl.classList.add("vjs-big-play-centered");
     videoRef.current!.appendChild(videoEl);
+
+    abLoopPlugin(window, videojs);
 
     const vjs = videojs(videoEl, options);
 
