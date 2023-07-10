@@ -75,16 +75,12 @@ export const ListFilter: React.FC<IListFilterProps> = ({
     [filter, onFilterUpdate]
   );
 
-  const searchCallback = useDebounce(
-    (value: string) => {
-      const newFilter = cloneDeep(filter);
-      newFilter.searchTerm = value;
-      newFilter.currentPage = 1;
-      onFilterUpdate(newFilter);
-    },
-    [filter, onFilterUpdate],
-    500
-  );
+  const searchCallback = useDebounce((value: string) => {
+    const newFilter = cloneDeep(filter);
+    newFilter.searchTerm = value;
+    newFilter.currentPage = 1;
+    onFilterUpdate(newFilter);
+  }, 500);
 
   const intl = useIntl();
 

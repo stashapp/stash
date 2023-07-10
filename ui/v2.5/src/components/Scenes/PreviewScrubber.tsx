@@ -101,12 +101,7 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
 
   const [activeIndex, setActiveIndex] = React.useState<number | undefined>();
 
-  const debounceSetActiveIndex = useDebounce(
-    setActiveIndex,
-    [setActiveIndex],
-    1
-  );
-
+  const debounceSetActiveIndex = useDebounce(setActiveIndex, 1);
   const spriteInfo = useSpriteInfo(vttPath);
 
   const style = useMemo(() => {
