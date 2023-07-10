@@ -3,12 +3,12 @@ package manager
 import (
 	"context"
 
+	"github.com/stashapp/stash/pkg/db"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -73,7 +73,7 @@ func (r *Repository) WithDB(ctx context.Context, fn txn.TxnFunc) error {
 	return txn.WithDatabase(ctx, r, fn)
 }
 
-func sqliteRepository(d *sqlite.Database) Repository {
+func dbRepository(d *db.Database) Repository {
 	txnRepo := d.TxnRepository()
 
 	return Repository{

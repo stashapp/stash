@@ -10,16 +10,16 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/stashapp/stash/pkg/db"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
 
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 
 	// necessary to register custom migrations
-	_ "github.com/stashapp/stash/pkg/sqlite/migrations"
+	_ "github.com/stashapp/stash/pkg/db/migrations"
 )
 
 const testName = "Foo's Bar"
@@ -33,11 +33,11 @@ var existingStudioID int
 
 const expectedMatchTitle = "expected match"
 
-var db *sqlite.Database
+var conn *db.Database
 var r models.Repository
 
 func testTeardown(databaseFile string) {
-	err := db.Close()
+	err := conn.Close()
 
 	if err != nil {
 		panic(err)
@@ -58,12 +58,12 @@ func runTests(m *testing.M) int {
 
 	f.Close()
 	databaseFile := f.Name()
-	db = sqlite.NewDatabase()
-	if err := db.Open(databaseFile); err != nil {
+	conn = db.NewDatabase()
+	if err := conn.Open(databaseFile); err != nil {
 		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
 	}
 
-	r = db.TxnRepository()
+	r = conn.TxnRepository()
 
 	// defer close and delete the database
 	defer testTeardown(databaseFile)
@@ -479,11 +479,11 @@ func createGallery(ctx context.Context, w models.GalleryWriter, o *models.Galler
 }
 
 func withTxn(f func(ctx context.Context) error) error {
-	return txn.WithTxn(context.TODO(), db, f)
+	return txn.WithTxn(context.TODO(), conn, f)
 }
 
 func withDB(f func(ctx context.Context) error) error {
-	return txn.WithDatabase(context.TODO(), db, f)
+	return txn.WithDatabase(context.TODO(), conn, f)
 }
 
 func populateDB() error {
@@ -546,7 +546,7 @@ func TestParsePerformerScenes(t *testing.T) {
 	}
 
 	tagger := Tagger{
-		TxnManager: db,
+		TxnManager: conn,
 	}
 
 	for _, p := range performers {
@@ -600,7 +600,7 @@ func TestParseStudioScenes(t *testing.T) {
 	}
 
 	tagger := Tagger{
-		TxnManager: db,
+		TxnManager: conn,
 	}
 
 	for _, s := range studios {
@@ -660,7 +660,7 @@ func TestParseTagScenes(t *testing.T) {
 	}
 
 	tagger := Tagger{
-		TxnManager: db,
+		TxnManager: conn,
 	}
 
 	for _, s := range tags {
@@ -716,7 +716,7 @@ func TestParsePerformerImages(t *testing.T) {
 	}
 
 	tagger := Tagger{
-		TxnManager: db,
+		TxnManager: conn,
 	}
 
 	for _, p := range performers {
@@ -771,7 +771,7 @@ func TestParseStudioImages(t *testing.T) {
 	}
 
 	tagger := Tagger{
-		TxnManager: db,
+		TxnManager: conn,
 	}
 
 	for _, s := range studios {
@@ -831,7 +831,7 @@ func TestParseTagImages(t *testing.T) {
 	}
 
 	tagger := Tagger{
-		TxnManager: db,
+		TxnManager: conn,
 	}
 
 	for _, s := range tags {
@@ -888,7 +888,7 @@ func TestParsePerformerGalleries(t *testing.T) {
 	}
 
 	tagger := Tagger{
-		TxnManager: db,
+		TxnManager: conn,
 	}
 
 	for _, p := range performers {
@@ -943,7 +943,7 @@ func TestParseStudioGalleries(t *testing.T) {
 	}
 
 	tagger := Tagger{
-		TxnManager: db,
+		TxnManager: conn,
 	}
 
 	for _, s := range studios {
@@ -1003,7 +1003,7 @@ func TestParseTagGalleries(t *testing.T) {
 	}
 
 	tagger := Tagger{
-		TxnManager: db,
+		TxnManager: conn,
 	}
 
 	for _, s := range tags {
