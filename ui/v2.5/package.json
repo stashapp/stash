@@ -112,7 +112,7 @@
     "postcss-scss": "^4.0.6",
     "prettier": "^2.8.4",
     "sass": "^1.58.1",
-    "stylelint": "^15.1.0",
+    "stylelint": "^15.10.1",
     "stylelint-order": "^6.0.2",
     "terser": "^5.9.0",
     "ts-node": "^10.9.1",

@@ -159,6 +159,7 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 	language := config.GetLanguage()
 	handyKey := config.GetHandyKey()
 	scriptOffset := config.GetFunscriptOffset()
+	useStashHostedFunscript := config.GetUseStashHostedFunscript()
 	showHeresphereButton := config.GetShowHeresphereButton()
 	imageLightboxOptions := config.GetImageLightboxOptions()
 	// FIXME - misnamed output field means we have redundant fields
@@ -191,8 +192,9 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 		DisabledDropdownCreate: disableDropdownCreate,
 		DisableDropdownCreate:  disableDropdownCreate,
 
-		HandyKey:        &handyKey,
-		FunscriptOffset: &scriptOffset,
+		HandyKey:                &handyKey,
+		FunscriptOffset:         &scriptOffset,
+		UseStashHostedFunscript: &useStashHostedFunscript,
 
 		ShowHeresphereButton: &showHeresphereButton,
 	}

@@ -40,16 +40,20 @@ query AllTagsForFilter {
 
 query Stats {
   stats {
-    scene_count,
-    scenes_size,
-    scenes_duration,
-    image_count,
-    images_size,
-    gallery_count,
-    performer_count,
-    studio_count,
-    movie_count,
+    scene_count
+    scenes_size
+    scenes_duration
+    image_count
+    images_size
+    gallery_count
+    performer_count
+    studio_count
+    movie_count
     tag_count
+    total_o_count
+    total_play_duration
+    total_play_count
+    scenes_played
   }
 }
 

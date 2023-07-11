@@ -15,18 +15,20 @@ else
 endif
 
 # set LDFLAGS environment variable to any extra ldflags required
-# set OUTPUT to generate a specific binary name
 LDFLAGS := $(LDFLAGS)
+
+# set OUTPUT environment variable to generate a specific binary name
 ifdef OUTPUT
   OUTPUT := -o $(OUTPUT)
 endif
 
-export CGO_ENABLED = 1
+# set GO_BUILD_FLAGS environment variable to any extra build flags required
+GO_BUILD_FLAGS := $(GO_BUILD_FLAGS)
+GO_BUILD_FLAGS += -buildmode=pie
 
-# including netgo causes name resolution to go through the Go resolver
-# and isn't necessary for static builds on Windows
-GO_BUILD_TAGS_WINDOWS := sqlite_omit_load_extension sqlite_stat4 osusergo
-GO_BUILD_TAGS_DEFAULT = $(GO_BUILD_TAGS_WINDOWS) netgo
+# set GO_BUILD_TAGS environment variable to any extra build tags required
+GO_BUILD_TAGS := $(GO_BUILD_TAGS)
+GO_BUILD_TAGS += sqlite_stat4
 
 # set STASH_NOLEGACY environment variable or uncomment to disable legacy browser support
 # STASH_NOLEGACY := true
@@ -34,13 +36,15 @@ GO_BUILD_TAGS_DEFAULT = $(GO_BUILD_TAGS_WINDOWS) netgo
 # set STASH_SOURCEMAPS environment variable or uncomment to enable UI sourcemaps
 # STASH_SOURCEMAPS := true
 
+export CGO_ENABLED := 1
+
 .PHONY: release
 release: pre-ui generate ui build-release
 
 .PHONY: pre-build
 pre-build:
 ifndef BUILD_DATE
-	$(eval BUILD_DATE := $(shell go run -mod=vendor scripts/getDate.go))
+	$(eval BUILD_DATE := $(shell go run scripts/getDate.go))
 endif
 
 ifndef GITHASH
@@ -57,32 +61,42 @@ endif
 
 .PHONY: build-flags
 build-flags: pre-build
-	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/internal/api.buildstamp=$(BUILD_DATE)')
-	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/internal/api.githash=$(GITHASH)')
-	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/internal/api.version=$(STASH_VERSION)')
-	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/internal/manager/config.officialBuild=$(OFFICIAL_BUILD)')
-ifndef GO_BUILD_TAGS
-	$(eval GO_BUILD_TAGS := $(GO_BUILD_TAGS_DEFAULT))
-endif
-	$(eval BUILD_FLAGS := -mod=vendor -v -tags "$(GO_BUILD_TAGS)" $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)")
+	$(eval BUILD_LDFLAGS := $(LDFLAGS))
+	$(eval BUILD_LDFLAGS += -X 'github.com/stashapp/stash/internal/build.buildstamp=$(BUILD_DATE)')
+	$(eval BUILD_LDFLAGS += -X 'github.com/stashapp/stash/internal/build.githash=$(GITHASH)')
+	$(eval BUILD_LDFLAGS += -X 'github.com/stashapp/stash/internal/build.version=$(STASH_VERSION)')
+	$(eval BUILD_LDFLAGS += -X 'github.com/stashapp/stash/internal/build.officialBuild=$(OFFICIAL_BUILD)')
+	$(eval BUILD_FLAGS := -v -tags "$(GO_BUILD_TAGS)" $(GO_BUILD_FLAGS) -ldflags "$(BUILD_LDFLAGS)")
 
-# NOTE: the build target still includes netgo because we cannot detect
-# Windows easily from the Makefile.
+# builds a dynamically-linked debug binary
 .PHONY: build
 build: build-flags
 build:
 	go build $(OUTPUT) $(BUILD_FLAGS) ./cmd/stash
 
-# strips debug symbols from the release build
+# TODO: Integrate the phasher target with the rest of the Makefile,
+# TODO: so it can be built as part of normal releases.
+.PHONY: phasher
+phasher:
+	go build -o $@ -trimpath -buildmode=pie -ldflags '-s -w' ./cmd/phasher
+
+# builds a dynamically-linked release binary
 .PHONY: build-release
-build-release: EXTRA_LDFLAGS := -s -w
-build-release: GO_BUILD_FLAGS := -trimpath
+build-release: LDFLAGS += -s -w
+build-release: GO_BUILD_FLAGS += -trimpath
 build-release: build
 
+# builds a statically-linked release binary
 .PHONY: build-release-static
-build-release-static: EXTRA_LDFLAGS := -extldflags=-static -s -w
-build-release-static: GO_BUILD_FLAGS := -trimpath
-build-release-static: build
+build-release-static: GO_BUILD_TAGS += netgo
+build-release-static: build-release-static-windows
+
+# build-release-static, but excluding netgo, which is not needed on windows
+.PHONY: build-release-static-windows
+build-release-static-windows: LDFLAGS += -extldflags=-static -s -w
+build-release-static-windows: GO_BUILD_FLAGS += -trimpath
+build-release-static-windows: GO_BUILD_TAGS += sqlite_omit_load_extension osusergo
+build-release-static-windows: build
 
 # cross-compile- targets should be run within the compiler docker container
 .PHONY: cross-compile-windows
@@ -91,8 +105,7 @@ cross-compile-windows: export GOARCH := amd64
 cross-compile-windows: export CC := x86_64-w64-mingw32-gcc
 cross-compile-windows: export CXX := x86_64-w64-mingw32-g++
 cross-compile-windows: OUTPUT := -o dist/stash-win.exe
-cross-compile-windows: GO_BUILD_TAGS := $(GO_BUILD_TAGS_WINDOWS)
-cross-compile-windows: build-release-static
+cross-compile-windows: build-release-static-windows
 
 .PHONY: cross-compile-macos-intel
 cross-compile-macos-intel: export GOOS := darwin
@@ -100,7 +113,6 @@ cross-compile-macos-intel: export GOARCH := amd64
 cross-compile-macos-intel: export CC := o64-clang
 cross-compile-macos-intel: export CXX := o64-clang++
 cross-compile-macos-intel: OUTPUT := -o dist/stash-macos-intel
-cross-compile-macos-intel: GO_BUILD_TAGS := $(GO_BUILD_TAGS_DEFAULT)
 # can't use static build for OSX
 cross-compile-macos-intel: build-release
 
@@ -110,7 +122,6 @@ cross-compile-macos-applesilicon: export GOARCH := arm64
 cross-compile-macos-applesilicon: export CC := oa64e-clang
 cross-compile-macos-applesilicon: export CXX := oa64e-clang++
 cross-compile-macos-applesilicon: OUTPUT := -o dist/stash-macos-applesilicon
-cross-compile-macos-applesilicon: GO_BUILD_TAGS := $(GO_BUILD_TAGS_DEFAULT)
 # can't use static build for OSX
 cross-compile-macos-applesilicon: build-release
 
@@ -133,14 +144,12 @@ cross-compile-macos:
 cross-compile-freebsd: export GOOS := freebsd
 cross-compile-freebsd: export GOARCH := amd64
 cross-compile-freebsd: OUTPUT := -o dist/stash-freebsd
-cross-compile-freebsd: GO_BUILD_TAGS += netgo
 cross-compile-freebsd: build-release-static
 
 .PHONY: cross-compile-linux
 cross-compile-linux: export GOOS := linux
 cross-compile-linux: export GOARCH := amd64
 cross-compile-linux: OUTPUT := -o dist/stash-linux
-cross-compile-linux: GO_BUILD_TAGS := $(GO_BUILD_TAGS_DEFAULT)
 cross-compile-linux: build-release-static
 
 .PHONY: cross-compile-linux-arm64v8
@@ -148,7 +157,6 @@ cross-compile-linux-arm64v8: export GOOS := linux
 cross-compile-linux-arm64v8: export GOARCH := arm64
 cross-compile-linux-arm64v8: export CC := aarch64-linux-gnu-gcc
 cross-compile-linux-arm64v8: OUTPUT := -o dist/stash-linux-arm64v8
-cross-compile-linux-arm64v8: GO_BUILD_TAGS := $(GO_BUILD_TAGS_DEFAULT)
 cross-compile-linux-arm64v8: build-release-static
 
 .PHONY: cross-compile-linux-arm32v7
@@ -157,7 +165,6 @@ cross-compile-linux-arm32v7: export GOARCH := arm
 cross-compile-linux-arm32v7: export GOARM := 7
 cross-compile-linux-arm32v7: export CC := arm-linux-gnueabihf-gcc
 cross-compile-linux-arm32v7: OUTPUT := -o dist/stash-linux-arm32v7
-cross-compile-linux-arm32v7: GO_BUILD_TAGS := $(GO_BUILD_TAGS_DEFAULT)
 cross-compile-linux-arm32v7: build-release-static
 
 .PHONY: cross-compile-linux-arm32v6
@@ -166,7 +173,6 @@ cross-compile-linux-arm32v6: export GOARCH := arm
 cross-compile-linux-arm32v6: export GOARM := 6
 cross-compile-linux-arm32v6: export CC := arm-linux-gnueabi-gcc
 cross-compile-linux-arm32v6: OUTPUT := -o dist/stash-linux-arm32v6
-cross-compile-linux-arm32v6: GO_BUILD_TAGS := $(GO_BUILD_TAGS_DEFAULT)
 cross-compile-linux-arm32v6: build-release-static
 
 .PHONY: cross-compile-all
@@ -199,16 +205,16 @@ generate-frontend:
 
 .PHONY: generate-backend
 generate-backend: touch-ui
-	go generate -mod=vendor ./cmd/stash
+	go generate ./cmd/stash
 
 .PHONY: generate-dataloaders
 generate-dataloaders:
-	go generate -mod=vendor ./internal/api/loaders
+	go generate ./internal/api/loaders
 
 # Regenerates stash-box client files
 .PHONY: generate-stash-box-client
 generate-stash-box-client:
-	go run -mod=vendor github.com/Yamashou/gqlgenc
+	go run github.com/Yamashou/gqlgenc
 
 # Runs gofmt -w on the project's source code, modifying any files that do not match its style.
 .PHONY: fmt
@@ -222,17 +228,17 @@ lint:
 # runs unit tests - excluding integration tests
 .PHONY: test
 test:
-	go test -mod=vendor ./...
+	go test ./...
 
 # runs all tests - including integration tests
 .PHONY: it
 it:
-	go test -mod=vendor -tags=integration ./...
+	go test -tags=integration ./...
 
 # generates test mocks
 .PHONY: generate-test-mocks
 generate-test-mocks:
-	go run -mod=vendor github.com/vektra/mockery/v2 --dir ./pkg/models --name '.*ReaderWriter' --outpkg mocks --output ./pkg/models/mocks
+	go run github.com/vektra/mockery/v2 --dir ./pkg/models --name '.*ReaderWriter' --outpkg mocks --output ./pkg/models/mocks
 
 # runs server
 # sets the config file to use the local dev config
