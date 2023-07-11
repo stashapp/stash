@@ -2161,18 +2161,6 @@
   dependencies:
     dequal "^2.0.2"
 
-"@silvermine/videojs-airplay@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@silvermine/videojs-airplay/-/videojs-airplay-1.2.0.tgz#3ca6464c8e94c97bb9f35c2926f59a5aa662cebd"
-  integrity sha512-4KzHoM/wJaq3au8IBLxnz8+btAB/M/2AdMoAoOdZRpp9DGG8SGU/UPw2w+CRMknvfbGtvlhlNrNiiXVWA6Cn0A==
-
-"@silvermine/videojs-chromecast@^1.4.1":
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/@silvermine/videojs-chromecast/-/videojs-chromecast-1.4.1.tgz#a5763eb85dfd4bc8f47a1b8b150d5dadbb8ea658"
-  integrity sha512-tXeikkWoNC3WIl2WSkIag1CLMbGsgn+26LM4LoB4qx0TQ8mkg7pgpldCTkvXxLVaDluQ/uEm2uxrgrMmjOc6sw==
-  dependencies:
-    webcomponents.js "git+https://git@github.com/webcomponents/webcomponentsjs.git#v0.7.24"
-
 "@tootallnate/once@2":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-2.0.0.tgz#f544a148d3ab35801c1f633a7441fd87c2e484bf"
@@ -8154,10 +8142,6 @@ web-streams-polyfill@^3.2.1:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/web-streams-polyfill/-/web-streams-polyfill-3.2.1.tgz#71c2718c52b45fd49dbeee88634b3a60ceab42a6"
   integrity sha512-e0MO3wdXWKrLbL0DgGnUV7WHVuw9OUvL4hjgnPkIeEvESk74gAITi5G606JtZPp39cd8HA9VQzCIvA49LpPN5Q==
-
-"webcomponents.js@git+https://git@github.com/webcomponents/webcomponentsjs.git#v0.7.24":
-  version "0.7.24"
-  resolved "git+https://git@github.com/webcomponents/webcomponentsjs.git#8a2e40557b177e2cca0def2553f84c8269c8f93e"
 
 webcrypto-core@^1.7.4:
   version "1.7.6"
