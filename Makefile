@@ -74,6 +74,12 @@ build: build-flags
 build:
 	go build $(OUTPUT) $(BUILD_FLAGS) ./cmd/stash
 
+# TODO: Integrate the phasher target with the rest of the Makefile,
+# TODO: so it can be built as part of normal releases.
+.PHONY: phasher
+phasher:
+	go build -o $@ -trimpath -buildmode=pie -ldflags '-s -w' ./cmd/phasher
+
 # builds a dynamically-linked release binary
 .PHONY: build-release
 build-release: LDFLAGS += -s -w
