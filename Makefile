@@ -62,10 +62,10 @@ endif
 .PHONY: build-flags
 build-flags: pre-build
 	$(eval BUILD_LDFLAGS := $(LDFLAGS))
-	$(eval BUILD_LDFLAGS += -X 'github.com/stashapp/stash/internal/api.buildstamp=$(BUILD_DATE)')
-	$(eval BUILD_LDFLAGS += -X 'github.com/stashapp/stash/internal/api.githash=$(GITHASH)')
-	$(eval BUILD_LDFLAGS += -X 'github.com/stashapp/stash/internal/api.version=$(STASH_VERSION)')
-	$(eval BUILD_LDFLAGS += -X 'github.com/stashapp/stash/internal/manager/config.officialBuild=$(OFFICIAL_BUILD)')
+	$(eval BUILD_LDFLAGS += -X 'github.com/stashapp/stash/internal/build.buildstamp=$(BUILD_DATE)')
+	$(eval BUILD_LDFLAGS += -X 'github.com/stashapp/stash/internal/build.githash=$(GITHASH)')
+	$(eval BUILD_LDFLAGS += -X 'github.com/stashapp/stash/internal/build.version=$(STASH_VERSION)')
+	$(eval BUILD_LDFLAGS += -X 'github.com/stashapp/stash/internal/build.officialBuild=$(OFFICIAL_BUILD)')
 	$(eval BUILD_FLAGS := -v -tags "$(GO_BUILD_TAGS)" $(GO_BUILD_FLAGS) -ldflags "$(BUILD_LDFLAGS)")
 
 # builds a dynamically-linked debug binary
