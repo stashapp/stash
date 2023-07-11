@@ -1133,6 +1133,14 @@ func (i *Instance) GetUIMinPlayPercent() int {
 
 	return -1
 }
+func (i *Instance) GetUIFavoriteTag() string {
+	cfgMap := i.GetUIConfiguration()
+	if val, ok := cfgMap["favoriteTag"]; ok {
+		return val.(string)
+	}
+
+	return ""
+}
 
 func (i *Instance) SetUIConfiguration(v map[string]interface{}) {
 	i.RLock()

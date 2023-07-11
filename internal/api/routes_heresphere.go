@@ -246,12 +246,19 @@ func getVrTag() (varTag string, err error) {
 	}
 	return
 }
-
-// TODO: Favorite tag
 func getMinPlayPercent() (per int, err error) {
-	val := config.GetInstance().GetUIMinPlayPercent()
-	if val == -1 {
+	per = config.GetInstance().GetUIMinPlayPercent()
+	if per == -1 {
 		err = fmt.Errorf("unset minimum play percent")
+	}
+	return
+}
+func getFavoriteTag() (varTag string, err error) {
+	varTag = config.GetInstance().GetUIFavoriteTag()
+	if len(varTag) == 0 {
+		//err = fmt.Errorf("zero length favorite tag")
+		varTag = "Favorite"
+		// TODO: This is for development, remove forced assign
 	}
 	return
 }
@@ -358,7 +365,31 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 		}
 	}
 
-	// TODO: Add favorites back!
+	// Favorites tag
+	// TODO: Test, suspected not working
+	if favName, err := getFavoriteTag(); user.IsFavorite != nil && err == nil {
+		fmt.Printf("Add favoite tag\n")
+		favTag := HeresphereVideoTag{Name: fmt.Sprintf("Tag:%v", favName)}
+		if *user.IsFavorite {
+			fmt.Printf("Add as favorite\n")
+			if user.Tags == nil {
+				fmt.Printf("No other tags\n")
+				user.Tags = &[]HeresphereVideoTag{favTag}
+			} else {
+				fmt.Printf("Existing tags\n")
+				*user.Tags = append(*user.Tags, favTag)
+			}
+		} else if user.Tags != nil {
+			fmt.Printf("Remove favorite\n")
+			for i, tag := range *user.Tags {
+				if tag.Name == favTag.Name {
+					fmt.Printf("Found favorite tag!\n")
+					*user.Tags = append((*user.Tags)[:i], (*user.Tags)[i+1:]...)
+					break
+				}
+			}
+		}
+	}
 
 	// Tags
 	if user.Tags != nil {
