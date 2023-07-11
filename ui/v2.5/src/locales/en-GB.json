@@ -666,7 +666,6 @@
             "description": "Play next scene in queue when video finishes",
             "heading": "Continue playlist by default"
           },
-          "enable_chromecast": "Enable Chromecast",
           "show_scrubber": "Show Scrubber",
           "track_activity": "Track Activity",
           "vr_tag": {
