@@ -71,16 +71,13 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
     const opts = player.abLoopPlugin.getOptions();
     if (!opts.start) {
       opts.start = player.currentTime();
-      console.log("setting start time");
     } else if (!opts.end) {
       opts.end = player.currentTime();
       opts.enabled = true;
-      console.log("setting end time, looping");
     } else {
       opts.start = 0;
       opts.end = 0;
       opts.enabled = false;
-      console.log("clearing loop");
     }
     player.abLoopPlugin.setOptions(opts);
   }
