@@ -247,13 +247,22 @@ func getVrTag() (varTag string, err error) {
 	return
 }
 
+// TODO: Favorite tag
+func getMinPlayPercent() (per int, err error) {
+	val := config.GetInstance().GetUIMinPlayPercent()
+	if val == -1 {
+		err = fmt.Errorf("unset minimum play percent")
+	}
+	return
+}
+
 /*
  * This is a video playback event
  * Intended for server-sided script playback.
  * But since we dont need that, we just use it for timestamps.
  */
 func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
-	scene := r.Context().Value(heresphereKey).(*models.Scene)
+	scn := r.Context().Value(heresphereKey).(*models.Scene)
 
 	// Decode event
 	var event HeresphereVideoEvent
@@ -265,14 +274,40 @@ func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.R
 
 	// Add playDuration
 	newTime := event.Time / 1000
-	newDuration := scene.PlayDuration
+	newDuration := scn.PlayDuration
 	// TODO: Huge value bug
 	/*if newTime > scene.ResumeTime {
 		newDuration += (newTime - scene.ResumeTime)
 	}*/
 
+	// Update PlayCount
+	if per, err := getMinPlayPercent(); err == nil {
+		if file := scn.Files.Primary(); file != nil && newTime/file.Duration > float64(per)/100.0 {
+			// Create update set
+			ret := &scene.UpdateSet{
+				ID: scn.ID,
+			}
+			ret.Partial = models.NewScenePartial()
+
+			// TODO: Unless we track playback, we cant know if its a "played" or skip event
+			if scn.PlayCount == 0 {
+				ret.Partial.PlayCount.Set = true
+				ret.Partial.PlayCount.Value = 1
+			}
+
+			// Update scene
+			if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+				_, err := ret.Update(ctx, rs.repository.Scene)
+				return err
+			}); err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+		}
+	}
+
 	// Write
-	if _, err := rs.resolver.Mutation().SceneSaveActivity(r.Context(), strconv.Itoa(scene.ID), &newTime, &newDuration); err != nil {
+	if _, err := rs.resolver.Mutation().SceneSaveActivity(r.Context(), strconv.Itoa(scn.ID), &newTime, &newDuration); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

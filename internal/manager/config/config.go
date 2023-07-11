@@ -1129,6 +1129,14 @@ func (i *Instance) GetUIVRTag() string {
 
 	return ""
 }
+func (i *Instance) GetUIMinPlayPercent() int {
+	cfgMap := i.GetUIConfiguration()
+	if val, ok := cfgMap["minimumPlayPercent"]; ok {
+		return val.(int)
+	}
+
+	return -1
+}
 
 func (i *Instance) SetUIConfiguration(v map[string]interface{}) {
 	i.RLock()
