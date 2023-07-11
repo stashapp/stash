@@ -969,6 +969,9 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 	query.handleCriterion(ctx, floatIntCriterionHandler(sceneFilter.Duration, "video_files.duration", qb.addVideoFilesTable))
 	query.handleCriterion(ctx, resolutionCriterionHandler(sceneFilter.Resolution, "video_files.height", "video_files.width", qb.addVideoFilesTable))
 
+	query.handleCriterion(ctx, codecCriterionHandler(sceneFilter.VideoCodec, "video_files.video_codec", qb.addVideoFilesTable))
+	query.handleCriterion(ctx, codecCriterionHandler(sceneFilter.AudioCodec, "video_files.audio_codec", qb.addVideoFilesTable))
+
 	query.handleCriterion(ctx, hasMarkersCriterionHandler(sceneFilter.HasMarkers))
 	query.handleCriterion(ctx, sceneIsMissingCriterionHandler(qb, sceneFilter.IsMissing))
 	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.URL, "scenes.url"))
@@ -1240,6 +1243,18 @@ func resolutionCriterionHandler(resolution *models.ResolutionCriterionInput, hei
 			case models.CriterionModifierGreaterThan:
 				f.addWhere(fmt.Sprintf("%s > %d", widthHeight, max))
 			}
+		}
+	}
+}
+
+func codecCriterionHandler(codec *models.StringCriterionInput, codecColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if codec != nil {
+			if addJoinFn != nil {
+				addJoinFn(f)
+			}
+
+			stringCriterionHandler(codec, codecColumn)(ctx, f)
 		}
 	}
 }

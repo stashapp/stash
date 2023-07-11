@@ -490,7 +490,7 @@ func setPageSecurityHeaders(w http.ResponseWriter, r *http.Request) {
 	// The graphql playground pulls its frontend from a cdn
 	if r.URL.Path == playgroundEndpoint {
 		connectSrc += " https://cdn.jsdelivr.net"
-		scriptSrc += " https://cdn.jsdelivr.net"
+		scriptSrc += " https://cdn.jsdelivr.net http://www.gstatic.com https://www.gstatic.com"
 		styleSrc += " https://cdn.jsdelivr.net"
 	}
 

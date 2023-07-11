@@ -129,6 +129,7 @@
   "also_known_as": "Also known as",
   "appears_with": "Appears With",
   "ascending": "Ascending",
+  "audio_codec": "Audio Codec",
   "average_resolution": "Average Resolution",
   "between_and": "and",
   "birth_year": "Birth Year",
@@ -657,6 +658,7 @@
             "description": "Play next scene in queue when video finishes",
             "heading": "Continue playlist by default"
           },
+          "enable_chromecast": "Enable Chromecast",
           "show_scrubber": "Show Scrubber",
           "track_activity": "Track Activity",
           "vr_tag": {
@@ -1263,6 +1265,7 @@
     "required": "${path} is a required field"
   },
   "videos": "Videos",
+  "video_codec": "Video Codec",
   "view_all": "View All",
   "weight": "Weight",
   "weight_kg": "Weight (kg)",
