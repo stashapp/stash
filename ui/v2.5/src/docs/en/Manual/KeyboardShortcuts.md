@@ -73,6 +73,7 @@
 | `{1-9}` | Seek to 10-90% duration |
 | `[` | Scrub backwards 10% duration |
 | `]` | Scrub forwards 10% duration |
+| `Shift + l` | Toggle player looping |
 
 ### Scene Markers tab shortcuts
 
