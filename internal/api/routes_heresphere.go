@@ -406,6 +406,7 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 			}
 
 			// If add tag
+			// TODO FUTURE: Switch to CutPrefix as it's nicer
 			if strings.HasPrefix(tagI.Name, "Tag:") {
 				after := strings.TrimPrefix(tagI.Name, "Tag:")
 				var err error
@@ -462,8 +463,9 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 					return err
 				}); err != nil || tagId == nil {
 					newTag := SceneMarkerCreateInput{
-						PrimaryTagID: after,
 						Seconds:      tagI.Start,
+						SceneID:      string(scn.ID),
+						PrimaryTagID: after,
 					}
 					if _, err := rs.resolver.Mutation().SceneMarkerCreate(r.Context(), newTag); err != nil {
 						return err
@@ -477,14 +479,17 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 			{
 				tagName := tagI.Name
 
+				// Will be overwritten if PlayCount tag is updated
 				prefix := string(HeresphereCustomTagWatched) + ":"
 				if strings.HasPrefix(tagName, prefix) {
 					after := strings.TrimPrefix(tagName, prefix)
 					if b, err := strconv.ParseBool(after); err == nil {
 						if b && scn.PlayCount == 0 {
-							scn.PlayCount = 1
+							ret.Partial.PlayCount.Set = true
+							ret.Partial.PlayCount.Value = 1
 						} else if !b {
-							scn.PlayCount = 0
+							ret.Partial.PlayCount.Set = true
+							ret.Partial.PlayCount.Value = 0
 						}
 					}
 					continue
@@ -493,7 +498,8 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 				if strings.HasPrefix(tagName, prefix) {
 					after := strings.TrimPrefix(tagName, prefix)
 					if b, err := strconv.ParseBool(after); err == nil {
-						scn.Organized = b
+						ret.Partial.Organized.Set = true
+						ret.Partial.Organized.Value = b
 					}
 					continue
 				}
@@ -501,7 +507,8 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 				if strings.HasPrefix(tagName, prefix) {
 					after := strings.TrimPrefix(tagName, prefix)
 					if b, err := strconv.ParseBool(after); err == nil && !b {
-						scn.Rating = nil
+						ret.Partial.Rating.Set = true
+						ret.Partial.Rating.Null = true
 					}
 					continue
 				}
@@ -511,7 +518,8 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 				if strings.HasPrefix(tagName, prefix) {
 					after := strings.TrimPrefix(tagName, prefix)
 					if numRes, err := strconv.ParseInt(after, 10, 32); err != nil {
-						scn.PlayCount = int(numRes)
+						ret.Partial.PlayCount.Set = true
+						ret.Partial.PlayCount.Value = int(numRes)
 					}
 					continue
 				}
@@ -519,7 +527,8 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 				if strings.HasPrefix(tagName, prefix) {
 					after := strings.TrimPrefix(tagName, prefix)
 					if numRes, err := strconv.ParseInt(after, 10, 32); err != nil {
-						scn.OCounter = int(numRes)
+						ret.Partial.OCounter.Set = true
+						ret.Partial.OCounter.Value = int(numRes)
 					}
 					continue
 				}
