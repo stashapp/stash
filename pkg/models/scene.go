@@ -45,6 +45,10 @@ type SceneFilterType struct {
 	Duplicated *PHashDuplicationCriterionInput `json:"duplicated"`
 	// Filter by resolution
 	Resolution *ResolutionCriterionInput `json:"resolution"`
+	// Filter by video codec
+	VideoCodec *StringCriterionInput `json:"video_codec"`
+	// Filter by audio codec
+	AudioCodec *StringCriterionInput `json:"audio_codec"`
 	// Filter by duration (in seconds)
 	Duration *IntCriterionInput `json:"duration"`
 	// Filter to only include scenes which have markers. `true` or `false`
@@ -164,12 +168,16 @@ type SceneReader interface {
 
 	CountByPerformerID(ctx context.Context, performerID int) (int, error)
 	OCountByPerformerID(ctx context.Context, performerID int) (int, error)
+	OCount(ctx context.Context) (int, error)
 	// FindByStudioID(studioID int) ([]*Scene, error)
 	FindByMovieID(ctx context.Context, movieID int) ([]*Scene, error)
 	CountByMovieID(ctx context.Context, movieID int) (int, error)
 	Count(ctx context.Context) (int, error)
+	PlayCount(ctx context.Context) (int, error)
+	UniqueScenePlayCount(ctx context.Context) (int, error)
 	Size(ctx context.Context) (float64, error)
 	Duration(ctx context.Context) (float64, error)
+	PlayDuration(ctx context.Context) (float64, error)
 	// SizeCount() (string, error)
 	CountByStudioID(ctx context.Context, studioID int) (int, error)
 	CountByTagID(ctx context.Context, tagID int) (int, error)

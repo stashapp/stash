@@ -81,6 +81,8 @@ export const InteractiveProvider: React.FC = ({ children }) => {
     undefined
   );
   const [scriptOffset, setScriptOffset] = useState<number>(0);
+  const [useStashHostedFunscript, setUseStashHostedFunscript] =
+    useState<boolean>(false);
   const [interactive] = useState<InteractiveAPI>(new InteractiveAPI("", 0));
 
   const [initialised, setInitialised] = useState(false);
@@ -118,6 +120,9 @@ export const InteractiveProvider: React.FC = ({ children }) => {
 
     setHandyKey(stashConfig.interface.handyKey ?? undefined);
     setScriptOffset(stashConfig.interface.funscriptOffset ?? 0);
+    setUseStashHostedFunscript(
+      stashConfig.interface.useStashHostedFunscript ?? false
+    );
   }, [stashConfig]);
 
   useEffect(() => {
@@ -129,11 +134,19 @@ export const InteractiveProvider: React.FC = ({ children }) => {
 
     interactive.handyKey = handyKey ?? "";
     interactive.scriptOffset = scriptOffset;
+    interactive.useStashHostedFunscript = useStashHostedFunscript;
 
     if (oldKey !== interactive.handyKey && interactive.handyKey) {
       initialise();
     }
-  }, [handyKey, scriptOffset, config, interactive, initialise]);
+  }, [
+    handyKey,
+    scriptOffset,
+    useStashHostedFunscript,
+    config,
+    interactive,
+    initialise,
+  ]);
 
   const sync = useCallback(async () => {
     if (
@@ -163,14 +176,17 @@ export const InteractiveProvider: React.FC = ({ children }) => {
 
       setState(ConnectionState.Uploading);
       try {
-        await interactive.uploadScript(funscriptPath);
+        await interactive.uploadScript(
+          funscriptPath,
+          stashConfig?.general?.apiKey
+        );
         setCurrentScript(funscriptPath);
         setState(ConnectionState.Ready);
       } catch (e) {
         setState(ConnectionState.Error);
       }
     },
-    [interactive, currentScript]
+    [interactive, currentScript, stashConfig]
   );
 
   return (
