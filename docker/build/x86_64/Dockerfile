@@ -6,7 +6,7 @@ RUN apk add --no-cache make git
 ## cache node_modules separately
 COPY ./ui/v2.5/package.json ./ui/v2.5/yarn.lock /stash/ui/v2.5/
 WORKDIR /stash
-RUN yarn --cwd ui/v2.5 install --frozen-lockfile.
+RUN make pre-ui
 COPY Makefile /stash/
 COPY ./graphql /stash/graphql/
 COPY ./ui /stash/ui/
@@ -29,7 +29,7 @@ COPY --from=frontend /stash /stash/
 RUN make generate-backend
 ARG GITHASH
 ARG STASH_VERSION
-RUN make build
+RUN make stash-release
 
 # Final Runnable Image
 FROM alpine:latest
