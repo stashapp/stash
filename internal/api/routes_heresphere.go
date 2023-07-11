@@ -323,6 +323,8 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 		}
 	}
 
+	// TODO: Add favorites back!
+
 	// Tags
 	if user.Tags != nil {
 		// Search input tags and add/create any new ones
@@ -378,8 +380,8 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 				perfIDs = append(perfIDs, tagMod.ID)
 			}
 
-			// Marker
-			// Other
+			// TODO: Marker
+			// TODO: Other
 
 			// Custom
 			{
