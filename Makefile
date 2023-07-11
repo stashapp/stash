@@ -278,10 +278,10 @@ endif
 
 # Regenerates GraphQL files
 .PHONY: generate
-generate: generate-backend generate-frontend
+generate: generate-backend generate-ui
 
-.PHONY: generate-frontend
-generate-frontend:
+.PHONY: generate-ui
+generate-ui:
 	cd ui/v2.5 && yarn run gqlgen
 
 .PHONY: generate-backend
@@ -377,8 +377,8 @@ fmt-ui:
 	cd ui/v2.5 && yarn format
 
 # runs all of the frontend PR-acceptance steps
-.PHONY: validate-frontend
-validate-frontend:
+.PHONY: validate-ui
+validate-ui:
 	cd ui/v2.5 && yarn run validate
 
 # runs all of the backend PR-acceptance steps
@@ -387,7 +387,7 @@ validate-backend: lint it
 
 # runs all of the tests and checks required for a PR to be accepted
 .PHONY: validate
-validate: validate-frontend validate-backend
+validate: validate-ui validate-backend
 
 # locally builds and tags a 'stash/build' docker image
 .PHONY: docker-build

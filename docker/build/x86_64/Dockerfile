@@ -10,7 +10,7 @@ RUN make pre-ui
 COPY Makefile /stash/
 COPY ./graphql /stash/graphql/
 COPY ./ui /stash/ui/
-RUN make generate-frontend
+RUN make generate-ui
 ARG GITHASH
 ARG STASH_VERSION
 RUN BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") make ui
