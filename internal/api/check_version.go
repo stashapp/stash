@@ -113,8 +113,6 @@ type LatestRelease struct {
 	Url       string
 }
 
-var githash string
-
 func makeGithubRequest(ctx context.Context, url string, output interface{}) error {
 	transport := &http.Transport{Proxy: http.ProxyFromEnvironment}
 
@@ -276,7 +274,7 @@ func printLatestVersion(ctx context.Context) {
 	if err != nil {
 		logger.Errorf("Couldn't retrieve latest version: %v", err)
 	} else {
-		_, githash, _ = build.Version()
+		_, githash, _ := build.Version()
 		switch {
 		case githash == "":
 			logger.Infof("Latest version: %s (%s)", latestRelease.Version, latestRelease.ShortHash)
