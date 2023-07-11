@@ -108,13 +108,9 @@ export function makeCriteria(
     case "average_resolution":
       return new AverageResolutionCriterion();
     case "video_codec":
-      return new StringCriterion(
-        new StringCriterionOption(type, type)
-      );
+      return new StringCriterion(new StringCriterionOption(type, type));
     case "audio_codec":
-      return new StringCriterion(
-        new StringCriterionOption(type, type)
-      );
+      return new StringCriterion(new StringCriterionOption(type, type));
     case "resume_time":
     case "duration":
     case "play_duration":
