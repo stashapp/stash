@@ -508,7 +508,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
       }
 
       const result = await createMovie({
-        variables: movieInput,
+        variables: { input: movieInput },
       });
 
       // add the new movie to the new movies value

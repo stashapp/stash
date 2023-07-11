@@ -141,6 +141,11 @@
   "captions": "Sous-titres",
   "career_length": "Durée de la carrière",
   "chapters": "Chapitres",
+  "circumcised": "Circoncis",
+  "circumcised_types": {
+    "CUT": "Coupé",
+    "UNCUT": "Non coupé"
+  },
   "component_tagger": {
     "config": {
       "active_instance": "Instance Stash-Box active :",
@@ -407,7 +412,7 @@
         "auto_tagging_all_paths": "Étiquetage automatique de tous les chemins",
         "auto_tagging_paths": "Étiquetage automatique des chemins suivants"
       },
-      "auto_tag_based_on_filenames": "Étiquetage automatique du contenu en se basant sur les noms de fichiers.",
+      "auto_tag_based_on_filenames": "Étiquetage automatique du contenu basé sur les chemins d'accès des fichiers.",
       "auto_tagging": "Étiquetage automatique",
       "backing_up_database": "Sauvegarde de la base de données",
       "backup_and_download": "Effectue une sauvegarde de la base de données et télécharge le fichier résultant.",
@@ -422,6 +427,7 @@
         "generating_from_paths": "Génération pour les scènes à partir des chemins suivants",
         "generating_scenes": "Génération pour {num} {scene}"
       },
+      "generate_clip_previews_during_scan": "Générer des aperçus pour les séquences d'images",
       "generate_desc": "Générer les supports images, sprites, vidéos, vtt et autres fichiers associés.",
       "generate_phashes_during_scan": "Générer des empreintes perceptuelles",
       "generate_phashes_during_scan_tooltip": "Pour la déduplication et l'identification des scènes.",
@@ -589,6 +595,10 @@
       "images": {
         "heading": "Images",
         "options": {
+          "create_image_clips_from_videos": {
+            "description": "Lorsqu'une bibliothèque a des vidéos désactivées, les fichiers vidéo (fichiers se terminant par une extension vidéo) seront analysés comme séquences d'images.",
+            "heading": "Analyser les extensions vidéo comme séquences d'images"
+          },
           "write_image_thumbnails": {
             "description": "Écrire les vignettes des images sur disque lorsqu'elles sont générées à la volée",
             "heading": "Enregistrer les vignettes des images"
@@ -648,7 +658,11 @@
             "heading": "Continuer la liste de lecture par défaut"
           },
           "show_scrubber": "Montrer la barre de progression",
-          "track_activity": "Suivre l'activité"
+          "track_activity": "Suivre l'activité",
+          "vr_tag": {
+            "description": "Le bouton VR est uniquement affiché pour les scènes comportant cette étiquette.",
+            "heading": "Étiquette VR"
+          }
         }
       },
       "scene_wall": {
@@ -716,6 +730,9 @@
     "equals": "est égal à",
     "excludes": "ne contient pas",
     "format_string": "{criterion} {modifierString} {valueString}",
+    "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {all} other {{depth}}})",
+    "format_string_excludes": "{criterion} {modifierString} {valueString} (excludes {excludedString})",
+    "format_string_excludes_depth": "{criterion} {modifierString} {valueString} (exclut {excludedString}) (+{depth, plural, =-1 {all} other {{depth}}})",
     "greater_than": "est plus grand que",
     "includes": "contient",
     "includes_all": "contient tout",
@@ -799,6 +816,7 @@
       "destination": "Réaffecter à"
     },
     "scene_gen": {
+      "clip_previews": "Aperçu des séquences d'images",
       "covers": "Vignettes de scène",
       "force_transcodes": "Forcer la génération du transcodage",
       "force_transcodes_tooltip": "Par défaut, les transcodes ne sont générés que lorsque le fichier vidéo n'est pas pris en charge par le navigateur. Activé, les transcodes seront générés même si le fichier vidéo semble être pris en charge par le navigateur.",
@@ -1010,6 +1028,9 @@
   "parent_tags": "Étiquettes parentes",
   "part_of": "Fait partie de {parent}",
   "path": "Chemin",
+  "penis": "Pénis",
+  "penis_length": "Longueur du pénis",
+  "penis_length_cm": "Longueur du pénis (cm)",
   "perceptual_similarity": "Similitude perceptuelle (empreinte)",
   "performer": "Performeurs",
   "performerTags": "Étiquettes de performeur",

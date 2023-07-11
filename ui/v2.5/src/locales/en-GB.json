@@ -129,6 +129,7 @@
   "also_known_as": "Also known as",
   "appears_with": "Appears With",
   "ascending": "Ascending",
+  "audio_codec": "Audio Codec",
   "average_resolution": "Average Resolution",
   "between_and": "and",
   "birth_year": "Birth Year",
@@ -143,8 +144,8 @@
   "chapters": "Chapters",
   "circumcised": "Circumcised",
   "circumcised_types": {
-    "UNCUT": "Uncut",
-    "CUT": "Cut"
+    "CUT": "Cut",
+    "UNCUT": "Uncut"
   },
   "component_tagger": {
     "config": {
@@ -595,13 +596,13 @@
       "images": {
         "heading": "Images",
         "options": {
+          "create_image_clips_from_videos": {
+            "description": "When a library has Videos disabled, Video Files (files ending with Video Extension) will be scanned as Image Clip.",
+            "heading": "Scan Video Extensions as Image Clip"
+          },
           "write_image_thumbnails": {
             "description": "Write image thumbnails to disk when generated on-the-fly",
             "heading": "Write image thumbnails"
-          },
-          "create_image_clips_from_videos": {
-            "description": "When a library has Videos disabled, Video Files (files ending with Video Extension) will be scanned as Image Clip",
-            "heading": "Scan Video Extensions as Image Clip"
           }
         }
       },
@@ -1263,6 +1264,7 @@
     "required": "${path} is a required field"
   },
   "videos": "Videos",
+  "video_codec": "Video Codec",
   "view_all": "View All",
   "weight": "Weight",
   "weight_kg": "Weight (kg)",

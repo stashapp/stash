@@ -45,6 +45,10 @@ type SceneFilterType struct {
 	Duplicated *PHashDuplicationCriterionInput `json:"duplicated"`
 	// Filter by resolution
 	Resolution *ResolutionCriterionInput `json:"resolution"`
+	// Filter by video codec
+	VideoCodec *StringCriterionInput `json:"video_codec"`
+	// Filter by audio codec
+	AudioCodec *StringCriterionInput `json:"audio_codec"`
 	// Filter by duration (in seconds)
 	Duration *IntCriterionInput `json:"duration"`
 	// Filter to only include scenes which have markers. `true` or `false`
@@ -178,6 +182,7 @@ type SceneReader interface {
 	Wall(ctx context.Context, q *string) ([]*Scene, error)
 	All(ctx context.Context) ([]*Scene, error)
 	Query(ctx context.Context, options SceneQueryOptions) (*SceneQueryResult, error)
+	QueryCount(ctx context.Context, sceneFilter *SceneFilterType, findFilter *FindFilterType) (int, error)
 	GetCover(ctx context.Context, sceneID int) ([]byte, error)
 	HasCover(ctx context.Context, sceneID int) (bool, error)
 }

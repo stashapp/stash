@@ -5,7 +5,6 @@ package sqlite_test
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"math"
@@ -29,7 +28,7 @@ func TestStudioFindByName(t *testing.T) {
 			t.Errorf("Error finding studios: %s", err.Error())
 		}
 
-		assert.Equal(t, studioNames[studioIdxWithScene], studio.Name.String)
+		assert.Equal(t, studioNames[studioIdxWithScene], studio.Name)
 
 		name = studioNames[studioIdxWithDupName] // find a studio by name nocase
 
@@ -40,9 +39,9 @@ func TestStudioFindByName(t *testing.T) {
 		}
 		// studioIdxWithDupName and studioIdxWithScene should have similar names ( only diff should be Name vs NaMe)
 		//studio.Name should match with studioIdxWithScene since its ID is before studioIdxWithDupName
-		assert.Equal(t, studioNames[studioIdxWithScene], studio.Name.String)
+		assert.Equal(t, studioNames[studioIdxWithScene], studio.Name)
 		//studio.Name should match with studioIdxWithDupName if the check is not case sensitive
-		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithDupName]), strings.ToLower(studio.Name.String))
+		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithDupName]), strings.ToLower(studio.Name))
 
 		return nil
 	})
@@ -74,8 +73,8 @@ func TestStudioQueryNameOr(t *testing.T) {
 		studios := queryStudio(ctx, t, sqb, &studioFilter, nil)
 
 		assert.Len(t, studios, 2)
-		assert.Equal(t, studio1Name, studios[0].Name.String)
-		assert.Equal(t, studio2Name, studios[1].Name.String)
+		assert.Equal(t, studio1Name, studios[0].Name)
+		assert.Equal(t, studio2Name, studios[1].Name)
 
 		return nil
 	})
@@ -93,7 +92,7 @@ func TestStudioQueryNameAndUrl(t *testing.T) {
 		},
 		And: &models.StudioFilterType{
 			URL: &models.StringCriterionInput{
-				Value:    studioUrl.String,
+				Value:    studioUrl,
 				Modifier: models.CriterionModifierEquals,
 			},
 		},
@@ -105,8 +104,8 @@ func TestStudioQueryNameAndUrl(t *testing.T) {
 		studios := queryStudio(ctx, t, sqb, &studioFilter, nil)
 
 		assert.Len(t, studios, 1)
-		assert.Equal(t, studioName, studios[0].Name.String)
-		assert.Equal(t, studioUrl.String, studios[0].URL.String)
+		assert.Equal(t, studioName, studios[0].Name)
+		assert.Equal(t, studioUrl, studios[0].URL)
 
 		return nil
 	})
@@ -123,7 +122,7 @@ func TestStudioQueryNameNotUrl(t *testing.T) {
 	}
 
 	urlCriterion := models.StringCriterionInput{
-		Value:    studioUrl.String,
+		Value:    studioUrl,
 		Modifier: models.CriterionModifierEquals,
 	}
 
@@ -140,9 +139,9 @@ func TestStudioQueryNameNotUrl(t *testing.T) {
 		studios := queryStudio(ctx, t, sqb, &studioFilter, nil)
 
 		for _, studio := range studios {
-			verifyString(t, studio.Name.String, nameCriterion)
+			verifyString(t, studio.Name, nameCriterion)
 			urlCriterion.Modifier = models.CriterionModifierNotEquals
-			verifyNullString(t, studio.URL, urlCriterion)
+			verifyString(t, studio.URL, urlCriterion)
 		}
 
 		return nil
@@ -218,7 +217,7 @@ func TestStudioQueryForAutoTag(t *testing.T) {
 		}
 
 		assert.Len(t, studios, 1)
-		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithMovie]), strings.ToLower(studios[0].Name.String))
+		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithMovie]), strings.ToLower(studios[0].Name))
 
 		// find by alias
 		name = getStudioStringValue(studioIdxWithMovie, "Alias")
@@ -293,7 +292,7 @@ func TestStudioDestroyParent(t *testing.T) {
 			return fmt.Errorf("Error creating parent studio: %s", err.Error())
 		}
 
-		parentID := int64(createdParent.ID)
+		parentID := createdParent.ID
 		createdChild, err := createStudio(ctx, db.Studio, childName, &parentID)
 		if err != nil {
 			return fmt.Errorf("Error creating child studio: %s", err.Error())
@@ -355,7 +354,7 @@ func TestStudioUpdateClearParent(t *testing.T) {
 			return fmt.Errorf("Error creating parent studio: %s", err.Error())
 		}
 
-		parentID := int64(createdParent.ID)
+		parentID := createdParent.ID
 		createdChild, err := createStudio(ctx, db.Studio, childName, &parentID)
 		if err != nil {
 			return fmt.Errorf("Error creating child studio: %s", err.Error())
@@ -365,17 +364,16 @@ func TestStudioUpdateClearParent(t *testing.T) {
 
 		// clear the parent id from the child
 		updatePartial := models.StudioPartial{
-			ID:       createdChild.ID,
-			ParentID: &sql.NullInt64{Valid: false},
+			ParentID: models.NewOptionalIntPtr(nil),
 		}
 
-		updatedStudio, err := sqb.Update(ctx, updatePartial)
+		updatedStudio, err := sqb.UpdatePartial(ctx, createdChild.ID, updatePartial)
 
 		if err != nil {
 			return fmt.Errorf("Error updated studio: %s", err.Error())
 		}
 
-		if updatedStudio.ParentID.Valid {
+		if updatedStudio.ParentID != nil {
 			return errors.New("updated studio has parent ID set")
 		}
 
@@ -582,7 +580,7 @@ func TestStudioQueryURL(t *testing.T) {
 
 	verifyFn := func(ctx context.Context, g *models.Studio) {
 		t.Helper()
-		verifyNullString(t, g.URL, urlCriterion)
+		verifyString(t, g.URL, urlCriterion)
 	}
 
 	verifyStudioQuery(t, filter, verifyFn)
@@ -662,7 +660,7 @@ func verifyStudiosRating(t *testing.T, ratingCriterion models.IntCriterionInput)
 		}
 
 		for _, studio := range studios {
-			verifyInt64(t, studio.Rating, ratingCriterion)
+			verifyIntPtr(t, studio.Rating, ratingCriterion)
 		}
 
 		return nil
@@ -686,7 +684,7 @@ func TestStudioQueryIsMissingRating(t *testing.T) {
 		assert.True(t, len(studios) > 0)
 
 		for _, studio := range studios {
-			assert.True(t, !studio.Rating.Valid)
+			assert.True(t, studio.Rating == nil)
 		}
 
 		return nil
@@ -716,7 +714,7 @@ func TestStudioQueryName(t *testing.T) {
 	}
 
 	verifyFn := func(ctx context.Context, studio *models.Studio) {
-		verifyNullString(t, studio.Name, *nameCriterion)
+		verifyString(t, studio.Name, *nameCriterion)
 	}
 
 	verifyStudioQuery(t, studioFilter, verifyFn)

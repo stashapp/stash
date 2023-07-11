@@ -104,6 +104,11 @@ var (
 		},
 		fkColumn: galleriesScenesJoinTable.Col(sceneIDColumn),
 	}
+
+	galleriesChaptersTableMgr = &table{
+		table:    goqu.T(galleriesChaptersTable),
+		idColumn: goqu.T(galleriesChaptersTable).Col(idColumn),
+	}
 )
 
 var (
@@ -239,5 +244,12 @@ var (
 	blobTableMgr = &table{
 		table:    goqu.T(blobTable),
 		idColumn: goqu.T(blobTable).Col(blobChecksumColumn),
+	}
+)
+
+var (
+	savedFilterTableMgr = &table{
+		table:    goqu.T(savedFilterTable),
+		idColumn: goqu.T(savedFilterTable).Col(idColumn),
 	}
 )

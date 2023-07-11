@@ -78,7 +78,6 @@ func (s *Performer) LoadRelationships(ctx context.Context, l PerformerReader) er
 // PerformerPartial represents part of a Performer object. It is used to update
 // the database entry.
 type PerformerPartial struct {
-	ID             int
 	Name           OptionalString
 	Disambiguation OptionalString
 	Gender         OptionalString

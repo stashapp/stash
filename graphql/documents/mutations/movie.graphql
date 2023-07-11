@@ -1,17 +1,5 @@
-mutation MovieCreate(
-  $name: String!,
-  $aliases: String,
-  $duration: Int,
-  $date: String,
-  $rating: Int,
-  $studio_id: ID,
-  $director: String,
-  $synopsis: String,
-  $url: String,
-  $front_image: String,
-  $back_image: String) {
-
-  movieCreate(input: { name: $name, aliases: $aliases, duration: $duration, date: $date, rating: $rating, studio_id: $studio_id, director: $director, synopsis: $synopsis, url: $url, front_image: $front_image, back_image: $back_image }) {
+mutation MovieCreate($input: MovieCreateInput!) {
+  movieCreate(input: $input) {
     ...MovieData
   }
 }

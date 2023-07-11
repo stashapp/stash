@@ -211,9 +211,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
               <Nav.Item>
                 <Nav.Link eventKey="gallery-file-info-panel">
                   <FormattedMessage id="file_info" />
-                  {gallery.files.length > 1 && (
-                    <Counter count={gallery.files.length ?? 0} />
-                  )}
+                  <Counter count={gallery.files.length} hideZero hideOne />
                 </Nav.Link>
               </Nav.Item>
             ) : undefined}
