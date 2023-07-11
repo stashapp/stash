@@ -417,31 +417,30 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 				perfIDs = append(perfIDs, tagMod.ID)
 			}
 
-			// Marker
-			/*if strings.HasPrefix(tagI.Name, "Marker:") {
+			// If add marker
+			if strings.HasPrefix(tagI.Name, "Marker:") {
 				after := strings.TrimPrefix(tagI.Name, "Marker:")
-				var err error
-				var tagMod *models.SceneMarker
+				var tagId *string
 				if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
-					var tagMods []*models.SceneMarker
-					if tagMods, err = rs.repository.SceneMarker.FindByNames(ctx, []string{after}, true); err == nil && len(tagMods) > 0 {
-						tagMod = tagMods[0]
+					var err error
+					var tagMods []*models.MarkerStringsResultType
+					searchType := "count"
+					if tagMods, err = rs.repository.SceneMarker.GetMarkerStrings(ctx, &after, &searchType); err == nil && len(tagMods) > 0 {
+						tagId = &tagMods[0].ID
 					}
 					return err
-				}); err != nil || tagMod == nil {
+				}); err != nil || tagId == nil {
 					newTag := SceneMarkerCreateInput{
-						Name: after,
-
+						PrimaryTagID: after,
+						Seconds:      tagI.Start,
 					}
-					if tagMod, err = rs.resolver.Mutation().SceneMarkerCreate(r.Context(), newTag); err != nil {
+					if _, err := rs.resolver.Mutation().SceneMarkerCreate(r.Context(), newTag); err != nil {
 						return err
 					}
 				}
+			}
 
-				perfIDs = append(perfIDs, tagMod.ID)
-			}*/
-
-			// TODO: Other
+			// TODO: Movie, Studio, Director?
 
 			// Custom
 			{
