@@ -375,7 +375,8 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 			}
 
 			// If add tag
-			if after, err := strings.CutPrefix(tagI.Name, "Tag:"); !err {
+			if strings.HasPrefix(tagI.Name, "Tag:") {
+				after := strings.TrimPrefix(tagI.Name, "Tag:")
 				var err error
 				var tagMod *models.Tag
 				if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
@@ -394,7 +395,8 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 			}
 
 			// If add performer
-			if after, err := strings.CutPrefix(tagI.Name, "Performer:"); !err {
+			if strings.HasPrefix(tagI.Name, "Performer:") {
+				after := strings.TrimPrefix(tagI.Name, "Performer:")
 				var err error
 				var tagMod *models.Performer
 				if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
@@ -415,14 +417,39 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 				perfIDs = append(perfIDs, tagMod.ID)
 			}
 
-			// TODO: Marker
+			// Marker
+			/*if strings.HasPrefix(tagI.Name, "Marker:") {
+				after := strings.TrimPrefix(tagI.Name, "Marker:")
+				var err error
+				var tagMod *models.SceneMarker
+				if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+					var tagMods []*models.SceneMarker
+					if tagMods, err = rs.repository.SceneMarker.FindByNames(ctx, []string{after}, true); err == nil && len(tagMods) > 0 {
+						tagMod = tagMods[0]
+					}
+					return err
+				}); err != nil || tagMod == nil {
+					newTag := SceneMarkerCreateInput{
+						Name: after,
+
+					}
+					if tagMod, err = rs.resolver.Mutation().SceneMarkerCreate(r.Context(), newTag); err != nil {
+						return err
+					}
+				}
+
+				perfIDs = append(perfIDs, tagMod.ID)
+			}*/
+
 			// TODO: Other
 
 			// Custom
 			{
 				tagName := tagI.Name
 
-				if after, err := strings.CutPrefix(tagName, string(HeresphereCustomTagWatched)+":"); !err {
+				prefix := string(HeresphereCustomTagWatched) + ":"
+				if strings.HasPrefix(tagName, prefix) {
+					after := strings.TrimPrefix(tagName, prefix)
 					if b, err := strconv.ParseBool(after); err == nil {
 						if b && scn.PlayCount == 0 {
 							scn.PlayCount = 1
@@ -432,13 +459,17 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 					}
 					continue
 				}
-				if after, err := strings.CutPrefix(tagName, string(HeresphereCustomTagOrganized)+":"); !err {
+				prefix = string(HeresphereCustomTagOrganized) + ":"
+				if strings.HasPrefix(tagName, prefix) {
+					after := strings.TrimPrefix(tagName, prefix)
 					if b, err := strconv.ParseBool(after); err == nil {
 						scn.Organized = b
 					}
 					continue
 				}
-				if after, err := strings.CutPrefix(tagName, string(HeresphereCustomTagRated)+":"); !err {
+				prefix = string(HeresphereCustomTagRated) + ":"
+				if strings.HasPrefix(tagName, prefix) {
+					after := strings.TrimPrefix(tagName, prefix)
 					if b, err := strconv.ParseBool(after); err == nil && !b {
 						scn.Rating = nil
 					}
@@ -446,13 +477,17 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 				}
 
 				// Set numbers
-				if after, err := strings.CutPrefix(tagName, string(HeresphereCustomTagPlayCount)+":"); !err {
+				prefix = string(HeresphereCustomTagPlayCount) + ":"
+				if strings.HasPrefix(tagName, prefix) {
+					after := strings.TrimPrefix(tagName, prefix)
 					if numRes, err := strconv.ParseInt(after, 10, 32); err != nil {
 						scn.PlayCount = int(numRes)
 					}
 					continue
 				}
-				if after, err := strings.CutPrefix(tagName, string(HeresphereCustomTagOCounter)+":"); !err {
+				prefix = string(HeresphereCustomTagOCounter) + ":"
+				if strings.HasPrefix(tagName, prefix) {
+					after := strings.TrimPrefix(tagName, prefix)
 					if numRes, err := strconv.ParseInt(after, 10, 32); err != nil {
 						scn.OCounter = int(numRes)
 					}
