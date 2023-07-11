@@ -9,6 +9,7 @@ $sceneTabWidth: 450px;
 .VideoPlayer {
   display: flex;
   flex-direction: column;
+  max-height: calc(100vh - #{$menuHeight});
   padding-bottom: 0.25rem;
 
   @media (min-width: 1200px) {
@@ -21,10 +22,9 @@ $sceneTabWidth: 450px;
 }
 
 .video-wrapper {
-  display: flex;
   height: 56.25vw;
-  max-height: calc(100vh - #{$menuHeight});
   width: 100%;
+  position: relative;
 
   @media (min-width: 1200px) {
     height: 100%;
@@ -34,6 +34,7 @@ $sceneTabWidth: 450px;
 .video-js {
   height: 100%;
   width: 100%;
+  position: absolute;
 
   .vjs-button {
     outline: none;
