@@ -264,6 +264,24 @@ func getFavoriteTag() (varTag string, err error) {
 }
 
 /*
+ * This auxiliary function searches for the "favorite" tag
+ */
+func (rs heresphereRoutes) getVideoFavorite(r *http.Request, scene *models.Scene) bool {
+	tag_ids, err := rs.resolver.Scene().Tags(r.Context(), scene)
+	if err == nil {
+		if favTag, err := getFavoriteTag(); err == nil {
+			for _, tag := range tag_ids {
+				if tag.Name == favTag {
+					return true
+				}
+			}
+		}
+	}
+
+	return false
+}
+
+/*
  * This is a video playback event
  * Intended for server-sided script playback.
  * But since we dont need that, we just use it for timestamps.
@@ -1017,7 +1035,7 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		Rating:         0,
 		Favorites:      0,
 		Comments:       scene.OCounter,
-		IsFavorite:     false,
+		IsFavorite:     rs.getVideoFavorite(r, scene),
 		Projection:     HeresphereProjectionPerspective,
 		Stereo:         HeresphereStereoMono,
 		IsEyeSwapped:   false,
