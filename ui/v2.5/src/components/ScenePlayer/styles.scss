@@ -22,8 +22,8 @@ $sceneTabWidth: 450px;
 }
 
 .video-wrapper {
-  position: relative;
   height: 56.25vw;
+  position: relative;
   width: 100%;
 
   @media (min-width: 1200px) {
@@ -32,8 +32,8 @@ $sceneTabWidth: 450px;
 }
 
 .video-js {
-  position: absolute;
   height: 100%;
+  position: absolute;
   width: 100%;
 
   .vjs-button {
