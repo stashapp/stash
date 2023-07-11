@@ -81,6 +81,12 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
       break;
   }
 
+  // toggle player looping with shift+l
+  if (event.shiftKey && event.which === 76){
+    player.loop(!player.loop());
+    return;
+  }
+
   if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
     return;
   }
