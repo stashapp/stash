@@ -33,6 +33,14 @@ type MetadataOptions struct {
 	SetOrganized  *bool `json:"setOrganized"`
 	// defaults to true if not provided
 	IncludeMalePerformers *bool `json:"includeMalePerformers"`
+	// defaults to true if not provided
+	SkipMultipleMatches *bool `json:"skipMultipleMatches"`
+	// ID of tag to tag skipped multiple matches with
+	SkipMultipleMatchTag *string `json:"skipMultipleMatchTag"`
+	// defaults to true if not provided
+	SkipSingleNamePerformers *bool `json:"skipSingleNamePerformers"`
+	// ID of tag to tag skipped single name performers with
+	SkipSingleNamePerformerTag *string `json:"skipSingleNamePerformerTag"`
 }
 
 type FieldOptions struct {

@@ -124,6 +124,10 @@ fragment IdentifyMetadataOptionsData on IdentifyMetadataOptions {
   setCoverImage
   setOrganized
   includeMalePerformers
+  skipMultipleMatches
+  skipMultipleMatchTag
+  skipSingleNamePerformers
+  skipSingleNamePerformerTag
 }
 
 fragment ScraperSourceData on ScraperSource {

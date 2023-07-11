@@ -64,4 +64,4 @@ node_modules
 /phasher
 dist
 .DS_Store
-/.local
+/.local*
