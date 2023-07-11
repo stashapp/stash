@@ -71,12 +71,12 @@ func main() {
 	}
 
 	ffmpegPath, ffprobePath := ffmpeg.GetPaths(nil)
-	FFMPEG := ffmpeg.NewEncoder(ffmpegPath)
-	FFMPEG.InitHWSupport(context.TODO())
-	FFPROBE := ffmpeg.FFProbe(ffprobePath)
+	encoder := ffmpeg.NewEncoder(ffmpegPath)
+	encoder.InitHWSupport(context.TODO())
+	ffprobe := ffmpeg.FFProbe(ffprobePath)
 
 	for _, item := range args {
-		if err := printPhash(FFMPEG, FFPROBE, item, quiet); err != nil {
+		if err := printPhash(encoder, ffprobe, item, quiet); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 		}
 	}
