@@ -704,7 +704,11 @@
           }
         }
       },
-      "title": "User Interface"
+      "title": "User Interface",
+      "use_stash_hosted_funscript": {
+        "description": "When enabled, funscripts will be served directly from Stash to your Handy device without using the third party Handy server. Requires that Stash be accessible from your Handy device.",
+        "heading": "Serve funscripts directly"
+      }
     }
   },
   "configuration": "Configuration",
