@@ -142,7 +142,6 @@ export class Interactive {
   }
 
   async uploadScript(funscriptPath: string, apiKey?: string) {
-    console.log("FS Path: " + funscriptPath);
     if (!(this._handy.connectionKey && funscriptPath)) {
       return;
     }
@@ -165,8 +164,6 @@ export class Interactive {
 
       funscriptUrl = await uploadCsv(csvFile).then((response) => response.url);
     }
-
-    console.log("funscriptUrl:" + funscriptUrl);
 
     await this._handy.setMode(HandyMode.hssp);
 
