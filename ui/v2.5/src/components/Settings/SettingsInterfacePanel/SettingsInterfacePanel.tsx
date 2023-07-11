@@ -273,6 +273,12 @@ export const SettingsInterfacePanel: React.FC = () => {
 
       <SettingSection headingID="config.ui.scene_player.heading">
         <BooleanSetting
+          id="enable-chromecast"
+          headingID="config.ui.scene_player.options.enable_chromecast"
+          checked={ui.enableChromecast ?? undefined}
+          onChange={(v) => saveUI({ enableChromecast: v })}
+        />
+        <BooleanSetting
           id="show-scrubber"
           headingID="config.ui.scene_player.options.show_scrubber"
           checked={iface.showScrubber ?? undefined}
@@ -755,6 +761,14 @@ export const SettingsInterfacePanel: React.FC = () => {
           subHeadingID="config.ui.funscript_offset.description"
           value={iface.funscriptOffset ?? undefined}
           onChange={(v) => saveInterface({ funscriptOffset: v })}
+        />
+
+        <BooleanSetting
+          id="use-stash-hosted-funscript"
+          headingID="config.ui.use_stash_hosted_funscript.heading"
+          subHeadingID="config.ui.use_stash_hosted_funscript.description"
+          checked={iface.useStashHostedFunscript ?? false}
+          onChange={(v) => saveInterface({ useStashHostedFunscript: v })}
         />
       </SettingSection>
     </>

@@ -93,6 +93,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   }
   handyKey
   funscriptOffset
+  useStashHostedFunscript
 }
 
 fragment ConfigDLNAData on ConfigDLNAResult {
