@@ -1,9 +1,7 @@
-package config
+package build
 
 import (
 	"regexp"
-
-	"github.com/stashapp/stash/pkg/logger"
 )
 
 var version string
@@ -11,11 +9,11 @@ var buildstamp string
 var githash string
 var officialBuild string
 
-func GetVersion() (string, string, string) {
+func Version() (string, string, string) {
 	return version, githash, buildstamp
 }
 
-func GetVersionString() string {
+func VersionString() string {
 	var versionString string
 	switch {
 	case version != "":
@@ -29,7 +27,7 @@ func GetVersionString() string {
 	default:
 		versionString = "unknown"
 	}
-	if IsOfficialBuild() {
+	if IsOfficial() {
 		versionString += " - Official Build"
 	} else {
 		versionString += " - Unofficial Build"
@@ -40,11 +38,7 @@ func GetVersionString() string {
 	return versionString
 }
 
-func PrintVersion() {
-	logger.Infof("stash version: %s\n", GetVersionString())
-}
-
-func IsOfficialBuild() bool {
+func IsOfficial() bool {
 	return officialBuild == "true"
 }
 

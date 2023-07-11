@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
+	"github.com/stashapp/stash/internal/build"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 )
@@ -49,7 +50,7 @@ func Initialize() (*Instance, error) {
 		}
 
 		if flags.versionFlag {
-			fmt.Printf(GetVersionString() + "\n")
+			fmt.Printf(build.VersionString() + "\n")
 			os.Exit(0)
 		}
 

@@ -7,8 +7,8 @@ import (
 	"sort"
 	"strconv"
 
+	"github.com/stashapp/stash/internal/build"
 	"github.com/stashapp/stash/internal/manager"
-	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
@@ -181,7 +181,7 @@ func (r *queryResolver) Stats(ctx context.Context) (*StatsResultType, error) {
 }
 
 func (r *queryResolver) Version(ctx context.Context) (*Version, error) {
-	version, hash, buildtime := config.GetVersion()
+	version, hash, buildtime := build.Version()
 
 	return &Version{
 		Version:   &version,

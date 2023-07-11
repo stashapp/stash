@@ -29,6 +29,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httplog"
 	"github.com/stashapp/stash/internal/api/loaders"
+	"github.com/stashapp/stash/internal/build"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -265,7 +266,7 @@ func Start() error {
 		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
 	}
 
-	config.PrintVersion()
+	logger.Infof("stash version: %s\n", build.VersionString())
 	go printLatestVersion(context.TODO())
 	logger.Infof("stash is listening on " + address)
 	if tlsConfig != nil {
