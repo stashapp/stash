@@ -194,6 +194,10 @@ input SceneFilterType {
   duplicated: PHashDuplicationCriterionInput
   """Filter by resolution"""
   resolution: ResolutionCriterionInput
+  """Filter by video codec"""
+  video_codec: StringCriterionInput
+  """Filter by audio codec"""
+  audio_codec: StringCriterionInput
   """Filter by duration (in seconds)"""
   duration: IntCriterionInput
   """Filter to only include scenes which have markers. `true` or `false`"""

@@ -10,6 +10,7 @@ interface IThreeStateBoolean {
   label?: React.ReactNode;
   disabled?: boolean;
   defaultValue?: boolean;
+  tooltip?: string | undefined;
 }
 
 export const ThreeStateBoolean: React.FC<IThreeStateBoolean> = ({
@@ -20,6 +21,7 @@ export const ThreeStateBoolean: React.FC<IThreeStateBoolean> = ({
   label,
   disabled,
   defaultValue,
+  tooltip,
 }) => {
   const intl = useIntl();
 
@@ -31,6 +33,7 @@ export const ThreeStateBoolean: React.FC<IThreeStateBoolean> = ({
         checked={value}
         label={label}
         onChange={() => setValue(!value)}
+        title={tooltip}
       />
     );
   }
@@ -79,7 +82,7 @@ export const ThreeStateBoolean: React.FC<IThreeStateBoolean> = ({
 
   return (
     <Form.Group>
-      <h6>{label}</h6>
+      <h6 title={tooltip}>{label}</h6>
       <Form.Group>
         {renderModeButton(undefined)}
         {renderModeButton(false)}
