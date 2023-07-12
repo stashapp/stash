@@ -221,6 +221,27 @@ func (_m *SceneReaderWriter) DecrementOCounter(ctx context.Context, id int) (int
 	return r0, r1
 }
 
+// DecrementWatchCount provides a mock function with given fields: ctx, id
+func (_m *SceneReaderWriter) DecrementWatchCount(ctx context.Context, id int) (int, error) {
+	ret := _m.Called(ctx, id)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
+		r0 = rf(ctx, id)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Destroy provides a mock function with given fields: ctx, id
 func (_m *SceneReaderWriter) Destroy(ctx context.Context, id int) error {
 	ret := _m.Called(ctx, id)
@@ -840,6 +861,27 @@ func (_m *SceneReaderWriter) QueryCount(ctx context.Context, sceneFilter *models
 
 // ResetOCounter provides a mock function with given fields: ctx, id
 func (_m *SceneReaderWriter) ResetOCounter(ctx context.Context, id int) (int, error) {
+	ret := _m.Called(ctx, id)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
+		r0 = rf(ctx, id)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ResetWatchCount provides a mock function with given fields: ctx, id
+func (_m *SceneReaderWriter) ResetWatchCount(ctx context.Context, id int) (int, error) {
 	ret := _m.Called(ctx, id)
 
 	var r0 int

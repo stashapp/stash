@@ -1420,6 +1420,10 @@ func Test_sceneQueryBuilder_ResetOCounter(t *testing.T) {
 	}
 }
 
+func Test_sceneQueryBuilder_ResetWatchCount(t *testing.T) {
+	return nil
+}
+
 func Test_sceneQueryBuilder_Destroy(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -4652,6 +4656,10 @@ func TestSceneStore_IncrementWatchCount(t *testing.T) {
 			})
 		})
 	}
+}
+
+func TestSceneStore_DecrementWatchCount(t *testing.T) {
+	return nil
 }
 
 func TestSceneStore_SaveActivity(t *testing.T) {
