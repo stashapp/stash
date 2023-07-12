@@ -346,7 +346,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     videoRef.current!.appendChild(videoEl);
 
     const vjs = videojs(videoEl, options);
-    
+
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     const settings = (vjs as any).textTrackSettings;
     settings.setValues({
