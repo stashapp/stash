@@ -111,9 +111,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
       .defined()
       .test({
         name: "unique",
-        test: (value, context) => {
-          const aliases = [context.parent.name, ...value];
-          const dupes = aliases
+        test: (value) => {
+          const dupes = value
             .map((e, i, a) => {
               if (a.indexOf(e) !== i) {
                 return String(i - 1);
