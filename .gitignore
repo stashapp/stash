@@ -61,7 +61,6 @@ node_modules
 *.db
 
 /stash
-/phasher
 dist
 .DS_Store
-/.local*
+/.local

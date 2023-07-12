@@ -50,10 +50,6 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
       includeMalePerformers: true,
       setCoverImage: true,
       setOrganized: false,
-      skipMultipleMatches: true,
-      skipMultipleMatchTag: undefined,
-      skipSingleNamePerformers: true,
-      skipSingleNamePerformerTag: undefined,
     };
   }
 
@@ -244,8 +240,6 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
         const autoTagCopy = { ...autoTag };
         autoTagCopy.options = {
           setOrganized: false,
-          skipMultipleMatches: true,
-          skipSingleNamePerformers: true,
         };
         newSources.push(autoTagCopy);
       }

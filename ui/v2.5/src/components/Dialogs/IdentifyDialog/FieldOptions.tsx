@@ -311,7 +311,7 @@ export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
   }
 
   return (
-    <Form.Group className="scraper-sources mt-3">
+    <Form.Group className="scraper-sources">
       <h5>
         <FormattedMessage id="config.tasks.identify.field_options" />
       </h5>

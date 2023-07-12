@@ -31,10 +31,9 @@ func Test_getPerformerID(t *testing.T) {
 	}).Return(nil)
 
 	type args struct {
-		endpoint       string
-		p              *models.ScrapedPerformer
-		createMissing  bool
-		skipSingleName bool
+		endpoint      string
+		p             *models.ScrapedPerformer
+		createMissing bool
 	}
 	tests := []struct {
 		name    string
@@ -48,7 +47,6 @@ func Test_getPerformerID(t *testing.T) {
 				emptyEndpoint,
 				&models.ScrapedPerformer{},
 				false,
-				false,
 			},
 			nil,
 			false,
@@ -60,7 +58,6 @@ func Test_getPerformerID(t *testing.T) {
 				&models.ScrapedPerformer{
 					StoredID: &invalidStoredID,
 				},
-				false,
 				false,
 			},
 			nil,
@@ -74,7 +71,6 @@ func Test_getPerformerID(t *testing.T) {
 					StoredID: &validStoredIDStr,
 				},
 				false,
-				false,
 			},
 			&validStoredID,
 			false,
@@ -87,7 +83,6 @@ func Test_getPerformerID(t *testing.T) {
 					Name: &name,
 				},
 				false,
-				false,
 			},
 			nil,
 			false,
@@ -98,23 +93,9 @@ func Test_getPerformerID(t *testing.T) {
 				emptyEndpoint,
 				&models.ScrapedPerformer{},
 				true,
-				false,
 			},
 			nil,
 			false,
-		},
-		{
-			"single name no disambig creating",
-			args{
-				emptyEndpoint,
-				&models.ScrapedPerformer{
-					Name: &name,
-				},
-				true,
-				true,
-			},
-			nil,
-			true,
 		},
 		{
 			"valid name creating",
@@ -124,7 +105,6 @@ func Test_getPerformerID(t *testing.T) {
 					Name: &name,
 				},
 				true,
-				false,
 			},
 			&validStoredID,
 			false,
@@ -132,7 +112,7 @@ func Test_getPerformerID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getPerformerID(testCtx, tt.args.endpoint, &mockPerformerReaderWriter, tt.args.p, tt.args.createMissing, tt.args.skipSingleName)
+			got, err := getPerformerID(testCtx, tt.args.endpoint, &mockPerformerReaderWriter, tt.args.p, tt.args.createMissing)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getPerformerID() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -227,7 +207,7 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 	name := "name"
 
 	var stringValues []string
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 17; i++ {
 		stringValues = append(stringValues, strconv.Itoa(i))
 	}
 
@@ -260,50 +240,44 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 		{
 			"set all",
 			&models.ScrapedPerformer{
-				Name:           &name,
-				Disambiguation: nextVal(),
-				Birthdate:      nextVal(),
-				DeathDate:      nextVal(),
-				Gender:         nextVal(),
-				Ethnicity:      nextVal(),
-				Country:        nextVal(),
-				EyeColor:       nextVal(),
-				HairColor:      nextVal(),
-				Height:         nextVal(),
-				Weight:         nextVal(),
-				Measurements:   nextVal(),
-				FakeTits:       nextVal(),
-				CareerLength:   nextVal(),
-				Tattoos:        nextVal(),
-				Piercings:      nextVal(),
-				Aliases:        nextVal(),
-				Twitter:        nextVal(),
-				Instagram:      nextVal(),
-				URL:            nextVal(),
-				Details:        nextVal(),
+				Name:         &name,
+				Birthdate:    nextVal(),
+				DeathDate:    nextVal(),
+				Gender:       nextVal(),
+				Ethnicity:    nextVal(),
+				Country:      nextVal(),
+				EyeColor:     nextVal(),
+				HairColor:    nextVal(),
+				Height:       nextVal(),
+				Weight:       nextVal(),
+				Measurements: nextVal(),
+				FakeTits:     nextVal(),
+				CareerLength: nextVal(),
+				Tattoos:      nextVal(),
+				Piercings:    nextVal(),
+				Aliases:      nextVal(),
+				Twitter:      nextVal(),
+				Instagram:    nextVal(),
 			},
 			models.Performer{
-				Name:           name,
-				Disambiguation: *nextVal(),
-				Birthdate:      dateToDatePtr(models.NewDate(*nextVal())),
-				DeathDate:      dateToDatePtr(models.NewDate(*nextVal())),
-				Gender:         genderPtr(models.GenderEnum(*nextVal())),
-				Ethnicity:      *nextVal(),
-				Country:        *nextVal(),
-				EyeColor:       *nextVal(),
-				HairColor:      *nextVal(),
-				Height:         nextIntVal(),
-				Weight:         nextIntVal(),
-				Measurements:   *nextVal(),
-				FakeTits:       *nextVal(),
-				CareerLength:   *nextVal(),
-				Tattoos:        *nextVal(),
-				Piercings:      *nextVal(),
-				Aliases:        models.NewRelatedStrings([]string{*nextVal()}),
-				Twitter:        *nextVal(),
-				Instagram:      *nextVal(),
-				URL:            *nextVal(),
-				Details:        *nextVal(),
+				Name:         name,
+				Birthdate:    dateToDatePtr(models.NewDate(*nextVal())),
+				DeathDate:    dateToDatePtr(models.NewDate(*nextVal())),
+				Gender:       genderPtr(models.GenderEnum(*nextVal())),
+				Ethnicity:    *nextVal(),
+				Country:      *nextVal(),
+				EyeColor:     *nextVal(),
+				HairColor:    *nextVal(),
+				Height:       nextIntVal(),
+				Weight:       nextIntVal(),
+				Measurements: *nextVal(),
+				FakeTits:     *nextVal(),
+				CareerLength: *nextVal(),
+				Tattoos:      *nextVal(),
+				Piercings:    *nextVal(),
+				Aliases:      models.NewRelatedStrings([]string{*nextVal()}),
+				Twitter:      *nextVal(),
+				Instagram:    *nextVal(),
 			},
 		},
 		{

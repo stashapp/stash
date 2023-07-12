@@ -405,32 +405,3 @@ func (r *sceneResolver) InteractiveSpeed(ctx context.Context, obj *models.Scene)
 
 	return primaryFile.InteractiveSpeed, nil
 }
-
-func (r *sceneResolver) URL(ctx context.Context, obj *models.Scene) (*string, error) {
-	if !obj.URLs.Loaded() {
-		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-			return obj.LoadURLs(ctx, r.repository.Scene)
-		}); err != nil {
-			return nil, err
-		}
-	}
-
-	urls := obj.URLs.List()
-	if len(urls) == 0 {
-		return nil, nil
-	}
-
-	return &urls[0], nil
-}
-
-func (r *sceneResolver) Urls(ctx context.Context, obj *models.Scene) ([]string, error) {
-	if !obj.URLs.Loaded() {
-		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-			return obj.LoadURLs(ctx, r.repository.Scene)
-		}); err != nil {
-			return nil, err
-		}
-	}
-
-	return obj.URLs.List(), nil
-}

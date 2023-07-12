@@ -23,7 +23,8 @@ $sceneTabWidth: 450px;
 
 .video-wrapper {
   height: 56.25vw;
-  position: relative;
+  max-height: calc(100vh - #{$menuHeight});
+  overflow: hidden;
   width: 100%;
 
   @media (min-width: 1200px) {
@@ -33,7 +34,6 @@ $sceneTabWidth: 450px;
 
 .video-js {
   height: 100%;
-  position: absolute;
   width: 100%;
 
   .vjs-button {

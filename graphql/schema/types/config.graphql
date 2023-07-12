@@ -354,8 +354,6 @@ input ConfigInterfaceInput {
   handyKey: String
   """Funscript Time Offset"""
   funscriptOffset: Int
-  """Whether to use Stash Hosted Funscript"""
-  useStashHostedFunscript: Boolean
   """True if we should not auto-open a browser window on startup"""
   noBrowser: Boolean
   """True if we should send notifications to the desktop"""
@@ -427,8 +425,6 @@ type ConfigInterfaceResult {
   handyKey: String
   """Funscript Time Offset"""
   funscriptOffset: Int
-  """Whether to use Stash Hosted Funscript"""
-  useStashHostedFunscript: Boolean
 }
 
 input ConfigDLNAInput {

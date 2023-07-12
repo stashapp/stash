@@ -1,12 +1,5 @@
 import { Tab, Nav, Dropdown, Button, ButtonGroup } from "react-bootstrap";
-import React, {
-  useEffect,
-  useState,
-  useMemo,
-  useContext,
-  useRef,
-  useLayoutEffect,
-} from "react";
+import React, { useEffect, useState, useMemo, useContext, useRef } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useParams, useLocation, useHistory, Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
@@ -604,11 +597,12 @@ const SceneLoader: React.FC = () => {
   const { configuration } = useContext(ConfigurationContext);
   const { data, loading, error } = useFindScene(id ?? "");
 
-  const [scene, setScene] = useState<GQL.SceneDataFragment>();
+  const [scene, setScene] = useState<GQL.SceneDataFragment | undefined>(
+    data?.findScene ?? undefined
+  );
 
-  // useLayoutEffect to update before paint
-  useLayoutEffect(() => {
-    // only update scene when loading is done
+  // only update scene when loading is done
+  useEffect(() => {
     if (!loading) {
       setScene(data?.findScene ?? undefined);
     }
@@ -825,32 +819,34 @@ const SceneLoader: React.FC = () => {
     }
   }
 
-  if (!scene) {
-    if (loading) return <LoadingIndicator />;
-    if (error) return <ErrorMessage error={error.message} />;
+  if (!scene && loading) return <LoadingIndicator />;
+  if (error) return <ErrorMessage error={error.message} />;
+
+  if (!loading && !scene)
     return <ErrorMessage error={`No scene found with id ${id}.`} />;
-  }
 
   return (
     <div className="row">
-      <ScenePage
-        scene={scene}
-        setTimestamp={setTimestamp}
-        queueScenes={queueScenes ?? []}
-        queueStart={queueStart}
-        onDelete={onDelete}
-        onQueueNext={onQueueNext}
-        onQueuePrevious={onQueuePrevious}
-        onQueueRandom={onQueueRandom}
-        continuePlaylist={continuePlaylist}
-        loadScene={loadScene}
-        queueHasMoreScenes={queueHasMoreScenes}
-        onQueueLessScenes={onQueueLessScenes}
-        onQueueMoreScenes={onQueueMoreScenes}
-        collapsed={collapsed}
-        setCollapsed={setCollapsed}
-        setContinuePlaylist={setContinuePlaylist}
-      />
+      {scene && (
+        <ScenePage
+          scene={scene}
+          setTimestamp={setTimestamp}
+          queueScenes={queueScenes ?? []}
+          queueStart={queueStart}
+          onDelete={onDelete}
+          onQueueNext={onQueueNext}
+          onQueuePrevious={onQueuePrevious}
+          onQueueRandom={onQueueRandom}
+          continuePlaylist={continuePlaylist}
+          loadScene={loadScene}
+          queueHasMoreScenes={queueHasMoreScenes}
+          onQueueLessScenes={onQueueLessScenes}
+          onQueueMoreScenes={onQueueMoreScenes}
+          collapsed={collapsed}
+          setCollapsed={setCollapsed}
+          setContinuePlaylist={setContinuePlaylist}
+        />
+      )}
       <div className={`scene-player-container ${collapsed ? "expanded" : ""}`}>
         <ScenePlayer
           key="ScenePlayer"

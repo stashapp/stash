@@ -176,7 +176,7 @@ func createScenes(ctx context.Context, sqb models.SceneReaderWriter, folderStore
 
 	s := &models.Scene{
 		Title:    expectedMatchTitle,
-		Code:     existingStudioSceneName,
+		URL:      existingStudioSceneName,
 		StudioID: &existingStudioID,
 	}
 	if err := createScene(ctx, sqb, s, f); err != nil {
@@ -625,7 +625,7 @@ func TestParseStudioScenes(t *testing.T) {
 
 		for _, scene := range scenes {
 			// check for existing studio id scene first
-			if scene.Code == existingStudioSceneName {
+			if scene.URL == existingStudioSceneName {
 				if scene.StudioID == nil || *scene.StudioID != existingStudioID {
 					t.Error("Incorrectly overwrote studio ID for scene with existing studio ID")
 				}

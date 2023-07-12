@@ -479,10 +479,6 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 		c.Set(config.FunscriptOffset, *input.FunscriptOffset)
 	}
 
-	if input.UseStashHostedFunscript != nil {
-		c.Set(config.UseStashHostedFunscript, *input.UseStashHostedFunscript)
-	}
-
 	if err := c.Write(); err != nil {
 		return makeConfigInterfaceResult(), err
 	}

@@ -1065,11 +1065,9 @@ func makeScene(i int) *models.Scene {
 	rating := getRating(i)
 
 	return &models.Scene{
-		Title:   title,
-		Details: details,
-		URLs: models.NewRelatedStrings([]string{
-			getSceneEmptyString(i, urlField),
-		}),
+		Title:        title,
+		Details:      details,
+		URL:          getSceneEmptyString(i, urlField),
 		Rating:       getIntPtr(rating),
 		OCounter:     getOCounter(i),
 		Date:         getObjectDate(i),

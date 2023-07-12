@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/pkg/browser"
-	"github.com/stashapp/stash/internal/build"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
@@ -105,7 +104,7 @@ func writeStashIcon(faviconProvider FaviconProvider) {
 func IsAllowedAutoUpdate() bool {
 
 	// Only try to update if downloaded from official sources
-	if !build.IsOfficial() {
+	if !config.IsOfficialBuild() {
 		return false
 	}
 

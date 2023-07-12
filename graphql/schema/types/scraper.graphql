@@ -64,8 +64,7 @@ type ScrapedScene {
   code: String
   details: String
   director: String
-  url: String @deprecated(reason: "use urls")
-  urls: [String!]
+  url: String
   date: String
 
   """This should be a base64 encoded data URL"""
@@ -88,8 +87,7 @@ input ScrapedSceneInput {
   code: String
   details: String
   director: String
-  url: String @deprecated(reason: "use urls")
-  urls: [String!]
+  url: String
   date: String
 
   # no image, file, duration or relationships

@@ -13,7 +13,6 @@ import (
 
 	"golang.org/x/sys/cpu"
 
-	"github.com/stashapp/stash/internal/build"
 	"github.com/stashapp/stash/pkg/logger"
 )
 
@@ -171,7 +170,7 @@ func GetLatestRelease(ctx context.Context) (*LatestRelease, error) {
 	wantedRelease := stashReleases()[platform]
 
 	url := apiReleases
-	if build.IsDevelop() {
+	if IsDevelop() {
 		// get the release tagged with the development tag
 		url += "/tags/" + developmentTag
 	} else {
@@ -214,7 +213,7 @@ func GetLatestRelease(ctx context.Context) (*LatestRelease, error) {
 		}
 	}
 
-	_, githash, _ := build.Version()
+	_, githash, _ := GetVersion()
 	shLength := len(githash)
 	if shLength == 0 {
 		shLength = defaultSHLength
@@ -274,7 +273,7 @@ func printLatestVersion(ctx context.Context) {
 	if err != nil {
 		logger.Errorf("Couldn't retrieve latest version: %v", err)
 	} else {
-		_, githash, _ := build.Version()
+		_, githash, _ = GetVersion()
 		switch {
 		case githash == "":
 			logger.Infof("Latest version: %s (%s)", latestRelease.Version, latestRelease.ShortHash)

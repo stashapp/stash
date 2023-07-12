@@ -114,7 +114,7 @@ fragment ScrapedSceneData on ScrapedScene {
   code
   details
   director
-  urls
+  url
   date
   image
   remote_site_id

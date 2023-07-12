@@ -93,7 +93,6 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.Set(CSSEnabled, i.GetCSSEnabled())
 				i.Set(CSSEnabled, i.GetCustomLocalesEnabled())
 				i.Set(HandyKey, i.GetHandyKey())
-				i.Set(UseStashHostedFunscript, i.GetUseStashHostedFunscript())
 				i.Set(DLNAServerName, i.GetDLNAServerName())
 				i.Set(DLNADefaultEnabled, i.GetDLNADefaultEnabled())
 				i.Set(DLNADefaultIPWhitelist, i.GetDLNADefaultIPWhitelist())

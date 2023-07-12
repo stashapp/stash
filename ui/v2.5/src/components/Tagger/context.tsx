@@ -408,7 +408,7 @@ export const TaggerContext: React.FC = ({ children }) => {
         details: scene.details,
         remote_site_id: scene.remote_site_id,
         title: scene.title,
-        urls: scene.urls,
+        url: scene.url,
       };
 
       const result = await queryScrapeSceneQueryFragment(

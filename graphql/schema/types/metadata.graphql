@@ -185,14 +185,6 @@ input IdentifyMetadataOptionsInput {
   setOrganized: Boolean
   """defaults to true if not provided"""
   includeMalePerformers: Boolean
-  """defaults to true if not provided"""
-  skipMultipleMatches: Boolean
-  """tag to tag skipped multiple matches with"""
-  skipMultipleMatchTag: String
-  """defaults to true if not provided"""
-  skipSingleNamePerformers: Boolean
-  """tag to tag skipped single name performers with"""
-  skipSingleNamePerformerTag: String
 }
 
 input IdentifySourceInput {
@@ -230,14 +222,6 @@ type IdentifyMetadataOptions {
   setOrganized: Boolean
   """defaults to true if not provided"""
   includeMalePerformers: Boolean
-  """defaults to true if not provided"""
-  skipMultipleMatches: Boolean
-  """tag to tag skipped multiple matches with"""
-  skipMultipleMatchTag: String
-  """defaults to true if not provided"""
-  skipSingleNamePerformers: Boolean
-  """tag to tag skipped single name performers with"""
-  skipSingleNamePerformerTag: String
 }
 
 type IdentifySource {

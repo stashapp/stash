@@ -3,7 +3,6 @@ package identify
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -14,7 +13,6 @@ import (
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
-	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -24,23 +22,20 @@ type SceneReaderUpdater interface {
 	models.PerformerIDLoader
 	models.TagIDLoader
 	models.StashIDLoader
-	models.URLLoader
 }
 
-type TagCreatorFinder interface {
+type TagCreator interface {
 	Create(ctx context.Context, newTag *models.Tag) error
-	tag.Finder
 }
 
 type sceneRelationships struct {
-	sceneReader              SceneReaderUpdater
-	studioCreator            StudioCreator
-	performerCreator         PerformerCreator
-	tagCreatorFinder         TagCreatorFinder
-	scene                    *models.Scene
-	result                   *scrapeResult
-	fieldOptions             map[string]*FieldOptions
-	skipSingleNamePerformers bool
+	sceneReader      SceneReaderUpdater
+	studioCreator    StudioCreator
+	performerCreator PerformerCreator
+	tagCreator       TagCreator
+	scene            *models.Scene
+	result           *scrapeResult
+	fieldOptions     map[string]*FieldOptions
 }
 
 func (g sceneRelationships) studio(ctx context.Context) (*int, error) {
@@ -98,19 +93,13 @@ func (g sceneRelationships) performers(ctx context.Context, ignoreMale bool) ([]
 		performerIDs = originalPerformerIDs
 	}
 
-	singleNamePerformerSkipped := false
-
 	for _, p := range scraped {
 		if ignoreMale && p.Gender != nil && strings.EqualFold(*p.Gender, models.GenderEnumMale.String()) {
 			continue
 		}
 
-		performerID, err := getPerformerID(ctx, endpoint, g.performerCreator, p, createMissing, g.skipSingleNamePerformers)
+		performerID, err := getPerformerID(ctx, endpoint, g.performerCreator, p, createMissing)
 		if err != nil {
-			if errors.Is(err, ErrSkipSingleNamePerformer) {
-				singleNamePerformerSkipped = true
-				continue
-			}
 			return nil, err
 		}
 
@@ -121,15 +110,9 @@ func (g sceneRelationships) performers(ctx context.Context, ignoreMale bool) ([]
 
 	// don't return if nothing was added
 	if sliceutil.SliceSame(originalPerformerIDs, performerIDs) {
-		if singleNamePerformerSkipped {
-			return nil, ErrSkipSingleNamePerformer
-		}
 		return nil, nil
 	}
 
-	if singleNamePerformerSkipped {
-		return performerIDs, ErrSkipSingleNamePerformer
-	}
 	return performerIDs, nil
 }
 
@@ -173,7 +156,7 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 				CreatedAt: now,
 				UpdatedAt: now,
 			}
-			err := g.tagCreatorFinder.Create(ctx, &newTag)
+			err := g.tagCreator.Create(ctx, &newTag)
 			if err != nil {
 				return nil, fmt.Errorf("error creating tag: %w", err)
 			}

@@ -1,55 +1,18 @@
 import { faMinus } from "@fortawesome/free-solid-svg-icons";
-import React, { ComponentType } from "react";
+import React from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import { Icon } from "./Icon";
 
-interface IListInputComponentProps {
-  value: string;
-  setValue: (value: string) => void;
-  placeholder?: string;
-  className?: string;
-  readOnly?: boolean;
-}
-
-interface IListInputAppendProps {
-  value: string;
-}
-
-export interface IStringListInputProps {
+interface IStringListInputProps {
   value: string[];
   setValue: (value: string[]) => void;
-  inputComponent?: ComponentType<IListInputComponentProps>;
-  appendComponent?: ComponentType<IListInputAppendProps>;
   placeholder?: string;
   className?: string;
   errors?: string;
   errorIdx?: number[];
-  readOnly?: boolean;
 }
 
-export const StringInput: React.FC<IListInputComponentProps> = ({
-  className,
-  placeholder,
-  value,
-  setValue,
-  readOnly = false,
-}) => {
-  return (
-    <Form.Control
-      className={`text-input ${className ?? ""}`}
-      value={value}
-      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-        setValue(e.currentTarget.value)
-      }
-      placeholder={placeholder}
-      readOnly={readOnly}
-    />
-  );
-};
-
 export const StringListInput: React.FC<IStringListInputProps> = (props) => {
-  const Input = props.inputComponent ?? StringInput;
-  const AppendComponent = props.appendComponent;
   const values = props.value.concat("");
 
   function valueChanged(idx: number, value: string) {
@@ -74,24 +37,24 @@ export const StringListInput: React.FC<IStringListInputProps> = (props) => {
         <Form.Group>
           {values.map((v, i) => (
             <InputGroup className={props.className} key={i}>
-              <Input
+              <Form.Control
+                className={`text-input ${
+                  props.errorIdx?.includes(i) ? "is-invalid" : ""
+                }`}
                 value={v}
-                setValue={(value) => valueChanged(i, value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  valueChanged(i, e.currentTarget.value)
+                }
                 placeholder={props.placeholder}
-                className={props.errorIdx?.includes(i) ? "is-invalid" : ""}
-                readOnly={props.readOnly}
               />
               <InputGroup.Append>
-                {AppendComponent && <AppendComponent value={v} />}
-                {!props.readOnly && (
-                  <Button
-                    variant="danger"
-                    onClick={() => removeValue(i)}
-                    disabled={i === values.length - 1}
-                  >
-                    <Icon icon={faMinus} />
-                  </Button>
-                )}
+                <Button
+                  variant="danger"
+                  onClick={() => removeValue(i)}
+                  disabled={i === values.length - 1}
+                >
+                  <Icon icon={faMinus} />
+                </Button>
               </InputGroup.Append>
             </InputGroup>
           ))}

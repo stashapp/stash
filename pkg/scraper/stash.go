@@ -328,7 +328,7 @@ func sceneToUpdateInput(scene *models.Scene) models.SceneUpdateInput {
 		ID:      strconv.Itoa(scene.ID),
 		Title:   &title,
 		Details: &scene.Details,
-		Urls:    scene.URLs.List(),
+		URL:     &scene.URL,
 		Date:    dateToStringPtr(scene.Date),
 	}
 }

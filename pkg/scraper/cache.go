@@ -52,11 +52,6 @@ func isCDPPathWS(c GlobalConfig) bool {
 	return strings.HasPrefix(c.GetScraperCDPPath(), "ws://")
 }
 
-type SceneFinder interface {
-	scene.IDFinder
-	models.URLLoader
-}
-
 type PerformerFinder interface {
 	match.PerformerAutoTagQueryer
 	match.PerformerFinder
@@ -78,7 +73,7 @@ type GalleryFinder interface {
 }
 
 type Repository struct {
-	SceneFinder     SceneFinder
+	SceneFinder     scene.IDFinder
 	GalleryFinder   GalleryFinder
 	TagFinder       TagFinder
 	PerformerFinder PerformerFinder
@@ -245,19 +240,7 @@ func (c Cache) ScrapeName(ctx context.Context, id, query string, ty ScrapeConten
 		return nil, fmt.Errorf("%w: cannot use scraper %s to scrape by name", ErrNotSupported, id)
 	}
 
-	content, err := ns.viaName(ctx, c.client, query, ty)
-	if err != nil {
-		return nil, fmt.Errorf("error while name scraping with scraper %s: %w", id, err)
-	}
-
-	for i, cc := range content {
-		content[i], err = c.postScrape(ctx, cc)
-		if err != nil {
-			return nil, fmt.Errorf("error while post-scraping with scraper %s: %w", id, err)
-		}
-	}
-
-	return content, nil
+	return ns.viaName(ctx, c.client, query, ty)
 }
 
 // ScrapeFragment uses the given fragment input to scrape
@@ -378,7 +361,7 @@ func (c Cache) getScene(ctx context.Context, sceneID int) (*models.Scene, error)
 			return fmt.Errorf("scene with id %d not found", sceneID)
 		}
 
-		return ret.LoadURLs(ctx, c.repository.SceneFinder)
+		return nil
 	}); err != nil {
 		return nil, err
 	}

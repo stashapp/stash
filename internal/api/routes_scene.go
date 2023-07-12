@@ -72,7 +72,6 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/vtt/thumbs", rs.VttThumbs)
 		r.Get("/vtt/sprite", rs.VttSprite)
 		r.Get("/funscript", rs.Funscript)
-		r.Get("/interactive_csv", rs.InteractiveCSV)
 		r.Get("/interactive_heatmap", rs.InteractiveHeatmap)
 		r.Get("/caption", rs.CaptionLang)
 
@@ -373,20 +372,6 @@ func (rs sceneRoutes) Funscript(w http.ResponseWriter, r *http.Request) {
 	filepath := video.GetFunscriptPath(s.Path)
 
 	utils.ServeStaticFile(w, r, filepath)
-}
-
-func (rs sceneRoutes) InteractiveCSV(w http.ResponseWriter, r *http.Request) {
-	s := r.Context().Value(sceneKey).(*models.Scene)
-	filepath := video.GetFunscriptPath(s.Path)
-
-	// TheHandy directly only accepts interactive CSVs
-	csvBytes, err := manager.ConvertFunscriptToCSV(filepath)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	utils.ServeStaticContent(w, r, csvBytes)
 }
 
 func (rs sceneRoutes) InteractiveHeatmap(w http.ResponseWriter, r *http.Request) {

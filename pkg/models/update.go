@@ -110,11 +110,3 @@ type UpdateStrings struct {
 	Values []string               `json:"values"`
 	Mode   RelationshipUpdateMode `json:"mode"`
 }
-
-func (u *UpdateStrings) Strings() []string {
-	if u == nil {
-		return nil
-	}
-
-	return u.Values
-}
