@@ -39,6 +39,7 @@ type SceneMarkerReader interface {
 	Count(ctx context.Context) (int, error)
 	All(ctx context.Context) ([]*SceneMarker, error)
 	Query(ctx context.Context, sceneMarkerFilter *SceneMarkerFilterType, findFilter *FindFilterType) ([]*SceneMarker, int, error)
+	QueryCount(ctx context.Context, sceneMarkerFilter *SceneMarkerFilterType, findFilter *FindFilterType) (int, error)
 	GetTagIDs(ctx context.Context, imageID int) ([]int, error)
 }
 

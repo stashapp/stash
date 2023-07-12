@@ -756,6 +756,14 @@ export const SettingsInterfacePanel: React.FC = () => {
           value={iface.funscriptOffset ?? undefined}
           onChange={(v) => saveInterface({ funscriptOffset: v })}
         />
+
+        <BooleanSetting
+          id="use-stash-hosted-funscript"
+          headingID="config.ui.use_stash_hosted_funscript.heading"
+          subHeadingID="config.ui.use_stash_hosted_funscript.description"
+          checked={iface.useStashHostedFunscript ?? false}
+          onChange={(v) => saveInterface({ useStashHostedFunscript: v })}
+        />
       </SettingSection>
     </>
   );

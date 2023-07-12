@@ -2125,6 +2125,8 @@ func TestSceneQuery(t *testing.T) {
 	var (
 		endpoint = sceneStashID(sceneIdxWithGallery).Endpoint
 		stashID  = sceneStashID(sceneIdxWithGallery).StashID
+
+		depth = -1
 	)
 
 	tests := []struct {
@@ -2225,6 +2227,20 @@ func TestSceneQuery(t *testing.T) {
 				},
 			},
 			[]int{sceneIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"with studio id 0 including child studios",
+			nil,
+			&models.SceneFilterType{
+				Studios: &models.HierarchicalMultiCriterionInput{
+					Value:    []string{"0"},
+					Modifier: models.CriterionModifierIncludes,
+					Depth:    &depth,
+				},
+			},
+			nil,
 			nil,
 			false,
 		},

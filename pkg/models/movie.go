@@ -37,6 +37,7 @@ type MovieReader interface {
 	All(ctx context.Context) ([]*Movie, error)
 	Count(ctx context.Context) (int, error)
 	Query(ctx context.Context, movieFilter *MovieFilterType, findFilter *FindFilterType) ([]*Movie, int, error)
+	QueryCount(ctx context.Context, movieFilter *MovieFilterType, findFilter *FindFilterType) (int, error)
 	GetFrontImage(ctx context.Context, movieID int) ([]byte, error)
 	HasFrontImage(ctx context.Context, movieID int) (bool, error)
 	GetBackImage(ctx context.Context, movieID int) ([]byte, error)

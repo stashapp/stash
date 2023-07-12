@@ -731,6 +731,9 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 				URL:          findURL(s.Studio.Urls, "HOME"),
 				RemoteSiteID: &studioID,
 			}
+			if s.Studio.Images != nil && len(s.Studio.Images) > 0 {
+				ss.Studio.Image = &s.Studio.Images[0].URL
+			}
 
 			err := match.ScrapedStudio(ctx, c.repository.Studio, ss.Studio, &c.box.Endpoint)
 			if err != nil {

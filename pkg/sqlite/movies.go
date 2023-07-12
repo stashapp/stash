@@ -352,7 +352,7 @@ func (qb *MovieStore) makeFilter(ctx context.Context, movieFilter *models.MovieF
 	return query
 }
 
-func (qb *MovieStore) Query(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) ([]*models.Movie, int, error) {
+func (qb *MovieStore) makeQuery(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) (*queryBuilder, error) {
 	if findFilter == nil {
 		findFilter = &models.FindFilterType{}
 	}
@@ -371,10 +371,20 @@ func (qb *MovieStore) Query(ctx context.Context, movieFilter *models.MovieFilter
 	filter := qb.makeFilter(ctx, movieFilter)
 
 	if err := query.addFilter(filter); err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
 	query.sortAndPagination = qb.getMovieSort(findFilter) + getPagination(findFilter)
+
+	return &query, nil
+}
+
+func (qb *MovieStore) Query(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) ([]*models.Movie, int, error) {
+	query, err := qb.makeQuery(ctx, movieFilter, findFilter)
+	if err != nil {
+		return nil, 0, err
+	}
+
 	idsResult, countResult, err := query.executeFind(ctx)
 	if err != nil {
 		return nil, 0, err
@@ -386,6 +396,15 @@ func (qb *MovieStore) Query(ctx context.Context, movieFilter *models.MovieFilter
 	}
 
 	return movies, countResult, nil
+}
+
+func (qb *MovieStore) QueryCount(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) (int, error) {
+	query, err := qb.makeQuery(ctx, movieFilter, findFilter)
+	if err != nil {
+		return 0, err
+	}
+
+	return query.executeCount(ctx)
 }
 
 func movieIsMissingCriterionHandler(qb *MovieStore, isMissing *string) criterionHandlerFunc {
