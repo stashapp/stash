@@ -4,6 +4,11 @@ import { Button, InputGroup, Form } from "react-bootstrap";
 import { Icon } from "./Icon";
 import { FormikHandlers } from "formik";
 import { faFileDownload } from "@fortawesome/free-solid-svg-icons";
+import {
+  IStringListInputProps,
+  StringInput,
+  StringListInput,
+} from "./StringListInput";
 
 interface IProps {
   value: string;
@@ -41,5 +46,35 @@ export const URLField: React.FC<IProps> = (props: IProps) => {
         </Button>
       </InputGroup.Append>
     </InputGroup>
+  );
+};
+
+interface IURLListProps extends IStringListInputProps {
+  onScrapeClick(url: string): void;
+  urlScrapable(url: string): boolean;
+}
+
+export const URLListInput: React.FC<IURLListProps> = (
+  listProps: IURLListProps
+) => {
+  const intl = useIntl();
+  const { onScrapeClick, urlScrapable } = listProps;
+  return (
+    <StringListInput
+      {...listProps}
+      placeholder={intl.formatMessage({ id: "url" })}
+      inputComponent={StringInput}
+      appendComponent={(props) => (
+        <Button
+          className="scrape-url-button text-input"
+          variant="secondary"
+          onClick={() => onScrapeClick(props.value)}
+          disabled={!props.value || !urlScrapable(props.value)}
+          title={intl.formatMessage({ id: "actions.scrape" })}
+        >
+          <Icon icon={faFileDownload} />
+        </Button>
+      )}
+    />
   );
 };

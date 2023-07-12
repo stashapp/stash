@@ -39,10 +39,12 @@ type SceneMovie struct {
 }
 
 type Scene struct {
-	Title        string           `json:"title,omitempty"`
-	Code         string           `json:"code,omitempty"`
-	Studio       string           `json:"studio,omitempty"`
+	Title  string `json:"title,omitempty"`
+	Code   string `json:"code,omitempty"`
+	Studio string `json:"studio,omitempty"`
+	// deprecated - for import only
 	URL          string           `json:"url,omitempty"`
+	URLs         []string         `json:"urls,omitempty"`
 	Date         string           `json:"date,omitempty"`
 	Rating       int              `json:"rating,omitempty"`
 	Organized    bool             `json:"organized,omitempty"`

@@ -41,7 +41,7 @@ func ToBasicJSON(ctx context.Context, reader CoverGetter, scene *models.Scene) (
 	newSceneJSON := jsonschema.Scene{
 		Title:     scene.Title,
 		Code:      scene.Code,
-		URL:       scene.URL,
+		URLs:      scene.URLs.List(),
 		Details:   scene.Details,
 		Director:  scene.Director,
 		CreatedAt: json.JSONTime{Time: scene.CreatedAt},
@@ -85,53 +85,6 @@ func ToBasicJSON(ctx context.Context, reader CoverGetter, scene *models.Scene) (
 
 	return &newSceneJSON, nil
 }
-
-// func getSceneFileJSON(scene *models.Scene) *jsonschema.SceneFile {
-// 	ret := &jsonschema.SceneFile{}
-
-// TODO
-// if scene.FileModTime != nil {
-// 	ret.ModTime = json.JSONTime{Time: *scene.FileModTime}
-// }
-
-// if scene.Size != nil {
-// 	ret.Size = *scene.Size
-// }
-
-// if scene.Duration != nil {
-// 	ret.Duration = getDecimalString(*scene.Duration)
-// }
-
-// if scene.VideoCodec != nil {
-// 	ret.VideoCodec = *scene.VideoCodec
-// }
-
-// if scene.AudioCodec != nil {
-// 	ret.AudioCodec = *scene.AudioCodec
-// }
-
-// if scene.Format != nil {
-// 	ret.Format = *scene.Format
-// }
-
-// if scene.Width != nil {
-// 	ret.Width = *scene.Width
-// }
-
-// if scene.Height != nil {
-// 	ret.Height = *scene.Height
-// }
-
-// if scene.Framerate != nil {
-// 	ret.Framerate = getDecimalString(*scene.Framerate)
-// }
-
-// if scene.Bitrate != nil {
-// 	ret.Bitrate = int(*scene.Bitrate)
-// }
-
-// 	return ret
-// }
 
 // GetStudioName returns the name of the provided scene's studio. It returns an
 // empty string if there is no studio assigned to the scene.
