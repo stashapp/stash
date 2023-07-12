@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -1632,6 +1633,21 @@ func (qb *SceneStore) SaveActivity(ctx context.Context, id int, resumeTime *floa
 	}
 
 	return true, nil
+}
+
+func (qb *SceneStore) IncrementWatchCount(ctx context.Context, id int) (int, error) {
+	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
+		return 0, err
+	}
+
+	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
+		"play_count":     goqu.L("play_count + 1"),
+		"last_played_at": time.Now(),
+	}); err != nil {
+		return 0, err
+	}
+
+	return qb.getPlayCount(ctx, id)
 }
 
 func (qb *SceneStore) GetURLs(ctx context.Context, sceneID int) ([]string, error) {

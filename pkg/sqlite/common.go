@@ -41,7 +41,7 @@ func (qb *oCounterManager) getOCounter(ctx context.Context, id int) (int, error)
 	return ret, nil
 }
 
-func (qb *playCounterManager) getPlayCount(ctx context.Context, id int) (int, error) {
+func (qb *playCounterManager) getPlayCounter(ctx context.Context, id int) (int, error) {
 	q := dialect.From(qb.tableMgr.table).Select("play_count").Where(goqu.Ex{"id": id})
 
 	const single = true
@@ -213,7 +213,7 @@ func (qb *playCounterManager) IncrementWatchCount(ctx context.Context, id int) (
 		return 0, err
 	}
 
-	return qb.getPlayCount(ctx, id)
+	return qb.getPlayCounter(ctx, id)
 }
 
 func (qb *playCounterManager) DecrementWatchCount(ctx context.Context, id int) (int, error) {
@@ -234,7 +234,7 @@ func (qb *playCounterManager) DecrementWatchCount(ctx context.Context, id int) (
 		return 0, err
 	}
 
-	return qb.getPlayCount(ctx, id)
+	return qb.getPlayCounter(ctx, id)
 }
 
 func (qb *playCounterManager) ResetWatchCount(ctx context.Context, id int) (int, error) {
@@ -256,5 +256,5 @@ func (qb *playCounterManager) ResetWatchCount(ctx context.Context, id int) (int,
 		return 0, err
 	}
 
-	return qb.getPlayCount(ctx, id)
+	return qb.getPlayCounter(ctx, id)
 }
