@@ -64,6 +64,8 @@
 | `p n` | Play next scene in queue |
 | `p p` | Play previous scene in queue |
 | `p r` | Play random scene in queue |
+| `Space` | Play/pause player |
+| `Enter` | Play/pause player |
 | `←` | Seek backwards by 10 seconds |
 | `→` | Seek forwards by 10 seconds |
 | `Shift + ←` | Seek backwards by 5 seconds |
@@ -73,6 +75,9 @@
 | `{1-9}` | Seek to 10-90% duration |
 | `[` | Scrub backwards 10% duration |
 | `]` | Scrub forwards 10% duration |
+| `↑` | Increase volume 10% |
+| `↓` | Decrease volume 10% |
+| `m` | Toggle mute |
 
 ### Scene Markers tab shortcuts
 
