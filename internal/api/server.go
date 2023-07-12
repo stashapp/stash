@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"regexp"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -30,6 +29,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httplog"
 	"github.com/stashapp/stash/internal/api/loaders"
+	"github.com/stashapp/stash/internal/build"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -45,10 +45,6 @@ const (
 	gqlEndpoint        = "/graphql"
 	playgroundEndpoint = "/playground"
 )
-
-var version string
-var buildstamp string
-var githash string
 
 var uiBox = ui.UIBox
 var loginUIBox = ui.LoginUIBox
@@ -270,7 +266,7 @@ func Start() error {
 		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
 	}
 
-	printVersion()
+	logger.Infof("stash version: %s\n", build.VersionString())
 	go printLatestVersion(context.TODO())
 	logger.Infof("stash is listening on " + address)
 	if tlsConfig != nil {
@@ -390,49 +386,6 @@ func customLocalesHandler(c *config.Instance) func(w http.ResponseWriter, r *htt
 	}
 }
 
-func printVersion() {
-	var versionString string
-	switch {
-	case version != "":
-		if githash != "" && !IsDevelop() {
-			versionString = version + " (" + githash + ")"
-		} else {
-			versionString = version
-		}
-	case githash != "":
-		versionString = githash
-	default:
-		versionString = "unknown"
-	}
-	if config.IsOfficialBuild() {
-		versionString += " - Official Build"
-	} else {
-		versionString += " - Unofficial Build"
-	}
-	if buildstamp != "" {
-		versionString += " - " + buildstamp
-	}
-	logger.Infof("stash version: %s\n", versionString)
-}
-
-func GetVersion() (string, string, string) {
-	return version, githash, buildstamp
-}
-
-func IsDevelop() bool {
-	if githash == "" {
-		return false
-	}
-
-	// if the version is suffixed with -x-xxxx, then we are running a development build
-	develop := false
-	re := regexp.MustCompile(`-\d+-g\w+$`)
-	if re.MatchString(version) {
-		develop = true
-	}
-	return develop
-}
-
 func makeTLSConfig(c *config.Instance) (*tls.Config, error) {
 	c.InitTLS()
 	certFile, keyFile := c.GetTLSFiles()
@@ -490,7 +443,7 @@ func setPageSecurityHeaders(w http.ResponseWriter, r *http.Request) {
 	// The graphql playground pulls its frontend from a cdn
 	if r.URL.Path == playgroundEndpoint {
 		connectSrc += " https://cdn.jsdelivr.net"
-		scriptSrc += " https://cdn.jsdelivr.net http://www.gstatic.com https://www.gstatic.com"
+		scriptSrc += " https://cdn.jsdelivr.net"
 		styleSrc += " https://cdn.jsdelivr.net"
 	}
 

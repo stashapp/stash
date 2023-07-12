@@ -23,8 +23,6 @@ import (
 	"github.com/stashapp/stash/pkg/models/paths"
 )
 
-var officialBuild string
-
 const (
 	Stash               = "stash"
 	Cache               = "cache"
@@ -273,10 +271,6 @@ type StashBoxError struct {
 func (s *StashBoxError) Error() string {
 	// "Stash-box" is a proper noun and is therefore capitcalized
 	return "Stash-box: " + s.msg
-}
-
-func IsOfficialBuild() bool {
-	return officialBuild == "true"
 }
 
 type Instance struct {

@@ -62,12 +62,6 @@ $sceneTabWidth: 450px;
     }
   }
 
-  .vjs-airplay-button .vjs-icon-placeholder,
-  .vjs-chromecast-button .vjs-icon-placeholder {
-    height: 1.6em;
-    width: 1.6em;
-  }
-
   .vjs-touch-overlay .vjs-play-control {
     z-index: 1;
   }
@@ -313,12 +307,6 @@ $sceneTabWidth: 450px;
       .vjs-skip-button::before {
         font-size: 1.5em;
         line-height: 2;
-      }
-
-      .vjs-airplay-button .vjs-icon-placeholder,
-      .vjs-chromecast-button .vjs-icon-placeholder {
-        height: 1.4em;
-        width: 1.4em;
       }
     }
 

@@ -705,6 +705,18 @@ func (qb *SceneStore) OCountByPerformerID(ctx context.Context, performerID int) 
 	return ret, nil
 }
 
+func (qb *SceneStore) OCount(ctx context.Context) (int, error) {
+	table := qb.table()
+
+	q := dialect.Select(goqu.COALESCE(goqu.SUM("o_counter"), 0)).From(table)
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
 func (qb *SceneStore) FindByMovieID(ctx context.Context, movieID int) ([]*models.Scene, error) {
 	sq := dialect.From(scenesMoviesJoinTable).Select(scenesMoviesJoinTable.Col(sceneIDColumn)).Where(
 		scenesMoviesJoinTable.Col(movieIDColumn).Eq(movieID),
@@ -727,6 +739,24 @@ func (qb *SceneStore) CountByMovieID(ctx context.Context, movieID int) (int, err
 
 func (qb *SceneStore) Count(ctx context.Context) (int, error) {
 	q := dialect.Select(goqu.COUNT("*")).From(qb.table())
+	return count(ctx, q)
+}
+
+func (qb *SceneStore) PlayCount(ctx context.Context) (int, error) {
+	q := dialect.Select(goqu.COALESCE(goqu.SUM("play_count"), 0)).From(qb.table())
+
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (qb *SceneStore) UniqueScenePlayCount(ctx context.Context) (int, error) {
+	table := qb.table()
+	q := dialect.Select(goqu.COUNT("*")).From(table).Where(table.Col("play_count").Gt(0))
+
 	return count(ctx, q)
 }
 
@@ -762,6 +792,19 @@ func (qb *SceneStore) Duration(ctx context.Context) (float64, error) {
 		videoFileTable,
 		goqu.On(videoFileTable.Col("file_id").Eq(scenesFilesJoinTable.Col("file_id"))),
 	)
+
+	var ret float64
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (qb *SceneStore) PlayDuration(ctx context.Context) (float64, error) {
+	table := qb.table()
+
+	q := dialect.Select(goqu.COALESCE(goqu.SUM("play_duration"), 0)).From(table)
 
 	var ret float64
 	if err := querySimple(ctx, q, &ret); err != nil {

@@ -8,7 +8,6 @@ import React, {
   useState,
 } from "react";
 import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
-import useScript from "src/hooks/useScript";
 import "videojs-contrib-dash";
 import "videojs-mobile-ui";
 import "videojs-seek-buttons";
@@ -23,12 +22,6 @@ import "./big-buttons";
 import "./track-activity";
 import "./vrmode";
 import cx from "classnames";
-// @ts-ignore
-import airplay from "@silvermine/videojs-airplay";
-// @ts-ignore
-import chromecast from "@silvermine/videojs-chromecast";
-import "@silvermine/videojs-chromecast/dist/silvermine-videojs-chromecast.css";
-import "@silvermine/videojs-airplay/dist/silvermine-videojs-airplay.css";
 import {
   useSceneSaveActivity,
   useSceneIncrementPlayCount,
@@ -218,14 +211,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const started = useRef(false);
   const auto = useRef(false);
   const interactiveReady = useRef(false);
+
   const minimumPlayPercent = uiConfig?.minimumPlayPercent ?? 0;
   const trackActivity = uiConfig?.trackActivity ?? false;
   const vrTag = uiConfig?.vrTag ?? undefined;
-
-  useScript(
-    "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1",
-    uiConfig?.enableChromecast
-  );
 
   const file = useMemo(
     () => (scene.files.length > 0 ? scene.files[0] : undefined),
@@ -278,8 +267,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   // Initialize VideoJS player
   useEffect(() => {
-    airplay(videojs);
-    chromecast(videojs);
     const options: VideoJsPlayerOptions = {
       id: VIDEO_PLAYER_ID,
       controls: true,
@@ -313,15 +300,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       inactivityTimeout: 2000,
       preload: "none",
       playsinline: true,
-      techOrder: ["chromecast", "html5"],
       userActions: {
         hotkeys: function (this: VideoJsPlayer, event) {
           handleHotkeys(this, event);
         },
       },
       plugins: {
-        airPlay: {},
-        chromecast: {},
         vttThumbnails: {
           showTimestamp: true,
         },
