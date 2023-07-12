@@ -215,25 +215,17 @@ func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 			return fmt.Errorf("reading info for %q: %w", path, err)
 		}
 
-		var size int64
-
-		// #2196/#3042 - replace size with target size if file is a symlink
-		if info.Mode()&os.ModeSymlink == os.ModeSymlink {
-			targetInfo, err := f.Stat(path)
-			if err != nil {
-				return fmt.Errorf("reading info for symlink %q: %w", path, err)
-			}
-			size = targetInfo.Size()
-		} else {
-			size = info.Size()
-		}
-
 		if !s.acceptEntry(ctx, path, info) {
 			if info.IsDir() {
 				return fs.SkipDir
 			}
 
 			return nil
+		}
+
+		size, err := getFileSize(f, path, info)
+		if err != nil {
+			return err
 		}
 
 		ff := scanFile{
@@ -292,6 +284,19 @@ func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 
 		return nil
 	}
+}
+
+func getFileSize(f FS, path string, info fs.FileInfo) (int64, error) {
+	// #2196/#3042 - replace size with target size if file is a symlink
+	if info.Mode()&os.ModeSymlink == os.ModeSymlink {
+		targetInfo, err := f.Stat(path)
+		if err != nil {
+			return 0, fmt.Errorf("reading info for symlink %q: %w", path, err)
+		}
+		return targetInfo.Size(), nil
+	}
+
+	return info.Size(), nil
 }
 
 func (s *scanJob) acceptEntry(ctx context.Context, path string, info fs.FileInfo) bool {
@@ -485,6 +490,15 @@ func (s *scanJob) handleFolder(ctx context.Context, file scanFile) error {
 }
 
 func (s *scanJob) onNewFolder(ctx context.Context, file scanFile) (*Folder, error) {
+	renamed, err := s.handleFolderRename(ctx, file)
+	if err != nil {
+		return nil, err
+	}
+
+	if renamed != nil {
+		return renamed, nil
+	}
+
 	now := time.Now()
 
 	toCreate := &Folder{
@@ -520,6 +534,42 @@ func (s *scanJob) onNewFolder(ctx context.Context, file scanFile) (*Folder, erro
 	}
 
 	return toCreate, nil
+}
+
+func (s *scanJob) handleFolderRename(ctx context.Context, file scanFile) (*Folder, error) {
+	// ignore folders in zip files
+	if file.ZipFileID != nil {
+		return nil, nil
+	}
+
+	// check if the folder was moved from elsewhere
+	renamedFrom, err := s.detectFolderMove(ctx, file)
+	if err != nil {
+		return nil, fmt.Errorf("detecting folder move: %w", err)
+	}
+
+	if renamedFrom == nil {
+		return nil, nil
+	}
+
+	// if the folder was moved, update the existing folder
+	logger.Infof("%s moved to %s. Updating path...", renamedFrom.Path, file.Path)
+	renamedFrom.Path = file.Path
+
+	// update the parent folder ID
+	// find the parent folder
+	parentFolderID, err := s.getFolderID(ctx, filepath.Dir(file.Path))
+	if err != nil {
+		return nil, fmt.Errorf("getting parent folder for %q: %w", file.Path, err)
+	}
+
+	renamedFrom.ParentFolderID = parentFolderID
+
+	if err := s.Repository.FolderStore.Update(ctx, renamedFrom); err != nil {
+		return nil, fmt.Errorf("updating folder for rename %q: %w", renamedFrom.Path, err)
+	}
+
+	return renamedFrom, nil
 }
 
 func (s *scanJob) onExistingFolder(ctx context.Context, f scanFile, existing *Folder) (*Folder, error) {

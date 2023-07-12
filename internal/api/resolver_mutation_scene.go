@@ -67,7 +67,6 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input SceneCreateInp
 		Code:         translator.string(input.Code, "code"),
 		Details:      translator.string(input.Details, "details"),
 		Director:     translator.string(input.Director, "director"),
-		URL:          translator.string(input.URL, "url"),
 		Date:         translator.datePtr(input.Date, "date"),
 		Rating:       translator.ratingConversionInt(input.Rating, input.Rating100),
 		Organized:    translator.bool(input.Organized, "organized"),
@@ -81,6 +80,12 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input SceneCreateInp
 	newScene.StudioID, err = translator.intPtrFromString(input.StudioID, "studio_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
+	}
+
+	if input.Urls != nil {
+		newScene.URLs = models.NewRelatedStrings(input.Urls)
+	} else if input.URL != nil {
+		newScene.URLs = models.NewRelatedStrings([]string{*input.URL})
 	}
 
 	var coverImageData []byte
@@ -168,7 +173,6 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 	updatedScene.Code = translator.optionalString(input.Code, "code")
 	updatedScene.Details = translator.optionalString(input.Details, "details")
 	updatedScene.Director = translator.optionalString(input.Director, "director")
-	updatedScene.URL = translator.optionalString(input.URL, "url")
 	updatedScene.Date = translator.optionalDate(input.Date, "date")
 	updatedScene.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
 	updatedScene.OCounter = translator.optionalInt(input.OCounter, "o_counter")
@@ -181,6 +185,18 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 	}
 
 	updatedScene.Organized = translator.optionalBool(input.Organized, "organized")
+
+	if translator.hasField("urls") {
+		updatedScene.URLs = &models.UpdateStrings{
+			Values: input.Urls,
+			Mode:   models.RelationshipUpdateModeSet,
+		}
+	} else if translator.hasField("url") {
+		updatedScene.URLs = &models.UpdateStrings{
+			Values: []string{*input.URL},
+			Mode:   models.RelationshipUpdateModeSet,
+		}
+	}
 
 	if input.PrimaryFileID != nil {
 		primaryFileID, err := strconv.Atoi(*input.PrimaryFileID)
@@ -339,7 +355,6 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 	updatedScene.Code = translator.optionalString(input.Code, "code")
 	updatedScene.Details = translator.optionalString(input.Details, "details")
 	updatedScene.Director = translator.optionalString(input.Director, "director")
-	updatedScene.URL = translator.optionalString(input.URL, "url")
 	updatedScene.Date = translator.optionalDate(input.Date, "date")
 	updatedScene.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
 	updatedScene.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
@@ -348,6 +363,18 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 	}
 
 	updatedScene.Organized = translator.optionalBool(input.Organized, "organized")
+
+	if translator.hasField("urls") {
+		updatedScene.URLs = &models.UpdateStrings{
+			Values: input.Urls.Values,
+			Mode:   input.Urls.Mode,
+		}
+	} else if translator.hasField("url") {
+		updatedScene.URLs = &models.UpdateStrings{
+			Values: []string{*input.URL},
+			Mode:   models.RelationshipUpdateModeSet,
+		}
+	}
 
 	if translator.hasField("performer_ids") {
 		updatedScene.PerformerIDs, err = translateUpdateIDs(input.PerformerIds.Ids, input.PerformerIds.Mode)

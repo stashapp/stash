@@ -68,6 +68,10 @@ func (r *mutationResolver) SubmitStashBoxSceneDraft(ctx context.Context, input S
 			logger.Errorf("Error getting scene cover: %v", err)
 		}
 
+		if err := scene.LoadURLs(ctx, r.repository.Scene); err != nil {
+			return fmt.Errorf("loading scene URLs: %w", err)
+		}
+
 		res, err = client.SubmitSceneDraft(ctx, scene, boxes[input.StashBoxIndex].Endpoint, cover)
 		return err
 	})

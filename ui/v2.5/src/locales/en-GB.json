@@ -129,6 +129,7 @@
   "also_known_as": "Also known as",
   "appears_with": "Appears With",
   "ascending": "Ascending",
+  "audio_codec": "Audio Codec",
   "average_resolution": "Average Resolution",
   "between_and": "and",
   "birth_year": "Birth Year",
@@ -454,10 +455,18 @@
         "include_male_performers": "Include male performers",
         "set_cover_images": "Set cover images",
         "set_organized": "Set organised flag",
+        "skip_multiple_matches": "Skip matches that have more than one result",
+        "skip_multiple_matches_tooltip": "If this is not enabled and more than one result is returned, one will be randomly chosen to match",
+        "skip_single_name_performers": "Skip single name performers with no disambiguation",
+        "skip_single_name_performers_tooltip": "If this is not enabled, performers that are often generic like Samantha or Olga will be matched",
         "source": "Source",
         "source_options": "{source} Options",
         "sources": "Sources",
-        "strategy": "Strategy"
+        "strategy": "Strategy",
+        "tag_skipped_matches": "Tag skipped matches with",
+        "tag_skipped_matches_tooltip": "Create a tag like 'Identify: Multiple Matches' that you can filter for in the Scene Tagger view and choose the correct match by hand",
+        "tag_skipped_performers": "Tag skipped performers with",
+        "tag_skipped_performer_tooltip": "Create a tag like 'Identify: Single Name Performer' that you can filter for in the Scene Tagger view and choose how you want to handle these performers"
       },
       "import_from_exported_json": "Import from exported JSON in the metadata directory. Wipes the existing database.",
       "incremental_import": "Incremental import from a supplied export zip file.",
@@ -702,7 +711,11 @@
           }
         }
       },
-      "title": "User Interface"
+      "title": "User Interface",
+      "use_stash_hosted_funscript": {
+        "description": "When enabled, funscripts will be served directly from Stash to your Handy device without using the third party Handy server. Requires that Stash be accessible from your Handy device.",
+        "heading": "Serve funscripts directly"
+      }
     }
   },
   "configuration": "Configuration",
@@ -1219,7 +1232,11 @@
   "stats": {
     "image_size": "Images size",
     "scenes_duration": "Scenes duration",
-    "scenes_size": "Scenes size"
+    "scenes_size": "Scenes size",
+    "scenes_played": "Scenes Played",
+    "total_play_duration": "Total Play Duration",
+    "total_play_count": "Total Play Count",
+    "total_o_count": "Total O-Count"
   },
   "status": "Status: {statusText}",
   "studio": "Studio",
@@ -1260,12 +1277,15 @@
   "type": "Type",
   "updated_at": "Updated At",
   "url": "URL",
+  "urls": "URLs",
   "validation": {
     "aliases_must_be_unique": "aliases must be unique",
     "date_invalid_form": "${path} must be in YYYY-MM-DD form",
-    "required": "${path} is a required field"
+    "required": "${path} is a required field",
+    "urls_must_be_unique": "URLs must be unique"
   },
   "videos": "Videos",
+  "video_codec": "Video Codec",
   "view_all": "View All",
   "weight": "Weight",
   "weight_kg": "Weight (kg)",

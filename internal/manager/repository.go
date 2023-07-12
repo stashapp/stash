@@ -29,6 +29,7 @@ type GalleryReaderWriter interface {
 type SceneReaderWriter interface {
 	models.SceneReaderWriter
 	scene.CreatorUpdater
+	models.URLLoader
 	GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error)
 }
 
