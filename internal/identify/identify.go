@@ -180,13 +180,10 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		scene:                    s,
 		result:                   result,
 		fieldOptions:             fieldOptions,
-		skipSingleNamePerformers: *options.SkipSingleNamePerformers,
+		skipSingleNamePerformers: utils.IsTrue(options.SkipSingleNamePerformers),
 	}
 
-	setOrganized := false
-	if options.SetOrganized != nil {
-		setOrganized = *options.SetOrganized
-	}
+	setOrganized := utils.IsTrue(options.SetOrganized)
 	ret.Partial = getScenePartial(s, scraped, fieldOptions, setOrganized)
 
 	studioID, err := rel.studio(ctx)
@@ -223,7 +220,7 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	if err != nil {
 		return nil, err
 	}
-	if addSkipSingleNamePerformerTag {
+	if addSkipSingleNamePerformerTag && options.SkipSingleNamePerformerTag != nil {
 		tagID, err := strconv.ParseInt(*options.SkipSingleNamePerformerTag, 10, 64)
 		if err != nil {
 			return nil, fmt.Errorf("error converting tag ID %s: %w", *options.SkipSingleNamePerformerTag, err)
@@ -249,7 +246,7 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		}
 	}
 
-	if options.SetCoverImage != nil && *options.SetCoverImage {
+	if utils.IsTrue(options.SetCoverImage) {
 		ret.CoverImage, err = rel.cover(ctx)
 		if err != nil {
 			return nil, err
