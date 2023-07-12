@@ -81,6 +81,12 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
       break;
   }
 
+  // toggle player looping with shift+l
+  if (event.shiftKey && event.which === 76) {
+    player.loop(!player.loop());
+    return;
+  }
+
   if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
     return;
   }
@@ -162,7 +168,7 @@ function getMarkerTitle(marker: MarkerFragment) {
 }
 
 interface IScenePlayerProps {
-  scene: GQL.SceneDataFragment | undefined | null;
+  scene: GQL.SceneDataFragment;
   hideScrubberOverride: boolean;
   autoplay?: boolean;
   permitLoop?: boolean;
@@ -217,7 +223,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const vrTag = uiConfig?.vrTag ?? undefined;
 
   const file = useMemo(
-    () => ((scene?.files.length ?? 0) > 0 ? scene?.files[0] : undefined),
+    () => (scene.files.length > 0 ? scene.files[0] : undefined),
     [scene]
   );
 
@@ -363,7 +369,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   }, [getPlayer, onNext, onPrevious]);
 
   useEffect(() => {
-    if (scene?.interactive && interactiveInitialised) {
+    if (scene.interactive && interactiveInitialised) {
       interactiveReady.current = false;
       uploadScript(scene.paths.funscript || "").then(() => {
         interactiveReady.current = true;
@@ -372,8 +378,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   }, [
     uploadScript,
     interactiveInitialised,
-    scene?.interactive,
-    scene?.paths.funscript,
+    scene.interactive,
+    scene.paths.funscript,
   ]);
 
   useEffect(() => {
@@ -384,7 +390,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     let showButton = false;
 
-    if (scene && vrTag) {
+    if (vrTag) {
       showButton = scene.tags.some((tag) => vrTag === tag.name);
     }
 
@@ -438,7 +444,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     function onplay(this: VideoJsPlayer) {
       this.persistVolume().enabled = true;
-      if (scene?.interactive && interactiveReady.current) {
+      if (scene.interactive && interactiveReady.current) {
         interactiveClient.play(this.currentTime());
       }
     }
@@ -449,14 +455,14 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     function seeking(this: VideoJsPlayer) {
       if (this.paused()) return;
-      if (scene?.interactive && interactiveReady.current) {
+      if (scene.interactive && interactiveReady.current) {
         interactiveClient.play(this.currentTime());
       }
     }
 
     function timeupdate(this: VideoJsPlayer) {
       if (this.paused()) return;
-      if (scene?.interactive && interactiveReady.current) {
+      if (scene.interactive && interactiveReady.current) {
         interactiveClient.ensurePlaying(this.currentTime());
       }
       setTime(this.currentTime());
@@ -480,7 +486,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (!player) return;
 
     // don't re-initialise the player unless the scene has changed
-    if (!scene || !file || scene.id === sceneId.current) return;
+    if (!file || scene.id === sceneId.current) return;
 
     sceneId.current = scene.id;
 
@@ -629,7 +635,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   useEffect(() => {
     const player = getPlayer();
-    if (!player || !scene) return;
+    if (!player) return;
 
     const markers = player.markers();
     markers.clearMarkers();
@@ -652,7 +658,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (!player) return;
 
     async function saveActivity(resumeTime: number, playDuration: number) {
-      if (!scene?.id) return;
+      if (!scene.id) return;
 
       await sceneSaveActivity({
         variables: {
@@ -664,7 +670,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     }
 
     async function incrementPlayCount() {
-      if (!scene?.id) return;
+      if (!scene.id) return;
 
       await sceneIncrementPlayCount({
         variables: {
@@ -698,7 +704,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   useEffect(() => {
     const player = getPlayer();
-    if (!player || !scene || !ready || !auto.current) {
+    if (!player || !ready || !auto.current) {
       return;
     }
 
@@ -766,7 +772,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   }
 
   const isPortrait =
-    scene && file && file.height && file.width && file.height > file.width;
+    file && file.height && file.width && file.height > file.width;
 
   return (
     <div
@@ -774,10 +780,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       onKeyDownCapture={onKeyDown}
     >
       <div className="video-wrapper" ref={videoRef} />
-      {scene?.interactive &&
+      {scene.interactive &&
         (interactiveState !== ConnectionState.Ready ||
           getPlayer()?.paused()) && <SceneInteractiveStatus />}
-      {scene && file && showScrubber && (
+      {file && showScrubber && (
         <ScenePlayerScrubber
           file={file}
           scene={scene}

@@ -24,6 +24,7 @@ var (
 	scenesPerformersJoinTable = goqu.T(performersScenesTable)
 	scenesStashIDsJoinTable   = goqu.T("scene_stash_ids")
 	scenesMoviesJoinTable     = goqu.T(moviesScenesTable)
+	scenesURLsJoinTable       = goqu.T(scenesURLsTable)
 
 	performersAliasesJoinTable  = goqu.T(performersAliasesTable)
 	performersTagsJoinTable     = goqu.T(performersTagsTable)
@@ -162,6 +163,14 @@ var (
 			table:    scenesMoviesJoinTable,
 			idColumn: scenesMoviesJoinTable.Col(sceneIDColumn),
 		},
+	}
+
+	scenesURLsTableMgr = &orderedValueTable[string]{
+		table: table{
+			table:    scenesURLsJoinTable,
+			idColumn: scenesURLsJoinTable.Col(sceneIDColumn),
+		},
+		valueColumn: scenesURLsJoinTable.Col(sceneURLColumn),
 	}
 )
 

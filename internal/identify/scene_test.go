@@ -378,9 +378,9 @@ func Test_sceneRelationships_tags(t *testing.T) {
 	})).Return(errors.New("error creating tag"))
 
 	tr := sceneRelationships{
-		sceneReader:  mockSceneReaderWriter,
-		tagCreator:   mockTagReaderWriter,
-		fieldOptions: make(map[string]*FieldOptions),
+		sceneReader:      mockSceneReaderWriter,
+		tagCreatorFinder: mockTagReaderWriter,
+		fieldOptions:     make(map[string]*FieldOptions),
 	}
 
 	tests := []struct {

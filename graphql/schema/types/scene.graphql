@@ -40,7 +40,8 @@ type Scene {
   code: String
   details: String
   director: String
-  url: String
+  url: String @deprecated(reason: "Use urls")
+  urls: [String!]
   date: String
   # rating expressed as 1-5
   rating: Int @deprecated(reason: "Use 1-100 range with rating100")
@@ -91,7 +92,8 @@ input SceneCreateInput {
   code: String
   details: String
   director: String
-  url: String
+  url: String @deprecated(reason: "Use urls")
+  urls: [String!]
   date: String
   # rating expressed as 1-5
   rating: Int @deprecated(reason: "Use 1-100 range with rating100")
@@ -119,7 +121,8 @@ input SceneUpdateInput {
   code: String
   details: String
   director: String
-  url: String
+  url: String @deprecated(reason: "Use urls")
+  urls: [String!]
   date: String
   # rating expressed as 1-5
   rating: Int @deprecated(reason: "Use 1-100 range with rating100")
@@ -164,7 +167,8 @@ input BulkSceneUpdateInput {
   code: String
   details: String
   director: String
-  url: String
+  url: String @deprecated(reason: "Use urls")
+  urls: BulkUpdateStrings
   date: String
   # rating expressed as 1-5
   rating: Int @deprecated(reason: "Use 1-100 range with rating100")
