@@ -29,6 +29,8 @@ import airplay from "@silvermine/videojs-airplay";
 import chromecast from "@silvermine/videojs-chromecast";
 import "@silvermine/videojs-chromecast/dist/silvermine-videojs-chromecast.css";
 import "@silvermine/videojs-airplay/dist/silvermine-videojs-airplay.css";
+airplay(videojs);
+chromecast(videojs);
 import {
   useSceneSaveActivity,
   useSceneIncrementPlayCount,
@@ -278,8 +280,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   // Initialize VideoJS player
   useEffect(() => {
-    airplay(videojs);
-    chromecast(videojs);
     const options: VideoJsPlayerOptions = {
       id: VIDEO_PLAYER_ID,
       controls: true,
@@ -346,7 +346,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     videoRef.current!.appendChild(videoEl);
 
     const vjs = videojs(videoEl, options);
-
+    
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     const settings = (vjs as any).textTrackSettings;
     settings.setValues({
