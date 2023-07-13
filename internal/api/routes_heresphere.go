@@ -443,13 +443,12 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 						if tagMod, err = rs.resolver.Mutation().TagCreate(context.Background(), newTag); err != nil {
 							return err
 						}
-					} else {
-						return err
 					}*/
-					return err
 				}
 
-				tagIDs = append(tagIDs, tagMod.ID)
+				if tagMod != nil {
+					tagIDs = append(tagIDs, tagMod.ID)
+				}
 			}
 
 			// If add performer
@@ -475,13 +474,12 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 						if tagMod, err = rs.resolver.Mutation().PerformerCreate(context.Background(), newTag); err != nil {
 							return err
 						}
-					} else {
-						return err
 					}*/
-					return err
 				}
 
-				perfIDs = append(perfIDs, tagMod.ID)
+				if tagMod != nil {
+					perfIDs = append(perfIDs, tagMod.ID)
+				}
 			}
 
 			// If add marker
@@ -500,7 +498,8 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 
 					return err
 				}); err != nil {
-					// Create if non-existent
+					// TODO: Multiple same type marker in scene?
+					// Create marker
 					if tagId == nil {
 						newTag := SceneMarkerCreateInput{
 							Seconds:      tagI.Start,
@@ -510,8 +509,6 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 						if _, err := rs.resolver.Mutation().SceneMarkerCreate(context.Background(), newTag); err != nil {
 							return err
 						}
-					} else {
-						return err
 					}
 				}
 			}
