@@ -370,8 +370,10 @@ func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOp
 	}
 	if scraped.Date != nil && (scene.Date == nil || scene.Date.String() != *scraped.Date) {
 		if shouldSetSingleValueField(fieldOptions["date"], scene.Date != nil) {
-			d := models.NewDate(*scraped.Date)
-			partial.Date = models.NewOptionalDate(d)
+			d, err := models.ParseDate(*scraped.Date)
+			if err == nil {
+				partial.Date = models.NewOptionalDate(d)
+			}
 		}
 	}
 	if scraped.Details != nil && (scene.Details != *scraped.Details) {

@@ -25,7 +25,7 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 		studioIDStr  = "2"
 	)
 
-	dateObj := NewDate(date)
+	dateObj, _ := ParseDate(date)
 
 	tests := []struct {
 		name string

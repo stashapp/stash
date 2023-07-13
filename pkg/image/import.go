@@ -89,8 +89,10 @@ func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 		newImage.URL = imageJSON.URL
 	}
 	if imageJSON.Date != "" {
-		d := models.NewDate(imageJSON.Date)
-		newImage.Date = &d
+		d, err := models.ParseDate(imageJSON.Date)
+		if err == nil {
+			newImage.Date = &d
+		}
 	}
 
 	return newImage

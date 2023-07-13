@@ -244,12 +244,23 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 		return &ret
 	}
 
-	dateToDatePtr := func(d models.Date) *models.Date {
+	dateFromInt := func(i int) *models.Date {
+		t := time.Date(2001, 1, i, 0, 0, 0, 0, time.UTC)
+		d := models.Date{Time: t}
 		return &d
 	}
+	dateStrFromInt := func(i int) *string {
+		s := dateFromInt(i).String()
+		return &s
+	}
 
-	genderPtr := func(g models.GenderEnum) *models.GenderEnum {
+	genderFromInt := func(i int) *models.GenderEnum {
+		g := models.AllGenderEnum[i%len(models.AllGenderEnum)]
 		return &g
+	}
+	genderStrFromInt := func(i int) *string {
+		s := genderFromInt(i).String()
+		return &s
 	}
 
 	tests := []struct {
@@ -262,9 +273,9 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 			&models.ScrapedPerformer{
 				Name:           &name,
 				Disambiguation: nextVal(),
-				Birthdate:      nextVal(),
-				DeathDate:      nextVal(),
-				Gender:         nextVal(),
+				Birthdate:      dateStrFromInt(*nextIntVal()),
+				DeathDate:      dateStrFromInt(*nextIntVal()),
+				Gender:         genderStrFromInt(*nextIntVal()),
 				Ethnicity:      nextVal(),
 				Country:        nextVal(),
 				EyeColor:       nextVal(),
@@ -285,9 +296,9 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 			models.Performer{
 				Name:           name,
 				Disambiguation: *nextVal(),
-				Birthdate:      dateToDatePtr(models.NewDate(*nextVal())),
-				DeathDate:      dateToDatePtr(models.NewDate(*nextVal())),
-				Gender:         genderPtr(models.GenderEnum(*nextVal())),
+				Birthdate:      dateFromInt(*nextIntVal()),
+				DeathDate:      dateFromInt(*nextIntVal()),
+				Gender:         genderFromInt(*nextIntVal()),
 				Ethnicity:      *nextVal(),
 				Country:        *nextVal(),
 				EyeColor:       *nextVal(),

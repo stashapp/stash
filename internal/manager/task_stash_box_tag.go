@@ -513,7 +513,10 @@ func getDate(val *string) *models.Date {
 		return nil
 	}
 
-	ret := models.NewDate(*val)
+	ret, err := models.ParseDate(*val)
+	if err != nil {
+		return nil
+	}
 	return &ret
 }
 

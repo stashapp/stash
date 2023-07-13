@@ -57,7 +57,7 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 		rating    = 60
 		ocounter  = 5
 		url       = "url"
-		date      = models.NewDate("2003-02-01")
+		date, _   = models.ParseDate("2003-02-01")
 		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
@@ -216,7 +216,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 		title     = "title"
 		rating    = 60
 		url       = "url"
-		date      = models.NewDate("2003-02-01")
+		date, _   = models.ParseDate("2003-02-01")
 		ocounter  = 5
 		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -396,7 +396,7 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 		title     = "title"
 		rating    = 60
 		url       = "url"
-		date      = models.NewDate("2003-02-01")
+		date, _   = models.ParseDate("2003-02-01")
 		ocounter  = 5
 		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -964,10 +964,6 @@ func makeImageWithID(index int) *models.Image {
 	const fromDB = true
 	ret := makeImage(index)
 	ret.ID = imageIDs[index]
-
-	if ret.Date != nil && ret.Date.IsZero() {
-		ret.Date = nil
-	}
 
 	ret.Files = models.NewRelatedFiles([]file.File{makeImageFile(index)})
 
@@ -2877,7 +2873,7 @@ func TestImageQuerySorting(t *testing.T) {
 			"date",
 			models.SortDirectionEnumDesc,
 			imageIdxWithTwoGalleries,
-			imageIdxWithPerformerParentTag,
+			imageIdxWithGrandChildStudio,
 		},
 	}
 

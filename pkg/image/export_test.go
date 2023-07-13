@@ -23,13 +23,13 @@ const (
 )
 
 var (
-	title     = "title"
-	rating    = 5
-	url       = "http://a.com"
-	date      = "2001-01-01"
-	dateObj   = models.NewDate(date)
-	organized = true
-	ocounter  = 2
+	title      = "title"
+	rating     = 5
+	url        = "http://a.com"
+	date       = "2001-01-01"
+	dateObj, _ = models.ParseDate(date)
+	organized  = true
+	ocounter   = 2
 )
 
 const (

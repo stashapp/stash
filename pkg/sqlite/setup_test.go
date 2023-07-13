@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sqlite"
@@ -956,14 +955,14 @@ func getWidth(index int) int {
 }
 
 func getObjectDate(index int) *models.Date {
-	dates := []string{"null", "", "0001-01-01", "2001-02-03"}
+	dates := []string{"null", "2000-01-01", "0001-01-01", "2001-02-03"}
 	date := dates[index%len(dates)]
 
 	if date == "null" {
 		return nil
 	}
 
-	ret := models.NewDate(date)
+	ret, _ := models.ParseDate(date)
 	return &ret
 }
 
@@ -1311,9 +1310,8 @@ func createMovies(ctx context.Context, mqb models.MovieReaderWriter, n int, o in
 
 		name = getMovieStringValue(index, name)
 		movie := models.Movie{
-			Name:     name,
-			URL:      getMovieNullStringValue(index, urlField),
-			Checksum: md5.FromString(name),
+			Name: name,
+			URL:  getMovieNullStringValue(index, urlField),
 		}
 
 		err := mqb.Create(ctx, &movie)
@@ -1577,8 +1575,7 @@ func getStudioNullStringValue(index int, field string) string {
 
 func createStudio(ctx context.Context, sqb *sqlite.StudioStore, name string, parentID *int) (*models.Studio, error) {
 	studio := models.Studio{
-		Name:     name,
-		Checksum: md5.FromString(name),
+		Name: name,
 	}
 
 	if parentID != nil {

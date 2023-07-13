@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/utils"
@@ -142,10 +141,7 @@ func (i *Importer) Update(ctx context.Context, id int) error {
 }
 
 func studioJSONtoStudio(studioJSON jsonschema.Studio) models.Studio {
-	checksum := md5.FromString(studioJSON.Name)
-
 	newStudio := models.Studio{
-		Checksum:      checksum,
 		Name:          studioJSON.Name,
 		URL:           studioJSON.URL,
 		Aliases:       models.NewRelatedStrings(studioJSON.Aliases),

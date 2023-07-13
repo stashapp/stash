@@ -246,7 +246,7 @@ func (g sceneRelationships) stashIDs(ctx context.Context) ([]models.StashID, err
 func (g sceneRelationships) cover(ctx context.Context) ([]byte, error) {
 	scraped := g.result.result.Image
 
-	if scraped == nil {
+	if scraped == nil || *scraped == "" {
 		return nil, nil
 	}
 

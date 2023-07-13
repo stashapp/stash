@@ -1,6 +1,5 @@
 fragment MovieData on Movie {
   id
-  checksum
   name
   aliases
   duration

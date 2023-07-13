@@ -7,7 +7,6 @@ import (
 
 type Studio struct {
 	ID        int       `json:"id"`
-	Checksum  string    `json:"checksum"`
 	Name      string    `json:"name"`
 	URL       string    `json:"url"`
 	ParentID  *int      `json:"parent_id"`
@@ -51,7 +50,6 @@ func (s *Studio) LoadRelationships(ctx context.Context, l PerformerReader) error
 // StudioPartial represents part of a Studio object. It is used to update the database entry.
 type StudioPartial struct {
 	ID       int
-	Checksum OptionalString
 	Name     OptionalString
 	URL      OptionalString
 	ParentID OptionalInt

@@ -123,6 +123,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input StudioUpdateI
 func studioPartialFromStudioUpdateInput(ctx context.Context, input StudioUpdateInput, id *string, translator changesetTranslator) (*models.StudioPartial, error) {
 	// Populate studio from the input
 	updatedStudio := models.StudioPartial{
+		Name:          translator.optionalString(input.Name, "name"),
 		URL:           translator.optionalString(input.URL, "url"),
 		Details:       translator.optionalString(input.Details, "details"),
 		Rating:        translator.ratingConversionOptional(input.Rating, input.Rating100),
@@ -131,10 +132,6 @@ func studioPartialFromStudioUpdateInput(ctx context.Context, input StudioUpdateI
 	}
 
 	updatedStudio.ID, _ = strconv.Atoi(*id)
-
-	if input.Name != nil && *input.Name != "" {
-		updatedStudio.Name = translator.optionalString(input.Name, "name")
-	}
 
 	if input.ParentID != nil {
 		parentID, _ := strconv.Atoi(*input.ParentID)
