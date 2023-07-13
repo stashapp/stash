@@ -111,7 +111,7 @@ type HeresphereIndex struct {
 type HeresphereVideoScript struct {
 	Name   string  `json:"name"`
 	Url    string  `json:"url"`
-	Rating float32 `json:"rating,omitempty"`
+	Rating float64 `json:"rating,omitempty"`
 }
 type HeresphereVideoSubtitle struct {
 	Name     string `json:"name"`
@@ -123,7 +123,7 @@ type HeresphereVideoTag struct {
 	Start  float64 `json:"start,omitempty"`
 	End    float64 `json:"end,omitempty"`
 	Track  int     `json:"track,omitempty"`
-	Rating float32 `json:"rating,omitempty"`
+	Rating float64 `json:"rating,omitempty"`
 }
 type HeresphereVideoMediaSource struct {
 	Resolution int `json:"resolution"`
@@ -444,6 +444,8 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 							return err
 						}
 					}*/
+					// Avoid empty branch, TODO: Remove
+					tagMod = nil
 				}
 
 				if tagMod != nil {
@@ -475,6 +477,8 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 							return err
 						}
 					}*/
+					// Avoid empty branch, TODO: Remove
+					tagMod = nil
 				}
 
 				if tagMod != nil {
@@ -503,7 +507,7 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 					if tagId == nil {
 						newTag := SceneMarkerCreateInput{
 							Seconds:      tagI.Start,
-							SceneID:      string(scn.ID),
+							SceneID:      strconv.Itoa(scn.ID),
 							PrimaryTagID: *tagId,
 						}
 						if _, err := rs.resolver.Mutation().SceneMarkerCreate(context.Background(), newTag); err != nil {
@@ -557,18 +561,18 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 				prefix = string(HeresphereCustomTagPlayCount) + ":"
 				if strings.HasPrefix(tagName, prefix) {
 					after := strings.TrimPrefix(tagName, prefix)
-					if numRes, err := strconv.ParseInt(after, 10, 32); err != nil {
+					if numRes, err := strconv.Atoi(after); err != nil {
 						ret.Partial.PlayCount.Set = true
-						ret.Partial.PlayCount.Value = int(numRes)
+						ret.Partial.PlayCount.Value = numRes
 					}
 					continue
 				}
 				prefix = string(HeresphereCustomTagOCounter) + ":"
 				if strings.HasPrefix(tagName, prefix) {
 					after := strings.TrimPrefix(tagName, prefix)
-					if numRes, err := strconv.ParseInt(after, 10, 32); err != nil {
+					if numRes, err := strconv.Atoi(after); err != nil {
 						ret.Partial.OCounter.Set = true
-						ret.Partial.OCounter.Value = int(numRes)
+						ret.Partial.OCounter.Value = numRes
 					}
 					continue
 				}
