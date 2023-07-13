@@ -36,7 +36,7 @@ func (r *studioResolver) ImagePath(ctx context.Context, obj *models.Studio) (*st
 
 func (r *studioResolver) Aliases(ctx context.Context, obj *models.Studio) ([]string, error) {
 	if !obj.Aliases.Loaded() {
-		if err := r.withTxn(ctx, func(ctx context.Context) error {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 			return obj.LoadAliases(ctx, r.repository.Studio)
 		}); err != nil {
 			return nil, err
@@ -122,7 +122,7 @@ func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) (
 
 func (r *studioResolver) StashIds(ctx context.Context, obj *models.Studio) ([]*models.StashID, error) {
 	if !obj.StashIDs.Loaded() {
-		if err := r.withTxn(ctx, func(ctx context.Context) error {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 			return obj.LoadStashIDs(ctx, r.repository.Studio)
 		}); err != nil {
 			return nil, err
