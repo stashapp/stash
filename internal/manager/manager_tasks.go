@@ -378,11 +378,11 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 							if (input.Refresh && len(performer.StashIDs.List()) > 0) ||
 								(!input.Refresh && len(performer.StashIDs.List()) == 0) {
 								tasks = append(tasks, StashBoxBatchTagTask{
-									performer:       performer,
-									refresh:         input.Refresh,
-									box:             box,
-									excluded_fields: input.ExcludeFields,
-									task_type:       Performer,
+									performer:      performer,
+									refresh:        input.Refresh,
+									box:            box,
+									excludedFields: input.ExcludeFields,
+									taskType:       Performer,
 								})
 							}
 						} else {
@@ -408,11 +408,11 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 					}
 
 					tasks = append(tasks, StashBoxBatchTagTask{
-						performer:       &performer,
-						refresh:         false,
-						box:             box,
-						excluded_fields: input.ExcludeFields,
-						task_type:       Performer,
+						performer:      &performer,
+						refresh:        false,
+						box:            box,
+						excludedFields: input.ExcludeFields,
+						taskType:       Performer,
 					})
 				}
 			}
@@ -443,11 +443,11 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 					}
 
 					tasks = append(tasks, StashBoxBatchTagTask{
-						performer:       performer,
-						refresh:         input.Refresh,
-						box:             box,
-						excluded_fields: input.ExcludeFields,
-						task_type:       Performer,
+						performer:      performer,
+						refresh:        input.Refresh,
+						box:            box,
+						excludedFields: input.ExcludeFields,
+						taskType:       Performer,
 					})
 				}
 				return nil
@@ -516,12 +516,12 @@ func (s *Manager) StashBoxBatchStudioTag(ctx context.Context, input StashBoxBatc
 							if (input.Refresh && len(studio.StashIDs.List()) > 0) ||
 								(!input.Refresh && len(studio.StashIDs.List()) == 0) {
 								tasks = append(tasks, StashBoxBatchTagTask{
-									studio:          studio,
-									refresh:         input.Refresh,
-									create_parent:   input.CreateParent,
-									box:             box,
-									excluded_fields: input.ExcludeFields,
-									task_type:       Studio,
+									studio:         studio,
+									refresh:        input.Refresh,
+									createParent:   input.CreateParent,
+									box:            box,
+									excludedFields: input.ExcludeFields,
+									taskType:       Studio,
 								})
 							}
 						} else {
@@ -538,12 +538,12 @@ func (s *Manager) StashBoxBatchStudioTag(ctx context.Context, input StashBoxBatc
 			for i := range input.Names {
 				if len(input.Names[i]) > 0 {
 					tasks = append(tasks, StashBoxBatchTagTask{
-						name:            &input.Names[i],
-						refresh:         false,
-						create_parent:   input.CreateParent,
-						box:             box,
-						excluded_fields: input.ExcludeFields,
-						task_type:       Studio,
+						name:           &input.Names[i],
+						refresh:        false,
+						createParent:   input.CreateParent,
+						box:            box,
+						excludedFields: input.ExcludeFields,
+						taskType:       Studio,
 					})
 				}
 			}
@@ -571,12 +571,12 @@ func (s *Manager) StashBoxBatchStudioTag(ctx context.Context, input StashBoxBatc
 
 				for _, studio := range studios {
 					tasks = append(tasks, StashBoxBatchTagTask{
-						studio:          studio,
-						refresh:         input.Refresh,
-						create_parent:   input.CreateParent,
-						box:             box,
-						excluded_fields: input.ExcludeFields,
-						task_type:       Studio,
+						studio:         studio,
+						refresh:        input.Refresh,
+						createParent:   input.CreateParent,
+						box:            box,
+						excludedFields: input.ExcludeFields,
+						taskType:       Studio,
 					})
 				}
 				return nil

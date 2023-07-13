@@ -23,29 +23,29 @@ const (
 )
 
 type StashBoxBatchTagTask struct {
-	box             *models.StashBox
-	name            *string
-	performer       *models.Performer
-	studio          *models.Studio
-	refresh         bool
-	create_parent   bool
-	excluded_fields []string
-	task_type       StashBoxTagTaskType
+	box            *models.StashBox
+	name           *string
+	performer      *models.Performer
+	studio         *models.Studio
+	refresh        bool
+	createParent   bool
+	excludedFields []string
+	taskType       StashBoxTagTaskType
 }
 
 func (t *StashBoxBatchTagTask) Start(ctx context.Context) {
-	switch t.task_type {
+	switch t.taskType {
 	case Performer:
 		t.stashBoxPerformerTag(ctx)
 	case Studio:
 		t.stashBoxStudioTag(ctx)
 	default:
-		logger.Errorf("Error starting batch task, unknown task_type %d", t.task_type)
+		logger.Errorf("Error starting batch task, unknown task_type %d", t.taskType)
 	}
 }
 
 func (t *StashBoxBatchTagTask) Description() string {
-	if t.task_type == Performer {
+	if t.taskType == Performer {
 		var name string
 		if t.name != nil {
 			name = *t.name
@@ -53,7 +53,7 @@ func (t *StashBoxBatchTagTask) Description() string {
 			name = t.performer.Name
 		}
 		return fmt.Sprintf("Tagging performer %s from stash-box", name)
-	} else if t.task_type == Studio {
+	} else if t.taskType == Studio {
 		var name string
 		if t.name != nil {
 			name = *t.name
@@ -62,7 +62,7 @@ func (t *StashBoxBatchTagTask) Description() string {
 		}
 		return fmt.Sprintf("Tagging studio %s from stash-box", name)
 	}
-	return fmt.Sprintf("Unknown tagging task type %d from stash-box", t.task_type)
+	return fmt.Sprintf("Unknown tagging task type %d from stash-box", t.taskType)
 }
 
 func (t *StashBoxBatchTagTask) stashBoxPerformerTag(ctx context.Context) {
@@ -102,7 +102,7 @@ func (t *StashBoxBatchTagTask) stashBoxPerformerTag(ctx context.Context) {
 	}
 
 	excluded := map[string]bool{}
-	for _, field := range t.excluded_fields {
+	for _, field := range t.excludedFields {
 		excluded[field] = true
 	}
 
@@ -223,7 +223,7 @@ func (t *StashBoxBatchTagTask) stashBoxStudioTag(ctx context.Context) {
 	}
 
 	excluded := map[string]bool{}
-	for _, field := range t.excluded_fields {
+	for _, field := range t.excludedFields {
 		excluded[field] = true
 	}
 
@@ -293,7 +293,7 @@ func (t *StashBoxBatchTagTask) findStashBoxStudio(ctx context.Context) (*models.
 func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, s *models.ScrapedStudio, excluded map[string]bool) {
 	// Refreshing an existing studio
 	if t.studio != nil {
-		if s.Parent != nil && t.create_parent {
+		if s.Parent != nil && t.createParent {
 			err := t.processParentStudio(ctx, s.Parent, excluded)
 			if err != nil {
 				return
@@ -325,7 +325,7 @@ func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, s *mode
 		}
 	} else if t.name != nil && s.Name != "" {
 		// Creating a new studio
-		if s.Parent != nil && t.create_parent {
+		if s.Parent != nil && t.createParent {
 			err := t.processParentStudio(ctx, s.Parent, excluded)
 			if err != nil {
 				return
