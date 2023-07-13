@@ -6,17 +6,18 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/studio"
 )
 
-func createMissingStudio(ctx context.Context, endpoint string, w models.StudioReaderWriter, studio *models.ScrapedStudio) (*int, error) {
+func createMissingStudio(ctx context.Context, endpoint string, w models.StudioReaderWriter, s *models.ScrapedStudio) (*int, error) {
 	var err error
 
-	if studio.Parent != nil {
-		if studio.Parent.StoredID == nil {
+	if s.Parent != nil {
+		if s.Parent.StoredID == nil {
 			// The parent needs to be created
-			newParentStudio, err := studio.Parent.ToStudio(ctx, endpoint, nil)
+			newParentStudio, err := s.Parent.ToStudio(ctx, endpoint, nil)
 			if err != nil {
-				logger.Errorf("Failed to make parent studio from scraped studio %s: %s", studio.Parent.Name, err.Error())
+				logger.Errorf("Failed to make parent studio from scraped studio %s: %s", s.Parent.Name, err.Error())
 				return nil, err
 			}
 
@@ -26,16 +27,16 @@ func createMissingStudio(ctx context.Context, endpoint string, w models.StudioRe
 				return nil, err
 			}
 			storedId := strconv.Itoa(newParentStudio.ID)
-			studio.Parent.StoredID = &storedId
+			s.Parent.StoredID = &storedId
 		} else {
 			// The parent studio matched an existing one and the user has chosen in the UI to link and/or update it
-			existingStashIDs := getStashIDsForStudio(ctx, *studio.Parent.StoredID, w)
-			studioPartial, err := studio.Parent.ToPartial(ctx, studio.Parent.StoredID, endpoint, nil, existingStashIDs)
+			existingStashIDs := getStashIDsForStudio(ctx, *s.Parent.StoredID, w)
+			studioPartial, err := s.Parent.ToPartial(ctx, s.Parent.StoredID, endpoint, nil, existingStashIDs)
 			if err != nil {
 				return nil, err
 			}
 
-			if err := studioPartial.ValidateModifyStudio(ctx, w); err != nil {
+			if err := studio.ValidateModify(ctx, *studioPartial, w); err != nil {
 				return nil, err
 			}
 
@@ -46,7 +47,7 @@ func createMissingStudio(ctx context.Context, endpoint string, w models.StudioRe
 		}
 	}
 
-	newStudio, err := studio.ToStudio(ctx, endpoint, nil)
+	newStudio, err := s.ToStudio(ctx, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}

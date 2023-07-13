@@ -10,6 +10,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -289,20 +290,20 @@ func (t *StashBoxBatchTagTask) findStashBoxStudio(ctx context.Context) (*models.
 	return studio, err
 }
 
-func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, studio *models.ScrapedStudio, excluded map[string]bool) {
+func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, s *models.ScrapedStudio, excluded map[string]bool) {
 	// Refreshing an existing studio
 	if t.studio != nil {
-		if studio.Parent != nil && t.create_parent {
-			err := t.processParentStudio(ctx, studio.Parent, excluded)
+		if s.Parent != nil && t.create_parent {
+			err := t.processParentStudio(ctx, s.Parent, excluded)
 			if err != nil {
 				return
 			}
 		}
 
-		existingStashIDs := getStashIDsForStudio(ctx, *studio.StoredID)
-		studioPartial, err := studio.ToPartial(ctx, studio.StoredID, t.box.Endpoint, excluded, existingStashIDs)
+		existingStashIDs := getStashIDsForStudio(ctx, *s.StoredID)
+		studioPartial, err := s.ToPartial(ctx, s.StoredID, t.box.Endpoint, excluded, existingStashIDs)
 		if err != nil {
-			logger.Errorf("Failed to make studio partial from scraped studio %s: %s", studio.Name, err.Error())
+			logger.Errorf("Failed to make studio partial from scraped studio %s: %s", s.Name, err.Error())
 			return
 		}
 
@@ -310,7 +311,7 @@ func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, studio 
 		err = txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
 			qb := instance.Repository.Studio
 
-			if err := studioPartial.ValidateModifyStudio(ctx, qb); err != nil {
+			if err := studio.ValidateModify(ctx, *studioPartial, qb); err != nil {
 				return err
 			}
 
@@ -318,22 +319,22 @@ func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, studio 
 			return err
 		})
 		if err != nil {
-			logger.Errorf("Failed to update studio %s: %s", studio.Name, err.Error())
+			logger.Errorf("Failed to update studio %s: %s", s.Name, err.Error())
 		} else {
-			logger.Infof("Updated studio %s", studio.Name)
+			logger.Infof("Updated studio %s", s.Name)
 		}
-	} else if t.name != nil && studio.Name != "" {
+	} else if t.name != nil && s.Name != "" {
 		// Creating a new studio
-		if studio.Parent != nil && t.create_parent {
-			err := t.processParentStudio(ctx, studio.Parent, excluded)
+		if s.Parent != nil && t.create_parent {
+			err := t.processParentStudio(ctx, s.Parent, excluded)
 			if err != nil {
 				return
 			}
 		}
 
-		newStudio, err := studio.ToStudio(ctx, t.box.Endpoint, excluded)
+		newStudio, err := s.ToStudio(ctx, t.box.Endpoint, excluded)
 		if err != nil {
-			logger.Errorf("Failed to make studio from scraped studio %s: %s", studio.Name, err.Error())
+			logger.Errorf("Failed to make studio from scraped studio %s: %s", s.Name, err.Error())
 			return
 		}
 
@@ -344,9 +345,9 @@ func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, studio 
 			return err
 		})
 		if err != nil {
-			logger.Errorf("Failed to create studio %s: %s", studio.Name, err.Error())
+			logger.Errorf("Failed to create studio %s: %s", s.Name, err.Error())
 		} else {
-			logger.Infof("Created studio %s", studio.Name)
+			logger.Infof("Created studio %s", s.Name)
 		}
 	}
 }
@@ -389,7 +390,7 @@ func (t *StashBoxBatchTagTask) processParentStudio(ctx context.Context, parent *
 		err = txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
 			qb := instance.Repository.Studio
 
-			if err := studioPartial.ValidateModifyStudio(ctx, instance.Repository.Studio); err != nil {
+			if err := studio.ValidateModify(ctx, *studioPartial, instance.Repository.Studio); err != nil {
 				return err
 			}
 

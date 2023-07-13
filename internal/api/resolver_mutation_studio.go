@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/txn"
+	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -27,69 +26,22 @@ func (r *mutationResolver) getStudio(ctx context.Context, id int) (ret *models.S
 func (r *mutationResolver) StudioCreate(ctx context.Context, input StudioCreateInput) (*models.Studio, error) {
 	var studioID *int
 	var err error
-	var parentTranslator changesetTranslator
-	runParentCreateHook := false
-	runParentUpdateHook := false
 
-	if input.Parent != nil {
-		if input.ParentID == nil {
-			// The parent needs to be created
-			newStudio, err := studioFromStudioCreateInput(ctx, *input.Parent)
-			if err != nil {
-				logger.Errorf("Failed to make parent studio from studio input %s: %s", input.Parent.Name, err.Error())
-				return nil, err
-			}
-
-			// Start the transaction and save the studio
-			err = txn.WithTxn(ctx, r.repository, func(ctx context.Context) error {
-				qb := r.repository.Studio
-				err := qb.Create(ctx, newStudio)
-				if err != nil {
-					return err
-				}
-				storedId := strconv.Itoa(newStudio.ID)
-				input.ParentID = &storedId
-				return nil
-			})
-			if err != nil {
-				logger.Errorf("Failed to create studio %s: %s", newStudio.Name, err.Error())
-			}
-		} else {
-			parentTranslator = changesetTranslator{
-				inputMap: getNamedUpdateInputMap(ctx, updateInputField+".parent"),
-			}
-
-			// The parent studio matched an existing one and the user has chosen in the UI to link and/or update it
-			studioPartial, err := studioPartialFromStudioCreateInput(ctx, *input.Parent, input.ParentID, parentTranslator)
-			// Start the transaction and update the studio
-			err = txn.WithTxn(ctx, r.repository, func(ctx context.Context) error {
-				qb := r.repository.Studio
-
-				if err := studioPartial.ValidateModifyStudio(ctx, qb); err != nil {
-					return err
-				}
-
-				_, err = qb.UpdatePartial(ctx, *studioPartial)
-				return err
-			})
-			if err != nil {
-				logger.Errorf("Failed to update studio %s: %s", studioPartial.Name, err.Error())
-			}
-		}
-		if err != nil {
-			return nil, err
-		}
-		runParentUpdateHook = true
-	}
-
-	studio, err := studioFromStudioCreateInput(ctx, input)
+	s, err := studioFromStudioCreateInput(ctx, input)
 	if err != nil {
 		return nil, err
 	}
 	// Start the transaction and save the studio
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Studio
-		err = qb.Create(ctx, studio)
+
+		if s.Aliases.Loaded() && len(s.Aliases.List()) > 0 {
+			if err := studio.EnsureAliasesUnique(ctx, 0, s.Aliases.List(), qb); err != nil {
+				return err
+			}
+		}
+
+		err = qb.Create(ctx, s)
 		if err != nil {
 			return err
 		}
@@ -103,11 +55,6 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input StudioCreateI
 		return nil, fmt.Errorf("finding after create: %w", err)
 	}
 
-	if runParentCreateHook {
-		r.hookExecutor.ExecutePostHooks(ctx, *newStudio.ParentID, plugin.StudioCreatePost, input, nil)
-	} else if runParentUpdateHook {
-		r.hookExecutor.ExecutePostHooks(ctx, *newStudio.ParentID, plugin.StudioUpdatePost, input, parentTranslator.getFields())
-	}
 	r.hookExecutor.ExecutePostHooks(ctx, *studioID, plugin.StudioCreatePost, input, nil)
 
 	return newStudio, nil
@@ -152,119 +99,14 @@ func studioFromStudioCreateInput(ctx context.Context, input StudioCreateInput) (
 	return &newStudio, nil
 }
 
-func studioPartialFromStudioCreateInput(ctx context.Context, input StudioCreateInput, id *string, translator changesetTranslator) (*models.StudioPartial, error) {
-	// Populate studio from the input
-	updatedStudio := models.StudioPartial{
-		URL:           translator.optionalString(input.URL, "url"),
-		Details:       translator.optionalString(input.Details, "details"),
-		Rating:        translator.ratingConversionOptional(input.Rating, input.Rating100),
-		IgnoreAutoTag: translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag"),
-	}
-	updatedStudio.ID, _ = strconv.Atoi(*id)
-
-	if input.Name != "" {
-		updatedStudio.Name = translator.optionalString(&input.Name, "name")
-	}
-
-	if input.ParentID != nil {
-		parentID, _ := strconv.Atoi(*input.ParentID)
-		if parentID > 0 {
-			// This is to be set directly as we know it has a value and the translator won't have the field
-			updatedStudio.ParentID = models.NewOptionalInt(parentID)
-		}
-	} else {
-		updatedStudio.ParentID = translator.optionalInt(nil, "parent_id")
-	}
-
-	// Process the base 64 encoded image string
-	updatedStudio.ImageIncluded = translator.hasField("image")
-	if input.Image != nil {
-		var err error
-		updatedStudio.ImageBytes, err = utils.ProcessImageInput(ctx, *input.Image)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if translator.hasField("aliases") {
-		updatedStudio.Aliases = &models.UpdateStrings{
-			Values: input.Aliases,
-			Mode:   models.RelationshipUpdateModeSet,
-		}
-	}
-
-	if translator.hasField("stash_ids") {
-		updatedStudio.StashIDs = &models.UpdateStashIDs{
-			StashIDs: stashIDPtrSliceToSlice(input.StashIds),
-			Mode:     models.RelationshipUpdateModeSet,
-		}
-	}
-
-	return &updatedStudio, nil
-}
-
 func (r *mutationResolver) StudioUpdate(ctx context.Context, input StudioUpdateInput) (*models.Studio, error) {
 	var updatedStudio *models.Studio
 	var err error
-	var parentTranslator changesetTranslator
-	runParentCreateHook := false
-	runParentUpdateHook := false
-
-	if input.Parent != nil {
-		if input.ParentID == nil {
-			// The parent needs to be created
-			newStudio, err := studioFromStudioCreateInput(ctx, *input.Parent)
-			if err != nil {
-				logger.Errorf("Failed to make parent studio from studio input %s: %s", input.Parent.Name, err.Error())
-				return nil, err
-			}
-
-			// Start the transaction and save the studio
-			err = txn.WithTxn(ctx, r.repository, func(ctx context.Context) error {
-				qb := r.repository.Studio
-				err := qb.Create(ctx, newStudio)
-				if err != nil {
-					return err
-				}
-				storedId := strconv.Itoa(newStudio.ID)
-				input.ParentID = &storedId
-				return nil
-			})
-			if err != nil {
-				logger.Errorf("Failed to create studio %s: %s", newStudio.Name, err.Error())
-			}
-		} else {
-			parentTranslator = changesetTranslator{
-				inputMap: getNamedUpdateInputMap(ctx, updateInputField+".parent"),
-			}
-
-			// The parent studio matched an existing one and the user has chosen in the UI to link and/or update it
-			studioPartial, err := studioPartialFromStudioCreateInput(ctx, *input.Parent, input.ParentID, parentTranslator)
-			// Start the transaction and update the studio
-			err = txn.WithTxn(ctx, r.repository, func(ctx context.Context) error {
-				qb := r.repository.Studio
-
-				if err := studioPartial.ValidateModifyStudio(ctx, qb); err != nil {
-					return err
-				}
-
-				_, err = qb.UpdatePartial(ctx, *studioPartial)
-				return err
-			})
-			if err != nil {
-				logger.Errorf("Failed to update studio %s: %s", studioPartial.Name, err.Error())
-			}
-		}
-		if err != nil {
-			return nil, err
-		}
-		runParentCreateHook = true
-	}
 
 	translator := changesetTranslator{
 		inputMap: getNamedUpdateInputMap(ctx, updateInputField),
 	}
-	studio, err := studioPartialFromStudioUpdateInput(ctx, input, &input.ID, translator)
+	s, err := studioPartialFromStudioUpdateInput(ctx, input, &input.ID, translator)
 	if err != nil {
 		return nil, err
 	}
@@ -273,11 +115,11 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input StudioUpdateI
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Studio
 
-		if err := studio.ValidateModifyStudio(ctx, qb); err != nil {
+		if err := studio.ValidateModify(ctx, *s, qb); err != nil {
 			return err
 		}
 
-		updatedStudio, err = qb.UpdatePartial(ctx, *studio)
+		updatedStudio, err = qb.UpdatePartial(ctx, *s)
 		if err != nil {
 			return err
 		}
@@ -286,11 +128,6 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input StudioUpdateI
 		return nil, err
 	}
 
-	if runParentCreateHook {
-		r.hookExecutor.ExecutePostHooks(ctx, *updatedStudio.ParentID, plugin.StudioCreatePost, input, nil)
-	} else if runParentUpdateHook {
-		r.hookExecutor.ExecutePostHooks(ctx, *updatedStudio.ParentID, plugin.StudioUpdatePost, input, parentTranslator.getFields())
-	}
 	r.hookExecutor.ExecutePostHooks(ctx, updatedStudio.ID, plugin.StudioUpdatePost, input, translator.getFields())
 
 	return updatedStudio, nil
