@@ -6,10 +6,10 @@ RUN apk add --no-cache make
 ## cache node_modules separately
 COPY ./ui/v2.5/package.json ./ui/v2.5/yarn.lock /stash/ui/v2.5/
 WORKDIR /stash
-RUN make pre-ui
 COPY Makefile /stash/
 COPY ./graphql /stash/graphql/
 COPY ./ui /stash/ui/
+RUN make pre-ui
 RUN make generate-ui
 ARG GITHASH
 ARG STASH_VERSION
