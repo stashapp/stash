@@ -1220,6 +1220,7 @@
   "stashbox": {
     "go_review_draft": "Go to {endpoint_name} to review draft.",
     "selected_stash_box": "Selected Stash-Box endpoint",
+    "source": "Stash-Box Source",
     "submission_failed": "Submission failed",
     "submission_successful": "Submission successful",
     "submit_update": "Already exists in {endpoint_name}"

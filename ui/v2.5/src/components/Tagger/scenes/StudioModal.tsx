@@ -227,7 +227,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
             {parent_link && (
               <h6 className="mt-2">
                 <a href={parent_link} target="_blank" rel="noopener noreferrer">
-                  Stash-Box Source
+                  <FormattedMessage id="stashbox.source" />
                   <Icon icon={faExternalLinkAlt} className="ml-2" />
                 </a>
               </h6>
@@ -277,7 +277,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
           {link && (
             <h6 className="mt-2">
               <a href={link} target="_blank" rel="noopener noreferrer">
-                Stash-Box Source
+                <FormattedMessage id="stashbox.source" />
                 <Icon icon={faExternalLinkAlt} className="ml-2" />
               </a>
             </h6>
