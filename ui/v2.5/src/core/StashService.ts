@@ -219,11 +219,11 @@ export const queryFindPerformers = (filter: ListFilterModel) =>
   });
 
 export const useFindGallery = (id: string) => {
-  const skip = id === "new";
+  const skip = id === "new" || id === "";
   return GQL.useFindGalleryQuery({ variables: { id }, skip });
 };
 export const useFindScene = (id: string) => {
-  const skip = id === "new";
+  const skip = id === "new" || id === "";
   return GQL.useFindSceneQuery({ variables: { id }, skip });
 };
 export const useSceneStreams = (id: string) =>
@@ -241,11 +241,11 @@ export const queryFindPerformer = (id: string) =>
   });
 
 export const useFindPerformer = (id: string) => {
-  const skip = id === "new";
+  const skip = id === "new" || id === "";
   return GQL.useFindPerformerQuery({ variables: { id }, skip });
 };
 export const useFindStudio = (id: string) => {
-  const skip = id === "new";
+  const skip = id === "new" || id === "";
   return GQL.useFindStudioQuery({ variables: { id }, skip });
 };
 export const queryFindStudio = (id: string) =>
@@ -256,11 +256,11 @@ export const queryFindStudio = (id: string) =>
     },
   });
 export const useFindMovie = (id: string) => {
-  const skip = id === "new";
+  const skip = id === "new" || id === "";
   return GQL.useFindMovieQuery({ variables: { id }, skip });
 };
 export const useFindTag = (id: string) => {
-  const skip = id === "new";
+  const skip = id === "new" || id === "";
   return GQL.useFindTagQuery({ variables: { id }, skip });
 };
 
