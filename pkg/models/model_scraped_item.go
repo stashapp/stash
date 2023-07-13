@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"strconv"
+	"time"
 
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -21,6 +22,8 @@ type ScrapedStudio struct {
 func (ScrapedStudio) IsScrapedContent() {}
 
 func (s *ScrapedStudio) ToStudio(ctx context.Context, endpoint string, excluded map[string]bool) (*Studio, error) {
+	now := time.Now()
+
 	// Populate a new studio from the input
 	newStudio := Studio{
 		Name: s.Name,
@@ -30,6 +33,8 @@ func (s *ScrapedStudio) ToStudio(ctx context.Context, endpoint string, excluded 
 				StashID:  *s.RemoteSiteID,
 			},
 		}),
+		CreatedAt: now,
+		UpdatedAt: now,
 	}
 
 	if s.URL != nil && !excluded["url"] {
@@ -54,7 +59,9 @@ func (s *ScrapedStudio) ToStudio(ctx context.Context, endpoint string, excluded 
 }
 
 func (s *ScrapedStudio) ToPartial(ctx context.Context, id *string, endpoint string, excluded map[string]bool, existingStashIDs []StashID) (*StudioPartial, error) {
-	partial := StudioPartial{}
+	partial := StudioPartial{
+		UpdatedAt: NewOptionalTime(time.Now()),
+	}
 	partial.ID, _ = strconv.Atoi(*id)
 
 	if s.Name != "" && !excluded["name"] {
