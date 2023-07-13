@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -49,21 +48,11 @@ func (r *studioRow) fromStudio(o models.Studio) {
 	r.Name = zero.StringFrom(o.Name)
 	r.URL = zero.StringFrom(o.URL)
 	r.ParentID = intFromPtr(o.ParentID)
+	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
+	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
 	r.Rating = intFromPtr(o.Rating)
 	r.Details = zero.StringFrom(o.Details)
 	r.IgnoreAutoTag = o.IgnoreAutoTag
-
-	if o.CreatedAt.IsZero() {
-		r.CreatedAt = Timestamp{Timestamp: time.Now()}
-	} else {
-		r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
-	}
-
-	if o.UpdatedAt.IsZero() {
-		r.UpdatedAt = Timestamp{Timestamp: time.Now()}
-	} else {
-		r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
-	}
 }
 
 func (r *studioRow) resolve() *models.Studio {
@@ -90,7 +79,8 @@ func (r *studioRowRecord) fromPartial(o models.StudioPartial) {
 	r.setNullString("name", o.Name)
 	r.setNullString("url", o.URL)
 	r.setNullInt("parent_id", o.ParentID)
-	r.setTimestamp("updated_at", models.NewOptionalTime(time.Now()))
+	r.setTimestamp("created_at", o.CreatedAt)
+	r.setTimestamp("updated_at", o.UpdatedAt)
 	r.setNullInt("rating", o.Rating)
 	r.setNullString("details", o.Details)
 	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)
@@ -446,19 +436,16 @@ func (qb *StudioStore) QueryForAutoTag(ctx context.Context, words []string) ([]*
 	// TODO - Query needs to be changed to support queries of this type, and
 	// this method should be removed
 	table := qb.table()
-	sq := dialect.From(table).Select(table.Col(idColumn))
-	// TODO - disabled alias matching until we get finer control over it
-	// .LeftJoin(
-	// 	studiosAliasesJoinTable,
-	// 	goqu.On(studiosAliasesJoinTable.Col(studioIDColumn).Eq(table.Col(idColumn))),
-	// )
+	sq := dialect.From(table).Select(table.Col(idColumn)).LeftJoin(
+		studiosAliasesJoinTable,
+		goqu.On(studiosAliasesJoinTable.Col(studioIDColumn).Eq(table.Col(idColumn))),
+	)
 
 	var whereClauses []exp.Expression
 
 	for _, w := range words {
 		whereClauses = append(whereClauses, table.Col(studioNameColumn).Like(w+"%"))
-		// TODO - see above
-		// whereClauses = append(whereClauses, studiosAliasesJoinTable.Col("alias").Like(w+"%"))
+		whereClauses = append(whereClauses, studiosAliasesJoinTable.Col("alias").Like(w+"%"))
 	}
 
 	sq = sq.Where(

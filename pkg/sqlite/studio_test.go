@@ -219,17 +219,15 @@ func TestStudioQueryForAutoTag(t *testing.T) {
 		assert.Len(t, studios, 1)
 		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithMovie]), strings.ToLower(studios[0].Name))
 
-		// Disabled until alias matching is implemented for performers and studios
-		// // find by alias
-		// name = getStudioStringValue(studioIdxWithMovie, "Alias")
-		// studios, err = tqb.QueryForAutoTag(ctx, []string{name})
+		name = getStudioStringValue(studioIdxWithMovie, "Alias")
+		studios, err = tqb.QueryForAutoTag(ctx, []string{name})
 
-		// if err != nil {
-		// 	t.Errorf("Error finding studios: %s", err.Error())
-		// }
-		// if assert.Len(t, studios, 1) {
-		// 	assert.Equal(t, studioIDs[studioIdxWithMovie], studios[0].ID)
-		// }
+		if err != nil {
+			t.Errorf("Error finding studios: %s", err.Error())
+		}
+		if assert.Len(t, studios, 1) {
+			assert.Equal(t, studioIDs[studioIdxWithMovie], studios[0].ID)
+		}
 		return nil
 	})
 }
