@@ -22,6 +22,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { getCountryByISO } from "src/utils/country";
 import { CountrySelect } from "./CountrySelect";
+import { StringListInput } from "./StringListInput";
 
 export class ScrapeResult<T> {
   public newValue?: T;
@@ -102,6 +103,7 @@ interface IScrapedFieldProps<T> {
 
 interface IScrapedRowProps<T, V extends IHasName>
   extends IScrapedFieldProps<T> {
+  className?: string;
   title: string;
   renderOriginalField: (result: ScrapeResult<T>) => JSX.Element | undefined;
   renderNewField: (result: ScrapeResult<T>) => JSX.Element | undefined;
@@ -175,7 +177,7 @@ export const ScrapeDialogRow = <T, V extends IHasName>(
   }
 
   return (
-    <Row className="px-3 pt-3">
+    <Row className={`px-3 pt-3 ${props.className ?? ""}`}>
       <Form.Label column lg="3">
         {props.title}
       </Form.Label>
@@ -262,6 +264,71 @@ export const ScrapedInputGroupRow: React.FC<IScrapedInputGroupRowProps> = (
       )}
       renderNewField={() => (
         <ScrapedInputGroup
+          placeholder={props.placeholder || props.title}
+          result={props.result}
+          isNew
+          locked={props.locked}
+          onChange={(value) =>
+            props.onChange(props.result.cloneWithValue(value))
+          }
+        />
+      )}
+      onChange={props.onChange}
+    />
+  );
+};
+
+interface IScrapedStringListProps {
+  isNew?: boolean;
+  placeholder?: string;
+  locked?: boolean;
+  result: ScrapeResult<string[]>;
+  onChange?: (value: string[]) => void;
+}
+
+const ScrapedStringList: React.FC<IScrapedStringListProps> = (props) => {
+  const value = props.isNew
+    ? props.result.newValue
+    : props.result.originalValue;
+
+  return (
+    <StringListInput
+      value={value ?? []}
+      setValue={(v) => {
+        if (props.isNew && props.onChange) {
+          props.onChange(v);
+        }
+      }}
+      placeholder={props.placeholder}
+      readOnly={!props.isNew || props.locked}
+    />
+  );
+};
+
+interface IScrapedStringListRowProps {
+  title: string;
+  placeholder?: string;
+  result: ScrapeResult<string[]>;
+  locked?: boolean;
+  onChange: (value: ScrapeResult<string[]>) => void;
+}
+
+export const ScrapedStringListRow: React.FC<IScrapedStringListRowProps> = (
+  props
+) => {
+  return (
+    <ScrapeDialogRow
+      className="string-list-row"
+      title={props.title}
+      result={props.result}
+      renderOriginalField={() => (
+        <ScrapedStringList
+          placeholder={props.placeholder || props.title}
+          result={props.result}
+        />
+      )}
+      renderNewField={() => (
+        <ScrapedStringList
           placeholder={props.placeholder || props.title}
           result={props.result}
           isNew

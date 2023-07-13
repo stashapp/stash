@@ -64,8 +64,8 @@ var stashIDs = []models.StashID{
 
 const image = "aW1hZ2VCeXRlcw=="
 
-var birthDate = models.NewDate("2001-01-01")
-var deathDate = models.NewDate("2021-02-02")
+var birthDate, _ = models.ParseDate("2001-01-01")
+var deathDate, _ = models.ParseDate("2021-02-02")
 
 var (
 	createTime = time.Date(2001, 01, 01, 0, 0, 0, 0, time.Local)

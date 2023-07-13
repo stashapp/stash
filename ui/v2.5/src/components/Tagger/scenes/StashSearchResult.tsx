@@ -360,7 +360,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       ),
       studio_id: studioID,
       cover_image: resolveField("cover_image", undefined, imgData),
-      url: resolveField("url", stashScene.url, scene.url),
+      urls: resolveField("url", stashScene.urls, scene.urls),
       tag_ids: tagIDs,
       stash_ids: stashScene.stash_ids ?? [],
       code: resolveField("code", stashScene.code, scene.code),
@@ -462,9 +462,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       );
     }
 
-    const sceneTitleEl = scene.url ? (
+    const url = scene.urls?.length ? scene.urls[0] : null;
+
+    const sceneTitleEl = url ? (
       <a
-        href={scene.url}
+        href={url}
         target="_blank"
         rel="noopener noreferrer"
         className="scene-link"
@@ -558,16 +560,20 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   };
 
   const maybeRenderURL = () => {
-    if (scene.url) {
+    if (scene.urls) {
       return (
         <div className="scene-details">
           <OptionalField
             exclude={excludedFields[fields.url]}
             setExclude={(v) => setExcludedField(fields.url, v)}
           >
-            <a href={scene.url} target="_blank" rel="noopener noreferrer">
-              {scene.url}
-            </a>
+            {scene.urls.map((url) => (
+              <div key={url}>
+                <a href={url} target="_blank" rel="noopener noreferrer">
+                  {url}
+                </a>
+              </div>
+            ))}
           </OptionalField>
         </div>
       );

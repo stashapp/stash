@@ -117,7 +117,6 @@ func Test_createMissingStudio(t *testing.T) {
 
 func Test_scrapedToStudioInput(t *testing.T) {
 	const name = "name"
-	const md5 = "b068931cc450442b63f5b3d276ea4297"
 	url := "url"
 
 	tests := []struct {
@@ -132,9 +131,8 @@ func Test_scrapedToStudioInput(t *testing.T) {
 				URL:  &url,
 			},
 			models.Studio{
-				Name:     name,
-				Checksum: md5,
-				URL:      url,
+				Name: name,
+				URL:  url,
 			},
 		},
 		{
@@ -143,8 +141,7 @@ func Test_scrapedToStudioInput(t *testing.T) {
 				Name: name,
 			},
 			models.Studio{
-				Name:     name,
-				Checksum: md5,
+				Name: name,
 			},
 		},
 	}

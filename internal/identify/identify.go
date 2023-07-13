@@ -10,7 +10,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/scraper"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -180,13 +180,10 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		scene:                    s,
 		result:                   result,
 		fieldOptions:             fieldOptions,
-		skipSingleNamePerformers: *options.SkipSingleNamePerformers,
+		skipSingleNamePerformers: utils.IsTrue(options.SkipSingleNamePerformers),
 	}
 
-	setOrganized := false
-	if options.SetOrganized != nil {
-		setOrganized = *options.SetOrganized
-	}
+	setOrganized := utils.IsTrue(options.SetOrganized)
 	ret.Partial = getScenePartial(s, scraped, fieldOptions, setOrganized)
 
 	studioID, err := rel.studio(ctx)
@@ -223,13 +220,13 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	if err != nil {
 		return nil, err
 	}
-	if addSkipSingleNamePerformerTag {
+	if addSkipSingleNamePerformerTag && options.SkipSingleNamePerformerTag != nil {
 		tagID, err := strconv.ParseInt(*options.SkipSingleNamePerformerTag, 10, 64)
 		if err != nil {
 			return nil, fmt.Errorf("error converting tag ID %s: %w", *options.SkipSingleNamePerformerTag, err)
 		}
 
-		tagIDs = intslice.IntAppendUnique(tagIDs, int(tagID))
+		tagIDs = sliceutil.AppendUnique(tagIDs, int(tagID))
 	}
 	if tagIDs != nil {
 		ret.Partial.TagIDs = &models.UpdateIDs{
@@ -249,7 +246,7 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		}
 	}
 
-	if options.SetCoverImage != nil && *options.SetCoverImage {
+	if utils.IsTrue(options.SetCoverImage) {
 		ret.CoverImage, err = rel.cover(ctx)
 		if err != nil {
 			return nil, err
@@ -263,6 +260,9 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager txn.Manage
 	var updater *scene.UpdateSet
 	if err := txn.WithTxn(ctx, txnManager, func(ctx context.Context) error {
 		// load scene relationships
+		if err := s.LoadURLs(ctx, t.SceneReaderUpdater); err != nil {
+			return err
+		}
 		if err := s.LoadPerformerIDs(ctx, t.SceneReaderUpdater); err != nil {
 			return err
 		}
@@ -323,7 +323,7 @@ func (t *SceneIdentifier) addTagToScene(ctx context.Context, txnManager txn.Mana
 		}
 		existing := s.TagIDs.List()
 
-		if intslice.IntInclude(existing, tagID) {
+		if sliceutil.Include(existing, tagID) {
 			// skip if the scene was already tagged
 			return nil
 		}
@@ -370,8 +370,10 @@ func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOp
 	}
 	if scraped.Date != nil && (scene.Date == nil || scene.Date.String() != *scraped.Date) {
 		if shouldSetSingleValueField(fieldOptions["date"], scene.Date != nil) {
-			d := models.NewDate(*scraped.Date)
-			partial.Date = models.NewOptionalDate(d)
+			d, err := models.ParseDate(*scraped.Date)
+			if err == nil {
+				partial.Date = models.NewOptionalDate(d)
+			}
 		}
 	}
 	if scraped.Details != nil && (scene.Details != *scraped.Details) {
@@ -379,9 +381,27 @@ func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOp
 			partial.Details = models.NewOptionalString(*scraped.Details)
 		}
 	}
-	if scraped.URL != nil && (scene.URL != *scraped.URL) {
-		if shouldSetSingleValueField(fieldOptions["url"], scene.URL != "") {
-			partial.URL = models.NewOptionalString(*scraped.URL)
+	if len(scraped.URLs) > 0 && shouldSetSingleValueField(fieldOptions["url"], false) {
+		// if overwrite, then set over the top
+		switch getFieldStrategy(fieldOptions["url"]) {
+		case FieldStrategyOverwrite:
+			// only overwrite if not equal
+			if len(sliceutil.Exclude(scene.URLs.List(), scraped.URLs)) != 0 {
+				partial.URLs = &models.UpdateStrings{
+					Values: scraped.URLs,
+					Mode:   models.RelationshipUpdateModeSet,
+				}
+			}
+		case FieldStrategyMerge:
+			// if merge, add if not already present
+			urls := sliceutil.AppendUniques(scene.URLs.List(), scraped.URLs)
+
+			if len(urls) != len(scene.URLs.List()) {
+				partial.URLs = &models.UpdateStrings{
+					Values: urls,
+					Mode:   models.RelationshipUpdateModeSet,
+				}
+			}
 		}
 	}
 	if scraped.Director != nil && (scene.Director != *scraped.Director) {
@@ -402,13 +422,20 @@ func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOp
 	return partial
 }
 
-func shouldSetSingleValueField(strategy *FieldOptions, hasExistingValue bool) bool {
+func getFieldStrategy(strategy *FieldOptions) FieldStrategy {
 	// if unset then default to MERGE
 	fs := FieldStrategyMerge
 
 	if strategy != nil && strategy.Strategy.IsValid() {
 		fs = strategy.Strategy
 	}
+
+	return fs
+}
+
+func shouldSetSingleValueField(strategy *FieldOptions, hasExistingValue bool) bool {
+	// if unset then default to MERGE
+	fs := getFieldStrategy(strategy)
 
 	if fs == FieldStrategyIgnore {
 		return false

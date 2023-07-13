@@ -11,6 +11,7 @@ import (
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -108,8 +109,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 	}
 
 	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
-	mockTagFinderCreator := &mocks.TagReaderWriter{}
-
+	mockSceneReaderWriter.On("GetURLs", mock.Anything, mock.Anything).Return(nil, nil)
 	mockSceneReaderWriter.On("UpdatePartial", mock.Anything, mock.MatchedBy(func(id int) bool {
 		return id == errUpdateID
 	}), mock.Anything).Return(nil, errors.New("update error"))
@@ -117,6 +117,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 		return id != errUpdateID
 	}), mock.Anything).Return(nil, nil)
 
+	mockTagFinderCreator := &mocks.TagReaderWriter{}
 	mockTagFinderCreator.On("Find", mock.Anything, skipMultipleTagID).Return(&models.Tag{
 		ID:   skipMultipleTagID,
 		Name: skipMultipleTagIDStr,
@@ -236,6 +237,7 @@ func TestSceneIdentifier_modifyScene(t *testing.T) {
 			"empty update",
 			args{
 				&models.Scene{
+					URLs:         models.NewRelatedStrings([]string{}),
 					PerformerIDs: models.NewRelatedIDs([]int{}),
 					TagIDs:       models.NewRelatedIDs([]int{}),
 					StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
@@ -344,40 +346,51 @@ func Test_getScenePartial(t *testing.T) {
 		scrapedURL     = "scrapedURL"
 	)
 
-	originalDateObj := models.NewDate(originalDate)
-	scrapedDateObj := models.NewDate(scrapedDate)
+	originalDateObj, _ := models.ParseDate(originalDate)
+	scrapedDateObj, _ := models.ParseDate(scrapedDate)
 
 	originalScene := &models.Scene{
 		Title:   originalTitle,
 		Date:    &originalDateObj,
 		Details: originalDetails,
-		URL:     originalURL,
+		URLs:    models.NewRelatedStrings([]string{originalURL}),
 	}
 
 	organisedScene := *originalScene
 	organisedScene.Organized = true
 
-	emptyScene := &models.Scene{}
+	emptyScene := &models.Scene{
+		URLs: models.NewRelatedStrings([]string{}),
+	}
 
 	postPartial := models.ScenePartial{
 		Title:   models.NewOptionalString(scrapedTitle),
 		Date:    models.NewOptionalDate(scrapedDateObj),
 		Details: models.NewOptionalString(scrapedDetails),
-		URL:     models.NewOptionalString(scrapedURL),
+		URLs: &models.UpdateStrings{
+			Values: []string{scrapedURL},
+			Mode:   models.RelationshipUpdateModeSet,
+		},
+	}
+
+	postPartialMerge := postPartial
+	postPartialMerge.URLs = &models.UpdateStrings{
+		Values: []string{scrapedURL},
+		Mode:   models.RelationshipUpdateModeSet,
 	}
 
 	scrapedScene := &scraper.ScrapedScene{
 		Title:   &scrapedTitle,
 		Date:    &scrapedDate,
 		Details: &scrapedDetails,
-		URL:     &scrapedURL,
+		URLs:    []string{scrapedURL},
 	}
 
 	scrapedUnchangedScene := &scraper.ScrapedScene{
 		Title:   &originalTitle,
 		Date:    &originalDate,
 		Details: &originalDetails,
-		URL:     &originalURL,
+		URLs:    []string{originalURL},
 	}
 
 	makeFieldOptions := func(input *FieldOptions) map[string]*FieldOptions {
@@ -440,7 +453,12 @@ func Test_getScenePartial(t *testing.T) {
 				mergeAll,
 				false,
 			},
-			models.ScenePartial{},
+			models.ScenePartial{
+				URLs: &models.UpdateStrings{
+					Values: []string{originalURL, scrapedURL},
+					Mode:   models.RelationshipUpdateModeSet,
+				},
+			},
 		},
 		{
 			"merge (empty values)",
@@ -450,7 +468,7 @@ func Test_getScenePartial(t *testing.T) {
 				mergeAll,
 				false,
 			},
-			postPartial,
+			postPartialMerge,
 		},
 		{
 			"unchanged",
@@ -487,9 +505,9 @@ func Test_getScenePartial(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getScenePartial(tt.args.scene, tt.args.scraped, tt.args.fieldOptions, tt.args.setOrganized); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("getScenePartial() = %v, want %v", got, tt.want)
-			}
+			got := getScenePartial(tt.args.scene, tt.args.scraped, tt.args.fieldOptions, tt.args.setOrganized)
+
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
