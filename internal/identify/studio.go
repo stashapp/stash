@@ -15,7 +15,8 @@ func createMissingStudio(ctx context.Context, endpoint string, w models.StudioRe
 	if s.Parent != nil {
 		if s.Parent.StoredID == nil {
 			// The parent needs to be created
-			newParentStudio, err := s.Parent.ToStudio(ctx, endpoint, nil)
+			newParentStudio := s.Parent.ToStudio(endpoint, nil)
+			parentImage, err := s.Parent.GetImage(ctx, nil)
 			if err != nil {
 				logger.Errorf("Failed to make parent studio from scraped studio %s: %s", s.Parent.Name, err.Error())
 				return nil, err
@@ -26,12 +27,21 @@ func createMissingStudio(ctx context.Context, endpoint string, w models.StudioRe
 			if err != nil {
 				return nil, err
 			}
+
+			// Update image table
+			if len(parentImage) > 0 {
+				if err := w.UpdateImage(ctx, newParentStudio.ID, parentImage); err != nil {
+					return nil, err
+				}
+			}
+
 			storedId := strconv.Itoa(newParentStudio.ID)
 			s.Parent.StoredID = &storedId
 		} else {
 			// The parent studio matched an existing one and the user has chosen in the UI to link and/or update it
 			existingStashIDs := getStashIDsForStudio(ctx, *s.Parent.StoredID, w)
-			studioPartial, err := s.Parent.ToPartial(ctx, s.Parent.StoredID, endpoint, nil, existingStashIDs)
+			studioPartial := s.Parent.ToPartial(s.Parent.StoredID, endpoint, nil, existingStashIDs)
+			parentImage, err := s.Parent.GetImage(ctx, nil)
 			if err != nil {
 				return nil, err
 			}
@@ -44,10 +54,17 @@ func createMissingStudio(ctx context.Context, endpoint string, w models.StudioRe
 			if err != nil {
 				return nil, err
 			}
+
+			if len(parentImage) > 0 {
+				if err := w.UpdateImage(ctx, studioPartial.ID, parentImage); err != nil {
+					return nil, err
+				}
+			}
 		}
 	}
 
-	newStudio, err := s.ToStudio(ctx, endpoint, nil)
+	newStudio := s.ToStudio(endpoint, nil)
+	studioImage, err := s.GetImage(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -55,6 +72,13 @@ func createMissingStudio(ctx context.Context, endpoint string, w models.StudioRe
 	err = w.Create(ctx, newStudio)
 	if err != nil {
 		return nil, err
+	}
+
+	// Update image table
+	if len(studioImage) > 0 {
+		if err := w.UpdateImage(ctx, newStudio.ID, studioImage); err != nil {
+			return nil, err
+		}
 	}
 
 	return &newStudio.ID, nil

@@ -287,9 +287,3 @@ func (o *OptionalTime) Ptr() *time.Time {
 	v := o.Value
 	return &v
 }
-
-// OptionalBytes represents an optional byte slice argument that may be null.
-type OptionalBytes struct {
-	Value []byte
-	Set   bool
-}

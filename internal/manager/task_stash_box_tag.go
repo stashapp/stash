@@ -301,7 +301,8 @@ func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, s *mode
 		}
 
 		existingStashIDs := getStashIDsForStudio(ctx, *s.StoredID)
-		studioPartial, err := s.ToPartial(ctx, s.StoredID, t.box.Endpoint, excluded, existingStashIDs)
+		studioPartial := s.ToPartial(s.StoredID, t.box.Endpoint, excluded, existingStashIDs)
+		studioImage, err := s.GetImage(ctx, excluded)
 		if err != nil {
 			logger.Errorf("Failed to make studio partial from scraped studio %s: %s", s.Name, err.Error())
 			return
@@ -315,8 +316,17 @@ func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, s *mode
 				return err
 			}
 
-			_, err = qb.UpdatePartial(ctx, *studioPartial)
-			return err
+			if _, err := qb.UpdatePartial(ctx, *studioPartial); err != nil {
+				return err
+			}
+
+			if len(studioImage) > 0 {
+				if err := qb.UpdateImage(ctx, studioPartial.ID, studioImage); err != nil {
+					return err
+				}
+			}
+
+			return nil
 		})
 		if err != nil {
 			logger.Errorf("Failed to update studio %s: %s", s.Name, err.Error())
@@ -332,7 +342,8 @@ func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, s *mode
 			}
 		}
 
-		newStudio, err := s.ToStudio(ctx, t.box.Endpoint, excluded)
+		newStudio := s.ToStudio(t.box.Endpoint, excluded)
+		studioImage, err := s.GetImage(ctx, excluded)
 		if err != nil {
 			logger.Errorf("Failed to make studio from scraped studio %s: %s", s.Name, err.Error())
 			return
@@ -341,8 +352,17 @@ func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, s *mode
 		// Start the transaction and save the studio
 		err = txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
 			qb := instance.Repository.Studio
-			err = qb.Create(ctx, newStudio)
-			return err
+			if err := qb.Create(ctx, newStudio); err != nil {
+				return err
+			}
+
+			if len(studioImage) > 0 {
+				if err := qb.UpdateImage(ctx, newStudio.ID, studioImage); err != nil {
+					return err
+				}
+			}
+
+			return nil
 		})
 		if err != nil {
 			logger.Errorf("Failed to create studio %s: %s", s.Name, err.Error())
@@ -355,7 +375,8 @@ func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, s *mode
 func (t *StashBoxBatchTagTask) processParentStudio(ctx context.Context, parent *models.ScrapedStudio, excluded map[string]bool) error {
 	if parent.StoredID == nil {
 		// The parent needs to be created
-		newParentStudio, err := parent.ToStudio(ctx, t.box.Endpoint, excluded)
+		newParentStudio := parent.ToStudio(t.box.Endpoint, excluded)
+		studioImage, err := parent.GetImage(ctx, excluded)
 		if err != nil {
 			logger.Errorf("Failed to make parent studio from scraped studio %s: %s", parent.Name, err.Error())
 			return err
@@ -364,10 +385,16 @@ func (t *StashBoxBatchTagTask) processParentStudio(ctx context.Context, parent *
 		// Start the transaction and save the studio
 		err = txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
 			qb := instance.Repository.Studio
-			err := qb.Create(ctx, newParentStudio)
-			if err != nil {
+			if err := qb.Create(ctx, newParentStudio); err != nil {
 				return err
 			}
+
+			if len(studioImage) > 0 {
+				if err := qb.UpdateImage(ctx, newParentStudio.ID, studioImage); err != nil {
+					return err
+				}
+			}
+
 			storedId := strconv.Itoa(newParentStudio.ID)
 			parent.StoredID = &storedId
 			return nil
@@ -380,7 +407,8 @@ func (t *StashBoxBatchTagTask) processParentStudio(ctx context.Context, parent *
 	} else {
 		// The parent studio matched an existing one and the user has chosen in the UI to link and/or update it
 		existingStashIDs := getStashIDsForStudio(ctx, *parent.StoredID)
-		studioPartial, err := parent.ToPartial(ctx, parent.StoredID, t.box.Endpoint, excluded, existingStashIDs)
+		studioPartial := parent.ToPartial(parent.StoredID, t.box.Endpoint, excluded, existingStashIDs)
+		studioImage, err := parent.GetImage(ctx, excluded)
 		if err != nil {
 			logger.Errorf("Failed to make parent studio partial from scraped studio %s: %s", parent.Name, err.Error())
 			return err
@@ -394,8 +422,17 @@ func (t *StashBoxBatchTagTask) processParentStudio(ctx context.Context, parent *
 				return err
 			}
 
-			_, err = qb.UpdatePartial(ctx, *studioPartial)
-			return err
+			if _, err := qb.UpdatePartial(ctx, *studioPartial); err != nil {
+				return err
+			}
+
+			if len(studioImage) > 0 {
+				if err := qb.UpdateImage(ctx, studioPartial.ID, studioImage); err != nil {
+					return err
+				}
+			}
+
+			return nil
 		})
 		if err != nil {
 			logger.Errorf("Failed to update studio %s: %s", parent.Name, err.Error())

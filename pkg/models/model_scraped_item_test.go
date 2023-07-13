@@ -1,7 +1,6 @@
 package models
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -53,7 +52,7 @@ func Test_scrapedToStudioInput(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := tt.studio.ToStudio(context.Background(), "", nil)
+			got := tt.studio.ToStudio("", nil)
 
 			assert.NotEqual(t, time.Time{}, got.CreatedAt)
 			assert.NotEqual(t, time.Time{}, got.UpdatedAt)

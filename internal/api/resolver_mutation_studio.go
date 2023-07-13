@@ -18,6 +18,17 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input StudioCreateI
 	if err != nil {
 		return nil, err
 	}
+
+	// Process the base 64 encoded image string
+	var imageData []byte
+	if input.Image != nil {
+		var err error
+		imageData, err = utils.ProcessImageInput(ctx, *input.Image)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	// Start the transaction and save the studio
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Studio
@@ -32,6 +43,13 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input StudioCreateI
 		if err != nil {
 			return err
 		}
+
+		if len(imageData) > 0 {
+			if err := qb.UpdateImage(ctx, s.ID, imageData); err != nil {
+				return err
+			}
+		}
+
 		return nil
 	}); err != nil {
 		return nil, err
@@ -65,15 +83,6 @@ func studioFromStudioCreateInput(ctx context.Context, input StudioCreateInput) (
 		return nil, fmt.Errorf("converting parent id: %w", err)
 	}
 
-	// Process the base 64 encoded image string
-	if input.Image != nil {
-		var err error
-		newStudio.ImageBytes, err = utils.ProcessImageInput(ctx, *input.Image)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	if input.Aliases != nil {
 		newStudio.Aliases = models.NewRelatedStrings(input.Aliases)
 	}
@@ -91,9 +100,17 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input StudioUpdateI
 	translator := changesetTranslator{
 		inputMap: getNamedUpdateInputMap(ctx, updateInputField),
 	}
-	s, err := studioPartialFromStudioUpdateInput(ctx, input, &input.ID, translator)
-	if err != nil {
-		return nil, err
+	s := studioPartialFromStudioUpdateInput(input, &input.ID, translator)
+
+	// Process the base 64 encoded image string
+	var imageData []byte
+	imageIncluded := translator.hasField("image")
+	if input.Image != nil {
+		var err error
+		imageData, err = utils.ProcessImageInput(ctx, *input.Image)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Start the transaction and update the studio
@@ -108,6 +125,13 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input StudioUpdateI
 		if err != nil {
 			return err
 		}
+
+		if imageIncluded {
+			if err := qb.UpdateImage(ctx, s.ID, imageData); err != nil {
+				return err
+			}
+		}
+
 		return nil
 	}); err != nil {
 		return nil, err
@@ -120,7 +144,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input StudioUpdateI
 
 // This is slightly different to studioPartialFromStudioCreateInput in that Name is handled differently
 // and ImageIncluded is not hardcoded to true
-func studioPartialFromStudioUpdateInput(ctx context.Context, input StudioUpdateInput, id *string, translator changesetTranslator) (*models.StudioPartial, error) {
+func studioPartialFromStudioUpdateInput(input StudioUpdateInput, id *string, translator changesetTranslator) *models.StudioPartial {
 	// Populate studio from the input
 	updatedStudio := models.StudioPartial{
 		Name:          translator.optionalString(input.Name, "name"),
@@ -143,16 +167,6 @@ func studioPartialFromStudioUpdateInput(ctx context.Context, input StudioUpdateI
 		updatedStudio.ParentID = translator.optionalInt(nil, "parent_id")
 	}
 
-	// Process the base 64 encoded image string
-	updatedStudio.Image.Set = translator.hasField("image")
-	if input.Image != nil {
-		var err error
-		updatedStudio.Image.Value, err = utils.ProcessImageInput(ctx, *input.Image)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	if translator.hasField("aliases") {
 		updatedStudio.Aliases = &models.UpdateStrings{
 			Values: input.Aliases,
@@ -167,7 +181,7 @@ func studioPartialFromStudioUpdateInput(ctx context.Context, input StudioUpdateI
 		}
 	}
 
-	return &updatedStudio, nil
+	return &updatedStudio
 }
 
 func (r *mutationResolver) StudioDestroy(ctx context.Context, input StudioDestroyInput) (bool, error) {

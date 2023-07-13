@@ -17,8 +17,6 @@ type Studio struct {
 	Details       string `json:"details"`
 	IgnoreAutoTag bool   `json:"ignore_auto_tag"`
 
-	ImageBytes []byte
-
 	Aliases  RelatedStrings  `json:"aliases"`
 	StashIDs RelatedStashIDs `json:"stash_ids"`
 }
@@ -59,7 +57,6 @@ type StudioPartial struct {
 	CreatedAt     OptionalTime
 	UpdatedAt     OptionalTime
 	IgnoreAutoTag OptionalBool
-	Image         OptionalBytes
 
 	Aliases  *UpdateStrings
 	StashIDs *UpdateStashIDs

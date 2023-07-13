@@ -127,13 +127,6 @@ func (qb *StudioStore) Create(ctx context.Context, newObject *models.Studio) err
 		return err
 	}
 
-	// Update image table
-	if len(newObject.ImageBytes) > 0 {
-		if err := qb.UpdateImage(ctx, id, newObject.ImageBytes); err != nil {
-			return err
-		}
-	}
-
 	if newObject.Aliases.Loaded() {
 		if err := studio.EnsureAliasesUnique(ctx, id, newObject.Aliases.List(), qb); err != nil {
 			return err
@@ -170,13 +163,6 @@ func (qb *StudioStore) UpdatePartial(ctx context.Context, input models.StudioPar
 
 	if len(r.Record) > 0 {
 		if err := qb.tableMgr.updateByID(ctx, input.ID, r.Record); err != nil {
-			return nil, err
-		}
-	}
-
-	// Update image table
-	if input.Image.Set {
-		if err := qb.UpdateImage(ctx, input.ID, input.Image.Value); err != nil {
 			return nil, err
 		}
 	}

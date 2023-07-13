@@ -21,7 +21,7 @@ type ScrapedStudio struct {
 
 func (ScrapedStudio) IsScrapedContent() {}
 
-func (s *ScrapedStudio) ToStudio(ctx context.Context, endpoint string, excluded map[string]bool) (*Studio, error) {
+func (s *ScrapedStudio) ToStudio(endpoint string, excluded map[string]bool) *Studio {
 	now := time.Now()
 
 	// Populate a new studio from the input
@@ -46,19 +46,25 @@ func (s *ScrapedStudio) ToStudio(ctx context.Context, endpoint string, excluded 
 		newStudio.ParentID = &parentId
 	}
 
+	return &newStudio
+}
+
+func (s *ScrapedStudio) GetImage(ctx context.Context, excluded map[string]bool) ([]byte, error) {
 	// Process the base 64 encoded image string
-	if s.Image != nil && !excluded["image"] {
+	if len(s.Images) > 0 && !excluded["image"] {
 		var err error
-		newStudio.ImageBytes, err = utils.ProcessImageInput(ctx, *s.Image)
+		img, err := utils.ProcessImageInput(ctx, *s.Image)
 		if err != nil {
 			return nil, err
 		}
+
+		return img, nil
 	}
 
-	return &newStudio, nil
+	return nil, nil
 }
 
-func (s *ScrapedStudio) ToPartial(ctx context.Context, id *string, endpoint string, excluded map[string]bool, existingStashIDs []StashID) (*StudioPartial, error) {
+func (s *ScrapedStudio) ToPartial(id *string, endpoint string, excluded map[string]bool, existingStashIDs []StashID) *StudioPartial {
 	partial := StudioPartial{
 		UpdatedAt: NewOptionalTime(time.Now()),
 	}
@@ -66,7 +72,6 @@ func (s *ScrapedStudio) ToPartial(ctx context.Context, id *string, endpoint stri
 
 	if s.Name != "" && !excluded["name"] {
 		partial.Name = NewOptionalString(s.Name)
-
 	}
 
 	if s.URL != nil && !excluded["url"] {
@@ -85,19 +90,6 @@ func (s *ScrapedStudio) ToPartial(ctx context.Context, id *string, endpoint stri
 		partial.ParentID = NewOptionalIntPtr(nil)
 	}
 
-	// Process the base 64 encoded image string
-	if len(s.Images) > 0 && !excluded["image"] {
-		partial.Image = OptionalBytes{
-			Set: true,
-		}
-
-		var err error
-		partial.Image.Value, err = utils.ProcessImageInput(ctx, s.Images[0])
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	partial.StashIDs = &UpdateStashIDs{
 		StashIDs: existingStashIDs,
 		Mode:     RelationshipUpdateModeSet,
@@ -108,7 +100,7 @@ func (s *ScrapedStudio) ToPartial(ctx context.Context, id *string, endpoint stri
 		StashID:  *s.RemoteSiteID,
 	})
 
-	return &partial, nil
+	return &partial
 }
 
 // A performer from a scraping operation...
