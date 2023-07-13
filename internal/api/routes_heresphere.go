@@ -238,6 +238,7 @@ func (rs heresphereRoutes) Routes() chi.Router {
 	return r
 }
 
+// TODO: getHeresphereEnabled?
 func getVrTag() (varTag string, err error) {
 	// Find setting
 	varTag = config.GetInstance().GetUIVRTag()
@@ -256,7 +257,7 @@ func getMinPlayPercent() (per int, err error) {
 func getFavoriteTag() (varTag string, err error) {
 	varTag = config.GetInstance().GetUIFavoriteTag()
 	if len(varTag) == 0 {
-		//err = fmt.Errorf("zero length favorite tag")
+		// err = fmt.Errorf("zero length favorite tag")
 		varTag = "Favorite"
 		// TODO: This is for development, remove forced assign
 	}
@@ -388,24 +389,17 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 
 	// Favorites tag
 	// TODO: Test, suspected not working
-	fmt.Printf("Favorite val: %v\n", user.IsFavorite)
 	if favName, err := getFavoriteTag(); user.IsFavorite != nil && err == nil {
-		fmt.Printf("Add favoite tag\n")
 		favTag := HeresphereVideoTag{Name: fmt.Sprintf("Tag:%v", favName)}
 		if *user.IsFavorite {
-			fmt.Printf("Add as favorite\n")
 			if user.Tags == nil {
-				fmt.Printf("No other tags\n")
 				user.Tags = &[]HeresphereVideoTag{favTag}
 			} else {
-				fmt.Printf("Existing tags\n")
 				*user.Tags = append(*user.Tags, favTag)
 			}
 		} else if user.Tags != nil {
-			fmt.Printf("Remove favorite\n")
 			for i, tag := range *user.Tags {
 				if tag.Name == favTag.Name {
-					fmt.Printf("Found favorite tag!\n")
 					*user.Tags = append((*user.Tags)[:i], (*user.Tags)[i+1:]...)
 					break
 				}
@@ -443,6 +437,8 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 						newTag := TagCreateInput{
 							Name: after,
 						}
+						// TODO Exception: 0 Unknown - missing operation context
+						// Needs GQL?
 						if tagMod, err = rs.resolver.Mutation().TagCreate(ctx, newTag); err != nil {
 							return err
 						}
