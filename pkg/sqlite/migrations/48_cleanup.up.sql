@@ -1,3 +1,5 @@
+PRAGMA foreign_keys=OFF;
+
 -- Cleanup old invalid dates
 UPDATE `scenes` SET `date` = NULL WHERE `date` = '0001-01-01' OR `date` = '';
 UPDATE `galleries` SET `date` = NULL WHERE `date` = '0001-01-01' OR `date` = '';
@@ -7,6 +9,7 @@ UPDATE `performers` SET `death_date` = NULL WHERE `death_date` = '0001-01-01' OR
 -- Delete scene markers with missing scenes
 DELETE FROM `scene_markers` WHERE `scene_id` IS NULL;
 
+-- make scene_id not null
 DROP INDEX `index_scene_markers_on_scene_id`;
 DROP INDEX `index_scene_markers_on_primary_tag_id`;
 
@@ -32,11 +35,36 @@ CREATE INDEX `index_scene_markers_on_scene_id` ON `scene_markers`(`scene_id`);
 -- drop unused scraped items table
 DROP TABLE IF EXISTS `scraped_items`;
 
+-- remove checksum from movies
 DROP INDEX `movies_checksum_unique`;
 DROP INDEX `movies_name_unique`;
-ALTER TABLE `movies` DROP COLUMN `checksum`;
-CREATE UNIQUE INDEX `index_movies_on_name_unique` ON `movies`(`name`);
 
+CREATE TABLE `movies_new` (
+  `id` integer not null primary key autoincrement,
+  `name` varchar(255) not null,
+  `aliases` varchar(255),
+  `duration` integer,
+  `date` date,
+  `rating` tinyint,
+  `studio_id` integer REFERENCES `studios`(`id`) ON DELETE SET NULL,
+  `director` varchar(255),
+  `synopsis` text,
+  `url` varchar(255),
+  `created_at` datetime not null,
+  `updated_at` datetime not null, 
+  `front_image_blob` varchar(255) REFERENCES `blobs`(`checksum`), 
+  `back_image_blob` varchar(255) REFERENCES `blobs`(`checksum`)
+);
+
+INSERT INTO `movies_new` SELECT `id`, `name`, `aliases`, `duration`, `date`, `rating`, `studio_id`, `director`, `synopsis`, `url`, `created_at`, `updated_at`, `front_image_blob`, `back_image_blob` FROM `movies`;
+
+DROP TABLE `movies`;
+ALTER TABLE `movies_new` RENAME TO `movies`;
+
+CREATE UNIQUE INDEX `index_movies_on_name_unique` ON `movies`(`name`);
+CREATE INDEX `index_movies_on_studio_id` on `movies` (`studio_id`);
+
+-- remove checksum from studios
 DROP INDEX `index_studios_on_checksum`;
 DROP INDEX `index_studios_on_name`;
 DROP INDEX `studios_checksum_unique`;
@@ -59,3 +87,5 @@ DROP TABLE `studios`;
 ALTER TABLE `studios_new` RENAME TO `studios`;
 
 CREATE UNIQUE INDEX `index_studios_on_name_unique` ON `studios`(`name`);
+
+PRAGMA foreign_keys=ON;
