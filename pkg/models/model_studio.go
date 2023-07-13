@@ -2,13 +2,10 @@ package models
 
 import (
 	"time"
-
-	"github.com/stashapp/stash/pkg/hash/md5"
 )
 
 type Studio struct {
 	ID        int       `json:"id"`
-	Checksum  string    `json:"checksum"`
 	Name      string    `json:"name"`
 	URL       string    `json:"url"`
 	ParentID  *int      `json:"parent_id"`
@@ -21,7 +18,6 @@ type Studio struct {
 }
 
 type StudioPartial struct {
-	Checksum  OptionalString
 	Name      OptionalString
 	URL       OptionalString
 	ParentID  OptionalInt
@@ -36,7 +32,6 @@ type StudioPartial struct {
 func NewStudio(name string) *Studio {
 	currentTime := time.Now()
 	return &Studio{
-		Checksum:  md5.FromString(name),
 		Name:      name,
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,

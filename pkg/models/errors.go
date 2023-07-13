@@ -8,4 +8,6 @@ var (
 
 	// ErrConversion signifies conversion errors
 	ErrConversion = errors.New("conversion error")
+
+	ErrScraperSource = errors.New("invalid ScraperSource")
 )

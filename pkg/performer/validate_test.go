@@ -16,8 +16,8 @@ func TestValidateDeathDate(t *testing.T) {
 	date4 := "2004-01-01"
 	empty := ""
 
-	md2 := models.NewDate(date2)
-	md3 := models.NewDate(date3)
+	md2, _ := models.ParseDate(date2)
+	md3, _ := models.ParseDate(date3)
 
 	emptyPerformer := models.Performer{}
 	invalidPerformer := models.Performer{

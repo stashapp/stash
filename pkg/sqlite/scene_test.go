@@ -97,7 +97,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 		stashID1     = "stashid1"
 		stashID2     = "stashid2"
 
-		date = models.NewDate("2003-02-01")
+		date, _ = models.ParseDate("2003-02-01")
 
 		videoFile = makeFileWithID(fileIdxStartVideoFiles)
 	)
@@ -336,7 +336,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 		stashID1     = "stashid1"
 		stashID2     = "stashid2"
 
-		date = models.NewDate("2003-02-01")
+		date, _ = models.ParseDate("2003-02-01")
 	)
 
 	tests := []struct {
@@ -552,7 +552,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 		stashID1     = "stashid1"
 		stashID2     = "stashid2"
 
-		date = models.NewDate("2003-02-01")
+		date, _ = models.ParseDate("2003-02-01")
 	)
 
 	tests := []struct {
@@ -1459,10 +1459,6 @@ func Test_sceneQueryBuilder_Destroy(t *testing.T) {
 func makeSceneWithID(index int) *models.Scene {
 	ret := makeScene(index)
 	ret.ID = sceneIDs[index]
-
-	if ret.Date != nil && ret.Date.IsZero() {
-		ret.Date = nil
-	}
 
 	ret.Files = models.NewRelatedVideoFiles([]*file.VideoFile{makeSceneFile(index)})
 
@@ -3243,12 +3239,12 @@ func TestSceneQueryIsMissingDate(t *testing.T) {
 
 		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
-		// three in four scenes have no date
-		assert.Len(t, scenes, int(math.Ceil(float64(totalScenes)/4*3)))
+		// one in four scenes have no date
+		assert.Len(t, scenes, int(math.Ceil(float64(totalScenes)/4)))
 
-		// ensure date is null, empty or "0001-01-01"
+		// ensure date is null
 		for _, scene := range scenes {
-			assert.True(t, scene.Date == nil || scene.Date.Time == time.Time{})
+			assert.Nil(t, scene.Date)
 		}
 
 		return nil
@@ -3293,7 +3289,7 @@ func TestSceneQueryIsMissingRating(t *testing.T) {
 
 		assert.True(t, len(scenes) > 0)
 
-		// ensure date is null, empty or "0001-01-01"
+		// ensure rating is null
 		for _, scene := range scenes {
 			assert.Nil(t, scene.Rating)
 		}

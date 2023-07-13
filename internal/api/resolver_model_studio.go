@@ -6,12 +6,18 @@ import (
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/gallery"
+	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/movie"
 	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/scene"
 )
+
+func (r *studioResolver) Checksum(ctx context.Context, obj *models.Studio) (string, error) {
+	// generate checksum from studio name
+	return md5.FromString(obj.Name), nil
+}
 
 func (r *studioResolver) ImagePath(ctx context.Context, obj *models.Studio) (*string, error) {
 	var hasImage bool
