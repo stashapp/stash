@@ -479,7 +479,7 @@ func setPageSecurityHeaders(w http.ResponseWriter, r *http.Request) {
 	defaultSrc := "data: 'self' 'unsafe-inline'"
 	connectSrc := "data: 'self'"
 	imageSrc := "data: *"
-	scriptSrc := "'self' 'unsafe-inline' 'unsafe-eval'"
+	scriptSrc := "'self' http://www.gstatic.com https://www.gstatic.com 'unsafe-inline' 'unsafe-eval'"
 	styleSrc := "'self' 'unsafe-inline'"
 	mediaSrc := "blob: 'self'"
 
@@ -490,7 +490,7 @@ func setPageSecurityHeaders(w http.ResponseWriter, r *http.Request) {
 	// The graphql playground pulls its frontend from a cdn
 	if r.URL.Path == playgroundEndpoint {
 		connectSrc += " https://cdn.jsdelivr.net"
-		scriptSrc += " https://cdn.jsdelivr.net http://www.gstatic.com https://www.gstatic.com"
+		scriptSrc += " https://cdn.jsdelivr.net"
 		styleSrc += " https://cdn.jsdelivr.net"
 	}
 

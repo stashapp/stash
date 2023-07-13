@@ -27,8 +27,6 @@ import cx from "classnames";
 import airplay from "@silvermine/videojs-airplay";
 // @ts-ignore
 import chromecast from "@silvermine/videojs-chromecast";
-import "@silvermine/videojs-chromecast/dist/silvermine-videojs-chromecast.css";
-import "@silvermine/videojs-airplay/dist/silvermine-videojs-airplay.css";
 airplay(videojs);
 chromecast(videojs);
 import {
