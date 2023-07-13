@@ -428,24 +428,24 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 				after := strings.TrimPrefix(tagI.Name, "Tag:")
 				var err error
 				var tagMod *models.Tag
-				if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+				if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 					// Search for tag
 					tagMod, err = rs.repository.Tag.FindByName(ctx, after, true)
-
+					return err
+				}); err != nil {
 					// Create if non-existent
-					if tagMod == nil {
+					/*if tagMod == nil {
 						newTag := TagCreateInput{
 							Name: after,
 						}
 						// TODO Exception: 0 Unknown - missing operation context
 						// Needs GQL?
-						if tagMod, err = rs.resolver.Mutation().TagCreate(ctx, newTag); err != nil {
+						if tagMod, err = rs.resolver.Mutation().TagCreate(context.Background(), newTag); err != nil {
 							return err
 						}
-					}
-
-					return err
-				}); err != nil || tagMod == nil {
+					} else {
+						return err
+					}*/
 					return err
 				}
 
@@ -457,7 +457,7 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 				after := strings.TrimPrefix(tagI.Name, "Performer:")
 				var err error
 				var tagMod *models.Performer
-				if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+				if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 					var tagMods []*models.Performer
 
 					// Search for performer
@@ -465,18 +465,19 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 						tagMod = tagMods[0]
 					}
 
+					return err
+				}); err != nil {
 					// Create if non-existent
-					if tagMod == nil {
+					/*if tagMod == nil {
 						newTag := PerformerCreateInput{
 							Name: after,
 						}
-						if tagMod, err = rs.resolver.Mutation().PerformerCreate(ctx, newTag); err != nil {
+						if tagMod, err = rs.resolver.Mutation().PerformerCreate(context.Background(), newTag); err != nil {
 							return err
 						}
-					}
-
-					return err
-				}); err != nil || tagMod == nil {
+					} else {
+						return err
+					}*/
 					return err
 				}
 
@@ -487,7 +488,7 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 			if strings.HasPrefix(tagI.Name, "Marker:") {
 				after := strings.TrimPrefix(tagI.Name, "Marker:")
 				var tagId *string
-				if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+				if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 					var err error
 					var tagMods []*models.MarkerStringsResultType
 					searchType := "count"
@@ -497,6 +498,8 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 						tagId = &tagMods[0].ID
 					}
 
+					return err
+				}); err != nil {
 					// Create if non-existent
 					if tagId == nil {
 						newTag := SceneMarkerCreateInput{
@@ -504,14 +507,12 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 							SceneID:      string(scn.ID),
 							PrimaryTagID: *tagId,
 						}
-						if _, err := rs.resolver.Mutation().SceneMarkerCreate(ctx, newTag); err != nil {
+						if _, err := rs.resolver.Mutation().SceneMarkerCreate(context.Background(), newTag); err != nil {
 							return err
 						}
+					} else {
+						return err
 					}
-
-					return err
-				}); err != nil || tagId == nil {
-					return err
 				}
 			}
 
