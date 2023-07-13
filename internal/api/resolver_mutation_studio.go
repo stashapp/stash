@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
@@ -12,21 +13,7 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-func (r *mutationResolver) getStudio(ctx context.Context, id int) (ret *models.Studio, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Studio.Find(ctx, id)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
-	return ret, nil
-}
-
 func (r *mutationResolver) StudioCreate(ctx context.Context, input StudioCreateInput) (*models.Studio, error) {
-	var studioID *int
-	var err error
-
 	s, err := studioFromStudioCreateInput(ctx, input)
 	if err != nil {
 		return nil, err
@@ -50,14 +37,9 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input StudioCreateI
 		return nil, err
 	}
 
-	newStudio, err := r.getStudio(ctx, *studioID)
-	if err != nil {
-		return nil, fmt.Errorf("finding after create: %w", err)
-	}
+	r.hookExecutor.ExecutePostHooks(ctx, s.ID, plugin.StudioCreatePost, input, nil)
 
-	r.hookExecutor.ExecutePostHooks(ctx, *studioID, plugin.StudioCreatePost, input, nil)
-
-	return newStudio, nil
+	return s, nil
 }
 
 func studioFromStudioCreateInput(ctx context.Context, input StudioCreateInput) (*models.Studio, error) {
@@ -66,8 +48,11 @@ func studioFromStudioCreateInput(ctx context.Context, input StudioCreateInput) (
 	}
 
 	// Populate a new studio from the input
+	currentTime := time.Now()
 	newStudio := models.Studio{
 		Name:          input.Name,
+		CreatedAt:     currentTime,
+		UpdatedAt:     currentTime,
 		URL:           translator.string(input.URL, "url"),
 		Rating:        translator.ratingConversionInt(input.Rating, input.Rating100),
 		Details:       translator.string(input.Details, "details"),
@@ -142,6 +127,7 @@ func studioPartialFromStudioUpdateInput(ctx context.Context, input StudioUpdateI
 		Details:       translator.optionalString(input.Details, "details"),
 		Rating:        translator.ratingConversionOptional(input.Rating, input.Rating100),
 		IgnoreAutoTag: translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag"),
+		UpdatedAt:     models.NewOptionalTime(time.Now()),
 	}
 
 	updatedStudio.ID, _ = strconv.Atoi(*id)
