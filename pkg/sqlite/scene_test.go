@@ -1421,7 +1421,7 @@ func Test_sceneQueryBuilder_ResetOCounter(t *testing.T) {
 }
 
 func Test_sceneQueryBuilder_ResetWatchCount(t *testing.T) {
-	return nil
+	return
 }
 
 func Test_sceneQueryBuilder_Destroy(t *testing.T) {
@@ -4659,7 +4659,7 @@ func TestSceneStore_IncrementWatchCount(t *testing.T) {
 }
 
 func TestSceneStore_DecrementWatchCount(t *testing.T) {
-	return nil
+	return
 }
 
 func TestSceneStore_SaveActivity(t *testing.T) {

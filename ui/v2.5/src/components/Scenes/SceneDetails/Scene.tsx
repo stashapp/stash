@@ -442,7 +442,7 @@ const ScenePage: React.FC<IProps> = ({
           <Nav.Item>
             <Nav.Link eventKey="scene-history-panel">
               <FormattedMessage id="history" />
-          </Nav.Link>
+            </Nav.Link>
           </Nav.Item>
           <Nav.Item>
             <Nav.Link eventKey="scene-edit-panel">
@@ -537,10 +537,10 @@ const ScenePage: React.FC<IProps> = ({
         </Tab.Pane>
         <Tab.Pane eventKey="scene-history-panel">
           <SceneHistoryPanel
-             isVisible={activeTabKey === "scene-history-panel"} // needed??
-             scene={scene}
-             onSubmit={onSave}
-             onDelete={() => setIsDeleteAlertOpen(true)} // needed??         
+            // isVisible={activeTabKey === "scene-history-panel"} // needed??
+            scene={scene}
+            // onSubmit={onSave}
+            // onDelete={() => setIsDeleteAlertOpen(true)} // needed??
           />
         </Tab.Pane>
       </Tab.Content>

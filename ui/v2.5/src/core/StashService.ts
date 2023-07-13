@@ -495,10 +495,9 @@ export const useSceneDecrementPlay = (id: string) =>
 export const useSceneResetPlays = (id: string) =>
   GQL.useSceneResetPlayCountMutation({
     variables: { id },
-    update: (cache, data) => 
+    update: (cache, data) =>
       updateScenePlays(id, cache, data.data?.sceneResetPlayCount),
   });
-
 
 export const useSceneIncrementO = (id: string) =>
   GQL.useSceneIncrementOMutation({

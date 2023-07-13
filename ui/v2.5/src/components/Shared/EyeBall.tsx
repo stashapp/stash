@@ -2,14 +2,17 @@ import React from "react";
 
 export const EyeBall: React.FC = () => (
   <span>
-    <svg 
+    <svg
       xmlns="http://www.w3.org/2000/svg"
       xmlnsXlink="http://www.w3.org/1999/xlink"
       aria-hidden="true"
       focusable="false"
       width="1em"
       height="1em"
-      style={{ transform: "fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5" }}
+      style={{
+        transform:
+          "fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5",
+      }}
       preserveAspectRatio="xMidYMid meet"
       viewBox="0 0 36 36"
     >

@@ -1,11 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Accordion, Button, Card } from "react-bootstrap";
-import {
-  FormattedMessage,
-  FormattedNumber,
-  FormattedTime,
-  useIntl,
-} from "react-intl";
+import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { DeleteFilesDialog } from "src/components/Shared/DeleteFilesDialog";

@@ -39,16 +39,20 @@ export const DateInput: React.FC<IProps> = (props: IProps) => {
       const ShowPickerButton = React.forwardRef<
         HTMLButtonElement,
         {
-          onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+          onClick: (
+            event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+          ) => void;
         }
       >(({ onClick }, ref) => (
         <Button variant="secondary" onClick={onClick} ref={ref}>
           <Icon icon={faCalendar} />
         </Button>
       ));
-  
-      const dateToString = props.isTime ? TextUtils.dateTimeToString : TextUtils.dateToString;
-  
+
+      const dateToString = props.isTime
+        ? TextUtils.dateTimeToString
+        : TextUtils.dateToString;
+
       return (
         <ReactDatePicker
           selected={date}
