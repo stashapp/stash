@@ -147,16 +147,16 @@ type HeresphereVideoEntry struct {
 	DateReleased   string                    `json:"dateReleased,omitempty"`
 	DateAdded      string                    `json:"dateAdded,omitempty"`
 	Duration       float64                   `json:"duration,omitempty"`
-	Rating         float32                   `json:"rating,omitempty"`
+	Rating         float64                   `json:"rating,omitempty"`
 	Favorites      int                       `json:"favorites"`
 	Comments       int                       `json:"comments"`
 	IsFavorite     bool                      `json:"isFavorite"`
 	Projection     HeresphereProjection      `json:"projection"`
 	Stereo         HeresphereStereo          `json:"stereo"`
 	IsEyeSwapped   bool                      `json:"isEyeSwapped"`
-	Fov            float32                   `json:"fov,omitempty"`
+	Fov            float64                   `json:"fov,omitempty"`
 	Lens           HeresphereLens            `json:"lens"`
-	CameraIPD      float32                   `json:"cameraIPD"`
+	CameraIPD      float64                   `json:"cameraIPD"`
 	Hsp            string                    `json:"hsp,omitempty"`
 	EventServer    string                    `json:"eventServer,omitempty"`
 	Scripts        []HeresphereVideoScript   `json:"scripts,omitempty"`
@@ -174,7 +174,7 @@ type HeresphereVideoEntryShort struct {
 	DateReleased string               `json:"dateReleased,omitempty"`
 	DateAdded    string               `json:"dateAdded,omitempty"`
 	Duration     float64              `json:"duration,omitempty"`
-	Rating       float32              `json:"rating,omitempty"`
+	Rating       float64              `json:"rating,omitempty"`
 	Favorites    int                  `json:"favorites"`
 	Comments     int                  `json:"comments"`
 	IsFavorite   bool                 `json:"isFavorite"`
@@ -188,7 +188,7 @@ type HeresphereAuthReq struct {
 	Password         string                `json:"password"`
 	NeedsMediaSource *bool                 `json:"needsMediaSource,omitempty"`
 	IsFavorite       *bool                 `json:"isFavorite,omitempty"`
-	Rating           *float32              `json:"rating,omitempty"`
+	Rating           *float64              `json:"rating,omitempty"`
 	Tags             *[]HeresphereVideoTag `json:"tags,omitempty"`
 	HspBase64        *string               `json:"hsp,omitempty"`
 	DeleteFile       *bool                 `json:"deleteFile,omitempty"`
@@ -199,7 +199,7 @@ type HeresphereVideoEvent struct {
 	Title         string              `json:"title"`
 	Event         HeresphereEventType `json:"event"`
 	Time          float64             `json:"time"`
-	Speed         float32             `json:"speed"`
+	Speed         float64             `json:"speed"`
 	Utc           float64             `json:"utc"`
 	ConnectionKey string              `json:"connectionKey"`
 }
@@ -346,6 +346,7 @@ func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.R
 func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *http.Request) error {
 	scn := r.Context().Value(heresphereKey).(*models.Scene)
 	user := r.Context().Value(heresphereUserKey).(HeresphereAuthReq)
+	shouldUpdate := false
 	fileDeleter := file.NewDeleter()
 
 	// Create update set
@@ -358,6 +359,7 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 	if user.Rating != nil {
 		rating := models.Rating5To100F(*user.Rating)
 		ret.Partial.Rating = models.NewOptionalInt(rating)
+		shouldUpdate = true
 	}
 
 	// Delete primary file
@@ -381,10 +383,12 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 			fileDeleter.Rollback()
 			return err
 		}
+		shouldUpdate = true
 	}
 
 	// Favorites tag
 	// TODO: Test, suspected not working
+	fmt.Printf("Favorite val: %v\n", user.IsFavorite)
 	if favName, err := getFavoriteTag(); user.IsFavorite != nil && err == nil {
 		fmt.Printf("Add favoite tag\n")
 		favTag := HeresphereVideoTag{Name: fmt.Sprintf("Tag:%v", favName)}
@@ -407,6 +411,7 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 				}
 			}
 		}
+		shouldUpdate = true
 	}
 
 	// Tags
@@ -429,16 +434,23 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 				after := strings.TrimPrefix(tagI.Name, "Tag:")
 				var err error
 				var tagMod *models.Tag
-				if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+				if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+					// Search for tag
 					tagMod, err = rs.repository.Tag.FindByName(ctx, after, true)
+
+					// Create if non-existent
+					if tagMod == nil {
+						newTag := TagCreateInput{
+							Name: after,
+						}
+						if tagMod, err = rs.resolver.Mutation().TagCreate(ctx, newTag); err != nil {
+							return err
+						}
+					}
+
 					return err
 				}); err != nil || tagMod == nil {
-					newTag := TagCreateInput{
-						Name: after,
-					}
-					if tagMod, err = rs.resolver.Mutation().TagCreate(r.Context(), newTag); err != nil {
-						return err
-					}
+					return err
 				}
 
 				tagIDs = append(tagIDs, tagMod.ID)
@@ -449,19 +461,27 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 				after := strings.TrimPrefix(tagI.Name, "Performer:")
 				var err error
 				var tagMod *models.Performer
-				if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+				if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 					var tagMods []*models.Performer
+
+					// Search for performer
 					if tagMods, err = rs.repository.Performer.FindByNames(ctx, []string{after}, true); err == nil && len(tagMods) > 0 {
 						tagMod = tagMods[0]
 					}
+
+					// Create if non-existent
+					if tagMod == nil {
+						newTag := PerformerCreateInput{
+							Name: after,
+						}
+						if tagMod, err = rs.resolver.Mutation().PerformerCreate(ctx, newTag); err != nil {
+							return err
+						}
+					}
+
 					return err
 				}); err != nil || tagMod == nil {
-					newTag := PerformerCreateInput{
-						Name: after,
-					}
-					if tagMod, err = rs.resolver.Mutation().PerformerCreate(r.Context(), newTag); err != nil {
-						return err
-					}
+					return err
 				}
 
 				perfIDs = append(perfIDs, tagMod.ID)
@@ -471,23 +491,31 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 			if strings.HasPrefix(tagI.Name, "Marker:") {
 				after := strings.TrimPrefix(tagI.Name, "Marker:")
 				var tagId *string
-				if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+				if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 					var err error
 					var tagMods []*models.MarkerStringsResultType
 					searchType := "count"
+
+					// Search for marker
 					if tagMods, err = rs.repository.SceneMarker.GetMarkerStrings(ctx, &after, &searchType); err == nil && len(tagMods) > 0 {
 						tagId = &tagMods[0].ID
 					}
+
+					// Create if non-existent
+					if tagId == nil {
+						newTag := SceneMarkerCreateInput{
+							Seconds:      tagI.Start,
+							SceneID:      string(scn.ID),
+							PrimaryTagID: *tagId,
+						}
+						if _, err := rs.resolver.Mutation().SceneMarkerCreate(ctx, newTag); err != nil {
+							return err
+						}
+					}
+
 					return err
 				}); err != nil || tagId == nil {
-					newTag := SceneMarkerCreateInput{
-						Seconds:      tagI.Start,
-						SceneID:      string(scn.ID),
-						PrimaryTagID: after,
-					}
-					if _, err := rs.resolver.Mutation().SceneMarkerCreate(r.Context(), newTag); err != nil {
-						return err
-					}
+					return err
 				}
 			}
 
@@ -563,19 +591,22 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 			IDs:  perfIDs,
 			Mode: models.RelationshipUpdateModeSet,
 		}
+		shouldUpdate = true
 	}
 
-	// Update scene
-	if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
-		_, err := ret.Update(ctx, rs.repository.Scene)
-		return err
-	}); err != nil {
-		return err
-	}
+	if shouldUpdate {
+		// Update scene
+		if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+			_, err := ret.Update(ctx, rs.repository.Scene)
+			return err
+		}); err != nil {
+			return err
+		}
 
-	// Commit to delete file
-	fileDeleter.Commit()
-	w.WriteHeader(http.StatusOK)
+		// Commit to delete file
+		fileDeleter.Commit()
+		w.WriteHeader(http.StatusOK)
+	}
 	return nil
 }
 
@@ -916,8 +947,8 @@ func FindProjectionTags(scene *models.Scene, processedScene *HeresphereVideoEntr
 		// Has degrees tag
 		if strings.HasSuffix(tagPre, "°") {
 			deg := strings.TrimSuffix(tagPre, "°")
-			if s, err := strconv.ParseFloat(deg, 32); err == nil {
-				processedScene.Fov = float32(s)
+			if s, err := strconv.ParseFloat(deg, 64); err == nil {
+				processedScene.Fov = float64(s)
 			}
 		}
 		// Has VR tag
@@ -1004,11 +1035,9 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 	user := r.Context().Value(heresphereUserKey).(HeresphereAuthReq)
 
 	// Update request
-	if user.IsFavorite != nil || user.Rating != nil || user.Tags != nil || user.HspBase64 != nil || user.DeleteFile != nil {
-		if err := rs.HeresphereVideoDataUpdate(w, r); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	if err := rs.HeresphereVideoDataUpdate(w, r); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	// Fetch scene
@@ -1273,6 +1302,7 @@ func (rs heresphereRoutes) HeresphereCtx(next http.Handler) http.Handler {
 
 		// Default request
 		needsMedia := true
+		// TODO: Can you do this, or do i need to check
 		user := HeresphereAuthReq{NeedsMediaSource: &needsMedia}
 
 		// Attempt decode, and if err and invalid auth, fail
