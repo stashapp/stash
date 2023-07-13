@@ -753,15 +753,15 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 				return err
 			}
 
-			var parent_studio *graphql.FindStudio
+			var parentStudio *graphql.FindStudio
 			if s.Studio.Parent != nil {
-				parent_studio, err = c.client.FindStudio(ctx, &s.Studio.Parent.ID, nil)
+				parentStudio, err = c.client.FindStudio(ctx, &s.Studio.Parent.ID, nil)
 				if err != nil {
 					return err
 				}
 
-				if parent_studio.FindStudio != nil {
-					ss.Studio.Parent = studioFragmentToScrapedStudio(*parent_studio.FindStudio)
+				if parentStudio.FindStudio != nil {
+					ss.Studio.Parent = studioFragmentToScrapedStudio(*parentStudio.FindStudio)
 
 					err = match.ScrapedStudio(ctx, c.repository.Studio, ss.Studio.Parent, &c.box.Endpoint)
 					if err != nil {
