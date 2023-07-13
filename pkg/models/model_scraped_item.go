@@ -82,9 +82,12 @@ func (s *ScrapedStudio) ToPartial(ctx context.Context, id *string, endpoint stri
 
 	// Process the base 64 encoded image string
 	if len(s.Images) > 0 && !excluded["image"] {
-		partial.ImageIncluded = true
+		partial.Image = OptionalBytes{
+			Set: true,
+		}
+
 		var err error
-		partial.ImageBytes, err = utils.ProcessImageInput(ctx, s.Images[0])
+		partial.Image.Value, err = utils.ProcessImageInput(ctx, s.Images[0])
 		if err != nil {
 			return nil, err
 		}

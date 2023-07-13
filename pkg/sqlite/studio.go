@@ -192,8 +192,8 @@ func (qb *StudioStore) UpdatePartial(ctx context.Context, input models.StudioPar
 	}
 
 	// Update image table
-	if input.ImageIncluded {
-		if err := qb.UpdateImage(ctx, input.ID, input.ImageBytes); err != nil {
+	if input.Image.Set {
+		if err := qb.UpdateImage(ctx, input.ID, input.Image.Value); err != nil {
 			return nil, err
 		}
 	}

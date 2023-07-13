@@ -61,11 +61,7 @@ type StudioPartial struct {
 	CreatedAt     OptionalTime
 	UpdatedAt     OptionalTime
 	IgnoreAutoTag OptionalBool
-
-	// True if the image should be updated with ImageBytes
-	ImageIncluded bool
-	// Either contains the image, or is empty if the image should be removed
-	ImageBytes []byte
+	Image         OptionalBytes
 
 	Aliases  *UpdateStrings
 	StashIDs *UpdateStashIDs

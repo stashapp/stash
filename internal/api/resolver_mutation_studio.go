@@ -161,10 +161,10 @@ func studioPartialFromStudioUpdateInput(ctx context.Context, input StudioUpdateI
 	}
 
 	// Process the base 64 encoded image string
-	updatedStudio.ImageIncluded = translator.hasField("image")
+	updatedStudio.Image.Set = translator.hasField("image")
 	if input.Image != nil {
 		var err error
-		updatedStudio.ImageBytes, err = utils.ProcessImageInput(ctx, *input.Image)
+		updatedStudio.Image.Value, err = utils.ProcessImageInput(ctx, *input.Image)
 		if err != nil {
 			return nil, err
 		}
