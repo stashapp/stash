@@ -5,7 +5,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/mocks"
@@ -64,7 +63,6 @@ func TestImporterPreImport(t *testing.T) {
 	assert.Nil(t, err)
 	expectedStudio := createFullStudio(0, 0)
 	expectedStudio.ParentID = nil
-	expectedStudio.Checksum = md5.FromString(studioName)
 	assert.Equal(t, expectedStudio, i.studio)
 }
 

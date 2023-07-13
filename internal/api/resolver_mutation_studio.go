@@ -6,13 +6,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/studio"
-
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -32,13 +30,9 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input StudioCreateI
 		inputMap: getUpdateInputMap(ctx),
 	}
 
-	// generate checksum from studio name rather than image
-	checksum := md5.FromString(input.Name)
-
 	// Populate a new studio from the input
 	currentTime := time.Now()
 	newStudio := models.Studio{
-		Checksum:      checksum,
 		Name:          input.Name,
 		CreatedAt:     currentTime,
 		UpdatedAt:     currentTime,
@@ -57,7 +51,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input StudioCreateI
 
 	// Process the base 64 encoded image string
 	var imageData []byte
-	if input.Image != nil && *input.Image != "" {
+	if input.Image != nil {
 		imageData, err = utils.ProcessImageInput(ctx, *input.Image)
 		if err != nil {
 			return nil, err
@@ -120,13 +114,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input StudioUpdateI
 	// Populate studio from the input
 	updatedStudio := models.NewStudioPartial()
 
-	if input.Name != nil {
-		// generate checksum from studio name rather than image
-		checksum := md5.FromString(*input.Name)
-		updatedStudio.Name = models.NewOptionalString(*input.Name)
-		updatedStudio.Checksum = models.NewOptionalString(checksum)
-	}
-
+	updatedStudio.Name = translator.optionalString(input.Name, "name")
 	updatedStudio.URL = translator.optionalString(input.URL, "url")
 	updatedStudio.Details = translator.optionalString(input.Details, "details")
 	updatedStudio.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)

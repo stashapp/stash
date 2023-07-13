@@ -9,7 +9,6 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
-	"gopkg.in/guregu/null.v4/zero"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
@@ -29,7 +28,7 @@ type sceneMarkerRow struct {
 	Title        string    `db:"title"`
 	Seconds      float64   `db:"seconds"`
 	PrimaryTagID int       `db:"primary_tag_id"`
-	SceneID      zero.Int  `db:"scene_id,omitempty"` // TODO: make schema non-nullable
+	SceneID      int       `db:"scene_id"`
 	CreatedAt    Timestamp `db:"created_at"`
 	UpdatedAt    Timestamp `db:"updated_at"`
 }
@@ -39,7 +38,7 @@ func (r *sceneMarkerRow) fromSceneMarker(o models.SceneMarker) {
 	r.Title = o.Title
 	r.Seconds = o.Seconds
 	r.PrimaryTagID = o.PrimaryTagID
-	r.SceneID = zero.IntFrom(int64(o.SceneID))
+	r.SceneID = o.SceneID
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
 }
@@ -50,7 +49,7 @@ func (r *sceneMarkerRow) resolve() *models.SceneMarker {
 		Title:        r.Title,
 		Seconds:      r.Seconds,
 		PrimaryTagID: r.PrimaryTagID,
-		SceneID:      int(r.SceneID.Int64),
+		SceneID:      r.SceneID,
 		CreatedAt:    r.CreatedAt.Timestamp,
 		UpdatedAt:    r.UpdatedAt.Timestamp,
 	}

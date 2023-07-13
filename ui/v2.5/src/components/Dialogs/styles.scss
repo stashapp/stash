@@ -6,3 +6,13 @@
     justify-content: space-between;
   }
 }
+
+.form-group {
+  h6,
+  label {
+    &[title]:not([title=""]) {
+      cursor: help;
+      text-decoration: underline dotted;
+    }
+  }
+}

@@ -41,23 +41,13 @@ func (d *NullDate) Scan(value interface{}) error {
 		return nil
 	}
 
-	// Zero dates, which primarily come from empty strings in the DB, are treated as being invalid.
-	// TODO: add migration to remove invalid dates from the database and remove this.
-	// Ensure elsewhere that empty date inputs resolve to a null date and not a zero date.
-	// Zero dates shouldn't be invalid.
-	if d.Date.IsZero() {
-		d.Valid = false
-	} else {
-		d.Valid = true
-	}
-
+	d.Valid = true
 	return nil
 }
 
 // Value implements the driver Valuer interface.
 func (d NullDate) Value() (driver.Value, error) {
-	// TODO: don't ignore zero value, as above
-	if !d.Valid || d.Date.IsZero() {
+	if !d.Valid {
 		return nil, nil
 	}
 
