@@ -15,6 +15,90 @@ import {
 import { Button, Form } from "react-bootstrap";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 
+interface IStudioDetailsProps {
+  studio: GQL.ScrapedSceneStudioDataFragment;
+  link?: string;
+  excluded: Record<string, boolean>;
+  toggleField: (field: string) => void;
+  isNew?: boolean;
+}
+
+const StudioDetails: React.FC<IStudioDetailsProps> = ({
+  studio,
+  link,
+  excluded,
+  toggleField,
+  isNew = false,
+}) => {
+  const renderField = (
+    id: string,
+    text: string | null | undefined,
+    isSelectable: boolean = true,
+    truncate: boolean = true
+  ) =>
+    text && (
+      <div className="row no-gutters">
+        <div className="col-5 studio-create-modal-field" key={id}>
+          {isSelectable && (
+            <Button
+              onClick={() => toggleField(id)}
+              variant="secondary"
+              className={excluded[id] ? "text-muted" : "text-success"}
+            >
+              <Icon icon={excluded[id] ? faTimes : faCheck} />
+            </Button>
+          )}
+          <strong>
+            <FormattedMessage id={id} />:
+          </strong>
+        </div>
+        {truncate ? (
+          <TruncatedText className="col-7" text={text} />
+        ) : (
+          <span className="col-7">{text}</span>
+        )}
+      </div>
+    );
+
+  return (
+    <div>
+      <div className="row">
+        <div className="col-12 image-selection">
+          <div className="studio-image">
+            <Button
+              onClick={() => toggleField("image")}
+              variant="secondary"
+              className={cx(
+                "studio-image-exclude",
+                excluded.image ? "text-muted" : "text-success"
+              )}
+            >
+              <Icon icon={excluded.image ? faTimes : faCheck} />
+            </Button>
+            <img src={studio.image ?? ""} alt="" />
+          </div>
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col-12">
+          {renderField("name", studio.name, !isNew)}
+          {renderField("url", studio.url)}
+          {renderField("parent_studio", studio.parent?.name, false)}
+          {link && (
+            <h6 className="mt-2">
+              <a href={link} target="_blank" rel="noopener noreferrer">
+                <FormattedMessage id="stashbox.source" />
+                <Icon icon={faExternalLinkAlt} className="ml-2" />
+              </a>
+            </h6>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 interface IStudioModalProps {
   studio: GQL.ScrapedSceneStudioDataFragment;
   modalVisible: boolean;
@@ -48,6 +132,18 @@ const StudioModal: React.FC<IStudioModalProps> = ({
     setExcluded({
       ...excluded,
       [name]: !excluded[name],
+    });
+
+  const [parentExcluded, setParentExcluded] = useState<Record<string, boolean>>(
+    excludedStudioFields.reduce(
+      (dict, field) => ({ ...dict, [field]: true }),
+      {}
+    )
+  );
+  const toggleParentField = (name: string) =>
+    setParentExcluded({
+      ...parentExcluded,
+      [name]: !parentExcluded[name],
     });
 
   const [createParentStudio, setCreateParentStudio] = useState<boolean>(
@@ -146,39 +242,9 @@ const StudioModal: React.FC<IStudioModalProps> = ({
     handleStudioCreate(studioData);
   }
 
-  const renderField = (
-    id: string,
-    text: string | null | undefined,
-    is_selectable: boolean = true,
-    truncate: boolean = true
-  ) =>
-    text && (
-      <div className="row no-gutters">
-        <div className="col-5 studio-create-modal-field" key={id}>
-          {is_selectable && (
-            <Button
-              onClick={() => toggleField(id)}
-              variant="secondary"
-              className={excluded[id] ? "text-muted" : "text-success"}
-            >
-              <Icon icon={excluded[id] ? faTimes : faCheck} />
-            </Button>
-          )}
-          <strong>
-            <FormattedMessage id={id} />:
-          </strong>
-        </div>
-        {truncate ? (
-          <TruncatedText className="col-7" text={text} />
-        ) : (
-          <span className="col-7">{text}</span>
-        )}
-      </div>
-    );
-
   const base = endpoint?.match(/https?:\/\/.*?\//)?.[0];
   const link = base ? `${base}studios/${studio.remote_site_id}` : undefined;
-  const parent_link = base
+  const parentLink = base
     ? `${base}studios/${studio.parent?.remote_site_id}`
     : undefined;
 
@@ -206,35 +272,18 @@ const StudioModal: React.FC<IStudioModalProps> = ({
   }
 
   function maybeRenderParentStudioDetails() {
-    if (!createParentStudio) {
+    if (!createParentStudio || !studio.parent) {
       return;
     }
 
     return (
-      <div>
-        <div className="row mb-4">
-          <img
-            className="col-12 studio-card-image"
-            src={studio.parent?.image ?? ""}
-            alt=""
-          />
-        </div>
-
-        <div className="row">
-          <div className="col-12">
-            {renderField("name", studio.parent?.name, false)}
-            {renderField("url", studio.parent?.url)}
-            {parent_link && (
-              <h6 className="mt-2">
-                <a href={parent_link} target="_blank" rel="noopener noreferrer">
-                  <FormattedMessage id="stashbox.source" />
-                  <Icon icon={faExternalLinkAlt} className="ml-2" />
-                </a>
-              </h6>
-            )}
-          </div>
-        </div>
-      </div>
+      <StudioDetails
+        studio={studio.parent}
+        excluded={parentExcluded}
+        toggleField={(field) => toggleParentField(field)}
+        link={parentLink}
+        isNew
+      />
     );
   }
 
@@ -251,39 +300,13 @@ const StudioModal: React.FC<IStudioModalProps> = ({
       icon={icon}
       header={header}
     >
-      <div className="row">
-        <div className="col-12 image-selection">
-          <div className="studio-image">
-            <Button
-              onClick={() => toggleField("image")}
-              variant="secondary"
-              className={cx(
-                "studio-image-exclude",
-                excluded.image ? "text-muted" : "text-success"
-              )}
-            >
-              <Icon icon={excluded.image ? faTimes : faCheck} />
-            </Button>
-            <img src={studio.image ?? ""} alt="" />
-          </div>
-        </div>
-      </div>
+      <StudioDetails
+        studio={studio}
+        excluded={excluded}
+        toggleField={(field) => toggleField(field)}
+        link={link}
+      />
 
-      <div className="row">
-        <div className="col-12">
-          {renderField("name", studio.name)}
-          {renderField("url", studio.url)}
-          {renderField("parent_studio", studio.parent?.name, false)}
-          {link && (
-            <h6 className="mt-2">
-              <a href={link} target="_blank" rel="noopener noreferrer">
-                <FormattedMessage id="stashbox.source" />
-                <Icon icon={faExternalLinkAlt} className="ml-2" />
-              </a>
-            </h6>
-          )}
-        </div>
-      </div>
       {maybeRenderParentStudio()}
     </ModalComponent>
   );
