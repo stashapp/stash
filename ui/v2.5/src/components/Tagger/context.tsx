@@ -50,6 +50,7 @@ export interface ITaggerContextState {
   createNewStudio: (
     toCreate: GQL.StudioCreateInput
   ) => Promise<string | undefined>;
+  updateStudio: (studio: GQL.StudioUpdateInput) => Promise<void>;
   linkStudio: (studio: GQL.ScrapedStudio, studioID: string) => Promise<void>;
   resolveScene: (
     sceneID: string,
@@ -86,6 +87,7 @@ export const TaggerStateContext = React.createContext<ITaggerContextState>({
   createNewPerformer: dummyValFn,
   linkPerformer: dummyFn,
   createNewStudio: dummyValFn,
+  updateStudio: dummyFn,
   linkStudio: dummyFn,
   resolveScene: dummyFn,
   submitFingerprints: dummyFn,
@@ -683,6 +685,53 @@ export const TaggerContext: React.FC = ({ children }) => {
     }
   }
 
+  async function updateExistingStudio(input: GQL.StudioUpdateInput) {
+    try {
+      const result = await updateStudio({
+        variables: {
+          input: input,
+        },
+      });
+
+      const studioID = result.data?.studioUpdate?.id;
+
+      const stashID = input.stash_ids?.find((e) => {
+        return e.endpoint === currentSource?.stashboxEndpoint;
+      })?.stash_id;
+
+      if (stashID) {
+        const newSearchResults = mapResults((r) => {
+          if (!r.studio) {
+            return r;
+          }
+
+          return {
+            ...r,
+            studio:
+              r.remote_site_id === stashID
+                ? {
+                    ...r.studio,
+                    stored_id: studioID,
+                  }
+                : r.studio,
+          };
+        });
+
+        setSearchResults(newSearchResults);
+      }
+
+      Toast.success({
+        content: (
+          <span>
+            Created studio: <b>{input.name}</b>
+          </span>
+        ),
+      });
+    } catch (e) {
+      Toast.error(e);
+    }
+  }
+
   async function linkStudio(studio: GQL.ScrapedStudio, studioID: string) {
     if (!studio.remote_site_id || !currentSource?.stashboxEndpoint) return;
 
@@ -762,6 +811,7 @@ export const TaggerContext: React.FC = ({ children }) => {
         createNewPerformer,
         linkPerformer,
         createNewStudio,
+        updateStudio: updateExistingStudio,
         linkStudio,
         resolveScene,
         saveScene,

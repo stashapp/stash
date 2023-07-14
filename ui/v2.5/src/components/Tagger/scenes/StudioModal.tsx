@@ -14,6 +14,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Button, Form } from "react-bootstrap";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
+import { excludeFields } from "src/utils/data";
 
 interface IStudioDetailsProps {
   studio: GQL.ScrapedSceneStudioDataFragment;
@@ -103,7 +104,10 @@ interface IStudioModalProps {
   studio: GQL.ScrapedSceneStudioDataFragment;
   modalVisible: boolean;
   closeModal: () => void;
-  handleStudioCreate: (input: GQL.StudioCreateInput) => void;
+  handleStudioCreate: (
+    input: GQL.StudioCreateInput,
+    parent?: GQL.StudioCreateInput
+  ) => void;
   excludedStudioFields?: string[];
   header: string;
   icon: IconDefinition;
@@ -194,20 +198,20 @@ const StudioModal: React.FC<IStudioModalProps> = ({
     }
 
     // handle exclusions
-    Object.keys(studioData).forEach((k) => {
-      if (excluded[k] || !studioData[k]) {
-        studioData[k] = undefined;
-      }
-    });
+    excludeFields(studioData, excluded);
 
-    if (createParentStudio) {
+    let parentData:
+      | (GQL.StudioCreateInput & {
+          [index: string]: unknown;
+        })
+      | undefined = undefined;
+
+    if (createParentStudio && sendParentStudio) {
       if (!studio.parent?.name) {
         throw new Error("parent studio name must set");
       }
 
-      const parentData: GQL.StudioCreateInput & {
-        [index: string]: unknown;
-      } = {
+      parentData = {
         name: studio.parent?.name,
         url: studio.parent?.url,
         image: studio.parent?.image,
@@ -225,21 +229,12 @@ const StudioModal: React.FC<IStudioModalProps> = ({
       }
 
       // handle exclusions
-      Object.keys(parentData).forEach((k) => {
-        // Can't exclude parent studio name when creating a new one
-        if (k != "name" && (excluded[k] || !parentData[k])) {
-          parentData[k] = undefined;
-        }
-      });
-
-      // Hack to not send parent data when we want to ignore the existing parent studio
-      studioData.parent = null;
-      if (sendParentStudio) {
-        studioData.parent = parentData;
-      }
+      // Can't exclude parent studio name when creating a new one
+      parentExcluded.name = false;
+      excludeFields(parentData, parentExcluded);
     }
 
-    handleStudioCreate(studioData);
+    handleStudioCreate(studioData, parentData);
   }
 
   const base = endpoint?.match(/https?:\/\/.*?\//)?.[0];

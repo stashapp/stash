@@ -204,6 +204,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     createNewPerformer,
     linkPerformer,
     createNewStudio,
+    updateStudio,
     linkStudio,
     resolveScene,
     currentSource,
@@ -408,8 +409,24 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     createPerformerModal(t, performerModalCallback);
   }
 
-  function studioModalCallback(toCreate?: GQL.StudioCreateInput | undefined) {
+  async function studioModalCallback(
+    toCreate?: GQL.StudioCreateInput,
+    parentInput?: GQL.StudioCreateInput
+  ) {
     if (toCreate) {
+      if (parentInput) {
+        if (toCreate.parent_id) {
+          const parentUpdateData: GQL.StudioUpdateInput = {
+            ...parentInput,
+            id: toCreate.parent_id,
+          };
+          await updateStudio(parentUpdateData);
+        } else {
+          const parentID = await createNewStudio(parentInput);
+          toCreate.parent_id = parentID;
+        }
+      }
+
       createNewStudio(toCreate);
     }
   }

@@ -14,6 +14,7 @@ import {
   mutateStashBoxBatchStudioTag,
   getClient,
   studioMutationImpactedQueries,
+  useStudioCreate,
 } from "src/core/StashService";
 import { Manual } from "src/components/Help/Manual";
 import { ConfigurationContext } from "src/hooks/Config";
@@ -282,6 +283,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
   onBatchUpdate,
 }) => {
   const intl = useIntl();
+
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<
     Record<string, GQL.ScrapedStudioDataFragment[]>
@@ -385,12 +387,55 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
     });
   };
 
+  const [createStudio] = useStudioCreate();
   const updateStudio = useUpdateStudio();
 
-  const handleStudioUpdate = async (input: GQL.StudioCreateInput) => {
+  function handleSaveError(studioID: string, name: string, message: string) {
+    setError({
+      ...error,
+      [studioID]: {
+        message: intl.formatMessage(
+          { id: "studio_tagger.failed_to_save_studio" },
+          { studio: modalStudio?.name }
+        ),
+        details:
+          message === "UNIQUE constraint failed: studios.checksum"
+            ? intl.formatMessage({
+                id: "studio_tagger.name_already_exists",
+              })
+            : message,
+      },
+    });
+  }
+
+  const handleStudioUpdate = async (
+    input: GQL.StudioCreateInput,
+    parentInput?: GQL.StudioCreateInput
+  ) => {
     setModalStudio(undefined);
     const studioID = modalStudio?.stored_id;
     if (studioID) {
+      if (parentInput) {
+        try {
+          // if parent id is set, then update the existing studio
+          if (input.parent_id) {
+            const parentUpdateData: GQL.StudioUpdateInput = {
+              ...parentInput,
+              id: input.parent_id,
+            };
+            await updateStudio(parentUpdateData);
+          } else {
+            const parentRes = await createStudio({
+              variables: { input: parentInput },
+            });
+            input.parent_id = parentRes.data?.studioCreate?.id;
+          }
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (e: any) {
+          handleSaveError(studioID, parentInput.name, e.message ?? "");
+        }
+      }
+
       const updateData: GQL.StudioUpdateInput = {
         ...input,
         id: studioID,
@@ -398,22 +443,11 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
 
       const res = await updateStudio(updateData);
       if (!res.data?.studioUpdate)
-        setError({
-          ...error,
-          [studioID]: {
-            message: intl.formatMessage(
-              { id: "studio_tagger.failed_to_save_studio" },
-              { studio: modalStudio?.name }
-            ),
-            details:
-              res?.errors?.[0].message ===
-              "UNIQUE constraint failed: studios.checksum"
-                ? intl.formatMessage({
-                    id: "studio_tagger.name_already_exists",
-                  })
-                : res?.errors?.[0].message,
-          },
-        });
+        handleSaveError(
+          studioID,
+          modalStudio?.name ?? "",
+          res?.errors?.[0]?.message ?? ""
+        );
     }
   };
 

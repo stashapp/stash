@@ -5,6 +5,8 @@ import * as GQL from "src/core/generated-graphql";
 import { useUpdateStudio } from "../queries";
 import StudioModal from "../scenes/StudioModal";
 import { faTags } from "@fortawesome/free-solid-svg-icons";
+import { useStudioCreate } from "src/core/StashService";
+import { useIntl } from "react-intl";
 
 interface IStashSearchResultProps {
   studio: GQL.SlimStudioDataFragment;
@@ -24,6 +26,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   excludedStudioFields,
   endpoint,
 }) => {
+  const intl = useIntl();
+
   const [modalStudio, setModalStudio] = useState<
     GQL.ScrapedStudioDataFragment | undefined
   >();
@@ -32,13 +36,46 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     {}
   );
 
+  const [createStudio] = useStudioCreate();
   const updateStudio = useUpdateStudio();
 
-  const handleSave = async (input: GQL.StudioCreateInput) => {
+  function handleSaveError(name: string, message: string) {
+    setError({
+      message: intl.formatMessage(
+        { id: "studio_tagger.failed_to_save_studio" },
+        { studio: name }
+      ),
+      details:
+        message === "UNIQUE constraint failed: studios.checksum"
+          ? "Name already exists"
+          : message,
+    });
+  }
+
+  const handleSave = async (
+    input: GQL.StudioCreateInput,
+    parentInput?: GQL.StudioCreateInput
+  ) => {
     setError({});
-    setSaveState("Saving studio");
     setModalStudio(undefined);
 
+    if (parentInput) {
+      setSaveState("Saving parent studio");
+
+      const parentRes = await createStudio({
+        variables: { input: parentInput },
+      });
+      if (!parentRes?.data?.studioCreate) {
+        handleSaveError(
+          parentInput.name,
+          parentRes?.errors?.[0]?.message ?? ""
+        );
+      } else {
+        input.parent_id = parentRes.data?.studioCreate?.id;
+      }
+    }
+
+    setSaveState("Saving studio");
     const updateData: GQL.StudioUpdateInput = {
       ...input,
       id: studio.id,
@@ -47,14 +84,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     const res = await updateStudio(updateData);
 
     if (!res?.data?.studioUpdate)
-      setError({
-        message: `Failed to save studio "${studio.name}"`,
-        details:
-          res?.errors?.[0].message ===
-          "UNIQUE constraint failed: studios.checksum"
-            ? "Name already exists"
-            : res?.errors?.[0].message,
-      });
+      handleSaveError(studio.name, res?.errors?.[0]?.message ?? "");
     else onStudioTagged(studio);
     setSaveState("");
   };
