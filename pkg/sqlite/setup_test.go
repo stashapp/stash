@@ -1310,8 +1310,8 @@ func createMovies(ctx context.Context, mqb models.MovieReaderWriter, n int, o in
 
 		name = getMovieStringValue(index, name)
 		movie := models.Movie{
-			Name:     name,
-			URL:      getMovieNullStringValue(index, urlField),
+			Name: name,
+			URL:  getMovieNullStringValue(index, urlField),
 		}
 
 		err := mqb.Create(ctx, &movie)
@@ -1575,7 +1575,7 @@ func getStudioNullStringValue(index int, field string) string {
 
 func createStudio(ctx context.Context, sqb models.StudioReaderWriter, name string, parentID *int) (*models.Studio, error) {
 	studio := models.Studio{
-		Name:     name,
+		Name: name,
 	}
 
 	if parentID != nil {
