@@ -36,14 +36,14 @@ const (
 )
 
 var (
-	url       = "url"
-	title     = "title"
-	date      = "2001-01-01"
-	dateObj   = models.NewDate(date)
-	rating    = 5
-	ocounter  = 2
-	organized = true
-	details   = "details"
+	url        = "url"
+	title      = "title"
+	date       = "2001-01-01"
+	dateObj, _ = models.ParseDate(date)
+	rating     = 5
+	ocounter   = 2
+	organized  = true
+	details    = "details"
 )
 
 var (

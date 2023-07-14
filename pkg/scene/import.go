@@ -98,8 +98,10 @@ func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 	}
 
 	if sceneJSON.Date != "" {
-		d := models.NewDate(sceneJSON.Date)
-		newScene.Date = &d
+		d, err := models.ParseDate(sceneJSON.Date)
+		if err == nil {
+			newScene.Date = &d
+		}
 	}
 	if sceneJSON.Rating != 0 {
 		newScene.Rating = &sceneJSON.Rating

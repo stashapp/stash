@@ -1305,7 +1305,7 @@ func sceneIsMissingCriterionHandler(qb *SceneStore, isMissing *string) criterion
 				qb.performersRepository().join(f, "performers_join", "scenes.id")
 				f.addWhere("performers_join.scene_id IS NULL")
 			case "date":
-				f.addWhere(`scenes.date IS NULL OR scenes.date IS "" OR scenes.date IS "0001-01-01"`)
+				f.addWhere(`scenes.date IS NULL OR scenes.date IS ""`)
 			case "tags":
 				qb.tagsRepository().join(f, "tags_join", "scenes.id")
 				f.addWhere("tags_join.scene_id IS NULL")
@@ -1442,7 +1442,6 @@ func scenePerformerAgeCriterionHandler(performerAge *models.IntCriterionInput) c
 
 			f.addWhere("scenes.date != '' AND performers.birthdate != ''")
 			f.addWhere("scenes.date IS NOT NULL AND performers.birthdate IS NOT NULL")
-			f.addWhere("scenes.date != '0001-01-01' AND performers.birthdate != '0001-01-01'")
 
 			ageCalc := "cast(strftime('%Y.%m%d', scenes.date) - strftime('%Y.%m%d', performers.birthdate) as int)"
 			whereClause, args := getIntWhereClause(ageCalc, performerAge.Modifier, performerAge.Value, performerAge.Value2)

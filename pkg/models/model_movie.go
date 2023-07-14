@@ -2,13 +2,10 @@ package models
 
 import (
 	"time"
-
-	"github.com/stashapp/stash/pkg/hash/md5"
 )
 
 type Movie struct {
 	ID       int    `json:"id"`
-	Checksum string `json:"checksum"`
 	Name     string `json:"name"`
 	Aliases  string `json:"aliases"`
 	Duration *int   `json:"duration"`
@@ -24,7 +21,6 @@ type Movie struct {
 }
 
 type MoviePartial struct {
-	Checksum OptionalString
 	Name     OptionalString
 	Aliases  OptionalString
 	Duration OptionalInt
@@ -44,7 +40,6 @@ var DefaultMovieImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkC
 func NewMovie(name string) *Movie {
 	currentTime := time.Now()
 	return &Movie{
-		Checksum:  md5.FromString(name),
 		Name:      name,
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,

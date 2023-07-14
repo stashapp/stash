@@ -432,7 +432,7 @@ func setPageSecurityHeaders(w http.ResponseWriter, r *http.Request) {
 	defaultSrc := "data: 'self' 'unsafe-inline'"
 	connectSrc := "data: 'self'"
 	imageSrc := "data: *"
-	scriptSrc := "'self' 'unsafe-inline' 'unsafe-eval'"
+	scriptSrc := "'self' http://www.gstatic.com https://www.gstatic.com 'unsafe-inline' 'unsafe-eval'"
 	styleSrc := "'self' 'unsafe-inline'"
 	mediaSrc := "blob: 'self'"
 

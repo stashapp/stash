@@ -346,8 +346,8 @@ func Test_getScenePartial(t *testing.T) {
 		scrapedURL     = "scrapedURL"
 	)
 
-	originalDateObj := models.NewDate(originalDate)
-	scrapedDateObj := models.NewDate(scrapedDate)
+	originalDateObj, _ := models.ParseDate(originalDate)
+	scrapedDateObj, _ := models.ParseDate(scrapedDate)
 
 	originalScene := &models.Scene{
 		Title:   originalTitle,

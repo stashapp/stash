@@ -223,22 +223,18 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 	}
 
 	if performerJSON.Birthdate != "" {
-		d, err := utils.ParseDateStringAsTime(performerJSON.Birthdate)
+		date, err := models.ParseDate(performerJSON.Birthdate)
 		if err == nil {
-			newPerformer.Birthdate = &models.Date{
-				Time: d,
-			}
+			newPerformer.Birthdate = &date
 		}
 	}
 	if performerJSON.Rating != 0 {
 		newPerformer.Rating = &performerJSON.Rating
 	}
 	if performerJSON.DeathDate != "" {
-		d, err := utils.ParseDateStringAsTime(performerJSON.DeathDate)
+		date, err := models.ParseDate(performerJSON.DeathDate)
 		if err == nil {
-			newPerformer.DeathDate = &models.Date{
-				Time: d,
-			}
+			newPerformer.DeathDate = &date
 		}
 	}
 

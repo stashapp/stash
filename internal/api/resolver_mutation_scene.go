@@ -67,7 +67,6 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input SceneCreateInp
 		Code:         translator.string(input.Code, "code"),
 		Details:      translator.string(input.Details, "details"),
 		Director:     translator.string(input.Director, "director"),
-		Date:         translator.datePtr(input.Date, "date"),
 		Rating:       translator.ratingConversionInt(input.Rating, input.Rating100),
 		Organized:    translator.bool(input.Organized, "organized"),
 		PerformerIDs: models.NewRelatedIDs(performerIDs),
@@ -77,6 +76,10 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input SceneCreateInp
 		StashIDs:     models.NewRelatedStashIDs(stashIDPtrSliceToSlice(input.StashIds)),
 	}
 
+	newScene.Date, err = translator.datePtr(input.Date, "date")
+	if err != nil {
+		return nil, fmt.Errorf("converting date: %w", err)
+	}
 	newScene.StudioID, err = translator.intPtrFromString(input.StudioID, "studio_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
@@ -89,7 +92,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input SceneCreateInp
 	}
 
 	var coverImageData []byte
-	if input.CoverImage != nil && *input.CoverImage != "" {
+	if input.CoverImage != nil {
 		var err error
 		coverImageData, err = utils.ProcessImageInput(ctx, *input.CoverImage)
 		if err != nil {
@@ -169,16 +172,21 @@ func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.Sce
 
 func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTranslator) (*models.ScenePartial, error) {
 	updatedScene := models.NewScenePartial()
+
+	var err error
+
 	updatedScene.Title = translator.optionalString(input.Title, "title")
 	updatedScene.Code = translator.optionalString(input.Code, "code")
 	updatedScene.Details = translator.optionalString(input.Details, "details")
 	updatedScene.Director = translator.optionalString(input.Director, "director")
-	updatedScene.Date = translator.optionalDate(input.Date, "date")
+	updatedScene.Date, err = translator.optionalDate(input.Date, "date")
+	if err != nil {
+		return nil, fmt.Errorf("converting date: %w", err)
+	}
 	updatedScene.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
 	updatedScene.OCounter = translator.optionalInt(input.OCounter, "o_counter")
 	updatedScene.PlayCount = translator.optionalInt(input.PlayCount, "play_count")
 	updatedScene.PlayDuration = translator.optionalFloat64(input.PlayDuration, "play_duration")
-	var err error
 	updatedScene.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
@@ -355,7 +363,10 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 	updatedScene.Code = translator.optionalString(input.Code, "code")
 	updatedScene.Details = translator.optionalString(input.Details, "details")
 	updatedScene.Director = translator.optionalString(input.Director, "director")
-	updatedScene.Date = translator.optionalDate(input.Date, "date")
+	updatedScene.Date, err = translator.optionalDate(input.Date, "date")
+	if err != nil {
+		return nil, fmt.Errorf("converting date: %w", err)
+	}
 	updatedScene.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
 	updatedScene.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {
@@ -602,7 +613,7 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 	}
 
 	var coverImageData []byte
-	if input.Values.CoverImage != nil && *input.Values.CoverImage != "" {
+	if input.Values.CoverImage != nil {
 		var err error
 		coverImageData, err = utils.ProcessImageInput(ctx, *input.Values.CoverImage)
 		if err != nil {
