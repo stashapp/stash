@@ -88,6 +88,16 @@ func (t *table) deleteODateByID(ctx context.Context, sceneID interface{}) error 
 	return nil
 }
 
+func (t *table) resetODateByID(ctx context.Context, sceneID interface{}) error {
+	q := dialect.Delete("scenes_odates").Where(goqu.I("scene_id").Eq(sceneID))
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("resetting odates for scene_id %v: %w", sceneID, err)
+	}
+
+	return nil
+}
+
 func (t *table) addPlayDateByID(ctx context.Context, id interface{}, o interface{}) error {
 	q := dialect.Insert("scenes_playdates").Rows(o)
 
@@ -114,16 +124,6 @@ func (t *table) resetPlayDateByID(ctx context.Context, sceneID interface{}) erro
 
 	if _, err := exec(ctx, q); err != nil {
 		return fmt.Errorf("resetting playdates for scene_id %v: %w", sceneID, err)
-	}
-
-	return nil
-}
-
-func (t *table) resetODateByID(ctx context.Context, sceneID interface{}) error {
-	q := dialect.Delete("scenes_odates").Where(goqu.I("scene_id").Eq(sceneID))
-
-	if _, err := exec(ctx, q); err != nil {
-		return fmt.Errorf("resetting odates for scene_id %v: %w", sceneID, err)
 	}
 
 	return nil

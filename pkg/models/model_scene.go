@@ -323,3 +323,19 @@ type VideoCaption struct {
 func (c VideoCaption) Path(filePath string) string {
 	return filepath.Join(filepath.Dir(filePath), c.Filename)
 }
+
+type ScenePlayDate struct {
+	ID       int       `json:"id"`
+	SceneID  int       `json:"scene_id"`
+	PlayDate time.Time `json:"playdate"`
+}
+
+type ScenePlayDates []*ScenePlayDate
+
+type SceneODate struct {
+	ID      int       `json:"id"`
+	SceneID int       `json:"scene_id"`
+	ODate   time.Time `json:"odate"`
+}
+
+type SceneODates []*SceneODate
