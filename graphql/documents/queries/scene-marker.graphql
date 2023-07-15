@@ -1,4 +1,7 @@
-query FindSceneMarkers($filter: FindFilterType, $scene_marker_filter: SceneMarkerFilterType) {
+query FindSceneMarkers(
+  $filter: FindFilterType
+  $scene_marker_filter: SceneMarkerFilterType
+) {
   findSceneMarkers(filter: $filter, scene_marker_filter: $scene_marker_filter) {
     count
     scene_markers {

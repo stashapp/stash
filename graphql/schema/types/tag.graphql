@@ -13,7 +13,6 @@ type Tag {
   image_count(depth: Int): Int! # Resolver
   gallery_count(depth: Int): Int! # Resolver
   performer_count(depth: Int): Int! # Resolver
-
   parents: [Tag!]!
   children: [Tag!]!
 }
@@ -24,7 +23,9 @@ input TagCreateInput {
   aliases: [String!]
   ignore_auto_tag: Boolean
 
-  """This should be a URL or a base64 encoded data URL"""
+  """
+  This should be a URL or a base64 encoded data URL
+  """
   image: String
 
   parent_ids: [ID!]
@@ -38,7 +39,9 @@ input TagUpdateInput {
   aliases: [String!]
   ignore_auto_tag: Boolean
 
-  """This should be a URL or a base64 encoded data URL"""
+  """
+  This should be a URL or a base64 encoded data URL
+  """
   image: String
 
   parent_ids: [ID!]
