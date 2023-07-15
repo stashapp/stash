@@ -93,20 +93,20 @@ func (_m *ImageReaderWriter) Create(ctx context.Context, newImage *models.ImageC
 	return r0
 }
 
-// DecrementOCounter provides a mock function with given fields: ctx, id
-func (_m *ImageReaderWriter) DecrementOCounter(ctx context.Context, id int) (int, error) {
-	ret := _m.Called(ctx, id)
+// DecrementOCounter provides a mock function with given fields: ctx, id, isScene
+func (_m *ImageReaderWriter) DecrementOCounter(ctx context.Context, id int, isScene bool) (int, error) {
+	ret := _m.Called(ctx, id, isScene)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
-		r0 = rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context, int, bool) int); ok {
+		r0 = rf(ctx, id, isScene)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, id)
+	if rf, ok := ret.Get(1).(func(context.Context, int, bool) error); ok {
+		r1 = rf(ctx, id, isScene)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -289,20 +289,20 @@ func (_m *ImageReaderWriter) GetTagIDs(ctx context.Context, relatedID int) ([]in
 	return r0, r1
 }
 
-// IncrementOCounter provides a mock function with given fields: ctx, id
-func (_m *ImageReaderWriter) IncrementOCounter(ctx context.Context, id int) (int, error) {
-	ret := _m.Called(ctx, id)
+// IncrementOCounter provides a mock function with given fields: ctx, id, isScene
+func (_m *ImageReaderWriter) IncrementOCounter(ctx context.Context, id int, isScene bool) (int, error) {
+	ret := _m.Called(ctx, id, isScene)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
-		r0 = rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context, int, bool) int); ok {
+		r0 = rf(ctx, id, isScene)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, id)
+	if rf, ok := ret.Get(1).(func(context.Context, int, bool) error); ok {
+		r1 = rf(ctx, id, isScene)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -375,20 +375,20 @@ func (_m *ImageReaderWriter) QueryCount(ctx context.Context, imageFilter *models
 	return r0, r1
 }
 
-// ResetOCounter provides a mock function with given fields: ctx, id
-func (_m *ImageReaderWriter) ResetOCounter(ctx context.Context, id int) (int, error) {
-	ret := _m.Called(ctx, id)
+// ResetOCounter provides a mock function with given fields: ctx, id, isScene
+func (_m *ImageReaderWriter) ResetOCounter(ctx context.Context, id int, isScene bool) (int, error) {
+	ret := _m.Called(ctx, id, isScene)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
-		r0 = rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context, int, bool) int); ok {
+		r0 = rf(ctx, id, isScene)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, id)
+	if rf, ok := ret.Get(1).(func(context.Context, int, bool) error); ok {
+		r1 = rf(ctx, id, isScene)
 	} else {
 		r1 = ret.Error(1)
 	}

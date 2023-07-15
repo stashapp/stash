@@ -200,20 +200,20 @@ func (_m *SceneReaderWriter) Create(ctx context.Context, newScene *models.Scene,
 	return r0
 }
 
-// DecrementOCounter provides a mock function with given fields: ctx, id
-func (_m *SceneReaderWriter) DecrementOCounter(ctx context.Context, id int) (int, error) {
-	ret := _m.Called(ctx, id)
+// DecrementOCounter provides a mock function with given fields: ctx, id, isScene
+func (_m *SceneReaderWriter) DecrementOCounter(ctx context.Context, id int, isScene bool) (int, error) {
+	ret := _m.Called(ctx, id, isScene)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
-		r0 = rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context, int, bool) int); ok {
+		r0 = rf(ctx, id, isScene)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, id)
+	if rf, ok := ret.Get(1).(func(context.Context, int, bool) error); ok {
+		r1 = rf(ctx, id, isScene)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -689,20 +689,20 @@ func (_m *SceneReaderWriter) HasCover(ctx context.Context, sceneID int) (bool, e
 	return r0, r1
 }
 
-// IncrementOCounter provides a mock function with given fields: ctx, id
-func (_m *SceneReaderWriter) IncrementOCounter(ctx context.Context, id int) (int, error) {
-	ret := _m.Called(ctx, id)
+// IncrementOCounter provides a mock function with given fields: ctx, id, isScene
+func (_m *SceneReaderWriter) IncrementOCounter(ctx context.Context, id int, isScene bool) (int, error) {
+	ret := _m.Called(ctx, id, isScene)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
-		r0 = rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context, int, bool) int); ok {
+		r0 = rf(ctx, id, isScene)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, id)
+	if rf, ok := ret.Get(1).(func(context.Context, int, bool) error); ok {
+		r1 = rf(ctx, id, isScene)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -859,20 +859,20 @@ func (_m *SceneReaderWriter) QueryCount(ctx context.Context, sceneFilter *models
 	return r0, r1
 }
 
-// ResetOCounter provides a mock function with given fields: ctx, id
-func (_m *SceneReaderWriter) ResetOCounter(ctx context.Context, id int) (int, error) {
-	ret := _m.Called(ctx, id)
+// ResetOCounter provides a mock function with given fields: ctx, id, isScene
+func (_m *SceneReaderWriter) ResetOCounter(ctx context.Context, id int, isScene bool) (int, error) {
+	ret := _m.Called(ctx, id, isScene)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
-		r0 = rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context, int, bool) int); ok {
+		r0 = rf(ctx, id, isScene)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, id)
+	if rf, ok := ret.Get(1).(func(context.Context, int, bool) error); ok {
+		r1 = rf(ctx, id, isScene)
 	} else {
 		r1 = ret.Error(1)
 	}

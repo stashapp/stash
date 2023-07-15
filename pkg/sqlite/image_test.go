@@ -805,6 +805,7 @@ func Test_imageQueryBuilder_IncrementOCounter(t *testing.T) {
 	tests := []struct {
 		name    string
 		id      int
+		isScene bool
 		want    int
 		wantErr bool
 	}{
@@ -826,7 +827,7 @@ func Test_imageQueryBuilder_IncrementOCounter(t *testing.T) {
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
-			got, err := qb.IncrementOCounter(ctx, tt.id)
+			got, err := qb.IncrementOCounter(ctx, tt.id, tt.isScene)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("imageQueryBuilder.IncrementOCounter() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -842,6 +843,7 @@ func Test_imageQueryBuilder_DecrementOCounter(t *testing.T) {
 	tests := []struct {
 		name    string
 		id      int
+		isScene bool
 		want    int
 		wantErr bool
 	}{
@@ -869,7 +871,7 @@ func Test_imageQueryBuilder_DecrementOCounter(t *testing.T) {
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
-			got, err := qb.DecrementOCounter(ctx, tt.id)
+			got, err := qb.DecrementOCounter(ctx, tt.id, tt.isScene)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("imageQueryBuilder.DecrementOCounter() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -885,6 +887,7 @@ func Test_imageQueryBuilder_ResetOCounter(t *testing.T) {
 	tests := []struct {
 		name    string
 		id      int
+		isScene bool
 		want    int
 		wantErr bool
 	}{
@@ -912,7 +915,7 @@ func Test_imageQueryBuilder_ResetOCounter(t *testing.T) {
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
-			got, err := qb.ResetOCounter(ctx, tt.id)
+			got, err := qb.ResetOCounter(ctx, tt.id, tt.isScene)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("imageQueryBuilder.ResetOCounter() error = %v, wantErr %v", err, tt.wantErr)
 				return

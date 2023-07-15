@@ -51,7 +51,7 @@
     "generate_thumb_from_current": "Generate thumbnail from current",
     "hash_migration": "hash migration",
     "hide": "Hide",
-    "hide_configuration": "Hide Configuration",    
+    "hide_configuration": "Hide Configuration",
     "identify": "Identify",
     "ignore": "Ignore",
     "import": "Import…",
@@ -967,7 +967,7 @@
     "NON_BINARY": "Non-Binary",
     "TRANSGENDER_FEMALE": "Transgender Female",
     "TRANSGENDER_MALE": "Transgender Male"
-  },  
+  },
   "hair_color": "Hair Colour",
   "handy_connection_status": {
     "connecting": "Connecting",

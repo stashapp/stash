@@ -11,6 +11,7 @@ import (
 
 type oCounterManager struct {
 	tableMgr *table
+	isScene  bool
 }
 type playCounterManager struct {
 	tableMgr *table
@@ -136,7 +137,7 @@ func (qb *playDateManager) ResetPlayDate(ctx context.Context, sceneID int) error
 	return nil
 }
 
-func (qb *oCounterManager) IncrementOCounter(ctx context.Context, id int) (int, error) {
+func (qb *oCounterManager) IncrementOCounter(ctx context.Context, id int, isScene bool) (int, error) {
 	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
 		return 0, err
 	}
@@ -147,15 +148,18 @@ func (qb *oCounterManager) IncrementOCounter(ctx context.Context, id int) (int, 
 		return 0, err
 	}
 
-	oDateMgr := &oDateManager{tableMgr: qb.tableMgr}
-	if err := oDateMgr.AddODate(ctx, id); err != nil {
-		return 0, err
+	qb.isScene = isScene
+	if qb.isScene {
+		oDateMgr := &oDateManager{tableMgr: qb.tableMgr}
+		if err := oDateMgr.AddODate(ctx, id); err != nil {
+			return 0, err
+		}
 	}
 
 	return qb.getOCounter(ctx, id)
 }
 
-func (qb *oCounterManager) DecrementOCounter(ctx context.Context, id int) (int, error) {
+func (qb *oCounterManager) DecrementOCounter(ctx context.Context, id int, isScene bool) (int, error) {
 	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
 		return 0, err
 	}
@@ -168,16 +172,18 @@ func (qb *oCounterManager) DecrementOCounter(ctx context.Context, id int) (int, 
 	if _, err := exec(ctx, q); err != nil {
 		return 0, fmt.Errorf("updating %s: %w", table.GetTable(), err)
 	}
-
-	oDateMgr := &oDateManager{tableMgr: qb.tableMgr}
-	if err := oDateMgr.DeleteODate(ctx, id); err != nil {
-		return 0, err
+	qb.isScene = isScene
+	if qb.isScene {
+		oDateMgr := &oDateManager{tableMgr: qb.tableMgr}
+		if err := oDateMgr.DeleteODate(ctx, id); err != nil {
+			return 0, err
+		}
 	}
 
 	return qb.getOCounter(ctx, id)
 }
 
-func (qb *oCounterManager) ResetOCounter(ctx context.Context, id int) (int, error) {
+func (qb *oCounterManager) ResetOCounter(ctx context.Context, id int, isScene bool) (int, error) {
 	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
 		return 0, err
 	}
@@ -187,10 +193,12 @@ func (qb *oCounterManager) ResetOCounter(ctx context.Context, id int) (int, erro
 	}); err != nil {
 		return 0, err
 	}
-
-	oDateMgr := &oDateManager{tableMgr: qb.tableMgr}
-	if err := oDateMgr.ResetODate(ctx, id); err != nil {
-		return 0, err
+	qb.isScene = isScene
+	if qb.isScene {
+		oDateMgr := &oDateManager{tableMgr: qb.tableMgr}
+		if err := oDateMgr.ResetODate(ctx, id); err != nil {
+			return 0, err
+		}
 	}
 
 	return qb.getOCounter(ctx, id)
