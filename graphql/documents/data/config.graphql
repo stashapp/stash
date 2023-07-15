@@ -93,6 +93,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   }
   handyKey
   funscriptOffset
+  useStashHostedFunscript
 }
 
 fragment ConfigDLNAData on ConfigDLNAResult {
@@ -123,6 +124,10 @@ fragment IdentifyMetadataOptionsData on IdentifyMetadataOptions {
   setCoverImage
   setOrganized
   includeMalePerformers
+  skipMultipleMatches
+  skipMultipleMatchTag
+  skipSingleNamePerformers
+  skipSingleNamePerformerTag
 }
 
 fragment ScraperSourceData on ScraperSource {

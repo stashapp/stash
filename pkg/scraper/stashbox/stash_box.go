@@ -684,6 +684,7 @@ func getFingerprints(scene *graphql.SceneFragment) []*models.StashBoxFingerprint
 
 func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.SceneFragment) (*scraper.ScrapedScene, error) {
 	stashID := s.ID
+
 	ss := &scraper.ScrapedScene{
 		Title:        s.Title,
 		Code:         s.Code,
@@ -696,6 +697,14 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 		Fingerprints: getFingerprints(s),
 		// Image
 		// stash_id
+	}
+
+	for _, u := range s.Urls {
+		ss.URLs = append(ss.URLs, u.URL)
+	}
+
+	if len(ss.URLs) > 0 {
+		ss.URL = &ss.URLs[0]
 	}
 
 	if len(s.Images) > 0 {
@@ -721,6 +730,9 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 				Name:         s.Studio.Name,
 				URL:          findURL(s.Studio.Urls, "HOME"),
 				RemoteSiteID: &studioID,
+			}
+			if s.Studio.Images != nil && len(s.Studio.Images) > 0 {
+				ss.Studio.Image = &s.Studio.Images[0].URL
 			}
 
 			err := match.ScrapedStudio(ctx, c.repository.Studio, ss.Studio, &c.box.Endpoint)
@@ -820,8 +832,9 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 	if scene.Director != "" {
 		draft.Director = &scene.Director
 	}
-	if scene.URL != "" && len(strings.TrimSpace(scene.URL)) > 0 {
-		url := strings.TrimSpace(scene.URL)
+	// TODO - draft does not accept multiple URLs. Use single URL for now.
+	if len(scene.URLs.List()) > 0 {
+		url := strings.TrimSpace(scene.URLs.List()[0])
 		draft.URL = &url
 	}
 	if scene.Date != nil {

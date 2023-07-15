@@ -66,9 +66,9 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 		UpdatedAt:    currentTime,
 	}
 
-	if input.Date != nil {
-		d := models.NewDate(*input.Date)
-		newGallery.Date = &d
+	newGallery.Date, err = translator.datePtr(input.Date, "date")
+	if err != nil {
+		return nil, fmt.Errorf("converting date: %w", err)
 	}
 	newGallery.StudioID, err = translator.intPtrFromString(input.StudioID, "studio_id")
 	if err != nil {
@@ -182,7 +182,10 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 
 	updatedGallery.Details = translator.optionalString(input.Details, "details")
 	updatedGallery.URL = translator.optionalString(input.URL, "url")
-	updatedGallery.Date = translator.optionalDate(input.Date, "date")
+	updatedGallery.Date, err = translator.optionalDate(input.Date, "date")
+	if err != nil {
+		return nil, fmt.Errorf("converting date: %w", err)
+	}
 	updatedGallery.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
 	updatedGallery.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {
@@ -262,7 +265,10 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 
 	updatedGallery.Details = translator.optionalString(input.Details, "details")
 	updatedGallery.URL = translator.optionalString(input.URL, "url")
-	updatedGallery.Date = translator.optionalDate(input.Date, "date")
+	updatedGallery.Date, err = translator.optionalDate(input.Date, "date")
+	if err != nil {
+		return nil, fmt.Errorf("converting date: %w", err)
+	}
 	updatedGallery.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
 	updatedGallery.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {

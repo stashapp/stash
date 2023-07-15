@@ -28,7 +28,6 @@ const (
 
 type studioRow struct {
 	ID        int         `db:"id" goqu:"skipinsert"`
-	Checksum  string      `db:"checksum"`
 	Name      zero.String `db:"name"`
 	URL       zero.String `db:"url"`
 	ParentID  null.Int    `db:"parent_id,omitempty"`
@@ -45,7 +44,6 @@ type studioRow struct {
 
 func (r *studioRow) fromStudio(o models.Studio) {
 	r.ID = o.ID
-	r.Checksum = o.Checksum
 	r.Name = zero.StringFrom(o.Name)
 	r.URL = zero.StringFrom(o.URL)
 	r.ParentID = intFromPtr(o.ParentID)
@@ -59,7 +57,6 @@ func (r *studioRow) fromStudio(o models.Studio) {
 func (r *studioRow) resolve() *models.Studio {
 	ret := &models.Studio{
 		ID:            r.ID,
-		Checksum:      r.Checksum,
 		Name:          r.Name.String,
 		URL:           r.URL.String,
 		ParentID:      nullIntPtr(r.ParentID),
@@ -78,7 +75,6 @@ type studioRowRecord struct {
 }
 
 func (r *studioRowRecord) fromPartial(o models.StudioPartial) {
-	r.setString("checksum", o.Checksum)
 	r.setNullString("name", o.Name)
 	r.setNullString("url", o.URL)
 	r.setNullInt("parent_id", o.ParentID)
@@ -170,13 +166,6 @@ func (qb *StudioStore) Update(ctx context.Context, updatedObject *models.Studio)
 func (qb *StudioStore) Destroy(ctx context.Context, id int) error {
 	// must handle image checksums manually
 	if err := qb.destroyImage(ctx, id); err != nil {
-		return err
-	}
-
-	// TODO - set null on foreign key in scraped items
-	// remove studio from scraped items
-	_, err := qb.tx.Exec(ctx, "UPDATE scraped_items SET studio_id = null WHERE studio_id = ?", id)
-	if err != nil {
 		return err
 	}
 

@@ -1,6 +1,5 @@
 fragment StudioData on Studio {
   id
-  checksum
   name
   url
   parent_studio {

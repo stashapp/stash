@@ -36,14 +36,14 @@ const (
 )
 
 var (
-	url       = "url"
-	title     = "title"
-	date      = "2001-01-01"
-	dateObj   = models.NewDate(date)
-	rating    = 5
-	ocounter  = 2
-	organized = true
-	details   = "details"
+	url        = "url"
+	title      = "title"
+	date       = "2001-01-01"
+	dateObj, _ = models.ParseDate(date)
+	rating     = 5
+	ocounter   = 2
+	organized  = true
+	details    = "details"
 )
 
 var (
@@ -92,7 +92,7 @@ func createFullScene(id int) models.Scene {
 		OCounter:  ocounter,
 		Rating:    &rating,
 		Organized: organized,
-		URL:       url,
+		URLs:      models.NewRelatedStrings([]string{url}),
 		Files: models.NewRelatedVideoFiles([]*file.VideoFile{
 			{
 				BaseFile: &file.BaseFile{
@@ -118,6 +118,7 @@ func createEmptyScene(id int) models.Scene {
 				},
 			},
 		}),
+		URLs:      models.NewRelatedStrings([]string{}),
 		StashIDs:  models.NewRelatedStashIDs([]models.StashID{}),
 		CreatedAt: createTime,
 		UpdatedAt: updateTime,
@@ -133,7 +134,7 @@ func createFullJSONScene(image string) *jsonschema.Scene {
 		OCounter:  ocounter,
 		Rating:    rating,
 		Organized: organized,
-		URL:       url,
+		URLs:      []string{url},
 		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},
@@ -149,6 +150,7 @@ func createFullJSONScene(image string) *jsonschema.Scene {
 
 func createEmptyJSONScene() *jsonschema.Scene {
 	return &jsonschema.Scene{
+		URLs:  []string{},
 		Files: []string{path},
 		CreatedAt: json.JSONTime{
 			Time: createTime,

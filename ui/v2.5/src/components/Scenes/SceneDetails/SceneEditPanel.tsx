@@ -29,7 +29,7 @@ import {
 import { Icon } from "src/components/Shared/Icon";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { ImageInput } from "src/components/Shared/ImageInput";
-import { URLField } from "src/components/Shared/URLField";
+import { URLListInput } from "src/components/Shared/URLField";
 import { useToast } from "src/hooks/Toast";
 import ImageUtils from "src/utils/image";
 import FormUtils from "src/utils/form";
@@ -106,7 +106,25 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const schema = yup.object({
     title: yup.string().ensure(),
     code: yup.string().ensure(),
-    url: yup.string().ensure(),
+    urls: yup
+      .array(yup.string().required())
+      .defined()
+      .test({
+        name: "unique",
+        test: (value) => {
+          const dupes = value
+            .map((e, i, a) => {
+              if (a.indexOf(e) !== i) {
+                return String(i - 1);
+              } else {
+                return null;
+              }
+            })
+            .filter((e) => e !== null) as string[];
+          if (dupes.length === 0) return true;
+          return new yup.ValidationError(dupes.join(" "), value, "urls");
+        },
+      }),
     date: yup
       .string()
       .ensure()
@@ -143,7 +161,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     () => ({
       title: scene.title ?? "",
       code: scene.code ?? "",
-      url: scene.url ?? "",
+      urls: scene.urls ?? [],
       date: scene.date ?? "",
       director: scene.director ?? "",
       rating100: scene.rating100 ?? null,
@@ -333,7 +351,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
         director: fragment.director,
         remote_site_id: fragment.remote_site_id,
         title: fragment.title,
-        url: fragment.url,
+        urls: fragment.urls,
       };
 
       const result = await queryScrapeSceneQueryFragment(s, input);
@@ -549,8 +567,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
       formik.setFieldValue("date", updatedScene.date);
     }
 
-    if (updatedScene.url) {
-      formik.setFieldValue("url", updatedScene.url);
+    if (updatedScene.urls) {
+      formik.setFieldValue("urls", updatedScene.urls);
     }
 
     if (updatedScene.studio && updatedScene.studio.stored_id) {
@@ -624,13 +642,13 @@ export const SceneEditPanel: React.FC<IProps> = ({
     }
   }
 
-  async function onScrapeSceneURL() {
-    if (!formik.values.url) {
+  async function onScrapeSceneURL(url: string) {
+    if (!url) {
       return;
     }
     setIsLoading(true);
     try {
-      const result = await queryScrapeSceneURL(formik.values.url);
+      const result = await queryScrapeSceneURL(url);
       if (!result.data || !result.data.scrapeSceneURL) {
         return;
       }
@@ -683,6 +701,14 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   if (isLoading) return <LoadingIndicator />;
 
+  const urlsErrors = Array.isArray(formik.errors.urls)
+    ? formik.errors.urls[0]
+    : formik.errors.urls;
+  const urlsErrorMsg = urlsErrors
+    ? intl.formatMessage({ id: "validation.urls_must_be_unique" })
+    : undefined;
+  const urlsErrorIdx = urlsErrors?.split(" ").map((e) => parseInt(e));
+
   return (
     <div id="scene-edit-details">
       <Prompt
@@ -728,18 +754,20 @@ export const SceneEditPanel: React.FC<IProps> = ({
           <div className="col-12 col-lg-7 col-xl-12">
             {renderTextField("title", intl.formatMessage({ id: "title" }))}
             {renderTextField("code", intl.formatMessage({ id: "scene_code" }))}
-            <Form.Group controlId="url" as={Row}>
+            <Form.Group controlId="urls" as={Row}>
               <Col xs={3} className="pr-0 url-label">
                 <Form.Label className="col-form-label">
-                  <FormattedMessage id="url" />
+                  <FormattedMessage id="urls" />
                 </Form.Label>
               </Col>
               <Col xs={9}>
-                <URLField
-                  {...formik.getFieldProps("url")}
-                  onScrapeClick={onScrapeSceneURL}
+                <URLListInput
+                  value={formik.values.urls ?? []}
+                  setValue={(value) => formik.setFieldValue("urls", value)}
+                  errors={urlsErrorMsg}
+                  errorIdx={urlsErrorIdx}
+                  onScrapeClick={(url) => onScrapeSceneURL(url)}
                   urlScrapable={urlScrapable}
-                  isInvalid={!!formik.getFieldMeta("url").error}
                 />
               </Col>
             </Form.Group>

@@ -1,7 +1,7 @@
 type Movie {
   id: ID!
-  checksum: String!
   name: String!
+  checksum: String! @deprecated(reason: "MD5 hash of name, use name directly")
   aliases: String
   """Duration in seconds"""
   duration: Int

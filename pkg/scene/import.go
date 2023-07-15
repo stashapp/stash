@@ -80,12 +80,10 @@ func (i *Importer) PreImport(ctx context.Context) error {
 
 func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 	newScene := models.Scene{
-		// Path:    i.Path,
 		Title:        sceneJSON.Title,
 		Code:         sceneJSON.Code,
 		Details:      sceneJSON.Details,
 		Director:     sceneJSON.Director,
-		URL:          sceneJSON.URL,
 		PerformerIDs: models.NewRelatedIDs([]int{}),
 		TagIDs:       models.NewRelatedIDs([]int{}),
 		GalleryIDs:   models.NewRelatedIDs([]int{}),
@@ -93,9 +91,17 @@ func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 		StashIDs:     models.NewRelatedStashIDs(sceneJSON.StashIDs),
 	}
 
+	if len(sceneJSON.URLs) > 0 {
+		newScene.URLs = models.NewRelatedStrings(sceneJSON.URLs)
+	} else if sceneJSON.URL != "" {
+		newScene.URLs = models.NewRelatedStrings([]string{sceneJSON.URL})
+	}
+
 	if sceneJSON.Date != "" {
-		d := models.NewDate(sceneJSON.Date)
-		newScene.Date = &d
+		d, err := models.ParseDate(sceneJSON.Date)
+		if err == nil {
+			newScene.Date = &d
+		}
 	}
 	if sceneJSON.Rating != 0 {
 		newScene.Rating = &sceneJSON.Rating

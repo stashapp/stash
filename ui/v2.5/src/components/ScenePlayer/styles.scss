@@ -1,6 +1,8 @@
 @import "video.js/dist/video-js.css";
 @import "videojs-mobile-ui/dist/videojs-mobile-ui.css";
 @import "videojs-seek-buttons/dist/videojs-seek-buttons.css";
+@import "@silvermine/videojs-chromecast/dist/silvermine-videojs-chromecast.css";
+@import "@silvermine/videojs-airplay/dist/silvermine-videojs-airplay.css";
 
 $scrubberHeight: 120px;
 $menuHeight: 4rem;
@@ -23,8 +25,7 @@ $sceneTabWidth: 450px;
 
 .video-wrapper {
   height: 56.25vw;
-  max-height: calc(100vh - #{$menuHeight});
-  overflow: hidden;
+  position: relative;
   width: 100%;
 
   @media (min-width: 1200px) {
@@ -34,6 +35,7 @@ $sceneTabWidth: 450px;
 
 .video-js {
   height: 100%;
+  position: absolute;
   width: 100%;
 
   .vjs-button {
@@ -60,6 +62,12 @@ $sceneTabWidth: 450px;
         line-height: 80px;
       }
     }
+  }
+
+  .vjs-airplay-button .vjs-icon-placeholder,
+  .vjs-chromecast-button .vjs-icon-placeholder {
+    height: 1.6em;
+    width: 1.6em;
   }
 
   .vjs-touch-overlay .vjs-play-control {
@@ -307,6 +315,12 @@ $sceneTabWidth: 450px;
       .vjs-skip-button::before {
         font-size: 1.5em;
         line-height: 2;
+      }
+
+      .vjs-airplay-button .vjs-icon-placeholder,
+      .vjs-chromecast-button .vjs-icon-placeholder {
+        height: 1.4em;
+        width: 1.4em;
       }
     }
 
