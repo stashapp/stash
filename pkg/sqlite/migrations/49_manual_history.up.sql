@@ -15,8 +15,7 @@ CREATE TABLE `scenes_odates` (
 WITH max_play_count AS (
   SELECT MAX(play_count) AS max_count
   FROM scenes
-)
-, numbers AS (
+), numbers AS (
   SELECT 1 AS n
   FROM max_play_count
   UNION ALL
@@ -27,8 +26,8 @@ WITH max_play_count AS (
 INSERT INTO scenes_playdates (scene_id, playdate)
 SELECT scenes.id, 
        CASE 
-         WHEN numbers.n = 1 THEN scenes.last_played_at
-         ELSE '2020-02-24'
+         WHEN numbers.n = scenes.play_count THEN scenes.last_played_at
+         ELSE scenes.created_at
        END AS playdate
 FROM scenes
 JOIN numbers
@@ -44,7 +43,7 @@ WITH numbers AS (
 INSERT INTO scenes_odates (scene_id, odate)
 SELECT scenes.id, 
        CASE 
-         WHEN numbers.n <= scenes.o_counter THEN '2020-02-24'
+         WHEN numbers.n <= scenes.o_counter THEN scenes.created_at
        END AS odate
 FROM scenes
 CROSS JOIN numbers
