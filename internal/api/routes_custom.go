@@ -12,6 +12,10 @@ type customRoutes struct {
 	servedFolders config.URLMap
 }
 
+func getCustomRoutes(servedFolders config.URLMap) chi.Router {
+	return customRoutes{servedFolders: servedFolders}.Routes()
+}
+
 func (rs customRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
 

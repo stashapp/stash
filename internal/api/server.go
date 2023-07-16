@@ -142,36 +142,13 @@ func Start() error {
 		gqlPlayground.Handler("GraphQL playground", endpoint)(w, r)
 	})
 
-	r.Mount("/performer", performerRoutes{
-		txnManager:      repo.TxnManager,
-		performerFinder: repo.Performer,
-	}.Routes())
-	r.Mount("/scene", sceneRoutes{
-		txnManager:        repo.TxnManager,
-		sceneFinder:       repo.Scene,
-		fileGetter:        repo.File,
-		captionFinder:     repo.File,
-		sceneMarkerFinder: repo.SceneMarker,
-		tagFinder:         repo.Tag,
-	}.Routes())
-	r.Mount("/image", imageRoutes{
-		txnManager:  repo.TxnManager,
-		imageFinder: repo.Image,
-		fileGetter:  repo.File,
-	}.Routes())
-	r.Mount("/studio", studioRoutes{
-		txnManager:   repo.TxnManager,
-		studioFinder: repo.Studio,
-	}.Routes())
-	r.Mount("/movie", movieRoutes{
-		txnManager:  repo.TxnManager,
-		movieFinder: repo.Movie,
-	}.Routes())
-	r.Mount("/tag", tagRoutes{
-		txnManager: repo.TxnManager,
-		tagFinder:  repo.Tag,
-	}.Routes())
-	r.Mount("/downloads", downloadsRoutes{}.Routes())
+	r.Mount("/performer", getPerformerRoutes(repo))
+	r.Mount("/scene", getSceneRoutes(repo))
+	r.Mount("/image", getImageRoutes(repo))
+	r.Mount("/studio", getStudioRoutes(repo))
+	r.Mount("/movie", getMovieRoutes(repo))
+	r.Mount("/tag", getTagRoutes(repo))
+	r.Mount("/downloads", getDownloadsRoutes())
 
 	r.HandleFunc("/css", cssHandler(c, pluginCache))
 	r.HandleFunc("/javascript", javascriptHandler(c, pluginCache))
@@ -191,9 +168,7 @@ func Start() error {
 	// Serve static folders
 	customServedFolders := c.GetCustomServedFolders()
 	if customServedFolders != nil {
-		r.Mount("/custom", customRoutes{
-			servedFolders: customServedFolders,
-		}.Routes())
+		r.Mount("/custom", getCustomRoutes(customServedFolders))
 	}
 
 	customUILocation := c.GetCustomUILocation()
