@@ -71,7 +71,8 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = (props) => {
           </div>
         </div>
       </div>
-      {/* Could replace these play/ocount displays with data from the scenes_playdates/odates table later*/}
+      {/* Could replace these play/ocount displays with data from the scenes_playdates/odates table once accessible in GraphQL */}
+      {/* Could also check then if the recorded dates are the same as scene.created_at then that they are 'Estimated Play Date' */}
       <div className="row">
         <div className="col-12">
           <h5>
@@ -80,22 +81,22 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = (props) => {
             {props.scene.play_count != null && props.scene.play_count !== 0 ? (
                 <>
                   {Array.from({ length: props.scene.play_count - 1 }).map((_, index) => (
-                    <h6 key={index}>Play Date Recorded</h6>
+                    <h6 key={index}><FormattedMessage id="playdate_recorded" /></h6>
                   ))}
                   {props.scene.last_played_at && (
                     <h6>
-                      Play Date Recorded:{" "}
+                      <FormattedMessage id="playdate_recorded" />{": "}
                       {TextUtils.formatDateTime(intl, props.scene.last_played_at)}
                     </h6>
                   )}
                 </>
               ) : props.scene.play_count === 0 ? (
-                <h6>No Play Dates Recorded</h6>
+                <h6><FormattedMessage id="playdate_recorded_no" /></h6>
               ) : (
                 <h6>N/A</h6>
             )}
           <h6>
-            {/* Could make this a toggle if Track Activity (Automatically) is off*/}
+            {/* Could make this a toggle if Track Activity is off*/}
             <FormattedMessage id="media_info.play_duration" />:&nbsp;
             {TextUtils.secondsToTimestamp(props.scene.play_duration ?? 0)}
           </h6>
@@ -110,12 +111,12 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = (props) => {
             <div className="date-row">
               {Array.from({ length: props.scene.o_counter }).map(
                 (_, index) => (
-                  <h6 key={index}>O Date Recorded</h6>
+                  <h6 key={index}><FormattedMessage id="odate_recorded" /></h6>
                 )
               )}
             </div>
           ) : props.scene.o_counter === 0 ? (
-            <h6>No O Dates Recorded</h6>
+            <h6><FormattedMessage id="odate_recorded_no" /></h6>
           ) : (
             <h6>N/A</h6>
           )}

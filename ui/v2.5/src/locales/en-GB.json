@@ -1031,6 +1031,8 @@
   "none": "None",
   "o_counter": "O-Counter",
   "o_history": "O History",
+  "odate_recorded": "O Date Recorded",
+  "odate_recorded_no": "No O Date Recorded",
   "operations": "Operations",
   "organized": "Organised",
   "pagination": {
@@ -1096,6 +1098,8 @@
   "play_counter": "Play Counter",
   "play_duration": "Play Duration",
   "play_history": "Play History",
+  "playdate_recorded": "Play Date Recorded",
+  "playdate_recorded_no": "No Play Date Recorded",
   "primary_file": "Primary file",
   "queue": "Queue",
   "random": "Random",
