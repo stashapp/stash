@@ -182,6 +182,10 @@ type playDateManager struct {
 	tableMgr *table
 }
 
+type oDateManager struct {
+	tableMgr *table
+}
+
 type playCounterManager struct {
 	tableMgr *table
 }
@@ -192,6 +196,7 @@ type SceneStore struct {
 
 	tableMgr *table
 	oCounterManager
+	oDateManager
 	playCounterManager
 
 	fileStore *FileStore
@@ -209,7 +214,7 @@ func NewSceneStore(fileStore *FileStore, blobStore *BlobStore) *SceneStore {
 		},
 
 		tableMgr:           sceneTableMgr,
-		oCounterManager:    oCounterManager{tableMgr: sceneTableMgr, isScene: false},
+		oCounterManager:    oCounterManager{tableMgr: sceneTableMgr},
 		playCounterManager: playCounterManager{sceneTableMgr},
 		fileStore:          fileStore,
 	}
@@ -1755,6 +1760,105 @@ func (qb *playDateManager) ResetPlayDate(ctx context.Context, sceneID int) error
 	}
 
 	if err := qb.tableMgr.resetPlayDateByID(ctx, sceneID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (qb *oCounterManager) IncrementOCounterDate(ctx context.Context, id int) (int, error) {
+	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
+		return 0, err
+	}
+
+	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
+		"o_counter": goqu.L("o_counter + 1"),
+	}); err != nil {
+		return 0, err
+	}
+
+	oDateMgr := &oDateManager{tableMgr: qb.tableMgr}
+	if err := oDateMgr.AddODate(ctx, id); err != nil {
+		return 0, err
+	}
+
+	return qb.getOCounter(ctx, id)
+}
+
+func (qb *oCounterManager) DecrementOCounterDate(ctx context.Context, id int) (int, error) {
+	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
+		return 0, err
+	}
+
+	table := qb.tableMgr.table
+	q := dialect.Update(table).Set(goqu.Record{
+		"o_counter": goqu.L("o_counter - 1"),
+	}).Where(qb.tableMgr.byID(id), goqu.L("o_counter > 0"))
+
+	if _, err := exec(ctx, q); err != nil {
+		return 0, fmt.Errorf("updating %s: %w", table.GetTable(), err)
+	}
+
+	oDateMgr := &oDateManager{tableMgr: qb.tableMgr}
+	if err := oDateMgr.DeleteODate(ctx, id); err != nil {
+		return 0, err
+	}
+
+	return qb.getOCounter(ctx, id)
+}
+
+func (qb *oCounterManager) ResetOCounterDate(ctx context.Context, id int) (int, error) {
+	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
+		return 0, err
+	}
+
+	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
+		"o_counter": 0,
+	}); err != nil {
+		return 0, err
+	}
+
+	oDateMgr := &oDateManager{tableMgr: qb.tableMgr}
+	if err := oDateMgr.ResetODate(ctx, id); err != nil {
+		return 0, err
+	}
+
+	return qb.getOCounter(ctx, id)
+}
+
+func (qb *oDateManager) AddODate(ctx context.Context, id int) error {
+	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
+		return err
+	}
+
+	if err := qb.tableMgr.addODateByID(ctx, id, goqu.Record{
+		"scene_id": id,
+		"odate":    time.Now().Local().Format(time.RFC3339Nano),
+	}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (qb *oDateManager) DeleteODate(ctx context.Context, id int) error {
+	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
+		return err
+	}
+
+	if err := qb.tableMgr.deleteODateByID(ctx, id); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (qb *oDateManager) ResetODate(ctx context.Context, sceneID int) error {
+	if err := qb.tableMgr.checkIDExists(ctx, sceneID); err != nil {
+		return err
+	}
+
+	if err := qb.tableMgr.resetODateByID(ctx, sceneID); err != nil {
 		return err
 	}
 

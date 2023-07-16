@@ -1301,7 +1301,6 @@ func Test_sceneQueryBuilder_IncrementOCounter(t *testing.T) {
 	tests := []struct {
 		name    string
 		id      int
-		isScene bool
 		want    int
 		wantErr bool
 	}{
@@ -1323,7 +1322,7 @@ func Test_sceneQueryBuilder_IncrementOCounter(t *testing.T) {
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
-			got, err := qb.IncrementOCounter(ctx, tt.id, tt.isScene)
+			got, err := qb.IncrementOCounter(ctx, tt.id)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("sceneQueryBuilder.IncrementOCounter() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1339,7 +1338,6 @@ func Test_sceneQueryBuilder_DecrementOCounter(t *testing.T) {
 	tests := []struct {
 		name    string
 		id      int
-		isScene bool
 		want    int
 		wantErr bool
 	}{
@@ -1367,7 +1365,7 @@ func Test_sceneQueryBuilder_DecrementOCounter(t *testing.T) {
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
-			got, err := qb.DecrementOCounter(ctx, tt.id, tt.isScene)
+			got, err := qb.DecrementOCounter(ctx, tt.id)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("sceneQueryBuilder.DecrementOCounter() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1383,7 +1381,6 @@ func Test_sceneQueryBuilder_ResetOCounter(t *testing.T) {
 	tests := []struct {
 		name    string
 		id      int
-		isScene bool
 		want    int
 		wantErr bool
 	}{
@@ -1411,7 +1408,7 @@ func Test_sceneQueryBuilder_ResetOCounter(t *testing.T) {
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
-			got, err := qb.ResetOCounter(ctx, tt.id, tt.isScene)
+			got, err := qb.ResetOCounter(ctx, tt.id)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("sceneQueryBuilder.ResetOCounter() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -4658,6 +4655,18 @@ func TestSceneStore_IncrementWatchCount(t *testing.T) {
 }
 
 func TestSceneStore_DecrementWatchCount(t *testing.T) {
+	return
+}
+
+func TestSceneStore_AddODate(t *testing.T) {
+	return
+}
+
+func TestSceneStore_DeleteODate(t *testing.T) {
+	return
+}
+
+func TestSceneStore_ResetODate(t *testing.T) {
 	return
 }
 

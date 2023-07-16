@@ -124,9 +124,9 @@ type ImageWriter interface {
 	Create(ctx context.Context, newImage *ImageCreateInput) error
 	Update(ctx context.Context, updatedImage *Image) error
 	UpdatePartial(ctx context.Context, id int, partial ImagePartial) (*Image, error)
-	IncrementOCounter(ctx context.Context, id int, isScene bool) (int, error)
-	DecrementOCounter(ctx context.Context, id int, isScene bool) (int, error)
-	ResetOCounter(ctx context.Context, id int, isScene bool) (int, error)
+	IncrementOCounter(ctx context.Context, id int) (int, error)
+	DecrementOCounter(ctx context.Context, id int) (int, error)
+	ResetOCounter(ctx context.Context, id int) (int, error)
 	Destroy(ctx context.Context, id int) error
 }
 

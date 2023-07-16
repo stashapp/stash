@@ -196,9 +196,9 @@ type SceneWriter interface {
 	Create(ctx context.Context, newScene *Scene, fileIDs []file.ID) error
 	Update(ctx context.Context, updatedScene *Scene) error
 	UpdatePartial(ctx context.Context, id int, updatedScene ScenePartial) (*Scene, error)
-	IncrementOCounter(ctx context.Context, id int, isScene bool) (int, error)
-	DecrementOCounter(ctx context.Context, id int, isScene bool) (int, error)
-	ResetOCounter(ctx context.Context, id int, isScene bool) (int, error)
+	IncrementOCounterDate(ctx context.Context, id int) (int, error)
+	DecrementOCounterDate(ctx context.Context, id int) (int, error)
+	ResetOCounterDate(ctx context.Context, id int) (int, error)
 	SaveActivity(ctx context.Context, id int, resumeTime *float64, playDuration *float64) (bool, error)
 	IncrementWatchCount(ctx context.Context, id int) (int, error)
 	DecrementWatchCount(ctx context.Context, id int) (int, error)

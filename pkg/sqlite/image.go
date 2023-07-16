@@ -119,7 +119,7 @@ func NewImageStore(fileStore *FileStore) *ImageStore {
 			idColumn:  idColumn,
 		},
 		tableMgr:        imageTableMgr,
-		oCounterManager: oCounterManager{tableMgr: imageTableMgr, isScene: false},
+		oCounterManager: oCounterManager{tableMgr: imageTableMgr},
 		fileStore:       fileStore,
 	}
 }

@@ -406,7 +406,7 @@ func (r *mutationResolver) ImageIncrementO(ctx context.Context, id string) (ret 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Image
 
-		ret, err = qb.IncrementOCounter(ctx, imageID, false)
+		ret, err = qb.IncrementOCounter(ctx, imageID)
 		return err
 	}); err != nil {
 		return 0, err
@@ -424,7 +424,7 @@ func (r *mutationResolver) ImageDecrementO(ctx context.Context, id string) (ret 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Image
 
-		ret, err = qb.DecrementOCounter(ctx, imageID, false)
+		ret, err = qb.DecrementOCounter(ctx, imageID)
 		return err
 	}); err != nil {
 		return 0, err
@@ -442,7 +442,7 @@ func (r *mutationResolver) ImageResetO(ctx context.Context, id string) (ret int,
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Image
 
-		ret, err = qb.ResetOCounter(ctx, imageID, false)
+		ret, err = qb.ResetOCounter(ctx, imageID)
 		return err
 	}); err != nil {
 		return 0, err

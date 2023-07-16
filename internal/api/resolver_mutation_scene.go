@@ -930,7 +930,7 @@ func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string) (ret 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.IncrementOCounter(ctx, sceneID, true)
+		ret, err = qb.IncrementOCounterDate(ctx, sceneID)
 		return err
 	}); err != nil {
 		return 0, err
@@ -948,7 +948,7 @@ func (r *mutationResolver) SceneDecrementO(ctx context.Context, id string) (ret 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.DecrementOCounter(ctx, sceneID, true)
+		ret, err = qb.DecrementOCounterDate(ctx, sceneID)
 		return err
 	}); err != nil {
 		return 0, err
@@ -966,7 +966,7 @@ func (r *mutationResolver) SceneResetO(ctx context.Context, id string) (ret int,
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.ResetOCounter(ctx, sceneID, true)
+		ret, err = qb.ResetOCounterDate(ctx, sceneID)
 		return err
 	}); err != nil {
 		return 0, err

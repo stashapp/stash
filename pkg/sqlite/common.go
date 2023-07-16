@@ -3,18 +3,12 @@ package sqlite
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/jmoiron/sqlx"
 )
 
 type oCounterManager struct {
-	tableMgr *table
-	isScene  bool
-}
-
-type oDateManager struct {
 	tableMgr *table
 }
 
@@ -35,7 +29,7 @@ func (qb *oCounterManager) getOCounter(ctx context.Context, id int) (int, error)
 	return ret, nil
 }
 
-func (qb *oCounterManager) IncrementOCounter(ctx context.Context, id int, isScene bool) (int, error) {
+func (qb *oCounterManager) IncrementOCounter(ctx context.Context, id int) (int, error) {
 	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
 		return 0, err
 	}
@@ -46,18 +40,10 @@ func (qb *oCounterManager) IncrementOCounter(ctx context.Context, id int, isScen
 		return 0, err
 	}
 
-	qb.isScene = isScene
-	if qb.isScene {
-		oDateMgr := &oDateManager{tableMgr: qb.tableMgr}
-		if err := oDateMgr.AddODate(ctx, id); err != nil {
-			return 0, err
-		}
-	}
-
 	return qb.getOCounter(ctx, id)
 }
 
-func (qb *oCounterManager) DecrementOCounter(ctx context.Context, id int, isScene bool) (int, error) {
+func (qb *oCounterManager) DecrementOCounter(ctx context.Context, id int) (int, error) {
 	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
 		return 0, err
 	}
@@ -70,18 +56,11 @@ func (qb *oCounterManager) DecrementOCounter(ctx context.Context, id int, isScen
 	if _, err := exec(ctx, q); err != nil {
 		return 0, fmt.Errorf("updating %s: %w", table.GetTable(), err)
 	}
-	qb.isScene = isScene
-	if qb.isScene {
-		oDateMgr := &oDateManager{tableMgr: qb.tableMgr}
-		if err := oDateMgr.DeleteODate(ctx, id); err != nil {
-			return 0, err
-		}
-	}
 
 	return qb.getOCounter(ctx, id)
 }
 
-func (qb *oCounterManager) ResetOCounter(ctx context.Context, id int, isScene bool) (int, error) {
+func (qb *oCounterManager) ResetOCounter(ctx context.Context, id int) (int, error) {
 	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
 		return 0, err
 	}
@@ -91,52 +70,6 @@ func (qb *oCounterManager) ResetOCounter(ctx context.Context, id int, isScene bo
 	}); err != nil {
 		return 0, err
 	}
-	qb.isScene = isScene
-	if qb.isScene {
-		oDateMgr := &oDateManager{tableMgr: qb.tableMgr}
-		if err := oDateMgr.ResetODate(ctx, id); err != nil {
-			return 0, err
-		}
-	}
 
 	return qb.getOCounter(ctx, id)
-}
-
-func (qb *oDateManager) AddODate(ctx context.Context, id int) error {
-	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
-		return err
-	}
-
-	if err := qb.tableMgr.addODateByID(ctx, id, goqu.Record{
-		"scene_id": id,
-		"odate":    time.Now().Local().Format(time.RFC3339Nano),
-	}); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (qb *oDateManager) DeleteODate(ctx context.Context, id int) error {
-	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
-		return err
-	}
-
-	if err := qb.tableMgr.deleteODateByID(ctx, id); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (qb *oDateManager) ResetODate(ctx context.Context, sceneID int) error {
-	if err := qb.tableMgr.checkIDExists(ctx, sceneID); err != nil {
-		return err
-	}
-
-	if err := qb.tableMgr.resetODateByID(ctx, sceneID); err != nil {
-		return err
-	}
-
-	return nil
 }
