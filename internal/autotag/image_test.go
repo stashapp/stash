@@ -76,8 +76,7 @@ func TestImagePerformers(t *testing.T) {
 		err := ImagePerformers(testCtx, &image, db.Image, db.Performer, nil)
 
 		assert.Nil(err)
-		db.Performer.AssertExpectations(t)
-		db.Image.AssertExpectations(t)
+		db.AssertExpectations(t)
 	}
 }
 
@@ -122,8 +121,7 @@ func TestImageStudios(t *testing.T) {
 		err := ImageStudios(testCtx, &image, db.Image, db.Studio, nil)
 
 		assert.Nil(err)
-		db.Studio.AssertExpectations(t)
-		db.Image.AssertExpectations(t)
+		db.AssertExpectations(t)
 	}
 
 	for _, test := range testTables {
@@ -199,8 +197,7 @@ func TestImageTags(t *testing.T) {
 		err := ImageTags(testCtx, &image, db.Image, db.Tag, nil)
 
 		assert.Nil(err)
-		db.Tag.AssertExpectations(t)
-		db.Image.AssertExpectations(t)
+		db.AssertExpectations(t)
 	}
 
 	for _, test := range testTables {

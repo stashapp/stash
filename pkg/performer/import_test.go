@@ -92,7 +92,7 @@ func TestImporterPreImportWithTag(t *testing.T) {
 	err = i.PreImport(testCtx)
 	assert.NotNil(t, err)
 
-	db.Tag.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestImporterPreImportWithMissingTag(t *testing.T) {
@@ -127,7 +127,7 @@ func TestImporterPreImportWithMissingTag(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, existingTagID, i.performer.TagIDs.List()[0])
 
-	db.Tag.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestImporterPreImportWithMissingTagCreateErr(t *testing.T) {
@@ -149,6 +149,8 @@ func TestImporterPreImportWithMissingTagCreateErr(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
+
+	db.AssertExpectations(t)
 }
 
 func TestImporterPostImport(t *testing.T) {
@@ -171,7 +173,7 @@ func TestImporterPostImport(t *testing.T) {
 	err = i.PostImport(testCtx, errImageID)
 	assert.NotNil(t, err)
 
-	db.Performer.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestImporterFindExistingID(t *testing.T) {
@@ -222,7 +224,7 @@ func TestImporterFindExistingID(t *testing.T) {
 	assert.Nil(t, id)
 	assert.NotNil(t, err)
 
-	db.Performer.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestCreate(t *testing.T) {
@@ -258,7 +260,7 @@ func TestCreate(t *testing.T) {
 	assert.Nil(t, id)
 	assert.NotNil(t, err)
 
-	db.Performer.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestUpdate(t *testing.T) {
@@ -296,5 +298,5 @@ func TestUpdate(t *testing.T) {
 	err = i.Update(testCtx, errImageID)
 	assert.NotNil(t, err)
 
-	db.Performer.AssertExpectations(t)
+	db.AssertExpectations(t)
 }

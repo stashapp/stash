@@ -92,7 +92,7 @@ func TestImporterPreImportWithParent(t *testing.T) {
 	err = i.PreImport(testCtx)
 	assert.NotNil(t, err)
 
-	db.Studio.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestImporterPreImportWithMissingParent(t *testing.T) {
@@ -126,7 +126,7 @@ func TestImporterPreImportWithMissingParent(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, existingStudioID, *i.studio.ParentID)
 
-	db.Studio.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestImporterPreImportWithMissingParentCreateErr(t *testing.T) {
@@ -147,6 +147,8 @@ func TestImporterPreImportWithMissingParentCreateErr(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
+
+	db.AssertExpectations(t)
 }
 
 func TestImporterPostImport(t *testing.T) {
@@ -171,7 +173,7 @@ func TestImporterPostImport(t *testing.T) {
 	err = i.PostImport(testCtx, errImageID)
 	assert.NotNil(t, err)
 
-	db.Studio.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestImporterFindExistingID(t *testing.T) {
@@ -205,7 +207,7 @@ func TestImporterFindExistingID(t *testing.T) {
 	assert.Nil(t, id)
 	assert.NotNil(t, err)
 
-	db.Studio.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestCreate(t *testing.T) {
@@ -240,7 +242,7 @@ func TestCreate(t *testing.T) {
 	assert.Nil(t, id)
 	assert.NotNil(t, err)
 
-	db.Studio.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestUpdate(t *testing.T) {
@@ -277,5 +279,5 @@ func TestUpdate(t *testing.T) {
 	err = i.Update(testCtx, errImageID)
 	assert.NotNil(t, err)
 
-	db.Studio.AssertExpectations(t)
+	db.AssertExpectations(t)
 }

@@ -210,8 +210,7 @@ func TestScenePerformers(t *testing.T) {
 		err := ScenePerformers(testCtx, &scene, db.Scene, db.Performer, nil)
 
 		assert.Nil(err)
-		db.Performer.AssertExpectations(t)
-		db.Scene.AssertExpectations(t)
+		db.AssertExpectations(t)
 	}
 }
 
@@ -258,8 +257,7 @@ func TestSceneStudios(t *testing.T) {
 		err := SceneStudios(testCtx, &scene, db.Scene, db.Studio, nil)
 
 		assert.Nil(err)
-		db.Studio.AssertExpectations(t)
-		db.Scene.AssertExpectations(t)
+		db.AssertExpectations(t)
 	}
 
 	for _, test := range testTables {
@@ -335,8 +333,7 @@ func TestSceneTags(t *testing.T) {
 		err := SceneTags(testCtx, &scene, db.Scene, db.Tag, nil)
 
 		assert.Nil(err)
-		db.Tag.AssertExpectations(t)
-		db.Scene.AssertExpectations(t)
+		db.AssertExpectations(t)
 	}
 
 	for _, test := range testTables {

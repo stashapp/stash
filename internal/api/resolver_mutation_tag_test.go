@@ -94,7 +94,7 @@ func TestTagCreate(t *testing.T) {
 	})
 
 	assert.Equal(t, expectedErr, err)
-	db.Tag.AssertExpectations(t)
+	db.AssertExpectations(t)
 
 	db = mocks.NewDatabase()
 	r = newResolver(db)
@@ -117,4 +117,5 @@ func TestTagCreate(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotNil(t, tag)
+	db.AssertExpectations(t)
 }

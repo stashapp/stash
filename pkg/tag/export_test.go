@@ -147,5 +147,5 @@ func TestToJSON(t *testing.T) {
 		}
 	}
 
-	db.Tag.AssertExpectations(t)
+	db.AssertExpectations(t)
 }

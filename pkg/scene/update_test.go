@@ -213,7 +213,7 @@ func TestUpdater_Update(t *testing.T) {
 		})
 	}
 
-	db.Scene.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestUpdateSet_UpdateInput(t *testing.T) {

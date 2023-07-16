@@ -112,7 +112,7 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 	assert := assert.New(t)
 
 	assert.Nil(err)
-	db.Scene.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestPerformerImages(t *testing.T) {
@@ -207,7 +207,7 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 	assert := assert.New(t)
 
 	assert.Nil(err)
-	db.Image.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestPerformerGalleries(t *testing.T) {
@@ -302,5 +302,5 @@ func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
 	assert := assert.New(t)
 
 	assert.Nil(err)
-	db.Gallery.AssertExpectations(t)
+	db.AssertExpectations(t)
 }

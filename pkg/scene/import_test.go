@@ -78,7 +78,7 @@ func TestImporterPreImportWithStudio(t *testing.T) {
 	err = i.PreImport(testCtx)
 	assert.NotNil(t, err)
 
-	db.Studio.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestImporterPreImportWithMissingStudio(t *testing.T) {
@@ -110,7 +110,7 @@ func TestImporterPreImportWithMissingStudio(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, existingStudioID, *i.scene.StudioID)
 
-	db.Studio.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestImporterPreImportWithMissingStudioCreateErr(t *testing.T) {
@@ -129,6 +129,8 @@ func TestImporterPreImportWithMissingStudioCreateErr(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
+
+	db.AssertExpectations(t)
 }
 
 func TestImporterPreImportWithPerformer(t *testing.T) {
@@ -160,7 +162,7 @@ func TestImporterPreImportWithPerformer(t *testing.T) {
 	err = i.PreImport(testCtx)
 	assert.NotNil(t, err)
 
-	db.Performer.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestImporterPreImportWithMissingPerformer(t *testing.T) {
@@ -194,7 +196,7 @@ func TestImporterPreImportWithMissingPerformer(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, []int{existingPerformerID}, i.scene.PerformerIDs.List())
 
-	db.Performer.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestImporterPreImportWithMissingPerformerCreateErr(t *testing.T) {
@@ -215,6 +217,8 @@ func TestImporterPreImportWithMissingPerformerCreateErr(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
+
+	db.AssertExpectations(t)
 }
 
 func TestImporterPreImportWithMovie(t *testing.T) {
@@ -247,7 +251,7 @@ func TestImporterPreImportWithMovie(t *testing.T) {
 	err = i.PreImport(testCtx)
 	assert.NotNil(t, err)
 
-	db.Movie.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestImporterPreImportWithMissingMovie(t *testing.T) {
@@ -283,7 +287,7 @@ func TestImporterPreImportWithMissingMovie(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, existingMovieID, i.scene.Movies.List()[0].MovieID)
 
-	db.Movie.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestImporterPreImportWithMissingMovieCreateErr(t *testing.T) {
@@ -306,6 +310,8 @@ func TestImporterPreImportWithMissingMovieCreateErr(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
+
+	db.AssertExpectations(t)
 }
 
 func TestImporterPreImportWithTag(t *testing.T) {
@@ -337,7 +343,7 @@ func TestImporterPreImportWithTag(t *testing.T) {
 	err = i.PreImport(testCtx)
 	assert.NotNil(t, err)
 
-	db.Tag.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestImporterPreImportWithMissingTag(t *testing.T) {
@@ -371,7 +377,7 @@ func TestImporterPreImportWithMissingTag(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, []int{existingTagID}, i.scene.TagIDs.List())
 
-	db.Tag.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestImporterPreImportWithMissingTagCreateErr(t *testing.T) {
@@ -392,4 +398,6 @@ func TestImporterPreImportWithMissingTagCreateErr(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
+
+	db.AssertExpectations(t)
 }

@@ -205,6 +205,5 @@ func TestToJSON(t *testing.T) {
 		}
 	}
 
-	db.Movie.AssertExpectations(t)
-	db.Studio.AssertExpectations(t)
+	db.AssertExpectations(t)
 }

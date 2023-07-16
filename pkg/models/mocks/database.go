@@ -5,6 +5,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
+	"github.com/stretchr/testify/mock"
 )
 
 type Database struct {
@@ -70,6 +71,21 @@ func NewDatabase() *Database {
 		Tag:            &TagReaderWriter{},
 		SavedFilter:    &SavedFilterReaderWriter{},
 	}
+}
+
+func (db *Database) AssertExpectations(t mock.TestingT) {
+	db.File.AssertExpectations(t)
+	db.Folder.AssertExpectations(t)
+	db.Gallery.AssertExpectations(t)
+	db.GalleryChapter.AssertExpectations(t)
+	db.Image.AssertExpectations(t)
+	db.Movie.AssertExpectations(t)
+	db.Performer.AssertExpectations(t)
+	db.Scene.AssertExpectations(t)
+	db.SceneMarker.AssertExpectations(t)
+	db.Studio.AssertExpectations(t)
+	db.Tag.AssertExpectations(t)
+	db.SavedFilter.AssertExpectations(t)
 }
 
 func (db *Database) Repository() models.Repository {

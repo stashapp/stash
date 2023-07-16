@@ -181,7 +181,7 @@ func TestGetStudioName(t *testing.T) {
 		}
 	}
 
-	db.Studio.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 const (
@@ -279,4 +279,6 @@ func TestGetGalleryChaptersJSON(t *testing.T) {
 			assert.Equal(t, s.expected, json, "[%d]", i)
 		}
 	}
+
+	db.AssertExpectations(t)
 }

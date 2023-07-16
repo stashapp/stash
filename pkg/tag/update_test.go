@@ -284,5 +284,5 @@ func testEnsureHierarchy(t *testing.T, tc testUniqueHierarchyCase, queryParents,
 		assert.Nil(res)
 	}
 
-	db.Tag.AssertExpectations(t)
+	db.AssertExpectations(t)
 }

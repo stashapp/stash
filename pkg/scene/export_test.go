@@ -208,7 +208,7 @@ func TestToJSON(t *testing.T) {
 		}
 	}
 
-	db.Scene.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func createStudioScene(studioID int) models.Scene {
@@ -266,7 +266,7 @@ func TestGetStudioName(t *testing.T) {
 		}
 	}
 
-	db.Studio.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 type stringSliceTestScenario struct {
@@ -327,7 +327,7 @@ func TestGetTagNames(t *testing.T) {
 		}
 	}
 
-	db.Tag.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 type sceneMoviesTestScenario struct {
@@ -417,7 +417,7 @@ func TestGetSceneMoviesJSON(t *testing.T) {
 		}
 	}
 
-	db.Movie.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 const (
@@ -591,5 +591,5 @@ func TestGetSceneMarkersJSON(t *testing.T) {
 		}
 	}
 
-	db.Tag.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
