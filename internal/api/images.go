@@ -61,11 +61,11 @@ var performerBoxCustom *imageBox
 
 func initialiseImages() {
 	var err error
-	performerBox, err = newImageBox(&static.Performer)
+	performerBox, err = newImageBox(static.Sub(static.Performer))
 	if err != nil {
 		logger.Warnf("error loading performer images: %v", err)
 	}
-	performerBoxMale, err = newImageBox(&static.PerformerMale)
+	performerBoxMale, err = newImageBox(static.Sub(static.PerformerMale))
 	if err != nil {
 		logger.Warnf("error loading male performer images: %v", err)
 	}

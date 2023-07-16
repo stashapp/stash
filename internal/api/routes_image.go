@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"errors"
-	"io"
 	"io/fs"
 	"net/http"
 	"os/exec"
@@ -124,8 +123,6 @@ func (rs imageRoutes) Image(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rs imageRoutes) serveImage(w http.ResponseWriter, r *http.Request, i *models.Image, useDefault bool) {
-	const defaultImageImage = "image/image.svg"
-
 	if i.Files.Primary() != nil {
 		err := i.Files.Primary().Base().Serve(&file.OsFS{}, w, r)
 		if err == nil {
@@ -146,10 +143,8 @@ func (rs imageRoutes) serveImage(w http.ResponseWriter, r *http.Request, i *mode
 		return
 	}
 
-	// fall back to static image
-	f, _ := static.Image.Open(defaultImageImage)
-	defer f.Close()
-	image, _ := io.ReadAll(f)
+	// fallback to default image
+	image := static.ReadAll(static.DefaultImageImage)
 	utils.ServeImage(w, r, image)
 }
 

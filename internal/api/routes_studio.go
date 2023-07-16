@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"errors"
-	"io"
 	"net/http"
 	"strconv"
 
@@ -61,15 +60,9 @@ func (rs studioRoutes) Image(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// fallback to default image
 	if len(image) == 0 {
-		const defaultStudioImage = "studio/studio.svg"
-
-		// fall back to static image
-		f, _ := static.Studio.Open(defaultStudioImage)
-		defer f.Close()
-		stat, _ := f.Stat()
-		http.ServeContent(w, r, "studio.svg", stat.ModTime(), f.(io.ReadSeeker))
-		return
+		image = static.ReadAll(static.DefaultStudioImage)
 	}
 
 	utils.ServeImage(w, r, image)

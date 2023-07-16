@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"errors"
-	"io"
 	"net/http"
 	"strconv"
 
@@ -61,15 +60,9 @@ func (rs tagRoutes) Image(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// fallback to default image
 	if len(image) == 0 {
-		const defaultTagImage = "tag/tag.svg"
-
-		// fall back to static image
-		f, _ := static.Tag.Open(defaultTagImage)
-		defer f.Close()
-		stat, _ := f.Stat()
-		http.ServeContent(w, r, "tag.svg", stat.ModTime(), f.(io.ReadSeeker))
-		return
+		image = static.ReadAll(static.DefaultTagImage)
 	}
 
 	utils.ServeImage(w, r, image)
