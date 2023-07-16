@@ -3,6 +3,8 @@ import { Badge } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 
 interface ITagDetails {
   tag: GQL.TagDataFragment;
@@ -42,18 +44,35 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag }) => {
         </dt>
         <dd className="col-9 col-xl-10">
           {tag.parents.map((p) => (
-            <Badge key={p.id} className="tag-item" variant="secondary">
-              <Link to={`/tags/${p.id}`}>{p.name}</Link>
-            </Badge>
+            <ParentTag key={p.id} tag={p as GQL.TagDataFragment} />
           ))}
         </dd>
       </dl>
     );
   }
 
+  function ParentTag({ tag }: { tag: GQL.TagDataFragment }) {
+    const { loading, error, data } = GQL.useFindTagQuery({
+      variables: { id: tag.id },
+    });
+
+    const fullTagInfo = data?.findTag as GQL.TagDataFragment;
+    const hasParent = fullTagInfo.parents?.length ?? 0;
+    const iconMargin = hasParent ? '0px 0px 0px 5px' : '0';
+
+    return (
+      <Badge key={fullTagInfo.id} className="tag-item" variant="secondary">
+        <Link to={`/tags/${fullTagInfo.id}`}>
+          {fullTagInfo.name}
+          {hasParent ? <FontAwesomeIcon icon={faPlus} style={{ margin: iconMargin }} /> : ''}
+        </Link>
+      </Badge>
+    );
+  }
+
   function renderChildrenField() {
     if (!tag.children?.length) {
-      return;
+      return null;
     }
 
     return (
@@ -63,12 +82,29 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag }) => {
         </dt>
         <dd className="col-9 col-xl-10">
           {tag.children.map((c) => (
-            <Badge key={c.id} className="tag-item" variant="secondary">
-              <Link to={`/tags/${c.id}`}>{c.name}</Link>
-            </Badge>
+            <ChildTag key={c.id} tag={c as GQL.TagDataFragment} />
           ))}
         </dd>
       </dl>
+    );
+  }
+
+  function ChildTag({ tag }: { tag: GQL.TagDataFragment }) {
+    const { loading, error, data } = GQL.useFindTagQuery({
+      variables: { id: tag.id },
+    });
+
+    const fullTagInfo = data?.findTag as GQL.TagDataFragment;
+    const hasChildren = fullTagInfo.children?.length ?? 0;
+    const iconMargin = hasChildren ? '0px 0px 0px 5px' : '0';
+
+    return (
+      <Badge key={fullTagInfo.id} className="tag-item" variant="secondary">
+        <Link to={`/tags/${fullTagInfo.id}`}>
+          {fullTagInfo.name}
+          {hasChildren ? <FontAwesomeIcon icon={faPlus} style={{ margin: iconMargin }} /> : ''}
+        </Link>
+      </Badge>
     );
   }
 
