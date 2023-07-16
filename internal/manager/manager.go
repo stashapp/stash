@@ -743,6 +743,76 @@ func (s *Manager) Migrate(ctx context.Context, input MigrateInput) error {
 	return nil
 }
 
+func (s *Manager) BackupDatabase(download bool) (string, string, error) {
+	var backupPath string
+	var backupName string
+	if download {
+		backupDir := s.Paths.Generated.Downloads
+		if err := fsutil.EnsureDir(backupDir); err != nil {
+			return "", "", fmt.Errorf("could not create backup directory %v: %w", backupDir, err)
+		}
+		f, err := os.CreateTemp(backupDir, "backup*.sqlite")
+		if err != nil {
+			return "", "", err
+		}
+
+		backupPath = f.Name()
+		backupName = s.Database.DatabaseBackupPath("")
+		f.Close()
+	} else {
+		backupDir := s.Config.GetBackupDirectoryPathOrDefault()
+		if backupDir != "" {
+			if err := fsutil.EnsureDir(backupDir); err != nil {
+				return "", "", fmt.Errorf("could not create backup directory %v: %w", backupDir, err)
+			}
+		}
+		backupPath = s.Database.DatabaseBackupPath(backupDir)
+		backupName = filepath.Base(backupPath)
+	}
+
+	err := s.Database.Backup(backupPath)
+	if err != nil {
+		return "", "", err
+	}
+
+	return backupPath, backupName, nil
+}
+
+func (s *Manager) AnonymiseDatabase(download bool) (string, string, error) {
+	var outPath string
+	var outName string
+	if download {
+		outDir := s.Paths.Generated.Downloads
+		if err := fsutil.EnsureDir(outDir); err != nil {
+			return "", "", fmt.Errorf("could not create output directory %v: %w", outDir, err)
+		}
+		f, err := os.CreateTemp(outDir, "anonymous*.sqlite")
+		if err != nil {
+			return "", "", err
+		}
+
+		outPath = f.Name()
+		outName = s.Database.AnonymousDatabasePath("")
+		f.Close()
+	} else {
+		outDir := s.Config.GetBackupDirectoryPathOrDefault()
+		if outDir != "" {
+			if err := fsutil.EnsureDir(outDir); err != nil {
+				return "", "", fmt.Errorf("could not create output directory %v: %w", outDir, err)
+			}
+		}
+		outPath = s.Database.AnonymousDatabasePath(outDir)
+		outName = filepath.Base(outPath)
+	}
+
+	err := s.Database.Anonymise(outPath)
+	if err != nil {
+		return "", "", err
+	}
+
+	return outPath, outName, nil
+}
+
 func (s *Manager) GetSystemStatus() *SystemStatus {
 	workingDir := fsutil.GetWorkingDirectory()
 	homeDir := fsutil.GetHomeDirectory()
