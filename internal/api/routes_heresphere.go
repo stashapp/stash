@@ -496,11 +496,27 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 					// Search for marker
 					if tagMods, err = rs.repository.SceneMarker.GetMarkerStrings(ctx, &after, &searchType); err == nil && len(tagMods) > 0 {
 						tagId = &tagMods[0].ID
+
+						// Search for tag
+						if markers, err := rs.repository.SceneMarker.FindBySceneID(r.Context(), scn.ID); err == nil {
+							i, e := strconv.Atoi(*tagId)
+							if e == nil {
+								// Note: Currently we search if a marker exists.
+								// If it doesn't, create it.
+								// This also means that markers CANNOT be deleted using the api.
+								for _, marker := range markers {
+									if marker.Seconds == tagI.Start &&
+										marker.SceneID == scn.ID &&
+										marker.PrimaryTagID == i {
+										tagId = nil
+									}
+								}
+							}
+						}
 					}
 
 					return err
 				}); err != nil {
-					// TODO: Multiple same type marker in scene?
 					// Create marker
 					if tagId == nil {
 						newTag := SceneMarkerCreateInput{
