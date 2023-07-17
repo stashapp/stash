@@ -4658,18 +4658,6 @@ func TestSceneStore_DecrementWatchCount(t *testing.T) {
 	return
 }
 
-func TestSceneStore_AddODate(t *testing.T) {
-	return
-}
-
-func TestSceneStore_DeleteODate(t *testing.T) {
-	return
-}
-
-func TestSceneStore_ResetODate(t *testing.T) {
-	return
-}
-
 func TestSceneStore_SaveActivity(t *testing.T) {
 	var (
 		resumeTime   = 111.2

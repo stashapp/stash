@@ -214,7 +214,7 @@ func NewSceneStore(fileStore *FileStore, blobStore *BlobStore) *SceneStore {
 		},
 
 		tableMgr:           sceneTableMgr,
-		oCounterManager:    oCounterManager{tableMgr: sceneTableMgr},
+		oCounterManager:    oCounterManager{sceneTableMgr},
 		playCounterManager: playCounterManager{sceneTableMgr},
 		fileStore:          fileStore,
 	}
