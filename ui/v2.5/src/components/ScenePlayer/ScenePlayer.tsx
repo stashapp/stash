@@ -504,7 +504,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       },
     };
     if (!isSafari) {
-        player.mobileUi(mobileUiOptions);
+      player.mobileUi(mobileUiOptions);
     }
 
     function isDirect(src: URL) {
