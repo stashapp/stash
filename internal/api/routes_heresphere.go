@@ -238,7 +238,6 @@ func (rs heresphereRoutes) Routes() chi.Router {
 	return r
 }
 
-// TODO: getHeresphereEnabled?
 func getVrTag() (varTag string, err error) {
 	// Find setting
 	varTag = config.GetInstance().GetUIVRTag()
@@ -388,7 +387,6 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 	}
 
 	// Favorites tag
-	// TODO: Test, suspected not working
 	if favName, err := getFavoriteTag(); user.IsFavorite != nil && err == nil {
 		favTag := HeresphereVideoTag{Name: fmt.Sprintf("Tag:%v", favName)}
 		if *user.IsFavorite {
@@ -688,8 +686,8 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 		processedTags = append(processedTags, genTag)
 	}
 
-	if interactive, err := rs.resolver.Scene().Interactive(r.Context(), scene); err == nil {
-		// TODO: Use Interactive:True or False instead
+	{
+		interactive, _ := rs.resolver.Scene().Interactive(r.Context(), scene)
 		genTag := HeresphereVideoTag{
 			Name: fmt.Sprintf("%s:%s",
 				string(HeresphereCustomTagInteractive),
@@ -1283,6 +1281,10 @@ func (rs heresphereRoutes) HeresphereSceneCtx(next http.Handler) http.Handler {
  */
 func (rs heresphereRoutes) HeresphereCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		/*if !config.GetInstance().GetHeresphereDefaultEnabled() {
+			writeNotAuthorized(w, r, "HereSphere API not enabled!")
+		}*/
+
 		// Add JSON Header (using Add uses camel case and makes it invalid because "Json")
 		w.Header()["HereSphere-JSON-Version"] = []string{strconv.Itoa(HeresphereJsonVersion)}
 
@@ -1299,14 +1301,18 @@ func (rs heresphereRoutes) HeresphereCtx(next http.Handler) http.Handler {
 		isAuth := config.GetInstance().HasCredentials() && !HeresphereHasValidToken(r)
 
 		// Default request
-		needsMedia := true
-		// TODO: Can you do this, or do i need to check
-		user := HeresphereAuthReq{NeedsMediaSource: &needsMedia}
+		user := HeresphereAuthReq{}
 
 		// Attempt decode, and if err and invalid auth, fail
 		if err := json.Unmarshal(body, &user); err != nil && isAuth {
 			writeNotAuthorized(w, r, "Not logged in!")
 			return
+		}
+
+		// If empty, fill as true
+		if user.NeedsMediaSource == nil {
+			needsMedia := true
+			user.NeedsMediaSource = &needsMedia
 		}
 
 		// If invalid creds, only allow auth endpoint

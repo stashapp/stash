@@ -216,6 +216,8 @@ const (
 	DLNADefaultIPWhitelist = "dlna.default_whitelist"
 	DLNAInterfaces         = "dlna.interfaces"
 
+	HeresphereEnabled = "heresphere.default_enabled"
+
 	DLNAVideoSortOrder        = "dlna.video_sort_order"
 	dlnaVideoSortOrderDefault = "title"
 
@@ -1421,6 +1423,11 @@ func (i *Instance) GetVideoSortOrder() string {
 	}
 
 	return ret
+}
+
+// GetHeresphereDefaultEnabled returns true if the HereSphere API is enabled by default.
+func (i *Instance) GetHeresphereDefaultEnabled() bool {
+	return i.getBool(HeresphereEnabled)
 }
 
 // GetLogFile returns the filename of the file to output logs to.
