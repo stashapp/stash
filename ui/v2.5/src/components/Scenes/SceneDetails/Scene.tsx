@@ -465,6 +465,7 @@ const ScenePage: React.FC<IProps> = ({
         </Tab.Pane>
         {scene.galleries.length === 1 && (
           <Tab.Pane eventKey="scene-galleries-panel">
+            <SceneGalleriesPanel galleries={scene.galleries} />
             <GalleryViewer galleryId={scene.galleries[0].id} />
           </Tab.Pane>
         )}
