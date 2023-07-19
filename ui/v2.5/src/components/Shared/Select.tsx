@@ -822,7 +822,7 @@ export const MovieSelect: React.FC<IFilterProps> = (props) => {
 
   const onCreate = async (name: string) => {
     const result = await createMovie({
-      variables: { name },
+      variables: { input: { name } },
     });
     return { item: result.data!.movieCreate!, message: "Created movie" };
   };
