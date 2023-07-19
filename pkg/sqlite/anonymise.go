@@ -58,7 +58,7 @@ func (db *Anonymiser) Anonymise(ctx context.Context) error {
 			func() error { return db.anonymiseStudios(ctx) },
 			func() error { return db.anonymiseTags(ctx) },
 			func() error { return db.anonymiseMovies(ctx) },
-			func() error { db.optimise(); return nil },
+			func() error { return db.Optimise(ctx) },
 		})
 	}(); err != nil {
 		// delete the database

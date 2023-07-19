@@ -265,6 +265,14 @@ func (s *Manager) Clean(ctx context.Context, input CleanMetadataInput) int {
 	return s.JobManager.Add(ctx, "Cleaning...", &j)
 }
 
+func (s *Manager) OptimiseDatabase(ctx context.Context) int {
+	j := OptimiseDatabaseJob{
+		Optimiser: s.Database,
+	}
+
+	return s.JobManager.Add(ctx, "Optimising database...", &j)
+}
+
 func (s *Manager) MigrateHash(ctx context.Context) int {
 	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
 		fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()

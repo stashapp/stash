@@ -1268,6 +1268,11 @@ export const mutateAnonymiseDatabase = (input: GQL.AnonymiseDatabaseInput) =>
     variables: { input },
   });
 
+export const mutateOptimiseDatabase = () =>
+  client.mutate<GQL.OptimiseDatabaseMutation>({
+    mutation: GQL.OptimiseDatabaseDocument,
+  });
+
 export const mutateStashBoxBatchPerformerTag = (
   input: GQL.StashBoxBatchPerformerTagInput
 ) =>

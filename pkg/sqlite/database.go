@@ -435,26 +435,39 @@ func (db *Database) RunMigrations() error {
 	}
 
 	// optimize database after migration
-	db.optimise()
+	err = db.Optimise(ctx)
+	if err != nil {
+		logger.Warnf("error while performing post-migration optimisation: %v", err)
+	}
 
 	return nil
 }
 
-func (db *Database) optimise() {
-	logger.Info("Optimizing database")
-	_, err := db.db.Exec("ANALYZE")
+func (db *Database) Optimise(ctx context.Context) error {
+	logger.Info("Optimising database")
+
+	err := db.Analyze(ctx)
 	if err != nil {
-		logger.Warnf("error while performing post-migration optimization: %v", err)
+		return err
 	}
-	_, err = db.db.Exec("VACUUM")
+
+	err = db.Vacuum(ctx)
 	if err != nil {
-		logger.Warnf("error while performing post-migration vacuum: %v", err)
+		return err
 	}
+
+	return nil
 }
 
 // Vacuum runs a VACUUM on the database, rebuilding the database file into a minimal amount of disk space.
 func (db *Database) Vacuum(ctx context.Context) error {
 	_, err := db.db.ExecContext(ctx, "VACUUM")
+	return err
+}
+
+// Analyze runs an ANALYZE on the database to improve query performance.
+func (db *Database) Analyze(ctx context.Context) error {
+	_, err := db.db.ExecContext(ctx, "ANALYZE")
 	return err
 }
 
