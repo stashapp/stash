@@ -11,9 +11,9 @@ type SavedFilterReader interface {
 }
 
 type SavedFilterWriter interface {
-	Create(ctx context.Context, obj SavedFilter) (*SavedFilter, error)
-	Update(ctx context.Context, obj SavedFilter) (*SavedFilter, error)
-	SetDefault(ctx context.Context, obj SavedFilter) (*SavedFilter, error)
+	Create(ctx context.Context, obj *SavedFilter) error
+	Update(ctx context.Context, obj *SavedFilter) error
+	SetDefault(ctx context.Context, obj *SavedFilter) error
 	Destroy(ctx context.Context, id int) error
 }
 

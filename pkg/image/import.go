@@ -89,8 +89,10 @@ func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 		newImage.URL = imageJSON.URL
 	}
 	if imageJSON.Date != "" {
-		d := models.NewDate(imageJSON.Date)
-		newImage.Date = &d
+		d, err := models.ParseDate(imageJSON.Date)
+		if err == nil {
+			newImage.Date = &d
+		}
 	}
 
 	return newImage
@@ -150,14 +152,14 @@ func (i *Importer) populateStudio(ctx context.Context) error {
 }
 
 func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
-	newStudio := *models.NewStudio(name)
+	newStudio := models.NewStudio(name)
 
-	created, err := i.StudioWriter.Create(ctx, newStudio)
+	err := i.StudioWriter.Create(ctx, newStudio)
 	if err != nil {
 		return 0, err
 	}
 
-	return created.ID, nil
+	return newStudio.ID, nil
 }
 
 func (i *Importer) locateGallery(ctx context.Context, ref jsonschema.GalleryRef) (*models.Gallery, error) {
@@ -394,14 +396,14 @@ func importTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []st
 func createTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []string) ([]*models.Tag, error) {
 	var ret []*models.Tag
 	for _, name := range names {
-		newTag := *models.NewTag(name)
+		newTag := models.NewTag(name)
 
-		created, err := tagWriter.Create(ctx, newTag)
+		err := tagWriter.Create(ctx, newTag)
 		if err != nil {
 			return nil, err
 		}
 
-		ret = append(ret, created)
+		ret = append(ret, newTag)
 	}
 
 	return ret, nil

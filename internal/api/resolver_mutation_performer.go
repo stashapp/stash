@@ -35,15 +35,8 @@ func stashIDPtrSliceToSlice(v []*models.StashID) []models.StashID {
 }
 
 func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerCreateInput) (*models.Performer, error) {
-	var imageData []byte
-	var err error
-
-	if input.Image != nil {
-		imageData, err = utils.ProcessImageInput(ctx, *input.Image)
-	}
-
-	if err != nil {
-		return nil, err
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
 	}
 
 	tagIDs, err := stringslice.StringSliceToIntSlice(input.TagIds)
@@ -54,103 +47,69 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerC
 	// Populate a new performer from the input
 	currentTime := time.Now()
 	newPerformer := models.Performer{
-		Name:      input.Name,
-		TagIDs:    models.NewRelatedIDs(tagIDs),
-		StashIDs:  models.NewRelatedStashIDs(stashIDPtrSliceToSlice(input.StashIds)),
-		CreatedAt: currentTime,
-		UpdatedAt: currentTime,
+		Name:           input.Name,
+		Disambiguation: translator.string(input.Disambiguation, "disambiguation"),
+		URL:            translator.string(input.URL, "url"),
+		Gender:         input.Gender,
+		Ethnicity:      translator.string(input.Ethnicity, "ethnicity"),
+		Country:        translator.string(input.Country, "country"),
+		EyeColor:       translator.string(input.EyeColor, "eye_color"),
+		Measurements:   translator.string(input.Measurements, "measurements"),
+		FakeTits:       translator.string(input.FakeTits, "fake_tits"),
+		PenisLength:    input.PenisLength,
+		Circumcised:    input.Circumcised,
+		CareerLength:   translator.string(input.CareerLength, "career_length"),
+		Tattoos:        translator.string(input.Tattoos, "tattoos"),
+		Piercings:      translator.string(input.Piercings, "piercings"),
+		Twitter:        translator.string(input.Twitter, "twitter"),
+		Instagram:      translator.string(input.Instagram, "instagram"),
+		Favorite:       translator.bool(input.Favorite, "favorite"),
+		Rating:         translator.ratingConversionInt(input.Rating, input.Rating100),
+		Details:        translator.string(input.Details, "details"),
+		HairColor:      translator.string(input.HairColor, "hair_color"),
+		Weight:         input.Weight,
+		IgnoreAutoTag:  translator.bool(input.IgnoreAutoTag, "ignore_auto_tag"),
+		CreatedAt:      currentTime,
+		UpdatedAt:      currentTime,
+		TagIDs:         models.NewRelatedIDs(tagIDs),
+		StashIDs:       models.NewRelatedStashIDs(stashIDPtrSliceToSlice(input.StashIds)),
 	}
-	if input.Disambiguation != nil {
-		newPerformer.Disambiguation = *input.Disambiguation
+
+	newPerformer.Birthdate, err = translator.datePtr(input.Birthdate, "birthdate")
+	if err != nil {
+		return nil, fmt.Errorf("converting birthdate: %w", err)
 	}
-	if input.URL != nil {
-		newPerformer.URL = *input.URL
+	newPerformer.DeathDate, err = translator.datePtr(input.DeathDate, "death_date")
+	if err != nil {
+		return nil, fmt.Errorf("converting death date: %w", err)
 	}
-	if input.Gender != nil {
-		newPerformer.Gender = input.Gender
-	}
-	if input.Birthdate != nil {
-		d := models.NewDate(*input.Birthdate)
-		newPerformer.Birthdate = &d
-	}
-	if input.Ethnicity != nil {
-		newPerformer.Ethnicity = *input.Ethnicity
-	}
-	if input.Country != nil {
-		newPerformer.Country = *input.Country
-	}
-	if input.EyeColor != nil {
-		newPerformer.EyeColor = *input.EyeColor
-	}
+
 	// prefer height_cm over height
 	if input.HeightCm != nil {
 		newPerformer.Height = input.HeightCm
-	} else if input.Height != nil {
-		h, err := strconv.Atoi(*input.Height)
+	} else {
+		newPerformer.Height, err = translator.intPtrFromString(input.Height, "height")
 		if err != nil {
-			return nil, fmt.Errorf("invalid height: %s", *input.Height)
+			return nil, fmt.Errorf("converting height: %w", err)
 		}
-		newPerformer.Height = &h
 	}
-	if input.Measurements != nil {
-		newPerformer.Measurements = *input.Measurements
-	}
-	if input.FakeTits != nil {
-		newPerformer.FakeTits = *input.FakeTits
-	}
-	if input.PenisLength != nil {
-		newPerformer.PenisLength = input.PenisLength
-	}
-	if input.Circumcised != nil {
-		newPerformer.Circumcised = input.Circumcised
-	}
-	if input.CareerLength != nil {
-		newPerformer.CareerLength = *input.CareerLength
-	}
-	if input.Tattoos != nil {
-		newPerformer.Tattoos = *input.Tattoos
-	}
-	if input.Piercings != nil {
-		newPerformer.Piercings = *input.Piercings
-	}
+
 	if input.AliasList != nil {
 		newPerformer.Aliases = models.NewRelatedStrings(input.AliasList)
 	} else if input.Aliases != nil {
 		newPerformer.Aliases = models.NewRelatedStrings(stringslice.FromString(*input.Aliases, ","))
 	}
-	if input.Twitter != nil {
-		newPerformer.Twitter = *input.Twitter
-	}
-	if input.Instagram != nil {
-		newPerformer.Instagram = *input.Instagram
-	}
-	if input.Favorite != nil {
-		newPerformer.Favorite = *input.Favorite
-	}
-	if input.Rating100 != nil {
-		newPerformer.Rating = input.Rating100
-	} else if input.Rating != nil {
-		rating := models.Rating5To100(*input.Rating)
-		newPerformer.Rating = &rating
-	}
-	if input.Details != nil {
-		newPerformer.Details = *input.Details
-	}
-	if input.DeathDate != nil {
-		d := models.NewDate(*input.DeathDate)
-		newPerformer.DeathDate = &d
-	}
-	if input.HairColor != nil {
-		newPerformer.HairColor = *input.HairColor
-	}
-	if input.Weight != nil {
-		newPerformer.Weight = input.Weight
-	}
-	if input.IgnoreAutoTag != nil {
-		newPerformer.IgnoreAutoTag = *input.IgnoreAutoTag
-	}
 
 	if err := performer.ValidateDeathDate(nil, input.Birthdate, input.DeathDate); err != nil {
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Process the base 64 encoded image string
+	var imageData []byte
+	if input.Image != nil {
+		imageData, err = utils.ProcessImageInput(ctx, *input.Image)
 		if err != nil {
 			return nil, err
 		}
@@ -182,40 +141,31 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerC
 }
 
 func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerUpdateInput) (*models.Performer, error) {
-	// Populate performer from the input
-	performerID, _ := strconv.Atoi(input.ID)
-	updatedPerformer := models.NewPerformerPartial()
+	performerID, err := strconv.Atoi(input.ID)
+	if err != nil {
+		return nil, err
+	}
 
+	// Populate performer from the input
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
 
-	var imageData []byte
-	var err error
-	imageIncluded := translator.hasField("image")
-	if input.Image != nil {
-		imageData, err = utils.ProcessImageInput(ctx, *input.Image)
-		if err != nil {
-			return nil, err
-		}
-	}
+	updatedPerformer := models.NewPerformerPartial()
 
 	updatedPerformer.Name = translator.optionalString(input.Name, "name")
 	updatedPerformer.Disambiguation = translator.optionalString(input.Disambiguation, "disambiguation")
 	updatedPerformer.URL = translator.optionalString(input.URL, "url")
-
-	if translator.hasField("gender") {
-		if input.Gender != nil {
-			updatedPerformer.Gender = models.NewOptionalString(input.Gender.String())
-		} else {
-			updatedPerformer.Gender = models.NewOptionalStringPtr(nil)
-		}
+	updatedPerformer.Gender = translator.optionalString((*string)(input.Gender), "gender")
+	updatedPerformer.Birthdate, err = translator.optionalDate(input.Birthdate, "birthdate")
+	if err != nil {
+		return nil, fmt.Errorf("converting birthdate: %w", err)
 	}
-
-	updatedPerformer.Birthdate = translator.optionalDate(input.Birthdate, "birthdate")
+	updatedPerformer.Ethnicity = translator.optionalString(input.Ethnicity, "ethnicity")
 	updatedPerformer.Country = translator.optionalString(input.Country, "country")
 	updatedPerformer.EyeColor = translator.optionalString(input.EyeColor, "eye_color")
 	updatedPerformer.Measurements = translator.optionalString(input.Measurements, "measurements")
+
 	// prefer height_cm over height
 	if translator.hasField("height_cm") {
 		updatedPerformer.Height = translator.optionalInt(input.HeightCm, "height_cm")
@@ -226,18 +176,9 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 		}
 	}
 
-	updatedPerformer.Ethnicity = translator.optionalString(input.Ethnicity, "ethnicity")
 	updatedPerformer.FakeTits = translator.optionalString(input.FakeTits, "fake_tits")
 	updatedPerformer.PenisLength = translator.optionalFloat64(input.PenisLength, "penis_length")
-
-	if translator.hasField("circumcised") {
-		if input.Circumcised != nil {
-			updatedPerformer.Circumcised = models.NewOptionalString(input.Circumcised.String())
-		} else {
-			updatedPerformer.Circumcised = models.NewOptionalStringPtr(nil)
-		}
-	}
-
+	updatedPerformer.Circumcised = translator.optionalString((*string)(input.Circumcised), "circumcised")
 	updatedPerformer.CareerLength = translator.optionalString(input.CareerLength, "career_length")
 	updatedPerformer.Tattoos = translator.optionalString(input.Tattoos, "tattoos")
 	updatedPerformer.Piercings = translator.optionalString(input.Piercings, "piercings")
@@ -246,7 +187,10 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 	updatedPerformer.Favorite = translator.optionalBool(input.Favorite, "favorite")
 	updatedPerformer.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
 	updatedPerformer.Details = translator.optionalString(input.Details, "details")
-	updatedPerformer.DeathDate = translator.optionalDate(input.DeathDate, "death_date")
+	updatedPerformer.DeathDate, err = translator.optionalDate(input.DeathDate, "death_date")
+	if err != nil {
+		return nil, fmt.Errorf("converting death date: %w", err)
+	}
 	updatedPerformer.HairColor = translator.optionalString(input.HairColor, "hair_color")
 	updatedPerformer.Weight = translator.optionalInt(input.Weight, "weight")
 	updatedPerformer.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
@@ -278,7 +222,16 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 		}
 	}
 
-	// Start the transaction and save the p
+	var imageData []byte
+	imageIncluded := translator.hasField("image")
+	if input.Image != nil {
+		imageData, err = utils.ProcessImageInput(ctx, *input.Image)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Start the transaction and save the performer
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Performer
 
@@ -304,13 +257,8 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 		}
 
 		// update image table
-		if len(imageData) > 0 {
+		if imageIncluded {
 			if err := qb.UpdateImage(ctx, performerID, imageData); err != nil {
-				return err
-			}
-		} else if imageIncluded {
-			// must be unsetting
-			if err := qb.DestroyImage(ctx, performerID); err != nil {
 				return err
 			}
 		}
@@ -339,10 +287,15 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 
 	updatedPerformer.Disambiguation = translator.optionalString(input.Disambiguation, "disambiguation")
 	updatedPerformer.URL = translator.optionalString(input.URL, "url")
-	updatedPerformer.Birthdate = translator.optionalDate(input.Birthdate, "birthdate")
+	updatedPerformer.Gender = translator.optionalString((*string)(input.Gender), "gender")
+	updatedPerformer.Birthdate, err = translator.optionalDate(input.Birthdate, "birthdate")
+	if err != nil {
+		return nil, fmt.Errorf("converting birthdate: %w", err)
+	}
 	updatedPerformer.Ethnicity = translator.optionalString(input.Ethnicity, "ethnicity")
 	updatedPerformer.Country = translator.optionalString(input.Country, "country")
 	updatedPerformer.EyeColor = translator.optionalString(input.EyeColor, "eye_color")
+
 	// prefer height_cm over height
 	if translator.hasField("height_cm") {
 		updatedPerformer.Height = translator.optionalInt(input.HeightCm, "height_cm")
@@ -356,15 +309,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	updatedPerformer.Measurements = translator.optionalString(input.Measurements, "measurements")
 	updatedPerformer.FakeTits = translator.optionalString(input.FakeTits, "fake_tits")
 	updatedPerformer.PenisLength = translator.optionalFloat64(input.PenisLength, "penis_length")
-
-	if translator.hasField("circumcised") {
-		if input.Circumcised != nil {
-			updatedPerformer.Circumcised = models.NewOptionalString(input.Circumcised.String())
-		} else {
-			updatedPerformer.Circumcised = models.NewOptionalStringPtr(nil)
-		}
-	}
-
+	updatedPerformer.Circumcised = translator.optionalString((*string)(input.Circumcised), "circumcised")
 	updatedPerformer.CareerLength = translator.optionalString(input.CareerLength, "career_length")
 	updatedPerformer.Tattoos = translator.optionalString(input.Tattoos, "tattoos")
 	updatedPerformer.Piercings = translator.optionalString(input.Piercings, "piercings")
@@ -373,7 +318,10 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	updatedPerformer.Favorite = translator.optionalBool(input.Favorite, "favorite")
 	updatedPerformer.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
 	updatedPerformer.Details = translator.optionalString(input.Details, "details")
-	updatedPerformer.DeathDate = translator.optionalDate(input.DeathDate, "death_date")
+	updatedPerformer.DeathDate, err = translator.optionalDate(input.DeathDate, "death_date")
+	if err != nil {
+		return nil, fmt.Errorf("converting death date: %w", err)
+	}
 	updatedPerformer.HairColor = translator.optionalString(input.HairColor, "hair_color")
 	updatedPerformer.Weight = translator.optionalInt(input.Weight, "weight")
 	updatedPerformer.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
@@ -390,14 +338,6 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 		}
 	}
 
-	if translator.hasField("gender") {
-		if input.Gender != nil {
-			updatedPerformer.Gender = models.NewOptionalString(input.Gender.String())
-		} else {
-			updatedPerformer.Gender = models.NewOptionalStringPtr(nil)
-		}
-	}
-
 	if translator.hasField("tag_ids") {
 		updatedPerformer.TagIDs, err = translateUpdateIDs(input.TagIds.Ids, input.TagIds.Mode)
 		if err != nil {
@@ -407,13 +347,11 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 
 	ret := []*models.Performer{}
 
-	// Start the transaction and save the scene marker
+	// Start the transaction and save the performers
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Performer
 
 		for _, performerID := range performerIDs {
-			updatedPerformer.ID = performerID
-
 			// need to get existing performer
 			existing, err := qb.Find(ctx, performerID)
 			if err != nil {

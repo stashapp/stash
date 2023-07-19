@@ -68,6 +68,10 @@ func (r *mutationResolver) SubmitStashBoxSceneDraft(ctx context.Context, input S
 			logger.Errorf("Error getting scene cover: %v", err)
 		}
 
+		if err := scene.LoadURLs(ctx, r.repository.Scene); err != nil {
+			return fmt.Errorf("loading scene URLs: %w", err)
+		}
+
 		res, err = client.SubmitSceneDraft(ctx, scene, boxes[input.StashBoxIndex].Endpoint, cover)
 		return err
 	})
@@ -95,6 +99,10 @@ func (r *mutationResolver) SubmitStashBoxPerformerDraft(ctx context.Context, inp
 		performer, err := qb.Find(ctx, id)
 		if err != nil {
 			return err
+		}
+
+		if performer == nil {
+			return fmt.Errorf("performer with id %d not found", id)
 		}
 
 		res, err = client.SubmitPerformerDraft(ctx, performer, boxes[input.StashBoxIndex].Endpoint)

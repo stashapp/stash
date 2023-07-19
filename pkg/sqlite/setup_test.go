@@ -15,8 +15,8 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
 
@@ -213,6 +213,7 @@ const (
 	tagIdxWithGrandChild
 	tagIdxWithParentAndChild
 	tagIdxWithGrandParent
+	tagIdx2WithMarkers
 	// new indexes above
 	// tags with dup names start from the end
 	tagIdx1WithDupName
@@ -400,6 +401,8 @@ var (
 	markerSpecs = []markerSpec{
 		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, nil},
 		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, []int{tagIdxWithMarkers}},
+		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, []int{tagIdx2WithMarkers}},
+		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, []int{tagIdxWithMarkers, tagIdx2WithMarkers}},
 		{sceneIdxWithMarkerAndTag, tagIdxWithPrimaryMarkers, nil},
 		{sceneIdxWithMarkerTwoTags, tagIdxWithPrimaryMarkers, nil},
 	}
@@ -648,7 +651,7 @@ func populateDB() error {
 			return fmt.Errorf("error adding tag image: %s", err.Error())
 		}
 
-		if err := createSavedFilters(ctx, sqlite.SavedFilterReaderWriter, totalSavedFilters); err != nil {
+		if err := createSavedFilters(ctx, db.SavedFilter, totalSavedFilters); err != nil {
 			return fmt.Errorf("error creating saved filters: %s", err.Error())
 		}
 
@@ -665,12 +668,12 @@ func populateDB() error {
 		}
 
 		for _, ms := range markerSpecs {
-			if err := createMarker(ctx, sqlite.SceneMarkerReaderWriter, ms); err != nil {
+			if err := createMarker(ctx, db.SceneMarker, ms); err != nil {
 				return fmt.Errorf("error creating scene marker: %s", err.Error())
 			}
 		}
 		for _, cs := range chapterSpecs {
-			if err := createChapter(ctx, sqlite.GalleryChapterReaderWriter, cs); err != nil {
+			if err := createChapter(ctx, db.GalleryChapter, cs); err != nil {
 				return fmt.Errorf("error creating gallery chapter: %s", err.Error())
 			}
 		}
@@ -951,22 +954,15 @@ func getWidth(index int) int {
 	return height * 2
 }
 
-func getObjectDate(index int) models.SQLiteDate {
-	dates := []string{"null", "", "0001-01-01", "2001-02-03"}
+func getObjectDate(index int) *models.Date {
+	dates := []string{"null", "2000-01-01", "0001-01-01", "2001-02-03"}
 	date := dates[index%len(dates)]
-	return models.SQLiteDate{
-		String: date,
-		Valid:  date != "null",
-	}
-}
 
-func getObjectDateObject(index int, fromDB bool) *models.Date {
-	d := getObjectDate(index)
-	if !d.Valid || (fromDB && (d.String == "" || d.String == "0001-01-01")) {
+	if date == "null" {
 		return nil
 	}
 
-	ret := models.NewDate(d.String)
+	ret, _ := models.ParseDate(date)
 	return &ret
 }
 
@@ -1068,12 +1064,14 @@ func makeScene(i int) *models.Scene {
 	rating := getRating(i)
 
 	return &models.Scene{
-		Title:        title,
-		Details:      details,
-		URL:          getSceneEmptyString(i, urlField),
+		Title:   title,
+		Details: details,
+		URLs: models.NewRelatedStrings([]string{
+			getSceneEmptyString(i, urlField),
+		}),
 		Rating:       getIntPtr(rating),
 		OCounter:     getOCounter(i),
-		Date:         getObjectDateObject(i, false),
+		Date:         getObjectDate(i),
 		StudioID:     studioID,
 		GalleryIDs:   models.NewRelatedIDs(gids),
 		PerformerIDs: models.NewRelatedIDs(pids),
@@ -1138,7 +1136,7 @@ func makeImageFile(i int) *file.ImageFile {
 	}
 }
 
-func makeImage(i int, fromDB bool) *models.Image {
+func makeImage(i int) *models.Image {
 	title := getImageStringValue(i, titleField)
 	var studioID *int
 	if _, ok := imageStudios[i]; ok {
@@ -1153,7 +1151,7 @@ func makeImage(i int, fromDB bool) *models.Image {
 	return &models.Image{
 		Title:        title,
 		Rating:       getIntPtr(getRating(i)),
-		Date:         getObjectDateObject(i, fromDB),
+		Date:         getObjectDate(i),
 		URL:          getImageStringValue(i, urlField),
 		OCounter:     getOCounter(i),
 		StudioID:     studioID,
@@ -1178,7 +1176,7 @@ func createImages(ctx context.Context, n int) error {
 		}
 		imageFileIDs = append(imageFileIDs, f.ID)
 
-		image := makeImage(i, false)
+		image := makeImage(i)
 
 		err := qb.Create(ctx, &models.ImageCreateInput{
 			Image:   image,
@@ -1239,7 +1237,7 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 		Title:        getGalleryStringValue(i, titleField),
 		URL:          getGalleryNullStringValue(i, urlField).String,
 		Rating:       getIntPtr(getRating(i)),
-		Date:         getObjectDateObject(i, false),
+		Date:         getObjectDate(i),
 		StudioID:     studioID,
 		PerformerIDs: models.NewRelatedIDs(pids),
 		TagIDs:       models.NewRelatedIDs(tids),
@@ -1289,8 +1287,10 @@ func getMovieStringValue(index int, field string) string {
 	return getPrefixedStringValue("movie", index, field)
 }
 
-func getMovieNullStringValue(index int, field string) sql.NullString {
-	return getPrefixedNullStringValue("movie", index, field)
+func getMovieNullStringValue(index int, field string) string {
+	ret := getPrefixedNullStringValue("movie", index, field)
+
+	return ret.String
 }
 
 // createMoviees creates n movies with plain Name and o movies with camel cased NaMe included
@@ -1310,19 +1310,18 @@ func createMovies(ctx context.Context, mqb models.MovieReaderWriter, n int, o in
 
 		name = getMovieStringValue(index, name)
 		movie := models.Movie{
-			Name:     sql.NullString{String: name, Valid: true},
+			Name:     name,
 			URL:      getMovieNullStringValue(index, urlField),
-			Checksum: md5.FromString(name),
 		}
 
-		created, err := mqb.Create(ctx, movie)
+		err := mqb.Create(ctx, &movie)
 
 		if err != nil {
 			return fmt.Errorf("Error creating movie [%d] %v+: %s", i, movie, err.Error())
 		}
 
-		movieIDs = append(movieIDs, created.ID)
-		movieNames = append(movieNames, created.Name.String)
+		movieIDs = append(movieIDs, movie.ID)
+		movieNames = append(movieNames, movie.Name)
 	}
 
 	return nil
@@ -1482,15 +1481,15 @@ func getTagSceneCount(id int) int {
 }
 
 func getTagMarkerCount(id int) int {
-	if id == tagIDs[tagIdxWithPrimaryMarkers] {
-		return 3
+	count := 0
+	idx := indexFromID(tagIDs, id)
+	for _, s := range markerSpecs {
+		if s.primaryTagIdx == idx || intslice.IntInclude(s.tagIdxs, idx) {
+			count++
+		}
 	}
 
-	if id == tagIDs[tagIdxWithMarkers] {
-		return 1
-	}
-
-	return 0
+	return count
 }
 
 func getTagImageCount(id int) int {
@@ -1545,7 +1544,7 @@ func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) e
 			IgnoreAutoTag: getIgnoreAutoTag(i),
 		}
 
-		created, err := tqb.Create(ctx, tag)
+		err := tqb.Create(ctx, &tag)
 
 		if err != nil {
 			return fmt.Errorf("Error creating tag %v+: %s", tag, err.Error())
@@ -1553,12 +1552,12 @@ func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) e
 
 		// add alias
 		alias := getTagStringValue(i, "Alias")
-		if err := tqb.UpdateAliases(ctx, created.ID, []string{alias}); err != nil {
+		if err := tqb.UpdateAliases(ctx, tag.ID, []string{alias}); err != nil {
 			return fmt.Errorf("error setting tag alias: %s", err.Error())
 		}
 
-		tagIDs = append(tagIDs, created.ID)
-		tagNames = append(tagNames, created.Name)
+		tagIDs = append(tagIDs, tag.ID)
+		tagNames = append(tagNames, tag.Name)
 	}
 
 	return nil
@@ -1568,31 +1567,37 @@ func getStudioStringValue(index int, field string) string {
 	return getPrefixedStringValue("studio", index, field)
 }
 
-func getStudioNullStringValue(index int, field string) sql.NullString {
-	return getPrefixedNullStringValue("studio", index, field)
+func getStudioNullStringValue(index int, field string) string {
+	ret := getPrefixedNullStringValue("studio", index, field)
+
+	return ret.String
 }
 
-func createStudio(ctx context.Context, sqb models.StudioReaderWriter, name string, parentID *int64) (*models.Studio, error) {
+func createStudio(ctx context.Context, sqb models.StudioReaderWriter, name string, parentID *int) (*models.Studio, error) {
 	studio := models.Studio{
-		Name:     sql.NullString{String: name, Valid: true},
-		Checksum: md5.FromString(name),
+		Name:     name,
 	}
 
 	if parentID != nil {
-		studio.ParentID = sql.NullInt64{Int64: *parentID, Valid: true}
+		studio.ParentID = parentID
 	}
 
-	return createStudioFromModel(ctx, sqb, studio)
+	err := createStudioFromModel(ctx, sqb, &studio)
+	if err != nil {
+		return nil, err
+	}
+
+	return &studio, nil
 }
 
-func createStudioFromModel(ctx context.Context, sqb models.StudioReaderWriter, studio models.Studio) (*models.Studio, error) {
-	created, err := sqb.Create(ctx, studio)
+func createStudioFromModel(ctx context.Context, sqb models.StudioReaderWriter, studio *models.Studio) error {
+	err := sqb.Create(ctx, studio)
 
 	if err != nil {
-		return nil, fmt.Errorf("Error creating studio %v+: %s", studio, err.Error())
+		return fmt.Errorf("Error creating studio %v+: %s", studio, err.Error())
 	}
 
-	return created, nil
+	return nil
 }
 
 // createStudios creates n studios with plain Name and o studios with camel cased NaMe included
@@ -1612,13 +1617,12 @@ func createStudios(ctx context.Context, sqb models.StudioReaderWriter, n int, o 
 
 		name = getStudioStringValue(index, name)
 		studio := models.Studio{
-			Name:          sql.NullString{String: name, Valid: true},
-			Checksum:      md5.FromString(name),
+			Name:          name,
 			URL:           getStudioNullStringValue(index, urlField),
 			IgnoreAutoTag: getIgnoreAutoTag(i),
 		}
-		created, err := createStudioFromModel(ctx, sqb, studio)
 
+		err := createStudioFromModel(ctx, sqb, &studio)
 		if err != nil {
 			return err
 		}
@@ -1627,13 +1631,13 @@ func createStudios(ctx context.Context, sqb models.StudioReaderWriter, n int, o 
 		// only add aliases for some scenes
 		if i == studioIdxWithMovie || i%5 == 0 {
 			alias := getStudioStringValue(i, "Alias")
-			if err := sqb.UpdateAliases(ctx, created.ID, []string{alias}); err != nil {
+			if err := sqb.UpdateAliases(ctx, studio.ID, []string{alias}); err != nil {
 				return fmt.Errorf("error setting studio alias: %s", err.Error())
 			}
 		}
 
-		studioIDs = append(studioIDs, created.ID)
-		studioNames = append(studioNames, created.Name.String)
+		studioIDs = append(studioIDs, studio.ID)
+		studioNames = append(studioNames, studio.Name)
 	}
 
 	return nil
@@ -1641,17 +1645,17 @@ func createStudios(ctx context.Context, sqb models.StudioReaderWriter, n int, o 
 
 func createMarker(ctx context.Context, mqb models.SceneMarkerReaderWriter, markerSpec markerSpec) error {
 	marker := models.SceneMarker{
-		SceneID:      sql.NullInt64{Int64: int64(sceneIDs[markerSpec.sceneIdx]), Valid: true},
+		SceneID:      sceneIDs[markerSpec.sceneIdx],
 		PrimaryTagID: tagIDs[markerSpec.primaryTagIdx],
 	}
 
-	created, err := mqb.Create(ctx, marker)
+	err := mqb.Create(ctx, &marker)
 
 	if err != nil {
 		return fmt.Errorf("error creating marker %v+: %w", marker, err)
 	}
 
-	markerIDs = append(markerIDs, created.ID)
+	markerIDs = append(markerIDs, marker.ID)
 
 	if len(markerSpec.tagIdxs) > 0 {
 		newTagIDs := []int{}
@@ -1660,7 +1664,7 @@ func createMarker(ctx context.Context, mqb models.SceneMarkerReaderWriter, marke
 			newTagIDs = append(newTagIDs, tagIDs[tagIdx])
 		}
 
-		if err := mqb.UpdateTags(ctx, created.ID, newTagIDs); err != nil {
+		if err := mqb.UpdateTags(ctx, marker.ID, newTagIDs); err != nil {
 			return fmt.Errorf("error creating marker/tag join: %w", err)
 		}
 	}
@@ -1670,18 +1674,18 @@ func createMarker(ctx context.Context, mqb models.SceneMarkerReaderWriter, marke
 
 func createChapter(ctx context.Context, mqb models.GalleryChapterReaderWriter, chapterSpec chapterSpec) error {
 	chapter := models.GalleryChapter{
-		GalleryID:  sql.NullInt64{Int64: int64(sceneIDs[chapterSpec.galleryIdx]), Valid: true},
+		GalleryID:  sceneIDs[chapterSpec.galleryIdx],
 		Title:      chapterSpec.title,
 		ImageIndex: chapterSpec.imageIndex,
 	}
 
-	created, err := mqb.Create(ctx, chapter)
+	err := mqb.Create(ctx, &chapter)
 
 	if err != nil {
 		return fmt.Errorf("error creating chapter %v+: %w", chapter, err)
 	}
 
-	chapterIDs = append(chapterIDs, created.ID)
+	chapterIDs = append(chapterIDs, chapter.ID)
 
 	return nil
 }
@@ -1719,13 +1723,13 @@ func createSavedFilters(ctx context.Context, qb models.SavedFilterReaderWriter, 
 			Filter: getPrefixedStringValue("savedFilter", i, "Filter"),
 		}
 
-		created, err := qb.Create(ctx, savedFilter)
+		err := qb.Create(ctx, &savedFilter)
 
 		if err != nil {
 			return fmt.Errorf("Error creating saved filter %v+: %s", savedFilter, err.Error())
 		}
 
-		savedFilterIDs = append(savedFilterIDs, created.ID)
+		savedFilterIDs = append(savedFilterIDs, savedFilter.ID)
 	}
 
 	return nil
@@ -1744,10 +1748,9 @@ func doLinks(links [][2]int, fn func(idx1, idx2 int) error) error {
 func linkMovieStudios(ctx context.Context, mqb models.MovieWriter) error {
 	return doLinks(movieStudioLinks, func(movieIndex, studioIndex int) error {
 		movie := models.MoviePartial{
-			ID:       movieIDs[movieIndex],
-			StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
+			StudioID: models.NewOptionalInt(studioIDs[studioIndex]),
 		}
-		_, err := mqb.Update(ctx, movie)
+		_, err := mqb.UpdatePartial(ctx, movieIDs[movieIndex], movie)
 
 		return err
 	})
@@ -1756,10 +1759,9 @@ func linkMovieStudios(ctx context.Context, mqb models.MovieWriter) error {
 func linkStudiosParent(ctx context.Context, qb models.StudioWriter) error {
 	return doLinks(studioParentLinks, func(parentIndex, childIndex int) error {
 		studio := models.StudioPartial{
-			ID:       studioIDs[childIndex],
-			ParentID: &sql.NullInt64{Int64: int64(studioIDs[parentIndex]), Valid: true},
+			ParentID: models.NewOptionalInt(studioIDs[parentIndex]),
 		}
-		_, err := qb.Update(ctx, studio)
+		_, err := qb.UpdatePartial(ctx, studioIDs[childIndex], studio)
 
 		return err
 	})

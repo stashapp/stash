@@ -11,14 +11,6 @@ type jsonUtils struct {
 	json paths.JSONPaths
 }
 
-func (jp *jsonUtils) getScraped() ([]jsonschema.ScrapedItem, error) {
-	return jsonschema.LoadScrapedFile(jp.json.ScrapedFile)
-}
-
-func (jp *jsonUtils) saveScaped(scraped []jsonschema.ScrapedItem) error {
-	return jsonschema.SaveScrapedFile(jp.json.ScrapedFile, scraped)
-}
-
 func (jp *jsonUtils) savePerformer(fn string, performer *jsonschema.Performer) error {
 	return jsonschema.SavePerformerFile(filepath.Join(jp.json.Performers, fn), performer)
 }

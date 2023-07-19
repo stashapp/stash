@@ -32,7 +32,7 @@ const (
 	dbConnTimeout = 30
 )
 
-var appSchemaVersion uint = 46
+var appSchemaVersion uint = 48
 
 //go:embed migrations/*.sql
 var migrationsBox embed.FS
@@ -64,16 +64,19 @@ func (e *MismatchedSchemaVersionError) Error() string {
 }
 
 type Database struct {
-	Blobs     *BlobStore
-	File      *FileStore
-	Folder    *FolderStore
-	Image     *ImageStore
-	Gallery   *GalleryStore
-	Scene     *SceneStore
-	Performer *PerformerStore
-	Studio    *studioQueryBuilder
-	Tag       *tagQueryBuilder
-	Movie     *movieQueryBuilder
+	Blobs          *BlobStore
+	File           *FileStore
+	Folder         *FolderStore
+	Image          *ImageStore
+	Gallery        *GalleryStore
+	GalleryChapter *GalleryChapterStore
+	Scene          *SceneStore
+	SceneMarker    *SceneMarkerStore
+	Performer      *PerformerStore
+	Studio         *StudioStore
+	Tag            *TagStore
+	Movie          *MovieStore
+	SavedFilter    *SavedFilterStore
 
 	db     *sqlx.DB
 	dbPath string
@@ -89,17 +92,20 @@ func NewDatabase() *Database {
 	blobStore := NewBlobStore(BlobStoreOptions{})
 
 	ret := &Database{
-		Blobs:     blobStore,
-		File:      fileStore,
-		Folder:    folderStore,
-		Scene:     NewSceneStore(fileStore, blobStore),
-		Image:     NewImageStore(fileStore),
-		Gallery:   NewGalleryStore(fileStore, folderStore),
-		Performer: NewPerformerStore(blobStore),
-		Studio:    NewStudioReaderWriter(blobStore),
-		Tag:       NewTagReaderWriter(blobStore),
-		Movie:     NewMovieReaderWriter(blobStore),
-		lockChan:  make(chan struct{}, 1),
+		Blobs:          blobStore,
+		File:           fileStore,
+		Folder:         folderStore,
+		Scene:          NewSceneStore(fileStore, blobStore),
+		SceneMarker:    NewSceneMarkerStore(),
+		Image:          NewImageStore(fileStore),
+		Gallery:        NewGalleryStore(fileStore, folderStore),
+		GalleryChapter: NewGalleryChapterStore(),
+		Performer:      NewPerformerStore(blobStore),
+		Studio:         NewStudioStore(blobStore),
+		Tag:            NewTagStore(blobStore),
+		Movie:          NewMovieStore(blobStore),
+		SavedFilter:    NewSavedFilterStore(),
+		lockChan:       make(chan struct{}, 1),
 	}
 
 	return ret

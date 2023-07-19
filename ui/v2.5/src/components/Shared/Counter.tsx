@@ -6,16 +6,23 @@ import TextUtils from "src/utils/text";
 interface IProps {
   abbreviateCounter?: boolean;
   count: number;
+  hideZero?: boolean;
+  hideOne?: boolean;
 }
 
 export const Counter: React.FC<IProps> = ({
   abbreviateCounter = false,
   count,
+  hideZero = false,
+  hideOne = false,
 }) => {
   const intl = useIntl();
 
+  if (hideZero && count === 0) return null;
+  if (hideOne && count === 1) return null;
+
   if (abbreviateCounter) {
-    const formated = TextUtils.abbreviateCounter(count);
+    const formatted = TextUtils.abbreviateCounter(count);
     return (
       <Badge
         className="left-spacing"
@@ -24,10 +31,10 @@ export const Counter: React.FC<IProps> = ({
         data-value={intl.formatNumber(count)}
       >
         <FormattedNumber
-          value={formated.size}
-          maximumFractionDigits={formated.digits}
+          value={formatted.size}
+          maximumFractionDigits={formatted.digits}
         />
-        {formated.unit}
+        {formatted.unit}
       </Badge>
     );
   } else {

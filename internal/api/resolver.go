@@ -3,9 +3,11 @@ package api
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sort"
 	"strconv"
 
+	"github.com/stashapp/stash/internal/build"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -156,18 +158,26 @@ func (r *queryResolver) Stats(ctx context.Context) (*StatsResultType, error) {
 		studiosCount, _ := studiosQB.Count(ctx)
 		moviesCount, _ := moviesQB.Count(ctx)
 		tagsCount, _ := tagsQB.Count(ctx)
+		totalOCount, _ := scenesQB.OCount(ctx)
+		totalPlayDuration, _ := scenesQB.PlayDuration(ctx)
+		totalPlayCount, _ := scenesQB.PlayCount(ctx)
+		uniqueScenePlayCount, _ := scenesQB.UniqueScenePlayCount(ctx)
 
 		ret = StatsResultType{
-			SceneCount:     scenesCount,
-			ScenesSize:     scenesSize,
-			ScenesDuration: scenesDuration,
-			ImageCount:     imageCount,
-			ImagesSize:     imageSize,
-			GalleryCount:   galleryCount,
-			PerformerCount: performersCount,
-			StudioCount:    studiosCount,
-			MovieCount:     moviesCount,
-			TagCount:       tagsCount,
+			SceneCount:        scenesCount,
+			ScenesSize:        scenesSize,
+			ScenesDuration:    scenesDuration,
+			ImageCount:        imageCount,
+			ImagesSize:        imageSize,
+			GalleryCount:      galleryCount,
+			PerformerCount:    performersCount,
+			StudioCount:       studiosCount,
+			MovieCount:        moviesCount,
+			TagCount:          tagsCount,
+			TotalOCount:       totalOCount,
+			TotalPlayDuration: totalPlayDuration,
+			TotalPlayCount:    totalPlayCount,
+			ScenesPlayed:      uniqueScenePlayCount,
 		}
 
 		return nil
@@ -179,7 +189,7 @@ func (r *queryResolver) Stats(ctx context.Context) (*StatsResultType, error) {
 }
 
 func (r *queryResolver) Version(ctx context.Context) (*Version, error) {
-	version, hash, buildtime := GetVersion()
+	version, hash, buildtime := build.Version()
 
 	return &Version{
 		Version:   &version,
@@ -228,6 +238,11 @@ func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([
 			if err != nil {
 				return err
 			}
+
+			if markerPrimaryTag == nil {
+				return fmt.Errorf("tag with id %d not found", sceneMarker.PrimaryTagID)
+			}
+
 			_, hasKey := tags[markerPrimaryTag.ID]
 			if !hasKey {
 				sceneMarkerTag := &SceneMarkerTag{Tag: markerPrimaryTag}

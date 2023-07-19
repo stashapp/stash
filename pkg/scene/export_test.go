@@ -36,14 +36,14 @@ const (
 )
 
 var (
-	url       = "url"
-	title     = "title"
-	date      = "2001-01-01"
-	dateObj   = models.NewDate(date)
-	rating    = 5
-	ocounter  = 2
-	organized = true
-	details   = "details"
+	url        = "url"
+	title      = "title"
+	date       = "2001-01-01"
+	dateObj, _ = models.ParseDate(date)
+	rating     = 5
+	ocounter   = 2
+	organized  = true
+	details    = "details"
 )
 
 var (
@@ -92,7 +92,7 @@ func createFullScene(id int) models.Scene {
 		OCounter:  ocounter,
 		Rating:    &rating,
 		Organized: organized,
-		URL:       url,
+		URLs:      models.NewRelatedStrings([]string{url}),
 		Files: models.NewRelatedVideoFiles([]*file.VideoFile{
 			{
 				BaseFile: &file.BaseFile{
@@ -118,6 +118,7 @@ func createEmptyScene(id int) models.Scene {
 				},
 			},
 		}),
+		URLs:      models.NewRelatedStrings([]string{}),
 		StashIDs:  models.NewRelatedStashIDs([]models.StashID{}),
 		CreatedAt: createTime,
 		UpdatedAt: updateTime,
@@ -133,7 +134,7 @@ func createFullJSONScene(image string) *jsonschema.Scene {
 		OCounter:  ocounter,
 		Rating:    rating,
 		Organized: organized,
-		URL:       url,
+		URLs:      []string{url},
 		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},
@@ -149,6 +150,7 @@ func createFullJSONScene(image string) *jsonschema.Scene {
 
 func createEmptyJSONScene() *jsonschema.Scene {
 	return &jsonschema.Scene{
+		URLs:  []string{},
 		Files: []string{path},
 		CreatedAt: json.JSONTime{
 			Time: createTime,
@@ -246,7 +248,7 @@ func TestGetStudioName(t *testing.T) {
 	studioErr := errors.New("error getting image")
 
 	mockStudioReader.On("Find", testCtx, studioID).Return(&models.Studio{
-		Name: models.NullString(studioName),
+		Name: studioName,
 	}, nil).Once()
 	mockStudioReader.On("Find", testCtx, missingStudioID).Return(nil, nil).Once()
 	mockStudioReader.On("Find", testCtx, errStudioID).Return(nil, studioErr).Once()
@@ -394,10 +396,10 @@ func TestGetSceneMoviesJSON(t *testing.T) {
 	movieErr := errors.New("error getting movie")
 
 	mockMovieReader.On("Find", testCtx, validMovie1).Return(&models.Movie{
-		Name: models.NullString(movie1Name),
+		Name: movie1Name,
 	}, nil).Once()
 	mockMovieReader.On("Find", testCtx, validMovie2).Return(&models.Movie{
-		Name: models.NullString(movie2Name),
+		Name: movie2Name,
 	}, nil).Once()
 	mockMovieReader.On("Find", testCtx, invalidMovie).Return(nil, movieErr).Once()
 
@@ -513,24 +515,16 @@ var validMarkers = []*models.SceneMarker{
 		Title:        markerTitle1,
 		PrimaryTagID: validTagID1,
 		Seconds:      markerSeconds1,
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
+		CreatedAt:    createTime,
+		UpdatedAt:    updateTime,
 	},
 	{
 		ID:           validMarkerID2,
 		Title:        markerTitle2,
 		PrimaryTagID: validTagID2,
 		Seconds:      markerSeconds2,
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
+		CreatedAt:    createTime,
+		UpdatedAt:    updateTime,
 	},
 }
 

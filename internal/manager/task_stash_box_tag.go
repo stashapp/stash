@@ -202,7 +202,7 @@ func (t *StashBoxPerformerTagTask) getPartial(performer *models.ScrapedPerformer
 	}
 	if performer.DeathDate != nil && *performer.DeathDate != "" && !excluded["deathdate"] {
 		value := getDate(performer.DeathDate)
-		partial.Birthdate = models.NewOptionalDate(*value)
+		partial.DeathDate = models.NewOptionalDate(*value)
 	}
 	if performer.CareerLength != nil && !excluded["career_length"] {
 		partial.CareerLength = models.NewOptionalString(*performer.CareerLength)
@@ -283,7 +283,10 @@ func getDate(val *string) *models.Date {
 		return nil
 	}
 
-	ret := models.NewDate(*val)
+	ret, err := models.ParseDate(*val)
+	if err != nil {
+		return nil
+	}
 	return &ret
 }
 

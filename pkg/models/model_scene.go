@@ -17,7 +17,6 @@ type Scene struct {
 	Code     string `json:"code"`
 	Details  string `json:"details"`
 	Director string `json:"director"`
-	URL      string `json:"url"`
 	Date     *Date  `json:"date"`
 	// Rating expressed in 1-100 scale
 	Rating    *int `json:"rating"`
@@ -43,11 +42,18 @@ type Scene struct {
 	PlayDuration float64    `json:"play_duration"`
 	PlayCount    int        `json:"play_count"`
 
+	URLs         RelatedStrings  `json:"urls"`
 	GalleryIDs   RelatedIDs      `json:"gallery_ids"`
 	TagIDs       RelatedIDs      `json:"tag_ids"`
 	PerformerIDs RelatedIDs      `json:"performer_ids"`
 	Movies       RelatedMovies   `json:"movies"`
 	StashIDs     RelatedStashIDs `json:"stash_ids"`
+}
+
+func (s *Scene) LoadURLs(ctx context.Context, l URLLoader) error {
+	return s.URLs.load(func() ([]string, error) {
+		return l.GetURLs(ctx, s.ID)
+	})
 }
 
 func (s *Scene) LoadFiles(ctx context.Context, l VideoFileLoader) error {
@@ -110,6 +116,10 @@ func (s *Scene) LoadStashIDs(ctx context.Context, l StashIDLoader) error {
 }
 
 func (s *Scene) LoadRelationships(ctx context.Context, l SceneReader) error {
+	if err := s.LoadURLs(ctx, l); err != nil {
+		return err
+	}
+
 	if err := s.LoadGalleryIDs(ctx, l); err != nil {
 		return err
 	}
@@ -144,7 +154,6 @@ type ScenePartial struct {
 	Code     OptionalString
 	Details  OptionalString
 	Director OptionalString
-	URL      OptionalString
 	Date     OptionalDate
 	// Rating expressed in 1-100 scale
 	Rating       OptionalInt
@@ -158,6 +167,7 @@ type ScenePartial struct {
 	PlayCount    OptionalInt
 	LastPlayedAt OptionalTime
 
+	URLs          *UpdateStrings
 	GalleryIDs    *UpdateIDs
 	TagIDs        *UpdateIDs
 	PerformerIDs  *UpdateIDs
@@ -193,6 +203,7 @@ type SceneUpdateInput struct {
 	Rating100    *int               `json:"rating100"`
 	OCounter     *int               `json:"o_counter"`
 	Organized    *bool              `json:"organized"`
+	Urls         []string           `json:"urls"`
 	StudioID     *string            `json:"studio_id"`
 	GalleryIds   []string           `json:"gallery_ids"`
 	PerformerIds []string           `json:"performer_ids"`
@@ -227,7 +238,7 @@ func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 		Code:         s.Code.Ptr(),
 		Details:      s.Details.Ptr(),
 		Director:     s.Director.Ptr(),
-		URL:          s.URL.Ptr(),
+		Urls:         s.URLs.Strings(),
 		Date:         dateStr,
 		Rating100:    s.Rating.Ptr(),
 		Organized:    s.Organized.Ptr(),

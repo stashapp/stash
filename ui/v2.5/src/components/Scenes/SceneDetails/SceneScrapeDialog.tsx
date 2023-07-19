@@ -14,6 +14,7 @@ import {
   ScrapedTextAreaRow,
   ScrapedImageRow,
   IHasName,
+  ScrapedStringListRow,
 } from "src/components/Shared/ScrapeDialog";
 import clone from "lodash-es/clone";
 import {
@@ -26,6 +27,7 @@ import {
 import { useToast } from "src/hooks/Toast";
 import DurationUtils from "src/utils/duration";
 import { useIntl } from "react-intl";
+import { uniq } from "lodash-es";
 
 interface IScrapedStudioRow {
   title: string;
@@ -295,9 +297,16 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
   const [code, setCode] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(scene.code, scraped.code)
   );
-  const [url, setURL] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(scene.url, scraped.url)
+
+  const [urls, setURLs] = useState<ScrapeResult<string[]>>(
+    new ScrapeResult<string[]>(
+      scene.urls,
+      scraped.urls
+        ? uniq((scene.urls ?? []).concat(scraped.urls ?? []))
+        : undefined
+    )
   );
+
   const [date, setDate] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(scene.date, scraped.date)
   );
@@ -407,7 +416,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
     [
       title,
       code,
-      url,
+      urls,
       date,
       director,
       studio,
@@ -508,7 +517,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
       }
 
       const result = await createMovie({
-        variables: movieInput,
+        variables: { input: movieInput },
       });
 
       // add the new movie to the new movies value
@@ -581,7 +590,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
     return {
       title: title.getNewValue(),
       code: code.getNewValue(),
-      url: url.getNewValue(),
+      urls: urls.getNewValue(),
       date: date.getNewValue(),
       director: director.getNewValue(),
       studio: newStudioValue
@@ -627,10 +636,10 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
           result={code}
           onChange={(value) => setCode(value)}
         />
-        <ScrapedInputGroupRow
-          title={intl.formatMessage({ id: "url" })}
-          result={url}
-          onChange={(value) => setURL(value)}
+        <ScrapedStringListRow
+          title={intl.formatMessage({ id: "urls" })}
+          result={urls}
+          onChange={(value) => setURLs(value)}
         />
         <ScrapedInputGroupRow
           title={intl.formatMessage({ id: "date" })}

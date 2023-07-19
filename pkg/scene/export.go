@@ -41,7 +41,7 @@ func ToBasicJSON(ctx context.Context, reader CoverGetter, scene *models.Scene) (
 	newSceneJSON := jsonschema.Scene{
 		Title:     scene.Title,
 		Code:      scene.Code,
-		URL:       scene.URL,
+		URLs:      scene.URLs.List(),
 		Details:   scene.Details,
 		Director:  scene.Director,
 		CreatedAt: json.JSONTime{Time: scene.CreatedAt},
@@ -86,53 +86,6 @@ func ToBasicJSON(ctx context.Context, reader CoverGetter, scene *models.Scene) (
 	return &newSceneJSON, nil
 }
 
-// func getSceneFileJSON(scene *models.Scene) *jsonschema.SceneFile {
-// 	ret := &jsonschema.SceneFile{}
-
-// TODO
-// if scene.FileModTime != nil {
-// 	ret.ModTime = json.JSONTime{Time: *scene.FileModTime}
-// }
-
-// if scene.Size != nil {
-// 	ret.Size = *scene.Size
-// }
-
-// if scene.Duration != nil {
-// 	ret.Duration = getDecimalString(*scene.Duration)
-// }
-
-// if scene.VideoCodec != nil {
-// 	ret.VideoCodec = *scene.VideoCodec
-// }
-
-// if scene.AudioCodec != nil {
-// 	ret.AudioCodec = *scene.AudioCodec
-// }
-
-// if scene.Format != nil {
-// 	ret.Format = *scene.Format
-// }
-
-// if scene.Width != nil {
-// 	ret.Width = *scene.Width
-// }
-
-// if scene.Height != nil {
-// 	ret.Height = *scene.Height
-// }
-
-// if scene.Framerate != nil {
-// 	ret.Framerate = getDecimalString(*scene.Framerate)
-// }
-
-// if scene.Bitrate != nil {
-// 	ret.Bitrate = int(*scene.Bitrate)
-// }
-
-// 	return ret
-// }
-
 // GetStudioName returns the name of the provided scene's studio. It returns an
 // empty string if there is no studio assigned to the scene.
 func GetStudioName(ctx context.Context, reader studio.Finder, scene *models.Scene) (string, error) {
@@ -143,7 +96,7 @@ func GetStudioName(ctx context.Context, reader studio.Finder, scene *models.Scen
 		}
 
 		if studio != nil {
-			return studio.Name.String, nil
+			return studio.Name, nil
 		}
 	}
 
@@ -221,9 +174,9 @@ func GetSceneMoviesJSON(ctx context.Context, movieReader MovieFinder, scene *mod
 			return nil, fmt.Errorf("error getting movie: %v", err)
 		}
 
-		if movie.Name.Valid {
+		if movie != nil {
 			sceneMovieJSON := jsonschema.SceneMovie{
-				MovieName: movie.Name.String,
+				MovieName: movie.Name,
 			}
 			if sceneMovie.SceneIndex != nil {
 				sceneMovieJSON.SceneIndex = *sceneMovie.SceneIndex
@@ -273,8 +226,8 @@ func GetSceneMarkersJSON(ctx context.Context, markerReader MarkerFinder, tagRead
 			Seconds:    getDecimalString(sceneMarker.Seconds),
 			PrimaryTag: primaryTag.Name,
 			Tags:       getTagNames(sceneMarkerTags),
-			CreatedAt:  json.JSONTime{Time: sceneMarker.CreatedAt.Timestamp},
-			UpdatedAt:  json.JSONTime{Time: sceneMarker.UpdatedAt.Timestamp},
+			CreatedAt:  json.JSONTime{Time: sceneMarker.CreatedAt},
+			UpdatedAt:  json.JSONTime{Time: sceneMarker.UpdatedAt},
 		}
 
 		results = append(results, sceneMarkerJSON)

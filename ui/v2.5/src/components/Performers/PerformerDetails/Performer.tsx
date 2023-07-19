@@ -227,13 +227,14 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <Tab
           eventKey="scenes"
           title={
-            <React.Fragment>
+            <>
               {intl.formatMessage({ id: "scenes" })}
               <Counter
                 abbreviateCounter={abbreviateCounter}
-                count={performer.scene_count ?? 0}
+                count={performer.scene_count}
+                hideZero
               />
-            </React.Fragment>
+            </>
           }
         >
           <PerformerScenesPanel
@@ -244,13 +245,14 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <Tab
           eventKey="galleries"
           title={
-            <React.Fragment>
+            <>
               {intl.formatMessage({ id: "galleries" })}
               <Counter
                 abbreviateCounter={abbreviateCounter}
-                count={performer.gallery_count ?? 0}
+                count={performer.gallery_count}
+                hideZero
               />
-            </React.Fragment>
+            </>
           }
         >
           <PerformerGalleriesPanel
@@ -261,13 +263,14 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <Tab
           eventKey="images"
           title={
-            <React.Fragment>
+            <>
               {intl.formatMessage({ id: "images" })}
               <Counter
                 abbreviateCounter={abbreviateCounter}
-                count={performer.image_count ?? 0}
+                count={performer.image_count}
+                hideZero
               />
-            </React.Fragment>
+            </>
           }
         >
           <PerformerImagesPanel
@@ -278,13 +281,14 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <Tab
           eventKey="movies"
           title={
-            <React.Fragment>
+            <>
               {intl.formatMessage({ id: "movies" })}
               <Counter
                 abbreviateCounter={abbreviateCounter}
-                count={performer.movie_count ?? 0}
+                count={performer.movie_count}
+                hideZero
               />
-            </React.Fragment>
+            </>
           }
         >
           <PerformerMoviesPanel
@@ -295,13 +299,14 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <Tab
           eventKey="appearswith"
           title={
-            <React.Fragment>
+            <>
               {intl.formatMessage({ id: "appears_with" })}
               <Counter
                 abbreviateCounter={abbreviateCounter}
-                count={performer.performer_count ?? 0}
+                count={performer.performer_count}
+                hideZero
               />
-            </React.Fragment>
+            </>
           }
         >
           <PerformerAppearsWithPanel

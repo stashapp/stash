@@ -3,13 +3,11 @@ package manager
 import (
 	"archive/zip"
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -17,7 +15,6 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/movie"
@@ -37,7 +34,6 @@ type ImportTask struct {
 	DuplicateBehaviour  ImportDuplicateEnum
 	MissingRefBehaviour models.ImportMissingRefEnum
 
-	scraped             []jsonschema.ScrapedItem
 	fileNamingAlgorithm models.HashAlgorithm
 }
 
@@ -111,12 +107,6 @@ func (t *ImportTask) Start(ctx context.Context) {
 		t.MissingRefBehaviour = models.ImportMissingRefEnumFail
 	}
 
-	scraped, _ := t.json.getScraped()
-	if scraped == nil {
-		logger.Warn("missing scraped json")
-	}
-	t.scraped = scraped
-
 	if t.Reset {
 		err := t.txnManager.Reset()
 
@@ -133,7 +123,6 @@ func (t *ImportTask) Start(ctx context.Context) {
 	t.ImportFiles(ctx)
 	t.ImportGalleries(ctx)
 
-	t.ImportScrapedItems(ctx)
 	t.ImportScenes(ctx)
 	t.ImportImages(ctx)
 }
@@ -613,57 +602,6 @@ func (t *ImportTask) ImportTag(ctx context.Context, tagJSON *jsonschema.Tag, pen
 	return nil
 }
 
-func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
-	if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
-		logger.Info("[scraped sites] importing")
-		r := t.txnManager
-		qb := r.ScrapedItem
-		sqb := r.Studio
-		currentTime := time.Now()
-
-		for i, mappingJSON := range t.scraped {
-			index := i + 1
-			logger.Progressf("[scraped sites] %d of %d", index, len(t.scraped))
-
-			newScrapedItem := models.ScrapedItem{
-				Title:           sql.NullString{String: mappingJSON.Title, Valid: true},
-				Description:     sql.NullString{String: mappingJSON.Description, Valid: true},
-				URL:             sql.NullString{String: mappingJSON.URL, Valid: true},
-				Date:            models.SQLiteDate{String: mappingJSON.Date, Valid: true},
-				Rating:          sql.NullString{String: mappingJSON.Rating, Valid: true},
-				Tags:            sql.NullString{String: mappingJSON.Tags, Valid: true},
-				Models:          sql.NullString{String: mappingJSON.Models, Valid: true},
-				Episode:         sql.NullInt64{Int64: int64(mappingJSON.Episode), Valid: true},
-				GalleryFilename: sql.NullString{String: mappingJSON.GalleryFilename, Valid: true},
-				GalleryURL:      sql.NullString{String: mappingJSON.GalleryURL, Valid: true},
-				VideoFilename:   sql.NullString{String: mappingJSON.VideoFilename, Valid: true},
-				VideoURL:        sql.NullString{String: mappingJSON.VideoURL, Valid: true},
-				CreatedAt:       models.SQLiteTimestamp{Timestamp: currentTime},
-				UpdatedAt:       models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(mappingJSON.UpdatedAt)},
-			}
-
-			studio, err := sqb.FindByName(ctx, mappingJSON.Studio, false)
-			if err != nil {
-				logger.Errorf("[scraped sites] failed to fetch studio: %s", err.Error())
-			}
-			if studio != nil {
-				newScrapedItem.StudioID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
-			}
-
-			_, err = qb.Create(ctx, newScrapedItem)
-			if err != nil {
-				logger.Errorf("[scraped sites] <%s> failed to create: %s", newScrapedItem.Title.String, err.Error())
-			}
-		}
-
-		return nil
-	}); err != nil {
-		logger.Errorf("[scraped sites] import failed to commit: %s", err.Error())
-	}
-
-	logger.Info("[scraped sites] import complete")
-}
-
 func (t *ImportTask) ImportScenes(ctx context.Context) {
 	logger.Info("[scenes] importing")
 
@@ -793,22 +731,4 @@ func (t *ImportTask) ImportImages(ctx context.Context) {
 	}
 
 	logger.Info("[images] import complete")
-}
-
-var currentLocation = time.Now().Location()
-
-func (t *ImportTask) getTimeFromJSONTime(jsonTime json.JSONTime) time.Time {
-	if currentLocation != nil {
-		if jsonTime.IsZero() {
-			return time.Now().In(currentLocation)
-		} else {
-			return jsonTime.Time.In(currentLocation)
-		}
-	} else {
-		if jsonTime.IsZero() {
-			return time.Now()
-		} else {
-			return jsonTime.Time
-		}
-	}
 }

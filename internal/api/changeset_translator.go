@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"strconv"
 	"strings"
@@ -92,21 +91,6 @@ func (t changesetTranslator) getFields() []string {
 	return ret
 }
 
-func (t changesetTranslator) nullString(value *string, field string) *sql.NullString {
-	if !t.hasField(field) {
-		return nil
-	}
-
-	ret := &sql.NullString{}
-
-	if value != nil {
-		ret.String = *value
-		ret.Valid = true
-	}
-
-	return ret
-}
-
 func (t changesetTranslator) string(value *string, field string) string {
 	if value == nil {
 		return ""
@@ -123,43 +107,36 @@ func (t changesetTranslator) optionalString(value *string, field string) models.
 	return models.NewOptionalStringPtr(value)
 }
 
-func (t changesetTranslator) sqliteDate(value *string, field string) *models.SQLiteDate {
+func (t changesetTranslator) optionalDate(value *string, field string) (models.OptionalDate, error) {
 	if !t.hasField(field) {
-		return nil
-	}
-
-	ret := &models.SQLiteDate{}
-
-	if value != nil {
-		ret.String = *value
-		ret.Valid = true
-	}
-
-	return ret
-}
-
-func (t changesetTranslator) optionalDate(value *string, field string) models.OptionalDate {
-	if !t.hasField(field) {
-		return models.OptionalDate{}
+		return models.OptionalDate{}, nil
 	}
 
 	if value == nil || *value == "" {
 		return models.OptionalDate{
 			Set:  true,
 			Null: true,
-		}
+		}, nil
 	}
 
-	return models.NewOptionalDate(models.NewDate(*value))
+	date, err := models.ParseDate(*value)
+	if err != nil {
+		return models.OptionalDate{}, err
+	}
+
+	return models.NewOptionalDate(date), nil
 }
 
-func (t changesetTranslator) datePtr(value *string, field string) *models.Date {
-	if value == nil {
-		return nil
+func (t changesetTranslator) datePtr(value *string, field string) (*models.Date, error) {
+	if value == nil || *value == "" {
+		return nil, nil
 	}
 
-	d := models.NewDate(*value)
-	return &d
+	date, err := models.ParseDate(*value)
+	if err != nil {
+		return nil, err
+	}
+	return &date, nil
 }
 
 func (t changesetTranslator) intPtrFromString(value *string, field string) (*int, error) {
@@ -172,37 +149,6 @@ func (t changesetTranslator) intPtrFromString(value *string, field string) (*int
 		return nil, fmt.Errorf("converting %v to int: %w", *value, err)
 	}
 	return &vv, nil
-}
-
-func (t changesetTranslator) nullInt64(value *int, field string) *sql.NullInt64 {
-	if !t.hasField(field) {
-		return nil
-	}
-
-	ret := &sql.NullInt64{}
-
-	if value != nil {
-		ret.Int64 = int64(*value)
-		ret.Valid = true
-	}
-
-	return ret
-}
-
-func (t changesetTranslator) ratingConversion(legacyValue *int, rating100Value *int) *sql.NullInt64 {
-	const (
-		legacyField    = "rating"
-		rating100Field = "rating100"
-	)
-
-	legacyRating := t.nullInt64(legacyValue, legacyField)
-	if legacyRating != nil {
-		if legacyRating.Valid {
-			legacyRating.Int64 = int64(models.Rating5To100(int(legacyRating.Int64)))
-		}
-		return legacyRating
-	}
-	return t.nullInt64(rating100Value, rating100Field)
 }
 
 func (t changesetTranslator) ratingConversionInt(legacyValue *int, rating100Value *int) *int {
@@ -245,21 +191,6 @@ func (t changesetTranslator) optionalInt(value *int, field string) models.Option
 	}
 
 	return models.NewOptionalIntPtr(value)
-}
-
-func (t changesetTranslator) nullInt64FromString(value *string, field string) *sql.NullInt64 {
-	if !t.hasField(field) {
-		return nil
-	}
-
-	ret := &sql.NullInt64{}
-
-	if value != nil {
-		ret.Int64, _ = strconv.ParseInt(*value, 10, 64)
-		ret.Valid = true
-	}
-
-	return ret
 }
 
 func (t changesetTranslator) optionalIntFromString(value *string, field string) (models.OptionalInt, error) {

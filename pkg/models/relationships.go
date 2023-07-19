@@ -42,6 +42,10 @@ type AliasLoader interface {
 	GetAliases(ctx context.Context, relatedID int) ([]string, error)
 }
 
+type URLLoader interface {
+	GetURLs(ctx context.Context, relatedID int) ([]string, error)
+}
+
 // RelatedIDs represents a list of related IDs.
 // TODO - this can be made generic
 type RelatedIDs struct {

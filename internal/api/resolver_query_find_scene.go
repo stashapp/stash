@@ -2,8 +2,6 @@ package api
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"strconv"
 
 	"github.com/99designs/gqlgen/graphql"
@@ -23,7 +21,7 @@ func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *str
 				return err
 			}
 			scene, err = qb.Find(ctx, idInt)
-			if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			if err != nil {
 				return err
 			}
 		} else if checksum != nil {

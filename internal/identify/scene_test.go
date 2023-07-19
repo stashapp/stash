@@ -25,9 +25,10 @@ func Test_sceneRelationships_studio(t *testing.T) {
 	}
 
 	mockStudioReaderWriter := &mocks.StudioReaderWriter{}
-	mockStudioReaderWriter.On("Create", testCtx, mock.Anything).Return(&models.Studio{
-		ID: int(validStoredIDInt),
-	}, nil)
+	mockStudioReaderWriter.On("Create", testCtx, mock.Anything).Run(func(args mock.Arguments) {
+		s := args.Get(1).(*models.Studio)
+		s.ID = validStoredIDInt
+	}).Return(nil)
 
 	tr := sceneRelationships{
 		studioCreator: mockStudioReaderWriter,
@@ -362,19 +363,20 @@ func Test_sceneRelationships_tags(t *testing.T) {
 	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
 	mockTagReaderWriter := &mocks.TagReaderWriter{}
 
-	mockTagReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p models.Tag) bool {
+	mockTagReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p *models.Tag) bool {
 		return p.Name == validName
-	})).Return(&models.Tag{
-		ID: validStoredIDInt,
-	}, nil)
-	mockTagReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p models.Tag) bool {
+	})).Run(func(args mock.Arguments) {
+		t := args.Get(1).(*models.Tag)
+		t.ID = validStoredIDInt
+	}).Return(nil)
+	mockTagReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p *models.Tag) bool {
 		return p.Name == invalidName
-	})).Return(nil, errors.New("error creating tag"))
+	})).Return(errors.New("error creating tag"))
 
 	tr := sceneRelationships{
-		sceneReader:  mockSceneReaderWriter,
-		tagCreator:   mockTagReaderWriter,
-		fieldOptions: make(map[string]*FieldOptions),
+		sceneReader:      mockSceneReaderWriter,
+		tagCreatorFinder: mockTagReaderWriter,
+		fieldOptions:     make(map[string]*FieldOptions),
 	}
 
 	tests := []struct {

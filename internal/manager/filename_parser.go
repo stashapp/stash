@@ -262,10 +262,11 @@ func validateRating100(rating100 int) bool {
 	return rating100 >= 1 && rating100 <= 100
 }
 
-func validateDate(dateStr string) bool {
+// returns nil if invalid
+func parseDate(dateStr string) *models.Date {
 	splits := strings.Split(dateStr, "-")
 	if len(splits) != 3 {
-		return false
+		return nil
 	}
 
 	year, _ := strconv.Atoi(splits[0])
@@ -274,19 +275,23 @@ func validateDate(dateStr string) bool {
 
 	// assume year must be between 1900 and 2100
 	if year < 1900 || year > 2100 {
-		return false
+		return nil
 	}
 
 	if month < 1 || month > 12 {
-		return false
+		return nil
 	}
 
 	// not checking individual months to ensure date is in the correct range
 	if d < 1 || d > 31 {
-		return false
+		return nil
 	}
 
-	return true
+	ret, err := models.ParseDate(dateStr)
+	if err != nil {
+		return nil
+	}
+	return &ret
 }
 
 func (h *sceneHolder) setDate(field *parserField, value string) {
@@ -315,9 +320,9 @@ func (h *sceneHolder) setDate(field *parserField, value string) {
 
 	// ensure the date is valid
 	// only set if new value is different from the old
-	if validateDate(fullDate) && h.scene.Date != nil && h.scene.Date.String() != fullDate {
-		d := models.NewDate(fullDate)
-		h.result.Date = &d
+	newDate := parseDate(fullDate)
+	if newDate != nil && h.scene.Date != nil && *h.scene.Date != *newDate {
+		h.result.Date = newDate
 	}
 }
 
@@ -346,10 +351,7 @@ func (h *sceneHolder) setField(field parserField, value interface{}) {
 		v := value.(string)
 		h.result.Title = v
 	case "date":
-		if validateDate(value.(string)) {
-			d := models.NewDate(value.(string))
-			h.result.Date = &d
-		}
+		h.result.Date = parseDate(value.(string))
 	case "rating":
 		rating, _ := strconv.Atoi(value.(string))
 		if validateRating(rating) {

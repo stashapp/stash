@@ -2,7 +2,6 @@ package tag
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -37,19 +36,12 @@ var (
 
 func createTag(id int) models.Tag {
 	return models.Tag{
-		ID:   id,
-		Name: tagName,
-		Description: sql.NullString{
-			String: description,
-			Valid:  true,
-		},
+		ID:            id,
+		Name:          tagName,
+		Description:   description,
 		IgnoreAutoTag: autoTagIgnored,
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
+		CreatedAt:     createTime,
+		UpdatedAt:     updateTime,
 	}
 }
 

@@ -69,7 +69,7 @@ func getStudioTagger(p *models.Studio, aliases []string, cache *match.Cache) []t
 	ret := []tagger{{
 		ID:    p.ID,
 		Type:  "studio",
-		Name:  p.Name.String,
+		Name:  p.Name,
 		cache: cache,
 	}}
 

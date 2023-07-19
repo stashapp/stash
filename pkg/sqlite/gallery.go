@@ -26,39 +26,36 @@ const (
 	galleriesTagsTable       = "galleries_tags"
 	galleriesImagesTable     = "galleries_images"
 	galleriesScenesTable     = "scenes_galleries"
-	galleriesChaptersTable   = "galleries_chapters"
 	galleryIDColumn          = "gallery_id"
 )
 
 type galleryRow struct {
-	ID      int               `db:"id" goqu:"skipinsert"`
-	Title   zero.String       `db:"title"`
-	URL     zero.String       `db:"url"`
-	Date    models.SQLiteDate `db:"date"`
-	Details zero.String       `db:"details"`
+	ID      int         `db:"id" goqu:"skipinsert"`
+	Title   zero.String `db:"title"`
+	URL     zero.String `db:"url"`
+	Date    NullDate    `db:"date"`
+	Details zero.String `db:"details"`
 	// expressed as 1-100
-	Rating    null.Int               `db:"rating"`
-	Organized bool                   `db:"organized"`
-	StudioID  null.Int               `db:"studio_id,omitempty"`
-	FolderID  null.Int               `db:"folder_id,omitempty"`
-	CreatedAt models.SQLiteTimestamp `db:"created_at"`
-	UpdatedAt models.SQLiteTimestamp `db:"updated_at"`
+	Rating    null.Int  `db:"rating"`
+	Organized bool      `db:"organized"`
+	StudioID  null.Int  `db:"studio_id,omitempty"`
+	FolderID  null.Int  `db:"folder_id,omitempty"`
+	CreatedAt Timestamp `db:"created_at"`
+	UpdatedAt Timestamp `db:"updated_at"`
 }
 
 func (r *galleryRow) fromGallery(o models.Gallery) {
 	r.ID = o.ID
 	r.Title = zero.StringFrom(o.Title)
 	r.URL = zero.StringFrom(o.URL)
-	if o.Date != nil {
-		_ = r.Date.Scan(o.Date.Time)
-	}
+	r.Date = NullDateFromDatePtr(o.Date)
 	r.Details = zero.StringFrom(o.Details)
 	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
 	r.StudioID = intFromPtr(o.StudioID)
 	r.FolderID = nullIntFromFolderIDPtr(o.FolderID)
-	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
-	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
+	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
+	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
 }
 
 type galleryQueryRow struct {
@@ -102,13 +99,13 @@ type galleryRowRecord struct {
 func (r *galleryRowRecord) fromPartial(o models.GalleryPartial) {
 	r.setNullString("title", o.Title)
 	r.setNullString("url", o.URL)
-	r.setSQLiteDate("date", o.Date)
+	r.setNullDate("date", o.Date)
 	r.setNullString("details", o.Details)
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
 	r.setNullInt("studio_id", o.StudioID)
-	r.setSQLiteTimestamp("created_at", o.CreatedAt)
-	r.setSQLiteTimestamp("updated_at", o.UpdatedAt)
+	r.setTimestamp("created_at", o.CreatedAt)
+	r.setTimestamp("updated_at", o.UpdatedAt)
 }
 
 type GalleryStore struct {
@@ -134,6 +131,36 @@ func NewGalleryStore(fileStore *FileStore, folderStore *FolderStore) *GallerySto
 
 func (qb *GalleryStore) table() exp.IdentifierExpression {
 	return qb.tableMgr.table
+}
+
+func (qb *GalleryStore) selectDataset() *goqu.SelectDataset {
+	table := qb.table()
+	files := fileTableMgr.table
+	folders := folderTableMgr.table
+	galleryFolder := folderTableMgr.table.As("gallery_folder")
+
+	return dialect.From(table).LeftJoin(
+		galleriesFilesJoinTable,
+		goqu.On(
+			galleriesFilesJoinTable.Col(galleryIDColumn).Eq(table.Col(idColumn)),
+			galleriesFilesJoinTable.Col("primary").Eq(1),
+		),
+	).LeftJoin(
+		files,
+		goqu.On(files.Col(idColumn).Eq(galleriesFilesJoinTable.Col(fileIDColumn))),
+	).LeftJoin(
+		folders,
+		goqu.On(folders.Col(idColumn).Eq(files.Col("parent_folder_id"))),
+	).LeftJoin(
+		galleryFolder,
+		goqu.On(galleryFolder.Col(idColumn).Eq(table.Col("folder_id"))),
+	).Select(
+		qb.table().All(),
+		galleriesFilesJoinTable.Col(fileIDColumn).As("primary_file_id"),
+		folders.Col("path").As("primary_file_folder_path"),
+		files.Col("basename").As("primary_file_basename"),
+		galleryFolder.Col("path").As("folder_path"),
+	)
 }
 
 func (qb *GalleryStore) Create(ctx context.Context, newObject *models.Gallery, fileIDs []file.ID) error {
@@ -168,7 +195,7 @@ func (qb *GalleryStore) Create(ctx context.Context, newObject *models.Gallery, f
 		}
 	}
 
-	updated, err := qb.Find(ctx, id)
+	updated, err := qb.find(ctx, id)
 	if err != nil {
 		return fmt.Errorf("finding after create: %w", err)
 	}
@@ -253,43 +280,99 @@ func (qb *GalleryStore) UpdatePartial(ctx context.Context, id int, partial model
 		}
 	}
 
-	return qb.Find(ctx, id)
+	return qb.find(ctx, id)
 }
 
 func (qb *GalleryStore) Destroy(ctx context.Context, id int) error {
 	return qb.tableMgr.destroyExisting(ctx, []int{id})
 }
 
-func (qb *GalleryStore) selectDataset() *goqu.SelectDataset {
-	table := qb.table()
-	files := fileTableMgr.table
-	folders := folderTableMgr.table
-	galleryFolder := folderTableMgr.table.As("gallery_folder")
+func (qb *GalleryStore) GetFiles(ctx context.Context, id int) ([]file.File, error) {
+	fileIDs, err := qb.filesRepository().get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
 
-	return dialect.From(table).LeftJoin(
-		galleriesFilesJoinTable,
-		goqu.On(
-			galleriesFilesJoinTable.Col(galleryIDColumn).Eq(table.Col(idColumn)),
-			galleriesFilesJoinTable.Col("primary").Eq(1),
-		),
-	).LeftJoin(
-		files,
-		goqu.On(files.Col(idColumn).Eq(galleriesFilesJoinTable.Col(fileIDColumn))),
-	).LeftJoin(
-		folders,
-		goqu.On(folders.Col(idColumn).Eq(files.Col("parent_folder_id"))),
-	).LeftJoin(
-		galleryFolder,
-		goqu.On(galleryFolder.Col(idColumn).Eq(table.Col("folder_id"))),
-	).Select(
-		qb.table().All(),
-		galleriesFilesJoinTable.Col(fileIDColumn).As("primary_file_id"),
-		folders.Col("path").As("primary_file_folder_path"),
-		files.Col("basename").As("primary_file_basename"),
-		galleryFolder.Col("path").As("folder_path"),
-	)
+	// use fileStore to load files
+	files, err := qb.fileStore.Find(ctx, fileIDs...)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := make([]file.File, len(files))
+	copy(ret, files)
+
+	return ret, nil
 }
 
+func (qb *GalleryStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error) {
+	const primaryOnly = false
+	return qb.filesRepository().getMany(ctx, ids, primaryOnly)
+}
+
+// returns nil, nil if not found
+func (qb *GalleryStore) Find(ctx context.Context, id int) (*models.Gallery, error) {
+	ret, err := qb.find(ctx, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	return ret, err
+}
+
+func (qb *GalleryStore) FindMany(ctx context.Context, ids []int) ([]*models.Gallery, error) {
+	galleries := make([]*models.Gallery, len(ids))
+
+	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
+		q := qb.selectDataset().Prepared(true).Where(qb.table().Col(idColumn).In(batch))
+		unsorted, err := qb.getMany(ctx, q)
+		if err != nil {
+			return err
+		}
+
+		for _, s := range unsorted {
+			i := intslice.IntIndex(ids, s.ID)
+			galleries[i] = s
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	for i := range galleries {
+		if galleries[i] == nil {
+			return nil, fmt.Errorf("gallery with id %d not found", ids[i])
+		}
+	}
+
+	return galleries, nil
+}
+
+// returns nil, sql.ErrNoRows if not found
+func (qb *GalleryStore) find(ctx context.Context, id int) (*models.Gallery, error) {
+	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
+
+	ret, err := qb.get(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (qb *GalleryStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Gallery, error) {
+	table := qb.table()
+
+	q := qb.selectDataset().Prepared(true).Where(
+		table.Col(idColumn).Eq(
+			sq,
+		),
+	)
+
+	return qb.getMany(ctx, q)
+}
+
+// returns nil, sql.ErrNoRows if not found
 func (qb *GalleryStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Gallery, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
@@ -327,81 +410,6 @@ func (qb *GalleryStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*
 	}
 
 	return ret, nil
-}
-
-func (qb *GalleryStore) GetFiles(ctx context.Context, id int) ([]file.File, error) {
-	fileIDs, err := qb.filesRepository().get(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	// use fileStore to load files
-	files, err := qb.fileStore.Find(ctx, fileIDs...)
-	if err != nil {
-		return nil, err
-	}
-
-	ret := make([]file.File, len(files))
-	copy(ret, files)
-
-	return ret, nil
-}
-
-func (qb *GalleryStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error) {
-	const primaryOnly = false
-	return qb.filesRepository().getMany(ctx, ids, primaryOnly)
-}
-
-func (qb *GalleryStore) Find(ctx context.Context, id int) (*models.Gallery, error) {
-	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
-
-	ret, err := qb.get(ctx, q)
-	if err != nil {
-		return nil, fmt.Errorf("getting gallery by id %d: %w", id, err)
-	}
-
-	return ret, nil
-}
-
-func (qb *GalleryStore) FindMany(ctx context.Context, ids []int) ([]*models.Gallery, error) {
-	galleries := make([]*models.Gallery, len(ids))
-
-	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
-		q := qb.selectDataset().Prepared(true).Where(qb.table().Col(idColumn).In(batch))
-		unsorted, err := qb.getMany(ctx, q)
-		if err != nil {
-			return err
-		}
-
-		for _, s := range unsorted {
-			i := intslice.IntIndex(ids, s.ID)
-			galleries[i] = s
-		}
-
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-
-	for i := range galleries {
-		if galleries[i] == nil {
-			return nil, fmt.Errorf("gallery with id %d not found", ids[i])
-		}
-	}
-
-	return galleries, nil
-}
-
-func (qb *GalleryStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Gallery, error) {
-	table := qb.table()
-
-	q := qb.selectDataset().Prepared(true).Where(
-		table.Col(idColumn).Eq(
-			sq,
-		),
-	)
-
-	return qb.getMany(ctx, q)
 }
 
 func (qb *GalleryStore) FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Gallery, error) {
@@ -769,14 +777,9 @@ func (qb *GalleryStore) Query(ctx context.Context, galleryFilter *models.Gallery
 		return nil, 0, err
 	}
 
-	var galleries []*models.Gallery
-	for _, id := range idsResult {
-		gallery, err := qb.Find(ctx, id)
-		if err != nil {
-			return nil, 0, err
-		}
-
-		galleries = append(galleries, gallery)
+	galleries, err := qb.FindMany(ctx, idsResult)
+	if err != nil {
+		return nil, 0, err
 	}
 
 	return galleries, countResult, nil
@@ -881,7 +884,7 @@ func galleryIsMissingCriterionHandler(qb *GalleryStore, isMissing *string) crite
 				qb.performersRepository().join(f, "performers_join", "galleries.id")
 				f.addWhere("performers_join.gallery_id IS NULL")
 			case "date":
-				f.addWhere("galleries.date IS NULL OR galleries.date IS \"\" OR galleries.date IS \"0001-01-01\"")
+				f.addWhere("galleries.date IS NULL OR galleries.date IS \"\"")
 			case "tags":
 				qb.tagsRepository().join(f, "tags_join", "galleries.id")
 				f.addWhere("tags_join.gallery_id IS NULL")
@@ -1005,7 +1008,6 @@ func galleryPerformerAgeCriterionHandler(performerAge *models.IntCriterionInput)
 
 			f.addWhere("galleries.date != '' AND performers.birthdate != ''")
 			f.addWhere("galleries.date IS NOT NULL AND performers.birthdate IS NOT NULL")
-			f.addWhere("galleries.date != '0001-01-01' AND performers.birthdate != '0001-01-01'")
 
 			ageCalc := "cast(strftime('%Y.%m%d', galleries.date) - strftime('%Y.%m%d', performers.birthdate) as int)"
 			whereClause, args := getIntWhereClause(ageCalc, performerAge.Modifier, performerAge.Value, performerAge.Value2)

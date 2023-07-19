@@ -69,8 +69,8 @@ func Test_PerformerStore_Create(t *testing.T) {
 		createdAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		birthdate = models.NewDate("2003-02-01")
-		deathdate = models.NewDate("2023-02-01")
+		birthdate, _ = models.ParseDate("2003-02-01")
+		deathdate, _ = models.ParseDate("2023-02-01")
 	)
 
 	tests := []struct {
@@ -217,8 +217,8 @@ func Test_PerformerStore_Update(t *testing.T) {
 		createdAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		birthdate = models.NewDate("2003-02-01")
-		deathdate = models.NewDate("2023-02-01")
+		birthdate, _ = models.ParseDate("2003-02-01")
+		deathdate, _ = models.ParseDate("2023-02-01")
 	)
 
 	tests := []struct {
@@ -400,8 +400,8 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 		createdAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		birthdate = models.NewDate("2003-02-01")
-		deathdate = models.NewDate("2023-02-01")
+		birthdate, _ = models.ParseDate("2003-02-01")
+		deathdate, _ = models.ParseDate("2023-02-01")
 	)
 
 	tests := []struct {
@@ -1163,44 +1163,6 @@ func TestPerformerUpdatePerformerImage(t *testing.T) {
 		}
 
 		return testUpdateImage(t, ctx, performer.ID, qb.UpdateImage, qb.GetImage)
-	}); err != nil {
-		t.Error(err.Error())
-	}
-}
-
-func TestPerformerDestroyPerformerImage(t *testing.T) {
-	if err := withRollbackTxn(func(ctx context.Context) error {
-		qb := db.Performer
-
-		// create performer to test against
-		const name = "TestPerformerDestroyPerformerImage"
-		performer := models.Performer{
-			Name: name,
-		}
-		err := qb.Create(ctx, &performer)
-		if err != nil {
-			return fmt.Errorf("Error creating performer: %s", err.Error())
-		}
-
-		image := []byte("image")
-		err = qb.UpdateImage(ctx, performer.ID, image)
-		if err != nil {
-			return fmt.Errorf("Error updating performer image: %s", err.Error())
-		}
-
-		err = qb.DestroyImage(ctx, performer.ID)
-		if err != nil {
-			return fmt.Errorf("Error destroying performer image: %s", err.Error())
-		}
-
-		// image should be nil
-		storedImage, err := qb.GetImage(ctx, performer.ID)
-		if err != nil {
-			return fmt.Errorf("Error getting image: %s", err.Error())
-		}
-		assert.Nil(t, storedImage)
-
-		return nil
 	}); err != nil {
 		t.Error(err.Error())
 	}
