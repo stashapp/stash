@@ -46,7 +46,7 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag }) => {
           {tag.parents.map((p) => (
             <Badge key={p.id} className="tag-item" variant="secondary">
               <Link to={`/tags/${p.id}`}>
-                {p.name}{" "}
+                {p.name}
                 {p.parent_count !== 0 && (
                   <Icon icon={faPlus} className="tag-icon" />
                 )}
@@ -72,7 +72,7 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag }) => {
           {tag.children.map((c) => (
             <Badge key={c.id} className="tag-item" variant="secondary">
               <Link to={`/tags/${c.id}`}>
-                {c.name}{" "}
+                {c.name}
                 {c.child_count !== 0 && (
                   <Icon icon={faPlus} className="tag-icon" />
                 )}
