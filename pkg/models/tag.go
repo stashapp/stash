@@ -57,6 +57,8 @@ type TagReader interface {
 	FindByParentTagID(ctx context.Context, parentID int) ([]*Tag, error)
 	FindByChildTagID(ctx context.Context, childID int) ([]*Tag, error)
 	Count(ctx context.Context) (int, error)
+	CountByParentTagID(ctx context.Context, parentID int) (int, error)
+	CountByChildTagID(ctx context.Context, childID int) (int, error)
 	All(ctx context.Context) ([]*Tag, error)
 	// TODO - this interface is temporary until the filter schema can fully
 	// support the query needed

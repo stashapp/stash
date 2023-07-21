@@ -2,7 +2,9 @@ import React from "react";
 import { Badge } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { Link } from "react-router-dom";
+import { Icon } from "../../Shared/Icon";
 import * as GQL from "src/core/generated-graphql";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 
 interface ITagDetails {
   tag: GQL.TagDataFragment;
@@ -43,7 +45,12 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag }) => {
         <dd className="col-9 col-xl-10">
           {tag.parents.map((p) => (
             <Badge key={p.id} className="tag-item" variant="secondary">
-              <Link to={`/tags/${p.id}`}>{p.name}</Link>
+              <Link to={`/tags/${p.id}`}>
+                {p.name}{" "}
+                {p.parent_count !== 0 && (
+                  <Icon icon={faPlus} className="tag-icon" />
+                )}
+              </Link>
             </Badge>
           ))}
         </dd>
@@ -64,7 +71,12 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag }) => {
         <dd className="col-9 col-xl-10">
           {tag.children.map((c) => (
             <Badge key={c.id} className="tag-item" variant="secondary">
-              <Link to={`/tags/${c.id}`}>{c.name}</Link>
+              <Link to={`/tags/${c.id}`}>
+                {c.name}{" "}
+                {c.child_count !== 0 && (
+                  <Icon icon={faPlus} className="tag-icon" />
+                )}
+              </Link>
             </Badge>
           ))}
         </dd>

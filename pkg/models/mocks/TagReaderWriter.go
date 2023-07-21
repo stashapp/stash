@@ -58,6 +58,45 @@ func (_m *TagReaderWriter) Count(ctx context.Context) (int, error) {
 	return r0, r1
 }
 
+func (_m *TagReaderWriter) CountByParentTagID(ctx context.Context, parentID int) (int, error) {
+	ret := _m.Called(ctx)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context) int); ok {
+		r0 = rf(ctx)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+func (_m *TagReaderWriter) CountByChildTagID(ctx context.Context, parentID int) (int, error) {
+	ret := _m.Called(ctx)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context) int); ok {
+		r0 = rf(ctx)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
 // Create provides a mock function with given fields: ctx, newTag
 func (_m *TagReaderWriter) Create(ctx context.Context, newTag *models.Tag) error {
 	ret := _m.Called(ctx, newTag)

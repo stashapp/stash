@@ -18,7 +18,7 @@ export const PrimaryTags: React.FC<IPrimaryTags> = ({
 }) => {
   if (!sceneMarkers?.length) return <div />;
 
-  const primaries: Record<string, GQL.SlimTagDataFragment> = {};
+  const primaries: Record<string, Partial<GQL.SlimTagDataFragment>> = {};
   const primaryTags: Record<string, GQL.SceneMarkerDataFragment[]> = {};
   sceneMarkers.forEach((m) => {
     if (primaryTags[m.primary_tag.id]) primaryTags[m.primary_tag.id].push(m);
