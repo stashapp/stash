@@ -1,10 +1,10 @@
 import React from "react";
-import { Badge } from "react-bootstrap";
+import { Badge, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { Link } from "react-router-dom";
 import { Icon } from "../../Shared/Icon";
 import * as GQL from "src/core/generated-graphql";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faFolderTree } from "@fortawesome/free-solid-svg-icons";
 
 interface ITagDetails {
   tag: GQL.TagDataFragment;
@@ -43,12 +43,26 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag }) => {
           <FormattedMessage id="parent_tags" />
         </dt>
         <dd className="col-9 col-xl-10">
-          {tag.parents.map((p) => (
+          {tag.children.map((p) => (
             <Badge key={p.id} className="tag-item" variant="secondary">
               <Link to={`/tags/${p.id}`}>
                 {p.name}
-                {p.parent_count !== 0 && (
-                  <Icon icon={faPlus} className="tag-icon" />
+                {p.child_count !== 0 && (
+                  <>
+                    <span className="icon-wrapper">
+                      <span className="vertical-line">|</span>
+                      <OverlayTrigger
+                        placement="top"
+                        overlay={
+                          <Tooltip id="tag-hierarchy-tooltip">
+                            Explore tag hierarchy
+                          </Tooltip>
+                        }
+                      >
+                        <Icon icon={faFolderTree} className="tag-icon" />
+                      </OverlayTrigger>
+                    </span>
+                  </>
                 )}
               </Link>
             </Badge>
@@ -74,7 +88,21 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag }) => {
               <Link to={`/tags/${c.id}`}>
                 {c.name}
                 {c.child_count !== 0 && (
-                  <Icon icon={faPlus} className="tag-icon" />
+                  <>
+                    <span className="icon-wrapper">
+                      <span className="vertical-line">|</span>
+                      <OverlayTrigger
+                        placement="top"
+                        overlay={
+                          <Tooltip id="tag-hierarchy-tooltip">
+                            Explore tag hierarchy
+                          </Tooltip>
+                        }
+                      >
+                        <Icon icon={faFolderTree} className="tag-icon" />
+                      </OverlayTrigger>
+                    </span>
+                  </>
                 )}
               </Link>
             </Badge>
