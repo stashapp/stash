@@ -41,6 +41,7 @@ import {
 import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { IUIConfig } from "src/core/config";
 import { useRatingKeybinds } from "src/hooks/keybinds";
+import { DetailItem } from "src/components/Shared/DetailItem";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -99,10 +100,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     tab === "movies" ||
     tab == "appearswith"
       ? tab
-      : "details";
+      : "scenes";
   const setActiveTabKey = (newTab: string | null) => {
     if (tab !== newTab) {
-      const tabParam = newTab === "details" ? "" : `/${newTab}`;
+      const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
       history.replace(`/performers/${performer.id}${tabParam}`);
     }
   };
@@ -126,7 +127,6 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
 
   // set up hotkeys
   useEffect(() => {
-    Mousetrap.bind("a", () => setActiveTabKey("details"));
     Mousetrap.bind("e", () => toggleEditing());
     Mousetrap.bind("c", () => setActiveTabKey("scenes"));
     Mousetrap.bind("g", () => setActiveTabKey("galleries"));
@@ -193,37 +193,15 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   }
   const renderTabs = () => (
     <React.Fragment>
-      <Col>
-        <Row xs={8}>
-          <DetailsEditNavbar
-            objectName={
-              performer?.name ?? intl.formatMessage({ id: "performer" })
-            }
-            onToggleEdit={() => toggleEditing()}
-            onDelete={onDelete}
-            onAutoTag={onAutoTag}
-            isNew={false}
-            isEditing={false}
-            onSave={() => {}}
-            onImageChange={() => {}}
-            classNames="mb-2"
-            customButtons={
-              <div>
-                <PerformerSubmitButton performer={performer} />
-              </div>
-            }
-          ></DetailsEditNavbar>
-        </Row>
-      </Col>
       <Tabs
         activeKey={activeTabKey}
         onSelect={setActiveTabKey}
         id="performer-details"
         unmountOnExit
       >
-        <Tab eventKey="details" title={intl.formatMessage({ id: "details" })}>
+        {/* <Tab eventKey="details" title={intl.formatMessage({ id: "details" })}>
           <PerformerDetailsPanel performer={performer} />
-        </Tab>
+        </Tab> */}
         <Tab
           eventKey="scenes"
           title={
@@ -335,6 +313,53 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     }
   }
 
+  function maybeRenderEditPanel() {
+    if (isEditing) {
+      return (
+        <PerformerEditPanel
+          performer={performer}
+          isVisible={isEditing}
+          onSubmit={onSave}
+          onCancel={() => toggleEditing()}
+          setImage={setImage}
+          setEncodingImage={setEncodingImage}
+        />
+      );
+    }
+    {
+      return (
+        <Col>
+          <Row xs={8}>
+            <DetailsEditNavbar
+              objectName={
+                performer?.name ?? intl.formatMessage({ id: "performer" })
+              }
+              onToggleEdit={() => toggleEditing()}
+              onDelete={onDelete}
+              onAutoTag={onAutoTag}
+              isNew={false}
+              isEditing={false}
+              onSave={() => {}}
+              onImageChange={() => {}}
+              classNames="mb-2"
+              customButtons={
+                <div>
+                  <PerformerSubmitButton performer={performer} />
+                </div>
+              }
+            ></DetailsEditNavbar>
+          </Row>
+        </Col>
+      );
+    }
+  }
+
+  function maybeRenderTab() {
+    if (!isEditing) {
+      return renderTabs();
+    }
+  }
+
   function maybeRenderAge() {
     if (performer?.birthdate) {
       // calculate the age from birthdate. In future, this should probably be
@@ -357,10 +382,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     if (performer?.alias_list?.length) {
       return (
         <div>
-          <span className="alias-head">
-            <FormattedMessage id="also_known_as" />{" "}
-          </span>
-          <span className="alias">{performer.alias_list?.join(", ")}</span>
+          <span className="alias-head">{performer.alias_list?.join(", ")}</span>
         </div>
       );
     }
@@ -465,31 +487,17 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <title>{performer.name}</title>
       </Helmet>
 
-      <div
-        className={`performer-image-container details-tab text-center text-center ${
-          collapsed ? "collapsed" : ""
-        }`}
-      >
-        {encodingImage ? (
-          <LoadingIndicator message="Encoding image..." />
-        ) : (
-          renderImage()
-        )}
-      </div>
-      <div className="details-divider d-none d-xl-block">
-        <Button onClick={() => setCollapsed(!collapsed)}>
-          <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
-        </Button>
-      </div>
-      <div className={`content-container ${collapsed ? "expanded" : ""}`}>
+      <div className={`detail-header ${isEditing ? "edit" : ""}`}>
+        <div className="detail-header-image">
+          {encodingImage ? (
+            <LoadingIndicator message="Encoding image..." />
+          ) : (
+            renderImage()
+          )}
+        </div>
         <div className="row">
           <div className="performer-head col">
             <h2>
-              <GenderIcon
-                gender={performer.gender}
-                className="gender-icon mr-2 fi"
-              />
-              <CountryFlag country={performer.country} className="mr-2" />
               <span className="performer-name">{performer.name}</span>
               {performer.disambiguation && (
                 <span className="performer-disambiguation">
@@ -498,16 +506,55 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
               )}
               {renderClickableIcons()}
             </h2>
+            {maybeRenderAliases()}
             <RatingSystem
               value={performer.rating100 ?? undefined}
               onSetRating={(value) => setRating(value ?? null)}
             />
-            {maybeRenderAliases()}
-            {maybeRenderAge()}
+            <div className="quick-detail-group">
+              <DetailItem header="Gender" value={performer?.gender} />
+              <DetailItem
+                header="Age"
+                value={TextUtils.age(performer.birthdate, performer.death_date)}
+              />
+              <DetailItem
+                header="Country"
+                value={
+                  <CountryFlag
+                    country={performer.country}
+                    className="mr-2"
+                    includeName={true}
+                  />
+                }
+              />
+              <DetailItem header="Ethinicty" value={performer?.ethnicity} />
+              <DetailItem header="Hair Color" value={performer?.hair_color} />
+              <DetailItem header="Eye Color" value={performer?.eye_color} />
+              <DetailItem header="Height" value={performer?.height_cm} />
+              <DetailItem header="Weight" value={performer?.weight} />
+              <DetailItem
+                header="Penis Length"
+                value={performer?.penis_length}
+              />
+              <DetailItem header="Circumcised" value={performer?.circumcised} />
+              <DetailItem
+                header="Measurements"
+                value={performer?.measurements}
+              />
+              <DetailItem header="Breast type" value={performer?.fake_tits} />
+              <DetailItem header="Tattoos" value={performer?.tattoos} />
+              <DetailItem header="Piercings" value={performer?.piercings} />
+              <DetailItem header="Details" value={performer?.details} />
+            </div>
+            {maybeRenderEditPanel()}
+
+            {/* {maybeRenderAge()} */}
           </div>
         </div>
+      </div>
+      <div className="detail-body">
         <div className="performer-body">
-          <div className="performer-tabs">{renderTabsOrEditPanel()}</div>
+          <div className="performer-tabs">{maybeRenderTab()}</div>
         </div>
       </div>
     </div>

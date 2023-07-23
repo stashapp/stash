@@ -61,6 +61,77 @@ dd {
   white-space: pre-line;
 }
 
+.detail-header {
+  min-height: 20rem;
+  background-color: #192127;
+  width: 100%;
+  padding: 1rem;
+}
+
+.detail-header .mr-2 {
+  margin-left: 0.5rem;
+}
+
+.detail-header.edit {
+  background-color: unset;
+}
+
+.detail-header.edit .details-edit {
+  padding-top: 1rem;
+}
+
+.detail-header.edit .quick-detail-group {
+  display: none;
+}
+
+.detail-body nav {
+  align-content: center;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  margin: 0 auto 10px;
+}
+
+.detail-body {
+  width: 100%;
+}
+
+.detail-header-image img {
+  max-width: 13rem;
+  border-radius: 0.5rem;
+}
+
+.detail-header-image {
+  float: left;
+  padding: 0rem 1rem;
+}
+
+.quick-detail-group {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  padding: 1rem 0;
+}
+
+.quick-detail-item {
+  align-items: left;
+  flex-direction: column;
+  display: inline-flex;
+  padding-right: 4rem;
+  padding-bottom: 0.5rem;
+}
+
+.quick-detail-header {
+  font-weight: 700 !important;
+  color: #868791;
+}
+
+.quick-detail-value {
+  align-items: center !important;
+  flex-direction: row !important;
+  display: flex !important;
+}
+
 .input-control,
 .text-input {
   border: 0;
