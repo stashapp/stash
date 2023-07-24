@@ -466,7 +466,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     }
 
     return (
-      <div>
+      <div className="main-content-container">
         <ButtonToolbar className="justify-content-center">
           <ListFilter
             onFilterUpdate={updateFilter}

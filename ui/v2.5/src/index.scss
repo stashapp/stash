@@ -39,16 +39,21 @@ html {
 
 body {
   color: $text-color;
-  -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
   margin: 0;
-  padding: 4rem 0 0 0;
+  overflow-x: hidden;
+  padding: 3.5rem 0 0 0;
 
   @include media-breakpoint-down(xs) {
     @media (orientation: portrait) {
       padding: 1rem 0 5rem;
     }
   }
+}
+
+.main-content-container {
+  padding-top: 15px;
 }
 
 code,
@@ -62,10 +67,55 @@ dd {
 }
 
 .detail-header {
-  min-height: 20rem;
   background-color: #192127;
-  width: 100%;
+  min-height: 20rem;
   padding: 1rem;
+  transition: 0.3s;
+  width: 100%;
+  z-index: 11;
+}
+
+.detail-header h2 {
+  margin-bottom: 0;
+}
+
+.sticky.detail-header-group a.performer-name {
+  color: #f5f8fa;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.sticky.detail-header-group a,
+.sticky.detail-header-group span {
+  color: #d7d9db;
+  font-weight: 600;
+  padding-right: 1.5rem;
+}
+
+.sticky.detail-header {
+  display: block;
+  min-height: 50px;
+  padding: unset;
+  position: fixed;
+  top: 3.3rem;
+  z-index: 10;
+
+  @media (max-width: 576px) {
+    top: 0;
+  }
+}
+
+.sticky.detail-header .performer-name {
+  font-weight: 800;
+}
+
+.sticky.detail-header-group {
+  padding: 1rem 2.5rem;
+}
+
+.detail-header .detail-group,
+.detail-header .col {
+  transition: 0.4s;
 }
 
 .detail-header .mr-2 {
@@ -80,16 +130,14 @@ dd {
   padding-top: 1rem;
 }
 
-.detail-header.edit .quick-detail-group {
-  display: none;
-}
-
 .detail-body nav {
   align-content: center;
   align-items: center;
+  border-bottom: solid 2px #192127;
   display: flex;
   justify-content: center;
-  margin: 0 auto 10px;
+  margin: 0;
+  padding: 5px 0;
 }
 
 .detail-body {
@@ -97,39 +145,44 @@ dd {
 }
 
 .detail-header-image img {
-  max-width: 13rem;
   border-radius: 0.5rem;
+  max-width: 14rem;
+  transition: 0.4s;
+}
+
+.detail-item.tags .pl-0 {
+  margin-bottom: 0;
 }
 
 .detail-header-image {
   float: left;
-  padding: 0rem 1rem;
+  padding: 0 1rem;
 }
 
-.quick-detail-group {
+.detail-group {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   padding: 1rem 0;
 }
 
-.quick-detail-item {
+.detail-item {
   align-items: left;
-  flex-direction: column;
   display: inline-flex;
-  padding-right: 4rem;
+  flex-direction: column;
   padding-bottom: 0.5rem;
+  padding-right: 4rem;
 }
 
-.quick-detail-header {
-  font-weight: 700 !important;
+.detail-item-title {
   color: #868791;
+  font-weight: 700;
 }
 
-.quick-detail-value {
-  align-items: center !important;
-  flex-direction: row !important;
-  display: flex !important;
+.detail-item-value {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
 }
 
 .input-control,

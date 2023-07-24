@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Button, Tabs, Tab, Col, Row } from "react-bootstrap";
-import { FormattedMessage, useIntl } from "react-intl";
+import { useIntl } from "react-intl";
 import { useParams, useHistory } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import cx from "classnames";
@@ -13,7 +13,6 @@ import {
   mutateMetadataAutoTag,
 } from "src/core/StashService";
 import { Counter } from "src/components/Shared/Counter";
-import { CountryFlag } from "src/components/Shared/CountryFlag";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { Icon } from "src/components/Shared/Icon";
@@ -23,7 +22,10 @@ import { useToast } from "src/hooks/Toast";
 import { ConfigurationContext } from "src/hooks/Config";
 import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
-import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
+import {
+  CompressedPerformerDetailsPanel,
+  PerformerDetailsPanel,
+} from "./PerformerDetailsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
 import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";
 import { PerformerMoviesPanel } from "./PerformerMoviesPanel";
@@ -31,17 +33,10 @@ import { PerformerImagesPanel } from "./PerformerImagesPanel";
 import { PerformerAppearsWithPanel } from "./performerAppearsWithPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
 import { PerformerSubmitButton } from "./PerformerSubmitButton";
-import GenderIcon from "../GenderIcon";
-import {
-  faHeart,
-  faLink,
-  faChevronRight,
-  faChevronLeft,
-} from "@fortawesome/free-solid-svg-icons";
+import { faHeart, faLink } from "@fortawesome/free-solid-svg-icons";
 import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { IUIConfig } from "src/core/config";
 import { useRatingKeybinds } from "src/hooks/keybinds";
-import { DetailItem } from "src/components/Shared/DetailItem";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -296,23 +291,6 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     </React.Fragment>
   );
 
-  function renderTabsOrEditPanel() {
-    if (isEditing) {
-      return (
-        <PerformerEditPanel
-          performer={performer}
-          isVisible={isEditing}
-          onSubmit={onSave}
-          onCancel={() => toggleEditing()}
-          setImage={setImage}
-          setEncodingImage={setEncodingImage}
-        />
-      );
-    } else {
-      return renderTabs();
-    }
-  }
-
   function maybeRenderEditPanel() {
     if (isEditing) {
       return (
@@ -354,27 +332,21 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     }
   }
 
-  function maybeRenderTab() {
+  function maybeRenderDetails() {
     if (!isEditing) {
-      return renderTabs();
+      return <PerformerDetailsPanel performer={performer} />;
     }
   }
 
-  function maybeRenderAge() {
-    if (performer?.birthdate) {
-      // calculate the age from birthdate. In future, this should probably be
-      // provided by the server
-      return (
-        <div>
-          <span className="age">
-            {TextUtils.age(performer.birthdate, performer.death_date)}
-          </span>
-          <span className="age-tail">
-            {" "}
-            <FormattedMessage id="years_old" />
-          </span>
-        </div>
-      );
+  function maybeRenderCompressedDetails() {
+    if (!isEditing) {
+      return <CompressedPerformerDetailsPanel performer={performer} />;
+    }
+  }
+
+  function maybeRenderTab() {
+    if (!isEditing) {
+      return renderTabs();
     }
   }
 
@@ -477,10 +449,6 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       />
     );
 
-  function getCollapseButtonIcon() {
-    return collapsed ? faChevronRight : faChevronLeft;
-  }
-
   return (
     <div id="performer-page" className="row">
       <Helmet>
@@ -511,47 +479,12 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
               value={performer.rating100 ?? undefined}
               onSetRating={(value) => setRating(value ?? null)}
             />
-            <div className="quick-detail-group">
-              <DetailItem header="Gender" value={performer?.gender} />
-              <DetailItem
-                header="Age"
-                value={TextUtils.age(performer.birthdate, performer.death_date)}
-              />
-              <DetailItem
-                header="Country"
-                value={
-                  <CountryFlag
-                    country={performer.country}
-                    className="mr-2"
-                    includeName={true}
-                  />
-                }
-              />
-              <DetailItem header="Ethinicty" value={performer?.ethnicity} />
-              <DetailItem header="Hair Color" value={performer?.hair_color} />
-              <DetailItem header="Eye Color" value={performer?.eye_color} />
-              <DetailItem header="Height" value={performer?.height_cm} />
-              <DetailItem header="Weight" value={performer?.weight} />
-              <DetailItem
-                header="Penis Length"
-                value={performer?.penis_length}
-              />
-              <DetailItem header="Circumcised" value={performer?.circumcised} />
-              <DetailItem
-                header="Measurements"
-                value={performer?.measurements}
-              />
-              <DetailItem header="Breast type" value={performer?.fake_tits} />
-              <DetailItem header="Tattoos" value={performer?.tattoos} />
-              <DetailItem header="Piercings" value={performer?.piercings} />
-              <DetailItem header="Details" value={performer?.details} />
-            </div>
+            {maybeRenderDetails()}
             {maybeRenderEditPanel()}
-
-            {/* {maybeRenderAge()} */}
           </div>
         </div>
       </div>
+      {maybeRenderCompressedDetails()}
       <div className="detail-body">
         <div className="performer-body">
           <div className="performer-tabs">{maybeRenderTab()}</div>

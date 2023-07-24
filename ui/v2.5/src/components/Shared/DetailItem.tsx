@@ -1,19 +1,24 @@
 import React from "react";
-import { useIntl } from "react-intl";
-import { getCountryByISO } from "src/utils/country";
+import { FormattedMessage } from "react-intl";
 
 interface IDetailItem {
-  header?: string | null;
+  id?: string | null;
   value?: any;
+  title?: string;
 }
 
-export const DetailItem: React.FC<IDetailItem> = ({ header, value }) => {
-  if (!value || value === "Na") return <></>;
+export const DetailItem: React.FC<IDetailItem> = ({ id, value, title }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (!id || !value || value === "Na") return <></>;
+
+  const message = <FormattedMessage id={id} />;
 
   return (
-    <div className="quick-detail-item">
-      <span className="quick-detail-header">{header}</span>
-      <span className="quick-detail-value">{value} </span>
+    <div className={`detail-item ${id}`}>
+      <span className={`detail-item-title ${id}`}>{message}</span>
+      <span className={`detail-item-value ${id}`} title={title}>
+        {value}
+      </span>
     </div>
   );
 };

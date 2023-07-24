@@ -1,12 +1,12 @@
 import React from "react";
-import { FormattedMessage, useIntl } from "react-intl";
+import { useIntl } from "react-intl";
 import { TagLink } from "src/components/Shared/TagLink";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
 import { getStashboxBase } from "src/utils/stashbox";
-import { getCountryByISO } from "src/utils/country";
-import { TextField, URLField } from "src/utils/field";
 import { cmToImperial, cmToInches, kgToLbs } from "src/utils/units";
+import { DetailItem } from "src/components/Shared/DetailItem";
+import { CountryFlag } from "src/components/Shared/CountryFlag";
 
 interface IPerformerDetails {
   performer: GQL.PerformerDataFragment;
@@ -19,23 +19,12 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   const intl = useIntl();
 
   function renderTagsField() {
-    if (!performer.tags.length) {
-      return;
-    }
-
     return (
-      <>
-        <dt>
-          <FormattedMessage id="tags" />
-        </dt>
-        <dd>
-          <ul className="pl-0">
-            {(performer.tags ?? []).map((tag) => (
-              <TagLink key={tag.id} tagType="performer" tag={tag} />
-            ))}
-          </ul>
-        </dd>
-      </>
+      <ul className="pl-0">
+        {(performer.tags ?? []).map((tag) => (
+          <TagLink key={tag.id} tagType="performer" tag={tag} />
+        ))}
+      </ul>
     );
   }
 
@@ -45,32 +34,27 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     }
 
     return (
-      <>
-        <dt>StashIDs</dt>
-        <dd>
-          <ul className="pl-0">
-            {performer.stash_ids.map((stashID) => {
-              const base = getStashboxBase(stashID.endpoint);
-              const link = base ? (
-                <a
-                  href={`${base}performers/${stashID.stash_id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {stashID.stash_id}
-                </a>
-              ) : (
-                stashID.stash_id
-              );
-              return (
-                <li key={stashID.stash_id} className="row no-gutters">
-                  {link}
-                </li>
-              );
-            })}
-          </ul>
-        </dd>
-      </>
+      <ul className="pl-0">
+        {performer.stash_ids.map((stashID) => {
+          const base = getStashboxBase(stashID.endpoint);
+          const link = base ? (
+            <a
+              href={`${base}performers/${stashID.stash_id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {stashID.stash_id}
+            </a>
+          ) : (
+            stashID.stash_id
+          );
+          return (
+            <li key={stashID.stash_id} className="row no-gutters">
+              {link}
+            </li>
+          );
+        })}
+      </ul>
     );
   }
 
@@ -177,91 +161,76 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   };
 
   return (
-    <dl className="details-list">
-      <TextField
+    <div className="detail-group">
+      <DetailItem
         id="gender"
-        value={
-          performer.gender
-            ? intl.formatMessage({ id: "gender_types." + performer.gender })
-            : undefined
-        }
+        value={intl.formatMessage({ id: "gender_types." + performer.gender })}
       />
-      <TextField
-        id="birthdate"
-        value={TextUtils.formatDate(intl, performer.birthdate ?? undefined)}
+      <DetailItem
+        id="age"
+        value={TextUtils.age(performer.birthdate, performer.death_date)}
+        title={TextUtils.formatDate(intl, performer.birthdate ?? undefined)}
       />
-      <TextField
-        id="death_date"
-        value={TextUtils.formatDate(intl, performer.death_date ?? undefined)}
-      />
-      <TextField id="ethnicity" value={performer.ethnicity} />
-      <TextField id="hair_color" value={performer.hair_color} />
-      <TextField id="eye_color" value={performer.eye_color} />
-      <TextField
+      <DetailItem id="death_date" value={performer.death_date} />
+      <DetailItem
         id="country"
         value={
-          getCountryByISO(performer.country, intl.locale) ?? performer.country
+          <CountryFlag
+            country={performer.country}
+            className="mr-2"
+            includeName={true}
+          />
         }
       />
-
-      {!!performer.height_cm && (
-        <>
-          <dt>
-            <FormattedMessage id="height" />
-          </dt>
-          <dd>{formatHeight(performer.height_cm)}</dd>
-        </>
-      )}
-
-      {!!performer.weight && (
-        <>
-          <dt>
-            <FormattedMessage id="weight" />
-          </dt>
-          <dd>{formatWeight(performer.weight)}</dd>
-        </>
-      )}
-
-      {(performer.penis_length || performer.circumcised) && (
-        <>
-          <dt>
-            <FormattedMessage id="penis" />:
-          </dt>
-          <dd>
-            {formatPenisLength(performer.penis_length)}
-            {formatCircumcised(performer.circumcised)}
-          </dd>
-        </>
-      )}
-      <TextField id="measurements" value={performer.measurements} />
-      <TextField id="fake_tits" value={performer.fake_tits} />
-      <TextField id="career_length" value={performer.career_length} />
-      <TextField id="tattoos" value={performer.tattoos} />
-      <TextField id="piercings" value={performer.piercings} />
-      <TextField id="details" value={performer.details} />
-      <URLField
-        id="url"
-        value={performer.url}
-        url={TextUtils.sanitiseURL(performer.url ?? "")}
+      <DetailItem id="ethnicity" value={performer?.ethnicity} />
+      <DetailItem id="hair_color" value={performer?.hair_color} />
+      <DetailItem id="eye_color" value={performer?.eye_color} />
+      <DetailItem id="height" value={formatHeight(performer.height_cm)} />
+      <DetailItem id="weight" value={formatWeight(performer.weight)} />
+      <DetailItem
+        id="penis_length"
+        value={formatPenisLength(performer.penis_length)}
       />
-      <URLField
-        id="twitter"
-        value={performer.twitter}
-        url={TextUtils.sanitiseURL(
-          performer.twitter ?? "",
-          TextUtils.twitterURL
-        )}
+      <DetailItem
+        id="circumcised"
+        value={formatCircumcised(performer.circumcised)}
       />
-      <URLField
-        id="instagram"
-        value={performer.instagram}
-        url={TextUtils.sanitiseURL(
-          performer.instagram ?? "",
-          TextUtils.instagramURL
-        )}
-      />
-      {renderTagsField()}
-      {renderStashIDs()}
-    </dl>
+      <DetailItem id="measurements" value={performer?.measurements} />
+      <DetailItem id="fake_tits" value={performer?.fake_tits} />
+      <DetailItem id="tattoos" value={performer?.tattoos} />
+      <DetailItem id="piercings" value={performer?.piercings} />
+      <DetailItem id="details" value={performer?.details} />
+      <DetailItem id="tags" value={renderTagsField()} />
+      <DetailItem id="StashIDs" value={renderStashIDs()} />
+    </div>
+  );
+};
+
+export const CompressedPerformerDetailsPanel: React.FC<IPerformerDetails> = ({
+  performer,
+}) => {
+  function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  return (
+    <div className="sticky detail-header">
+      <div className="sticky detail-header-group">
+        <a className="performer-name" onClick={() => scrollToTop()}>
+          {performer.name}
+        </a>
+        <span className="performer-gender">{performer?.gender}</span>
+        <span className="performer-age">
+          {TextUtils.age(performer.birthdate, performer.death_date)}
+        </span>
+        <span className="performer-country">
+          <CountryFlag
+            country={performer.country}
+            className="mr-2"
+            includeName={true}
+          />
+        </span>
+      </div>
+    </div>
   );
 };
