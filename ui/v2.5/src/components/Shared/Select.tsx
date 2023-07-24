@@ -31,6 +31,7 @@ import { galleryTitle } from "src/core/galleries";
 import { TagPopover } from "../Tags/TagPopover";
 import { defaultMaxOptionsShown, IUIConfig } from "src/core/config";
 import { useDebouncedSetState } from "src/hooks/debounce";
+import { Placement } from "react-bootstrap/esm/Overlay";
 
 export type SelectObject = {
   id: string;
@@ -832,9 +833,9 @@ export const MovieSelect: React.FC<IFilterProps> = (props) => {
   );
 };
 
-export const TagSelect: React.FC<IFilterProps & { excludeIds?: string[] }> = (
-  props
-) => {
+export const TagSelect: React.FC<
+  IFilterProps & { excludeIds?: string[]; hoverPlacement?: Placement }
+> = (props) => {
   const [tagAliases, setTagAliases] = useState<Record<string, string[]>>({});
   const [allAliases, setAllAliases] = useState<string[]>([]);
   const { data, loading } = useAllTagsForFilter();
@@ -890,7 +891,7 @@ export const TagSelect: React.FC<IFilterProps & { excludeIds?: string[] }> = (
       : optionProps.data.value;
 
     return (
-      <TagPopover id={id}>
+      <TagPopover id={id} placement={props.hoverPlacement}>
         <reactSelectComponents.Option {...thisOptionProps} />
       </TagPopover>
     );
