@@ -49,6 +49,18 @@ func (r *galleryChapterRow) resolve() *models.GalleryChapter {
 	return ret
 }
 
+type galleryChapterRowRecord struct {
+	updateRecord
+}
+
+func (r *galleryChapterRowRecord) fromPartial(o models.GalleryChapterPartial) {
+	r.setString("title", o.Title)
+	r.setInt("image_index", o.ImageIndex)
+	r.setInt("gallery_id", o.GalleryID)
+	r.setTimestamp("created_at", o.CreatedAt)
+	r.setTimestamp("updated_at", o.UpdatedAt)
+}
+
 type GalleryChapterStore struct {
 	repository
 
@@ -101,6 +113,24 @@ func (qb *GalleryChapterStore) Update(ctx context.Context, updatedObject *models
 	}
 
 	return nil
+}
+
+func (qb *GalleryChapterStore) UpdatePartial(ctx context.Context, id int, partial models.GalleryChapterPartial) (*models.GalleryChapter, error) {
+	r := galleryChapterRowRecord{
+		updateRecord{
+			Record: make(exp.Record),
+		},
+	}
+
+	r.fromPartial(partial)
+
+	if len(r.Record) > 0 {
+		if err := qb.tableMgr.updateByID(ctx, id, r.Record); err != nil {
+			return nil, err
+		}
+	}
+
+	return qb.find(ctx, id)
 }
 
 func (qb *GalleryChapterStore) Destroy(ctx context.Context, id int) error {

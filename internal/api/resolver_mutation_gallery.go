@@ -498,23 +498,11 @@ func (r *mutationResolver) getGalleryChapter(ctx context.Context, id int) (ret *
 func (r *mutationResolver) GalleryChapterCreate(ctx context.Context, input GalleryChapterCreateInput) (*models.GalleryChapter, error) {
 	galleryID, err := strconv.Atoi(input.GalleryID)
 	if err != nil {
-		return nil, err
-	}
-
-	var imageCount int
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		imageCount, err = r.repository.Image.CountByGalleryID(ctx, galleryID)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-	// Sanity Check of Index
-	if input.ImageIndex > imageCount || input.ImageIndex < 1 {
-		return nil, errors.New("Image # must greater than zero and in range of the gallery images")
+		return nil, fmt.Errorf("converting gallery id: %w", err)
 	}
 
 	currentTime := time.Now()
-	newGalleryChapter := models.GalleryChapter{
+	newChapter := models.GalleryChapter{
 		Title:      input.Title,
 		ImageIndex: input.ImageIndex,
 		GalleryID:  galleryID,
@@ -522,21 +510,29 @@ func (r *mutationResolver) GalleryChapterCreate(ctx context.Context, input Galle
 		UpdatedAt:  currentTime,
 	}
 
-	if err != nil {
+	// Start the transaction and save the gallery chapter
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		imageCount, err := r.repository.Image.CountByGalleryID(ctx, galleryID)
+		if err != nil {
+			return err
+		}
+
+		// Sanity Check of Index
+		if newChapter.ImageIndex > imageCount || newChapter.ImageIndex < 1 {
+			return errors.New("Image # must greater than zero and in range of the gallery images")
+		}
+
+		return r.repository.GalleryChapter.Create(ctx, &newChapter)
+	}); err != nil {
 		return nil, err
 	}
 
-	err = r.changeChapter(ctx, create, &newGalleryChapter)
-	if err != nil {
-		return nil, err
-	}
-
-	r.hookExecutor.ExecutePostHooks(ctx, newGalleryChapter.ID, plugin.GalleryChapterCreatePost, input, nil)
-	return r.getGalleryChapter(ctx, newGalleryChapter.ID)
+	r.hookExecutor.ExecutePostHooks(ctx, newChapter.ID, plugin.GalleryChapterCreatePost, input, nil)
+	return r.getGalleryChapter(ctx, newChapter.ID)
 }
 
 func (r *mutationResolver) GalleryChapterUpdate(ctx context.Context, input GalleryChapterUpdateInput) (*models.GalleryChapter, error) {
-	galleryChapterID, err := strconv.Atoi(input.ID)
+	chapterID, err := strconv.Atoi(input.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -545,39 +541,61 @@ func (r *mutationResolver) GalleryChapterUpdate(ctx context.Context, input Galle
 		inputMap: getUpdateInputMap(ctx),
 	}
 
-	galleryID, err := strconv.Atoi(input.GalleryID)
+	// Populate gallery chapter from the input
+	updatedChapter := models.NewGalleryChapterPartial()
+
+	updatedChapter.Title = translator.optionalString(input.Title, "title")
+	updatedChapter.ImageIndex = translator.optionalInt(input.ImageIndex, "image_index")
+	updatedChapter.GalleryID, err = translator.optionalIntFromString(input.GalleryID, "gallery_id")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting gallery id: %w", err)
 	}
 
-	var imageCount int
+	// Start the transaction and save the gallery chapter
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		imageCount, err = r.repository.Image.CountByGalleryID(ctx, galleryID)
-		return err
+		qb := r.repository.GalleryChapter
+
+		// check to see if timestamp was changed
+		existingChapter, err := qb.Find(ctx, chapterID)
+		if err != nil {
+			return err
+		}
+		if existingChapter == nil {
+			return fmt.Errorf("gallery chapter with id %d not found", chapterID)
+		}
+
+		galleryID := existingChapter.GalleryID
+		imageIndex := existingChapter.ImageIndex
+
+		if updatedChapter.GalleryID.Set {
+			galleryID = updatedChapter.GalleryID.Value
+		}
+		if updatedChapter.ImageIndex.Set {
+			imageIndex = updatedChapter.ImageIndex.Value
+		}
+
+		imageCount, err := r.repository.Image.CountByGalleryID(ctx, galleryID)
+		if err != nil {
+			return err
+		}
+
+		// Sanity Check of Index
+		if imageIndex > imageCount || imageIndex < 1 {
+			return errors.New("Image # must greater than zero and in range of the gallery images")
+		}
+
+		_, err = qb.UpdatePartial(ctx, chapterID, updatedChapter)
+		if err != nil {
+			return err
+		}
+
+		return nil
 	}); err != nil {
 		return nil, err
 	}
-	// Sanity Check of Index
-	if input.ImageIndex > imageCount || input.ImageIndex < 1 {
-		return nil, errors.New("Image # must greater than zero and in range of the gallery images")
-	}
 
-	// Populate gallery chapter from the input
-	updatedGalleryChapter := models.GalleryChapter{
-		ID:         galleryChapterID,
-		Title:      input.Title,
-		ImageIndex: input.ImageIndex,
-		GalleryID:  galleryID,
-		UpdatedAt:  time.Now(),
-	}
-
-	err = r.changeChapter(ctx, update, &updatedGalleryChapter)
-	if err != nil {
-		return nil, err
-	}
-
-	r.hookExecutor.ExecutePostHooks(ctx, updatedGalleryChapter.ID, plugin.GalleryChapterUpdatePost, input, translator.getFields())
-	return r.getGalleryChapter(ctx, updatedGalleryChapter.ID)
+	r.hookExecutor.ExecutePostHooks(ctx, chapterID, plugin.GalleryChapterUpdatePost, input, translator.getFields())
+	return r.getGalleryChapter(ctx, chapterID)
 }
 
 func (r *mutationResolver) GalleryChapterDestroy(ctx context.Context, id string) (bool, error) {
@@ -607,25 +625,4 @@ func (r *mutationResolver) GalleryChapterDestroy(ctx context.Context, id string)
 	r.hookExecutor.ExecutePostHooks(ctx, chapterID, plugin.GalleryChapterDestroyPost, id, nil)
 
 	return true, nil
-}
-
-func (r *mutationResolver) changeChapter(ctx context.Context, changeType int, changedChapter *models.GalleryChapter) error {
-	// Start the transaction and save the gallery chapter
-	var err = r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.GalleryChapter
-		var err error
-
-		switch changeType {
-		case create:
-			err = qb.Create(ctx, changedChapter)
-		case update:
-			err = qb.Update(ctx, changedChapter)
-			if err != nil {
-				return err
-			}
-		}
-		return err
-	})
-
-	return err
 }
