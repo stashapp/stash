@@ -54,6 +54,10 @@ body {
 
 .main-content-container {
   padding-top: 15px;
+
+  @media (max-width: 576px) {
+    overflow-x: hidden;
+  }
 }
 
 code,
@@ -111,6 +115,10 @@ dd {
 
 .sticky.detail-header-group {
   padding: 1rem 2.5rem;
+
+  @media (max-width: 576px) {
+    padding: 1rem 1.5rem;
+  }
 }
 
 .detail-header .detail-group,
@@ -142,12 +150,21 @@ dd {
 
 .detail-body {
   width: 100%;
+
+  @media (max-width: 576px) {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
 }
 
 .detail-header-image img {
   border-radius: 0.5rem;
   max-width: 14rem;
   transition: 0.4s;
+
+  @media (max-width: 576px) {
+    max-width: 100%;
+  }
 }
 
 .detail-item.tags .pl-0 {
