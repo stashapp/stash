@@ -977,6 +977,14 @@ dl.details-list {
   vertical-align: middle;
 }
 
+.invalid-feedback {
+  display: block;
+
+  &:empty {
+    display: none;
+  }
+}
+
 // Fix Safari styling on dropdowns
 select {
   -webkit-appearance: none;
