@@ -194,8 +194,8 @@ dd {
   padding: 0 1rem;
 
   @media (max-width: 576px) {
-    height: unset;
     float: unset;
+    height: auto;
   }
 
   img {
