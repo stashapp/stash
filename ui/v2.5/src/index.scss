@@ -90,10 +90,6 @@ dd {
 .sticky.detail-header-group {
   padding: 1rem 2.5rem;
 
-  @media (max-width: 576px) {
-    padding: 1rem 1.5rem;
-  }
-
   a.movie-name,
   a.performer-name,
   a.studio-name,
@@ -131,7 +127,7 @@ dd {
   z-index: 10;
 
   @media (max-width: 576px) {
-    top: 0;
+    display: none;
   }
 
   .movie-name,
@@ -194,12 +190,23 @@ dd {
   @media (max-width: 576px) {
     float: unset;
     height: auto;
+    padding: 0;
+
+    .movie-images .img {
+      max-width: 100%;
+    }
   }
 
   img {
     border-radius: 0.5rem;
     max-width: 14rem;
     object-fit: contain;
+  }
+
+  .movie-images img {
+    @media (max-width: 576px) {
+      max-width: 100%;
+    }
   }
 }
 
