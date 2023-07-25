@@ -15,7 +15,7 @@ var ErrZipFileNotExist = errors.New("zip file does not exist")
 
 type Importer struct {
 	ReaderWriter models.FileFinderCreator
-	FolderStore  FolderStore
+	FolderStore  models.FolderFinderCreator
 	Input        jsonschema.DirEntry
 
 	file   models.File

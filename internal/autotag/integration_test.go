@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
@@ -124,7 +123,7 @@ func createTag(ctx context.Context, qb models.TagWriter) error {
 	return nil
 }
 
-func createScenes(ctx context.Context, sqb models.SceneReaderWriter, folderStore file.FolderStore, fileCreator models.FileCreator) error {
+func createScenes(ctx context.Context, sqb models.SceneReaderWriter, folderStore models.FolderFinderCreator, fileCreator models.FileCreator) error {
 	// create the scenes
 	scenePatterns, falseScenePatterns := generateTestPaths(testName, sceneExt)
 
@@ -196,7 +195,7 @@ func makeScene(expectedResult bool) *models.Scene {
 	return s
 }
 
-func createSceneFile(ctx context.Context, name string, folderStore file.FolderStore, fileCreator models.FileCreator) (*models.VideoFile, error) {
+func createSceneFile(ctx context.Context, name string, folderStore models.FolderFinderCreator, fileCreator models.FileCreator) (*models.VideoFile, error) {
 	folderPath := filepath.Dir(name)
 	basename := filepath.Base(name)
 
@@ -221,7 +220,7 @@ func createSceneFile(ctx context.Context, name string, folderStore file.FolderSt
 	return f, nil
 }
 
-func getOrCreateFolder(ctx context.Context, folderStore file.FolderStore, folderPath string) (*models.Folder, error) {
+func getOrCreateFolder(ctx context.Context, folderStore models.FolderFinderCreator, folderPath string) (*models.Folder, error) {
 	f, err := folderStore.FindByPath(ctx, folderPath)
 	if err != nil {
 		return nil, fmt.Errorf("getting folder by path: %w", err)
@@ -267,7 +266,7 @@ func createScene(ctx context.Context, sqb models.SceneWriter, s *models.Scene, f
 	return nil
 }
 
-func createImages(ctx context.Context, w models.ImageReaderWriter, folderStore file.FolderStore, fileCreator models.FileCreator) error {
+func createImages(ctx context.Context, w models.ImageReaderWriter, folderStore models.FolderFinderCreator, fileCreator models.FileCreator) error {
 	// create the images
 	imagePatterns, falseImagePatterns := generateTestPaths(testName, imageExt)
 
@@ -326,7 +325,7 @@ func createImages(ctx context.Context, w models.ImageReaderWriter, folderStore f
 	return nil
 }
 
-func createImageFile(ctx context.Context, name string, folderStore file.FolderStore, fileCreator models.FileCreator) (*models.ImageFile, error) {
+func createImageFile(ctx context.Context, name string, folderStore models.FolderFinderCreator, fileCreator models.FileCreator) (*models.ImageFile, error) {
 	folderPath := filepath.Dir(name)
 	basename := filepath.Base(name)
 
@@ -375,7 +374,7 @@ func createImage(ctx context.Context, w models.ImageWriter, o *models.Image, f *
 	return nil
 }
 
-func createGalleries(ctx context.Context, w models.GalleryReaderWriter, folderStore file.FolderStore, fileCreator models.FileCreator) error {
+func createGalleries(ctx context.Context, w models.GalleryReaderWriter, folderStore models.FolderFinderCreator, fileCreator models.FileCreator) error {
 	// create the galleries
 	galleryPatterns, falseGalleryPatterns := generateTestPaths(testName, galleryExt)
 
@@ -434,7 +433,7 @@ func createGalleries(ctx context.Context, w models.GalleryReaderWriter, folderSt
 	return nil
 }
 
-func createGalleryFile(ctx context.Context, name string, folderStore file.FolderStore, fileCreator models.FileCreator) (*models.BaseFile, error) {
+func createGalleryFile(ctx context.Context, name string, folderStore models.FolderFinderCreator, fileCreator models.FileCreator) (*models.BaseFile, error) {
 	folderPath := filepath.Dir(name)
 	basename := filepath.Base(name)
 

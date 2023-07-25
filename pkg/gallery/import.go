@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/performer"
@@ -20,7 +19,7 @@ type Importer struct {
 	PerformerWriter     performer.NameFinderCreator
 	TagWriter           tag.NameFinderCreator
 	FileFinder          models.FileFinder
-	FolderFinder        file.FolderGetter
+	FolderFinder        models.FolderFinder
 	Input               jsonschema.Gallery
 	MissingRefBehaviour models.ImportMissingRefEnum
 

@@ -3,7 +3,6 @@ package gallery
 import (
 	"context"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -48,5 +47,5 @@ type Service struct {
 	ImageFinder  ImageFinder
 	ImageService ImageService
 	File         models.FileReaderWriter
-	Folder       file.FolderStore
+	Folder       models.FolderReaderWriter
 }

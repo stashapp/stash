@@ -11,5 +11,5 @@ type Repository struct {
 	txn.DatabaseProvider
 
 	FileStore   models.FileReaderWriter
-	FolderStore FolderStore
+	FolderStore models.FolderReaderWriter
 }

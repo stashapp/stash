@@ -197,7 +197,7 @@ func Destroy(ctx context.Context, destroyer models.FileDestroyer, f models.File,
 
 type ZipDestroyer struct {
 	FileDestroyer   models.FileFinderDestroyer
-	FolderDestroyer FolderGetterDestroyer
+	FolderDestroyer models.FolderFinderDestroyer
 }
 
 func (d *ZipDestroyer) DestroyZip(ctx context.Context, f models.File, fileDeleter *Deleter, deleteFile bool) error {

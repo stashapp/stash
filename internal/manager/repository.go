@@ -3,7 +3,6 @@ package manager
 import (
 	"context"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
@@ -33,15 +32,11 @@ type SceneReaderWriter interface {
 	GetManyFileIDs(ctx context.Context, ids []int) ([][]models.FileID, error)
 }
 
-type FolderReaderWriter interface {
-	file.FolderStore
-}
-
 type Repository struct {
 	models.TxnManager
 
 	File           models.FileReaderWriter
-	Folder         FolderReaderWriter
+	Folder         models.FolderReaderWriter
 	Gallery        GalleryReaderWriter
 	GalleryChapter models.GalleryChapterReaderWriter
 	Image          ImageReaderWriter
