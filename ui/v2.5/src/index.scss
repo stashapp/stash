@@ -72,7 +72,7 @@ dd {
 
 .detail-header {
   background-color: #192127;
-  min-height: 20rem;
+  min-height: 15rem;
   padding: 1rem;
   transition: 0.3s;
   width: 100%;
@@ -83,7 +83,14 @@ dd {
   margin-bottom: 0;
 }
 
-.sticky.detail-header-group a.performer-name {
+.detail-header .details-edit div:nth-last-child(2) {
+  flex: unset;
+}
+
+.sticky.detail-header-group a.movie-name,
+.sticky.detail-header-group a.performer-name,
+.sticky.detail-header-group a.studio-name,
+.sticky.detail-header-group a.tag-name {
   color: #f5f8fa;
   cursor: pointer;
   font-weight: 800;
@@ -109,7 +116,10 @@ dd {
   }
 }
 
-.sticky.detail-header .performer-name {
+.sticky.detail-header .movie-name,
+.sticky.detail-header .performer-name,
+.sticky.detail-header .studio-name,
+.sticky.detail-header .tag-name {
   font-weight: 800;
 }
 
@@ -157,9 +167,14 @@ dd {
   }
 }
 
+#tag-page .detail-header-image img {
+  max-width: 18rem;
+}
+
 .detail-header-image img {
   border-radius: 0.5rem;
   max-width: 14rem;
+  object-fit: contain;
   transition: 0.4s;
 
   @media (max-width: 576px) {
@@ -172,8 +187,19 @@ dd {
 }
 
 .detail-header-image {
+  display: flex;
   float: left;
+  height: 100%;
+  justify-content: center;
   padding: 0 1rem;
+
+  @media (max-width: 576px) {
+    height: unset;
+  }
+}
+
+#performer-page .detail-header.edit .detail-header-image {
+  height: unset;
 }
 
 .detail-group {

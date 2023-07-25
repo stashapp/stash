@@ -1,4 +1,4 @@
-import { Button, Tabs, Tab, Dropdown } from "react-bootstrap";
+import { Tabs, Tab, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -26,7 +26,7 @@ import { TagMarkersPanel } from "./TagMarkersPanel";
 import { TagImagesPanel } from "./TagImagesPanel";
 import { TagPerformersPanel } from "./TagPerformersPanel";
 import { TagGalleriesPanel } from "./TagGalleriesPanel";
-import { TagDetailsPanel } from "./TagDetailsPanel";
+import { CompressedTagDetailsPanel, TagDetailsPanel } from "./TagDetailsPanel";
 import { TagEditPanel } from "./TagEditPanel";
 import { TagMergeModal } from "./TagMergeDialog";
 import {
@@ -270,157 +270,177 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
     );
   }
 
-  function getCollapseButtonIcon() {
-    return collapsed ? faChevronRight : faChevronLeft;
+  function maybeRenderDetails() {
+    if (!isEditing) {
+      return <TagDetailsPanel tag={tag} />;
+    }
+  }
+
+  function maybeRenderEditPanel() {
+    if (isEditing) {
+      return (
+        <TagEditPanel
+          tag={tag}
+          onSubmit={onSave}
+          onCancel={() => toggleEditing()}
+          onDelete={onDelete}
+          setImage={setImage}
+          setEncodingImage={setEncodingImage}
+        />
+      );
+    }
+    {
+      return (
+        <DetailsEditNavbar
+          objectName={tag.name}
+          isNew={false}
+          isEditing={isEditing}
+          onToggleEdit={() => toggleEditing()}
+          onSave={() => {}}
+          onImageChange={() => {}}
+          onClearImage={() => {}}
+          onAutoTag={onAutoTag}
+          onDelete={onDelete}
+          classNames="mb-2"
+          customButtons={renderMergeButton()}
+        />
+      );
+    }
+  }
+
+  const renderTabs = () => (
+    <React.Fragment>
+      <Tabs
+        id="tag-tabs"
+        mountOnEnter
+        unmountOnExit
+        activeKey={activeTabKey}
+        onSelect={setActiveTabKey}
+      >
+        <Tab
+          eventKey="scenes"
+          title={
+            <>
+              {intl.formatMessage({ id: "scenes" })}
+              <Counter
+                abbreviateCounter={abbreviateCounter}
+                count={sceneCount}
+                hideZero
+              />
+            </>
+          }
+        >
+          <TagScenesPanel active={activeTabKey == "scenes"} tag={tag} />
+        </Tab>
+        <Tab
+          eventKey="images"
+          title={
+            <>
+              {intl.formatMessage({ id: "images" })}
+              <Counter
+                abbreviateCounter={abbreviateCounter}
+                count={imageCount}
+                hideZero
+              />
+            </>
+          }
+        >
+          <TagImagesPanel active={activeTabKey == "images"} tag={tag} />
+        </Tab>
+        <Tab
+          eventKey="galleries"
+          title={
+            <>
+              {intl.formatMessage({ id: "galleries" })}
+              <Counter
+                abbreviateCounter={abbreviateCounter}
+                count={galleryCount}
+                hideZero
+              />
+            </>
+          }
+        >
+          <TagGalleriesPanel active={activeTabKey == "galleries"} tag={tag} />
+        </Tab>
+        <Tab
+          eventKey="markers"
+          title={
+            <>
+              {intl.formatMessage({ id: "markers" })}
+              <Counter
+                abbreviateCounter={abbreviateCounter}
+                count={sceneMarkerCount}
+                hideZero
+              />
+            </>
+          }
+        >
+          <TagMarkersPanel active={activeTabKey == "markers"} tag={tag} />
+        </Tab>
+        <Tab
+          eventKey="performers"
+          title={
+            <>
+              {intl.formatMessage({ id: "performers" })}
+              <Counter
+                abbreviateCounter={abbreviateCounter}
+                count={performerCount}
+                hideZero
+              />
+            </>
+          }
+        >
+          <TagPerformersPanel active={activeTabKey == "performers"} tag={tag} />
+        </Tab>
+      </Tabs>
+    </React.Fragment>
+  );
+
+  function maybeRenderTab() {
+    if (!isEditing) {
+      return renderTabs();
+    }
+  }
+
+  function maybeRenderCompressedDetails() {
+    if (!isEditing) {
+      return <CompressedTagDetailsPanel tag={tag} />;
+    }
   }
 
   return (
-    <>
+    <div id="tag-page" className="row">
       <Helmet>
         <title>{tag.name}</title>
       </Helmet>
-      <div className="row">
-        <div
-          className={`tag-details details-tab ${collapsed ? "collapsed" : ""}`}
-        >
-          <div className="text-center logo-container">
-            {encodingImage ? (
-              <LoadingIndicator message="Encoding image..." />
-            ) : (
-              renderImage()
-            )}
-            <h2>{tag.name}</h2>
-            <p>{tag.description}</p>
-          </div>
-          {!isEditing ? (
-            <>
-              <TagDetailsPanel tag={tag} />
-              {/* HACK - this is also rendered in the TagEditPanel */}
-              <DetailsEditNavbar
-                objectName={tag.name}
-                isNew={false}
-                isEditing={isEditing}
-                onToggleEdit={() => toggleEditing()}
-                onSave={() => {}}
-                onImageChange={() => {}}
-                onClearImage={() => {}}
-                onAutoTag={onAutoTag}
-                onDelete={onDelete}
-                classNames="mb-2"
-                customButtons={renderMergeButton()}
-              />
-            </>
+
+      <div className={`detail-header ${isEditing ? "edit" : ""}`}>
+        <div className="detail-header-image">
+          {encodingImage ? (
+            <LoadingIndicator message="Encoding image..." />
           ) : (
-            <TagEditPanel
-              tag={tag}
-              onSubmit={onSave}
-              onCancel={() => toggleEditing()}
-              onDelete={onDelete}
-              setImage={setImage}
-              setEncodingImage={setEncodingImage}
-            />
+            renderImage()
           )}
         </div>
-        <div className="details-divider d-none d-xl-block">
-          <Button onClick={() => setCollapsed(!collapsed)}>
-            <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
-          </Button>
+        <div className="row">
+          <div className="studio-head col">
+            <h2>
+              <span className="tag-name">{tag.name}</span>
+            </h2>
+            {maybeRenderDetails()}
+            {maybeRenderEditPanel()}
+          </div>
         </div>
-        <div className={`col content-container ${collapsed ? "expanded" : ""}`}>
-          <Tabs
-            id="tag-tabs"
-            mountOnEnter
-            unmountOnExit
-            activeKey={activeTabKey}
-            onSelect={setActiveTabKey}
-          >
-            <Tab
-              eventKey="scenes"
-              title={
-                <>
-                  {intl.formatMessage({ id: "scenes" })}
-                  <Counter
-                    abbreviateCounter={abbreviateCounter}
-                    count={sceneCount}
-                    hideZero
-                  />
-                </>
-              }
-            >
-              <TagScenesPanel active={activeTabKey == "scenes"} tag={tag} />
-            </Tab>
-            <Tab
-              eventKey="images"
-              title={
-                <>
-                  {intl.formatMessage({ id: "images" })}
-                  <Counter
-                    abbreviateCounter={abbreviateCounter}
-                    count={imageCount}
-                    hideZero
-                  />
-                </>
-              }
-            >
-              <TagImagesPanel active={activeTabKey == "images"} tag={tag} />
-            </Tab>
-            <Tab
-              eventKey="galleries"
-              title={
-                <>
-                  {intl.formatMessage({ id: "galleries" })}
-                  <Counter
-                    abbreviateCounter={abbreviateCounter}
-                    count={galleryCount}
-                    hideZero
-                  />
-                </>
-              }
-            >
-              <TagGalleriesPanel
-                active={activeTabKey == "galleries"}
-                tag={tag}
-              />
-            </Tab>
-            <Tab
-              eventKey="markers"
-              title={
-                <>
-                  {intl.formatMessage({ id: "markers" })}
-                  <Counter
-                    abbreviateCounter={abbreviateCounter}
-                    count={sceneMarkerCount}
-                    hideZero
-                  />
-                </>
-              }
-            >
-              <TagMarkersPanel active={activeTabKey == "markers"} tag={tag} />
-            </Tab>
-            <Tab
-              eventKey="performers"
-              title={
-                <>
-                  {intl.formatMessage({ id: "performers" })}
-                  <Counter
-                    abbreviateCounter={abbreviateCounter}
-                    count={performerCount}
-                    hideZero
-                  />
-                </>
-              }
-            >
-              <TagPerformersPanel
-                active={activeTabKey == "performers"}
-                tag={tag}
-              />
-            </Tab>
-          </Tabs>
-        </div>
-        {renderDeleteAlert()}
-        {renderMergeDialog()}
       </div>
-    </>
+      {maybeRenderCompressedDetails()}
+      <div className="detail-body">
+        <div className="tag-body">
+          <div className="tag-tabs">{maybeRenderTab()}</div>
+        </div>
+      </div>
+      {renderDeleteAlert()}
+      {renderMergeDialog()}
+    </div>
   );
 };
 

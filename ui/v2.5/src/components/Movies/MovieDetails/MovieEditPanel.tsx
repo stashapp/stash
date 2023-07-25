@@ -17,12 +17,9 @@ import { Modal as BSModal, Form, Button, Col, Row } from "react-bootstrap";
 import DurationUtils from "src/utils/duration";
 import FormUtils from "src/utils/form";
 import ImageUtils from "src/utils/image";
-import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { MovieScrapeDialog } from "./MovieScrapeDialog";
-import { useRatingKeybinds } from "src/hooks/keybinds";
-import { ConfigurationContext } from "src/hooks/Config";
 import isEqual from "lodash-es/isEqual";
 import { DateInput } from "src/components/Shared/DateInput";
 import { handleUnsavedChanges } from "src/utils/navigation";
@@ -48,7 +45,6 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
 }) => {
   const intl = useIntl();
   const Toast = useToast();
-  const { configuration: stashConfig } = React.useContext(ConfigurationContext);
 
   const isNew = movie.id === undefined;
 
@@ -106,16 +102,6 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     validationSchema: schema,
     onSubmit: (values) => onSave(values),
   });
-
-  function setRating(v: number) {
-    formik.setFieldValue("rating100", v);
-  }
-
-  useRatingKeybinds(
-    true,
-    stashConfig?.ui?.ratingSystemOptions?.type,
-    setRating
-  );
 
   // set up hotkeys
   useEffect(() => {
@@ -454,19 +440,6 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
 
         {renderTextField("director", intl.formatMessage({ id: "director" }))}
 
-        <Form.Group controlId="rating" as={Row}>
-          {FormUtils.renderLabel({
-            title: intl.formatMessage({ id: "rating" }),
-          })}
-          <Col xs={9}>
-            <RatingSystem
-              value={formik.values.rating100 ?? undefined}
-              onSetRating={(value) =>
-                formik.setFieldValue("rating100", value ?? null)
-              }
-            />
-          </Col>
-        </Form.Group>
         <Form.Group controlId="url" as={Row}>
           {FormUtils.renderLabel({
             title: intl.formatMessage({ id: "url" }),

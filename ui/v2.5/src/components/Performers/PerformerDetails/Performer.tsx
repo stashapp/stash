@@ -194,9 +194,6 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         id="performer-details"
         unmountOnExit
       >
-        {/* <Tab eventKey="details" title={intl.formatMessage({ id: "details" })}>
-          <PerformerDetailsPanel performer={performer} />
-        </Tab> */}
         <Tab
           eventKey="scenes"
           title={
@@ -398,7 +395,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <Icon icon={faHeart} />
       </Button>
       {performer.url && (
-        <Button className="minimal icon-link">
+        <Button className="minimal icon-link" title={performer.url}>
           <a
             href={TextUtils.sanitiseURL(performer.url)}
             className="link"
@@ -410,7 +407,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         </Button>
       )}
       {performer.twitter && (
-        <Button className="minimal icon-link">
+        <Button className="minimal icon-link" title={performer.twitter}>
           <a
             href={TextUtils.sanitiseURL(
               performer.twitter,
@@ -425,7 +422,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         </Button>
       )}
       {performer.instagram && (
-        <Button className="minimal icon-link">
+        <Button className="minimal icon-link" title={performer.instagram}>
           <a
             href={TextUtils.sanitiseURL(
               performer.instagram,

@@ -26,14 +26,15 @@ import { StudioImagesPanel } from "./StudioImagesPanel";
 import { StudioChildrenPanel } from "./StudioChildrenPanel";
 import { StudioPerformersPanel } from "./StudioPerformersPanel";
 import { StudioEditPanel } from "./StudioEditPanel";
-import { StudioDetailsPanel } from "./StudioDetailsPanel";
-import { StudioMoviesPanel } from "./StudioMoviesPanel";
 import {
-  faTrashAlt,
-  faChevronRight,
-  faChevronLeft,
-} from "@fortawesome/free-solid-svg-icons";
+  CompressedStudioDetailsPanel,
+  StudioDetailsPanel,
+} from "./StudioDetailsPanel";
+import { StudioMoviesPanel } from "./StudioMoviesPanel";
+import { faTrashAlt, faLink } from "@fortawesome/free-solid-svg-icons";
 import { IUIConfig } from "src/core/config";
+import TextUtils from "src/utils/text";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -203,175 +204,239 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     }
   };
 
-  function getCollapseButtonIcon() {
-    return collapsed ? faChevronRight : faChevronLeft;
+  const renderClickableIcons = () => (
+    <span className="name-icons">
+      {studio.url && (
+        <Button className="minimal icon-link" title={studio.url}>
+          <a
+            href={TextUtils.sanitiseURL(studio.url)}
+            className="link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Icon icon={faLink} />
+          </a>
+        </Button>
+      )}
+    </span>
+  );
+
+  function setRating(v: number | null) {
+    if (studio.id) {
+      updateStudio({
+        variables: {
+          input: {
+            id: studio.id,
+            rating100: v,
+          },
+        },
+      });
+    }
+  }
+
+  function maybeRenderDetails() {
+    if (!isEditing) {
+      return <StudioDetailsPanel studio={studio} />;
+    }
+  }
+
+  function maybeRenderCompressedDetails() {
+    if (!isEditing) {
+      return <CompressedStudioDetailsPanel studio={studio} />;
+    }
+  }
+
+  const renderTabs = () => (
+    <React.Fragment>
+      <Tabs
+        id="studio-tabs"
+        mountOnEnter
+        unmountOnExit
+        activeKey={activeTabKey}
+        onSelect={setActiveTabKey}
+      >
+        <Tab
+          eventKey="scenes"
+          title={
+            <>
+              {intl.formatMessage({ id: "scenes" })}
+              <Counter
+                abbreviateCounter={abbreviateCounter}
+                count={sceneCount}
+                hideZero
+              />
+            </>
+          }
+        >
+          <StudioScenesPanel
+            active={activeTabKey == "scenes"}
+            studio={studio}
+          />
+        </Tab>
+        <Tab
+          eventKey="galleries"
+          title={
+            <>
+              {intl.formatMessage({ id: "galleries" })}
+              <Counter
+                abbreviateCounter={abbreviateCounter}
+                count={galleryCount}
+                hideZero
+              />
+            </>
+          }
+        >
+          <StudioGalleriesPanel
+            active={activeTabKey == "galleries"}
+            studio={studio}
+          />
+        </Tab>
+        <Tab
+          eventKey="images"
+          title={
+            <>
+              {intl.formatMessage({ id: "images" })}
+              <Counter
+                abbreviateCounter={abbreviateCounter}
+                count={imageCount}
+                hideZero
+              />
+            </>
+          }
+        >
+          <StudioImagesPanel
+            active={activeTabKey == "images"}
+            studio={studio}
+          />
+        </Tab>
+        <Tab
+          eventKey="performers"
+          title={
+            <>
+              {intl.formatMessage({ id: "performers" })}
+              <Counter
+                abbreviateCounter={abbreviateCounter}
+                count={performerCount}
+                hideZero
+              />
+            </>
+          }
+        >
+          <StudioPerformersPanel
+            active={activeTabKey == "performers"}
+            studio={studio}
+          />
+        </Tab>
+        <Tab
+          eventKey="movies"
+          title={
+            <>
+              {intl.formatMessage({ id: "movies" })}
+              <Counter
+                abbreviateCounter={abbreviateCounter}
+                count={movieCount}
+                hideZero
+              />
+            </>
+          }
+        >
+          <StudioMoviesPanel
+            active={activeTabKey == "movies"}
+            studio={studio}
+          />
+        </Tab>
+        <Tab
+          eventKey="childstudios"
+          title={
+            <>
+              {intl.formatMessage({ id: "subsidiary_studios" })}
+              <Counter
+                abbreviateCounter={false}
+                count={studio.child_studios.length}
+                hideZero
+              />
+            </>
+          }
+        >
+          <StudioChildrenPanel
+            active={activeTabKey == "childstudios"}
+            studio={studio}
+          />
+        </Tab>
+      </Tabs>
+    </React.Fragment>
+  );
+
+  function maybeRenderTab() {
+    if (!isEditing) {
+      return renderTabs();
+    }
+  }
+
+  function maybeRenderEditPanel() {
+    if (isEditing) {
+      return (
+        <StudioEditPanel
+          studio={studio}
+          onSubmit={onSave}
+          onCancel={() => toggleEditing()}
+          onDelete={onDelete}
+          setImage={setImage}
+          setEncodingImage={setEncodingImage}
+        />
+      );
+    }
+    {
+      return (
+        <DetailsEditNavbar
+          objectName={studio.name ?? intl.formatMessage({ id: "studio" })}
+          isNew={false}
+          isEditing={isEditing}
+          onToggleEdit={() => toggleEditing()}
+          onSave={() => {}}
+          onImageChange={() => {}}
+          onClearImage={() => {}}
+          onAutoTag={onAutoTag}
+          onDelete={onDelete}
+        />
+      );
+    }
   }
 
   return (
-    <div className="row">
-      <div
-        className={`studio-details details-tab ${collapsed ? "collapsed" : ""}`}
-      >
-        <div className="text-center">
+    <div id="studio-page" className="row">
+      <Helmet>
+        <title>{studio.name ?? intl.formatMessage({ id: "studio" })}</title>
+      </Helmet>
+
+      <div className={`detail-header ${isEditing ? "edit" : ""}`}>
+        <div className="detail-header-image">
           {encodingImage ? (
             <LoadingIndicator message="Encoding image..." />
           ) : (
             renderImage()
           )}
         </div>
-        {!isEditing ? (
-          <>
-            <Helmet>
-              <title>
-                {studio.name ?? intl.formatMessage({ id: "studio" })}
-              </title>
-            </Helmet>
-            <StudioDetailsPanel studio={studio} />
-            <DetailsEditNavbar
-              objectName={studio.name ?? intl.formatMessage({ id: "studio" })}
-              isNew={false}
-              isEditing={isEditing}
-              onToggleEdit={() => toggleEditing()}
-              onSave={() => {}}
-              onImageChange={() => {}}
-              onClearImage={() => {}}
-              onAutoTag={onAutoTag}
-              onDelete={onDelete}
+        <div className="row">
+          <div className="studio-head col">
+            <h2>
+              <span className="studio-name">{studio.name}</span>
+              {renderClickableIcons()}
+            </h2>
+            <RatingSystem
+              value={studio.rating100 ?? undefined}
+              onSetRating={(value) => setRating(value ?? null)}
             />
-          </>
-        ) : (
-          <StudioEditPanel
-            studio={studio}
-            onSubmit={onSave}
-            onCancel={() => toggleEditing()}
-            onDelete={onDelete}
-            setImage={setImage}
-            setEncodingImage={setEncodingImage}
-          />
-        )}
+            {maybeRenderDetails()}
+            {maybeRenderEditPanel()}
+          </div>
+        </div>
       </div>
-      <div className="details-divider d-none d-xl-block">
-        <Button onClick={() => setCollapsed(!collapsed)}>
-          <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
-        </Button>
-      </div>
-      <div className={`col content-container ${collapsed ? "expanded" : ""}`}>
-        <Tabs
-          id="studio-tabs"
-          mountOnEnter
-          unmountOnExit
-          activeKey={activeTabKey}
-          onSelect={setActiveTabKey}
-        >
-          <Tab
-            eventKey="scenes"
-            title={
-              <>
-                {intl.formatMessage({ id: "scenes" })}
-                <Counter
-                  abbreviateCounter={abbreviateCounter}
-                  count={sceneCount}
-                  hideZero
-                />
-              </>
-            }
-          >
-            <StudioScenesPanel
-              active={activeTabKey == "scenes"}
-              studio={studio}
-            />
-          </Tab>
-          <Tab
-            eventKey="galleries"
-            title={
-              <>
-                {intl.formatMessage({ id: "galleries" })}
-                <Counter
-                  abbreviateCounter={abbreviateCounter}
-                  count={galleryCount}
-                  hideZero
-                />
-              </>
-            }
-          >
-            <StudioGalleriesPanel
-              active={activeTabKey == "galleries"}
-              studio={studio}
-            />
-          </Tab>
-          <Tab
-            eventKey="images"
-            title={
-              <>
-                {intl.formatMessage({ id: "images" })}
-                <Counter
-                  abbreviateCounter={abbreviateCounter}
-                  count={imageCount}
-                  hideZero
-                />
-              </>
-            }
-          >
-            <StudioImagesPanel
-              active={activeTabKey == "images"}
-              studio={studio}
-            />
-          </Tab>
-          <Tab
-            eventKey="performers"
-            title={
-              <>
-                {intl.formatMessage({ id: "performers" })}
-                <Counter
-                  abbreviateCounter={abbreviateCounter}
-                  count={performerCount}
-                  hideZero
-                />
-              </>
-            }
-          >
-            <StudioPerformersPanel
-              active={activeTabKey == "performers"}
-              studio={studio}
-            />
-          </Tab>
-          <Tab
-            eventKey="movies"
-            title={
-              <>
-                {intl.formatMessage({ id: "movies" })}
-                <Counter
-                  abbreviateCounter={abbreviateCounter}
-                  count={movieCount}
-                  hideZero
-                />
-              </>
-            }
-          >
-            <StudioMoviesPanel
-              active={activeTabKey == "movies"}
-              studio={studio}
-            />
-          </Tab>
-          <Tab
-            eventKey="childstudios"
-            title={
-              <>
-                {intl.formatMessage({ id: "subsidiary_studios" })}
-                <Counter
-                  abbreviateCounter={false}
-                  count={studio.child_studios.length}
-                  hideZero
-                />
-              </>
-            }
-          >
-            <StudioChildrenPanel
-              active={activeTabKey == "childstudios"}
-              studio={studio}
-            />
-          </Tab>
-        </Tabs>
+      {maybeRenderCompressedDetails()}
+      <div className="detail-body">
+        <div className="studio-body">
+          <div className="studio-tabs">{maybeRenderTab()}</div>
+        </div>
       </div>
       {renderDeleteAlert()}
     </div>

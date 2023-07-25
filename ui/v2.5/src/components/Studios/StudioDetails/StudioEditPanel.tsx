@@ -11,13 +11,10 @@ import { Button, Form, Col, Row } from "react-bootstrap";
 import FormUtils from "src/utils/form";
 import ImageUtils from "src/utils/image";
 import { getStashIDs } from "src/utils/stashIds";
-import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { StringListInput } from "../../Shared/StringListInput";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
-import { useRatingKeybinds } from "src/hooks/keybinds";
-import { ConfigurationContext } from "src/hooks/Config";
 import isEqual from "lodash-es/isEqual";
 import { useToast } from "src/hooks/Toast";
 import { handleUnsavedChanges } from "src/utils/navigation";
@@ -43,7 +40,6 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
   const Toast = useToast();
 
   const isNew = studio.id === undefined;
-  const { configuration } = React.useContext(ConfigurationContext);
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -111,16 +107,6 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
   useEffect(() => {
     setEncodingImage(encodingImage);
   }, [setEncodingImage, encodingImage]);
-
-  function setRating(v: number) {
-    formik.setFieldValue("rating100", v);
-  }
-
-  useRatingKeybinds(
-    true,
-    configuration?.ui?.ratingSystemOptions?.type,
-    setRating
-  );
 
   // set up hotkeys
   useEffect(() => {
@@ -297,20 +283,6 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
               }
               ids={formik.values.parent_id ? [formik.values.parent_id] : []}
               excludeIds={studio.id ? [studio.id] : []}
-            />
-          </Col>
-        </Form.Group>
-
-        <Form.Group controlId="rating" as={Row}>
-          {FormUtils.renderLabel({
-            title: intl.formatMessage({ id: "rating" }),
-          })}
-          <Col xs={9}>
-            <RatingSystem
-              value={formik.values.rating100 ?? undefined}
-              onSetRating={(value) =>
-                formik.setFieldValue("rating100", value ?? null)
-              }
             />
           </Col>
         </Form.Group>
