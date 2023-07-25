@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
@@ -385,7 +386,7 @@ func (t *ImportTask) ImportFiles(ctx context.Context) {
 		if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
 			return t.ImportFile(ctx, fileJSON, pendingParent)
 		}); err != nil {
-			if errors.Is(err, errZipFileNotExist) {
+			if errors.Is(err, file.ErrZipFileNotExist) {
 				// add to the pending parent list so that it is created after the parent
 				s := pendingParent[fileJSON.DirEntry().ZipFile]
 				s = append(s, fileJSON)
@@ -421,7 +422,7 @@ func (t *ImportTask) ImportFile(ctx context.Context, fileJSON jsonschema.DirEntr
 	r := t.txnManager
 	readerWriter := r.File
 
-	fileImporter := &fileFolderImporter{
+	fileImporter := &file.Importer{
 		ReaderWriter: readerWriter,
 		FolderStore:  r.Folder,
 		Input:        fileJSON,

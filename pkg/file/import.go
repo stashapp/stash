@@ -1,4 +1,4 @@
-package manager
+package file
 
 import (
 	"context"
@@ -7,25 +7,22 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 )
 
-// HACK: this is all here because of an import loop in jsonschema -> models -> file
+var ErrZipFileNotExist = errors.New("zip file does not exist")
 
-var errZipFileNotExist = errors.New("zip file does not exist")
-
-type fileFolderImporter struct {
-	ReaderWriter file.Store
-	FolderStore  file.FolderStore
+type Importer struct {
+	ReaderWriter models.FileFinderCreator
+	FolderStore  FolderStore
 	Input        jsonschema.DirEntry
 
 	file   models.File
 	folder *models.Folder
 }
 
-func (i *fileFolderImporter) PreImport(ctx context.Context) error {
+func (i *Importer) PreImport(ctx context.Context) error {
 	var err error
 
 	switch ff := i.Input.(type) {
@@ -38,7 +35,7 @@ func (i *fileFolderImporter) PreImport(ctx context.Context) error {
 	return err
 }
 
-func (i *fileFolderImporter) folderJSONToFolder(ctx context.Context, baseJSON *jsonschema.BaseDirEntry) (*models.Folder, error) {
+func (i *Importer) folderJSONToFolder(ctx context.Context, baseJSON *jsonschema.BaseDirEntry) (*models.Folder, error) {
 	ret := models.Folder{
 		DirEntry: models.DirEntry{
 			ModTime: baseJSON.ModTime.GetTime(),
@@ -57,7 +54,7 @@ func (i *fileFolderImporter) folderJSONToFolder(ctx context.Context, baseJSON *j
 	return &ret, nil
 }
 
-func (i *fileFolderImporter) fileJSONToFile(ctx context.Context, fileJSON jsonschema.DirEntry) (models.File, error) {
+func (i *Importer) fileJSONToFile(ctx context.Context, fileJSON jsonschema.DirEntry) (models.File, error) {
 	switch ff := fileJSON.(type) {
 	case *jsonschema.VideoFile:
 		baseFile, err := i.baseFileJSONToBaseFile(ctx, ff.BaseFile)
@@ -95,7 +92,7 @@ func (i *fileFolderImporter) fileJSONToFile(ctx context.Context, fileJSON jsonsc
 	return nil, fmt.Errorf("unknown file type")
 }
 
-func (i *fileFolderImporter) baseFileJSONToBaseFile(ctx context.Context, baseJSON *jsonschema.BaseFile) (*models.BaseFile, error) {
+func (i *Importer) baseFileJSONToBaseFile(ctx context.Context, baseJSON *jsonschema.BaseFile) (*models.BaseFile, error) {
 	baseFile := models.BaseFile{
 		DirEntry: models.DirEntry{
 			ModTime: baseJSON.ModTime.GetTime(),
@@ -120,7 +117,7 @@ func (i *fileFolderImporter) baseFileJSONToBaseFile(ctx context.Context, baseJSO
 	return &baseFile, nil
 }
 
-func (i *fileFolderImporter) populateZipFileID(ctx context.Context, f *models.DirEntry) error {
+func (i *Importer) populateZipFileID(ctx context.Context, f *models.DirEntry) error {
 	zipFilePath := i.Input.DirEntry().ZipFile
 	if zipFilePath != "" {
 		zf, err := i.ReaderWriter.FindByPath(ctx, zipFilePath)
@@ -129,7 +126,7 @@ func (i *fileFolderImporter) populateZipFileID(ctx context.Context, f *models.Di
 		}
 
 		if zf == nil {
-			return errZipFileNotExist
+			return ErrZipFileNotExist
 		}
 
 		id := zf.Base().ID
@@ -139,15 +136,15 @@ func (i *fileFolderImporter) populateZipFileID(ctx context.Context, f *models.Di
 	return nil
 }
 
-func (i *fileFolderImporter) PostImport(ctx context.Context, id int) error {
+func (i *Importer) PostImport(ctx context.Context, id int) error {
 	return nil
 }
 
-func (i *fileFolderImporter) Name() string {
+func (i *Importer) Name() string {
 	return i.Input.DirEntry().Path
 }
 
-func (i *fileFolderImporter) FindExistingID(ctx context.Context) (*int, error) {
+func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 	path := i.Input.DirEntry().Path
 	existing, err := i.ReaderWriter.FindByPath(ctx, path)
 	if err != nil {
@@ -162,7 +159,7 @@ func (i *fileFolderImporter) FindExistingID(ctx context.Context) (*int, error) {
 	return nil, nil
 }
 
-func (i *fileFolderImporter) createFolderHierarchy(ctx context.Context, p string) (*models.Folder, error) {
+func (i *Importer) createFolderHierarchy(ctx context.Context, p string) (*models.Folder, error) {
 	parentPath := filepath.Dir(p)
 
 	if parentPath == p {
@@ -178,7 +175,7 @@ func (i *fileFolderImporter) createFolderHierarchy(ctx context.Context, p string
 	return i.getOrCreateFolder(ctx, p, parent)
 }
 
-func (i *fileFolderImporter) getOrCreateFolder(ctx context.Context, path string, parent *models.Folder) (*models.Folder, error) {
+func (i *Importer) getOrCreateFolder(ctx context.Context, path string, parent *models.Folder) (*models.Folder, error) {
 	folder, err := i.FolderStore.FindByPath(ctx, path)
 	if err != nil {
 		return nil, err
@@ -208,7 +205,7 @@ func (i *fileFolderImporter) getOrCreateFolder(ctx context.Context, path string,
 	return folder, nil
 }
 
-func (i *fileFolderImporter) Create(ctx context.Context) (*int, error) {
+func (i *Importer) Create(ctx context.Context) (*int, error) {
 	// create folder hierarchy and set parent folder id
 	path := i.Input.DirEntry().Path
 	path = filepath.Dir(path)
@@ -224,7 +221,7 @@ func (i *fileFolderImporter) Create(ctx context.Context) (*int, error) {
 	return i.createFile(ctx, folder)
 }
 
-func (i *fileFolderImporter) createFile(ctx context.Context, parentFolder *models.Folder) (*int, error) {
+func (i *Importer) createFile(ctx context.Context, parentFolder *models.Folder) (*int, error) {
 	if parentFolder != nil {
 		i.file.Base().ParentFolderID = parentFolder.ID
 	}
@@ -237,7 +234,7 @@ func (i *fileFolderImporter) createFile(ctx context.Context, parentFolder *model
 	return &id, nil
 }
 
-func (i *fileFolderImporter) createFolder(ctx context.Context, parentFolder *models.Folder) (*int, error) {
+func (i *Importer) createFolder(ctx context.Context, parentFolder *models.Folder) (*int, error) {
 	if parentFolder != nil {
 		i.folder.ParentFolderID = &parentFolder.ID
 	}
@@ -250,7 +247,7 @@ func (i *fileFolderImporter) createFolder(ctx context.Context, parentFolder *mod
 	return &id, nil
 }
 
-func (i *fileFolderImporter) Update(ctx context.Context, id int) error {
+func (i *Importer) Update(ctx context.Context, id int) error {
 	// update not supported
 	return nil
 }
