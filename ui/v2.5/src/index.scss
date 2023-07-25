@@ -87,7 +87,7 @@ dd {
   flex: unset;
 }
 
-.sticky.detail-header-group{
+.sticky.detail-header-group {
   padding: 1rem 2.5rem;
 
   @media (max-width: 576px) {
@@ -110,7 +110,6 @@ dd {
     padding-right: 1.5rem;
   }
 }
-
 
 @keyframes fadeIn {
   0% {
@@ -153,7 +152,6 @@ dd {
     margin-left: 0.5rem;
   }
 }
-
 
 .detail-header.edit {
   background-color: unset;
@@ -216,7 +214,6 @@ dd {
     max-width: 100%;
   }
 }
-
 
 .detail-item.tags .pl-0 {
   margin-bottom: 0;
