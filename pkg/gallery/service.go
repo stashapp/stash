@@ -9,7 +9,7 @@ import (
 )
 
 type FinderByFile interface {
-	FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Gallery, error)
+	FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Gallery, error)
 }
 
 type Repository interface {
@@ -26,14 +26,14 @@ type PartialUpdater interface {
 }
 
 type ImageFinder interface {
-	FindByFolderID(ctx context.Context, folder file.FolderID) ([]*models.Image, error)
-	FindByZipFileID(ctx context.Context, zipFileID file.ID) ([]*models.Image, error)
+	FindByFolderID(ctx context.Context, folder models.FolderID) ([]*models.Image, error)
+	FindByZipFileID(ctx context.Context, zipFileID models.FileID) ([]*models.Image, error)
 	models.GalleryIDLoader
 }
 
 type ImageService interface {
 	Destroy(ctx context.Context, i *models.Image, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) error
-	DestroyZipImages(ctx context.Context, zipFile file.File, fileDeleter *image.FileDeleter, deleteGenerated bool) ([]*models.Image, error)
+	DestroyZipImages(ctx context.Context, zipFile models.File, fileDeleter *image.FileDeleter, deleteGenerated bool) ([]*models.Image, error)
 }
 
 type ChapterRepository interface {

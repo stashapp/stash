@@ -8,8 +8,8 @@ import (
 )
 
 type FinderByFile interface {
-	FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Image, error)
-	FindByZipFileID(ctx context.Context, zipFileID file.ID) ([]*models.Image, error)
+	FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Image, error)
+	FindByZipFileID(ctx context.Context, zipFileID models.FileID) ([]*models.Image, error)
 }
 
 type Repository interface {

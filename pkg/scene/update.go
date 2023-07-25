@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -113,7 +112,7 @@ func AddGallery(ctx context.Context, qb PartialUpdater, o *models.Scene, gallery
 	return err
 }
 
-func (s *Service) AssignFile(ctx context.Context, sceneID int, fileID file.ID) error {
+func (s *Service) AssignFile(ctx context.Context, sceneID int, fileID models.FileID) error {
 	// ensure file isn't a primary file and that it is a video file
 	f, err := s.File.Find(ctx, fileID)
 	if err != nil {
@@ -121,7 +120,7 @@ func (s *Service) AssignFile(ctx context.Context, sceneID int, fileID file.ID) e
 	}
 
 	ff := f[0]
-	if _, ok := ff.(*file.VideoFile); !ok {
+	if _, ok := ff.(*models.VideoFile); !ok {
 		return fmt.Errorf("%s is not a video file", ff.Base().Path)
 	}
 
@@ -134,5 +133,5 @@ func (s *Service) AssignFile(ctx context.Context, sceneID int, fileID file.ID) e
 		return errors.New("cannot reassign primary file")
 	}
 
-	return s.Repository.AssignFiles(ctx, sceneID, []file.ID{fileID})
+	return s.Repository.AssignFiles(ctx, sceneID, []models.FileID{fileID})
 }

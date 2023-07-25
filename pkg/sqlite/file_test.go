@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,10 +17,10 @@ func getFilePath(folderIdx int, basename string) string {
 	return filepath.Join(folderPaths[folderIdx], basename)
 }
 
-func makeZipFileWithID(index int) file.File {
+func makeZipFileWithID(index int) models.File {
 	f := makeFile(index)
 
-	return &file.BaseFile{
+	return &models.BaseFile{
 		ID:       fileIDs[index],
 		Basename: f.Base().Basename,
 		Path:     getFilePath(fileFolders[index], getFileBaseName(index)),
@@ -49,13 +49,13 @@ func Test_fileFileStore_Create(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		newObject file.File
+		newObject models.File
 		wantErr   bool
 	}{
 		{
 			"full",
-			&file.BaseFile{
-				DirEntry: file.DirEntry{
+			&models.BaseFile{
+				DirEntry: models.DirEntry{
 					ZipFileID: &fileIDs[fileIdxZip],
 					ZipFile:   makeZipFileWithID(fileIdxZip),
 					ModTime:   fileModTime,
@@ -64,7 +64,7 @@ func Test_fileFileStore_Create(t *testing.T) {
 				ParentFolderID: folderIDs[folderIdxWithFiles],
 				Basename:       basename,
 				Size:           size,
-				Fingerprints: []file.Fingerprint{
+				Fingerprints: []models.Fingerprint{
 					{
 						Type:        fingerprintType,
 						Fingerprint: fingerprintValue,
@@ -77,9 +77,9 @@ func Test_fileFileStore_Create(t *testing.T) {
 		},
 		{
 			"video file",
-			&file.VideoFile{
-				BaseFile: &file.BaseFile{
-					DirEntry: file.DirEntry{
+			&models.VideoFile{
+				BaseFile: &models.BaseFile{
+					DirEntry: models.DirEntry{
 						ZipFileID: &fileIDs[fileIdxZip],
 						ZipFile:   makeZipFileWithID(fileIdxZip),
 						ModTime:   fileModTime,
@@ -88,7 +88,7 @@ func Test_fileFileStore_Create(t *testing.T) {
 					ParentFolderID: folderIDs[folderIdxWithFiles],
 					Basename:       basename,
 					Size:           size,
-					Fingerprints: []file.Fingerprint{
+					Fingerprints: []models.Fingerprint{
 						{
 							Type:        fingerprintType,
 							Fingerprint: fingerprintValue,
@@ -110,9 +110,9 @@ func Test_fileFileStore_Create(t *testing.T) {
 		},
 		{
 			"image file",
-			&file.ImageFile{
-				BaseFile: &file.BaseFile{
-					DirEntry: file.DirEntry{
+			&models.ImageFile{
+				BaseFile: &models.BaseFile{
+					DirEntry: models.DirEntry{
 						ZipFileID: &fileIDs[fileIdxZip],
 						ZipFile:   makeZipFileWithID(fileIdxZip),
 						ModTime:   fileModTime,
@@ -121,7 +121,7 @@ func Test_fileFileStore_Create(t *testing.T) {
 					ParentFolderID: folderIDs[folderIdxWithFiles],
 					Basename:       basename,
 					Size:           size,
-					Fingerprints: []file.Fingerprint{
+					Fingerprints: []models.Fingerprint{
 						{
 							Type:        fingerprintType,
 							Fingerprint: fingerprintValue,
@@ -138,15 +138,15 @@ func Test_fileFileStore_Create(t *testing.T) {
 		},
 		{
 			"duplicate path",
-			&file.BaseFile{
-				DirEntry: file.DirEntry{
+			&models.BaseFile{
+				DirEntry: models.DirEntry{
 					ModTime: fileModTime,
 				},
 				Path:           getFilePath(folderIdxWithFiles, getFileBaseName(fileIdxZip)),
 				ParentFolderID: folderIDs[folderIdxWithFiles],
 				Basename:       getFileBaseName(fileIdxZip),
 				Size:           size,
-				Fingerprints: []file.Fingerprint{
+				Fingerprints: []models.Fingerprint{
 					{
 						Type:        fingerprintType,
 						Fingerprint: fingerprintValue,
@@ -159,22 +159,22 @@ func Test_fileFileStore_Create(t *testing.T) {
 		},
 		{
 			"empty basename",
-			&file.BaseFile{
+			&models.BaseFile{
 				ParentFolderID: folderIDs[folderIdxWithFiles],
 			},
 			true,
 		},
 		{
 			"missing folder id",
-			&file.BaseFile{
+			&models.BaseFile{
 				Basename: basename,
 			},
 			true,
 		},
 		{
 			"invalid folder id",
-			&file.BaseFile{
-				DirEntry:       file.DirEntry{},
+			&models.BaseFile{
+				DirEntry:       models.DirEntry{},
 				ParentFolderID: invalidFolderID,
 				Basename:       basename,
 			},
@@ -182,8 +182,8 @@ func Test_fileFileStore_Create(t *testing.T) {
 		},
 		{
 			"invalid zip file id",
-			&file.BaseFile{
-				DirEntry: file.DirEntry{
+			&models.BaseFile{
+				DirEntry: models.DirEntry{
 					ZipFileID: &invalidFileID,
 				},
 				Basename: basename,
@@ -210,15 +210,15 @@ func Test_fileFileStore_Create(t *testing.T) {
 
 			assert.NotZero(s.Base().ID)
 
-			var copy file.File
+			var copy models.File
 			switch t := s.(type) {
-			case *file.BaseFile:
+			case *models.BaseFile:
 				v := *t
 				copy = &v
-			case *file.VideoFile:
+			case *models.VideoFile:
 				v := *t
 				copy = &v
-			case *file.ImageFile:
+			case *models.ImageFile:
 				v := *t
 				copy = &v
 			}
@@ -266,14 +266,14 @@ func Test_fileStore_Update(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		updatedObject file.File
+		updatedObject models.File
 		wantErr       bool
 	}{
 		{
 			"full",
-			&file.BaseFile{
+			&models.BaseFile{
 				ID: fileIDs[fileIdxInZip],
-				DirEntry: file.DirEntry{
+				DirEntry: models.DirEntry{
 					ZipFileID: &fileIDs[fileIdxZip],
 					ZipFile:   makeZipFileWithID(fileIdxZip),
 					ModTime:   fileModTime,
@@ -282,7 +282,7 @@ func Test_fileStore_Update(t *testing.T) {
 				ParentFolderID: folderIDs[folderIdxWithFiles],
 				Basename:       basename,
 				Size:           size,
-				Fingerprints: []file.Fingerprint{
+				Fingerprints: []models.Fingerprint{
 					{
 						Type:        fingerprintType,
 						Fingerprint: fingerprintValue,
@@ -295,10 +295,10 @@ func Test_fileStore_Update(t *testing.T) {
 		},
 		{
 			"video file",
-			&file.VideoFile{
-				BaseFile: &file.BaseFile{
+			&models.VideoFile{
+				BaseFile: &models.BaseFile{
 					ID: fileIDs[fileIdxStartVideoFiles],
-					DirEntry: file.DirEntry{
+					DirEntry: models.DirEntry{
 						ZipFileID: &fileIDs[fileIdxZip],
 						ZipFile:   makeZipFileWithID(fileIdxZip),
 						ModTime:   fileModTime,
@@ -307,7 +307,7 @@ func Test_fileStore_Update(t *testing.T) {
 					ParentFolderID: folderIDs[folderIdxWithFiles],
 					Basename:       basename,
 					Size:           size,
-					Fingerprints: []file.Fingerprint{
+					Fingerprints: []models.Fingerprint{
 						{
 							Type:        fingerprintType,
 							Fingerprint: fingerprintValue,
@@ -329,10 +329,10 @@ func Test_fileStore_Update(t *testing.T) {
 		},
 		{
 			"image file",
-			&file.ImageFile{
-				BaseFile: &file.BaseFile{
+			&models.ImageFile{
+				BaseFile: &models.BaseFile{
 					ID: fileIDs[fileIdxStartImageFiles],
-					DirEntry: file.DirEntry{
+					DirEntry: models.DirEntry{
 						ZipFileID: &fileIDs[fileIdxZip],
 						ZipFile:   makeZipFileWithID(fileIdxZip),
 						ModTime:   fileModTime,
@@ -341,7 +341,7 @@ func Test_fileStore_Update(t *testing.T) {
 					ParentFolderID: folderIDs[folderIdxWithFiles],
 					Basename:       basename,
 					Size:           size,
-					Fingerprints: []file.Fingerprint{
+					Fingerprints: []models.Fingerprint{
 						{
 							Type:        fingerprintType,
 							Fingerprint: fingerprintValue,
@@ -358,16 +358,16 @@ func Test_fileStore_Update(t *testing.T) {
 		},
 		{
 			"duplicate path",
-			&file.BaseFile{
+			&models.BaseFile{
 				ID: fileIDs[fileIdxInZip],
-				DirEntry: file.DirEntry{
+				DirEntry: models.DirEntry{
 					ModTime: fileModTime,
 				},
 				Path:           getFilePath(folderIdxWithFiles, getFileBaseName(fileIdxZip)),
 				ParentFolderID: folderIDs[folderIdxWithFiles],
 				Basename:       getFileBaseName(fileIdxZip),
 				Size:           size,
-				Fingerprints: []file.Fingerprint{
+				Fingerprints: []models.Fingerprint{
 					{
 						Type:        fingerprintType,
 						Fingerprint: fingerprintValue,
@@ -380,7 +380,7 @@ func Test_fileStore_Update(t *testing.T) {
 		},
 		{
 			"clear zip",
-			&file.BaseFile{
+			&models.BaseFile{
 				ID:             fileIDs[fileIdxInZip],
 				Path:           getFilePath(folderIdxWithFiles, getFileBaseName(fileIdxZip)+".renamed"),
 				Basename:       getFileBaseName(fileIdxZip) + ".renamed",
@@ -390,7 +390,7 @@ func Test_fileStore_Update(t *testing.T) {
 		},
 		{
 			"clear folder",
-			&file.BaseFile{
+			&models.BaseFile{
 				ID:   fileIDs[fileIdxZip],
 				Path: basename,
 			},
@@ -398,7 +398,7 @@ func Test_fileStore_Update(t *testing.T) {
 		},
 		{
 			"invalid parent folder id",
-			&file.BaseFile{
+			&models.BaseFile{
 				ID:             fileIDs[fileIdxZip],
 				Path:           basename,
 				ParentFolderID: invalidFolderID,
@@ -407,10 +407,10 @@ func Test_fileStore_Update(t *testing.T) {
 		},
 		{
 			"invalid zip file id",
-			&file.BaseFile{
+			&models.BaseFile{
 				ID:   fileIDs[fileIdxZip],
 				Path: basename,
-				DirEntry: file.DirEntry{
+				DirEntry: models.DirEntry{
 					ZipFileID: &invalidFileID,
 				},
 				ParentFolderID: folderIDs[folderIdxWithFiles],
@@ -450,7 +450,7 @@ func Test_fileStore_Update(t *testing.T) {
 	}
 }
 
-func makeFileWithID(index int) file.File {
+func makeFileWithID(index int) models.File {
 	ret := makeFile(index)
 	ret.Base().Path = getFilePath(fileFolders[index], getFileBaseName(index))
 	ret.Base().ID = fileIDs[index]
@@ -461,8 +461,8 @@ func makeFileWithID(index int) file.File {
 func Test_fileStore_Find(t *testing.T) {
 	tests := []struct {
 		name    string
-		id      file.ID
-		want    file.File
+		id      models.FileID
+		want    models.File
 		wantErr bool
 	}{
 		{
@@ -473,7 +473,7 @@ func Test_fileStore_Find(t *testing.T) {
 		},
 		{
 			"invalid",
-			file.ID(invalidID),
+			models.FileID(invalidID),
 			nil,
 			true,
 		},
@@ -529,7 +529,7 @@ func Test_FileStore_FindByPath(t *testing.T) {
 	tests := []struct {
 		name    string
 		path    string
-		want    file.File
+		want    models.File
 		wantErr bool
 	}{
 		{
@@ -565,31 +565,31 @@ func Test_FileStore_FindByPath(t *testing.T) {
 func TestFileStore_FindByFingerprint(t *testing.T) {
 	tests := []struct {
 		name    string
-		fp      file.Fingerprint
-		want    []file.File
+		fp      models.Fingerprint
+		want    []models.File
 		wantErr bool
 	}{
 		{
 			"by MD5",
-			file.Fingerprint{
+			models.Fingerprint{
 				Type:        "MD5",
 				Fingerprint: getPrefixedStringValue("file", fileIdxZip, "md5"),
 			},
-			[]file.File{makeFileWithID(fileIdxZip)},
+			[]models.File{makeFileWithID(fileIdxZip)},
 			false,
 		},
 		{
 			"by OSHASH",
-			file.Fingerprint{
+			models.Fingerprint{
 				Type:        "OSHASH",
 				Fingerprint: getPrefixedStringValue("file", fileIdxZip, "oshash"),
 			},
-			[]file.File{makeFileWithID(fileIdxZip)},
+			[]models.File{makeFileWithID(fileIdxZip)},
 			false,
 		},
 		{
 			"non-existing",
-			file.Fingerprint{
+			models.Fingerprint{
 				Type:        "OSHASH",
 				Fingerprint: "foo",
 			},
@@ -617,7 +617,7 @@ func TestFileStore_FindByFingerprint(t *testing.T) {
 func TestFileStore_IsPrimary(t *testing.T) {
 	tests := []struct {
 		name   string
-		fileID file.ID
+		fileID models.FileID
 		want   bool
 	}{
 		{

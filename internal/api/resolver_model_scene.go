@@ -9,50 +9,28 @@ import (
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/internal/manager"
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-func convertVideoFile(f *file.VideoFile) *VideoFile {
-	ret := &VideoFile{
-		ID:             strconv.Itoa(int(f.ID)),
-		Path:           f.Path,
-		Basename:       f.Basename,
-		ParentFolderID: strconv.Itoa(int(f.ParentFolderID)),
-		ModTime:        f.ModTime,
-		Format:         f.Format,
-		Size:           f.Size,
-		Duration:       handleFloat64Value(f.Duration),
-		VideoCodec:     f.VideoCodec,
-		AudioCodec:     f.AudioCodec,
-		Width:          f.Width,
-		Height:         f.Height,
-		FrameRate:      handleFloat64Value(f.FrameRate),
-		BitRate:        int(f.BitRate),
-		CreatedAt:      f.CreatedAt,
-		UpdatedAt:      f.UpdatedAt,
-		Fingerprints:   resolveFingerprints(f.Base()),
+func convertVideoFile(f models.File) (*models.VideoFile, error) {
+	vf, ok := f.(*models.VideoFile)
+	if !ok {
+		return nil, fmt.Errorf("file %T is not a video file", f)
 	}
-
-	if f.ZipFileID != nil {
-		zipFileID := strconv.Itoa(int(*f.ZipFileID))
-		ret.ZipFileID = &zipFileID
-	}
-
-	return ret
+	return vf, nil
 }
 
-func (r *sceneResolver) getPrimaryFile(ctx context.Context, obj *models.Scene) (*file.VideoFile, error) {
+func (r *sceneResolver) getPrimaryFile(ctx context.Context, obj *models.Scene) (*models.VideoFile, error) {
 	if obj.PrimaryFileID != nil {
 		f, err := loaders.From(ctx).FileByID.Load(*obj.PrimaryFileID)
 		if err != nil {
 			return nil, err
 		}
 
-		ret, ok := f.(*file.VideoFile)
-		if !ok {
-			return nil, fmt.Errorf("file %T is not an image file", f)
+		ret, err := convertVideoFile(f)
+		if err != nil {
+			return nil, err
 		}
 
 		obj.Files.SetPrimary(ret)
@@ -65,26 +43,29 @@ func (r *sceneResolver) getPrimaryFile(ctx context.Context, obj *models.Scene) (
 	return nil, nil
 }
 
-func (r *sceneResolver) getFiles(ctx context.Context, obj *models.Scene) ([]*file.VideoFile, error) {
+func (r *sceneResolver) getFiles(ctx context.Context, obj *models.Scene) ([]*models.VideoFile, error) {
 	fileIDs, err := loaders.From(ctx).SceneFiles.Load(obj.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	files, errs := loaders.From(ctx).FileByID.LoadAll(fileIDs)
-	ret := make([]*file.VideoFile, len(files))
-	for i, bf := range files {
-		f, ok := bf.(*file.VideoFile)
-		if !ok {
-			return nil, fmt.Errorf("file %T is not a video file", f)
-		}
+	err = firstError(errs)
+	if err != nil {
+		return nil, err
+	}
 
-		ret[i] = f
+	ret := make([]*models.VideoFile, len(files))
+	for i, f := range files {
+		ret[i], err = convertVideoFile(f)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	obj.Files.Set(ret)
 
-	return ret, firstError(errs)
+	return ret, nil
 }
 
 func (r *sceneResolver) FileModTime(ctx context.Context, obj *models.Scene) (*time.Time, error) {
@@ -132,19 +113,13 @@ func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (*models.Sc
 	}, nil
 }
 
-func (r *sceneResolver) Files(ctx context.Context, obj *models.Scene) ([]*VideoFile, error) {
+func (r *sceneResolver) Files(ctx context.Context, obj *models.Scene) ([]*models.VideoFile, error) {
 	files, err := r.getFiles(ctx, obj)
 	if err != nil {
 		return nil, err
 	}
 
-	ret := make([]*VideoFile, len(files))
-
-	for i, f := range files {
-		ret[i] = convertVideoFile(f)
-	}
-
-	return ret, nil
+	return files, nil
 }
 
 func (r *sceneResolver) Rating(ctx context.Context, obj *models.Scene) (*int, error) {
@@ -157,28 +132,6 @@ func (r *sceneResolver) Rating(ctx context.Context, obj *models.Scene) (*int, er
 
 func (r *sceneResolver) Rating100(ctx context.Context, obj *models.Scene) (*int, error) {
 	return obj.Rating, nil
-}
-
-func resolveFingerprints(f *file.BaseFile) []*Fingerprint {
-	ret := make([]*Fingerprint, len(f.Fingerprints))
-
-	for i, fp := range f.Fingerprints {
-		ret[i] = &Fingerprint{
-			Type:  fp.Type,
-			Value: formatFingerprint(fp.Fingerprint),
-		}
-	}
-
-	return ret
-}
-
-func formatFingerprint(fp interface{}) string {
-	switch v := fp.(type) {
-	case int64:
-		return strconv.FormatUint(uint64(v), 16)
-	default:
-		return fmt.Sprintf("%v", fp)
-	}
 }
 
 func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePathsType, error) {
@@ -352,7 +305,7 @@ func (r *sceneResolver) Phash(ctx context.Context, obj *models.Scene) (*string, 
 		return nil, nil
 	}
 
-	val := f.Fingerprints.Get(file.FingerprintTypePhash)
+	val := f.Fingerprints.Get(models.FingerprintTypePhash)
 	if val == nil {
 		return nil, nil
 	}

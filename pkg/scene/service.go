@@ -10,15 +10,15 @@ import (
 )
 
 type FinderByFile interface {
-	FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Scene, error)
+	FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Scene, error)
 }
 
 type FileAssigner interface {
-	AssignFiles(ctx context.Context, sceneID int, fileID []file.ID) error
+	AssignFiles(ctx context.Context, sceneID int, fileID []models.FileID) error
 }
 
 type Creator interface {
-	Create(ctx context.Context, newScene *models.Scene, fileIDs []file.ID) error
+	Create(ctx context.Context, newScene *models.Scene, fileIDs []models.FileID) error
 }
 
 type CoverUpdater interface {

@@ -36,7 +36,7 @@ type SceneMarkerFinder interface {
 }
 
 type CaptionFinder interface {
-	GetCaptions(ctx context.Context, fileID file.ID) ([]*models.VideoCaption, error)
+	GetCaptions(ctx context.Context, fileID models.FileID) ([]*models.VideoCaption, error)
 }
 
 type sceneRoutes struct {

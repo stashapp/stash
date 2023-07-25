@@ -19,7 +19,6 @@ import (
 
 	"github.com/Yamashou/gqlgenc/graphqljson"
 	"github.com/gofrs/uuid"
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
@@ -151,7 +150,7 @@ func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, ids []int)
 			var sceneFPs []*graphql.FingerprintQueryInput
 
 			for _, f := range scene.Files.List() {
-				checksum := f.Fingerprints.GetString(file.FingerprintTypeMD5)
+				checksum := f.Fingerprints.GetString(models.FingerprintTypeMD5)
 				if checksum != "" {
 					sceneFPs = append(sceneFPs, &graphql.FingerprintQueryInput{
 						Hash:      checksum,
@@ -159,7 +158,7 @@ func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, ids []int)
 					})
 				}
 
-				oshash := f.Fingerprints.GetString(file.FingerprintTypeOshash)
+				oshash := f.Fingerprints.GetString(models.FingerprintTypeOshash)
 				if oshash != "" {
 					sceneFPs = append(sceneFPs, &graphql.FingerprintQueryInput{
 						Hash:      oshash,
@@ -167,7 +166,7 @@ func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, ids []int)
 					})
 				}
 
-				phash := f.Fingerprints.GetInt64(file.FingerprintTypePhash)
+				phash := f.Fingerprints.GetInt64(models.FingerprintTypePhash)
 				if phash != 0 {
 					phashStr := utils.PhashToString(phash)
 					sceneFPs = append(sceneFPs, &graphql.FingerprintQueryInput{
@@ -279,7 +278,7 @@ func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []strin
 					duration := f.Duration
 
 					if duration != 0 {
-						if checksum := f.Fingerprints.GetString(file.FingerprintTypeMD5); checksum != "" {
+						if checksum := f.Fingerprints.GetString(models.FingerprintTypeMD5); checksum != "" {
 							fingerprint := graphql.FingerprintInput{
 								Hash:      checksum,
 								Algorithm: graphql.FingerprintAlgorithmMd5,
@@ -291,7 +290,7 @@ func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []strin
 							})
 						}
 
-						if oshash := f.Fingerprints.GetString(file.FingerprintTypeOshash); oshash != "" {
+						if oshash := f.Fingerprints.GetString(models.FingerprintTypeOshash); oshash != "" {
 							fingerprint := graphql.FingerprintInput{
 								Hash:      oshash,
 								Algorithm: graphql.FingerprintAlgorithmOshash,
@@ -303,7 +302,7 @@ func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []strin
 							})
 						}
 
-						if phash := f.Fingerprints.GetInt64(file.FingerprintTypePhash); phash != 0 {
+						if phash := f.Fingerprints.GetInt64(models.FingerprintTypePhash); phash != 0 {
 							fingerprint := graphql.FingerprintInput{
 								Hash:      utils.PhashToString(phash),
 								Algorithm: graphql.FingerprintAlgorithmPhash,
@@ -979,7 +978,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 		duration := f.Duration
 
 		if duration != 0 {
-			if oshash := f.Fingerprints.GetString(file.FingerprintTypeOshash); oshash != "" {
+			if oshash := f.Fingerprints.GetString(models.FingerprintTypeOshash); oshash != "" {
 				fingerprint := graphql.FingerprintInput{
 					Hash:      oshash,
 					Algorithm: graphql.FingerprintAlgorithmOshash,
@@ -988,7 +987,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 				fingerprints = appendFingerprintUnique(fingerprints, &fingerprint)
 			}
 
-			if checksum := f.Fingerprints.GetString(file.FingerprintTypeMD5); checksum != "" {
+			if checksum := f.Fingerprints.GetString(models.FingerprintTypeMD5); checksum != "" {
 				fingerprint := graphql.FingerprintInput{
 					Hash:      checksum,
 					Algorithm: graphql.FingerprintAlgorithmMd5,
@@ -997,7 +996,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 				fingerprints = appendFingerprintUnique(fingerprints, &fingerprint)
 			}
 
-			if phash := f.Fingerprints.GetInt64(file.FingerprintTypePhash); phash != 0 {
+			if phash := f.Fingerprints.GetInt64(models.FingerprintTypePhash); phash != 0 {
 				fingerprint := graphql.FingerprintInput{
 					Hash:      utils.PhashToString(phash),
 					Algorithm: graphql.FingerprintAlgorithmPhash,

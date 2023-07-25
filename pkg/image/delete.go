@@ -45,7 +45,7 @@ func (s *Service) Destroy(ctx context.Context, i *models.Image, fileDeleter *Fil
 
 // DestroyZipImages destroys all images in zip, optionally marking the files and generated files for deletion.
 // Returns a slice of images that were destroyed.
-func (s *Service) DestroyZipImages(ctx context.Context, zipFile file.File, fileDeleter *FileDeleter, deleteGenerated bool) ([]*models.Image, error) {
+func (s *Service) DestroyZipImages(ctx context.Context, zipFile models.File, fileDeleter *FileDeleter, deleteGenerated bool) ([]*models.Image, error) {
 	var imgsDestroyed []*models.Image
 
 	imgs, err := s.Repository.FindByZipFileID(ctx, zipFile.Base().ID)

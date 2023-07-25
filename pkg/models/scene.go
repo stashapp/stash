@@ -1,10 +1,6 @@
 package models
 
-import (
-	"context"
-
-	"github.com/stashapp/stash/pkg/file"
-)
+import "context"
 
 type PHashDuplicationCriterionInput struct {
 	Duplicated *bool `json:"duplicated"`
@@ -193,7 +189,7 @@ type SceneReader interface {
 }
 
 type SceneWriter interface {
-	Create(ctx context.Context, newScene *Scene, fileIDs []file.ID) error
+	Create(ctx context.Context, newScene *Scene, fileIDs []FileID) error
 	Update(ctx context.Context, updatedScene *Scene) error
 	UpdatePartial(ctx context.Context, id int, updatedScene ScenePartial) (*Scene, error)
 	IncrementOCounter(ctx context.Context, id int) (int, error)

@@ -99,7 +99,7 @@ func createPerformer(ctx context.Context, pqb models.PerformerWriter) error {
 func createStudio(ctx context.Context, qb models.StudioWriter, name string) (*models.Studio, error) {
 	// create the studio
 	studio := models.Studio{
-		Name:     name,
+		Name: name,
 	}
 
 	err := qb.Create(ctx, &studio)
@@ -196,7 +196,7 @@ func makeScene(expectedResult bool) *models.Scene {
 	return s
 }
 
-func createSceneFile(ctx context.Context, name string, folderStore file.FolderStore, fileStore file.Store) (*file.VideoFile, error) {
+func createSceneFile(ctx context.Context, name string, folderStore file.FolderStore, fileStore file.Store) (*models.VideoFile, error) {
 	folderPath := filepath.Dir(name)
 	basename := filepath.Base(name)
 
@@ -207,8 +207,8 @@ func createSceneFile(ctx context.Context, name string, folderStore file.FolderSt
 
 	folderID := folder.ID
 
-	f := &file.VideoFile{
-		BaseFile: &file.BaseFile{
+	f := &models.VideoFile{
+		BaseFile: &models.BaseFile{
 			Basename:       basename,
 			ParentFolderID: folderID,
 		},
@@ -221,7 +221,7 @@ func createSceneFile(ctx context.Context, name string, folderStore file.FolderSt
 	return f, nil
 }
 
-func getOrCreateFolder(ctx context.Context, folderStore file.FolderStore, folderPath string) (*file.Folder, error) {
+func getOrCreateFolder(ctx context.Context, folderStore file.FolderStore, folderPath string) (*models.Folder, error) {
 	f, err := folderStore.FindByPath(ctx, folderPath)
 	if err != nil {
 		return nil, fmt.Errorf("getting folder by path: %w", err)
@@ -231,7 +231,7 @@ func getOrCreateFolder(ctx context.Context, folderStore file.FolderStore, folder
 		return f, nil
 	}
 
-	var parentID file.FolderID
+	var parentID models.FolderID
 	dir := filepath.Dir(folderPath)
 	if dir != "." {
 		parent, err := getOrCreateFolder(ctx, folderStore, dir)
@@ -242,7 +242,7 @@ func getOrCreateFolder(ctx context.Context, folderStore file.FolderStore, folder
 		parentID = parent.ID
 	}
 
-	f = &file.Folder{
+	f = &models.Folder{
 		Path: folderPath,
 	}
 
@@ -257,8 +257,8 @@ func getOrCreateFolder(ctx context.Context, folderStore file.FolderStore, folder
 	return f, nil
 }
 
-func createScene(ctx context.Context, sqb models.SceneWriter, s *models.Scene, f *file.VideoFile) error {
-	err := sqb.Create(ctx, s, []file.ID{f.ID})
+func createScene(ctx context.Context, sqb models.SceneWriter, s *models.Scene, f *models.VideoFile) error {
+	err := sqb.Create(ctx, s, []models.FileID{f.ID})
 
 	if err != nil {
 		return fmt.Errorf("Failed to create scene with path '%s': %s", f.Path, err.Error())
@@ -326,7 +326,7 @@ func createImages(ctx context.Context, w models.ImageReaderWriter, folderStore f
 	return nil
 }
 
-func createImageFile(ctx context.Context, name string, folderStore file.FolderStore, fileStore file.Store) (*file.ImageFile, error) {
+func createImageFile(ctx context.Context, name string, folderStore file.FolderStore, fileStore file.Store) (*models.ImageFile, error) {
 	folderPath := filepath.Dir(name)
 	basename := filepath.Base(name)
 
@@ -337,8 +337,8 @@ func createImageFile(ctx context.Context, name string, folderStore file.FolderSt
 
 	folderID := folder.ID
 
-	f := &file.ImageFile{
-		BaseFile: &file.BaseFile{
+	f := &models.ImageFile{
+		BaseFile: &models.BaseFile{
 			Basename:       basename,
 			ParentFolderID: folderID,
 		},
@@ -362,10 +362,10 @@ func makeImage(expectedResult bool) *models.Image {
 	return o
 }
 
-func createImage(ctx context.Context, w models.ImageWriter, o *models.Image, f *file.ImageFile) error {
+func createImage(ctx context.Context, w models.ImageWriter, o *models.Image, f *models.ImageFile) error {
 	err := w.Create(ctx, &models.ImageCreateInput{
 		Image:   o,
-		FileIDs: []file.ID{f.ID},
+		FileIDs: []models.FileID{f.ID},
 	})
 
 	if err != nil {
@@ -434,7 +434,7 @@ func createGalleries(ctx context.Context, w models.GalleryReaderWriter, folderSt
 	return nil
 }
 
-func createGalleryFile(ctx context.Context, name string, folderStore file.FolderStore, fileStore file.Store) (*file.BaseFile, error) {
+func createGalleryFile(ctx context.Context, name string, folderStore file.FolderStore, fileStore file.Store) (*models.BaseFile, error) {
 	folderPath := filepath.Dir(name)
 	basename := filepath.Base(name)
 
@@ -445,7 +445,7 @@ func createGalleryFile(ctx context.Context, name string, folderStore file.Folder
 
 	folderID := folder.ID
 
-	f := &file.BaseFile{
+	f := &models.BaseFile{
 		Basename:       basename,
 		ParentFolderID: folderID,
 	}
@@ -468,8 +468,8 @@ func makeGallery(expectedResult bool) *models.Gallery {
 	return o
 }
 
-func createGallery(ctx context.Context, w models.GalleryWriter, o *models.Gallery, f *file.BaseFile) error {
-	err := w.Create(ctx, o, []file.ID{f.ID})
+func createGallery(ctx context.Context, w models.GalleryWriter, o *models.Gallery, f *models.BaseFile) error {
+	err := w.Create(ctx, o, []models.FileID{f.ID})
 	if err != nil {
 		return fmt.Errorf("Failed to create gallery with path '%s': %s", f.Path, err.Error())
 	}

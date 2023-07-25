@@ -26,6 +26,7 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
@@ -280,15 +281,15 @@ func initialize() error {
 	return nil
 }
 
-func videoFileFilter(ctx context.Context, f file.File) bool {
+func videoFileFilter(ctx context.Context, f models.File) bool {
 	return useAsVideo(f.Base().Path)
 }
 
-func imageFileFilter(ctx context.Context, f file.File) bool {
+func imageFileFilter(ctx context.Context, f models.File) bool {
 	return useAsImage(f.Base().Path)
 }
 
-func galleryFileFilter(ctx context.Context, f file.File) bool {
+func galleryFileFilter(ctx context.Context, f models.File) bool {
 	return isZip(f.Base().Basename)
 }
 

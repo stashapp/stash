@@ -1,10 +1,6 @@
 package models
 
-import (
-	"context"
-
-	"github.com/stashapp/stash/pkg/file"
-)
+import "context"
 
 type GalleryFilterType struct {
 	And     *GalleryFilterType    `json:"AND"`
@@ -112,7 +108,7 @@ type GalleryReader interface {
 }
 
 type GalleryWriter interface {
-	Create(ctx context.Context, newGallery *Gallery, fileIDs []file.ID) error
+	Create(ctx context.Context, newGallery *Gallery, fileIDs []FileID) error
 	Update(ctx context.Context, updatedGallery *Gallery) error
 	UpdatePartial(ctx context.Context, id int, updatedGallery GalleryPartial) (*Gallery, error)
 	Destroy(ctx context.Context, id int) error

@@ -12,7 +12,7 @@ import (
 )
 
 type GeneratePhashTask struct {
-	File                *file.VideoFile
+	File                *models.VideoFile
 	Overwrite           bool
 	fileNamingAlgorithm models.HashAlgorithm
 	txnManager          txn.Manager
@@ -38,8 +38,8 @@ func (t *GeneratePhashTask) Start(ctx context.Context) {
 	if err := txn.WithTxn(ctx, t.txnManager, func(ctx context.Context) error {
 		qb := t.fileUpdater
 		hashValue := int64(*hash)
-		t.File.Fingerprints = t.File.Fingerprints.AppendUnique(file.Fingerprint{
-			Type:        file.FingerprintTypePhash,
+		t.File.Fingerprints = t.File.Fingerprints.AppendUnique(models.Fingerprint{
+			Type:        models.FingerprintTypePhash,
 			Fingerprint: hashValue,
 		})
 
@@ -54,5 +54,5 @@ func (t *GeneratePhashTask) required() bool {
 		return true
 	}
 
-	return t.File.Fingerprints.Get(file.FingerprintTypePhash) == nil
+	return t.File.Fingerprints.Get(models.FingerprintTypePhash) == nil
 }
