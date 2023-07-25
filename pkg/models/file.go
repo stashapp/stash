@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-	"io/fs"
 	"path/filepath"
 	"strings"
 )
@@ -59,55 +58,21 @@ type FileQueryResult struct {
 	IDs   []FileID
 	Count int
 
-	finder     FileFinder
+	getter     FileGetter
 	files      []File
 	resolveErr error
 }
 
-func NewFileQueryResult(finder FileFinder) *FileQueryResult {
+func NewFileQueryResult(fileGetter FileGetter) *FileQueryResult {
 	return &FileQueryResult{
-		finder: finder,
+		getter: fileGetter,
 	}
 }
 
 func (r *FileQueryResult) Resolve(ctx context.Context) ([]File, error) {
 	// cache results
 	if r.files == nil && r.resolveErr == nil {
-		r.files, r.resolveErr = r.finder.Find(ctx, r.IDs...)
+		r.files, r.resolveErr = r.getter.Find(ctx, r.IDs...)
 	}
 	return r.files, r.resolveErr
-}
-
-type FileFinder interface {
-	Find(ctx context.Context, id ...FileID) ([]File, error)
-}
-
-type FileReader interface {
-	FileFinder
-	FindByPath(ctx context.Context, path string) (File, error)
-	FindAllByPath(ctx context.Context, path string) ([]File, error)
-	FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]File, error)
-	FindByFingerprint(ctx context.Context, fp Fingerprint) ([]File, error)
-	FindByZipFileID(ctx context.Context, zipFileID FileID) ([]File, error)
-	FindByFileInfo(ctx context.Context, info fs.FileInfo, size int64) ([]File, error)
-	Query(ctx context.Context, options FileQueryOptions) (*FileQueryResult, error)
-
-	CountAllInPaths(ctx context.Context, p []string) (int, error)
-	CountByFolderID(ctx context.Context, folderID FolderID) (int, error)
-
-	GetCaptions(ctx context.Context, fileID FileID) ([]*VideoCaption, error)
-	IsPrimary(ctx context.Context, fileID FileID) (bool, error)
-}
-
-type FileWriter interface {
-	Create(ctx context.Context, f File) error
-	Update(ctx context.Context, f File) error
-	Destroy(ctx context.Context, id FileID) error
-
-	UpdateCaptions(ctx context.Context, fileID FileID, captions []*VideoCaption) error
-}
-
-type FileReaderWriter interface {
-	FileReader
-	FileWriter
 }

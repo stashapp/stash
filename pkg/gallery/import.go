@@ -19,7 +19,7 @@ type Importer struct {
 	StudioWriter        studio.NameFinderCreator
 	PerformerWriter     performer.NameFinderCreator
 	TagWriter           tag.NameFinderCreator
-	FileFinder          file.Getter
+	FileFinder          models.FileFinder
 	FolderFinder        file.FolderGetter
 	Input               jsonschema.Gallery
 	MissingRefBehaviour models.ImportMissingRefEnum

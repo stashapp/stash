@@ -60,7 +60,7 @@ func (s *Scene) LoadFiles(ctx context.Context, l VideoFileLoader) error {
 	})
 }
 
-func (s *Scene) LoadPrimaryFile(ctx context.Context, l FileFinder) error {
+func (s *Scene) LoadPrimaryFile(ctx context.Context, l FileGetter) error {
 	return s.Files.loadPrimary(func() (*VideoFile, error) {
 		if s.PrimaryFileID == nil {
 			return nil, nil

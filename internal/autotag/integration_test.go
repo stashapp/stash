@@ -124,12 +124,12 @@ func createTag(ctx context.Context, qb models.TagWriter) error {
 	return nil
 }
 
-func createScenes(ctx context.Context, sqb models.SceneReaderWriter, folderStore file.FolderStore, fileStore file.Store) error {
+func createScenes(ctx context.Context, sqb models.SceneReaderWriter, folderStore file.FolderStore, fileCreator models.FileCreator) error {
 	// create the scenes
 	scenePatterns, falseScenePatterns := generateTestPaths(testName, sceneExt)
 
 	for _, fn := range scenePatterns {
-		f, err := createSceneFile(ctx, fn, folderStore, fileStore)
+		f, err := createSceneFile(ctx, fn, folderStore, fileCreator)
 		if err != nil {
 			return err
 		}
@@ -141,7 +141,7 @@ func createScenes(ctx context.Context, sqb models.SceneReaderWriter, folderStore
 	}
 
 	for _, fn := range falseScenePatterns {
-		f, err := createSceneFile(ctx, fn, folderStore, fileStore)
+		f, err := createSceneFile(ctx, fn, folderStore, fileCreator)
 		if err != nil {
 			return err
 		}
@@ -154,7 +154,7 @@ func createScenes(ctx context.Context, sqb models.SceneReaderWriter, folderStore
 
 	// add organized scenes
 	for _, fn := range scenePatterns {
-		f, err := createSceneFile(ctx, "organized"+fn, folderStore, fileStore)
+		f, err := createSceneFile(ctx, "organized"+fn, folderStore, fileCreator)
 		if err != nil {
 			return err
 		}
@@ -168,7 +168,7 @@ func createScenes(ctx context.Context, sqb models.SceneReaderWriter, folderStore
 	}
 
 	// create scene with existing studio io
-	f, err := createSceneFile(ctx, existingStudioSceneName, folderStore, fileStore)
+	f, err := createSceneFile(ctx, existingStudioSceneName, folderStore, fileCreator)
 	if err != nil {
 		return err
 	}
@@ -196,7 +196,7 @@ func makeScene(expectedResult bool) *models.Scene {
 	return s
 }
 
-func createSceneFile(ctx context.Context, name string, folderStore file.FolderStore, fileStore file.Store) (*models.VideoFile, error) {
+func createSceneFile(ctx context.Context, name string, folderStore file.FolderStore, fileCreator models.FileCreator) (*models.VideoFile, error) {
 	folderPath := filepath.Dir(name)
 	basename := filepath.Base(name)
 
@@ -214,7 +214,7 @@ func createSceneFile(ctx context.Context, name string, folderStore file.FolderSt
 		},
 	}
 
-	if err := fileStore.Create(ctx, f); err != nil {
+	if err := fileCreator.Create(ctx, f); err != nil {
 		return nil, fmt.Errorf("creating scene file %q: %w", name, err)
 	}
 
@@ -267,12 +267,12 @@ func createScene(ctx context.Context, sqb models.SceneWriter, s *models.Scene, f
 	return nil
 }
 
-func createImages(ctx context.Context, w models.ImageReaderWriter, folderStore file.FolderStore, fileStore file.Store) error {
+func createImages(ctx context.Context, w models.ImageReaderWriter, folderStore file.FolderStore, fileCreator models.FileCreator) error {
 	// create the images
 	imagePatterns, falseImagePatterns := generateTestPaths(testName, imageExt)
 
 	for _, fn := range imagePatterns {
-		f, err := createImageFile(ctx, fn, folderStore, fileStore)
+		f, err := createImageFile(ctx, fn, folderStore, fileCreator)
 		if err != nil {
 			return err
 		}
@@ -283,7 +283,7 @@ func createImages(ctx context.Context, w models.ImageReaderWriter, folderStore f
 		}
 	}
 	for _, fn := range falseImagePatterns {
-		f, err := createImageFile(ctx, fn, folderStore, fileStore)
+		f, err := createImageFile(ctx, fn, folderStore, fileCreator)
 		if err != nil {
 			return err
 		}
@@ -296,7 +296,7 @@ func createImages(ctx context.Context, w models.ImageReaderWriter, folderStore f
 
 	// add organized images
 	for _, fn := range imagePatterns {
-		f, err := createImageFile(ctx, "organized"+fn, folderStore, fileStore)
+		f, err := createImageFile(ctx, "organized"+fn, folderStore, fileCreator)
 		if err != nil {
 			return err
 		}
@@ -310,7 +310,7 @@ func createImages(ctx context.Context, w models.ImageReaderWriter, folderStore f
 	}
 
 	// create image with existing studio io
-	f, err := createImageFile(ctx, existingStudioImageName, folderStore, fileStore)
+	f, err := createImageFile(ctx, existingStudioImageName, folderStore, fileCreator)
 	if err != nil {
 		return err
 	}
@@ -326,7 +326,7 @@ func createImages(ctx context.Context, w models.ImageReaderWriter, folderStore f
 	return nil
 }
 
-func createImageFile(ctx context.Context, name string, folderStore file.FolderStore, fileStore file.Store) (*models.ImageFile, error) {
+func createImageFile(ctx context.Context, name string, folderStore file.FolderStore, fileCreator models.FileCreator) (*models.ImageFile, error) {
 	folderPath := filepath.Dir(name)
 	basename := filepath.Base(name)
 
@@ -344,7 +344,7 @@ func createImageFile(ctx context.Context, name string, folderStore file.FolderSt
 		},
 	}
 
-	if err := fileStore.Create(ctx, f); err != nil {
+	if err := fileCreator.Create(ctx, f); err != nil {
 		return nil, err
 	}
 
@@ -375,12 +375,12 @@ func createImage(ctx context.Context, w models.ImageWriter, o *models.Image, f *
 	return nil
 }
 
-func createGalleries(ctx context.Context, w models.GalleryReaderWriter, folderStore file.FolderStore, fileStore file.Store) error {
+func createGalleries(ctx context.Context, w models.GalleryReaderWriter, folderStore file.FolderStore, fileCreator models.FileCreator) error {
 	// create the galleries
 	galleryPatterns, falseGalleryPatterns := generateTestPaths(testName, galleryExt)
 
 	for _, fn := range galleryPatterns {
-		f, err := createGalleryFile(ctx, fn, folderStore, fileStore)
+		f, err := createGalleryFile(ctx, fn, folderStore, fileCreator)
 		if err != nil {
 			return err
 		}
@@ -391,7 +391,7 @@ func createGalleries(ctx context.Context, w models.GalleryReaderWriter, folderSt
 		}
 	}
 	for _, fn := range falseGalleryPatterns {
-		f, err := createGalleryFile(ctx, fn, folderStore, fileStore)
+		f, err := createGalleryFile(ctx, fn, folderStore, fileCreator)
 		if err != nil {
 			return err
 		}
@@ -404,7 +404,7 @@ func createGalleries(ctx context.Context, w models.GalleryReaderWriter, folderSt
 
 	// add organized galleries
 	for _, fn := range galleryPatterns {
-		f, err := createGalleryFile(ctx, "organized"+fn, folderStore, fileStore)
+		f, err := createGalleryFile(ctx, "organized"+fn, folderStore, fileCreator)
 		if err != nil {
 			return err
 		}
@@ -418,7 +418,7 @@ func createGalleries(ctx context.Context, w models.GalleryReaderWriter, folderSt
 	}
 
 	// create gallery with existing studio io
-	f, err := createGalleryFile(ctx, existingStudioGalleryName, folderStore, fileStore)
+	f, err := createGalleryFile(ctx, existingStudioGalleryName, folderStore, fileCreator)
 	if err != nil {
 		return err
 	}
@@ -434,7 +434,7 @@ func createGalleries(ctx context.Context, w models.GalleryReaderWriter, folderSt
 	return nil
 }
 
-func createGalleryFile(ctx context.Context, name string, folderStore file.FolderStore, fileStore file.Store) (*models.BaseFile, error) {
+func createGalleryFile(ctx context.Context, name string, folderStore file.FolderStore, fileCreator models.FileCreator) (*models.BaseFile, error) {
 	folderPath := filepath.Dir(name)
 	basename := filepath.Base(name)
 
@@ -450,7 +450,7 @@ func createGalleryFile(ctx context.Context, name string, folderStore file.Folder
 		ParentFolderID: folderID,
 	}
 
-	if err := fileStore.Create(ctx, f); err != nil {
+	if err := fileCreator.Create(ctx, f); err != nil {
 		return nil, err
 	}
 

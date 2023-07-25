@@ -33,13 +33,6 @@ type SceneReaderWriter interface {
 	GetManyFileIDs(ctx context.Context, ids []int) ([][]models.FileID, error)
 }
 
-type FileReaderWriter interface {
-	file.Store
-	Query(ctx context.Context, options models.FileQueryOptions) (*models.FileQueryResult, error)
-	GetCaptions(ctx context.Context, fileID models.FileID) ([]*models.VideoCaption, error)
-	IsPrimary(ctx context.Context, fileID models.FileID) (bool, error)
-}
-
 type FolderReaderWriter interface {
 	file.FolderStore
 }
@@ -47,7 +40,7 @@ type FolderReaderWriter interface {
 type Repository struct {
 	models.TxnManager
 
-	File           FileReaderWriter
+	File           models.FileReaderWriter
 	Folder         FolderReaderWriter
 	Gallery        GalleryReaderWriter
 	GalleryChapter models.GalleryChapterReaderWriter

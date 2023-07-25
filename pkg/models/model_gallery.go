@@ -48,7 +48,7 @@ func (g *Gallery) LoadFiles(ctx context.Context, l FileLoader) error {
 	})
 }
 
-func (g *Gallery) LoadPrimaryFile(ctx context.Context, l FileFinder) error {
+func (g *Gallery) LoadPrimaryFile(ctx context.Context, l FileGetter) error {
 	return g.Files.loadPrimary(func() (File, error) {
 		if g.PrimaryFileID == nil {
 			return nil, nil

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/hash/videophash"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -16,7 +15,7 @@ type GeneratePhashTask struct {
 	Overwrite           bool
 	fileNamingAlgorithm models.HashAlgorithm
 	txnManager          txn.Manager
-	fileUpdater         file.Updater
+	fileUpdater         models.FileUpdater
 }
 
 func (t *GeneratePhashTask) GetDescription() string {

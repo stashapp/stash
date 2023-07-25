@@ -41,14 +41,14 @@ func (r folderCreatorStatRenamerImpl) Mkdir(name string, perm os.FileMode) error
 
 type Mover struct {
 	Renamer DirMakerStatRenamer
-	Files   GetterUpdater
+	Files   models.FileFinderUpdater
 	Folders FolderStore
 
 	moved          map[string]string
 	foldersCreated []string
 }
 
-func NewMover(fileStore GetterUpdater, folderStore FolderStore) *Mover {
+func NewMover(fileStore models.FileFinderUpdater, folderStore FolderStore) *Mover {
 	return &Mover{
 		Files:   fileStore,
 		Folders: folderStore,

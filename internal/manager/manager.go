@@ -223,7 +223,7 @@ func initialize() error {
 
 	instance.DLNAService = dlna.NewService(instance.Repository, dlna.Repository{
 		SceneFinder:     instance.Repository.Scene,
-		FileFinder:      instance.Repository.File,
+		FileGetter:      instance.Repository.File,
 		StudioFinder:    instance.Repository.Studio,
 		TagFinder:       instance.Repository.Tag,
 		PerformerFinder: instance.Repository.Performer,
@@ -298,7 +298,7 @@ func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
 		Repository: file.Repository{
 			Manager:          db,
 			DatabaseProvider: db,
-			Store:            db.File,
+			FileStore:        db.File,
 			FolderStore:      db.Folder,
 		},
 		FileDecorators: []file.Decorator{
@@ -326,7 +326,7 @@ func makeCleaner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Cleaner {
 		Repository: file.Repository{
 			Manager:          db,
 			DatabaseProvider: db,
-			Store:            db.File,
+			FileStore:        db.File,
 			FolderStore:      db.Folder,
 		},
 		Handlers: []file.CleanHandler{

@@ -42,7 +42,7 @@ func (i *Image) LoadFiles(ctx context.Context, l FileLoader) error {
 	})
 }
 
-func (i *Image) LoadPrimaryFile(ctx context.Context, l FileFinder) error {
+func (i *Image) LoadPrimaryFile(ctx context.Context, l FileGetter) error {
 	return i.Files.loadPrimary(func() (File, error) {
 		if i.PrimaryFileID == nil {
 			return nil, nil

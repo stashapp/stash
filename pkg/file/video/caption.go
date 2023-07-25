@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/asticode/go-astisub"
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
@@ -92,7 +91,7 @@ type CaptionUpdater interface {
 }
 
 // associates captions to scene/s with the same basename
-func AssociateCaptions(ctx context.Context, captionPath string, txnMgr txn.Manager, fqb file.Getter, w CaptionUpdater) {
+func AssociateCaptions(ctx context.Context, captionPath string, txnMgr txn.Manager, fqb models.FileFinder, w CaptionUpdater) {
 	captionLang := getCaptionsLangFromPath(captionPath)
 
 	captionPrefix := getCaptionPrefix(captionPath)

@@ -3,7 +3,6 @@ package scene
 import (
 	"context"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
@@ -50,7 +49,7 @@ type MarkerRepository interface {
 }
 
 type Service struct {
-	File             file.Store
+	File             models.FileReaderWriter
 	Repository       Repository
 	MarkerRepository MarkerRepository
 	PluginCache      *plugin.Cache

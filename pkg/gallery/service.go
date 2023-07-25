@@ -47,6 +47,6 @@ type Service struct {
 	Repository   Repository
 	ImageFinder  ImageFinder
 	ImageService ImageService
-	File         file.Store
+	File         models.FileReaderWriter
 	Folder       file.FolderStore
 }

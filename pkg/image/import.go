@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/performer"
@@ -26,7 +25,7 @@ type FullCreatorUpdater interface {
 
 type Importer struct {
 	ReaderWriter        FullCreatorUpdater
-	FileFinder          file.Getter
+	FileFinder          models.FileFinder
 	StudioWriter        studio.NameFinderCreator
 	GalleryFinder       GalleryFinder
 	PerformerWriter     performer.NameFinderCreator

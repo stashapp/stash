@@ -3,7 +3,6 @@ package image
 import (
 	"context"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -19,6 +18,6 @@ type Repository interface {
 }
 
 type Service struct {
-	File       file.Store
+	File       models.FileReaderWriter
 	Repository Repository
 }

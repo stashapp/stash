@@ -180,7 +180,7 @@ func (d *Deleter) renameForRestore(path string) error {
 	return d.RenamerRemover.Rename(path+deleteFileSuffix, path)
 }
 
-func Destroy(ctx context.Context, destroyer Destroyer, f models.File, fileDeleter *Deleter, deleteFile bool) error {
+func Destroy(ctx context.Context, destroyer models.FileDestroyer, f models.File, fileDeleter *Deleter, deleteFile bool) error {
 	if err := destroyer.Destroy(ctx, f.Base().ID); err != nil {
 		return err
 	}
@@ -196,7 +196,7 @@ func Destroy(ctx context.Context, destroyer Destroyer, f models.File, fileDelete
 }
 
 type ZipDestroyer struct {
-	FileDestroyer   GetterDestroyer
+	FileDestroyer   models.FileFinderDestroyer
 	FolderDestroyer FolderGetterDestroyer
 }
 

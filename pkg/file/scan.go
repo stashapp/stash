@@ -25,15 +25,6 @@ const (
 	maxRetries = -1
 )
 
-// Repository provides access to storage methods for files and folders.
-type Repository struct {
-	txn.Manager
-	txn.DatabaseProvider
-	Store
-
-	FolderStore FolderStore
-}
-
 // Scanner scans files into the database.
 //
 // The scan process works using two goroutines. The first walks through the provided paths
@@ -71,6 +62,33 @@ type Scanner struct {
 // FingerprintCalculator calculates a fingerprint for the provided file.
 type FingerprintCalculator interface {
 	CalculateFingerprints(f *models.BaseFile, o Opener, useExisting bool) ([]models.Fingerprint, error)
+}
+
+// Decorator wraps the Decorate method to add additional functionality while scanning files.
+type Decorator interface {
+	Decorate(ctx context.Context, fs models.FS, f models.File) (models.File, error)
+	IsMissingMetadata(ctx context.Context, fs models.FS, f models.File) bool
+}
+
+type FilteredDecorator struct {
+	Decorator
+	Filter
+}
+
+// Decorate runs the decorator if the filter accepts the file.
+func (d *FilteredDecorator) Decorate(ctx context.Context, fs models.FS, f models.File) (models.File, error) {
+	if d.Accept(ctx, f) {
+		return d.Decorator.Decorate(ctx, fs, f)
+	}
+	return f, nil
+}
+
+func (d *FilteredDecorator) IsMissingMetadata(ctx context.Context, fs models.FS, f models.File) bool {
+	if d.Accept(ctx, f) {
+		return d.Decorator.IsMissingMetadata(ctx, fs, f)
+	}
+
+	return false
 }
 
 // ProgressReporter is used to report progress of the scan.
@@ -451,7 +469,7 @@ func (s *scanJob) getZipFileID(ctx context.Context, zipFile *scanFile) (*models.
 		return &v, nil
 	}
 
-	ret, err := s.Repository.FindByPath(ctx, path)
+	ret, err := s.Repository.FileStore.FindByPath(ctx, path)
 	if err != nil {
 		return nil, fmt.Errorf("getting zip file ID for %q: %w", path, err)
 	}
@@ -624,7 +642,7 @@ func (s *scanJob) handleFile(ctx context.Context, f scanFile) error {
 	if err := s.withDB(ctx, func(ctx context.Context) error {
 		// determine if file already exists in data store
 		var err error
-		ff, err = s.Repository.FindByPath(ctx, f.Path)
+		ff, err = s.Repository.FileStore.FindByPath(ctx, f.Path)
 		if err != nil {
 			return fmt.Errorf("checking for existing file %q: %w", f.Path, err)
 		}
@@ -722,7 +740,7 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (models.File, error
 
 	// if not renamed, queue file for creation
 	if err := s.withTxn(ctx, func(ctx context.Context) error {
-		if err := s.Repository.Create(ctx, file); err != nil {
+		if err := s.Repository.FileStore.Create(ctx, file); err != nil {
 			return fmt.Errorf("creating file %q: %w", path, err)
 		}
 
@@ -815,7 +833,7 @@ func (s *scanJob) handleRename(ctx context.Context, f models.File, fp []models.F
 	var others []models.File
 
 	for _, tfp := range fp {
-		thisOthers, err := s.Repository.FindByFingerprint(ctx, tfp)
+		thisOthers, err := s.Repository.FileStore.FindByFingerprint(ctx, tfp)
 		if err != nil {
 			return nil, fmt.Errorf("getting files by fingerprint %v: %w", tfp, err)
 		}
@@ -873,7 +891,7 @@ func (s *scanJob) handleRename(ctx context.Context, f models.File, fp []models.F
 	fBase.Fingerprints = otherBase.Fingerprints
 
 	if err := s.withTxn(ctx, func(ctx context.Context) error {
-		if err := s.Repository.Update(ctx, f); err != nil {
+		if err := s.Repository.FileStore.Update(ctx, f); err != nil {
 			return fmt.Errorf("updating file for rename %q: %w", fBase.Path, err)
 		}
 
@@ -940,7 +958,7 @@ func (s *scanJob) setMissingMetadata(ctx context.Context, f scanFile, existing m
 
 	// queue file for update
 	if err := s.withTxn(ctx, func(ctx context.Context) error {
-		if err := s.Repository.Update(ctx, existing); err != nil {
+		if err := s.Repository.FileStore.Update(ctx, existing); err != nil {
 			return fmt.Errorf("updating file %q: %w", path, err)
 		}
 
@@ -963,7 +981,7 @@ func (s *scanJob) setMissingFingerprints(ctx context.Context, f scanFile, existi
 		existing.SetFingerprints(fp)
 
 		if err := s.withTxn(ctx, func(ctx context.Context) error {
-			if err := s.Repository.Update(ctx, existing); err != nil {
+			if err := s.Repository.FileStore.Update(ctx, existing); err != nil {
 				return fmt.Errorf("updating file %q: %w", f.Path, err)
 			}
 
@@ -1012,7 +1030,7 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing model
 
 	// queue file for update
 	if err := s.withTxn(ctx, func(ctx context.Context) error {
-		if err := s.Repository.Update(ctx, existing); err != nil {
+		if err := s.Repository.FileStore.Update(ctx, existing); err != nil {
 			return fmt.Errorf("updating file %q: %w", path, err)
 		}
 

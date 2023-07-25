@@ -12,7 +12,6 @@ import (
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/ffmpeg"
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
@@ -42,7 +41,7 @@ type CaptionFinder interface {
 type sceneRoutes struct {
 	txnManager        txn.Manager
 	sceneFinder       SceneFinder
-	fileFinder        file.Finder
+	fileGetter        models.FileGetter
 	captionFinder     CaptionFinder
 	sceneMarkerFinder SceneMarkerFinder
 	tagFinder         scene.MarkerTagFinder
@@ -574,7 +573,7 @@ func (rs sceneRoutes) SceneCtx(next http.Handler) http.Handler {
 			scene, _ = qb.Find(ctx, sceneID)
 
 			if scene != nil {
-				if err := scene.LoadPrimaryFile(ctx, rs.fileFinder); err != nil {
+				if err := scene.LoadPrimaryFile(ctx, rs.fileGetter); err != nil {
 					if !errors.Is(err, context.Canceled) {
 						logger.Errorf("error loading primary file for scene %d: %v", sceneID, err)
 					}
