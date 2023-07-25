@@ -33,8 +33,6 @@ import {
   faSignInAlt,
   faSignOutAlt,
   faTrashAlt,
-  faChevronRight,
-  faChevronLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import { IUIConfig } from "src/core/config";
 

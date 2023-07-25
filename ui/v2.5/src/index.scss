@@ -169,6 +169,10 @@ dd {
 
 #tag-page .detail-header-image img {
   max-width: 18rem;
+
+  @media (max-width: 576px) {
+    max-width: 100%;
+  }
 }
 
 .detail-header-image img {
