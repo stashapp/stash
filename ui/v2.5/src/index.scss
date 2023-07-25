@@ -103,7 +103,17 @@ dd {
   padding-right: 1.5rem;
 }
 
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 .sticky.detail-header {
+  animation: 1s fadeIn;
   display: block;
   min-height: 50px;
   padding: unset;
@@ -133,7 +143,7 @@ dd {
 
 .detail-header .detail-group,
 .detail-header .col {
-  transition: 0.4s;
+  transition: 0.2s;
 }
 
 .detail-header .mr-2 {
@@ -167,7 +177,7 @@ dd {
   }
 }
 
-.main.container-fluid{
+.main.container-fluid {
   overflow-x: hidden;
 }
 
