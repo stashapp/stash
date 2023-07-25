@@ -209,6 +209,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
 export const CompressedPerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   performer,
 }) => {
+  // Network state
+  const intl = useIntl();
+
   function scrollToTop() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -219,8 +222,13 @@ export const CompressedPerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         <a className="performer-name" onClick={() => scrollToTop()}>
           {performer.name}
         </a>
-        <span className="performer-gender">{performer?.gender}</span>
-        <span className="performer-age">
+        <span className="performer-gender">
+          {intl.formatMessage({ id: "gender_types." + performer.gender })}
+        </span>
+        <span
+          className="performer-age"
+          title={TextUtils.formatDate(intl, performer.birthdate ?? undefined)}
+        >
           {TextUtils.age(performer.birthdate, performer.death_date)}
         </span>
         <span className="performer-country">
