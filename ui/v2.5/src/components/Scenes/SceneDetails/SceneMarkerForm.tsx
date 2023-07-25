@@ -94,6 +94,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
       }
       ids={fieldProps.field.value ? [fieldProps.field.value] : []}
       noSelectionString="Select/create tag..."
+      hoverPlacement="right"
     />
   );
 
@@ -108,6 +109,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
       }
       ids={fieldProps.field.value}
       noSelectionString="Select/create tags..."
+      hoverPlacement="right"
     />
   );
 

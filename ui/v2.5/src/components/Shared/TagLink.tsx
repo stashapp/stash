@@ -15,6 +15,7 @@ import { galleryTitle } from "src/core/galleries";
 import * as GQL from "src/core/generated-graphql";
 import { TagPopover } from "../Tags/TagPopover";
 import { markerTitle } from "src/core/markers";
+import { Placement } from "react-bootstrap/esm/Overlay";
 
 interface IFile {
   path: string;
@@ -40,6 +41,7 @@ interface IProps {
   scene?: Partial<Pick<SceneDataFragment, "id" | "title" | "files">>;
   gallery?: Partial<IGallery>;
   className?: string;
+  hoverPlacement?: Placement;
 }
 
 export const TagLink: React.FC<IProps> = (props: IProps) => {
@@ -84,7 +86,7 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
   }
   return (
     <Badge className={cx("tag-item", props.className)} variant="secondary">
-      <TagPopover id={id}>
+      <TagPopover id={id} placement={props.hoverPlacement}>
         <Link to={link}>{title}</Link>
       </TagPopover>
     </Badge>
