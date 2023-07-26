@@ -164,11 +164,16 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
 
   function maybeRenderExtraDetails() {
     if (!collapsed) {
+      /* Remove extra urls provided in details since they will be present by perfomr name */
+      /* This code can be removed once multple urls are supported for performers */
+      let details = performer?.details
+        ?.replace(/\[((?:http|www\.)[^\n\]]+)\]/gm, "")
+        .trim();
       return (
         <>
           <DetailItem id="tattoos" value={performer?.tattoos} />
           <DetailItem id="piercings" value={performer?.piercings} />
-          <DetailItem id="details" value={performer?.details} />
+          <DetailItem id="details" value={details} />
           <DetailItem id="tags" value={renderTagsField()} />
           <DetailItem id="StashIDs" value={renderStashIDs()} />
         </>

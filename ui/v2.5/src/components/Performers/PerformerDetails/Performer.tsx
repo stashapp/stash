@@ -119,6 +119,14 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     }
   }
 
+  useEffect(() => {
+    setCollapsed(JSON.parse(window.localStorage.getItem("collapsed") || ""));
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("collapsed", JSON.stringify(collapsed));
+  }, [collapsed]);
+
   useRatingKeybinds(
     true,
     configuration?.ui?.ratingSystemOptions?.type,
@@ -406,61 +414,81 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     }
   }
 
-  const renderClickableIcons = () => (
-    <span className="name-icons">
-      <Button
-        className={cx(
-          "minimal",
-          performer.favorite ? "favorite" : "not-favorite"
+  function renderClickableIcons() {
+    /* Collect urls adding into details */
+    /* This code can be removed once multple urls are supported for performers */
+    const detailURLsRegex = /\[((?:http|www\.)[^\n\]]+)\]/gm;
+    let urls = performer?.details?.match(detailURLsRegex);
+    console.log("urls: " + urls);
+
+    return (
+      <span className="name-icons">
+        <Button
+          className={cx(
+            "minimal",
+            performer.favorite ? "favorite" : "not-favorite"
+          )}
+          onClick={() => setFavorite(!performer.favorite)}
+        >
+          <Icon icon={faHeart} />
+        </Button>
+        {performer.url && (
+          <Button className="minimal icon-link" title={performer.url}>
+            <a
+              href={TextUtils.sanitiseURL(performer.url)}
+              className="link"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Icon icon={faLink} />
+            </a>
+          </Button>
         )}
-        onClick={() => setFavorite(!performer.favorite)}
-      >
-        <Icon icon={faHeart} />
-      </Button>
-      {performer.url && (
-        <Button className="minimal icon-link" title={performer.url}>
-          <a
-            href={TextUtils.sanitiseURL(performer.url)}
-            className="link"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Icon icon={faLink} />
-          </a>
-        </Button>
-      )}
-      {performer.twitter && (
-        <Button className="minimal icon-link" title={performer.twitter}>
-          <a
-            href={TextUtils.sanitiseURL(
-              performer.twitter,
-              TextUtils.twitterURL
-            )}
-            className="twitter"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Icon icon={faTwitter} />
-          </a>
-        </Button>
-      )}
-      {performer.instagram && (
-        <Button className="minimal icon-link" title={performer.instagram}>
-          <a
-            href={TextUtils.sanitiseURL(
-              performer.instagram,
-              TextUtils.instagramURL
-            )}
-            className="instagram"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Icon icon={faInstagram} />
-          </a>
-        </Button>
-      )}
-    </span>
-  );
+        {(urls ?? []).map((url) => (
+          <Button className="minimal icon-link" title={url}>
+            <a
+              href={TextUtils.sanitiseURL(url)}
+              className="link"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Icon icon={faLink} />
+            </a>
+          </Button>
+        ))}
+        {performer.twitter && (
+          <Button className="minimal icon-link" title={performer.twitter}>
+            <a
+              href={TextUtils.sanitiseURL(
+                performer.twitter,
+                TextUtils.twitterURL
+              )}
+              className="twitter"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Icon icon={faTwitter} />
+            </a>
+          </Button>
+        )}
+        {performer.instagram && (
+          <Button className="minimal icon-link" title={performer.instagram}>
+            <a
+              href={TextUtils.sanitiseURL(
+                performer.instagram,
+                TextUtils.instagramURL
+              )}
+              className="instagram"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Icon icon={faInstagram} />
+            </a>
+          </Button>
+        )}
+      </span>
+    );
+  }
 
   if (isDestroying)
     return (
