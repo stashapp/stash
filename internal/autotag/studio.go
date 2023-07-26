@@ -7,14 +7,13 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
 // the following functions aren't used in Tagger because they assume
 // use within a transaction
 
-func addSceneStudio(ctx context.Context, sceneWriter scene.PartialUpdater, o *models.Scene, studioID int) (bool, error) {
+func addSceneStudio(ctx context.Context, sceneWriter models.SceneUpdater, o *models.Scene, studioID int) (bool, error) {
 	// don't set if already set
 	if o.StudioID != nil {
 		return false, nil
@@ -82,11 +81,6 @@ func getStudioTagger(p *models.Studio, aliases []string, cache *match.Cache) []t
 	}
 
 	return ret
-}
-
-type SceneFinderUpdater interface {
-	scene.Queryer
-	scene.PartialUpdater
 }
 
 // StudioScenes searches for scenes whose path matches the provided studio name and tags the scene with the studio, if studio is not already set on the scene.

@@ -8,37 +8,8 @@ import (
 	"github.com/stashapp/stash/pkg/plugin"
 )
 
-type FinderByFile interface {
-	FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Scene, error)
-}
-
-type FileAssigner interface {
-	AssignFiles(ctx context.Context, sceneID int, fileID []models.FileID) error
-}
-
-type Creator interface {
-	Create(ctx context.Context, newScene *models.Scene, fileIDs []models.FileID) error
-}
-
-type CoverUpdater interface {
-	HasCover(ctx context.Context, sceneID int) (bool, error)
-	UpdateCover(ctx context.Context, sceneID int, cover []byte) error
-}
-
 type Config interface {
 	GetVideoFileNamingAlgorithm() models.HashAlgorithm
-}
-
-type Repository interface {
-	IDFinder
-	FinderByFile
-	Creator
-	PartialUpdater
-	Destroyer
-	models.VideoFileLoader
-	FileAssigner
-	CoverUpdater
-	models.SceneReader
 }
 
 type MarkerRepository interface {
@@ -50,7 +21,7 @@ type MarkerRepository interface {
 
 type Service struct {
 	File             models.FileReaderWriter
-	Repository       Repository
+	Repository       models.SceneReaderWriter
 	MarkerRepository MarkerRepository
 	PluginCache      *plugin.Cache
 

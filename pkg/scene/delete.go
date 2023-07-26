@@ -105,10 +105,6 @@ func (d *FileDeleter) MarkMarkerFiles(scene *models.Scene, seconds int) error {
 	return d.Files(files)
 }
 
-type Destroyer interface {
-	Destroy(ctx context.Context, id int) error
-}
-
 type MarkerDestroyer interface {
 	FindBySceneID(ctx context.Context, sceneID int) ([]*models.SceneMarker, error)
 	Destroy(ctx context.Context, id int) error

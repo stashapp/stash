@@ -10,15 +10,6 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type Updater interface {
-	PartialUpdater
-	UpdateCover(ctx context.Context, sceneID int, cover []byte) error
-}
-
-type PartialUpdater interface {
-	UpdatePartial(ctx context.Context, id int, updatedScene models.ScenePartial) (*models.Scene, error)
-}
-
 var ErrEmptyUpdater = errors.New("no fields have been set")
 
 // UpdateSet is used to update a scene and its relationships.
@@ -45,7 +36,7 @@ func (u *UpdateSet) IsEmpty() bool {
 // Update updates a scene by updating the fields in the Partial field, then
 // updates non-nil relationships. Returns an error if there is no work to
 // be done.
-func (u *UpdateSet) Update(ctx context.Context, qb Updater) (*models.Scene, error) {
+func (u *UpdateSet) Update(ctx context.Context, qb models.SceneUpdater) (*models.Scene, error) {
 	if u.IsEmpty() {
 		return nil, ErrEmptyUpdater
 	}
@@ -82,7 +73,7 @@ func (u UpdateSet) UpdateInput() models.SceneUpdateInput {
 	return ret
 }
 
-func AddPerformer(ctx context.Context, qb PartialUpdater, o *models.Scene, performerID int) error {
+func AddPerformer(ctx context.Context, qb models.SceneUpdater, o *models.Scene, performerID int) error {
 	_, err := qb.UpdatePartial(ctx, o.ID, models.ScenePartial{
 		PerformerIDs: &models.UpdateIDs{
 			IDs:  []int{performerID},
@@ -92,7 +83,7 @@ func AddPerformer(ctx context.Context, qb PartialUpdater, o *models.Scene, perfo
 	return err
 }
 
-func AddTag(ctx context.Context, qb PartialUpdater, o *models.Scene, tagID int) error {
+func AddTag(ctx context.Context, qb models.SceneUpdater, o *models.Scene, tagID int) error {
 	_, err := qb.UpdatePartial(ctx, o.ID, models.ScenePartial{
 		TagIDs: &models.UpdateIDs{
 			IDs:  []int{tagID},
@@ -102,7 +93,7 @@ func AddTag(ctx context.Context, qb PartialUpdater, o *models.Scene, tagID int) 
 	return err
 }
 
-func AddGallery(ctx context.Context, qb PartialUpdater, o *models.Scene, galleryID int) error {
+func AddGallery(ctx context.Context, qb models.SceneUpdater, o *models.Scene, galleryID int) error {
 	_, err := qb.UpdatePartial(ctx, o.ID, models.ScenePartial{
 		TagIDs: &models.UpdateIDs{
 			IDs:  []int{galleryID},

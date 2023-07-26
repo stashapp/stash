@@ -299,7 +299,7 @@ func PathToTags(ctx context.Context, path string, reader TagAutoTagQueryer, cach
 	return ret, nil
 }
 
-func PathToScenesFn(ctx context.Context, name string, paths []string, sceneReader scene.Queryer, fn func(ctx context.Context, scene *models.Scene) error) error {
+func PathToScenesFn(ctx context.Context, name string, paths []string, sceneReader models.SceneQueryer, fn func(ctx context.Context, scene *models.Scene) error) error {
 	regex := getPathQueryRegex(name)
 	organized := false
 	filter := models.SceneFilterType{

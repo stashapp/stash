@@ -18,6 +18,10 @@ type TagIDLoader interface {
 	GetTagIDs(ctx context.Context, relatedID int) ([]int, error)
 }
 
+type FileIDLoader interface {
+	GetManyFileIDs(ctx context.Context, ids []int) ([][]FileID, error)
+}
+
 type SceneMovieLoader interface {
 	GetMovies(ctx context.Context, id int) ([]MoviesScenes, error)
 }

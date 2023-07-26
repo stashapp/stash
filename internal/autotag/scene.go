@@ -9,14 +9,19 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
+type SceneFinderUpdater interface {
+	models.SceneQueryer
+	models.SceneUpdater
+}
+
 type ScenePerformerUpdater interface {
 	models.PerformerIDLoader
-	scene.PartialUpdater
+	models.SceneUpdater
 }
 
 type SceneTagUpdater interface {
 	models.TagIDLoader
-	scene.PartialUpdater
+	models.SceneUpdater
 }
 
 func getSceneFileTagger(s *models.Scene, cache *match.Cache) tagger {

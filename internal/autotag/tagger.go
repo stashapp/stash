@@ -22,7 +22,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -117,7 +116,7 @@ func (t *tagger) tagTags(ctx context.Context, tagReader match.TagAutoTagQueryer,
 	return nil
 }
 
-func (t *tagger) tagScenes(ctx context.Context, paths []string, sceneReader scene.Queryer, addFunc addSceneLinkFunc) error {
+func (t *tagger) tagScenes(ctx context.Context, paths []string, sceneReader models.SceneQueryer, addFunc addSceneLinkFunc) error {
 	return match.PathToScenesFn(ctx, t.Name, paths, sceneReader, func(ctx context.Context, p *models.Scene) error {
 		added, err := addFunc(p)
 

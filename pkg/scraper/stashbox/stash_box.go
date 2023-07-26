@@ -32,7 +32,7 @@ import (
 )
 
 type SceneReader interface {
-	Find(ctx context.Context, id int) (*models.Scene, error)
+	models.SceneGetter
 	models.StashIDLoader
 	models.VideoFileLoader
 }

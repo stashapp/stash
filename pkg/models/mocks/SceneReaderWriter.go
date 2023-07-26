@@ -14,6 +14,34 @@ type SceneReaderWriter struct {
 	mock.Mock
 }
 
+// AddFileID provides a mock function with given fields: ctx, id, fileID
+func (_m *SceneReaderWriter) AddFileID(ctx context.Context, id int, fileID models.FileID) error {
+	ret := _m.Called(ctx, id, fileID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, models.FileID) error); ok {
+		r0 = rf(ctx, id, fileID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// AddGalleryIDs provides a mock function with given fields: ctx, sceneID, galleryIDs
+func (_m *SceneReaderWriter) AddGalleryIDs(ctx context.Context, sceneID int, galleryIDs []int) error {
+	ret := _m.Called(ctx, sceneID, galleryIDs)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, []int) error); ok {
+		r0 = rf(ctx, sceneID, galleryIDs)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // All provides a mock function with given fields: ctx
 func (_m *SceneReaderWriter) All(ctx context.Context) ([]*models.Scene, error) {
 	ret := _m.Called(ctx)
@@ -37,6 +65,20 @@ func (_m *SceneReaderWriter) All(ctx context.Context) ([]*models.Scene, error) {
 	return r0, r1
 }
 
+// AssignFiles provides a mock function with given fields: ctx, sceneID, fileID
+func (_m *SceneReaderWriter) AssignFiles(ctx context.Context, sceneID int, fileID []models.FileID) error {
+	ret := _m.Called(ctx, sceneID, fileID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, []models.FileID) error); ok {
+		r0 = rf(ctx, sceneID, fileID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Count provides a mock function with given fields: ctx
 func (_m *SceneReaderWriter) Count(ctx context.Context) (int, error) {
 	ret := _m.Called(ctx)
@@ -51,6 +93,27 @@ func (_m *SceneReaderWriter) Count(ctx context.Context) (int, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
 		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CountByFileID provides a mock function with given fields: ctx, fileID
+func (_m *SceneReaderWriter) CountByFileID(ctx context.Context, fileID models.FileID) (int, error) {
+	ret := _m.Called(ctx, fileID)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, models.FileID) int); ok {
+		r0 = rf(ctx, fileID)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, models.FileID) error); ok {
+		r1 = rf(ctx, fileID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -300,6 +363,52 @@ func (_m *SceneReaderWriter) FindByChecksum(ctx context.Context, checksum string
 	return r0, r1
 }
 
+// FindByFileID provides a mock function with given fields: ctx, fileID
+func (_m *SceneReaderWriter) FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Scene, error) {
+	ret := _m.Called(ctx, fileID)
+
+	var r0 []*models.Scene
+	if rf, ok := ret.Get(0).(func(context.Context, models.FileID) []*models.Scene); ok {
+		r0 = rf(ctx, fileID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Scene)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, models.FileID) error); ok {
+		r1 = rf(ctx, fileID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FindByFingerprints provides a mock function with given fields: ctx, fp
+func (_m *SceneReaderWriter) FindByFingerprints(ctx context.Context, fp []models.Fingerprint) ([]*models.Scene, error) {
+	ret := _m.Called(ctx, fp)
+
+	var r0 []*models.Scene
+	if rf, ok := ret.Get(0).(func(context.Context, []models.Fingerprint) []*models.Scene); ok {
+		r0 = rf(ctx, fp)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Scene)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []models.Fingerprint) error); ok {
+		r1 = rf(ctx, fp)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByGalleryID provides a mock function with given fields: ctx, performerID
 func (_m *SceneReaderWriter) FindByGalleryID(ctx context.Context, performerID int) ([]*models.Scene, error) {
 	ret := _m.Called(ctx, performerID)
@@ -415,6 +524,29 @@ func (_m *SceneReaderWriter) FindByPerformerID(ctx context.Context, performerID 
 	return r0, r1
 }
 
+// FindByPrimaryFileID provides a mock function with given fields: ctx, fileID
+func (_m *SceneReaderWriter) FindByPrimaryFileID(ctx context.Context, fileID models.FileID) ([]*models.Scene, error) {
+	ret := _m.Called(ctx, fileID)
+
+	var r0 []*models.Scene
+	if rf, ok := ret.Get(0).(func(context.Context, models.FileID) []*models.Scene); ok {
+		r0 = rf(ctx, fileID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Scene)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, models.FileID) error); ok {
+		r1 = rf(ctx, fileID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindDuplicates provides a mock function with given fields: ctx, distance, durationDiff
 func (_m *SceneReaderWriter) FindDuplicates(ctx context.Context, distance int, durationDiff float64) ([][]*models.Scene, error) {
 	ret := _m.Called(ctx, distance, durationDiff)
@@ -523,6 +655,29 @@ func (_m *SceneReaderWriter) GetGalleryIDs(ctx context.Context, relatedID int) (
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
 		r1 = rf(ctx, relatedID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetManyFileIDs provides a mock function with given fields: ctx, ids
+func (_m *SceneReaderWriter) GetManyFileIDs(ctx context.Context, ids []int) ([][]models.FileID, error) {
+	ret := _m.Called(ctx, ids)
+
+	var r0 [][]models.FileID
+	if rf, ok := ret.Get(0).(func(context.Context, []int) [][]models.FileID); ok {
+		r0 = rf(ctx, ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([][]models.FileID)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []int) error); ok {
+		r1 = rf(ctx, ids)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -25,13 +25,6 @@ type GalleryReaderWriter interface {
 	GetManyFileIDs(ctx context.Context, ids []int) ([][]models.FileID, error)
 }
 
-type SceneReaderWriter interface {
-	models.SceneReaderWriter
-	scene.CreatorUpdater
-	models.URLLoader
-	GetManyFileIDs(ctx context.Context, ids []int) ([][]models.FileID, error)
-}
-
 type Repository struct {
 	models.TxnManager
 
@@ -42,7 +35,7 @@ type Repository struct {
 	Image          ImageReaderWriter
 	Movie          models.MovieReaderWriter
 	Performer      models.PerformerReaderWriter
-	Scene          SceneReaderWriter
+	Scene          models.SceneReaderWriter
 	SceneMarker    models.SceneMarkerReaderWriter
 	Studio         models.StudioReaderWriter
 	Tag            models.TagReaderWriter

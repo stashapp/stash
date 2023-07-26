@@ -16,14 +16,13 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type FullCreatorUpdater interface {
-	CreatorUpdater
-	Update(ctx context.Context, updatedScene *models.Scene) error
-	Updater
+type ImporterReaderWriter interface {
+	models.SceneCreatorUpdater
+	FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Scene, error)
 }
 
 type Importer struct {
-	ReaderWriter        FullCreatorUpdater
+	ReaderWriter        ImporterReaderWriter
 	FileFinder          models.FileFinder
 	StudioWriter        studio.NameFinderCreator
 	GalleryFinder       gallery.Finder

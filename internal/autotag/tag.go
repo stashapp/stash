@@ -13,9 +13,9 @@ import (
 )
 
 type SceneQueryTagUpdater interface {
-	scene.Queryer
+	models.SceneQueryer
 	models.TagIDLoader
-	scene.PartialUpdater
+	models.SceneUpdater
 }
 
 type ImageQueryTagUpdater interface {

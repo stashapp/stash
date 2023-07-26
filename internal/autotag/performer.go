@@ -13,9 +13,9 @@ import (
 )
 
 type SceneQueryPerformerUpdater interface {
-	scene.Queryer
+	models.SceneQueryer
 	models.PerformerIDLoader
-	scene.PartialUpdater
+	models.SceneUpdater
 }
 
 type ImageQueryPerformerUpdater interface {

@@ -450,7 +450,7 @@ func (p *FilenameParser) initWhiteSpaceRegex() {
 }
 
 type FilenameParserRepository struct {
-	Scene     Queryer
+	Scene     models.SceneQueryer
 	Performer PerformerNamesFinder
 	Studio    studio.Queryer
 	Movie     MovieNameFinder

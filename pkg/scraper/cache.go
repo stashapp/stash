@@ -15,7 +15,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/txn"
 )
@@ -53,7 +52,7 @@ func isCDPPathWS(c GlobalConfig) bool {
 }
 
 type SceneFinder interface {
-	scene.IDFinder
+	models.SceneGetter
 	models.URLLoader
 }
 
