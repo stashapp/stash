@@ -70,23 +70,6 @@ dd {
   white-space: pre-line;
 }
 
-.detail-header {
-  background-color: #192127;
-  min-height: 15rem;
-  padding: 1rem;
-  transition: 0.3s;
-  width: 100%;
-  z-index: 11;
-}
-
-.detail-header h2 {
-  margin-bottom: 0;
-}
-
-.detail-header .details-edit div:nth-last-child(2) {
-  flex: unset;
-}
-
 .sticky.detail-header-group {
   padding: 1rem 2.5rem;
 
@@ -139,9 +122,24 @@ dd {
 }
 
 .detail-header {
+  background-color: #192127;
+  min-height: 15rem;
+  padding: 1rem;
+  transition: 0.3s;
+  width: 100%;
+  z-index: 11;
+
   .detail-group,
   .col {
     transition: 0.2s;
+  }
+
+  .details-edit div:nth-last-child(2) {
+    flex: unset;
+  }
+
+  h2 {
+    margin-bottom: 0;
   }
 
   .mr-2 {
