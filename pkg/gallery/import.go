@@ -13,8 +13,15 @@ import (
 	"github.com/stashapp/stash/pkg/tag"
 )
 
+type ImporterReaderWriter interface {
+	models.GalleryCreatorUpdater
+	FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Gallery, error)
+	FindByFolderID(ctx context.Context, folderID models.FolderID) ([]*models.Gallery, error)
+	FindUserGalleryByTitle(ctx context.Context, title string) ([]*models.Gallery, error)
+}
+
 type Importer struct {
-	ReaderWriter        FullCreatorUpdater
+	ReaderWriter        ImporterReaderWriter
 	StudioWriter        studio.NameFinderCreator
 	PerformerWriter     performer.NameFinderCreator
 	TagWriter           tag.NameFinderCreator
@@ -25,11 +32,6 @@ type Importer struct {
 
 	ID      int
 	gallery models.Gallery
-}
-
-type FullCreatorUpdater interface {
-	FinderCreatorUpdater
-	Update(ctx context.Context, updatedGallery *models.Gallery) error
 }
 
 func (i *Importer) PreImport(ctx context.Context) error {

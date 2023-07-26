@@ -25,9 +25,9 @@ type ImageQueryTagUpdater interface {
 }
 
 type GalleryQueryTagUpdater interface {
-	gallery.Queryer
+	models.GalleryQueryer
 	models.TagIDLoader
-	gallery.PartialUpdater
+	models.GalleryUpdater
 }
 
 func getTagTaggers(p *models.Tag, aliases []string, cache *match.Cache) []tagger {

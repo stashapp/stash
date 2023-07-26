@@ -12,12 +12,14 @@ import (
 	"github.com/stashapp/stash/pkg/plugin"
 )
 
-type FinderCreatorUpdater interface {
-	Finder
+type ScanCreatorUpdater interface {
+	FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Gallery, error)
+	FindByFingerprints(ctx context.Context, fp []models.Fingerprint) ([]*models.Gallery, error)
+	GetFiles(ctx context.Context, relatedID int) ([]models.File, error)
+
 	Create(ctx context.Context, newGallery *models.Gallery, fileIDs []models.FileID) error
 	UpdatePartial(ctx context.Context, id int, updatedGallery models.GalleryPartial) (*models.Gallery, error)
 	AddFileID(ctx context.Context, id int, fileID models.FileID) error
-	models.FileLoader
 }
 
 type ScanSceneFinderUpdater interface {
@@ -32,7 +34,7 @@ type ScanImageFinderUpdater interface {
 }
 
 type ScanHandler struct {
-	CreatorUpdater     FullCreatorUpdater
+	CreatorUpdater     ScanCreatorUpdater
 	SceneFinderUpdater ScanSceneFinderUpdater
 	ImageFinderUpdater ScanImageFinderUpdater
 	PluginCache        *plugin.Cache

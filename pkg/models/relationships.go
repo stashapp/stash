@@ -6,6 +6,10 @@ type SceneIDLoader interface {
 	GetSceneIDs(ctx context.Context, relatedID int) ([]int, error)
 }
 
+type ImageIDLoader interface {
+	GetImageIDs(ctx context.Context, relatedID int) ([]int, error)
+}
+
 type GalleryIDLoader interface {
 	GetGalleryIDs(ctx context.Context, relatedID int) ([]int, error)
 }

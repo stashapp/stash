@@ -7,23 +7,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-type FinderByFile interface {
-	FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Gallery, error)
-}
-
-type Repository interface {
-	models.GalleryFinder
-	FinderByFile
-	Destroy(ctx context.Context, id int) error
-	models.FileLoader
-	ImageUpdater
-	PartialUpdater
-}
-
-type PartialUpdater interface {
-	UpdatePartial(ctx context.Context, id int, updatedGallery models.GalleryPartial) (*models.Gallery, error)
-}
-
 type ImageFinder interface {
 	FindByFolderID(ctx context.Context, folder models.FolderID) ([]*models.Image, error)
 	FindByZipFileID(ctx context.Context, zipFileID models.FileID) ([]*models.Image, error)
@@ -43,7 +26,7 @@ type ChapterRepository interface {
 }
 
 type Service struct {
-	Repository   Repository
+	Repository   models.GalleryReaderWriter
 	ImageFinder  ImageFinder
 	ImageService ImageService
 	File         models.FileReaderWriter

@@ -3,7 +3,6 @@ package autotag
 import (
 	"context"
 
-	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
@@ -142,12 +141,6 @@ func (tagger *Tagger) StudioImages(ctx context.Context, p *models.Studio, paths 
 	}
 
 	return nil
-}
-
-type GalleryFinderUpdater interface {
-	gallery.Queryer
-	gallery.PartialUpdater
-	Find(ctx context.Context, id int) (*models.Gallery, error)
 }
 
 // StudioGalleries searches for galleries whose path matches the provided studio name and tags the gallery with the studio, if studio is not already set on the gallery.

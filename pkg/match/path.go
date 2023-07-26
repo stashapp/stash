@@ -417,7 +417,7 @@ func PathToImagesFn(ctx context.Context, name string, paths []string, imageReade
 	return nil
 }
 
-func PathToGalleriesFn(ctx context.Context, name string, paths []string, galleryReader gallery.Queryer, fn func(ctx context.Context, scene *models.Gallery) error) error {
+func PathToGalleriesFn(ctx context.Context, name string, paths []string, galleryReader models.GalleryQueryer, fn func(ctx context.Context, scene *models.Gallery) error) error {
 	regex := getPathQueryRegex(name)
 	organized := false
 	filter := models.GalleryFilterType{

@@ -72,7 +72,7 @@ type TagFinder interface {
 }
 
 type GalleryFinder interface {
-	Find(ctx context.Context, id int) (*models.Gallery, error)
+	models.GalleryGetter
 	models.FileLoader
 }
 

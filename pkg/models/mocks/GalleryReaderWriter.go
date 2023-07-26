@@ -14,6 +14,41 @@ type GalleryReaderWriter struct {
 	mock.Mock
 }
 
+// AddFileID provides a mock function with given fields: ctx, galleryID, fileID
+func (_m *GalleryReaderWriter) AddFileID(ctx context.Context, galleryID int, fileID models.FileID) error {
+	ret := _m.Called(ctx, galleryID, fileID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, models.FileID) error); ok {
+		r0 = rf(ctx, galleryID, fileID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// AddImages provides a mock function with given fields: ctx, galleryID, imageIDs
+func (_m *GalleryReaderWriter) AddImages(ctx context.Context, galleryID int, imageIDs ...int) error {
+	_va := make([]interface{}, len(imageIDs))
+	for _i := range imageIDs {
+		_va[_i] = imageIDs[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, galleryID)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, ...int) error); ok {
+		r0 = rf(ctx, galleryID, imageIDs...)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // All provides a mock function with given fields: ctx
 func (_m *GalleryReaderWriter) All(ctx context.Context) ([]*models.Gallery, error) {
 	ret := _m.Called(ctx)
@@ -51,6 +86,27 @@ func (_m *GalleryReaderWriter) Count(ctx context.Context) (int, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
 		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CountByFileID provides a mock function with given fields: ctx, fileID
+func (_m *GalleryReaderWriter) CountByFileID(ctx context.Context, fileID models.FileID) (int, error) {
+	ret := _m.Called(ctx, fileID)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, models.FileID) int); ok {
+		r0 = rf(ctx, fileID)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, models.FileID) error); ok {
+		r1 = rf(ctx, fileID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -155,6 +211,75 @@ func (_m *GalleryReaderWriter) FindByChecksums(ctx context.Context, checksums []
 	return r0, r1
 }
 
+// FindByFileID provides a mock function with given fields: ctx, fileID
+func (_m *GalleryReaderWriter) FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Gallery, error) {
+	ret := _m.Called(ctx, fileID)
+
+	var r0 []*models.Gallery
+	if rf, ok := ret.Get(0).(func(context.Context, models.FileID) []*models.Gallery); ok {
+		r0 = rf(ctx, fileID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Gallery)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, models.FileID) error); ok {
+		r1 = rf(ctx, fileID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FindByFingerprints provides a mock function with given fields: ctx, fp
+func (_m *GalleryReaderWriter) FindByFingerprints(ctx context.Context, fp []models.Fingerprint) ([]*models.Gallery, error) {
+	ret := _m.Called(ctx, fp)
+
+	var r0 []*models.Gallery
+	if rf, ok := ret.Get(0).(func(context.Context, []models.Fingerprint) []*models.Gallery); ok {
+		r0 = rf(ctx, fp)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Gallery)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []models.Fingerprint) error); ok {
+		r1 = rf(ctx, fp)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FindByFolderID provides a mock function with given fields: ctx, folderID
+func (_m *GalleryReaderWriter) FindByFolderID(ctx context.Context, folderID models.FolderID) ([]*models.Gallery, error) {
+	ret := _m.Called(ctx, folderID)
+
+	var r0 []*models.Gallery
+	if rf, ok := ret.Get(0).(func(context.Context, models.FolderID) []*models.Gallery); ok {
+		r0 = rf(ctx, folderID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Gallery)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, models.FolderID) error); ok {
+		r1 = rf(ctx, folderID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByImageID provides a mock function with given fields: ctx, imageID
 func (_m *GalleryReaderWriter) FindByImageID(ctx context.Context, imageID int) ([]*models.Gallery, error) {
 	ret := _m.Called(ctx, imageID)
@@ -247,13 +372,59 @@ func (_m *GalleryReaderWriter) FindMany(ctx context.Context, ids []int) ([]*mode
 	return r0, r1
 }
 
-// GetImageIDs provides a mock function with given fields: ctx, galleryID
-func (_m *GalleryReaderWriter) GetImageIDs(ctx context.Context, galleryID int) ([]int, error) {
-	ret := _m.Called(ctx, galleryID)
+// FindUserGalleryByTitle provides a mock function with given fields: ctx, title
+func (_m *GalleryReaderWriter) FindUserGalleryByTitle(ctx context.Context, title string) ([]*models.Gallery, error) {
+	ret := _m.Called(ctx, title)
+
+	var r0 []*models.Gallery
+	if rf, ok := ret.Get(0).(func(context.Context, string) []*models.Gallery); ok {
+		r0 = rf(ctx, title)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Gallery)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, title)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetFiles provides a mock function with given fields: ctx, relatedID
+func (_m *GalleryReaderWriter) GetFiles(ctx context.Context, relatedID int) ([]models.File, error) {
+	ret := _m.Called(ctx, relatedID)
+
+	var r0 []models.File
+	if rf, ok := ret.Get(0).(func(context.Context, int) []models.File); ok {
+		r0 = rf(ctx, relatedID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]models.File)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, relatedID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetImageIDs provides a mock function with given fields: ctx, relatedID
+func (_m *GalleryReaderWriter) GetImageIDs(ctx context.Context, relatedID int) ([]int, error) {
+	ret := _m.Called(ctx, relatedID)
 
 	var r0 []int
 	if rf, ok := ret.Get(0).(func(context.Context, int) []int); ok {
-		r0 = rf(ctx, galleryID)
+		r0 = rf(ctx, relatedID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]int)
@@ -262,7 +433,30 @@ func (_m *GalleryReaderWriter) GetImageIDs(ctx context.Context, galleryID int) (
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, galleryID)
+		r1 = rf(ctx, relatedID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetManyFileIDs provides a mock function with given fields: ctx, ids
+func (_m *GalleryReaderWriter) GetManyFileIDs(ctx context.Context, ids []int) ([][]models.FileID, error) {
+	ret := _m.Called(ctx, ids)
+
+	var r0 [][]models.FileID
+	if rf, ok := ret.Get(0).(func(context.Context, []int) [][]models.FileID); ok {
+		r0 = rf(ctx, ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([][]models.FileID)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []int) error); ok {
+		r1 = rf(ctx, ids)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -388,6 +582,27 @@ func (_m *GalleryReaderWriter) QueryCount(ctx context.Context, galleryFilter *mo
 	}
 
 	return r0, r1
+}
+
+// RemoveImages provides a mock function with given fields: ctx, galleryID, imageIDs
+func (_m *GalleryReaderWriter) RemoveImages(ctx context.Context, galleryID int, imageIDs ...int) error {
+	_va := make([]interface{}, len(imageIDs))
+	for _i := range imageIDs {
+		_va[_i] = imageIDs[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, galleryID)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, ...int) error); ok {
+		r0 = rf(ctx, galleryID, imageIDs...)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // Update provides a mock function with given fields: ctx, updatedGallery
