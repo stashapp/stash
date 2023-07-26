@@ -260,6 +260,10 @@ dd {
   flex-direction: column;
   padding-bottom: 0.5rem;
   padding-right: 4rem;
+
+  @media (max-width: 576px) {
+    padding-right: 2rem;
+  }
 }
 
 .detail-item-title {
@@ -339,6 +343,13 @@ textarea.text-input {
 
   &:first-child {
     border-left: none;
+  }
+}
+
+@media (max-width: 576px) {
+  .row.justify-content-center {
+    margin-right: 0;
+    margin-left: 0;
   }
 }
 
