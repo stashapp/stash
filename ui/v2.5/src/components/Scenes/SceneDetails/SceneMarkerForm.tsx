@@ -118,6 +118,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
               }
               ids={primaryTagId ? [primaryTagId] : []}
               noSelectionString="Select/create tag..."
+              hoverPlacement="right"
             />
             <Form.Control.Feedback type="invalid">
               {formik.errors.primary_tag_id}
@@ -159,6 +160,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
               }
               ids={formik.values.tag_ids}
               noSelectionString="Select/create tags..."
+              hoverPlacement="right"
             />
           </div>
         </Form.Group>

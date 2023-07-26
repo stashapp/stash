@@ -513,6 +513,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     interactiveClient.pause();
     interactiveReady.current = false;
 
+    const isSafari = UAParser().browser.name?.includes("Safari");
     const isLandscape = file.height && file.width && file.width > file.height;
     const mobileUiOptions = {
       fullscreen: {
@@ -525,7 +526,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         disabled: true,
       },
     };
-    player.mobileUi(mobileUiOptions);
+    if (!isSafari) {
+      player.mobileUi(mobileUiOptions);
+    }
 
     function isDirect(src: URL) {
       return (
@@ -537,7 +540,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     const { duration } = file;
     const sourceSelector = player.sourceSelector();
-    const isSafari = UAParser().browser.name?.includes("Safari");
     sourceSelector.setSources(
       scene.sceneStreams
         .filter((stream) => {
