@@ -655,14 +655,14 @@ func (r *mutationResolver) getSceneMarker(ctx context.Context, id int) (ret *mod
 }
 
 func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input SceneMarkerCreateInput) (*models.SceneMarker, error) {
-	primaryTagID, err := strconv.Atoi(input.PrimaryTagID)
-	if err != nil {
-		return nil, err
-	}
-
 	sceneID, err := strconv.Atoi(input.SceneID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting scene id: %w", err)
+	}
+
+	primaryTagID, err := strconv.Atoi(input.PrimaryTagID)
+	if err != nil {
+		return nil, fmt.Errorf("converting primary tag id: %w", err)
 	}
 
 	currentTime := time.Now()
@@ -677,7 +677,7 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input SceneMar
 
 	tagIDs, err := stringslice.StringSliceToIntSlice(input.TagIds)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
@@ -721,7 +721,7 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 	}
 	updatedMarker.PrimaryTagID, err = translator.optionalIntFromString(input.PrimaryTagID, "primary_tag_id")
 	if err != nil {
-		return nil, fmt.Errorf("converting scene id: %w", err)
+		return nil, fmt.Errorf("converting primary tag id: %w", err)
 	}
 
 	var tagIDs []int
