@@ -555,7 +555,6 @@ func (r *mutationResolver) GalleryChapterUpdate(ctx context.Context, input Galle
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.GalleryChapter
 
-		// check to see if timestamp was changed
 		existingChapter, err := qb.Find(ctx, chapterID)
 		if err != nil {
 			return err

@@ -729,9 +729,6 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 	if input.TagIds != nil {
 		tagIDs, err = stringslice.StringSliceToIntSlice(input.TagIds)
 		if err != nil {
-			return nil, err
-		}
-		if err != nil {
 			return nil, fmt.Errorf("converting tag ids: %w", err)
 		}
 	}
