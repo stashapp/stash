@@ -650,7 +650,10 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
     });
     return {
       item: result.data!.performerCreate!,
-      message: "Created performer",
+      message: intl.formatMessage(
+        { id: "toast.created_entity" },
+        { entity: intl.formatMessage({ id: "performer" }).toLocaleLowerCase() }
+      ),
     };
   };
 
@@ -760,7 +763,13 @@ export const StudioSelect: React.FC<
         input: { name },
       },
     });
-    return { item: result.data!.studioCreate!, message: "Created studio" };
+    return {
+      item: result.data!.studioCreate!,
+      message: intl.formatMessage(
+        { id: "toast.created_entity" },
+        { entity: intl.formatMessage({ id: "studio" }).toLocaleLowerCase() }
+      ),
+    };
   };
 
   const isValidNewOption = (
@@ -824,7 +833,13 @@ export const MovieSelect: React.FC<IFilterProps> = (props) => {
     const result = await createMovie({
       variables: { input: { name } },
     });
-    return { item: result.data!.movieCreate!, message: "Created movie" };
+    return {
+      item: result.data!.movieCreate!,
+      message: intl.formatMessage(
+        { id: "toast.created_entity" },
+        { entity: intl.formatMessage({ id: "movie" }).toLocaleLowerCase() }
+      ),
+    };
   };
 
   return (
@@ -941,7 +956,13 @@ export const TagSelect: React.FC<IFilterProps & { excludeIds?: string[] }> = (
         },
       },
     });
-    return { item: result.data!.tagCreate!, message: "Created tag" };
+    return {
+      item: result.data!.tagCreate!,
+      message: intl.formatMessage(
+        { id: "toast.created_entity" },
+        { entity: intl.formatMessage({ id: "tag" }).toLocaleLowerCase() }
+      ),
+    };
   };
 
   const isValidNewOption = (
