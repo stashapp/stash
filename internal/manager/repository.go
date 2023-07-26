@@ -11,12 +11,6 @@ import (
 	"github.com/stashapp/stash/pkg/txn"
 )
 
-type ImageReaderWriter interface {
-	models.ImageReaderWriter
-	image.FinderCreatorUpdater
-	GetManyFileIDs(ctx context.Context, ids []int) ([][]models.FileID, error)
-}
-
 type GalleryReaderWriter interface {
 	models.GalleryReaderWriter
 	gallery.FinderCreatorUpdater
@@ -32,7 +26,7 @@ type Repository struct {
 	Folder         models.FolderReaderWriter
 	Gallery        GalleryReaderWriter
 	GalleryChapter models.GalleryChapterReaderWriter
-	Image          ImageReaderWriter
+	Image          models.ImageReaderWriter
 	Movie          models.MovieReaderWriter
 	Performer      models.PerformerReaderWriter
 	Scene          models.SceneReaderWriter

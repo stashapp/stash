@@ -18,13 +18,13 @@ type GalleryFinder interface {
 	FindUserGalleryByTitle(ctx context.Context, title string) ([]*models.Gallery, error)
 }
 
-type FullCreatorUpdater interface {
-	FinderCreatorUpdater
-	Update(ctx context.Context, updatedImage *models.Image) error
+type ImporterReaderWriter interface {
+	models.ImageCreatorUpdater
+	FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Image, error)
 }
 
 type Importer struct {
-	ReaderWriter        FullCreatorUpdater
+	ReaderWriter        ImporterReaderWriter
 	FileFinder          models.FileFinder
 	StudioWriter        studio.NameFinderCreator
 	GalleryFinder       GalleryFinder

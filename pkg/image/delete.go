@@ -10,10 +10,6 @@ import (
 	"github.com/stashapp/stash/pkg/models/paths"
 )
 
-type Destroyer interface {
-	Destroy(ctx context.Context, id int) error
-}
-
 // FileDeleter is an extension of file.Deleter that handles deletion of image files.
 type FileDeleter struct {
 	*file.Deleter

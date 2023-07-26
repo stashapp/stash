@@ -19,9 +19,9 @@ type SceneQueryPerformerUpdater interface {
 }
 
 type ImageQueryPerformerUpdater interface {
-	image.Queryer
+	models.ImageQueryer
 	models.PerformerIDLoader
-	image.PartialUpdater
+	models.ImageUpdater
 }
 
 type GalleryQueryPerformerUpdater interface {

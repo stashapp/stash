@@ -19,9 +19,9 @@ type SceneQueryTagUpdater interface {
 }
 
 type ImageQueryTagUpdater interface {
-	image.Queryer
+	models.ImageQueryer
 	models.TagIDLoader
-	image.PartialUpdater
+	models.ImageUpdater
 }
 
 type GalleryQueryTagUpdater interface {

@@ -22,7 +22,7 @@ import (
 )
 
 type ImageFinder interface {
-	Find(ctx context.Context, id int) (*models.Image, error)
+	models.ImageGetter
 	FindByChecksum(ctx context.Context, checksum string) ([]*models.Image, error)
 }
 

@@ -9,14 +9,19 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
+type ImageFinderUpdater interface {
+	models.ImageQueryer
+	models.ImageUpdater
+}
+
 type ImagePerformerUpdater interface {
 	models.PerformerIDLoader
-	image.PartialUpdater
+	models.ImageUpdater
 }
 
 type ImageTagUpdater interface {
 	models.TagIDLoader
-	image.PartialUpdater
+	models.ImageUpdater
 }
 
 func getImageFileTagger(s *models.Image, cache *match.Cache) tagger {

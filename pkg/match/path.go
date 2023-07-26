@@ -358,7 +358,7 @@ func PathToScenesFn(ctx context.Context, name string, paths []string, sceneReade
 	return nil
 }
 
-func PathToImagesFn(ctx context.Context, name string, paths []string, imageReader image.Queryer, fn func(ctx context.Context, scene *models.Image) error) error {
+func PathToImagesFn(ctx context.Context, name string, paths []string, imageReader models.ImageQueryer, fn func(ctx context.Context, scene *models.Image) error) error {
 	regex := getPathQueryRegex(name)
 	organized := false
 	filter := models.ImageFilterType{

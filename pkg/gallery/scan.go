@@ -26,7 +26,7 @@ type ScanSceneFinderUpdater interface {
 	AddGalleryIDs(ctx context.Context, sceneID int, galleryIDs []int) error
 }
 
-type ImageFinderUpdater interface {
+type ScanImageFinderUpdater interface {
 	FindByZipFileID(ctx context.Context, zipFileID models.FileID) ([]*models.Image, error)
 	UpdatePartial(ctx context.Context, id int, partial models.ImagePartial) (*models.Image, error)
 }
@@ -34,7 +34,7 @@ type ImageFinderUpdater interface {
 type ScanHandler struct {
 	CreatorUpdater     FullCreatorUpdater
 	SceneFinderUpdater ScanSceneFinderUpdater
-	ImageFinderUpdater ImageFinderUpdater
+	ImageFinderUpdater ScanImageFinderUpdater
 	PluginCache        *plugin.Cache
 }
 

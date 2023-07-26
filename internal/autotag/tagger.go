@@ -18,7 +18,6 @@ import (
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/gallery"
-	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
@@ -132,7 +131,7 @@ func (t *tagger) tagScenes(ctx context.Context, paths []string, sceneReader mode
 	})
 }
 
-func (t *tagger) tagImages(ctx context.Context, paths []string, imageReader image.Queryer, addFunc addImageLinkFunc) error {
+func (t *tagger) tagImages(ctx context.Context, paths []string, imageReader models.ImageQueryer, addFunc addImageLinkFunc) error {
 	return match.PathToImagesFn(ctx, t.Name, paths, imageReader, func(ctx context.Context, p *models.Image) error {
 		added, err := addFunc(p)
 
