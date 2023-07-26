@@ -348,11 +348,10 @@ textarea.text-input {
 
 @media (max-width: 576px) {
   .row.justify-content-center {
-    margin-right: 0;
     margin-left: 0;
+    margin-right: 0;
   }
 }
-
 @media (min-width: 576px) {
   .zoom-0 {
     width: 240px;
