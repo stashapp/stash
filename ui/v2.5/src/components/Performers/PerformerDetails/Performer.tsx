@@ -33,7 +33,12 @@ import { PerformerImagesPanel } from "./PerformerImagesPanel";
 import { PerformerAppearsWithPanel } from "./performerAppearsWithPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
 import { PerformerSubmitButton } from "./PerformerSubmitButton";
-import { faHeart, faLink } from "@fortawesome/free-solid-svg-icons";
+import {
+  faChevronDown,
+  faChevronUp,
+  faHeart,
+  faLink,
+} from "@fortawesome/free-solid-svg-icons";
 import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { IUIConfig } from "src/core/config";
 import { useRatingKeybinds } from "src/hooks/keybinds";
@@ -51,7 +56,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const intl = useIntl();
   const { tab = "details" } = useParams<IPerformerParams>();
 
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
@@ -329,9 +334,15 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     }
   }
 
+  function getCollapseButtonIcon() {
+    return collapsed ? faChevronDown : faChevronUp;
+  }
+
   function maybeRenderDetails() {
     if (!isEditing) {
-      return <PerformerDetailsPanel performer={performer} />;
+      return (
+        <PerformerDetailsPanel performer={performer} collapsed={collapsed} />
+      );
     }
   }
 
@@ -380,6 +391,18 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           },
         },
       });
+    }
+  }
+
+  function maybeRenderShowCollapseButton() {
+    if (!isEditing) {
+      return (
+        <div className="detail-expand-collapse">
+          <Button onClick={() => setCollapsed(!collapsed)}>
+            <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
+          </Button>
+        </div>
+      );
     }
   }
 
@@ -452,7 +475,11 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <title>{performer.name}</title>
       </Helmet>
 
-      <div className={`detail-header ${isEditing ? "edit" : ""}`}>
+      <div
+        className={`detail-header ${isEditing ? "edit" : ""}  ${
+          collapsed ? "collapsed" : ""
+        }`}
+      >
         <div className="detail-header-image">
           {encodingImage ? (
             <LoadingIndicator message="Encoding image..." />
@@ -469,6 +496,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
                   {` (${performer.disambiguation})`}
                 </span>
               )}
+              {maybeRenderShowCollapseButton()}
               {renderClickableIcons()}
             </h2>
             {maybeRenderAliases()}

@@ -145,6 +145,21 @@ dd {
   .mr-2 {
     margin-left: 0.5rem;
   }
+
+  .alias-head {
+    color: #868791;
+  }
+}
+
+.detail-expand-collapse {
+  display: contents;
+
+  button,
+  .btn-primary:hover {
+    background-color: unset;
+    border: unset;
+    color: #fff;
+  }
 }
 
 .detail-header.edit {
@@ -156,6 +171,13 @@ dd {
 
   .detail-header-image {
     height: auto;
+  }
+}
+
+.detail-header.collapsed {
+  .detail-header-image img {
+    max-width: 11rem;
+    transition: 0.5s;
   }
 }
 
@@ -199,6 +221,7 @@ dd {
     border-radius: 0.5rem;
     max-width: 14rem;
     object-fit: contain;
+    transition: 0.5s;
   }
 
   .movie-images img {

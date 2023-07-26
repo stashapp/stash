@@ -10,10 +10,12 @@ import { CountryFlag } from "src/components/Shared/CountryFlag";
 
 interface IPerformerDetails {
   performer: GQL.PerformerDataFragment;
+  collapsed?: boolean;
 }
 
 export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   performer,
+  collapsed,
 }) => {
   // Network state
   const intl = useIntl();
@@ -160,6 +162,20 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     );
   };
 
+  function maybeRenderExtraDetails() {
+    if (!collapsed) {
+      return (
+        <>
+          <DetailItem id="tattoos" value={performer?.tattoos} />
+          <DetailItem id="piercings" value={performer?.piercings} />
+          <DetailItem id="details" value={performer?.details} />
+          <DetailItem id="tags" value={renderTagsField()} />
+          <DetailItem id="StashIDs" value={renderStashIDs()} />
+        </>
+      );
+    }
+  }
+
   return (
     <div className="detail-group">
       <DetailItem
@@ -197,11 +213,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       />
       <DetailItem id="measurements" value={performer?.measurements} />
       <DetailItem id="fake_tits" value={performer?.fake_tits} />
-      <DetailItem id="tattoos" value={performer?.tattoos} />
-      <DetailItem id="piercings" value={performer?.piercings} />
-      <DetailItem id="details" value={performer?.details} />
-      <DetailItem id="tags" value={renderTagsField()} />
-      <DetailItem id="StashIDs" value={renderStashIDs()} />
+      {maybeRenderExtraDetails()}
     </div>
   );
 };
