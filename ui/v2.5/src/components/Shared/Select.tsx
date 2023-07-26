@@ -21,6 +21,7 @@ import {
   useTagCreate,
   useStudioCreate,
   usePerformerCreate,
+  useMovieCreate,
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import { SelectComponents } from "react-select/dist/declarations/src/components";
@@ -650,7 +651,10 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
     });
     return {
       item: result.data!.performerCreate!,
-      message: "Created performer",
+      message: intl.formatMessage(
+        { id: "toast.created_entity" },
+        { entity: intl.formatMessage({ id: "performer" }).toLocaleLowerCase() }
+      ),
     };
   };
 
@@ -760,7 +764,13 @@ export const StudioSelect: React.FC<
         input: { name },
       },
     });
-    return { item: result.data!.studioCreate!, message: "Created studio" };
+    return {
+      item: result.data!.studioCreate!,
+      message: intl.formatMessage(
+        { id: "toast.created_entity" },
+        { entity: intl.formatMessage({ id: "studio" }).toLocaleLowerCase() }
+      ),
+    };
   };
 
   const isValidNewOption = (
@@ -812,8 +822,26 @@ export const StudioSelect: React.FC<
 
 export const MovieSelect: React.FC<IFilterProps> = (props) => {
   const { data, loading } = useAllMoviesForFilter();
+  const [createMovie] = useMovieCreate();
   const items = data?.allMovies ?? [];
   const intl = useIntl();
+
+  const { configuration } = React.useContext(ConfigurationContext);
+  const defaultCreatable =
+    !configuration?.interface.disableDropdownCreate.movie ?? true;
+
+  const onCreate = async (name: string) => {
+    const result = await createMovie({
+      variables: { input: { name } },
+    });
+    return {
+      item: result.data!.movieCreate!,
+      message: intl.formatMessage(
+        { id: "toast.created_entity" },
+        { entity: intl.formatMessage({ id: "movie" }).toLocaleLowerCase() }
+      ),
+    };
+  };
 
   return (
     <FilterSelectComponent
@@ -829,6 +857,8 @@ export const MovieSelect: React.FC<IFilterProps> = (props) => {
           { entityType: intl.formatMessage({ id: "movie" }) }
         )
       }
+      creatable={props.creatable ?? defaultCreatable}
+      onCreate={onCreate}
     />
   );
 };
@@ -927,7 +957,13 @@ export const TagSelect: React.FC<
         },
       },
     });
-    return { item: result.data!.tagCreate!, message: "Created tag" };
+    return {
+      item: result.data!.tagCreate!,
+      message: intl.formatMessage(
+        { id: "toast.created_entity" },
+        { entity: intl.formatMessage({ id: "tag" }).toLocaleLowerCase() }
+      ),
+    };
   };
 
   const isValidNewOption = (
