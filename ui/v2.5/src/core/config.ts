@@ -43,6 +43,8 @@ export interface IUIConfig {
 
   ratingSystemOptions?: RatingSystemOptions;
 
+  // if true show all content details by default
+  showAllDetails?: boolean;
   // if true the chromecast option will enabled
   enableChromecast?: boolean;
   // if true continue scene will always play from the beginning

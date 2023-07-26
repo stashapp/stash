@@ -50,8 +50,6 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
   const intl = useIntl();
   const { tab = "details" } = useParams<IStudioParams>();
 
-  const [collapsed, setCollapsed] = useState(false);
-
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
   const abbreviateCounter =
@@ -87,8 +85,6 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     Mousetrap.bind("d d", () => {
       onDelete();
     });
-    Mousetrap.bind(",", () => setCollapsed(!collapsed));
-
     return () => {
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");

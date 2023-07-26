@@ -556,6 +556,13 @@ export const SettingsInterfacePanel: React.FC = () => {
           value={ui.maxOptionsShown ?? defaultMaxOptionsShown}
           onChange={(v) => saveUI({ maxOptionsShown: v })}
         />
+        <BooleanSetting
+          id="show_all_details"
+          headingID="config.ui.editing.show_all_details.heading"
+          subHeadingID="config.ui.editing.show_all_details.description"
+          checked={ui.showAllDetails ?? undefined}
+          onChange={(v) => saveUI({ showAllDetails: v })}
+        />
         <SelectSetting
           id="rating_system"
           headingID="config.ui.editing.rating_system.type.label"

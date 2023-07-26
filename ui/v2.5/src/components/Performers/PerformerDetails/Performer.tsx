@@ -56,13 +56,13 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const intl = useIntl();
   const { tab = "details" } = useParams<IPerformerParams>();
 
-  const [collapsed, setCollapsed] = useState(true);
-
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
-  const abbreviateCounter =
-    (configuration?.ui as IUIConfig)?.abbreviateCounters ?? false;
+  const uiConfig = configuration?.ui as IUIConfig | undefined;
+  const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
+  const showAllDetails = uiConfig?.showAllDetails ?? false;
 
+  const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [image, setImage] = useState<string | null>();
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
@@ -118,14 +118,6 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       Toast.error(e);
     }
   }
-
-  useEffect(() => {
-    setCollapsed(JSON.parse(window.localStorage.getItem("collapsed") || ""));
-  }, []);
-
-  useEffect(() => {
-    window.localStorage.setItem("collapsed", JSON.stringify(collapsed));
-  }, [collapsed]);
 
   useRatingKeybinds(
     true,
@@ -419,7 +411,6 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     /* This code can be removed once multple urls are supported for performers */
     const detailURLsRegex = /\[((?:http|www\.)[^\n\]]+)\]/gm;
     let urls = performer?.details?.match(detailURLsRegex);
-    console.log("urls: " + urls);
 
     return (
       <span className="name-icons">
@@ -444,11 +435,11 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             </a>
           </Button>
         )}
-        {(urls ?? []).map((url) => (
-          <Button className="minimal icon-link" title={url}>
+        {(urls ?? []).map((url, index) => (
+          <Button key={index} className="minimal icon-link" title={url}>
             <a
               href={TextUtils.sanitiseURL(url)}
-              className="link"
+              className={`detail-link ${index}`}
               target="_blank"
               rel="noopener noreferrer"
             >

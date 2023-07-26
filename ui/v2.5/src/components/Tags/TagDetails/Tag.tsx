@@ -49,8 +49,6 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
   const Toast = useToast();
   const intl = useIntl();
 
-  const [collapsed, setCollapsed] = useState(false);
-
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
   const abbreviateCounter =
@@ -102,7 +100,6 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
     Mousetrap.bind("d d", () => {
       onDelete();
     });
-    Mousetrap.bind(",", () => setCollapsed(!collapsed));
 
     return () => {
       if (isEditing) {
