@@ -11,10 +11,8 @@ import (
 )
 
 type MarkerCreatorUpdater interface {
-	Create(ctx context.Context, newSceneMarker *models.SceneMarker) error
-	Update(ctx context.Context, updatedSceneMarker *models.SceneMarker) error
+	models.SceneMarkerCreatorUpdater
 	FindBySceneID(ctx context.Context, sceneID int) ([]*models.SceneMarker, error)
-	UpdateTags(ctx context.Context, markerID int, tagIDs []int) error
 }
 
 type MarkerImporter struct {
