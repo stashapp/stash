@@ -13,12 +13,19 @@ type GalleryChapter struct {
 	UpdatedAt  time.Time `json:"updated_at"`
 }
 
-type GalleryChapters []*GalleryChapter
-
-func (m *GalleryChapters) Append(o interface{}) {
-	*m = append(*m, o.(*GalleryChapter))
+// GalleryChapterPartial represents part of a GalleryChapter object.
+// It is used to update the database entry.
+type GalleryChapterPartial struct {
+	Title      OptionalString
+	ImageIndex OptionalInt
+	GalleryID  OptionalInt
+	CreatedAt  OptionalTime
+	UpdatedAt  OptionalTime
 }
 
-func (m *GalleryChapters) New() interface{} {
-	return &GalleryChapter{}
+func NewGalleryChapterPartial() GalleryChapterPartial {
+	updatedTime := time.Now()
+	return GalleryChapterPartial{
+		UpdatedAt: NewOptionalTime(updatedTime),
+	}
 }
