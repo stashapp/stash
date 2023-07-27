@@ -262,6 +262,9 @@ func (c Cache) ScrapeName(ctx context.Context, id, query string, ty ScrapeConten
 
 // ScrapeFragment uses the given fragment input to scrape
 func (c Cache) ScrapeFragment(ctx context.Context, id string, input Input) (ScrapedContent, error) {
+	// set the deprecated URL field if it's not set
+	input.populateURL()
+
 	s := c.findScraper(id)
 	if s == nil {
 		return nil, fmt.Errorf("%w: id %s", ErrNotFound, id)

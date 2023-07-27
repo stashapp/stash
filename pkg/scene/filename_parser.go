@@ -1,4 +1,4 @@
-package manager
+package scene
 
 import (
 	"context"
@@ -9,41 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/studio"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/tag"
 )
-
-type SceneParserInput struct {
-	IgnoreWords          []string `json:"ignoreWords"`
-	WhitespaceCharacters *string  `json:"whitespaceCharacters"`
-	CapitalizeTitle      *bool    `json:"capitalizeTitle"`
-	IgnoreOrganized      *bool    `json:"ignoreOrganized"`
-}
-
-type SceneParserResult struct {
-	Scene        *models.Scene   `json:"scene"`
-	Title        *string         `json:"title"`
-	Code         *string         `json:"code"`
-	Details      *string         `json:"details"`
-	Director     *string         `json:"director"`
-	URL          *string         `json:"url"`
-	Date         *string         `json:"date"`
-	Rating       *int            `json:"rating"`
-	Rating100    *int            `json:"rating100"`
-	StudioID     *string         `json:"studio_id"`
-	GalleryIds   []string        `json:"gallery_ids"`
-	PerformerIds []string        `json:"performer_ids"`
-	Movies       []*SceneMovieID `json:"movies"`
-	TagIds       []string        `json:"tag_ids"`
-}
-
-type SceneMovieID struct {
-	MovieID    string  `json:"movie_id"`
-	SceneIndex *string `json:"scene_index"`
-}
 
 type parserField struct {
 	field           string
@@ -435,9 +405,9 @@ func (m parseMapper) parse(scene *models.Scene) *sceneHolder {
 	return sceneHolder
 }
 
-type SceneFilenameParser struct {
+type FilenameParser struct {
 	Pattern        string
-	ParserInput    SceneParserInput
+	ParserInput    models.SceneParserInput
 	Filter         *models.FindFilterType
 	whitespaceRE   *regexp.Regexp
 	performerCache map[string]*models.Performer
@@ -446,8 +416,8 @@ type SceneFilenameParser struct {
 	tagCache       map[string]*models.Tag
 }
 
-func NewSceneFilenameParser(filter *models.FindFilterType, config SceneParserInput) *SceneFilenameParser {
-	p := &SceneFilenameParser{
+func NewFilenameParser(filter *models.FindFilterType, config models.SceneParserInput) *FilenameParser {
+	p := &FilenameParser{
 		Pattern:     *filter.Q,
 		ParserInput: config,
 		Filter:      filter,
@@ -463,7 +433,7 @@ func NewSceneFilenameParser(filter *models.FindFilterType, config SceneParserInp
 	return p
 }
 
-func (p *SceneFilenameParser) initWhiteSpaceRegex() {
+func (p *FilenameParser) initWhiteSpaceRegex() {
 	compileREs()
 
 	wsChars := ""
@@ -479,15 +449,15 @@ func (p *SceneFilenameParser) initWhiteSpaceRegex() {
 	}
 }
 
-type SceneFilenameParserRepository struct {
-	Scene     scene.Queryer
+type FilenameParserRepository struct {
+	Scene     Queryer
 	Performer PerformerNamesFinder
 	Studio    studio.Queryer
 	Movie     MovieNameFinder
 	Tag       tag.Queryer
 }
 
-func (p *SceneFilenameParser) Parse(ctx context.Context, repo SceneFilenameParserRepository) ([]*SceneParserResult, int, error) {
+func (p *FilenameParser) Parse(ctx context.Context, repo FilenameParserRepository) ([]*models.SceneParserResult, int, error) {
 	// perform the query to find the scenes
 	mapper, err := newParseMapper(p.Pattern, p.ParserInput.IgnoreWords)
 
@@ -509,7 +479,7 @@ func (p *SceneFilenameParser) Parse(ctx context.Context, repo SceneFilenameParse
 
 	p.Filter.Q = nil
 
-	scenes, total, err := scene.QueryWithCount(ctx, repo.Scene, sceneFilter, p.Filter)
+	scenes, total, err := QueryWithCount(ctx, repo.Scene, sceneFilter, p.Filter)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -519,13 +489,13 @@ func (p *SceneFilenameParser) Parse(ctx context.Context, repo SceneFilenameParse
 	return ret, total, nil
 }
 
-func (p *SceneFilenameParser) parseScenes(ctx context.Context, repo SceneFilenameParserRepository, scenes []*models.Scene, mapper *parseMapper) []*SceneParserResult {
-	var ret []*SceneParserResult
+func (p *FilenameParser) parseScenes(ctx context.Context, repo FilenameParserRepository, scenes []*models.Scene, mapper *parseMapper) []*models.SceneParserResult {
+	var ret []*models.SceneParserResult
 	for _, scene := range scenes {
 		sceneHolder := mapper.parse(scene)
 
 		if sceneHolder != nil {
-			r := &SceneParserResult{
+			r := &models.SceneParserResult{
 				Scene: scene,
 			}
 			p.setParserResult(ctx, repo, *sceneHolder, r)
@@ -537,7 +507,7 @@ func (p *SceneFilenameParser) parseScenes(ctx context.Context, repo SceneFilenam
 	return ret
 }
 
-func (p SceneFilenameParser) replaceWhitespaceCharacters(value string) string {
+func (p FilenameParser) replaceWhitespaceCharacters(value string) string {
 	if p.whitespaceRE != nil {
 		value = p.whitespaceRE.ReplaceAllString(value, " ")
 		// remove consecutive spaces
@@ -551,7 +521,7 @@ type PerformerNamesFinder interface {
 	FindByNames(ctx context.Context, names []string, nocase bool) ([]*models.Performer, error)
 }
 
-func (p *SceneFilenameParser) queryPerformer(ctx context.Context, qb PerformerNamesFinder, performerName string) *models.Performer {
+func (p *FilenameParser) queryPerformer(ctx context.Context, qb PerformerNamesFinder, performerName string) *models.Performer {
 	// massage the performer name
 	performerName = delimiterRE.ReplaceAllString(performerName, " ")
 
@@ -574,7 +544,7 @@ func (p *SceneFilenameParser) queryPerformer(ctx context.Context, qb PerformerNa
 	return ret
 }
 
-func (p *SceneFilenameParser) queryStudio(ctx context.Context, qb studio.Queryer, studioName string) *models.Studio {
+func (p *FilenameParser) queryStudio(ctx context.Context, qb studio.Queryer, studioName string) *models.Studio {
 	// massage the performer name
 	studioName = delimiterRE.ReplaceAllString(studioName, " ")
 
@@ -600,7 +570,7 @@ type MovieNameFinder interface {
 	FindByName(ctx context.Context, name string, nocase bool) (*models.Movie, error)
 }
 
-func (p *SceneFilenameParser) queryMovie(ctx context.Context, qb MovieNameFinder, movieName string) *models.Movie {
+func (p *FilenameParser) queryMovie(ctx context.Context, qb MovieNameFinder, movieName string) *models.Movie {
 	// massage the movie name
 	movieName = delimiterRE.ReplaceAllString(movieName, " ")
 
@@ -617,7 +587,7 @@ func (p *SceneFilenameParser) queryMovie(ctx context.Context, qb MovieNameFinder
 	return ret
 }
 
-func (p *SceneFilenameParser) queryTag(ctx context.Context, qb tag.Queryer, tagName string) *models.Tag {
+func (p *FilenameParser) queryTag(ctx context.Context, qb tag.Queryer, tagName string) *models.Tag {
 	// massage the tag name
 	tagName = delimiterRE.ReplaceAllString(tagName, " ")
 
@@ -640,7 +610,7 @@ func (p *SceneFilenameParser) queryTag(ctx context.Context, qb tag.Queryer, tagN
 	return ret
 }
 
-func (p *SceneFilenameParser) setPerformers(ctx context.Context, qb PerformerNamesFinder, h sceneHolder, result *SceneParserResult) {
+func (p *FilenameParser) setPerformers(ctx context.Context, qb PerformerNamesFinder, h sceneHolder, result *models.SceneParserResult) {
 	// query for each performer
 	performersSet := make(map[int]bool)
 	for _, performerName := range h.performers {
@@ -656,7 +626,7 @@ func (p *SceneFilenameParser) setPerformers(ctx context.Context, qb PerformerNam
 	}
 }
 
-func (p *SceneFilenameParser) setTags(ctx context.Context, qb tag.Queryer, h sceneHolder, result *SceneParserResult) {
+func (p *FilenameParser) setTags(ctx context.Context, qb tag.Queryer, h sceneHolder, result *models.SceneParserResult) {
 	// query for each performer
 	tagsSet := make(map[int]bool)
 	for _, tagName := range h.tags {
@@ -672,7 +642,7 @@ func (p *SceneFilenameParser) setTags(ctx context.Context, qb tag.Queryer, h sce
 	}
 }
 
-func (p *SceneFilenameParser) setStudio(ctx context.Context, qb studio.Queryer, h sceneHolder, result *SceneParserResult) {
+func (p *FilenameParser) setStudio(ctx context.Context, qb studio.Queryer, h sceneHolder, result *models.SceneParserResult) {
 	// query for each performer
 	if h.studio != "" {
 		studio := p.queryStudio(ctx, qb, h.studio)
@@ -683,7 +653,7 @@ func (p *SceneFilenameParser) setStudio(ctx context.Context, qb studio.Queryer, 
 	}
 }
 
-func (p *SceneFilenameParser) setMovies(ctx context.Context, qb MovieNameFinder, h sceneHolder, result *SceneParserResult) {
+func (p *FilenameParser) setMovies(ctx context.Context, qb MovieNameFinder, h sceneHolder, result *models.SceneParserResult) {
 	// query for each movie
 	moviesSet := make(map[int]bool)
 	for _, movieName := range h.movies {
@@ -691,7 +661,7 @@ func (p *SceneFilenameParser) setMovies(ctx context.Context, qb MovieNameFinder,
 			movie := p.queryMovie(ctx, qb, movieName)
 			if movie != nil {
 				if _, found := moviesSet[movie.ID]; !found {
-					result.Movies = append(result.Movies, &SceneMovieID{
+					result.Movies = append(result.Movies, &models.SceneMovieID{
 						MovieID: strconv.Itoa(movie.ID),
 					})
 					moviesSet[movie.ID] = true
@@ -701,7 +671,7 @@ func (p *SceneFilenameParser) setMovies(ctx context.Context, qb MovieNameFinder,
 	}
 }
 
-func (p *SceneFilenameParser) setParserResult(ctx context.Context, repo SceneFilenameParserRepository, h sceneHolder, result *SceneParserResult) {
+func (p *FilenameParser) setParserResult(ctx context.Context, repo FilenameParserRepository, h sceneHolder, result *models.SceneParserResult) {
 	if h.result.Title != "" {
 		title := h.result.Title
 		title = p.replaceWhitespaceCharacters(title)

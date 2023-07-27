@@ -200,13 +200,16 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
                 <FormattedMessage id="details" />
               </Nav.Link>
             </Nav.Item>
-            {gallery.scenes.length > 0 && (
+            {gallery.scenes.length >= 1 ? (
               <Nav.Item>
                 <Nav.Link eventKey="gallery-scenes-panel">
-                  <FormattedMessage id="scenes" />
+                  <FormattedMessage
+                    id="countables.scenes"
+                    values={{ count: gallery.scenes.length }}
+                  />
                 </Nav.Link>
               </Nav.Item>
-            )}
+            ) : undefined}
             {path ? (
               <Nav.Item>
                 <Nav.Link eventKey="gallery-file-info-panel">

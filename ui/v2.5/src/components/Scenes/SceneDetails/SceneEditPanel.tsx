@@ -899,6 +899,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
                     )
                   }
                   ids={formik.values.tag_ids}
+                  hoverPlacement="right"
                 />
               </Col>
             </Form.Group>

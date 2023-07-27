@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"database/sql"
 	"embed"
 	"errors"
 	"fmt"
@@ -469,6 +470,60 @@ func (db *Database) Vacuum(ctx context.Context) error {
 func (db *Database) Analyze(ctx context.Context) error {
 	_, err := db.db.ExecContext(ctx, "ANALYZE")
 	return err
+}
+
+func (db *Database) ExecSQL(ctx context.Context, query string, args []interface{}) (*int64, *int64, error) {
+	wrapper := dbWrapper{}
+
+	result, err := wrapper.Exec(ctx, query, args...)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var rowsAffected *int64
+	ra, err := result.RowsAffected()
+	if err == nil {
+		rowsAffected = &ra
+	}
+
+	var lastInsertId *int64
+	li, err := result.LastInsertId()
+	if err == nil {
+		lastInsertId = &li
+	}
+
+	return rowsAffected, lastInsertId, nil
+}
+
+func (db *Database) QuerySQL(ctx context.Context, query string, args []interface{}) ([]string, [][]interface{}, error) {
+	wrapper := dbWrapper{}
+
+	rows, err := wrapper.QueryxContext(ctx, query, args...)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, nil, err
+	}
+	defer rows.Close()
+
+	cols, err := rows.Columns()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var ret [][]interface{}
+
+	for rows.Next() {
+		row, err := rows.SliceScan()
+		if err != nil {
+			return nil, nil, err
+		}
+		ret = append(ret, row)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, nil, err
+	}
+
+	return cols, ret, nil
 }
 
 func (db *Database) runCustomMigrations(ctx context.Context, fns []customMigrationFunc) error {
