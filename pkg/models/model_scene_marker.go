@@ -14,8 +14,8 @@ type SceneMarker struct {
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 
-// SceneMarkerPartial represents part of a SceneMarker object. It is used to update
-// the database entry.
+// SceneMarkerPartial represents part of a SceneMarker object.
+// It is used to update the database entry.
 type SceneMarkerPartial struct {
 	Title        OptionalString
 	Seconds      OptionalFloat64
