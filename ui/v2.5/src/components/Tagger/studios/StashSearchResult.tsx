@@ -62,16 +62,23 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     if (parentInput) {
       setSaveState("Saving parent studio");
 
-      const parentRes = await createStudio({
-        variables: { input: parentInput },
-      });
-      if (!parentRes?.data?.studioCreate) {
-        handleSaveError(
-          parentInput.name,
-          parentRes?.errors?.[0]?.message ?? ""
-        );
-      } else {
-        input.parent_id = parentRes.data?.studioCreate?.id;
+      try {
+        // if parent id is set, then update the existing studio
+        if (input.parent_id) {
+          const parentUpdateData: GQL.StudioUpdateInput = {
+            ...parentInput,
+            id: input.parent_id,
+          };
+          await updateStudio(parentUpdateData);
+        } else {
+          const parentRes = await createStudio({
+            variables: { input: parentInput },
+          });
+          input.parent_id = parentRes.data?.studioCreate?.id;
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (e: any) {
+        handleSaveError(parentInput.name, e.message ?? "");
       }
     }
 
