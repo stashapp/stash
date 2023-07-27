@@ -61,6 +61,11 @@ export const CompressedTagDetailsPanel: React.FC<ITagDetails> = ({ tag }) => {
         <a className="tag-name" onClick={() => scrollToTop()}>
           {tag.name}
         </a>
+        {tag.description ? (
+          <span className="tag-desc">{tag.description}</span>
+        ) : (
+          ""
+        )}
       </div>
     </div>
   );

@@ -183,26 +183,34 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
 
   return (
     <div className="detail-group">
-      <DetailItem
-        id="gender"
-        value={intl.formatMessage({ id: "gender_types." + performer.gender })}
-      />
+      {performer.gender ? (
+        <DetailItem
+          id="gender"
+          value={intl.formatMessage({ id: "gender_types." + performer.gender })}
+        />
+      ) : (
+        ""
+      )}
       <DetailItem
         id="age"
         value={TextUtils.age(performer.birthdate, performer.death_date)}
         title={TextUtils.formatDate(intl, performer.birthdate ?? undefined)}
       />
       <DetailItem id="death_date" value={performer.death_date} />
-      <DetailItem
-        id="country"
-        value={
-          <CountryFlag
-            country={performer.country}
-            className="mr-2"
-            includeName={true}
-          />
-        }
-      />
+      {performer.country ? (
+        <DetailItem
+          id="country"
+          value={
+            <CountryFlag
+              country={performer.country}
+              className="mr-2"
+              includeName={true}
+            />
+          }
+        />
+      ) : (
+        ""
+      )}
       <DetailItem id="ethnicity" value={performer?.ethnicity} />
       <DetailItem id="hair_color" value={performer?.hair_color} />
       <DetailItem id="eye_color" value={performer?.eye_color} />
@@ -239,22 +247,34 @@ export const CompressedPerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         <a className="performer-name" onClick={() => scrollToTop()}>
           {performer.name}
         </a>
-        <span className="performer-gender">
-          {intl.formatMessage({ id: "gender_types." + performer.gender })}
-        </span>
-        <span
-          className="performer-age"
-          title={TextUtils.formatDate(intl, performer.birthdate ?? undefined)}
-        >
-          {TextUtils.age(performer.birthdate, performer.death_date)}
-        </span>
-        <span className="performer-country">
-          <CountryFlag
-            country={performer.country}
-            className="mr-2"
-            includeName={true}
-          />
-        </span>
+        {performer.gender ? (
+          <span className="performer-gender">
+            {intl.formatMessage({ id: "gender_types." + performer.gender })}
+          </span>
+        ) : (
+          ""
+        )}
+        {performer.birthdate ? (
+          <span
+            className="performer-age"
+            title={TextUtils.formatDate(intl, performer.birthdate ?? undefined)}
+          >
+            {TextUtils.age(performer.birthdate, performer.death_date)}
+          </span>
+        ) : (
+          ""
+        )}
+        {performer.country ? (
+          <span className="performer-country">
+            <CountryFlag
+              country={performer.country}
+              className="mr-2"
+              includeName={true}
+            />
+          </span>
+        ) : (
+          ""
+        )}
       </div>
     </div>
   );

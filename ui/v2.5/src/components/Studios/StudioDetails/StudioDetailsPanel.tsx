@@ -72,7 +72,11 @@ export const CompressedStudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
         <a className="studio-name" onClick={() => scrollToTop()}>
           {studio.name}
         </a>
-        <span className="studio-parent">{studio?.parent_studio?.name}</span>
+        {studio?.parent_studio?.name ? (
+          <span className="studio-parent">{studio?.parent_studio?.name}</span>
+        ) : (
+          ""
+        )}
       </div>
     </div>
   );
