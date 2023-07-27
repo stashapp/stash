@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Button, Form } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { useFormik } from "formik";
@@ -40,12 +40,16 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
     tag_ids: yup.array(yup.string().required()).defined(),
   });
 
-  const initialValues = {
-    title: marker?.title ?? "",
-    seconds: marker?.seconds ?? Math.round(getPlayerPosition() ?? 0),
-    primary_tag_id: marker?.primary_tag.id ?? "",
-    tag_ids: marker?.tags.map((tag) => tag.id) ?? [],
-  };
+  // useMemo to only run getPlayerPosition when the input marker actually changes
+  const initialValues = useMemo(
+    () => ({
+      title: marker?.title ?? "",
+      seconds: marker?.seconds ?? Math.round(getPlayerPosition() ?? 0),
+      primary_tag_id: marker?.primary_tag.id ?? "",
+      tag_ids: marker?.tags.map((tag) => tag.id) ?? [],
+    }),
+    [marker]
+  );
 
   type InputValues = yup.InferType<typeof schema>;
 
