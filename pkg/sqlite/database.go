@@ -449,12 +449,12 @@ func (db *Database) Optimise(ctx context.Context) error {
 
 	err := db.Analyze(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("performing optimization: %w", err)
 	}
 
 	err = db.Vacuum(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("performing vacuum: %w", err)
 	}
 
 	return nil
