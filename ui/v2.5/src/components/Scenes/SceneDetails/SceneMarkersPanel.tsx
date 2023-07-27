@@ -52,7 +52,7 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = ({
     return (
       <SceneMarkerForm
         sceneID={sceneId}
-        editingMarker={editingMarker}
+        marker={editingMarker}
         onClose={closeEditor}
       />
     );

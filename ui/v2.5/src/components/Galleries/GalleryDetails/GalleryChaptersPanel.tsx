@@ -46,7 +46,7 @@ export const GalleryChapterPanel: React.FC<IGalleryChapterPanelProps> = ({
     return (
       <GalleryChapterForm
         galleryID={gallery.id}
-        editingChapter={editingChapter}
+        chapter={editingChapter}
         onClose={closeEditor}
       />
     );
