@@ -287,6 +287,29 @@ func (_m *SceneMarkerReaderWriter) Update(ctx context.Context, updatedSceneMarke
 	return r0
 }
 
+// UpdatePartial provides a mock function with given fields: ctx, id, updatedSceneMarker
+func (_m *SceneMarkerReaderWriter) UpdatePartial(ctx context.Context, id int, updatedSceneMarker models.SceneMarkerPartial) (*models.SceneMarker, error) {
+	ret := _m.Called(ctx, id, updatedSceneMarker)
+
+	var r0 *models.SceneMarker
+	if rf, ok := ret.Get(0).(func(context.Context, int, models.SceneMarkerPartial) *models.SceneMarker); ok {
+		r0 = rf(ctx, id, updatedSceneMarker)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.SceneMarker)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int, models.SceneMarkerPartial) error); ok {
+		r1 = rf(ctx, id, updatedSceneMarker)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // UpdateTags provides a mock function with given fields: ctx, markerID, tagIDs
 func (_m *SceneMarkerReaderWriter) UpdateTags(ctx context.Context, markerID int, tagIDs []int) error {
 	ret := _m.Called(ctx, markerID, tagIDs)

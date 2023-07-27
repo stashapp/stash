@@ -533,6 +533,11 @@ type Mutation {
   Submit performer as draft to stash-box instance
   """
   submitStashBoxPerformerDraft(input: StashBoxDraftSubmissionInput!): ID
+  
+  """
+  Run batch performer tag task. Returns the job ID.
+  """
+  stashBoxBatchPerformerTag(input: StashBoxBatchPerformerTagInput!): String!
 
   """
   Backup the database. Optionally returns a link to download the database file
@@ -540,9 +545,14 @@ type Mutation {
   backupDatabase(input: BackupDatabaseInput!): String
 
   """
-  Run batch performer tag task. Returns the job ID.
+  DANGEROUS: Execute an arbitrary SQL statement that returns rows.
   """
-  stashBoxBatchPerformerTag(input: StashBoxBatchPerformerTagInput!): String!
+  querySQL(sql: String!, args: [Any]): SQLQueryResult!
+
+  """
+  DANGEROUS: Execute an arbitrary SQL statement without returning any rows.
+  """
+  execSQL(sql: String!, args: [Any]): SQLExecResult!
 
   """
   Enables DLNA for an optional duration. Has no effect if DLNA is enabled by default

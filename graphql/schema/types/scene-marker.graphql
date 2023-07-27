@@ -32,10 +32,10 @@ input SceneMarkerCreateInput {
 
 input SceneMarkerUpdateInput {
   id: ID!
-  title: String!
-  seconds: Float!
-  scene_id: ID!
-  primary_tag_id: ID!
+  title: String
+  seconds: Float
+  scene_id: ID
+  primary_tag_id: ID
   tag_ids: [ID!]
 }
 

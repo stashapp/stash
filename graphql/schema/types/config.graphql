@@ -507,6 +507,7 @@ input ConfigDisableDropdownCreateInput {
   performer: Boolean
   tag: Boolean
   studio: Boolean
+  movie: Boolean
 }
 
 enum ImageLightboxDisplayMode {
@@ -646,6 +647,7 @@ type ConfigDisableDropdownCreate {
   performer: Boolean!
   tag: Boolean!
   studio: Boolean!
+  movie: Boolean!
 }
 
 type ConfigInterfaceResult {
