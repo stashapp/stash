@@ -236,6 +236,20 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
           </Col>
         </Form.Group>
 
+        <Form.Group controlId="aliases" as={Row}>
+          <Form.Label column xs={3}>
+            <FormattedMessage id="aliases" />
+          </Form.Label>
+          <Col xs={9}>
+            <StringListInput
+              value={formik.values.aliases ?? []}
+              setValue={(value) => formik.setFieldValue("aliases", value)}
+              errors={aliasErrorMsg}
+              errorIdx={aliasErrorIdx}
+            />
+          </Col>
+        </Form.Group>
+
         <Form.Group controlId="url" as={Row}>
           {FormUtils.renderLabel({
             title: intl.formatMessage({ id: "url" }),
@@ -288,20 +302,6 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         </Form.Group>
 
         {renderStashIDs()}
-
-        <Form.Group controlId="aliases" as={Row}>
-          <Form.Label column xs={3}>
-            <FormattedMessage id="aliases" />
-          </Form.Label>
-          <Col xs={9}>
-            <StringListInput
-              value={formik.values.aliases ?? []}
-              setValue={(value) => formik.setFieldValue("aliases", value)}
-              errors={aliasErrorMsg}
-              errorIdx={aliasErrorIdx}
-            />
-          </Col>
-        </Form.Group>
       </Form>
 
       <hr />

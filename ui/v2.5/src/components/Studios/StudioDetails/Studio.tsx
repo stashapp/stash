@@ -159,6 +159,16 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     );
   }
 
+  function maybeRenderAliases() {
+    if (studio?.aliases?.length) {
+      return (
+        <div>
+          <span className="alias-head">{studio?.aliases?.join(", ")}</span>
+        </div>
+      );
+    }
+  }
+
   function toggleEditing(value?: boolean) {
     if (value !== undefined) {
       setIsEditing(value);
@@ -419,6 +429,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               <span className="studio-name">{studio.name}</span>
               {renderClickableIcons()}
             </h2>
+            {maybeRenderAliases()}
             <RatingSystem
               value={studio.rating100 ?? undefined}
               onSetRating={(value) => setRating(value ?? null)}

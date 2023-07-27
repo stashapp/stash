@@ -9,22 +9,6 @@ interface ITagDetails {
 }
 
 export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag }) => {
-  function renderAliasesField() {
-    if (!tag.aliases.length) {
-      return;
-    }
-
-    return (
-      <>
-        {tag.aliases.map((a) => (
-          <Badge className="tag-item" variant="secondary" key={a}>
-            {a}
-          </Badge>
-        ))}
-      </>
-    );
-  }
-
   function renderParentsField() {
     if (!tag.parents?.length) {
       return;
@@ -62,7 +46,6 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag }) => {
       <DetailItem id="description" value={tag.description} />
       <DetailItem id="parent_tags" value={renderParentsField()} />
       <DetailItem id="sub_tags" value={renderChildrenField()} />
-      <DetailItem id="aliases" value={renderAliasesField()} />
     </div>
   );
 };

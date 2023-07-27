@@ -1,5 +1,4 @@
 import React from "react";
-import { Badge } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { DetailItem } from "src/components/Shared/DetailItem";
 
@@ -10,22 +9,6 @@ interface IStudioDetailsPanel {
 export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
   studio,
 }) => {
-  function renderTagsList() {
-    if (!studio.aliases?.length) {
-      return;
-    }
-
-    return (
-      <>
-        {studio.aliases.map((a) => (
-          <Badge className="tag-item" variant="secondary" key={a}>
-            {a}
-          </Badge>
-        ))}
-      </>
-    );
-  }
-
   function renderStashIDs() {
     if (!studio.stash_ids?.length) {
       return;
@@ -71,7 +54,6 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
           )
         }
       />
-      <DetailItem id="aliases" value={renderTagsList()} />
       <DetailItem id="StashIDs" value={renderStashIDs()} />
     </div>
   );

@@ -198,6 +198,16 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
     );
   }
 
+  function maybeRenderAliases() {
+    if (tag?.aliases?.length) {
+      return (
+        <div>
+          <span className="alias-head">{tag?.aliases?.join(", ")}</span>
+        </div>
+      );
+    }
+  }
+
   function toggleEditing(value?: boolean) {
     if (value !== undefined) {
       setIsEditing(value);
@@ -422,6 +432,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
             <h2>
               <span className="tag-name">{tag.name}</span>
             </h2>
+            {maybeRenderAliases()}
             {maybeRenderDetails()}
             {maybeRenderEditPanel()}
           </div>
