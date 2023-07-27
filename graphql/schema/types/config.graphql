@@ -1,505 +1,267 @@
 input SetupInput {
-  """
-  Empty to indicate $HOME/.stash/config.yml default
-  """
+  "Empty to indicate $HOME/.stash/config.yml default"
   configLocation: String!
   stashes: [StashConfigInput!]!
-  """
-  Empty to indicate default
-  """
+  "Empty to indicate default"
   databaseFile: String!
-  """
-  Empty to indicate default
-  """
+  "Empty to indicate default"
   generatedLocation: String!
-  """
-  Empty to indicate default
-  """
+  "Empty to indicate default"
   cacheLocation: String!
-  """
-  Empty to indicate database storage for blobs
-  """
+  "Empty to indicate database storage for blobs"
   blobsLocation: String!
 }
 
 enum StreamingResolutionEnum {
-  "240p"
-  LOW
-  "480p"
-  STANDARD
-  "720p"
-  STANDARD_HD
-  "1080p"
-  FULL_HD
-  "4k"
-  FOUR_K
-  "Original"
-  ORIGINAL
+  "240p", LOW
+  "480p", STANDARD
+  "720p", STANDARD_HD
+  "1080p", FULL_HD
+  "4k", FOUR_K
+  "Original", ORIGINAL
 }
 
 enum PreviewPreset {
-  "X264_ULTRAFAST"
-  ultrafast
-  "X264_VERYFAST"
-  veryfast
-  "X264_FAST"
-  fast
-  "X264_MEDIUM"
-  medium
-  "X264_SLOW"
-  slow
-  "X264_SLOWER"
-  slower
-  "X264_VERYSLOW"
-  veryslow
+  "X264_ULTRAFAST", ultrafast
+  "X264_VERYFAST", veryfast
+  "X264_FAST", fast
+  "X264_MEDIUM", medium
+  "X264_SLOW", slow
+  "X264_SLOWER", slower
+  "X264_VERYSLOW", veryslow
 }
 
 enum HashAlgorithm {
   MD5
-  "oshash"
-  OSHASH
+  "oshash", OSHASH
 }
 
 enum BlobsStorageType {
   # blobs are stored in the database
-  "Database"
-  DATABASE
+  "Database", DATABASE
   # blobs are stored in the filesystem under the configured blobs directory
-  "Filesystem"
-  FILESYSTEM
+  "Filesystem", FILESYSTEM
 }
 
 input ConfigGeneralInput {
-  """
-  Array of file paths to content
-  """
+  "Array of file paths to content"
   stashes: [StashConfigInput!]
-  """
-  Path to the SQLite database
-  """
+  "Path to the SQLite database"
   databasePath: String
-  """
-  Path to backup directory
-  """
+  "Path to backup directory"
   backupDirectoryPath: String
-  """
-  Path to generated files
-  """
+  "Path to generated files"
   generatedPath: String
-  """
-  Path to import/export files
-  """
+  "Path to import/export files"
   metadataPath: String
-  """
-  Path to scrapers
-  """
+  "Path to scrapers"
   scrapersPath: String
-  """
-  Path to cache
-  """
+  "Path to cache"
   cachePath: String
-  """
-  Path to blobs - required for filesystem blob storage
-  """
+  "Path to blobs - required for filesystem blob storage"
   blobsPath: String
-  """
-  Where to store blobs
-  """
+  "Where to store blobs"
   blobsStorage: BlobsStorageType
-  """
-  Whether to calculate MD5 checksums for scene video files
-  """
+  "Whether to calculate MD5 checksums for scene video files"
   calculateMD5: Boolean
-  """
-  Hash algorithm to use for generated file naming
-  """
+  "Hash algorithm to use for generated file naming"
   videoFileNamingAlgorithm: HashAlgorithm
-  """
-  Number of parallel tasks to start during scan/generate
-  """
+  "Number of parallel tasks to start during scan/generate"
   parallelTasks: Int
-  """
-  Include audio stream in previews
-  """
+  "Include audio stream in previews"
   previewAudio: Boolean
-  """
-  Number of segments in a preview file
-  """
+  "Number of segments in a preview file"
   previewSegments: Int
-  """
-  Preview segment duration, in seconds
-  """
+  "Preview segment duration, in seconds"
   previewSegmentDuration: Float
-  """
-  Duration of start of video to exclude when generating previews
-  """
+  "Duration of start of video to exclude when generating previews"
   previewExcludeStart: String
-  """
-  Duration of end of video to exclude when generating previews
-  """
+  "Duration of end of video to exclude when generating previews"
   previewExcludeEnd: String
-  """
-  Preset when generating preview
-  """
+  "Preset when generating preview"
   previewPreset: PreviewPreset
-  """
-  Transcode Hardware Acceleration
-  """
+  "Transcode Hardware Acceleration"
   transcodeHardwareAcceleration: Boolean
-  """
-  Max generated transcode size
-  """
+  "Max generated transcode size"
   maxTranscodeSize: StreamingResolutionEnum
-  """
-  Max streaming transcode size
-  """
+  "Max streaming transcode size"
   maxStreamingTranscodeSize: StreamingResolutionEnum
-
-  """
-  ffmpeg transcode input args - injected before input file
-  These are applied to generated transcodes (previews and transcodes)
-  """
+  
+  """ffmpeg transcode input args - injected before input file
+  These are applied to generated transcodes (previews and transcodes)"""
   transcodeInputArgs: [String!]
-  """
-  ffmpeg transcode output args - injected before output file
-  These are applied to generated transcodes (previews and transcodes)
-  """
+  """ffmpeg transcode output args - injected before output file
+  These are applied to generated transcodes (previews and transcodes)"""
   transcodeOutputArgs: [String!]
 
-  """
-  ffmpeg stream input args - injected before input file
-  These are applied when live transcoding
-  """
+  """ffmpeg stream input args - injected before input file
+  These are applied when live transcoding"""
   liveTranscodeInputArgs: [String!]
-  """
-  ffmpeg stream output args - injected before output file
-  These are applied when live transcoding
-  """
+  """ffmpeg stream output args - injected before output file
+  These are applied when live transcoding"""
   liveTranscodeOutputArgs: [String!]
 
-  """
-  whether to include range in generated funscript heatmaps
-  """
+  "whether to include range in generated funscript heatmaps"
   drawFunscriptHeatmapRange: Boolean
 
-  """
-  Write image thumbnails to disk when generating on the fly
-  """
+  "Write image thumbnails to disk when generating on the fly"
   writeImageThumbnails: Boolean
-  """
-  Create Image Clips from Video extensions when Videos are disabled in Library
-  """
+  "Create Image Clips from Video extensions when Videos are disabled in Library"
   createImageClipsFromVideos: Boolean
-  """
-  Username
-  """
+  "Username"
   username: String
-  """
-  Password
-  """
+  "Password"
   password: String
-  """
-  Maximum session cookie age
-  """
+  "Maximum session cookie age"
   maxSessionAge: Int
-  """
-  Comma separated list of proxies to allow traffic from
-  """
+  "Comma separated list of proxies to allow traffic from"
   trustedProxies: [String!] @deprecated(reason: "no longer supported")
-  """
-  Name of the log file
-  """
+  "Name of the log file"
   logFile: String
-  """
-  Whether to also output to stderr
-  """
+  "Whether to also output to stderr"
   logOut: Boolean
-  """
-  Minimum log level
-  """
+  "Minimum log level"
   logLevel: String
-  """
-  Whether to log http access
-  """
+  "Whether to log http access"
   logAccess: Boolean
-  """
-  True if galleries should be created from folders with images
-  """
+  "True if galleries should be created from folders with images"
   createGalleriesFromFolders: Boolean
-  """
-  Regex used to identify images as gallery covers
-  """
-  galleryCoverRegex: String
-  """
-  Array of video file extensions
-  """
+  "Regex used to identify images as gallery covers"
+  galleryCoverRegex: String  
+  "Array of video file extensions"
   videoExtensions: [String!]
-  """
-  Array of image file extensions
-  """
+  "Array of image file extensions"
   imageExtensions: [String!]
-  """
-  Array of gallery zip file extensions
-  """
+  "Array of gallery zip file extensions"
   galleryExtensions: [String!]
-  """
-  Array of file regexp to exclude from Video Scans
-  """
+  "Array of file regexp to exclude from Video Scans"
   excludes: [String!]
-  """
-  Array of file regexp to exclude from Image Scans
-  """
+  "Array of file regexp to exclude from Image Scans"
   imageExcludes: [String!]
-  """
-  Custom Performer Image Location
-  """
+  "Custom Performer Image Location"
   customPerformerImageLocation: String
-  """
-  Scraper user agent string
-  """
-  scraperUserAgent: String
-    @deprecated(
-      reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead"
-    )
-  """
-  Scraper CDP path. Path to chrome executable or remote address
-  """
-  scraperCDPPath: String
-    @deprecated(
-      reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead"
-    )
-  """
-  Whether the scraper should check for invalid certificates
-  """
-  scraperCertCheck: Boolean
-    @deprecated(
-      reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead"
-    )
-  """
-  Stash-box instances used for tagging
-  """
+  "Scraper user agent string"
+  scraperUserAgent: String @deprecated(reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead")
+  "Scraper CDP path. Path to chrome executable or remote address"
+  scraperCDPPath: String @deprecated(reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead")
+  "Whether the scraper should check for invalid certificates"
+  scraperCertCheck: Boolean @deprecated(reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead")
+  "Stash-box instances used for tagging"
   stashBoxes: [StashBoxInput!]
-  """
-  Python path - resolved using path if unset
-  """
+  "Python path - resolved using path if unset"
   pythonPath: String
 }
 
 type ConfigGeneralResult {
-  """
-  Array of file paths to content
-  """
+  "Array of file paths to content"
   stashes: [StashConfig!]!
-  """
-  Path to the SQLite database
-  """
+  "Path to the SQLite database"
   databasePath: String!
-  """
-  Path to backup directory
-  """
+  "Path to backup directory"
   backupDirectoryPath: String!
-  """
-  Path to generated files
-  """
+  "Path to generated files"
   generatedPath: String!
-  """
-  Path to import/export files
-  """
+  "Path to import/export files"
   metadataPath: String!
-  """
-  Path to the config file used
-  """
+  "Path to the config file used"
   configFilePath: String!
-  """
-  Path to scrapers
-  """
+  "Path to scrapers"
   scrapersPath: String!
-  """
-  Path to cache
-  """
+  "Path to cache"
   cachePath: String!
-  """
-  Path to blobs - required for filesystem blob storage
-  """
+  "Path to blobs - required for filesystem blob storage"
   blobsPath: String!
-  """
-  Where to store blobs
-  """
+  "Where to store blobs"
   blobsStorage: BlobsStorageType!
-  """
-  Whether to calculate MD5 checksums for scene video files
-  """
+  "Whether to calculate MD5 checksums for scene video files"
   calculateMD5: Boolean!
-  """
-  Hash algorithm to use for generated file naming
-  """
+  "Hash algorithm to use for generated file naming"
   videoFileNamingAlgorithm: HashAlgorithm!
-  """
-  Number of parallel tasks to start during scan/generate
-  """
+  "Number of parallel tasks to start during scan/generate"
   parallelTasks: Int!
-  """
-  Include audio stream in previews
-  """
+  "Include audio stream in previews"
   previewAudio: Boolean!
-  """
-  Number of segments in a preview file
-  """
+  "Number of segments in a preview file"
   previewSegments: Int!
-  """
-  Preview segment duration, in seconds
-  """
+  "Preview segment duration, in seconds"
   previewSegmentDuration: Float!
-  """
-  Duration of start of video to exclude when generating previews
-  """
+  "Duration of start of video to exclude when generating previews"
   previewExcludeStart: String!
-  """
-  Duration of end of video to exclude when generating previews
-  """
+  "Duration of end of video to exclude when generating previews"
   previewExcludeEnd: String!
-  """
-  Preset when generating preview
-  """
+  "Preset when generating preview"
   previewPreset: PreviewPreset!
-  """
-  Transcode Hardware Acceleration
-  """
+  "Transcode Hardware Acceleration"
   transcodeHardwareAcceleration: Boolean!
-  """
-  Max generated transcode size
-  """
+  "Max generated transcode size"
   maxTranscodeSize: StreamingResolutionEnum
-  """
-  Max streaming transcode size
-  """
+  "Max streaming transcode size"
   maxStreamingTranscodeSize: StreamingResolutionEnum
 
-  """
-  ffmpeg transcode input args - injected before input file
-  These are applied to generated transcodes (previews and transcodes)
-  """
+  """ffmpeg transcode input args - injected before input file
+  These are applied to generated transcodes (previews and transcodes)"""
   transcodeInputArgs: [String!]!
-  """
-  ffmpeg transcode output args - injected before output file
-  These are applied to generated transcodes (previews and transcodes)
-  """
+  """ffmpeg transcode output args - injected before output file
+  These are applied to generated transcodes (previews and transcodes)"""
   transcodeOutputArgs: [String!]!
 
-  """
-  ffmpeg stream input args - injected before input file
-  These are applied when live transcoding
-  """
+  """ffmpeg stream input args - injected before input file
+  These are applied when live transcoding"""
   liveTranscodeInputArgs: [String!]!
-  """
-  ffmpeg stream output args - injected before output file
-  These are applied when live transcoding
-  """
+  """ffmpeg stream output args - injected before output file
+  These are applied when live transcoding"""
   liveTranscodeOutputArgs: [String!]!
 
-  """
-  whether to include range in generated funscript heatmaps
-  """
+  "whether to include range in generated funscript heatmaps"
   drawFunscriptHeatmapRange: Boolean!
 
-  """
-  Write image thumbnails to disk when generating on the fly
-  """
+  "Write image thumbnails to disk when generating on the fly"
   writeImageThumbnails: Boolean!
-  """
-  Create Image Clips from Video extensions when Videos are disabled in Library
-  """
+  "Create Image Clips from Video extensions when Videos are disabled in Library"
   createImageClipsFromVideos: Boolean!
-  """
-  API Key
-  """
+  "API Key"
   apiKey: String!
-  """
-  Username
-  """
+  "Username"
   username: String!
-  """
-  Password
-  """
+  "Password"
   password: String!
-  """
-  Maximum session cookie age
-  """
+  "Maximum session cookie age"
   maxSessionAge: Int!
-  """
-  Comma separated list of proxies to allow traffic from
-  """
+  "Comma separated list of proxies to allow traffic from"
   trustedProxies: [String!] @deprecated(reason: "no longer supported")
-  """
-  Name of the log file
-  """
+  "Name of the log file"
   logFile: String
-  """
-  Whether to also output to stderr
-  """
+  "Whether to also output to stderr"
   logOut: Boolean!
-  """
-  Minimum log level
-  """
+  "Minimum log level"
   logLevel: String!
-  """
-  Whether to log http access
-  """
+  "Whether to log http access"
   logAccess: Boolean!
-  """
-  Array of video file extensions
-  """
+  "Array of video file extensions"
   videoExtensions: [String!]!
-  """
-  Array of image file extensions
-  """
+  "Array of image file extensions"
   imageExtensions: [String!]!
-  """
-  Array of gallery zip file extensions
-  """
+  "Array of gallery zip file extensions"
   galleryExtensions: [String!]!
-  """
-  True if galleries should be created from folders with images
-  """
+  "True if galleries should be created from folders with images"
   createGalleriesFromFolders: Boolean!
-  """
-  Regex used to identify images as gallery covers
-  """
+  "Regex used to identify images as gallery covers"
   galleryCoverRegex: String!
-  """
-  Array of file regexp to exclude from Video Scans
-  """
+  "Array of file regexp to exclude from Video Scans"
   excludes: [String!]!
-  """
-  Array of file regexp to exclude from Image Scans
-  """
+  "Array of file regexp to exclude from Image Scans"
   imageExcludes: [String!]!
-  """
-  Custom Performer Image Location
-  """
+  "Custom Performer Image Location"
   customPerformerImageLocation: String
-  """
-  Scraper user agent string
-  """
-  scraperUserAgent: String
-    @deprecated(reason: "use ConfigResult.scraping instead")
-  """
-  Scraper CDP path. Path to chrome executable or remote address
-  """
-  scraperCDPPath: String
-    @deprecated(reason: "use ConfigResult.scraping instead")
-  """
-  Whether the scraper should check for invalid certificates
-  """
-  scraperCertCheck: Boolean!
-    @deprecated(reason: "use ConfigResult.scraping instead")
-  """
-  Stash-box instances used for tagging
-  """
+  "Scraper user agent string"
+  scraperUserAgent: String @deprecated(reason: "use ConfigResult.scraping instead")
+  "Scraper CDP path. Path to chrome executable or remote address"
+  scraperCDPPath: String @deprecated(reason: "use ConfigResult.scraping instead")
+  "Whether the scraper should check for invalid certificates"
+  scraperCertCheck: Boolean! @deprecated(reason: "use ConfigResult.scraping instead")
+  "Stash-box instances used for tagging"
   stashBoxes: [StashBox!]!
-  """
-  Python path - resolved using path if unset
-  """
+  "Python path - resolved using path if unset"
   pythonPath: String!
 }
 
@@ -540,106 +302,64 @@ type ConfigImageLightboxResult {
 }
 
 input ConfigInterfaceInput {
-  """
-  Ordered list of items that should be shown in the menu
-  """
+  "Ordered list of items that should be shown in the menu"
   menuItems: [String!]
 
-  """
-  Enable sound on mouseover previews
-  """
+  "Enable sound on mouseover previews"
   soundOnPreview: Boolean
-
-  """
-  Show title and tags in wall view
-  """
+  
+  "Show title and tags in wall view"
   wallShowTitle: Boolean
-  """
-  Wall playback type
-  """
+  "Wall playback type"
   wallPlayback: String
 
-  """
-  Show scene scrubber by default
-  """
+  "Show scene scrubber by default"
   showScrubber: Boolean
-
-  """
-  Maximum duration (in seconds) in which a scene video will loop in the scene player
-  """
+  
+  "Maximum duration (in seconds) in which a scene video will loop in the scene player"
   maximumLoopDuration: Int
-  """
-  If true, video will autostart on load in the scene player
-  """
+  "If true, video will autostart on load in the scene player"
   autostartVideo: Boolean
-  """
-  If true, video will autostart when loading from play random or play selected
-  """
+  "If true, video will autostart when loading from play random or play selected"
   autostartVideoOnPlaySelected: Boolean
-  """
-  If true, next scene in playlist will be played at video end by default
-  """
+  "If true, next scene in playlist will be played at video end by default"
   continuePlaylistDefault: Boolean
-
-  """
-  If true, studio overlays will be shown as text instead of logo images
-  """
+  
+  "If true, studio overlays will be shown as text instead of logo images"
   showStudioAsText: Boolean
-
-  """
-  Custom CSS
-  """
+  
+  "Custom CSS"
   css: String
   cssEnabled: Boolean
 
-  """
-  Custom Javascript
-  """
+  "Custom Javascript"
   javascript: String
   javascriptEnabled: Boolean
 
-  """
-  Custom Locales
-  """
+  "Custom Locales"
   customLocales: String
   customLocalesEnabled: Boolean
-
-  """
-  Interface language
-  """
+  
+  "Interface language"
   language: String
 
-  """
-  Slideshow Delay
-  """
+  "Slideshow Delay"
   slideshowDelay: Int @deprecated(reason: "Use imageLightbox.slideshowDelay")
-
+  
   imageLightbox: ConfigImageLightboxInput
-
-  """
-  Set to true to disable creating new objects via the dropdown menus
-  """
+  
+  "Set to true to disable creating new objects via the dropdown menus"
   disableDropdownCreate: ConfigDisableDropdownCreateInput
-
-  """
-  Handy Connection Key
-  """
+  
+  "Handy Connection Key"
   handyKey: String
-  """
-  Funscript Time Offset
-  """
+  "Funscript Time Offset"
   funscriptOffset: Int
-  """
-  Whether to use Stash Hosted Funscript
-  """
+  "Whether to use Stash Hosted Funscript"
   useStashHostedFunscript: Boolean
-  """
-  True if we should not auto-open a browser window on startup
-  """
+  "True if we should not auto-open a browser window on startup"
   noBrowser: Boolean
-  """
-  True if we should send notifications to the desktop
-  """
+  "True if we should send notifications to the desktop"
   notificationsEnabled: Boolean
 }
 
@@ -651,186 +371,111 @@ type ConfigDisableDropdownCreate {
 }
 
 type ConfigInterfaceResult {
-  """
-  Ordered list of items that should be shown in the menu
-  """
+  "Ordered list of items that should be shown in the menu"
   menuItems: [String!]
 
-  """
-  Enable sound on mouseover previews
-  """
+  "Enable sound on mouseover previews"
   soundOnPreview: Boolean
 
-  """
-  Show title and tags in wall view
-  """
+  "Show title and tags in wall view"
   wallShowTitle: Boolean
-  """
-  Wall playback type
-  """
+  "Wall playback type"
   wallPlayback: String
 
-  """
-  Show scene scrubber by default
-  """
+  "Show scene scrubber by default"
   showScrubber: Boolean
 
-  """
-  Maximum duration (in seconds) in which a scene video will loop in the scene player
-  """
+  "Maximum duration (in seconds) in which a scene video will loop in the scene player"
   maximumLoopDuration: Int
-  """
-  True if we should not auto-open a browser window on startup
-  """
+  "True if we should not auto-open a browser window on startup"
   noBrowser: Boolean
-  """
-  True if we should send desktop notifications
-  """
+  "True if we should send desktop notifications"
   notificationsEnabled: Boolean
-  """
-  If true, video will autostart on load in the scene player
-  """
+  "If true, video will autostart on load in the scene player"
   autostartVideo: Boolean
-  """
-  If true, video will autostart when loading from play random or play selected
-  """
+  "If true, video will autostart when loading from play random or play selected"
   autostartVideoOnPlaySelected: Boolean
-  """
-  If true, next scene in playlist will be played at video end by default
-  """
+  "If true, next scene in playlist will be played at video end by default"
   continuePlaylistDefault: Boolean
 
-  """
-  If true, studio overlays will be shown as text instead of logo images
-  """
+  "If true, studio overlays will be shown as text instead of logo images"
   showStudioAsText: Boolean
 
-  """
-  Custom CSS
-  """
+  "Custom CSS"
   css: String
   cssEnabled: Boolean
 
-  """
-  Custom Javascript
-  """
+  "Custom Javascript"
   javascript: String
   javascriptEnabled: Boolean
 
-  """
-  Custom Locales
-  """
+  "Custom Locales"
   customLocales: String
   customLocalesEnabled: Boolean
-
-  """
-  Interface language
-  """
+  
+  "Interface language"
   language: String
 
-  """
-  Slideshow Delay
-  """
+  "Slideshow Delay"
   slideshowDelay: Int @deprecated(reason: "Use imageLightbox.slideshowDelay")
 
   imageLightbox: ConfigImageLightboxResult!
 
-  """
-  Fields are true if creating via dropdown menus are disabled
-  """
+  "Fields are true if creating via dropdown menus are disabled"
   disableDropdownCreate: ConfigDisableDropdownCreate!
-  disabledDropdownCreate: ConfigDisableDropdownCreate!
-    @deprecated(reason: "Use disableDropdownCreate")
+  disabledDropdownCreate: ConfigDisableDropdownCreate! @deprecated(reason: "Use disableDropdownCreate")
 
-  """
-  Handy Connection Key
-  """
+  "Handy Connection Key"
   handyKey: String
-  """
-  Funscript Time Offset
-  """
+  "Funscript Time Offset"
   funscriptOffset: Int
-  """
-  Whether to use Stash Hosted Funscript
-  """
+  "Whether to use Stash Hosted Funscript"
   useStashHostedFunscript: Boolean
 }
 
 input ConfigDLNAInput {
   serverName: String
-  """
-  True if DLNA service should be enabled by default
-  """
+  "True if DLNA service should be enabled by default"
   enabled: Boolean
-  """
-  List of IPs whitelisted for DLNA service
-  """
+  "List of IPs whitelisted for DLNA service"
   whitelistedIPs: [String!]
-  """
-  List of interfaces to run DLNA on. Empty for all
-  """
+  "List of interfaces to run DLNA on. Empty for all"
   interfaces: [String!]
-  """
-  Order to sort videos
-  """
+  "Order to sort videos"
   videoSortOrder: String
 }
 
 type ConfigDLNAResult {
   serverName: String!
-  """
-  True if DLNA service should be enabled by default
-  """
+  "True if DLNA service should be enabled by default"
   enabled: Boolean!
-  """
-  List of IPs whitelisted for DLNA service
-  """
+  "List of IPs whitelisted for DLNA service"
   whitelistedIPs: [String!]!
-  """
-  List of interfaces to run DLNA on. Empty for all
-  """
+  "List of interfaces to run DLNA on. Empty for all"
   interfaces: [String!]!
-  """
-  Order to sort videos
-  """
+  "Order to sort videos"
   videoSortOrder: String!
 }
 
 input ConfigScrapingInput {
-  """
-  Scraper user agent string
-  """
+  "Scraper user agent string"
   scraperUserAgent: String
-  """
-  Scraper CDP path. Path to chrome executable or remote address
-  """
+  "Scraper CDP path. Path to chrome executable or remote address"
   scraperCDPPath: String
-  """
-  Whether the scraper should check for invalid certificates
-  """
+  "Whether the scraper should check for invalid certificates"
   scraperCertCheck: Boolean
-  """
-  Tags blacklist during scraping
-  """
+  "Tags blacklist during scraping"
   excludeTagPatterns: [String!]
 }
 
 type ConfigScrapingResult {
-  """
-  Scraper user agent string
-  """
+  "Scraper user agent string"
   scraperUserAgent: String
-  """
-  Scraper CDP path. Path to chrome executable or remote address
-  """
+  "Scraper CDP path. Path to chrome executable or remote address"
   scraperCDPPath: String
-  """
-  Whether the scraper should check for invalid certificates
-  """
+  "Whether the scraper should check for invalid certificates"
   scraperCertCheck: Boolean!
-  """
-  Tags blacklist during scraping
-  """
+  "Tags blacklist during scraping"
   excludeTagPatterns: [String!]!
 }
 
@@ -839,14 +484,10 @@ type ConfigDefaultSettingsResult {
   identify: IdentifyMetadataTaskOptions
   autoTag: AutoTagMetadataOptions
   generate: GenerateMetadataOptions
-
-  """
-  If true, delete file checkbox will be checked by default
-  """
+  
+  "If true, delete file checkbox will be checked by default"
   deleteFile: Boolean
-  """
-  If true, delete generated supporting files checkbox will be checked by default
-  """
+  "If true, delete generated supporting files checkbox will be checked by default"
   deleteGenerated: Boolean
 }
 
@@ -856,19 +497,13 @@ input ConfigDefaultSettingsInput {
   autoTag: AutoTagMetadataInput
   generate: GenerateMetadataInput
 
-  """
-  If true, delete file checkbox will be checked by default
-  """
+  "If true, delete file checkbox will be checked by default"
   deleteFile: Boolean
-  """
-  If true, delete generated files checkbox will be checked by default
-  """
+  "If true, delete generated files checkbox will be checked by default"
   deleteGenerated: Boolean
 }
 
-"""
-All configuration settings
-"""
+"All configuration settings"
 type ConfigResult {
   general: ConfigGeneralResult!
   interface: ConfigInterfaceResult!
@@ -878,18 +513,14 @@ type ConfigResult {
   ui: Map!
 }
 
-"""
-Directory structure of a path
-"""
+"Directory structure of a path"
 type Directory {
-  path: String!
-  parent: String
-  directories: [String!]!
+    path: String!
+    parent: String
+    directories: [String!]!
 }
 
-"""
-Stash configuration details
-"""
+"Stash configuration details"
 input StashConfigInput {
   path: String!
   excludeVideo: Boolean!

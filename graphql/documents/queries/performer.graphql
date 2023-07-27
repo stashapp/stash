@@ -1,7 +1,4 @@
-query FindPerformers(
-  $filter: FindFilterType
-  $performer_filter: PerformerFilterType
-) {
+query FindPerformers($filter: FindFilterType, $performer_filter: PerformerFilterType) {
   findPerformers(filter: $filter, performer_filter: $performer_filter) {
     count
     performers {

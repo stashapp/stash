@@ -6,7 +6,7 @@ enum GenderEnum {
   INTERSEX
   NON_BINARY
 }
-
+ 
 enum CircumisedEnum {
   CUT
   UNCUT
@@ -14,7 +14,7 @@ enum CircumisedEnum {
 
 type Performer {
   id: ID!
-  checksum: String @deprecated(reason: "Not used")
+  checksum: String @deprecated(reason: "Not used") 
   name: String!
   disambiguation: String
   url: String
@@ -87,9 +87,7 @@ input PerformerCreateInput {
   instagram: String
   favorite: Boolean
   tag_ids: [ID!]
-  """
-  This should be a URL or a base64 encoded data URL
-  """
+  "This should be a URL or a base64 encoded data URL"
   image: String
   stash_ids: [StashIDInput!]
   # rating expressed as 1-5
@@ -129,9 +127,7 @@ input PerformerUpdateInput {
   instagram: String
   favorite: Boolean
   tag_ids: [ID!]
-  """
-  This should be a URL or a base64 encoded data URL
-  """
+  "This should be a URL or a base64 encoded data URL"
   image: String
   stash_ids: [StashIDInput!]
   # rating expressed as 1-5

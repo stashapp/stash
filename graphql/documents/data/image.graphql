@@ -26,7 +26,7 @@ fragment ImageData on Image {
   studio {
     ...SlimStudioData
   }
-
+  
   tags {
     ...SlimTagData
   }

@@ -17,7 +17,7 @@ fragment SlimGalleryData on Gallery {
     files {
       ...ImageFileData
     }
-
+    
     paths {
       thumbnail
     }
