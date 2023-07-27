@@ -69,7 +69,6 @@ type Scene {
   file: SceneFileType! @deprecated(reason: "Use files")
   files: [VideoFile!]!
   paths: ScenePathsType! # Resolver
-
   scene_markers: [SceneMarker!]!
   galleries: [Gallery!]!
   studio: Studio
@@ -182,7 +181,7 @@ input BulkSceneUpdateInput {
   gallery_ids: BulkUpdateIds
   performer_ids: BulkUpdateIds
   tag_ids: BulkUpdateIds
-  movie_ids:  BulkUpdateIds
+  movie_ids: BulkUpdateIds
 }
 
 input SceneDestroyInput {
@@ -207,9 +206,9 @@ type FindScenesResultType {
 }
 
 input SceneParserInput {
-  ignoreWords: [String!],
-  whitespaceCharacters: String,
-  capitalizeTitle: Boolean,
+  ignoreWords: [String!]
+  whitespaceCharacters: String
+  capitalizeTitle: Boolean
   ignoreOrganized: Boolean
 }
 
@@ -259,8 +258,10 @@ input AssignSceneFileInput {
 }
 
 input SceneMergeInput {
-  """If destination scene has no files, then the primary file of the
-  first source scene will be assigned as primary"""
+  """
+  If destination scene has no files, then the primary file of the
+  first source scene will be assigned as primary
+  """
   source: [ID!]!
   destination: ID!
   # values defined here will override values in the destination

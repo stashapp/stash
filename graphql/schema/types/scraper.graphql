@@ -16,32 +16,32 @@ enum ScrapeContentType {
 }
 
 "Scraped Content is the forming union over the different scrapers"
-union ScrapedContent = ScrapedStudio
-                     | ScrapedTag
-                     | ScrapedScene
-                     | ScrapedGallery
-                     | ScrapedMovie
-                     | ScrapedPerformer
+union ScrapedContent =
+    ScrapedStudio
+  | ScrapedTag
+  | ScrapedScene
+  | ScrapedGallery
+  | ScrapedMovie
+  | ScrapedPerformer
 
 type ScraperSpec {
-    "URLs matching these can be scraped with"
-    urls: [String!]
-    supported_scrapes: [ScrapeType!]!
+  "URLs matching these can be scraped with"
+  urls: [String!]
+  supported_scrapes: [ScrapeType!]!
 }
 
 type Scraper {
-    id: ID!
-    name: String!
-    "Details for performer scraper"
-    performer: ScraperSpec
-    "Details for scene scraper"
-    scene: ScraperSpec
-    "Details for gallery scraper"
-    gallery: ScraperSpec
-    "Details for movie scraper"
-    movie: ScraperSpec
+  id: ID!
+  name: String!
+  "Details for performer scraper"
+  performer: ScraperSpec
+  "Details for scene scraper"
+  scene: ScraperSpec
+  "Details for gallery scraper"
+  gallery: ScraperSpec
+  "Details for movie scraper"
+  movie: ScraperSpec
 }
-
 
 type ScrapedStudio {
   "Set if studio matched"
@@ -72,7 +72,6 @@ type ScrapedScene {
   image: String
 
   file: SceneFileType # Resolver
-
   studio: ScrapedStudio
   tags: [ScrapedTag!]
   performers: [ScrapedPerformer!]

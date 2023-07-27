@@ -87,7 +87,7 @@ input BulkGalleryUpdateInput {
 input GalleryDestroyInput {
   ids: [ID!]!
   """
-  If true, then the zip file will be deleted if the gallery is zip-file-based. 
+  If true, then the zip file will be deleted if the gallery is zip-file-based.
   If gallery is folder-based, then any files not associated with other
   galleries will be deleted, along with the folder, if it is not empty.
   """

@@ -13,21 +13,36 @@ input FindFilterType {
 }
 
 enum ResolutionEnum {
-  "144p", VERY_LOW
-  "240p", LOW
-  "360p", R360P
-  "480p", STANDARD
-  "540p", WEB_HD
-  "720p", STANDARD_HD
-  "1080p", FULL_HD
-  "1440p", QUAD_HD
-  "1920p", VR_HD @deprecated(reason: "Use 4K instead") 
-  "4K", FOUR_K
-  "5K", FIVE_K
-  "6K", SIX_K
-  "7K", SEVEN_K
-  "8K", EIGHT_K
-  "8K+", HUGE
+  "144p"
+  VERY_LOW
+  "240p"
+  LOW
+  "360p"
+  R360P
+  "480p"
+  STANDARD
+  "540p"
+  WEB_HD
+  "720p"
+  STANDARD_HD
+  "1080p"
+  FULL_HD
+  "1440p"
+  QUAD_HD
+  "1920p"
+  VR_HD @deprecated(reason: "Use 4K instead")
+  "4K"
+  FOUR_K
+  "5K"
+  FIVE_K
+  "6K"
+  SIX_K
+  "7K"
+  SEVEN_K
+  "8K"
+  EIGHT_K
+  "8K+"
+  HUGE
 }
 
 input ResolutionCriterionInput {
@@ -42,8 +57,10 @@ input PHashDuplicationCriterionInput {
 }
 
 input StashIDCriterionInput {
-  """If present, this value is treated as a predicate.
-  That is, it will filter based on stash_ids with the matching endpoint"""
+  """
+  If present, this value is treated as a predicate.
+  That is, it will filter based on stash_ids with the matching endpoint
+  """
   endpoint: String
   stash_id: String
   modifier: CriterionModifier!
@@ -71,8 +88,8 @@ input PerformerFilterType {
   "Filter by eye color"
   eye_color: StringCriterionInput
   "Filter by height"
-  height: StringCriterionInput @deprecated(reason: "Use height_cm instead") 
-  "Filter by height in cm" 
+  height: StringCriterionInput @deprecated(reason: "Use height_cm instead")
+  "Filter by height in cm"
   height_cm: IntCriterionInput
   "Filter by measurements"
   measurements: StringCriterionInput
@@ -107,11 +124,13 @@ input PerformerFilterType {
   "Filter by o count"
   o_counter: IntCriterionInput
   "Filter by StashID"
-  stash_id: StringCriterionInput @deprecated(reason: "Use stash_id_endpoint instead") 
+  stash_id: StringCriterionInput
+    @deprecated(reason: "Use stash_id_endpoint instead")
   "Filter by StashID"
   stash_id_endpoint: StashIDCriterionInput
   "Filter by rating"
-  rating: IntCriterionInput @deprecated(reason: "Use 1-100 range with rating100")
+  rating: IntCriterionInput
+    @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: IntCriterionInput
   "Filter by url"
@@ -124,8 +143,8 @@ input PerformerFilterType {
   death_year: IntCriterionInput
   "Filter by studios where performer appears in scene/image/gallery"
   studios: HierarchicalMultiCriterionInput
-	"Filter by performers where performer appears with another performer in scene/image/gallery"
-	performers: MultiCriterionInput
+  "Filter by performers where performer appears with another performer in scene/image/gallery"
+  performers: MultiCriterionInput
   "Filter by autotag ignore value"
   ignore_auto_tag: Boolean
   "Filter by birthdate"
@@ -183,7 +202,8 @@ input SceneFilterType {
   "Filter by file count"
   file_count: IntCriterionInput
   "Filter by rating"
-  rating: IntCriterionInput @deprecated(reason: "Use 1-100 range with rating100")
+  rating: IntCriterionInput
+    @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: IntCriterionInput
   "Filter by organized"
@@ -223,7 +243,8 @@ input SceneFilterType {
   "Filter by performer count"
   performer_count: IntCriterionInput
   "Filter by StashID"
-  stash_id: StringCriterionInput @deprecated(reason: "Use stash_id_endpoint instead") 
+  stash_id: StringCriterionInput
+    @deprecated(reason: "Use stash_id_endpoint instead")
   "Filter by StashID"
   stash_id_endpoint: StashIDCriterionInput
   "Filter by url"
@@ -249,7 +270,6 @@ input SceneFilterType {
 }
 
 input MovieFilterType {
-
   name: StringCriterionInput
   director: StringCriterionInput
   synopsis: StringCriterionInput
@@ -257,7 +277,8 @@ input MovieFilterType {
   "Filter by duration (in seconds)"
   duration: IntCriterionInput
   "Filter by rating"
-  rating: IntCriterionInput @deprecated(reason: "Use 1-100 range with rating100")
+  rating: IntCriterionInput
+    @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: IntCriterionInput
   "Filter to only include movies with this studio"
@@ -286,13 +307,15 @@ input StudioFilterType {
   "Filter to only include studios with this parent studio"
   parents: MultiCriterionInput
   "Filter by StashID"
-  stash_id: StringCriterionInput @deprecated(reason: "Use stash_id_endpoint instead") 
+  stash_id: StringCriterionInput
+    @deprecated(reason: "Use stash_id_endpoint instead")
   "Filter by StashID"
   stash_id_endpoint: StashIDCriterionInput
   "Filter to only include studios missing this property"
   is_missing: String
   "Filter by rating"
-  rating: IntCriterionInput @deprecated(reason: "Use 1-100 range with rating100")
+  rating: IntCriterionInput
+    @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: IntCriterionInput
   "Filter by scene count"
@@ -333,7 +356,8 @@ input GalleryFilterType {
   "Filter to include/exclude galleries that were created from zip"
   is_zip: Boolean
   "Filter by rating"
-  rating: IntCriterionInput @deprecated(reason: "Use 1-100 range with rating100")
+  rating: IntCriterionInput
+    @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: IntCriterionInput
   "Filter by organized"
@@ -440,7 +464,8 @@ input ImageFilterType {
   "Filter by file count"
   file_count: IntCriterionInput
   "Filter by rating"
-  rating: IntCriterionInput @deprecated(reason: "Use 1-100 range with rating100")
+  rating: IntCriterionInput
+    @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: IntCriterionInput
   "Filter by date"
@@ -479,29 +504,29 @@ input ImageFilterType {
 
 enum CriterionModifier {
   "="
-  EQUALS,
+  EQUALS
   "!="
-  NOT_EQUALS,
+  NOT_EQUALS
   ">"
-  GREATER_THAN,
+  GREATER_THAN
   "<"
-  LESS_THAN,
+  LESS_THAN
   "IS NULL"
-  IS_NULL,
+  IS_NULL
   "IS NOT NULL"
-  NOT_NULL,
+  NOT_NULL
   "INCLUDES ALL"
-  INCLUDES_ALL,
-  INCLUDES,
-  EXCLUDES,
+  INCLUDES_ALL
+  INCLUDES
+  EXCLUDES
   "MATCHES REGEX"
-  MATCHES_REGEX,
+  MATCHES_REGEX
   "NOT MATCHES REGEX"
-  NOT_MATCHES_REGEX,
+  NOT_MATCHES_REGEX
   ">= AND <="
-  BETWEEN,
+  BETWEEN
   "< OR >"
-  NOT_BETWEEN,
+  NOT_BETWEEN
 }
 
 input StringCriterionInput {
@@ -531,7 +556,7 @@ input GenderCriterionInput {
   value: GenderEnum
   modifier: CriterionModifier!
 }
- 
+
 input CircumcisionCriterionInput {
   value: [CircumisedEnum!]
   modifier: CriterionModifier!
@@ -563,14 +588,14 @@ input PhashDistanceCriterionInput {
 }
 
 enum FilterMode {
-  SCENES,
-  PERFORMERS,
-  STUDIOS,
-  GALLERIES,
-  SCENE_MARKERS,
-  MOVIES,
-  TAGS,
-  IMAGES,
+  SCENES
+  PERFORMERS
+  STUDIOS
+  GALLERIES
+  SCENE_MARKERS
+  MOVIES
+  TAGS
+  IMAGES
 }
 
 type SavedFilter {

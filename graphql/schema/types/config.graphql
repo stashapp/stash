@@ -13,34 +13,50 @@ input SetupInput {
 }
 
 enum StreamingResolutionEnum {
-  "240p", LOW
-  "480p", STANDARD
-  "720p", STANDARD_HD
-  "1080p", FULL_HD
-  "4k", FOUR_K
-  "Original", ORIGINAL
+  "240p"
+  LOW
+  "480p"
+  STANDARD
+  "720p"
+  STANDARD_HD
+  "1080p"
+  FULL_HD
+  "4k"
+  FOUR_K
+  "Original"
+  ORIGINAL
 }
 
 enum PreviewPreset {
-  "X264_ULTRAFAST", ultrafast
-  "X264_VERYFAST", veryfast
-  "X264_FAST", fast
-  "X264_MEDIUM", medium
-  "X264_SLOW", slow
-  "X264_SLOWER", slower
-  "X264_VERYSLOW", veryslow
+  "X264_ULTRAFAST"
+  ultrafast
+  "X264_VERYFAST"
+  veryfast
+  "X264_FAST"
+  fast
+  "X264_MEDIUM"
+  medium
+  "X264_SLOW"
+  slow
+  "X264_SLOWER"
+  slower
+  "X264_VERYSLOW"
+  veryslow
 }
 
 enum HashAlgorithm {
   MD5
-  "oshash", OSHASH
+  "oshash"
+  OSHASH
 }
 
 enum BlobsStorageType {
   # blobs are stored in the database
-  "Database", DATABASE
+  "Database"
+  DATABASE
   # blobs are stored in the filesystem under the configured blobs directory
-  "Filesystem", FILESYSTEM
+  "Filesystem"
+  FILESYSTEM
 }
 
 input ConfigGeneralInput {
@@ -86,19 +102,27 @@ input ConfigGeneralInput {
   maxTranscodeSize: StreamingResolutionEnum
   "Max streaming transcode size"
   maxStreamingTranscodeSize: StreamingResolutionEnum
-  
-  """ffmpeg transcode input args - injected before input file
-  These are applied to generated transcodes (previews and transcodes)"""
+
+  """
+  ffmpeg transcode input args - injected before input file
+  These are applied to generated transcodes (previews and transcodes)
+  """
   transcodeInputArgs: [String!]
-  """ffmpeg transcode output args - injected before output file
-  These are applied to generated transcodes (previews and transcodes)"""
+  """
+  ffmpeg transcode output args - injected before output file
+  These are applied to generated transcodes (previews and transcodes)
+  """
   transcodeOutputArgs: [String!]
 
-  """ffmpeg stream input args - injected before input file
-  These are applied when live transcoding"""
+  """
+  ffmpeg stream input args - injected before input file
+  These are applied when live transcoding
+  """
   liveTranscodeInputArgs: [String!]
-  """ffmpeg stream output args - injected before output file
-  These are applied when live transcoding"""
+  """
+  ffmpeg stream output args - injected before output file
+  These are applied when live transcoding
+  """
   liveTranscodeOutputArgs: [String!]
 
   "whether to include range in generated funscript heatmaps"
@@ -127,7 +151,7 @@ input ConfigGeneralInput {
   "True if galleries should be created from folders with images"
   createGalleriesFromFolders: Boolean
   "Regex used to identify images as gallery covers"
-  galleryCoverRegex: String  
+  galleryCoverRegex: String
   "Array of video file extensions"
   videoExtensions: [String!]
   "Array of image file extensions"
@@ -141,11 +165,20 @@ input ConfigGeneralInput {
   "Custom Performer Image Location"
   customPerformerImageLocation: String
   "Scraper user agent string"
-  scraperUserAgent: String @deprecated(reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead")
+  scraperUserAgent: String
+    @deprecated(
+      reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead"
+    )
   "Scraper CDP path. Path to chrome executable or remote address"
-  scraperCDPPath: String @deprecated(reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead")
+  scraperCDPPath: String
+    @deprecated(
+      reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead"
+    )
   "Whether the scraper should check for invalid certificates"
-  scraperCertCheck: Boolean @deprecated(reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead")
+  scraperCertCheck: Boolean
+    @deprecated(
+      reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead"
+    )
   "Stash-box instances used for tagging"
   stashBoxes: [StashBoxInput!]
   "Python path - resolved using path if unset"
@@ -198,18 +231,26 @@ type ConfigGeneralResult {
   "Max streaming transcode size"
   maxStreamingTranscodeSize: StreamingResolutionEnum
 
-  """ffmpeg transcode input args - injected before input file
-  These are applied to generated transcodes (previews and transcodes)"""
+  """
+  ffmpeg transcode input args - injected before input file
+  These are applied to generated transcodes (previews and transcodes)
+  """
   transcodeInputArgs: [String!]!
-  """ffmpeg transcode output args - injected before output file
-  These are applied to generated transcodes (previews and transcodes)"""
+  """
+  ffmpeg transcode output args - injected before output file
+  These are applied to generated transcodes (previews and transcodes)
+  """
   transcodeOutputArgs: [String!]!
 
-  """ffmpeg stream input args - injected before input file
-  These are applied when live transcoding"""
+  """
+  ffmpeg stream input args - injected before input file
+  These are applied when live transcoding
+  """
   liveTranscodeInputArgs: [String!]!
-  """ffmpeg stream output args - injected before output file
-  These are applied when live transcoding"""
+  """
+  ffmpeg stream output args - injected before output file
+  These are applied when live transcoding
+  """
   liveTranscodeOutputArgs: [String!]!
 
   "whether to include range in generated funscript heatmaps"
@@ -254,11 +295,14 @@ type ConfigGeneralResult {
   "Custom Performer Image Location"
   customPerformerImageLocation: String
   "Scraper user agent string"
-  scraperUserAgent: String @deprecated(reason: "use ConfigResult.scraping instead")
+  scraperUserAgent: String
+    @deprecated(reason: "use ConfigResult.scraping instead")
   "Scraper CDP path. Path to chrome executable or remote address"
-  scraperCDPPath: String @deprecated(reason: "use ConfigResult.scraping instead")
+  scraperCDPPath: String
+    @deprecated(reason: "use ConfigResult.scraping instead")
   "Whether the scraper should check for invalid certificates"
-  scraperCertCheck: Boolean! @deprecated(reason: "use ConfigResult.scraping instead")
+  scraperCertCheck: Boolean!
+    @deprecated(reason: "use ConfigResult.scraping instead")
   "Stash-box instances used for tagging"
   stashBoxes: [StashBox!]!
   "Python path - resolved using path if unset"
@@ -307,7 +351,7 @@ input ConfigInterfaceInput {
 
   "Enable sound on mouseover previews"
   soundOnPreview: Boolean
-  
+
   "Show title and tags in wall view"
   wallShowTitle: Boolean
   "Wall playback type"
@@ -315,7 +359,7 @@ input ConfigInterfaceInput {
 
   "Show scene scrubber by default"
   showScrubber: Boolean
-  
+
   "Maximum duration (in seconds) in which a scene video will loop in the scene player"
   maximumLoopDuration: Int
   "If true, video will autostart on load in the scene player"
@@ -324,10 +368,10 @@ input ConfigInterfaceInput {
   autostartVideoOnPlaySelected: Boolean
   "If true, next scene in playlist will be played at video end by default"
   continuePlaylistDefault: Boolean
-  
+
   "If true, studio overlays will be shown as text instead of logo images"
   showStudioAsText: Boolean
-  
+
   "Custom CSS"
   css: String
   cssEnabled: Boolean
@@ -339,18 +383,18 @@ input ConfigInterfaceInput {
   "Custom Locales"
   customLocales: String
   customLocalesEnabled: Boolean
-  
+
   "Interface language"
   language: String
 
   "Slideshow Delay"
   slideshowDelay: Int @deprecated(reason: "Use imageLightbox.slideshowDelay")
-  
+
   imageLightbox: ConfigImageLightboxInput
-  
+
   "Set to true to disable creating new objects via the dropdown menus"
   disableDropdownCreate: ConfigDisableDropdownCreateInput
-  
+
   "Handy Connection Key"
   handyKey: String
   "Funscript Time Offset"
@@ -412,7 +456,7 @@ type ConfigInterfaceResult {
   "Custom Locales"
   customLocales: String
   customLocalesEnabled: Boolean
-  
+
   "Interface language"
   language: String
 
@@ -423,7 +467,8 @@ type ConfigInterfaceResult {
 
   "Fields are true if creating via dropdown menus are disabled"
   disableDropdownCreate: ConfigDisableDropdownCreate!
-  disabledDropdownCreate: ConfigDisableDropdownCreate! @deprecated(reason: "Use disableDropdownCreate")
+  disabledDropdownCreate: ConfigDisableDropdownCreate!
+    @deprecated(reason: "Use disableDropdownCreate")
 
   "Handy Connection Key"
   handyKey: String
@@ -484,7 +529,7 @@ type ConfigDefaultSettingsResult {
   identify: IdentifyMetadataTaskOptions
   autoTag: AutoTagMetadataOptions
   generate: GenerateMetadataOptions
-  
+
   "If true, delete file checkbox will be checked by default"
   deleteFile: Boolean
   "If true, delete generated supporting files checkbox will be checked by default"
@@ -515,9 +560,9 @@ type ConfigResult {
 
 "Directory structure of a path"
 type Directory {
-    path: String!
-    parent: String
-    directories: [String!]!
+  path: String!
+  parent: String
+  directories: [String!]!
 }
 
 "Stash configuration details"

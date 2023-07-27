@@ -131,7 +131,9 @@ query FindScenesByFullFingerprints($fingerprints: [FingerprintQueryInput!]!) {
   }
 }
 
-query FindScenesBySceneFingerprints($fingerprints: [[FingerprintQueryInput!]!]!) {
+query FindScenesBySceneFingerprints(
+  $fingerprints: [[FingerprintQueryInput!]!]!
+) {
   findScenesBySceneFingerprints(fingerprints: $fingerprints) {
     ...SceneFragment
   }

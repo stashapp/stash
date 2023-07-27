@@ -13,7 +13,6 @@ type Tag {
   image_count(depth: Int): Int! # Resolver
   gallery_count(depth: Int): Int! # Resolver
   performer_count(depth: Int): Int! # Resolver
-
   parents: [Tag!]!
   children: [Tag!]!
 }

@@ -6,7 +6,7 @@ enum GenderEnum {
   INTERSEX
   NON_BINARY
 }
- 
+
 enum CircumisedEnum {
   CUT
   UNCUT
@@ -14,7 +14,7 @@ enum CircumisedEnum {
 
 type Performer {
   id: ID!
-  checksum: String @deprecated(reason: "Not used") 
+  checksum: String @deprecated(reason: "Not used")
   name: String!
   disambiguation: String
   url: String

@@ -81,7 +81,7 @@ input ScanMetadataInput {
   "Set name, date, details from metadata (if present)"
   useFileMetadata: Boolean @deprecated(reason: "Not implemented")
 
-  # stripFileExtension is deprecated since we no longer set the title from the 
+  # stripFileExtension is deprecated since we no longer set the title from the
   # filename - it is automatically returned if the object has no title. If this
   # functionality is desired, then we could make this an option to not include
   # the extension in the auto-generated title.
@@ -130,7 +130,7 @@ type ScanMetadataOptions {
 
 input CleanMetadataInput {
   paths: [String!]
-  
+
   "Do a dry run. Don't delete any files"
   dryRun: Boolean!
 }
@@ -138,20 +138,32 @@ input CleanMetadataInput {
 input AutoTagMetadataInput {
   "Paths to tag, null for all files"
   paths: [String!]
-  """IDs of performers to tag files with, or "*" for all"""
+  """
+  IDs of performers to tag files with, or "*" for all
+  """
   performers: [String!]
-  """IDs of studios to tag files with, or "*" for all"""
+  """
+  IDs of studios to tag files with, or "*" for all
+  """
   studios: [String!]
-  """IDs of tags to tag files with, or "*" for all"""
+  """
+  IDs of tags to tag files with, or "*" for all
+  """
   tags: [String!]
 }
 
 type AutoTagMetadataOptions {
-  """IDs of performers to tag files with, or "*" for all"""
+  """
+  IDs of performers to tag files with, or "*" for all
+  """
   performers: [String!]
-  """IDs of studios to tag files with, or "*" for all"""
+  """
+  IDs of studios to tag files with, or "*" for all
+  """
   studios: [String!]
-  """IDs of tags to tag files with, or "*" for all"""
+  """
+  IDs of tags to tag files with, or "*" for all
+  """
   tags: [String!]
 }
 
@@ -163,7 +175,8 @@ enum IdentifyFieldStrategy {
   For single-value fields, ignore if already set
   """
   MERGE
-  """Always replaces the value if a value is found.
+  """
+  Always replaces the value if a value is found.
   For multi-value fields, any existing values are removed and replaced with the
   scraped values.
   """
