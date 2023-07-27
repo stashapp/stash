@@ -18,13 +18,6 @@ type ImageService interface {
 	DestroyZipImages(ctx context.Context, zipFile models.File, fileDeleter *image.FileDeleter, deleteGenerated bool) ([]*models.Image, error)
 }
 
-type ChapterRepository interface {
-	ChapterFinder
-	ChapterDestroyer
-
-	Update(ctx context.Context, updatedObject models.GalleryChapter) (*models.GalleryChapter, error)
-}
-
 type Service struct {
 	Repository   models.GalleryReaderWriter
 	ImageFinder  ImageFinder

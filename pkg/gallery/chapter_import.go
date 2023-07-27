@@ -8,15 +8,14 @@ import (
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 )
 
-type ChapterCreatorUpdater interface {
-	Create(ctx context.Context, newGalleryChapter *models.GalleryChapter) error
-	Update(ctx context.Context, updatedGalleryChapter *models.GalleryChapter) error
+type ChapterImporterReaderWriter interface {
+	models.GalleryChapterCreatorUpdater
 	FindByGalleryID(ctx context.Context, galleryID int) ([]*models.GalleryChapter, error)
 }
 
 type ChapterImporter struct {
 	GalleryID           int
-	ReaderWriter        ChapterCreatorUpdater
+	ReaderWriter        ChapterImporterReaderWriter
 	Input               jsonschema.GalleryChapter
 	MissingRefBehaviour models.ImportMissingRefEnum
 
