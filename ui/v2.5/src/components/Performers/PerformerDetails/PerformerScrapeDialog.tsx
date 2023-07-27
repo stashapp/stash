@@ -443,7 +443,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     remoteSiteID,
   ];
   // don't show the dialog if nothing was scraped
-  if (allFields.every((r) => !r.scraped)) {
+  if (allFields.every((r) => !r.scraped) && newTags.length === 0) {
     props.onClose();
     return <></>;
   }

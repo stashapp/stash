@@ -426,7 +426,11 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
       details,
       image,
       stashID,
-    ].every((r) => !r.scraped)
+    ].every((r) => !r.scraped) &&
+    newTags.length === 0 &&
+    newPerformers.length === 0 &&
+    newMovies.length === 0 &&
+    !newStudio
   ) {
     onClose();
     return <></>;
