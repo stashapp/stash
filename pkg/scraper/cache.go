@@ -62,8 +62,9 @@ type PerformerFinder interface {
 }
 
 type StudioFinder interface {
-	match.StudioAutoTagQueryer
-	match.StudioFinder
+	models.StudioQueryer
+	FindByStashID(ctx context.Context, stashID models.StashID) ([]*models.Studio, error)
+	GetAliases(ctx context.Context, studioID int) ([]string, error)
 }
 
 type TagFinder interface {

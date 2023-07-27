@@ -10,7 +10,6 @@ import (
 	"github.com/stashapp/stash/pkg/movie"
 	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -23,7 +22,7 @@ type ImporterReaderWriter interface {
 type Importer struct {
 	ReaderWriter        ImporterReaderWriter
 	FileFinder          models.FileFinder
-	StudioWriter        studio.NameFinderCreator
+	StudioWriter        models.StudioFinderCreator
 	GalleryFinder       models.GalleryFinder
 	PerformerWriter     performer.NameFinderCreator
 	MovieWriter         movie.NameFinderCreator

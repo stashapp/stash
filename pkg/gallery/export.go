@@ -7,7 +7,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
-	"github.com/stashapp/stash/pkg/studio"
 )
 
 // ToBasicJSON converts a gallery object into its JSON object equivalent. It
@@ -44,7 +43,7 @@ func ToBasicJSON(gallery *models.Gallery) (*jsonschema.Gallery, error) {
 
 // GetStudioName returns the name of the provided gallery's studio. It returns an
 // empty string if there is no studio assigned to the gallery.
-func GetStudioName(ctx context.Context, reader studio.Finder, gallery *models.Gallery) (string, error) {
+func GetStudioName(ctx context.Context, reader models.StudioGetter, gallery *models.Gallery) (string, error) {
 	if gallery.StudioID != nil {
 		studio, err := reader.Find(ctx, *gallery.StudioID)
 		if err != nil {

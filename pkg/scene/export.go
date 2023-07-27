@@ -11,7 +11,6 @@ import (
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
-	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -84,7 +83,7 @@ func ToBasicJSON(ctx context.Context, reader CoverGetter, scene *models.Scene) (
 
 // GetStudioName returns the name of the provided scene's studio. It returns an
 // empty string if there is no studio assigned to the scene.
-func GetStudioName(ctx context.Context, reader studio.Finder, scene *models.Scene) (string, error) {
+func GetStudioName(ctx context.Context, reader models.StudioGetter, scene *models.Scene) (string, error) {
 	if scene.StudioID != nil {
 		studio, err := reader.Find(ctx, *scene.StudioID)
 		if err != nil {

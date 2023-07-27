@@ -14,7 +14,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
 )
 
@@ -35,8 +34,7 @@ type PerformerAutoTagQueryer interface {
 }
 
 type StudioAutoTagQueryer interface {
-	QueryForAutoTag(ctx context.Context, words []string) ([]*models.Studio, error)
-	studio.Queryer
+	models.StudioQueryer
 	GetAliases(ctx context.Context, studioID int) ([]string, error)
 }
 

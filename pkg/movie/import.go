@@ -6,7 +6,6 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
-	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -23,7 +22,7 @@ type NameFinderCreatorUpdater interface {
 
 type Importer struct {
 	ReaderWriter        NameFinderCreatorUpdater
-	StudioWriter        studio.NameFinderCreator
+	StudioWriter        models.StudioFinderCreator
 	Input               jsonschema.Movie
 	MissingRefBehaviour models.ImportMissingRefEnum
 

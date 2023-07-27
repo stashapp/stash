@@ -58,7 +58,7 @@ func ScrapedPerformer(ctx context.Context, qb PerformerFinder, p *models.Scraped
 }
 
 type StudioFinder interface {
-	studio.Queryer
+	models.StudioQueryer
 	FindByStashID(ctx context.Context, stashID models.StashID) ([]*models.Studio, error)
 }
 
