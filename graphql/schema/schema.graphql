@@ -338,6 +338,12 @@ type Mutation {
   """Backup the database. Optionally returns a link to download the database file"""
   backupDatabase(input: BackupDatabaseInput!): String
 
+  """DANGEROUS: Execute an arbitrary SQL statement that returns rows."""
+  querySQL(sql: String!, args: [Any]): SQLQueryResult!
+
+  """DANGEROUS: Execute an arbitrary SQL statement without returning any rows."""
+  execSQL(sql: String!, args: [Any]): SQLExecResult!
+
   """Run batch performer tag task. Returns the job ID."""
   stashBoxBatchPerformerTag(input: StashBoxBatchTagInput!): String!
   """Run batch studio tag task. Returns the job ID."""

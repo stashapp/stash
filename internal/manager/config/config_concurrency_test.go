@@ -112,6 +112,7 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.Set(DisableDropdownCreatePerformer, i.GetDisableDropdownCreate().Performer)
 				i.Set(DisableDropdownCreateStudio, i.GetDisableDropdownCreate().Studio)
 				i.Set(DisableDropdownCreateTag, i.GetDisableDropdownCreate().Tag)
+				i.Set(DisableDropdownCreateMovie, i.GetDisableDropdownCreate().Movie)
 				i.Set(AutostartVideoOnPlaySelected, i.GetAutostartVideoOnPlaySelected())
 				i.Set(ContinuePlaylistDefault, i.GetContinuePlaylistDefault())
 				i.Set(PythonPath, i.GetPythonPath())

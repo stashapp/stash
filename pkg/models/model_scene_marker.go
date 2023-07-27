@@ -14,12 +14,20 @@ type SceneMarker struct {
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 
-type SceneMarkers []*SceneMarker
-
-func (m *SceneMarkers) Append(o interface{}) {
-	*m = append(*m, o.(*SceneMarker))
+// SceneMarkerPartial represents part of a SceneMarker object. It is used to update
+// the database entry.
+type SceneMarkerPartial struct {
+	Title        OptionalString
+	Seconds      OptionalFloat64
+	PrimaryTagID OptionalInt
+	SceneID      OptionalInt
+	CreatedAt    OptionalTime
+	UpdatedAt    OptionalTime
 }
 
-func (m *SceneMarkers) New() interface{} {
-	return &SceneMarker{}
+func NewSceneMarkerPartial() SceneMarkerPartial {
+	updatedTime := time.Now()
+	return SceneMarkerPartial{
+		UpdatedAt: NewOptionalTime(updatedTime),
+	}
 }

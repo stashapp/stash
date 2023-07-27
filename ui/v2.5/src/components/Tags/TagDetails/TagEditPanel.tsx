@@ -241,6 +241,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
                 ...formik.values.child_ids,
               ]}
               creatable={false}
+              hoverPlacement="right"
             />
           </Col>
         </Form.Group>
@@ -269,6 +270,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
                 ...formik.values.parent_ids,
               ]}
               creatable={false}
+              hoverPlacement="right"
             />
           </Col>
         </Form.Group>

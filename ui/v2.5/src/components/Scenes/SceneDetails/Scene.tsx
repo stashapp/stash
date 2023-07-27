@@ -463,14 +463,12 @@ const ScenePage: React.FC<IProps> = ({
         <Tab.Pane eventKey="scene-movie-panel">
           <SceneMoviePanel scene={scene} />
         </Tab.Pane>
-        {scene.galleries.length === 1 && (
-          <Tab.Pane eventKey="scene-galleries-panel">
-            <GalleryViewer galleryId={scene.galleries[0].id} />
-          </Tab.Pane>
-        )}
-        {scene.galleries.length > 1 && (
+        {scene.galleries.length >= 1 && (
           <Tab.Pane eventKey="scene-galleries-panel">
             <SceneGalleriesPanel galleries={scene.galleries} />
+            {scene.galleries.length === 1 && (
+              <GalleryViewer galleryId={scene.galleries[0].id} />
+            )}
           </Tab.Pane>
         )}
         <Tab.Pane eventKey="scene-video-filter-panel">
