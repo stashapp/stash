@@ -281,7 +281,10 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
   if (
     [title, url, date, studio, performers, tags, details].every(
       (r) => !r.scraped
-    )
+    ) &&
+    !newStudio &&
+    newPerformers.length === 0 &&
+    newTags.length === 0
   ) {
     props.onClose();
     return <></>;

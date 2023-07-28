@@ -162,7 +162,7 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
     backImage,
   ];
   // don't show the dialog if nothing was scraped
-  if (allFields.every((r) => !r.scraped)) {
+  if (allFields.every((r) => !r.scraped) && !newStudio) {
     props.onClose();
     return <></>;
   }

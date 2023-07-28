@@ -5,7 +5,7 @@ query JobQueue {
 }
 
 query FindJob($input: FindJobInput!) {
-    findJob(input: $input) {
-        ...JobData
-    }
+  findJob(input: $input) {
+    ...JobData
+  }
 }

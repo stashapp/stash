@@ -1,6 +1,7 @@
 import * as GQL from "src/core/generated-graphql";
 import sortBy from "lodash-es/sortBy";
 import {
+  evictQueries,
   getClient,
   studioMutationImpactedQueries,
 } from "src/core/StashService";
@@ -224,7 +225,7 @@ export const useUpdateStudio = () => {
 
         if (updatedStudio.data?.studioUpdate?.parent_studio) {
           const ac = getClient();
-          ac.refetchQueries({ include: studioMutationImpactedQueries });
+          evictQueries(ac.cache, studioMutationImpactedQueries);
         } else {
           updatedStudio.data.studioUpdate.stash_ids.forEach((id) => {
             store.writeQuery<

@@ -15,6 +15,7 @@ import {
   getClient,
   studioMutationImpactedQueries,
   useStudioCreate,
+  evictQueries,
 } from "src/core/StashService";
 import { Manual } from "src/components/Help/Manual";
 import { ConfigurationContext } from "src/hooks/Config";
@@ -702,7 +703,7 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
 
       // Once the studio batch is complete, refresh all local studio data
       const ac = getClient();
-      ac.refetchQueries({ include: studioMutationImpactedQueries });
+      evictQueries(ac.cache, studioMutationImpactedQueries);
     }
   }, [jobsSubscribe, batchJobID]);
 

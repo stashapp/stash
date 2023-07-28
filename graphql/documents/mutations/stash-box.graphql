@@ -1,4 +1,6 @@
-mutation SubmitStashBoxFingerprints($input: StashBoxFingerprintSubmissionInput!) {
+mutation SubmitStashBoxFingerprints(
+  $input: StashBoxFingerprintSubmissionInput!
+) {
   submitStashBoxFingerprints(input: $input)
 }
 
