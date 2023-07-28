@@ -14,13 +14,13 @@ import isEqual from "lodash-es/isEqual";
 
 interface IGalleryChapterForm {
   galleryID: string;
-  editingChapter?: GQL.GalleryChapterDataFragment;
+  chapter?: GQL.GalleryChapterDataFragment;
   onClose: () => void;
 }
 
 export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
   galleryID,
-  editingChapter,
+  chapter,
   onClose,
 }) => {
   const intl = useIntl();
@@ -29,6 +29,8 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
   const [galleryChapterUpdate] = useGalleryChapterUpdate();
   const [galleryChapterDestroy] = useGalleryChapterDestroy();
   const Toast = useToast();
+
+  const isNew = chapter === undefined;
 
   const schema = yup.object({
     title: yup.string().ensure(),
@@ -41,8 +43,8 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
   });
 
   const initialValues = {
-    title: editingChapter?.title ?? "",
-    image_index: editingChapter?.image_index ?? 1,
+    title: chapter?.title ?? "",
+    image_index: chapter?.image_index ?? 1,
   };
 
   type InputValues = yup.InferType<typeof schema>;
@@ -56,7 +58,7 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
 
   async function onSave(input: InputValues) {
     try {
-      if (!editingChapter) {
+      if (isNew) {
         await galleryChapterCreate({
           variables: {
             gallery_id: galleryID,
@@ -66,7 +68,7 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
       } else {
         await galleryChapterUpdate({
           variables: {
-            id: editingChapter.id,
+            id: chapter.id,
             gallery_id: galleryID,
             ...input,
           },
@@ -80,10 +82,10 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
   }
 
   async function onDelete() {
-    if (!editingChapter) return;
+    if (isNew) return;
 
     try {
-      await galleryChapterDestroy({ variables: { id: editingChapter.id } });
+      await galleryChapterDestroy({ variables: { id: chapter.id } });
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -130,9 +132,7 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
         <div className="col d-flex">
           <Button
             variant="primary"
-            disabled={
-              (editingChapter && !formik.dirty) || !isEqual(formik.errors, {})
-            }
+            disabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}
             onClick={() => formik.submitForm()}
           >
             <FormattedMessage id="actions.save" />
@@ -145,7 +145,7 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
           >
             <FormattedMessage id="actions.cancel" />
           </Button>
-          {editingChapter && (
+          {!isNew && (
             <Button
               variant="danger"
               className="ml-auto"

@@ -20,7 +20,7 @@ const (
 
 type galleryChapterRow struct {
 	ID         int       `db:"id" goqu:"skipinsert"`
-	Title      string    `db:"title"`
+	Title      string    `db:"title"` // TODO: make db schema (and gql schema) nullable
 	ImageIndex int       `db:"image_index"`
 	GalleryID  int       `db:"gallery_id"`
 	CreatedAt  Timestamp `db:"created_at"`
@@ -54,7 +54,12 @@ type galleryChapterRowRecord struct {
 }
 
 func (r *galleryChapterRowRecord) fromPartial(o models.GalleryChapterPartial) {
-	r.setString("title", o.Title)
+	// TODO: replace with setNullString after schema is made nullable
+	// r.setNullString("title", o.Title)
+	// saves a null input as the empty string
+	if o.Title.Set {
+		r.set("title", o.Title.Value)
+	}
 	r.setInt("image_index", o.ImageIndex)
 	r.setInt("gallery_id", o.GalleryID)
 	r.setTimestamp("created_at", o.CreatedAt)

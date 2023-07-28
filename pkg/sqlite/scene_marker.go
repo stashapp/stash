@@ -25,7 +25,7 @@ GROUP BY scene_markers.id
 
 type sceneMarkerRow struct {
 	ID           int       `db:"id" goqu:"skipinsert"`
-	Title        string    `db:"title"`
+	Title        string    `db:"title"` // TODO: make db schema (and gql schema) nullable
 	Seconds      float64   `db:"seconds"`
 	PrimaryTagID int       `db:"primary_tag_id"`
 	SceneID      int       `db:"scene_id"`
@@ -62,7 +62,12 @@ type sceneMarkerRowRecord struct {
 }
 
 func (r *sceneMarkerRowRecord) fromPartial(o models.SceneMarkerPartial) {
-	r.setNullString("title", o.Title)
+	// TODO: replace with setNullString after schema is made nullable
+	// r.setNullString("title", o.Title)
+	// saves a null input as the empty string
+	if o.Title.Set {
+		r.set("title", o.Title.Value)
+	}
 	r.setFloat64("seconds", o.Seconds)
 	r.setInt("primary_tag_id", o.PrimaryTagID)
 	r.setInt("scene_id", o.SceneID)
