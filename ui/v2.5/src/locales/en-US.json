@@ -19,5 +19,6 @@
       }
     }
   },
+  "optimise_database": "Optimize Database",
   "performer_favorite": "Performer Favorited"
 }
