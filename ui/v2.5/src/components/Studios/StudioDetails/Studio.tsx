@@ -55,7 +55,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
   const { configuration } = React.useContext(ConfigurationContext);
   const uiConfig = configuration?.ui as IUIConfig | undefined;
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
-  const enableBackgroundImage = uiConfig?.enableBackgroundImage ?? false;
+  const enableBackgroundImage = uiConfig?.enableStudioBackgroundImage ?? false;
 
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(false);

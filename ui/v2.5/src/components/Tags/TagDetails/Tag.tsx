@@ -54,7 +54,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
   const { configuration } = React.useContext(ConfigurationContext);
   const uiConfig = configuration?.ui as IUIConfig | undefined;
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
-  const enableBackgroundImage = uiConfig?.enableBackgroundImage ?? false;
+  const enableBackgroundImage = uiConfig?.enableTagBackgroundImage ?? false;
 
   const { tab = "scenes" } = useParams<ITabParams>();
 

@@ -61,7 +61,8 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const { configuration } = React.useContext(ConfigurationContext);
   const uiConfig = configuration?.ui as IUIConfig | undefined;
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
-  const enableBackgroundImage = uiConfig?.enableBackgroundImage ?? false;
+  const enableBackgroundImage =
+    uiConfig?.enablePerformerBackgroundImage ?? false;
   const showAllDetails = uiConfig?.showAllDetails ?? false;
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);

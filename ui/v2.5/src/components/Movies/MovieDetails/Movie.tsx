@@ -42,7 +42,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
   const uiConfig = configuration?.ui as IUIConfig | undefined;
-  const enableBackgroundImage = uiConfig?.enableBackgroundImage ?? false;
+  const enableBackgroundImage = uiConfig?.enableMovieBackgroundImage ?? false;
 
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -323,14 +323,15 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   }
 
   function maybeRenderHeaderBackgroundImage() {
-    if (enableBackgroundImage && !isEditing && frontImage) {
+    let image = movie.front_image_path;
+    if (enableBackgroundImage && !isEditing && image) {
       return (
         <div className="background-image-container">
           <picture>
-            <source src={frontImage} />
+            <source src={image} />
             <img
               className="background-image"
-              src={frontImage}
+              src={image}
               alt={`${movie.name} background`}
             />
           </picture>

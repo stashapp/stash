@@ -44,7 +44,13 @@ export interface IUIConfig {
   ratingSystemOptions?: RatingSystemOptions;
 
   // if true a background image will be display on header
-  enableBackgroundImage?: boolean;
+  enableMovieBackgroundImage?: boolean;
+  // if true a background image will be display on header
+  enablePerformerBackgroundImage?: boolean;
+  // if true a background image will be display on header
+  enableStudioBackgroundImage?: boolean;
+  // if true a background image will be display on header
+  enableTagBackgroundImage?: boolean;
   // if true show all content details by default
   showAllDetails?: boolean;
   // if true the chromecast option will enabled

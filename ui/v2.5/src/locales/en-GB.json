@@ -556,14 +556,6 @@
         "max_options_shown": {
           "label": "Maximum number of items to show in select dropdowns"
         },
-        "enable_background_image": {
-          "description": "Display background image on detail page header.",
-          "heading": "Enable background image"
-        },
-        "show_all_details": {
-          "description": "When enabled, all content details will be shown by default.",
-          "heading": "Show all details"
-        },
         "rating_system": {
           "star_precision": {
             "label": "Rating Star Precision",
@@ -581,6 +573,17 @@
               "stars": "Stars"
             }
           }
+        }
+      },
+      "detail": {
+        "enable_background_image": {
+          "description": "Display background image on detail page.",
+          "heading": "Enable background image"
+        },
+        "heading": "Detail Page",
+        "show_all_details": {
+          "description": "When enabled, all content details will be shown by default.",
+          "heading": "Show all details"
         }
       },
       "funscript_offset": {
