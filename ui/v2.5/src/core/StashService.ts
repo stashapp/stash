@@ -1871,6 +1871,7 @@ export const stashBoxPerformerQuery = (
         query: searchVal,
       },
     },
+    fetchPolicy: "network-only",
   });
 
 export const stashBoxStudioQuery = (
@@ -1887,6 +1888,7 @@ export const stashBoxStudioQuery = (
         query: query,
       },
     },
+    fetchPolicy: "network-only",
   });
 
 export const mutateStashBoxBatchPerformerTag = (
