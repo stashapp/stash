@@ -1,16 +1,20 @@
-"""The query root for this schema"""
+"The query root for this schema"
 type Query {
   # Filters
   findSavedFilter(id: ID!): SavedFilter
   findSavedFilters(mode: FilterMode): [SavedFilter!]!
   findDefaultFilter(mode: FilterMode!): SavedFilter
 
-  """Find a scene by ID or Checksum"""
+  "Find a scene by ID or Checksum"
   findScene(id: ID, checksum: String): Scene
   findSceneByHash(input: SceneHashInput!): Scene
 
-  """A function which queries Scene objects"""
-  findScenes(scene_filter: SceneFilterType, scene_ids: [Int!], filter: FindFilterType): FindScenesResultType!
+  "A function which queries Scene objects"
+  findScenes(
+    scene_filter: SceneFilterType
+    scene_ids: [Int!]
+    filter: FindFilterType
+  ): FindScenesResultType!
 
   findScenesByPathRegex(filter: FindFilterType): FindScenesResultType!
 
@@ -19,123 +23,180 @@ type Query {
   and the difference between their duration is smaller than durationDiff
   """
   findDuplicateScenes(
-    distance: Int,
-    """Max difference in seconds between files in order to be considered for similarity matching.
-    Fractional seconds are ok: 0.5 will mean only files that have durations within 0.5 seconds between them will be matched based on PHash distance."""
+    distance: Int
+    """
+    Max difference in seconds between files in order to be considered for similarity matching.
+    Fractional seconds are ok: 0.5 will mean only files that have durations within 0.5 seconds between them will be matched based on PHash distance.
+    """
     duration_diff: Float
   ): [[Scene!]!]!
 
-  """Return valid stream paths"""
+  "Return valid stream paths"
   sceneStreams(id: ID): [SceneStreamEndpoint!]!
 
-  parseSceneFilenames(filter: FindFilterType, config: SceneParserInput!): SceneParserResultType!
+  parseSceneFilenames(
+    filter: FindFilterType
+    config: SceneParserInput!
+  ): SceneParserResultType!
 
-  """A function which queries SceneMarker objects"""
-  findSceneMarkers(scene_marker_filter: SceneMarkerFilterType filter: FindFilterType): FindSceneMarkersResultType!
+  "A function which queries SceneMarker objects"
+  findSceneMarkers(
+    scene_marker_filter: SceneMarkerFilterType
+    filter: FindFilterType
+  ): FindSceneMarkersResultType!
 
   findImage(id: ID, checksum: String): Image
 
-  """A function which queries Scene objects"""
-  findImages(image_filter: ImageFilterType, image_ids: [Int!], filter: FindFilterType): FindImagesResultType!
+  "A function which queries Scene objects"
+  findImages(
+    image_filter: ImageFilterType
+    image_ids: [Int!]
+    filter: FindFilterType
+  ): FindImagesResultType!
 
-  """Find a performer by ID"""
+  "Find a performer by ID"
   findPerformer(id: ID!): Performer
-  """A function which queries Performer objects"""
-  findPerformers(performer_filter: PerformerFilterType, filter: FindFilterType): FindPerformersResultType!
+  "A function which queries Performer objects"
+  findPerformers(
+    performer_filter: PerformerFilterType
+    filter: FindFilterType
+  ): FindPerformersResultType!
 
-  """Find a studio by ID"""
+  "Find a studio by ID"
   findStudio(id: ID!): Studio
-  """A function which queries Studio objects"""
-  findStudios(studio_filter: StudioFilterType, filter: FindFilterType): FindStudiosResultType!
+  "A function which queries Studio objects"
+  findStudios(
+    studio_filter: StudioFilterType
+    filter: FindFilterType
+  ): FindStudiosResultType!
 
-   """Find a movie by ID"""
+  "Find a movie by ID"
   findMovie(id: ID!): Movie
-  """A function which queries Movie objects"""
-  findMovies(movie_filter: MovieFilterType, filter: FindFilterType): FindMoviesResultType!
+  "A function which queries Movie objects"
+  findMovies(
+    movie_filter: MovieFilterType
+    filter: FindFilterType
+  ): FindMoviesResultType!
 
   findGallery(id: ID!): Gallery
-  findGalleries(gallery_filter: GalleryFilterType, filter: FindFilterType): FindGalleriesResultType!
+  findGalleries(
+    gallery_filter: GalleryFilterType
+    filter: FindFilterType
+  ): FindGalleriesResultType!
 
   findTag(id: ID!): Tag
-  findTags(tag_filter: TagFilterType, filter: FindFilterType): FindTagsResultType!
+  findTags(
+    tag_filter: TagFilterType
+    filter: FindFilterType
+  ): FindTagsResultType!
 
-  """Retrieve random scene markers for the wall"""
+  "Retrieve random scene markers for the wall"
   markerWall(q: String): [SceneMarker!]!
-  """Retrieve random scenes for the wall"""
+  "Retrieve random scenes for the wall"
   sceneWall(q: String): [Scene!]!
 
-  """Get marker strings"""
+  "Get marker strings"
   markerStrings(q: String, sort: String): [MarkerStringsResultType]!
-  """Get stats"""
+  "Get stats"
   stats: StatsResultType!
-  """Organize scene markers by tag for a given scene ID"""
+  "Organize scene markers by tag for a given scene ID"
   sceneMarkerTags(scene_id: ID!): [SceneMarkerTag!]!
 
   logs: [LogEntry!]!
 
   # Scrapers
 
-  """List available scrapers"""
+  "List available scrapers"
   listScrapers(types: [ScrapeContentType!]!): [Scraper!]!
-  listPerformerScrapers: [Scraper!]! @deprecated(reason: "Use listScrapers(types: [PERFORMER])")
-  listSceneScrapers: [Scraper!]! @deprecated(reason: "Use listScrapers(types: [SCENE])")
-  listGalleryScrapers: [Scraper!]! @deprecated(reason: "Use listScrapers(types: [GALLERY])")
-  listMovieScrapers: [Scraper!]! @deprecated(reason: "Use listScrapers(types: [MOVIE])")
+  listPerformerScrapers: [Scraper!]!
+    @deprecated(reason: "Use listScrapers(types: [PERFORMER])")
+  listSceneScrapers: [Scraper!]!
+    @deprecated(reason: "Use listScrapers(types: [SCENE])")
+  listGalleryScrapers: [Scraper!]!
+    @deprecated(reason: "Use listScrapers(types: [GALLERY])")
+  listMovieScrapers: [Scraper!]!
+    @deprecated(reason: "Use listScrapers(types: [MOVIE])")
 
+  "Scrape for a single scene"
+  scrapeSingleScene(
+    source: ScraperSourceInput!
+    input: ScrapeSingleSceneInput!
+  ): [ScrapedScene!]!
+  "Scrape for multiple scenes"
+  scrapeMultiScenes(
+    source: ScraperSourceInput!
+    input: ScrapeMultiScenesInput!
+  ): [[ScrapedScene!]!]!
 
-  """Scrape for a single scene"""
-  scrapeSingleScene(source: ScraperSourceInput!, input: ScrapeSingleSceneInput!): [ScrapedScene!]!
-  """Scrape for multiple scenes"""
-  scrapeMultiScenes(source: ScraperSourceInput!, input: ScrapeMultiScenesInput!): [[ScrapedScene!]!]!
+  "Scrape for a single performer"
+  scrapeSinglePerformer(
+    source: ScraperSourceInput!
+    input: ScrapeSinglePerformerInput!
+  ): [ScrapedPerformer!]!
+  "Scrape for multiple performers"
+  scrapeMultiPerformers(
+    source: ScraperSourceInput!
+    input: ScrapeMultiPerformersInput!
+  ): [[ScrapedPerformer!]!]!
 
-  """Scrape for a single performer"""
-  scrapeSinglePerformer(source: ScraperSourceInput!, input: ScrapeSinglePerformerInput!): [ScrapedPerformer!]!
-  """Scrape for multiple performers"""
-  scrapeMultiPerformers(source: ScraperSourceInput!, input: ScrapeMultiPerformersInput!): [[ScrapedPerformer!]!]!
+  "Scrape for a single gallery"
+  scrapeSingleGallery(
+    source: ScraperSourceInput!
+    input: ScrapeSingleGalleryInput!
+  ): [ScrapedGallery!]!
 
-  """Scrape for a single gallery"""
-  scrapeSingleGallery(source: ScraperSourceInput!, input: ScrapeSingleGalleryInput!): [ScrapedGallery!]!
-
-  """Scrape for a single movie"""
-  scrapeSingleMovie(source: ScraperSourceInput!, input: ScrapeSingleMovieInput!): [ScrapedMovie!]!
+  "Scrape for a single movie"
+  scrapeSingleMovie(
+    source: ScraperSourceInput!
+    input: ScrapeSingleMovieInput!
+  ): [ScrapedMovie!]!
 
   "Scrapes content based on a URL"
   scrapeURL(url: String!, ty: ScrapeContentType!): ScrapedContent
 
-  """Scrapes a complete performer record based on a URL"""
+  "Scrapes a complete performer record based on a URL"
   scrapePerformerURL(url: String!): ScrapedPerformer
-  """Scrapes a complete scene record based on a URL"""
+  "Scrapes a complete scene record based on a URL"
   scrapeSceneURL(url: String!): ScrapedScene
-  """Scrapes a complete gallery record based on a URL"""
+  "Scrapes a complete gallery record based on a URL"
   scrapeGalleryURL(url: String!): ScrapedGallery
-  """Scrapes a complete movie record based on a URL"""
+  "Scrapes a complete movie record based on a URL"
   scrapeMovieURL(url: String!): ScrapedMovie
 
-  """Scrape a list of performers based on name"""
-  scrapePerformerList(scraper_id: ID!, query: String!): [ScrapedPerformer!]! @deprecated(reason: "use scrapeSinglePerformer")
-  """Scrapes a complete performer record based on a scrapePerformerList result"""
-  scrapePerformer(scraper_id: ID!, scraped_performer: ScrapedPerformerInput!): ScrapedPerformer @deprecated(reason: "use scrapeSinglePerformer")
-  """Scrapes a complete scene record based on an existing scene"""
-  scrapeScene(scraper_id: ID!, scene: SceneUpdateInput!): ScrapedScene @deprecated(reason: "use scrapeSingleScene")
-  """Scrapes a complete gallery record based on an existing gallery"""
-  scrapeGallery(scraper_id: ID!, gallery: GalleryUpdateInput!): ScrapedGallery @deprecated(reason: "use scrapeSingleGallery")
+  "Scrape a list of performers based on name"
+  scrapePerformerList(scraper_id: ID!, query: String!): [ScrapedPerformer!]!
+    @deprecated(reason: "use scrapeSinglePerformer")
+  "Scrapes a complete performer record based on a scrapePerformerList result"
+  scrapePerformer(
+    scraper_id: ID!
+    scraped_performer: ScrapedPerformerInput!
+  ): ScrapedPerformer @deprecated(reason: "use scrapeSinglePerformer")
+  "Scrapes a complete scene record based on an existing scene"
+  scrapeScene(scraper_id: ID!, scene: SceneUpdateInput!): ScrapedScene
+    @deprecated(reason: "use scrapeSingleScene")
+  "Scrapes a complete gallery record based on an existing gallery"
+  scrapeGallery(scraper_id: ID!, gallery: GalleryUpdateInput!): ScrapedGallery
+    @deprecated(reason: "use scrapeSingleGallery")
 
-  """Scrape a list of performers from a query"""
-  scrapeFreeonesPerformerList(query: String!): [String!]! @deprecated(reason: "use scrapeSinglePerformer with scraper_id = builtin_freeones")
+  "Scrape a list of performers from a query"
+  scrapeFreeonesPerformerList(query: String!): [String!]!
+    @deprecated(
+      reason: "use scrapeSinglePerformer with scraper_id = builtin_freeones"
+    )
 
   # Plugins
-  """List loaded plugins"""
+  "List loaded plugins"
   plugins: [Plugin!]
-  """List available plugin operations"""
+  "List available plugin operations"
   pluginTasks: [PluginTask!]
 
   # Config
-  """Returns the current, complete configuration"""
+  "Returns the current, complete configuration"
   configuration: ConfigResult!
-  """Returns an array of paths for the given path"""
+  "Returns an array of paths for the given path"
   directory(
     "The directory path to list"
-    path: String,
+    path: String
     "Desired collation locale. Determines the order of the directory result. eg. 'en-US', 'pt-BR', ..."
     locale: String = "en"
   ): Directory!
@@ -182,20 +243,20 @@ type Mutation {
   scenesDestroy(input: ScenesDestroyInput!): Boolean!
   scenesUpdate(input: [SceneUpdateInput!]!): [Scene]
 
-  """Increments the o-counter for a scene. Returns the new value"""
+  "Increments the o-counter for a scene. Returns the new value"
   sceneIncrementO(id: ID!): Int!
-  """Decrements the o-counter for a scene. Returns the new value"""
+  "Decrements the o-counter for a scene. Returns the new value"
   sceneDecrementO(id: ID!): Int!
-  """Resets the o-counter for a scene to 0. Returns the new value"""
+  "Resets the o-counter for a scene to 0. Returns the new value"
   sceneResetO(id: ID!): Int!
 
-  """Sets the resume time point (if provided) and adds the provided duration to the scene's play duration"""
+  "Sets the resume time point (if provided) and adds the provided duration to the scene's play duration"
   sceneSaveActivity(id: ID!, resume_time: Float, playDuration: Float): Boolean!
 
-  """Increments the play count for the scene. Returns the new play count value."""
+  "Increments the play count for the scene. Returns the new play count value."
   sceneIncrementPlayCount(id: ID!): Int!
 
-  """Generates screenshot at specified time in seconds. Leave empty to generate default screenshot"""
+  "Generates screenshot at specified time in seconds. Leave empty to generate default screenshot"
   sceneGenerateScreenshot(id: ID!, at: Float): String!
 
   sceneMarkerCreate(input: SceneMarkerCreateInput!): SceneMarker
@@ -210,11 +271,11 @@ type Mutation {
   imagesDestroy(input: ImagesDestroyInput!): Boolean!
   imagesUpdate(input: [ImageUpdateInput!]!): [Image]
 
-  """Increments the o-counter for an image. Returns the new value"""
+  "Increments the o-counter for an image. Returns the new value"
   imageIncrementO(id: ID!): Int!
-  """Decrements the o-counter for an image. Returns the new value"""
+  "Decrements the o-counter for an image. Returns the new value"
   imageDecrementO(id: ID!): Int!
-  """Resets the o-counter for a image to 0. Returns the new value"""
+  "Resets the o-counter for a image to 0. Returns the new value"
   imageResetO(id: ID!): Int!
 
   galleryCreate(input: GalleryCreateInput!): Gallery
@@ -253,8 +314,10 @@ type Mutation {
   tagsDestroy(ids: [ID!]!): Boolean!
   tagsMerge(input: TagsMergeInput!): Tag
 
-  """Moves the given files to the given destination. Returns true if successful.
-  Either the destination_folder or destination_folder_id must be provided. If both are provided, the destination_folder_id takes precedence.
+  """
+  Moves the given files to the given destination. Returns true if successful.
+  Either the destination_folder or destination_folder_id must be provided.
+  If both are provided, the destination_folder_id takes precedence.
   Destination folder must be a subfolder of one of the stash library paths.
   If provided, destination_basename must be a valid filename with an extension that
   matches one of the media extensions.
@@ -268,97 +331,105 @@ type Mutation {
   destroySavedFilter(input: DestroyFilterInput!): Boolean!
   setDefaultFilter(input: SetDefaultFilterInput!): Boolean!
 
-  """Change general configuration options"""
+  "Change general configuration options"
   configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!
   configureInterface(input: ConfigInterfaceInput!): ConfigInterfaceResult!
   configureDLNA(input: ConfigDLNAInput!): ConfigDLNAResult!
   configureScraping(input: ConfigScrapingInput!): ConfigScrapingResult!
-  configureDefaults(input: ConfigDefaultSettingsInput!): ConfigDefaultSettingsResult!
+  configureDefaults(
+    input: ConfigDefaultSettingsInput!
+  ): ConfigDefaultSettingsResult!
 
   # overwrites the entire UI configuration
   configureUI(input: Map!): Map!
   # sets a single UI key value
   configureUISetting(key: String!, value: Any): Map!
 
-  """Generate and set (or clear) API key"""
+  "Generate and set (or clear) API key"
   generateAPIKey(input: GenerateAPIKeyInput!): String!
 
-  """Returns a link to download the result"""
+  "Returns a link to download the result"
   exportObjects(input: ExportObjectsInput!): String
 
-  """Performs an incremental import. Returns the job ID"""
+  "Performs an incremental import. Returns the job ID"
   importObjects(input: ImportObjectsInput!): ID!
 
-  """Start an full import. Completely wipes the database and imports from the metadata directory. Returns the job ID"""
+  "Start an full import. Completely wipes the database and imports from the metadata directory. Returns the job ID"
   metadataImport: ID!
-  """Start a full export. Outputs to the metadata directory. Returns the job ID"""
+  "Start a full export. Outputs to the metadata directory. Returns the job ID"
   metadataExport: ID!
-  """Start a scan. Returns the job ID"""
+  "Start a scan. Returns the job ID"
   metadataScan(input: ScanMetadataInput!): ID!
-  """Start generating content. Returns the job ID"""
+  "Start generating content. Returns the job ID"
   metadataGenerate(input: GenerateMetadataInput!): ID!
-  """Start auto-tagging. Returns the job ID"""
+  "Start auto-tagging. Returns the job ID"
   metadataAutoTag(input: AutoTagMetadataInput!): ID!
-  """Clean metadata. Returns the job ID"""
+  "Clean metadata. Returns the job ID"
   metadataClean(input: CleanMetadataInput!): ID!
-  """Identifies scenes using scrapers. Returns the job ID"""
+  "Identifies scenes using scrapers. Returns the job ID"
   metadataIdentify(input: IdentifyMetadataInput!): ID!
 
-  """Migrate generated files for the current hash naming"""
+  "Migrate generated files for the current hash naming"
   migrateHashNaming: ID!
-  """Migrates legacy scene screenshot files into the blob storage"""
+  "Migrates legacy scene screenshot files into the blob storage"
   migrateSceneScreenshots(input: MigrateSceneScreenshotsInput!): ID!
-  """Migrates blobs from the old storage system to the current one"""
+  "Migrates blobs from the old storage system to the current one"
   migrateBlobs(input: MigrateBlobsInput!): ID!
 
-  """Anonymise the database in a separate file. Optionally returns a link to download the database file"""
+  "Anonymise the database in a separate file. Optionally returns a link to download the database file"
   anonymiseDatabase(input: AnonymiseDatabaseInput!): String
 
-  """Optimises the database. Returns the job ID"""
+  "Optimises the database. Returns the job ID"
   optimiseDatabase: ID!
 
-  """Reload scrapers"""
+  "Reload scrapers"
   reloadScrapers: Boolean!
 
-  """Run plugin task. Returns the job ID"""
-  runPluginTask(plugin_id: ID!, task_name: String!, args: [PluginArgInput!]): ID!
+  "Run plugin task. Returns the job ID"
+  runPluginTask(
+    plugin_id: ID!
+    task_name: String!
+    args: [PluginArgInput!]
+  ): ID!
   reloadPlugins: Boolean!
 
   stopJob(job_id: ID!): Boolean!
   stopAllJobs: Boolean!
 
-  """Submit fingerprints to stash-box instance"""
-  submitStashBoxFingerprints(input: StashBoxFingerprintSubmissionInput!): Boolean!
+  "Submit fingerprints to stash-box instance"
+  submitStashBoxFingerprints(
+    input: StashBoxFingerprintSubmissionInput!
+  ): Boolean!
 
-  """Submit scene as draft to stash-box instance"""
+  "Submit scene as draft to stash-box instance"
   submitStashBoxSceneDraft(input: StashBoxDraftSubmissionInput!): ID
-  """Submit performer as draft to stash-box instance"""
+  "Submit performer as draft to stash-box instance"
   submitStashBoxPerformerDraft(input: StashBoxDraftSubmissionInput!): ID
 
-  """Backup the database. Optionally returns a link to download the database file"""
+  "Backup the database. Optionally returns a link to download the database file"
   backupDatabase(input: BackupDatabaseInput!): String
 
-  """DANGEROUS: Execute an arbitrary SQL statement that returns rows."""
+  "DANGEROUS: Execute an arbitrary SQL statement that returns rows."
   querySQL(sql: String!, args: [Any]): SQLQueryResult!
 
-  """DANGEROUS: Execute an arbitrary SQL statement without returning any rows."""
+  "DANGEROUS: Execute an arbitrary SQL statement without returning any rows."
   execSQL(sql: String!, args: [Any]): SQLExecResult!
 
-  """Run batch performer tag task. Returns the job ID."""
+  "Run batch performer tag task. Returns the job ID."
   stashBoxBatchPerformerTag(input: StashBoxBatchPerformerTagInput!): String!
 
-  """Enables DLNA for an optional duration. Has no effect if DLNA is enabled by default"""
+  "Enables DLNA for an optional duration. Has no effect if DLNA is enabled by default"
   enableDLNA(input: EnableDLNAInput!): Boolean!
-  """Disables DLNA for an optional duration. Has no effect if DLNA is disabled by default"""
+  "Disables DLNA for an optional duration. Has no effect if DLNA is disabled by default"
   disableDLNA(input: DisableDLNAInput!): Boolean!
-  """Enables an IP address for DLNA for an optional duration"""
+  "Enables an IP address for DLNA for an optional duration"
   addTempDLNAIP(input: AddTempDLNAIPInput!): Boolean!
-  """Removes an IP address from the temporary DLNA whitelist"""
+  "Removes an IP address from the temporary DLNA whitelist"
   removeTempDLNAIP(input: RemoveTempDLNAIPInput!): Boolean!
 }
 
 type Subscription {
-  """Update from the metadata manager"""
+  "Update from the metadata manager"
   jobsSubscribe: JobStatusUpdate!
 
   loggingSubscribe: [LogEntry!]!

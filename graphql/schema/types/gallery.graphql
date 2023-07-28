@@ -1,4 +1,4 @@
-"""Gallery type"""
+"Gallery type"
 type Gallery {
   id: ID!
   checksum: String! @deprecated(reason: "Use files.fingerprints")
@@ -26,7 +26,7 @@ type Gallery {
   tags: [Tag!]!
   performers: [Performer!]!
 
-  """The images in the gallery"""
+  "The images in the gallery"
   images: [Image!]! @deprecated(reason: "Use findImages")
   cover: Image
 }
@@ -87,7 +87,7 @@ input BulkGalleryUpdateInput {
 input GalleryDestroyInput {
   ids: [ID!]!
   """
-  If true, then the zip file will be deleted if the gallery is zip-file-based. 
+  If true, then the zip file will be deleted if the gallery is zip-file-based.
   If gallery is folder-based, then any files not associated with other
   galleries will be deleted, along with the folder, if it is not empty.
   """
