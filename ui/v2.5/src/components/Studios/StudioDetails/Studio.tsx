@@ -191,7 +191,14 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     }
 
     if (studioImage) {
-      return <img className="logo" alt={studio.name} src={studioImage} />;
+      return (
+        <img
+          height={studioImage.includes("default=true") ? "200px" : ""}
+          className="logo"
+          alt={studio.name}
+          src={studioImage}
+        />
+      );
     }
   }
 

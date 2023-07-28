@@ -28,9 +28,13 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({ movie }) => {
       <DetailItem
         id="studio"
         value={
-          <a href={`/studios/${movie.studio?.id}`} target="_self">
-            {movie.studio?.name}
-          </a>
+          movie.studio?.id ? (
+            <a href={`/studios/${movie.studio?.id}`} target="_self">
+              {movie.studio?.name}
+            </a>
+          ) : (
+            ""
+          )
         }
       />
 

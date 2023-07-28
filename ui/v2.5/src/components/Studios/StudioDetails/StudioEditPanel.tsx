@@ -8,7 +8,6 @@ import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { StudioSelect } from "src/components/Shared/Select";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { Button, Form, Col, Row } from "react-bootstrap";
-import FormUtils from "src/utils/form";
 import ImageUtils from "src/utils/image";
 import { getStashIDs } from "src/utils/stashIds";
 import { useFormik } from "formik";
@@ -41,6 +40,11 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
 
   const isNew = studio.id === undefined;
 
+  const labelXS = 3;
+  const labelXL = 2;
+  const fieldXS = 9;
+  const fieldXL = 7;
+
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
@@ -49,7 +53,6 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     url: yup.string().ensure(),
     details: yup.string().ensure(),
     parent_id: yup.string().required().nullable(),
-    rating100: yup.number().nullable().defined(),
     aliases: yup
       .array(yup.string().required())
       .defined()
@@ -81,7 +84,6 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     url: studio.url ?? "",
     details: studio.details ?? "",
     parent_id: studio.parent_studio?.id ?? null,
-    rating100: studio.rating100 ?? null,
     aliases: studio.aliases ?? [],
     ignore_auto_tag: studio.ignore_auto_tag ?? false,
     stash_ids: getStashIDs(studio.stash_ids),
@@ -158,7 +160,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     return (
       <Row>
         <Form.Label column>StashIDs</Form.Label>
-        <Col xs={9}>
+        <Col xs={fieldXS} xl={fieldXL}>
           <ul className="pl-0">
             {formik.values.stash_ids.map((stashID) => {
               const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
@@ -221,10 +223,10 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
 
       <Form noValidate onSubmit={formik.handleSubmit} id="studio-edit">
         <Form.Group controlId="name" as={Row}>
-          {FormUtils.renderLabel({
-            title: intl.formatMessage({ id: "name" }),
-          })}
-          <Col xs={9}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            <FormattedMessage id="name" />
+          </Form.Label>
+          <Col xs={fieldXS} xl={fieldXL}>
             <Form.Control
               className="text-input"
               {...formik.getFieldProps("name")}
@@ -237,10 +239,10 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         </Form.Group>
 
         <Form.Group controlId="aliases" as={Row}>
-          <Form.Label column xs={3}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
             <FormattedMessage id="aliases" />
           </Form.Label>
-          <Col xs={9}>
+          <Col xs={fieldXS} xl={fieldXL}>
             <StringListInput
               value={formik.values.aliases ?? []}
               setValue={(value) => formik.setFieldValue("aliases", value)}
@@ -251,10 +253,10 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         </Form.Group>
 
         <Form.Group controlId="url" as={Row}>
-          {FormUtils.renderLabel({
-            title: intl.formatMessage({ id: "url" }),
-          })}
-          <Col xs={9}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            <FormattedMessage id="url" />
+          </Form.Label>
+          <Col xs={fieldXS} xl={fieldXL}>
             <Form.Control
               className="text-input"
               {...formik.getFieldProps("url")}
@@ -267,10 +269,10 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         </Form.Group>
 
         <Form.Group controlId="details" as={Row}>
-          {FormUtils.renderLabel({
-            title: intl.formatMessage({ id: "details" }),
-          })}
-          <Col xs={9}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            <FormattedMessage id="details" />
+          </Form.Label>
+          <Col xs={fieldXS} xl={fieldXL}>
             <Form.Control
               as="textarea"
               className="text-input"
@@ -284,10 +286,10 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         </Form.Group>
 
         <Form.Group controlId="parent_studio" as={Row}>
-          {FormUtils.renderLabel({
-            title: intl.formatMessage({ id: "parent_studios" }),
-          })}
-          <Col xs={9}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            <FormattedMessage id="parent_studios" />
+          </Form.Label>
+          <Col xs={fieldXS} xl={fieldXL}>
             <StudioSelect
               onSelect={(items) =>
                 formik.setFieldValue(
@@ -307,10 +309,10 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
       <hr />
 
       <Form.Group controlId="ignore-auto-tag" as={Row}>
-        <Form.Label column xs={3}>
+        <Form.Label column xs={labelXS} xl={labelXL}>
           <FormattedMessage id="ignore_auto_tag" />
         </Form.Label>
-        <Col xs={9}>
+        <Col xs={fieldXS} xl={fieldXL}>
           <Form.Check
             {...formik.getFieldProps({
               name: "ignore_auto_tag",
@@ -322,6 +324,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
 
       <DetailsEditNavbar
         objectName={studio?.name ?? intl.formatMessage({ id: "studio" })}
+        classNames="col-xl-9 mt-3"
         isNew={isNew}
         isEditing
         onToggleEdit={onCancel}

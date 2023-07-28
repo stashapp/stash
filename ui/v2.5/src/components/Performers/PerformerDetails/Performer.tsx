@@ -397,11 +397,14 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   function maybeRenderShowCollapseButton() {
     if (!isEditing) {
       return (
-        <div className="detail-expand-collapse">
-          <Button onClick={() => setCollapsed(!collapsed)}>
+        <span className="detail-expand-collapse">
+          <Button
+            className="minimal expand-collapse"
+            onClick={() => setCollapsed(!collapsed)}
+          >
             <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
           </Button>
-        </div>
+        </span>
       );
     }
   }
