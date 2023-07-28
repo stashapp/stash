@@ -42,6 +42,7 @@ import {
 import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { IUIConfig } from "src/core/config";
 import { useRatingKeybinds } from "src/hooks/keybinds";
+import ImageUtils from "src/utils/image";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -60,6 +61,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const { configuration } = React.useContext(ConfigurationContext);
   const uiConfig = configuration?.ui as IUIConfig | undefined;
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
+  const enableBackgroundImage = uiConfig?.enableBackgroundImage ?? false;
   const showAllDetails = uiConfig?.showAllDetails ?? false;
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
@@ -186,7 +188,12 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     if (activeImage) {
       return (
         <Button variant="link" onClick={() => showLightbox()}>
-          <img className="performer" src={activeImage} alt={performer.name} />
+          <img
+            className="performer"
+            src={activeImage}
+            alt={performer.name}
+            onLoad={ImageUtils.verifyImageSize}
+          />
         </Button>
       );
     }
@@ -292,6 +299,23 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       </Tabs>
     </React.Fragment>
   );
+
+  function maybeRenderHeaderBackgroundImage() {
+    if (enableBackgroundImage && !isEditing && activeImage) {
+      return (
+        <div className="background-image-container">
+          <picture>
+            <source src={activeImage} />
+            <img
+              className="background-image"
+              src={activeImage}
+              alt={`${performer.name} background`}
+            />
+          </picture>
+        </div>
+      );
+    }
+  }
 
   function maybeRenderEditPanel() {
     if (isEditing) {
@@ -502,32 +526,35 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           collapsed ? "collapsed" : ""
         }`}
       >
-        <div className="detail-header-image">
-          {encodingImage ? (
-            <LoadingIndicator message="Encoding image..." />
-          ) : (
-            renderImage()
-          )}
-        </div>
-        <div className="row">
-          <div className="performer-head col">
-            <h2>
-              <span className="performer-name">{performer.name}</span>
-              {performer.disambiguation && (
-                <span className="performer-disambiguation">
-                  {` (${performer.disambiguation})`}
-                </span>
-              )}
-              {maybeRenderShowCollapseButton()}
-              {renderClickableIcons()}
-            </h2>
-            {maybeRenderAliases()}
-            <RatingSystem
-              value={performer.rating100 ?? undefined}
-              onSetRating={(value) => setRating(value ?? null)}
-            />
-            {maybeRenderDetails()}
-            {maybeRenderEditPanel()}
+        {maybeRenderHeaderBackgroundImage()}
+        <div className="detail-container">
+          <div className="detail-header-image">
+            {encodingImage ? (
+              <LoadingIndicator message="Encoding image..." />
+            ) : (
+              renderImage()
+            )}
+          </div>
+          <div className="row">
+            <div className="performer-head col">
+              <h2>
+                <span className="performer-name">{performer.name}</span>
+                {performer.disambiguation && (
+                  <span className="performer-disambiguation">
+                    {` (${performer.disambiguation})`}
+                  </span>
+                )}
+                {maybeRenderShowCollapseButton()}
+                {renderClickableIcons()}
+              </h2>
+              {maybeRenderAliases()}
+              <RatingSystem
+                value={performer.rating100 ?? undefined}
+                onSetRating={(value) => setRating(value ?? null)}
+              />
+              {maybeRenderDetails()}
+              {maybeRenderEditPanel()}
+            </div>
           </div>
         </div>
       </div>

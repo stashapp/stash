@@ -22,11 +22,17 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
 
   function renderTagsField() {
     return (
-      <ul className="pl-0">
-        {(performer.tags ?? []).map((tag) => (
-          <TagLink key={tag.id} tagType="performer" tag={tag} />
-        ))}
-      </ul>
+      <>
+        {performer.tags ? (
+          <ul className="pl-0">
+            {(performer.tags ?? []).map((tag) => (
+              <TagLink key={tag.id} tagType="performer" tag={tag} />
+            ))}
+          </ul>
+        ) : (
+          ""
+        )}
+      </>
     );
   }
 

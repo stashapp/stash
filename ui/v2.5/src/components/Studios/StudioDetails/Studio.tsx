@@ -35,6 +35,7 @@ import { faTrashAlt, faLink } from "@fortawesome/free-solid-svg-icons";
 import { IUIConfig } from "src/core/config";
 import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
+import ImageUtils from "src/utils/image";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -52,8 +53,9 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
-  const abbreviateCounter =
-    (configuration?.ui as IUIConfig)?.abbreviateCounters ?? false;
+  const uiConfig = configuration?.ui as IUIConfig | undefined;
+  const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
+  const enableBackgroundImage = uiConfig?.enableBackgroundImage ?? false;
 
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -193,10 +195,10 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     if (studioImage) {
       return (
         <img
-          height={studioImage.includes("default=true") ? "200px" : ""}
           className="logo"
           alt={studio.name}
           src={studioImage}
+          onLoad={ImageUtils.verifyImageSize}
         />
       );
     }
@@ -380,6 +382,24 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     </React.Fragment>
   );
 
+  function maybeRenderHeaderBackgroundImage() {
+    let studioImage = studio.image_path;
+    if (enableBackgroundImage && !isEditing && studioImage) {
+      return (
+        <div className="background-image-container">
+          <picture>
+            <source src={studioImage} />
+            <img
+              className="background-image"
+              src={studioImage}
+              alt={`${studio.name} background`}
+            />
+          </picture>
+        </div>
+      );
+    }
+  }
+
   function maybeRenderTab() {
     if (!isEditing) {
       return renderTabs();
@@ -423,26 +443,29 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
       </Helmet>
 
       <div className={`detail-header ${isEditing ? "edit" : ""}`}>
-        <div className="detail-header-image">
-          {encodingImage ? (
-            <LoadingIndicator message="Encoding image..." />
-          ) : (
-            renderImage()
-          )}
-        </div>
-        <div className="row">
-          <div className="studio-head col">
-            <h2>
-              <span className="studio-name">{studio.name}</span>
-              {renderClickableIcons()}
-            </h2>
-            {maybeRenderAliases()}
-            <RatingSystem
-              value={studio.rating100 ?? undefined}
-              onSetRating={(value) => setRating(value ?? null)}
-            />
-            {maybeRenderDetails()}
-            {maybeRenderEditPanel()}
+        {maybeRenderHeaderBackgroundImage()}
+        <div className="detail-container">
+          <div className="detail-header-image">
+            {encodingImage ? (
+              <LoadingIndicator message="Encoding image..." />
+            ) : (
+              renderImage()
+            )}
+          </div>
+          <div className="row">
+            <div className="studio-head col">
+              <h2>
+                <span className="studio-name">{studio.name}</span>
+                {renderClickableIcons()}
+              </h2>
+              {maybeRenderAliases()}
+              <RatingSystem
+                value={studio.rating100 ?? undefined}
+                onSetRating={(value) => setRating(value ?? null)}
+              />
+              {maybeRenderDetails()}
+              {maybeRenderEditPanel()}
+            </div>
           </div>
         </div>
       </div>

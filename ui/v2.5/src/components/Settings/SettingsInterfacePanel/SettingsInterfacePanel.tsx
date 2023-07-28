@@ -557,6 +557,13 @@ export const SettingsInterfacePanel: React.FC = () => {
           onChange={(v) => saveUI({ maxOptionsShown: v })}
         />
         <BooleanSetting
+          id="enable_background_image"
+          headingID="config.ui.editing.enable_background_image.heading"
+          subHeadingID="config.ui.editing.enable_background_image.description"
+          checked={ui.enableBackgroundImage ?? undefined}
+          onChange={(v) => saveUI({ enableBackgroundImage: v })}
+        />
+        <BooleanSetting
           id="show_all_details"
           headingID="config.ui.editing.show_all_details.heading"
           subHeadingID="config.ui.editing.show_all_details.description"

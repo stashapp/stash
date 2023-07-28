@@ -35,6 +35,7 @@ import {
   faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { IUIConfig } from "src/core/config";
+import ImageUtils from "src/utils/image";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -51,8 +52,9 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
-  const abbreviateCounter =
-    (configuration?.ui as IUIConfig)?.abbreviateCounters ?? false;
+  const uiConfig = configuration?.ui as IUIConfig | undefined;
+  const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
+  const enableBackgroundImage = uiConfig?.enableBackgroundImage ?? false;
 
   const { tab = "scenes" } = useParams<ITabParams>();
 
@@ -230,7 +232,14 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
     }
 
     if (tagImage) {
-      return <img className="logo" alt={tag.name} src={tagImage} />;
+      return (
+        <img
+          className="logo"
+          alt={tag.name}
+          src={tagImage}
+          onLoad={ImageUtils.verifyImageSize}
+        />
+      );
     }
   }
 
@@ -401,6 +410,24 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
     </React.Fragment>
   );
 
+  function maybeRenderHeaderBackgroundImage() {
+    let tagImage = tag.image_path;
+    if (enableBackgroundImage && !isEditing && tagImage) {
+      return (
+        <div className="background-image-container">
+          <picture>
+            <source src={tagImage} />
+            <img
+              className="background-image"
+              src={tagImage}
+              alt={`${tag.name} background`}
+            />
+          </picture>
+        </div>
+      );
+    }
+  }
+
   function maybeRenderTab() {
     if (!isEditing) {
       return renderTabs();
@@ -420,21 +447,24 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
       </Helmet>
 
       <div className={`detail-header ${isEditing ? "edit" : ""}`}>
-        <div className="detail-header-image">
-          {encodingImage ? (
-            <LoadingIndicator message="Encoding image..." />
-          ) : (
-            renderImage()
-          )}
-        </div>
-        <div className="row">
-          <div className="studio-head col">
-            <h2>
-              <span className="tag-name">{tag.name}</span>
-            </h2>
-            {maybeRenderAliases()}
-            {maybeRenderDetails()}
-            {maybeRenderEditPanel()}
+        {maybeRenderHeaderBackgroundImage()}
+        <div className="detail-container">
+          <div className="detail-header-image">
+            {encodingImage ? (
+              <LoadingIndicator message="Encoding image..." />
+            ) : (
+              renderImage()
+            )}
+          </div>
+          <div className="row">
+            <div className="studio-head col">
+              <h2>
+                <span className="tag-name">{tag.name}</span>
+              </h2>
+              {maybeRenderAliases()}
+              {maybeRenderDetails()}
+              {maybeRenderEditPanel()}
+            </div>
           </div>
         </div>
       </div>

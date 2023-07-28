@@ -139,7 +139,9 @@ dd {
 .detail-header {
   background-color: #192127;
   min-height: 15rem;
+  overflow: hidden;
   padding: 1rem;
+  position: relative;
   transition: 0.3s;
   width: 100%;
   z-index: 11;
@@ -151,6 +153,28 @@ dd {
     @media (max-width: 576px) {
       padding-top: 0.5rem;
     }
+  }
+
+  .background-image-container {
+    bottom: -0.2rem;
+    left: 0;
+    opacity: 0.2;
+    position: absolute;
+    right: 0;
+    top: -0.2rem;
+    z-index: auto;
+
+    .background-image {
+      filter: blur(16px);
+      height: 100%;
+      object-fit: cover;
+      object-position: 50% 30%;
+      width: 100%;
+    }
+  }
+
+  .detail-container {
+    height: 100%;
   }
 
   h2 {
@@ -168,6 +192,7 @@ dd {
     color: #868791;
   }
 
+  .detail-expand-collapse,
   .name-icons {
     margin-left: 10px;
   }
@@ -238,7 +263,6 @@ dd {
   }
 
   img {
-    border-radius: 0.5rem;
     margin: auto;
     max-width: 14rem;
     transition: 0.5s;
@@ -249,6 +273,12 @@ dd {
       max-width: 100%;
     }
   }
+}
+
+#movie-page .detail-header-image img,
+#performer-page .detail-header-image img,
+#tag-page .detail-header-image img {
+  border-radius: 0.5rem;
 }
 
 #tag-page .detail-header-image img {

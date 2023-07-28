@@ -26,6 +26,9 @@ import { faLink, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import TextUtils from "src/utils/text";
 import { Icon } from "src/components/Shared/Icon";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
+import { ConfigurationContext } from "src/hooks/Config";
+import { IUIConfig } from "src/core/config";
+import ImageUtils from "src/utils/image";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
@@ -35,6 +38,11 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   const intl = useIntl();
   const history = useHistory();
   const Toast = useToast();
+
+  // Configuration settings
+  const { configuration } = React.useContext(ConfigurationContext);
+  const uiConfig = configuration?.ui as IUIConfig | undefined;
+  const enableBackgroundImage = uiConfig?.enableBackgroundImage ?? false;
 
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -180,7 +188,11 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
     if (image && defaultImage) {
       return (
         <div className="movie-image-container">
-          <img alt="Front Cover" src={image} />
+          <img
+            alt="Front Cover"
+            src={image}
+            onLoad={ImageUtils.verifyImageSize}
+          />
         </div>
       );
     } else if (image) {
@@ -190,7 +202,11 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
           variant="link"
           onClick={() => showLightbox()}
         >
-          <img alt="Front Cover" src={image} />
+          <img
+            alt="Front Cover"
+            src={image}
+            onLoad={ImageUtils.verifyImageSize}
+          />
         </Button>
       );
     }
@@ -213,7 +229,11 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
           variant="link"
           onClick={() => showLightbox(index - 1)}
         >
-          <img alt="Back Cover" src={image} />
+          <img
+            alt="Back Cover"
+            src={image}
+            onLoad={ImageUtils.verifyImageSize}
+          />
         </Button>
       );
     }
@@ -302,6 +322,23 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
     }
   }
 
+  function maybeRenderHeaderBackgroundImage() {
+    if (enableBackgroundImage && !isEditing && frontImage) {
+      return (
+        <div className="background-image-container">
+          <picture>
+            <source src={frontImage} />
+            <img
+              className="background-image"
+              src={frontImage}
+              alt={`${movie.name} background`}
+            />
+          </picture>
+        </div>
+      );
+    }
+  }
+
   function maybeRenderTab() {
     if (!isEditing) {
       return renderTabs();
@@ -317,31 +354,34 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
       </Helmet>
 
       <div className={`detail-header ${isEditing ? "edit" : ""}`}>
-        <div className="detail-header-image">
-          <div className="logo w-100">
-            {encodingImage ? (
-              <LoadingIndicator message="Encoding image..." />
-            ) : (
-              <div className="movie-images">
-                {renderFrontImage()}
-                {renderBackImage()}
-              </div>
-            )}
+        {maybeRenderHeaderBackgroundImage()}
+        <div className="detail-container">
+          <div className="detail-header-image">
+            <div className="logo w-100">
+              {encodingImage ? (
+                <LoadingIndicator message="Encoding image..." />
+              ) : (
+                <div className="movie-images">
+                  {renderFrontImage()}
+                  {renderBackImage()}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-        <div className="row">
-          <div className="movie-head col">
-            <h2>
-              <span className="movie-name">{movie.name}</span>
-              {renderClickableIcons()}
-            </h2>
-            {maybeRenderAliases()}
-            <RatingSystem
-              value={movie.rating100 ?? undefined}
-              onSetRating={(value) => setRating(value ?? null)}
-            />
-            {maybeRenderDetails()}
-            {maybeRenderEditPanel()}
+          <div className="row">
+            <div className="movie-head col">
+              <h2>
+                <span className="movie-name">{movie.name}</span>
+                {renderClickableIcons()}
+              </h2>
+              {maybeRenderAliases()}
+              <RatingSystem
+                value={movie.rating100 ?? undefined}
+                onSetRating={(value) => setRating(value ?? null)}
+              />
+              {maybeRenderDetails()}
+              {maybeRenderEditPanel()}
+            </div>
           </div>
         </div>
       </div>
