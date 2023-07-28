@@ -60,7 +60,7 @@ const typePolicies: TypePolicies = {
         read: readReference("SavedFilter"),
       },
       findDefaultFilter: {
-        read: readDanglingNull,
+        read: readReference("SavedFilter"),
       },
     },
   },
