@@ -157,6 +157,13 @@ dd {
     margin-bottom: 0;
   }
 
+  .country,
+  .performer-country {
+    .mr-2.fi {
+      margin-left: 0.5rem;
+    }
+  }
+
   .alias-head {
     color: #868791;
   }
