@@ -396,26 +396,20 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     await saveScene(sceneCreateInput, includeStashID);
   }
 
-  function performerModalCallback(
-    toCreate?: GQL.PerformerCreateInput | undefined
-  ) {
-    if (toCreate) {
-      createNewPerformer(toCreate);
-    }
-  }
-
   function showPerformerModal(t: GQL.ScrapedPerformer) {
-    createPerformerModal(t, performerModalCallback);
-  }
-
-  function studioModalCallback(toCreate?: GQL.StudioCreateInput | undefined) {
-    if (toCreate) {
-      createNewStudio(toCreate);
-    }
+    createPerformerModal(t, (toCreate) => {
+      if (toCreate) {
+        createNewPerformer(t, toCreate);
+      }
+    });
   }
 
   function showStudioModal(t: GQL.ScrapedStudio) {
-    createStudioModal(t, studioModalCallback);
+    createStudioModal(t, (toCreate) => {
+      if (toCreate) {
+        createNewStudio(t, toCreate);
+      }
+    });
   }
 
   // constants to get around dot-notation eslint rule
@@ -660,7 +654,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   );
 
   async function onCreateTag(t: GQL.ScrapedTag) {
-    const newTagID = await createNewTag(t);
+    const toCreate: GQL.TagCreateInput = { name: t.name };
+    const newTagID = await createNewTag(t, toCreate);
     if (newTagID !== undefined) {
       setTagIDs([...tagIDs, newTagID]);
     }

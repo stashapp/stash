@@ -1,41 +1,45 @@
-mutation GalleryCreate(
-  $input: GalleryCreateInput!) {
-
+mutation GalleryCreate($input: GalleryCreateInput!) {
   galleryCreate(input: $input) {
-      ...GalleryData
+    ...GalleryData
   }
 }
 
-mutation GalleryUpdate(
-  $input: GalleryUpdateInput!) {
-
+mutation GalleryUpdate($input: GalleryUpdateInput!) {
   galleryUpdate(input: $input) {
-      ...GalleryData
+    ...GalleryData
   }
 }
 
-mutation BulkGalleryUpdate(
-  $input: BulkGalleryUpdateInput!) {
-
+mutation BulkGalleryUpdate($input: BulkGalleryUpdateInput!) {
   bulkGalleryUpdate(input: $input) {
-      ...GalleryData
+    ...GalleryData
   }
 }
 
-mutation GalleriesUpdate($input : [GalleryUpdateInput!]!) {
+mutation GalleriesUpdate($input: [GalleryUpdateInput!]!) {
   galleriesUpdate(input: $input) {
     ...GalleryData
   }
 }
 
-mutation GalleryDestroy($ids: [ID!]!, $delete_file: Boolean, $delete_generated : Boolean) {
-  galleryDestroy(input: {ids: $ids, delete_file: $delete_file, delete_generated: $delete_generated})
+mutation GalleryDestroy(
+  $ids: [ID!]!
+  $delete_file: Boolean
+  $delete_generated: Boolean
+) {
+  galleryDestroy(
+    input: {
+      ids: $ids
+      delete_file: $delete_file
+      delete_generated: $delete_generated
+    }
+  )
 }
 
 mutation AddGalleryImages($gallery_id: ID!, $image_ids: [ID!]!) {
-  addGalleryImages(input: {gallery_id: $gallery_id, image_ids: $image_ids})
+  addGalleryImages(input: { gallery_id: $gallery_id, image_ids: $image_ids })
 }
 
 mutation RemoveGalleryImages($gallery_id: ID!, $image_ids: [ID!]!) {
-  removeGalleryImages(input: {gallery_id: $gallery_id, image_ids: $image_ids})
+  removeGalleryImages(input: { gallery_id: $gallery_id, image_ids: $image_ids })
 }

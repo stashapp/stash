@@ -12,14 +12,14 @@
     "lint:css": "stylelint --cache \"src/**/*.scss\"",
     "lint:js": "eslint --cache src/",
     "check": "tsc --noEmit",
-    "format": "prettier --write .",
-    "format-check": "prettier --check .",
+    "format": "prettier --write . ../../graphql",
+    "format-check": "prettier --check . ../../graphql",
     "gqlgen": "gql-gen --config codegen.yml",
     "extract": "NODE_ENV=development extract-messages -l=en,de -o src/locale -d en --flat false 'src/**/!(*.test).tsx'"
   },
   "dependencies": {
     "@ant-design/react-slick": "^1.0.0",
-    "@apollo/client": "^3.7.8",
+    "@apollo/client": "^3.7.17",
     "@formatjs/intl-getcanonicallocales": "^2.0.5",
     "@formatjs/intl-locale": "^3.0.11",
     "@formatjs/intl-numberformat": "^8.3.3",
