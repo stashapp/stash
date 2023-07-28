@@ -28,7 +28,7 @@ const (
 
 type studioRow struct {
 	ID        int         `db:"id" goqu:"skipinsert"`
-	Name      string      `db:"name"`
+	Name      zero.String `db:"name"`
 	URL       zero.String `db:"url"`
 	ParentID  null.Int    `db:"parent_id,omitempty"`
 	CreatedAt Timestamp   `db:"created_at"`
@@ -44,7 +44,7 @@ type studioRow struct {
 
 func (r *studioRow) fromStudio(o models.Studio) {
 	r.ID = o.ID
-	r.Name = o.Name
+	r.Name = zero.StringFrom(o.Name)
 	r.URL = zero.StringFrom(o.URL)
 	r.ParentID = intFromPtr(o.ParentID)
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
@@ -57,7 +57,7 @@ func (r *studioRow) fromStudio(o models.Studio) {
 func (r *studioRow) resolve() *models.Studio {
 	ret := &models.Studio{
 		ID:            r.ID,
-		Name:          r.Name,
+		Name:          r.Name.String,
 		URL:           r.URL.String,
 		ParentID:      nullIntPtr(r.ParentID),
 		CreatedAt:     r.CreatedAt.Timestamp,
@@ -75,7 +75,7 @@ type studioRowRecord struct {
 }
 
 func (r *studioRowRecord) fromPartial(o models.StudioPartial) {
-	r.setString("name", o.Name)
+	r.setNullString("name", o.Name)
 	r.setNullString("url", o.URL)
 	r.setNullInt("parent_id", o.ParentID)
 	r.setTimestamp("created_at", o.CreatedAt)

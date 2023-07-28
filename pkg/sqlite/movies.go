@@ -26,7 +26,7 @@ const (
 
 type movieRow struct {
 	ID       int         `db:"id" goqu:"skipinsert"`
-	Name     string      `db:"name"`
+	Name     zero.String `db:"name"`
 	Aliases  zero.String `db:"aliases"`
 	Duration null.Int    `db:"duration"`
 	Date     NullDate    `db:"date"`
@@ -46,7 +46,7 @@ type movieRow struct {
 
 func (r *movieRow) fromMovie(o models.Movie) {
 	r.ID = o.ID
-	r.Name = o.Name
+	r.Name = zero.StringFrom(o.Name)
 	r.Aliases = zero.StringFrom(o.Aliases)
 	r.Duration = intFromPtr(o.Duration)
 	r.Date = NullDateFromDatePtr(o.Date)
@@ -62,7 +62,7 @@ func (r *movieRow) fromMovie(o models.Movie) {
 func (r *movieRow) resolve() *models.Movie {
 	ret := &models.Movie{
 		ID:        r.ID,
-		Name:      r.Name,
+		Name:      r.Name.String,
 		Aliases:   r.Aliases.String,
 		Duration:  nullIntPtr(r.Duration),
 		Date:      r.Date.DatePtr(),
@@ -83,7 +83,7 @@ type movieRowRecord struct {
 }
 
 func (r *movieRowRecord) fromPartial(o models.MoviePartial) {
-	r.setString("name", o.Name)
+	r.setNullString("name", o.Name)
 	r.setNullString("aliases", o.Aliases)
 	r.setNullInt("duration", o.Duration)
 	r.setNullDate("date", o.Date)
