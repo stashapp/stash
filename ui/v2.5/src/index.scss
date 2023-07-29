@@ -222,12 +222,9 @@ dd {
 }
 
 .detail-body {
+  margin-left: 15px;
+  margin-right: 15px;
   width: 100%;
-
-  @media (max-width: 576px) {
-    padding-left: 15px;
-    padding-right: 15px;
-  }
 
   nav {
     align-content: center;
