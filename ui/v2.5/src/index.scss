@@ -238,9 +238,7 @@ dd {
   }
 }
 
-#movie-page .collapsed .detail-item-value.synopsis,
-#studio-page .collapsed .detail-item-value.details,
-#tag-page .collapsed .detail-item-value.description {
+.collapsed .detail-item-value {
   -webkit-box-orient: vertical;
   display: -webkit-box;
   -webkit-line-clamp: 3;
