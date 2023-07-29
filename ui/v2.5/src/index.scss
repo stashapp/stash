@@ -175,6 +175,8 @@ dd {
 
   .detail-container {
     height: 100%;
+    position: relative;
+    z-index: 20;
   }
 
   h2 {
@@ -281,11 +283,14 @@ dd {
   }
 }
 
+#movie-page .detail-header-image .movie-images img {
+  max-width: 13rem;
+}
+
 #movie-page .detail-header-image img,
 #performer-page .detail-header-image img,
 #tag-page .detail-header-image img {
   border-radius: 0.5rem;
-  max-width: 13rem;
 }
 
 #tag-page .detail-header-image img {
