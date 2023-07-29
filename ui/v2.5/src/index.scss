@@ -236,6 +236,15 @@ dd {
   }
 }
 
+#movie-page .collapsed .detail-item-value.synopsis,
+#studio-page .collapsed .detail-item-value.details,
+#tag-page .collapsed .detail-item-value.description {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
 .detail-header-image {
   display: flex;
   float: left;
@@ -276,6 +285,7 @@ dd {
 #performer-page .detail-header-image img,
 #tag-page .detail-header-image img {
   border-radius: 0.5rem;
+  max-width: 13rem;
 }
 
 #tag-page .detail-header-image img {
@@ -318,6 +328,7 @@ dd {
   align-items: center;
   display: flex;
   flex-direction: row;
+  white-space: pre-line;
 }
 
 .input-control,

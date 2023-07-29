@@ -1,4 +1,4 @@
-import { Tabs, Tab, Dropdown } from "react-bootstrap";
+import { Tabs, Tab, Dropdown, Button } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -30,6 +30,8 @@ import { CompressedTagDetailsPanel, TagDetailsPanel } from "./TagDetailsPanel";
 import { TagEditPanel } from "./TagEditPanel";
 import { TagMergeModal } from "./TagMergeDialog";
 import {
+  faChevronDown,
+  faChevronUp,
   faSignInAlt,
   faSignOutAlt,
   faTrashAlt,
@@ -55,6 +57,9 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
   const uiConfig = configuration?.ui as IUIConfig | undefined;
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
   const enableBackgroundImage = uiConfig?.enableTagBackgroundImage ?? false;
+  const showAllDetails = uiConfig?.showAllDetails ?? false;
+
+  const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
 
   const { tab = "scenes" } = useParams<ITabParams>();
 
@@ -102,6 +107,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
     Mousetrap.bind("d d", () => {
       onDelete();
     });
+    Mousetrap.bind(",", () => setCollapsed(!collapsed));
 
     return () => {
       if (isEditing) {
@@ -198,6 +204,25 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
         </p>
       </ModalComponent>
     );
+  }
+
+  function getCollapseButtonIcon() {
+    return collapsed ? faChevronDown : faChevronUp;
+  }
+
+  function maybeRenderShowCollapseButton() {
+    if (!isEditing) {
+      return (
+        <span className="detail-expand-collapse">
+          <Button
+            className="minimal expand-collapse"
+            onClick={() => setCollapsed(!collapsed)}
+          >
+            <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
+          </Button>
+        </span>
+      );
+    }
   }
 
   function maybeRenderAliases() {
@@ -446,7 +471,11 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
         <title>{tag.name}</title>
       </Helmet>
 
-      <div className={`detail-header ${isEditing ? "edit" : ""}`}>
+      <div
+        className={`detail-header ${isEditing ? "edit" : ""}  ${
+          collapsed ? "collapsed" : ""
+        }`}
+      >
         {maybeRenderHeaderBackgroundImage()}
         <div className="detail-container">
           <div className="detail-header-image">
@@ -460,6 +489,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
             <div className="studio-head col">
               <h2>
                 <span className="tag-name">{tag.name}</span>
+                {maybeRenderShowCollapseButton()}
               </h2>
               {maybeRenderAliases()}
               {maybeRenderDetails()}

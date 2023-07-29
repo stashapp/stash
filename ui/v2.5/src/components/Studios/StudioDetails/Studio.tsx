@@ -31,7 +31,12 @@ import {
   StudioDetailsPanel,
 } from "./StudioDetailsPanel";
 import { StudioMoviesPanel } from "./StudioMoviesPanel";
-import { faTrashAlt, faLink } from "@fortawesome/free-solid-svg-icons";
+import {
+  faTrashAlt,
+  faLink,
+  faChevronDown,
+  faChevronUp,
+} from "@fortawesome/free-solid-svg-icons";
 import { IUIConfig } from "src/core/config";
 import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
@@ -56,6 +61,9 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
   const uiConfig = configuration?.ui as IUIConfig | undefined;
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
   const enableBackgroundImage = uiConfig?.enableStudioBackgroundImage ?? false;
+  const showAllDetails = uiConfig?.showAllDetails ?? false;
+
+  const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
 
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -87,6 +95,8 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     Mousetrap.bind("d d", () => {
       onDelete();
     });
+    Mousetrap.bind(",", () => setCollapsed(!collapsed));
+
     return () => {
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");
@@ -171,6 +181,10 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     }
   }
 
+  function getCollapseButtonIcon() {
+    return collapsed ? faChevronDown : faChevronUp;
+  }
+
   function toggleEditing(value?: boolean) {
     if (value !== undefined) {
       setIsEditing(value);
@@ -252,6 +266,21 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
   function maybeRenderDetails() {
     if (!isEditing) {
       return <StudioDetailsPanel studio={studio} />;
+    }
+  }
+
+  function maybeRenderShowCollapseButton() {
+    if (!isEditing) {
+      return (
+        <span className="detail-expand-collapse">
+          <Button
+            className="minimal expand-collapse"
+            onClick={() => setCollapsed(!collapsed)}
+          >
+            <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
+          </Button>
+        </span>
+      );
     }
   }
 
@@ -442,7 +471,11 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
         <title>{studio.name ?? intl.formatMessage({ id: "studio" })}</title>
       </Helmet>
 
-      <div className={`detail-header ${isEditing ? "edit" : ""}`}>
+      <div
+        className={`detail-header ${isEditing ? "edit" : ""}  ${
+          collapsed ? "collapsed" : ""
+        }`}
+      >
         {maybeRenderHeaderBackgroundImage()}
         <div className="detail-container">
           <div className="detail-header-image">
@@ -456,6 +489,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
             <div className="studio-head col">
               <h2>
                 <span className="studio-name">{studio.name}</span>
+                {maybeRenderShowCollapseButton()}
                 {renderClickableIcons()}
               </h2>
               {maybeRenderAliases()}

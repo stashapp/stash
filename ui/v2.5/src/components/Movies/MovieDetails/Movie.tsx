@@ -22,7 +22,12 @@ import {
   MovieDetailsPanel,
 } from "./MovieDetailsPanel";
 import { MovieEditPanel } from "./MovieEditPanel";
-import { faLink, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import {
+  faChevronDown,
+  faChevronUp,
+  faLink,
+  faTrashAlt,
+} from "@fortawesome/free-solid-svg-icons";
 import TextUtils from "src/utils/text";
 import { Icon } from "src/components/Shared/Icon";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
@@ -43,6 +48,9 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   const { configuration } = React.useContext(ConfigurationContext);
   const uiConfig = configuration?.ui as IUIConfig | undefined;
   const enableBackgroundImage = uiConfig?.enableMovieBackgroundImage ?? false;
+  const showAllDetails = uiConfig?.showAllDetails ?? false;
+
+  const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
 
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -101,6 +109,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
     Mousetrap.bind("d d", () => {
       onDelete();
     });
+    Mousetrap.bind(",", () => setCollapsed(!collapsed));
 
     return () => {
       Mousetrap.unbind("e");
@@ -171,6 +180,25 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
         </p>
       </ModalComponent>
     );
+  }
+
+  function getCollapseButtonIcon() {
+    return collapsed ? faChevronDown : faChevronUp;
+  }
+
+  function maybeRenderShowCollapseButton() {
+    if (!isEditing) {
+      return (
+        <span className="detail-expand-collapse">
+          <Button
+            className="minimal expand-collapse"
+            onClick={() => setCollapsed(!collapsed)}
+          >
+            <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
+          </Button>
+        </span>
+      );
+    }
   }
 
   function renderFrontImage() {
@@ -354,7 +382,11 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
         <title>{movie?.name}</title>
       </Helmet>
 
-      <div className={`detail-header ${isEditing ? "edit" : ""}`}>
+      <div
+        className={`detail-header ${isEditing ? "edit" : ""}  ${
+          collapsed ? "collapsed" : ""
+        }`}
+      >
         {maybeRenderHeaderBackgroundImage()}
         <div className="detail-container">
           <div className="detail-header-image">
@@ -373,6 +405,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
             <div className="movie-head col">
               <h2>
                 <span className="movie-name">{movie.name}</span>
+                {maybeRenderShowCollapseButton()}
                 {renderClickableIcons()}
               </h2>
               {maybeRenderAliases()}
