@@ -4,10 +4,12 @@ import { DetailItem } from "src/components/Shared/DetailItem";
 
 interface IStudioDetailsPanel {
   studio: GQL.StudioDataFragment;
+  collapsed?: boolean;
 }
 
 export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
   studio,
+  collapsed,
 }) => {
   function renderStashIDs() {
     if (!studio.stash_ids?.length) {
@@ -39,6 +41,12 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
     );
   }
 
+  function maybeRenderExtraDetails() {
+    if (!collapsed) {
+      return <DetailItem id="StashIDs" value={renderStashIDs()} />;
+    }
+  }
+
   return (
     <div className="detail-group">
       <DetailItem id="details" value={studio.details} />
@@ -54,7 +62,7 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
           )
         }
       />
-      <DetailItem id="StashIDs" value={renderStashIDs()} />
+      {maybeRenderExtraDetails()}
     </div>
   );
 };

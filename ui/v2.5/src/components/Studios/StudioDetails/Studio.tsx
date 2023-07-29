@@ -265,7 +265,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
 
   function maybeRenderDetails() {
     if (!isEditing) {
-      return <StudioDetailsPanel studio={studio} />;
+      return <StudioDetailsPanel studio={studio} collapsed={collapsed} />;
     }
   }
 
