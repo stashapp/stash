@@ -249,7 +249,12 @@ dd {
     width: 100%;
 
     .detail-item-title {
-      padding-right: 0.5rem;
+      display: table-cell;
+      width: 100px;
+    }
+
+    .detail-item-value {
+      padding-left: .5rem;
     }
   }
 
