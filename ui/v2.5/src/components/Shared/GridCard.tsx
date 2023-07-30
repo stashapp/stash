@@ -35,6 +35,7 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
       props.onSelectedChanged(!props.selected, shiftKey);
       event.preventDefault();
     }
+    window.scrollTo(0, 0);
   }
 
   function handleDrag(event: React.DragEvent<HTMLElement>) {
