@@ -153,13 +153,9 @@ func GetDependentTagIDs(ctx context.Context, tags MarkerTagFinder, markerReader 
 	return ret, nil
 }
 
-type MovieFinder interface {
-	Find(ctx context.Context, id int) (*models.Movie, error)
-}
-
 // GetSceneMoviesJSON returns a slice of SceneMovie JSON representation objects
 // corresponding to the provided scene's scene movie relationships.
-func GetSceneMoviesJSON(ctx context.Context, movieReader MovieFinder, scene *models.Scene) ([]jsonschema.SceneMovie, error) {
+func GetSceneMoviesJSON(ctx context.Context, movieReader models.MovieGetter, scene *models.Scene) ([]jsonschema.SceneMovie, error) {
 	sceneMovies := scene.Movies.List()
 
 	var results []jsonschema.SceneMovie
