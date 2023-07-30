@@ -19,7 +19,10 @@ export const getClient = () => client;
 
 // Evicts cached results for the given queries.
 // Will also call a cache GC afterwards.
-function evictQueries(cache: ApolloCache<unknown>, queries: DocumentNode[]) {
+export function evictQueries(
+  cache: ApolloCache<unknown>,
+  queries: DocumentNode[]
+) {
   const fields: Modifiers = {};
   for (const query of queries) {
     const { selections } = getQueryDefinition(query).selectionSet;
@@ -111,7 +114,7 @@ function deleteObject(
 /// Object queries
 
 export const useFindScene = (id: string) => {
-  const skip = id === "new";
+  const skip = id === "new" || id === "";
   return GQL.useFindSceneQuery({ variables: { id }, skip });
 };
 
@@ -172,7 +175,7 @@ export const queryFindImages = (filter: ListFilterModel) =>
   });
 
 export const useFindMovie = (id: string) => {
-  const skip = id === "new";
+  const skip = id === "new" || id === "";
   return GQL.useFindMovieQuery({ variables: { id }, skip });
 };
 
@@ -217,7 +220,7 @@ export const queryFindSceneMarkers = (filter: ListFilterModel) =>
 export const useMarkerStrings = () => GQL.useMarkerStringsQuery();
 
 export const useFindGallery = (id: string) => {
-  const skip = id === "new";
+  const skip = id === "new" || id === "";
   return GQL.useFindGalleryQuery({ variables: { id }, skip });
 };
 
@@ -240,7 +243,7 @@ export const queryFindGalleries = (filter: ListFilterModel) =>
   });
 
 export const useFindPerformer = (id: string) => {
-  const skip = id === "new";
+  const skip = id === "new" || id === "";
   return GQL.useFindPerformerQuery({ variables: { id }, skip });
 };
 
@@ -272,7 +275,7 @@ export const useAllPerformersForFilter = () =>
   GQL.useAllPerformersForFilterQuery();
 
 export const useFindStudio = (id: string) => {
-  const skip = id === "new";
+  const skip = id === "new" || id === "";
   return GQL.useFindStudioQuery({ variables: { id }, skip });
 };
 
@@ -303,7 +306,7 @@ export const queryFindStudios = (filter: ListFilterModel) =>
 export const useAllStudiosForFilter = () => GQL.useAllStudiosForFilterQuery();
 
 export const useFindTag = (id: string) => {
-  const skip = id === "new";
+  const skip = id === "new" || id === "";
   return GQL.useFindTagQuery({ variables: { id }, skip });
 };
 
@@ -1475,7 +1478,7 @@ const studioMutationImpactedTypeFields = {
   Studio: ["child_studios"],
 };
 
-const studioMutationImpactedQueries = [
+export const studioMutationImpactedQueries = [
   GQL.FindScenesDocument, // filter by studio
   GQL.FindImagesDocument, // filter by studio
   GQL.FindMoviesDocument, // filter by studio
@@ -1868,13 +1871,39 @@ export const stashBoxPerformerQuery = (
         query: searchVal,
       },
     },
+    fetchPolicy: "network-only",
+  });
+
+export const stashBoxStudioQuery = (
+  query: string | null,
+  stashBoxIndex: number
+) =>
+  client.query<GQL.ScrapeSingleStudioQuery>({
+    query: GQL.ScrapeSingleStudioDocument,
+    variables: {
+      source: {
+        stash_box_index: stashBoxIndex,
+      },
+      input: {
+        query: query,
+      },
+    },
+    fetchPolicy: "network-only",
   });
 
 export const mutateStashBoxBatchPerformerTag = (
-  input: GQL.StashBoxBatchPerformerTagInput
+  input: GQL.StashBoxBatchTagInput
 ) =>
   client.mutate<GQL.StashBoxBatchPerformerTagMutation>({
     mutation: GQL.StashBoxBatchPerformerTagDocument,
+    variables: { input },
+  });
+
+export const mutateStashBoxBatchStudioTag = (
+  input: GQL.StashBoxBatchTagInput
+) =>
+  client.mutate<GQL.StashBoxBatchStudioTagMutation>({
+    mutation: GQL.StashBoxBatchStudioTagDocument,
     variables: { input },
   });
 

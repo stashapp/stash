@@ -30,3 +30,15 @@ export function withoutTypename<T extends ITypename>(
     {} as Omit<T, "__typename">
   );
 }
+
+// excludeFields removes fields from data that are in the excluded object
+export function excludeFields(
+  data: { [index: string]: unknown },
+  excluded: Record<string, boolean>
+) {
+  Object.keys(data).forEach((k) => {
+    if (excluded[k] || !data[k]) {
+      data[k] = undefined;
+    }
+  });
+}

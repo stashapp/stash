@@ -44,7 +44,7 @@ type ScraperSource struct {
 
 type SceneIdentifier struct {
 	SceneReaderUpdater SceneReaderUpdater
-	StudioCreator      StudioCreator
+	StudioReaderWriter models.StudioReaderWriter
 	PerformerCreator   PerformerCreator
 	TagCreatorFinder   TagCreatorFinder
 
@@ -174,7 +174,7 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 
 	rel := sceneRelationships{
 		sceneReader:              t.SceneReaderUpdater,
-		studioCreator:            t.StudioCreator,
+		studioReaderWriter:       t.StudioReaderWriter,
 		performerCreator:         t.PerformerCreator,
 		tagCreatorFinder:         t.TagCreatorFinder,
 		scene:                    s,
