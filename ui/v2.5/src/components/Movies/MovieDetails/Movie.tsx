@@ -51,6 +51,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   const showAllDetails = uiConfig?.showAllDetails ?? false;
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
+  const [loadStickyHeader, setLoadStickyHeader] = useState<boolean>(false);
 
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -116,6 +117,18 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
       Mousetrap.unbind("d d");
     };
   });
+
+  window.onscroll = function () {
+    scrollFunction();
+  };
+
+  function scrollFunction() {
+    if (document.documentElement.scrollTop <= 20) {
+      setLoadStickyHeader(false);
+    } else {
+      setLoadStickyHeader(true);
+    }
+  }
 
   async function onSave(input: GQL.MovieCreateInput) {
     await updateMovie({
@@ -350,7 +363,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   }
 
   function maybeRenderCompressedDetails() {
-    if (!isEditing) {
+    if (!isEditing && loadStickyHeader) {
       return <CompressedMovieDetailsPanel movie={movie} />;
     }
   }

@@ -23,18 +23,15 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   const intl = useIntl();
 
   function renderTagsField() {
+    if (!performer.tags.length) {
+      return;
+    }
     return (
-      <>
-        {performer.tags ? (
-          <ul className="pl-0">
-            {(performer.tags ?? []).map((tag) => (
-              <TagLink key={tag.id} tagType="performer" tag={tag} />
-            ))}
-          </ul>
-        ) : (
-          ""
-        )}
-      </>
+      <ul className="pl-0">
+        {(performer.tags ?? []).map((tag) => (
+          <TagLink key={tag.id} tagType="performer" tag={tag} />
+        ))}
+      </ul>
     );
   }
 

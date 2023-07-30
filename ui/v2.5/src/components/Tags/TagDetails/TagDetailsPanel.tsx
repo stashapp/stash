@@ -50,12 +50,12 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag, fullWidth }) => {
         fullWidth={fullWidth}
       />
       <DetailItem
-        id="parent_tags"
+        id="parent-tags"
         value={renderParentsField()}
         fullWidth={fullWidth}
       />
       <DetailItem
-        id="sub_tags"
+        id="sub-tags"
         value={renderChildrenField()}
         fullWidth={fullWidth}
       />

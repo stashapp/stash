@@ -69,6 +69,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [image, setImage] = useState<string | null>();
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
+  const [loadStickyHeader, setLoadStickyHeader] = useState<boolean>(false);
 
   const activeImage = useMemo(() => {
     const performerImage = performer.image_path;
@@ -363,6 +364,18 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     return collapsed ? faChevronDown : faChevronUp;
   }
 
+  window.onscroll = function () {
+    scrollFunction();
+  };
+
+  function scrollFunction() {
+    if (document.documentElement.scrollTop <= 20) {
+      setLoadStickyHeader(false);
+    } else {
+      setLoadStickyHeader(true);
+    }
+  }
+
   function maybeRenderDetails() {
     if (!isEditing) {
       return (
@@ -376,7 +389,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   }
 
   function maybeRenderCompressedDetails() {
-    if (!isEditing) {
+    if (!isEditing && loadStickyHeader) {
       return <CompressedPerformerDetailsPanel performer={performer} />;
     }
   }

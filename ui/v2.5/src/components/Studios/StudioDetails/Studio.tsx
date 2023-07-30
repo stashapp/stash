@@ -64,6 +64,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
   const showAllDetails = uiConfig?.showAllDetails ?? false;
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
+  const [loadStickyHeader, setLoadStickyHeader] = useState<boolean>(false);
 
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -103,6 +104,18 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
       Mousetrap.unbind(",");
     };
   });
+
+  window.onscroll = function () {
+    scrollFunction();
+  };
+
+  function scrollFunction() {
+    if (document.documentElement.scrollTop <= 20) {
+      setLoadStickyHeader(false);
+    } else {
+      setLoadStickyHeader(true);
+    }
+  }
 
   async function onSave(input: GQL.StudioCreateInput) {
     await updateStudio({
@@ -291,7 +304,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
   }
 
   function maybeRenderCompressedDetails() {
-    if (!isEditing) {
+    if (!isEditing && loadStickyHeader) {
       return <CompressedStudioDetailsPanel studio={studio} />;
     }
   }

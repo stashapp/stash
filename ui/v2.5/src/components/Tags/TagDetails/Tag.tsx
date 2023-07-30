@@ -60,6 +60,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
   const showAllDetails = uiConfig?.showAllDetails ?? false;
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
+  const [loadStickyHeader, setLoadStickyHeader] = useState<boolean>(false);
 
   const { tab = "scenes" } = useParams<ITabParams>();
 
@@ -119,6 +120,18 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
       Mousetrap.unbind(",");
     };
   });
+
+  window.onscroll = function () {
+    scrollFunction();
+  };
+
+  function scrollFunction() {
+    if (document.documentElement.scrollTop <= 20) {
+      setLoadStickyHeader(false);
+    } else {
+      setLoadStickyHeader(true);
+    }
+  }
 
   async function onSave(input: GQL.TagCreateInput) {
     const oldRelations = {
@@ -462,7 +475,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
   }
 
   function maybeRenderCompressedDetails() {
-    if (!isEditing) {
+    if (!isEditing && loadStickyHeader) {
       return <CompressedTagDetailsPanel tag={tag} />;
     }
   }
