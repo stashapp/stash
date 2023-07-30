@@ -163,6 +163,27 @@ query FindSceneByID($id: ID!) {
   }
 }
 
+query FindStudioByID($id: ID!) {
+  findStudio(id: $id) {
+    ...StudioFragment
+  }
+}
+
+query FindStudioByName($name: String!) {
+  findStudio(name: $name) {
+    ...StudioFragment
+  }
+}
+
+query QueryStudios($input: StudioQueryInput!) {
+  queryStudios(input: $input) {
+    count
+    studios {
+      ...StudioFragment
+    }
+  }
+}
+
 mutation SubmitFingerprint($input: FingerprintSubmission!) {
   submitFingerprint(input: $input)
 }

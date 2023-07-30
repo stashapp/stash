@@ -7,7 +7,7 @@ import { Icon } from "src/components/Shared/Icon";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { StudioSelect } from "src/components/Shared/Select";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
-import { Button, Form, Col, Row } from "react-bootstrap";
+import { Button, Form, Col, Row, Dropdown } from "react-bootstrap";
 import FormUtils from "src/utils/form";
 import ImageUtils from "src/utils/image";
 import { getStashIDs } from "src/utils/stashIds";
@@ -15,12 +15,24 @@ import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { StringListInput } from "../../Shared/StringListInput";
-import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import { faTrashAlt, faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { ConfigurationContext } from "src/hooks/Config";
 import isEqual from "lodash-es/isEqual";
 import { useToast } from "src/hooks/Toast";
 import { handleUnsavedChanges } from "src/utils/navigation";
+import { stashboxDisplayName } from "src/utils/stashbox";
+import StudioStashBoxModal, { IStashBox } from "./StudioStashBoxModal";
+import StudioScrapeModal from "./StudioScrapeModal";
+
+import {
+  useListStudioScrapers,
+  mutateReloadScrapers,
+} from "src/core/StashService";
+
+const isScraper = (
+  scraper: GQL.Scraper | GQL.StashBox
+): scraper is GQL.Scraper => (scraper as GQL.Scraper).id !== undefined;
 
 interface IStudioEditPanel {
   studio: Partial<GQL.StudioDataFragment>;
@@ -47,6 +59,13 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
+
+  const Scrapers = useListStudioScrapers();
+  const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
+  const [scraper, setScraper] = useState<GQL.Scraper | IStashBox>();
+  const [isScraperModalOpen, setIsScraperModalOpen] = useState<boolean>(false);
+
+  const { configuration: stashConfig } = React.useContext(ConfigurationContext);
 
   const schema = yup.object({
     name: yup.string().required(),
@@ -164,6 +183,155 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     );
   };
 
+  function onScraperSelected(s: GQL.Scraper | IStashBox | undefined) {
+    setScraper(s);
+    setIsScraperModalOpen(true);
+  }
+
+  async function onReloadScrapers() {
+    setIsLoading(true);
+    try {
+      await mutateReloadScrapers();
+
+      // reload the studio scrapers
+      await Scrapers.refetch();
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  function renderScraperMenu() {
+    if (!studio) {
+      return;
+    }
+    const stashBoxes = stashConfig?.general.stashBoxes ?? [];
+
+    const popover = (
+      <Dropdown.Menu id="studio-scraper-popover">
+        {stashBoxes.map((s, index) => (
+          <Dropdown.Item
+            as={Button}
+            key={s.endpoint}
+            className="minimal"
+            onClick={() => onScraperSelected({ ...s, index })}
+          >
+            {stashboxDisplayName(s.name, index)}
+          </Dropdown.Item>
+        ))}
+        {queryableScrapers
+          ? queryableScrapers.map((s) => (
+              <Dropdown.Item
+                as={Button}
+                key={s.name}
+                className="minimal"
+                onClick={() => onScraperSelected(s)}
+              >
+                {s.name}
+              </Dropdown.Item>
+            ))
+          : ""}
+        <Dropdown.Item
+          as={Button}
+          className="minimal"
+          onClick={() => onReloadScrapers()}
+        >
+          <span className="fa-icon">
+            <Icon icon={faSyncAlt} />
+          </span>
+          <span>
+            <FormattedMessage id="actions.reload_scrapers" />
+          </span>
+        </Dropdown.Item>
+      </Dropdown.Menu>
+    );
+
+    return (
+      <Dropdown drop="up" className="d-inline-block">
+        <Dropdown.Toggle variant="secondary" className="mr-2">
+          <FormattedMessage id="actions.scrape_with" />
+        </Dropdown.Toggle>
+        {popover}
+      </Dropdown>
+    );
+  }
+
+  async function onScrapeStudio(
+    selectedPerformer: GQL.ScrapedPerformerDataFragment,
+    selectedScraper: GQL.Scraper
+  ) {
+    setIsScraperModalOpen(false);
+    try {
+      if (!scraper) return;
+      setIsLoading(true);
+
+      const {
+        __typename,
+        images: _image,
+        tags: _tags,
+        ...ret
+      } = selectedPerformer;
+
+      const result = await queryScrapeStudio(selectedScraper.id, ret);
+      if (!result?.data?.scrapeSingleStudio?.length) return;
+
+      // assume one result
+      // if this is a new studio, just dump the data
+      if (isNew) {
+        updateStudioEditStateFromScraper(
+          result.data.scrapeSingleStudio[0]
+        );
+        setScraper(undefined);
+      } else {
+        setScrapedStudio(result.data.scrapeSingleStudio[0]);
+      }
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function onScrapeStashBox(studioResult: GQL.ScrapedStudio) {
+    setIsScraperModalOpen(false);
+
+    const result: GQL.ScrapedStudioDataFragment = {
+      ...studioResult,
+      image: studioResult.image ?? undefined,
+      url: studioResult.url ?? undefined,
+      __typename: "ScrapedStudio",
+    };
+
+    // if this is a new studio, just dump the data
+    if (isNew) {
+      updateStudioEditStateFromScraper(result);
+      setScraper(undefined);
+    } else {
+      setScrapedStudio(result);
+    }
+  }
+
+  const renderScrapeModal = () => {
+    if (!isScraperModalOpen) return;
+
+    return scraper !== undefined && isScraper(scraper) ? (
+      <StudioScrapeModal
+        scraper={scraper}
+        onHide={() => setScraper(undefined)}
+        onSelectPerformer={onScrapeStudio}
+        name={formik.values.name || ""}
+      />
+    ) : scraper !== undefined && !isScraper(scraper) ? (
+      <StudioStashBoxModal
+        instance={scraper}
+        onHide={() => setScraper(undefined)}
+        onSelectPerformer={onScrapeStashBox}
+        name={formik.values.name || ""}
+      />
+    ) : undefined;
+  };
+
   function renderStashIDs() {
     if (!formik.values.stash_ids?.length) {
       return;
@@ -222,6 +390,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
 
   return (
     <>
+      {renderScrapeModal()}
       <Prompt
         when={formik.dirty}
         message={(location, action) => {
@@ -358,6 +527,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         onImageChange={onImageChange}
         onImageChangeURL={onImageLoad}
         onClearImage={() => onImageLoad(null)}
+        customButtons={renderScraperMenu()}
         onDelete={onDelete}
         acceptSVG
       />

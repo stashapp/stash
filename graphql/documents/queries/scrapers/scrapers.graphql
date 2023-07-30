@@ -31,6 +31,17 @@ query ListGalleryScrapers {
   }
 }
 
+query ListStudioScrapers {
+  listStudioScrapers {
+    id
+    name
+    studio {
+      urls
+      supported_scrapes
+    }
+  }
+}
+
 query ListMovieScrapers {
   listMovieScrapers {
     id
@@ -48,6 +59,15 @@ query ScrapeSinglePerformer(
 ) {
   scrapeSinglePerformer(source: $source, input: $input) {
     ...ScrapedPerformerData
+  }
+}
+
+query ScrapeSingleStudio(
+  $source: ScraperSourceInput!
+  $input: ScrapeSingleStudioInput!
+) {
+  scrapeSingleStudio(source: $source, input: $input) {
+    ...ScrapedStudioData
   }
 }
 

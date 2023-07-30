@@ -33,6 +33,7 @@ const (
 	ScrapeContentTypeMovie     ScrapeContentType = "MOVIE"
 	ScrapeContentTypePerformer ScrapeContentType = "PERFORMER"
 	ScrapeContentTypeScene     ScrapeContentType = "SCENE"
+	ScrapeContentTypeStudio    ScrapeContentType = "STUDIO"
 )
 
 var AllScrapeContentType = []ScrapeContentType{
@@ -40,11 +41,12 @@ var AllScrapeContentType = []ScrapeContentType{
 	ScrapeContentTypeMovie,
 	ScrapeContentTypePerformer,
 	ScrapeContentTypeScene,
+	ScrapeContentTypeStudio,
 }
 
 func (e ScrapeContentType) IsValid() bool {
 	switch e {
-	case ScrapeContentTypeGallery, ScrapeContentTypeMovie, ScrapeContentTypePerformer, ScrapeContentTypeScene:
+	case ScrapeContentTypeGallery, ScrapeContentTypeMovie, ScrapeContentTypePerformer, ScrapeContentTypeScene, ScrapeContentTypeStudio:
 		return true
 	}
 	return false
@@ -82,6 +84,8 @@ type Scraper struct {
 	Gallery *ScraperSpec `json:"gallery"`
 	// Details for movie scraper
 	Movie *ScraperSpec `json:"movie"`
+	// Details for studio scraper
+	Studio *ScraperSpec `json:"studio"`
 }
 
 type ScraperSpec struct {
@@ -155,6 +159,7 @@ type Input struct {
 	Performer *ScrapedPerformerInput
 	Scene     *ScrapedSceneInput
 	Gallery   *ScrapedGalleryInput
+	Studio    *ScrapedStudioInput
 }
 
 // populateURL populates the URL field of the input based on the
@@ -219,4 +224,10 @@ type galleryScraper interface {
 	scraper
 
 	viaGallery(ctx context.Context, client *http.Client, gallery *models.Gallery) (*ScrapedGallery, error)
+}
+
+type studioScraper interface {
+	scraper
+
+	viaStudio(ctx context.Context, client *http.Client, studio *models.Studio) (*ScrapedStudio, error)
 }

@@ -48,6 +48,12 @@ type config struct {
 	// Configuration for querying a movie by a URL
 	MovieByURL []*scrapeByURLConfig `yaml:"movieByURL"`
 
+	// Configuration for querying studios by name
+	StudioByName *scraperTypeConfig `yaml:"studioByName"`
+
+	// Configuration for querying a studio by a URL
+	StudioByURL []*scrapeByURLConfig `yaml:"studioByURL"`
+
 	// Scraper debugging options
 	DebugOptions *scraperDebugOptions `yaml:"debug"`
 
@@ -100,6 +106,18 @@ func (c config) validate() error {
 	}
 
 	for _, s := range c.MovieByURL {
+		if err := s.validate(); err != nil {
+			return err
+		}
+	}
+
+	if c.StudioByName != nil {
+		if err := c.StudioByName.validate(); err != nil {
+			return err
+		}
+	}
+
+	for _, s := range c.StudioByURL {
 		if err := s.validate(); err != nil {
 			return err
 		}
@@ -301,6 +319,21 @@ func (c config) spec() Scraper {
 		ret.Movie = &movie
 	}
 
+	studio := ScraperSpec{}
+	if c.StudioByName != nil {
+		studio.SupportedScrapes = append(studio.SupportedScrapes, ScrapeTypeName)
+	}
+	if len(c.StudioByURL) > 0 {
+		studio.SupportedScrapes = append(studio.SupportedScrapes, ScrapeTypeURL)
+		for _, v := range c.StudioByURL {
+			studio.Urls = append(studio.Urls, v.URL...)
+		}
+	}
+
+	if len(studio.SupportedScrapes) > 0 {
+		ret.Studio = &studio
+	}
+
 	return ret
 }
 
@@ -314,6 +347,8 @@ func (c config) supports(ty ScrapeContentType) bool {
 		return c.GalleryByFragment != nil || len(c.GalleryByURL) > 0
 	case ScrapeContentTypeMovie:
 		return len(c.MovieByURL) > 0
+	case ScrapeContentTypeStudio:
+		return c.StudioByName != nil || len(c.StudioByURL) > 0
 	}
 
 	panic("Unhandled ScrapeContentType")
@@ -341,6 +376,12 @@ func (c config) matchesURL(url string, ty ScrapeContentType) bool {
 		}
 	case ScrapeContentTypeMovie:
 		for _, scraper := range c.MovieByURL {
+			if scraper.matchesURL(url) {
+				return true
+			}
+		}
+	case ScrapeContentTypeStudio:
+		for _, scraper := range c.StudioByURL {
 			if scraper.matchesURL(url) {
 				return true
 			}

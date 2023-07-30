@@ -116,6 +116,8 @@ type Query {
     @deprecated(reason: "Use listScrapers(types: [GALLERY])")
   listMovieScrapers: [Scraper!]!
     @deprecated(reason: "Use listScrapers(types: [MOVIE])")
+  listStudioScrapers: [Scraper!]!
+    @deprecated(reason: "Use listScrapers(types: [STUDIO])")
 
   "Scrape for a single scene"
   scrapeSingleScene(
@@ -150,6 +152,12 @@ type Query {
     source: ScraperSourceInput!
     input: ScrapeSingleMovieInput!
   ): [ScrapedMovie!]!
+
+  "Scrape for a single studio"
+  scrapeSingleStudio(
+    source: ScraperSourceInput!
+    input: ScrapeSingleStudioInput!
+  ): [ScrapedStudio!]!
 
   "Scrapes content based on a URL"
   scrapeURL(url: String!, ty: ScrapeContentType!): ScrapedContent

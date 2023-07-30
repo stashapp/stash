@@ -278,6 +278,48 @@ func (s *mappedPerformerScraperConfig) UnmarshalYAML(unmarshal func(interface{})
 	return nil
 }
 
+type mappedStudioScraperConfig struct {
+	mappedConfig
+}
+type _mappedStudioScraperConfig mappedStudioScraperConfig
+
+func (s *mappedStudioScraperConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	// HACK - unmarshal to map first, then remove known scene sub-fields, then
+	// remarshal to yaml and pass that down to the base map
+	parentMap := make(map[string]interface{})
+	if err := unmarshal(parentMap); err != nil {
+		return err
+	}
+
+	// move the known sub-fields to a separate map
+	thisMap := make(map[string]interface{})
+
+	// re-unmarshal the sub-fields
+	yml, err := yaml.Marshal(thisMap)
+	if err != nil {
+		return err
+	}
+
+	// needs to be a different type to prevent infinite recursion
+	c := _mappedStudioScraperConfig{}
+	if err := yaml.Unmarshal(yml, &c); err != nil {
+		return err
+	}
+
+	*s = mappedStudioScraperConfig(c)
+
+	yml, err = yaml.Marshal(parentMap)
+	if err != nil {
+		return err
+	}
+
+	if err := yaml.Unmarshal(yml, &s.mappedConfig); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type mappedMovieScraperConfig struct {
 	mappedConfig
 
@@ -731,6 +773,7 @@ type mappedScraper struct {
 	Gallery   *mappedGalleryScraperConfig   `yaml:"gallery"`
 	Performer *mappedPerformerScraperConfig `yaml:"performer"`
 	Movie     *mappedMovieScraperConfig     `yaml:"movie"`
+	Studio    *mappedStudioScraperConfig    `yaml:"studio"`
 }
 
 type mappedResult map[string]string
@@ -1046,6 +1089,28 @@ func (s mappedScraper) scrapeMovie(ctx context.Context, q mappedQuery) (*models.
 	}
 
 	if len(results) == 0 && ret.Studio == nil {
+		return nil, nil
+	}
+
+	if len(results) > 0 {
+		results[0].apply(&ret)
+	}
+
+	return &ret, nil
+}
+
+func (s mappedScraper) scrapeStudio(ctx context.Context, q mappedQuery) (*models.ScrapedStudio, error) {
+	var ret models.ScrapedStudio
+
+	studioScraperConfig := s.Studio
+	studioMap := studioScraperConfig.mappedConfig
+	if studioMap == nil {
+		return nil, nil
+	}
+
+	results := studioMap.process(ctx, q, s.Common)
+
+	if len(results) == 0 {
 		return nil, nil
 	}
 

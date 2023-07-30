@@ -53,6 +53,29 @@ func marshalScrapedPerformers(content []scraper.ScrapedContent) ([]*models.Scrap
 	return ret, nil
 }
 
+// marshalScrapedStudios converts ScrapedContent into ScrapedStudio. If conversion
+// fails, an error is returned to the caller.
+func marshalScrapedStudios(content []scraper.ScrapedContent) ([]*models.ScrapedStudio, error) {
+	var ret []*models.ScrapedStudio
+	for _, c := range content {
+		if c == nil {
+			// graphql schema requires studios to be non-nil
+			continue
+		}
+
+		switch s := c.(type) {
+		case *models.ScrapedStudio:
+			ret = append(ret, s)
+		case models.ScrapedStudio:
+			ret = append(ret, &s)
+		default:
+			return nil, fmt.Errorf("%w: cannot turn ScrapedContent into ScrapedStudio", models.ErrConversion)
+		}
+	}
+
+	return ret, nil
+}
+
 // marshalScrapedGalleries converts ScrapedContent into ScrapedGallery. If
 // conversion fails, an error is returned.
 func marshalScrapedGalleries(content []scraper.ScrapedContent) ([]*scraper.ScrapedGallery, error) {

@@ -23,8 +23,8 @@ func createMissingStudio(ctx context.Context, endpoint string, w StudioCreator, 
 	}
 
 	// update image table
-	if studio.Image != nil && len(*studio.Image) > 0 {
-		imageData, err := utils.ReadImageFromURL(ctx, *studio.Image)
+	if studio.Images != nil && len(studio.Images) > 0 {
+		imageData, err := utils.ReadImageFromURL(ctx, *studio.Images[0])
 		if err != nil {
 			return nil, err
 		}
@@ -57,8 +57,8 @@ func scrapedToStudioInput(studio *models.ScrapedStudio) models.Studio {
 		UpdatedAt: currentTime,
 	}
 
-	if studio.URL != nil {
-		ret.URL = *studio.URL
+	if studio.URLS != nil {
+		ret.URL = *studio.URLS[0]
 	}
 
 	return ret

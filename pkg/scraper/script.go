@@ -201,6 +201,10 @@ func (s *scriptScraper) scrape(ctx context.Context, input string, ty ScrapeConte
 		var movie *models.ScrapedMovie
 		err := s.runScraperScript(ctx, input, &movie)
 		return movie, err
+	case ScrapeContentTypeStudio:
+		var studio *models.ScrapedStudio
+		err := s.runScraperScript(ctx, input, &studio)
+		return studio, err
 	}
 
 	return nil, ErrNotSupported

@@ -85,6 +85,8 @@ func loadUrlCandidates(c config, ty ScrapeContentType) []*scrapeByURLConfig {
 		return c.MovieByURL
 	case ScrapeContentTypeGallery:
 		return c.GalleryByURL
+	case ScrapeContentTypeStudio:
+		return c.StudioByURL
 	}
 
 	panic("loadUrlCandidates: unreachable")

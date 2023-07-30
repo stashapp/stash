@@ -1817,6 +1817,9 @@ export const stashBoxSceneBatchQuery = (
 export const useListPerformerScrapers = () =>
   GQL.useListPerformerScrapersQuery();
 
+  export const useListStudioScrapers = () =>
+  GQL.useListStudioScrapersQuery();
+
 export const useScrapePerformerList = (scraperId: string, q: string) =>
   GQL.useScrapeSinglePerformerQuery({
     variables: {

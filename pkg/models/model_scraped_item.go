@@ -2,11 +2,11 @@ package models
 
 type ScrapedStudio struct {
 	// Set if studio matched
-	StoredID     *string `json:"stored_id"`
-	Name         string  `json:"name"`
-	URL          *string `json:"url"`
-	Image        *string `json:"image"`
-	RemoteSiteID *string `json:"remote_site_id"`
+	StoredID     *string   `json:"stored_id"`
+	Name         string    `json:"name"`
+	URLS         []*string `json:"urls"`
+	Images       []*string `json:"images"`
+	RemoteSiteID *string   `json:"remote_site_id"`
 }
 
 func (ScrapedStudio) IsScrapedContent() {}

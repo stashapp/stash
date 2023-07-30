@@ -358,6 +358,41 @@ func (c Client) QueryStashBoxPerformer(ctx context.Context, queryStr string) ([]
 	return res, err
 }
 
+// QueryStashBoxPStudio queries stash-box for studios using a query string.
+func (c Client) QueryStashBoxStudio(ctx context.Context, queryStr string) (*StashBoxStudioQueryResult, error) {
+	studios, err := c.queryStashBoxStudio(ctx, queryStr)
+
+	res := &StashBoxStudioQueryResult{
+		Query:   queryStr,
+		Results: studios,
+	}
+
+	return res, err
+}
+
+func (c Client) queryStashBoxStudio(ctx context.Context, queryStr string) ([]*models.ScrapedStudio, error) {
+	studioQueryInput := graphql.StudioQueryInput{
+		Name:      &queryStr,
+		Direction: graphql.SortDirectionEnumDesc,
+		Page:      1,
+		PerPage:   40,
+		Sort:      graphql.StudioSortEnumName,
+	}
+	studios, err := c.client.QueryStudios(ctx, studioQueryInput)
+	if err != nil {
+		return nil, err
+	}
+	studioFragments := studios.QueryStudios
+
+	var ret []*models.ScrapedStudio
+	for _, s := range studioFragments.Studios {
+		studio := studioFragmentToScrapedStudio(*s)
+		ret = append(ret, studio)
+	}
+
+	return ret, nil
+}
+
 func (c Client) queryStashBoxPerformer(ctx context.Context, queryStr string) ([]*models.ScrapedPerformer, error) {
 	performers, err := c.client.SearchPerformer(ctx, queryStr)
 	if err != nil {
@@ -373,6 +408,40 @@ func (c Client) queryStashBoxPerformer(ctx context.Context, queryStr string) ([]
 	}
 
 	return ret, nil
+}
+
+func (c Client) FindStashBoxStudiosByNames(ctx context.Context, studioIDs []string) ([]*StashBoxStudioQueryResult, error) {
+	ids, err := stringslice.StringSliceToIntSlice(studioIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	var studios []*models.Studio
+
+	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
+		qb := c.repository.Studio
+
+		for _, studioID := range ids {
+			studio, err := qb.Find(ctx, studioID)
+			if err != nil {
+				return err
+			}
+
+			if studio == nil {
+				return fmt.Errorf("performer with id %d not found", studioID)
+			}
+
+			if studio.Name != "" {
+				studios = append(studios, studio)
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return c.findStashBoxStudiosByNames(ctx, studios)
 }
 
 // FindStashBoxPerformersByNames queries stash-box for performers by name
@@ -449,6 +518,27 @@ func (c Client) FindStashBoxPerformersByPerformerNames(ctx context.Context, perf
 	var ret [][]*models.ScrapedPerformer
 	for _, r := range results {
 		ret = append(ret, r.Results)
+	}
+
+	return ret, nil
+}
+
+func (c Client) findStashBoxStudiosByNames(ctx context.Context, studios []*models.Studio) ([]*StashBoxStudioQueryResult, error) {
+	var ret []*StashBoxStudioQueryResult
+	for _, studio := range studios {
+		if studio.Name != "" {
+			studioResults, err := c.queryStashBoxStudio(ctx, studio.Name)
+			if err != nil {
+				return nil, err
+			}
+
+			result := StashBoxStudioQueryResult{
+				Query:   strconv.Itoa(studio.ID),
+				Results: studioResults,
+			}
+
+			ret = append(ret, &result)
+		}
 	}
 
 	return ret, nil
@@ -597,6 +687,27 @@ func fetchImage(ctx context.Context, client *http.Client, url string) (*string, 
 	return &img, nil
 }
 
+func studioFragmentToScrapedStudio(s graphql.StudioFragment) *models.ScrapedStudio {
+	urls := []*string{}
+	for _, url := range s.Urls {
+		urls = append(urls, &url.URL)
+	}
+
+	images := []*string{}
+	for _, image := range s.Images {
+		images = append(images, &image.URL)
+	}
+
+	ss := &models.ScrapedStudio{
+		Name:         s.Name,
+		RemoteSiteID: &s.ID,
+		URLS:         urls,
+		Images:       images,
+	}
+
+	return ss
+}
+
 func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *models.ScrapedPerformer {
 	id := p.ID
 	images := []string{}
@@ -728,11 +839,11 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 			studioID := s.Studio.ID
 			ss.Studio = &models.ScrapedStudio{
 				Name:         s.Studio.Name,
-				URL:          findURL(s.Studio.Urls, "HOME"),
+				URLS:         []*string{findURL(s.Studio.Urls, "HOME")},
 				RemoteSiteID: &studioID,
 			}
 			if s.Studio.Images != nil && len(s.Studio.Images) > 0 {
-				ss.Studio.Image = &s.Studio.Images[0].URL
+				ss.Studio.Images = []*string{&s.Studio.Images[0].URL}
 			}
 
 			err := match.ScrapedStudio(ctx, c.repository.Studio, ss.Studio, &c.box.Endpoint)

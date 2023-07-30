@@ -60,6 +60,10 @@ func (r *queryResolver) ListGalleryScrapers(ctx context.Context) ([]*scraper.Scr
 	return r.scraperCache().ListScrapers([]scraper.ScrapeContentType{scraper.ScrapeContentTypeGallery}), nil
 }
 
+func (r *queryResolver) ListStudioScrapers(ctx context.Context) ([]*scraper.Scraper, error) {
+	return r.scraperCache().ListScrapers([]scraper.ScrapeContentType{scraper.ScrapeContentTypeStudio}), nil
+}
+
 func (r *queryResolver) ListMovieScrapers(ctx context.Context) ([]*scraper.Scraper, error) {
 	return r.scraperCache().ListScrapers([]scraper.ScrapeContentType{scraper.ScrapeContentTypeMovie}), nil
 }
@@ -303,6 +307,82 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source scraper.So
 	}
 
 	filterSceneTags(ret)
+
+	return ret, nil
+}
+
+func (r *queryResolver) ScrapeSingleStudio(ctx context.Context, source scraper.Source, input ScrapeSingleStudioInput) ([]*models.ScrapedStudio, error) {
+	var ret []*models.ScrapedStudio
+
+	var studioID int
+	if input.StudioID != nil {
+		var err error
+		studioID, err = strconv.Atoi(*input.StudioID)
+		if err != nil {
+			return nil, fmt.Errorf("%w: studioID is not an integer: '%s'", ErrInput, *input.StudioID)
+		}
+	}
+
+	switch {
+	case source.ScraperID != nil:
+		var err error
+		var c scraper.ScrapedContent
+		var content []scraper.ScrapedContent
+
+		switch {
+		case input.StudioID != nil:
+			c, err = r.scraperCache().ScrapeID(ctx, *source.ScraperID, studioID, scraper.ScrapeContentTypeStudio)
+			if c != nil {
+				content = []scraper.ScrapedContent{c}
+			}
+		case input.StudioInput != nil:
+			c, err = r.scraperCache().ScrapeFragment(ctx, *source.ScraperID, scraper.Input{Studio: input.StudioInput})
+			if c != nil {
+				content = []scraper.ScrapedContent{c}
+			}
+		case input.Query != nil:
+			content, err = r.scraperCache().ScrapeName(ctx, *source.ScraperID, *input.Query, scraper.ScrapeContentTypeStudio)
+		default:
+			err = fmt.Errorf("%w: scene_id, scene_input, or query must be set", ErrInput)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		ret, err = marshalScrapedStudios(content)
+		if err != nil {
+			return nil, err
+		}
+	case source.StashBoxIndex != nil:
+		client, err := r.getStashBoxClient(*source.StashBoxIndex)
+		if err != nil {
+			return nil, err
+		}
+
+		switch {
+		case input.StudioID != nil:
+			panic("not implemented")
+			// ret, err = client.FindStashBoxSceneByFingerprints(ctx, studioID)
+		case input.Query != nil:
+			var queryResult *stashbox.StashBoxStudioQueryResult
+			queryResult, err = client.QueryStashBoxStudio(ctx, *input.Query)
+			if err != nil {
+				return nil, err
+			}
+			if queryResult != nil {
+				return queryResult.Results, nil
+			}
+		default:
+			return nil, fmt.Errorf("%w: scene_id or query must be set", ErrInput)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, fmt.Errorf("%w: scraper_id or stash_box_index must be set", ErrInput)
+	}
 
 	return ret, nil
 }

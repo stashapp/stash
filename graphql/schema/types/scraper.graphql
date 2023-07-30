@@ -13,6 +13,7 @@ enum ScrapeContentType {
   MOVIE
   PERFORMER
   SCENE
+  STUDIO
 }
 
 "Scraped Content is the forming union over the different scrapers"
@@ -41,14 +42,16 @@ type Scraper {
   gallery: ScraperSpec
   "Details for movie scraper"
   movie: ScraperSpec
+  "Details for studio scraper"
+  studio: ScraperSpec
 }
 
 type ScrapedStudio {
   "Set if studio matched"
   stored_id: ID
   name: String!
-  url: String
-  image: String
+  urls: [String!]
+  images: [String!]
 
   remote_site_id: String
 }
@@ -116,6 +119,12 @@ input ScrapedGalleryInput {
   # no studio, tags or performers
 }
 
+input ScrapedStudioInput {
+  name: String!
+  url: String
+  image: String
+}
+
 input ScraperSourceInput {
   "Index of the configured stash-box instance to use. Should be unset if scraper_id is set"
   stash_box_index: Int @deprecated(reason: "use stash_box_endpoint")
@@ -146,6 +155,15 @@ input ScrapeSingleSceneInput {
 input ScrapeMultiScenesInput {
   "Instructs to query by scene fingerprints"
   scene_ids: [ID!]
+}
+
+input ScrapeSingleStudioInput {
+  "Instructs to query by string"
+  query: String
+  "Instructs to query by studio id"
+  studio_id: ID
+  "Instructs to query by studio fragment"
+  studio_input: ScrapedStudioInput
 }
 
 input ScrapeSinglePerformerInput {
@@ -201,6 +219,11 @@ input StashBoxPerformerQueryInput {
 type StashBoxPerformerQueryResult {
   query: String!
   results: [ScrapedPerformer!]!
+}
+
+type StashBoxStudioQueryResult {
+  query: String!
+  results: [ScrapedStudio!]!
 }
 
 type StashBoxFingerprint {

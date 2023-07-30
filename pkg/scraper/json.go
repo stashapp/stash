@@ -90,6 +90,8 @@ func (s *jsonScraper) scrapeByURL(ctx context.Context, url string, ty ScrapeCont
 		return scraper.scrapeGallery(ctx, q)
 	case ScrapeContentTypeMovie:
 		return scraper.scrapeMovie(ctx, q)
+	case ScrapeContentTypeStudio:
+		return scraper.scrapeStudio(ctx, q)
 	}
 
 	return nil, ErrNotSupported

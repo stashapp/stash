@@ -65,7 +65,7 @@ fragment ScrapedScenePerformerData on ScrapedPerformer {
 fragment ScrapedMovieStudioData on ScrapedStudio {
   stored_id
   name
-  url
+  urls
 }
 
 fragment ScrapedMovieData on ScrapedMovie {
@@ -100,7 +100,7 @@ fragment ScrapedSceneMovieData on ScrapedMovie {
 fragment ScrapedSceneStudioData on ScrapedStudio {
   stored_id
   name
-  url
+  urls
   remote_site_id
 }
 
@@ -222,4 +222,11 @@ fragment ScrapedStashBoxPerformerData on StashBoxPerformerQueryResult {
   results {
     ...ScrapedScenePerformerData
   }
+}
+
+fragment ScrapedStudioData on ScrapedStudio {
+  name
+  images
+  urls
+  remote_site_id
 }
