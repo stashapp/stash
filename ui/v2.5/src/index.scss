@@ -245,6 +245,26 @@ dd {
   overflow: hidden;
 }
 
+.full-width {
+  .detail-header-image {
+    height: auto;
+
+    img {
+      max-width: 22rem;
+    }
+  }
+
+  .detail-item {
+    flex-direction: unset;
+    padding-right: 0;
+    width: 100%;
+
+    .detail-item-title {
+      padding-right: 0.5rem;
+    }
+  }
+}
+
 .detail-header-image {
   display: flex;
   float: left;

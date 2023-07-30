@@ -265,7 +265,13 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
 
   function maybeRenderDetails() {
     if (!isEditing) {
-      return <StudioDetailsPanel studio={studio} collapsed={collapsed} />;
+      return (
+        <StudioDetailsPanel
+          studio={studio}
+          collapsed={collapsed}
+          fullWidth={!collapsed && showAllDetails}
+        />
+      );
     }
   }
 
@@ -473,7 +479,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
 
       <div
         className={`detail-header ${isEditing ? "edit" : ""}  ${
-          collapsed ? "collapsed" : ""
+          collapsed ? "collapsed" : showAllDetails ? "full-width" : ""
         }`}
       >
         {maybeRenderHeaderBackgroundImage()}

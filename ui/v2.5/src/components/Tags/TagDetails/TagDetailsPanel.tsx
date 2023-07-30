@@ -6,9 +6,10 @@ import * as GQL from "src/core/generated-graphql";
 
 interface ITagDetails {
   tag: GQL.TagDataFragment;
+  fullWidth?: boolean;
 }
 
-export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag }) => {
+export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag, fullWidth }) => {
   function renderParentsField() {
     if (!tag.parents?.length) {
       return;
@@ -43,9 +44,21 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag }) => {
 
   return (
     <div className="detail-group">
-      <DetailItem id="description" value={tag.description} />
-      <DetailItem id="parent_tags" value={renderParentsField()} />
-      <DetailItem id="sub_tags" value={renderChildrenField()} />
+      <DetailItem
+        id="description"
+        value={tag.description}
+        fullWidth={fullWidth}
+      />
+      <DetailItem
+        id="parent_tags"
+        value={renderParentsField()}
+        fullWidth={fullWidth}
+      />
+      <DetailItem
+        id="sub_tags"
+        value={renderChildrenField()}
+        fullWidth={fullWidth}
+      />
     </div>
   );
 };

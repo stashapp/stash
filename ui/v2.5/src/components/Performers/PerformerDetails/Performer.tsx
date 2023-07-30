@@ -366,7 +366,11 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   function maybeRenderDetails() {
     if (!isEditing) {
       return (
-        <PerformerDetailsPanel performer={performer} collapsed={collapsed} />
+        <PerformerDetailsPanel
+          performer={performer}
+          collapsed={collapsed}
+          fullWidth={!collapsed && showAllDetails}
+        />
       );
     }
   }
@@ -524,7 +528,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
 
       <div
         className={`detail-header ${isEditing ? "edit" : ""}  ${
-          collapsed ? "collapsed" : ""
+          collapsed ? "collapsed" : showAllDetails ? "full-width" : ""
         }`}
       >
         {maybeRenderHeaderBackgroundImage()}

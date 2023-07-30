@@ -11,11 +11,13 @@ import { CountryFlag } from "src/components/Shared/CountryFlag";
 interface IPerformerDetails {
   performer: GQL.PerformerDataFragment;
   collapsed?: boolean;
+  fullWidth?: boolean;
 }
 
 export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   performer,
   collapsed,
+  fullWidth,
 }) => {
   // Network state
   const intl = useIntl();
@@ -177,11 +179,27 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         .trim();
       return (
         <>
-          <DetailItem id="tattoos" value={performer?.tattoos} />
-          <DetailItem id="piercings" value={performer?.piercings} />
-          <DetailItem id="details" value={details} />
-          <DetailItem id="tags" value={renderTagsField()} />
-          <DetailItem id="StashIDs" value={renderStashIDs()} />
+          <DetailItem
+            id="tattoos"
+            value={performer?.tattoos}
+            fullWidth={fullWidth}
+          />
+          <DetailItem
+            id="piercings"
+            value={performer?.piercings}
+            fullWidth={fullWidth}
+          />
+          <DetailItem id="details" value={details} fullWidth={fullWidth} />
+          <DetailItem
+            id="tags"
+            value={renderTagsField()}
+            fullWidth={fullWidth}
+          />
+          <DetailItem
+            id="StashIDs"
+            value={renderStashIDs()}
+            fullWidth={fullWidth}
+          />
         </>
       );
     }
@@ -193,6 +211,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         <DetailItem
           id="gender"
           value={intl.formatMessage({ id: "gender_types." + performer.gender })}
+          fullWidth={fullWidth}
         />
       ) : (
         ""
@@ -201,6 +220,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         id="age"
         value={TextUtils.age(performer.birthdate, performer.death_date)}
         title={TextUtils.formatDate(intl, performer.birthdate ?? undefined)}
+        fullWidth={fullWidth}
       />
       <DetailItem id="death_date" value={performer.death_date} />
       {performer.country ? (
@@ -213,25 +233,56 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
               includeName={true}
             />
           }
+          fullWidth={fullWidth}
         />
       ) : (
         ""
       )}
-      <DetailItem id="ethnicity" value={performer?.ethnicity} />
-      <DetailItem id="hair_color" value={performer?.hair_color} />
-      <DetailItem id="eye_color" value={performer?.eye_color} />
-      <DetailItem id="height" value={formatHeight(performer.height_cm)} />
-      <DetailItem id="weight" value={formatWeight(performer.weight)} />
+      <DetailItem
+        id="ethnicity"
+        value={performer?.ethnicity}
+        fullWidth={fullWidth}
+      />
+      <DetailItem
+        id="hair_color"
+        value={performer?.hair_color}
+        fullWidth={fullWidth}
+      />
+      <DetailItem
+        id="eye_color"
+        value={performer?.eye_color}
+        fullWidth={fullWidth}
+      />
+      <DetailItem
+        id="height"
+        value={formatHeight(performer.height_cm)}
+        fullWidth={fullWidth}
+      />
+      <DetailItem
+        id="weight"
+        value={formatWeight(performer.weight)}
+        fullWidth={fullWidth}
+      />
       <DetailItem
         id="penis_length"
         value={formatPenisLength(performer.penis_length)}
+        fullWidth={fullWidth}
       />
       <DetailItem
         id="circumcised"
         value={formatCircumcised(performer.circumcised)}
+        fullWidth={fullWidth}
       />
-      <DetailItem id="measurements" value={performer?.measurements} />
-      <DetailItem id="fake_tits" value={performer?.fake_tits} />
+      <DetailItem
+        id="measurements"
+        value={performer?.measurements}
+        fullWidth={fullWidth}
+      />
+      <DetailItem
+        id="fake_tits"
+        value={performer?.fake_tits}
+        fullWidth={fullWidth}
+      />
       {maybeRenderExtraDetails()}
     </div>
   );

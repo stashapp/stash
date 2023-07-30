@@ -311,7 +311,12 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
 
   function maybeRenderDetails() {
     if (!isEditing) {
-      return <MovieDetailsPanel movie={movie} />;
+      return (
+        <MovieDetailsPanel
+          movie={movie}
+          fullWidth={!collapsed && showAllDetails}
+        />
+      );
     }
   }
 
@@ -384,7 +389,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
 
       <div
         className={`detail-header ${isEditing ? "edit" : ""}  ${
-          collapsed ? "collapsed" : ""
+          collapsed ? "collapsed" : showAllDetails ? "full-width" : ""
         }`}
       >
         {maybeRenderHeaderBackgroundImage()}

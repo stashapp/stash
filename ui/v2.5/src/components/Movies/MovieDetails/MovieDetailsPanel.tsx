@@ -7,9 +7,13 @@ import { DetailItem } from "src/components/Shared/DetailItem";
 
 interface IMovieDetailsPanel {
   movie: GQL.MovieDataFragment;
+  fullWidth?: boolean;
 }
 
-export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({ movie }) => {
+export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({
+  movie,
+  fullWidth,
+}) => {
   // Network state
   const intl = useIntl();
 
@@ -20,10 +24,12 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({ movie }) => {
         value={
           movie.duration ? DurationUtils.secondsToString(movie.duration) : ""
         }
+        fullWidth={fullWidth}
       />
       <DetailItem
         id="date"
         value={movie.date ? TextUtils.formatDate(intl, movie.date) : ""}
+        fullWidth={fullWidth}
       />
       <DetailItem
         id="studio"
@@ -36,10 +42,11 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({ movie }) => {
             ""
           )
         }
+        fullWidth={fullWidth}
       />
 
-      <DetailItem id="director" value={movie.director} />
-      <DetailItem id="synopsis" value={movie.synopsis} />
+      <DetailItem id="director" value={movie.director} fullWidth={fullWidth} />
+      <DetailItem id="synopsis" value={movie.synopsis} fullWidth={fullWidth} />
     </div>
   );
 };

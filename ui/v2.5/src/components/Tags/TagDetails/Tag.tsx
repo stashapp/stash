@@ -311,7 +311,9 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
 
   function maybeRenderDetails() {
     if (!isEditing) {
-      return <TagDetailsPanel tag={tag} />;
+      return (
+        <TagDetailsPanel tag={tag} fullWidth={!collapsed && showAllDetails} />
+      );
     }
   }
 
@@ -473,7 +475,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
 
       <div
         className={`detail-header ${isEditing ? "edit" : ""}  ${
-          collapsed ? "collapsed" : ""
+          collapsed ? "collapsed" : showAllDetails ? "full-width" : ""
         }`}
       >
         {maybeRenderHeaderBackgroundImage()}
