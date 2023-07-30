@@ -28,7 +28,10 @@ export const DetailItem: React.FC<IDetailItem> = ({
         {message}
         {fullWidth ? ":" : ""}
       </span>
-      <span className={`detail-item-value ${id.replace("_", "-")}`} title={title}>
+      <span
+        className={`detail-item-value ${id.replace("_", "-")}`}
+        title={title}
+      >
         {value}
       </span>
     </div>
