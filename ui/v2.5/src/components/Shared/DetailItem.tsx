@@ -22,12 +22,13 @@ export const DetailItem: React.FC<IDetailItem> = ({
   const message = <FormattedMessage id={id} />;
 
   return (
+    // according to linter rule CSS classes shouldn't use underscores
     <div className={`detail-item ${id}`}>
-      <span className={`detail-item-title ${id}`}>
+      <span className={`detail-item-title ${id.replace("_", "-")}`}>
         {message}
         {fullWidth ? ":" : ""}
       </span>
-      <span className={`detail-item-value ${id}`} title={title}>
+      <span className={`detail-item-value ${id.replace("_", "-")}`} title={title}>
         {value}
       </span>
     </div>
