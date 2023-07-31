@@ -37,11 +37,11 @@ type SceneReader interface {
 }
 
 type PerformerReader interface {
+	models.PerformerGetter
 	match.PerformerFinder
-	Find(ctx context.Context, id int) (*models.Performer, error)
-	FindBySceneID(ctx context.Context, sceneID int) ([]*models.Performer, error)
 	models.AliasLoader
 	models.StashIDLoader
+	FindBySceneID(ctx context.Context, sceneID int) ([]*models.Performer, error)
 	GetImage(ctx context.Context, performerID int) ([]byte, error)
 }
 

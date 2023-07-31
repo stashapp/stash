@@ -7,7 +7,6 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
-	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/tag"
 )
@@ -27,7 +26,7 @@ type Importer struct {
 	FileFinder          models.FileFinder
 	StudioWriter        models.StudioFinderCreator
 	GalleryFinder       GalleryFinder
-	PerformerWriter     performer.NameFinderCreator
+	PerformerWriter     models.PerformerFinderCreator
 	TagWriter           tag.NameFinderCreator
 	Input               jsonschema.Image
 	MissingRefBehaviour models.ImportMissingRefEnum
