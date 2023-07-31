@@ -5,9 +5,6 @@ import {
   getQueryDefinition,
   StoreObject,
 } from "@apollo/client/utilities";
-import { stringToGender } from "src/utils/gender";
-import { stringToCircumcised } from "src/utils/circumcised";
-import { filterData } from "../utils/data";
 import { ListFilterModel } from "../models/list-filter/filter";
 import * as GQL from "./generated-graphql";
 
@@ -2205,38 +2202,3 @@ export const queryParseSceneFilenames = (
     variables: { filter, config },
     fetchPolicy: "network-only",
   });
-
-export const makePerformerCreateInput = (toCreate: GQL.ScrapedPerformer) => {
-  const input: GQL.PerformerCreateInput = {
-    name: toCreate.name ?? "",
-    url: toCreate.url,
-    gender: stringToGender(toCreate.gender),
-    birthdate: toCreate.birthdate,
-    ethnicity: toCreate.ethnicity,
-    country: toCreate.country,
-    eye_color: toCreate.eye_color,
-    height_cm: toCreate.height ? Number(toCreate.height) : undefined,
-    measurements: toCreate.measurements,
-    fake_tits: toCreate.fake_tits,
-    career_length: toCreate.career_length,
-    tattoos: toCreate.tattoos,
-    piercings: toCreate.piercings,
-    aliases: toCreate.aliases,
-    twitter: toCreate.twitter,
-    instagram: toCreate.instagram,
-    tag_ids: filterData((toCreate.tags ?? []).map((t) => t.stored_id)),
-    image:
-      (toCreate.images ?? []).length > 0
-        ? (toCreate.images ?? [])[0]
-        : undefined,
-    details: toCreate.details,
-    death_date: toCreate.death_date,
-    hair_color: toCreate.hair_color,
-    weight: toCreate.weight ? Number(toCreate.weight) : undefined,
-    penis_length: toCreate.penis_length
-      ? Number(toCreate.penis_length)
-      : undefined,
-    circumcised: stringToCircumcised(toCreate.circumcised),
-  };
-  return input;
-};
