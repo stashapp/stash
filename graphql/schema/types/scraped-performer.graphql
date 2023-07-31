@@ -1,6 +1,6 @@
-"""A performer from a scraping operation..."""
+"A performer from a scraping operation..."
 type ScrapedPerformer {
-  """Set if performer matched"""
+  "Set if performer matched"
   stored_id: ID
   name: String
   disambiguation: String
@@ -24,7 +24,7 @@ type ScrapedPerformer {
   aliases: String
   tags: [ScrapedTag!]
 
-  """This should be a base64 encoded data URL"""
+  "This should be a base64 encoded data URL"
   image: String @deprecated(reason: "use images instead")
   images: [String!]
   details: String
@@ -35,7 +35,7 @@ type ScrapedPerformer {
 }
 
 input ScrapedPerformerInput {
-  """Set if performer matched"""
+  "Set if performer matched"
   stored_id: ID
   name: String
   disambiguation: String

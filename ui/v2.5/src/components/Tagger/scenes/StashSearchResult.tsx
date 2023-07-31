@@ -204,6 +204,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     createNewPerformer,
     linkPerformer,
     createNewStudio,
+    updateStudio,
     linkStudio,
     resolveScene,
     currentSource,
@@ -396,26 +397,41 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     await saveScene(sceneCreateInput, includeStashID);
   }
 
-  function performerModalCallback(
-    toCreate?: GQL.PerformerCreateInput | undefined
+  function showPerformerModal(t: GQL.ScrapedPerformer) {
+    createPerformerModal(t, (toCreate) => {
+      if (toCreate) {
+        createNewPerformer(t, toCreate);
+      }
+    });
+  }
+
+  async function studioModalCallback(
+    studio: GQL.ScrapedStudio,
+    toCreate?: GQL.StudioCreateInput,
+    parentInput?: GQL.StudioCreateInput
   ) {
     if (toCreate) {
-      createNewPerformer(toCreate);
-    }
-  }
+      if (parentInput && studio.parent) {
+        if (toCreate.parent_id) {
+          const parentUpdateData: GQL.StudioUpdateInput = {
+            ...parentInput,
+            id: toCreate.parent_id,
+          };
+          await updateStudio(parentUpdateData);
+        } else {
+          const parentID = await createNewStudio(studio.parent, parentInput);
+          toCreate.parent_id = parentID;
+        }
+      }
 
-  function showPerformerModal(t: GQL.ScrapedPerformer) {
-    createPerformerModal(t, performerModalCallback);
-  }
-
-  function studioModalCallback(toCreate?: GQL.StudioCreateInput | undefined) {
-    if (toCreate) {
-      createNewStudio(toCreate);
+      createNewStudio(studio, toCreate);
     }
   }
 
   function showStudioModal(t: GQL.ScrapedStudio) {
-    createStudioModal(t, studioModalCallback);
+    createStudioModal(t, (toCreate, parentInput) => {
+      studioModalCallback(t, toCreate, parentInput);
+    });
   }
 
   // constants to get around dot-notation eslint rule
@@ -660,7 +676,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   );
 
   async function onCreateTag(t: GQL.ScrapedTag) {
-    const newTagID = await createNewTag(t);
+    const toCreate: GQL.TagCreateInput = { name: t.name };
+    const newTagID = await createNewTag(t, toCreate);
     if (newTagID !== undefined) {
       setTagIDs([...tagIDs, newTagID]);
     }

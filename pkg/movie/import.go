@@ -116,7 +116,9 @@ func (i *Importer) populateStudio(ctx context.Context) error {
 }
 
 func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
-	newStudio := models.NewStudio(name)
+	newStudio := &models.Studio{
+		Name: name,
+	}
 
 	err := i.StudioWriter.Create(ctx, newStudio)
 	if err != nil {

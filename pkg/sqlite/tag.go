@@ -10,6 +10,7 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
+	"gopkg.in/guregu/null.v4"
 	"gopkg.in/guregu/null.v4/zero"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -27,7 +28,7 @@ const (
 
 type tagRow struct {
 	ID            int         `db:"id" goqu:"skipinsert"`
-	Name          string      `db:"name"`
+	Name          null.String `db:"name"` // TODO: make schema non-nullable
 	Description   zero.String `db:"description"`
 	IgnoreAutoTag bool        `db:"ignore_auto_tag"`
 	CreatedAt     Timestamp   `db:"created_at"`
@@ -39,7 +40,7 @@ type tagRow struct {
 
 func (r *tagRow) fromTag(o models.Tag) {
 	r.ID = o.ID
-	r.Name = o.Name
+	r.Name = null.StringFrom(o.Name)
 	r.Description = zero.StringFrom(o.Description)
 	r.IgnoreAutoTag = o.IgnoreAutoTag
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
@@ -49,7 +50,7 @@ func (r *tagRow) fromTag(o models.Tag) {
 func (r *tagRow) resolve() *models.Tag {
 	ret := &models.Tag{
 		ID:            r.ID,
-		Name:          r.Name,
+		Name:          r.Name.String,
 		Description:   r.Description.String,
 		IgnoreAutoTag: r.IgnoreAutoTag,
 		CreatedAt:     r.CreatedAt.Timestamp,

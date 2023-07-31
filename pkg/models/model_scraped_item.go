@@ -1,15 +1,107 @@
 package models
 
+import (
+	"context"
+	"strconv"
+	"time"
+
+	"github.com/stashapp/stash/pkg/utils"
+)
+
 type ScrapedStudio struct {
 	// Set if studio matched
-	StoredID     *string `json:"stored_id"`
-	Name         string  `json:"name"`
-	URL          *string `json:"url"`
-	Image        *string `json:"image"`
-	RemoteSiteID *string `json:"remote_site_id"`
+	StoredID     *string        `json:"stored_id"`
+	Name         string         `json:"name"`
+	URL          *string        `json:"url"`
+	Parent       *ScrapedStudio `json:"parent"`
+	Image        *string        `json:"image"`
+	Images       []string       `json:"images"`
+	RemoteSiteID *string        `json:"remote_site_id"`
 }
 
 func (ScrapedStudio) IsScrapedContent() {}
+
+func (s *ScrapedStudio) ToStudio(endpoint string, excluded map[string]bool) *Studio {
+	now := time.Now()
+
+	// Populate a new studio from the input
+	newStudio := Studio{
+		Name: s.Name,
+		StashIDs: NewRelatedStashIDs([]StashID{
+			{
+				Endpoint: endpoint,
+				StashID:  *s.RemoteSiteID,
+			},
+		}),
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	if s.URL != nil && !excluded["url"] {
+		newStudio.URL = *s.URL
+	}
+
+	if s.Parent != nil && s.Parent.StoredID != nil && !excluded["parent"] {
+		parentId, _ := strconv.Atoi(*s.Parent.StoredID)
+		newStudio.ParentID = &parentId
+	}
+
+	return &newStudio
+}
+
+func (s *ScrapedStudio) GetImage(ctx context.Context, excluded map[string]bool) ([]byte, error) {
+	// Process the base 64 encoded image string
+	if len(s.Images) > 0 && !excluded["image"] {
+		var err error
+		img, err := utils.ProcessImageInput(ctx, *s.Image)
+		if err != nil {
+			return nil, err
+		}
+
+		return img, nil
+	}
+
+	return nil, nil
+}
+
+func (s *ScrapedStudio) ToPartial(id *string, endpoint string, excluded map[string]bool, existingStashIDs []StashID) *StudioPartial {
+	partial := StudioPartial{
+		UpdatedAt: NewOptionalTime(time.Now()),
+	}
+	partial.ID, _ = strconv.Atoi(*id)
+
+	if s.Name != "" && !excluded["name"] {
+		partial.Name = NewOptionalString(s.Name)
+	}
+
+	if s.URL != nil && !excluded["url"] {
+		partial.URL = NewOptionalString(*s.URL)
+	}
+
+	if s.Parent != nil && !excluded["parent"] {
+		if s.Parent.StoredID != nil {
+			parentID, _ := strconv.Atoi(*s.Parent.StoredID)
+			if parentID > 0 {
+				// This is to be set directly as we know it has a value and the translator won't have the field
+				partial.ParentID = NewOptionalInt(parentID)
+			}
+		}
+	} else {
+		partial.ParentID = NewOptionalIntPtr(nil)
+	}
+
+	partial.StashIDs = &UpdateStashIDs{
+		StashIDs: existingStashIDs,
+		Mode:     RelationshipUpdateModeSet,
+	}
+
+	partial.StashIDs.Set(StashID{
+		Endpoint: endpoint,
+		StashID:  *s.RemoteSiteID,
+	})
+
+	return &partial
+}
 
 // A performer from a scraping operation...
 type ScrapedPerformer struct {

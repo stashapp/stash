@@ -8,12 +8,6 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
-// An enum https://golang.org/ref/spec#Iota
-const (
-	create = iota // 0
-	update = iota // 1
-)
-
 // #1572 - Inf and NaN values cause the JSON marshaller to fail
 // Return nil for these values
 func handleFloat64(v float64) *float64 {

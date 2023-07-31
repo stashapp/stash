@@ -208,3 +208,8 @@ func (r *mutationResolver) AnonymiseDatabase(ctx context.Context, input Anonymis
 
 	return nil, nil
 }
+
+func (r *mutationResolver) OptimiseDatabase(ctx context.Context) (string, error) {
+	jobID := manager.GetInstance().OptimiseDatabase(ctx)
+	return strconv.Itoa(jobID), nil
+}

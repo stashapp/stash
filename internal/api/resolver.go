@@ -216,6 +216,44 @@ func (r *queryResolver) Latestversion(ctx context.Context) (*LatestVersion, erro
 	}, nil
 }
 
+func (r *mutationResolver) ExecSQL(ctx context.Context, sql string, args []interface{}) (*SQLExecResult, error) {
+	var rowsAffected *int64
+	var lastInsertID *int64
+
+	db := manager.GetInstance().Database
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		var err error
+		rowsAffected, lastInsertID, err = db.ExecSQL(ctx, sql, args)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &SQLExecResult{
+		RowsAffected: rowsAffected,
+		LastInsertID: lastInsertID,
+	}, nil
+}
+
+func (r *mutationResolver) QuerySQL(ctx context.Context, sql string, args []interface{}) (*SQLQueryResult, error) {
+	var cols []string
+	var rows [][]interface{}
+
+	db := manager.GetInstance().Database
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		var err error
+		cols, rows, err = db.QuerySQL(ctx, sql, args)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &SQLQueryResult{
+		Columns: cols,
+		Rows:    rows,
+	}, nil
+}
+
 // Get scene marker tags which show up under the video.
 func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([]*SceneMarkerTag, error) {
 	sceneID, err := strconv.Atoi(scene_id)

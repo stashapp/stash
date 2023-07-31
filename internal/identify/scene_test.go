@@ -16,6 +16,7 @@ import (
 
 func Test_sceneRelationships_studio(t *testing.T) {
 	validStoredID := "1"
+	remoteSiteID := "2"
 	var validStoredIDInt = 1
 	invalidStoredID := "invalidStoredID"
 	createMissing := true
@@ -31,8 +32,8 @@ func Test_sceneRelationships_studio(t *testing.T) {
 	}).Return(nil)
 
 	tr := sceneRelationships{
-		studioCreator: mockStudioReaderWriter,
-		fieldOptions:  make(map[string]*FieldOptions),
+		studioReaderWriter: mockStudioReaderWriter,
+		fieldOptions:       make(map[string]*FieldOptions),
 	}
 
 	tests := []struct {
@@ -110,7 +111,7 @@ func Test_sceneRelationships_studio(t *testing.T) {
 				Strategy:      FieldStrategyMerge,
 				CreateMissing: &createMissing,
 			},
-			&models.ScrapedStudio{},
+			&models.ScrapedStudio{RemoteSiteID: &remoteSiteID},
 			&validStoredIDInt,
 			false,
 		},
@@ -120,6 +121,9 @@ func Test_sceneRelationships_studio(t *testing.T) {
 			tr.scene = tt.scene
 			tr.fieldOptions["studio"] = tt.fieldOptions
 			tr.result = &scrapeResult{
+				source: ScraperSource{
+					RemoteSite: "endpoint",
+				},
 				result: &scraper.ScrapedScene{
 					Studio: tt.result,
 				},

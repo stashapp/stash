@@ -13,7 +13,7 @@ export const SceneGalleriesPanel: React.FC<ISceneGalleriesPanelProps> = ({
     <GalleryCard key={gallery.id} gallery={gallery} selecting={false} />
   ));
 
-  return <div className="row justify-content-center">{cards}</div>;
+  return <div className="container scene-galleries">{cards}</div>;
 };
 
 export default SceneGalleriesPanel;

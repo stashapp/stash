@@ -157,6 +157,14 @@ type Input struct {
 	Gallery   *ScrapedGalleryInput
 }
 
+// populateURL populates the URL field of the input based on the
+// URLs field of the input. Does nothing if the URL field is already set.
+func (i *Input) populateURL() {
+	if i.Scene != nil && i.Scene.URL == nil && len(i.Scene.URLs) > 0 {
+		i.Scene.URL = &i.Scene.URLs[0]
+	}
+}
+
 // simple type definitions that can help customize
 // actions per query
 type QueryType int

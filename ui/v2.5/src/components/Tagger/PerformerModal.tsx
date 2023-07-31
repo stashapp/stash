@@ -232,7 +232,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
           {link && (
             <h6 className="mt-2">
               <a href={link} target="_blank" rel="noopener noreferrer">
-                Stash-Box Source
+                <FormattedMessage id="stashbox.source" />
                 <Icon icon={faExternalLinkAlt} className="ml-2" />
               </a>
             </h6>

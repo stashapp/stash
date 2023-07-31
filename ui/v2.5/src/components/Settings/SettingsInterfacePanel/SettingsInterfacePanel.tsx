@@ -607,6 +607,19 @@ export const SettingsInterfacePanel: React.FC = () => {
               })
             }
           />
+          <BooleanSetting
+            id="disableDropdownCreate_movie"
+            headingID="movie"
+            checked={iface.disableDropdownCreate?.movie ?? undefined}
+            onChange={(v) =>
+              saveInterface({
+                disableDropdownCreate: {
+                  ...iface.disableDropdownCreate,
+                  movie: v,
+                },
+              })
+            }
+          />
         </div>
         <NumberSetting
           id="max_options_shown"

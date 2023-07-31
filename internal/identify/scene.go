@@ -34,7 +34,7 @@ type TagCreatorFinder interface {
 
 type sceneRelationships struct {
 	sceneReader              SceneReaderUpdater
-	studioCreator            StudioCreator
+	studioReaderWriter       models.StudioReaderWriter
 	performerCreator         PerformerCreator
 	tagCreatorFinder         TagCreatorFinder
 	scene                    *models.Scene
@@ -67,7 +67,7 @@ func (g sceneRelationships) studio(ctx context.Context) (*int, error) {
 			return &studioID, nil
 		}
 	} else if createMissing {
-		return createMissingStudio(ctx, endpoint, g.studioCreator, scraped)
+		return createMissingStudio(ctx, endpoint, g.studioReaderWriter, scraped)
 	}
 
 	return nil, nil
