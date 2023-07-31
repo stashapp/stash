@@ -18,9 +18,9 @@ import {
   useStudioCreate,
   usePerformerCreate,
   useTagCreate,
-  makePerformerCreateInput,
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
+import { scrapedPerformerToCreateInput } from "src/core/performers";
 
 function renderScrapedStudio(
   result: ScrapeResult<string>,
@@ -324,7 +324,7 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
   }
 
   async function createNewPerformer(toCreate: GQL.ScrapedPerformer) {
-    const input = makePerformerCreateInput(toCreate);
+    const input = scrapedPerformerToCreateInput(toCreate);
 
     try {
       const result = await createPerformer({
