@@ -421,7 +421,9 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
           <div className="detail-header-image">
             <div className="logo w-100">
               {encodingImage ? (
-                <LoadingIndicator message="Encoding image..." />
+                <LoadingIndicator
+                  message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+                />
               ) : (
                 <div className="movie-images">
                   {renderFrontImage()}

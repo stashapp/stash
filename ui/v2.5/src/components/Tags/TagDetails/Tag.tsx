@@ -502,7 +502,9 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
         <div className="detail-container">
           <div className="detail-header-image">
             {encodingImage ? (
-              <LoadingIndicator message="Encoding image..." />
+              <LoadingIndicator
+                message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+              />
             ) : (
               renderImage()
             )}

@@ -510,7 +510,9 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
         <div className="detail-container">
           <div className="detail-header-image">
             {encodingImage ? (
-              <LoadingIndicator message="Encoding image..." />
+              <LoadingIndicator
+                message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+              />
             ) : (
               renderImage()
             )}
