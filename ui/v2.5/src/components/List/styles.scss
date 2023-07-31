@@ -359,3 +359,11 @@ input[type="range"].zoom-slider {
 .tilted {
   transform: rotate(45deg);
 }
+
+.item-list-container {
+  padding-top: 15px;
+
+  @media (max-width: 576px) {
+    overflow-x: hidden;
+  }
+}

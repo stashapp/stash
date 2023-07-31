@@ -52,14 +52,6 @@ body {
   }
 }
 
-.item-list-container {
-  padding-top: 15px;
-
-  @media (max-width: 576px) {
-    overflow-x: hidden;
-  }
-}
-
 code,
 .code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
