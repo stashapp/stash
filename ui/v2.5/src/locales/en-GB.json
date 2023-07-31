@@ -40,6 +40,7 @@
     "download_backup": "Download Backup",
     "edit": "Edit",
     "edit_entity": "Edit {entityType}",
+    "encoding_image": "Encoding image",
     "export": "Export",
     "export_all": "Export all…",
     "find": "Find",
