@@ -1,6 +1,5 @@
 import React from "react";
-import { Badge } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { TagLink } from "src/components/Shared/TagLink";
 import { DetailItem } from "src/components/Shared/DetailItem";
 import * as GQL from "src/core/generated-graphql";
 
@@ -18,9 +17,7 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag, fullWidth }) => {
     return (
       <>
         {tag.parents.map((p) => (
-          <Badge key={p.id} className="tag-item" variant="secondary">
-            <Link to={`/tags/${p.id}`}>{p.name}</Link>
-          </Badge>
+          <TagLink key={p.id} tag={p} hoverPlacement="bottom" />
         ))}
       </>
     );
@@ -34,9 +31,7 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag, fullWidth }) => {
     return (
       <>
         {tag.children.map((c) => (
-          <Badge key={c.id} className="tag-item" variant="secondary">
-            <Link to={`/tags/${c.id}`}>{c.name}</Link>
-          </Badge>
+          <TagLink key={c.id} tag={c} hoverPlacement="bottom" />
         ))}
       </>
     );
