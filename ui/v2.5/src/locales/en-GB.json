@@ -40,6 +40,7 @@
     "download_backup": "Download Backup",
     "edit": "Edit",
     "edit_entity": "Edit {entityType}",
+    "encoding_image": "Encoding image",
     "export": "Export",
     "export_all": "Export all…",
     "find": "Find",
@@ -578,6 +579,21 @@
               "stars": "Stars"
             }
           }
+        }
+      },
+      "detail": {
+        "enable_background_image": {
+          "description": "Display background image on detail page.",
+          "heading": "Enable background image"
+        },
+        "heading": "Detail Page",
+        "compact_expanded_details": {
+          "description": "When enabled, this option will present expanded details while maintaining a compact presentation",
+          "heading": "Compact expanded details"
+        },
+        "show_all_details": {
+          "description": "When enabled, all content details will be shown by default and each detail item will fit under a single column",
+          "heading": "Show all details"
         }
       },
       "funscript_offset": {

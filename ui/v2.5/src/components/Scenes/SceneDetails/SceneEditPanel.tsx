@@ -683,7 +683,11 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   const image = useMemo(() => {
     if (encodingImage) {
-      return <LoadingIndicator message="Encoding image..." />;
+      return (
+        <LoadingIndicator
+          message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+        />
+      );
     }
 
     if (coverImagePreview) {
