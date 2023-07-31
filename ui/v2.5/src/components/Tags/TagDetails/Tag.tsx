@@ -328,7 +328,12 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
 
   function maybeRenderDetails() {
     if (!isEditing) {
-      return <TagDetailsPanel tag={tag} fullWidth={!compactExpandedDetails} />;
+      return (
+        <TagDetailsPanel
+          tag={tag}
+          fullWidth={!collapsed && !compactExpandedDetails}
+        />
+      );
     }
   }
 

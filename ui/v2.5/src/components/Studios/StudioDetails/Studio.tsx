@@ -293,7 +293,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
         <StudioDetailsPanel
           studio={studio}
           collapsed={collapsed}
-          fullWidth={!compactExpandedDetails}
+          fullWidth={!collapsed && !compactExpandedDetails}
         />
       );
     }

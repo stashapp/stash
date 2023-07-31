@@ -336,7 +336,10 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   function maybeRenderDetails() {
     if (!isEditing) {
       return (
-        <MovieDetailsPanel movie={movie} fullWidth={!compactExpandedDetails} />
+        <MovieDetailsPanel
+          movie={movie}
+          fullWidth={!collapsed && !compactExpandedDetails}
+        />
       );
     }
   }

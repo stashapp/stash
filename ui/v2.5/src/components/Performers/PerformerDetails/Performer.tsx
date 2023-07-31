@@ -386,7 +386,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <PerformerDetailsPanel
           performer={performer}
           collapsed={collapsed}
-          fullWidth={!compactExpandedDetails}
+          fullWidth={!collapsed && !compactExpandedDetails}
         />
       );
     }
@@ -552,7 +552,9 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <div className="detail-container">
           <div className="detail-header-image">
             {encodingImage ? (
-              <LoadingIndicator message={`${intl.formatMessage({ id: "encoding_image" })}...`} />
+              <LoadingIndicator
+                message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+              />
             ) : (
               renderImage()
             )}
