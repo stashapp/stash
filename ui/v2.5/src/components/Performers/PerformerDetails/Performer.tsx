@@ -364,17 +364,20 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     return collapsed ? faChevronDown : faChevronUp;
   }
 
-  window.onscroll = function () {
-    scrollFunction();
-  };
+  useEffect(() => {
+    const f = () => {
+      if (document.documentElement.scrollTop <= 50) {
+        setLoadStickyHeader(false);
+      } else {
+        setLoadStickyHeader(true);
+      }
+    };
 
-  function scrollFunction() {
-    if (document.documentElement.scrollTop <= 20) {
-      setLoadStickyHeader(false);
-    } else {
-      setLoadStickyHeader(true);
-    }
-  }
+    window.addEventListener("scroll", f);
+    return () => {
+      window.removeEventListener("scroll", f);
+    };
+  });
 
   function maybeRenderDetails() {
     if (!isEditing) {

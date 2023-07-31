@@ -105,17 +105,20 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     };
   });
 
-  window.onscroll = function () {
-    scrollFunction();
-  };
+  useEffect(() => {
+    const f = () => {
+      if (document.documentElement.scrollTop <= 50) {
+        setLoadStickyHeader(false);
+      } else {
+        setLoadStickyHeader(true);
+      }
+    };
 
-  function scrollFunction() {
-    if (document.documentElement.scrollTop <= 20) {
-      setLoadStickyHeader(false);
-    } else {
-      setLoadStickyHeader(true);
-    }
-  }
+    window.addEventListener("scroll", f);
+    return () => {
+      window.removeEventListener("scroll", f);
+    };
+  });
 
   async function onSave(input: GQL.StudioCreateInput) {
     await updateStudio({
