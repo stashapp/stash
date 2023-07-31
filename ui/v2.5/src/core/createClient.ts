@@ -27,10 +27,12 @@ const readReference = (typename: string): FieldReadFunction => {
         });
 };
 
-// A read function that returns null if no valid reference is available.
+// A read function that returns null if a cached reference is invalid.
 // Means that a dangling reference implies the object was deleted.
-const readDanglingNull: FieldReadFunction = (existing, { canRead }) =>
-  canRead(existing) ? existing : null;
+const readDanglingNull: FieldReadFunction = (existing, { canRead }) => {
+  if (existing === undefined) return undefined;
+  return canRead(existing) ? existing : null;
+};
 
 const typePolicies: TypePolicies = {
   Query: {
@@ -60,7 +62,7 @@ const typePolicies: TypePolicies = {
         read: readReference("SavedFilter"),
       },
       findDefaultFilter: {
-        read: readReference("SavedFilter"),
+        read: readDanglingNull,
       },
     },
   },
