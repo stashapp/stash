@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Button, Tabs, Tab, Col, Row } from "react-bootstrap";
-import { FormattedMessage, useIntl } from "react-intl";
+import { useIntl } from "react-intl";
 import { useParams, useHistory } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import cx from "classnames";
@@ -13,7 +13,6 @@ import {
   mutateMetadataAutoTag,
 } from "src/core/StashService";
 import { Counter } from "src/components/Shared/Counter";
-import { CountryFlag } from "src/components/Shared/CountryFlag";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { Icon } from "src/components/Shared/Icon";
@@ -23,7 +22,10 @@ import { useToast } from "src/hooks/Toast";
 import { ConfigurationContext } from "src/hooks/Config";
 import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
-import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
+import {
+  CompressedPerformerDetailsPanel,
+  PerformerDetailsPanel,
+} from "./PerformerDetailsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
 import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";
 import { PerformerMoviesPanel } from "./PerformerMoviesPanel";
@@ -31,16 +33,16 @@ import { PerformerImagesPanel } from "./PerformerImagesPanel";
 import { PerformerAppearsWithPanel } from "./performerAppearsWithPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
 import { PerformerSubmitButton } from "./PerformerSubmitButton";
-import GenderIcon from "../GenderIcon";
 import {
+  faChevronDown,
+  faChevronUp,
   faHeart,
   faLink,
-  faChevronRight,
-  faChevronLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { IUIConfig } from "src/core/config";
 import { useRatingKeybinds } from "src/hooks/keybinds";
+import ImageUtils from "src/utils/image";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -55,16 +57,20 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const intl = useIntl();
   const { tab = "details" } = useParams<IPerformerParams>();
 
-  const [collapsed, setCollapsed] = useState(false);
-
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
-  const abbreviateCounter =
-    (configuration?.ui as IUIConfig)?.abbreviateCounters ?? false;
+  const uiConfig = configuration?.ui as IUIConfig | undefined;
+  const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
+  const enableBackgroundImage =
+    uiConfig?.enablePerformerBackgroundImage ?? false;
+  const showAllDetails = uiConfig?.showAllDetails ?? false;
+  const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
 
+  const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [image, setImage] = useState<string | null>();
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
+  const [loadStickyHeader, setLoadStickyHeader] = useState<boolean>(false);
 
   const activeImage = useMemo(() => {
     const performerImage = performer.image_path;
@@ -99,10 +105,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     tab === "movies" ||
     tab == "appearswith"
       ? tab
-      : "details";
+      : "scenes";
   const setActiveTabKey = (newTab: string | null) => {
     if (tab !== newTab) {
-      const tabParam = newTab === "details" ? "" : `/${newTab}`;
+      const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
       history.replace(`/performers/${performer.id}${tabParam}`);
     }
   };
@@ -126,7 +132,6 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
 
   // set up hotkeys
   useEffect(() => {
-    Mousetrap.bind("a", () => setActiveTabKey("details"));
     Mousetrap.bind("e", () => toggleEditing());
     Mousetrap.bind("c", () => setActiveTabKey("scenes"));
     Mousetrap.bind("g", () => setActiveTabKey("galleries"));
@@ -186,44 +191,24 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     if (activeImage) {
       return (
         <Button variant="link" onClick={() => showLightbox()}>
-          <img className="performer" src={activeImage} alt={performer.name} />
+          <img
+            className="performer"
+            src={activeImage}
+            alt={performer.name}
+            onLoad={ImageUtils.verifyImageSize}
+          />
         </Button>
       );
     }
   }
   const renderTabs = () => (
     <React.Fragment>
-      <Col>
-        <Row xs={8}>
-          <DetailsEditNavbar
-            objectName={
-              performer?.name ?? intl.formatMessage({ id: "performer" })
-            }
-            onToggleEdit={() => toggleEditing()}
-            onDelete={onDelete}
-            onAutoTag={onAutoTag}
-            isNew={false}
-            isEditing={false}
-            onSave={() => {}}
-            onImageChange={() => {}}
-            classNames="mb-2"
-            customButtons={
-              <div>
-                <PerformerSubmitButton performer={performer} />
-              </div>
-            }
-          ></DetailsEditNavbar>
-        </Row>
-      </Col>
       <Tabs
         activeKey={activeTabKey}
         onSelect={setActiveTabKey}
         id="performer-details"
         unmountOnExit
       >
-        <Tab eventKey="details" title={intl.formatMessage({ id: "details" })}>
-          <PerformerDetailsPanel performer={performer} />
-        </Tab>
         <Tab
           eventKey="scenes"
           title={
@@ -318,7 +303,24 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     </React.Fragment>
   );
 
-  function renderTabsOrEditPanel() {
+  function maybeRenderHeaderBackgroundImage() {
+    if (enableBackgroundImage && !isEditing && activeImage) {
+      return (
+        <div className="background-image-container">
+          <picture>
+            <source src={activeImage} />
+            <img
+              className="background-image"
+              src={activeImage}
+              alt={`${performer.name} background`}
+            />
+          </picture>
+        </div>
+      );
+    }
+  }
+
+  function maybeRenderEditPanel() {
     if (isEditing) {
       return (
         <PerformerEditPanel
@@ -330,26 +332,75 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           setEncodingImage={setEncodingImage}
         />
       );
-    } else {
-      return renderTabs();
+    }
+    {
+      return (
+        <Col>
+          <Row xs={8}>
+            <DetailsEditNavbar
+              objectName={
+                performer?.name ?? intl.formatMessage({ id: "performer" })
+              }
+              onToggleEdit={() => toggleEditing()}
+              onDelete={onDelete}
+              onAutoTag={onAutoTag}
+              isNew={false}
+              isEditing={false}
+              onSave={() => {}}
+              onImageChange={() => {}}
+              classNames="mb-2"
+              customButtons={
+                <div>
+                  <PerformerSubmitButton performer={performer} />
+                </div>
+              }
+            ></DetailsEditNavbar>
+          </Row>
+        </Col>
+      );
     }
   }
 
-  function maybeRenderAge() {
-    if (performer?.birthdate) {
-      // calculate the age from birthdate. In future, this should probably be
-      // provided by the server
+  function getCollapseButtonIcon() {
+    return collapsed ? faChevronDown : faChevronUp;
+  }
+
+  useEffect(() => {
+    const f = () => {
+      if (document.documentElement.scrollTop <= 50) {
+        setLoadStickyHeader(false);
+      } else {
+        setLoadStickyHeader(true);
+      }
+    };
+
+    window.addEventListener("scroll", f);
+    return () => {
+      window.removeEventListener("scroll", f);
+    };
+  });
+
+  function maybeRenderDetails() {
+    if (!isEditing) {
       return (
-        <div>
-          <span className="age">
-            {TextUtils.age(performer.birthdate, performer.death_date)}
-          </span>
-          <span className="age-tail">
-            {" "}
-            <FormattedMessage id="years_old" />
-          </span>
-        </div>
+        <PerformerDetailsPanel
+          performer={performer}
+          collapsed={collapsed}
+          fullWidth={!collapsed && !compactExpandedDetails}
+        />
       );
+    }
+  }
+
+  function maybeRenderCompressedDetails() {
+    if (!isEditing && loadStickyHeader) {
+      return <CompressedPerformerDetailsPanel performer={performer} />;
+    }
+  }
+
+  function maybeRenderTab() {
+    if (!isEditing) {
+      return renderTabs();
     }
   }
 
@@ -357,10 +408,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     if (performer?.alias_list?.length) {
       return (
         <div>
-          <span className="alias-head">
-            <FormattedMessage id="also_known_as" />{" "}
-          </span>
-          <span className="alias">{performer.alias_list?.join(", ")}</span>
+          <span className="alias-head">{performer.alias_list?.join(", ")}</span>
         </div>
       );
     }
@@ -392,61 +440,95 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     }
   }
 
-  const renderClickableIcons = () => (
-    <span className="name-icons">
-      <Button
-        className={cx(
-          "minimal",
-          performer.favorite ? "favorite" : "not-favorite"
+  function maybeRenderShowCollapseButton() {
+    if (!isEditing) {
+      return (
+        <span className="detail-expand-collapse">
+          <Button
+            className="minimal expand-collapse"
+            onClick={() => setCollapsed(!collapsed)}
+          >
+            <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
+          </Button>
+        </span>
+      );
+    }
+  }
+
+  function renderClickableIcons() {
+    /* Collect urls adding into details */
+    /* This code can be removed once multple urls are supported for performers */
+    const detailURLsRegex = /\[((?:http|www\.)[^\n\]]+)\]/gm;
+    let urls = performer?.details?.match(detailURLsRegex);
+
+    return (
+      <span className="name-icons">
+        <Button
+          className={cx(
+            "minimal",
+            performer.favorite ? "favorite" : "not-favorite"
+          )}
+          onClick={() => setFavorite(!performer.favorite)}
+        >
+          <Icon icon={faHeart} />
+        </Button>
+        {performer.url && (
+          <Button className="minimal icon-link" title={performer.url}>
+            <a
+              href={TextUtils.sanitiseURL(performer.url)}
+              className="link"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Icon icon={faLink} />
+            </a>
+          </Button>
         )}
-        onClick={() => setFavorite(!performer.favorite)}
-      >
-        <Icon icon={faHeart} />
-      </Button>
-      {performer.url && (
-        <Button className="minimal icon-link">
-          <a
-            href={TextUtils.sanitiseURL(performer.url)}
-            className="link"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Icon icon={faLink} />
-          </a>
-        </Button>
-      )}
-      {performer.twitter && (
-        <Button className="minimal icon-link">
-          <a
-            href={TextUtils.sanitiseURL(
-              performer.twitter,
-              TextUtils.twitterURL
-            )}
-            className="twitter"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Icon icon={faTwitter} />
-          </a>
-        </Button>
-      )}
-      {performer.instagram && (
-        <Button className="minimal icon-link">
-          <a
-            href={TextUtils.sanitiseURL(
-              performer.instagram,
-              TextUtils.instagramURL
-            )}
-            className="instagram"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Icon icon={faInstagram} />
-          </a>
-        </Button>
-      )}
-    </span>
-  );
+        {(urls ?? []).map((url, index) => (
+          <Button key={index} className="minimal icon-link" title={url}>
+            <a
+              href={TextUtils.sanitiseURL(url)}
+              className={`detail-link ${index}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Icon icon={faLink} />
+            </a>
+          </Button>
+        ))}
+        {performer.twitter && (
+          <Button className="minimal icon-link" title={performer.twitter}>
+            <a
+              href={TextUtils.sanitiseURL(
+                performer.twitter,
+                TextUtils.twitterURL
+              )}
+              className="twitter"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Icon icon={faTwitter} />
+            </a>
+          </Button>
+        )}
+        {performer.instagram && (
+          <Button className="minimal icon-link" title={performer.instagram}>
+            <a
+              href={TextUtils.sanitiseURL(
+                performer.instagram,
+                TextUtils.instagramURL
+              )}
+              className="instagram"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Icon icon={faInstagram} />
+            </a>
+          </Button>
+        )}
+      </span>
+    );
+  }
 
   if (isDestroying)
     return (
@@ -455,10 +537,6 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       />
     );
 
-  function getCollapseButtonIcon() {
-    return collapsed ? faChevronRight : faChevronLeft;
-  }
-
   return (
     <div id="performer-page" className="row">
       <Helmet>
@@ -466,48 +544,48 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       </Helmet>
 
       <div
-        className={`performer-image-container details-tab text-center text-center ${
-          collapsed ? "collapsed" : ""
+        className={`detail-header ${isEditing ? "edit" : ""}  ${
+          collapsed ? "collapsed" : !compactExpandedDetails ? "full-width" : ""
         }`}
       >
-        {encodingImage ? (
-          <LoadingIndicator message="Encoding image..." />
-        ) : (
-          renderImage()
-        )}
-      </div>
-      <div className="details-divider d-none d-xl-block">
-        <Button onClick={() => setCollapsed(!collapsed)}>
-          <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
-        </Button>
-      </div>
-      <div className={`content-container ${collapsed ? "expanded" : ""}`}>
-        <div className="row">
-          <div className="performer-head col">
-            <h2>
-              <GenderIcon
-                gender={performer.gender}
-                className="gender-icon mr-2 fi"
+        {maybeRenderHeaderBackgroundImage()}
+        <div className="detail-container">
+          <div className="detail-header-image">
+            {encodingImage ? (
+              <LoadingIndicator
+                message={`${intl.formatMessage({ id: "encoding_image" })}...`}
               />
-              <CountryFlag country={performer.country} className="mr-2" />
-              <span className="performer-name">{performer.name}</span>
-              {performer.disambiguation && (
-                <span className="performer-disambiguation">
-                  {` (${performer.disambiguation})`}
-                </span>
-              )}
-              {renderClickableIcons()}
-            </h2>
-            <RatingSystem
-              value={performer.rating100 ?? undefined}
-              onSetRating={(value) => setRating(value ?? null)}
-            />
-            {maybeRenderAliases()}
-            {maybeRenderAge()}
+            ) : (
+              renderImage()
+            )}
+          </div>
+          <div className="row">
+            <div className="performer-head col">
+              <h2>
+                <span className="performer-name">{performer.name}</span>
+                {performer.disambiguation && (
+                  <span className="performer-disambiguation">
+                    {` (${performer.disambiguation})`}
+                  </span>
+                )}
+                {maybeRenderShowCollapseButton()}
+                {renderClickableIcons()}
+              </h2>
+              {maybeRenderAliases()}
+              <RatingSystem
+                value={performer.rating100 ?? undefined}
+                onSetRating={(value) => setRating(value ?? null)}
+              />
+              {maybeRenderDetails()}
+              {maybeRenderEditPanel()}
+            </div>
           </div>
         </div>
+      </div>
+      {maybeRenderCompressedDetails()}
+      <div className="detail-body">
         <div className="performer-body">
-          <div className="performer-tabs">{renderTabsOrEditPanel()}</div>
+          <div className="performer-tabs">{maybeRenderTab()}</div>
         </div>
       </div>
     </div>

@@ -21,6 +21,7 @@ import {
   useTagCreate,
   useStudioCreate,
   usePerformerCreate,
+  useMovieCreate,
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import { SelectComponents } from "react-select/dist/declarations/src/components";
@@ -31,6 +32,7 @@ import { galleryTitle } from "src/core/galleries";
 import { TagPopover } from "../Tags/TagPopover";
 import { defaultMaxOptionsShown, IUIConfig } from "src/core/config";
 import { useDebouncedSetState } from "src/hooks/debounce";
+import { Placement } from "react-bootstrap/esm/Overlay";
 
 export type SelectObject = {
   id: string;
@@ -649,7 +651,10 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
     });
     return {
       item: result.data!.performerCreate!,
-      message: "Created performer",
+      message: intl.formatMessage(
+        { id: "toast.created_entity" },
+        { entity: intl.formatMessage({ id: "performer" }).toLocaleLowerCase() }
+      ),
     };
   };
 
@@ -759,7 +764,13 @@ export const StudioSelect: React.FC<
         input: { name },
       },
     });
-    return { item: result.data!.studioCreate!, message: "Created studio" };
+    return {
+      item: result.data!.studioCreate!,
+      message: intl.formatMessage(
+        { id: "toast.created_entity" },
+        { entity: intl.formatMessage({ id: "studio" }).toLocaleLowerCase() }
+      ),
+    };
   };
 
   const isValidNewOption = (
@@ -811,8 +822,26 @@ export const StudioSelect: React.FC<
 
 export const MovieSelect: React.FC<IFilterProps> = (props) => {
   const { data, loading } = useAllMoviesForFilter();
+  const [createMovie] = useMovieCreate();
   const items = data?.allMovies ?? [];
   const intl = useIntl();
+
+  const { configuration } = React.useContext(ConfigurationContext);
+  const defaultCreatable =
+    !configuration?.interface.disableDropdownCreate.movie ?? true;
+
+  const onCreate = async (name: string) => {
+    const result = await createMovie({
+      variables: { input: { name } },
+    });
+    return {
+      item: result.data!.movieCreate!,
+      message: intl.formatMessage(
+        { id: "toast.created_entity" },
+        { entity: intl.formatMessage({ id: "movie" }).toLocaleLowerCase() }
+      ),
+    };
+  };
 
   return (
     <FilterSelectComponent
@@ -828,13 +857,15 @@ export const MovieSelect: React.FC<IFilterProps> = (props) => {
           { entityType: intl.formatMessage({ id: "movie" }) }
         )
       }
+      creatable={props.creatable ?? defaultCreatable}
+      onCreate={onCreate}
     />
   );
 };
 
-export const TagSelect: React.FC<IFilterProps & { excludeIds?: string[] }> = (
-  props
-) => {
+export const TagSelect: React.FC<
+  IFilterProps & { excludeIds?: string[]; hoverPlacement?: Placement }
+> = (props) => {
   const [tagAliases, setTagAliases] = useState<Record<string, string[]>>({});
   const [allAliases, setAllAliases] = useState<string[]>([]);
   const { data, loading } = useAllTagsForFilter();
@@ -890,7 +921,7 @@ export const TagSelect: React.FC<IFilterProps & { excludeIds?: string[] }> = (
       : optionProps.data.value;
 
     return (
-      <TagPopover id={id}>
+      <TagPopover id={id} placement={props.hoverPlacement}>
         <reactSelectComponents.Option {...thisOptionProps} />
       </TagPopover>
     );
@@ -926,7 +957,13 @@ export const TagSelect: React.FC<IFilterProps & { excludeIds?: string[] }> = (
         },
       },
     });
-    return { item: result.data!.tagCreate!, message: "Created tag" };
+    return {
+      item: result.data!.tagCreate!,
+      message: intl.formatMessage(
+        { id: "toast.created_entity" },
+        { entity: intl.formatMessage({ id: "tag" }).toLocaleLowerCase() }
+      ),
+    };
   };
 
   const isValidNewOption = (

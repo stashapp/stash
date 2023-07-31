@@ -5,11 +5,13 @@ import { getCountryByISO } from "src/utils/country";
 interface ICountryFlag {
   country?: string | null;
   className?: string;
+  includeName?: boolean;
 }
 
 export const CountryFlag: React.FC<ICountryFlag> = ({
   className,
   country: isoCountry,
+  includeName,
 }) => {
   const { locale } = useIntl();
 
@@ -18,9 +20,12 @@ export const CountryFlag: React.FC<ICountryFlag> = ({
   if (!isoCountry || !country) return <></>;
 
   return (
-    <span
-      className={`${className ?? ""} fi fi-${isoCountry.toLowerCase()}`}
-      title={country}
-    />
+    <>
+      {includeName ? country : ""}
+      <span
+        className={`${className ?? ""} fi fi-${isoCountry.toLowerCase()}`}
+        title={country}
+      />
+    </>
   );
 };

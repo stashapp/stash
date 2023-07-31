@@ -1,4 +1,4 @@
-"""A movie from a scraping operation..."""
+"A movie from a scraping operation..."
 type ScrapedMovie {
   stored_id: ID
   name: String
@@ -11,9 +11,9 @@ type ScrapedMovie {
   synopsis: String
   studio: ScrapedStudio
 
-  """This should be a base64 encoded data URL"""
+  "This should be a base64 encoded data URL"
   front_image: String
-  """This should be a base64 encoded data URL"""
+  "This should be a base64 encoded data URL"
   back_image: String
 }
 
