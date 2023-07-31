@@ -17,7 +17,7 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag, fullWidth }) => {
     return (
       <>
         {tag.parents.map((p) => (
-          <TagLink key={p.id} tag={p} />
+          <TagLink key={p.id} tag={p} hoverPlacement="bottom" />
         ))}
       </>
     );
@@ -31,7 +31,7 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag, fullWidth }) => {
     return (
       <>
         {tag.children.map((c) => (
-          <TagLink key={c.id} tag={c} />
+          <TagLink key={c.id} tag={c} hoverPlacement="bottom" />
         ))}
       </>
     );
