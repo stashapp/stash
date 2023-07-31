@@ -5,7 +5,6 @@ import * as yup from "yup";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { TagSelect } from "src/components/Shared/Select";
 import { Form, Col, Row } from "react-bootstrap";
-import FormUtils from "src/utils/form";
 import ImageUtils from "src/utils/image";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
@@ -42,9 +41,9 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   const labelXS = 3;
-  const labelXL = 3;
+  const labelXL = 2;
   const fieldXS = 9;
-  const fieldXL = 9;
+  const fieldXL = 7;
 
   const schema = yup.object({
     name: yup.string().required(),
@@ -204,10 +203,10 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
         </Form.Group>
 
         <Form.Group controlId="description" as={Row}>
-          {FormUtils.renderLabel({
-            title: intl.formatMessage({ id: "description" }),
-          })}
-          <Col xs={9}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            <FormattedMessage id="description" />
+          </Form.Label>
+          <Col xs={fieldXS} xl={fieldXL}>
             <Form.Control
               as="textarea"
               className="text-input"
@@ -218,15 +217,10 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
         </Form.Group>
 
         <Form.Group controlId="parent_tags" as={Row}>
-          {FormUtils.renderLabel({
-            title: intl.formatMessage({ id: "parent_tags" }),
-            labelProps: {
-              column: true,
-              sm: 3,
-              xl: 12,
-            },
-          })}
-          <Col sm={9} xl={12}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            <FormattedMessage id="parent_tags" />
+          </Form.Label>
+          <Col xs={fieldXS} xl={fieldXL}>
             <TagSelect
               isMulti
               onSelect={(items) =>
@@ -247,15 +241,10 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
         </Form.Group>
 
         <Form.Group controlId="sub_tags" as={Row}>
-          {FormUtils.renderLabel({
-            title: intl.formatMessage({ id: "sub_tags" }),
-            labelProps: {
-              column: true,
-              sm: 3,
-              xl: 12,
-            },
-          })}
-          <Col sm={9} xl={12}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            <FormattedMessage id="sub_tags" />
+          </Form.Label>
+          <Col xs={fieldXS} xl={fieldXL}>
             <TagSelect
               isMulti
               onSelect={(items) =>
@@ -294,6 +283,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
       <DetailsEditNavbar
         objectName={tag?.name ?? intl.formatMessage({ id: "tag" })}
+        classNames="col-xl-9 mt-3"
         isNew={isNew}
         isEditing={isEditing}
         onToggleEdit={onCancel}

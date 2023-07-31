@@ -70,6 +70,17 @@ const ImageUtils = {
   onImageChange,
   usePasteImage,
   imageToDataURL,
+  verifyImageSize,
 };
+
+function verifyImageSize(e: React.UIEvent<HTMLImageElement>) {
+  const img = e.target as HTMLImageElement;
+  // set width = 200px if zero-sized image (SVG w/o intrinsic size)
+  if (img.width === 0 && img.height === 0) {
+    img.setAttribute("width", "200");
+  } else {
+    img.removeAttribute("width");
+  }
+}
 
 export default ImageUtils;
