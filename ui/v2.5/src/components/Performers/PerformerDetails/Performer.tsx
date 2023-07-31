@@ -64,6 +64,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const enableBackgroundImage =
     uiConfig?.enablePerformerBackgroundImage ?? false;
   const showAllDetails = uiConfig?.showAllDetails ?? false;
+  const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -385,7 +386,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <PerformerDetailsPanel
           performer={performer}
           collapsed={collapsed}
-          fullWidth={!collapsed && showAllDetails}
+          fullWidth={!compactExpandedDetails}
         />
       );
     }
@@ -544,7 +545,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
 
       <div
         className={`detail-header ${isEditing ? "edit" : ""}  ${
-          collapsed ? "collapsed" : showAllDetails ? "full-width" : ""
+          collapsed ? "collapsed" : !compactExpandedDetails ? "full-width" : ""
         }`}
       >
         {maybeRenderHeaderBackgroundImage()}

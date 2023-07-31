@@ -539,8 +539,15 @@ export const SettingsInterfacePanel: React.FC = () => {
           id="show_all_details"
           headingID="config.ui.detail.show_all_details.heading"
           subHeadingID="config.ui.detail.show_all_details.description"
-          checked={ui.showAllDetails ?? undefined}
+          checked={ui.showAllDetails ?? true}
           onChange={(v) => saveUI({ showAllDetails: v })}
+        />
+        <BooleanSetting
+          id="compact_expanded_details"
+          headingID="config.ui.detail.compact_expanded_details.heading"
+          subHeadingID="config.ui.detail.compact_expanded_details.description"
+          checked={ui.compactExpandedDetails ?? undefined}
+          onChange={(v) => saveUI({ compactExpandedDetails: v })}
         />
       </SettingSection>
 

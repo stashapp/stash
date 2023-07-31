@@ -34,6 +34,7 @@ import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { ConfigurationContext } from "src/hooks/Config";
 import { IUIConfig } from "src/core/config";
 import ImageUtils from "src/utils/image";
+import { useRatingKeybinds } from "src/hooks/keybinds";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
@@ -48,7 +49,8 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   const { configuration } = React.useContext(ConfigurationContext);
   const uiConfig = configuration?.ui as IUIConfig | undefined;
   const enableBackgroundImage = uiConfig?.enableMovieBackgroundImage ?? false;
-  const showAllDetails = uiConfig?.showAllDetails ?? false;
+  const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
+  const showAllDetails = uiConfig?.showAllDetails ?? true;
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
   const [loadStickyHeader, setLoadStickyHeader] = useState<boolean>(false);
@@ -117,6 +119,12 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
       Mousetrap.unbind("d d");
     };
   });
+
+  useRatingKeybinds(
+    true,
+    configuration?.ui?.ratingSystemOptions?.type,
+    setRating
+  );
 
   useEffect(() => {
     const f = () => {
@@ -328,10 +336,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   function maybeRenderDetails() {
     if (!isEditing) {
       return (
-        <MovieDetailsPanel
-          movie={movie}
-          fullWidth={!collapsed && showAllDetails}
-        />
+        <MovieDetailsPanel movie={movie} fullWidth={!compactExpandedDetails} />
       );
     }
   }
@@ -405,7 +410,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
 
       <div
         className={`detail-header ${isEditing ? "edit" : ""}  ${
-          collapsed ? "collapsed" : showAllDetails ? "full-width" : ""
+          collapsed ? "collapsed" : !compactExpandedDetails ? "full-width" : ""
         }`}
       >
         {maybeRenderHeaderBackgroundImage()}

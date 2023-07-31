@@ -58,6 +58,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
   const enableBackgroundImage = uiConfig?.enableTagBackgroundImage ?? false;
   const showAllDetails = uiConfig?.showAllDetails ?? false;
+  const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
   const [loadStickyHeader, setLoadStickyHeader] = useState<boolean>(false);
@@ -327,9 +328,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
 
   function maybeRenderDetails() {
     if (!isEditing) {
-      return (
-        <TagDetailsPanel tag={tag} fullWidth={!collapsed && showAllDetails} />
-      );
+      return <TagDetailsPanel tag={tag} fullWidth={!compactExpandedDetails} />;
     }
   }
 
@@ -491,7 +490,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
 
       <div
         className={`detail-header ${isEditing ? "edit" : ""}  ${
-          collapsed ? "collapsed" : showAllDetails ? "full-width" : ""
+          collapsed ? "collapsed" : !compactExpandedDetails ? "full-width" : ""
         }`}
       >
         {maybeRenderHeaderBackgroundImage()}

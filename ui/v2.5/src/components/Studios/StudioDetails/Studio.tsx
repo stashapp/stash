@@ -41,6 +41,7 @@ import { IUIConfig } from "src/core/config";
 import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import ImageUtils from "src/utils/image";
+import { useRatingKeybinds } from "src/hooks/keybinds";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -62,6 +63,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
   const enableBackgroundImage = uiConfig?.enableStudioBackgroundImage ?? false;
   const showAllDetails = uiConfig?.showAllDetails ?? false;
+  const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
   const [loadStickyHeader, setLoadStickyHeader] = useState<boolean>(false);
@@ -104,6 +106,12 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
       Mousetrap.unbind(",");
     };
   });
+
+  useRatingKeybinds(
+    true,
+    configuration?.ui?.ratingSystemOptions?.type,
+    setRating
+  );
 
   useEffect(() => {
     const f = () => {
@@ -285,7 +293,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
         <StudioDetailsPanel
           studio={studio}
           collapsed={collapsed}
-          fullWidth={!collapsed && showAllDetails}
+          fullWidth={!compactExpandedDetails}
         />
       );
     }
@@ -495,7 +503,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
 
       <div
         className={`detail-header ${isEditing ? "edit" : ""}  ${
-          collapsed ? "collapsed" : showAllDetails ? "full-width" : ""
+          collapsed ? "collapsed" : !compactExpandedDetails ? "full-width" : ""
         }`}
       >
         {maybeRenderHeaderBackgroundImage()}

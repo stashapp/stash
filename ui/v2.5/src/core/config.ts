@@ -51,6 +51,8 @@ export interface IUIConfig {
   enableStudioBackgroundImage?: boolean;
   // if true a background image will be display on header
   enableTagBackgroundImage?: boolean;
+  // if true view expanded details compact
+  compactExpandedDetails?: boolean;
   // if true show all content details by default
   showAllDetails?: boolean;
   // if true the chromecast option will enabled
