@@ -72,7 +72,9 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
   const [loadStickyHeader, setLoadStickyHeader] = useState<boolean>(false);
 
-  const appleRendering = /(ipad)/i.test(navigator.userAgent) || /(macintosh.*safari)/i.test(navigator.userAgent);
+  const appleRendering =
+    /(ipad)/i.test(navigator.userAgent) ||
+    /(macintosh.*safari)/i.test(navigator.userAgent);
 
   const activeImage = useMemo(() => {
     const performerImage = performer.image_path;
