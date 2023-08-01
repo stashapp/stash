@@ -43,7 +43,7 @@ import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { IUIConfig } from "src/core/config";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import ImageUtils from "src/utils/image";
-import { isPlatfornUniquelyRenderByApple } from "src/utils/apple";
+import { isPlatformUniquelyRenderedByApple } from "src/utils/apple";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -73,7 +73,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
   const [loadStickyHeader, setLoadStickyHeader] = useState<boolean>(false);
 
-  const appleRendering = isPlatfornUniquelyRenderByApple();
+  const appleRendering = isPlatformUniquelyRenderedByApple();
 
   const activeImage = useMemo(() => {
     const performerImage = performer.image_path;

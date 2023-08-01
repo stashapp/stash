@@ -38,7 +38,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { IUIConfig } from "src/core/config";
 import ImageUtils from "src/utils/image";
-import { isPlatfornUniquelyRenderByApple } from "src/utils/apple";
+import { isPlatformUniquelyRenderedByApple } from "src/utils/apple";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -64,7 +64,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
   const [loadStickyHeader, setLoadStickyHeader] = useState<boolean>(false);
 
-  const appleRendering = isPlatfornUniquelyRenderByApple();
+  const appleRendering = isPlatformUniquelyRenderedByApple();
 
   const { tab = "scenes" } = useParams<ITabParams>();
 
