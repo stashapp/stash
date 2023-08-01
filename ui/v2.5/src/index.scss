@@ -351,6 +351,8 @@ dd {
   }
 }
 
+/* the .apple class denotes areas where rendering on some apple platforms has been inconsistent with other platforms
+   these rules aim to address those inconsistences */
 .detail-header.apple .detail-container {
   display: flex;
 }

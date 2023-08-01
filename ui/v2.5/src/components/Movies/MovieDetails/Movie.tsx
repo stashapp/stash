@@ -35,6 +35,7 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { IUIConfig } from "src/core/config";
 import ImageUtils from "src/utils/image";
 import { useRatingKeybinds } from "src/hooks/keybinds";
+import { isPlatfornUniquelyRenderByApple } from "src/utils/apple";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
@@ -64,9 +65,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   const [backImage, setBackImage] = useState<string | null>();
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
-  const appleRendering =
-    /(ipad)/i.test(navigator.userAgent) ||
-    /(macintosh.*safari)/i.test(navigator.userAgent);
+  const appleRendering = isPlatfornUniquelyRenderByApple();
 
   const defaultImage =
     movie.front_image_path && movie.front_image_path.includes("default=true")
