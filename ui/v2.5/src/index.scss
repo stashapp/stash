@@ -43,13 +43,20 @@ body {
   -webkit-font-smoothing: antialiased;
   margin: 0;
   overflow-x: hidden;
-  padding: 3.5rem 0 0 0;
+  padding: 4rem 0 0 0;
 
   @include media-breakpoint-down(xs) {
     @media (orientation: portrait) {
       padding: 1rem 0 5rem;
     }
   }
+}
+
+#movie-page,
+#performer-page,
+#studio-page,
+#tag-page {
+  margin-top: -0.5rem;
 }
 
 code,

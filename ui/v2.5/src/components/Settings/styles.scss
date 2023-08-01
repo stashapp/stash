@@ -1,16 +1,11 @@
 @include media-breakpoint-up(sm) {
   #settings-menu-container {
-    margin-top: 0.5rem;
     position: fixed;
   }
 }
 
-#settings-container {
-  margin-top: 0.5rem;
-
-  .tab-content {
-    max-width: 780px;
-  }
+#settings-container .tab-content {
+  max-width: 780px;
 }
 
 .setting-section {
