@@ -12,6 +12,7 @@ import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { stringToGender } from "src/utils/gender";
 import TextUtils from "src/utils/text";
 import GenderIcon from "src/components/Performers/GenderIcon";
+import { CountryFlag } from "src/components/Shared/CountryFlag";
 
 const CLASSNAME = "PerformerScrapeModal";
 const CLASSNAME_LIST = `${CLASSNAME}-list`;
@@ -66,33 +67,51 @@ const PerformerSearchResultDetails: React.FC<
     }
   }
 
-  let calculated_age = calculateAge();
+  function renderCountry() {
+    if (performer.country) {
+      return (
+        <span>
+          <CountryFlag
+            className="performer-result__country-flag"
+            country={performer.country}
+          />
+        </span>
+      );
+    }
+  }
+
+  let age = calculateAge();
 
   return (
-    <div className="scene-details">
+    <div className="performer-result">
       <Row>
         {renderImage()}
         <div className="col flex-column">
-          <h4>
-            {performer.name}
+          <h4 className="performer-name">
+            <span>{performer.name}</span>
             {performer.disambiguation && (
               <span className="performer-disambiguation">
                 {` (${performer.disambiguation})`}
               </span>
             )}
           </h4>
-          <h5>
+          <h5 className="performer-details">
             {performer.gender && (
-              <GenderIcon
-                className="gender-icon"
-                gender={stringToGender(performer.gender, true)}
-              />
+              <span>
+                <GenderIcon
+                  className="gender-icon"
+                  gender={stringToGender(performer.gender, true)}
+                />
+              </span>
             )}
-            {performer.gender && calculated_age && ` • `}
-            {calculated_age}
-            {calculated_age && " "}
-            {calculated_age && <FormattedMessage id="years_old" />}
+            {age && (
+              <span>
+                {`${age} `}
+                <FormattedMessage id="years_old" />
+              </span>
+            )}
           </h5>
+          {renderCountry()}
         </div>
       </Row>
       <Row>

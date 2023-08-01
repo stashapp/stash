@@ -213,3 +213,13 @@
   /* stylelint-enable */
   padding-right: 0.5rem;
 }
+
+.performer-result .performer-details > span {
+  &::after {
+    content: " • ";
+  }
+
+  &:last-child::after {
+    content: "";
+  }
+}
