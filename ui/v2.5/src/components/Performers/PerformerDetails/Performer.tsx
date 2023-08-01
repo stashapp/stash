@@ -43,6 +43,7 @@ import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { IUIConfig } from "src/core/config";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import ImageUtils from "src/utils/image";
+import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -70,7 +71,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [image, setImage] = useState<string | null>();
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
-  const [loadStickyHeader, setLoadStickyHeader] = useState<boolean>(false);
+  const loadStickyHeader = useLoadStickyHeader();
 
   const activeImage = useMemo(() => {
     const performerImage = performer.image_path;
@@ -364,21 +365,6 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   function getCollapseButtonIcon() {
     return collapsed ? faChevronDown : faChevronUp;
   }
-
-  useEffect(() => {
-    const f = () => {
-      if (document.documentElement.scrollTop <= 50) {
-        setLoadStickyHeader(false);
-      } else {
-        setLoadStickyHeader(true);
-      }
-    };
-
-    window.addEventListener("scroll", f);
-    return () => {
-      window.removeEventListener("scroll", f);
-    };
-  });
 
   function maybeRenderDetails() {
     if (!isEditing) {

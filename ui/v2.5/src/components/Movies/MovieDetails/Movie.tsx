@@ -35,6 +35,7 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { IUIConfig } from "src/core/config";
 import ImageUtils from "src/utils/image";
 import { useRatingKeybinds } from "src/hooks/keybinds";
+import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
@@ -53,7 +54,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   const showAllDetails = uiConfig?.showAllDetails ?? true;
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
-  const [loadStickyHeader, setLoadStickyHeader] = useState<boolean>(false);
+  const loadStickyHeader = useLoadStickyHeader();
 
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -125,21 +126,6 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
     configuration?.ui?.ratingSystemOptions?.type,
     setRating
   );
-
-  useEffect(() => {
-    const f = () => {
-      if (document.documentElement.scrollTop <= 50) {
-        setLoadStickyHeader(false);
-      } else {
-        setLoadStickyHeader(true);
-      }
-    };
-
-    window.addEventListener("scroll", f);
-    return () => {
-      window.removeEventListener("scroll", f);
-    };
-  });
 
   async function onSave(input: GQL.MovieCreateInput) {
     await updateMovie({

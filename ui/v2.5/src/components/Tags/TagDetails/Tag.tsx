@@ -38,6 +38,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { IUIConfig } from "src/core/config";
 import ImageUtils from "src/utils/image";
+import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -61,7 +62,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
   const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
-  const [loadStickyHeader, setLoadStickyHeader] = useState<boolean>(false);
+  const loadStickyHeader = useLoadStickyHeader();
 
   const { tab = "scenes" } = useParams<ITabParams>();
 
@@ -119,21 +120,6 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");
       Mousetrap.unbind(",");
-    };
-  });
-
-  useEffect(() => {
-    const f = () => {
-      if (document.documentElement.scrollTop <= 50) {
-        setLoadStickyHeader(false);
-      } else {
-        setLoadStickyHeader(true);
-      }
-    };
-
-    window.addEventListener("scroll", f);
-    return () => {
-      window.removeEventListener("scroll", f);
     };
   });
 
