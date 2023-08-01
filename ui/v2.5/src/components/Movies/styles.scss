@@ -28,12 +28,10 @@
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
-  margin: 1rem;
   max-width: 100%;
 
   .movie-image-container {
     box-shadow: none;
-    margin: 1rem;
   }
 
   img {

@@ -66,7 +66,9 @@ const MovieCreate: React.FC = () => {
       <div className="movie-details mb-3 col">
         <div className="logo w-100">
           {encodingImage ? (
-            <LoadingIndicator message="Encoding image..." />
+            <LoadingIndicator
+              message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+            />
           ) : (
             <div className="movie-images">
               {renderFrontImage()}

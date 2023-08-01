@@ -631,7 +631,7 @@ func populateDB() error {
 			return fmt.Errorf("error creating performers: %s", err.Error())
 		}
 
-		if err := createStudios(ctx, db.Studio, studiosNameCase, studiosNameNoCase); err != nil {
+		if err := createStudios(ctx, studiosNameCase, studiosNameNoCase); err != nil {
 			return fmt.Errorf("error creating studios: %s", err.Error())
 		}
 
@@ -659,7 +659,7 @@ func populateDB() error {
 			return fmt.Errorf("error linking movie studios: %s", err.Error())
 		}
 
-		if err := linkStudiosParent(ctx, db.Studio); err != nil {
+		if err := linkStudiosParent(ctx); err != nil {
 			return fmt.Errorf("error linking studios parent: %s", err.Error())
 		}
 
@@ -1310,8 +1310,8 @@ func createMovies(ctx context.Context, mqb models.MovieReaderWriter, n int, o in
 
 		name = getMovieStringValue(index, name)
 		movie := models.Movie{
-			Name:     name,
-			URL:      getMovieNullStringValue(index, urlField),
+			Name: name,
+			URL:  getMovieNullStringValue(index, urlField),
 		}
 
 		err := mqb.Create(ctx, &movie)
@@ -1573,9 +1573,9 @@ func getStudioNullStringValue(index int, field string) string {
 	return ret.String
 }
 
-func createStudio(ctx context.Context, sqb models.StudioReaderWriter, name string, parentID *int) (*models.Studio, error) {
+func createStudio(ctx context.Context, sqb *sqlite.StudioStore, name string, parentID *int) (*models.Studio, error) {
 	studio := models.Studio{
-		Name:     name,
+		Name: name,
 	}
 
 	if parentID != nil {
@@ -1590,7 +1590,7 @@ func createStudio(ctx context.Context, sqb models.StudioReaderWriter, name strin
 	return &studio, nil
 }
 
-func createStudioFromModel(ctx context.Context, sqb models.StudioReaderWriter, studio *models.Studio) error {
+func createStudioFromModel(ctx context.Context, sqb *sqlite.StudioStore, studio *models.Studio) error {
 	err := sqb.Create(ctx, studio)
 
 	if err != nil {
@@ -1601,7 +1601,8 @@ func createStudioFromModel(ctx context.Context, sqb models.StudioReaderWriter, s
 }
 
 // createStudios creates n studios with plain Name and o studios with camel cased NaMe included
-func createStudios(ctx context.Context, sqb models.StudioReaderWriter, n int, o int) error {
+func createStudios(ctx context.Context, n int, o int) error {
+	sqb := db.Studio
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
 
@@ -1618,22 +1619,18 @@ func createStudios(ctx context.Context, sqb models.StudioReaderWriter, n int, o 
 		name = getStudioStringValue(index, name)
 		studio := models.Studio{
 			Name:          name,
-			URL:           getStudioNullStringValue(index, urlField),
+			URL:           getStudioStringValue(index, urlField),
 			IgnoreAutoTag: getIgnoreAutoTag(i),
 		}
-
-		err := createStudioFromModel(ctx, sqb, &studio)
-		if err != nil {
-			return err
-		}
-
-		// add alias
 		// only add aliases for some scenes
 		if i == studioIdxWithMovie || i%5 == 0 {
 			alias := getStudioStringValue(i, "Alias")
-			if err := sqb.UpdateAliases(ctx, studio.ID, []string{alias}); err != nil {
-				return fmt.Errorf("error setting studio alias: %s", err.Error())
-			}
+			studio.Aliases = models.NewRelatedStrings([]string{alias})
+		}
+		err := createStudioFromModel(ctx, sqb, &studio)
+
+		if err != nil {
+			return err
 		}
 
 		studioIDs = append(studioIDs, studio.ID)
@@ -1756,12 +1753,14 @@ func linkMovieStudios(ctx context.Context, mqb models.MovieWriter) error {
 	})
 }
 
-func linkStudiosParent(ctx context.Context, qb models.StudioWriter) error {
+func linkStudiosParent(ctx context.Context) error {
+	qb := db.Studio
 	return doLinks(studioParentLinks, func(parentIndex, childIndex int) error {
-		studio := models.StudioPartial{
+		input := &models.StudioPartial{
+			ID:       studioIDs[childIndex],
 			ParentID: models.NewOptionalInt(studioIDs[parentIndex]),
 		}
-		_, err := qb.UpdatePartial(ctx, studioIDs[childIndex], studio)
+		_, err := qb.UpdatePartial(ctx, *input)
 
 		return err
 	})
