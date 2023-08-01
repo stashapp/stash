@@ -186,6 +186,11 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
             value={performer?.piercings}
             fullWidth={fullWidth}
           />
+          <DetailItem
+            id="career_length"
+            value={performer?.career_length}
+            fullWidth={fullWidth}
+          />
           <DetailItem id="details" value={details} fullWidth={fullWidth} />
           <DetailItem
             id="tags"

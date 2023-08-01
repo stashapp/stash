@@ -43,13 +43,20 @@ body {
   -webkit-font-smoothing: antialiased;
   margin: 0;
   overflow-x: hidden;
-  padding: 3.5rem 0 0 0;
+  padding: 4rem 0 0 0;
 
   @include media-breakpoint-down(xs) {
     @media (orientation: portrait) {
       padding: 1rem 0 5rem;
     }
   }
+}
+
+#movie-page,
+#performer-page,
+#studio-page,
+#tag-page {
+  margin-top: -0.5rem;
 }
 
 code,
@@ -188,6 +195,7 @@ dd {
 
 .detail-header.edit {
   background-color: unset;
+  overflow: auto;
 
   form {
     padding-top: 0.5rem;
@@ -241,7 +249,7 @@ dd {
   }
 
   .detail-item {
-    flex-direction: unset;
+    display: table;
     padding-right: 0;
     width: 100%;
 
@@ -251,7 +259,11 @@ dd {
     }
 
     .detail-item-value {
-      padding-left: 0.5rem;
+      margin-left: 1.5rem;
+    }
+
+    .detail-item-value.age {
+      width: fit-content;
     }
   }
 
@@ -336,7 +348,6 @@ dd {
 }
 
 .detail-item {
-  align-items: left;
   display: inline-flex;
   flex-direction: column;
   padding-bottom: 0.5rem;
@@ -345,6 +356,17 @@ dd {
   @media (max-width: 576px) {
     padding-right: 2rem;
   }
+}
+
+/* the .apple class denotes areas where rendering on some apple platforms has been inconsistent with other platforms
+   these rules aim to address those inconsistences */
+.detail-header.apple .detail-container {
+  display: flex;
+}
+
+.detail-header.full-width.apple .detail-header-image,
+.detail-header.edit.apple .detail-header-image {
+  display: unset;
 }
 
 .detail-item-title {
