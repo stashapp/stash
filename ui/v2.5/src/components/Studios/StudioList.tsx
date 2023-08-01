@@ -19,6 +19,7 @@ import { DisplayMode } from "src/models/list-filter/types";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { StudioCard } from "./StudioCard";
+import { StudioTagger } from "../Tagger/studios/StudioTagger";
 
 const StudioItemList = makeItemList({
   filterMode: GQL.FilterMode.Studios,
@@ -155,6 +156,9 @@ export const StudioList: React.FC<IStudioList> = ({
       }
       if (filter.displayMode === DisplayMode.Wall) {
         return <h1>TODO</h1>;
+      }
+      if (filter.displayMode === DisplayMode.Tagger) {
+        return <StudioTagger studios={result.data.findStudios.studios} />;
       }
     }
 

@@ -219,18 +219,15 @@ func TestStudioQueryForAutoTag(t *testing.T) {
 		assert.Len(t, studios, 1)
 		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithMovie]), strings.ToLower(studios[0].Name))
 
-		// find by alias
 		name = getStudioStringValue(studioIdxWithMovie, "Alias")
 		studios, err = tqb.QueryForAutoTag(ctx, []string{name})
 
 		if err != nil {
 			t.Errorf("Error finding studios: %s", err.Error())
 		}
-
 		if assert.Len(t, studios, 1) {
 			assert.Equal(t, studioIDs[studioIdxWithMovie], studios[0].ID)
 		}
-
 		return nil
 	})
 }
@@ -363,11 +360,12 @@ func TestStudioUpdateClearParent(t *testing.T) {
 		sqb := db.Studio
 
 		// clear the parent id from the child
-		updatePartial := models.StudioPartial{
+		input := models.StudioPartial{
+			ID:       createdChild.ID,
 			ParentID: models.NewOptionalIntPtr(nil),
 		}
 
-		updatedStudio, err := sqb.UpdatePartial(ctx, createdChild.ID, updatePartial)
+		updatedStudio, err := sqb.UpdatePartial(ctx, input)
 
 		if err != nil {
 			return fmt.Errorf("Error updated studio: %s", err.Error())
@@ -548,7 +546,7 @@ func verifyStudiosGalleryCount(t *testing.T, galleryCountCriterion models.IntCri
 }
 
 func TestStudioStashIDs(t *testing.T) {
-	if err := withTxn(func(ctx context.Context) error {
+	if err := withRollbackTxn(func(ctx context.Context) error {
 		qb := db.Studio
 
 		// create studio to test against
@@ -558,11 +556,81 @@ func TestStudioStashIDs(t *testing.T) {
 			return fmt.Errorf("Error creating studio: %s", err.Error())
 		}
 
-		testStashIDReaderWriter(ctx, t, qb, created.ID)
+		studio, err := qb.Find(ctx, created.ID)
+		if err != nil {
+			return fmt.Errorf("Error getting studio: %s", err.Error())
+		}
+
+		if err := studio.LoadStashIDs(ctx, qb); err != nil {
+			return err
+		}
+
+		testStudioStashIDs(ctx, t, studio)
 		return nil
 	}); err != nil {
 		t.Error(err.Error())
 	}
+}
+
+func testStudioStashIDs(ctx context.Context, t *testing.T, s *models.Studio) {
+	qb := db.Studio
+
+	if err := s.LoadStashIDs(ctx, qb); err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	// ensure no stash IDs to begin with
+	assert.Len(t, s.StashIDs.List(), 0)
+
+	// add stash ids
+	const stashIDStr = "stashID"
+	const endpoint = "endpoint"
+	stashID := models.StashID{
+		StashID:  stashIDStr,
+		Endpoint: endpoint,
+	}
+
+	// update stash ids and ensure was updated
+	input := models.StudioPartial{
+		ID: s.ID,
+		StashIDs: &models.UpdateStashIDs{
+			StashIDs: []models.StashID{stashID},
+			Mode:     models.RelationshipUpdateModeSet,
+		},
+	}
+	var err error
+	s, err = qb.UpdatePartial(ctx, input)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if err := s.LoadStashIDs(ctx, qb); err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	assert.Equal(t, []models.StashID{stashID}, s.StashIDs.List())
+
+	// remove stash ids and ensure was updated
+	input = models.StudioPartial{
+		ID: s.ID,
+		StashIDs: &models.UpdateStashIDs{
+			StashIDs: []models.StashID{stashID},
+			Mode:     models.RelationshipUpdateModeRemove,
+		},
+	}
+	s, err = qb.UpdatePartial(ctx, input)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if err := s.LoadStashIDs(ctx, qb); err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	assert.Len(t, s.StashIDs.List(), 0)
 }
 
 func TestStudioQueryURL(t *testing.T) {
@@ -684,7 +752,7 @@ func TestStudioQueryIsMissingRating(t *testing.T) {
 		assert.True(t, len(studios) > 0)
 
 		for _, studio := range studios {
-			assert.True(t, studio.Rating == nil)
+			assert.Nil(t, studio.Rating)
 		}
 
 		return nil
@@ -778,34 +846,85 @@ func TestStudioQueryAlias(t *testing.T) {
 	verifyStudioQuery(t, studioFilter, verifyFn)
 }
 
-func TestStudioUpdateAlias(t *testing.T) {
-	if err := withTxn(func(ctx context.Context) error {
+func TestStudioAlias(t *testing.T) {
+	if err := withRollbackTxn(func(ctx context.Context) error {
 		qb := db.Studio
 
 		// create studio to test against
-		const name = "TestStudioUpdateAlias"
-		created, err := createStudio(ctx, qb, name, nil)
+		const name = "TestStudioAlias"
+		created, err := createStudio(ctx, db.Studio, name, nil)
 		if err != nil {
 			return fmt.Errorf("Error creating studio: %s", err.Error())
 		}
 
-		aliases := []string{"alias1", "alias2"}
-		err = qb.UpdateAliases(ctx, created.ID, aliases)
+		studio, err := qb.Find(ctx, created.ID)
 		if err != nil {
-			return fmt.Errorf("Error updating studio aliases: %s", err.Error())
+			return fmt.Errorf("Error getting studio: %s", err.Error())
 		}
 
-		// ensure aliases set
-		storedAliases, err := qb.GetAliases(ctx, created.ID)
-		if err != nil {
-			return fmt.Errorf("Error getting aliases: %s", err.Error())
+		if err := studio.LoadStashIDs(ctx, qb); err != nil {
+			return err
 		}
-		assert.Equal(t, aliases, storedAliases)
 
+		testStudioAlias(ctx, t, studio)
 		return nil
 	}); err != nil {
 		t.Error(err.Error())
 	}
+}
+
+func testStudioAlias(ctx context.Context, t *testing.T, s *models.Studio) {
+	qb := db.Studio
+	if err := s.LoadAliases(ctx, qb); err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	// ensure no alias to begin with
+	assert.Len(t, s.Aliases.List(), 0)
+
+	aliases := []string{"alias1", "alias2"}
+
+	// update alias and ensure was updated
+	input := models.StudioPartial{
+		ID: s.ID,
+		Aliases: &models.UpdateStrings{
+			Values: aliases,
+			Mode:   models.RelationshipUpdateModeSet,
+		},
+	}
+	var err error
+	s, err = qb.UpdatePartial(ctx, input)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if err := s.LoadAliases(ctx, qb); err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	assert.Equal(t, aliases, s.Aliases.List())
+
+	// remove alias and ensure was updated
+	input = models.StudioPartial{
+		ID: s.ID,
+		Aliases: &models.UpdateStrings{
+			Values: aliases,
+			Mode:   models.RelationshipUpdateModeRemove,
+		},
+	}
+	s, err = qb.UpdatePartial(ctx, input)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if err := s.LoadAliases(ctx, qb); err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	assert.Len(t, s.Aliases.List(), 0)
 }
 
 // TestStudioQueryFast does a quick test for major errors, no result verification

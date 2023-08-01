@@ -5,9 +5,6 @@ import {
   getQueryDefinition,
   StoreObject,
 } from "@apollo/client/utilities";
-import { stringToGender } from "src/utils/gender";
-import { stringToCircumcised } from "src/utils/circumcised";
-import { filterData } from "../utils/data";
 import { ListFilterModel } from "../models/list-filter/filter";
 import * as GQL from "./generated-graphql";
 
@@ -19,7 +16,10 @@ export const getClient = () => client;
 
 // Evicts cached results for the given queries.
 // Will also call a cache GC afterwards.
-function evictQueries(cache: ApolloCache<unknown>, queries: DocumentNode[]) {
+export function evictQueries(
+  cache: ApolloCache<unknown>,
+  queries: DocumentNode[]
+) {
   const fields: Modifiers = {};
   for (const query of queries) {
     const { selections } = getQueryDefinition(query).selectionSet;
@@ -111,7 +111,7 @@ function deleteObject(
 /// Object queries
 
 export const useFindScene = (id: string) => {
-  const skip = id === "new";
+  const skip = id === "new" || id === "";
   return GQL.useFindSceneQuery({ variables: { id }, skip });
 };
 
@@ -172,7 +172,7 @@ export const queryFindImages = (filter: ListFilterModel) =>
   });
 
 export const useFindMovie = (id: string) => {
-  const skip = id === "new";
+  const skip = id === "new" || id === "";
   return GQL.useFindMovieQuery({ variables: { id }, skip });
 };
 
@@ -217,7 +217,7 @@ export const queryFindSceneMarkers = (filter: ListFilterModel) =>
 export const useMarkerStrings = () => GQL.useMarkerStringsQuery();
 
 export const useFindGallery = (id: string) => {
-  const skip = id === "new";
+  const skip = id === "new" || id === "";
   return GQL.useFindGalleryQuery({ variables: { id }, skip });
 };
 
@@ -240,7 +240,7 @@ export const queryFindGalleries = (filter: ListFilterModel) =>
   });
 
 export const useFindPerformer = (id: string) => {
-  const skip = id === "new";
+  const skip = id === "new" || id === "";
   return GQL.useFindPerformerQuery({ variables: { id }, skip });
 };
 
@@ -272,7 +272,7 @@ export const useAllPerformersForFilter = () =>
   GQL.useAllPerformersForFilterQuery();
 
 export const useFindStudio = (id: string) => {
-  const skip = id === "new";
+  const skip = id === "new" || id === "";
   return GQL.useFindStudioQuery({ variables: { id }, skip });
 };
 
@@ -303,7 +303,7 @@ export const queryFindStudios = (filter: ListFilterModel) =>
 export const useAllStudiosForFilter = () => GQL.useAllStudiosForFilterQuery();
 
 export const useFindTag = (id: string) => {
-  const skip = id === "new";
+  const skip = id === "new" || id === "";
   return GQL.useFindTagQuery({ variables: { id }, skip });
 };
 
@@ -1475,7 +1475,7 @@ const studioMutationImpactedTypeFields = {
   Studio: ["child_studios"],
 };
 
-const studioMutationImpactedQueries = [
+export const studioMutationImpactedQueries = [
   GQL.FindScenesDocument, // filter by studio
   GQL.FindImagesDocument, // filter by studio
   GQL.FindMoviesDocument, // filter by studio
@@ -1868,13 +1868,39 @@ export const stashBoxPerformerQuery = (
         query: searchVal,
       },
     },
+    fetchPolicy: "network-only",
+  });
+
+export const stashBoxStudioQuery = (
+  query: string | null,
+  stashBoxIndex: number
+) =>
+  client.query<GQL.ScrapeSingleStudioQuery>({
+    query: GQL.ScrapeSingleStudioDocument,
+    variables: {
+      source: {
+        stash_box_index: stashBoxIndex,
+      },
+      input: {
+        query: query,
+      },
+    },
+    fetchPolicy: "network-only",
   });
 
 export const mutateStashBoxBatchPerformerTag = (
-  input: GQL.StashBoxBatchPerformerTagInput
+  input: GQL.StashBoxBatchTagInput
 ) =>
   client.mutate<GQL.StashBoxBatchPerformerTagMutation>({
     mutation: GQL.StashBoxBatchPerformerTagDocument,
+    variables: { input },
+  });
+
+export const mutateStashBoxBatchStudioTag = (
+  input: GQL.StashBoxBatchTagInput
+) =>
+  client.mutate<GQL.StashBoxBatchStudioTagMutation>({
+    mutation: GQL.StashBoxBatchStudioTagDocument,
     variables: { input },
   });
 
@@ -1949,16 +1975,7 @@ export const queryLogs = () =>
     fetchPolicy: "no-cache",
   });
 
-export const useSystemStatus = () =>
-  GQL.useSystemStatusQuery({
-    fetchPolicy: "no-cache",
-  });
-
-export const querySystemStatus = () =>
-  client.query<GQL.SystemStatusQuery>({
-    query: GQL.SystemStatusDocument,
-    fetchPolicy: "no-cache",
-  });
+export const useSystemStatus = () => GQL.useSystemStatusQuery();
 
 export const useJobsSubscribe = () => GQL.useJobsSubscribeSubscription();
 
@@ -2176,38 +2193,3 @@ export const queryParseSceneFilenames = (
     variables: { filter, config },
     fetchPolicy: "network-only",
   });
-
-export const makePerformerCreateInput = (toCreate: GQL.ScrapedPerformer) => {
-  const input: GQL.PerformerCreateInput = {
-    name: toCreate.name ?? "",
-    url: toCreate.url,
-    gender: stringToGender(toCreate.gender),
-    birthdate: toCreate.birthdate,
-    ethnicity: toCreate.ethnicity,
-    country: toCreate.country,
-    eye_color: toCreate.eye_color,
-    height_cm: toCreate.height ? Number(toCreate.height) : undefined,
-    measurements: toCreate.measurements,
-    fake_tits: toCreate.fake_tits,
-    career_length: toCreate.career_length,
-    tattoos: toCreate.tattoos,
-    piercings: toCreate.piercings,
-    aliases: toCreate.aliases,
-    twitter: toCreate.twitter,
-    instagram: toCreate.instagram,
-    tag_ids: filterData((toCreate.tags ?? []).map((t) => t.stored_id)),
-    image:
-      (toCreate.images ?? []).length > 0
-        ? (toCreate.images ?? [])[0]
-        : undefined,
-    details: toCreate.details,
-    death_date: toCreate.death_date,
-    hair_color: toCreate.hair_color,
-    weight: toCreate.weight ? Number(toCreate.weight) : undefined,
-    penis_length: toCreate.penis_length
-      ? Number(toCreate.penis_length)
-      : undefined,
-    circumcised: stringToCircumcised(toCreate.circumcised),
-  };
-  return input;
-};

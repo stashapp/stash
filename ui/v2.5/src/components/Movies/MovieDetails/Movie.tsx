@@ -17,9 +17,25 @@ import { useLightbox } from "src/hooks/Lightbox/hooks";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { useToast } from "src/hooks/Toast";
 import { MovieScenesPanel } from "./MovieScenesPanel";
-import { MovieDetailsPanel } from "./MovieDetailsPanel";
+import {
+  CompressedMovieDetailsPanel,
+  MovieDetailsPanel,
+} from "./MovieDetailsPanel";
 import { MovieEditPanel } from "./MovieEditPanel";
-import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import {
+  faChevronDown,
+  faChevronUp,
+  faLink,
+  faTrashAlt,
+} from "@fortawesome/free-solid-svg-icons";
+import TextUtils from "src/utils/text";
+import { Icon } from "src/components/Shared/Icon";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
+import { ConfigurationContext } from "src/hooks/Config";
+import { IUIConfig } from "src/core/config";
+import ImageUtils from "src/utils/image";
+import { useRatingKeybinds } from "src/hooks/keybinds";
+import { isPlatformUniquelyRenderedByApple } from "src/utils/apple";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
@@ -30,6 +46,16 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   const history = useHistory();
   const Toast = useToast();
 
+  // Configuration settings
+  const { configuration } = React.useContext(ConfigurationContext);
+  const uiConfig = configuration?.ui as IUIConfig | undefined;
+  const enableBackgroundImage = uiConfig?.enableMovieBackgroundImage ?? false;
+  const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
+  const showAllDetails = uiConfig?.showAllDetails ?? true;
+
+  const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
+  const [loadStickyHeader, setLoadStickyHeader] = useState<boolean>(false);
+
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
@@ -38,6 +64,8 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   const [frontImage, setFrontImage] = useState<string | null>();
   const [backImage, setBackImage] = useState<string | null>();
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
+
+  const appleRendering = isPlatformUniquelyRenderedByApple();
 
   const defaultImage =
     movie.front_image_path && movie.front_image_path.includes("default=true")
@@ -87,10 +115,32 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
     Mousetrap.bind("d d", () => {
       onDelete();
     });
+    Mousetrap.bind(",", () => setCollapsed(!collapsed));
 
     return () => {
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");
+    };
+  });
+
+  useRatingKeybinds(
+    true,
+    configuration?.ui?.ratingSystemOptions?.type,
+    setRating
+  );
+
+  useEffect(() => {
+    const f = () => {
+      if (document.documentElement.scrollTop <= 50) {
+        setLoadStickyHeader(false);
+      } else {
+        setLoadStickyHeader(true);
+      }
+    };
+
+    window.addEventListener("scroll", f);
+    return () => {
+      window.removeEventListener("scroll", f);
     };
   });
 
@@ -159,6 +209,25 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
     );
   }
 
+  function getCollapseButtonIcon() {
+    return collapsed ? faChevronDown : faChevronUp;
+  }
+
+  function maybeRenderShowCollapseButton() {
+    if (!isEditing) {
+      return (
+        <span className="detail-expand-collapse">
+          <Button
+            className="minimal expand-collapse"
+            onClick={() => setCollapsed(!collapsed)}
+          >
+            <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
+          </Button>
+        </span>
+      );
+    }
+  }
+
   function renderFrontImage() {
     let image = movie.front_image_path;
     if (isEditing) {
@@ -174,7 +243,11 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
     if (image && defaultImage) {
       return (
         <div className="movie-image-container">
-          <img alt="Front Cover" src={image} />
+          <img
+            alt="Front Cover"
+            src={image}
+            onLoad={ImageUtils.verifyImageSize}
+          />
         </div>
       );
     } else if (image) {
@@ -184,7 +257,11 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
           variant="link"
           onClick={() => showLightbox()}
         >
-          <img alt="Front Cover" src={image} />
+          <img
+            alt="Front Cover"
+            src={image}
+            onLoad={ImageUtils.verifyImageSize}
+          />
         </Button>
       );
     }
@@ -207,62 +284,180 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
           variant="link"
           onClick={() => showLightbox(index - 1)}
         >
-          <img alt="Back Cover" src={image} />
+          <img
+            alt="Back Cover"
+            src={image}
+            onLoad={ImageUtils.verifyImageSize}
+          />
         </Button>
       );
     }
   }
 
+  const renderClickableIcons = () => (
+    <span className="name-icons">
+      {movie.url && (
+        <Button className="minimal icon-link" title={movie.url}>
+          <a
+            href={TextUtils.sanitiseURL(movie.url)}
+            className="link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Icon icon={faLink} />
+          </a>
+        </Button>
+      )}
+    </span>
+  );
+
+  function maybeRenderAliases() {
+    if (movie?.aliases) {
+      return (
+        <div>
+          <span className="alias-head">{movie?.aliases}</span>
+        </div>
+      );
+    }
+  }
+
+  function setRating(v: number | null) {
+    if (movie.id) {
+      updateMovie({
+        variables: {
+          input: {
+            id: movie.id,
+            rating100: v,
+          },
+        },
+      });
+    }
+  }
+
+  const renderTabs = () => <MovieScenesPanel active={true} movie={movie} />;
+
+  function maybeRenderDetails() {
+    if (!isEditing) {
+      return (
+        <MovieDetailsPanel
+          movie={movie}
+          fullWidth={!collapsed && !compactExpandedDetails}
+        />
+      );
+    }
+  }
+
+  function maybeRenderEditPanel() {
+    if (isEditing) {
+      return (
+        <MovieEditPanel
+          movie={movie}
+          onSubmit={onSave}
+          onCancel={() => toggleEditing()}
+          onDelete={onDelete}
+          setFrontImage={setFrontImage}
+          setBackImage={setBackImage}
+          setEncodingImage={setEncodingImage}
+        />
+      );
+    }
+    {
+      return (
+        <DetailsEditNavbar
+          objectName={movie.name}
+          isNew={false}
+          isEditing={isEditing}
+          onToggleEdit={() => toggleEditing()}
+          onSave={() => {}}
+          onImageChange={() => {}}
+          onDelete={onDelete}
+        />
+      );
+    }
+  }
+
+  function maybeRenderCompressedDetails() {
+    if (!isEditing && loadStickyHeader) {
+      return <CompressedMovieDetailsPanel movie={movie} />;
+    }
+  }
+
+  function maybeRenderHeaderBackgroundImage() {
+    let image = movie.front_image_path;
+    if (enableBackgroundImage && !isEditing && image) {
+      return (
+        <div className="background-image-container">
+          <picture>
+            <source src={image} />
+            <img
+              className="background-image"
+              src={image}
+              alt={`${movie.name} background`}
+            />
+          </picture>
+        </div>
+      );
+    }
+  }
+
+  function maybeRenderTab() {
+    if (!isEditing) {
+      return renderTabs();
+    }
+  }
+
   if (updating || deleting) return <LoadingIndicator />;
 
-  // TODO: CSS class
   return (
-    <div className="row">
+    <div id="movie-page" className="row">
       <Helmet>
         <title>{movie?.name}</title>
       </Helmet>
 
-      <div className="movie-details mb-3 col col-xl-4 col-lg-6">
-        <div className="logo w-100">
-          {encodingImage ? (
-            <LoadingIndicator message="Encoding image..." />
-          ) : (
-            <div className="movie-images">
-              {renderFrontImage()}
-              {renderBackImage()}
+      <div
+        className={`detail-header ${isEditing ? "edit" : ""}  ${
+          collapsed ? "collapsed" : !compactExpandedDetails ? "full-width" : ""
+        } ${appleRendering ? "apple" : ""}`}
+      >
+        {maybeRenderHeaderBackgroundImage()}
+        <div className="detail-container">
+          <div className="detail-header-image">
+            <div className="logo w-100">
+              {encodingImage ? (
+                <LoadingIndicator
+                  message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+                />
+              ) : (
+                <div className="movie-images">
+                  {renderFrontImage()}
+                  {renderBackImage()}
+                </div>
+              )}
             </div>
-          )}
+          </div>
+          <div className="row">
+            <div className="movie-head col">
+              <h2>
+                <span className="movie-name">{movie.name}</span>
+                {maybeRenderShowCollapseButton()}
+                {renderClickableIcons()}
+              </h2>
+              {maybeRenderAliases()}
+              <RatingSystem
+                value={movie.rating100 ?? undefined}
+                onSetRating={(value) => setRating(value ?? null)}
+              />
+              {maybeRenderDetails()}
+              {maybeRenderEditPanel()}
+            </div>
+          </div>
         </div>
-
-        {!isEditing ? (
-          <>
-            <MovieDetailsPanel movie={movie} />
-            {/* HACK - this is also rendered in the MovieEditPanel */}
-            <DetailsEditNavbar
-              objectName={movie.name}
-              isNew={false}
-              isEditing={isEditing}
-              onToggleEdit={() => toggleEditing()}
-              onSave={() => {}}
-              onImageChange={() => {}}
-              onDelete={onDelete}
-            />
-          </>
-        ) : (
-          <MovieEditPanel
-            movie={movie}
-            onSubmit={onSave}
-            onCancel={() => toggleEditing()}
-            onDelete={onDelete}
-            setFrontImage={setFrontImage}
-            setBackImage={setBackImage}
-            setEncodingImage={setEncodingImage}
-          />
-        )}
       </div>
-
-      <div className="col-xl-8 col-lg-6">
-        <MovieScenesPanel active={true} movie={movie} />
+      {maybeRenderCompressedDetails()}
+      <div className="detail-body">
+        <div className="movie-body">
+          <div className="movie-tabs">{maybeRenderTab()}</div>
+        </div>
       </div>
       {renderDeleteAlert()}
     </div>

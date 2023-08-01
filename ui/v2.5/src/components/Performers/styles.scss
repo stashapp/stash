@@ -16,12 +16,9 @@
 
   .performer-head {
     display: inline-block;
-    margin-bottom: 2rem;
     vertical-align: top;
 
     .name-icons {
-      margin-left: 10px;
-
       .not-favorite {
         color: rgba(191, 204, 214, 0.5);
       }
@@ -214,4 +211,5 @@
   /* stylelint-disable */
   font-size: 0.875em;
   /* stylelint-enable */
+  padding-right: 0.5rem;
 }
