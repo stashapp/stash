@@ -158,13 +158,14 @@
 
 .PerformerScrapeModal {
   &-list {
-    list-style-type: none;
+    list-style: none;
     max-height: 50vh;
-    overflow-x: auto;
-    padding-left: 1rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-inline-start: 0;
 
-    .btn {
-      font-size: 1.2rem;
+    li {
+      cursor: pointer;
     }
   }
 }
@@ -211,4 +212,14 @@
   font-size: 0.875em;
   /* stylelint-enable */
   padding-right: 0.5rem;
+}
+
+.performer-result .performer-details > span {
+  &::after {
+    content: " • ";
+  }
+
+  &:last-child::after {
+    content: "";
+  }
 }
