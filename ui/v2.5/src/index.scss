@@ -188,6 +188,7 @@ dd {
 
 .detail-header.edit {
   background-color: unset;
+  overflow: auto;
 
   form {
     padding-top: 0.5rem;
@@ -241,7 +242,7 @@ dd {
   }
 
   .detail-item {
-    flex-direction: unset;
+    display: table;
     padding-right: 0;
     width: 100%;
 
@@ -251,7 +252,11 @@ dd {
     }
 
     .detail-item-value {
-      padding-left: 0.5rem;
+      margin-left: 1.5rem;
+    }
+
+    .detail-item-value.age {
+      width: 1.13rem;
     }
   }
 
@@ -336,7 +341,6 @@ dd {
 }
 
 .detail-item {
-  align-items: left;
   display: inline-flex;
   flex-direction: column;
   padding-bottom: 0.5rem;
@@ -345,6 +349,15 @@ dd {
   @media (max-width: 576px) {
     padding-right: 2rem;
   }
+}
+
+.detail-header.apple .detail-container {
+  display: flex;
+}
+
+.detail-header.full-width.apple .detail-header-image,
+.detail-header.edit.apple .detail-header-image {
+  display: unset;
 }
 
 .detail-item-title {

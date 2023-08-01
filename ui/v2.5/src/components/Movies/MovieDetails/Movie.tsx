@@ -35,6 +35,7 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { IUIConfig } from "src/core/config";
 import ImageUtils from "src/utils/image";
 import { useRatingKeybinds } from "src/hooks/keybinds";
+import UAParser from "ua-parser-js";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
@@ -63,6 +64,8 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   const [frontImage, setFrontImage] = useState<string | null>();
   const [backImage, setBackImage] = useState<string | null>();
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
+
+  const appleRendering = /(ipad)/i.test(navigator.userAgent) || /(macintosh.*safari)/i.test(navigator.userAgent);
 
   const defaultImage =
     movie.front_image_path && movie.front_image_path.includes("default=true")
@@ -414,16 +417,14 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
       <div
         className={`detail-header ${isEditing ? "edit" : ""}  ${
           collapsed ? "collapsed" : !compactExpandedDetails ? "full-width" : ""
-        }`}
+        } ${appleRendering ? "apple" : ""}`}
       >
         {maybeRenderHeaderBackgroundImage()}
         <div className="detail-container">
           <div className="detail-header-image">
             <div className="logo w-100">
               {encodingImage ? (
-                <LoadingIndicator
-                  message={`${intl.formatMessage({ id: "encoding_image" })}...`}
-                />
+                <LoadingIndicator message="Encoding image..." />
               ) : (
                 <div className="movie-images">
                   {renderFrontImage()}

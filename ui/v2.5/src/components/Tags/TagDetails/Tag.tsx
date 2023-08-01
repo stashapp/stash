@@ -63,6 +63,8 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
   const [loadStickyHeader, setLoadStickyHeader] = useState<boolean>(false);
 
+  const appleRendering = /(ipad)/i.test(navigator.userAgent) || /(macintosh.*safari)/i.test(navigator.userAgent);
+
   const { tab = "scenes" } = useParams<ITabParams>();
 
   // Editing state
@@ -496,7 +498,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
       <div
         className={`detail-header ${isEditing ? "edit" : ""}  ${
           collapsed ? "collapsed" : !compactExpandedDetails ? "full-width" : ""
-        }`}
+        } ${appleRendering ? "apple" : ""}`}
       >
         {maybeRenderHeaderBackgroundImage()}
         <div className="detail-container">
