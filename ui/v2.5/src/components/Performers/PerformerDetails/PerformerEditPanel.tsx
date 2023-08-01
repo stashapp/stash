@@ -789,7 +789,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return (
       <Row>
         <Form.Label column sm={labelXS} xl={labelXL}>
-          StashIDs
+          {intl.formatMessage({ id: "stash_ids" })}
         </Form.Label>
         <Col sm={fieldXS} xl={fieldXL}>
           <ul className="pl-0">

@@ -213,7 +213,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
             fullWidth={fullWidth}
           />
           <DetailItem
-            id="StashIDs"
+            id="stash_ids"
             value={renderStashIDs()}
             fullWidth={fullWidth}
           />
