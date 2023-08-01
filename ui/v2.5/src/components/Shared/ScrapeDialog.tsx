@@ -494,9 +494,9 @@ export const ScrapeImageDialogRow = <
 
   function renderSelector() {
     return (
-      props.images.length > 0 && (
+      props.images.length > 1 && (
         <div className="d-flex mt-2 image-selection">
-          <Button onClick={setPrev} disabled={props.images.length === 1}>
+          <Button onClick={setPrev}>
             <Icon icon={faArrowLeft} />
           </Button>
           <h5 className="flex-grow-1 px-2">
@@ -504,7 +504,7 @@ export const ScrapeImageDialogRow = <
             <br />
             {imageIndex + 1} of {props.images.length}
           </h5>
-          <Button onClick={setNext} disabled={props.images.length === 1}>
+          <Button onClick={setNext}>
             <Icon icon={faArrowRight} />
           </Button>
         </div>
