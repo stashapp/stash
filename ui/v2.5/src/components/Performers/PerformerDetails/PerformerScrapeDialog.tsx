@@ -414,8 +414,10 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     )
   );
 
-  const images = props.scraped.images && props.scraped.images.length > 0
-    ? props.scraped.images : [];
+  const images =
+    props.scraped.images && props.scraped.images.length > 0
+      ? props.scraped.images
+      : [];
 
   const allFields = [
     name,
