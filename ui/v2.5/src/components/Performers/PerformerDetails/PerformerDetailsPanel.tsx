@@ -329,34 +329,43 @@ export const CompressedPerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         <a className="performer-name" onClick={() => scrollToTop()}>
           {performer.name}
         </a>
-        <span className="detail-divider">/</span>
         {performer.gender ? (
-          <span className="performer-gender">
-            {intl.formatMessage({ id: "gender_types." + performer.gender })}
-          </span>
+          <>
+            <span className="detail-divider">/</span>
+            <span className="performer-gender">
+              {intl.formatMessage({ id: "gender_types." + performer.gender })}
+            </span>
+          </>
         ) : (
           ""
         )}
-        <span className="detail-divider">/</span>
         {performer.birthdate ? (
-          <span
-            className="performer-age"
-            title={TextUtils.formatDate(intl, performer.birthdate ?? undefined)}
-          >
-            {TextUtils.age(performer.birthdate, performer.death_date)}
-          </span>
+          <>
+            <span className="detail-divider">/</span>
+            <span
+              className="performer-age"
+              title={TextUtils.formatDate(
+                intl,
+                performer.birthdate ?? undefined
+              )}
+            >
+              {TextUtils.age(performer.birthdate, performer.death_date)}
+            </span>
+          </>
         ) : (
           ""
         )}
-        <span className="detail-divider">/</span>
         {performer.country ? (
-          <span className="performer-country">
-            <CountryFlag
-              country={performer.country}
-              className="mr-2"
-              includeName={true}
-            />
-          </span>
+          <>
+            <span className="detail-divider">/</span>
+            <span className="performer-country">
+              <CountryFlag
+                country={performer.country}
+                className="mr-2"
+                includeName={true}
+              />
+            </span>
+          </>
         ) : (
           ""
         )}
