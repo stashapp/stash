@@ -561,8 +561,8 @@ export const ScrapeImageDialogRow = <
           </Col>
           <Col xs="6">
             <InputGroup>
-              {props.renderNewField()}
               {renderSelector()}
+              {props.renderNewField()}
             </InputGroup>
             {renderNewValues()}
           </Col>
