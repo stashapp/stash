@@ -39,6 +39,7 @@ import { IUIConfig } from "./core/config";
 import { releaseNotes } from "./docs/en/ReleaseNotes";
 import { getPlatformURL } from "./core/createClient";
 import { lazyComponent } from "./utils/lazyComponent";
+import { isPlatformUniquelyRenderedByApple } from "./utils/apple";
 
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")
@@ -66,6 +67,8 @@ const SceneFilenameParser = lazyComponent(
 const SceneDuplicateChecker = lazyComponent(
   () => import("./components/SceneDuplicateChecker/SceneDuplicateChecker")
 );
+
+const appleRendering = isPlatformUniquelyRenderedByApple();
 
 initPolyfills();
 
@@ -274,7 +277,11 @@ export const App: React.FC = () => {
                         defaultTitle="Stash"
                       />
                       {maybeRenderNavbar()}
-                      <div className="main container-fluid">
+                      <div
+                        className={`main container-fluid ${
+                          appleRendering ? "apple" : ""
+                        }`}
+                      >
                         {renderContent()}
                       </div>
                     </InteractiveProvider>

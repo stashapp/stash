@@ -42,7 +42,6 @@ import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import ImageUtils from "src/utils/image";
 import { useRatingKeybinds } from "src/hooks/keybinds";
-import { isPlatformUniquelyRenderedByApple } from "src/utils/apple";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -68,8 +67,6 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
   const [loadStickyHeader, setLoadStickyHeader] = useState<boolean>(false);
-
-  const appleRendering = isPlatformUniquelyRenderedByApple();
 
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -507,7 +504,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
       <div
         className={`detail-header ${isEditing ? "edit" : ""}  ${
           collapsed ? "collapsed" : !compactExpandedDetails ? "full-width" : ""
-        }  ${appleRendering ? "apple" : ""}`}
+        }`}
       >
         {maybeRenderHeaderBackgroundImage()}
         <div className="detail-container">
