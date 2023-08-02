@@ -949,6 +949,7 @@
   },
   "empty_server": "Add some scenes to your server to view recommendations on this page.",
   "errors": {
+    "loading_type": "Error loading {type}",
     "image_index_greater_than_zero": "Image index must be greater than 0",
     "lazy_component_error_help": "If you recently upgraded Stash, please reload the page or clear your browser cache.",
     "something_went_wrong": "Something went wrong."
@@ -1013,6 +1014,7 @@
   "include_parent_tags": "Include parent tags",
   "include_sub_studios": "Include subsidiary studios",
   "include_sub_tags": "Include sub-tags",
+  "index_of_total": "{index} of {total}",
   "instagram": "Instagram",
   "interactive": "Interactive",
   "interactive_speed": "Interactive speed",

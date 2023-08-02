@@ -15,8 +15,6 @@ import isEqual from "lodash-es/isEqual";
 import clone from "lodash-es/clone";
 import { FormattedMessage, useIntl } from "react-intl";
 import {
-  faArrowLeft,
-  faArrowRight,
   faCheck,
   faPencilAlt,
   faPlus,
@@ -25,6 +23,7 @@ import {
 import { getCountryByISO } from "src/utils/country";
 import { CountrySelect } from "./CountrySelect";
 import { StringListInput } from "./StringListInput";
+import { ImageSelector } from "./ImageSelector";
 
 export class ScrapeResult<T> {
   public newValue?: T;
@@ -443,135 +442,6 @@ export const ScrapedImageRow: React.FC<IScrapedImageRowProps> = (props) => {
   );
 };
 
-interface IScrapedImageDialogRowProps<
-  T extends ScrapeResult<string>,
-  V extends IHasName
-> extends IScrapedFieldProps<string> {
-  title: string;
-  renderOriginalField: () => JSX.Element | undefined;
-  renderNewField: () => JSX.Element | undefined;
-  onChange: (value: T) => void;
-  newValues?: V[];
-  images: string[];
-  onCreateNew?: (index: number) => void;
-}
-
-export const ScrapeImageDialogRow = <
-  T extends ScrapeResult<string>,
-  V extends IHasName
->(
-  props: IScrapedImageDialogRowProps<T, V>
-) => {
-  const [imageIndex, setImageIndex] = useState(0);
-
-  function hasNewValues() {
-    return props.newValues && props.newValues.length > 0 && props.onCreateNew;
-  }
-
-  function setPrev() {
-    let newIdx = imageIndex - 1;
-    if (newIdx < 0) {
-      newIdx = props.images.length - 1;
-    }
-    const ret = props.result.cloneWithValue(props.images[newIdx]);
-    props.onChange(ret as T);
-    setImageIndex(newIdx);
-  }
-
-  function setNext() {
-    let newIdx = imageIndex + 1;
-    if (newIdx >= props.images.length) {
-      newIdx = 0;
-    }
-    const ret = props.result.cloneWithValue(props.images[newIdx]);
-    props.onChange(ret as T);
-    setImageIndex(newIdx);
-  }
-
-  if (!props.result.scraped && !hasNewValues()) {
-    return <></>;
-  }
-
-  function renderSelector() {
-    return (
-      props.images.length > 1 && (
-        <div className="d-flex mt-2 image-selection">
-          <Button onClick={setPrev}>
-            <Icon icon={faArrowLeft} />
-          </Button>
-          <h5 className="flex-grow-1 px-2">
-            Select performer image
-            <br />
-            {imageIndex + 1} of {props.images.length}
-          </h5>
-          <Button onClick={setNext}>
-            <Icon icon={faArrowRight} />
-          </Button>
-        </div>
-      )
-    );
-  }
-
-  function renderNewValues() {
-    if (!hasNewValues()) {
-      return;
-    }
-
-    const ret = (
-      <>
-        {props.newValues!.map((t, i) => (
-          <Badge
-            className="tag-item"
-            variant="secondary"
-            key={t.name}
-            onClick={() => props.onCreateNew!(i)}
-          >
-            {t.name}
-            <Button className="minimal ml-2">
-              <Icon className="fa-fw" icon={faPlus} />
-            </Button>
-          </Badge>
-        ))}
-      </>
-    );
-
-    const minCollapseLength = 10;
-
-    if (props.newValues!.length >= minCollapseLength) {
-      return (
-        <CollapseButton text={`Missing (${props.newValues!.length})`}>
-          {ret}
-        </CollapseButton>
-      );
-    }
-
-    return ret;
-  }
-
-  return (
-    <Row className="px-3 pt-3">
-      <Form.Label column lg="3">
-        {props.title}
-      </Form.Label>
-
-      <Col lg="9">
-        <Row>
-          <Col xs="6">
-            <InputGroup>{props.renderOriginalField()}</InputGroup>
-          </Col>
-          <Col xs="6">
-            <InputGroup>
-              {props.renderNewField()}
-              {renderSelector()}
-            </InputGroup>
-            {renderNewValues()}
-          </Col>
-        </Row>
-      </Col>
-    </Row>
-  );
-};
-
 interface IScrapedImagesRowProps {
   title: string;
   className?: string;
@@ -581,11 +451,18 @@ interface IScrapedImagesRowProps {
 }
 
 export const ScrapedImagesRow: React.FC<IScrapedImagesRowProps> = (props) => {
+  const [imageIndex, setImageIndex] = useState(0);
+
+  function onSetImageIndex(newIdx: number) {
+    const ret = props.result.cloneWithValue(props.images[newIdx]);
+    props.onChange(ret);
+    setImageIndex(newIdx);
+  }
+
   return (
-    <ScrapeImageDialogRow
+    <ScrapeDialogRow
       title={props.title}
       result={props.result}
-      images={props.images}
       renderOriginalField={() => (
         <ScrapedImage
           result={props.result}
@@ -594,12 +471,14 @@ export const ScrapedImagesRow: React.FC<IScrapedImagesRowProps> = (props) => {
         />
       )}
       renderNewField={() => (
-        <ScrapedImage
-          result={props.result}
-          className={props.className}
-          placeholder={props.title}
-          isNew
-        />
+        <div>
+          <ImageSelector
+            imageClassName={props.className}
+            images={props.images}
+            imageIndex={imageIndex}
+            setImageIndex={onSetImageIndex}
+          />
+        </div>
       )}
       onChange={props.onChange}
     />
