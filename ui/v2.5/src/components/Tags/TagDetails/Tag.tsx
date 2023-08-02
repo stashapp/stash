@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
+import cx from "classnames";
 import Mousetrap from "mousetrap";
 
 import * as GQL from "src/core/generated-graphql";
@@ -484,17 +485,19 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     }
   }
 
+  const headerClassName = cx("detail-header", {
+    edit: isEditing,
+    collapsed,
+    "full-width": !collapsed && !compactExpandedDetails,
+  });
+
   return (
     <div id="tag-page" className="row">
       <Helmet>
         <title>{tag.name}</title>
       </Helmet>
 
-      <div
-        className={`detail-header ${isEditing ? "edit" : ""}  ${
-          collapsed ? "collapsed" : !compactExpandedDetails ? "full-width" : ""
-        }`}
-      >
+      <div className={headerClassName}>
         {maybeRenderHeaderBackgroundImage()}
         <div className="detail-container">
           <div className="detail-header-image">

@@ -536,17 +536,19 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
       />
     );
 
+  const headerClassName = cx("detail-header", {
+    edit: isEditing,
+    collapsed,
+    "full-width": !collapsed && !compactExpandedDetails,
+  });
+
   return (
     <div id="performer-page" className="row">
       <Helmet>
         <title>{performer.name}</title>
       </Helmet>
 
-      <div
-        className={`detail-header ${isEditing ? "edit" : ""}  ${
-          collapsed ? "collapsed" : !compactExpandedDetails ? "full-width" : ""
-        }`}
-      >
+      <div className={headerClassName}>
         {maybeRenderHeaderBackgroundImage()}
         <div className="detail-container">
           <div className="detail-header-image">
