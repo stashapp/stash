@@ -9,7 +9,7 @@ import {
   useMovieUpdate,
   useMovieDestroy,
 } from "src/core/StashService";
-import { useParams, useHistory } from "react-router-dom";
+import { useHistory, RouteComponentProps } from "react-router-dom";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
@@ -40,6 +40,10 @@ import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
+}
+
+interface IMovieParams {
+  id: string;
 }
 
 const MoviePage: React.FC<IProps> = ({ movie }) => {
@@ -448,9 +452,11 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   );
 };
 
-const MovieLoader: React.FC = () => {
-  const { id } = useParams<{ id?: string }>();
-  const { data, loading, error } = useFindMovie(id ?? "");
+const MovieLoader: React.FC<RouteComponentProps<IMovieParams>> = ({
+  match,
+}) => {
+  const { id } = match.params;
+  const { data, loading, error } = useFindMovie(id);
 
   useScrollToTopOnMount();
 

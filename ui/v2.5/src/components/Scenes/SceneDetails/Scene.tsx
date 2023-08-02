@@ -8,7 +8,7 @@ import React, {
   useLayoutEffect,
 } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useParams, useLocation, useHistory, Link } from "react-router-dom";
+import { Link, RouteComponentProps } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -91,6 +91,10 @@ interface IProps {
   collapsed: boolean;
   setCollapsed: (state: boolean) => void;
   setContinuePlaylist: (value: boolean) => void;
+}
+
+interface ISceneParams {
+  id: string;
 }
 
 const ScenePage: React.FC<IProps> = ({
@@ -539,12 +543,14 @@ const ScenePage: React.FC<IProps> = ({
   );
 };
 
-const SceneLoader: React.FC = () => {
-  const { id } = useParams<{ id?: string }>();
-  const location = useLocation();
-  const history = useHistory();
+const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
+  location,
+  history,
+  match,
+}) => {
+  const { id } = match.params;
   const { configuration } = useContext(ConfigurationContext);
-  const { data, loading, error } = useFindScene(id ?? "");
+  const { data, loading, error } = useFindScene(id);
 
   const [scene, setScene] = useState<GQL.SceneDataFragment>();
 
