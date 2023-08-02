@@ -39,6 +39,7 @@ import {
 import { IUIConfig } from "src/core/config";
 import ImageUtils from "src/utils/image";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
+import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -523,6 +524,8 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
 const TagLoader: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
   const { data, loading, error } = useFindTag(id ?? "");
+
+  useScrollToTopOnMount();
 
   if (loading) return <LoadingIndicator />;
   if (error) return <ErrorMessage error={error.message} />;

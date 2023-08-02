@@ -44,6 +44,7 @@ import { IUIConfig } from "src/core/config";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import ImageUtils from "src/utils/image";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
+import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -581,6 +582,8 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
 const PerformerLoader: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
   const { data, loading, error } = useFindPerformer(id ?? "");
+
+  useScrollToTopOnMount();
 
   if (loading) return <LoadingIndicator />;
   if (error) return <ErrorMessage error={error.message} />;

@@ -31,6 +31,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { galleryPath, galleryTitle } from "src/core/galleries";
 import { GalleryChapterPanel } from "./GalleryChaptersPanel";
+import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 
 interface IProps {
   gallery: GQL.GalleryDataFragment;
@@ -375,6 +376,8 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
 const GalleryLoader: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
   const { data, loading, error } = useFindGallery(id ?? "");
+
+  useScrollToTopOnMount();
 
   if (loading) return <LoadingIndicator />;
   if (error) return <ErrorMessage error={error.message} />;

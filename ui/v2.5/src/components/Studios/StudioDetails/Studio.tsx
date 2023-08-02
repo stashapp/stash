@@ -43,6 +43,7 @@ import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import ImageUtils from "src/utils/image";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
+import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -535,6 +536,8 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
 const StudioLoader: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
   const { data, loading, error } = useFindStudio(id ?? "");
+
+  useScrollToTopOnMount();
 
   if (loading) return <LoadingIndicator />;
   if (error) return <ErrorMessage error={error.message} />;

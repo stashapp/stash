@@ -36,6 +36,7 @@ import { IUIConfig } from "src/core/config";
 import ImageUtils from "src/utils/image";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
+import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
@@ -450,6 +451,8 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
 const MovieLoader: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
   const { data, loading, error } = useFindMovie(id ?? "");
+
+  useScrollToTopOnMount();
 
   if (loading) return <LoadingIndicator />;
   if (error) return <ErrorMessage error={error.message} />;
