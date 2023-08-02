@@ -35,7 +35,6 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { IUIConfig } from "src/core/config";
 import ImageUtils from "src/utils/image";
 import { useRatingKeybinds } from "src/hooks/keybinds";
-import { isPlatformUniquelyRenderedByApple } from "src/utils/apple";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
@@ -64,8 +63,6 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   const [frontImage, setFrontImage] = useState<string | null>();
   const [backImage, setBackImage] = useState<string | null>();
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
-
-  const appleRendering = isPlatformUniquelyRenderedByApple();
 
   const defaultImage =
     movie.front_image_path && movie.front_image_path.includes("default=true")
@@ -417,7 +414,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
       <div
         className={`detail-header ${isEditing ? "edit" : ""}  ${
           collapsed ? "collapsed" : !compactExpandedDetails ? "full-width" : ""
-        } ${appleRendering ? "apple" : ""}`}
+        }`}
       >
         {maybeRenderHeaderBackgroundImage()}
         <div className="detail-container">
