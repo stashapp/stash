@@ -97,6 +97,21 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     );
   };
 
+  const formatAge = (birthdate?: string | null, deathdate?: string | null) => {
+    if (!birthdate) {
+      return "";
+    }
+
+    const age = TextUtils.age(birthdate, deathdate);
+
+    return (
+      <span className="performer-age">
+        <span className="age">{age}</span>
+        <span className="birthdate"> ({birthdate})</span>
+      </span>
+    );
+  };
+
   const formatWeight = (weight?: number | null) => {
     if (!weight) {
       return "";
@@ -186,6 +201,11 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
             value={performer?.piercings}
             fullWidth={fullWidth}
           />
+          <DetailItem
+            id="career_length"
+            value={performer?.career_length}
+            fullWidth={fullWidth}
+          />
           <DetailItem id="details" value={details} fullWidth={fullWidth} />
           <DetailItem
             id="tags"
@@ -215,8 +235,16 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       )}
       <DetailItem
         id="age"
-        value={TextUtils.age(performer.birthdate, performer.death_date)}
-        title={TextUtils.formatDate(intl, performer.birthdate ?? undefined)}
+        value={
+          !fullWidth
+            ? TextUtils.age(performer.birthdate, performer.death_date)
+            : formatAge(performer.birthdate, performer.death_date)
+        }
+        title={
+          !fullWidth
+            ? TextUtils.formatDate(intl, performer.birthdate ?? undefined)
+            : ""
+        }
         fullWidth={fullWidth}
       />
       <DetailItem id="death_date" value={performer.death_date} />
@@ -301,6 +329,7 @@ export const CompressedPerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         <a className="performer-name" onClick={() => scrollToTop()}>
           {performer.name}
         </a>
+        <span className="detail-divider">/</span>
         {performer.gender ? (
           <span className="performer-gender">
             {intl.formatMessage({ id: "gender_types." + performer.gender })}
@@ -308,6 +337,7 @@ export const CompressedPerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         ) : (
           ""
         )}
+        <span className="detail-divider">/</span>
         {performer.birthdate ? (
           <span
             className="performer-age"
@@ -318,6 +348,7 @@ export const CompressedPerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         ) : (
           ""
         )}
+        <span className="detail-divider">/</span>
         {performer.country ? (
           <span className="performer-country">
             <CountryFlag

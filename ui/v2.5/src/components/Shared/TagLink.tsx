@@ -34,7 +34,7 @@ type SceneMarkerFragment = Pick<GQL.SceneMarker, "id" | "title" | "seconds"> & {
 
 interface IProps {
   tag?: Partial<TagDataFragment>;
-  tagType?: "performer" | "scene" | "gallery" | "image";
+  tagType?: "performer" | "scene" | "gallery" | "image" | "details";
   performer?: Partial<PerformerDataFragment>;
   marker?: SceneMarkerFragment;
   movie?: Partial<MovieDataFragment>;
@@ -49,6 +49,7 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
   let link: string = "#";
   let title: string = "";
   if (props.tag) {
+    id = props.tag.id || "";
     switch (props.tagType) {
       case "scene":
       case undefined:
@@ -63,8 +64,10 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
       case "image":
         link = NavUtils.makeTagImagesUrl(props.tag);
         break;
+      case "details":
+        link = NavUtils.makeTagUrl(id);
+        break;
     }
-    id = props.tag.id || "";
     title = props.tag.name || "";
   } else if (props.performer) {
     link = NavUtils.makePerformerScenesUrl(props.performer);

@@ -43,13 +43,20 @@ body {
   -webkit-font-smoothing: antialiased;
   margin: 0;
   overflow-x: hidden;
-  padding: 3.5rem 0 0 0;
+  padding: 4rem 0 0 0;
 
   @include media-breakpoint-down(xs) {
     @media (orientation: portrait) {
       padding: 1rem 0 5rem;
     }
   }
+}
+
+#movie-page,
+#performer-page,
+#studio-page,
+#tag-page {
+  margin-top: -0.5rem;
 }
 
 code,
@@ -60,26 +67,6 @@ code,
 
 dd {
   white-space: pre-line;
-}
-
-.sticky.detail-header-group {
-  padding: 1rem 2.5rem;
-
-  a.movie-name,
-  a.performer-name,
-  a.studio-name,
-  a.tag-name {
-    color: #f5f8fa;
-    cursor: pointer;
-    font-weight: 800;
-  }
-
-  a,
-  span {
-    color: #d7d9db;
-    font-weight: 600;
-    padding-right: 1.5rem;
-  }
 }
 
 .sticky.detail-header {
@@ -99,6 +86,32 @@ dd {
   .studio-name,
   .tag-name {
     font-weight: 800;
+  }
+
+  .sticky.detail-header-group {
+    padding: 1rem 2.5rem;
+
+    a.movie-name,
+    a.performer-name,
+    a.studio-name,
+    a.tag-name {
+      color: #f5f8fa;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    a,
+    span {
+      color: #d7d9db;
+      font-weight: 600;
+      padding-right: 0.5rem;
+    }
+
+    .detail-divider {
+      font-size: 1rem;
+      font-weight: 400;
+      opacity: 0.6;
+    }
   }
 }
 
@@ -163,6 +176,11 @@ dd {
       border-bottom: 1px dotted #f5f8fa;
       margin-right: auto;
     }
+
+    .performer-disambiguation {
+      letter-spacing: -0.04rem;
+      opacity: 0.65;
+    }
   }
 
   h2 {
@@ -188,6 +206,7 @@ dd {
 
 .detail-header.edit {
   background-color: unset;
+  overflow: visible;
 
   form {
     padding-top: 0.5rem;
@@ -199,6 +218,11 @@ dd {
 
   .detail-header-image {
     height: auto;
+  }
+
+  /* StashID alignment fix */
+  .form-group.row .row.no-gutters {
+    padding-top: calc(0.375rem + 1px);
   }
 }
 
@@ -241,17 +265,18 @@ dd {
   }
 
   .detail-item {
-    flex-direction: unset;
+    display: table;
     padding-right: 0;
     width: 100%;
 
     .detail-item-title {
       display: table-cell;
-      width: 100px;
+      width: 130px;
     }
 
-    .detail-item-value {
-      padding-left: 0.5rem;
+    .detail-item-value.age {
+      border-bottom: unset;
+      width: fit-content;
     }
   }
 
@@ -336,7 +361,6 @@ dd {
 }
 
 .detail-item {
-  align-items: left;
   display: inline-flex;
   flex-direction: column;
   padding-bottom: 0.5rem;
@@ -344,6 +368,25 @@ dd {
 
   @media (max-width: 576px) {
     padding-right: 2rem;
+  }
+}
+
+/* the .apple class denotes areas where rendering on some apple platforms has been inconsistent with other platforms
+   these rules aim to address those inconsistences */
+.apple {
+  .detail-header {
+    .detail-container {
+      display: flex;
+    }
+  }
+
+  .detail-header.edit .row {
+    flex: 1;
+  }
+
+  .detail-header.full-width .detail-header-image,
+  .detail-header.edit .detail-header-image {
+    display: unset;
   }
 }
 
@@ -357,6 +400,13 @@ dd {
   display: flex;
   flex-direction: row;
   white-space: pre-line;
+
+  .birthdate,
+  .height-imperial,
+  .penis-length-imperial,
+  .weight-imperial {
+    opacity: 0.65;
+  }
 }
 
 .input-control,
