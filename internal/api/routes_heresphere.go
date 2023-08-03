@@ -314,7 +314,7 @@ func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.R
 			}
 			ret.Partial = models.NewScenePartial()
 
-			// TODO: Unless we track playback, we cant know if its a "played" or skip event
+			// Unless we track playback, we cant know if its a "played" or skip event
 			if scn.PlayCount == 0 {
 				ret.Partial.PlayCount.Set = true
 				ret.Partial.PlayCount.Value = 1
@@ -431,18 +431,6 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 					tagMod, err = rs.repository.Tag.FindByName(ctx, after, true)
 					return err
 				}); err != nil {
-					// Create if non-existent
-					/*if tagMod == nil {
-						newTag := TagCreateInput{
-							Name: after,
-						}
-						// TODO Exception: 0 Unknown - missing operation context
-						// Needs GQL?
-						if tagMod, err = rs.resolver.Mutation().TagCreate(context.Background(), newTag); err != nil {
-							return err
-						}
-					}*/
-					// Avoid empty branch, TODO: Remove
 					tagMod = nil
 				}
 
@@ -466,16 +454,6 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 
 					return err
 				}); err != nil {
-					// Create if non-existent
-					/*if tagMod == nil {
-						newTag := PerformerCreateInput{
-							Name: after,
-						}
-						if tagMod, err = rs.resolver.Mutation().PerformerCreate(context.Background(), newTag); err != nil {
-							return err
-						}
-					}*/
-					// Avoid empty branch, TODO: Remove
 					tagMod = nil
 				}
 
@@ -531,7 +509,42 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 				}
 			}
 
-			// TODO: Movie, Studio, Director?
+			if strings.HasPrefix(tagI.Name, "Movie:") {
+				after := strings.TrimPrefix(tagI.Name, "Movie:")
+
+				var err error
+				var tagMod *models.Movie
+				if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+					// Search for performer
+					tagMod, err = rs.repository.Movie.FindByName(ctx, after, true)
+					return err
+				}); err == nil {
+					ret.Partial.MovieIDs.Mode = models.RelationshipUpdateModeSet
+					ret.Partial.MovieIDs.AddUnique(models.MoviesScenes{
+						MovieID:    tagMod.ID,
+						SceneIndex: &scn.ID,
+					})
+				}
+			}
+			if strings.HasPrefix(tagI.Name, "Studio:") {
+				after := strings.TrimPrefix(tagI.Name, "Studio:")
+
+				var err error
+				var tagMod *models.Studio
+				if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+					// Search for performer
+					tagMod, err = rs.repository.Studio.FindByName(ctx, after, true)
+					return err
+				}); err == nil {
+					ret.Partial.StudioID.Set = true
+					ret.Partial.StudioID.Value = tagMod.ID
+				}
+			}
+			if strings.HasPrefix(tagI.Name, "Director:") {
+				after := strings.TrimPrefix(tagI.Name, "Director:")
+				ret.Partial.Director.Set = true
+				ret.Partial.Director.Value = after
+			}
 
 			// Custom
 			{
@@ -542,6 +555,7 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 				if strings.HasPrefix(tagName, prefix) {
 					after := strings.TrimPrefix(tagName, prefix)
 					if b, err := strconv.ParseBool(after); err == nil {
+						// Plays chicken
 						if b && scn.PlayCount == 0 {
 							ret.Partial.PlayCount.Set = true
 							ret.Partial.PlayCount.Value = 1
@@ -860,7 +874,6 @@ func (rs heresphereRoutes) getVideoMedia(r *http.Request, scene *models.Scene) [
 				maxTrans := transcodeSize.GetMaxResolution()
 				// If resolution is below or equal to allowed res (and original video res)
 				if height := res.GetMaxResolution(); (maxTrans == 0 || maxTrans >= height) && height <= mediaFile.Height {
-					// TODO: Prettify
 					processedEntry.Resolution = height
 					processedEntry.Height = height
 					processedEntry.Width = int(resRatio * float32(height))
