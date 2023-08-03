@@ -958,8 +958,7 @@ func (rs heresphereRoutes) HeresphereIndex(w http.ResponseWriter, r *http.Reques
 	w.Header().Set("Content-Type", "application/json")
 	enc := json.NewEncoder(w)
 	enc.SetEscapeHTML(false)
-	err := enc.Encode(idx)
-	if err != nil {
+	if err := enc.Encode(idx); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -1142,8 +1141,7 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 	w.Header().Set("Content-Type", "application/json")
 	enc := json.NewEncoder(w)
 	enc.SetEscapeHTML(false)
-	err := enc.Encode(processedScene)
-	if err != nil {
+	if err := enc.Encode(processedScene); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -1190,8 +1188,7 @@ func (rs heresphereRoutes) HeresphereLoginToken(w http.ResponseWriter, r *http.R
 	w.Header().Set("Content-Type", "application/json")
 	enc := json.NewEncoder(w)
 	enc.SetEscapeHTML(false)
-	err := enc.Encode(auth)
-	if err != nil {
+	if err := enc.Encode(auth); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -1267,8 +1264,7 @@ func writeNotAuthorized(w http.ResponseWriter, r *http.Request, msg string) {
 	w.Header().Set("Content-Type", "application/json")
 	enc := json.NewEncoder(w)
 	enc.SetEscapeHTML(false)
-	err := enc.Encode(idx)
-	if err != nil {
+	if err := enc.Encode(idx); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
