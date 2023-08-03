@@ -175,11 +175,12 @@ func Start() error {
 	}.Routes())
 	r.Mount("/downloads", downloadsRoutes{}.Routes())
 	r.Mount("/heresphere", heresphereRoutes{
-		txnManager:  txnManager,
-		sceneFinder: txnManager.Scene,
-		fileFinder:  txnManager.File,
-		repository:  txnManager,
-		resolver:    resolver,
+		txnManager:    txnManager,
+		sceneFinder:   txnManager.Scene,
+		fileFinder:    txnManager.File,
+		captionFinder: txnManager.File,
+		repository:    txnManager,
+		resolver:      resolver,
 	}.Routes())
 
 	r.HandleFunc("/css", cssHandler(c, pluginCache))

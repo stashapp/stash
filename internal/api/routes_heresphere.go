@@ -205,11 +205,12 @@ type HeresphereVideoEvent struct {
 }
 
 type heresphereRoutes struct {
-	txnManager  txn.Manager
-	sceneFinder SceneFinder
-	fileFinder  file.Finder
-	repository  manager.Repository
-	resolver    ResolverRoot
+	txnManager    txn.Manager
+	sceneFinder   SceneFinder
+	fileFinder    file.Finder
+	captionFinder CaptionFinder
+	repository    manager.Repository
+	resolver      ResolverRoot
 }
 
 /*
@@ -220,6 +221,7 @@ func (rs heresphereRoutes) Routes() chi.Router {
 
 	r.Route("/", func(r chi.Router) {
 		r.Use(rs.HeresphereCtx)
+
 		r.Post("/", rs.HeresphereIndex)
 		r.Get("/", rs.HeresphereIndex)
 		r.Head("/", rs.HeresphereIndex)
@@ -232,6 +234,7 @@ func (rs heresphereRoutes) Routes() chi.Router {
 			r.Get("/", rs.HeresphereVideoData)
 
 			r.Post("/event", rs.HeresphereVideoEvent)
+			r.Get("/caption/{langCode}/{captionType}", rs.getVideoCaptions)
 		})
 	})
 
@@ -299,9 +302,9 @@ func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.R
 
 	// Add playDuration
 	newTime := event.Time / 1000
-	newDuration := scn.PlayDuration
+	/*newDuration := scn.PlayDuration
 	// TODO: Huge value bug
-	/*if newTime > scene.ResumeTime {
+	if newTime > scene.ResumeTime {
 		newDuration += (newTime - scene.ResumeTime)
 	}*/
 
@@ -332,12 +335,51 @@ func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.R
 	}
 
 	// Write
-	if _, err := rs.resolver.Mutation().SceneSaveActivity(r.Context(), strconv.Itoa(scn.ID), &newTime, &newDuration); err != nil {
+	// TODO: Datebug still exists
+	/*if _, err := rs.resolver.Mutation().SceneSaveActivity(r.Context(), strconv.Itoa(scn.ID), &newTime, &newDuration); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}*/
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (rs heresphereRoutes) getVideoCaptions(w http.ResponseWriter, r *http.Request) {
+	scene := r.Context().Value(heresphereKey).(*models.Scene)
+
+	lang := chi.URLParam(r, "langCode")
+	ext := chi.URLParam(r, "captionType")
+
+	var captions []*models.VideoCaption
+	readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		var err error
+		primaryFile := scene.Files.Primary()
+		if primaryFile == nil {
+			return nil
+		}
+
+		captions, err = rs.captionFinder.GetCaptions(ctx, primaryFile.Base().ID)
+
+		return err
+	})
+	if errors.Is(readTxnErr, context.Canceled) {
+		return
+	}
+	if readTxnErr != nil {
+		logger.Warnf("read transaction error on fetch scene captions: %v", readTxnErr)
+		http.Error(w, readTxnErr.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	for _, caption := range captions {
+		if lang != caption.LanguageCode || ext != caption.CaptionType {
+			continue
+		}
+
+		sub := caption.Path(scene.Path)
+		http.ServeFile(w, r, sub)
+		return
+	}
 }
 
 /*
@@ -814,17 +856,23 @@ func (rs heresphereRoutes) getVideoScripts(r *http.Request, scene *models.Scene)
 func (rs heresphereRoutes) getVideoSubtitles(r *http.Request, scene *models.Scene) []HeresphereVideoSubtitle {
 	processedSubtitles := []HeresphereVideoSubtitle{}
 
-	// TODO: Seemingly broken in heresphere
 	if captions_id, err := rs.resolver.Scene().Captions(r.Context(), scene); err == nil {
 		for _, caption := range captions_id {
 			processedCaption := HeresphereVideoSubtitle{
 				Name:     caption.Filename,
 				Language: caption.LanguageCode,
-				Url: addApiKey(fmt.Sprintf("%s?lang=%v&type=%v",
-					urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetCaptionURL(),
+				// Fixes ampersand bug in Heresphere
+				Url: addApiKey(fmt.Sprintf("%s/heresphere/%d/caption/%s/%s",
+					GetBaseURL(r),
+					scene.ID,
 					caption.LanguageCode,
 					caption.CaptionType,
 				)),
+				/*Url: addApiKey(fmt.Sprintf("%s?lang=%v&type=%v",
+					urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetCaptionURL(),
+					caption.LanguageCode,
+					caption.CaptionType,
+				)),*/
 			}
 			processedSubtitles = append(processedSubtitles, processedCaption)
 		}
@@ -1230,7 +1278,7 @@ func addApiKey(urlS string) string {
 /*
  * This auxiliary writes a library with a fake name upon auth failure
  */
-// TODO: Does this even work?
+// TODO: Does this even work in HereSphere?
 func writeNotAuthorized(w http.ResponseWriter, r *http.Request, msg string) {
 	// Banner
 	banner := HeresphereBanner{
@@ -1310,8 +1358,10 @@ func (rs heresphereRoutes) HeresphereSceneCtx(next http.Handler) http.Handler {
  */
 func (rs heresphereRoutes) HeresphereCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// TODO: Enable and make the settings button
 		/*if !config.GetInstance().GetHeresphereDefaultEnabled() {
 			writeNotAuthorized(w, r, "HereSphere API not enabled!")
+			return
 		}*/
 
 		// Add JSON Header (using Add uses camel case and makes it invalid because "Json")

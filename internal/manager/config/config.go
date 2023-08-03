@@ -1138,6 +1138,7 @@ func (i *Instance) GetUIMinPlayPercent() int {
 	return -1
 }
 func (i *Instance) GetUIFavoriteTag() string {
+	// TODO: Consolidate into heresphere settings
 	cfgMap := i.GetUIConfiguration()
 	if val, ok := cfgMap["favoriteTag"]; ok {
 		return val.(string)
