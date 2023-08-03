@@ -234,7 +234,6 @@ func (rs heresphereRoutes) Routes() chi.Router {
 			r.Get("/", rs.HeresphereVideoData)
 
 			r.Post("/event", rs.HeresphereVideoEvent)
-			r.Get("/caption/{langCode}/{captionType}", rs.getVideoCaptions)
 		})
 	})
 
@@ -342,44 +341,6 @@ func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.R
 	}*/
 
 	w.WriteHeader(http.StatusOK)
-}
-
-func (rs heresphereRoutes) getVideoCaptions(w http.ResponseWriter, r *http.Request) {
-	scene := r.Context().Value(heresphereKey).(*models.Scene)
-
-	lang := chi.URLParam(r, "langCode")
-	ext := chi.URLParam(r, "captionType")
-
-	var captions []*models.VideoCaption
-	readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
-		var err error
-		primaryFile := scene.Files.Primary()
-		if primaryFile == nil {
-			return nil
-		}
-
-		captions, err = rs.captionFinder.GetCaptions(ctx, primaryFile.Base().ID)
-
-		return err
-	})
-	if errors.Is(readTxnErr, context.Canceled) {
-		return
-	}
-	if readTxnErr != nil {
-		logger.Warnf("read transaction error on fetch scene captions: %v", readTxnErr)
-		http.Error(w, readTxnErr.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	for _, caption := range captions {
-		if lang != caption.LanguageCode || ext != caption.CaptionType {
-			continue
-		}
-
-		sub := caption.Path(scene.Path)
-		http.ServeFile(w, r, sub)
-		return
-	}
 }
 
 /*
@@ -861,18 +822,11 @@ func (rs heresphereRoutes) getVideoSubtitles(r *http.Request, scene *models.Scen
 			processedCaption := HeresphereVideoSubtitle{
 				Name:     caption.Filename,
 				Language: caption.LanguageCode,
-				// Fixes ampersand bug in Heresphere
-				Url: addApiKey(fmt.Sprintf("%s/heresphere/%d/caption/%s/%s",
-					GetBaseURL(r),
-					scene.ID,
-					caption.LanguageCode,
-					caption.CaptionType,
-				)),
-				/*Url: addApiKey(fmt.Sprintf("%s?lang=%v&type=%v",
+				Url: addApiKey(fmt.Sprintf("%s?lang=%v&type=%v",
 					urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetCaptionURL(),
 					caption.LanguageCode,
 					caption.CaptionType,
-				)),*/
+				)),
 			}
 			processedSubtitles = append(processedSubtitles, processedCaption)
 		}
@@ -1002,7 +956,9 @@ func (rs heresphereRoutes) HeresphereIndex(w http.ResponseWriter, r *http.Reques
 
 	// Create a JSON encoder for the response writer
 	w.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(idx)
+	enc := json.NewEncoder(w)
+	enc.SetEscapeHTML(false)
+	err := enc.Encode(idx)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -1184,7 +1140,9 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 
 	// Create a JSON encoder for the response writer
 	w.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(processedScene)
+	enc := json.NewEncoder(w)
+	enc.SetEscapeHTML(false)
+	err := enc.Encode(processedScene)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -1230,7 +1188,9 @@ func (rs heresphereRoutes) HeresphereLoginToken(w http.ResponseWriter, r *http.R
 
 	// Create a JSON encoder for the response writer
 	w.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(auth)
+	enc := json.NewEncoder(w)
+	enc.SetEscapeHTML(false)
+	err := enc.Encode(auth)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -1305,7 +1265,9 @@ func writeNotAuthorized(w http.ResponseWriter, r *http.Request, msg string) {
 
 	// Create a JSON encoder for the response writer
 	w.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(idx)
+	enc := json.NewEncoder(w)
+	enc.SetEscapeHTML(false)
+	err := enc.Encode(idx)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
