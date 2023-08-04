@@ -14,13 +14,13 @@ type GalleryReaderWriter struct {
 	mock.Mock
 }
 
-// AddFileID provides a mock function with given fields: ctx, galleryID, fileID
-func (_m *GalleryReaderWriter) AddFileID(ctx context.Context, galleryID int, fileID models.FileID) error {
-	ret := _m.Called(ctx, galleryID, fileID)
+// AddFileID provides a mock function with given fields: ctx, id, fileID
+func (_m *GalleryReaderWriter) AddFileID(ctx context.Context, id int, fileID models.FileID) error {
+	ret := _m.Called(ctx, id, fileID)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, int, models.FileID) error); ok {
-		r0 = rf(ctx, galleryID, fileID)
+		r0 = rf(ctx, id, fileID)
 	} else {
 		r0 = ret.Error(0)
 	}

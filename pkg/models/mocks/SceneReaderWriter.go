@@ -842,20 +842,20 @@ func (_m *SceneReaderWriter) IncrementOCounter(ctx context.Context, id int) (int
 	return r0, r1
 }
 
-// IncrementWatchCount provides a mock function with given fields: ctx, id
-func (_m *SceneReaderWriter) IncrementWatchCount(ctx context.Context, id int) (int, error) {
-	ret := _m.Called(ctx, id)
+// IncrementWatchCount provides a mock function with given fields: ctx, sceneID
+func (_m *SceneReaderWriter) IncrementWatchCount(ctx context.Context, sceneID int) (int, error) {
+	ret := _m.Called(ctx, sceneID)
 
 	var r0 int
 	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
-		r0 = rf(ctx, id)
+		r0 = rf(ctx, sceneID)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, id)
+		r1 = rf(ctx, sceneID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1012,20 +1012,20 @@ func (_m *SceneReaderWriter) ResetOCounter(ctx context.Context, id int) (int, er
 	return r0, r1
 }
 
-// SaveActivity provides a mock function with given fields: ctx, id, resumeTime, playDuration
-func (_m *SceneReaderWriter) SaveActivity(ctx context.Context, id int, resumeTime *float64, playDuration *float64) (bool, error) {
-	ret := _m.Called(ctx, id, resumeTime, playDuration)
+// SaveActivity provides a mock function with given fields: ctx, sceneID, resumeTime, playDuration
+func (_m *SceneReaderWriter) SaveActivity(ctx context.Context, sceneID int, resumeTime *float64, playDuration *float64) (bool, error) {
+	ret := _m.Called(ctx, sceneID, resumeTime, playDuration)
 
 	var r0 bool
 	if rf, ok := ret.Get(0).(func(context.Context, int, *float64, *float64) bool); ok {
-		r0 = rf(ctx, id, resumeTime, playDuration)
+		r0 = rf(ctx, sceneID, resumeTime, playDuration)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int, *float64, *float64) error); ok {
-		r1 = rf(ctx, id, resumeTime, playDuration)
+		r1 = rf(ctx, sceneID, resumeTime, playDuration)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -626,3 +626,31 @@ func (_m *ImageReaderWriter) UpdatePartial(ctx context.Context, id int, partial 
 
 	return r0, r1
 }
+
+// UpdatePerformers provides a mock function with given fields: ctx, imageID, performerIDs
+func (_m *ImageReaderWriter) UpdatePerformers(ctx context.Context, imageID int, performerIDs []int) error {
+	ret := _m.Called(ctx, imageID, performerIDs)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, []int) error); ok {
+		r0 = rf(ctx, imageID, performerIDs)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdateTags provides a mock function with given fields: ctx, imageID, tagIDs
+func (_m *ImageReaderWriter) UpdateTags(ctx context.Context, imageID int, tagIDs []int) error {
+	ret := _m.Called(ctx, imageID, tagIDs)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, []int) error); ok {
+		r0 = rf(ctx, imageID, tagIDs)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
