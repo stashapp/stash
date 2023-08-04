@@ -22,6 +22,12 @@ type StudioFinder interface {
 // StudioQueryer provides methods to query studios.
 type StudioQueryer interface {
 	Query(ctx context.Context, studioFilter *StudioFilterType, findFilter *FindFilterType) ([]*Studio, int, error)
+}
+
+type StudioAutoTagQueryer interface {
+	StudioQueryer
+	AliasLoader
+
 	// TODO - this interface is temporary until the filter schema can fully
 	// support the query needed
 	QueryForAutoTag(ctx context.Context, words []string) ([]*Studio, error)
@@ -63,6 +69,7 @@ type StudioCreatorUpdater interface {
 type StudioReader interface {
 	StudioFinder
 	StudioQueryer
+	StudioAutoTagQueryer
 	StudioCounter
 
 	AliasLoader

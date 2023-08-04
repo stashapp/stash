@@ -51,7 +51,7 @@ func (t *tagger) addLog(otherType, otherName string) {
 	logger.Infof("Added %s '%s' to %s '%s'", otherType, otherName, t.Type, t.Name)
 }
 
-func (t *tagger) tagPerformers(ctx context.Context, performerReader match.PerformerAutoTagQueryer, addFunc addLinkFunc) error {
+func (t *tagger) tagPerformers(ctx context.Context, performerReader models.PerformerAutoTagQueryer, addFunc addLinkFunc) error {
 	others, err := match.PathToPerformers(ctx, t.Path, performerReader, t.cache, t.trimExt)
 	if err != nil {
 		return err
@@ -72,7 +72,7 @@ func (t *tagger) tagPerformers(ctx context.Context, performerReader match.Perfor
 	return nil
 }
 
-func (t *tagger) tagStudios(ctx context.Context, studioReader match.StudioAutoTagQueryer, addFunc addLinkFunc) error {
+func (t *tagger) tagStudios(ctx context.Context, studioReader models.StudioAutoTagQueryer, addFunc addLinkFunc) error {
 	studio, err := match.PathToStudio(ctx, t.Path, studioReader, t.cache, t.trimExt)
 	if err != nil {
 		return err
@@ -93,7 +93,7 @@ func (t *tagger) tagStudios(ctx context.Context, studioReader match.StudioAutoTa
 	return nil
 }
 
-func (t *tagger) tagTags(ctx context.Context, tagReader match.TagAutoTagQueryer, addFunc addLinkFunc) error {
+func (t *tagger) tagTags(ctx context.Context, tagReader models.TagAutoTagQueryer, addFunc addLinkFunc) error {
 	others, err := match.PathToTags(ctx, t.Path, tagReader, t.cache, t.trimExt)
 	if err != nil {
 		return err

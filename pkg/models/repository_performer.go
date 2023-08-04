@@ -24,6 +24,12 @@ type PerformerFinder interface {
 type PerformerQueryer interface {
 	Query(ctx context.Context, performerFilter *PerformerFilterType, findFilter *FindFilterType) ([]*Performer, int, error)
 	QueryCount(ctx context.Context, galleryFilter *PerformerFilterType, findFilter *FindFilterType) (int, error)
+}
+
+type PerformerAutoTagQueryer interface {
+	PerformerQueryer
+	AliasLoader
+
 	// TODO - this interface is temporary until the filter schema can fully
 	// support the query needed
 	QueryForAutoTag(ctx context.Context, words []string) ([]*Performer, error)
@@ -66,6 +72,7 @@ type PerformerCreatorUpdater interface {
 type PerformerReader interface {
 	PerformerFinder
 	PerformerQueryer
+	PerformerAutoTagQueryer
 	PerformerCounter
 
 	AliasLoader

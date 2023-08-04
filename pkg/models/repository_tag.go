@@ -28,6 +28,12 @@ type TagFinder interface {
 // TagQueryer provides methods to query tags.
 type TagQueryer interface {
 	Query(ctx context.Context, tagFilter *TagFilterType, findFilter *FindFilterType) ([]*Tag, int, error)
+}
+
+type TagAutoTagQueryer interface {
+	TagQueryer
+	AliasLoader
+
 	// TODO - this interface is temporary until the filter schema can fully
 	// support the query needed
 	QueryForAutoTag(ctx context.Context, words []string) ([]*Tag, error)
@@ -72,6 +78,7 @@ type TagCreatorUpdater interface {
 type TagReader interface {
 	TagFinder
 	TagQueryer
+	TagAutoTagQueryer
 	TagCounter
 
 	AliasLoader

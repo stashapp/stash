@@ -56,19 +56,18 @@ type SceneFinder interface {
 }
 
 type PerformerFinder interface {
-	match.PerformerAutoTagQueryer
+	models.PerformerAutoTagQueryer
 	match.PerformerFinder
 }
 
 type StudioFinder interface {
-	models.StudioQueryer
+	models.StudioAutoTagQueryer
 	FindByStashID(ctx context.Context, stashID models.StashID) ([]*models.Studio, error)
-	GetAliases(ctx context.Context, studioID int) ([]string, error)
 }
 
 type TagFinder interface {
 	models.TagGetter
-	match.TagAutoTagQueryer
+	models.TagAutoTagQueryer
 }
 
 type GalleryFinder interface {
