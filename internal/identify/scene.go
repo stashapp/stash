@@ -13,7 +13,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
-	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -30,16 +29,11 @@ type SceneReaderUpdater interface {
 	models.URLLoader
 }
 
-type TagCreatorFinder interface {
-	Create(ctx context.Context, newTag *models.Tag) error
-	tag.Finder
-}
-
 type sceneRelationships struct {
 	sceneReader              SceneCoverGetter
 	studioReaderWriter       models.StudioReaderWriter
 	performerCreator         PerformerCreator
-	tagCreatorFinder         TagCreatorFinder
+	tagCreator               models.TagCreator
 	scene                    *models.Scene
 	result                   *scrapeResult
 	fieldOptions             map[string]*FieldOptions
@@ -176,7 +170,7 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 				CreatedAt: now,
 				UpdatedAt: now,
 			}
-			err := g.tagCreatorFinder.Create(ctx, &newTag)
+			err := g.tagCreator.Create(ctx, &newTag)
 			if err != nil {
 				return nil, fmt.Errorf("error creating tag: %w", err)
 			}

@@ -25,7 +25,6 @@ import (
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/scraper/stashbox/graphql"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -50,8 +49,9 @@ type StudioReader interface {
 	match.StudioFinder
 	models.StashIDLoader
 }
+
 type TagFinder interface {
-	tag.Queryer
+	models.TagQueryer
 	FindBySceneID(ctx context.Context, sceneID int) ([]*models.Tag, error)
 }
 

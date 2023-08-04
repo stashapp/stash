@@ -16,7 +16,6 @@ import (
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -30,8 +29,13 @@ type SceneFinder interface {
 }
 
 type SceneMarkerFinder interface {
-	Find(ctx context.Context, id int) (*models.SceneMarker, error)
+	models.SceneMarkerGetter
 	FindBySceneID(ctx context.Context, sceneID int) ([]*models.SceneMarker, error)
+}
+
+type SceneMarkerTagFinder interface {
+	models.TagGetter
+	FindBySceneMarkerID(ctx context.Context, sceneMarkerID int) ([]*models.Tag, error)
 }
 
 type CaptionFinder interface {
@@ -44,7 +48,7 @@ type sceneRoutes struct {
 	fileGetter        models.FileGetter
 	captionFinder     CaptionFinder
 	sceneMarkerFinder SceneMarkerFinder
-	tagFinder         scene.MarkerTagFinder
+	tagFinder         SceneMarkerTagFinder
 }
 
 func (rs sceneRoutes) Routes() chi.Router {

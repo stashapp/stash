@@ -570,7 +570,7 @@ func (t *ImportTask) ImportTags(ctx context.Context) {
 	logger.Info("[tags] import complete")
 }
 
-func (t *ImportTask) ImportTag(ctx context.Context, tagJSON *jsonschema.Tag, pendingParent map[string][]*jsonschema.Tag, fail bool, readerWriter tag.NameFinderCreatorUpdater) error {
+func (t *ImportTask) ImportTag(ctx context.Context, tagJSON *jsonschema.Tag, pendingParent map[string][]*jsonschema.Tag, fail bool, readerWriter tag.ImporterReaderWriter) error {
 	importer := &tag.Importer{
 		ReaderWriter:        readerWriter,
 		Input:               *tagJSON,

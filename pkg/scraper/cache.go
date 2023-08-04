@@ -15,7 +15,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -68,8 +67,8 @@ type StudioFinder interface {
 }
 
 type TagFinder interface {
+	models.TagGetter
 	match.TagAutoTagQueryer
-	tag.Queryer
 }
 
 type GalleryFinder interface {

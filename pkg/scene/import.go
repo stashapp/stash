@@ -8,7 +8,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -24,7 +23,7 @@ type Importer struct {
 	GalleryFinder       models.GalleryFinder
 	PerformerWriter     models.PerformerFinderCreator
 	MovieWriter         models.MovieFinderCreator
-	TagWriter           tag.NameFinderCreator
+	TagWriter           models.TagFinderCreator
 	Input               jsonschema.Scene
 	MissingRefBehaviour models.ImportMissingRefEnum
 	FileNamingAlgorithm models.HashAlgorithm
@@ -431,7 +430,7 @@ func (i *Importer) Update(ctx context.Context, id int) error {
 	return nil
 }
 
-func importTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []string, missingRefBehaviour models.ImportMissingRefEnum) ([]*models.Tag, error) {
+func importTags(ctx context.Context, tagWriter models.TagFinderCreator, names []string, missingRefBehaviour models.ImportMissingRefEnum) ([]*models.Tag, error) {
 	tags, err := tagWriter.FindByNames(ctx, names, false)
 	if err != nil {
 		return nil, err
@@ -466,7 +465,7 @@ func importTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []st
 	return tags, nil
 }
 
-func createTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []string) ([]*models.Tag, error) {
+func createTags(ctx context.Context, tagWriter models.TagCreator, names []string) ([]*models.Tag, error) {
 	var ret []*models.Tag
 	for _, name := range names {
 		newTag := models.NewTag(name)

@@ -6,7 +6,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -201,7 +200,7 @@ func (c Cache) postScrapeGallery(ctx context.Context, g ScrapedGallery) (Scraped
 	return g, nil
 }
 
-func postProcessTags(ctx context.Context, tqb tag.Queryer, scrapedTags []*models.ScrapedTag) ([]*models.ScrapedTag, error) {
+func postProcessTags(ctx context.Context, tqb models.TagQueryer, scrapedTags []*models.ScrapedTag) ([]*models.ScrapedTag, error) {
 	var ret []*models.ScrapedTag
 
 	for _, t := range scrapedTags {

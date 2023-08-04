@@ -8,7 +8,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/tag"
 )
 
 type ImporterReaderWriter interface {
@@ -22,7 +21,7 @@ type Importer struct {
 	ReaderWriter        ImporterReaderWriter
 	StudioWriter        models.StudioFinderCreator
 	PerformerWriter     models.PerformerFinderCreator
-	TagWriter           tag.NameFinderCreator
+	TagWriter           models.TagFinderCreator
 	FileFinder          models.FileFinder
 	FolderFinder        models.FolderFinder
 	Input               jsonschema.Gallery

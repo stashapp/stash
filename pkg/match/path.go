@@ -14,7 +14,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/tag"
 )
 
 const (
@@ -39,8 +38,7 @@ type StudioAutoTagQueryer interface {
 }
 
 type TagAutoTagQueryer interface {
-	QueryForAutoTag(ctx context.Context, words []string) ([]*models.Tag, error)
-	tag.Queryer
+	models.TagQueryer
 	GetAliases(ctx context.Context, tagID int) ([]string, error)
 }
 

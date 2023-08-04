@@ -11,7 +11,6 @@ import (
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
-	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -19,14 +18,10 @@ type CoverGetter interface {
 	GetCover(ctx context.Context, sceneID int) ([]byte, error)
 }
 
-type MarkerTagFinder interface {
-	tag.Finder
-	TagFinder
-	FindBySceneMarkerID(ctx context.Context, sceneMarkerID int) ([]*models.Tag, error)
-}
-
 type TagFinder interface {
+	models.TagGetter
 	FindBySceneID(ctx context.Context, sceneID int) ([]*models.Tag, error)
+	FindBySceneMarkerID(ctx context.Context, sceneMarkerID int) ([]*models.Tag, error)
 }
 
 // ToBasicJSON converts a scene object into its JSON object equivalent. It
@@ -121,7 +116,7 @@ func getTagNames(tags []*models.Tag) []string {
 }
 
 // GetDependentTagIDs returns a slice of unique tag IDs that this scene references.
-func GetDependentTagIDs(ctx context.Context, tags MarkerTagFinder, markerReader models.SceneMarkerFinder, scene *models.Scene) ([]int, error) {
+func GetDependentTagIDs(ctx context.Context, tags TagFinder, markerReader models.SceneMarkerFinder, scene *models.Scene) ([]int, error) {
 	var ret []int
 
 	t, err := tags.FindBySceneID(ctx, scene.ID)
@@ -193,7 +188,7 @@ func GetDependentMovieIDs(ctx context.Context, scene *models.Scene) ([]int, erro
 
 // GetSceneMarkersJSON returns a slice of SceneMarker JSON representation
 // objects corresponding to the provided scene's markers.
-func GetSceneMarkersJSON(ctx context.Context, markerReader models.SceneMarkerFinder, tagReader MarkerTagFinder, scene *models.Scene) ([]jsonschema.SceneMarker, error) {
+func GetSceneMarkersJSON(ctx context.Context, markerReader models.SceneMarkerFinder, tagReader TagFinder, scene *models.Scene) ([]jsonschema.SceneMarker, error) {
 	sceneMarkers, err := markerReader.FindBySceneID(ctx, scene.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting scene markers: %v", err)
