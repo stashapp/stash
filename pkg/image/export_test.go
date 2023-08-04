@@ -54,7 +54,7 @@ func createFullImage(id int) models.Image {
 		OCounter:  ocounter,
 		Rating:    &rating,
 		Date:      &dateObj,
-		URL:       url,
+		URLs:      models.NewRelatedStrings([]string{url}),
 		Organized: organized,
 		CreatedAt: createTime,
 		UpdatedAt: updateTime,
@@ -67,7 +67,7 @@ func createFullJSONImage() *jsonschema.Image {
 		OCounter:  ocounter,
 		Rating:    rating,
 		Date:      date,
-		URL:       url,
+		URLs:      []string{url},
 		Organized: organized,
 		Files:     []string{path},
 		CreatedAt: json.JSONTime{

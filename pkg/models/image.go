@@ -115,6 +115,7 @@ type ImageReader interface {
 	Query(ctx context.Context, options ImageQueryOptions) (*ImageQueryResult, error)
 	QueryCount(ctx context.Context, imageFilter *ImageFilterType, findFilter *FindFilterType) (int, error)
 
+	URLLoader
 	GalleryIDLoader
 	PerformerIDLoader
 	TagIDLoader

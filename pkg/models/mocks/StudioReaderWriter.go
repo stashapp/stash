@@ -58,13 +58,13 @@ func (_m *StudioReaderWriter) Count(ctx context.Context) (int, error) {
 	return r0, r1
 }
 
-// Create provides a mock function with given fields: ctx, input
-func (_m *StudioReaderWriter) Create(ctx context.Context, input *models.Studio) error {
-	ret := _m.Called(ctx, input)
+// Create provides a mock function with given fields: ctx, newStudio
+func (_m *StudioReaderWriter) Create(ctx context.Context, newStudio *models.Studio) error {
+	ret := _m.Called(ctx, newStudio)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, *models.Studio) error); ok {
-		r0 = rf(ctx, input)
+		r0 = rf(ctx, newStudio)
 	} else {
 		r0 = ret.Error(0)
 	}

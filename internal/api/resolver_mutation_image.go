@@ -106,7 +106,6 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 
 	updatedImage.Title = translator.optionalString(input.Title, "title")
 	updatedImage.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
-	updatedImage.URL = translator.optionalString(input.URL, "url")
 	updatedImage.Date, err = translator.optionalDate(input.Date, "date")
 	if err != nil {
 		return nil, fmt.Errorf("converting date: %w", err)
@@ -116,6 +115,18 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
+
+	if translator.hasField("urls") {
+		updatedImage.URLs = &models.UpdateStrings{
+			Values: input.Urls,
+			Mode:   models.RelationshipUpdateModeSet,
+		}
+	} else if translator.hasField("url") {
+		updatedImage.URLs = &models.UpdateStrings{
+			Values: []string{*input.URL},
+			Mode:   models.RelationshipUpdateModeSet,
+		}
+	}
 
 	if input.PrimaryFileID != nil {
 		primaryFileID, err := strconv.Atoi(*input.PrimaryFileID)
@@ -208,7 +219,6 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 
 	updatedImage.Title = translator.optionalString(input.Title, "title")
 	updatedImage.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
-	updatedImage.URL = translator.optionalString(input.URL, "url")
 	updatedImage.Date, err = translator.optionalDate(input.Date, "date")
 	if err != nil {
 		return nil, fmt.Errorf("converting date: %w", err)
@@ -218,6 +228,18 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
+
+	if translator.hasField("urls") {
+		updatedImage.URLs = &models.UpdateStrings{
+			Values: input.Urls.Values,
+			Mode:   input.Urls.Mode,
+		}
+	} else if translator.hasField("url") {
+		updatedImage.URLs = &models.UpdateStrings{
+			Values: []string{*input.URL},
+			Mode:   models.RelationshipUpdateModeSet,
+		}
+	}
 
 	if translator.hasField("gallery_ids") {
 		updatedImage.GalleryIDs, err = translateUpdateIDs(input.GalleryIds.Ids, input.GalleryIds.Mode)

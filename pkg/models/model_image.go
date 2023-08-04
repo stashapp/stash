@@ -15,12 +15,12 @@ type Image struct {
 
 	Title string `json:"title"`
 	// Rating expressed in 1-100 scale
-	Rating    *int   `json:"rating"`
-	Organized bool   `json:"organized"`
-	OCounter  int    `json:"o_counter"`
-	StudioID  *int   `json:"studio_id"`
-	URL       string `json:"url"`
-	Date      *Date  `json:"date"`
+	Rating    *int           `json:"rating"`
+	Organized bool           `json:"organized"`
+	OCounter  int            `json:"o_counter"`
+	StudioID  *int           `json:"studio_id"`
+	URLs      RelatedStrings `json:"urls"`
+	Date      *Date          `json:"date"`
 
 	// transient - not persisted
 	Files         RelatedFiles
@@ -36,6 +36,12 @@ type Image struct {
 	GalleryIDs   RelatedIDs `json:"gallery_ids"`
 	TagIDs       RelatedIDs `json:"tag_ids"`
 	PerformerIDs RelatedIDs `json:"performer_ids"`
+}
+
+func (i *Image) LoadURLs(ctx context.Context, l URLLoader) error {
+	return i.URLs.load(func() ([]string, error) {
+		return l.GetURLs(ctx, i.ID)
+	})
 }
 
 func (i *Image) LoadFiles(ctx context.Context, l FileLoader) error {
@@ -114,7 +120,7 @@ type ImagePartial struct {
 	Title OptionalString
 	// Rating expressed in 1-100 scale
 	Rating    OptionalInt
-	URL       OptionalString
+	URLs      *UpdateStrings
 	Date      OptionalDate
 	Organized OptionalBool
 	OCounter  OptionalInt
