@@ -41,7 +41,7 @@ import {
 import { IUIConfig } from "src/core/config";
 import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
-import ImageUtils from "src/utils/image";
+import { DetailImage } from "src/components/Shared/DetailImage";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
@@ -237,12 +237,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
 
     if (studioImage) {
       return (
-        <img
-          className="logo"
-          alt={studio.name}
-          src={studioImage}
-          onLoad={ImageUtils.verifyImageSize}
-        />
+        <DetailImage className="logo" alt={studio.name} src={studioImage} />
       );
     }
   }

@@ -34,7 +34,7 @@ import { Icon } from "src/components/Shared/Icon";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { ConfigurationContext } from "src/hooks/Config";
 import { IUIConfig } from "src/core/config";
-import ImageUtils from "src/utils/image";
+import { DetailImage } from "src/components/Shared/DetailImage";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
@@ -232,11 +232,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
     if (image && defaultImage) {
       return (
         <div className="movie-image-container">
-          <img
-            alt="Front Cover"
-            src={image}
-            onLoad={ImageUtils.verifyImageSize}
-          />
+          <DetailImage alt="Front Cover" src={image} />
         </div>
       );
     } else if (image) {
@@ -246,11 +242,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
           variant="link"
           onClick={() => showLightbox()}
         >
-          <img
-            alt="Front Cover"
-            src={image}
-            onLoad={ImageUtils.verifyImageSize}
-          />
+          <DetailImage alt="Front Cover" src={image} />
         </Button>
       );
     }
@@ -273,11 +265,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
           variant="link"
           onClick={() => showLightbox(index - 1)}
         >
-          <img
-            alt="Back Cover"
-            src={image}
-            onLoad={ImageUtils.verifyImageSize}
-          />
+          <DetailImage alt="Back Cover" src={image} />
         </Button>
       );
     }

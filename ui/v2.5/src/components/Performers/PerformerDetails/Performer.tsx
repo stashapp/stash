@@ -42,7 +42,7 @@ import {
 import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { IUIConfig } from "src/core/config";
 import { useRatingKeybinds } from "src/hooks/keybinds";
-import ImageUtils from "src/utils/image";
+import { DetailImage } from "src/components/Shared/DetailImage";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 
@@ -206,11 +206,10 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
     if (activeImage) {
       return (
         <Button variant="link" onClick={() => showLightbox()}>
-          <img
+          <DetailImage
             className="performer"
             src={activeImage}
             alt={performer.name}
-            onLoad={ImageUtils.verifyImageSize}
           />
         </Button>
       );

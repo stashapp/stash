@@ -38,7 +38,7 @@ import {
   faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { IUIConfig } from "src/core/config";
-import ImageUtils from "src/utils/image";
+import { DetailImage } from "src/components/Shared/DetailImage";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 
@@ -274,14 +274,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     }
 
     if (tagImage) {
-      return (
-        <img
-          className="logo"
-          alt={tag.name}
-          src={tagImage}
-          onLoad={ImageUtils.verifyImageSize}
-        />
-      );
+      return <DetailImage className="logo" alt={tag.name} src={tagImage} />;
     }
   }
 
