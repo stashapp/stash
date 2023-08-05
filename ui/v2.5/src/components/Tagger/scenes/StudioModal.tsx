@@ -188,9 +188,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
       throw new Error("studio name must set");
     }
 
-    const studioData: GQL.StudioCreateInput & {
-      [index: string]: unknown;
-    } = {
+    const studioData: GQL.StudioCreateInput = {
       name: studio.name,
       url: studio.url,
       image: studio.image,
@@ -211,11 +209,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
     // handle exclusions
     excludeFields(studioData, excluded);
 
-    let parentData:
-      | (GQL.StudioCreateInput & {
-          [index: string]: unknown;
-        })
-      | undefined = undefined;
+    let parentData: GQL.StudioCreateInput | undefined = undefined;
 
     if (createParentStudio && sendParentStudio) {
       if (!studio.parent?.name) {
