@@ -46,12 +46,24 @@ func TestGalleryPerformers(t *testing.T) {
 		mockPerformerReader.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Performer{&performer, &reversedPerformer}, nil).Once()
 
 		if test.Matches {
-			mockGalleryReader.On("UpdatePartial", testCtx, galleryID, models.GalleryPartial{
-				PerformerIDs: &models.UpdateIDs{
-					IDs:  []int{performerID},
-					Mode: models.RelationshipUpdateModeAdd,
-				},
-			}).Return(nil, nil).Once()
+			matchPartial := mock.MatchedBy(func(got models.GalleryPartial) bool {
+				expected := models.GalleryPartial{
+					PerformerIDs: &models.UpdateIDs{
+						IDs:  []int{performerID},
+						Mode: models.RelationshipUpdateModeAdd,
+					},
+				}
+
+				// updated at should be set and not null
+				if !got.UpdatedAt.Set || got.UpdatedAt.Null {
+					return false
+				}
+				// else ignore the exact value
+				got.UpdatedAt = models.OptionalTime{}
+
+				return assert.Equal(got, expected)
+			})
+			mockGalleryReader.On("UpdatePartial", testCtx, galleryID, matchPartial).Return(nil, nil).Once()
 		}
 
 		gallery := models.Gallery{
@@ -91,10 +103,21 @@ func TestGalleryStudios(t *testing.T) {
 
 	doTest := func(mockStudioReader *mocks.StudioReaderWriter, mockGalleryReader *mocks.GalleryReaderWriter, test pathTestTable) {
 		if test.Matches {
-			expectedStudioID := studioID
-			mockGalleryReader.On("UpdatePartial", testCtx, galleryID, models.GalleryPartial{
-				StudioID: models.NewOptionalInt(expectedStudioID),
-			}).Return(nil, nil).Once()
+			matchPartial := mock.MatchedBy(func(got models.GalleryPartial) bool {
+				expected := models.GalleryPartial{
+					StudioID: models.NewOptionalInt(studioID),
+				}
+
+				// updated at should be set and not null
+				if !got.UpdatedAt.Set || got.UpdatedAt.Null {
+					return false
+				}
+				// else ignore the exact value
+				got.UpdatedAt = models.OptionalTime{}
+
+				return assert.Equal(got, expected)
+			})
+			mockGalleryReader.On("UpdatePartial", testCtx, galleryID, matchPartial).Return(nil, nil).Once()
 		}
 
 		gallery := models.Gallery{
@@ -162,12 +185,24 @@ func TestGalleryTags(t *testing.T) {
 
 	doTest := func(mockTagReader *mocks.TagReaderWriter, mockGalleryReader *mocks.GalleryReaderWriter, test pathTestTable) {
 		if test.Matches {
-			mockGalleryReader.On("UpdatePartial", testCtx, galleryID, models.GalleryPartial{
-				TagIDs: &models.UpdateIDs{
-					IDs:  []int{tagID},
-					Mode: models.RelationshipUpdateModeAdd,
-				},
-			}).Return(nil, nil).Once()
+			matchPartial := mock.MatchedBy(func(got models.GalleryPartial) bool {
+				expected := models.GalleryPartial{
+					TagIDs: &models.UpdateIDs{
+						IDs:  []int{tagID},
+						Mode: models.RelationshipUpdateModeAdd,
+					},
+				}
+
+				// updated at should be set and not null
+				if !got.UpdatedAt.Set || got.UpdatedAt.Null {
+					return false
+				}
+				// else ignore the exact value
+				got.UpdatedAt = models.OptionalTime{}
+
+				return assert.Equal(got, expected)
+			})
+			mockGalleryReader.On("UpdatePartial", testCtx, galleryID, matchPartial).Return(nil, nil).Once()
 		}
 
 		gallery := models.Gallery{

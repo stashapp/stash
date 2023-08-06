@@ -43,12 +43,24 @@ func TestImagePerformers(t *testing.T) {
 		mockPerformerReader.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Performer{&performer, &reversedPerformer}, nil).Once()
 
 		if test.Matches {
-			mockImageReader.On("UpdatePartial", testCtx, imageID, models.ImagePartial{
-				PerformerIDs: &models.UpdateIDs{
-					IDs:  []int{performerID},
-					Mode: models.RelationshipUpdateModeAdd,
-				},
-			}).Return(nil, nil).Once()
+			matchPartial := mock.MatchedBy(func(got models.ImagePartial) bool {
+				expected := models.ImagePartial{
+					PerformerIDs: &models.UpdateIDs{
+						IDs:  []int{performerID},
+						Mode: models.RelationshipUpdateModeAdd,
+					},
+				}
+
+				// updated at should be set and not null
+				if !got.UpdatedAt.Set || got.UpdatedAt.Null {
+					return false
+				}
+				// else ignore the exact value
+				got.UpdatedAt = models.OptionalTime{}
+
+				return assert.Equal(got, expected)
+			})
+			mockImageReader.On("UpdatePartial", testCtx, imageID, matchPartial).Return(nil, nil).Once()
 		}
 
 		image := models.Image{
@@ -88,10 +100,21 @@ func TestImageStudios(t *testing.T) {
 
 	doTest := func(mockStudioReader *mocks.StudioReaderWriter, mockImageReader *mocks.ImageReaderWriter, test pathTestTable) {
 		if test.Matches {
-			expectedStudioID := studioID
-			mockImageReader.On("UpdatePartial", testCtx, imageID, models.ImagePartial{
-				StudioID: models.NewOptionalInt(expectedStudioID),
-			}).Return(nil, nil).Once()
+			matchPartial := mock.MatchedBy(func(got models.ImagePartial) bool {
+				expected := models.ImagePartial{
+					StudioID: models.NewOptionalInt(studioID),
+				}
+
+				// updated at should be set and not null
+				if !got.UpdatedAt.Set || got.UpdatedAt.Null {
+					return false
+				}
+				// else ignore the exact value
+				got.UpdatedAt = models.OptionalTime{}
+
+				return assert.Equal(got, expected)
+			})
+			mockImageReader.On("UpdatePartial", testCtx, imageID, matchPartial).Return(nil, nil).Once()
 		}
 
 		image := models.Image{
@@ -159,12 +182,24 @@ func TestImageTags(t *testing.T) {
 
 	doTest := func(mockTagReader *mocks.TagReaderWriter, mockImageReader *mocks.ImageReaderWriter, test pathTestTable) {
 		if test.Matches {
-			mockImageReader.On("UpdatePartial", testCtx, imageID, models.ImagePartial{
-				TagIDs: &models.UpdateIDs{
-					IDs:  []int{tagID},
-					Mode: models.RelationshipUpdateModeAdd,
-				},
-			}).Return(nil, nil).Once()
+			matchPartial := mock.MatchedBy(func(got models.ImagePartial) bool {
+				expected := models.ImagePartial{
+					TagIDs: &models.UpdateIDs{
+						IDs:  []int{tagID},
+						Mode: models.RelationshipUpdateModeAdd,
+					},
+				}
+
+				// updated at should be set and not null
+				if !got.UpdatedAt.Set || got.UpdatedAt.Null {
+					return false
+				}
+				// else ignore the exact value
+				got.UpdatedAt = models.OptionalTime{}
+
+				return assert.Equal(got, expected)
+			})
+			mockImageReader.On("UpdatePartial", testCtx, imageID, matchPartial).Return(nil, nil).Once()
 		}
 
 		image := models.Image{

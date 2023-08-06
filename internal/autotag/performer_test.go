@@ -89,12 +89,25 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 
 	for i := range matchingPaths {
 		sceneID := i + 1
-		mockSceneReader.On("UpdatePartial", mock.Anything, sceneID, models.ScenePartial{
-			PerformerIDs: &models.UpdateIDs{
-				IDs:  []int{performerID},
-				Mode: models.RelationshipUpdateModeAdd,
-			},
-		}).Return(nil, nil).Once()
+
+		matchPartial := mock.MatchedBy(func(got models.ScenePartial) bool {
+			expected := models.ScenePartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			}
+
+			// updated at should be set and not null
+			if !got.UpdatedAt.Set || got.UpdatedAt.Null {
+				return false
+			}
+			// else ignore the exact value
+			got.UpdatedAt = models.OptionalTime{}
+
+			return assert.Equal(t, got, expected)
+		})
+		mockSceneReader.On("UpdatePartial", mock.Anything, sceneID, matchPartial).Return(nil, nil).Once()
 	}
 
 	tagger := Tagger{
@@ -178,12 +191,25 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 
 	for i := range matchingPaths {
 		imageID := i + 1
-		mockImageReader.On("UpdatePartial", mock.Anything, imageID, models.ImagePartial{
-			PerformerIDs: &models.UpdateIDs{
-				IDs:  []int{performerID},
-				Mode: models.RelationshipUpdateModeAdd,
-			},
-		}).Return(nil, nil).Once()
+
+		matchPartial := mock.MatchedBy(func(got models.ImagePartial) bool {
+			expected := models.ImagePartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			}
+
+			// updated at should be set and not null
+			if !got.UpdatedAt.Set || got.UpdatedAt.Null {
+				return false
+			}
+			// else ignore the exact value
+			got.UpdatedAt = models.OptionalTime{}
+
+			return assert.Equal(t, got, expected)
+		})
+		mockImageReader.On("UpdatePartial", mock.Anything, imageID, matchPartial).Return(nil, nil).Once()
 	}
 
 	tagger := Tagger{
@@ -267,12 +293,25 @@ func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
 
 	for i := range matchingPaths {
 		galleryID := i + 1
-		mockGalleryReader.On("UpdatePartial", mock.Anything, galleryID, models.GalleryPartial{
-			PerformerIDs: &models.UpdateIDs{
-				IDs:  []int{performerID},
-				Mode: models.RelationshipUpdateModeAdd,
-			},
-		}).Return(nil, nil).Once()
+
+		matchPartial := mock.MatchedBy(func(got models.GalleryPartial) bool {
+			expected := models.GalleryPartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			}
+
+			// updated at should be set and not null
+			if !got.UpdatedAt.Set || got.UpdatedAt.Null {
+				return false
+			}
+			// else ignore the exact value
+			got.UpdatedAt = models.OptionalTime{}
+
+			return assert.Equal(t, got, expected)
+		})
+		mockGalleryReader.On("UpdatePartial", mock.Anything, galleryID, matchPartial).Return(nil, nil).Once()
 	}
 
 	tagger := Tagger{

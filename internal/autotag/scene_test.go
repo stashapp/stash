@@ -182,12 +182,24 @@ func TestScenePerformers(t *testing.T) {
 		}
 
 		if test.Matches {
-			mockSceneReader.On("UpdatePartial", testCtx, sceneID, models.ScenePartial{
-				PerformerIDs: &models.UpdateIDs{
-					IDs:  []int{performerID},
-					Mode: models.RelationshipUpdateModeAdd,
-				},
-			}).Return(nil, nil).Once()
+			matchPartial := mock.MatchedBy(func(got models.ScenePartial) bool {
+				expected := models.ScenePartial{
+					PerformerIDs: &models.UpdateIDs{
+						IDs:  []int{performerID},
+						Mode: models.RelationshipUpdateModeAdd,
+					},
+				}
+
+				// updated at should be set and not null
+				if !got.UpdatedAt.Set || got.UpdatedAt.Null {
+					return false
+				}
+				// else ignore the exact value
+				got.UpdatedAt = models.OptionalTime{}
+
+				return assert.Equal(got, expected)
+			})
+			mockSceneReader.On("UpdatePartial", testCtx, sceneID, matchPartial).Return(nil, nil).Once()
 		}
 
 		err := ScenePerformers(testCtx, &scene, mockSceneReader, mockPerformerReader, nil)
@@ -224,10 +236,21 @@ func TestSceneStudios(t *testing.T) {
 
 	doTest := func(mockStudioReader *mocks.StudioReaderWriter, mockSceneReader *mocks.SceneReaderWriter, test pathTestTable) {
 		if test.Matches {
-			expectedStudioID := studioID
-			mockSceneReader.On("UpdatePartial", testCtx, sceneID, models.ScenePartial{
-				StudioID: models.NewOptionalInt(expectedStudioID),
-			}).Return(nil, nil).Once()
+			matchPartial := mock.MatchedBy(func(got models.ScenePartial) bool {
+				expected := models.ScenePartial{
+					StudioID: models.NewOptionalInt(studioID),
+				}
+
+				// updated at should be set and not null
+				if !got.UpdatedAt.Set || got.UpdatedAt.Null {
+					return false
+				}
+				// else ignore the exact value
+				got.UpdatedAt = models.OptionalTime{}
+
+				return assert.Equal(got, expected)
+			})
+			mockSceneReader.On("UpdatePartial", testCtx, sceneID, matchPartial).Return(nil, nil).Once()
 		}
 
 		scene := models.Scene{
@@ -295,12 +318,24 @@ func TestSceneTags(t *testing.T) {
 
 	doTest := func(mockTagReader *mocks.TagReaderWriter, mockSceneReader *mocks.SceneReaderWriter, test pathTestTable) {
 		if test.Matches {
-			mockSceneReader.On("UpdatePartial", testCtx, sceneID, models.ScenePartial{
-				TagIDs: &models.UpdateIDs{
-					IDs:  []int{tagID},
-					Mode: models.RelationshipUpdateModeAdd,
-				},
-			}).Return(nil, nil).Once()
+			matchPartial := mock.MatchedBy(func(got models.ScenePartial) bool {
+				expected := models.ScenePartial{
+					TagIDs: &models.UpdateIDs{
+						IDs:  []int{tagID},
+						Mode: models.RelationshipUpdateModeAdd,
+					},
+				}
+
+				// updated at should be set and not null
+				if !got.UpdatedAt.Set || got.UpdatedAt.Null {
+					return false
+				}
+				// else ignore the exact value
+				got.UpdatedAt = models.OptionalTime{}
+
+				return assert.Equal(got, expected)
+			})
+			mockSceneReader.On("UpdatePartial", testCtx, sceneID, matchPartial).Return(nil, nil).Once()
 		}
 
 		scene := models.Scene{
