@@ -331,10 +331,7 @@ func (i *Importer) Create(ctx context.Context) (*int, error) {
 		fileIDs = append(fileIDs, f.Base().ID)
 	}
 
-	err := i.ReaderWriter.Create(ctx, &models.ImageCreateInput{
-		Image:   &i.image,
-		FileIDs: fileIDs,
-	})
+	err := i.ReaderWriter.Create(ctx, &i.image, fileIDs)
 	if err != nil {
 		return nil, fmt.Errorf("error creating image: %v", err)
 	}

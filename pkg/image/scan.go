@@ -26,7 +26,7 @@ type ScanCreatorUpdater interface {
 	GetFiles(ctx context.Context, relatedID int) ([]models.File, error)
 	GetGalleryIDs(ctx context.Context, relatedID int) ([]int, error)
 
-	Create(ctx context.Context, newImage *models.ImageCreateInput) error
+	Create(ctx context.Context, newImage *models.Image, fileIDs []models.FileID) error
 	UpdatePartial(ctx context.Context, id int, updatedImage models.ImagePartial) (*models.Image, error)
 	AddFileID(ctx context.Context, id int, fileID models.FileID) error
 }
@@ -123,10 +123,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 			logger.Infof("Adding %s to gallery %s", f.Base().Path, g.Path)
 		}
 
-		if err := h.CreatorUpdater.Create(ctx, &models.ImageCreateInput{
-			Image:   &newImage,
-			FileIDs: []models.FileID{imageFile.ID},
-		}); err != nil {
+		if err := h.CreatorUpdater.Create(ctx, &newImage, []models.FileID{imageFile.ID}); err != nil {
 			return fmt.Errorf("creating new image: %w", err)
 		}
 

@@ -135,8 +135,3 @@ func (i Image) DisplayName() string {
 
 	return strconv.Itoa(i.ID)
 }
-
-type ImageCreateInput struct {
-	*Image
-	FileIDs []FileID
-}
