@@ -18,6 +18,7 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+// used to refetch gallery after hooks run
 func (r *mutationResolver) getGallery(ctx context.Context, id int) (ret *models.Gallery, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Gallery.Find(ctx, id)
@@ -39,32 +40,18 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 		inputMap: getUpdateInputMap(ctx),
 	}
 
-	performerIDs, err := stringslice.StringSliceToIntSlice(input.PerformerIds)
-	if err != nil {
-		return nil, fmt.Errorf("converting performer ids: %w", err)
-	}
-	tagIDs, err := stringslice.StringSliceToIntSlice(input.TagIds)
-	if err != nil {
-		return nil, fmt.Errorf("converting tag ids: %w", err)
-	}
-	sceneIDs, err := stringslice.StringSliceToIntSlice(input.SceneIds)
-	if err != nil {
-		return nil, fmt.Errorf("converting scene ids: %w", err)
-	}
-
 	// Populate a new gallery from the input
 	currentTime := time.Now()
 	newGallery := models.Gallery{
-		Title:        input.Title,
-		URL:          translator.string(input.URL, "url"),
-		Details:      translator.string(input.Details, "details"),
-		Rating:       translator.ratingConversionInt(input.Rating, input.Rating100),
-		PerformerIDs: models.NewRelatedIDs(performerIDs),
-		TagIDs:       models.NewRelatedIDs(tagIDs),
-		SceneIDs:     models.NewRelatedIDs(sceneIDs),
-		CreatedAt:    currentTime,
-		UpdatedAt:    currentTime,
+		Title:     input.Title,
+		URL:       translator.string(input.URL, "url"),
+		Details:   translator.string(input.Details, "details"),
+		Rating:    translator.ratingConversion(input.Rating, input.Rating100),
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
 	}
+
+	var err error
 
 	newGallery.Date, err = translator.datePtr(input.Date, "date")
 	if err != nil {
@@ -73,6 +60,19 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	newGallery.StudioID, err = translator.intPtrFromString(input.StudioID, "studio_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
+	}
+
+	newGallery.PerformerIDs, err = translator.relatedIds(input.PerformerIds, "performers_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting performer ids: %w", err)
+	}
+	newGallery.TagIDs, err = translator.relatedIds(input.TagIds, "tag_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting tag ids: %w", err)
+	}
+	newGallery.SceneIDs, err = translator.relatedIds(input.SceneIds, "scene_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting scene ids: %w", err)
 	}
 
 	// Start the transaction and save the gallery
@@ -140,6 +140,7 @@ func (r *mutationResolver) GalleriesUpdate(ctx context.Context, input []*models.
 		}
 
 		r.hookExecutor.ExecutePostHooks(ctx, gallery.ID, plugin.GalleryUpdatePost, input, translator.getFields())
+
 		gallery, err = r.getGallery(ctx, gallery.ID)
 		if err != nil {
 			return nil, err
@@ -182,25 +183,24 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 
 	updatedGallery.Details = translator.optionalString(input.Details, "details")
 	updatedGallery.URL = translator.optionalString(input.URL, "url")
+	updatedGallery.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedGallery.Organized = translator.optionalBool(input.Organized, "organized")
+
 	updatedGallery.Date, err = translator.optionalDate(input.Date, "date")
 	if err != nil {
 		return nil, fmt.Errorf("converting date: %w", err)
 	}
-	updatedGallery.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
 	updatedGallery.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
-	updatedGallery.Organized = translator.optionalBool(input.Organized, "organized")
 
-	if input.PrimaryFileID != nil {
-		primaryFileID, err := strconv.Atoi(*input.PrimaryFileID)
-		if err != nil {
-			return nil, fmt.Errorf("converting primary file id: %w", err)
-		}
-
-		converted := models.FileID(primaryFileID)
-		updatedGallery.PrimaryFileID = &converted
+	updatedGallery.PrimaryFileID, err = translator.fileIDPtrFromString(input.PrimaryFileID, "primary_file_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting primary file id: %w", err)
+	}
+	if updatedGallery.PrimaryFileID != nil {
+		primaryFileID := *updatedGallery.PrimaryFileID
 
 		if err := originalGallery.LoadFiles(ctx, r.repository.Gallery); err != nil {
 			return nil, err
@@ -209,35 +209,27 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 		// ensure that new primary file is associated with gallery
 		var f models.File
 		for _, ff := range originalGallery.Files.List() {
-			if ff.Base().ID == converted {
+			if ff.Base().ID == primaryFileID {
 				f = ff
 			}
 		}
 
 		if f == nil {
-			return nil, fmt.Errorf("file with id %d not associated with gallery", converted)
+			return nil, fmt.Errorf("file with id %d not associated with gallery", primaryFileID)
 		}
 	}
 
-	if translator.hasField("performer_ids") {
-		updatedGallery.PerformerIDs, err = translateUpdateIDs(input.PerformerIds, models.RelationshipUpdateModeSet)
-		if err != nil {
-			return nil, fmt.Errorf("converting performer ids: %w", err)
-		}
+	updatedGallery.PerformerIDs, err = translator.updateIds(input.PerformerIds, "performer_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting performer ids: %w", err)
 	}
-
-	if translator.hasField("tag_ids") {
-		updatedGallery.TagIDs, err = translateUpdateIDs(input.TagIds, models.RelationshipUpdateModeSet)
-		if err != nil {
-			return nil, fmt.Errorf("converting tag ids: %w", err)
-		}
+	updatedGallery.TagIDs, err = translator.updateIds(input.TagIds, "tag_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
-
-	if translator.hasField("scene_ids") {
-		updatedGallery.SceneIDs, err = translateUpdateIDs(input.SceneIds, models.RelationshipUpdateModeSet)
-		if err != nil {
-			return nil, fmt.Errorf("converting scene ids: %w", err)
-		}
+	updatedGallery.SceneIDs, err = translator.updateIds(input.SceneIds, "scene_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting scene ids: %w", err)
 	}
 
 	// gallery scene is set from the scene only
@@ -265,36 +257,29 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 
 	updatedGallery.Details = translator.optionalString(input.Details, "details")
 	updatedGallery.URL = translator.optionalString(input.URL, "url")
+	updatedGallery.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedGallery.Organized = translator.optionalBool(input.Organized, "organized")
+
 	updatedGallery.Date, err = translator.optionalDate(input.Date, "date")
 	if err != nil {
 		return nil, fmt.Errorf("converting date: %w", err)
 	}
-	updatedGallery.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
 	updatedGallery.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
-	updatedGallery.Organized = translator.optionalBool(input.Organized, "organized")
 
-	if translator.hasField("performer_ids") {
-		updatedGallery.PerformerIDs, err = translateUpdateIDs(input.PerformerIds.Ids, input.PerformerIds.Mode)
-		if err != nil {
-			return nil, fmt.Errorf("converting performer ids: %w", err)
-		}
+	updatedGallery.PerformerIDs, err = translator.updateIdsBulk(input.PerformerIds, "performer_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting performer ids: %w", err)
 	}
-
-	if translator.hasField("tag_ids") {
-		updatedGallery.TagIDs, err = translateUpdateIDs(input.TagIds.Ids, input.TagIds.Mode)
-		if err != nil {
-			return nil, fmt.Errorf("converting tag ids: %w", err)
-		}
+	updatedGallery.TagIDs, err = translator.updateIdsBulk(input.TagIds, "tag_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
-
-	if translator.hasField("scene_ids") {
-		updatedGallery.SceneIDs, err = translateUpdateIDs(input.SceneIds.Ids, input.SceneIds.Mode)
-		if err != nil {
-			return nil, fmt.Errorf("converting scene ids: %w", err)
-		}
+	updatedGallery.SceneIDs, err = translator.updateIdsBulk(input.SceneIds, "scene_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting scene ids: %w", err)
 	}
 
 	ret := []*models.Gallery{}

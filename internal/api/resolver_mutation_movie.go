@@ -12,6 +12,7 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+// used to refetch movie after hooks run
 func (r *mutationResolver) getMovie(ctx context.Context, id int) (ret *models.Movie, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Movie.Find(ctx, id)
@@ -36,7 +37,7 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 		UpdatedAt: currentTime,
 		Aliases:   translator.string(input.Aliases, "aliases"),
 		Duration:  input.Duration,
-		Rating:    translator.ratingConversionInt(input.Rating, input.Rating100),
+		Rating:    translator.ratingConversion(input.Rating, input.Rating100),
 		Director:  translator.string(input.Director, "director"),
 		Synopsis:  translator.string(input.Synopsis, "synopsis"),
 		URL:       translator.string(input.URL, "url"),
@@ -124,14 +125,15 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	updatedMovie.Name = translator.optionalString(input.Name, "name")
 	updatedMovie.Aliases = translator.optionalString(input.Aliases, "aliases")
 	updatedMovie.Duration = translator.optionalInt(input.Duration, "duration")
+	updatedMovie.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedMovie.Director = translator.optionalString(input.Director, "director")
+	updatedMovie.Synopsis = translator.optionalString(input.Synopsis, "synopsis")
+	updatedMovie.URL = translator.optionalString(input.URL, "url")
+
 	updatedMovie.Date, err = translator.optionalDate(input.Date, "date")
 	if err != nil {
 		return nil, fmt.Errorf("converting date: %w", err)
 	}
-	updatedMovie.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
-	updatedMovie.Director = translator.optionalString(input.Director, "director")
-	updatedMovie.Synopsis = translator.optionalString(input.Synopsis, "synopsis")
-	updatedMovie.URL = translator.optionalString(input.URL, "url")
 	updatedMovie.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
@@ -196,11 +198,12 @@ func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieU
 		inputMap: getUpdateInputMap(ctx),
 	}
 
-	// populate movie from the input
+	// Populate movie from the input
 	updatedMovie := models.NewMoviePartial()
 
-	updatedMovie.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
+	updatedMovie.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
 	updatedMovie.Director = translator.optionalString(input.Director, "director")
+
 	updatedMovie.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)

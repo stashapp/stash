@@ -113,6 +113,64 @@ type SceneQueryResult struct {
 	resolveErr error
 }
 
+type SceneMovieInput struct {
+	MovieID    string `json:"movie_id"`
+	SceneIndex *int   `json:"scene_index"`
+}
+
+type SceneCreateInput struct {
+	Title        *string           `json:"title"`
+	Code         *string           `json:"code"`
+	Details      *string           `json:"details"`
+	Director     *string           `json:"director"`
+	URL          *string           `json:"url"`
+	Urls         []string          `json:"urls"`
+	Date         *string           `json:"date"`
+	Rating       *int              `json:"rating"`
+	Rating100    *int              `json:"rating100"`
+	Organized    *bool             `json:"organized"`
+	StudioID     *string           `json:"studio_id"`
+	GalleryIds   []string          `json:"gallery_ids"`
+	PerformerIds []string          `json:"performer_ids"`
+	Movies       []SceneMovieInput `json:"movies"`
+	TagIds       []string          `json:"tag_ids"`
+	// This should be a URL or a base64 encoded data URL
+	CoverImage *string   `json:"cover_image"`
+	StashIds   []StashID `json:"stash_ids"`
+	// The first id will be assigned as primary.
+	// Files will be reassigned from existing scenes if applicable.
+	// Files must not already be primary for another scene.
+	FileIds []string `json:"file_ids"`
+}
+
+type SceneUpdateInput struct {
+	ClientMutationID *string           `json:"clientMutationId"`
+	ID               string            `json:"id"`
+	Title            *string           `json:"title"`
+	Code             *string           `json:"code"`
+	Details          *string           `json:"details"`
+	Director         *string           `json:"director"`
+	URL              *string           `json:"url"`
+	Urls             []string          `json:"urls"`
+	Date             *string           `json:"date"`
+	Rating           *int              `json:"rating"`
+	Rating100        *int              `json:"rating100"`
+	OCounter         *int              `json:"o_counter"`
+	Organized        *bool             `json:"organized"`
+	StudioID         *string           `json:"studio_id"`
+	GalleryIds       []string          `json:"gallery_ids"`
+	PerformerIds     []string          `json:"performer_ids"`
+	Movies           []SceneMovieInput `json:"movies"`
+	TagIds           []string          `json:"tag_ids"`
+	// This should be a URL or a base64 encoded data URL
+	CoverImage    *string   `json:"cover_image"`
+	StashIds      []StashID `json:"stash_ids"`
+	ResumeTime    *float64  `json:"resume_time"`
+	PlayDuration  *float64  `json:"play_duration"`
+	PlayCount     *int      `json:"play_count"`
+	PrimaryFileID *string   `json:"primary_file_id"`
+}
+
 type SceneDestroyInput struct {
 	ID              string `json:"id"`
 	DeleteFile      *bool  `json:"delete_file"`
