@@ -155,7 +155,7 @@ func (r *mutationResolver) GalleriesUpdate(ctx context.Context, input []*models.
 func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.GalleryUpdateInput, translator changesetTranslator) (*models.Gallery, error) {
 	galleryID, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting id: %w", err)
 	}
 
 	qb := r.repository.Gallery
@@ -245,7 +245,7 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGalleryUpdateInput) ([]*models.Gallery, error) {
 	galleryIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting ids: %w", err)
 	}
 
 	translator := changesetTranslator{
@@ -321,7 +321,7 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.GalleryDestroyInput) (bool, error) {
 	galleryIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting ids: %w", err)
 	}
 
 	var galleries []*models.Gallery
@@ -412,12 +412,12 @@ func isStashPath(path string) bool {
 func (r *mutationResolver) AddGalleryImages(ctx context.Context, input GalleryAddInput) (bool, error) {
 	galleryID, err := strconv.Atoi(input.GalleryID)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting gallery id: %w", err)
 	}
 
 	imageIDs, err := stringslice.StringSliceToIntSlice(input.ImageIds)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting image ids: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
@@ -442,12 +442,12 @@ func (r *mutationResolver) AddGalleryImages(ctx context.Context, input GalleryAd
 func (r *mutationResolver) RemoveGalleryImages(ctx context.Context, input GalleryRemoveInput) (bool, error) {
 	galleryID, err := strconv.Atoi(input.GalleryID)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting gallery id: %w", err)
 	}
 
 	imageIDs, err := stringslice.StringSliceToIntSlice(input.ImageIds)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting image ids: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
@@ -519,7 +519,7 @@ func (r *mutationResolver) GalleryChapterCreate(ctx context.Context, input Galle
 func (r *mutationResolver) GalleryChapterUpdate(ctx context.Context, input GalleryChapterUpdateInput) (*models.GalleryChapter, error) {
 	chapterID, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting id: %w", err)
 	}
 
 	translator := changesetTranslator{
@@ -585,7 +585,7 @@ func (r *mutationResolver) GalleryChapterUpdate(ctx context.Context, input Galle
 func (r *mutationResolver) GalleryChapterDestroy(ctx context.Context, id string) (bool, error) {
 	chapterID, err := strconv.Atoi(id)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting id: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {

@@ -57,7 +57,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 		var err error
 		imageData, err = utils.ProcessImageInput(ctx, *input.Image)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("processing image: %w", err)
 		}
 	}
 
@@ -94,7 +94,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.StudioUpdateInput) (*models.Studio, error) {
 	studioID, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting id: %w", err)
 	}
 
 	translator := changesetTranslator{
@@ -126,7 +126,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		var err error
 		imageData, err = utils.ProcessImageInput(ctx, *input.Image)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("processing image: %w", err)
 		}
 	}
 
@@ -161,7 +161,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 func (r *mutationResolver) StudioDestroy(ctx context.Context, input StudioDestroyInput) (bool, error) {
 	id, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting id: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
@@ -178,7 +178,7 @@ func (r *mutationResolver) StudioDestroy(ctx context.Context, input StudioDestro
 func (r *mutationResolver) StudiosDestroy(ctx context.Context, studioIDs []string) (bool, error) {
 	ids, err := stringslice.StringSliceToIntSlice(studioIDs)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting ids: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {

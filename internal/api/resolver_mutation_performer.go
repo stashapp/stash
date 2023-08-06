@@ -104,7 +104,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	if input.Image != nil {
 		imageData, err = utils.ProcessImageInput(ctx, *input.Image)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("processing image: %w", err)
 		}
 	}
 
@@ -136,7 +136,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.PerformerUpdateInput) (*models.Performer, error) {
 	performerID, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting id: %w", err)
 	}
 
 	translator := changesetTranslator{
@@ -185,7 +185,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	} else if translator.hasField("height") {
 		updatedPerformer.Height, err = translator.optionalIntFromString(input.Height, "height")
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("converting height: %w", err)
 		}
 	}
 
@@ -210,7 +210,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	if input.Image != nil {
 		imageData, err = utils.ProcessImageInput(ctx, *input.Image)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("processing image: %w", err)
 		}
 	}
 
@@ -257,7 +257,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPerformerUpdateInput) ([]*models.Performer, error) {
 	performerIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting ids: %w", err)
 	}
 
 	translator := changesetTranslator{
@@ -304,7 +304,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	} else if translator.hasField("height") {
 		updatedPerformer.Height, err = translator.optionalIntFromString(input.Height, "height")
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("converting height: %w", err)
 		}
 	}
 
@@ -378,7 +378,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 func (r *mutationResolver) PerformerDestroy(ctx context.Context, input PerformerDestroyInput) (bool, error) {
 	id, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting id: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
@@ -395,7 +395,7 @@ func (r *mutationResolver) PerformerDestroy(ctx context.Context, input Performer
 func (r *mutationResolver) PerformersDestroy(ctx context.Context, performerIDs []string) (bool, error) {
 	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting ids: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {

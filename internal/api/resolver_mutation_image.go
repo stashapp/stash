@@ -91,7 +91,7 @@ func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*ImageUpdat
 func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInput, translator changesetTranslator) (*models.Image, error) {
 	imageID, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting id: %w", err)
 	}
 
 	i, err := r.repository.Image.Find(ctx, imageID)
@@ -191,7 +191,7 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageUpdateInput) (ret []*models.Image, err error) {
 	imageIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting ids: %w", err)
 	}
 
 	translator := changesetTranslator{
@@ -296,7 +296,7 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageDestroyInput) (ret bool, err error) {
 	imageID, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting id: %w", err)
 	}
 
 	var i *models.Image
@@ -336,7 +336,7 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.ImagesDestroyInput) (ret bool, err error) {
 	imageIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting ids: %w", err)
 	}
 
 	var images []*models.Image
@@ -388,7 +388,7 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 func (r *mutationResolver) ImageIncrementO(ctx context.Context, id string) (ret int, err error) {
 	imageID, err := strconv.Atoi(id)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("converting id: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
@@ -406,7 +406,7 @@ func (r *mutationResolver) ImageIncrementO(ctx context.Context, id string) (ret 
 func (r *mutationResolver) ImageDecrementO(ctx context.Context, id string) (ret int, err error) {
 	imageID, err := strconv.Atoi(id)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("converting id: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
@@ -424,7 +424,7 @@ func (r *mutationResolver) ImageDecrementO(ctx context.Context, id string) (ret 
 func (r *mutationResolver) ImageResetO(ctx context.Context, id string) (ret int, err error) {
 	imageID, err := strconv.Atoi(id)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("converting id: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {

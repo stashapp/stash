@@ -46,7 +46,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 	if len(input.ParentIds) > 0 {
 		parentIDs, err = stringslice.StringSliceToIntSlice(input.ParentIds)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("converting parent ids: %w", err)
 		}
 	}
 
@@ -54,7 +54,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 	if len(input.ChildIds) > 0 {
 		childIDs, err = stringslice.StringSliceToIntSlice(input.ChildIds)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("converting child ids: %w", err)
 		}
 	}
 
@@ -63,7 +63,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 	if input.Image != nil {
 		imageData, err = utils.ProcessImageInput(ctx, *input.Image)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("processing image: %w", err)
 		}
 	}
 
@@ -130,7 +130,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) (*models.Tag, error) {
 	tagID, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting id: %w", err)
 	}
 
 	translator := changesetTranslator{
@@ -147,7 +147,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 	if translator.hasField("parent_ids") {
 		parentIDs, err = stringslice.StringSliceToIntSlice(input.ParentIds)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("converting parent ids: %w", err)
 		}
 	}
 
@@ -155,7 +155,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 	if translator.hasField("child_ids") {
 		childIDs, err = stringslice.StringSliceToIntSlice(input.ChildIds)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("converting child ids: %w", err)
 		}
 	}
 
@@ -164,7 +164,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 	if input.Image != nil {
 		imageData, err = utils.ProcessImageInput(ctx, *input.Image)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("processing image: %w", err)
 		}
 	}
 
@@ -246,7 +246,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 func (r *mutationResolver) TagDestroy(ctx context.Context, input TagDestroyInput) (bool, error) {
 	tagID, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting id: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
@@ -263,7 +263,7 @@ func (r *mutationResolver) TagDestroy(ctx context.Context, input TagDestroyInput
 func (r *mutationResolver) TagsDestroy(ctx context.Context, tagIDs []string) (bool, error) {
 	ids, err := stringslice.StringSliceToIntSlice(tagIDs)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting ids: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
@@ -289,12 +289,12 @@ func (r *mutationResolver) TagsDestroy(ctx context.Context, tagIDs []string) (bo
 func (r *mutationResolver) TagsMerge(ctx context.Context, input TagsMergeInput) (*models.Tag, error) {
 	source, err := stringslice.StringSliceToIntSlice(input.Source)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting source ids: %w", err)
 	}
 
 	destination, err := strconv.Atoi(input.Destination)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting destination id: %w", err)
 	}
 
 	if len(source) == 0 {
@@ -345,5 +345,6 @@ func (r *mutationResolver) TagsMerge(ctx context.Context, input TagsMergeInput) 
 	}
 
 	r.hookExecutor.ExecutePostHooks(ctx, t.ID, plugin.TagMergePost, input, nil)
+
 	return t, nil
 }

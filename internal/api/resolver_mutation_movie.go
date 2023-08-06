@@ -65,7 +65,7 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 	if input.FrontImage != nil {
 		frontimageData, err = utils.ProcessImageInput(ctx, *input.FrontImage)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("processing front image: %w", err)
 		}
 	}
 
@@ -74,7 +74,7 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 	if input.BackImage != nil {
 		backimageData, err = utils.ProcessImageInput(ctx, *input.BackImage)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("processing back image: %w", err)
 		}
 	}
 
@@ -112,7 +112,7 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInput) (*models.Movie, error) {
 	movieID, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting id: %w", err)
 	}
 
 	translator := changesetTranslator{
@@ -144,7 +144,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	if input.FrontImage != nil {
 		frontimageData, err = utils.ProcessImageInput(ctx, *input.FrontImage)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("processing front image: %w", err)
 		}
 	}
 
@@ -153,7 +153,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	if input.BackImage != nil {
 		backimageData, err = utils.ProcessImageInput(ctx, *input.BackImage)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("processing back image: %w", err)
 		}
 	}
 
@@ -191,7 +191,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieUpdateInput) ([]*models.Movie, error) {
 	movieIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting ids: %w", err)
 	}
 
 	translator := changesetTranslator{
@@ -246,7 +246,7 @@ func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieU
 func (r *mutationResolver) MovieDestroy(ctx context.Context, input MovieDestroyInput) (bool, error) {
 	id, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting id: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
@@ -263,7 +263,7 @@ func (r *mutationResolver) MovieDestroy(ctx context.Context, input MovieDestroyI
 func (r *mutationResolver) MoviesDestroy(ctx context.Context, movieIDs []string) (bool, error) {
 	ids, err := stringslice.StringSliceToIntSlice(movieIDs)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting ids: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {

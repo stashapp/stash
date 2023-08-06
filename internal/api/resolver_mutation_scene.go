@@ -88,7 +88,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 		var err error
 		coverImageData, err = utils.ProcessImageInput(ctx, *input.CoverImage)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("processing cover image: %w", err)
 		}
 	}
 
@@ -227,7 +227,7 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUpdateInput, translator changesetTranslator) (*models.Scene, error) {
 	sceneID, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting id: %w", err)
 	}
 
 	qb := r.repository.Scene
@@ -285,7 +285,7 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		var err error
 		coverImageData, err = utils.ProcessImageInput(ctx, *input.CoverImage)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("processing cover image: %w", err)
 		}
 	}
 
@@ -317,7 +317,7 @@ func (r *mutationResolver) sceneUpdateCoverImage(ctx context.Context, s *models.
 func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneUpdateInput) ([]*models.Scene, error) {
 	sceneIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting ids: %w", err)
 	}
 
 	translator := changesetTranslator{
@@ -411,7 +411,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneDestroyInput) (bool, error) {
 	sceneID, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting id: %w", err)
 	}
 
 	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
@@ -464,7 +464,7 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.ScenesDestroyInput) (bool, error) {
 	sceneIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting ids: %w", err)
 	}
 
 	var scenes []*models.Scene
@@ -526,18 +526,16 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 func (r *mutationResolver) SceneAssignFile(ctx context.Context, input AssignSceneFileInput) (bool, error) {
 	sceneID, err := strconv.Atoi(input.SceneID)
 	if err != nil {
-		return false, fmt.Errorf("converting scene ID: %w", err)
+		return false, fmt.Errorf("converting scene id: %w", err)
 	}
 
-	fileIDInt, err := strconv.Atoi(input.FileID)
+	fileID, err := strconv.Atoi(input.FileID)
 	if err != nil {
-		return false, fmt.Errorf("converting file ID: %w", err)
+		return false, fmt.Errorf("converting file id: %w", err)
 	}
-
-	fileID := models.FileID(fileIDInt)
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		return r.Resolver.sceneService.AssignFile(ctx, sceneID, fileID)
+		return r.Resolver.sceneService.AssignFile(ctx, sceneID, models.FileID(fileID))
 	}); err != nil {
 		return false, fmt.Errorf("assigning file to scene: %w", err)
 	}
@@ -548,12 +546,12 @@ func (r *mutationResolver) SceneAssignFile(ctx context.Context, input AssignScen
 func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput) (*models.Scene, error) {
 	srcIDs, err := stringslice.StringSliceToIntSlice(input.Source)
 	if err != nil {
-		return nil, fmt.Errorf("converting source IDs: %w", err)
+		return nil, fmt.Errorf("converting source ids: %w", err)
 	}
 
 	destID, err := strconv.Atoi(input.Destination)
 	if err != nil {
-		return nil, fmt.Errorf("converting destination ID %s: %w", input.Destination, err)
+		return nil, fmt.Errorf("converting destination id: %w", err)
 	}
 
 	var values *models.ScenePartial
@@ -576,7 +574,7 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 		var err error
 		coverImageData, err = utils.ProcessImageInput(ctx, *input.Values.CoverImage)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("processing cover image: %w", err)
 		}
 	}
 
@@ -662,7 +660,7 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input SceneMar
 func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMarkerUpdateInput) (*models.SceneMarker, error) {
 	markerID, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting id: %w", err)
 	}
 
 	translator := changesetTranslator{
@@ -760,7 +758,7 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (bool, error) {
 	markerID, err := strconv.Atoi(id)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting id: %w", err)
 	}
 
 	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
@@ -811,7 +809,7 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 func (r *mutationResolver) SceneSaveActivity(ctx context.Context, id string, resumeTime *float64, playDuration *float64) (ret bool, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting id: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
@@ -829,7 +827,7 @@ func (r *mutationResolver) SceneSaveActivity(ctx context.Context, id string, res
 func (r *mutationResolver) SceneIncrementPlayCount(ctx context.Context, id string) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("converting id: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
@@ -847,7 +845,7 @@ func (r *mutationResolver) SceneIncrementPlayCount(ctx context.Context, id strin
 func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("converting id: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
@@ -865,7 +863,7 @@ func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string) (ret 
 func (r *mutationResolver) SceneDecrementO(ctx context.Context, id string) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("converting id: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
@@ -883,7 +881,7 @@ func (r *mutationResolver) SceneDecrementO(ctx context.Context, id string) (ret 
 func (r *mutationResolver) SceneResetO(ctx context.Context, id string) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("converting id: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
