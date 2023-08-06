@@ -5,7 +5,5 @@ export function isPlatformUniquelyRenderedByApple() {
   const isiOS = UAParser().os.name?.includes("iOS");
   const isMacOS = UAParser().os.name?.includes("Mac OS");
   const isSafari = UAParser().browser.name?.includes("Safari");
-  return (
-    isiOS || (isMacOS && isSafari)
-  );
+  return isiOS || (isMacOS && isSafari);
 }
