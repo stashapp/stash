@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"time"
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/file"
@@ -41,15 +40,12 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	}
 
 	// Populate a new gallery from the input
-	currentTime := time.Now()
-	newGallery := models.Gallery{
-		Title:     input.Title,
-		URL:       translator.string(input.URL, "url"),
-		Details:   translator.string(input.Details, "details"),
-		Rating:    translator.ratingConversion(input.Rating, input.Rating100),
-		CreatedAt: currentTime,
-		UpdatedAt: currentTime,
-	}
+	newGallery := models.NewGallery()
+
+	newGallery.Title = input.Title
+	newGallery.URL = translator.string(input.URL, "url")
+	newGallery.Details = translator.string(input.Details, "details")
+	newGallery.Rating = translator.ratingConversion(input.Rating, input.Rating100)
 
 	var err error
 
@@ -486,14 +482,12 @@ func (r *mutationResolver) GalleryChapterCreate(ctx context.Context, input Galle
 		return nil, fmt.Errorf("converting gallery id: %w", err)
 	}
 
-	currentTime := time.Now()
-	newChapter := models.GalleryChapter{
-		Title:      input.Title,
-		ImageIndex: input.ImageIndex,
-		GalleryID:  galleryID,
-		CreatedAt:  currentTime,
-		UpdatedAt:  currentTime,
-	}
+	// Populate a new gallery chapter from the input
+	newChapter := models.NewGalleryChapter()
+
+	newChapter.Title = input.Title
+	newChapter.ImageIndex = input.ImageIndex
+	newChapter.GalleryID = galleryID
 
 	// Start the transaction and save the gallery chapter
 	if err := r.withTxn(ctx, func(ctx context.Context) error {

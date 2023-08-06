@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
@@ -31,18 +30,15 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	}
 
 	// Populate a new studio from the input
-	currentTime := time.Now()
-	newStudio := models.Studio{
-		Name:          input.Name,
-		CreatedAt:     currentTime,
-		UpdatedAt:     currentTime,
-		URL:           translator.string(input.URL, "url"),
-		Rating:        translator.ratingConversion(input.Rating, input.Rating100),
-		Details:       translator.string(input.Details, "details"),
-		IgnoreAutoTag: translator.bool(input.IgnoreAutoTag, "ignore_auto_tag"),
-		Aliases:       models.NewRelatedStrings(input.Aliases),
-		StashIDs:      models.NewRelatedStashIDs(input.StashIds),
-	}
+	newStudio := models.NewStudio()
+
+	newStudio.Name = input.Name
+	newStudio.URL = translator.string(input.URL, "url")
+	newStudio.Rating = translator.ratingConversion(input.Rating, input.Rating100)
+	newStudio.Details = translator.string(input.Details, "details")
+	newStudio.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag, "ignore_auto_tag")
+	newStudio.Aliases = models.NewRelatedStrings(input.Aliases)
+	newStudio.StashIDs = models.NewRelatedStashIDs(input.StashIds)
 
 	var err error
 
@@ -102,17 +98,16 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	}
 
 	// Populate studio from the input
-	updatedStudio := models.StudioPartial{
-		ID:            studioID,
-		Name:          translator.optionalString(input.Name, "name"),
-		URL:           translator.optionalString(input.URL, "url"),
-		Details:       translator.optionalString(input.Details, "details"),
-		Rating:        translator.optionalRatingConversion(input.Rating, input.Rating100),
-		IgnoreAutoTag: translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag"),
-		Aliases:       translator.updateStrings(input.Aliases, "aliases"),
-		StashIDs:      translator.updateStashIDs(input.StashIds, "stash_ids"),
-		UpdatedAt:     models.NewOptionalTime(time.Now()),
-	}
+	updatedStudio := models.NewStudioPartial()
+
+	updatedStudio.ID = studioID
+	updatedStudio.Name = translator.optionalString(input.Name, "name")
+	updatedStudio.URL = translator.optionalString(input.URL, "url")
+	updatedStudio.Details = translator.optionalString(input.Details, "details")
+	updatedStudio.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedStudio.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
+	updatedStudio.Aliases = translator.updateStrings(input.Aliases, "aliases")
+	updatedStudio.StashIDs = translator.updateStashIDs(input.StashIds, "stash_ids")
 
 	updatedStudio.ParentID, err = translator.optionalIntFromString(input.ParentID, "parent_id")
 	if err != nil {

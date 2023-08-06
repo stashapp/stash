@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/file"
@@ -40,15 +39,15 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 	}
 
 	// Populate a new scene from the input
-	newScene := models.Scene{
-		Title:     translator.string(input.Title, "title"),
-		Code:      translator.string(input.Code, "code"),
-		Details:   translator.string(input.Details, "details"),
-		Director:  translator.string(input.Director, "director"),
-		Rating:    translator.ratingConversion(input.Rating, input.Rating100),
-		Organized: translator.bool(input.Organized, "organized"),
-		StashIDs:  models.NewRelatedStashIDs(input.StashIds),
-	}
+	newScene := models.NewScene()
+
+	newScene.Title = translator.string(input.Title, "title")
+	newScene.Code = translator.string(input.Code, "code")
+	newScene.Details = translator.string(input.Details, "details")
+	newScene.Director = translator.string(input.Director, "director")
+	newScene.Rating = translator.ratingConversion(input.Rating, input.Rating100)
+	newScene.Organized = translator.bool(input.Organized, "organized")
+	newScene.StashIDs = models.NewRelatedStashIDs(input.StashIds)
 
 	newScene.Date, err = translator.datePtr(input.Date, "date")
 	if err != nil {
@@ -622,15 +621,13 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input SceneMar
 		return nil, fmt.Errorf("converting primary tag id: %w", err)
 	}
 
-	currentTime := time.Now()
-	newMarker := models.SceneMarker{
-		Title:        input.Title,
-		Seconds:      input.Seconds,
-		PrimaryTagID: primaryTagID,
-		SceneID:      sceneID,
-		CreatedAt:    currentTime,
-		UpdatedAt:    currentTime,
-	}
+	// Populate a new scene marker from the input
+	newMarker := models.NewSceneMarker()
+
+	newMarker.Title = input.Title
+	newMarker.Seconds = input.Seconds
+	newMarker.PrimaryTagID = primaryTagID
+	newMarker.SceneID = sceneID
 
 	tagIDs, err := stringslice.StringSliceToIntSlice(input.TagIds)
 	if err != nil {

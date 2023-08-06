@@ -890,9 +890,9 @@ func (qb *TagStore) queryTags(ctx context.Context, query string, args []interfac
 	return ret, nil
 }
 
-func (qb *TagStore) queryTagPaths(ctx context.Context, query string, args []interface{}) (models.TagPaths, error) {
+func (qb *TagStore) queryTagPaths(ctx context.Context, query string, args []interface{}) ([]*models.TagPath, error) {
 	const single = false
-	var ret models.TagPaths
+	var ret []*models.TagPath
 	if err := qb.queryFunc(ctx, query, args, single, func(r *sqlx.Rows) error {
 		var f tagPathRow
 		if err := r.StructScan(&f); err != nil {

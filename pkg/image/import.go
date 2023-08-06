@@ -148,11 +148,10 @@ func (i *Importer) populateStudio(ctx context.Context) error {
 }
 
 func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
-	newStudio := &models.Studio{
-		Name: name,
-	}
+	newStudio := models.NewStudio()
+	newStudio.Name = name
 
-	err := i.StudioWriter.Create(ctx, newStudio)
+	err := i.StudioWriter.Create(ctx, &newStudio)
 	if err != nil {
 		return 0, err
 	}
@@ -261,7 +260,8 @@ func (i *Importer) populatePerformers(ctx context.Context) error {
 func (i *Importer) createPerformers(ctx context.Context, names []string) ([]*models.Performer, error) {
 	var ret []*models.Performer
 	for _, name := range names {
-		newPerformer := *models.NewPerformer(name)
+		newPerformer := models.NewPerformer()
+		newPerformer.Name = name
 
 		err := i.PerformerWriter.Create(ctx, &newPerformer)
 		if err != nil {
@@ -394,14 +394,15 @@ func importTags(ctx context.Context, tagWriter models.TagFinderCreator, names []
 func createTags(ctx context.Context, tagWriter models.TagCreator, names []string) ([]*models.Tag, error) {
 	var ret []*models.Tag
 	for _, name := range names {
-		newTag := models.NewTag(name)
+		newTag := models.NewTag()
+		newTag.Name = name
 
-		err := tagWriter.Create(ctx, newTag)
+		err := tagWriter.Create(ctx, &newTag)
 		if err != nil {
 			return nil, err
 		}
 
-		ret = append(ret, newTag)
+		ret = append(ret, &newTag)
 	}
 
 	return ret, nil

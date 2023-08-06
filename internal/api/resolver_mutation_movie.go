@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
@@ -30,18 +29,15 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 	}
 
 	// Populate a new movie from the input
-	currentTime := time.Now()
-	newMovie := models.Movie{
-		Name:      input.Name,
-		CreatedAt: currentTime,
-		UpdatedAt: currentTime,
-		Aliases:   translator.string(input.Aliases, "aliases"),
-		Duration:  input.Duration,
-		Rating:    translator.ratingConversion(input.Rating, input.Rating100),
-		Director:  translator.string(input.Director, "director"),
-		Synopsis:  translator.string(input.Synopsis, "synopsis"),
-		URL:       translator.string(input.URL, "url"),
-	}
+	newMovie := models.NewMovie()
+
+	newMovie.Name = input.Name
+	newMovie.Aliases = translator.string(input.Aliases, "aliases")
+	newMovie.Duration = input.Duration
+	newMovie.Rating = translator.ratingConversion(input.Rating, input.Rating100)
+	newMovie.Director = translator.string(input.Director, "director")
+	newMovie.Synopsis = translator.string(input.Synopsis, "synopsis")
+	newMovie.URL = translator.string(input.URL, "url")
 
 	var err error
 

@@ -48,6 +48,50 @@ type Scene struct {
 	StashIDs     RelatedStashIDs `json:"stash_ids"`
 }
 
+func NewScene() Scene {
+	currentTime := time.Now()
+	return Scene{
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
+	}
+}
+
+// ScenePartial represents part of a Scene object. It is used to update
+// the database entry.
+type ScenePartial struct {
+	Title    OptionalString
+	Code     OptionalString
+	Details  OptionalString
+	Director OptionalString
+	Date     OptionalDate
+	// Rating expressed in 1-100 scale
+	Rating       OptionalInt
+	Organized    OptionalBool
+	OCounter     OptionalInt
+	StudioID     OptionalInt
+	CreatedAt    OptionalTime
+	UpdatedAt    OptionalTime
+	ResumeTime   OptionalFloat64
+	PlayDuration OptionalFloat64
+	PlayCount    OptionalInt
+	LastPlayedAt OptionalTime
+
+	URLs          *UpdateStrings
+	GalleryIDs    *UpdateIDs
+	TagIDs        *UpdateIDs
+	PerformerIDs  *UpdateIDs
+	MovieIDs      *UpdateMovieIDs
+	StashIDs      *UpdateStashIDs
+	PrimaryFileID *FileID
+}
+
+func NewScenePartial() ScenePartial {
+	currentTime := time.Now()
+	return ScenePartial{
+		UpdatedAt: NewOptionalTime(currentTime),
+	}
+}
+
 func (s *Scene) LoadURLs(ctx context.Context, l URLLoader) error {
 	return s.URLs.load(func() ([]string, error) {
 		return l.GetURLs(ctx, s.ID)
@@ -145,42 +189,6 @@ func (s *Scene) LoadRelationships(ctx context.Context, l SceneReader) error {
 	return nil
 }
 
-// ScenePartial represents part of a Scene object. It is used to update
-// the database entry.
-type ScenePartial struct {
-	Title    OptionalString
-	Code     OptionalString
-	Details  OptionalString
-	Director OptionalString
-	Date     OptionalDate
-	// Rating expressed in 1-100 scale
-	Rating       OptionalInt
-	Organized    OptionalBool
-	OCounter     OptionalInt
-	StudioID     OptionalInt
-	CreatedAt    OptionalTime
-	UpdatedAt    OptionalTime
-	ResumeTime   OptionalFloat64
-	PlayDuration OptionalFloat64
-	PlayCount    OptionalInt
-	LastPlayedAt OptionalTime
-
-	URLs          *UpdateStrings
-	GalleryIDs    *UpdateIDs
-	TagIDs        *UpdateIDs
-	PerformerIDs  *UpdateIDs
-	MovieIDs      *UpdateMovieIDs
-	StashIDs      *UpdateStashIDs
-	PrimaryFileID *FileID
-}
-
-func NewScenePartial() ScenePartial {
-	updatedTime := time.Now()
-	return ScenePartial{
-		UpdatedAt: NewOptionalTime(updatedTime),
-	}
-}
-
 // UpdateInput constructs a SceneUpdateInput using the populated fields in the ScenePartial object.
 func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 	var dateStr *string
@@ -265,16 +273,6 @@ type SceneFileType struct {
 	Height     *int     `graphql:"height" json:"height"`
 	Framerate  *float64 `graphql:"framerate" json:"framerate"`
 	Bitrate    *int     `graphql:"bitrate" json:"bitrate"`
-}
-
-type Scenes []*Scene
-
-func (s *Scenes) Append(o interface{}) {
-	*s = append(*s, o.(*Scene))
-}
-
-func (s *Scenes) New() interface{} {
-	return &Scene{}
 }
 
 type VideoCaption struct {

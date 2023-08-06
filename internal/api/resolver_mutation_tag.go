@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -31,14 +30,11 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 	}
 
 	// Populate a new tag from the input
-	currentTime := time.Now()
-	newTag := models.Tag{
-		Name:          input.Name,
-		CreatedAt:     currentTime,
-		UpdatedAt:     currentTime,
-		Description:   translator.string(input.Description, "description"),
-		IgnoreAutoTag: translator.bool(input.IgnoreAutoTag, "ignore_auto_tag"),
-	}
+	newTag := models.NewTag()
+
+	newTag.Name = input.Name
+	newTag.Description = translator.string(input.Description, "description")
+	newTag.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag, "ignore_auto_tag")
 
 	var err error
 

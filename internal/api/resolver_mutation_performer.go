@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/performer"
@@ -31,34 +30,31 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	}
 
 	// Populate a new performer from the input
-	currentTime := time.Now()
-	newPerformer := models.Performer{
-		Name:           input.Name,
-		Disambiguation: translator.string(input.Disambiguation, "disambiguation"),
-		URL:            translator.string(input.URL, "url"),
-		Gender:         input.Gender,
-		Ethnicity:      translator.string(input.Ethnicity, "ethnicity"),
-		Country:        translator.string(input.Country, "country"),
-		EyeColor:       translator.string(input.EyeColor, "eye_color"),
-		Measurements:   translator.string(input.Measurements, "measurements"),
-		FakeTits:       translator.string(input.FakeTits, "fake_tits"),
-		PenisLength:    input.PenisLength,
-		Circumcised:    input.Circumcised,
-		CareerLength:   translator.string(input.CareerLength, "career_length"),
-		Tattoos:        translator.string(input.Tattoos, "tattoos"),
-		Piercings:      translator.string(input.Piercings, "piercings"),
-		Twitter:        translator.string(input.Twitter, "twitter"),
-		Instagram:      translator.string(input.Instagram, "instagram"),
-		Favorite:       translator.bool(input.Favorite, "favorite"),
-		Rating:         translator.ratingConversion(input.Rating, input.Rating100),
-		Details:        translator.string(input.Details, "details"),
-		HairColor:      translator.string(input.HairColor, "hair_color"),
-		Weight:         input.Weight,
-		IgnoreAutoTag:  translator.bool(input.IgnoreAutoTag, "ignore_auto_tag"),
-		CreatedAt:      currentTime,
-		UpdatedAt:      currentTime,
-		StashIDs:       models.NewRelatedStashIDs(input.StashIds),
-	}
+	newPerformer := models.NewPerformer()
+
+	newPerformer.Name = input.Name
+	newPerformer.Disambiguation = translator.string(input.Disambiguation, "disambiguation")
+	newPerformer.URL = translator.string(input.URL, "url")
+	newPerformer.Gender = input.Gender
+	newPerformer.Ethnicity = translator.string(input.Ethnicity, "ethnicity")
+	newPerformer.Country = translator.string(input.Country, "country")
+	newPerformer.EyeColor = translator.string(input.EyeColor, "eye_color")
+	newPerformer.Measurements = translator.string(input.Measurements, "measurements")
+	newPerformer.FakeTits = translator.string(input.FakeTits, "fake_tits")
+	newPerformer.PenisLength = input.PenisLength
+	newPerformer.Circumcised = input.Circumcised
+	newPerformer.CareerLength = translator.string(input.CareerLength, "career_length")
+	newPerformer.Tattoos = translator.string(input.Tattoos, "tattoos")
+	newPerformer.Piercings = translator.string(input.Piercings, "piercings")
+	newPerformer.Twitter = translator.string(input.Twitter, "twitter")
+	newPerformer.Instagram = translator.string(input.Instagram, "instagram")
+	newPerformer.Favorite = translator.bool(input.Favorite, "favorite")
+	newPerformer.Rating = translator.ratingConversion(input.Rating, input.Rating100)
+	newPerformer.Details = translator.string(input.Details, "details")
+	newPerformer.HairColor = translator.string(input.HairColor, "hair_color")
+	newPerformer.Weight = input.Weight
+	newPerformer.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag, "ignore_auto_tag")
+	newPerformer.StashIDs = models.NewRelatedStashIDs(input.StashIds)
 
 	var err error
 

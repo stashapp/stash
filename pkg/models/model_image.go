@@ -36,6 +36,39 @@ type Image struct {
 	PerformerIDs RelatedIDs `json:"performer_ids"`
 }
 
+func NewImage() Image {
+	currentTime := time.Now()
+	return Image{
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
+	}
+}
+
+type ImagePartial struct {
+	Title OptionalString
+	// Rating expressed in 1-100 scale
+	Rating    OptionalInt
+	URL       OptionalString
+	Date      OptionalDate
+	Organized OptionalBool
+	OCounter  OptionalInt
+	StudioID  OptionalInt
+	CreatedAt OptionalTime
+	UpdatedAt OptionalTime
+
+	GalleryIDs    *UpdateIDs
+	TagIDs        *UpdateIDs
+	PerformerIDs  *UpdateIDs
+	PrimaryFileID *FileID
+}
+
+func NewImagePartial() ImagePartial {
+	currentTime := time.Now()
+	return ImagePartial{
+		UpdatedAt: NewOptionalTime(currentTime),
+	}
+}
+
 func (i *Image) LoadFiles(ctx context.Context, l FileLoader) error {
 	return i.Files.load(func() ([]File, error) {
 		return l.GetFiles(ctx, i.ID)
@@ -106,39 +139,4 @@ func (i Image) DisplayName() string {
 type ImageCreateInput struct {
 	*Image
 	FileIDs []FileID
-}
-
-type ImagePartial struct {
-	Title OptionalString
-	// Rating expressed in 1-100 scale
-	Rating    OptionalInt
-	URL       OptionalString
-	Date      OptionalDate
-	Organized OptionalBool
-	OCounter  OptionalInt
-	StudioID  OptionalInt
-	CreatedAt OptionalTime
-	UpdatedAt OptionalTime
-
-	GalleryIDs    *UpdateIDs
-	TagIDs        *UpdateIDs
-	PerformerIDs  *UpdateIDs
-	PrimaryFileID *FileID
-}
-
-func NewImagePartial() ImagePartial {
-	updatedTime := time.Now()
-	return ImagePartial{
-		UpdatedAt: NewOptionalTime(updatedTime),
-	}
-}
-
-type Images []*Image
-
-func (i *Images) Append(o interface{}) {
-	*i = append(*i, o.(*Image))
-}
-
-func (i *Images) New() interface{} {
-	return &Image{}
 }
