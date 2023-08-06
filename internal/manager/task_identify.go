@@ -136,6 +136,7 @@ func (j *IdentifyJob) identifyScene(ctx context.Context, s *models.Scene, source
 	j.progress.ExecuteTask("Identifying "+s.Path, func() {
 		r := instance.Repository
 		task := identify.SceneIdentifier{
+			TxnManager:         r.TxnManager,
 			SceneReaderUpdater: r.Scene,
 			StudioReaderWriter: r.Studio,
 			PerformerCreator:   r.Performer,
@@ -146,7 +147,7 @@ func (j *IdentifyJob) identifyScene(ctx context.Context, s *models.Scene, source
 			SceneUpdatePostHookExecutor: j.postHookExecutor,
 		}
 
-		taskError = task.Identify(ctx, r.TxnManager, s)
+		taskError = task.Identify(ctx, s)
 	})
 
 	if taskError != nil {
@@ -167,16 +168,11 @@ func (j *IdentifyJob) getSources() ([]identify.ScraperSource, error) {
 
 		var src identify.ScraperSource
 		if stashBox != nil {
-			r := instance.Repository
+			stashboxRepository := stashbox.NewRepository(instance.Repository)
 			src = identify.ScraperSource{
 				Name: "stash-box: " + stashBox.Endpoint,
 				Scraper: stashboxSource{
-					stashbox.NewClient(*stashBox, r.TxnManager, stashbox.Repository{
-						Scene:     r.Scene,
-						Performer: r.Performer,
-						Tag:       r.Tag,
-						Studio:    r.Studio,
-					}),
+					stashbox.NewClient(*stashBox, stashboxRepository),
 					stashBox.Endpoint,
 				},
 				RemoteSite: stashBox.Endpoint,

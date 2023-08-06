@@ -254,9 +254,7 @@ func (f *cleanFilter) shouldCleanImage(path string, stash *config.StashConfig) b
 	return false
 }
 
-type cleanHandler struct {
-	PluginCache *plugin.Cache
-}
+type cleanHandler struct{}
 
 func (h *cleanHandler) HandleFile(ctx context.Context, fileDeleter *file.Deleter, fileID models.FileID) error {
 	if err := h.handleRelatedScenes(ctx, fileDeleter, fileID); err != nil {
@@ -278,7 +276,7 @@ func (h *cleanHandler) HandleFolder(ctx context.Context, fileDeleter *file.Delet
 
 func (h *cleanHandler) handleRelatedScenes(ctx context.Context, fileDeleter *file.Deleter, fileID models.FileID) error {
 	mgr := GetInstance()
-	sceneQB := mgr.Database.Scene
+	sceneQB := mgr.Repository.Scene
 	scenes, err := sceneQB.FindByFileID(ctx, fileID)
 	if err != nil {
 		return err
@@ -304,12 +302,9 @@ func (h *cleanHandler) handleRelatedScenes(ctx context.Context, fileDeleter *fil
 				return err
 			}
 
-			checksum := scene.Checksum
-			oshash := scene.OSHash
-
 			mgr.PluginCache.RegisterPostHooks(ctx, scene.ID, plugin.SceneDestroyPost, plugin.SceneDestroyInput{
-				Checksum: checksum,
-				OSHash:   oshash,
+				Checksum: scene.Checksum,
+				OSHash:   scene.OSHash,
 				Path:     scene.Path,
 			}, nil)
 		} else {
@@ -336,7 +331,7 @@ func (h *cleanHandler) handleRelatedScenes(ctx context.Context, fileDeleter *fil
 
 func (h *cleanHandler) handleRelatedGalleries(ctx context.Context, fileID models.FileID) error {
 	mgr := GetInstance()
-	qb := mgr.Database.Gallery
+	qb := mgr.Repository.Gallery
 	galleries, err := qb.FindByFileID(ctx, fileID)
 	if err != nil {
 		return err
@@ -382,7 +377,7 @@ func (h *cleanHandler) handleRelatedGalleries(ctx context.Context, fileID models
 
 func (h *cleanHandler) deleteRelatedFolderGalleries(ctx context.Context, folderID models.FolderID) error {
 	mgr := GetInstance()
-	qb := mgr.Database.Gallery
+	qb := mgr.Repository.Gallery
 	galleries, err := qb.FindByFolderID(ctx, folderID)
 	if err != nil {
 		return err
@@ -406,7 +401,7 @@ func (h *cleanHandler) deleteRelatedFolderGalleries(ctx context.Context, folderI
 
 func (h *cleanHandler) handleRelatedImages(ctx context.Context, fileDeleter *file.Deleter, fileID models.FileID) error {
 	mgr := GetInstance()
-	imageQB := mgr.Database.Image
+	imageQB := mgr.Repository.Image
 	images, err := imageQB.FindByFileID(ctx, fileID)
 	if err != nil {
 		return err
@@ -414,7 +409,7 @@ func (h *cleanHandler) handleRelatedImages(ctx context.Context, fileDeleter *fil
 
 	imageFileDeleter := &image.FileDeleter{
 		Deleter: fileDeleter,
-		Paths:   GetInstance().Paths,
+		Paths:   mgr.Paths,
 	}
 
 	for _, i := range images {

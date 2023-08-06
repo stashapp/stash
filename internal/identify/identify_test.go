@@ -202,7 +202,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 				TagIDs:       models.NewRelatedIDs([]int{}),
 				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
 			}
-			if err := identifier.Identify(testCtx, &mocks.TxnManager{}, scene); (err != nil) != tt.wantErr {
+			if err := identifier.Identify(testCtx, scene); (err != nil) != tt.wantErr {
 				t.Errorf("SceneIdentifier.Identify() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -210,9 +210,6 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 }
 
 func TestSceneIdentifier_modifyScene(t *testing.T) {
-	repo := models.Repository{
-		TxnManager: &mocks.TxnManager{},
-	}
 	boolFalse := false
 	defaultOptions := &MetadataOptions{
 		SetOrganized:             &boolFalse,
@@ -221,6 +218,7 @@ func TestSceneIdentifier_modifyScene(t *testing.T) {
 		SkipSingleNamePerformers: &boolFalse,
 	}
 	tr := &SceneIdentifier{
+		TxnManager:     &mocks.TxnManager{},
 		DefaultOptions: defaultOptions,
 	}
 
@@ -254,7 +252,7 @@ func TestSceneIdentifier_modifyScene(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tr.modifyScene(testCtx, repo.TxnManager, tt.args.scene, tt.args.result); (err != nil) != tt.wantErr {
+			if err := tr.modifyScene(testCtx, tt.args.scene, tt.args.result); (err != nil) != tt.wantErr {
 				t.Errorf("SceneIdentifier.modifyScene() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

@@ -222,14 +222,8 @@ func initialize() error {
 		SceneCoverGetter: repo.Scene,
 	}
 
-	instance.DLNAService = dlna.NewService(repo.TxnManager, dlna.Repository{
-		SceneFinder:     repo.Scene,
-		FileGetter:      repo.File,
-		StudioFinder:    repo.Studio,
-		TagFinder:       repo.Tag,
-		PerformerFinder: repo.Performer,
-		MovieFinder:     repo.Movie,
-	}, instance.Config, &sceneServer)
+	dlnaRepository := dlna.NewRepository(repo)
+	instance.DLNAService = dlna.NewService(dlnaRepository, cfg, &sceneServer)
 
 	if !cfg.IsNewSystem() {
 		logger.Infof("using config file: %s", cfg.GetConfigFile())
@@ -296,12 +290,7 @@ func galleryFileFilter(ctx context.Context, f models.File) bool {
 
 func makeScanner(repo models.Repository, pluginCache *plugin.Cache) *file.Scanner {
 	return &file.Scanner{
-		Repository: file.Repository{
-			Manager:          repo.TxnManager,
-			DatabaseProvider: repo.TxnManager,
-			FileStore:        repo.File,
-			FolderStore:      repo.Folder,
-		},
+		Repository: file.NewRepository(repo),
 		FileDecorators: []file.Decorator{
 			&file.FilteredDecorator{
 				Decorator: &video.Decorator{
@@ -323,13 +312,8 @@ func makeScanner(repo models.Repository, pluginCache *plugin.Cache) *file.Scanne
 
 func makeCleaner(repo models.Repository, pluginCache *plugin.Cache) *file.Cleaner {
 	return &file.Cleaner{
-		FS: &file.OsFS{},
-		Repository: file.Repository{
-			Manager:          repo.TxnManager,
-			DatabaseProvider: repo.TxnManager,
-			FileStore:        repo.File,
-			FolderStore:      repo.Folder,
-		},
+		FS:         &file.OsFS{},
+		Repository: file.NewRepository(repo),
 		Handlers: []file.CleanHandler{
 			&cleanHandler{},
 		},
@@ -524,15 +508,8 @@ func writeStashIcon() {
 
 // initScraperCache initializes a new scraper cache and returns it.
 func (s *Manager) initScraperCache() *scraper.Cache {
-	repo := s.Repository
-	ret, err := scraper.NewCache(s.Config, repo.TxnManager, scraper.Repository{
-		SceneFinder:     repo.Scene,
-		GalleryFinder:   repo.Gallery,
-		TagFinder:       repo.Tag,
-		PerformerFinder: repo.Performer,
-		MovieFinder:     repo.Movie,
-		StudioFinder:    repo.Studio,
-	})
+	scraperRepository := scraper.NewRepository(s.Repository)
+	ret, err := scraper.NewCache(s.Config, scraperRepository)
 
 	if err != nil {
 		logger.Errorf("Error reading scraper configs: %s", err.Error())

@@ -92,12 +92,9 @@ func (t *StashBoxBatchTagTask) findStashBoxPerformer(ctx context.Context) (*mode
 	var err error
 
 	r := instance.Repository
-	client := stashbox.NewClient(*t.box, r.TxnManager, stashbox.Repository{
-		Scene:     r.Scene,
-		Performer: r.Performer,
-		Tag:       r.Tag,
-		Studio:    r.Studio,
-	})
+
+	stashboxRepository := stashbox.NewRepository(r)
+	client := stashbox.NewClient(*t.box, stashboxRepository)
 
 	if t.refresh {
 		var remoteID string
@@ -239,12 +236,9 @@ func (t *StashBoxBatchTagTask) findStashBoxStudio(ctx context.Context) (*models.
 	var err error
 
 	r := instance.Repository
-	client := stashbox.NewClient(*t.box, r.TxnManager, stashbox.Repository{
-		Scene:     r.Scene,
-		Performer: r.Performer,
-		Tag:       r.Tag,
-		Studio:    r.Studio,
-	})
+
+	stashboxRepository := stashbox.NewRepository(r)
+	client := stashbox.NewClient(*t.box, stashboxRepository)
 
 	if t.refresh {
 		var remoteID string
