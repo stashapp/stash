@@ -374,6 +374,8 @@ dd {
 /* the .apple class denotes areas where rendering on some apple platforms has been inconsistent with other platforms
    these rules aim to address those inconsistences */
 .apple {
+
+  @media (min-width: 576px) {
   .detail-header {
     .detail-container {
       display: flex;
@@ -388,6 +390,7 @@ dd {
   .detail-header.edit .detail-header-image {
     display: unset;
   }
+}
 }
 
 .detail-item-title {
