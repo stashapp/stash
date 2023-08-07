@@ -46,7 +46,7 @@ const defaultDurationDiff = "1";
 export const SceneDuplicateChecker: React.FC = () => {
   const intl = useIntl();
   const history = useHistory();
-
+  const selectionType = "selectNone";
   const query = new URLSearchParams(history.location.search);
   const currentPage = Number.parseInt(query.get("page") ?? "1", 10);
   const pageSize = Number.parseInt(query.get("size") ?? "20", 10);
@@ -59,9 +59,17 @@ export const SceneDuplicateChecker: React.FC = () => {
   const [isMultiDelete, setIsMultiDelete] = useState(false);
   const [deletingScenes, setDeletingScenes] = useState(false);
   const [editingScenes, setEditingScenes] = useState(false);
+  const [currentSelectionType, setCurrentSelectionType] =
+    useState(selectionType);
+  const [chkSafeSelect, setChkSafeSelect] = useState(true);
+
   const [checkedScenes, setCheckedScenes] = useState<Record<string, boolean>>(
     {}
   );
+
+  const pageSizes = [10, 20, 30, 40, 50, 100, 150, 200, 250, 500, 750, 1000, 1250, 1500];
+
+
   const { data, loading, refetch } = GQL.useFindDuplicateScenesQuery({
     fetchPolicy: "no-cache",
     variables: {
@@ -69,6 +77,7 @@ export const SceneDuplicateChecker: React.FC = () => {
       duration_diff: durationDiff,
     },
   });
+
   const { data: missingPhash } = GQL.useFindScenesQuery({
     variables: {
       filter: {
@@ -116,6 +125,30 @@ export const SceneDuplicateChecker: React.FC = () => {
     history.push({ search: newQuery.toString() });
   };
 
+  function generatePageOptions(sizes: number[], total: number) {
+    const opts = [];
+    for (let i = 0; i < sizes.length; i++) {
+      const size = sizes[i];
+      if (size > total) break;
+
+      opts.push(
+        <option key={size} value={size}>{size}</option>
+      );
+    }
+    return opts;
+  }
+
+  const resetCheckboxSelection = () => {
+    const updatedScenes: Record<string, boolean> = {};
+
+    Object.keys(checkedScenes).forEach((sceneKey) => {
+      updatedScenes[sceneKey] = false;
+    });
+
+    setCheckedScenes(updatedScenes);
+    setCurrentSelectionType("selectNone");
+  };
+
   function onDeleteDialogClosed(deleted: boolean) {
     setDeletingScenes(false);
     if (deleted) {
@@ -123,7 +156,120 @@ export const SceneDuplicateChecker: React.FC = () => {
       refetch();
       if (isMultiDelete) setCheckedScenes({});
     }
+    resetCheckboxSelection();
   }
+
+  const findLargestScene = (group: GQL.SlimSceneDataFragment[]) => {
+    // Get total size of a scene
+    const totalSize = (scene: GQL.SlimSceneDataFragment) => {
+      scene.files[0].mod_time
+      return scene.files.reduce((sum: number, f) => sum + (f.size || 0), 0);
+    };
+    // Find scene object with maximum total size
+    return group.reduce((largest, scene) => {
+      const largestSize = totalSize(largest);
+      const currentSize = totalSize(scene);
+      return currentSize > largestSize ? scene : largest;
+    });
+  };
+
+
+  // Helper to get file date
+
+
+
+  const findOldestFile = (oldest: boolean, scenes: GQL.SlimSceneDataFragment[]) => {
+    let selectedFile: GQL.VideoFileDataFragment;
+    let oldestTimestamp: Date;
+    
+    if(oldest) {
+      oldestTimestamp = new Date(2100, 12, 31);
+    } else {
+      oldestTimestamp = new Date(1900, 12, 31);
+    }
+
+    // Loop through all files
+    for (const file of scenes.flatMap(s => s.files)) {
+
+      // Get timestamp
+      const timestamp: Date = new Date(file.mod_time);
+
+      // Check if current file is oldest
+      if (oldest) {
+        if (timestamp < oldestTimestamp) {
+          oldestTimestamp = timestamp;
+          selectedFile = file;
+        }
+      }
+      else {
+        if (timestamp > oldestTimestamp) {
+          oldestTimestamp = timestamp;
+          selectedFile = file;
+        }
+
+      }
+
+    }
+
+    // Find scene with oldest file
+    return scenes.find(s =>
+      s.files.some(f => f.id === selectedFile.id)
+    );
+
+  };
+
+  function checkSameCodec(codecGroup: GQL.SlimSceneDataFragment[]) {
+    const codecs = codecGroup.map(s => s.files[0]?.video_codec);
+    return new Set(codecs).size === 1;
+  }
+
+  const onSelectLargestClick = () => {
+    setSelectedScenes([]);
+    const checkedArray: Record<string, boolean> = {};
+
+    filteredScenes.forEach((group) => {
+
+      // const codecs = group.map(s => s.files[0]?.video_codec);
+      const allSameCodec = checkSameCodec(group);
+
+      if (chkSafeSelect && !allSameCodec) {
+        return;
+      }
+      // Find largest scene in group a
+      const largest = findLargestScene(group);
+      group.forEach((scene) => {
+        if (scene !== largest) {
+          checkedArray[scene.id] = true;
+        }
+      });
+
+      setCheckedScenes(checkedArray);
+    });
+  };
+
+  const onSelectOldestClick = (oldestFileSelection: boolean) => {
+    setSelectedScenes([]);
+    const checkedArray: Record<string, boolean> = {};
+
+    filteredScenes.forEach((group) => {
+
+      const allSameCodec = checkSameCodec(group);
+
+      if (chkSafeSelect && !allSameCodec) {
+        return;
+      }
+
+      const largest = findOldestFile(oldestFileSelection, group);
+      group.forEach((scene) => {
+        if (scene !== largest) {
+          checkedArray[scene.id] = true;
+        }
+      });
+
+      setCheckedScenes(checkedArray);
+    });
+  };
+
 
   const handleCheck = (checked: boolean, sceneID: string) => {
     setCheckedScenes({ ...checkedScenes, [sceneID]: checked });
@@ -144,6 +290,7 @@ export const SceneDuplicateChecker: React.FC = () => {
   function onEdit() {
     setSelectedScenes(scenes.flat().filter((s) => checkedScenes[s.id]));
     setEditingScenes(true);
+    resetCheckboxSelection();
   }
 
   const renderFilesize = (filesize: number | null | undefined) => {
@@ -395,9 +542,10 @@ export const SceneDuplicateChecker: React.FC = () => {
           currentPage={currentPage}
           totalItems={scenes.length}
           metadataByline={[]}
-          onChangePage={(newPage) =>
-            setQuery({ page: newPage === 1 ? undefined : newPage })
-          }
+          onChangePage={(newPage) => {
+            setQuery({ page: newPage === 1 ? undefined : newPage });
+            resetCheckboxSelection();
+          }}
         />
         <Form.Control
           as="select"
@@ -412,13 +560,10 @@ export const SceneDuplicateChecker: React.FC = () => {
                   ? undefined
                   : e.currentTarget.value,
             });
+            resetCheckboxSelection();
           }}
         >
-          <option value={10}>10</option>
-          <option value={20}>20</option>
-          <option value={40}>40</option>
-          <option value={60}>60</option>
-          <option value={80}>80</option>
+          {generatePageOptions(pageSizes, scenes.length)}
         </Form.Control>
       </div>
     );
@@ -572,6 +717,87 @@ export const SceneDuplicateChecker: React.FC = () => {
               </Col>
             </Row>
           </Form.Group>
+          <Form.Group>
+            <Row noGutters>
+              <Form.Label>
+                <FormattedMessage id="dupe_check.select_options" />
+              </Form.Label>
+              <Row noGutters>
+                <Col xs="12">
+                  <Form.Control
+                    as="select"
+                    onChange={(e) => {
+
+                      switch (e.target.value) {
+                        case "selectNone":
+                          resetCheckboxSelection();
+                          break;
+
+                        case "selectLargest":
+                          onSelectLargestClick();
+                          break;
+
+                        case "selectOldest":
+                          onSelectOldestClick(true);
+                          break
+
+                        case "selectYoungest":
+                          onSelectOldestClick(false);
+                          break
+
+
+                        default:
+                        // Default case
+                      }
+
+
+                      setCurrentSelectionType(e.target.value);
+                    }}
+                    defaultValue="selectNone"
+                    value={currentSelectionType}
+                    className="input-control ml-4"
+                  >
+                    <option value="selectNone">
+                      {intl.formatMessage({ id: "dupe_check.select_none" })}
+                    </option>
+
+                    <option value="selectLargest">
+                      {intl.formatMessage({
+                        id: "dupe_check.select_all_but_largest_file",
+                      })}
+                    </option>
+
+                    <option value="selectOldest">
+                      {intl.formatMessage({
+                        id: "dupe_check.select_oldest",
+                      })}
+                    </option>
+
+                    <option value="selectYoungest">
+                      {intl.formatMessage({
+                        id: "dupe_check.select_youngest",
+                      })}
+
+                    </option>
+                  </Form.Control>
+                </Col>
+              </Row>
+
+            </Row>
+            <Row noGutters>
+              <Form.Check
+                type="checkbox"
+                id="chkSafeSelect"
+                label="Only select if all codecs match in the duplicate group"
+                checked={chkSafeSelect}
+                onChange={(e) => {
+                  setChkSafeSelect(e.target.checked);
+                  resetCheckboxSelection();
+
+                }}
+              />
+            </Row>
+          </Form.Group>
         </Form>
 
         {maybeRenderMissingPhashWarning()}
@@ -621,6 +847,7 @@ export const SceneDuplicateChecker: React.FC = () => {
                     >
                       <td>
                         <Form.Check
+                          checked={checkedScenes[scene.id]}
                           onChange={(e) =>
                             handleCheck(e.currentTarget.checked, scene.id)
                           }
@@ -641,15 +868,41 @@ export const SceneDuplicateChecker: React.FC = () => {
                             src={scene.paths.sprite ?? ""}
                             alt=""
                             width={100}
+                            style={{
+                              border: checkedScenes[scene.id]
+                                ? "2px solid red"
+                                : ""
+                            }}
                           />
                         </HoverPopover>
                       </td>
                       <td className="text-left">
                         <p>
-                          <Link to={`/scenes/${scene.id}`}>
+                          {/* <Link to={`/scenes/${scene.id}`}>
                             {scene.title
                               ? scene.title
                               : TextUtils.fileNameFromPath(file?.path ?? "")}
+                          </Link> */}
+                          <Link
+                            to={`/scenes/${scene.id}`}
+                            style={{
+                              fontWeight: checkedScenes[scene.id]
+                                ? "bold"
+                                : "inherit",
+                              textDecoration: checkedScenes[scene.id]
+                                ? "line-through 3px"
+                                : "inherit",
+                              textDecorationColor: checkedScenes[scene.id]
+                                ? "red"
+                                : "inherit"
+                            }}
+                          >
+                            {" "}
+                            {scene.title
+                              ? scene.title
+                              : TextUtils.fileNameFromPath(
+                                file?.path ?? ""
+                              )}{" "}
                           </Link>
                         </p>
                         <p className="scene-path">{file?.path ?? ""}</p>
