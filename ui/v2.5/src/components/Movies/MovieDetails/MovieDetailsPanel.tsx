@@ -64,9 +64,11 @@ export const CompressedMovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({
         <a className="movie-name" onClick={() => scrollToTop()}>
           {movie.name}
         </a>
-        <span className="detail-divider">/</span>
         {movie?.studio?.name ? (
-          <span className="movie-studio">{movie?.studio?.name}</span>
+          <>
+            <span className="detail-divider">/</span>
+            <span className="movie-studio">{movie?.studio?.name}</span>
+          </>
         ) : (
           ""
         )}
