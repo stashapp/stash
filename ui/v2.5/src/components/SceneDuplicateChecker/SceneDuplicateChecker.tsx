@@ -67,8 +67,9 @@ export const SceneDuplicateChecker: React.FC = () => {
     {}
   );
 
-  const pageSizes = [10, 20, 30, 40, 50, 100, 150, 200, 250, 500, 750, 1000, 1250, 1500];
-
+  const pageSizes = [
+    10, 20, 30, 40, 50, 100, 150, 200, 250, 500, 750, 1000, 1250, 1500,
+  ];
 
   const { data, loading, refetch } = GQL.useFindDuplicateScenesQuery({
     fetchPolicy: "no-cache",
@@ -132,7 +133,9 @@ export const SceneDuplicateChecker: React.FC = () => {
       if (size > total) break;
 
       opts.push(
-        <option key={size} value={size}>{size}</option>
+        <option key={size} value={size}>
+          {size}
+        </option>
       );
     }
     return opts;
@@ -162,7 +165,7 @@ export const SceneDuplicateChecker: React.FC = () => {
   const findLargestScene = (group: GQL.SlimSceneDataFragment[]) => {
     // Get total size of a scene
     const totalSize = (scene: GQL.SlimSceneDataFragment) => {
-      scene.files[0].mod_time
+      scene.files[0].mod_time;
       return scene.files.reduce((sum: number, f) => sum + (f.size || 0), 0);
     };
     // Find scene object with maximum total size
@@ -173,24 +176,23 @@ export const SceneDuplicateChecker: React.FC = () => {
     });
   };
 
-
   // Helper to get file date
 
-
-
-  const findOldestFile = (oldest: boolean, scenes: GQL.SlimSceneDataFragment[]) => {
+  const findOldestFile = (
+    oldest: boolean,
+    scenes: GQL.SlimSceneDataFragment[]
+  ) => {
     let selectedFile: GQL.VideoFileDataFragment;
     let oldestTimestamp: Date;
-    
-    if(oldest) {
+
+    if (oldest) {
       oldestTimestamp = new Date(2100, 12, 31);
     } else {
       oldestTimestamp = new Date(1900, 12, 31);
     }
 
     // Loop through all files
-    for (const file of scenes.flatMap(s => s.files)) {
-
+    for (const file of scenes.flatMap((s) => s.files)) {
       // Get timestamp
       const timestamp: Date = new Date(file.mod_time);
 
@@ -200,26 +202,20 @@ export const SceneDuplicateChecker: React.FC = () => {
           oldestTimestamp = timestamp;
           selectedFile = file;
         }
-      }
-      else {
+      } else {
         if (timestamp > oldestTimestamp) {
           oldestTimestamp = timestamp;
           selectedFile = file;
         }
-
       }
-
     }
 
     // Find scene with oldest file
-    return scenes.find(s =>
-      s.files.some(f => f.id === selectedFile.id)
-    );
-
+    return scenes.find((s) => s.files.some((f) => f.id === selectedFile.id));
   };
 
   function checkSameCodec(codecGroup: GQL.SlimSceneDataFragment[]) {
-    const codecs = codecGroup.map(s => s.files[0]?.video_codec);
+    const codecs = codecGroup.map((s) => s.files[0]?.video_codec);
     return new Set(codecs).size === 1;
   }
 
@@ -228,7 +224,6 @@ export const SceneDuplicateChecker: React.FC = () => {
     const checkedArray: Record<string, boolean> = {};
 
     filteredScenes.forEach((group) => {
-
       // const codecs = group.map(s => s.files[0]?.video_codec);
       const allSameCodec = checkSameCodec(group);
 
@@ -252,7 +247,6 @@ export const SceneDuplicateChecker: React.FC = () => {
     const checkedArray: Record<string, boolean> = {};
 
     filteredScenes.forEach((group) => {
-
       const allSameCodec = checkSameCodec(group);
 
       if (chkSafeSelect && !allSameCodec) {
@@ -269,7 +263,6 @@ export const SceneDuplicateChecker: React.FC = () => {
       setCheckedScenes(checkedArray);
     });
   };
-
 
   const handleCheck = (checked: boolean, sceneID: string) => {
     setCheckedScenes({ ...checkedScenes, [sceneID]: checked });
@@ -727,7 +720,6 @@ export const SceneDuplicateChecker: React.FC = () => {
                   <Form.Control
                     as="select"
                     onChange={(e) => {
-
                       switch (e.target.value) {
                         case "selectNone":
                           resetCheckboxSelection();
@@ -739,17 +731,15 @@ export const SceneDuplicateChecker: React.FC = () => {
 
                         case "selectOldest":
                           onSelectOldestClick(true);
-                          break
+                          break;
 
                         case "selectYoungest":
                           onSelectOldestClick(false);
-                          break
-
+                          break;
 
                         default:
                         // Default case
                       }
-
 
                       setCurrentSelectionType(e.target.value);
                     }}
@@ -777,12 +767,10 @@ export const SceneDuplicateChecker: React.FC = () => {
                       {intl.formatMessage({
                         id: "dupe_check.select_youngest",
                       })}
-
                     </option>
                   </Form.Control>
                 </Col>
               </Row>
-
             </Row>
             <Row noGutters>
               <Form.Check
@@ -793,7 +781,6 @@ export const SceneDuplicateChecker: React.FC = () => {
                 onChange={(e) => {
                   setChkSafeSelect(e.target.checked);
                   resetCheckboxSelection();
-
                 }}
               />
             </Row>
@@ -871,18 +858,13 @@ export const SceneDuplicateChecker: React.FC = () => {
                             style={{
                               border: checkedScenes[scene.id]
                                 ? "2px solid red"
-                                : ""
+                                : "",
                             }}
                           />
                         </HoverPopover>
                       </td>
                       <td className="text-left">
                         <p>
-                          {/* <Link to={`/scenes/${scene.id}`}>
-                            {scene.title
-                              ? scene.title
-                              : TextUtils.fileNameFromPath(file?.path ?? "")}
-                          </Link> */}
                           <Link
                             to={`/scenes/${scene.id}`}
                             style={{
@@ -894,15 +876,15 @@ export const SceneDuplicateChecker: React.FC = () => {
                                 : "inherit",
                               textDecorationColor: checkedScenes[scene.id]
                                 ? "red"
-                                : "inherit"
+                                : "inherit",
                             }}
                           >
                             {" "}
                             {scene.title
                               ? scene.title
                               : TextUtils.fileNameFromPath(
-                                file?.path ?? ""
-                              )}{" "}
+                                  file?.path ?? ""
+                                )}{" "}
                           </Link>
                         </p>
                         <p className="scene-path">{file?.path ?? ""}</p>
