@@ -165,7 +165,6 @@ export const SceneDuplicateChecker: React.FC = () => {
   const findLargestScene = (group: GQL.SlimSceneDataFragment[]) => {
     // Get total size of a scene
     const totalSize = (scene: GQL.SlimSceneDataFragment) => {
-      scene.files[0].mod_time;
       return scene.files.reduce((sum: number, f) => sum + (f.size || 0), 0);
     };
     // Find scene object with maximum total size
@@ -180,7 +179,7 @@ export const SceneDuplicateChecker: React.FC = () => {
 
   const findOldestFile = (
     oldest: boolean,
-    scenes: GQL.SlimSceneDataFragment[]
+    compareScenes: GQL.SlimSceneDataFragment[]
   ) => {
     let selectedFile: GQL.VideoFileDataFragment;
     let oldestTimestamp: Date;
@@ -192,7 +191,7 @@ export const SceneDuplicateChecker: React.FC = () => {
     }
 
     // Loop through all files
-    for (const file of scenes.flatMap((s) => s.files)) {
+    for (const file of compareScenes.flatMap((s) => s.files)) {
       // Get timestamp
       const timestamp: Date = new Date(file.mod_time);
 
@@ -211,7 +210,9 @@ export const SceneDuplicateChecker: React.FC = () => {
     }
 
     // Find scene with oldest file
-    return scenes.find((s) => s.files.some((f) => f.id === selectedFile.id));
+    return compareScenes.find((s) =>
+      s.files.some((f) => f.id === selectedFile.id)
+    );
   };
 
   function checkSameCodec(codecGroup: GQL.SlimSceneDataFragment[]) {
