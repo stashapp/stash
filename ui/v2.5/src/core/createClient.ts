@@ -68,9 +68,6 @@ const typePolicies: TypePolicies = {
   },
   Scene: {
     fields: {
-      scene_markers: {
-        merge: false,
-      },
       studio: {
         read: readDanglingNull,
       },
@@ -80,6 +77,9 @@ const typePolicies: TypePolicies = {
     fields: {
       studio: {
         read: readDanglingNull,
+      },
+      paths: {
+        merge: false,
       },
     },
   },
@@ -101,16 +101,6 @@ const typePolicies: TypePolicies = {
     fields: {
       parent_studio: {
         read: readDanglingNull,
-      },
-    },
-  },
-  Tag: {
-    fields: {
-      parents: {
-        merge: false,
-      },
-      children: {
-        merge: false,
       },
     },
   },

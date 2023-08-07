@@ -1,8 +1,9 @@
 import { Button, Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
-import { useParams, useHistory } from "react-router-dom";
+import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
+import cx from "classnames";
 import Mousetrap from "mousetrap";
 
 import * as GQL from "src/core/generated-graphql";
@@ -40,22 +41,41 @@ import {
 import { IUIConfig } from "src/core/config";
 import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
-import ImageUtils from "src/utils/image";
+import { DetailImage } from "src/components/Shared/DetailImage";
 import { useRatingKeybinds } from "src/hooks/keybinds";
+import { useLoadStickyHeader } from "src/hooks/detailsPanel";
+import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
+  tabKey: TabKey;
 }
 
 interface IStudioParams {
+  id: string;
   tab?: string;
 }
 
-const StudioPage: React.FC<IProps> = ({ studio }) => {
+const validTabs = [
+  "scenes",
+  "galleries",
+  "images",
+  "performers",
+  "movies",
+  "childstudios",
+] as const;
+type TabKey = (typeof validTabs)[number];
+
+const defaultTab: TabKey = "scenes";
+
+function isTabKey(tab: string): tab is TabKey {
+  return validTabs.includes(tab as TabKey);
+}
+
+const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   const history = useHistory();
   const Toast = useToast();
   const intl = useIntl();
-  const { tab = "details" } = useParams<IStudioParams>();
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
@@ -66,7 +86,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
   const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
-  const [loadStickyHeader, setLoadStickyHeader] = useState<boolean>(false);
+  const loadStickyHeader = useLoadStickyHeader();
 
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -112,21 +132,6 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     configuration?.ui?.ratingSystemOptions?.type,
     setRating
   );
-
-  useEffect(() => {
-    const f = () => {
-      if (document.documentElement.scrollTop <= 50) {
-        setLoadStickyHeader(false);
-      } else {
-        setLoadStickyHeader(true);
-      }
-    };
-
-    window.addEventListener("scroll", f);
-    return () => {
-      window.removeEventListener("scroll", f);
-    };
-  });
 
   async function onSave(input: GQL.StudioCreateInput) {
     await updateStudio({
@@ -232,30 +237,21 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
 
     if (studioImage) {
       return (
-        <img
-          className="logo"
-          alt={studio.name}
-          src={studioImage}
-          onLoad={ImageUtils.verifyImageSize}
-        />
+        <DetailImage className="logo" alt={studio.name} src={studioImage} />
       );
     }
   }
 
-  const activeTabKey =
-    tab === "childstudios" ||
-    tab === "images" ||
-    tab === "galleries" ||
-    tab === "performers" ||
-    tab === "movies"
-      ? tab
-      : "scenes";
-  const setActiveTabKey = (newTab: string | null) => {
-    if (tab !== newTab) {
-      const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
-      history.replace(`/studios/${studio.id}${tabParam}`);
+  function setTabKey(newTabKey: string | null) {
+    if (!newTabKey) newTabKey = defaultTab;
+    if (newTabKey === tabKey) return;
+
+    if (newTabKey === defaultTab) {
+      history.replace(`/studios/${studio.id}`);
+    } else if (isTabKey(newTabKey)) {
+      history.replace(`/studios/${studio.id}/${newTabKey}`);
     }
-  };
+  }
 
   const renderClickableIcons = () => (
     <span className="name-icons">
@@ -321,124 +317,110 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
   }
 
   const renderTabs = () => (
-    <React.Fragment>
-      <Tabs
-        id="studio-tabs"
-        mountOnEnter
-        unmountOnExit
-        activeKey={activeTabKey}
-        onSelect={setActiveTabKey}
+    <Tabs
+      id="studio-tabs"
+      mountOnEnter
+      unmountOnExit
+      activeKey={tabKey}
+      onSelect={setTabKey}
+    >
+      <Tab
+        eventKey="scenes"
+        title={
+          <>
+            {intl.formatMessage({ id: "scenes" })}
+            <Counter
+              abbreviateCounter={abbreviateCounter}
+              count={sceneCount}
+              hideZero
+            />
+          </>
+        }
       >
-        <Tab
-          eventKey="scenes"
-          title={
-            <>
-              {intl.formatMessage({ id: "scenes" })}
-              <Counter
-                abbreviateCounter={abbreviateCounter}
-                count={sceneCount}
-                hideZero
-              />
-            </>
-          }
-        >
-          <StudioScenesPanel
-            active={activeTabKey == "scenes"}
-            studio={studio}
-          />
-        </Tab>
-        <Tab
-          eventKey="galleries"
-          title={
-            <>
-              {intl.formatMessage({ id: "galleries" })}
-              <Counter
-                abbreviateCounter={abbreviateCounter}
-                count={galleryCount}
-                hideZero
-              />
-            </>
-          }
-        >
-          <StudioGalleriesPanel
-            active={activeTabKey == "galleries"}
-            studio={studio}
-          />
-        </Tab>
-        <Tab
-          eventKey="images"
-          title={
-            <>
-              {intl.formatMessage({ id: "images" })}
-              <Counter
-                abbreviateCounter={abbreviateCounter}
-                count={imageCount}
-                hideZero
-              />
-            </>
-          }
-        >
-          <StudioImagesPanel
-            active={activeTabKey == "images"}
-            studio={studio}
-          />
-        </Tab>
-        <Tab
-          eventKey="performers"
-          title={
-            <>
-              {intl.formatMessage({ id: "performers" })}
-              <Counter
-                abbreviateCounter={abbreviateCounter}
-                count={performerCount}
-                hideZero
-              />
-            </>
-          }
-        >
-          <StudioPerformersPanel
-            active={activeTabKey == "performers"}
-            studio={studio}
-          />
-        </Tab>
-        <Tab
-          eventKey="movies"
-          title={
-            <>
-              {intl.formatMessage({ id: "movies" })}
-              <Counter
-                abbreviateCounter={abbreviateCounter}
-                count={movieCount}
-                hideZero
-              />
-            </>
-          }
-        >
-          <StudioMoviesPanel
-            active={activeTabKey == "movies"}
-            studio={studio}
-          />
-        </Tab>
-        <Tab
-          eventKey="childstudios"
-          title={
-            <>
-              {intl.formatMessage({ id: "subsidiary_studios" })}
-              <Counter
-                abbreviateCounter={false}
-                count={studio.child_studios.length}
-                hideZero
-              />
-            </>
-          }
-        >
-          <StudioChildrenPanel
-            active={activeTabKey == "childstudios"}
-            studio={studio}
-          />
-        </Tab>
-      </Tabs>
-    </React.Fragment>
+        <StudioScenesPanel active={tabKey === "scenes"} studio={studio} />
+      </Tab>
+      <Tab
+        eventKey="galleries"
+        title={
+          <>
+            {intl.formatMessage({ id: "galleries" })}
+            <Counter
+              abbreviateCounter={abbreviateCounter}
+              count={galleryCount}
+              hideZero
+            />
+          </>
+        }
+      >
+        <StudioGalleriesPanel active={tabKey === "galleries"} studio={studio} />
+      </Tab>
+      <Tab
+        eventKey="images"
+        title={
+          <>
+            {intl.formatMessage({ id: "images" })}
+            <Counter
+              abbreviateCounter={abbreviateCounter}
+              count={imageCount}
+              hideZero
+            />
+          </>
+        }
+      >
+        <StudioImagesPanel active={tabKey === "images"} studio={studio} />
+      </Tab>
+      <Tab
+        eventKey="performers"
+        title={
+          <>
+            {intl.formatMessage({ id: "performers" })}
+            <Counter
+              abbreviateCounter={abbreviateCounter}
+              count={performerCount}
+              hideZero
+            />
+          </>
+        }
+      >
+        <StudioPerformersPanel
+          active={tabKey === "performers"}
+          studio={studio}
+        />
+      </Tab>
+      <Tab
+        eventKey="movies"
+        title={
+          <>
+            {intl.formatMessage({ id: "movies" })}
+            <Counter
+              abbreviateCounter={abbreviateCounter}
+              count={movieCount}
+              hideZero
+            />
+          </>
+        }
+      >
+        <StudioMoviesPanel active={tabKey === "movies"} studio={studio} />
+      </Tab>
+      <Tab
+        eventKey="childstudios"
+        title={
+          <>
+            {intl.formatMessage({ id: "subsidiary_studios" })}
+            <Counter
+              abbreviateCounter={false}
+              count={studio.child_studios.length}
+              hideZero
+            />
+          </>
+        }
+      >
+        <StudioChildrenPanel
+          active={tabKey === "childstudios"}
+          studio={studio}
+        />
+      </Tab>
+    </Tabs>
   );
 
   function maybeRenderHeaderBackgroundImage() {
@@ -495,17 +477,19 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     }
   }
 
+  const headerClassName = cx("detail-header", {
+    edit: isEditing,
+    collapsed,
+    "full-width": !collapsed && !compactExpandedDetails,
+  });
+
   return (
     <div id="studio-page" className="row">
       <Helmet>
         <title>{studio.name ?? intl.formatMessage({ id: "studio" })}</title>
       </Helmet>
 
-      <div
-        className={`detail-header ${isEditing ? "edit" : ""}  ${
-          collapsed ? "collapsed" : !compactExpandedDetails ? "full-width" : ""
-        }`}
-      >
+      <div className={headerClassName}>
         {maybeRenderHeaderBackgroundImage()}
         <div className="detail-container">
           <div className="detail-header-image">
@@ -546,16 +530,36 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
   );
 };
 
-const StudioLoader: React.FC = () => {
-  const { id } = useParams<{ id?: string }>();
-  const { data, loading, error } = useFindStudio(id ?? "");
+const StudioLoader: React.FC<RouteComponentProps<IStudioParams>> = ({
+  location,
+  match,
+}) => {
+  const { id, tab } = match.params;
+  const { data, loading, error } = useFindStudio(id);
+
+  useScrollToTopOnMount();
 
   if (loading) return <LoadingIndicator />;
   if (error) return <ErrorMessage error={error.message} />;
   if (!data?.findStudio)
     return <ErrorMessage error={`No studio found with id ${id}.`} />;
 
-  return <StudioPage studio={data.findStudio} />;
+  if (!tab) {
+    return <StudioPage studio={data.findStudio} tabKey={defaultTab} />;
+  }
+
+  if (!isTabKey(tab)) {
+    return (
+      <Redirect
+        to={{
+          ...location,
+          pathname: `/studios/${id}`,
+        }}
+      />
+    );
+  }
+
+  return <StudioPage studio={data.findStudio} tabKey={tab} />;
 };
 
 export default StudioLoader;

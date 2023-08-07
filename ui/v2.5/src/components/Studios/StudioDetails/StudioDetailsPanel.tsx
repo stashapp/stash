@@ -47,7 +47,7 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
     if (!collapsed) {
       return (
         <DetailItem
-          id="StashIDs"
+          id="stash_ids"
           value={renderStashIDs()}
           fullWidth={fullWidth}
         />
