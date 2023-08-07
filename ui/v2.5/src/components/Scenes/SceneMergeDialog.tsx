@@ -165,7 +165,11 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       new ScrapeResult(dest.code, sources.find((s) => s.code)?.code, !dest.code)
     );
     setURL(
-      new ScrapeResult(dest.urls, sources.find((s) => s.urls)?.urls, !dest.urls?.length)
+      new ScrapeResult(
+        dest.urls,
+        sources.find((s) => s.urls)?.urls,
+        !dest.urls?.length
+      )
     );
     setDate(
       new ScrapeResult(dest.date, sources.find((s) => s.date)?.date, !dest.date)
