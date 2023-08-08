@@ -291,15 +291,14 @@ func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.R
 
 	// Add playDuration
 	newTime := event.Time / 1000
-	// TODO: Datebug still exists
-	// Huge value bug
-	newDuration := 0.0 // scn.PlayDuration
-	/*if newTime > scene.ResumeTime {
-		newDuration += (newTime - scene.ResumeTime)
-	}*/
+	newDuration := 0.0
+	if newTime > scn.ResumeTime {
+		newDuration += (newTime - scn.ResumeTime)
+	}
 
 	// Update PlayCount
 	if per, err := getMinPlayPercent(); err == nil {
+		// Above min playback percent
 		if file := scn.Files.Primary(); file != nil && newTime/file.Duration > float64(per)/100.0 {
 			// Create update set
 			ret := &scene.UpdateSet{
@@ -409,7 +408,6 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 
 			return err
 		}); err != nil {
-			// TODO: Should i really stop here?
 			return err
 		}
 	}
@@ -429,7 +427,7 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 			}
 
 			// If add tag
-			// TODO FUTURE: Switch to CutPrefix as it's nicer
+			// TODO FUTURE: Switch to CutPrefix as it's nicer (1.20+)
 			if strings.HasPrefix(tagI.Name, "Tag:") {
 				after := strings.TrimPrefix(tagI.Name, "Tag:")
 				var err error
