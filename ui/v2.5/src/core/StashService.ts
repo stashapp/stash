@@ -2030,6 +2030,15 @@ export const useAddTempDLNAIP = () => GQL.useAddTempDlnaipMutation();
 
 export const useRemoveTempDLNAIP = () => GQL.useRemoveTempDlnaipMutation();
 
+export const useConfigureHSP = () =>
+  GQL.useConfigureHspMutation({
+    update: updateConfiguration,
+  });
+
+export const useEnableHSP = () => GQL.useEnableHspMutation();
+
+
+
 export const mutateReloadScrapers = () =>
   client.mutate<GQL.ReloadScrapersMutation>({
     mutation: GQL.ReloadScrapersDocument,

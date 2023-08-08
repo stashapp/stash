@@ -532,6 +532,35 @@ func (r *mutationResolver) ConfigureDlna(ctx context.Context, input ConfigDLNAIn
 	return makeConfigDLNAResult(), nil
 }
 
+func (r *mutationResolver) ConfigureHsp(ctx context.Context, input ConfigHSPInput) (*ConfigHSPResult, error) {
+	c := config.GetInstance()
+
+	if input.Enabled != nil {
+		c.Set(config.HSPDefaultEnabled, *input.Enabled)
+	}
+	if input.FavoriteTagID != nil {
+		c.Set(config.HSPFavoriteTag, *input.FavoriteTagID)
+	}
+	if input.WriteFavorites != nil {
+		c.Set(config.HSPWriteFavorites, *input.WriteFavorites)
+	}
+	if input.WriteRatings != nil {
+		c.Set(config.HSPWriteRating, *input.WriteRatings)
+	}
+	if input.WriteTags != nil {
+		c.Set(config.HSPWriteTags, *input.WriteTags)
+	}
+	if input.WriteDeletes != nil {
+		c.Set(config.HSPWriteDeletes, *input.WriteDeletes)
+	}
+
+	if err := c.Write(); err != nil {
+		return makeConfigHSPResult(), err
+	}
+
+	return makeConfigHSPResult(), nil
+}
+
 func (r *mutationResolver) ConfigureScraping(ctx context.Context, input ConfigScrapingInput) (*ConfigScrapingResult, error) {
 	c := config.GetInstance()
 

@@ -502,6 +502,36 @@ type ConfigDLNAResult {
   videoSortOrder: String!
 }
 
+input ConfigHSPInput {
+  "True if HSP Api should be enabled by default"
+  enabled: Boolean
+  "ID of the favorite tag"
+  favoriteTagId: Int
+  "True if writing favorites to HSP Api should be enabled"
+  writeFavorites: Boolean
+  "True if writing ratings to HSP Api should be enabled"
+  writeRatings: Boolean
+  "True if writing tags to HSP Api should be enabled"
+  writeTags: Boolean
+  "True if writing deletes to HSP Api should be enabled"
+  writeDeletes: Boolean
+}
+
+type ConfigHSPResult {
+  "True if HSP Api should be enabled by default"
+  enabled: Boolean!
+  "ID of the favorite tag"
+  favoriteTagId: Int!
+  "True if writing favorites to HSP Api should be enabled"
+  writeFavorites: Boolean!
+  "True if writing ratings to HSP Api should be enabled"
+  writeRatings: Boolean!
+  "True if writing tags to HSP Api should be enabled"
+  writeTags: Boolean!
+  "True if writing deletes to HSP Api should be enabled"
+  writeDeletes: Boolean!
+}
+
 input ConfigScrapingInput {
   "Scraper user agent string"
   scraperUserAgent: String
@@ -553,6 +583,7 @@ type ConfigResult {
   general: ConfigGeneralResult!
   interface: ConfigInterfaceResult!
   dlna: ConfigDLNAResult!
+  hsp: ConfigHSPResult!
   scraping: ConfigScrapingResult!
   defaults: ConfigDefaultSettingsResult!
   ui: Map!

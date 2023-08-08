@@ -217,6 +217,14 @@ const (
 	DLNAVideoSortOrder        = "dlna.video_sort_order"
 	dlnaVideoSortOrderDefault = "title"
 
+	// HSP options
+	HSPDefaultEnabled = "hsp.default_enabled"
+	HSPFavoriteTag    = "hsp.favorite_tag"
+	HSPWriteFavorites = "hsp.write_favorites"
+	HSPWriteRating    = "hsp.write_rating"
+	HSPWriteTags      = "hsp.write_tags"
+	HSPWriteDeletes   = "hsp.write_deletes"
+
 	// Logging options
 	LogFile          = "logFile"
 	LogOut           = "logOut"
@@ -1128,15 +1136,6 @@ func (i *Instance) GetUIMinPlayPercent() int {
 
 	return -1
 }
-func (i *Instance) GetUIFavoriteTag() string {
-	// TODO: Consolidate into heresphere settings
-	cfgMap := i.GetUIConfiguration()
-	if val, ok := cfgMap["favoriteTag"]; ok {
-		return val.(string)
-	}
-
-	return ""
-}
 
 func (i *Instance) SetUIConfiguration(v map[string]interface{}) {
 	i.RLock()
@@ -1417,6 +1416,36 @@ func (i *Instance) GetVideoSortOrder() string {
 	}
 
 	return ret
+}
+
+// GetHSPDefaultEnabled returns true if the HSP Api is enabled by default.
+func (i *Instance) GetHSPDefaultEnabled() bool {
+	return i.getBool(HSPDefaultEnabled)
+}
+
+// GetHSPFavoriteTag returns the favorites tag id
+func (i *Instance) GetHSPFavoriteTag() int {
+	return i.getInt(HSPFavoriteTag)
+}
+
+// GetHSPWriteFavorites returns if favorites should be written
+func (i *Instance) GetHSPWriteFavorites() bool {
+	return i.getBool(HSPWriteFavorites)
+}
+
+// GetHSPWriteRatings returns if ratings should be written
+func (i *Instance) GetHSPWriteRatings() bool {
+	return i.getBool(HSPWriteRating)
+}
+
+// GetHSPWriteTags returns if tags should be written
+func (i *Instance) GetHSPWriteTags() bool {
+	return i.getBool(HSPWriteTags)
+}
+
+// GetHSPWriteDeletes returns if deletions should happen
+func (i *Instance) GetHSPWriteDeletes() bool {
+	return i.getBool(HSPWriteDeletes)
 }
 
 // GetLogFile returns the filename of the file to output logs to.

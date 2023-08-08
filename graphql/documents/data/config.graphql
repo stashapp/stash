@@ -105,6 +105,15 @@ fragment ConfigDLNAData on ConfigDLNAResult {
   videoSortOrder
 }
 
+fragment ConfigHSPData on ConfigHSPResult {
+  enabled
+  favoriteTagId
+  writeFavorites
+  writeRatings
+  writeTags
+  writeDeletes
+}
+
 fragment ConfigScrapingData on ConfigScrapingResult {
   scraperUserAgent
   scraperCertCheck
@@ -204,6 +213,9 @@ fragment ConfigData on ConfigResult {
   }
   dlna {
     ...ConfigDLNAData
+  }
+  hsp {
+    ...ConfigHSPData
   }
   scraping {
     ...ConfigScrapingData

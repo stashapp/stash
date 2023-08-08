@@ -64,6 +64,7 @@ func makeConfigResult() *ConfigResult {
 		General:   makeConfigGeneralResult(),
 		Interface: makeConfigInterfaceResult(),
 		Dlna:      makeConfigDLNAResult(),
+		Hsp:       makeConfigHSPResult(),
 		Scraping:  makeConfigScrapingResult(),
 		Defaults:  makeConfigDefaultsResult(),
 		UI:        makeConfigUIResult(),
@@ -206,6 +207,19 @@ func makeConfigDLNAResult() *ConfigDLNAResult {
 		WhitelistedIPs: config.GetDLNADefaultIPWhitelist(),
 		Interfaces:     config.GetDLNAInterfaces(),
 		VideoSortOrder: config.GetVideoSortOrder(),
+	}
+}
+
+func makeConfigHSPResult() *ConfigHSPResult {
+	config := config.GetInstance()
+
+	return &ConfigHSPResult{
+		Enabled:        config.GetHSPDefaultEnabled(),
+		FavoriteTagID:  config.GetHSPFavoriteTag(),
+		WriteFavorites: config.GetHSPWriteFavorites(),
+		WriteRatings:   config.GetHSPWriteRatings(),
+		WriteTags:      config.GetHSPWriteTags(),
+		WriteDeletes:   config.GetHSPWriteDeletes(),
 	}
 }
 

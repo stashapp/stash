@@ -16,6 +16,7 @@ import { ModalComponent } from "../Shared/Modal";
 import { SettingSection } from "./SettingSection";
 import {
   BooleanSetting,
+  NumberSetting,
   StringListSetting,
   StringSetting,
   SelectSetting,
@@ -37,9 +38,11 @@ export const SettingsServicesPanel: React.FC = () => {
 
   const {
     dlna,
+    hsp,
     loading: configLoading,
     error,
     saveDLNA,
+    saveHSP,
   } = React.useContext(SettingStateContext);
 
   // undefined to hide dialog, true for enable, false for disable
@@ -475,6 +478,55 @@ export const SettingsServicesPanel: React.FC = () => {
     );
   };
 
+  const HSPSettingsForm: React.FC = () => {
+    return (
+      <>
+        <SettingSection headingID="settings">
+          <BooleanSetting
+            id="hsp-enabled-by-default"
+            headingID="config.hsp.enabled_by_default"
+            checked={hsp.enabled ?? undefined}
+            onChange={(v) => saveHSP({ enabled: v })}
+          />
+
+          {/* TODO: This should really be a dropdown for different tags */}
+          <NumberSetting
+            id="hsp-favorites-tag"
+            headingID="config.hsp.favorites_tag"
+            value={hsp.favoriteTagId ?? undefined}
+            onChange={(v) => saveHSP({ favoriteTagId: v })}
+          />
+
+          <BooleanSetting
+            id="hsp-write-favorites"
+            headingID="config.hsp.write_favorites"
+            checked={hsp.writeFavorites ?? undefined}
+            onChange={(v) => saveHSP({ writeFavorites: v })}
+          />
+          <BooleanSetting
+            id="hsp-write-ratings"
+            headingID="config.hsp.write_ratings"
+            checked={hsp.writeRatings ?? undefined}
+            onChange={(v) => saveHSP({ writeRatings: v })}
+          />
+          <BooleanSetting
+            id="hsp-write-tags"
+            headingID="config.hsp.write_tags"
+            checked={hsp.writeTags ?? undefined}
+            onChange={(v) => saveHSP({ writeTags: v })}
+          />
+          <BooleanSetting
+            id="hsp-write-deletes"
+            headingID="config.hsp.write_deletes"
+            checked={hsp.writeDeletes ?? undefined}
+            onChange={(v) => saveHSP({ writeDeletes: v })}
+          />
+
+        </SettingSection>
+      </>
+    );
+  };
+
   return (
     <div id="settings-dlna">
       {renderTempEnableDialog()}
@@ -510,6 +562,10 @@ export const SettingsServicesPanel: React.FC = () => {
       </SettingSection>
 
       <DLNASettingsForm />
+
+      <h4>HereSphere API</h4>
+
+      <HSPSettingsForm />
     </div>
   );
 };

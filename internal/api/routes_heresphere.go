@@ -255,12 +255,10 @@ func getMinPlayPercent() (per int, err error) {
 	}
 	return
 }
-func getFavoriteTag() (varTag string, err error) {
-	varTag = config.GetInstance().GetUIFavoriteTag()
-	if len(varTag) == 0 {
-		// err = fmt.Errorf("zero length favorite tag")
-		varTag = "Favorite"
-		// TODO: This is for development, remove forced assign
+func getFavoriteTag() (varTag int, err error) {
+	varTag = config.GetInstance().GetHSPFavoriteTag()
+	if varTag < 0 {
+		err = fmt.Errorf("invalid favorite tag id")
 	}
 	return
 }
@@ -273,7 +271,7 @@ func (rs heresphereRoutes) getVideoFavorite(r *http.Request, scene *models.Scene
 	if err == nil {
 		if favTag, err := getFavoriteTag(); err == nil {
 			for _, tag := range tag_ids {
-				if tag.Name == favTag {
+				if tag.ID == favTag {
 					return true
 				}
 			}
@@ -351,6 +349,8 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 	user := r.Context().Value(heresphereUserKey).(HeresphereAuthReq)
 	shouldUpdate := false
 	fileDeleter := file.NewDeleter()
+	// Having this here is mostly paranoia
+	c := config.GetInstance()
 
 	// Create update set
 	ret := &scene.UpdateSet{
@@ -359,14 +359,14 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 	ret.Partial = models.NewScenePartial()
 
 	// Update rating
-	if user.Rating != nil {
+	if user.Rating != nil && c.GetHSPWriteRatings() {
 		rating := models.Rating5To100F(*user.Rating)
 		ret.Partial.Rating = models.NewOptionalInt(rating)
 		shouldUpdate = true
 	}
 
 	// Delete primary file
-	if user.DeleteFile != nil && *user.DeleteFile {
+	if user.DeleteFile != nil && *user.DeleteFile && c.GetHSPWriteDeletes() {
 		if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 			fqb := rs.repository.File
 
@@ -390,7 +390,7 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 	}
 
 	// Favorites tag
-	if favName, err := getFavoriteTag(); user.IsFavorite != nil && err == nil {
+	if favName, err := getFavoriteTag(); user.IsFavorite != nil && err == nil && c.GetHSPWriteFavorites() {
 		favTag := HeresphereVideoTag{Name: fmt.Sprintf("Tag:%v", favName)}
 		if *user.IsFavorite {
 			if user.Tags == nil {
@@ -410,7 +410,7 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 	}
 
 	// Tags
-	if user.Tags != nil {
+	if user.Tags != nil && c.GetHSPWriteTags() {
 		// Search input tags and add/create any new ones
 		var tagIDs []int
 		var perfIDs []int
@@ -1062,6 +1062,7 @@ func FindProjectionTags(scene *models.Scene, processedScene *HeresphereVideoEntr
  */
 func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value(heresphereUserKey).(HeresphereAuthReq)
+	c := config.GetInstance()
 
 	// Update request
 	if err := rs.HeresphereVideoDataUpdate(w, r); err != nil {
@@ -1108,9 +1109,9 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		Subtitles:     rs.getVideoSubtitles(r, scene),
 		Tags:          rs.getVideoTags(r, scene),
 		Media:         []HeresphereVideoMedia{},
-		WriteFavorite: true,
-		WriteRating:   true,
-		WriteTags:     true,
+		WriteFavorite: c.GetHSPWriteFavorites(),
+		WriteRating:   c.GetHSPWriteRatings(),
+		WriteTags:     c.GetHSPWriteTags(),
 		WriteHSP:      false,
 	}
 
@@ -1252,7 +1253,7 @@ func writeNotAuthorized(w http.ResponseWriter, r *http.Request, msg string) {
 	// Default video
 	library := HeresphereIndexEntry{
 		Name: msg,
-		List: []string{fmt.Sprintf("%s/heresphere/doesnt-exist", GetBaseURL(r))},
+		List: []string{},
 	}
 	// Index
 	idx := HeresphereIndex{
@@ -1317,11 +1318,11 @@ func (rs heresphereRoutes) HeresphereSceneCtx(next http.Handler) http.Handler {
  */
 func (rs heresphereRoutes) HeresphereCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Enable and make the settings button
-		/*if !config.GetInstance().GetHeresphereDefaultEnabled() {
+		// Only if enabled
+		if !config.GetInstance().GetHSPDefaultEnabled() {
 			writeNotAuthorized(w, r, "HereSphere API not enabled!")
 			return
-		}*/
+		}
 
 		// Add JSON Header (using Add uses camel case and makes it invalid because "Json")
 		w.Header()["HereSphere-JSON-Version"] = []string{strconv.Itoa(HeresphereJsonVersion)}

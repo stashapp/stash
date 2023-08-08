@@ -11,6 +11,7 @@ import {
   useConfiguration,
   useConfigureDefaults,
   useConfigureDLNA,
+  useConfigureHSP,
   useConfigureGeneral,
   useConfigureInterface,
   useConfigureScraping,
@@ -29,6 +30,7 @@ export interface ISettingsContextState {
   defaults: GQL.ConfigDefaultSettingsInput;
   scraping: GQL.ConfigScrapingInput;
   dlna: GQL.ConfigDlnaInput;
+  hsp: GQL.ConfigHspInput;
   ui: IUIConfig;
 
   // apikey isn't directly settable, so expose it here
@@ -39,6 +41,7 @@ export interface ISettingsContextState {
   saveDefaults: (input: Partial<GQL.ConfigDefaultSettingsInput>) => void;
   saveScraping: (input: Partial<GQL.ConfigScrapingInput>) => void;
   saveDLNA: (input: Partial<GQL.ConfigDlnaInput>) => void;
+  saveHSP: (input: Partial<GQL.ConfigHspInput>) => void;
   saveUI: (input: Partial<IUIConfig>) => void;
 
   refetch: () => void;
@@ -52,6 +55,7 @@ export const SettingStateContext = React.createContext<ISettingsContextState>({
   defaults: {},
   scraping: {},
   dlna: {},
+  hsp: {},
   ui: {},
   apiKey: "",
   saveGeneral: () => {},
@@ -59,6 +63,7 @@ export const SettingStateContext = React.createContext<ISettingsContextState>({
   saveDefaults: () => {},
   saveScraping: () => {},
   saveDLNA: () => {},
+  saveHSP: () => {},
   saveUI: () => {},
   refetch: () => {},
 });
@@ -92,6 +97,10 @@ export const SettingsContext: React.FC = ({ children }) => {
   const [dlna, setDLNA] = useState<GQL.ConfigDlnaInput>({});
   const [pendingDLNA, setPendingDLNA] = useState<GQL.ConfigDlnaInput>();
   const [updateDLNAConfig] = useConfigureDLNA();
+
+  const [hsp, setHSP] = useState<GQL.ConfigHspInput>({});
+  const [pendingHSP, setPendingHSP] = useState<GQL.ConfigHspInput>();
+  const [updateHSPConfig] = useConfigureHSP();
 
   const [ui, setUI] = useState({});
   const [pendingUI, setPendingUI] = useState<{}>();
@@ -131,6 +140,7 @@ export const SettingsContext: React.FC = ({ children }) => {
     setDefaults({ ...withoutTypename(data.configuration.defaults) });
     setScraping({ ...withoutTypename(data.configuration.scraping) });
     setDLNA({ ...withoutTypename(data.configuration.dlna) });
+    setHSP({ ...withoutTypename(data.configuration.hsp) });
     setUI(data.configuration.ui);
   }, [data, error]);
 
@@ -391,6 +401,57 @@ export const SettingsContext: React.FC = ({ children }) => {
     });
   }
 
+
+  // saves the configuration if no further changes are made after a half second
+  const saveHSPConfig = useDebounce(
+    async (input: GQL.ConfigHspInput) => {
+      try {
+        setUpdateSuccess(undefined);
+        await updateHSPConfig({
+          variables: {
+            input,
+          },
+        });
+
+        setPendingHSP(undefined);
+        onSuccess();
+      } catch (e) {
+        setSaveError(e);
+      }
+    },
+    [updateHSPConfig, onSuccess],
+    500
+  );
+
+  useEffect(() => {
+    if (!pendingHSP) {
+      return;
+    }
+
+    saveHSPConfig(pendingHSP);
+  }, [pendingHSP, saveHSPConfig]);
+
+  function saveHSP(input: Partial<GQL.ConfigHspInput>) {
+    if (!hsp) {
+      return;
+    }
+
+    setHSP({
+      ...hsp,
+      ...input,
+    });
+
+    setPendingHSP((current) => {
+      if (!current) {
+        return input;
+      }
+      return {
+        ...current,
+        ...input,
+      };
+    });
+  }
+
   // saves the configuration if no further changes are made after a half second
   const saveUIConfig = useDebounce(
     async (input: IUIConfig) => {
@@ -460,6 +521,7 @@ export const SettingsContext: React.FC = ({ children }) => {
       pendingDefaults ||
       pendingScraping ||
       pendingDLNA ||
+      pendingHSP ||
       pendingUI
     ) {
       return (
@@ -491,12 +553,14 @@ export const SettingsContext: React.FC = ({ children }) => {
         defaults,
         scraping,
         dlna,
+        hsp,
         ui,
         saveGeneral,
         saveInterface,
         saveDefaults,
         saveScraping,
         saveDLNA,
+        saveHSP,
         saveUI,
         refetch,
       }}

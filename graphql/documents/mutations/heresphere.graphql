@@ -1,0 +1,18 @@
+mutation EnableHSP($input: EnableHSPInput!) {
+  enableHSP(input: $input)
+}
+mutation SetHSPFavoriteTag($input: FavoriteTagHSPInput!) {
+  setHSPFavoriteTag(input: $input)
+}
+mutation SetHSPFavoriteWrite($input: HSPFavoriteWrite!) {
+  setHSPWriteFavorites(input: $input)
+}
+mutation SetHSPRatingWrite($input: HSPRatingWrite!) {
+  setHSPWriteRatings(input: $input)
+}
+mutation SetHSPTagWrite($input: HSPTagWrite!) {
+  setHSPWriteTags(input: $input)
+}
+mutation SetHSPDeleteWrite($input: HSPDeleteWrite!) {
+  setHSPWriteDeletes(input: $input)
+}

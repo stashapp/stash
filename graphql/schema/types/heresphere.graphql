@@ -1,0 +1,30 @@
+input EnableHSPInput {
+  "If HSP Api should be enabled."
+  enabled: Boolean
+}
+
+input FavoriteTagHSPInput {
+  "ID of the tag to be set as favorite."
+  tagId: ID!
+}
+
+
+input HSPFavoriteWrite {
+  "If writing favorites to HSP Api should be enabled."
+  enabled: Boolean
+}
+
+input HSPRatingWrite {
+  "If writing ratings to HSP Api should be enabled."
+  enabled: Boolean
+}
+
+input HSPTagWrite {
+  "If writing tags to HSP Api should be enabled."
+  enabled: Boolean
+}
+
+input HSPDeleteWrite {
+  "If writing deletes to HSP Api should be enabled."
+  enabled: Boolean
+}

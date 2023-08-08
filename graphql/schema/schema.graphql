@@ -341,6 +341,7 @@ type Mutation {
   configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!
   configureInterface(input: ConfigInterfaceInput!): ConfigInterfaceResult!
   configureDLNA(input: ConfigDLNAInput!): ConfigDLNAResult!
+  configureHSP(input: ConfigHSPInput!): ConfigHSPResult!
   configureScraping(input: ConfigScrapingInput!): ConfigScrapingResult!
   configureDefaults(
     input: ConfigDefaultSettingsInput!
@@ -434,6 +435,19 @@ type Mutation {
   addTempDLNAIP(input: AddTempDLNAIPInput!): Boolean!
   "Removes an IP address from the temporary DLNA whitelist"
   removeTempDLNAIP(input: RemoveTempDLNAIPInput!): Boolean!
+
+  "Enables HSP API."
+  enableHSP(input: EnableHSPInput!): Boolean!
+  "Sets a tag as favorite in the HSP API."
+  setHSPFavoriteTag(input: FavoriteTagHSPInput!): Boolean!
+  "Enables writing favorites to the HSP API."
+  setHSPWriteFavorites(input: HSPFavoriteWrite!): Boolean!
+  "Enables writing ratings to the HSP API."
+  setHSPWriteRatings(input: HSPRatingWrite!): Boolean!
+  "Enables writing tags to the HSP API."
+  setHSPWriteTags(input: HSPTagWrite!): Boolean!
+  "Enables writing deletes to the HSP API."
+  setHSPWriteDeletes(input: HSPDeleteWrite!): Boolean!
 }
 
 type Subscription {

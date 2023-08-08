@@ -24,6 +24,12 @@ mutation ConfigureDLNA($input: ConfigDLNAInput!) {
   }
 }
 
+mutation ConfigureHSP($input: ConfigHSPInput!) {
+  configureHSP(input: $input) {
+    ...ConfigHSPData
+  }
+}
+
 mutation ConfigureScraping($input: ConfigScrapingInput!) {
   configureScraping(input: $input) {
     ...ConfigScrapingData
