@@ -35,7 +35,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
 
   const schema = yup.object({
     title: yup.string().ensure(),
-    seconds: yup.number().required().integer(),
+    seconds: yup.number().required(),
     primary_tag_id: yup.string().required(),
     tag_ids: yup.array(yup.string().required()).defined(),
   });
