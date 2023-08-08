@@ -248,6 +248,20 @@
       "video_sort_order": "Default Video Sort Order",
       "video_sort_order_desc": "Order to sort videos by default."
     },
+    "hsp": {
+      "title": "HereSphere API",
+      "enabled_by_default": "Enabled",
+      "favorites_tag": "Favorites tag",
+      "favorites_tag_desc": "What tag to add when HSP (HereSphere) sends a favorites request",
+      "write_favorites": "Write Favorites",
+      "write_favorites_desc": "Whether to enable HSP to write the favorite tag to videos",
+      "write_ratings": "Write Ratings",
+      "write_ratings_desc": "Wether to enable HSP to write ratings",
+      "write_tags": "Write Tags",
+      "write_tags_desc": "Wether to enable HSP to write tags",
+      "write_deletes": "Do deletes",
+      "write_deletes_desc": "Wether to allow file deletion via HSP Api"
+    },
     "general": {
       "auth": {
         "api_key": "API Key",

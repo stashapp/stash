@@ -250,15 +250,8 @@ func getVrTag() (varTag string, err error) {
 }
 func getMinPlayPercent() (per int, err error) {
 	per = config.GetInstance().GetUIMinPlayPercent()
-	if per == -1 {
+	if per < 0 {
 		err = fmt.Errorf("unset minimum play percent")
-	}
-	return
-}
-func getFavoriteTag() (varTag int, err error) {
-	varTag = config.GetInstance().GetHSPFavoriteTag()
-	if varTag < 0 {
-		err = fmt.Errorf("invalid favorite tag id")
 	}
 	return
 }
@@ -269,11 +262,10 @@ func getFavoriteTag() (varTag int, err error) {
 func (rs heresphereRoutes) getVideoFavorite(r *http.Request, scene *models.Scene) bool {
 	tag_ids, err := rs.resolver.Scene().Tags(r.Context(), scene)
 	if err == nil {
-		if favTag, err := getFavoriteTag(); err == nil {
-			for _, tag := range tag_ids {
-				if tag.ID == favTag {
-					return true
-				}
+		favTag := config.GetInstance().GetHSPFavoriteTag()
+		for _, tag := range tag_ids {
+			if tag.ID == favTag {
+				return true
 			}
 		}
 	}
@@ -299,9 +291,10 @@ func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.R
 
 	// Add playDuration
 	newTime := event.Time / 1000
-	/*newDuration := scn.PlayDuration
+	// TODO: Datebug still exists
+	newDuration := 0.0 // scn.PlayDuration
 	// TODO: Huge value bug
-	if newTime > scene.ResumeTime {
+	/*if newTime > scene.ResumeTime {
 		newDuration += (newTime - scene.ResumeTime)
 	}*/
 
@@ -332,11 +325,10 @@ func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.R
 	}
 
 	// Write
-	// TODO: Datebug still exists
-	/*if _, err := rs.resolver.Mutation().SceneSaveActivity(r.Context(), strconv.Itoa(scn.ID), &newTime, &newDuration); err != nil {
+	if _, err := rs.resolver.Mutation().SceneSaveActivity(r.Context(), strconv.Itoa(scn.ID), &newTime, &newDuration); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	}*/
+	}
 
 	w.WriteHeader(http.StatusOK)
 }
@@ -390,23 +382,36 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 	}
 
 	// Favorites tag
-	if favName, err := getFavoriteTag(); user.IsFavorite != nil && err == nil && c.GetHSPWriteFavorites() {
-		favTag := HeresphereVideoTag{Name: fmt.Sprintf("Tag:%v", favName)}
-		if *user.IsFavorite {
-			if user.Tags == nil {
-				user.Tags = &[]HeresphereVideoTag{favTag}
-			} else {
-				*user.Tags = append(*user.Tags, favTag)
-			}
-		} else if user.Tags != nil {
-			for i, tag := range *user.Tags {
-				if tag.Name == favTag.Name {
-					*user.Tags = append((*user.Tags)[:i], (*user.Tags)[i+1:]...)
-					break
+	if user.IsFavorite != nil && c.GetHSPWriteFavorites() {
+		if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+			var err error
+			var favTag *models.Tag
+
+			tagId := config.GetInstance().GetHSPFavoriteTag()
+			if favTag, err = rs.repository.Tag.Find(ctx, tagId); err == nil {
+				favTagVal := HeresphereVideoTag{Name: fmt.Sprintf("Tag:%v", favTag.Name)}
+				if *user.IsFavorite {
+					if user.Tags == nil {
+						user.Tags = &[]HeresphereVideoTag{favTagVal}
+					} else {
+						*user.Tags = append(*user.Tags, favTagVal)
+					}
+				} else if user.Tags != nil {
+					for i, tag := range *user.Tags {
+						if tag.Name == favTagVal.Name {
+							*user.Tags = append((*user.Tags)[:i], (*user.Tags)[i+1:]...)
+							break
+						}
+					}
 				}
+				shouldUpdate = true
 			}
+
+			return err
+		}); err != nil {
+			// TODO: Should i really stop here?
+			return err
 		}
-		shouldUpdate = true
 	}
 
 	// Tags

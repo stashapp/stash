@@ -481,7 +481,7 @@ export const SettingsServicesPanel: React.FC = () => {
   const HSPSettingsForm: React.FC = () => {
     return (
       <>
-        <SettingSection headingID="settings">
+        <SettingSection headingID="config.hsp.title">
           <BooleanSetting
             id="hsp-enabled-by-default"
             headingID="config.hsp.enabled_by_default"
@@ -493,6 +493,7 @@ export const SettingsServicesPanel: React.FC = () => {
           <NumberSetting
             id="hsp-favorites-tag"
             headingID="config.hsp.favorites_tag"
+            subHeadingID="config.hsp.favorites_tag_desc"
             value={hsp.favoriteTagId ?? undefined}
             onChange={(v) => saveHSP({ favoriteTagId: v })}
           />
@@ -500,24 +501,28 @@ export const SettingsServicesPanel: React.FC = () => {
           <BooleanSetting
             id="hsp-write-favorites"
             headingID="config.hsp.write_favorites"
+            subHeadingID="config.hsp.write_favorites_desc"
             checked={hsp.writeFavorites ?? undefined}
             onChange={(v) => saveHSP({ writeFavorites: v })}
           />
           <BooleanSetting
             id="hsp-write-ratings"
             headingID="config.hsp.write_ratings"
+            subHeadingID="config.hsp.write_ratings_desc"
             checked={hsp.writeRatings ?? undefined}
             onChange={(v) => saveHSP({ writeRatings: v })}
           />
           <BooleanSetting
             id="hsp-write-tags"
             headingID="config.hsp.write_tags"
+            subHeadingID="config.hsp.write_tags_desc"
             checked={hsp.writeTags ?? undefined}
             onChange={(v) => saveHSP({ writeTags: v })}
           />
           <BooleanSetting
             id="hsp-write-deletes"
             headingID="config.hsp.write_deletes"
+            subHeadingID="config.hsp.write_deletes_desc"
             checked={hsp.writeDeletes ?? undefined}
             onChange={(v) => saveHSP({ writeDeletes: v })}
           />
@@ -562,8 +567,6 @@ export const SettingsServicesPanel: React.FC = () => {
       </SettingSection>
 
       <DLNASettingsForm />
-
-      <h4>HereSphere API</h4>
 
       <HSPSettingsForm />
     </div>
