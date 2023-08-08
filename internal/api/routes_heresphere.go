@@ -390,6 +390,8 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 			tagId := config.GetInstance().GetHSPFavoriteTag()
 			if favTag, err = rs.repository.Tag.Find(ctx, tagId); err == nil {
 				favTagVal := HeresphereVideoTag{Name: fmt.Sprintf("Tag:%v", favTag.Name)}
+
+				// Do the old switcheroo to figure out how to add the tag
 				if *user.IsFavorite {
 					if user.Tags == nil {
 						user.Tags = &[]HeresphereVideoTag{favTagVal}
@@ -404,6 +406,7 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 						}
 					}
 				}
+
 				shouldUpdate = true
 			}
 
