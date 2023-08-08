@@ -8,7 +8,6 @@ input FavoriteTagHSPInput {
   tagId: ID!
 }
 
-
 input HSPFavoriteWrite {
   "If writing favorites to HSP Api should be enabled."
   enabled: Boolean

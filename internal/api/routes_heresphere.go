@@ -292,8 +292,8 @@ func (rs heresphereRoutes) HeresphereVideoEvent(w http.ResponseWriter, r *http.R
 	// Add playDuration
 	newTime := event.Time / 1000
 	// TODO: Datebug still exists
+	// Huge value bug
 	newDuration := 0.0 // scn.PlayDuration
-	// TODO: Huge value bug
 	/*if newTime > scene.ResumeTime {
 		newDuration += (newTime - scene.ResumeTime)
 	}*/
@@ -1242,7 +1242,6 @@ func addApiKey(urlS string) string {
 /*
  * This auxiliary writes a library with a fake name upon auth failure
  */
-// TODO: Does this even work in HereSphere?
 func writeNotAuthorized(w http.ResponseWriter, r *http.Request, msg string) {
 	// Banner
 	banner := HeresphereBanner{

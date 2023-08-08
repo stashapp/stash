@@ -526,7 +526,6 @@ export const SettingsServicesPanel: React.FC = () => {
             checked={hsp.writeDeletes ?? undefined}
             onChange={(v) => saveHSP({ writeDeletes: v })}
           />
-
         </SettingSection>
       </>
     );

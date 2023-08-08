@@ -2037,8 +2037,6 @@ export const useConfigureHSP = () =>
 
 export const useEnableHSP = () => GQL.useEnableHspMutation();
 
-
-
 export const mutateReloadScrapers = () =>
   client.mutate<GQL.ReloadScrapersMutation>({
     mutation: GQL.ReloadScrapersDocument,

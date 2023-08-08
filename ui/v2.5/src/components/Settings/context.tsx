@@ -401,7 +401,6 @@ export const SettingsContext: React.FC = ({ children }) => {
     });
   }
 
-
   // saves the configuration if no further changes are made after a half second
   const saveHSPConfig = useDebounce(
     async (input: GQL.ConfigHspInput) => {
