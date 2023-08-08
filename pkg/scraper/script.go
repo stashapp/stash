@@ -108,7 +108,7 @@ func (s *scriptScraper) runScraperScript(ctx context.Context, inString string, o
 		if lenientErr != nil {
 			// The error is genuine, so return it
 			logger.Errorf("could not unmarshal json from script output: %v", lenientErr)
-			return fmt.Errorf("could not unmarshal json from script output: %w", lenientErr)
+			return errors.New("Error running scraper script, check the logs for more information")
 		}
 
 		// Lenient decode succeeded, print a warning, but use the decode
