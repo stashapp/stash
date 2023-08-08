@@ -31,7 +31,6 @@ import {
   faTimes,
   faUser,
   faVideo,
-  faHelmetSafety,
 } from "@fortawesome/free-solid-svg-icons";
 import { baseURL } from "src/core/createClient";
 

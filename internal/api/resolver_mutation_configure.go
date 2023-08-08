@@ -404,7 +404,6 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 	setBool(config.NoBrowser, input.NoBrowser)
 
 	setBool(config.NotificationsEnabled, input.NotificationsEnabled)
-	setBool(config.ShowHeresphereButton, input.ShowHeresphereButton)
 
 	setBool(config.ShowScrubber, input.ShowScrubber)
 

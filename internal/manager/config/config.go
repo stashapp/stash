@@ -97,9 +97,6 @@ const (
 	CreateImageClipsFromVideos        = "create_image_clip_from_videos"
 	createImageClipsFromVideosDefault = false
 
-	ShowHeresphereButton        = "show_scene_heresphere_button"
-	showHeresphereButtonDefault = false
-
 	Host        = "host"
 	hostDefault = "0.0.0.0"
 
@@ -216,8 +213,6 @@ const (
 	DLNADefaultEnabled     = "dlna.default_enabled"
 	DLNADefaultIPWhitelist = "dlna.default_whitelist"
 	DLNAInterfaces         = "dlna.interfaces"
-
-	HeresphereEnabled = "heresphere.default_enabled"
 
 	DLNAVideoSortOrder        = "dlna.video_sort_order"
 	dlnaVideoSortOrderDefault = "title"
@@ -874,10 +869,6 @@ func (i *Instance) IsCreateImageClipsFromVideos() bool {
 	return i.getBool(CreateImageClipsFromVideos)
 }
 
-func (i *Instance) GetShowHeresphereButton() bool {
-	return i.getBool(ShowHeresphereButton)
-}
-
 func (i *Instance) GetAPIKey() string {
 	return i.getString(ApiKey)
 }
@@ -1428,11 +1419,6 @@ func (i *Instance) GetVideoSortOrder() string {
 	return ret
 }
 
-// GetHeresphereDefaultEnabled returns true if the HereSphere API is enabled by default.
-func (i *Instance) GetHeresphereDefaultEnabled() bool {
-	return i.getBool(HeresphereEnabled)
-}
-
 // GetLogFile returns the filename of the file to output logs to.
 // An empty string means that file logging will be disabled.
 func (i *Instance) GetLogFile() string {
@@ -1563,8 +1549,6 @@ func (i *Instance) setDefaultValues(write bool) error {
 
 	i.main.SetDefault(WriteImageThumbnails, writeImageThumbnailsDefault)
 	i.main.SetDefault(CreateImageClipsFromVideos, createImageClipsFromVideosDefault)
-
-	i.main.SetDefault(ShowHeresphereButton, showHeresphereButtonDefault)
 
 	i.main.SetDefault(Database, defaultDatabaseFilePath)
 

@@ -435,8 +435,6 @@ type ConfigInterfaceResult {
   noBrowser: Boolean
   "True if we should send desktop notifications"
   notificationsEnabled: Boolean
-  """True if we should automatically redirect Heresphere clients to the Heresphere endpoint"""
-  showHeresphereButton: Boolean
   "If true, video will autostart on load in the scene player"
   autostartVideo: Boolean
   "If true, video will autostart when loading from play random or play selected"
