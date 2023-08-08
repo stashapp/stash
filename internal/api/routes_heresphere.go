@@ -352,7 +352,8 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 	// Update rating
 	if user.Rating != nil && c.GetHSPWriteRatings() {
 		rating := models.Rating5To100F(*user.Rating)
-		ret.Partial.Rating = models.NewOptionalInt(rating)
+		ret.Partial.Rating.Value = rating
+		ret.Partial.Rating.Set = true
 		shouldUpdate = true
 	}
 
