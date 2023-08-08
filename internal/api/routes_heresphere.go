@@ -389,7 +389,7 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 
 			tagId := config.GetInstance().GetHSPFavoriteTag()
 			if favTag, err = rs.repository.Tag.Find(ctx, tagId); err == nil {
-				favTagVal := HeresphereVideoTag{Name: fmt.Sprintf("Tag:%v", favTag.Name)}
+				favTagVal := HeresphereVideoTag{Name: fmt.Sprintf("Tag:%s", favTag.Name)}
 
 				// Do the old switcheroo to figure out how to add the tag
 				if *user.IsFavorite {
@@ -683,7 +683,7 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 			}
 
 			genTag := HeresphereVideoTag{
-				Name:  fmt.Sprintf("Marker:%v", tagName),
+				Name:  fmt.Sprintf("Marker:%s", tagName),
 				Start: mark.Seconds * 1000,
 				End:   (mark.Seconds + 60) * 1000,
 			}
@@ -694,7 +694,7 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 	if gallery_ids, err := rs.resolver.Scene().Galleries(r.Context(), scene); err == nil {
 		for _, gal := range gallery_ids {
 			genTag := HeresphereVideoTag{
-				Name: fmt.Sprintf("Gallery:%v", gal.GetTitle()),
+				Name: fmt.Sprintf("Gallery:%s", gal.GetTitle()),
 			}
 			processedTags = append(processedTags, genTag)
 		}
@@ -703,7 +703,7 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 	if tag_ids, err := rs.resolver.Scene().Tags(r.Context(), scene); err == nil {
 		for _, tag := range tag_ids {
 			genTag := HeresphereVideoTag{
-				Name: fmt.Sprintf("Tag:%v", tag.Name),
+				Name: fmt.Sprintf("Tag:%s", tag.Name),
 			}
 			processedTags = append(processedTags, genTag)
 		}
@@ -722,7 +722,7 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 		for _, movie := range movie_ids {
 			if movie.Movie != nil {
 				genTag := HeresphereVideoTag{
-					Name: fmt.Sprintf("Movie:%v", movie.Movie.Name),
+					Name: fmt.Sprintf("Movie:%s", movie.Movie.Name),
 				}
 				processedTags = append(processedTags, genTag)
 			}
@@ -731,13 +731,12 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 
 	if studio_id, err := rs.resolver.Scene().Studio(r.Context(), scene); err == nil && studio_id != nil {
 		genTag := HeresphereVideoTag{
-			Name: fmt.Sprintf("Studio:%v", studio_id.Name),
+			Name: fmt.Sprintf("Studio:%s", studio_id.Name),
 		}
 		processedTags = append(processedTags, genTag)
 	}
 
-	{
-		interactive, _ := rs.resolver.Scene().Interactive(r.Context(), scene)
+	if interactive, err := rs.resolver.Scene().Interactive(r.Context(), scene); err == nil {
 		genTag := HeresphereVideoTag{
 			Name: fmt.Sprintf("%s:%s",
 				string(HeresphereCustomTagInteractive),
@@ -747,9 +746,18 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 		processedTags = append(processedTags, genTag)
 	}
 
+	if interactiveSpeed, err := rs.resolver.Scene().InteractiveSpeed(r.Context(), scene); err == nil && interactiveSpeed != nil {
+		genTag := HeresphereVideoTag{
+			Name: fmt.Sprintf("Funspeed:%d",
+				*interactiveSpeed,
+			),
+		}
+		processedTags = append(processedTags, genTag)
+	}
+
 	if len(scene.Director) > 0 {
 		genTag := HeresphereVideoTag{
-			Name: fmt.Sprintf("Director:%v", scene.Director),
+			Name: fmt.Sprintf("Director:%s", scene.Director),
 		}
 		processedTags = append(processedTags, genTag)
 	}
@@ -805,13 +813,13 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 
 	{
 		genTag := HeresphereVideoTag{
-			Name: fmt.Sprintf("%v:%v", string(HeresphereCustomTagPlayCount), scene.PlayCount),
+			Name: fmt.Sprintf("%s:%d", string(HeresphereCustomTagPlayCount), scene.PlayCount),
 		}
 		processedTags = append(processedTags, genTag)
 	}
 	{
 		genTag := HeresphereVideoTag{
-			Name: fmt.Sprintf("%v:%v", string(HeresphereCustomTagOCounter), scene.OCounter),
+			Name: fmt.Sprintf("%s:%d", string(HeresphereCustomTagOCounter), scene.OCounter),
 		}
 		processedTags = append(processedTags, genTag)
 	}
@@ -848,7 +856,7 @@ func (rs heresphereRoutes) getVideoSubtitles(r *http.Request, scene *models.Scen
 			processedCaption := HeresphereVideoSubtitle{
 				Name:     caption.Filename,
 				Language: caption.LanguageCode,
-				Url: addApiKey(fmt.Sprintf("%s?lang=%v&type=%v",
+				Url: addApiKey(fmt.Sprintf("%s?lang=%s&type=%s",
 					urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetCaptionURL(),
 					caption.LanguageCode,
 					caption.CaptionType,
@@ -962,7 +970,7 @@ func (rs heresphereRoutes) HeresphereIndex(w http.ResponseWriter, r *http.Reques
 	// Create scene list
 	sceneUrls := make([]string, len(scenes))
 	for idx, scene := range scenes {
-		sceneUrls[idx] = fmt.Sprintf("%s/heresphere/%v",
+		sceneUrls[idx] = fmt.Sprintf("%s/heresphere/%d",
 			GetBaseURL(r),
 			scene.ID,
 		)
@@ -1126,7 +1134,7 @@ func (rs heresphereRoutes) HeresphereVideoData(w http.ResponseWriter, r *http.Re
 		Fov:            180.0,
 		Lens:           HeresphereLensLinear,
 		CameraIPD:      6.5,
-		EventServer: addApiKey(fmt.Sprintf("%s/heresphere/%v/event",
+		EventServer: addApiKey(fmt.Sprintf("%s/heresphere/%d/event",
 			GetBaseURL(r),
 			scene.ID,
 		)),
