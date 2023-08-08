@@ -435,6 +435,7 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 
 			// If add tag
 			// FUTURE IMPROVEMENT: Switch to CutPrefix as it's nicer (1.20+)
+			// FUTURE IMPROVEMENT: Consider batching searches
 			if strings.HasPrefix(tagI.Name, "Tag:") {
 				after := strings.TrimPrefix(tagI.Name, "Tag:")
 				var err error
