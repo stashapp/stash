@@ -489,7 +489,7 @@ export const SettingsServicesPanel: React.FC = () => {
             onChange={(v) => saveHSP({ enabled: v })}
           />
 
-          {/* TODO: This should really be a dropdown for different tags */}
+          {/* FUTURE IMPROVEMENT: This should really be a dropdown for different tags */}
           <NumberSetting
             id="hsp-favorites-tag"
             headingID="config.hsp.favorites_tag"
