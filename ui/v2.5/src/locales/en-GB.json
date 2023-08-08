@@ -250,8 +250,9 @@
     },
     "hsp": {
       "title": "HereSphere API",
+      "desc": "The &quot;VR Tag&quot; and &quot;Minimum Play Percent&quot; from the Interface settings panel are reused for the HSP (HereSphere) API",
       "enabled_by_default": "Enabled",
-      "favorites_tag": "Favorites tag",
+      "favorites_tag": "Favorites Tag ID",
       "favorites_tag_desc": "What tag to add when HSP sends a favorites request",
       "write_favorites": "Write Favorites",
       "write_favorites_desc": "Whether to enable HSP to write the favorite tag to videos",
@@ -260,7 +261,7 @@
       "write_tags": "Write Tags",
       "write_tags_desc": "Wether to enable HSP to write tags",
       "write_deletes": "Do deletes",
-      "write_deletes_desc": "Wether to allow file deletion via HSP Api"
+      "write_deletes_desc": "Wether to allow file deletion via HSP API"
     },
     "general": {
       "auth": {
