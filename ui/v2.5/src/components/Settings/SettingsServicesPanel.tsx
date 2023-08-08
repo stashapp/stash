@@ -482,7 +482,7 @@ export const SettingsServicesPanel: React.FC = () => {
     return (
       <>
         <SettingSection headingID="config.hsp.title">
-          <a>The VR Tag and Minimum Play Percent from the Interface settings are reused for the HSP (HereSphere) Api</a>
+          <a>The "VR Tag" and "Minimum Play Percent" from the Interface settings are reused for the HSP (HereSphere) Api</a>
           <BooleanSetting
             id="hsp-enabled-by-default"
             headingID="config.hsp.enabled_by_default"

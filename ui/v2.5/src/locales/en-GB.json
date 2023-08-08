@@ -252,7 +252,7 @@
       "title": "HereSphere API",
       "enabled_by_default": "Enabled",
       "favorites_tag": "Favorites tag",
-      "favorites_tag_desc": "What tag to add when HSP (HereSphere) sends a favorites request",
+      "favorites_tag_desc": "What tag to add when HSP sends a favorites request",
       "write_favorites": "Write Favorites",
       "write_favorites_desc": "Whether to enable HSP to write the favorite tag to videos",
       "write_ratings": "Write Ratings",
