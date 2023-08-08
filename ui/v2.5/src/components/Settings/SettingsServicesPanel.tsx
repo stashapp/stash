@@ -481,7 +481,10 @@ export const SettingsServicesPanel: React.FC = () => {
   const HSPSettingsForm: React.FC = () => {
     return (
       <>
-        <SettingSection headingID="config.hsp.title" subHeadingID="config.hsp.desc">
+        <SettingSection
+          headingID="config.hsp.title"
+          subHeadingID="config.hsp.desc"
+        >
           <BooleanSetting
             id="hsp-enabled-by-default"
             headingID="config.hsp.enabled_by_default"
