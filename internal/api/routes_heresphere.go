@@ -834,7 +834,6 @@ func (rs heresphereRoutes) getVideoSubtitles(r *http.Request, scene *models.Scen
 			processedCaption := HeresphereVideoSubtitle{
 				Name:     caption.Filename,
 				Language: caption.LanguageCode,
-				// & causes chi router bug with \u0026
 				Url: addApiKey(fmt.Sprintf("%s?lang=%v&type=%v",
 					urlbuilders.NewSceneURLBuilder(GetBaseURL(r), scene).GetCaptionURL(),
 					caption.LanguageCode,
