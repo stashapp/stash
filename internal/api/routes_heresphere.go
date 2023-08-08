@@ -740,6 +740,15 @@ func (rs heresphereRoutes) getVideoTags(r *http.Request, scene *models.Scene) []
 		processedTags = append(processedTags, genTag)
 	}
 
+	if scene.Rating != nil {
+		genTag := HeresphereVideoTag{
+			Name: fmt.Sprintf("Rating:%d",
+				models.Rating100To5(*scene.Rating),
+			),
+		}
+		processedTags = append(processedTags, genTag)
+	}
+
 	{
 		genTag := HeresphereVideoTag{
 			Name: fmt.Sprintf("%s:%s",
