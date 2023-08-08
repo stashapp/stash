@@ -398,7 +398,12 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 					} else {
 						*user.Tags = append(*user.Tags, favTagVal)
 					}
-				} else if user.Tags != nil {
+				} else {
+					if user.Tags == nil {
+						sceneTags := rs.getVideoTags(r, scn)
+						user.Tags = &sceneTags
+					}
+
 					for i, tag := range *user.Tags {
 						if tag.Name == favTagVal.Name {
 							*user.Tags = append((*user.Tags)[:i], (*user.Tags)[i+1:]...)
@@ -423,8 +428,6 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 		var perfIDs []int
 
 		for _, tagI := range *user.Tags {
-			fmt.Printf("Tag name: %v\n", tagI.Name)
-
 			// If missing
 			if len(tagI.Name) == 0 {
 				continue
@@ -447,6 +450,7 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 				if tagMod != nil {
 					tagIDs = append(tagIDs, tagMod.ID)
 				}
+				continue
 			}
 
 			// If add performer
@@ -470,6 +474,7 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 				if tagMod != nil {
 					perfIDs = append(perfIDs, tagMod.ID)
 				}
+				continue
 			}
 
 			// If add marker
@@ -517,6 +522,7 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 						}
 					}
 				}
+				continue
 			}
 
 			if strings.HasPrefix(tagI.Name, "Movie:") {
@@ -535,6 +541,7 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 						SceneIndex: &scn.ID,
 					})
 				}
+				continue
 			}
 			if strings.HasPrefix(tagI.Name, "Studio:") {
 				after := strings.TrimPrefix(tagI.Name, "Studio:")
@@ -549,11 +556,13 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 					ret.Partial.StudioID.Set = true
 					ret.Partial.StudioID.Value = tagMod.ID
 				}
+				continue
 			}
 			if strings.HasPrefix(tagI.Name, "Director:") {
 				after := strings.TrimPrefix(tagI.Name, "Director:")
 				ret.Partial.Director.Set = true
 				ret.Partial.Director.Value = after
+				continue
 			}
 
 			// Custom
