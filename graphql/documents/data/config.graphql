@@ -95,7 +95,6 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   handyKey
   funscriptOffset
   useStashHostedFunscript
-  showHeresphereButton
 }
 
 fragment ConfigDLNAData on ConfigDLNAResult {

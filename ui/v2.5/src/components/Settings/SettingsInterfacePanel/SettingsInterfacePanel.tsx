@@ -206,13 +206,6 @@ export const SettingsInterfacePanel: React.FC = () => {
           checked={ui.abbreviateCounters ?? undefined}
           onChange={(v) => saveUI({ abbreviateCounters: v })}
         />
-        <BooleanSetting
-          id="show-heresphere-button"
-          headingID="config.ui.show_heresphere_button.heading"
-          subHeadingID="config.ui.show_heresphere_button.description"
-          checked={iface.showHeresphereButton ?? undefined}
-          onChange={(v) => saveInterface({ showHeresphereButton: v })}
-        />
       </SettingSection>
 
       <SettingSection headingID="config.ui.desktop_integration.desktop_integration">

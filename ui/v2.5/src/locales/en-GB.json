@@ -639,11 +639,7 @@
       "language": {
         "heading": "Language"
       },
-      "show_heresphere_button": {
-        "description": "Show a button to open to the HereSphere API",
-        "heading": "Show HereSphere button"
-      },
-	  "max_loop_duration": {
+      "max_loop_duration": {
         "description": "Maximum scene duration where scene player will loop the video - 0 to disable",
         "heading": "Maximum loop duration"
       },

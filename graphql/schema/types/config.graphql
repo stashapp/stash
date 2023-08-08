@@ -405,8 +405,6 @@ input ConfigInterfaceInput {
   noBrowser: Boolean
   "True if we should send notifications to the desktop"
   notificationsEnabled: Boolean
-  """True if we should automatically redirect Heresphere clients to the Heresphere endpoint"""
-  showHeresphereButton: Boolean
 }
 
 type ConfigDisableDropdownCreate {
