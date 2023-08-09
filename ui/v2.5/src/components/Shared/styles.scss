@@ -101,6 +101,7 @@
   list-style-type: none;
   margin: 0;
   padding-top: 1rem;
+  padding-bottom: 1rem;
 
   &-item {
     white-space: nowrap;
@@ -367,6 +368,7 @@ div.react-datepicker {
 
   .react-datepicker__day {
     color: $text-color;
+
     &.react-datepicker__day--disabled {
       color: $text-muted;
     }
@@ -436,6 +438,7 @@ div.react-datepicker {
     }
   }
 }
+
 /* stylelint-enable */
 
 #date-picker-portal .react-datepicker-popper {

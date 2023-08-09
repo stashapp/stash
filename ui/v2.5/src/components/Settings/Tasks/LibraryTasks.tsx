@@ -74,17 +74,17 @@ export const LibraryTasks: React.FC = () => {
   const [configureDefaults] = useConfigureDefaults();
 
   const [dialogOpen, setDialogOpenState] = useState({
-    clean: false,
     scan: false,
     autoTag: false,
+    autoTagAlert: false,
     identify: false,
   });
 
   const [scanOptions, setScanOptions] = useState<GQL.ScanMetadataInput>({});
   const [autoTagOptions, setAutoTagOptions] =
     useState<GQL.AutoTagMetadataInput>({
-      performers: ["*"],
-      studios: ["*"],
+      performers: [],
+      studios: [],
       tags: ["*"],
     });
 
@@ -210,19 +210,36 @@ export const LibraryTasks: React.FC = () => {
   }
 
   function renderAutoTagDialog() {
-    if (!dialogOpen.autoTag) {
-      return;
+    if (dialogOpen.autoTagAlert || dialogOpen.autoTag) {
+      return (
+        <DirectorySelectionDialog
+          allowPathSelection={dialogOpen.autoTag}
+          message={intl.formatMessage({
+            id: "config.tasks.auto_tag_based_on_filenames",
+          })}
+          header={intl.formatMessage({ id: "actions.auto_tag" })}
+          acceptButtonText={intl.formatMessage({ id: "actions.auto_tag" })}
+          acceptButtonVariant="danger"
+          onClose={(p) => {
+            // undefined means cancelled
+            if (p !== undefined) {
+              if (dialogOpen.autoTagAlert) {
+                // don't provide paths
+                runAutoTag();
+              } else {
+                runAutoTag(p);
+              }
+            }
+
+            setDialogOpen({
+              autoTag: false,
+              autoTagAlert: false,
+            });
+          }}
+        />
+      );
     }
-
-    return <DirectorySelectionDialog onClose={onAutoTagDialogClosed} />;
-  }
-
-  function onAutoTagDialogClosed(paths?: string[]) {
-    if (paths) {
-      runAutoTag(paths);
-    }
-
-    setDialogOpen({ autoTag: false });
+    return;
   }
 
   async function runAutoTag(paths?: string[]) {
@@ -368,7 +385,7 @@ export const LibraryTasks: React.FC = () => {
                 variant="secondary"
                 type="submit"
                 className="mr-2"
-                onClick={() => runAutoTag()}
+                onClick={() => setDialogOpen({ autoTagAlert: true })}
               >
                 <FormattedMessage id="actions.auto_tag" />
               </Button>

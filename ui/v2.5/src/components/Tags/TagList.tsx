@@ -8,7 +8,7 @@ import {
   PersistanceLevel,
   showWhenSelected,
 } from "../List/ItemList";
-import { Button } from "react-bootstrap";
+import { Button, Modal } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -27,7 +27,10 @@ import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { TagCard } from "./TagCard";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { tagRelationHook } from "../../core/tags";
-import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import {
+  faTrashAlt,
+  faTriangleExclamation,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface ITagList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -63,6 +66,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
+  const [isAutoTagAlertOpen, setIsAutoTagAlertOpen] = useState(false);
 
   const otherOperations = [
     {
@@ -125,6 +129,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
   }
 
   async function onAutoTag(tag: GQL.TagDataFragment) {
+    setIsAutoTagAlertOpen(false);
     if (!tag) return;
     try {
       await mutateMetadataAutoTag({ tags: [tag.id] });
@@ -185,6 +190,45 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
       }
     }
 
+    function renderAutoTagButton() {
+      return (
+        <Button
+          variant="secondary"
+          className="tag-list-button"
+          onClick={() => setIsAutoTagAlertOpen(true)}
+        >
+          <FormattedMessage id="actions.auto_tag" />
+        </Button>
+      );
+    }
+
+    function renderAutoTagAlert(tag: any) {
+      return (
+        <Modal show={isAutoTagAlertOpen}>
+          <Modal.Header>
+            <Icon icon={faTriangleExclamation} />
+            <span>
+              <FormattedMessage id="actions.confirm" />
+            </span>
+          </Modal.Header>
+          <Modal.Body>
+            <FormattedMessage id="config.tasks.auto_tag_based_on_filenames" />
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="danger" onClick={() => onAutoTag(tag)}>
+              <FormattedMessage id="actions.auto_tag" />
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => setIsAutoTagAlertOpen(false)}
+            >
+              <FormattedMessage id="actions.cancel" />
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      );
+    }
+
     function renderTags() {
       if (!result.data?.findTags) return;
 
@@ -234,13 +278,8 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
               <Link to={`/tags/${tag.id}`}>{tag.name}</Link>
 
               <div className="ml-auto">
-                <Button
-                  variant="secondary"
-                  className="tag-list-button"
-                  onClick={() => onAutoTag(tag)}
-                >
-                  <FormattedMessage id="actions.auto_tag" />
-                </Button>
+                {renderAutoTagButton()}
+                {renderAutoTagAlert(tag)}
                 <Button variant="secondary" className="tag-list-button">
                   <Link
                     to={NavUtils.makeTagScenesUrl(tag)}

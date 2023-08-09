@@ -1,4 +1,5 @@
 import {
+  IconDefinition,
   faMinus,
   faPencilAlt,
   faPlus,
@@ -15,12 +16,29 @@ interface IDirectorySelectionDialogProps {
   animation?: boolean;
   initialPaths?: string[];
   allowEmpty?: boolean;
+  allowPathSelection?: boolean;
+  message?: string;
+  header?: string;
+  icon?: IconDefinition;
+  acceptButtonText?: string;
+  acceptButtonVariant?: "danger" | "primary" | "secondary";
   onClose: (paths?: string[]) => void;
 }
 
 export const DirectorySelectionDialog: React.FC<
   IDirectorySelectionDialogProps
-> = ({ animation, allowEmpty = false, initialPaths = [], onClose }) => {
+> = ({
+  animation,
+  allowEmpty = false,
+  initialPaths = [],
+  allowPathSelection = true,
+  message,
+  header,
+  icon = faPencilAlt,
+  acceptButtonText,
+  acceptButtonVariant = "primary",
+  onClose,
+}) => {
   const intl = useIntl();
   const { configuration } = React.useContext(ConfigurationContext);
 
@@ -43,14 +61,15 @@ export const DirectorySelectionDialog: React.FC<
     <ModalComponent
       show
       modalProps={{ animation }}
-      disabled={!allowEmpty && paths.length === 0}
-      icon={faPencilAlt}
-      header={intl.formatMessage({ id: "actions.select_folders" })}
+      disabled={!allowEmpty && allowPathSelection && paths.length === 0}
+      icon={icon}
+      header={header ?? intl.formatMessage({ id: "actions.select_folders" })}
       accept={{
         onClick: () => {
           onClose(paths);
         },
-        text: intl.formatMessage({ id: "actions.confirm" }),
+        text: acceptButtonText ?? intl.formatMessage({ id: "actions.confirm" }),
+        variant: acceptButtonVariant,
       }}
       cancel={{
         onClick: () => onClose(),
@@ -78,19 +97,22 @@ export const DirectorySelectionDialog: React.FC<
           </Row>
         ))}
 
-        <FolderSelect
-          currentDirectory={currentDirectory}
-          setCurrentDirectory={(v) => setCurrentDirectory(v)}
-          defaultDirectories={libraryPaths}
-          appendButton={
-            <Button
-              variant="secondary"
-              onClick={() => addPath(currentDirectory)}
-            >
-              <Icon icon={faPlus} />
-            </Button>
-          }
-        />
+        {allowPathSelection ? (
+          <FolderSelect
+            currentDirectory={currentDirectory}
+            setCurrentDirectory={(v) => setCurrentDirectory(v)}
+            defaultDirectories={libraryPaths}
+            appendButton={
+              <Button
+                variant="secondary"
+                onClick={() => addPath(currentDirectory)}
+              >
+                <Icon icon={faPlus} />
+              </Button>
+            }
+          />
+        ) : undefined}
+        {message}
       </div>
     </ModalComponent>
   );
