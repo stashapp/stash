@@ -1,5 +1,3 @@
-import { clone } from "lodash-es";
-
 export const filterData = <T>(data?: (T | null | undefined)[] | null) =>
   data ? (data.filter((item) => item) as T[]) : [];
 
@@ -43,22 +41,4 @@ export function excludeFields(
       data[k] = undefined;
     }
   });
-}
-
-export interface IHasID {
-  id: string;
-}
-
-export function sortIdObjectList<T extends IHasID>(list?: T[] | null) {
-  if (!list) {
-    return;
-  }
-
-  const ret = clone(list);
-  // sort by id numerically
-  ret.sort((a, b) => {
-    return parseInt(a.id, 10) - parseInt(b.id, 10);
-  });
-
-  return ret;
 }
