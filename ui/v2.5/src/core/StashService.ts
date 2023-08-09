@@ -1377,8 +1377,6 @@ export const usePerformerCreate = () =>
       const performer = result.data?.performerCreate;
       if (!performer) return;
 
-      appendObject(cache, performer, GQL.AllPerformersForFilterDocument);
-
       // update stats
       updateStats(cache, "performer_count", 1);
 
