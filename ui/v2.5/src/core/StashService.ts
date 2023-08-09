@@ -268,8 +268,13 @@ export const queryFindPerformers = (filter: ListFilterModel) =>
     },
   });
 
-export const useAllPerformersForFilter = () =>
-  GQL.useAllPerformersForFilterQuery();
+export const queryFindPerformersByID = (performerIDs: number[]) =>
+  client.query<GQL.FindPerformersQuery>({
+    query: GQL.FindPerformersDocument,
+    variables: {
+      performer_ids: performerIDs,
+    },
+  });
 
 export const useFindStudio = (id: string) => {
   const skip = id === "new" || id === "";

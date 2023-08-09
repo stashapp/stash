@@ -110,9 +110,12 @@ const SelectComponent = <T, IsMulti extends boolean>(
   );
 };
 
-export interface IFilterProps<T> {
+export interface IFilterValueProps<T> {
   values?: T[];
   onSelect?: (item: T[]) => void;
+}
+
+export interface IFilterProps {
   noSelectionString?: string;
   className?: string;
   isMulti?: boolean;
@@ -122,7 +125,7 @@ export interface IFilterProps<T> {
   menuPortalTarget?: HTMLElement | null;
 }
 
-interface IFilterComponentProps<T> extends IFilterProps<T> {
+export interface IFilterComponentProps<T> extends IFilterProps {
   loadOptions: (inputValue: string) => Promise<Option<T>[]>;
   onCreate?: (
     name: string
@@ -135,7 +138,9 @@ export const FilterSelectComponent = <
   T extends IHasID,
   IsMulti extends boolean
 >(
-  props: IFilterComponentProps<T> & IFilterSelectProps<T, IsMulti>
+  props: IFilterValueProps<T> &
+    IFilterComponentProps<T> &
+    IFilterSelectProps<T, IsMulti>
 ) => {
   const { values, isMulti, onSelect, isValidNewOption, getNamedObject } = props;
   const [loading, setLoading] = useState(false);
@@ -227,3 +232,8 @@ export const FilterSelectComponent = <
     />
   );
 };
+
+export interface IFilterIDProps<T> {
+  ids?: string[];
+  onSelect?: (item: T[]) => void;
+}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   OptionProps,
   components as reactSelectComponents,
@@ -7,16 +7,23 @@ import {
 } from "react-select";
 
 import * as GQL from "src/core/generated-graphql";
-import { usePerformerCreate, queryFindPerformers } from "src/core/StashService";
+import {
+  usePerformerCreate,
+  queryFindPerformers,
+  queryFindPerformersByID,
+} from "src/core/StashService";
 import { ConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
 import { defaultMaxOptionsShown, IUIConfig } from "src/core/config";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import {
   FilterSelectComponent,
+  IFilterIDProps,
   IFilterProps,
+  IFilterValueProps,
   Option as SelectOption,
 } from "../Shared/FilterSelect";
+import { useCompare } from "src/hooks/state";
 
 export type SelectObject = {
   id: string;
@@ -30,7 +37,9 @@ export type Performer = Pick<
 >;
 type Option = SelectOption<Performer>;
 
-export const PerformerSelect: React.FC<IFilterProps<Performer>> = (props) => {
+export const PerformerSelect: React.FC<
+  IFilterProps & IFilterValueProps<Performer>
+> = (props) => {
   const [createPerformer] = usePerformerCreate();
 
   const { configuration } = React.useContext(ConfigurationContext);
@@ -181,4 +190,52 @@ export const PerformerSelect: React.FC<IFilterProps<Performer>> = (props) => {
       }
     />
   );
+};
+
+export const PerformerIDSelect: React.FC<
+  IFilterProps & IFilterIDProps<Performer>
+> = (props) => {
+  const { ids, onSelect: onSelectValues } = props;
+
+  const [values, setValues] = useState<Performer[]>([]);
+  const idsChanged = useCompare(ids);
+
+  function onSelect(items: Performer[]) {
+    setValues(items);
+    onSelectValues?.(items);
+  }
+
+  async function loadObjectsByID(idsToLoad: string[]): Promise<Performer[]> {
+    const performerIDs = idsToLoad.map((id) => parseInt(id));
+    const query = await queryFindPerformersByID(performerIDs);
+    const { performers: loadedPerformers } = query.data.findPerformers;
+
+    return loadedPerformers;
+  }
+
+  useEffect(() => {
+    if (!idsChanged) {
+      return;
+    }
+
+    if (!ids || ids?.length === 0) {
+      setValues([]);
+      return;
+    }
+
+    // load the values if we have ids and they haven't been loaded yet
+    const filteredValues = values.filter((v) => ids.includes(v.id.toString()));
+    if (filteredValues.length === ids.length) {
+      return;
+    }
+
+    const load = async () => {
+      const items = await loadObjectsByID(ids);
+      setValues(items);
+    };
+
+    load();
+  }, [ids, idsChanged, values]);
+
+  return <PerformerSelect {...props} values={values} onSelect={onSelect} />;
 };
