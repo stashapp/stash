@@ -250,7 +250,7 @@
     },
     "hsp": {
       "title": "HereSphere API",
-      "desc": "The &quot;VR Tag&quot; and &quot;Minimum Play Percent&quot; from the Interface settings panel are reused for the HSP (HereSphere) API",
+      "desc": "The 'VR Tag' and 'Minimum Play Percent' from the Interface settings panel are reused for the HSP (HereSphere) API",
       "enabled_by_default": "Enabled",
       "favorites_tag": "Favorites Tag ID",
       "favorites_tag_desc": "What tag to add when HSP sends a favorites request",

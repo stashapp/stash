@@ -1237,7 +1237,7 @@ func HeresphereHasValidToken(r *http.Request) bool {
 	apiKey := r.Header.Get(HeresphereAuthHeader)
 
 	// Check url query auth
-	if apiKey == "" {
+	if len(apiKey) == 0 {
 		apiKey = r.URL.Query().Get(session.ApiKeyParameter)
 	}
 
@@ -1350,14 +1350,14 @@ func (rs heresphereRoutes) HeresphereSceneCtx(next http.Handler) http.Handler {
  */
 func (rs heresphereRoutes) HeresphereCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Add JSON Header (using Add uses camel case and makes it invalid because "Json")
+		w.Header()["HereSphere-JSON-Version"] = []string{strconv.Itoa(HeresphereJsonVersion)}
+
 		// Only if enabled
 		if !config.GetInstance().GetHSPDefaultEnabled() {
 			writeNotAuthorized(w, r, "HereSphere API not enabled!")
 			return
 		}
-
-		// Add JSON Header (using Add uses camel case and makes it invalid because "Json")
-		w.Header()["HereSphere-JSON-Version"] = []string{strconv.Itoa(HeresphereJsonVersion)}
 
 		// Read HTTP Body
 		body, err := io.ReadAll(r.Body)
