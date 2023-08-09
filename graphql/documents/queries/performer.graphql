@@ -1,8 +1,13 @@
 query FindPerformers(
   $filter: FindFilterType
   $performer_filter: PerformerFilterType
+  $performer_ids: [Int!]
 ) {
-  findPerformers(filter: $filter, performer_filter: $performer_filter) {
+  findPerformers(
+    filter: $filter
+    performer_filter: $performer_filter
+    performer_ids: $performer_ids
+  ) {
     count
     performers {
       ...PerformerData
