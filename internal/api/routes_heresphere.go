@@ -1010,7 +1010,7 @@ func FindProjectionTags(scene *models.Scene, processedScene *HeresphereVideoEntr
 		if strings.HasSuffix(tagPre, "°") {
 			deg := strings.TrimSuffix(tagPre, "°")
 			if s, err := strconv.ParseFloat(deg, 64); err == nil {
-				processedScene.Fov = float64(s)
+				processedScene.Fov = s
 			}
 		}
 		// Has VR tag
@@ -1056,14 +1056,18 @@ func FindProjectionTags(scene *models.Scene, processedScene *HeresphereVideoEntr
 		// Projection settings
 		if strings.Contains(path, "_EAC360") || strings.Contains(path, "_360EAC") {
 			processedScene.Projection = HeresphereProjectionEquirectangularCubemap
+			processedScene.Fov = 360.0
 		}
 		if strings.Contains(path, "_360") {
 			processedScene.Projection = HeresphereProjectionEquirectangular360
+			processedScene.Fov = 360.0
 		}
 		if strings.Contains(path, "_F180") || strings.Contains(path, "_180F") || strings.Contains(path, "_VR180") {
 			processedScene.Projection = HeresphereProjectionFisheye
+			processedScene.Fov = 180.0
 		} else if strings.Contains(path, "_180") {
 			processedScene.Projection = HeresphereProjectionEquirectangular
+			processedScene.Fov = 180.0
 		}
 		if strings.Contains(path, "_MKX200") {
 			processedScene.Projection = HeresphereProjectionFisheye
