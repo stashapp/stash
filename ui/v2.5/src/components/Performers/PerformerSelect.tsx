@@ -9,8 +9,8 @@ import {
 import * as GQL from "src/core/generated-graphql";
 import {
   usePerformerCreate,
-  queryFindPerformers,
-  queryFindPerformersByID,
+  queryFindPerformersByIDForSelect,
+  queryFindPerformersForSelect,
 } from "src/core/StashService";
 import { ConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
@@ -56,7 +56,7 @@ export const PerformerSelect: React.FC<
     filter.itemsPerPage = maxOptionsShown;
     filter.sortBy = "name";
     filter.sortDirection = GQL.SortDirectionEnum.Asc;
-    const query = await queryFindPerformers(filter);
+    const query = await queryFindPerformersForSelect(filter);
     return query.data.findPerformers.performers.map((performer) => ({
       value: performer.id,
       object: performer,
@@ -207,7 +207,7 @@ export const PerformerIDSelect: React.FC<
 
   async function loadObjectsByID(idsToLoad: string[]): Promise<Performer[]> {
     const performerIDs = idsToLoad.map((id) => parseInt(id));
-    const query = await queryFindPerformersByID(performerIDs);
+    const query = await queryFindPerformersByIDForSelect(performerIDs);
     const { performers: loadedPerformers } = query.data.findPerformers;
 
     return loadedPerformers;

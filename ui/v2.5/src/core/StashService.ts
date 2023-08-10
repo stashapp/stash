@@ -268,11 +268,20 @@ export const queryFindPerformers = (filter: ListFilterModel) =>
     },
   });
 
-export const queryFindPerformersByID = (performerIDs: number[]) =>
-  client.query<GQL.FindPerformersQuery>({
-    query: GQL.FindPerformersDocument,
+export const queryFindPerformersByIDForSelect = (performerIDs: number[]) =>
+  client.query<GQL.FindPerformersForSelectQuery>({
+    query: GQL.FindPerformersForSelectDocument,
     variables: {
       performer_ids: performerIDs,
+    },
+  });
+
+export const queryFindPerformersForSelect = (filter: ListFilterModel) =>
+  client.query<GQL.FindPerformersForSelectQuery>({
+    query: GQL.FindPerformersForSelectDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      performer_filter: filter.makeFilter(),
     },
   });
 

@@ -20,3 +20,20 @@ query FindPerformer($id: ID!) {
     ...PerformerData
   }
 }
+
+query FindPerformersForSelect(
+  $filter: FindFilterType
+  $performer_filter: PerformerFilterType
+  $performer_ids: [Int!]
+) {
+  findPerformers(
+    filter: $filter
+    performer_filter: $performer_filter
+    performer_ids: $performer_ids
+  ) {
+    count
+    performers {
+      ...SelectPerformerData
+    }
+  }
+}
