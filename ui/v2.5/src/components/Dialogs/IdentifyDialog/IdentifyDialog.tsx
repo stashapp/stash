@@ -28,8 +28,6 @@ import {
   faQuestionCircle,
 } from "@fortawesome/free-solid-svg-icons";
 
-const autoTagScraperID = "builtin_autotag";
-
 interface IIdentifyDialogProps {
   selectedIds?: string[];
   onClose: () => void;

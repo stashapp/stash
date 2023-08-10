@@ -202,7 +202,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
       );
     }
 
-    function renderAutoTagAlert(tag: any) {
+    function renderAutoTagAlert(tag: GQL.TagDataFragment) {
       return (
         <Modal show={isAutoTagAlertOpen}>
           <Modal.Header>
