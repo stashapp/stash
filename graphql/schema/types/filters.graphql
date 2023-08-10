@@ -621,7 +621,7 @@ type SavedFilter {
   ui_options: Map
 }
 
-input FilterInput {
+input SavedFilterInput {
   find_filter: FindFilterType
   object_filter: Map
   # generic map for ui options
@@ -633,8 +633,7 @@ input SaveFilterInput {
   id: ID
   mode: FilterMode!
   name: String!
-  "JSON-encoded filter string"
-  filter: FilterInput!
+  filter: SavedFilterInput!
 }
 
 input DestroyFilterInput {
@@ -643,6 +642,6 @@ input DestroyFilterInput {
 
 input SetDefaultFilterInput {
   mode: FilterMode!
-  "JSON-encoded filter string - null to clear"
-  filter: FilterInput
+  "null to clear"
+  filter: SavedFilterInput
 }
