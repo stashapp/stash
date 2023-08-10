@@ -246,6 +246,14 @@ dd {
     margin: 0;
     padding: 5px 0;
   }
+
+  .item-list-container {
+    padding-top: 15px;
+
+    @media (max-width: 576px) {
+      overflow-x: hidden;
+    }
+  }
 }
 
 .collapsed .detail-item-value {
