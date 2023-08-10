@@ -484,12 +484,12 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 				var tagId *string
 				if err := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 					var err error
-					var tagMods []*models.MarkerStringsResultType
+					var markerResult []*models.MarkerStringsResultType
 					searchType := "count"
 
 					// Search for marker
-					if tagMods, err = rs.repository.SceneMarker.GetMarkerStrings(ctx, &after, &searchType); err == nil && len(tagMods) > 0 {
-						tagId = &tagMods[0].ID
+					if markerResult, err = rs.repository.SceneMarker.GetMarkerStrings(ctx, &after, &searchType); err == nil && len(markerResult) > 0 {
+						tagId = &markerResult[0].ID
 
 						// Search for tag
 						if markers, err := rs.repository.SceneMarker.FindBySceneID(r.Context(), scn.ID); err == nil {
@@ -512,7 +512,7 @@ func (rs heresphereRoutes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *h
 					return err
 				}); err != nil {
 					// Create marker
-					if tagId == nil {
+					if tagId != nil {
 						newTag := SceneMarkerCreateInput{
 							Seconds:      tagI.Start,
 							SceneID:      strconv.Itoa(scn.ID),
