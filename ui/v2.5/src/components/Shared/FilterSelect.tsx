@@ -12,6 +12,7 @@ import AsyncCreatableSelect, {
 } from "react-select/async-creatable";
 
 import { useToast } from "src/hooks/Toast";
+import { useDebounce } from "src/hooks/debounce";
 
 interface IHasID {
   id: string;
@@ -142,7 +143,14 @@ export const FilterSelectComponent = <
     IFilterComponentProps<T> &
     IFilterSelectProps<T, IsMulti>
 ) => {
-  const { values, isMulti, onSelect, isValidNewOption, getNamedObject } = props;
+  const {
+    values,
+    isMulti,
+    onSelect,
+    isValidNewOption,
+    getNamedObject,
+    loadOptions,
+  } = props;
   const [loading, setLoading] = useState(false);
   const Toast = useToast();
 
@@ -220,9 +228,19 @@ export const FilterSelectComponent = <
     );
   };
 
+  const debounceDelay = 100;
+  const debounceLoadOptions = useDebounce(
+    (inputValue, callback) => {
+      loadOptions(inputValue).then(callback);
+    },
+    [loadOptions],
+    debounceDelay
+  );
+
   return (
     <SelectComponent<T, IsMulti>
       {...props}
+      loadOptions={debounceLoadOptions}
       isLoading={props.isLoading || loading}
       onChange={onChange}
       selectedOptions={selectedOptions}
