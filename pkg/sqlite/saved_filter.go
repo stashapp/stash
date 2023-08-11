@@ -11,6 +11,7 @@ import (
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
@@ -34,7 +35,11 @@ func encodeJSONOrEmpty(v interface{}) string {
 		return ""
 	}
 
-	encoded, _ := json.Marshal(v)
+	encoded, err := json.Marshal(v)
+	if err != nil {
+		logger.Errorf("error encoding json %v: %v", v, err)
+	}
+
 	return string(encoded)
 }
 
@@ -43,7 +48,9 @@ func decodeJSON(s string, v interface{}) {
 		return
 	}
 
-	_ = json.Unmarshal([]byte(s), v)
+	if err := json.Unmarshal([]byte(s), v); err != nil {
+		logger.Errorf("error decoding json %q: %v", s, err)
+	}
 }
 
 func (r *savedFilterRow) fromSavedFilter(o models.SavedFilter) {
@@ -67,15 +74,15 @@ func (r *savedFilterRow) resolve() *models.SavedFilter {
 	// decode the filters from json
 	if r.FindFilter != "" {
 		ret.FindFilter = &models.FindFilterType{}
-		decodeJSON(r.FindFilter, ret.FindFilter)
+		decodeJSON(r.FindFilter, &ret.FindFilter)
 	}
 	if r.ObjectFilter != "" {
 		ret.ObjectFilter = make(map[string]interface{})
-		decodeJSON(r.ObjectFilter, ret.ObjectFilter)
+		decodeJSON(r.ObjectFilter, &ret.ObjectFilter)
 	}
 	if r.UIOptions != "" {
 		ret.UIOptions = make(map[string]interface{})
-		decodeJSON(r.UIOptions, ret.UIOptions)
+		decodeJSON(r.UIOptions, &ret.UIOptions)
 	}
 
 	return ret
