@@ -107,11 +107,15 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
         <Modal.Header>
           <Icon icon={faTriangleExclamation} />
           <span>
-            <FormattedMessage id="actions.confirm" />
+            <FormattedMessage id="actions.auto_tag" />
           </span>
         </Modal.Header>
         <Modal.Body>
-          <FormattedMessage id="config.tasks.auto_tag_based_on_filenames" />
+          <p>
+            <FormattedMessage id="config.tasks.auto_tag_based_on_filenames" />
+          </p>
+          <Icon icon={faTriangleExclamation} size="xl" />
+          <FormattedMessage id="config.tasks.auto_tag_warning" />
         </Modal.Body>
         <Modal.Footer>
           <Button
@@ -123,7 +127,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
               setIsAutoTagAlertOpen(false);
             }}
           >
-            <FormattedMessage id="actions.auto_tag" />
+            <FormattedMessage id="actions.continue" />
           </Button>
           <Button
             variant="secondary"

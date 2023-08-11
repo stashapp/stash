@@ -17,7 +17,7 @@ interface IDirectorySelectionDialogProps {
   initialPaths?: string[];
   allowEmpty?: boolean;
   allowPathSelection?: boolean;
-  message?: string;
+  message?: string | React.ReactNode;
   header?: string;
   icon?: IconDefinition;
   acceptButtonText?: string;

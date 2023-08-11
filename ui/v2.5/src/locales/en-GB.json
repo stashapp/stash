@@ -417,7 +417,8 @@
         "auto_tagging_all_paths": "Auto Tagging all paths",
         "auto_tagging_paths": "Auto Tagging the following paths"
       },
-      "auto_tag_based_on_filenames": "Auto Tag analyzes your file paths and attempts to find matches with your existing metadata (tags, studios, or performers). This process cannot be undone and may match incorrect false positives, particularly with non-unique tags and names.",
+      "auto_tag_based_on_filenames": "Auto Tag analyzes your file paths and attempts to find matches with your existing metadata (tags, studios, or performers).",
+      "auto_tag_warning": "This process cannot be undone and may match incorrect false positives, particularly with non-unique tags and names.",
       "auto_tagging": "Auto Tagging",
       "backing_up_database": "Backing up database",
       "backup_and_download": "Performs a backup of the database and downloads the resulting file.",
@@ -448,7 +449,7 @@
         "and_create_missing": "and create missing",
         "create_missing": "Create missing",
         "default_options": "Default Options",
-        "description": "Automatically set scene metadata using stash-box and scraper sources. Unexpected incorrect matches cannot be undone.",
+        "description": "Automatically set scene metadata using stash-box and scraper sources.",
         "explicit_set_description": "The following options will be used where not overridden in the source-specific options.",
         "field": "Field",
         "field_behaviour": "{strategy} {field}",
@@ -470,7 +471,8 @@
         "tag_skipped_matches": "Tag skipped matches with",
         "tag_skipped_matches_tooltip": "Create a tag like 'Identify: Multiple Matches' that you can filter for in the Scene Tagger view and choose the correct match by hand",
         "tag_skipped_performers": "Tag skipped performers with",
-        "tag_skipped_performer_tooltip": "Create a tag like 'Identify: Single Name Performer' that you can filter for in the Scene Tagger view and choose how you want to handle these performers"
+        "tag_skipped_performer_tooltip": "Create a tag like 'Identify: Single Name Performer' that you can filter for in the Scene Tagger view and choose how you want to handle these performers",
+        "warning": "Some incorrect matches can be expected and they cannot be undone."
       },
       "import_from_exported_json": "Import from exported JSON in the metadata directory. Wipes the existing database.",
       "incremental_import": "Incremental import from a supplied export zip file.",

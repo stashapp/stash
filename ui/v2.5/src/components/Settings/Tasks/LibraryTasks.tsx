@@ -19,7 +19,10 @@ import { SettingSection } from "../SettingSection";
 import { BooleanSetting, Setting, SettingGroup } from "../Inputs";
 import { ManualLink } from "src/components/Help/context";
 import { Icon } from "src/components/Shared/Icon";
-import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
+import {
+  faQuestionCircle,
+  faTriangleExclamation,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface IAutoTagOptions {
   options: GQL.AutoTagMetadataInput;
@@ -83,6 +86,8 @@ export const LibraryTasks: React.FC = () => {
   const [scanOptions, setScanOptions] = useState<GQL.ScanMetadataInput>({});
   const [autoTagOptions, setAutoTagOptions] =
     useState<GQL.AutoTagMetadataInput>({
+      // Updated per issue #3909 so that new users don't accidentally
+      // auto tag their entire library with performers and studios.
       performers: [],
       studios: [],
       tags: ["*"],
@@ -214,11 +219,20 @@ export const LibraryTasks: React.FC = () => {
       return (
         <DirectorySelectionDialog
           allowPathSelection={dialogOpen.autoTag}
-          message={intl.formatMessage({
-            id: "config.tasks.auto_tag_based_on_filenames",
-          })}
+          message={
+            <>
+              <p>
+                {intl.formatMessage({
+                  id: "config.tasks.auto_tag_based_on_filenames",
+                })}
+              </p>
+              <Icon icon={faTriangleExclamation} size="xl" />
+              {intl.formatMessage({ id: "config.tasks.auto_tag_warning" })}
+            </>
+          }
           header={intl.formatMessage({ id: "actions.auto_tag" })}
-          acceptButtonText={intl.formatMessage({ id: "actions.auto_tag" })}
+          icon={faTriangleExclamation}
+          acceptButtonText={intl.formatMessage({ id: "actions.continue" })}
           acceptButtonVariant="danger"
           onClose={(p) => {
             // undefined means cancelled
@@ -239,7 +253,6 @@ export const LibraryTasks: React.FC = () => {
         />
       );
     }
-    return;
   }
 
   async function runAutoTag(paths?: string[]) {
@@ -354,7 +367,14 @@ export const LibraryTasks: React.FC = () => {
               </ManualLink>
             </>
           }
-          subHeadingID="config.tasks.identify.description"
+          subHeading={
+            <>
+              {intl.formatMessage({ id: "config.tasks.identify.description" })}
+              <br />
+              <Icon icon={faTriangleExclamation} />
+              {intl.formatMessage({ id: "config.tasks.identify.warning" })}
+            </>
+          }
         >
           <Button
             variant="secondary"
@@ -377,7 +397,16 @@ export const LibraryTasks: React.FC = () => {
                 </ManualLink>
               </>
             ),
-            subHeadingID: "config.tasks.auto_tag_based_on_filenames",
+            subHeading: (
+              <>
+                {intl.formatMessage({
+                  id: "config.tasks.auto_tag_based_on_filenames",
+                })}
+                <br />
+                <Icon icon={faTriangleExclamation} />
+                {intl.formatMessage({ id: "config.tasks.auto_tag_warning" })}
+              </>
+            ),
           }}
           topLevel={
             <>

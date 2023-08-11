@@ -26,6 +26,7 @@ import {
   faCogs,
   faFolderOpen,
   faQuestionCircle,
+  faTriangleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface IIdentifyDialogProps {
@@ -428,7 +429,8 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
     >
       <div>
         <p>
-          <FormattedMessage id="config.tasks.identify.description" />
+          <Icon icon={faTriangleExclamation} size="xl" />
+          <FormattedMessage id="config.tasks.identify.warning" />
         </p>
       </div>
       <Form>
