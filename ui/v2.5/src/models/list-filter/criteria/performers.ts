@@ -20,9 +20,9 @@ const defaultModifier = CriterionModifier.IncludesAll;
 export const PerformersCriterionOption = new CriterionOption({
   messageID: "performers",
   type: "performers",
-  parameterName: "performers",
   modifierOptions,
   defaultModifier,
+  makeCriterion: () => new PerformersCriterion(),
 });
 
 export class PerformersCriterion extends Criterion<ILabeledValueListValue> {

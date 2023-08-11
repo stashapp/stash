@@ -3,7 +3,6 @@ import { ILabeledIdCriterion, ILabeledIdCriterionOption } from "./criterion";
 export const MoviesCriterionOption = new ILabeledIdCriterionOption(
   "movies",
   "movies",
-  "movies",
   false
 );
 

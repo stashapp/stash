@@ -16,12 +16,9 @@ export const LabeledIdFilter: React.FC<ILabeledIdFilterProps> = ({
   if (
     criterion.criterionOption.type !== "performers" &&
     criterion.criterionOption.type !== "studios" &&
-    criterion.criterionOption.type !== "parent_studios" &&
+    criterion.criterionOption.type !== "parents" &&
     criterion.criterionOption.type !== "tags" &&
-    criterion.criterionOption.type !== "sceneTags" &&
-    criterion.criterionOption.type !== "performerTags" &&
-    criterion.criterionOption.type !== "parentTags" &&
-    criterion.criterionOption.type !== "childTags" &&
+    criterion.criterionOption.type !== "children" &&
     criterion.criterionOption.type !== "movies"
   )
     return null;

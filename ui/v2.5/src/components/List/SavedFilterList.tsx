@@ -75,7 +75,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
             id,
             mode: filter.mode,
             name,
-            filter: filterCopy.makeSavedFilterJSON(),
+            filter: filterCopy.makeSavedFilterInput(),
           },
         },
       });
@@ -143,7 +143,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
         variables: {
           input: {
             mode: filter.mode,
-            filter: filterCopy.makeSavedFilterJSON(),
+            filter: filterCopy.makeSavedFilterInput(),
           },
         },
       });
@@ -166,7 +166,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
     newFilter.currentPage = 1;
     // #1795 - reset search term if not present in saved filter
     newFilter.searchTerm = "";
-    newFilter.configureFromJSON(f.filter);
+    newFilter.configureFromSavedFilter(f);
     // #1507 - reset random seed when loaded
     newFilter.randomSeed = -1;
 

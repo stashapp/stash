@@ -2,9 +2,9 @@ import { CriterionOption, StringCriterion } from "./criterion";
 
 export const HasChaptersCriterionOption = new CriterionOption({
   messageID: "hasChapters",
-  type: "hasChapters",
-  parameterName: "has_chapters",
+  type: "has_chapters",
   options: [true.toString(), false.toString()],
+  makeCriterion: () => new HasChaptersCriterion(),
 });
 
 export class HasChaptersCriterion extends StringCriterion {

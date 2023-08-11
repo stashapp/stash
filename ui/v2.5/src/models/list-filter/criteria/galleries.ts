@@ -3,7 +3,6 @@ import { ILabeledIdCriterion, ILabeledIdCriterionOption } from "./criterion";
 const galleriesCriterionOption = new ILabeledIdCriterionOption(
   "galleries",
   "galleries",
-  "galleries",
   true
 );
 

@@ -64,11 +64,7 @@ const criterionOptions = [
   createStringCriterionOption("details"),
   createStringCriterionOption("director"),
   createMandatoryStringCriterionOption("oshash", "media_info.hash"),
-  createStringCriterionOption(
-    "sceneChecksum",
-    "media_info.checksum",
-    "checksum"
-  ),
+  createStringCriterionOption("checksum", "media_info.checksum"),
   PhashCriterionOption,
   DuplicatedCriterionOption,
   OrganizedCriterionOption,

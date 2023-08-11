@@ -10,7 +10,6 @@ class CaptionsCriterionOptionType extends CriterionOption {
     super({
       messageID: value,
       type: value,
-      parameterName: value,
       modifierOptions: [
         CriterionModifier.Includes,
         CriterionModifier.Excludes,
@@ -19,6 +18,7 @@ class CaptionsCriterionOptionType extends CriterionOption {
       ],
       defaultModifier: CriterionModifier.Includes,
       options: languageStrings,
+      makeCriterion: () => new CaptionCriterion(),
     });
   }
 }
