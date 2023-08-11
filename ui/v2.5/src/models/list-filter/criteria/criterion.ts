@@ -166,7 +166,15 @@ export abstract class Criterion<V extends CriterionValue> {
   }
 }
 
-export type InputType = "number" | "text" | undefined;
+export type InputType =
+  | "number"
+  | "text"
+  | "performers"
+  | "studios"
+  | "tags"
+  | "movies"
+  | "galleries"
+  | undefined;
 
 interface ICriterionOptionsParams {
   messageID: string;
@@ -455,7 +463,12 @@ export class NumberCriterion extends Criterion<INumberValue> {
 }
 
 export class ILabeledIdCriterionOption extends CriterionOption {
-  constructor(messageID: string, value: CriterionType, includeAll: boolean) {
+  constructor(
+    messageID: string,
+    value: CriterionType,
+    includeAll: boolean,
+    inputType: InputType
+  ) {
     const modifierOptions = [
       CriterionModifier.Includes,
       CriterionModifier.Excludes,
@@ -475,6 +488,7 @@ export class ILabeledIdCriterionOption extends CriterionOption {
       modifierOptions,
       defaultModifier,
       makeCriterion: () => new ILabeledIdCriterion(this),
+      inputType,
     });
   }
 }

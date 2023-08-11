@@ -42,16 +42,7 @@ export type SelectObject = {
 type Option = { value: string; label: string };
 
 interface ITypeProps {
-  type?:
-    | "performers"
-    | "studios"
-    | "parent_studios"
-    | "tags"
-    | "sceneTags"
-    | "performerTags"
-    | "parentTags"
-    | "childTags"
-    | "movies";
+  type?: "performers" | "studios" | "tags" | "movies";
 }
 interface IFilterProps {
   ids?: string[];
@@ -1011,7 +1002,7 @@ export const TagSelect: React.FC<
 export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) => {
   if (props.type === "performers") {
     return <PerformerSelect {...props} creatable={false} />;
-  } else if (props.type === "studios" || props.type === "parent_studios") {
+  } else if (props.type === "studios") {
     return <StudioSelect {...props} creatable={false} />;
   } else if (props.type === "movies") {
     return <MovieSelect {...props} creatable={false} />;

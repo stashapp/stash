@@ -18,8 +18,9 @@ const withoutEqualsModifierOptions = [
 ];
 
 const defaultModifier = CriterionModifier.IncludesAll;
+const inputType = "tags";
 
-class TagsCriterionOptionClass extends CriterionOption {
+export class TagsCriterionOptionClass extends CriterionOption {
   constructor(
     messageID: string,
     type: CriterionType,
@@ -31,6 +32,7 @@ class TagsCriterionOptionClass extends CriterionOption {
       modifierOptions,
       defaultModifier,
       makeCriterion: () => new TagsCriterion(this),
+      inputType,
     });
   }
 }
