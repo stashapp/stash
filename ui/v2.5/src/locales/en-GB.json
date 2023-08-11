@@ -415,7 +415,8 @@
       "anonymising_database": "Anonymising database",
       "auto_tag": {
         "auto_tagging_all_paths": "Auto Tagging all paths",
-        "auto_tagging_paths": "Auto Tagging the following paths"
+        "auto_tagging_paths": "Auto Tagging the following paths",
+        "matching": "Matching:"
       },
       "auto_tag_based_on_filenames": "Auto Tag analyzes your file paths and attempts to find matches with your existing metadata (tags, studios, or performers).",
       "auto_tag_warning": "This process cannot be undone and may match incorrect false positives, particularly with non-unique tags and names.",

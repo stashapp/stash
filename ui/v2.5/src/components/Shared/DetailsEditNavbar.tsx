@@ -114,8 +114,14 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
           <p>
             <FormattedMessage id="config.tasks.auto_tag_based_on_filenames" />
           </p>
-          <Icon icon={faTriangleExclamation} size="xl" />
-          <FormattedMessage id="config.tasks.auto_tag_warning" />
+          <p>
+            <Icon icon={faTriangleExclamation} size="xl" />
+            <FormattedMessage id="config.tasks.auto_tag_warning" />
+          </p>
+          <FormattedMessage id="config.tasks.auto_tag.matching" />
+          <ul>
+            <li>{props.objectName}</li>
+          </ul>
         </Modal.Body>
         <Modal.Footer>
           <Button
