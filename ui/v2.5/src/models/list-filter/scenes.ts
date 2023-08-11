@@ -59,7 +59,7 @@ const displayModeOptions = [
 
 const criterionOptions = [
   createStringCriterionOption("title"),
-  createStringCriterionOption("scene_code"),
+  createStringCriterionOption("code", "scene_code"),
   createPathCriterionOption("path"),
   createStringCriterionOption("details"),
   createStringCriterionOption("director"),

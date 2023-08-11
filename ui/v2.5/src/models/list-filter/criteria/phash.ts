@@ -52,7 +52,8 @@ export class PhashCriterion extends Criterion<IPhashDistanceValue> {
 
 export const DuplicatedCriterionOption = new BooleanCriterionOption(
   "duplicated_phash",
-  "duplicated"
+  "duplicated",
+  () => new DuplicatedCriterion()
 );
 
 export class DuplicatedCriterion extends PhashDuplicateCriterion {

@@ -315,14 +315,14 @@ export function createPathCriterionOption(
 }
 
 export class BooleanCriterionOption extends CriterionOption {
-  constructor(messageID: string, value: CriterionType) {
+  constructor(messageID: string, value: CriterionType, makeCriterion?: () => Criterion<CriterionValue>) {
     super({
       messageID,
       type: value,
       modifierOptions: [],
       defaultModifier: CriterionModifier.Equals,
       options: [true.toString(), false.toString()],
-      makeCriterion: () => new BooleanCriterion(this),
+      makeCriterion: makeCriterion ? makeCriterion : () => new BooleanCriterion(this),
     });
   }
 }
