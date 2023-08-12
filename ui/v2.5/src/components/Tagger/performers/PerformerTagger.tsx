@@ -346,6 +346,24 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
 
   const updatePerformer = useUpdatePerformer();
 
+  function handleSaveError(performerID: string, name: string, message: string) {
+    setError({
+      ...error,
+      [performerID]: {
+        message: intl.formatMessage(
+          { id: "performer_tagger.failed_to_save_performer" },
+          { studio: modalPerformer?.name }
+        ),
+        details:
+          message === "UNIQUE constraint failed: performers.name"
+            ? intl.formatMessage({
+                id: "performer_tagger.name_already_exists",
+              })
+            : message,
+      },
+    });
+  }
+
   const handlePerformerUpdate = async (input: GQL.PerformerCreateInput) => {
     setModalPerformer(undefined);
     const performerID = modalPerformer?.stored_id;
@@ -357,22 +375,11 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
 
       const res = await updatePerformer(updateData);
       if (!res.data?.performerUpdate)
-        setError({
-          ...error,
-          [performerID]: {
-            message: intl.formatMessage(
-              { id: "performer_tagger.failed_to_save_performer" },
-              { performer: modalPerformer?.name }
-            ),
-            details:
-              res?.errors?.[0].message ===
-              "UNIQUE constraint failed: performers.checksum"
-                ? intl.formatMessage({
-                    id: "performer_tagger.name_already_exists",
-                  })
-                : res?.errors?.[0].message,
-          },
-        });
+        handleSaveError(
+          performerID,
+          modalPerformer?.name ?? "",
+          res?.errors?.[0]?.message ?? ""
+        );
     }
   };
 

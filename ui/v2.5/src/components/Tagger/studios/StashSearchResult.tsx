@@ -28,9 +28,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 }) => {
   const intl = useIntl();
 
-  const [modalStudio, setModalStudio] = useState<
-    GQL.ScrapedStudioDataFragment | undefined
-  >();
+  const [modalStudio, setModalStudio] =
+    useState<GQL.ScrapedStudioDataFragment>();
   const [saveState, setSaveState] = useState<string>("");
   const [error, setError] = useState<{ message?: string; details?: string }>(
     {}
@@ -46,7 +45,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         { studio: name }
       ),
       details:
-        message === "UNIQUE constraint failed: studios.checksum"
+        message === "UNIQUE constraint failed: studios.name"
           ? "Name already exists"
           : message,
     });

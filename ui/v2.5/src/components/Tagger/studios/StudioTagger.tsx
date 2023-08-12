@@ -400,7 +400,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
           { studio: modalStudio?.name }
         ),
         details:
-          message === "UNIQUE constraint failed: studios.checksum"
+          message === "UNIQUE constraint failed: studios.name"
             ? intl.formatMessage({
                 id: "studio_tagger.name_already_exists",
               })
