@@ -52,6 +52,8 @@ type SceneFilterType struct {
 	// Filter by duration (in seconds)
 	Duration *IntCriterionInput `json:"duration"`
 	// Filter to only include scenes which have markers. `true` or `false`
+	HasFilters *string `json:"has_filters"`
+	// Filter to only include scenes which have markers. `true` or `false`
 	HasMarkers *string `json:"has_markers"`
 	// Filter to only include scenes missing this property
 	IsMissing *string `json:"is_missing"`

@@ -1,0 +1,20 @@
+fragment SceneFilterData on SceneFilter {
+  id
+  contrast
+  brightness
+  gamma
+  saturate
+  hue_rotate
+  warmth
+  red
+  green
+  blue
+  blur
+  rotate
+  scale
+  aspect_ratio
+
+  scene {
+    id
+  }
+}

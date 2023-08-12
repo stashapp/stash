@@ -18,6 +18,10 @@ type HookTriggerEnum string
 // integrated.
 
 const (
+	SceneFilterCreatePost  HookTriggerEnum = "SceneFilter.Create.Post"
+	SceneFilterUpdatePost  HookTriggerEnum = "SceneFilter.Update.Post"
+	SceneFilterDestroyPost HookTriggerEnum = "SceneFilter.Destroy.Post"
+
 	SceneMarkerCreatePost  HookTriggerEnum = "SceneMarker.Create.Post"
 	SceneMarkerUpdatePost  HookTriggerEnum = "SceneMarker.Update.Post"
 	SceneMarkerDestroyPost HookTriggerEnum = "SceneMarker.Destroy.Post"
@@ -57,6 +61,10 @@ const (
 )
 
 var AllHookTriggerEnum = []HookTriggerEnum{
+	SceneFilterCreatePost,
+	SceneFilterUpdatePost,
+	SceneFilterDestroyPost,
+
 	SceneMarkerCreatePost,
 	SceneMarkerUpdatePost,
 	SceneMarkerDestroyPost,
@@ -98,7 +106,11 @@ var AllHookTriggerEnum = []HookTriggerEnum{
 func (e HookTriggerEnum) IsValid() bool {
 
 	switch e {
-	case SceneMarkerCreatePost,
+	case SceneFilterCreatePost,
+		SceneFilterUpdatePost,
+		SceneFilterDestroyPost,
+
+		SceneMarkerCreatePost,
 		SceneMarkerUpdatePost,
 		SceneMarkerDestroyPost,
 

@@ -32,7 +32,7 @@ const (
 	dbConnTimeout = 30
 )
 
-var appSchemaVersion uint = 48
+var appSchemaVersion uint = 49
 
 //go:embed migrations/*.sql
 var migrationsBox embed.FS
@@ -71,6 +71,7 @@ type Database struct {
 	Gallery        *GalleryStore
 	GalleryChapter *GalleryChapterStore
 	Scene          *SceneStore
+	SceneFilter    *SceneFilterStore
 	SceneMarker    *SceneMarkerStore
 	Performer      *PerformerStore
 	Studio         *StudioStore
@@ -96,6 +97,7 @@ func NewDatabase() *Database {
 		File:           fileStore,
 		Folder:         folderStore,
 		Scene:          NewSceneStore(fileStore, blobStore),
+		SceneFilter:    NewSceneFilterStore(),
 		SceneMarker:    NewSceneMarkerStore(),
 		Image:          NewImageStore(fileStore),
 		Gallery:        NewGalleryStore(fileStore, folderStore),

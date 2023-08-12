@@ -69,6 +69,7 @@ const (
 	sceneIdxWithStudio
 	sceneIdx1WithStudio
 	sceneIdx2WithStudio
+	sceneIdxWithFilters
 	sceneIdxWithMarkers
 	sceneIdxWithPerformerTag
 	sceneIdxWithTwoPerformerTag
@@ -252,6 +253,11 @@ const (
 )
 
 const (
+	filterIdxWithScene = iota
+	totalfilters
+)
+
+const (
 	markerIdxWithScene = iota
 	markerIdxWithTag
 	markerIdxWithSceneTag
@@ -297,6 +303,7 @@ var (
 	galleryIDs     []int
 	tagIDs         []int
 	studioIDs      []int
+	filterIDs      []int
 	markerIDs      []int
 	savedFilterIDs []int
 
@@ -389,6 +396,18 @@ var (
 		sceneIdxWithGrandChildStudio: studioIdxWithGrandParent,
 	}
 )
+
+type filterSpec struct {
+    sceneIdx int
+}
+
+var (
+    // indexed by filter
+    filterSpecs = []filterSpec{
+        {sceneIdxWithFilters},
+    }
+)
+
 
 type markerSpec struct {
 	sceneIdx      int
@@ -667,6 +686,11 @@ func populateDB() error {
 			return fmt.Errorf("error linking tags parent: %s", err.Error())
 		}
 
+		for _, ms := range filterSpecs {
+			if err := createFilter(ctx, db.SceneFilter, ms); err != nil {
+				return fmt.Errorf("error creating scene filter: %s", err.Error())
+			}
+		}
 		for _, ms := range markerSpecs {
 			if err := createMarker(ctx, db.SceneMarker, ms); err != nil {
 				return fmt.Errorf("error creating scene marker: %s", err.Error())
@@ -1639,6 +1663,22 @@ func createStudios(ctx context.Context, sqb models.StudioReaderWriter, n int, o 
 		studioIDs = append(studioIDs, studio.ID)
 		studioNames = append(studioNames, studio.Name)
 	}
+
+	return nil
+}
+
+func createFilter(ctx context.Context, mqb models.SceneFilterReaderWriter, filterSpec filterSpec) error {
+	filter := models.SceneFilter{
+		SceneID:      sceneIDs[filterSpec.sceneIdx],
+	}
+
+	err := mqb.Create(ctx, &filter)
+
+	if err != nil {
+		return fmt.Errorf("error creating filter %v+: %w", filter, err)
+	}
+
+	filterIDs = append(filterIDs, filter.ID)
 
 	return nil
 }

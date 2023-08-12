@@ -113,6 +113,11 @@ type MarkerDestroyer interface {
 	Destroy(ctx context.Context, id int) error
 }
 
+type FilterDestroyer interface {
+	FindBySceneID(ctx context.Context, sceneID int) ([]*models.SceneFilter, error)
+	Destroy(ctx context.Context, id int) error
+}
+
 // Destroy deletes a scene and its associated relationships from the
 // database.
 func (s *Service) Destroy(ctx context.Context, scene *models.Scene, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
@@ -121,7 +126,6 @@ func (s *Service) Destroy(ctx context.Context, scene *models.Scene, fileDeleter 
 	if err != nil {
 		return err
 	}
-
 	for _, m := range markers {
 		if err := DestroyMarker(ctx, scene, m, mqb, fileDeleter); err != nil {
 			return err
@@ -182,6 +186,13 @@ func (s *Service) deleteFiles(ctx context.Context, scene *models.Scene, fileDele
 		}
 	}
 
+	return nil
+}
+
+func DestroyFilter(ctx context.Context, scene *models.Scene, sceneFilter *models.SceneFilter, qb FilterDestroyer) error {
+	if err := qb.Destroy(ctx, sceneFilter.ID); err != nil {
+		return err
+	}
 	return nil
 }
 

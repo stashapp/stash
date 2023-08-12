@@ -869,6 +869,7 @@
     "ready": "Conexion Preparada",
     "syncing": "Sincronizando con el servidor"
   },
+  "hasFilters": "Tiene filtros",
   "hasMarkers": "Tiene marcadores",
   "height": "Estatura",
   "help": "Ayuda",

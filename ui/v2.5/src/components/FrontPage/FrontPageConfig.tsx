@@ -28,6 +28,7 @@ const FilterModeToMessageID = {
   [FilterMode.Images]: "images",
   [FilterMode.Movies]: "movies",
   [FilterMode.Performers]: "performers",
+  [FilterMode.SceneFilters]: "filters",
   [FilterMode.SceneMarkers]: "markers",
   [FilterMode.Scenes]: "scenes",
   [FilterMode.Studios]: "studios",

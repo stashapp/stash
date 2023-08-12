@@ -7,6 +7,7 @@ import {
   createMandatoryTimestampCriterionOption,
   createPathCriterionOption,
 } from "./criteria/criterion";
+import { HasFiltersCriterionOption } from "./criteria/has-filters";
 import { HasMarkersCriterionOption } from "./criteria/has-markers";
 import { SceneIsMissingCriterionOption } from "./criteria/is-missing";
 import { MoviesCriterionOption } from "./criteria/movies";
@@ -81,6 +82,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("resume_time"),
   createMandatoryNumberCriterionOption("play_duration"),
   createMandatoryNumberCriterionOption("play_count"),
+  HasFiltersCriterionOption,
   HasMarkersCriterionOption,
   SceneIsMissingCriterionOption,
   TagsCriterionOption,

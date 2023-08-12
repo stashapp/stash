@@ -11,6 +11,24 @@ import (
 	"github.com/stashapp/stash/pkg/models/json"
 )
 
+type SceneFilter struct {
+	Contrast    int           `json:"contrast,omitempty"`
+	Brightness  int           `json:"brightness,omitempty"`
+	Gamma       int           `json:"gamma,omitempty"`
+	Saturate    int           `json:"saturate,omitempty"`
+	HueRotate   int           `json:"hue_rotate,omitempty"`
+	Warmth      int           `json:"warmth,omitempty"`
+	Red         int           `json:"red,omitempty"`
+	Green       int           `json:"green,omitempty"`
+	Blue        int           `json:"blue,omitempty"`
+	Blur        int           `json:"blur,omitempty"`
+	Rotate      float64       `json:"rotate,omitempty"`
+	Scale       int           `json:"scale,omitempty"`
+	AspectRatio int           `json:"aspect_ratio,omitempty"`
+	CreatedAt   json.JSONTime `json:"created_at,omitempty"`
+	UpdatedAt   json.JSONTime `json:"updated_at,omitempty"`
+}
+
 type SceneMarker struct {
 	Title      string        `json:"title,omitempty"`
 	Seconds    string        `json:"seconds,omitempty"`
@@ -55,6 +73,7 @@ type Scene struct {
 	Performers   []string         `json:"performers,omitempty"`
 	Movies       []SceneMovie     `json:"movies,omitempty"`
 	Tags         []string         `json:"tags,omitempty"`
+	Filters      []SceneFilter    `json:"filters,omitempty"`
 	Markers      []SceneMarker    `json:"markers,omitempty"`
 	Files        []string         `json:"files,omitempty"`
 	Cover        string           `json:"cover,omitempty"`

@@ -184,6 +184,7 @@ interface IScenePlayerProps {
   onComplete: () => void;
   onNext: () => void;
   onPrevious: () => void;
+  setStarted: () => void;
 }
 
 export const ScenePlayer: React.FC<IScenePlayerProps> = ({
@@ -196,6 +197,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   onComplete,
   onNext,
   onPrevious,
+  setStarted,
 }) => {
   const { configuration } = useContext(ConfigurationContext);
   const interfaceConfig = configuration?.interface;
@@ -222,6 +224,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   const initialTimestamp = useRef(-1);
   const started = useRef(false);
+  if (!started.current) {
+    setStarted();
+  }
   const auto = useRef(false);
   const interactiveReady = useRef(false);
   const minimumPlayPercent = uiConfig?.minimumPlayPercent ?? 0;

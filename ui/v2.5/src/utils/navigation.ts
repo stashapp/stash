@@ -314,6 +314,15 @@ const makeTagImagesUrl = (tag: Partial<GQL.TagDataFragment>) => {
   return `/images?${filter.makeQueryParameters()}`;
 };
 
+type SceneFilterDataFragment = Pick<GQL.SceneFilter, "id"> & {
+  scene: Pick<GQL.Scene, "id">;
+};
+
+const makeSceneFilterUrl = (sceneFilter: SceneFilterDataFragment) => {
+  if (!sceneFilter.id || !sceneFilter.scene) return "#";
+  return `/scenes/${sceneFilter.scene.id}`;
+};
+
 type SceneMarkerDataFragment = Pick<GQL.SceneMarker, "id" | "seconds"> & {
   scene: Pick<GQL.Scene, "id">;
 };
@@ -381,6 +390,7 @@ const NavUtils = {
   makeTagGalleriesUrl,
   makeTagImagesUrl,
   makeScenesPHashMatchUrl,
+  makeSceneFilterUrl,
   makeSceneMarkerUrl,
   makeMovieScenesUrl,
   makeChildStudiosUrl,

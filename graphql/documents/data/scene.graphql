@@ -38,6 +38,10 @@ fragment SceneData on Scene {
     caption
   }
 
+  scene_filters {
+    ...SceneFilterData
+  }
+
   scene_markers {
     ...SceneMarkerData
   }

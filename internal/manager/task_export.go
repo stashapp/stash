@@ -484,6 +484,7 @@ func exportScene(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 	galleryReader := repo.Gallery
 	performerReader := repo.Performer
 	tagReader := repo.Tag
+	sceneFilterReader := repo.SceneFilter
 	sceneMarkerReader := repo.SceneMarker
 
 	for s := range jobChan {
@@ -540,6 +541,12 @@ func exportScene(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 		newSceneJSON.Tags, err = scene.GetTagNames(ctx, tagReader, s)
 		if err != nil {
 			logger.Errorf("[scenes] <%s> error getting scene tag names: %s", sceneHash, err.Error())
+			continue
+		}
+
+		newSceneJSON.Filters, err = scene.GetSceneFiltersJSON(ctx, sceneFilterReader, s)
+		if err != nil {
+			logger.Errorf("[scenes] <%s> error getting scene filters JSON: %s", sceneHash, err.Error())
 			continue
 		}
 

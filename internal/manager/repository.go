@@ -55,6 +55,7 @@ type Repository struct {
 	Movie          models.MovieReaderWriter
 	Performer      models.PerformerReaderWriter
 	Scene          SceneReaderWriter
+	SceneFilter    models.SceneFilterReaderWriter
 	SceneMarker    models.SceneMarkerReaderWriter
 	Studio         models.StudioReaderWriter
 	Tag            models.TagReaderWriter
@@ -86,6 +87,7 @@ func sqliteRepository(d *sqlite.Database) Repository {
 		Movie:          txnRepo.Movie,
 		Performer:      txnRepo.Performer,
 		Scene:          d.Scene,
+		SceneFilter:    txnRepo.SceneFilter,
 		SceneMarker:    txnRepo.SceneMarker,
 		Studio:         txnRepo.Studio,
 		Tag:            txnRepo.Tag,

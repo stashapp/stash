@@ -110,6 +110,24 @@ export const queryFindScenesByID = (sceneIDs: number[]) =>
     },
   });
 
+export const useFindSceneFilters = (filter?: ListFilterModel) =>
+  GQL.useFindSceneFiltersQuery({
+    skip: filter === undefined,
+    variables: {
+      filter: filter?.makeFindFilter(),
+      scene_filter_filter: filter?.makeFilter(),
+    },
+  });
+
+export const queryFindSceneFilters = (filter: ListFilterModel) =>
+  client.query<GQL.FindSceneFiltersQuery>({
+    query: GQL.FindSceneFiltersDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      scene_filter_filter: filter.makeFilter(),
+    },
+  });
+
 export const useFindSceneMarkers = (filter?: ListFilterModel) =>
   GQL.useFindSceneMarkersQuery({
     skip: filter === undefined,
@@ -264,6 +282,28 @@ export const useFindTag = (id: string) => {
   return GQL.useFindTagQuery({ variables: { id }, skip });
 };
 
+const sceneFilterMutationImpactedQueries = [
+  GQL.FindSceneDocument,
+  GQL.FindScenesDocument,
+  GQL.FindSceneFiltersDocument,
+];
+
+export const useSceneFilterCreate = () =>
+  GQL.useSceneFilterCreateMutation({
+    refetchQueries: getQueryNames([GQL.FindSceneDocument]),
+    update: deleteCache(sceneFilterMutationImpactedQueries),
+  });
+export const useSceneFilterUpdate = () =>
+  GQL.useSceneFilterUpdateMutation({
+    refetchQueries: getQueryNames([GQL.FindSceneDocument]),
+    update: deleteCache(sceneFilterMutationImpactedQueries),
+  });
+export const useSceneFilterDestroy = () =>
+  GQL.useSceneFilterDestroyMutation({
+    refetchQueries: getQueryNames([GQL.FindSceneDocument]),
+    update: deleteCache(sceneFilterMutationImpactedQueries),
+  });
+
 const sceneMarkerMutationImpactedQueries = [
   GQL.FindSceneDocument,
   GQL.FindScenesDocument,
@@ -411,6 +451,7 @@ const sceneMutationImpactedQueries = [
   GQL.FindPerformerDocument,
   GQL.FindPerformersDocument,
   GQL.FindScenesDocument,
+  GQL.FindSceneFiltersDocument,
   GQL.FindSceneMarkersDocument,
   GQL.FindStudioDocument,
   GQL.FindStudiosDocument,

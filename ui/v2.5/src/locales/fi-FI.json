@@ -807,7 +807,8 @@
     "syncing": "Synkronoidaan palvelimelle",
     "uploading": "Ladataan skriptiä"
   },
-  "hasMarkers": "On merkki",
+  "hasFilters": "On filterkkit",
+  "hasMarkers": "On markerkkit",
   "height": "Pituus",
   "height_cm": "Pituus (cm)",
   "help": "Apua",

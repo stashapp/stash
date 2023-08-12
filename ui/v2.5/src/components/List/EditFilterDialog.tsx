@@ -196,6 +196,7 @@ const FilterModeToConfigKey = {
   [FilterMode.Images]: "images",
   [FilterMode.Movies]: "movies",
   [FilterMode.Performers]: "performers",
+  [FilterMode.SceneFilters]: "sceneFilters",
   [FilterMode.SceneMarkers]: "sceneMarkers",
   [FilterMode.Scenes]: "scenes",
   [FilterMode.Studios]: "studios",

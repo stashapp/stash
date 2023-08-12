@@ -211,6 +211,17 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePat
 	}, nil
 }
 
+func (r *sceneResolver) SceneFilters(ctx context.Context, obj *models.Scene) (ret []*models.SceneFilter, err error) {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.SceneFilter.FindBySceneID(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
 func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) (ret []*models.SceneMarker, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.SceneMarker.FindBySceneID(ctx, obj.ID)

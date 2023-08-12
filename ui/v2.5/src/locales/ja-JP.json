@@ -876,6 +876,7 @@
     "syncing": "サーバーと同期中",
     "uploading": "スクリプトをアップロード中"
   },
+  "hasFilters": "フィルターはありますか?",
   "hasMarkers": "マーカーあり？",
   "height": "身長",
   "height_cm": "身長(cm)",

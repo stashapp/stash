@@ -20,6 +20,10 @@ type CoverGetter interface {
 	GetCover(ctx context.Context, sceneID int) ([]byte, error)
 }
 
+type FilterFinder interface {
+	FindBySceneID(ctx context.Context, sceneID int) ([]*models.SceneFilter, error)
+}
+
 type MarkerTagFinder interface {
 	tag.Finder
 	TagFinder
@@ -198,6 +202,42 @@ func GetDependentMovieIDs(ctx context.Context, scene *models.Scene) ([]int, erro
 	}
 
 	return ret, nil
+}
+
+// GetSceneFiltersJSON returns a slice of SceneFilter JSON representation
+// objects corresponding to the provided scene's filters.
+func GetSceneFiltersJSON(ctx context.Context, filterReader FilterFinder, scene *models.Scene) ([]jsonschema.SceneFilter, error) {
+	sceneFilters, err := filterReader.FindBySceneID(ctx, scene.ID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting scene filters: %v", err)
+	}
+
+	var results []jsonschema.SceneFilter
+
+	for _, sceneFilter := range sceneFilters {
+
+		sceneFilterJSON := jsonschema.SceneFilter{
+			Contrast:    sceneFilter.Contrast,
+			Brightness:  sceneFilter.Brightness,
+			Gamma:       sceneFilter.Gamma,
+			Saturate:    sceneFilter.Saturate,
+			HueRotate:   sceneFilter.HueRotate,
+			Warmth:      sceneFilter.Warmth,
+			Red:         sceneFilter.Red,
+			Green:       sceneFilter.Green,
+			Blue:        sceneFilter.Blue,
+			Blur:        sceneFilter.Blur,
+			Rotate:      sceneFilter.Rotate,
+			Scale:       sceneFilter.Scale,
+			AspectRatio: sceneFilter.AspectRatio,
+			CreatedAt:   json.JSONTime{Time: sceneFilter.CreatedAt},
+			UpdatedAt:   json.JSONTime{Time: sceneFilter.UpdatedAt},
+		}
+
+		results = append(results, sceneFilterJSON)
+	}
+
+	return results, nil
 }
 
 // GetSceneMarkersJSON returns a slice of SceneMarker JSON representation

@@ -22,6 +22,7 @@ type Repository struct {
 	Movie          MovieReaderWriter
 	Performer      PerformerReaderWriter
 	Scene          SceneReaderWriter
+	SceneFilter    SceneFilterReaderWriter
 	SceneMarker    SceneMarkerReaderWriter
 	Studio         StudioReaderWriter
 	Tag            TagReaderWriter

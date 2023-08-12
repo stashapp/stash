@@ -643,6 +643,176 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 	return ret, nil
 }
 
+func (r *mutationResolver) getSceneFilter(ctx context.Context, id int) (ret *models.SceneFilter, err error) {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.SceneFilter.Find(ctx, id)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (r *mutationResolver) SceneFilterCreate(ctx context.Context, input SceneFilterCreateInput) (*models.SceneFilter, error) {
+	sceneID, err := strconv.Atoi(input.SceneID)
+	if err != nil {
+		return nil, err
+	}
+
+	currentTime := time.Now()
+	newSceneFilter := models.SceneFilter{
+		Contrast:    input.Contrast,
+		Brightness:  input.Brightness,
+		Gamma:       input.Gamma,
+		Saturate:    input.Saturate,
+		HueRotate:   input.HueRotate,
+		Warmth:      input.Warmth,
+		Red:         input.Red,
+		Green:       input.Green,
+		Blue:        input.Blue,
+		Blur:        input.Blur,
+		Rotate:      input.Rotate,
+		Scale:       input.Scale,
+		AspectRatio: input.AspectRatio,
+		SceneID:     sceneID,
+		CreatedAt:   currentTime,
+		UpdatedAt:   currentTime,
+	}
+
+	err = r.changeFilter(ctx, create, &newSceneFilter)
+	if err != nil {
+		return nil, err
+	}
+
+	r.hookExecutor.ExecutePostHooks(ctx, newSceneFilter.ID, plugin.SceneFilterCreatePost, input, nil)
+	return r.getSceneFilter(ctx, newSceneFilter.ID)
+}
+
+func (r *mutationResolver) SceneFilterUpdate(ctx context.Context, input SceneFilterUpdateInput) (*models.SceneFilter, error) {
+	// Populate scene filter from the input
+	sceneFilterID, err := strconv.Atoi(input.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	sceneID, err := strconv.Atoi(input.SceneID)
+	if err != nil {
+		return nil, err
+	}
+
+	updatedSceneFilter := models.SceneFilter{
+		ID:          sceneFilterID,
+		SceneID:     sceneID,
+		Contrast:    input.Contrast,
+		Brightness:  input.Brightness,
+		Gamma:       input.Gamma,
+		Saturate:    input.Saturate,
+		HueRotate:   input.HueRotate,
+		Warmth:      input.Warmth,
+		Red:         input.Red,
+		Green:       input.Green,
+		Blue:        input.Blue,
+		Blur:        input.Blur,
+		Rotate:      input.Rotate,
+		Scale:       input.Scale,
+		AspectRatio: input.AspectRatio,
+		UpdatedAt:   time.Now(),
+	}
+
+	err = r.changeFilter(ctx, update, &updatedSceneFilter)
+	if err != nil {
+		return nil, err
+	}
+
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+	r.hookExecutor.ExecutePostHooks(ctx, updatedSceneFilter.ID, plugin.SceneFilterUpdatePost, input, translator.getFields())
+	return r.getSceneFilter(ctx, updatedSceneFilter.ID)
+}
+
+func (r *mutationResolver) SceneFilterDestroy(ctx context.Context, id string) (bool, error) {
+	filterID, err := strconv.Atoi(id)
+	if err != nil {
+		return false, err
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.SceneFilter
+		sqb := r.repository.Scene
+
+		filter, err := qb.Find(ctx, filterID)
+
+		if err != nil {
+			return err
+		}
+
+		if filter == nil {
+			return fmt.Errorf("scene filter with id %d not found", filterID)
+		}
+
+		s, err := sqb.Find(ctx, filter.SceneID)
+		if err != nil {
+			return err
+		}
+
+		if s == nil {
+			return fmt.Errorf("scene with id %d not found", filter.SceneID)
+		}
+
+		return scene.DestroyFilter(ctx, s, filter, qb)
+	}); err != nil {
+		return false, err
+	}
+
+	r.hookExecutor.ExecutePostHooks(ctx, filterID, plugin.SceneFilterDestroyPost, id, nil)
+
+	return true, nil
+}
+
+func (r *mutationResolver) changeFilter(ctx context.Context, changeType int, changedFilter *models.SceneFilter) error {
+	// Start the transaction and save the scene filter
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.SceneFilter
+		sqb := r.repository.Scene
+
+		switch changeType {
+		case create:
+			err := qb.Create(ctx, changedFilter)
+			if err != nil {
+				return err
+			}
+		case update:
+			// check to see if timestamp was changed
+			existingFilter, err := qb.Find(ctx, changedFilter.ID)
+			if err != nil {
+				return err
+			}
+			if existingFilter == nil {
+				return fmt.Errorf("scene filter with id %d not found", changedFilter.ID)
+			}
+
+			err = qb.Update(ctx, changedFilter)
+			if err != nil {
+				return err
+			}
+
+			s, err := sqb.Find(ctx, existingFilter.SceneID)
+			if err != nil {
+				return err
+			}
+			if s == nil {
+				return fmt.Errorf("scene with id %d not found", existingFilter.ID)
+			}
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *mutationResolver) getSceneMarker(ctx context.Context, id int) (ret *models.SceneMarker, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.SceneMarker.Find(ctx, id)

@@ -30,6 +30,9 @@ type Query {
 
   parseSceneFilenames(filter: FindFilterType, config: SceneParserInput!): SceneParserResultType!
 
+  """A function which queries SceneFilter objects"""
+  findSceneFilters(scene_filter_filter: SceneFilterFilterType filter: FindFilterType): FindSceneFiltersResultType!
+
   """A function which queries SceneMarker objects"""
   findSceneMarkers(scene_marker_filter: SceneMarkerFilterType filter: FindFilterType): FindSceneMarkersResultType!
 
@@ -197,6 +200,11 @@ type Mutation {
 
   """Generates screenshot at specified time in seconds. Leave empty to generate default screenshot"""
   sceneGenerateScreenshot(id: ID!, at: Float): String!
+
+  """Updates video filters for a scene"""
+  sceneFilterCreate(input: SceneFilterCreateInput!): SceneFilter
+  sceneFilterUpdate(input: SceneFilterUpdateInput!): SceneFilter
+  sceneFilterDestroy(id: ID!): Boolean!
 
   sceneMarkerCreate(input: SceneMarkerCreateInput!): SceneMarker
   sceneMarkerUpdate(input: SceneMarkerUpdateInput!): SceneMarker

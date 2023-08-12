@@ -149,6 +149,7 @@ For example, a post-hook on a scene create operation will be `Scene.Create.Post`
 
 The following object types are supported:
 * `Scene`
+* `SceneFilter`
 * `SceneMarker`
 * `Image`
 * `Gallery`

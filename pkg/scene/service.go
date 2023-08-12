@@ -42,6 +42,13 @@ type Repository interface {
 	models.SceneReader
 }
 
+type FilterRepository interface {
+	FilterFinder
+	FilterDestroyer
+
+	Update(ctx context.Context, updatedObject *models.SceneFilter) error
+}
+
 type MarkerRepository interface {
 	MarkerFinder
 	MarkerDestroyer
@@ -52,6 +59,7 @@ type MarkerRepository interface {
 type Service struct {
 	File             file.Store
 	Repository       Repository
+	FilterRepository FilterRepository
 	MarkerRepository MarkerRepository
 	PluginCache      *plugin.Cache
 

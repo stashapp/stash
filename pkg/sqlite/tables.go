@@ -118,6 +118,11 @@ var (
 		idColumn: goqu.T(sceneTable).Col(idColumn),
 	}
 
+	sceneFilterTableMgr = &table{
+		table:    goqu.T(sceneFilterTable),
+		idColumn: goqu.T(sceneFilterTable).Col(idColumn),
+	}
+
 	sceneMarkerTableMgr = &table{
 		table:    goqu.T(sceneMarkerTable),
 		idColumn: goqu.T(sceneMarkerTable).Col(idColumn),

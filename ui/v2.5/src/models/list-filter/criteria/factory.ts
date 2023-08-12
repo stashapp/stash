@@ -19,6 +19,7 @@ import {
 } from "./criterion";
 import { OrganizedCriterion } from "./organized";
 import { FavoriteCriterion, PerformerFavoriteCriterion } from "./favorite";
+import { HasFiltersCriterion } from "./has-filters";
 import { HasMarkersCriterion } from "./has-markers";
 import { HasChaptersCriterion } from "./has-chapters";
 import {
@@ -119,8 +120,10 @@ export function makeCriteria(
       );
     case "favorite":
       return new FavoriteCriterion();
-    case "hasMarkers":
+    case "hasFilters":
       return new HasMarkersCriterion();
+    case "hasMarkers":
+      return new HasFiltersCriterion();
     case "hasChapters":
       return new HasChaptersCriterion();
     case "sceneIsMissing":

@@ -1,0 +1,59 @@
+type SceneFilter {
+  id: ID!
+  scene: Scene!
+  contrast: Int!
+  brightness: Int!
+  gamma: Int!
+  saturate: Int!
+  hue_rotate: Int!
+  warmth: Int!
+  red: Int!
+  green: Int!
+  blue: Int!
+  blur: Int!
+  rotate: Float!
+  scale: Int!
+  aspect_ratio: Int!
+  created_at: Time!
+  updated_at: Time!
+}
+
+input SceneFilterCreateInput {
+  scene_id: ID!
+  contrast: Int!
+  brightness: Int!
+  gamma: Int!
+  saturate: Int!
+  hue_rotate: Int!
+  warmth: Int!
+  red: Int!
+  green: Int!
+  blue: Int!
+  blur: Int!
+  rotate: Float!
+  scale: Int!
+  aspect_ratio: Int!
+}
+
+input SceneFilterUpdateInput {
+  id: ID!
+  scene_id: ID!
+  contrast: Int!
+  brightness: Int!
+  gamma: Int!
+  saturate: Int!
+  hue_rotate: Int!
+  warmth: Int!
+  red: Int!
+  green: Int!
+  blue: Int!
+  blur: Int!
+  rotate: Float!
+  scale: Int!
+  aspect_ratio: Int!
+}
+
+type FindSceneFiltersResultType {
+  count: Int!
+  scene_filters: [SceneFilter!]!
+}

@@ -988,6 +988,7 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 	query.handleCriterion(ctx, codecCriterionHandler(sceneFilter.VideoCodec, "video_files.video_codec", qb.addVideoFilesTable))
 	query.handleCriterion(ctx, codecCriterionHandler(sceneFilter.AudioCodec, "video_files.audio_codec", qb.addVideoFilesTable))
 
+	query.handleCriterion(ctx, hasFiltersCriterionHandler(sceneFilter.HasFilters))
 	query.handleCriterion(ctx, hasMarkersCriterionHandler(sceneFilter.HasMarkers))
 	query.handleCriterion(ctx, sceneIsMissingCriterionHandler(qb, sceneFilter.IsMissing))
 	query.handleCriterion(ctx, sceneURLsCriterionHandler(sceneFilter.URL))
@@ -1082,6 +1083,10 @@ func (qb *SceneStore) makeQuery(ctx context.Context, sceneFilter *models.SceneFi
 			join{
 				table:    sceneMarkerTable,
 				onClause: "scene_markers.scene_id = scenes.id",
+			},
+			join{
+				table:    sceneFilterTable,
+				onClause: "scene_filters.scene_id = scenes.id",
 			},
 		)
 
@@ -1271,6 +1276,19 @@ func codecCriterionHandler(codec *models.StringCriterionInput, codecColumn strin
 			}
 
 			stringCriterionHandler(codec, codecColumn)(ctx, f)
+		}
+	}
+}
+
+func hasFiltersCriterionHandler(hasFilters *string) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if hasFilters != nil {
+			f.addLeftJoin("scene_filters", "", "scene_filters.scene_id = scenes.id")
+			if *hasFilters == "true" {
+				f.addHaving("count(scene_filters.scene_id) > 0")
+			} else {
+				f.addWhere("scene_filters.id IS NULL")
+			}
 		}
 	}
 }

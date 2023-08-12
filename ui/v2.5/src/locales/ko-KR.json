@@ -839,6 +839,7 @@
     "syncing": "서버와 동기화 중",
     "uploading": "스크립트 업로드 중"
   },
+  "hasFilters": "필터 유무에 관계없이",
   "hasMarkers": "마커 유무",
   "height": "키",
   "height_cm": "키 (cm)",

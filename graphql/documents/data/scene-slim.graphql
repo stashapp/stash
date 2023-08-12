@@ -31,6 +31,23 @@ fragment SlimSceneData on Scene {
     caption
   }
 
+  scene_filters {
+    id
+    contrast
+    brightness
+    gamma
+    saturate
+    hue_rotate
+    warmth
+    red
+    green
+    blue
+    blur
+    rotate
+    scale
+    aspect_ratio
+  }
+
   scene_markers {
     id
     title

@@ -1,0 +1,77 @@
+mutation SceneFilterCreate(
+  $contrast: Int!,
+  $brightness: Int!,
+  $gamma: Int!,
+  $saturate: Int!,
+  $hue_rotate: Int!,
+  $warmth: Int!,
+  $red: Int!,
+  $green: Int!,
+  $blue: Int!,
+  $blur: Int!,
+  $rotate: Float!,
+  $scale: Int!,
+  $aspect_ratio: Int!,
+  $scene_id: ID!) {
+
+  sceneFilterCreate(input: {
+                              contrast: $contrast,
+                              brightness: $brightness,
+                              gamma: $gamma,
+                              saturate: $saturate,
+                              hue_rotate: $hue_rotate,
+                              warmth: $warmth,
+                              red: $red,
+                              green: $green,
+                              blue: $blue
+                              blur: $blur,
+                              rotate: $rotate,
+                              scale: $scale,
+                              aspect_ratio: $aspect_ratio,
+                              scene_id: $scene_id
+                            }) {
+    ...SceneFilterData
+  }
+}
+
+mutation SceneFilterUpdate(
+  $id: ID!,
+  $scene_id: ID!,
+  $contrast: Int!,
+  $brightness: Int!,
+  $gamma: Int!,
+  $saturate: Int!,
+  $hue_rotate: Int!,
+  $warmth: Int!,
+  $red: Int!,
+  $green: Int!,
+  $blue: Int!,
+  $blur: Int!,
+  $rotate: Float!,
+  $scale: Int!,
+  $aspect_ratio: Int!) {
+
+  sceneFilterUpdate(input: {
+                              id: $id,
+                              scene_id: $scene_id,
+                              contrast: $contrast,
+                              brightness: $brightness,
+                              gamma: $gamma,
+                              saturate: $saturate,
+                              hue_rotate: $hue_rotate,
+                              warmth: $warmth,
+                              red: $red,
+                              green: $green,
+                              blue: $blue,
+                              blur: $blur,
+                              rotate: $rotate,
+                              scale: $scale,
+                              aspect_ratio: $aspect_ratio
+                            }) {
+    ...SceneFilterData
+  }
+}
+
+mutation SceneFilterDestroy($id: ID!) {
+  sceneFilterDestroy(id: $id)
+}
