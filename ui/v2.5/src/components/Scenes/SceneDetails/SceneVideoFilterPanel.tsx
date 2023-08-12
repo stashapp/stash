@@ -20,9 +20,7 @@ import {
   useSceneFilterUpdate,
   useSceneFilterDestroy,
 } from "src/core/StashService";
-import isEqual from "lodash-es/isEqual";
 
-// Define the filter fragment interface
 interface ISceneFilterDataFragment {
   contrast: number;
   brightness: number;
@@ -61,11 +59,9 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = ({
   isVisible,
   ...props
 }) => {
-
   const intl = useIntl();
   const [isLoading, setIsLoading] = useState(false);
   const filterRecordExists = props.scene.scene_filters?.length > 0;
-  const [currentValues, setCurrentValues] = useState({});
   const [sceneFilterCreate] = useSceneFilterCreate();
   const [sceneFilterUpdate] = useSceneFilterUpdate();
   const [sceneFilterDestroy] = useSceneFilterDestroy();
@@ -177,41 +173,39 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = ({
       return {
         id: props.scene.scene_filters[0].id,
         scene_id: props.scene.id,
-        contrast: contrastValue,
-        brightness: brightnessValue,
-        gamma: gammaValue,
-        saturate: saturateValue,
-        hue_rotate: hueRotateValue,
-        warmth: warmthValue,
-        red: redValue,
-        green: greenValue,
-        blue: blueValue,
-        blur: blurValue,
-        rotate: rotateValue,
-        scale: scaleValue,
-        aspect_ratio: aspectRatioValue,
+        contrast: props.scene.scene_filters[0].contrast,
+        brightness: props.scene.scene_filters[0].brightness,
+        gamma: props.scene.scene_filters[0].gamma,
+        saturate: props.scene.scene_filters[0].saturate,
+        hue_rotate: props.scene.scene_filters[0].hue_rotate,
+        warmth: props.scene.scene_filters[0].warmth,
+        red: props.scene.scene_filters[0].red,
+        green: props.scene.scene_filters[0].green,
+        blue: props.scene.scene_filters[0].blue,
+        blur: props.scene.scene_filters[0].blur,
+        rotate: props.scene.scene_filters[0].rotate,
+        scale: props.scene.scene_filters[0].scale,
+        aspect_ratio: props.scene.scene_filters[0].aspect_ratio,
       } as GQL.SceneFilterUpdateInput;
     } else {
       return {
         scene_id: props.scene.id,
-        contrast: contrastValue,
-        brightness: brightnessValue,
-        gamma: gammaValue,
-        saturate: saturateValue,
-        hue_rotate: hueRotateValue,
-        warmth: warmthValue,
-        red: redValue,
-        green: greenValue,
-        blue: blueValue,
-        blur: blurValue,
-        rotate: rotateValue,
-        scale: scaleValue,
-        aspect_ratio: aspectRatioValue,
+        contrast: 100,
+        brightness: 100,
+        gamma: 100,
+        saturate: 100,
+        hue_rotate: 0,
+        warmth: 100,
+        red: 100,
+        green: 100,
+        blue: 100,
+        blur: 0,
+        rotate: 2,
+        scale: 100,
+        aspect_ratio: 150,
       } as GQL.SceneFilterCreateInput;
     }
-  }, [
-    props.scene?.scene_filters,
-  ]);
+  }, [filterRecordExists, props.scene.id, props.scene?.scene_filters]);
 
   const schemaUpdate = yup.object({
     id: yup.string().required(),
