@@ -61,8 +61,11 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = ({
   isVisible,
   ...props
 }) => {
+
+  const intl = useIntl();
   const [isLoading, setIsLoading] = useState(false);
   const filterRecordExists = props.scene.scene_filters?.length > 0;
+  const [currentValues, setCurrentValues] = useState({});
   const [sceneFilterCreate] = useSceneFilterCreate();
   const [sceneFilterUpdate] = useSceneFilterUpdate();
   const [sceneFilterDestroy] = useSceneFilterDestroy();
@@ -125,8 +128,6 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = ({
       }
     }
   }
-
-  const intl = useIntl();
 
   const [contrastValue, setContrastValue] = useState(
     props.scene.scene_filters[0]?.contrast ?? sliderRanges.contrastRange.default
@@ -209,22 +210,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = ({
       } as GQL.SceneFilterCreateInput;
     }
   }, [
-    aspectRatioValue,
-    blueValue,
-    blurValue,
-    brightnessValue,
-    contrastValue,
-    gammaValue,
-    greenValue,
-    filterRecordExists,
-    hueRotateValue,
-    props.scene.id,
-    props.scene.scene_filters,
-    redValue,
-    rotateValue,
-    scaleValue,
-    saturateValue,
-    warmthValue,
+    props.scene?.scene_filters,
   ]);
 
   const schemaUpdate = yup.object({
@@ -326,14 +312,6 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = ({
     }
     setIsLoading(false);
   }
-
-  // Calculate if the form values are different from the fragment values or default values
-  const isFormDirty =
-    !props.scene.scene_filters ||
-    !isEqual(formik.values, props.scene.scene_filters);
-
-  // Disable the save button if the form values are equal to the fragment values or default values
-  const isSaveDisabled = !isFormDirty;
 
   interface ISliderProps {
     title: string;
@@ -688,11 +666,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = ({
             <Button
               className="edit-button"
               variant="primary"
-              disabled={
-                formik.isSubmitting ||
-                (!isSaveDisabled && !formik.dirty) ||
-                !isEqual(formik.errors, {})
-              }
+              disabled={!formik.dirty}
               onClick={() => formik.submitForm()}
             >
               <FormattedMessage id="actions.save" />
