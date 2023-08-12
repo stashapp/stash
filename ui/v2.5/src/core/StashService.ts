@@ -1358,7 +1358,7 @@ const performerMutationImpactedTypeFields = {
   Tag: ["performer_count"],
 };
 
-const performerMutationImpactedQueries = [
+export const performerMutationImpactedQueries = [
   GQL.FindScenesDocument, // filter by performer tags
   GQL.FindImagesDocument, // filter by performer tags
   GQL.FindGalleriesDocument, // filter by performer tags

@@ -12,6 +12,9 @@ import {
   stashBoxPerformerQuery,
   useJobsSubscribe,
   mutateStashBoxBatchPerformerTag,
+  getClient,
+  evictQueries,
+  performerMutationImpactedQueries,
 } from "src/core/StashService";
 import { Manual } from "src/components/Help/Manual";
 import { ConfigurationContext } from "src/hooks/Config";
@@ -638,6 +641,10 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
     } else {
       setBatchJob(undefined);
       setBatchJobID(undefined);
+
+      // Once the performer batch is complete, refresh all local performer data
+      const ac = getClient();
+      evictQueries(ac.cache, performerMutationImpactedQueries);
     }
   }, [jobsSubscribe, batchJobID]);
 
