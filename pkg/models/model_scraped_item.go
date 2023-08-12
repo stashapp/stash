@@ -152,7 +152,7 @@ func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool
 			ret.Birthdate = &date
 		}
 	}
-	if p.DeathDate != nil && !excluded["deathdate"] {
+	if p.DeathDate != nil && !excluded["death_date"] {
 		date, err := ParseDate(*p.DeathDate)
 		if err == nil {
 			ret.DeathDate = &date
@@ -212,6 +212,18 @@ func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool
 	if p.Tattoos != nil && !excluded["tattoos"] {
 		ret.Tattoos = *p.Tattoos
 	}
+	if p.PenisLength != nil && !excluded["penis_length"] {
+		l, err := strconv.ParseFloat(*p.PenisLength, 64)
+		if err == nil {
+			ret.PenisLength = &l
+		}
+	}
+	if p.Circumcised != nil && !excluded["circumcised"] {
+		v := CircumisedEnum(*p.Circumcised)
+		if v.IsValid() {
+			ret.Circumcised = &v
+		}
+	}
 	if p.Twitter != nil && !excluded["twitter"] {
 		ret.Twitter = *p.Twitter
 	}
@@ -259,7 +271,7 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 			partial.Birthdate = NewOptionalDate(date)
 		}
 	}
-	if p.DeathDate != nil && !excluded["deathdate"] {
+	if p.DeathDate != nil && !excluded["death_date"] {
 		date, err := ParseDate(*p.DeathDate)
 		if err == nil {
 			partial.DeathDate = NewOptionalDate(date)
