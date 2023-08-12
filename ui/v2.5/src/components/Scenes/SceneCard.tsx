@@ -25,12 +25,14 @@ import {
   faTag,
 } from "@fortawesome/free-solid-svg-icons";
 import { objectPath, objectTitle } from "src/core/files";
+import { PreviewScrubber } from "./PreviewScrubber";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
   image?: string;
   video?: string;
   soundActive: boolean;
+  vttPath?: string;
 }
 
 export const ScenePreview: React.FC<IScenePreviewProps> = ({
@@ -38,6 +40,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
   video,
   isPortrait,
   soundActive,
+  vttPath,
 }) => {
   const videoEl = useRef<HTMLVideoElement>(null);
 
@@ -72,6 +75,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
         ref={videoEl}
         src={video}
       />
+      <PreviewScrubber vttPath={vttPath} />
     </div>
   );
 };
@@ -404,6 +408,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             video={props.scene.paths.preview ?? undefined}
             isPortrait={isPortrait()}
             soundActive={configuration?.interface?.soundOnPreview ?? false}
+            vttPath={props.scene.paths.vtt ?? undefined}
           />
           <RatingBanner rating={props.scene.rating100} />
           {maybeRenderSceneSpecsOverlay()}

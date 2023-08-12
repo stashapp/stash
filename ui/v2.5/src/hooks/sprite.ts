@@ -47,6 +47,11 @@ export function useSpriteInfo(vttPath: string | undefined) {
     }
 
     fetch(vttPath).then((response) => {
+      if (!response.ok) {
+        setSpriteInfo(undefined);
+        return;
+      }
+
       response.text().then((text) => {
         setSpriteInfo(getSpriteInfo(vttPath, text));
       });

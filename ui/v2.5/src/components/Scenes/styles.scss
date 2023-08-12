@@ -643,3 +643,34 @@ input[type="range"].blue-slider {
 .scrape-dialog .rating-number.disabled {
   padding-left: 0.5em;
 }
+
+.preview-scrubber {
+  height: 100%;
+  position: absolute;
+  width: 100%;
+
+  .scrubber-image {
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.hover-scrubber {
+  bottom: 0;
+  height: 20px;
+  position: absolute;
+  width: 100%;
+  z-index: 1;
+
+  .hover-scrubber-indicator {
+    height: 100%;
+    position: absolute;
+    width: 100%;
+
+    .hover-scrubber-indicator-marker {
+      background-color: rgba(255, 0, 0, 0.5);
+      height: 100%;
+      position: absolute;
+    }
+  }
+}
