@@ -42,7 +42,7 @@ func (s *ScrapedStudio) ToStudio(endpoint string, excluded map[string]bool) *Stu
 		newStudio.URL = *s.URL
 	}
 
-	if s.Parent != nil && s.Parent.StoredID != nil && !excluded["parent"] {
+	if s.Parent != nil && s.Parent.StoredID != nil && !excluded["parent"] && !excluded["parent_studio"] {
 		parentId, _ := strconv.Atoi(*s.Parent.StoredID)
 		newStudio.ParentID = &parentId
 	}

@@ -387,11 +387,6 @@ const formatDateTime = (intl: IntlShape, dateTime?: string, utc = false) =>
     timeZone: utc ? "utc" : undefined,
   })}`;
 
-const capitalize = (val: string) =>
-  val
-    .replace(/^[-_]*(.)/, (_, c) => c.toUpperCase())
-    .replace(/[-_]+(.)/g, (_, c) => ` ${c.toUpperCase()}`);
-
 type CountUnit = "" | "K" | "M" | "B";
 const CountUnits: CountUnit[] = ["", "K", "M", "B"];
 
@@ -435,7 +430,6 @@ const TextUtils = {
   instagramURL,
   formatDate,
   formatDateTime,
-  capitalize,
   secondsAsTimeString,
   abbreviateCounter,
 };
