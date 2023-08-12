@@ -112,7 +112,7 @@ const PerformerBatchUpdateModal: React.FC<IPerformerBatchUpdateModal> = ({
           type="radio"
           name="performer-query"
           label={<FormattedMessage id="performer_tagger.current_page" />}
-          defaultChecked={!queryAll}
+          checked={!queryAll}
           onChange={() => setQueryAll(false)}
         />
         <Form.Check
@@ -122,8 +122,8 @@ const PerformerBatchUpdateModal: React.FC<IPerformerBatchUpdateModal> = ({
           label={intl.formatMessage({
             id: "performer_tagger.query_all_performers_in_the_database",
           })}
-          defaultChecked={false}
-          onChange={() => setQueryAll(queryAll)}
+          checked={queryAll}
+          onChange={() => setQueryAll(true)}
         />
       </Form.Group>
       <Form.Group>
@@ -139,7 +139,7 @@ const PerformerBatchUpdateModal: React.FC<IPerformerBatchUpdateModal> = ({
           label={intl.formatMessage({
             id: "performer_tagger.untagged_performers",
           })}
-          defaultChecked={!refresh}
+          checked={!refresh}
           onChange={() => setRefresh(false)}
         />
         <Form.Text>
@@ -152,8 +152,8 @@ const PerformerBatchUpdateModal: React.FC<IPerformerBatchUpdateModal> = ({
           label={intl.formatMessage({
             id: "performer_tagger.refresh_tagged_performers",
           })}
-          defaultChecked={false}
-          onChange={() => setRefresh(refresh)}
+          checked={refresh}
+          onChange={() => setRefresh(true)}
         />
         <Form.Text>
           <FormattedMessage id="performer_tagger.refreshing_will_update_the_data" />

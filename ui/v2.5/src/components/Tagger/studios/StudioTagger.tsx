@@ -120,7 +120,7 @@ const StudioBatchUpdateModal: React.FC<IStudioBatchUpdateModal> = ({
           type="radio"
           name="studio-query"
           label={<FormattedMessage id="studio_tagger.current_page" />}
-          defaultChecked={!queryAll}
+          checked={!queryAll}
           onChange={() => setQueryAll(false)}
         />
         <Form.Check
@@ -130,7 +130,7 @@ const StudioBatchUpdateModal: React.FC<IStudioBatchUpdateModal> = ({
           label={intl.formatMessage({
             id: "studio_tagger.query_all_studios_in_the_database",
           })}
-          defaultChecked={queryAll}
+          checked={queryAll}
           onChange={() => setQueryAll(true)}
         />
       </Form.Group>
@@ -147,7 +147,7 @@ const StudioBatchUpdateModal: React.FC<IStudioBatchUpdateModal> = ({
           label={intl.formatMessage({
             id: "studio_tagger.untagged_studios",
           })}
-          defaultChecked={!refresh}
+          checked={!refresh}
           onChange={() => setRefresh(false)}
         />
         <Form.Text>
@@ -160,7 +160,7 @@ const StudioBatchUpdateModal: React.FC<IStudioBatchUpdateModal> = ({
           label={intl.formatMessage({
             id: "studio_tagger.refresh_tagged_studios",
           })}
-          defaultChecked={refresh}
+          checked={refresh}
           onChange={() => setRefresh(true)}
         />
         <Form.Text>
