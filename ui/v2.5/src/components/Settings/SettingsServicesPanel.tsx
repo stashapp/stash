@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import {
@@ -7,7 +7,9 @@ import {
   useEnableDLNA,
   useAddTempDLNAIP,
   useRemoveTempDLNAIP,
+  queryFindTags,
 } from "src/core/StashService";
+import * as GQL from "src/core/generated-graphql";
 import { useToast } from "src/hooks/Toast";
 import { DurationInput } from "../Shared/DurationInput";
 import { Icon } from "../Shared/Icon";
@@ -16,7 +18,6 @@ import { ModalComponent } from "../Shared/Modal";
 import { SettingSection } from "./SettingSection";
 import {
   BooleanSetting,
-  NumberSetting,
   StringListSetting,
   StringSetting,
   SelectSetting,
@@ -31,6 +32,7 @@ import {
   faTimes,
   faUserClock,
 } from "@fortawesome/free-solid-svg-icons";
+import { ListFilterModel } from "src/models/list-filter/filter";
 
 export const SettingsServicesPanel: React.FC = () => {
   const intl = useIntl();
@@ -479,6 +481,26 @@ export const SettingsServicesPanel: React.FC = () => {
   };
 
   const HSPSettingsForm: React.FC = () => {
+    const [data, setData] = useState<GQL.FindTagsQuery | null>(null);
+
+    useEffect(() => {
+      const fetchData = async () => {
+        const filter = new ListFilterModel(GQL.FilterMode.Tags);
+        filter.itemsPerPage = 1000000;
+
+        const result = await queryFindTags(filter);
+        const cardCount = result.data?.findTags.count;
+
+        if (!result.loading && !cardCount) {
+          console.log("error loading tags!");
+          return null;
+        }
+
+        setData(result.data);
+      }
+      fetchData()
+    }, [])
+
     return (
       <>
         <SettingSection
@@ -492,14 +514,24 @@ export const SettingsServicesPanel: React.FC = () => {
             onChange={(v) => saveHSP({ enabled: v })}
           />
 
-          {/* FUTURE IMPROVEMENT: This should really be a dropdown for different tags */}
-          <NumberSetting
+          <SelectSetting
             id="hsp-favorites-tag"
             headingID="config.hsp.favorites_tag"
             subHeadingID="config.hsp.favorites_tag_desc"
-            value={hsp.favoriteTagId ?? undefined}
-            onChange={(v) => saveHSP({ favoriteTagId: v })}
-          />
+            onChange={(v) =>
+              saveHSP({ favoriteTagId: parseInt(v) })
+            }
+            value={
+              hsp.favoriteTagId !== undefined && hsp.favoriteTagId !== null ? hsp.favoriteTagId.toString() : undefined
+            }
+          >
+            <option>&#160;</option>
+            {data != null && data.findTags.tags.map((q) => (
+              <option value={q.id}>
+                {q.name}
+              </option>
+            ))}
+          </SelectSetting>
 
           <BooleanSetting
             id="hsp-write-favorites"
