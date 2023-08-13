@@ -497,9 +497,9 @@ export const SettingsServicesPanel: React.FC = () => {
         }
 
         setData(result.data);
-      }
-      fetchData()
-    }, [])
+      };
+      fetchData();
+    }, []);
 
     return (
       <>
@@ -518,19 +518,20 @@ export const SettingsServicesPanel: React.FC = () => {
             id="hsp-favorites-tag"
             headingID="config.hsp.favorites_tag"
             subHeadingID="config.hsp.favorites_tag_desc"
-            onChange={(v) =>
-              saveHSP({ favoriteTagId: parseInt(v) })
-            }
+            onChange={(v) => saveHSP({ favoriteTagId: parseInt(v) })}
             value={
-              hsp.favoriteTagId !== undefined && hsp.favoriteTagId !== null ? hsp.favoriteTagId.toString() : undefined
+              hsp.favoriteTagId !== undefined && hsp.favoriteTagId !== null
+                ? hsp.favoriteTagId.toString()
+                : undefined
             }
           >
             <option>&#160;</option>
-            {data != null && data.findTags.tags.map((q) => (
-              <option value={q.id}>
-                {q.name}
-              </option>
-            ))}
+            {data != null &&
+              data.findTags.tags.map((q) => (
+                <option key={q.id} value={q.id}>
+                  {q.name}
+                </option>
+              ))}
           </SelectSetting>
 
           <BooleanSetting
