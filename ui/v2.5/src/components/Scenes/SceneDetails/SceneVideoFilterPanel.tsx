@@ -168,8 +168,107 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = ({
       sliderRanges.aspectRatioRange.default
   );
 
+  const [
+    currentOrPreviousVideoStateIsFilter,
+    setCurrentOrPreviousVideoStateIsFilter,
+  ] = useState<boolean>(false); // Track the previous scene state if it's a filter
+  const [
+    currentOrPreviousVideoStateIsDefaultFilter,
+    setCurrentOrPreviousVideoStateIsDefaultFilter,
+  ] = useState<boolean>(false); // Track the previous scene state if it's a filter
+
+  function setDefaultFilterValues() {
+    setContrastValue(sliderRanges.contrastRange.default);
+    setBrightnessValue(sliderRanges.brightnessRange.default);
+    setGammaValue(sliderRanges.contrastRange.default);
+    setSaturateValue(sliderRanges.saturateRange.default);
+    setHueRotateValue(sliderRanges.hueRotateRange.default);
+    setWarmthValue(sliderRanges.warmthRange.default);
+    setRedValue(sliderRanges.contrastRange.default);
+    setGreenValue(sliderRanges.colourRange.default);
+    setBlueValue(sliderRanges.colourRange.default);
+    setBlurValue(sliderRanges.blurRange.default);
+    setScaleValue(sliderRanges.scaleRange.default);
+    setRotateValue(sliderRanges.rotateRange.default);
+    setAspectRatioValue(sliderRanges.aspectRatioRange.default);
+  }
+
+  function setFilterFilterValues() {
+    setContrastValue(props.scene.scene_filters[0].contrast);
+    setBrightnessValue(props.scene.scene_filters[0].brightness);
+    setGammaValue(props.scene.scene_filters[0].gamma);
+    setSaturateValue(props.scene.scene_filters[0].saturate);
+    setHueRotateValue(props.scene.scene_filters[0].hue_rotate);
+    setWarmthValue(props.scene.scene_filters[0].warmth);
+    setRedValue(props.scene.scene_filters[0].red);
+    setGreenValue(props.scene.scene_filters[0].green);
+    setBlueValue(props.scene.scene_filters[0].blue);
+    setBlurValue(props.scene.scene_filters[0].blur);
+    setScaleValue(props.scene.scene_filters[0].scale);
+    setRotateValue(props.scene.scene_filters[0].rotate);
+    setAspectRatioValue(props.scene.scene_filters[0].aspect_ratio);
+  }
+
+  // Initialize values once when component mounts
+  useEffect(() => {
+    if (
+      currentOrPreviousVideoStateIsFilter &&
+      props.scene.scene_filters.length == 0
+    ) {
+      setCurrentOrPreviousVideoStateIsFilter(false);
+      setCurrentOrPreviousVideoStateIsDefaultFilter(true);
+      setDefaultFilterValues();
+    } else if (
+      currentOrPreviousVideoStateIsFilter &&
+      props.scene.scene_filters.length > 0
+    ) {
+      setCurrentOrPreviousVideoStateIsFilter(true);
+      setCurrentOrPreviousVideoStateIsDefaultFilter(false);
+      setFilterFilterValues();
+    } else if (
+      currentOrPreviousVideoStateIsDefaultFilter &&
+      props.scene.scene_filters.length == 0
+    ) {
+      setCurrentOrPreviousVideoStateIsFilter(false);
+      setCurrentOrPreviousVideoStateIsDefaultFilter(true);
+    } else if (
+      currentOrPreviousVideoStateIsDefaultFilter &&
+      props.scene.scene_filters.length > 0
+    ) {
+      setCurrentOrPreviousVideoStateIsFilter(true);
+      setCurrentOrPreviousVideoStateIsDefaultFilter(false);
+      setFilterFilterValues();
+    } else if (
+      !currentOrPreviousVideoStateIsDefaultFilter &&
+      props.scene.scene_filters.length > 0
+    ) {
+      setCurrentOrPreviousVideoStateIsFilter(true);
+      setCurrentOrPreviousVideoStateIsDefaultFilter(false);
+      setFilterFilterValues();
+    }
+    // Diabling checks because only props.scene is needed to trigger hook
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.scene]);
+
   const initialValues = useMemo(() => {
-    if (filterRecordExists) {
+    if (props.scene.scene_filters.length == 0) {
+      return {
+        scene_id: props.scene.id,
+        contrast: 100,
+        brightness: 100,
+        gamma: 100,
+        saturate: 100,
+        hue_rotate: 0,
+        warmth: 100,
+        red: 100,
+        green: 100,
+        blue: 100,
+        blur: 0,
+        rotate: 2,
+        scale: 100,
+        aspect_ratio: 150,
+      } as GQL.SceneFilterCreateInput;
+    } else if (props.scene.scene_filters.length > 0) {
       return {
         id: props.scene.scene_filters[0].id,
         scene_id: props.scene.id,
@@ -205,7 +304,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = ({
         aspect_ratio: 150,
       } as GQL.SceneFilterCreateInput;
     }
-  }, [filterRecordExists, props.scene.id, props.scene?.scene_filters]);
+  }, [props.scene.id, props.scene?.scene_filters]);
 
   const schemaUpdate = yup.object({
     id: yup.string().required(),

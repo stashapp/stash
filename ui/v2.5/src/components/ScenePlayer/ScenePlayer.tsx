@@ -184,7 +184,6 @@ interface IScenePlayerProps {
   onComplete: () => void;
   onNext: () => void;
   onPrevious: () => void;
-  setStarted: () => void;
 }
 
 export const ScenePlayer: React.FC<IScenePlayerProps> = ({
@@ -197,7 +196,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   onComplete,
   onNext,
   onPrevious,
-  setStarted,
 }) => {
   const { configuration } = useContext(ConfigurationContext);
   const interfaceConfig = configuration?.interface;
@@ -224,9 +222,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   const initialTimestamp = useRef(-1);
   const started = useRef(false);
-  if (!started.current) {
-    setStarted();
-  }
   const auto = useRef(false);
   const interactiveReady = useRef(false);
   const minimumPlayPercent = uiConfig?.minimumPlayPercent ?? 0;
@@ -518,6 +513,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     interactiveClient.pause();
     interactiveReady.current = false;
 
+    const isSafari = UAParser().browser.name?.includes("Safari");
     const isLandscape = file.height && file.width && file.width > file.height;
     const mobileUiOptions = {
       fullscreen: {
@@ -530,7 +526,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         disabled: true,
       },
     };
-    player.mobileUi(mobileUiOptions);
+    if (!isSafari) {
+      player.mobileUi(mobileUiOptions);
+    }
 
     function isDirect(src: URL) {
       return (
@@ -542,7 +540,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     const { duration } = file;
     const sourceSelector = player.sourceSelector();
-    const isSafari = UAParser().browser.name?.includes("Safari");
     sourceSelector.setSources(
       scene.sceneStreams
         .filter((stream) => {
