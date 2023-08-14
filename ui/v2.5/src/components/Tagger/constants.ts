@@ -35,6 +35,7 @@ export const initialConfig: ITaggerConfig = {
   tagOperation: "merge",
   fingerprintQueue: {},
   excludedPerformerFields: DEFAULT_EXCLUDED_PERFORMER_FIELDS,
+  markSceneAsOrganizedOnSave: false,
 };
 
 export type ParseMode = "auto" | "filename" | "dir" | "path" | "metadata";
@@ -49,6 +50,7 @@ export interface ITaggerConfig {
   selectedEndpoint?: string;
   fingerprintQueue: Record<string, string[]>;
   excludedPerformerFields?: string[];
+  markSceneAsOrganizedOnSave?: boolean;
 }
 
 export const PERFORMER_FIELDS = [
