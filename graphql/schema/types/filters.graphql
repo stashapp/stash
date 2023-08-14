@@ -157,6 +157,19 @@ input PerformerFilterType {
   updated_at: TimestampCriterionInput
 }
 
+input SceneFilterFilterType {
+  "Filter by creation time"
+  created_at: TimestampCriterionInput
+  "Filter by last update time"
+  updated_at: TimestampCriterionInput
+  "Filter by scene date"
+  scene_date: DateCriterionInput
+  "Filter by scene creation time"
+  scene_created_at: TimestampCriterionInput
+  "Filter by scene last update time"
+  scene_updated_at: TimestampCriterionInput
+}
+
 input SceneMarkerFilterType {
   "Filter to only include scene markers with this tag"
   tag_id: ID @deprecated(reason: "use tags filter instead")
@@ -172,9 +185,9 @@ input SceneMarkerFilterType {
   updated_at: TimestampCriterionInput
   "Filter by scene date"
   scene_date: DateCriterionInput
-  "Filter by cscene reation time"
+  "Filter by scene reation time"
   scene_created_at: TimestampCriterionInput
-  """Filter by lscene ast update time"""
+  """Filter by scene last update time"""
   scene_updated_at: TimestampCriterionInput
 }
 

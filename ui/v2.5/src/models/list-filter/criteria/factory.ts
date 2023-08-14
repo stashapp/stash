@@ -121,9 +121,9 @@ export function makeCriteria(
     case "favorite":
       return new FavoriteCriterion();
     case "hasFilters":
-      return new HasMarkersCriterion();
-    case "hasMarkers":
       return new HasFiltersCriterion();
+    case "hasMarkers":
+      return new HasMarkersCriterion();
     case "hasChapters":
       return new HasChaptersCriterion();
     case "sceneIsMissing":

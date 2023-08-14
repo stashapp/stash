@@ -34,10 +34,16 @@ type Query {
   "Return valid stream paths"
   sceneStreams(id: ID): [SceneStreamEndpoint!]!
 
-  parseSceneFilenames(filter: FindFilterType, config: SceneParserInput!): SceneParserResultType!
+  parseSceneFilenames(
+    filter: FindFilterType
+    config: SceneParserInput!
+  ): SceneParserResultType!
 
-  """A function which queries SceneFilter objects"""
-  findSceneFilters(scene_filter_filter: SceneFilterFilterType filter: FindFilterType): FindSceneFiltersResultType!
+  "A function which queries SceneFilter objects"
+  findSceneFilters(
+    scene_filter_filter: SceneFilterFilterType
+    filter: FindFilterType
+  ): FindSceneFiltersResultType!
 
   "A function which queries SceneMarker objects"
   findSceneMarkers(

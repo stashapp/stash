@@ -67,7 +67,6 @@ func (r *Resolver) Scene() SceneResolver {
 func (r *Resolver) Image() ImageResolver {
 	return &imageResolver{r}
 }
-
 func (r *Resolver) SceneFilter() SceneFilterResolver {
 	return &sceneFilterResolver{r}
 }

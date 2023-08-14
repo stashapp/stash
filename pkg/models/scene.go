@@ -51,7 +51,7 @@ type SceneFilterType struct {
 	AudioCodec *StringCriterionInput `json:"audio_codec"`
 	// Filter by duration (in seconds)
 	Duration *IntCriterionInput `json:"duration"`
-	// Filter to only include scenes which have markers. `true` or `false`
+	// Filter to only include scenes which have filters. `true` or `false`
 	HasFilters *string `json:"has_filters"`
 	// Filter to only include scenes which have markers. `true` or `false`
 	HasMarkers *string `json:"has_markers"`

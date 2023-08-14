@@ -144,25 +144,6 @@ export const queryFindScenesByID = (sceneIDs: number[]) =>
     },
   });
 
-
-  export const useFindSceneFilters = (filter?: ListFilterModel) =>
-  GQL.useFindSceneFiltersQuery({
-    skip: filter === undefined,
-    variables: {
-      filter: filter?.makeFindFilter(),
-      scene_filter_filter: filter?.makeFilter(),
-    },
-  });
-
-export const queryFindSceneFilters = (filter: ListFilterModel) =>
-  client.query<GQL.FindSceneFiltersQuery>({
-    query: GQL.FindSceneFiltersDocument,
-    variables: {
-      filter: filter.makeFindFilter(),
-      scene_filter_filter: filter.makeFilter(),
-    },
-  });
-
 export const querySceneByPathRegex = (filter: GQL.FindFilterType) =>
   client.query<GQL.FindScenesByPathRegexQuery>({
     query: GQL.FindScenesByPathRegexDocument,
@@ -214,6 +195,24 @@ export const queryFindMovies = (filter: ListFilterModel) =>
   });
 
 export const useAllMoviesForFilter = () => GQL.useAllMoviesForFilterQuery();
+
+export const useFindSceneFilters = (filter?: ListFilterModel) =>
+  GQL.useFindSceneFiltersQuery({
+    skip: filter === undefined,
+    variables: {
+      filter: filter?.makeFindFilter(),
+      scene_filter_filter: filter?.makeFilter(),
+    },
+  });
+
+export const queryFindSceneFilters = (filter: ListFilterModel) =>
+  client.query<GQL.FindSceneFiltersQuery>({
+    query: GQL.FindSceneFiltersDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      scene_filter_filter: filter.makeFilter(),
+    },
+  });
 
 export const useFindSceneMarkers = (filter?: ListFilterModel) =>
   GQL.useFindSceneMarkersQuery({
@@ -335,29 +334,13 @@ export const useFindTags = (filter?: ListFilterModel) =>
     },
   });
 
-export const useFindTags = (filter?: ListFilterModel) =>
-  GQL.useFindTagsQuery({
-    skip: filter === undefined,
+export const queryFindTags = (filter: ListFilterModel) =>
+  client.query<GQL.FindTagsQuery>({
+    query: GQL.FindTagsDocument,
     variables: {
-      filter: filter?.makeFindFilter(),
-      tag_filter: filter?.makeFilter(),
+      filter: filter.makeFindFilter(),
+      tag_filter: filter.makeFilter(),
     },
-  });
-
-export const useListPerformerScrapers = () =>
-  GQL.useListPerformerScrapersQuery();
-
-export const useScrapePerformerList = (scraperId: string, q: string) =>
-  GQL.useScrapeSinglePerformerQuery({
-    variables: {
-      source: {
-        scraper_id: scraperId,
-      },
-      input: {
-        query: q,
-      },
-    },
-    skip: q === "",
   });
 
 export const useAllTagsForFilter = () => GQL.useAllTagsForFilterQuery();
@@ -506,6 +489,7 @@ export const useSceneDestroy = (input: GQL.SceneDestroyInput) =>
       evictTypeFields(cache, sceneMutationImpactedTypeFields);
       evictQueries(cache, [
         ...sceneMutationImpactedQueries,
+        GQL.FindSceneFiltersDocument,
         GQL.FindSceneMarkersDocument, // filter by scene tags
         GQL.StatsDocument, // scenes size, scene count, etc
       ]);
@@ -526,6 +510,7 @@ export const useScenesDestroy = (input: GQL.ScenesDestroyInput) =>
       evictTypeFields(cache, sceneMutationImpactedTypeFields);
       evictQueries(cache, [
         ...sceneMutationImpactedQueries,
+        GQL.FindSceneFiltersDocument,
         GQL.FindSceneMarkersDocument, // filter by scene tags
         GQL.StatsDocument, // scenes size, scene count, etc
       ]);
@@ -1150,25 +1135,50 @@ export const useMoviesDestroy = (input: GQL.MoviesDestroyMutationVariables) =>
   });
 
   const sceneFilterMutationImpactedQueries = [
-    GQL.FindSceneDocument,
-    GQL.FindScenesDocument,
-    GQL.FindSceneFiltersDocument,
+    GQL.FindScenesDocument, // has marker filter
+    GQL.FindSceneFiltersDocument, // various filters
   ];
   
   export const useSceneFilterCreate = () =>
     GQL.useSceneFilterCreateMutation({
-      refetchQueries: getQueryNames([GQL.FindSceneDocument]),
-      update: deleteCache(sceneFilterMutationImpactedQueries),
+      update(cache, result, { variables }) {
+        if (!result.data?.sceneFilterCreate || !variables) return;
+  
+        // refetch linked scene's marker list
+        cache.evict({
+          id: cache.identify({ __typename: "Scene", id: variables.scene_id }),
+          fieldName: "scene_filters",
+        });
+  
+        evictQueries(cache, sceneFilterMutationImpactedQueries);
+      },
     });
+  
   export const useSceneFilterUpdate = () =>
     GQL.useSceneFilterUpdateMutation({
-      refetchQueries: getQueryNames([GQL.FindSceneDocument]),
-      update: deleteCache(sceneFilterMutationImpactedQueries),
+      update(cache, result, { variables }) {
+        if (!result.data?.sceneFilterUpdate || !variables) return;
+  
+        // refetch linked scene's marker list
+        cache.evict({
+          id: cache.identify({ __typename: "Scene", id: variables.scene_id }),
+          fieldName: "scene_filters",
+        });
+  
+        evictQueries(cache, sceneFilterMutationImpactedQueries);
+      },
     });
+  
   export const useSceneFilterDestroy = () =>
     GQL.useSceneFilterDestroyMutation({
-      refetchQueries: getQueryNames([GQL.FindSceneDocument]),
-      update: deleteCache(sceneFilterMutationImpactedQueries),
+      update(cache, result, { variables }) {
+        if (!result.data?.sceneFilterDestroy || !variables) return;
+  
+        const obj = { __typename: "SceneFilter", id: variables.id };
+        cache.evict({ id: cache.identify(obj) });
+  
+        evictQueries(cache, sceneFilterMutationImpactedQueries);
+      },
     });
 
 const sceneMarkerMutationImpactedTypeFields = {

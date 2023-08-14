@@ -657,11 +657,11 @@ func (r *mutationResolver) getSceneFilter(ctx context.Context, id int) (ret *mod
 func (r *mutationResolver) SceneFilterCreate(ctx context.Context, input SceneFilterCreateInput) (*models.SceneFilter, error) {
 	sceneID, err := strconv.Atoi(input.SceneID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting scene id: %w", err)
 	}
 
 	currentTime := time.Now()
-	newSceneFilter := models.SceneFilter{
+	newFilter := models.SceneFilter{
 		Contrast:    input.Contrast,
 		Brightness:  input.Brightness,
 		Gamma:       input.Gamma,
@@ -680,18 +680,24 @@ func (r *mutationResolver) SceneFilterCreate(ctx context.Context, input SceneFil
 		UpdatedAt:   currentTime,
 	}
 
-	err = r.changeFilter(ctx, create, &newSceneFilter)
-	if err != nil {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.SceneFilter
+
+		err := qb.Create(ctx, &newFilter)
+		if err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, newSceneFilter.ID, plugin.SceneFilterCreatePost, input, nil)
-	return r.getSceneFilter(ctx, newSceneFilter.ID)
+	r.hookExecutor.ExecutePostHooks(ctx, newFilter.ID, plugin.SceneFilterCreatePost, input, nil)
+	return r.getSceneFilter(ctx, newFilter.ID)
 }
 
 func (r *mutationResolver) SceneFilterUpdate(ctx context.Context, input SceneFilterUpdateInput) (*models.SceneFilter, error) {
-	// Populate scene filter from the input
-	sceneFilterID, err := strconv.Atoi(input.ID)
+	filterID, err := strconv.Atoi(input.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -701,8 +707,12 @@ func (r *mutationResolver) SceneFilterUpdate(ctx context.Context, input SceneFil
 		return nil, err
 	}
 
-	updatedSceneFilter := models.SceneFilter{
-		ID:          sceneFilterID,
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+
+	updatedFilter := models.SceneFilter{
+		ID:          filterID,
 		SceneID:     sceneID,
 		Contrast:    input.Contrast,
 		Brightness:  input.Brightness,
@@ -720,16 +730,44 @@ func (r *mutationResolver) SceneFilterUpdate(ctx context.Context, input SceneFil
 		UpdatedAt:   time.Now(),
 	}
 
-	err = r.changeFilter(ctx, update, &updatedSceneFilter)
 	if err != nil {
+		return nil, fmt.Errorf("converting scene id: %w", err)
+	}
+
+	// Start the transaction and save the scene marker
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.SceneFilter
+		sqb := r.repository.Scene
+
+		// check to see if timestamp was changed
+		existingFilter, err := qb.Find(ctx, filterID)
+		if err != nil {
+			return err
+		}
+		if existingFilter == nil {
+			return fmt.Errorf("scene filter with id %d not found", filterID)
+		}
+
+		newFilter, err := qb.UpdatePartial(ctx, markerID, updatedFilter)
+		if err != nil {
+			return err
+		}
+
+		existingScene, err := sqb.Find(ctx, existingFilter.SceneID)
+		if err != nil {
+			return err
+		}
+		if existingScene == nil {
+			return fmt.Errorf("scene with id %d not found", existingFilter.SceneID)
+		}
+
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
-	translator := changesetTranslator{
-		inputMap: getUpdateInputMap(ctx),
-	}
-	r.hookExecutor.ExecutePostHooks(ctx, updatedSceneFilter.ID, plugin.SceneFilterUpdatePost, input, translator.getFields())
-	return r.getSceneFilter(ctx, updatedSceneFilter.ID)
+	r.hookExecutor.ExecutePostHooks(ctx, updatedFilter.ID, plugin.SceneFilterUpdatePost, input, translator.getFields())
+	return r.getSceneFilter(ctx, updatedFilter.ID)
 }
 
 func (r *mutationResolver) SceneFilterDestroy(ctx context.Context, id string) (bool, error) {

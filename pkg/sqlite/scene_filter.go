@@ -249,7 +249,7 @@ func (qb *SceneFilterStore) makeQuery(ctx context.Context, sceneFilterFilter *mo
 	distinctIDs(&query, sceneFilterTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		searchColumns := []string{"scene_filters.id", "scenes.id"}
+		searchColumns := []string{"scenes.title"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
