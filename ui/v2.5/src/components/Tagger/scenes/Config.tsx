@@ -183,7 +183,10 @@ const Config: React.FC<IConfigProps> = ({ show }) => {
                 }
                 checked={config.markSceneAsOrganizedOnSave}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setConfig({ ...config, markSceneAsOrganizedOnSave: e.currentTarget.checked })
+                  setConfig({
+                    ...config,
+                    markSceneAsOrganizedOnSave: e.currentTarget.checked,
+                  })
                 }
               />
               <Form.Text>

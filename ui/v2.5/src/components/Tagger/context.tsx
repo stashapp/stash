@@ -462,8 +462,8 @@ export const TaggerContext: React.FC = ({ children }) => {
       await updateScene({
         variables: {
           input: {
-            ...sceneCreateInput, 
-            organized: config?.markSceneAsOrganizedOnSave
+            ...sceneCreateInput,
+            organized: config?.markSceneAsOrganizedOnSave,
           },
         },
       });
