@@ -53,7 +53,7 @@ fragment SceneData on Scene {
   studio {
     ...SlimStudioData
   }
-  
+
   movies {
     movie {
       ...MovieData

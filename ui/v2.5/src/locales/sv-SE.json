@@ -658,7 +658,11 @@
             "heading": "Fortsätt spellista som standard"
           },
           "show_scrubber": "Visa skrubbaren",
-          "track_activity": "Spåra Aktivitet"
+          "track_activity": "Spåra Aktivitet",
+          "vr_tag": {
+            "description": "VR-knappen kommer endast visas för scener med denna tagg.",
+            "heading": "VR Tagg"
+          }
         }
       },
       "scene_wall": {
@@ -726,7 +730,9 @@
     "equals": "är",
     "excludes": "exkluderar",
     "format_string": "{criterion} {modifierString} {valueString}",
-    "format_string_excludes": "{criterion} {modifierString} {valueString} (excludes {excludedString})",
+    "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {allt} other {{djup}}})",
+    "format_string_excludes": "{criterion} {modifierString} {valueString} (exkluderar {excludedString})",
+    "format_string_excludes_depth": "{criterion} {modifierString} {valueString} (exkluderar {excludedString}) (+{depth, plural, =-1 {allt} other {{djup}}})",
     "greater_than": "är större än",
     "includes": "inkluderar",
     "includes_all": "inkluderar allt",

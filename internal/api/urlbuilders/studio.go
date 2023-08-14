@@ -1,8 +1,9 @@
 package urlbuilders
 
 import (
-	"github.com/stashapp/stash/pkg/models"
 	"strconv"
+
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type StudioURLBuilder struct {

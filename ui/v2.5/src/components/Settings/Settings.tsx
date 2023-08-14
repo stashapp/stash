@@ -1,9 +1,9 @@
 import React from "react";
 import { Tab, Nav, Row, Col } from "react-bootstrap";
 import { useHistory, useLocation } from "react-router-dom";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import { Helmet } from "react-helmet";
-import { TITLE_SUFFIX } from "src/components/Shared/constants";
+import { useTitleProps } from "src/hooks/title";
 import { SettingsAboutPanel } from "./SettingsAboutPanel";
 import { SettingsConfigurationPanel } from "./SettingsSystemPanel";
 import { SettingsInterfacePanel } from "./SettingsInterfacePanel/SettingsInterfacePanel";
@@ -19,26 +19,20 @@ import { SettingsSecurityPanel } from "./SettingsSecurityPanel";
 import Changelog from "../Changelog/Changelog";
 
 export const Settings: React.FC = () => {
-  const intl = useIntl();
   const location = useLocation();
   const history = useHistory();
   const defaultTab = new URLSearchParams(location.search).get("tab") ?? "tasks";
 
   const onSelect = (val: string) => history.push(`?tab=${val}`);
 
-  const title_template = `${intl.formatMessage({
-    id: "settings",
-  })} ${TITLE_SUFFIX}`;
+  const titleProps = useTitleProps({ id: "settings" });
   return (
     <Tab.Container
       activeKey={defaultTab}
       id="configuration-tabs"
       onSelect={(tab) => tab && onSelect(tab)}
     >
-      <Helmet
-        defaultTitle={title_template}
-        titleTemplate={`%s | ${title_template}`}
-      />
+      <Helmet {...titleProps} />
       <Row>
         <Col id="settings-menu-container" sm={3} md={3} xl={2}>
           <Nav variant="pills" className="flex-column">

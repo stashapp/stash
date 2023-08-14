@@ -90,6 +90,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
     performer
     tag
     studio
+    movie
   }
   handyKey
   funscriptOffset
@@ -148,7 +149,7 @@ fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
     scanGenerateThumbnails
     scanGenerateClipPreviews
   }
-  
+
   identify {
     sources {
       source {

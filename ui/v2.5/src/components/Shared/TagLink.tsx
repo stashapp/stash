@@ -15,6 +15,7 @@ import { galleryTitle } from "src/core/galleries";
 import * as GQL from "src/core/generated-graphql";
 import { TagPopover } from "../Tags/TagPopover";
 import { markerTitle } from "src/core/markers";
+import { Placement } from "react-bootstrap/esm/Overlay";
 
 interface IFile {
   path: string;
@@ -33,13 +34,14 @@ type SceneMarkerFragment = Pick<GQL.SceneMarker, "id" | "title" | "seconds"> & {
 
 interface IProps {
   tag?: Partial<TagDataFragment>;
-  tagType?: "performer" | "scene" | "gallery" | "image";
+  tagType?: "performer" | "scene" | "gallery" | "image" | "details";
   performer?: Partial<PerformerDataFragment>;
   marker?: SceneMarkerFragment;
   movie?: Partial<MovieDataFragment>;
   scene?: Partial<Pick<SceneDataFragment, "id" | "title" | "files">>;
   gallery?: Partial<IGallery>;
   className?: string;
+  hoverPlacement?: Placement;
 }
 
 export const TagLink: React.FC<IProps> = (props: IProps) => {
@@ -47,6 +49,7 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
   let link: string = "#";
   let title: string = "";
   if (props.tag) {
+    id = props.tag.id || "";
     switch (props.tagType) {
       case "scene":
       case undefined:
@@ -61,8 +64,10 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
       case "image":
         link = NavUtils.makeTagImagesUrl(props.tag);
         break;
+      case "details":
+        link = NavUtils.makeTagUrl(id);
+        break;
     }
-    id = props.tag.id || "";
     title = props.tag.name || "";
   } else if (props.performer) {
     link = NavUtils.makePerformerScenesUrl(props.performer);
@@ -84,7 +89,7 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
   }
   return (
     <Badge className={cx("tag-item", props.className)} variant="secondary">
-      <TagPopover id={id}>
+      <TagPopover id={id} placement={props.hoverPlacement}>
         <Link to={link}>{title}</Link>
       </TagPopover>
     </Badge>

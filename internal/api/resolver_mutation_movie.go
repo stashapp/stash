@@ -28,8 +28,6 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 		inputMap: getUpdateInputMap(ctx),
 	}
 
-	// generate checksum from movie name rather than image
-
 	// Populate a new movie from the input
 	currentTime := time.Now()
 	newMovie := models.Movie{

@@ -417,7 +417,7 @@
       "backing_up_database": "Sauvegarde de la base de données",
       "backup_and_download": "Effectue une sauvegarde de la base de données et télécharge le fichier résultant.",
       "backup_database": "Effectue un enregistrement de la base de données dans le répertoire de sauvegarde, avec le format de nom de fichier {filename_format}",
-      "cleanup_desc": "Vérifier les fichiers manquants et les supprimer de la base de données. Cette action est destructive.",
+      "cleanup_desc": "Vérifier les fichiers manquants et les supprimer de la base de données. Cette action est irréversible.",
       "data_management": "Gestion des données",
       "defaults_set": "Les valeurs par défaut ont été définies et seront utilisées en cliquant sur le bouton {action} de la page Tâches.",
       "dont_include_file_extension_as_part_of_the_title": "Ne pas inclure l'extension du fichier dans le titre",
@@ -474,7 +474,7 @@
         "overwrite_existing": "Remplacer les blobs existants par les données de vignettes"
       },
       "migrations": "Migrations",
-      "only_dry_run": "Effectuer un essai à blanc. Ne supprime rien",
+      "only_dry_run": "Effectuer un essai à blanc. Ne rien supprimer",
       "plugin_tasks": "Tâches de Plugin",
       "scan": {
         "scanning_all_paths": "Analyse tous les chemins",

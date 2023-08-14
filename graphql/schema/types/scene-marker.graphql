@@ -8,11 +8,11 @@ type SceneMarker {
   created_at: Time!
   updated_at: Time!
 
-  """The path to stream this marker"""
+  "The path to stream this marker"
   stream: String! # Resolver
-  """The path to the preview image for this marker"""
+  "The path to the preview image for this marker"
   preview: String! # Resolver
-  """The path to the screenshot image for this marker"""
+  "The path to the screenshot image for this marker"
   screenshot: String! # Resolver
 }
 
@@ -26,10 +26,10 @@ input SceneMarkerCreateInput {
 
 input SceneMarkerUpdateInput {
   id: ID!
-  title: String!
-  seconds: Float!
-  scene_id: ID!
-  primary_tag_id: ID!
+  title: String
+  seconds: Float
+  scene_id: ID
+  primary_tag_id: ID
   tag_ids: [ID!]
 }
 
