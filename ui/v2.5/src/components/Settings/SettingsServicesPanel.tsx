@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import {
@@ -7,9 +7,7 @@ import {
   useEnableDLNA,
   useAddTempDLNAIP,
   useRemoveTempDLNAIP,
-  queryFindTags,
 } from "src/core/StashService";
-import * as GQL from "src/core/generated-graphql";
 import { useToast } from "src/hooks/Toast";
 import { DurationInput } from "../Shared/DurationInput";
 import { Icon } from "../Shared/Icon";
@@ -21,6 +19,7 @@ import {
   StringListSetting,
   StringSetting,
   SelectSetting,
+  Setting,
 } from "./Inputs";
 import { SettingStateContext } from "./context";
 import {
@@ -494,27 +493,24 @@ export const SettingsServicesPanel: React.FC = () => {
             onChange={(v) => saveHSP({ enabled: v })}
           />
 
-          <div className="setting">
-            <div>
-              <h3>{intl.formatMessage({ id: "config.hsp.favorites_tag" })}</h3>
-              <div className="sub-heading">
-                {intl.formatMessage({ id: "config.hsp.favorites_tag_desc" })}
-              </div>
-            </div>
-            <div>
-              <TagSelect
-                onSelect={(items) =>
-                  saveHSP({ favoriteTagId: parseInt(items[0].id) })
-                }
-                ids={
-                  hsp.favoriteTagId !== undefined && hsp.favoriteTagId !== null
-                    ? [hsp.favoriteTagId.toString()]
-                    : []
-                }
-                hoverPlacement="right"
-              />
-            </div>
-          </div>
+          <Setting
+            id="hsp-favorites-tag"
+            subClassName="hsp-select"
+            headingID="config.hsp.favorites_tag"
+            subHeadingID="config.hsp.favorites_tag_desc"
+          >
+            <TagSelect
+              onSelect={(items) =>
+                saveHSP({ favoriteTagId: parseInt(items[0].id) })
+              }
+              ids={
+                hsp.favoriteTagId !== undefined && hsp.favoriteTagId !== null
+                  ? [hsp.favoriteTagId.toString()]
+                  : []
+              }
+              hoverPlacement="right"
+            />
+          </Setting>
 
           <BooleanSetting
             id="hsp-write-favorites"
