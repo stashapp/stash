@@ -495,7 +495,7 @@ export const SettingsServicesPanel: React.FC = () => {
 
           <Setting
             id="hsp-favorites-tag"
-            subClassName="hsp-select"
+            subElementId="hsp-select"
             headingID="config.hsp.favorites_tag"
             subHeadingID="config.hsp.favorites_tag_desc"
           >

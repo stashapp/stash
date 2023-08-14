@@ -8,7 +8,7 @@ import { StringListInput } from "../Shared/StringListInput";
 interface ISetting {
   id?: string;
   className?: string;
-  subClassName?: string;
+  subElementId?: string;
   heading?: React.ReactNode;
   headingID?: string;
   subHeadingID?: string;
@@ -21,7 +21,7 @@ interface ISetting {
 export const Setting: React.FC<PropsWithChildren<ISetting>> = ({
   id,
   className,
-  subClassName,
+  subElementId,
   heading,
   headingID,
   subHeadingID,
@@ -66,7 +66,7 @@ export const Setting: React.FC<PropsWithChildren<ISetting>> = ({
         <h3 title={tooltip}>{renderHeading()}</h3>
         {renderSubHeading()}
       </div>
-      <div className={`${subClassName}`}>{children}</div>
+      <div id={`${subElementId}`}>{children}</div>
     </div>
   );
 };
