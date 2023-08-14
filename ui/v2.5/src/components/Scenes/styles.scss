@@ -653,6 +653,15 @@ input[type="range"].blue-slider {
     height: 100%;
     width: 100%;
   }
+
+  .scrubber-timestamp {
+    bottom: calc(20px + 0.25rem);
+    font-weight: 400;
+    opacity: 0.75;
+    position: absolute;
+    right: 0.7rem;
+    text-shadow: 0 0 3px #000;
+  }
 }
 
 .hover-scrubber {

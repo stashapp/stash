@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { useDebounce } from "src/hooks/debounce";
 import { useSpriteInfo } from "src/hooks/sprite";
+import TextUtils from "src/utils/text";
 
 interface IHoverScrubber {
   totalSprites: number;
@@ -45,7 +46,7 @@ const HoverScrubber: React.FC<IHoverScrubber> = ({
         className="hover-scrubber-area"
         onMouseMove={onMouseMove}
         onMouseLeave={onMouseLeave}
-      ></div>
+      />
       <div className="hover-scrubber-indicator">
         {activeIndex !== undefined && (
           <div
@@ -101,6 +102,18 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({ vttPath }) => {
     };
   }, [spriteInfo, activeIndex]);
 
+  const currentTime = useMemo(() => {
+    if (!spriteInfo || activeIndex === undefined) {
+      return undefined;
+    }
+
+    const sprite = spriteInfo[activeIndex];
+
+    const start = TextUtils.secondsToTimestamp(sprite.start);
+
+    return start;
+  }, [activeIndex, spriteInfo]);
+
   if (!spriteInfo) return null;
 
   return (
@@ -108,6 +121,9 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({ vttPath }) => {
       {activeIndex !== undefined && spriteInfo && (
         <div className="scene-card-preview-image">
           <div className="scrubber-image" style={style}></div>
+          {currentTime !== undefined && (
+            <div className="scrubber-timestamp">{currentTime}</div>
+          )}
         </div>
       )}
       <HoverScrubber
