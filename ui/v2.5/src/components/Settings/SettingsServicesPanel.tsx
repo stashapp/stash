@@ -32,7 +32,7 @@ import {
   faTimes,
   faUserClock,
 } from "@fortawesome/free-solid-svg-icons";
-import { ListFilterModel } from "src/models/list-filter/filter";
+import { TagSelect } from "../Shared/Select";
 
 export const SettingsServicesPanel: React.FC = () => {
   const intl = useIntl();
@@ -481,26 +481,6 @@ export const SettingsServicesPanel: React.FC = () => {
   };
 
   const HSPSettingsForm: React.FC = () => {
-    const [data, setData] = useState<GQL.FindTagsQuery | null>(null);
-
-    useEffect(() => {
-      const fetchData = async () => {
-        const filter = new ListFilterModel(GQL.FilterMode.Tags);
-        filter.itemsPerPage = 1000000;
-
-        const result = await queryFindTags(filter);
-        const cardCount = result.data?.findTags.count;
-
-        if (!result.loading && !cardCount) {
-          console.log("error loading tags!");
-          return null;
-        }
-
-        setData(result.data);
-      };
-      fetchData();
-    }, []);
-
     return (
       <>
         <SettingSection
@@ -514,25 +494,27 @@ export const SettingsServicesPanel: React.FC = () => {
             onChange={(v) => saveHSP({ enabled: v })}
           />
 
-          <SelectSetting
-            id="hsp-favorites-tag"
-            headingID="config.hsp.favorites_tag"
-            subHeadingID="config.hsp.favorites_tag_desc"
-            onChange={(v) => saveHSP({ favoriteTagId: parseInt(v) })}
-            value={
-              hsp.favoriteTagId !== undefined && hsp.favoriteTagId !== null
-                ? hsp.favoriteTagId.toString()
-                : undefined
-            }
-          >
-            <option>&#160;</option>
-            {data != null &&
-              data.findTags.tags.map((q) => (
-                <option key={q.id} value={q.id}>
-                  {q.name}
-                </option>
-              ))}
-          </SelectSetting>
+          <div className="setting">
+            <div>
+              <h3>{intl.formatMessage({ id: "config.hsp.favorites_tag" })}</h3>
+              <div className="sub-heading">
+                {intl.formatMessage({ id: "config.hsp.favorites_tag_desc" })}
+              </div>
+            </div>
+            <div>
+              <TagSelect
+                onSelect={(items) =>
+                  saveHSP({ favoriteTagId: parseInt(items[0].id) })
+                }
+                ids={
+                  hsp.favoriteTagId !== undefined && hsp.favoriteTagId !== null
+                    ? [hsp.favoriteTagId.toString()]
+                    : []
+                }
+                hoverPlacement="right"
+              />
+            </div>
+          </div>
 
           <BooleanSetting
             id="hsp-write-favorites"
