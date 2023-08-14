@@ -649,6 +649,13 @@ input[type="range"].blue-slider {
   position: absolute;
   width: 100%;
 
+  .scene-card-preview-image {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+  }
+
   .scrubber-image {
     height: 100%;
     width: 100%;

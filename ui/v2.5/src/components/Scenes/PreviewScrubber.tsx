@@ -81,10 +81,24 @@ interface IScenePreviewProps {
   onClick?: (timestamp: number) => void;
 }
 
+function scaleToFit(dimensions: { w: number; h: number }, bounds: DOMRect) {
+  const rw = bounds.width / dimensions.w;
+  const rh = bounds.height / dimensions.h;
+
+  // for consistency, use max by default and min for portrait
+  if (dimensions.w > dimensions.h) {
+    return Math.max(rw, rh);
+  }
+
+  return Math.min(rw, rh);
+}
+
 export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
   vttPath,
   onClick,
 }) => {
+  const imageParentRef = React.useRef<HTMLDivElement>(null);
+
   const [activeIndex, setActiveIndex] = React.useState<number | undefined>();
 
   const debounceSetActiveIndex = useDebounce(
@@ -96,32 +110,23 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
   const spriteInfo = useSpriteInfo(vttPath);
 
   const style = useMemo(() => {
-    if (!spriteInfo || activeIndex === undefined) {
+    if (!spriteInfo || activeIndex === undefined || !imageParentRef.current) {
       return {};
     }
 
     const sprite = spriteInfo[activeIndex];
-    const totalWidth = spriteInfo.reduce(
-      (acc, cur) => Math.max(acc, cur.x + cur.w),
-      0
-    );
-    const totalHeight = spriteInfo.reduce(
-      (acc, cur) => Math.max(acc, cur.y + cur.h),
-      0
-    );
 
-    const spriteX = sprite.x / totalWidth;
-    const spriteY = sprite.y / totalHeight;
-
-    const spritesX = Math.floor(totalWidth / sprite.w);
-    const spritesY = Math.floor(totalHeight / sprite.h);
+    const clientRect = imageParentRef.current?.getBoundingClientRect();
+    const scale = clientRect ? scaleToFit(sprite, clientRect) : 1;
 
     return {
-      "background-size": `calc(100% * ${spritesX}) calc(100% * ${spritesY})`,
-      backgroundPosition: `calc(${-spriteX} * 100% * ${spritesX}) calc(${-spriteY} * 100% * ${spritesY})`,
+      backgroundPosition: `${-sprite.x}px ${-sprite.y}px`,
       backgroundImage: `url(${sprite.url})`,
+      width: `${sprite.w}px`,
+      height: `${sprite.h}px`,
+      transform: `scale(${scale})`,
     };
-  }, [spriteInfo, activeIndex]);
+  }, [spriteInfo, activeIndex, imageParentRef]);
 
   const currentTime = useMemo(() => {
     if (!spriteInfo || activeIndex === undefined) {
@@ -150,7 +155,7 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
   return (
     <div className="preview-scrubber">
       {activeIndex !== undefined && spriteInfo && (
-        <div className="scene-card-preview-image">
+        <div className="scene-card-preview-image" ref={imageParentRef}>
           <div className="scrubber-image" style={style}></div>
           {currentTime !== undefined && (
             <div className="scrubber-timestamp">{currentTime}</div>
