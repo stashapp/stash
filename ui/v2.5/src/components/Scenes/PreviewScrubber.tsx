@@ -32,11 +32,9 @@ const HoverScrubber: React.FC<IHoverScrubber> = ({
   const indicatorStyle = useMemo(() => {
     if (activeIndex === undefined) return {};
 
-    const left = (activeIndex / totalSprites) * 100;
-    const width = 100 / totalSprites;
+    const width = (activeIndex / totalSprites) * 100;
 
     return {
-      left: `${left}%`,
       width: `${width}%`,
     };
   }, [activeIndex, totalSprites]);
@@ -44,10 +42,11 @@ const HoverScrubber: React.FC<IHoverScrubber> = ({
   return (
     <div className="hover-scrubber">
       <div
-        className="hover-scrubber-indicator"
+        className="hover-scrubber-area"
         onMouseMove={onMouseMove}
         onMouseLeave={onMouseLeave}
-      >
+      ></div>
+      <div className="hover-scrubber-indicator">
         {activeIndex !== undefined && (
           <div
             className="hover-scrubber-indicator-marker"

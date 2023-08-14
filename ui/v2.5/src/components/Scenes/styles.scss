@@ -658,19 +658,35 @@ input[type="range"].blue-slider {
 .hover-scrubber {
   bottom: 0;
   height: 20px;
+  overflow: hidden;
   position: absolute;
   width: 100%;
-  z-index: 1;
 
-  .hover-scrubber-indicator {
+  .hover-scrubber-area {
+    cursor: col-resize;
     height: 100%;
     position: absolute;
+    width: 100%;
+    z-index: 1;
+  }
+
+  .hover-scrubber-indicator {
+    background-color: rgba(255, 255, 255, 0.1);
+    bottom: -100%;
+    height: 100%;
+    position: absolute;
+    transition: bottom 0.2s ease-in-out;
     width: 100%;
 
     .hover-scrubber-indicator-marker {
       background-color: rgba(255, 0, 0, 0.5);
-      height: 100%;
+      bottom: 0;
+      height: 5px;
       position: absolute;
     }
+  }
+
+  &:hover .hover-scrubber-indicator {
+    bottom: 0;
   }
 }
