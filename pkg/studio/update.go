@@ -2,14 +2,19 @@ package studio
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
 )
 
+var (
+	ErrStudioOwnAncestor = errors.New("studio cannot be an ancestor of itself")
+)
+
 type NameFinderCreator interface {
 	FindByName(ctx context.Context, name string, nocase bool) (*models.Studio, error)
-	Create(ctx context.Context, newStudio models.Studio) (*models.Studio, error)
+	Create(ctx context.Context, newStudio *models.Studio) error
 }
 
 type NameExistsError struct {
@@ -53,7 +58,7 @@ func EnsureStudioNameUnique(ctx context.Context, id int, name string, qb Queryer
 	if sameNameStudio != nil && id != sameNameStudio.ID {
 		return &NameUsedByAliasError{
 			Name:        name,
-			OtherStudio: sameNameStudio.Name.String,
+			OtherStudio: sameNameStudio.Name,
 		}
 	}
 
@@ -65,6 +70,63 @@ func EnsureAliasesUnique(ctx context.Context, id int, aliases []string, qb Query
 		if err := EnsureStudioNameUnique(ctx, id, a, qb); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+// Checks to make sure that:
+// 1. The studio exists locally
+// 2. The studio is not its own ancestor
+// 3. The studio's aliases are unique
+func ValidateModify(ctx context.Context, s models.StudioPartial, qb FinderQueryer) error {
+	existing, err := qb.Find(ctx, s.ID)
+	if err != nil {
+		return err
+	}
+	if existing == nil {
+		return fmt.Errorf("studio with id %d not found", s.ID)
+	}
+
+	newParentID := s.ParentID.Ptr()
+
+	if newParentID != nil {
+		if err := validateParent(ctx, s.ID, *newParentID, qb); err != nil {
+			return err
+		}
+	}
+
+	if s.Aliases != nil {
+		if err := existing.LoadAliases(ctx, qb); err != nil {
+			return err
+		}
+
+		effectiveAliases := s.Aliases.EffectiveValues(existing.Aliases.List())
+		if err := EnsureAliasesUnique(ctx, s.ID, effectiveAliases, qb); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func validateParent(ctx context.Context, studioID int, newParentID int, qb FinderQueryer) error {
+	if newParentID == studioID {
+		return ErrStudioOwnAncestor
+	}
+
+	// ensure there is no cyclic dependency
+	parentStudio, err := qb.Find(ctx, newParentID)
+	if err != nil {
+		return fmt.Errorf("error finding parent studio: %v", err)
+	}
+
+	if parentStudio == nil {
+		return fmt.Errorf("studio with id %d not found", newParentID)
+	}
+
+	if parentStudio.ParentID != nil {
+		return validateParent(ctx, studioID, *parentStudio.ParentID, qb)
 	}
 
 	return nil

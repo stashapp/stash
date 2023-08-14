@@ -48,6 +48,7 @@ type StudioReader interface {
 	FindChildren(ctx context.Context, id int) ([]*Studio, error)
 	FindByName(ctx context.Context, name string, nocase bool) (*Studio, error)
 	FindByStashID(ctx context.Context, stashID StashID) ([]*Studio, error)
+	FindByStashIDStatus(ctx context.Context, hasStashID bool, stashboxEndpoint string) ([]*Studio, error)
 	Count(ctx context.Context) (int, error)
 	All(ctx context.Context) ([]*Studio, error)
 	// TODO - this interface is temporary until the filter schema can fully
@@ -56,18 +57,16 @@ type StudioReader interface {
 	Query(ctx context.Context, studioFilter *StudioFilterType, findFilter *FindFilterType) ([]*Studio, int, error)
 	GetImage(ctx context.Context, studioID int) ([]byte, error)
 	HasImage(ctx context.Context, studioID int) (bool, error)
+	AliasLoader
 	StashIDLoader
-	GetAliases(ctx context.Context, studioID int) ([]string, error)
 }
 
 type StudioWriter interface {
-	Create(ctx context.Context, newStudio Studio) (*Studio, error)
-	Update(ctx context.Context, updatedStudio StudioPartial) (*Studio, error)
-	UpdateFull(ctx context.Context, updatedStudio Studio) (*Studio, error)
+	Create(ctx context.Context, newStudio *Studio) error
+	UpdatePartial(ctx context.Context, input StudioPartial) (*Studio, error)
+	Update(ctx context.Context, updatedStudio *Studio) error
 	Destroy(ctx context.Context, id int) error
 	UpdateImage(ctx context.Context, studioID int, image []byte) error
-	UpdateStashIDs(ctx context.Context, studioID int, stashIDs []StashID) error
-	UpdateAliases(ctx context.Context, studioID int, aliases []string) error
 }
 
 type StudioReaderWriter interface {

@@ -28,13 +28,13 @@ const (
 )
 
 var (
-	url       = "url"
-	title     = "title"
-	date      = "2001-01-01"
-	dateObj   = models.NewDate(date)
-	rating    = 5
-	organized = true
-	details   = "details"
+	url        = "url"
+	title      = "title"
+	date       = "2001-01-01"
+	dateObj, _ = models.ParseDate(date)
+	rating     = 5
+	organized  = true
+	details    = "details"
 )
 
 const (
@@ -163,7 +163,7 @@ func TestGetStudioName(t *testing.T) {
 	studioErr := errors.New("error getting image")
 
 	mockStudioReader.On("Find", testCtx, studioID).Return(&models.Studio{
-		Name: models.NullString(studioName),
+		Name: studioName,
 	}, nil).Once()
 	mockStudioReader.On("Find", testCtx, missingStudioID).Return(nil, nil).Once()
 	mockStudioReader.On("Find", testCtx, errStudioID).Return(nil, studioErr).Once()
@@ -246,23 +246,15 @@ var validChapters = []*models.GalleryChapter{
 		ID:         validChapterID1,
 		Title:      chapterTitle1,
 		ImageIndex: chapterImageIndex1,
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
+		CreatedAt:  createTime,
+		UpdatedAt:  updateTime,
 	},
 	{
 		ID:         validChapterID2,
 		Title:      chapterTitle2,
 		ImageIndex: chapterImageIndex2,
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
+		CreatedAt:  createTime,
+		UpdatedAt:  updateTime,
 	},
 }
 

@@ -24,6 +24,9 @@ github.com/99designs/gqlgen/plugin/federation/fieldset
 github.com/99designs/gqlgen/plugin/modelgen
 github.com/99designs/gqlgen/plugin/resolvergen
 github.com/99designs/gqlgen/plugin/servergen
+# github.com/WithoutPants/sortorder v0.0.0-20230616003020-921c9ef69552
+## explicit; go 1.13
+github.com/WithoutPants/sortorder/casefolded
 # github.com/Yamashou/gqlgenc v0.0.6
 ## explicit; go 1.16
 github.com/Yamashou/gqlgenc
@@ -143,9 +146,6 @@ github.com/doug-martin/goqu/v9/sqlgen
 # github.com/fsnotify/fsnotify v1.5.1
 ## explicit; go 1.13
 github.com/fsnotify/fsnotify
-# github.com/fvbommel/sortorder v1.1.0
-## explicit; go 1.13
-github.com/fvbommel/sortorder/casefolded
 # github.com/go-chi/chi v4.0.2+incompatible
 ## explicit
 github.com/go-chi/chi
@@ -176,6 +176,9 @@ github.com/gobwas/pool/pbytes
 ## explicit; go 1.15
 github.com/gobwas/ws
 github.com/gobwas/ws/wsutil
+# github.com/gofrs/uuid v4.4.0+incompatible
+## explicit
+github.com/gofrs/uuid
 # github.com/golang-jwt/jwt/v4 v4.0.0
 ## explicit; go 1.15
 github.com/golang-jwt/jwt/v4

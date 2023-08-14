@@ -9,8 +9,9 @@ type GalleryChapterReader interface {
 }
 
 type GalleryChapterWriter interface {
-	Create(ctx context.Context, newGalleryChapter GalleryChapter) (*GalleryChapter, error)
-	Update(ctx context.Context, updatedGalleryChapter GalleryChapter) (*GalleryChapter, error)
+	Create(ctx context.Context, newGalleryChapter *GalleryChapter) error
+	Update(ctx context.Context, updatedGalleryChapter *GalleryChapter) error
+	UpdatePartial(ctx context.Context, id int, updatedGalleryChapter GalleryChapterPartial) (*GalleryChapter, error)
 	Destroy(ctx context.Context, id int) error
 }
 

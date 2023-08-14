@@ -85,11 +85,11 @@ func (t *tagger) tagStudios(ctx context.Context, studioReader match.StudioAutoTa
 		added, err := addFunc(t.ID, studio.ID)
 
 		if err != nil {
-			return t.addError("studio", studio.Name.String, err)
+			return t.addError("studio", studio.Name, err)
 		}
 
 		if added {
-			t.addLog("studio", studio.Name.String)
+			t.addLog("studio", studio.Name)
 		}
 	}
 

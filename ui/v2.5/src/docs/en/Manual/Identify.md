@@ -15,6 +15,10 @@ The following options can be set:
 | Include male performers | If false, then male performers will not be created or set on scenes. |
 | Set cover images | If false, then scene cover images will not be modified. |
 | Set organised flag | If true, the organised flag is set to true when a scene is organised. |
+| Skip matches that have more than one result | If this is not enabled and more than one result is returned, one will be randomly chosen to match |
+| Tag skipped matches with | If the above option is set and a scene is skipped, this will add the tag so that you can filter for it in the Scene Tagger view and choose the correct match by hand |
+| Skip single name performers with no disambiguation | If this is not enabled, performers that are often generic like Samantha or Olga will be matched |
+| Tag skipped performers with | If the above options is set and a performer is skipped, this will add the tag so that you can filter for in it the Scene Tagger view and choose how you want to handle those performers |
 
 Field specific options may be set as well. Each field may have a Strategy. The behaviour for each strategy value is as follows:
 

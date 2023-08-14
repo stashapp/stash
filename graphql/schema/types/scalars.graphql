@@ -1,4 +1,3 @@
-
 """
 Timestamp is a point in time. It is always output as RFC3339-compatible time points.
 It can be input as a RFC3339 string, or as "<4h" for "4 hours in the past" or ">5m"

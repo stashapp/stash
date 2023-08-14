@@ -5,7 +5,6 @@ package sqlite_test
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"strconv"
 	"strings"
@@ -13,7 +12,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -29,7 +27,7 @@ func TestMovieFindByName(t *testing.T) {
 			t.Errorf("Error finding movies: %s", err.Error())
 		}
 
-		assert.Equal(t, movieNames[movieIdxWithScene], movie.Name.String)
+		assert.Equal(t, movieNames[movieIdxWithScene], movie.Name)
 
 		name = movieNames[movieIdxWithDupName] // find a movie by name nocase
 
@@ -40,9 +38,9 @@ func TestMovieFindByName(t *testing.T) {
 		}
 		// movieIdxWithDupName and movieIdxWithScene should have similar names ( only diff should be Name vs NaMe)
 		//movie.Name should match with movieIdxWithScene since its ID is before moveIdxWithDupName
-		assert.Equal(t, movieNames[movieIdxWithScene], movie.Name.String)
+		assert.Equal(t, movieNames[movieIdxWithScene], movie.Name)
 		//movie.Name should match with movieIdxWithDupName if the check is not case sensitive
-		assert.Equal(t, strings.ToLower(movieNames[movieIdxWithDupName]), strings.ToLower(movie.Name.String))
+		assert.Equal(t, strings.ToLower(movieNames[movieIdxWithDupName]), strings.ToLower(movie.Name))
 
 		return nil
 	})
@@ -61,15 +59,15 @@ func TestMovieFindByNames(t *testing.T) {
 			t.Errorf("Error finding movies: %s", err.Error())
 		}
 		assert.Len(t, movies, 1)
-		assert.Equal(t, movieNames[movieIdxWithScene], movies[0].Name.String)
+		assert.Equal(t, movieNames[movieIdxWithScene], movies[0].Name)
 
 		movies, err = mqb.FindByNames(ctx, names, true) // find movies by names nocase
 		if err != nil {
 			t.Errorf("Error finding movies: %s", err.Error())
 		}
 		assert.Len(t, movies, 2) // movieIdxWithScene and movieIdxWithDupName
-		assert.Equal(t, strings.ToLower(movieNames[movieIdxWithScene]), strings.ToLower(movies[0].Name.String))
-		assert.Equal(t, strings.ToLower(movieNames[movieIdxWithScene]), strings.ToLower(movies[1].Name.String))
+		assert.Equal(t, strings.ToLower(movieNames[movieIdxWithScene]), strings.ToLower(movies[0].Name))
+		assert.Equal(t, strings.ToLower(movieNames[movieIdxWithScene]), strings.ToLower(movies[1].Name))
 
 		return nil
 	})
@@ -207,7 +205,7 @@ func TestMovieQueryURL(t *testing.T) {
 
 	verifyFn := func(n *models.Movie) {
 		t.Helper()
-		verifyNullString(t, n.URL, urlCriterion)
+		verifyString(t, n.URL, urlCriterion)
 	}
 
 	verifyMovieQuery(t, filter, verifyFn)
@@ -292,11 +290,10 @@ func TestMovieUpdateFrontImage(t *testing.T) {
 
 		// create movie to test against
 		const name = "TestMovieUpdateMovieImages"
-		toCreate := models.Movie{
-			Name:     sql.NullString{String: name, Valid: true},
-			Checksum: md5.FromString(name),
+		movie := models.Movie{
+			Name:     name,
 		}
-		movie, err := qb.Create(ctx, toCreate)
+		err := qb.Create(ctx, &movie)
 		if err != nil {
 			return fmt.Errorf("Error creating movie: %s", err.Error())
 		}
@@ -313,11 +310,10 @@ func TestMovieUpdateBackImage(t *testing.T) {
 
 		// create movie to test against
 		const name = "TestMovieUpdateMovieImages"
-		toCreate := models.Movie{
-			Name:     sql.NullString{String: name, Valid: true},
-			Checksum: md5.FromString(name),
+		movie := models.Movie{
+			Name:     name,
 		}
-		movie, err := qb.Create(ctx, toCreate)
+		err := qb.Create(ctx, &movie)
 		if err != nil {
 			return fmt.Errorf("Error creating movie: %s", err.Error())
 		}

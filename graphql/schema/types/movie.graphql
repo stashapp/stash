@@ -1,9 +1,9 @@
 type Movie {
   id: ID!
-  checksum: String!
   name: String!
+  checksum: String! @deprecated(reason: "MD5 hash of name, use name directly")
   aliases: String
-  """Duration in seconds"""
+  "Duration in seconds"
   duration: Int
   date: String
   # rating expressed as 1-5
@@ -19,14 +19,14 @@ type Movie {
 
   front_image_path: String # Resolver
   back_image_path: String # Resolver
-  scene_count: Int # Resolver
+  scene_count: Int! # Resolver
   scenes: [Scene!]!
 }
 
 input MovieCreateInput {
   name: String!
   aliases: String
-  """Duration in seconds"""
+  "Duration in seconds"
   duration: Int
   date: String
   # rating expressed as 1-5
@@ -37,9 +37,9 @@ input MovieCreateInput {
   director: String
   synopsis: String
   url: String
-  """This should be a URL or a base64 encoded data URL"""
+  "This should be a URL or a base64 encoded data URL"
   front_image: String
-  """This should be a URL or a base64 encoded data URL"""
+  "This should be a URL or a base64 encoded data URL"
   back_image: String
 }
 
@@ -57,9 +57,9 @@ input MovieUpdateInput {
   director: String
   synopsis: String
   url: String
-  """This should be a URL or a base64 encoded data URL"""
+  "This should be a URL or a base64 encoded data URL"
   front_image: String
-  """This should be a URL or a base64 encoded data URL"""
+  "This should be a URL or a base64 encoded data URL"
   back_image: String
 }
 

@@ -103,14 +103,14 @@ func importTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []st
 func createTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []string) ([]*models.Tag, error) {
 	var ret []*models.Tag
 	for _, name := range names {
-		newTag := *models.NewTag(name)
+		newTag := models.NewTag(name)
 
-		created, err := tagWriter.Create(ctx, newTag)
+		err := tagWriter.Create(ctx, newTag)
 		if err != nil {
 			return nil, err
 		}
 
-		ret = append(ret, created)
+		ret = append(ret, newTag)
 	}
 
 	return ret, nil
@@ -223,22 +223,18 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 	}
 
 	if performerJSON.Birthdate != "" {
-		d, err := utils.ParseDateStringAsTime(performerJSON.Birthdate)
+		date, err := models.ParseDate(performerJSON.Birthdate)
 		if err == nil {
-			newPerformer.Birthdate = &models.Date{
-				Time: d,
-			}
+			newPerformer.Birthdate = &date
 		}
 	}
 	if performerJSON.Rating != 0 {
 		newPerformer.Rating = &performerJSON.Rating
 	}
 	if performerJSON.DeathDate != "" {
-		d, err := utils.ParseDateStringAsTime(performerJSON.DeathDate)
+		date, err := models.ParseDate(performerJSON.DeathDate)
 		if err == nil {
-			newPerformer.DeathDate = &models.Date{
-				Time: d,
-			}
+			newPerformer.DeathDate = &date
 		}
 	}
 

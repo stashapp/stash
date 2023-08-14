@@ -90,9 +90,11 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
     performer
     tag
     studio
+    movie
   }
   handyKey
   funscriptOffset
+  useStashHostedFunscript
 }
 
 fragment ConfigDLNAData on ConfigDLNAResult {
@@ -123,6 +125,10 @@ fragment IdentifyMetadataOptionsData on IdentifyMetadataOptions {
   setCoverImage
   setOrganized
   includeMalePerformers
+  skipMultipleMatches
+  skipMultipleMatchTag
+  skipSingleNamePerformers
+  skipSingleNamePerformerTag
 }
 
 fragment ScraperSourceData on ScraperSource {
@@ -143,7 +149,7 @@ fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
     scanGenerateThumbnails
     scanGenerateClipPreviews
   }
-  
+
   identify {
     sources {
       source {

@@ -2,51 +2,95 @@ package identify
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
-	"time"
+	"strconv"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/studio"
 )
 
-type StudioCreator interface {
-	Create(ctx context.Context, newStudio models.Studio) (*models.Studio, error)
-	UpdateStashIDs(ctx context.Context, studioID int, stashIDs []models.StashID) error
-}
+func createMissingStudio(ctx context.Context, endpoint string, w models.StudioReaderWriter, s *models.ScrapedStudio) (*int, error) {
+	var err error
 
-func createMissingStudio(ctx context.Context, endpoint string, w StudioCreator, studio *models.ScrapedStudio) (*int, error) {
-	created, err := w.Create(ctx, scrapedToStudioInput(studio))
-	if err != nil {
-		return nil, fmt.Errorf("error creating studio: %w", err)
-	}
+	if s.Parent != nil {
+		if s.Parent.StoredID == nil {
+			// The parent needs to be created
+			newParentStudio := s.Parent.ToStudio(endpoint, nil)
+			parentImage, err := s.Parent.GetImage(ctx, nil)
+			if err != nil {
+				logger.Errorf("Failed to make parent studio from scraped studio %s: %s", s.Parent.Name, err.Error())
+				return nil, err
+			}
 
-	if endpoint != "" && studio.RemoteSiteID != nil {
-		if err := w.UpdateStashIDs(ctx, created.ID, []models.StashID{
-			{
-				Endpoint: endpoint,
-				StashID:  *studio.RemoteSiteID,
-			},
-		}); err != nil {
-			return nil, fmt.Errorf("error setting studio stash id: %w", err)
+			// Create the studio
+			err = w.Create(ctx, newParentStudio)
+			if err != nil {
+				return nil, err
+			}
+
+			// Update image table
+			if len(parentImage) > 0 {
+				if err := w.UpdateImage(ctx, newParentStudio.ID, parentImage); err != nil {
+					return nil, err
+				}
+			}
+
+			storedId := strconv.Itoa(newParentStudio.ID)
+			s.Parent.StoredID = &storedId
+		} else {
+			// The parent studio matched an existing one and the user has chosen in the UI to link and/or update it
+			existingStashIDs := getStashIDsForStudio(ctx, *s.Parent.StoredID, w)
+			studioPartial := s.Parent.ToPartial(s.Parent.StoredID, endpoint, nil, existingStashIDs)
+			parentImage, err := s.Parent.GetImage(ctx, nil)
+			if err != nil {
+				return nil, err
+			}
+
+			if err := studio.ValidateModify(ctx, *studioPartial, w); err != nil {
+				return nil, err
+			}
+
+			_, err = w.UpdatePartial(ctx, *studioPartial)
+			if err != nil {
+				return nil, err
+			}
+
+			if len(parentImage) > 0 {
+				if err := w.UpdateImage(ctx, studioPartial.ID, parentImage); err != nil {
+					return nil, err
+				}
+			}
 		}
 	}
 
-	return &created.ID, nil
+	newStudio := s.ToStudio(endpoint, nil)
+	studioImage, err := s.GetImage(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	err = w.Create(ctx, newStudio)
+	if err != nil {
+		return nil, err
+	}
+
+	// Update image table
+	if len(studioImage) > 0 {
+		if err := w.UpdateImage(ctx, newStudio.ID, studioImage); err != nil {
+			return nil, err
+		}
+	}
+
+	return &newStudio.ID, nil
 }
 
-func scrapedToStudioInput(studio *models.ScrapedStudio) models.Studio {
-	currentTime := time.Now()
-	ret := models.Studio{
-		Name:      sql.NullString{String: studio.Name, Valid: true},
-		Checksum:  md5.FromString(studio.Name),
-		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-	}
+func getStashIDsForStudio(ctx context.Context, studioID string, w models.StudioReaderWriter) []models.StashID {
+	id, _ := strconv.Atoi(studioID)
+	tempStudio := &models.Studio{ID: id}
 
-	if studio.URL != nil {
-		ret.URL = sql.NullString{String: *studio.URL, Valid: true}
+	err := tempStudio.LoadStashIDs(ctx, w)
+	if err != nil {
+		return nil
 	}
-
-	return ret
+	return tempStudio.StashIDs.List()
 }

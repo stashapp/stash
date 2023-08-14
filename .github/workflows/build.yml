@@ -68,7 +68,7 @@ jobs:
     - name: Validate UI
       # skip UI validation for pull requests if UI is unchanged
       if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
-      run: docker exec -t build /bin/bash -c "make validate-frontend"
+      run: docker exec -t build /bin/bash -c "make validate-ui"
 
     # Static validation happens in the linter workflow in parallel to this workflow
     # Run Dynamic validation here, to make sure we pass all the projects integration tests

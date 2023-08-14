@@ -39,12 +39,14 @@ type SceneMarkerReader interface {
 	Count(ctx context.Context) (int, error)
 	All(ctx context.Context) ([]*SceneMarker, error)
 	Query(ctx context.Context, sceneMarkerFilter *SceneMarkerFilterType, findFilter *FindFilterType) ([]*SceneMarker, int, error)
+	QueryCount(ctx context.Context, sceneMarkerFilter *SceneMarkerFilterType, findFilter *FindFilterType) (int, error)
 	GetTagIDs(ctx context.Context, imageID int) ([]int, error)
 }
 
 type SceneMarkerWriter interface {
-	Create(ctx context.Context, newSceneMarker SceneMarker) (*SceneMarker, error)
-	Update(ctx context.Context, updatedSceneMarker SceneMarker) (*SceneMarker, error)
+	Create(ctx context.Context, newSceneMarker *SceneMarker) error
+	Update(ctx context.Context, updatedSceneMarker *SceneMarker) error
+	UpdatePartial(ctx context.Context, id int, updatedSceneMarker SceneMarkerPartial) (*SceneMarker, error)
 	Destroy(ctx context.Context, id int) error
 	UpdateTags(ctx context.Context, markerID int, tagIDs []int) error
 }

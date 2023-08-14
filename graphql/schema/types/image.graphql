@@ -13,14 +13,13 @@ type Image {
   path: String! @deprecated(reason: "Use files.path")
   created_at: Time!
   updated_at: Time!
-  
+
   file_mod_time: Time @deprecated(reason: "Use files.mod_time")
 
   file: ImageFileType! @deprecated(reason: "Use visual_files")
   files: [ImageFile!]! @deprecated(reason: "Use visual_files")
   visual_files: [VisualFile!]!
   paths: ImagePathsType! # Resolver
-
   galleries: [Gallery!]!
   studio: Studio
   tags: [Tag!]!
@@ -51,7 +50,7 @@ input ImageUpdateInput {
   organized: Boolean
   url: String
   date: String
-  
+
   studio_id: ID
   performer_ids: [ID!]
   tag_ids: [ID!]
@@ -71,7 +70,7 @@ input BulkImageUpdateInput {
   organized: Boolean
   url: String
   date: String
-  
+
   studio_id: ID
   performer_ids: BulkUpdateIds
   tag_ids: BulkUpdateIds
@@ -92,9 +91,9 @@ input ImagesDestroyInput {
 
 type FindImagesResultType {
   count: Int!
-  """Total megapixels of the images"""
+  "Total megapixels of the images"
   megapixels: Float!
-  """Total file size in bytes"""
+  "Total file size in bytes"
   filesize: Float!
   images: [Image!]!
 }

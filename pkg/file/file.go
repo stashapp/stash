@@ -154,10 +154,12 @@ type Getter interface {
 	FindByFingerprint(ctx context.Context, fp Fingerprint) ([]File, error)
 	FindByZipFileID(ctx context.Context, zipFileID ID) ([]File, error)
 	FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]File, error)
+	FindByFileInfo(ctx context.Context, info fs.FileInfo, size int64) ([]File, error)
 }
 
 type Counter interface {
 	CountAllInPaths(ctx context.Context, p []string) (int, error)
+	CountByFolderID(ctx context.Context, folderID FolderID) (int, error)
 }
 
 // Creator provides methods to create Files.

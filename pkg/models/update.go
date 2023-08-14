@@ -5,6 +5,7 @@ import (
 	"io"
 	"strconv"
 
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
@@ -94,19 +95,41 @@ func (u *UpdateIDs) EffectiveIDs(existing []int) []int {
 		return nil
 	}
 
-	switch u.Mode {
-	case RelationshipUpdateModeAdd:
-		return intslice.IntAppendUniques(existing, u.IDs)
-	case RelationshipUpdateModeRemove:
-		return intslice.IntExclude(existing, u.IDs)
-	case RelationshipUpdateModeSet:
-		return u.IDs
-	}
-
-	return nil
+	return effectiveValues(u.IDs, u.Mode, existing)
 }
 
 type UpdateStrings struct {
 	Values []string               `json:"values"`
 	Mode   RelationshipUpdateMode `json:"mode"`
+}
+
+func (u *UpdateStrings) Strings() []string {
+	if u == nil {
+		return nil
+	}
+
+	return u.Values
+}
+
+// GetEffectiveIDs returns the new IDs that will be effective after the update.
+func (u *UpdateStrings) EffectiveValues(existing []string) []string {
+	if u == nil {
+		return nil
+	}
+
+	return effectiveValues(u.Values, u.Mode, existing)
+}
+
+// effectiveValues returns the new values that will be effective after the update.
+func effectiveValues[T comparable](values []T, mode RelationshipUpdateMode, existing []T) []T {
+	switch mode {
+	case RelationshipUpdateModeAdd:
+		return sliceutil.AppendUniques(existing, values)
+	case RelationshipUpdateModeRemove:
+		return sliceutil.Exclude(existing, values)
+	case RelationshipUpdateModeSet:
+		return values
+	}
+
+	return nil
 }

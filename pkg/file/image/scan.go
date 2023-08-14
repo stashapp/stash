@@ -12,6 +12,7 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/file/video"
+	"github.com/stashapp/stash/pkg/logger"
 	_ "golang.org/x/image/webp"
 )
 
@@ -22,15 +23,14 @@ type Decorator struct {
 
 func (d *Decorator) Decorate(ctx context.Context, fs file.FS, f file.File) (file.File, error) {
 	base := f.Base()
-	r, err := fs.Open(base.Path)
-	if err != nil {
-		return f, fmt.Errorf("reading image file %q: %w", base.Path, err)
-	}
-	defer r.Close()
 
-	probe, err := d.FFProbe.NewVideoFile(base.Path)
-	if err != nil {
-		fmt.Printf("Warning: File %q could not be read with ffprobe: %s, assuming ImageFile", base.Path, err)
+	decorateFallback := func() (file.File, error) {
+		r, err := fs.Open(base.Path)
+		if err != nil {
+			return f, fmt.Errorf("reading image file %q: %w", base.Path, err)
+		}
+		defer r.Close()
+
 		c, format, err := image.DecodeConfig(r)
 		if err != nil {
 			return f, fmt.Errorf("decoding image file %q: %w", base.Path, err)
@@ -40,6 +40,29 @@ func (d *Decorator) Decorate(ctx context.Context, fs file.FS, f file.File) (file
 			Format:   format,
 			Width:    c.Width,
 			Height:   c.Height,
+		}, nil
+	}
+
+	// ignore clips in non-OsFS filesystems as ffprobe cannot read them
+	// TODO - copy to temp file if not an OsFS
+	if _, isOs := fs.(*file.OsFS); !isOs {
+		logger.Debugf("assuming ImageFile for non-OsFS file %q", base.Path)
+		return decorateFallback()
+	}
+
+	probe, err := d.FFProbe.NewVideoFile(base.Path)
+	if err != nil {
+		logger.Warnf("File %q could not be read with ffprobe: %s, assuming ImageFile", base.Path, err)
+		return decorateFallback()
+	}
+
+	// Fallback to catch non-animated avif images that FFProbe detects as video files
+	if probe.Bitrate == 0 && probe.VideoCodec == "av1" {
+		return &file.ImageFile{
+			BaseFile: base,
+			Format:   "avif",
+			Width:    probe.Width,
+			Height:   probe.Height,
 		}, nil
 	}
 

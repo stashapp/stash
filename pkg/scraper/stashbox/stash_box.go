@@ -3,7 +3,6 @@ package stashbox
 import (
 	"bytes"
 	"context"
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -19,6 +18,7 @@ import (
 	"golang.org/x/text/language"
 
 	"github.com/Yamashou/gqlgenc/graphqljson"
+	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
@@ -249,9 +249,8 @@ func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []strin
 		qb := c.repository.Scene
 
 		for _, sceneID := range ids {
-			// TODO - Find should return an appropriate not found error
 			scene, err := qb.Find(ctx, sceneID)
-			if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			if err != nil {
 				return err
 			}
 
@@ -662,6 +661,26 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 	return sp
 }
 
+func studioFragmentToScrapedStudio(s graphql.StudioFragment) *models.ScrapedStudio {
+	images := []string{}
+	for _, image := range s.Images {
+		images = append(images, image.URL)
+	}
+
+	st := &models.ScrapedStudio{
+		Name:         s.Name,
+		URL:          findURL(s.Urls, "HOME"),
+		Images:       images,
+		RemoteSiteID: &s.ID,
+	}
+
+	if len(st.Images) > 0 {
+		st.Image = &st.Images[0]
+	}
+
+	return st
+}
+
 func getFirstImage(ctx context.Context, client *http.Client, images []*graphql.ImageFragment) *string {
 	ret, err := fetchImage(ctx, client, images[0].URL)
 	if err != nil && !errors.Is(err, context.Canceled) {
@@ -686,6 +705,7 @@ func getFingerprints(scene *graphql.SceneFragment) []*models.StashBoxFingerprint
 
 func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.SceneFragment) (*scraper.ScrapedScene, error) {
 	stashID := s.ID
+
 	ss := &scraper.ScrapedScene{
 		Title:        s.Title,
 		Code:         s.Code,
@@ -698,6 +718,14 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 		Fingerprints: getFingerprints(s),
 		// Image
 		// stash_id
+	}
+
+	for _, u := range s.Urls {
+		ss.URLs = append(ss.URLs, u.URL)
+	}
+
+	if len(ss.URLs) > 0 {
+		ss.URL = &ss.URLs[0]
 	}
 
 	if len(s.Images) > 0 {
@@ -718,16 +746,28 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 		tqb := c.repository.Tag
 
 		if s.Studio != nil {
-			studioID := s.Studio.ID
-			ss.Studio = &models.ScrapedStudio{
-				Name:         s.Studio.Name,
-				URL:          findURL(s.Studio.Urls, "HOME"),
-				RemoteSiteID: &studioID,
-			}
+			ss.Studio = studioFragmentToScrapedStudio(*s.Studio)
 
 			err := match.ScrapedStudio(ctx, c.repository.Studio, ss.Studio, &c.box.Endpoint)
 			if err != nil {
 				return err
+			}
+
+			var parentStudio *graphql.FindStudio
+			if s.Studio.Parent != nil {
+				parentStudio, err = c.client.FindStudio(ctx, &s.Studio.Parent.ID, nil)
+				if err != nil {
+					return err
+				}
+
+				if parentStudio.FindStudio != nil {
+					ss.Studio.Parent = studioFragmentToScrapedStudio(*parentStudio.FindStudio)
+
+					err = match.ScrapedStudio(ctx, c.repository.Studio, ss.Studio.Parent, &c.box.Endpoint)
+					if err != nil {
+						return err
+					}
+				}
 			}
 		}
 
@@ -789,6 +829,56 @@ func (c Client) FindStashBoxPerformerByName(ctx context.Context, name string) (*
 	return ret, nil
 }
 
+func (c Client) FindStashBoxStudio(ctx context.Context, query string) (*models.ScrapedStudio, error) {
+	var studio *graphql.FindStudio
+
+	_, err := uuid.FromString(query)
+	if err == nil {
+		// Confirmed the user passed in a Stash ID
+		studio, err = c.client.FindStudio(ctx, &query, nil)
+	} else {
+		// Otherwise assume they're searching on a name
+		studio, err = c.client.FindStudio(ctx, nil, &query)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	var ret *models.ScrapedStudio
+	if studio.FindStudio != nil {
+		if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
+			ret = studioFragmentToScrapedStudio(*studio.FindStudio)
+
+			err = match.ScrapedStudio(ctx, c.repository.Studio, ret, &c.box.Endpoint)
+			if err != nil {
+				return err
+			}
+
+			if studio.FindStudio.Parent != nil {
+				parentStudio, err := c.client.FindStudio(ctx, &studio.FindStudio.Parent.ID, nil)
+				if err != nil {
+					return err
+				}
+
+				if parentStudio.FindStudio != nil {
+					ret.Parent = studioFragmentToScrapedStudio(*parentStudio.FindStudio)
+
+					err = match.ScrapedStudio(ctx, c.repository.Studio, ret.Parent, &c.box.Endpoint)
+					if err != nil {
+						return err
+					}
+				}
+			}
+			return nil
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	return ret, nil
+}
+
 func (c Client) GetUser(ctx context.Context) (*graphql.Me, error) {
 	return c.client.Me(ctx)
 }
@@ -822,8 +912,9 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 	if scene.Director != "" {
 		draft.Director = &scene.Director
 	}
-	if scene.URL != "" && len(strings.TrimSpace(scene.URL)) > 0 {
-		url := strings.TrimSpace(scene.URL)
+	// TODO - draft does not accept multiple URLs. Use single URL for now.
+	if len(scene.URLs.List()) > 0 {
+		url := strings.TrimSpace(scene.URLs.List()[0])
 		draft.URL = &url
 	}
 	if scene.Date != nil {
@@ -832,12 +923,16 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 	}
 
 	if scene.StudioID != nil {
-		studio, err := sqb.Find(ctx, int(*scene.StudioID))
+		studio, err := sqb.Find(ctx, *scene.StudioID)
 		if err != nil {
 			return nil, err
 		}
+		if studio == nil {
+			return nil, fmt.Errorf("studio with id %d not found", *scene.StudioID)
+		}
+
 		studioDraft := graphql.DraftEntityInput{
-			Name: studio.Name.String,
+			Name: studio.Name,
 		}
 
 		stashIDs, err := sqb.GetStashIDs(ctx, studio.ID)

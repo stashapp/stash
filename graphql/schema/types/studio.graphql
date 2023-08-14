@@ -1,7 +1,7 @@
 type Studio {
   id: ID!
-  checksum: String!
   name: String!
+  checksum: String! @deprecated(reason: "MD5 hash of name, use name directly")
   url: String
   parent_studio: Studio
   child_studios: [Studio!]!
@@ -9,10 +9,11 @@ type Studio {
   ignore_auto_tag: Boolean!
 
   image_path: String # Resolver
-  scene_count: Int # Resolver
-  image_count: Int # Resolver
-  gallery_count: Int # Resolver
-  performer_count: Int # Resolver
+  scene_count(depth: Int): Int! # Resolver
+  image_count(depth: Int): Int! # Resolver
+  gallery_count(depth: Int): Int! # Resolver
+  performer_count(depth: Int): Int! # Resolver
+  movie_count(depth: Int): Int! # Resolver
   stash_ids: [StashID!]!
   # rating expressed as 1-5
   rating: Int @deprecated(reason: "Use 1-100 range with rating100")
@@ -21,7 +22,6 @@ type Studio {
   details: String
   created_at: Time!
   updated_at: Time!
-  movie_count: Int
   movies: [Movie!]!
 }
 
@@ -29,7 +29,7 @@ input StudioCreateInput {
   name: String!
   url: String
   parent_id: ID
-  """This should be a URL or a base64 encoded data URL"""
+  "This should be a URL or a base64 encoded data URL"
   image: String
   stash_ids: [StashIDInput!]
   # rating expressed as 1-5
@@ -45,8 +45,8 @@ input StudioUpdateInput {
   id: ID!
   name: String
   url: String
-  parent_id: ID,
-  """This should be a URL or a base64 encoded data URL"""
+  parent_id: ID
+  "This should be a URL or a base64 encoded data URL"
   image: String
   stash_ids: [StashIDInput!]
   # rating expressed as 1-5

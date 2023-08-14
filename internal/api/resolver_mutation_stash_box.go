@@ -32,8 +32,13 @@ func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input
 	return client.SubmitStashBoxFingerprints(ctx, input.SceneIds, boxes[input.StashBoxIndex].Endpoint)
 }
 
-func (r *mutationResolver) StashBoxBatchPerformerTag(ctx context.Context, input manager.StashBoxBatchPerformerTagInput) (string, error) {
+func (r *mutationResolver) StashBoxBatchPerformerTag(ctx context.Context, input manager.StashBoxBatchTagInput) (string, error) {
 	jobID := manager.GetInstance().StashBoxBatchPerformerTag(ctx, input)
+	return strconv.Itoa(jobID), nil
+}
+
+func (r *mutationResolver) StashBoxBatchStudioTag(ctx context.Context, input manager.StashBoxBatchTagInput) (string, error) {
+	jobID := manager.GetInstance().StashBoxBatchStudioTag(ctx, input)
 	return strconv.Itoa(jobID), nil
 }
 
@@ -68,6 +73,10 @@ func (r *mutationResolver) SubmitStashBoxSceneDraft(ctx context.Context, input S
 			logger.Errorf("Error getting scene cover: %v", err)
 		}
 
+		if err := scene.LoadURLs(ctx, r.repository.Scene); err != nil {
+			return fmt.Errorf("loading scene URLs: %w", err)
+		}
+
 		res, err = client.SubmitSceneDraft(ctx, scene, boxes[input.StashBoxIndex].Endpoint, cover)
 		return err
 	})
@@ -95,6 +104,10 @@ func (r *mutationResolver) SubmitStashBoxPerformerDraft(ctx context.Context, inp
 		performer, err := qb.Find(ctx, id)
 		if err != nil {
 			return err
+		}
+
+		if performer == nil {
+			return fmt.Errorf("performer with id %d not found", id)
 		}
 
 		res, err = client.SubmitPerformerDraft(ctx, performer, boxes[input.StashBoxIndex].Endpoint)

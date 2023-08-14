@@ -25,7 +25,7 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 		studioIDStr  = "2"
 	)
 
-	dateObj := NewDate(date)
+	dateObj, _ := ParseDate(date)
 
 	tests := []struct {
 		name string
@@ -37,11 +37,14 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 			"full",
 			id,
 			ScenePartial{
-				Title:     NewOptionalString(title),
-				Code:      NewOptionalString(code),
-				Details:   NewOptionalString(details),
-				Director:  NewOptionalString(director),
-				URL:       NewOptionalString(url),
+				Title:    NewOptionalString(title),
+				Code:     NewOptionalString(code),
+				Details:  NewOptionalString(details),
+				Director: NewOptionalString(director),
+				URLs: &UpdateStrings{
+					Values: []string{url},
+					Mode:   RelationshipUpdateModeSet,
+				},
 				Date:      NewOptionalDate(dateObj),
 				Rating:    NewOptionalInt(rating100),
 				Organized: NewOptionalBool(organized),
@@ -53,7 +56,7 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 				Code:      &code,
 				Details:   &details,
 				Director:  &director,
-				URL:       &url,
+				Urls:      []string{url},
 				Date:      &date,
 				Rating:    &ratingLegacy,
 				Rating100: &rating100,

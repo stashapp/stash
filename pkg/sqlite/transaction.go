@@ -129,15 +129,14 @@ func (db *Database) TxnRepository() models.Repository {
 		File:           db.File,
 		Folder:         db.Folder,
 		Gallery:        db.Gallery,
-		GalleryChapter: GalleryChapterReaderWriter,
+		GalleryChapter: db.GalleryChapter,
 		Image:          db.Image,
 		Movie:          db.Movie,
 		Performer:      db.Performer,
 		Scene:          db.Scene,
-		SceneMarker:    SceneMarkerReaderWriter,
-		ScrapedItem:    ScrapedItemReaderWriter,
+		SceneMarker:    db.SceneMarker,
 		Studio:         db.Studio,
 		Tag:            db.Tag,
-		SavedFilter:    SavedFilterReaderWriter,
+		SavedFilter:    db.SavedFilter,
 	}
 }

@@ -72,11 +72,11 @@ func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
 			var err error
 			scene, err := instance.Repository.Scene.Find(ctx, id)
 			if err != nil {
-				return fmt.Errorf("error finding scene with id %d: %w", id, err)
+				return fmt.Errorf("finding scene id %d: %w", id, err)
 			}
 
 			if scene == nil {
-				return fmt.Errorf("%w: scene with id %d", models.ErrNotFound, id)
+				return fmt.Errorf("scene with id %d not found", id)
 			}
 
 			j.identifyScene(ctx, scene, sources)
@@ -134,9 +134,9 @@ func (j *IdentifyJob) identifyScene(ctx context.Context, s *models.Scene, source
 	j.progress.ExecuteTask("Identifying "+s.Path, func() {
 		task := identify.SceneIdentifier{
 			SceneReaderUpdater: instance.Repository.Scene,
-			StudioCreator:      instance.Repository.Studio,
+			StudioReaderWriter: instance.Repository.Studio,
 			PerformerCreator:   instance.Repository.Performer,
-			TagCreator:         instance.Repository.Tag,
+			TagCreatorFinder:   instance.Repository.Tag,
 
 			DefaultOptions:              j.input.Options,
 			Sources:                     sources,
@@ -248,14 +248,14 @@ type stashboxSource struct {
 	endpoint string
 }
 
-func (s stashboxSource) ScrapeScene(ctx context.Context, sceneID int) (*scraper.ScrapedScene, error) {
+func (s stashboxSource) ScrapeScenes(ctx context.Context, sceneID int) ([]*scraper.ScrapedScene, error) {
 	results, err := s.FindStashBoxSceneByFingerprints(ctx, sceneID)
 	if err != nil {
 		return nil, fmt.Errorf("error querying stash-box using scene ID %d: %w", sceneID, err)
 	}
 
 	if len(results) > 0 {
-		return results[0], nil
+		return results, nil
 	}
 
 	return nil, nil
@@ -270,7 +270,7 @@ type scraperSource struct {
 	scraperID string
 }
 
-func (s scraperSource) ScrapeScene(ctx context.Context, sceneID int) (*scraper.ScrapedScene, error) {
+func (s scraperSource) ScrapeScenes(ctx context.Context, sceneID int) ([]*scraper.ScrapedScene, error) {
 	content, err := s.cache.ScrapeID(ctx, s.scraperID, sceneID, scraper.ScrapeContentTypeScene)
 	if err != nil {
 		return nil, err
@@ -282,7 +282,7 @@ func (s scraperSource) ScrapeScene(ctx context.Context, sceneID int) (*scraper.S
 	}
 
 	if scene, ok := content.(scraper.ScrapedScene); ok {
-		return &scene, nil
+		return []*scraper.ScrapedScene{&scene}, nil
 	}
 
 	return nil, errors.New("could not convert content to scene")

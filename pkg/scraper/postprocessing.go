@@ -106,6 +106,14 @@ func (c Cache) postScrapeScenePerformer(ctx context.Context, p models.ScrapedPer
 }
 
 func (c Cache) postScrapeScene(ctx context.Context, scene ScrapedScene) (ScrapedContent, error) {
+	// set the URL/URLs field
+	if scene.URL == nil && len(scene.URLs) > 0 {
+		scene.URL = &scene.URLs[0]
+	}
+	if scene.URL != nil && len(scene.URLs) == 0 {
+		scene.URLs = []string{*scene.URL}
+	}
+
 	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
 		pqb := c.repository.PerformerFinder
 		mqb := c.repository.MovieFinder

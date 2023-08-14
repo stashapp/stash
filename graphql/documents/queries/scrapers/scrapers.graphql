@@ -42,13 +42,28 @@ query ListMovieScrapers {
   }
 }
 
-query ScrapeSinglePerformer($source: ScraperSourceInput!, $input: ScrapeSinglePerformerInput!) {
+query ScrapeSingleStudio(
+  $source: ScraperSourceInput!
+  $input: ScrapeSingleStudioInput!
+) {
+  scrapeSingleStudio(source: $source, input: $input) {
+    ...ScrapedStudioData
+  }
+}
+
+query ScrapeSinglePerformer(
+  $source: ScraperSourceInput!
+  $input: ScrapeSinglePerformerInput!
+) {
   scrapeSinglePerformer(source: $source, input: $input) {
     ...ScrapedPerformerData
   }
 }
 
-query ScrapeMultiPerformers($source: ScraperSourceInput!, $input: ScrapeMultiPerformersInput!) {
+query ScrapeMultiPerformers(
+  $source: ScraperSourceInput!
+  $input: ScrapeMultiPerformersInput!
+) {
   scrapeMultiPerformers(source: $source, input: $input) {
     ...ScrapedPerformerData
   }
@@ -60,13 +75,19 @@ query ScrapePerformerURL($url: String!) {
   }
 }
 
-query ScrapeSingleScene($source: ScraperSourceInput!, $input: ScrapeSingleSceneInput!) {
+query ScrapeSingleScene(
+  $source: ScraperSourceInput!
+  $input: ScrapeSingleSceneInput!
+) {
   scrapeSingleScene(source: $source, input: $input) {
     ...ScrapedSceneData
   }
 }
 
-query ScrapeMultiScenes($source: ScraperSourceInput!, $input: ScrapeMultiScenesInput!) {
+query ScrapeMultiScenes(
+  $source: ScraperSourceInput!
+  $input: ScrapeMultiScenesInput!
+) {
   scrapeMultiScenes(source: $source, input: $input) {
     ...ScrapedSceneData
   }
@@ -78,7 +99,10 @@ query ScrapeSceneURL($url: String!) {
   }
 }
 
-query ScrapeSingleGallery($source: ScraperSourceInput!, $input: ScrapeSingleGalleryInput!) {
+query ScrapeSingleGallery(
+  $source: ScraperSourceInput!
+  $input: ScrapeSingleGalleryInput!
+) {
   scrapeSingleGallery(source: $source, input: $input) {
     ...ScrapedGalleryData
   }

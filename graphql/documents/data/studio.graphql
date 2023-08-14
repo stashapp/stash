@@ -1,6 +1,5 @@
 fragment StudioData on Studio {
   id
-  checksum
   name
   url
   parent_studio {
@@ -17,10 +16,15 @@ fragment StudioData on Studio {
   ignore_auto_tag
   image_path
   scene_count
+  scene_count_all: scene_count(depth: -1)
   image_count
+  image_count_all: image_count(depth: -1)
   gallery_count
+  gallery_count_all: gallery_count(depth: -1)
   performer_count
+  performer_count_all: performer_count(depth: -1)
   movie_count
+  movie_count_all: movie_count(depth: -1)
   stash_ids {
     stash_id
     endpoint

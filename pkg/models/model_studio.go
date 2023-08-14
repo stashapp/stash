@@ -1,50 +1,65 @@
 package models
 
 import (
-	"database/sql"
+	"context"
 	"time"
-
-	"github.com/stashapp/stash/pkg/hash/md5"
 )
 
 type Studio struct {
-	ID        int             `db:"id" json:"id"`
-	Checksum  string          `db:"checksum" json:"checksum"`
-	Name      sql.NullString  `db:"name" json:"name"`
-	URL       sql.NullString  `db:"url" json:"url"`
-	ParentID  sql.NullInt64   `db:"parent_id,omitempty" json:"parent_id"`
-	CreatedAt SQLiteTimestamp `db:"created_at" json:"created_at"`
-	UpdatedAt SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	ID        int       `json:"id"`
+	Name      string    `json:"name"`
+	URL       string    `json:"url"`
+	ParentID  *int      `json:"parent_id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 	// Rating expressed in 1-100 scale
-	Rating        sql.NullInt64  `db:"rating" json:"rating"`
-	Details       sql.NullString `db:"details" json:"details"`
-	IgnoreAutoTag bool           `db:"ignore_auto_tag" json:"ignore_auto_tag"`
-	// TODO - this is only here because of database code in the models package
-	ImageBlob sql.NullString `db:"image_blob" json:"-"`
+	Rating        *int   `json:"rating"`
+	Details       string `json:"details"`
+	IgnoreAutoTag bool   `json:"ignore_auto_tag"`
+
+	Aliases  RelatedStrings  `json:"aliases"`
+	StashIDs RelatedStashIDs `json:"stash_ids"`
 }
 
-type StudioPartial struct {
-	ID        int              `db:"id" json:"id"`
-	Checksum  *string          `db:"checksum" json:"checksum"`
-	Name      *sql.NullString  `db:"name" json:"name"`
-	URL       *sql.NullString  `db:"url" json:"url"`
-	ParentID  *sql.NullInt64   `db:"parent_id,omitempty" json:"parent_id"`
-	CreatedAt *SQLiteTimestamp `db:"created_at" json:"created_at"`
-	UpdatedAt *SQLiteTimestamp `db:"updated_at" json:"updated_at"`
-	// Rating expressed in 1-100 scale
-	Rating        *sql.NullInt64  `db:"rating" json:"rating"`
-	Details       *sql.NullString `db:"details" json:"details"`
-	IgnoreAutoTag *bool           `db:"ignore_auto_tag" json:"ignore_auto_tag"`
+func (s *Studio) LoadAliases(ctx context.Context, l AliasLoader) error {
+	return s.Aliases.load(func() ([]string, error) {
+		return l.GetAliases(ctx, s.ID)
+	})
 }
 
-func NewStudio(name string) *Studio {
-	currentTime := time.Now()
-	return &Studio{
-		Checksum:  md5.FromString(name),
-		Name:      sql.NullString{String: name, Valid: true},
-		CreatedAt: SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt: SQLiteTimestamp{Timestamp: currentTime},
+func (s *Studio) LoadStashIDs(ctx context.Context, l StashIDLoader) error {
+	return s.StashIDs.load(func() ([]StashID, error) {
+		return l.GetStashIDs(ctx, s.ID)
+	})
+}
+
+func (s *Studio) LoadRelationships(ctx context.Context, l PerformerReader) error {
+	if err := s.LoadAliases(ctx, l); err != nil {
+		return err
 	}
+
+	if err := s.LoadStashIDs(ctx, l); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// StudioPartial represents part of a Studio object. It is used to update the database entry.
+type StudioPartial struct {
+	ID       int
+	Name     OptionalString
+	URL      OptionalString
+	ParentID OptionalInt
+	// Rating expressed in 1-100 scale
+	Rating        OptionalInt
+	Details       OptionalString
+	CreatedAt     OptionalTime
+	UpdatedAt     OptionalTime
+	IgnoreAutoTag OptionalBool
+
+	Aliases  *UpdateStrings
+	StashIDs *UpdateStashIDs
 }
 
 type Studios []*Studio

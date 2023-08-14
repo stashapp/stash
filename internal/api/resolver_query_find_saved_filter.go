@@ -2,8 +2,6 @@ package api
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -18,7 +16,7 @@ func (r *queryResolver) FindSavedFilter(ctx context.Context, id string) (ret *mo
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.SavedFilter.Find(ctx, idInt)
 		return err
-	}); err != nil && !errors.Is(err, sql.ErrNoRows) {
+	}); err != nil {
 		return nil, err
 	}
 	return ret, err
@@ -42,7 +40,7 @@ func (r *queryResolver) FindDefaultFilter(ctx context.Context, mode models.Filte
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.SavedFilter.FindDefault(ctx, mode)
 		return err
-	}); err != nil && !errors.Is(err, sql.ErrNoRows) {
+	}); err != nil {
 		return nil, err
 	}
 	return ret, err

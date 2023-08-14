@@ -2,13 +2,12 @@ package api
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"strconv"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/stashapp/stash/internal/manager"
+
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
@@ -23,7 +22,7 @@ func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *str
 				return err
 			}
 			scene, err = qb.Find(ctx, idInt)
-			if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			if err != nil {
 				return err
 			}
 		} else if checksum != nil {
@@ -191,11 +190,11 @@ func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *model
 	return ret, nil
 }
 
-func (r *queryResolver) ParseSceneFilenames(ctx context.Context, filter *models.FindFilterType, config manager.SceneParserInput) (ret *SceneParserResultType, err error) {
-	parser := manager.NewSceneFilenameParser(filter, config)
+func (r *queryResolver) ParseSceneFilenames(ctx context.Context, filter *models.FindFilterType, config models.SceneParserInput) (ret *SceneParserResultType, err error) {
+	parser := scene.NewFilenameParser(filter, config)
 
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		result, count, err := parser.Parse(ctx, manager.SceneFilenameParserRepository{
+		result, count, err := parser.Parse(ctx, scene.FilenameParserRepository{
 			Scene:     r.repository.Scene,
 			Performer: r.repository.Performer,
 			Studio:    r.repository.Studio,

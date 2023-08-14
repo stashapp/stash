@@ -23,10 +23,10 @@ autobind:
 
 models:
   # Scalars
-  Timestamp:
-    model: github.com/stashapp/stash/pkg/models.Timestamp
   Int64:
-    model: github.com/stashapp/stash/pkg/models.Int64
+    model: github.com/99designs/gqlgen/graphql.Int64
+  Timestamp:
+    model: github.com/stashapp/stash/internal/api.Timestamp
   # define to force resolvers
   Image:
     model: github.com/stashapp/stash/pkg/models.Image
@@ -54,12 +54,6 @@ models:
     model:  github.com/stashapp/stash/internal/manager/config.ScanMetadataOptions
   AutoTagMetadataOptions:
     model: github.com/stashapp/stash/internal/manager/config.AutoTagMetadataOptions
-  SceneParserInput:
-    model: github.com/stashapp/stash/internal/manager.SceneParserInput
-  SceneParserResult:
-    model: github.com/stashapp/stash/internal/manager.SceneParserResult
-  SceneMovieID:
-    model: github.com/stashapp/stash/internal/manager.SceneMovieID
   SystemStatus:
     model: github.com/stashapp/stash/internal/manager.SystemStatus
   SystemStatusEnum:
@@ -80,8 +74,8 @@ models:
     model: github.com/stashapp/stash/internal/manager.AutoTagMetadataInput
   CleanMetadataInput:
     model: github.com/stashapp/stash/internal/manager.CleanMetadataInput
-  StashBoxBatchPerformerTagInput:
-    model: github.com/stashapp/stash/internal/manager.StashBoxBatchPerformerTagInput
+  StashBoxBatchTagInput:
+    model: github.com/stashapp/stash/internal/manager.StashBoxBatchTagInput
   SceneStreamEndpoint:
     model: github.com/stashapp/stash/internal/manager.SceneStreamEndpoint
   ExportObjectTypeInput:

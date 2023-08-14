@@ -15,26 +15,17 @@ type GalleryChapterReaderWriter struct {
 }
 
 // Create provides a mock function with given fields: ctx, newGalleryChapter
-func (_m *GalleryChapterReaderWriter) Create(ctx context.Context, newGalleryChapter models.GalleryChapter) (*models.GalleryChapter, error) {
+func (_m *GalleryChapterReaderWriter) Create(ctx context.Context, newGalleryChapter *models.GalleryChapter) error {
 	ret := _m.Called(ctx, newGalleryChapter)
 
-	var r0 *models.GalleryChapter
-	if rf, ok := ret.Get(0).(func(context.Context, models.GalleryChapter) *models.GalleryChapter); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *models.GalleryChapter) error); ok {
 		r0 = rf(ctx, newGalleryChapter)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.GalleryChapter)
-		}
+		r0 = ret.Error(0)
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, models.GalleryChapter) error); ok {
-		r1 = rf(ctx, newGalleryChapter)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // Destroy provides a mock function with given fields: ctx, id
@@ -121,12 +112,26 @@ func (_m *GalleryChapterReaderWriter) FindMany(ctx context.Context, ids []int) (
 }
 
 // Update provides a mock function with given fields: ctx, updatedGalleryChapter
-func (_m *GalleryChapterReaderWriter) Update(ctx context.Context, updatedGalleryChapter models.GalleryChapter) (*models.GalleryChapter, error) {
+func (_m *GalleryChapterReaderWriter) Update(ctx context.Context, updatedGalleryChapter *models.GalleryChapter) error {
 	ret := _m.Called(ctx, updatedGalleryChapter)
 
-	var r0 *models.GalleryChapter
-	if rf, ok := ret.Get(0).(func(context.Context, models.GalleryChapter) *models.GalleryChapter); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *models.GalleryChapter) error); ok {
 		r0 = rf(ctx, updatedGalleryChapter)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdatePartial provides a mock function with given fields: ctx, id, updatedGalleryChapter
+func (_m *GalleryChapterReaderWriter) UpdatePartial(ctx context.Context, id int, updatedGalleryChapter models.GalleryChapterPartial) (*models.GalleryChapter, error) {
+	ret := _m.Called(ctx, id, updatedGalleryChapter)
+
+	var r0 *models.GalleryChapter
+	if rf, ok := ret.Get(0).(func(context.Context, int, models.GalleryChapterPartial) *models.GalleryChapter); ok {
+		r0 = rf(ctx, id, updatedGalleryChapter)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.GalleryChapter)
@@ -134,8 +139,8 @@ func (_m *GalleryChapterReaderWriter) Update(ctx context.Context, updatedGallery
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, models.GalleryChapter) error); ok {
-		r1 = rf(ctx, updatedGalleryChapter)
+	if rf, ok := ret.Get(1).(func(context.Context, int, models.GalleryChapterPartial) error); ok {
+		r1 = rf(ctx, id, updatedGalleryChapter)
 	} else {
 		r1 = ret.Error(1)
 	}

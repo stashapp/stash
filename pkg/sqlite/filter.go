@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"path/filepath"
@@ -950,13 +951,21 @@ WHERE id in {inBinding}
 
 	query := fmt.Sprintf("WITH RECURSIVE %s SELECT 'VALUES' || GROUP_CONCAT('(' || root_id || ', ' || item_id || ')') AS val FROM items", withClause)
 
-	var valuesClause string
+	var valuesClause sql.NullString
 	err := tx.Get(ctx, &valuesClause, query, args...)
 	if err != nil {
 		return "", fmt.Errorf("failed to get hierarchical values: %w", err)
 	}
 
-	return valuesClause, nil
+	// if no values are found, just return a values string with the values only
+	if !valuesClause.Valid {
+		for i, value := range values {
+			values[i] = fmt.Sprintf("(%s, %s)", value, value)
+		}
+		valuesClause.String = "VALUES" + strings.Join(values, ",")
+	}
+
+	return valuesClause.String, nil
 }
 
 func addHierarchicalConditionClauses(f *filterBuilder, criterion models.HierarchicalMultiCriterionInput, table, idColumn string) {

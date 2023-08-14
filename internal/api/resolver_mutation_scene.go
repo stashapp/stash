@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"strconv"
@@ -62,13 +61,12 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input SceneCreateInp
 		fileIDs[i] = file.ID(v)
 	}
 
+	// Populate a new scene from the input
 	newScene := models.Scene{
 		Title:        translator.string(input.Title, "title"),
 		Code:         translator.string(input.Code, "code"),
 		Details:      translator.string(input.Details, "details"),
 		Director:     translator.string(input.Director, "director"),
-		URL:          translator.string(input.URL, "url"),
-		Date:         translator.datePtr(input.Date, "date"),
 		Rating:       translator.ratingConversionInt(input.Rating, input.Rating100),
 		Organized:    translator.bool(input.Organized, "organized"),
 		PerformerIDs: models.NewRelatedIDs(performerIDs),
@@ -78,13 +76,23 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input SceneCreateInp
 		StashIDs:     models.NewRelatedStashIDs(stashIDPtrSliceToSlice(input.StashIds)),
 	}
 
+	newScene.Date, err = translator.datePtr(input.Date, "date")
+	if err != nil {
+		return nil, fmt.Errorf("converting date: %w", err)
+	}
 	newScene.StudioID, err = translator.intPtrFromString(input.StudioID, "studio_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 
+	if input.Urls != nil {
+		newScene.URLs = models.NewRelatedStrings(input.Urls)
+	} else if input.URL != nil {
+		newScene.URLs = models.NewRelatedStrings([]string{*input.URL})
+	}
+
 	var coverImageData []byte
-	if input.CoverImage != nil && *input.CoverImage != "" {
+	if input.CoverImage != nil {
 		var err error
 		coverImageData, err = utils.ProcessImageInput(ctx, *input.CoverImage)
 		if err != nil {
@@ -122,7 +130,7 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.SceneUpdateInput) (ret []*models.Scene, err error) {
 	inputMaps := getUpdateInputMaps(ctx)
 
-	// Start the transaction and save the scene
+	// Start the transaction and save the scenes
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		for i, scene := range input {
 			translator := changesetTranslator{
@@ -130,11 +138,11 @@ func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.Sce
 			}
 
 			thisScene, err := r.sceneUpdate(ctx, *scene, translator)
-			ret = append(ret, thisScene)
-
 			if err != nil {
 				return err
 			}
+
+			ret = append(ret, thisScene)
 		}
 
 		return nil
@@ -164,23 +172,39 @@ func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.Sce
 
 func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTranslator) (*models.ScenePartial, error) {
 	updatedScene := models.NewScenePartial()
+
+	var err error
+
 	updatedScene.Title = translator.optionalString(input.Title, "title")
 	updatedScene.Code = translator.optionalString(input.Code, "code")
 	updatedScene.Details = translator.optionalString(input.Details, "details")
 	updatedScene.Director = translator.optionalString(input.Director, "director")
-	updatedScene.URL = translator.optionalString(input.URL, "url")
-	updatedScene.Date = translator.optionalDate(input.Date, "date")
+	updatedScene.Date, err = translator.optionalDate(input.Date, "date")
+	if err != nil {
+		return nil, fmt.Errorf("converting date: %w", err)
+	}
 	updatedScene.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
 	updatedScene.OCounter = translator.optionalInt(input.OCounter, "o_counter")
 	updatedScene.PlayCount = translator.optionalInt(input.PlayCount, "play_count")
 	updatedScene.PlayDuration = translator.optionalFloat64(input.PlayDuration, "play_duration")
-	var err error
 	updatedScene.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 
 	updatedScene.Organized = translator.optionalBool(input.Organized, "organized")
+
+	if translator.hasField("urls") {
+		updatedScene.URLs = &models.UpdateStrings{
+			Values: input.Urls,
+			Mode:   models.RelationshipUpdateModeSet,
+		}
+	} else if translator.hasField("url") {
+		updatedScene.URLs = &models.UpdateStrings{
+			Values: []string{*input.URL},
+			Mode:   models.RelationshipUpdateModeSet,
+		}
+	}
 
 	if input.PrimaryFileID != nil {
 		primaryFileID, err := strconv.Atoi(*input.PrimaryFileID)
@@ -233,7 +257,6 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 }
 
 func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUpdateInput, translator changesetTranslator) (*models.Scene, error) {
-	// Populate scene from the input
 	sceneID, err := strconv.Atoi(input.ID)
 	if err != nil {
 		return nil, err
@@ -241,17 +264,16 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 
 	qb := r.repository.Scene
 
-	s, err := qb.Find(ctx, sceneID)
+	originalScene, err := qb.Find(ctx, sceneID)
 	if err != nil {
 		return nil, err
 	}
 
-	if s == nil {
+	if originalScene == nil {
 		return nil, fmt.Errorf("scene with id %d not found", sceneID)
 	}
 
-	var coverImageData []byte
-
+	// Populate scene from the input
 	updatedScene, err := scenePartialFromInput(input, translator)
 	if err != nil {
 		return nil, err
@@ -259,11 +281,11 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 
 	// ensure that title is set where scene has no file
 	if updatedScene.Title.Set && updatedScene.Title.Value == "" {
-		if err := s.LoadFiles(ctx, r.repository.Scene); err != nil {
+		if err := originalScene.LoadFiles(ctx, r.repository.Scene); err != nil {
 			return nil, err
 		}
 
-		if len(s.Files.List()) == 0 {
+		if len(originalScene.Files.List()) == 0 {
 			return nil, errors.New("title must be set if scene has no files")
 		}
 	}
@@ -273,13 +295,13 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 
 		// if file hash has changed, we should migrate generated files
 		// after commit
-		if err := s.LoadFiles(ctx, r.repository.Scene); err != nil {
+		if err := originalScene.LoadFiles(ctx, r.repository.Scene); err != nil {
 			return nil, err
 		}
 
 		// ensure that new primary file is associated with scene
 		var f *file.VideoFile
-		for _, ff := range s.Files.List() {
+		for _, ff := range originalScene.Files.List() {
 			if ff.ID == newPrimaryFileID {
 				f = ff
 			}
@@ -290,7 +312,8 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		}
 	}
 
-	if input.CoverImage != nil && *input.CoverImage != "" {
+	var coverImageData []byte
+	if input.CoverImage != nil {
 		var err error
 		coverImageData, err = utils.ProcessImageInput(ctx, *input.CoverImage)
 		if err != nil {
@@ -298,16 +321,16 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		}
 	}
 
-	s, err = qb.UpdatePartial(ctx, sceneID, *updatedScene)
+	scene, err := qb.UpdatePartial(ctx, sceneID, *updatedScene)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := r.sceneUpdateCoverImage(ctx, s, coverImageData); err != nil {
+	if err := r.sceneUpdateCoverImage(ctx, scene, coverImageData); err != nil {
 		return nil, err
 	}
 
-	return s, nil
+	return scene, nil
 }
 
 func (r *mutationResolver) sceneUpdateCoverImage(ctx context.Context, s *models.Scene, coverImageData []byte) error {
@@ -329,18 +352,21 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 		return nil, err
 	}
 
-	// Populate scene from the input
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
 
+	// Populate scene from the input
 	updatedScene := models.NewScenePartial()
+
 	updatedScene.Title = translator.optionalString(input.Title, "title")
 	updatedScene.Code = translator.optionalString(input.Code, "code")
 	updatedScene.Details = translator.optionalString(input.Details, "details")
 	updatedScene.Director = translator.optionalString(input.Director, "director")
-	updatedScene.URL = translator.optionalString(input.URL, "url")
-	updatedScene.Date = translator.optionalDate(input.Date, "date")
+	updatedScene.Date, err = translator.optionalDate(input.Date, "date")
+	if err != nil {
+		return nil, fmt.Errorf("converting date: %w", err)
+	}
 	updatedScene.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
 	updatedScene.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {
@@ -348,6 +374,18 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 	}
 
 	updatedScene.Organized = translator.optionalBool(input.Organized, "organized")
+
+	if translator.hasField("urls") {
+		updatedScene.URLs = &models.UpdateStrings{
+			Values: input.Urls.Values,
+			Mode:   input.Urls.Mode,
+		}
+	} else if translator.hasField("url") {
+		updatedScene.URLs = &models.UpdateStrings{
+			Values: []string{*input.URL},
+			Mode:   models.RelationshipUpdateModeSet,
+		}
+	}
 
 	if translator.hasField("performer_ids") {
 		updatedScene.PerformerIDs, err = translateUpdateIDs(input.PerformerIds.Ids, input.PerformerIds.Mode)
@@ -380,7 +418,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 
 	ret := []*models.Scene{}
 
-	// Start the transaction and save the scene marker
+	// Start the transaction and save the scenes
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
@@ -490,9 +528,11 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 			if err != nil {
 				return err
 			}
-			if s != nil {
-				scenes = append(scenes, s)
+			if s == nil {
+				return fmt.Errorf("scene with id %d not found", sceneID)
 			}
+
+			scenes = append(scenes, s)
 
 			// kill any running encoders
 			manager.KillRunningStreams(s, fileNamingAlgo)
@@ -573,8 +613,7 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 	}
 
 	var coverImageData []byte
-
-	if input.Values.CoverImage != nil && *input.Values.CoverImage != "" {
+	if input.Values.CoverImage != nil {
 		var err error
 		coverImageData, err = utils.ProcessImageInput(ctx, *input.Values.CoverImage)
 		if err != nil {
@@ -589,12 +628,14 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 		}
 
 		ret, err = r.Resolver.repository.Scene.Find(ctx, destID)
-
-		if err == nil && ret != nil {
-			err = r.sceneUpdateCoverImage(ctx, ret, coverImageData)
+		if err != nil {
+			return err
+		}
+		if ret == nil {
+			return fmt.Errorf("scene with id %d not found", destID)
 		}
 
-		return err
+		return r.sceneUpdateCoverImage(ctx, ret, coverImageData)
 	}); err != nil {
 		return nil, err
 	}
@@ -614,72 +655,53 @@ func (r *mutationResolver) getSceneMarker(ctx context.Context, id int) (ret *mod
 }
 
 func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input SceneMarkerCreateInput) (*models.SceneMarker, error) {
-	primaryTagID, err := strconv.Atoi(input.PrimaryTagID)
-	if err != nil {
-		return nil, err
-	}
-
 	sceneID, err := strconv.Atoi(input.SceneID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting scene id: %w", err)
+	}
+
+	primaryTagID, err := strconv.Atoi(input.PrimaryTagID)
+	if err != nil {
+		return nil, fmt.Errorf("converting primary tag id: %w", err)
 	}
 
 	currentTime := time.Now()
-	newSceneMarker := models.SceneMarker{
+	newMarker := models.SceneMarker{
 		Title:        input.Title,
 		Seconds:      input.Seconds,
 		PrimaryTagID: primaryTagID,
-		SceneID:      sql.NullInt64{Int64: int64(sceneID), Valid: sceneID != 0},
-		CreatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
+		SceneID:      sceneID,
+		CreatedAt:    currentTime,
+		UpdatedAt:    currentTime,
 	}
 
 	tagIDs, err := stringslice.StringSliceToIntSlice(input.TagIds)
 	if err != nil {
+		return nil, fmt.Errorf("converting tag ids: %w", err)
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.SceneMarker
+
+		err := qb.Create(ctx, &newMarker)
+		if err != nil {
+			return err
+		}
+
+		// Save the marker tags
+		// If this tag is the primary tag, then let's not add it.
+		tagIDs = intslice.IntExclude(tagIDs, []int{newMarker.PrimaryTagID})
+		return qb.UpdateTags(ctx, newMarker.ID, tagIDs)
+	}); err != nil {
 		return nil, err
 	}
 
-	ret, err := r.changeMarker(ctx, create, newSceneMarker, tagIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	r.hookExecutor.ExecutePostHooks(ctx, ret.ID, plugin.SceneMarkerCreatePost, input, nil)
-	return r.getSceneMarker(ctx, ret.ID)
+	r.hookExecutor.ExecutePostHooks(ctx, newMarker.ID, plugin.SceneMarkerCreatePost, input, nil)
+	return r.getSceneMarker(ctx, newMarker.ID)
 }
 
 func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMarkerUpdateInput) (*models.SceneMarker, error) {
-	// Populate scene marker from the input
-	sceneMarkerID, err := strconv.Atoi(input.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	primaryTagID, err := strconv.Atoi(input.PrimaryTagID)
-	if err != nil {
-		return nil, err
-	}
-
-	sceneID, err := strconv.Atoi(input.SceneID)
-	if err != nil {
-		return nil, err
-	}
-
-	updatedSceneMarker := models.SceneMarker{
-		ID:           sceneMarkerID,
-		Title:        input.Title,
-		Seconds:      input.Seconds,
-		SceneID:      sql.NullInt64{Int64: int64(sceneID), Valid: sceneID != 0},
-		PrimaryTagID: primaryTagID,
-		UpdatedAt:    models.SQLiteTimestamp{Timestamp: time.Now()},
-	}
-
-	tagIDs, err := stringslice.StringSliceToIntSlice(input.TagIds)
-	if err != nil {
-		return nil, err
-	}
-
-	ret, err := r.changeMarker(ctx, update, updatedSceneMarker, tagIDs)
+	markerID, err := strconv.Atoi(input.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -687,8 +709,93 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
-	r.hookExecutor.ExecutePostHooks(ctx, ret.ID, plugin.SceneMarkerUpdatePost, input, translator.getFields())
-	return r.getSceneMarker(ctx, ret.ID)
+
+	// Populate scene marker from the input
+	updatedMarker := models.NewSceneMarkerPartial()
+
+	updatedMarker.Title = translator.optionalString(input.Title, "title")
+	updatedMarker.Seconds = translator.optionalFloat64(input.Seconds, "seconds")
+	updatedMarker.SceneID, err = translator.optionalIntFromString(input.SceneID, "scene_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting scene id: %w", err)
+	}
+	updatedMarker.PrimaryTagID, err = translator.optionalIntFromString(input.PrimaryTagID, "primary_tag_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting primary tag id: %w", err)
+	}
+
+	var tagIDs []int
+	tagIdsIncluded := translator.hasField("tag_ids")
+	if input.TagIds != nil {
+		tagIDs, err = stringslice.StringSliceToIntSlice(input.TagIds)
+		if err != nil {
+			return nil, fmt.Errorf("converting tag ids: %w", err)
+		}
+	}
+
+	mgr := manager.GetInstance()
+
+	fileDeleter := &scene.FileDeleter{
+		Deleter:        file.NewDeleter(),
+		FileNamingAlgo: mgr.Config.GetVideoFileNamingAlgorithm(),
+		Paths:          mgr.Paths,
+	}
+
+	// Start the transaction and save the scene marker
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.SceneMarker
+		sqb := r.repository.Scene
+
+		// check to see if timestamp was changed
+		existingMarker, err := qb.Find(ctx, markerID)
+		if err != nil {
+			return err
+		}
+		if existingMarker == nil {
+			return fmt.Errorf("scene marker with id %d not found", markerID)
+		}
+
+		newMarker, err := qb.UpdatePartial(ctx, markerID, updatedMarker)
+		if err != nil {
+			return err
+		}
+
+		existingScene, err := sqb.Find(ctx, existingMarker.SceneID)
+		if err != nil {
+			return err
+		}
+		if existingScene == nil {
+			return fmt.Errorf("scene with id %d not found", existingMarker.SceneID)
+		}
+
+		// remove the marker preview if the scene changed or if the timestamp was changed
+		if existingMarker.SceneID != newMarker.SceneID || existingMarker.Seconds != newMarker.Seconds {
+			seconds := int(existingMarker.Seconds)
+			if err := fileDeleter.MarkMarkerFiles(existingScene, seconds); err != nil {
+				return err
+			}
+		}
+
+		if tagIdsIncluded {
+			// Save the marker tags
+			// If this tag is the primary tag, then let's not add it.
+			tagIDs = intslice.IntExclude(tagIDs, []int{newMarker.PrimaryTagID})
+			if err := qb.UpdateTags(ctx, markerID, tagIDs); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
+		fileDeleter.Rollback()
+		return nil, err
+	}
+
+	// perform the post-commit actions
+	fileDeleter.Commit()
+
+	r.hookExecutor.ExecutePostHooks(ctx, markerID, plugin.SceneMarkerUpdatePost, input, translator.getFields())
+	return r.getSceneMarker(ctx, markerID)
 }
 
 func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (bool, error) {
@@ -719,9 +826,13 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 			return fmt.Errorf("scene marker with id %d not found", markerID)
 		}
 
-		s, err := sqb.Find(ctx, int(marker.SceneID.Int64))
+		s, err := sqb.Find(ctx, marker.SceneID)
 		if err != nil {
 			return err
+		}
+
+		if s == nil {
+			return fmt.Errorf("scene with id %d not found", marker.SceneID)
 		}
 
 		return scene.DestroyMarker(ctx, s, marker, qb, fileDeleter)
@@ -736,67 +847,6 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 	r.hookExecutor.ExecutePostHooks(ctx, markerID, plugin.SceneMarkerDestroyPost, id, nil)
 
 	return true, nil
-}
-
-func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, changedMarker models.SceneMarker, tagIDs []int) (*models.SceneMarker, error) {
-	var existingMarker *models.SceneMarker
-	var sceneMarker *models.SceneMarker
-	var s *models.Scene
-
-	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
-
-	fileDeleter := &scene.FileDeleter{
-		Deleter:        file.NewDeleter(),
-		FileNamingAlgo: fileNamingAlgo,
-		Paths:          manager.GetInstance().Paths,
-	}
-
-	// Start the transaction and save the scene marker
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.SceneMarker
-		sqb := r.repository.Scene
-
-		var err error
-		switch changeType {
-		case create:
-			sceneMarker, err = qb.Create(ctx, changedMarker)
-		case update:
-			// check to see if timestamp was changed
-			existingMarker, err = qb.Find(ctx, changedMarker.ID)
-			if err != nil {
-				return err
-			}
-			sceneMarker, err = qb.Update(ctx, changedMarker)
-			if err != nil {
-				return err
-			}
-
-			s, err = sqb.Find(ctx, int(existingMarker.SceneID.Int64))
-		}
-		if err != nil {
-			return err
-		}
-
-		// remove the marker preview if the timestamp was changed
-		if s != nil && existingMarker != nil && existingMarker.Seconds != changedMarker.Seconds {
-			seconds := int(existingMarker.Seconds)
-			if err := fileDeleter.MarkMarkerFiles(s, seconds); err != nil {
-				return err
-			}
-		}
-
-		// Save the marker tags
-		// If this tag is the primary tag, then let's not add it.
-		tagIDs = intslice.IntExclude(tagIDs, []int{changedMarker.PrimaryTagID})
-		return qb.UpdateTags(ctx, sceneMarker.ID, tagIDs)
-	}); err != nil {
-		fileDeleter.Rollback()
-		return nil, err
-	}
-
-	// perform the post-commit actions
-	fileDeleter.Commit()
-	return sceneMarker, nil
 }
 
 func (r *mutationResolver) SceneSaveActivity(ctx context.Context, id string, resumeTime *float64, playDuration *float64) (ret bool, err error) {

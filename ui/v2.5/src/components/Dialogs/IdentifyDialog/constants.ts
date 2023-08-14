@@ -31,6 +31,8 @@ export const multiValueSceneFields: SceneField[] = [
 export function sceneFieldMessageID(field: SceneField) {
   if (field === "code") {
     return "scene_code";
+  } else if (field === "studio") {
+    return "studio_and_parent";
   }
 
   return field;

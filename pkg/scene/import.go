@@ -80,12 +80,10 @@ func (i *Importer) PreImport(ctx context.Context) error {
 
 func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 	newScene := models.Scene{
-		// Path:    i.Path,
 		Title:        sceneJSON.Title,
 		Code:         sceneJSON.Code,
 		Details:      sceneJSON.Details,
 		Director:     sceneJSON.Director,
-		URL:          sceneJSON.URL,
 		PerformerIDs: models.NewRelatedIDs([]int{}),
 		TagIDs:       models.NewRelatedIDs([]int{}),
 		GalleryIDs:   models.NewRelatedIDs([]int{}),
@@ -93,9 +91,17 @@ func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 		StashIDs:     models.NewRelatedStashIDs(sceneJSON.StashIDs),
 	}
 
+	if len(sceneJSON.URLs) > 0 {
+		newScene.URLs = models.NewRelatedStrings(sceneJSON.URLs)
+	} else if sceneJSON.URL != "" {
+		newScene.URLs = models.NewRelatedStrings([]string{sceneJSON.URL})
+	}
+
 	if sceneJSON.Date != "" {
-		d := models.NewDate(sceneJSON.Date)
-		newScene.Date = &d
+		d, err := models.ParseDate(sceneJSON.Date)
+		if err == nil {
+			newScene.Date = &d
+		}
 	}
 	if sceneJSON.Rating != 0 {
 		newScene.Rating = &sceneJSON.Rating
@@ -170,14 +176,16 @@ func (i *Importer) populateStudio(ctx context.Context) error {
 }
 
 func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
-	newStudio := *models.NewStudio(name)
+	newStudio := &models.Studio{
+		Name: name,
+	}
 
-	created, err := i.StudioWriter.Create(ctx, newStudio)
+	err := i.StudioWriter.Create(ctx, newStudio)
 	if err != nil {
 		return 0, err
 	}
 
-	return created.ID, nil
+	return newStudio.ID, nil
 }
 
 func (i *Importer) locateGallery(ctx context.Context, ref jsonschema.GalleryRef) (*models.Gallery, error) {
@@ -299,13 +307,14 @@ func (i *Importer) populateMovies(ctx context.Context) error {
 				return fmt.Errorf("error finding scene movie: %v", err)
 			}
 
+			var movieID int
 			if movie == nil {
 				if i.MissingRefBehaviour == models.ImportMissingRefEnumFail {
 					return fmt.Errorf("scene movie [%s] not found", inputMovie.MovieName)
 				}
 
 				if i.MissingRefBehaviour == models.ImportMissingRefEnumCreate {
-					movie, err = i.createMovie(ctx, inputMovie.MovieName)
+					movieID, err = i.createMovie(ctx, inputMovie.MovieName)
 					if err != nil {
 						return fmt.Errorf("error creating scene movie: %v", err)
 					}
@@ -315,10 +324,12 @@ func (i *Importer) populateMovies(ctx context.Context) error {
 				if i.MissingRefBehaviour == models.ImportMissingRefEnumIgnore {
 					continue
 				}
+			} else {
+				movieID = movie.ID
 			}
 
 			toAdd := models.MoviesScenes{
-				MovieID: movie.ID,
+				MovieID: movieID,
 			}
 
 			if inputMovie.SceneIndex != 0 {
@@ -333,15 +344,15 @@ func (i *Importer) populateMovies(ctx context.Context) error {
 	return nil
 }
 
-func (i *Importer) createMovie(ctx context.Context, name string) (*models.Movie, error) {
-	newMovie := *models.NewMovie(name)
+func (i *Importer) createMovie(ctx context.Context, name string) (int, error) {
+	newMovie := models.NewMovie(name)
 
-	created, err := i.MovieWriter.Create(ctx, newMovie)
+	err := i.MovieWriter.Create(ctx, newMovie)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	return created, nil
+	return newMovie.ID, nil
 }
 
 func (i *Importer) populateTags(ctx context.Context) error {
@@ -464,14 +475,14 @@ func importTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []st
 func createTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []string) ([]*models.Tag, error) {
 	var ret []*models.Tag
 	for _, name := range names {
-		newTag := *models.NewTag(name)
+		newTag := models.NewTag(name)
 
-		created, err := tagWriter.Create(ctx, newTag)
+		err := tagWriter.Create(ctx, newTag)
 		if err != nil {
 			return nil, err
 		}
 
-		ret = append(ret, created)
+		ret = append(ret, newTag)
 	}
 
 	return ret, nil

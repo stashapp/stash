@@ -208,14 +208,14 @@ func TestSceneStudios(t *testing.T) {
 	)
 	studio := models.Studio{
 		ID:   studioID,
-		Name: models.NullString(studioName),
+		Name: studioName,
 	}
 
 	const reversedStudioName = "name studio"
 	const reversedStudioID = 3
 	reversedStudio := models.Studio{
 		ID:   reversedStudioID,
-		Name: models.NullString(reversedStudioName),
+		Name: reversedStudioName,
 	}
 
 	testTables := generateTestTable(studioName, sceneExt)
@@ -253,7 +253,7 @@ func TestSceneStudios(t *testing.T) {
 	}
 
 	const unmatchedName = "unmatched"
-	studio.Name.String = unmatchedName
+	studio.Name = unmatchedName
 
 	// test against aliases
 	for _, test := range testTables {

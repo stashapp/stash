@@ -1,7 +1,6 @@
 package movie
 
 import (
-	"database/sql"
 	"errors"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -32,16 +31,15 @@ const (
 const movieName = "testMovie"
 const movieAliases = "aliases"
 
-var date = models.SQLiteDate{
-	String: "2001-01-01",
-	Valid:  true,
-}
-
-const rating = 5
-const duration = 100
-const director = "director"
-const synopsis = "synopsis"
-const url = "url"
+var (
+	date       = "2001-01-01"
+	dateObj, _ = models.ParseDate(date)
+	rating     = 5
+	duration   = 100
+	director   = "director"
+	synopsis   = "synopsis"
+	url        = "url"
+)
 
 const studioName = "studio"
 
@@ -56,7 +54,7 @@ var (
 )
 
 var movieStudio models.Studio = models.Studio{
-	Name: models.NullString(studioName),
+	Name: studioName,
 }
 
 var (
@@ -66,43 +64,26 @@ var (
 
 func createFullMovie(id int, studioID int) models.Movie {
 	return models.Movie{
-		ID:      id,
-		Name:    models.NullString(movieName),
-		Aliases: models.NullString(movieAliases),
-		Date:    date,
-		Rating: sql.NullInt64{
-			Int64: rating,
-			Valid: true,
-		},
-		Duration: sql.NullInt64{
-			Int64: duration,
-			Valid: true,
-		},
-		Director: models.NullString(director),
-		Synopsis: models.NullString(synopsis),
-		URL:      models.NullString(url),
-		StudioID: sql.NullInt64{
-			Int64: int64(studioID),
-			Valid: true,
-		},
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
+		ID:        id,
+		Name:      movieName,
+		Aliases:   movieAliases,
+		Date:      &dateObj,
+		Rating:    &rating,
+		Duration:  &duration,
+		Director:  director,
+		Synopsis:  synopsis,
+		URL:       url,
+		StudioID:  &studioID,
+		CreatedAt: createTime,
+		UpdatedAt: updateTime,
 	}
 }
 
 func createEmptyMovie(id int) models.Movie {
 	return models.Movie{
-		ID: id,
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
+		ID:        id,
+		CreatedAt: createTime,
+		UpdatedAt: updateTime,
 	}
 }
 
@@ -110,7 +91,7 @@ func createFullJSONMovie(studio, frontImage, backImage string) *jsonschema.Movie
 	return &jsonschema.Movie{
 		Name:       movieName,
 		Aliases:    movieAliases,
-		Date:       date.String,
+		Date:       date,
 		Rating:     rating,
 		Duration:   duration,
 		Director:   director,

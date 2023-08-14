@@ -2,78 +2,226 @@ package sqlite
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 
+	"github.com/doug-martin/goqu/v9"
+	"github.com/doug-martin/goqu/v9/exp"
+	"github.com/jmoiron/sqlx"
+
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
-type galleryChapterQueryBuilder struct {
+const (
+	galleriesChaptersTable = "galleries_chapters"
+)
+
+type galleryChapterRow struct {
+	ID         int       `db:"id" goqu:"skipinsert"`
+	Title      string    `db:"title"` // TODO: make db schema (and gql schema) nullable
+	ImageIndex int       `db:"image_index"`
+	GalleryID  int       `db:"gallery_id"`
+	CreatedAt  Timestamp `db:"created_at"`
+	UpdatedAt  Timestamp `db:"updated_at"`
+}
+
+func (r *galleryChapterRow) fromGalleryChapter(o models.GalleryChapter) {
+	r.ID = o.ID
+	r.Title = o.Title
+	r.ImageIndex = o.ImageIndex
+	r.GalleryID = o.GalleryID
+	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
+	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
+}
+
+func (r *galleryChapterRow) resolve() *models.GalleryChapter {
+	ret := &models.GalleryChapter{
+		ID:         r.ID,
+		Title:      r.Title,
+		ImageIndex: r.ImageIndex,
+		GalleryID:  r.GalleryID,
+		CreatedAt:  r.CreatedAt.Timestamp,
+		UpdatedAt:  r.UpdatedAt.Timestamp,
+	}
+
+	return ret
+}
+
+type galleryChapterRowRecord struct {
+	updateRecord
+}
+
+func (r *galleryChapterRowRecord) fromPartial(o models.GalleryChapterPartial) {
+	// TODO: replace with setNullString after schema is made nullable
+	// r.setNullString("title", o.Title)
+	// saves a null input as the empty string
+	if o.Title.Set {
+		r.set("title", o.Title.Value)
+	}
+	r.setInt("image_index", o.ImageIndex)
+	r.setInt("gallery_id", o.GalleryID)
+	r.setTimestamp("created_at", o.CreatedAt)
+	r.setTimestamp("updated_at", o.UpdatedAt)
+}
+
+type GalleryChapterStore struct {
 	repository
+
+	tableMgr *table
 }
 
-var GalleryChapterReaderWriter = &galleryChapterQueryBuilder{
-	repository{
-		tableName: galleriesChaptersTable,
-		idColumn:  idColumn,
-	},
+func NewGalleryChapterStore() *GalleryChapterStore {
+	return &GalleryChapterStore{
+		repository: repository{
+			tableName: galleriesChaptersTable,
+			idColumn:  idColumn,
+		},
+		tableMgr: galleriesChaptersTableMgr,
+	}
 }
 
-func (qb *galleryChapterQueryBuilder) Create(ctx context.Context, newObject models.GalleryChapter) (*models.GalleryChapter, error) {
-	var ret models.GalleryChapter
-	if err := qb.insertObject(ctx, newObject, &ret); err != nil {
-		return nil, err
+func (qb *GalleryChapterStore) table() exp.IdentifierExpression {
+	return qb.tableMgr.table
+}
+
+func (qb *GalleryChapterStore) selectDataset() *goqu.SelectDataset {
+	return dialect.From(qb.table()).Select(qb.table().All())
+}
+
+func (qb *GalleryChapterStore) Create(ctx context.Context, newObject *models.GalleryChapter) error {
+	var r galleryChapterRow
+	r.fromGalleryChapter(*newObject)
+
+	id, err := qb.tableMgr.insertID(ctx, r)
+	if err != nil {
+		return err
 	}
 
-	return &ret, nil
-}
-
-func (qb *galleryChapterQueryBuilder) Update(ctx context.Context, updatedObject models.GalleryChapter) (*models.GalleryChapter, error) {
-	const partial = false
-	if err := qb.update(ctx, updatedObject.ID, updatedObject, partial); err != nil {
-		return nil, err
+	updated, err := qb.find(ctx, id)
+	if err != nil {
+		return fmt.Errorf("finding after create: %w", err)
 	}
 
-	var ret models.GalleryChapter
-	if err := qb.getByID(ctx, updatedObject.ID, &ret); err != nil {
-		return nil, err
-	}
+	*newObject = *updated
 
-	return &ret, nil
+	return nil
 }
 
-func (qb *galleryChapterQueryBuilder) Destroy(ctx context.Context, id int) error {
+func (qb *GalleryChapterStore) Update(ctx context.Context, updatedObject *models.GalleryChapter) error {
+	var r galleryChapterRow
+	r.fromGalleryChapter(*updatedObject)
+
+	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (qb *GalleryChapterStore) UpdatePartial(ctx context.Context, id int, partial models.GalleryChapterPartial) (*models.GalleryChapter, error) {
+	r := galleryChapterRowRecord{
+		updateRecord{
+			Record: make(exp.Record),
+		},
+	}
+
+	r.fromPartial(partial)
+
+	if len(r.Record) > 0 {
+		if err := qb.tableMgr.updateByID(ctx, id, r.Record); err != nil {
+			return nil, err
+		}
+	}
+
+	return qb.find(ctx, id)
+}
+
+func (qb *GalleryChapterStore) Destroy(ctx context.Context, id int) error {
 	return qb.destroyExisting(ctx, []int{id})
 }
 
-func (qb *galleryChapterQueryBuilder) Find(ctx context.Context, id int) (*models.GalleryChapter, error) {
-	query := "SELECT * FROM galleries_chapters WHERE id = ? LIMIT 1"
-	args := []interface{}{id}
-	results, err := qb.queryGalleryChapters(ctx, query, args)
-	if err != nil || len(results) < 1 {
+// returns nil, nil if not found
+func (qb *GalleryChapterStore) Find(ctx context.Context, id int) (*models.GalleryChapter, error) {
+	ret, err := qb.find(ctx, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	return ret, err
+}
+
+func (qb *GalleryChapterStore) FindMany(ctx context.Context, ids []int) ([]*models.GalleryChapter, error) {
+	ret := make([]*models.GalleryChapter, len(ids))
+
+	table := qb.table()
+	q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(ids))
+	unsorted, err := qb.getMany(ctx, q)
+	if err != nil {
 		return nil, err
 	}
-	return results[0], nil
-}
 
-func (qb *galleryChapterQueryBuilder) FindMany(ctx context.Context, ids []int) ([]*models.GalleryChapter, error) {
-	var markers []*models.GalleryChapter
-	for _, id := range ids {
-		marker, err := qb.Find(ctx, id)
-		if err != nil {
-			return nil, err
-		}
-
-		if marker == nil {
-			return nil, fmt.Errorf("gallery chapter with id %d not found", id)
-		}
-
-		markers = append(markers, marker)
+	for _, s := range unsorted {
+		i := intslice.IntIndex(ids, s.ID)
+		ret[i] = s
 	}
 
-	return markers, nil
+	for i := range ret {
+		if ret[i] == nil {
+			return nil, fmt.Errorf("gallery chapter with id %d not found", ids[i])
+		}
+	}
+
+	return ret, nil
 }
 
-func (qb *galleryChapterQueryBuilder) FindByGalleryID(ctx context.Context, galleryID int) ([]*models.GalleryChapter, error) {
+// returns nil, sql.ErrNoRows if not found
+func (qb *GalleryChapterStore) find(ctx context.Context, id int) (*models.GalleryChapter, error) {
+	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
+
+	ret, err := qb.get(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+// returns nil, sql.ErrNoRows if not found
+func (qb *GalleryChapterStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.GalleryChapter, error) {
+	ret, err := qb.getMany(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ret) == 0 {
+		return nil, sql.ErrNoRows
+	}
+
+	return ret[0], nil
+}
+
+func (qb *GalleryChapterStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.GalleryChapter, error) {
+	const single = false
+	var ret []*models.GalleryChapter
+	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
+		var f galleryChapterRow
+		if err := r.StructScan(&f); err != nil {
+			return err
+		}
+
+		s := f.resolve()
+
+		ret = append(ret, s)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (qb *GalleryChapterStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*models.GalleryChapter, error) {
 	query := `
 		SELECT galleries_chapters.* FROM galleries_chapters
 		WHERE galleries_chapters.gallery_id = ?
@@ -84,11 +232,22 @@ func (qb *galleryChapterQueryBuilder) FindByGalleryID(ctx context.Context, galle
 	return qb.queryGalleryChapters(ctx, query, args)
 }
 
-func (qb *galleryChapterQueryBuilder) queryGalleryChapters(ctx context.Context, query string, args []interface{}) ([]*models.GalleryChapter, error) {
-	var ret models.GalleryChapters
-	if err := qb.query(ctx, query, args, &ret); err != nil {
+func (qb *GalleryChapterStore) queryGalleryChapters(ctx context.Context, query string, args []interface{}) ([]*models.GalleryChapter, error) {
+	const single = false
+	var ret []*models.GalleryChapter
+	if err := qb.queryFunc(ctx, query, args, single, func(r *sqlx.Rows) error {
+		var f galleryChapterRow
+		if err := r.StructScan(&f); err != nil {
+			return err
+		}
+
+		s := f.resolve()
+
+		ret = append(ret, s)
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
-	return []*models.GalleryChapter(ret), nil
+	return ret, nil
 }

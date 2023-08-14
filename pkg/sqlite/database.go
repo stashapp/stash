@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"database/sql"
 	"embed"
 	"errors"
 	"fmt"
@@ -32,7 +33,7 @@ const (
 	dbConnTimeout = 30
 )
 
-var appSchemaVersion uint = 46
+var appSchemaVersion uint = 48
 
 //go:embed migrations/*.sql
 var migrationsBox embed.FS
@@ -64,16 +65,19 @@ func (e *MismatchedSchemaVersionError) Error() string {
 }
 
 type Database struct {
-	Blobs     *BlobStore
-	File      *FileStore
-	Folder    *FolderStore
-	Image     *ImageStore
-	Gallery   *GalleryStore
-	Scene     *SceneStore
-	Performer *PerformerStore
-	Studio    *studioQueryBuilder
-	Tag       *tagQueryBuilder
-	Movie     *movieQueryBuilder
+	Blobs          *BlobStore
+	File           *FileStore
+	Folder         *FolderStore
+	Image          *ImageStore
+	Gallery        *GalleryStore
+	GalleryChapter *GalleryChapterStore
+	Scene          *SceneStore
+	SceneMarker    *SceneMarkerStore
+	Performer      *PerformerStore
+	Studio         *StudioStore
+	Tag            *TagStore
+	Movie          *MovieStore
+	SavedFilter    *SavedFilterStore
 
 	db     *sqlx.DB
 	dbPath string
@@ -89,17 +93,20 @@ func NewDatabase() *Database {
 	blobStore := NewBlobStore(BlobStoreOptions{})
 
 	ret := &Database{
-		Blobs:     blobStore,
-		File:      fileStore,
-		Folder:    folderStore,
-		Scene:     NewSceneStore(fileStore, blobStore),
-		Image:     NewImageStore(fileStore),
-		Gallery:   NewGalleryStore(fileStore, folderStore),
-		Performer: NewPerformerStore(blobStore),
-		Studio:    NewStudioReaderWriter(blobStore),
-		Tag:       NewTagReaderWriter(blobStore),
-		Movie:     NewMovieReaderWriter(blobStore),
-		lockChan:  make(chan struct{}, 1),
+		Blobs:          blobStore,
+		File:           fileStore,
+		Folder:         folderStore,
+		Scene:          NewSceneStore(fileStore, blobStore),
+		SceneMarker:    NewSceneMarkerStore(),
+		Image:          NewImageStore(fileStore),
+		Gallery:        NewGalleryStore(fileStore, folderStore),
+		GalleryChapter: NewGalleryChapterStore(),
+		Performer:      NewPerformerStore(blobStore),
+		Studio:         NewStudioStore(blobStore),
+		Tag:            NewTagStore(blobStore),
+		Movie:          NewMovieStore(blobStore),
+		SavedFilter:    NewSavedFilterStore(),
+		lockChan:       make(chan struct{}, 1),
 	}
 
 	return ret
@@ -429,27 +436,94 @@ func (db *Database) RunMigrations() error {
 	}
 
 	// optimize database after migration
-	db.optimise()
+	err = db.Optimise(ctx)
+	if err != nil {
+		logger.Warnf("error while performing post-migration optimisation: %v", err)
+	}
 
 	return nil
 }
 
-func (db *Database) optimise() {
-	logger.Info("Optimizing database")
-	_, err := db.db.Exec("ANALYZE")
+func (db *Database) Optimise(ctx context.Context) error {
+	logger.Info("Optimising database")
+
+	err := db.Analyze(ctx)
 	if err != nil {
-		logger.Warnf("error while performing post-migration optimization: %v", err)
+		return fmt.Errorf("performing optimization: %w", err)
 	}
-	_, err = db.db.Exec("VACUUM")
+
+	err = db.Vacuum(ctx)
 	if err != nil {
-		logger.Warnf("error while performing post-migration vacuum: %v", err)
+		return fmt.Errorf("performing vacuum: %w", err)
 	}
+
+	return nil
 }
 
 // Vacuum runs a VACUUM on the database, rebuilding the database file into a minimal amount of disk space.
 func (db *Database) Vacuum(ctx context.Context) error {
 	_, err := db.db.ExecContext(ctx, "VACUUM")
 	return err
+}
+
+// Analyze runs an ANALYZE on the database to improve query performance.
+func (db *Database) Analyze(ctx context.Context) error {
+	_, err := db.db.ExecContext(ctx, "ANALYZE")
+	return err
+}
+
+func (db *Database) ExecSQL(ctx context.Context, query string, args []interface{}) (*int64, *int64, error) {
+	wrapper := dbWrapper{}
+
+	result, err := wrapper.Exec(ctx, query, args...)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var rowsAffected *int64
+	ra, err := result.RowsAffected()
+	if err == nil {
+		rowsAffected = &ra
+	}
+
+	var lastInsertId *int64
+	li, err := result.LastInsertId()
+	if err == nil {
+		lastInsertId = &li
+	}
+
+	return rowsAffected, lastInsertId, nil
+}
+
+func (db *Database) QuerySQL(ctx context.Context, query string, args []interface{}) ([]string, [][]interface{}, error) {
+	wrapper := dbWrapper{}
+
+	rows, err := wrapper.QueryxContext(ctx, query, args...)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, nil, err
+	}
+	defer rows.Close()
+
+	cols, err := rows.Columns()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var ret [][]interface{}
+
+	for rows.Next() {
+		row, err := rows.SliceScan()
+		if err != nil {
+			return nil, nil, err
+		}
+		ret = append(ret, row)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, nil, err
+	}
+
+	return cols, ret, nil
 }
 
 func (db *Database) runCustomMigrations(ctx context.Context, fns []customMigrationFunc) error {

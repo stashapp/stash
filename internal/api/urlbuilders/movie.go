@@ -15,7 +15,7 @@ func NewMovieURLBuilder(baseURL string, movie *models.Movie) MovieURLBuilder {
 	return MovieURLBuilder{
 		BaseURL:   baseURL,
 		MovieID:   strconv.Itoa(movie.ID),
-		UpdatedAt: strconv.FormatInt(movie.UpdatedAt.Timestamp.Unix(), 10),
+		UpdatedAt: strconv.FormatInt(movie.UpdatedAt.Unix(), 10),
 	}
 }
 

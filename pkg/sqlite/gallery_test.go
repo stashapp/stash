@@ -62,7 +62,7 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 		galleryFile = makeFileWithID(fileIdxStartGalleryFiles)
 	)
 
-	date := models.NewDate("2003-02-01")
+	date, _ := models.ParseDate("2003-02-01")
 
 	tests := []struct {
 		name      string
@@ -211,7 +211,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 	)
 
-	date := models.NewDate("2003-02-01")
+	date, _ := models.ParseDate("2003-02-01")
 
 	tests := []struct {
 		name          string
@@ -403,7 +403,7 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		date = models.NewDate("2003-02-01")
+		date, _ = models.ParseDate("2003-02-01")
 	)
 
 	tests := []struct {
@@ -831,7 +831,7 @@ func Test_galleryQueryBuilder_Destroy(t *testing.T) {
 			// ensure cannot be found
 			i, err := qb.Find(ctx, tt.id)
 
-			assert.NotNil(err)
+			assert.Nil(err)
 			assert.Nil(i)
 			return
 
@@ -843,10 +843,6 @@ func makeGalleryWithID(index int) *models.Gallery {
 	const includeScenes = true
 	ret := makeGallery(index, includeScenes)
 	ret.ID = galleryIDs[index]
-
-	if ret.Date != nil && ret.Date.IsZero() {
-		ret.Date = nil
-	}
 
 	ret.Files = models.NewRelatedFiles([]file.File{makeGalleryFile(index)})
 
@@ -870,7 +866,7 @@ func Test_galleryQueryBuilder_Find(t *testing.T) {
 			"invalid",
 			invalidID,
 			nil,
-			true,
+			false,
 		},
 		{
 			"with performers",
@@ -1932,12 +1928,12 @@ func TestGalleryQueryIsMissingDate(t *testing.T) {
 
 		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
-		// three in four scenes have no date
-		assert.Len(t, galleries, int(math.Ceil(float64(totalGalleries)/4*3)))
+		// one in four galleries have no date
+		assert.Len(t, galleries, int(math.Ceil(float64(totalGalleries)/4)))
 
-		// ensure date is null, empty or "0001-01-01"
+		// ensure date is null
 		for _, g := range galleries {
-			assert.True(t, g.Date == nil || g.Date.Time == time.Time{})
+			assert.Nil(t, g.Date)
 		}
 
 		return nil

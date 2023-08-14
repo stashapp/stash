@@ -5,6 +5,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 )
@@ -106,6 +107,7 @@ func (s *Service) deleteFiles(ctx context.Context, i *models.Image, fileDeleter 
 		// don't delete files in zip archives
 		const deleteFile = true
 		if f.Base().ZipFileID == nil {
+			logger.Info("Deleting image file: ", f.Base().Path)
 			if err := file.Destroy(ctx, s.File, f, fileDeleter.Deleter, deleteFile); err != nil {
 				return err
 			}
