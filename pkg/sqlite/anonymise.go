@@ -58,7 +58,7 @@ func (db *Anonymiser) Anonymise(ctx context.Context) error {
 			func() error { return db.anonymiseStudios(ctx) },
 			func() error { return db.anonymiseTags(ctx) },
 			func() error { return db.anonymiseMovies(ctx) },
-			func() error { db.optimise(); return nil },
+			func() error { return db.Optimise(ctx) },
 		})
 	}(); err != nil {
 		// delete the database
@@ -230,7 +230,6 @@ func (db *Anonymiser) anonymiseScenes(ctx context.Context) error {
 				table.Col(idColumn),
 				table.Col("title"),
 				table.Col("details"),
-				table.Col("url"),
 				table.Col("code"),
 				table.Col("director"),
 			).Where(table.Col(idColumn).Gt(lastID)).Limit(1000)
@@ -243,7 +242,6 @@ func (db *Anonymiser) anonymiseScenes(ctx context.Context) error {
 					id       int
 					title    sql.NullString
 					details  sql.NullString
-					url      sql.NullString
 					code     sql.NullString
 					director sql.NullString
 				)
@@ -252,7 +250,6 @@ func (db *Anonymiser) anonymiseScenes(ctx context.Context) error {
 					&id,
 					&title,
 					&details,
-					&url,
 					&code,
 					&director,
 				); err != nil {
@@ -264,7 +261,6 @@ func (db *Anonymiser) anonymiseScenes(ctx context.Context) error {
 				// if title set set new title
 				db.obfuscateNullString(set, "title", title)
 				db.obfuscateNullString(set, "details", details)
-				db.obfuscateNullString(set, "url", url)
 
 				if len(set) > 0 {
 					stmt := dialect.Update(table).Set(set).Where(table.Col(idColumn).Eq(id))
@@ -299,6 +295,10 @@ func (db *Anonymiser) anonymiseScenes(ctx context.Context) error {
 		}); err != nil {
 			return err
 		}
+	}
+
+	if err := db.anonymiseURLs(ctx, goqu.T(scenesURLsTable), "scene_id"); err != nil {
+		return err
 	}
 
 	return nil
@@ -692,6 +692,68 @@ func (db *Anonymiser) anonymiseAliases(ctx context.Context, table exp.Identifier
 
 				if total%logEvery == 0 {
 					logger.Infof("Anonymised %d %s aliases", total, table.GetTable())
+				}
+
+				return nil
+			})
+		}); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (db *Anonymiser) anonymiseURLs(ctx context.Context, table exp.IdentifierExpression, idColumn string) error {
+	lastID := 0
+	lastURL := ""
+	total := 0
+	const logEvery = 10000
+
+	for gotSome := true; gotSome; {
+		if err := txn.WithTxn(ctx, db, func(ctx context.Context) error {
+			query := dialect.From(table).Select(
+				table.Col(idColumn),
+				table.Col("url"),
+			).Where(goqu.L("(" + idColumn + ", url)").Gt(goqu.L("(?, ?)", lastID, lastURL))).Limit(1000)
+
+			gotSome = false
+
+			const single = false
+			return queryFunc(ctx, query, single, func(rows *sqlx.Rows) error {
+				var (
+					id  int
+					url sql.NullString
+				)
+
+				if err := rows.Scan(
+					&id,
+					&url,
+				); err != nil {
+					return err
+				}
+
+				set := goqu.Record{}
+				db.obfuscateNullString(set, "url", url)
+
+				if len(set) > 0 {
+					stmt := dialect.Update(table).Set(set).Where(
+						table.Col(idColumn).Eq(id),
+						table.Col("url").Eq(url),
+					)
+
+					if _, err := exec(ctx, stmt); err != nil {
+						return fmt.Errorf("anonymising %s: %w", table.GetTable(), err)
+					}
+				}
+
+				lastID = id
+				lastURL = url.String
+				gotSome = true
+				total++
+
+				if total%logEvery == 0 {
+					logger.Infof("Anonymised %d %s URLs", total, table.GetTable())
 				}
 
 				return nil

@@ -9,7 +9,6 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
-	"gopkg.in/guregu/null.v4/zero"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
@@ -26,10 +25,10 @@ GROUP BY scene_markers.id
 
 type sceneMarkerRow struct {
 	ID           int       `db:"id" goqu:"skipinsert"`
-	Title        string    `db:"title"`
+	Title        string    `db:"title"` // TODO: make db schema (and gql schema) nullable
 	Seconds      float64   `db:"seconds"`
 	PrimaryTagID int       `db:"primary_tag_id"`
-	SceneID      zero.Int  `db:"scene_id,omitempty"` // TODO: make schema non-nullable
+	SceneID      int       `db:"scene_id"`
 	CreatedAt    Timestamp `db:"created_at"`
 	UpdatedAt    Timestamp `db:"updated_at"`
 }
@@ -39,7 +38,7 @@ func (r *sceneMarkerRow) fromSceneMarker(o models.SceneMarker) {
 	r.Title = o.Title
 	r.Seconds = o.Seconds
 	r.PrimaryTagID = o.PrimaryTagID
-	r.SceneID = zero.IntFrom(int64(o.SceneID))
+	r.SceneID = o.SceneID
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
 }
@@ -50,12 +49,30 @@ func (r *sceneMarkerRow) resolve() *models.SceneMarker {
 		Title:        r.Title,
 		Seconds:      r.Seconds,
 		PrimaryTagID: r.PrimaryTagID,
-		SceneID:      int(r.SceneID.Int64),
+		SceneID:      r.SceneID,
 		CreatedAt:    r.CreatedAt.Timestamp,
 		UpdatedAt:    r.UpdatedAt.Timestamp,
 	}
 
 	return ret
+}
+
+type sceneMarkerRowRecord struct {
+	updateRecord
+}
+
+func (r *sceneMarkerRowRecord) fromPartial(o models.SceneMarkerPartial) {
+	// TODO: replace with setNullString after schema is made nullable
+	// r.setNullString("title", o.Title)
+	// saves a null input as the empty string
+	if o.Title.Set {
+		r.set("title", o.Title.Value)
+	}
+	r.setFloat64("seconds", o.Seconds)
+	r.setInt("primary_tag_id", o.PrimaryTagID)
+	r.setInt("scene_id", o.SceneID)
+	r.setTimestamp("created_at", o.CreatedAt)
+	r.setTimestamp("updated_at", o.UpdatedAt)
 }
 
 type SceneMarkerStore struct {
@@ -99,6 +116,24 @@ func (qb *SceneMarkerStore) Create(ctx context.Context, newObject *models.SceneM
 	*newObject = *updated
 
 	return nil
+}
+
+func (qb *SceneMarkerStore) UpdatePartial(ctx context.Context, id int, partial models.SceneMarkerPartial) (*models.SceneMarker, error) {
+	r := sceneMarkerRowRecord{
+		updateRecord{
+			Record: make(exp.Record),
+		},
+	}
+
+	r.fromPartial(partial)
+
+	if len(r.Record) > 0 {
+		if err := qb.tableMgr.updateByID(ctx, id, r.Record); err != nil {
+			return nil, err
+		}
+	}
+
+	return qb.find(ctx, id)
 }
 
 func (qb *SceneMarkerStore) Update(ctx context.Context, updatedObject *models.SceneMarker) error {
@@ -317,9 +352,11 @@ func sceneMarkerTagIDCriterionHandler(qb *SceneMarkerStore, tagID *string) crite
 	}
 }
 
-func sceneMarkerTagsCriterionHandler(qb *SceneMarkerStore, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func sceneMarkerTagsCriterionHandler(qb *SceneMarkerStore, criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
-		if tags != nil {
+		if criterion != nil {
+			tags := criterion.CombineExcludes()
+
 			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
 				var notClause string
 				if tags.Modifier == models.CriterionModifierNotNull {
@@ -332,26 +369,59 @@ func sceneMarkerTagsCriterionHandler(qb *SceneMarkerStore, tags *models.Hierarch
 				return
 			}
 
-			if len(tags.Value) == 0 {
-				return
-			}
-			valuesClause, err := getHierarchicalValues(ctx, qb.tx, tags.Value, tagTable, "tags_relations", "parent_id", "child_id", tags.Depth)
-			if err != nil {
-				f.setError(err)
+			if tags.Modifier == models.CriterionModifierEquals && tags.Depth != nil && *tags.Depth != 0 {
+				f.setError(fmt.Errorf("depth is not supported for equals modifier for marker tag filtering"))
 				return
 			}
 
-			f.addWith(`marker_tags AS (
-SELECT mt.scene_marker_id, t.column1 AS root_tag_id FROM scene_markers_tags mt
-INNER JOIN (` + valuesClause + `) t ON t.column2 = mt.tag_id
-UNION
-SELECT m.id, t.column1 FROM scene_markers m
-INNER JOIN (` + valuesClause + `) t ON t.column2 = m.primary_tag_id
-)`)
+			if len(tags.Value) == 0 && len(tags.Excludes) == 0 {
+				return
+			}
 
-			f.addLeftJoin("marker_tags", "", "marker_tags.scene_marker_id = scene_markers.id")
+			if len(tags.Value) > 0 {
+				valuesClause, err := getHierarchicalValues(ctx, qb.tx, tags.Value, tagTable, "tags_relations", "parent_id", "child_id", tags.Depth)
+				if err != nil {
+					f.setError(err)
+					return
+				}
 
-			addHierarchicalConditionClauses(f, *tags, "marker_tags", "root_tag_id")
+				f.addWith(`marker_tags AS (
+	SELECT mt.scene_marker_id, t.column1 AS root_tag_id FROM scene_markers_tags mt
+	INNER JOIN (` + valuesClause + `) t ON t.column2 = mt.tag_id
+	UNION
+	SELECT m.id, t.column1 FROM scene_markers m
+	INNER JOIN (` + valuesClause + `) t ON t.column2 = m.primary_tag_id
+	)`)
+
+				f.addLeftJoin("marker_tags", "", "marker_tags.scene_marker_id = scene_markers.id")
+
+				switch tags.Modifier {
+				case models.CriterionModifierEquals:
+					// includes only the provided ids
+					f.addWhere("marker_tags.root_tag_id IS NOT NULL")
+					tagsLen := len(tags.Value)
+					f.addHaving(fmt.Sprintf("count(distinct marker_tags.root_tag_id) IS %d", tagsLen))
+					// decrement by one to account for primary tag id
+					f.addWhere("(SELECT COUNT(*) FROM scene_markers_tags s WHERE s.scene_marker_id = scene_markers.id) = ?", tagsLen-1)
+				case models.CriterionModifierNotEquals:
+					f.setError(fmt.Errorf("not equals modifier is not supported for scene marker tags"))
+				default:
+					addHierarchicalConditionClauses(f, tags, "marker_tags", "root_tag_id")
+				}
+			}
+
+			if len(criterion.Excludes) > 0 {
+				valuesClause, err := getHierarchicalValues(ctx, dbWrapper{}, tags.Excludes, tagTable, "tags_relations", "parent_id", "child_id", tags.Depth)
+				if err != nil {
+					f.setError(err)
+					return
+				}
+
+				clause := "scene_markers.id NOT IN (SELECT scene_markers_tags.scene_marker_id FROM scene_markers_tags WHERE scene_markers_tags.tag_id IN (SELECT column2 FROM (%s)))"
+				f.addWhere(fmt.Sprintf(clause, valuesClause))
+
+				f.addWhere(fmt.Sprintf("scene_markers.primary_tag_id NOT IN (SELECT column2 FROM (%s))", valuesClause))
+			}
 		}
 	}
 }

@@ -9,8 +9,8 @@ require (
 	github.com/chromedp/chromedp v0.7.3
 	github.com/corona10/goimagehash v1.0.3
 	github.com/disintegration/imaging v1.6.0
-	github.com/fvbommel/sortorder v1.1.0
 	github.com/go-chi/chi v4.0.2+incompatible
+	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/golang-jwt/jwt/v4 v4.0.0
 	github.com/golang-migrate/migrate/v4 v4.15.0-beta.1
 	github.com/gorilla/securecookie v1.1.1
@@ -45,6 +45,7 @@ require (
 )
 
 require (
+	github.com/WithoutPants/sortorder v0.0.0-20230616003020-921c9ef69552
 	github.com/asticode/go-astisub v0.20.0
 	github.com/doug-martin/goqu/v9 v9.18.0
 	github.com/go-chi/cors v1.2.1

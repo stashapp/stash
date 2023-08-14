@@ -12,31 +12,29 @@ interface IGalleryChapterPanelProps {
   onClickChapter: (index: number) => void;
 }
 
-export const GalleryChapterPanel: React.FC<IGalleryChapterPanelProps> = (
-  props: IGalleryChapterPanelProps
-) => {
+export const GalleryChapterPanel: React.FC<IGalleryChapterPanelProps> = ({
+  gallery,
+  isVisible,
+  onClickChapter,
+}) => {
   const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
   const [editingChapter, setEditingChapter] =
     useState<GQL.GalleryChapterDataFragment>();
 
   // set up hotkeys
   useEffect(() => {
-    if (props.isVisible) {
-      Mousetrap.bind("n", () => onOpenEditor());
+    if (!isVisible) return;
 
-      return () => {
-        Mousetrap.unbind("n");
-      };
-    }
+    Mousetrap.bind("n", () => onOpenEditor());
+
+    return () => {
+      Mousetrap.unbind("n");
+    };
   });
 
   function onOpenEditor(chapter?: GQL.GalleryChapterDataFragment) {
     setIsEditorOpen(true);
     setEditingChapter(chapter ?? undefined);
-  }
-
-  function onClickChapter(image_index: number) {
-    props.onClickChapter(image_index);
   }
 
   const closeEditor = () => {
@@ -47,8 +45,8 @@ export const GalleryChapterPanel: React.FC<IGalleryChapterPanelProps> = (
   if (isEditorOpen)
     return (
       <GalleryChapterForm
-        galleryID={props.gallery.id}
-        editingChapter={editingChapter}
+        galleryID={gallery.id}
+        chapter={editingChapter}
         onClose={closeEditor}
       />
     );
@@ -60,7 +58,7 @@ export const GalleryChapterPanel: React.FC<IGalleryChapterPanelProps> = (
       </Button>
       <div className="container">
         <ChapterEntries
-          galleryChapters={props.gallery.chapters}
+          galleryChapters={gallery.chapters}
           onClickChapter={onClickChapter}
           onEdit={onOpenEditor}
         />

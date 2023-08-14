@@ -6,9 +6,9 @@ query Configuration {
 
 query Directory($path: String) {
   directory(path: $path) {
-      path
-      parent
-      directories
+    path
+    parent
+    directories
   }
 }
 

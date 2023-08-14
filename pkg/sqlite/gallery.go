@@ -884,7 +884,7 @@ func galleryIsMissingCriterionHandler(qb *GalleryStore, isMissing *string) crite
 				qb.performersRepository().join(f, "performers_join", "galleries.id")
 				f.addWhere("performers_join.gallery_id IS NULL")
 			case "date":
-				f.addWhere("galleries.date IS NULL OR galleries.date IS \"\" OR galleries.date IS \"0001-01-01\"")
+				f.addWhere("galleries.date IS NULL OR galleries.date IS \"\"")
 			case "tags":
 				qb.tagsRepository().join(f, "tags_join", "galleries.id")
 				f.addWhere("tags_join.gallery_id IS NULL")
@@ -1008,7 +1008,6 @@ func galleryPerformerAgeCriterionHandler(performerAge *models.IntCriterionInput)
 
 			f.addWhere("galleries.date != '' AND performers.birthdate != ''")
 			f.addWhere("galleries.date IS NOT NULL AND performers.birthdate IS NOT NULL")
-			f.addWhere("galleries.date != '0001-01-01' AND performers.birthdate != '0001-01-01'")
 
 			ageCalc := "cast(strftime('%Y.%m%d', galleries.date) - strftime('%Y.%m%d', performers.birthdate) as int)"
 			whereClause, args := getIntWhereClause(ageCalc, performerAge.Modifier, performerAge.Value, performerAge.Value2)

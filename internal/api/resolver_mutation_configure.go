@@ -469,6 +469,7 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 		setBool(config.DisableDropdownCreatePerformer, ddc.Performer)
 		setBool(config.DisableDropdownCreateStudio, ddc.Studio)
 		setBool(config.DisableDropdownCreateTag, ddc.Tag)
+		setBool(config.DisableDropdownCreateMovie, ddc.Movie)
 	}
 
 	if input.HandyKey != nil {
@@ -477,6 +478,10 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 
 	if input.FunscriptOffset != nil {
 		c.Set(config.FunscriptOffset, *input.FunscriptOffset)
+	}
+
+	if input.UseStashHostedFunscript != nil {
+		c.Set(config.UseStashHostedFunscript, *input.UseStashHostedFunscript)
 	}
 
 	if err := c.Write(); err != nil {

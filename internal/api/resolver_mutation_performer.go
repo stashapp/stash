@@ -75,13 +75,13 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerC
 		StashIDs:       models.NewRelatedStashIDs(stashIDPtrSliceToSlice(input.StashIds)),
 	}
 
-	if input.Birthdate != nil {
-		d := models.NewDate(*input.Birthdate)
-		newPerformer.Birthdate = &d
+	newPerformer.Birthdate, err = translator.datePtr(input.Birthdate, "birthdate")
+	if err != nil {
+		return nil, fmt.Errorf("converting birthdate: %w", err)
 	}
-	if input.DeathDate != nil {
-		d := models.NewDate(*input.DeathDate)
-		newPerformer.DeathDate = &d
+	newPerformer.DeathDate, err = translator.datePtr(input.DeathDate, "death_date")
+	if err != nil {
+		return nil, fmt.Errorf("converting death date: %w", err)
 	}
 
 	// prefer height_cm over height
@@ -157,7 +157,10 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 	updatedPerformer.Disambiguation = translator.optionalString(input.Disambiguation, "disambiguation")
 	updatedPerformer.URL = translator.optionalString(input.URL, "url")
 	updatedPerformer.Gender = translator.optionalString((*string)(input.Gender), "gender")
-	updatedPerformer.Birthdate = translator.optionalDate(input.Birthdate, "birthdate")
+	updatedPerformer.Birthdate, err = translator.optionalDate(input.Birthdate, "birthdate")
+	if err != nil {
+		return nil, fmt.Errorf("converting birthdate: %w", err)
+	}
 	updatedPerformer.Ethnicity = translator.optionalString(input.Ethnicity, "ethnicity")
 	updatedPerformer.Country = translator.optionalString(input.Country, "country")
 	updatedPerformer.EyeColor = translator.optionalString(input.EyeColor, "eye_color")
@@ -184,7 +187,10 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 	updatedPerformer.Favorite = translator.optionalBool(input.Favorite, "favorite")
 	updatedPerformer.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
 	updatedPerformer.Details = translator.optionalString(input.Details, "details")
-	updatedPerformer.DeathDate = translator.optionalDate(input.DeathDate, "death_date")
+	updatedPerformer.DeathDate, err = translator.optionalDate(input.DeathDate, "death_date")
+	if err != nil {
+		return nil, fmt.Errorf("converting death date: %w", err)
+	}
 	updatedPerformer.HairColor = translator.optionalString(input.HairColor, "hair_color")
 	updatedPerformer.Weight = translator.optionalInt(input.Weight, "weight")
 	updatedPerformer.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
@@ -282,7 +288,10 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	updatedPerformer.Disambiguation = translator.optionalString(input.Disambiguation, "disambiguation")
 	updatedPerformer.URL = translator.optionalString(input.URL, "url")
 	updatedPerformer.Gender = translator.optionalString((*string)(input.Gender), "gender")
-	updatedPerformer.Birthdate = translator.optionalDate(input.Birthdate, "birthdate")
+	updatedPerformer.Birthdate, err = translator.optionalDate(input.Birthdate, "birthdate")
+	if err != nil {
+		return nil, fmt.Errorf("converting birthdate: %w", err)
+	}
 	updatedPerformer.Ethnicity = translator.optionalString(input.Ethnicity, "ethnicity")
 	updatedPerformer.Country = translator.optionalString(input.Country, "country")
 	updatedPerformer.EyeColor = translator.optionalString(input.EyeColor, "eye_color")
@@ -309,7 +318,10 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	updatedPerformer.Favorite = translator.optionalBool(input.Favorite, "favorite")
 	updatedPerformer.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
 	updatedPerformer.Details = translator.optionalString(input.Details, "details")
-	updatedPerformer.DeathDate = translator.optionalDate(input.DeathDate, "death_date")
+	updatedPerformer.DeathDate, err = translator.optionalDate(input.DeathDate, "death_date")
+	if err != nil {
+		return nil, fmt.Errorf("converting death date: %w", err)
+	}
 	updatedPerformer.HairColor = translator.optionalString(input.HairColor, "hair_color")
 	updatedPerformer.Weight = translator.optionalInt(input.Weight, "weight")
 	updatedPerformer.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")

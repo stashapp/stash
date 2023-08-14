@@ -1,6 +1,5 @@
 fragment MovieData on Movie {
   id
-  checksum
   name
   aliases
   duration
@@ -11,7 +10,7 @@ fragment MovieData on Movie {
   studio {
     ...SlimStudioData
   }
-  
+
   synopsis
   url
   front_image_path

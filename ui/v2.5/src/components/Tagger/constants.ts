@@ -25,6 +25,7 @@ export const DEFAULT_BLACKLIST = [
   "\\]",
 ];
 export const DEFAULT_EXCLUDED_PERFORMER_FIELDS = ["name"];
+export const DEFAULT_EXCLUDED_STUDIO_FIELDS = ["name"];
 
 export const initialConfig: ITaggerConfig = {
   blacklist: DEFAULT_BLACKLIST,
@@ -36,6 +37,8 @@ export const initialConfig: ITaggerConfig = {
   fingerprintQueue: {},
   excludedPerformerFields: DEFAULT_EXCLUDED_PERFORMER_FIELDS,
   markSceneAsOrganizedOnSave: false,
+  excludedStudioFields: DEFAULT_EXCLUDED_STUDIO_FIELDS,
+  createParentStudios: true,
 };
 
 export type ParseMode = "auto" | "filename" | "dir" | "path" | "metadata";
@@ -51,6 +54,8 @@ export interface ITaggerConfig {
   fingerprintQueue: Record<string, string[]>;
   excludedPerformerFields?: string[];
   markSceneAsOrganizedOnSave?: boolean;
+  excludedStudioFields?: string[];
+  createParentStudios: boolean;
 }
 
 export const PERFORMER_FIELDS = [
@@ -76,3 +81,5 @@ export const PERFORMER_FIELDS = [
   "death_date",
   "weight",
 ];
+
+export const STUDIO_FIELDS = ["name", "image", "url", "parent"];

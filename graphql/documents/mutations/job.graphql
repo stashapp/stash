@@ -3,5 +3,5 @@ mutation StopJob($job_id: ID!) {
 }
 
 mutation StopAllJobs {
-    stopAllJobs
+  stopAllJobs
 }

@@ -4,7 +4,7 @@ fragment SceneData on Scene {
   code
   details
   director
-  url
+  urls
   date
   rating100
   o_counter
@@ -49,7 +49,7 @@ fragment SceneData on Scene {
   studio {
     ...SlimStudioData
   }
-  
+
   movies {
     movie {
       ...MovieData

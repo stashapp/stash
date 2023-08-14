@@ -1,3 +1,18 @@
+fragment ScrapedStudioData on ScrapedStudio {
+  stored_id
+  name
+  url
+  parent {
+    stored_id
+    name
+    url
+    image
+    remote_site_id
+  }
+  image
+  remote_site_id
+}
+
 fragment ScrapedPerformerData on ScrapedPerformer {
   stored_id
   name
@@ -101,6 +116,14 @@ fragment ScrapedSceneStudioData on ScrapedStudio {
   stored_id
   name
   url
+  parent {
+    stored_id
+    name
+    url
+    image
+    remote_site_id
+  }
+  image
   remote_site_id
 }
 
@@ -114,7 +137,7 @@ fragment ScrapedSceneData on ScrapedScene {
   code
   details
   director
-  url
+  urls
   date
   image
   remote_site_id

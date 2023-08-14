@@ -1,7 +1,6 @@
 package identify
 
 import (
-	"context"
 	"errors"
 	"reflect"
 	"strconv"
@@ -16,6 +15,7 @@ import (
 
 func Test_sceneRelationships_studio(t *testing.T) {
 	validStoredID := "1"
+	remoteSiteID := "2"
 	var validStoredIDInt = 1
 	invalidStoredID := "invalidStoredID"
 	createMissing := true
@@ -31,8 +31,8 @@ func Test_sceneRelationships_studio(t *testing.T) {
 	}).Return(nil)
 
 	tr := sceneRelationships{
-		studioCreator: mockStudioReaderWriter,
-		fieldOptions:  make(map[string]*FieldOptions),
+		studioReaderWriter: mockStudioReaderWriter,
+		fieldOptions:       make(map[string]*FieldOptions),
 	}
 
 	tests := []struct {
@@ -110,7 +110,7 @@ func Test_sceneRelationships_studio(t *testing.T) {
 				Strategy:      FieldStrategyMerge,
 				CreateMissing: &createMissing,
 			},
-			&models.ScrapedStudio{},
+			&models.ScrapedStudio{RemoteSiteID: &remoteSiteID},
 			&validStoredIDInt,
 			false,
 		},
@@ -120,6 +120,9 @@ func Test_sceneRelationships_studio(t *testing.T) {
 			tr.scene = tt.scene
 			tr.fieldOptions["studio"] = tt.fieldOptions
 			tr.result = &scrapeResult{
+				source: ScraperSource{
+					RemoteSite: "endpoint",
+				},
 				result: &scraper.ScrapedScene{
 					Studio: tt.result,
 				},
@@ -374,9 +377,9 @@ func Test_sceneRelationships_tags(t *testing.T) {
 	})).Return(errors.New("error creating tag"))
 
 	tr := sceneRelationships{
-		sceneReader:  mockSceneReaderWriter,
-		tagCreator:   mockTagReaderWriter,
-		fieldOptions: make(map[string]*FieldOptions),
+		sceneReader:      mockSceneReaderWriter,
+		tagCreatorFinder: mockTagReaderWriter,
+		fieldOptions:     make(map[string]*FieldOptions),
 	}
 
 	tests := []struct {
@@ -766,7 +769,7 @@ func Test_sceneRelationships_cover(t *testing.T) {
 				},
 			}
 
-			got, err := tr.cover(context.TODO())
+			got, err := tr.cover(testCtx)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("sceneRelationships.cover() error = %v, wantErr %v", err, tt.wantErr)
 				return

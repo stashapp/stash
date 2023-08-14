@@ -6,9 +6,11 @@ import { useFindTag } from "../../core/StashService";
 import { TagCard } from "./TagCard";
 import { ConfigurationContext } from "../../hooks/Config";
 import { IUIConfig } from "src/core/config";
+import { Placement } from "react-bootstrap/esm/Overlay";
 
 interface ITagPopoverProps {
   id?: string;
+  placement?: Placement;
 }
 
 export const TagPopoverCard: React.FC<ITagPopoverCardProps> = ({ id }) => {
@@ -33,7 +35,11 @@ export const TagPopoverCard: React.FC<ITagPopoverCardProps> = ({ id }) => {
   );
 };
 
-export const TagPopover: React.FC<ITagPopoverProps> = ({ id, children }) => {
+export const TagPopover: React.FC<ITagPopoverProps> = ({
+  id,
+  children,
+  placement = "top",
+}) => {
   const { configuration: config } = React.useContext(ConfigurationContext);
 
   const showTagCardOnHover =
@@ -45,7 +51,7 @@ export const TagPopover: React.FC<ITagPopoverProps> = ({ id, children }) => {
 
   return (
     <HoverPopover
-      placement={"top"}
+      placement={placement}
       enterDelay={500}
       leaveDelay={100}
       content={<TagPopoverCard id={id} />}

@@ -327,6 +327,32 @@ func (r *queryResolver) ScrapeMultiScenes(ctx context.Context, source scraper.So
 	return nil, errors.New("scraper_id or stash_box_index must be set")
 }
 
+func (r *queryResolver) ScrapeSingleStudio(ctx context.Context, source scraper.Source, input ScrapeSingleStudioInput) ([]*models.ScrapedStudio, error) {
+	if source.StashBoxIndex != nil {
+		client, err := r.getStashBoxClient(*source.StashBoxIndex)
+		if err != nil {
+			return nil, err
+		}
+
+		var ret []*models.ScrapedStudio
+		out, err := client.FindStashBoxStudio(ctx, *input.Query)
+
+		if err != nil {
+			return nil, err
+		} else if out != nil {
+			ret = append(ret, out)
+		}
+
+		if len(ret) > 0 {
+			return ret, nil
+		}
+
+		return nil, nil
+	}
+
+	return nil, errors.New("stash_box_index must be set")
+}
+
 func (r *queryResolver) ScrapeSinglePerformer(ctx context.Context, source scraper.Source, input ScrapeSinglePerformerInput) ([]*models.ScrapedPerformer, error) {
 	if source.ScraperID != nil {
 		if input.PerformerInput != nil {
