@@ -748,7 +748,7 @@ func (r *mutationResolver) SceneFilterUpdate(ctx context.Context, input SceneFil
 			return fmt.Errorf("scene filter with id %d not found", filterID)
 		}
 
-		newFilter, err := qb.UpdatePartial(ctx, markerID, updatedFilter)
+		newFilter, err := qb.Update(ctx, filterID, updatedFilter)
 		if err != nil {
 			return err
 		}
@@ -807,48 +807,6 @@ func (r *mutationResolver) SceneFilterDestroy(ctx context.Context, id string) (b
 	r.hookExecutor.ExecutePostHooks(ctx, filterID, plugin.SceneFilterDestroyPost, id, nil)
 
 	return true, nil
-}
-
-func (r *mutationResolver) changeFilter(ctx context.Context, changeType int, changedFilter *models.SceneFilter) error {
-	// Start the transaction and save the scene filter
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.SceneFilter
-		sqb := r.repository.Scene
-
-		switch changeType {
-		case create:
-			err := qb.Create(ctx, changedFilter)
-			if err != nil {
-				return err
-			}
-		case update:
-			// check to see if timestamp was changed
-			existingFilter, err := qb.Find(ctx, changedFilter.ID)
-			if err != nil {
-				return err
-			}
-			if existingFilter == nil {
-				return fmt.Errorf("scene filter with id %d not found", changedFilter.ID)
-			}
-
-			err = qb.Update(ctx, changedFilter)
-			if err != nil {
-				return err
-			}
-
-			s, err := sqb.Find(ctx, existingFilter.SceneID)
-			if err != nil {
-				return err
-			}
-			if s == nil {
-				return fmt.Errorf("scene with id %d not found", existingFilter.ID)
-			}
-		}
-		return nil
-	}); err != nil {
-		return err
-	}
-	return nil
 }
 
 func (r *mutationResolver) getSceneMarker(ctx context.Context, id int) (ret *models.SceneMarker, err error) {
