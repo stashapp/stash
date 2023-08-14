@@ -27,15 +27,18 @@ func (s *ScrapedStudio) ToStudio(endpoint string, excluded map[string]bool) *Stu
 
 	// Populate a new studio from the input
 	newStudio := Studio{
-		Name: s.Name,
-		StashIDs: NewRelatedStashIDs([]StashID{
+		Name:      s.Name,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	if s.RemoteSiteID != nil && endpoint != "" {
+		newStudio.StashIDs = NewRelatedStashIDs([]StashID{
 			{
 				Endpoint: endpoint,
 				StashID:  *s.RemoteSiteID,
 			},
-		}),
-		CreatedAt: now,
-		UpdatedAt: now,
+		})
 	}
 
 	if s.URL != nil && !excluded["url"] {
@@ -91,15 +94,16 @@ func (s *ScrapedStudio) ToPartial(id *string, endpoint string, excluded map[stri
 		partial.ParentID = NewOptionalIntPtr(nil)
 	}
 
-	partial.StashIDs = &UpdateStashIDs{
-		StashIDs: existingStashIDs,
-		Mode:     RelationshipUpdateModeSet,
+	if s.RemoteSiteID != nil && endpoint != "" {
+		partial.StashIDs = &UpdateStashIDs{
+			StashIDs: existingStashIDs,
+			Mode:     RelationshipUpdateModeSet,
+		}
+		partial.StashIDs.Set(StashID{
+			Endpoint: endpoint,
+			StashID:  *s.RemoteSiteID,
+		})
 	}
-
-	partial.StashIDs.Set(StashID{
-		Endpoint: endpoint,
-		StashID:  *s.RemoteSiteID,
-	})
 
 	return &partial
 }
@@ -231,12 +235,14 @@ func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool
 		ret.URL = *p.URL
 	}
 
-	ret.StashIDs = NewRelatedStashIDs([]StashID{
-		{
-			Endpoint: endpoint,
-			StashID:  *p.RemoteSiteID,
-		},
-	})
+	if p.RemoteSiteID != nil && endpoint != "" {
+		ret.StashIDs = NewRelatedStashIDs([]StashID{
+			{
+				Endpoint: endpoint,
+				StashID:  *p.RemoteSiteID,
+			},
+		})
+	}
 
 	return ret
 }
@@ -338,15 +344,16 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 		partial.URL = NewOptionalString(*p.URL)
 	}
 
-	partial.StashIDs = &UpdateStashIDs{
-		StashIDs: existingStashIDs,
-		Mode:     RelationshipUpdateModeSet,
+	if p.RemoteSiteID != nil && endpoint != "" {
+		partial.StashIDs = &UpdateStashIDs{
+			StashIDs: existingStashIDs,
+			Mode:     RelationshipUpdateModeSet,
+		}
+		partial.StashIDs.Set(StashID{
+			Endpoint: endpoint,
+			StashID:  *p.RemoteSiteID,
+		})
 	}
-
-	partial.StashIDs.Set(StashID{
-		Endpoint: endpoint,
-		StashID:  *p.RemoteSiteID,
-	})
 
 	return partial
 }

@@ -11,12 +11,15 @@ import (
 func Test_scrapedToStudioInput(t *testing.T) {
 	const name = "name"
 	url := "url"
+	emptyEndpoint := ""
+	endpoint := "endpoint"
 	remoteSiteID := "remoteSiteID"
 
 	tests := []struct {
-		name   string
-		studio *ScrapedStudio
-		want   *Studio
+		name     string
+		studio   *ScrapedStudio
+		endpoint string
+		want     *Studio
 	}{
 		{
 			"set all",
@@ -25,12 +28,14 @@ func Test_scrapedToStudioInput(t *testing.T) {
 				URL:          &url,
 				RemoteSiteID: &remoteSiteID,
 			},
+			endpoint,
 			&Studio{
 				Name: name,
 				URL:  url,
 				StashIDs: NewRelatedStashIDs([]StashID{
 					{
-						StashID: remoteSiteID,
+						Endpoint: endpoint,
+						StashID:  remoteSiteID,
 					},
 				}),
 			},
@@ -38,14 +43,36 @@ func Test_scrapedToStudioInput(t *testing.T) {
 		{
 			"set none",
 			&ScrapedStudio{
+				Name: name,
+			},
+			emptyEndpoint,
+			&Studio{
+				Name: name,
+			},
+		},
+		{
+			"missing remoteSiteID",
+			&ScrapedStudio{
+				Name: name,
+			},
+			endpoint,
+			&Studio{
+				Name: name,
+			},
+		},
+		{
+			"set stashid",
+			&ScrapedStudio{
 				Name:         name,
 				RemoteSiteID: &remoteSiteID,
 			},
+			endpoint,
 			&Studio{
 				Name: name,
 				StashIDs: NewRelatedStashIDs([]StashID{
 					{
-						StashID: remoteSiteID,
+						Endpoint: endpoint,
+						StashID:  remoteSiteID,
 					},
 				}),
 			},
@@ -53,7 +80,7 @@ func Test_scrapedToStudioInput(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.studio.ToStudio("", nil)
+			got := tt.studio.ToStudio(tt.endpoint, nil)
 
 			assert.NotEqual(t, time.Time{}, got.CreatedAt)
 			assert.NotEqual(t, time.Time{}, got.UpdatedAt)
@@ -67,6 +94,8 @@ func Test_scrapedToStudioInput(t *testing.T) {
 
 func Test_scrapedToPerformerInput(t *testing.T) {
 	name := "name"
+	emptyEndpoint := ""
+	endpoint := "endpoint"
 	remoteSiteID := "remoteSiteID"
 
 	var stringValues []string
@@ -109,6 +138,7 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 	tests := []struct {
 		name      string
 		performer *ScrapedPerformer
+		endpoint  string
 		want      *Performer
 	}{
 		{
@@ -137,6 +167,7 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 				Details:        nextVal(),
 				RemoteSiteID:   &remoteSiteID,
 			},
+			endpoint,
 			&Performer{
 				Name:           name,
 				Disambiguation: *nextVal(),
@@ -161,7 +192,8 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 				Details:        *nextVal(),
 				StashIDs: NewRelatedStashIDs([]StashID{
 					{
-						StashID: remoteSiteID,
+						Endpoint: endpoint,
+						StashID:  remoteSiteID,
 					},
 				}),
 			},
@@ -169,14 +201,36 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 		{
 			"set none",
 			&ScrapedPerformer{
+				Name: &name,
+			},
+			emptyEndpoint,
+			&Performer{
+				Name: name,
+			},
+		},
+		{
+			"missing remoteSiteID",
+			&ScrapedPerformer{
+				Name: &name,
+			},
+			endpoint,
+			&Performer{
+				Name: name,
+			},
+		},
+		{
+			"set stashid",
+			&ScrapedPerformer{
 				Name:         &name,
 				RemoteSiteID: &remoteSiteID,
 			},
+			endpoint,
 			&Performer{
 				Name: name,
 				StashIDs: NewRelatedStashIDs([]StashID{
 					{
-						StashID: remoteSiteID,
+						Endpoint: endpoint,
+						StashID:  remoteSiteID,
 					},
 				}),
 			},
@@ -184,7 +238,7 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.performer.ToPerformer("", nil)
+			got := tt.performer.ToPerformer(tt.endpoint, nil)
 
 			assert.NotEqual(t, time.Time{}, got.CreatedAt)
 			assert.NotEqual(t, time.Time{}, got.UpdatedAt)
