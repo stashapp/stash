@@ -7,27 +7,43 @@ interface IHoverScrubber {
   totalSprites: number;
   activeIndex: number | undefined;
   setActiveIndex: (index: number | undefined) => void;
+  onClick?: (index: number) => void;
 }
 
 const HoverScrubber: React.FC<IHoverScrubber> = ({
   totalSprites,
   activeIndex,
   setActiveIndex,
+  onClick,
 }) => {
+  function getActiveIndex(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    const { width } = e.currentTarget.getBoundingClientRect();
+    const x = e.nativeEvent.offsetX;
+
+    return Math.floor((x / width) * totalSprites);
+  }
+
   function onMouseMove(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     const relatedTarget = e.currentTarget;
 
     if (relatedTarget !== e.target) return;
 
-    const { width } = relatedTarget.getBoundingClientRect();
-    const x = e.nativeEvent.offsetX;
-
-    const index = Math.floor((x / width) * totalSprites);
-    setActiveIndex(index);
+    setActiveIndex(getActiveIndex(e));
   }
 
   function onMouseLeave() {
     setActiveIndex(undefined);
+  }
+
+  function onScrubberClick(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    if (!onClick) return;
+
+    const relatedTarget = e.currentTarget;
+
+    if (relatedTarget !== e.target) return;
+
+    e.preventDefault();
+    onClick(getActiveIndex(e));
   }
 
   const indicatorStyle = useMemo(() => {
@@ -46,6 +62,7 @@ const HoverScrubber: React.FC<IHoverScrubber> = ({
         className="hover-scrubber-area"
         onMouseMove={onMouseMove}
         onMouseLeave={onMouseLeave}
+        onClick={onScrubberClick}
       />
       <div className="hover-scrubber-indicator">
         {activeIndex !== undefined && (
@@ -61,9 +78,13 @@ const HoverScrubber: React.FC<IHoverScrubber> = ({
 
 interface IScenePreviewProps {
   vttPath: string | undefined;
+  onClick?: (timestamp: number) => void;
 }
 
-export const PreviewScrubber: React.FC<IScenePreviewProps> = ({ vttPath }) => {
+export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
+  vttPath,
+  onClick,
+}) => {
   const [activeIndex, setActiveIndex] = React.useState<number | undefined>();
 
   const debounceSetActiveIndex = useDebounce(
@@ -114,6 +135,16 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({ vttPath }) => {
     return start;
   }, [activeIndex, spriteInfo]);
 
+  function onScrubberClick(index: number) {
+    if (!spriteInfo || !onClick) {
+      return;
+    }
+
+    const sprite = spriteInfo[index];
+
+    onClick(sprite.start);
+  }
+
   if (!spriteInfo) return null;
 
   return (
@@ -130,6 +161,7 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({ vttPath }) => {
         totalSprites={81}
         activeIndex={activeIndex}
         setActiveIndex={(i) => debounceSetActiveIndex(i)}
+        onClick={onScrubberClick}
       />
     </div>
   );
