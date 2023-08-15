@@ -53,6 +53,7 @@ interface ITagParams {
 }
 
 const validTabs = [
+  "default",
   "scenes",
   "images",
   "galleries",
@@ -61,7 +62,7 @@ const validTabs = [
 ] as const;
 type TabKey = (typeof validTabs)[number];
 
-const defaultTab: TabKey = "scenes";
+const defaultTab: TabKey = "default";
 
 function isTabKey(tab: string): tab is TabKey {
   return validTabs.includes(tab as TabKey);
@@ -107,11 +108,27 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
   const performerCount =
     (showAllCounts ? tag.performer_count_all : tag.performer_count) ?? 0;
 
+  var populatedDefaultTab: TabKey = "scenes";
+  if (sceneCount == 0) {
+    if (imageCount != 0) {
+      populatedDefaultTab = "images";
+    } else if (galleryCount != 0) {
+      populatedDefaultTab = "galleries";
+    } else if (sceneMarkerCount != 0) {
+      populatedDefaultTab = "markers";
+    } else if (performerCount != 0) {
+      populatedDefaultTab = "performers";
+    }
+  }
+  if (tabKey === defaultTab) {
+    tabKey = populatedDefaultTab;
+  }
+
   function setTabKey(newTabKey: string | null) {
-    if (!newTabKey) newTabKey = defaultTab;
+    if (!newTabKey || newTabKey === defaultTab) newTabKey = populatedDefaultTab;
     if (newTabKey === tabKey) return;
 
-    if (newTabKey === defaultTab) {
+    if (newTabKey === populatedDefaultTab) {
       history.replace(`/tags/${tag.id}`);
     } else if (isTabKey(newTabKey)) {
       history.replace(`/tags/${tag.id}/${newTabKey}`);

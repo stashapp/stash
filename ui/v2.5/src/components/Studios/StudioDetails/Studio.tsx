@@ -57,6 +57,7 @@ interface IStudioParams {
 }
 
 const validTabs = [
+  "default",
   "scenes",
   "galleries",
   "images",
@@ -66,7 +67,7 @@ const validTabs = [
 ] as const;
 type TabKey = (typeof validTabs)[number];
 
-const defaultTab: TabKey = "scenes";
+const defaultTab: TabKey = "default";
 
 function isTabKey(tab: string): tab is TabKey {
   return validTabs.includes(tab as TabKey);
@@ -111,6 +112,24 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
     (showAllCounts ? studio.performer_count_all : studio.performer_count) ?? 0;
   const movieCount =
     (showAllCounts ? studio.movie_count_all : studio.movie_count) ?? 0;
+
+  var populatedDefaultTab: TabKey = "scenes";
+  if (sceneCount == 0) {
+    if (galleryCount != 0) {
+      populatedDefaultTab = "galleries";
+    } else if (imageCount != 0) {
+      populatedDefaultTab = "images";
+    } else if (performerCount != 0) {
+      populatedDefaultTab = "performers";
+    } else if (movieCount != 0) {
+      populatedDefaultTab = "movies";
+    } else if (studio.child_studios.length != 0) {
+      populatedDefaultTab = "childstudios";
+    }
+  }
+  if (tabKey === defaultTab) {
+    tabKey = populatedDefaultTab;
+  }
 
   // set up hotkeys
   useEffect(() => {
@@ -243,10 +262,10 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   }
 
   function setTabKey(newTabKey: string | null) {
-    if (!newTabKey) newTabKey = defaultTab;
+    if (!newTabKey || newTabKey === defaultTab) newTabKey = populatedDefaultTab;
     if (newTabKey === tabKey) return;
 
-    if (newTabKey === defaultTab) {
+    if (newTabKey === populatedDefaultTab) {
       history.replace(`/studios/${studio.id}`);
     } else if (isTabKey(newTabKey)) {
       history.replace(`/studios/${studio.id}/${newTabKey}`);
