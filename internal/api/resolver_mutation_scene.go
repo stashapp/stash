@@ -798,8 +798,7 @@ func (r *mutationResolver) SceneFilterDestroy(ctx context.Context, id string) (b
 		if s == nil {
 			return fmt.Errorf("scene with id %d not found", filter.SceneID)
 		}
-
-		return scene.DestroyFilter(ctx, s, filter, qb)
+		return qb.Destroy(ctx, filterID)
 	}); err != nil {
 		return false, err
 	}

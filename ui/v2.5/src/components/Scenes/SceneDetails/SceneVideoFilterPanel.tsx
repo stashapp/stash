@@ -11,7 +11,6 @@ import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { VIDEO_PLAYER_ID } from "src/components/ScenePlayer/util";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
-import { Prompt } from "react-router-dom";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
 import { useFormik } from "formik";
