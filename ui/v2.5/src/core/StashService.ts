@@ -1134,52 +1134,52 @@ export const useMoviesDestroy = (input: GQL.MoviesDestroyMutationVariables) =>
     },
   });
 
-  const sceneFilterMutationImpactedQueries = [
-    GQL.FindScenesDocument, // has marker filter
-    GQL.FindSceneFiltersDocument, // various filters
-  ];
-  
-  export const useSceneFilterCreate = () =>
-    GQL.useSceneFilterCreateMutation({
-      update(cache, result, { variables }) {
-        if (!result.data?.sceneFilterCreate || !variables) return;
-  
-        // refetch linked scene's marker list
-        cache.evict({
-          id: cache.identify({ __typename: "Scene", id: variables.scene_id }),
-          fieldName: "scene_filters",
-        });
-  
-        evictQueries(cache, sceneFilterMutationImpactedQueries);
-      },
-    });
-  
-  export const useSceneFilterUpdate = () =>
-    GQL.useSceneFilterUpdateMutation({
-      update(cache, result, { variables }) {
-        if (!result.data?.sceneFilterUpdate || !variables) return;
-  
-        // refetch linked scene's marker list
-        cache.evict({
-          id: cache.identify({ __typename: "Scene", id: variables.scene_id }),
-          fieldName: "scene_filters",
-        });
-  
-        evictQueries(cache, sceneFilterMutationImpactedQueries);
-      },
-    });
-  
-  export const useSceneFilterDestroy = () =>
-    GQL.useSceneFilterDestroyMutation({
-      update(cache, result, { variables }) {
-        if (!result.data?.sceneFilterDestroy || !variables) return;
-  
-        const obj = { __typename: "SceneFilter", id: variables.id };
-        cache.evict({ id: cache.identify(obj) });
-  
-        evictQueries(cache, sceneFilterMutationImpactedQueries);
-      },
-    });
+const sceneFilterMutationImpactedQueries = [
+  GQL.FindScenesDocument, // has marker filter
+  GQL.FindSceneFiltersDocument, // various filters
+];
+
+export const useSceneFilterCreate = () =>
+  GQL.useSceneFilterCreateMutation({
+    update(cache, result, { variables }) {
+      if (!result.data?.sceneFilterCreate || !variables) return;
+
+      // refetch linked scene's marker list
+      cache.evict({
+        id: cache.identify({ __typename: "Scene", id: variables.scene_id }),
+        fieldName: "scene_filters",
+      });
+
+      evictQueries(cache, sceneFilterMutationImpactedQueries);
+    },
+  });
+
+export const useSceneFilterUpdate = () =>
+  GQL.useSceneFilterUpdateMutation({
+    update(cache, result, { variables }) {
+      if (!result.data?.sceneFilterUpdate || !variables) return;
+
+      // refetch linked scene's marker list
+      cache.evict({
+        id: cache.identify({ __typename: "Scene", id: variables.scene_id }),
+        fieldName: "scene_filters",
+      });
+
+      evictQueries(cache, sceneFilterMutationImpactedQueries);
+    },
+  });
+
+export const useSceneFilterDestroy = () =>
+  GQL.useSceneFilterDestroyMutation({
+    update(cache, result, { variables }) {
+      if (!result.data?.sceneFilterDestroy || !variables) return;
+
+      const obj = { __typename: "SceneFilter", id: variables.id };
+      cache.evict({ id: cache.identify(obj) });
+
+      evictQueries(cache, sceneFilterMutationImpactedQueries);
+    },
+  });
 
 const sceneMarkerMutationImpactedTypeFields = {
   Tag: ["scene_marker_count"],

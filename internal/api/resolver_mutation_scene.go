@@ -748,16 +748,16 @@ func (r *mutationResolver) SceneFilterUpdate(ctx context.Context, input SceneFil
 			return fmt.Errorf("scene filter with id %d not found", filterID)
 		}
 
-		newFilter, err := qb.Update(ctx, filterID, updatedFilter)
+		err = qb.Update(ctx, &updatedFilter)
 		if err != nil {
 			return err
 		}
 
-		existingScene, err := sqb.Find(ctx, existingFilter.SceneID)
+		s, err := sqb.Find(ctx, existingFilter.SceneID)
 		if err != nil {
 			return err
 		}
-		if existingScene == nil {
+		if s == nil {
 			return fmt.Errorf("scene with id %d not found", existingFilter.SceneID)
 		}
 

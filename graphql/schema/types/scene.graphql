@@ -69,7 +69,6 @@ type Scene {
   file: SceneFileType! @deprecated(reason: "Use files")
   files: [VideoFile!]!
   paths: ScenePathsType! # Resolver
-
   scene_filters: [SceneFilter!]!
   scene_markers: [SceneMarker!]!
   galleries: [Gallery!]!

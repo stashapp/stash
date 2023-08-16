@@ -187,7 +187,9 @@ input SceneMarkerFilterType {
   scene_date: DateCriterionInput
   "Filter by scene reation time"
   scene_created_at: TimestampCriterionInput
-  """Filter by scene last update time"""
+  """
+  Filter by scene last update time
+  """
   scene_updated_at: TimestampCriterionInput
 }
 

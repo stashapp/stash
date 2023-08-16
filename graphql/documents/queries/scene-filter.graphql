@@ -1,4 +1,7 @@
-query FindSceneFilters($filter: FindFilterType, $scene_filter_filter: SceneFilterFilterType) {
+query FindSceneFilters(
+  $filter: FindFilterType
+  $scene_filter_filter: SceneFilterFilterType
+) {
   findSceneFilters(filter: $filter, scene_filter_filter: $scene_filter_filter) {
     count
     scene_filters {

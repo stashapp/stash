@@ -1,34 +1,34 @@
-mutation SceneFilterCreate($input: SceneFilterCreateInput!)(
-  $contrast: Int!,
-  $brightness: Int!,
-  $gamma: Int!,
-  $saturate: Int!,
-  $hue_rotate: Int!,
-  $warmth: Int!,
-  $red: Int!,
-  $green: Int!,
-  $blue: Int!,
-  $blur: Int!,
-  $rotate: Float!,
-  $scale: Int!,
-  $aspect_ratio: Int!,
+mutation SceneFilterCreate(
+  $aspect_ratio: Int!
+  $brightness: Int!
+  $contrast: Int!
+  $gamma: Int!
+  $hue_rotate: Int!
+  $red: Int!
+  $green: Int!
+  $blue: Int!
+  $blur: Int!
+  $rotate: Float!
+  $saturate: Int!
+  $scale: Int!
+  $warmth: Int!
   $scene_id: ID!
 ) {
   sceneFilterCreate(
     input: {
-      contrast: $contrast,
-      brightness: $brightness,
-      gamma: $gamma,
-      saturate: $saturate,
-      hue_rotate: $hue_rotate,
-      warmth: $warmth,
-      red: $red,
-      green: $green,
+      aspect_ratio: $aspect_ratio
+      brightness: $brightness
+      contrast: $contrast
+      gamma: $gamma
+      hue_rotate: $hue_rotate
+      red: $red
+      green: $green
       blue: $blue
-      blur: $blur,
-      rotate: $rotate,
-      scale: $scale,
-      aspect_ratio: $aspect_ratio,
+      blur: $blur
+      rotate: $rotate
+      saturate: $saturate
+      scale: $scale
+      warmth: $warmth
       scene_id: $scene_id
     }
   ) {
@@ -36,40 +36,40 @@ mutation SceneFilterCreate($input: SceneFilterCreateInput!)(
   }
 }
 
-mutation SceneFilterUpdate($input: SceneFilterUpdateInput!)(
-  $id: ID!,
-  $scene_id: ID!,
-  $contrast: Int!,
-  $brightness: Int!,
-  $gamma: Int!,
-  $saturate: Int!,
-  $hue_rotate: Int!,
-  $warmth: Int!,
-  $red: Int!,
-  $green: Int!,
-  $blue: Int!,
-  $blur: Int!,
-  $rotate: Float!,
-  $scale: Int!,
+mutation SceneFilterUpdate(
+  $id: ID!
   $aspect_ratio: Int!
+  $brightness: Int!
+  $contrast: Int!
+  $gamma: Int!
+  $hue_rotate: Int!
+  $red: Int!
+  $green: Int!
+  $blue: Int!
+  $blur: Int!
+  $rotate: Float!
+  $saturate: Int!
+  $warmth: Int!
+  $scale: Int!
+  $scene_id: ID!
 ) {
   sceneFilterUpdate(
     input: {
-      id: $id,
-      scene_id: $scene_id,
-      contrast: $contrast,
-      brightness: $brightness,
-      gamma: $gamma,
-      saturate: $saturate,
-      hue_rotate: $hue_rotate,
-      warmth: $warmth,
-      red: $red,
-      green: $green,
-      blue: $blue,
-      blur: $blur,
-      rotate: $rotate,
-      scale: $scale,
+      id: $id
       aspect_ratio: $aspect_ratio
+      brightness: $brightness
+      contrast: $contrast
+      gamma: $gamma
+      hue_rotate: $hue_rotate
+      red: $red
+      green: $green
+      blue: $blue
+      blur: $blur
+      rotate: $rotate
+      saturate: $saturate
+      scale: $scale
+      warmth: $warmth
+      scene_id: $scene_id
     }
   ) {
     ...SceneFilterData

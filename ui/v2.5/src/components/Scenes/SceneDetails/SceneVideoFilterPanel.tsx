@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, {
+  useEffect,
+  useState,
+  useMemo,
+  useRef,
+  useCallback,
+} from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Button, Form } from "react-bootstrap";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
@@ -20,26 +26,11 @@ import {
   useSceneFilterUpdate,
   useSceneFilterDestroy,
 } from "src/core/StashService";
-
-interface ISceneFilterDataFragment {
-  contrast: number;
-  brightness: number;
-  gamma: number;
-  saturate: number;
-  hue_rotate: number;
-  warmth: number;
-  red: number;
-  green: number;
-  blue: number;
-  blur: number;
-  rotate: number;
-  scale: number;
-  aspect_ratio: number;
-  scene_id: string;
-}
+import isEqual from "lodash-es/isEqual";
 
 interface ISceneVideoFilterPanelProps {
   scene: GQL.SceneDataFragment;
+  filter?: GQL.SceneFilterDataFragment;
   isVisible: boolean;
 }
 
@@ -56,74 +47,17 @@ type SliderRange = {
 };
 
 export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = ({
+  filter,
   isVisible,
   ...props
 }) => {
   const intl = useIntl();
+  const Toast = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const filterRecordExists = props.scene.scene_filters?.length > 0;
+  const isNew = props.scene.scene_filters[0] === undefined;
   const [sceneFilterCreate] = useSceneFilterCreate();
   const [sceneFilterUpdate] = useSceneFilterUpdate();
   const [sceneFilterDestroy] = useSceneFilterDestroy();
-  const Toast = useToast();
-
-  async function onSubmit(values: ISceneFilterDataFragment) {
-    setIsLoading(true);
-    const variables: GQL.SceneFilterUpdateInput | GQL.SceneFilterCreateInput = {
-      aspect_ratio: values.aspect_ratio,
-      brightness: values.brightness,
-      contrast: values.contrast,
-      gamma: values.gamma,
-      hue_rotate: values.hue_rotate,
-      red: values.red,
-      green: values.green,
-      blue: values.blue,
-      blur: values.blur,
-      rotate: values.rotate,
-      saturate: values.saturate,
-      scale: values.scale,
-      warmth: values.warmth,
-      scene_id: props.scene.id,
-    };
-    if (!filterRecordExists) {
-      const updateVariables = variables as GQL.SceneFilterCreateInput;
-      updateVariables.scene_id = props.scene.id;
-      try {
-        const result = await sceneFilterCreate({ variables: updateVariables });
-
-        if (result.data || props.scene.scene_filters?.length) {
-          Toast.success({
-            content: "Scene filter sucessfully created",
-          });
-        }
-        return;
-      } catch (e) {
-        Toast.error(e);
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
-      const updateVariables = {
-        ...variables,
-        id: props.scene.scene_filters[0].id,
-        scene_id: props.scene.id,
-      } as GQL.SceneFilterUpdateInput;
-      try {
-        const result = await sceneFilterUpdate({ variables: updateVariables });
-
-        if (result.data) {
-          Toast.success({
-            content: "Scene filter sucessfully updated",
-          });
-        }
-        return;
-      } catch (e) {
-        Toast.error(e);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  }
 
   const [contrastValue, setContrastValue] = useState(
     props.scene.scene_filters[0]?.contrast ?? sliderRanges.contrastRange.default
@@ -168,16 +102,9 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = ({
       sliderRanges.aspectRatioRange.default
   );
 
-  const [
-    currentOrPreviousVideoStateIsFilter,
-    setCurrentOrPreviousVideoStateIsFilter,
-  ] = useState<boolean>(false); // Track the previous scene state if it's a filter
-  const [
-    currentOrPreviousVideoStateIsDefaultFilter,
-    setCurrentOrPreviousVideoStateIsDefaultFilter,
-  ] = useState<boolean>(false); // Track the previous scene state if it's a filter
+  console.log("isNew: " + isNew);
 
-  function setDefaultFilterValues() {
+  const setDefaultFilterValues = useCallback(() => {
     setContrastValue(sliderRanges.contrastRange.default);
     setBrightnessValue(sliderRanges.brightnessRange.default);
     setGammaValue(sliderRanges.contrastRange.default);
@@ -191,9 +118,9 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = ({
     setScaleValue(sliderRanges.scaleRange.default);
     setRotateValue(sliderRanges.rotateRange.default);
     setAspectRatioValue(sliderRanges.aspectRatioRange.default);
-  }
+  }, []);
 
-  function setFilterFilterValues() {
+  const setFilterFilterValues = useCallback(() => {
     setContrastValue(props.scene.scene_filters[0].contrast);
     setBrightnessValue(props.scene.scene_filters[0].brightness);
     setGammaValue(props.scene.scene_filters[0].gamma);
@@ -207,108 +134,52 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = ({
     setScaleValue(props.scene.scene_filters[0].scale);
     setRotateValue(props.scene.scene_filters[0].rotate);
     setAspectRatioValue(props.scene.scene_filters[0].aspect_ratio);
-  }
+  }, [props.scene.scene_filters]);
 
+  const prevVideoFiltersRef = useRef<boolean>(false);
+  const prevDefaultFiltersRef = useRef<boolean>(false);
+
+  const setCurrentOrPreviousVideoState = (
+    isFilter: boolean,
+    isDefaultFilter: boolean
+  ) => {
+    prevVideoFiltersRef.current = isFilter;
+    prevDefaultFiltersRef.current = isDefaultFilter;
+  };
+
+  // Video filter changing between scenes
   // Initialize values once when component mounts
   useEffect(() => {
-    if (
-      currentOrPreviousVideoStateIsFilter &&
-      props.scene.scene_filters.length == 0
-    ) {
-      setCurrentOrPreviousVideoStateIsFilter(false);
-      setCurrentOrPreviousVideoStateIsDefaultFilter(true);
+    if (prevVideoFiltersRef.current && props.scene.scene_filters.length === 0) {
+      setCurrentOrPreviousVideoState(false, true);
       setDefaultFilterValues();
     } else if (
-      currentOrPreviousVideoStateIsFilter &&
+      prevVideoFiltersRef.current &&
       props.scene.scene_filters.length > 0
     ) {
-      setCurrentOrPreviousVideoStateIsFilter(true);
-      setCurrentOrPreviousVideoStateIsDefaultFilter(false);
+      setCurrentOrPreviousVideoState(true, false);
       setFilterFilterValues();
     } else if (
-      currentOrPreviousVideoStateIsDefaultFilter &&
-      props.scene.scene_filters.length == 0
+      prevDefaultFiltersRef.current &&
+      props.scene.scene_filters.length === 0
     ) {
-      setCurrentOrPreviousVideoStateIsFilter(false);
-      setCurrentOrPreviousVideoStateIsDefaultFilter(true);
+      setCurrentOrPreviousVideoState(false, true);
     } else if (
-      currentOrPreviousVideoStateIsDefaultFilter &&
+      prevDefaultFiltersRef.current &&
       props.scene.scene_filters.length > 0
     ) {
-      setCurrentOrPreviousVideoStateIsFilter(true);
-      setCurrentOrPreviousVideoStateIsDefaultFilter(false);
+      setCurrentOrPreviousVideoState(true, false);
       setFilterFilterValues();
     } else if (
-      !currentOrPreviousVideoStateIsDefaultFilter &&
+      !prevDefaultFiltersRef.current &&
       props.scene.scene_filters.length > 0
     ) {
-      setCurrentOrPreviousVideoStateIsFilter(true);
-      setCurrentOrPreviousVideoStateIsDefaultFilter(false);
+      setCurrentOrPreviousVideoState(true, false);
       setFilterFilterValues();
     }
-    // Diabling checks because only props.scene is needed to trigger hook
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.scene]);
+  }, [props.scene, setFilterFilterValues, setDefaultFilterValues]);
 
-  const initialValues = useMemo(() => {
-    if (props.scene.scene_filters.length == 0) {
-      return {
-        scene_id: props.scene.id,
-        contrast: 100,
-        brightness: 100,
-        gamma: 100,
-        saturate: 100,
-        hue_rotate: 0,
-        warmth: 100,
-        red: 100,
-        green: 100,
-        blue: 100,
-        blur: 0,
-        rotate: 2,
-        scale: 100,
-        aspect_ratio: 150,
-      } as GQL.SceneFilterCreateInput;
-    } else if (props.scene.scene_filters.length > 0) {
-      return {
-        id: props.scene.scene_filters[0].id,
-        scene_id: props.scene.id,
-        contrast: props.scene.scene_filters[0].contrast,
-        brightness: props.scene.scene_filters[0].brightness,
-        gamma: props.scene.scene_filters[0].gamma,
-        saturate: props.scene.scene_filters[0].saturate,
-        hue_rotate: props.scene.scene_filters[0].hue_rotate,
-        warmth: props.scene.scene_filters[0].warmth,
-        red: props.scene.scene_filters[0].red,
-        green: props.scene.scene_filters[0].green,
-        blue: props.scene.scene_filters[0].blue,
-        blur: props.scene.scene_filters[0].blur,
-        rotate: props.scene.scene_filters[0].rotate,
-        scale: props.scene.scene_filters[0].scale,
-        aspect_ratio: props.scene.scene_filters[0].aspect_ratio,
-      } as GQL.SceneFilterUpdateInput;
-    } else {
-      return {
-        scene_id: props.scene.id,
-        contrast: 100,
-        brightness: 100,
-        gamma: 100,
-        saturate: 100,
-        hue_rotate: 0,
-        warmth: 100,
-        red: 100,
-        green: 100,
-        blue: 100,
-        blur: 0,
-        rotate: 2,
-        scale: 100,
-        aspect_ratio: 150,
-      } as GQL.SceneFilterCreateInput;
-    }
-  }, [props.scene.id, props.scene?.scene_filters]);
-
-  const schemaUpdate = yup.object({
-    id: yup.string().required(),
-    scene_id: yup.string().required(),
+  const schema = yup.object({
     contrast: yup.number().required(),
     brightness: yup.number().required(),
     gamma: yup.number().required(),
@@ -324,24 +195,24 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = ({
     aspect_ratio: yup.number().required(),
   });
 
-  const schemaCreate = yup.object({
-    scene_id: yup.string().required(),
-    contrast: yup.number().required(),
-    brightness: yup.number().required(),
-    gamma: yup.number().required(),
-    saturate: yup.number().required(),
-    hue_rotate: yup.number().required(),
-    warmth: yup.number().required(),
-    red: yup.number().required(),
-    green: yup.number().required(),
-    blue: yup.number().required(),
-    blur: yup.number().required(),
-    rotate: yup.number().required(),
-    scale: yup.number().required(),
-    aspect_ratio: yup.number().required(),
-  });
-
-  var schema = filterRecordExists ? schemaUpdate : schemaCreate;
+  const initialValues = useMemo(
+    () => ({
+      contrast: filter?.contrast ?? 100,
+      brightness: filter?.brightness ?? 100,
+      gamma: filter?.gamma ?? 100,
+      saturate: filter?.saturate ?? 100,
+      hue_rotate: filter?.hue_rotate ?? 0,
+      warmth: filter?.warmth ?? 100,
+      red: filter?.red ?? 100,
+      green: filter?.green ?? 100,
+      blue: filter?.blue ?? 100,
+      blur: filter?.blur ?? 0,
+      rotate: filter?.rotate ?? 2,
+      scale: filter?.scale ?? 100,
+      aspect_ratio: filter?.aspect_ratio ?? 150,
+    }),
+    [filter]
+  );
 
   type InputValues = yup.InferType<typeof schema>;
 
@@ -376,13 +247,11 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = ({
     setIsLoading(true);
     try {
       const result = await sceneFilterDestroy({
-        variables: {
-          id: props.scene.scene_filters[0].id,
-        },
+        variables: { id: props.scene.scene_filters[0].id },
       });
-      if (result.data || props.scene.scene_filters?.length) {
+      if (result) {
         Toast.success({
-          content: "Scene filter sucessfully deleted",
+          content: "Scene filter successfully deleted",
         });
         onResetTransforms();
         onResetFilters();
@@ -396,14 +265,38 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = ({
   }
 
   async function onSave(input: InputValues) {
-    setIsLoading(true);
     try {
-      await onSubmit(input);
-      formik.resetForm();
+      if (isNew == true) {
+        const result = await sceneFilterCreate({
+          variables: {
+            scene_id: props.scene.id,
+            ...input,
+          },
+        });
+        if (result) {
+          Toast.success({
+            content: "Scene filter successfully created",
+          });
+          onResetTransforms();
+          onResetFilters();
+        }
+      } else {
+        const result = await sceneFilterUpdate({
+          variables: {
+            scene_id: props.scene.id,
+            id: props.scene.scene_filters[0].id,
+            ...input,
+          },
+        });
+        if (result) {
+          Toast.success({
+            content: "Scene filter successfully updated",
+          });
+        }
+      }
     } catch (e) {
       Toast.error(e);
     }
-    setIsLoading(false);
   }
 
   interface ISliderProps {
@@ -759,21 +652,21 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = ({
             <Button
               className="edit-button"
               variant="primary"
-              disabled={!formik.dirty}
+              disabled={
+                (!isNew && !formik.dirty) || !isEqual(formik.errors, {})
+              }
               onClick={() => formik.submitForm()}
             >
               <FormattedMessage id="actions.save" />
             </Button>
-            {onDelete && (
-              <Button
-                className="edit-button"
-                variant="danger"
-                disabled={props.scene.scene_filters.length < 1}
-                onClick={() => onDelete()}
-              >
-                <FormattedMessage id="actions.delete" />
-              </Button>
-            )}
+            <Button
+              className="edit-button"
+              variant="danger"
+              onClick={() => onDelete()}
+              disabled={isNew}
+            >
+              <FormattedMessage id="actions.delete" />
+            </Button>
           </div>
         </div>
       </>
@@ -806,11 +699,6 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = ({
 
   return (
     <div className="scene-video-filter form-container">
-      <Prompt
-        when={formik.dirty}
-        message={intl.formatMessage({ id: "dialogs.unsaved_changes" })}
-      />
-
       <Form noValidate onSubmit={formik.handleSubmit}>
         {renderSaveButtons()}
         <div className="row form-group">

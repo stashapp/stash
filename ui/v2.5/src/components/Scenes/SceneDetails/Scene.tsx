@@ -41,6 +41,7 @@ import {
   faChevronLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import { lazyComponent } from "src/utils/lazyComponent";
+import { updateVideoFilters, updateVideoStyle } from "src/utils/videoFilter";
 
 const SubmitStashBoxDraft = lazyComponent(
   () => import("src/components/Dialogs/SubmitDraft")
@@ -158,6 +159,7 @@ const ScenePage: React.FC<IProps> = ({
     Mousetrap.bind("e", () => setActiveTabKey("scene-edit-panel"));
     Mousetrap.bind("k", () => setActiveTabKey("scene-markers-panel"));
     Mousetrap.bind("i", () => setActiveTabKey("scene-file-info-panel"));
+    Mousetrap.bind("t", () => setActiveTabKey("scene-video-filter-panel"));
     Mousetrap.bind("o", () => {
       onIncrementClick();
     });
@@ -170,6 +172,7 @@ const ScenePage: React.FC<IProps> = ({
       Mousetrap.unbind("a");
       Mousetrap.unbind("q");
       Mousetrap.unbind("e");
+      Mousetrap.unbind("t");
       Mousetrap.unbind("k");
       Mousetrap.unbind("i");
       Mousetrap.unbind("o");
@@ -284,6 +287,32 @@ const ScenePage: React.FC<IProps> = ({
       );
     }
   }
+
+  const [started] = useState(false);
+
+  useEffect(() => {
+    // This code will run after the component has rendered
+    if (scene.scene_filters?.length > 0) {
+      const f = scene.scene_filters[0];
+      // On render update video style.
+      updateVideoFilters(f.gamma, f.red, f.green, f.blue, f.warmth);
+      updateVideoStyle(
+        f.aspect_ratio,
+        f.blur,
+        f.brightness,
+        f.contrast,
+        f.gamma,
+        f.hue_rotate,
+        f.red,
+        f.green,
+        f.blue,
+        f.rotate,
+        f.saturate,
+        f.scale,
+        f.warmth
+      );
+    }
+  }, [scene.scene_filters, started]);
 
   const renderOperations = () => (
     <Dropdown>
@@ -553,7 +582,11 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   const { data, loading, error } = useFindScene(id);
 
   const [scene, setScene] = useState<GQL.SceneDataFragment>();
+  const [, setStarted] = useState(false);
 
+  const handleScenePlayerStart = () => {
+    setStarted(true);
+  };
   // useLayoutEffect to update before paint
   useLayoutEffect(() => {
     // only update scene when loading is done
@@ -811,6 +844,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
           onComplete={onComplete}
           onNext={onNext}
           onPrevious={onPrevious}
+          setStarted={handleScenePlayerStart}
         />
       </div>
     </div>

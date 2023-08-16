@@ -271,7 +271,9 @@ type Mutation {
   "Generates screenshot at specified time in seconds. Leave empty to generate default screenshot"
   sceneGenerateScreenshot(id: ID!, at: Float): String!
 
-  """Updates video filters for a scene"""
+  """
+  Updates video filters for a scene
+  """
   sceneFilterCreate(input: SceneFilterCreateInput!): SceneFilter
   sceneFilterUpdate(input: SceneFilterUpdateInput!): SceneFilter
   sceneFilterDestroy(id: ID!): Boolean!
