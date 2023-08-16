@@ -39,6 +39,8 @@ export enum PersistanceLevel {
   NONE,
   // load default query, don't load or persist display mode
   ALL,
+  // load default view without the query
+  SAVEDVIEW,
   // load and persist display mode only
   VIEW,
 }
@@ -622,6 +624,29 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
               newFilter.configureFromJSON(
                 defaultFilter.findDefaultFilter.filter
               );
+            } catch (err) {
+              console.log(err);
+              // ignore
+            }
+            // #1507 - reset random seed when loaded
+            newFilter.randomSeed = -1;
+          }
+        }
+      } else if (persistState === PersistanceLevel.SAVEDVIEW) {
+        // only set default filter if uninitialised
+        if (loadDefault) {
+          // wait until default filter is loaded
+          if (defaultFilterLoading) return;
+
+          if (defaultFilter?.findDefaultFilter) {
+            newFilter.currentPage = 1;
+            try {
+              let { criteria: criteria } = newFilter;
+              newFilter.configureFromJSON(
+                defaultFilter.findDefaultFilter.filter
+              );
+              newFilter.criteria = criteria;
+              newFilter.searchTerm = "";
             } catch (err) {
               console.log(err);
               // ignore

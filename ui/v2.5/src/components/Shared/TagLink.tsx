@@ -1,5 +1,5 @@
 import { Badge } from "react-bootstrap";
-import React from "react";
+import React, { useRef } from "react";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 import {
@@ -16,6 +16,10 @@ import * as GQL from "src/core/generated-graphql";
 import { TagPopover } from "../Tags/TagPopover";
 import { markerTitle } from "src/core/markers";
 import { Placement } from "react-bootstrap/esm/Overlay";
+import {
+  ListFilterModel,
+  useDefaultFilter,
+} from "src/models/list-filter/filter";
 
 interface IFile {
   path: string;
@@ -45,52 +49,71 @@ interface IProps {
 }
 
 export const TagLink: React.FC<IProps> = (props: IProps) => {
-  let id: string = "";
-  let link: string = "#";
-  let title: string = "";
+  const id = useRef("");
+  const link = useRef("#");
+  const title = useRef("");
+  let modeMap = new Map<string, GQL.FilterMode>([
+    ["scene", GQL.FilterMode.Scenes],
+    ["performer", GQL.FilterMode.Performers],
+    ["gallery", GQL.FilterMode.Galleries],
+    ["image", GQL.FilterMode.Images],
+    ["details", GQL.FilterMode.Tags],
+  ]);
+  const mode: GQL.FilterMode =
+    props.tag && props.tagType != undefined
+      ? modeMap.get(props.tagType) || GQL.FilterMode.Scenes
+      : GQL.FilterMode.Scenes;
+  const defaultFilter: ListFilterModel = useDefaultFilter(mode);
+
   if (props.tag) {
-    id = props.tag.id || "";
+    id.current = props.tag.id || "";
     switch (props.tagType) {
       case "scene":
       case undefined:
-        link = NavUtils.makeTagScenesUrl(props.tag);
+        link.current = NavUtils.makeTagScenesUrl(props.tag, defaultFilter);
         break;
       case "performer":
-        link = NavUtils.makeTagPerformersUrl(props.tag);
+        link.current = NavUtils.makeTagPerformersUrl(props.tag, defaultFilter);
         break;
       case "gallery":
-        link = NavUtils.makeTagGalleriesUrl(props.tag);
+        link.current = NavUtils.makeTagGalleriesUrl(props.tag, defaultFilter);
         break;
       case "image":
-        link = NavUtils.makeTagImagesUrl(props.tag);
+        link.current = NavUtils.makeTagImagesUrl(props.tag, defaultFilter);
         break;
       case "details":
-        link = NavUtils.makeTagUrl(id);
+        link.current = NavUtils.makeTagUrl(id.current);
         break;
     }
-    title = props.tag.name || "";
+    title.current = props.tag.name || "";
   } else if (props.performer) {
-    link = NavUtils.makePerformerScenesUrl(props.performer);
-    title = props.performer.name || "";
+    link.current = NavUtils.makePerformerScenesUrl(
+      props.performer,
+      undefined,
+      undefined,
+      defaultFilter
+    );
+    title.current = props.performer.name || "";
   } else if (props.movie) {
-    link = NavUtils.makeMovieScenesUrl(props.movie);
-    title = props.movie.name || "";
+    link.current = NavUtils.makeMovieScenesUrl(props.movie, defaultFilter);
+    title.current = props.movie.name || "";
   } else if (props.marker) {
-    link = NavUtils.makeSceneMarkerUrl(props.marker);
-    title = `${markerTitle(props.marker)} - ${TextUtils.secondsToTimestamp(
-      props.marker.seconds || 0
-    )}`;
+    link.current = NavUtils.makeSceneMarkerUrl(props.marker);
+    title.current = `${markerTitle(
+      props.marker
+    )} - ${TextUtils.secondsToTimestamp(props.marker.seconds || 0)}`;
   } else if (props.gallery) {
-    link = `/galleries/${props.gallery.id}`;
-    title = galleryTitle(props.gallery);
+    link.current = `/galleries/${props.gallery.id}`;
+    title.current = galleryTitle(props.gallery);
   } else if (props.scene) {
-    link = `/scenes/${props.scene.id}`;
-    title = objectTitle(props.scene);
+    link.current = `/scenes/${props.scene.id}`;
+    title.current = objectTitle(props.scene);
   }
+
   return (
     <Badge className={cx("tag-item", props.className)} variant="secondary">
-      <TagPopover id={id} placement={props.hoverPlacement}>
-        <Link to={link}>{title}</Link>
+      <TagPopover id={id.current} placement={props.hoverPlacement}>
+        <Link to={link.current}>{title.current}</Link>
       </TagPopover>
     </Badge>
   );

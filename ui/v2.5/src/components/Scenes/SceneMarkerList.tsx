@@ -27,6 +27,7 @@ const SceneMarkerItemList = makeItemList({
 
 interface ISceneMarkerList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  persistState?: PersistanceLevel;
   alterQuery?: boolean;
 }
 

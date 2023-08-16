@@ -17,6 +17,10 @@ import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
 import { getStashboxBase } from "src/utils/stashbox";
 import { TextField, URLField, URLsField } from "src/utils/field";
+import {
+  ListFilterModel,
+  useDefaultFilter,
+} from "src/models/list-filter/filter";
 
 interface IFileInfoPanelProps {
   sceneID: string;
@@ -34,6 +38,9 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
 ) => {
   const intl = useIntl();
   const history = useHistory();
+  const sceneDefaultFilter: ListFilterModel = useDefaultFilter(
+    GQL.FilterMode.Scenes
+  );
 
   function renderFileSize() {
     const { size, unit } = TextUtils.fileSize(props.file.size);
@@ -82,7 +89,10 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
           id="media_info.phash"
           abbr="Perceptual hash"
           value={phash?.value}
-          url={NavUtils.makeScenesPHashMatchUrl(phash?.value)}
+          url={NavUtils.makeScenesPHashMatchUrl(
+            phash?.value,
+            sceneDefaultFilter
+          )}
           target="_self"
           truncate
           trusted

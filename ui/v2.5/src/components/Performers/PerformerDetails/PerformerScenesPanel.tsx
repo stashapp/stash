@@ -2,6 +2,7 @@ import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { SceneList } from "src/components/Scenes/SceneList";
 import { usePerformerFilterHook } from "src/core/performers";
+import { PersistanceLevel } from "src/components/List/ItemList";
 
 interface IPerformerDetailsProps {
   active: boolean;
@@ -13,5 +14,11 @@ export const PerformerScenesPanel: React.FC<IPerformerDetailsProps> = ({
   performer,
 }) => {
   const filterHook = usePerformerFilterHook(performer);
-  return <SceneList filterHook={filterHook} alterQuery={active} />;
+  return (
+    <SceneList
+      filterHook={filterHook}
+      alterQuery={active}
+      persistState={PersistanceLevel.SAVEDVIEW}
+    />
+  );
 };

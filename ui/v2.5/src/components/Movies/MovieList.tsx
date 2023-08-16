@@ -34,6 +34,7 @@ const MovieItemList = makeItemList({
 
 interface IMovieList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  persistState?: PersistanceLevel;
   alterQuery?: boolean;
 }
 

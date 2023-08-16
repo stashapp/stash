@@ -35,6 +35,7 @@ const StudioItemList = makeItemList({
 interface IStudioList {
   fromParent?: boolean;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  persistState?: PersistanceLevel;
   alterQuery?: boolean;
 }
 

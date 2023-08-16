@@ -25,6 +25,10 @@ import {
   faTag,
 } from "@fortawesome/free-solid-svg-icons";
 import { objectPath, objectTitle } from "src/core/files";
+import {
+  ListFilterModel,
+  useDefaultFilter,
+} from "src/models/list-filter/filter";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -91,6 +95,9 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   props: ISceneCardProps
 ) => {
   const { configuration } = React.useContext(ConfigurationContext);
+  const sceneDefaultFilter: ListFilterModel = useDefaultFilter(
+    GQL.FilterMode.Scenes
+  );
 
   const file = useMemo(
     () => (props.scene.files.length > 0 ? props.scene.files[0] : undefined),
@@ -313,7 +320,10 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       return (
         <div className="other-copies extra-scene-info">
           <Button
-            href={NavUtils.makeScenesPHashMatchUrl(phash.value)}
+            href={NavUtils.makeScenesPHashMatchUrl(
+              phash.value,
+              sceneDefaultFilter
+            )}
             className="minimal"
           >
             <Icon icon={faCopy} />

@@ -9,6 +9,10 @@ import { Icon } from "../Shared/Icon";
 import NavUtils from "src/utils/navigation";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import { cmToImperial } from "src/utils/units";
+import {
+  ListFilterModel,
+  useDefaultFilter,
+} from "src/models/list-filter/filter";
 
 interface IPerformerListTableProps {
   performers: GQL.PerformerDataFragment[];
@@ -18,6 +22,15 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   props: IPerformerListTableProps
 ) => {
   const intl = useIntl();
+  const sceneDefaultFilter: ListFilterModel = useDefaultFilter(
+    GQL.FilterMode.Scenes
+  );
+  const imageDefaultFilter: ListFilterModel = useDefaultFilter(
+    GQL.FilterMode.Images
+  );
+  const galleryDefaultFilter: ListFilterModel = useDefaultFilter(
+    GQL.FilterMode.Galleries
+  );
 
   const formatHeight = (height?: number | null) => {
     if (!height) {
@@ -83,17 +96,38 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
         )}
       </td>
       <td>
-        <Link to={NavUtils.makePerformerScenesUrl(performer)}>
+        <Link
+          to={NavUtils.makePerformerScenesUrl(
+            performer,
+            undefined,
+            undefined,
+            sceneDefaultFilter
+          )}
+        >
           <h6>{performer.scene_count}</h6>
         </Link>
       </td>
       <td>
-        <Link to={NavUtils.makePerformerImagesUrl(performer)}>
+        <Link
+          to={NavUtils.makePerformerImagesUrl(
+            performer,
+            undefined,
+            undefined,
+            imageDefaultFilter
+          )}
+        >
           <h6>{performer.image_count}</h6>
         </Link>
       </td>
       <td>
-        <Link to={NavUtils.makePerformerGalleriesUrl(performer)}>
+        <Link
+          to={NavUtils.makePerformerGalleriesUrl(
+            performer,
+            undefined,
+            undefined,
+            galleryDefaultFilter
+          )}
+        >
           <h6>{performer.gallery_count}</h6>
         </Link>
       </td>

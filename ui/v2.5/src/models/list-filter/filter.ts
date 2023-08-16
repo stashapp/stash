@@ -7,6 +7,9 @@ import {
 import { Criterion, CriterionValue } from "./criteria/criterion";
 import { makeCriteria } from "./criteria/factory";
 import { DisplayMode } from "./types";
+import * as GQL from "src/core/generated-graphql";
+import { useFindDefaultFilter } from "src/core/StashService";
+import { useEffect, useRef, useState } from "react";
 
 interface IDecodedParams {
   perPage?: number;
@@ -406,3 +409,34 @@ export class ListFilterModel {
     return output;
   }
 }
+
+// Returns the default filter as a filtermodel
+export const useDefaultFilter = (mode: GQL.FilterMode) => {
+  const { data, loading } = useFindDefaultFilter(mode);
+  const [filterIsInitialized, setFilterIsInitialized] = useState(false);
+  const defaultFilter = useRef(new ListFilterModel(mode, undefined));
+
+  useEffect(() => {
+    if (filterIsInitialized) return;
+    if (loading) return;
+
+    if (data?.findDefaultFilter) {
+      try {
+        defaultFilter.current.configureFromJSON(data.findDefaultFilter.filter);
+        // #1507 - reset random seed when loaded
+        defaultFilter.current.randomSeed = -1;
+      } catch (err) {
+        console.log(err);
+      }
+    }
+    setFilterIsInitialized(true);
+  }, [
+    data,
+    loading,
+    defaultFilter,
+    filterIsInitialized,
+    setFilterIsInitialized,
+  ]);
+
+  return defaultFilter.current;
+};

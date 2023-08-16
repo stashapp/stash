@@ -9,6 +9,10 @@ import { TruncatedText } from "../Shared/TruncatedText";
 import { GridCard } from "../Shared/GridCard";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import { faMapMarkerAlt, faUser } from "@fortawesome/free-solid-svg-icons";
+import {
+  ListFilterModel,
+  useDefaultFilter,
+} from "src/models/list-filter/filter";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -25,6 +29,25 @@ export const TagCard: React.FC<IProps> = ({
   selected,
   onSelectedChanged,
 }) => {
+  const sceneDefaultFilter: ListFilterModel = useDefaultFilter(
+    GQL.FilterMode.Scenes
+  );
+  const imageDefaultFilter: ListFilterModel = useDefaultFilter(
+    GQL.FilterMode.Images
+  );
+  const galleryDefaultFilter: ListFilterModel = useDefaultFilter(
+    GQL.FilterMode.Galleries
+  );
+  const markerDefaultFilter: ListFilterModel = useDefaultFilter(
+    GQL.FilterMode.SceneMarkers
+  );
+  const performerDefaultFilter: ListFilterModel = useDefaultFilter(
+    GQL.FilterMode.Performers
+  );
+  const tagDefaultFilter: ListFilterModel = useDefaultFilter(
+    GQL.FilterMode.Tags
+  );
+
   function maybeRenderDescription() {
     if (tag.description) {
       return (
@@ -59,7 +82,7 @@ export const TagCard: React.FC<IProps> = ({
             id="sub_tag_of"
             values={{
               parent: (
-                <Link to={NavUtils.makeParentTagsUrl(tag)}>
+                <Link to={NavUtils.makeParentTagsUrl(tag, tagDefaultFilter)}>
                   {tag.parents.length}&nbsp;
                   <FormattedMessage
                     id="countables.tags"
@@ -82,7 +105,7 @@ export const TagCard: React.FC<IProps> = ({
             id="parent_of"
             values={{
               children: (
-                <Link to={NavUtils.makeChildTagsUrl(tag)}>
+                <Link to={NavUtils.makeChildTagsUrl(tag, tagDefaultFilter)}>
                   {tag.children.length}&nbsp;
                   <FormattedMessage
                     id="countables.tags"
@@ -105,7 +128,7 @@ export const TagCard: React.FC<IProps> = ({
         className="scene-count"
         type="scene"
         count={tag.scene_count}
-        url={NavUtils.makeTagScenesUrl(tag)}
+        url={NavUtils.makeTagScenesUrl(tag, sceneDefaultFilter)}
       />
     );
   }
@@ -114,7 +137,10 @@ export const TagCard: React.FC<IProps> = ({
     if (!tag.scene_marker_count) return;
 
     return (
-      <Link className="marker-count" to={NavUtils.makeTagSceneMarkersUrl(tag)}>
+      <Link
+        className="marker-count"
+        to={NavUtils.makeTagSceneMarkersUrl(tag, markerDefaultFilter)}
+      >
         <Button className="minimal">
           <Icon icon={faMapMarkerAlt} />
           <span>{tag.scene_marker_count}</span>
@@ -131,7 +157,7 @@ export const TagCard: React.FC<IProps> = ({
         className="image-count"
         type="image"
         count={tag.image_count}
-        url={NavUtils.makeTagImagesUrl(tag)}
+        url={NavUtils.makeTagImagesUrl(tag, imageDefaultFilter)}
       />
     );
   }
@@ -144,7 +170,7 @@ export const TagCard: React.FC<IProps> = ({
         className="gallery-count"
         type="gallery"
         count={tag.gallery_count}
-        url={NavUtils.makeTagGalleriesUrl(tag)}
+        url={NavUtils.makeTagGalleriesUrl(tag, galleryDefaultFilter)}
       />
     );
   }
@@ -153,7 +179,10 @@ export const TagCard: React.FC<IProps> = ({
     if (!tag.performer_count) return;
 
     return (
-      <Link className="performer-count" to={NavUtils.makeTagPerformersUrl(tag)}>
+      <Link
+        className="performer-count"
+        to={NavUtils.makeTagPerformersUrl(tag, performerDefaultFilter)}
+      >
         <Button className="minimal">
           <Icon icon={faUser} />
           <span>{tag.performer_count}</span>
