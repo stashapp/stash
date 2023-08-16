@@ -459,6 +459,7 @@
         "identifying_from_paths": "Identifying scenes from the following paths",
         "identifying_scenes": "Identifying {num} {scene}",
         "include_male_performers": "Include male performers",
+        "organized": "Scenes marked as organized will be skipped by Identify and Autotag",
         "set_cover_images": "Set cover images",
         "set_organized": "Set organised flag",
         "skip_multiple_matches": "Skip matches that have more than one result",
