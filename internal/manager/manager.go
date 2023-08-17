@@ -100,7 +100,9 @@ type SetupInput struct {
 	GeneratedLocation string `json:"generatedLocation"`
 	// Empty to indicate default
 	CacheLocation string `json:"cacheLocation"`
-	// Empty to indicate database storage for blobs
+
+	StoreBlobsInDatabase bool `json:"storeBlobsInDatabase"`
+	// Empty to indicate default
 	BlobsLocation string `json:"blobsLocation"`
 }
 
@@ -596,6 +598,10 @@ func setSetupDefaults(input *SetupInput) {
 	if input.DatabaseFile == "" {
 		input.DatabaseFile = filepath.Join(configDir, "stash-go.sqlite")
 	}
+
+	if input.BlobsLocation == "" {
+		input.BlobsLocation = filepath.Join(configDir, "blobs")
+	}
 }
 
 func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
@@ -648,20 +654,20 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 		s.Config.Set(config.Cache, input.CacheLocation)
 	}
 
-	// if blobs path was provided then use filesystem based blob storage
-	if input.BlobsLocation != "" {
+	if input.StoreBlobsInDatabase {
+		s.Config.Set(config.BlobsStorage, config.BlobStorageTypeDatabase)
+	} else {
 		if !c.HasOverride(config.BlobsPath) {
 			if exists, _ := fsutil.DirExists(input.BlobsLocation); !exists {
 				if err := os.MkdirAll(input.BlobsLocation, 0755); err != nil {
 					return fmt.Errorf("error creating blobs directory: %v", err)
 				}
 			}
+
+			s.Config.Set(config.BlobsPath, input.BlobsLocation)
 		}
 
-		s.Config.Set(config.BlobsPath, input.BlobsLocation)
 		s.Config.Set(config.BlobsStorage, config.BlobStorageTypeFilesystem)
-	} else {
-		s.Config.Set(config.BlobsStorage, config.BlobStorageTypeDatabase)
 	}
 
 	// set the configuration
