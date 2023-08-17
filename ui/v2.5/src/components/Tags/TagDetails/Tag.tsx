@@ -280,7 +280,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
 
   function renderMergeButton() {
     return (
-      <Dropdown drop="up">
+      <Dropdown>
         <Dropdown.Toggle variant="secondary">
           <FormattedMessage id="actions.merge" />
           ...
