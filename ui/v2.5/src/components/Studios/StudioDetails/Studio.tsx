@@ -82,7 +82,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   const uiConfig = configuration?.ui as IUIConfig | undefined;
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
   const enableBackgroundImage = uiConfig?.enableStudioBackgroundImage ?? false;
-  const showAllDetails = uiConfig?.showAllDetails ?? false;
+  const showAllDetails = uiConfig?.showAllDetails ?? true;
   const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
