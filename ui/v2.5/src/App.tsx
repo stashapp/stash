@@ -28,7 +28,7 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { MainNavbar } from "./components/MainNavbar";
 import { PageNotFound } from "./components/PageNotFound";
 import * as GQL from "./core/generated-graphql";
-import { TITLE_SUFFIX } from "./components/Shared/constants";
+import { makeTitleProps } from "./hooks/title";
 import { LoadingIndicator } from "./components/Shared/LoadingIndicator";
 
 import { ConfigurationProvider } from "./hooks/Config";
@@ -254,6 +254,8 @@ export const App: React.FC = () => {
     );
   }
 
+  const titleProps = makeTitleProps();
+
   return (
     <ErrorBoundary>
       {messages ? (
@@ -272,10 +274,7 @@ export const App: React.FC = () => {
                 <LightboxProvider>
                   <ManualProvider>
                     <InteractiveProvider>
-                      <Helmet
-                        titleTemplate={`%s ${TITLE_SUFFIX}`}
-                        defaultTitle="Stash"
-                      />
+                      <Helmet {...titleProps} />
                       {maybeRenderNavbar()}
                       <div
                         className={`main container-fluid ${

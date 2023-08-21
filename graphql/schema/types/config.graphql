@@ -8,7 +8,8 @@ input SetupInput {
   generatedLocation: String!
   "Empty to indicate default"
   cacheLocation: String!
-  "Empty to indicate database storage for blobs"
+  storeBlobsInDatabase: Boolean!
+  "Empty to indicate default - only applicable if storeBlobsInDatabase is false"
   blobsLocation: String!
 }
 

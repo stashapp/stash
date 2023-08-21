@@ -78,7 +78,9 @@ export const FolderSelect: React.FC<IProps> = ({
     currentDirectory && data?.directory?.parent ? (
       <li className="folder-list-parent folder-list-item">
         <Button variant="link" onClick={() => goUp()}>
-          <FormattedMessage id="setup.folder.up_dir" />
+          <span>
+            <FormattedMessage id="setup.folder.up_dir" />
+          </span>
         </Button>
       </li>
     ) : null;
@@ -128,7 +130,7 @@ export const FolderSelect: React.FC<IProps> = ({
             return (
               <li key={path} className="folder-list-item">
                 <Button variant="link" onClick={() => setInstant(path)}>
-                  {path}
+                  <span>{path}</span>
                 </Button>
               </li>
             );

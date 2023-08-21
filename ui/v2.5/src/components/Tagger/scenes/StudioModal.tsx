@@ -31,13 +31,38 @@ const StudioDetails: React.FC<IStudioDetailsProps> = ({
   toggleField,
   isNew = false,
 }) => {
-  const renderField = (
+  function maybeRenderImage() {
+    if (!studio.image) return;
+
+    return (
+      <div className="row">
+        <div className="col-12 image-selection">
+          <div className="studio-image">
+            <Button
+              onClick={() => toggleField("image")}
+              variant="secondary"
+              className={cx(
+                "studio-image-exclude",
+                excluded.image ? "text-muted" : "text-success"
+              )}
+            >
+              <Icon icon={excluded.image ? faTimes : faCheck} />
+            </Button>
+            <img src={studio.image} alt="" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function maybeRenderField(
     id: string,
     text: string | null | undefined,
-    isSelectable: boolean = true,
-    truncate: boolean = true
-  ) =>
-    text && (
+    isSelectable: boolean = true
+  ) {
+    if (!text) return;
+
+    return (
       <div className="row no-gutters">
         <div className="col-5 studio-create-modal-field" key={id}>
           {isSelectable && (
@@ -53,47 +78,33 @@ const StudioDetails: React.FC<IStudioDetailsProps> = ({
             <FormattedMessage id={id} />:
           </strong>
         </div>
-        {truncate ? (
-          <TruncatedText className="col-7" text={text} />
-        ) : (
-          <span className="col-7">{text}</span>
-        )}
+        <TruncatedText className="col-7" text={text} />
       </div>
     );
+  }
+
+  function maybeRenderLink() {
+    if (!link) return;
+
+    return (
+      <h6 className="mt-2">
+        <a href={link} target="_blank" rel="noopener noreferrer">
+          <FormattedMessage id="stashbox.source" />
+          <Icon icon={faExternalLinkAlt} className="ml-2" />
+        </a>
+      </h6>
+    );
+  }
 
   return (
     <div>
-      <div className="row">
-        <div className="col-12 image-selection">
-          <div className="studio-image">
-            <Button
-              onClick={() => toggleField("image")}
-              variant="secondary"
-              className={cx(
-                "studio-image-exclude",
-                excluded.image ? "text-muted" : "text-success"
-              )}
-            >
-              <Icon icon={excluded.image ? faTimes : faCheck} />
-            </Button>
-            <img src={studio.image ?? ""} alt="" />
-          </div>
-        </div>
-      </div>
-
+      {maybeRenderImage()}
       <div className="row">
         <div className="col-12">
-          {renderField("name", studio.name, !isNew)}
-          {renderField("url", studio.url)}
-          {renderField("parent_studio", studio.parent?.name, false)}
-          {link && (
-            <h6 className="mt-2">
-              <a href={link} target="_blank" rel="noopener noreferrer">
-                <FormattedMessage id="stashbox.source" />
-                <Icon icon={faExternalLinkAlt} className="ml-2" />
-              </a>
-            </h6>
-          )}
+          {maybeRenderField("name", studio.name, !isNew)}
+          {maybeRenderField("url", studio.url)}
+          {maybeRenderField("parent_studio", studio.parent?.name, false)}
+          {maybeRenderLink()}
         </div>
       </div>
     </div>
@@ -177,9 +188,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
       throw new Error("studio name must set");
     }
 
-    const studioData: GQL.StudioCreateInput & {
-      [index: string]: unknown;
-    } = {
+    const studioData: GQL.StudioCreateInput = {
       name: studio.name,
       url: studio.url,
       image: studio.image,
@@ -200,11 +209,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
     // handle exclusions
     excludeFields(studioData, excluded);
 
-    let parentData:
-      | (GQL.StudioCreateInput & {
-          [index: string]: unknown;
-        })
-      | undefined = undefined;
+    let parentData: GQL.StudioCreateInput | undefined = undefined;
 
     if (createParentStudio && sendParentStudio) {
       if (!studio.parent?.name) {

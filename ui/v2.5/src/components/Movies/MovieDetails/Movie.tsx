@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Button } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
+import cx from "classnames";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -9,7 +10,7 @@ import {
   useMovieUpdate,
   useMovieDestroy,
 } from "src/core/StashService";
-import { useParams, useHistory } from "react-router-dom";
+import { useHistory, RouteComponentProps } from "react-router-dom";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
@@ -33,11 +34,17 @@ import { Icon } from "src/components/Shared/Icon";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { ConfigurationContext } from "src/hooks/Config";
 import { IUIConfig } from "src/core/config";
-import ImageUtils from "src/utils/image";
+import { DetailImage } from "src/components/Shared/DetailImage";
 import { useRatingKeybinds } from "src/hooks/keybinds";
+import { useLoadStickyHeader } from "src/hooks/detailsPanel";
+import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
+}
+
+interface IMovieParams {
+  id: string;
 }
 
 const MoviePage: React.FC<IProps> = ({ movie }) => {
@@ -53,7 +60,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   const showAllDetails = uiConfig?.showAllDetails ?? true;
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
-  const [loadStickyHeader, setLoadStickyHeader] = useState<boolean>(false);
+  const loadStickyHeader = useLoadStickyHeader();
 
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -125,21 +132,6 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
     configuration?.ui?.ratingSystemOptions?.type,
     setRating
   );
-
-  useEffect(() => {
-    const f = () => {
-      if (document.documentElement.scrollTop <= 50) {
-        setLoadStickyHeader(false);
-      } else {
-        setLoadStickyHeader(true);
-      }
-    };
-
-    window.addEventListener("scroll", f);
-    return () => {
-      window.removeEventListener("scroll", f);
-    };
-  });
 
   async function onSave(input: GQL.MovieCreateInput) {
     await updateMovie({
@@ -240,11 +232,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
     if (image && defaultImage) {
       return (
         <div className="movie-image-container">
-          <img
-            alt="Front Cover"
-            src={image}
-            onLoad={ImageUtils.verifyImageSize}
-          />
+          <DetailImage alt="Front Cover" src={image} />
         </div>
       );
     } else if (image) {
@@ -254,11 +242,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
           variant="link"
           onClick={() => showLightbox()}
         >
-          <img
-            alt="Front Cover"
-            src={image}
-            onLoad={ImageUtils.verifyImageSize}
-          />
+          <DetailImage alt="Front Cover" src={image} />
         </Button>
       );
     }
@@ -281,11 +265,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
           variant="link"
           onClick={() => showLightbox(index - 1)}
         >
-          <img
-            alt="Back Cover"
-            src={image}
-            onLoad={ImageUtils.verifyImageSize}
-          />
+          <DetailImage alt="Back Cover" src={image} />
         </Button>
       );
     }
@@ -405,17 +385,19 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
 
   if (updating || deleting) return <LoadingIndicator />;
 
+  const headerClassName = cx("detail-header", {
+    edit: isEditing,
+    collapsed,
+    "full-width": !collapsed && !compactExpandedDetails,
+  });
+
   return (
     <div id="movie-page" className="row">
       <Helmet>
         <title>{movie?.name}</title>
       </Helmet>
 
-      <div
-        className={`detail-header ${isEditing ? "edit" : ""}  ${
-          collapsed ? "collapsed" : !compactExpandedDetails ? "full-width" : ""
-        }`}
-      >
+      <div className={headerClassName}>
         {maybeRenderHeaderBackgroundImage()}
         <div className="detail-container">
           <div className="detail-header-image">
@@ -461,9 +443,13 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   );
 };
 
-const MovieLoader: React.FC = () => {
-  const { id } = useParams<{ id?: string }>();
-  const { data, loading, error } = useFindMovie(id ?? "");
+const MovieLoader: React.FC<RouteComponentProps<IMovieParams>> = ({
+  match,
+}) => {
+  const { id } = match.params;
+  const { data, loading, error } = useFindMovie(id);
+
+  useScrollToTopOnMount();
 
   if (loading) return <LoadingIndicator />;
   if (error) return <ErrorMessage error={error.message} />;

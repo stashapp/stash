@@ -190,19 +190,24 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
       return;
     }
 
+    const localOptionsCopy = { ...localOptions };
+    if (localOptionsCopy.strategy === undefined && !allowSetDefault) {
+      localOptionsCopy.strategy = GQL.IdentifyFieldStrategy.Merge;
+    }
+
     // send null if strategy is undefined
-    if (localOptions.strategy === undefined) {
+    if (localOptionsCopy.strategy === undefined) {
       editOptions(null);
       resetOptions();
     } else {
-      let { createMissing } = localOptions;
+      let { createMissing } = localOptionsCopy;
       if (createMissing === undefined && !allowSetDefault) {
         createMissing = false;
       }
 
       editOptions({
-        ...localOptions,
-        strategy: localOptions.strategy,
+        ...localOptionsCopy,
+        strategy: localOptionsCopy.strategy,
         createMissing,
       });
     }

@@ -40,7 +40,8 @@ export const Setup: React.FC = () => {
   const [databaseFile, setDatabaseFile] = useState("");
   const [generatedLocation, setGeneratedLocation] = useState("");
   const [cacheLocation, setCacheLocation] = useState("");
-  const [blobsLocation, setBlobsLocation] = useState("blobs");
+  const [storeBlobsInDatabase, setStoreBlobsInDatabase] = useState(false);
+  const [blobsLocation, setBlobsLocation] = useState("");
   const [loading, setLoading] = useState(false);
   const [setupError, setSetupError] = useState("");
 
@@ -393,27 +394,43 @@ export const Setup: React.FC = () => {
               }}
             />
           </p>
-          <InputGroup>
-            <Form.Control
-              className="text-input"
-              value={blobsLocation}
-              placeholder={intl.formatMessage({
-                id: "setup.paths.path_to_blobs_directory_empty_for_database",
+
+          <p>
+            <Form.Check
+              id="store-blobs-in-database"
+              checked={storeBlobsInDatabase}
+              label={intl.formatMessage({
+                id: "setup.paths.store_blobs_in_database",
               })}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setBlobsLocation(e.currentTarget.value)
-              }
+              onChange={() => setStoreBlobsInDatabase(!storeBlobsInDatabase)}
             />
-            <InputGroup.Append>
-              <Button
-                variant="secondary"
+          </p>
+
+          {!storeBlobsInDatabase && (
+            <InputGroup>
+              <Form.Control
                 className="text-input"
-                onClick={() => setShowBlobsDialog(true)}
-              >
-                <Icon icon={faEllipsisH} />
-              </Button>
-            </InputGroup.Append>
-          </InputGroup>
+                value={blobsLocation}
+                placeholder={intl.formatMessage({
+                  id: "setup.paths.path_to_blobs_directory_empty_for_default",
+                })}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setBlobsLocation(e.currentTarget.value)
+                }
+                disabled={storeBlobsInDatabase}
+              />
+              <InputGroup.Append>
+                <Button
+                  variant="secondary"
+                  className="text-input"
+                  onClick={() => setShowBlobsDialog(true)}
+                  disabled={storeBlobsInDatabase}
+                >
+                  <Icon icon={faEllipsisH} />
+                </Button>
+              </InputGroup.Append>
+            </InputGroup>
+          )}
         </Form.Group>
       );
     }
@@ -543,6 +560,7 @@ export const Setup: React.FC = () => {
         databaseFile,
         generatedLocation,
         cacheLocation,
+        storeBlobsInDatabase,
         blobsLocation,
         stashes,
       });
@@ -631,7 +649,11 @@ export const Setup: React.FC = () => {
             </dt>
             <dd>
               <code>
-                {blobsLocation !== ""
+                {storeBlobsInDatabase
+                  ? intl.formatMessage({
+                      id: "setup.confirm.blobs_use_database",
+                    })
+                  : blobsLocation !== ""
                   ? blobsLocation
                   : intl.formatMessage({
                       id: "setup.confirm.default_blobs_location",
