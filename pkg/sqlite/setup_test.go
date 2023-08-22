@@ -1714,10 +1714,29 @@ func getSavedFilterName(index int) string {
 
 func createSavedFilters(ctx context.Context, qb models.SavedFilterReaderWriter, n int) error {
 	for i := 0; i < n; i++ {
+		filterQ := ""
+		filterPage := i
+		filterPerPage := i * 40
+		filterSort := "date"
+		filterDirection := models.SortDirectionEnumAsc
+		findFilter := models.FindFilterType{
+			Q:         &filterQ,
+			Page:      &filterPage,
+			PerPage:   &filterPerPage,
+			Sort:      &filterSort,
+			Direction: &filterDirection,
+		}
 		savedFilter := models.SavedFilter{
-			Mode:   getSavedFilterMode(i),
-			Name:   getSavedFilterName(i),
-			Filter: getPrefixedStringValue("savedFilter", i, "Filter"),
+			Mode:       getSavedFilterMode(i),
+			Name:       getSavedFilterName(i),
+			FindFilter: &findFilter,
+			ObjectFilter: map[string]interface{}{
+				"test": "object",
+			},
+			UIOptions: map[string]interface{}{
+				"display_mode": 1,
+				"zoom_index":   1,
+			},
 		}
 
 		err := qb.Create(ctx, &savedFilter)
