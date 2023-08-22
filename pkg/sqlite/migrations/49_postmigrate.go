@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/jmoiron/sqlx"
@@ -12,74 +14,71 @@ import (
 	"github.com/stashapp/stash/pkg/sqlite"
 )
 
-// var migrate49CriterionMap = map[models.FilterMode]map[string]string{
-// 	models.FilterModeScenes: map[string]string{
-// 		"id":                 "IntCriterionInput",
-// 		"title":              "StringCriterionInput",
-// 		"code":               "StringCriterionInput",
-// 		"details":            "StringCriterionInput",
-// 		"director":           "StringCriterionInput",
-// 		"oshash":             "StringCriterionInput",
-// 		"checksum":           "StringCriterionInput",
-// 		"phash":              "StringCriterionInput",
-// 		"phash_distance":     "PhashDistanceCriterionInput",
-// 		"path":               "StringCriterionInput",
-// 		"file_count":         "IntCriterionInput",
-// 		"rating":             "IntCriterionInput",
-// 		"rating100":          "IntCriterionInput",
-// 		"organized":          "Boolean",
-// 		"o_counter":          "IntCriterionInput",
-// 		"duplicated":         "PHashDuplicationCriterionInput",
-// 		"resolution":         "ResolutionCriterionInput",
-// 		"duration":           "IntCriterionInput",
-// 		"has_markers":        "String",
-// 		"is_missing":         "String",
-// 		"studios":            "HierarchicalMultiCriterionInput",
-// 		"movies":             "MultiCriterionInput",
-// 		"tags":               "HierarchicalMultiCriterionInput",
-// 		"tag_count":          "IntCriterionInput",
-// 		"performer_tags":     "HierarchicalMultiCriterionInput",
-// 		"performer_favorite": "Boolean",
-// 		"performer_age":      "IntCriterionInput",
-// 		"performers":         "MultiCriterionInput",
-// 		"performer_count":    "IntCriterionInput",
-// 		"stash_id":           "StringCriterionInput",
-// 		"stash_id_endpoint":  "StashIDCriterionInput",
-// 		"url":                "StringCriterionInput",
-// 		"interactive":        "Boolean",
-// 		"interactive_speed":  "IntCriterionInput",
-// 		"captions":           "StringCriterionInput",
-// 		"resume_time":        "IntCriterionInput",
-// 		"play_count":         "IntCriterionInput",
-// 		"play_duration":      "IntCriterionInput",
-// 		"date":               "DateCriterionInput",
-// 		"created_at":         "TimestampCriterionInput",
-// 		"updated_at":         "TimestampCriterionInput",
-// 	},
-// }
+var migrate49TypeResolution = map[string][]string{
+	"Boolean": {
+		/*
+			"organized",
+			"interactive",
+			"ignore_auto_tag",
+			"performer_favorite",
+			"filter_favorites",
+		*/
+	},
+	"Int": {
+		"id",
+		"rating",
+		"rating100",
+		"o_counter",
+		"duration",
+		"tag_count",
+		"age",
+		"height",
+		"height_cm",
+		"weight",
+		"scene_count",
+		"marker_count",
+		"image_count",
+		"gallery_count",
+		"performer_count",
+		"interactive_speed",
+		"resume_time",
+		"play_count",
+		"play_duration",
+		"parent_count",
+		"child_count",
+		"performer_age",
+		"file_count",
+	},
+	"Float": {
+		"penis_length",
+	},
+	"Object": {
+		"tags",
+		"performers",
+		"studios",
+		"movies",
+		"galleries",
+		"parent_studios",
+		"child_studios",
+		"parents",
+		"children",
+	},
+}
+var migrate49NameChanges = map[string]string{
+	"rating":           "rating100",
+	"parent_studios":   "parents",
+	"child_studios":    "children",
+	"parent_tags":      "parents",
+	"child_tags":       "children",
+	"child_tag_count":  "child_count",
+	"parent_tag_count": "parent_count",
+	"height":           "height_cm",
+	"imageIsMissing":   "is_missing",
+	"favorite":         "filter_favorites",
+}
 
 func post49(ctx context.Context, db *sqlx.DB) error {
 	logger.Info("Running post-migration for schema version 49")
-
-	// translate the existing saved filters into the new format
-
-	// existing format:
-	/* const result = {
-	   perPage: this.itemsPerPage,
-	   sortby: this.getSortBy(),
-	   sortdir:
-	     this.sortBy === "date"
-	       ? this.sortDirection === SortDirectionEnum.Asc
-	         ? "asc"
-	         : undefined
-	       : this.sortDirection === SortDirectionEnum.Desc
-	       ? "desc"
-	       : undefined,
-	   disp: this.displayMode,
-	   q: this.searchTerm || undefined,
-	   z: this.zoomIndex,
-	   c: encodedCriteria,
-	 }; */
 
 	m := schema49Migrator{
 		migrator: migrator{
@@ -170,23 +169,36 @@ func (m *schema49Migrator) getDisplayOptions(data json.RawMessage) (json.RawMess
 func (m *schema49Migrator) getFindFilter(data json.RawMessage) (json.RawMessage, error) {
 	type findFilterJson struct {
 		Q         *string `json:"q"`
+		Page      *int    `json:"page"`
 		PerPage   *int    `json:"perPage"`
 		Sort      *string `json:"sortby"`
 		Direction *string `json:"sortdir"`
 	}
 
-	var ff findFilterJson
+	ppDefault := 40
+	pageDefault := 1
+	qDefault := ""
+	sortDefault := "date"
+	asc := "asc"
+	ff := findFilterJson{Q: &qDefault, Page: &pageDefault, PerPage: &ppDefault, Sort: &sortDefault, Direction: &asc}
 	if err := json.Unmarshal(data, &ff); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal find filter: %w", err)
 	}
 
-	if ff.Direction != nil {
-		newDir := strings.ToUpper(*ff.Direction)
-		ff.Direction = &newDir
+	newDir := strings.ToUpper(*ff.Direction)
+	ff.Direction = &newDir
+
+	type findFilterRewrite struct {
+		Q         *string `json:"q"`
+		Page      *int    `json:"page"`
+		PerPage   *int    `json:"per_page"`
+		Sort      *string `json:"sort"`
+		Direction *string `json:"direction"`
 	}
 
-	// remarshal back to json
-	return json.Marshal(ff)
+	fr := findFilterRewrite(ff)
+
+	return json.Marshal(fr)
 }
 
 func (m *schema49Migrator) getObjectFilter(mode models.FilterMode, data json.RawMessage) (json.RawMessage, error) {
@@ -217,13 +229,150 @@ func (m *schema49Migrator) convertCriterion(mode models.FilterMode, out map[stri
 		return fmt.Errorf("failed to unmarshal criterion: %w", err)
 	}
 
-	// TODO - convert UI type to parameter name
 	field := ret["type"].(string)
+	// Some names are depracated
+	if newFieldName, ok := migrate49NameChanges[field]; ok {
+		field = newFieldName
+	}
 	delete(ret, "type")
 
+	// Find out whether the object needs some adjustment/has non-string content attached
+	if arrayContains(migrate49TypeResolution["Boolean"], field) {
+		ret["value"] = adjustCriterionValue(ret["value"], "bool")
+	}
+	if arrayContains(migrate49TypeResolution["Int"], field) {
+		ret["value"] = adjustCriterionValue(ret["value"], "int")
+	}
+	if arrayContains(migrate49TypeResolution["Float"], field) {
+		ret["value"] = adjustCriterionValue(ret["value"], "float64")
+	}
+	if arrayContains(migrate49TypeResolution["Object"], field) {
+		ret["value"] = adjustCriterionValue(ret["value"], "object")
+	}
 	out[field] = ret
 
 	return nil
+}
+
+func arrayContains(sl []string, name string) bool {
+	for _, value := range sl {
+		if value == name {
+			return true
+		}
+	}
+	return false
+}
+
+// General Function for converting the types inside a criterion
+func adjustCriterionValue(value interface{}, t string) interface{} {
+	if mapvalue, ok := value.(map[string]interface{}); ok {
+		// Primitive values and lists of them
+		for _, next := range []string{"value", "value2"} {
+			if valmap, ok := mapvalue[next].([]string); ok {
+				var valNewMap []interface{}
+				for index, v := range valmap {
+					valNewMap[index] = convertString(interface{}(v), t)
+				}
+				mapvalue[next] = interface{}(valNewMap)
+			} else if _, ok := mapvalue[next]; ok {
+				mapvalue[next] = convertString(mapvalue[next], t)
+			}
+		}
+		// Items
+		for _, next := range []string{"items", "excluded"} {
+			if _, ok := mapvalue[next]; ok {
+				mapvalue[next] = adjustCriterionItem(mapvalue[next])
+			}
+		}
+
+		// Those Values are always Int
+		for _, next := range []string{"Distance", "Depth"} {
+			if _, ok := mapvalue[next]; ok {
+				if formattedOut, ok := strconv.ParseInt(mapvalue[next].(string), 10, 64); ok == nil {
+					mapvalue[next] = interface{}(formattedOut)
+				}
+			}
+		}
+		return mapvalue
+	} else if _, ok := value.(string); ok {
+		// Singular Primitive Values
+		return convertString(value, t)
+	} else if listvalue, ok := value.([]interface{}); ok {
+		// Items as a singular value, as well as singular lists
+		if t == "object" {
+			value = adjustCriterionItem(value)
+		} else {
+			for index, val := range listvalue {
+				listvalue[index] = convertString(val, t)
+			}
+			value = interface{}(listvalue)
+		}
+		return value
+	} else if _, ok := value.(int); ok {
+		return value
+	}
+	fmt.Printf("Could not recognize format of value %v\n", value)
+	return value
+}
+
+// Converts values inside a criterion that represent some objects, like performer or studio.
+func adjustCriterionItem(value interface{}) interface{} {
+	// Basically, this first converts step by step the value, after that it adjusts id and Depth (of parent/child studios) to int
+	if itemlist, ok := value.([]interface{}); ok {
+		var itemNewList []interface{}
+		for _, val := range itemlist {
+			if val, ok := val.(map[string]interface{}); ok {
+				newItem := make(map[string]interface{})
+				for index, v := range val {
+					if v, ok := v.(string); ok {
+						switch index {
+						case "id":
+							if formattedOut, ok := strconv.ParseInt(v, 10, 64); ok == nil {
+								newItem["id"] = formattedOut
+							}
+						case "Depth":
+							if formattedOut, ok := strconv.ParseInt(v, 10, 64); ok == nil {
+								newItem["Depth"] = formattedOut
+							}
+						default:
+							newItem[index] = v
+						}
+					}
+				}
+				itemNewList = append(itemNewList, interface{}(newItem))
+			}
+		}
+		return interface{}(itemNewList)
+	}
+	fmt.Printf("Could not recognize %v as an item list \n", value)
+	return value
+}
+
+// Converts a value of type string to its according type, given by string
+func convertString(value interface{}, t string) interface{} {
+	if val, ok := value.(string); ok {
+		switch t {
+		case "float64":
+			if formattedOut, ok := strconv.ParseFloat(val, 64); ok == nil {
+				return interface{}(formattedOut)
+			}
+		case "int":
+			if formattedOut, ok := strconv.ParseInt(val, 10, 64); ok == nil {
+				return interface{}(formattedOut)
+			}
+		case "bool":
+			if formattedOut, ok := strconv.ParseBool(val); ok == nil {
+				return interface{}(formattedOut)
+			}
+		default:
+			fmt.Printf("No valid conversiontype, need bool, int or float64\n")
+			return value
+		}
+	}
+	if reflect.TypeOf(value).Name() != t && !(t == "int" && reflect.TypeOf(value).Name() == "float64") && !(t == "float64" && reflect.TypeOf(value).Name() == "int") {
+		fmt.Printf("Failed to convert %v to String, leaving unmodified.\n", value)
+	}
+	return value
 }
 
 func init() {
