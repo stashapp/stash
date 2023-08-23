@@ -82,7 +82,7 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
   const enableBackgroundImage =
     uiConfig?.enablePerformerBackgroundImage ?? false;
-  const showAllDetails = uiConfig?.showAllDetails ?? false;
+  const showAllDetails = uiConfig?.showAllDetails ?? true;
   const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
