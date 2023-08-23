@@ -451,5 +451,4 @@ export class ListFilterModel {
       zoom_index: this.zoomIndex,
     };
   }
-
 }

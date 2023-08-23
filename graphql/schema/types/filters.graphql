@@ -633,7 +633,6 @@ input SaveFilterInput {
   object_filter: Map
   # generic map for ui options
   ui_options: Map
-
 }
 
 input DestroyFilterInput {
