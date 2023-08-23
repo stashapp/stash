@@ -22,7 +22,7 @@ const (
 )
 
 type savedFilterRow struct {
-	ID           int               `db:"id"`
+	ID           int               `db:"id" goqu:"skipinsert"`
 	Mode         models.FilterMode `db:"mode"`
 	Name         string            `db:"name"`
 	FindFilter   string            `db:"find_filter"`

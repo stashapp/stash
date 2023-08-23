@@ -144,7 +144,7 @@ func TestSavedFilterSetDefault(t *testing.T) {
 		def, err := db.SavedFilter.FindDefault(ctx, models.FilterModeMovies)
 		if err == nil {
 			defID = def.ID
-			assert.Equal(t, findFilter, def.FindFilter)
+			assert.Equal(t, &findFilter, def.FindFilter)
 		}
 
 		return err
