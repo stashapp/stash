@@ -87,6 +87,8 @@ var migrate49NameChanges = map[string]string{
 	"phash":              "phash_distance",
 	"scene_code":         "code",
 	"hasChapters":        "has_chapters",
+	"sceneChecksum":      "checksum",
+	"galleryChecksum":    "checksum",
 }
 
 func post49(ctx context.Context, db *sqlx.DB) error {

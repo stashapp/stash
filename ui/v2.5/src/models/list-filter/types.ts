@@ -160,8 +160,6 @@ export type CriterionType =
   | "title"
   | "oshash"
   | "checksum"
-  | "sceneChecksum"
-  | "galleryChecksum"
   | "phash_distance"
   | "director"
   | "synopsis"

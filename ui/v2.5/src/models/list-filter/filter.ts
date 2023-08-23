@@ -260,7 +260,7 @@ export class ListFilterModel {
     this.itemsPerPage = findFilter?.per_page ?? this.itemsPerPage;
     this.sortBy = findFilter?.sort ?? this.sortBy;
     this.sortDirection =
-      (findFilter?.sort as SortDirectionEnum) ?? this.sortDirection;
+      (findFilter?.direction as SortDirectionEnum) ?? this.sortDirection;
     this.searchTerm = findFilter?.q ?? this.searchTerm;
 
     this.displayMode = uiOptions?.display_mode ?? this.displayMode;
