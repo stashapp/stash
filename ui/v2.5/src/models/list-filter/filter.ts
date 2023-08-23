@@ -3,7 +3,6 @@ import {
   FilterMode,
   FindFilterType,
   SavedFilterDataFragment,
-  SavedFilterInput,
   SortDirectionEnum,
 } from "src/core/generated-graphql";
 import { Criterion, CriterionValue } from "./criteria/criterion";
@@ -443,11 +442,4 @@ export class ListFilterModel {
     };
   }
 
-  public makeSavedFilterInput(): SavedFilterInput {
-    return {
-      find_filter: this.makeFindFilter(),
-      object_filter: this.makeFilter(),
-      ui_options: this.makeUIOptions(),
-    };
-  }
 }

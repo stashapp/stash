@@ -29,9 +29,9 @@ func (r *mutationResolver) SaveFilter(ctx context.Context, input SaveFilterInput
 		f := models.SavedFilter{
 			Mode:         input.Mode,
 			Name:         input.Name,
-			FindFilter:   input.Filter.FindFilter,
-			ObjectFilter: input.Filter.ObjectFilter,
-			UIOptions:    input.Filter.UIOptions,
+			FindFilter:   input.FindFilter,
+			ObjectFilter: input.ObjectFilter,
+			UIOptions:    input.UIOptions,
 		}
 
 		if id == nil {
@@ -69,7 +69,7 @@ func (r *mutationResolver) SetDefaultFilter(ctx context.Context, input SetDefaul
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.SavedFilter
 
-		if input.Filter == nil {
+		if input.FindFilter == nil && input.ObjectFilter == nil && input.UIOptions == nil {
 			// clearing
 			def, err := qb.FindDefault(ctx, input.Mode)
 			if err != nil {
@@ -85,9 +85,9 @@ func (r *mutationResolver) SetDefaultFilter(ctx context.Context, input SetDefaul
 
 		return qb.SetDefault(ctx, &models.SavedFilter{
 			Mode:         input.Mode,
-			FindFilter:   input.Filter.FindFilter,
-			ObjectFilter: input.Filter.ObjectFilter,
-			UIOptions:    input.Filter.UIOptions,
+			FindFilter:   input.FindFilter,
+			ObjectFilter: input.ObjectFilter,
+			UIOptions:    input.UIOptions,
 		})
 	}); err != nil {
 		return false, err
