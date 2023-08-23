@@ -434,6 +434,16 @@ export class ListFilterModel {
     return output;
   }
 
+  public makeSavedFindFilter() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const output: Record<string, any> = {};
+    this.criteria.forEach((criterion) => {
+      criterion.toSavedFilter(output);
+    });
+
+    return output;
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public makeUIOptions(): Record<string, any> {
     return {

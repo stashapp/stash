@@ -164,6 +164,14 @@ export abstract class Criterion<V extends CriterionValue> {
       modifier: this.modifier,
     };
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public toSavedFilter(outputFilter: Record<string, any>) {
+    outputFilter[this.criterionOption.type] = {
+      value: this.value,
+      modifier: this.modifier,
+    };
+  }
 }
 
 export type InputType =
@@ -416,8 +424,8 @@ export class NumberCriterion extends Criterion<INumberValue> {
   protected toCriterionInput(): IntCriterionInput {
     return {
       modifier: this.modifier,
-      value: this.value.value ?? 0,
-      value2: this.value.value2,
+      value: this.value?.value ?? 0,
+      value2: this.value?.value2,
     };
   }
 
@@ -698,8 +706,8 @@ export class DurationCriterion extends Criterion<INumberValue> {
   protected toCriterionInput(): IntCriterionInput {
     return {
       modifier: this.modifier,
-      value: this.value.value ?? 0,
-      value2: this.value.value2,
+      value: this.value?.value ?? 0,
+      value2: this.value?.value2,
     };
   }
 
@@ -788,8 +796,8 @@ export class DateCriterion extends Criterion<IDateValue> {
   protected toCriterionInput(): DateCriterionInput {
     return {
       modifier: this.modifier,
-      value: this.value.value,
-      value2: this.value.value2,
+      value: this.value?.value,
+      value2: this.value?.value2,
     };
   }
 
@@ -858,8 +866,8 @@ export function createTimestampCriterionOption(value: CriterionType) {
 export class TimestampCriterion extends Criterion<ITimestampValue> {
   public encodeValue() {
     return {
-      value: this.value.value,
-      value2: this.value.value2,
+      value: this.value?.value,
+      value2: this.value?.value2,
     };
   }
 
