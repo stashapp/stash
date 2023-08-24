@@ -1,5 +1,5 @@
 import { Button, Tabs, Tab } from "react-bootstrap";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
@@ -113,20 +113,32 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   const movieCount =
     (showAllCounts ? studio.movie_count_all : studio.movie_count) ?? 0;
 
-  var populatedDefaultTab: TabKey = "scenes";
-  if (sceneCount == 0) {
-    if (galleryCount != 0) {
-      populatedDefaultTab = "galleries";
-    } else if (imageCount != 0) {
-      populatedDefaultTab = "images";
-    } else if (performerCount != 0) {
-      populatedDefaultTab = "performers";
-    } else if (movieCount != 0) {
-      populatedDefaultTab = "movies";
-    } else if (studio.child_studios.length != 0) {
-      populatedDefaultTab = "childstudios";
+  const populatedDefaultTab = useMemo(() => {
+    let ret: TabKey = "scenes";
+    if (sceneCount == 0) {
+      if (galleryCount != 0) {
+        ret = "galleries";
+      } else if (imageCount != 0) {
+        ret = "images";
+      } else if (performerCount != 0) {
+        ret = "performers";
+      } else if (movieCount != 0) {
+        ret = "movies";
+      } else if (studio.child_studios.length != 0) {
+        ret = "childstudios";
+      }
     }
-  }
+
+    return ret;
+  }, [
+    sceneCount,
+    galleryCount,
+    imageCount,
+    performerCount,
+    movieCount,
+    studio,
+  ]);
+
   if (tabKey === defaultTab) {
     tabKey = populatedDefaultTab;
   }

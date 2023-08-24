@@ -1,5 +1,5 @@
 import { Tabs, Tab, Dropdown, Button } from "react-bootstrap";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
@@ -108,18 +108,23 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
   const performerCount =
     (showAllCounts ? tag.performer_count_all : tag.performer_count) ?? 0;
 
-  var populatedDefaultTab: TabKey = "scenes";
-  if (sceneCount == 0) {
-    if (imageCount != 0) {
-      populatedDefaultTab = "images";
-    } else if (galleryCount != 0) {
-      populatedDefaultTab = "galleries";
-    } else if (sceneMarkerCount != 0) {
-      populatedDefaultTab = "markers";
-    } else if (performerCount != 0) {
-      populatedDefaultTab = "performers";
+  const populatedDefaultTab = useMemo(() => {
+    let ret: TabKey = "scenes";
+    if (sceneCount == 0) {
+      if (imageCount != 0) {
+        ret = "images";
+      } else if (galleryCount != 0) {
+        ret = "galleries";
+      } else if (sceneMarkerCount != 0) {
+        ret = "markers";
+      } else if (performerCount != 0) {
+        ret = "performers";
+      }
     }
-  }
+
+    return ret;
+  }, [sceneCount, imageCount, galleryCount, sceneMarkerCount, performerCount]);
+
   if (tabKey === defaultTab) {
     tabKey = populatedDefaultTab;
   }

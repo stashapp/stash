@@ -118,16 +118,21 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
   const [updatePerformer] = usePerformerUpdate();
   const [deletePerformer, { loading: isDestroying }] = usePerformerDestroy();
 
-  var populatedDefaultTab: TabKey = "scenes";
-  if (performer.scene_count == 0) {
-    if (performer.gallery_count != 0) {
-      populatedDefaultTab = "galleries";
-    } else if (performer.image_count != 0) {
-      populatedDefaultTab = "images";
-    } else if (performer.movie_count != 0) {
-      populatedDefaultTab = "movies";
+  const populatedDefaultTab = useMemo(() => {
+    let ret: TabKey = "scenes";
+    if (performer.scene_count == 0) {
+      if (performer.gallery_count != 0) {
+        ret = "galleries";
+      } else if (performer.image_count != 0) {
+        ret = "images";
+      } else if (performer.movie_count != 0) {
+        ret = "movies";
+      }
     }
-  }
+
+    return ret;
+  }, [performer]);
+
   if (tabKey === defaultTab) {
     tabKey = populatedDefaultTab;
   }
