@@ -258,6 +258,12 @@ export class ListFilterModel {
 
     this.itemsPerPage = findFilter?.per_page ?? this.itemsPerPage;
     this.sortBy = findFilter?.sort ?? this.sortBy;
+    // parse the random seed if provided
+    const match = this.sortBy?.match(/^random_(\d+)$/);
+    if (match) {
+      this.sortBy = "random";
+      this.randomSeed = Number.parseInt(match[1], 10);
+    }
     this.sortDirection =
       (findFilter?.direction as SortDirectionEnum) ?? this.sortDirection;
     this.searchTerm = findFilter?.q ?? this.searchTerm;
