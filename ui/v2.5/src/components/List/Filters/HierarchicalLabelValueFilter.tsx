@@ -18,7 +18,12 @@ export const HierarchicalLabelValueFilter: React.FC<
 
   const intl = useIntl();
 
-  if (inputType !== "studios" && inputType !== "tags") {
+  if (
+    inputType !== "studios" &&
+    inputType !== "tags" &&
+    inputType !== "scene_tags" &&
+    inputType !== "performer_tags"
+  ) {
     return null;
   }
 

@@ -44,14 +44,14 @@ export const TagsCriterionOption = new TagsCriterionOptionClass(
 );
 
 export const SceneTagsCriterionOption = new TagsCriterionOptionClass(
-  "sceneTags",
-  "tags",
+  "scene_tags",
+  "scene_tags",
   defaultModifierOptions
 );
 
 export const PerformerTagsCriterionOption = new TagsCriterionOptionClass(
-  "performerTags",
-  "tags",
+  "performer_tags",
+  "performer_tags",
   withoutEqualsModifierOptions
 );
 

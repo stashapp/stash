@@ -42,7 +42,13 @@ export type SelectObject = {
 type Option = { value: string; label: string };
 
 interface ITypeProps {
-  type?: "performers" | "studios" | "tags" | "movies";
+  type?:
+    | "performers"
+    | "studios"
+    | "tags"
+    | "scene_tags"
+    | "performer_tags"
+    | "movies";
 }
 interface IFilterProps {
   ids?: string[];

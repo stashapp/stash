@@ -80,15 +80,15 @@ var migrate49NameChanges = map[string]string{
 	"movieIsMissing":     "is_missing",
 	"favorite":           "filter_favorites",
 	"hasMarkers":         "has_markers",
-	"sceneTags":          "tags", // this one and the next four seem fishy, is this really good?
-	"performerTags":      "tags",
-	"parentTags":         "tags",
-	"childTags":          "tags",
+	"parentTags":         "parents",
+	"childTags":          "children",
 	"phash":              "phash_distance",
 	"scene_code":         "code",
 	"hasChapters":        "has_chapters",
 	"sceneChecksum":      "checksum",
 	"galleryChecksum":    "checksum",
+	"sceneTags":          "scene_tags",
+	"performerTags":      "performer_tags",
 }
 
 func post49(ctx context.Context, db *sqlx.DB) error {

@@ -116,6 +116,8 @@ export type CriterionType =
   | "has_markers"
   | "is_missing"
   | "tags"
+  | "scene_tags"
+  | "performer_tags"
   | "tag_count"
   | "performers"
   | "studios"
