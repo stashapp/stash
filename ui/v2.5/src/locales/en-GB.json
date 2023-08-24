@@ -690,6 +690,7 @@
             "heading": "Continue playlist by default"
           },
           "enable_chromecast": "Enable Chromecast",
+          "show_ab_loop_controls": "Show AB Loop plugin controls",
           "show_scrubber": "Show Scrubber",
           "track_activity": "Track Activity",
           "vr_tag": {
