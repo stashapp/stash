@@ -60,6 +60,8 @@ var migrate49TypeResolution = map[string][]string{
 		"galleries",
 		"parents",
 		"children",
+		"scene_tags",
+		"performer_tags",
 	},
 }
 var migrate49NameChanges = map[string]string{
