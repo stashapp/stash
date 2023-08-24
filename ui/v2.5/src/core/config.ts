@@ -55,8 +55,10 @@ export interface IUIConfig {
   compactExpandedDetails?: boolean;
   // if true show all content details by default
   showAllDetails?: boolean;
+
   // if true the chromecast option will enabled
   enableChromecast?: boolean;
+
   // if true continue scene will always play from the beginning
   alwaysStartFromBeginning?: boolean;
   // if true enable activity tracking
@@ -64,6 +66,8 @@ export interface IUIConfig {
   // the minimum percentage of scene duration which a scene must be played
   // before the play count is incremented
   minimumPlayPercent?: number;
+
+  showAbLoopControls?: boolean;
 
   // maximum number of items to shown in the dropdown list - defaults to 200
   // upper limit of 1000

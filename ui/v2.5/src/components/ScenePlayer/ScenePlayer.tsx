@@ -367,7 +367,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           loopIfAfterEnd: true,
           pauseAfterLooping: false,
           pauseBeforeLooping: false,
-          createButtons: true,
+          createButtons: uiConfig?.showAbLoopControls ?? false,
         },
       },
     };
@@ -403,7 +403,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       sceneId.current = undefined;
     };
     // empty deps - only init once
-  }, []);
+    // showAbLoopControls is necessary to re-init the player when the config changes
+  }, [uiConfig?.showAbLoopControls]);
 
   useEffect(() => {
     const player = getPlayer();
