@@ -43,6 +43,20 @@ export interface IUIConfig {
 
   ratingSystemOptions?: RatingSystemOptions;
 
+  // if true a background image will be display on header
+  enableMovieBackgroundImage?: boolean;
+  // if true a background image will be display on header
+  enablePerformerBackgroundImage?: boolean;
+  // if true a background image will be display on header
+  enableStudioBackgroundImage?: boolean;
+  // if true a background image will be display on header
+  enableTagBackgroundImage?: boolean;
+  // if true view expanded details compact
+  compactExpandedDetails?: boolean;
+  // if true show all content details by default
+  showAllDetails?: boolean;
+  // if true the chromecast option will enabled
+  enableChromecast?: boolean;
   // if true continue scene will always play from the beginning
   alwaysStartFromBeginning?: boolean;
   // if true enable activity tracking

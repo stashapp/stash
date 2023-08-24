@@ -30,7 +30,7 @@ const sortByOptions = ["name", "random", "rating"]
     },
   ]);
 
-const displayModeOptions = [DisplayMode.Grid];
+const displayModeOptions = [DisplayMode.Grid, DisplayMode.Tagger];
 const criterionOptions = [
   createMandatoryStringCriterionOption("name"),
   createStringCriterionOption("details"),

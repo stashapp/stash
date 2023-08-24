@@ -127,6 +127,7 @@
   "aliases": "Inne nazwy",
   "all": "wszystkie",
   "also_known_as": "Znany/a również jako",
+  "appears_with": "Pojawia się z",
   "ascending": "Rosnąco",
   "average_resolution": "Średnia rozdzielczość",
   "between_and": "i",
@@ -140,6 +141,11 @@
   "captions": "Napisy",
   "career_length": "Długość kariery",
   "chapters": "Rozdziały",
+  "circumcised": "Obrzezanie",
+  "circumcised_types": {
+    "CUT": "Obrzezany",
+    "UNCUT": "Nieobrzezany"
+  },
   "component_tagger": {
     "config": {
       "active_instance": "Aktywna instancja stash-box:",
@@ -233,7 +239,9 @@
       "server_display_name": "Wyświetlana nazwa serwera",
       "server_display_name_desc": "Nazwa wyświetlana dla serwera DLNA. Domyślnie {server_name}, jeśli jest pusta.",
       "successfully_cancelled_temporary_behaviour": "Pomyślnie anulowano zachowanie tymczasowe",
-      "until_restart": "do ponownego uruchomienia"
+      "until_restart": "do ponownego uruchomienia",
+      "video_sort_order": "Domyślna kolejność sortowania wideo",
+      "video_sort_order_desc": "Ustaw domyślną kolejność sortowania filmów."
     },
     "general": {
       "auth": {
@@ -280,7 +288,7 @@
       "check_for_insecure_certificates_desc": "Niektóre witryny używają nieprawidłowych certyfikatów ssl. Jeśli opcja ta nie jest zaznaczona, scraper pomija sprawdzanie niezapewniających bezpieczeństwa certyfikatów i pozwala na skrobanie tych witryn. Jeśli podczas skrobania pojawia się błąd certyfikatu, usuń zaznaczenie tej opcji.",
       "chrome_cdp_path": "Ścieżka Chrome CDP",
       "chrome_cdp_path_desc": "Ścieżka do pliku wykonywalnego Chrome lub adres zdalny (zaczynający się od http:// lub https://, na przykład http://localhost:9222/json/version) do instancji Chrome.",
-      "create_galleries_from_folders_desc": "Jeśli włączone, tworzy galerie z folderów zawierających obrazy.",
+      "create_galleries_from_folders_desc": "Jeśli włączone, domyślnie tworzy galerie z folderów zawierających obrazy. Utwórz plik o nazwie .forcegallery lub .nogallery w folderze, aby wymusić/zapobiec temu.",
       "create_galleries_from_folders_label": "Tworzenie galerii z folderów zawierających obrazy",
       "database": "Baza danych",
       "db_path_head": "Ścieżka bazy danych",
@@ -307,7 +315,7 @@
         "transcode": {
           "input_args": {
             "desc": "Zaawansowane: Dodatkowe argumenty do przekazania do FFmpeg przed polem wejściowym podczas generowania wideo.",
-            "heading": "Argumenty wejściowe dla transkodowani na żywo przy użyciu FFmpeg"
+            "heading": "Argumenty wejściowe dla transkodowani przy użyciu FFmpeg"
           },
           "output_args": {
             "desc": "Zaawansowane: Dodatkowe argumenty do przekazania do FFmpeg przed polem wyjściowym podczas generowania wideo.",
@@ -404,7 +412,7 @@
         "auto_tagging_all_paths": "Automatyczne tagowanie wszystkich ścieżek",
         "auto_tagging_paths": "Automatyczne tagowanie następujących ścieżek"
       },
-      "auto_tag_based_on_filenames": "Automatyczne tagowanie zawartości na podstawie nazw plików.",
+      "auto_tag_based_on_filenames": "Automatyczne tagowanie zawartości na podstawie ścieżek plików.",
       "auto_tagging": "Automatyczne tagowanie",
       "backing_up_database": "Tworzenie kopii zapasowej bazy danych",
       "backup_and_download": "Wykonuje kopię zapasową bazy danych i pobiera plik wynikowy.",
@@ -419,6 +427,7 @@
         "generating_from_paths": "Generowanie dla scen z następujących ścieżek",
         "generating_scenes": "Generowanie dla {num} {scene}"
       },
+      "generate_clip_previews_during_scan": "Generowanie podglądu klipów obrazów",
       "generate_desc": "Generowanie pomocniczych plików graficznych, sprite'ów, wideo, vtt i innych.",
       "generate_phashes_during_scan": "Generowanie hashy percepcyjnych",
       "generate_phashes_during_scan_tooltip": "Do deduplikacji i identyfikacji scen.",
@@ -584,8 +593,12 @@
         "margin": "Margines (w pikselach)"
       },
       "images": {
-        "heading": "Zdjęcia",
+        "heading": "Obrazy",
         "options": {
+          "create_image_clips_from_videos": {
+            "description": "Gdy biblioteka ma wyłączone pliki wideo, pliki wideo (pliki kończące się rozszerzeniem wideo) będą skanowane jako klipy obrazów.",
+            "heading": "Skanuj rozszerzenia wideo jako klipy obrazów"
+          },
           "write_image_thumbnails": {
             "description": "Zapisywanie miniatur obrazów na dysku, gdy są one generowane w locie",
             "heading": "Zapisywanie miniatur obrazów"
@@ -645,7 +658,11 @@
             "heading": "Domyślnie kontynuuj odtwarzanie playlisty"
           },
           "show_scrubber": "Pokaż Scrubber",
-          "track_activity": "Śledzenie aktywności"
+          "track_activity": "Śledzenie aktywności",
+          "vr_tag": {
+            "description": "Przycisk VR będzie wyświetlany tylko dla scen z tym znacznikiem.",
+            "heading": "Tag VR"
+          }
         }
       },
       "scene_wall": {
@@ -690,15 +707,15 @@
   },
   "configuration": "Konfiguracja",
   "countables": {
-    "files": "{count, plural, one {Plik} other {Pliki}}",
-    "galleries": "{count, plural, one {Galeria} other {Galerie}}",
-    "images": "{count, plural, one {Obraz} other {Obrazy}}",
-    "markers": "{count, plural, one {Znacznik} other {Znaczniki}}",
-    "movies": "{count, plural, one {Film} other {Filmy}}",
-    "performers": "{count, plural, one {Aktor} other {Aktorzy}}",
-    "scenes": "{count, plural, one {Scena} other {Sceny}}",
-    "studios": "{count, plural, one {Studio} other {Studia}}",
-    "tags": "{count, plural, one {Tag} other {Tagi}}"
+    "files": "{count, plural, one {Plik} few {Pliki} other {Plików}}",
+    "galleries": "{count, plural, one {Galeria} few {Galerie} other {Galerii}}",
+    "images": "{count, plural, one {Obraz} few {Obrazy} other {Obrazów}}",
+    "markers": "{count, plural, one {Znacznik} few {Znaczniki} other {Znaczników}}",
+    "movies": "{count, plural, one {Film} few {Filmy} other {Filmów}}",
+    "performers": "{count, plural, one {Aktor} few {Aktorów} other {Aktorów}}",
+    "scenes": "{count, plural, one {Scena} few {Sceny} other {Scen}}",
+    "studios": "{count, plural, one {Studio} few {Studia} other {Studiów}}",
+    "tags": "{count, plural, one {Tag} few {Tagi} other {Tagów}}"
   },
   "country": "Kraj",
   "cover_image": "Okładka",
@@ -745,7 +762,7 @@
     "delete_galleries_extra": "…oraz wszystkie pliki obrazów, które nie są dołączone do żadnej innej galerii.",
     "delete_gallery_files": "Usuń folder galerii/plik zip i wszystkie obrazy, które nie są dołączone do żadnej innej galerii..",
     "delete_object_desc": "Czy na pewno chcesz usunąć {count, plural, one {{singularEntity}} other {{pluralEntity}}}?",
-    "delete_object_overflow": "…i {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
+    "delete_object_overflow": "…i jeszcze {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Usuń {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "dont_show_until_updated": "Nie pokazuj do następnej aktualizacji",
     "edit_entity_title": "Edytuj {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
@@ -791,11 +808,12 @@
       "source": "Źródło"
     },
     "overwrite_filter_confirm": "Czy na pewno chcesz nadpisać istniejące zapisane zapytanie {entityName}?",
-    "reassign_entity_title": "{count, plural, one {Przypisz {singularEntity}} other {Przypisz {pluralEntity}}}",
+    "reassign_entity_title": "Przypisz {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "reassign_files": {
       "destination": "Przypisz ponownie do"
     },
     "scene_gen": {
+      "clip_previews": "Podgląd klipu obrazu",
       "covers": "Okładki scen",
       "force_transcodes": "Wymuś generowanie transkodu",
       "force_transcodes_tooltip": "Domyślnie transkody są generowane tylko wtedy, gdy plik wideo nie jest obsługiwany przez przeglądarkę. Po włączeniu tej funkcji transkod będzie generowany nawet wtedy, gdy plik wideo wydaje się być obsługiwany przez przeglądarkę.",
@@ -810,7 +828,7 @@
       "markers_tooltip": "20-sekundowe filmy rozpoczynające się od podanego kodu czasowego.",
       "override_preview_generation_options": "Zastąp opcje generowania podglądu",
       "override_preview_generation_options_desc": "Nadpisanie opcji generowania podglądu dla tej operacji. Domyślne wartości ustawia się w System -> Generowanie podglądu.",
-      "overwrite": "Nadpisywanie istniejących wygenerowanych plików",
+      "overwrite": "Nadpisywanie istniejących plików",
       "phash": "Hasze percepcyjne (do deduplikacji)",
       "preview_exclude_end_time_desc": "Wyklucz z podglądu sceny ostatnie x sekund. Może to być wartość wyrażona w sekundach lub procent (np. 2%) całkowitego czasu trwania sceny.",
       "preview_exclude_end_time_head": "Pomiń koniec",
@@ -852,7 +870,12 @@
   "donate": "Przekaż darowiznę",
   "dupe_check": {
     "description": "Obliczenia na poziomach poniżej \"Dokładna\" mogą trwać dłużej. Na niższych poziomach dokładności mogą być również zwracane wyniki fałszywie dodatnie.",
-    "found_sets": "{setCount, plural, one{Znaleziono # zestaw duplikatów.} few {Znaleziono # zestawy duplikatów.} other {Znaleziono # zestawów duplikatów.}}",
+    "duration_diff": "Maksymalna różnica czasu trwania",
+    "duration_options": {
+      "any": "Dowolna",
+      "equal": "Brak (takiej samej długości)"
+    },
+    "found_sets": "Znaleziono {setCount, plural, one{# zestaw} few {# zestawy} other {# zestawów}} duplikatów.",
     "options": {
       "exact": "Dokładna",
       "high": "Wysoka",
@@ -947,7 +970,7 @@
   "image": "Obraz",
   "image_count": "Liczba obrazów",
   "image_index": "Obraz nr",
-  "images": "Zdjęcia",
+  "images": "Obrazy",
   "include_parent_tags": "Uwzględnij tagi nadrzędne",
   "include_sub_studios": "Uwzględnić studia zależne",
   "include_sub_tags": "Uwzględnij podtagi",
@@ -1002,6 +1025,9 @@
   "parent_tags": "Tagi nadrzędne",
   "part_of": "Część {parent}",
   "path": "Ścieżka",
+  "penis": "Penis",
+  "penis_length": "Długość penisa",
+  "penis_length_cm": "Długość penisa (cm)",
   "perceptual_similarity": "Podobieństwo percepcyjne (phash)",
   "performer": "Aktor",
   "performerTags": "Tagi aktorów",
@@ -1074,6 +1100,7 @@
     "saved_filters": "Zapisane filtry",
     "update_filter": "Aktualizuj filtr"
   },
+  "second": "Drugi",
   "seconds": "Sekund",
   "settings": "Ustawienia",
   "setup": {

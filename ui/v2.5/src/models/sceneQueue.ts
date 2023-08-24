@@ -9,6 +9,7 @@ export interface IPlaySceneOptions {
   newPage?: number;
   autoPlay?: boolean;
   continue?: boolean;
+  start?: number;
 }
 
 export class SceneQueue {
@@ -116,6 +117,9 @@ export class SceneQueue {
     }
     if (options.continue !== undefined) {
       params.push("continue=" + options.continue);
+    }
+    if (options.start !== undefined) {
+      params.push("t=" + options.start);
     }
     return `/scenes/${sceneID}${params.length ? "?" + params.join("&") : ""}`;
   }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Form,
   Col,
@@ -23,6 +23,7 @@ import {
 import { getCountryByISO } from "src/utils/country";
 import { CountrySelect } from "./CountrySelect";
 import { StringListInput } from "./StringListInput";
+import { ImageSelector } from "./ImageSelector";
 
 export class ScrapeResult<T> {
   public newValue?: T;
@@ -435,6 +436,49 @@ export const ScrapedImageRow: React.FC<IScrapedImageRowProps> = (props) => {
           placeholder={props.title}
           isNew
         />
+      )}
+      onChange={props.onChange}
+    />
+  );
+};
+
+interface IScrapedImagesRowProps {
+  title: string;
+  className?: string;
+  result: ScrapeResult<string>;
+  images: string[];
+  onChange: (value: ScrapeResult<string>) => void;
+}
+
+export const ScrapedImagesRow: React.FC<IScrapedImagesRowProps> = (props) => {
+  const [imageIndex, setImageIndex] = useState(0);
+
+  function onSetImageIndex(newIdx: number) {
+    const ret = props.result.cloneWithValue(props.images[newIdx]);
+    props.onChange(ret);
+    setImageIndex(newIdx);
+  }
+
+  return (
+    <ScrapeDialogRow
+      title={props.title}
+      result={props.result}
+      renderOriginalField={() => (
+        <ScrapedImage
+          result={props.result}
+          className={props.className}
+          placeholder={props.title}
+        />
+      )}
+      renderNewField={() => (
+        <div>
+          <ImageSelector
+            imageClassName={props.className}
+            images={props.images}
+            imageIndex={imageIndex}
+            setImageIndex={onSetImageIndex}
+          />
+        </div>
       )}
       onChange={props.onChange}
     />

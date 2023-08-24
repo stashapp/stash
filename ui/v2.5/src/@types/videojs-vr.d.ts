@@ -2,6 +2,9 @@
 
 declare module "videojs-vr" {
   import videojs from "video.js";
+  // we don't want to depend on THREE.js directly, these are just typedefs for videojs-vr
+  // eslint-disable-next-line import/no-extraneous-dependencies
+  import * as THREE from "three";
 
   declare function videojsVR(options?: videojsVR.Options): videojsVR.Plugin;
 
@@ -102,6 +105,12 @@ declare module "videojs-vr" {
       setProjection(projection: ProjectionType): void;
       init(): void;
       reset(): void;
+
+      cameraVector: THREE.Vector3;
+
+      camera: THREE.Camera;
+      scene: THREE.Scene;
+      renderer: THREE.Renderer;
     }
   }
 

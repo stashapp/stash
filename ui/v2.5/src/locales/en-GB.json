@@ -8,6 +8,7 @@
     "allow_temporarily": "Allow temporarily",
     "anonymise": "Anonymise",
     "apply": "Apply",
+    "assign_stashid_to_parent_studio": "Assign Stash ID to existing parent studio and update metadata",
     "auto_tag": "Auto Tag",
     "backup": "Backup",
     "browse_for_image": "Browse for image…",
@@ -24,6 +25,7 @@
     "create_chapters": "Create Chapter",
     "create_entity": "Create {entityType}",
     "create_marker": "Create Marker",
+    "create_parent_studio": "Create parent studio",
     "created_entity": "Created {entity_type}: {entity_name}",
     "customise": "Customise",
     "delete": "Delete",
@@ -38,6 +40,7 @@
     "download_backup": "Download Backup",
     "edit": "Edit",
     "edit_entity": "Edit {entityType}",
+    "encoding_image": "Encoding image",
     "export": "Export",
     "export_all": "Export all…",
     "find": "Find",
@@ -67,6 +70,7 @@
     "not_running": "not running",
     "open_in_external_player": "Open in external player",
     "open_random": "Open Random",
+    "optimise_database": "Optimise Database",
     "overwrite": "Overwrite",
     "play_random": "Play Random",
     "play_selected": "Play selected",
@@ -152,6 +156,8 @@
       "active_instance": "Active stash-box instance:",
       "blacklist_desc": "Blacklist items are excluded from queries. Note that they are regular expressions and also case-insensitive. Certain characters must be escaped with a backslash: {chars_require_escape}",
       "blacklist_label": "Blacklist",
+      "mark_organized_desc": "Immediately mark the scene as Organized after the Save button is clicked.",
+      "mark_organized_label": "Mark as Organized on save",
       "query_mode_auto": "Auto",
       "query_mode_auto_desc": "Uses metadata if present, or filename",
       "query_mode_dir": "Dir",
@@ -484,6 +490,8 @@
       },
       "migrations": "Migrations",
       "only_dry_run": "Only perform a dry run. Don't remove anything",
+      "optimise_database": "Attempt to improve performance by analysing and then rebuilding the entire database file.",
+      "optimise_database_warning": "Warning: while this task is running, any operations that modify the database will fail, and depending on your database size, it could take several minutes to complete. It also requires at the very minimum as much free disk space as your database is large, but 1.5x is recommended.",
       "plugin_tasks": "Plugin Tasks",
       "scan": {
         "scanning_all_paths": "Scanning all paths",
@@ -573,6 +581,21 @@
               "stars": "Stars"
             }
           }
+        }
+      },
+      "detail": {
+        "enable_background_image": {
+          "description": "Display background image on detail page.",
+          "heading": "Enable background image"
+        },
+        "heading": "Detail Page",
+        "compact_expanded_details": {
+          "description": "When enabled, this option will present expanded details while maintaining a compact presentation",
+          "heading": "Compact expanded details"
+        },
+        "show_all_details": {
+          "description": "When enabled, all content details will be shown by default and each detail item will fit under a single column",
+          "heading": "Show all details"
         }
       },
       "funscript_offset": {
@@ -666,6 +689,7 @@
             "description": "Play next scene in queue when video finishes",
             "heading": "Continue playlist by default"
           },
+          "enable_chromecast": "Enable Chromecast",
           "show_scrubber": "Show Scrubber",
           "track_activity": "Track Activity",
           "vr_tag": {
@@ -866,6 +890,7 @@
       "video_previews_tooltip": "Video previews which play when hovering over a scene"
     },
     "scenes_found": "{count} scenes found",
+    "performers_found": "{count} performers found",
     "scrape_entity_query": "{entity_type} Scrape Query",
     "scrape_entity_title": "{entity_type} Scrape Results",
     "scrape_results_existing": "Existing",
@@ -926,6 +951,7 @@
   },
   "empty_server": "Add some scenes to your server to view recommendations on this page.",
   "errors": {
+    "loading_type": "Error loading {type}",
     "image_index_greater_than_zero": "Image index must be greater than 0",
     "lazy_component_error_help": "If you recently upgraded Stash, please reload the page or clear your browser cache.",
     "something_went_wrong": "Something went wrong."
@@ -990,6 +1016,7 @@
   "include_parent_tags": "Include parent tags",
   "include_sub_studios": "Include subsidiary studios",
   "include_sub_tags": "Include sub-tags",
+  "index_of_total": "{index} of {total}",
   "instagram": "Instagram",
   "interactive": "Interactive",
   "interactive_speed": "Interactive speed",
@@ -1036,6 +1063,7 @@
     "previous": "Previous"
   },
   "parent_of": "Parent of {children}",
+  "parent_studio": "Parent Studio",
   "parent_studios": "Parent Studios",
   "parent_tag_count": "Parent Tag Count",
   "parent_tags": "Parent Tags",
@@ -1123,10 +1151,11 @@
     "confirm": {
       "almost_ready": "We're almost ready to complete the configuration. Please confirm the following settings. You can click back to change anything incorrect. If everything looks good, click Confirm to create your system.",
       "blobs_directory": "Binary data directory",
+      "blobs_use_database": "<use database>",
       "cache_directory": "Cache directory",
       "configuration_file_location": "Configuration file location:",
       "database_file_path": "Database file path",
-      "default_blobs_location": "<use database>",
+      "default_blobs_location": "<path containing configuration file>/blobs",
       "default_cache_location": "<path containing configuration file>/cache",
       "default_db_location": "<path containing configuration file>/stash-go.sqlite",
       "default_generated_content_location": "<path containing configuration file>/generated",
@@ -1164,14 +1193,15 @@
     "paths": {
       "database_filename_empty_for_default": "database filename (empty for default)",
       "description": "Next up, we need to determine where to find your porn collection, and where to store the Stash database, generated files and cache files. These settings can be changed later if needed.",
-      "path_to_blobs_directory_empty_for_database": "path to blobs directory (empty to use database)",
+      "path_to_blobs_directory_empty_for_default": "path to blobs directory (empty for default)",
       "path_to_cache_directory_empty_for_default": "path to cache directory (empty for default)",
       "path_to_generated_directory_empty_for_default": "path to generated directory (empty for default)",
       "set_up_your_paths": "Set up your paths",
       "stash_alert": "No library paths have been selected. No media will be able to be scanned into Stash. Are you sure?",
+      "store_blobs_in_database": "Store blobs in database",
       "where_can_stash_store_blobs": "Where can Stash store database binary data?",
-      "where_can_stash_store_blobs_description": "Stash can store binary data such as scene covers, performer, studio and tag images either in the database or in the filesystem. By default, it will store this data in the filesystem in the subdirectory <code>blobs</code>. If you want to change this, please enter an absolute or relative (to the current working directory) path. Stash will create this directory if it does not already exist.",
-      "where_can_stash_store_blobs_description_addendum": "Alternatively, if you want to store this data in the database, you can leave this field blank. <strong>Note:</strong> This will increase the size of your database file, and will increase database migration times.",
+      "where_can_stash_store_blobs_description": "Stash can store binary data such as scene covers, performer, studio and tag images either in the database or in the filesystem. By default, it will store this data in the filesystem in the subdirectory <code>blobs</code> within the directory containing your config file. If you want to change this, please enter an absolute or relative (to the current working directory) path. Stash will create this directory if it does not already exist.",
+      "where_can_stash_store_blobs_description_addendum": "Alternatively, you can store this data in the database. <strong>Note:</strong> This will increase the size of your database file, and will increase database migration times.",
       "where_can_stash_store_cache_files": "Where can Stash store cache files?",
       "where_can_stash_store_cache_files_description": "In order for some functionality like HLS/DASH live transcoding to function, Stash requires a cache directory for temporary files. By default, Stash will create a <code>cache</code> directory within the directory containing your config file. If you want to change this, please enter an absolute or relative (to the current working directory) path. Stash will create this directory if it does not already exist.",
       "where_can_stash_store_its_database": "Where can Stash store its database?",
@@ -1217,6 +1247,7 @@
   "stashbox": {
     "go_review_draft": "Go to {endpoint_name} to review draft.",
     "selected_stash_box": "Selected Stash-Box endpoint",
+    "source": "Stash-Box Source",
     "submission_failed": "Submission failed",
     "submission_successful": "Submission successful",
     "submit_update": "Already exists in {endpoint_name}"
@@ -1233,7 +1264,46 @@
   },
   "status": "Status: {statusText}",
   "studio": "Studio",
+  "studio_and_parent": "Studio & Parent",
   "studio_depth": "Levels (empty for all)",
+  "studio_tagger": {
+    "add_new_studios": "Add New Studios",
+    "any_names_entered_will_be_queried": "Any names entered will be queried from the remote Stash-Box instance and added if found. Only exact matches will be considered a match.",
+    "batch_add_studios": "Batch Add Studios",
+    "batch_update_studios": "Batch Update Studios",
+    "config": {
+      "active_stash-box_instance": "Active stash-box instance:",
+      "create_parent_desc": "Create missing parent studios, or tag and update data/image for existing parent studios with exact name matches",
+      "create_parent_label": "Create parent studios",
+      "edit_excluded_fields": "Edit Excluded Fields",
+      "excluded_fields": "Excluded fields:",
+      "no_fields_are_excluded": "No fields are excluded",
+      "no_instances_found": "No instances found",
+      "these_fields_will_not_be_changed_when_updating_studios": "These fields will not be changed when updating studios."
+    },
+    "create_or_tag_parent_studios": "Create missing or tag existing parent studios",
+    "current_page": "Current page",
+    "failed_to_save_studio": "Failed to save studio \"{studio}\"",
+    "name_already_exists": "Name already exists",
+    "network_error": "Network Error",
+    "no_results_found": "No results found.",
+    "number_of_studios_will_be_processed": "{studio_count} studios will be processed",
+    "studio_already_tagged": "Studio already tagged",
+    "studio_names_separated_by_comma": "Studio names separated by comma",
+    "studio_selection": "Studio selection",
+    "studio_successfully_tagged": "Studio successfully tagged",
+    "query_all_studios_in_the_database": "All studios in the database",
+    "refresh_tagged_studios": "Refresh tagged studios",
+    "refreshing_will_update_the_data": "Refreshing will update the data of any tagged studios from the stash-box instance.",
+    "status_tagging_job_queued": "Status: Tagging job queued",
+    "status_tagging_studios": "Status: Tagging studios",
+    "tag_status": "Tag Status",
+    "to_use_the_studio_tagger": "To use the studio tagger a stash-box instance needs to be configured.",
+    "untagged_studios": "Untagged studios",
+    "update_studio": "Update Studio",
+    "update_studios": "Update Studios",
+    "updating_untagged_studios_description": "Updating untagged studios will try to match any studios that lack a stashid and update the metadata."
+  },
   "studios": "Studios",
   "sub_tag_count": "Sub-Tag Count",
   "sub_tag_of": "Sub-tag of {parent}",

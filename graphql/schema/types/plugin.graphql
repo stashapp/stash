@@ -1,43 +1,42 @@
-
 type Plugin {
-    id: ID!
-    name: String!
-    description: String
-    url: String
-    version: String
+  id: ID!
+  name: String!
+  description: String
+  url: String
+  version: String
 
-    tasks: [PluginTask!]
-    hooks: [PluginHook!]
+  tasks: [PluginTask!]
+  hooks: [PluginHook!]
 }
 
 type PluginTask {
-    name: String!
-    description: String
-    plugin: Plugin!
+  name: String!
+  description: String
+  plugin: Plugin!
 }
 
 type PluginHook {
-    name: String!
-    description: String
-    hooks: [String!]
-    plugin: Plugin!
+  name: String!
+  description: String
+  hooks: [String!]
+  plugin: Plugin!
 }
 
 type PluginResult {
-    error: String
-    result: String
+  error: String
+  result: String
 }
 
 input PluginArgInput {
-    key: String!
-    value: PluginValueInput
+  key: String!
+  value: PluginValueInput
 }
 
 input PluginValueInput {
-    str: String
-    i: Int
-    b: Boolean
-    f: Float
-    o: [PluginArgInput!]
-    a: [PluginValueInput!]
+  str: String
+  i: Int
+  b: Boolean
+  f: Float
+  o: [PluginArgInput!]
+  a: [PluginValueInput!]
 }

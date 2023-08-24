@@ -123,6 +123,7 @@
 | `r 0` | [Edit mode] Unset rating (stars) |
 | `r {0-9} {0-9}` | [Edit mode] Set rating (decimal - `r 0 0` for `10.0`) |
 | ``r ` `` | [Edit mode] Unset rating (decimal) |
+| `,` | Expand/Collapse Details |
 | `Ctrl + v` | Paste Movie image |
 
 [//]: # "Commented until implementation is dealt with"
@@ -145,11 +146,11 @@
 
 | Keyboard sequence | Action |
 |-------------------|--------|
-| `a` | Details tab |
 | `c` | Scenes tab |
 | `e` | Edit tab |
 | `o` | Operations tab |
 | `f` | Toggle favourite |
+| `,` | Expand/Collapse Details |
 
 ### Edit Performer tab shortcuts
 
@@ -172,6 +173,7 @@
 | `e` | Edit Studio |
 | `s s` | Save Studio |
 | `d d` | Delete Studio |
+| `,` | Expand/Collapse Details |
 | `Ctrl + v` | Paste Studio image |
 
 ## Tags Page shortcuts
@@ -187,4 +189,5 @@
 | `e` | Edit Tag |
 | `s s` | Save Tag |
 | `d d` | Delete Tag |
+| `,` | Expand/Collapse Details |
 | `Ctrl + v` | Paste Tag image |

@@ -5,7 +5,7 @@ import {
   ScrapeDialog,
   ScrapeResult,
   ScrapedInputGroupRow,
-  ScrapedImageRow,
+  ScrapedImagesRow,
   ScrapeDialogRow,
   ScrapedTextAreaRow,
   ScrapedCountryRow,
@@ -414,6 +414,11 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     )
   );
 
+  const images =
+    props.scraped.images && props.scraped.images.length > 0
+      ? props.scraped.images
+      : [];
+
   const allFields = [
     name,
     disambiguation,
@@ -443,7 +448,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     remoteSiteID,
   ];
   // don't show the dialog if nothing was scraped
-  if (allFields.every((r) => !r.scraped)) {
+  if (allFields.every((r) => !r.scraped) && newTags.length === 0) {
     props.onClose();
     return <></>;
   }
@@ -646,10 +651,11 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           newTags,
           createNewTag
         )}
-        <ScrapedImageRow
+        <ScrapedImagesRow
           title={intl.formatMessage({ id: "performer_image" })}
           className="performer-image"
           result={image}
+          images={images}
           onChange={(value) => setImage(value)}
         />
         <ScrapedInputGroupRow

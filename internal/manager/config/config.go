@@ -189,6 +189,7 @@ const (
 	DisableDropdownCreatePerformer = "disable_dropdown_create.performer"
 	DisableDropdownCreateStudio    = "disable_dropdown_create.studio"
 	DisableDropdownCreateTag       = "disable_dropdown_create.tag"
+	DisableDropdownCreateMovie     = "disable_dropdown_create.movie"
 
 	HandyKey                       = "handy_key"
 	FunscriptOffset                = "funscript_offset"
@@ -1096,6 +1097,7 @@ func (i *Instance) GetDisableDropdownCreate() *ConfigDisableDropdownCreate {
 		Performer: i.getBool(DisableDropdownCreatePerformer),
 		Studio:    i.getBool(DisableDropdownCreateStudio),
 		Tag:       i.getBool(DisableDropdownCreateTag),
+		Movie:     i.getBool(DisableDropdownCreateMovie),
 	}
 }
 
