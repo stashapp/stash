@@ -57,6 +57,7 @@ interface IPerformerParams {
 }
 
 const validTabs = [
+  "default",
   "scenes",
   "galleries",
   "images",
@@ -65,7 +66,7 @@ const validTabs = [
 ] as const;
 type TabKey = (typeof validTabs)[number];
 
-const defaultTab: TabKey = "scenes";
+const defaultTab: TabKey = "default";
 
 function isTabKey(tab: string): tab is TabKey {
   return validTabs.includes(tab as TabKey);
@@ -82,7 +83,7 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
   const enableBackgroundImage =
     uiConfig?.enablePerformerBackgroundImage ?? false;
-  const showAllDetails = uiConfig?.showAllDetails ?? false;
+  const showAllDetails = uiConfig?.showAllDetails ?? true;
   const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
@@ -117,11 +118,30 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
   const [updatePerformer] = usePerformerUpdate();
   const [deletePerformer, { loading: isDestroying }] = usePerformerDestroy();
 
+  const populatedDefaultTab = useMemo(() => {
+    let ret: TabKey = "scenes";
+    if (performer.scene_count == 0) {
+      if (performer.gallery_count != 0) {
+        ret = "galleries";
+      } else if (performer.image_count != 0) {
+        ret = "images";
+      } else if (performer.movie_count != 0) {
+        ret = "movies";
+      }
+    }
+
+    return ret;
+  }, [performer]);
+
+  if (tabKey === defaultTab) {
+    tabKey = populatedDefaultTab;
+  }
+
   function setTabKey(newTabKey: string | null) {
-    if (!newTabKey) newTabKey = defaultTab;
+    if (!newTabKey || newTabKey === defaultTab) newTabKey = populatedDefaultTab;
     if (newTabKey === tabKey) return;
 
-    if (newTabKey === defaultTab) {
+    if (newTabKey === populatedDefaultTab) {
       history.replace(`/performers/${performer.id}`);
     } else if (isTabKey(newTabKey)) {
       history.replace(`/performers/${performer.id}/${newTabKey}`);

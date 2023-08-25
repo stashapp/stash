@@ -410,13 +410,10 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 			}
 
 			for i := range namesToUse {
-				if len(namesToUse[i]) > 0 {
-					performer := models.Performer{
-						Name: namesToUse[i],
-					}
-
+				name := namesToUse[i]
+				if len(name) > 0 {
 					tasks = append(tasks, StashBoxBatchTagTask{
-						performer:      &performer,
+						name:           &name,
 						refresh:        false,
 						box:            box,
 						excludedFields: input.ExcludeFields,
@@ -435,6 +432,7 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 				performerQuery := s.Repository.Performer
 				var performers []*models.Performer
 				var err error
+
 				if input.Refresh {
 					performers, err = performerQuery.FindByStashIDStatus(ctx, true, box.Endpoint)
 				} else {
@@ -473,12 +471,9 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 
 		logger.Infof("Starting stash-box batch operation for %d performers", len(tasks))
 
-		var wg sync.WaitGroup
 		for _, task := range tasks {
-			wg.Add(1)
 			progress.ExecuteTask(task.Description(), func() {
 				task.Start(ctx)
-				wg.Done()
 			})
 
 			progress.Increment()
@@ -544,9 +539,10 @@ func (s *Manager) StashBoxBatchStudioTag(ctx context.Context, input StashBoxBatc
 		} else if len(input.Names) > 0 {
 			// The user is batch adding studios
 			for i := range input.Names {
-				if len(input.Names[i]) > 0 {
+				name := input.Names[i]
+				if len(name) > 0 {
 					tasks = append(tasks, StashBoxBatchTagTask{
-						name:           &input.Names[i],
+						name:           &name,
 						refresh:        false,
 						createParent:   input.CreateParent,
 						box:            box,
@@ -602,12 +598,9 @@ func (s *Manager) StashBoxBatchStudioTag(ctx context.Context, input StashBoxBatc
 
 		logger.Infof("Starting stash-box batch operation for %d studios", len(tasks))
 
-		var wg sync.WaitGroup
 		for _, task := range tasks {
-			wg.Add(1)
 			progress.ExecuteTask(task.Description(), func() {
 				task.Start(ctx)
-				wg.Done()
 			})
 
 			progress.Increment()

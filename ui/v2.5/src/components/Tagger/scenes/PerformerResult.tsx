@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import cx from "classnames";
@@ -6,9 +6,12 @@ import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "src/components/Shared/Icon";
 import { OperationButton } from "src/components/Shared/OperationButton";
-import { PerformerSelect, SelectObject } from "src/components/Shared/Select";
 import { OptionalField } from "../IncludeButton";
 import { faSave } from "@fortawesome/free-solid-svg-icons";
+import {
+  Performer,
+  PerformerSelect,
+} from "src/components/Performers/PerformerSelect";
 
 interface IPerformerResultProps {
   performer: GQL.ScrapedPerformer;
@@ -40,10 +43,25 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
       stashID.stash_id === performer.remote_site_id
   );
 
-  const handlePerformerSelect = (performers: SelectObject[]) => {
+  const [selectedPerformer, setSelectedPerformer] = useState<
+    Performer | undefined
+  >();
+
+  useEffect(() => {
+    if (
+      performerData?.findPerformer &&
+      selectedID === performerData?.findPerformer?.id
+    ) {
+      setSelectedPerformer(performerData.findPerformer);
+    }
+  }, [performerData?.findPerformer, selectedID]);
+
+  const handlePerformerSelect = (performers: Performer[]) => {
     if (performers.length) {
+      setSelectedPerformer(performers[0]);
       setSelectedID(performers[0].id);
     } else {
+      setSelectedPerformer(undefined);
       setSelectedID(undefined);
     }
   };
@@ -114,7 +132,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
           <FormattedMessage id="actions.skip" />
         </Button>
         <PerformerSelect
-          ids={selectedID ? [selectedID] : []}
+          values={selectedPerformer ? [selectedPerformer] : []}
           onSelect={handlePerformerSelect}
           className={cx("performer-select", {
             "performer-select-active": selectedSource === "existing",

@@ -60,6 +60,7 @@ type Query {
   findPerformers(
     performer_filter: PerformerFilterType
     filter: FindFilterType
+    performer_ids: [Int!]
   ): FindPerformersResultType!
 
   "Find a studio by ID"
@@ -223,10 +224,12 @@ type Query {
   allSceneMarkers: [SceneMarker!]!
   allImages: [Image!]!
   allGalleries: [Gallery!]!
-  allPerformers: [Performer!]!
   allStudios: [Studio!]!
   allMovies: [Movie!]!
   allTags: [Tag!]!
+
+  # @deprecated
+  allPerformers: [Performer!]!
 
   # Get everything with minimal metadata
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "../Shared/Icon";
@@ -29,12 +29,15 @@ import {
   ListFilterModel,
   useDefaultFilter,
 } from "src/models/list-filter/filter";
+import { PreviewScrubber } from "./PreviewScrubber";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
   image?: string;
   video?: string;
   soundActive: boolean;
+  vttPath?: string;
+  onScrubberClick?: (timestamp: number) => void;
 }
 
 export const ScenePreview: React.FC<IScenePreviewProps> = ({
@@ -42,6 +45,8 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
   video,
   isPortrait,
   soundActive,
+  vttPath,
+  onScrubberClick,
 }) => {
   const videoEl = useRef<HTMLVideoElement>(null);
 
@@ -76,6 +81,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
         ref={videoEl}
         src={video}
       />
+      <PreviewScrubber vttPath={vttPath} onClick={onScrubberClick} />
     </div>
   );
 };
@@ -94,6 +100,7 @@ interface ISceneCardProps {
 export const SceneCard: React.FC<ISceneCardProps> = (
   props: ISceneCardProps
 ) => {
+  const history = useHistory();
   const { configuration } = React.useContext(ConfigurationContext);
   const sceneDefaultFilter: ListFilterModel = useDefaultFilter(
     GQL.FilterMode.Scenes
@@ -393,6 +400,18 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       })
     : `/scenes/${props.scene.id}`;
 
+  function onScrubberClick(timestamp: number) {
+    const link = props.queue
+      ? props.queue.makeLink(props.scene.id, {
+          sceneIndex: props.index,
+          continue: cont,
+          start: timestamp,
+        })
+      : `/scenes/${props.scene.id}?t=${timestamp}`;
+
+    history.push(link);
+  }
+
   return (
     <GridCard
       className={`scene-card ${zoomIndex()} ${filelessClass()}`}
@@ -414,6 +433,8 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             video={props.scene.paths.preview ?? undefined}
             isPortrait={isPortrait()}
             soundActive={configuration?.interface?.soundOnPreview ?? false}
+            vttPath={props.scene.paths.vtt ?? undefined}
+            onScrubberClick={onScrubberClick}
           />
           <RatingBanner rating={props.scene.rating100} />
           {maybeRenderSceneSpecsOverlay()}
