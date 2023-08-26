@@ -104,7 +104,7 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
   const debounceSetActiveIndex = useDebounce(
     setActiveIndex,
     [setActiveIndex],
-    10
+    1
   );
 
   const spriteInfo = useSpriteInfo(vttPath);
