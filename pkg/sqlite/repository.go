@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"reflect"
 	"strings"
 
 	"github.com/jmoiron/sqlx"
@@ -27,64 +26,10 @@ type repository struct {
 	idColumn  string
 }
 
-func (r *repository) getByID(ctx context.Context, id int, dest interface{}) error {
-	stmt := fmt.Sprintf("SELECT * FROM %s WHERE %s = ? LIMIT 1", r.tableName, r.idColumn)
-	return r.tx.Get(ctx, dest, stmt, id)
-}
-
 func (r *repository) getAll(ctx context.Context, id int, f func(rows *sqlx.Rows) error) error {
 	stmt := fmt.Sprintf("SELECT * FROM %s WHERE %s = ?", r.tableName, r.idColumn)
 	return r.queryFunc(ctx, stmt, []interface{}{id}, false, f)
 }
-
-func (r *repository) insert(ctx context.Context, obj interface{}) (sql.Result, error) {
-	stmt := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", r.tableName, listKeys(obj, false), listKeys(obj, true))
-	return r.tx.NamedExec(ctx, stmt, obj)
-}
-
-func (r *repository) insertObject(ctx context.Context, obj interface{}, out interface{}) error {
-	result, err := r.insert(ctx, obj)
-	if err != nil {
-		return err
-	}
-	id, err := result.LastInsertId()
-	if err != nil {
-		return err
-	}
-	return r.getByID(ctx, int(id), out)
-}
-
-func (r *repository) update(ctx context.Context, id int, obj interface{}, partial bool) error {
-	exists, err := r.exists(ctx, id)
-	if err != nil {
-		return err
-	}
-
-	if !exists {
-		return fmt.Errorf("%s %d does not exist in %s", r.idColumn, id, r.tableName)
-	}
-
-	stmt := fmt.Sprintf("UPDATE %s SET %s WHERE %s.%s = :id", r.tableName, updateSet(obj, partial), r.tableName, r.idColumn)
-	_, err = r.tx.NamedExec(ctx, stmt, obj)
-
-	return err
-}
-
-// func (r *repository) updateMap(ctx context.Context, id int, m map[string]interface{}) error {
-// 	exists, err := r.exists(ctx, id)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	if !exists {
-// 		return fmt.Errorf("%s %d does not exist in %s", r.idColumn, id, r.tableName)
-// 	}
-
-// 	stmt := fmt.Sprintf("UPDATE %s SET %s WHERE %s.%s = :id", r.tableName, updateSetMap(m), r.tableName, r.idColumn)
-// 	_, err = r.tx.NamedExec(ctx, stmt, m)
-
-// 	return err
-// }
 
 func (r *repository) destroyExisting(ctx context.Context, ids []int) error {
 	for _, id := range ids {
@@ -493,21 +438,6 @@ func (r *stashIDRepository) get(ctx context.Context, id int) ([]models.StashID, 
 	return []models.StashID(ret), err
 }
 
-func (r *stashIDRepository) replace(ctx context.Context, id int, newIDs []models.StashID) error {
-	if err := r.destroy(ctx, []int{id}); err != nil {
-		return err
-	}
-
-	query := fmt.Sprintf("INSERT INTO %s (%s, endpoint, stash_id) VALUES (?, ?, ?)", r.tableName, r.idColumn)
-	for _, stashID := range newIDs {
-		_, err := r.tx.Exec(ctx, query, id, stashID.Endpoint, stashID.StashID)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 type filesRepository struct {
 	repository
 }
@@ -597,53 +527,3 @@ func (r *filesRepository) get(ctx context.Context, id int) ([]file.ID, error) {
 
 	return ret, nil
 }
-
-func listKeys(i interface{}, addPrefix bool) string {
-	var query []string
-	v := reflect.ValueOf(i)
-	for i := 0; i < v.NumField(); i++ {
-		// Get key for struct tag
-		rawKey := v.Type().Field(i).Tag.Get("db")
-		key := strings.Split(rawKey, ",")[0]
-		if key == "id" {
-			continue
-		}
-		if addPrefix {
-			key = ":" + key
-		}
-		query = append(query, key)
-	}
-	return strings.Join(query, ", ")
-}
-
-func updateSet(i interface{}, partial bool) string {
-	var query []string
-	v := reflect.ValueOf(i)
-	for i := 0; i < v.NumField(); i++ {
-		// Get key for struct tag
-		rawKey := v.Type().Field(i).Tag.Get("db")
-		key := strings.Split(rawKey, ",")[0]
-		if key == "id" {
-			continue
-		}
-
-		add := true
-		if partial {
-			reflectValue := reflect.ValueOf(v.Field(i).Interface())
-			add = !reflectValue.IsNil()
-		}
-
-		if add {
-			query = append(query, fmt.Sprintf("%s=:%s", key, key))
-		}
-	}
-	return strings.Join(query, ", ")
-}
-
-// func updateSetMap(m map[string]interface{}) string {
-// 	var query []string
-// 	for k := range m {
-// 		query = append(query, fmt.Sprintf("%s=:%s", k, k))
-// 	}
-// 	return strings.Join(query, ", ")
-// }

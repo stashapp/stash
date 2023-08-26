@@ -89,8 +89,10 @@ func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 		newImage.URL = imageJSON.URL
 	}
 	if imageJSON.Date != "" {
-		d := models.NewDate(imageJSON.Date)
-		newImage.Date = &d
+		d, err := models.ParseDate(imageJSON.Date)
+		if err == nil {
+			newImage.Date = &d
+		}
 	}
 
 	return newImage
@@ -150,7 +152,9 @@ func (i *Importer) populateStudio(ctx context.Context) error {
 }
 
 func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
-	newStudio := models.NewStudio(name)
+	newStudio := &models.Studio{
+		Name: name,
+	}
 
 	err := i.StudioWriter.Create(ctx, newStudio)
 	if err != nil {

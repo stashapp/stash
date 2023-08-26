@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Form,
   Col,
@@ -22,6 +22,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { getCountryByISO } from "src/utils/country";
 import { CountrySelect } from "./CountrySelect";
+import { StringListInput } from "./StringListInput";
+import { ImageSelector } from "./ImageSelector";
 
 export class ScrapeResult<T> {
   public newValue?: T;
@@ -102,6 +104,7 @@ interface IScrapedFieldProps<T> {
 
 interface IScrapedRowProps<T, V extends IHasName>
   extends IScrapedFieldProps<T> {
+  className?: string;
   title: string;
   renderOriginalField: (result: ScrapeResult<T>) => JSX.Element | undefined;
   renderNewField: (result: ScrapeResult<T>) => JSX.Element | undefined;
@@ -175,7 +178,7 @@ export const ScrapeDialogRow = <T, V extends IHasName>(
   }
 
   return (
-    <Row className="px-3 pt-3">
+    <Row className={`px-3 pt-3 ${props.className ?? ""}`}>
       <Form.Label column lg="3">
         {props.title}
       </Form.Label>
@@ -262,6 +265,71 @@ export const ScrapedInputGroupRow: React.FC<IScrapedInputGroupRowProps> = (
       )}
       renderNewField={() => (
         <ScrapedInputGroup
+          placeholder={props.placeholder || props.title}
+          result={props.result}
+          isNew
+          locked={props.locked}
+          onChange={(value) =>
+            props.onChange(props.result.cloneWithValue(value))
+          }
+        />
+      )}
+      onChange={props.onChange}
+    />
+  );
+};
+
+interface IScrapedStringListProps {
+  isNew?: boolean;
+  placeholder?: string;
+  locked?: boolean;
+  result: ScrapeResult<string[]>;
+  onChange?: (value: string[]) => void;
+}
+
+const ScrapedStringList: React.FC<IScrapedStringListProps> = (props) => {
+  const value = props.isNew
+    ? props.result.newValue
+    : props.result.originalValue;
+
+  return (
+    <StringListInput
+      value={value ?? []}
+      setValue={(v) => {
+        if (props.isNew && props.onChange) {
+          props.onChange(v);
+        }
+      }}
+      placeholder={props.placeholder}
+      readOnly={!props.isNew || props.locked}
+    />
+  );
+};
+
+interface IScrapedStringListRowProps {
+  title: string;
+  placeholder?: string;
+  result: ScrapeResult<string[]>;
+  locked?: boolean;
+  onChange: (value: ScrapeResult<string[]>) => void;
+}
+
+export const ScrapedStringListRow: React.FC<IScrapedStringListRowProps> = (
+  props
+) => {
+  return (
+    <ScrapeDialogRow
+      className="string-list-row"
+      title={props.title}
+      result={props.result}
+      renderOriginalField={() => (
+        <ScrapedStringList
+          placeholder={props.placeholder || props.title}
+          result={props.result}
+        />
+      )}
+      renderNewField={() => (
+        <ScrapedStringList
           placeholder={props.placeholder || props.title}
           result={props.result}
           isNew
@@ -368,6 +436,49 @@ export const ScrapedImageRow: React.FC<IScrapedImageRowProps> = (props) => {
           placeholder={props.title}
           isNew
         />
+      )}
+      onChange={props.onChange}
+    />
+  );
+};
+
+interface IScrapedImagesRowProps {
+  title: string;
+  className?: string;
+  result: ScrapeResult<string>;
+  images: string[];
+  onChange: (value: ScrapeResult<string>) => void;
+}
+
+export const ScrapedImagesRow: React.FC<IScrapedImagesRowProps> = (props) => {
+  const [imageIndex, setImageIndex] = useState(0);
+
+  function onSetImageIndex(newIdx: number) {
+    const ret = props.result.cloneWithValue(props.images[newIdx]);
+    props.onChange(ret);
+    setImageIndex(newIdx);
+  }
+
+  return (
+    <ScrapeDialogRow
+      title={props.title}
+      result={props.result}
+      renderOriginalField={() => (
+        <ScrapedImage
+          result={props.result}
+          className={props.className}
+          placeholder={props.title}
+        />
+      )}
+      renderNewField={() => (
+        <div>
+          <ImageSelector
+            imageClassName={props.className}
+            images={props.images}
+            imageIndex={imageIndex}
+            setImageIndex={onSetImageIndex}
+          />
+        </div>
       )}
       onChange={props.onChange}
     />

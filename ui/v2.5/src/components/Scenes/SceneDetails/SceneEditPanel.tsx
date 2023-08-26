@@ -20,7 +20,6 @@ import {
   queryScrapeSceneQueryFragment,
 } from "src/core/StashService";
 import {
-  PerformerSelect,
   TagSelect,
   StudioSelect,
   GallerySelect,
@@ -29,7 +28,7 @@ import {
 import { Icon } from "src/components/Shared/Icon";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { ImageInput } from "src/components/Shared/ImageInput";
-import { URLField } from "src/components/Shared/URLField";
+import { URLListInput } from "src/components/Shared/URLField";
 import { useToast } from "src/hooks/Toast";
 import ImageUtils from "src/utils/image";
 import FormUtils from "src/utils/form";
@@ -51,6 +50,10 @@ import { useRatingKeybinds } from "src/hooks/keybinds";
 import { lazyComponent } from "src/utils/lazyComponent";
 import isEqual from "lodash-es/isEqual";
 import { DateInput } from "src/components/Shared/DateInput";
+import {
+  Performer,
+  PerformerSelect,
+} from "src/components/Performers/PerformerSelect";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
@@ -78,6 +81,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const [galleries, setGalleries] = useState<{ id: string; title: string }[]>(
     []
   );
+  const [performers, setPerformers] = useState<Performer[]>([]);
 
   const Scrapers = useListSceneScrapers();
   const [fragmentScrapers, setFragmentScrapers] = useState<GQL.Scraper[]>([]);
@@ -98,6 +102,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
     );
   }, [scene.galleries]);
 
+  useEffect(() => {
+    setPerformers(scene.performers ?? []);
+  }, [scene.performers]);
+
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
 
   // Network state
@@ -106,7 +114,25 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const schema = yup.object({
     title: yup.string().ensure(),
     code: yup.string().ensure(),
-    url: yup.string().ensure(),
+    urls: yup
+      .array(yup.string().required())
+      .defined()
+      .test({
+        name: "unique",
+        test: (value) => {
+          const dupes = value
+            .map((e, i, a) => {
+              if (a.indexOf(e) !== i) {
+                return String(i - 1);
+              } else {
+                return null;
+              }
+            })
+            .filter((e) => e !== null) as string[];
+          if (dupes.length === 0) return true;
+          return new yup.ValidationError(dupes.join(" "), value, "urls");
+        },
+      }),
     date: yup
       .string()
       .ensure()
@@ -143,7 +169,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     () => ({
       title: scene.title ?? "",
       code: scene.code ?? "",
-      url: scene.url ?? "",
+      urls: scene.urls ?? [],
       date: scene.date ?? "",
       director: scene.director ?? "",
       rating100: scene.rating100 ?? null,
@@ -197,6 +223,14 @@ export const SceneEditPanel: React.FC<IProps> = ({
     formik.setFieldValue(
       "gallery_ids",
       items.map((i) => i.id)
+    );
+  }
+
+  function onSetPerformers(items: Performer[]) {
+    setPerformers(items);
+    formik.setFieldValue(
+      "performer_ids",
+      items.map((item) => item.id)
     );
   }
 
@@ -333,7 +367,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
         director: fragment.director,
         remote_site_id: fragment.remote_site_id,
         title: fragment.title,
-        url: fragment.url,
+        urls: fragment.urls,
       };
 
       const result = await queryScrapeSceneQueryFragment(s, input);
@@ -549,8 +583,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
       formik.setFieldValue("date", updatedScene.date);
     }
 
-    if (updatedScene.url) {
-      formik.setFieldValue("url", updatedScene.url);
+    if (updatedScene.urls) {
+      formik.setFieldValue("urls", updatedScene.urls);
     }
 
     if (updatedScene.studio && updatedScene.studio.stored_id) {
@@ -563,8 +597,15 @@ export const SceneEditPanel: React.FC<IProps> = ({
       });
 
       if (idPerfs.length > 0) {
-        const newIds = idPerfs.map((p) => p.stored_id);
-        formik.setFieldValue("performer_ids", newIds as string[]);
+        onSetPerformers(
+          idPerfs.map((p) => {
+            return {
+              id: p.stored_id!,
+              name: p.name ?? "",
+              alias_list: [],
+            };
+          })
+        );
       }
     }
 
@@ -624,13 +665,13 @@ export const SceneEditPanel: React.FC<IProps> = ({
     }
   }
 
-  async function onScrapeSceneURL() {
-    if (!formik.values.url) {
+  async function onScrapeSceneURL(url: string) {
+    if (!url) {
       return;
     }
     setIsLoading(true);
     try {
-      const result = await queryScrapeSceneURL(formik.values.url);
+      const result = await queryScrapeSceneURL(url);
       if (!result.data || !result.data.scrapeSceneURL) {
         return;
       }
@@ -665,7 +706,11 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   const image = useMemo(() => {
     if (encodingImage) {
-      return <LoadingIndicator message="Encoding image..." />;
+      return (
+        <LoadingIndicator
+          message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+        />
+      );
     }
 
     if (coverImagePreview) {
@@ -682,6 +727,14 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }, [encodingImage, coverImagePreview, intl]);
 
   if (isLoading) return <LoadingIndicator />;
+
+  const urlsErrors = Array.isArray(formik.errors.urls)
+    ? formik.errors.urls[0]
+    : formik.errors.urls;
+  const urlsErrorMsg = urlsErrors
+    ? intl.formatMessage({ id: "validation.urls_must_be_unique" })
+    : undefined;
+  const urlsErrorIdx = urlsErrors?.split(" ").map((e) => parseInt(e));
 
   return (
     <div id="scene-edit-details">
@@ -728,18 +781,20 @@ export const SceneEditPanel: React.FC<IProps> = ({
           <div className="col-12 col-lg-7 col-xl-12">
             {renderTextField("title", intl.formatMessage({ id: "title" }))}
             {renderTextField("code", intl.formatMessage({ id: "scene_code" }))}
-            <Form.Group controlId="url" as={Row}>
+            <Form.Group controlId="urls" as={Row}>
               <Col xs={3} className="pr-0 url-label">
                 <Form.Label className="col-form-label">
-                  <FormattedMessage id="url" />
+                  <FormattedMessage id="urls" />
                 </Form.Label>
               </Col>
               <Col xs={9}>
-                <URLField
-                  {...formik.getFieldProps("url")}
-                  onScrapeClick={onScrapeSceneURL}
+                <URLListInput
+                  value={formik.values.urls ?? []}
+                  setValue={(value) => formik.setFieldValue("urls", value)}
+                  errors={urlsErrorMsg}
+                  errorIdx={urlsErrorIdx}
+                  onScrapeClick={(url) => onScrapeSceneURL(url)}
                   urlScrapable={urlScrapable}
-                  isInvalid={!!formik.getFieldMeta("url").error}
                 />
               </Col>
             </Form.Group>
@@ -820,13 +875,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
               <Col sm={9} xl={12}>
                 <PerformerSelect
                   isMulti
-                  onSelect={(items) =>
-                    formik.setFieldValue(
-                      "performer_ids",
-                      items.map((item) => item.id)
-                    )
-                  }
-                  ids={formik.values.performer_ids}
+                  onSelect={onSetPerformers}
+                  values={performers}
                 />
               </Col>
             </Form.Group>
@@ -871,6 +921,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
                     )
                   }
                   ids={formik.values.tag_ids}
+                  hoverPlacement="right"
                 />
               </Col>
             </Form.Group>

@@ -16,6 +16,10 @@ fragment StudioFragment on Studio {
   urls {
     ...URLFragment
   }
+  parent {
+    name
+    id
+  }
   images {
     ...ImageFragment
   }
@@ -131,7 +135,9 @@ query FindScenesByFullFingerprints($fingerprints: [FingerprintQueryInput!]!) {
   }
 }
 
-query FindScenesBySceneFingerprints($fingerprints: [[FingerprintQueryInput!]!]!) {
+query FindScenesBySceneFingerprints(
+  $fingerprints: [[FingerprintQueryInput!]!]!
+) {
   findScenesBySceneFingerprints(fingerprints: $fingerprints) {
     ...SceneFragment
   }
@@ -158,6 +164,12 @@ query FindPerformerByID($id: ID!) {
 query FindSceneByID($id: ID!) {
   findScene(id: $id) {
     ...SceneFragment
+  }
+}
+
+query FindStudio($id: ID, $name: String) {
+  findStudio(id: $id, name: $name) {
+    ...StudioFragment
   }
 }
 

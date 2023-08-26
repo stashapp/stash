@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strconv"
 
+	"github.com/stashapp/stash/internal/build"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -157,18 +158,26 @@ func (r *queryResolver) Stats(ctx context.Context) (*StatsResultType, error) {
 		studiosCount, _ := studiosQB.Count(ctx)
 		moviesCount, _ := moviesQB.Count(ctx)
 		tagsCount, _ := tagsQB.Count(ctx)
+		totalOCount, _ := scenesQB.OCount(ctx)
+		totalPlayDuration, _ := scenesQB.PlayDuration(ctx)
+		totalPlayCount, _ := scenesQB.PlayCount(ctx)
+		uniqueScenePlayCount, _ := scenesQB.UniqueScenePlayCount(ctx)
 
 		ret = StatsResultType{
-			SceneCount:     scenesCount,
-			ScenesSize:     scenesSize,
-			ScenesDuration: scenesDuration,
-			ImageCount:     imageCount,
-			ImagesSize:     imageSize,
-			GalleryCount:   galleryCount,
-			PerformerCount: performersCount,
-			StudioCount:    studiosCount,
-			MovieCount:     moviesCount,
-			TagCount:       tagsCount,
+			SceneCount:        scenesCount,
+			ScenesSize:        scenesSize,
+			ScenesDuration:    scenesDuration,
+			ImageCount:        imageCount,
+			ImagesSize:        imageSize,
+			GalleryCount:      galleryCount,
+			PerformerCount:    performersCount,
+			StudioCount:       studiosCount,
+			MovieCount:        moviesCount,
+			TagCount:          tagsCount,
+			TotalOCount:       totalOCount,
+			TotalPlayDuration: totalPlayDuration,
+			TotalPlayCount:    totalPlayCount,
+			ScenesPlayed:      uniqueScenePlayCount,
 		}
 
 		return nil
@@ -180,7 +189,7 @@ func (r *queryResolver) Stats(ctx context.Context) (*StatsResultType, error) {
 }
 
 func (r *queryResolver) Version(ctx context.Context) (*Version, error) {
-	version, hash, buildtime := GetVersion()
+	version, hash, buildtime := build.Version()
 
 	return &Version{
 		Version:   &version,
@@ -204,6 +213,44 @@ func (r *queryResolver) Latestversion(ctx context.Context) (*LatestVersion, erro
 		Shorthash:   latestRelease.ShortHash,
 		ReleaseDate: latestRelease.Date,
 		URL:         latestRelease.Url,
+	}, nil
+}
+
+func (r *mutationResolver) ExecSQL(ctx context.Context, sql string, args []interface{}) (*SQLExecResult, error) {
+	var rowsAffected *int64
+	var lastInsertID *int64
+
+	db := manager.GetInstance().Database
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		var err error
+		rowsAffected, lastInsertID, err = db.ExecSQL(ctx, sql, args)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &SQLExecResult{
+		RowsAffected: rowsAffected,
+		LastInsertID: lastInsertID,
+	}, nil
+}
+
+func (r *mutationResolver) QuerySQL(ctx context.Context, sql string, args []interface{}) (*SQLQueryResult, error) {
+	var cols []string
+	var rows [][]interface{}
+
+	db := manager.GetInstance().Database
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		var err error
+		cols, rows, err = db.QuerySQL(ctx, sql, args)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &SQLQueryResult{
+		Columns: cols,
+		Rows:    rows,
 	}, nil
 }
 

@@ -157,15 +157,15 @@ const fileSizeFractionalDigits = (unit: Unit) => {
 };
 
 const secondsToTimestamp = (seconds: number) => {
-  let ret = new Date(seconds * 1000).toISOString().substr(11, 8);
+  let ret = new Date(seconds * 1000).toISOString().substring(11, 19);
 
   if (ret.startsWith("00")) {
     // strip hours if under one hour
-    ret = ret.substr(3);
+    ret = ret.substring(3);
   }
   if (ret.startsWith("0")) {
     // for duration under a minute, leave one leading zero
-    ret = ret.substr(1);
+    ret = ret.substring(1);
   }
   return ret;
 };
@@ -387,11 +387,6 @@ const formatDateTime = (intl: IntlShape, dateTime?: string, utc = false) =>
     timeZone: utc ? "utc" : undefined,
   })}`;
 
-const capitalize = (val: string) =>
-  val
-    .replace(/^[-_]*(.)/, (_, c) => c.toUpperCase())
-    .replace(/[-_]+(.)/g, (_, c) => ` ${c.toUpperCase()}`);
-
 type CountUnit = "" | "K" | "M" | "B";
 const CountUnits: CountUnit[] = ["", "K", "M", "B"];
 
@@ -435,7 +430,6 @@ const TextUtils = {
   instagramURL,
   formatDate,
   formatDateTime,
-  capitalize,
   secondsAsTimeString,
   abbreviateCounter,
 };

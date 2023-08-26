@@ -5,7 +5,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/mocks"
@@ -64,7 +63,6 @@ func TestImporterPreImport(t *testing.T) {
 	assert.Nil(t, err)
 	expectedStudio := createFullStudio(0, 0)
 	expectedStudio.ParentID = nil
-	expectedStudio.Checksum = md5.FromString(studioName)
 	assert.Equal(t, expectedStudio, i.studio)
 }
 
@@ -166,23 +164,14 @@ func TestImporterPostImport(t *testing.T) {
 	}
 
 	updateStudioImageErr := errors.New("UpdateImage error")
-	updateTagAliasErr := errors.New("UpdateAlias error")
 
 	readerWriter.On("UpdateImage", ctx, studioID, imageBytes).Return(nil).Once()
 	readerWriter.On("UpdateImage", ctx, errImageID, imageBytes).Return(updateStudioImageErr).Once()
-	readerWriter.On("UpdateImage", ctx, errAliasID, imageBytes).Return(nil).Once()
-
-	readerWriter.On("UpdateAliases", ctx, studioID, i.Input.Aliases).Return(nil).Once()
-	readerWriter.On("UpdateAliases", ctx, errImageID, i.Input.Aliases).Return(nil).Maybe()
-	readerWriter.On("UpdateAliases", ctx, errAliasID, i.Input.Aliases).Return(updateTagAliasErr).Once()
 
 	err := i.PostImport(ctx, studioID)
 	assert.Nil(t, err)
 
 	err = i.PostImport(ctx, errImageID)
-	assert.NotNil(t, err)
-
-	err = i.PostImport(ctx, errAliasID)
 	assert.NotNil(t, err)
 
 	readerWriter.AssertExpectations(t)

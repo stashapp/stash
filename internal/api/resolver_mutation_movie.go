@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
@@ -29,19 +28,14 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 		inputMap: getUpdateInputMap(ctx),
 	}
 
-	// generate checksum from movie name rather than image
-	checksum := md5.FromString(input.Name)
-
 	// Populate a new movie from the input
 	currentTime := time.Now()
 	newMovie := models.Movie{
-		Checksum:  checksum,
 		Name:      input.Name,
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,
 		Aliases:   translator.string(input.Aliases, "aliases"),
 		Duration:  input.Duration,
-		Date:      translator.datePtr(input.Date, "date"),
 		Rating:    translator.ratingConversionInt(input.Rating, input.Rating100),
 		Director:  translator.string(input.Director, "director"),
 		Synopsis:  translator.string(input.Synopsis, "synopsis"),
@@ -50,6 +44,10 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 
 	var err error
 
+	newMovie.Date, err = translator.datePtr(input.Date, "date")
+	if err != nil {
+		return nil, fmt.Errorf("converting date: %w", err)
+	}
 	newMovie.StudioID, err = translator.intPtrFromString(input.StudioID, "studio_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
@@ -123,16 +121,13 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	// Populate movie from the input
 	updatedMovie := models.NewMoviePartial()
 
-	if input.Name != nil {
-		// generate checksum from movie name rather than image
-		checksum := md5.FromString(*input.Name)
-		updatedMovie.Name = models.NewOptionalString(*input.Name)
-		updatedMovie.Checksum = models.NewOptionalString(checksum)
-	}
-
+	updatedMovie.Name = translator.optionalString(input.Name, "name")
 	updatedMovie.Aliases = translator.optionalString(input.Aliases, "aliases")
 	updatedMovie.Duration = translator.optionalInt(input.Duration, "duration")
-	updatedMovie.Date = translator.optionalDate(input.Date, "date")
+	updatedMovie.Date, err = translator.optionalDate(input.Date, "date")
+	if err != nil {
+		return nil, fmt.Errorf("converting date: %w", err)
+	}
 	updatedMovie.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
 	updatedMovie.Director = translator.optionalString(input.Director, "director")
 	updatedMovie.Synopsis = translator.optionalString(input.Synopsis, "synopsis")

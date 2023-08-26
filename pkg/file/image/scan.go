@@ -56,6 +56,16 @@ func (d *Decorator) Decorate(ctx context.Context, fs file.FS, f file.File) (file
 		return decorateFallback()
 	}
 
+	// Fallback to catch non-animated avif images that FFProbe detects as video files
+	if probe.Bitrate == 0 && probe.VideoCodec == "av1" {
+		return &file.ImageFile{
+			BaseFile: base,
+			Format:   "avif",
+			Width:    probe.Width,
+			Height:   probe.Height,
+		}, nil
+	}
+
 	isClip := true
 	// This list is derived from ffmpegImageThumbnail in pkg/image/thumbnail. If one gets updated, the other should be as well
 	for _, item := range []string{"png", "mjpeg", "webp"} {

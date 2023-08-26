@@ -16,7 +16,7 @@ import { useToast } from "src/hooks/Toast";
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
 import { getStashboxBase } from "src/utils/stashbox";
-import { TextField, URLField } from "src/utils/field";
+import { TextField, URLField, URLsField } from "src/utils/field";
 
 interface IFileInfoPanelProps {
   sceneID: string;
@@ -191,7 +191,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
 
     return (
       <>
-        <dt>StashIDs</dt>
+        <dt>
+          <FormattedMessage id="stash_ids" />
+        </dt>
         <dd>
           <dl>
             {props.scene.stash_ids.map((stashID) => {
@@ -316,12 +318,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
         )}
         {renderFunscript()}
         {renderInteractiveSpeed()}
-        <URLField
-          id="media_info.downloaded_from"
-          url={props.scene.url}
-          value={props.scene.url}
-          truncate
-        />
+        <URLsField id="urls" urls={props.scene.urls} truncate />
         {renderStashIDs()}
         <TextField
           id="media_info.play_count"

@@ -71,8 +71,10 @@ func (i *Importer) galleryJSONToGallery(galleryJSON jsonschema.Gallery) models.G
 		newGallery.URL = galleryJSON.URL
 	}
 	if galleryJSON.Date != "" {
-		d := models.NewDate(galleryJSON.Date)
-		newGallery.Date = &d
+		d, err := models.ParseDate(galleryJSON.Date)
+		if err == nil {
+			newGallery.Date = &d
+		}
 	}
 	if galleryJSON.Rating != 0 {
 		newGallery.Rating = &galleryJSON.Rating
@@ -117,7 +119,9 @@ func (i *Importer) populateStudio(ctx context.Context) error {
 }
 
 func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
-	newStudio := models.NewStudio(name)
+	newStudio := &models.Studio{
+		Name: name,
+	}
 
 	err := i.StudioWriter.Create(ctx, newStudio)
 	if err != nil {

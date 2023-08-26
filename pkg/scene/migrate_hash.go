@@ -40,6 +40,12 @@ func MigrateHash(p *paths.Paths, oldHash string, newHash string) {
 	oldPath = scenePaths.GetInteractiveHeatmapPath(oldHash)
 	newPath = scenePaths.GetInteractiveHeatmapPath(newHash)
 	migrateSceneFiles(oldPath, newPath)
+
+	// #3986 - migrate scene marker files
+	markerPaths := p.SceneMarkers
+	oldPath = markerPaths.GetFolderPath(oldHash)
+	newPath = markerPaths.GetFolderPath(newHash)
+	migrateSceneFolder(oldPath, newPath)
 }
 
 func migrateSceneFiles(oldName, newName string) {
@@ -73,5 +79,20 @@ func migrateVttFile(vttPath, oldSpritePath, newSpritePath string) {
 	if err := os.WriteFile(vttPath, contents, 0644); err != nil {
 		logger.Errorf("Error writing %s for vtt migration: %v", vttPath, err)
 		return
+	}
+}
+
+func migrateSceneFolder(oldName, newName string) {
+	oldExists, err := fsutil.DirExists(oldName)
+	if err != nil && !os.IsNotExist(err) {
+		logger.Errorf("Error checking existence of %s: %s", oldName, err.Error())
+		return
+	}
+
+	if oldExists {
+		logger.Infof("renaming %s to %s", oldName, newName)
+		if err := os.Rename(oldName, newName); err != nil {
+			logger.Errorf("error renaming %s to %s: %s", oldName, newName, err.Error())
+		}
 	}
 }

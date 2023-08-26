@@ -5,12 +5,13 @@ import (
 )
 
 type ScrapedScene struct {
-	Title    *string `json:"title"`
-	Code     *string `json:"code"`
-	Details  *string `json:"details"`
-	Director *string `json:"director"`
-	URL      *string `json:"url"`
-	Date     *string `json:"date"`
+	Title    *string  `json:"title"`
+	Code     *string  `json:"code"`
+	Details  *string  `json:"details"`
+	Director *string  `json:"director"`
+	URL      *string  `json:"url"`
+	URLs     []string `json:"urls"`
+	Date     *string  `json:"date"`
 	// This should be a base64 encoded data URL
 	Image        *string                       `json:"image"`
 	File         *models.SceneFileType         `json:"file"`
@@ -26,11 +27,12 @@ type ScrapedScene struct {
 func (ScrapedScene) IsScrapedContent() {}
 
 type ScrapedSceneInput struct {
-	Title        *string `json:"title"`
-	Code         *string `json:"code"`
-	Details      *string `json:"details"`
-	Director     *string `json:"director"`
-	URL          *string `json:"url"`
-	Date         *string `json:"date"`
-	RemoteSiteID *string `json:"remote_site_id"`
+	Title        *string  `json:"title"`
+	Code         *string  `json:"code"`
+	Details      *string  `json:"details"`
+	Director     *string  `json:"director"`
+	URL          *string  `json:"url"`
+	URLs         []string `json:"urls"`
+	Date         *string  `json:"date"`
+	RemoteSiteID *string  `json:"remote_site_id"`
 }

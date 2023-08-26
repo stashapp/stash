@@ -4,7 +4,6 @@ import (
 	"errors"
 	"reflect"
 	"testing"
-	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
@@ -31,18 +30,32 @@ func Test_createMissingStudio(t *testing.T) {
 		return p.Name == invalidName
 	})).Return(errors.New("error creating studio"))
 
-	mockStudioReaderWriter.On("UpdateStashIDs", testCtx, createdID, []models.StashID{
-		{
-			Endpoint: invalidEndpoint,
-			StashID:  remoteSiteID,
+	mockStudioReaderWriter.On("UpdatePartial", testCtx, models.StudioPartial{
+		ID: createdID,
+		StashIDs: &models.UpdateStashIDs{
+			StashIDs: []models.StashID{
+				{
+					Endpoint: invalidEndpoint,
+					StashID:  remoteSiteID,
+				},
+			},
+			Mode: models.RelationshipUpdateModeSet,
 		},
-	}).Return(errors.New("error updating stash ids"))
-	mockStudioReaderWriter.On("UpdateStashIDs", testCtx, createdID, []models.StashID{
-		{
-			Endpoint: validEndpoint,
-			StashID:  remoteSiteID,
+	}).Return(nil, errors.New("error updating stash ids"))
+	mockStudioReaderWriter.On("UpdatePartial", testCtx, models.StudioPartial{
+		ID: createdID,
+		StashIDs: &models.UpdateStashIDs{
+			StashIDs: []models.StashID{
+				{
+					Endpoint: validEndpoint,
+					StashID:  remoteSiteID,
+				},
+			},
+			Mode: models.RelationshipUpdateModeSet,
 		},
-	}).Return(nil)
+	}).Return(models.Studio{
+		ID: createdID,
+	}, nil)
 
 	type args struct {
 		endpoint string
@@ -59,7 +72,8 @@ func Test_createMissingStudio(t *testing.T) {
 			args{
 				emptyEndpoint,
 				&models.ScrapedStudio{
-					Name: validName,
+					Name:         validName,
+					RemoteSiteID: &remoteSiteID,
 				},
 			},
 			&createdID,
@@ -70,7 +84,8 @@ func Test_createMissingStudio(t *testing.T) {
 			args{
 				emptyEndpoint,
 				&models.ScrapedStudio{
-					Name: invalidName,
+					Name:         invalidName,
+					RemoteSiteID: &remoteSiteID,
 				},
 			},
 			nil,
@@ -88,18 +103,6 @@ func Test_createMissingStudio(t *testing.T) {
 			&createdID,
 			false,
 		},
-		{
-			"invalid stash id",
-			args{
-				invalidEndpoint,
-				&models.ScrapedStudio{
-					Name:         validName,
-					RemoteSiteID: &remoteSiteID,
-				},
-			},
-			nil,
-			true,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -110,54 +113,6 @@ func Test_createMissingStudio(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("createMissingStudio() = %d, want %d", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_scrapedToStudioInput(t *testing.T) {
-	const name = "name"
-	const md5 = "b068931cc450442b63f5b3d276ea4297"
-	url := "url"
-
-	tests := []struct {
-		name   string
-		studio *models.ScrapedStudio
-		want   models.Studio
-	}{
-		{
-			"set all",
-			&models.ScrapedStudio{
-				Name: name,
-				URL:  &url,
-			},
-			models.Studio{
-				Name:     name,
-				Checksum: md5,
-				URL:      url,
-			},
-		},
-		{
-			"set none",
-			&models.ScrapedStudio{
-				Name: name,
-			},
-			models.Studio{
-				Name:     name,
-				Checksum: md5,
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := scrapedToStudioInput(tt.studio)
-
-			// clear created/updated dates
-			got.CreatedAt = time.Time{}
-			got.UpdatedAt = got.CreatedAt
-
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("scrapedToStudioInput() = %v, want %v", got, tt.want)
 			}
 		})
 	}

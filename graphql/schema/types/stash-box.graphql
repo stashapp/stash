@@ -1,13 +1,13 @@
 type StashBox {
-    endpoint: String!
-    api_key: String!
-    name: String!
+  endpoint: String!
+  api_key: String!
+  name: String!
 }
 
 input StashBoxInput {
-    endpoint: String!
-    api_key: String!
-    name: String!
+  endpoint: String!
+  api_key: String!
+  name: String!
 }
 
 type StashID {

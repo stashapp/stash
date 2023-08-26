@@ -1,53 +1,30 @@
 import React from "react";
-import { Badge } from "react-bootstrap";
-import { FormattedMessage } from "react-intl";
-import { Link } from "react-router-dom";
+import { TagLink } from "src/components/Shared/TagLink";
+import { DetailItem } from "src/components/Shared/DetailItem";
 import * as GQL from "src/core/generated-graphql";
 
 interface ITagDetails {
   tag: GQL.TagDataFragment;
+  fullWidth?: boolean;
 }
 
-export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag }) => {
-  function renderAliasesField() {
-    if (!tag.aliases.length) {
-      return;
-    }
-
-    return (
-      <dl className="row">
-        <dt className="col-3 col-xl-2">
-          <FormattedMessage id="aliases" />
-        </dt>
-        <dd className="col-9 col-xl-10">
-          {tag.aliases.map((a) => (
-            <Badge className="tag-item" variant="secondary" key={a}>
-              {a}
-            </Badge>
-          ))}
-        </dd>
-      </dl>
-    );
-  }
-
+export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag, fullWidth }) => {
   function renderParentsField() {
     if (!tag.parents?.length) {
       return;
     }
 
     return (
-      <dl className="row">
-        <dt className="col-3 col-xl-2">
-          <FormattedMessage id="parent_tags" />
-        </dt>
-        <dd className="col-9 col-xl-10">
-          {tag.parents.map((p) => (
-            <Badge key={p.id} className="tag-item" variant="secondary">
-              <Link to={`/tags/${p.id}`}>{p.name}</Link>
-            </Badge>
-          ))}
-        </dd>
-      </dl>
+      <>
+        {tag.parents.map((p) => (
+          <TagLink
+            key={p.id}
+            tag={p}
+            hoverPlacement="bottom"
+            tagType="details"
+          />
+        ))}
+      </>
     );
   }
 
@@ -57,26 +34,60 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag }) => {
     }
 
     return (
-      <dl className="row">
-        <dt className="col-3 col-xl-2">
-          <FormattedMessage id="sub_tags" />
-        </dt>
-        <dd className="col-9 col-xl-10">
-          {tag.children.map((c) => (
-            <Badge key={c.id} className="tag-item" variant="secondary">
-              <Link to={`/tags/${c.id}`}>{c.name}</Link>
-            </Badge>
-          ))}
-        </dd>
-      </dl>
+      <>
+        {tag.children.map((c) => (
+          <TagLink
+            key={c.id}
+            tag={c}
+            hoverPlacement="bottom"
+            tagType="details"
+          />
+        ))}
+      </>
     );
   }
 
   return (
-    <>
-      {renderAliasesField()}
-      {renderParentsField()}
-      {renderChildrenField()}
-    </>
+    <div className="detail-group">
+      <DetailItem
+        id="description"
+        value={tag.description}
+        fullWidth={fullWidth}
+      />
+      <DetailItem
+        id="parent_tags"
+        value={renderParentsField()}
+        fullWidth={fullWidth}
+      />
+      <DetailItem
+        id="sub_tags"
+        value={renderChildrenField()}
+        fullWidth={fullWidth}
+      />
+    </div>
+  );
+};
+
+export const CompressedTagDetailsPanel: React.FC<ITagDetails> = ({ tag }) => {
+  function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  return (
+    <div className="sticky detail-header">
+      <div className="sticky detail-header-group">
+        <a className="tag-name" onClick={() => scrollToTop()}>
+          {tag.name}
+        </a>
+        {tag.description ? (
+          <>
+            <span className="detail-divider">/</span>
+            <span className="tag-desc">{tag.description}</span>
+          </>
+        ) : (
+          ""
+        )}
+      </div>
+    </div>
   );
 };

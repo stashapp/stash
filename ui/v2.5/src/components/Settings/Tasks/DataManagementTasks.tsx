@@ -10,6 +10,7 @@ import {
   mutateAnonymiseDatabase,
   mutateMigrateSceneScreenshots,
   mutateMigrateBlobs,
+  mutateOptimiseDatabase,
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import downloadFile from "src/utils/download";
@@ -338,6 +339,24 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
     }
   }
 
+  async function onOptimiseDatabase() {
+    try {
+      await mutateOptimiseDatabase();
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          {
+            operation_name: intl.formatMessage({
+              id: "actions.optimise_database",
+            }),
+          }
+        ),
+      });
+    } catch (e) {
+      Toast.error(e);
+    }
+  }
+
   async function onAnonymise(download?: boolean) {
     try {
       setIsAnonymiseRunning(true);
@@ -419,6 +438,25 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
             setOptions={(o) => setCleanOptions(o)}
           />
         </div>
+
+        <Setting
+          headingID="actions.optimise_database"
+          subHeading={
+            <>
+              <FormattedMessage id="config.tasks.optimise_database" />
+              <br />
+              <FormattedMessage id="config.tasks.optimise_database_warning" />
+            </>
+          }
+        >
+          <Button
+            id="optimiseDatabase"
+            variant="danger"
+            onClick={() => onOptimiseDatabase()}
+          >
+            <FormattedMessage id="actions.optimise_database" />
+          </Button>
+        </Setting>
       </SettingSection>
 
       <SettingSection headingID="metadata">
@@ -519,7 +557,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
           )}
         >
           <Button
-            id="backup"
+            id="anonymise"
             variant="secondary"
             type="submit"
             onClick={() => onAnonymise()}
@@ -533,7 +571,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
           subHeadingID="config.tasks.anonymise_and_download"
         >
           <Button
-            id="anonymousDownload"
+            id="anonymiseDownload"
             variant="secondary"
             type="submit"
             onClick={() => onAnonymise(true)}

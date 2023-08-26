@@ -273,6 +273,10 @@ const makeMovieScenesUrl = (movie: Partial<GQL.MovieDataFragment>) => {
   return `/scenes?${filter.makeQueryParameters()}`;
 };
 
+const makeTagUrl = (id: string) => {
+  return `/tags/${id}`;
+};
+
 const makeParentTagsUrl = (tag: Partial<GQL.TagDataFragment>) => {
   if (!tag.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Tags, undefined);
@@ -433,6 +437,7 @@ const NavUtils = {
   makeStudioGalleriesUrl,
   makeStudioMoviesUrl,
   makeStudioPerformersUrl,
+  makeTagUrl,
   makeParentTagsUrl,
   makeChildTagsUrl,
   makeTagSceneMarkersUrl,

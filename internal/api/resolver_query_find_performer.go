@@ -25,23 +25,34 @@ func (r *queryResolver) FindPerformer(ctx context.Context, id string) (ret *mode
 	return ret, nil
 }
 
-func (r *queryResolver) FindPerformers(ctx context.Context, performerFilter *models.PerformerFilterType, filter *models.FindFilterType) (ret *FindPerformersResultType, err error) {
+func (r *queryResolver) FindPerformers(ctx context.Context, performerFilter *models.PerformerFilterType, filter *models.FindFilterType, performerIDs []int) (ret *FindPerformersResultType, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var performers []*models.Performer
+		var err error
+		var total int
+
 		var filteredCounts []*models.FilteredCounts
-		var result *models.PerformerQueryResult
 
-		fields := graphql.CollectAllFields(ctx)
+		if len(performerIDs) > 0 {
+			performers, err = r.repository.Performer.FindMany(ctx, performerIDs)
+			total = len(performers)
+		} else {
+			var result *models.PerformerQueryResult
 
-		result, err = r.repository.Performer.QueryWithOptions(ctx, models.PerformerQueryOptions{
-			QueryOptions: models.QueryOptions{
-				FindFilter: filter,
-			},
-			PerformerFilter: performerFilter,
-			FilteredCounts:  (performerFilter != nil && performerFilter.Performers != nil || performerFilter != nil && performerFilter.Studios != nil) && stringslice.StrInclude(fields, "filteredCounts"),
-		})
-		if err == nil {
-			performers, filteredCounts, err = result.Resolve(ctx)
+			fields := graphql.CollectAllFields(ctx)
+
+			result, err = r.repository.Performer.QueryWithOptions(ctx, models.PerformerQueryOptions{
+				QueryOptions: models.QueryOptions{
+					FindFilter: filter,
+				},
+				PerformerFilter: performerFilter,
+				FilteredCounts:  (performerFilter != nil && performerFilter.Performers != nil || performerFilter != nil && performerFilter.Studios != nil) && stringslice.StrInclude(fields, "filteredCounts"),
+			})
+
+			if err == nil {
+				performers, filteredCounts, err = result.Resolve(ctx)
+			}
+			total = result.Count
 		}
 
 		if err != nil {
@@ -49,7 +60,7 @@ func (r *queryResolver) FindPerformers(ctx context.Context, performerFilter *mod
 		}
 
 		ret = &FindPerformersResultType{
-			Count:          result.Count,
+			Count:          total,
 			Performers:     performers,
 			FilteredCounts: filteredCounts,
 		}

@@ -31,6 +31,8 @@ const (
 	scenesTagsTable       = "scenes_tags"
 	scenesGalleriesTable  = "scenes_galleries"
 	moviesScenesTable     = "movies_scenes"
+	scenesURLsTable       = "scene_urls"
+	sceneURLColumn        = "url"
 
 	sceneCoverBlobColumn = "cover_blob"
 )
@@ -76,7 +78,6 @@ type sceneRow struct {
 	Code     zero.String `db:"code"`
 	Details  zero.String `db:"details"`
 	Director zero.String `db:"director"`
-	URL      zero.String `db:"url"`
 	Date     NullDate    `db:"date"`
 	// expressed as 1-100
 	Rating       null.Int      `db:"rating"`
@@ -100,7 +101,6 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.Code = zero.StringFrom(o.Code)
 	r.Details = zero.StringFrom(o.Details)
 	r.Director = zero.StringFrom(o.Director)
-	r.URL = zero.StringFrom(o.URL)
 	r.Date = NullDateFromDatePtr(o.Date)
 	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
@@ -130,7 +130,6 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		Code:      r.Code.String,
 		Details:   r.Details.String,
 		Director:  r.Director.String,
-		URL:       r.URL.String,
 		Date:      r.Date.DatePtr(),
 		Rating:    nullIntPtr(r.Rating),
 		Organized: r.Organized,
@@ -166,7 +165,6 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setNullString("code", o.Code)
 	r.setNullString("details", o.Details)
 	r.setNullString("director", o.Director)
-	r.setNullString("url", o.URL)
 	r.setNullDate("date", o.Date)
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
@@ -268,6 +266,13 @@ func (qb *SceneStore) Create(ctx context.Context, newObject *models.Scene, fileI
 		}
 	}
 
+	if newObject.URLs.Loaded() {
+		const startPos = 0
+		if err := scenesURLsTableMgr.insertJoins(ctx, id, startPos, newObject.URLs.List()); err != nil {
+			return err
+		}
+	}
+
 	if newObject.PerformerIDs.Loaded() {
 		if err := scenesPerformersTableMgr.insertJoins(ctx, id, newObject.PerformerIDs.List()); err != nil {
 			return err
@@ -322,6 +327,11 @@ func (qb *SceneStore) UpdatePartial(ctx context.Context, id int, partial models.
 		}
 	}
 
+	if partial.URLs != nil {
+		if err := scenesURLsTableMgr.modifyJoins(ctx, id, partial.URLs.Values, partial.URLs.Mode); err != nil {
+			return nil, err
+		}
+	}
 	if partial.PerformerIDs != nil {
 		if err := scenesPerformersTableMgr.modifyJoins(ctx, id, partial.PerformerIDs.IDs, partial.PerformerIDs.Mode); err != nil {
 			return nil, err
@@ -362,6 +372,12 @@ func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) e
 
 	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
 		return err
+	}
+
+	if updatedObject.URLs.Loaded() {
+		if err := scenesURLsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.URLs.List()); err != nil {
+			return err
+		}
 	}
 
 	if updatedObject.PerformerIDs.Loaded() {
@@ -705,6 +721,18 @@ func (qb *SceneStore) OCountByPerformerID(ctx context.Context, performerID int) 
 	return ret, nil
 }
 
+func (qb *SceneStore) OCount(ctx context.Context) (int, error) {
+	table := qb.table()
+
+	q := dialect.Select(goqu.COALESCE(goqu.SUM("o_counter"), 0)).From(table)
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
 func (qb *SceneStore) FindByMovieID(ctx context.Context, movieID int) ([]*models.Scene, error) {
 	sq := dialect.From(scenesMoviesJoinTable).Select(scenesMoviesJoinTable.Col(sceneIDColumn)).Where(
 		scenesMoviesJoinTable.Col(movieIDColumn).Eq(movieID),
@@ -727,6 +755,24 @@ func (qb *SceneStore) CountByMovieID(ctx context.Context, movieID int) (int, err
 
 func (qb *SceneStore) Count(ctx context.Context) (int, error) {
 	q := dialect.Select(goqu.COUNT("*")).From(qb.table())
+	return count(ctx, q)
+}
+
+func (qb *SceneStore) PlayCount(ctx context.Context) (int, error) {
+	q := dialect.Select(goqu.COALESCE(goqu.SUM("play_count"), 0)).From(qb.table())
+
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (qb *SceneStore) UniqueScenePlayCount(ctx context.Context) (int, error) {
+	table := qb.table()
+	q := dialect.Select(goqu.COUNT("*")).From(table).Where(table.Col("play_count").Gt(0))
+
 	return count(ctx, q)
 }
 
@@ -762,6 +808,19 @@ func (qb *SceneStore) Duration(ctx context.Context) (float64, error) {
 		videoFileTable,
 		goqu.On(videoFileTable.Col("file_id").Eq(scenesFilesJoinTable.Col("file_id"))),
 	)
+
+	var ret float64
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (qb *SceneStore) PlayDuration(ctx context.Context) (float64, error) {
+	table := qb.table()
+
+	q := dialect.Select(goqu.COALESCE(goqu.SUM("play_duration"), 0)).From(table)
 
 	var ret float64
 	if err := querySimple(ctx, q, &ret); err != nil {
@@ -926,9 +985,12 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 	query.handleCriterion(ctx, floatIntCriterionHandler(sceneFilter.Duration, "video_files.duration", qb.addVideoFilesTable))
 	query.handleCriterion(ctx, resolutionCriterionHandler(sceneFilter.Resolution, "video_files.height", "video_files.width", qb.addVideoFilesTable))
 
+	query.handleCriterion(ctx, codecCriterionHandler(sceneFilter.VideoCodec, "video_files.video_codec", qb.addVideoFilesTable))
+	query.handleCriterion(ctx, codecCriterionHandler(sceneFilter.AudioCodec, "video_files.audio_codec", qb.addVideoFilesTable))
+
 	query.handleCriterion(ctx, hasMarkersCriterionHandler(sceneFilter.HasMarkers))
 	query.handleCriterion(ctx, sceneIsMissingCriterionHandler(qb, sceneFilter.IsMissing))
-	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.URL, "scenes.url"))
+	query.handleCriterion(ctx, sceneURLsCriterionHandler(sceneFilter.URL))
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if sceneFilter.StashID != nil {
@@ -1201,6 +1263,18 @@ func resolutionCriterionHandler(resolution *models.ResolutionCriterionInput, hei
 	}
 }
 
+func codecCriterionHandler(codec *models.StringCriterionInput, codecColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if codec != nil {
+			if addJoinFn != nil {
+				addJoinFn(f)
+			}
+
+			stringCriterionHandler(codec, codecColumn)(ctx, f)
+		}
+	}
+}
+
 func hasMarkersCriterionHandler(hasMarkers *string) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if hasMarkers != nil {
@@ -1230,7 +1304,7 @@ func sceneIsMissingCriterionHandler(qb *SceneStore, isMissing *string) criterion
 				qb.performersRepository().join(f, "performers_join", "scenes.id")
 				f.addWhere("performers_join.scene_id IS NULL")
 			case "date":
-				f.addWhere(`scenes.date IS NULL OR scenes.date IS "" OR scenes.date IS "0001-01-01"`)
+				f.addWhere(`scenes.date IS NULL OR scenes.date IS ""`)
 			case "tags":
 				qb.tagsRepository().join(f, "tags_join", "scenes.id")
 				f.addWhere("tags_join.scene_id IS NULL")
@@ -1248,6 +1322,18 @@ func sceneIsMissingCriterionHandler(qb *SceneStore, isMissing *string) criterion
 			}
 		}
 	}
+}
+
+func sceneURLsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
+	h := stringListCriterionHandlerBuilder{
+		joinTable:    scenesURLsTable,
+		stringColumn: sceneURLColumn,
+		addJoinTable: func(f *filterBuilder) {
+			scenesURLsTableMgr.join(f, "", "scenes.id")
+		},
+	}
+
+	return h.handler(url)
 }
 
 func (qb *SceneStore) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
@@ -1355,7 +1441,6 @@ func scenePerformerAgeCriterionHandler(performerAge *models.IntCriterionInput) c
 
 			f.addWhere("scenes.date != '' AND performers.birthdate != ''")
 			f.addWhere("scenes.date IS NOT NULL AND performers.birthdate IS NOT NULL")
-			f.addWhere("scenes.date != '0001-01-01' AND performers.birthdate != '0001-01-01'")
 
 			ageCalc := "cast(strftime('%Y.%m%d', scenes.date) - strftime('%Y.%m%d', performers.birthdate) as int)"
 			whereClause, args := getIntWhereClause(ageCalc, performerAge.Modifier, performerAge.Value, performerAge.Value2)
@@ -1577,6 +1662,10 @@ func (qb *SceneStore) IncrementWatchCount(ctx context.Context, id int) (int, err
 	}
 
 	return qb.getPlayCount(ctx, id)
+}
+
+func (qb *SceneStore) GetURLs(ctx context.Context, sceneID int) ([]string, error) {
+	return scenesURLsTableMgr.get(ctx, sceneID)
 }
 
 func (qb *SceneStore) GetCover(ctx context.Context, sceneID int) ([]byte, error) {

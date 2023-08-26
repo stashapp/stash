@@ -30,7 +30,7 @@ const (
 
 type performerRow struct {
 	ID            int         `db:"id" goqu:"skipinsert"`
-	Name          string      `db:"name"`
+	Name          null.String `db:"name"` // TODO: make schema non-nullable
 	Disambigation zero.String `db:"disambiguation"`
 	Gender        zero.String `db:"gender"`
 	URL           zero.String `db:"url"`
@@ -73,7 +73,7 @@ type filteredCountsRow struct {
 
 func (r *performerRow) fromPerformer(o models.Performer) {
 	r.ID = o.ID
-	r.Name = o.Name
+	r.Name = null.StringFrom(o.Name)
 	r.Disambigation = zero.StringFrom(o.Disambiguation)
 	if o.Gender != nil && o.Gender.IsValid() {
 		r.Gender = zero.StringFrom(o.Gender.String())
@@ -109,7 +109,7 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 func (r *performerRow) resolve() *models.Performer {
 	ret := &models.Performer{
 		ID:             r.ID,
-		Name:           r.Name,
+		Name:           r.Name.String,
 		Disambiguation: r.Disambigation.String,
 		URL:            r.URL.String,
 		Twitter:        r.Twitter.String,
@@ -853,7 +853,7 @@ func performerAgeFilterCriterionHandler(age *models.IntCriterionInput) criterion
 	return func(ctx context.Context, f *filterBuilder) {
 		if age != nil && age.Modifier.IsValid() {
 			clause, args := getIntCriterionWhereClause(
-				"cast(strftime('%Y.%m%d',CASE WHEN performers.death_date IS NULL OR performers.death_date = '0001-01-01' OR performers.death_date = '' THEN 'now' ELSE performers.death_date END) - strftime('%Y.%m%d', performers.birthdate) as int)",
+				"cast(IFNULL(strftime('%Y.%m%d', performers.death_date), strftime('%Y.%m%d', 'now')) - strftime('%Y.%m%d', performers.birthdate) as int)",
 				*age,
 			)
 			f.addWhere(clause, args...)
@@ -1210,7 +1210,9 @@ func (qb *PerformerStore) tagsRepository() *joinRepository {
 			tableName: performersTagsTable,
 			idColumn:  performerIDColumn,
 		},
-		fkColumn: tagIDColumn,
+		fkColumn:     tagIDColumn,
+		foreignTable: tagTable,
+		orderBy:      "tags.name ASC",
 	}
 }
 

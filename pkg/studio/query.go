@@ -14,6 +14,12 @@ type Queryer interface {
 	Query(ctx context.Context, studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) ([]*models.Studio, int, error)
 }
 
+type FinderQueryer interface {
+	Finder
+	Queryer
+	models.AliasLoader
+}
+
 func ByName(ctx context.Context, qb Queryer, name string) (*models.Studio, error) {
 	f := &models.StudioFilterType{
 		Name: &models.StringCriterionInput{

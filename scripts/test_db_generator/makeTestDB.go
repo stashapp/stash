@@ -36,7 +36,7 @@ type config struct {
 	Markers    int          `yaml:"markers"`
 	Images     int          `yaml:"images"`
 	Galleries  int          `yaml:"galleries"`
-        Chapters   int          `yaml:"chapters"`
+	Chapters   int          `yaml:"chapters"`
 	Performers int          `yaml:"performers"`
 	Studios    int          `yaml:"studios"`
 	Tags       int          `yaml:"tags"`
@@ -98,7 +98,7 @@ func populateDB() {
 	makeScenes(c.Scenes)
 	makeImages(c.Images)
 	makeGalleries(c.Galleries)
-        makeChapters(c.Chapters)
+	makeChapters(c.Chapters)
 	makeMarkers(c.Markers)
 }
 
@@ -504,35 +504,35 @@ func generateGallery(i int) models.Gallery {
 }
 
 func makeChapters(n int) {
-        logf("creating %d chapters...", n)
-        for i := 0; i < n; {
-                // do in batches of 1000
-                batch := i + batchSize
-                if err := withTxn(func(ctx context.Context) error {
-                        for ; i < batch && i < n; i++ {
-                                chapter := generateChapter(i)
-                                chapter.GalleryID = models.NullInt64(int64(getRandomGallery()))
+	logf("creating %d chapters...", n)
+	for i := 0; i < n; {
+		// do in batches of 1000
+		batch := i + batchSize
+		if err := withTxn(func(ctx context.Context) error {
+			for ; i < batch && i < n; i++ {
+				chapter := generateChapter(i)
+				chapter.GalleryID = models.NullInt64(int64(getRandomGallery()))
 
-                                created, err := repo.GalleryChapter.Create(ctx, chapter)
-                                if err != nil {
-                                        return err
-                                }
-                        }
+				created, err := repo.GalleryChapter.Create(ctx, chapter)
+				if err != nil {
+					return err
+				}
+			}
 
-                        logf("... created %d chapters", i)
+			logf("... created %d chapters", i)
 
-                        return nil
-                }); err != nil {
-                        panic(err)
-                }
-        }
+			return nil
+		}); err != nil {
+			panic(err)
+		}
+	}
 }
 
 func generateChapter(i int) models.GalleryChapter {
-        return models.GalleryChapter{
-                Title: names[c.Naming.Galleries].generateName(rand.Intn(7) + 1),
-                ImageIndex: rand.Intn(200),
-        }
+	return models.GalleryChapter{
+		Title:      names[c.Naming.Galleries].generateName(rand.Intn(7) + 1),
+		ImageIndex: rand.Intn(200),
+	}
 }
 
 func makeMarkers(n int) {
@@ -657,7 +657,7 @@ func getRandomScene() int {
 }
 
 func getRandomGallery() int {
-        return rand.Intn(c.Galleries) + 1
+	return rand.Intn(c.Galleries) + 1
 }
 
 func getRandomTags(ctx context.Context, min, max int) []int {

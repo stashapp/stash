@@ -1,4 +1,4 @@
-query FindTags($filter: FindFilterType, $tag_filter: TagFilterType ) {
+query FindTags($filter: FindFilterType, $tag_filter: TagFilterType) {
   findTags(filter: $filter, tag_filter: $tag_filter) {
     count
     tags {
