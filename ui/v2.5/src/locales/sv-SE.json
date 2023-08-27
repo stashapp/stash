@@ -1301,7 +1301,8 @@
     "validation": {
         "aliases_must_be_unique": "alias måste vara unik",
         "date_invalid_form": "${path} måste vara i formatet ÅÅÅÅ-MM-DD",
-        "required": "${path} är ett obligatoriskt fält"
+        "required": "${path} är ett obligatoriskt fält",
+        "urls_must_be_unique": "URL:er måste vara unika"
     },
     "videos": "Videor",
     "view_all": "Visa Allt",
@@ -1311,5 +1312,45 @@
     "zip_file_count": "Antal Zip-filer",
     "audio_codec": "Ljudcodec",
     "index_of_total": "{index} av {total}",
-    "parent_studio": "Överordnad Studio"
+    "parent_studio": "Överordnad Studio",
+    "studio_tagger": {
+        "add_new_studios": "Lägg Till Nya Studior",
+        "any_names_entered_will_be_queried": "Skrivna namn kommer sökas i Stash-Box instansen och läggas till om de hittas. Bara exakta matchningar kommer räknas om en matchning.",
+        "batch_add_studios": "Lägg Till Flera Studior",
+        "config": {
+            "active_stash-box_instance": "Aktiv Stash-Box instans:",
+            "create_parent_label": "Skapa överordnande studior",
+            "create_parent_desc": "Skapa saknade överordnad studio, eller tagga och uppdatera data/bild för existerande överordnad studio med exakt namnmatchning",
+            "edit_excluded_fields": "Ändra Exkluderade Fält",
+            "excluded_fields": "Exkluderade Fält:",
+            "these_fields_will_not_be_changed_when_updating_studios": "Dessa fält kommer inte ändras när studior uppdateras.",
+            "no_fields_are_excluded": "Inga fält är exkluderade",
+            "no_instances_found": "Inga hittade instanser"
+        },
+        "updating_untagged_studios_description": "Uppdatera otaggade studior kommer försöka matcha studior som saknar Stash ID och uppdatera metadata.",
+        "batch_update_studios": "Uppdatera Flera Studior",
+        "network_error": "Nätverksfel",
+        "current_page": "Nuvarande sida",
+        "create_or_tag_parent_studios": "Skapa saknad eller tagga existerande överordnade studior",
+        "failed_to_save_studio": "Misslyckades med att spara studio \"{studio}\"",
+        "no_results_found": "Inga resultat hittades.",
+        "studio_names_separated_by_comma": "Studionamn separerade med komma",
+        "name_already_exists": "Namnet finns redan",
+        "number_of_studios_will_be_processed": "{studio_count} studior kommer behandlas",
+        "studio_already_tagged": "Studio redan taggad",
+        "studio_selection": "Studioval",
+        "studio_successfully_tagged": "Studiotaggning lyckades",
+        "query_all_studios_in_the_database": "Alla studior i databasen",
+        "status_tagging_job_queued": "Status: Taggjob köat",
+        "update_studios": "Uppdatera Studior",
+        "refresh_tagged_studios": "Förnya taggade studior",
+        "refreshing_will_update_the_data": "Förnyelse kommer uppdatera datan hos alla taggade studior från Stash-Box instansen.",
+        "status_tagging_studios": "Status: Taggar studior",
+        "tag_status": "Taggstatus",
+        "to_use_the_studio_tagger": "För att använda studiotaggaren behöver en Stash-Box instans vara konfigurerad.",
+        "untagged_studios": "Otaggade studior",
+        "update_studio": "Uppdatera Studio"
+    },
+    "urls": "URL:er",
+    "video_codec": "Videocodec"
 }
