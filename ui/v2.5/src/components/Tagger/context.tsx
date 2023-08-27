@@ -141,7 +141,7 @@ export const TaggerContext: React.FC = ({ children }) => {
     }
 
     const { stashBoxes } = stashConfig.general;
-    const scrapers = Scrapers.data.listSceneScrapers;
+    const scrapers = Scrapers.data.listScrapers;
 
     const stashboxSources: ITaggerSource[] = stashBoxes.map((s, i) => ({
       id: `${STASH_BOX_PREFIX}${i}`,

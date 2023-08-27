@@ -48,22 +48,6 @@ func (r *queryResolver) ListScrapers(ctx context.Context, types []scraper.Scrape
 	return r.scraperCache().ListScrapers(types), nil
 }
 
-func (r *queryResolver) ListPerformerScrapers(ctx context.Context) ([]*scraper.Scraper, error) {
-	return r.scraperCache().ListScrapers([]scraper.ScrapeContentType{scraper.ScrapeContentTypePerformer}), nil
-}
-
-func (r *queryResolver) ListSceneScrapers(ctx context.Context) ([]*scraper.Scraper, error) {
-	return r.scraperCache().ListScrapers([]scraper.ScrapeContentType{scraper.ScrapeContentTypeScene}), nil
-}
-
-func (r *queryResolver) ListGalleryScrapers(ctx context.Context) ([]*scraper.Scraper, error) {
-	return r.scraperCache().ListScrapers([]scraper.ScrapeContentType{scraper.ScrapeContentTypeGallery}), nil
-}
-
-func (r *queryResolver) ListMovieScrapers(ctx context.Context) ([]*scraper.Scraper, error) {
-	return r.scraperCache().ListScrapers([]scraper.ScrapeContentType{scraper.ScrapeContentTypeMovie}), nil
-}
-
 func (r *queryResolver) ScrapePerformerList(ctx context.Context, scraperID string, query string) ([]*models.ScrapedPerformer, error) {
 	if query == "" {
 		return nil, nil

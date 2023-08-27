@@ -109,14 +109,6 @@ type Query {
 
   "List available scrapers"
   listScrapers(types: [ScrapeContentType!]!): [Scraper!]!
-  listPerformerScrapers: [Scraper!]!
-    @deprecated(reason: "Use listScrapers(types: [PERFORMER])")
-  listSceneScrapers: [Scraper!]!
-    @deprecated(reason: "Use listScrapers(types: [SCENE])")
-  listGalleryScrapers: [Scraper!]!
-    @deprecated(reason: "Use listScrapers(types: [GALLERY])")
-  listMovieScrapers: [Scraper!]!
-    @deprecated(reason: "Use listScrapers(types: [MOVIE])")
 
   "Scrape for a single scene"
   scrapeSingleScene(
