@@ -144,6 +144,8 @@ func (r *queryResolver) getStashBoxClient(index int) (*stashbox.Client, error) {
 	return stashbox.NewClient(*boxes[index], r.stashboxRepository()), nil
 }
 
+// FIXME - in the following resolvers, we're processing the deprecated field and not processing the new endpoint input
+
 func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source scraper.Source, input ScrapeSingleSceneInput) ([]*scraper.ScrapedScene, error) {
 	var ret []*scraper.ScrapedScene
 
@@ -281,6 +283,7 @@ func (r *queryResolver) ScrapeSinglePerformer(ctx context.Context, source scrape
 		}
 
 		return nil, ErrNotImplemented
+		// FIXME - we're relying on a deprecated field and not processing the endpoint input
 	} else if source.StashBoxIndex != nil {
 		client, err := r.getStashBoxClient(*source.StashBoxIndex)
 		if err != nil {
