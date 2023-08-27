@@ -21,52 +21,8 @@ func (r *queryResolver) ScrapeURL(ctx context.Context, url string, ty scraper.Sc
 	return r.scraperCache().ScrapeURL(ctx, url, ty)
 }
 
-// deprecated
-func (r *queryResolver) ScrapeFreeonesPerformerList(ctx context.Context, query string) ([]string, error) {
-	content, err := r.scraperCache().ScrapeName(ctx, scraper.FreeonesScraperID, query, scraper.ScrapeContentTypePerformer)
-
-	if err != nil {
-		return nil, err
-	}
-
-	performers, err := marshalScrapedPerformers(content)
-	if err != nil {
-		return nil, err
-	}
-
-	var ret []string
-	for _, p := range performers {
-		if p.Name != nil {
-			ret = append(ret, *p.Name)
-		}
-	}
-
-	return ret, nil
-}
-
 func (r *queryResolver) ListScrapers(ctx context.Context, types []scraper.ScrapeContentType) ([]*scraper.Scraper, error) {
 	return r.scraperCache().ListScrapers(types), nil
-}
-
-func (r *queryResolver) ScrapePerformerList(ctx context.Context, scraperID string, query string) ([]*models.ScrapedPerformer, error) {
-	if query == "" {
-		return nil, nil
-	}
-
-	content, err := r.scraperCache().ScrapeName(ctx, scraperID, query, scraper.ScrapeContentTypePerformer)
-	if err != nil {
-		return nil, err
-	}
-
-	return marshalScrapedPerformers(content)
-}
-
-func (r *queryResolver) ScrapePerformer(ctx context.Context, scraperID string, scrapedPerformer scraper.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
-	content, err := r.scraperCache().ScrapeFragment(ctx, scraperID, scraper.Input{Performer: &scrapedPerformer})
-	if err != nil {
-		return nil, err
-	}
-	return marshalScrapedPerformer(content)
 }
 
 func (r *queryResolver) ScrapePerformerURL(ctx context.Context, url string) (*models.ScrapedPerformer, error) {
@@ -94,29 +50,6 @@ func (r *queryResolver) ScrapeSceneQuery(ctx context.Context, scraperID string, 
 	}
 
 	filterSceneTags(ret)
-	return ret, nil
-}
-
-func (r *queryResolver) ScrapeScene(ctx context.Context, scraperID string, scene models.SceneUpdateInput) (*scraper.ScrapedScene, error) {
-	id, err := strconv.Atoi(scene.ID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: scene.ID is not an integer: '%s'", ErrInput, scene.ID)
-	}
-
-	content, err := r.scraperCache().ScrapeID(ctx, scraperID, id, scraper.ScrapeContentTypeScene)
-	if err != nil {
-		return nil, err
-	}
-
-	ret, err := marshalScrapedScene(content)
-	if err != nil {
-		return nil, err
-	}
-
-	if ret != nil {
-		filterSceneTags([]*scraper.ScrapedScene{ret})
-	}
-
 	return ret, nil
 }
 
@@ -181,20 +114,6 @@ func (r *queryResolver) ScrapeSceneURL(ctx context.Context, url string) (*scrape
 	}
 
 	return ret, nil
-}
-
-func (r *queryResolver) ScrapeGallery(ctx context.Context, scraperID string, gallery models.GalleryUpdateInput) (*scraper.ScrapedGallery, error) {
-	id, err := strconv.Atoi(gallery.ID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: gallery id is not an integer: '%s'", ErrInput, gallery.ID)
-	}
-
-	content, err := r.scraperCache().ScrapeID(ctx, scraperID, id, scraper.ScrapeContentTypeGallery)
-	if err != nil {
-		return nil, err
-	}
-
-	return marshalScrapedGallery(content)
 }
 
 func (r *queryResolver) ScrapeGalleryURL(ctx context.Context, url string) (*scraper.ScrapedGallery, error) {
