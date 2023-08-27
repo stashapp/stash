@@ -220,7 +220,6 @@ type PerformerCreateInput struct {
 	// This should be a URL or a base64 encoded data URL
 	Image         *string   `json:"image"`
 	StashIds      []StashID `json:"stash_ids"`
-	Rating        *int      `json:"rating"`
 	Rating100     *int      `json:"rating100"`
 	Details       *string   `json:"details"`
 	DeathDate     *string   `json:"death_date"`
@@ -257,7 +256,6 @@ type PerformerUpdateInput struct {
 	// This should be a URL or a base64 encoded data URL
 	Image         *string   `json:"image"`
 	StashIds      []StashID `json:"stash_ids"`
-	Rating        *int      `json:"rating"`
 	Rating100     *int      `json:"rating100"`
 	Details       *string   `json:"details"`
 	DeathDate     *string   `json:"death_date"`
