@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
@@ -44,26 +43,6 @@ func (r *imageResolver) getFiles(ctx context.Context, obj *models.Image) ([]mode
 func (r *imageResolver) Title(ctx context.Context, obj *models.Image) (*string, error) {
 	ret := obj.GetTitle()
 	return &ret, nil
-}
-
-func (r *imageResolver) File(ctx context.Context, obj *models.Image) (*ImageFileType, error) {
-	f, err := r.getPrimaryFile(ctx, obj)
-	if err != nil {
-		return nil, err
-	}
-
-	if f == nil {
-		return nil, nil
-	}
-
-	width := f.GetWidth()
-	height := f.GetHeight()
-	size := f.Base().Size
-	return &ImageFileType{
-		Size:   int(size),
-		Width:  width,
-		Height: height,
-	}, nil
 }
 
 func (r *imageResolver) VisualFiles(ctx context.Context, obj *models.Image) ([]models.VisualFile, error) {
@@ -112,18 +91,6 @@ func (r *imageResolver) Files(ctx context.Context, obj *models.Image) ([]*models
 	return ret, nil
 }
 
-func (r *imageResolver) FileModTime(ctx context.Context, obj *models.Image) (*time.Time, error) {
-	f, err := r.getPrimaryFile(ctx, obj)
-	if err != nil {
-		return nil, err
-	}
-	if f != nil {
-		return &f.Base().ModTime, nil
-	}
-
-	return nil, nil
-}
-
 func (r *imageResolver) Paths(ctx context.Context, obj *models.Image) (*ImagePathsType, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	builder := urlbuilders.NewImageURLBuilder(baseURL, obj)
@@ -149,14 +116,6 @@ func (r *imageResolver) Galleries(ctx context.Context, obj *models.Image) (ret [
 	var errs []error
 	ret, errs = loaders.From(ctx).GalleryByID.LoadAll(obj.GalleryIDs.List())
 	return ret, firstError(errs)
-}
-
-func (r *imageResolver) Rating(ctx context.Context, obj *models.Image) (*int, error) {
-	if obj.Rating != nil {
-		rating := models.Rating100To5(*obj.Rating)
-		return &rating, nil
-	}
-	return nil, nil
 }
 
 func (r *imageResolver) Rating100(ctx context.Context, obj *models.Image) (*int, error) {
