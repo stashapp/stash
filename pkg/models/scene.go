@@ -128,7 +128,6 @@ type SceneCreateInput struct {
 	URL          *string           `json:"url"`
 	Urls         []string          `json:"urls"`
 	Date         *string           `json:"date"`
-	Rating       *int              `json:"rating"`
 	Rating100    *int              `json:"rating100"`
 	Organized    *bool             `json:"organized"`
 	StudioID     *string           `json:"studio_id"`
@@ -155,7 +154,6 @@ type SceneUpdateInput struct {
 	URL              *string           `json:"url"`
 	Urls             []string          `json:"urls"`
 	Date             *string           `json:"date"`
-	Rating           *int              `json:"rating"`
 	Rating100        *int              `json:"rating100"`
 	OCounter         *int              `json:"o_counter"`
 	Organized        *bool             `json:"organized"`
