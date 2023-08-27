@@ -20,7 +20,7 @@ const HoverScrubber: React.FC<IHoverScrubber> = ({
     const { width } = e.currentTarget.getBoundingClientRect();
     const x = e.nativeEvent.offsetX;
 
-    return Math.floor((x / width) * totalSprites);
+    return Math.floor((x / width) * (totalSprites - 1));
   }
 
   function onMouseMove(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
@@ -104,7 +104,7 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
   const debounceSetActiveIndex = useDebounce(
     setActiveIndex,
     [setActiveIndex],
-    10
+    1
   );
 
   const spriteInfo = useSpriteInfo(vttPath);
