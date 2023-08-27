@@ -319,20 +319,6 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		initCustomPerformerImages(*input.CustomPerformerImageLocation)
 	}
 
-	if input.ScraperUserAgent != nil {
-		c.Set(config.ScraperUserAgent, input.ScraperUserAgent)
-		refreshScraperCache = true
-	}
-
-	if input.ScraperCDPPath != nil {
-		c.Set(config.ScraperCDPPath, input.ScraperCDPPath)
-		refreshScraperCache = true
-	}
-
-	if input.ScraperCertCheck != nil {
-		c.Set(config.ScraperCertCheck, input.ScraperCertCheck)
-	}
-
 	if input.StashBoxes != nil {
 		if err := c.ValidateStashBoxes(input.StashBoxes); err != nil {
 			return nil, err
@@ -422,11 +408,6 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 
 	if input.Language != nil {
 		c.Set(config.Language, *input.Language)
-	}
-
-	// deprecated field
-	if input.SlideshowDelay != nil {
-		c.Set(config.ImageLightboxSlideshowDelay, *input.SlideshowDelay)
 	}
 
 	if input.ImageLightbox != nil {
