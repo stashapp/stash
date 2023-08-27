@@ -136,8 +136,6 @@ fragment ScraperSourceData on ScraperSource {
 
 fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
   scan {
-    useFileMetadata
-    stripFileExtension
     scanGenerateCovers
     scanGeneratePreviews
     scanGenerateImagePreviews
