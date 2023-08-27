@@ -43,7 +43,6 @@ type StudioCreateInput struct {
 	// This should be a URL or a base64 encoded data URL
 	Image         *string   `json:"image"`
 	StashIds      []StashID `json:"stash_ids"`
-	Rating        *int      `json:"rating"`
 	Rating100     *int      `json:"rating100"`
 	Details       *string   `json:"details"`
 	Aliases       []string  `json:"aliases"`
@@ -58,7 +57,6 @@ type StudioUpdateInput struct {
 	// This should be a URL or a base64 encoded data URL
 	Image         *string   `json:"image"`
 	StashIds      []StashID `json:"stash_ids"`
-	Rating        *int      `json:"rating"`
 	Rating100     *int      `json:"rating100"`
 	Details       *string   `json:"details"`
 	Aliases       []string  `json:"aliases"`
