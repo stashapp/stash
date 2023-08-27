@@ -62,7 +62,6 @@ type GalleryUpdateInput struct {
 	Urls             []string `json:"urls"`
 	Date             *string  `json:"date"`
 	Details          *string  `json:"details"`
-	Rating           *int     `json:"rating"`
 	Rating100        *int     `json:"rating100"`
 	Organized        *bool    `json:"organized"`
 	SceneIds         []string `json:"scene_ids"`
