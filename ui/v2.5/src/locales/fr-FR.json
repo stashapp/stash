@@ -1244,7 +1244,7 @@
     },
     "stash_id": "ID Stash",
     "stash_id_endpoint": "Point de terminaison Stash ID",
-    "stash_ids": "ID Stash",
+    "stash_ids": "IDs Stash",
     "stashbox": {
         "go_review_draft": "Allez sur {endpoint_name} pour examiner l'ébauche.",
         "selected_stash_box": "Point de terminaison Stash-Box sélectionné",
