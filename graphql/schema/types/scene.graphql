@@ -49,7 +49,6 @@ type Scene {
   captions: [VideoCaption!]
   created_at: Time!
   updated_at: Time!
-  file_mod_time: Time @deprecated(reason: "Use files.mod_time")
   "The last time play count was updated"
   last_played_at: Time
   "The time index a scene was left at"

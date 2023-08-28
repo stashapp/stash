@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
@@ -64,18 +63,6 @@ func (r *sceneResolver) getFiles(ctx context.Context, obj *models.Scene) ([]*mod
 	obj.Files.Set(ret)
 
 	return ret, nil
-}
-
-func (r *sceneResolver) FileModTime(ctx context.Context, obj *models.Scene) (*time.Time, error) {
-	f, err := r.getPrimaryFile(ctx, obj)
-	if err != nil {
-		return nil, err
-	}
-
-	if f != nil {
-		return &f.ModTime, nil
-	}
-	return nil, nil
 }
 
 func (r *sceneResolver) Date(ctx context.Context, obj *models.Scene) (*string, error) {
