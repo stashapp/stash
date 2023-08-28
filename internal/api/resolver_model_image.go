@@ -17,19 +17,6 @@ func convertVisualFile(f models.File) (models.VisualFile, error) {
 	return vf, nil
 }
 
-func (r *imageResolver) getPrimaryFile(ctx context.Context, obj *models.Image) (models.VisualFile, error) {
-	if obj.PrimaryFileID != nil {
-		f, err := loaders.From(ctx).FileByID.Load(*obj.PrimaryFileID)
-		if err != nil {
-			return nil, err
-		}
-
-		return convertVisualFile(f)
-	}
-
-	return nil, nil
-}
-
 func (r *imageResolver) getFiles(ctx context.Context, obj *models.Image) ([]models.File, error) {
 	fileIDs, err := loaders.From(ctx).ImageFiles.Load(obj.ID)
 	if err != nil {
