@@ -14,8 +14,6 @@ type StudioFilterType struct {
 	StashIDEndpoint *StashIDCriterionInput `json:"stash_id_endpoint"`
 	// Filter to only include studios missing this property
 	IsMissing *string `json:"is_missing"`
-	// Filter by rating expressed as 1-5
-	Rating *IntCriterionInput `json:"rating"`
 	// Filter by rating expressed as 1-100
 	Rating100 *IntCriterionInput `json:"rating100"`
 	// Filter by scene count
