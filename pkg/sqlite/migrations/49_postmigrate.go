@@ -246,25 +246,32 @@ func (m *schema49Migrator) convertCriterion(mode models.FilterMode, out map[stri
 	}
 
 	field := ret["type"].(string)
-	// Some names are depracated
+	// Some names are deprecated
 	if newFieldName, ok := migrate49NameChanges[field]; ok {
 		field = newFieldName
 	}
 	delete(ret, "type")
 
 	// Find out whether the object needs some adjustment/has non-string content attached
-	if arrayContains(migrate49TypeResolution["Boolean"], field) {
-		ret["value"] = adjustCriterionValue(ret["value"], "bool")
+	// Only adjust if value is present
+	if v, ok := ret["value"]; ok && v != nil {
+		var err error
+		switch {
+		case arrayContains(migrate49TypeResolution["Boolean"], field):
+			ret["value"], err = m.adjustCriterionValue(ret["value"], "bool")
+		case arrayContains(migrate49TypeResolution["Int"], field):
+			ret["value"], err = m.adjustCriterionValue(ret["value"], "int")
+		case arrayContains(migrate49TypeResolution["Float"], field):
+			ret["value"], err = m.adjustCriterionValue(ret["value"], "float64")
+		case arrayContains(migrate49TypeResolution["Object"], field):
+			ret["value"], err = m.adjustCriterionValue(ret["value"], "object")
+		}
+
+		if err != nil {
+			return fmt.Errorf("failed to adjust criterion value for %q: %w", field, err)
+		}
 	}
-	if arrayContains(migrate49TypeResolution["Int"], field) {
-		ret["value"] = adjustCriterionValue(ret["value"], "int")
-	}
-	if arrayContains(migrate49TypeResolution["Float"], field) {
-		ret["value"] = adjustCriterionValue(ret["value"], "float64")
-	}
-	if arrayContains(migrate49TypeResolution["Object"], field) {
-		ret["value"] = adjustCriterionValue(ret["value"], "object")
-	}
+
 	out[field] = ret
 
 	return nil
@@ -280,59 +287,78 @@ func arrayContains(sl []string, name string) bool {
 }
 
 // General Function for converting the types inside a criterion
-func adjustCriterionValue(value interface{}, t string) interface{} {
+func (m *schema49Migrator) adjustCriterionValue(value interface{}, typ string) (interface{}, error) {
 	if mapvalue, ok := value.(map[string]interface{}); ok {
 		// Primitive values and lists of them
+		var err error
 		for _, next := range []string{"value", "value2"} {
 			if valmap, ok := mapvalue[next].([]string); ok {
 				var valNewMap []interface{}
 				for index, v := range valmap {
-					valNewMap[index] = convertString(interface{}(v), t)
+					valNewMap[index], err = m.convertValue(v, typ)
+					if err != nil {
+						return nil, err
+					}
 				}
-				mapvalue[next] = interface{}(valNewMap)
+				mapvalue[next] = valNewMap
 			} else if _, ok := mapvalue[next]; ok {
-				mapvalue[next] = convertString(mapvalue[next], t)
+				mapvalue[next], err = m.convertValue(mapvalue[next], typ)
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
 		// Items
 		for _, next := range []string{"items", "excluded"} {
 			if _, ok := mapvalue[next]; ok {
-				mapvalue[next] = adjustCriterionItem(mapvalue[next])
+				mapvalue[next], err = m.adjustCriterionItem(mapvalue[next])
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
 
 		// Those Values are always Int
 		for _, next := range []string{"Distance", "Depth"} {
 			if _, ok := mapvalue[next]; ok {
-				if formattedOut, ok := strconv.ParseInt(mapvalue[next].(string), 10, 64); ok == nil {
-					mapvalue[next] = interface{}(formattedOut)
+				mapvalue[next], err = strconv.ParseInt(mapvalue[next].(string), 10, 64)
+				if err != nil {
+					return nil, err
 				}
 			}
 		}
-		return mapvalue
+		return mapvalue, nil
 	} else if _, ok := value.(string); ok {
 		// Singular Primitive Values
-		return convertString(value, t)
+		return m.convertValue(value, typ)
 	} else if listvalue, ok := value.([]interface{}); ok {
 		// Items as a singular value, as well as singular lists
-		if t == "object" {
-			value = adjustCriterionItem(value)
+		var err error
+		if typ == "object" {
+			value, err = m.adjustCriterionItem(value)
+			if err != nil {
+				return nil, err
+			}
 		} else {
 			for index, val := range listvalue {
-				listvalue[index] = convertString(val, t)
+				listvalue[index], err = m.convertValue(val, typ)
+				if err != nil {
+					return nil, err
+				}
 			}
-			value = interface{}(listvalue)
+			value = listvalue
 		}
-		return value
+
+		return value, nil
 	} else if _, ok := value.(int); ok {
-		return value
+		return value, nil
 	}
-	fmt.Printf("Could not recognize format of value %v\n", value)
-	return value
+
+	return nil, fmt.Errorf("could not recognize format of value %v", value)
 }
 
 // Converts values inside a criterion that represent some objects, like performer or studio.
-func adjustCriterionItem(value interface{}) interface{} {
+func (m *schema49Migrator) adjustCriterionItem(value interface{}) (interface{}, error) {
 	// Basically, this first converts step by step the value, after that it adjusts id and Depth (of parent/child studios) to int
 	if itemlist, ok := value.([]interface{}); ok {
 		var itemNewList []interface{}
@@ -355,40 +381,35 @@ func adjustCriterionItem(value interface{}) interface{} {
 						}
 					}
 				}
-				itemNewList = append(itemNewList, interface{}(newItem))
+				itemNewList = append(itemNewList, newItem)
 			}
 		}
-		return interface{}(itemNewList)
+		return itemNewList, nil
 	}
-	fmt.Printf("Could not recognize %v as an item list \n", value)
-	return value
+	return nil, fmt.Errorf("could not recognize %v as an item list", value)
 }
 
 // Converts a value of type string to its according type, given by string
-func convertString(value interface{}, t string) interface{} {
+func (m *schema49Migrator) convertValue(value interface{}, typ string) (interface{}, error) {
+	valueType := reflect.TypeOf(value).Name()
+	if typ == valueType || (typ == "int" && valueType == "float64") || (typ == "float64" && valueType == "int") {
+		return value, nil
+	}
+
 	if val, ok := value.(string); ok {
-		switch t {
+		switch typ {
 		case "float64":
-			if formattedOut, ok := strconv.ParseFloat(val, 64); ok == nil {
-				return interface{}(formattedOut)
-			}
+			return strconv.ParseFloat(val, 64)
 		case "int":
-			if formattedOut, ok := strconv.ParseInt(val, 10, 64); ok == nil {
-				return interface{}(formattedOut)
-			}
+			return strconv.ParseInt(val, 10, 64)
 		case "bool":
-			if formattedOut, ok := strconv.ParseBool(val); ok == nil {
-				return interface{}(formattedOut)
-			}
+			return strconv.ParseBool(val)
 		default:
-			fmt.Printf("No valid conversiontype, need bool, int or float64\n")
-			return value
+			return nil, fmt.Errorf("no valid conversion type for %v, need bool, int or float64", typ)
 		}
 	}
-	if reflect.TypeOf(value).Name() != t && !(t == "int" && reflect.TypeOf(value).Name() == "float64") && !(t == "float64" && reflect.TypeOf(value).Name() == "int") {
-		fmt.Printf("Failed to convert %v to String, leaving unmodified.\n", value)
-	}
-	return value
+
+	return nil, fmt.Errorf("cannot convert %v (%T) to %s", value, value, typ)
 }
 
 func init() {
