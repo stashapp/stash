@@ -369,7 +369,7 @@ func (c Client) queryStashBoxPerformer(ctx context.Context, queryStr string) ([]
 
 	var ret []*models.ScrapedPerformer
 	for _, fragment := range performerFragments {
-		performer := performerFragmentToScrapedScenePerformer(*fragment)
+		performer := performerFragmentToScrapedPerformer(*fragment)
 		ret = append(ret, performer)
 	}
 
@@ -598,12 +598,12 @@ func fetchImage(ctx context.Context, client *http.Client, url string) (*string, 
 	return &img, nil
 }
 
-func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *models.ScrapedPerformer {
-	id := p.ID
+func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.ScrapedPerformer {
 	images := []string{}
 	for _, image := range p.Images {
 		images = append(images, image.URL)
 	}
+
 	sp := &models.ScrapedPerformer{
 		Name:           &p.Name,
 		Disambiguation: p.Disambiguation,
@@ -613,7 +613,7 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 		Tattoos:        formatBodyModifications(p.Tattoos),
 		Piercings:      formatBodyModifications(p.Piercings),
 		Twitter:        findURL(p.Urls, "TWITTER"),
-		RemoteSiteID:   &id,
+		RemoteSiteID:   &p.ID,
 		Images:         images,
 		// TODO - tags not currently supported
 		// graphql schema change to accommodate this. Leave off for now.
@@ -772,7 +772,7 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 		}
 
 		for _, p := range s.Performers {
-			sp := performerFragmentToScrapedScenePerformer(p.Performer)
+			sp := performerFragmentToScrapedPerformer(p.Performer)
 
 			err := match.ScrapedPerformer(ctx, pqb, sp, &c.box.Endpoint)
 			if err != nil {
@@ -809,7 +809,15 @@ func (c Client) FindStashBoxPerformerByID(ctx context.Context, id string) (*mode
 		return nil, err
 	}
 
-	ret := performerFragmentToScrapedScenePerformer(*performer.FindPerformer)
+	ret := performerFragmentToScrapedPerformer(*performer.FindPerformer)
+
+	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
+		err := match.ScrapedPerformer(ctx, c.repository.Performer, ret, &c.box.Endpoint)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
 	return ret, nil
 }
 
@@ -822,8 +830,19 @@ func (c Client) FindStashBoxPerformerByName(ctx context.Context, name string) (*
 	var ret *models.ScrapedPerformer
 	for _, performer := range performers.SearchPerformer {
 		if strings.EqualFold(performer.Name, name) {
-			ret = performerFragmentToScrapedScenePerformer(*performer)
+			ret = performerFragmentToScrapedPerformer(*performer)
 		}
+	}
+
+	if ret == nil {
+		return nil, nil
+	}
+
+	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
+		err := match.ScrapedPerformer(ctx, c.repository.Performer, ret, &c.box.Endpoint)
+		return err
+	}); err != nil {
+		return nil, err
 	}
 
 	return ret, nil

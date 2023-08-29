@@ -4,10 +4,10 @@ const secondsToString = (seconds: number) => {
   let ret = TextUtils.secondsToTimestamp(seconds);
 
   if (ret.startsWith("00:")) {
-    ret = ret.substr(3);
+    ret = ret.substring(3);
 
     if (ret.startsWith("0")) {
-      ret = ret.substr(1);
+      ret = ret.substring(1);
     }
   }
 
