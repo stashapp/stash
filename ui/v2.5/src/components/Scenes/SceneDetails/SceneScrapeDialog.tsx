@@ -8,17 +8,8 @@ import {
   ScrapedStringListRow,
 } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import clone from "lodash-es/clone";
-import {
-  useStudioCreate,
-  usePerformerCreate,
-  useMovieCreate,
-  useTagCreate,
-} from "src/core/StashService";
-import { useToast } from "src/hooks/Toast";
 import { useIntl } from "react-intl";
 import { uniq } from "lodash-es";
-import { scrapedPerformerToCreateInput } from "src/core/performers";
-import { scrapedMovieToCreateInput } from "src/core/movies";
 import { Performer } from "src/components/Performers/PerformerSelect";
 import { IHasStoredID, sortStoredIdObjects } from "src/utils/data";
 import { ScrapeResult } from "src/components/Shared/ScrapeDialog/scrapeResult";
@@ -28,6 +19,12 @@ import {
   ScrapedStudioRow,
   ScrapedTagsRow,
 } from "src/components/Shared/ScrapeDialog/ScrapedObjectsRow";
+import {
+  useCreateScrapedMovie,
+  useCreateScrapedPerformer,
+  useCreateScrapedStudio,
+  useCreateScrapedTag,
+} from "src/components/Shared/ScrapeDialog/createObjects";
 
 interface ISceneScrapeDialogProps {
   scene: Partial<GQL.SceneUpdateInput>;
@@ -164,13 +161,34 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
     new ScrapeResult<string>(scene.cover_image, scraped.image)
   );
 
-  const [createStudio] = useStudioCreate();
-  const [createPerformer] = usePerformerCreate();
-  const [createMovie] = useMovieCreate();
-  const [createTag] = useTagCreate();
+  const createNewStudio = useCreateScrapedStudio({
+    scrapeResult: studio,
+    setScrapeResult: setStudio,
+    setNewObject: setNewStudio,
+  });
+
+  const createNewPerformer = useCreateScrapedPerformer({
+    scrapeResult: performers,
+    setScrapeResult: setPerformers,
+    newObjects: newPerformers,
+    setNewObjects: setNewPerformers,
+  });
+
+  const createNewMovie = useCreateScrapedMovie({
+    scrapeResult: movies,
+    setScrapeResult: setMovies,
+    newObjects: newMovies,
+    setNewObjects: setNewMovies,
+  });
+
+  const createNewTag = useCreateScrapedTag({
+    scrapeResult: tags,
+    setScrapeResult: setTags,
+    newObjects: newTags,
+    setNewObjects: setNewTags,
+  });
 
   const intl = useIntl();
-  const Toast = useToast();
 
   // don't show the dialog if nothing was scraped
   if (
@@ -195,146 +213,6 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
   ) {
     onClose();
     return <></>;
-  }
-
-  async function createNewStudio(toCreate: GQL.ScrapedStudio) {
-    try {
-      const result = await createStudio({
-        variables: {
-          input: {
-            name: toCreate.name,
-            url: toCreate.url,
-          },
-        },
-      });
-
-      // set the new studio as the value
-      setStudio(studio.cloneWithValue(result.data!.studioCreate!.id));
-      setNewStudio(undefined);
-
-      Toast.success({
-        content: (
-          <span>
-            Created studio: <b>{toCreate.name}</b>
-          </span>
-        ),
-      });
-    } catch (e) {
-      Toast.error(e);
-    }
-  }
-
-  async function createNewPerformer(toCreate: GQL.ScrapedPerformer) {
-    const input = scrapedPerformerToCreateInput(toCreate);
-
-    try {
-      const result = await createPerformer({
-        variables: { input },
-      });
-
-      const newValue = [...(performers.newValue ?? [])];
-      if (result.data?.performerCreate)
-        newValue.push({
-          stored_id: result.data.performerCreate.id,
-          name: result.data.performerCreate.name,
-        });
-
-      // add the new performer to the new performers value
-      const performerClone = performers.cloneWithValue(newValue);
-      setPerformers(performerClone);
-
-      // remove the performer from the list
-      const newPerformersClone = newPerformers.concat();
-      const pIndex = newPerformersClone.findIndex(
-        (p) => p.name === toCreate.name
-      );
-      if (pIndex === -1) throw new Error("Could not find performer to remove");
-
-      newPerformersClone.splice(pIndex, 1);
-
-      setNewPerformers(newPerformersClone);
-
-      Toast.success({
-        content: (
-          <span>
-            Created performer: <b>{toCreate.name}</b>
-          </span>
-        ),
-      });
-    } catch (e) {
-      Toast.error(e);
-    }
-  }
-
-  async function createNewMovie(toCreate: GQL.ScrapedMovie) {
-    const movieInput = scrapedMovieToCreateInput(toCreate);
-    try {
-      const result = await createMovie({
-        variables: { input: movieInput },
-      });
-
-      // add the new movie to the new movies value
-      const movieClone = movies.cloneWithValue(movies.newValue);
-      if (!movieClone.newValue) {
-        movieClone.newValue = [];
-      }
-      movieClone.newValue.push(result.data!.movieCreate!.id);
-      setMovies(movieClone);
-
-      // remove the movie from the list
-      const newMoviesClone = newMovies.concat();
-      const pIndex = newMoviesClone.findIndex((p) => p.name === toCreate.name);
-      if (pIndex === -1) throw new Error("Could not find movie to remove");
-      newMoviesClone.splice(pIndex, 1);
-
-      setNewMovies(newMoviesClone);
-
-      Toast.success({
-        content: (
-          <span>
-            Created movie: <b>{toCreate.name}</b>
-          </span>
-        ),
-      });
-    } catch (e) {
-      Toast.error(e);
-    }
-  }
-
-  async function createNewTag(toCreate: GQL.ScrapedTag) {
-    const tagInput: GQL.TagCreateInput = { name: toCreate.name ?? "" };
-    try {
-      const result = await createTag({
-        variables: {
-          input: tagInput,
-        },
-      });
-
-      const newValue = [...(tags.newValue ?? [])];
-      if (result.data?.tagCreate) newValue.push(result.data.tagCreate.id);
-
-      // add the new tag to the new tags value
-      const tagClone = tags.cloneWithValue(newValue);
-      setTags(tagClone);
-
-      // remove the tag from the list
-      const newTagsClone = newTags.concat();
-      const pIndex = newTagsClone.indexOf(toCreate);
-      if (pIndex === -1) throw new Error("Could not find tag to remove");
-      newTagsClone.splice(pIndex, 1);
-
-      setNewTags(newTagsClone);
-
-      Toast.success({
-        content: (
-          <span>
-            Created tag: <b>{toCreate.name}</b>
-          </span>
-        ),
-      });
-    } catch (e) {
-      Toast.error(e);
-    }
   }
 
   function makeNewScrapedItem(): GQL.ScrapedSceneDataFragment {
