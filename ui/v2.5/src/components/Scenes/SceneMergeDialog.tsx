@@ -20,12 +20,6 @@ import {
   ScrapedTextAreaRow,
 } from "../Shared/ScrapeDialog/ScrapeDialog";
 import { clone, uniq } from "lodash-es";
-import {
-  ScrapedMoviesRow,
-  ScrapedPerformersRow,
-  ScrapedStudioRow,
-  ScrapedTagsRow,
-} from "./SceneDetails/SceneScrapeDialog";
 import { galleryTitle } from "src/core/galleries";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { ModalComponent } from "../Shared/Modal";
@@ -35,6 +29,12 @@ import {
   ZeroableScrapeResult,
   hasScrapedValues,
 } from "../Shared/ScrapeDialog/scrapeResult";
+import {
+  ScrapedMoviesRow,
+  ScrapedPerformersRow,
+  ScrapedStudioRow,
+  ScrapedTagsRow,
+} from "../Shared/ScrapeDialog/ScrapedObjectsRow";
 
 interface IStashIDsField {
   values: GQL.StashId[];
