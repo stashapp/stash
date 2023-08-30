@@ -148,14 +148,14 @@ func (rs Routes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *http.Reques
 	}
 
 	if user.IsFavorite != nil && c.GetHSPWriteFavorites() {
-		if b, err = handleFavoriteTag(r.Context(), rs, scn, user, rs.TxnManager, ret); err != nil {
+		if b, err = handleFavoriteTag(r.Context(), rs, scn, &user, rs.TxnManager, ret); err != nil {
 			return err
 		}
 		shouldUpdate = b || shouldUpdate
 	}
 
 	if user.Tags != nil && c.GetHSPWriteTags() {
-		if b, err = handleTags(r.Context(), user.Tags, scn, user, rs, ret); err != nil {
+		if b, err = handleTags(r.Context(), scn, &user, rs, ret); err != nil {
 			return err
 		}
 		shouldUpdate = b || shouldUpdate

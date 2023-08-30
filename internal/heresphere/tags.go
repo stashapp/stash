@@ -228,7 +228,7 @@ func getVideoTags(ctx context.Context, rs Routes, scene *models.Scene) []Heresph
 /*
  * Processes tags and updates scene tags if applicable
  */
-func handleTags(ctx context.Context, tags *[]HeresphereVideoTag, scn *models.Scene, user HeresphereAuthReq, rs Routes, ret *scene.UpdateSet) (bool, error) {
+func handleTags(ctx context.Context, scn *models.Scene, user *HeresphereAuthReq, rs Routes, ret *scene.UpdateSet) (bool, error) {
 	// Search input tags and add/create any new ones
 	var tagIDs []int
 	var perfIDs []int
