@@ -23,12 +23,12 @@ func convertVideoFile(f *file.VideoFile) *VideoFile {
 		ModTime:        f.ModTime,
 		Format:         f.Format,
 		Size:           f.Size,
-		Duration:       handleFloat64Value(f.Duration),
+		Duration:       manager.HandleFloat64Value(f.Duration),
 		VideoCodec:     f.VideoCodec,
 		AudioCodec:     f.AudioCodec,
 		Width:          f.Width,
 		Height:         f.Height,
-		FrameRate:      handleFloat64Value(f.FrameRate),
+		FrameRate:      manager.HandleFloat64Value(f.FrameRate),
 		BitRate:        int(f.BitRate),
 		CreatedAt:      f.CreatedAt,
 		UpdatedAt:      f.UpdatedAt,
@@ -122,12 +122,12 @@ func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (*models.Sc
 
 	return &models.SceneFileType{
 		Size:       &size,
-		Duration:   handleFloat64(f.Duration),
+		Duration:   manager.HandleFloat64(f.Duration),
 		VideoCodec: &f.VideoCodec,
 		AudioCodec: &f.AudioCodec,
 		Width:      &f.Width,
 		Height:     &f.Height,
-		Framerate:  handleFloat64(f.FrameRate),
+		Framerate:  manager.HandleFloat64(f.FrameRate),
 		Bitrate:    &bitrate,
 	}, nil
 }

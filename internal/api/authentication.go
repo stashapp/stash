@@ -84,7 +84,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 						return
 					}
 
-					prefix := getProxyPrefix(r)
+					prefix := manager.GetProxyPrefix(r)
 
 					// otherwise redirect to the login page
 					returnURL := url.URL{

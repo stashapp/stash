@@ -33,7 +33,7 @@ type loginTemplateData struct {
 
 func serveLoginPage(loginUIBox fs.FS, w http.ResponseWriter, r *http.Request, returnURL string, loginError string) {
 	loginPage := string(getLoginPage(loginUIBox))
-	prefix := getProxyPrefix(r)
+	prefix := manager.GetProxyPrefix(r)
 	loginPage = strings.ReplaceAll(loginPage, "/%BASE_URL%", prefix)
 
 	templ, err := template.New("Login").Parse(loginPage)
@@ -63,7 +63,7 @@ func handleLogin(loginUIBox fs.FS) http.HandlerFunc {
 			if returnURL != "" {
 				http.Redirect(w, r, returnURL, http.StatusFound)
 			} else {
-				prefix := getProxyPrefix(r)
+				prefix := manager.GetProxyPrefix(r)
 				http.Redirect(w, r, prefix+"/", http.StatusFound)
 			}
 			return
@@ -77,7 +77,7 @@ func handleLoginPost(loginUIBox fs.FS) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		url := r.FormValue(returnURLParam)
 		if url == "" {
-			url = getProxyPrefix(r) + "/"
+			url = manager.GetProxyPrefix(r) + "/"
 		}
 
 		err := manager.GetInstance().SessionStore.Login(w, r)
@@ -111,7 +111,7 @@ func handleLogout() http.HandlerFunc {
 		}
 
 		// redirect to the login page if credentials are required
-		prefix := getProxyPrefix(r)
+		prefix := manager.GetProxyPrefix(r)
 		if config.GetInstance().HasCredentials() {
 			http.Redirect(w, r, prefix+loginEndpoint, http.StatusFound)
 		} else {

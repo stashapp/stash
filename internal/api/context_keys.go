@@ -13,6 +13,4 @@ const (
 	tagKey
 	downloadKey
 	imageKey
-	heresphereKey
-	heresphereUserKey
 )

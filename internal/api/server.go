@@ -30,6 +30,7 @@ import (
 	"github.com/go-chi/httplog"
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/build"
+	"github.com/stashapp/stash/internal/heresphere"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -140,7 +141,7 @@ func Start() error {
 	r.HandleFunc(gqlEndpoint, gqlHandlerFunc)
 	r.HandleFunc(playgroundEndpoint, func(w http.ResponseWriter, r *http.Request) {
 		setPageSecurityHeaders(w, r)
-		endpoint := getProxyPrefix(r) + gqlEndpoint
+		endpoint := manager.GetProxyPrefix(r) + gqlEndpoint
 		gqlPlayground.Handler("GraphQL playground", endpoint)(w, r)
 	})
 
@@ -174,13 +175,11 @@ func Start() error {
 		tagFinder:  txnManager.Tag,
 	}.Routes())
 	r.Mount("/downloads", downloadsRoutes{}.Routes())
-	r.Mount("/heresphere", heresphereRoutes{
-		txnManager:    txnManager,
-		sceneFinder:   txnManager.Scene,
-		fileFinder:    txnManager.File,
-		captionFinder: txnManager.File,
-		repository:    txnManager,
-		resolver:      resolver,
+	r.Mount("/heresphere", heresphere.Routes{
+		TxnManager:  txnManager,
+		SceneFinder: txnManager.Scene,
+		FileFinder:  txnManager.File,
+		Repository:  txnManager,
 	}.Routes())
 
 	r.HandleFunc("/css", cssHandler(c, pluginCache))
@@ -230,7 +229,7 @@ func Start() error {
 			}
 			indexHtml := string(data)
 
-			prefix := getProxyPrefix(r)
+			prefix := manager.GetProxyPrefix(r)
 			indexHtml = strings.ReplaceAll(indexHtml, "%COLOR%", themeColor)
 			indexHtml = strings.Replace(indexHtml, `<base href="/"`, fmt.Sprintf(`<base href="%s/"`, prefix), 1)
 
@@ -483,35 +482,14 @@ var (
 	BaseURLCtxKey = &contextKey{"BaseURL"}
 )
 
-func GetBaseURL(r *http.Request) string {
-	scheme := "http"
-	if strings.Compare("https", r.URL.Scheme) == 0 || r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https" {
-		scheme = "https"
-	}
-	prefix := getProxyPrefix(r)
-
-	baseURL := scheme + "://" + r.Host + prefix
-
-	externalHost := config.GetInstance().GetExternalHost()
-	if externalHost != "" {
-		baseURL = externalHost + prefix
-	}
-
-	return baseURL
-}
-
 func BaseURLMiddleware(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		baseURL := GetBaseURL(r)
+		baseURL := manager.GetBaseURL(r)
 		r = r.WithContext(context.WithValue(ctx, BaseURLCtxKey, baseURL))
 
 		next.ServeHTTP(w, r)
 	}
 	return http.HandlerFunc(fn)
-}
-
-func getProxyPrefix(r *http.Request) string {
-	return strings.TrimRight(r.Header.Get("X-Forwarded-Prefix"), "/")
 }

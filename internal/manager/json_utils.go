@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"math"
 	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/models/jsonschema"
@@ -41,4 +42,22 @@ func (jp *jsonUtils) saveGallery(fn string, gallery *jsonschema.Gallery) error {
 
 func (jp *jsonUtils) saveFile(fn string, file jsonschema.DirEntry) error {
 	return jsonschema.SaveFileFile(filepath.Join(jp.json.Files, fn), file)
+}
+
+// #1572 - Inf and NaN values cause the JSON marshaller to fail
+// Return nil for these values
+func HandleFloat64(v float64) *float64 {
+	if math.IsInf(v, 0) || math.IsNaN(v) {
+		return nil
+	}
+
+	return &v
+}
+
+func HandleFloat64Value(v float64) float64 {
+	if math.IsInf(v, 0) || math.IsNaN(v) {
+		return 0
+	}
+
+	return v
 }
