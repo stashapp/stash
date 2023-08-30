@@ -4,7 +4,6 @@ import {
   MovieSelect,
   TagSelect,
   StudioSelect,
-  PerformerSelect,
 } from "src/components/Shared/Select";
 import {
   ScrapeDialog,
@@ -28,6 +27,11 @@ import { useIntl } from "react-intl";
 import { uniq } from "lodash-es";
 import { scrapedPerformerToCreateInput } from "src/core/performers";
 import { scrapedMovieToCreateInput } from "src/core/movies";
+import {
+  Performer,
+  PerformerSelect,
+} from "src/components/Performers/PerformerSelect";
+import { IHasStoredID, sortStoredIdObjects } from "src/utils/data";
 
 interface IScrapedStudioRow {
   title: string;
@@ -87,21 +91,21 @@ export const ScrapedStudioRow: React.FC<IScrapedStudioRow> = ({
   );
 };
 
-interface IScrapedObjectsRow<T> {
+interface IScrapedObjectsRow<T, R> {
   title: string;
-  result: ScrapeResult<string[]>;
-  onChange: (value: ScrapeResult<string[]>) => void;
+  result: ScrapeResult<R[]>;
+  onChange: (value: ScrapeResult<R[]>) => void;
   newObjects?: T[];
   onCreateNew?: (value: T) => void;
   renderObjects: (
-    result: ScrapeResult<string[]>,
+    result: ScrapeResult<R[]>,
     isNew?: boolean,
-    onChange?: (value: string[]) => void
+    onChange?: (value: R[]) => void
   ) => JSX.Element;
 }
 
-export const ScrapedObjectsRow = <T extends IHasName>(
-  props: IScrapedObjectsRow<T>
+export const ScrapedObjectsRow = <T extends IHasName, R>(
+  props: IScrapedObjectsRow<T, R>
 ) => {
   const { title, result, onChange, newObjects, onCreateNew, renderObjects } =
     props;
@@ -125,10 +129,13 @@ export const ScrapedObjectsRow = <T extends IHasName>(
   );
 };
 
-type IScrapedObjectRowImpl<T> = Omit<IScrapedObjectsRow<T>, "renderObjects">;
+type IScrapedObjectRowImpl<T, R> = Omit<
+  IScrapedObjectsRow<T, R>,
+  "renderObjects"
+>;
 
 export const ScrapedPerformersRow: React.FC<
-  IScrapedObjectRowImpl<GQL.ScrapedPerformer>
+  IScrapedObjectRowImpl<GQL.ScrapedPerformer, GQL.ScrapedPerformer>
 > = ({ title, result, onChange, newObjects, onCreateNew }) => {
   const performersCopy = useMemo(() => {
     return (
@@ -139,19 +146,24 @@ export const ScrapedPerformersRow: React.FC<
     );
   }, [newObjects]);
 
-  type PerformerType = GQL.ScrapedPerformer & {
-    name: string;
-  };
-
   function renderScrapedPerformers(
-    scrapeResult: ScrapeResult<string[]>,
+    scrapeResult: ScrapeResult<GQL.ScrapedPerformer[]>,
     isNew?: boolean,
-    onChangeFn?: (value: string[]) => void
+    onChangeFn?: (value: GQL.ScrapedPerformer[]) => void
   ) {
     const resultValue = isNew
       ? scrapeResult.newValue
       : scrapeResult.originalValue;
     const value = resultValue ?? [];
+
+    const selectValue = value.map((p) => {
+      const alias_list: string[] = [];
+      return {
+        id: p.stored_id ?? "",
+        name: p.name ?? "",
+        alias_list,
+      };
+    });
 
     return (
       <PerformerSelect
@@ -160,16 +172,20 @@ export const ScrapedPerformersRow: React.FC<
         isDisabled={!isNew}
         onSelect={(items) => {
           if (onChangeFn) {
-            onChangeFn(items.map((i) => i.id));
+            onChangeFn(items);
           }
         }}
-        ids={value}
+        values={selectValue}
       />
     );
   }
 
+  type PerformerType = GQL.ScrapedPerformer & {
+    name: string;
+  };
+
   return (
-    <ScrapedObjectsRow<PerformerType>
+    <ScrapedObjectsRow<PerformerType, GQL.ScrapedPerformer>
       title={title}
       result={result}
       renderObjects={renderScrapedPerformers}
@@ -181,7 +197,7 @@ export const ScrapedPerformersRow: React.FC<
 };
 
 export const ScrapedMoviesRow: React.FC<
-  IScrapedObjectRowImpl<GQL.ScrapedMovie>
+  IScrapedObjectRowImpl<GQL.ScrapedMovie, string>
 > = ({ title, result, onChange, newObjects, onCreateNew }) => {
   const moviesCopy = useMemo(() => {
     return (
@@ -222,7 +238,7 @@ export const ScrapedMoviesRow: React.FC<
   }
 
   return (
-    <ScrapedObjectsRow<MovieType>
+    <ScrapedObjectsRow<MovieType, string>
       title={title}
       result={result}
       renderObjects={renderScrapedMovies}
@@ -234,7 +250,7 @@ export const ScrapedMoviesRow: React.FC<
 };
 
 export const ScrapedTagsRow: React.FC<
-  IScrapedObjectRowImpl<GQL.ScrapedTag>
+  IScrapedObjectRowImpl<GQL.ScrapedTag, string>
 > = ({ title, result, onChange, newObjects, onCreateNew }) => {
   function renderScrapedTags(
     scrapeResult: ScrapeResult<string[]>,
@@ -262,7 +278,7 @@ export const ScrapedTagsRow: React.FC<
   }
 
   return (
-    <ScrapedObjectsRow<GQL.ScrapedTag>
+    <ScrapedObjectsRow<GQL.ScrapedTag, string>
       title={title}
       result={result}
       renderObjects={renderScrapedTags}
@@ -275,18 +291,16 @@ export const ScrapedTagsRow: React.FC<
 
 interface ISceneScrapeDialogProps {
   scene: Partial<GQL.SceneUpdateInput>;
+  scenePerformers: Performer[];
   scraped: GQL.ScrapedScene;
   endpoint?: string;
 
   onClose: (scrapedScene?: GQL.ScrapedScene) => void;
 }
 
-interface IHasStoredID {
-  stored_id?: string | null;
-}
-
 export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
   scene,
+  scenePerformers,
   scraped,
   onClose,
   endpoint,
@@ -365,10 +379,17 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
     return ret;
   }
 
-  const [performers, setPerformers] = useState<ScrapeResult<string[]>>(
-    new ScrapeResult<string[]>(
-      sortIdList(scene.performer_ids),
-      mapStoredIdObjects(scraped.performers ?? undefined)
+  const [performers, setPerformers] = useState<
+    ScrapeResult<GQL.ScrapedPerformer[]>
+  >(
+    new ScrapeResult<GQL.ScrapedPerformer[]>(
+      sortStoredIdObjects(
+        scenePerformers.map((p) => ({
+          stored_id: p.id,
+          name: p.name,
+        }))
+      ),
+      sortStoredIdObjects(scraped.performers ?? undefined)
     )
   );
   const [newPerformers, setNewPerformers] = useState<GQL.ScrapedPerformer[]>(
@@ -473,7 +494,10 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
 
       const newValue = [...(performers.newValue ?? [])];
       if (result.data?.performerCreate)
-        newValue.push(result.data.performerCreate.id);
+        newValue.push({
+          stored_id: result.data.performerCreate.id,
+          name: result.data.performerCreate.name,
+        });
 
       // add the new performer to the new performers value
       const performerClone = performers.cloneWithValue(newValue);
@@ -588,12 +612,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
             name: "",
           }
         : undefined,
-      performers: performers.getNewValue()?.map((p) => {
-        return {
-          stored_id: p,
-          name: "",
-        };
-      }),
+      performers: performers.getNewValue(),
       movies: movies.getNewValue()?.map((m) => {
         return {
           stored_id: m,
