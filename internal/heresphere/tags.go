@@ -134,16 +134,18 @@ func getVideoTags(ctx context.Context, rs Routes, scene *models.Scene) []Heresph
 			}
 			processedTags = append(processedTags, genTag)
 
-			funSpeed := 0
-			if primaryFile.InteractiveSpeed != nil {
-				funSpeed = *primaryFile.InteractiveSpeed
+			if primaryFile.Interactive {
+				funSpeed := 0
+				if primaryFile.InteractiveSpeed != nil {
+					funSpeed = *primaryFile.InteractiveSpeed
+				}
+				genTag = HeresphereVideoTag{
+					Name: fmt.Sprintf("Funspeed:%d",
+						funSpeed,
+					),
+				}
+				processedTags = append(processedTags, genTag)
 			}
-			genTag = HeresphereVideoTag{
-				Name: fmt.Sprintf("Funspeed:%d",
-					funSpeed,
-				),
-			}
-			processedTags = append(processedTags, genTag)
 		}
 
 		return err
