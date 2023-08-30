@@ -88,26 +88,27 @@ func (rs Routes) HeresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// This is kinda sketchy, since we dont know if the user skipped ahead
-	newTime := event.Time / 1000
-	newDuration := 0.0
-	if newTime > scn.ResumeTime {
-		newDuration += (newTime - scn.ResumeTime)
-	}
+	if event.Event == HeresphereEventClose {
+		newTime := event.Time / 1000
+		newDuration := 0.0
+		if newTime > scn.ResumeTime {
+			newDuration += (newTime - scn.ResumeTime)
+		}
 
-	if err := updatePlayCount(r.Context(), scn, event, rs.TxnManager, rs.Repository.Scene); err != nil {
-		logger.Errorf("Heresphere HeresphereVideoEvent updatePlayCount error: %s\n", err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+		if err := updatePlayCount(r.Context(), scn, event, rs.TxnManager, rs.Repository.Scene); err != nil {
+			logger.Errorf("Heresphere HeresphereVideoEvent updatePlayCount error: %s\n", err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	if err := txn.WithReadTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
-		_, err := rs.Repository.Scene.SaveActivity(ctx, scn.ID, &newTime, &newDuration)
-		return err
-	}); err != nil {
-		logger.Errorf("Heresphere HeresphereVideoEvent SaveActivity error: %s\n", err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		if err := txn.WithReadTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
+			_, err := rs.Repository.Scene.SaveActivity(ctx, scn.ID, &newTime, &newDuration)
+			return err
+		}); err != nil {
+			logger.Errorf("Heresphere HeresphereVideoEvent SaveActivity error: %s\n", err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	w.WriteHeader(http.StatusOK)

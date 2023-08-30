@@ -28,7 +28,7 @@ func updatePlayCount(ctx context.Context, scn *models.Scene, event HeresphereVid
 		newTime := event.Time / 1000
 		file := scn.Files.Primary()
 
-		if file != nil && newTime/file.Duration > float64(per)/100.0 && event.Event == HeresphereEventClose {
+		if file != nil && newTime/file.Duration > float64(per)/100.0 {
 			ret := &scene.UpdateSet{
 				ID: scn.ID,
 			}
