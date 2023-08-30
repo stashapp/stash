@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/txn"
@@ -33,7 +34,7 @@ func handleFavoriteTag(ctx context.Context, rs Routes, scn *models.Scene, user H
 				}
 			} else {
 				if user.Tags == nil {
-					sceneTags := getVideoTags(rs, ctx, scn)
+					sceneTags := getVideoTags(ctx, rs, scn)
 					user.Tags = &sceneTags
 				}
 
@@ -60,21 +61,22 @@ func handleFavoriteTag(ctx context.Context, rs Routes, scn *models.Scene, user H
  * This auxiliary function searches for the "favorite" tag
  */
 func getVideoFavorite(rs Routes, r *http.Request, scene *models.Scene) bool {
-	found := false
-	favTag := config.GetInstance().GetHSPFavoriteTag()
-
-	txn.WithReadTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
-		tag_ids, err := rs.Repository.Tag.FindBySceneID(ctx, scene.ID)
-		if err == nil {
-			for _, tag := range tag_ids {
-				if tag.ID == favTag {
-					found = true
-					return nil
-				}
-			}
-		}
+	var err error
+	var tag_ids []*models.Tag
+	if err := txn.WithReadTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
+		tag_ids, err = rs.Repository.Tag.FindBySceneID(ctx, scene.ID)
 		return err
-	})
+	}); err != nil {
+		logger.Errorf("Heresphere getVideoFavorite error: %s\n", err.Error())
+		return false
+	}
 
-	return found
+	favTag := config.GetInstance().GetHSPFavoriteTag()
+	for _, tag := range tag_ids {
+		if tag.ID == favTag {
+			return true
+		}
+	}
+
+	return false
 }

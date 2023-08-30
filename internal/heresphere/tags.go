@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/txn"
@@ -14,17 +16,18 @@ import (
 /*
  * This auxiliary function gathers various tags from the scene to feed the api.
  */
-func getVideoTags(rs Routes, ctx context.Context, scene *models.Scene) []HeresphereVideoTag {
+func getVideoTags(ctx context.Context, rs Routes, scene *models.Scene) []HeresphereVideoTag {
 	processedTags := []HeresphereVideoTag{}
 
 	// Load all relationships
 	if err := txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
 		return scene.LoadRelationships(ctx, rs.Repository.Scene)
 	}); err != nil {
+		logger.Errorf("Heresphere getVideoTags LoadRelationships error: %s\n", err.Error())
 		return processedTags
 	}
 
-	txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
+	if err := txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
 		mark_ids, err := rs.Repository.SceneMarker.FindBySceneID(ctx, scene.ID)
 		if err == nil {
 			for _, mark := range mark_ids {
@@ -46,7 +49,8 @@ func getVideoTags(rs Routes, ctx context.Context, scene *models.Scene) []Heresph
 				}
 				processedTags = append(processedTags, genTag)
 			}
-
+		} else {
+			logger.Errorf("Heresphere getVideoTags SceneMarker.FindBySceneID error: %s\n", err.Error())
 		}
 
 		tag_ids, err := rs.Repository.Tag.FindBySceneID(ctx, scene.ID)
@@ -57,6 +61,8 @@ func getVideoTags(rs Routes, ctx context.Context, scene *models.Scene) []Heresph
 				}
 				processedTags = append(processedTags, genTag)
 			}
+		} else {
+			logger.Errorf("Heresphere getVideoTags Tag.FindBySceneID error: %s\n", err.Error())
 		}
 
 		perf_ids, err := rs.Repository.Performer.FindBySceneID(ctx, scene.ID)
@@ -67,6 +73,8 @@ func getVideoTags(rs Routes, ctx context.Context, scene *models.Scene) []Heresph
 				}
 				processedTags = append(processedTags, genTag)
 			}
+		} else {
+			logger.Errorf("Heresphere getVideoTags Performer.FindBySceneID error: %s\n", err.Error())
 		}
 
 		if scene.GalleryIDs.Loaded() {
@@ -78,6 +86,8 @@ func getVideoTags(rs Routes, ctx context.Context, scene *models.Scene) []Heresph
 					}
 					processedTags = append(processedTags, genTag)
 				}
+			} else {
+				logger.Errorf("Heresphere getVideoTags Gallery.FindMany error: %s\n", err.Error())
 			}
 		}
 
@@ -96,16 +106,21 @@ func getVideoTags(rs Routes, ctx context.Context, scene *models.Scene) []Heresph
 					}
 					processedTags = append(processedTags, genTag)
 				}
+			} else {
+				logger.Errorf("Heresphere getVideoTags Movie.FindMany error: %s\n", err.Error())
 			}
 		}
 
 		if scene.StudioID != nil {
-			studio, _ := rs.Repository.Studio.Find(ctx, *scene.StudioID)
+			studio, err := rs.Repository.Studio.Find(ctx, *scene.StudioID)
 			if studio != nil {
 				genTag := HeresphereVideoTag{
 					Name: fmt.Sprintf("Studio:%s", studio.Name),
 				}
 				processedTags = append(processedTags, genTag)
+			}
+			if err != nil {
+				logger.Errorf("Heresphere getVideoTags Studio.Find error: %s\n", err.Error())
 			}
 		}
 
@@ -132,7 +147,9 @@ func getVideoTags(rs Routes, ctx context.Context, scene *models.Scene) []Heresph
 		}
 
 		return err
-	})
+	}); err != nil {
+		fmt.Printf("Heresphere getVideoTags scene reader error: %s\n", err.Error())
+	}
 
 	if len(scene.Director) > 0 {
 		genTag := HeresphereVideoTag{
@@ -209,7 +226,7 @@ func getVideoTags(rs Routes, ctx context.Context, scene *models.Scene) []Heresph
 /*
  * Processes tags and updates scene tags if applicable
  */
-func handleTags(tags *[]HeresphereVideoTag, ctx context.Context, scn *models.Scene, user HeresphereAuthReq, rs Routes, ret *scene.UpdateSet) (bool, error) {
+func handleTags(ctx context.Context, tags *[]HeresphereVideoTag, scn *models.Scene, user HeresphereAuthReq, rs Routes, ret *scene.UpdateSet) (bool, error) {
 	// Search input tags and add/create any new ones
 	var tagIDs []int
 	var perfIDs []int
@@ -232,6 +249,7 @@ func handleTags(tags *[]HeresphereVideoTag, ctx context.Context, scn *models.Sce
 				tagMod, err = rs.Repository.Tag.FindByName(ctx, after, true)
 				return err
 			}); err != nil {
+				fmt.Printf("Heresphere handleTags Tag.FindByName error: %s\n", err.Error())
 				tagMod = nil
 			}
 
@@ -256,6 +274,7 @@ func handleTags(tags *[]HeresphereVideoTag, ctx context.Context, scn *models.Sce
 
 				return err
 			}); err != nil {
+				fmt.Printf("Heresphere handleTags Performer.FindByNames error: %s\n", err.Error())
 				tagMod = nil
 			}
 
@@ -299,16 +318,22 @@ func handleTags(tags *[]HeresphereVideoTag, ctx context.Context, scn *models.Sce
 				return err
 			}); err != nil {
 				// Create marker
-				/*if tagId != nil {
-					newTag := SceneMarkerCreateInput{
+				i, e := strconv.Atoi(*tagId)
+				if tagId != nil && e == nil {
+					currentTime := time.Now()
+					newMarker := models.SceneMarker{
+						Title:        "",
 						Seconds:      tagI.Start,
-						SceneID:      strconv.Itoa(scn.ID),
-						PrimaryTagID: *tagId,
+						PrimaryTagID: i,
+						SceneID:      scn.ID,
+						CreatedAt:    currentTime,
+						UpdatedAt:    currentTime,
 					}
-					if _, err := rs.resolver.Mutation().SceneMarkerCreate(context.Background(), newTag); err != nil {
-						return false, err
+
+					if rs.Repository.SceneMarker.Create(ctx, &newMarker) != nil {
+						logger.Errorf("Heresphere handleTags SceneMarker.Create error: %s\n", err.Error())
 					}
-				}*/
+				}
 			}
 			continue
 		}

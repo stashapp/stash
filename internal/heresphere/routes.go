@@ -18,7 +18,6 @@ import (
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/txn"
 )
@@ -38,10 +37,6 @@ const (
 
 	HeresphereCustomTagRated HeresphereCustomTag = "Rated"
 )
-
-type hookExecutor interface {
-	ExecutePostHooks(ctx context.Context, id int, hookType plugin.HookTriggerEnum, input interface{}, inputFields []string)
-}
 
 type Routes struct {
 	TxnManager  txn.Manager
@@ -88,6 +83,7 @@ func (rs Routes) HeresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
 	var event HeresphereVideoEvent
 	err := json.NewDecoder(r.Body).Decode(&event)
 	if err != nil {
+		logger.Errorf("Heresphere HeresphereVideoEvent decode error: %s\n", err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -100,6 +96,7 @@ func (rs Routes) HeresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := updatePlayCount(r.Context(), scn, event, rs.TxnManager, rs.Repository.Scene); err != nil {
+		logger.Errorf("Heresphere HeresphereVideoEvent updatePlayCount error: %s\n", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -108,6 +105,7 @@ func (rs Routes) HeresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
 		_, err := rs.Repository.Scene.SaveActivity(ctx, scn.ID, &newTime, &newDuration)
 		return err
 	}); err != nil {
+		logger.Errorf("Heresphere HeresphereVideoEvent SaveActivity error: %s\n", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -156,7 +154,7 @@ func (rs Routes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *http.Reques
 	}
 
 	if user.Tags != nil && c.GetHSPWriteTags() {
-		if b, err = handleTags(user.Tags, r.Context(), scn, user, rs, ret); err != nil {
+		if b, err = handleTags(r.Context(), user.Tags, scn, user, rs, ret); err != nil {
 			return err
 		}
 		shouldUpdate = b || shouldUpdate
@@ -199,6 +197,7 @@ func (rs Routes) HeresphereIndex(w http.ResponseWriter, r *http.Request) {
 		scenes, err = rs.Repository.Scene.All(ctx)
 		return err
 	}); err != nil {
+		logger.Errorf("Heresphere HeresphereIndex SceneAll error: %s\n", err.Error())
 		http.Error(w, "Failed to fetch scenes!", http.StatusInternalServerError)
 		return
 	}
@@ -229,6 +228,7 @@ func (rs Routes) HeresphereIndex(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
 	enc.SetEscapeHTML(false)
 	if err := enc.Encode(idx); err != nil {
+		logger.Errorf("Heresphere HeresphereIndex encode error: %s\n", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -243,6 +243,7 @@ func (rs Routes) HeresphereVideoData(w http.ResponseWriter, r *http.Request) {
 
 	// Update request
 	if err := rs.HeresphereVideoDataUpdate(w, r); err != nil {
+		logger.Errorf("Heresphere HeresphereVideoData HeresphereVideoDataUpdate error: %s\n", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -255,6 +256,7 @@ func (rs Routes) HeresphereVideoData(w http.ResponseWriter, r *http.Request) {
 	if err := txn.WithReadTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
 		return scene.LoadRelationships(ctx, rs.Repository.Scene)
 	}); err != nil {
+		logger.Errorf("Heresphere HeresphereVideoData LoadRelationships error: %s\n", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -284,7 +286,7 @@ func (rs Routes) HeresphereVideoData(w http.ResponseWriter, r *http.Request) {
 		)),
 		Scripts:       getVideoScripts(rs, r, scene),
 		Subtitles:     getVideoSubtitles(rs, r, scene),
-		Tags:          getVideoTags(rs, r.Context(), scene),
+		Tags:          getVideoTags(r.Context(), rs, scene),
 		Media:         []HeresphereVideoMedia{},
 		WriteFavorite: c.GetHSPWriteFavorites(),
 		WriteRating:   c.GetHSPWriteRatings(),
@@ -321,6 +323,7 @@ func (rs Routes) HeresphereVideoData(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
 	enc.SetEscapeHTML(false)
 	if err := enc.Encode(processedScene); err != nil {
+		logger.Errorf("Heresphere HeresphereVideoData encode error: %s\n", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -356,6 +359,7 @@ func (rs Routes) HeresphereLoginToken(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
 	enc.SetEscapeHTML(false)
 	if err := enc.Encode(auth); err != nil {
+		logger.Errorf("Heresphere HeresphereLoginToken encode error: %s\n", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

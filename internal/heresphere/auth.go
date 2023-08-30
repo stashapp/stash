@@ -8,6 +8,7 @@ import (
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/session"
 )
 
@@ -93,6 +94,7 @@ func writeNotAuthorized(w http.ResponseWriter, r *http.Request, msg string) {
 	enc := json.NewEncoder(w)
 	enc.SetEscapeHTML(false)
 	if err := enc.Encode(idx); err != nil {
+		logger.Errorf("Heresphere writeNotAuthorized error: %s\n", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

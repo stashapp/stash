@@ -3,6 +3,6 @@ package heresphere
 type key int
 
 const (
-	sceneKey = iota + 1
+	sceneKey key = iota + 1
 	authKey
 )

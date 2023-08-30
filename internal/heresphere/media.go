@@ -10,6 +10,7 @@ import (
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
 )
@@ -60,29 +61,32 @@ func getVideoScripts(rs Routes, r *http.Request, scene *models.Scene) []Heresphe
 func getVideoSubtitles(rs Routes, r *http.Request, scene *models.Scene) []HeresphereVideoSubtitle {
 	processedSubtitles := []HeresphereVideoSubtitle{}
 
-	txn.WithReadTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
-		var err error
+	primaryFile := scene.Files.Primary()
+	if primaryFile != nil {
+		var captions_id []*models.VideoCaption
 
-		primaryFile := scene.Files.Primary()
-		if primaryFile != nil {
-			if captions_id, err := rs.Repository.File.GetCaptions(ctx, primaryFile.ID); err == nil {
-				for _, caption := range captions_id {
-					processedCaption := HeresphereVideoSubtitle{
-						Name:     caption.Filename,
-						Language: caption.LanguageCode,
-						Url: addApiKey(fmt.Sprintf("%s?lang=%s&type=%s",
-							urlbuilders.NewSceneURLBuilder(manager.GetBaseURL(r), scene).GetCaptionURL(),
-							caption.LanguageCode,
-							caption.CaptionType,
-						)),
-					}
-					processedSubtitles = append(processedSubtitles, processedCaption)
-				}
-			}
+		if err := txn.WithReadTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
+			var err error
+			captions_id, err = rs.Repository.File.GetCaptions(ctx, primaryFile.ID)
+			return err
+		}); err != nil {
+			logger.Errorf("Heresphere getVideoSubtitles error: %s\n", err.Error())
+			return processedSubtitles
 		}
 
-		return err
-	})
+		for _, caption := range captions_id {
+			processedCaption := HeresphereVideoSubtitle{
+				Name:     caption.Filename,
+				Language: caption.LanguageCode,
+				Url: addApiKey(fmt.Sprintf("%s?lang=%s&type=%s",
+					urlbuilders.NewSceneURLBuilder(manager.GetBaseURL(r), scene).GetCaptionURL(),
+					caption.LanguageCode,
+					caption.CaptionType,
+				)),
+			}
+			processedSubtitles = append(processedSubtitles, processedCaption)
+		}
+	}
 
 	return processedSubtitles
 }
@@ -103,7 +107,9 @@ func getTranscodedMediaSources(sceneURL string, transcodeSize int, mediaFile *fi
 					if err != nil {
 						panic(err)
 					}
-					transcodedUrl.Query().Add("resolution", res.String())
+					q := transcodedUrl.Query()
+					q.Add("resolution", res.String())
+					transcodedUrl.RawQuery = q.Encode()
 
 					processedEntry := HeresphereVideoMediaSource{
 						Resolution: height,
@@ -132,6 +138,7 @@ func getVideoMedia(rs Routes, r *http.Request, scene *models.Scene) []Heresphere
 	if err := txn.WithTxn(r.Context(), rs.Repository.TxnManager, func(ctx context.Context) error {
 		return scene.LoadPrimaryFile(ctx, rs.Repository.File)
 	}); err != nil {
+		logger.Errorf("Heresphere getVideoMedia error: %s\n", err.Error())
 		return processedMedia
 	}
 
