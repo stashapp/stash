@@ -28,7 +28,7 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { MainNavbar } from "./components/MainNavbar";
 import { PageNotFound } from "./components/PageNotFound";
 import * as GQL from "./core/generated-graphql";
-import { TITLE_SUFFIX } from "./components/Shared/constants";
+import { makeTitleProps } from "./hooks/title";
 import { LoadingIndicator } from "./components/Shared/LoadingIndicator";
 
 import { ConfigurationProvider } from "./hooks/Config";
@@ -39,6 +39,7 @@ import { IUIConfig } from "./core/config";
 import { releaseNotes } from "./docs/en/ReleaseNotes";
 import { getPlatformURL } from "./core/createClient";
 import { lazyComponent } from "./utils/lazyComponent";
+import { isPlatformUniquelyRenderedByApple } from "./utils/apple";
 
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")
@@ -66,6 +67,8 @@ const SceneFilenameParser = lazyComponent(
 const SceneDuplicateChecker = lazyComponent(
   () => import("./components/SceneDuplicateChecker/SceneDuplicateChecker")
 );
+
+const appleRendering = isPlatformUniquelyRenderedByApple();
 
 initPolyfills();
 
@@ -251,6 +254,8 @@ export const App: React.FC = () => {
     );
   }
 
+  const titleProps = makeTitleProps();
+
   return (
     <ErrorBoundary>
       {messages ? (
@@ -269,12 +274,13 @@ export const App: React.FC = () => {
                 <LightboxProvider>
                   <ManualProvider>
                     <InteractiveProvider>
-                      <Helmet
-                        titleTemplate={`%s ${TITLE_SUFFIX}`}
-                        defaultTitle="Stash"
-                      />
+                      <Helmet {...titleProps} />
                       {maybeRenderNavbar()}
-                      <div className="main container-fluid">
+                      <div
+                        className={`main container-fluid ${
+                          appleRendering ? "apple" : ""
+                        }`}
+                      >
                         {renderContent()}
                       </div>
                     </InteractiveProvider>

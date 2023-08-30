@@ -493,6 +493,64 @@ export const SettingsInterfacePanel: React.FC = () => {
         />
       </SettingSection>
 
+      <SettingSection headingID="config.ui.detail.heading">
+        <div className="setting-group">
+          <div className="setting">
+            <div>
+              <h3>
+                {intl.formatMessage({
+                  id: "config.ui.detail.enable_background_image.heading",
+                })}
+              </h3>
+              <div className="sub-heading">
+                {intl.formatMessage({
+                  id: "config.ui.detail.enable_background_image.description",
+                })}
+              </div>
+            </div>
+            <div />
+          </div>
+          <BooleanSetting
+            id="enableMovieBackgroundImage"
+            headingID="movie"
+            checked={ui.enableMovieBackgroundImage ?? undefined}
+            onChange={(v) => saveUI({ enableMovieBackgroundImage: v })}
+          />
+          <BooleanSetting
+            id="enablePerformerBackgroundImage"
+            headingID="performer"
+            checked={ui.enablePerformerBackgroundImage ?? undefined}
+            onChange={(v) => saveUI({ enablePerformerBackgroundImage: v })}
+          />
+          <BooleanSetting
+            id="enableStudioBackgroundImage"
+            headingID="studio"
+            checked={ui.enableStudioBackgroundImage ?? undefined}
+            onChange={(v) => saveUI({ enableStudioBackgroundImage: v })}
+          />
+          <BooleanSetting
+            id="enableTagBackgroundImage"
+            headingID="tag"
+            checked={ui.enableTagBackgroundImage ?? undefined}
+            onChange={(v) => saveUI({ enableTagBackgroundImage: v })}
+          />
+        </div>
+        <BooleanSetting
+          id="show_all_details"
+          headingID="config.ui.detail.show_all_details.heading"
+          subHeadingID="config.ui.detail.show_all_details.description"
+          checked={ui.showAllDetails ?? true}
+          onChange={(v) => saveUI({ showAllDetails: v })}
+        />
+        <BooleanSetting
+          id="compact_expanded_details"
+          headingID="config.ui.detail.compact_expanded_details.heading"
+          subHeadingID="config.ui.detail.compact_expanded_details.description"
+          checked={ui.compactExpandedDetails ?? undefined}
+          onChange={(v) => saveUI({ compactExpandedDetails: v })}
+        />
+      </SettingSection>
+
       <SettingSection headingID="config.ui.editing.heading">
         <div className="setting-group">
           <div className="setting">
@@ -545,6 +603,19 @@ export const SettingsInterfacePanel: React.FC = () => {
                 disableDropdownCreate: {
                   ...iface.disableDropdownCreate,
                   tag: v,
+                },
+              })
+            }
+          />
+          <BooleanSetting
+            id="disableDropdownCreate_movie"
+            headingID="movie"
+            checked={iface.disableDropdownCreate?.movie ?? undefined}
+            onChange={(v) =>
+              saveInterface({
+                disableDropdownCreate: {
+                  ...iface.disableDropdownCreate,
+                  movie: v,
                 },
               })
             }

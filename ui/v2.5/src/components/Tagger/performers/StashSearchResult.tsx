@@ -24,9 +24,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   excludedPerformerFields,
   endpoint,
 }) => {
-  const [modalPerformer, setModalPerformer] = useState<
-    GQL.ScrapedPerformerDataFragment | undefined
-  >();
+  const [modalPerformer, setModalPerformer] =
+    useState<GQL.ScrapedPerformerDataFragment>();
   const [saveState, setSaveState] = useState<string>("");
   const [error, setError] = useState<{ message?: string; details?: string }>(
     {}
@@ -51,7 +50,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         message: `Failed to save performer "${performer.name}"`,
         details:
           res?.errors?.[0].message ===
-          "UNIQUE constraint failed: performers.checksum"
+          "UNIQUE constraint failed: performers.name"
             ? "Name already exists"
             : res?.errors?.[0].message,
       });

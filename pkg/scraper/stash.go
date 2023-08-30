@@ -324,12 +324,20 @@ func sceneToUpdateInput(scene *models.Scene) models.SceneUpdateInput {
 	// fallback to file basename if title is empty
 	title := scene.GetTitle()
 
+	var url *string
+	urls := scene.URLs.List()
+	if len(urls) > 0 {
+		url = &urls[0]
+	}
+
 	return models.SceneUpdateInput{
 		ID:      strconv.Itoa(scene.ID),
 		Title:   &title,
 		Details: &scene.Details,
-		Urls:    scene.URLs.List(),
-		Date:    dateToStringPtr(scene.Date),
+		// include deprecated URL for now
+		URL:  url,
+		Urls: urls,
+		Date: dateToStringPtr(scene.Date),
 	}
 }
 

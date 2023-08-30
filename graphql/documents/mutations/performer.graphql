@@ -1,22 +1,16 @@
-mutation PerformerCreate(
-  $input: PerformerCreateInput!) {
-
+mutation PerformerCreate($input: PerformerCreateInput!) {
   performerCreate(input: $input) {
-      ...PerformerData
+    ...PerformerData
   }
 }
 
-mutation PerformerUpdate(
-  $input: PerformerUpdateInput!) {
-
+mutation PerformerUpdate($input: PerformerUpdateInput!) {
   performerUpdate(input: $input) {
     ...PerformerData
   }
 }
 
-mutation BulkPerformerUpdate(
-  $input: BulkPerformerUpdateInput!) {
-
+mutation BulkPerformerUpdate($input: BulkPerformerUpdateInput!) {
   bulkPerformerUpdate(input: $input) {
     ...PerformerData
   }

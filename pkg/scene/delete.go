@@ -7,6 +7,7 @@ import (
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 )
@@ -166,6 +167,7 @@ func (s *Service) deleteFiles(ctx context.Context, scene *models.Scene, fileDele
 		}
 
 		const deleteFile = true
+		logger.Info("Deleting scene file: ", f.Path)
 		if err := file.Destroy(ctx, s.File, f, fileDeleter.Deleter, deleteFile); err != nil {
 			return err
 		}

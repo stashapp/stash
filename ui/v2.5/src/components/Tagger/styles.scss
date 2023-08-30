@@ -227,6 +227,128 @@
   }
 }
 
+.studio-create-modal {
+  font-size: 1.2rem;
+  max-width: 800px;
+
+  .image-selection {
+    text-align: center;
+
+    .studio-image {
+      height: 85%;
+      position: relative;
+
+      &-exclude {
+        position: absolute;
+        right: 20px;
+        top: 10px;
+      }
+    }
+
+    img {
+      max-height: 100%;
+      max-width: 100%;
+    }
+  }
+
+  .LoadingIndicator {
+    height: 100%;
+  }
+
+  &-field {
+    margin-bottom: 5px;
+
+    .btn {
+      margin-right: 5px;
+    }
+
+    .fa-icon {
+      width: 12px;
+    }
+  }
+}
+
+.StudioTagger {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 1600px;
+
+  &-header {
+    color: white;
+
+    &:hover {
+      color: white;
+    }
+  }
+
+  &-studio {
+    background-color: #495b68;
+    border-radius: 3px;
+    display: flex;
+    margin: 1rem;
+    max-width: 100%;
+    padding: 1rem;
+
+    .studio-card {
+      box-shadow: none;
+      flex-shrink: 0;
+      margin: 0;
+      padding: 0;
+
+      img {
+        background-color: #495b68;
+        max-height: 150px;
+        object-fit: contain;
+        vertical-align: middle;
+        width: 100%;
+      }
+    }
+  }
+
+  &-details {
+    //flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin: 0.5rem;
+    width: 24rem;
+  }
+
+  &-details-image {
+    vertical-align: bottom;
+  }
+
+  &-details-text {
+    vertical-align: bottom;
+  }
+
+  &-studio-search {
+    display: flex;
+    flex-wrap: wrap;
+
+    &-item {
+      align-items: center;
+      display: flex;
+      overflow: hidden;
+      text-align: left;
+    }
+  }
+
+  &-thumb {
+    height: 40px;
+    margin-right: 10px;
+  }
+
+  &-box-link {
+    margin-bottom: 5px;
+
+    .input-group-text {
+      font-family: monospace;
+    }
+  }
+}
+
 .FieldSelect {
   .fa-icon {
     width: 12px;

@@ -15,9 +15,9 @@ input GalleryChapterCreateInput {
 
 input GalleryChapterUpdateInput {
   id: ID!
-  gallery_id: ID!
-  title: String!
-  image_index: Int!
+  gallery_id: ID
+  title: String
+  image_index: Int
 }
 
 type FindGalleryChaptersResultType {

@@ -14,10 +14,10 @@ fragment SlimGalleryData on Gallery {
   }
   image_count
   cover {
+    id
     files {
       ...ImageFileData
     }
-    
     paths {
       thumbnail
     }

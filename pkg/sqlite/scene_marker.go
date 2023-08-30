@@ -25,7 +25,7 @@ GROUP BY scene_markers.id
 
 type sceneMarkerRow struct {
 	ID           int       `db:"id" goqu:"skipinsert"`
-	Title        string    `db:"title"`
+	Title        string    `db:"title"` // TODO: make db schema (and gql schema) nullable
 	Seconds      float64   `db:"seconds"`
 	PrimaryTagID int       `db:"primary_tag_id"`
 	SceneID      int       `db:"scene_id"`
@@ -55,6 +55,24 @@ func (r *sceneMarkerRow) resolve() *models.SceneMarker {
 	}
 
 	return ret
+}
+
+type sceneMarkerRowRecord struct {
+	updateRecord
+}
+
+func (r *sceneMarkerRowRecord) fromPartial(o models.SceneMarkerPartial) {
+	// TODO: replace with setNullString after schema is made nullable
+	// r.setNullString("title", o.Title)
+	// saves a null input as the empty string
+	if o.Title.Set {
+		r.set("title", o.Title.Value)
+	}
+	r.setFloat64("seconds", o.Seconds)
+	r.setInt("primary_tag_id", o.PrimaryTagID)
+	r.setInt("scene_id", o.SceneID)
+	r.setTimestamp("created_at", o.CreatedAt)
+	r.setTimestamp("updated_at", o.UpdatedAt)
 }
 
 type SceneMarkerStore struct {
@@ -98,6 +116,24 @@ func (qb *SceneMarkerStore) Create(ctx context.Context, newObject *models.SceneM
 	*newObject = *updated
 
 	return nil
+}
+
+func (qb *SceneMarkerStore) UpdatePartial(ctx context.Context, id int, partial models.SceneMarkerPartial) (*models.SceneMarker, error) {
+	r := sceneMarkerRowRecord{
+		updateRecord{
+			Record: make(exp.Record),
+		},
+	}
+
+	r.fromPartial(partial)
+
+	if len(r.Record) > 0 {
+		if err := qb.tableMgr.updateByID(ctx, id, r.Record); err != nil {
+			return nil, err
+		}
+	}
+
+	return qb.find(ctx, id)
 }
 
 func (qb *SceneMarkerStore) Update(ctx context.Context, updatedObject *models.SceneMarker) error {

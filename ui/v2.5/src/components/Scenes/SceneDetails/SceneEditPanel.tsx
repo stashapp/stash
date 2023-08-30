@@ -683,7 +683,11 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   const image = useMemo(() => {
     if (encodingImage) {
-      return <LoadingIndicator message="Encoding image..." />;
+      return (
+        <LoadingIndicator
+          message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+        />
+      );
     }
 
     if (coverImagePreview) {
@@ -899,6 +903,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
                     )
                   }
                   ids={formik.values.tag_ids}
+                  hoverPlacement="right"
                 />
               </Col>
             </Form.Group>
