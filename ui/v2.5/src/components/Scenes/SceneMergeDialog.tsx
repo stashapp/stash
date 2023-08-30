@@ -12,16 +12,13 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useToast } from "src/hooks/Toast";
 import { faExchangeAlt, faSignInAlt } from "@fortawesome/free-solid-svg-icons";
 import {
-  hasScrapedValues,
   ScrapeDialog,
   ScrapeDialogRow,
   ScrapedImageRow,
   ScrapedInputGroupRow,
   ScrapedStringListRow,
   ScrapedTextAreaRow,
-  ScrapeResult,
-  ZeroableScrapeResult,
-} from "../Shared/ScrapeDialog";
+} from "../Shared/ScrapeDialog/ScrapeDialog";
 import { clone, uniq } from "lodash-es";
 import {
   ScrapedMoviesRow,
@@ -33,6 +30,11 @@ import { galleryTitle } from "src/core/galleries";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { ModalComponent } from "../Shared/Modal";
 import { IHasStoredID, sortStoredIdObjects } from "src/utils/data";
+import {
+  ScrapeResult,
+  ZeroableScrapeResult,
+  hasScrapedValues,
+} from "../Shared/ScrapeDialog/scrapeResult";
 
 interface IStashIDsField {
   values: GQL.StashId[];
@@ -112,7 +114,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
   function uniqIDStoredIDs(objs: IHasStoredID[]) {
     return objs.filter((o, i) => {
       return objs.findIndex((oo) => oo.stored_id === o.stored_id) === i;
-    })
+    });
   }
 
   const [performers, setPerformers] = useState<

@@ -9,10 +9,9 @@ import * as GQL from "src/core/generated-graphql";
 import {
   ScrapeDialog,
   ScrapeDialogRow,
-  ScrapeResult,
   ScrapedInputGroupRow,
   ScrapedTextAreaRow,
-} from "src/components/Shared/ScrapeDialog";
+} from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import clone from "lodash-es/clone";
 import {
   useStudioCreate,
@@ -21,6 +20,7 @@ import {
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import { scrapedPerformerToCreateInput } from "src/core/performers";
+import { ScrapeResult } from "src/components/Shared/ScrapeDialog/scrapeResult";
 
 function renderScrapedStudio(
   result: ScrapeResult<string>,

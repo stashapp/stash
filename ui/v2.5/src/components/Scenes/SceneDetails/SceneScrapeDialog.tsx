@@ -8,13 +8,12 @@ import {
 import {
   ScrapeDialog,
   ScrapeDialogRow,
-  ScrapeResult,
   ScrapedInputGroupRow,
   ScrapedTextAreaRow,
   ScrapedImageRow,
   IHasName,
   ScrapedStringListRow,
-} from "src/components/Shared/ScrapeDialog";
+} from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import clone from "lodash-es/clone";
 import {
   useStudioCreate,
@@ -32,6 +31,7 @@ import {
   PerformerSelect,
 } from "src/components/Performers/PerformerSelect";
 import { IHasStoredID, sortStoredIdObjects } from "src/utils/data";
+import { ScrapeResult } from "src/components/Shared/ScrapeDialog/scrapeResult";
 
 interface IScrapedStudioRow {
   title: string;
