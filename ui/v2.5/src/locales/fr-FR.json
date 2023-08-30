@@ -33,7 +33,7 @@
         "delete_file": "Supprimer le fichier",
         "delete_file_and_funscript": "Supprimer le fichier (et script interactif)",
         "delete_generated_supporting_files": "Supprimer les fichiers générés associés",
-        "delete_stashid": "Supprimer StashID",
+        "delete_stashid": "Supprimer l'identifiant Stash",
         "disallow": "Refuser",
         "download": "Télécharger",
         "download_anonymised": "Téléchargement anonymisé",
@@ -1113,7 +1113,7 @@
         "untagged_performers": "Performeurs non étiquetés",
         "update_performer": "Mise à jour du performeur",
         "update_performers": "Mise à jour des performeurs",
-        "updating_untagged_performers_description": "Une mise à jour des performeurs non étiquetés essaiera de faire correspondre tous les performeurs qui n'ont pas de StashID et actualisera les métadonnées."
+        "updating_untagged_performers_description": "Une mise à jour des performeurs non étiquetés essaiera de faire correspondre tous les performeurs qui n'ont pas d'identifiant Stash et actualisera les métadonnées."
     },
     "performers": "Performeurs",
     "piercings": "Piercings",
@@ -1242,9 +1242,9 @@
         },
         "welcome_to_stash": "Bienvenue sur Stash"
     },
-    "stash_id": "ID Stash",
-    "stash_id_endpoint": "Point de terminaison Stash ID",
-    "stash_ids": "IDs Stash",
+    "stash_id": "identifiant Stash",
+    "stash_id_endpoint": "Point de terminaison de l'identifiant Stash",
+    "stash_ids": "identifiants Stash",
     "stashbox": {
         "go_review_draft": "Allez sur {endpoint_name} pour examiner l'ébauche.",
         "selected_stash_box": "Point de terminaison Stash-Box sélectionné",
@@ -1261,7 +1261,7 @@
         "scenes_size": "Poids des scènes",
         "total_o_count": "Nombre total de O-",
         "total_play_count": "Nombre de visionnage total",
-        "total_play_duration": "Durée de visionnage totale"
+        "total_play_duration": "Temps de visionnage total"
     },
     "status": "Statut : {statusText}",
     "studio": "Studio",
@@ -1301,9 +1301,9 @@
         "tag_status": "Statut de l'étiquette",
         "to_use_the_studio_tagger": "Pour utiliser l’étiqueteur de studio, une instance stash-box doit être configurée.",
         "untagged_studios": "Studios non étiquetés",
-        "update_studio": "Mise à jour du studio",
+        "update_studio": "Actualiser le studio",
         "update_studios": "Actualiser les studios",
-        "updating_untagged_studios_description": "L'actualisation des studios non étiquetés tentera de faire correspondre chaques studios qui n'ont pas de StashID et mettre à jour les métadonnées."
+        "updating_untagged_studios_description": "Une mise à jour des studios non étiquetés essaiera de faire correspondre les studios qui n'ont pas d'identifiant Stash et actualisera les métadonnées."
     },
     "studios": "Studios",
     "sub_tag_count": "Nombre d'étiquettes affiliées",
@@ -1344,7 +1344,7 @@
     "urls": "URLs",
     "validation": {
         "aliases_must_be_unique": "Les alias doivent être uniques",
-        "date_invalid_form": "${path} doit être au format AAAA-MM-JJ",
+        "date_invalid_form": "${path} doit être du format AAAA-MM-JJ",
         "required": "${path} est un champ requis",
         "urls_must_be_unique": "Les URLs doivent être uniques"
     },
