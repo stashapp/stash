@@ -9,7 +9,7 @@ import { CountryFlag } from "../Shared/CountryFlag";
 import { SweatDrops } from "../Shared/SweatDrops";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
-import { TagLink } from "../Shared/TagLink";
+import { PerformerLink } from "../Shared/TagLink";
 import { Button, ButtonGroup } from "react-bootstrap";
 import {
   Criterion,
@@ -168,7 +168,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     if (performer.tags.length <= 0) return;
 
     const popoverContent = performer.tags.map((tag) => (
-      <TagLink key={tag.id} tagType="performer" tag={tag} />
+      <PerformerLink key={tag.id} linkType="performer" tag={tag} />
     ));
 
     return (

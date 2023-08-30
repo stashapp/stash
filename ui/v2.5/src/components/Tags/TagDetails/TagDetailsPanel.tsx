@@ -1,8 +1,7 @@
 import React from "react";
-import { TagLink } from "src/components/Shared/TagLink";
+import { DetailsLink } from "src/components/Shared/TagLink";
 import { DetailItem } from "src/components/Shared/DetailItem";
 import * as GQL from "src/core/generated-graphql";
-import { faFolderTree } from "@fortawesome/free-solid-svg-icons";
 
 interface ITagDetails {
   tag: GQL.TagDataFragment;
@@ -18,11 +17,12 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag, fullWidth }) => {
     return (
       <>
         {tag.parents.map((p) => (
-          <TagLink
+          <DetailsLink
             key={p.id}
             tag={p}
             hoverPlacement="bottom"
-            tagType="details"
+            linkType="details"
+            showHierarchyIcon={p.parent_count !== 0}
           />
         ))}
       </>
@@ -37,11 +37,12 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag, fullWidth }) => {
     return (
       <>
         {tag.children.map((c) => (
-          <TagLink
+          <DetailsLink
             key={c.id}
             tag={c}
             hoverPlacement="bottom"
-            tagType="details"
+            linkType="details"
+            showHierarchyIcon={c.child_count !== 0}
           />
         ))}
       </>
