@@ -17,21 +17,29 @@ import (
  * This adds a tag, which means tags must also be enabled, or it will never be written.
  */
 func handleFavoriteTag(ctx context.Context, rs Routes, scn *models.Scene, user *HeresphereAuthReq, txnManager txn.Manager, ret *scene.UpdateSet) (bool, error) {
-	var err error
-	var favTag *models.Tag
-	tagId := config.GetInstance().GetHSPFavoriteTag()
+	tagID := config.GetInstance().GetHSPFavoriteTag()
 
-	if err := txn.WithReadTxn(ctx, txnManager, func(ctx context.Context) error {
-		favTag, err = rs.Repository.Tag.Find(ctx, tagId)
-		return err
-	}); err != nil {
+	favTag, err := func() (*models.Tag, error) {
+		var tag *models.Tag
+		var err error
+		err = txn.WithReadTxn(ctx, txnManager, func(ctx context.Context) error {
+			tag, err = rs.Repository.Tag.Find(ctx, tagID)
+			return err
+		})
+		return tag, err
+	}()
+
+	if err != nil {
 		logger.Errorf("Heresphere handleFavoriteTag Tag.Find error: %s\n", err.Error())
 		return false, err
 	}
 
+	if favTag == nil {
+		return false, nil
+	}
+
 	favTagVal := HeresphereVideoTag{Name: fmt.Sprintf("Tag:%s", favTag.Name)}
 
-	// Do the old switcheroo to figure out how to add the tag
 	if *user.IsFavorite {
 		if user.Tags == nil {
 			user.Tags = &[]HeresphereVideoTag{favTagVal}
@@ -59,18 +67,23 @@ func handleFavoriteTag(ctx context.Context, rs Routes, scn *models.Scene, user *
  * This auxiliary function searches for the "favorite" tag
  */
 func getVideoFavorite(rs Routes, r *http.Request, scene *models.Scene) bool {
-	var err error
-	var tag_ids []*models.Tag
-	if err := txn.WithReadTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
-		tag_ids, err = rs.Repository.Tag.FindBySceneID(ctx, scene.ID)
-		return err
-	}); err != nil {
+	tagIDs, err := func() ([]*models.Tag, error) {
+		var tags []*models.Tag
+		var err error
+		err = txn.WithReadTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
+			tags, err = rs.Repository.Tag.FindBySceneID(ctx, scene.ID)
+			return err
+		})
+		return tags, err
+	}()
+
+	if err != nil {
 		logger.Errorf("Heresphere getVideoFavorite error: %s\n", err.Error())
 		return false
 	}
 
 	favTag := config.GetInstance().GetHSPFavoriteTag()
-	for _, tag := range tag_ids {
+	for _, tag := range tagIDs {
 		if tag.ID == favTag {
 			return true
 		}

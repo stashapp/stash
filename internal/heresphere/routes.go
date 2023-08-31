@@ -181,35 +181,31 @@ func (rs Routes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *http.Reques
 func (rs Routes) HeresphereIndex(w http.ResponseWriter, r *http.Request) {
 	// Banner
 	banner := HeresphereBanner{
-		Image: fmt.Sprintf("%s%s",
-			manager.GetBaseURL(r),
-			"/apple-touch-icon.png",
-		),
-		Link: fmt.Sprintf("%s%s",
-			manager.GetBaseURL(r),
-			"/",
-		),
+		Image: fmt.Sprintf("%s%s", manager.GetBaseURL(r), "/apple-touch-icon.png"),
+		Link:  fmt.Sprintf("%s%s", manager.GetBaseURL(r), "/"),
 	}
 
 	// Read scenes
-	var scenes []*models.Scene
-	if err := txn.WithReadTxn(r.Context(), rs.Repository.TxnManager, func(ctx context.Context) error {
-		var err error
-		scenes, err = rs.Repository.Scene.All(ctx)
-		return err
-	}); err != nil {
+	scenes, err := func() ([]*models.Scene, error) {
+		var scenes []*models.Scene
+		err := txn.WithReadTxn(r.Context(), rs.Repository.TxnManager, func(ctx context.Context) error {
+			var err error
+			scenes, err = rs.Repository.Scene.All(ctx)
+			return err
+		})
+		return scenes, err
+	}()
+
+	if err != nil {
 		logger.Errorf("Heresphere HeresphereIndex SceneAll error: %s\n", err.Error())
 		http.Error(w, "Failed to fetch scenes!", http.StatusInternalServerError)
 		return
 	}
 
-	// Create scene list
+	// Create scene URLs
 	sceneUrls := make([]string, len(scenes))
 	for idx, scene := range scenes {
-		sceneUrls[idx] = fmt.Sprintf("%s/heresphere/%d",
-			manager.GetBaseURL(r),
-			scene.ID,
-		)
+		sceneUrls[idx] = fmt.Sprintf("%s/heresphere/%d", manager.GetBaseURL(r), scene.ID)
 	}
 
 	// All library
@@ -224,7 +220,7 @@ func (rs Routes) HeresphereIndex(w http.ResponseWriter, r *http.Request) {
 		Library: []HeresphereIndexEntry{library},
 	}
 
-	// Create a JSON encoder for the response writer
+	// Set response headers and encode JSON
 	w.Header().Set("Content-Type", "application/json")
 	enc := json.NewEncoder(w)
 	enc.SetEscapeHTML(false)

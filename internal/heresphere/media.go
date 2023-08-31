@@ -59,22 +59,26 @@ func getVideoScripts(rs Routes, r *http.Request, scene *models.Scene) []Heresphe
  * This auxiliary function gathers subtitles if applicable
  */
 func getVideoSubtitles(rs Routes, r *http.Request, scene *models.Scene) []HeresphereVideoSubtitle {
-	processedSubtitles := []HeresphereVideoSubtitle{}
+	processedSubtitles := make([]HeresphereVideoSubtitle, 0)
 
 	primaryFile := scene.Files.Primary()
 	if primaryFile != nil {
-		var captions_id []*models.VideoCaption
-
-		if err := txn.WithReadTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
+		captions, err := func() ([]*models.VideoCaption, error) {
+			var captions []*models.VideoCaption
 			var err error
-			captions_id, err = rs.Repository.File.GetCaptions(ctx, primaryFile.ID)
-			return err
-		}); err != nil {
+			err = txn.WithReadTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
+				captions, err = rs.Repository.File.GetCaptions(ctx, primaryFile.ID)
+				return err
+			})
+			return captions, err
+		}()
+
+		if err != nil {
 			logger.Errorf("Heresphere getVideoSubtitles error: %s\n", err.Error())
 			return processedSubtitles
 		}
 
-		for _, caption := range captions_id {
+		for _, caption := range captions {
 			processedCaption := HeresphereVideoSubtitle{
 				Name:     caption.Filename,
 				Language: caption.LanguageCode,

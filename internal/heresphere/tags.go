@@ -239,205 +239,42 @@ func handleTags(ctx context.Context, scn *models.Scene, user *HeresphereAuthReq,
 			continue
 		}
 
-		// If add tag
 		// FUTURE IMPROVEMENT: Switch to CutPrefix as it's nicer (1.20+)
 		// FUTURE IMPROVEMENT: Consider batching searches
-		if strings.HasPrefix(tagI.Name, "Tag:") {
-			after := strings.TrimPrefix(tagI.Name, "Tag:")
-			var err error
-			var tagMod *models.Tag
-			if err := txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
-				// Search for tag
-				tagMod, err = rs.Repository.Tag.FindByName(ctx, after, true)
-				return err
-			}); err != nil {
-				fmt.Printf("Heresphere handleTags Tag.FindByName error: %s\n", err.Error())
-				tagMod = nil
-			}
-
-			if tagMod != nil {
-				tagIDs = append(tagIDs, tagMod.ID)
-			}
+		if handleAddTag(ctx, rs, tagI, &tagIDs) {
 			continue
 		}
-
-		// If add performer
-		if strings.HasPrefix(tagI.Name, "Performer:") {
-			after := strings.TrimPrefix(tagI.Name, "Performer:")
-			var err error
-			var tagMod *models.Performer
-			if err := txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
-				var tagMods []*models.Performer
-
-				// Search for performer
-				if tagMods, err = rs.Repository.Performer.FindByNames(ctx, []string{after}, true); err == nil && len(tagMods) > 0 {
-					tagMod = tagMods[0]
-				}
-
-				return err
-			}); err != nil {
-				fmt.Printf("Heresphere handleTags Performer.FindByNames error: %s\n", err.Error())
-				tagMod = nil
-			}
-
-			if tagMod != nil {
-				perfIDs = append(perfIDs, tagMod.ID)
-			}
+		if handleAddPerformer(ctx, rs, tagI, &perfIDs) {
 			continue
 		}
-
-		// If add marker
-		if strings.HasPrefix(tagI.Name, "Marker:") {
-			after := strings.TrimPrefix(tagI.Name, "Marker:")
-			var tagId *string
-			if err := txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
-				var err error
-				var markerResult []*models.MarkerStringsResultType
-				searchType := "count"
-
-				// Search for marker
-				if markerResult, err = rs.Repository.SceneMarker.GetMarkerStrings(ctx, &after, &searchType); err == nil && len(markerResult) > 0 {
-					tagId = &markerResult[0].ID
-
-					// Search for tag
-					if markers, err := rs.Repository.SceneMarker.FindBySceneID(ctx, scn.ID); err == nil {
-						i, e := strconv.Atoi(*tagId)
-						if e == nil {
-							// Note: Currently we search if a marker exists.
-							// If it doesn't, create it.
-							// This also means that markers CANNOT be deleted using the api.
-							for _, marker := range markers {
-								if marker.Seconds == tagI.Start &&
-									marker.SceneID == scn.ID &&
-									marker.PrimaryTagID == i {
-									tagId = nil
-								}
-							}
-						}
-					}
-				}
-
-				return err
-			}); err != nil {
-				// Create marker
-				i, e := strconv.Atoi(*tagId)
-				if tagId != nil && e == nil {
-					currentTime := time.Now()
-					newMarker := models.SceneMarker{
-						Title:        "",
-						Seconds:      tagI.Start,
-						PrimaryTagID: i,
-						SceneID:      scn.ID,
-						CreatedAt:    currentTime,
-						UpdatedAt:    currentTime,
-					}
-
-					if rs.Repository.SceneMarker.Create(ctx, &newMarker) != nil {
-						logger.Errorf("Heresphere handleTags SceneMarker.Create error: %s\n", err.Error())
-					}
-				}
-			}
+		if handleAddMarker(ctx, rs, tagI, scn) {
 			continue
 		}
-
-		if strings.HasPrefix(tagI.Name, "Movie:") {
-			after := strings.TrimPrefix(tagI.Name, "Movie:")
-
-			var err error
-			var tagMod *models.Movie
-			if err := txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
-				// Search for performer
-				tagMod, err = rs.Repository.Movie.FindByName(ctx, after, true)
-				return err
-			}); err == nil {
-				ret.Partial.MovieIDs.Mode = models.RelationshipUpdateModeSet
-				ret.Partial.MovieIDs.AddUnique(models.MoviesScenes{
-					MovieID:    tagMod.ID,
-					SceneIndex: &scn.ID,
-				})
-			}
+		if handleAddMovie(ctx, rs, tagI, scn, ret) {
 			continue
 		}
-		if strings.HasPrefix(tagI.Name, "Studio:") {
-			after := strings.TrimPrefix(tagI.Name, "Studio:")
-
-			var err error
-			var tagMod *models.Studio
-			if err := txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
-				// Search for performer
-				tagMod, err = rs.Repository.Studio.FindByName(ctx, after, true)
-				return err
-			}); err == nil {
-				ret.Partial.StudioID.Set = true
-				ret.Partial.StudioID.Value = tagMod.ID
-			}
+		if handleAddStudio(ctx, rs, tagI, scn, ret) {
 			continue
 		}
-		if strings.HasPrefix(tagI.Name, "Director:") {
-			after := strings.TrimPrefix(tagI.Name, "Director:")
-			ret.Partial.Director.Set = true
-			ret.Partial.Director.Value = after
+		if handleAddDirector(ctx, rs, tagI, scn, ret) {
 			continue
 		}
 
 		// Custom
-		{
-			tagName := tagI.Name
-
-			// Will be overwritten if PlayCount tag is updated
-			prefix := string(HeresphereCustomTagWatched) + ":"
-			if strings.HasPrefix(tagName, prefix) {
-				after := strings.TrimPrefix(tagName, prefix)
-				if b, err := strconv.ParseBool(after); err == nil {
-					// Plays chicken
-					if b && scn.PlayCount == 0 {
-						ret.Partial.PlayCount.Set = true
-						ret.Partial.PlayCount.Value = 1
-					} else if !b {
-						ret.Partial.PlayCount.Set = true
-						ret.Partial.PlayCount.Value = 0
-					}
-				}
-				continue
-			}
-			prefix = string(HeresphereCustomTagOrganized) + ":"
-			if strings.HasPrefix(tagName, prefix) {
-				after := strings.TrimPrefix(tagName, prefix)
-				if b, err := strconv.ParseBool(after); err == nil {
-					ret.Partial.Organized.Set = true
-					ret.Partial.Organized.Value = b
-				}
-				continue
-			}
-			prefix = string(HeresphereCustomTagRated) + ":"
-			if strings.HasPrefix(tagName, prefix) {
-				after := strings.TrimPrefix(tagName, prefix)
-				if b, err := strconv.ParseBool(after); err == nil && !b {
-					ret.Partial.Rating.Set = true
-					ret.Partial.Rating.Null = true
-				}
-				continue
-			}
-
-			// Set numbers
-			prefix = string(HeresphereCustomTagPlayCount) + ":"
-			if strings.HasPrefix(tagName, prefix) {
-				after := strings.TrimPrefix(tagName, prefix)
-				if numRes, err := strconv.Atoi(after); err != nil {
-					ret.Partial.PlayCount.Set = true
-					ret.Partial.PlayCount.Value = numRes
-				}
-				continue
-			}
-			prefix = string(HeresphereCustomTagOCounter) + ":"
-			if strings.HasPrefix(tagName, prefix) {
-				after := strings.TrimPrefix(tagName, prefix)
-				if numRes, err := strconv.Atoi(after); err != nil {
-					ret.Partial.OCounter.Set = true
-					ret.Partial.OCounter.Value = numRes
-				}
-				continue
-			}
+		if handleSetWatched(ctx, rs, tagI, scn, ret) {
+			continue
+		}
+		if handleSetOrganized(ctx, rs, tagI, scn, ret) {
+			continue
+		}
+		if handleSetRated(ctx, rs, tagI, scn, ret) {
+			continue
+		}
+		if handleSetPlayCount(ctx, rs, tagI, scn, ret) {
+			continue
+		}
+		if handleSetOCount(ctx, rs, tagI, scn, ret) {
+			continue
 		}
 	}
 
@@ -453,4 +290,224 @@ func handleTags(ctx context.Context, scn *models.Scene, user *HeresphereAuthReq,
 	}
 
 	return true, nil
+}
+
+func handleAddTag(ctx context.Context, rs Routes, tag HeresphereVideoTag, tagIDs *[]int) bool {
+	if strings.HasPrefix(tag.Name, "Tag:") {
+		after := strings.TrimPrefix(tag.Name, "Tag:")
+		var err error
+		var tagMod *models.Tag
+		if err := txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
+			// Search for tag
+			tagMod, err = rs.Repository.Tag.FindByName(ctx, after, true)
+			return err
+		}); err != nil {
+			fmt.Printf("Heresphere handleTags Tag.FindByName error: %s\n", err.Error())
+			tagMod = nil
+		}
+
+		if tagMod != nil {
+			*tagIDs = append(*tagIDs, tagMod.ID)
+		}
+		return true
+	}
+	return false
+}
+func handleAddPerformer(ctx context.Context, rs Routes, tag HeresphereVideoTag, perfIDs *[]int) bool {
+	if strings.HasPrefix(tag.Name, "Performer:") {
+		after := strings.TrimPrefix(tag.Name, "Performer:")
+		var err error
+		var tagMod *models.Performer
+		if err := txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
+			var tagMods []*models.Performer
+
+			// Search for performer
+			if tagMods, err = rs.Repository.Performer.FindByNames(ctx, []string{after}, true); err == nil && len(tagMods) > 0 {
+				tagMod = tagMods[0]
+			}
+
+			return err
+		}); err != nil {
+			fmt.Printf("Heresphere handleTags Performer.FindByNames error: %s\n", err.Error())
+			tagMod = nil
+		}
+
+		if tagMod != nil {
+			*perfIDs = append(*perfIDs, tagMod.ID)
+		}
+		return true
+	}
+	return false
+}
+func handleAddMarker(ctx context.Context, rs Routes, tag HeresphereVideoTag, scene *models.Scene) bool {
+	if strings.HasPrefix(tag.Name, "Marker:") {
+		after := strings.TrimPrefix(tag.Name, "Marker:")
+		var tagId *string
+		if err := txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
+			var err error
+			var markerResult []*models.MarkerStringsResultType
+			searchType := "count"
+
+			// Search for marker
+			if markerResult, err = rs.Repository.SceneMarker.GetMarkerStrings(ctx, &after, &searchType); err == nil && len(markerResult) > 0 {
+				tagId = &markerResult[0].ID
+
+				// Search for tag
+				if markers, err := rs.Repository.SceneMarker.FindBySceneID(ctx, scene.ID); err == nil {
+					i, e := strconv.Atoi(*tagId)
+					if e == nil {
+						// Note: Currently we search if a marker exists.
+						// If it doesn't, create it.
+						// This also means that markers CANNOT be deleted using the api.
+						for _, marker := range markers {
+							if marker.Seconds == tag.Start &&
+								marker.SceneID == scene.ID &&
+								marker.PrimaryTagID == i {
+								tagId = nil
+							}
+						}
+					}
+				}
+			}
+
+			return err
+		}); err != nil {
+			// Create marker
+			i, e := strconv.Atoi(*tagId)
+			if tagId != nil && e == nil {
+				currentTime := time.Now()
+				newMarker := models.SceneMarker{
+					Title:        "",
+					Seconds:      tag.Start,
+					PrimaryTagID: i,
+					SceneID:      scene.ID,
+					CreatedAt:    currentTime,
+					UpdatedAt:    currentTime,
+				}
+
+				if rs.Repository.SceneMarker.Create(ctx, &newMarker) != nil {
+					logger.Errorf("Heresphere handleTags SceneMarker.Create error: %s\n", err.Error())
+				}
+			}
+		}
+		return true
+	}
+	return false
+}
+func handleAddMovie(ctx context.Context, rs Routes, tag HeresphereVideoTag, scene *models.Scene, ret *scene.UpdateSet) bool {
+	if strings.HasPrefix(tag.Name, "Movie:") {
+		after := strings.TrimPrefix(tag.Name, "Movie:")
+
+		var err error
+		var tagMod *models.Movie
+		if err := txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
+			// Search for performer
+			tagMod, err = rs.Repository.Movie.FindByName(ctx, after, true)
+			return err
+		}); err == nil {
+			ret.Partial.MovieIDs.Mode = models.RelationshipUpdateModeSet
+			ret.Partial.MovieIDs.AddUnique(models.MoviesScenes{
+				MovieID:    tagMod.ID,
+				SceneIndex: &scene.ID,
+			})
+		}
+		return true
+	}
+	return false
+}
+func handleAddStudio(ctx context.Context, rs Routes, tag HeresphereVideoTag, scene *models.Scene, ret *scene.UpdateSet) bool {
+	if strings.HasPrefix(tag.Name, "Studio:") {
+		after := strings.TrimPrefix(tag.Name, "Studio:")
+
+		var err error
+		var tagMod *models.Studio
+		if err := txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
+			// Search for performer
+			tagMod, err = rs.Repository.Studio.FindByName(ctx, after, true)
+			return err
+		}); err == nil {
+			ret.Partial.StudioID.Set = true
+			ret.Partial.StudioID.Value = tagMod.ID
+		}
+		return true
+	}
+	return false
+}
+func handleAddDirector(ctx context.Context, rs Routes, tag HeresphereVideoTag, scene *models.Scene, ret *scene.UpdateSet) bool {
+	if strings.HasPrefix(tag.Name, "Director:") {
+		after := strings.TrimPrefix(tag.Name, "Director:")
+		ret.Partial.Director.Set = true
+		ret.Partial.Director.Value = after
+		return true
+	}
+
+	return false
+}
+
+// Will be overwritten if PlayCount tag is updated
+func handleSetWatched(ctx context.Context, rs Routes, tag HeresphereVideoTag, scene *models.Scene, ret *scene.UpdateSet) bool {
+	prefix := string(HeresphereCustomTagWatched) + ":"
+	if strings.HasPrefix(tag.Name, prefix) {
+		after := strings.TrimPrefix(tag.Name, prefix)
+		if b, err := strconv.ParseBool(after); err == nil {
+			// Plays chicken
+			if b && scene.PlayCount == 0 {
+				ret.Partial.PlayCount.Set = true
+				ret.Partial.PlayCount.Value = 1
+			} else if !b {
+				ret.Partial.PlayCount.Set = true
+				ret.Partial.PlayCount.Value = 0
+			}
+		}
+		return true
+	}
+	return false
+}
+func handleSetOrganized(ctx context.Context, rs Routes, tag HeresphereVideoTag, scene *models.Scene, ret *scene.UpdateSet) bool {
+	prefix := string(HeresphereCustomTagOrganized) + ":"
+	if strings.HasPrefix(tag.Name, prefix) {
+		after := strings.TrimPrefix(tag.Name, prefix)
+		if b, err := strconv.ParseBool(after); err == nil {
+			ret.Partial.Organized.Set = true
+			ret.Partial.Organized.Value = b
+		}
+		return true
+	}
+	return false
+}
+func handleSetRated(ctx context.Context, rs Routes, tag HeresphereVideoTag, scene *models.Scene, ret *scene.UpdateSet) bool {
+	prefix := string(HeresphereCustomTagRated) + ":"
+	if strings.HasPrefix(tag.Name, prefix) {
+		after := strings.TrimPrefix(tag.Name, prefix)
+		if b, err := strconv.ParseBool(after); err == nil && !b {
+			ret.Partial.Rating.Set = true
+			ret.Partial.Rating.Null = true
+		}
+		return true
+	}
+	return false
+}
+func handleSetPlayCount(ctx context.Context, rs Routes, tag HeresphereVideoTag, scene *models.Scene, ret *scene.UpdateSet) bool {
+	prefix := string(HeresphereCustomTagPlayCount) + ":"
+	if strings.HasPrefix(tag.Name, prefix) {
+		after := strings.TrimPrefix(tag.Name, prefix)
+		if numRes, err := strconv.Atoi(after); err != nil {
+			ret.Partial.PlayCount.Set = true
+			ret.Partial.PlayCount.Value = numRes
+		}
+		return true
+	}
+	return false
+}
+func handleSetOCount(ctx context.Context, rs Routes, tag HeresphereVideoTag, scene *models.Scene, ret *scene.UpdateSet) bool {
+	prefix := string(HeresphereCustomTagOCounter) + ":"
+	if strings.HasPrefix(tag.Name, prefix) {
+		after := strings.TrimPrefix(tag.Name, prefix)
+		if numRes, err := strconv.Atoi(after); err != nil {
+			ret.Partial.OCounter.Set = true
+			ret.Partial.OCounter.Value = numRes
+		}
+		return true
+	}
+	return false
 }
