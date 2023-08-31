@@ -1158,7 +1158,8 @@
             "default_generated_content_location": "<sökväg innehållande konfigurationsfil>/generated",
             "generated_directory": "Genererat sökväg",
             "nearly_there": "Nästan framme!",
-            "stash_library_directories": "Stash bibliotekssökväg"
+            "stash_library_directories": "Stash bibliotekssökväg",
+            "blobs_use_database": "<använd databas>"
         },
         "creating": {
             "creating_your_system": "Skapa ditt system",
