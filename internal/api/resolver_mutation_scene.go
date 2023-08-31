@@ -199,7 +199,7 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 			Values: input.Urls,
 			Mode:   models.RelationshipUpdateModeSet,
 		}
-	} else if translator.hasField("url") {
+	} else if input.URL != nil {
 		updatedScene.URLs = &models.UpdateStrings{
 			Values: []string{*input.URL},
 			Mode:   models.RelationshipUpdateModeSet,
@@ -380,7 +380,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 			Values: input.Urls.Values,
 			Mode:   input.Urls.Mode,
 		}
-	} else if translator.hasField("url") {
+	} else if input.URL != nil {
 		updatedScene.URLs = &models.UpdateStrings{
 			Values: []string{*input.URL},
 			Mode:   models.RelationshipUpdateModeSet,
