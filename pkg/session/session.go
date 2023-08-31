@@ -77,8 +77,8 @@ func (s *Store) Login(w http.ResponseWriter, r *http.Request) error {
 	password := r.FormValue(passwordFormKey)
 
 	// authenticate the user
-	if !s.config.ValidateCredentials(username, password) {
-		return &InvalidCredentialsError{Username: username}
+	if err := s.LoginPlain(username, password); err != nil {
+		return err
 	}
 
 	// since we only have one user, don't leak the name
