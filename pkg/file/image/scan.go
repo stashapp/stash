@@ -13,6 +13,7 @@ import (
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 	_ "golang.org/x/image/webp"
 )
 
@@ -21,10 +22,10 @@ type Decorator struct {
 	FFProbe ffmpeg.FFProbe
 }
 
-func (d *Decorator) Decorate(ctx context.Context, fs file.FS, f file.File) (file.File, error) {
+func (d *Decorator) Decorate(ctx context.Context, fs models.FS, f models.File) (models.File, error) {
 	base := f.Base()
 
-	decorateFallback := func() (file.File, error) {
+	decorateFallback := func() (models.File, error) {
 		r, err := fs.Open(base.Path)
 		if err != nil {
 			return f, fmt.Errorf("reading image file %q: %w", base.Path, err)
@@ -35,7 +36,7 @@ func (d *Decorator) Decorate(ctx context.Context, fs file.FS, f file.File) (file
 		if err != nil {
 			return f, fmt.Errorf("decoding image file %q: %w", base.Path, err)
 		}
-		return &file.ImageFile{
+		return &models.ImageFile{
 			BaseFile: base,
 			Format:   format,
 			Width:    c.Width,
@@ -58,7 +59,7 @@ func (d *Decorator) Decorate(ctx context.Context, fs file.FS, f file.File) (file
 
 	// Fallback to catch non-animated avif images that FFProbe detects as video files
 	if probe.Bitrate == 0 && probe.VideoCodec == "av1" {
-		return &file.ImageFile{
+		return &models.ImageFile{
 			BaseFile: base,
 			Format:   "avif",
 			Width:    probe.Width,
@@ -78,7 +79,7 @@ func (d *Decorator) Decorate(ctx context.Context, fs file.FS, f file.File) (file
 		return videoFileDecorator.Decorate(ctx, fs, f)
 	}
 
-	return &file.ImageFile{
+	return &models.ImageFile{
 		BaseFile: base,
 		Format:   probe.VideoCodec,
 		Width:    probe.Width,
@@ -86,14 +87,14 @@ func (d *Decorator) Decorate(ctx context.Context, fs file.FS, f file.File) (file
 	}, nil
 }
 
-func (d *Decorator) IsMissingMetadata(ctx context.Context, fs file.FS, f file.File) bool {
+func (d *Decorator) IsMissingMetadata(ctx context.Context, fs models.FS, f models.File) bool {
 	const (
 		unsetString = "unset"
 		unsetNumber = -1
 	)
 
-	imf, isImage := f.(*file.ImageFile)
-	vf, isVideo := f.(*file.VideoFile)
+	imf, isImage := f.(*models.ImageFile)
+	vf, isVideo := f.(*models.VideoFile)
 
 	switch {
 	case isImage:

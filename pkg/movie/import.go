@@ -6,24 +6,17 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
-	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type ImageUpdater interface {
-	UpdateFrontImage(ctx context.Context, movieID int, frontImage []byte) error
-	UpdateBackImage(ctx context.Context, movieID int, backImage []byte) error
-}
-
-type NameFinderCreatorUpdater interface {
-	NameFinderCreator
-	Update(ctx context.Context, updatedMovie *models.Movie) error
-	ImageUpdater
+type ImporterReaderWriter interface {
+	models.MovieCreatorUpdater
+	FindByName(ctx context.Context, name string, nocase bool) (*models.Movie, error)
 }
 
 type Importer struct {
-	ReaderWriter        NameFinderCreatorUpdater
-	StudioWriter        studio.NameFinderCreator
+	ReaderWriter        ImporterReaderWriter
+	StudioWriter        models.StudioFinderCreator
 	Input               jsonschema.Movie
 	MissingRefBehaviour models.ImportMissingRefEnum
 

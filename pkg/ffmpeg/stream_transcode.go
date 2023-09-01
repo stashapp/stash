@@ -8,7 +8,6 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -134,7 +133,7 @@ var (
 
 type TranscodeOptions struct {
 	StreamType StreamFormat
-	VideoFile  *file.VideoFile
+	VideoFile  *models.VideoFile
 	Resolution string
 	StartTime  float64
 }

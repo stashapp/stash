@@ -9,14 +9,19 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
+type ImageFinderUpdater interface {
+	models.ImageQueryer
+	models.ImageUpdater
+}
+
 type ImagePerformerUpdater interface {
 	models.PerformerIDLoader
-	image.PartialUpdater
+	models.ImageUpdater
 }
 
 type ImageTagUpdater interface {
 	models.TagIDLoader
-	image.PartialUpdater
+	models.ImageUpdater
 }
 
 func getImageFileTagger(s *models.Image, cache *match.Cache) tagger {
@@ -30,7 +35,7 @@ func getImageFileTagger(s *models.Image, cache *match.Cache) tagger {
 }
 
 // ImagePerformers tags the provided image with performers whose name matches the image's path.
-func ImagePerformers(ctx context.Context, s *models.Image, rw ImagePerformerUpdater, performerReader match.PerformerAutoTagQueryer, cache *match.Cache) error {
+func ImagePerformers(ctx context.Context, s *models.Image, rw ImagePerformerUpdater, performerReader models.PerformerAutoTagQueryer, cache *match.Cache) error {
 	t := getImageFileTagger(s, cache)
 
 	return t.tagPerformers(ctx, performerReader, func(subjectID, otherID int) (bool, error) {
@@ -54,7 +59,7 @@ func ImagePerformers(ctx context.Context, s *models.Image, rw ImagePerformerUpda
 // ImageStudios tags the provided image with the first studio whose name matches the image's path.
 //
 // Images will not be tagged if studio is already set.
-func ImageStudios(ctx context.Context, s *models.Image, rw ImageFinderUpdater, studioReader match.StudioAutoTagQueryer, cache *match.Cache) error {
+func ImageStudios(ctx context.Context, s *models.Image, rw ImageFinderUpdater, studioReader models.StudioAutoTagQueryer, cache *match.Cache) error {
 	if s.StudioID != nil {
 		// don't modify
 		return nil
@@ -68,7 +73,7 @@ func ImageStudios(ctx context.Context, s *models.Image, rw ImageFinderUpdater, s
 }
 
 // ImageTags tags the provided image with tags whose name matches the image's path.
-func ImageTags(ctx context.Context, s *models.Image, rw ImageTagUpdater, tagReader match.TagAutoTagQueryer, cache *match.Cache) error {
+func ImageTags(ctx context.Context, s *models.Image, rw ImageTagUpdater, tagReader models.TagAutoTagQueryer, cache *match.Cache) error {
 	t := getImageFileTagger(s, cache)
 
 	return t.tagTags(ctx, tagReader, func(subjectID, otherID int) (bool, error) {

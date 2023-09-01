@@ -6,8 +6,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
-
-	"github.com/stashapp/stash/pkg/file"
 )
 
 // Scene stores the metadata for a single video scene.
@@ -26,7 +24,7 @@ type Scene struct {
 
 	// transient - not persisted
 	Files         RelatedVideoFiles
-	PrimaryFileID *file.ID
+	PrimaryFileID *FileID
 	// transient - path of primary file - empty if no files
 	Path string
 	// transient - oshash of primary file - empty if no files
@@ -57,13 +55,13 @@ func (s *Scene) LoadURLs(ctx context.Context, l URLLoader) error {
 }
 
 func (s *Scene) LoadFiles(ctx context.Context, l VideoFileLoader) error {
-	return s.Files.load(func() ([]*file.VideoFile, error) {
+	return s.Files.load(func() ([]*VideoFile, error) {
 		return l.GetFiles(ctx, s.ID)
 	})
 }
 
-func (s *Scene) LoadPrimaryFile(ctx context.Context, l file.Finder) error {
-	return s.Files.loadPrimary(func() (*file.VideoFile, error) {
+func (s *Scene) LoadPrimaryFile(ctx context.Context, l FileGetter) error {
+	return s.Files.loadPrimary(func() (*VideoFile, error) {
 		if s.PrimaryFileID == nil {
 			return nil, nil
 		}
@@ -73,10 +71,10 @@ func (s *Scene) LoadPrimaryFile(ctx context.Context, l file.Finder) error {
 			return nil, err
 		}
 
-		var vf *file.VideoFile
+		var vf *VideoFile
 		if len(f) > 0 {
 			var ok bool
-			vf, ok = f[0].(*file.VideoFile)
+			vf, ok = f[0].(*VideoFile)
 			if !ok {
 				return nil, errors.New("not a video file")
 			}
@@ -173,7 +171,7 @@ type ScenePartial struct {
 	PerformerIDs  *UpdateIDs
 	MovieIDs      *UpdateMovieIDs
 	StashIDs      *UpdateStashIDs
-	PrimaryFileID *file.ID
+	PrimaryFileID *FileID
 }
 
 func NewScenePartial() ScenePartial {

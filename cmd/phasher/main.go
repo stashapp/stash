@@ -8,8 +8,8 @@ import (
 
 	flag "github.com/spf13/pflag"
 	"github.com/stashapp/stash/pkg/ffmpeg"
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/hash/videophash"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 func customUsage() {
@@ -28,8 +28,8 @@ func printPhash(ff *ffmpeg.FFMpeg, ffp ffmpeg.FFProbe, inputfile string, quiet *
 	// videoFile.Path (from BaseFile)
 	// videoFile.Duration
 	// The rest of the struct isn't needed.
-	vf := &file.VideoFile{
-		BaseFile: &file.BaseFile{Path: inputfile},
+	vf := &models.VideoFile{
+		BaseFile: &models.BaseFile{Path: inputfile},
 		Duration: ffvideoFile.FileDuration,
 	}
 

@@ -186,7 +186,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			identifier := SceneIdentifier{
 				SceneReaderUpdater:          mockSceneReaderWriter,
-				TagCreatorFinder:            mockTagFinderCreator,
+				TagFinderCreator:            mockTagFinderCreator,
 				DefaultOptions:              defaultOptions,
 				Sources:                     sources,
 				SceneUpdatePostHookExecutor: mockHookExecutor{},

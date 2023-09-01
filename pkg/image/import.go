@@ -5,13 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
-	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/studio"
-	"github.com/stashapp/stash/pkg/tag"
 )
 
 type GalleryFinder interface {
@@ -19,18 +15,18 @@ type GalleryFinder interface {
 	FindUserGalleryByTitle(ctx context.Context, title string) ([]*models.Gallery, error)
 }
 
-type FullCreatorUpdater interface {
-	FinderCreatorUpdater
-	Update(ctx context.Context, updatedImage *models.Image) error
+type ImporterReaderWriter interface {
+	models.ImageCreatorUpdater
+	FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Image, error)
 }
 
 type Importer struct {
-	ReaderWriter        FullCreatorUpdater
-	FileFinder          file.Getter
-	StudioWriter        studio.NameFinderCreator
+	ReaderWriter        ImporterReaderWriter
+	FileFinder          models.FileFinder
+	StudioWriter        models.StudioFinderCreator
 	GalleryFinder       GalleryFinder
-	PerformerWriter     performer.NameFinderCreator
-	TagWriter           tag.NameFinderCreator
+	PerformerWriter     models.PerformerFinderCreator
+	TagWriter           models.TagFinderCreator
 	Input               jsonschema.Image
 	MissingRefBehaviour models.ImportMissingRefEnum
 
@@ -99,7 +95,7 @@ func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 }
 
 func (i *Importer) populateFiles(ctx context.Context) error {
-	files := make([]file.File, 0)
+	files := make([]models.File, 0)
 
 	for _, ref := range i.Input.Files {
 		path := ref
@@ -330,7 +326,7 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	var fileIDs []file.ID
+	var fileIDs []models.FileID
 	for _, f := range i.image.Files.List() {
 		fileIDs = append(fileIDs, f.Base().ID)
 	}
@@ -360,7 +356,7 @@ func (i *Importer) Update(ctx context.Context, id int) error {
 	return nil
 }
 
-func importTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []string, missingRefBehaviour models.ImportMissingRefEnum) ([]*models.Tag, error) {
+func importTags(ctx context.Context, tagWriter models.TagFinderCreator, names []string, missingRefBehaviour models.ImportMissingRefEnum) ([]*models.Tag, error) {
 	tags, err := tagWriter.FindByNames(ctx, names, false)
 	if err != nil {
 		return nil, err
@@ -395,7 +391,7 @@ func importTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []st
 	return tags, nil
 }
 
-func createTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []string) ([]*models.Tag, error) {
+func createTags(ctx context.Context, tagWriter models.TagCreator, names []string) ([]*models.Tag, error) {
 	var ret []*models.Tag
 	for _, name := range names {
 		newTag := models.NewTag(name)

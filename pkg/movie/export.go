@@ -8,7 +8,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
-	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -18,7 +17,7 @@ type ImageGetter interface {
 }
 
 // ToJSON converts a Movie into its JSON equivalent.
-func ToJSON(ctx context.Context, reader ImageGetter, studioReader studio.Finder, movie *models.Movie) (*jsonschema.Movie, error) {
+func ToJSON(ctx context.Context, reader ImageGetter, studioReader models.StudioGetter, movie *models.Movie) (*jsonschema.Movie, error) {
 	newMovieJSON := jsonschema.Movie{
 		Name:      movie.Name,
 		Aliases:   movie.Aliases,

@@ -257,7 +257,7 @@ type cleanHandler struct {
 	PluginCache *plugin.Cache
 }
 
-func (h *cleanHandler) HandleFile(ctx context.Context, fileDeleter *file.Deleter, fileID file.ID) error {
+func (h *cleanHandler) HandleFile(ctx context.Context, fileDeleter *file.Deleter, fileID models.FileID) error {
 	if err := h.handleRelatedScenes(ctx, fileDeleter, fileID); err != nil {
 		return err
 	}
@@ -271,11 +271,11 @@ func (h *cleanHandler) HandleFile(ctx context.Context, fileDeleter *file.Deleter
 	return nil
 }
 
-func (h *cleanHandler) HandleFolder(ctx context.Context, fileDeleter *file.Deleter, folderID file.FolderID) error {
+func (h *cleanHandler) HandleFolder(ctx context.Context, fileDeleter *file.Deleter, folderID models.FolderID) error {
 	return h.deleteRelatedFolderGalleries(ctx, folderID)
 }
 
-func (h *cleanHandler) handleRelatedScenes(ctx context.Context, fileDeleter *file.Deleter, fileID file.ID) error {
+func (h *cleanHandler) handleRelatedScenes(ctx context.Context, fileDeleter *file.Deleter, fileID models.FileID) error {
 	mgr := GetInstance()
 	sceneQB := mgr.Database.Scene
 	scenes, err := sceneQB.FindByFileID(ctx, fileID)
@@ -313,7 +313,7 @@ func (h *cleanHandler) handleRelatedScenes(ctx context.Context, fileDeleter *fil
 			}, nil)
 		} else {
 			// set the primary file to a remaining file
-			var newPrimaryID file.ID
+			var newPrimaryID models.FileID
 			for _, f := range scene.Files.List() {
 				if f.ID != fileID {
 					newPrimaryID = f.ID
@@ -332,7 +332,7 @@ func (h *cleanHandler) handleRelatedScenes(ctx context.Context, fileDeleter *fil
 	return nil
 }
 
-func (h *cleanHandler) handleRelatedGalleries(ctx context.Context, fileID file.ID) error {
+func (h *cleanHandler) handleRelatedGalleries(ctx context.Context, fileID models.FileID) error {
 	mgr := GetInstance()
 	qb := mgr.Database.Gallery
 	galleries, err := qb.FindByFileID(ctx, fileID)
@@ -358,7 +358,7 @@ func (h *cleanHandler) handleRelatedGalleries(ctx context.Context, fileID file.I
 			}, nil)
 		} else {
 			// set the primary file to a remaining file
-			var newPrimaryID file.ID
+			var newPrimaryID models.FileID
 			for _, f := range g.Files.List() {
 				if f.Base().ID != fileID {
 					newPrimaryID = f.Base().ID
@@ -377,7 +377,7 @@ func (h *cleanHandler) handleRelatedGalleries(ctx context.Context, fileID file.I
 	return nil
 }
 
-func (h *cleanHandler) deleteRelatedFolderGalleries(ctx context.Context, folderID file.FolderID) error {
+func (h *cleanHandler) deleteRelatedFolderGalleries(ctx context.Context, folderID models.FolderID) error {
 	mgr := GetInstance()
 	qb := mgr.Database.Gallery
 	galleries, err := qb.FindByFolderID(ctx, folderID)
@@ -401,7 +401,7 @@ func (h *cleanHandler) deleteRelatedFolderGalleries(ctx context.Context, folderI
 	return nil
 }
 
-func (h *cleanHandler) handleRelatedImages(ctx context.Context, fileDeleter *file.Deleter, fileID file.ID) error {
+func (h *cleanHandler) handleRelatedImages(ctx context.Context, fileDeleter *file.Deleter, fileID models.FileID) error {
 	mgr := GetInstance()
 	imageQB := mgr.Database.Image
 	images, err := imageQB.FindByFileID(ctx, fileID)
@@ -431,7 +431,7 @@ func (h *cleanHandler) handleRelatedImages(ctx context.Context, fileDeleter *fil
 			}, nil)
 		} else {
 			// set the primary file to a remaining file
-			var newPrimaryID file.ID
+			var newPrimaryID models.FileID
 			for _, f := range i.Files.List() {
 				if f.Base().ID != fileID {
 					newPrimaryID = f.Base().ID

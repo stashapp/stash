@@ -136,7 +136,7 @@ func (j *IdentifyJob) identifyScene(ctx context.Context, s *models.Scene, source
 			SceneReaderUpdater: instance.Repository.Scene,
 			StudioReaderWriter: instance.Repository.Studio,
 			PerformerCreator:   instance.Repository.Performer,
-			TagCreatorFinder:   instance.Repository.Tag,
+			TagFinderCreator:   instance.Repository.Tag,
 
 			DefaultOptions:              j.input.Options,
 			Sources:                     sources,

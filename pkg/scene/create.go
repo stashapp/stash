@@ -6,12 +6,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 )
 
-func (s *Service) Create(ctx context.Context, input *models.Scene, fileIDs []file.ID, coverImage []byte) (*models.Scene, error) {
+func (s *Service) Create(ctx context.Context, input *models.Scene, fileIDs []models.FileID, coverImage []byte) (*models.Scene, error) {
 	// title must be set if no files are provided
 	if input.Title == "" && len(fileIDs) == 0 {
 		return nil, errors.New("title must be set if scene has no files")

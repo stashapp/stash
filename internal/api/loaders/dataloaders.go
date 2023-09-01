@@ -1,14 +1,14 @@
-//go:generate go run -mod=vendor github.com/vektah/dataloaden SceneLoader int *github.com/stashapp/stash/pkg/models.Scene
-//go:generate go run -mod=vendor github.com/vektah/dataloaden GalleryLoader int *github.com/stashapp/stash/pkg/models.Gallery
-//go:generate go run -mod=vendor github.com/vektah/dataloaden ImageLoader int *github.com/stashapp/stash/pkg/models.Image
-//go:generate go run -mod=vendor github.com/vektah/dataloaden PerformerLoader int *github.com/stashapp/stash/pkg/models.Performer
-//go:generate go run -mod=vendor github.com/vektah/dataloaden StudioLoader int *github.com/stashapp/stash/pkg/models.Studio
-//go:generate go run -mod=vendor github.com/vektah/dataloaden TagLoader int *github.com/stashapp/stash/pkg/models.Tag
-//go:generate go run -mod=vendor github.com/vektah/dataloaden MovieLoader int *github.com/stashapp/stash/pkg/models.Movie
-//go:generate go run -mod=vendor github.com/vektah/dataloaden FileLoader github.com/stashapp/stash/pkg/file.ID github.com/stashapp/stash/pkg/file.File
-//go:generate go run -mod=vendor github.com/vektah/dataloaden SceneFileIDsLoader int []github.com/stashapp/stash/pkg/file.ID
-//go:generate go run -mod=vendor github.com/vektah/dataloaden ImageFileIDsLoader int []github.com/stashapp/stash/pkg/file.ID
-//go:generate go run -mod=vendor github.com/vektah/dataloaden GalleryFileIDsLoader int []github.com/stashapp/stash/pkg/file.ID
+//go:generate go run github.com/vektah/dataloaden SceneLoader int *github.com/stashapp/stash/pkg/models.Scene
+//go:generate go run github.com/vektah/dataloaden GalleryLoader int *github.com/stashapp/stash/pkg/models.Gallery
+//go:generate go run github.com/vektah/dataloaden ImageLoader int *github.com/stashapp/stash/pkg/models.Image
+//go:generate go run github.com/vektah/dataloaden PerformerLoader int *github.com/stashapp/stash/pkg/models.Performer
+//go:generate go run github.com/vektah/dataloaden StudioLoader int *github.com/stashapp/stash/pkg/models.Studio
+//go:generate go run github.com/vektah/dataloaden TagLoader int *github.com/stashapp/stash/pkg/models.Tag
+//go:generate go run github.com/vektah/dataloaden MovieLoader int *github.com/stashapp/stash/pkg/models.Movie
+//go:generate go run github.com/vektah/dataloaden FileLoader github.com/stashapp/stash/pkg/models.FileID github.com/stashapp/stash/pkg/models.File
+//go:generate go run github.com/vektah/dataloaden SceneFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
+//go:generate go run github.com/vektah/dataloaden ImageFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
+//go:generate go run github.com/vektah/dataloaden GalleryFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
 
 package loaders
 
@@ -18,7 +18,6 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/manager"
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
 )
@@ -216,8 +215,8 @@ func (m Middleware) fetchMovies(ctx context.Context) func(keys []int) ([]*models
 	}
 }
 
-func (m Middleware) fetchFiles(ctx context.Context) func(keys []file.ID) ([]file.File, []error) {
-	return func(keys []file.ID) (ret []file.File, errs []error) {
+func (m Middleware) fetchFiles(ctx context.Context) func(keys []models.FileID) ([]models.File, []error) {
+	return func(keys []models.FileID) (ret []models.File, errs []error) {
 		err := m.withTxn(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.File.Find(ctx, keys...)
@@ -227,8 +226,8 @@ func (m Middleware) fetchFiles(ctx context.Context) func(keys []file.ID) ([]file
 	}
 }
 
-func (m Middleware) fetchScenesFileIDs(ctx context.Context) func(keys []int) ([][]file.ID, []error) {
-	return func(keys []int) (ret [][]file.ID, errs []error) {
+func (m Middleware) fetchScenesFileIDs(ctx context.Context) func(keys []int) ([][]models.FileID, []error) {
+	return func(keys []int) (ret [][]models.FileID, errs []error) {
 		err := m.withTxn(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Scene.GetManyFileIDs(ctx, keys)
@@ -238,8 +237,8 @@ func (m Middleware) fetchScenesFileIDs(ctx context.Context) func(keys []int) ([]
 	}
 }
 
-func (m Middleware) fetchImagesFileIDs(ctx context.Context) func(keys []int) ([][]file.ID, []error) {
-	return func(keys []int) (ret [][]file.ID, errs []error) {
+func (m Middleware) fetchImagesFileIDs(ctx context.Context) func(keys []int) ([][]models.FileID, []error) {
+	return func(keys []int) (ret [][]models.FileID, errs []error) {
 		err := m.withTxn(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Image.GetManyFileIDs(ctx, keys)
@@ -249,8 +248,8 @@ func (m Middleware) fetchImagesFileIDs(ctx context.Context) func(keys []int) ([]
 	}
 }
 
-func (m Middleware) fetchGalleriesFileIDs(ctx context.Context) func(keys []int) ([][]file.ID, []error) {
-	return func(keys []int) (ret [][]file.ID, errs []error) {
+func (m Middleware) fetchGalleriesFileIDs(ctx context.Context) func(keys []int) ([][]models.FileID, []error) {
+	return func(keys []int) (ret [][]models.FileID, errs []error) {
 		err := m.withTxn(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Gallery.GetManyFileIDs(ctx, keys)

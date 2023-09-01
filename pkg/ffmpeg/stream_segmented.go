@@ -16,7 +16,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -51,7 +50,7 @@ const (
 type StreamType struct {
 	Name          string
 	SegmentType   *SegmentType
-	ServeManifest func(sm *StreamManager, w http.ResponseWriter, r *http.Request, vf *file.VideoFile, resolution string)
+	ServeManifest func(sm *StreamManager, w http.ResponseWriter, r *http.Request, vf *models.VideoFile, resolution string)
 	Args          func(codec VideoCodec, segment int, videoFilter VideoFilter, videoOnly bool, outputDir string) Args
 }
 
@@ -250,7 +249,7 @@ var ErrInvalidSegment = errors.New("invalid segment")
 
 type StreamOptions struct {
 	StreamType *StreamType
-	VideoFile  *file.VideoFile
+	VideoFile  *models.VideoFile
 	Resolution string
 	Hash       string
 	Segment    string
@@ -279,7 +278,7 @@ type waitingSegment struct {
 type runningStream struct {
 	dir              string
 	streamType       *StreamType
-	vf               *file.VideoFile
+	vf               *models.VideoFile
 	maxTranscodeSize int
 	outputDir        string
 
@@ -394,7 +393,7 @@ func (tp *transcodeProcess) checkSegments() {
 	}
 }
 
-func lastSegment(vf *file.VideoFile) int {
+func lastSegment(vf *models.VideoFile) int {
 	return int(math.Ceil(vf.Duration/segmentLength)) - 1
 }
 
@@ -405,7 +404,7 @@ func segmentExists(path string) bool {
 
 // serveHLSManifest serves a generated HLS playlist. The URLs for the segments
 // are of the form {r.URL}/%d.ts{?urlQuery} where %d is the segment index.
-func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request, vf *file.VideoFile, resolution string) {
+func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request, vf *models.VideoFile, resolution string) {
 	if sm.cacheDir == "" {
 		logger.Error("[transcode] cannot live transcode with HLS because cache dir is unset")
 		http.Error(w, "cannot live transcode with HLS because cache dir is unset", http.StatusServiceUnavailable)
@@ -460,7 +459,7 @@ func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request,
 }
 
 // serveDASHManifest serves a generated DASH manifest.
-func serveDASHManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request, vf *file.VideoFile, resolution string) {
+func serveDASHManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request, vf *models.VideoFile, resolution string) {
 	if sm.cacheDir == "" {
 		logger.Error("[transcode] cannot live transcode with DASH because cache dir is unset")
 		http.Error(w, "cannot live transcode files with DASH because cache dir is unset", http.StatusServiceUnavailable)
@@ -550,7 +549,7 @@ func serveDASHManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request
 	utils.ServeStaticContent(w, r, buf.Bytes())
 }
 
-func (sm *StreamManager) ServeManifest(w http.ResponseWriter, r *http.Request, streamType *StreamType, vf *file.VideoFile, resolution string) {
+func (sm *StreamManager) ServeManifest(w http.ResponseWriter, r *http.Request, streamType *StreamType, vf *models.VideoFile, resolution string) {
 	streamType.ServeManifest(sm, w, r, vf, resolution)
 }
 

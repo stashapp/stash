@@ -6,13 +6,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 // FileLoaderConfig captures the config to create a new FileLoader
 type FileLoaderConfig struct {
 	// Fetch is a method that provides the data for the loader
-	Fetch func(keys []file.ID) ([]file.File, []error)
+	Fetch func(keys []models.FileID) ([]models.File, []error)
 
 	// Wait is how long wait before sending a batch
 	Wait time.Duration
@@ -33,7 +33,7 @@ func NewFileLoader(config FileLoaderConfig) *FileLoader {
 // FileLoader batches and caches requests
 type FileLoader struct {
 	// this method provides the data for the loader
-	fetch func(keys []file.ID) ([]file.File, []error)
+	fetch func(keys []models.FileID) ([]models.File, []error)
 
 	// how long to done before sending a batch
 	wait time.Duration
@@ -44,7 +44,7 @@ type FileLoader struct {
 	// INTERNAL
 
 	// lazily created cache
-	cache map[file.ID]file.File
+	cache map[models.FileID]models.File
 
 	// the current batch. keys will continue to be collected until timeout is hit,
 	// then everything will be sent to the fetch method and out to the listeners
@@ -55,26 +55,26 @@ type FileLoader struct {
 }
 
 type fileLoaderBatch struct {
-	keys    []file.ID
-	data    []file.File
+	keys    []models.FileID
+	data    []models.File
 	error   []error
 	closing bool
 	done    chan struct{}
 }
 
 // Load a File by key, batching and caching will be applied automatically
-func (l *FileLoader) Load(key file.ID) (file.File, error) {
+func (l *FileLoader) Load(key models.FileID) (models.File, error) {
 	return l.LoadThunk(key)()
 }
 
 // LoadThunk returns a function that when called will block waiting for a File.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *FileLoader) LoadThunk(key file.ID) func() (file.File, error) {
+func (l *FileLoader) LoadThunk(key models.FileID) func() (models.File, error) {
 	l.mu.Lock()
 	if it, ok := l.cache[key]; ok {
 		l.mu.Unlock()
-		return func() (file.File, error) {
+		return func() (models.File, error) {
 			return it, nil
 		}
 	}
@@ -85,10 +85,10 @@ func (l *FileLoader) LoadThunk(key file.ID) func() (file.File, error) {
 	pos := batch.keyIndex(l, key)
 	l.mu.Unlock()
 
-	return func() (file.File, error) {
+	return func() (models.File, error) {
 		<-batch.done
 
-		var data file.File
+		var data models.File
 		if pos < len(batch.data) {
 			data = batch.data[pos]
 		}
@@ -113,14 +113,14 @@ func (l *FileLoader) LoadThunk(key file.ID) func() (file.File, error) {
 
 // LoadAll fetches many keys at once. It will be broken into appropriate sized
 // sub batches depending on how the loader is configured
-func (l *FileLoader) LoadAll(keys []file.ID) ([]file.File, []error) {
-	results := make([]func() (file.File, error), len(keys))
+func (l *FileLoader) LoadAll(keys []models.FileID) ([]models.File, []error) {
+	results := make([]func() (models.File, error), len(keys))
 
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
 	}
 
-	files := make([]file.File, len(keys))
+	files := make([]models.File, len(keys))
 	errors := make([]error, len(keys))
 	for i, thunk := range results {
 		files[i], errors[i] = thunk()
@@ -131,13 +131,13 @@ func (l *FileLoader) LoadAll(keys []file.ID) ([]file.File, []error) {
 // LoadAllThunk returns a function that when called will block waiting for a Files.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *FileLoader) LoadAllThunk(keys []file.ID) func() ([]file.File, []error) {
-	results := make([]func() (file.File, error), len(keys))
+func (l *FileLoader) LoadAllThunk(keys []models.FileID) func() ([]models.File, []error) {
+	results := make([]func() (models.File, error), len(keys))
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
 	}
-	return func() ([]file.File, []error) {
-		files := make([]file.File, len(keys))
+	return func() ([]models.File, []error) {
+		files := make([]models.File, len(keys))
 		errors := make([]error, len(keys))
 		for i, thunk := range results {
 			files[i], errors[i] = thunk()
@@ -149,7 +149,7 @@ func (l *FileLoader) LoadAllThunk(keys []file.ID) func() ([]file.File, []error) 
 // Prime the cache with the provided key and value. If the key already exists, no change is made
 // and false is returned.
 // (To forcefully prime the cache, clear the key first with loader.clear(key).prime(key, value).)
-func (l *FileLoader) Prime(key file.ID, value file.File) bool {
+func (l *FileLoader) Prime(key models.FileID, value models.File) bool {
 	l.mu.Lock()
 	var found bool
 	if _, found = l.cache[key]; !found {
@@ -160,22 +160,22 @@ func (l *FileLoader) Prime(key file.ID, value file.File) bool {
 }
 
 // Clear the value at key from the cache, if it exists
-func (l *FileLoader) Clear(key file.ID) {
+func (l *FileLoader) Clear(key models.FileID) {
 	l.mu.Lock()
 	delete(l.cache, key)
 	l.mu.Unlock()
 }
 
-func (l *FileLoader) unsafeSet(key file.ID, value file.File) {
+func (l *FileLoader) unsafeSet(key models.FileID, value models.File) {
 	if l.cache == nil {
-		l.cache = map[file.ID]file.File{}
+		l.cache = map[models.FileID]models.File{}
 	}
 	l.cache[key] = value
 }
 
 // keyIndex will return the location of the key in the batch, if its not found
 // it will add the key to the batch
-func (b *fileLoaderBatch) keyIndex(l *FileLoader, key file.ID) int {
+func (b *fileLoaderBatch) keyIndex(l *FileLoader, key models.FileID) int {
 	for i, existingKey := range b.keys {
 		if key == existingKey {
 			return i

@@ -450,11 +450,11 @@ func (p *FilenameParser) initWhiteSpaceRegex() {
 }
 
 type FilenameParserRepository struct {
-	Scene     Queryer
+	Scene     models.SceneQueryer
 	Performer PerformerNamesFinder
-	Studio    studio.Queryer
+	Studio    models.StudioQueryer
 	Movie     MovieNameFinder
-	Tag       tag.Queryer
+	Tag       models.TagQueryer
 }
 
 func (p *FilenameParser) Parse(ctx context.Context, repo FilenameParserRepository) ([]*models.SceneParserResult, int, error) {
@@ -544,7 +544,7 @@ func (p *FilenameParser) queryPerformer(ctx context.Context, qb PerformerNamesFi
 	return ret
 }
 
-func (p *FilenameParser) queryStudio(ctx context.Context, qb studio.Queryer, studioName string) *models.Studio {
+func (p *FilenameParser) queryStudio(ctx context.Context, qb models.StudioQueryer, studioName string) *models.Studio {
 	// massage the performer name
 	studioName = delimiterRE.ReplaceAllString(studioName, " ")
 
@@ -587,7 +587,7 @@ func (p *FilenameParser) queryMovie(ctx context.Context, qb MovieNameFinder, mov
 	return ret
 }
 
-func (p *FilenameParser) queryTag(ctx context.Context, qb tag.Queryer, tagName string) *models.Tag {
+func (p *FilenameParser) queryTag(ctx context.Context, qb models.TagQueryer, tagName string) *models.Tag {
 	// massage the tag name
 	tagName = delimiterRE.ReplaceAllString(tagName, " ")
 
@@ -626,7 +626,7 @@ func (p *FilenameParser) setPerformers(ctx context.Context, qb PerformerNamesFin
 	}
 }
 
-func (p *FilenameParser) setTags(ctx context.Context, qb tag.Queryer, h sceneHolder, result *models.SceneParserResult) {
+func (p *FilenameParser) setTags(ctx context.Context, qb models.TagQueryer, h sceneHolder, result *models.SceneParserResult) {
 	// query for each performer
 	tagsSet := make(map[int]bool)
 	for _, tagName := range h.tags {
@@ -642,7 +642,7 @@ func (p *FilenameParser) setTags(ctx context.Context, qb tag.Queryer, h sceneHol
 	}
 }
 
-func (p *FilenameParser) setStudio(ctx context.Context, qb studio.Queryer, h sceneHolder, result *models.SceneParserResult) {
+func (p *FilenameParser) setStudio(ctx context.Context, qb models.StudioQueryer, h sceneHolder, result *models.SceneParserResult) {
 	// query for each performer
 	if h.studio != "" {
 		studio := p.queryStudio(ctx, qb, h.studio)

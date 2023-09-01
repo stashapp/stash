@@ -1,7 +1,6 @@
 package models
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"strconv"
@@ -192,45 +191,4 @@ type PerformerFilterType struct {
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at
 	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
-}
-
-type PerformerFinder interface {
-	FindMany(ctx context.Context, ids []int) ([]*Performer, error)
-}
-
-type PerformerReader interface {
-	Find(ctx context.Context, id int) (*Performer, error)
-	PerformerFinder
-	FindBySceneID(ctx context.Context, sceneID int) ([]*Performer, error)
-	FindByImageID(ctx context.Context, imageID int) ([]*Performer, error)
-	FindByGalleryID(ctx context.Context, galleryID int) ([]*Performer, error)
-	FindByNames(ctx context.Context, names []string, nocase bool) ([]*Performer, error)
-	FindByStashID(ctx context.Context, stashID StashID) ([]*Performer, error)
-	FindByStashIDStatus(ctx context.Context, hasStashID bool, stashboxEndpoint string) ([]*Performer, error)
-	CountByTagID(ctx context.Context, tagID int) (int, error)
-	Count(ctx context.Context) (int, error)
-	All(ctx context.Context) ([]*Performer, error)
-	// TODO - this interface is temporary until the filter schema can fully
-	// support the query needed
-	QueryForAutoTag(ctx context.Context, words []string) ([]*Performer, error)
-	Query(ctx context.Context, performerFilter *PerformerFilterType, findFilter *FindFilterType) ([]*Performer, int, error)
-	QueryCount(ctx context.Context, galleryFilter *PerformerFilterType, findFilter *FindFilterType) (int, error)
-	AliasLoader
-	GetImage(ctx context.Context, performerID int) ([]byte, error)
-	HasImage(ctx context.Context, performerID int) (bool, error)
-	StashIDLoader
-	TagIDLoader
-}
-
-type PerformerWriter interface {
-	Create(ctx context.Context, newPerformer *Performer) error
-	UpdatePartial(ctx context.Context, id int, updatedPerformer PerformerPartial) (*Performer, error)
-	Update(ctx context.Context, updatedPerformer *Performer) error
-	Destroy(ctx context.Context, id int) error
-	UpdateImage(ctx context.Context, performerID int, image []byte) error
-}
-
-type PerformerReaderWriter interface {
-	PerformerReader
-	PerformerWriter
 }
