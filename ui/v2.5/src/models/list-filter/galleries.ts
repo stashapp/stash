@@ -45,11 +45,7 @@ const criterionOptions = [
   createStringCriterionOption("title"),
   createStringCriterionOption("details"),
   createPathCriterionOption("path"),
-  createStringCriterionOption(
-    "galleryChecksum",
-    "media_info.checksum",
-    "checksum"
-  ),
+  createStringCriterionOption("checksum", "media_info.checksum"),
   new NullNumberCriterionOption("rating", "rating100"),
   OrganizedCriterionOption,
   AverageResolutionCriterionOption,

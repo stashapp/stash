@@ -643,3 +643,66 @@ input[type="range"].blue-slider {
 .scrape-dialog .rating-number.disabled {
   padding-left: 0.5em;
 }
+
+.preview-scrubber {
+  height: 100%;
+  position: absolute;
+  width: 100%;
+
+  .scene-card-preview-image {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .scrubber-image {
+    height: 100%;
+    width: 100%;
+  }
+
+  .scrubber-timestamp {
+    bottom: calc(20px + 0.25rem);
+    font-weight: 400;
+    opacity: 0.75;
+    position: absolute;
+    right: 0.7rem;
+    text-shadow: 0 0 3px #000;
+  }
+}
+
+.hover-scrubber {
+  bottom: 0;
+  height: 20px;
+  overflow: hidden;
+  position: absolute;
+  width: 100%;
+
+  .hover-scrubber-area {
+    cursor: col-resize;
+    height: 100%;
+    position: absolute;
+    width: 100%;
+    z-index: 1;
+  }
+
+  .hover-scrubber-indicator {
+    background-color: rgba(255, 255, 255, 0.1);
+    bottom: -100%;
+    height: 100%;
+    position: absolute;
+    transition: bottom 0.2s ease-in-out;
+    width: 100%;
+
+    .hover-scrubber-indicator-marker {
+      background-color: rgba(255, 0, 0, 0.5);
+      bottom: 0;
+      height: 5px;
+      position: absolute;
+    }
+  }
+
+  &:hover .hover-scrubber-indicator {
+    bottom: 0;
+  }
+}

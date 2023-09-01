@@ -5,8 +5,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
-
-	"github.com/stashapp/stash/pkg/file"
 )
 
 // Image stores the metadata for a single image.
@@ -24,7 +22,7 @@ type Image struct {
 
 	// transient - not persisted
 	Files         RelatedFiles
-	PrimaryFileID *file.ID
+	PrimaryFileID *FileID
 	// transient - path of primary file - empty if no files
 	Path string
 	// transient - checksum of primary file - empty if no files
@@ -39,13 +37,13 @@ type Image struct {
 }
 
 func (i *Image) LoadFiles(ctx context.Context, l FileLoader) error {
-	return i.Files.load(func() ([]file.File, error) {
+	return i.Files.load(func() ([]File, error) {
 		return l.GetFiles(ctx, i.ID)
 	})
 }
 
-func (i *Image) LoadPrimaryFile(ctx context.Context, l file.Finder) error {
-	return i.Files.loadPrimary(func() (file.File, error) {
+func (i *Image) LoadPrimaryFile(ctx context.Context, l FileGetter) error {
+	return i.Files.loadPrimary(func() (File, error) {
 		if i.PrimaryFileID == nil {
 			return nil, nil
 		}
@@ -107,7 +105,7 @@ func (i Image) DisplayName() string {
 
 type ImageCreateInput struct {
 	*Image
-	FileIDs []file.ID
+	FileIDs []FileID
 }
 
 type ImagePartial struct {
@@ -125,7 +123,7 @@ type ImagePartial struct {
 	GalleryIDs    *UpdateIDs
 	TagIDs        *UpdateIDs
 	PerformerIDs  *UpdateIDs
-	PrimaryFileID *file.ID
+	PrimaryFileID *FileID
 }
 
 func NewImagePartial() ImagePartial {

@@ -78,7 +78,8 @@
 | `↑` | Increase volume 10% |
 | `↓` | Decrease volume 10% |
 | `m` | Toggle mute |
-| `Shift + l` | Toggle player looping |
+| `l` | A/B looping toggle. Press once to set start point. Press again to set end point. Press again to disable loop. |
+| `Shift + l` | Toggle looping of scene when it's over |
 
 ### Scene Markers tab shortcuts
 

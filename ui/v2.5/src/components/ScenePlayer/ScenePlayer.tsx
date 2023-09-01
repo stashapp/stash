@@ -8,6 +8,7 @@ import React, {
   useState,
 } from "react";
 import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
+import abLoopPlugin from "videojs-abloop";
 import useScript from "src/hooks/useScript";
 import "videojs-contrib-dash";
 import "videojs-mobile-ui";
@@ -73,6 +74,21 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
     player.currentTime(time);
   }
 
+  function toggleABLooping() {
+    const opts = player.abLoopPlugin.getOptions();
+    if (!opts.start) {
+      opts.start = player.currentTime();
+    } else if (!opts.end) {
+      opts.end = player.currentTime();
+      opts.enabled = true;
+    } else {
+      opts.start = 0;
+      opts.end = 0;
+      opts.enabled = false;
+    }
+    player.abLoopPlugin.setOptions(opts);
+  }
+
   let seekFactor = 10;
   if (event.shiftKey) {
     seekFactor = 5;
@@ -110,6 +126,9 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
     case 70: // f
       if (player.isFullscreen()) player.exitFullscreen();
       else player.requestFullscreen();
+      break;
+    case 76: // l
+      toggleABLooping();
       break;
     case 38: // up arrow
       player.volume(player.volume() + 0.1);
@@ -340,6 +359,16 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         skipButtons: {},
         trackActivity: {},
         vrMenu: {},
+        abLoopPlugin: {
+          start: 0,
+          end: false,
+          enabled: false,
+          loopIfBeforeStart: true,
+          loopIfAfterEnd: true,
+          pauseAfterLooping: false,
+          pauseBeforeLooping: false,
+          createButtons: uiConfig?.showAbLoopControls ?? false,
+        },
       },
     };
 
@@ -348,6 +377,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     videoEl.setAttribute("crossorigin", "anonymous");
     videoEl.classList.add("vjs-big-play-centered");
     videoRef.current!.appendChild(videoEl);
+
+    abLoopPlugin(window, videojs);
 
     const vjs = videojs(videoEl, options);
 
@@ -372,7 +403,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       sceneId.current = undefined;
     };
     // empty deps - only init once
-  }, []);
+    // showAbLoopControls is necessary to re-init the player when the config changes
+  }, [uiConfig?.showAbLoopControls]);
 
   useEffect(() => {
     const player = getPlayer();

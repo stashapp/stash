@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -97,7 +96,7 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 				Rating:    &rating,
 				Organized: true,
 				StudioID:  &studioIDs[studioIdxWithScene],
-				Files: models.NewRelatedFiles([]file.File{
+				Files: models.NewRelatedFiles([]models.File{
 					galleryFile,
 				}),
 				CreatedAt:    createdAt,
@@ -145,9 +144,9 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 			assert := assert.New(t)
 
 			s := tt.newObject
-			var fileIDs []file.ID
+			var fileIDs []models.FileID
 			if s.Files.Loaded() {
-				fileIDs = []file.ID{s.Files.List()[0].Base().ID}
+				fileIDs = []models.FileID{s.Files.List()[0].Base().ID}
 			}
 
 			if err := qb.Create(ctx, &s, fileIDs); (err != nil) != tt.wantErr {
@@ -195,7 +194,7 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 	}
 }
 
-func makeGalleryFileWithID(i int) *file.BaseFile {
+func makeGalleryFileWithID(i int) *models.BaseFile {
 	ret := makeGalleryFile(i)
 	ret.ID = galleryFileIDs[i]
 	return ret
@@ -229,7 +228,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 				Rating:    &rating,
 				Organized: true,
 				StudioID:  &studioIDs[studioIdxWithScene],
-				Files: models.NewRelatedFiles([]file.File{
+				Files: models.NewRelatedFiles([]models.File{
 					makeGalleryFileWithID(galleryIdxWithScene),
 				}),
 				CreatedAt:    createdAt,
@@ -449,7 +448,7 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 				Rating:    &rating,
 				Organized: true,
 				StudioID:  &studioIDs[studioIdxWithGallery],
-				Files: models.NewRelatedFiles([]file.File{
+				Files: models.NewRelatedFiles([]models.File{
 					makeGalleryFile(galleryIdxWithImage),
 				}),
 				CreatedAt:    createdAt,
@@ -466,7 +465,7 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 			clearGalleryPartial(),
 			models.Gallery{
 				ID: galleryIDs[galleryIdxWithImage],
-				Files: models.NewRelatedFiles([]file.File{
+				Files: models.NewRelatedFiles([]models.File{
 					makeGalleryFile(galleryIdxWithImage),
 				}),
 				SceneIDs:     models.NewRelatedIDs([]int{}),
@@ -844,7 +843,7 @@ func makeGalleryWithID(index int) *models.Gallery {
 	ret := makeGallery(index, includeScenes)
 	ret.ID = galleryIDs[index]
 
-	ret.Files = models.NewRelatedFiles([]file.File{makeGalleryFile(index)})
+	ret.Files = models.NewRelatedFiles([]models.File{makeGalleryFile(index)})
 
 	return ret
 }
@@ -1281,7 +1280,7 @@ func galleriesToIDs(i []*models.Gallery) []int {
 func Test_galleryStore_FindByFileID(t *testing.T) {
 	tests := []struct {
 		name    string
-		fileID  file.ID
+		fileID  models.FileID
 		include []int
 		exclude []int
 	}{
@@ -1330,7 +1329,7 @@ func Test_galleryStore_FindByFileID(t *testing.T) {
 func Test_galleryStore_FindByFolderID(t *testing.T) {
 	tests := []struct {
 		name     string
-		folderID file.FolderID
+		folderID models.FolderID
 		include  []int
 		exclude  []int
 	}{

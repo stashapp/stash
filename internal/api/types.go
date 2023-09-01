@@ -18,14 +18,6 @@ func handleFloat64(v float64) *float64 {
 	return &v
 }
 
-func handleFloat64Value(v float64) float64 {
-	if math.IsInf(v, 0) || math.IsNaN(v) {
-		return 0
-	}
-
-	return v
-}
-
 func translateUpdateIDs(strIDs []string, mode models.RelationshipUpdateMode) (*models.UpdateIDs, error) {
 	ids, err := stringslice.StringSliceToIntSlice(strIDs)
 	if err != nil {

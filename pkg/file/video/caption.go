@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/asticode/go-astisub"
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
@@ -87,12 +86,12 @@ func getCaptionsLangFromPath(captionPath string) string {
 }
 
 type CaptionUpdater interface {
-	GetCaptions(ctx context.Context, fileID file.ID) ([]*models.VideoCaption, error)
-	UpdateCaptions(ctx context.Context, fileID file.ID, captions []*models.VideoCaption) error
+	GetCaptions(ctx context.Context, fileID models.FileID) ([]*models.VideoCaption, error)
+	UpdateCaptions(ctx context.Context, fileID models.FileID, captions []*models.VideoCaption) error
 }
 
 // associates captions to scene/s with the same basename
-func AssociateCaptions(ctx context.Context, captionPath string, txnMgr txn.Manager, fqb file.Getter, w CaptionUpdater) {
+func AssociateCaptions(ctx context.Context, captionPath string, txnMgr txn.Manager, fqb models.FileFinder, w CaptionUpdater) {
 	captionLang := getCaptionsLangFromPath(captionPath)
 
 	captionPrefix := getCaptionPrefix(captionPath)
@@ -108,7 +107,7 @@ func AssociateCaptions(ctx context.Context, captionPath string, txnMgr txn.Manag
 			// found some files
 			// filter out non video files
 			switch f.(type) {
-			case *file.VideoFile:
+			case *models.VideoFile:
 				break
 			default:
 				continue
@@ -143,7 +142,7 @@ func AssociateCaptions(ctx context.Context, captionPath string, txnMgr txn.Manag
 }
 
 // CleanCaptions removes non existent/accessible language codes from captions
-func CleanCaptions(ctx context.Context, f *file.VideoFile, txnMgr txn.Manager, w CaptionUpdater) error {
+func CleanCaptions(ctx context.Context, f *models.VideoFile, txnMgr txn.Manager, w CaptionUpdater) error {
 	captions, err := w.GetCaptions(ctx, f.ID)
 	if err != nil {
 		return fmt.Errorf("getting captions for file %s: %w", f.Path, err)

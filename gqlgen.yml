@@ -23,6 +23,12 @@ autobind:
 
 models:
   # Scalars
+  ID:
+    model:
+      - github.com/99designs/gqlgen/graphql.ID
+      - github.com/99designs/gqlgen/graphql.IntID
+      - github.com/stashapp/stash/pkg/models.FileID
+      - github.com/stashapp/stash/pkg/models.FolderID
   Int64:
     model: github.com/99designs/gqlgen/graphql.Int64
   Timestamp:
@@ -33,6 +39,30 @@ models:
     fields:
       title:
         resolver: true
+  # override models, from internal/api/models.go
+  BaseFile:
+    model: github.com/stashapp/stash/internal/api.BaseFile
+  GalleryFile:
+    model: github.com/stashapp/stash/internal/api.GalleryFile
+    fields:
+      # override fingerprint field
+      fingerprints:
+        fieldName: FingerprintSlice
+  VideoFile:
+    fields:
+      # override fingerprint field
+      fingerprints:
+        fieldName: FingerprintSlice
+      # override float fields - #1572
+      duration:
+        fieldName: DurationFinite
+      frame_rate:
+        fieldName: FrameRateFinite
+  ImageFile:
+    fields:
+      # override fingerprint field
+      fingerprints:
+        fieldName: FingerprintSlice
   # autobind on config causes generation issues
   BlobsStorageType:
     model: github.com/stashapp/stash/internal/manager/config.BlobsStorageType
@@ -118,4 +148,6 @@ models:
     model: github.com/stashapp/stash/internal/identify.MetadataOptions
   ScraperSourceInput:
     model: github.com/stashapp/stash/pkg/scraper.Source
+  SavedFindFilterType:
+    model: github.com/stashapp/stash/pkg/models.FindFilterType
   

@@ -17,12 +17,15 @@ const modifierOptions = [
 
 const defaultModifier = CriterionModifier.IncludesAll;
 
+const inputType = "performers";
+
 export const PerformersCriterionOption = new CriterionOption({
   messageID: "performers",
   type: "performers",
-  parameterName: "performers",
   modifierOptions,
   defaultModifier,
+  makeCriterion: () => new PerformersCriterion(),
+  inputType,
 });
 
 export class PerformersCriterion extends Criterion<ILabeledValueListValue> {

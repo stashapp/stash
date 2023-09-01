@@ -3,18 +3,15 @@ package autotag
 import (
 	"context"
 
-	"github.com/stashapp/stash/pkg/gallery"
-	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
 // the following functions aren't used in Tagger because they assume
 // use within a transaction
 
-func addSceneStudio(ctx context.Context, sceneWriter scene.PartialUpdater, o *models.Scene, studioID int) (bool, error) {
+func addSceneStudio(ctx context.Context, sceneWriter models.SceneUpdater, o *models.Scene, studioID int) (bool, error) {
 	// don't set if already set
 	if o.StudioID != nil {
 		return false, nil
@@ -31,7 +28,7 @@ func addSceneStudio(ctx context.Context, sceneWriter scene.PartialUpdater, o *mo
 	return true, nil
 }
 
-func addImageStudio(ctx context.Context, imageWriter image.PartialUpdater, i *models.Image, studioID int) (bool, error) {
+func addImageStudio(ctx context.Context, imageWriter models.ImageUpdater, i *models.Image, studioID int) (bool, error) {
 	// don't set if already set
 	if i.StudioID != nil {
 		return false, nil
@@ -84,11 +81,6 @@ func getStudioTagger(p *models.Studio, aliases []string, cache *match.Cache) []t
 	return ret
 }
 
-type SceneFinderUpdater interface {
-	scene.Queryer
-	scene.PartialUpdater
-}
-
 // StudioScenes searches for scenes whose path matches the provided studio name and tags the scene with the studio, if studio is not already set on the scene.
 func (tagger *Tagger) StudioScenes(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw SceneFinderUpdater) error {
 	t := getStudioTagger(p, aliases, tagger.Cache)
@@ -120,12 +112,6 @@ func (tagger *Tagger) StudioScenes(ctx context.Context, p *models.Studio, paths 
 	return nil
 }
 
-type ImageFinderUpdater interface {
-	image.Queryer
-	Find(ctx context.Context, id int) (*models.Image, error)
-	UpdatePartial(ctx context.Context, id int, partial models.ImagePartial) (*models.Image, error)
-}
-
 // StudioImages searches for images whose path matches the provided studio name and tags the image with the studio, if studio is not already set on the image.
 func (tagger *Tagger) StudioImages(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw ImageFinderUpdater) error {
 	t := getStudioTagger(p, aliases, tagger.Cache)
@@ -155,12 +141,6 @@ func (tagger *Tagger) StudioImages(ctx context.Context, p *models.Studio, paths 
 	}
 
 	return nil
-}
-
-type GalleryFinderUpdater interface {
-	gallery.Queryer
-	gallery.PartialUpdater
-	Find(ctx context.Context, id int) (*models.Gallery, error)
 }
 
 // StudioGalleries searches for galleries whose path matches the provided studio name and tags the gallery with the studio, if studio is not already set on the gallery.

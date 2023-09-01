@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -33,7 +32,7 @@ func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int,
 		return fmt.Errorf("finding source scenes: %w", err)
 	}
 
-	var fileIDs []file.ID
+	var fileIDs []models.FileID
 
 	for _, src := range sources {
 		// TODO - delete generated files as needed

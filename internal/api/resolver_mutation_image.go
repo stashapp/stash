@@ -123,7 +123,7 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 			return nil, fmt.Errorf("converting primary file id: %w", err)
 		}
 
-		converted := file.ID(primaryFileID)
+		converted := models.FileID(primaryFileID)
 		updatedImage.PrimaryFileID = &converted
 
 		if err := i.LoadFiles(ctx, r.repository.Image); err != nil {
@@ -131,7 +131,7 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 		}
 
 		// ensure that new primary file is associated with image
-		var f file.File
+		var f models.File
 		for _, ff := range i.Files.List() {
 			if ff.Base().ID == converted {
 				f = ff

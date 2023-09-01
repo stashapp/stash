@@ -3,16 +3,16 @@ import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import {
   ScrapeDialog,
-  ScrapeResult,
   ScrapedInputGroupRow,
   ScrapedImageRow,
   ScrapeDialogRow,
   ScrapedTextAreaRow,
-} from "src/components/Shared/ScrapeDialog";
+} from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import { StudioSelect } from "src/components/Shared/Select";
 import DurationUtils from "src/utils/duration";
 import { useStudioCreate } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
+import { ScrapeResult } from "src/components/Shared/ScrapeDialog/scrapeResult";
 
 function renderScrapedStudio(
   result: ScrapeResult<string>,

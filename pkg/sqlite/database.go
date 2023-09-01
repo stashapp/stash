@@ -33,7 +33,7 @@ const (
 	dbConnTimeout = 30
 )
 
-var appSchemaVersion uint = 48
+var appSchemaVersion uint = 49
 
 //go:embed migrations/*.sql
 var migrationsBox embed.FS
@@ -74,10 +74,10 @@ type Database struct {
 	Scene          *SceneStore
 	SceneMarker    *SceneMarkerStore
 	Performer      *PerformerStore
+	SavedFilter    *SavedFilterStore
 	Studio         *StudioStore
 	Tag            *TagStore
 	Movie          *MovieStore
-	SavedFilter    *SavedFilterStore
 
 	db     *sqlx.DB
 	dbPath string

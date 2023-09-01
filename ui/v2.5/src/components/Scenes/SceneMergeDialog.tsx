@@ -12,26 +12,29 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useToast } from "src/hooks/Toast";
 import { faExchangeAlt, faSignInAlt } from "@fortawesome/free-solid-svg-icons";
 import {
-  hasScrapedValues,
   ScrapeDialog,
   ScrapeDialogRow,
   ScrapedImageRow,
   ScrapedInputGroupRow,
   ScrapedStringListRow,
   ScrapedTextAreaRow,
+} from "../Shared/ScrapeDialog/ScrapeDialog";
+import { clone, uniq } from "lodash-es";
+import { galleryTitle } from "src/core/galleries";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
+import { ModalComponent } from "../Shared/Modal";
+import { IHasStoredID, sortStoredIdObjects } from "src/utils/data";
+import {
   ScrapeResult,
   ZeroableScrapeResult,
-} from "../Shared/ScrapeDialog";
-import { clone, uniq } from "lodash-es";
+  hasScrapedValues,
+} from "../Shared/ScrapeDialog/scrapeResult";
 import {
   ScrapedMoviesRow,
   ScrapedPerformersRow,
   ScrapedStudioRow,
   ScrapedTagsRow,
-} from "./SceneDetails/SceneScrapeDialog";
-import { galleryTitle } from "src/core/galleries";
-import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
-import { ModalComponent } from "../Shared/Modal";
+} from "../Shared/ScrapeDialog/ScrapedObjectsRow";
 
 interface IStashIDsField {
   values: GQL.StashId[];
@@ -101,8 +104,25 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     return ret;
   }
 
-  const [performers, setPerformers] = useState<ScrapeResult<string[]>>(
-    new ScrapeResult<string[]>(sortIdList(dest.performers.map((p) => p.id)))
+  function idToStoredID(o: { id: string; name: string }) {
+    return {
+      stored_id: o.id,
+      name: o.name,
+    };
+  }
+
+  function uniqIDStoredIDs(objs: IHasStoredID[]) {
+    return objs.filter((o, i) => {
+      return objs.findIndex((oo) => oo.stored_id === o.stored_id) === i;
+    });
+  }
+
+  const [performers, setPerformers] = useState<
+    ScrapeResult<GQL.ScrapedPerformer[]>
+  >(
+    new ScrapeResult<GQL.ScrapedPerformer[]>(
+      sortStoredIdObjects(dest.performers.map(idToStoredID))
+    )
   );
 
   const [movies, setMovies] = useState<ScrapeResult<string[]>>(
@@ -184,8 +204,8 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
 
     setPerformers(
       new ScrapeResult(
-        dest.performers.map((p) => p.id),
-        uniq(all.map((s) => s.performers.map((p) => p.id)).flat())
+        dest.performers.map(idToStoredID),
+        uniqIDStoredIDs(all.map((s) => s.performers.map(idToStoredID)).flat())
       )
     );
     setTags(
@@ -559,7 +579,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       play_duration: playDuration.getNewValue(),
       gallery_ids: galleries.getNewValue(),
       studio_id: studio.getNewValue(),
-      performer_ids: performers.getNewValue(),
+      performer_ids: performers.getNewValue()?.map((p) => p.stored_id!),
       movies: movies.getNewValue()?.map((m) => {
         // find the equivalent movie in the original scenes
         const found = all

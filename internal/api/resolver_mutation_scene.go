@@ -56,9 +56,9 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input SceneCreateInp
 		return nil, fmt.Errorf("converting file ids: %w", err)
 	}
 
-	fileIDs := make([]file.ID, len(fileIDsInt))
+	fileIDs := make([]models.FileID, len(fileIDsInt))
 	for i, v := range fileIDsInt {
-		fileIDs[i] = file.ID(v)
+		fileIDs[i] = models.FileID(v)
 	}
 
 	// Populate a new scene from the input
@@ -212,7 +212,7 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 			return nil, fmt.Errorf("converting primary file id: %w", err)
 		}
 
-		converted := file.ID(primaryFileID)
+		converted := models.FileID(primaryFileID)
 		updatedScene.PrimaryFileID = &converted
 	}
 
@@ -300,7 +300,7 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		}
 
 		// ensure that new primary file is associated with scene
-		var f *file.VideoFile
+		var f *models.VideoFile
 		for _, ff := range originalScene.Files.List() {
 			if ff.ID == newPrimaryFileID {
 				f = ff
@@ -575,7 +575,7 @@ func (r *mutationResolver) SceneAssignFile(ctx context.Context, input AssignScen
 		return false, fmt.Errorf("converting file ID: %w", err)
 	}
 
-	fileID := file.ID(fileIDInt)
+	fileID := models.FileID(fileIDInt)
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		return r.Resolver.sceneService.AssignFile(ctx, sceneID, fileID)

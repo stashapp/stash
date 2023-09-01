@@ -54,7 +54,7 @@ func (s *Service) RemoveImages(ctx context.Context, g *models.Gallery, toRemove 
 	return s.Updated(ctx, g.ID)
 }
 
-func AddPerformer(ctx context.Context, qb PartialUpdater, o *models.Gallery, performerID int) error {
+func AddPerformer(ctx context.Context, qb models.GalleryUpdater, o *models.Gallery, performerID int) error {
 	_, err := qb.UpdatePartial(ctx, o.ID, models.GalleryPartial{
 		PerformerIDs: &models.UpdateIDs{
 			IDs:  []int{performerID},
@@ -64,7 +64,7 @@ func AddPerformer(ctx context.Context, qb PartialUpdater, o *models.Gallery, per
 	return err
 }
 
-func AddTag(ctx context.Context, qb PartialUpdater, o *models.Gallery, tagID int) error {
+func AddTag(ctx context.Context, qb models.GalleryUpdater, o *models.Gallery, tagID int) error {
 	_, err := qb.UpdatePartial(ctx, o.ID, models.GalleryPartial{
 		TagIDs: &models.UpdateIDs{
 			IDs:  []int{tagID},

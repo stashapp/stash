@@ -19,7 +19,6 @@ import {
   mutateReloadScrapers,
 } from "src/core/StashService";
 import {
-  PerformerSelect,
   TagSelect,
   SceneSelect,
   StudioSelect,
@@ -39,6 +38,10 @@ import { ConfigurationContext } from "src/hooks/Config";
 import isEqual from "lodash-es/isEqual";
 import { DateInput } from "src/components/Shared/DateInput";
 import { handleUnsavedChanges } from "src/utils/navigation";
+import {
+  Performer,
+  PerformerSelect,
+} from "src/components/Performers/PerformerSelect";
 
 interface IProps {
   gallery: Partial<GQL.GalleryDataFragment>;
@@ -61,6 +64,8 @@ export const GalleryEditPanel: React.FC<IProps> = ({
       title: galleryTitle(s),
     }))
   );
+
+  const [performers, setPerformers] = useState<Performer[]>([]);
 
   const isNew = gallery.id === undefined;
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
@@ -139,11 +144,23 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     );
   }
 
+  function onSetPerformers(items: Performer[]) {
+    setPerformers(items);
+    formik.setFieldValue(
+      "performer_ids",
+      items.map((item) => item.id)
+    );
+  }
+
   useRatingKeybinds(
     isVisible,
     stashConfig?.ui?.ratingSystemOptions?.type,
     setRating
   );
+
+  useEffect(() => {
+    setPerformers(gallery.performers ?? []);
+  }, [gallery.performers]);
 
   useEffect(() => {
     if (isVisible) {
@@ -238,6 +255,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     return (
       <GalleryScrapeDialog
         gallery={currentGallery}
+        galleryPerformers={performers}
         scraped={scrapedGallery}
         onClose={(data) => {
           onScrapeDialogClosed(data);
@@ -309,8 +327,15 @@ export const GalleryEditPanel: React.FC<IProps> = ({
       });
 
       if (idPerfs.length > 0) {
-        const newIds = idPerfs.map((p) => p.stored_id);
-        formik.setFieldValue("performer_ids", newIds as string[]);
+        onSetPerformers(
+          idPerfs.map((p) => {
+            return {
+              id: p.stored_id!,
+              name: p.name ?? "",
+              alias_list: [],
+            };
+          })
+        );
       }
     }
 
@@ -472,13 +497,8 @@ export const GalleryEditPanel: React.FC<IProps> = ({
               <Col sm={9} xl={12}>
                 <PerformerSelect
                   isMulti
-                  onSelect={(items) =>
-                    formik.setFieldValue(
-                      "performer_ids",
-                      items.map((item) => item.id)
-                    )
-                  }
-                  ids={formik.values.performer_ids}
+                  onSelect={onSetPerformers}
+                  values={performers}
                 />
               </Col>
             </Form.Group>
