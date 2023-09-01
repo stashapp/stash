@@ -8104,6 +8104,11 @@ vfile@^4.0.0:
     videojs-font "3.2.0"
     videojs-vtt.js "^0.15.4"
 
+videojs-abloop@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/videojs-abloop/-/videojs-abloop-1.2.0.tgz#ead4054400e6107d6512553ddff2a97260decf3e"
+  integrity sha512-6/hvtB5gNQUr5FJ969UhXVg5H+3wxhOzh9AVftlezOXlhzzaWfNfiOJYqNKo01Gc/eSQOvfttrOX7jH+aHpwrw==
+
 videojs-contrib-dash@^5.1.1:
   version "5.1.1"
   resolved "https://registry.yarnpkg.com/videojs-contrib-dash/-/videojs-contrib-dash-5.1.1.tgz#9f50191677815a7d816c500977811a926aee0643"

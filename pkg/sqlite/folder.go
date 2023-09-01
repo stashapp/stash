@@ -10,23 +10,23 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/models"
 	"gopkg.in/guregu/null.v4"
 )
 
 const folderTable = "folders"
 
 type folderRow struct {
-	ID             file.FolderID `db:"id" goqu:"skipinsert"`
-	Path           string        `db:"path"`
-	ZipFileID      null.Int      `db:"zip_file_id"`
-	ParentFolderID null.Int      `db:"parent_folder_id"`
-	ModTime        Timestamp     `db:"mod_time"`
-	CreatedAt      Timestamp     `db:"created_at"`
-	UpdatedAt      Timestamp     `db:"updated_at"`
+	ID             models.FolderID `db:"id" goqu:"skipinsert"`
+	Path           string          `db:"path"`
+	ZipFileID      null.Int        `db:"zip_file_id"`
+	ParentFolderID null.Int        `db:"parent_folder_id"`
+	ModTime        Timestamp       `db:"mod_time"`
+	CreatedAt      Timestamp       `db:"created_at"`
+	UpdatedAt      Timestamp       `db:"updated_at"`
 }
 
-func (r *folderRow) fromFolder(o file.Folder) {
+func (r *folderRow) fromFolder(o models.Folder) {
 	r.ID = o.ID
 	r.Path = o.Path
 	r.ZipFileID = nullIntFromFileIDPtr(o.ZipFileID)
@@ -43,10 +43,10 @@ type folderQueryRow struct {
 	ZipFolderPath null.String `db:"zip_folder_path"`
 }
 
-func (r *folderQueryRow) resolve() *file.Folder {
-	ret := &file.Folder{
+func (r *folderQueryRow) resolve() *models.Folder {
+	ret := &models.Folder{
 		ID: r.ID,
-		DirEntry: file.DirEntry{
+		DirEntry: models.DirEntry{
 			ZipFileID: nullIntFileIDPtr(r.ZipFileID),
 			ModTime:   r.ModTime.Timestamp,
 		},
@@ -57,7 +57,7 @@ func (r *folderQueryRow) resolve() *file.Folder {
 	}
 
 	if ret.ZipFileID != nil && r.ZipFolderPath.Valid && r.ZipBasename.Valid {
-		ret.ZipFile = &file.BaseFile{
+		ret.ZipFile = &models.BaseFile{
 			ID:       *ret.ZipFileID,
 			Path:     filepath.Join(r.ZipFolderPath.String, r.ZipBasename.String),
 			Basename: r.ZipBasename.String,
@@ -69,8 +69,8 @@ func (r *folderQueryRow) resolve() *file.Folder {
 
 type folderQueryRows []folderQueryRow
 
-func (r folderQueryRows) resolve() []*file.Folder {
-	var ret []*file.Folder
+func (r folderQueryRows) resolve() []*models.Folder {
+	var ret []*models.Folder
 
 	for _, row := range r {
 		f := row.resolve()
@@ -97,7 +97,7 @@ func NewFolderStore() *FolderStore {
 	}
 }
 
-func (qb *FolderStore) Create(ctx context.Context, f *file.Folder) error {
+func (qb *FolderStore) Create(ctx context.Context, f *models.Folder) error {
 	var r folderRow
 	r.fromFolder(*f)
 
@@ -107,12 +107,12 @@ func (qb *FolderStore) Create(ctx context.Context, f *file.Folder) error {
 	}
 
 	// only assign id once we are successful
-	f.ID = file.FolderID(id)
+	f.ID = models.FolderID(id)
 
 	return nil
 }
 
-func (qb *FolderStore) Update(ctx context.Context, updatedObject *file.Folder) error {
+func (qb *FolderStore) Update(ctx context.Context, updatedObject *models.Folder) error {
 	var r folderRow
 	r.fromFolder(*updatedObject)
 
@@ -123,7 +123,7 @@ func (qb *FolderStore) Update(ctx context.Context, updatedObject *file.Folder) e
 	return nil
 }
 
-func (qb *FolderStore) Destroy(ctx context.Context, id file.FolderID) error {
+func (qb *FolderStore) Destroy(ctx context.Context, id models.FolderID) error {
 	return qb.tableMgr.destroyExisting(ctx, []int{int(id)})
 }
 
@@ -179,7 +179,7 @@ func (qb *FolderStore) countDataset() *goqu.SelectDataset {
 	)
 }
 
-func (qb *FolderStore) get(ctx context.Context, q *goqu.SelectDataset) (*file.Folder, error) {
+func (qb *FolderStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Folder, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
 		return nil, err
@@ -192,7 +192,7 @@ func (qb *FolderStore) get(ctx context.Context, q *goqu.SelectDataset) (*file.Fo
 	return ret[0], nil
 }
 
-func (qb *FolderStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*file.Folder, error) {
+func (qb *FolderStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.Folder, error) {
 	const single = false
 	var rows folderQueryRows
 	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
@@ -210,7 +210,7 @@ func (qb *FolderStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*f
 	return rows.resolve(), nil
 }
 
-func (qb *FolderStore) Find(ctx context.Context, id file.FolderID) (*file.Folder, error) {
+func (qb *FolderStore) Find(ctx context.Context, id models.FolderID) (*models.Folder, error) {
 	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
 
 	ret, err := qb.get(ctx, q)
@@ -221,7 +221,7 @@ func (qb *FolderStore) Find(ctx context.Context, id file.FolderID) (*file.Folder
 	return ret, nil
 }
 
-func (qb *FolderStore) FindByPath(ctx context.Context, p string) (*file.Folder, error) {
+func (qb *FolderStore) FindByPath(ctx context.Context, p string) (*models.Folder, error) {
 	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("path").Eq(p))
 
 	ret, err := qb.get(ctx, q)
@@ -232,7 +232,7 @@ func (qb *FolderStore) FindByPath(ctx context.Context, p string) (*file.Folder, 
 	return ret, nil
 }
 
-func (qb *FolderStore) FindByParentFolderID(ctx context.Context, parentFolderID file.FolderID) ([]*file.Folder, error) {
+func (qb *FolderStore) FindByParentFolderID(ctx context.Context, parentFolderID models.FolderID) ([]*models.Folder, error) {
 	q := qb.selectDataset().Where(qb.table().Col("parent_folder_id").Eq(int(parentFolderID)))
 
 	ret, err := qb.getMany(ctx, q)
@@ -261,7 +261,7 @@ func (qb *FolderStore) allInPaths(q *goqu.SelectDataset, p []string) *goqu.Selec
 // FindAllInPaths returns the all folders that are or are within any of the given paths.
 // Returns all if limit is < 0.
 // Returns all folders if p is empty.
-func (qb *FolderStore) FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]*file.Folder, error) {
+func (qb *FolderStore) FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]*models.Folder, error) {
 	q := qb.selectDataset().Prepared(true)
 	q = qb.allInPaths(q, p)
 
@@ -300,7 +300,7 @@ func (qb *FolderStore) CountAllInPaths(ctx context.Context, p []string) (int, er
 // 	return qb.getMany(ctx, q)
 // }
 
-func (qb *FolderStore) FindByZipFileID(ctx context.Context, zipFileID file.ID) ([]*file.Folder, error) {
+func (qb *FolderStore) FindByZipFileID(ctx context.Context, zipFileID models.FileID) ([]*models.Folder, error) {
 	table := qb.table()
 
 	q := qb.selectDataset().Prepared(true).Where(

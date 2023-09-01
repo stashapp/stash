@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
@@ -281,7 +282,7 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 	logger.Info("[studios] import complete")
 }
 
-func (t *ImportTask) ImportStudio(ctx context.Context, studioJSON *jsonschema.Studio, pendingParent map[string][]*jsonschema.Studio, readerWriter studio.NameFinderCreatorUpdater) error {
+func (t *ImportTask) ImportStudio(ctx context.Context, studioJSON *jsonschema.Studio, pendingParent map[string][]*jsonschema.Studio, readerWriter studio.ImporterReaderWriter) error {
 	importer := &studio.Importer{
 		ReaderWriter:        readerWriter,
 		Input:               *studioJSON,
@@ -385,7 +386,7 @@ func (t *ImportTask) ImportFiles(ctx context.Context) {
 		if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
 			return t.ImportFile(ctx, fileJSON, pendingParent)
 		}); err != nil {
-			if errors.Is(err, errZipFileNotExist) {
+			if errors.Is(err, file.ErrZipFileNotExist) {
 				// add to the pending parent list so that it is created after the parent
 				s := pendingParent[fileJSON.DirEntry().ZipFile]
 				s = append(s, fileJSON)
@@ -421,7 +422,7 @@ func (t *ImportTask) ImportFile(ctx context.Context, fileJSON jsonschema.DirEntr
 	r := t.txnManager
 	readerWriter := r.File
 
-	fileImporter := &fileFolderImporter{
+	fileImporter := &file.Importer{
 		ReaderWriter: readerWriter,
 		FolderStore:  r.Folder,
 		Input:        fileJSON,
@@ -569,7 +570,7 @@ func (t *ImportTask) ImportTags(ctx context.Context) {
 	logger.Info("[tags] import complete")
 }
 
-func (t *ImportTask) ImportTag(ctx context.Context, tagJSON *jsonschema.Tag, pendingParent map[string][]*jsonschema.Tag, fail bool, readerWriter tag.NameFinderCreatorUpdater) error {
+func (t *ImportTask) ImportTag(ctx context.Context, tagJSON *jsonschema.Tag, pendingParent map[string][]*jsonschema.Tag, fail bool, readerWriter tag.ImporterReaderWriter) error {
 	importer := &tag.Importer{
 		ReaderWriter:        readerWriter,
 		Input:               *tagJSON,

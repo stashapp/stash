@@ -16,6 +16,7 @@ export const CircumcisedCriterionOption = new CriterionOption({
     CriterionModifier.IsNull,
     CriterionModifier.NotNull,
   ],
+  makeCriterion: () => new CircumcisedCriterion(),
 });
 
 export class CircumcisedCriterion extends MultiStringCriterion {

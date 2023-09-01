@@ -11,19 +11,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-type Queryer interface {
-	Query(ctx context.Context, options models.SceneQueryOptions) (*models.SceneQueryResult, error)
-}
-
-type CountQueryer interface {
-	QueryCount(ctx context.Context, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) (int, error)
-}
-
-type IDFinder interface {
-	Find(ctx context.Context, id int) (*models.Scene, error)
-	FindMany(ctx context.Context, ids []int) ([]*models.Scene, error)
-}
-
 // QueryOptions returns a SceneQueryOptions populated with the provided filters.
 func QueryOptions(sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType, count bool) models.SceneQueryOptions {
 	return models.SceneQueryOptions{
@@ -36,7 +23,7 @@ func QueryOptions(sceneFilter *models.SceneFilterType, findFilter *models.FindFi
 }
 
 // QueryWithCount queries for scenes, returning the scene objects and the total count.
-func QueryWithCount(ctx context.Context, qb Queryer, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) ([]*models.Scene, int, error) {
+func QueryWithCount(ctx context.Context, qb models.SceneQueryer, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) ([]*models.Scene, int, error) {
 	// this was moved from the queryBuilder code
 	// left here so that calling functions can reference this instead
 	result, err := qb.Query(ctx, QueryOptions(sceneFilter, findFilter, true))
@@ -53,7 +40,7 @@ func QueryWithCount(ctx context.Context, qb Queryer, sceneFilter *models.SceneFi
 }
 
 // Query queries for scenes using the provided filters.
-func Query(ctx context.Context, qb Queryer, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) ([]*models.Scene, error) {
+func Query(ctx context.Context, qb models.SceneQueryer, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) ([]*models.Scene, error) {
 	result, err := qb.Query(ctx, QueryOptions(sceneFilter, findFilter, false))
 	if err != nil {
 		return nil, err
@@ -67,7 +54,7 @@ func Query(ctx context.Context, qb Queryer, sceneFilter *models.SceneFilterType,
 	return scenes, nil
 }
 
-func BatchProcess(ctx context.Context, reader Queryer, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType, fn func(scene *models.Scene) error) error {
+func BatchProcess(ctx context.Context, reader models.SceneQueryer, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType, fn func(scene *models.Scene) error) error {
 	const batchSize = 1000
 
 	if findFilter == nil {
@@ -134,7 +121,7 @@ func FilterFromPaths(paths []string) *models.SceneFilterType {
 	return ret
 }
 
-func CountByStudioID(ctx context.Context, r CountQueryer, id int, depth *int) (int, error) {
+func CountByStudioID(ctx context.Context, r models.SceneQueryer, id int, depth *int) (int, error) {
 	filter := &models.SceneFilterType{
 		Studios: &models.HierarchicalMultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
@@ -146,7 +133,7 @@ func CountByStudioID(ctx context.Context, r CountQueryer, id int, depth *int) (i
 	return r.QueryCount(ctx, filter, nil)
 }
 
-func CountByTagID(ctx context.Context, r CountQueryer, id int, depth *int) (int, error) {
+func CountByTagID(ctx context.Context, r models.SceneQueryer, id int, depth *int) (int, error) {
 	filter := &models.SceneFilterType{
 		Tags: &models.HierarchicalMultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},

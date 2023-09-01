@@ -1,11 +1,5 @@
 package models
 
-import (
-	"context"
-
-	"github.com/stashapp/stash/pkg/file"
-)
-
 type GalleryFilterType struct {
 	And     *GalleryFilterType    `json:"AND"`
 	Or      *GalleryFilterType    `json:"OR"`
@@ -85,41 +79,4 @@ type GalleryDestroyInput struct {
 	// galleries will be deleted, along with the folder, if it is not empty.
 	DeleteFile      *bool `json:"delete_file"`
 	DeleteGenerated *bool `json:"delete_generated"`
-}
-
-type GalleryFinder interface {
-	FindMany(ctx context.Context, ids []int) ([]*Gallery, error)
-}
-
-type GalleryReader interface {
-	Find(ctx context.Context, id int) (*Gallery, error)
-	GalleryFinder
-	FindByChecksum(ctx context.Context, checksum string) ([]*Gallery, error)
-	FindByChecksums(ctx context.Context, checksums []string) ([]*Gallery, error)
-	FindByPath(ctx context.Context, path string) ([]*Gallery, error)
-	FindBySceneID(ctx context.Context, sceneID int) ([]*Gallery, error)
-	FindByImageID(ctx context.Context, imageID int) ([]*Gallery, error)
-
-	SceneIDLoader
-	PerformerIDLoader
-	TagIDLoader
-
-	Count(ctx context.Context) (int, error)
-	All(ctx context.Context) ([]*Gallery, error)
-	Query(ctx context.Context, galleryFilter *GalleryFilterType, findFilter *FindFilterType) ([]*Gallery, int, error)
-	QueryCount(ctx context.Context, galleryFilter *GalleryFilterType, findFilter *FindFilterType) (int, error)
-	GetImageIDs(ctx context.Context, galleryID int) ([]int, error)
-}
-
-type GalleryWriter interface {
-	Create(ctx context.Context, newGallery *Gallery, fileIDs []file.ID) error
-	Update(ctx context.Context, updatedGallery *Gallery) error
-	UpdatePartial(ctx context.Context, id int, updatedGallery GalleryPartial) (*Gallery, error)
-	Destroy(ctx context.Context, id int) error
-	UpdateImages(ctx context.Context, galleryID int, imageIDs []int) error
-}
-
-type GalleryReaderWriter interface {
-	GalleryReader
-	GalleryWriter
 }

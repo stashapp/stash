@@ -110,31 +110,6 @@ export const useCreatePerformer = () => {
       update: (store, newPerformer) => {
         if (!newPerformer?.data?.performerCreate) return;
 
-        const currentQuery = store.readQuery<
-          GQL.AllPerformersForFilterQuery,
-          GQL.AllPerformersForFilterQueryVariables
-        >({
-          query: GQL.AllPerformersForFilterDocument,
-        });
-        const allPerformers = sortBy(
-          [
-            ...(currentQuery?.allPerformers ?? []),
-            newPerformer.data.performerCreate,
-          ],
-          ["name"]
-        );
-        if (allPerformers.length > 1) {
-          store.writeQuery<
-            GQL.AllPerformersForFilterQuery,
-            GQL.AllPerformersForFilterQueryVariables
-          >({
-            query: GQL.AllPerformersForFilterDocument,
-            data: {
-              allPerformers,
-            },
-          });
-        }
-
         store.writeQuery<
           GQL.FindPerformersQuery,
           GQL.FindPerformersQueryVariables

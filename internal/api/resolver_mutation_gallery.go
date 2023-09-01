@@ -199,7 +199,7 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 			return nil, fmt.Errorf("converting primary file id: %w", err)
 		}
 
-		converted := file.ID(primaryFileID)
+		converted := models.FileID(primaryFileID)
 		updatedGallery.PrimaryFileID = &converted
 
 		if err := originalGallery.LoadFiles(ctx, r.repository.Gallery); err != nil {
@@ -207,7 +207,7 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 		}
 
 		// ensure that new primary file is associated with gallery
-		var f file.File
+		var f models.File
 		for _, ff := range originalGallery.Files.List() {
 			if ff.Base().ID == converted {
 				f = ff

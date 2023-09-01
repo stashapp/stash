@@ -105,11 +105,11 @@ const SavedFilterResults: React.FC<ISavedFilterResults> = ({
   const filter = useMemo(() => {
     if (!data?.findSavedFilter) return;
 
-    const { mode, filter: filterJSON } = data.findSavedFilter;
+    const { mode } = data.findSavedFilter;
 
     const ret = new ListFilterModel(mode, config);
     ret.currentPage = 1;
-    ret.configureFromJSON(filterJSON);
+    ret.configureFromSavedFilter(data.findSavedFilter);
     ret.randomSeed = -1;
     return ret;
   }, [data?.findSavedFilter, config]);

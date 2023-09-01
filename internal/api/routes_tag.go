@@ -11,13 +11,12 @@ import (
 	"github.com/stashapp/stash/internal/static"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 type TagFinder interface {
-	tag.Finder
+	models.TagGetter
 	GetImage(ctx context.Context, tagID int) ([]byte, error)
 }
 

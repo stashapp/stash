@@ -1,5 +1,5 @@
 import { Tabs, Tab, Dropdown, Button } from "react-bootstrap";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
@@ -53,6 +53,7 @@ interface ITagParams {
 }
 
 const validTabs = [
+  "default",
   "scenes",
   "images",
   "galleries",
@@ -61,7 +62,7 @@ const validTabs = [
 ] as const;
 type TabKey = (typeof validTabs)[number];
 
-const defaultTab: TabKey = "scenes";
+const defaultTab: TabKey = "default";
 
 function isTabKey(tab: string): tab is TabKey {
   return validTabs.includes(tab as TabKey);
@@ -77,7 +78,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
   const uiConfig = configuration?.ui as IUIConfig | undefined;
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
   const enableBackgroundImage = uiConfig?.enableTagBackgroundImage ?? false;
-  const showAllDetails = uiConfig?.showAllDetails ?? false;
+  const showAllDetails = uiConfig?.showAllDetails ?? true;
   const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
@@ -107,11 +108,32 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
   const performerCount =
     (showAllCounts ? tag.performer_count_all : tag.performer_count) ?? 0;
 
+  const populatedDefaultTab = useMemo(() => {
+    let ret: TabKey = "scenes";
+    if (sceneCount == 0) {
+      if (imageCount != 0) {
+        ret = "images";
+      } else if (galleryCount != 0) {
+        ret = "galleries";
+      } else if (sceneMarkerCount != 0) {
+        ret = "markers";
+      } else if (performerCount != 0) {
+        ret = "performers";
+      }
+    }
+
+    return ret;
+  }, [sceneCount, imageCount, galleryCount, sceneMarkerCount, performerCount]);
+
+  if (tabKey === defaultTab) {
+    tabKey = populatedDefaultTab;
+  }
+
   function setTabKey(newTabKey: string | null) {
-    if (!newTabKey) newTabKey = defaultTab;
+    if (!newTabKey || newTabKey === defaultTab) newTabKey = populatedDefaultTab;
     if (newTabKey === tabKey) return;
 
-    if (newTabKey === defaultTab) {
+    if (newTabKey === populatedDefaultTab) {
       history.replace(`/tags/${tag.id}`);
     } else if (isTabKey(newTabKey)) {
       history.replace(`/tags/${tag.id}/${newTabKey}`);

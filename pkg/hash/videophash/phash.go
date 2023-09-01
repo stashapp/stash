@@ -13,8 +13,8 @@ import (
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/ffmpeg/transcoder"
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type phashConfig struct {
@@ -23,7 +23,7 @@ type phashConfig struct {
 	rows           int
 }
 
-func Generate(encoder *ffmpeg.FFMpeg, videoFile *file.VideoFile) (*uint64, error) {
+func Generate(encoder *ffmpeg.FFMpeg, videoFile *models.VideoFile) (*uint64, error) {
 	// Original algorithm hardcoded to 5 x 5 grid
 	columns := 5
 
@@ -96,7 +96,7 @@ func combineImages(images []image.Image, config phashConfig) image.Image {
 	return montage
 }
 
-func generateSprite(encoder *ffmpeg.FFMpeg, videoFile *file.VideoFile, config phashConfig) (image.Image, error) {
+func generateSprite(encoder *ffmpeg.FFMpeg, videoFile *models.VideoFile, config phashConfig) (image.Image, error) {
 	logger.Infof("[generator] generating phash sprite for %s", videoFile.Path)
 
 	// Generate sprite image offset by 5% on each end to avoid intro/outros

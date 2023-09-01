@@ -2,18 +2,16 @@ package api
 
 import (
 	"context"
-	"strconv"
 	"time"
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/manager/config"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func (r *galleryResolver) getPrimaryFile(ctx context.Context, obj *models.Gallery) (file.File, error) {
+func (r *galleryResolver) getPrimaryFile(ctx context.Context, obj *models.Gallery) (models.File, error) {
 	if obj.PrimaryFileID != nil {
 		f, err := loaders.From(ctx).FileByID.Load(*obj.PrimaryFileID)
 		if err != nil {
@@ -26,7 +24,7 @@ func (r *galleryResolver) getPrimaryFile(ctx context.Context, obj *models.Galler
 	return nil, nil
 }
 
-func (r *galleryResolver) getFiles(ctx context.Context, obj *models.Gallery) ([]file.File, error) {
+func (r *galleryResolver) getFiles(ctx context.Context, obj *models.Gallery) ([]models.File, error) {
 	fileIDs, err := loaders.From(ctx).GalleryFiles.Load(obj.ID)
 	if err != nil {
 		return nil, err
@@ -45,34 +43,20 @@ func (r *galleryResolver) Files(ctx context.Context, obj *models.Gallery) ([]*Ga
 	ret := make([]*GalleryFile, len(files))
 
 	for i, f := range files {
-		base := f.Base()
 		ret[i] = &GalleryFile{
-			ID:             strconv.Itoa(int(base.ID)),
-			Path:           base.Path,
-			Basename:       base.Basename,
-			ParentFolderID: strconv.Itoa(int(base.ParentFolderID)),
-			ModTime:        base.ModTime,
-			Size:           base.Size,
-			CreatedAt:      base.CreatedAt,
-			UpdatedAt:      base.UpdatedAt,
-			Fingerprints:   resolveFingerprints(base),
-		}
-
-		if base.ZipFileID != nil {
-			zipFileID := strconv.Itoa(int(*base.ZipFileID))
-			ret[i].ZipFileID = &zipFileID
+			BaseFile: f.Base(),
 		}
 	}
 
 	return ret, nil
 }
 
-func (r *galleryResolver) Folder(ctx context.Context, obj *models.Gallery) (*Folder, error) {
+func (r *galleryResolver) Folder(ctx context.Context, obj *models.Gallery) (*models.Folder, error) {
 	if obj.FolderID == nil {
 		return nil, nil
 	}
 
-	var ret *file.Folder
+	var ret *models.Folder
 
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var err error
@@ -91,25 +75,7 @@ func (r *galleryResolver) Folder(ctx context.Context, obj *models.Gallery) (*Fol
 		return nil, nil
 	}
 
-	rr := &Folder{
-		ID:        ret.ID.String(),
-		Path:      ret.Path,
-		ModTime:   ret.ModTime,
-		CreatedAt: ret.CreatedAt,
-		UpdatedAt: ret.UpdatedAt,
-	}
-
-	if ret.ParentFolderID != nil {
-		pfidStr := ret.ParentFolderID.String()
-		rr.ParentFolderID = &pfidStr
-	}
-
-	if ret.ZipFileID != nil {
-		zfidStr := ret.ZipFileID.String()
-		rr.ZipFileID = &zfidStr
-	}
-
-	return rr, nil
+	return ret, nil
 }
 
 func (r *galleryResolver) FileModTime(ctx context.Context, obj *models.Gallery) (*time.Time, error) {

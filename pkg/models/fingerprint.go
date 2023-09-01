@@ -1,4 +1,9 @@
-package file
+package models
+
+import (
+	"fmt"
+	"strconv"
+)
 
 var (
 	FingerprintTypeOshash = "oshash"
@@ -10,6 +15,15 @@ var (
 type Fingerprint struct {
 	Type        string
 	Fingerprint interface{}
+}
+
+func (f *Fingerprint) Value() string {
+	switch v := f.Fingerprint.(type) {
+	case int64:
+		return strconv.FormatUint(uint64(v), 16)
+	default:
+		return fmt.Sprintf("%v", f.Fingerprint)
+	}
 }
 
 type Fingerprints []Fingerprint
@@ -113,9 +127,4 @@ func (f Fingerprints) AppendUnique(o Fingerprint) Fingerprints {
 	}
 
 	return append(f, o)
-}
-
-// FingerprintCalculator calculates a fingerprint for the provided file.
-type FingerprintCalculator interface {
-	CalculateFingerprints(f *BaseFile, o Opener, useExisting bool) ([]Fingerprint, error)
 }

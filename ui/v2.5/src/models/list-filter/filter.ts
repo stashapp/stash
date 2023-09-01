@@ -2,11 +2,12 @@ import {
   ConfigDataFragment,
   FilterMode,
   FindFilterType,
+  SavedFilterDataFragment,
   SortDirectionEnum,
 } from "src/core/generated-graphql";
 import { Criterion, CriterionValue } from "./criteria/criterion";
 import { makeCriteria } from "./criteria/factory";
-import { DisplayMode } from "./types";
+import { CriterionType, DisplayMode } from "./types";
 
 interface IDecodedParams {
   perPage?: number;
@@ -127,7 +128,7 @@ export class ListFilterModel {
       for (const jsonString of params.c) {
         try {
           const encodedCriterion = JSON.parse(jsonString);
-          const criterion = makeCriteria(this.config, encodedCriterion.type);
+          const criterion = makeCriteria(this.mode, encodedCriterion.type);
           // it's possible that we have unsupported criteria. Just skip if so.
           if (criterion) {
             criterion.setFromEncodedCriterion(encodedCriterion);
@@ -248,8 +249,41 @@ export class ListFilterModel {
     this.configureFromDecodedParams(decoded);
   }
 
-  public configureFromJSON(json: string) {
-    this.configureFromDecodedParams(JSON.parse(json));
+  public configureFromSavedFilter(savedFilter: SavedFilterDataFragment) {
+    const {
+      find_filter: findFilter,
+      object_filter: objectFilter,
+      ui_options: uiOptions,
+    } = savedFilter;
+
+    this.itemsPerPage = findFilter?.per_page ?? this.itemsPerPage;
+    this.sortBy = findFilter?.sort ?? this.sortBy;
+    // parse the random seed if provided
+    const match = this.sortBy?.match(/^random_(\d+)$/);
+    if (match) {
+      this.sortBy = "random";
+      this.randomSeed = Number.parseInt(match[1], 10);
+    }
+    this.sortDirection =
+      (findFilter?.direction as SortDirectionEnum) ?? this.sortDirection;
+    this.searchTerm = findFilter?.q ?? this.searchTerm;
+
+    this.displayMode = uiOptions?.display_mode ?? this.displayMode;
+    this.zoomIndex = uiOptions?.zoom_index ?? this.zoomIndex;
+
+    this.currentPage = 1;
+
+    this.criteria = [];
+    if (objectFilter) {
+      Object.keys(objectFilter).forEach((key) => {
+        const criterion = makeCriteria(this.mode, key as CriterionType);
+        // it's possible that we have unsupported criteria. Just skip if so.
+        if (criterion) {
+          criterion.setFromEncodedCriterion(objectFilter[key]);
+          this.criteria.push(criterion);
+        }
+      });
+    }
   }
 
   private setRandomSeed() {
@@ -404,5 +438,23 @@ export class ListFilterModel {
     });
 
     return output;
+  }
+
+  public makeSavedFindFilter() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const output: Record<string, any> = {};
+    this.criteria.forEach((criterion) => {
+      criterion.toSavedFilter(output);
+    });
+
+    return output;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public makeUIOptions(): Record<string, any> {
+    return {
+      display_mode: this.displayMode,
+      zoom_index: this.zoomIndex,
+    };
   }
 }
