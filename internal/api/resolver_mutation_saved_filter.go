@@ -14,12 +14,6 @@ func (r *mutationResolver) SaveFilter(ctx context.Context, input SaveFilterInput
 		return nil, errors.New("name must be non-empty")
 	}
 
-	newFilter := models.SavedFilter{
-		Mode:   input.Mode,
-		Name:   input.Name,
-		Filter: input.Filter,
-	}
-
 	var id *int
 	if input.ID != nil {
 		idv, err := strconv.Atoi(*input.ID)
@@ -32,17 +26,27 @@ func (r *mutationResolver) SaveFilter(ctx context.Context, input SaveFilterInput
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.SavedFilter
 
-		if id == nil {
-			err = qb.Create(ctx, &newFilter)
-		} else {
-			newFilter.ID = *id
-			err = qb.Update(ctx, &newFilter)
+		f := models.SavedFilter{
+			Mode:         input.Mode,
+			Name:         input.Name,
+			FindFilter:   input.FindFilter,
+			ObjectFilter: input.ObjectFilter,
+			UIOptions:    input.UIOptions,
 		}
+
+		if id == nil {
+			err = qb.Create(ctx, &f)
+			ret = &f
+		} else {
+			f.ID = *id
+			err = qb.Update(ctx, &f)
+			ret = &f
+		}
+
 		return err
 	}); err != nil {
 		return nil, err
 	}
-	ret = &newFilter
 	return ret, err
 }
 
@@ -65,7 +69,7 @@ func (r *mutationResolver) SetDefaultFilter(ctx context.Context, input SetDefaul
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.SavedFilter
 
-		if input.Filter == nil {
+		if input.FindFilter == nil && input.ObjectFilter == nil && input.UIOptions == nil {
 			// clearing
 			def, err := qb.FindDefault(ctx, input.Mode)
 			if err != nil {
@@ -79,12 +83,12 @@ func (r *mutationResolver) SetDefaultFilter(ctx context.Context, input SetDefaul
 			return nil
 		}
 
-		err := qb.SetDefault(ctx, &models.SavedFilter{
-			Mode:   input.Mode,
-			Filter: *input.Filter,
+		return qb.SetDefault(ctx, &models.SavedFilter{
+			Mode:         input.Mode,
+			FindFilter:   input.FindFilter,
+			ObjectFilter: input.ObjectFilter,
+			UIOptions:    input.UIOptions,
 		})
-
-		return err
 	}); err != nil {
 		return false, err
 	}

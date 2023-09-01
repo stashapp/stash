@@ -3,7 +3,6 @@ package scene
 import (
 	"errors"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
@@ -93,9 +92,9 @@ func createFullScene(id int) models.Scene {
 		Rating:    &rating,
 		Organized: organized,
 		URLs:      models.NewRelatedStrings([]string{url}),
-		Files: models.NewRelatedVideoFiles([]*file.VideoFile{
+		Files: models.NewRelatedVideoFiles([]*models.VideoFile{
 			{
-				BaseFile: &file.BaseFile{
+				BaseFile: &models.BaseFile{
 					Path: path,
 				},
 			},
@@ -111,9 +110,9 @@ func createFullScene(id int) models.Scene {
 func createEmptyScene(id int) models.Scene {
 	return models.Scene{
 		ID: id,
-		Files: models.NewRelatedVideoFiles([]*file.VideoFile{
+		Files: models.NewRelatedVideoFiles([]*models.VideoFile{
 			{
-				BaseFile: &file.BaseFile{
+				BaseFile: &models.BaseFile{
 					Path: path,
 				},
 			},

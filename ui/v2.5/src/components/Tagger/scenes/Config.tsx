@@ -176,6 +176,23 @@ const Config: React.FC<IConfigProps> = ({ show }) => {
                 })}
               </Form.Text>
             </Form.Group>
+            <Form.Group controlId="toggle-organized">
+              <Form.Check
+                label={
+                  <FormattedMessage id="component_tagger.config.mark_organized_label" />
+                }
+                checked={config.markSceneAsOrganizedOnSave}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setConfig({
+                    ...config,
+                    markSceneAsOrganizedOnSave: e.currentTarget.checked,
+                  })
+                }
+              />
+              <Form.Text>
+                <FormattedMessage id="component_tagger.config.mark_organized_desc" />
+              </Form.Text>
+            </Form.Group>
           </Form>
           <div className="col-md-6">
             <h5>

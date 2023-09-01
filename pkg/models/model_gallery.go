@@ -5,8 +5,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
-
-	"github.com/stashapp/stash/pkg/file"
 )
 
 type Gallery struct {
@@ -24,11 +22,11 @@ type Gallery struct {
 	// transient - not persisted
 	Files RelatedFiles
 	// transient - not persisted
-	PrimaryFileID *file.ID
+	PrimaryFileID *FileID
 	// transient - path of primary file or folder
 	Path string
 
-	FolderID *file.FolderID `json:"folder_id"`
+	FolderID *FolderID `json:"folder_id"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -45,13 +43,13 @@ func (g *Gallery) IsUserCreated() bool {
 }
 
 func (g *Gallery) LoadFiles(ctx context.Context, l FileLoader) error {
-	return g.Files.load(func() ([]file.File, error) {
+	return g.Files.load(func() ([]File, error) {
 		return l.GetFiles(ctx, g.ID)
 	})
 }
 
-func (g *Gallery) LoadPrimaryFile(ctx context.Context, l file.Finder) error {
-	return g.Files.loadPrimary(func() (file.File, error) {
+func (g *Gallery) LoadPrimaryFile(ctx context.Context, l FileGetter) error {
+	return g.Files.loadPrimary(func() (File, error) {
 		if g.PrimaryFileID == nil {
 			return nil, nil
 		}
@@ -89,7 +87,7 @@ func (g *Gallery) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
 func (g Gallery) PrimaryChecksum() string {
 	// renamed from Checksum to prevent gqlgen from using it in the resolver
 	if p := g.Files.Primary(); p != nil {
-		v := p.Base().Fingerprints.Get(file.FingerprintTypeMD5)
+		v := p.Base().Fingerprints.Get(FingerprintTypeMD5)
 		if v == nil {
 			return ""
 		}
@@ -120,7 +118,7 @@ type GalleryPartial struct {
 	SceneIDs      *UpdateIDs
 	TagIDs        *UpdateIDs
 	PerformerIDs  *UpdateIDs
-	PrimaryFileID *file.ID
+	PrimaryFileID *FileID
 }
 
 func NewGalleryPartial() GalleryPartial {

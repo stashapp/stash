@@ -6,6 +6,7 @@ export const GenderCriterionOption = new CriterionOption({
   messageID: "gender",
   type: "gender",
   options: genderStrings,
+  makeCriterion: () => new GenderCriterion(),
 });
 
 export class GenderCriterion extends StringCriterion {

@@ -5,32 +5,25 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
-	"github.com/stashapp/stash/pkg/movie"
-	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/studio"
-	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type FullCreatorUpdater interface {
-	CreatorUpdater
-	Update(ctx context.Context, updatedScene *models.Scene) error
-	Updater
+type ImporterReaderWriter interface {
+	models.SceneCreatorUpdater
+	FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Scene, error)
 }
 
 type Importer struct {
-	ReaderWriter        FullCreatorUpdater
-	FileFinder          file.Getter
-	StudioWriter        studio.NameFinderCreator
-	GalleryFinder       gallery.Finder
-	PerformerWriter     performer.NameFinderCreator
-	MovieWriter         movie.NameFinderCreator
-	TagWriter           tag.NameFinderCreator
+	ReaderWriter        ImporterReaderWriter
+	FileFinder          models.FileFinder
+	StudioWriter        models.StudioFinderCreator
+	GalleryFinder       models.GalleryFinder
+	PerformerWriter     models.PerformerFinderCreator
+	MovieWriter         models.MovieFinderCreator
+	TagWriter           models.TagFinderCreator
 	Input               jsonschema.Scene
 	MissingRefBehaviour models.ImportMissingRefEnum
 	FileNamingAlgorithm models.HashAlgorithm
@@ -123,7 +116,7 @@ func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 }
 
 func (i *Importer) populateFiles(ctx context.Context) error {
-	files := make([]*file.VideoFile, 0)
+	files := make([]*models.VideoFile, 0)
 
 	for _, ref := range i.Input.Files {
 		path := ref
@@ -135,7 +128,7 @@ func (i *Importer) populateFiles(ctx context.Context) error {
 		if f == nil {
 			return fmt.Errorf("scene file '%s' not found", path)
 		} else {
-			files = append(files, f.(*file.VideoFile))
+			files = append(files, f.(*models.VideoFile))
 		}
 	}
 
@@ -413,7 +406,7 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	var fileIDs []file.ID
+	var fileIDs []models.FileID
 	for _, f := range i.scene.Files.List() {
 		fileIDs = append(fileIDs, f.Base().ID)
 	}
@@ -437,7 +430,7 @@ func (i *Importer) Update(ctx context.Context, id int) error {
 	return nil
 }
 
-func importTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []string, missingRefBehaviour models.ImportMissingRefEnum) ([]*models.Tag, error) {
+func importTags(ctx context.Context, tagWriter models.TagFinderCreator, names []string, missingRefBehaviour models.ImportMissingRefEnum) ([]*models.Tag, error) {
 	tags, err := tagWriter.FindByNames(ctx, names, false)
 	if err != nil {
 		return nil, err
@@ -472,7 +465,7 @@ func importTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []st
 	return tags, nil
 }
 
-func createTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []string) ([]*models.Tag, error) {
+func createTags(ctx context.Context, tagWriter models.TagCreator, names []string) ([]*models.Tag, error) {
 	var ret []*models.Tag
 	for _, name := range names {
 		newTag := models.NewTag(name)

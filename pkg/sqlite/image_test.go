@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -97,8 +96,8 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 				Organized: true,
 				OCounter:  ocounter,
 				StudioID:  &studioIDs[studioIdxWithImage],
-				Files: models.NewRelatedFiles([]file.File{
-					imageFile.(*file.ImageFile),
+				Files: models.NewRelatedFiles([]models.File{
+					imageFile.(*models.ImageFile),
 				}),
 				PrimaryFileID: &imageFile.Base().ID,
 				Path:          imageFile.Base().Path,
@@ -146,7 +145,7 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			var fileIDs []file.ID
+			var fileIDs []models.FileID
 			if tt.newObject.Files.Loaded() {
 				for _, f := range tt.newObject.Files.List() {
 					fileIDs = append(fileIDs, f.Base().ID)
@@ -205,7 +204,7 @@ func clearImageFileIDs(image *models.Image) {
 	}
 }
 
-func makeImageFileWithID(i int) *file.ImageFile {
+func makeImageFileWithID(i int) *models.ImageFile {
 	ret := makeImageFile(i)
 	ret.ID = imageFileIDs[i]
 	return ret
@@ -444,7 +443,7 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 				Organized: true,
 				OCounter:  ocounter,
 				StudioID:  &studioIDs[studioIdxWithImage],
-				Files: models.NewRelatedFiles([]file.File{
+				Files: models.NewRelatedFiles([]models.File{
 					makeImageFile(imageIdx1WithGallery),
 				}),
 				CreatedAt:    createdAt,
@@ -462,7 +461,7 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 			models.Image{
 				ID:       imageIDs[imageIdx1WithGallery],
 				OCounter: getOCounter(imageIdx1WithGallery),
-				Files: models.NewRelatedFiles([]file.File{
+				Files: models.NewRelatedFiles([]models.File{
 					makeImageFile(imageIdx1WithGallery),
 				}),
 				GalleryIDs:   models.NewRelatedIDs([]int{}),
@@ -965,7 +964,7 @@ func makeImageWithID(index int) *models.Image {
 	ret := makeImage(index)
 	ret.ID = imageIDs[index]
 
-	ret.Files = models.NewRelatedFiles([]file.File{makeImageFile(index)})
+	ret.Files = models.NewRelatedFiles([]models.File{makeImageFile(index)})
 
 	return ret
 }
@@ -1153,15 +1152,15 @@ func Test_imageQueryBuilder_FindByFingerprints(t *testing.T) {
 
 	tests := []struct {
 		name         string
-		fingerprints []file.Fingerprint
+		fingerprints []models.Fingerprint
 		want         []*models.Image
 		wantErr      bool
 	}{
 		{
 			"valid",
-			[]file.Fingerprint{
+			[]models.Fingerprint{
 				{
-					Type:        file.FingerprintTypeMD5,
+					Type:        models.FingerprintTypeMD5,
 					Fingerprint: getChecksum(imageIdxWithGallery),
 				},
 			},
@@ -1170,9 +1169,9 @@ func Test_imageQueryBuilder_FindByFingerprints(t *testing.T) {
 		},
 		{
 			"invalid",
-			[]file.Fingerprint{
+			[]models.Fingerprint{
 				{
-					Type:        file.FingerprintTypeMD5,
+					Type:        models.FingerprintTypeMD5,
 					Fingerprint: "invalid checksum",
 				},
 			},
@@ -1181,9 +1180,9 @@ func Test_imageQueryBuilder_FindByFingerprints(t *testing.T) {
 		},
 		{
 			"with performers",
-			[]file.Fingerprint{
+			[]models.Fingerprint{
 				{
-					Type:        file.FingerprintTypeMD5,
+					Type:        models.FingerprintTypeMD5,
 					Fingerprint: getChecksum(imageIdxWithTwoPerformers),
 				},
 			},
@@ -1192,9 +1191,9 @@ func Test_imageQueryBuilder_FindByFingerprints(t *testing.T) {
 		},
 		{
 			"with tags",
-			[]file.Fingerprint{
+			[]models.Fingerprint{
 				{
-					Type:        file.FingerprintTypeMD5,
+					Type:        models.FingerprintTypeMD5,
 					Fingerprint: getChecksum(imageIdxWithTwoTags),
 				},
 			},
@@ -1316,7 +1315,7 @@ func imagesToIDs(i []*models.Image) []int {
 func Test_imageStore_FindByFileID(t *testing.T) {
 	tests := []struct {
 		name    string
-		fileID  file.ID
+		fileID  models.FileID
 		include []int
 		exclude []int
 	}{
@@ -1365,7 +1364,7 @@ func Test_imageStore_FindByFileID(t *testing.T) {
 func Test_imageStore_FindByFolderID(t *testing.T) {
 	tests := []struct {
 		name     string
-		folderID file.FolderID
+		folderID models.FolderID
 		include  []int
 		exclude  []int
 	}{
@@ -1420,7 +1419,7 @@ func Test_imageStore_FindByFolderID(t *testing.T) {
 func Test_imageStore_FindByZipFileID(t *testing.T) {
 	tests := []struct {
 		name      string
-		zipFileID file.ID
+		zipFileID models.FileID
 		include   []int
 		exclude   []int
 	}{
@@ -1868,11 +1867,12 @@ func verifyImagesResolution(t *testing.T, resolution models.ResolutionEnum) {
 				t.Errorf("Error loading primary file: %s", err.Error())
 				return nil
 			}
-			asFrame, ok := image.Files.Primary().(file.VisualFile)
+			f := image.Files.Primary()
+			vf, ok := f.(models.VisualFile)
 			if !ok {
-				t.Errorf("Error: Associated primary file of image is not of type VisualFile")
+				t.Errorf("Error: image primary file is not a visual file (is type %T)", f)
 			}
-			verifyImageResolution(t, asFrame.GetHeight(), resolution)
+			verifyImageResolution(t, vf.GetHeight(), resolution)
 		}
 
 		return nil

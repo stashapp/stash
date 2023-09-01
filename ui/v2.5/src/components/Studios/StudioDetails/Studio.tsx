@@ -1,5 +1,5 @@
 import { Button, Tabs, Tab } from "react-bootstrap";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
@@ -57,6 +57,7 @@ interface IStudioParams {
 }
 
 const validTabs = [
+  "default",
   "scenes",
   "galleries",
   "images",
@@ -66,7 +67,7 @@ const validTabs = [
 ] as const;
 type TabKey = (typeof validTabs)[number];
 
-const defaultTab: TabKey = "scenes";
+const defaultTab: TabKey = "default";
 
 function isTabKey(tab: string): tab is TabKey {
   return validTabs.includes(tab as TabKey);
@@ -82,7 +83,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   const uiConfig = configuration?.ui as IUIConfig | undefined;
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
   const enableBackgroundImage = uiConfig?.enableStudioBackgroundImage ?? false;
-  const showAllDetails = uiConfig?.showAllDetails ?? false;
+  const showAllDetails = uiConfig?.showAllDetails ?? true;
   const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
@@ -111,6 +112,36 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
     (showAllCounts ? studio.performer_count_all : studio.performer_count) ?? 0;
   const movieCount =
     (showAllCounts ? studio.movie_count_all : studio.movie_count) ?? 0;
+
+  const populatedDefaultTab = useMemo(() => {
+    let ret: TabKey = "scenes";
+    if (sceneCount == 0) {
+      if (galleryCount != 0) {
+        ret = "galleries";
+      } else if (imageCount != 0) {
+        ret = "images";
+      } else if (performerCount != 0) {
+        ret = "performers";
+      } else if (movieCount != 0) {
+        ret = "movies";
+      } else if (studio.child_studios.length != 0) {
+        ret = "childstudios";
+      }
+    }
+
+    return ret;
+  }, [
+    sceneCount,
+    galleryCount,
+    imageCount,
+    performerCount,
+    movieCount,
+    studio,
+  ]);
+
+  if (tabKey === defaultTab) {
+    tabKey = populatedDefaultTab;
+  }
 
   // set up hotkeys
   useEffect(() => {
@@ -243,10 +274,10 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   }
 
   function setTabKey(newTabKey: string | null) {
-    if (!newTabKey) newTabKey = defaultTab;
+    if (!newTabKey || newTabKey === defaultTab) newTabKey = populatedDefaultTab;
     if (newTabKey === tabKey) return;
 
-    if (newTabKey === defaultTab) {
+    if (newTabKey === populatedDefaultTab) {
       history.replace(`/studios/${studio.id}`);
     } else if (isTabKey(newTabKey)) {
       history.replace(`/studios/${studio.id}/${newTabKey}`);

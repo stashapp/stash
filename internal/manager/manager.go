@@ -26,6 +26,7 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
@@ -222,7 +223,7 @@ func initialize() error {
 
 	instance.DLNAService = dlna.NewService(instance.Repository, dlna.Repository{
 		SceneFinder:     instance.Repository.Scene,
-		FileFinder:      instance.Repository.File,
+		FileGetter:      instance.Repository.File,
 		StudioFinder:    instance.Repository.Studio,
 		TagFinder:       instance.Repository.Tag,
 		PerformerFinder: instance.Repository.Performer,
@@ -280,15 +281,15 @@ func initialize() error {
 	return nil
 }
 
-func videoFileFilter(ctx context.Context, f file.File) bool {
+func videoFileFilter(ctx context.Context, f models.File) bool {
 	return useAsVideo(f.Base().Path)
 }
 
-func imageFileFilter(ctx context.Context, f file.File) bool {
+func imageFileFilter(ctx context.Context, f models.File) bool {
 	return useAsImage(f.Base().Path)
 }
 
-func galleryFileFilter(ctx context.Context, f file.File) bool {
+func galleryFileFilter(ctx context.Context, f models.File) bool {
 	return isZip(f.Base().Basename)
 }
 
@@ -297,7 +298,7 @@ func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
 		Repository: file.Repository{
 			Manager:          db,
 			DatabaseProvider: db,
-			Store:            db.File,
+			FileStore:        db.File,
 			FolderStore:      db.Folder,
 		},
 		FileDecorators: []file.Decorator{
@@ -325,7 +326,7 @@ func makeCleaner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Cleaner {
 		Repository: file.Repository{
 			Manager:          db,
 			DatabaseProvider: db,
-			Store:            db.File,
+			FileStore:        db.File,
 			FolderStore:      db.Folder,
 		},
 		Handlers: []file.CleanHandler{

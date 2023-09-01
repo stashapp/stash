@@ -10,7 +10,7 @@ import (
 )
 
 type PerformerCreator interface {
-	Create(ctx context.Context, newPerformer *models.Performer) error
+	models.PerformerCreator
 	UpdateImage(ctx context.Context, performerID int, image []byte) error
 }
 

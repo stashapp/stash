@@ -3,7 +3,6 @@ package image
 import (
 	"errors"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
@@ -45,8 +44,8 @@ var (
 func createFullImage(id int) models.Image {
 	return models.Image{
 		ID: id,
-		Files: models.NewRelatedFiles([]file.File{
-			&file.BaseFile{
+		Files: models.NewRelatedFiles([]models.File{
+			&models.BaseFile{
 				Path: path,
 			},
 		}),

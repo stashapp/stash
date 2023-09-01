@@ -94,7 +94,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("gallery_count"),
   createMandatoryNumberCriterionOption("o_counter"),
   createBooleanCriterionOption("ignore_auto_tag"),
-  new NumberCriterionOption("height", "height_cm", "height_cm"),
+  new NumberCriterionOption("height", "height_cm"),
   ...numberCriteria.map((c) => createNumberCriterionOption(c)),
   ...stringCriteria.map((c) => createStringCriterionOption(c)),
   createDateCriterionOption("birthdate"),

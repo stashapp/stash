@@ -270,11 +270,11 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
       if (existing) {
         setCriterion(existing);
       } else {
-        const newCriterion = makeCriteria(configuration, option.type);
+        const newCriterion = makeCriteria(filter.mode, option.type);
         setCriterion(newCriterion);
       }
     },
-    [criteria, configuration]
+    [filter.mode, criteria]
   );
 
   const ui = (configuration?.ui ?? {}) as IUIConfig;

@@ -4,7 +4,12 @@ import {
 } from "src/core/generated-graphql";
 import { stringToResolution, resolutionStrings } from "src/utils/resolution";
 import { CriterionType } from "../types";
-import { CriterionOption, StringCriterion } from "./criterion";
+import {
+  Criterion,
+  CriterionOption,
+  CriterionValue,
+  StringCriterion,
+} from "./criterion";
 
 abstract class AbstractResolutionCriterion extends StringCriterion {
   protected toCriterionInput(): ResolutionCriterionInput | undefined {
@@ -20,11 +25,13 @@ abstract class AbstractResolutionCriterion extends StringCriterion {
 }
 
 class ResolutionCriterionOptionType extends CriterionOption {
-  constructor(value: CriterionType) {
+  constructor(
+    value: CriterionType,
+    makeCriterion: () => Criterion<CriterionValue>
+  ) {
     super({
       messageID: value,
       type: value,
-      parameterName: value,
       modifierOptions: [
         CriterionModifier.Equals,
         CriterionModifier.NotEquals,
@@ -32,12 +39,14 @@ class ResolutionCriterionOptionType extends CriterionOption {
         CriterionModifier.LessThan,
       ],
       options: resolutionStrings,
+      makeCriterion,
     });
   }
 }
 
 export const ResolutionCriterionOption = new ResolutionCriterionOptionType(
-  "resolution"
+  "resolution",
+  () => new ResolutionCriterion()
 );
 export class ResolutionCriterion extends AbstractResolutionCriterion {
   constructor() {
@@ -46,7 +55,10 @@ export class ResolutionCriterion extends AbstractResolutionCriterion {
 }
 
 export const AverageResolutionCriterionOption =
-  new ResolutionCriterionOptionType("average_resolution");
+  new ResolutionCriterionOptionType(
+    "average_resolution",
+    () => new AverageResolutionCriterion()
+  );
 
 export class AverageResolutionCriterion extends AbstractResolutionCriterion {
   constructor() {

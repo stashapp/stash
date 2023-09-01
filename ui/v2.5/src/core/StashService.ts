@@ -268,8 +268,22 @@ export const queryFindPerformers = (filter: ListFilterModel) =>
     },
   });
 
-export const useAllPerformersForFilter = () =>
-  GQL.useAllPerformersForFilterQuery();
+export const queryFindPerformersByIDForSelect = (performerIDs: number[]) =>
+  client.query<GQL.FindPerformersForSelectQuery>({
+    query: GQL.FindPerformersForSelectDocument,
+    variables: {
+      performer_ids: performerIDs,
+    },
+  });
+
+export const queryFindPerformersForSelect = (filter: ListFilterModel) =>
+  client.query<GQL.FindPerformersForSelectQuery>({
+    query: GQL.FindPerformersForSelectDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      performer_filter: filter.makeFilter(),
+    },
+  });
 
 export const useFindStudio = (id: string) => {
   const skip = id === "new" || id === "";
@@ -1371,8 +1385,6 @@ export const usePerformerCreate = () =>
     update(cache, result) {
       const performer = result.data?.performerCreate;
       if (!performer) return;
-
-      appendObject(cache, performer, GQL.AllPerformersForFilterDocument);
 
       // update stats
       updateStats(cache, "performer_count", 1);

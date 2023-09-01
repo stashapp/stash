@@ -12,6 +12,17 @@ input FindFilterType {
   direction: SortDirectionEnum
 }
 
+type SavedFindFilterType {
+  q: String
+  page: Int
+  """
+  use per_page = -1 to indicate all results. Defaults to 25.
+  """
+  per_page: Int
+  sort: String
+  direction: SortDirectionEnum
+}
+
 enum ResolutionEnum {
   "144p"
   VERY_LOW
@@ -604,6 +615,13 @@ type SavedFilter {
   name: String!
   "JSON-encoded filter string"
   filter: String!
+    @deprecated(reason: "use find_filter and object_filter instead")
+  find_filter: SavedFindFilterType
+  # maps to any of the AnyFilterInput types
+  # using a generic Map instead of creating and maintaining match types for inputs
+  object_filter: Map
+  # generic map for ui options
+  ui_options: Map
 }
 
 input SaveFilterInput {
@@ -611,8 +629,10 @@ input SaveFilterInput {
   id: ID
   mode: FilterMode!
   name: String!
-  "JSON-encoded filter string"
-  filter: String!
+  find_filter: FindFilterType
+  object_filter: Map
+  # generic map for ui options
+  ui_options: Map
 }
 
 input DestroyFilterInput {
@@ -621,6 +641,9 @@ input DestroyFilterInput {
 
 input SetDefaultFilterInput {
   mode: FilterMode!
-  "JSON-encoded filter string - null to clear"
-  filter: String
+  "null to clear"
+  find_filter: FindFilterType
+  object_filter: Map
+  # generic map for ui options
+  ui_options: Map
 }

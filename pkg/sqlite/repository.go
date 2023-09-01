@@ -9,7 +9,6 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -336,7 +335,7 @@ type captionRepository struct {
 	repository
 }
 
-func (r *captionRepository) get(ctx context.Context, id file.ID) ([]*models.VideoCaption, error) {
+func (r *captionRepository) get(ctx context.Context, id models.FileID) ([]*models.VideoCaption, error) {
 	query := fmt.Sprintf("SELECT %s, %s, %s from %s WHERE %s = ?", captionCodeColumn, captionFilenameColumn, captionTypeColumn, r.tableName, r.idColumn)
 	var ret []*models.VideoCaption
 	err := r.queryFunc(ctx, query, []interface{}{id}, false, func(rows *sqlx.Rows) error {
@@ -359,12 +358,12 @@ func (r *captionRepository) get(ctx context.Context, id file.ID) ([]*models.Vide
 	return ret, err
 }
 
-func (r *captionRepository) insert(ctx context.Context, id file.ID, caption *models.VideoCaption) (sql.Result, error) {
+func (r *captionRepository) insert(ctx context.Context, id models.FileID, caption *models.VideoCaption) (sql.Result, error) {
 	stmt := fmt.Sprintf("INSERT INTO %s (%s, %s, %s, %s) VALUES (?, ?, ?, ?)", r.tableName, r.idColumn, captionCodeColumn, captionFilenameColumn, captionTypeColumn)
 	return r.tx.Exec(ctx, stmt, id, caption.LanguageCode, caption.Filename, caption.CaptionType)
 }
 
-func (r *captionRepository) replace(ctx context.Context, id file.ID, captions []*models.VideoCaption) error {
+func (r *captionRepository) replace(ctx context.Context, id models.FileID, captions []*models.VideoCaption) error {
 	if err := r.destroy(ctx, []int{int(id)}); err != nil {
 		return err
 	}
@@ -443,12 +442,12 @@ type filesRepository struct {
 }
 
 type relatedFileRow struct {
-	ID      int     `db:"id"`
-	FileID  file.ID `db:"file_id"`
-	Primary bool    `db:"primary"`
+	ID      int           `db:"id"`
+	FileID  models.FileID `db:"file_id"`
+	Primary bool          `db:"primary"`
 }
 
-func (r *filesRepository) getMany(ctx context.Context, ids []int, primaryOnly bool) ([][]file.ID, error) {
+func (r *filesRepository) getMany(ctx context.Context, ids []int, primaryOnly bool) ([][]models.FileID, error) {
 	var primaryClause string
 	if primaryOnly {
 		primaryClause = " AND `primary` = 1"
@@ -476,7 +475,7 @@ func (r *filesRepository) getMany(ctx context.Context, ids []int, primaryOnly bo
 		return nil, err
 	}
 
-	ret := make([][]file.ID, len(ids))
+	ret := make([][]models.FileID, len(ids))
 	idToIndex := make(map[int]int)
 	for i, id := range ids {
 		idToIndex[id] = i
@@ -488,7 +487,7 @@ func (r *filesRepository) getMany(ctx context.Context, ids []int, primaryOnly bo
 
 		if row.Primary {
 			// prepend to list
-			ret[idToIndex[id]] = append([]file.ID{fileID}, ret[idToIndex[id]]...)
+			ret[idToIndex[id]] = append([]models.FileID{fileID}, ret[idToIndex[id]]...)
 		} else {
 			ret[idToIndex[id]] = append(ret[idToIndex[id]], row.FileID)
 		}
@@ -497,15 +496,15 @@ func (r *filesRepository) getMany(ctx context.Context, ids []int, primaryOnly bo
 	return ret, nil
 }
 
-func (r *filesRepository) get(ctx context.Context, id int) ([]file.ID, error) {
+func (r *filesRepository) get(ctx context.Context, id int) ([]models.FileID, error) {
 	query := fmt.Sprintf("SELECT file_id, `primary` from %s WHERE %s = ?", r.tableName, r.idColumn)
 
 	type relatedFile struct {
-		FileID  file.ID `db:"file_id"`
-		Primary bool    `db:"primary"`
+		FileID  models.FileID `db:"file_id"`
+		Primary bool          `db:"primary"`
 	}
 
-	var ret []file.ID
+	var ret []models.FileID
 	if err := r.queryFunc(ctx, query, []interface{}{id}, false, func(rows *sqlx.Rows) error {
 		var f relatedFile
 
@@ -515,7 +514,7 @@ func (r *filesRepository) get(ctx context.Context, id int) ([]file.ID, error) {
 
 		if f.Primary {
 			// prepend to list
-			ret = append([]file.ID{f.FileID}, ret...)
+			ret = append([]models.FileID{f.FileID}, ret...)
 		} else {
 			ret = append(ret, f.FileID)
 		}

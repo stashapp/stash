@@ -152,7 +152,7 @@ func Start() error {
 	r.Mount("/scene", sceneRoutes{
 		txnManager:        txnManager,
 		sceneFinder:       txnManager.Scene,
-		fileFinder:        txnManager.File,
+		fileGetter:        txnManager.File,
 		captionFinder:     txnManager.File,
 		sceneMarkerFinder: txnManager.SceneMarker,
 		tagFinder:         txnManager.Tag,
@@ -160,7 +160,7 @@ func Start() error {
 	r.Mount("/image", imageRoutes{
 		txnManager:  txnManager,
 		imageFinder: txnManager.Image,
-		fileFinder:  txnManager.File,
+		fileGetter:  txnManager.File,
 	}.Routes())
 	r.Mount("/studio", studioRoutes{
 		txnManager:   txnManager,

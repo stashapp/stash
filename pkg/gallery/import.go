@@ -5,32 +5,30 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
-	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/studio"
-	"github.com/stashapp/stash/pkg/tag"
 )
 
+type ImporterReaderWriter interface {
+	models.GalleryCreatorUpdater
+	FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Gallery, error)
+	FindByFolderID(ctx context.Context, folderID models.FolderID) ([]*models.Gallery, error)
+	FindUserGalleryByTitle(ctx context.Context, title string) ([]*models.Gallery, error)
+}
+
 type Importer struct {
-	ReaderWriter        FullCreatorUpdater
-	StudioWriter        studio.NameFinderCreator
-	PerformerWriter     performer.NameFinderCreator
-	TagWriter           tag.NameFinderCreator
-	FileFinder          file.Getter
-	FolderFinder        file.FolderGetter
+	ReaderWriter        ImporterReaderWriter
+	StudioWriter        models.StudioFinderCreator
+	PerformerWriter     models.PerformerFinderCreator
+	TagWriter           models.TagFinderCreator
+	FileFinder          models.FileFinder
+	FolderFinder        models.FolderFinder
 	Input               jsonschema.Gallery
 	MissingRefBehaviour models.ImportMissingRefEnum
 
 	ID      int
 	gallery models.Gallery
-}
-
-type FullCreatorUpdater interface {
-	FinderCreatorUpdater
-	Update(ctx context.Context, updatedGallery *models.Gallery) error
 }
 
 func (i *Importer) PreImport(ctx context.Context) error {
@@ -251,7 +249,7 @@ func (i *Importer) createTags(ctx context.Context, names []string) ([]*models.Ta
 }
 
 func (i *Importer) populateFilesFolder(ctx context.Context) error {
-	files := make([]file.File, 0)
+	files := make([]models.File, 0)
 
 	for _, ref := range i.Input.ZipFiles {
 		path := ref
@@ -340,7 +338,7 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	var fileIDs []file.ID
+	var fileIDs []models.FileID
 	for _, f := range i.gallery.Files.List() {
 		fileIDs = append(fileIDs, f.Base().ID)
 	}
