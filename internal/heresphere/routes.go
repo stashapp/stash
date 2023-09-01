@@ -311,7 +311,9 @@ func (rs Routes) HeresphereVideoData(w http.ResponseWriter, r *http.Request) {
 	if scene.Files.PrimaryLoaded() {
 		file_ids := scene.Files.Primary()
 		if file_ids != nil {
-			processedScene.Duration = manager.HandleFloat64Value(file_ids.Duration * 1000.0)
+			if val := manager.HandleFloat64(file_ids.Duration * 1000.0); val != nil {
+				processedScene.Duration = *val
+			}
 		}
 	}
 
