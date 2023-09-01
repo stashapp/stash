@@ -59,16 +59,12 @@ const displayModeOptions = [
 
 const criterionOptions = [
   createStringCriterionOption("title"),
-  createStringCriterionOption("scene_code"),
+  createStringCriterionOption("code", "scene_code"),
   createPathCriterionOption("path"),
   createStringCriterionOption("details"),
   createStringCriterionOption("director"),
   createMandatoryStringCriterionOption("oshash", "media_info.hash"),
-  createStringCriterionOption(
-    "sceneChecksum",
-    "media_info.checksum",
-    "checksum"
-  ),
+  createStringCriterionOption("checksum", "media_info.checksum"),
   PhashCriterionOption,
   DuplicatedCriterionOption,
   OrganizedCriterionOption,

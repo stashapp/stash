@@ -11,25 +11,19 @@ export class IsMissingCriterion extends StringCriterion {
 }
 
 class IsMissingCriterionOptionClass extends CriterionOption {
-  constructor(
-    messageID: string,
-    value: CriterionType,
-    parameterName: string,
-    options: Option[]
-  ) {
+  constructor(messageID: string, type: CriterionType, options: Option[]) {
     super({
       messageID,
-      type: value,
-      parameterName,
+      type,
       options,
       defaultModifier: CriterionModifier.Equals,
+      makeCriterion: () => new IsMissingCriterion(this),
     });
   }
 }
 
 export const SceneIsMissingCriterionOption = new IsMissingCriterionOptionClass(
   "isMissing",
-  "sceneIsMissing",
   "is_missing",
   [
     "title",
@@ -48,73 +42,59 @@ export const SceneIsMissingCriterionOption = new IsMissingCriterionOptionClass(
 
 export const ImageIsMissingCriterionOption = new IsMissingCriterionOptionClass(
   "isMissing",
-  "imageIsMissing",
   "is_missing",
   ["title", "galleries", "studio", "performers", "tags"]
 );
 
 export const PerformerIsMissingCriterionOption =
-  new IsMissingCriterionOptionClass(
-    "isMissing",
-    "performerIsMissing",
-    "is_missing",
-    [
-      "url",
-      "twitter",
-      "instagram",
-      "ethnicity",
-      "country",
-      "hair_color",
-      "eye_color",
-      "height",
-      "weight",
-      "measurements",
-      "fake_tits",
-      "career_length",
-      "tattoos",
-      "piercings",
-      "aliases",
-      "gender",
-      "image",
-      "details",
-      "stash_id",
-    ]
-  );
+  new IsMissingCriterionOptionClass("isMissing", "is_missing", [
+    "url",
+    "twitter",
+    "instagram",
+    "ethnicity",
+    "country",
+    "hair_color",
+    "eye_color",
+    "height",
+    "weight",
+    "measurements",
+    "fake_tits",
+    "career_length",
+    "tattoos",
+    "piercings",
+    "aliases",
+    "gender",
+    "image",
+    "details",
+    "stash_id",
+  ]);
 
 export const GalleryIsMissingCriterionOption =
-  new IsMissingCriterionOptionClass(
-    "isMissing",
-    "galleryIsMissing",
-    "is_missing",
-    [
-      "title",
-      "details",
-      "url",
-      "date",
-      "studio",
-      "performers",
-      "tags",
-      "scenes",
-    ]
-  );
+  new IsMissingCriterionOptionClass("isMissing", "is_missing", [
+    "title",
+    "details",
+    "url",
+    "date",
+    "studio",
+    "performers",
+    "tags",
+    "scenes",
+  ]);
 
 export const TagIsMissingCriterionOption = new IsMissingCriterionOptionClass(
   "isMissing",
-  "tagIsMissing",
   "is_missing",
   ["image"]
 );
 
 export const StudioIsMissingCriterionOption = new IsMissingCriterionOptionClass(
   "isMissing",
-  "studioIsMissing",
   "is_missing",
   ["image", "stash_id", "details"]
 );
 
 export const MovieIsMissingCriterionOption = new IsMissingCriterionOptionClass(
   "isMissing",
-  "movieIsMissing",
   "is_missing",
   ["front_image", "back_image", "scenes"]
 );

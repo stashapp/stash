@@ -20,14 +20,14 @@ const (
 type autotagScraper struct {
 	// repository   models.Repository
 	txnManager      txn.Manager
-	performerReader match.PerformerAutoTagQueryer
-	studioReader    match.StudioAutoTagQueryer
-	tagReader       match.TagAutoTagQueryer
+	performerReader models.PerformerAutoTagQueryer
+	studioReader    models.StudioAutoTagQueryer
+	tagReader       models.TagAutoTagQueryer
 
 	globalConfig GlobalConfig
 }
 
-func autotagMatchPerformers(ctx context.Context, path string, performerReader match.PerformerAutoTagQueryer, trimExt bool) ([]*models.ScrapedPerformer, error) {
+func autotagMatchPerformers(ctx context.Context, path string, performerReader models.PerformerAutoTagQueryer, trimExt bool) ([]*models.ScrapedPerformer, error) {
 	p, err := match.PathToPerformers(ctx, path, performerReader, nil, trimExt)
 	if err != nil {
 		return nil, fmt.Errorf("error matching performers: %w", err)
@@ -52,7 +52,7 @@ func autotagMatchPerformers(ctx context.Context, path string, performerReader ma
 	return ret, nil
 }
 
-func autotagMatchStudio(ctx context.Context, path string, studioReader match.StudioAutoTagQueryer, trimExt bool) (*models.ScrapedStudio, error) {
+func autotagMatchStudio(ctx context.Context, path string, studioReader models.StudioAutoTagQueryer, trimExt bool) (*models.ScrapedStudio, error) {
 	studio, err := match.PathToStudio(ctx, path, studioReader, nil, trimExt)
 	if err != nil {
 		return nil, fmt.Errorf("error matching studios: %w", err)
@@ -69,7 +69,7 @@ func autotagMatchStudio(ctx context.Context, path string, studioReader match.Stu
 	return nil, nil
 }
 
-func autotagMatchTags(ctx context.Context, path string, tagReader match.TagAutoTagQueryer, trimExt bool) ([]*models.ScrapedTag, error) {
+func autotagMatchTags(ctx context.Context, path string, tagReader models.TagAutoTagQueryer, trimExt bool) ([]*models.ScrapedTag, error) {
 	t, err := match.PathToTags(ctx, path, tagReader, nil, trimExt)
 	if err != nil {
 		return nil, fmt.Errorf("error matching tags: %w", err)

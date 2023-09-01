@@ -44,12 +44,9 @@ interface ITypeProps {
   type?:
     | "performers"
     | "studios"
-    | "parent_studios"
     | "tags"
-    | "sceneTags"
-    | "performerTags"
-    | "parentTags"
-    | "childTags"
+    | "scene_tags"
+    | "performer_tags"
     | "movies";
 }
 interface IFilterProps {
@@ -865,7 +862,7 @@ export const TagSelect: React.FC<
 export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) => {
   if (props.type === "performers") {
     return <PerformerSelect {...props} creatable={false} />;
-  } else if (props.type === "studios" || props.type === "parent_studios") {
+  } else if (props.type === "studios") {
     return <StudioSelect {...props} creatable={false} />;
   } else if (props.type === "movies") {
     return <MovieSelect {...props} creatable={false} />;

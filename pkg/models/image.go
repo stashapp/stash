@@ -77,60 +77,21 @@ type ImageQueryResult struct {
 	Megapixels float64
 	TotalSize  float64
 
-	finder     ImageFinder
+	getter     ImageGetter
 	images     []*Image
 	resolveErr error
 }
 
-func NewImageQueryResult(finder ImageFinder) *ImageQueryResult {
+func NewImageQueryResult(getter ImageGetter) *ImageQueryResult {
 	return &ImageQueryResult{
-		finder: finder,
+		getter: getter,
 	}
 }
 
 func (r *ImageQueryResult) Resolve(ctx context.Context) ([]*Image, error) {
 	// cache results
 	if r.images == nil && r.resolveErr == nil {
-		r.images, r.resolveErr = r.finder.FindMany(ctx, r.IDs)
+		r.images, r.resolveErr = r.getter.FindMany(ctx, r.IDs)
 	}
 	return r.images, r.resolveErr
-}
-
-type ImageFinder interface {
-	// TODO - rename to Find and remove existing method
-	FindMany(ctx context.Context, ids []int) ([]*Image, error)
-}
-
-type ImageReader interface {
-	ImageFinder
-	// TODO - remove this in another PR
-	Find(ctx context.Context, id int) (*Image, error)
-	FindByChecksum(ctx context.Context, checksum string) ([]*Image, error)
-	FindByGalleryID(ctx context.Context, galleryID int) ([]*Image, error)
-	CountByGalleryID(ctx context.Context, galleryID int) (int, error)
-	OCountByPerformerID(ctx context.Context, performerID int) (int, error)
-	Count(ctx context.Context) (int, error)
-	Size(ctx context.Context) (float64, error)
-	All(ctx context.Context) ([]*Image, error)
-	Query(ctx context.Context, options ImageQueryOptions) (*ImageQueryResult, error)
-	QueryCount(ctx context.Context, imageFilter *ImageFilterType, findFilter *FindFilterType) (int, error)
-
-	GalleryIDLoader
-	PerformerIDLoader
-	TagIDLoader
-}
-
-type ImageWriter interface {
-	Create(ctx context.Context, newImage *ImageCreateInput) error
-	Update(ctx context.Context, updatedImage *Image) error
-	UpdatePartial(ctx context.Context, id int, partial ImagePartial) (*Image, error)
-	IncrementOCounter(ctx context.Context, id int) (int, error)
-	DecrementOCounter(ctx context.Context, id int) (int, error)
-	ResetOCounter(ctx context.Context, id int) (int, error)
-	Destroy(ctx context.Context, id int) error
-}
-
-type ImageReaderWriter interface {
-	ImageReader
-	ImageWriter
 }

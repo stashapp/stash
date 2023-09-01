@@ -320,7 +320,7 @@ export const HierarchicalObjectsFilter = <
     if (criterion.criterionOption.type === "studios") {
       return "include-sub-studios";
     }
-    if (criterion.criterionOption.type === "childTags") {
+    if (criterion.criterionOption.type === "children") {
       return "include-parent-tags";
     }
     return "include-sub-tags";
@@ -330,7 +330,7 @@ export const HierarchicalObjectsFilter = <
     const optionType =
       criterion.criterionOption.type === "studios"
         ? "include_sub_studios"
-        : criterion.criterionOption.type === "childTags"
+        : criterion.criterionOption.type === "children"
         ? "include_parent_tags"
         : "include_sub_tags";
     return {

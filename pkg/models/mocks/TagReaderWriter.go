@@ -385,13 +385,13 @@ func (_m *TagReaderWriter) FindMany(ctx context.Context, ids []int) ([]*models.T
 	return r0, r1
 }
 
-// GetAliases provides a mock function with given fields: ctx, tagID
-func (_m *TagReaderWriter) GetAliases(ctx context.Context, tagID int) ([]string, error) {
-	ret := _m.Called(ctx, tagID)
+// GetAliases provides a mock function with given fields: ctx, relatedID
+func (_m *TagReaderWriter) GetAliases(ctx context.Context, relatedID int) ([]string, error) {
+	ret := _m.Called(ctx, relatedID)
 
 	var r0 []string
 	if rf, ok := ret.Get(0).(func(context.Context, int) []string); ok {
-		r0 = rf(ctx, tagID)
+		r0 = rf(ctx, relatedID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]string)
@@ -400,7 +400,7 @@ func (_m *TagReaderWriter) GetAliases(ctx context.Context, tagID int) ([]string,
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, tagID)
+		r1 = rf(ctx, relatedID)
 	} else {
 		r1 = ret.Error(1)
 	}

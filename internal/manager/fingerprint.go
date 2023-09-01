@@ -10,13 +10,14 @@ import (
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/hash/oshash"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type fingerprintCalculator struct {
 	Config *config.Instance
 }
 
-func (c *fingerprintCalculator) calculateOshash(f *file.BaseFile, o file.Opener) (*file.Fingerprint, error) {
+func (c *fingerprintCalculator) calculateOshash(f *models.BaseFile, o file.Opener) (*models.Fingerprint, error) {
 	r, err := o.Open()
 	if err != nil {
 		return nil, fmt.Errorf("opening file: %w", err)
@@ -34,13 +35,13 @@ func (c *fingerprintCalculator) calculateOshash(f *file.BaseFile, o file.Opener)
 		return nil, fmt.Errorf("calculating oshash: %w", err)
 	}
 
-	return &file.Fingerprint{
-		Type:        file.FingerprintTypeOshash,
+	return &models.Fingerprint{
+		Type:        models.FingerprintTypeOshash,
 		Fingerprint: hash,
 	}, nil
 }
 
-func (c *fingerprintCalculator) calculateMD5(o file.Opener) (*file.Fingerprint, error) {
+func (c *fingerprintCalculator) calculateMD5(o file.Opener) (*models.Fingerprint, error) {
 	r, err := o.Open()
 	if err != nil {
 		return nil, fmt.Errorf("opening file: %w", err)
@@ -53,24 +54,24 @@ func (c *fingerprintCalculator) calculateMD5(o file.Opener) (*file.Fingerprint, 
 		return nil, fmt.Errorf("calculating md5: %w", err)
 	}
 
-	return &file.Fingerprint{
-		Type:        file.FingerprintTypeMD5,
+	return &models.Fingerprint{
+		Type:        models.FingerprintTypeMD5,
 		Fingerprint: hash,
 	}, nil
 }
 
-func (c *fingerprintCalculator) CalculateFingerprints(f *file.BaseFile, o file.Opener, useExisting bool) ([]file.Fingerprint, error) {
-	var ret []file.Fingerprint
+func (c *fingerprintCalculator) CalculateFingerprints(f *models.BaseFile, o file.Opener, useExisting bool) ([]models.Fingerprint, error) {
+	var ret []models.Fingerprint
 	calculateMD5 := true
 
 	if useAsVideo(f.Path) {
 		var (
-			fp  *file.Fingerprint
+			fp  *models.Fingerprint
 			err error
 		)
 
 		if useExisting {
-			fp = f.Fingerprints.For(file.FingerprintTypeOshash)
+			fp = f.Fingerprints.For(models.FingerprintTypeOshash)
 		}
 
 		if fp == nil {
@@ -89,12 +90,12 @@ func (c *fingerprintCalculator) CalculateFingerprints(f *file.BaseFile, o file.O
 
 	if calculateMD5 {
 		var (
-			fp  *file.Fingerprint
+			fp  *models.Fingerprint
 			err error
 		)
 
 		if useExisting {
-			fp = f.Fingerprints.For(file.FingerprintTypeMD5)
+			fp = f.Fingerprints.For(models.FingerprintTypeMD5)
 		}
 
 		if fp == nil {

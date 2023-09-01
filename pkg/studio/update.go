@@ -12,11 +12,6 @@ var (
 	ErrStudioOwnAncestor = errors.New("studio cannot be an ancestor of itself")
 )
 
-type NameFinderCreator interface {
-	FindByName(ctx context.Context, name string, nocase bool) (*models.Studio, error)
-	Create(ctx context.Context, newStudio *models.Studio) error
-}
-
 type NameExistsError struct {
 	Name string
 }
@@ -36,7 +31,7 @@ func (e *NameUsedByAliasError) Error() string {
 
 // EnsureStudioNameUnique returns an error if the studio name provided
 // is used as a name or alias of another existing tag.
-func EnsureStudioNameUnique(ctx context.Context, id int, name string, qb Queryer) error {
+func EnsureStudioNameUnique(ctx context.Context, id int, name string, qb models.StudioQueryer) error {
 	// ensure name is unique
 	sameNameStudio, err := ByName(ctx, qb, name)
 	if err != nil {
@@ -65,7 +60,7 @@ func EnsureStudioNameUnique(ctx context.Context, id int, name string, qb Queryer
 	return nil
 }
 
-func EnsureAliasesUnique(ctx context.Context, id int, aliases []string, qb Queryer) error {
+func EnsureAliasesUnique(ctx context.Context, id int, aliases []string, qb models.StudioQueryer) error {
 	for _, a := range aliases {
 		if err := EnsureStudioNameUnique(ctx, id, a, qb); err != nil {
 			return err
@@ -75,11 +70,17 @@ func EnsureAliasesUnique(ctx context.Context, id int, aliases []string, qb Query
 	return nil
 }
 
+type ValidateModifyReader interface {
+	models.StudioGetter
+	models.StudioQueryer
+	models.AliasLoader
+}
+
 // Checks to make sure that:
 // 1. The studio exists locally
 // 2. The studio is not its own ancestor
 // 3. The studio's aliases are unique
-func ValidateModify(ctx context.Context, s models.StudioPartial, qb FinderQueryer) error {
+func ValidateModify(ctx context.Context, s models.StudioPartial, qb ValidateModifyReader) error {
 	existing, err := qb.Find(ctx, s.ID)
 	if err != nil {
 		return err
@@ -110,7 +111,7 @@ func ValidateModify(ctx context.Context, s models.StudioPartial, qb FinderQuerye
 	return nil
 }
 
-func validateParent(ctx context.Context, studioID int, newParentID int, qb FinderQueryer) error {
+func validateParent(ctx context.Context, studioID int, newParentID int, qb models.StudioGetter) error {
 	if newParentID == studioID {
 		return ErrStudioOwnAncestor
 	}

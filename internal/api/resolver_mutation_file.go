@@ -8,6 +8,7 @@ import (
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
@@ -19,7 +20,7 @@ func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) 
 		mover.RegisterHooks(ctx, r.txnManager)
 
 		var (
-			folder   *file.Folder
+			folder   *models.Folder
 			basename string
 		)
 
@@ -37,7 +38,7 @@ func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) 
 				return fmt.Errorf("invalid folder id %s: %w", *input.DestinationFolderID, err)
 			}
 
-			folder, err = folderStore.Find(ctx, file.FolderID(folderID))
+			folder, err = folderStore.Find(ctx, models.FolderID(folderID))
 			if err != nil {
 				return fmt.Errorf("finding destination folder: %w", err)
 			}
@@ -82,7 +83,7 @@ func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) 
 		}
 
 		for _, fileIDInt := range fileIDs {
-			fileID := file.ID(fileIDInt)
+			fileID := models.FileID(fileIDInt)
 			f, err := fileStore.Find(ctx, fileID)
 			if err != nil {
 				return fmt.Errorf("finding file %d: %w", fileID, err)
@@ -158,7 +159,7 @@ func (r *mutationResolver) DeleteFiles(ctx context.Context, ids []string) (ret b
 		qb := r.repository.File
 
 		for _, fileIDInt := range fileIDs {
-			fileID := file.ID(fileIDInt)
+			fileID := models.FileID(fileIDInt)
 			f, err := qb.Find(ctx, fileID)
 			if err != nil {
 				return err

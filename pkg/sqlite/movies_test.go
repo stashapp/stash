@@ -291,7 +291,7 @@ func TestMovieUpdateFrontImage(t *testing.T) {
 		// create movie to test against
 		const name = "TestMovieUpdateMovieImages"
 		movie := models.Movie{
-			Name:     name,
+			Name: name,
 		}
 		err := qb.Create(ctx, &movie)
 		if err != nil {
@@ -311,7 +311,7 @@ func TestMovieUpdateBackImage(t *testing.T) {
 		// create movie to test against
 		const name = "TestMovieUpdateMovieImages"
 		movie := models.Movie{
-			Name:     name,
+			Name: name,
 		}
 		err := qb.Create(ctx, &movie)
 		if err != nil {

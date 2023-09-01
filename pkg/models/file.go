@@ -4,8 +4,6 @@ import (
 	"context"
 	"path/filepath"
 	"strings"
-
-	"github.com/stashapp/stash/pkg/file"
 )
 
 type FileQueryOptions struct {
@@ -57,24 +55,24 @@ func PathsFileFilter(paths []string) *FileFilterType {
 type FileQueryResult struct {
 	// can't use QueryResult because id type is wrong
 
-	IDs   []file.ID
+	IDs   []FileID
 	Count int
 
-	finder     file.Finder
-	files      []file.File
+	getter     FileGetter
+	files      []File
 	resolveErr error
 }
 
-func NewFileQueryResult(finder file.Finder) *FileQueryResult {
+func NewFileQueryResult(fileGetter FileGetter) *FileQueryResult {
 	return &FileQueryResult{
-		finder: finder,
+		getter: fileGetter,
 	}
 }
 
-func (r *FileQueryResult) Resolve(ctx context.Context) ([]file.File, error) {
+func (r *FileQueryResult) Resolve(ctx context.Context) ([]File, error) {
 	// cache results
 	if r.files == nil && r.resolveErr == nil {
-		r.files, r.resolveErr = r.finder.Find(ctx, r.IDs...)
+		r.files, r.resolveErr = r.getter.Find(ctx, r.IDs...)
 	}
 	return r.files, r.resolveErr
 }

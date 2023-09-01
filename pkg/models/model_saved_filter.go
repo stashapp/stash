@@ -60,11 +60,12 @@ func (e FilterMode) MarshalGQL(w io.Writer) {
 }
 
 type SavedFilter struct {
-	ID   int        `json:"id"`
-	Mode FilterMode `json:"mode"`
-	Name string     `json:"name"`
-	// JSON-encoded filter string
-	Filter string `json:"filter"`
+	ID           int                    `db:"id" json:"id"`
+	Mode         FilterMode             `db:"mode" json:"mode"`
+	Name         string                 `db:"name" json:"name"`
+	FindFilter   *FindFilterType        `json:"find_filter"`
+	ObjectFilter map[string]interface{} `json:"object_filter"`
+	UIOptions    map[string]interface{} `json:"ui_options"`
 }
 
 type SavedFilters []*SavedFilter

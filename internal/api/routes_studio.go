@@ -11,13 +11,12 @@ import (
 	"github.com/stashapp/stash/internal/static"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 type StudioFinder interface {
-	studio.Finder
+	models.StudioGetter
 	GetImage(ctx context.Context, studioID int) ([]byte, error)
 }
 
