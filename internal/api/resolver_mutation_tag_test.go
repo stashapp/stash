@@ -14,13 +14,9 @@ import (
 )
 
 // TODO - move this into a common area
-func newResolver() *Resolver {
-	txnMgr := &mocks.TxnManager{}
+func newResolver(db *mocks.Database) *Resolver {
 	return &Resolver{
-		repository: models.Repository{
-			TxnManager: txnMgr,
-			Tag:        &mocks.TagReaderWriter{},
-		},
+		repository:   db.Repository(),
 		hookExecutor: &mockHookExecutor{},
 	}
 }
@@ -43,9 +39,8 @@ func (*mockHookExecutor) ExecutePostHooks(ctx context.Context, id int, hookType 
 }
 
 func TestTagCreate(t *testing.T) {
-	r := newResolver()
-
-	tagRW := r.repository.Tag.(*mocks.TagReaderWriter)
+	db := mocks.NewDatabase()
+	r := newResolver(db)
 
 	pp := 1
 	findFilter := &models.FindFilterType{
@@ -70,17 +65,17 @@ func TestTagCreate(t *testing.T) {
 		}
 	}
 
-	tagRW.On("Query", mock.Anything, tagFilterForName(existingTagName), findFilter).Return([]*models.Tag{
+	db.Tag.On("Query", mock.Anything, tagFilterForName(existingTagName), findFilter).Return([]*models.Tag{
 		{
 			ID:   existingTagID,
 			Name: existingTagName,
 		},
 	}, 1, nil).Once()
-	tagRW.On("Query", mock.Anything, tagFilterForName(errTagName), findFilter).Return(nil, 0, nil).Once()
-	tagRW.On("Query", mock.Anything, tagFilterForAlias(errTagName), findFilter).Return(nil, 0, nil).Once()
+	db.Tag.On("Query", mock.Anything, tagFilterForName(errTagName), findFilter).Return(nil, 0, nil).Once()
+	db.Tag.On("Query", mock.Anything, tagFilterForAlias(errTagName), findFilter).Return(nil, 0, nil).Once()
 
 	expectedErr := errors.New("TagCreate error")
-	tagRW.On("Create", mock.Anything, mock.AnythingOfType("*models.Tag")).Return(expectedErr)
+	db.Tag.On("Create", mock.Anything, mock.AnythingOfType("*models.Tag")).Return(expectedErr)
 
 	// fails here because testCtx is empty
 	// TODO: Fix this
@@ -99,22 +94,22 @@ func TestTagCreate(t *testing.T) {
 	})
 
 	assert.Equal(t, expectedErr, err)
-	tagRW.AssertExpectations(t)
+	db.Tag.AssertExpectations(t)
 
-	r = newResolver()
-	tagRW = r.repository.Tag.(*mocks.TagReaderWriter)
+	db = mocks.NewDatabase()
+	r = newResolver(db)
 
-	tagRW.On("Query", mock.Anything, tagFilterForName(tagName), findFilter).Return(nil, 0, nil).Once()
-	tagRW.On("Query", mock.Anything, tagFilterForAlias(tagName), findFilter).Return(nil, 0, nil).Once()
+	db.Tag.On("Query", mock.Anything, tagFilterForName(tagName), findFilter).Return(nil, 0, nil).Once()
+	db.Tag.On("Query", mock.Anything, tagFilterForAlias(tagName), findFilter).Return(nil, 0, nil).Once()
 	newTag := &models.Tag{
 		ID:   newTagID,
 		Name: tagName,
 	}
-	tagRW.On("Create", mock.Anything, mock.AnythingOfType("*models.Tag")).Run(func(args mock.Arguments) {
+	db.Tag.On("Create", mock.Anything, mock.AnythingOfType("*models.Tag")).Run(func(args mock.Arguments) {
 		arg := args.Get(1).(*models.Tag)
 		arg.ID = newTagID
 	}).Return(nil)
-	tagRW.On("Find", mock.Anything, newTagID).Return(newTag, nil)
+	db.Tag.On("Find", mock.Anything, newTagID).Return(newTag, nil)
 
 	tag, err := r.Mutation().TagCreate(testCtx, TagCreateInput{
 		Name: tagName,

@@ -474,11 +474,11 @@ func createGallery(ctx context.Context, w models.GalleryWriter, o *models.Galler
 }
 
 func withTxn(f func(ctx context.Context) error) error {
-	return txn.WithTxn(context.TODO(), db, f)
+	return txn.WithTxn(testCtx, db, f)
 }
 
 func withDB(f func(ctx context.Context) error) error {
-	return txn.WithDatabase(context.TODO(), db, f)
+	return txn.WithDatabase(testCtx, db, f)
 }
 
 func populateDB() error {
