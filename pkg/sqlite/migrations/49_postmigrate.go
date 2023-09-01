@@ -392,7 +392,7 @@ func (m *schema49Migrator) adjustCriterionItem(value interface{}) (interface{}, 
 // Converts a value of type string to its according type, given by string
 func (m *schema49Migrator) convertValue(value interface{}, typ string) (interface{}, error) {
 	valueType := reflect.TypeOf(value).Name()
-	if typ == valueType || (typ == "int" && valueType == "float64") || (typ == "float64" && valueType == "int") {
+	if typ == valueType || (typ == "int" && valueType == "float64") || (typ == "float64" && valueType == "int") || value == "" {
 		return value, nil
 	}
 
