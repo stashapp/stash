@@ -53,11 +53,3 @@ func HandleFloat64(v float64) *float64 {
 
 	return &v
 }
-
-func HandleFloat64Value(v float64) float64 {
-	if math.IsInf(v, 0) || math.IsNaN(v) {
-		return 0
-	}
-
-	return v
-}
