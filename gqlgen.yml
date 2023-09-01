@@ -118,4 +118,6 @@ models:
     model: github.com/stashapp/stash/internal/identify.MetadataOptions
   ScraperSourceInput:
     model: github.com/stashapp/stash/pkg/scraper.Source
+  SavedFindFilterType:
+    model: github.com/stashapp/stash/pkg/models.FindFilterType
   

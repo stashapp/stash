@@ -13,13 +13,15 @@ const modifierOptions = [
 ];
 
 const defaultModifier = CriterionModifier.Includes;
+const inputType = "studios";
 
 export const StudiosCriterionOption = new CriterionOption({
   messageID: "studios",
   type: "studios",
-  parameterName: "studios",
   modifierOptions,
   defaultModifier,
+  makeCriterion: () => new StudiosCriterion(),
+  inputType,
 });
 
 export class StudiosCriterion extends IHierarchicalLabeledIdCriterion {
@@ -30,9 +32,9 @@ export class StudiosCriterion extends IHierarchicalLabeledIdCriterion {
 
 export const ParentStudiosCriterionOption = new ILabeledIdCriterionOption(
   "parent_studios",
-  "parent_studios",
   "parents",
-  false
+  false,
+  inputType
 );
 export class ParentStudiosCriterion extends ILabeledIdCriterion {
   constructor() {

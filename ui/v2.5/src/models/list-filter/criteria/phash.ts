@@ -12,8 +12,7 @@ import {
 
 export const PhashCriterionOption = new CriterionOption({
   messageID: "media_info.phash",
-  type: "phash",
-  parameterName: "phash_distance",
+  type: "phash_distance",
   inputType: "text",
   modifierOptions: [
     CriterionModifier.Equals,
@@ -21,6 +20,7 @@ export const PhashCriterionOption = new CriterionOption({
     CriterionModifier.IsNull,
     CriterionModifier.NotNull,
   ],
+  makeCriterion: () => new PhashCriterion(),
 });
 
 export class PhashCriterion extends Criterion<IPhashDistanceValue> {
@@ -53,7 +53,7 @@ export class PhashCriterion extends Criterion<IPhashDistanceValue> {
 export const DuplicatedCriterionOption = new BooleanCriterionOption(
   "duplicated_phash",
   "duplicated",
-  "duplicated"
+  () => new DuplicatedCriterion()
 );
 
 export class DuplicatedCriterion extends PhashDuplicateCriterion {
