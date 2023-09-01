@@ -201,8 +201,12 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 			Mode:   models.RelationshipUpdateModeSet,
 		}
 	} else if translator.hasField("aliases") {
+		var values []string
+		if input.Aliases != nil {
+			values = stringslice.FromString(*input.Aliases, ",")
+		}
 		updatedPerformer.Aliases = &models.UpdateStrings{
-			Values: stringslice.FromString(*input.Aliases, ","),
+			Values: values,
 			Mode:   models.RelationshipUpdateModeSet,
 		}
 	}
@@ -332,8 +336,12 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 			Mode:   input.AliasList.Mode,
 		}
 	} else if translator.hasField("aliases") {
+		var values []string
+		if input.Aliases != nil {
+			values = stringslice.FromString(*input.Aliases, ",")
+		}
 		updatedPerformer.Aliases = &models.UpdateStrings{
-			Values: stringslice.FromString(*input.Aliases, ","),
+			Values: values,
 			Mode:   models.RelationshipUpdateModeSet,
 		}
 	}
