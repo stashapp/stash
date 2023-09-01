@@ -352,6 +352,8 @@ func (m *schema49Migrator) adjustCriterionValue(value interface{}, typ string) (
 		return value, nil
 	} else if _, ok := value.(int); ok {
 		return value, nil
+	} else if _, ok := value.(float64); ok {
+		return value, nil
 	}
 
 	return nil, fmt.Errorf("could not recognize format of value %v", value)
