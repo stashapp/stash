@@ -1,10 +1,10 @@
 package heresphere
 
 import (
-	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type sceneFinder interface {
-	scene.Queryer
-	scene.IDFinder
+	models.SceneQueryer
+	models.SceneGetter
 }

@@ -41,7 +41,7 @@ const (
 type Routes struct {
 	TxnManager  txn.Manager
 	SceneFinder sceneFinder
-	FileFinder  file.Finder
+	FileFinder  models.FileFinder
 	Repository  manager.Repository
 }
 
@@ -205,7 +205,7 @@ func (rs Routes) HeresphereIndex(w http.ResponseWriter, r *http.Request) {
 	// Create scene URLs
 	sceneUrls := make([]string, len(scenes))
 	for idx, scene := range scenes {
-		sceneUrls[idx] = fmt.Sprintf("%s/heresphere/%d", manager.GetBaseURL(r), scene.ID)
+		sceneUrls[idx] = addApiKey(fmt.Sprintf("%s/heresphere/%d", manager.GetBaseURL(r), scene.ID))
 	}
 
 	// All library

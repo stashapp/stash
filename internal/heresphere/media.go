@@ -9,7 +9,6 @@ import (
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
@@ -98,7 +97,7 @@ func getVideoSubtitles(rs Routes, r *http.Request, scene *models.Scene) []Heresp
 /*
  * Function to get transcoded media sources
  */
-func getTranscodedMediaSources(sceneURL string, transcodeSize int, mediaFile *file.VideoFile) map[string][]HeresphereVideoMediaSource {
+func getTranscodedMediaSources(sceneURL string, transcodeSize int, mediaFile *models.VideoFile) map[string][]HeresphereVideoMediaSource {
 	transcodedSources := make(map[string][]HeresphereVideoMediaSource)
 	transNames := []string{"HLS", "DASH"}
 	resRatio := float32(mediaFile.Width) / float32(mediaFile.Height)

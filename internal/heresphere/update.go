@@ -3,7 +3,6 @@ package heresphere
 import (
 	"context"
 
-	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
@@ -23,7 +22,7 @@ func updateRating(user HeresphereAuthReq, ret *scene.UpdateSet) (bool, error) {
 /*
  * Modifies the scene PlayCount
  */
-func updatePlayCount(ctx context.Context, scn *models.Scene, event HeresphereVideoEvent, txnManager txn.Manager, fqb manager.SceneReaderWriter) error {
+func updatePlayCount(ctx context.Context, scn *models.Scene, event HeresphereVideoEvent, txnManager txn.Manager, fqb models.SceneReaderWriter) error {
 	if per, err := getMinPlayPercent(); err == nil {
 		newTime := event.Time / 1000
 		file := scn.Files.Primary()
@@ -51,7 +50,7 @@ func updatePlayCount(ctx context.Context, scn *models.Scene, event HeresphereVid
 /*
  * Deletes the scene's primary file
  */
-func handleDeletePrimaryFile(ctx context.Context, txnManager txn.Manager, scn *models.Scene, fqb manager.FileReaderWriter, fileDeleter *file.Deleter) (bool, error) {
+func handleDeletePrimaryFile(ctx context.Context, txnManager txn.Manager, scn *models.Scene, fqb models.FileReaderWriter, fileDeleter *file.Deleter) (bool, error) {
 	err := txn.WithTxn(ctx, txnManager, func(ctx context.Context) error {
 		if err := scn.LoadPrimaryFile(ctx, fqb); err != nil {
 			return err
