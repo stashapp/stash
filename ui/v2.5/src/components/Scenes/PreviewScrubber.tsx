@@ -1,6 +1,6 @@
-import React, { useMemo } from "react";
-import { useDebounce } from "src/hooks/debounce";
+import React, { useRef, useMemo, useState } from "react";
 import { useSpriteInfo } from "src/hooks/sprite";
+import { useThrottle } from "src/hooks/throttle";
 import TextUtils from "src/utils/text";
 
 interface IHoverScrubber {
@@ -97,11 +97,12 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
   vttPath,
   onClick,
 }) => {
-  const imageParentRef = React.useRef<HTMLDivElement>(null);
+  const imageParentRef = useRef<HTMLDivElement>(null);
 
-  const [activeIndex, setActiveIndex] = React.useState<number | undefined>();
+  const [activeIndex, setActiveIndex] = useState<number>();
 
-  const debounceSetActiveIndex = useDebounce(setActiveIndex, 1);
+  const debounceSetActiveIndex = useThrottle(setActiveIndex, 50);
+
   const spriteInfo = useSpriteInfo(vttPath);
 
   const style = useMemo(() => {
