@@ -185,46 +185,37 @@ func (rs Routes) HeresphereIndex(w http.ResponseWriter, r *http.Request) {
 		Link:  fmt.Sprintf("%s%s", manager.GetBaseURL(r), "/"),
 	}
 
-	// Read scenes
-	scenes, err := func() ([]*models.Scene, error) {
-		var scenes []*models.Scene
-		err := txn.WithReadTxn(r.Context(), rs.Repository.TxnManager, func(ctx context.Context) error {
-			var err error
-			scenes, err = rs.Repository.Scene.All(ctx)
-			return err
-		})
-		return scenes, err
-	}()
-
-	if err != nil {
-		logger.Errorf("Heresphere HeresphereIndex SceneAll error: %s\n", err.Error())
-		http.Error(w, "Failed to fetch scenes!", http.StatusInternalServerError)
-		return
-	}
-
-	// Create scene URLs
-	sceneUrls := make([]string, len(scenes))
-	for idx, scene := range scenes {
-		sceneUrls[idx] = addApiKey(fmt.Sprintf("%s/heresphere/%d", manager.GetBaseURL(r), scene.ID))
-	}
-
-	// All library
-	library := HeresphereIndexEntry{
-		Name: "All",
-		List: sceneUrls,
-	}
 	// Index
-	idx := HeresphereIndex{
+	libraryObj := HeresphereIndex{
 		Access:  HeresphereMember,
 		Banner:  banner,
-		Library: []HeresphereIndexEntry{library},
+		Library: []HeresphereIndexEntry{},
+	}
+
+	// Add filters
+	parsedFilters, err := getAllFilters(r.Context(), rs.Repository)
+	if err == nil {
+		for key, value := range parsedFilters {
+			sceneUrls := make([]string, len(value))
+
+			for idx, sceneID := range value {
+				sceneUrls[idx] = addApiKey(fmt.Sprintf("%s/heresphere/%d", manager.GetBaseURL(r), sceneID))
+			}
+
+			libraryObj.Library = append(libraryObj.Library, HeresphereIndexEntry{
+				Name: key,
+				List: sceneUrls,
+			})
+		}
+	} else {
+		logger.Warnf("Heresphere HeresphereIndex getAllFilters error: %s\n", err.Error())
 	}
 
 	// Set response headers and encode JSON
 	w.Header().Set("Content-Type", "application/json")
 	enc := json.NewEncoder(w)
 	enc.SetEscapeHTML(false)
-	if err := enc.Encode(idx); err != nil {
+	if err := enc.Encode(libraryObj); err != nil {
 		logger.Errorf("Heresphere HeresphereIndex encode error: %s\n", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
