@@ -16,12 +16,9 @@ import (
 func getVideoTags(ctx context.Context, rs Routes, scene *models.Scene) []HeresphereVideoTag {
 	processedTags := []HeresphereVideoTag{}
 
-	// Load all relationships
-	if err := loadRelationships(ctx, rs, scene); err != nil {
-		logger.Errorf("Heresphere getVideoTags LoadRelationships error: %s\n", err.Error())
-	}
-
 	if err := txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
+		err := scene.LoadRelationships(ctx, rs.Repository.Scene)
+
 		processedTags = append(processedTags, generateMarkerTags(ctx, rs, scene)...)
 		processedTags = append(processedTags, generateTagTags(ctx, rs, scene)...)
 		processedTags = append(processedTags, generatePerformerTags(ctx, rs, scene)...)
@@ -38,17 +35,12 @@ func getVideoTags(ctx context.Context, rs Routes, scene *models.Scene) []Heresph
 		processedTags = append(processedTags, generatePlayCountTag(scene)...)
 		processedTags = append(processedTags, generateOCounterTag(scene)...)
 
-		return nil
+		return err
 	}); err != nil {
 		logger.Errorf("Heresphere getVideoTags generate tags error: %s\n", err.Error())
 	}
 
 	return processedTags
-}
-func loadRelationships(ctx context.Context, rs Routes, scene *models.Scene) error {
-	return txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
-		return scene.LoadRelationships(ctx, rs.Repository.Scene)
-	})
 }
 func generateMarkerTags(ctx context.Context, rs Routes, scene *models.Scene) []HeresphereVideoTag {
 	// Generate marker tags
