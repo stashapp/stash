@@ -47,10 +47,10 @@ ENV NVIDIA_DRIVER_CAPABILITIES=video,utility
 ENV STASH_CONFIG_FILE=/root/.stash/config.yml
 
 # NVENC Patch
-RUN mkdir -p /usr/local/bin /patched-lib
-RUN wget https://raw.githubusercontent.com/keylase/nvidia-patch/master/patch.sh -O /usr/local/bin/patch.sh
-RUN wget https://raw.githubusercontent.com/keylase/nvidia-patch/master/docker-entrypoint.sh -O /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/patch.sh /usr/local/bin/docker-entrypoint.sh /usr/bin/stash
+RUN mkdir -p /usr/local/bin /patched-lib \
+    && wget https://raw.githubusercontent.com/keylase/nvidia-patch/master/patch.sh -O /usr/local/bin/patch.sh \
+    && wget https://raw.githubusercontent.com/keylase/nvidia-patch/master/docker-entrypoint.sh -O /usr/local/bin/docker-entrypoint.sh \
+    && chmod +x /usr/local/bin/patch.sh /usr/local/bin/docker-entrypoint.sh /usr/bin/stash
 
 # Clean
 RUN apt-get remove -y build-essential wget && apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/*
