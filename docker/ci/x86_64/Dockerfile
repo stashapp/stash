@@ -26,14 +26,10 @@ COPY --from=binary /stash /usr/bin/
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && apt-get install -y \
     gcc \
-    python3-dev \
-    python3 \
-    python3-pip \
-    python3-requests \
-    python3-requests-toolbelt \
-    python3-lxml \
+    python3-dev python3 python3-pip python3-requests python3-requests-toolbelt python3-lxml \
     ffmpeg \
     libvips-tools \
+    intel-media-va-driver-non-free vainfo \
     ruby \
     gem \
     tzdata \
