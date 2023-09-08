@@ -229,13 +229,9 @@ export const FilterSelectComponent = <
   };
 
   const debounceDelay = 100;
-  const debounceLoadOptions = useDebounce(
-    (inputValue, callback) => {
-      loadOptions(inputValue).then(callback);
-    },
-    [loadOptions],
-    debounceDelay
-  );
+  const debounceLoadOptions = useDebounce((inputValue, callback) => {
+    loadOptions(inputValue).then(callback);
+  }, debounceDelay);
 
   return (
     <SelectComponent<T, IsMulti>

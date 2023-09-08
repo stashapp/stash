@@ -212,7 +212,6 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const disableInstantTransition = useDebounce(
     () => setInstantTransition(false),
-    [],
     400
   );
 
