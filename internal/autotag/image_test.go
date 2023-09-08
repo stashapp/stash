@@ -51,14 +51,7 @@ func TestImagePerformers(t *testing.T) {
 					},
 				}
 
-				// updated at should be set and not null
-				if !got.UpdatedAt.Set || got.UpdatedAt.Null {
-					return false
-				}
-				// else ignore the exact value
-				got.UpdatedAt = models.OptionalTime{}
-
-				return assert.Equal(got, expected)
+				return mocks.AssertImagePartial(t, got, expected)
 			})
 			mockImageReader.On("UpdatePartial", testCtx, imageID, matchPartial).Return(nil, nil).Once()
 		}
@@ -105,14 +98,7 @@ func TestImageStudios(t *testing.T) {
 					StudioID: models.NewOptionalInt(studioID),
 				}
 
-				// updated at should be set and not null
-				if !got.UpdatedAt.Set || got.UpdatedAt.Null {
-					return false
-				}
-				// else ignore the exact value
-				got.UpdatedAt = models.OptionalTime{}
-
-				return assert.Equal(got, expected)
+				return mocks.AssertImagePartial(t, got, expected)
 			})
 			mockImageReader.On("UpdatePartial", testCtx, imageID, matchPartial).Return(nil, nil).Once()
 		}
@@ -190,14 +176,7 @@ func TestImageTags(t *testing.T) {
 					},
 				}
 
-				// updated at should be set and not null
-				if !got.UpdatedAt.Set || got.UpdatedAt.Null {
-					return false
-				}
-				// else ignore the exact value
-				got.UpdatedAt = models.OptionalTime{}
-
-				return assert.Equal(got, expected)
+				return mocks.AssertImagePartial(t, got, expected)
 			})
 			mockImageReader.On("UpdatePartial", testCtx, imageID, matchPartial).Return(nil, nil).Once()
 		}

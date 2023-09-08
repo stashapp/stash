@@ -190,14 +190,7 @@ func TestScenePerformers(t *testing.T) {
 					},
 				}
 
-				// updated at should be set and not null
-				if !got.UpdatedAt.Set || got.UpdatedAt.Null {
-					return false
-				}
-				// else ignore the exact value
-				got.UpdatedAt = models.OptionalTime{}
-
-				return assert.Equal(got, expected)
+				return mocks.AssertScenePartial(t, got, expected)
 			})
 			mockSceneReader.On("UpdatePartial", testCtx, sceneID, matchPartial).Return(nil, nil).Once()
 		}
@@ -241,14 +234,7 @@ func TestSceneStudios(t *testing.T) {
 					StudioID: models.NewOptionalInt(studioID),
 				}
 
-				// updated at should be set and not null
-				if !got.UpdatedAt.Set || got.UpdatedAt.Null {
-					return false
-				}
-				// else ignore the exact value
-				got.UpdatedAt = models.OptionalTime{}
-
-				return assert.Equal(got, expected)
+				return mocks.AssertScenePartial(t, got, expected)
 			})
 			mockSceneReader.On("UpdatePartial", testCtx, sceneID, matchPartial).Return(nil, nil).Once()
 		}
@@ -326,14 +312,7 @@ func TestSceneTags(t *testing.T) {
 					},
 				}
 
-				// updated at should be set and not null
-				if !got.UpdatedAt.Set || got.UpdatedAt.Null {
-					return false
-				}
-				// else ignore the exact value
-				got.UpdatedAt = models.OptionalTime{}
-
-				return assert.Equal(got, expected)
+				return mocks.AssertScenePartial(t, got, expected)
 			})
 			mockSceneReader.On("UpdatePartial", testCtx, sceneID, matchPartial).Return(nil, nil).Once()
 		}

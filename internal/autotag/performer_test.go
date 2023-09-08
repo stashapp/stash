@@ -98,14 +98,7 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 				},
 			}
 
-			// updated at should be set and not null
-			if !got.UpdatedAt.Set || got.UpdatedAt.Null {
-				return false
-			}
-			// else ignore the exact value
-			got.UpdatedAt = models.OptionalTime{}
-
-			return assert.Equal(t, got, expected)
+			return mocks.AssertScenePartial(t, got, expected)
 		})
 		mockSceneReader.On("UpdatePartial", mock.Anything, sceneID, matchPartial).Return(nil, nil).Once()
 	}
@@ -200,14 +193,7 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 				},
 			}
 
-			// updated at should be set and not null
-			if !got.UpdatedAt.Set || got.UpdatedAt.Null {
-				return false
-			}
-			// else ignore the exact value
-			got.UpdatedAt = models.OptionalTime{}
-
-			return assert.Equal(t, got, expected)
+			return mocks.AssertImagePartial(t, got, expected)
 		})
 		mockImageReader.On("UpdatePartial", mock.Anything, imageID, matchPartial).Return(nil, nil).Once()
 	}
@@ -302,14 +288,7 @@ func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
 				},
 			}
 
-			// updated at should be set and not null
-			if !got.UpdatedAt.Set || got.UpdatedAt.Null {
-				return false
-			}
-			// else ignore the exact value
-			got.UpdatedAt = models.OptionalTime{}
-
-			return assert.Equal(t, got, expected)
+			return mocks.AssertGalleryPartial(t, got, expected)
 		})
 		mockGalleryReader.On("UpdatePartial", mock.Anything, galleryID, matchPartial).Return(nil, nil).Once()
 	}

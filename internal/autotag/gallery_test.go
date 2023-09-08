@@ -54,14 +54,7 @@ func TestGalleryPerformers(t *testing.T) {
 					},
 				}
 
-				// updated at should be set and not null
-				if !got.UpdatedAt.Set || got.UpdatedAt.Null {
-					return false
-				}
-				// else ignore the exact value
-				got.UpdatedAt = models.OptionalTime{}
-
-				return assert.Equal(got, expected)
+				return mocks.AssertGalleryPartial(t, got, expected)
 			})
 			mockGalleryReader.On("UpdatePartial", testCtx, galleryID, matchPartial).Return(nil, nil).Once()
 		}
@@ -108,14 +101,7 @@ func TestGalleryStudios(t *testing.T) {
 					StudioID: models.NewOptionalInt(studioID),
 				}
 
-				// updated at should be set and not null
-				if !got.UpdatedAt.Set || got.UpdatedAt.Null {
-					return false
-				}
-				// else ignore the exact value
-				got.UpdatedAt = models.OptionalTime{}
-
-				return assert.Equal(got, expected)
+				return mocks.AssertGalleryPartial(t, got, expected)
 			})
 			mockGalleryReader.On("UpdatePartial", testCtx, galleryID, matchPartial).Return(nil, nil).Once()
 		}
@@ -193,14 +179,7 @@ func TestGalleryTags(t *testing.T) {
 					},
 				}
 
-				// updated at should be set and not null
-				if !got.UpdatedAt.Set || got.UpdatedAt.Null {
-					return false
-				}
-				// else ignore the exact value
-				got.UpdatedAt = models.OptionalTime{}
-
-				return assert.Equal(got, expected)
+				return mocks.AssertGalleryPartial(t, got, expected)
 			})
 			mockGalleryReader.On("UpdatePartial", testCtx, galleryID, matchPartial).Return(nil, nil).Once()
 		}
