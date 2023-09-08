@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
-import { DetailsLink } from "src/components/Shared/TagLink";
+import { TagLink } from "src/components/Shared/TagLink";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
@@ -37,7 +37,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
   function renderTags() {
     if (props.scene.tags.length === 0) return;
     const tags = props.scene.tags.map((tag) => (
-      <DetailsLink key={tag.id} tag={tag} />
+      <TagLink key={tag.id} tag={tag} />
     ));
     return (
       <>

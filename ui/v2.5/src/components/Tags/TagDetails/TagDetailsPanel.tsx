@@ -1,5 +1,5 @@
 import React from "react";
-import { DetailsLink } from "src/components/Shared/TagLink";
+import { TagLink } from "src/components/Shared/TagLink";
 import { DetailItem } from "src/components/Shared/DetailItem";
 import * as GQL from "src/core/generated-graphql";
 
@@ -17,7 +17,7 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag, fullWidth }) => {
     return (
       <>
         {tag.parents.map((p) => (
-          <DetailsLink
+          <TagLink
             key={p.id}
             tag={p}
             hoverPlacement="bottom"
@@ -37,7 +37,7 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag, fullWidth }) => {
     return (
       <>
         {tag.children.map((c) => (
-          <DetailsLink
+          <TagLink
             key={c.id}
             tag={c}
             hoverPlacement="bottom"

@@ -1,6 +1,6 @@
 import React from "react";
 import { useIntl } from "react-intl";
-import { PerformerLink } from "src/components/Shared/TagLink";
+import { TagLink } from "src/components/Shared/TagLink";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
 import { getStashboxBase } from "src/utils/stashbox";
@@ -29,7 +29,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     return (
       <ul className="pl-0">
         {(performer.tags ?? []).map((tag) => (
-          <PerformerLink key={tag.id} linkType="performer" tag={tag} />
+          <TagLink key={tag.id} linkType="performer" tag={tag} />
         ))}
       </ul>
     );

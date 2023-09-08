@@ -7,7 +7,7 @@ import { FormattedMessage } from "react-intl";
 import { sortPerformers } from "src/core/performers";
 import { Icon } from "src/components/Shared/Icon";
 import { OperationButton } from "src/components/Shared/OperationButton";
-import { PerformerLink, SceneLink } from "src/components/Shared/TagLink";
+import { PerformerLink, TagLink } from "src/components/Shared/TagLink";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { parsePath, prepareQueryString } from "src/components/Tagger/utils";
 import { ScenePreview } from "src/components/Scenes/SceneCard";
@@ -64,7 +64,7 @@ const TaggerSceneDetails: React.FC<ITaggerSceneDetails> = ({ scene }) => {
             </div>
             <div>
               {scene.tags.map((tag) => (
-                <SceneLink key={tag.id} tag={tag} />
+                <TagLink key={tag.id} tag={tag} />
               ))}
             </div>
           </div>
