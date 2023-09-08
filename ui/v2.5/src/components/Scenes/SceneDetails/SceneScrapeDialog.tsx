@@ -12,7 +12,10 @@ import { useIntl } from "react-intl";
 import { uniq } from "lodash-es";
 import { Performer } from "src/components/Performers/PerformerSelect";
 import { IHasStoredID, sortStoredIdObjects } from "src/utils/data";
-import { ScrapeResult } from "src/components/Shared/ScrapeDialog/scrapeResult";
+import {
+  ObjectListScrapeResult,
+  ScrapeResult,
+} from "src/components/Shared/ScrapeDialog/scrapeResult";
 import {
   ScrapedMoviesRow,
   ScrapedPerformersRow,
@@ -117,9 +120,9 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
   }
 
   const [performers, setPerformers] = useState<
-    ScrapeResult<GQL.ScrapedPerformer[]>
+    ObjectListScrapeResult<GQL.ScrapedPerformer>
   >(
-    new ScrapeResult<GQL.ScrapedPerformer[]>(
+    new ObjectListScrapeResult<GQL.ScrapedPerformer>(
       sortStoredIdObjects(
         scenePerformers.map((p) => ({
           stored_id: p.id,
