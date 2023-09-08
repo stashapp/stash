@@ -217,6 +217,8 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 
 			if g != nil {
 				galleryPartial := models.GalleryPartial{
+					// set UpdatedAt directly instead of using NewGalleryPartial, to ensure
+					// that the linked gallery has the same UpdatedAt time as this image
 					UpdatedAt: imagePartial.UpdatedAt,
 				}
 				if _, err := h.GalleryFinder.UpdatePartial(ctx, g.ID, galleryPartial); err != nil {

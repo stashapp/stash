@@ -92,6 +92,8 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 					IDs:  []int{newGallery.ID},
 					Mode: models.RelationshipUpdateModeAdd,
 				},
+				// set UpdatedAt directly instead of using NewImagePartial, to ensure
+				// that the images have the same UpdatedAt time as the gallery
 				UpdatedAt: models.NewOptionalTime(newGallery.UpdatedAt),
 			}
 			if _, err := h.ImageFinderUpdater.UpdatePartial(ctx, i.ID, imagePartial); err != nil {

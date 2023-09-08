@@ -224,8 +224,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 			return fmt.Errorf("performer with id %d not found", performerID)
 		}
 
-		err = performer.ValidateDeathDate(existing, input.Birthdate, input.DeathDate)
-		if err != nil {
+		if err := performer.ValidateDeathDate(existing, input.Birthdate, input.DeathDate); err != nil {
 			return err
 		}
 
