@@ -44,7 +44,7 @@ export const ModalComponent: React.FC<IModal> = ({
 }) => (
   <Modal
     className="ModalComponent"
-    keyboard={false}
+    keyboard={true}
     onHide={onHide ?? defaultOnHide}
     show={show}
     dialogClassName={dialogClassName}
