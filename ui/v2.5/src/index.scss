@@ -341,19 +341,21 @@ dd {
   border-radius: 0.5rem;
 }
 
-#tag-page .full-width .detail-header-image img {
-  max-width: 22rem;
-
-  @media (max-width: 576px) {
-    max-width: 100%;
+#tag-page {
+  .full-width .detail-header-image img {
+    max-width: 22rem;
   }
-}
 
-#tag-page .detail-header-image img {
-  max-width: 18rem;
+  .detail-header.collapsed .detail-header-image img {
+    max-width: 18rem;
+  }
 
-  @media (max-width: 576px) {
-    max-width: 100%;
+  .detail-header-image img {
+    max-width: 20rem;
+
+    @media (max-width: 576px) {
+      max-width: 100%;
+    }
   }
 }
 
