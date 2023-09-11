@@ -17,6 +17,7 @@ import { StudiosCriterionOption } from "./criteria/studios";
 import { TagsCriterionOption } from "./criteria/tags";
 import { ListFilterOptions } from "./filter-options";
 import { CriterionType, DisplayMode } from "./types";
+import { CountryCriterionOption } from "./criteria/country";
 
 const defaultSortBy = "name";
 const sortByOptions = [
@@ -67,7 +68,6 @@ const stringCriteria: CriterionType[] = [
   "disambiguation",
   "details",
   "ethnicity",
-  "country",
   "hair_color",
   "eye_color",
   "measurements",
@@ -96,6 +96,7 @@ const criterionOptions = [
   createBooleanCriterionOption("ignore_auto_tag"),
   new NumberCriterionOption("height", "height_cm"),
   ...numberCriteria.map((c) => createNumberCriterionOption(c)),
+  CountryCriterionOption,
   ...stringCriteria.map((c) => createStringCriterionOption(c)),
   createDateCriterionOption("birthdate"),
   createDateCriterionOption("death_date"),

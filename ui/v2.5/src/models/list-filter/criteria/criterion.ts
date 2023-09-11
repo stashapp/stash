@@ -222,23 +222,28 @@ export class CriterionOption {
 }
 
 export class StringCriterionOption extends CriterionOption {
+  public static readonly modifierOptions = [
+    CriterionModifier.Equals,
+    CriterionModifier.NotEquals,
+    CriterionModifier.Includes,
+    CriterionModifier.Excludes,
+    CriterionModifier.IsNull,
+    CriterionModifier.NotNull,
+    CriterionModifier.MatchesRegex,
+    CriterionModifier.NotMatchesRegex,
+  ];
+
+  public static readonly defaultModifier = CriterionModifier.Equals;
+  public static readonly inputType = "text";
+
   constructor(messageID: string, type: CriterionType, options?: Option[]) {
     super({
       messageID,
       type,
-      modifierOptions: [
-        CriterionModifier.Equals,
-        CriterionModifier.NotEquals,
-        CriterionModifier.Includes,
-        CriterionModifier.Excludes,
-        CriterionModifier.IsNull,
-        CriterionModifier.NotNull,
-        CriterionModifier.MatchesRegex,
-        CriterionModifier.NotMatchesRegex,
-      ],
-      defaultModifier: CriterionModifier.Equals,
+      modifierOptions: StringCriterionOption.modifierOptions,
+      defaultModifier: StringCriterionOption.defaultModifier,
       options,
-      inputType: "text",
+      inputType: StringCriterionOption.inputType,
       makeCriterion: () => new StringCriterion(this),
     });
   }
