@@ -6,7 +6,6 @@ import {
   createDateCriterionOption,
   createMandatoryTimestampCriterionOption,
   NumberCriterionOption,
-  NullNumberCriterionOption,
 } from "./criteria/criterion";
 import { FavoriteCriterionOption } from "./criteria/favorite";
 import { GenderCriterionOption } from "./criteria/gender";
@@ -18,6 +17,7 @@ import { TagsCriterionOption } from "./criteria/tags";
 import { ListFilterOptions } from "./filter-options";
 import { CriterionType, DisplayMode } from "./types";
 import { CountryCriterionOption } from "./criteria/country";
+import { RatingCriterionOption } from "./criteria/rating";
 
 const defaultSortBy = "name";
 const sortByOptions = [
@@ -87,7 +87,7 @@ const criterionOptions = [
   StudiosCriterionOption,
   StashIDCriterionOption,
   createStringCriterionOption("url"),
-  new NullNumberCriterionOption("rating", "rating100"),
+  RatingCriterionOption,
   createMandatoryNumberCriterionOption("tag_count"),
   createMandatoryNumberCriterionOption("scene_count"),
   createMandatoryNumberCriterionOption("image_count"),

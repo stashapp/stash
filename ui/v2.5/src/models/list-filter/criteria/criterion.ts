@@ -10,6 +10,7 @@ import {
   PHashDuplicationCriterionInput,
   DateCriterionInput,
   TimestampCriterionInput,
+  ConfigDataFragment,
 } from "src/core/generated-graphql";
 import DurationUtils from "src/utils/duration";
 import {
@@ -193,7 +194,10 @@ interface ICriterionOptionsParams {
   modifierOptions?: CriterionModifier[];
   defaultModifier?: CriterionModifier;
   options?: Option[];
-  makeCriterion: () => Criterion<CriterionValue>;
+  makeCriterion: (
+    o: CriterionOption,
+    config?: ConfigDataFragment
+  ) => Criterion<CriterionValue>;
 }
 export class CriterionOption {
   public readonly messageID: string;
@@ -203,7 +207,8 @@ export class CriterionOption {
   public readonly options: Option[] | undefined;
   public readonly inputType: InputType;
   public readonly makeCriterionFn: (
-    o: CriterionOption
+    o: CriterionOption,
+    config?: ConfigDataFragment
   ) => Criterion<CriterionValue>;
 
   constructor(options: ICriterionOptionsParams) {
@@ -216,8 +221,8 @@ export class CriterionOption {
     this.makeCriterionFn = options.makeCriterion;
   }
 
-  public makeCriterion() {
-    return this.makeCriterionFn(this);
+  public makeCriterion(config?: ConfigDataFragment) {
+    return this.makeCriterionFn(this, config);
   }
 }
 

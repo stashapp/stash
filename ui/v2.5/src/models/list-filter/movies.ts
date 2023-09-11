@@ -1,7 +1,6 @@
 import {
   createMandatoryNumberCriterionOption,
   createStringCriterionOption,
-  NullNumberCriterionOption,
   createDateCriterionOption,
   createMandatoryTimestampCriterionOption,
 } from "./criteria/criterion";
@@ -10,6 +9,7 @@ import { StudiosCriterionOption } from "./criteria/studios";
 import { PerformersCriterionOption } from "./criteria/performers";
 import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
+import { RatingCriterionOption } from "./criteria/rating";
 
 const defaultSortBy = "name";
 
@@ -30,7 +30,7 @@ const criterionOptions = [
   createStringCriterionOption("director"),
   createStringCriterionOption("synopsis"),
   createMandatoryNumberCriterionOption("duration"),
-  new NullNumberCriterionOption("rating", "rating100"),
+  RatingCriterionOption,
   PerformersCriterionOption,
   createDateCriterionOption("date"),
   createMandatoryTimestampCriterionOption("created_at"),

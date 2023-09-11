@@ -128,7 +128,11 @@ export class ListFilterModel {
       for (const jsonString of params.c) {
         try {
           const encodedCriterion = JSON.parse(jsonString);
-          const criterion = makeCriteria(this.mode, encodedCriterion.type);
+          const criterion = makeCriteria(
+            this.mode,
+            encodedCriterion.type,
+            this.config
+          );
           // it's possible that we have unsupported criteria. Just skip if so.
           if (criterion) {
             criterion.setFromEncodedCriterion(encodedCriterion);
@@ -276,7 +280,11 @@ export class ListFilterModel {
     this.criteria = [];
     if (objectFilter) {
       Object.keys(objectFilter).forEach((key) => {
-        const criterion = makeCriteria(this.mode, key as CriterionType);
+        const criterion = makeCriteria(
+          this.mode,
+          key as CriterionType,
+          this.config
+        );
         // it's possible that we have unsupported criteria. Just skip if so.
         if (criterion) {
           criterion.setFromEncodedCriterion(objectFilter[key]);
