@@ -33,16 +33,16 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	newStudio := models.NewStudio()
 
 	newStudio.Name = input.Name
-	newStudio.URL = translator.string(input.URL, "url")
+	newStudio.URL = translator.string(input.URL)
 	newStudio.Rating = translator.ratingConversion(input.Rating, input.Rating100)
-	newStudio.Details = translator.string(input.Details, "details")
-	newStudio.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag, "ignore_auto_tag")
+	newStudio.Details = translator.string(input.Details)
+	newStudio.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag)
 	newStudio.Aliases = models.NewRelatedStrings(input.Aliases)
 	newStudio.StashIDs = models.NewRelatedStashIDs(input.StashIds)
 
 	var err error
 
-	newStudio.ParentID, err = translator.intPtrFromString(input.ParentID, "parent_id")
+	newStudio.ParentID, err = translator.intPtrFromString(input.ParentID)
 	if err != nil {
 		return nil, fmt.Errorf("converting parent id: %w", err)
 	}

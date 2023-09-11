@@ -33,7 +33,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 		inputMap: getUpdateInputMap(ctx),
 	}
 
-	fileIDs, err := translator.fileIDSliceFromStringSlice(input.FileIds, "file_ids")
+	fileIDs, err := translator.fileIDSliceFromStringSlice(input.FileIds)
 	if err != nil {
 		return nil, fmt.Errorf("converting file ids: %w", err)
 	}
@@ -41,19 +41,19 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 	// Populate a new scene from the input
 	newScene := models.NewScene()
 
-	newScene.Title = translator.string(input.Title, "title")
-	newScene.Code = translator.string(input.Code, "code")
-	newScene.Details = translator.string(input.Details, "details")
-	newScene.Director = translator.string(input.Director, "director")
+	newScene.Title = translator.string(input.Title)
+	newScene.Code = translator.string(input.Code)
+	newScene.Details = translator.string(input.Details)
+	newScene.Director = translator.string(input.Director)
 	newScene.Rating = translator.ratingConversion(input.Rating, input.Rating100)
-	newScene.Organized = translator.bool(input.Organized, "organized")
+	newScene.Organized = translator.bool(input.Organized)
 	newScene.StashIDs = models.NewRelatedStashIDs(input.StashIds)
 
-	newScene.Date, err = translator.datePtr(input.Date, "date")
+	newScene.Date, err = translator.datePtr(input.Date)
 	if err != nil {
 		return nil, fmt.Errorf("converting date: %w", err)
 	}
-	newScene.StudioID, err = translator.intPtrFromString(input.StudioID, "studio_id")
+	newScene.StudioID, err = translator.intPtrFromString(input.StudioID)
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
@@ -64,20 +64,20 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 		newScene.URLs = models.NewRelatedStrings([]string{*input.URL})
 	}
 
-	newScene.PerformerIDs, err = translator.relatedIds(input.PerformerIds, "performer_ids")
+	newScene.PerformerIDs, err = translator.relatedIds(input.PerformerIds)
 	if err != nil {
 		return nil, fmt.Errorf("converting performer ids: %w", err)
 	}
-	newScene.TagIDs, err = translator.relatedIds(input.TagIds, "tag_ids")
+	newScene.TagIDs, err = translator.relatedIds(input.TagIds)
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
-	newScene.GalleryIDs, err = translator.relatedIds(input.GalleryIds, "gallery_ids")
+	newScene.GalleryIDs, err = translator.relatedIds(input.GalleryIds)
 	if err != nil {
 		return nil, fmt.Errorf("converting gallery ids: %w", err)
 	}
 
-	newScene.Movies, err = translator.relatedMovies(input.Movies, "movies")
+	newScene.Movies, err = translator.relatedMovies(input.Movies)
 	if err != nil {
 		return nil, fmt.Errorf("converting movies: %w", err)
 	}
@@ -197,7 +197,7 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 		updatedScene.URLs = translator.updateStrings(urls, "url")
 	}
 
-	updatedScene.PrimaryFileID, err = translator.fileIDPtrFromString(input.PrimaryFileID, "primary_file_id")
+	updatedScene.PrimaryFileID, err = translator.fileIDPtrFromString(input.PrimaryFileID)
 	if err != nil {
 		return nil, fmt.Errorf("converting primary file id: %w", err)
 	}

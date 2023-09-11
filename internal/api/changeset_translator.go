@@ -93,7 +93,7 @@ func (t changesetTranslator) getFields() []string {
 	return ret
 }
 
-func (t changesetTranslator) string(value *string, field string) string {
+func (t changesetTranslator) string(value *string) string {
 	if value == nil {
 		return ""
 	}
@@ -129,7 +129,7 @@ func (t changesetTranslator) optionalDate(value *string, field string) (models.O
 	return models.NewOptionalDate(date), nil
 }
 
-func (t changesetTranslator) datePtr(value *string, field string) (*models.Date, error) {
+func (t changesetTranslator) datePtr(value *string) (*models.Date, error) {
 	if value == nil || *value == "" {
 		return nil, nil
 	}
@@ -141,7 +141,7 @@ func (t changesetTranslator) datePtr(value *string, field string) (*models.Date,
 	return &date, nil
 }
 
-func (t changesetTranslator) intPtrFromString(value *string, field string) (*int, error) {
+func (t changesetTranslator) intPtrFromString(value *string) (*int, error) {
 	if value == nil || *value == "" {
 		return nil, nil
 	}
@@ -214,7 +214,7 @@ func (t changesetTranslator) optionalIntFromString(value *string, field string) 
 	return models.NewOptionalInt(vv), nil
 }
 
-func (t changesetTranslator) bool(value *bool, field string) bool {
+func (t changesetTranslator) bool(value *bool) bool {
 	if value == nil {
 		return false
 	}
@@ -238,7 +238,7 @@ func (t changesetTranslator) optionalFloat64(value *float64, field string) model
 	return models.NewOptionalFloat64Ptr(value)
 }
 
-func (t changesetTranslator) fileIDPtrFromString(value *string, field string) (*models.FileID, error) {
+func (t changesetTranslator) fileIDPtrFromString(value *string) (*models.FileID, error) {
 	if value == nil || *value == "" {
 		return nil, nil
 	}
@@ -252,7 +252,7 @@ func (t changesetTranslator) fileIDPtrFromString(value *string, field string) (*
 	return &id, nil
 }
 
-func (t changesetTranslator) fileIDSliceFromStringSlice(value []string, field string) ([]models.FileID, error) {
+func (t changesetTranslator) fileIDSliceFromStringSlice(value []string) ([]models.FileID, error) {
 	ints, err := stringslice.StringSliceToIntSlice(value)
 	if err != nil {
 		return nil, err
@@ -266,7 +266,7 @@ func (t changesetTranslator) fileIDSliceFromStringSlice(value []string, field st
 	return fileIDs, nil
 }
 
-func (t changesetTranslator) relatedIds(value []string, field string) (models.RelatedIDs, error) {
+func (t changesetTranslator) relatedIds(value []string) (models.RelatedIDs, error) {
 	ids, err := stringslice.StringSliceToIntSlice(value)
 	if err != nil {
 		return models.RelatedIDs{}, err
@@ -340,7 +340,7 @@ func (t changesetTranslator) updateStashIDs(value []models.StashID, field string
 	}
 }
 
-func (t changesetTranslator) relatedMovies(value []models.SceneMovieInput, field string) (models.RelatedMovies, error) {
+func (t changesetTranslator) relatedMovies(value []models.SceneMovieInput) (models.RelatedMovies, error) {
 	moviesScenes, err := models.MoviesScenesFromInput(value)
 	if err != nil {
 		return models.RelatedMovies{}, err

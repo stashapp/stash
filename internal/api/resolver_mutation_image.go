@@ -120,7 +120,7 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 
-	updatedImage.PrimaryFileID, err = translator.fileIDPtrFromString(input.PrimaryFileID, "primary_file_id")
+	updatedImage.PrimaryFileID, err = translator.fileIDPtrFromString(input.PrimaryFileID)
 	if err != nil {
 		return nil, fmt.Errorf("converting primary file id: %w", err)
 	}

@@ -32,20 +32,20 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 	newMovie := models.NewMovie()
 
 	newMovie.Name = input.Name
-	newMovie.Aliases = translator.string(input.Aliases, "aliases")
+	newMovie.Aliases = translator.string(input.Aliases)
 	newMovie.Duration = input.Duration
 	newMovie.Rating = translator.ratingConversion(input.Rating, input.Rating100)
-	newMovie.Director = translator.string(input.Director, "director")
-	newMovie.Synopsis = translator.string(input.Synopsis, "synopsis")
-	newMovie.URL = translator.string(input.URL, "url")
+	newMovie.Director = translator.string(input.Director)
+	newMovie.Synopsis = translator.string(input.Synopsis)
+	newMovie.URL = translator.string(input.URL)
 
 	var err error
 
-	newMovie.Date, err = translator.datePtr(input.Date, "date")
+	newMovie.Date, err = translator.datePtr(input.Date)
 	if err != nil {
 		return nil, fmt.Errorf("converting date: %w", err)
 	}
-	newMovie.StudioID, err = translator.intPtrFromString(input.StudioID, "studio_id")
+	newMovie.StudioID, err = translator.intPtrFromString(input.StudioID)
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}

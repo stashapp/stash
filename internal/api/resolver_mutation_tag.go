@@ -33,8 +33,8 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 	newTag := models.NewTag()
 
 	newTag.Name = input.Name
-	newTag.Description = translator.string(input.Description, "description")
-	newTag.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag, "ignore_auto_tag")
+	newTag.Description = translator.string(input.Description)
+	newTag.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag)
 
 	var err error
 

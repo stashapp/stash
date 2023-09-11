@@ -33,36 +33,36 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	newPerformer := models.NewPerformer()
 
 	newPerformer.Name = input.Name
-	newPerformer.Disambiguation = translator.string(input.Disambiguation, "disambiguation")
-	newPerformer.URL = translator.string(input.URL, "url")
+	newPerformer.Disambiguation = translator.string(input.Disambiguation)
+	newPerformer.URL = translator.string(input.URL)
 	newPerformer.Gender = input.Gender
-	newPerformer.Ethnicity = translator.string(input.Ethnicity, "ethnicity")
-	newPerformer.Country = translator.string(input.Country, "country")
-	newPerformer.EyeColor = translator.string(input.EyeColor, "eye_color")
-	newPerformer.Measurements = translator.string(input.Measurements, "measurements")
-	newPerformer.FakeTits = translator.string(input.FakeTits, "fake_tits")
+	newPerformer.Ethnicity = translator.string(input.Ethnicity)
+	newPerformer.Country = translator.string(input.Country)
+	newPerformer.EyeColor = translator.string(input.EyeColor)
+	newPerformer.Measurements = translator.string(input.Measurements)
+	newPerformer.FakeTits = translator.string(input.FakeTits)
 	newPerformer.PenisLength = input.PenisLength
 	newPerformer.Circumcised = input.Circumcised
-	newPerformer.CareerLength = translator.string(input.CareerLength, "career_length")
-	newPerformer.Tattoos = translator.string(input.Tattoos, "tattoos")
-	newPerformer.Piercings = translator.string(input.Piercings, "piercings")
-	newPerformer.Twitter = translator.string(input.Twitter, "twitter")
-	newPerformer.Instagram = translator.string(input.Instagram, "instagram")
-	newPerformer.Favorite = translator.bool(input.Favorite, "favorite")
+	newPerformer.CareerLength = translator.string(input.CareerLength)
+	newPerformer.Tattoos = translator.string(input.Tattoos)
+	newPerformer.Piercings = translator.string(input.Piercings)
+	newPerformer.Twitter = translator.string(input.Twitter)
+	newPerformer.Instagram = translator.string(input.Instagram)
+	newPerformer.Favorite = translator.bool(input.Favorite)
 	newPerformer.Rating = translator.ratingConversion(input.Rating, input.Rating100)
-	newPerformer.Details = translator.string(input.Details, "details")
-	newPerformer.HairColor = translator.string(input.HairColor, "hair_color")
+	newPerformer.Details = translator.string(input.Details)
+	newPerformer.HairColor = translator.string(input.HairColor)
 	newPerformer.Weight = input.Weight
-	newPerformer.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag, "ignore_auto_tag")
+	newPerformer.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag)
 	newPerformer.StashIDs = models.NewRelatedStashIDs(input.StashIds)
 
 	var err error
 
-	newPerformer.Birthdate, err = translator.datePtr(input.Birthdate, "birthdate")
+	newPerformer.Birthdate, err = translator.datePtr(input.Birthdate)
 	if err != nil {
 		return nil, fmt.Errorf("converting birthdate: %w", err)
 	}
-	newPerformer.DeathDate, err = translator.datePtr(input.DeathDate, "death_date")
+	newPerformer.DeathDate, err = translator.datePtr(input.DeathDate)
 	if err != nil {
 		return nil, fmt.Errorf("converting death date: %w", err)
 	}
@@ -71,7 +71,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	if input.HeightCm != nil {
 		newPerformer.Height = input.HeightCm
 	} else {
-		newPerformer.Height, err = translator.intPtrFromString(input.Height, "height")
+		newPerformer.Height, err = translator.intPtrFromString(input.Height)
 		if err != nil {
 			return nil, fmt.Errorf("converting height: %w", err)
 		}
@@ -84,7 +84,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		newPerformer.Aliases = models.NewRelatedStrings(stringslice.FromString(*input.Aliases, ","))
 	}
 
-	newPerformer.TagIDs, err = translator.relatedIds(input.TagIds, "tag_ids")
+	newPerformer.TagIDs, err = translator.relatedIds(input.TagIds)
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}

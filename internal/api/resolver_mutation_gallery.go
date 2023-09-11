@@ -43,30 +43,30 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	newGallery := models.NewGallery()
 
 	newGallery.Title = input.Title
-	newGallery.URL = translator.string(input.URL, "url")
-	newGallery.Details = translator.string(input.Details, "details")
+	newGallery.URL = translator.string(input.URL)
+	newGallery.Details = translator.string(input.Details)
 	newGallery.Rating = translator.ratingConversion(input.Rating, input.Rating100)
 
 	var err error
 
-	newGallery.Date, err = translator.datePtr(input.Date, "date")
+	newGallery.Date, err = translator.datePtr(input.Date)
 	if err != nil {
 		return nil, fmt.Errorf("converting date: %w", err)
 	}
-	newGallery.StudioID, err = translator.intPtrFromString(input.StudioID, "studio_id")
+	newGallery.StudioID, err = translator.intPtrFromString(input.StudioID)
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 
-	newGallery.PerformerIDs, err = translator.relatedIds(input.PerformerIds, "performers_ids")
+	newGallery.PerformerIDs, err = translator.relatedIds(input.PerformerIds)
 	if err != nil {
 		return nil, fmt.Errorf("converting performer ids: %w", err)
 	}
-	newGallery.TagIDs, err = translator.relatedIds(input.TagIds, "tag_ids")
+	newGallery.TagIDs, err = translator.relatedIds(input.TagIds)
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
-	newGallery.SceneIDs, err = translator.relatedIds(input.SceneIds, "scene_ids")
+	newGallery.SceneIDs, err = translator.relatedIds(input.SceneIds)
 	if err != nil {
 		return nil, fmt.Errorf("converting scene ids: %w", err)
 	}
@@ -191,7 +191,7 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 
-	updatedGallery.PrimaryFileID, err = translator.fileIDPtrFromString(input.PrimaryFileID, "primary_file_id")
+	updatedGallery.PrimaryFileID, err = translator.fileIDPtrFromString(input.PrimaryFileID)
 	if err != nil {
 		return nil, fmt.Errorf("converting primary file id: %w", err)
 	}
