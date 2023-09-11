@@ -22,7 +22,7 @@ import {
 import { defineMessages, MessageDescriptor, useIntl } from "react-intl";
 import { CriterionModifier } from "src/core/generated-graphql";
 import { keyboardClickHandler } from "src/utils/keyboard";
-import { useDebouncedSetState } from "src/hooks/debounce";
+import { useDebounce } from "src/hooks/debounce";
 import useFocus from "src/utils/focus";
 
 interface ISelectedItem {
@@ -192,7 +192,7 @@ export const ObjectsFilter = <
   const [query, setQuery] = useState("");
   const [displayQuery, setDisplayQuery] = useState(query);
 
-  const debouncedSetQuery = useDebouncedSetState(setQuery, 250);
+  const debouncedSetQuery = useDebounce(setQuery, 250);
   const onQueryChange = useCallback(
     (input: string) => {
       setDisplayQuery(input);
