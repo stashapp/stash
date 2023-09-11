@@ -1,6 +1,4 @@
-/* eslint-disable consistent-return */
 /* eslint @typescript-eslint/no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
-
 import { IntlShape } from "react-intl";
 import {
   CriterionModifier,
@@ -609,7 +607,11 @@ export function createNullNumberCriterionOption(value: CriterionType) {
 }
 
 export class MandatoryNumberCriterionOption extends CriterionOption {
-  constructor(messageID: string, value: CriterionType) {
+  constructor(
+    messageID: string,
+    value: CriterionType,
+    makeCriterion?: () => Criterion<CriterionValue>
+  ) {
     super({
       messageID,
       type: value,
@@ -623,7 +625,9 @@ export class MandatoryNumberCriterionOption extends CriterionOption {
       ],
       defaultModifier: CriterionModifier.Equals,
       inputType: "number",
-      makeCriterion: () => new NumberCriterion(this),
+      makeCriterion: makeCriterion
+        ? makeCriterion
+        : () => new NumberCriterion(this),
     });
   }
 }
@@ -700,6 +704,19 @@ export class NumberCriterion extends Criterion<INumberValue> {
   }
 }
 
+export class DurationCriterionOption extends MandatoryNumberCriterionOption {
+  constructor(messageID: string, value: CriterionType) {
+    super(messageID, value, () => new DurationCriterion(this));
+  }
+}
+
+export function createDurationCriterionOption(
+  value: CriterionType,
+  messageID?: string
+) {
+  return new DurationCriterionOption(messageID ?? value, value);
+}
+
 export class DurationCriterion extends Criterion<INumberValue> {
   constructor(type: CriterionOption) {
     super(type, { value: undefined, value2: undefined });
@@ -714,17 +731,16 @@ export class DurationCriterion extends Criterion<INumberValue> {
   }
 
   protected getLabelValue(_intl: IntlShape) {
-    return this.modifier === CriterionModifier.Between ||
+    const value = DurationUtils.secondsToString(this.value.value ?? 0);
+    const value2 = DurationUtils.secondsToString(this.value.value2 ?? 0);
+    if (
+      this.modifier === CriterionModifier.Between ||
       this.modifier === CriterionModifier.NotBetween
-      ? `${DurationUtils.secondsToString(
-          this.value.value ?? 0
-        )} ${DurationUtils.secondsToString(this.value.value2 ?? 0)}`
-      : this.modifier === CriterionModifier.GreaterThan ||
-        this.modifier === CriterionModifier.LessThan ||
-        this.modifier === CriterionModifier.Equals ||
-        this.modifier === CriterionModifier.NotEquals
-      ? DurationUtils.secondsToString(this.value.value ?? 0)
-      : "?";
+    ) {
+      return `${value}, ${value2}`;
+    } else {
+      return value;
+    }
   }
 
   public isValid(): boolean {

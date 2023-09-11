@@ -4,6 +4,7 @@ import {
   createStringCriterionOption,
   createDateCriterionOption,
   createMandatoryTimestampCriterionOption,
+  createDurationCriterionOption,
 } from "./criteria/criterion";
 import { HasMarkersCriterionOption } from "./criteria/has-markers";
 import { SceneIsMissingCriterionOption } from "./criteria/is-missing";
@@ -73,9 +74,9 @@ const criterionOptions = [
   ResolutionCriterionOption,
   createStringCriterionOption("video_codec"),
   createStringCriterionOption("audio_codec"),
-  createMandatoryNumberCriterionOption("duration"),
-  createMandatoryNumberCriterionOption("resume_time"),
-  createMandatoryNumberCriterionOption("play_duration"),
+  createDurationCriterionOption("duration"),
+  createDurationCriterionOption("resume_time"),
+  createDurationCriterionOption("play_duration"),
   createMandatoryNumberCriterionOption("play_count"),
   HasMarkersCriterionOption,
   SceneIsMissingCriterionOption,
