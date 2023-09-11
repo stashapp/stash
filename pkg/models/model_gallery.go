@@ -36,6 +36,45 @@ type Gallery struct {
 	PerformerIDs RelatedIDs `json:"performer_ids"`
 }
 
+func NewGallery() Gallery {
+	currentTime := time.Now()
+	return Gallery{
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
+	}
+}
+
+// GalleryPartial represents part of a Gallery object. It is used to update
+// the database entry. Only non-nil fields will be updated.
+type GalleryPartial struct {
+	// Path        OptionalString
+	// Checksum    OptionalString
+	// Zip         OptionalBool
+	Title   OptionalString
+	URL     OptionalString
+	Date    OptionalDate
+	Details OptionalString
+	// Rating expressed in 1-100 scale
+	Rating    OptionalInt
+	Organized OptionalBool
+	StudioID  OptionalInt
+	// FileModTime OptionalTime
+	CreatedAt OptionalTime
+	UpdatedAt OptionalTime
+
+	SceneIDs      *UpdateIDs
+	TagIDs        *UpdateIDs
+	PerformerIDs  *UpdateIDs
+	PrimaryFileID *FileID
+}
+
+func NewGalleryPartial() GalleryPartial {
+	currentTime := time.Now()
+	return GalleryPartial{
+		UpdatedAt: NewOptionalTime(currentTime),
+	}
+}
+
 // IsUserCreated returns true if the gallery was created by the user.
 // This is determined by whether the gallery has a primary file or folder.
 func (g *Gallery) IsUserCreated() bool {
@@ -97,37 +136,6 @@ func (g Gallery) PrimaryChecksum() string {
 	return ""
 }
 
-// GalleryPartial represents part of a Gallery object. It is used to update
-// the database entry. Only non-nil fields will be updated.
-type GalleryPartial struct {
-	// Path        OptionalString
-	// Checksum    OptionalString
-	// Zip         OptionalBool
-	Title   OptionalString
-	URL     OptionalString
-	Date    OptionalDate
-	Details OptionalString
-	// Rating expressed in 1-100 scale
-	Rating    OptionalInt
-	Organized OptionalBool
-	StudioID  OptionalInt
-	// FileModTime OptionalTime
-	CreatedAt OptionalTime
-	UpdatedAt OptionalTime
-
-	SceneIDs      *UpdateIDs
-	TagIDs        *UpdateIDs
-	PerformerIDs  *UpdateIDs
-	PrimaryFileID *FileID
-}
-
-func NewGalleryPartial() GalleryPartial {
-	updatedTime := time.Now()
-	return GalleryPartial{
-		UpdatedAt: NewOptionalTime(updatedTime),
-	}
-}
-
 // GetTitle returns the title of the scene. If the Title field is empty,
 // then the base filename is returned.
 func (g Gallery) GetTitle() string {
@@ -153,13 +161,3 @@ func (g Gallery) DisplayName() string {
 }
 
 const DefaultGthumbWidth int = 640
-
-type Galleries []*Gallery
-
-func (g *Galleries) Append(o interface{}) {
-	*g = append(*g, o.(*Gallery))
-}
-
-func (g *Galleries) New() interface{} {
-	return &Gallery{}
-}

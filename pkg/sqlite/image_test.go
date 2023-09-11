@@ -152,10 +152,7 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 				}
 			}
 			s := tt.newObject
-			if err := qb.Create(ctx, &models.ImageCreateInput{
-				Image:   &s,
-				FileIDs: fileIDs,
-			}); (err != nil) != tt.wantErr {
+			if err := qb.Create(ctx, &s, fileIDs); (err != nil) != tt.wantErr {
 				t.Errorf("imageQueryBuilder.Create() error = %v, wantErr = %v", err, tt.wantErr)
 			}
 

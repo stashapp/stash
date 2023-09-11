@@ -1,7 +1,6 @@
 import {
   createMandatoryNumberCriterionOption,
   createStringCriterionOption,
-  NullNumberCriterionOption,
   createDateCriterionOption,
   createMandatoryTimestampCriterionOption,
   createPathCriterionOption,
@@ -19,6 +18,7 @@ import {
 } from "./criteria/tags";
 import { ListFilterOptions, MediaSortByOptions } from "./filter-options";
 import { DisplayMode } from "./types";
+import { RatingCriterionOption } from "./criteria/rating";
 
 const defaultSortBy = "path";
 
@@ -46,7 +46,7 @@ const criterionOptions = [
   createStringCriterionOption("details"),
   createPathCriterionOption("path"),
   createStringCriterionOption("checksum", "media_info.checksum"),
-  new NullNumberCriterionOption("rating", "rating100"),
+  RatingCriterionOption,
   OrganizedCriterionOption,
   AverageResolutionCriterionOption,
   GalleryIsMissingCriterionOption,

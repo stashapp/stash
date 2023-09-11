@@ -1177,10 +1177,7 @@ func createImages(ctx context.Context, n int) error {
 
 		image := makeImage(i)
 
-		err := qb.Create(ctx, &models.ImageCreateInput{
-			Image:   image,
-			FileIDs: []models.FileID{f.ID},
-		})
+		err := qb.Create(ctx, image, []models.FileID{f.ID})
 
 		if err != nil {
 			return fmt.Errorf("Error creating image %v+: %s", image, err.Error())

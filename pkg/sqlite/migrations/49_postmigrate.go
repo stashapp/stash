@@ -352,6 +352,8 @@ func (m *schema49Migrator) adjustCriterionValue(value interface{}, typ string) (
 		return value, nil
 	} else if _, ok := value.(int); ok {
 		return value, nil
+	} else if _, ok := value.(float64); ok {
+		return value, nil
 	}
 
 	return nil, fmt.Errorf("could not recognize format of value %v", value)
@@ -392,7 +394,7 @@ func (m *schema49Migrator) adjustCriterionItem(value interface{}) (interface{}, 
 // Converts a value of type string to its according type, given by string
 func (m *schema49Migrator) convertValue(value interface{}, typ string) (interface{}, error) {
 	valueType := reflect.TypeOf(value).Name()
-	if typ == valueType || (typ == "int" && valueType == "float64") || (typ == "float64" && valueType == "int") {
+	if typ == valueType || (typ == "int" && valueType == "float64") || (typ == "float64" && valueType == "int") || value == "" {
 		return value, nil
 	}
 

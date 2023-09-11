@@ -144,7 +144,7 @@ export const SettingsContext: React.FC = ({ children }) => {
     setUI(data.configuration.ui);
   }, [data, error]);
 
-  const resetSuccess = useDebounce(() => setUpdateSuccess(undefined), [], 4000);
+  const resetSuccess = useDebounce(() => setUpdateSuccess(undefined), 4000);
 
   const onSuccess = useCallback(() => {
     setUpdateSuccess(true);
@@ -168,7 +168,6 @@ export const SettingsContext: React.FC = ({ children }) => {
         setSaveError(e);
       }
     },
-    [updateGeneralConfig, onSuccess],
     500
   );
 
@@ -218,7 +217,6 @@ export const SettingsContext: React.FC = ({ children }) => {
         setSaveError(e);
       }
     },
-    [updateInterfaceConfig, onSuccess],
     500
   );
 
@@ -268,7 +266,6 @@ export const SettingsContext: React.FC = ({ children }) => {
         setSaveError(e);
       }
     },
-    [updateDefaultsConfig, onSuccess],
     500
   );
 
@@ -318,7 +315,6 @@ export const SettingsContext: React.FC = ({ children }) => {
         setSaveError(e);
       }
     },
-    [updateScrapingConfig, onSuccess],
     500
   );
 
@@ -352,25 +348,21 @@ export const SettingsContext: React.FC = ({ children }) => {
   }
 
   // saves the configuration if no further changes are made after a half second
-  const saveDLNAConfig = useDebounce(
-    async (input: GQL.ConfigDlnaInput) => {
-      try {
-        setUpdateSuccess(undefined);
-        await updateDLNAConfig({
-          variables: {
-            input,
-          },
-        });
+  const saveDLNAConfig = useDebounce(async (input: GQL.ConfigDlnaInput) => {
+    try {
+      setUpdateSuccess(undefined);
+      await updateDLNAConfig({
+        variables: {
+          input,
+        },
+      });
 
-        setPendingDLNA(undefined);
-        onSuccess();
-      } catch (e) {
-        setSaveError(e);
-      }
-    },
-    [updateDLNAConfig, onSuccess],
-    500
-  );
+      setPendingDLNA(undefined);
+      onSuccess();
+    } catch (e) {
+      setSaveError(e);
+    }
+  }, 500);
 
   useEffect(() => {
     if (!pendingDLNA) {
@@ -402,8 +394,7 @@ export const SettingsContext: React.FC = ({ children }) => {
   }
 
   // saves the configuration if no further changes are made after a half second
-  const saveHSPConfig = useDebounce(
-    async (input: GQL.ConfigHspInput) => {
+  const saveHSPConfig = useDebounce(async (input: GQL.ConfigHspInput) => {
       try {
         setUpdateSuccess(undefined);
         await updateHSPConfig({
@@ -417,10 +408,7 @@ export const SettingsContext: React.FC = ({ children }) => {
       } catch (e) {
         setSaveError(e);
       }
-    },
-    [updateHSPConfig, onSuccess],
-    500
-  );
+  }, 500);
 
   useEffect(() => {
     if (!pendingHSP) {
@@ -452,25 +440,21 @@ export const SettingsContext: React.FC = ({ children }) => {
   }
 
   // saves the configuration if no further changes are made after a half second
-  const saveUIConfig = useDebounce(
-    async (input: IUIConfig) => {
-      try {
-        setUpdateSuccess(undefined);
-        await updateUIConfig({
-          variables: {
-            input,
-          },
-        });
+  const saveUIConfig = useDebounce(async (input: IUIConfig) => {
+    try {
+      setUpdateSuccess(undefined);
+      await updateUIConfig({
+        variables: {
+          input,
+        },
+      });
 
-        setPendingUI(undefined);
-        onSuccess();
-      } catch (e) {
-        setSaveError(e);
-      }
-    },
-    [updateUIConfig, onSuccess],
-    500
-  );
+      setPendingUI(undefined);
+      onSuccess();
+    } catch (e) {
+      setSaveError(e);
+    }
+  }, 500);
 
   useEffect(() => {
     if (!pendingUI) {
