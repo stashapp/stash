@@ -7,7 +7,6 @@ import {
   HierarchicalMultiCriterionInput,
   IntCriterionInput,
   MultiCriterionInput,
-  PHashDuplicationCriterionInput,
   DateCriterionInput,
   TimestampCriterionInput,
   ConfigDataFragment,
@@ -765,14 +764,6 @@ export class DurationCriterion extends Criterion<INumberValue> {
     }
 
     return true;
-  }
-}
-
-export class PhashDuplicateCriterion extends StringCriterion {
-  protected toCriterionInput(): PHashDuplicationCriterionInput {
-    return {
-      duplicated: this.value === "true",
-    };
   }
 }
 
