@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -193,7 +194,15 @@ func (rs Routes) heresphereIndex(w http.ResponseWriter, r *http.Request) {
 	// Add filters
 	parsedFilters, err := getAllFilters(r.Context(), rs.Repository)
 	if err == nil {
-		for key, value := range parsedFilters {
+		var keys []string
+		for key := range parsedFilters {
+			keys = append(keys, key)
+		}
+
+		sort.Strings(keys)
+
+		for _, key := range keys {
+			value := parsedFilters[key]
 			sceneUrls := make([]string, len(value))
 
 			for idx, sceneID := range value {
