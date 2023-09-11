@@ -576,8 +576,11 @@ export class NumberCriterionOption extends CriterionOption {
   }
 }
 
-export function createNumberCriterionOption(value: CriterionType) {
-  return new NumberCriterionOption(value, value);
+export function createNumberCriterionOption(
+  value: CriterionType,
+  messageID?: string
+) {
+  return new NumberCriterionOption(messageID ?? value, value);
 }
 
 export class NullNumberCriterionOption extends CriterionOption {
@@ -602,8 +605,11 @@ export class NullNumberCriterionOption extends CriterionOption {
   }
 }
 
-export function createNullNumberCriterionOption(value: CriterionType) {
-  return new NullNumberCriterionOption(value, value);
+export function createNullNumberCriterionOption(
+  value: CriterionType,
+  messageID?: string
+) {
+  return new NullNumberCriterionOption(messageID ?? value, value);
 }
 
 export class MandatoryNumberCriterionOption extends CriterionOption {

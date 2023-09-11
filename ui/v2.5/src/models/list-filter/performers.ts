@@ -5,7 +5,6 @@ import {
   createBooleanCriterionOption,
   createDateCriterionOption,
   createMandatoryTimestampCriterionOption,
-  NumberCriterionOption,
 } from "./criteria/criterion";
 import { FavoriteCriterionOption } from "./criteria/favorite";
 import { GenderCriterionOption } from "./criteria/gender";
@@ -94,9 +93,9 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("gallery_count"),
   createMandatoryNumberCriterionOption("o_counter"),
   createBooleanCriterionOption("ignore_auto_tag"),
-  new NumberCriterionOption("height", "height_cm"),
-  ...numberCriteria.map((c) => createNumberCriterionOption(c)),
   CountryCriterionOption,
+  createNumberCriterionOption("height_cm", "height"),
+  ...numberCriteria.map((c) => createNumberCriterionOption(c)),
   ...stringCriteria.map((c) => createStringCriterionOption(c)),
   createDateCriterionOption("birthdate"),
   createDateCriterionOption("death_date"),
