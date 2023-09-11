@@ -11,6 +11,19 @@ import (
 
 const imageExt = "jpg"
 
+// returns got == expected
+// ignores expected.UpdatedAt, but ensures that got.UpdatedAt is set and not null
+func imagePartialsEqual(got, expected models.ImagePartial) bool {
+	// updated at should be set and not null
+	if !got.UpdatedAt.Set || got.UpdatedAt.Null {
+		return false
+	}
+	// else ignore the exact value
+	got.UpdatedAt = models.OptionalTime{}
+
+	return assert.ObjectsAreEqual(got, expected)
+}
+
 func TestImagePerformers(t *testing.T) {
 	t.Parallel()
 
@@ -51,7 +64,7 @@ func TestImagePerformers(t *testing.T) {
 					},
 				}
 
-				return mocks.AssertImagePartial(t, got, expected)
+				return imagePartialsEqual(got, expected)
 			})
 			mockImageReader.On("UpdatePartial", testCtx, imageID, matchPartial).Return(nil, nil).Once()
 		}
@@ -98,7 +111,7 @@ func TestImageStudios(t *testing.T) {
 					StudioID: models.NewOptionalInt(studioID),
 				}
 
-				return mocks.AssertImagePartial(t, got, expected)
+				return imagePartialsEqual(got, expected)
 			})
 			mockImageReader.On("UpdatePartial", testCtx, imageID, matchPartial).Return(nil, nil).Once()
 		}
@@ -176,7 +189,7 @@ func TestImageTags(t *testing.T) {
 					},
 				}
 
-				return mocks.AssertImagePartial(t, got, expected)
+				return imagePartialsEqual(got, expected)
 			})
 			mockImageReader.On("UpdatePartial", testCtx, imageID, matchPartial).Return(nil, nil).Once()
 		}

@@ -160,7 +160,7 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 				},
 			}
 
-			return mocks.AssertScenePartial(t, got, expected)
+			return scenePartialsEqual(got, expected)
 		})
 		mockSceneReader.On("UpdatePartial", mock.Anything, sceneID, matchPartial).Return(nil, nil).Once()
 	}
@@ -267,7 +267,7 @@ func testTagImages(t *testing.T, tc testTagCase) {
 				},
 			}
 
-			return mocks.AssertImagePartial(t, got, expected)
+			return imagePartialsEqual(got, expected)
 		})
 		mockImageReader.On("UpdatePartial", mock.Anything, imageID, matchPartial).Return(nil, nil).Once()
 	}
@@ -374,7 +374,7 @@ func testTagGalleries(t *testing.T, tc testTagCase) {
 				},
 			}
 
-			return mocks.AssertGalleryPartial(t, got, expected)
+			return galleryPartialsEqual(got, expected)
 		})
 		mockGalleryReader.On("UpdatePartial", mock.Anything, galleryID, matchPartial).Return(nil, nil).Once()
 

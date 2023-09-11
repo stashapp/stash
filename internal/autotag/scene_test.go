@@ -29,6 +29,19 @@ var testEndSeparators = []string{
 	",",
 }
 
+// asserts that got == expected
+// ignores expected.UpdatedAt, but ensures that got.UpdatedAt is set and not null
+func scenePartialsEqual(got, expected models.ScenePartial) bool {
+	// updated at should be set and not null
+	if !got.UpdatedAt.Set || got.UpdatedAt.Null {
+		return false
+	}
+	// else ignore the exact value
+	got.UpdatedAt = models.OptionalTime{}
+
+	return assert.ObjectsAreEqual(got, expected)
+}
+
 func generateNamePatterns(name, separator, ext string) []string {
 	var ret []string
 	ret = append(ret, fmt.Sprintf("%s%saaa.%s", name, separator, ext))
@@ -190,7 +203,7 @@ func TestScenePerformers(t *testing.T) {
 					},
 				}
 
-				return mocks.AssertScenePartial(t, got, expected)
+				return scenePartialsEqual(got, expected)
 			})
 			mockSceneReader.On("UpdatePartial", testCtx, sceneID, matchPartial).Return(nil, nil).Once()
 		}
@@ -234,7 +247,7 @@ func TestSceneStudios(t *testing.T) {
 					StudioID: models.NewOptionalInt(studioID),
 				}
 
-				return mocks.AssertScenePartial(t, got, expected)
+				return scenePartialsEqual(got, expected)
 			})
 			mockSceneReader.On("UpdatePartial", testCtx, sceneID, matchPartial).Return(nil, nil).Once()
 		}
@@ -312,7 +325,7 @@ func TestSceneTags(t *testing.T) {
 					},
 				}
 
-				return mocks.AssertScenePartial(t, got, expected)
+				return scenePartialsEqual(got, expected)
 			})
 			mockSceneReader.On("UpdatePartial", testCtx, sceneID, matchPartial).Return(nil, nil).Once()
 		}

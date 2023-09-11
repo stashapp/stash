@@ -14,6 +14,19 @@ const galleryExt = "zip"
 
 var testCtx = context.Background()
 
+// returns got == expected
+// ignores expected.UpdatedAt, but ensures that got.UpdatedAt is set and not null
+func galleryPartialsEqual(got, expected models.GalleryPartial) bool {
+	// updated at should be set and not null
+	if !got.UpdatedAt.Set || got.UpdatedAt.Null {
+		return false
+	}
+	// else ignore the exact value
+	got.UpdatedAt = models.OptionalTime{}
+
+	return assert.ObjectsAreEqual(got, expected)
+}
+
 func TestGalleryPerformers(t *testing.T) {
 	t.Parallel()
 
@@ -54,7 +67,7 @@ func TestGalleryPerformers(t *testing.T) {
 					},
 				}
 
-				return mocks.AssertGalleryPartial(t, got, expected)
+				return galleryPartialsEqual(got, expected)
 			})
 			mockGalleryReader.On("UpdatePartial", testCtx, galleryID, matchPartial).Return(nil, nil).Once()
 		}
@@ -101,7 +114,7 @@ func TestGalleryStudios(t *testing.T) {
 					StudioID: models.NewOptionalInt(studioID),
 				}
 
-				return mocks.AssertGalleryPartial(t, got, expected)
+				return galleryPartialsEqual(got, expected)
 			})
 			mockGalleryReader.On("UpdatePartial", testCtx, galleryID, matchPartial).Return(nil, nil).Once()
 		}
@@ -179,7 +192,7 @@ func TestGalleryTags(t *testing.T) {
 					},
 				}
 
-				return mocks.AssertGalleryPartial(t, got, expected)
+				return galleryPartialsEqual(got, expected)
 			})
 			mockGalleryReader.On("UpdatePartial", testCtx, galleryID, matchPartial).Return(nil, nil).Once()
 		}

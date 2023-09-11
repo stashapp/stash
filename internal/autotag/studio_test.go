@@ -157,7 +157,7 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 				StudioID: models.NewOptionalInt(studioID),
 			}
 
-			return mocks.AssertScenePartial(t, got, expected)
+			return scenePartialsEqual(got, expected)
 		})
 		mockSceneReader.On("UpdatePartial", mock.Anything, sceneID, matchPartial).Return(nil, nil).Once()
 	}
@@ -260,7 +260,7 @@ func testStudioImages(t *testing.T, tc testStudioCase) {
 				StudioID: models.NewOptionalInt(studioID),
 			}
 
-			return mocks.AssertImagePartial(t, got, expected)
+			return imagePartialsEqual(got, expected)
 		})
 		mockImageReader.On("UpdatePartial", mock.Anything, imageID, matchPartial).Return(nil, nil).Once()
 	}
@@ -362,7 +362,7 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 				StudioID: models.NewOptionalInt(studioID),
 			}
 
-			return mocks.AssertGalleryPartial(t, got, expected)
+			return galleryPartialsEqual(got, expected)
 		})
 		mockGalleryReader.On("UpdatePartial", mock.Anything, galleryID, matchPartial).Return(nil, nil).Once()
 	}

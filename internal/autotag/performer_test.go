@@ -98,7 +98,7 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 				},
 			}
 
-			return mocks.AssertScenePartial(t, got, expected)
+			return scenePartialsEqual(got, expected)
 		})
 		mockSceneReader.On("UpdatePartial", mock.Anything, sceneID, matchPartial).Return(nil, nil).Once()
 	}
@@ -193,7 +193,7 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 				},
 			}
 
-			return mocks.AssertImagePartial(t, got, expected)
+			return imagePartialsEqual(got, expected)
 		})
 		mockImageReader.On("UpdatePartial", mock.Anything, imageID, matchPartial).Return(nil, nil).Once()
 	}
@@ -288,7 +288,7 @@ func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
 				},
 			}
 
-			return mocks.AssertGalleryPartial(t, got, expected)
+			return galleryPartialsEqual(got, expected)
 		})
 		mockGalleryReader.On("UpdatePartial", mock.Anything, galleryID, matchPartial).Return(nil, nil).Once()
 	}
