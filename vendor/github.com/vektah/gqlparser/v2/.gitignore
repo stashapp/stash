@@ -1,5 +1,0 @@
-/vendor
-/validator/imported/node_modules
-/validator/imported/graphql-js
-
-.idea/
