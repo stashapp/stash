@@ -27,11 +27,12 @@ func updatePlayCount(ctx context.Context, scn *models.Scene, event HeresphereVid
 		newTime := event.Time / 1000
 		file := scn.Files.Primary()
 
-		if file != nil && newTime/file.Duration > float64(per)/100.0 {
+		// TODO: Need temporal memory, we need to track "Open" videos to do this properly
+		if scn.PlayCount == 0 && file != nil && newTime/file.Duration > float64(per)/100.0 {
 			ret := &scene.UpdateSet{
-				ID: scn.ID,
+				ID:      scn.ID,
+				Partial: models.NewScenePartial(),
 			}
-			ret.Partial = models.NewScenePartial()
 			ret.Partial.PlayCount.Set = true
 			ret.Partial.PlayCount.Value = scn.PlayCount + 1
 

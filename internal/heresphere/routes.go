@@ -52,20 +52,20 @@ func (rs Routes) Routes() chi.Router {
 	r := chi.NewRouter()
 
 	r.Route("/", func(r chi.Router) {
-		r.Use(rs.HeresphereCtx)
+		r.Use(rs.heresphereCtx)
 
-		r.Post("/", rs.HeresphereIndex)
-		r.Get("/", rs.HeresphereIndex)
-		r.Head("/", rs.HeresphereIndex)
+		r.Post("/", rs.heresphereIndex)
+		r.Get("/", rs.heresphereIndex)
+		r.Head("/", rs.heresphereIndex)
 
-		r.Post("/auth", rs.HeresphereLoginToken)
+		r.Post("/auth", rs.heresphereLoginToken)
 		r.Route("/{sceneId}", func(r chi.Router) {
-			r.Use(rs.HeresphereSceneCtx)
+			r.Use(rs.heresphereSceneCtx)
 
-			r.Post("/", rs.HeresphereVideoData)
-			r.Get("/", rs.HeresphereVideoData)
+			r.Post("/", rs.heresphereVideoData)
+			r.Get("/", rs.heresphereVideoData)
 
-			r.Post("/event", rs.HeresphereVideoEvent)
+			r.Post("/event", rs.heresphereVideoEvent)
 		})
 	})
 
@@ -77,7 +77,7 @@ func (rs Routes) Routes() chi.Router {
  * Intended for server-sided script playback.
  * But since we dont need that, we just use it for timestamps.
  */
-func (rs Routes) HeresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
+func (rs Routes) heresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
 	scn := r.Context().Value(sceneKey).(*models.Scene)
 
 	var event HeresphereVideoEvent
@@ -88,27 +88,25 @@ func (rs Routes) HeresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if event.Event == HeresphereEventClose {
-		newTime := event.Time / 1000
-		newDuration := 0.0
-		if newTime > scn.ResumeTime {
-			newDuration += (newTime - scn.ResumeTime)
-		}
+	newTime := event.Time / 1000
+	newDuration := 0.0
+	if newTime > scn.ResumeTime {
+		newDuration += (newTime - scn.ResumeTime)
+	}
 
-		if err := updatePlayCount(r.Context(), scn, event, rs.TxnManager, rs.Repository.Scene); err != nil {
-			logger.Errorf("Heresphere HeresphereVideoEvent updatePlayCount error: %s\n", err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	if err := updatePlayCount(r.Context(), scn, event, rs.TxnManager, rs.Repository.Scene); err != nil {
+		logger.Errorf("Heresphere HeresphereVideoEvent updatePlayCount error: %s\n", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-		if err := txn.WithReadTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
-			_, err := rs.Repository.Scene.SaveActivity(ctx, scn.ID, &newTime, &newDuration)
-			return err
-		}); err != nil {
-			logger.Errorf("Heresphere HeresphereVideoEvent SaveActivity error: %s\n", err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	if err := txn.WithTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
+		_, err := rs.Repository.Scene.SaveActivity(ctx, scn.ID, &newTime, &newDuration)
+		return err
+	}); err != nil {
+		logger.Errorf("Heresphere HeresphereVideoEvent SaveActivity error: %s\n", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -178,7 +176,7 @@ func (rs Routes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *http.Reques
 /*
  * This endpoint provides the main libraries that are available to browse.
  */
-func (rs Routes) HeresphereIndex(w http.ResponseWriter, r *http.Request) {
+func (rs Routes) heresphereIndex(w http.ResponseWriter, r *http.Request) {
 	// Banner
 	banner := HeresphereBanner{
 		Image: fmt.Sprintf("%s%s", manager.GetBaseURL(r), "/apple-touch-icon.png"),
@@ -225,7 +223,7 @@ func (rs Routes) HeresphereIndex(w http.ResponseWriter, r *http.Request) {
 /*
  * This endpoint provides a single scenes full information.
  */
-func (rs Routes) HeresphereVideoData(w http.ResponseWriter, r *http.Request) {
+func (rs Routes) heresphereVideoData(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value(authKey).(HeresphereAuthReq)
 	c := config.GetInstance()
 
@@ -322,7 +320,7 @@ func (rs Routes) HeresphereVideoData(w http.ResponseWriter, r *http.Request) {
 /*
  * This endpoint function allows the user to login and receive a token if successful.
  */
-func (rs Routes) HeresphereLoginToken(w http.ResponseWriter, r *http.Request) {
+func (rs Routes) heresphereLoginToken(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value(authKey).(HeresphereAuthReq)
 
 	// Try login
@@ -358,7 +356,7 @@ func (rs Routes) HeresphereLoginToken(w http.ResponseWriter, r *http.Request) {
 /*
  * This context function finds the applicable scene from the request and stores it.
  */
-func (rs Routes) HeresphereSceneCtx(next http.Handler) http.Handler {
+func (rs Routes) heresphereSceneCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Get sceneId
 		sceneID, err := strconv.Atoi(chi.URLParam(r, "sceneId"))
@@ -399,7 +397,7 @@ func (rs Routes) HeresphereSceneCtx(next http.Handler) http.Handler {
 /*
  * This context function finds if the authentication is correct, otherwise rejects the request.
  */
-func (rs Routes) HeresphereCtx(next http.Handler) http.Handler {
+func (rs Routes) heresphereCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Add JSON Header (using Add uses camel case and makes it invalid because "Json")
 		w.Header()["HereSphere-JSON-Version"] = []string{strconv.Itoa(HeresphereJsonVersion)}
