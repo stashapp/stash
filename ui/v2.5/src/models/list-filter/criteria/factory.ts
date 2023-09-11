@@ -22,7 +22,8 @@ const filterModeOptions = {
 
 export function makeCriteria(
   mode: GQL.FilterMode,
-  type: CriterionType = "none"
+  type: CriterionType,
+  config?: GQL.ConfigDataFragment
 ) {
   const criterionOptions = filterModeOptions[mode];
 
@@ -32,5 +33,5 @@ export function makeCriteria(
     throw new Error(`Unknown criterion parameter name: ${type}`);
   }
 
-  return option?.makeCriterion();
+  return option?.makeCriterion(config);
 }
