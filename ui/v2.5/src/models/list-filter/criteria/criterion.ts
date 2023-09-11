@@ -423,29 +423,29 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
 }
 
 export class StringCriterionOption extends CriterionOption {
-  public static readonly modifierOptions = [
-    CriterionModifier.Equals,
-    CriterionModifier.NotEquals,
-    CriterionModifier.Includes,
-    CriterionModifier.Excludes,
-    CriterionModifier.IsNull,
-    CriterionModifier.NotNull,
-    CriterionModifier.MatchesRegex,
-    CriterionModifier.NotMatchesRegex,
-  ];
-
-  public static readonly defaultModifier = CriterionModifier.Equals;
-  public static readonly inputType = "text";
-
-  constructor(messageID: string, type: CriterionType, options?: Option[]) {
+  constructor(
+    messageID: string,
+    value: CriterionType,
+    makeCriterion?: () => Criterion<CriterionValue>
+  ) {
     super({
       messageID,
-      type,
-      modifierOptions: StringCriterionOption.modifierOptions,
-      defaultModifier: StringCriterionOption.defaultModifier,
-      options,
-      inputType: StringCriterionOption.inputType,
-      makeCriterion: () => new StringCriterion(this),
+      type: value,
+      modifierOptions: [
+        CriterionModifier.Equals,
+        CriterionModifier.NotEquals,
+        CriterionModifier.Includes,
+        CriterionModifier.Excludes,
+        CriterionModifier.IsNull,
+        CriterionModifier.NotNull,
+        CriterionModifier.MatchesRegex,
+        CriterionModifier.NotMatchesRegex,
+      ],
+      defaultModifier: CriterionModifier.Equals,
+      inputType: "text",
+      makeCriterion: makeCriterion
+        ? makeCriterion
+        : () => new StringCriterion(this),
     });
   }
 }
@@ -458,7 +458,7 @@ export function createStringCriterionOption(
 }
 
 export class MandatoryStringCriterionOption extends CriterionOption {
-  constructor(messageID: string, value: CriterionType, options?: Option[]) {
+  constructor(messageID: string, value: CriterionType) {
     super({
       messageID,
       type: value,
@@ -471,7 +471,6 @@ export class MandatoryStringCriterionOption extends CriterionOption {
         CriterionModifier.NotMatchesRegex,
       ],
       defaultModifier: CriterionModifier.Equals,
-      options,
       inputType: "text",
       makeCriterion: () => new StringCriterion(this),
     });
