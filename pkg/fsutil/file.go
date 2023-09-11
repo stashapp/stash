@@ -59,9 +59,9 @@ func SafeMove(src, dst string) error {
 	err := os.Rename(src, dst)
 
 	if err != nil {
-		err = CopyFile(src, dst)
-		if err != nil {
-			return err
+		copyErr := CopyFile(src, dst)
+		if copyErr != nil {
+			return fmt.Errorf("copying file during SaveMove failed with: '%w'; renaming file failed previously with: '%v'", copyErr, err)
 		}
 
 		err = os.Remove(src)
