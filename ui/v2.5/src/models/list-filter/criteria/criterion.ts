@@ -557,7 +557,7 @@ export class BooleanCriterion extends StringCriterion {
 }
 
 export class NumberCriterionOption extends CriterionOption {
-  constructor(messageID: string, value: CriterionType, options?: Option[]) {
+  constructor(messageID: string, value: CriterionType) {
     super({
       messageID,
       type: value,
@@ -572,7 +572,6 @@ export class NumberCriterionOption extends CriterionOption {
         CriterionModifier.NotBetween,
       ],
       defaultModifier: CriterionModifier.Equals,
-      options,
       inputType: "number",
       makeCriterion: () => new NumberCriterion(this),
     });
@@ -754,7 +753,7 @@ export class DurationCriterion extends Criterion<INumberValue> {
 }
 
 export class DateCriterionOption extends CriterionOption {
-  constructor(messageID: string, value: CriterionType, options?: Option[]) {
+  constructor(messageID: string, value: CriterionType) {
     super({
       messageID,
       type: value,
@@ -769,7 +768,6 @@ export class DateCriterionOption extends CriterionOption {
         CriterionModifier.NotBetween,
       ],
       defaultModifier: CriterionModifier.Equals,
-      options,
       inputType: "text",
       makeCriterion: () => new DateCriterion(this),
     });
@@ -834,7 +832,7 @@ export class DateCriterion extends Criterion<IDateValue> {
 }
 
 export class TimestampCriterionOption extends CriterionOption {
-  constructor(messageID: string, value: CriterionType, options?: Option[]) {
+  constructor(messageID: string, value: CriterionType) {
     super({
       messageID,
       type: value,
@@ -847,7 +845,6 @@ export class TimestampCriterionOption extends CriterionOption {
         CriterionModifier.NotBetween,
       ],
       defaultModifier: CriterionModifier.GreaterThan,
-      options,
       inputType: "text",
       makeCriterion: () => new TimestampCriterion(this),
     });
@@ -859,7 +856,7 @@ export function createTimestampCriterionOption(value: CriterionType) {
 }
 
 export class MandatoryTimestampCriterionOption extends CriterionOption {
-  constructor(messageID: string, value: CriterionType, options?: Option[]) {
+  constructor(messageID: string, value: CriterionType) {
     super({
       messageID,
       type: value,
@@ -870,7 +867,6 @@ export class MandatoryTimestampCriterionOption extends CriterionOption {
         CriterionModifier.NotBetween,
       ],
       defaultModifier: CriterionModifier.GreaterThan,
-      options,
       inputType: "text",
       makeCriterion: () => new TimestampCriterion(this),
     });
