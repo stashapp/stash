@@ -14,7 +14,6 @@ import {
   Criterion,
   CriterionOption,
 } from "src/models/list-filter/criteria/criterion";
-import { makeCriteria } from "src/models/list-filter/criteria/factory";
 import { FormattedMessage, useIntl } from "react-intl";
 import { ConfigurationContext } from "src/hooks/Config";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -264,11 +263,11 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
       if (existing) {
         setCriterion(existing);
       } else {
-        const newCriterion = makeCriteria(filter.mode, option.type);
+        const newCriterion = filter.makeCriterion(option.type);
         setCriterion(newCriterion);
       }
     },
-    [filter.mode, criteria]
+    [filter, criteria]
   );
 
   const ui = (configuration?.ui ?? {}) as IUIConfig;
