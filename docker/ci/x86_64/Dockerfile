@@ -21,7 +21,7 @@ ENV STASH_CONFIG_FILE=/root/.stash/config.yml
 EXPOSE 9999
 CMD ["stash"]
 
-FROM --platform=$TARGETPLATFORM nvidia/cuda:12.2.0-base-ubuntu22.04 AS cuda_app
+FROM --platform=$TARGETPLATFORM nvidia/cuda:12.0.1-base-ubuntu22.04 AS cuda_app
 COPY --from=binary /stash /usr/bin/
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && apt-get install -y \
