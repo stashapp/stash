@@ -114,13 +114,13 @@ func (_m *ImageReaderWriter) CountByGalleryID(ctx context.Context, galleryID int
 	return r0, r1
 }
 
-// Create provides a mock function with given fields: ctx, newImage
-func (_m *ImageReaderWriter) Create(ctx context.Context, newImage *models.ImageCreateInput) error {
-	ret := _m.Called(ctx, newImage)
+// Create provides a mock function with given fields: ctx, newImage, fileIDs
+func (_m *ImageReaderWriter) Create(ctx context.Context, newImage *models.Image, fileIDs []models.FileID) error {
+	ret := _m.Called(ctx, newImage, fileIDs)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.ImageCreateInput) error); ok {
-		r0 = rf(ctx, newImage)
+	if rf, ok := ret.Get(0).(func(context.Context, *models.Image, []models.FileID) error); ok {
+		r0 = rf(ctx, newImage, fileIDs)
 	} else {
 		r0 = ret.Error(0)
 	}

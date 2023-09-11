@@ -3,7 +3,6 @@ package models
 import (
 	"context"
 	"strconv"
-	"time"
 
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
@@ -23,17 +22,12 @@ type ScrapedStudio struct {
 func (ScrapedStudio) IsScrapedContent() {}
 
 func (s *ScrapedStudio) ToStudio(endpoint string, excluded map[string]bool) *Studio {
-	now := time.Now()
-
 	// Populate a new studio from the input
-	newStudio := Studio{
-		Name:      s.Name,
-		CreatedAt: now,
-		UpdatedAt: now,
-	}
+	ret := NewStudio()
+	ret.Name = s.Name
 
 	if s.RemoteSiteID != nil && endpoint != "" {
-		newStudio.StashIDs = NewRelatedStashIDs([]StashID{
+		ret.StashIDs = NewRelatedStashIDs([]StashID{
 			{
 				Endpoint: endpoint,
 				StashID:  *s.RemoteSiteID,
@@ -42,15 +36,15 @@ func (s *ScrapedStudio) ToStudio(endpoint string, excluded map[string]bool) *Stu
 	}
 
 	if s.URL != nil && !excluded["url"] {
-		newStudio.URL = *s.URL
+		ret.URL = *s.URL
 	}
 
 	if s.Parent != nil && s.Parent.StoredID != nil && !excluded["parent"] && !excluded["parent_studio"] {
 		parentId, _ := strconv.Atoi(*s.Parent.StoredID)
-		newStudio.ParentID = &parentId
+		ret.ParentID = &parentId
 	}
 
-	return &newStudio
+	return &ret
 }
 
 func (s *ScrapedStudio) GetImage(ctx context.Context, excluded map[string]bool) ([]byte, error) {
@@ -69,17 +63,15 @@ func (s *ScrapedStudio) GetImage(ctx context.Context, excluded map[string]bool) 
 }
 
 func (s *ScrapedStudio) ToPartial(id *string, endpoint string, excluded map[string]bool, existingStashIDs []StashID) *StudioPartial {
-	partial := StudioPartial{
-		UpdatedAt: NewOptionalTime(time.Now()),
-	}
-	partial.ID, _ = strconv.Atoi(*id)
+	ret := NewStudioPartial()
+	ret.ID, _ = strconv.Atoi(*id)
 
 	if s.Name != "" && !excluded["name"] {
-		partial.Name = NewOptionalString(s.Name)
+		ret.Name = NewOptionalString(s.Name)
 	}
 
 	if s.URL != nil && !excluded["url"] {
-		partial.URL = NewOptionalString(*s.URL)
+		ret.URL = NewOptionalString(*s.URL)
 	}
 
 	if s.Parent != nil && !excluded["parent"] {
@@ -87,25 +79,25 @@ func (s *ScrapedStudio) ToPartial(id *string, endpoint string, excluded map[stri
 			parentID, _ := strconv.Atoi(*s.Parent.StoredID)
 			if parentID > 0 {
 				// This is to be set directly as we know it has a value and the translator won't have the field
-				partial.ParentID = NewOptionalInt(parentID)
+				ret.ParentID = NewOptionalInt(parentID)
 			}
 		}
 	} else {
-		partial.ParentID = NewOptionalIntPtr(nil)
+		ret.ParentID = NewOptionalIntPtr(nil)
 	}
 
 	if s.RemoteSiteID != nil && endpoint != "" {
-		partial.StashIDs = &UpdateStashIDs{
+		ret.StashIDs = &UpdateStashIDs{
 			StashIDs: existingStashIDs,
 			Mode:     RelationshipUpdateModeSet,
 		}
-		partial.StashIDs.Set(StashID{
+		ret.StashIDs.Set(StashID{
 			Endpoint: endpoint,
 			StashID:  *s.RemoteSiteID,
 		})
 	}
 
-	return &partial
+	return &ret
 }
 
 // A performer from a scraping operation...
@@ -145,7 +137,8 @@ type ScrapedPerformer struct {
 func (ScrapedPerformer) IsScrapedContent() {}
 
 func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool) *Performer {
-	ret := NewPerformer(*p.Name)
+	ret := NewPerformer()
+	ret.Name = *p.Name
 
 	if p.Aliases != nil && !excluded["aliases"] {
 		ret.Aliases = NewRelatedStrings(stringslice.FromString(*p.Aliases, ","))
@@ -244,7 +237,7 @@ func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool
 		})
 	}
 
-	return ret
+	return &ret
 }
 
 func (p *ScrapedPerformer) GetImage(ctx context.Context, excluded map[string]bool) ([]byte, error) {
@@ -263,10 +256,10 @@ func (p *ScrapedPerformer) GetImage(ctx context.Context, excluded map[string]boo
 }
 
 func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, existingStashIDs []StashID) PerformerPartial {
-	partial := NewPerformerPartial()
+	ret := NewPerformerPartial()
 
 	if p.Aliases != nil && !excluded["aliases"] {
-		partial.Aliases = &UpdateStrings{
+		ret.Aliases = &UpdateStrings{
 			Values: stringslice.FromString(*p.Aliases, ","),
 			Mode:   RelationshipUpdateModeSet,
 		}
@@ -274,88 +267,88 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 	if p.Birthdate != nil && !excluded["birthdate"] {
 		date, err := ParseDate(*p.Birthdate)
 		if err == nil {
-			partial.Birthdate = NewOptionalDate(date)
+			ret.Birthdate = NewOptionalDate(date)
 		}
 	}
 	if p.DeathDate != nil && !excluded["death_date"] {
 		date, err := ParseDate(*p.DeathDate)
 		if err == nil {
-			partial.DeathDate = NewOptionalDate(date)
+			ret.DeathDate = NewOptionalDate(date)
 		}
 	}
 	if p.CareerLength != nil && !excluded["career_length"] {
-		partial.CareerLength = NewOptionalString(*p.CareerLength)
+		ret.CareerLength = NewOptionalString(*p.CareerLength)
 	}
 	if p.Country != nil && !excluded["country"] {
-		partial.Country = NewOptionalString(*p.Country)
+		ret.Country = NewOptionalString(*p.Country)
 	}
 	if p.Ethnicity != nil && !excluded["ethnicity"] {
-		partial.Ethnicity = NewOptionalString(*p.Ethnicity)
+		ret.Ethnicity = NewOptionalString(*p.Ethnicity)
 	}
 	if p.EyeColor != nil && !excluded["eye_color"] {
-		partial.EyeColor = NewOptionalString(*p.EyeColor)
+		ret.EyeColor = NewOptionalString(*p.EyeColor)
 	}
 	if p.HairColor != nil && !excluded["hair_color"] {
-		partial.HairColor = NewOptionalString(*p.HairColor)
+		ret.HairColor = NewOptionalString(*p.HairColor)
 	}
 	if p.FakeTits != nil && !excluded["fake_tits"] {
-		partial.FakeTits = NewOptionalString(*p.FakeTits)
+		ret.FakeTits = NewOptionalString(*p.FakeTits)
 	}
 	if p.Gender != nil && !excluded["gender"] {
-		partial.Gender = NewOptionalString(*p.Gender)
+		ret.Gender = NewOptionalString(*p.Gender)
 	}
 	if p.Height != nil && !excluded["height"] {
 		h, err := strconv.Atoi(*p.Height)
 		if err == nil {
-			partial.Height = NewOptionalInt(h)
+			ret.Height = NewOptionalInt(h)
 		}
 	}
 	if p.Weight != nil && !excluded["weight"] {
 		w, err := strconv.Atoi(*p.Weight)
 		if err == nil {
-			partial.Weight = NewOptionalInt(w)
+			ret.Weight = NewOptionalInt(w)
 		}
 	}
 	if p.Instagram != nil && !excluded["instagram"] {
-		partial.Instagram = NewOptionalString(*p.Instagram)
+		ret.Instagram = NewOptionalString(*p.Instagram)
 	}
 	if p.Measurements != nil && !excluded["measurements"] {
-		partial.Measurements = NewOptionalString(*p.Measurements)
+		ret.Measurements = NewOptionalString(*p.Measurements)
 	}
 	if p.Name != nil && !excluded["name"] {
-		partial.Name = NewOptionalString(*p.Name)
+		ret.Name = NewOptionalString(*p.Name)
 	}
 	if p.Disambiguation != nil && !excluded["disambiguation"] {
-		partial.Disambiguation = NewOptionalString(*p.Disambiguation)
+		ret.Disambiguation = NewOptionalString(*p.Disambiguation)
 	}
 	if p.Details != nil && !excluded["details"] {
-		partial.Details = NewOptionalString(*p.Details)
+		ret.Details = NewOptionalString(*p.Details)
 	}
 	if p.Piercings != nil && !excluded["piercings"] {
-		partial.Piercings = NewOptionalString(*p.Piercings)
+		ret.Piercings = NewOptionalString(*p.Piercings)
 	}
 	if p.Tattoos != nil && !excluded["tattoos"] {
-		partial.Tattoos = NewOptionalString(*p.Tattoos)
+		ret.Tattoos = NewOptionalString(*p.Tattoos)
 	}
 	if p.Twitter != nil && !excluded["twitter"] {
-		partial.Twitter = NewOptionalString(*p.Twitter)
+		ret.Twitter = NewOptionalString(*p.Twitter)
 	}
 	if p.URL != nil && !excluded["url"] {
-		partial.URL = NewOptionalString(*p.URL)
+		ret.URL = NewOptionalString(*p.URL)
 	}
 
 	if p.RemoteSiteID != nil && endpoint != "" {
-		partial.StashIDs = &UpdateStashIDs{
+		ret.StashIDs = &UpdateStashIDs{
 			StashIDs: existingStashIDs,
 			Mode:     RelationshipUpdateModeSet,
 		}
-		partial.StashIDs.Set(StashID{
+		ret.StashIDs.Set(StashID{
 			Endpoint: endpoint,
 			StashID:  *p.RemoteSiteID,
 		})
 	}
 
-	return partial
+	return ret
 }
 
 type ScrapedTag struct {

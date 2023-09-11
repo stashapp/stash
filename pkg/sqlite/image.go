@@ -160,18 +160,18 @@ func (qb *ImageStore) selectDataset() *goqu.SelectDataset {
 	)
 }
 
-func (qb *ImageStore) Create(ctx context.Context, newObject *models.ImageCreateInput) error {
+func (qb *ImageStore) Create(ctx context.Context, newObject *models.Image, fileIDs []models.FileID) error {
 	var r imageRow
-	r.fromImage(*newObject.Image)
+	r.fromImage(*newObject)
 
 	id, err := qb.tableMgr.insertID(ctx, r)
 	if err != nil {
 		return err
 	}
 
-	if len(newObject.FileIDs) > 0 {
+	if len(fileIDs) > 0 {
 		const firstPrimary = true
-		if err := imagesFilesTableMgr.insertJoins(ctx, id, firstPrimary, newObject.FileIDs); err != nil {
+		if err := imagesFilesTableMgr.insertJoins(ctx, id, firstPrimary, fileIDs); err != nil {
 			return err
 		}
 	}
@@ -198,7 +198,7 @@ func (qb *ImageStore) Create(ctx context.Context, newObject *models.ImageCreateI
 		return fmt.Errorf("finding after create: %w", err)
 	}
 
-	*newObject.Image = *updated
+	*newObject = *updated
 
 	return nil
 }

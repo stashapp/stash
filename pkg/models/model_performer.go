@@ -41,38 +41,12 @@ type Performer struct {
 	StashIDs RelatedStashIDs `json:"stash_ids"`
 }
 
-func (s *Performer) LoadAliases(ctx context.Context, l AliasLoader) error {
-	return s.Aliases.load(func() ([]string, error) {
-		return l.GetAliases(ctx, s.ID)
-	})
-}
-
-func (s *Performer) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
-	return s.TagIDs.load(func() ([]int, error) {
-		return l.GetTagIDs(ctx, s.ID)
-	})
-}
-
-func (s *Performer) LoadStashIDs(ctx context.Context, l StashIDLoader) error {
-	return s.StashIDs.load(func() ([]StashID, error) {
-		return l.GetStashIDs(ctx, s.ID)
-	})
-}
-
-func (s *Performer) LoadRelationships(ctx context.Context, l PerformerReader) error {
-	if err := s.LoadAliases(ctx, l); err != nil {
-		return err
+func NewPerformer() Performer {
+	currentTime := time.Now()
+	return Performer{
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
 	}
-
-	if err := s.LoadTagIDs(ctx, l); err != nil {
-		return err
-	}
-
-	if err := s.LoadStashIDs(ctx, l); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // PerformerPartial represents part of a Performer object. It is used to update
@@ -112,28 +86,43 @@ type PerformerPartial struct {
 	StashIDs *UpdateStashIDs
 }
 
-func NewPerformer(name string) *Performer {
-	currentTime := time.Now()
-	return &Performer{
-		Name:      name,
-		CreatedAt: currentTime,
-		UpdatedAt: currentTime,
-	}
-}
-
 func NewPerformerPartial() PerformerPartial {
-	updatedTime := time.Now()
+	currentTime := time.Now()
 	return PerformerPartial{
-		UpdatedAt: NewOptionalTime(updatedTime),
+		UpdatedAt: NewOptionalTime(currentTime),
 	}
 }
 
-type Performers []*Performer
-
-func (p *Performers) Append(o interface{}) {
-	*p = append(*p, o.(*Performer))
+func (s *Performer) LoadAliases(ctx context.Context, l AliasLoader) error {
+	return s.Aliases.load(func() ([]string, error) {
+		return l.GetAliases(ctx, s.ID)
+	})
 }
 
-func (p *Performers) New() interface{} {
-	return &Performer{}
+func (s *Performer) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
+	return s.TagIDs.load(func() ([]int, error) {
+		return l.GetTagIDs(ctx, s.ID)
+	})
+}
+
+func (s *Performer) LoadStashIDs(ctx context.Context, l StashIDLoader) error {
+	return s.StashIDs.load(func() ([]StashID, error) {
+		return l.GetStashIDs(ctx, s.ID)
+	})
+}
+
+func (s *Performer) LoadRelationships(ctx context.Context, l PerformerReader) error {
+	if err := s.LoadAliases(ctx, l); err != nil {
+		return err
+	}
+
+	if err := s.LoadTagIDs(ctx, l); err != nil {
+		return err
+	}
+
+	if err := s.LoadStashIDs(ctx, l); err != nil {
+		return err
+	}
+
+	return nil
 }

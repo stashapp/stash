@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -164,12 +163,9 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 
 			tagIDs = intslice.IntAppendUnique(tagIDs, int(tagID))
 		} else if createMissing {
-			now := time.Now()
-			newTag := models.Tag{
-				Name:      t.Name,
-				CreatedAt: now,
-				UpdatedAt: now,
-			}
+			newTag := models.NewTag()
+			newTag.Name = t.Name
+
 			err := g.tagCreator.Create(ctx, &newTag)
 			if err != nil {
 				return nil, fmt.Errorf("error creating tag: %w", err)
