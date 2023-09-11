@@ -1,9 +1,12 @@
-import { StringBooleanCriterion, StringBooleanCriterionOption } from "./criterion";
+import {
+  StringBooleanCriterion,
+  StringBooleanCriterionOption,
+} from "./criterion";
 
 export const HasChaptersCriterionOption = new StringBooleanCriterionOption(
   "hasChapters",
   "has_chapters",
-  () => new HasChaptersCriterion(),
+  () => new HasChaptersCriterion()
 );
 
 export class HasChaptersCriterion extends StringBooleanCriterion {

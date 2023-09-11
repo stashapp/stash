@@ -20,8 +20,8 @@ export const StudiosCriterionOption = new CriterionOption({
   type: "studios",
   modifierOptions,
   defaultModifier,
-  makeCriterion: () => new StudiosCriterion(),
   inputType,
+  makeCriterion: () => new StudiosCriterion(),
 });
 
 export class StudiosCriterion extends IHierarchicalLabeledIdCriterion {
@@ -34,8 +34,10 @@ export const ParentStudiosCriterionOption = new ILabeledIdCriterionOption(
   "parent_studios",
   "parents",
   false,
-  inputType
+  inputType,
+  () => new ParentStudiosCriterion()
 );
+
 export class ParentStudiosCriterion extends ILabeledIdCriterion {
   constructor() {
     super(ParentStudiosCriterionOption);

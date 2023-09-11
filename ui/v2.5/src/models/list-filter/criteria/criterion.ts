@@ -224,7 +224,8 @@ export class ILabeledIdCriterionOption extends CriterionOption {
     messageID: string,
     value: CriterionType,
     includeAll: boolean,
-    inputType: InputType
+    inputType: InputType,
+    makeCriterion?: () => Criterion<CriterionValue>
   ) {
     const modifierOptions = [
       CriterionModifier.Includes,
@@ -244,8 +245,10 @@ export class ILabeledIdCriterionOption extends CriterionOption {
       type: value,
       modifierOptions,
       defaultModifier,
-      makeCriterion: () => new ILabeledIdCriterion(this),
       inputType,
+      makeCriterion: makeCriterion
+        ? makeCriterion
+        : () => new ILabeledIdCriterion(this),
     });
   }
 }
