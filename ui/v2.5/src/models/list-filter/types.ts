@@ -1,5 +1,4 @@
 // NOTE: add new enum values to the end, to ensure existing data
-
 // is not impacted
 export enum DisplayMode {
   Grid,
@@ -101,7 +100,6 @@ export interface IOptionType {
 }
 
 export type CriterionType =
-  | "none"
   | "path"
   | "rating"
   | "rating100"

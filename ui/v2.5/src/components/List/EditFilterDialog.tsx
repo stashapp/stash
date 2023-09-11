@@ -243,17 +243,11 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   }, [currentFilter.mode]);
 
   const criterionOptions = useMemo(() => {
-    const filteredOptions = filterOptions.criterionOptions.filter((o) => {
-      return o.type !== "none";
-    });
-
-    filteredOptions.sort((a, b) => {
+    return [...filterOptions.criterionOptions].sort((a, b) => {
       return intl
         .formatMessage({ id: a.messageID })
         .localeCompare(intl.formatMessage({ id: b.messageID }));
     });
-
-    return filteredOptions;
   }, [intl, filterOptions.criterionOptions]);
 
   const optionSelected = useCallback(
