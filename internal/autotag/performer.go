@@ -13,21 +13,21 @@ import (
 )
 
 type SceneQueryPerformerUpdater interface {
-	scene.Queryer
+	models.SceneQueryer
 	models.PerformerIDLoader
-	scene.PartialUpdater
+	models.SceneUpdater
 }
 
 type ImageQueryPerformerUpdater interface {
-	image.Queryer
+	models.ImageQueryer
 	models.PerformerIDLoader
-	image.PartialUpdater
+	models.ImageUpdater
 }
 
 type GalleryQueryPerformerUpdater interface {
-	gallery.Queryer
+	models.GalleryQueryer
 	models.PerformerIDLoader
-	gallery.PartialUpdater
+	models.GalleryUpdater
 }
 
 func getPerformerTaggers(p *models.Performer, cache *match.Cache) []tagger {

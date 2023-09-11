@@ -20,7 +20,6 @@ import {
   queryScrapeSceneQueryFragment,
 } from "src/core/StashService";
 import {
-  PerformerSelect,
   TagSelect,
   StudioSelect,
   GallerySelect,
@@ -52,6 +51,10 @@ import { lazyComponent } from "src/utils/lazyComponent";
 import isEqual from "lodash-es/isEqual";
 import { DateInput } from "src/components/Shared/DateInput";
 import { yupDateString, yupUniqueStringList } from "src/utils/yup";
+import {
+  Performer,
+  PerformerSelect,
+} from "src/components/Performers/PerformerSelect";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
@@ -79,6 +82,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const [galleries, setGalleries] = useState<{ id: string; title: string }[]>(
     []
   );
+  const [performers, setPerformers] = useState<Performer[]>([]);
 
   const Scrapers = useListSceneScrapers();
   const [fragmentScrapers, setFragmentScrapers] = useState<GQL.Scraper[]>([]);
@@ -98,6 +102,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
       })) ?? []
     );
   }, [scene.galleries]);
+
+  useEffect(() => {
+    setPerformers(scene.performers ?? []);
+  }, [scene.performers]);
 
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
 
@@ -186,6 +194,14 @@ export const SceneEditPanel: React.FC<IProps> = ({
     formik.setFieldValue(
       "gallery_ids",
       items.map((i) => i.id)
+    );
+  }
+
+  function onSetPerformers(items: Performer[]) {
+    setPerformers(items);
+    formik.setFieldValue(
+      "performer_ids",
+      items.map((item) => item.id)
     );
   }
 
@@ -385,6 +401,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     return (
       <SceneScrapeDialog
         scene={currentScene}
+        scenePerformers={performers}
         scraped={scrapedScene}
         endpoint={endpoint}
         onClose={(s) => onScrapeDialogClosed(s)}
@@ -552,8 +569,15 @@ export const SceneEditPanel: React.FC<IProps> = ({
       });
 
       if (idPerfs.length > 0) {
-        const newIds = idPerfs.map((p) => p.stored_id);
-        formik.setFieldValue("performer_ids", newIds as string[]);
+        onSetPerformers(
+          idPerfs.map((p) => {
+            return {
+              id: p.stored_id!,
+              name: p.name ?? "",
+              alias_list: [],
+            };
+          })
+        );
       }
     }
 
@@ -823,13 +847,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
               <Col sm={9} xl={12}>
                 <PerformerSelect
                   isMulti
-                  onSelect={(items) =>
-                    formik.setFieldValue(
-                      "performer_ids",
-                      items.map((item) => item.id)
-                    )
-                  }
-                  ids={formik.values.performer_ids}
+                  onSelect={onSetPerformers}
+                  values={performers}
                 />
               </Col>
             </Form.Group>

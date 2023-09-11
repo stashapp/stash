@@ -26,6 +26,7 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
@@ -100,7 +101,9 @@ type SetupInput struct {
 	GeneratedLocation string `json:"generatedLocation"`
 	// Empty to indicate default
 	CacheLocation string `json:"cacheLocation"`
-	// Empty to indicate database storage for blobs
+
+	StoreBlobsInDatabase bool `json:"storeBlobsInDatabase"`
+	// Empty to indicate default
 	BlobsLocation string `json:"blobsLocation"`
 }
 
@@ -220,7 +223,7 @@ func initialize() error {
 
 	instance.DLNAService = dlna.NewService(instance.Repository, dlna.Repository{
 		SceneFinder:     instance.Repository.Scene,
-		FileFinder:      instance.Repository.File,
+		FileGetter:      instance.Repository.File,
 		StudioFinder:    instance.Repository.Studio,
 		TagFinder:       instance.Repository.Tag,
 		PerformerFinder: instance.Repository.Performer,
@@ -278,15 +281,15 @@ func initialize() error {
 	return nil
 }
 
-func videoFileFilter(ctx context.Context, f file.File) bool {
+func videoFileFilter(ctx context.Context, f models.File) bool {
 	return useAsVideo(f.Base().Path)
 }
 
-func imageFileFilter(ctx context.Context, f file.File) bool {
+func imageFileFilter(ctx context.Context, f models.File) bool {
 	return useAsImage(f.Base().Path)
 }
 
-func galleryFileFilter(ctx context.Context, f file.File) bool {
+func galleryFileFilter(ctx context.Context, f models.File) bool {
 	return isZip(f.Base().Basename)
 }
 
@@ -295,7 +298,7 @@ func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
 		Repository: file.Repository{
 			Manager:          db,
 			DatabaseProvider: db,
-			Store:            db.File,
+			FileStore:        db.File,
 			FolderStore:      db.Folder,
 		},
 		FileDecorators: []file.Decorator{
@@ -323,7 +326,7 @@ func makeCleaner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Cleaner {
 		Repository: file.Repository{
 			Manager:          db,
 			DatabaseProvider: db,
-			Store:            db.File,
+			FileStore:        db.File,
 			FolderStore:      db.Folder,
 		},
 		Handlers: []file.CleanHandler{
@@ -596,6 +599,10 @@ func setSetupDefaults(input *SetupInput) {
 	if input.DatabaseFile == "" {
 		input.DatabaseFile = filepath.Join(configDir, "stash-go.sqlite")
 	}
+
+	if input.BlobsLocation == "" {
+		input.BlobsLocation = filepath.Join(configDir, "blobs")
+	}
 }
 
 func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
@@ -648,20 +655,20 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 		s.Config.Set(config.Cache, input.CacheLocation)
 	}
 
-	// if blobs path was provided then use filesystem based blob storage
-	if input.BlobsLocation != "" {
+	if input.StoreBlobsInDatabase {
+		s.Config.Set(config.BlobsStorage, config.BlobStorageTypeDatabase)
+	} else {
 		if !c.HasOverride(config.BlobsPath) {
 			if exists, _ := fsutil.DirExists(input.BlobsLocation); !exists {
 				if err := os.MkdirAll(input.BlobsLocation, 0755); err != nil {
 					return fmt.Errorf("error creating blobs directory: %v", err)
 				}
 			}
+
+			s.Config.Set(config.BlobsPath, input.BlobsLocation)
 		}
 
-		s.Config.Set(config.BlobsPath, input.BlobsLocation)
 		s.Config.Set(config.BlobsStorage, config.BlobStorageTypeFilesystem)
-	} else {
-		s.Config.Set(config.BlobsStorage, config.BlobStorageTypeDatabase)
 	}
 
 	// set the configuration

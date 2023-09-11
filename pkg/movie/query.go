@@ -7,15 +7,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-type Queryer interface {
-	Query(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) ([]*models.Movie, int, error)
-}
-
-type CountQueryer interface {
-	QueryCount(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) (int, error)
-}
-
-func CountByStudioID(ctx context.Context, r CountQueryer, id int, depth *int) (int, error) {
+func CountByStudioID(ctx context.Context, r models.MovieQueryer, id int, depth *int) (int, error) {
 	filter := &models.MovieFilterType{
 		Studios: &models.HierarchicalMultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},

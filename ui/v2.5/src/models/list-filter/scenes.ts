@@ -2,7 +2,6 @@ import {
   createMandatoryNumberCriterionOption,
   createMandatoryStringCriterionOption,
   createStringCriterionOption,
-  NullNumberCriterionOption,
   createDateCriterionOption,
   createMandatoryTimestampCriterionOption,
   createPathCriterionOption,
@@ -28,6 +27,7 @@ import {
 import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
 import { CaptionsCriterionOption } from "./criteria/captions";
 import { StashIDCriterionOption } from "./criteria/stash-ids";
+import { RatingCriterionOption } from "./criteria/rating";
 
 const defaultSortBy = "date";
 const sortByOptions = [
@@ -59,20 +59,16 @@ const displayModeOptions = [
 
 const criterionOptions = [
   createStringCriterionOption("title"),
-  createStringCriterionOption("scene_code"),
+  createStringCriterionOption("code", "scene_code"),
   createPathCriterionOption("path"),
   createStringCriterionOption("details"),
   createStringCriterionOption("director"),
   createMandatoryStringCriterionOption("oshash", "media_info.hash"),
-  createStringCriterionOption(
-    "sceneChecksum",
-    "media_info.checksum",
-    "checksum"
-  ),
+  createStringCriterionOption("checksum", "media_info.checksum"),
   PhashCriterionOption,
   DuplicatedCriterionOption,
   OrganizedCriterionOption,
-  new NullNumberCriterionOption("rating", "rating100"),
+  RatingCriterionOption,
   createMandatoryNumberCriterionOption("o_counter"),
   ResolutionCriterionOption,
   createStringCriterionOption("video_codec"),

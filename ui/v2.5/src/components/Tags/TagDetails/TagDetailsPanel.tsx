@@ -80,7 +80,10 @@ export const CompressedTagDetailsPanel: React.FC<ITagDetails> = ({ tag }) => {
           {tag.name}
         </a>
         {tag.description ? (
-          <span className="tag-desc">{tag.description}</span>
+          <>
+            <span className="detail-divider">/</span>
+            <span className="tag-desc">{tag.description}</span>
+          </>
         ) : (
           ""
         )}

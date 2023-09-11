@@ -3,57 +3,35 @@ package api
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func convertImageFile(f *file.ImageFile) *ImageFile {
-	ret := &ImageFile{
-		ID:             strconv.Itoa(int(f.ID)),
-		Path:           f.Path,
-		Basename:       f.Basename,
-		ParentFolderID: strconv.Itoa(int(f.ParentFolderID)),
-		ModTime:        f.ModTime,
-		Size:           f.Size,
-		Width:          f.Width,
-		Height:         f.Height,
-		CreatedAt:      f.CreatedAt,
-		UpdatedAt:      f.UpdatedAt,
-		Fingerprints:   resolveFingerprints(f.Base()),
+func convertVisualFile(f models.File) (models.VisualFile, error) {
+	vf, ok := f.(models.VisualFile)
+	if !ok {
+		return nil, fmt.Errorf("file %s is not a visual file", f.Base().Path)
 	}
-
-	if f.ZipFileID != nil {
-		zipFileID := strconv.Itoa(int(*f.ZipFileID))
-		ret.ZipFileID = &zipFileID
-	}
-
-	return ret
+	return vf, nil
 }
 
-func (r *imageResolver) getPrimaryFile(ctx context.Context, obj *models.Image) (file.VisualFile, error) {
+func (r *imageResolver) getPrimaryFile(ctx context.Context, obj *models.Image) (models.VisualFile, error) {
 	if obj.PrimaryFileID != nil {
 		f, err := loaders.From(ctx).FileByID.Load(*obj.PrimaryFileID)
 		if err != nil {
 			return nil, err
 		}
 
-		asFrame, ok := f.(file.VisualFile)
-		if !ok {
-			return nil, fmt.Errorf("file %T is not an frame", f)
-		}
-
-		return asFrame, nil
+		return convertVisualFile(f)
 	}
 
 	return nil, nil
 }
 
-func (r *imageResolver) getFiles(ctx context.Context, obj *models.Image) ([]file.File, error) {
+func (r *imageResolver) getFiles(ctx context.Context, obj *models.Image) ([]models.File, error) {
 	fileIDs, err := loaders.From(ctx).ImageFiles.Load(obj.ID)
 	if err != nil {
 		return nil, err
@@ -88,30 +66,21 @@ func (r *imageResolver) File(ctx context.Context, obj *models.Image) (*ImageFile
 	}, nil
 }
 
-func convertVisualFile(f file.File) VisualFile {
-	switch f := f.(type) {
-	case *file.ImageFile:
-		return convertImageFile(f)
-	case *file.VideoFile:
-		return convertVideoFile(f)
-	default:
-		panic(fmt.Sprintf("unknown file type %T", f))
-	}
-}
-
-func (r *imageResolver) VisualFiles(ctx context.Context, obj *models.Image) ([]VisualFile, error) {
-	fileIDs, err := loaders.From(ctx).ImageFiles.Load(obj.ID)
+func (r *imageResolver) VisualFiles(ctx context.Context, obj *models.Image) ([]models.VisualFile, error) {
+	files, err := r.getFiles(ctx, obj)
 	if err != nil {
 		return nil, err
 	}
 
-	files, errs := loaders.From(ctx).FileByID.LoadAll(fileIDs)
-	ret := make([]VisualFile, len(files))
+	ret := make([]models.VisualFile, len(files))
 	for i, f := range files {
-		ret[i] = convertVisualFile(f)
+		ret[i], err = convertVisualFile(f)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return ret, firstError(errs)
+	return ret, nil
 }
 
 func (r *imageResolver) Date(ctx context.Context, obj *models.Image) (*string, error) {
@@ -122,24 +91,22 @@ func (r *imageResolver) Date(ctx context.Context, obj *models.Image) (*string, e
 	return nil, nil
 }
 
-func (r *imageResolver) Files(ctx context.Context, obj *models.Image) ([]*ImageFile, error) {
+func (r *imageResolver) Files(ctx context.Context, obj *models.Image) ([]*models.ImageFile, error) {
 	files, err := r.getFiles(ctx, obj)
 	if err != nil {
 		return nil, err
 	}
 
-	var ret []*ImageFile
+	var ret []*models.ImageFile
 
 	for _, f := range files {
 		// filter out non-image files
-		imageFile, ok := f.(*file.ImageFile)
+		imageFile, ok := f.(*models.ImageFile)
 		if !ok {
 			continue
 		}
 
-		thisFile := convertImageFile(imageFile)
-
-		ret = append(ret, thisFile)
+		ret = append(ret, imageFile)
 	}
 
 	return ret, nil

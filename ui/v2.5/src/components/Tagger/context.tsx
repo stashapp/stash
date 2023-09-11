@@ -461,7 +461,10 @@ export const TaggerContext: React.FC = ({ children }) => {
     try {
       await updateScene({
         variables: {
-          input: sceneCreateInput,
+          input: {
+            ...sceneCreateInput,
+            organized: config?.markSceneAsOrganizedOnSave,
+          },
         },
       });
 
@@ -563,7 +566,7 @@ export const TaggerContext: React.FC = ({ children }) => {
         return {
           ...r,
           performers: r.performers.map((p) => {
-            if (p.remote_site_id === performer.remote_site_id) {
+            if (p.name === performer.name) {
               return {
                 ...p,
                 stored_id: performerID,
@@ -658,8 +661,6 @@ export const TaggerContext: React.FC = ({ children }) => {
     studio: GQL.ScrapedStudio,
     toCreate: GQL.StudioCreateInput
   ) {
-    if (!currentSource?.stashboxEndpoint) return;
-
     try {
       const result = await createStudio({
         variables: {
@@ -678,7 +679,7 @@ export const TaggerContext: React.FC = ({ children }) => {
         return {
           ...r,
           studio:
-            r.studio.remote_site_id === studio.remote_site_id
+            r.studio.name === studio.name
               ? {
                   ...r.studio,
                   stored_id: studioID,

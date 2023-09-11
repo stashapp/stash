@@ -160,7 +160,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     return (
       <Row>
         <Form.Label column xs={labelXS} xl={labelXL}>
-          StashIDs
+          {intl.formatMessage({ id: "stash_ids" })}
         </Form.Label>
         <Col xs={fieldXS} xl={fieldXL}>
           <ul className="pl-0">

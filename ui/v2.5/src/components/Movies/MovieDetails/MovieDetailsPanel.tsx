@@ -65,7 +65,10 @@ export const CompressedMovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({
           {movie.name}
         </a>
         {movie?.studio?.name ? (
-          <span className="movie-studio">{movie?.studio?.name}</span>
+          <>
+            <span className="detail-divider">/</span>
+            <span className="movie-studio">{movie?.studio?.name}</span>
+          </>
         ) : (
           ""
         )}

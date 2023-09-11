@@ -13,20 +13,19 @@ interface IHierarchicalLabelValueFilterProps {
 export const HierarchicalLabelValueFilter: React.FC<
   IHierarchicalLabelValueFilterProps
 > = ({ criterion, onValueChanged }) => {
+  const { criterionOption } = criterion;
+  const { type, inputType } = criterionOption;
+
   const intl = useIntl();
 
   if (
-    criterion.criterionOption.type !== "performers" &&
-    criterion.criterionOption.type !== "studios" &&
-    criterion.criterionOption.type !== "parent_studios" &&
-    criterion.criterionOption.type !== "tags" &&
-    criterion.criterionOption.type !== "sceneTags" &&
-    criterion.criterionOption.type !== "performerTags" &&
-    criterion.criterionOption.type !== "parentTags" &&
-    criterion.criterionOption.type !== "childTags" &&
-    criterion.criterionOption.type !== "movies"
-  )
+    inputType !== "studios" &&
+    inputType !== "tags" &&
+    inputType !== "scene_tags" &&
+    inputType !== "performer_tags"
+  ) {
     return null;
+  }
 
   const messages = defineMessages({
     studio_depth: {
@@ -51,10 +50,10 @@ export const HierarchicalLabelValueFilter: React.FC<
   }
 
   function criterionOptionTypeToIncludeID(): string {
-    if (criterion.criterionOption.type === "studios") {
+    if (inputType === "studios") {
       return "include-sub-studios";
     }
-    if (criterion.criterionOption.type === "childTags") {
+    if (type === "children") {
       return "include-parent-tags";
     }
     return "include-sub-tags";
@@ -62,9 +61,9 @@ export const HierarchicalLabelValueFilter: React.FC<
 
   function criterionOptionTypeToIncludeUIString(): MessageDescriptor {
     const optionType =
-      criterion.criterionOption.type === "studios"
+      inputType === "studios"
         ? "include_sub_studios"
-        : criterion.criterionOption.type === "childTags"
+        : type === "children"
         ? "include_parent_tags"
         : "include_sub_tags";
     return {
@@ -76,7 +75,7 @@ export const HierarchicalLabelValueFilter: React.FC<
     <>
       <Form.Group>
         <FilterSelect
-          type={criterion.criterionOption.type}
+          type={inputType}
           isMulti
           onSelect={onSelectionChanged}
           ids={criterion.value.items.map((labeled) => labeled.id)}

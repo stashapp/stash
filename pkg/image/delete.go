@@ -5,13 +5,10 @@ import (
 
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 )
-
-type Destroyer interface {
-	Destroy(ctx context.Context, id int) error
-}
 
 // FileDeleter is an extension of file.Deleter that handles deletion of image files.
 type FileDeleter struct {
@@ -44,7 +41,7 @@ func (s *Service) Destroy(ctx context.Context, i *models.Image, fileDeleter *Fil
 
 // DestroyZipImages destroys all images in zip, optionally marking the files and generated files for deletion.
 // Returns a slice of images that were destroyed.
-func (s *Service) DestroyZipImages(ctx context.Context, zipFile file.File, fileDeleter *FileDeleter, deleteGenerated bool) ([]*models.Image, error) {
+func (s *Service) DestroyZipImages(ctx context.Context, zipFile models.File, fileDeleter *FileDeleter, deleteGenerated bool) ([]*models.Image, error) {
 	var imgsDestroyed []*models.Image
 
 	imgs, err := s.Repository.FindByZipFileID(ctx, zipFile.Base().ID)
@@ -106,6 +103,7 @@ func (s *Service) deleteFiles(ctx context.Context, i *models.Image, fileDeleter 
 		// don't delete files in zip archives
 		const deleteFile = true
 		if f.Base().ZipFileID == nil {
+			logger.Info("Deleting image file: ", f.Base().Path)
 			if err := file.Destroy(ctx, s.File, f, fileDeleter.Deleter, deleteFile); err != nil {
 				return err
 			}

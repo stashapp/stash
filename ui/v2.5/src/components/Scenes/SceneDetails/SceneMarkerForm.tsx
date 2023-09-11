@@ -10,10 +10,13 @@ import {
   useSceneMarkerDestroy,
 } from "src/core/StashService";
 import { DurationInput } from "src/components/Shared/DurationInput";
-import { TagSelect, MarkerTitleSuggest } from "src/components/Shared/Select";
+import {
+  TagSelect,
+  MarkerTitleSuggest,
+  SelectObject,
+} from "src/components/Shared/Select";
 import { getPlayerPosition } from "src/components/ScenePlayer/util";
 import { useToast } from "src/hooks/Toast";
-import isEqual from "lodash-es/isEqual";
 
 interface ISceneMarkerForm {
   sceneID: string;
@@ -35,7 +38,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
 
   const schema = yup.object({
     title: yup.string().ensure(),
-    seconds: yup.number().required().integer(),
+    seconds: yup.number().required(),
     primary_tag_id: yup.string().required(),
     tag_ids: yup.array(yup.string().required()).defined(),
   });
@@ -97,6 +100,11 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
     }
   }
 
+  async function onSetPrimaryTagID(tags: SelectObject[]) {
+    await formik.setFieldValue("primary_tag_id", tags[0]?.id);
+    await formik.setFieldTouched("primary_tag_id", true);
+  }
+
   const primaryTagId = formik.values.primary_tag_id;
 
   return (
@@ -119,16 +127,16 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
           </Form.Label>
           <div className="col-sm-4 col-md-6 col-xl-12 mb-3 mb-sm-0 mb-xl-3">
             <TagSelect
-              onSelect={(tags) =>
-                formik.setFieldValue("primary_tag_id", tags[0]?.id)
-              }
+              onSelect={onSetPrimaryTagID}
               ids={primaryTagId ? [primaryTagId] : []}
               noSelectionString="Select/create tag..."
               hoverPlacement="right"
             />
-            <Form.Control.Feedback type="invalid">
-              {formik.errors.primary_tag_id}
-            </Form.Control.Feedback>
+            {formik.touched.primary_tag_id && (
+              <Form.Control.Feedback type="invalid">
+                {formik.errors.primary_tag_id}
+              </Form.Control.Feedback>
+            )}
           </div>
           <div className="col-sm-5 col-md-4 col-xl-12">
             <div className="row">
@@ -175,7 +183,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
         <div className="col d-flex">
           <Button
             variant="primary"
-            disabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}
+            disabled={!isNew && !formik.dirty}
             onClick={() => formik.submitForm()}
           >
             <FormattedMessage id="actions.save" />

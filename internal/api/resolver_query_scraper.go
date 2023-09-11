@@ -129,7 +129,9 @@ func (r *queryResolver) ScrapeScene(ctx context.Context, scraperID string, scene
 		return nil, err
 	}
 
-	filterSceneTags([]*scraper.ScrapedScene{ret})
+	if ret != nil {
+		filterSceneTags([]*scraper.ScrapedScene{ret})
+	}
 
 	return ret, nil
 }
@@ -190,7 +192,9 @@ func (r *queryResolver) ScrapeSceneURL(ctx context.Context, url string) (*scrape
 		return nil, err
 	}
 
-	filterSceneTags([]*scraper.ScrapedScene{ret})
+	if ret != nil {
+		filterSceneTags([]*scraper.ScrapedScene{ret})
+	}
 
 	return ret, nil
 }

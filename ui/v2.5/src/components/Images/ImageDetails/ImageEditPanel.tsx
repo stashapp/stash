@@ -4,11 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
-import {
-  PerformerSelect,
-  TagSelect,
-  StudioSelect,
-} from "src/components/Shared/Select";
+import { TagSelect, StudioSelect } from "src/components/Shared/Select";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { URLListInput } from "src/components/Shared/URLField";
 import { useToast } from "src/hooks/Toast";
@@ -21,6 +17,10 @@ import { ConfigurationContext } from "src/hooks/Config";
 import isEqual from "lodash-es/isEqual";
 import { DateInput } from "src/components/Shared/DateInput";
 import { yupDateString, yupUniqueStringList } from "src/utils/yup";
+import {
+  Performer,
+  PerformerSelect,
+} from "src/components/Performers/PerformerSelect";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -42,6 +42,8 @@ export const ImageEditPanel: React.FC<IProps> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   const { configuration } = React.useContext(ConfigurationContext);
+
+  const [performers, setPerformers] = useState<Performer[]>([]);
 
   const schema = yup.object({
     title: yup.string().ensure(),
@@ -76,11 +78,23 @@ export const ImageEditPanel: React.FC<IProps> = ({
     formik.setFieldValue("rating100", v);
   }
 
+  function onSetPerformers(items: Performer[]) {
+    setPerformers(items);
+    formik.setFieldValue(
+      "performer_ids",
+      items.map((item) => item.id)
+    );
+  }
+
   useRatingKeybinds(
     true,
     configuration?.ui?.ratingSystemOptions?.type,
     setRating
   );
+
+  useEffect(() => {
+    setPerformers(image.performers ?? []);
+  }, [image.performers]);
 
   useEffect(() => {
     if (isVisible) {
@@ -244,13 +258,8 @@ export const ImageEditPanel: React.FC<IProps> = ({
               <Col sm={9} xl={12}>
                 <PerformerSelect
                   isMulti
-                  onSelect={(items) =>
-                    formik.setFieldValue(
-                      "performer_ids",
-                      items.map((item) => item.id)
-                    )
-                  }
-                  ids={formik.values.performer_ids}
+                  onSelect={onSetPerformers}
+                  values={performers}
                 />
               </Col>
             </Form.Group>

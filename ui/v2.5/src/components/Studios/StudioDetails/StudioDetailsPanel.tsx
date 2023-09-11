@@ -47,7 +47,7 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
     if (!collapsed) {
       return (
         <DetailItem
-          id="StashIDs"
+          id="stash_ids"
           value={renderStashIDs()}
           fullWidth={fullWidth}
         />
@@ -90,7 +90,10 @@ export const CompressedStudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
           {studio.name}
         </a>
         {studio?.parent_studio?.name ? (
-          <span className="studio-parent">{studio?.parent_studio?.name}</span>
+          <>
+            <span className="detail-divider">/</span>
+            <span className="studio-parent">{studio?.parent_studio?.name}</span>
+          </>
         ) : (
           ""
         )}

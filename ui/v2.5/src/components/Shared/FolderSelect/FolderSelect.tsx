@@ -5,7 +5,7 @@ import { Icon } from "../Icon";
 import { LoadingIndicator } from "../LoadingIndicator";
 import { useDirectory } from "src/core/StashService";
 import { faEllipsis, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { useDebouncedSetState } from "src/hooks/debounce";
+import { useDebounce } from "src/hooks/debounce";
 
 interface IProps {
   currentDirectory: string;
@@ -44,7 +44,7 @@ export const FolderSelect: React.FC<IProps> = ({
       (error && hideError ? [] : defaultDirectoriesOrEmpty)
     : defaultDirectoriesOrEmpty;
 
-  const debouncedSetDirectory = useDebouncedSetState(setDirectory, 250);
+  const debouncedSetDirectory = useDebounce(setDirectory, 250);
 
   useEffect(() => {
     if (currentDirectory !== directory) {
@@ -78,7 +78,9 @@ export const FolderSelect: React.FC<IProps> = ({
     currentDirectory && data?.directory?.parent ? (
       <li className="folder-list-parent folder-list-item">
         <Button variant="link" onClick={() => goUp()}>
-          <FormattedMessage id="setup.folder.up_dir" />
+          <span>
+            <FormattedMessage id="setup.folder.up_dir" />
+          </span>
         </Button>
       </li>
     ) : null;
@@ -128,7 +130,7 @@ export const FolderSelect: React.FC<IProps> = ({
             return (
               <li key={path} className="folder-list-item">
                 <Button variant="link" onClick={() => setInstant(path)}>
-                  {path}
+                  <span>{path}</span>
                 </Button>
               </li>
             );

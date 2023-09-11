@@ -8,92 +8,22 @@ import {
   FormControl,
   Badge,
 } from "react-bootstrap";
-import { CollapseButton } from "./CollapseButton";
-import { Icon } from "./Icon";
-import { ModalComponent } from "./Modal";
-import isEqual from "lodash-es/isEqual";
+import { CollapseButton } from "../CollapseButton";
+import { Icon } from "../Icon";
+import { ModalComponent } from "../Modal";
 import clone from "lodash-es/clone";
 import { FormattedMessage, useIntl } from "react-intl";
 import {
-  faArrowLeft,
-  faArrowRight,
   faCheck,
   faPencilAlt,
   faPlus,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { getCountryByISO } from "src/utils/country";
-import { CountrySelect } from "./CountrySelect";
-import { StringListInput } from "./StringListInput";
-
-export class ScrapeResult<T> {
-  public newValue?: T;
-  public originalValue?: T;
-  public scraped: boolean = false;
-  public useNewValue: boolean = false;
-
-  public constructor(
-    originalValue?: T | null,
-    newValue?: T | null,
-    useNewValue?: boolean
-  ) {
-    this.originalValue = originalValue ?? undefined;
-    this.newValue = newValue ?? undefined;
-    // NOTE: this means that zero values are treated as null
-    // this is incorrect for numbers and booleans, but correct for strings
-    const hasNewValue = !!this.newValue;
-
-    const valuesEqual = isEqual(originalValue, newValue);
-    this.useNewValue = useNewValue ?? (hasNewValue && !valuesEqual);
-    this.scraped = hasNewValue && !valuesEqual;
-  }
-
-  public setOriginalValue(value?: T) {
-    this.originalValue = value;
-    this.newValue = value;
-  }
-
-  public cloneWithValue(value?: T) {
-    const ret = clone(this);
-
-    ret.newValue = value;
-    ret.useNewValue = !isEqual(ret.newValue, ret.originalValue);
-
-    // #2691 - if we're setting the value, assume it should be treated as
-    // scraped
-    ret.scraped = true;
-
-    return ret;
-  }
-
-  public getNewValue() {
-    if (this.useNewValue) {
-      return this.newValue;
-    }
-  }
-}
-
-// for types where !!value is a valid value (boolean and number)
-export class ZeroableScrapeResult<T> extends ScrapeResult<T> {
-  public constructor(
-    originalValue?: T | null,
-    newValue?: T | null,
-    useNewValue?: boolean
-  ) {
-    super(originalValue, newValue, useNewValue);
-
-    const hasNewValue = this.newValue !== undefined;
-
-    const valuesEqual = isEqual(originalValue, newValue);
-    this.useNewValue = useNewValue ?? (hasNewValue && !valuesEqual);
-    this.scraped = hasNewValue && !valuesEqual;
-  }
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function hasScrapedValues(values: ScrapeResult<any>[]) {
-  return values.some((r) => r.scraped);
-}
+import { CountrySelect } from "../CountrySelect";
+import { StringListInput } from "../StringListInput";
+import { ImageSelector } from "../ImageSelector";
+import { ScrapeResult } from "./scrapeResult";
 
 export interface IHasName {
   name: string | undefined;
@@ -443,135 +373,6 @@ export const ScrapedImageRow: React.FC<IScrapedImageRowProps> = (props) => {
   );
 };
 
-interface IScrapedImageDialogRowProps<
-  T extends ScrapeResult<string>,
-  V extends IHasName
-> extends IScrapedFieldProps<string> {
-  title: string;
-  renderOriginalField: () => JSX.Element | undefined;
-  renderNewField: () => JSX.Element | undefined;
-  onChange: (value: T) => void;
-  newValues?: V[];
-  images: string[];
-  onCreateNew?: (index: number) => void;
-}
-
-export const ScrapeImageDialogRow = <
-  T extends ScrapeResult<string>,
-  V extends IHasName
->(
-  props: IScrapedImageDialogRowProps<T, V>
-) => {
-  const [imageIndex, setImageIndex] = useState(0);
-
-  function hasNewValues() {
-    return props.newValues && props.newValues.length > 0 && props.onCreateNew;
-  }
-
-  function setPrev() {
-    let newIdx = imageIndex - 1;
-    if (newIdx < 0) {
-      newIdx = props.images.length - 1;
-    }
-    const ret = props.result.cloneWithValue(props.images[newIdx]);
-    props.onChange(ret as T);
-    setImageIndex(newIdx);
-  }
-
-  function setNext() {
-    let newIdx = imageIndex + 1;
-    if (newIdx >= props.images.length) {
-      newIdx = 0;
-    }
-    const ret = props.result.cloneWithValue(props.images[newIdx]);
-    props.onChange(ret as T);
-    setImageIndex(newIdx);
-  }
-
-  if (!props.result.scraped && !hasNewValues()) {
-    return <></>;
-  }
-
-  function renderSelector() {
-    return (
-      props.images.length > 1 && (
-        <div className="d-flex mt-2 image-selection">
-          <Button onClick={setPrev}>
-            <Icon icon={faArrowLeft} />
-          </Button>
-          <h5 className="flex-grow-1 px-2">
-            Select performer image
-            <br />
-            {imageIndex + 1} of {props.images.length}
-          </h5>
-          <Button onClick={setNext}>
-            <Icon icon={faArrowRight} />
-          </Button>
-        </div>
-      )
-    );
-  }
-
-  function renderNewValues() {
-    if (!hasNewValues()) {
-      return;
-    }
-
-    const ret = (
-      <>
-        {props.newValues!.map((t, i) => (
-          <Badge
-            className="tag-item"
-            variant="secondary"
-            key={t.name}
-            onClick={() => props.onCreateNew!(i)}
-          >
-            {t.name}
-            <Button className="minimal ml-2">
-              <Icon className="fa-fw" icon={faPlus} />
-            </Button>
-          </Badge>
-        ))}
-      </>
-    );
-
-    const minCollapseLength = 10;
-
-    if (props.newValues!.length >= minCollapseLength) {
-      return (
-        <CollapseButton text={`Missing (${props.newValues!.length})`}>
-          {ret}
-        </CollapseButton>
-      );
-    }
-
-    return ret;
-  }
-
-  return (
-    <Row className="px-3 pt-3">
-      <Form.Label column lg="3">
-        {props.title}
-      </Form.Label>
-
-      <Col lg="9">
-        <Row>
-          <Col xs="6">
-            <InputGroup>{props.renderOriginalField()}</InputGroup>
-          </Col>
-          <Col xs="6">
-            <InputGroup>
-              {props.renderNewField()}
-              {renderSelector()}
-            </InputGroup>
-            {renderNewValues()}
-          </Col>
-        </Row>
-      </Col>
-    </Row>
-  );
-};
-
 interface IScrapedImagesRowProps {
   title: string;
   className?: string;
@@ -581,11 +382,18 @@ interface IScrapedImagesRowProps {
 }
 
 export const ScrapedImagesRow: React.FC<IScrapedImagesRowProps> = (props) => {
+  const [imageIndex, setImageIndex] = useState(0);
+
+  function onSetImageIndex(newIdx: number) {
+    const ret = props.result.cloneWithValue(props.images[newIdx]);
+    props.onChange(ret);
+    setImageIndex(newIdx);
+  }
+
   return (
-    <ScrapeImageDialogRow
+    <ScrapeDialogRow
       title={props.title}
       result={props.result}
-      images={props.images}
       renderOriginalField={() => (
         <ScrapedImage
           result={props.result}
@@ -594,12 +402,14 @@ export const ScrapedImagesRow: React.FC<IScrapedImagesRowProps> = (props) => {
         />
       )}
       renderNewField={() => (
-        <ScrapedImage
-          result={props.result}
-          className={props.className}
-          placeholder={props.title}
-          isNew
-        />
+        <div>
+          <ImageSelector
+            imageClassName={props.className}
+            images={props.images}
+            imageIndex={imageIndex}
+            setImageIndex={onSetImageIndex}
+          />
+        </div>
       )}
       onChange={props.onChange}
     />

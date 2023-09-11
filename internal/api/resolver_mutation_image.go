@@ -15,6 +15,7 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+// used to refetch image after hooks run
 func (r *mutationResolver) getImage(ctx context.Context, id int) (ret *models.Image, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Image.Find(ctx, id)
@@ -75,6 +76,7 @@ func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*ImageUpdat
 		}
 
 		r.hookExecutor.ExecutePostHooks(ctx, image.ID, plugin.ImageUpdatePost, input, translator.getFields())
+
 		image, err = r.getImage(ctx, image.ID)
 		if err != nil {
 			return nil, err
@@ -89,7 +91,7 @@ func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*ImageUpdat
 func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInput, translator changesetTranslator) (*models.Image, error) {
 	imageID, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting id: %w", err)
 	}
 
 	i, err := r.repository.Image.Find(ctx, imageID)
@@ -105,7 +107,9 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 	updatedImage := models.NewImagePartial()
 
 	updatedImage.Title = translator.optionalString(input.Title, "title")
-	updatedImage.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
+	updatedImage.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
+
 	updatedImage.Date, err = translator.optionalDate(input.Date, "date")
 	if err != nil {
 		return nil, fmt.Errorf("converting date: %w", err)
@@ -114,8 +118,8 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
-	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
 
+	// prefer urls over url
 	if translator.hasField("urls") {
 		updatedImage.URLs = &models.UpdateStrings{
 			Values: input.Urls,
@@ -128,40 +132,37 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 		}
 	}
 
-	if input.PrimaryFileID != nil {
-		primaryFileID, err := strconv.Atoi(*input.PrimaryFileID)
-		if err != nil {
-			return nil, fmt.Errorf("converting primary file id: %w", err)
-		}
-
-		converted := file.ID(primaryFileID)
-		updatedImage.PrimaryFileID = &converted
+	updatedImage.PrimaryFileID, err = translator.fileIDPtrFromString(input.PrimaryFileID)
+	if err != nil {
+		return nil, fmt.Errorf("converting primary file id: %w", err)
+	}
+	if updatedImage.PrimaryFileID != nil {
+		primaryFileID := *updatedImage.PrimaryFileID
 
 		if err := i.LoadFiles(ctx, r.repository.Image); err != nil {
 			return nil, err
 		}
 
 		// ensure that new primary file is associated with image
-		var f file.File
+		var f models.File
 		for _, ff := range i.Files.List() {
-			if ff.Base().ID == converted {
+			if ff.Base().ID == primaryFileID {
 				f = ff
 			}
 		}
 
 		if f == nil {
-			return nil, fmt.Errorf("file with id %d not associated with image", converted)
+			return nil, fmt.Errorf("file with id %d not associated with image", primaryFileID)
 		}
 	}
 
 	var updatedGalleryIDs []int
 
-	if translator.hasField("gallery_ids") {
-		updatedImage.GalleryIDs, err = translateUpdateIDs(input.GalleryIds, models.RelationshipUpdateModeSet)
-		if err != nil {
-			return nil, fmt.Errorf("converting gallery ids: %w", err)
-		}
-
+	updatedImage.GalleryIDs, err = translator.updateIds(input.GalleryIds, "gallery_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting gallery ids: %w", err)
+	}
+	if updatedImage.GalleryIDs != nil {
 		// ensure gallery IDs are loaded
 		if err := i.LoadGalleryIDs(ctx, r.repository.Image); err != nil {
 			return nil, err
@@ -174,18 +175,13 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 		updatedGalleryIDs = updatedImage.GalleryIDs.ImpactedIDs(i.GalleryIDs.List())
 	}
 
-	if translator.hasField("performer_ids") {
-		updatedImage.PerformerIDs, err = translateUpdateIDs(input.PerformerIds, models.RelationshipUpdateModeSet)
-		if err != nil {
-			return nil, fmt.Errorf("converting performer ids: %w", err)
-		}
+	updatedImage.PerformerIDs, err = translator.updateIds(input.PerformerIds, "performer_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting performer ids: %w", err)
 	}
-
-	if translator.hasField("tag_ids") {
-		updatedImage.TagIDs, err = translateUpdateIDs(input.TagIds, models.RelationshipUpdateModeSet)
-		if err != nil {
-			return nil, fmt.Errorf("converting tag ids: %w", err)
-		}
+	updatedImage.TagIDs, err = translator.updateIds(input.TagIds, "tag_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
 
 	qb := r.repository.Image
@@ -207,7 +203,7 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageUpdateInput) (ret []*models.Image, err error) {
 	imageIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting ids: %w", err)
 	}
 
 	translator := changesetTranslator{
@@ -218,7 +214,9 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 	updatedImage := models.NewImagePartial()
 
 	updatedImage.Title = translator.optionalString(input.Title, "title")
-	updatedImage.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
+	updatedImage.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
+
 	updatedImage.Date, err = translator.optionalDate(input.Date, "date")
 	if err != nil {
 		return nil, fmt.Errorf("converting date: %w", err)
@@ -227,8 +225,8 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
-	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
 
+	// prefer urls over url
 	if translator.hasField("urls") {
 		updatedImage.URLs = &models.UpdateStrings{
 			Values: input.Urls.Values,
@@ -241,25 +239,17 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 		}
 	}
 
-	if translator.hasField("gallery_ids") {
-		updatedImage.GalleryIDs, err = translateUpdateIDs(input.GalleryIds.Ids, input.GalleryIds.Mode)
-		if err != nil {
-			return nil, fmt.Errorf("converting gallery ids: %w", err)
-		}
+	updatedImage.GalleryIDs, err = translator.updateIdsBulk(input.GalleryIds, "gallery_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting gallery ids: %w", err)
 	}
-
-	if translator.hasField("performer_ids") {
-		updatedImage.PerformerIDs, err = translateUpdateIDs(input.PerformerIds.Ids, input.PerformerIds.Mode)
-		if err != nil {
-			return nil, fmt.Errorf("converting performer ids: %w", err)
-		}
+	updatedImage.PerformerIDs, err = translator.updateIdsBulk(input.PerformerIds, "performer_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting performer ids: %w", err)
 	}
-
-	if translator.hasField("tag_ids") {
-		updatedImage.TagIDs, err = translateUpdateIDs(input.TagIds.Ids, input.TagIds.Mode)
-		if err != nil {
-			return nil, fmt.Errorf("converting tag ids: %w", err)
-		}
+	updatedImage.TagIDs, err = translator.updateIdsBulk(input.TagIds, "tag_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
 
 	// Start the transaction and save the images
@@ -330,7 +320,7 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageDestroyInput) (ret bool, err error) {
 	imageID, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting id: %w", err)
 	}
 
 	var i *models.Image
@@ -370,7 +360,7 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.ImagesDestroyInput) (ret bool, err error) {
 	imageIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting ids: %w", err)
 	}
 
 	var images []*models.Image
@@ -422,7 +412,7 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 func (r *mutationResolver) ImageIncrementO(ctx context.Context, id string) (ret int, err error) {
 	imageID, err := strconv.Atoi(id)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("converting id: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
@@ -440,7 +430,7 @@ func (r *mutationResolver) ImageIncrementO(ctx context.Context, id string) (ret 
 func (r *mutationResolver) ImageDecrementO(ctx context.Context, id string) (ret int, err error) {
 	imageID, err := strconv.Atoi(id)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("converting id: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
@@ -458,7 +448,7 @@ func (r *mutationResolver) ImageDecrementO(ctx context.Context, id string) (ret 
 func (r *mutationResolver) ImageResetO(ctx context.Context, id string) (ret int, err error) {
 	imageID, err := strconv.Atoi(id)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("converting id: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {

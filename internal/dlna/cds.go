@@ -363,7 +363,7 @@ func (me *contentDirectoryService) handleBrowseMetadata(obj object, host string)
 		if err := txn.WithReadTxn(context.TODO(), me.txnManager, func(ctx context.Context) error {
 			scene, err = me.repository.SceneFinder.Find(ctx, sceneID)
 			if scene != nil {
-				err = scene.LoadPrimaryFile(ctx, me.repository.FileFinder)
+				err = scene.LoadPrimaryFile(ctx, me.repository.FileGetter)
 			}
 
 			if err != nil {
@@ -478,7 +478,7 @@ func (me *contentDirectoryService) getVideos(sceneFilter *models.SceneFilterType
 			}
 		} else {
 			for _, s := range scenes {
-				if err := s.LoadPrimaryFile(ctx, me.repository.FileFinder); err != nil {
+				if err := s.LoadPrimaryFile(ctx, me.repository.FileGetter); err != nil {
 					return err
 				}
 
@@ -506,7 +506,7 @@ func (me *contentDirectoryService) getPageVideos(sceneFilter *models.SceneFilter
 		sort := me.VideoSortOrder
 		direction := getSortDirection(sceneFilter, sort)
 		var err error
-		objs, err = pager.getPageVideos(ctx, me.repository.SceneFinder, me.repository.FileFinder, page, host, sort, direction)
+		objs, err = pager.getPageVideos(ctx, me.repository.SceneFinder, me.repository.FileGetter, page, host, sort, direction)
 		if err != nil {
 			return err
 		}

@@ -1,7 +1,6 @@
 package identify
 
 import (
-	"context"
 	"errors"
 	"reflect"
 	"strconv"
@@ -378,9 +377,9 @@ func Test_sceneRelationships_tags(t *testing.T) {
 	})).Return(errors.New("error creating tag"))
 
 	tr := sceneRelationships{
-		sceneReader:      mockSceneReaderWriter,
-		tagCreatorFinder: mockTagReaderWriter,
-		fieldOptions:     make(map[string]*FieldOptions),
+		sceneReader:  mockSceneReaderWriter,
+		tagCreator:   mockTagReaderWriter,
+		fieldOptions: make(map[string]*FieldOptions),
 	}
 
 	tests := []struct {
@@ -770,7 +769,7 @@ func Test_sceneRelationships_cover(t *testing.T) {
 				},
 			}
 
-			got, err := tr.cover(context.TODO())
+			got, err := tr.cover(testCtx)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("sceneRelationships.cover() error = %v, wantErr %v", err, tt.wantErr)
 				return

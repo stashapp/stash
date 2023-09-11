@@ -21,6 +21,38 @@ type Studio struct {
 	StashIDs RelatedStashIDs `json:"stash_ids"`
 }
 
+func NewStudio() Studio {
+	currentTime := time.Now()
+	return Studio{
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
+	}
+}
+
+// StudioPartial represents part of a Studio object. It is used to update the database entry.
+type StudioPartial struct {
+	ID       int
+	Name     OptionalString
+	URL      OptionalString
+	ParentID OptionalInt
+	// Rating expressed in 1-100 scale
+	Rating        OptionalInt
+	Details       OptionalString
+	CreatedAt     OptionalTime
+	UpdatedAt     OptionalTime
+	IgnoreAutoTag OptionalBool
+
+	Aliases  *UpdateStrings
+	StashIDs *UpdateStashIDs
+}
+
+func NewStudioPartial() StudioPartial {
+	currentTime := time.Now()
+	return StudioPartial{
+		UpdatedAt: NewOptionalTime(currentTime),
+	}
+}
+
 func (s *Studio) LoadAliases(ctx context.Context, l AliasLoader) error {
 	return s.Aliases.load(func() ([]string, error) {
 		return l.GetAliases(ctx, s.ID)
@@ -43,31 +75,4 @@ func (s *Studio) LoadRelationships(ctx context.Context, l PerformerReader) error
 	}
 
 	return nil
-}
-
-// StudioPartial represents part of a Studio object. It is used to update the database entry.
-type StudioPartial struct {
-	ID       int
-	Name     OptionalString
-	URL      OptionalString
-	ParentID OptionalInt
-	// Rating expressed in 1-100 scale
-	Rating        OptionalInt
-	Details       OptionalString
-	CreatedAt     OptionalTime
-	UpdatedAt     OptionalTime
-	IgnoreAutoTag OptionalBool
-
-	Aliases  *UpdateStrings
-	StashIDs *UpdateStashIDs
-}
-
-type Studios []*Studio
-
-func (s *Studios) Append(o interface{}) {
-	*s = append(*s, o.(*Studio))
-}
-
-func (s *Studios) New() interface{} {
-	return &Studio{}
 }

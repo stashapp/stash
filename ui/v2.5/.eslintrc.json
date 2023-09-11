@@ -53,10 +53,6 @@
     "import/namespace": "off",
     "import/no-unresolved": "off",
     "react/display-name": "off",
-    "react-hooks/exhaustive-deps": [
-      "error",
-      { "additionalHooks": "^(useDebounce)$" }
-    ],
     "react/prop-types": "off",
     "react/style-prop-object": [
       "error",
@@ -74,7 +70,7 @@
     "prefer-destructuring": ["error", { "object": true, "array": false }],
     "@typescript-eslint/no-use-before-define": [
       "error",
-      { "functions": false, "classes": true }
+      { "functions": false, "classes": false }
     ],
     "no-nested-ternary": "off"
   }

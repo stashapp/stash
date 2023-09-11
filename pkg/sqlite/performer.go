@@ -1034,7 +1034,9 @@ func (qb *PerformerStore) tagsRepository() *joinRepository {
 			tableName: performersTagsTable,
 			idColumn:  performerIDColumn,
 		},
-		fkColumn: tagIDColumn,
+		fkColumn:     tagIDColumn,
+		foreignTable: tagTable,
+		orderBy:      "tags.name ASC",
 	}
 }
 

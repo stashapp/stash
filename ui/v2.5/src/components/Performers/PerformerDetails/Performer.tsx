@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Button, Tabs, Tab, Col, Row } from "react-bootstrap";
 import { useIntl } from "react-intl";
-import { useParams, useHistory } from "react-router-dom";
+import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
@@ -42,21 +42,40 @@ import {
 import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { IUIConfig } from "src/core/config";
 import { useRatingKeybinds } from "src/hooks/keybinds";
-import ImageUtils from "src/utils/image";
-import { isPlatformUniquelyRenderedByApple } from "src/utils/apple";
+import { DetailImage } from "src/components/Shared/DetailImage";
+import { useLoadStickyHeader } from "src/hooks/detailsPanel";
+import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
+  tabKey: TabKey;
 }
+
 interface IPerformerParams {
+  id: string;
   tab?: string;
 }
 
-const PerformerPage: React.FC<IProps> = ({ performer }) => {
+const validTabs = [
+  "default",
+  "scenes",
+  "galleries",
+  "images",
+  "movies",
+  "appearswith",
+] as const;
+type TabKey = (typeof validTabs)[number];
+
+const defaultTab: TabKey = "default";
+
+function isTabKey(tab: string): tab is TabKey {
+  return validTabs.includes(tab as TabKey);
+}
+
+const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
   const Toast = useToast();
   const history = useHistory();
   const intl = useIntl();
-  const { tab = "details" } = useParams<IPerformerParams>();
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
@@ -64,16 +83,14 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
   const enableBackgroundImage =
     uiConfig?.enablePerformerBackgroundImage ?? false;
-  const showAllDetails = uiConfig?.showAllDetails ?? false;
+  const showAllDetails = uiConfig?.showAllDetails ?? true;
   const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [image, setImage] = useState<string | null>();
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
-  const [loadStickyHeader, setLoadStickyHeader] = useState<boolean>(false);
-
-  const appleRendering = isPlatformUniquelyRenderedByApple();
+  const loadStickyHeader = useLoadStickyHeader();
 
   const activeImage = useMemo(() => {
     const performerImage = performer.image_path;
@@ -101,20 +118,35 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const [updatePerformer] = usePerformerUpdate();
   const [deletePerformer, { loading: isDestroying }] = usePerformerDestroy();
 
-  const activeTabKey =
-    tab === "scenes" ||
-    tab === "galleries" ||
-    tab === "images" ||
-    tab === "movies" ||
-    tab == "appearswith"
-      ? tab
-      : "scenes";
-  const setActiveTabKey = (newTab: string | null) => {
-    if (tab !== newTab) {
-      const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
-      history.replace(`/performers/${performer.id}${tabParam}`);
+  const populatedDefaultTab = useMemo(() => {
+    let ret: TabKey = "scenes";
+    if (performer.scene_count == 0) {
+      if (performer.gallery_count != 0) {
+        ret = "galleries";
+      } else if (performer.image_count != 0) {
+        ret = "images";
+      } else if (performer.movie_count != 0) {
+        ret = "movies";
+      }
     }
-  };
+
+    return ret;
+  }, [performer]);
+
+  if (tabKey === defaultTab) {
+    tabKey = populatedDefaultTab;
+  }
+
+  function setTabKey(newTabKey: string | null) {
+    if (!newTabKey || newTabKey === defaultTab) newTabKey = populatedDefaultTab;
+    if (newTabKey === tabKey) return;
+
+    if (newTabKey === populatedDefaultTab) {
+      history.replace(`/performers/${performer.id}`);
+    } else if (isTabKey(newTabKey)) {
+      history.replace(`/performers/${performer.id}/${newTabKey}`);
+    }
+  }
 
   async function onAutoTag() {
     try {
@@ -136,18 +168,18 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("e", () => toggleEditing());
-    Mousetrap.bind("c", () => setActiveTabKey("scenes"));
-    Mousetrap.bind("g", () => setActiveTabKey("galleries"));
-    Mousetrap.bind("m", () => setActiveTabKey("movies"));
+    Mousetrap.bind("c", () => setTabKey("scenes"));
+    Mousetrap.bind("g", () => setTabKey("galleries"));
+    Mousetrap.bind("m", () => setTabKey("movies"));
     Mousetrap.bind("f", () => setFavorite(!performer.favorite));
     Mousetrap.bind(",", () => setCollapsed(!collapsed));
 
     return () => {
-      Mousetrap.unbind("a");
       Mousetrap.unbind("e");
       Mousetrap.unbind("c");
+      Mousetrap.unbind("g");
+      Mousetrap.unbind("m");
       Mousetrap.unbind("f");
-      Mousetrap.unbind("o");
       Mousetrap.unbind(",");
     };
   });
@@ -194,116 +226,114 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     if (activeImage) {
       return (
         <Button variant="link" onClick={() => showLightbox()}>
-          <img
+          <DetailImage
             className="performer"
             src={activeImage}
             alt={performer.name}
-            onLoad={ImageUtils.verifyImageSize}
           />
         </Button>
       );
     }
   }
   const renderTabs = () => (
-    <React.Fragment>
-      <Tabs
-        activeKey={activeTabKey}
-        onSelect={setActiveTabKey}
-        id="performer-details"
-        unmountOnExit
+    <Tabs
+      id="performer-tabs"
+      mountOnEnter
+      unmountOnExit
+      activeKey={tabKey}
+      onSelect={setTabKey}
+    >
+      <Tab
+        eventKey="scenes"
+        title={
+          <>
+            {intl.formatMessage({ id: "scenes" })}
+            <Counter
+              abbreviateCounter={abbreviateCounter}
+              count={performer.scene_count}
+              hideZero
+            />
+          </>
+        }
       >
-        <Tab
-          eventKey="scenes"
-          title={
-            <>
-              {intl.formatMessage({ id: "scenes" })}
-              <Counter
-                abbreviateCounter={abbreviateCounter}
-                count={performer.scene_count}
-                hideZero
-              />
-            </>
-          }
-        >
-          <PerformerScenesPanel
-            active={activeTabKey == "scenes"}
-            performer={performer}
-          />
-        </Tab>
-        <Tab
-          eventKey="galleries"
-          title={
-            <>
-              {intl.formatMessage({ id: "galleries" })}
-              <Counter
-                abbreviateCounter={abbreviateCounter}
-                count={performer.gallery_count}
-                hideZero
-              />
-            </>
-          }
-        >
-          <PerformerGalleriesPanel
-            active={activeTabKey == "galleries"}
-            performer={performer}
-          />
-        </Tab>
-        <Tab
-          eventKey="images"
-          title={
-            <>
-              {intl.formatMessage({ id: "images" })}
-              <Counter
-                abbreviateCounter={abbreviateCounter}
-                count={performer.image_count}
-                hideZero
-              />
-            </>
-          }
-        >
-          <PerformerImagesPanel
-            active={activeTabKey == "images"}
-            performer={performer}
-          />
-        </Tab>
-        <Tab
-          eventKey="movies"
-          title={
-            <>
-              {intl.formatMessage({ id: "movies" })}
-              <Counter
-                abbreviateCounter={abbreviateCounter}
-                count={performer.movie_count}
-                hideZero
-              />
-            </>
-          }
-        >
-          <PerformerMoviesPanel
-            active={activeTabKey == "movies"}
-            performer={performer}
-          />
-        </Tab>
-        <Tab
-          eventKey="appearswith"
-          title={
-            <>
-              {intl.formatMessage({ id: "appears_with" })}
-              <Counter
-                abbreviateCounter={abbreviateCounter}
-                count={performer.performer_count}
-                hideZero
-              />
-            </>
-          }
-        >
-          <PerformerAppearsWithPanel
-            active={activeTabKey == "appearswith"}
-            performer={performer}
-          />
-        </Tab>
-      </Tabs>
-    </React.Fragment>
+        <PerformerScenesPanel
+          active={tabKey === "scenes"}
+          performer={performer}
+        />
+      </Tab>
+      <Tab
+        eventKey="galleries"
+        title={
+          <>
+            {intl.formatMessage({ id: "galleries" })}
+            <Counter
+              abbreviateCounter={abbreviateCounter}
+              count={performer.gallery_count}
+              hideZero
+            />
+          </>
+        }
+      >
+        <PerformerGalleriesPanel
+          active={tabKey === "galleries"}
+          performer={performer}
+        />
+      </Tab>
+      <Tab
+        eventKey="images"
+        title={
+          <>
+            {intl.formatMessage({ id: "images" })}
+            <Counter
+              abbreviateCounter={abbreviateCounter}
+              count={performer.image_count}
+              hideZero
+            />
+          </>
+        }
+      >
+        <PerformerImagesPanel
+          active={tabKey === "images"}
+          performer={performer}
+        />
+      </Tab>
+      <Tab
+        eventKey="movies"
+        title={
+          <>
+            {intl.formatMessage({ id: "movies" })}
+            <Counter
+              abbreviateCounter={abbreviateCounter}
+              count={performer.movie_count}
+              hideZero
+            />
+          </>
+        }
+      >
+        <PerformerMoviesPanel
+          active={tabKey === "movies"}
+          performer={performer}
+        />
+      </Tab>
+      <Tab
+        eventKey="appearswith"
+        title={
+          <>
+            {intl.formatMessage({ id: "appears_with" })}
+            <Counter
+              abbreviateCounter={abbreviateCounter}
+              count={performer.performer_count}
+              hideZero
+            />
+          </>
+        }
+      >
+        <PerformerAppearsWithPanel
+          active={tabKey === "appearswith"}
+          performer={performer}
+        />
+      </Tab>
+    </Tabs>
   );
 
   function maybeRenderHeaderBackgroundImage() {
@@ -367,21 +397,6 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   function getCollapseButtonIcon() {
     return collapsed ? faChevronDown : faChevronUp;
   }
-
-  useEffect(() => {
-    const f = () => {
-      if (document.documentElement.scrollTop <= 50) {
-        setLoadStickyHeader(false);
-      } else {
-        setLoadStickyHeader(true);
-      }
-    };
-
-    window.addEventListener("scroll", f);
-    return () => {
-      window.removeEventListener("scroll", f);
-    };
-  });
 
   function maybeRenderDetails() {
     if (!isEditing) {
@@ -540,17 +555,19 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       />
     );
 
+  const headerClassName = cx("detail-header", {
+    edit: isEditing,
+    collapsed,
+    "full-width": !collapsed && !compactExpandedDetails,
+  });
+
   return (
     <div id="performer-page" className="row">
       <Helmet>
         <title>{performer.name}</title>
       </Helmet>
 
-      <div
-        className={`detail-header ${isEditing ? "edit" : ""}  ${
-          collapsed ? "collapsed" : !compactExpandedDetails ? "full-width" : ""
-        } ${appleRendering ? "apple" : ""}`}
-      >
+      <div className={headerClassName}>
         {maybeRenderHeaderBackgroundImage()}
         <div className="detail-container">
           <div className="detail-header-image">
@@ -595,16 +612,36 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   );
 };
 
-const PerformerLoader: React.FC = () => {
-  const { id } = useParams<{ id?: string }>();
-  const { data, loading, error } = useFindPerformer(id ?? "");
+const PerformerLoader: React.FC<RouteComponentProps<IPerformerParams>> = ({
+  location,
+  match,
+}) => {
+  const { id, tab } = match.params;
+  const { data, loading, error } = useFindPerformer(id);
+
+  useScrollToTopOnMount();
 
   if (loading) return <LoadingIndicator />;
   if (error) return <ErrorMessage error={error.message} />;
   if (!data?.findPerformer)
     return <ErrorMessage error={`No performer found with id ${id}.`} />;
 
-  return <PerformerPage performer={data.findPerformer} />;
+  if (!tab) {
+    return <PerformerPage performer={data.findPerformer} tabKey={defaultTab} />;
+  }
+
+  if (!isTabKey(tab)) {
+    return (
+      <Redirect
+        to={{
+          ...location,
+          pathname: `/performers/${id}`,
+        }}
+      />
+    );
+  }
+
+  return <PerformerPage performer={data.findPerformer} tabKey={tab} />;
 };
 
 export default PerformerLoader;

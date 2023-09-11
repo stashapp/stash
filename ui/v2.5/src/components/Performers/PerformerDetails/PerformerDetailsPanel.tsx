@@ -97,6 +97,21 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     );
   };
 
+  const formatAge = (birthdate?: string | null, deathdate?: string | null) => {
+    if (!birthdate) {
+      return "";
+    }
+
+    const age = TextUtils.age(birthdate, deathdate);
+
+    return (
+      <span className="performer-age">
+        <span className="age">{age}</span>
+        <span className="birthdate"> ({birthdate})</span>
+      </span>
+    );
+  };
+
   const formatWeight = (weight?: number | null) => {
     if (!weight) {
       return "";
@@ -198,7 +213,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
             fullWidth={fullWidth}
           />
           <DetailItem
-            id="StashIDs"
+            id="stash_ids"
             value={renderStashIDs()}
             fullWidth={fullWidth}
           />
@@ -220,8 +235,16 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       )}
       <DetailItem
         id="age"
-        value={TextUtils.age(performer.birthdate, performer.death_date)}
-        title={TextUtils.formatDate(intl, performer.birthdate ?? undefined)}
+        value={
+          !fullWidth
+            ? TextUtils.age(performer.birthdate, performer.death_date)
+            : formatAge(performer.birthdate, performer.death_date)
+        }
+        title={
+          !fullWidth
+            ? TextUtils.formatDate(intl, performer.birthdate ?? undefined)
+            : ""
+        }
         fullWidth={fullWidth}
       />
       <DetailItem id="death_date" value={performer.death_date} />
@@ -307,30 +330,42 @@ export const CompressedPerformerDetailsPanel: React.FC<IPerformerDetails> = ({
           {performer.name}
         </a>
         {performer.gender ? (
-          <span className="performer-gender">
-            {intl.formatMessage({ id: "gender_types." + performer.gender })}
-          </span>
+          <>
+            <span className="detail-divider">/</span>
+            <span className="performer-gender">
+              {intl.formatMessage({ id: "gender_types." + performer.gender })}
+            </span>
+          </>
         ) : (
           ""
         )}
         {performer.birthdate ? (
-          <span
-            className="performer-age"
-            title={TextUtils.formatDate(intl, performer.birthdate ?? undefined)}
-          >
-            {TextUtils.age(performer.birthdate, performer.death_date)}
-          </span>
+          <>
+            <span className="detail-divider">/</span>
+            <span
+              className="performer-age"
+              title={TextUtils.formatDate(
+                intl,
+                performer.birthdate ?? undefined
+              )}
+            >
+              {TextUtils.age(performer.birthdate, performer.death_date)}
+            </span>
+          </>
         ) : (
           ""
         )}
         {performer.country ? (
-          <span className="performer-country">
-            <CountryFlag
-              country={performer.country}
-              className="mr-2"
-              includeName={true}
-            />
-          </span>
+          <>
+            <span className="detail-divider">/</span>
+            <span className="performer-country">
+              <CountryFlag
+                country={performer.country}
+                className="mr-2"
+                includeName={true}
+              />
+            </span>
+          </>
         ) : (
           ""
         )}

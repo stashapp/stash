@@ -22,14 +22,14 @@ import (
 )
 
 type ImageFinder interface {
-	Find(ctx context.Context, id int) (*models.Image, error)
+	models.ImageGetter
 	FindByChecksum(ctx context.Context, checksum string) ([]*models.Image, error)
 }
 
 type imageRoutes struct {
 	txnManager  txn.Manager
 	imageFinder ImageFinder
-	fileFinder  file.Finder
+	fileGetter  models.FileGetter
 }
 
 func (rs imageRoutes) Routes() chi.Router {
@@ -168,7 +168,7 @@ func (rs imageRoutes) ImageCtx(next http.Handler) http.Handler {
 			}
 
 			if image != nil {
-				if err := image.LoadPrimaryFile(ctx, rs.fileFinder); err != nil {
+				if err := image.LoadPrimaryFile(ctx, rs.fileGetter); err != nil {
 					if !errors.Is(err, context.Canceled) {
 						logger.Errorf("error loading primary file for image %d: %v", imageID, err)
 					}
