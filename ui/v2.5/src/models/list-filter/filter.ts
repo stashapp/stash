@@ -439,8 +439,7 @@ export class ListFilterModel {
   }
 
   public makeFilter() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const output: Record<string, any> = {};
+    const output: Record<string, unknown> = {};
     this.criteria.forEach((criterion) => {
       criterion.apply(output);
     });
@@ -449,8 +448,7 @@ export class ListFilterModel {
   }
 
   public makeSavedFindFilter() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const output: Record<string, any> = {};
+    const output: Record<string, unknown> = {};
     this.criteria.forEach((criterion) => {
       criterion.toSavedFilter(output);
     });
@@ -458,8 +456,7 @@ export class ListFilterModel {
     return output;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public makeUIOptions(): Record<string, any> {
+  public makeUIOptions(): Record<string, unknown> {
     return {
       display_mode: this.displayMode,
       zoom_index: this.zoomIndex,

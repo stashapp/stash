@@ -151,22 +151,18 @@ export abstract class Criterion<V extends CriterionValue> {
     this.modifier = encodedCriterion.modifier;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public apply(outputFilter: Record<string, any>) {
-    // eslint-disable-next-line no-param-reassign
+  public apply(outputFilter: Record<string, unknown>) {
     outputFilter[this.criterionOption.type] = this.toCriterionInput();
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected toCriterionInput(): any {
+  protected toCriterionInput(): unknown {
     return {
       value: this.value,
       modifier: this.modifier,
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public toSavedFilter(outputFilter: Record<string, any>) {
+  public toSavedFilter(outputFilter: Record<string, unknown>) {
     outputFilter[this.criterionOption.type] = {
       value: this.value,
       modifier: this.modifier,
