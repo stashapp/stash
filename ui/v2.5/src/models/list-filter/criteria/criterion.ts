@@ -521,15 +521,6 @@ export class MultiStringCriterion extends Criterion<string[]> {
   }
 }
 
-export class PathCriterionOption extends StringCriterionOption {}
-
-export function createPathCriterionOption(
-  type: CriterionType,
-  messageID?: string
-) {
-  return new PathCriterionOption(messageID ?? type, type);
-}
-
 export class BooleanCriterionOption extends CriterionOption {
   constructor(
     messageID: string,

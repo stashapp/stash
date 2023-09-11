@@ -4,7 +4,6 @@ import {
   createStringCriterionOption,
   createDateCriterionOption,
   createMandatoryTimestampCriterionOption,
-  createPathCriterionOption,
 } from "./criteria/criterion";
 import { HasMarkersCriterionOption } from "./criteria/has-markers";
 import { SceneIsMissingCriterionOption } from "./criteria/is-missing";
@@ -28,6 +27,7 @@ import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
 import { CaptionsCriterionOption } from "./criteria/captions";
 import { StashIDCriterionOption } from "./criteria/stash-ids";
 import { RatingCriterionOption } from "./criteria/rating";
+import { PathCriterionOption } from "./criteria/path";
 
 const defaultSortBy = "date";
 const sortByOptions = [
@@ -60,7 +60,7 @@ const displayModeOptions = [
 const criterionOptions = [
   createStringCriterionOption("title"),
   createStringCriterionOption("code", "scene_code"),
-  createPathCriterionOption("path"),
+  PathCriterionOption,
   createStringCriterionOption("details"),
   createStringCriterionOption("director"),
   createMandatoryStringCriterionOption("oshash", "media_info.hash"),
