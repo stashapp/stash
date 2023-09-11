@@ -8,7 +8,6 @@ import React, {
   useState,
 } from "react";
 import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
-import abLoopPlugin from "videojs-abloop";
 import useScript from "src/hooks/useScript";
 import "videojs-contrib-dash";
 import "videojs-mobile-ui";
@@ -24,12 +23,6 @@ import "./big-buttons";
 import "./track-activity";
 import "./vrmode";
 import cx from "classnames";
-// @ts-ignore
-import airplay from "@silvermine/videojs-airplay";
-// @ts-ignore
-import chromecast from "@silvermine/videojs-chromecast";
-airplay(videojs);
-chromecast(videojs);
 import {
   useSceneSaveActivity,
   useSceneIncrementPlayCount,
@@ -46,6 +39,17 @@ import { SceneInteractiveStatus } from "src/hooks/Interactive/status";
 import { languageMap } from "src/utils/caption";
 import { VIDEO_PLAYER_ID } from "./util";
 import { IUIConfig } from "src/core/config";
+
+// @ts-ignore
+import airplay from "@silvermine/videojs-airplay";
+// @ts-ignore
+import chromecast from "@silvermine/videojs-chromecast";
+import abLoopPlugin from "videojs-abloop";
+
+// register videojs plugins
+airplay(videojs);
+chromecast(videojs);
+abLoopPlugin(window, videojs);
 
 function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
   function seekStep(step: number) {
@@ -377,8 +381,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     videoEl.setAttribute("crossorigin", "anonymous");
     videoEl.classList.add("vjs-big-play-centered");
     videoRef.current!.appendChild(videoEl);
-
-    abLoopPlugin(window, videojs);
 
     const vjs = videojs(videoEl, options);
 
