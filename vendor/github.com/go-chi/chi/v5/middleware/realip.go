@@ -4,16 +4,18 @@ package middleware
 // https://github.com/zenazn/goji/tree/master/web/middleware
 
 import (
+	"net"
 	"net/http"
 	"strings"
 )
 
+var trueClientIP = http.CanonicalHeaderKey("True-Client-IP")
 var xForwardedFor = http.CanonicalHeaderKey("X-Forwarded-For")
 var xRealIP = http.CanonicalHeaderKey("X-Real-IP")
 
 // RealIP is a middleware that sets a http.Request's RemoteAddr to the results
-// of parsing either the X-Forwarded-For header or the X-Real-IP header (in that
-// order).
+// of parsing either the True-Client-IP, X-Real-IP or the X-Forwarded-For headers
+// (in that order).
 //
 // This middleware should be inserted fairly early in the middleware stack to
 // ensure that subsequent layers (e.g., request loggers) which examine the
@@ -40,15 +42,19 @@ func RealIP(h http.Handler) http.Handler {
 func realIP(r *http.Request) string {
 	var ip string
 
-	if xrip := r.Header.Get(xRealIP); xrip != "" {
+	if tcip := r.Header.Get(trueClientIP); tcip != "" {
+		ip = tcip
+	} else if xrip := r.Header.Get(xRealIP); xrip != "" {
 		ip = xrip
 	} else if xff := r.Header.Get(xForwardedFor); xff != "" {
-		i := strings.Index(xff, ", ")
+		i := strings.Index(xff, ",")
 		if i == -1 {
 			i = len(xff)
 		}
 		ip = xff[:i]
 	}
-
+	if ip == "" || net.ParseIP(ip) == nil {
+		return ""
+	}
 	return ip
 }

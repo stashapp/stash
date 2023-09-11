@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type config struct {
@@ -196,7 +196,7 @@ func loadConfigFromYAML(id string, reader io.Reader) (*config, error) {
 	ret := &config{}
 
 	parser := yaml.NewDecoder(reader)
-	parser.SetStrict(true)
+	parser.KnownFields(true)
 	err := parser.Decode(&ret)
 	if err != nil {
 		return nil, err

@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"runtime/debug"
@@ -17,11 +18,16 @@ import (
 // backtrace), and returns a HTTP 500 (Internal Server Error) status if
 // possible. Recoverer prints a request ID if one is provided.
 //
-// Alternatively, look at https://github.com/pressly/lg middleware pkgs.
+// Alternatively, look at https://github.com/go-chi/httplog middleware pkgs.
 func Recoverer(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
-			if rvr := recover(); rvr != nil && rvr != http.ErrAbortHandler {
+			if rvr := recover(); rvr != nil {
+				if rvr == http.ErrAbortHandler {
+					// we don't recover http.ErrAbortHandler so the response
+					// to the client is aborted, this should not be logged
+					panic(rvr)
+				}
 
 				logEntry := GetLogEntry(r)
 				if logEntry != nil {
@@ -30,7 +36,9 @@ func Recoverer(next http.Handler) http.Handler {
 					PrintPrettyStack(rvr)
 				}
 
-				w.WriteHeader(http.StatusInternalServerError)
+				if r.Header.Get("Connection") != "Upgrade" {
+					w.WriteHeader(http.StatusInternalServerError)
+				}
 			}
 		}()
 
@@ -40,12 +48,15 @@ func Recoverer(next http.Handler) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
+// for ability to test the PrintPrettyStack function
+var recovererErrorWriter io.Writer = os.Stderr
+
 func PrintPrettyStack(rvr interface{}) {
 	debugStack := debug.Stack()
 	s := prettyStack{}
 	out, err := s.parse(debugStack, rvr)
 	if err == nil {
-		os.Stderr.Write(out)
+		recovererErrorWriter.Write(out)
 	} else {
 		// print stdlib output as a fallback
 		os.Stderr.Write(debugStack)
@@ -72,7 +83,7 @@ func (s prettyStack) parse(debugStack []byte, rvr interface{}) ([]byte, error) {
 	// locate panic line, as we may have nested panics
 	for i := len(stack) - 1; i > 0; i-- {
 		lines = append(lines, stack[i])
-		if strings.HasPrefix(stack[i], "panic(0x") {
+		if strings.HasPrefix(stack[i], "panic(") {
 			lines = lines[0 : len(lines)-2] // remove boilerplate
 			break
 		}
@@ -124,17 +135,18 @@ func (s prettyStack) decorateFuncCallLine(line string, useColor bool, num int) (
 	// addr := line[idx:]
 	method := ""
 
-	idx = strings.LastIndex(pkg, string(os.PathSeparator))
-	if idx < 0 {
-		idx = strings.Index(pkg, ".")
-		method = pkg[idx:]
-		pkg = pkg[0:idx]
+	if idx := strings.LastIndex(pkg, string(os.PathSeparator)); idx < 0 {
+		if idx := strings.Index(pkg, "."); idx > 0 {
+			method = pkg[idx:]
+			pkg = pkg[0:idx]
+		}
 	} else {
 		method = pkg[idx+1:]
 		pkg = pkg[0 : idx+1]
-		idx = strings.Index(method, ".")
-		pkg += method[0:idx]
-		method = method[idx:]
+		if idx := strings.Index(method, "."); idx > 0 {
+			pkg += method[0:idx]
+			method = method[idx:]
+		}
 	}
 	pkgColor := nYellow
 	methodColor := bGreen

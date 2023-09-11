@@ -8,13 +8,13 @@
 package tiff // import "golang.org/x/image/tiff"
 
 import (
+	"bytes"
 	"compress/zlib"
 	"encoding/binary"
 	"fmt"
 	"image"
 	"image/color"
 	"io"
-	"io/ioutil"
 	"math"
 
 	"golang.org/x/image/ccitt"
@@ -579,6 +579,11 @@ func newDecoder(r io.Reader) (*decoder, error) {
 	default:
 		return nil, UnsupportedError("color model")
 	}
+	if d.firstVal(tPhotometricInterpretation) != pRGB {
+		if len(d.features[tBitsPerSample]) != 1 {
+			return nil, UnsupportedError("extra samples")
+		}
+	}
 
 	return d, nil
 }
@@ -628,6 +633,13 @@ func Decode(r io.Reader) (img image.Image, err error) {
 
 		blockWidth = int(d.firstVal(tTileWidth))
 		blockHeight = int(d.firstVal(tTileLength))
+
+		// The specification says that tile widths and lengths must be a multiple of 16.
+		// We currently permit invalid sizes, but reject anything too small to limit the
+		// amount of work a malicious input can force us to perform.
+		if blockWidth < 8 || blockHeight < 8 {
+			return nil, FormatError("tile size is too small")
+		}
 
 		if blockWidth != 0 {
 			blocksAcross = (d.config.Width + blockWidth - 1) / blockWidth
@@ -681,6 +693,11 @@ func Decode(r io.Reader) (img image.Image, err error) {
 		}
 	}
 
+	if blocksAcross == 0 || blocksDown == 0 {
+		return
+	}
+	// Maximum data per pixel is 8 bytes (RGBA64).
+	blockMaxDataSize := int64(blockWidth) * int64(blockHeight) * 8
 	for i := 0; i < blocksAcross; i++ {
 		blkW := blockWidth
 		if !blockPadding && i == blocksAcross-1 && d.config.Width%blockWidth != 0 {
@@ -708,15 +725,15 @@ func Decode(r io.Reader) (img image.Image, err error) {
 				inv := d.firstVal(tPhotometricInterpretation) == pWhiteIsZero
 				order := ccittFillOrder(d.firstVal(tFillOrder))
 				r := ccitt.NewReader(io.NewSectionReader(d.r, offset, n), order, ccitt.Group3, blkW, blkH, &ccitt.Options{Invert: inv, Align: false})
-				d.buf, err = ioutil.ReadAll(r)
+				d.buf, err = readBuf(r, d.buf, blockMaxDataSize)
 			case cG4:
 				inv := d.firstVal(tPhotometricInterpretation) == pWhiteIsZero
 				order := ccittFillOrder(d.firstVal(tFillOrder))
 				r := ccitt.NewReader(io.NewSectionReader(d.r, offset, n), order, ccitt.Group4, blkW, blkH, &ccitt.Options{Invert: inv, Align: false})
-				d.buf, err = ioutil.ReadAll(r)
+				d.buf, err = readBuf(r, d.buf, blockMaxDataSize)
 			case cLZW:
 				r := lzw.NewReader(io.NewSectionReader(d.r, offset, n), lzw.MSB, 8)
-				d.buf, err = ioutil.ReadAll(r)
+				d.buf, err = readBuf(r, d.buf, blockMaxDataSize)
 				r.Close()
 			case cDeflate, cDeflateOld:
 				var r io.ReadCloser
@@ -724,7 +741,7 @@ func Decode(r io.Reader) (img image.Image, err error) {
 				if err != nil {
 					return nil, err
 				}
-				d.buf, err = ioutil.ReadAll(r)
+				d.buf, err = readBuf(r, d.buf, blockMaxDataSize)
 				r.Close()
 			case cPackBits:
 				d.buf, err = unpackBits(io.NewSectionReader(d.r, offset, n))
@@ -746,6 +763,12 @@ func Decode(r io.Reader) (img image.Image, err error) {
 		}
 	}
 	return
+}
+
+func readBuf(r io.Reader, buf []byte, lim int64) ([]byte, error) {
+	b := bytes.NewBuffer(buf[:0])
+	_, err := b.ReadFrom(io.LimitReader(r, lim))
+	return b.Bytes(), err
 }
 
 func init() {

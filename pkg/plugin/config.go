@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // Config describes the configuration for a single plugin.
@@ -282,7 +282,7 @@ func loadPluginFromYAML(reader io.Reader) (*Config, error) {
 	ret := &Config{}
 
 	parser := yaml.NewDecoder(reader)
-	parser.SetStrict(true)
+	parser.KnownFields(true)
 	err := parser.Decode(&ret)
 	if err != nil {
 		return nil, err

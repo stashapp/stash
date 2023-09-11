@@ -191,14 +191,22 @@ func decodeConfig(r io.Reader) (config image.Config, bitsPerPixel int, topDown b
 	}
 	switch bpp {
 	case 8:
-		if offset != fileHeaderLen+infoLen+256*4 {
+		colorUsed := readUint32(b[46:50])
+		// If colorUsed is 0, it is set to the maximum number of colors for the given bpp, which is 2^bpp.
+		if colorUsed == 0 {
+			colorUsed = 256
+		} else if colorUsed > 256 {
 			return image.Config{}, 0, false, false, ErrUnsupported
 		}
-		_, err = io.ReadFull(r, b[:256*4])
+
+		if offset != fileHeaderLen+infoLen+colorUsed*4 {
+			return image.Config{}, 0, false, false, ErrUnsupported
+		}
+		_, err = io.ReadFull(r, b[:colorUsed*4])
 		if err != nil {
 			return image.Config{}, 0, false, false, err
 		}
-		pcm := make(color.Palette, 256)
+		pcm := make(color.Palette, colorUsed)
 		for i := range pcm {
 			// BMP images are stored in BGR order rather than RGB order.
 			// Every 4th byte is padding.

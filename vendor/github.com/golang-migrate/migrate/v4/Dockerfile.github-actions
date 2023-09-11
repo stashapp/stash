@@ -1,8 +1,11 @@
-FROM alpine:3.13
+FROM alpine:3.18
 
 RUN apk add --no-cache ca-certificates
 
-ENTRYPOINT ["/usr/bin/migrate"]
-CMD ["--help"]
+COPY migrate /usr/local/bin/migrate
 
-COPY migrate /usr/bin/migrate
+RUN ln -s /usr/local/bin/migrate /usr/bin/migrate
+RUN ln -s /usr/local/bin/migrate /migrate
+
+ENTRYPOINT ["migrate"]
+CMD ["--help"]

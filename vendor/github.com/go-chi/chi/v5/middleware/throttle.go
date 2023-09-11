@@ -18,15 +18,15 @@ var (
 
 // ThrottleOpts represents a set of throttling options.
 type ThrottleOpts struct {
+	RetryAfterFn   func(ctxDone bool) time.Duration
 	Limit          int
 	BacklogLimit   int
 	BacklogTimeout time.Duration
-	RetryAfterFn   func(ctxDone bool) time.Duration
 }
 
 // Throttle is a middleware that limits number of currently processed requests
 // at a time across all users. Note: Throttle is not a rate-limiter per user,
-// instead it just puts a ceiling on the number of currentl in-flight requests
+// instead it just puts a ceiling on the number of currently in-flight requests
 // being processed from the point from where the Throttle middleware is mounted.
 func Throttle(limit int) func(http.Handler) http.Handler {
 	return ThrottleWithOpts(ThrottleOpts{Limit: limit, BacklogTimeout: defaultBacklogTimeout})
@@ -119,8 +119,8 @@ type token struct{}
 type throttler struct {
 	tokens         chan token
 	backlogTokens  chan token
-	backlogTimeout time.Duration
 	retryAfterFn   func(ctxDone bool) time.Duration
+	backlogTimeout time.Duration
 }
 
 // setRetryAfterHeaderIfNeeded sets Retry-After HTTP header if corresponding retryAfterFn option of throttler is initialized.

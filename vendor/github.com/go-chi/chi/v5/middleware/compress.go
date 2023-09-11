@@ -45,7 +45,6 @@ func Compress(level int, types ...string) func(next http.Handler) http.Handler {
 
 // Compressor represents a set of encoding configurations.
 type Compressor struct {
-	level int // The compression level.
 	// The mapping of encoder names to encoder functions.
 	encoders map[string]EncoderFunc
 	// The mapping of pooled encoders to pools.
@@ -55,6 +54,7 @@ type Compressor struct {
 	allowedWildcards map[string]struct{}
 	// The list of encoders in order of decreasing precedence.
 	encodingPrecedence []string
+	level              int // The compression level.
 }
 
 // NewCompressor creates a new Compressor that will handle encoding responses.
@@ -115,7 +115,7 @@ func NewCompressor(level int, types ...string) *Compressor {
 	// https://web.archive.org/web/20120321182910/http://www.vervestudios.co/projects/compression-tests/results
 	//
 	// That's why we prefer gzip over deflate. It's just more reliable
-	// and not significantly slower than gzip.
+	// and not significantly slower than deflate.
 	c.SetEncoder("deflate", encoderDeflate)
 
 	// TODO: Exception for old MSIE browsers that can't handle non-HTML?
@@ -135,12 +135,12 @@ func NewCompressor(level int, types ...string) *Compressor {
 // The encoding should be a standardised identifier. See:
 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Encoding
 //
-// For example, add the Brotli algortithm:
+// For example, add the Brotli algorithm:
 //
 //  import brotli_enc "gopkg.in/kothar/brotli-go.v0/enc"
 //
 //  compressor := middleware.NewCompressor(5, "text/html")
-//  compressor.SetEncoder("br", func(w http.ResponseWriter, level int) io.Writer {
+//  compressor.SetEncoder("br", func(w io.Writer, level int) io.Writer {
 //    params := brotli_enc.NewBrotliParams()
 //    params.SetQuality(level)
 //    return brotli_enc.NewBrotliWriter(params, w)
@@ -271,9 +271,9 @@ type compressResponseWriter struct {
 	// The streaming encoder writer to be used if there is one. Otherwise,
 	// this is just the normal writer.
 	w                io.Writer
-	encoding         string
 	contentTypes     map[string]struct{}
 	contentWildcards map[string]struct{}
+	encoding         string
 	wroteHeader      bool
 	compressable     bool
 }
@@ -285,7 +285,7 @@ func (cw *compressResponseWriter) isCompressable() bool {
 		contentType = contentType[0:idx]
 	}
 
-	// Is the content type compressable?
+	// Is the content type compressible?
 	if _, ok := cw.contentTypes[contentType]; ok {
 		return true
 	}
@@ -318,7 +318,7 @@ func (cw *compressResponseWriter) WriteHeader(code int) {
 	if cw.encoding != "" {
 		cw.compressable = true
 		cw.Header().Set("Content-Encoding", cw.encoding)
-		cw.Header().Set("Vary", "Accept-Encoding")
+		cw.Header().Add("Vary", "Accept-Encoding")
 
 		// The content-length after compression is unknown
 		cw.Header().Del("Content-Length")
@@ -380,6 +380,10 @@ func (cw *compressResponseWriter) Close() error {
 		return c.Close()
 	}
 	return errors.New("chi/middleware: io.WriteCloser is unavailable on the writer")
+}
+
+func (cw *compressResponseWriter) Unwrap() http.ResponseWriter {
+	return cw.ResponseWriter
 }
 
 func encoderGzip(w io.Writer, level int) io.Writer {

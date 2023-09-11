@@ -11,7 +11,7 @@ import (
 	"github.com/antchfx/htmlquery"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // adapted from https://www.freeones.com/html/m_links/bio_Mia_Malkova.php
