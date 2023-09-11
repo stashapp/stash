@@ -529,7 +529,7 @@ export class BooleanCriterionOption extends CriterionOption {
       type: value,
       modifierOptions: [],
       defaultModifier: CriterionModifier.Equals,
-      options: [true.toString(), false.toString()],
+      options: ["true", "false"],
       makeCriterion: makeCriterion
         ? makeCriterion
         : () => new BooleanCriterion(this),
@@ -547,6 +547,33 @@ export function createBooleanCriterionOption(
 export class BooleanCriterion extends StringCriterion {
   protected toCriterionInput(): boolean {
     return this.value === "true";
+  }
+
+  public isValid() {
+    return this.value === "true" || this.value === "false";
+  }
+}
+
+export class StringBooleanCriterionOption extends CriterionOption {
+  constructor(
+    messageID: string,
+    value: CriterionType,
+    makeCriterion?: () => Criterion<CriterionValue>
+  ) {
+    super({
+      messageID,
+      type: value,
+      options: ["true", "false"],
+      makeCriterion: makeCriterion
+        ? makeCriterion
+        : () => new StringBooleanCriterion(this),
+    });
+  }
+}
+
+export class StringBooleanCriterion extends StringCriterion {
+  protected toCriterionInput(): string {
+    return this.value;
   }
 
   public isValid() {
