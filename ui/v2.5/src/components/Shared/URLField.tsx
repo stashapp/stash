@@ -50,8 +50,8 @@ export const URLField: React.FC<IProps> = (props: IProps) => {
 };
 
 interface IURLListProps extends IStringListInputProps {
-  onScrapeClick(url: string): void;
-  urlScrapable(url: string): boolean;
+  onScrapeClick?: (url: string) => void;
+  urlScrapable?: (url: string) => boolean;
 }
 
 export const URLListInput: React.FC<IURLListProps> = (
@@ -64,17 +64,23 @@ export const URLListInput: React.FC<IURLListProps> = (
       {...listProps}
       placeholder={intl.formatMessage({ id: "url" })}
       inputComponent={StringInput}
-      appendComponent={(props) => (
-        <Button
-          className="scrape-url-button text-input"
-          variant="secondary"
-          onClick={() => onScrapeClick(props.value)}
-          disabled={!props.value || !urlScrapable(props.value)}
-          title={intl.formatMessage({ id: "actions.scrape" })}
-        >
-          <Icon icon={faFileDownload} />
-        </Button>
-      )}
+      appendComponent={(props) => {
+        if (!onScrapeClick || !urlScrapable) {
+          return <></>;
+        }
+
+        return (
+          <Button
+            className="scrape-url-button text-input"
+            variant="secondary"
+            onClick={() => onScrapeClick(props.value)}
+            disabled={!props.value || !urlScrapable(props.value)}
+            title={intl.formatMessage({ id: "actions.scrape" })}
+          >
+            <Icon icon={faFileDownload} />
+          </Button>
+        );
+      }}
     />
   );
 };

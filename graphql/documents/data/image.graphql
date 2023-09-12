@@ -3,7 +3,7 @@ fragment ImageData on Image {
   title
   rating100
   date
-  url
+  urls
   organized
   o_counter
   created_at

@@ -7,7 +7,7 @@ import * as GQL from "src/core/generated-graphql";
 import { mutateImageSetPrimaryFile } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import TextUtils from "src/utils/text";
-import { TextField, URLField } from "src/utils/field";
+import { TextField, URLField, URLsField } from "src/utils/field";
 
 interface IFileInfoPanelProps {
   file: GQL.ImageFileDataFragment | GQL.VideoFileDataFragment;
@@ -120,20 +120,11 @@ export const ImageFileInfoPanel: React.FC<IImageFileInfoPanelProps> = (
   if (props.image.visual_files.length === 1) {
     return (
       <>
-        <FileInfoPanel file={props.image.visual_files[0]} />
+        <dl className="container image-file-info details-list">
+          <URLsField id="urls" urls={props.image.urls} truncate />
+        </dl>
 
-        {props.image.url ? (
-          <dl className="container image-file-info details-list">
-            <URLField
-              id="media_info.downloaded_from"
-              url={TextUtils.sanitiseURL(props.image.url)}
-              value={TextUtils.domainFromURL(props.image.url)}
-              truncate
-            />
-          </dl>
-        ) : (
-          ""
-        )}
+        <FileInfoPanel file={props.image.visual_files[0]} />
       </>
     );
   }
