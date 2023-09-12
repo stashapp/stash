@@ -35,10 +35,11 @@ func updatePlayCount(ctx context.Context, scn *models.Scene, event HeresphereVid
 			ret.Partial.PlayCount.Set = true
 			ret.Partial.PlayCount.Value = scn.PlayCount + 1
 
-			return true, txn.WithTxn(ctx, txnManager, func(ctx context.Context) error {
+			err := txn.WithTxn(ctx, txnManager, func(ctx context.Context) error {
 				_, err := ret.Update(ctx, fqb)
 				return err
 			})
+			return err == nil, err
 		}
 	}
 
