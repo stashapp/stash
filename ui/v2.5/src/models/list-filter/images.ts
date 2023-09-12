@@ -4,11 +4,11 @@ import {
   createStringCriterionOption,
   createMandatoryTimestampCriterionOption,
   createDateCriterionOption,
-  createPathCriterionOption,
 } from "./criteria/criterion";
 import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
 import { ImageIsMissingCriterionOption } from "./criteria/is-missing";
 import { OrganizedCriterionOption } from "./criteria/organized";
+import { PathCriterionOption } from "./criteria/path";
 import { PerformersCriterionOption } from "./criteria/performers";
 import { RatingCriterionOption } from "./criteria/rating";
 import { ResolutionCriterionOption } from "./criteria/resolution";
@@ -34,7 +34,7 @@ const displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
 const criterionOptions = [
   createStringCriterionOption("title"),
   createMandatoryStringCriterionOption("checksum", "media_info.checksum"),
-  createPathCriterionOption("path"),
+  PathCriterionOption,
   OrganizedCriterionOption,
   createMandatoryNumberCriterionOption("o_counter"),
   ResolutionCriterionOption,

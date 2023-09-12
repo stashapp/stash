@@ -2,7 +2,7 @@
 
 COMPILER_CONTAINER="stashapp/compiler:7"
 
-BUILD_DATE=`go run -mod=vendor scripts/getDate.go`
+BUILD_DATE=`go run scripts/getDate.go`
 GITHASH=`git rev-parse --short HEAD`
 STASH_VERSION=`git describe --tags --exclude latest_develop`
 

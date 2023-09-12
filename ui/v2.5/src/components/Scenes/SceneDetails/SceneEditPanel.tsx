@@ -50,6 +50,7 @@ import { useRatingKeybinds } from "src/hooks/keybinds";
 import { lazyComponent } from "src/utils/lazyComponent";
 import isEqual from "lodash-es/isEqual";
 import { DateInput } from "src/components/Shared/DateInput";
+import { yupDateString, yupUniqueStringList } from "src/utils/yup";
 import {
   Performer,
   PerformerSelect,
@@ -114,38 +115,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const schema = yup.object({
     title: yup.string().ensure(),
     code: yup.string().ensure(),
-    urls: yup
-      .array(yup.string().required())
-      .defined()
-      .test({
-        name: "unique",
-        test: (value) => {
-          const dupes = value
-            .map((e, i, a) => {
-              if (a.indexOf(e) !== i) {
-                return String(i - 1);
-              } else {
-                return null;
-              }
-            })
-            .filter((e) => e !== null) as string[];
-          if (dupes.length === 0) return true;
-          return new yup.ValidationError(dupes.join(" "), value, "urls");
-        },
-      }),
-    date: yup
-      .string()
-      .ensure()
-      .test({
-        name: "date",
-        test: (value) => {
-          if (!value) return true;
-          if (!value.match(/^\d{4}-\d{2}-\d{2}$/)) return false;
-          if (Number.isNaN(Date.parse(value))) return false;
-          return true;
-        },
-        message: intl.formatMessage({ id: "validation.date_invalid_form" }),
-      }),
+    urls: yupUniqueStringList("urls"),
+    date: yupDateString(intl),
     director: yup.string().ensure(),
     rating100: yup.number().nullable().defined(),
     gallery_ids: yup.array(yup.string().required()).defined(),

@@ -8,7 +8,7 @@ import {
   ConfigDataFragment,
   CriterionModifier,
   IntCriterionInput,
-} from "../../../core/generated-graphql";
+} from "src/core/generated-graphql";
 import { INumberValue } from "../types";
 import { Criterion, CriterionOption } from "./criterion";
 import { IUIConfig } from "src/core/config";

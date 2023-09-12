@@ -307,6 +307,46 @@ func (t changesetTranslator) updateIdsBulk(value *BulkUpdateIds, field string) (
 	}, nil
 }
 
+func (t changesetTranslator) optionalURLs(value []string, legacyValue *string) *models.UpdateStrings {
+	const (
+		legacyField = "url"
+		field       = "urls"
+	)
+
+	// prefer urls over url
+	if t.hasField(field) {
+		return t.updateStrings(value, field)
+	} else if t.hasField(legacyField) {
+		var valueSlice []string
+		if legacyValue != nil {
+			valueSlice = []string{*legacyValue}
+		}
+		return t.updateStrings(valueSlice, legacyField)
+	}
+
+	return nil
+}
+
+func (t changesetTranslator) optionalURLsBulk(value *BulkUpdateStrings, legacyValue *string) *models.UpdateStrings {
+	const (
+		legacyField = "url"
+		field       = "urls"
+	)
+
+	// prefer urls over url
+	if t.hasField("urls") {
+		return t.updateStringsBulk(value, field)
+	} else if t.hasField(legacyField) {
+		var valueSlice []string
+		if legacyValue != nil {
+			valueSlice = []string{*legacyValue}
+		}
+		return t.updateStrings(valueSlice, legacyField)
+	}
+
+	return nil
+}
+
 func (t changesetTranslator) updateStrings(value []string, field string) *models.UpdateStrings {
 	if !t.hasField(field) {
 		return nil

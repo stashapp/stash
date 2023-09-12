@@ -24,27 +24,27 @@ const (
 	performersImagesTable = "performers_images"
 	imagesTagsTable       = "images_tags"
 	imagesFilesTable      = "images_files"
+	imagesURLsTable       = "image_urls"
+	imageURLColumn        = "url"
 )
 
 type imageRow struct {
 	ID    int         `db:"id" goqu:"skipinsert"`
 	Title zero.String `db:"title"`
 	// expressed as 1-100
-	Rating    null.Int    `db:"rating"`
-	URL       zero.String `db:"url"`
-	Date      NullDate    `db:"date"`
-	Organized bool        `db:"organized"`
-	OCounter  int         `db:"o_counter"`
-	StudioID  null.Int    `db:"studio_id,omitempty"`
-	CreatedAt Timestamp   `db:"created_at"`
-	UpdatedAt Timestamp   `db:"updated_at"`
+	Rating    null.Int  `db:"rating"`
+	Date      NullDate  `db:"date"`
+	Organized bool      `db:"organized"`
+	OCounter  int       `db:"o_counter"`
+	StudioID  null.Int  `db:"studio_id,omitempty"`
+	CreatedAt Timestamp `db:"created_at"`
+	UpdatedAt Timestamp `db:"updated_at"`
 }
 
 func (r *imageRow) fromImage(i models.Image) {
 	r.ID = i.ID
 	r.Title = zero.StringFrom(i.Title)
 	r.Rating = intFromPtr(i.Rating)
-	r.URL = zero.StringFrom(i.URL)
 	r.Date = NullDateFromDatePtr(i.Date)
 	r.Organized = i.Organized
 	r.OCounter = i.OCounter
@@ -66,7 +66,6 @@ func (r *imageQueryRow) resolve() *models.Image {
 		ID:        r.ID,
 		Title:     r.Title.String,
 		Rating:    nullIntPtr(r.Rating),
-		URL:       r.URL.String,
 		Date:      r.Date.DatePtr(),
 		Organized: r.Organized,
 		OCounter:  r.OCounter,
@@ -93,7 +92,6 @@ type imageRowRecord struct {
 func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
 	r.setNullString("title", i.Title)
 	r.setNullInt("rating", i.Rating)
-	r.setNullString("url", i.URL)
 	r.setNullDate("date", i.Date)
 	r.setBool("organized", i.Organized)
 	r.setInt("o_counter", i.OCounter)
@@ -176,6 +174,13 @@ func (qb *ImageStore) Create(ctx context.Context, newObject *models.Image, fileI
 		}
 	}
 
+	if newObject.URLs.Loaded() {
+		const startPos = 0
+		if err := imagesURLsTableMgr.insertJoins(ctx, id, startPos, newObject.URLs.List()); err != nil {
+			return err
+		}
+	}
+
 	if newObject.PerformerIDs.Loaded() {
 		if err := imagesPerformersTableMgr.insertJoins(ctx, id, newObject.PerformerIDs.List()); err != nil {
 			return err
@@ -223,6 +228,12 @@ func (qb *ImageStore) UpdatePartial(ctx context.Context, id int, partial models.
 			return nil, err
 		}
 	}
+
+	if partial.URLs != nil {
+		if err := imagesURLsTableMgr.modifyJoins(ctx, id, partial.URLs.Values, partial.URLs.Mode); err != nil {
+			return nil, err
+		}
+	}
 	if partial.PerformerIDs != nil {
 		if err := imagesPerformersTableMgr.modifyJoins(ctx, id, partial.PerformerIDs.IDs, partial.PerformerIDs.Mode); err != nil {
 			return nil, err
@@ -249,6 +260,12 @@ func (qb *ImageStore) Update(ctx context.Context, updatedObject *models.Image) e
 
 	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
 		return err
+	}
+
+	if updatedObject.URLs.Loaded() {
+		if err := imagesURLsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.URLs.List()); err != nil {
+			return err
+		}
 	}
 
 	if updatedObject.PerformerIDs.Loaded() {
@@ -664,7 +681,7 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 	query.handleCriterion(ctx, intCriterionHandler(imageFilter.OCounter, "images.o_counter", nil))
 	query.handleCriterion(ctx, boolCriterionHandler(imageFilter.Organized, "images.organized", nil))
 	query.handleCriterion(ctx, dateCriterionHandler(imageFilter.Date, "images.date"))
-	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.URL, "images.url"))
+	query.handleCriterion(ctx, imageURLsCriterionHandler(imageFilter.URL))
 
 	query.handleCriterion(ctx, resolutionCriterionHandler(imageFilter.Resolution, "image_files.height", "image_files.width", qb.addImageFilesTable))
 	query.handleCriterion(ctx, imageIsMissingCriterionHandler(qb, imageFilter.IsMissing))
@@ -853,6 +870,18 @@ func imageIsMissingCriterionHandler(qb *ImageStore, isMissing *string) criterion
 			}
 		}
 	}
+}
+
+func imageURLsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
+	h := stringListCriterionHandlerBuilder{
+		joinTable:    imagesURLsTable,
+		stringColumn: imageURLColumn,
+		addJoinTable: func(f *filterBuilder) {
+			imagesURLsTableMgr.join(f, "", "images.id")
+		},
+	}
+
+	return h.handler(url)
 }
 
 func (qb *ImageStore) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
@@ -1096,4 +1125,8 @@ func (qb *ImageStore) GetTagIDs(ctx context.Context, imageID int) ([]int, error)
 func (qb *ImageStore) UpdateTags(ctx context.Context, imageID int, tagIDs []int) error {
 	// Delete the existing joins and then create new ones
 	return qb.tagsRepository().replace(ctx, imageID, tagIDs)
+}
+
+func (qb *ImageStore) GetURLs(ctx context.Context, imageID int) ([]string, error) {
+	return imagesURLsTableMgr.get(ctx, imageID)
 }

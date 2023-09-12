@@ -63,6 +63,7 @@ type ImageReader interface {
 	ImageQueryer
 	ImageCounter
 
+	URLLoader
 	FileIDLoader
 	GalleryIDLoader
 	PerformerIDLoader

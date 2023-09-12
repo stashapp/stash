@@ -3,7 +3,6 @@ import {
   createStringCriterionOption,
   createDateCriterionOption,
   createMandatoryTimestampCriterionOption,
-  createPathCriterionOption,
 } from "./criteria/criterion";
 import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
 import { GalleryIsMissingCriterionOption } from "./criteria/is-missing";
@@ -19,6 +18,7 @@ import {
 import { ListFilterOptions, MediaSortByOptions } from "./filter-options";
 import { DisplayMode } from "./types";
 import { RatingCriterionOption } from "./criteria/rating";
+import { PathCriterionOption } from "./criteria/path";
 
 const defaultSortBy = "path";
 
@@ -44,7 +44,7 @@ const displayModeOptions = [
 const criterionOptions = [
   createStringCriterionOption("title"),
   createStringCriterionOption("details"),
-  createPathCriterionOption("path"),
+  PathCriterionOption,
   createStringCriterionOption("checksum", "media_info.checksum"),
   RatingCriterionOption,
   OrganizedCriterionOption,
@@ -52,13 +52,13 @@ const criterionOptions = [
   GalleryIsMissingCriterionOption,
   TagsCriterionOption,
   HasChaptersCriterionOption,
-  createStringCriterionOption("tag_count"),
+  createMandatoryNumberCriterionOption("tag_count"),
   PerformerTagsCriterionOption,
   PerformersCriterionOption,
-  createStringCriterionOption("performer_count"),
+  createMandatoryNumberCriterionOption("performer_count"),
   createMandatoryNumberCriterionOption("performer_age"),
   PerformerFavoriteCriterionOption,
-  createStringCriterionOption("image_count"),
+  createMandatoryNumberCriterionOption("image_count"),
   StudiosCriterionOption,
   createStringCriterionOption("url"),
   createMandatoryNumberCriterionOption("file_count", "zip_file_count"),
