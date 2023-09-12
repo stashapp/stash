@@ -1,20 +1,13 @@
 import { IntlShape } from "react-intl";
 import { CriterionModifier } from "src/core/generated-graphql";
 import { getCountryByISO } from "src/utils/country";
-import {
-  CriterionOption,
-  StringCriterion,
-  StringCriterionOption,
-} from "./criterion";
+import { StringCriterion, StringCriterionOption } from "./criterion";
 
-export const CountryCriterionOption = new CriterionOption({
-  messageID: "country",
-  type: "country",
-  modifierOptions: StringCriterionOption.modifierOptions,
-  defaultModifier: StringCriterionOption.defaultModifier,
-  makeCriterion: () => new CountryCriterion(),
-  inputType: StringCriterionOption.inputType,
-});
+export const CountryCriterionOption = new StringCriterionOption(
+  "country",
+  "country",
+  () => new CountryCriterion()
+);
 
 export class CountryCriterion extends StringCriterion {
   constructor() {

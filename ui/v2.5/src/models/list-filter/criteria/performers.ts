@@ -24,8 +24,8 @@ export const PerformersCriterionOption = new CriterionOption({
   type: "performers",
   modifierOptions,
   defaultModifier,
-  makeCriterion: () => new PerformersCriterion(),
   inputType,
+  makeCriterion: () => new PerformersCriterion(),
 });
 
 export class PerformersCriterion extends Criterion<ILabeledValueListValue> {

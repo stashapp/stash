@@ -16,13 +16,13 @@ const secondsToString = (seconds: number) => {
 
 const stringToSeconds = (v?: string) => {
   if (!v) {
-    return 0;
+    return undefined;
   }
 
   const splits = v.split(":");
 
   if (splits.length > 3) {
-    return 0;
+    return undefined;
   }
 
   let seconds = 0;
@@ -30,12 +30,12 @@ const stringToSeconds = (v?: string) => {
   while (splits.length > 0) {
     const thisSplit = splits.pop();
     if (thisSplit === undefined) {
-      return 0;
+      return undefined;
     }
 
     const thisInt = parseInt(thisSplit, 10);
     if (Number.isNaN(thisInt)) {
-      return 0;
+      return undefined;
     }
 
     seconds += factor * thisInt;

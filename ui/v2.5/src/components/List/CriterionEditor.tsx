@@ -12,7 +12,6 @@ import {
   DateCriterion,
   TimestampCriterion,
   BooleanCriterion,
-  PathCriterionOption,
 } from "src/models/list-filter/criteria/criterion";
 import { useIntl } from "react-intl";
 import {
@@ -47,6 +46,7 @@ import TagsFilter from "./Filters/TagsFilter";
 import { PhashCriterion } from "src/models/list-filter/criteria/phash";
 import { PhashFilter } from "./Filters/PhashFilter";
 import cx from "classnames";
+import { PathCriterion } from "src/models/list-filter/criteria/path";
 
 interface IGenericCriterionEditor {
   criterion: Criterion<CriterionValue>;
@@ -175,7 +175,7 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
         );
       }
     }
-    if (criterion.criterionOption instanceof PathCriterionOption) {
+    if (criterion instanceof PathCriterion) {
       return (
         <PathFilter criterion={criterion} onValueChanged={onValueChanged} />
       );

@@ -16,7 +16,7 @@ export const usePerformerFilterHook = (
     // if performers is already present, then we modify it, otherwise add
     let performerCriterion = filter.criteria.find((c) => {
       return c.criterionOption.type === "performers";
-    }) as PerformersCriterion;
+    }) as PerformersCriterion | undefined;
 
     if (performerCriterion) {
       if (
