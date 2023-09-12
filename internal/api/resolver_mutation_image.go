@@ -119,18 +119,7 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 
-	// prefer urls over url
-	if translator.hasField("urls") {
-		updatedImage.URLs = &models.UpdateStrings{
-			Values: input.Urls,
-			Mode:   models.RelationshipUpdateModeSet,
-		}
-	} else if translator.hasField("url") {
-		updatedImage.URLs = &models.UpdateStrings{
-			Values: []string{*input.URL},
-			Mode:   models.RelationshipUpdateModeSet,
-		}
-	}
+	updatedImage.URLs = translator.optionalURLs(input.Urls, input.URL)
 
 	updatedImage.PrimaryFileID, err = translator.fileIDPtrFromString(input.PrimaryFileID)
 	if err != nil {
@@ -226,18 +215,7 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 
-	// prefer urls over url
-	if translator.hasField("urls") {
-		updatedImage.URLs = &models.UpdateStrings{
-			Values: input.Urls.Values,
-			Mode:   input.Urls.Mode,
-		}
-	} else if translator.hasField("url") {
-		updatedImage.URLs = &models.UpdateStrings{
-			Values: []string{*input.URL},
-			Mode:   models.RelationshipUpdateModeSet,
-		}
-	}
+	updatedImage.URLs = translator.optionalURLsBulk(input.Urls, input.URL)
 
 	updatedImage.GalleryIDs, err = translator.updateIdsBulk(input.GalleryIds, "gallery_ids")
 	if err != nil {
