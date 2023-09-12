@@ -219,13 +219,7 @@ func (db *Database) Close() error {
 }
 
 func (db *Database) open(disableForeignKeys bool) (*sqlx.DB, error) {
-	// https://github.com/mattn/go-sqlite3
-	url := "file:" + db.dbPath + "?_journal=WAL&_sync=NORMAL&_busy_timeout=50"
-	if !disableForeignKeys {
-		url += "&_fk=true"
-	}
-
-	conn, err := sqlx.Open(sqlite3Driver, url)
+	conn, err := createDBConn(db.dbPath, disableForeignKeys)
 	conn.SetMaxOpenConns(dbConns)
 	conn.SetMaxIdleConns(dbConns)
 	conn.SetConnMaxIdleTime(dbConnTimeout * time.Second)
@@ -241,12 +235,12 @@ func (db *Database) Remove() error {
 	err := db.Close()
 
 	if err != nil {
-		return errors.New("Error closing database: " + err.Error())
+		return fmt.Errorf("error closing database: %w", err)
 	}
 
 	err = os.Remove(databasePath)
 	if err != nil {
-		return errors.New("Error removing database: " + err.Error())
+		return fmt.Errorf("error removing database: %w", err)
 	}
 
 	// remove the -shm, -wal files ( if they exist )
@@ -255,7 +249,7 @@ func (db *Database) Remove() error {
 		if exists, _ := fsutil.FileExists(wf); exists {
 			err = os.Remove(wf)
 			if err != nil {
-				return errors.New("Error removing database: " + err.Error())
+				return fmt.Errorf("error removing database: %w", err)
 			}
 		}
 	}
@@ -284,7 +278,7 @@ func (db *Database) Backup(backupPath string) error {
 		var err error
 		thisDB, err = sqlx.Connect(sqlite3Driver, "file:"+db.dbPath+"?_fk=true")
 		if err != nil {
-			return fmt.Errorf("open database %s failed: %v", db.dbPath, err)
+			return fmt.Errorf("open database %s failed: %w", db.dbPath, err)
 		}
 		defer thisDB.Close()
 	}
@@ -292,7 +286,7 @@ func (db *Database) Backup(backupPath string) error {
 	logger.Infof("Backing up database into: %s", backupPath)
 	_, err := thisDB.Exec(`VACUUM INTO "` + backupPath + `"`)
 	if err != nil {
-		return fmt.Errorf("vacuum failed: %v", err)
+		return fmt.Errorf("vacuum failed: %w", err)
 	}
 
 	return nil

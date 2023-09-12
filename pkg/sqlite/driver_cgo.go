@@ -1,11 +1,15 @@
+//go:build cgo
+
 package sqlite
 
 import (
 	"database/sql"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 
 	"github.com/WithoutPants/sortorder/casefolded"
+	"github.com/jmoiron/sqlx"
 	sqlite3 "github.com/mattn/go-sqlite3"
 )
 
@@ -69,4 +73,30 @@ func (c *CustomSQLiteConn) Close() error {
 	_, _ = conn.Exec("PRAGMA analysis_limit=1000; PRAGMA optimize;", []driver.Value{})
 
 	return conn.Close()
+}
+
+func createDBConn(dbPath string, disableForeignKeys bool) (*sqlx.DB, error) {
+	// https://github.com/mattn/go-sqlite3
+	url := "file:" + dbPath + "?_journal=WAL&_sync=NORMAL&_busy_timeout=50"
+	if !disableForeignKeys {
+		url += "&_fk=true"
+	}
+
+	return sqlx.Open(sqlite3Driver, url)
+}
+
+func IsLockedError(err error) bool {
+	var sqliteErr sqlite3.Error
+	if errors.As(err, &sqliteErr) {
+		return sqliteErr.Code == sqlite3.ErrBusy
+	}
+	return false
+}
+
+func IsConstraintError(err error) bool {
+	var sqliteErr sqlite3.Error
+	if errors.As(err, &sqliteErr) {
+		return sqliteErr.Code == sqlite3.ErrConstraint
+	}
+	return false
 }

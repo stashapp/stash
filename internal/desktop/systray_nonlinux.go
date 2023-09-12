@@ -1,5 +1,4 @@
-//go:build windows || darwin
-// +build windows darwin
+//go:build (windows || darwin) && cgo
 
 package desktop
 
@@ -7,15 +6,15 @@ import (
 	"strings"
 
 	"github.com/kermieisinthehouse/systray"
-	"github.com/stashapp/stash/internal/manager/config"
-	"github.com/stashapp/stash/pkg/logger"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
+
+	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 // MUST be run on the main goroutine or will have no effect on macOS
 func startSystray(shutdownHandler ShutdownHandler, faviconProvider FaviconProvider) {
-
 	// Shows a small notification to inform that Stash will no longer show a terminal window,
 	// and instead will be available in the tray. Will only show the first time a pre-desktop integration
 	// system is started from a non-terminal method, e.g. double-clicking an icon.
