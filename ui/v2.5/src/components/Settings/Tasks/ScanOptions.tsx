@@ -12,6 +12,7 @@ export const ScanOptions: React.FC<IScanOptions> = ({
   setOptions: setOptionsState,
 }) => {
   const {
+    forceRescanZips,
     scanGenerateCovers,
     scanGeneratePreviews,
     scanGenerateImagePreviews,
@@ -27,6 +28,12 @@ export const ScanOptions: React.FC<IScanOptions> = ({
 
   return (
     <>
+      <BooleanSetting
+        id="rescan-gallery-zips"
+        headingID="config.tasks.force_rescan_gallery_zips"
+        checked={forceRescanZips ?? false}
+        onChange={(v) => setOptions({ forceRescanZips: v })}
+      />
       <BooleanSetting
         id="scan-generate-covers"
         headingID="config.tasks.generate_video_covers_during_scan"

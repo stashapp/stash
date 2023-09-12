@@ -7,6 +7,8 @@ type ScanMetadataOptions struct {
 	// Strip file extension from title
 	// Deprecated: not implemented
 	StripFileExtension bool `json:"stripFileExtension"`
+	// Forces a rescan on Gallery zips
+	ForceRescanZips bool `json:"forceRescanZips"`
 	// Generate scene covers during scan
 	ScanGenerateCovers bool `json:"scanGenerateCovers"`
 	// Generate previews during scan

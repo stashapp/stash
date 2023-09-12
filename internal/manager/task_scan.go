@@ -35,6 +35,7 @@ type ScanJob struct {
 }
 
 func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
+	c := config.GetInstance()
 	input := j.input
 
 	if job.IsCancelled(ctx) {
@@ -66,6 +67,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 		HandlerRequiredFilters: []file.Filter{
 			newHandlerRequiredFilter(instance.Config),
 		},
+		ForceRescanZips: c.GetDefaultScanSettings().ForceRescanZips,
 	}, progress)
 
 	taskQueue.Close()
