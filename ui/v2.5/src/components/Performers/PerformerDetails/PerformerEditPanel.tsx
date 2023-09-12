@@ -645,7 +645,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     );
 
     return (
-      <Dropdown drop="up" className="d-inline-block">
+      <Dropdown className="d-inline-block">
         <Dropdown.Toggle variant="secondary" className="mr-2">
           <FormattedMessage id="actions.scrape_with" />
         </Dropdown.Toggle>
@@ -789,7 +789,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return (
       <Row>
         <Form.Label column sm={labelXS} xl={labelXL}>
-          StashIDs
+          {intl.formatMessage({ id: "stash_ids" })}
         </Form.Label>
         <Col sm={fieldXS} xl={fieldXL}>
           <ul className="pl-0">

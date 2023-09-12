@@ -81,7 +81,7 @@ These instructions are for existing users whose systems will be defaulted to use
 
 This setting controls how many sub-tasks will be run in parallel during scanning and generation tasks. (See Tasks)
 
-Auto-detection can be enabled by setting this to zero. This will calculate the number of parallel tasks to be cpu_cores/4 + 1.
+Auto-detection can be enabled by setting this to zero. This will calculate the number of parallel tasks to be logical cores/4 + 1.
 
 This setting can be used to increase/decrease overall CPU utilisation in two scenarios:
 1) High performance 4+ core cpus.

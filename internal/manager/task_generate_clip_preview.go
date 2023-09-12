@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
@@ -44,7 +43,7 @@ func (t *GenerateClipPreviewTask) Start(ctx context.Context) {
 }
 
 func (t *GenerateClipPreviewTask) required() bool {
-	_, ok := t.Image.Files.Primary().(*file.VideoFile)
+	_, ok := t.Image.Files.Primary().(*models.VideoFile)
 	if !ok {
 		return false
 	}

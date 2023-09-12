@@ -321,21 +321,31 @@ func (s *Manager) MigrateHash(ctx context.Context) int {
 	return s.JobManager.Add(ctx, "Migrating scene hashes...", j)
 }
 
-// If neither performer_ids nor performer_names are set, tag all performers
-type StashBoxBatchPerformerTagInput struct {
-	// Stash endpoint to use for the performer tagging
+// If neither ids nor names are set, tag all items
+type StashBoxBatchTagInput struct {
+	// Stash endpoint to use for the tagging
 	Endpoint int `json:"endpoint"`
-	// Fields to exclude when executing the performer tagging
+	// Fields to exclude when executing the tagging
 	ExcludeFields []string `json:"exclude_fields"`
-	// Refresh performers already tagged by StashBox if true. Only tag performers with no StashBox tagging if false
+	// Refresh items already tagged by StashBox if true. Only tag items with no StashBox tagging if false
 	Refresh bool `json:"refresh"`
+	// If batch adding studios, should their parent studios also be created?
+	CreateParent bool `json:"createParent"`
+	// If set, only tag these ids
+	Ids []string `json:"ids"`
+	// If set, only tag these names
+	Names []string `json:"names"`
 	// If set, only tag these performer ids
+	//
+	// Deprecated: please use Ids
 	PerformerIds []string `json:"performer_ids"`
 	// If set, only tag these performer names
+	//
+	// Deprecated: please use Names
 	PerformerNames []string `json:"performer_names"`
 }
 
-func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxBatchPerformerTagInput) int {
+func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxBatchTagInput) int {
 	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
 		logger.Infof("Initiating stash-box batch performer tag")
 
@@ -346,7 +356,7 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 		}
 		box := boxes[input.Endpoint]
 
-		var tasks []StashBoxPerformerTagTask
+		var tasks []StashBoxBatchTagTask
 
 		// The gocritic linter wants to turn this ifElseChain into a switch.
 		// however, such a switch would contain quite large blocks for each section
@@ -354,24 +364,35 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 		//
 		// This is why we mark this section nolint. In principle, we should look to
 		// rewrite the section at some point, to avoid the linter warning.
-		if len(input.PerformerIds) > 0 { //nolint:gocritic
+		if len(input.Ids) > 0 || len(input.PerformerIds) > 0 { //nolint:gocritic
+			// The user has chosen only to tag the items on the current page
 			if err := s.Repository.WithTxn(ctx, func(ctx context.Context) error {
 				performerQuery := s.Repository.Performer
 
-				for _, performerID := range input.PerformerIds {
+				idsToUse := input.PerformerIds
+				if len(input.Ids) > 0 {
+					idsToUse = input.Ids
+				}
+
+				for _, performerID := range idsToUse {
 					if id, err := strconv.Atoi(performerID); err == nil {
 						performer, err := performerQuery.Find(ctx, id)
 						if err == nil {
-							err = performer.LoadStashIDs(ctx, performerQuery)
-						}
+							if err := performer.LoadStashIDs(ctx, performerQuery); err != nil {
+								return fmt.Errorf("loading performer stash ids: %w", err)
+							}
 
-						if err == nil {
-							tasks = append(tasks, StashBoxPerformerTagTask{
-								performer:       performer,
-								refresh:         input.Refresh,
-								box:             box,
-								excluded_fields: input.ExcludeFields,
-							})
+							// Check if the user wants to refresh existing or new items
+							if (input.Refresh && len(performer.StashIDs.List()) > 0) ||
+								(!input.Refresh && len(performer.StashIDs.List()) == 0) {
+								tasks = append(tasks, StashBoxBatchTagTask{
+									performer:      performer,
+									refresh:        input.Refresh,
+									box:            box,
+									excludedFields: input.ExcludeFields,
+									taskType:       Performer,
+								})
+							}
 						} else {
 							return err
 						}
@@ -381,14 +402,22 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 			}); err != nil {
 				logger.Error(err.Error())
 			}
-		} else if len(input.PerformerNames) > 0 {
-			for i := range input.PerformerNames {
-				if len(input.PerformerNames[i]) > 0 {
-					tasks = append(tasks, StashBoxPerformerTagTask{
-						name:            &input.PerformerNames[i],
-						refresh:         input.Refresh,
-						box:             box,
-						excluded_fields: input.ExcludeFields,
+		} else if len(input.Names) > 0 || len(input.PerformerNames) > 0 {
+			// The user is batch adding performers
+			namesToUse := input.PerformerNames
+			if len(input.Names) > 0 {
+				namesToUse = input.Names
+			}
+
+			for i := range namesToUse {
+				name := namesToUse[i]
+				if len(name) > 0 {
+					tasks = append(tasks, StashBoxBatchTagTask{
+						name:           &name,
+						refresh:        false,
+						box:            box,
+						excludedFields: input.ExcludeFields,
+						taskType:       Performer,
 					})
 				}
 			}
@@ -397,15 +426,19 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 			// However, this doesn't really help with readability of the current section. Mark it
 			// as nolint for now. In the future we'd like to rewrite this code by factoring some of
 			// this into separate functions.
+
+			// The user has chosen to tag every item in their database
 			if err := s.Repository.WithTxn(ctx, func(ctx context.Context) error {
 				performerQuery := s.Repository.Performer
 				var performers []*models.Performer
 				var err error
+
 				if input.Refresh {
 					performers, err = performerQuery.FindByStashIDStatus(ctx, true, box.Endpoint)
 				} else {
 					performers, err = performerQuery.FindByStashIDStatus(ctx, false, box.Endpoint)
 				}
+
 				if err != nil {
 					return fmt.Errorf("error querying performers: %v", err)
 				}
@@ -415,11 +448,12 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 						return fmt.Errorf("error loading stash ids for performer %s: %v", performer.Name, err)
 					}
 
-					tasks = append(tasks, StashBoxPerformerTagTask{
-						performer:       performer,
-						refresh:         input.Refresh,
-						box:             box,
-						excluded_fields: input.ExcludeFields,
+					tasks = append(tasks, StashBoxBatchTagTask{
+						performer:      performer,
+						refresh:        input.Refresh,
+						box:            box,
+						excludedFields: input.ExcludeFields,
+						taskType:       Performer,
 					})
 				}
 				return nil
@@ -437,12 +471,9 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 
 		logger.Infof("Starting stash-box batch operation for %d performers", len(tasks))
 
-		var wg sync.WaitGroup
 		for _, task := range tasks {
-			wg.Add(1)
 			progress.ExecuteTask(task.Description(), func() {
 				task.Start(ctx)
-				wg.Done()
 			})
 
 			progress.Increment()
@@ -450,4 +481,131 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 	})
 
 	return s.JobManager.Add(ctx, "Batch stash-box performer tag...", j)
+}
+
+func (s *Manager) StashBoxBatchStudioTag(ctx context.Context, input StashBoxBatchTagInput) int {
+	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
+		logger.Infof("Initiating stash-box batch studio tag")
+
+		boxes := config.GetInstance().GetStashBoxes()
+		if input.Endpoint < 0 || input.Endpoint >= len(boxes) {
+			logger.Error(fmt.Errorf("invalid stash_box_index %d", input.Endpoint))
+			return
+		}
+		box := boxes[input.Endpoint]
+
+		var tasks []StashBoxBatchTagTask
+
+		// The gocritic linter wants to turn this ifElseChain into a switch.
+		// however, such a switch would contain quite large blocks for each section
+		// and would arguably be hard to read.
+		//
+		// This is why we mark this section nolint. In principle, we should look to
+		// rewrite the section at some point, to avoid the linter warning.
+		if len(input.Ids) > 0 { //nolint:gocritic
+			// The user has chosen only to tag the items on the current page
+			if err := s.Repository.WithTxn(ctx, func(ctx context.Context) error {
+				studioQuery := s.Repository.Studio
+
+				for _, studioID := range input.Ids {
+					if id, err := strconv.Atoi(studioID); err == nil {
+						studio, err := studioQuery.Find(ctx, id)
+						if err == nil {
+							if err := studio.LoadStashIDs(ctx, studioQuery); err != nil {
+								return fmt.Errorf("loading studio stash ids: %w", err)
+							}
+
+							// Check if the user wants to refresh existing or new items
+							if (input.Refresh && len(studio.StashIDs.List()) > 0) ||
+								(!input.Refresh && len(studio.StashIDs.List()) == 0) {
+								tasks = append(tasks, StashBoxBatchTagTask{
+									studio:         studio,
+									refresh:        input.Refresh,
+									createParent:   input.CreateParent,
+									box:            box,
+									excludedFields: input.ExcludeFields,
+									taskType:       Studio,
+								})
+							}
+						} else {
+							return err
+						}
+					}
+				}
+				return nil
+			}); err != nil {
+				logger.Error(err.Error())
+			}
+		} else if len(input.Names) > 0 {
+			// The user is batch adding studios
+			for i := range input.Names {
+				name := input.Names[i]
+				if len(name) > 0 {
+					tasks = append(tasks, StashBoxBatchTagTask{
+						name:           &name,
+						refresh:        false,
+						createParent:   input.CreateParent,
+						box:            box,
+						excludedFields: input.ExcludeFields,
+						taskType:       Studio,
+					})
+				}
+			}
+		} else { //nolint:gocritic
+			// The gocritic linter wants to fold this if-block into the else on the line above.
+			// However, this doesn't really help with readability of the current section. Mark it
+			// as nolint for now. In the future we'd like to rewrite this code by factoring some of
+			// this into separate functions.
+
+			// The user has chosen to tag every item in their database
+			if err := s.Repository.WithTxn(ctx, func(ctx context.Context) error {
+				studioQuery := s.Repository.Studio
+				var studios []*models.Studio
+				var err error
+
+				if input.Refresh {
+					studios, err = studioQuery.FindByStashIDStatus(ctx, true, box.Endpoint)
+				} else {
+					studios, err = studioQuery.FindByStashIDStatus(ctx, false, box.Endpoint)
+				}
+
+				if err != nil {
+					return fmt.Errorf("error querying studios: %v", err)
+				}
+
+				for _, studio := range studios {
+					tasks = append(tasks, StashBoxBatchTagTask{
+						studio:         studio,
+						refresh:        input.Refresh,
+						createParent:   input.CreateParent,
+						box:            box,
+						excludedFields: input.ExcludeFields,
+						taskType:       Studio,
+					})
+				}
+				return nil
+			}); err != nil {
+				logger.Error(err.Error())
+				return
+			}
+		}
+
+		if len(tasks) == 0 {
+			return
+		}
+
+		progress.SetTotal(len(tasks))
+
+		logger.Infof("Starting stash-box batch operation for %d studios", len(tasks))
+
+		for _, task := range tasks {
+			progress.ExecuteTask(task.Description(), func() {
+				task.Start(ctx)
+			})
+
+			progress.Increment()
+		}
+	})
+
+	return s.JobManager.Add(ctx, "Batch stash-box studio tag...", j)
 }

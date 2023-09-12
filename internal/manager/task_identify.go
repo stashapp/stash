@@ -134,9 +134,9 @@ func (j *IdentifyJob) identifyScene(ctx context.Context, s *models.Scene, source
 	j.progress.ExecuteTask("Identifying "+s.Path, func() {
 		task := identify.SceneIdentifier{
 			SceneReaderUpdater: instance.Repository.Scene,
-			StudioCreator:      instance.Repository.Studio,
+			StudioReaderWriter: instance.Repository.Studio,
 			PerformerCreator:   instance.Repository.Performer,
-			TagCreatorFinder:   instance.Repository.Tag,
+			TagFinderCreator:   instance.Repository.Tag,
 
 			DefaultOptions:              j.input.Options,
 			Sources:                     sources,

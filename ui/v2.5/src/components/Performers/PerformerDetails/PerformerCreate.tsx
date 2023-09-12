@@ -42,7 +42,11 @@ const PerformerCreate: React.FC = () => {
 
   function renderPerformerImage() {
     if (encodingImage) {
-      return <LoadingIndicator message="Encoding image..." />;
+      return (
+        <LoadingIndicator
+          message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+        />
+      );
     }
     if (image) {
       return (

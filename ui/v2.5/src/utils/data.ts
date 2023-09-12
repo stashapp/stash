@@ -30,3 +30,39 @@ export function withoutTypename<T extends ITypename>(
     {} as Omit<T, "__typename">
   );
 }
+
+// excludeFields removes fields from data that are in the excluded object
+export function excludeFields(
+  data: { [index: string]: unknown },
+  excluded: Record<string, boolean>
+) {
+  Object.keys(data).forEach((k) => {
+    if (excluded[k] || !data[k]) {
+      data[k] = undefined;
+    }
+  });
+}
+
+export interface IHasStoredID {
+  stored_id?: string | null;
+}
+
+export function sortStoredIdObjects(
+  scrapedObjects?: IHasStoredID[]
+): IHasStoredID[] | undefined {
+  if (!scrapedObjects) {
+    return undefined;
+  }
+  const ret = scrapedObjects.filter((p) => !!p.stored_id);
+
+  if (ret.length === 0) {
+    return undefined;
+  }
+
+  // sort by id numerically
+  ret.sort((a, b) => {
+    return parseInt(a.stored_id!, 10) - parseInt(b.stored_id!, 10);
+  });
+
+  return ret;
+}

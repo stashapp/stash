@@ -1,6 +1,11 @@
 import { Button, Tab, Nav, Dropdown } from "react-bootstrap";
 import React, { useEffect, useMemo, useState } from "react";
-import { useParams, useHistory, Link } from "react-router-dom";
+import {
+  useHistory,
+  Link,
+  RouteComponentProps,
+  Redirect,
+} from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
 import * as GQL from "src/core/generated-graphql";
@@ -31,17 +36,19 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { galleryPath, galleryTitle } from "src/core/galleries";
 import { GalleryChapterPanel } from "./GalleryChaptersPanel";
+import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 
 interface IProps {
   gallery: GQL.GalleryDataFragment;
+  add?: boolean;
 }
 
 interface IGalleryParams {
+  id: string;
   tab?: string;
 }
 
-export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
-  const { tab = "images" } = useParams<IGalleryParams>();
+export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
   const history = useHistory();
   const Toast = useToast();
   const intl = useIntl();
@@ -50,11 +57,12 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
   const [collapsed, setCollapsed] = useState(false);
 
   const [activeTabKey, setActiveTabKey] = useState("gallery-details-panel");
-  const activeRightTabKey = tab === "images" || tab === "add" ? tab : "images";
-  const setActiveRightTabKey = (newTab: string | null) => {
-    if (tab !== newTab) {
-      const tabParam = newTab === "images" ? "" : `/${newTab}`;
-      history.replace(`/galleries/${gallery.id}${tabParam}`);
+
+  const setMainTabKey = (newTabKey: string | null) => {
+    if (newTabKey === "add") {
+      history.replace(`/galleries/${gallery.id}/add`);
+    } else {
+      history.replace(`/galleries/${gallery.id}`);
     }
   };
 
@@ -281,9 +289,9 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
 
     return (
       <Tab.Container
-        activeKey={activeRightTabKey}
+        activeKey={add ? "add" : "images"}
         unmountOnExit
-        onSelect={(k) => k && setActiveRightTabKey(k)}
+        onSelect={setMainTabKey}
       >
         <div>
           <Nav variant="tabs" className="mr-auto">
@@ -302,16 +310,10 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
 
         <Tab.Content>
           <Tab.Pane eventKey="images">
-            <GalleryImagesPanel
-              active={activeRightTabKey == "images"}
-              gallery={gallery}
-            />
+            <GalleryImagesPanel active={!add} gallery={gallery} />
           </Tab.Pane>
           <Tab.Pane eventKey="add">
-            <GalleryAddPanel
-              active={activeRightTabKey == "add"}
-              gallery={gallery}
-            />
+            <GalleryAddPanel active={!!add} gallery={gallery} />
           </Tab.Pane>
         </Tab.Content>
       </Tab.Container>
@@ -372,14 +374,34 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
   );
 };
 
-const GalleryLoader: React.FC = () => {
-  const { id } = useParams<{ id?: string }>();
-  const { data, loading, error } = useFindGallery(id ?? "");
+const GalleryLoader: React.FC<RouteComponentProps<IGalleryParams>> = ({
+  location,
+  match,
+}) => {
+  const { id, tab } = match.params;
+  const { data, loading, error } = useFindGallery(id);
+
+  useScrollToTopOnMount();
 
   if (loading) return <LoadingIndicator />;
   if (error) return <ErrorMessage error={error.message} />;
   if (!data?.findGallery)
     return <ErrorMessage error={`No gallery found with id ${id}.`} />;
+
+  if (tab === "add") {
+    return <GalleryPage add gallery={data.findGallery} />;
+  }
+
+  if (tab) {
+    return (
+      <Redirect
+        to={{
+          ...location,
+          pathname: `/galleries/${id}`,
+        }}
+      />
+    );
+  }
 
   return <GalleryPage gallery={data.findGallery} />;
 };

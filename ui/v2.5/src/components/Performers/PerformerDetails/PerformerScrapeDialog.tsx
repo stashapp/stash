@@ -3,13 +3,12 @@ import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import {
   ScrapeDialog,
-  ScrapeResult,
   ScrapedInputGroupRow,
-  ScrapedImageRow,
+  ScrapedImagesRow,
   ScrapeDialogRow,
   ScrapedTextAreaRow,
   ScrapedCountryRow,
-} from "src/components/Shared/ScrapeDialog";
+} from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import { useTagCreate } from "src/core/StashService";
 import { Form } from "react-bootstrap";
 import { TagSelect } from "src/components/Shared/Select";
@@ -26,6 +25,7 @@ import {
   stringToCircumcised,
 } from "src/utils/circumcised";
 import { IStashBox } from "./PerformerStashBoxModal";
+import { ScrapeResult } from "src/components/Shared/ScrapeDialog/scrapeResult";
 
 function renderScrapedGender(
   result: ScrapeResult<string>,
@@ -414,6 +414,11 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     )
   );
 
+  const images =
+    props.scraped.images && props.scraped.images.length > 0
+      ? props.scraped.images
+      : [];
+
   const allFields = [
     name,
     disambiguation,
@@ -646,10 +651,11 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           newTags,
           createNewTag
         )}
-        <ScrapedImageRow
+        <ScrapedImagesRow
           title={intl.formatMessage({ id: "performer_image" })}
           className="performer-image"
           result={image}
+          images={images}
           onChange={(value) => setImage(value)}
         />
         <ScrapedInputGroupRow

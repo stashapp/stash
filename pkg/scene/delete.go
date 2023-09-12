@@ -7,6 +7,7 @@ import (
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 )
@@ -104,15 +105,6 @@ func (d *FileDeleter) MarkMarkerFiles(scene *models.Scene, seconds int) error {
 	return d.Files(files)
 }
 
-type Destroyer interface {
-	Destroy(ctx context.Context, id int) error
-}
-
-type MarkerDestroyer interface {
-	FindBySceneID(ctx context.Context, sceneID int) ([]*models.SceneMarker, error)
-	Destroy(ctx context.Context, id int) error
-}
-
 // Destroy deletes a scene and its associated relationships from the
 // database.
 func (s *Service) Destroy(ctx context.Context, scene *models.Scene, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
@@ -166,6 +158,7 @@ func (s *Service) deleteFiles(ctx context.Context, scene *models.Scene, fileDele
 		}
 
 		const deleteFile = true
+		logger.Info("Deleting scene file: ", f.Path)
 		if err := file.Destroy(ctx, s.File, f, fileDeleter.Deleter, deleteFile); err != nil {
 			return err
 		}
@@ -188,7 +181,7 @@ func (s *Service) deleteFiles(ctx context.Context, scene *models.Scene, fileDele
 // DestroyMarker deletes the scene marker from the database and returns a
 // function that removes the generated files, to be executed after the
 // transaction is successfully committed.
-func DestroyMarker(ctx context.Context, scene *models.Scene, sceneMarker *models.SceneMarker, qb MarkerDestroyer, fileDeleter *FileDeleter) error {
+func DestroyMarker(ctx context.Context, scene *models.Scene, sceneMarker *models.SceneMarker, qb models.SceneMarkerDestroyer, fileDeleter *FileDeleter) error {
 	if err := qb.Destroy(ctx, sceneMarker.ID); err != nil {
 		return err
 	}

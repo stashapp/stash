@@ -32,8 +32,13 @@ func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input
 	return client.SubmitStashBoxFingerprints(ctx, input.SceneIds, boxes[input.StashBoxIndex].Endpoint)
 }
 
-func (r *mutationResolver) StashBoxBatchPerformerTag(ctx context.Context, input manager.StashBoxBatchPerformerTagInput) (string, error) {
+func (r *mutationResolver) StashBoxBatchPerformerTag(ctx context.Context, input manager.StashBoxBatchTagInput) (string, error) {
 	jobID := manager.GetInstance().StashBoxBatchPerformerTag(ctx, input)
+	return strconv.Itoa(jobID), nil
+}
+
+func (r *mutationResolver) StashBoxBatchStudioTag(ctx context.Context, input manager.StashBoxBatchTagInput) (string, error) {
+	jobID := manager.GetInstance().StashBoxBatchStudioTag(ctx, input)
 	return strconv.Itoa(jobID), nil
 }
 
@@ -48,7 +53,7 @@ func (r *mutationResolver) SubmitStashBoxSceneDraft(ctx context.Context, input S
 
 	id, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting id: %w", err)
 	}
 
 	var res *string
@@ -90,7 +95,7 @@ func (r *mutationResolver) SubmitStashBoxPerformerDraft(ctx context.Context, inp
 
 	id, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting id: %w", err)
 	}
 
 	var res *string

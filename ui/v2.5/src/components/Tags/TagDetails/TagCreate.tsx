@@ -60,7 +60,9 @@ const TagCreate: React.FC = () => {
       <div className="tag-details col-md-8">
         <div className="text-center logo-container">
           {encodingImage ? (
-            <LoadingIndicator message="Encoding image..." />
+            <LoadingIndicator
+              message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+            />
           ) : (
             renderImage()
           )}

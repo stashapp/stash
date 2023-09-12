@@ -40,6 +40,7 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MinGW. For examp
 
 * `make pre-ui` - Installs the UI dependencies. This only needs to be run once after cloning the repository, or if the dependencies are updated.
 * `make generate` - Generates Go and UI GraphQL files. Requires `make pre-ui` to have been run.
+* `make generate-stash-box-client` - Generate Go files for the Stash-box client code.
 * `make ui` - Builds the UI. Requires `make pre-ui` to have been run.
 * `make stash` - Builds the `stash` binary (make sure to build the UI as well... see below)
 * `make stash-release` - Builds a release version the `stash` binary, with debug information removed
