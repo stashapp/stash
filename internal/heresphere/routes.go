@@ -73,6 +73,10 @@ func (rs Routes) Routes() chi.Router {
 	return r
 }
 
+var (
+	idMap = make(map[string]string)
+)
+
 /*
  * This is a video playback event
  * Intended for server-sided script playback.
@@ -95,10 +99,15 @@ func (rs Routes) heresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
 		newDuration += (newTime - scn.ResumeTime)
 	}
 
-	if err := updatePlayCount(r.Context(), scn, event, rs.TxnManager, rs.Repository.Scene); err != nil {
-		logger.Errorf("Heresphere HeresphereVideoEvent updatePlayCount error: %s\n", err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	previousID := idMap[r.RemoteAddr]
+	if previousID != event.Id || event.Event == HeresphereEventClose {
+		if b, err := updatePlayCount(r.Context(), scn, event, rs.TxnManager, rs.Repository.Scene); err != nil {
+			logger.Errorf("Heresphere HeresphereVideoEvent updatePlayCount error: %s\n", err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		} else if b {
+			idMap[r.RemoteAddr] = event.Id
+		}
 	}
 
 	if err := txn.WithTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {

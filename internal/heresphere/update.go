@@ -22,13 +22,12 @@ func updateRating(user HeresphereAuthReq, ret *scene.UpdateSet) (bool, error) {
 /*
  * Modifies the scene PlayCount
  */
-func updatePlayCount(ctx context.Context, scn *models.Scene, event HeresphereVideoEvent, txnManager txn.Manager, fqb models.SceneReaderWriter) error {
+func updatePlayCount(ctx context.Context, scn *models.Scene, event HeresphereVideoEvent, txnManager txn.Manager, fqb models.SceneReaderWriter) (bool, error) {
 	if per, err := getMinPlayPercent(); err == nil {
 		newTime := event.Time / 1000
 		file := scn.Files.Primary()
 
-		// TODO: Need temporal memory, we need to track "Open" videos to do this properly
-		if scn.PlayCount == 0 && file != nil && newTime/file.Duration > float64(per)/100.0 {
+		if file != nil && newTime/file.Duration > float64(per)/100.0 {
 			ret := &scene.UpdateSet{
 				ID:      scn.ID,
 				Partial: models.NewScenePartial(),
@@ -36,16 +35,14 @@ func updatePlayCount(ctx context.Context, scn *models.Scene, event HeresphereVid
 			ret.Partial.PlayCount.Set = true
 			ret.Partial.PlayCount.Value = scn.PlayCount + 1
 
-			if err := txn.WithTxn(ctx, txnManager, func(ctx context.Context) error {
+			return true, txn.WithTxn(ctx, txnManager, func(ctx context.Context) error {
 				_, err := ret.Update(ctx, fqb)
 				return err
-			}); err != nil {
-				return err
-			}
+			})
 		}
 	}
 
-	return nil
+	return false, nil
 }
 
 /*
