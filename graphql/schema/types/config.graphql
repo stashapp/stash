@@ -373,6 +373,9 @@ input ConfigInterfaceInput {
   "If true, studio overlays will be shown as text instead of logo images"
   showStudioAsText: Boolean
 
+  "If true, file path will show below the title in the scene list"
+  showFilePathInSceneList: Boolean
+
   "Custom CSS"
   css: String
   cssEnabled: Boolean
@@ -445,6 +448,9 @@ type ConfigInterfaceResult {
 
   "If true, studio overlays will be shown as text instead of logo images"
   showStudioAsText: Boolean
+
+  "If true, file path will show below the title in the scene list"
+  showFilePathInSceneList: Boolean
 
   "Custom CSS"
   css: String

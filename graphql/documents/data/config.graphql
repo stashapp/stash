@@ -71,6 +71,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   autostartVideoOnPlaySelected
   continuePlaylistDefault
   showStudioAsText
+  showFilePathInSceneList
   css
   cssEnabled
   javascript

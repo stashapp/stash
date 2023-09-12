@@ -676,6 +676,12 @@
           "show_studio_as_text": "Show Studios as text"
         }
       },
+      "scene_list_table": {
+        "heading": "Scene List Table",
+        "options": {
+          "show_file_path_in_scene_list": "Show File Path"
+        }
+      },
       "scene_player": {
         "heading": "Scene Player",
         "options": {

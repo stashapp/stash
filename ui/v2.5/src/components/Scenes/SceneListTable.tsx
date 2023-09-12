@@ -8,6 +8,7 @@ import { FormattedMessage } from "react-intl";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import SceneQueue from "src/models/sceneQueue";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface ISceneListTableProps {
   scenes: GQL.SlimSceneDataFragment[];
@@ -19,6 +20,8 @@ interface ISceneListTableProps {
 export const SceneListTable: React.FC<ISceneListTableProps> = (
   props: ISceneListTableProps
 ) => {
+  const { configuration } = React.useContext(ConfigurationContext);
+
   const renderTags = (tags: Partial<GQL.TagDataFragment>[]) =>
     tags.map((tag) => (
       <Link key={tag.id} to={NavUtils.makeTagScenesUrl(tag)}>
@@ -59,6 +62,9 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
 
     const file = scene.files.length > 0 ? scene.files[0] : undefined;
 
+    const showFilePath =
+      configuration?.interface.showFilePathInSceneList && file?.path;
+
     const title = objectTitle(scene);
     return (
       <tr key={scene.id}>
@@ -97,6 +103,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
           <Link to={sceneLink}>
             <h5>{title}</h5>
           </Link>
+          {showFilePath && <small>{file.path}</small>}
         </td>
         <td>{scene.rating100 ? scene.rating100 : ""}</td>
         <td>{file?.duration && TextUtils.secondsToTimestamp(file.duration)}</td>

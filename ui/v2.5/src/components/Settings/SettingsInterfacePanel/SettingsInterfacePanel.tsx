@@ -271,6 +271,15 @@ export const SettingsInterfacePanel: React.FC = () => {
         />
       </SettingSection>
 
+      <SettingSection headingID="config.ui.scene_list_table.heading">
+        <BooleanSetting
+          id="show-file-path"
+          headingID="config.ui.scene_list_table.options.show_file_path_in_scene_list"
+          checked={iface.showFilePathInSceneList ?? undefined}
+          onChange={(v) => saveInterface({ showFilePathInSceneList: v })}
+        />
+      </SettingSection>
+
       <SettingSection headingID="config.ui.scene_player.heading">
         <BooleanSetting
           id="enable-chromecast"

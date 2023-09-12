@@ -14,6 +14,10 @@ The Scene Wall and Marker pages display scene preview videos by default. This ca
 
 By default, a scene's studio will be shown as an image overlay. Checking this option changes this to display studios as a text name instead.
 
+## Show File Path
+
+By default, no file path will be shown in the scene list. Checking this option changes this to display the file path below the title.
+
 ## Scene Player options
 
 By default, scene videos do not automatically start when navigating to the scenes page. Checking the "Auto-start video" option changes this to auto play scene videos.

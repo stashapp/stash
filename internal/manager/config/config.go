@@ -163,6 +163,7 @@ const (
 	autostartVideoOnPlaySelectedDefault = true
 	ContinuePlaylistDefault             = "continue_playlist_default"
 	ShowStudioAsText                    = "show_studio_as_text"
+	ShowFilePathInSceneList             = "show_file_path_in_scene_list"
 	CSSEnabled                          = "cssEnabled"
 	JavascriptEnabled                   = "javascriptEnabled"
 	CustomLocalesEnabled                = "customLocalesEnabled"
@@ -1039,6 +1040,10 @@ func (i *Instance) GetContinuePlaylistDefault() bool {
 
 func (i *Instance) GetShowStudioAsText() bool {
 	return i.getBool(ShowStudioAsText)
+}
+
+func (i *Instance) GetShowFilePathInSceneList() bool {
+	return i.getBool(ShowFilePathInSceneList)
 }
 
 func (i *Instance) getSlideshowDelay() int {
