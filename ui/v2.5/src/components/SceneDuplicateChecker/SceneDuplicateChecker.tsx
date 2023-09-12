@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Button,
   ButtonGroup,
@@ -67,10 +67,6 @@ export const SceneDuplicateChecker: React.FC = () => {
     {}
   );
 
-  const pageSizes = [
-    10, 20, 30, 40, 50, 100, 150, 200, 250, 500, 750, 1000, 1250, 1500,
-  ];
-
   const { data, loading, refetch } = GQL.useFindDuplicateScenesQuery({
     fetchPolicy: "no-cache",
     variables: {
@@ -78,6 +74,8 @@ export const SceneDuplicateChecker: React.FC = () => {
       duration_diff: durationDiff,
     },
   });
+
+  const scenes = data?.findDuplicateScenes ?? [];
 
   const { data: missingPhash } = GQL.useFindScenesQuery({
     variables: {
@@ -101,10 +99,27 @@ export const SceneDuplicateChecker: React.FC = () => {
   const [mergeScenes, setMergeScenes] =
     useState<{ id: string; title: string }[]>();
 
+  const pageOptions = useMemo(() => {
+    const pageSizes = [
+      10, 20, 30, 40, 50, 100, 150, 200, 250, 500, 750, 1000, 1250, 1500,
+    ];
+
+    const filteredSizes = pageSizes.filter((s, i) => {
+      return scenes.length > s || i == 0 || scenes.length > pageSizes[i - 1];
+    });
+
+    return filteredSizes.map((size) => {
+      return (
+        <option key={size} value={size}>
+          {size}
+        </option>
+      );
+    });
+  }, [scenes.length]);
+
   if (loading) return <LoadingIndicator />;
   if (!data) return <ErrorMessage error="Error searching for duplicates." />;
 
-  const scenes = data?.findDuplicateScenes ?? [];
   const filteredScenes = scenes.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
@@ -125,21 +140,6 @@ export const SceneDuplicateChecker: React.FC = () => {
     }
     history.push({ search: newQuery.toString() });
   };
-
-  function generatePageOptions(sizes: number[], total: number) {
-    const opts = [];
-    for (let i = 0; i < sizes.length; i++) {
-      const size = sizes[i];
-      if (size > total) break;
-
-      opts.push(
-        <option key={size} value={size}>
-          {size}
-        </option>
-      );
-    }
-    return opts;
-  }
 
   const resetCheckboxSelection = () => {
     const updatedScenes: Record<string, boolean> = {};
@@ -557,7 +557,7 @@ export const SceneDuplicateChecker: React.FC = () => {
             resetCheckboxSelection();
           }}
         >
-          {generatePageOptions(pageSizes, scenes.length)}
+          {pageOptions}
         </Form.Control>
       </div>
     );
