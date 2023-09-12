@@ -395,19 +395,19 @@ export const SettingsContext: React.FC = ({ children }) => {
 
   // saves the configuration if no further changes are made after a half second
   const saveHSPConfig = useDebounce(async (input: GQL.ConfigHspInput) => {
-      try {
-        setUpdateSuccess(undefined);
-        await updateHSPConfig({
-          variables: {
-            input,
-          },
-        });
+    try {
+      setUpdateSuccess(undefined);
+      await updateHSPConfig({
+        variables: {
+          input,
+        },
+      });
 
-        setPendingHSP(undefined);
-        onSuccess();
-      } catch (e) {
-        setSaveError(e);
-      }
+      setPendingHSP(undefined);
+      onSuccess();
+    } catch (e) {
+      setSaveError(e);
+    }
   }, 500);
 
   useEffect(() => {
