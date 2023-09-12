@@ -735,7 +735,9 @@ export const SceneDuplicateChecker: React.FC = () => {
               <Form.Check
                 type="checkbox"
                 id="chkSafeSelect"
-                label="Only select if all codecs match in the duplicate group"
+                label={intl.formatMessage({
+                  id: "dupe_check.only_select_matching_codecs",
+                })}
                 checked={chkSafeSelect}
                 onChange={(e) => {
                   setChkSafeSelect(e.target.checked);
