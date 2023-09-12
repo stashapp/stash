@@ -926,7 +926,7 @@
     },
     "search_accuracy_label": "Search Accuracy",
     "title": "Duplicate Scenes",
-    "select_options" : "Select Options",
+    "select_options" : "Select Options…",
     "select_all_but_largest_file": "Select every file in each duplicated group, except the largest file",
     "select_none": "Select None",
     "select_oldest": "Select the oldest file in the duplicate group",

@@ -4,6 +4,7 @@ import {
   ButtonGroup,
   Card,
   Col,
+  Dropdown,
   Form,
   OverlayTrigger,
   Row,
@@ -46,7 +47,6 @@ const defaultDurationDiff = "1";
 export const SceneDuplicateChecker: React.FC = () => {
   const intl = useIntl();
   const history = useHistory();
-  const selectionType = "selectNone";
   const query = new URLSearchParams(history.location.search);
   const currentPage = Number.parseInt(query.get("page") ?? "1", 10);
   const pageSize = Number.parseInt(query.get("size") ?? "20", 10);
@@ -59,8 +59,6 @@ export const SceneDuplicateChecker: React.FC = () => {
   const [isMultiDelete, setIsMultiDelete] = useState(false);
   const [deletingScenes, setDeletingScenes] = useState(false);
   const [editingScenes, setEditingScenes] = useState(false);
-  const [currentSelectionType, setCurrentSelectionType] =
-    useState(selectionType);
   const [chkSafeSelect, setChkSafeSelect] = useState(true);
 
   const [checkedScenes, setCheckedScenes] = useState<Record<string, boolean>>(
@@ -149,7 +147,6 @@ export const SceneDuplicateChecker: React.FC = () => {
     });
 
     setCheckedScenes(updatedScenes);
-    setCurrentSelectionType("selectNone");
   };
 
   function onDeleteDialogClosed(deleted: boolean) {
@@ -703,66 +700,36 @@ export const SceneDuplicateChecker: React.FC = () => {
           </Form.Group>
           <Form.Group>
             <Row noGutters>
-              <Form.Label>
-                <FormattedMessage id="dupe_check.select_options" />
-              </Form.Label>
-              <Row noGutters>
-                <Col xs="12">
-                  <Form.Control
-                    as="select"
-                    onChange={(e) => {
-                      const oldest = true;
-                      switch (e.target.value) {
-                        case "selectNone":
-                          resetCheckboxSelection();
-                          break;
-
-                        case "selectLargest":
-                          onSelectLargestClick();
-                          break;
-
-                        case "selectOldest":
-                          onSelectByAge(oldest);
-                          break;
-
-                        case "selectYoungest":
-                          onSelectByAge(!oldest);
-                          break;
-
-                        default:
-                        // Default case
-                      }
-
-                      setCurrentSelectionType(e.target.value);
-                    }}
-                    defaultValue="selectNone"
-                    value={currentSelectionType}
-                    className="input-control ml-4"
-                  >
-                    <option value="selectNone">
+              <Col xs="12">
+                <Dropdown className="">
+                  <Dropdown.Toggle variant="secondary">
+                    <FormattedMessage id="dupe_check.select_options" />
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu className="bg-secondary text-white">
+                    <Dropdown.Item onClick={() => resetCheckboxSelection()}>
                       {intl.formatMessage({ id: "dupe_check.select_none" })}
-                    </option>
+                    </Dropdown.Item>
 
-                    <option value="selectLargest">
+                    <Dropdown.Item onClick={() => onSelectLargestClick()}>
                       {intl.formatMessage({
                         id: "dupe_check.select_all_but_largest_file",
                       })}
-                    </option>
+                    </Dropdown.Item>
 
-                    <option value="selectOldest">
+                    <Dropdown.Item onClick={() => onSelectByAge(true)}>
                       {intl.formatMessage({
                         id: "dupe_check.select_oldest",
                       })}
-                    </option>
+                    </Dropdown.Item>
 
-                    <option value="selectYoungest">
+                    <Dropdown.Item onClick={() => onSelectByAge(false)}>
                       {intl.formatMessage({
                         id: "dupe_check.select_youngest",
                       })}
-                    </option>
-                  </Form.Control>
-                </Col>
-              </Row>
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
+              </Col>
             </Row>
             <Row noGutters>
               <Form.Check
