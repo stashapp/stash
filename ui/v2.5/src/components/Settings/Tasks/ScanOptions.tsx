@@ -30,7 +30,7 @@ export const ScanOptions: React.FC<IScanOptions> = ({
     <>
       <BooleanSetting
         id="rescan-gallery-zips"
-        headingID="config.tasks.force_rescan_gallery_zips"
+        headingID="config.tasks.force_rescan_zips"
         checked={forceRescanZips ?? false}
         onChange={(v) => setOptions({ forceRescanZips: v })}
       />
