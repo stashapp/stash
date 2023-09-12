@@ -4,7 +4,7 @@ import {
   createStringCriterionOption,
   createDateCriterionOption,
   createMandatoryTimestampCriterionOption,
-  createPathCriterionOption,
+  createDurationCriterionOption,
 } from "./criteria/criterion";
 import { HasMarkersCriterionOption } from "./criteria/has-markers";
 import { SceneIsMissingCriterionOption } from "./criteria/is-missing";
@@ -28,6 +28,7 @@ import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
 import { CaptionsCriterionOption } from "./criteria/captions";
 import { StashIDCriterionOption } from "./criteria/stash-ids";
 import { RatingCriterionOption } from "./criteria/rating";
+import { PathCriterionOption } from "./criteria/path";
 
 const defaultSortBy = "date";
 const sortByOptions = [
@@ -60,7 +61,7 @@ const displayModeOptions = [
 const criterionOptions = [
   createStringCriterionOption("title"),
   createStringCriterionOption("code", "scene_code"),
-  createPathCriterionOption("path"),
+  PathCriterionOption,
   createStringCriterionOption("details"),
   createStringCriterionOption("director"),
   createMandatoryStringCriterionOption("oshash", "media_info.hash"),
@@ -73,9 +74,9 @@ const criterionOptions = [
   ResolutionCriterionOption,
   createStringCriterionOption("video_codec"),
   createStringCriterionOption("audio_codec"),
-  createMandatoryNumberCriterionOption("duration"),
-  createMandatoryNumberCriterionOption("resume_time"),
-  createMandatoryNumberCriterionOption("play_duration"),
+  createDurationCriterionOption("duration"),
+  createDurationCriterionOption("resume_time"),
+  createDurationCriterionOption("play_duration"),
   createMandatoryNumberCriterionOption("play_count"),
   HasMarkersCriterionOption,
   SceneIsMissingCriterionOption,

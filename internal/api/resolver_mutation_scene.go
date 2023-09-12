@@ -186,16 +186,7 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 
-	// prefer urls over url
-	if translator.hasField("urls") {
-		updatedScene.URLs = translator.updateStrings(input.Urls, "urls")
-	} else if translator.hasField("url") {
-		var urls []string
-		if input.URL != nil {
-			urls = []string{*input.URL}
-		}
-		updatedScene.URLs = translator.updateStrings(urls, "url")
-	}
+	updatedScene.URLs = translator.optionalURLs(input.Urls, input.URL)
 
 	updatedScene.PrimaryFileID, err = translator.fileIDPtrFromString(input.PrimaryFileID)
 	if err != nil {
@@ -342,16 +333,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 
-	// prefer urls over url
-	if translator.hasField("urls") {
-		updatedScene.URLs = translator.updateStringsBulk(input.Urls, "urls")
-	} else if translator.hasField("url") {
-		var urls []string
-		if input.URL != nil {
-			urls = []string{*input.URL}
-		}
-		updatedScene.URLs = translator.updateStrings(urls, "url")
-	}
+	updatedScene.URLs = translator.optionalURLsBulk(input.Urls, input.URL)
 
 	updatedScene.PerformerIDs, err = translator.updateIdsBulk(input.PerformerIds, "performer_ids")
 	if err != nil {

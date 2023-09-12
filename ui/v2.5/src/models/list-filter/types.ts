@@ -1,5 +1,4 @@
 // NOTE: add new enum values to the end, to ensure existing data
-
 // is not impacted
 export enum DisplayMode {
   Grid,
@@ -60,38 +59,51 @@ export interface IPhashDistanceValue {
 }
 
 export function criterionIsHierarchicalLabelValue(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value: any
+  value: unknown
 ): value is IHierarchicalLabelValue {
-  return typeof value === "object" && "items" in value && "depth" in value;
+  return (
+    typeof value === "object" && !!value && "items" in value && "depth" in value
+  );
 }
 
-export function criterionIsNumberValue(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value: any
-): value is INumberValue {
-  return typeof value === "object" && "value" in value && "value2" in value;
+export function criterionIsNumberValue(value: unknown): value is INumberValue {
+  return (
+    typeof value === "object" &&
+    !!value &&
+    "value" in value &&
+    "value2" in value
+  );
 }
 
 export function criterionIsStashIDValue(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value: any
+  value: unknown
 ): value is IStashIDValue {
-  return typeof value === "object" && "endpoint" in value && "stashID" in value;
+  return (
+    typeof value === "object" &&
+    !!value &&
+    "endpoint" in value &&
+    "stashID" in value
+  );
 }
 
-export function criterionIsDateValue(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value: any
-): value is IDateValue {
-  return typeof value === "object" && "value" in value && "value2" in value;
+export function criterionIsDateValue(value: unknown): value is IDateValue {
+  return (
+    typeof value === "object" &&
+    !!value &&
+    "value" in value &&
+    "value2" in value
+  );
 }
 
 export function criterionIsTimestampValue(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value: any
+  value: unknown
 ): value is ITimestampValue {
-  return typeof value === "object" && "value" in value && "value2" in value;
+  return (
+    typeof value === "object" &&
+    !!value &&
+    "value" in value &&
+    "value2" in value
+  );
 }
 
 export interface IOptionType {
@@ -101,7 +113,6 @@ export interface IOptionType {
 }
 
 export type CriterionType =
-  | "none"
   | "path"
   | "rating"
   | "rating100"

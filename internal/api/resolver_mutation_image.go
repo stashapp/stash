@@ -108,7 +108,6 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 
 	updatedImage.Title = translator.optionalString(input.Title, "title")
 	updatedImage.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
-	updatedImage.URL = translator.optionalString(input.URL, "url")
 	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
 
 	updatedImage.Date, err = translator.optionalDate(input.Date, "date")
@@ -119,6 +118,8 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
+
+	updatedImage.URLs = translator.optionalURLs(input.Urls, input.URL)
 
 	updatedImage.PrimaryFileID, err = translator.fileIDPtrFromString(input.PrimaryFileID)
 	if err != nil {
@@ -203,7 +204,6 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 
 	updatedImage.Title = translator.optionalString(input.Title, "title")
 	updatedImage.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
-	updatedImage.URL = translator.optionalString(input.URL, "url")
 	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
 
 	updatedImage.Date, err = translator.optionalDate(input.Date, "date")
@@ -214,6 +214,8 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
+
+	updatedImage.URLs = translator.optionalURLsBulk(input.Urls, input.URL)
 
 	updatedImage.GalleryIDs, err = translator.updateIdsBulk(input.GalleryIds, "gallery_ids")
 	if err != nil {

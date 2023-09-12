@@ -356,8 +356,8 @@ export const SettingsInterfacePanel: React.FC = () => {
           onChange={(v) => saveInterface({ maximumLoopDuration: v })}
           renderField={(value, setValue) => (
             <DurationInput
-              numericValue={value}
-              onValueChange={(duration) => setValue(duration ?? 0)}
+              value={value}
+              setValue={(duration) => setValue(duration ?? 0)}
             />
           )}
           renderValue={(v) => {
