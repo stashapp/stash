@@ -177,18 +177,12 @@ export const SceneDuplicateChecker: React.FC = () => {
 
   // Helper to get file date
 
-  const findOldestFile = (
+  const findFirstFileByAge = (
     oldest: boolean,
     compareScenes: GQL.SlimSceneDataFragment[]
   ) => {
     let selectedFile: GQL.VideoFileDataFragment;
-    let oldestTimestamp: Date;
-
-    if (oldest) {
-      oldestTimestamp = new Date(2100, 12, 31);
-    } else {
-      oldestTimestamp = new Date(1900, 12, 31);
-    }
+    let oldestTimestamp: Date | undefined = undefined;
 
     // Loop through all files
     for (const file of compareScenes.flatMap((s) => s.files)) {
@@ -197,12 +191,12 @@ export const SceneDuplicateChecker: React.FC = () => {
 
       // Check if current file is oldest
       if (oldest) {
-        if (timestamp < oldestTimestamp) {
+        if (oldestTimestamp === undefined || timestamp < oldestTimestamp) {
           oldestTimestamp = timestamp;
           selectedFile = file;
         }
       } else {
-        if (timestamp > oldestTimestamp) {
+        if (oldestTimestamp === undefined || timestamp > oldestTimestamp) {
           oldestTimestamp = timestamp;
           selectedFile = file;
         }
@@ -225,10 +219,7 @@ export const SceneDuplicateChecker: React.FC = () => {
     const checkedArray: Record<string, boolean> = {};
 
     filteredScenes.forEach((group) => {
-      // const codecs = group.map(s => s.files[0]?.video_codec);
-      const allSameCodec = checkSameCodec(group);
-
-      if (chkSafeSelect && !allSameCodec) {
+      if (chkSafeSelect && !checkSameCodec(group)) {
         return;
       }
       // Find largest scene in group a
@@ -238,31 +229,30 @@ export const SceneDuplicateChecker: React.FC = () => {
           checkedArray[scene.id] = true;
         }
       });
-
-      setCheckedScenes(checkedArray);
     });
+
+    setCheckedScenes(checkedArray);
   };
 
-  const onSelectOldestClick = (oldestFileSelection: boolean) => {
+  const onSelectByAge = (oldest: boolean) => {
     setSelectedScenes([]);
+
     const checkedArray: Record<string, boolean> = {};
 
     filteredScenes.forEach((group) => {
-      const allSameCodec = checkSameCodec(group);
-
-      if (chkSafeSelect && !allSameCodec) {
+      if (chkSafeSelect && !checkSameCodec(group)) {
         return;
       }
 
-      const largest = findOldestFile(oldestFileSelection, group);
+      const oldestScene = findFirstFileByAge(oldest, group);
       group.forEach((scene) => {
-        if (scene !== largest) {
+        if (scene !== oldestScene) {
           checkedArray[scene.id] = true;
         }
       });
-
-      setCheckedScenes(checkedArray);
     });
+
+    setCheckedScenes(checkedArray);
   };
 
   const handleCheck = (checked: boolean, sceneID: string) => {
@@ -721,6 +711,7 @@ export const SceneDuplicateChecker: React.FC = () => {
                   <Form.Control
                     as="select"
                     onChange={(e) => {
+                      const oldest = true;
                       switch (e.target.value) {
                         case "selectNone":
                           resetCheckboxSelection();
@@ -731,11 +722,11 @@ export const SceneDuplicateChecker: React.FC = () => {
                           break;
 
                         case "selectOldest":
-                          onSelectOldestClick(true);
+                          onSelectByAge(oldest);
                           break;
 
                         case "selectYoungest":
-                          onSelectOldestClick(false);
+                          onSelectByAge(!oldest);
                           break;
 
                         default:
