@@ -135,7 +135,7 @@ type ScanOptions struct {
 
 	ParallelTasks int
 
-	// When true zip in path will be rescanned
+	// When true files in path will be rescanned
 	ForceRescan bool
 }
 
