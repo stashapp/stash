@@ -536,6 +536,8 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 	}
 
 	var values *models.ScenePartial
+	var coverImageData []byte
+
 	if input.Values != nil {
 		translator := changesetTranslator{
 			inputMap: getNamedUpdateInputMap(ctx, "input.values"),
@@ -545,18 +547,17 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 		if err != nil {
 			return nil, err
 		}
+
+		if input.Values.CoverImage != nil {
+			var err error
+			coverImageData, err = utils.ProcessImageInput(ctx, *input.Values.CoverImage)
+			if err != nil {
+				return nil, fmt.Errorf("processing cover image: %w", err)
+			}
+		}
 	} else {
 		v := models.NewScenePartial()
 		values = &v
-	}
-
-	var coverImageData []byte
-	if input.Values.CoverImage != nil {
-		var err error
-		coverImageData, err = utils.ProcessImageInput(ctx, *input.Values.CoverImage)
-		if err != nil {
-			return nil, fmt.Errorf("processing cover image: %w", err)
-		}
 	}
 
 	var ret *models.Scene
