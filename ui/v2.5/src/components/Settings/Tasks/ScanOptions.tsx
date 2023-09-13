@@ -29,7 +29,6 @@ export const ScanOptions: React.FC<IScanOptions> = ({
 
   useEffect(() => {
     options.forceRescan = forceRescanInstance;
-    console.log("useEffect");
   }, [forceRescanInstance, options]);
 
   return (
