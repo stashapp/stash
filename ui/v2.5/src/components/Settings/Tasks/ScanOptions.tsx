@@ -25,11 +25,12 @@ export const ScanOptions: React.FC<IScanOptions> = ({
     setOptionsState({ ...options, ...input });
   }
 
-  const [forceRescanZipsInstance, setForceRescanZipsInstance] = useState(false);
+  const [forceRescanInstance, setForceRescanInstance] = useState(false);
 
   useEffect(() => {
-    setOptions({ forceRescan: forceRescanZipsInstance });
-  }, [forceRescanZipsInstance]);
+    options.forceRescan = forceRescanInstance;
+    console.log("useEffect");
+  }, [forceRescanInstance, options]);
 
   return (
     <>
@@ -84,8 +85,8 @@ export const ScanOptions: React.FC<IScanOptions> = ({
       <BooleanSetting
         id="rescan-gallery-zips"
         headingID="config.tasks.force_rescan"
-        checked={forceRescanZipsInstance}
-        onChange={() => setForceRescanZipsInstance(!forceRescanZipsInstance)}
+        checked={forceRescanInstance ?? false}
+        onChange={() => setForceRescanInstance(!forceRescanInstance)}
       />
     </>
   );
