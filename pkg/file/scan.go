@@ -136,7 +136,7 @@ type ScanOptions struct {
 	ParallelTasks int
 
 	// When true zip in path will be rescanned
-	ForceRescanZips bool
+	ForceRescan bool
 }
 
 // Scan starts the scanning process.
@@ -1001,11 +1001,10 @@ func (s *scanJob) setMissingFingerprints(ctx context.Context, f scanFile, existi
 func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing models.File) (models.File, error) {
 	base := existing.Base()
 	path := base.Path
-	isZip := s.isZipFile(path)
 
 	fileModTime := f.ModTime
 	updated := !fileModTime.Equal(base.ModTime)
-	forceRescan := isZip && s.options.ForceRescanZips
+	forceRescan := s.options.ForceRescan
 
 	if !updated && !forceRescan {
 		return s.onUnchangedFile(ctx, f, existing)

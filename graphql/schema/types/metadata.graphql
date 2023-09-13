@@ -88,8 +88,8 @@ input ScanMetadataInput {
 
   "Strip file extension from title"
   stripFileExtension: Boolean @deprecated(reason: "Not implemented")
-  "Forces a rescan on Gallery zips"
-  forceRescanZips: Boolean
+  "Forces a rescan on files"
+  forceRescan: Boolean
   "Generate covers during scan"
   scanGenerateCovers: Boolean
   "Generate previews during scan"
@@ -114,8 +114,8 @@ type ScanMetadataOptions {
   useFileMetadata: Boolean! @deprecated(reason: "Not implemented")
   "Strip file extension from title"
   stripFileExtension: Boolean! @deprecated(reason: "Not implemented")
-  "Forces a rescan on Gallery zips"
-  forceRescanZips: Boolean!
+  "Forces a rescan on files"
+  forceRescan: Boolean!
   "Generate covers during scan"
   scanGenerateCovers: Boolean!
   "Generate previews during scan"

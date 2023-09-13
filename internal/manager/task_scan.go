@@ -67,7 +67,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 		HandlerRequiredFilters: []file.Filter{
 			newHandlerRequiredFilter(instance.Config),
 		},
-		ForceRescanZips: c.GetDefaultScanSettings().ForceRescanZips,
+		ForceRescan: c.GetDefaultScanSettings().ForceRescan,
 	}, progress)
 
 	taskQueue.Close()

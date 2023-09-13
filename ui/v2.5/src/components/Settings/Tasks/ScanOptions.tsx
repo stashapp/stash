@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { BooleanSetting } from "../Inputs";
 
@@ -12,7 +12,6 @@ export const ScanOptions: React.FC<IScanOptions> = ({
   setOptions: setOptionsState,
 }) => {
   const {
-    forceRescanZips,
     scanGenerateCovers,
     scanGeneratePreviews,
     scanGenerateImagePreviews,
@@ -26,14 +25,14 @@ export const ScanOptions: React.FC<IScanOptions> = ({
     setOptionsState({ ...options, ...input });
   }
 
+  const [forceRescanZipsInstance, setForceRescanZipsInstance] = useState(false);
+
+  useEffect(() => {
+    setOptions({ forceRescan: forceRescanZipsInstance });
+  }, [forceRescanZipsInstance]);
+
   return (
     <>
-      <BooleanSetting
-        id="rescan-gallery-zips"
-        headingID="config.tasks.force_rescan_zips"
-        checked={forceRescanZips ?? false}
-        onChange={(v) => setOptions({ forceRescanZips: v })}
-      />
       <BooleanSetting
         id="scan-generate-covers"
         headingID="config.tasks.generate_video_covers_during_scan"
@@ -81,6 +80,12 @@ export const ScanOptions: React.FC<IScanOptions> = ({
         checked={scanGenerateClipPreviews ?? false}
         headingID="config.tasks.generate_clip_previews_during_scan"
         onChange={(v) => setOptions({ scanGenerateClipPreviews: v })}
+      />
+      <BooleanSetting
+        id="rescan-gallery-zips"
+        headingID="config.tasks.force_rescan"
+        checked={forceRescanZipsInstance}
+        onChange={() => setForceRescanZipsInstance(!forceRescanZipsInstance)}
       />
     </>
   );
