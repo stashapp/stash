@@ -23,19 +23,22 @@ type phashConfig struct {
 	rows           int
 }
 
-func Generate(encoder *ffmpeg.FFMpeg, videoFile *models.VideoFile) (*uint64, error) {
+func Generate(encoder *ffmpeg.FFMpeg, videoFile *models.VideoFile, overrideDuration ...bool) (*uint64, error) {
 	// Original algorithm hardcoded to 5 x 5 grid
 	columns := 5
 
-	// Per https://github.com/stashapp/stash/issues/3722 use a smaller amount of frames when
-	// the length of the video is shorter. Aiming for around 7 seconds between frames.
-	switch {
-	case videoFile.Duration < 46:
-		columns = 2
-	case videoFile.Duration < 91:
-		columns = 3
-	case videoFile.Duration < 151:
-		columns = 4
+	// For a temporary time, allowing the override to genereate old style hashes for short videos
+	if len(overrideDuration) == 0 || !overrideDuration[0] {
+		// Per https://github.com/stashapp/stash/issues/3722 use a smaller amount of frames when
+		// the length of the video is shorter. Aiming for around 7 seconds between frames.
+		switch {
+		case videoFile.Duration < 46:
+			columns = 2
+		case videoFile.Duration < 91:
+			columns = 3
+		case videoFile.Duration < 151:
+			columns = 4
+		}
 	}
 
 	config := phashConfig{

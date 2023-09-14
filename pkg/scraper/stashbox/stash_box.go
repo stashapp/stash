@@ -173,6 +173,15 @@ func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, ids []int)
 						Algorithm: graphql.FingerprintAlgorithmPhash,
 					})
 				}
+
+				phashOld := f.Fingerprints.GetInt64(models.FingerprintTypePhashOld)
+				if phashOld != 0 {
+					phashOldStr := utils.PhashToString(phashOld)
+					sceneFPs = append(sceneFPs, &graphql.FingerprintQueryInput{
+						Hash:      phashOldStr,
+						Algorithm: graphql.FingerprintAlgorithmPhash,
+					})
+				}
 			}
 
 			fingerprints = append(fingerprints, sceneFPs)
