@@ -431,6 +431,7 @@
       "empty_queue": "No tasks are currently running.",
       "export_to_json": "Exports the database content into JSON format in the metadata directory.",
       "force_rescan": "Force rescan",
+      "force_rescan_tooltip": "Ignore the modtime check and rescan every file in the path. Only use when attempting to pick up missing changes or resolve issues.",
       "generate": {
         "generating_from_paths": "Generating for scenes from the following paths",
         "generating_scenes": "Generating for {num} {scene}"

@@ -84,6 +84,7 @@ export const ScanOptions: React.FC<IScanOptions> = ({
       <BooleanSetting
         id="rescan-gallery-zips"
         headingID="config.tasks.force_rescan"
+        tooltipID="config.tasks.force_rescan_tooltip"
         checked={forceRescanInstance ?? false}
         onChange={() => setForceRescanInstance(!forceRescanInstance)}
       />
