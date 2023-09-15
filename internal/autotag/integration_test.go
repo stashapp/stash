@@ -362,10 +362,7 @@ func makeImage(expectedResult bool) *models.Image {
 }
 
 func createImage(ctx context.Context, w models.ImageWriter, o *models.Image, f *models.ImageFile) error {
-	err := w.Create(ctx, &models.ImageCreateInput{
-		Image:   o,
-		FileIDs: []models.FileID{f.ID},
-	})
+	err := w.Create(ctx, o, []models.FileID{f.ID})
 
 	if err != nil {
 		return fmt.Errorf("Failed to create image with path '%s': %s", f.Path, err.Error())

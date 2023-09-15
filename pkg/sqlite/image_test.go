@@ -15,6 +15,11 @@ import (
 )
 
 func loadImageRelationships(ctx context.Context, expected models.Image, actual *models.Image) error {
+	if expected.URLs.Loaded() {
+		if err := actual.LoadURLs(ctx, db.Image); err != nil {
+			return err
+		}
+	}
 	if expected.GalleryIDs.Loaded() {
 		if err := actual.LoadGalleryIDs(ctx, db.Image); err != nil {
 			return err
@@ -74,7 +79,7 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 				Title:        title,
 				Rating:       &rating,
 				Date:         &date,
-				URL:          url,
+				URLs:         models.NewRelatedStrings([]string{url}),
 				Organized:    true,
 				OCounter:     ocounter,
 				StudioID:     &studioIDs[studioIdxWithImage],
@@ -92,7 +97,7 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 				Title:     title,
 				Rating:    &rating,
 				Date:      &date,
-				URL:       url,
+				URLs:      models.NewRelatedStrings([]string{url}),
 				Organized: true,
 				OCounter:  ocounter,
 				StudioID:  &studioIDs[studioIdxWithImage],
@@ -152,10 +157,7 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 				}
 			}
 			s := tt.newObject
-			if err := qb.Create(ctx, &models.ImageCreateInput{
-				Image:   &s,
-				FileIDs: fileIDs,
-			}); (err != nil) != tt.wantErr {
+			if err := qb.Create(ctx, &s, fileIDs); (err != nil) != tt.wantErr {
 				t.Errorf("imageQueryBuilder.Create() error = %v, wantErr = %v", err, tt.wantErr)
 			}
 
@@ -232,7 +234,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 				ID:           imageIDs[imageIdxWithGallery],
 				Title:        title,
 				Rating:       &rating,
-				URL:          url,
+				URLs:         models.NewRelatedStrings([]string{url}),
 				Date:         &date,
 				Organized:    true,
 				OCounter:     ocounter,
@@ -381,7 +383,7 @@ func clearImagePartial() models.ImagePartial {
 	return models.ImagePartial{
 		Title:        models.OptionalString{Set: true, Null: true},
 		Rating:       models.OptionalInt{Set: true, Null: true},
-		URL:          models.OptionalString{Set: true, Null: true},
+		URLs:         &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
 		Date:         models.OptionalDate{Set: true, Null: true},
 		StudioID:     models.OptionalInt{Set: true, Null: true},
 		GalleryIDs:   &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
@@ -412,9 +414,12 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 			"full",
 			imageIDs[imageIdx1WithGallery],
 			models.ImagePartial{
-				Title:     models.NewOptionalString(title),
-				Rating:    models.NewOptionalInt(rating),
-				URL:       models.NewOptionalString(url),
+				Title:  models.NewOptionalString(title),
+				Rating: models.NewOptionalInt(rating),
+				URLs: &models.UpdateStrings{
+					Values: []string{url},
+					Mode:   models.RelationshipUpdateModeSet,
+				},
 				Date:      models.NewOptionalDate(date),
 				Organized: models.NewOptionalBool(true),
 				OCounter:  models.NewOptionalInt(ocounter),
@@ -438,7 +443,7 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 				ID:        imageIDs[imageIdx1WithGallery],
 				Title:     title,
 				Rating:    &rating,
-				URL:       url,
+				URLs:      models.NewRelatedStrings([]string{url}),
 				Date:      &date,
 				Organized: true,
 				OCounter:  ocounter,
@@ -1520,6 +1525,67 @@ func imageQueryQ(ctx context.Context, t *testing.T, sqb models.ImageReader, q st
 	images = queryImages(ctx, t, sqb, nil, &filter)
 
 	assert.Len(t, images, totalImages)
+}
+
+func verifyImageQuery(t *testing.T, filter models.ImageFilterType, verifyFn func(ctx context.Context, s *models.Image)) {
+	t.Helper()
+	withTxn(func(ctx context.Context) error {
+		t.Helper()
+		sqb := db.Image
+
+		images := queryImages(ctx, t, sqb, &filter, nil)
+
+		// assume it should find at least one
+		assert.Greater(t, len(images), 0)
+
+		for _, image := range images {
+			verifyFn(ctx, image)
+		}
+
+		return nil
+	})
+}
+
+func TestImageQueryURL(t *testing.T) {
+	const imageIdx = 1
+	imageURL := getImageStringValue(imageIdx, urlField)
+	urlCriterion := models.StringCriterionInput{
+		Value:    imageURL,
+		Modifier: models.CriterionModifierEquals,
+	}
+	filter := models.ImageFilterType{
+		URL: &urlCriterion,
+	}
+
+	verifyFn := func(ctx context.Context, o *models.Image) {
+		t.Helper()
+
+		if err := o.LoadURLs(ctx, db.Image); err != nil {
+			t.Errorf("Error loading scene URLs: %v", err)
+		}
+
+		urls := o.URLs.List()
+		var url string
+		if len(urls) > 0 {
+			url = urls[0]
+		}
+
+		verifyString(t, url, urlCriterion)
+	}
+
+	verifyImageQuery(t, filter, verifyFn)
+	urlCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyImageQuery(t, filter, verifyFn)
+	urlCriterion.Modifier = models.CriterionModifierMatchesRegex
+	urlCriterion.Value = "image_.*1_URL"
+	verifyImageQuery(t, filter, verifyFn)
+	urlCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifyImageQuery(t, filter, verifyFn)
+	urlCriterion.Modifier = models.CriterionModifierIsNull
+	urlCriterion.Value = ""
+	verifyImageQuery(t, filter, verifyFn)
+	urlCriterion.Modifier = models.CriterionModifierNotNull
+	verifyImageQuery(t, filter, verifyFn)
 }
 
 func TestImageQueryPath(t *testing.T) {

@@ -62,8 +62,6 @@ func (i *Importer) PreImport(ctx context.Context) error {
 
 func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 	newImage := models.Image{
-		// Checksum: imageJSON.Checksum,
-		// Path:     i.Path,
 		PerformerIDs: models.NewRelatedIDs([]int{}),
 		TagIDs:       models.NewRelatedIDs([]int{}),
 		GalleryIDs:   models.NewRelatedIDs([]int{}),
@@ -81,9 +79,12 @@ func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 	if imageJSON.Rating != 0 {
 		newImage.Rating = &imageJSON.Rating
 	}
-	if imageJSON.URL != "" {
-		newImage.URL = imageJSON.URL
+	if len(imageJSON.URLs) > 0 {
+		newImage.URLs = models.NewRelatedStrings(imageJSON.URLs)
+	} else if imageJSON.URL != "" {
+		newImage.URLs = models.NewRelatedStrings([]string{imageJSON.URL})
 	}
+
 	if imageJSON.Date != "" {
 		d, err := models.ParseDate(imageJSON.Date)
 		if err == nil {
@@ -148,11 +149,10 @@ func (i *Importer) populateStudio(ctx context.Context) error {
 }
 
 func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
-	newStudio := &models.Studio{
-		Name: name,
-	}
+	newStudio := models.NewStudio()
+	newStudio.Name = name
 
-	err := i.StudioWriter.Create(ctx, newStudio)
+	err := i.StudioWriter.Create(ctx, &newStudio)
 	if err != nil {
 		return 0, err
 	}
@@ -261,7 +261,8 @@ func (i *Importer) populatePerformers(ctx context.Context) error {
 func (i *Importer) createPerformers(ctx context.Context, names []string) ([]*models.Performer, error) {
 	var ret []*models.Performer
 	for _, name := range names {
-		newPerformer := *models.NewPerformer(name)
+		newPerformer := models.NewPerformer()
+		newPerformer.Name = name
 
 		err := i.PerformerWriter.Create(ctx, &newPerformer)
 		if err != nil {
@@ -331,10 +332,7 @@ func (i *Importer) Create(ctx context.Context) (*int, error) {
 		fileIDs = append(fileIDs, f.Base().ID)
 	}
 
-	err := i.ReaderWriter.Create(ctx, &models.ImageCreateInput{
-		Image:   &i.image,
-		FileIDs: fileIDs,
-	})
+	err := i.ReaderWriter.Create(ctx, &i.image, fileIDs)
 	if err != nil {
 		return nil, fmt.Errorf("error creating image: %v", err)
 	}
@@ -394,14 +392,15 @@ func importTags(ctx context.Context, tagWriter models.TagFinderCreator, names []
 func createTags(ctx context.Context, tagWriter models.TagCreator, names []string) ([]*models.Tag, error) {
 	var ret []*models.Tag
 	for _, name := range names {
-		newTag := models.NewTag(name)
+		newTag := models.NewTag()
+		newTag.Name = name
 
-		err := tagWriter.Create(ctx, newTag)
+		err := tagWriter.Create(ctx, &newTag)
 		if err != nil {
 			return nil, err
 		}
 
-		ret = append(ret, newTag)
+		ret = append(ret, &newTag)
 	}
 
 	return ret, nil

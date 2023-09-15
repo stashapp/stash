@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -27,7 +26,7 @@ type ScanCreatorUpdater interface {
 	GetFiles(ctx context.Context, relatedID int) ([]models.File, error)
 	GetGalleryIDs(ctx context.Context, relatedID int) ([]int, error)
 
-	Create(ctx context.Context, newImage *models.ImageCreateInput) error
+	Create(ctx context.Context, newImage *models.Image, fileIDs []models.FileID) error
 	UpdatePartial(ctx context.Context, id int, updatedImage models.ImagePartial) (*models.Image, error)
 	AddFileID(ctx context.Context, id int, fileID models.FileID) error
 }
@@ -109,16 +108,12 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 		}
 	} else {
 		// create a new image
-		now := time.Now()
-		newImage := &models.Image{
-			CreatedAt:  now,
-			UpdatedAt:  now,
-			GalleryIDs: models.NewRelatedIDs([]int{}),
-		}
+		newImage := models.NewImage()
+		newImage.GalleryIDs = models.NewRelatedIDs([]int{})
 
 		logger.Infof("%s doesn't exist. Creating new image...", f.Base().Path)
 
-		g, err := h.getGalleryToAssociate(ctx, newImage, f)
+		g, err := h.getGalleryToAssociate(ctx, &newImage, f)
 		if err != nil {
 			return err
 		}
@@ -128,25 +123,23 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 			logger.Infof("Adding %s to gallery %s", f.Base().Path, g.Path)
 		}
 
-		if err := h.CreatorUpdater.Create(ctx, &models.ImageCreateInput{
-			Image:   newImage,
-			FileIDs: []models.FileID{imageFile.ID},
-		}); err != nil {
+		if err := h.CreatorUpdater.Create(ctx, &newImage, []models.FileID{imageFile.ID}); err != nil {
 			return fmt.Errorf("creating new image: %w", err)
 		}
 
 		// update the gallery updated at timestamp if applicable
 		if g != nil {
-			if _, err := h.GalleryFinder.UpdatePartial(ctx, g.ID, models.GalleryPartial{
-				UpdatedAt: models.NewOptionalTime(time.Now()),
-			}); err != nil {
+			galleryPartial := models.GalleryPartial{
+				UpdatedAt: models.NewOptionalTime(newImage.UpdatedAt),
+			}
+			if _, err := h.GalleryFinder.UpdatePartial(ctx, g.ID, galleryPartial); err != nil {
 				return fmt.Errorf("updating gallery updated at timestamp: %w", err)
 			}
 		}
 
 		h.PluginCache.RegisterPostHooks(ctx, newImage.ID, plugin.ImageCreatePost, nil, nil)
 
-		existing = []*models.Image{newImage}
+		existing = []*models.Image{&newImage}
 	}
 
 	// remove the old thumbnail if the checksum changed - we'll regenerate it
@@ -215,17 +208,20 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 
 		if changed {
 			// always update updated_at time
-			if _, err := h.CreatorUpdater.UpdatePartial(ctx, i.ID, models.ImagePartial{
-				GalleryIDs: galleryIDs,
-				UpdatedAt:  models.NewOptionalTime(time.Now()),
-			}); err != nil {
+			imagePartial := models.NewImagePartial()
+			imagePartial.GalleryIDs = galleryIDs
+
+			if _, err := h.CreatorUpdater.UpdatePartial(ctx, i.ID, imagePartial); err != nil {
 				return fmt.Errorf("updating image: %w", err)
 			}
 
 			if g != nil {
-				if _, err := h.GalleryFinder.UpdatePartial(ctx, g.ID, models.GalleryPartial{
-					UpdatedAt: models.NewOptionalTime(time.Now()),
-				}); err != nil {
+				galleryPartial := models.GalleryPartial{
+					// set UpdatedAt directly instead of using NewGalleryPartial, to ensure
+					// that the linked gallery has the same UpdatedAt time as this image
+					UpdatedAt: imagePartial.UpdatedAt,
+				}
+				if _, err := h.GalleryFinder.UpdatePartial(ctx, g.ID, galleryPartial); err != nil {
 					return fmt.Errorf("updating gallery updated at timestamp: %w", err)
 				}
 			}
@@ -252,16 +248,12 @@ func (h *ScanHandler) getOrCreateFolderBasedGallery(ctx context.Context, f model
 	}
 
 	// create a new folder-based gallery
-	now := time.Now()
-	newGallery := &models.Gallery{
-		FolderID:  &folderID,
-		CreatedAt: now,
-		UpdatedAt: now,
-	}
+	newGallery := models.NewGallery()
+	newGallery.FolderID = &folderID
 
 	logger.Infof("Creating folder-based gallery for %s", filepath.Dir(f.Base().Path))
 
-	if err := h.GalleryFinder.Create(ctx, newGallery, nil); err != nil {
+	if err := h.GalleryFinder.Create(ctx, &newGallery, nil); err != nil {
 		return nil, fmt.Errorf("creating folder based gallery: %w", err)
 	}
 
@@ -269,11 +261,11 @@ func (h *ScanHandler) getOrCreateFolderBasedGallery(ctx context.Context, f model
 
 	// it's possible that there are other images in the folder that
 	// need to be added to the new gallery. Find and add them now.
-	if err := h.associateFolderImages(ctx, newGallery); err != nil {
+	if err := h.associateFolderImages(ctx, &newGallery); err != nil {
 		return nil, fmt.Errorf("associating existing folder images: %w", err)
 	}
 
-	return newGallery, nil
+	return &newGallery, nil
 }
 
 func (h *ScanHandler) associateFolderImages(ctx context.Context, g *models.Gallery) error {
@@ -285,13 +277,13 @@ func (h *ScanHandler) associateFolderImages(ctx context.Context, g *models.Galle
 	for _, ii := range i {
 		logger.Infof("Adding %s to gallery %s", ii.Path, g.Path)
 
-		if _, err := h.CreatorUpdater.UpdatePartial(ctx, ii.ID, models.ImagePartial{
-			GalleryIDs: &models.UpdateIDs{
-				IDs:  []int{g.ID},
-				Mode: models.RelationshipUpdateModeAdd,
-			},
-			UpdatedAt: models.NewOptionalTime(time.Now()),
-		}); err != nil {
+		imagePartial := models.NewImagePartial()
+		imagePartial.GalleryIDs = &models.UpdateIDs{
+			IDs:  []int{g.ID},
+			Mode: models.RelationshipUpdateModeAdd,
+		}
+
+		if _, err := h.CreatorUpdater.UpdatePartial(ctx, ii.ID, imagePartial); err != nil {
 			return fmt.Errorf("updating image: %w", err)
 		}
 	}
@@ -311,21 +303,17 @@ func (h *ScanHandler) getOrCreateZipBasedGallery(ctx context.Context, zipFile mo
 	}
 
 	// create a new zip-based gallery
-	now := time.Now()
-	newGallery := &models.Gallery{
-		CreatedAt: now,
-		UpdatedAt: now,
-	}
+	newGallery := models.NewGallery()
 
 	logger.Infof("%s doesn't exist. Creating new gallery...", zipFile.Base().Path)
 
-	if err := h.GalleryFinder.Create(ctx, newGallery, []models.FileID{zipFile.Base().ID}); err != nil {
+	if err := h.GalleryFinder.Create(ctx, &newGallery, []models.FileID{zipFile.Base().ID}); err != nil {
 		return nil, fmt.Errorf("creating zip-based gallery: %w", err)
 	}
 
 	h.PluginCache.RegisterPostHooks(ctx, newGallery.ID, plugin.GalleryCreatePost, nil, nil)
 
-	return newGallery, nil
+	return &newGallery, nil
 }
 
 func (h *ScanHandler) getOrCreateGallery(ctx context.Context, f models.File) (*models.Gallery, error) {
