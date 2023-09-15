@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { BooleanSetting } from "../Inputs";
 
