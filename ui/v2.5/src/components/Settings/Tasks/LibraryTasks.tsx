@@ -188,7 +188,11 @@ export const LibraryTasks: React.FC = () => {
       configureDefaults({
         variables: {
           input: {
-            scan: scanOptions,
+            scan: {
+              ...scanOptions,
+              // always default forceRescan to false
+              forceRescan: false,
+            },
           },
         },
       });
@@ -264,7 +268,11 @@ export const LibraryTasks: React.FC = () => {
       configureDefaults({
         variables: {
           input: {
-            generate: generateOptions,
+            generate: {
+              ...generateOptions,
+              // always default overwrite to false
+              overwrite: false,
+            },
           },
         },
       });

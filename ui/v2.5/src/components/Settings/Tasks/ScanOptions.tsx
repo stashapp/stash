@@ -19,17 +19,12 @@ export const ScanOptions: React.FC<IScanOptions> = ({
     scanGeneratePhashes,
     scanGenerateThumbnails,
     scanGenerateClipPreviews,
+    forceRescan,
   } = options;
 
   function setOptions(input: Partial<GQL.ScanMetadataInput>) {
     setOptionsState({ ...options, ...input });
   }
-
-  const [forceRescanInstance, setForceRescanInstance] = useState(false);
-
-  useEffect(() => {
-    options.forceRescan = forceRescanInstance;
-  }, [forceRescanInstance, options]);
 
   return (
     <>
@@ -82,11 +77,11 @@ export const ScanOptions: React.FC<IScanOptions> = ({
         onChange={(v) => setOptions({ scanGenerateClipPreviews: v })}
       />
       <BooleanSetting
-        id="rescan-gallery-zips"
+        id="force-rescan"
         headingID="config.tasks.force_rescan"
         tooltipID="config.tasks.force_rescan_tooltip"
-        checked={forceRescanInstance ?? false}
-        onChange={() => setForceRescanInstance(!forceRescanInstance)}
+        checked={forceRescan ?? false}
+        onChange={(v) => setOptions({ forceRescan: v })}
       />
     </>
   );
