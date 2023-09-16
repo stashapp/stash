@@ -150,8 +150,8 @@ func handleAddMarker(ctx context.Context, rs Routes, tag HeresphereVideoTag, sce
 
 			// Search for tag
 			if markers, err := rs.Repository.SceneMarker.FindBySceneID(ctx, scene.ID); err == nil {
-				i, e := strconv.Atoi(*tagId)
-				if e == nil {
+				i, err := strconv.Atoi(*tagId)
+				if err == nil {
 					// Note: Currently we search if a marker exists.
 					// If it doesn't, create it.
 					// This also means that markers CANNOT be deleted using the api.
@@ -167,7 +167,7 @@ func handleAddMarker(ctx context.Context, rs Routes, tag HeresphereVideoTag, sce
 		}
 
 		return err
-	}); tagId != nil {
+	}); err != nil || tagId != nil {
 		// Create marker
 		i, e := strconv.Atoi(*tagId)
 		if e == nil {
@@ -181,7 +181,9 @@ func handleAddMarker(ctx context.Context, rs Routes, tag HeresphereVideoTag, sce
 				UpdatedAt:    currentTime,
 			}
 
-			if rs.Repository.SceneMarker.Create(ctx, &newMarker) != nil {
+			if err := txn.WithTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
+				return rs.Repository.SceneMarker.Create(ctx, &newMarker)
+			}); err != nil {
 				logger.Errorf("Heresphere handleTags SceneMarker.Create error: %s\n", err.Error())
 			}
 		}

@@ -63,12 +63,11 @@ func generateMarkerTags(ctx context.Context, rs Routes, scene *models.Scene) []H
 			}
 		}
 
-		genTag := HeresphereVideoTag{
+		tags = append(tags, HeresphereVideoTag{
 			Name:  fmt.Sprintf("Marker:%s", tagName),
 			Start: mark.Seconds * 1000,
 			End:   (mark.Seconds + 60) * 1000,
-		}
-		tags = append(tags, genTag)
+		})
 	}
 
 	return tags
@@ -84,10 +83,9 @@ func generateTagTags(ctx context.Context, rs Routes, scene *models.Scene) []Here
 	}
 
 	for _, tag := range tagIDs {
-		genTag := HeresphereVideoTag{
+		tags = append(tags, HeresphereVideoTag{
 			Name: fmt.Sprintf("Tag:%s", tag.Name),
-		}
-		tags = append(tags, genTag)
+		})
 	}
 
 	return tags
@@ -104,10 +102,12 @@ func generatePerformerTags(ctx context.Context, rs Routes, scene *models.Scene) 
 	}
 
 	for _, perf := range perfIDs {
-		genTag := HeresphereVideoTag{
+		tags = append(tags, HeresphereVideoTag{
 			Name: fmt.Sprintf("Performer:%s", perf.Name),
-		}
-		tags = append(tags, genTag)
+		})
+		tags = append(tags, HeresphereVideoTag{
+			Name: fmt.Sprintf("HasFavoritedPerformer:%s", strconv.FormatBool(perf.Favorite)),
+		})
 	}
 
 	return tags
@@ -125,10 +125,9 @@ func generateGalleryTags(ctx context.Context, rs Routes, scene *models.Scene) []
 		}
 
 		for _, gallery := range galleries {
-			genTag := HeresphereVideoTag{
+			tags = append(tags, HeresphereVideoTag{
 				Name: fmt.Sprintf("Gallery:%s", gallery.Title),
-			}
-			tags = append(tags, genTag)
+			})
 		}
 	}
 
@@ -153,10 +152,9 @@ func generateMovieTags(ctx context.Context, rs Routes, scene *models.Scene) []He
 		}
 
 		for _, movie := range movies {
-			genTag := HeresphereVideoTag{
+			tags = append(tags, HeresphereVideoTag{
 				Name: fmt.Sprintf("Movie:%s", movie.Name),
-			}
-			tags = append(tags, genTag)
+			})
 		}
 	}
 
@@ -174,10 +172,9 @@ func generateStudioTag(ctx context.Context, rs Routes, scene *models.Scene) []He
 			return tags
 		}
 
-		genTag := HeresphereVideoTag{
+		tags = append(tags, HeresphereVideoTag{
 			Name: fmt.Sprintf("Studio:%s", studio.Name),
-		}
-		tags = append(tags, genTag)
+		})
 	}
 
 	return tags
@@ -189,25 +186,23 @@ func generateInteractiveTag(scene *models.Scene) []HeresphereVideoTag {
 
 	primaryFile := scene.Files.Primary()
 	if primaryFile != nil {
-		genTag := HeresphereVideoTag{
+		tags = append(tags, HeresphereVideoTag{
 			Name: fmt.Sprintf("%s:%s",
 				string(HeresphereCustomTagInteractive),
 				strconv.FormatBool(primaryFile.Interactive),
 			),
-		}
-		tags = append(tags, genTag)
+		})
 
 		if primaryFile.Interactive {
 			funSpeed := 0
 			if primaryFile.InteractiveSpeed != nil {
 				funSpeed = *primaryFile.InteractiveSpeed
 			}
-			genTag := HeresphereVideoTag{
+			tags = append(tags, HeresphereVideoTag{
 				Name: fmt.Sprintf("Funspeed:%d",
 					funSpeed,
 				),
-			}
-			tags = append(tags, genTag)
+			})
 		}
 	}
 
@@ -219,10 +214,9 @@ func generateDirectorTag(scene *models.Scene) []HeresphereVideoTag {
 	tags := []HeresphereVideoTag{}
 
 	if len(scene.Director) > 0 {
-		genTag := HeresphereVideoTag{
+		tags = append(tags, HeresphereVideoTag{
 			Name: fmt.Sprintf("Director:%s", scene.Director),
-		}
-		tags = append(tags, genTag)
+		})
 	}
 
 	return tags
@@ -233,12 +227,11 @@ func generateRatingTag(scene *models.Scene) []HeresphereVideoTag {
 	tags := []HeresphereVideoTag{}
 
 	if scene.Rating != nil {
-		genTag := HeresphereVideoTag{
+		tags = append(tags, HeresphereVideoTag{
 			Name: fmt.Sprintf("Rating:%d",
 				models.Rating100To5(*scene.Rating),
 			),
-		}
-		tags = append(tags, genTag)
+		})
 	}
 
 	return tags
@@ -246,82 +239,64 @@ func generateRatingTag(scene *models.Scene) []HeresphereVideoTag {
 
 func generateWatchedTag(scene *models.Scene) []HeresphereVideoTag {
 	// Generate watched tag
-	tags := []HeresphereVideoTag{}
-
-	genTag := HeresphereVideoTag{
-		Name: fmt.Sprintf("%s:%s",
-			string(HeresphereCustomTagWatched),
-			strconv.FormatBool(scene.PlayCount > 0),
-		),
+	return []HeresphereVideoTag{
+		{
+			Name: fmt.Sprintf("%s:%s",
+				string(HeresphereCustomTagWatched),
+				strconv.FormatBool(scene.PlayCount > 0),
+			),
+		},
 	}
-	tags = append(tags, genTag)
-
-	return tags
 }
 
 func generateOrganizedTag(scene *models.Scene) []HeresphereVideoTag {
 	// Generate organized tag
-	tags := []HeresphereVideoTag{}
-
-	genTag := HeresphereVideoTag{
-		Name: fmt.Sprintf("%s:%s",
-			string(HeresphereCustomTagOrganized),
-			strconv.FormatBool(scene.Organized),
-		),
+	return []HeresphereVideoTag{
+		{
+			Name: fmt.Sprintf("%s:%s",
+				string(HeresphereCustomTagOrganized),
+				strconv.FormatBool(scene.Organized),
+			),
+		},
 	}
-	tags = append(tags, genTag)
-
-	return tags
 }
 
 func generateRatedTag(scene *models.Scene) []HeresphereVideoTag {
 	// Generate rated tag
-	tags := []HeresphereVideoTag{}
-
-	genTag := HeresphereVideoTag{
-		Name: fmt.Sprintf("%s:%s",
-			string(HeresphereCustomTagRated),
-			strconv.FormatBool(scene.Rating != nil),
-		),
+	return []HeresphereVideoTag{
+		{
+			Name: fmt.Sprintf("%s:%s",
+				string(HeresphereCustomTagRated),
+				strconv.FormatBool(scene.Rating != nil),
+			),
+		},
 	}
-	tags = append(tags, genTag)
-
-	return tags
 }
 
 func generateOrgasmedTag(scene *models.Scene) []HeresphereVideoTag {
 	// Generate orgasmed tag
-	tags := []HeresphereVideoTag{}
-
-	genTag := HeresphereVideoTag{
-		Name: fmt.Sprintf("%s:%s",
-			string(HeresphereCustomTagOrgasmed),
-			strconv.FormatBool(scene.OCounter > 0),
-		),
+	return []HeresphereVideoTag{
+		{
+			Name: fmt.Sprintf("%s:%s",
+				string(HeresphereCustomTagOrgasmed),
+				strconv.FormatBool(scene.OCounter > 0),
+			),
+		},
 	}
-	tags = append(tags, genTag)
-
-	return tags
 }
 
 func generatePlayCountTag(scene *models.Scene) []HeresphereVideoTag {
-	tags := []HeresphereVideoTag{}
-
-	playCountTag := HeresphereVideoTag{
-		Name: fmt.Sprintf("%s:%d", string(HeresphereCustomTagPlayCount), scene.PlayCount),
+	return []HeresphereVideoTag{
+		{
+			Name: fmt.Sprintf("%s:%d", string(HeresphereCustomTagPlayCount), scene.PlayCount),
+		},
 	}
-	tags = append(tags, playCountTag)
-
-	return tags
 }
 
 func generateOCounterTag(scene *models.Scene) []HeresphereVideoTag {
-	tags := []HeresphereVideoTag{}
-
-	oCounterTag := HeresphereVideoTag{
-		Name: fmt.Sprintf("%s:%d", string(HeresphereCustomTagOCounter), scene.OCounter),
+	return []HeresphereVideoTag{
+		{
+			Name: fmt.Sprintf("%s:%d", string(HeresphereCustomTagOCounter), scene.OCounter),
+		},
 	}
-	tags = append(tags, oCounterTag)
-
-	return tags
 }
