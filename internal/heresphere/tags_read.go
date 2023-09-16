@@ -101,14 +101,17 @@ func generatePerformerTags(ctx context.Context, rs Routes, scene *models.Scene) 
 		return tags
 	}
 
+	hasFavPerformer := false
 	for _, perf := range perfIDs {
 		tags = append(tags, HeresphereVideoTag{
 			Name: fmt.Sprintf("Performer:%s", perf.Name),
 		})
-		tags = append(tags, HeresphereVideoTag{
-			Name: fmt.Sprintf("HasFavoritedPerformer:%s", strconv.FormatBool(perf.Favorite)),
-		})
+		hasFavPerformer = hasFavPerformer || perf.Favorite
 	}
+
+	tags = append(tags, HeresphereVideoTag{
+		Name: fmt.Sprintf("HasFavoritedPerformer:%s", strconv.FormatBool(hasFavPerformer)),
+	})
 
 	return tags
 }
