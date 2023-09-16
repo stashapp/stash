@@ -130,7 +130,7 @@ func (m *schema48PreMigrator) fixStudioNames(ctx context.Context) error {
 					}
 				}
 
-				logger.Info("Renaming duplicate studio id %d to %s", id, newName)
+				logger.Infof("Renaming duplicate studio id %d to %s", id, newName)
 				_, err := m.db.Exec("UPDATE studios SET name = ? WHERE id = ?", newName, id)
 				if err != nil {
 					return err
