@@ -73,6 +73,9 @@ const CLASSNAME_NAVSELECTED = `${CLASSNAME_NAV}-selected`;
 const DEFAULT_SLIDESHOW_DELAY = 5000;
 const SECONDS_TO_MS = 1000;
 const MIN_VALID_INTERVAL_SECONDS = 1;
+const MIN_ZOOM = 0.1;
+const SCROLL_ZOOM_TIMEOUT = 250;
+const ZOOM_NONE_EPSILON = 0.015;
 
 interface IProps {
   images: ILightboxImage[];
@@ -120,6 +123,18 @@ export const LightboxComponent: React.FC<IProps> = ({
   const oldImages = useRef<ILightboxImage[]>([]);
 
   const [zoom, setZoom] = useState(1);
+
+  function updateZoom(v: number) {
+    if (v < MIN_ZOOM) {
+      setZoom(MIN_ZOOM);
+    } else if (Math.abs(v - 1) < ZOOM_NONE_EPSILON) {
+      // "snap to 1" effect: if new zoom is close to 1, set to 1
+      setZoom(1);
+    } else {
+      setZoom(v);
+    }
+  }
+
   const [resetPosition, setResetPosition] = useState(false);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -372,6 +387,14 @@ export const LightboxComponent: React.FC<IProps> = ({
       index,
     ]
   );
+
+  const firstScroll = useRef<number | null>(null);
+  const inScrollGroup = useRef(false);
+
+  const debouncedScrollReset = useDebounce(() => {
+    firstScroll.current = null;
+    inScrollGroup.current = false;
+  }, SCROLL_ZOOM_TIMEOUT);
 
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
@@ -842,14 +865,17 @@ export const LightboxComponent: React.FC<IProps> = ({
                     lightboxSettings?.scrollMode ??
                     GQL.ImageLightboxScrollMode.Zoom
                   }
+                  resetPosition={resetPosition}
+                  zoom={i === currentIndex ? zoom : 1}
+                  scrollAttemptsBeforeChange={scrollAttemptsBeforeChange}
+                  firstScroll={firstScroll}
+                  inScrollGroup={inScrollGroup}
+                  current={i === currentIndex}
+                  alignBottom={movingLeft}
+                  setZoom={updateZoom}
+                  debouncedScrollReset={debouncedScrollReset}
                   onLeft={handleLeft}
                   onRight={handleRight}
-                  alignBottom={movingLeft}
-                  zoom={i === currentIndex ? zoom : 1}
-                  current={i === currentIndex}
-                  scrollAttemptsBeforeChange={scrollAttemptsBeforeChange}
-                  setZoom={(v) => setZoom(v)}
-                  resetPosition={resetPosition}
                   isVideo={isVideo(image.visual_files?.[0] ?? {})}
                 />
               ) : undefined}
