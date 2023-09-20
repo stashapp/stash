@@ -1,16 +1,16 @@
 import TextUtils from "src/utils/text";
 import * as GQL from "src/core/generated-graphql";
 
-interface IFile {
+export interface IFile {
   path: string;
 }
 
 interface IObjectWithFiles {
-  files: IFile[];
+  files?: IFile[];
 }
 
-interface IObjectWithTitleFiles extends IObjectWithFiles {
-  title: GQL.Maybe<string>;
+export interface IObjectWithTitleFiles extends IObjectWithFiles {
+  title?: GQL.Maybe<string>;
 }
 
 export function objectTitle(s: Partial<IObjectWithTitleFiles>) {

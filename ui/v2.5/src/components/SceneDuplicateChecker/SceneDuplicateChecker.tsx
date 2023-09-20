@@ -19,7 +19,12 @@ import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { ErrorMessage } from "../Shared/ErrorMessage";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
-import { TagLink } from "../Shared/TagLink";
+import {
+  GalleryLink,
+  MovieLink,
+  SceneMarkerLink,
+  TagLink,
+} from "../Shared/TagLink";
 import { SweatDrops } from "../Shared/SweatDrops";
 import { Pagination } from "src/components/List/Pagination";
 import TextUtils from "src/utils/text";
@@ -349,7 +354,7 @@ export const SceneDuplicateChecker: React.FC = () => {
             src={sceneMovie.movie.front_image_path ?? ""}
           />
         </Link>
-        <TagLink
+        <MovieLink
           key={sceneMovie.movie.id}
           movie={sceneMovie.movie}
           className="d-block"
@@ -377,8 +382,8 @@ export const SceneDuplicateChecker: React.FC = () => {
     if (scene.scene_markers.length <= 0) return;
 
     const popoverContent = scene.scene_markers.map((marker) => {
-      const markerPopover = { ...marker, scene: { id: scene.id } };
-      return <TagLink key={marker.id} marker={markerPopover} />;
+      const markerWithScene = { ...marker, scene: { id: scene.id } };
+      return <SceneMarkerLink key={marker.id} marker={markerWithScene} />;
     });
 
     return (
@@ -410,7 +415,7 @@ export const SceneDuplicateChecker: React.FC = () => {
     if (scene.galleries.length <= 0) return;
 
     const popoverContent = scene.galleries.map((gallery) => (
-      <TagLink key={gallery.id} gallery={gallery} />
+      <GalleryLink key={gallery.id} gallery={gallery} />
     ));
 
     return (

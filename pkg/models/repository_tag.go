@@ -42,6 +42,8 @@ type TagAutoTagQueryer interface {
 // TagCounter provides methods to count tags.
 type TagCounter interface {
 	Count(ctx context.Context) (int, error)
+	CountByParentTagID(ctx context.Context, parentID int) (int, error)
+	CountByChildTagID(ctx context.Context, childID int) (int, error)
 }
 
 // TagCreator provides methods to create tags.
