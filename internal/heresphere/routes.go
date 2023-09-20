@@ -83,25 +83,35 @@ var (
  * But since we dont need that, we just use it for timestamps.
  */
 func (rs Routes) heresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
+	// Get the scene from the request context
 	scn := r.Context().Value(sceneKey).(*models.Scene)
 
+	// Decode the JSON request body into the HeresphereVideoEvent struct
 	var event HeresphereVideoEvent
 	err := json.NewDecoder(r.Body).Decode(&event)
 	if err != nil {
+		// Handle JSON decoding error
 		logger.Errorf("Heresphere HeresphereVideoEvent decode error: %s\n", err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	// Convert time from milliseconds to seconds
 	newTime := event.Time / 1000
 	newDuration := 0.0
-	if newTime > scn.ResumeTime {
+
+	// Calculate new duration if necessary
+	// (if HeresphereEventPlay then its most likely a "skip" event)
+	if newTime > scn.ResumeTime && event.Event != HeresphereEventPlay {
 		newDuration += (newTime - scn.ResumeTime)
 	}
 
+	// Check if the event ID is different from the previous event for the same client
 	previousID := idMap[r.RemoteAddr]
-	if previousID != event.Id || event.Event == HeresphereEventClose {
+	if previousID != event.Id {
+		// Update play count and store the new event ID if needed
 		if b, err := updatePlayCount(r.Context(), scn, event, rs.TxnManager, rs.Repository.Scene); err != nil {
+			// Handle updatePlayCount error
 			logger.Errorf("Heresphere HeresphereVideoEvent updatePlayCount error: %s\n", err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -110,15 +120,18 @@ func (rs Routes) heresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Update the scene activity with the new time and duration
 	if err := txn.WithTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
 		_, err := rs.Repository.Scene.SaveActivity(ctx, scn.ID, &newTime, &newDuration)
 		return err
 	}); err != nil {
+		// Handle SaveActivity error
 		logger.Errorf("Heresphere HeresphereVideoEvent SaveActivity error: %s\n", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// Respond with a successful HTTP status code
 	w.WriteHeader(http.StatusOK)
 }
 
