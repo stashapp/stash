@@ -168,7 +168,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     if (performer.tags.length <= 0) return;
 
     const popoverContent = performer.tags.map((tag) => (
-      <TagLink key={tag.id} tagType="performer" tag={tag} />
+      <TagLink key={tag.id} linkType="performer" tag={tag} />
     ));
 
     return (
