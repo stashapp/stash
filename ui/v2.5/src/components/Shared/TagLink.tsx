@@ -12,6 +12,7 @@ import { markerTitle } from "src/core/markers";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { faFolderTree } from "@fortawesome/free-solid-svg-icons";
 import { Icon } from "../Shared/Icon";
+import { FormattedMessage } from "react-intl";
 
 type SceneMarkerFragment = Pick<GQL.SceneMarker, "id" | "title" | "seconds"> & {
   scene: Pick<GQL.Scene, "id">;
@@ -191,6 +192,7 @@ interface ITagLinkProps {
   className?: string;
   hoverPlacement?: Placement;
   showHierarchyIcon?: boolean;
+  hierarchyTooltipID?: string;
 }
 
 export const TagLink: React.FC<ITagLinkProps> = ({
@@ -199,6 +201,7 @@ export const TagLink: React.FC<ITagLinkProps> = ({
   className,
   hoverPlacement,
   showHierarchyIcon = false,
+  hierarchyTooltipID,
 }) => {
   const link = useMemo(() => {
     switch (linkType) {
@@ -217,20 +220,25 @@ export const TagLink: React.FC<ITagLinkProps> = ({
 
   const title = tag.name || "";
 
+  const tooltip = useMemo(() => {
+    if (!hierarchyTooltipID) {
+      return <></>;
+    }
+
+    return (
+      <Tooltip id="tag-hierarchy-tooltip">
+        <FormattedMessage id={hierarchyTooltipID} />
+      </Tooltip>
+    );
+  }, [hierarchyTooltipID]);
+
   return (
     <CommonLinkComponent link={link} className={className}>
       <TagPopover id={tag.id ?? ""} placement={hoverPlacement}>
         <Link to={link}>
           {title}
           {showHierarchyIcon && (
-            <OverlayTrigger
-              placement="top"
-              overlay={
-                <Tooltip id="tag-hierarchy-tooltip">
-                  Explore tag hierarchy
-                </Tooltip>
-              }
-            >
+            <OverlayTrigger placement="top" overlay={tooltip}>
               <span className="icon-wrapper">
                 <span className="vertical-line">|</span>
                 <Icon icon={faFolderTree} className="tag-icon" />

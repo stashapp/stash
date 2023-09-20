@@ -23,6 +23,7 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag, fullWidth }) => {
             hoverPlacement="bottom"
             linkType="details"
             showHierarchyIcon={p.parent_count !== 0}
+            hierarchyTooltipID="tag_parent_tooltip"
           />
         ))}
       </>
@@ -43,6 +44,7 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag, fullWidth }) => {
             hoverPlacement="bottom"
             linkType="details"
             showHierarchyIcon={c.child_count !== 0}
+            hierarchyTooltipID="tag_sub_tag_tooltip"
           />
         ))}
       </>

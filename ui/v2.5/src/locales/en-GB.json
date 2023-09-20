@@ -1319,6 +1319,8 @@
   "synopsis": "Synopsis",
   "tag": "Tag",
   "tag_count": "Tag Count",
+  "tag_parent_tooltip": "Has parent tags",
+  "tag_sub_tag_tooltip": "Has sub-tags",
   "tags": "Tags",
   "tattoos": "Tattoos",
   "title": "Title",
