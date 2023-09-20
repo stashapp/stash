@@ -900,6 +900,9 @@ func galleryIsMissingCriterionHandler(qb *GalleryStore, isMissing *string) crite
 	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
+			case "url":
+				galleriesURLsTableMgr.join(f, "", "galleries.id")
+				f.addWhere("gallery_urls.url IS NULL")
 			case "scenes":
 				f.addLeftJoin("scenes_galleries", "scenes_join", "scenes_join.gallery_id = galleries.id")
 				f.addWhere("scenes_join.gallery_id IS NULL")
