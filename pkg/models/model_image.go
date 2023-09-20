@@ -13,12 +13,12 @@ type Image struct {
 
 	Title string `json:"title"`
 	// Rating expressed in 1-100 scale
-	Rating    *int   `json:"rating"`
-	Organized bool   `json:"organized"`
-	OCounter  int    `json:"o_counter"`
-	StudioID  *int   `json:"studio_id"`
-	URL       string `json:"url"`
-	Date      *Date  `json:"date"`
+	Rating    *int           `json:"rating"`
+	Organized bool           `json:"organized"`
+	OCounter  int            `json:"o_counter"`
+	StudioID  *int           `json:"studio_id"`
+	URLs      RelatedStrings `json:"urls"`
+	Date      *Date          `json:"date"`
 
 	// transient - not persisted
 	Files         RelatedFiles
@@ -34,6 +34,45 @@ type Image struct {
 	GalleryIDs   RelatedIDs `json:"gallery_ids"`
 	TagIDs       RelatedIDs `json:"tag_ids"`
 	PerformerIDs RelatedIDs `json:"performer_ids"`
+}
+
+func NewImage() Image {
+	currentTime := time.Now()
+	return Image{
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
+	}
+}
+
+type ImagePartial struct {
+	Title OptionalString
+	// Rating expressed in 1-100 scale
+	Rating    OptionalInt
+	URLs      *UpdateStrings
+	Date      OptionalDate
+	Organized OptionalBool
+	OCounter  OptionalInt
+	StudioID  OptionalInt
+	CreatedAt OptionalTime
+	UpdatedAt OptionalTime
+
+	GalleryIDs    *UpdateIDs
+	TagIDs        *UpdateIDs
+	PerformerIDs  *UpdateIDs
+	PrimaryFileID *FileID
+}
+
+func NewImagePartial() ImagePartial {
+	currentTime := time.Now()
+	return ImagePartial{
+		UpdatedAt: NewOptionalTime(currentTime),
+	}
+}
+
+func (i *Image) LoadURLs(ctx context.Context, l URLLoader) error {
+	return i.URLs.load(func() ([]string, error) {
+		return l.GetURLs(ctx, i.ID)
+	})
 }
 
 func (i *Image) LoadFiles(ctx context.Context, l FileLoader) error {
@@ -101,44 +140,4 @@ func (i Image) DisplayName() string {
 	}
 
 	return strconv.Itoa(i.ID)
-}
-
-type ImageCreateInput struct {
-	*Image
-	FileIDs []FileID
-}
-
-type ImagePartial struct {
-	Title OptionalString
-	// Rating expressed in 1-100 scale
-	Rating    OptionalInt
-	URL       OptionalString
-	Date      OptionalDate
-	Organized OptionalBool
-	OCounter  OptionalInt
-	StudioID  OptionalInt
-	CreatedAt OptionalTime
-	UpdatedAt OptionalTime
-
-	GalleryIDs    *UpdateIDs
-	TagIDs        *UpdateIDs
-	PerformerIDs  *UpdateIDs
-	PrimaryFileID *FileID
-}
-
-func NewImagePartial() ImagePartial {
-	updatedTime := time.Now()
-	return ImagePartial{
-		UpdatedAt: NewOptionalTime(updatedTime),
-	}
-}
-
-type Images []*Image
-
-func (i *Images) Append(o interface{}) {
-	*i = append(*i, o.(*Image))
-}
-
-func (i *Images) New() interface{} {
-	return &Image{}
 }

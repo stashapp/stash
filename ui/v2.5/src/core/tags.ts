@@ -17,7 +17,7 @@ export const useTagFilterHook = (tag: GQL.TagDataFragment) => {
     // if tag is already present, then we modify it, otherwise add
     let tagCriterion = filter.criteria.find((c) => {
       return c.criterionOption.type === "tags";
-    }) as TagsCriterion;
+    }) as TagsCriterion | undefined;
 
     if (tagCriterion) {
       if (

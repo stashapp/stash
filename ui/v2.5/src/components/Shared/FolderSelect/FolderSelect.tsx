@@ -5,7 +5,7 @@ import { Icon } from "../Icon";
 import { LoadingIndicator } from "../LoadingIndicator";
 import { useDirectory } from "src/core/StashService";
 import { faEllipsis, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { useDebouncedSetState } from "src/hooks/debounce";
+import { useDebounce } from "src/hooks/debounce";
 
 interface IProps {
   currentDirectory: string;
@@ -44,7 +44,7 @@ export const FolderSelect: React.FC<IProps> = ({
       (error && hideError ? [] : defaultDirectoriesOrEmpty)
     : defaultDirectoriesOrEmpty;
 
-  const debouncedSetDirectory = useDebouncedSetState(setDirectory, 250);
+  const debouncedSetDirectory = useDebounce(setDirectory, 250);
 
   useEffect(() => {
     if (currentDirectory !== directory) {

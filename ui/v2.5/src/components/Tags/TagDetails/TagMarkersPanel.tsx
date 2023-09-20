@@ -21,7 +21,7 @@ export const TagMarkersPanel: React.FC<ITagMarkersPanel> = ({
     // if tag is already present, then we modify it, otherwise add
     let tagCriterion = filter.criteria.find((c) => {
       return c.criterionOption.type === "tags";
-    }) as TagsCriterion;
+    }) as TagsCriterion | undefined;
 
     if (
       tagCriterion &&

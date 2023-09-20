@@ -41,7 +41,7 @@ type Scene {
   details: String
   director: String
   url: String @deprecated(reason: "Use urls")
-  urls: [String!]
+  urls: [String!]!
   date: String
   # rating expressed as 1-5
   rating: Int @deprecated(reason: "Use 1-100 range with rating100")

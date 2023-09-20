@@ -26,7 +26,7 @@ func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) 
 
 		fileIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 		if err != nil {
-			return fmt.Errorf("converting file ids: %w", err)
+			return fmt.Errorf("converting ids: %w", err)
 		}
 
 		switch {
@@ -35,7 +35,7 @@ func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) 
 
 			folderID, err := strconv.Atoi(*input.DestinationFolderID)
 			if err != nil {
-				return fmt.Errorf("invalid folder id %s: %w", *input.DestinationFolderID, err)
+				return fmt.Errorf("converting destination folder id: %w", err)
 			}
 
 			folder, err = folderStore.Find(ctx, models.FolderID(folderID))
@@ -146,7 +146,7 @@ func (r *mutationResolver) validateFileExtensionList(exts []string, oldBasename,
 func (r *mutationResolver) DeleteFiles(ctx context.Context, ids []string) (ret bool, err error) {
 	fileIDs, err := stringslice.StringSliceToIntSlice(ids)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting ids: %w", err)
 	}
 
 	fileDeleter := file.NewDeleter()

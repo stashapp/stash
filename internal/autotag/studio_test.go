@@ -151,10 +151,15 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 
 	for i := range matchingPaths {
 		sceneID := i + 1
-		expectedStudioID := studioID
-		mockSceneReader.On("UpdatePartial", mock.Anything, sceneID, models.ScenePartial{
-			StudioID: models.NewOptionalInt(expectedStudioID),
-		}).Return(nil, nil).Once()
+
+		matchPartial := mock.MatchedBy(func(got models.ScenePartial) bool {
+			expected := models.ScenePartial{
+				StudioID: models.NewOptionalInt(studioID),
+			}
+
+			return scenePartialsEqual(got, expected)
+		})
+		mockSceneReader.On("UpdatePartial", mock.Anything, sceneID, matchPartial).Return(nil, nil).Once()
 	}
 
 	tagger := Tagger{
@@ -249,10 +254,15 @@ func testStudioImages(t *testing.T, tc testStudioCase) {
 
 	for i := range matchingPaths {
 		imageID := i + 1
-		expectedStudioID := studioID
-		mockImageReader.On("UpdatePartial", mock.Anything, imageID, models.ImagePartial{
-			StudioID: models.NewOptionalInt(expectedStudioID),
-		}).Return(nil, nil).Once()
+
+		matchPartial := mock.MatchedBy(func(got models.ImagePartial) bool {
+			expected := models.ImagePartial{
+				StudioID: models.NewOptionalInt(studioID),
+			}
+
+			return imagePartialsEqual(got, expected)
+		})
+		mockImageReader.On("UpdatePartial", mock.Anything, imageID, matchPartial).Return(nil, nil).Once()
 	}
 
 	tagger := Tagger{
@@ -346,10 +356,15 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 
 	for i := range matchingPaths {
 		galleryID := i + 1
-		expectedStudioID := studioID
-		mockGalleryReader.On("UpdatePartial", mock.Anything, galleryID, models.GalleryPartial{
-			StudioID: models.NewOptionalInt(expectedStudioID),
-		}).Return(nil, nil).Once()
+
+		matchPartial := mock.MatchedBy(func(got models.GalleryPartial) bool {
+			expected := models.GalleryPartial{
+				StudioID: models.NewOptionalInt(studioID),
+			}
+
+			return galleryPartialsEqual(got, expected)
+		})
+		mockGalleryReader.On("UpdatePartial", mock.Anything, galleryID, matchPartial).Return(nil, nil).Once()
 	}
 
 	tagger := Tagger{

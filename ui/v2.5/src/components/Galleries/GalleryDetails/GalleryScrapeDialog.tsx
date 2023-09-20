@@ -7,7 +7,10 @@ import {
   ScrapedTextAreaRow,
 } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import clone from "lodash-es/clone";
-import { ScrapeResult } from "src/components/Shared/ScrapeDialog/scrapeResult";
+import {
+  ObjectListScrapeResult,
+  ScrapeResult,
+} from "src/components/Shared/ScrapeDialog/scrapeResult";
 import {
   ScrapedPerformersRow,
   ScrapedStudioRow,
@@ -97,9 +100,9 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
   }
 
   const [performers, setPerformers] = useState<
-    ScrapeResult<GQL.ScrapedPerformer[]>
+    ObjectListScrapeResult<GQL.ScrapedPerformer>
   >(
-    new ScrapeResult<GQL.ScrapedPerformer[]>(
+    new ObjectListScrapeResult<GQL.ScrapedPerformer>(
       sortStoredIdObjects(
         props.galleryPerformers.map((p) => ({
           stored_id: p.id,

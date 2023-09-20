@@ -14,7 +14,7 @@ import (
 func ToBasicJSON(image *models.Image) *jsonschema.Image {
 	newImageJSON := jsonschema.Image{
 		Title:     image.Title,
-		URL:       image.URL,
+		URLs:      image.URLs.List(),
 		CreatedAt: json.JSONTime{Time: image.CreatedAt},
 		UpdatedAt: json.JSONTime{Time: image.UpdatedAt},
 	}
@@ -36,19 +36,6 @@ func ToBasicJSON(image *models.Image) *jsonschema.Image {
 
 	return &newImageJSON
 }
-
-// func getImageFileJSON(image *models.Image) *jsonschema.ImageFile {
-// 	ret := &jsonschema.ImageFile{}
-
-// 	f := image.PrimaryFile()
-
-// 	ret.ModTime = json.JSONTime{Time: f.ModTime}
-// 	ret.Size = f.Size
-// 	ret.Width = f.Width
-// 	ret.Height = f.Height
-
-// 	return ret
-// }
 
 // GetStudioName returns the name of the provided image's studio. It returns an
 // empty string if there is no studio assigned to the image.

@@ -266,7 +266,7 @@ func (sm *StreamManager) getTranscodeStream(ctx *fsutil.LockContext, options Tra
 		// process killing should be handled by command context
 
 		_, err := io.Copy(w, stdout)
-		if err != nil && !errors.Is(err, syscall.EPIPE) {
+		if err != nil && !errors.Is(err, syscall.EPIPE) && !errors.Is(err, syscall.ECONNRESET) {
 			logger.Errorf("[transcode] error serving transcoded video file: %v", err)
 		}
 

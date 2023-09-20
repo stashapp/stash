@@ -20,7 +20,7 @@ func CopyFile(srcpath, dstpath string) (err error) {
 		return err
 	}
 
-	w, err := os.OpenFile(dstpath, os.O_CREATE|os.O_EXCL, 0666)
+	w, err := os.OpenFile(dstpath, os.O_CREATE|os.O_WRONLY|os.O_EXCL, 0666)
 	if err != nil {
 		r.Close() // We need to close the input file as the defer below would not be called.
 		return err
@@ -59,9 +59,9 @@ func SafeMove(src, dst string) error {
 	err := os.Rename(src, dst)
 
 	if err != nil {
-		err = CopyFile(src, dst)
-		if err != nil {
-			return err
+		copyErr := CopyFile(src, dst)
+		if copyErr != nil {
+			return fmt.Errorf("copying file during SaveMove failed with: '%w'; renaming file failed previously with: '%v'", copyErr, err)
 		}
 
 		err = os.Remove(src)

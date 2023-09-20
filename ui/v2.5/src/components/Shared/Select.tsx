@@ -29,7 +29,7 @@ import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import { TagPopover } from "../Tags/TagPopover";
 import { defaultMaxOptionsShown, IUIConfig } from "src/core/config";
-import { useDebouncedSetState } from "src/hooks/debounce";
+import { useDebounce } from "src/hooks/debounce";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { PerformerIDSelect } from "../Performers/PerformerSelect";
 
@@ -352,7 +352,7 @@ export const GallerySelect: React.FC<ITitledSelect> = (props) => {
     value: g.id,
   }));
 
-  const onInputChange = useDebouncedSetState(setQuery, 500);
+  const onInputChange = useDebounce(setQuery, 500);
 
   const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
     const selected = getSelectedItems(selectedItems);
@@ -403,7 +403,7 @@ export const SceneSelect: React.FC<ITitledSelect> = (props) => {
     value: s.id,
   }));
 
-  const onInputChange = useDebouncedSetState(setQuery, 500);
+  const onInputChange = useDebounce(setQuery, 500);
 
   const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
     const selected = getSelectedItems(selectedItems);
@@ -453,7 +453,7 @@ export const ImageSelect: React.FC<ITitledSelect> = (props) => {
     value: s.id,
   }));
 
-  const onInputChange = useDebouncedSetState(setQuery, 500);
+  const onInputChange = useDebounce(setQuery, 500);
 
   const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
     const selected = getSelectedItems(selectedItems);

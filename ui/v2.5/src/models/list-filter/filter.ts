@@ -6,7 +6,7 @@ import {
   SortDirectionEnum,
 } from "src/core/generated-graphql";
 import { Criterion, CriterionValue } from "./criteria/criterion";
-import { makeCriteria } from "./criteria/factory";
+import { getFilterOptions } from "./factory";
 import { CriterionType, DisplayMode } from "./types";
 
 interface IDecodedParams {
@@ -128,12 +128,9 @@ export class ListFilterModel {
       for (const jsonString of params.c) {
         try {
           const encodedCriterion = JSON.parse(jsonString);
-          const criterion = makeCriteria(this.mode, encodedCriterion.type);
-          // it's possible that we have unsupported criteria. Just skip if so.
-          if (criterion) {
-            criterion.setFromEncodedCriterion(encodedCriterion);
-            this.criteria.push(criterion);
-          }
+          const criterion = this.makeCriterion(encodedCriterion.type);
+          criterion.setFromEncodedCriterion(encodedCriterion);
+          this.criteria.push(criterion);
         } catch (err) {
           // eslint-disable-next-line no-console
           console.error("Failed to parse encoded criterion:", err);
@@ -276,12 +273,9 @@ export class ListFilterModel {
     this.criteria = [];
     if (objectFilter) {
       Object.keys(objectFilter).forEach((key) => {
-        const criterion = makeCriteria(this.mode, key as CriterionType);
-        // it's possible that we have unsupported criteria. Just skip if so.
-        if (criterion) {
-          criterion.setFromEncodedCriterion(objectFilter[key]);
-          this.criteria.push(criterion);
-        }
+        const criterion = this.makeCriterion(key as CriterionType);
+        criterion.setFromEncodedCriterion(objectFilter[key]);
+        this.criteria.push(criterion);
       });
     }
   }
@@ -418,6 +412,18 @@ export class ListFilterModel {
     return query.join("&");
   }
 
+  public makeCriterion(type: CriterionType) {
+    const { criterionOptions } = getFilterOptions(this.mode);
+
+    const option = criterionOptions.find((o) => o.type === type);
+
+    if (!option) {
+      throw new Error(`Unknown criterion parameter name: ${type}`);
+    }
+
+    return option.makeCriterion(this.config);
+  }
+
   // TODO: These don't support multiple of the same criteria, only the last one set is used.
 
   public makeFindFilter(): FindFilterType {
@@ -431,8 +437,7 @@ export class ListFilterModel {
   }
 
   public makeFilter() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const output: Record<string, any> = {};
+    const output: Record<string, unknown> = {};
     this.criteria.forEach((criterion) => {
       criterion.apply(output);
     });
@@ -441,8 +446,7 @@ export class ListFilterModel {
   }
 
   public makeSavedFindFilter() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const output: Record<string, any> = {};
+    const output: Record<string, unknown> = {};
     this.criteria.forEach((criterion) => {
       criterion.toSavedFilter(output);
     });
@@ -450,8 +454,7 @@ export class ListFilterModel {
     return output;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public makeUIOptions(): Record<string, any> {
+  public makeUIOptions(): Record<string, unknown> {
     return {
       display_mode: this.displayMode,
       zoom_index: this.zoomIndex,
