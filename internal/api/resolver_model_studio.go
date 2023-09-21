@@ -140,3 +140,27 @@ func (r *studioResolver) Movies(ctx context.Context, obj *models.Studio) (ret []
 
 	return ret, nil
 }
+
+func (r *studioResolver) FindPerformers(ctx context.Context, obj *models.Studio, performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType, depth *int) (ret *FindPerformersResultType, err error) {
+	var performers []*models.Performer
+	var total int
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		performers, total, err = r.repository.Performer.QueryByStudioID(ctx, performerFilter, findFilter, obj.ID, depth)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	for _, performer := range performers {
+		performer.ParentObject.ID = obj.ID
+		performer.ParentObject.Depth = depth
+		performer.ParentObject.ObjectType = "STUDIO"
+	}
+
+	ret = &FindPerformersResultType{
+		Count:      total,
+		Performers: performers,
+	}
+
+	return ret, nil
+}
