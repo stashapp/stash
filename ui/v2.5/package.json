@@ -38,7 +38,7 @@
     "flag-icons": "^6.6.6",
     "flexbin": "^0.2.0",
     "formik": "^2.2.9",
-    "graphql": "^16.6.0",
+    "graphql": "^16.8.1",
     "graphql-tag": "^2.12.6",
     "graphql-ws": "^5.11.3",
     "i18n-iso-countries": "^7.5.0",
