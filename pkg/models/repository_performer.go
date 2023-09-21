@@ -24,6 +24,7 @@ type PerformerFinder interface {
 type PerformerQueryer interface {
 	Query(ctx context.Context, performerFilter *PerformerFilterType, findFilter *FindFilterType) ([]*Performer, int, error)
 	QueryCount(ctx context.Context, galleryFilter *PerformerFilterType, findFilter *FindFilterType) (int, error)
+	QueryByStudioID(ctx context.Context, performerFilter *PerformerFilterType, findFilter *FindFilterType, studioID int, depth *int) ([]*Performer, int, error)
 }
 
 type PerformerAutoTagQueryer interface {

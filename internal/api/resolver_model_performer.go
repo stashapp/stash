@@ -10,7 +10,9 @@ import (
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/movie"
 	"github.com/stashapp/stash/pkg/performer"
+	"github.com/stashapp/stash/pkg/scene"
 )
 
 // Checksum is deprecated
@@ -94,7 +96,11 @@ func (r *performerResolver) Tags(ctx context.Context, obj *models.Performer) (re
 
 func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Scene.CountByPerformerID(ctx, obj.ID)
+		if obj.ParentObject.ObjectType == "STUDIO" && obj.ParentObject.ID > 0 {
+			ret, err = scene.CountByPerformerIDStudioID(ctx, r.repository.Scene, obj.ID, obj.ParentObject.ID, obj.ParentObject.Depth)
+		} else {
+			ret, err = r.repository.Scene.CountByPerformerID(ctx, obj.ID)
+		}
 		return err
 	}); err != nil {
 		return 0, err
@@ -105,7 +111,11 @@ func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performe
 
 func (r *performerResolver) ImageCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = image.CountByPerformerID(ctx, r.repository.Image, obj.ID)
+		if obj.ParentObject.ObjectType == "STUDIO" && obj.ParentObject.ID > 0 {
+			ret, err = image.CountByPerformerIDStudioID(ctx, r.repository.Image, obj.ID, obj.ParentObject.ID, obj.ParentObject.Depth)
+		} else {
+			ret, err = image.CountByPerformerID(ctx, r.repository.Image, obj.ID)
+		}
 		return err
 	}); err != nil {
 		return 0, err
@@ -116,7 +126,11 @@ func (r *performerResolver) ImageCount(ctx context.Context, obj *models.Performe
 
 func (r *performerResolver) GalleryCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = gallery.CountByPerformerID(ctx, r.repository.Gallery, obj.ID)
+		if obj.ParentObject.ObjectType == "STUDIO" && obj.ParentObject.ID > 0 {
+			ret, err = gallery.CountByPerformerIDStudioID(ctx, r.repository.Gallery, obj.ID, obj.ParentObject.ID, obj.ParentObject.Depth)
+		} else {
+			ret, err = gallery.CountByPerformerID(ctx, r.repository.Gallery, obj.ID)
+		}
 		return err
 	}); err != nil {
 		return 0, err
@@ -127,7 +141,11 @@ func (r *performerResolver) GalleryCount(ctx context.Context, obj *models.Perfor
 
 func (r *performerResolver) MovieCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Movie.CountByPerformerID(ctx, obj.ID)
+		if obj.ParentObject.ObjectType == "STUDIO" && obj.ParentObject.ID > 0 {
+			ret, err = movie.CountByPerformerIDStudioID(ctx, r.repository.Movie, obj.ID, obj.ParentObject.ID, obj.ParentObject.Depth)
+		} else {
+			ret, err = r.repository.Movie.CountByPerformerID(ctx, obj.ID)
+		}
 		return err
 	}); err != nil {
 		return 0, err
