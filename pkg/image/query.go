@@ -151,3 +151,19 @@ func findGalleryCover(ctx context.Context, r Queryer, galleryID int, useCoverJpg
 
 	return nil, nil
 }
+
+func CountByPerformerIDStudioID(ctx context.Context, r CountQueryer, performerID int, studioID int, depth *int) (int, error) {
+	filter := &models.ImageFilterType{
+		Studios: &models.HierarchicalMultiCriterionInput{
+			Value:    []string{strconv.Itoa(studioID)},
+			Modifier: models.CriterionModifierIncludes,
+			Depth:    depth,
+		},
+		Performers: &models.MultiCriterionInput{
+			Value:    []string{strconv.Itoa(performerID)},
+			Modifier: models.CriterionModifierIncludes,
+		},
+	}
+
+	return r.QueryCount(ctx, filter, nil)
+}

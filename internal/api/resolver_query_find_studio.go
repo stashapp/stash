@@ -2,13 +2,20 @@ package api
 
 import (
 	"context"
+	"errors"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func (r *queryResolver) FindStudio(ctx context.Context, id string) (ret *models.Studio, err error) {
-	idInt, err := strconv.Atoi(id)
+func (r *queryResolver) FindStudio(ctx context.Context, id *string) (ret *models.Studio, err error) {
+	if id == nil {
+		err = errors.New("Field \"findStudio\" argument \"id\" of type \"ID\" is required, but it was not provided.")
+		return nil, err
+	}
+
+	idString := *id
+	idInt, err := strconv.Atoi(idString)
 	if err != nil {
 		return nil, err
 	}
