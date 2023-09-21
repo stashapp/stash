@@ -47,6 +47,12 @@ interface IDataItem {
   id: string;
 }
 
+export interface IQueryParameters {
+  id: string;
+  depth?: number;
+  type?: string;
+}
+
 export interface IItemListOperation<T extends QueryResult> {
   text: string;
   onClick: (
@@ -57,7 +63,8 @@ export interface IItemListOperation<T extends QueryResult> {
   isDisplayed?: (
     result: T,
     filter: ListFilterModel,
-    selectedIds: Set<string>
+    selectedIds: Set<string>,
+    queryArgs?: IQueryParameters
   ) => boolean;
   postRefetch?: boolean;
   icon?: IconDefinition;
@@ -66,7 +73,7 @@ export interface IItemListOperation<T extends QueryResult> {
 
 interface IItemListOptions<T extends QueryResult, E extends IDataItem> {
   filterMode: GQL.FilterMode;
-  useResult: (filter: ListFilterModel) => T;
+  useResult: (filter?: ListFilterModel, id?: string, depth?: number) => T;
   getCount: (data: T) => number;
   renderMetadataByline?: (data: T) => React.ReactNode;
   getItems: (data: T) => E[];
@@ -111,8 +118,10 @@ interface IItemListProps<T extends QueryResult, E extends IDataItem> {
   addKeybinds?: (
     result: T,
     filter: ListFilterModel,
-    selectedIds: Set<string>
+    selectedIds: Set<string>,
+    queryArgs?: IQueryParameters
   ) => () => void;
+  queryArgs?: IQueryParameters;
 }
 
 const getSelectedData = <I extends IDataItem>(
@@ -147,6 +156,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     renderEditDialog,
     renderDeleteDialog,
     addKeybinds,
+    queryArgs,
   }) => {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -156,7 +166,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     const [editingCriterion, setEditingCriterion] = useState<string>();
     const [showEditFilter, setShowEditFilter] = useState(false);
 
-    const result = useResult(filter);
+    const result = useResult(filter, queryArgs?.id, queryArgs?.depth);
     const [totalCount, setTotalCount] = useState(0);
     const [metadataByline, setMetadataByline] = useState<React.ReactNode>();
     const items = useMemo(() => getItems(result), [result]);
@@ -239,12 +249,17 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     }, [filter, onChangePage, totalCount]);
     useEffect(() => {
       if (addKeybinds) {
-        const unbindExtras = addKeybinds(result, filter, selectedIds);
+        const unbindExtras = addKeybinds(
+          result,
+          filter,
+          selectedIds,
+          queryArgs
+        );
         return () => {
           unbindExtras();
         };
       }
-    }, [addKeybinds, result, filter, selectedIds]);
+    }, [addKeybinds, result, filter, selectedIds, queryArgs]);
 
     function singleSelect(id: string, selected: boolean) {
       setLastClickedId(id);
@@ -339,7 +354,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       },
       isDisplayed: () => {
         if (o.isDisplayed) {
-          return o.isDisplayed(result, filter, selectedIds);
+          return o.isDisplayed(result, filter, selectedIds, queryArgs);
         }
 
         return true;

@@ -7,12 +7,15 @@ import * as GQL from "src/core/generated-graphql";
 import {
   queryFindPerformers,
   useFindPerformers,
+  queryFindStudioPerformers,
+  useFindStudioPerformers,
   usePerformersDestroy,
 } from "src/core/StashService";
 import {
   makeItemList,
   PersistanceLevel,
   showWhenSelected,
+  IQueryParameters,
 } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
@@ -22,6 +25,18 @@ import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { IPerformerCardExtraCriteria, PerformerCard } from "./PerformerCard";
 import { PerformerListTable } from "./PerformerListTable";
 import { EditPerformersDialog } from "./EditPerformersDialog";
+import { QueryResult } from "@apollo/client";
+
+const StudioPerformerItemList = makeItemList({
+  filterMode: GQL.FilterMode.Performers,
+  useResult: useFindStudioPerformers,
+  getItems(result: GQL.FindStudioPerformersQueryResult) {
+    return result?.data?.findStudio?.findPerformers?.performers ?? [];
+  },
+  getCount(result: GQL.FindStudioPerformersQueryResult) {
+    return result?.data?.findStudio?.findPerformers?.count ?? 0;
+  },
+});
 
 const PerformerItemList = makeItemList({
   filterMode: GQL.FilterMode.Performers,
@@ -39,6 +54,7 @@ interface IPerformerList {
   persistState?: PersistanceLevel;
   alterQuery?: boolean;
   extraCriteria?: IPerformerCardExtraCriteria;
+  queryArgs?: IQueryParameters;
 }
 
 export const PerformerList: React.FC<IPerformerList> = ({
@@ -46,6 +62,7 @@ export const PerformerList: React.FC<IPerformerList> = ({
   persistState,
   alterQuery,
   extraCriteria,
+  queryArgs,
 }) => {
   const intl = useIntl();
   const history = useHistory();
@@ -68,10 +85,30 @@ export const PerformerList: React.FC<IPerformerList> = ({
     },
   ];
 
-  function addKeybinds(
-    result: GQL.FindPerformersQueryResult,
-    filter: ListFilterModel
-  ) {
+  function isFindStudioPerformersQueryResult(
+    obj: QueryResult
+  ): obj is GQL.FindStudioPerformersQueryResult {
+    return (
+      typeof obj === "object" &&
+      obj != null &&
+      "data" in obj &&
+      "findStudio" in obj.data &&
+      "findPerformers" in obj.data.findStudio
+    );
+  }
+
+  function isFindPerformersQueryResult(
+    obj: QueryResult
+  ): obj is GQL.FindPerformersQueryResult {
+    return (
+      typeof obj === "object" &&
+      obj !== null &&
+      "data" in obj &&
+      "findPerformers" in obj.data
+    );
+  }
+
+  function addKeybinds(result: QueryResult, filter: ListFilterModel) {
     Mousetrap.bind("p r", () => {
       openRandom(result, filter);
     });
@@ -81,12 +118,36 @@ export const PerformerList: React.FC<IPerformerList> = ({
     };
   }
 
-  async function openRandom(
-    result: GQL.FindPerformersQueryResult,
-    filter: ListFilterModel
-  ) {
-    if (result.data?.findPerformers) {
-      const { count } = result.data.findPerformers;
+  async function openRandom(result: QueryResult, filter: ListFilterModel) {
+    const performersStudioQuery =
+      isFindStudioPerformersQueryResult(result) == true
+        ? result.data.findStudio.findPerformers
+        : undefined;
+    const performersQuery =
+      isFindPerformersQueryResult(result) == true
+        ? result.data.findPerformers
+        : undefined;
+
+    if (performersStudioQuery) {
+      const { count } = performersStudioQuery;
+      const index = Math.floor(Math.random() * count);
+      const filterCopy = cloneDeep(filter);
+      filterCopy.itemsPerPage = 1;
+      filterCopy.currentPage = index + 1;
+      const singleResult = await queryFindStudioPerformers(
+        filterCopy,
+        queryArgs?.id,
+        queryArgs?.depth
+      );
+      if (
+        singleResult.data.findStudio?.findPerformers.performers.length === 1
+      ) {
+        const { id } =
+          singleResult.data.findStudio?.findPerformers.performers[0]!;
+        history.push(`/performers/${id}`);
+      }
+    } else if (performersQuery) {
+      const { count } = performersQuery;
       const index = Math.floor(Math.random() * count);
       const filterCopy = cloneDeep(filter);
       filterCopy.itemsPerPage = 1;
@@ -110,7 +171,7 @@ export const PerformerList: React.FC<IPerformerList> = ({
   }
 
   function renderContent(
-    result: GQL.FindPerformersQueryResult,
+    result: QueryResult,
     filter: ListFilterModel,
     selectedIds: Set<string>,
     onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void
@@ -134,12 +195,21 @@ export const PerformerList: React.FC<IPerformerList> = ({
     }
 
     function renderPerformers() {
-      if (!result.data?.findPerformers) return;
+      const performers =
+        isFindStudioPerformersQueryResult(result) == true
+          ? result.data.findStudio.findPerformers.performers
+          : isFindPerformersQueryResult(result) == true
+          ? result.data.findPerformers.performers
+          : undefined;
+
+      if (!performers) {
+        return;
+      }
 
       if (filter.displayMode === DisplayMode.Grid) {
         return (
           <div className="row justify-content-center">
-            {result.data.findPerformers.performers.map((p) => (
+            {performers.map((p: GQL.Performer) => (
               <PerformerCard
                 key={p.id}
                 performer={p}
@@ -155,16 +225,10 @@ export const PerformerList: React.FC<IPerformerList> = ({
         );
       }
       if (filter.displayMode === DisplayMode.List) {
-        return (
-          <PerformerListTable
-            performers={result.data.findPerformers.performers}
-          />
-        );
+        return <PerformerListTable performers={performers} />;
       }
       if (filter.displayMode === DisplayMode.Tagger) {
-        return (
-          <PerformerTagger performers={result.data.findPerformers.performers} />
-        );
+        return <PerformerTagger performers={performers} />;
       }
     }
 
@@ -200,17 +264,33 @@ export const PerformerList: React.FC<IPerformerList> = ({
     );
   }
 
-  return (
-    <PerformerItemList
-      selectable
-      filterHook={filterHook}
-      persistState={persistState}
-      alterQuery={alterQuery}
-      otherOperations={otherOperations}
-      addKeybinds={addKeybinds}
-      renderContent={renderContent}
-      renderEditDialog={renderEditDialog}
-      renderDeleteDialog={renderDeleteDialog}
-    />
-  );
+  if (queryArgs?.type === "STUDIO") {
+    return (
+      <StudioPerformerItemList
+        selectable
+        persistState={persistState}
+        alterQuery={alterQuery}
+        otherOperations={otherOperations}
+        addKeybinds={addKeybinds}
+        renderContent={renderContent}
+        renderEditDialog={renderEditDialog}
+        renderDeleteDialog={renderDeleteDialog}
+        queryArgs={queryArgs}
+      />
+    );
+  } else {
+    return (
+      <PerformerItemList
+        selectable
+        filterHook={filterHook}
+        persistState={persistState}
+        alterQuery={alterQuery}
+        otherOperations={otherOperations}
+        addKeybinds={addKeybinds}
+        renderContent={renderContent}
+        renderEditDialog={renderEditDialog}
+        renderDeleteDialog={renderDeleteDialog}
+      />
+    );
+  }
 };

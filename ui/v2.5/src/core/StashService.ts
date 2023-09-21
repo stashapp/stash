@@ -305,6 +305,38 @@ export const useFindStudios = (filter?: ListFilterModel) =>
     },
   });
 
+export const useFindStudioPerformers = (
+  filter?: ListFilterModel,
+  id?: string,
+  depth?: number
+) =>
+  GQL.useFindStudioPerformersQuery({
+    fetchPolicy: "no-cache",
+    skip: id === "" || id === undefined,
+    variables: {
+      id: id,
+      depth: depth,
+      filter: filter?.makeFindFilter(),
+      performer_filter: filter?.makeFilter(),
+    },
+  });
+
+export const queryFindStudioPerformers = (
+  filter: ListFilterModel,
+  id?: string,
+  depth?: number
+) =>
+  client.query<GQL.FindStudioPerformersQuery>({
+    query: GQL.FindStudioPerformersDocument,
+    fetchPolicy: "no-cache",
+    variables: {
+      id: id,
+      depth: depth,
+      filter: filter?.makeFindFilter(),
+      performer_filter: filter?.makeFilter(),
+    },
+  });
+
 export const queryFindStudios = (filter: ListFilterModel) =>
   client.query<GQL.FindStudiosQuery>({
     query: GQL.FindStudiosDocument,
