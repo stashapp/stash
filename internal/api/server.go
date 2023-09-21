@@ -321,6 +321,10 @@ func cssHandler(c *config.Instance, pluginCache *plugin.Cache) func(w http.Respo
 		var paths []string
 
 		for _, p := range pluginCache.ListPlugins() {
+			if !p.Enabled {
+				continue
+			}
+
 			paths = append(paths, p.UI.CSS...)
 		}
 
@@ -344,6 +348,10 @@ func javascriptHandler(c *config.Instance, pluginCache *plugin.Cache) func(w htt
 		var paths []string
 
 		for _, p := range pluginCache.ListPlugins() {
+			if !p.Enabled {
+				continue
+			}
+
 			paths = append(paths, p.UI.Javascript...)
 		}
 
