@@ -7,6 +7,7 @@ type Plugin {
 
   tasks: [PluginTask!]
   hooks: [PluginHook!]
+  settings: [PluginSetting!]
 }
 
 type PluginTask {
@@ -39,4 +40,17 @@ input PluginValueInput {
   f: Float
   o: [PluginArgInput!]
   a: [PluginValueInput!]
+}
+
+enum PluginSettingTypeEnum {
+  STRING
+  NUMBER
+  BOOLEAN
+}
+
+type PluginSetting {
+  name: String!
+  display_name: String
+  description: String
+  type: PluginSettingTypeEnum!
 }
