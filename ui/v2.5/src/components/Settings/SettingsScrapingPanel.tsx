@@ -16,7 +16,7 @@ import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { ScrapeType } from "src/core/generated-graphql";
 import { SettingSection } from "./SettingSection";
 import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";
-import { SettingStateContext } from "./context";
+import { useSettings } from "./context";
 import { StashBoxSetting } from "./StashBoxConfiguration";
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 
@@ -87,7 +87,7 @@ export const SettingsScrapingPanel: React.FC = () => {
     useListMovieScrapers();
 
   const { general, scraping, loading, error, saveGeneral, saveScraping } =
-    React.useContext(SettingStateContext);
+    useSettings();
 
   async function onReloadScrapers() {
     await mutateReloadScrapers().catch((e) => Toast.error(e));

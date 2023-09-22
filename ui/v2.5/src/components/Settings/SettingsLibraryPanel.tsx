@@ -4,14 +4,14 @@ import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { StashSetting } from "./StashConfiguration";
 import { SettingSection } from "./SettingSection";
 import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";
-import { SettingStateContext } from "./context";
+import { useSettings } from "./context";
 import { useIntl } from "react-intl";
 import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 
 export const SettingsLibraryPanel: React.FC = () => {
   const intl = useIntl();
   const { general, loading, error, saveGeneral, defaults, saveDefaults } =
-    React.useContext(SettingStateContext);
+    useSettings();
 
   function commaDelimitedToList(value: string | undefined) {
     if (value) {

@@ -2034,6 +2034,11 @@ export const useConfigureDLNA = () =>
     update: updateConfiguration,
   });
 
+export const useConfigurePlugin = () =>
+  GQL.useConfigurePluginMutation({
+    update: updateConfiguration,
+  });
+
 export const useEnableDLNA = () => GQL.useEnableDlnaMutation();
 
 export const useDisableDLNA = () => GQL.useDisableDlnaMutation();

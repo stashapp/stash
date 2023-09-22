@@ -10,7 +10,7 @@ import {
   StringListSetting,
   StringSetting,
 } from "./Inputs";
-import { SettingStateContext } from "./context";
+import { useSettings } from "./context";
 import {
   VideoPreviewInput,
   VideoPreviewSettingsInput,
@@ -20,8 +20,7 @@ import { useIntl } from "react-intl";
 export const SettingsConfigurationPanel: React.FC = () => {
   const intl = useIntl();
 
-  const { general, loading, error, saveGeneral } =
-    React.useContext(SettingStateContext);
+  const { general, loading, error, saveGeneral } = useSettings();
 
   const transcodeQualities = [
     GQL.StreamingResolutionEnum.Low,
