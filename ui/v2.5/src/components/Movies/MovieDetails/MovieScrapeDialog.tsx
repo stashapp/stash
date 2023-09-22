@@ -84,7 +84,9 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
   const [duration, setDuration] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(
       DurationUtils.secondsToString(props.movie.duration || 0),
-      props.scraped.duration
+      props.scraped.duration && !isNaN(+props.scraped.duration)
+        ? DurationUtils.secondsToString(parseInt(props.scraped.duration, 10))
+        : undefined
     )
   );
   const [date, setDate] = useState<ScrapeResult<string>>(
