@@ -110,6 +110,12 @@ fragment ScrapedSceneMovieData on ScrapedMovie {
   director
   url
   synopsis
+  front_image
+  back_image
+
+  studio {
+    ...ScrapedMovieStudioData
+  }
 }
 
 fragment ScrapedSceneStudioData on ScrapedStudio {
