@@ -648,3 +648,14 @@ func (r *mutationResolver) ConfigureUISetting(ctx context.Context, key string, v
 
 	return r.ConfigureUI(ctx, cfg)
 }
+
+func (r *mutationResolver) ConfigurePlugin(ctx context.Context, pluginID string, input map[string]interface{}) (map[string]interface{}, error) {
+	c := config.GetInstance()
+	c.SetPluginConfiguration(pluginID, input)
+
+	if err := c.Write(); err != nil {
+		return c.GetPluginConfiguration(pluginID), err
+	}
+
+	return c.GetPluginConfiguration(pluginID), nil
+}

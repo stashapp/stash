@@ -85,6 +85,9 @@ func (r *Resolver) Tag() TagResolver {
 func (r *Resolver) SavedFilter() SavedFilterResolver {
 	return &savedFilterResolver{r}
 }
+func (r *Resolver) ConfigResult() ConfigResultResolver {
+	return &configResultResolver{r}
+}
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
@@ -100,6 +103,7 @@ type studioResolver struct{ *Resolver }
 type movieResolver struct{ *Resolver }
 type tagResolver struct{ *Resolver }
 type savedFilterResolver struct{ *Resolver }
+type configResultResolver struct{ *Resolver }
 
 func (r *Resolver) withTxn(ctx context.Context, fn func(ctx context.Context) error) error {
 	return txn.WithTxn(ctx, r.txnManager, fn)
