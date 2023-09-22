@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useState } from "react";
 import {
   Route,
   Switch,
@@ -40,7 +40,7 @@ import { releaseNotes } from "./docs/en/ReleaseNotes";
 import { getPlatformURL } from "./core/createClient";
 import { lazyComponent } from "./utils/lazyComponent";
 import { isPlatformUniquelyRenderedByApple } from "./utils/apple";
-import { PluginComponentLocation, PluginComponents } from "./plugins";
+import { PluginComponentLocation, PluginComponents, PluginRoutes } from "./plugins";
 
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")
@@ -215,6 +215,7 @@ export const App: React.FC = () => {
             />
             <Route path="/setup" component={Setup} />
             <Route path="/migrate" component={Migrate} />
+            <PluginRoutes />
             <Route component={PageNotFound} />
           </Switch>
         </Suspense>
