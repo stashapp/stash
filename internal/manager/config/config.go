@@ -738,7 +738,8 @@ func (i *Instance) GetAllPluginConfiguration() map[string]interface{} {
 	for plugin := range sub {
 		// HACK: viper changes map keys to case insensitive values, so the workaround is to
 		// convert map keys to snake case for storage
-		ret[plugin] = fromSnakeCaseMap(i.viper(PluginsSetting).GetStringMap(PluginsSettingPrefix + plugin))
+		name := fromSnakeCase(plugin)
+		ret[name] = fromSnakeCaseMap(i.viper(PluginsSetting).GetStringMap(PluginsSettingPrefix + plugin))
 	}
 
 	return ret
@@ -748,7 +749,7 @@ func (i *Instance) GetPluginConfiguration(pluginID string) map[string]interface{
 	i.RLock()
 	defer i.RUnlock()
 
-	key := PluginsSettingPrefix + pluginID
+	key := PluginsSettingPrefix + toSnakeCase(pluginID)
 
 	// HACK: viper changes map keys to case insensitive values, so the workaround is to
 	// convert map keys to snake case for storage
@@ -760,6 +761,8 @@ func (i *Instance) GetPluginConfiguration(pluginID string) map[string]interface{
 func (i *Instance) SetPluginConfiguration(pluginID string, v map[string]interface{}) {
 	i.RLock()
 	defer i.RUnlock()
+
+	pluginID = toSnakeCase(pluginID)
 
 	key := PluginsSettingPrefix + pluginID
 
