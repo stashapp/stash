@@ -1176,7 +1176,7 @@ func makeImage(i int) *models.Image {
 }
 
 func createImages(ctx context.Context, n int) error {
-	qb := db.TxnRepository().Image
+	qb := db.Repository().Image
 	fqb := db.File
 
 	for i := 0; i < n; i++ {
@@ -1262,7 +1262,7 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 }
 
 func createGalleries(ctx context.Context, n int) error {
-	gqb := db.TxnRepository().Gallery
+	gqb := db.Repository().Gallery
 	fqb := db.File
 
 	for i := 0; i < n; i++ {

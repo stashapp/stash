@@ -181,7 +181,7 @@ func (m *Mover) moveFile(oldPath, newPath string) error {
 	return nil
 }
 
-func (m *Mover) RegisterHooks(ctx context.Context, mgr txn.Manager) {
+func (m *Mover) RegisterHooks(ctx context.Context) {
 	txn.AddPostCommitHook(ctx, func(ctx context.Context) {
 		m.commit()
 	})

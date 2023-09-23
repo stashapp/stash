@@ -9,7 +9,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
 	"github.com/stashapp/stash/pkg/studio"
-	"github.com/stashapp/stash/pkg/txn"
 )
 
 type StashBoxTagTaskType int
@@ -92,18 +91,21 @@ func (t *StashBoxBatchTagTask) findStashBoxPerformer(ctx context.Context) (*mode
 	var performer *models.ScrapedPerformer
 	var err error
 
-	client := stashbox.NewClient(*t.box, instance.Repository, stashbox.Repository{
-		Scene:     instance.Repository.Scene,
-		Performer: instance.Repository.Performer,
-		Tag:       instance.Repository.Tag,
-		Studio:    instance.Repository.Studio,
+	r := instance.Repository
+	client := stashbox.NewClient(*t.box, r.TxnManager, stashbox.Repository{
+		Scene:     r.Scene,
+		Performer: r.Performer,
+		Tag:       r.Tag,
+		Studio:    r.Studio,
 	})
 
 	if t.refresh {
 		var remoteID string
-		if err := txn.WithReadTxn(ctx, instance.Repository, func(ctx context.Context) error {
+		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
+			qb := r.Performer
+
 			if !t.performer.StashIDs.Loaded() {
-				err = t.performer.LoadStashIDs(ctx, instance.Repository.Performer)
+				err = t.performer.LoadStashIDs(ctx, qb)
 				if err != nil {
 					return err
 				}
@@ -145,8 +147,9 @@ func (t *StashBoxBatchTagTask) processMatchedPerformer(ctx context.Context, p *m
 		}
 
 		// Start the transaction and update the performer
-		err = txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
-			qb := instance.Repository.Performer
+		r := instance.Repository
+		err = r.WithTxn(ctx, func(ctx context.Context) error {
+			qb := r.Performer
 
 			existingStashIDs, err := qb.GetStashIDs(ctx, storedID)
 			if err != nil {
@@ -181,8 +184,10 @@ func (t *StashBoxBatchTagTask) processMatchedPerformer(ctx context.Context, p *m
 			return
 		}
 
-		err = txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
-			qb := instance.Repository.Performer
+		r := instance.Repository
+		err = r.WithTxn(ctx, func(ctx context.Context) error {
+			qb := r.Performer
+
 			if err := qb.Create(ctx, newPerformer); err != nil {
 				return err
 			}
@@ -233,18 +238,19 @@ func (t *StashBoxBatchTagTask) findStashBoxStudio(ctx context.Context) (*models.
 	var studio *models.ScrapedStudio
 	var err error
 
-	client := stashbox.NewClient(*t.box, instance.Repository, stashbox.Repository{
-		Scene:     instance.Repository.Scene,
-		Performer: instance.Repository.Performer,
-		Tag:       instance.Repository.Tag,
-		Studio:    instance.Repository.Studio,
+	r := instance.Repository
+	client := stashbox.NewClient(*t.box, r.TxnManager, stashbox.Repository{
+		Scene:     r.Scene,
+		Performer: r.Performer,
+		Tag:       r.Tag,
+		Studio:    r.Studio,
 	})
 
 	if t.refresh {
 		var remoteID string
-		if err := txn.WithReadTxn(ctx, instance.Repository, func(ctx context.Context) error {
+		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 			if !t.studio.StashIDs.Loaded() {
-				err = t.studio.LoadStashIDs(ctx, instance.Repository.Studio)
+				err = t.studio.LoadStashIDs(ctx, r.Studio)
 				if err != nil {
 					return err
 				}
@@ -293,8 +299,9 @@ func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, s *mode
 		}
 
 		// Start the transaction and update the studio
-		err = txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
-			qb := instance.Repository.Studio
+		r := instance.Repository
+		err = r.WithTxn(ctx, func(ctx context.Context) error {
+			qb := r.Studio
 
 			existingStashIDs, err := qb.GetStashIDs(ctx, storedID)
 			if err != nil {
@@ -341,8 +348,10 @@ func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, s *mode
 		}
 
 		// Start the transaction and save the studio
-		err = txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
-			qb := instance.Repository.Studio
+		r := instance.Repository
+		err = r.WithTxn(ctx, func(ctx context.Context) error {
+			qb := r.Studio
+
 			if err := qb.Create(ctx, newStudio); err != nil {
 				return err
 			}
@@ -375,8 +384,10 @@ func (t *StashBoxBatchTagTask) processParentStudio(ctx context.Context, parent *
 		}
 
 		// Start the transaction and save the studio
-		err = txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
-			qb := instance.Repository.Studio
+		r := instance.Repository
+		err = r.WithTxn(ctx, func(ctx context.Context) error {
+			qb := r.Studio
+
 			if err := qb.Create(ctx, newParentStudio); err != nil {
 				return err
 			}
@@ -408,8 +419,9 @@ func (t *StashBoxBatchTagTask) processParentStudio(ctx context.Context, parent *
 		}
 
 		// Start the transaction and update the studio
-		err = txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
-			qb := instance.Repository.Studio
+		r := instance.Repository
+		err = r.WithTxn(ctx, func(ctx context.Context) error {
+			qb := r.Studio
 
 			existingStashIDs, err := qb.GetStashIDs(ctx, storedID)
 			if err != nil {

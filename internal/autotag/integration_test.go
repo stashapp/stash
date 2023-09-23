@@ -62,7 +62,7 @@ func runTests(m *testing.M) int {
 		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
 	}
 
-	r = db.TxnRepository()
+	r = db.Repository()
 
 	// defer close and delete the database
 	defer testTeardown(databaseFile)

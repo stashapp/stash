@@ -16,7 +16,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/txn"
 )
 
 type cleaner interface {
@@ -25,7 +24,7 @@ type cleaner interface {
 
 type cleanJob struct {
 	cleaner      cleaner
-	txnManager   Repository
+	repository   models.Repository
 	input        CleanMetadataInput
 	sceneService SceneService
 	imageService ImageService
@@ -61,10 +60,11 @@ func (j *cleanJob) cleanEmptyGalleries(ctx context.Context) {
 	const batchSize = 1000
 	var toClean []int
 	findFilter := models.BatchFindFilter(batchSize)
-	if err := txn.WithTxn(ctx, j.txnManager, func(ctx context.Context) error {
+	r := j.repository
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		found := true
 		for found {
-			emptyGalleries, _, err := j.txnManager.Gallery.Query(ctx, &models.GalleryFilterType{
+			emptyGalleries, _, err := r.Gallery.Query(ctx, &models.GalleryFilterType{
 				ImageCount: &models.IntCriterionInput{
 					Value:    0,
 					Modifier: models.CriterionModifierEquals,
@@ -108,9 +108,10 @@ func (j *cleanJob) cleanEmptyGalleries(ctx context.Context) {
 
 func (j *cleanJob) deleteGallery(ctx context.Context, id int) {
 	pluginCache := GetInstance().PluginCache
-	qb := j.txnManager.Gallery
 
-	if err := txn.WithTxn(ctx, j.txnManager, func(ctx context.Context) error {
+	r := j.repository
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
+		qb := r.Gallery
 		g, err := qb.Find(ctx, id)
 		if err != nil {
 			return err
@@ -120,7 +121,7 @@ func (j *cleanJob) deleteGallery(ctx context.Context, id int) {
 			return fmt.Errorf("gallery with id %d not found", id)
 		}
 
-		if err := g.LoadPrimaryFile(ctx, j.txnManager.File); err != nil {
+		if err := g.LoadPrimaryFile(ctx, r.File); err != nil {
 			return err
 		}
 

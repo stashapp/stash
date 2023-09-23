@@ -254,7 +254,7 @@ func TestSceneIdentifier_modifyScene(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tr.modifyScene(testCtx, repo, tt.args.scene, tt.args.result); (err != nil) != tt.wantErr {
+			if err := tr.modifyScene(testCtx, repo.TxnManager, tt.args.scene, tt.args.result); (err != nil) != tt.wantErr {
 				t.Errorf("SceneIdentifier.modifyScene() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

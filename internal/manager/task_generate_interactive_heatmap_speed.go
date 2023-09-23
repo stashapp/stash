@@ -11,10 +11,10 @@ import (
 )
 
 type GenerateInteractiveHeatmapSpeedTask struct {
+	repository          models.Repository
 	Scene               models.Scene
 	Overwrite           bool
 	fileNamingAlgorithm models.HashAlgorithm
-	TxnManager          Repository
 }
 
 func (t *GenerateInteractiveHeatmapSpeedTask) GetDescription() string {
@@ -42,10 +42,11 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 
 	median := generator.InteractiveSpeed
 
-	if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
+	r := t.repository
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		primaryFile := t.Scene.Files.Primary()
 		primaryFile.InteractiveSpeed = &median
-		qb := t.TxnManager.File
+		qb := r.File
 		return qb.Update(ctx, primaryFile)
 	}); err != nil && ctx.Err() == nil {
 		logger.Error(err.Error())

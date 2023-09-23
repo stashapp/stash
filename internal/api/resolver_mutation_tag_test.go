@@ -5,7 +5,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stashapp/stash/pkg/plugin"
@@ -18,8 +17,7 @@ import (
 func newResolver() *Resolver {
 	txnMgr := &mocks.TxnManager{}
 	return &Resolver{
-		txnManager: txnMgr,
-		repository: manager.Repository{
+		repository: models.Repository{
 			TxnManager: txnMgr,
 			Tag:        &mocks.TagReaderWriter{},
 		},
