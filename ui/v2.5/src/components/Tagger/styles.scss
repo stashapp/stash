@@ -66,6 +66,16 @@
     background-color: hsl(204, 20%, 30%);
     cursor: pointer;
   }
+
+  .performer-select,
+  .studio-select {
+    width: 14rem;
+
+    // stylelint-disable-next-line selector-class-pattern
+    &-active .react-select__control {
+      background-color: #137cbd;
+    }
+  }
 }
 
 .selected-result {
@@ -96,16 +106,6 @@
 
 .select-existing {
   width: 2rem;
-}
-
-.performer-select,
-.studio-select {
-  width: 14rem;
-
-  // stylelint-disable-next-line selector-class-pattern
-  &-active .react-select__control {
-    background-color: #137cbd;
-  }
 }
 
 .entity-name {

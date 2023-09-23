@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
-import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "src/components/Shared/Icon";
@@ -134,9 +133,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
         <PerformerSelect
           values={selectedPerformer ? [selectedPerformer] : []}
           onSelect={handlePerformerSelect}
-          className={cx("performer-select", {
-            "performer-select-active": selectedSource === "existing",
-          })}
+          active={selectedSource === "existing"}
           isClearable={false}
         />
         {maybeRenderLinkButton()}

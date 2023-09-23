@@ -89,7 +89,6 @@ const SelectComponent = <T, IsMulti extends boolean>(
     styles,
     defaultOptions: true,
     value: selectedOptions,
-    className: "react-select",
     classNamePrefix: "react-select",
     noOptionsMessage: () => noOptionsMessage,
     placeholder: isDisabled ? "" : placeholder,
@@ -119,6 +118,7 @@ export interface IFilterValueProps<T> {
 export interface IFilterProps {
   noSelectionString?: string;
   className?: string;
+  active?: boolean;
   isMulti?: boolean;
   isClearable?: boolean;
   isDisabled?: boolean;
