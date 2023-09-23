@@ -10,6 +10,7 @@ import AsyncSelect from "react-select/async";
 import AsyncCreatableSelect, {
   AsyncCreatableProps,
 } from "react-select/async-creatable";
+import cx from "classnames";
 
 import { useToast } from "src/hooks/Toast";
 import { useDebounce } from "src/hooks/debounce";
@@ -89,6 +90,7 @@ const SelectComponent = <T, IsMulti extends boolean>(
     styles,
     defaultOptions: true,
     value: selectedOptions,
+    className: cx("react-select", props.className),
     classNamePrefix: "react-select",
     noOptionsMessage: () => noOptionsMessage,
     placeholder: isDisabled ? "" : placeholder,
