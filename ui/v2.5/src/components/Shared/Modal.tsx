@@ -23,7 +23,6 @@ interface IModal {
   dialogClassName?: string;
   footerButtons?: React.ReactNode;
   leftFooterButtons?: React.ReactNode;
-  scrollable?: boolean;
 }
 
 const defaultOnHide = () => {};
@@ -42,7 +41,6 @@ export const ModalComponent: React.FC<IModal> = ({
   dialogClassName,
   footerButtons,
   leftFooterButtons,
-  scrollable,
 }) => (
   <Modal
     className="ModalComponent"

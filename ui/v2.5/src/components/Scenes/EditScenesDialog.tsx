@@ -10,7 +10,6 @@ import {
 } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import isEqual from "lodash-es/isEqual";
-import { useBulkSceneUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import { StudioSelect } from "../Shared/Select";
@@ -39,6 +38,7 @@ import {
 import {
   queryScrapeScene,
   queryScrapeSceneURL,
+  useBulkSceneUpdate,
   useListSceneScrapers,
   mutateReloadScrapers,
   queryScrapeSceneQueryFragment,
@@ -50,6 +50,7 @@ import {
   faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { objectTitle } from "src/core/files";
+import { Performer } from "src/components/Performers/PerformerSelect";
 
 import { lazyComponent } from "src/utils/lazyComponent";
 
@@ -61,7 +62,7 @@ const SceneQueryModal = lazyComponent(
 );
 
 interface IListOperationProps {
-  selected: GQL.SceneDataFragment[];
+  selected: GQL.SlimSceneDataFragment[];
   onClose: (applied: boolean) => void;
 }
 
@@ -118,6 +119,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
   const [studioId, setStudioId] = useState<string>();
   const [performerMode, setPerformerMode] =
     React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
+  const [performers, setPerformers] = useState<Performer[]>([]);
   const [performerIds, setPerformerIds] = useState<string[]>();
   const [existingPerformerIds, setExistingPerformerIds] = useState<string[]>();
   const [tagMode, setTagMode] = React.useState<GQL.BulkUpdateIdMode>(
@@ -208,6 +210,25 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     details: yup.string().ensure(),
     cover_image: yup.string().nullable().optional(),
   });
+
+  useEffect(() => {
+    if (
+      props.selected &&
+      props.selected.length > 0 &&
+      props.selected[0].performers
+    ) {
+      const selectedPerformers = props.selected[0].performers;
+      // Transform 'SelectObject' to match 'Performer' type
+      const filterPerformers: Performer[] = selectedPerformers.map(
+        (performer) => ({
+          id: performer.id,
+          name: performer.name,
+          alias_list: [],
+        })
+      );
+      setPerformers(filterPerformers);
+    }
+  }, [props.selected]);
 
   async function onScrapeClicked(s: GQL.ScraperSourceInput) {
     setIsLoading(true);
@@ -340,6 +361,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     return (
       <SceneScrapeDialog
         scene={currentScene}
+        scenePerformers={performers}
         scraped={scrapedScene}
         endpoint={endpoint}
         onClose={(s) => onScrapeDialogClosed(s)}
@@ -544,8 +566,8 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
 
     if (updatedScene.remote_site_id && endpoint) {
       let found = false;
-      setStashIds((stashIds) =>
-        stashIds.map((s) => {
+      setStashIds((prevStashIds) =>
+        prevStashIds.map((s) => {
           if (s.endpoint === endpoint) {
             found = true;
             return {
@@ -558,8 +580,8 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
       );
 
       if (!found) {
-        setStashIds((stashIds) => [
-          ...stashIds,
+        setStashIds((prevStashIds) => [
+          ...prevStashIds,
           { endpoint, stash_id: updatedScene.remote_site_id },
         ]);
       }
@@ -687,7 +709,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     let updateCoverImage: string | undefined;
     let updatestashIds: { stash_id: string; endpoint: string }[] = [];
 
-    state.forEach((scene: GQL.SceneDataFragment) => {
+    state.forEach((scene: GQL.SlimSceneDataFragment) => {
       if (state.length === 1) {
         const sceneTitle = scene.title;
         const sceneStudioCode = scene.code;
@@ -800,7 +822,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     }
 
     return null;
-  }, [coverImage]);
+  }, [props.selected, isSingleScene, coverImage]);
 
   function onImageLoad(imageData: string) {
     setCoverImage(imageData);
@@ -835,7 +857,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
 
     // Return null or a default component when not a single scene is selected
     return null;
-  }, [encodingImage, coverImagePreview, intl]);
+  }, [isSingleScene, encodingImage, coverImagePreview, intl]);
 
   function renderMultiSelect(
     type: "galleries" | "performers" | "tags" | "movies",
@@ -942,12 +964,19 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     }
   }
 
-  const variableMap: Record<updateVariableType, any> = {
+  const variableMap: Record<updateVariableType, string> = {
     title: title,
     code: studioCode,
     date: date,
     director: director,
   };
+
+  class CustomError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "CustomError";
+    }
+  }
 
   async function handleUrlInputChange(value: string[]) {
     // Update the URL input values
@@ -964,24 +993,28 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
         ...prevErrors,
         ["urls"]: undefined,
       }));
-    } catch (error: any) {
-      setUrlsErrorMsg(
-        intl.formatMessage({ id: "validation.urls_must_be_unique" })
-      );
-      const errorIndices = error.message
-        .split(" ")
-        .map((e: string) => parseInt(e));
-      setUrlsErrorIdx(errorIndices);
-      setValidationErrors((prevErrors) => ({
-        ...prevErrors,
-        ["urls"]: error.message,
-      }));
+    } catch (error: unknown) {
+      if (error instanceof CustomError) {
+        const customError = error as CustomError;
+        setUrlsErrorMsg(
+          intl.formatMessage({ id: "validation.urls_must_be_unique" })
+        );
+        const errorIndices = customError.message
+          .split(" ")
+          .map((e: string) => parseInt(e));
+        setUrlsErrorIdx(errorIndices);
+        setValidationErrors((prevErrors) => ({
+          ...prevErrors,
+          ["urls"]: customError.message,
+        }));
+      } else {
+        throw error;
+      }
     }
   }
-
   function renderTextField(
     field: updateVariableType,
-    title: string,
+    label: string,
     placeholder?: string
   ) {
     const handleChanges = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -999,17 +1032,23 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
           ...prevErrors,
           [name]: undefined,
         }));
-      } catch (error: any) {
-        setValidationErrors((prevErrors) => ({
-          ...prevErrors,
-          [name]: error.message,
-        }));
+      } catch (error: unknown) {
+        if (error instanceof CustomError) {
+          const customError = error as CustomError;
+
+          setValidationErrors((prevErrors) => ({
+            ...prevErrors,
+            [name]: customError.message,
+          }));
+        } else {
+          throw error;
+        }
       }
     };
     return (
       <Form.Group controlId={field} as={Row}>
         {FormUtils.renderLabel({
-          title,
+          title: label,
         })}
         <Col xs={9}>
           <Form.Control
