@@ -124,6 +124,30 @@ export function getAggregateMovieIds(state: IHasMovies[]) {
   return ret;
 }
 
+interface IHasGalleries {
+  galleries: IHasID[];
+}
+
+export function getAggregateGalleries(state: IHasGalleries[]) {
+  let ret: string[] = [];
+  let first = true;
+
+  state.forEach((o) => {
+    if (first) {
+      ret = o.galleries ? o.galleries.map((m) => m.id).sort() : [];
+      first = false;
+    } else {
+      const mIds = o.galleries ? o.galleries.map((m) => m.id).sort() : [];
+
+      if (!isEqual(ret, mIds)) {
+        ret = [];
+      }
+    }
+  });
+
+  return ret;
+}
+
 export function makeBulkUpdateIds(
   ids: string[],
   mode: GQL.BulkUpdateIdMode

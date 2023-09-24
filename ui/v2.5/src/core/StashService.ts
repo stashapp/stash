@@ -216,6 +216,9 @@ export const queryFindSceneMarkers = (filter: ListFilterModel) =>
 
 export const useMarkerStrings = () => GQL.useMarkerStringsQuery();
 
+export const useAllGalleriesForFilter = () =>
+  GQL.useAllGalleriesForFilterQuery();
+
 export const useFindGallery = (id: string) => {
   const skip = id === "new" || id === "";
   return GQL.useFindGalleryQuery({ variables: { id }, skip });

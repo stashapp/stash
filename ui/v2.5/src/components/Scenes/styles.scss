@@ -607,6 +607,10 @@ input[type="range"].blue-slider {
   }
 }
 
+.SceneEditModal .modal-body {
+  overflow-x: hidden;
+}
+
 .scene-file-card.card {
   margin: 0;
   padding: 0;
@@ -642,4 +646,9 @@ input[type="range"].blue-slider {
 
 .scrape-dialog .rating-number.disabled {
   padding-left: 0.5em;
+}
+
+.scrape-div {
+  margin-bottom: 1rem;
+  text-align: right;
 }
