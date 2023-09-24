@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -40,14 +41,14 @@ func (r folderCreatorStatRenamerImpl) Mkdir(name string, perm os.FileMode) error
 
 type Mover struct {
 	Renamer DirMakerStatRenamer
-	Files   GetterUpdater
-	Folders FolderStore
+	Files   models.FileFinderUpdater
+	Folders models.FolderReaderWriter
 
 	moved          map[string]string
 	foldersCreated []string
 }
 
-func NewMover(fileStore GetterUpdater, folderStore FolderStore) *Mover {
+func NewMover(fileStore models.FileFinderUpdater, folderStore models.FolderReaderWriter) *Mover {
 	return &Mover{
 		Files:   fileStore,
 		Folders: folderStore,
@@ -60,7 +61,7 @@ func NewMover(fileStore GetterUpdater, folderStore FolderStore) *Mover {
 
 // Move moves the file to the given folder and basename. If basename is empty, then the existing basename is used.
 // Assumes that the parent folder exists in the filesystem.
-func (m *Mover) Move(ctx context.Context, f File, folder *Folder, basename string) error {
+func (m *Mover) Move(ctx context.Context, f models.File, folder *models.Folder, basename string) error {
 	fBase := f.Base()
 
 	// don't allow moving files in zip files

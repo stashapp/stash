@@ -13,6 +13,7 @@ var (
 	imagesTagsJoinTable       = goqu.T(imagesTagsTable)
 	performersImagesJoinTable = goqu.T(performersImagesTable)
 	imagesFilesJoinTable      = goqu.T(imagesFilesTable)
+	imagesURLsJoinTable       = goqu.T(imagesURLsTable)
 
 	galleriesFilesJoinTable      = goqu.T(galleriesFilesTable)
 	galleriesTagsJoinTable       = goqu.T(galleriesTagsTable)
@@ -69,6 +70,14 @@ var (
 			idColumn: performersImagesJoinTable.Col(imageIDColumn),
 		},
 		fkColumn: performersImagesJoinTable.Col(performerIDColumn),
+	}
+
+	imagesURLsTableMgr = &orderedValueTable[string]{
+		table: table{
+			table:    imagesURLsJoinTable,
+			idColumn: imagesURLsJoinTable.Col(imageIDColumn),
+		},
+		valueColumn: imagesURLsJoinTable.Col(imageURLColumn),
 	}
 )
 

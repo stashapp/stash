@@ -36,6 +36,7 @@ export const initialConfig: ITaggerConfig = {
   tagOperation: "merge",
   fingerprintQueue: {},
   excludedPerformerFields: DEFAULT_EXCLUDED_PERFORMER_FIELDS,
+  markSceneAsOrganizedOnSave: false,
   excludedStudioFields: DEFAULT_EXCLUDED_STUDIO_FIELDS,
   createParentStudios: true,
 };
@@ -52,6 +53,7 @@ export interface ITaggerConfig {
   selectedEndpoint?: string;
   fingerprintQueue: Record<string, string[]>;
   excludedPerformerFields?: string[];
+  markSceneAsOrganizedOnSave?: boolean;
   excludedStudioFields?: string[];
   createParentStudios: boolean;
 }

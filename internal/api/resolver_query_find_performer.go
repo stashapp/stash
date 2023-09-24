@@ -23,9 +23,19 @@ func (r *queryResolver) FindPerformer(ctx context.Context, id string) (ret *mode
 	return ret, nil
 }
 
-func (r *queryResolver) FindPerformers(ctx context.Context, performerFilter *models.PerformerFilterType, filter *models.FindFilterType) (ret *FindPerformersResultType, err error) {
+func (r *queryResolver) FindPerformers(ctx context.Context, performerFilter *models.PerformerFilterType, filter *models.FindFilterType, performerIDs []int) (ret *FindPerformersResultType, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		performers, total, err := r.repository.Performer.Query(ctx, performerFilter, filter)
+		var performers []*models.Performer
+		var err error
+		var total int
+
+		if len(performerIDs) > 0 {
+			performers, err = r.repository.Performer.FindMany(ctx, performerIDs)
+			total = len(performers)
+		} else {
+			performers, total, err = r.repository.Performer.Query(ctx, performerFilter, filter)
+		}
+
 		if err != nil {
 			return err
 		}
@@ -34,6 +44,7 @@ func (r *queryResolver) FindPerformers(ctx context.Context, performerFilter *mod
 			Count:      total,
 			Performers: performers,
 		}
+
 		return nil
 	}); err != nil {
 		return nil, err

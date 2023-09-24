@@ -6,7 +6,7 @@ import * as GQL from "src/core/generated-graphql";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { useScrapePerformerList } from "src/core/StashService";
-import { useDebouncedSetState } from "src/hooks/debounce";
+import { useDebounce } from "src/hooks/debounce";
 
 const CLASSNAME = "PerformerScrapeModal";
 const CLASSNAME_LIST = `${CLASSNAME}-list`;
@@ -33,7 +33,7 @@ const PerformerScrapeModal: React.FC<IProps> = ({
 
   const performers = data?.scrapeSinglePerformer ?? [];
 
-  const onInputChange = useDebouncedSetState(setQuery, 500);
+  const onInputChange = useDebounce(setQuery, 500);
 
   useEffect(() => inputRef.current?.focus(), []);
 

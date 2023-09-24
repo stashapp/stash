@@ -156,6 +156,8 @@
       "active_instance": "Active stash-box instance:",
       "blacklist_desc": "Blacklist items are excluded from queries. Note that they are regular expressions and also case-insensitive. Certain characters must be escaped with a backslash: {chars_require_escape}",
       "blacklist_label": "Blacklist",
+      "mark_organized_desc": "Immediately mark the scene as Organized after the Save button is clicked.",
+      "mark_organized_label": "Mark as Organized on save",
       "query_mode_auto": "Auto",
       "query_mode_auto_desc": "Uses metadata if present, or filename",
       "query_mode_dir": "Dir",
@@ -358,8 +360,8 @@
       "parallel_scan_head": "Parallel Scan/Generation",
       "preview_generation": "Preview Generation",
       "python_path": {
-        "description": "Location of python executable. Used for script scrapers and plugins. If blank, python will be resolved from the environment",
-        "heading": "Python Path"
+        "description": "Path to the python executable (not just the folder). Used for script scrapers and plugins. If blank, python will be resolved from the environment",
+        "heading": "Python Executable Path"
       },
       "scraper_user_agent": "Scraper User Agent",
       "scraper_user_agent_desc": "User-Agent string used during scrape http requests",
@@ -437,8 +439,9 @@
       "generate_phashes_during_scan": "Generate perceptual hashes",
       "generate_phashes_during_scan_tooltip": "For deduplication and scene identification.",
       "generate_previews_during_scan": "Generate animated image previews",
-      "generate_previews_during_scan_tooltip": "Generate animated WebP previews, only required if Preview Type is set to Animated Image.",
+      "generate_previews_during_scan_tooltip": "Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files.",
       "generate_sprites_during_scan": "Generate scrubber sprites",
+      "generate_sprites_during_scan_tooltip": "The set of images displayed below the video player for easy navigation.",
       "generate_thumbnails_during_scan": "Generate thumbnails for images",
       "generate_video_covers_during_scan": "Generate scene covers",
       "generate_video_previews_during_scan": "Generate previews",
@@ -660,7 +663,7 @@
         }
       },
       "preview_type": {
-        "description": "Configuration for wall items",
+        "description": "The default option is video (mp4) previews. For less CPU usage when browsing, you can use the animated image (webp) previews. However they must be generated in addition to the video previews and are larger files.",
         "heading": "Preview Type",
         "options": {
           "animated": "Animated Image",
@@ -688,6 +691,7 @@
             "heading": "Continue playlist by default"
           },
           "enable_chromecast": "Enable Chromecast",
+          "show_ab_loop_controls": "Show AB Loop plugin controls",
           "show_scrubber": "Show Scrubber",
           "track_activity": "Track Activity",
           "vr_tag": {
@@ -856,10 +860,10 @@
       "force_transcodes": "Force Transcode generation",
       "force_transcodes_tooltip": "By default, transcodes are only generated when the video file is not supported in the browser. When enabled, transcodes will be generated even when the video file appears to be supported in the browser.",
       "image_previews": "Animated Image Previews",
-      "image_previews_tooltip": "Animated WebP previews, only required if Preview Type is set to Animated Image.",
+      "image_previews_tooltip": "Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files.",
       "interactive_heatmap_speed": "Generate heatmaps and speeds for interactive scenes",
       "marker_image_previews": "Marker Animated Image Previews",
-      "marker_image_previews_tooltip": "Animated marker WebP previews, only required if Preview Type is set to Animated Image.",
+      "marker_image_previews_tooltip": "Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files.",
       "marker_screenshots": "Marker Screenshots",
       "marker_screenshots_tooltip": "Marker static JPG images, only required if Preview Type is set to Static Image.",
       "markers": "Marker Previews",
@@ -867,7 +871,8 @@
       "override_preview_generation_options": "Override Preview Generation Options",
       "override_preview_generation_options_desc": "Override Preview Generation Options for this operation. Defaults are set in System -> Preview Generation.",
       "overwrite": "Overwrite existing files",
-      "phash": "Perceptual hashes (for deduplication)",
+      "phash": "Perceptual hashes",
+      "phash_tooltip": "For deduplication and scene identification",
       "preview_exclude_end_time_desc": "Exclude the last x seconds from scene previews. This can be a value in seconds, or a percentage (eg 2%) of the total scene duration.",
       "preview_exclude_end_time_head": "Exclude end time",
       "preview_exclude_start_time_desc": "Exclude the first x seconds from scene previews. This can be a value in seconds, or a percentage (eg 2%) of the total scene duration.",
@@ -881,7 +886,7 @@
       "preview_seg_duration_desc": "Duration of each preview segment, in seconds.",
       "preview_seg_duration_head": "Preview segment duration",
       "sprites": "Scene Scrubber Sprites",
-      "sprites_tooltip": "Sprites (for the scene scrubber)",
+      "sprites_tooltip": "The set of images displayed below the video player for easy navigation.",
       "transcodes": "Transcodes",
       "transcodes_tooltip": "MP4 conversions of unsupported video formats",
       "video_previews": "Previews",
@@ -915,6 +920,7 @@
       "equal": "Equal"
     },
     "found_sets": "{setCount, plural, one{# set of duplicates found.} other {# sets of duplicates found.}}",
+    "only_select_matching_codecs": "Only select if all codecs match in the duplicate group",
     "options": {
       "exact": "Exact",
       "high": "High",
@@ -922,6 +928,11 @@
       "medium": "Medium"
     },
     "search_accuracy_label": "Search Accuracy",
+    "select_options": "Select Options…",
+    "select_all_but_largest_file": "Select every file in each duplicated group, except the largest file",
+    "select_none": "Select None",
+    "select_oldest": "Select the oldest file in the duplicate group",
+    "select_youngest": "Select the youngest file in the duplicate group",
     "title": "Duplicate Scenes"
   },
   "duplicated_phash": "Duplicated (phash)",
@@ -1072,7 +1083,7 @@
   "penis_length_cm": "Penis Length (cm)",
   "perceptual_similarity": "Perceptual Similarity (phash)",
   "performer": "Performer",
-  "performerTags": "Performer Tags",
+  "performer_tags": "Performer Tags",
   "performer_age": "Performer Age",
   "performer_count": "Performer Count",
   "performer_favorite": "Performer Favourited",
@@ -1127,7 +1138,7 @@
   "resume_time": "Resume Time",
   "scene": "Scene",
   "sceneTagger": "Scene Tagger",
-  "sceneTags": "Scene Tags",
+  "scene_tags": "Scene Tags",
   "scene_code": "Studio Code",
   "scene_count": "Scene Count",
   "scene_created_at": "Scene Created At",
@@ -1310,6 +1321,8 @@
   "synopsis": "Synopsis",
   "tag": "Tag",
   "tag_count": "Tag Count",
+  "tag_parent_tooltip": "Has parent tags",
+  "tag_sub_tag_tooltip": "Has sub-tags",
   "tags": "Tags",
   "tattoos": "Tattoos",
   "title": "Title",

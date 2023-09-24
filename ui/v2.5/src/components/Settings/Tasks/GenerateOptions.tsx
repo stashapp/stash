@@ -133,6 +133,7 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
         id="phash-task"
         checked={options.phashes ?? false}
         headingID="dialogs.scene_gen.phash"
+        tooltipID="dialogs.scene_gen.phash_tooltip"
         onChange={(v) => setOptions({ phashes: v })}
       />
 

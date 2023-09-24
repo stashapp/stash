@@ -1,10 +1,6 @@
 package models
 
-import (
-	"context"
-
-	"github.com/stashapp/stash/pkg/file"
-)
+import "context"
 
 type PHashDuplicationCriterionInput struct {
 	Duplicated *bool `json:"duplicated"`
@@ -112,9 +108,67 @@ type SceneQueryResult struct {
 	TotalDuration float64
 	TotalSize     float64
 
-	finder     SceneFinder
+	getter     SceneGetter
 	scenes     []*Scene
 	resolveErr error
+}
+
+type SceneMovieInput struct {
+	MovieID    string `json:"movie_id"`
+	SceneIndex *int   `json:"scene_index"`
+}
+
+type SceneCreateInput struct {
+	Title        *string           `json:"title"`
+	Code         *string           `json:"code"`
+	Details      *string           `json:"details"`
+	Director     *string           `json:"director"`
+	URL          *string           `json:"url"`
+	Urls         []string          `json:"urls"`
+	Date         *string           `json:"date"`
+	Rating       *int              `json:"rating"`
+	Rating100    *int              `json:"rating100"`
+	Organized    *bool             `json:"organized"`
+	StudioID     *string           `json:"studio_id"`
+	GalleryIds   []string          `json:"gallery_ids"`
+	PerformerIds []string          `json:"performer_ids"`
+	Movies       []SceneMovieInput `json:"movies"`
+	TagIds       []string          `json:"tag_ids"`
+	// This should be a URL or a base64 encoded data URL
+	CoverImage *string   `json:"cover_image"`
+	StashIds   []StashID `json:"stash_ids"`
+	// The first id will be assigned as primary.
+	// Files will be reassigned from existing scenes if applicable.
+	// Files must not already be primary for another scene.
+	FileIds []string `json:"file_ids"`
+}
+
+type SceneUpdateInput struct {
+	ClientMutationID *string           `json:"clientMutationId"`
+	ID               string            `json:"id"`
+	Title            *string           `json:"title"`
+	Code             *string           `json:"code"`
+	Details          *string           `json:"details"`
+	Director         *string           `json:"director"`
+	URL              *string           `json:"url"`
+	Urls             []string          `json:"urls"`
+	Date             *string           `json:"date"`
+	Rating           *int              `json:"rating"`
+	Rating100        *int              `json:"rating100"`
+	OCounter         *int              `json:"o_counter"`
+	Organized        *bool             `json:"organized"`
+	StudioID         *string           `json:"studio_id"`
+	GalleryIds       []string          `json:"gallery_ids"`
+	PerformerIds     []string          `json:"performer_ids"`
+	Movies           []SceneMovieInput `json:"movies"`
+	TagIds           []string          `json:"tag_ids"`
+	// This should be a URL or a base64 encoded data URL
+	CoverImage    *string   `json:"cover_image"`
+	StashIds      []StashID `json:"stash_ids"`
+	ResumeTime    *float64  `json:"resume_time"`
+	PlayDuration  *float64  `json:"play_duration"`
+	PlayCount     *int      `json:"play_count"`
+	PrimaryFileID *string   `json:"primary_file_id"`
 }
 
 type SceneDestroyInput struct {
@@ -129,83 +183,16 @@ type ScenesDestroyInput struct {
 	DeleteGenerated *bool    `json:"delete_generated"`
 }
 
-func NewSceneQueryResult(finder SceneFinder) *SceneQueryResult {
+func NewSceneQueryResult(getter SceneGetter) *SceneQueryResult {
 	return &SceneQueryResult{
-		finder: finder,
+		getter: getter,
 	}
 }
 
 func (r *SceneQueryResult) Resolve(ctx context.Context) ([]*Scene, error) {
 	// cache results
 	if r.scenes == nil && r.resolveErr == nil {
-		r.scenes, r.resolveErr = r.finder.FindMany(ctx, r.IDs)
+		r.scenes, r.resolveErr = r.getter.FindMany(ctx, r.IDs)
 	}
 	return r.scenes, r.resolveErr
-}
-
-type SceneFinder interface {
-	// TODO - rename this to Find and remove existing method
-	FindMany(ctx context.Context, ids []int) ([]*Scene, error)
-}
-
-type SceneReader interface {
-	SceneFinder
-	// TODO - remove this in another PR
-	Find(ctx context.Context, id int) (*Scene, error)
-	FindByChecksum(ctx context.Context, checksum string) ([]*Scene, error)
-	FindByOSHash(ctx context.Context, oshash string) ([]*Scene, error)
-	FindByPath(ctx context.Context, path string) ([]*Scene, error)
-	FindByPerformerID(ctx context.Context, performerID int) ([]*Scene, error)
-	FindByGalleryID(ctx context.Context, performerID int) ([]*Scene, error)
-	FindDuplicates(ctx context.Context, distance int, durationDiff float64) ([][]*Scene, error)
-
-	URLLoader
-	GalleryIDLoader
-	PerformerIDLoader
-	TagIDLoader
-	SceneMovieLoader
-	StashIDLoader
-	VideoFileLoader
-
-	CountByPerformerID(ctx context.Context, performerID int) (int, error)
-	OCountByPerformerID(ctx context.Context, performerID int) (int, error)
-	OCount(ctx context.Context) (int, error)
-	// FindByStudioID(studioID int) ([]*Scene, error)
-	FindByMovieID(ctx context.Context, movieID int) ([]*Scene, error)
-	CountByMovieID(ctx context.Context, movieID int) (int, error)
-	Count(ctx context.Context) (int, error)
-	PlayCount(ctx context.Context) (int, error)
-	UniqueScenePlayCount(ctx context.Context) (int, error)
-	Size(ctx context.Context) (float64, error)
-	Duration(ctx context.Context) (float64, error)
-	PlayDuration(ctx context.Context) (float64, error)
-	// SizeCount() (string, error)
-	CountByStudioID(ctx context.Context, studioID int) (int, error)
-	CountByTagID(ctx context.Context, tagID int) (int, error)
-	CountMissingChecksum(ctx context.Context) (int, error)
-	CountMissingOSHash(ctx context.Context) (int, error)
-	Wall(ctx context.Context, q *string) ([]*Scene, error)
-	All(ctx context.Context) ([]*Scene, error)
-	Query(ctx context.Context, options SceneQueryOptions) (*SceneQueryResult, error)
-	QueryCount(ctx context.Context, sceneFilter *SceneFilterType, findFilter *FindFilterType) (int, error)
-	GetCover(ctx context.Context, sceneID int) ([]byte, error)
-	HasCover(ctx context.Context, sceneID int) (bool, error)
-}
-
-type SceneWriter interface {
-	Create(ctx context.Context, newScene *Scene, fileIDs []file.ID) error
-	Update(ctx context.Context, updatedScene *Scene) error
-	UpdatePartial(ctx context.Context, id int, updatedScene ScenePartial) (*Scene, error)
-	IncrementOCounter(ctx context.Context, id int) (int, error)
-	DecrementOCounter(ctx context.Context, id int) (int, error)
-	ResetOCounter(ctx context.Context, id int) (int, error)
-	SaveActivity(ctx context.Context, id int, resumeTime *float64, playDuration *float64) (bool, error)
-	IncrementWatchCount(ctx context.Context, id int) (int, error)
-	Destroy(ctx context.Context, id int) error
-	UpdateCover(ctx context.Context, sceneID int, cover []byte) error
-}
-
-type SceneReaderWriter interface {
-	SceneReader
-	SceneWriter
 }

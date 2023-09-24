@@ -10,10 +10,14 @@ import (
 )
 
 type Image struct {
-	Title      string        `json:"title,omitempty"`
-	Studio     string        `json:"studio,omitempty"`
-	Rating     int           `json:"rating,omitempty"`
-	URL        string        `json:"url,omitempty"`
+	Title  string `json:"title,omitempty"`
+	Studio string `json:"studio,omitempty"`
+	Rating int    `json:"rating,omitempty"`
+
+	// deprecated - for import only
+	URL string `json:"url,omitempty"`
+
+	URLs       []string      `json:"urls,omitempty"`
 	Date       string        `json:"date,omitempty"`
 	Organized  bool          `json:"organized,omitempty"`
 	OCounter   int           `json:"o_counter,omitempty"`

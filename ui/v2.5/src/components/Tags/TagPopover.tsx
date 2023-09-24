@@ -8,13 +8,12 @@ import { ConfigurationContext } from "../../hooks/Config";
 import { IUIConfig } from "src/core/config";
 import { Placement } from "react-bootstrap/esm/Overlay";
 
-interface ITagPopoverProps {
-  id?: string;
-  placement?: Placement;
+interface ITagPopoverCardProps {
+  id: string;
 }
 
 export const TagPopoverCard: React.FC<ITagPopoverCardProps> = ({ id }) => {
-  const { data, loading, error } = useFindTag(id ?? "");
+  const { data, loading, error } = useFindTag(id);
 
   if (loading)
     return (
@@ -35,8 +34,15 @@ export const TagPopoverCard: React.FC<ITagPopoverCardProps> = ({ id }) => {
   );
 };
 
+interface ITagPopoverProps {
+  id: string;
+  hide?: boolean;
+  placement?: Placement;
+}
+
 export const TagPopover: React.FC<ITagPopoverProps> = ({
   id,
+  hide,
   children,
   placement = "top",
 }) => {
@@ -45,7 +51,7 @@ export const TagPopover: React.FC<ITagPopoverProps> = ({
   const showTagCardOnHover =
     (config?.ui as IUIConfig)?.showTagCardOnHover ?? true;
 
-  if (!id || !showTagCardOnHover) {
+  if (hide || !showTagCardOnHover) {
     return <>{children}</>;
   }
 
@@ -60,7 +66,3 @@ export const TagPopover: React.FC<ITagPopoverProps> = ({
     </HoverPopover>
   );
 };
-
-interface ITagPopoverCardProps {
-  id?: string;
-}

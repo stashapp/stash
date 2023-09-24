@@ -17,8 +17,8 @@ export const StudioChildrenPanel: React.FC<IStudioChildrenPanel> = ({
     const studioValue = { id: studio.id!, label: studio.name! };
     // if studio is already present, then we modify it, otherwise add
     let parentStudioCriterion = filter.criteria.find((c) => {
-      return c.criterionOption.type === "parent_studios";
-    }) as ParentStudiosCriterion;
+      return c.criterionOption.type === "parents";
+    }) as ParentStudiosCriterion | undefined;
 
     if (
       parentStudioCriterion &&

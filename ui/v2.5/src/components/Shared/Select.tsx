@@ -17,11 +17,9 @@ import {
   useAllTagsForFilter,
   useAllMoviesForFilter,
   useAllStudiosForFilter,
-  useAllPerformersForFilter,
   useMarkerStrings,
   useTagCreate,
   useStudioCreate,
-  usePerformerCreate,
   useMovieCreate,
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
@@ -32,8 +30,9 @@ import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import { TagPopover } from "../Tags/TagPopover";
 import { defaultMaxOptionsShown, IUIConfig } from "src/core/config";
-import { useDebouncedSetState } from "src/hooks/debounce";
+import { useDebounce } from "src/hooks/debounce";
 import { Placement } from "react-bootstrap/esm/Overlay";
+import { PerformerIDSelect } from "../Performers/PerformerSelect";
 
 export type SelectObject = {
   id: string;
@@ -47,12 +46,9 @@ interface ITypeProps {
     | "galleries"
     | "performers"
     | "studios"
-    | "parent_studios"
     | "tags"
-    | "sceneTags"
-    | "performerTags"
-    | "parentTags"
-    | "childTags"
+    | "scene_tags"
+    | "performer_tags"
     | "movies";
 }
 interface IFilterProps {
@@ -358,7 +354,7 @@ export const GallerySelect: React.FC<ITitledSelect> = (props) => {
     value: g.id,
   }));
 
-  const onInputChange = useDebouncedSetState(setQuery, 500);
+  const onInputChange = useDebounce(setQuery, 500);
 
   const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
     const selected = getSelectedItems(selectedItems);
@@ -409,7 +405,7 @@ export const SceneSelect: React.FC<ITitledSelect> = (props) => {
     value: s.id,
   }));
 
-  const onInputChange = useDebouncedSetState(setQuery, 500);
+  const onInputChange = useDebounce(setQuery, 500);
 
   const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
     const selected = getSelectedItems(selectedItems);
@@ -459,7 +455,7 @@ export const ImageSelect: React.FC<ITitledSelect> = (props) => {
     value: s.id,
   }));
 
-  const onInputChange = useDebouncedSetState(setQuery, 500);
+  const onInputChange = useDebounce(setQuery, 500);
 
   const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
     const selected = getSelectedItems(selectedItems);
@@ -535,152 +531,7 @@ export const MarkerTitleSuggest: React.FC<IMarkerSuggestProps> = (props) => {
 };
 
 export const PerformerSelect: React.FC<IFilterProps> = (props) => {
-  const [performerAliases, setPerformerAliases] = useState<
-    Record<string, string[]>
-  >({});
-  const [performerDisambiguations, setPerformerDisambiguations] = useState<
-    Record<string, string>
-  >({});
-  const [allAliases, setAllAliases] = useState<string[]>([]);
-  const { data, loading } = useAllPerformersForFilter();
-  const [createPerformer] = usePerformerCreate();
-
-  const { configuration } = React.useContext(ConfigurationContext);
-  const intl = useIntl();
-  const defaultCreatable =
-    !configuration?.interface.disableDropdownCreate.performer ?? true;
-
-  const performers = useMemo(
-    () => data?.allPerformers ?? [],
-    [data?.allPerformers]
-  );
-
-  useEffect(() => {
-    // build the tag aliases map
-    const newAliases: Record<string, string[]> = {};
-    const newDisambiguations: Record<string, string> = {};
-    const newAll: string[] = [];
-    performers.forEach((t) => {
-      if (t.alias_list.length) {
-        newAliases[t.id] = t.alias_list;
-      }
-      newAll.push(...t.alias_list);
-      if (t.disambiguation) {
-        newDisambiguations[t.id] = t.disambiguation;
-      }
-    });
-    setPerformerAliases(newAliases);
-    setAllAliases(newAll);
-    setPerformerDisambiguations(newDisambiguations);
-  }, [performers]);
-
-  const PerformerOption: React.FC<OptionProps<Option, boolean>> = (
-    optionProps
-  ) => {
-    const { inputValue } = optionProps.selectProps;
-
-    let thisOptionProps = optionProps;
-
-    let { label } = optionProps.data;
-    const id = Number(optionProps.data.value);
-
-    if (id && performerDisambiguations[id]) {
-      label += ` (${performerDisambiguations[id]})`;
-    }
-
-    if (
-      inputValue &&
-      !optionProps.label.toLowerCase().includes(inputValue.toLowerCase())
-    ) {
-      // must be alias
-      label += " (alias)";
-    }
-
-    if (label != optionProps.data.label) {
-      thisOptionProps = {
-        ...optionProps,
-        children: label,
-      };
-    }
-
-    return <reactSelectComponents.Option {...thisOptionProps} />;
-  };
-
-  const filterOption = (option: Option, rawInput: string): boolean => {
-    if (!rawInput) {
-      return true;
-    }
-
-    const input = rawInput.toLowerCase();
-    const optionVal = option.label.toLowerCase();
-
-    if (optionVal.includes(input)) {
-      return true;
-    }
-
-    // search for performer aliases
-    const aliases = performerAliases[option.value];
-    return aliases && aliases.some((a) => a.toLowerCase().includes(input));
-  };
-
-  const isValidNewOption = (
-    inputValue: string,
-    value: Options<Option>,
-    options: OptionsOrGroups<Option, GroupBase<Option>>
-  ) => {
-    if (!inputValue) {
-      return false;
-    }
-
-    if (
-      (options as Options<Option>).some((o: Option) => {
-        return o.label.toLowerCase() === inputValue.toLowerCase();
-      })
-    ) {
-      return false;
-    }
-
-    if (allAliases.some((a) => a.toLowerCase() === inputValue.toLowerCase())) {
-      return false;
-    }
-
-    return true;
-  };
-
-  const onCreate = async (name: string) => {
-    const result = await createPerformer({
-      variables: { input: { name } },
-    });
-    return {
-      item: result.data!.performerCreate!,
-      message: intl.formatMessage(
-        { id: "toast.created_entity" },
-        { entity: intl.formatMessage({ id: "performer" }).toLocaleLowerCase() }
-      ),
-    };
-  };
-
-  return (
-    <FilterSelectComponent
-      {...props}
-      filterOption={filterOption}
-      isValidNewOption={isValidNewOption}
-      components={{ Option: PerformerOption }}
-      isMulti={props.isMulti ?? false}
-      creatable={props.creatable ?? defaultCreatable}
-      onCreate={onCreate}
-      type="performers"
-      isLoading={loading}
-      items={performers}
-      placeholder={
-        props.noSelectionString ??
-        intl.formatMessage(
-          { id: "actions.select_entity" },
-          { entityType: intl.formatMessage({ id: "performer" }) }
-        )
-      }
-    />
-  );
+  return <PerformerIDSelect {...props} />;
 };
 
 export const StudioSelect: React.FC<
@@ -990,12 +841,12 @@ export const TagSelect: React.FC<
       };
     }
 
-    const id = (optionProps.data as Option & { __isNew__: boolean }).__isNew__
-      ? ""
-      : optionProps.data.value;
+    const id = optionProps.data.value;
+    const hide = (optionProps.data as Option & { __isNew__: boolean })
+      .__isNew__;
 
     return (
-      <TagPopover id={id} placement={props.hoverPlacement}>
+      <TagPopover id={id} hide={hide} placement={props.hoverPlacement}>
         <reactSelectComponents.Option {...thisOptionProps} />
       </TagPopover>
     );
@@ -1085,7 +936,7 @@ export const TagSelect: React.FC<
 export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) => {
   if (props.type === "performers") {
     return <PerformerSelect {...props} creatable={false} />;
-  } else if (props.type === "studios" || props.type === "parent_studios") {
+  } else if (props.type === "studios") {
     return <StudioSelect {...props} creatable={false} />;
   } else if (props.type === "movies") {
     return <MovieSelect {...props} creatable={false} />;

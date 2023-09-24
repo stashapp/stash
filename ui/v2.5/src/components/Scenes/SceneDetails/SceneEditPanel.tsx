@@ -20,7 +20,6 @@ import {
   queryScrapeSceneQueryFragment,
 } from "src/core/StashService";
 import {
-  PerformerSelect,
   TagSelect,
   StudioSelect,
   GallerySelect,
@@ -51,6 +50,11 @@ import { useRatingKeybinds } from "src/hooks/keybinds";
 import { lazyComponent } from "src/utils/lazyComponent";
 import isEqual from "lodash-es/isEqual";
 import { DateInput } from "src/components/Shared/DateInput";
+import { yupDateString, yupUniqueStringList } from "src/utils/yup";
+import {
+  Performer,
+  PerformerSelect,
+} from "src/components/Performers/PerformerSelect";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
@@ -78,6 +82,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const [galleries, setGalleries] = useState<{ id: string; title: string }[]>(
     []
   );
+  const [performers, setPerformers] = useState<Performer[]>([]);
 
   const Scrapers = useListSceneScrapers();
   const [fragmentScrapers, setFragmentScrapers] = useState<GQL.Scraper[]>([]);
@@ -98,6 +103,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
     );
   }, [scene.galleries]);
 
+  useEffect(() => {
+    setPerformers(scene.performers ?? []);
+  }, [scene.performers]);
+
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
 
   // Network state
@@ -106,38 +115,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const schema = yup.object({
     title: yup.string().ensure(),
     code: yup.string().ensure(),
-    urls: yup
-      .array(yup.string().required())
-      .defined()
-      .test({
-        name: "unique",
-        test: (value) => {
-          const dupes = value
-            .map((e, i, a) => {
-              if (a.indexOf(e) !== i) {
-                return String(i - 1);
-              } else {
-                return null;
-              }
-            })
-            .filter((e) => e !== null) as string[];
-          if (dupes.length === 0) return true;
-          return new yup.ValidationError(dupes.join(" "), value, "urls");
-        },
-      }),
-    date: yup
-      .string()
-      .ensure()
-      .test({
-        name: "date",
-        test: (value) => {
-          if (!value) return true;
-          if (!value.match(/^\d{4}-\d{2}-\d{2}$/)) return false;
-          if (Number.isNaN(Date.parse(value))) return false;
-          return true;
-        },
-        message: intl.formatMessage({ id: "validation.date_invalid_form" }),
-      }),
+    urls: yupUniqueStringList("urls"),
+    date: yupDateString(intl),
     director: yup.string().ensure(),
     rating100: yup.number().nullable().defined(),
     gallery_ids: yup.array(yup.string().required()).defined(),
@@ -215,6 +194,14 @@ export const SceneEditPanel: React.FC<IProps> = ({
     formik.setFieldValue(
       "gallery_ids",
       items.map((i) => i.id)
+    );
+  }
+
+  function onSetPerformers(items: Performer[]) {
+    setPerformers(items);
+    formik.setFieldValue(
+      "performer_ids",
+      items.map((item) => item.id)
     );
   }
 
@@ -414,6 +401,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     return (
       <SceneScrapeDialog
         scene={currentScene}
+        scenePerformers={performers}
         scraped={scrapedScene}
         endpoint={endpoint}
         onClose={(s) => onScrapeDialogClosed(s)}
@@ -581,8 +569,15 @@ export const SceneEditPanel: React.FC<IProps> = ({
       });
 
       if (idPerfs.length > 0) {
-        const newIds = idPerfs.map((p) => p.stored_id);
-        formik.setFieldValue("performer_ids", newIds as string[]);
+        onSetPerformers(
+          idPerfs.map((p) => {
+            return {
+              id: p.stored_id!,
+              name: p.name ?? "",
+              alias_list: [],
+            };
+          })
+        );
       }
     }
 
@@ -852,13 +847,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
               <Col sm={9} xl={12}>
                 <PerformerSelect
                   isMulti
-                  onSelect={(items) =>
-                    formik.setFieldValue(
-                      "performer_ids",
-                      items.map((item) => item.id)
-                    )
-                  }
-                  ids={formik.values.performer_ids}
+                  onSelect={onSetPerformers}
+                  values={performers}
                 />
               </Col>
             </Form.Group>

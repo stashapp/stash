@@ -1,5 +1,4 @@
 // NOTE: add new enum values to the end, to ensure existing data
-
 // is not impacted
 export enum DisplayMode {
   Grid,
@@ -60,38 +59,51 @@ export interface IPhashDistanceValue {
 }
 
 export function criterionIsHierarchicalLabelValue(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value: any
+  value: unknown
 ): value is IHierarchicalLabelValue {
-  return typeof value === "object" && "items" in value && "depth" in value;
+  return (
+    typeof value === "object" && !!value && "items" in value && "depth" in value
+  );
 }
 
-export function criterionIsNumberValue(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value: any
-): value is INumberValue {
-  return typeof value === "object" && "value" in value && "value2" in value;
+export function criterionIsNumberValue(value: unknown): value is INumberValue {
+  return (
+    typeof value === "object" &&
+    !!value &&
+    "value" in value &&
+    "value2" in value
+  );
 }
 
 export function criterionIsStashIDValue(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value: any
+  value: unknown
 ): value is IStashIDValue {
-  return typeof value === "object" && "endpoint" in value && "stashID" in value;
+  return (
+    typeof value === "object" &&
+    !!value &&
+    "endpoint" in value &&
+    "stashID" in value
+  );
 }
 
-export function criterionIsDateValue(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value: any
-): value is IDateValue {
-  return typeof value === "object" && "value" in value && "value2" in value;
+export function criterionIsDateValue(value: unknown): value is IDateValue {
+  return (
+    typeof value === "object" &&
+    !!value &&
+    "value" in value &&
+    "value2" in value
+  );
 }
 
 export function criterionIsTimestampValue(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value: any
+  value: unknown
 ): value is ITimestampValue {
-  return typeof value === "object" && "value" in value && "value2" in value;
+  return (
+    typeof value === "object" &&
+    !!value &&
+    "value" in value &&
+    "value2" in value
+  );
 }
 
 export interface IOptionType {
@@ -101,7 +113,6 @@ export interface IOptionType {
 }
 
 export type CriterionType =
-  | "none"
   | "path"
   | "rating"
   | "rating100"
@@ -112,20 +123,12 @@ export type CriterionType =
   | "video_codec"
   | "audio_codec"
   | "duration"
-  | "favorite"
-  | "hasMarkers"
-  | "sceneIsMissing"
-  | "imageIsMissing"
-  | "performerIsMissing"
-  | "galleryIsMissing"
-  | "tagIsMissing"
-  | "studioIsMissing"
-  | "movieIsMissing"
+  | "filter_favorites"
+  | "has_markers"
+  | "is_missing"
   | "tags"
-  | "sceneTags"
-  | "performerTags"
-  | "parentTags"
-  | "childTags"
+  | "scene_tags"
+  | "performer_tags"
   | "tag_count"
   | "performers"
   | "studios"
@@ -149,7 +152,8 @@ export type CriterionType =
   | "piercings"
   | "aliases"
   | "gender"
-  | "parent_studios"
+  | "parents"
+  | "children"
   | "scene_count"
   | "marker_count"
   | "image_count"
@@ -169,13 +173,11 @@ export type CriterionType =
   | "title"
   | "oshash"
   | "checksum"
-  | "sceneChecksum"
-  | "galleryChecksum"
-  | "phash"
+  | "phash_distance"
   | "director"
   | "synopsis"
-  | "parent_tag_count"
-  | "child_tag_count"
+  | "parent_count"
+  | "child_count"
   | "performer_favorite"
   | "performer_age"
   | "duplicated"
@@ -191,6 +193,6 @@ export type CriterionType =
   | "scene_created_at"
   | "scene_updated_at"
   | "description"
-  | "scene_code"
+  | "code"
   | "disambiguation"
-  | "hasChapters";
+  | "has_chapters";

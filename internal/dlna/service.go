@@ -8,7 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
@@ -16,7 +15,7 @@ import (
 
 type Repository struct {
 	SceneFinder     SceneFinder
-	FileFinder      file.Finder
+	FileGetter      models.FileGetter
 	StudioFinder    StudioFinder
 	TagFinder       TagFinder
 	PerformerFinder PerformerFinder

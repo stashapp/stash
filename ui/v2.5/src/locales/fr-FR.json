@@ -8,6 +8,7 @@
     "allow_temporarily": "Autoriser temporairement",
     "anonymise": "Anonymiser",
     "apply": "Appliquer",
+    "assign_stashid_to_parent_studio": "Attribuer l'identifiant Stash au studio parent existant et actualiser les métadonnées",
     "auto_tag": "Étiquetage automatique",
     "backup": "Sauvegarder",
     "browse_for_image": "Sélectionner une image…",
@@ -24,6 +25,7 @@
     "create_chapters": "Créer un chapitre",
     "create_entity": "Créer {entityType}",
     "create_marker": "Créer un marqueur",
+    "create_parent_studio": "Créer un studio parent",
     "created_entity": "Créé {entity_type} : {entity_name}",
     "customise": "Personnaliser",
     "delete": "Supprimer",
@@ -38,6 +40,7 @@
     "download_backup": "Télécharger une sauvegarde",
     "edit": "Éditer",
     "edit_entity": "Éditer {entityType}",
+    "encoding_image": "Encodage de l'image",
     "export": "Exporter",
     "export_all": "Tout exporter…",
     "find": "Rechercher",
@@ -67,6 +70,7 @@
     "not_running": "arrêt",
     "open_in_external_player": "Ouvrir dans un lecteur externe",
     "open_random": "Ouvrir au hasard",
+    "optimise_database": "Optimiser la base de données",
     "overwrite": "Écraser",
     "play_random": "Lecture aléatoire",
     "play_selected": "Lire la sélection",
@@ -129,6 +133,7 @@
   "also_known_as": "Également connu comme",
   "appears_with": "Apparaît avec",
   "ascending": "Ascendant",
+  "audio_codec": "Codec audio",
   "average_resolution": "Résolution moyenne",
   "between_and": "et",
   "birth_year": "Année de naissance",
@@ -454,10 +459,18 @@
         "include_male_performers": "Inclure les performeurs masculins",
         "set_cover_images": "Définir les vignettes",
         "set_organized": "Définir le drapeau organisé",
+        "skip_multiple_matches": "Ignorer les correspondances qui ont plusieurs résultats",
+        "skip_multiple_matches_tooltip": "Si cette option n'est pas activée et que plusieurs résultats sont retournés, un seul sera aléatoirement choisi pour correspondre",
+        "skip_single_name_performers": "Ignorer les performeurs à nom unique sans désambiguïsation",
+        "skip_single_name_performers_tooltip": "Si cette option n'est pas activée, les performeurs qui sont souvent génériques, comme Samantha ou Olga, correspondront",
         "source": "Source",
         "source_options": "Options pour {source}",
         "sources": "Sources",
-        "strategy": "Stratégie"
+        "strategy": "Stratégie",
+        "tag_skipped_matches": "Étiqueter les correspondances ignorées avec",
+        "tag_skipped_matches_tooltip": "Créer une étiquette telle que \"Identifier : plusieurs correspondances\" filtrable dans la vue Étiquetage de scène et déterminer la bonne correspondance manuellement",
+        "tag_skipped_performer_tooltip": "Créer une étiquette telle que \"Identifier : Performeur à nom unique\" filtrable dans la vue Étiquetage de scène et déterminer comment les traiter",
+        "tag_skipped_performers": "Étiqueter les performeurs ignorés avec"
       },
       "import_from_exported_json": "Importation à partir du JSON exporté dans le répertoire des métadonnées. Efface la base de données existante.",
       "incremental_import": "Importation incrémentielle à partir d'un fichier zip d'exportation fourni.",
@@ -475,6 +488,8 @@
       },
       "migrations": "Migrations",
       "only_dry_run": "Effectuer un essai à blanc. Ne rien supprimer",
+      "optimise_database": "Essayer d'améliorer les performances en analysant et en reconstruisant l'ensemble de la base de données.",
+      "optimise_database_warning": "Attention : pendant l'exécution de cette tâche, toute opération modifiant la base de données échouera et, selon la taille de la base de données, elle peut prendre plusieurs minutes pour aboutir. Elle requiert au minimum autant d'espace disque libre que la taille de votre base de données, mais 1.5x est recommandé.",
       "plugin_tasks": "Tâches de Plugin",
       "scan": {
         "scanning_all_paths": "Analyse tous les chemins",
@@ -537,6 +552,21 @@
         "send_desktop_notifications_for_events": "Envoyer des notifications sur le bureau en cas d'événements",
         "skip_opening_browser": "Ne pas ouvrir de navigateur",
         "skip_opening_browser_on_startup": "Ignorer l'ouverture automatique du navigateur lors du démarrage"
+      },
+      "detail": {
+        "compact_expanded_details": {
+          "description": "Activée, cette option présentera des détails plus étendus en préservant une présentation compacte",
+          "heading": "Détails étendus compacts"
+        },
+        "enable_background_image": {
+          "description": "Afficher l'image d'arrière-plan sur la page Détail.",
+          "heading": "Activer l'image d'arrière-plan"
+        },
+        "heading": "Page Détail",
+        "show_all_details": {
+          "description": "Activée, tous les détails du contenu seront affichés par défaut et chaque élément détaillé tiendra dans une seule colonne",
+          "heading": "Montrer tous les détails"
+        }
       },
       "editing": {
         "disable_dropdown_create": {
@@ -657,6 +687,7 @@
             "description": "Lire la scène suivante de la file d'attente lorsque une vidéo se termine",
             "heading": "Continuer la liste de lecture par défaut"
           },
+          "enable_chromecast": "Activer Chromecast",
           "show_scrubber": "Montrer la barre de progression",
           "track_activity": "Suivre l'activité",
           "vr_tag": {
@@ -702,7 +733,11 @@
           }
         }
       },
-      "title": "Interface utilisateur"
+      "title": "Interface utilisateur",
+      "use_stash_hosted_funscript": {
+        "description": "Activée, les funscripts sont transmis directement de Stash à votre dispositif Handy sans recourir au serveur Handy de tierce partie. Nécessite que Stash soit accessible depuis votre dispositif Handy.",
+        "heading": "Transmettre directement les funscripts"
+      }
     }
   },
   "configuration": "Configuration",
@@ -811,6 +846,7 @@
       "source": "Source"
     },
     "overwrite_filter_confirm": "Êtes-vous sûr de vouloir remplacer la requête sauvegardée existante {entityName} ?",
+    "performers_found": "{count} performeurs trouvés",
     "reassign_entity_title": "{count, plural, one {Réaffecté {singularEntity}} other {Réaffectés {pluralEntity}}}",
     "reassign_files": {
       "destination": "Réaffecter à"
@@ -915,6 +951,7 @@
   "errors": {
     "image_index_greater_than_zero": "L'index de l'image doit être supérieur à 0",
     "lazy_component_error_help": "Si vous avez récemment mis à jour Stash, merci de recharger la page ou de vider le cache de votre navigateur.",
+    "loading_type": "Erreur de chargement de {type}",
     "something_went_wrong": "Quelque chose n'a pas fonctionné."
   },
   "ethnicity": "Ethnicité",
@@ -977,6 +1014,7 @@
   "include_parent_tags": "Inclure les étiquettes parentes",
   "include_sub_studios": "Inclure les studios affiliés",
   "include_sub_tags": "Inclure les étiquettes affiliées",
+  "index_of_total": "{index} de {total}",
   "instagram": "Instagram",
   "interactive": "Interactif",
   "interactive_speed": "Vitesse interactive",
@@ -1023,6 +1061,7 @@
     "previous": "Précédente"
   },
   "parent_of": "Parent de {children}",
+  "parent_studio": "Studio parent",
   "parent_studios": "Studio parent",
   "parent_tag_count": "Nombre d'étiquettes parentes",
   "parent_tags": "Étiquettes parentes",
@@ -1033,7 +1072,7 @@
   "penis_length_cm": "Longueur du pénis (cm)",
   "perceptual_similarity": "Similitude perceptuelle (empreinte)",
   "performer": "Performeurs",
-  "performerTags": "Étiquettes de performeur",
+  "performer_tags": "Étiquettes de performeur",
   "performer_age": "Âge du performeur",
   "performer_count": "Nombre de performeurs",
   "performer_favorite": "Performeur favori",
@@ -1088,7 +1127,7 @@
   "resume_time": "Reprendre le temps",
   "scene": "Scène",
   "sceneTagger": "Étiqueteuse de scènes",
-  "sceneTags": "Étiquettes de la scène",
+  "scene_tags": "Étiquettes de la scène",
   "scene_code": "Code studio",
   "scene_count": "Nombre de scènes",
   "scene_created_at": "Scène créée le",
@@ -1204,6 +1243,7 @@
   "stashbox": {
     "go_review_draft": "Allez sur {endpoint_name} pour examiner l'ébauche.",
     "selected_stash_box": "Point de terminaison Stash-Box sélectionné",
+    "source": "Source Stash-Box",
     "submission_failed": "Envoi échoué",
     "submission_successful": "Envoi réussi",
     "submit_update": "Existe déjà dans {endpoint_name}"
@@ -1212,11 +1252,54 @@
   "stats": {
     "image_size": "Poids des images",
     "scenes_duration": "Durée des scènes",
-    "scenes_size": "Poids des scènes"
+    "scenes_played": "Scènes visionnées",
+    "scenes_size": "Poids des scènes",
+    "total_o_count": "Nombre total de O-",
+    "total_play_count": "Nombre de visionnage total",
+    "total_play_duration": "Durée de visionnage totale"
   },
   "status": "Statut : {statusText}",
   "studio": "Studio",
+  "studio_and_parent": "Studio & Parent",
   "studio_depth": "Niveaux (vides pour tous)",
+  "studio_tagger": {
+    "add_new_studios": "Ajouter des nouveaux studios",
+    "any_names_entered_will_be_queried": "Tous les noms saisis seront interrogés depuis l'instance Stash-Box distante et ajoutés si trouvés. Seules les correspondances exactes seront considérées comme telles.",
+    "batch_add_studios": "Ajouter des studios par lots",
+    "batch_update_studios": "Mise à jour des studios par lots",
+    "config": {
+      "active_stash-box_instance": "Instance active Stash-Box :",
+      "create_parent_desc": "Créer les studios parents manquants, ou étiqueter et mettre à jour les données/image pour les studios parents existants avec des correspondances de noms exactes",
+      "create_parent_label": "Créer les studios parents",
+      "edit_excluded_fields": "Éditer les champs exclus",
+      "excluded_fields": "Champs exclus :",
+      "no_fields_are_excluded": "Aucun champ n'est exclu",
+      "no_instances_found": "Aucunes instances trouvées",
+      "these_fields_will_not_be_changed_when_updating_studios": "Ces champs ne seront pas modifiés lors de la mise à jour des studios."
+    },
+    "create_or_tag_parent_studios": "Créer les studios parents manquants ou étiqueter les existants",
+    "current_page": "Page actuelle",
+    "failed_to_save_studio": "Enregistrement du studio \"{studio}\" échoué",
+    "name_already_exists": "Nom déjà existant",
+    "network_error": "Erreur réseau",
+    "no_results_found": "Aucuns résultats trouvés.",
+    "number_of_studios_will_be_processed": "{studio_count} studios seront traités",
+    "query_all_studios_in_the_database": "Tous les studios de la base de données",
+    "refresh_tagged_studios": "Rafraîchir les studios étiquetés",
+    "refreshing_will_update_the_data": "Un rafraîchissement mettra à jour les données de tous les studios étiquetés depuis l'instance stash-box.",
+    "status_tagging_job_queued": "Statut : Étiquetage en file d'attente",
+    "status_tagging_studios": "Statut : Étiquetage des studios",
+    "studio_already_tagged": "Studio déjà étiqueté",
+    "studio_names_separated_by_comma": "Noms de studio séparés par une virgule",
+    "studio_selection": "Sélection de studio",
+    "studio_successfully_tagged": "Studio étiqueté avec succès",
+    "tag_status": "Statut de l'étiquette",
+    "to_use_the_studio_tagger": "Pour utiliser l’étiqueteur de studio, une instance stash-box doit être configurée.",
+    "untagged_studios": "Studios non étiquetés",
+    "update_studio": "Mise à jour du studio",
+    "update_studios": "Actualiser les studios",
+    "updating_untagged_studios_description": "L'actualisation des studios non étiquetés tentera de faire correspondre chaques studios qui n'ont pas de StashID et mettre à jour les métadonnées."
+  },
   "studios": "Studios",
   "sub_tag_count": "Nombre d'étiquettes affiliées",
   "sub_tag_of": "Étiquette affiliée de {parent}",
@@ -1253,11 +1336,14 @@
   "type": "Type",
   "updated_at": "Actualisé le",
   "url": "URL",
+  "urls": "URLs",
   "validation": {
     "aliases_must_be_unique": "Les alias doivent être uniques",
     "date_invalid_form": "${path} doit être au format AAAA-MM-JJ",
-    "required": "${path} est un champ requis"
+    "required": "${path} est un champ requis",
+    "urls_must_be_unique": "Les URLs doivent être uniques"
   },
+  "video_codec": "Codec vidéo",
   "videos": "Vidéos",
   "view_all": "Tout voir",
   "weight": "Poids",

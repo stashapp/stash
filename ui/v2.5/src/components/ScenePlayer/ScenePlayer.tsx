@@ -23,12 +23,6 @@ import "./big-buttons";
 import "./track-activity";
 import "./vrmode";
 import cx from "classnames";
-// @ts-ignore
-import airplay from "@silvermine/videojs-airplay";
-// @ts-ignore
-import chromecast from "@silvermine/videojs-chromecast";
-airplay(videojs);
-chromecast(videojs);
 import {
   useSceneSaveActivity,
   useSceneIncrementPlayCount,
@@ -45,6 +39,17 @@ import { SceneInteractiveStatus } from "src/hooks/Interactive/status";
 import { languageMap } from "src/utils/caption";
 import { VIDEO_PLAYER_ID } from "./util";
 import { IUIConfig } from "src/core/config";
+
+// @ts-ignore
+import airplay from "@silvermine/videojs-airplay";
+// @ts-ignore
+import chromecast from "@silvermine/videojs-chromecast";
+import abLoopPlugin from "videojs-abloop";
+
+// register videojs plugins
+airplay(videojs);
+chromecast(videojs);
+abLoopPlugin(window, videojs);
 
 function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
   function seekStep(step: number) {
@@ -71,6 +76,21 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
     const time = currentTime + duration * percent;
     if (time > duration) return;
     player.currentTime(time);
+  }
+
+  function toggleABLooping() {
+    const opts = player.abLoopPlugin.getOptions();
+    if (!opts.start) {
+      opts.start = player.currentTime();
+    } else if (!opts.end) {
+      opts.end = player.currentTime();
+      opts.enabled = true;
+    } else {
+      opts.start = 0;
+      opts.end = 0;
+      opts.enabled = false;
+    }
+    player.abLoopPlugin.setOptions(opts);
   }
 
   let seekFactor = 10;
@@ -110,6 +130,9 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
     case 70: // f
       if (player.isFullscreen()) player.exitFullscreen();
       else player.requestFullscreen();
+      break;
+    case 76: // l
+      toggleABLooping();
       break;
     case 38: // up arrow
       player.volume(player.volume() + 0.1);
@@ -340,6 +363,16 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         skipButtons: {},
         trackActivity: {},
         vrMenu: {},
+        abLoopPlugin: {
+          start: 0,
+          end: false,
+          enabled: false,
+          loopIfBeforeStart: true,
+          loopIfAfterEnd: true,
+          pauseAfterLooping: false,
+          pauseBeforeLooping: false,
+          createButtons: uiConfig?.showAbLoopControls ?? false,
+        },
       },
     };
 
@@ -372,7 +405,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       sceneId.current = undefined;
     };
     // empty deps - only init once
-  }, []);
+    // showAbLoopControls is necessary to re-init the player when the config changes
+  }, [uiConfig?.showAbLoopControls]);
 
   useEffect(() => {
     const player = getPlayer();

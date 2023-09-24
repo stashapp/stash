@@ -619,8 +619,8 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
           if (defaultFilter?.findDefaultFilter) {
             newFilter.currentPage = 1;
             try {
-              newFilter.configureFromJSON(
-                defaultFilter.findDefaultFilter.filter
+              newFilter.configureFromSavedFilter(
+                defaultFilter.findDefaultFilter
               );
             } catch (err) {
               console.log(err);

@@ -138,9 +138,6 @@ func (t *StashBoxBatchTagTask) processMatchedPerformer(ctx context.Context, p *m
 	if t.performer != nil {
 		storedID, _ := strconv.Atoi(*p.StoredID)
 
-		existingStashIDs := getStashIDsForPerformer(ctx, storedID)
-		partial := p.ToPartial(t.box.Endpoint, excluded, existingStashIDs)
-
 		image, err := p.GetImage(ctx, excluded)
 		if err != nil {
 			logger.Errorf("Error processing scraped performer image for %s: %v", *p.Name, err)
@@ -150,6 +147,13 @@ func (t *StashBoxBatchTagTask) processMatchedPerformer(ctx context.Context, p *m
 		// Start the transaction and update the performer
 		err = txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
 			qb := instance.Repository.Performer
+
+			existingStashIDs, err := qb.GetStashIDs(ctx, storedID)
+			if err != nil {
+				return err
+			}
+
+			partial := p.ToPartial(t.box.Endpoint, excluded, existingStashIDs)
 
 			if _, err := qb.UpdatePartial(ctx, t.performer.ID, partial); err != nil {
 				return err
@@ -197,16 +201,6 @@ func (t *StashBoxBatchTagTask) processMatchedPerformer(ctx context.Context, p *m
 			logger.Infof("Created performer %s", *p.Name)
 		}
 	}
-}
-
-func getStashIDsForPerformer(ctx context.Context, performerID int) []models.StashID {
-	tempPerformer := &models.Performer{ID: performerID}
-
-	err := tempPerformer.LoadStashIDs(ctx, instance.Repository.Performer)
-	if err != nil {
-		return nil
-	}
-	return tempPerformer.StashIDs.List()
 }
 
 func (t *StashBoxBatchTagTask) stashBoxStudioTag(ctx context.Context) {
@@ -292,9 +286,6 @@ func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, s *mode
 			}
 		}
 
-		existingStashIDs := getStashIDsForStudio(ctx, storedID)
-		partial := s.ToPartial(s.StoredID, t.box.Endpoint, excluded, existingStashIDs)
-
 		image, err := s.GetImage(ctx, excluded)
 		if err != nil {
 			logger.Errorf("Error processing scraped studio image for %s: %v", s.Name, err)
@@ -304,6 +295,13 @@ func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, s *mode
 		// Start the transaction and update the studio
 		err = txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
 			qb := instance.Repository.Studio
+
+			existingStashIDs, err := qb.GetStashIDs(ctx, storedID)
+			if err != nil {
+				return err
+			}
+
+			partial := s.ToPartial(s.StoredID, t.box.Endpoint, excluded, existingStashIDs)
 
 			if err := studio.ValidateModify(ctx, *partial, qb); err != nil {
 				return err
@@ -400,11 +398,8 @@ func (t *StashBoxBatchTagTask) processParentStudio(ctx context.Context, parent *
 		}
 		return err
 	} else {
-		storedID, _ := strconv.Atoi(*parent.StoredID)
-
 		// The parent studio matched an existing one and the user has chosen in the UI to link and/or update it
-		existingStashIDs := getStashIDsForStudio(ctx, storedID)
-		partial := parent.ToPartial(parent.StoredID, t.box.Endpoint, excluded, existingStashIDs)
+		storedID, _ := strconv.Atoi(*parent.StoredID)
 
 		image, err := parent.GetImage(ctx, excluded)
 		if err != nil {
@@ -416,7 +411,14 @@ func (t *StashBoxBatchTagTask) processParentStudio(ctx context.Context, parent *
 		err = txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
 			qb := instance.Repository.Studio
 
-			if err := studio.ValidateModify(ctx, *partial, instance.Repository.Studio); err != nil {
+			existingStashIDs, err := qb.GetStashIDs(ctx, storedID)
+			if err != nil {
+				return err
+			}
+
+			partial := parent.ToPartial(parent.StoredID, t.box.Endpoint, excluded, existingStashIDs)
+
+			if err := studio.ValidateModify(ctx, *partial, qb); err != nil {
 				return err
 			}
 
@@ -439,14 +441,4 @@ func (t *StashBoxBatchTagTask) processParentStudio(ctx context.Context, parent *
 		}
 		return err
 	}
-}
-
-func getStashIDsForStudio(ctx context.Context, studioID int) []models.StashID {
-	tempStudio := &models.Studio{ID: studioID}
-
-	err := tempStudio.LoadStashIDs(ctx, instance.Repository.Studio)
-	if err != nil {
-		return nil
-	}
-	return tempStudio.StashIDs.List()
 }
