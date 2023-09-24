@@ -50,7 +50,9 @@ var uiBox = ui.UIBox
 var loginUIBox = ui.LoginUIBox
 
 func Start() error {
-	initialiseImages()
+	c := config.GetInstance()
+
+	initCustomPerformerImages(c.GetCustomPerformerImageLocation())
 
 	r := chi.NewRouter()
 
@@ -62,7 +64,6 @@ func Start() error {
 
 	r.Use(middleware.Recoverer)
 
-	c := config.GetInstance()
 	if c.GetLogAccess() {
 		httpLogger := httplog.NewLogger("Stash", httplog.Options{
 			Concise: true,
