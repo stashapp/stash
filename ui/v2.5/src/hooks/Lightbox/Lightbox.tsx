@@ -319,12 +319,12 @@ export const LightboxComponent: React.FC<IProps> = ({
   });
 
   const close = useCallback(() => {
-    if (!isFullscreen) {
-      hide();
-      document.body.style.overflow = "auto";
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (Mousetrap as any).unpause();
-    } else document.exitFullscreen();
+    if (isFullscreen) document.exitFullscreen();
+
+    hide();
+    document.body.style.overflow = "auto";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (Mousetrap as any).unpause();
   }, [isFullscreen, hide]);
 
   const handleClose = (e: React.MouseEvent<HTMLDivElement>) => {
