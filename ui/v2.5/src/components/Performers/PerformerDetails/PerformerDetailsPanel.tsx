@@ -29,7 +29,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     return (
       <ul className="pl-0">
         {(performer.tags ?? []).map((tag) => (
-          <TagLink key={tag.id} tagType="performer" tag={tag} />
+          <TagLink key={tag.id} linkType="performer" tag={tag} />
         ))}
       </ul>
     );

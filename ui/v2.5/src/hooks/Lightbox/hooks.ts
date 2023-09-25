@@ -1,13 +1,13 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
-import { LightboxContext, IState } from "./context";
+import { IState, useLightboxContext } from "./context";
 import { IChapter } from "./types";
 
 export const useLightbox = (
   state: Partial<Omit<IState, "isVisible">>,
   chapters: IChapter[] = []
 ) => {
-  const { setLightboxState } = useContext(LightboxContext);
+  const { setLightboxState } = useLightboxContext();
 
   useEffect(() => {
     setLightboxState({
@@ -50,7 +50,7 @@ export const useLightbox = (
 };
 
 export const useGalleryLightbox = (id: string, chapters: IChapter[] = []) => {
-  const { setLightboxState } = useContext(LightboxContext);
+  const { setLightboxState } = useLightboxContext();
 
   const pageSize = 40;
   const [page, setPage] = useState(1);

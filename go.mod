@@ -7,8 +7,8 @@ require (
 	github.com/WithoutPants/sortorder v0.0.0-20230616003020-921c9ef69552
 	github.com/Yamashou/gqlgenc v0.0.6
 	github.com/anacrolix/dms v1.2.2
-	github.com/antchfx/htmlquery v1.2.5-0.20211125074323-810ee8082758
-	github.com/asticode/go-astisub v0.20.0
+	github.com/antchfx/htmlquery v1.3.0
+	github.com/asticode/go-astisub v0.26.0
 	github.com/chromedp/cdproto v0.0.0-20210622022015-fe1827b46b84
 	github.com/chromedp/chromedp v0.7.3
 	github.com/corona10/goimagehash v1.1.0
@@ -61,7 +61,7 @@ require (
 
 require (
 	github.com/agnivade/levenshtein v1.1.1 // indirect
-	github.com/antchfx/xpath v1.2.0 // indirect
+	github.com/antchfx/xpath v1.2.3 // indirect
 	github.com/asticode/go-astikit v0.20.0 // indirect
 	github.com/asticode/go-astits v1.8.0 // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect

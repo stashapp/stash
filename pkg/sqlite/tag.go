@@ -396,6 +396,20 @@ func (qb *TagStore) FindByChildTagID(ctx context.Context, parentID int) ([]*mode
 	return qb.queryTags(ctx, query, args)
 }
 
+func (qb *TagStore) CountByParentTagID(ctx context.Context, parentID int) (int, error) {
+	q := dialect.Select(goqu.COUNT("*")).From(goqu.T("tags")).
+		InnerJoin(goqu.T("tags_relations"), goqu.On(goqu.I("tags_relations.parent_id").Eq(goqu.I("tags.id")))).
+		Where(goqu.I("tags_relations.child_id").Eq(goqu.V(parentID))) // Pass the parentID here
+	return count(ctx, q)
+}
+
+func (qb *TagStore) CountByChildTagID(ctx context.Context, childID int) (int, error) {
+	q := dialect.Select(goqu.COUNT("*")).From(goqu.T("tags")).
+		InnerJoin(goqu.T("tags_relations"), goqu.On(goqu.I("tags_relations.child_id").Eq(goqu.I("tags.id")))).
+		Where(goqu.I("tags_relations.parent_id").Eq(goqu.V(childID))) // Pass the childID here
+	return count(ctx, q)
+}
+
 func (qb *TagStore) Count(ctx context.Context) (int, error) {
 	q := dialect.Select(goqu.COUNT("*")).From(qb.table())
 	return count(ctx, q)

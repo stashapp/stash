@@ -3,7 +3,7 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "src/components/Shared/Icon";
-import { TagLink } from "src/components/Shared/TagLink";
+import { GalleryLink, TagLink } from "src/components/Shared/TagLink";
 import { HoverPopover } from "src/components/Shared/HoverPopover";
 import { SweatDrops } from "src/components/Shared/SweatDrops";
 import { PerformerPopoverButton } from "src/components/Shared/PerformerPopoverButton";
@@ -41,7 +41,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
     if (props.image.tags.length <= 0) return;
 
     const popoverContent = props.image.tags.map((tag) => (
-      <TagLink key={tag.id} tag={tag} tagType="image" />
+      <TagLink key={tag.id} tag={tag} linkType="image" />
     ));
 
     return (
@@ -83,7 +83,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
     if (props.image.galleries.length <= 0) return;
 
     const popoverContent = props.image.galleries.map((gallery) => (
-      <TagLink key={gallery.id} gallery={gallery} />
+      <GalleryLink key={gallery.id} gallery={gallery} />
     ));
 
     return (

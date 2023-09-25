@@ -415,9 +415,9 @@ func (t changesetTranslator) updateMovieIDsBulk(value *BulkUpdateIds, field stri
 		return nil, fmt.Errorf("converting ids [%v]: %w", value.Ids, err)
 	}
 
-	movies := make([]models.MoviesScenes, len(value.Ids))
-	for _, id := range ids {
-		movies = append(movies, models.MoviesScenes{MovieID: id})
+	movies := make([]models.MoviesScenes, len(ids))
+	for i, id := range ids {
+		movies[i] = models.MoviesScenes{MovieID: id}
 	}
 
 	return &models.UpdateMovieIDs{
