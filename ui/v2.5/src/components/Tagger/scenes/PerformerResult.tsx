@@ -44,6 +44,11 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
 
   const [selectedPerformer, setSelectedPerformer] = useState<Performer>();
 
+  function selectPerformer(selected: Performer | undefined) {
+    setSelectedPerformer(selected);
+    setSelectedID(selected?.id);
+  }
+
   useEffect(() => {
     if (
       performerData?.findPerformer &&
@@ -55,17 +60,14 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
 
   const handleSelect = (performers: Performer[]) => {
     if (performers.length) {
-      setSelectedPerformer(performers[0]);
-      setSelectedID(performers[0].id);
+      selectPerformer(performers[0]);
     } else {
-      setSelectedPerformer(undefined);
-      setSelectedID(undefined);
+      selectPerformer(undefined);
     }
   };
 
   const handleSkip = () => {
-    setSelectedPerformer(undefined);
-    setSelectedID(undefined);
+    selectPerformer(undefined);
   };
 
   if (stashLoading) return <div>Loading performer</div>;
