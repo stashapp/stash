@@ -193,17 +193,16 @@ cross-compile-macos-applesilicon: build
 
 .PHONY: cross-compile-macos
 cross-compile-macos:
-	rm -rf dist/Stash.app dist/Stash-macos.zip
 	make cross-compile-macos-applesilicon
 	make cross-compile-macos-intel
 	# Combine into one universal binary
-	lipo -create -output dist/stash-macos-universal dist/stash-macos-intel dist/stash-macos-applesilicon
+	lipo -create -output dist/stash-macos dist/stash-macos-intel dist/stash-macos-applesilicon
 	rm dist/stash-macos-intel dist/stash-macos-applesilicon
 	# Place into bundle and zip up
 	cp -R scripts/macos-bundle dist/Stash.app
 	mkdir dist/Stash.app/Contents/MacOS
-	mv dist/stash-macos-universal dist/Stash.app/Contents/MacOS/stash
-	cd dist && zip -r Stash-macos.zip Stash.app && cd ..
+	cp dist/stash-macos dist/Stash.app/Contents/MacOS/stash
+	cd dist && rm -f Stash.app.zip && zip -r Stash.app.zip Stash.app
 	rm -rf dist/Stash.app
 
 .PHONY: cross-compile-freebsd
@@ -259,8 +258,7 @@ cross-compile-linux-arm32v6: build
 .PHONY: cross-compile-all
 cross-compile-all:
 	make cross-compile-windows
-	make cross-compile-macos-intel
-	make cross-compile-macos-applesilicon
+	make cross-compile-macos
 	make cross-compile-linux
 	make cross-compile-linux-arm64v8
 	make cross-compile-linux-arm32v7
