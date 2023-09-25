@@ -195,9 +195,13 @@ cross-compile-macos-applesilicon: build
 cross-compile-macos:
 	make cross-compile-macos-applesilicon
 	make cross-compile-macos-intel
-	# Combine into one universal binary
+
+	# Combine into universal binaries
 	lipo -create -output dist/stash-macos dist/stash-macos-intel dist/stash-macos-applesilicon
 	rm dist/stash-macos-intel dist/stash-macos-applesilicon
+	lipo -create -output dist/phasher-macos dist/phasher-macos-intel dist/phasher-macos-applesilicon
+	rm dist/phasher-macos-intel dist/phasher-macos-applesilicon
+
 	# Place into bundle and zip up
 	cp -R scripts/macos-bundle dist/Stash.app
 	mkdir dist/Stash.app/Contents/MacOS
