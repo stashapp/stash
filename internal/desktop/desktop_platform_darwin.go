@@ -23,7 +23,8 @@ func sendNotification(notificationTitle string, notificationText string) {
 	notification := gosxnotifier.NewNotification(notificationText)
 	notification.Title = notificationTitle
 	notification.AppIcon = getIconPath()
-	notification.Link = getServerURL("")
+	notification.Open = getServerURL("")
+	notification.Sender = "org.stashapp.stash"
 	err := notification.Push()
 
 	if err != nil {
