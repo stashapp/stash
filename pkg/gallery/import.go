@@ -65,8 +65,10 @@ func (i *Importer) galleryJSONToGallery(galleryJSON jsonschema.Gallery) models.G
 	if galleryJSON.Details != "" {
 		newGallery.Details = galleryJSON.Details
 	}
-	if galleryJSON.URL != "" {
-		newGallery.URL = galleryJSON.URL
+	if len(galleryJSON.URLs) > 0 {
+		newGallery.URLs = models.NewRelatedStrings(galleryJSON.URLs)
+	} else if galleryJSON.URL != "" {
+		newGallery.URLs = models.NewRelatedStrings([]string{galleryJSON.URL})
 	}
 	if galleryJSON.Date != "" {
 		d, err := models.ParseDate(galleryJSON.Date)

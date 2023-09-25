@@ -1213,7 +1213,16 @@ func getGalleryNullStringValue(index int, field string) sql.NullString {
 }
 
 func getGalleryNullStringPtr(index int, field string) *string {
-	return getStringPtr(getPrefixedStringValue("gallery", index, field))
+	return getStringPtrFromNullString(getPrefixedNullStringValue("gallery", index, field))
+}
+
+func getGalleryEmptyString(index int, field string) string {
+	v := getGalleryNullStringPtr(index, field)
+	if v == nil {
+		return ""
+	}
+
+	return *v
 }
 
 func getGalleryBasename(index int) string {
@@ -1245,8 +1254,10 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 	tids := indexesToIDs(tagIDs, galleryTags[i])
 
 	ret := &models.Gallery{
-		Title:        getGalleryStringValue(i, titleField),
-		URL:          getGalleryNullStringValue(i, urlField).String,
+		Title: getGalleryStringValue(i, titleField),
+		URLs: models.NewRelatedStrings([]string{
+			getGalleryEmptyString(i, urlField),
+		}),
 		Rating:       getIntPtr(getRating(i)),
 		Date:         getObjectDate(i),
 		StudioID:     studioID,

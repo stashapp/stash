@@ -7,7 +7,7 @@ import * as GQL from "src/core/generated-graphql";
 import { mutateGallerySetPrimaryFile } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import TextUtils from "src/utils/text";
-import { TextField, URLField } from "src/utils/field";
+import { TextField, URLField, URLsField } from "src/utils/field";
 
 interface IFileInfoPanelProps {
   folder?: Pick<GQL.Folder, "id" | "path">;
@@ -147,12 +147,7 @@ export const GalleryFileInfoPanel: React.FC<IGalleryFileInfoPanelProps> = (
   return (
     <>
       <dl className="container gallery-file-info details-list">
-        <URLField
-          id="media_info.downloaded_from"
-          url={props.gallery.url}
-          value={props.gallery.url}
-          truncate
-        />
+        <URLsField id="urls" urls={props.gallery.urls} truncate />
       </dl>
 
       {filesPanel}
