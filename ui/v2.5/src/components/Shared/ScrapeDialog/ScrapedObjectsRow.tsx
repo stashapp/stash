@@ -147,7 +147,7 @@ export const ScrapedPerformersRow: React.FC<
     return (
       <PerformerSelect
         isMulti
-        className="form-control react-select"
+        className="form-control"
         isDisabled={!isNew}
         onSelect={(items) => {
           if (onChangeFn) {
