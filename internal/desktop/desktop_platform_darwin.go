@@ -24,7 +24,7 @@ func sendNotification(notificationTitle string, notificationText string) {
 	notification.Title = notificationTitle
 	notification.AppIcon = getIconPath()
 	notification.Open = getServerURL("")
-	notification.Sender = "org.stashapp.stash"
+	notification.Sender = "cc.stashapp.stash"
 	err := notification.Push()
 
 	if err != nil {
