@@ -89,7 +89,7 @@ const SelectComponent = <T, IsMulti extends boolean>(
     ...props,
     styles,
     defaultOptions: true,
-    value: selectedOptions,
+    value: selectedOptions ?? null,
     className: cx("react-select", props.className),
     classNamePrefix: "react-select",
     noOptionsMessage: () => noOptionsMessage,
