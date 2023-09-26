@@ -489,6 +489,7 @@ const recursiveRenameToSnakeCase = (
 
 export const useDefaultLinkFilter = (mode: GQL.FilterMode) => {
   let filter = new ListFilterModel(mode, undefined);
+  filter.sortBy = "name";
   let { configuration: config } = useContext(ConfigurationContext);
   if (config?.ui?.linkFilters?.[mode.toLowerCase()]) {
     let linkFilter = recursiveRenameToSnakeCase(
@@ -504,6 +505,5 @@ export const useDefaultLinkFilter = (mode: GQL.FilterMode) => {
     filter.currentPage = 1;
     filter.randomSeed = -1;
   }
-  console.log(filter);
   return filter;
 };
