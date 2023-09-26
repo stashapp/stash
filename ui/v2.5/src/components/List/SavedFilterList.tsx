@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import {
   Button,
   ButtonGroup,
@@ -10,6 +10,7 @@ import {
   Tooltip,
 } from "react-bootstrap";
 import {
+  useConfigureUI,
   useFindSavedFilters,
   useSavedFilterDestroy,
   useSaveFilter,
@@ -23,6 +24,8 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { IUIConfig } from "src/core/config";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface ISavedFilterListProps {
   filter: ListFilterModel;
@@ -49,10 +52,16 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   const [overwritingFilter, setOverwritingFilter] = useState<
     SavedFilterDataFragment | undefined
   >();
+  const [linkFilterAlert, setLinkFilterAlert] = useState<
+    boolean | undefined
+  >();
 
   const [saveFilter] = useSaveFilter();
   const [destroyFilter] = useSavedFilterDestroy();
   const [setDefaultFilter] = useSetDefaultFilter();
+  const { configuration } = useContext(ConfigurationContext);
+  const ui = (configuration?.ui ?? {}) as IUIConfig;
+  const [saveUI] = useConfigureUI();
 
   const savedFilters = data?.findSavedFilters ?? [];
 
@@ -162,6 +171,37 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
     } finally {
       setSaving(false);
     }
+  }
+
+  async function onSetDefaultLinkFilter() {
+    const filterCopy = filter.clone();
+
+    try { 
+      await saveUI({
+        variables: {
+          input: {
+            ...configuration?.ui,
+            linkFilters: {
+              ...ui.linkFilters,
+              [filter.mode.toLowerCase()]: {
+                mode: filter.mode,
+                find_filter: filterCopy.makeFindFilter(),
+                object_filter: filterCopy.makeSavedFindFilter(),
+                ui_options: filterCopy.makeUIOptions(),
+              },
+            },
+          },
+        },
+      });
+
+      Toast.success({
+        content: intl.formatMessage({
+          id: "toast.default_link_filter_set",
+        }),
+      });
+    } catch (err) {
+      Toast.error(err);
+    } 
   }
 
   function filterClicked(f: SavedFilterDataFragment) {
@@ -284,6 +324,38 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
     );
   }
 
+  function maybeRenderFilterLinkAlert() {
+    if (!linkFilterAlert) {
+      return;
+    }
+
+    return (
+      <Modal show>
+        <Modal.Body>
+          <FormattedMessage
+            id="dialogs.filter_link_confirm"
+          />
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="primary"
+            onClick={() =>
+              onSetDefaultLinkFilter()
+            }
+          >
+            {intl.formatMessage({ id: "actions.confirm" })}
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => setLinkFilterAlert(undefined)}
+          >
+            {intl.formatMessage({ id: "actions.cancel" })}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    );
+  }
+
   function renderSavedFilters() {
     if (loading || saving) {
       return (
@@ -323,10 +395,26 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
     }
   }
 
+  function maybeRenderSetDefaultLinkButton() {
+    if (["STUDIOS", "TAGS"].indexOf(filter.mode) == -1 ) {
+      return (
+        <Button
+          className="set-as-default-button"
+          variant="secondary"
+          size="sm"
+          onClick={() => { Object.keys(filter.makeSavedFindFilter()).length ? setLinkFilterAlert(true) : onSetDefaultLinkFilter() }
+        >
+          { intl.formatMessage({ id: "actions.set_as_default_link" }) }
+        </Button>
+      );
+    }
+  }
+
   return (
     <div>
       {maybeRenderDeleteAlert()}
       {maybeRenderOverwriteAlert()}
+      {maybeRenderFilterLinkAlert()}
       <InputGroup>
         <FormControl
           className="bg-secondary text-white border-secondary"
@@ -359,6 +447,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
       </InputGroup>
       {renderSavedFilters()}
       {maybeRenderSetDefaultButton()}
+      {maybeRenderSetDefaultLinkButton()}
     </div>
   );
 };

@@ -102,7 +102,8 @@
     "selective_auto_tag": "Selective Auto Tag",
     "selective_clean": "Selective Clean",
     "selective_scan": "Selective Scan",
-    "set_as_default": "Set as default",
+    "set_as_default": "Set default for Site",
+    "set_as_default_link": "Set default for Link",
     "set_back_image": "Back image…",
     "set_front_image": "Front image…",
     "set_image": "Set image…",
@@ -809,6 +810,7 @@
     "edit_entity_title": "Edit {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Include related objects in export",
     "export_title": "Export",
+    "filter_link_confirm": "Warning: This View contains some Filters and/or search terms. Making it default would mean that links or subsites might lead to empty views, due to the filter restriction. Are you sure these filters should be set default?",
     "imagewall": {
       "direction": {
         "column": "Column",
@@ -1320,7 +1322,8 @@
     "added_entity": "Added {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "added_generation_job_to_queue": "Added generation job to queue",
     "created_entity": "Created {entity}",
-    "default_filter_set": "Default filter set",
+    "default_filter_set": "Default site filter set",
+    "default_link_filter_set": "Default link filter set",
     "delete_past_tense": "Deleted {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Generating screenshot…",
     "image_index_too_large": "Error: Image index is larger than the number of images in the Gallery",
