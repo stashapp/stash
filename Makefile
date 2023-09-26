@@ -238,7 +238,7 @@ cross-compile-linux-arm64v8: build
 cross-compile-linux-arm32v7: export GOOS := linux
 cross-compile-linux-arm32v7: export GOARCH := arm
 cross-compile-linux-arm32v7: export GOARM := 7
-cross-compile-linux-arm32v7: export CC := arm-linux-gnueabihf-gcc
+cross-compile-linux-arm32v7: export CC := arm-linux-gnueabi-gcc -march=armv7-a 
 cross-compile-linux-arm32v7: STASH_OUTPUT := -o dist/stash-linux-arm32v7
 cross-compile-linux-arm32v7: PHASHER_OUTPUT := -o dist/phasher-linux-arm32v7
 cross-compile-linux-arm32v7: flags-release
