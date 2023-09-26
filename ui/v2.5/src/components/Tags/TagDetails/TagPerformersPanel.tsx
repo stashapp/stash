@@ -18,7 +18,7 @@ export const TagPerformersPanel: React.FC<ITagPerformersPanel> = ({
     <PerformerList
       filterHook={filterHook}
       alterQuery={active}
-      persistState={PersistanceLevel.SAVEDVIEW}
+      persistState={PersistanceLevel.SAVEDLINKFILTER}
     />
   );
 };

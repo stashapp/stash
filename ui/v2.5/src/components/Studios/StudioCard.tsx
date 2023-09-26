@@ -9,7 +9,7 @@ import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import { RatingBanner } from "../Shared/RatingBanner";
 import {
   ListFilterModel,
-  useDefaultFilter,
+  useDefaultLinkFilter,
 } from "src/models/list-filter/filter";
 
 interface IProps {
@@ -71,22 +71,22 @@ export const StudioCard: React.FC<IProps> = ({
   selected,
   onSelectedChanged,
 }) => {
-  const sceneDefaultFilter: ListFilterModel = useDefaultFilter(
+  const sceneDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Scenes
   );
-  const imageDefaultFilter: ListFilterModel = useDefaultFilter(
+  const imageDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Images
   );
-  const galleryDefaultFilter: ListFilterModel = useDefaultFilter(
+  const galleryDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Galleries
   );
-  const movieDefaultFilter: ListFilterModel = useDefaultFilter(
+  const movieDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Movies
   );
-  const performerDefaultFilter: ListFilterModel = useDefaultFilter(
+  const performerDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Performers
   );
-  const studioDefaultFilter: ListFilterModel = useDefaultFilter(
+  const studioDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Studios
   );
 

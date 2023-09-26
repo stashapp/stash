@@ -10,7 +10,7 @@ import { galleryTitle } from "src/core/galleries";
 import SceneQueue from "src/models/sceneQueue";
 import {
   ListFilterModel,
-  useDefaultFilter,
+  useDefaultLinkFilter,
 } from "src/models/list-filter/filter";
 
 interface ISceneListTableProps {
@@ -23,7 +23,7 @@ interface ISceneListTableProps {
 export const SceneListTable: React.FC<ISceneListTableProps> = (
   props: ISceneListTableProps
 ) => {
-  const sceneDefaultFilter: ListFilterModel = useDefaultFilter(
+  const sceneDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Scenes
   );
   const renderTags = (tags: Partial<GQL.TagDataFragment>[]) =>

@@ -18,7 +18,7 @@ export const StudioGalleriesPanel: React.FC<IStudioGalleriesPanel> = ({
     <GalleryList
       filterHook={filterHook}
       alterQuery={active}
-      persistState={PersistanceLevel.SAVEDVIEW}
+      persistState={PersistanceLevel.SAVEDLINKFILTER}
     />
   );
 };

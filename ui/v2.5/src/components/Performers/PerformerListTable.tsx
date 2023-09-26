@@ -11,7 +11,7 @@ import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import { cmToImperial } from "src/utils/units";
 import {
   ListFilterModel,
-  useDefaultFilter,
+  useDefaultLinkFilter,
 } from "src/models/list-filter/filter";
 
 interface IPerformerListTableProps {
@@ -22,13 +22,13 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   props: IPerformerListTableProps
 ) => {
   const intl = useIntl();
-  const sceneDefaultFilter: ListFilterModel = useDefaultFilter(
+  const sceneDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Scenes
   );
-  const imageDefaultFilter: ListFilterModel = useDefaultFilter(
+  const imageDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Images
   );
-  const galleryDefaultFilter: ListFilterModel = useDefaultFilter(
+  const galleryDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Galleries
   );
 

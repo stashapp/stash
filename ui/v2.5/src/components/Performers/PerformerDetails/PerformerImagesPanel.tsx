@@ -18,7 +18,7 @@ export const PerformerImagesPanel: React.FC<IPerformerImagesPanel> = ({
     <ImageList
       filterHook={filterHook}
       alterQuery={active}
-      persistState={PersistanceLevel.SAVEDVIEW}
+      persistState={PersistanceLevel.SAVEDLINKFILTER}
     />
   );
 };

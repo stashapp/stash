@@ -52,9 +52,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   const [overwritingFilter, setOverwritingFilter] = useState<
     SavedFilterDataFragment | undefined
   >();
-  const [linkFilterAlert, setLinkFilterAlert] = useState<
-    boolean | undefined
-  >();
+  const [linkFilterAlert, setLinkFilterAlert] = useState<boolean | undefined>();
 
   const [saveFilter] = useSaveFilter();
   const [destroyFilter] = useSavedFilterDestroy();
@@ -176,7 +174,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   async function onSetDefaultLinkFilter() {
     const filterCopy = filter.clone();
 
-    try { 
+    try {
       await saveUI({
         variables: {
           input: {
@@ -201,7 +199,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
       });
     } catch (err) {
       Toast.error(err);
-    } 
+    }
   }
 
   function filterClicked(f: SavedFilterDataFragment) {
@@ -332,17 +330,10 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
     return (
       <Modal show>
         <Modal.Body>
-          <FormattedMessage
-            id="dialogs.filter_link_confirm"
-          />
+          <FormattedMessage id="dialogs.filter_link_confirm" />
         </Modal.Body>
         <Modal.Footer>
-          <Button
-            variant="primary"
-            onClick={() =>
-              onSetDefaultLinkFilter()
-            }
-          >
+          <Button variant="primary" onClick={() => onSetDefaultLinkFilter()}>
             {intl.formatMessage({ id: "actions.confirm" })}
           </Button>
           <Button
@@ -396,15 +387,20 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   }
 
   function maybeRenderSetDefaultLinkButton() {
-    if (["STUDIOS", "TAGS"].indexOf(filter.mode) == -1 ) {
+    if (["STUDIOS", "TAGS"].indexOf(filter.mode) == -1) {
       return (
         <Button
           className="set-as-default-button"
           variant="secondary"
           size="sm"
-          onClick={() => Object.keys(filter.makeSavedFindFilter()).length || filter.makeFindFilter()?.q ? setLinkFilterAlert(true) : onSetDefaultLinkFilter() }
+          onClick={() =>
+            Object.keys(filter.makeSavedFindFilter()).length ||
+            filter.makeFindFilter()?.q
+              ? setLinkFilterAlert(true)
+              : onSetDefaultLinkFilter()
+          }
         >
-          { intl.formatMessage({ id: "actions.set_as_default_link" }) }
+          {intl.formatMessage({ id: "actions.set_as_default_link" })}
         </Button>
       );
     }

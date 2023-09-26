@@ -29,7 +29,7 @@ export const PerformerAppearsWithPanel: React.FC<IPerformerDetailsProps> = ({
       filterHook={filterHook}
       extraCriteria={extraCriteria}
       alterQuery={active}
-      persistState={PersistanceLevel.SAVEDVIEW}
+      persistState={PersistanceLevel.SAVEDLINKFILTER}
     />
   );
 };

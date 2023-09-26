@@ -11,7 +11,7 @@ import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import { faMapMarkerAlt, faUser } from "@fortawesome/free-solid-svg-icons";
 import {
   ListFilterModel,
-  useDefaultFilter,
+  useDefaultLinkFilter,
 } from "src/models/list-filter/filter";
 
 interface IProps {
@@ -29,22 +29,22 @@ export const TagCard: React.FC<IProps> = ({
   selected,
   onSelectedChanged,
 }) => {
-  const sceneDefaultFilter: ListFilterModel = useDefaultFilter(
+  const sceneDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Scenes
   );
-  const imageDefaultFilter: ListFilterModel = useDefaultFilter(
+  const imageDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Images
   );
-  const galleryDefaultFilter: ListFilterModel = useDefaultFilter(
+  const galleryDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Galleries
   );
-  const markerDefaultFilter: ListFilterModel = useDefaultFilter(
+  const markerDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.SceneMarkers
   );
-  const performerDefaultFilter: ListFilterModel = useDefaultFilter(
+  const performerDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Performers
   );
-  const tagDefaultFilter: ListFilterModel = useDefaultFilter(
+  const tagDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Tags
   );
 

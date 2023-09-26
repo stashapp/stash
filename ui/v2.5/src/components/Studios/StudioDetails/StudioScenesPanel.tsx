@@ -18,7 +18,7 @@ export const StudioScenesPanel: React.FC<IStudioScenesPanel> = ({
     <SceneList
       filterHook={filterHook}
       alterQuery={active}
-      persistState={PersistanceLevel.SAVEDVIEW}
+      persistState={PersistanceLevel.SAVEDLINKFILTER}
     />
   );
 };

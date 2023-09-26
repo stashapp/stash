@@ -18,7 +18,7 @@ export const PerformerScenesPanel: React.FC<IPerformerDetailsProps> = ({
     <SceneList
       filterHook={filterHook}
       alterQuery={active}
-      persistState={PersistanceLevel.SAVEDVIEW}
+      persistState={PersistanceLevel.SAVEDLINKFILTER}
     />
   );
 };

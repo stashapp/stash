@@ -18,7 +18,7 @@ export const PerformerGalleriesPanel: React.FC<IPerformerDetailsProps> = ({
     <GalleryList
       filterHook={filterHook}
       alterQuery={active}
-      persistState={PersistanceLevel.SAVEDVIEW}
+      persistState={PersistanceLevel.SAVEDLINKFILTER}
     />
   );
 };

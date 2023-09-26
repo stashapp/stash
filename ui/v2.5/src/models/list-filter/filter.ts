@@ -9,8 +9,8 @@ import { Criterion, CriterionValue } from "./criteria/criterion";
 import { getFilterOptions } from "./factory";
 import { CriterionType, DisplayMode } from "./types";
 import * as GQL from "src/core/generated-graphql";
-import { useFindDefaultFilter } from "src/core/StashService";
-import { useEffect, useRef, useState } from "react";
+import { useContext } from "react";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface IDecodedParams {
   perPage?: number;
@@ -465,33 +465,33 @@ export class ListFilterModel {
   }
 }
 
-// Returns the default filter as a filtermodel
-export const useDefaultFilter = (mode: GQL.FilterMode) => {
-  const { data, loading } = useFindDefaultFilter(mode);
-  const [filterIsInitialized, setFilterIsInitialized] = useState(false);
-  const defaultFilter = useRef(new ListFilterModel(mode, undefined));
-
-  useEffect(() => {
-    if (filterIsInitialized) return;
-    if (loading) return;
-
-    if (data?.findDefaultFilter) {
-      try {
-        defaultFilter.current.configureFromJSON(data.findDefaultFilter.filter);
-        // #1507 - reset random seed when loaded
-        defaultFilter.current.randomSeed = -1;
-      } catch (err) {
-        console.log(err);
-      }
+export const useDefaultLinkFilter = (mode: GQL.FilterMode) => {
+  let filter = new ListFilterModel(mode, undefined);
+  let { configuration: config } = useContext(ConfigurationContext);
+  if (config?.ui?.linkFilters?.[mode.toLowerCase()]) {
+    let linkFilter = config?.ui?.linkFilters?.[mode.toLowerCase()];
+    // TODO, this is horrible, some other way to clean this up?
+    if (linkFilter?.findFilter?.perPage) {
+      linkFilter.findFilter.per_page = linkFilter?.findFilter?.perPage;
     }
-    setFilterIsInitialized(true);
-  }, [
-    data,
-    loading,
-    defaultFilter,
-    filterIsInitialized,
-    setFilterIsInitialized,
-  ]);
+    if (linkFilter?.uiOptions?.displayMode) {
+      linkFilter.uiOptions.display_mode = linkFilter?.uiOptions?.displayMode;
+    }
+    if (linkFilter?.uiOptions?.zoomIndex) {
+      linkFilter.uiOptions.zoom_index = linkFilter?.uiOptions?.zoomIndex;
+    }
 
-  return defaultFilter.current;
+    filter.configureFromSavedFilter({
+      id: mode + "defaultLinkFilter",
+      name: "",
+      mode: mode,
+      find_filter: linkFilter?.findFilter,
+      object_filter: linkFilter?.objectFilter,
+      ui_options: linkFilter?.uiOptions,
+    });
+    filter.currentPage = 1;
+    filter.randomSeed = -1;
+  }
+  console.log(filter);
+  return filter;
 };

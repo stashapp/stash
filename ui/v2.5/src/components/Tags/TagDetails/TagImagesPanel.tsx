@@ -15,7 +15,7 @@ export const TagImagesPanel: React.FC<ITagImagesPanel> = ({ active, tag }) => {
     <ImageList
       filterHook={filterHook}
       alterQuery={active}
-      persistState={PersistanceLevel.SAVEDVIEW}
+      persistState={PersistanceLevel.SAVEDLINKFILTER}
     />
   );
 };

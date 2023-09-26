@@ -57,7 +57,7 @@ export const TagMarkersPanel: React.FC<ITagMarkersPanel> = ({
     <SceneMarkerList
       filterHook={filterHook}
       alterQuery={active}
-      persistState={PersistanceLevel.SAVEDVIEW}
+      persistState={PersistanceLevel.SAVEDLINKFILTER}
     />
   );
 };

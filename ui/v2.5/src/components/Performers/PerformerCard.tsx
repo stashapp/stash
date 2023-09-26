@@ -24,7 +24,7 @@ import { usePerformerUpdate } from "src/core/StashService";
 import { ILabeledId } from "src/models/list-filter/types";
 import {
   ListFilterModel,
-  useDefaultFilter,
+  useDefaultLinkFilter,
 } from "src/models/list-filter/filter";
 
 export interface IPerformerCardExtraCriteria {
@@ -69,19 +69,19 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     { age, years_old: ageL10String }
   );
 
-  const sceneDefaultFilter: ListFilterModel = useDefaultFilter(
+  const sceneDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Scenes
   );
-  const imageDefaultFilter: ListFilterModel = useDefaultFilter(
+  const imageDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Images
   );
-  const galleryDefaultFilter: ListFilterModel = useDefaultFilter(
+  const galleryDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Galleries
   );
-  const movieDefaultFilter: ListFilterModel = useDefaultFilter(
+  const movieDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Movies
   );
-  const performerDefaultFilter: ListFilterModel = useDefaultFilter(
+  const performerDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Performers
   );
 

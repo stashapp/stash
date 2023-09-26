@@ -32,7 +32,7 @@ import {
 import { objectPath, objectTitle } from "src/core/files";
 import {
   ListFilterModel,
-  useDefaultFilter,
+  useDefaultLinkFilter,
 } from "src/models/list-filter/filter";
 import { PreviewScrubber } from "./PreviewScrubber";
 
@@ -107,7 +107,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
 ) => {
   const history = useHistory();
   const { configuration } = React.useContext(ConfigurationContext);
-  const sceneDefaultFilter: ListFilterModel = useDefaultFilter(
+  const sceneDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Scenes
   );
 

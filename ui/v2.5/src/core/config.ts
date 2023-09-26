@@ -83,7 +83,7 @@ export interface IUIConfig {
   vrTag?: string;
   pinnedFilters?: PinnedFilters;
 
-  linkFilters?: LinkFilters;  
+  linkFilters?: LinkFilters;
 }
 
 function recentlyReleased(

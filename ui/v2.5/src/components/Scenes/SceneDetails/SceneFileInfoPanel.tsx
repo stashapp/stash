@@ -19,7 +19,7 @@ import { getStashboxBase } from "src/utils/stashbox";
 import { TextField, URLField, URLsField } from "src/utils/field";
 import {
   ListFilterModel,
-  useDefaultFilter,
+  useDefaultLinkFilter,
 } from "src/models/list-filter/filter";
 
 interface IFileInfoPanelProps {
@@ -38,7 +38,7 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
 ) => {
   const intl = useIntl();
   const history = useHistory();
-  const sceneDefaultFilter: ListFilterModel = useDefaultFilter(
+  const sceneDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Scenes
   );
 

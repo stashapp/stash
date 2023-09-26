@@ -35,7 +35,7 @@ export const StudioPerformersPanel: React.FC<IStudioPerformersPanel> = ({
       filterHook={filterHook}
       extraCriteria={extraCriteria}
       alterQuery={active}
-      persistState={PersistanceLevel.SAVEDVIEW}
+      persistState={PersistanceLevel.SAVEDLINKFILTER}
     />
   );
 };

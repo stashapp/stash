@@ -18,7 +18,7 @@ export const StudioImagesPanel: React.FC<IStudioImagesPanel> = ({
     <ImageList
       filterHook={filterHook}
       alterQuery={active}
-      persistState={PersistanceLevel.SAVEDVIEW}
+      persistState={PersistanceLevel.SAVEDLINKFILTER}
     />
   );
 };

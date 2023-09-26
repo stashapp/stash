@@ -15,7 +15,7 @@ export const TagScenesPanel: React.FC<ITagScenesPanel> = ({ active, tag }) => {
     <SceneList
       filterHook={filterHook}
       alterQuery={active}
-      persistState={PersistanceLevel.SAVEDVIEW}
+      persistState={PersistanceLevel.SAVEDLINKFILTER}
     />
   );
 };

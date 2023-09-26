@@ -51,7 +51,7 @@ export const StudioChildrenPanel: React.FC<IStudioChildrenPanel> = ({
       fromParent
       filterHook={filterHook}
       alterQuery={active}
-      persistState={PersistanceLevel.SAVEDVIEW}
+      persistState={PersistanceLevel.SAVEDLINKFILTER}
     />
   );
 };

@@ -3,7 +3,7 @@ import cloneDeep from "lodash-es/cloneDeep";
 import Mousetrap from "mousetrap";
 import {
   ListFilterModel,
-  useDefaultFilter,
+  useDefaultLinkFilter,
 } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import {
@@ -52,16 +52,16 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
   const Toast = useToast();
   const [deletingTag, setDeletingTag] =
     useState<Partial<GQL.TagDataFragment> | null>(null);
-  const sceneDefaultFilter: ListFilterModel = useDefaultFilter(
+  const sceneDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Scenes
   );
-  const imageDefaultFilter: ListFilterModel = useDefaultFilter(
+  const imageDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Images
   );
-  const galleryDefaultFilter: ListFilterModel = useDefaultFilter(
+  const galleryDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.Galleries
   );
-  const markerDefaultFilter: ListFilterModel = useDefaultFilter(
+  const markerDefaultFilter: ListFilterModel = useDefaultLinkFilter(
     GQL.FilterMode.SceneMarkers
   );
 

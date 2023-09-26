@@ -41,8 +41,6 @@ const makePerformerScenesUrl = (
   var filter = defaultFilter
     ? defaultFilter
     : new ListFilterModel(GQL.FilterMode.Scenes, undefined);
-  filter.searchTerm = "";
-  filter.criteria = [];
   const criterion = new PerformersCriterion();
   criterion.value.items = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
@@ -67,8 +65,6 @@ const makePerformerImagesUrl = (
   var filter = defaultFilter
     ? defaultFilter
     : new ListFilterModel(GQL.FilterMode.Images, undefined);
-  filter.searchTerm = "";
-  filter.criteria = [];
   const criterion = new PerformersCriterion();
   criterion.value.items = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
@@ -98,8 +94,6 @@ const makePerformerGalleriesUrl = (
   var filter = defaultFilter
     ? defaultFilter
     : new ListFilterModel(GQL.FilterMode.Galleries, undefined);
-  filter.searchTerm = "";
-  filter.criteria = [];
   const criterion = new PerformersCriterion();
   criterion.value.items = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
@@ -124,8 +118,6 @@ const makePerformerMoviesUrl = (
   var filter = defaultFilter
     ? defaultFilter
     : new ListFilterModel(GQL.FilterMode.Movies, undefined);
-  filter.searchTerm = "";
-  filter.criteria = [];
   const criterion = new PerformersCriterion();
   criterion.value.items = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
@@ -148,8 +140,6 @@ const makePerformersCountryUrl = (
   var filter = defaultFilter
     ? defaultFilter
     : new ListFilterModel(GQL.FilterMode.Performers, undefined);
-  filter.searchTerm = "";
-  filter.criteria = [];
   const criterion = new CountryCriterion();
   criterion.value = `${performer.country}`;
   filter.criteria.push(criterion);
@@ -164,8 +154,6 @@ const makeStudioScenesUrl = (
   var filter = defaultFilter
     ? defaultFilter
     : new ListFilterModel(GQL.FilterMode.Studios, undefined);
-  filter.searchTerm = "";
-  filter.criteria = [];
   const criterion = new StudiosCriterion();
   criterion.value = {
     items: [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }],
@@ -184,8 +172,6 @@ const makeStudioImagesUrl = (
   var filter = defaultFilter
     ? defaultFilter
     : new ListFilterModel(GQL.FilterMode.Images, undefined);
-  filter.searchTerm = "";
-  filter.criteria = [];
   const criterion = new StudiosCriterion();
   criterion.value = {
     items: [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }],
@@ -204,8 +190,6 @@ const makeStudioGalleriesUrl = (
   var filter = defaultFilter
     ? defaultFilter
     : new ListFilterModel(GQL.FilterMode.Galleries, undefined);
-  filter.searchTerm = "";
-  filter.criteria = [];
   const criterion = new StudiosCriterion();
   criterion.value = {
     items: [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }],
@@ -224,8 +208,6 @@ const makeStudioMoviesUrl = (
   var filter = defaultFilter
     ? defaultFilter
     : new ListFilterModel(GQL.FilterMode.Movies, undefined);
-  filter.searchTerm = "";
-  filter.criteria = [];
   const criterion = new StudiosCriterion();
   criterion.value = {
     items: [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }],
@@ -244,8 +226,6 @@ const makeStudioPerformersUrl = (
   var filter = defaultFilter
     ? defaultFilter
     : new ListFilterModel(GQL.FilterMode.Performers, undefined);
-  filter.searchTerm = "";
-  filter.criteria = [];
   const criterion = new StudiosCriterion();
   criterion.value = {
     items: [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }],
@@ -264,8 +244,6 @@ const makeChildStudiosUrl = (
   var filter = defaultFilter
     ? defaultFilter
     : new ListFilterModel(GQL.FilterMode.Studios, undefined);
-  filter.searchTerm = "";
-  filter.criteria = [];
   const criterion = new ParentStudiosCriterion();
   criterion.value = [
     { id: studio.id, label: studio.name || `Studio ${studio.id}` },
@@ -282,8 +260,6 @@ const makeMovieScenesUrl = (
   var filter = defaultFilter
     ? defaultFilter
     : new ListFilterModel(GQL.FilterMode.Scenes, undefined);
-  filter.searchTerm = "";
-  filter.criteria = [];
   const criterion = new MoviesCriterion();
   criterion.value = [
     { id: movie.id, label: movie.name || `Movie ${movie.id}` },
@@ -304,8 +280,6 @@ const makeParentTagsUrl = (
   var filter = defaultFilter
     ? defaultFilter
     : new ListFilterModel(GQL.FilterMode.Tags, undefined);
-  filter.searchTerm = "";
-  filter.criteria = [];
   const criterion = new TagsCriterion(ChildTagsCriterionOption);
   criterion.value = {
     items: [
@@ -329,8 +303,6 @@ const makeChildTagsUrl = (
   var filter = defaultFilter
     ? defaultFilter
     : new ListFilterModel(GQL.FilterMode.Tags, undefined);
-  filter.searchTerm = "";
-  filter.criteria = [];
   const criterion = new TagsCriterion(ParentTagsCriterionOption);
   criterion.value = {
     items: [
@@ -354,8 +326,6 @@ const makeTagScenesUrl = (
   var filter = defaultFilter
     ? defaultFilter
     : new ListFilterModel(GQL.FilterMode.Scenes, undefined);
-  filter.searchTerm = "";
-  filter.criteria = [];
   const criterion = new TagsCriterion(TagsCriterionOption);
   criterion.value = {
     items: [{ id: tag.id, label: tag.name || `Tag ${tag.id}` }],
@@ -374,8 +344,6 @@ const makeTagPerformersUrl = (
   var filter = defaultFilter
     ? defaultFilter
     : new ListFilterModel(GQL.FilterMode.Performers, undefined);
-  filter.searchTerm = "";
-  filter.criteria = [];
   const criterion = new TagsCriterion(TagsCriterionOption);
   criterion.value = {
     items: [{ id: tag.id, label: tag.name || `Tag ${tag.id}` }],
@@ -394,8 +362,6 @@ const makeTagSceneMarkersUrl = (
   var filter = defaultFilter
     ? defaultFilter
     : new ListFilterModel(GQL.FilterMode.SceneMarkers, undefined);
-  filter.searchTerm = "";
-  filter.criteria = [];
   const criterion = new TagsCriterion(TagsCriterionOption);
   criterion.value = {
     items: [{ id: tag.id, label: tag.name || `Tag ${tag.id}` }],
@@ -414,8 +380,6 @@ const makeTagGalleriesUrl = (
   var filter = defaultFilter
     ? defaultFilter
     : new ListFilterModel(GQL.FilterMode.Galleries, undefined);
-  filter.searchTerm = "";
-  filter.criteria = [];
   const criterion = new TagsCriterion(TagsCriterionOption);
   criterion.value = {
     items: [{ id: tag.id, label: tag.name || `Tag ${tag.id}` }],
@@ -434,8 +398,6 @@ const makeTagImagesUrl = (
   var filter = defaultFilter
     ? defaultFilter
     : new ListFilterModel(GQL.FilterMode.Images, undefined);
-  filter.searchTerm = "";
-  filter.criteria = [];
   const criterion = new TagsCriterion(TagsCriterionOption);
   criterion.value = {
     items: [{ id: tag.id, label: tag.name || `Tag ${tag.id}` }],
@@ -463,8 +425,6 @@ const makeScenesPHashMatchUrl = (
   var filter = defaultFilter
     ? defaultFilter
     : new ListFilterModel(GQL.FilterMode.Scenes, undefined);
-  filter.searchTerm = "";
-  filter.criteria = [];
   const criterion = new PhashCriterion();
   criterion.value = { value: phash };
   filter.criteria.push(criterion);
