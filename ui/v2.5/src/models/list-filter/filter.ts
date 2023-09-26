@@ -465,30 +465,42 @@ export class ListFilterModel {
   }
 }
 
+const recursiveRenameToSnakeCase = (
+  camelCaseObject: Record<string, unknown>
+) => {
+  let camelCaseKeys = Object.keys(camelCaseObject);
+  camelCaseKeys.forEach((key) => {
+    if (
+      typeof camelCaseObject[key] === "object" &&
+      !Array.isArray(camelCaseObject[key]) &&
+      camelCaseObject[key] !== null
+    ) {
+      let cco: Record<string, unknown> = Object(camelCaseObject[key]);
+      camelCaseObject[key] = recursiveRenameToSnakeCase(cco);
+    }
+    let snakeCaseKey = key.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase();
+    if (snakeCaseKey !== key) {
+      camelCaseObject[snakeCaseKey] = camelCaseObject[key];
+      delete camelCaseObject[key];
+    }
+  });
+  return camelCaseObject;
+};
+
 export const useDefaultLinkFilter = (mode: GQL.FilterMode) => {
   let filter = new ListFilterModel(mode, undefined);
   let { configuration: config } = useContext(ConfigurationContext);
   if (config?.ui?.linkFilters?.[mode.toLowerCase()]) {
-    let linkFilter = config?.ui?.linkFilters?.[mode.toLowerCase()];
-    // TODO, this is horrible, some other way to clean this up?
-    if (linkFilter?.findFilter?.perPage) {
-      linkFilter.findFilter.per_page = linkFilter?.findFilter?.perPage;
-    }
-    if (linkFilter?.uiOptions?.displayMode) {
-      linkFilter.uiOptions.display_mode = linkFilter?.uiOptions?.displayMode;
-    }
-    if (linkFilter?.uiOptions?.zoomIndex) {
-      linkFilter.uiOptions.zoom_index = linkFilter?.uiOptions?.zoomIndex;
-    }
-
-    filter.configureFromSavedFilter({
+    let linkFilter = recursiveRenameToSnakeCase(
+      config?.ui?.linkFilters?.[mode.toLowerCase()]
+    );
+    let savedFilter: SavedFilterDataFragment = {
+      ...linkFilter,
       id: mode + "defaultLinkFilter",
-      name: "",
       mode: mode,
-      find_filter: linkFilter?.findFilter,
-      object_filter: linkFilter?.objectFilter,
-      ui_options: linkFilter?.uiOptions,
-    });
+      name: "",
+    };
+    filter.configureFromSavedFilter(savedFilter);
     filter.currentPage = 1;
     filter.randomSeed = -1;
   }
