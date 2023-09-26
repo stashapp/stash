@@ -402,7 +402,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
           className="set-as-default-button"
           variant="secondary"
           size="sm"
-          onClick={() => { Object.keys(filter.makeSavedFindFilter()).length ? setLinkFilterAlert(true) : onSetDefaultLinkFilter() }
+          onClick={() => Object.keys(filter.makeSavedFindFilter()).length || filter.makeFindFilter()?.q ? setLinkFilterAlert(true) : onSetDefaultLinkFilter() }
         >
           { intl.formatMessage({ id: "actions.set_as_default_link" }) }
         </Button>

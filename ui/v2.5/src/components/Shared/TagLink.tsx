@@ -10,10 +10,6 @@ import * as GQL from "src/core/generated-graphql";
 import { TagPopover } from "../Tags/TagPopover";
 import { markerTitle } from "src/core/markers";
 import { Placement } from "react-bootstrap/esm/Overlay";
-import {
-  ListFilterModel,
-  useDefaultFilter,
-} from "src/models/list-filter/filter";
 import { faFolderTree } from "@fortawesome/free-solid-svg-icons";
 import { Icon } from "../Shared/Icon";
 import { FormattedMessage } from "react-intl";

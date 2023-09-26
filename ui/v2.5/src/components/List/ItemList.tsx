@@ -633,20 +633,20 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
           }
         }
       } else if (persistState === PersistanceLevel.SAVEDVIEW) {
-        // only set default filter if uninitialised
-        if (loadDefault) {
-          // wait until default filter is loaded
-          if (defaultFilterLoading) return;
-
-          if (defaultFilter?.findDefaultFilter) {
-            newFilter.currentPage = 1;
+          if (config?.ui?.linkFilters?.[filterMode.toLowerCase()]) {
+            let linkFilter=config?.ui?.linkFilters?.[filterMode.toLowerCase()];
             try {
-              let { criteria: criteria } = newFilter;
-              newFilter.configureFromJSON(
-                defaultFilter.findDefaultFilter.filter
+              newFilter.currentPage = 1;
+              newFilter.configureFromSavedFilter(
+                {
+                  id: filterMode + "defaultLinkFilter",
+                  name: "",
+                  mode: filterMode,
+                  find_filter: linkFilter?.findFilter,
+                  object_filter: linkFilter?.objectFilter,
+                  ui_options: linkFilter?.uiOptions
+                }
               );
-              newFilter.criteria = criteria;
-              newFilter.searchTerm = "";
             } catch (err) {
               console.log(err);
               // ignore
@@ -654,7 +654,6 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
             // #1507 - reset random seed when loaded
             newFilter.randomSeed = -1;
           }
-        }
       } else if (persistState === PersistanceLevel.VIEW) {
         // wait until forage is initialised
         if (interfaceState.loading) return;
