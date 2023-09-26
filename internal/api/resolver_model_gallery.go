@@ -226,3 +226,32 @@ func (r *galleryResolver) Chapters(ctx context.Context, obj *models.Gallery) (re
 
 	return ret, nil
 }
+
+func (r *galleryResolver) URL(ctx context.Context, obj *models.Gallery) (*string, error) {
+	if !obj.URLs.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadURLs(ctx, r.repository.Gallery)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	urls := obj.URLs.List()
+	if len(urls) == 0 {
+		return nil, nil
+	}
+
+	return &urls[0], nil
+}
+
+func (r *galleryResolver) Urls(ctx context.Context, obj *models.Gallery) ([]string, error) {
+	if !obj.URLs.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadURLs(ctx, r.repository.Gallery)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	return obj.URLs.List(), nil
+}

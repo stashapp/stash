@@ -1,16 +1,10 @@
-import { Badge } from "react-bootstrap";
-import React, { useRef } from "react";
+import { Badge, OverlayTrigger, Tooltip } from "react-bootstrap";
+import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import cx from "classnames";
-import {
-  PerformerDataFragment,
-  TagDataFragment,
-  MovieDataFragment,
-  SceneDataFragment,
-} from "src/core/generated-graphql";
-import NavUtils from "src/utils/navigation";
+import NavUtils, { INamedObject } from "src/utils/navigation";
 import TextUtils from "src/utils/text";
-import { objectTitle } from "src/core/files";
+import { IFile, IObjectWithTitleFiles, objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import * as GQL from "src/core/generated-graphql";
 import { TagPopover } from "../Tags/TagPopover";
@@ -20,101 +14,243 @@ import {
   ListFilterModel,
   useDefaultFilter,
 } from "src/models/list-filter/filter";
-
-interface IFile {
-  path: string;
-}
-interface IGallery {
-  id: string;
-  files: IFile[];
-  folder?: GQL.Maybe<IFile>;
-  title: GQL.Maybe<string>;
-}
+import { faFolderTree } from "@fortawesome/free-solid-svg-icons";
+import { Icon } from "../Shared/Icon";
+import { FormattedMessage } from "react-intl";
 
 type SceneMarkerFragment = Pick<GQL.SceneMarker, "id" | "title" | "seconds"> & {
   scene: Pick<GQL.Scene, "id">;
   primary_tag: Pick<GQL.Tag, "id" | "name">;
 };
 
-interface IProps {
-  tag?: Partial<TagDataFragment>;
-  tagType?: "performer" | "scene" | "gallery" | "image" | "details";
-  performer?: Partial<PerformerDataFragment>;
-  marker?: SceneMarkerFragment;
-  movie?: Partial<MovieDataFragment>;
-  scene?: Partial<Pick<SceneDataFragment, "id" | "title" | "files">>;
-  gallery?: Partial<IGallery>;
+interface ICommonLinkProps {
+  link: string;
   className?: string;
-  hoverPlacement?: Placement;
 }
 
-export const TagLink: React.FC<IProps> = (props: IProps) => {
-  const id = useRef("");
-  const link = useRef("#");
-  const title = useRef("");
-  let modeMap = new Map<string, GQL.FilterMode>([
-    ["scene", GQL.FilterMode.Scenes],
-    ["performer", GQL.FilterMode.Performers],
-    ["gallery", GQL.FilterMode.Galleries],
-    ["image", GQL.FilterMode.Images],
-    ["details", GQL.FilterMode.Tags],
-  ]);
-  const mode: GQL.FilterMode =
-    props.tag && props.tagType != undefined
-      ? modeMap.get(props.tagType) || GQL.FilterMode.Scenes
-      : GQL.FilterMode.Scenes;
-  const defaultFilter: ListFilterModel = useDefaultFilter(mode);
+const CommonLinkComponent: React.FC<ICommonLinkProps> = ({
+  link,
+  className,
+  children,
+}) => {
+  return (
+    <Badge className={cx("tag-item", className)} variant="secondary">
+      <Link to={link}>{children}</Link>
+    </Badge>
+  );
+};
 
-  if (props.tag) {
-    id.current = props.tag.id || "";
-    switch (props.tagType) {
-      case "scene":
-      case undefined:
-        link.current = NavUtils.makeTagScenesUrl(props.tag, defaultFilter);
-        break;
-      case "performer":
-        link.current = NavUtils.makeTagPerformersUrl(props.tag, defaultFilter);
-        break;
+interface IPerformerLinkProps {
+  performer: INamedObject;
+  linkType?: "scene" | "gallery" | "image";
+  className?: string;
+}
+
+export const PerformerLink: React.FC<IPerformerLinkProps> = ({
+  performer,
+  linkType = "scene",
+  className,
+}) => {
+  const link = useMemo(() => {
+    switch (linkType) {
       case "gallery":
-        link.current = NavUtils.makeTagGalleriesUrl(props.tag, defaultFilter);
-        break;
+        return NavUtils.makePerformerGalleriesUrl(performer);
       case "image":
-        link.current = NavUtils.makeTagImagesUrl(props.tag, defaultFilter);
-        break;
-      case "details":
-        link.current = NavUtils.makeTagUrl(id.current);
-        break;
+        return NavUtils.makePerformerImagesUrl(performer);
+      case "scene":
+      default:
+        return NavUtils.makePerformerScenesUrl(performer);
     }
-    title.current = props.tag.name || "";
-  } else if (props.performer) {
-    link.current = NavUtils.makePerformerScenesUrl(
-      props.performer,
-      undefined,
-      undefined,
-      defaultFilter
-    );
-    title.current = props.performer.name || "";
-  } else if (props.movie) {
-    link.current = NavUtils.makeMovieScenesUrl(props.movie, defaultFilter);
-    title.current = props.movie.name || "";
-  } else if (props.marker) {
-    link.current = NavUtils.makeSceneMarkerUrl(props.marker);
-    title.current = `${markerTitle(
-      props.marker
-    )} - ${TextUtils.secondsToTimestamp(props.marker.seconds || 0)}`;
-  } else if (props.gallery) {
-    link.current = `/galleries/${props.gallery.id}`;
-    title.current = galleryTitle(props.gallery);
-  } else if (props.scene) {
-    link.current = `/scenes/${props.scene.id}`;
-    title.current = objectTitle(props.scene);
-  }
+  }, [performer, linkType]);
+
+  const title = performer.name || "";
 
   return (
-    <Badge className={cx("tag-item", props.className)} variant="secondary">
-      <TagPopover id={id.current} placement={props.hoverPlacement}>
-        <Link to={link.current}>{title.current}</Link>
+    <CommonLinkComponent link={link} className={className}>
+      {title}
+    </CommonLinkComponent>
+  );
+};
+
+interface IMovieLinkProps {
+  movie: INamedObject;
+  linkType?: "scene";
+  className?: string;
+}
+
+export const MovieLink: React.FC<IMovieLinkProps> = ({
+  movie,
+  linkType = "scene",
+  className,
+}) => {
+  const link = useMemo(() => {
+    switch (linkType) {
+      case "scene":
+        return NavUtils.makeMovieScenesUrl(movie);
+    }
+  }, [movie, linkType]);
+
+  const title = movie.name || "";
+
+  return (
+    <CommonLinkComponent link={link} className={className}>
+      {title}
+    </CommonLinkComponent>
+  );
+};
+
+interface ISceneMarkerLinkProps {
+  marker: SceneMarkerFragment;
+  linkType?: "scene";
+  className?: string;
+}
+
+export const SceneMarkerLink: React.FC<ISceneMarkerLinkProps> = ({
+  marker,
+  linkType = "scene",
+  className,
+}) => {
+  const link = useMemo(() => {
+    switch (linkType) {
+      case "scene":
+        return NavUtils.makeSceneMarkerUrl(marker);
+    }
+  }, [marker, linkType]);
+
+  const title = `${markerTitle(marker)} - ${TextUtils.secondsToTimestamp(
+    marker.seconds || 0
+  )}`;
+
+  return (
+    <CommonLinkComponent link={link} className={className}>
+      {title}
+    </CommonLinkComponent>
+  );
+};
+
+interface IObjectWithIDTitleFiles extends IObjectWithTitleFiles {
+  id: string;
+}
+
+interface ISceneLinkProps {
+  scene: IObjectWithIDTitleFiles;
+  linkType?: "details";
+  className?: string;
+}
+
+export const SceneLink: React.FC<ISceneLinkProps> = ({
+  scene,
+  linkType = "details",
+  className,
+}) => {
+  const link = useMemo(() => {
+    switch (linkType) {
+      case "details":
+        return `/scenes/${scene.id}`;
+    }
+  }, [scene, linkType]);
+
+  const title = objectTitle(scene);
+
+  return (
+    <CommonLinkComponent link={link} className={className}>
+      {title}
+    </CommonLinkComponent>
+  );
+};
+
+interface IGallery extends IObjectWithIDTitleFiles {
+  folder?: GQL.Maybe<IFile>;
+}
+
+interface IGalleryLinkProps {
+  gallery: IGallery;
+  linkType?: "details";
+  className?: string;
+}
+
+export const GalleryLink: React.FC<IGalleryLinkProps> = ({
+  gallery,
+  linkType = "details",
+  className,
+}) => {
+  const link = useMemo(() => {
+    switch (linkType) {
+      case "details":
+        return `/galleries/${gallery.id}`;
+    }
+  }, [gallery, linkType]);
+
+  const title = galleryTitle(gallery);
+
+  return (
+    <CommonLinkComponent link={link} className={className}>
+      {title}
+    </CommonLinkComponent>
+  );
+};
+
+interface ITagLinkProps {
+  tag: INamedObject;
+  linkType?: "scene" | "gallery" | "image" | "details" | "performer";
+  className?: string;
+  hoverPlacement?: Placement;
+  showHierarchyIcon?: boolean;
+  hierarchyTooltipID?: string;
+}
+
+export const TagLink: React.FC<ITagLinkProps> = ({
+  tag,
+  linkType = "scene",
+  className,
+  hoverPlacement,
+  showHierarchyIcon = false,
+  hierarchyTooltipID,
+}) => {
+  const link = useMemo(() => {
+    switch (linkType) {
+      case "scene":
+        return NavUtils.makeTagScenesUrl(tag);
+      case "performer":
+        return NavUtils.makeTagPerformersUrl(tag);
+      case "gallery":
+        return NavUtils.makeTagGalleriesUrl(tag);
+      case "image":
+        return NavUtils.makeTagImagesUrl(tag);
+      case "details":
+        return NavUtils.makeTagUrl(tag.id ?? "");
+    }
+  }, [tag, linkType]);
+
+  const title = tag.name || "";
+
+  const tooltip = useMemo(() => {
+    if (!hierarchyTooltipID) {
+      return <></>;
+    }
+
+    return (
+      <Tooltip id="tag-hierarchy-tooltip">
+        <FormattedMessage id={hierarchyTooltipID} />
+      </Tooltip>
+    );
+  }, [hierarchyTooltipID]);
+
+  return (
+    <CommonLinkComponent link={link} className={className}>
+      <TagPopover id={tag.id ?? ""} placement={hoverPlacement}>
+        <Link to={link}>
+          {title}
+          {showHierarchyIcon && (
+            <OverlayTrigger placement="top" overlay={tooltip}>
+              <span className="icon-wrapper">
+                <span className="vertical-line">|</span>
+                <Icon icon={faFolderTree} className="tag-icon" />
+              </span>
+            </OverlayTrigger>
+          )}
+        </Link>
       </TagPopover>
-    </Badge>
+    </CommonLinkComponent>
   );
 };

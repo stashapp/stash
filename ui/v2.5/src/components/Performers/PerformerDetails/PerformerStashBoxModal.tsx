@@ -6,7 +6,7 @@ import * as GQL from "src/core/generated-graphql";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { stashboxDisplayName } from "src/utils/stashbox";
-import { useDebouncedSetState } from "src/hooks/debounce";
+import { useDebounce } from "src/hooks/debounce";
 
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { stringToGender } from "src/utils/gender";
@@ -171,7 +171,7 @@ const PerformerStashBoxModal: React.FC<IProps> = ({
 
   const performers = data?.scrapeSinglePerformer ?? [];
 
-  const onInputChange = useDebouncedSetState(setQuery, 500);
+  const onInputChange = useDebounce(setQuery, 500);
 
   useEffect(() => inputRef.current?.focus(), []);
 

@@ -11,20 +11,7 @@ import {
   StringCriterion,
 } from "./criterion";
 
-abstract class AbstractResolutionCriterion extends StringCriterion {
-  protected toCriterionInput(): ResolutionCriterionInput | undefined {
-    const value = stringToResolution(this.value);
-
-    if (value !== undefined) {
-      return {
-        value,
-        modifier: this.modifier,
-      };
-    }
-  }
-}
-
-class ResolutionCriterionOptionType extends CriterionOption {
+class BaseResolutionCriterionOption extends CriterionOption {
   constructor(
     value: CriterionType,
     makeCriterion: () => Criterion<CriterionValue>
@@ -44,23 +31,37 @@ class ResolutionCriterionOptionType extends CriterionOption {
   }
 }
 
-export const ResolutionCriterionOption = new ResolutionCriterionOptionType(
+class BaseResolutionCriterion extends StringCriterion {
+  protected toCriterionInput(): ResolutionCriterionInput | undefined {
+    const value = stringToResolution(this.value);
+
+    if (value !== undefined) {
+      return {
+        value,
+        modifier: this.modifier,
+      };
+    }
+  }
+}
+
+export const ResolutionCriterionOption = new BaseResolutionCriterionOption(
   "resolution",
   () => new ResolutionCriterion()
 );
-export class ResolutionCriterion extends AbstractResolutionCriterion {
+
+export class ResolutionCriterion extends BaseResolutionCriterion {
   constructor() {
     super(ResolutionCriterionOption);
   }
 }
 
 export const AverageResolutionCriterionOption =
-  new ResolutionCriterionOptionType(
+  new BaseResolutionCriterionOption(
     "average_resolution",
     () => new AverageResolutionCriterion()
   );
 
-export class AverageResolutionCriterion extends AbstractResolutionCriterion {
+export class AverageResolutionCriterion extends BaseResolutionCriterion {
   constructor() {
     super(AverageResolutionCriterionOption);
   }

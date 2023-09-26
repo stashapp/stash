@@ -1,7 +1,6 @@
 # options for analysis running
 run:
   timeout: 5m
-  modules-download-mode: vendor
 
 linters:
   disable-all: true

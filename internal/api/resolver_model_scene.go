@@ -275,16 +275,6 @@ func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) (ret 
 	return ret, firstError(errs)
 }
 
-func stashIDsSliceToPtrSlice(v []models.StashID) []*models.StashID {
-	ret := make([]*models.StashID, len(v))
-	for i, vv := range v {
-		c := vv
-		ret[i] = &c
-	}
-
-	return ret
-}
-
 func (r *sceneResolver) StashIds(ctx context.Context, obj *models.Scene) (ret []*models.StashID, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		return obj.LoadStashIDs(ctx, r.repository.Scene)

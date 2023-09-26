@@ -396,6 +396,20 @@ func (qb *TagStore) FindByChildTagID(ctx context.Context, parentID int) ([]*mode
 	return qb.queryTags(ctx, query, args)
 }
 
+func (qb *TagStore) CountByParentTagID(ctx context.Context, parentID int) (int, error) {
+	q := dialect.Select(goqu.COUNT("*")).From(goqu.T("tags")).
+		InnerJoin(goqu.T("tags_relations"), goqu.On(goqu.I("tags_relations.parent_id").Eq(goqu.I("tags.id")))).
+		Where(goqu.I("tags_relations.child_id").Eq(goqu.V(parentID))) // Pass the parentID here
+	return count(ctx, q)
+}
+
+func (qb *TagStore) CountByChildTagID(ctx context.Context, childID int) (int, error) {
+	q := dialect.Select(goqu.COUNT("*")).From(goqu.T("tags")).
+		InnerJoin(goqu.T("tags_relations"), goqu.On(goqu.I("tags_relations.child_id").Eq(goqu.I("tags.id")))).
+		Where(goqu.I("tags_relations.parent_id").Eq(goqu.V(childID))) // Pass the childID here
+	return count(ctx, q)
+}
+
 func (qb *TagStore) Count(ctx context.Context) (int, error) {
 	q := dialect.Select(goqu.COUNT("*")).From(qb.table())
 	return count(ctx, q)
@@ -890,9 +904,9 @@ func (qb *TagStore) queryTags(ctx context.Context, query string, args []interfac
 	return ret, nil
 }
 
-func (qb *TagStore) queryTagPaths(ctx context.Context, query string, args []interface{}) (models.TagPaths, error) {
+func (qb *TagStore) queryTagPaths(ctx context.Context, query string, args []interface{}) ([]*models.TagPath, error) {
 	const single = false
-	var ret models.TagPaths
+	var ret []*models.TagPath
 	if err := qb.queryFunc(ctx, query, args, single, func(r *sqlx.Rows) error {
 		var f tagPathRow
 		if err := r.StructScan(&f); err != nil {

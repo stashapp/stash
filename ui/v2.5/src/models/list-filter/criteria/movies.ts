@@ -6,7 +6,8 @@ export const MoviesCriterionOption = new ILabeledIdCriterionOption(
   "movies",
   "movies",
   false,
-  inputType
+  inputType,
+  () => new MoviesCriterion()
 );
 
 export class MoviesCriterion extends ILabeledIdCriterion {

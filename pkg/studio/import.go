@@ -77,11 +77,10 @@ func (i *Importer) populateParentStudio(ctx context.Context) error {
 }
 
 func (i *Importer) createParentStudio(ctx context.Context, name string) (int, error) {
-	newStudio := &models.Studio{
-		Name: name,
-	}
+	newStudio := models.NewStudio()
+	newStudio.Name = name
 
-	err := i.ReaderWriter.Create(ctx, newStudio)
+	err := i.ReaderWriter.Create(ctx, &newStudio)
 	if err != nil {
 		return 0, err
 	}

@@ -114,13 +114,13 @@ func (_m *ImageReaderWriter) CountByGalleryID(ctx context.Context, galleryID int
 	return r0, r1
 }
 
-// Create provides a mock function with given fields: ctx, newImage
-func (_m *ImageReaderWriter) Create(ctx context.Context, newImage *models.ImageCreateInput) error {
-	ret := _m.Called(ctx, newImage)
+// Create provides a mock function with given fields: ctx, newImage, fileIDs
+func (_m *ImageReaderWriter) Create(ctx context.Context, newImage *models.Image, fileIDs []models.FileID) error {
+	ret := _m.Called(ctx, newImage, fileIDs)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.ImageCreateInput) error); ok {
-		r0 = rf(ctx, newImage)
+	if rf, ok := ret.Get(0).(func(context.Context, *models.Image, []models.FileID) error); ok {
+		r0 = rf(ctx, newImage, fileIDs)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -449,6 +449,29 @@ func (_m *ImageReaderWriter) GetTagIDs(ctx context.Context, relatedID int) ([]in
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, relatedID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetURLs provides a mock function with given fields: ctx, relatedID
+func (_m *ImageReaderWriter) GetURLs(ctx context.Context, relatedID int) ([]string, error) {
+	ret := _m.Called(ctx, relatedID)
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func(context.Context, int) []string); ok {
+		r0 = rf(ctx, relatedID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
 		}
 	}
 

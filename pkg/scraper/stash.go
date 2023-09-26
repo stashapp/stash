@@ -354,11 +354,18 @@ func galleryToUpdateInput(gallery *models.Gallery) models.GalleryUpdateInput {
 	// fallback to file basename if title is empty
 	title := gallery.GetTitle()
 
+	var url *string
+	urls := gallery.URLs.List()
+	if len(urls) > 0 {
+		url = &urls[0]
+	}
+
 	return models.GalleryUpdateInput{
 		ID:      strconv.Itoa(gallery.ID),
 		Title:   &title,
 		Details: &gallery.Details,
-		URL:     &gallery.URL,
+		URL:     url,
+		Urls:    urls,
 		Date:    dateToStringPtr(gallery.Date),
 	}
 }

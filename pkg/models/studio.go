@@ -35,3 +35,32 @@ type StudioFilterType struct {
 	// Filter by updated at
 	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
 }
+
+type StudioCreateInput struct {
+	Name     string  `json:"name"`
+	URL      *string `json:"url"`
+	ParentID *string `json:"parent_id"`
+	// This should be a URL or a base64 encoded data URL
+	Image         *string   `json:"image"`
+	StashIds      []StashID `json:"stash_ids"`
+	Rating        *int      `json:"rating"`
+	Rating100     *int      `json:"rating100"`
+	Details       *string   `json:"details"`
+	Aliases       []string  `json:"aliases"`
+	IgnoreAutoTag *bool     `json:"ignore_auto_tag"`
+}
+
+type StudioUpdateInput struct {
+	ID       string  `json:"id"`
+	Name     *string `json:"name"`
+	URL      *string `json:"url"`
+	ParentID *string `json:"parent_id"`
+	// This should be a URL or a base64 encoded data URL
+	Image         *string   `json:"image"`
+	StashIds      []StashID `json:"stash_ids"`
+	Rating        *int      `json:"rating"`
+	Rating100     *int      `json:"rating100"`
+	Details       *string   `json:"details"`
+	Aliases       []string  `json:"aliases"`
+	IgnoreAutoTag *bool     `json:"ignore_auto_tag"`
+}

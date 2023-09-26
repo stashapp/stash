@@ -1113,6 +1113,19 @@ func getImageStringValue(index int, field string) string {
 	return fmt.Sprintf("image_%04d_%s", index, field)
 }
 
+func getImageNullStringPtr(index int, field string) *string {
+	return getStringPtrFromNullString(getPrefixedNullStringValue("image", index, field))
+}
+
+func getImageEmptyString(index int, field string) string {
+	v := getImageNullStringPtr(index, field)
+	if v == nil {
+		return ""
+	}
+
+	return *v
+}
+
 func getImageBasename(index int) string {
 	return getImageStringValue(index, pathField)
 }
@@ -1148,10 +1161,12 @@ func makeImage(i int) *models.Image {
 	tids := indexesToIDs(tagIDs, imageTags[i])
 
 	return &models.Image{
-		Title:        title,
-		Rating:       getIntPtr(getRating(i)),
-		Date:         getObjectDate(i),
-		URL:          getImageStringValue(i, urlField),
+		Title:  title,
+		Rating: getIntPtr(getRating(i)),
+		Date:   getObjectDate(i),
+		URLs: models.NewRelatedStrings([]string{
+			getImageEmptyString(i, urlField),
+		}),
 		OCounter:     getOCounter(i),
 		StudioID:     studioID,
 		GalleryIDs:   models.NewRelatedIDs(gids),
@@ -1177,10 +1192,7 @@ func createImages(ctx context.Context, n int) error {
 
 		image := makeImage(i)
 
-		err := qb.Create(ctx, &models.ImageCreateInput{
-			Image:   image,
-			FileIDs: []models.FileID{f.ID},
-		})
+		err := qb.Create(ctx, image, []models.FileID{f.ID})
 
 		if err != nil {
 			return fmt.Errorf("Error creating image %v+: %s", image, err.Error())
@@ -1201,7 +1213,16 @@ func getGalleryNullStringValue(index int, field string) sql.NullString {
 }
 
 func getGalleryNullStringPtr(index int, field string) *string {
-	return getStringPtr(getPrefixedStringValue("gallery", index, field))
+	return getStringPtrFromNullString(getPrefixedNullStringValue("gallery", index, field))
+}
+
+func getGalleryEmptyString(index int, field string) string {
+	v := getGalleryNullStringPtr(index, field)
+	if v == nil {
+		return ""
+	}
+
+	return *v
 }
 
 func getGalleryBasename(index int) string {
@@ -1233,8 +1254,10 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 	tids := indexesToIDs(tagIDs, galleryTags[i])
 
 	ret := &models.Gallery{
-		Title:        getGalleryStringValue(i, titleField),
-		URL:          getGalleryNullStringValue(i, urlField).String,
+		Title: getGalleryStringValue(i, titleField),
+		URLs: models.NewRelatedStrings([]string{
+			getGalleryEmptyString(i, urlField),
+		}),
 		Rating:       getIntPtr(getRating(i)),
 		Date:         getObjectDate(i),
 		StudioID:     studioID,

@@ -133,17 +133,17 @@ func (m *schema49Migrator) migrateSavedFilters(ctx context.Context) error {
 
 			newFindFilter, err := m.getFindFilter(asRawMessage)
 			if err != nil {
-				return fmt.Errorf("failed to get find filter for saved filter %d: %w", id, err)
+				return fmt.Errorf("failed to get find filter for saved filter  %s : %w", findFilter, err)
 			}
 
 			objectFilter, err := m.getObjectFilter(mode, asRawMessage)
 			if err != nil {
-				return fmt.Errorf("failed to get object filter for saved filter %d: %w", id, err)
+				return fmt.Errorf("failed to get object filter for saved filter  %s : %w", findFilter, err)
 			}
 
 			uiOptions, err := m.getDisplayOptions(asRawMessage)
 			if err != nil {
-				return fmt.Errorf("failed to get display options for saved filter %d: %w", id, err)
+				return fmt.Errorf("failed to get display options for saved filter  %s : %w", findFilter, err)
 			}
 
 			_, err = m.db.Exec("UPDATE saved_filters SET find_filter = ?, object_filter = ?, ui_options = ? WHERE id = ?", newFindFilter, objectFilter, uiOptions, id)
@@ -252,23 +252,29 @@ func (m *schema49Migrator) convertCriterion(mode models.FilterMode, out map[stri
 	}
 	delete(ret, "type")
 
-	// Find out whether the object needs some adjustment/has non-string content attached
-	// Only adjust if value is present
-	if v, ok := ret["value"]; ok && v != nil {
-		var err error
-		switch {
-		case arrayContains(migrate49TypeResolution["Boolean"], field):
-			ret["value"], err = m.adjustCriterionValue(ret["value"], "bool")
-		case arrayContains(migrate49TypeResolution["Int"], field):
-			ret["value"], err = m.adjustCriterionValue(ret["value"], "int")
-		case arrayContains(migrate49TypeResolution["Float"], field):
-			ret["value"], err = m.adjustCriterionValue(ret["value"], "float64")
-		case arrayContains(migrate49TypeResolution["Object"], field):
-			ret["value"], err = m.adjustCriterionValue(ret["value"], "object")
-		}
+	// unset the value for IS_NULL or NOT_NULL modifiers
+	modifier := models.CriterionModifier(ret["modifier"].(string))
+	if modifier == models.CriterionModifierIsNull || modifier == models.CriterionModifierNotNull {
+		delete(ret, "value")
+	} else {
+		// Find out whether the object needs some adjustment/has non-string content attached
+		// Only adjust if value is present
+		if v, ok := ret["value"]; ok && v != nil {
+			var err error
+			switch {
+			case arrayContains(migrate49TypeResolution["Boolean"], field):
+				ret["value"], err = m.adjustCriterionValue(ret["value"], "bool")
+			case arrayContains(migrate49TypeResolution["Int"], field):
+				ret["value"], err = m.adjustCriterionValue(ret["value"], "int")
+			case arrayContains(migrate49TypeResolution["Float"], field):
+				ret["value"], err = m.adjustCriterionValue(ret["value"], "float64")
+			case arrayContains(migrate49TypeResolution["Object"], field):
+				ret["value"], err = m.adjustCriterionValue(ret["value"], "object")
+			}
 
-		if err != nil {
-			return fmt.Errorf("failed to adjust criterion value for %q: %w", field, err)
+			if err != nil {
+				return fmt.Errorf("failed to adjust criterion value for %q: %w", field, err)
+			}
 		}
 	}
 
@@ -352,6 +358,8 @@ func (m *schema49Migrator) adjustCriterionValue(value interface{}, typ string) (
 		return value, nil
 	} else if _, ok := value.(int); ok {
 		return value, nil
+	} else if _, ok := value.(float64); ok {
+		return value, nil
 	}
 
 	return nil, fmt.Errorf("could not recognize format of value %v", value)
@@ -392,7 +400,7 @@ func (m *schema49Migrator) adjustCriterionItem(value interface{}) (interface{}, 
 // Converts a value of type string to its according type, given by string
 func (m *schema49Migrator) convertValue(value interface{}, typ string) (interface{}, error) {
 	valueType := reflect.TypeOf(value).Name()
-	if typ == valueType || (typ == "int" && valueType == "float64") || (typ == "float64" && valueType == "int") {
+	if typ == valueType || (typ == "int" && valueType == "float64") || (typ == "float64" && valueType == "int") || value == "" {
 		return value, nil
 	}
 

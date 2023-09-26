@@ -13,6 +13,14 @@ type Tag struct {
 	UpdatedAt     time.Time `json:"updated_at"`
 }
 
+func NewTag() Tag {
+	currentTime := time.Now()
+	return Tag{
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
+	}
+}
+
 type TagPartial struct {
 	Name          OptionalString
 	Description   OptionalString
@@ -21,43 +29,14 @@ type TagPartial struct {
 	UpdatedAt     OptionalTime
 }
 
+func NewTagPartial() TagPartial {
+	currentTime := time.Now()
+	return TagPartial{
+		UpdatedAt: NewOptionalTime(currentTime),
+	}
+}
+
 type TagPath struct {
 	Tag
 	Path string `json:"path"`
-}
-
-func NewTag(name string) *Tag {
-	currentTime := time.Now()
-	return &Tag{
-		Name:      name,
-		CreatedAt: currentTime,
-		UpdatedAt: currentTime,
-	}
-}
-
-func NewTagPartial() TagPartial {
-	updatedTime := time.Now()
-	return TagPartial{
-		UpdatedAt: NewOptionalTime(updatedTime),
-	}
-}
-
-type Tags []*Tag
-
-func (t *Tags) Append(o interface{}) {
-	*t = append(*t, o.(*Tag))
-}
-
-func (t *Tags) New() interface{} {
-	return &Tag{}
-}
-
-type TagPaths []*TagPath
-
-func (t *TagPaths) Append(o interface{}) {
-	*t = append(*t, o.(*TagPath))
-}
-
-func (t *TagPaths) New() interface{} {
-	return &TagPath{}
 }

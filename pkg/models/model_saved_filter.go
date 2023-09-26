@@ -67,13 +67,3 @@ type SavedFilter struct {
 	ObjectFilter map[string]interface{} `json:"object_filter"`
 	UIOptions    map[string]interface{} `json:"ui_options"`
 }
-
-type SavedFilters []*SavedFilter
-
-func (m *SavedFilters) Append(o interface{}) {
-	*m = append(*m, o.(*SavedFilter))
-}
-
-func (m *SavedFilters) New() interface{} {
-	return &SavedFilter{}
-}

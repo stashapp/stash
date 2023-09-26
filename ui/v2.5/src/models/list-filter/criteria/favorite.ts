@@ -2,7 +2,8 @@ import { BooleanCriterion, BooleanCriterionOption } from "./criterion";
 
 export const FavoriteCriterionOption = new BooleanCriterionOption(
   "favourite",
-  "filter_favorites"
+  "filter_favorites",
+  () => new FavoriteCriterion()
 );
 
 export class FavoriteCriterion extends BooleanCriterion {
@@ -13,7 +14,8 @@ export class FavoriteCriterion extends BooleanCriterion {
 
 export const PerformerFavoriteCriterionOption = new BooleanCriterionOption(
   "performer_favorite",
-  "performer_favorite"
+  "performer_favorite",
+  () => new PerformerFavoriteCriterion()
 );
 
 export class PerformerFavoriteCriterion extends BooleanCriterion {
