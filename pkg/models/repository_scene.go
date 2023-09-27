@@ -101,11 +101,13 @@ type SceneWriter interface {
 	AddFileID(ctx context.Context, id int, fileID FileID) error
 	AddGalleryIDs(ctx context.Context, sceneID int, galleryIDs []int) error
 	AssignFiles(ctx context.Context, sceneID int, fileID []FileID) error
-	IncrementOCounter(ctx context.Context, id int) (int, error)
-	DecrementOCounter(ctx context.Context, id int) (int, error)
-	ResetOCounter(ctx context.Context, id int) (int, error)
+	IncrementOCounterDate(ctx context.Context, id int) (int, error)
+	DecrementOCounterDate(ctx context.Context, id int) (int, error)
+	ResetOCounterDate(ctx context.Context, id int) (int, error)
 	SaveActivity(ctx context.Context, sceneID int, resumeTime *float64, playDuration *float64) (bool, error)
 	IncrementWatchCount(ctx context.Context, sceneID int) (int, error)
+	DecrementWatchCount(ctx context.Context, id int) (int, error)
+	ResetWatchCount(ctx context.Context, id int) (int, error)
 }
 
 // SceneReaderWriter provides all scene methods.
