@@ -185,7 +185,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
             ...configuration?.ui,
             linkFilters: {
               ...ui.linkFilters,
-              [filter.mode.toLowerCase()]: {
+              [filter.mode.toLowerCase().replace("_", "")]: {
                 mode: filter.mode,
                 find_filter: findFilter,
                 object_filter: uiOnly ? {} : filterCopy.makeSavedFindFilter(),

@@ -490,9 +490,9 @@ const recursiveRenameToSnakeCase = (
 export const useDefaultLinkFilter = (mode: GQL.FilterMode) => {
   let filter = new ListFilterModel(mode, undefined);
   let { configuration: config } = useContext(ConfigurationContext);
-  if (config?.ui?.linkFilters?.[mode.toLowerCase()]) {
+  if (config?.ui?.linkFilters?.[mode.toLowerCase().replace("_", "")]) {
     let linkFilter = recursiveRenameToSnakeCase(
-      config?.ui?.linkFilters?.[mode.toLowerCase()]
+      config?.ui?.linkFilters?.[mode.toLowerCase().replace("_", "")]
     );
     let savedFilter: SavedFilterDataFragment = {
       ...linkFilter,
