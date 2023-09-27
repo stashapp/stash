@@ -73,8 +73,13 @@ const makePerformerImagesUrl = (
   return `/images?${filter.makeQueryParameters()}`;
 };
 
+export interface INamedObject {
+  id?: string;
+  name?: string;
+}
+
 const makePerformerGalleriesUrl = (
-  performer: Partial<GQL.PerformerDataFragment>,
+  performer: INamedObject,
   extraPerformer?: ILabeledId,
   extraCriteria?: Criterion<CriterionValue>[]
 ) => {
@@ -211,6 +216,10 @@ const makeMovieScenesUrl = (movie: Partial<GQL.MovieDataFragment>) => {
   ];
   filter.criteria.push(criterion);
   return `/scenes?${filter.makeQueryParameters()}`;
+};
+
+const makeTagUrl = (id: string) => {
+  return `/tags/${id}`;
 };
 
 const makeParentTagsUrl = (tag: Partial<GQL.TagDataFragment>) => {
@@ -373,6 +382,7 @@ const NavUtils = {
   makeStudioGalleriesUrl,
   makeStudioMoviesUrl,
   makeStudioPerformersUrl,
+  makeTagUrl,
   makeParentTagsUrl,
   makeChildTagsUrl,
   makeTagSceneMarkersUrl,

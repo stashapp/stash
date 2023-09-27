@@ -44,9 +44,9 @@ type ScraperSource struct {
 
 type SceneIdentifier struct {
 	SceneReaderUpdater SceneReaderUpdater
-	StudioCreator      StudioCreator
+	StudioReaderWriter models.StudioReaderWriter
 	PerformerCreator   PerformerCreator
-	TagCreatorFinder   TagCreatorFinder
+	TagFinderCreator   models.TagFinderCreator
 
 	DefaultOptions              *MetadataOptions
 	Sources                     []ScraperSource
@@ -174,9 +174,9 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 
 	rel := sceneRelationships{
 		sceneReader:              t.SceneReaderUpdater,
-		studioCreator:            t.StudioCreator,
+		studioReaderWriter:       t.StudioReaderWriter,
 		performerCreator:         t.PerformerCreator,
-		tagCreatorFinder:         t.TagCreatorFinder,
+		tagCreator:               t.TagFinderCreator,
 		scene:                    s,
 		result:                   result,
 		fieldOptions:             fieldOptions,
@@ -332,7 +332,7 @@ func (t *SceneIdentifier) addTagToScene(ctx context.Context, txnManager txn.Mana
 			return err
 		}
 
-		ret, err := t.TagCreatorFinder.Find(ctx, tagID)
+		ret, err := t.TagFinderCreator.Find(ctx, tagID)
 		if err != nil {
 			logger.Infof("Added tag id %s to skipped scene %s", tagToAdd, s.Path)
 		} else {

@@ -986,7 +986,7 @@
   "resume_time": "Tempo Continuazione",
   "scene": "Scena",
   "sceneTagger": "Tagger Scena",
-  "sceneTags": "Tag Scena",
+  "scene_tags": "Tag Scena",
   "scene_code": "Codice dello Studio",
   "scene_count": "Numero Scene",
   "scene_created_at": "Scena Creata Al",

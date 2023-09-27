@@ -13,11 +13,13 @@ var (
 	imagesTagsJoinTable       = goqu.T(imagesTagsTable)
 	performersImagesJoinTable = goqu.T(performersImagesTable)
 	imagesFilesJoinTable      = goqu.T(imagesFilesTable)
+	imagesURLsJoinTable       = goqu.T(imagesURLsTable)
 
 	galleriesFilesJoinTable      = goqu.T(galleriesFilesTable)
 	galleriesTagsJoinTable       = goqu.T(galleriesTagsTable)
 	performersGalleriesJoinTable = goqu.T(performersGalleriesTable)
 	galleriesScenesJoinTable     = goqu.T(galleriesScenesTable)
+	galleriesURLsJoinTable       = goqu.T(galleriesURLsTable)
 
 	scenesFilesJoinTable      = goqu.T(scenesFilesTable)
 	scenesTagsJoinTable       = goqu.T(scenesTagsTable)
@@ -29,6 +31,9 @@ var (
 	performersAliasesJoinTable  = goqu.T(performersAliasesTable)
 	performersTagsJoinTable     = goqu.T(performersTagsTable)
 	performersStashIDsJoinTable = goqu.T("performer_stash_ids")
+
+	studiosAliasesJoinTable  = goqu.T(studioAliasesTable)
+	studiosStashIDsJoinTable = goqu.T("studio_stash_ids")
 )
 
 var (
@@ -66,6 +71,14 @@ var (
 			idColumn: performersImagesJoinTable.Col(imageIDColumn),
 		},
 		fkColumn: performersImagesJoinTable.Col(performerIDColumn),
+	}
+
+	imagesURLsTableMgr = &orderedValueTable[string]{
+		table: table{
+			table:    imagesURLsJoinTable,
+			idColumn: imagesURLsJoinTable.Col(imageIDColumn),
+		},
+		valueColumn: imagesURLsJoinTable.Col(imageURLColumn),
 	}
 )
 
@@ -109,6 +122,14 @@ var (
 	galleriesChaptersTableMgr = &table{
 		table:    goqu.T(galleriesChaptersTable),
 		idColumn: goqu.T(galleriesChaptersTable).Col(idColumn),
+	}
+
+	galleriesURLsTableMgr = &orderedValueTable[string]{
+		table: table{
+			table:    galleriesURLsJoinTable,
+			idColumn: galleriesURLsJoinTable.Col(galleryIDColumn),
+		},
+		valueColumn: galleriesURLsJoinTable.Col(galleriesURLColumn),
 	}
 )
 
@@ -242,6 +263,21 @@ var (
 	studioTableMgr = &table{
 		table:    goqu.T(studioTable),
 		idColumn: goqu.T(studioTable).Col(idColumn),
+	}
+
+	studiosAliasesTableMgr = &stringTable{
+		table: table{
+			table:    studiosAliasesJoinTable,
+			idColumn: studiosAliasesJoinTable.Col(studioIDColumn),
+		},
+		stringColumn: studiosAliasesJoinTable.Col(studioAliasColumn),
+	}
+
+	studiosStashIDsTableMgr = &stashIDTable{
+		table: table{
+			table:    studiosStashIDsJoinTable,
+			idColumn: studiosStashIDsJoinTable.Col(studioIDColumn),
+		},
 	}
 )
 

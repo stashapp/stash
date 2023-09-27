@@ -1,35 +1,33 @@
-
-
 type DLNAIP {
-    ipAddress: String!
-    """Time until IP will be no longer allowed/disallowed"""
-    until: Time
+  ipAddress: String!
+  "Time until IP will be no longer allowed/disallowed"
+  until: Time
 }
 
 type DLNAStatus {
-    running: Boolean!
-    """If not currently running, time until it will be started. If running, time until it will be stopped"""
-    until: Time
-    recentIPAddresses: [String!]!
-    allowedIPAddresses: [DLNAIP!]!
+  running: Boolean!
+  "If not currently running, time until it will be started. If running, time until it will be stopped"
+  until: Time
+  recentIPAddresses: [String!]!
+  allowedIPAddresses: [DLNAIP!]!
 }
 
 input EnableDLNAInput {
-    """Duration to enable, in minutes. 0 or null for indefinite."""
-    duration: Int
+  "Duration to enable, in minutes. 0 or null for indefinite."
+  duration: Int
 }
- 
+
 input DisableDLNAInput {
-    """Duration to enable, in minutes. 0 or null for indefinite."""
-    duration: Int
+  "Duration to enable, in minutes. 0 or null for indefinite."
+  duration: Int
 }
 
 input AddTempDLNAIPInput {
-    address: String!
-    """Duration to enable, in minutes. 0 or null for indefinite."""
-    duration: Int
+  address: String!
+  "Duration to enable, in minutes. 0 or null for indefinite."
+  duration: Int
 }
 
 input RemoveTempDLNAIPInput {
-    address: String!
+  address: String!
 }

@@ -14,9 +14,9 @@ import (
 )
 
 type MovieFinder interface {
+	models.MovieGetter
 	GetFrontImage(ctx context.Context, movieID int) ([]byte, error)
 	GetBackImage(ctx context.Context, movieID int) ([]byte, error)
-	Find(ctx context.Context, id int) (*models.Movie, error)
 }
 
 type movieRoutes struct {

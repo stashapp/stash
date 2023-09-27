@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -18,6 +17,11 @@ import (
 var invalidID = -1
 
 func loadGalleryRelationships(ctx context.Context, expected models.Gallery, actual *models.Gallery) error {
+	if expected.URLs.Loaded() {
+		if err := actual.LoadURLs(ctx, db.Gallery); err != nil {
+			return err
+		}
+	}
 	if expected.SceneIDs.Loaded() {
 		if err := actual.LoadSceneIDs(ctx, db.Gallery); err != nil {
 			return err
@@ -73,7 +77,7 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 			"full",
 			models.Gallery{
 				Title:        title,
-				URL:          url,
+				URLs:         models.NewRelatedStrings([]string{url}),
 				Date:         &date,
 				Details:      details,
 				Rating:       &rating,
@@ -91,13 +95,13 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 			"with file",
 			models.Gallery{
 				Title:     title,
-				URL:       url,
+				URLs:      models.NewRelatedStrings([]string{url}),
 				Date:      &date,
 				Details:   details,
 				Rating:    &rating,
 				Organized: true,
 				StudioID:  &studioIDs[studioIdxWithScene],
-				Files: models.NewRelatedFiles([]file.File{
+				Files: models.NewRelatedFiles([]models.File{
 					galleryFile,
 				}),
 				CreatedAt:    createdAt,
@@ -145,9 +149,9 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 			assert := assert.New(t)
 
 			s := tt.newObject
-			var fileIDs []file.ID
+			var fileIDs []models.FileID
 			if s.Files.Loaded() {
-				fileIDs = []file.ID{s.Files.List()[0].Base().ID}
+				fileIDs = []models.FileID{s.Files.List()[0].Base().ID}
 			}
 
 			if err := qb.Create(ctx, &s, fileIDs); (err != nil) != tt.wantErr {
@@ -195,7 +199,7 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 	}
 }
 
-func makeGalleryFileWithID(i int) *file.BaseFile {
+func makeGalleryFileWithID(i int) *models.BaseFile {
 	ret := makeGalleryFile(i)
 	ret.ID = galleryFileIDs[i]
 	return ret
@@ -223,13 +227,13 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 			&models.Gallery{
 				ID:        galleryIDs[galleryIdxWithScene],
 				Title:     title,
-				URL:       url,
+				URLs:      models.NewRelatedStrings([]string{url}),
 				Date:      &date,
 				Details:   details,
 				Rating:    &rating,
 				Organized: true,
 				StudioID:  &studioIDs[studioIdxWithScene],
-				Files: models.NewRelatedFiles([]file.File{
+				Files: models.NewRelatedFiles([]models.File{
 					makeGalleryFileWithID(galleryIdxWithScene),
 				}),
 				CreatedAt:    createdAt,
@@ -244,6 +248,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 			"clear nullables",
 			&models.Gallery{
 				ID:           galleryIDs[galleryIdxWithImage],
+				URLs:         models.NewRelatedStrings([]string{}),
 				SceneIDs:     models.NewRelatedIDs([]int{}),
 				TagIDs:       models.NewRelatedIDs([]int{}),
 				PerformerIDs: models.NewRelatedIDs([]int{}),
@@ -385,7 +390,7 @@ func clearGalleryPartial() models.GalleryPartial {
 	return models.GalleryPartial{
 		Title:        models.OptionalString{Set: true, Null: true},
 		Details:      models.OptionalString{Set: true, Null: true},
-		URL:          models.OptionalString{Set: true, Null: true},
+		URLs:         &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
 		Date:         models.OptionalDate{Set: true, Null: true},
 		Rating:       models.OptionalInt{Set: true, Null: true},
 		StudioID:     models.OptionalInt{Set: true, Null: true},
@@ -417,9 +422,12 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 			"full",
 			galleryIDs[galleryIdxWithImage],
 			models.GalleryPartial{
-				Title:     models.NewOptionalString(title),
-				Details:   models.NewOptionalString(details),
-				URL:       models.NewOptionalString(url),
+				Title:   models.NewOptionalString(title),
+				Details: models.NewOptionalString(details),
+				URLs: &models.UpdateStrings{
+					Values: []string{url},
+					Mode:   models.RelationshipUpdateModeSet,
+				},
 				Date:      models.NewOptionalDate(date),
 				Rating:    models.NewOptionalInt(rating),
 				Organized: models.NewOptionalBool(true),
@@ -444,12 +452,12 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 				ID:        galleryIDs[galleryIdxWithImage],
 				Title:     title,
 				Details:   details,
-				URL:       url,
+				URLs:      models.NewRelatedStrings([]string{url}),
 				Date:      &date,
 				Rating:    &rating,
 				Organized: true,
 				StudioID:  &studioIDs[studioIdxWithGallery],
-				Files: models.NewRelatedFiles([]file.File{
+				Files: models.NewRelatedFiles([]models.File{
 					makeGalleryFile(galleryIdxWithImage),
 				}),
 				CreatedAt:    createdAt,
@@ -466,7 +474,7 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 			clearGalleryPartial(),
 			models.Gallery{
 				ID: galleryIDs[galleryIdxWithImage],
-				Files: models.NewRelatedFiles([]file.File{
+				Files: models.NewRelatedFiles([]models.File{
 					makeGalleryFile(galleryIdxWithImage),
 				}),
 				SceneIDs:     models.NewRelatedIDs([]int{}),
@@ -844,7 +852,7 @@ func makeGalleryWithID(index int) *models.Gallery {
 	ret := makeGallery(index, includeScenes)
 	ret.ID = galleryIDs[index]
 
-	ret.Files = models.NewRelatedFiles([]file.File{makeGalleryFile(index)})
+	ret.Files = models.NewRelatedFiles([]models.File{makeGalleryFile(index)})
 
 	return ret
 }
@@ -1281,7 +1289,7 @@ func galleriesToIDs(i []*models.Gallery) []int {
 func Test_galleryStore_FindByFileID(t *testing.T) {
 	tests := []struct {
 		name    string
-		fileID  file.ID
+		fileID  models.FileID
 		include []int
 		exclude []int
 	}{
@@ -1330,7 +1338,7 @@ func Test_galleryStore_FindByFileID(t *testing.T) {
 func Test_galleryStore_FindByFolderID(t *testing.T) {
 	tests := []struct {
 		name     string
-		folderID file.FolderID
+		folderID models.FolderID
 		include  []int
 		exclude  []int
 	}{
@@ -1654,7 +1662,13 @@ func TestGalleryQueryURL(t *testing.T) {
 
 	verifyFn := func(g *models.Gallery) {
 		t.Helper()
-		verifyString(t, g.URL, urlCriterion)
+		urls := g.URLs.List()
+		var url string
+		if len(urls) > 0 {
+			url = urls[0]
+		}
+
+		verifyString(t, url, urlCriterion)
 	}
 
 	verifyGalleryQuery(t, filter, verifyFn)
@@ -1683,6 +1697,12 @@ func verifyGalleryQuery(t *testing.T, filter models.GalleryFilterType, verifyFn 
 		sqb := db.Gallery
 
 		galleries := queryGallery(ctx, t, sqb, &filter, nil)
+
+		for _, g := range galleries {
+			if err := g.LoadURLs(ctx, sqb); err != nil {
+				t.Errorf("Error loading gallery URLs: %v", err)
+			}
+		}
 
 		// assume it should find at least one
 		assert.Greater(t, len(galleries), 0)

@@ -14,8 +14,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/studio"
-	"github.com/stashapp/stash/pkg/tag"
 )
 
 const (
@@ -27,24 +25,6 @@ const (
 )
 
 var separatorRE = regexp.MustCompile(separatorPattern)
-
-type PerformerAutoTagQueryer interface {
-	Query(ctx context.Context, performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) ([]*models.Performer, int, error)
-	QueryForAutoTag(ctx context.Context, words []string) ([]*models.Performer, error)
-	models.AliasLoader
-}
-
-type StudioAutoTagQueryer interface {
-	QueryForAutoTag(ctx context.Context, words []string) ([]*models.Studio, error)
-	studio.Queryer
-	GetAliases(ctx context.Context, studioID int) ([]string, error)
-}
-
-type TagAutoTagQueryer interface {
-	QueryForAutoTag(ctx context.Context, words []string) ([]*models.Tag, error)
-	tag.Queryer
-	GetAliases(ctx context.Context, tagID int) ([]string, error)
-}
 
 func getPathQueryRegex(name string) string {
 	// escape specific regex characters
@@ -146,7 +126,7 @@ func regexpMatchesPath(r *regexp.Regexp, path string) int {
 	return found[len(found)-1][0]
 }
 
-func getPerformers(ctx context.Context, words []string, performerReader PerformerAutoTagQueryer, cache *Cache) ([]*models.Performer, error) {
+func getPerformers(ctx context.Context, words []string, performerReader models.PerformerAutoTagQueryer, cache *Cache) ([]*models.Performer, error) {
 	performers, err := performerReader.QueryForAutoTag(ctx, words)
 	if err != nil {
 		return nil, err
@@ -160,7 +140,7 @@ func getPerformers(ctx context.Context, words []string, performerReader Performe
 	return append(performers, swPerformers...), nil
 }
 
-func PathToPerformers(ctx context.Context, path string, reader PerformerAutoTagQueryer, cache *Cache, trimExt bool) ([]*models.Performer, error) {
+func PathToPerformers(ctx context.Context, path string, reader models.PerformerAutoTagQueryer, cache *Cache, trimExt bool) ([]*models.Performer, error) {
 	words := getPathWords(path, trimExt)
 
 	performers, err := getPerformers(ctx, words, reader, cache)
@@ -198,7 +178,7 @@ func PathToPerformers(ctx context.Context, path string, reader PerformerAutoTagQ
 	return ret, nil
 }
 
-func getStudios(ctx context.Context, words []string, reader StudioAutoTagQueryer, cache *Cache) ([]*models.Studio, error) {
+func getStudios(ctx context.Context, words []string, reader models.StudioAutoTagQueryer, cache *Cache) ([]*models.Studio, error) {
 	studios, err := reader.QueryForAutoTag(ctx, words)
 	if err != nil {
 		return nil, err
@@ -215,7 +195,7 @@ func getStudios(ctx context.Context, words []string, reader StudioAutoTagQueryer
 // PathToStudio returns the Studio that matches the given path.
 // Where multiple matching studios are found, the one that matches the latest
 // position in the path is returned.
-func PathToStudio(ctx context.Context, path string, reader StudioAutoTagQueryer, cache *Cache, trimExt bool) (*models.Studio, error) {
+func PathToStudio(ctx context.Context, path string, reader models.StudioAutoTagQueryer, cache *Cache, trimExt bool) (*models.Studio, error) {
 	words := getPathWords(path, trimExt)
 	candidates, err := getStudios(ctx, words, reader, cache)
 
@@ -249,7 +229,7 @@ func PathToStudio(ctx context.Context, path string, reader StudioAutoTagQueryer,
 	return ret, nil
 }
 
-func getTags(ctx context.Context, words []string, reader TagAutoTagQueryer, cache *Cache) ([]*models.Tag, error) {
+func getTags(ctx context.Context, words []string, reader models.TagAutoTagQueryer, cache *Cache) ([]*models.Tag, error) {
 	tags, err := reader.QueryForAutoTag(ctx, words)
 	if err != nil {
 		return nil, err
@@ -263,7 +243,7 @@ func getTags(ctx context.Context, words []string, reader TagAutoTagQueryer, cach
 	return append(tags, swTags...), nil
 }
 
-func PathToTags(ctx context.Context, path string, reader TagAutoTagQueryer, cache *Cache, trimExt bool) ([]*models.Tag, error) {
+func PathToTags(ctx context.Context, path string, reader models.TagAutoTagQueryer, cache *Cache, trimExt bool) ([]*models.Tag, error) {
 	words := getPathWords(path, trimExt)
 	tags, err := getTags(ctx, words, reader, cache)
 
@@ -299,7 +279,7 @@ func PathToTags(ctx context.Context, path string, reader TagAutoTagQueryer, cach
 	return ret, nil
 }
 
-func PathToScenesFn(ctx context.Context, name string, paths []string, sceneReader scene.Queryer, fn func(ctx context.Context, scene *models.Scene) error) error {
+func PathToScenesFn(ctx context.Context, name string, paths []string, sceneReader models.SceneQueryer, fn func(ctx context.Context, scene *models.Scene) error) error {
 	regex := getPathQueryRegex(name)
 	organized := false
 	filter := models.SceneFilterType{
@@ -358,7 +338,7 @@ func PathToScenesFn(ctx context.Context, name string, paths []string, sceneReade
 	return nil
 }
 
-func PathToImagesFn(ctx context.Context, name string, paths []string, imageReader image.Queryer, fn func(ctx context.Context, scene *models.Image) error) error {
+func PathToImagesFn(ctx context.Context, name string, paths []string, imageReader models.ImageQueryer, fn func(ctx context.Context, scene *models.Image) error) error {
 	regex := getPathQueryRegex(name)
 	organized := false
 	filter := models.ImageFilterType{
@@ -417,7 +397,7 @@ func PathToImagesFn(ctx context.Context, name string, paths []string, imageReade
 	return nil
 }
 
-func PathToGalleriesFn(ctx context.Context, name string, paths []string, galleryReader gallery.Queryer, fn func(ctx context.Context, scene *models.Gallery) error) error {
+func PathToGalleriesFn(ctx context.Context, name string, paths []string, galleryReader models.GalleryQueryer, fn func(ctx context.Context, scene *models.Gallery) error) error {
 	regex := getPathQueryRegex(name)
 	organized := false
 	filter := models.GalleryFilterType{

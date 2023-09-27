@@ -141,6 +141,11 @@
   "captions": "字幕",
   "career_length": "工龄",
   "chapters": "章节",
+  "circumcised": "割包皮",
+  "circumcised_types": {
+    "CUT": "已切",
+    "UNCUT": "未切"
+  },
   "component_tagger": {
     "config": {
       "active_instance": "目前使用的 Stash-box：",
@@ -407,7 +412,7 @@
         "auto_tagging_all_paths": "自动标签所有路径",
         "auto_tagging_paths": "自动标签以下路径"
       },
-      "auto_tag_based_on_filenames": "根据文件名自动添加标签。",
+      "auto_tag_based_on_filenames": "根据文件路径自动添加标签。",
       "auto_tagging": "自动标签",
       "backing_up_database": "自动备份数据中",
       "backup_and_download": "备份数据库并下载其文件.",
@@ -422,6 +427,7 @@
         "generating_from_paths": "正在为以下路径的短片生成资料",
         "generating_scenes": "正在为{num}个{scene}生成资料"
       },
+      "generate_clip_previews_during_scan": "为图像短片生成预览图",
       "generate_desc": "生成辅助的图片，预览，片段，字幕等其他文件。",
       "generate_phashes_during_scan": "生成感知识别码",
       "generate_phashes_during_scan_tooltip": "为了防止重复和短片甄别.",
@@ -1012,7 +1018,7 @@
   "path": "路径",
   "perceptual_similarity": "感知的类似程度（感知码）",
   "performer": "演员",
-  "performerTags": "演员标签",
+  "performer_tags": "演员标签",
   "performer_age": "演员年龄",
   "performer_count": "演员数量",
   "performer_favorite": "演员已收藏",
@@ -1067,7 +1073,7 @@
   "resume_time": "恢复时间",
   "scene": "短片",
   "sceneTagger": "短片标记器",
-  "sceneTags": "短片标记",
+  "scene_tags": "短片标记",
   "scene_code": "工作室代码",
   "scene_count": "短片数量",
   "scene_created_at": "短片建立在",

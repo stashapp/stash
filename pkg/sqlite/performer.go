@@ -30,7 +30,7 @@ const (
 
 type performerRow struct {
 	ID            int         `db:"id" goqu:"skipinsert"`
-	Name          string      `db:"name"`
+	Name          null.String `db:"name"` // TODO: make schema non-nullable
 	Disambigation zero.String `db:"disambiguation"`
 	Gender        zero.String `db:"gender"`
 	URL           zero.String `db:"url"`
@@ -65,7 +65,7 @@ type performerRow struct {
 
 func (r *performerRow) fromPerformer(o models.Performer) {
 	r.ID = o.ID
-	r.Name = o.Name
+	r.Name = null.StringFrom(o.Name)
 	r.Disambigation = zero.StringFrom(o.Disambiguation)
 	if o.Gender != nil && o.Gender.IsValid() {
 		r.Gender = zero.StringFrom(o.Gender.String())
@@ -101,7 +101,7 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 func (r *performerRow) resolve() *models.Performer {
 	ret := &models.Performer{
 		ID:             r.ID,
-		Name:           r.Name,
+		Name:           r.Name.String,
 		Disambiguation: r.Disambigation.String,
 		URL:            r.URL.String,
 		Twitter:        r.Twitter.String,
@@ -1034,7 +1034,9 @@ func (qb *PerformerStore) tagsRepository() *joinRepository {
 			tableName: performersTagsTable,
 			idColumn:  performerIDColumn,
 		},
-		fkColumn: tagIDColumn,
+		fkColumn:     tagIDColumn,
+		foreignTable: tagTable,
+		orderBy:      "tags.name ASC",
 	}
 }
 

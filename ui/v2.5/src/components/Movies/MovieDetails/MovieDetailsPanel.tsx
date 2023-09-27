@@ -3,82 +3,76 @@ import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import DurationUtils from "src/utils/duration";
 import TextUtils from "src/utils/text";
-import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
-import { TextField, URLField } from "src/utils/field";
+import { DetailItem } from "src/components/Shared/DetailItem";
 
 interface IMovieDetailsPanel {
   movie: GQL.MovieDataFragment;
+  fullWidth?: boolean;
 }
 
-export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({ movie }) => {
+export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({
+  movie,
+  fullWidth,
+}) => {
   // Network state
   const intl = useIntl();
 
-  function maybeRenderAliases() {
-    if (movie.aliases) {
-      return (
-        <div>
-          <span className="alias-head">
-            {intl.formatMessage({ id: "also_known_as" })}{" "}
-          </span>
-          <span className="alias">{movie.aliases}</span>
-        </div>
-      );
-    }
-  }
-
-  function renderRatingField() {
-    if (!movie.rating100) {
-      return;
-    }
-
-    return (
-      <>
-        <dt>{intl.formatMessage({ id: "rating" })}</dt>
-        <dd>
-          <RatingSystem value={movie.rating100} disabled />
-        </dd>
-      </>
-    );
-  }
-
-  // TODO: CSS class
   return (
-    <div className="movie-details">
-      <div>
-        <h2>{movie.name}</h2>
+    <div className="detail-group">
+      <DetailItem
+        id="duration"
+        value={
+          movie.duration ? DurationUtils.secondsToString(movie.duration) : ""
+        }
+        fullWidth={fullWidth}
+      />
+      <DetailItem
+        id="date"
+        value={movie.date ? TextUtils.formatDate(intl, movie.date) : ""}
+        fullWidth={fullWidth}
+      />
+      <DetailItem
+        id="studio"
+        value={
+          movie.studio?.id ? (
+            <a href={`/studios/${movie.studio?.id}`} target="_self">
+              {movie.studio?.name}
+            </a>
+          ) : (
+            ""
+          )
+        }
+        fullWidth={fullWidth}
+      />
+
+      <DetailItem id="director" value={movie.director} fullWidth={fullWidth} />
+      <DetailItem id="synopsis" value={movie.synopsis} fullWidth={fullWidth} />
+    </div>
+  );
+};
+
+export const CompressedMovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({
+  movie,
+}) => {
+  function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  return (
+    <div className="sticky detail-header">
+      <div className="sticky detail-header-group">
+        <a className="movie-name" onClick={() => scrollToTop()}>
+          {movie.name}
+        </a>
+        {movie?.studio?.name ? (
+          <>
+            <span className="detail-divider">/</span>
+            <span className="movie-studio">{movie?.studio?.name}</span>
+          </>
+        ) : (
+          ""
+        )}
       </div>
-
-      {maybeRenderAliases()}
-
-      <dl className="details-list">
-        <TextField
-          id="duration"
-          value={
-            movie.duration ? DurationUtils.secondsToString(movie.duration) : ""
-          }
-        />
-        <TextField
-          id="date"
-          value={movie.date ? TextUtils.formatDate(intl, movie.date) : ""}
-        />
-        <URLField
-          id="studio"
-          value={movie.studio?.name}
-          url={`/studios/${movie.studio?.id}`}
-        />
-        <TextField id="director" value={movie.director} />
-
-        {renderRatingField()}
-
-        <URLField
-          id="url"
-          value={movie.url}
-          url={TextUtils.sanitiseURL(movie.url ?? "")}
-        />
-
-        <TextField id="synopsis" value={movie.synopsis} />
-      </dl>
     </div>
   );
 };

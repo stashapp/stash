@@ -12,7 +12,7 @@ export const useStudioFilterHook = (studio: GQL.StudioDataFragment) => {
     // if studio is already present, then we modify it, otherwise add
     let studioCriterion = filter.criteria.find((c) => {
       return c.criterionOption.type === "studios";
-    }) as StudiosCriterion;
+    }) as StudiosCriterion | undefined;
 
     if (studioCriterion) {
       // we should be showing studio only. Remove other values

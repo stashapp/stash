@@ -324,12 +324,20 @@ func sceneToUpdateInput(scene *models.Scene) models.SceneUpdateInput {
 	// fallback to file basename if title is empty
 	title := scene.GetTitle()
 
+	var url *string
+	urls := scene.URLs.List()
+	if len(urls) > 0 {
+		url = &urls[0]
+	}
+
 	return models.SceneUpdateInput{
 		ID:      strconv.Itoa(scene.ID),
 		Title:   &title,
 		Details: &scene.Details,
-		Urls:    scene.URLs.List(),
-		Date:    dateToStringPtr(scene.Date),
+		// include deprecated URL for now
+		URL:  url,
+		Urls: urls,
+		Date: dateToStringPtr(scene.Date),
 	}
 }
 
@@ -346,11 +354,18 @@ func galleryToUpdateInput(gallery *models.Gallery) models.GalleryUpdateInput {
 	// fallback to file basename if title is empty
 	title := gallery.GetTitle()
 
+	var url *string
+	urls := gallery.URLs.List()
+	if len(urls) > 0 {
+		url = &urls[0]
+	}
+
 	return models.GalleryUpdateInput{
 		ID:      strconv.Itoa(gallery.ID),
 		Title:   &title,
 		Details: &gallery.Details,
-		URL:     &gallery.URL,
+		URL:     url,
+		Urls:    urls,
 		Date:    dateToStringPtr(gallery.Date),
 	}
 }

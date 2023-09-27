@@ -10,6 +10,7 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
+	"gopkg.in/guregu/null.v4"
 	"gopkg.in/guregu/null.v4/zero"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -27,7 +28,7 @@ const (
 
 type tagRow struct {
 	ID            int         `db:"id" goqu:"skipinsert"`
-	Name          string      `db:"name"`
+	Name          null.String `db:"name"` // TODO: make schema non-nullable
 	Description   zero.String `db:"description"`
 	IgnoreAutoTag bool        `db:"ignore_auto_tag"`
 	CreatedAt     Timestamp   `db:"created_at"`
@@ -39,7 +40,7 @@ type tagRow struct {
 
 func (r *tagRow) fromTag(o models.Tag) {
 	r.ID = o.ID
-	r.Name = o.Name
+	r.Name = null.StringFrom(o.Name)
 	r.Description = zero.StringFrom(o.Description)
 	r.IgnoreAutoTag = o.IgnoreAutoTag
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
@@ -49,7 +50,7 @@ func (r *tagRow) fromTag(o models.Tag) {
 func (r *tagRow) resolve() *models.Tag {
 	ret := &models.Tag{
 		ID:            r.ID,
-		Name:          r.Name,
+		Name:          r.Name.String,
 		Description:   r.Description.String,
 		IgnoreAutoTag: r.IgnoreAutoTag,
 		CreatedAt:     r.CreatedAt.Timestamp,
@@ -393,6 +394,20 @@ func (qb *TagStore) FindByChildTagID(ctx context.Context, parentID int) ([]*mode
 	query += qb.getDefaultTagSort()
 	args := []interface{}{parentID}
 	return qb.queryTags(ctx, query, args)
+}
+
+func (qb *TagStore) CountByParentTagID(ctx context.Context, parentID int) (int, error) {
+	q := dialect.Select(goqu.COUNT("*")).From(goqu.T("tags")).
+		InnerJoin(goqu.T("tags_relations"), goqu.On(goqu.I("tags_relations.parent_id").Eq(goqu.I("tags.id")))).
+		Where(goqu.I("tags_relations.child_id").Eq(goqu.V(parentID))) // Pass the parentID here
+	return count(ctx, q)
+}
+
+func (qb *TagStore) CountByChildTagID(ctx context.Context, childID int) (int, error) {
+	q := dialect.Select(goqu.COUNT("*")).From(goqu.T("tags")).
+		InnerJoin(goqu.T("tags_relations"), goqu.On(goqu.I("tags_relations.child_id").Eq(goqu.I("tags.id")))).
+		Where(goqu.I("tags_relations.parent_id").Eq(goqu.V(childID))) // Pass the childID here
+	return count(ctx, q)
 }
 
 func (qb *TagStore) Count(ctx context.Context) (int, error) {
@@ -889,9 +904,9 @@ func (qb *TagStore) queryTags(ctx context.Context, query string, args []interfac
 	return ret, nil
 }
 
-func (qb *TagStore) queryTagPaths(ctx context.Context, query string, args []interface{}) (models.TagPaths, error) {
+func (qb *TagStore) queryTagPaths(ctx context.Context, query string, args []interface{}) ([]*models.TagPath, error) {
 	const single = false
-	var ret models.TagPaths
+	var ret []*models.TagPath
 	if err := qb.queryFunc(ctx, query, args, single, func(r *sqlx.Rows) error {
 		var f tagPathRow
 		if err := r.StructScan(&f); err != nil {

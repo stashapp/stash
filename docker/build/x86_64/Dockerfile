@@ -21,7 +21,6 @@ RUN apk add --no-cache make alpine-sdk
 WORKDIR /stash
 COPY ./go* ./*.go Makefile gqlgen.yml .gqlgenc.yml /stash/
 COPY ./scripts /stash/scripts/
-COPY ./vendor /stash/vendor/
 COPY ./pkg /stash/pkg/
 COPY ./cmd /stash/cmd
 COPY ./internal /stash/internal

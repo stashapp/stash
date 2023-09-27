@@ -82,6 +82,9 @@ func (r *Resolver) Subscription() SubscriptionResolver {
 func (r *Resolver) Tag() TagResolver {
 	return &tagResolver{r}
 }
+func (r *Resolver) SavedFilter() SavedFilterResolver {
+	return &savedFilterResolver{r}
+}
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
@@ -96,6 +99,7 @@ type imageResolver struct{ *Resolver }
 type studioResolver struct{ *Resolver }
 type movieResolver struct{ *Resolver }
 type tagResolver struct{ *Resolver }
+type savedFilterResolver struct{ *Resolver }
 
 func (r *Resolver) withTxn(ctx context.Context, fn func(ctx context.Context) error) error {
 	return txn.WithTxn(ctx, r.txnManager, fn)
@@ -213,6 +217,44 @@ func (r *queryResolver) Latestversion(ctx context.Context) (*LatestVersion, erro
 		Shorthash:   latestRelease.ShortHash,
 		ReleaseDate: latestRelease.Date,
 		URL:         latestRelease.Url,
+	}, nil
+}
+
+func (r *mutationResolver) ExecSQL(ctx context.Context, sql string, args []interface{}) (*SQLExecResult, error) {
+	var rowsAffected *int64
+	var lastInsertID *int64
+
+	db := manager.GetInstance().Database
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		var err error
+		rowsAffected, lastInsertID, err = db.ExecSQL(ctx, sql, args)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &SQLExecResult{
+		RowsAffected: rowsAffected,
+		LastInsertID: lastInsertID,
+	}, nil
+}
+
+func (r *mutationResolver) QuerySQL(ctx context.Context, sql string, args []interface{}) (*SQLQueryResult, error) {
+	var cols []string
+	var rows [][]interface{}
+
+	db := manager.GetInstance().Database
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		var err error
+		cols, rows, err = db.QuerySQL(ctx, sql, args)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &SQLQueryResult{
+		Columns: cols,
+		Rows:    rows,
 	}, nil
 }
 

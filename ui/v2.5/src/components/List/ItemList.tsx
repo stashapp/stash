@@ -153,9 +153,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [lastClickedId, setLastClickedId] = useState<string>();
 
-    const [editingCriterion, setEditingCriterion] = useState<
-      string | undefined
-    >();
+    const [editingCriterion, setEditingCriterion] = useState<string>();
     const [showEditFilter, setShowEditFilter] = useState(false);
 
     const result = useResult(filter);
@@ -466,7 +464,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     }
 
     return (
-      <div>
+      <div className="item-list-container">
         <ButtonToolbar className="justify-content-center">
           <ListFilter
             onFilterUpdate={updateFilter}
@@ -621,8 +619,8 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
           if (defaultFilter?.findDefaultFilter) {
             newFilter.currentPage = 1;
             try {
-              newFilter.configureFromJSON(
-                defaultFilter.findDefaultFilter.filter
+              newFilter.configureFromSavedFilter(
+                defaultFilter.findDefaultFilter
               );
             } catch (err) {
               console.log(err);
@@ -701,7 +699,15 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
         const newFilter = cloneDeep(filter);
         newFilter.currentPage = page;
         updateFilter(newFilter);
-        window.scrollTo(0, 0);
+
+        // if the current page has a detail-header, then
+        // scroll up relative to that rather than 0, 0
+        const detailHeader = document.querySelector(".detail-header");
+        if (detailHeader) {
+          window.scrollTo(0, detailHeader.scrollHeight - 50);
+        } else {
+          window.scrollTo(0, 0);
+        }
       },
       [filter, updateFilter]
     );

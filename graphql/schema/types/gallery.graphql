@@ -1,10 +1,11 @@
-"""Gallery type"""
+"Gallery type"
 type Gallery {
   id: ID!
   checksum: String! @deprecated(reason: "Use files.fingerprints")
   path: String @deprecated(reason: "Use files.path")
   title: String
-  url: String
+  url: String @deprecated(reason: "Use urls")
+  urls: [String!]!
   date: String
   details: String
   # rating expressed as 1-5
@@ -26,14 +27,15 @@ type Gallery {
   tags: [Tag!]!
   performers: [Performer!]!
 
-  """The images in the gallery"""
+  "The images in the gallery"
   images: [Image!]! @deprecated(reason: "Use findImages")
   cover: Image
 }
 
 input GalleryCreateInput {
   title: String!
-  url: String
+  url: String @deprecated(reason: "Use urls")
+  urls: [String!]
   date: String
   details: String
   # rating expressed as 1-5
@@ -51,7 +53,8 @@ input GalleryUpdateInput {
   clientMutationId: String
   id: ID!
   title: String
-  url: String
+  url: String @deprecated(reason: "Use urls")
+  urls: [String!]
   date: String
   details: String
   # rating expressed as 1-5
@@ -70,7 +73,8 @@ input GalleryUpdateInput {
 input BulkGalleryUpdateInput {
   clientMutationId: String
   ids: [ID!]
-  url: String
+  url: String @deprecated(reason: "Use urls")
+  urls: BulkUpdateStrings
   date: String
   details: String
   # rating expressed as 1-5
@@ -87,7 +91,7 @@ input BulkGalleryUpdateInput {
 input GalleryDestroyInput {
   ids: [ID!]!
   """
-  If true, then the zip file will be deleted if the gallery is zip-file-based. 
+  If true, then the zip file will be deleted if the gallery is zip-file-based.
   If gallery is folder-based, then any files not associated with other
   galleries will be deleted, along with the folder, if it is not empty.
   """

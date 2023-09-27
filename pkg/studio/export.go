@@ -12,10 +12,10 @@ import (
 )
 
 type FinderImageStashIDGetter interface {
-	Finder
-	GetAliases(ctx context.Context, studioID int) ([]string, error)
-	GetImage(ctx context.Context, studioID int) ([]byte, error)
+	models.StudioGetter
+	models.AliasLoader
 	models.StashIDLoader
+	GetImage(ctx context.Context, studioID int) ([]byte, error)
 }
 
 // ToJSON converts a Studio object into its JSON equivalent.
@@ -44,12 +44,15 @@ func ToJSON(ctx context.Context, reader FinderImageStashIDGetter, studio *models
 		newStudioJSON.Rating = *studio.Rating
 	}
 
-	aliases, err := reader.GetAliases(ctx, studio.ID)
-	if err != nil {
-		return nil, fmt.Errorf("error getting studio aliases: %v", err)
+	if err := studio.LoadAliases(ctx, reader); err != nil {
+		return nil, fmt.Errorf("loading studio aliases: %w", err)
 	}
+	newStudioJSON.Aliases = studio.Aliases.List()
 
-	newStudioJSON.Aliases = aliases
+	if err := studio.LoadStashIDs(ctx, reader); err != nil {
+		return nil, fmt.Errorf("loading studio stash ids: %w", err)
+	}
+	newStudioJSON.StashIDs = studio.StashIDs.List()
 
 	image, err := reader.GetImage(ctx, studio.ID)
 	if err != nil {
@@ -59,18 +62,6 @@ func ToJSON(ctx context.Context, reader FinderImageStashIDGetter, studio *models
 	if len(image) > 0 {
 		newStudioJSON.Image = utils.GetBase64StringFromData(image)
 	}
-
-	stashIDs, _ := reader.GetStashIDs(ctx, studio.ID)
-	var ret []models.StashID
-	for _, stashID := range stashIDs {
-		newJoin := models.StashID{
-			StashID:  stashID.StashID,
-			Endpoint: stashID.Endpoint,
-		}
-		ret = append(ret, newJoin)
-	}
-
-	newStudioJSON.StashIDs = ret
 
 	return &newStudioJSON, nil
 }

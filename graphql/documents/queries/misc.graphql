@@ -6,15 +6,6 @@ query MarkerStrings($q: String, $sort: String) {
   }
 }
 
-query AllPerformersForFilter {
-  allPerformers {
-    id
-    name
-    disambiguation
-    alias_list
-  }
-}
-
 query AllStudiosForFilter {
   allStudios {
     id

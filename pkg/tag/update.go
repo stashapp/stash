@@ -7,11 +7,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-type NameFinderCreator interface {
-	FindByNames(ctx context.Context, names []string, nocase bool) ([]*models.Tag, error)
-	Create(ctx context.Context, newTag *models.Tag) error
-}
-
 type NameExistsError struct {
 	Name string
 }
@@ -43,7 +38,7 @@ func (e *InvalidTagHierarchyError) Error() string {
 
 // EnsureTagNameUnique returns an error if the tag name provided
 // is used as a name or alias of another existing tag.
-func EnsureTagNameUnique(ctx context.Context, id int, name string, qb Queryer) error {
+func EnsureTagNameUnique(ctx context.Context, id int, name string, qb models.TagQueryer) error {
 	// ensure name is unique
 	sameNameTag, err := ByName(ctx, qb, name)
 	if err != nil {
@@ -72,7 +67,7 @@ func EnsureTagNameUnique(ctx context.Context, id int, name string, qb Queryer) e
 	return nil
 }
 
-func EnsureAliasesUnique(ctx context.Context, id int, aliases []string, qb Queryer) error {
+func EnsureAliasesUnique(ctx context.Context, id int, aliases []string, qb models.TagQueryer) error {
 	for _, a := range aliases {
 		if err := EnsureTagNameUnique(ctx, id, a, qb); err != nil {
 			return err
@@ -82,14 +77,14 @@ func EnsureAliasesUnique(ctx context.Context, id int, aliases []string, qb Query
 	return nil
 }
 
-type RelationshipGetter interface {
+type RelationshipFinder interface {
 	FindAllAncestors(ctx context.Context, tagID int, excludeIDs []int) ([]*models.TagPath, error)
 	FindAllDescendants(ctx context.Context, tagID int, excludeIDs []int) ([]*models.TagPath, error)
 	FindByChildTagID(ctx context.Context, childID int) ([]*models.Tag, error)
 	FindByParentTagID(ctx context.Context, parentID int) ([]*models.Tag, error)
 }
 
-func ValidateHierarchy(ctx context.Context, tag *models.Tag, parentIDs, childIDs []int, qb RelationshipGetter) error {
+func ValidateHierarchy(ctx context.Context, tag *models.Tag, parentIDs, childIDs []int, qb RelationshipFinder) error {
 	id := tag.ID
 	allAncestors := make(map[int]*models.TagPath)
 	allDescendants := make(map[int]*models.TagPath)
@@ -177,7 +172,7 @@ func ValidateHierarchy(ctx context.Context, tag *models.Tag, parentIDs, childIDs
 	return nil
 }
 
-func MergeHierarchy(ctx context.Context, destination int, sources []int, qb RelationshipGetter) ([]int, []int, error) {
+func MergeHierarchy(ctx context.Context, destination int, sources []int, qb RelationshipFinder) ([]int, []int, error) {
 	var mergedParents, mergedChildren []int
 	allIds := append([]int{destination}, sources...)
 

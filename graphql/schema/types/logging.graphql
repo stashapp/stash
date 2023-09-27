@@ -1,13 +1,13 @@
-"""Log entries"""
+"Log entries"
 scalar Time
 
 enum LogLevel {
-    Trace
-    Debug
-    Info
-    Progress
-    Warning
-    Error
+  Trace
+  Debug
+  Info
+  Progress
+  Warning
+  Error
 }
 
 type LogEntry {

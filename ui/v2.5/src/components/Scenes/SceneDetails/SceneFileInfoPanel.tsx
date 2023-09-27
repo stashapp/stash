@@ -179,7 +179,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
 
     return (
       <>
-        <dt>StashIDs</dt>
+        <dt>
+          <FormattedMessage id="stash_ids" />
+        </dt>
         <dd>
           <dl>
             {props.scene.stash_ids.map((stashID) => {

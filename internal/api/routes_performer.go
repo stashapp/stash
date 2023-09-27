@@ -15,7 +15,7 @@ import (
 )
 
 type PerformerFinder interface {
-	Find(ctx context.Context, id int) (*models.Performer, error)
+	models.PerformerGetter
 	GetImage(ctx context.Context, performerID int) ([]byte, error)
 }
 

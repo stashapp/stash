@@ -15,8 +15,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -53,27 +51,27 @@ func isCDPPathWS(c GlobalConfig) bool {
 }
 
 type SceneFinder interface {
-	scene.IDFinder
+	models.SceneGetter
 	models.URLLoader
 }
 
 type PerformerFinder interface {
-	match.PerformerAutoTagQueryer
+	models.PerformerAutoTagQueryer
 	match.PerformerFinder
 }
 
 type StudioFinder interface {
-	match.StudioAutoTagQueryer
-	match.StudioFinder
+	models.StudioAutoTagQueryer
+	FindByStashID(ctx context.Context, stashID models.StashID) ([]*models.Studio, error)
 }
 
 type TagFinder interface {
-	match.TagAutoTagQueryer
-	tag.Queryer
+	models.TagGetter
+	models.TagAutoTagQueryer
 }
 
 type GalleryFinder interface {
-	Find(ctx context.Context, id int) (*models.Gallery, error)
+	models.GalleryGetter
 	models.FileLoader
 }
 
@@ -262,6 +260,9 @@ func (c Cache) ScrapeName(ctx context.Context, id, query string, ty ScrapeConten
 
 // ScrapeFragment uses the given fragment input to scrape
 func (c Cache) ScrapeFragment(ctx context.Context, id string, input Input) (ScrapedContent, error) {
+	// set the deprecated URL field if it's not set
+	input.populateURL()
+
 	s := c.findScraper(id)
 	if s == nil {
 		return nil, fmt.Errorf("%w: id %s", ErrNotFound, id)
