@@ -33,6 +33,7 @@ interface ISceneMarkerList {
 
 export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
   filterHook,
+  persistState,
   alterQuery,
 }) => {
   const intl = useIntl();
@@ -97,7 +98,7 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
   return (
     <SceneMarkerItemList
       filterHook={filterHook}
-      persistState={PersistanceLevel.ALL}
+      persistState={persistState ?? PersistanceLevel.ALL}
       alterQuery={alterQuery}
       otherOperations={otherOperations}
       addKeybinds={addKeybinds}

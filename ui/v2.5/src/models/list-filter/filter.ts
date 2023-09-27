@@ -489,7 +489,6 @@ const recursiveRenameToSnakeCase = (
 
 export const useDefaultLinkFilter = (mode: GQL.FilterMode) => {
   let filter = new ListFilterModel(mode, undefined);
-  filter.sortBy = "name";
   let { configuration: config } = useContext(ConfigurationContext);
   if (config?.ui?.linkFilters?.[mode.toLowerCase()]) {
     let linkFilter = recursiveRenameToSnakeCase(
@@ -504,6 +503,23 @@ export const useDefaultLinkFilter = (mode: GQL.FilterMode) => {
     filter.configureFromSavedFilter(savedFilter);
     filter.currentPage = 1;
     filter.randomSeed = -1;
+  } else {
+    // SortBy is not set by default, breaking the usage in itemlist. The default sort is dependant on the mode.
+    switch (mode) {
+      case GQL.FilterMode.Scenes:
+        filter.sortBy = "date";
+        filter.sortDirection = SortDirectionEnum.Desc;
+        break;
+      case GQL.FilterMode.SceneMarkers:
+        filter.sortBy = "title";
+        break;
+      case GQL.FilterMode.Images:
+      case GQL.FilterMode.Galleries:
+        filter.sortBy = "path";
+        break;
+      default:
+        filter.sortBy = "name";
+    }
   }
   return filter;
 };

@@ -123,6 +123,7 @@
     },
     "temp_disable": "Disable temporarily…",
     "temp_enable": "Enable temporarily…",
+    "ui_only": "UI Settings only",
     "unset": "Unset",
     "use_default": "Use default",
     "view_random": "View Random"

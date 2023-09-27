@@ -42,7 +42,7 @@ export enum PersistanceLevel {
   NONE,
   // load default query, don't load or persist display mode
   ALL,
-  // load default view without the query
+  // load default link filter
   SAVEDLINKFILTER,
   // load and persist display mode only
   VIEW,

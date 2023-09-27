@@ -171,8 +171,12 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
     }
   }
 
-  async function onSetDefaultLinkFilter() {
+  async function onSetDefaultLinkFilter(uiOnly: boolean = false) {
     const filterCopy = filter.clone();
+    let findFilter = filterCopy.makeFindFilter();
+    if (uiOnly) {
+      findFilter.q = "";
+    }
 
     try {
       await saveUI({
@@ -183,8 +187,8 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
               ...ui.linkFilters,
               [filter.mode.toLowerCase()]: {
                 mode: filter.mode,
-                find_filter: filterCopy.makeFindFilter(),
-                object_filter: filterCopy.makeSavedFindFilter(),
+                find_filter: findFilter,
+                object_filter: uiOnly ? {} : filterCopy.makeSavedFindFilter(),
                 ui_options: filterCopy.makeUIOptions(),
               },
             },
@@ -333,8 +337,14 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
           <FormattedMessage id="dialogs.filter_link_confirm" />
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary" onClick={() => onSetDefaultLinkFilter()}>
+          <Button variant="danger" onClick={() => onSetDefaultLinkFilter()}>
             {intl.formatMessage({ id: "actions.confirm" })}
+          </Button>
+          <Button
+            variant="primary"
+            onClick={() => onSetDefaultLinkFilter(true)}
+          >
+            {intl.formatMessage({ id: "actions.ui_only" })}
           </Button>
           <Button
             variant="secondary"
