@@ -5,7 +5,7 @@ import {
   FormattedNumber,
   FormattedTime,
   useIntl,
-} from "react-intl";  
+} from "react-intl";
 import { useHistory } from "react-router-dom";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { DeleteFilesDialog } from "src/components/Shared/DeleteFilesDialog";
@@ -94,11 +94,6 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
           truncate
         />
         {renderFileSize()}
-        <TextField
-          id="duration"
-          value={TextUtils.secondsToTimestamp(props.file.duration ?? 0)}
-          truncate
-        />
         <TextField id="file_mod_time">
           <FormattedTime
             dateStyle="medium"
@@ -106,6 +101,11 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
             value={props.file.mod_time ?? 0}
           />
         </TextField>
+        <TextField
+          id="duration"
+          value={TextUtils.secondsToTimestamp(props.file.duration ?? 0)}
+          truncate
+        />
         <TextField
           id="dimensions"
           value={`${props.file.width} x ${props.file.height}`}
