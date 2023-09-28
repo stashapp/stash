@@ -11,64 +11,7 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = (props) => {
   const intl = useIntl();
 
   return (
-    <>
-      <div className="row">
-        <div className="col-12">
-          <h5>
-            <FormattedMessage id="history" />{" "}
-          </h5>
-          <div className="date-row">
-            <h6>
-              <FormattedMessage id="release_date" />:
-              {props.scene.date && (
-                <>
-                  &nbsp;
-                  {TextUtils.formatDateTime(intl, props.scene.date)}
-                </>
-              )}
-            </h6>
-            <h6>
-              <FormattedMessage id="file_mod_time" />:
-              {props.scene.files[0].mod_time && (
-                <>
-                  &nbsp;
-                  {TextUtils.formatDateTime(
-                    intl,
-                    props.scene.files[0].mod_time
-                  )}
-                </>
-              )}
-            </h6>
-          </div>
-        </div>
-      </div>
-      <div className="row">
-        <div className="col-12">
-          <h5>
-            <FormattedMessage id="scene_history" />{" "}
-          </h5>
-          <div className="date-row">
-            <h6>
-              <FormattedMessage id="created_at" />:
-              {props.scene.created_at && (
-                <>
-                  &nbsp;
-                  {TextUtils.formatDateTime(intl, props.scene.created_at)}
-                </>
-              )}
-            </h6>
-            <h6>
-              <FormattedMessage id="updated_at" />:
-              {props.scene.updated_at && (
-                <>
-                  &nbsp;
-                  {TextUtils.formatDateTime(intl, props.scene.updated_at)}
-                </>
-              )}
-            </h6>
-          </div>
-        </div>
-      </div>
+    <>     
       {/* Could replace these play/ocount displays with data from the scenes_playdates/odates table once accessible in GraphQL */}
       {/* Could also check then if the recorded dates are the same as scene.created_at then that they are 'Estimated Play Date' */}
       <div className="row">
