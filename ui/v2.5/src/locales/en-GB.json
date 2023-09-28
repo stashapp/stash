@@ -206,6 +206,7 @@
       "latest_version": "Latest Version",
       "latest_version_build_hash": "Latest Version Build Hash:",
       "new_version_notice": "[NEW]",
+      "release_date": "Release date:",
       "stash_discord": "Join our {url} channel",
       "stash_home": "Stash home at {url}",
       "stash_open_collective": "Support us through {url}",
