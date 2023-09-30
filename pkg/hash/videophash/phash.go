@@ -17,14 +17,37 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-const (
-	screenshotSize = 160
-	columns        = 5
-	rows           = 5
-)
+type phashConfig struct {
+	screenshotSize int
+	columns        int
+	rows           int
+}
 
-func Generate(encoder *ffmpeg.FFMpeg, videoFile *models.VideoFile) (*uint64, error) {
-	sprite, err := generateSprite(encoder, videoFile)
+func Generate(encoder *ffmpeg.FFMpeg, videoFile *models.VideoFile, overrideDuration ...bool) (*uint64, error) {
+	// Original algorithm hardcoded to 5 x 5 grid
+	columns := 5
+
+	// For a temporary time, allowing the override to genereate old style hashes for short videos
+	if len(overrideDuration) == 0 || !overrideDuration[0] {
+		// Per https://github.com/stashapp/stash/issues/3722 use a smaller amount of frames when
+		// the length of the video is shorter. Aiming for around 7 seconds between frames.
+		switch {
+		case videoFile.Duration < 46:
+			columns = 2
+		case videoFile.Duration < 91:
+			columns = 3
+		case videoFile.Duration < 151:
+			columns = 4
+		}
+	}
+
+	config := phashConfig{
+		screenshotSize: 160,
+		columns:        columns,
+		rows:           columns,
+	}
+
+	sprite, err := generateSprite(encoder, videoFile, config)
 	if err != nil {
 		return nil, err
 	}
@@ -37,9 +60,9 @@ func Generate(encoder *ffmpeg.FFMpeg, videoFile *models.VideoFile) (*uint64, err
 	return &hashValue, nil
 }
 
-func generateSpriteScreenshot(encoder *ffmpeg.FFMpeg, input string, t float64) (image.Image, error) {
+func generateSpriteScreenshot(encoder *ffmpeg.FFMpeg, input string, t float64, config phashConfig) (image.Image, error) {
 	options := transcoder.ScreenshotOptions{
-		Width:      screenshotSize,
+		Width:      config.screenshotSize,
 		OutputPath: "-",
 		OutputType: transcoder.ScreenshotOutputTypeBMP,
 	}
@@ -60,15 +83,15 @@ func generateSpriteScreenshot(encoder *ffmpeg.FFMpeg, input string, t float64) (
 	return img, nil
 }
 
-func combineImages(images []image.Image) image.Image {
+func combineImages(images []image.Image, config phashConfig) image.Image {
 	width := images[0].Bounds().Size().X
 	height := images[0].Bounds().Size().Y
-	canvasWidth := width * columns
-	canvasHeight := height * rows
+	canvasWidth := width * config.columns
+	canvasHeight := height * config.rows
 	montage := imaging.New(canvasWidth, canvasHeight, color.NRGBA{})
 	for index := 0; index < len(images); index++ {
-		x := width * (index % columns)
-		y := height * int(math.Floor(float64(index)/float64(rows)))
+		x := width * (index % config.columns)
+		y := height * int(math.Floor(float64(index)/float64(config.rows)))
 		img := images[index]
 		montage = imaging.Paste(montage, img, image.Pt(x, y))
 	}
@@ -76,18 +99,18 @@ func combineImages(images []image.Image) image.Image {
 	return montage
 }
 
-func generateSprite(encoder *ffmpeg.FFMpeg, videoFile *models.VideoFile) (image.Image, error) {
+func generateSprite(encoder *ffmpeg.FFMpeg, videoFile *models.VideoFile, config phashConfig) (image.Image, error) {
 	logger.Infof("[generator] generating phash sprite for %s", videoFile.Path)
 
 	// Generate sprite image offset by 5% on each end to avoid intro/outros
-	chunkCount := columns * rows
+	chunkCount := config.columns * config.rows
 	offset := 0.05 * videoFile.Duration
 	stepSize := (0.9 * videoFile.Duration) / float64(chunkCount)
 	var images []image.Image
 	for i := 0; i < chunkCount; i++ {
 		time := offset + (float64(i) * stepSize)
 
-		img, err := generateSpriteScreenshot(encoder, videoFile.Path, time)
+		img, err := generateSpriteScreenshot(encoder, videoFile.Path, time, config)
 		if err != nil {
 			return nil, fmt.Errorf("generating sprite screenshot: %w", err)
 		}
@@ -100,5 +123,5 @@ func generateSprite(encoder *ffmpeg.FFMpeg, videoFile *models.VideoFile) (image.
 		return nil, fmt.Errorf("images slice is empty, failed to generate phash sprite for %s", videoFile.Path)
 	}
 
-	return combineImages(images), nil
+	return combineImages(images, config), nil
 }

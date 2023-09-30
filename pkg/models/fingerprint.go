@@ -6,9 +6,10 @@ import (
 )
 
 var (
-	FingerprintTypeOshash = "oshash"
-	FingerprintTypeMD5    = "md5"
-	FingerprintTypePhash  = "phash"
+	FingerprintTypeOshash   = "oshash"
+	FingerprintTypeMD5      = "md5"
+	FingerprintTypePhash    = "phash"
+	FingerprintTypePhashOld = "phash-old"
 )
 
 // Fingerprint represents a fingerprint of a file.

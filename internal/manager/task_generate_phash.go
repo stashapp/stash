@@ -33,15 +33,30 @@ func (t *GeneratePhashTask) Start(ctx context.Context) {
 		logErrorOutput(err)
 		return
 	}
+	hashValue := int64(*hash)
+	t.File.Fingerprints = t.File.Fingerprints.AppendUnique(models.Fingerprint{
+		Type:        models.FingerprintTypePhash,
+		Fingerprint: hashValue,
+	})
+
+	// For a temporary time, if it doesn't already exist, also generate old style
+	// phashes for videos shorter than 2.5 min to aid in tagging with Stashbox
+	if t.File.Fingerprints.Get(models.FingerprintTypePhashOld) == nil {
+		hashOld, err := videophash.Generate(instance.FFMPEG, t.File, true)
+		if err != nil {
+			logger.Errorf("error generating phash-old: %s", err.Error())
+			logErrorOutput(err)
+			return
+		}
+		hashOldValue := int64(*hashOld)
+		t.File.Fingerprints = t.File.Fingerprints.AppendUnique(models.Fingerprint{
+			Type:        models.FingerprintTypePhashOld,
+			Fingerprint: hashOldValue,
+		})
+	}
 
 	if err := txn.WithTxn(ctx, t.txnManager, func(ctx context.Context) error {
 		qb := t.fileUpdater
-		hashValue := int64(*hash)
-		t.File.Fingerprints = t.File.Fingerprints.AppendUnique(models.Fingerprint{
-			Type:        models.FingerprintTypePhash,
-			Fingerprint: hashValue,
-		})
-
 		return qb.Update(ctx, t.File)
 	}); err != nil && ctx.Err() == nil {
 		logger.Errorf("Error setting phash: %v", err)
