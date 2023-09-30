@@ -14,7 +14,7 @@ query FindStudio($id: ID!) {
 }
 
 query FindStudioPerformers(
-  $id: ID,
+  $id: ID!,
   $depth: Int,
   $filter: FindFilterType,
   $performer_filter: PerformerFilterType

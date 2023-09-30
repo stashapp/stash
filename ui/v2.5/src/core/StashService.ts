@@ -314,7 +314,7 @@ export const useFindStudioPerformers = (
     fetchPolicy: "no-cache",
     skip: id === "" || id === undefined,
     variables: {
-      id: id,
+      id: id as string,
       depth: depth,
       filter: filter?.makeFindFilter(),
       performer_filter: filter?.makeFilter(),
@@ -323,7 +323,7 @@ export const useFindStudioPerformers = (
 
 export const queryFindStudioPerformers = (
   filter: ListFilterModel,
-  id?: string,
+  id: string,
   depth?: number
 ) =>
   client.query<GQL.FindStudioPerformersQuery>({
