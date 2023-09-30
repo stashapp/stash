@@ -27,13 +27,15 @@ import { PerformerListTable } from "./PerformerListTable";
 import { EditPerformersDialog } from "./EditPerformersDialog";
 import { QueryResult } from "@apollo/client";
 
+type FindStudioPerformersQueryResult = QueryResult<GQL.FindStudioPerformersQuery, Omit<GQL.FindStudioPerformersQueryVariables, 'id'> & { id?: string } >;
+
 const StudioPerformerItemList = makeItemList({
   filterMode: GQL.FilterMode.Performers,
   useResult: useFindStudioPerformers,
-  getItems(result: GQL.FindStudioPerformersQueryResult) {
+  getItems(result: FindStudioPerformersQueryResult) {
     return result?.data?.findStudio?.findPerformers?.performers ?? [];
   },
-  getCount(result: GQL.FindStudioPerformersQueryResult) {
+  getCount(result: FindStudioPerformersQueryResult) {
     return result?.data?.findStudio?.findPerformers?.count ?? 0;
   },
 });
@@ -87,7 +89,7 @@ export const PerformerList: React.FC<IPerformerList> = ({
 
   function isFindStudioPerformersQueryResult(
     obj: QueryResult
-  ): obj is GQL.FindStudioPerformersQueryResult {
+  ): obj is FindStudioPerformersQueryResult {
     return (
       typeof obj === "object" &&
       obj != null &&
@@ -119,7 +121,7 @@ export const PerformerList: React.FC<IPerformerList> = ({
   }
 
   async function openRandom(result: QueryResult, filter: ListFilterModel) {
-    const performersStudioQuery =
+    const studioPerformersQuery =
       isFindStudioPerformersQueryResult(result) == true
         ? result.data.findStudio.findPerformers
         : undefined;
@@ -128,16 +130,16 @@ export const PerformerList: React.FC<IPerformerList> = ({
         ? result.data.findPerformers
         : undefined;
 
-    if (performersStudioQuery) {
-      const { count } = performersStudioQuery;
+    if (studioPerformersQuery && queryArgs) {
+      const { count } = studioPerformersQuery;
       const index = Math.floor(Math.random() * count);
       const filterCopy = cloneDeep(filter);
       filterCopy.itemsPerPage = 1;
       filterCopy.currentPage = index + 1;
       const singleResult = await queryFindStudioPerformers(
         filterCopy,
-        queryArgs?.id,
-        queryArgs?.depth
+        queryArgs.id,
+        queryArgs.depth
       );
       if (
         singleResult.data.findStudio?.findPerformers.performers.length === 1

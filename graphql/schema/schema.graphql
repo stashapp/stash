@@ -64,7 +64,7 @@ type Query {
   ): FindPerformersResultType!
 
   "Find a studio by ID"
-  findStudio(id: ID): Studio
+  findStudio(id: ID!): Studio
   "A function which queries Studio objects"
   findStudios(
     studio_filter: StudioFilterType
