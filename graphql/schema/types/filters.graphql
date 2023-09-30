@@ -225,6 +225,8 @@ input SceneFilterType {
   duplicated: PHashDuplicationCriterionInput
   "Filter by resolution"
   resolution: ResolutionCriterionInput
+  "Filter by frame rate"
+  framerate: IntCriterionInput
   "Filter by video codec"
   video_codec: StringCriterionInput
   "Filter by audio codec"
