@@ -14,15 +14,15 @@ query FindStudio($id: ID!) {
 }
 
 query FindStudioPerformers(
-  $id: ID!,
-  $depth: Int,
-  $filter: FindFilterType,
+  $id: ID!
+  $depth: Int
+  $filter: FindFilterType
   $performer_filter: PerformerFilterType
 ) {
   findStudio(id: $id) {
     findPerformers(
-      filter: $filter,
-      performer_filter: $performer_filter,
+      filter: $filter
+      performer_filter: $performer_filter
       depth: $depth
     ) {
       count
