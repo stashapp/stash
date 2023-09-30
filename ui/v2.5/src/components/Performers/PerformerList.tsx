@@ -27,11 +27,21 @@ import { PerformerListTable } from "./PerformerListTable";
 import { EditPerformersDialog } from "./EditPerformersDialog";
 import { QueryResult } from "@apollo/client";
 
-type FindStudioPerformersQueryResult = QueryResult<GQL.FindStudioPerformersQuery, Omit<GQL.FindStudioPerformersQueryVariables, 'id'> & { id?: string } >;
+type FindStudioPerformersQueryResult = QueryResult<
+  GQL.FindStudioPerformersQuery,
+  Omit<GQL.FindStudioPerformersQueryVariables, "id"> & { id?: string }
+>;
 
 const StudioPerformerItemList = makeItemList({
   filterMode: GQL.FilterMode.Performers,
-  useResult: useFindStudioPerformers,
+  useResult: (filter, id, depth) => {
+    const result = useFindStudioPerformers(
+      filter,
+      id,
+      depth
+    ) as FindStudioPerformersQueryResult;
+    return result;
+  },
   getItems(result: FindStudioPerformersQueryResult) {
     return result?.data?.findStudio?.findPerformers?.performers ?? [];
   },
