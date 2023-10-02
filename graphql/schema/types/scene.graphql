@@ -66,6 +66,9 @@ type Scene {
   "The number ot times a scene has been played"
   play_count: Int
 
+  playdates: [String]
+  odates: [String]
+
   file: SceneFileType! @deprecated(reason: "Use files")
   files: [VideoFile!]!
   paths: ScenePathsType! # Resolver

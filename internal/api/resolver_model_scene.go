@@ -377,3 +377,41 @@ func (r *sceneResolver) Urls(ctx context.Context, obj *models.Scene) ([]string, 
 
 	return obj.URLs.List(), nil
 }
+
+func (r *sceneResolver) Playdates(ctx context.Context, obj *models.Scene) ([]*string, error) {
+	if !obj.PlayDates.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadPlayDates(ctx, r.repository.Scene)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	playDates := obj.PlayDates.List()
+	ptrPlayDates := make([]*string, len(playDates))
+	for i, date := range playDates {
+		ptrDate := date
+		ptrPlayDates[i] = &ptrDate
+	}
+
+	return ptrPlayDates, nil
+}
+
+func (r *sceneResolver) Odates(ctx context.Context, obj *models.Scene) ([]*string, error) {
+	if !obj.ODates.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadODates(ctx, r.repository.Scene)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	oDates := obj.ODates.List()
+	ptrODates := make([]*string, len(oDates))
+	for i, date := range oDates {
+		ptrDate := date
+		ptrODates[i] = &ptrDate
+	}
+
+	return ptrODates, nil
+}

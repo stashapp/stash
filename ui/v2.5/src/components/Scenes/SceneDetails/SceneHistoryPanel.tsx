@@ -11,7 +11,7 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = (props) => {
   const intl = useIntl();
 
   return (
-    <>     
+    <>
       {/* Could replace these play/ocount displays with data from the scenes_playdates/odates table once accessible in GraphQL */}
       {/* Could also check then if the recorded dates are the same as scene.created_at then that they are 'Estimated Play Date' */}
       <div className="row">
@@ -19,7 +19,15 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = (props) => {
           <h5>
             <FormattedMessage id="play_history" />{" "}
           </h5>
-          {props.scene.play_count != null && props.scene.play_count !== 0 ? (
+          {props.scene.playdates && props.scene.playdates.length > 0 ? (
+            props.scene.playdates.map((playdate, index) => (
+              <h6 key={index}>
+                <FormattedMessage id="playdate_recorded" />
+                {": "}
+                {playdate && TextUtils.formatDateTime(intl, playdate)}
+              </h6>
+            ))
+          ) : props.scene.play_count != null && props.scene.play_count !== 0 ? (
             <>
               {Array.from({ length: props.scene.play_count - 1 }).map(
                 (_, index) => (
@@ -56,14 +64,31 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = (props) => {
           <h5>
             <FormattedMessage id="o_history" />{" "}
           </h5>
-          {props.scene.o_counter != null && props.scene.o_counter !== 0 ? (
-            <div className="date-row">
-              {Array.from({ length: props.scene.o_counter }).map((_, index) => (
-                <h6 key={index}>
+          {props.scene.odates && props.scene.odates.length > 0 ? (
+            props.scene.odates.map((odate, index) => (
+              <h6 key={index}>
+                <FormattedMessage id="odate_recorded" />
+                {": "}
+                {odate && TextUtils.formatDateTime(intl, odate)}
+              </h6>
+            ))
+          ) : props.scene.o_counter != null && props.scene.o_counter !== 0 ? (
+            <>
+              {Array.from({ length: props.scene.o_counter - 1 }).map(
+                (_, index) => (
+                  <h6 key={index}>
+                    <FormattedMessage id="odate_recorded" />
+                  </h6>
+                )
+              )}
+              {props.scene.odates && (
+                <h6>
                   <FormattedMessage id="odate_recorded" />
+                  {": "}
+                  {props.scene.odates && props.scene.odates.filter(Boolean).map((odate) => odate && TextUtils.formatDateTime(intl, odate)).join(", ")}
                 </h6>
-              ))}
-            </div>
+              )}
+            </>
           ) : props.scene.o_counter === 0 ? (
             <h6>
               <FormattedMessage id="odate_recorded_no" />
@@ -76,5 +101,6 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = (props) => {
     </>
   );
 };
+
 
 export default SceneHistoryPanel;

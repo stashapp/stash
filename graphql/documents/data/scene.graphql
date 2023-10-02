@@ -22,6 +22,9 @@ fragment SceneData on Scene {
   play_duration
   play_count
 
+  playdates
+  odates
+
   files {
     ...VideoFileData
   }

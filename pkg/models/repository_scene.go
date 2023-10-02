@@ -75,6 +75,8 @@ type SceneReader interface {
 	SceneCounter
 
 	URLLoader
+	PlayDateLoader
+	ODateLoader
 	FileIDLoader
 	GalleryIDLoader
 	PerformerIDLoader
