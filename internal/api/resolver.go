@@ -73,6 +73,9 @@ func (r *Resolver) SceneMarker() SceneMarkerResolver {
 func (r *Resolver) Studio() StudioResolver {
 	return &studioResolver{r}
 }
+func (r *Resolver) StudioPerformer() StudioPerformerResolver {
+	return &studioPerformerResolver{r}
+}
 func (r *Resolver) Movie() MovieResolver {
 	return &movieResolver{r}
 }
@@ -97,6 +100,7 @@ type sceneResolver struct{ *Resolver }
 type sceneMarkerResolver struct{ *Resolver }
 type imageResolver struct{ *Resolver }
 type studioResolver struct{ *Resolver }
+type studioPerformerResolver struct{ *Resolver }
 type movieResolver struct{ *Resolver }
 type tagResolver struct{ *Resolver }
 type savedFilterResolver struct{ *Resolver }

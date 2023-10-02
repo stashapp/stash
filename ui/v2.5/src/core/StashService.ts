@@ -311,7 +311,6 @@ export const useFindStudioPerformers = (
   depth?: number
 ) =>
   GQL.useFindStudioPerformersQuery({
-    fetchPolicy: "no-cache",
     skip: id === "" || id === undefined,
     variables: {
       id: id as string,
@@ -328,7 +327,6 @@ export const queryFindStudioPerformers = (
 ) =>
   client.query<GQL.FindStudioPerformersQuery>({
     query: GQL.FindStudioPerformersDocument,
-    fetchPolicy: "no-cache",
     variables: {
       id: id,
       depth: depth,

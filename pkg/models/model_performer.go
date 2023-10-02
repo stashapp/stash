@@ -36,16 +36,9 @@ type Performer struct {
 	Weight        *int   `json:"weight"`
 	IgnoreAutoTag bool   `json:"ignore_auto_tag"`
 
-	Aliases      RelatedStrings  `json:"aliases"`
-	TagIDs       RelatedIDs      `json:"tag_ids"`
-	StashIDs     RelatedStashIDs `json:"stash_ids"`
-	ParentObject ParentObject
-}
-
-type ParentObject struct {
-	ID         int
-	Depth      *int
-	ObjectType string
+	Aliases  RelatedStrings  `json:"aliases"`
+	TagIDs   RelatedIDs      `json:"tag_ids"`
+	StashIDs RelatedStashIDs `json:"stash_ids"`
 }
 
 func NewPerformer() Performer {

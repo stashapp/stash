@@ -23,11 +23,11 @@ type Studio {
   created_at: Time!
   updated_at: Time!
   movies: [Movie!]!
-  findPerformers(
+  performers(
     performer_filter: PerformerFilterType
     filter: FindFilterType
     depth: Int
-  ): FindPerformersResultType!
+  ): FindStudioPerformersResultType!
 }
 
 input StudioCreateInput {

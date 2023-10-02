@@ -20,14 +20,23 @@ query FindStudioPerformers(
   $performer_filter: PerformerFilterType
 ) {
   findStudio(id: $id) {
-    findPerformers(
+    id
+    performers(
       filter: $filter
       performer_filter: $performer_filter
       depth: $depth
     ) {
       count
-      performers {
-        ...PerformerData
+      studioPerformer {
+        id
+        studio_id
+        scene_count
+        image_count
+        gallery_count
+        movie_count
+        performer {
+          ...PerformerData
+        }
       }
     }
   }
