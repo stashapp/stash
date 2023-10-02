@@ -593,6 +593,11 @@ func (s *scanJob) handleFolderRename(ctx context.Context, file scanFile) (*model
 		return nil, fmt.Errorf("updating folder for rename %q: %w", renamedFrom.Path, err)
 	}
 
+	// #4146 - correct sub-folders to have the correct path
+	if err := correctSubFolderHierarchy(ctx, s.Repository.FolderStore, renamedFrom); err != nil {
+		return nil, fmt.Errorf("correcting sub folder hierarchy for %q: %w", renamedFrom.Path, err)
+	}
+
 	return renamedFrom, nil
 }
 
