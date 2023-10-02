@@ -43,10 +43,13 @@ const StudioPerformerItemList = makeItemList({
     return result;
   },
   getItems(result: FindStudioPerformersQueryResult) {
-    return result?.data?.findStudio?.findPerformers?.performers ?? [];
+    const performers = result?.data?.findStudio?.performers.studioPerformer.map(
+      (p) => p.performer
+    );
+    return performers ?? [];
   },
   getCount(result: FindStudioPerformersQueryResult) {
-    return result?.data?.findStudio?.findPerformers?.count ?? 0;
+    return result?.data?.findStudio?.performers?.count ?? 0;
   },
 });
 
@@ -105,7 +108,8 @@ export const PerformerList: React.FC<IPerformerList> = ({
       obj != null &&
       "data" in obj &&
       "findStudio" in obj.data &&
-      "findPerformers" in obj.data.findStudio
+      "performers" in obj.data.findStudio &&
+      "studioPerformer" in obj.data.findStudio.performers
     );
   }
 
@@ -133,7 +137,7 @@ export const PerformerList: React.FC<IPerformerList> = ({
   async function openRandom(result: QueryResult, filter: ListFilterModel) {
     const studioPerformersQuery =
       isFindStudioPerformersQueryResult(result) == true
-        ? result.data.findStudio.findPerformers
+        ? result.data.findStudio.performers
         : undefined;
     const performersQuery =
       isFindPerformersQueryResult(result) == true
@@ -152,10 +156,10 @@ export const PerformerList: React.FC<IPerformerList> = ({
         queryArgs.depth
       );
       if (
-        singleResult.data.findStudio?.findPerformers.performers.length === 1
+        singleResult.data.findStudio?.performers.studioPerformer.length === 1
       ) {
         const { id } =
-          singleResult.data.findStudio?.findPerformers.performers[0]!;
+          singleResult.data.findStudio?.performers.studioPerformer[0]!;
         history.push(`/performers/${id}`);
       }
     } else if (performersQuery) {
@@ -209,7 +213,17 @@ export const PerformerList: React.FC<IPerformerList> = ({
     function renderPerformers() {
       const performers =
         isFindStudioPerformersQueryResult(result) == true
-          ? result.data.findStudio.findPerformers.performers
+          ? result.data.findStudio.performers.studioPerformer.map(
+              (studioPerformer: GQL.StudioPerformer) => {
+                return {
+                  ...studioPerformer.performer,
+                  scene_count: studioPerformer.scene_count,
+                  image_count: studioPerformer.image_count,
+                  gallery_count: studioPerformer.gallery_count,
+                  movie_count: studioPerformer.movie_count,
+                };
+              }
+            )
           : isFindPerformersQueryResult(result) == true
           ? result.data.findPerformers.performers
           : undefined;

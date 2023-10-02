@@ -1,0 +1,14 @@
+type StudioPerformer {
+  id: ID!
+  studio_id: ID!
+  scene_count: Int! # Resolver
+  image_count: Int! # Resolver
+  gallery_count: Int! # Resolver
+  movie_count: Int! # Resolver
+  performer: Performer!
+}
+
+type FindStudioPerformersResultType {
+  count: Int!
+  studioPerformer: [StudioPerformer!]!
+}
