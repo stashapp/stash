@@ -3,6 +3,7 @@ package migrations
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -64,7 +65,7 @@ func (m *schema52Migrator) migrate(ctx context.Context) error {
 				// ensure the correct path is unique
 				var v int
 				isEmptyErr := m.db.Get(&v, "SELECT 1 FROM folders WHERE path = ?", correctPath)
-				if isEmptyErr != nil && isEmptyErr != sql.ErrNoRows {
+				if isEmptyErr != nil && !errors.Is(isEmptyErr, sql.ErrNoRows) {
 					return fmt.Errorf("error checking if correct path %s is unique: %w", correctPath, isEmptyErr)
 				}
 
