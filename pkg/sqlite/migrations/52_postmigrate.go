@@ -2,6 +2,7 @@ package migrations
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -59,6 +60,19 @@ func (m *schema52Migrator) migrate(ctx context.Context) error {
 				correctPath := filepath.Join(parentFolderPath, folderBasename)
 
 				logger.Infof("correcting folder path %s to %s", folderPath, correctPath)
+
+				// ensure the correct path is unique
+				var v int
+				isEmptyErr := m.db.Get(&v, "SELECT 1 FROM folders WHERE path = ?", correctPath)
+				if isEmptyErr != nil && isEmptyErr != sql.ErrNoRows {
+					return fmt.Errorf("error checking if correct path %s is unique: %w", correctPath, isEmptyErr)
+				}
+
+				if isEmptyErr == nil {
+					// correct path is not unique, log and skip
+					logger.Warnf("correct path %s is not unique, skipping...", correctPath)
+					continue
+				}
 
 				if _, err := m.db.Exec("UPDATE folders SET path = ? WHERE id = ?", correctPath, id); err != nil {
 					return fmt.Errorf("error updating folder path %s to %s: %w", folderPath, correctPath, err)
