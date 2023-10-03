@@ -291,20 +291,6 @@ func (qb *SceneStore) Create(ctx context.Context, newObject *models.Scene, fileI
 		}
 	}
 
-	// if newObject.PlayDates.Loaded() {
-	// 	const startPos = 0
-	// 	if err := scenesPlayDatesTableMgr.insertJoins(ctx, id, startPos, newObject.PlayDates.List()); err != nil {
-	// 		return err
-	// 	}
-	// }
-
-	// if newObject.ODates.Loaded() {
-	// 	const startPos = 0
-	// 	if err := scenesODatesTableMgr.insertJoins(ctx, id, startPos, newObject.ODates.List()); err != nil {
-	// 		return err
-	// 	}
-	// }
-
 	if newObject.PerformerIDs.Loaded() {
 		if err := scenesPerformersTableMgr.insertJoins(ctx, id, newObject.PerformerIDs.List()); err != nil {
 			return err
@@ -364,16 +350,6 @@ func (qb *SceneStore) UpdatePartial(ctx context.Context, id int, partial models.
 			return nil, err
 		}
 	}
-	// if partial.PlayDates != nil {
-	// 	if err := scenesPlayDatesTableMgr.modifyJoins(ctx, id, partial.PlayDates.Values, partial.PlayDates.Mode); err != nil {
-	// 		return nil, err
-	// 	}
-	// }
-	// if partial.ODates != nil {
-	// 	if err := scenesODatesTableMgr.modifyJoins(ctx, id, partial.ODates.Values, partial.ODates.Mode); err != nil {
-	// 		return nil, err
-	// 	}
-	// }
 	if partial.PerformerIDs != nil {
 		if err := scenesPerformersTableMgr.modifyJoins(ctx, id, partial.PerformerIDs.IDs, partial.PerformerIDs.Mode); err != nil {
 			return nil, err
@@ -421,18 +397,6 @@ func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) e
 			return err
 		}
 	}
-
-	// if updatedObject.PlayDates.Loaded() {
-	// 	if err := scenesPlayDatesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.PlayDates.List()); err != nil {
-	// 		return err
-	// 	}
-	// }
-
-	// if updatedObject.ODates.Loaded() {
-	// 	if err := scenesODatesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.ODates.List()); err != nil {
-	// 		return err
-	// 	}
-	// }
 
 	if updatedObject.PerformerIDs.Loaded() {
 		if err := scenesPerformersTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.PerformerIDs.List()); err != nil {
@@ -1045,8 +1009,6 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 	query.handleCriterion(ctx, hasMarkersCriterionHandler(sceneFilter.HasMarkers))
 	query.handleCriterion(ctx, sceneIsMissingCriterionHandler(qb, sceneFilter.IsMissing))
 	query.handleCriterion(ctx, sceneURLsCriterionHandler(sceneFilter.URL))
-	//query.handleCriterion(ctx, scenePlayDatesCriterionHandler(sceneFilter.URL))
-	//query.handleCriterion(ctx, sceneODatesCriterionHandler(sceneFilter.URL))
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if sceneFilter.StashID != nil {
@@ -1351,12 +1313,6 @@ func sceneIsMissingCriterionHandler(qb *SceneStore, isMissing *string) criterion
 			case "url":
 				scenesURLsTableMgr.join(f, "", "scenes.id")
 				f.addWhere("scene_urls.url IS NULL")
-			// case "playdate":
-			// 	scenesPlayDatesTableMgr.join(f, "", "scenes.id")
-			// 	f.addWhere("scenes_playdates.playdate IS NULL")
-			// case "odate":
-			// 	scenesODatesTableMgr.join(f, "", "scenes.id")
-			// 	f.addWhere("scenes_odates.odate IS NULL")
 			case "galleries":
 				qb.galleriesRepository().join(f, "galleries_join", "scenes.id")
 				f.addWhere("galleries_join.scene_id IS NULL")
@@ -1400,30 +1356,6 @@ func sceneURLsCriterionHandler(url *models.StringCriterionInput) criterionHandle
 
 	return h.handler(url)
 }
-
-// func scenePlayDatesCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
-// 	h := stringListCriterionHandlerBuilder{
-// 		joinTable:    scenesPlayDatesTable,
-// 		stringColumn: scenePlayDateColumn,
-// 		addJoinTable: func(f *filterBuilder) {
-// 			scenesPlayDatesTableMgr.join(f, "", "scenes.id")
-// 		},
-// 	}
-
-// 	return h.handler(url)
-// }
-
-// func sceneODatesCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
-// 	h := stringListCriterionHandlerBuilder{
-// 		joinTable:    scenesODatesTable,
-// 		stringColumn: sceneODateColumn,
-// 		addJoinTable: func(f *filterBuilder) {
-// 			scenesODatesTableMgr.join(f, "", "scenes.id")
-// 		},
-// 	}
-
-// 	return h.handler(url)
-// }
 
 func (qb *SceneStore) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
 	return multiCriterionHandlerBuilder{

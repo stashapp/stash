@@ -540,7 +540,12 @@ type orderedValueTable[T comparable] struct {
 }
 
 func (t *orderedValueTable[T]) positionColumn() exp.IdentifierExpression {
-	const positionColumn = "position"
+	var positionColumn string
+	if t.table.table == scenesPlayDatesJoinTable || t.table.table == scenesODatesJoinTable {
+		positionColumn = "id"
+	} else {
+		positionColumn = "position"
+	}
 	return t.table.table.Col(positionColumn)
 }
 

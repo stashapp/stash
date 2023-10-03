@@ -151,9 +151,25 @@ var (
 		idColumn: goqu.T(scenePlayDateTable).Col(idColumn),
 	}
 
+	scenesPlayDatesTableMgr = &orderedValueTable[string]{
+		table: table{
+			table:    scenesPlayDatesJoinTable,
+			idColumn: scenesPlayDatesJoinTable.Col(sceneIDColumn),
+		},
+		valueColumn: scenesPlayDatesJoinTable.Col(scenePlayDateColumn),
+	}
+
 	sceneODateTableMgr = &table{
 		table:    goqu.T(sceneODateTable),
 		idColumn: goqu.T(sceneODateTable).Col(idColumn),
+	}
+
+	scenesODatesTableMgr = &orderedValueTable[string]{
+		table: table{
+			table:    scenesODatesJoinTable,
+			idColumn: scenesODatesJoinTable.Col(sceneIDColumn),
+		},
+		valueColumn: scenesODatesJoinTable.Col(sceneODateColumn),
 	}
 
 	scenesFilesTableMgr = &relatedFilesTable{
@@ -201,22 +217,6 @@ var (
 			idColumn: scenesURLsJoinTable.Col(sceneIDColumn),
 		},
 		valueColumn: scenesURLsJoinTable.Col(sceneURLColumn),
-	}
-
-	scenesPlayDatesTableMgr = &orderedValueTable[string]{
-		table: table{
-			table:    scenesPlayDatesJoinTable,
-			idColumn: scenesPlayDatesJoinTable.Col(sceneIDColumn),
-		},
-		valueColumn: scenesPlayDatesJoinTable.Col(scenePlayDateColumn),
-	}
-
-	scenesODatesTableMgr = &orderedValueTable[string]{
-		table: table{
-			table:    scenesODatesJoinTable,
-			idColumn: scenesODatesJoinTable.Col(sceneIDColumn),
-		},
-		valueColumn: scenesODatesJoinTable.Col(sceneODateColumn),
 	}
 )
 
