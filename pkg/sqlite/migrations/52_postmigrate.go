@@ -71,7 +71,7 @@ func (m *schema52Migrator) migrate(ctx context.Context) error {
 
 				if isEmptyErr == nil {
 					// correct path is not unique, log and skip
-					logger.Warnf("correct path %s is not unique, skipping...", correctPath)
+					logger.Warnf("correct path %s already exists, skipping...", correctPath)
 					continue
 				}
 
