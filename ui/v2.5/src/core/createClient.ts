@@ -104,6 +104,9 @@ const typePolicies: TypePolicies = {
       },
     },
   },
+  StudioPerformer: {
+    keyFields: false,
+  }
 };
 
 const possibleTypes = {
