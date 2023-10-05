@@ -27,6 +27,8 @@ import { PerformerListTable } from "./PerformerListTable";
 import { EditPerformersDialog } from "./EditPerformersDialog";
 import { QueryResult } from "@apollo/client";
 
+// The generated GQL.FindStudioPerformersQueryResult can't extend QueryResult when id is required in the graphql schema.
+// This type replaces the id property with an optional id.
 type FindStudioPerformersQueryResult = QueryResult<
   GQL.FindStudioPerformersQuery,
   Omit<GQL.FindStudioPerformersQueryVariables, "id"> & { id?: string }
