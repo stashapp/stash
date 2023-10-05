@@ -354,7 +354,9 @@ input GalleryFilterType {
 
   id: IntCriterionInput
   title: StringCriterionInput
+  code: StringCriterionInput
   details: StringCriterionInput
+  photographer: StringCriterionInput
 
   "Filter by file checksum"
   checksum: StringCriterionInput

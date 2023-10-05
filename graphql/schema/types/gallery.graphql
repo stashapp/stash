@@ -4,10 +4,12 @@ type Gallery {
   checksum: String! @deprecated(reason: "Use files.fingerprints")
   path: String @deprecated(reason: "Use files.path")
   title: String
+  code: String
   url: String @deprecated(reason: "Use urls")
   urls: [String!]!
   date: String
   details: String
+  photographer: String
   # rating expressed as 1-5
   rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
@@ -34,10 +36,12 @@ type Gallery {
 
 input GalleryCreateInput {
   title: String!
+  code: String
   url: String @deprecated(reason: "Use urls")
   urls: [String!]
   date: String
   details: String
+  photographer: String
   # rating expressed as 1-5
   rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
@@ -53,10 +57,12 @@ input GalleryUpdateInput {
   clientMutationId: String
   id: ID!
   title: String
+  code: String
   url: String @deprecated(reason: "Use urls")
   urls: [String!]
   date: String
   details: String
+  photographer: String
   # rating expressed as 1-5
   rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
@@ -73,10 +79,12 @@ input GalleryUpdateInput {
 input BulkGalleryUpdateInput {
   clientMutationId: String
   ids: [ID!]
+  code: String
   url: String @deprecated(reason: "Use urls")
   urls: BulkUpdateStrings
   date: String
   details: String
+  photographer: String
   # rating expressed as 1-5
   rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
