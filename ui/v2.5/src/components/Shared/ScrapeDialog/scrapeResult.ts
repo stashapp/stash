@@ -106,7 +106,6 @@ export class ObjectListScrapeResult<
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function hasScrapedValues(values: ScrapeResult<any>[]) {
+export function hasScrapedValues(values: { scraped: boolean }[]): boolean {
   return values.some((r) => r.scraped);
 }

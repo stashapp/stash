@@ -298,8 +298,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     if (isVisible) {
       if (index === null) setIndex(initialIndex);
       document.body.style.overflow = "hidden";
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (Mousetrap as any).pause();
+      Mousetrap.pause();
     }
   }, [initialIndex, isVisible, setIndex, index]);
 
@@ -323,8 +322,7 @@ export const LightboxComponent: React.FC<IProps> = ({
 
     hide();
     document.body.style.overflow = "auto";
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (Mousetrap as any).unpause();
+    Mousetrap.unpause();
   }, [isFullscreen, hide]);
 
   const handleClose = (e: React.MouseEvent<HTMLDivElement>) => {
