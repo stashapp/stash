@@ -28,7 +28,7 @@ query FindStudioPerformers(
     ) {
       count
       studioPerformer {
-        id
+        performer_id
         studio_id
         scene_count
         image_count

@@ -160,9 +160,9 @@ export const PerformerList: React.FC<IPerformerList> = ({
       if (
         singleResult.data.findStudio?.performers.studioPerformer.length === 1
       ) {
-        const { id } =
+        const { performer_id } =
           singleResult.data.findStudio?.performers.studioPerformer[0]!;
-        history.push(`/performers/${id}`);
+        history.push(`/performers/${performer_id}`);
       }
     } else if (performersQuery) {
       const { count } = performersQuery;

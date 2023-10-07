@@ -1,5 +1,5 @@
 type StudioPerformer {
-  id: ID!
+  performer_id: ID!
   studio_id: ID!
   "Number of Scenes the Performer appears in for the Studio"
   scene_count: Int! # Resolver
