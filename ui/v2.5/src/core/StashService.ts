@@ -428,7 +428,7 @@ const sceneMutationImpactedTypeFields = {
     "movie_count",
     "performer_count",
   ],
-  Studio: ["scene_count", "performer_count"],
+  Studio: ["scene_count", "performer_count", "performers"],
   Tag: ["scene_count"],
 };
 
@@ -815,7 +815,7 @@ export const useSceneIncrementPlayCount = () =>
 const imageMutationImpactedTypeFields = {
   Gallery: ["images", "image_count"],
   Performer: ["image_count", "performer_count"],
-  Studio: ["image_count", "performer_count"],
+  Studio: ["image_count", "performer_count", "performers"],
   Tag: ["image_count"],
 };
 
@@ -1215,7 +1215,7 @@ export const useSceneMarkerDestroy = () =>
 const galleryMutationImpactedTypeFields = {
   Scene: ["galleries"],
   Performer: ["gallery_count", "performer_count"],
-  Studio: ["gallery_count", "performer_count"],
+  Studio: ["gallery_count", "performer_count", "performers"],
   Tag: ["gallery_count"],
 };
 
