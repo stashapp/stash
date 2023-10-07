@@ -12,7 +12,7 @@ import (
 
 func (r *studioPerformerResolver) SceneCount(ctx context.Context, obj *models.StudioPerformer) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = scene.CountByPerformerIDStudioID(ctx, r.repository.Scene, obj.ID, obj.StudioID, obj.Depth)
+		ret, err = scene.CountByPerformerIDStudioID(ctx, r.repository.Scene, obj.PerformerID, obj.StudioID, obj.Depth)
 		return err
 	}); err != nil {
 		return 0, err
@@ -23,7 +23,7 @@ func (r *studioPerformerResolver) SceneCount(ctx context.Context, obj *models.St
 
 func (r *studioPerformerResolver) GalleryCount(ctx context.Context, obj *models.StudioPerformer) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = gallery.CountByPerformerIDStudioID(ctx, r.repository.Gallery, obj.ID, obj.StudioID, obj.Depth)
+		ret, err = gallery.CountByPerformerIDStudioID(ctx, r.repository.Gallery, obj.PerformerID, obj.StudioID, obj.Depth)
 		return err
 	}); err != nil {
 		return 0, err
@@ -34,7 +34,7 @@ func (r *studioPerformerResolver) GalleryCount(ctx context.Context, obj *models.
 
 func (r *studioPerformerResolver) ImageCount(ctx context.Context, obj *models.StudioPerformer) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = image.CountByPerformerIDStudioID(ctx, r.repository.Image, obj.ID, obj.StudioID, obj.Depth)
+		ret, err = image.CountByPerformerIDStudioID(ctx, r.repository.Image, obj.PerformerID, obj.StudioID, obj.Depth)
 		return err
 	}); err != nil {
 		return 0, err
@@ -45,7 +45,7 @@ func (r *studioPerformerResolver) ImageCount(ctx context.Context, obj *models.St
 
 func (r *studioPerformerResolver) MovieCount(ctx context.Context, obj *models.StudioPerformer) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = movie.CountByPerformerIDStudioID(ctx, r.repository.Movie, obj.ID, obj.StudioID, obj.Depth)
+		ret, err = movie.CountByPerformerIDStudioID(ctx, r.repository.Movie, obj.PerformerID, obj.StudioID, obj.Depth)
 		return err
 	}); err != nil {
 		return 0, err

@@ -169,10 +169,10 @@ func (r *studioResolver) Performers(ctx context.Context, obj *models.Studio, per
 	for _, performer := range performers {
 
 		studioPerformer := &models.StudioPerformer{
-			ID:        performer.ID,
-			StudioID:  obj.ID,
-			Depth:     depth,
-			Performer: *performer,
+			PerformerID: performer.ID,
+			StudioID:    obj.ID,
+			Depth:       depth,
+			Performer:   *performer,
 		}
 
 		studioPerformers = append(studioPerformers, studioPerformer)
