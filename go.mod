@@ -9,8 +9,8 @@ require (
 	github.com/anacrolix/dms v1.2.2
 	github.com/antchfx/htmlquery v1.3.0
 	github.com/asticode/go-astisub v0.26.0
-	github.com/chromedp/cdproto v0.0.0-20210622022015-fe1827b46b84
-	github.com/chromedp/chromedp v0.7.3
+	github.com/chromedp/cdproto v0.0.0-20231007061347-18b01cd81617
+	github.com/chromedp/chromedp v0.9.2
 	github.com/corona10/goimagehash v1.1.0
 	github.com/disintegration/imaging v1.6.2
 	github.com/doug-martin/goqu/v9 v9.18.0
@@ -52,7 +52,7 @@ require (
 	golang.org/x/crypto v0.13.0
 	golang.org/x/image v0.12.0
 	golang.org/x/net v0.15.0
-	golang.org/x/sys v0.12.0
+	golang.org/x/sys v0.13.0
 	golang.org/x/term v0.12.0
 	golang.org/x/text v0.13.0
 	gopkg.in/guregu/null.v4 v4.0.0
@@ -70,7 +70,7 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
-	github.com/gobwas/ws v1.1.0-rc.5 // indirect
+	github.com/gobwas/ws v1.3.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
