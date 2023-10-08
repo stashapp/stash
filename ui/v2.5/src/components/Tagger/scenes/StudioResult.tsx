@@ -18,6 +18,7 @@ interface IStudioResultProps {
   onCreate: () => void;
   onLink?: () => Promise<void>;
   endpoint?: string;
+  stashBoxBaseURL?: string;
 }
 
 const StudioResult: React.FC<IStudioResultProps> = ({
@@ -27,6 +28,7 @@ const StudioResult: React.FC<IStudioResultProps> = ({
   onCreate,
   onLink,
   endpoint,
+  stashBoxBaseURL,
 }) => {
   const { data: studioData, loading: stashLoading } = GQL.useFindStudioQuery({
     variables: { id: studio.stored_id ?? "" },
@@ -52,12 +54,32 @@ const StudioResult: React.FC<IStudioResultProps> = ({
 
   if (stashLoading) return <div>Loading studio</div>;
 
+  function renderStudioName(
+    name: string,
+    url: string | undefined,
+    id: string | undefined | null
+  ) {
+    return url && id ? (
+      <a href={url + "studios/" + id} target="_blank" rel="noreferrer">
+        {name}
+      </a>
+    ) : (
+      name
+    );
+  }
+
   if (matchedStudio && matchedStashID) {
     return (
       <div className="row no-gutters my-2">
         <div className="entity-name">
           <FormattedMessage id="countables.studios" values={{ count: 1 }} />:
-          <b className="ml-2">{studio.name}</b>
+          <b className="ml-2">
+            {renderStudioName(
+              studio.name,
+              stashBoxBaseURL,
+              studio.remote_site_id
+            )}
+          </b>
         </div>
         <span className="ml-auto">
           <OptionalField
@@ -70,7 +92,9 @@ const StudioResult: React.FC<IStudioResultProps> = ({
               <span className="mr-2">
                 <FormattedMessage id="component_tagger.verb_matched" />:
               </span>
-              <b className="col-3 text-right">{matchedStudio.name}</b>
+              <b className="col-3 text-right">
+                {renderStudioName(matchedStudio.name, "/", matchedStudio.id)}
+              </b>
             </div>
           </OptionalField>
         </span>
@@ -99,7 +123,13 @@ const StudioResult: React.FC<IStudioResultProps> = ({
     <div className="row no-gutters align-items-center mt-2">
       <div className="entity-name">
         <FormattedMessage id="countables.studios" values={{ count: 1 }} />:
-        <b className="ml-2">{studio.name}</b>
+        <b className="ml-2">
+          {renderStudioName(
+            studio.name,
+            stashBoxBaseURL,
+            studio.remote_site_id
+          )}
+        </b>
       </div>
       <ButtonGroup>
         <Button variant="secondary" onClick={() => onCreate()}>

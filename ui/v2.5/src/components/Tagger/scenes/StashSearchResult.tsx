@@ -301,13 +301,14 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     }
   }, [isActive, loading, stashScene, index, resolveScene, scene]);
 
+  const stashBoxBaseURL = currentSource?.stashboxEndpoint
+    ? currentSource.stashboxEndpoint.match(/https?:\/\/.*?\//)?.[0]
+    : undefined;
   const stashBoxURL = useMemo(() => {
-    if (currentSource?.stashboxEndpoint && scene.remote_site_id) {
-      const endpoint = currentSource.stashboxEndpoint;
-      const endpointBase = endpoint.match(/https?:\/\/.*?\//)?.[0];
-      return `${endpointBase}scenes/${scene.remote_site_id}`;
+    if (stashBoxBaseURL) {
+      return `${stashBoxBaseURL}scenes/${scene.remote_site_id}`;
     }
-  }, [currentSource, scene]);
+  }, [scene, stashBoxBaseURL]);
 
   const setExcludedField = (name: string, value: boolean) =>
     setExcludedFields({
@@ -638,6 +639,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             setSelectedID={(id) => setStudioID(id)}
             onCreate={() => showStudioModal(scene.studio!)}
             endpoint={currentSource?.stashboxEndpoint}
+            stashBoxBaseURL={stashBoxBaseURL}
             onLink={async () => {
               await linkStudio(scene.studio!, studioID!);
             }}
@@ -667,6 +669,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
                 await linkPerformer(performer, performerIDs[performerIndex]!);
               }}
               endpoint={currentSource?.stashboxEndpoint}
+              stashBoxBaseURL={stashBoxBaseURL}
               key={`${performer.name ?? performer.remote_site_id ?? ""}`}
             />
           ))}
