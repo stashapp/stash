@@ -48,6 +48,9 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
   const [title, setTitle] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(gallery.title, scraped.title)
   );
+  const [code, setCode] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(gallery.code, scraped.code)
+  );
   const [urls, setURLs] = useState<ScrapeResult<string[]>>(
     new ScrapeResult<string[]>(
       gallery.urls,
@@ -58,6 +61,9 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
   );
   const [date, setDate] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(gallery.date, scraped.date)
+  );
+  const [photographer, setPhotographer] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(gallery.photographer, scraped.photographer)
   );
   const [studio, setStudio] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(gallery.studio_id, scraped.studio?.stored_id)
@@ -157,7 +163,7 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
 
   // don't show the dialog if nothing was scraped
   if (
-    [title, urls, date, studio, performers, tags, details].every(
+    [title, code, urls, date, photographer, studio, performers, tags, details].every(
       (r) => !r.scraped
     ) &&
     !newStudio &&
@@ -173,8 +179,10 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
 
     return {
       title: title.getNewValue(),
+      code: code.getNewValue(),
       urls: urls.getNewValue(),
       date: date.getNewValue(),
+      photographer: photographer.getNewValue(),
       studio: newStudioValue
         ? {
             stored_id: newStudioValue,
@@ -200,6 +208,11 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
           result={title}
           onChange={(value) => setTitle(value)}
         />
+        <ScrapedInputGroupRow
+          title={intl.formatMessage({ id: "scene_code" })}
+          result={code}
+          onChange={(value) => setCode(value)}
+        />
         <ScrapedStringListRow
           title={intl.formatMessage({ id: "urls" })}
           result={urls}
@@ -210,6 +223,11 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
           placeholder="YYYY-MM-DD"
           result={date}
           onChange={(value) => setDate(value)}
+        />
+        <ScrapedInputGroupRow
+          title={intl.formatMessage({ id: "photographer" })}
+          result={photographer}
+          onChange={(value) => setPhotographer(value)}
         />
         <ScrapedStudioRow
           title={intl.formatMessage({ id: "studios" })}

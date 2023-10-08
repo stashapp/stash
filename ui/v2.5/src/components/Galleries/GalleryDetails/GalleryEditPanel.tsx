@@ -85,8 +85,10 @@ export const GalleryEditPanel: React.FC<IProps> = ({
 
   const schema = yup.object({
     title: titleRequired ? yup.string().required() : yup.string().ensure(),
+    code: yup.string().optional().nullable(),
     urls: yupUniqueStringList("urls"),
     date: yupDateString(intl),
+    photographer: yup.string().optional().nullable(),
     rating100: yup.number().nullable().defined(),
     studio_id: yup.string().required().nullable(),
     performer_ids: yup.array(yup.string().required()).defined(),
@@ -97,8 +99,10 @@ export const GalleryEditPanel: React.FC<IProps> = ({
 
   const initialValues = {
     title: gallery?.title ?? "",
+    code: gallery.code ?? "",
     urls: gallery?.urls ?? [],
     date: gallery?.date ?? "",
+    photographer: gallery.photographer ?? "",
     rating100: gallery?.rating100 ?? null,
     studio_id: gallery?.studio?.id ?? null,
     performer_ids: (gallery?.performers ?? []).map((p) => p.id),
@@ -294,8 +298,16 @@ export const GalleryEditPanel: React.FC<IProps> = ({
       formik.setFieldValue("title", galleryData.title);
     }
 
+    if (galleryData.code) {
+      formik.setFieldValue("code", galleryData.code);
+    }
+
     if (galleryData.details) {
       formik.setFieldValue("details", galleryData.details);
+    }
+
+    if (galleryData.photographer) {
+      formik.setFieldValue("photographer", galleryData.photographer);
     }
 
     if (galleryData.date) {
@@ -425,6 +437,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
         <div className="form-container row px-3">
           <div className="col-12 col-lg-6 col-xl-12">
             {renderTextField("title", intl.formatMessage({ id: "title" }))}
+            {renderTextField("code", intl.formatMessage({ id: "scene_code" }))}
             <Form.Group controlId="urls" as={Row}>
               <Col xs={3} className="pr-0 url-label">
                 <Form.Label className="col-form-label">
@@ -454,6 +467,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
                 />
               </Col>
             </Form.Group>
+            {renderTextField("photographer", intl.formatMessage({ id: "photographer" }))}
             <Form.Group controlId="rating" as={Row}>
               {FormUtils.renderLabel({
                 title: intl.formatMessage({ id: "rating" }),
