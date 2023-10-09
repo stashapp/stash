@@ -514,17 +514,22 @@ func (p *postProcessFeetToCm) Apply(ctx context.Context, value string, q mappedQ
 type postProcessDimensionToMetric bool
 
 func (p *postProcessDimensionToMetric) Apply(ctx context.Context, value string, q mappedQuery) string {
-	// https://regex101.com/r/N4wkja/1
-	cmRe := regexp.MustCompile(`(?P<height>(1|2)(?:[,.]?(\d\d)))(?:\s*(?:m|meters|cm|centimeters))?`)
+	// https://regex101.com/r/N4wkja/2
+	cmRe := regexp.MustCompile(`(?P<meters>(?:1|2))(?:[,.]?(?P<centimeters>\d{1,2}))(?:\s*(?:m|meters|cm|centimeters)?)?`)
 	if metricMatches := cmRe.FindStringSubmatch(value); metricMatches != nil {
-		return metricMatches[2] + metricMatches[3]
+		meters := metricMatches[1]
+		centimeters := metricMatches[2]
+		if len(centimeters) == 1 {
+			centimeters += "0"
+		}
+		return meters + centimeters
 	}
 
 	const foot_in_cm = 30.48
 	const inch_in_cm = 2.54
 
-	// https://regex101.com/r/C7fXeT/2
-	feetInchRe := regexp.MustCompile(`(?:(?P<feet>\d+(?:\.\d+)?)(?:'|\s*feet|\s*ft))?(?:\s*(?P<inches>\d+(?:\.\d+)?)?(?:"|\s*inches|\s*in)?)?`)
+	// https://regex101.com/r/C7fXeT/3
+	feetInchRe := regexp.MustCompile(`(?:(?P<feet>\d+(?:\.\d+)?)(?:'|\s*feet|\s*foot|\s*ft))?(?:\s*(?P<inches>\d+(?:\.\d+)?)?(?:"|\s*inch(es)?|\s*in)?)?`)
 	imperialMatches := feetInchRe.FindStringSubmatch(value)
 
 	feet, _ := strconv.ParseFloat(imperialMatches[1], 64)
