@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	stashExec "github.com/stashapp/stash/pkg/exec"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/python"
@@ -40,16 +41,29 @@ func (s *scriptScraper) runScraperScript(ctx context.Context, inString string, o
 		pythonPath := s.globalConfig.GetPythonPath()
 		var p *python.Python
 		if pythonPath != "" {
-			p = python.New(pythonPath)
+			// Users commonly set the path to a folder instead of the executable
+			isFile, err := fsutil.FileExists(pythonPath)
+			if err != nil {
+				logger.Warnf("Unable to validate python path: %s", err)
+			} else if !isFile {
+				logger.Warnf("Python path is not a file: %s", pythonPath)
+			} else {
+				logger.Debugf("Using configured python path: %s", *p)
+				p = python.New(pythonPath)
+			}
 		} else {
 			p, _ = python.Resolve()
+			if p == nil {
+				logger.Warnf("Unable to resolve python from environment")
+			}
 		}
 
 		if p != nil {
 			cmd = p.Command(ctx, command[1:])
+		} else {
+			// if could not find python, just use the command args as-is
+			logger.Warnf("Could not find python executable, using command args as-is: %s", strings.Join(command, " "))
 		}
-
-		// if could not find python, just use the command args as-is
 	}
 
 	if cmd == nil {
