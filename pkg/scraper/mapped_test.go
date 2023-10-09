@@ -62,6 +62,51 @@ func TestFeetToCM(t *testing.T) {
 	}
 }
 
+type dimensionToMetricTest struct {
+	in  string
+	out string
+}
+
+var dimensionToMetricTests = []dimensionToMetricTest{
+	// Not actual measurements
+	{"", "0"},
+	{"a", "0"},
+	// Inches
+	{"9", "23"},
+	{"9in", "23"},
+	{"9 in", "23"},
+	{"9.5", "24"},
+	{"9.5in", "24"},
+	{"9.5 in", "24"},
+	// Feet and inches
+	{"5 feet", "152"},
+	{"5ft1", "155"},
+	{"5 feet 2 inches", "157"},
+	{"5'3", "160"},
+	{"5'4\"", "163"},
+	{"5ft5.99", "168"},
+	// Already metric
+	{"169", "169"},
+	{"170cm", "170"},
+	{"171 cm", "171"},
+	{"172.0", "172"},
+	{"173.2", "173"},
+	{"174.99", "174"},
+	{"1.75 m", "175"},
+	{"1.76m", "176"},
+}
+
+func TestDimensionToMetric(t *testing.T) {
+	pp := postProcessDimensionToMetric(true)
+
+	q := &xpathQuery{}
+
+	for _, test := range dimensionToMetricTests {
+		t.Logf("Testing %s", test.in)
+		assert.Equal(t, test.out, pp.Apply(context.Background(), test.in, q))
+	}
+}
+
 func Test_postProcessParseDate_Apply(t *testing.T) {
 	const internalDateFormat = "2006-01-02"
 

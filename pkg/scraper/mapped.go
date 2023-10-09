@@ -511,6 +511,29 @@ func (p *postProcessFeetToCm) Apply(ctx context.Context, value string, q mappedQ
 	return strconv.Itoa(int(math.Round(centimeters)))
 }
 
+type postProcessDimensionToMetric bool
+
+func (p *postProcessDimensionToMetric) Apply(ctx context.Context, value string, q mappedQuery) string {
+	// https://regex101.com/r/N4wkja/1
+	cmRe := regexp.MustCompile(`(?P<height>(1|2)(?:[,.]?(\d\d)))(?:\s*(?:m|meters|cm|centimeters))?`)
+	if metricMatches := cmRe.FindStringSubmatch(value); metricMatches != nil {
+		return metricMatches[2] + metricMatches[3]
+	}
+
+	const foot_in_cm = 30.48
+	const inch_in_cm = 2.54
+
+	// https://regex101.com/r/C7fXeT/2
+	feetInchRe := regexp.MustCompile(`(?:(?P<feet>\d+(?:\.\d+)?)(?:'|\s*feet|\s*ft))?(?:\s*(?P<inches>\d+(?:\.\d+)?)?(?:"|\s*inches|\s*in)?)?`)
+	imperialMatches := feetInchRe.FindStringSubmatch(value)
+
+	feet, _ := strconv.ParseFloat(imperialMatches[1], 64)
+	inches, _ := strconv.ParseFloat(imperialMatches[2], 64)
+
+	var centimeters = feet*foot_in_cm + inches*inch_in_cm
+	return strconv.Itoa(int(math.Round(centimeters)))
+}
+
 type postProcessLbToKg bool
 
 func (p *postProcessLbToKg) Apply(ctx context.Context, value string, q mappedQuery) string {
@@ -524,13 +547,14 @@ func (p *postProcessLbToKg) Apply(ctx context.Context, value string, q mappedQue
 }
 
 type mappedPostProcessAction struct {
-	ParseDate    string                   `yaml:"parseDate"`
-	SubtractDays bool                     `yaml:"subtractDays"`
-	Replace      mappedRegexConfigs       `yaml:"replace"`
-	SubScraper   *mappedScraperAttrConfig `yaml:"subScraper"`
-	Map          map[string]string        `yaml:"map"`
-	FeetToCm     bool                     `yaml:"feetToCm"`
-	LbToKg       bool                     `yaml:"lbToKg"`
+	ParseDate         string                   `yaml:"parseDate"`
+	SubtractDays      bool                     `yaml:"subtractDays"`
+	Replace           mappedRegexConfigs       `yaml:"replace"`
+	SubScraper        *mappedScraperAttrConfig `yaml:"subScraper"`
+	Map               map[string]string        `yaml:"map"`
+	FeetToCm          bool                     `yaml:"feetToCm"`
+	DimensionToMetric bool                     `yaml:"dimensionToMetric"`
+	LbToKg            bool                     `yaml:"lbToKg"`
 }
 
 func (a mappedPostProcessAction) ToPostProcessAction() (postProcessAction, error) {
@@ -572,6 +596,14 @@ func (a mappedPostProcessAction) ToPostProcessAction() (postProcessAction, error
 		}
 		found = "feetToCm"
 		action := postProcessFeetToCm(a.FeetToCm)
+		ret = &action
+	}
+	if a.DimensionToMetric {
+		if found != "" {
+			return nil, fmt.Errorf("post-process actions must have a single field, found %s and %s", found, "dimensionToMetric")
+		}
+		found = "dimensionToMetric"
+		action := postProcessDimensionToMetric(a.DimensionToMetric)
 		ret = &action
 	}
 	if a.LbToKg {
