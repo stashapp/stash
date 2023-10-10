@@ -134,6 +134,9 @@ type ScanOptions struct {
 	HandlerRequiredFilters []Filter
 
 	ParallelTasks int
+
+	// When true files in path will be rescanned
+	ForceRescan bool
 }
 
 // Scan starts the scanning process.
@@ -1006,8 +1009,9 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing model
 
 	fileModTime := f.ModTime
 	updated := !fileModTime.Equal(base.ModTime)
+	forceRescan := s.options.ForceRescan
 
-	if !updated {
+	if !updated && !forceRescan {
 		return s.onUnchangedFile(ctx, f, existing)
 	}
 

@@ -21,6 +21,7 @@ The scan task accepts the following options:
 | Generate perceptual hashes | Generates perceptual hashes for scene deduplication and identification. |
 | Generate thumbnails for images | Generates thumbnails for image files. | 
 | Generate previews for image clips | Generates a gif/looping video as thumbnail for image clips/gifs. |
+| Force rescan | By default, Stash will only rescan existing files if the file's modified date has been updated since its previous scan. Stash will scan files in the path when this option is enabled, regardless of the mod time changed. Only enable this option if Stash is not picking up changes recently made to files. This option is mainly relevant to users using gallery zips. |
 
 # Auto Tagging
 See the [Auto Tagging](/help/AutoTagging.md) page.
