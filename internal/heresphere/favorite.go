@@ -40,18 +40,14 @@ func handleFavoriteTag(ctx context.Context, rs Routes, scn *models.Scene, user *
 
 	favTagVal := HeresphereVideoTag{Name: fmt.Sprintf("Tag:%s", favTag.Name)}
 
-	if *user.IsFavorite {
-		if user.Tags == nil {
-			user.Tags = &[]HeresphereVideoTag{favTagVal}
-		} else {
-			*user.Tags = append(*user.Tags, favTagVal)
-		}
-	} else {
-		if user.Tags == nil {
-			sceneTags := getVideoTags(ctx, rs, scn)
-			user.Tags = &sceneTags
-		}
+	if user.Tags == nil {
+		sceneTags := getVideoTags(ctx, rs, scn)
+		user.Tags = &sceneTags
+	}
 
+	if *user.IsFavorite {
+		*user.Tags = append(*user.Tags, favTagVal)
+	} else {
 		for i, tag := range *user.Tags {
 			if tag.Name == favTagVal.Name {
 				*user.Tags = append((*user.Tags)[:i], (*user.Tags)[i+1:]...)
