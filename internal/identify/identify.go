@@ -46,7 +46,7 @@ type SceneIdentifier struct {
 	SceneReaderUpdater SceneReaderUpdater
 	StudioReaderWriter models.StudioReaderWriter
 	PerformerCreator   PerformerCreator
-	TagCreatorFinder   TagCreatorFinder
+	TagFinderCreator   models.TagFinderCreator
 
 	DefaultOptions              *MetadataOptions
 	Sources                     []ScraperSource
@@ -126,10 +126,14 @@ func (t *SceneIdentifier) scrapeScene(ctx context.Context, txnManager txn.Manage
 
 // Returns a MetadataOptions object with any default options overwritten by source specific options
 func (t *SceneIdentifier) getOptions(source ScraperSource) MetadataOptions {
-	options := *t.DefaultOptions
+	var options MetadataOptions
+	if t.DefaultOptions != nil {
+		options = *t.DefaultOptions
+	}
 	if source.Options == nil {
 		return options
 	}
+
 	if source.Options.SetCoverImage != nil {
 		options.SetCoverImage = source.Options.SetCoverImage
 	}
@@ -151,6 +155,7 @@ func (t *SceneIdentifier) getOptions(source ScraperSource) MetadataOptions {
 	if source.Options.SkipSingleNamePerformerTag != nil && len(*source.Options.SkipSingleNamePerformerTag) > 0 {
 		options.SkipSingleNamePerformerTag = source.Options.SkipSingleNamePerformerTag
 	}
+
 	return options
 }
 
@@ -176,7 +181,7 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		sceneReader:              t.SceneReaderUpdater,
 		studioReaderWriter:       t.StudioReaderWriter,
 		performerCreator:         t.PerformerCreator,
-		tagCreatorFinder:         t.TagCreatorFinder,
+		tagCreator:               t.TagFinderCreator,
 		scene:                    s,
 		result:                   result,
 		fieldOptions:             fieldOptions,
@@ -332,7 +337,7 @@ func (t *SceneIdentifier) addTagToScene(ctx context.Context, txnManager txn.Mana
 			return err
 		}
 
-		ret, err := t.TagCreatorFinder.Find(ctx, tagID)
+		ret, err := t.TagFinderCreator.Find(ctx, tagID)
 		if err != nil {
 			logger.Infof("Added tag id %s to skipped scene %s", tagToAdd, s.Path)
 		} else {

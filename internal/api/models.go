@@ -9,8 +9,15 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
+
+type BaseFile interface{}
+
+type GalleryFile struct {
+	*models.BaseFile
+}
 
 var ErrTimestamp = errors.New("cannot parse Timestamp")
 

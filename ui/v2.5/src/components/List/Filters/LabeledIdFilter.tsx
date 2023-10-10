@@ -13,18 +13,19 @@ export const LabeledIdFilter: React.FC<ILabeledIdFilterProps> = ({
   criterion,
   onValueChanged,
 }) => {
+  const { criterionOption } = criterion;
+  const { inputType } = criterionOption;
+
   if (
-    criterion.criterionOption.type !== "performers" &&
-    criterion.criterionOption.type !== "studios" &&
-    criterion.criterionOption.type !== "parent_studios" &&
-    criterion.criterionOption.type !== "tags" &&
-    criterion.criterionOption.type !== "sceneTags" &&
-    criterion.criterionOption.type !== "performerTags" &&
-    criterion.criterionOption.type !== "parentTags" &&
-    criterion.criterionOption.type !== "childTags" &&
-    criterion.criterionOption.type !== "movies"
-  )
+    inputType !== "performers" &&
+    inputType !== "studios" &&
+    inputType !== "scene_tags" &&
+    inputType !== "performer_tags" &&
+    inputType !== "tags" &&
+    inputType !== "movies"
+  ) {
     return null;
+  }
 
   function onSelectionChanged(items: SelectObject[]) {
     onValueChanged(
@@ -38,7 +39,7 @@ export const LabeledIdFilter: React.FC<ILabeledIdFilterProps> = ({
   return (
     <Form.Group>
       <FilterSelect
-        type={criterion.criterionOption.type}
+        type={inputType}
         isMulti
         onSelect={onSelectionChanged}
         ids={criterion.value.map((labeled) => labeled.id)}

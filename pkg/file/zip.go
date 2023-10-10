@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/xWTF/chardet"
 
 	"golang.org/x/net/html/charset"
@@ -22,14 +23,14 @@ var (
 )
 
 // ZipFS is a file system backed by a zip file.
-type ZipFS struct {
+type zipFS struct {
 	*zip.Reader
 	zipFileCloser io.Closer
 	zipInfo       fs.FileInfo
 	zipPath       string
 }
 
-func newZipFS(fs FS, path string, info fs.FileInfo) (*ZipFS, error) {
+func newZipFS(fs models.FS, path string, info fs.FileInfo) (*zipFS, error) {
 	reader, err := fs.Open(path)
 	if err != nil {
 		return nil, err
@@ -85,7 +86,7 @@ func newZipFS(fs FS, path string, info fs.FileInfo) (*ZipFS, error) {
 		}
 	}
 
-	return &ZipFS{
+	return &zipFS{
 		Reader:        zipReader,
 		zipFileCloser: reader,
 		zipInfo:       info,
@@ -93,7 +94,7 @@ func newZipFS(fs FS, path string, info fs.FileInfo) (*ZipFS, error) {
 	}, nil
 }
 
-func (f *ZipFS) rel(name string) (string, error) {
+func (f *zipFS) rel(name string) (string, error) {
 	if f.zipPath == name {
 		return ".", nil
 	}
@@ -110,7 +111,7 @@ func (f *ZipFS) rel(name string) (string, error) {
 	return relName, nil
 }
 
-func (f *ZipFS) Stat(name string) (fs.FileInfo, error) {
+func (f *zipFS) Stat(name string) (fs.FileInfo, error) {
 	reader, err := f.Open(name)
 	if err != nil {
 		return nil, err
@@ -120,15 +121,15 @@ func (f *ZipFS) Stat(name string) (fs.FileInfo, error) {
 	return reader.Stat()
 }
 
-func (f *ZipFS) Lstat(name string) (fs.FileInfo, error) {
+func (f *zipFS) Lstat(name string) (fs.FileInfo, error) {
 	return f.Stat(name)
 }
 
-func (f *ZipFS) OpenZip(name string) (*ZipFS, error) {
+func (f *zipFS) OpenZip(name string) (models.ZipFS, error) {
 	return nil, errZipFSOpenZip
 }
 
-func (f *ZipFS) IsPathCaseSensitive(path string) (bool, error) {
+func (f *zipFS) IsPathCaseSensitive(path string) (bool, error) {
 	return true, nil
 }
 
@@ -145,7 +146,7 @@ func (f *zipReadDirFile) ReadDir(n int) ([]fs.DirEntry, error) {
 	return asReadDirFile.ReadDir(n)
 }
 
-func (f *ZipFS) Open(name string) (fs.ReadDirFile, error) {
+func (f *zipFS) Open(name string) (fs.ReadDirFile, error) {
 	relName, err := f.rel(name)
 	if err != nil {
 		return nil, err
@@ -161,12 +162,12 @@ func (f *ZipFS) Open(name string) (fs.ReadDirFile, error) {
 	}, nil
 }
 
-func (f *ZipFS) Close() error {
+func (f *zipFS) Close() error {
 	return f.zipFileCloser.Close()
 }
 
 // openOnly returns a ReadCloser where calling Close will close the zip fs as well.
-func (f *ZipFS) OpenOnly(name string) (io.ReadCloser, error) {
+func (f *zipFS) OpenOnly(name string) (io.ReadCloser, error) {
 	r, err := f.Open(name)
 	if err != nil {
 		return nil, err

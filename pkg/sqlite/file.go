@@ -13,7 +13,6 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"gopkg.in/guregu/null.v4"
 )
@@ -31,17 +30,17 @@ const (
 )
 
 type basicFileRow struct {
-	ID             file.ID       `db:"id" goqu:"skipinsert"`
-	Basename       string        `db:"basename"`
-	ZipFileID      null.Int      `db:"zip_file_id"`
-	ParentFolderID file.FolderID `db:"parent_folder_id"`
-	Size           int64         `db:"size"`
-	ModTime        Timestamp     `db:"mod_time"`
-	CreatedAt      Timestamp     `db:"created_at"`
-	UpdatedAt      Timestamp     `db:"updated_at"`
+	ID             models.FileID   `db:"id" goqu:"skipinsert"`
+	Basename       string          `db:"basename"`
+	ZipFileID      null.Int        `db:"zip_file_id"`
+	ParentFolderID models.FolderID `db:"parent_folder_id"`
+	Size           int64           `db:"size"`
+	ModTime        Timestamp       `db:"mod_time"`
+	CreatedAt      Timestamp       `db:"created_at"`
+	UpdatedAt      Timestamp       `db:"updated_at"`
 }
 
-func (r *basicFileRow) fromBasicFile(o file.BaseFile) {
+func (r *basicFileRow) fromBasicFile(o models.BaseFile) {
 	r.ID = o.ID
 	r.Basename = o.Basename
 	r.ZipFileID = nullIntFromFileIDPtr(o.ZipFileID)
@@ -53,20 +52,20 @@ func (r *basicFileRow) fromBasicFile(o file.BaseFile) {
 }
 
 type videoFileRow struct {
-	FileID           file.ID  `db:"file_id"`
-	Format           string   `db:"format"`
-	Width            int      `db:"width"`
-	Height           int      `db:"height"`
-	Duration         float64  `db:"duration"`
-	VideoCodec       string   `db:"video_codec"`
-	AudioCodec       string   `db:"audio_codec"`
-	FrameRate        float64  `db:"frame_rate"`
-	BitRate          int64    `db:"bit_rate"`
-	Interactive      bool     `db:"interactive"`
-	InteractiveSpeed null.Int `db:"interactive_speed"`
+	FileID           models.FileID `db:"file_id"`
+	Format           string        `db:"format"`
+	Width            int           `db:"width"`
+	Height           int           `db:"height"`
+	Duration         float64       `db:"duration"`
+	VideoCodec       string        `db:"video_codec"`
+	AudioCodec       string        `db:"audio_codec"`
+	FrameRate        float64       `db:"frame_rate"`
+	BitRate          int64         `db:"bit_rate"`
+	Interactive      bool          `db:"interactive"`
+	InteractiveSpeed null.Int      `db:"interactive_speed"`
 }
 
-func (f *videoFileRow) fromVideoFile(ff file.VideoFile) {
+func (f *videoFileRow) fromVideoFile(ff models.VideoFile) {
 	f.FileID = ff.ID
 	f.Format = ff.Format
 	f.Width = ff.Width
@@ -81,13 +80,13 @@ func (f *videoFileRow) fromVideoFile(ff file.VideoFile) {
 }
 
 type imageFileRow struct {
-	FileID file.ID `db:"file_id"`
-	Format string  `db:"format"`
-	Width  int     `db:"width"`
-	Height int     `db:"height"`
+	FileID models.FileID `db:"file_id"`
+	Format string        `db:"format"`
+	Width  int           `db:"width"`
+	Height int           `db:"height"`
 }
 
-func (f *imageFileRow) fromImageFile(ff file.ImageFile) {
+func (f *imageFileRow) fromImageFile(ff models.ImageFile) {
 	f.FileID = ff.ID
 	f.Format = ff.Format
 	f.Width = ff.Width
@@ -110,8 +109,8 @@ type videoFileQueryRow struct {
 	InteractiveSpeed null.Int    `db:"interactive_speed"`
 }
 
-func (f *videoFileQueryRow) resolve() *file.VideoFile {
-	return &file.VideoFile{
+func (f *videoFileQueryRow) resolve() *models.VideoFile {
+	return &models.VideoFile{
 		Format:           f.Format.String,
 		Width:            int(f.Width.Int64),
 		Height:           int(f.Height.Int64),
@@ -159,8 +158,8 @@ func (imageFileQueryRow) columns(table *table) []interface{} {
 	}
 }
 
-func (f *imageFileQueryRow) resolve() *file.ImageFile {
-	return &file.ImageFile{
+func (f *imageFileQueryRow) resolve() *models.ImageFile {
+	return &models.ImageFile{
 		Format: f.Format.String,
 		Width:  int(f.Width.Int64),
 		Height: int(f.Height.Int64),
@@ -186,15 +185,15 @@ type fileQueryRow struct {
 	imageFileQueryRow
 }
 
-func (r *fileQueryRow) resolve() file.File {
-	basic := &file.BaseFile{
-		ID: file.ID(r.FileID.Int64),
-		DirEntry: file.DirEntry{
+func (r *fileQueryRow) resolve() models.File {
+	basic := &models.BaseFile{
+		ID: models.FileID(r.FileID.Int64),
+		DirEntry: models.DirEntry{
 			ZipFileID: nullIntFileIDPtr(r.ZipFileID),
 			ModTime:   r.ModTime.Timestamp,
 		},
 		Path:           filepath.Join(r.FolderPath.String, r.Basename.String),
-		ParentFolderID: file.FolderID(r.ParentFolderID.Int64),
+		ParentFolderID: models.FolderID(r.ParentFolderID.Int64),
 		Basename:       r.Basename.String,
 		Size:           r.Size.Int64,
 		CreatedAt:      r.CreatedAt.Timestamp,
@@ -202,14 +201,14 @@ func (r *fileQueryRow) resolve() file.File {
 	}
 
 	if basic.ZipFileID != nil && r.ZipFolderPath.Valid && r.ZipBasename.Valid {
-		basic.ZipFile = &file.BaseFile{
+		basic.ZipFile = &models.BaseFile{
 			ID:       *basic.ZipFileID,
 			Path:     filepath.Join(r.ZipFolderPath.String, r.ZipBasename.String),
 			Basename: r.ZipBasename.String,
 		}
 	}
 
-	var ret file.File = basic
+	var ret models.File = basic
 
 	if r.videoFileQueryRow.Format.Valid {
 		vf := r.videoFileQueryRow.resolve()
@@ -228,7 +227,7 @@ func (r *fileQueryRow) resolve() file.File {
 	return ret
 }
 
-func appendFingerprintsUnique(vs []file.Fingerprint, v ...file.Fingerprint) []file.Fingerprint {
+func appendFingerprintsUnique(vs []models.Fingerprint, v ...models.Fingerprint) []models.Fingerprint {
 	for _, vv := range v {
 		found := false
 		for _, vsv := range vs {
@@ -245,7 +244,7 @@ func appendFingerprintsUnique(vs []file.Fingerprint, v ...file.Fingerprint) []fi
 	return vs
 }
 
-func (r *fileQueryRow) appendRelationships(i *file.BaseFile) {
+func (r *fileQueryRow) appendRelationships(i *models.BaseFile) {
 	if r.fingerprintQueryRow.valid() {
 		i.Fingerprints = appendFingerprintsUnique(i.Fingerprints, r.fingerprintQueryRow.resolve())
 	}
@@ -253,16 +252,16 @@ func (r *fileQueryRow) appendRelationships(i *file.BaseFile) {
 
 type fileQueryRows []fileQueryRow
 
-func (r fileQueryRows) resolve() []file.File {
-	var ret []file.File
-	var last file.File
-	var lastID file.ID
+func (r fileQueryRows) resolve() []models.File {
+	var ret []models.File
+	var last models.File
+	var lastID models.FileID
 
 	for _, row := range r {
-		if last == nil || lastID != file.ID(row.FileID.Int64) {
+		if last == nil || lastID != models.FileID(row.FileID.Int64) {
 			f := row.resolve()
 			last = f
-			lastID = file.ID(row.FileID.Int64)
+			lastID = models.FileID(row.FileID.Int64)
 			ret = append(ret, last)
 			continue
 		}
@@ -295,7 +294,7 @@ func (qb *FileStore) table() exp.IdentifierExpression {
 	return qb.tableMgr.table
 }
 
-func (qb *FileStore) Create(ctx context.Context, f file.File) error {
+func (qb *FileStore) Create(ctx context.Context, f models.File) error {
 	var r basicFileRow
 	r.fromBasicFile(*f.Base())
 
@@ -304,15 +303,15 @@ func (qb *FileStore) Create(ctx context.Context, f file.File) error {
 		return err
 	}
 
-	fileID := file.ID(id)
+	fileID := models.FileID(id)
 
 	// create extended stuff here
 	switch ef := f.(type) {
-	case *file.VideoFile:
+	case *models.VideoFile:
 		if err := qb.createVideoFile(ctx, fileID, *ef); err != nil {
 			return err
 		}
-	case *file.ImageFile:
+	case *models.ImageFile:
 		if err := qb.createImageFile(ctx, fileID, *ef); err != nil {
 			return err
 		}
@@ -333,7 +332,7 @@ func (qb *FileStore) Create(ctx context.Context, f file.File) error {
 	return nil
 }
 
-func (qb *FileStore) Update(ctx context.Context, f file.File) error {
+func (qb *FileStore) Update(ctx context.Context, f models.File) error {
 	var r basicFileRow
 	r.fromBasicFile(*f.Base())
 
@@ -345,11 +344,11 @@ func (qb *FileStore) Update(ctx context.Context, f file.File) error {
 
 	// create extended stuff here
 	switch ef := f.(type) {
-	case *file.VideoFile:
+	case *models.VideoFile:
 		if err := qb.updateOrCreateVideoFile(ctx, id, *ef); err != nil {
 			return err
 		}
-	case *file.ImageFile:
+	case *models.ImageFile:
 		if err := qb.updateOrCreateImageFile(ctx, id, *ef); err != nil {
 			return err
 		}
@@ -362,11 +361,11 @@ func (qb *FileStore) Update(ctx context.Context, f file.File) error {
 	return nil
 }
 
-func (qb *FileStore) Destroy(ctx context.Context, id file.ID) error {
+func (qb *FileStore) Destroy(ctx context.Context, id models.FileID) error {
 	return qb.tableMgr.destroyExisting(ctx, []int{int(id)})
 }
 
-func (qb *FileStore) createVideoFile(ctx context.Context, id file.ID, f file.VideoFile) error {
+func (qb *FileStore) createVideoFile(ctx context.Context, id models.FileID, f models.VideoFile) error {
 	var r videoFileRow
 	r.fromVideoFile(f)
 	r.FileID = id
@@ -377,7 +376,7 @@ func (qb *FileStore) createVideoFile(ctx context.Context, id file.ID, f file.Vid
 	return nil
 }
 
-func (qb *FileStore) updateOrCreateVideoFile(ctx context.Context, id file.ID, f file.VideoFile) error {
+func (qb *FileStore) updateOrCreateVideoFile(ctx context.Context, id models.FileID, f models.VideoFile) error {
 	exists, err := videoFileTableMgr.idExists(ctx, id)
 	if err != nil {
 		return err
@@ -397,7 +396,7 @@ func (qb *FileStore) updateOrCreateVideoFile(ctx context.Context, id file.ID, f 
 	return nil
 }
 
-func (qb *FileStore) createImageFile(ctx context.Context, id file.ID, f file.ImageFile) error {
+func (qb *FileStore) createImageFile(ctx context.Context, id models.FileID, f models.ImageFile) error {
 	var r imageFileRow
 	r.fromImageFile(f)
 	r.FileID = id
@@ -408,7 +407,7 @@ func (qb *FileStore) createImageFile(ctx context.Context, id file.ID, f file.Ima
 	return nil
 }
 
-func (qb *FileStore) updateOrCreateImageFile(ctx context.Context, id file.ID, f file.ImageFile) error {
+func (qb *FileStore) updateOrCreateImageFile(ctx context.Context, id models.FileID, f models.ImageFile) error {
 	exists, err := imageFileTableMgr.idExists(ctx, id)
 	if err != nil {
 		return err
@@ -515,7 +514,7 @@ func (qb *FileStore) countDataset() *goqu.SelectDataset {
 	)
 }
 
-func (qb *FileStore) get(ctx context.Context, q *goqu.SelectDataset) (file.File, error) {
+func (qb *FileStore) get(ctx context.Context, q *goqu.SelectDataset) (models.File, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
 		return nil, err
@@ -528,7 +527,7 @@ func (qb *FileStore) get(ctx context.Context, q *goqu.SelectDataset) (file.File,
 	return ret[0], nil
 }
 
-func (qb *FileStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]file.File, error) {
+func (qb *FileStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]models.File, error) {
 	const single = false
 	var rows fileQueryRows
 	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
@@ -546,8 +545,8 @@ func (qb *FileStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]file
 	return rows.resolve(), nil
 }
 
-func (qb *FileStore) Find(ctx context.Context, ids ...file.ID) ([]file.File, error) {
-	var files []file.File
+func (qb *FileStore) Find(ctx context.Context, ids ...models.FileID) ([]models.File, error) {
+	var files []models.File
 	for _, id := range ids {
 		file, err := qb.find(ctx, id)
 		if err != nil {
@@ -564,7 +563,7 @@ func (qb *FileStore) Find(ctx context.Context, ids ...file.ID) ([]file.File, err
 	return files, nil
 }
 
-func (qb *FileStore) find(ctx context.Context, id file.ID) (file.File, error) {
+func (qb *FileStore) find(ctx context.Context, id models.FileID) (models.File, error) {
 	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
 
 	ret, err := qb.get(ctx, q)
@@ -576,7 +575,7 @@ func (qb *FileStore) find(ctx context.Context, id file.ID) (file.File, error) {
 }
 
 // FindByPath returns the first file that matches the given path. Wildcard characters are supported.
-func (qb *FileStore) FindByPath(ctx context.Context, p string) (file.File, error) {
+func (qb *FileStore) FindByPath(ctx context.Context, p string) (models.File, error) {
 
 	ret, err := qb.FindAllByPath(ctx, p)
 
@@ -593,7 +592,7 @@ func (qb *FileStore) FindByPath(ctx context.Context, p string) (file.File, error
 
 // FindAllByPath returns all the files that match the given path.
 // Wildcard characters are supported.
-func (qb *FileStore) FindAllByPath(ctx context.Context, p string) ([]file.File, error) {
+func (qb *FileStore) FindAllByPath(ctx context.Context, p string) ([]models.File, error) {
 	// separate basename from path
 	basename := filepath.Base(p)
 	dirName := filepath.Dir(p)
@@ -646,7 +645,7 @@ func (qb *FileStore) allInPaths(q *goqu.SelectDataset, p []string) *goqu.SelectD
 // FindAllByPaths returns the all files that are within any of the given paths.
 // Returns all if limit is < 0.
 // Returns all files if p is empty.
-func (qb *FileStore) FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]file.File, error) {
+func (qb *FileStore) FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]models.File, error) {
 	table := qb.table()
 	folderTable := folderTableMgr.table
 
@@ -680,7 +679,7 @@ func (qb *FileStore) CountAllInPaths(ctx context.Context, p []string) (int, erro
 	return count(ctx, q)
 }
 
-func (qb *FileStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]file.File, error) {
+func (qb *FileStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]models.File, error) {
 	table := qb.table()
 
 	q := qb.selectDataset().Prepared(true).Where(
@@ -692,7 +691,7 @@ func (qb *FileStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset)
 	return qb.getMany(ctx, q)
 }
 
-func (qb *FileStore) FindByFingerprint(ctx context.Context, fp file.Fingerprint) ([]file.File, error) {
+func (qb *FileStore) FindByFingerprint(ctx context.Context, fp models.Fingerprint) ([]models.File, error) {
 	fingerprintTable := fingerprintTableMgr.table
 
 	fingerprints := fingerprintTable.As("fp")
@@ -705,7 +704,7 @@ func (qb *FileStore) FindByFingerprint(ctx context.Context, fp file.Fingerprint)
 	return qb.findBySubquery(ctx, sq)
 }
 
-func (qb *FileStore) FindByZipFileID(ctx context.Context, zipFileID file.ID) ([]file.File, error) {
+func (qb *FileStore) FindByZipFileID(ctx context.Context, zipFileID models.FileID) ([]models.File, error) {
 	table := qb.table()
 
 	q := qb.selectDataset().Prepared(true).Where(
@@ -716,7 +715,7 @@ func (qb *FileStore) FindByZipFileID(ctx context.Context, zipFileID file.ID) ([]
 }
 
 // FindByFileInfo finds files that match the base name, size, and mod time of the given file.
-func (qb *FileStore) FindByFileInfo(ctx context.Context, info fs.FileInfo, size int64) ([]file.File, error) {
+func (qb *FileStore) FindByFileInfo(ctx context.Context, info fs.FileInfo, size int64) ([]models.File, error) {
 	table := qb.table()
 
 	modTime := info.ModTime().Format(time.RFC3339)
@@ -730,7 +729,7 @@ func (qb *FileStore) FindByFileInfo(ctx context.Context, info fs.FileInfo, size 
 	return qb.getMany(ctx, q)
 }
 
-func (qb *FileStore) CountByFolderID(ctx context.Context, folderID file.FolderID) (int, error) {
+func (qb *FileStore) CountByFolderID(ctx context.Context, folderID models.FolderID) (int, error) {
 	table := qb.table()
 
 	q := qb.countDataset().Prepared(true).Where(
@@ -740,7 +739,7 @@ func (qb *FileStore) CountByFolderID(ctx context.Context, folderID file.FolderID
 	return count(ctx, q)
 }
 
-func (qb *FileStore) IsPrimary(ctx context.Context, fileID file.ID) (bool, error) {
+func (qb *FileStore) IsPrimary(ctx context.Context, fileID models.FileID) (bool, error) {
 	joinTables := []exp.IdentifierExpression{
 		scenesFilesJoinTable,
 		galleriesFilesJoinTable,
@@ -867,9 +866,9 @@ func (qb *FileStore) Query(ctx context.Context, options models.FileQueryOptions)
 		return nil, fmt.Errorf("error finding IDs: %w", err)
 	}
 
-	result.IDs = make([]file.ID, len(idsResult))
+	result.IDs = make([]models.FileID, len(idsResult))
 	for i, id := range idsResult {
-		result.IDs[i] = file.ID(id)
+		result.IDs[i] = models.FileID(id)
 	}
 
 	return result, nil
@@ -929,10 +928,10 @@ func (qb *FileStore) captionRepository() *captionRepository {
 	}
 }
 
-func (qb *FileStore) GetCaptions(ctx context.Context, fileID file.ID) ([]*models.VideoCaption, error) {
+func (qb *FileStore) GetCaptions(ctx context.Context, fileID models.FileID) ([]*models.VideoCaption, error) {
 	return qb.captionRepository().get(ctx, fileID)
 }
 
-func (qb *FileStore) UpdateCaptions(ctx context.Context, fileID file.ID, captions []*models.VideoCaption) error {
+func (qb *FileStore) UpdateCaptions(ctx context.Context, fileID models.FileID, captions []*models.VideoCaption) error {
 	return qb.captionRepository().replace(ctx, fileID, captions)
 }

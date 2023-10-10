@@ -5,6 +5,7 @@ import {
   MultiValueGenericProps,
   SingleValueProps,
 } from "react-select";
+import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -170,6 +171,13 @@ export const PerformerSelect: React.FC<
   return (
     <FilterSelectComponent<Performer, boolean>
       {...props}
+      className={cx(
+        "performer-select",
+        {
+          "performer-select-active": props.active,
+        },
+        props.className
+      )}
       loadOptions={loadPerformers}
       getNamedObject={getNamedObject}
       isValidNewOption={isValidNewOption}

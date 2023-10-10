@@ -14,7 +14,6 @@ import {
   Criterion,
   CriterionOption,
 } from "src/models/list-filter/criteria/criterion";
-import { makeCriteria } from "src/models/list-filter/criteria/factory";
 import { FormattedMessage, useIntl } from "react-intl";
 import { ConfigurationContext } from "src/hooks/Config";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -243,17 +242,11 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   }, [currentFilter.mode]);
 
   const criterionOptions = useMemo(() => {
-    const filteredOptions = filterOptions.criterionOptions.filter((o) => {
-      return o.type !== "none";
-    });
-
-    filteredOptions.sort((a, b) => {
+    return [...filterOptions.criterionOptions].sort((a, b) => {
       return intl
         .formatMessage({ id: a.messageID })
         .localeCompare(intl.formatMessage({ id: b.messageID }));
     });
-
-    return filteredOptions;
   }, [intl, filterOptions.criterionOptions]);
 
   const optionSelected = useCallback(
@@ -270,11 +263,11 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
       if (existing) {
         setCriterion(existing);
       } else {
-        const newCriterion = makeCriteria(configuration, option.type);
+        const newCriterion = filter.makeCriterion(option.type);
         setCriterion(newCriterion);
       }
     },
-    [criteria, configuration]
+    [filter, criteria]
   );
 
   const ui = (configuration?.ui ?? {}) as IUIConfig;

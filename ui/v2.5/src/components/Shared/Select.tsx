@@ -29,7 +29,7 @@ import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import { TagPopover } from "../Tags/TagPopover";
 import { defaultMaxOptionsShown, IUIConfig } from "src/core/config";
-import { useDebouncedSetState } from "src/hooks/debounce";
+import { useDebounce } from "src/hooks/debounce";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { PerformerIDSelect } from "../Performers/PerformerSelect";
 
@@ -44,12 +44,9 @@ interface ITypeProps {
   type?:
     | "performers"
     | "studios"
-    | "parent_studios"
     | "tags"
-    | "sceneTags"
-    | "performerTags"
-    | "parentTags"
-    | "childTags"
+    | "scene_tags"
+    | "performer_tags"
     | "movies";
 }
 interface IFilterProps {
@@ -355,7 +352,7 @@ export const GallerySelect: React.FC<ITitledSelect> = (props) => {
     value: g.id,
   }));
 
-  const onInputChange = useDebouncedSetState(setQuery, 500);
+  const onInputChange = useDebounce(setQuery, 500);
 
   const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
     const selected = getSelectedItems(selectedItems);
@@ -406,7 +403,7 @@ export const SceneSelect: React.FC<ITitledSelect> = (props) => {
     value: s.id,
   }));
 
-  const onInputChange = useDebouncedSetState(setQuery, 500);
+  const onInputChange = useDebounce(setQuery, 500);
 
   const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
     const selected = getSelectedItems(selectedItems);
@@ -456,7 +453,7 @@ export const ImageSelect: React.FC<ITitledSelect> = (props) => {
     value: s.id,
   }));
 
-  const onInputChange = useDebouncedSetState(setQuery, 500);
+  const onInputChange = useDebounce(setQuery, 500);
 
   const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
     const selected = getSelectedItems(selectedItems);
@@ -770,12 +767,12 @@ export const TagSelect: React.FC<
       };
     }
 
-    const id = (optionProps.data as Option & { __isNew__: boolean }).__isNew__
-      ? ""
-      : optionProps.data.value;
+    const id = optionProps.data.value;
+    const hide = (optionProps.data as Option & { __isNew__: boolean })
+      .__isNew__;
 
     return (
-      <TagPopover id={id} placement={props.hoverPlacement}>
+      <TagPopover id={id} hide={hide} placement={props.hoverPlacement}>
         <reactSelectComponents.Option {...thisOptionProps} />
       </TagPopover>
     );
@@ -865,7 +862,7 @@ export const TagSelect: React.FC<
 export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) => {
   if (props.type === "performers") {
     return <PerformerSelect {...props} creatable={false} />;
-  } else if (props.type === "studios" || props.type === "parent_studios") {
+  } else if (props.type === "studios") {
     return <StudioSelect {...props} creatable={false} />;
   } else if (props.type === "movies") {
     return <MovieSelect {...props} creatable={false} />;

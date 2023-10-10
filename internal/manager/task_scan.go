@@ -96,17 +96,17 @@ func newExtensionConfig(c *config.Instance) extensionConfig {
 }
 
 type fileCounter interface {
-	CountByFileID(ctx context.Context, fileID file.ID) (int, error)
+	CountByFileID(ctx context.Context, fileID models.FileID) (int, error)
 }
 
 type galleryFinder interface {
 	fileCounter
-	FindByFolderID(ctx context.Context, folderID file.FolderID) ([]*models.Gallery, error)
+	FindByFolderID(ctx context.Context, folderID models.FolderID) ([]*models.Gallery, error)
 }
 
 type sceneFinder interface {
 	fileCounter
-	FindByPrimaryFileID(ctx context.Context, fileID file.ID) ([]*models.Scene, error)
+	FindByPrimaryFileID(ctx context.Context, fileID models.FileID) ([]*models.Scene, error)
 }
 
 // handlerRequiredFilter returns true if a File's handler needs to be executed despite the file not being updated.
@@ -139,7 +139,7 @@ func newHandlerRequiredFilter(c *config.Instance) *handlerRequiredFilter {
 	}
 }
 
-func (f *handlerRequiredFilter) Accept(ctx context.Context, ff file.File) bool {
+func (f *handlerRequiredFilter) Accept(ctx context.Context, ff models.File) bool {
 	path := ff.Base().Path
 	isVideoFile := useAsVideo(path)
 	isImageFile := useAsImage(path)
@@ -213,7 +213,7 @@ func (f *handlerRequiredFilter) Accept(ctx context.Context, ff file.File) bool {
 
 		// clean captions - scene handler handles this as well, but
 		// unchanged files aren't processed by the scene handler
-		videoFile, _ := ff.(*file.VideoFile)
+		videoFile, _ := ff.(*models.VideoFile)
 		if videoFile != nil {
 			if err := video.CleanCaptions(ctx, videoFile, f.txnManager, f.CaptionUpdater); err != nil {
 				logger.Errorf("Error cleaning captions: %v", err)
@@ -370,7 +370,7 @@ type imageGenerators struct {
 	progress  *job.Progress
 }
 
-func (g *imageGenerators) Generate(ctx context.Context, i *models.Image, f file.File) error {
+func (g *imageGenerators) Generate(ctx context.Context, i *models.Image, f models.File) error {
 	const overwrite = false
 
 	progress := g.progress
@@ -387,12 +387,12 @@ func (g *imageGenerators) Generate(ctx context.Context, i *models.Image, f file.
 	}
 
 	// avoid adding a task if the file isn't a video file
-	_, isVideo := f.(*file.VideoFile)
+	_, isVideo := f.(*models.VideoFile)
 	if isVideo && t.ScanGenerateClipPreviews {
 		// this is a bit of a hack: the task requires files to be loaded, but
 		// we don't really need to since we already have the file
 		ii := *i
-		ii.Files = models.NewRelatedFiles([]file.File{f})
+		ii.Files = models.NewRelatedFiles([]models.File{f})
 
 		progress.AddTotal(1)
 		previewsFn := func(ctx context.Context) {
@@ -415,7 +415,7 @@ func (g *imageGenerators) Generate(ctx context.Context, i *models.Image, f file.
 	return nil
 }
 
-func (g *imageGenerators) generateThumbnail(ctx context.Context, i *models.Image, f file.File) error {
+func (g *imageGenerators) generateThumbnail(ctx context.Context, i *models.Image, f models.File) error {
 	thumbPath := GetInstance().Paths.Generated.GetThumbnailPath(i.Checksum, models.DefaultGthumbWidth)
 	exists, _ := fsutil.FileExists(thumbPath)
 	if exists {
@@ -424,12 +424,12 @@ func (g *imageGenerators) generateThumbnail(ctx context.Context, i *models.Image
 
 	path := f.Base().Path
 
-	asFrame, ok := f.(file.VisualFile)
+	vf, ok := f.(models.VisualFile)
 	if !ok {
-		return fmt.Errorf("file %s does not implement Frame", path)
+		return fmt.Errorf("file %s is not a visual file", path)
 	}
 
-	if asFrame.GetHeight() <= models.DefaultGthumbWidth && asFrame.GetWidth() <= models.DefaultGthumbWidth {
+	if vf.GetHeight() <= models.DefaultGthumbWidth && vf.GetWidth() <= models.DefaultGthumbWidth {
 		return nil
 	}
 
@@ -466,7 +466,7 @@ type sceneGenerators struct {
 	progress  *job.Progress
 }
 
-func (g *sceneGenerators) Generate(ctx context.Context, s *models.Scene, f *file.VideoFile) error {
+func (g *sceneGenerators) Generate(ctx context.Context, s *models.Scene, f *models.VideoFile) error {
 	const overwrite = false
 
 	progress := g.progress

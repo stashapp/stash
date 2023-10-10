@@ -3,16 +3,16 @@ import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import {
   ScrapeDialog,
-  ScrapeResult,
   ScrapedInputGroupRow,
   ScrapedImageRow,
   ScrapeDialogRow,
   ScrapedTextAreaRow,
-} from "src/components/Shared/ScrapeDialog";
+} from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import { StudioSelect } from "src/components/Shared/Select";
 import DurationUtils from "src/utils/duration";
 import { useStudioCreate } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
+import { ScrapeResult } from "src/components/Shared/ScrapeDialog/scrapeResult";
 
 function renderScrapedStudio(
   result: ScrapeResult<string>,
@@ -84,7 +84,10 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
   const [duration, setDuration] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(
       DurationUtils.secondsToString(props.movie.duration || 0),
-      props.scraped.duration
+      // convert seconds to string if it's a number
+      props.scraped.duration && !isNaN(+props.scraped.duration)
+        ? DurationUtils.secondsToString(parseInt(props.scraped.duration, 10))
+        : props.scraped.duration
     )
   );
   const [date, setDate] = useState<ScrapeResult<string>>(

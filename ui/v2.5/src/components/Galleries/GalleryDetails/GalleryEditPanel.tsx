@@ -25,7 +25,7 @@ import {
 } from "src/components/Shared/Select";
 import { Icon } from "src/components/Shared/Icon";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { URLField } from "src/components/Shared/URLField";
+import { URLListInput } from "src/components/Shared/URLField";
 import { useToast } from "src/hooks/Toast";
 import { useFormik } from "formik";
 import FormUtils from "src/utils/form";
@@ -42,6 +42,7 @@ import {
   Performer,
   PerformerSelect,
 } from "src/components/Performers/PerformerSelect";
+import { yupDateString, yupUniqueStringList } from "src/utils/yup";
 
 interface IProps {
   gallery: Partial<GQL.GalleryDataFragment>;
@@ -84,20 +85,8 @@ export const GalleryEditPanel: React.FC<IProps> = ({
 
   const schema = yup.object({
     title: titleRequired ? yup.string().required() : yup.string().ensure(),
-    url: yup.string().ensure(),
-    date: yup
-      .string()
-      .ensure()
-      .test({
-        name: "date",
-        test: (value) => {
-          if (!value) return true;
-          if (!value.match(/^\d{4}-\d{2}-\d{2}$/)) return false;
-          if (Number.isNaN(Date.parse(value))) return false;
-          return true;
-        },
-        message: intl.formatMessage({ id: "validation.date_invalid_form" }),
-      }),
+    urls: yupUniqueStringList("urls"),
+    date: yupDateString(intl),
     rating100: yup.number().nullable().defined(),
     studio_id: yup.string().required().nullable(),
     performer_ids: yup.array(yup.string().required()).defined(),
@@ -108,7 +97,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
 
   const initialValues = {
     title: gallery?.title ?? "",
-    url: gallery?.url ?? "",
+    urls: gallery?.urls ?? [],
     date: gallery?.date ?? "",
     rating100: gallery?.rating100 ?? null,
     studio_id: gallery?.studio?.id ?? null,
@@ -255,6 +244,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     return (
       <GalleryScrapeDialog
         gallery={currentGallery}
+        galleryPerformers={performers}
         scraped={scrapedGallery}
         onClose={(data) => {
           onScrapeDialogClosed(data);
@@ -312,8 +302,8 @@ export const GalleryEditPanel: React.FC<IProps> = ({
       formik.setFieldValue("date", galleryData.date);
     }
 
-    if (galleryData.url) {
-      formik.setFieldValue("url", galleryData.url);
+    if (galleryData.urls) {
+      formik.setFieldValue("url", galleryData.urls);
     }
 
     if (galleryData.studio?.stored_id) {
@@ -350,13 +340,13 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     }
   }
 
-  async function onScrapeGalleryURL() {
-    if (!formik.values.url) {
+  async function onScrapeGalleryURL(url: string) {
+    if (!url) {
       return;
     }
     setIsLoading(true);
     try {
-      const result = await queryScrapeGalleryURL(formik.values.url);
+      const result = await queryScrapeGalleryURL(url);
       if (!result || !result.data || !result.data.scrapeGalleryURL) {
         return;
       }
@@ -390,6 +380,14 @@ export const GalleryEditPanel: React.FC<IProps> = ({
   }
 
   if (isLoading) return <LoadingIndicator />;
+
+  const urlsErrors = Array.isArray(formik.errors.urls)
+    ? formik.errors.urls[0]
+    : formik.errors.urls;
+  const urlsErrorMsg = urlsErrors
+    ? intl.formatMessage({ id: "validation.urls_must_be_unique" })
+    : undefined;
+  const urlsErrorIdx = urlsErrors?.split(" ").map((e) => parseInt(e));
 
   return (
     <div id="gallery-edit-details">
@@ -427,18 +425,20 @@ export const GalleryEditPanel: React.FC<IProps> = ({
         <div className="form-container row px-3">
           <div className="col-12 col-lg-6 col-xl-12">
             {renderTextField("title", intl.formatMessage({ id: "title" }))}
-            <Form.Group controlId="url" as={Row}>
+            <Form.Group controlId="urls" as={Row}>
               <Col xs={3} className="pr-0 url-label">
                 <Form.Label className="col-form-label">
-                  <FormattedMessage id="url" />
+                  <FormattedMessage id="urls" />
                 </Form.Label>
               </Col>
               <Col xs={9}>
-                <URLField
-                  {...formik.getFieldProps("url")}
-                  onScrapeClick={onScrapeGalleryURL}
+                <URLListInput
+                  value={formik.values.urls ?? []}
+                  setValue={(value) => formik.setFieldValue("urls", value)}
+                  errors={urlsErrorMsg}
+                  errorIdx={urlsErrorIdx}
+                  onScrapeClick={(url) => onScrapeGalleryURL(url)}
                   urlScrapable={urlScrapable}
-                  isInvalid={!!formik.getFieldMeta("url").error}
                 />
               </Col>
             </Form.Group>

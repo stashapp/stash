@@ -11,7 +11,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	"gopkg.in/guregu/null.v4"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil"
@@ -707,12 +706,12 @@ type relatedFilesTable struct {
 }
 
 // type scenesFilesRow struct {
-// 	SceneID int     `db:"scene_id"`
-// 	Primary bool    `db:"primary"`
-// 	FileID  file.ID `db:"file_id"`
+// 	SceneID int           `db:"scene_id"`
+// 	Primary bool          `db:"primary"`
+// 	FileID  models.FileID `db:"file_id"`
 // }
 
-func (t *relatedFilesTable) insertJoin(ctx context.Context, id int, primary bool, fileID file.ID) error {
+func (t *relatedFilesTable) insertJoin(ctx context.Context, id int, primary bool, fileID models.FileID) error {
 	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "primary", "file_id").Vals(
 		goqu.Vals{id, primary, fileID},
 	)
@@ -724,7 +723,7 @@ func (t *relatedFilesTable) insertJoin(ctx context.Context, id int, primary bool
 	return nil
 }
 
-func (t *relatedFilesTable) insertJoins(ctx context.Context, id int, firstPrimary bool, fileIDs []file.ID) error {
+func (t *relatedFilesTable) insertJoins(ctx context.Context, id int, firstPrimary bool, fileIDs []models.FileID) error {
 	for i, fk := range fileIDs {
 		if err := t.insertJoin(ctx, id, firstPrimary && i == 0, fk); err != nil {
 			return err
@@ -734,7 +733,7 @@ func (t *relatedFilesTable) insertJoins(ctx context.Context, id int, firstPrimar
 	return nil
 }
 
-func (t *relatedFilesTable) replaceJoins(ctx context.Context, id int, fileIDs []file.ID) error {
+func (t *relatedFilesTable) replaceJoins(ctx context.Context, id int, fileIDs []models.FileID) error {
 	if err := t.destroy(ctx, []int{id}); err != nil {
 		return err
 	}
@@ -744,7 +743,7 @@ func (t *relatedFilesTable) replaceJoins(ctx context.Context, id int, fileIDs []
 }
 
 // destroyJoins destroys all entries in the table with the provided fileIDs
-func (t *relatedFilesTable) destroyJoins(ctx context.Context, fileIDs []file.ID) error {
+func (t *relatedFilesTable) destroyJoins(ctx context.Context, fileIDs []models.FileID) error {
 	q := dialect.Delete(t.table.table).Where(t.table.table.Col("file_id").In(fileIDs))
 
 	if _, err := exec(ctx, q); err != nil {
@@ -754,7 +753,7 @@ func (t *relatedFilesTable) destroyJoins(ctx context.Context, fileIDs []file.ID)
 	return nil
 }
 
-func (t *relatedFilesTable) setPrimary(ctx context.Context, id int, fileID file.ID) error {
+func (t *relatedFilesTable) setPrimary(ctx context.Context, id int, fileID models.FileID) error {
 	table := t.table.table
 
 	q := dialect.Update(table).Prepared(true).Set(goqu.Record{
