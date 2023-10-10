@@ -315,7 +315,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     }
 
     if (galleryData.urls) {
-      formik.setFieldValue("url", galleryData.urls);
+      formik.setFieldValue("urls", galleryData.urls);
     }
 
     if (galleryData.studio?.stored_id) {
