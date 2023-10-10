@@ -43,13 +43,14 @@ func (s *scriptScraper) runScraperScript(ctx context.Context, inString string, o
 		if pythonPath != "" {
 			// Users commonly set the path to a folder instead of the executable
 			isFile, err := fsutil.FileExists(pythonPath)
-			if err != nil {
-				logger.Warnf("Unable to validate python path: %s", err)
-			} else if !isFile {
-				logger.Warnf("Python path is not a file: %s", pythonPath)
-			} else {
-				logger.Debugf("Using configured python path: %s", *p)
+			switch {
+			case err == nil && isFile:
+				logger.Debugf("Using configured python path: %s", pythonPath)
 				p = python.New(pythonPath)
+			case err == nil && !isFile:
+				logger.Warnf("Python path is not a file: %s", pythonPath)
+			case err != nil:
+				logger.Warnf("Unable to validate python path: %s", err)
 			}
 		} else {
 			p, _ = python.Resolve()
