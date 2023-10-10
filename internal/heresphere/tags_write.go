@@ -38,9 +38,6 @@ func handleTags(ctx context.Context, scn *models.Scene, user *HeresphereAuthReq,
 		if handleAddMarker(ctx, rs, tagI, scn) {
 			continue
 		}
-		if handleAddMovie(ctx, rs, tagI, scn, ret) {
-			continue
-		}
 		if handleAddStudio(ctx, rs, tagI, scn, ret) {
 			continue
 		}
@@ -187,29 +184,6 @@ func handleAddMarker(ctx context.Context, rs Routes, tag HeresphereVideoTag, sce
 				logger.Errorf("Heresphere handleTags SceneMarker.Create error: %s\n", err.Error())
 			}
 		}
-	}
-
-	return true
-}
-func handleAddMovie(ctx context.Context, rs Routes, tag HeresphereVideoTag, scene *models.Scene, ret *scene.UpdateSet) bool {
-	if !strings.HasPrefix(tag.Name, "Movie:") {
-		return false
-	}
-
-	after := strings.TrimPrefix(tag.Name, "Movie:")
-
-	var err error
-	var tagMod *models.Movie
-	if err := txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
-		// Search for performer
-		tagMod, err = rs.Repository.Movie.FindByName(ctx, after, true)
-		return err
-	}); err == nil {
-		ret.Partial.MovieIDs.Mode = models.RelationshipUpdateModeSet
-		ret.Partial.MovieIDs.AddUnique(models.MoviesScenes{
-			MovieID:    tagMod.ID,
-			SceneIndex: &scene.ID,
-		})
 	}
 
 	return true
