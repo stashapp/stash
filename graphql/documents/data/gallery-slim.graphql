@@ -2,7 +2,7 @@ fragment SlimGalleryData on Gallery {
   id
   title
   date
-  url
+  urls
   details
   rating100
   organized

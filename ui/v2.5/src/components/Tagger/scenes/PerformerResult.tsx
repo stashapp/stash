@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
-import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "src/components/Shared/Icon";
@@ -43,9 +42,12 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
       stashID.stash_id === performer.remote_site_id
   );
 
-  const [selectedPerformer, setSelectedPerformer] = useState<
-    Performer | undefined
-  >();
+  const [selectedPerformer, setSelectedPerformer] = useState<Performer>();
+
+  function selectPerformer(selected: Performer | undefined) {
+    setSelectedPerformer(selected);
+    setSelectedID(selected?.id);
+  }
 
   useEffect(() => {
     if (
@@ -56,18 +58,16 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
     }
   }, [performerData?.findPerformer, selectedID]);
 
-  const handlePerformerSelect = (performers: Performer[]) => {
+  const handleSelect = (performers: Performer[]) => {
     if (performers.length) {
-      setSelectedPerformer(performers[0]);
-      setSelectedID(performers[0].id);
+      selectPerformer(performers[0]);
     } else {
-      setSelectedPerformer(undefined);
-      setSelectedID(undefined);
+      selectPerformer(undefined);
     }
   };
 
-  const handlePerformerSkip = () => {
-    setSelectedID(undefined);
+  const handleSkip = () => {
+    selectPerformer(undefined);
   };
 
   if (stashLoading) return <div>Loading performer</div>;
@@ -83,7 +83,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
           <OptionalField
             exclude={selectedID === undefined}
             setExclude={(v) =>
-              v ? handlePerformerSkip() : setSelectedID(matchedPerformer.id)
+              v ? handleSkip() : setSelectedID(matchedPerformer.id)
             }
           >
             <div>
@@ -127,16 +127,14 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
         </Button>
         <Button
           variant={selectedSource === "skip" ? "primary" : "secondary"}
-          onClick={() => handlePerformerSkip()}
+          onClick={() => handleSkip()}
         >
           <FormattedMessage id="actions.skip" />
         </Button>
         <PerformerSelect
           values={selectedPerformer ? [selectedPerformer] : []}
-          onSelect={handlePerformerSelect}
-          className={cx("performer-select", {
-            "performer-select-active": selectedSource === "existing",
-          })}
+          onSelect={handleSelect}
+          active={selectedSource === "existing"}
           isClearable={false}
         />
         {maybeRenderLinkButton()}

@@ -59,7 +59,7 @@ func createFullGallery(id int) models.Gallery {
 		Details:   details,
 		Rating:    &rating,
 		Organized: organized,
-		URL:       url,
+		URLs:      models.NewRelatedStrings([]string{url}),
 		CreatedAt: createTime,
 		UpdatedAt: updateTime,
 	}
@@ -85,7 +85,7 @@ func createFullJSONGallery() *jsonschema.Gallery {
 		Details:   details,
 		Rating:    rating,
 		Organized: organized,
-		URL:       url,
+		URLs:      []string{url},
 		ZipFiles:  []string{path},
 		CreatedAt: json.JSONTime{
 			Time: createTime,

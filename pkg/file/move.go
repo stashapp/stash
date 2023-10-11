@@ -212,3 +212,34 @@ func (m *Mover) rollback() {
 		}
 	}
 }
+
+// correctSubFolderHierarchy sets the path of all contained folders to be relative to the given folder.
+// It does not move the folder hierarchy in the filesystem.
+func correctSubFolderHierarchy(ctx context.Context, rw models.FolderReaderWriter, folder *models.Folder) error {
+	folders, err := rw.FindByParentFolderID(ctx, folder.ID)
+	if err != nil {
+		return fmt.Errorf("finding contained folders in folder %s: %w", folder.Path, err)
+	}
+
+	folderPath := folder.Path
+
+	for _, f := range folders {
+		oldPath := f.Path
+		folderBasename := filepath.Base(f.Path)
+		correctPath := filepath.Join(folderPath, folderBasename)
+
+		logger.Debugf("updating folder %s to %s", oldPath, correctPath)
+
+		f.Path = correctPath
+		if err := rw.Update(ctx, f); err != nil {
+			return fmt.Errorf("updating folder path %s -> %s: %w", oldPath, f.Path, err)
+		}
+
+		// recurse
+		if err := correctSubFolderHierarchy(ctx, rw, f); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

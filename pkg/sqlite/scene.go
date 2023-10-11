@@ -1291,6 +1291,9 @@ func sceneIsMissingCriterionHandler(qb *SceneStore, isMissing *string) criterion
 	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
+			case "url":
+				scenesURLsTableMgr.join(f, "", "scenes.id")
+				f.addWhere("scene_urls.url IS NULL")
 			case "galleries":
 				qb.galleriesRepository().join(f, "galleries_join", "scenes.id")
 				f.addWhere("galleries_join.scene_id IS NULL")

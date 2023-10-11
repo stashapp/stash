@@ -127,10 +127,14 @@ func (t *SceneIdentifier) scrapeScene(ctx context.Context, scene *models.Scene) 
 
 // Returns a MetadataOptions object with any default options overwritten by source specific options
 func (t *SceneIdentifier) getOptions(source ScraperSource) MetadataOptions {
-	options := *t.DefaultOptions
+	var options MetadataOptions
+	if t.DefaultOptions != nil {
+		options = *t.DefaultOptions
+	}
 	if source.Options == nil {
 		return options
 	}
+
 	if source.Options.SetCoverImage != nil {
 		options.SetCoverImage = source.Options.SetCoverImage
 	}
@@ -152,6 +156,7 @@ func (t *SceneIdentifier) getOptions(source ScraperSource) MetadataOptions {
 	if source.Options.SkipSingleNamePerformerTag != nil && len(*source.Options.SkipSingleNamePerformerTag) > 0 {
 		options.SkipSingleNamePerformerTag = source.Options.SkipSingleNamePerformerTag
 	}
+
 	return options
 }
 

@@ -43,7 +43,6 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	newGallery := models.NewGallery()
 
 	newGallery.Title = input.Title
-	newGallery.URL = translator.string(input.URL)
 	newGallery.Details = translator.string(input.Details)
 	newGallery.Rating = translator.ratingConversion(input.Rating, input.Rating100)
 
@@ -69,6 +68,12 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	newGallery.SceneIDs, err = translator.relatedIds(input.SceneIds)
 	if err != nil {
 		return nil, fmt.Errorf("converting scene ids: %w", err)
+	}
+
+	if input.Urls != nil {
+		newGallery.URLs = models.NewRelatedStrings(input.Urls)
+	} else if input.URL != nil {
+		newGallery.URLs = models.NewRelatedStrings([]string{*input.URL})
 	}
 
 	// Start the transaction and save the gallery
@@ -178,7 +183,6 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 	}
 
 	updatedGallery.Details = translator.optionalString(input.Details, "details")
-	updatedGallery.URL = translator.optionalString(input.URL, "url")
 	updatedGallery.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
 	updatedGallery.Organized = translator.optionalBool(input.Organized, "organized")
 
@@ -190,6 +194,8 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
+
+	updatedGallery.URLs = translator.optionalURLs(input.Urls, input.URL)
 
 	updatedGallery.PrimaryFileID, err = translator.fileIDPtrFromString(input.PrimaryFileID)
 	if err != nil {
@@ -252,9 +258,9 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 	updatedGallery := models.NewGalleryPartial()
 
 	updatedGallery.Details = translator.optionalString(input.Details, "details")
-	updatedGallery.URL = translator.optionalString(input.URL, "url")
 	updatedGallery.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
 	updatedGallery.Organized = translator.optionalBool(input.Organized, "organized")
+	updatedGallery.URLs = translator.optionalURLsBulk(input.Urls, input.URL)
 
 	updatedGallery.Date, err = translator.optionalDate(input.Date, "date")
 	if err != nil {

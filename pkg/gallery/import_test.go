@@ -66,7 +66,7 @@ func TestImporterPreImport(t *testing.T) {
 		Details:      details,
 		Rating:       &rating,
 		Organized:    organized,
-		URL:          url,
+		URLs:         models.NewRelatedStrings([]string{url}),
 		Files:        models.NewRelatedFiles([]models.File{}),
 		TagIDs:       models.NewRelatedIDs([]int{}),
 		PerformerIDs: models.NewRelatedIDs([]int{}),
