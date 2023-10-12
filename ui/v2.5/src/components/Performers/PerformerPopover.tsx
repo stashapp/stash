@@ -12,7 +12,9 @@ interface IPerformerPopoverCardProps {
   id: string;
 }
 
-export const PerformerPopoverCard: React.FC<IPerformerPopoverCardProps> = ({ id }) => {
+export const PerformerPopoverCard: React.FC<IPerformerPopoverCardProps> = ({
+  id,
+}) => {
   const { data, loading, error } = useFindPerformer(id);
 
   if (loading)
@@ -48,7 +50,8 @@ export const PerformerPopover: React.FC<IPerformerPopoverProps> = ({
 }) => {
   const { configuration: config } = React.useContext(ConfigurationContext);
 
-  const showPerformerCardOnHover = (config?.ui as IUIConfig)?.showPerformerCardOnHover ?? true;
+  const showPerformerCardOnHover =
+    (config?.ui as IUIConfig)?.showPerformerCardOnHover ?? true;
 
   if (hide || !showPerformerCardOnHover) {
     return <>{children}</>;

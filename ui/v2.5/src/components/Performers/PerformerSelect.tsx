@@ -41,7 +41,7 @@ export type Performer = Pick<
 type Option = SelectOption<Performer>;
 
 export const PerformerSelect: React.FC<
-  IFilterProps  & { hoverPlacement?: Placement } & IFilterValueProps<Performer>
+  IFilterProps & { hoverPlacement?: Placement } & IFilterValueProps<Performer>
 > = (props) => {
   const [createPerformer] = usePerformerCreate();
 
