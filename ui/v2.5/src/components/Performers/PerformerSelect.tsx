@@ -25,6 +25,8 @@ import {
   Option as SelectOption,
 } from "../Shared/FilterSelect";
 import { useCompare } from "src/hooks/state";
+import { Placement } from "react-bootstrap/esm/Overlay";
+import { PerformerPopover } from "./PerformerPopover";
 
 export type SelectObject = {
   id: string;
@@ -39,7 +41,7 @@ export type Performer = Pick<
 type Option = SelectOption<Performer>;
 
 export const PerformerSelect: React.FC<
-  IFilterProps & IFilterValueProps<Performer>
+  IFilterProps  & { hoverPlacement?: Placement } & IFilterValueProps<Performer>
 > = (props) => {
   const [createPerformer] = usePerformerCreate();
 
@@ -95,7 +97,15 @@ export const PerformerSelect: React.FC<
       ),
     };
 
-    return <reactSelectComponents.Option {...thisOptionProps} />;
+    const id = optionProps.data.value;
+    const hide = (optionProps.data as Option & { __isNew__: boolean })
+      .__isNew__;
+
+    return (
+      <PerformerPopover id={id} hide={hide} placement={props.hoverPlacement}>
+        <reactSelectComponents.Option {...thisOptionProps} />
+      </PerformerPopover>
+    );
   };
 
   const PerformerMultiValueLabel: React.FC<
