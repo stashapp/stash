@@ -728,6 +728,15 @@
           }
         }
       },
+      "performer_panel": {
+        "heading": "Performer view",
+        "options": {
+          "show_performer_card_on_hover": {
+            "description": "Show performer card when hovering input list selections",
+            "heading": "Performer card tooltips"
+          }
+        }
+      },
       "tag_panel": {
         "heading": "Tag view",
         "options": {

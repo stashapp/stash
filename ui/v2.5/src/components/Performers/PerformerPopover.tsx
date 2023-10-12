@@ -48,8 +48,7 @@ export const PerformerPopover: React.FC<IPerformerPopoverProps> = ({
 }) => {
   const { configuration: config } = React.useContext(ConfigurationContext);
 
-  const showPerformerCardOnHover = true;
-   // (config?.ui as IUIConfig)?.showPerformerCardOnHover ?? true;
+  const showPerformerCardOnHover = (config?.ui as IUIConfig)?.showPerformerCardOnHover ?? true;
 
   if (hide || !showPerformerCardOnHover) {
     return <>{children}</>;

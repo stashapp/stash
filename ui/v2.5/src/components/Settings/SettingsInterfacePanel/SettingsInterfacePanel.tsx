@@ -372,6 +372,15 @@ export const SettingsInterfacePanel: React.FC = () => {
           onChange={(v) => saveUI({ showAbLoopControls: v })}
         />
       </SettingSection>
+      <SettingSection headingID="config.ui.performer_panel.heading">
+        <BooleanSetting
+          id="show-performer-card-on-hover"
+          headingID="config.ui.performer_panel.options.show_performer_card_on_hover.heading"
+          subHeadingID="config.ui.performer_panel.options.show_performer_card_on_hover.description"
+          checked={ui.showPerformerCardOnHover ?? true}
+          onChange={(v) => saveUI({ showPerformerCardOnHover: v })}
+        />
+      </SettingSection>
       <SettingSection headingID="config.ui.tag_panel.heading">
         <BooleanSetting
           id="show-tag-card-on-hover"

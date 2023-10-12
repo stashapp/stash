@@ -37,6 +37,8 @@ export interface IUIConfig {
 
   showChildTagContent?: boolean;
   showChildStudioContent?: boolean;
+  showPerformerCardOnHover?: boolean;
+
   showTagCardOnHover?: boolean;
 
   abbreviateCounters?: boolean;

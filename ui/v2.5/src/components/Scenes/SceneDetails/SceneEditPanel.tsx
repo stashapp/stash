@@ -849,6 +849,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
                   isMulti
                   onSelect={onSetPerformers}
                   values={performers}
+                  hoverPlacement="right"
                 />
               </Col>
             </Form.Group>
