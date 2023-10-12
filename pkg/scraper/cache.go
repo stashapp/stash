@@ -73,6 +73,7 @@ type TagFinder interface {
 type GalleryFinder interface {
 	models.GalleryGetter
 	models.FileLoader
+	models.URLLoader
 }
 
 type Repository struct {
@@ -399,7 +400,12 @@ func (c Cache) getGallery(ctx context.Context, galleryID int) (*models.Gallery, 
 			return fmt.Errorf("gallery with id %d not found", galleryID)
 		}
 
-		return ret.LoadFiles(ctx, c.repository.GalleryFinder)
+		err = ret.LoadFiles(ctx, c.repository.GalleryFinder)
+		if err != nil {
+			return err
+		}
+
+		return ret.LoadURLs(ctx, c.repository.GalleryFinder)
 	}); err != nil {
 		return nil, err
 	}
