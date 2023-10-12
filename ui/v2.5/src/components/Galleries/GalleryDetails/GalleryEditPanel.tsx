@@ -99,10 +99,10 @@ export const GalleryEditPanel: React.FC<IProps> = ({
 
   const initialValues = {
     title: gallery?.title ?? "",
-    code: gallery.code ?? "",
+    code: gallery?.code ?? "",
     urls: gallery?.urls ?? [],
     date: gallery?.date ?? "",
-    photographer: gallery.photographer ?? "",
+    photographer: gallery?.photographer ?? "",
     rating100: gallery?.rating100 ?? null,
     studio_id: gallery?.studio?.id ?? null,
     performer_ids: (gallery?.performers ?? []).map((p) => p.id),

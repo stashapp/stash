@@ -255,27 +255,3 @@ func (r *galleryResolver) Urls(ctx context.Context, obj *models.Gallery) ([]stri
 
 	return obj.URLs.List(), nil
 }
-
-func (r *galleryResolver) Code(ctx context.Context, obj *models.Gallery) (*string, error) {
-	if !obj.URLs.Loaded() {
-		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-			return obj.LoadURLs(ctx, r.repository.Gallery)
-		}); err != nil {
-			return nil, err
-		}
-	}
-
-	return nil, nil
-}
-
-func (r *galleryResolver) Photographer(ctx context.Context, obj *models.Gallery) (*string, error) {
-	if !obj.URLs.Loaded() {
-		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-			return obj.LoadURLs(ctx, r.repository.Gallery)
-		}); err != nil {
-			return nil, err
-		}
-	}
-
-	return nil, nil
-}
