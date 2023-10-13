@@ -23,7 +23,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { IUIConfig } from "src/core/config";
+import { DefaultFilters, IUIConfig } from "src/core/config";
 import { ConfigurationContext } from "src/hooks/Config";
 
 interface ISavedFilterListProps {
@@ -148,19 +148,31 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
 
     try {
       setSaving(true);
+
+      // TODO - this is a horrible temporary hack to work around stupid viper
+      let existingDefaultFilters: DefaultFilters;
+      try {
+        existingDefaultFilters = JSON.parse(ui.defaultFilters ?? "{}");
+      } catch (e) {
+        // ignore
+        existingDefaultFilters = {};
+      }
+
+      const newDefaultFilters = JSON.stringify({
+        ...existingDefaultFilters,
+        [view.toString()]: {
+          mode: filter.mode,
+          find_filter: filter.makeFindFilter(),
+          object_filter: filterCopy.makeSavedFindFilter(),
+          ui_options: filterCopy.makeUIOptions(),
+        },
+      });
+
       await saveUI({
         variables: {
           input: {
             ...configuration?.ui,
-            defaultFilters: {
-              ...ui.defaultFilters,
-              [view.toString()]: {
-                mode: filter.mode,
-                find_filter: filter.makeFindFilter(),
-                object_filter: filterCopy.makeSavedFindFilter(),
-                ui_options: filterCopy.makeUIOptions(),
-              },
-            },
+            defaultFilters: newDefaultFilters,
           },
         },
       });

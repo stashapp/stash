@@ -12,7 +12,7 @@ import * as GQL from "src/core/generated-graphql";
 import { useContext, useMemo } from "react";
 import { ConfigurationContext } from "src/hooks/Config";
 import { View } from "src/components/List/views";
-import { IUIConfig } from "src/core/config";
+import { DefaultFilters, IUIConfig } from "src/core/config";
 
 interface IDecodedParams {
   perPage?: number;
@@ -494,7 +494,18 @@ export const useDefaultFilter = (mode: GQL.FilterMode, view?: View) => {
   const { defaultFilters } = config?.ui as IUIConfig;
 
   const defaultFilter = useMemo(() => {
-    const savedFilter = view ? defaultFilters?.[view] : undefined;
+    // TODO - this is a horrible temporary workaround for viper
+    let parsed: DefaultFilters;
+
+    try {
+      parsed = JSON.parse(defaultFilters ?? "{}");
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to parse default filters:", e);
+      return undefined;
+    }
+
+    const savedFilter = view ? parsed[view] : undefined;
     if (!view || !savedFilter) return undefined;
 
     let filter = new ListFilterModel(mode, config);

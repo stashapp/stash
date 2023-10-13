@@ -33,7 +33,9 @@ export interface ICustomFilter extends ITypename {
 // NOTE: This value cannot be more defined, because the generated enum it depends upon is UpperCase, which leads to errors on saving
 export type PinnedFilters = Record<string, Array<string>>;
 
-export type DefaultFilters = Record<View, SavedFilterDataFragment>;
+export type DefaultFilters = {
+  [P in View]?: SavedFilterDataFragment;
+};
 
 export type FrontPageContent = ISavedFilterRow | ICustomFilter;
 
@@ -87,7 +89,7 @@ export interface IUIConfig {
   vrTag?: string;
   pinnedFilters?: PinnedFilters;
 
-  defaultFilters?: DefaultFilters;
+  defaultFilters?: string;
 }
 
 function recentlyReleased(
