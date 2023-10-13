@@ -6,7 +6,7 @@ import {
   TagsCriterionOption,
 } from "src/models/list-filter/criteria/tags";
 import { SceneMarkerList } from "src/components/Scenes/SceneMarkerList";
-import { PersistanceLevel } from "src/components/List/ItemList";
+import { View } from "src/components/List/views";
 
 interface ITagMarkersPanel {
   active: boolean;
@@ -57,7 +57,7 @@ export const TagMarkersPanel: React.FC<ITagMarkersPanel> = ({
     <SceneMarkerList
       filterHook={filterHook}
       alterQuery={active}
-      persistState={PersistanceLevel.SAVEDLINKFILTER}
+      view={View.TagMarkers}
     />
   );
 };

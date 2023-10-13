@@ -2,7 +2,7 @@ import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { ImageList } from "src/components/Images/ImageList";
 import { usePerformerFilterHook } from "src/core/performers";
-import { PersistanceLevel } from "src/components/List/ItemList";
+import { View } from "src/components/List/views";
 
 interface IPerformerImagesPanel {
   active: boolean;
@@ -18,7 +18,7 @@ export const PerformerImagesPanel: React.FC<IPerformerImagesPanel> = ({
     <ImageList
       filterHook={filterHook}
       alterQuery={active}
-      persistState={PersistanceLevel.SAVEDLINKFILTER}
+      view={View.PerformerImages}
     />
   );
 };

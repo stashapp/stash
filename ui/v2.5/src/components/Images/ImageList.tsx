@@ -14,7 +14,6 @@ import { queryFindImages, useFindImages } from "src/core/StashService";
 import {
   makeItemList,
   IItemListOperation,
-  PersistanceLevel,
   showWhenSelected,
 } from "../List/ItemList";
 import { useLightbox } from "src/hooks/Lightbox/hooks";
@@ -32,6 +31,7 @@ import { objectTitle } from "src/core/files";
 import TextUtils from "src/utils/text";
 import { ConfigurationContext } from "src/hooks/Config";
 import { IUIConfig } from "src/core/config";
+import { View } from "../List/views";
 
 interface IImageWallProps {
   images: GQL.SlimImageDataFragment[];
@@ -291,8 +291,7 @@ const ImageItemList = makeItemList({
 
 interface IImageList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
-  persistState?: PersistanceLevel;
-  persistanceKey?: string;
+  view?: View;
   alterQuery?: boolean;
   extraOperations?: IItemListOperation<GQL.FindImagesQueryResult>[];
   chapters?: GQL.GalleryChapterDataFragment[];
@@ -300,8 +299,7 @@ interface IImageList {
 
 export const ImageList: React.FC<IImageList> = ({
   filterHook,
-  persistState,
-  persistanceKey,
+  view,
   alterQuery,
   extraOperations,
   chapters = [],
@@ -442,8 +440,7 @@ export const ImageList: React.FC<IImageList> = ({
       zoomable
       selectable
       filterHook={filterHook}
-      persistState={persistState}
-      persistanceKey={persistanceKey}
+      view={view}
       alterQuery={alterQuery}
       otherOperations={otherOperations}
       addKeybinds={addKeybinds}

@@ -9,8 +9,10 @@ import { Criterion, CriterionValue } from "./criteria/criterion";
 import { getFilterOptions } from "./factory";
 import { CriterionType, DisplayMode } from "./types";
 import * as GQL from "src/core/generated-graphql";
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 import { ConfigurationContext } from "src/hooks/Config";
+import { View } from "src/components/List/views";
+import { IUIConfig } from "src/core/config";
 
 interface IDecodedParams {
   perPage?: number;
@@ -465,61 +467,42 @@ export class ListFilterModel {
   }
 }
 
-const recursiveRenameToSnakeCase = (
-  camelCaseObject: Record<string, unknown>
-) => {
-  let camelCaseKeys = Object.keys(camelCaseObject);
-  camelCaseKeys.forEach((key) => {
-    if (
-      typeof camelCaseObject[key] === "object" &&
-      !Array.isArray(camelCaseObject[key]) &&
-      camelCaseObject[key] !== null
-    ) {
-      let cco: Record<string, unknown> = Object(camelCaseObject[key]);
-      camelCaseObject[key] = recursiveRenameToSnakeCase(cco);
-    }
-    let snakeCaseKey = key.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase();
-    if (snakeCaseKey !== key) {
-      camelCaseObject[snakeCaseKey] = camelCaseObject[key];
-      delete camelCaseObject[key];
-    }
-  });
-  return camelCaseObject;
-};
+// const recursiveRenameToSnakeCase = (
+//   camelCaseObject: Record<string, unknown>
+// ) => {
+//   let camelCaseKeys = Object.keys(camelCaseObject);
+//   camelCaseKeys.forEach((key) => {
+//     if (
+//       typeof camelCaseObject[key] === "object" &&
+//       !Array.isArray(camelCaseObject[key]) &&
+//       camelCaseObject[key] !== null
+//     ) {
+//       let cco: Record<string, unknown> = Object(camelCaseObject[key]);
+//       camelCaseObject[key] = recursiveRenameToSnakeCase(cco);
+//     }
+//     let snakeCaseKey = key.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase();
+//     if (snakeCaseKey !== key) {
+//       camelCaseObject[snakeCaseKey] = camelCaseObject[key];
+//       delete camelCaseObject[key];
+//     }
+//   });
+//   return camelCaseObject;
+// };
 
-export const useDefaultLinkFilter = (mode: GQL.FilterMode) => {
-  let filter = new ListFilterModel(mode, undefined);
-  let { configuration: config } = useContext(ConfigurationContext);
-  if (config?.ui?.linkFilters?.[mode.toLowerCase().replace("_", "")]) {
-    let linkFilter = recursiveRenameToSnakeCase(
-      config?.ui?.linkFilters?.[mode.toLowerCase().replace("_", "")]
-    );
-    let savedFilter: SavedFilterDataFragment = {
-      ...linkFilter,
-      id: mode + "defaultLinkFilter",
-      mode: mode,
-      name: "",
-    };
+export const useDefaultFilter = (mode: GQL.FilterMode, view?: View) => {
+  let { configuration: config, loading } = useContext(ConfigurationContext);
+  const { defaultFilters } = config?.ui as IUIConfig;
+
+  const defaultFilter = useMemo(() => {
+    const savedFilter = view ? defaultFilters?.[view] : undefined;
+    if (!view || !savedFilter) return undefined;
+
+    let filter = new ListFilterModel(mode, config);
     filter.configureFromSavedFilter(savedFilter);
     filter.currentPage = 1;
     filter.randomSeed = -1;
-  } else {
-    // SortBy is not set by default, breaking the usage in itemlist. The default sort is dependant on the mode.
-    switch (mode) {
-      case GQL.FilterMode.Scenes:
-        filter.sortBy = "date";
-        filter.sortDirection = SortDirectionEnum.Desc;
-        break;
-      case GQL.FilterMode.SceneMarkers:
-        filter.sortBy = "title";
-        break;
-      case GQL.FilterMode.Images:
-      case GQL.FilterMode.Galleries:
-        filter.sortBy = "path";
-        break;
-      default:
-        filter.sortBy = "name";
-    }
-  }
-  return filter;
+    return filter;
+  }, [config, mode, view, defaultFilters]);
+
+  return { defaultFilter, loading };
 };

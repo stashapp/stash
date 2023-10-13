@@ -2,7 +2,7 @@ import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { GalleryList } from "src/components/Galleries/GalleryList";
 import { useStudioFilterHook } from "src/core/studios";
-import { PersistanceLevel } from "src/components/List/ItemList";
+import { View } from "src/components/List/views";
 
 interface IStudioGalleriesPanel {
   active: boolean;
@@ -18,7 +18,7 @@ export const StudioGalleriesPanel: React.FC<IStudioGalleriesPanel> = ({
     <GalleryList
       filterHook={filterHook}
       alterQuery={active}
-      persistState={PersistanceLevel.SAVEDLINKFILTER}
+      view={View.StudioGalleries}
     />
   );
 };

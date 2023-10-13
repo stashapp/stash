@@ -2,7 +2,7 @@ import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { useTagFilterHook } from "src/core/tags";
 import { GalleryList } from "src/components/Galleries/GalleryList";
-import { PersistanceLevel } from "src/components/List/ItemList";
+import { View } from "src/components/List/views";
 
 interface ITagGalleriesPanel {
   active: boolean;
@@ -18,7 +18,7 @@ export const TagGalleriesPanel: React.FC<ITagGalleriesPanel> = ({
     <GalleryList
       filterHook={filterHook}
       alterQuery={active}
-      persistState={PersistanceLevel.SAVEDLINKFILTER}
+      view={View.TagGalleries}
     />
   );
 };

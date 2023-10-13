@@ -2,7 +2,7 @@ import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { SceneList } from "src/components/Scenes/SceneList";
 import { useTagFilterHook } from "src/core/tags";
-import { PersistanceLevel } from "src/components/List/ItemList";
+import { View } from "src/components/List/views";
 
 interface ITagScenesPanel {
   active: boolean;
@@ -15,7 +15,7 @@ export const TagScenesPanel: React.FC<ITagScenesPanel> = ({ active, tag }) => {
     <SceneList
       filterHook={filterHook}
       alterQuery={active}
-      persistState={PersistanceLevel.SAVEDLINKFILTER}
+      view={View.TagScenes}
     />
   );
 };

@@ -9,11 +9,7 @@ import {
   useFindPerformers,
   usePerformersDestroy,
 } from "src/core/StashService";
-import {
-  makeItemList,
-  PersistanceLevel,
-  showWhenSelected,
-} from "../List/ItemList";
+import { makeItemList, showWhenSelected } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { PerformerTagger } from "../Tagger/performers/PerformerTagger";
@@ -22,6 +18,7 @@ import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { IPerformerCardExtraCriteria, PerformerCard } from "./PerformerCard";
 import { PerformerListTable } from "./PerformerListTable";
 import { EditPerformersDialog } from "./EditPerformersDialog";
+import { View } from "../List/views";
 
 const PerformerItemList = makeItemList({
   filterMode: GQL.FilterMode.Performers,
@@ -36,14 +33,14 @@ const PerformerItemList = makeItemList({
 
 interface IPerformerList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
-  persistState?: PersistanceLevel;
+  view?: View;
   alterQuery?: boolean;
   extraCriteria?: IPerformerCardExtraCriteria;
 }
 
 export const PerformerList: React.FC<IPerformerList> = ({
   filterHook,
-  persistState,
+  view,
   alterQuery,
   extraCriteria,
 }) => {
@@ -204,7 +201,7 @@ export const PerformerList: React.FC<IPerformerList> = ({
     <PerformerItemList
       selectable
       filterHook={filterHook}
-      persistState={persistState}
+      view={view}
       alterQuery={alterQuery}
       otherOperations={otherOperations}
       addKeybinds={addKeybinds}

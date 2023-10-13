@@ -2,8 +2,12 @@ import { IntlShape } from "react-intl";
 import { ITypename } from "src/utils/data";
 import { ImageWallOptions } from "src/utils/imageWall";
 import { RatingSystemOptions } from "src/utils/rating";
-import { FilterMode, SortDirectionEnum } from "./generated-graphql";
-import { ListFilterModel } from "src/models/list-filter/filter";
+import {
+  FilterMode,
+  SavedFilterDataFragment,
+  SortDirectionEnum,
+} from "./generated-graphql";
+import { View } from "src/components/List/views";
 
 // NOTE: double capitals aren't converted correctly in the backend
 
@@ -29,7 +33,7 @@ export interface ICustomFilter extends ITypename {
 // NOTE: This value cannot be more defined, because the generated enum it depends upon is UpperCase, which leads to errors on saving
 export type PinnedFilters = Record<string, Array<string>>;
 
-export type LinkFilters = Record<string, ListFilterModel>;
+export type DefaultFilters = Record<View, SavedFilterDataFragment>;
 
 export type FrontPageContent = ISavedFilterRow | ICustomFilter;
 
@@ -83,7 +87,7 @@ export interface IUIConfig {
   vrTag?: string;
   pinnedFilters?: PinnedFilters;
 
-  linkFilters?: LinkFilters;
+  defaultFilters?: DefaultFilters;
 }
 
 function recentlyReleased(

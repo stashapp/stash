@@ -14,12 +14,11 @@ import {
   useFindSavedFilters,
   useSavedFilterDestroy,
   useSaveFilter,
-  useSetDefaultFilter,
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { SavedFilterDataFragment } from "src/core/generated-graphql";
-import { PersistanceLevel } from "./ItemList";
+import { View } from "./views";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
@@ -30,13 +29,13 @@ import { ConfigurationContext } from "src/hooks/Config";
 interface ISavedFilterListProps {
   filter: ListFilterModel;
   onSetFilter: (f: ListFilterModel) => void;
-  persistState?: PersistanceLevel;
+  view?: View;
 }
 
 export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   filter,
   onSetFilter,
-  persistState,
+  view,
 }) => {
   const Toast = useToast();
   const intl = useIntl();
@@ -52,11 +51,9 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   const [overwritingFilter, setOverwritingFilter] = useState<
     SavedFilterDataFragment | undefined
   >();
-  const [linkFilterAlert, setLinkFilterAlert] = useState<boolean | undefined>();
 
   const [saveFilter] = useSaveFilter();
   const [destroyFilter] = useSavedFilterDestroy();
-  const [setDefaultFilter] = useSetDefaultFilter();
   const { configuration } = useContext(ConfigurationContext);
   const ui = (configuration?.ui ?? {}) as IUIConfig;
   const [saveUI] = useConfigureUI();
@@ -143,18 +140,27 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   }
 
   async function onSetDefaultFilter() {
+    if (!view) {
+      return;
+    }
+
     const filterCopy = filter.clone();
 
     try {
       setSaving(true);
-
-      await setDefaultFilter({
+      await saveUI({
         variables: {
           input: {
-            mode: filter.mode,
-            find_filter: filterCopy.makeFindFilter(),
-            object_filter: filterCopy.makeSavedFindFilter(),
-            ui_options: filterCopy.makeUIOptions(),
+            ...configuration?.ui,
+            defaultFilters: {
+              ...ui.defaultFilters,
+              [view.toString()]: {
+                mode: filter.mode,
+                find_filter: filter.makeFindFilter(),
+                object_filter: filterCopy.makeSavedFindFilter(),
+                ui_options: filterCopy.makeUIOptions(),
+              },
+            },
           },
         },
       });
@@ -168,41 +174,6 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
       Toast.error(err);
     } finally {
       setSaving(false);
-    }
-  }
-
-  async function onSetDefaultLinkFilter(uiOnly: boolean = false) {
-    const filterCopy = filter.clone();
-    let findFilter = filterCopy.makeFindFilter();
-    if (uiOnly) {
-      findFilter.q = "";
-    }
-
-    try {
-      await saveUI({
-        variables: {
-          input: {
-            ...configuration?.ui,
-            linkFilters: {
-              ...ui.linkFilters,
-              [filter.mode.toLowerCase().replace("_", "")]: {
-                mode: filter.mode,
-                find_filter: findFilter,
-                object_filter: uiOnly ? {} : filterCopy.makeSavedFindFilter(),
-                ui_options: filterCopy.makeUIOptions(),
-              },
-            },
-          },
-        },
-      });
-
-      Toast.success({
-        content: intl.formatMessage({
-          id: "toast.default_link_filter_set",
-        }),
-      });
-    } catch (err) {
-      Toast.error(err);
     }
   }
 
@@ -326,37 +297,6 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
     );
   }
 
-  function maybeRenderFilterLinkAlert() {
-    if (!linkFilterAlert) {
-      return;
-    }
-
-    return (
-      <Modal show>
-        <Modal.Body>
-          <FormattedMessage id="dialogs.filter_link_confirm" />
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="danger" onClick={() => onSetDefaultLinkFilter()}>
-            {intl.formatMessage({ id: "actions.confirm" })}
-          </Button>
-          <Button
-            variant="primary"
-            onClick={() => onSetDefaultLinkFilter(true)}
-          >
-            {intl.formatMessage({ id: "actions.ui_only" })}
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() => setLinkFilterAlert(undefined)}
-          >
-            {intl.formatMessage({ id: "actions.cancel" })}
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    );
-  }
-
   function renderSavedFilters() {
     if (loading || saving) {
       return (
@@ -382,7 +322,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   }
 
   function maybeRenderSetDefaultButton() {
-    if (persistState === PersistanceLevel.ALL) {
+    if (view) {
       return (
         <Button
           className="set-as-default-button"
@@ -396,31 +336,10 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
     }
   }
 
-  function maybeRenderSetDefaultLinkButton() {
-    if (["STUDIOS", "TAGS"].indexOf(filter.mode) == -1) {
-      return (
-        <Button
-          className="set-as-default-button"
-          variant="secondary"
-          size="sm"
-          onClick={() =>
-            Object.keys(filter.makeSavedFindFilter()).length ||
-            filter.makeFindFilter()?.q
-              ? setLinkFilterAlert(true)
-              : onSetDefaultLinkFilter()
-          }
-        >
-          {intl.formatMessage({ id: "actions.set_as_default_link" })}
-        </Button>
-      );
-    }
-  }
-
   return (
     <div>
       {maybeRenderDeleteAlert()}
       {maybeRenderOverwriteAlert()}
-      {maybeRenderFilterLinkAlert()}
       <InputGroup>
         <FormControl
           className="bg-secondary text-white border-secondary"
@@ -453,7 +372,6 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
       </InputGroup>
       {renderSavedFilters()}
       {maybeRenderSetDefaultButton()}
-      {maybeRenderSetDefaultLinkButton()}
     </div>
   );
 };
