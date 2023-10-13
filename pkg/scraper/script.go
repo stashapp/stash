@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	stashExec "github.com/stashapp/stash/pkg/exec"
-	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/python"
@@ -39,35 +38,17 @@ func (s *scriptScraper) runScraperScript(ctx context.Context, inString string, o
 	var cmd *exec.Cmd
 	if python.IsPythonCommand(command[0]) {
 		pythonPath := s.globalConfig.GetPythonPath()
-		var p *python.Python
-		if pythonPath != "" {
-			// Users commonly set the path to a folder instead of the executable
-			isFile, err := fsutil.FileExists(pythonPath)
-			switch {
-			case err == nil && isFile:
-				logger.Debugf("Using configured python path: %s", pythonPath)
-				p = python.New(pythonPath)
-			case err == nil && !isFile:
-				logger.Warnf("Python path is not a file: %s", pythonPath)
-			case err != nil:
-				logger.Warnf("Unable to validate python path: %s", err)
-			}
-		} else {
-			p, _ = python.Resolve()
-			if p == nil {
-				logger.Warnf("Unable to resolve python from environment")
-			}
-		}
+		p, err := python.Resolve(pythonPath)
 
-		if p != nil {
-			cmd = p.Command(ctx, command[1:])
+		if err != nil {
+			logger.Warnf("%s", err)
 		} else {
-			// if could not find python, just use the command args as-is
-			logger.Warnf("Could not find python executable, using command args as-is: %s", strings.Join(command, " "))
+			cmd = p.Command(context.TODO(), command[1:])
 		}
 	}
 
 	if cmd == nil {
+		// if could not find python, just use the command args as-is
 		cmd = stashExec.Command(command[0], command[1:]...)
 	}
 
@@ -103,7 +84,7 @@ func (s *scriptScraper) runScraperScript(ctx context.Context, inString string, o
 
 	go handleScraperStderr(s.config.Name, stderr)
 
-	logger.Debugf("Scraper script <%s> started", strings.Join(cmd.Args, " "))
+	logger.Infof("Scraper script <%s> started", strings.Join(cmd.Args, " "))
 
 	// TODO - add a timeout here
 	// Make a copy of stdout here. This allows us to decode it twice.
@@ -131,7 +112,7 @@ func (s *scriptScraper) runScraperScript(ctx context.Context, inString string, o
 	}
 
 	err = cmd.Wait()
-	logger.Debugf("Scraper script finished")
+	logger.Infof("Scraper script finished")
 
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrScraperScript, err)

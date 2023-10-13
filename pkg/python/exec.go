@@ -2,9 +2,12 @@ package python
 
 import (
 	"context"
+	"fmt"
 	"os/exec"
 
 	stashExec "github.com/stashapp/stash/pkg/exec"
+	"github.com/stashapp/stash/pkg/fsutil"
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 type Python string
@@ -22,18 +25,33 @@ func New(path string) *Python {
 // Resolve tries to find the python executable in the system.
 // It first checks for python3, then python.
 // Returns nil and an exec.ErrNotFound error if not found.
-func Resolve() (*Python, error) {
+func Resolve(configuredPythonPath string) (*Python, error) {
+	if configuredPythonPath != "" {
+		isFile, err := fsutil.FileExists(configuredPythonPath)
+		switch {
+		case err == nil && isFile:
+			logger.Tracef("using configured python path: %s", configuredPythonPath)
+			return New(configuredPythonPath), nil
+		case err == nil && !isFile:
+			logger.Warnf("configured python path is not a file: %s", configuredPythonPath)
+		case err != nil:
+			logger.Warnf("unable to use configured python path: %s", err)
+		}
+	}
+
 	python3, err := exec.LookPath("python3")
-	if err == nil {
-		return New(python3), nil
+
+	if err != nil {
+		python, err := exec.LookPath("python")
+		if err != nil {
+			return nil, fmt.Errorf("python executable not in PATH: %s", err)
+		}
+		ret := Python(python)
+		return &ret, nil
 	}
 
-	python, err := exec.LookPath("python")
-	if err == nil {
-		return New(python), nil
-	}
-
-	return nil, err
+	ret := Python(python3)
+	return &ret, nil
 }
 
 // IsPythonCommand returns true if arg is "python" or "python3"
