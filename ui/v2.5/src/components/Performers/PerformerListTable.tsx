@@ -9,10 +9,6 @@ import { Icon } from "../Shared/Icon";
 import NavUtils from "src/utils/navigation";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import { cmToImperial } from "src/utils/units";
-import {
-  ListFilterModel,
-  useDefaultLinkFilter,
-} from "src/models/list-filter/filter";
 
 interface IPerformerListTableProps {
   performers: GQL.PerformerDataFragment[];
@@ -22,15 +18,6 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   props: IPerformerListTableProps
 ) => {
   const intl = useIntl();
-  const sceneDefaultFilter: ListFilterModel = useDefaultLinkFilter(
-    GQL.FilterMode.Scenes
-  );
-  const imageDefaultFilter: ListFilterModel = useDefaultLinkFilter(
-    GQL.FilterMode.Images
-  );
-  const galleryDefaultFilter: ListFilterModel = useDefaultLinkFilter(
-    GQL.FilterMode.Galleries
-  );
 
   const formatHeight = (height?: number | null) => {
     if (!height) {
@@ -96,38 +83,17 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
         )}
       </td>
       <td>
-        <Link
-          to={NavUtils.makePerformerScenesUrl(
-            performer,
-            undefined,
-            undefined,
-            sceneDefaultFilter
-          )}
-        >
+        <Link to={NavUtils.makePerformerScenesUrl(performer)}>
           <h6>{performer.scene_count}</h6>
         </Link>
       </td>
       <td>
-        <Link
-          to={NavUtils.makePerformerImagesUrl(
-            performer,
-            undefined,
-            undefined,
-            imageDefaultFilter
-          )}
-        >
+        <Link to={NavUtils.makePerformerImagesUrl(performer)}>
           <h6>{performer.image_count}</h6>
         </Link>
       </td>
       <td>
-        <Link
-          to={NavUtils.makePerformerGalleriesUrl(
-            performer,
-            undefined,
-            undefined,
-            galleryDefaultFilter
-          )}
-        >
+        <Link to={NavUtils.makePerformerGalleriesUrl(performer)}>
           <h6>{performer.gallery_count}</h6>
         </Link>
       </td>

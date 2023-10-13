@@ -13,7 +13,6 @@ import { Placement } from "react-bootstrap/esm/Overlay";
 import { faFolderTree } from "@fortawesome/free-solid-svg-icons";
 import { Icon } from "../Shared/Icon";
 import { FormattedMessage } from "react-intl";
-import { useDefaultLinkFilter } from "src/models/list-filter/filter";
 
 type SceneMarkerFragment = Pick<GQL.SceneMarker, "id" | "title" | "seconds"> & {
   scene: Pick<GQL.Scene, "id">;
@@ -48,41 +47,17 @@ export const PerformerLink: React.FC<IPerformerLinkProps> = ({
   linkType = "scene",
   className,
 }) => {
-  const defaultGalleryFilter = useDefaultLinkFilter(GQL.FilterMode.Galleries);
-  const defaultImageFilter = useDefaultLinkFilter(GQL.FilterMode.Images);
-  const defaultSceneFilter = useDefaultLinkFilter(GQL.FilterMode.Scenes);
   const link = useMemo(() => {
     switch (linkType) {
       case "gallery":
-        return NavUtils.makePerformerGalleriesUrl(
-          performer,
-          undefined,
-          undefined,
-          defaultGalleryFilter
-        );
+        return NavUtils.makePerformerGalleriesUrl(performer);
       case "image":
-        return NavUtils.makePerformerImagesUrl(
-          performer,
-          undefined,
-          undefined,
-          defaultImageFilter
-        );
+        return NavUtils.makePerformerImagesUrl(performer);
       case "scene":
       default:
-        return NavUtils.makePerformerScenesUrl(
-          performer,
-          undefined,
-          undefined,
-          defaultSceneFilter
-        );
+        return NavUtils.makePerformerScenesUrl(performer);
     }
-  }, [
-    performer,
-    linkType,
-    defaultGalleryFilter,
-    defaultImageFilter,
-    defaultSceneFilter,
-  ]);
+  }, [performer, linkType]);
 
   const title = performer.name || "";
 
@@ -104,13 +79,12 @@ export const MovieLink: React.FC<IMovieLinkProps> = ({
   linkType = "scene",
   className,
 }) => {
-  const defaultSceneFilter = useDefaultLinkFilter(GQL.FilterMode.Scenes);
   const link = useMemo(() => {
     switch (linkType) {
       case "scene":
-        return NavUtils.makeMovieScenesUrl(movie, defaultSceneFilter);
+        return NavUtils.makeMovieScenesUrl(movie);
     }
-  }, [movie, linkType, defaultSceneFilter]);
+  }, [movie, linkType]);
 
   const title = movie.name || "";
 
@@ -229,33 +203,20 @@ export const TagLink: React.FC<ITagLinkProps> = ({
   showHierarchyIcon = false,
   hierarchyTooltipID,
 }) => {
-  const defaultSceneFilter = useDefaultLinkFilter(GQL.FilterMode.Scenes);
-  const defaultGalleryFilter = useDefaultLinkFilter(GQL.FilterMode.Galleries);
-  const defaultImageFilter = useDefaultLinkFilter(GQL.FilterMode.Images);
-  const defaultPerformerFilter = useDefaultLinkFilter(
-    GQL.FilterMode.Performers
-  );
   const link = useMemo(() => {
     switch (linkType) {
       case "scene":
-        return NavUtils.makeTagScenesUrl(tag, defaultSceneFilter);
+        return NavUtils.makeTagScenesUrl(tag);
       case "performer":
-        return NavUtils.makeTagPerformersUrl(tag, defaultPerformerFilter);
+        return NavUtils.makeTagPerformersUrl(tag);
       case "gallery":
-        return NavUtils.makeTagGalleriesUrl(tag, defaultGalleryFilter);
+        return NavUtils.makeTagGalleriesUrl(tag);
       case "image":
-        return NavUtils.makeTagImagesUrl(tag, defaultImageFilter);
+        return NavUtils.makeTagImagesUrl(tag);
       case "details":
         return NavUtils.makeTagUrl(tag.id ?? "");
     }
-  }, [
-    tag,
-    linkType,
-    defaultGalleryFilter,
-    defaultImageFilter,
-    defaultPerformerFilter,
-    defaultSceneFilter,
-  ]);
+  }, [tag, linkType]);
 
   const title = tag.name || "";
 

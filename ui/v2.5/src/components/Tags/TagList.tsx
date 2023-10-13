@@ -1,10 +1,7 @@
 import React, { useState } from "react";
 import cloneDeep from "lodash-es/cloneDeep";
 import Mousetrap from "mousetrap";
-import {
-  ListFilterModel,
-  useDefaultLinkFilter,
-} from "src/models/list-filter/filter";
+import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import {
   makeItemList,
@@ -52,18 +49,6 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
   const Toast = useToast();
   const [deletingTag, setDeletingTag] =
     useState<Partial<GQL.TagDataFragment> | null>(null);
-  const sceneDefaultFilter: ListFilterModel = useDefaultLinkFilter(
-    GQL.FilterMode.Scenes
-  );
-  const imageDefaultFilter: ListFilterModel = useDefaultLinkFilter(
-    GQL.FilterMode.Images
-  );
-  const galleryDefaultFilter: ListFilterModel = useDefaultLinkFilter(
-    GQL.FilterMode.Galleries
-  );
-  const markerDefaultFilter: ListFilterModel = useDefaultLinkFilter(
-    GQL.FilterMode.SceneMarkers
-  );
 
   function getDeleteTagInput() {
     const tagInput: Partial<GQL.TagDestroyInput> = {};
@@ -258,7 +243,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
                 </Button>
                 <Button variant="secondary" className="tag-list-button">
                   <Link
-                    to={NavUtils.makeTagScenesUrl(tag, sceneDefaultFilter)}
+                    to={NavUtils.makeTagScenesUrl(tag)}
                     className="tag-list-anchor"
                   >
                     <FormattedMessage
@@ -272,7 +257,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
                 </Button>
                 <Button variant="secondary" className="tag-list-button">
                   <Link
-                    to={NavUtils.makeTagImagesUrl(tag, imageDefaultFilter)}
+                    to={NavUtils.makeTagImagesUrl(tag)}
                     className="tag-list-anchor"
                   >
                     <FormattedMessage
@@ -286,7 +271,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
                 </Button>
                 <Button variant="secondary" className="tag-list-button">
                   <Link
-                    to={NavUtils.makeTagGalleriesUrl(tag, galleryDefaultFilter)}
+                    to={NavUtils.makeTagGalleriesUrl(tag)}
                     className="tag-list-anchor"
                   >
                     <FormattedMessage
@@ -300,10 +285,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
                 </Button>
                 <Button variant="secondary" className="tag-list-button">
                   <Link
-                    to={NavUtils.makeTagSceneMarkersUrl(
-                      tag,
-                      markerDefaultFilter
-                    )}
+                    to={NavUtils.makeTagSceneMarkersUrl(tag)}
                     className="tag-list-anchor"
                   >
                     <FormattedMessage

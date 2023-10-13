@@ -34,13 +34,10 @@ function addExtraCriteria(
 const makePerformerScenesUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
   extraPerformer?: ILabeledId,
-  extraCriteria?: Criterion<CriterionValue>[],
-  defaultFilter?: ListFilterModel
+  extraCriteria?: Criterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
-  var filter = defaultFilter
-    ? defaultFilter
-    : new ListFilterModel(GQL.FilterMode.Scenes, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
   const criterion = new PerformersCriterion();
   criterion.value.items = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
@@ -58,13 +55,10 @@ const makePerformerScenesUrl = (
 const makePerformerImagesUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
   extraPerformer?: ILabeledId,
-  extraCriteria?: Criterion<CriterionValue>[],
-  defaultFilter?: ListFilterModel
+  extraCriteria?: Criterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
-  var filter = defaultFilter
-    ? defaultFilter
-    : new ListFilterModel(GQL.FilterMode.Images, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Images, undefined);
   const criterion = new PerformersCriterion();
   criterion.value.items = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
@@ -87,13 +81,10 @@ export interface INamedObject {
 const makePerformerGalleriesUrl = (
   performer: INamedObject,
   extraPerformer?: ILabeledId,
-  extraCriteria?: Criterion<CriterionValue>[],
-  defaultFilter?: ListFilterModel
+  extraCriteria?: Criterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
-  var filter = defaultFilter
-    ? defaultFilter
-    : new ListFilterModel(GQL.FilterMode.Galleries, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Galleries, undefined);
   const criterion = new PerformersCriterion();
   criterion.value.items = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
@@ -111,13 +102,10 @@ const makePerformerGalleriesUrl = (
 const makePerformerMoviesUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
   extraPerformer?: ILabeledId,
-  extraCriteria?: Criterion<CriterionValue>[],
-  defaultFilter?: ListFilterModel
+  extraCriteria?: Criterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
-  var filter = defaultFilter
-    ? defaultFilter
-    : new ListFilterModel(GQL.FilterMode.Movies, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Movies, undefined);
   const criterion = new PerformersCriterion();
   criterion.value.items = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
@@ -133,27 +121,19 @@ const makePerformerMoviesUrl = (
 };
 
 const makePerformersCountryUrl = (
-  performer: Partial<GQL.PerformerDataFragment>,
-  defaultFilter?: ListFilterModel
+  performer: Partial<GQL.PerformerDataFragment>
 ) => {
   if (!performer.id) return "#";
-  var filter = defaultFilter
-    ? defaultFilter
-    : new ListFilterModel(GQL.FilterMode.Performers, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Performers, undefined);
   const criterion = new CountryCriterion();
   criterion.value = `${performer.country}`;
   filter.criteria.push(criterion);
   return `/performers?${filter.makeQueryParameters()}`;
 };
 
-const makeStudioScenesUrl = (
-  studio: Partial<GQL.StudioDataFragment>,
-  defaultFilter?: ListFilterModel
-) => {
+const makeStudioScenesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   if (!studio.id) return "#";
-  var filter = defaultFilter
-    ? defaultFilter
-    : new ListFilterModel(GQL.FilterMode.Studios, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
   const criterion = new StudiosCriterion();
   criterion.value = {
     items: [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }],
@@ -164,14 +144,9 @@ const makeStudioScenesUrl = (
   return `/scenes?${filter.makeQueryParameters()}`;
 };
 
-const makeStudioImagesUrl = (
-  studio: Partial<GQL.StudioDataFragment>,
-  defaultFilter?: ListFilterModel
-) => {
+const makeStudioImagesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   if (!studio.id) return "#";
-  var filter = defaultFilter
-    ? defaultFilter
-    : new ListFilterModel(GQL.FilterMode.Images, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Images, undefined);
   const criterion = new StudiosCriterion();
   criterion.value = {
     items: [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }],
@@ -182,14 +157,9 @@ const makeStudioImagesUrl = (
   return `/images?${filter.makeQueryParameters()}`;
 };
 
-const makeStudioGalleriesUrl = (
-  studio: Partial<GQL.StudioDataFragment>,
-  defaultFilter?: ListFilterModel
-) => {
+const makeStudioGalleriesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   if (!studio.id) return "#";
-  var filter = defaultFilter
-    ? defaultFilter
-    : new ListFilterModel(GQL.FilterMode.Galleries, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Galleries, undefined);
   const criterion = new StudiosCriterion();
   criterion.value = {
     items: [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }],
@@ -200,14 +170,9 @@ const makeStudioGalleriesUrl = (
   return `/galleries?${filter.makeQueryParameters()}`;
 };
 
-const makeStudioMoviesUrl = (
-  studio: Partial<GQL.StudioDataFragment>,
-  defaultFilter?: ListFilterModel
-) => {
+const makeStudioMoviesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   if (!studio.id) return "#";
-  var filter = defaultFilter
-    ? defaultFilter
-    : new ListFilterModel(GQL.FilterMode.Movies, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Movies, undefined);
   const criterion = new StudiosCriterion();
   criterion.value = {
     items: [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }],
@@ -218,14 +183,9 @@ const makeStudioMoviesUrl = (
   return `/movies?${filter.makeQueryParameters()}`;
 };
 
-const makeStudioPerformersUrl = (
-  studio: Partial<GQL.StudioDataFragment>,
-  defaultFilter?: ListFilterModel
-) => {
+const makeStudioPerformersUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   if (!studio.id) return "#";
-  var filter = defaultFilter
-    ? defaultFilter
-    : new ListFilterModel(GQL.FilterMode.Performers, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Performers, undefined);
   const criterion = new StudiosCriterion();
   criterion.value = {
     items: [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }],
@@ -236,14 +196,9 @@ const makeStudioPerformersUrl = (
   return `/performers?${filter.makeQueryParameters()}`;
 };
 
-const makeChildStudiosUrl = (
-  studio: Partial<GQL.StudioDataFragment>,
-  defaultFilter?: ListFilterModel
-) => {
+const makeChildStudiosUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   if (!studio.id) return "#";
-  var filter = defaultFilter
-    ? defaultFilter
-    : new ListFilterModel(GQL.FilterMode.Studios, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Studios, undefined);
   const criterion = new ParentStudiosCriterion();
   criterion.value = [
     { id: studio.id, label: studio.name || `Studio ${studio.id}` },
@@ -252,14 +207,9 @@ const makeChildStudiosUrl = (
   return `/studios?${filter.makeQueryParameters()}`;
 };
 
-const makeMovieScenesUrl = (
-  movie: Partial<GQL.MovieDataFragment>,
-  defaultFilter?: ListFilterModel
-) => {
+const makeMovieScenesUrl = (movie: Partial<GQL.MovieDataFragment>) => {
   if (!movie.id) return "#";
-  var filter = defaultFilter
-    ? defaultFilter
-    : new ListFilterModel(GQL.FilterMode.Scenes, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
   const criterion = new MoviesCriterion();
   criterion.value = [
     { id: movie.id, label: movie.name || `Movie ${movie.id}` },
@@ -272,14 +222,9 @@ const makeTagUrl = (id: string) => {
   return `/tags/${id}`;
 };
 
-const makeParentTagsUrl = (
-  tag: Partial<GQL.TagDataFragment>,
-  defaultFilter?: ListFilterModel
-) => {
+const makeParentTagsUrl = (tag: Partial<GQL.TagDataFragment>) => {
   if (!tag.id) return "#";
-  var filter = defaultFilter
-    ? defaultFilter
-    : new ListFilterModel(GQL.FilterMode.Tags, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Tags, undefined);
   const criterion = new TagsCriterion(ChildTagsCriterionOption);
   criterion.value = {
     items: [
@@ -295,14 +240,9 @@ const makeParentTagsUrl = (
   return `/tags?${filter.makeQueryParameters()}`;
 };
 
-const makeChildTagsUrl = (
-  tag: Partial<GQL.TagDataFragment>,
-  defaultFilter?: ListFilterModel
-) => {
+const makeChildTagsUrl = (tag: Partial<GQL.TagDataFragment>) => {
   if (!tag.id) return "#";
-  var filter = defaultFilter
-    ? defaultFilter
-    : new ListFilterModel(GQL.FilterMode.Tags, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Tags, undefined);
   const criterion = new TagsCriterion(ParentTagsCriterionOption);
   criterion.value = {
     items: [
@@ -318,14 +258,9 @@ const makeChildTagsUrl = (
   return `/tags?${filter.makeQueryParameters()}`;
 };
 
-const makeTagScenesUrl = (
-  tag: Partial<GQL.TagDataFragment>,
-  defaultFilter?: ListFilterModel
-) => {
+const makeTagScenesUrl = (tag: Partial<GQL.TagDataFragment>) => {
   if (!tag.id) return "#";
-  var filter = defaultFilter
-    ? defaultFilter
-    : new ListFilterModel(GQL.FilterMode.Scenes, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
   const criterion = new TagsCriterion(TagsCriterionOption);
   criterion.value = {
     items: [{ id: tag.id, label: tag.name || `Tag ${tag.id}` }],
@@ -336,14 +271,9 @@ const makeTagScenesUrl = (
   return `/scenes?${filter.makeQueryParameters()}`;
 };
 
-const makeTagPerformersUrl = (
-  tag: Partial<GQL.TagDataFragment>,
-  defaultFilter?: ListFilterModel
-) => {
+const makeTagPerformersUrl = (tag: Partial<GQL.TagDataFragment>) => {
   if (!tag.id) return "#";
-  var filter = defaultFilter
-    ? defaultFilter
-    : new ListFilterModel(GQL.FilterMode.Performers, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Performers, undefined);
   const criterion = new TagsCriterion(TagsCriterionOption);
   criterion.value = {
     items: [{ id: tag.id, label: tag.name || `Tag ${tag.id}` }],
@@ -354,14 +284,9 @@ const makeTagPerformersUrl = (
   return `/performers?${filter.makeQueryParameters()}`;
 };
 
-const makeTagSceneMarkersUrl = (
-  tag: Partial<GQL.TagDataFragment>,
-  defaultFilter?: ListFilterModel
-) => {
+const makeTagSceneMarkersUrl = (tag: Partial<GQL.TagDataFragment>) => {
   if (!tag.id) return "#";
-  var filter = defaultFilter
-    ? defaultFilter
-    : new ListFilterModel(GQL.FilterMode.SceneMarkers, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.SceneMarkers, undefined);
   const criterion = new TagsCriterion(TagsCriterionOption);
   criterion.value = {
     items: [{ id: tag.id, label: tag.name || `Tag ${tag.id}` }],
@@ -372,14 +297,9 @@ const makeTagSceneMarkersUrl = (
   return `/scenes/markers?${filter.makeQueryParameters()}`;
 };
 
-const makeTagGalleriesUrl = (
-  tag: Partial<GQL.TagDataFragment>,
-  defaultFilter?: ListFilterModel
-) => {
+const makeTagGalleriesUrl = (tag: Partial<GQL.TagDataFragment>) => {
   if (!tag.id) return "#";
-  var filter = defaultFilter
-    ? defaultFilter
-    : new ListFilterModel(GQL.FilterMode.Galleries, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Galleries, undefined);
   const criterion = new TagsCriterion(TagsCriterionOption);
   criterion.value = {
     items: [{ id: tag.id, label: tag.name || `Tag ${tag.id}` }],
@@ -390,14 +310,9 @@ const makeTagGalleriesUrl = (
   return `/galleries?${filter.makeQueryParameters()}`;
 };
 
-const makeTagImagesUrl = (
-  tag: Partial<GQL.TagDataFragment>,
-  defaultFilter?: ListFilterModel
-) => {
+const makeTagImagesUrl = (tag: Partial<GQL.TagDataFragment>) => {
   if (!tag.id) return "#";
-  var filter = defaultFilter
-    ? defaultFilter
-    : new ListFilterModel(GQL.FilterMode.Images, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Images, undefined);
   const criterion = new TagsCriterion(TagsCriterionOption);
   criterion.value = {
     items: [{ id: tag.id, label: tag.name || `Tag ${tag.id}` }],
@@ -417,14 +332,9 @@ const makeSceneMarkerUrl = (sceneMarker: SceneMarkerDataFragment) => {
   return `/scenes/${sceneMarker.scene.id}?t=${sceneMarker.seconds}`;
 };
 
-const makeScenesPHashMatchUrl = (
-  phash: GQL.Maybe<string> | undefined,
-  defaultFilter?: ListFilterModel
-) => {
+const makeScenesPHashMatchUrl = (phash: GQL.Maybe<string> | undefined) => {
   if (!phash) return "#";
-  var filter = defaultFilter
-    ? defaultFilter
-    : new ListFilterModel(GQL.FilterMode.Scenes, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
   const criterion = new PhashCriterion();
   criterion.value = { value: phash };
   filter.criteria.push(criterion);

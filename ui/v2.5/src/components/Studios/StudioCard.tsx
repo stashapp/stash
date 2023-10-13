@@ -7,10 +7,6 @@ import { ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import { RatingBanner } from "../Shared/RatingBanner";
-import {
-  ListFilterModel,
-  useDefaultLinkFilter,
-} from "src/models/list-filter/filter";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -42,10 +38,7 @@ function maybeRenderParent(
   }
 }
 
-function maybeRenderChildren(
-  studio: GQL.StudioDataFragment,
-  defaultFilter: ListFilterModel
-) {
+function maybeRenderChildren(studio: GQL.StudioDataFragment) {
   if (studio.child_studios.length > 0) {
     return (
       <div className="studio-child-studios">
@@ -53,7 +46,7 @@ function maybeRenderChildren(
           id="parent_of"
           values={{
             children: (
-              <Link to={NavUtils.makeChildStudiosUrl(studio, defaultFilter)}>
+              <Link to={NavUtils.makeChildStudiosUrl(studio)}>
                 {studio.child_studios.length} studios
               </Link>
             ),
@@ -71,25 +64,6 @@ export const StudioCard: React.FC<IProps> = ({
   selected,
   onSelectedChanged,
 }) => {
-  const sceneDefaultFilter: ListFilterModel = useDefaultLinkFilter(
-    GQL.FilterMode.Scenes
-  );
-  const imageDefaultFilter: ListFilterModel = useDefaultLinkFilter(
-    GQL.FilterMode.Images
-  );
-  const galleryDefaultFilter: ListFilterModel = useDefaultLinkFilter(
-    GQL.FilterMode.Galleries
-  );
-  const movieDefaultFilter: ListFilterModel = useDefaultLinkFilter(
-    GQL.FilterMode.Movies
-  );
-  const performerDefaultFilter: ListFilterModel = useDefaultLinkFilter(
-    GQL.FilterMode.Performers
-  );
-  const studioDefaultFilter: ListFilterModel = useDefaultLinkFilter(
-    GQL.FilterMode.Studios
-  );
-
   function maybeRenderScenesPopoverButton() {
     if (!studio.scene_count) return;
 
@@ -98,7 +72,7 @@ export const StudioCard: React.FC<IProps> = ({
         className="scene-count"
         type="scene"
         count={studio.scene_count}
-        url={NavUtils.makeStudioScenesUrl(studio, sceneDefaultFilter)}
+        url={NavUtils.makeStudioScenesUrl(studio)}
       />
     );
   }
@@ -111,7 +85,7 @@ export const StudioCard: React.FC<IProps> = ({
         className="image-count"
         type="image"
         count={studio.image_count}
-        url={NavUtils.makeStudioImagesUrl(studio, imageDefaultFilter)}
+        url={NavUtils.makeStudioImagesUrl(studio)}
       />
     );
   }
@@ -124,7 +98,7 @@ export const StudioCard: React.FC<IProps> = ({
         className="gallery-count"
         type="gallery"
         count={studio.gallery_count}
-        url={NavUtils.makeStudioGalleriesUrl(studio, galleryDefaultFilter)}
+        url={NavUtils.makeStudioGalleriesUrl(studio)}
       />
     );
   }
@@ -137,7 +111,7 @@ export const StudioCard: React.FC<IProps> = ({
         className="movie-count"
         type="movie"
         count={studio.movie_count}
-        url={NavUtils.makeStudioMoviesUrl(studio, movieDefaultFilter)}
+        url={NavUtils.makeStudioMoviesUrl(studio)}
       />
     );
   }
@@ -150,7 +124,7 @@ export const StudioCard: React.FC<IProps> = ({
         className="performer-count"
         type="performer"
         count={studio.performer_count}
-        url={NavUtils.makeStudioPerformersUrl(studio, performerDefaultFilter)}
+        url={NavUtils.makeStudioPerformersUrl(studio)}
       />
     );
   }
@@ -194,7 +168,7 @@ export const StudioCard: React.FC<IProps> = ({
       details={
         <div className="studio-card__details">
           {maybeRenderParent(studio, hideParent)}
-          {maybeRenderChildren(studio, studioDefaultFilter)}
+          {maybeRenderChildren(studio)}
           <RatingBanner rating={studio.rating100} />
         </div>
       }

@@ -8,10 +8,6 @@ import { FormattedMessage } from "react-intl";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import SceneQueue from "src/models/sceneQueue";
-import {
-  ListFilterModel,
-  useDefaultLinkFilter,
-} from "src/models/list-filter/filter";
 
 interface ISceneListTableProps {
   scenes: GQL.SlimSceneDataFragment[];
@@ -23,30 +19,16 @@ interface ISceneListTableProps {
 export const SceneListTable: React.FC<ISceneListTableProps> = (
   props: ISceneListTableProps
 ) => {
-  const sceneDefaultFilter: ListFilterModel = useDefaultLinkFilter(
-    GQL.FilterMode.Scenes
-  );
   const renderTags = (tags: Partial<GQL.TagDataFragment>[]) =>
     tags.map((tag) => (
-      <Link
-        key={tag.id}
-        to={NavUtils.makeTagScenesUrl(tag, sceneDefaultFilter)}
-      >
+      <Link key={tag.id} to={NavUtils.makeTagScenesUrl(tag)}>
         <h6>{tag.name}</h6>
       </Link>
     ));
 
   const renderPerformers = (performers: Partial<GQL.PerformerDataFragment>[]) =>
     performers.map((performer) => (
-      <Link
-        key={performer.id}
-        to={NavUtils.makePerformerScenesUrl(
-          performer,
-          undefined,
-          undefined,
-          sceneDefaultFilter
-        )}
-      >
+      <Link key={performer.id} to={NavUtils.makePerformerScenesUrl(performer)}>
         <h6>{performer.name}</h6>
       </Link>
     ));
@@ -55,7 +37,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
     scene.movies.map((sceneMovie) => (
       <Link
         key={sceneMovie.movie.id}
-        to={NavUtils.makeMovieScenesUrl(sceneMovie.movie, sceneDefaultFilter)}
+        to={NavUtils.makeMovieScenesUrl(sceneMovie.movie)}
       >
         <h6>{sceneMovie.movie.name}</h6>
       </Link>
@@ -122,12 +104,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
         <td>{renderPerformers(scene.performers)}</td>
         <td>
           {scene.studio && (
-            <Link
-              to={NavUtils.makeStudioScenesUrl(
-                scene.studio,
-                sceneDefaultFilter
-              )}
-            >
+            <Link to={NavUtils.makeStudioScenesUrl(scene.studio)}>
               <h6>{scene.studio.name}</h6>
             </Link>
           )}

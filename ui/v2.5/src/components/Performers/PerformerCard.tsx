@@ -22,10 +22,6 @@ import { RatingBanner } from "../Shared/RatingBanner";
 import cx from "classnames";
 import { usePerformerUpdate } from "src/core/StashService";
 import { ILabeledId } from "src/models/list-filter/types";
-import {
-  ListFilterModel,
-  useDefaultLinkFilter,
-} from "src/models/list-filter/filter";
 
 export interface IPerformerCardExtraCriteria {
   scenes?: Criterion<CriterionValue>[];
@@ -67,22 +63,6 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   const ageString = intl.formatMessage(
     { id: ageL10nId },
     { age, years_old: ageL10String }
-  );
-
-  const sceneDefaultFilter: ListFilterModel = useDefaultLinkFilter(
-    GQL.FilterMode.Scenes
-  );
-  const imageDefaultFilter: ListFilterModel = useDefaultLinkFilter(
-    GQL.FilterMode.Images
-  );
-  const galleryDefaultFilter: ListFilterModel = useDefaultLinkFilter(
-    GQL.FilterMode.Galleries
-  );
-  const movieDefaultFilter: ListFilterModel = useDefaultLinkFilter(
-    GQL.FilterMode.Movies
-  );
-  const performerDefaultFilter: ListFilterModel = useDefaultLinkFilter(
-    GQL.FilterMode.Performers
   );
 
   const [updatePerformer] = usePerformerUpdate();
@@ -129,8 +109,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
         url={NavUtils.makePerformerScenesUrl(
           performer,
           extraCriteria?.performer,
-          extraCriteria?.scenes,
-          sceneDefaultFilter
+          extraCriteria?.scenes
         )}
       />
     );
@@ -147,8 +126,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
         url={NavUtils.makePerformerImagesUrl(
           performer,
           extraCriteria?.performer,
-          extraCriteria?.images,
-          imageDefaultFilter
+          extraCriteria?.images
         )}
       />
     );
@@ -165,8 +143,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
         url={NavUtils.makePerformerGalleriesUrl(
           performer,
           extraCriteria?.performer,
-          extraCriteria?.galleries,
-          galleryDefaultFilter
+          extraCriteria?.galleries
         )}
       />
     );
@@ -215,8 +192,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
         url={NavUtils.makePerformerMoviesUrl(
           performer,
           extraCriteria?.performer,
-          extraCriteria?.movies,
-          movieDefaultFilter
+          extraCriteria?.movies
         )}
       />
     );
@@ -257,12 +233,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   function maybeRenderFlag() {
     if (performer.country) {
       return (
-        <Link
-          to={NavUtils.makePerformersCountryUrl(
-            performer,
-            performerDefaultFilter
-          )}
-        >
+        <Link to={NavUtils.makePerformersCountryUrl(performer)}>
           <CountryFlag
             className="performer-card__country-flag"
             country={performer.country}

@@ -17,10 +17,7 @@ import {
   Criterion,
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
-import {
-  ListFilterModel,
-  useDefaultLinkFilter,
-} from "src/models/list-filter/filter";
+import { ListFilterModel } from "src/models/list-filter/filter";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { useInterfaceLocalForage } from "src/hooks/LocalForage";
 import { useHistory, useLocation } from "react-router-dom";
@@ -42,8 +39,6 @@ export enum PersistanceLevel {
   NONE,
   // load default query, don't load or persist display mode
   ALL,
-  // load default link filter
-  SAVEDLINKFILTER,
   // load and persist display mode only
   VIEW,
 }
@@ -540,7 +535,6 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     const [interfaceState, setInterfaceState] = useInterfaceLocalForage();
     const [filterInitialised, setFilterInitialised] = useState(false);
     const { configuration: config } = useContext(ConfigurationContext);
-    const linkFilter = useDefaultLinkFilter(filterMode);
 
     const lastPathname = useRef(location.pathname);
     const defaultDisplayMode = filterOptions.displayModeOptions[0];
@@ -636,8 +630,6 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
             newFilter.randomSeed = -1;
           }
         }
-      } else if (persistState === PersistanceLevel.SAVEDLINKFILTER) {
-        newFilter = linkFilter;
       } else if (persistState === PersistanceLevel.VIEW) {
         // wait until forage is initialised
         if (interfaceState.loading) return;
@@ -660,7 +652,6 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       filterInitialised,
       location,
       config,
-      linkFilter,
       defaultSort,
       defaultDisplayMode,
       defaultZoomIndex,
