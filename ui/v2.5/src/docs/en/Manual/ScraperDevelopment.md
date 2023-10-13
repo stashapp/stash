@@ -341,7 +341,7 @@ scene:
 ### Post-processing options
 
 Post-processing operations are contained in the `postProcess` key. Post-processing operations are performed in the order they are specified. The following post-processing operations are available:
-* `javascript`: accepts a javascript code block, that must return a string value. The input string is declared in the `value` variable. 
+* `javascript`: accepts a javascript code block, that must return a string value. The input string is declared in the `value` variable. If an error occurs while compiling or running the script, then the original value is returned.
 Example:
 ```yaml
 performer:
