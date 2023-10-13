@@ -528,7 +528,11 @@ type postProcessJavascript string
 
 func (p *postProcessJavascript) Apply(ctx context.Context, value string, q mappedQuery) string {
 	vm := otto.New()
-	vm.Set("value", value)
+	if err := vm.Set("value", value); err != nil {
+		logger.Warnf("javascript failed to set value: %v", err)
+		return value
+	}
+
 	script, err := vm.Compile("", "(function() { "+string(*p)+"})()")
 	if err != nil {
 		logger.Warnf("javascript failed to compile: %v", err)
