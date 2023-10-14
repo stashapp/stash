@@ -91,6 +91,7 @@ var migrate49NameChanges = map[string]string{
 	"galleryChecksum":    "checksum",
 	"sceneTags":          "scene_tags",
 	"performerTags":      "performer_tags",
+	"stash_id":           "stash_id_endpoint",
 }
 
 func post49(ctx context.Context, db *sqlx.DB) error {

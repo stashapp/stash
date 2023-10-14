@@ -184,7 +184,7 @@ const (
 
 	UI = "ui"
 
-	defaultImageLightboxSlideshowDelay = 5000
+	defaultImageLightboxSlideshowDelay = 5
 
 	DisableDropdownCreatePerformer = "disable_dropdown_create.performer"
 	DisableDropdownCreateStudio    = "disable_dropdown_create.studio"
