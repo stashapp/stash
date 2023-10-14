@@ -31,21 +31,27 @@ const (
 type imageRow struct {
 	ID    int         `db:"id" goqu:"skipinsert"`
 	Title zero.String `db:"title"`
+	Code  zero.String `db:"code"`
 	// expressed as 1-100
-	Rating    null.Int  `db:"rating"`
-	Date      NullDate  `db:"date"`
-	Organized bool      `db:"organized"`
-	OCounter  int       `db:"o_counter"`
-	StudioID  null.Int  `db:"studio_id,omitempty"`
-	CreatedAt Timestamp `db:"created_at"`
-	UpdatedAt Timestamp `db:"updated_at"`
+	Rating       null.Int    `db:"rating"`
+	Date         NullDate    `db:"date"`
+	Details      zero.String `db:"details"`
+	Photographer zero.String `db:"photographer"`
+	Organized    bool        `db:"organized"`
+	OCounter     int         `db:"o_counter"`
+	StudioID     null.Int    `db:"studio_id,omitempty"`
+	CreatedAt    Timestamp   `db:"created_at"`
+	UpdatedAt    Timestamp   `db:"updated_at"`
 }
 
 func (r *imageRow) fromImage(i models.Image) {
 	r.ID = i.ID
 	r.Title = zero.StringFrom(i.Title)
+	r.Code = zero.StringFrom(i.Code)
 	r.Rating = intFromPtr(i.Rating)
 	r.Date = NullDateFromDatePtr(i.Date)
+	r.Details = zero.StringFrom(i.Details)
+	r.Photographer = zero.StringFrom(i.Photographer)
 	r.Organized = i.Organized
 	r.OCounter = i.OCounter
 	r.StudioID = intFromPtr(i.StudioID)
@@ -63,13 +69,16 @@ type imageQueryRow struct {
 
 func (r *imageQueryRow) resolve() *models.Image {
 	ret := &models.Image{
-		ID:        r.ID,
-		Title:     r.Title.String,
-		Rating:    nullIntPtr(r.Rating),
-		Date:      r.Date.DatePtr(),
-		Organized: r.Organized,
-		OCounter:  r.OCounter,
-		StudioID:  nullIntPtr(r.StudioID),
+		ID:           r.ID,
+		Title:        r.Title.String,
+		Code:         r.Code.String,
+		Rating:       nullIntPtr(r.Rating),
+		Date:         r.Date.DatePtr(),
+		Details:      r.Details.String,
+		Photographer: r.Photographer.String,
+		Organized:    r.Organized,
+		OCounter:     r.OCounter,
+		StudioID:     nullIntPtr(r.StudioID),
 
 		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
 		Checksum:      r.PrimaryFileChecksum.String,
@@ -91,8 +100,11 @@ type imageRowRecord struct {
 
 func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
 	r.setNullString("title", i.Title)
+	r.setNullString("code", i.Code)
 	r.setNullInt("rating", i.Rating)
 	r.setNullDate("date", i.Date)
+	r.setNullString("details", i.Details)
+	r.setNullString("photographer", i.Photographer)
 	r.setBool("organized", i.Organized)
 	r.setInt("o_counter", i.OCounter)
 	r.setNullInt("studio_id", i.StudioID)
@@ -672,6 +684,9 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 		stringCriterionHandler(imageFilter.Checksum, "fingerprints_md5.fingerprint")(ctx, f)
 	}))
 	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Title, "images.title"))
+	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Code, "images.code"))
+	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Details, "images.details"))
+	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Photographer, "images.photographer"))
 
 	query.handleCriterion(ctx, pathCriterionHandler(imageFilter.Path, "folders.path", "files.basename", qb.addFoldersTable))
 	query.handleCriterion(ctx, imageFileCountCriterionHandler(qb, imageFilter.FileCount))

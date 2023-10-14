@@ -3,11 +3,14 @@ package models
 import "context"
 
 type ImageFilterType struct {
-	And   *ImageFilterType      `json:"AND"`
-	Or    *ImageFilterType      `json:"OR"`
-	Not   *ImageFilterType      `json:"NOT"`
-	ID    *IntCriterionInput    `json:"id"`
-	Title *StringCriterionInput `json:"title"`
+	And          *ImageFilterType      `json:"AND"`
+	Or           *ImageFilterType      `json:"OR"`
+	Not          *ImageFilterType      `json:"NOT"`
+	ID           *IntCriterionInput    `json:"id"`
+	Title        *StringCriterionInput `json:"title"`
+	Code         *StringCriterionInput `json:"code"`
+	Details      *StringCriterionInput `json:"details"`
+	Photographer *StringCriterionInput `json:"photographer"`
 	// Filter by file checksum
 	Checksum *StringCriterionInput `json:"checksum"`
 	// Filter by path

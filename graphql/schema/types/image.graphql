@@ -2,6 +2,7 @@ type Image {
   id: ID!
   checksum: String @deprecated(reason: "Use files.fingerprints")
   title: String
+  code: String
   # rating expressed as 1-5
   rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
@@ -9,6 +10,8 @@ type Image {
   url: String @deprecated(reason: "Use urls")
   urls: [String!]!
   date: String
+  details: String
+  photographer: String
   o_counter: Int
   organized: Boolean!
   path: String! @deprecated(reason: "Use files.path")
@@ -44,6 +47,7 @@ input ImageUpdateInput {
   clientMutationId: String
   id: ID!
   title: String
+  code: String
   # rating expressed as 1-5
   rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
@@ -52,6 +56,8 @@ input ImageUpdateInput {
   url: String @deprecated(reason: "Use urls")
   urls: [String!]
   date: String
+  details: String
+  photographer: String
 
   studio_id: ID
   performer_ids: [ID!]
@@ -65,6 +71,7 @@ input BulkImageUpdateInput {
   clientMutationId: String
   ids: [ID!]
   title: String
+  code: String
   # rating expressed as 1-5
   rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
@@ -73,6 +80,8 @@ input BulkImageUpdateInput {
   url: String @deprecated(reason: "Use urls")
   urls: BulkUpdateStrings
   date: String
+  details: String
+  photographer: String
 
   studio_id: ID
   performer_ids: BulkUpdateIds

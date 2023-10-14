@@ -107,6 +107,9 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 	updatedImage := models.NewImagePartial()
 
 	updatedImage.Title = translator.optionalString(input.Title, "title")
+	updatedImage.Code = translator.optionalString(input.Code, "code")
+	updatedImage.Details = translator.optionalString(input.Details, "details")
+	updatedImage.Photographer = translator.optionalString(input.Photographer, "photographer")
 	updatedImage.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
 	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
 
@@ -203,6 +206,9 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 	updatedImage := models.NewImagePartial()
 
 	updatedImage.Title = translator.optionalString(input.Title, "title")
+	updatedImage.Code = translator.optionalString(input.Code, "code")
+	updatedImage.Details = translator.optionalString(input.Details, "details")
+	updatedImage.Photographer = translator.optionalString(input.Photographer, "photographer")
 	updatedImage.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
 	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
 

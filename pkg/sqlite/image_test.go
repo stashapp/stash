@@ -57,13 +57,16 @@ func loadImageRelationships(ctx context.Context, expected models.Image, actual *
 
 func Test_imageQueryBuilder_Create(t *testing.T) {
 	var (
-		title     = "title"
-		rating    = 60
-		ocounter  = 5
-		url       = "url"
-		date, _   = models.ParseDate("2003-02-01")
-		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		title        = "title"
+		code         = "code"
+		rating       = 60
+		details      = "details"
+		photographer = "photographer"
+		ocounter     = 5
+		url          = "url"
+		date, _      = models.ParseDate("2003-02-01")
+		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
 		imageFile = makeFileWithID(fileIdxStartImageFiles)
 	)
@@ -77,8 +80,11 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 			"full",
 			models.Image{
 				Title:        title,
+				Code:         code,
 				Rating:       &rating,
 				Date:         &date,
+				Details:      details,
+				Photographer: photographer,
 				URLs:         models.NewRelatedStrings([]string{url}),
 				Organized:    true,
 				OCounter:     ocounter,
@@ -94,13 +100,16 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 		{
 			"with file",
 			models.Image{
-				Title:     title,
-				Rating:    &rating,
-				Date:      &date,
-				URLs:      models.NewRelatedStrings([]string{url}),
-				Organized: true,
-				OCounter:  ocounter,
-				StudioID:  &studioIDs[studioIdxWithImage],
+				Title:        title,
+				Code:         code,
+				Rating:       &rating,
+				Date:         &date,
+				Details:      details,
+				Photographer: photographer,
+				URLs:         models.NewRelatedStrings([]string{url}),
+				Organized:    true,
+				OCounter:     ocounter,
+				StudioID:     &studioIDs[studioIdxWithImage],
 				Files: models.NewRelatedFiles([]models.File{
 					imageFile.(*models.ImageFile),
 				}),
@@ -214,13 +223,16 @@ func makeImageFileWithID(i int) *models.ImageFile {
 
 func Test_imageQueryBuilder_Update(t *testing.T) {
 	var (
-		title     = "title"
-		rating    = 60
-		url       = "url"
-		date, _   = models.ParseDate("2003-02-01")
-		ocounter  = 5
-		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		title        = "title"
+		code         = "code"
+		rating       = 60
+		url          = "url"
+		details      = "details"
+		photographer = "photographer"
+		date, _      = models.ParseDate("2003-02-01")
+		ocounter     = 5
+		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 	)
 
 	tests := []struct {
@@ -233,9 +245,12 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 			&models.Image{
 				ID:           imageIDs[imageIdxWithGallery],
 				Title:        title,
+				Code:         code,
 				Rating:       &rating,
 				URLs:         models.NewRelatedStrings([]string{url}),
 				Date:         &date,
+				Details:      details,
+				photographer: photographer,
 				Organized:    true,
 				OCounter:     ocounter,
 				StudioID:     &studioIDs[studioIdxWithImage],
@@ -382,6 +397,9 @@ func clearImagePartial() models.ImagePartial {
 	// leave mandatory fields
 	return models.ImagePartial{
 		Title:        models.OptionalString{Set: true, Null: true},
+		Code:         models.OptionalString{Set: true, Null: true},
+		Details:      models.OptionalString{Set: true, Null: true},
+		Photographer: models.OptionalString{Set: true, Null: true},
 		Rating:       models.OptionalInt{Set: true, Null: true},
 		URLs:         &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
 		Date:         models.OptionalDate{Set: true, Null: true},
@@ -394,13 +412,16 @@ func clearImagePartial() models.ImagePartial {
 
 func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 	var (
-		title     = "title"
-		rating    = 60
-		url       = "url"
-		date, _   = models.ParseDate("2003-02-01")
-		ocounter  = 5
-		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		title        = "title"
+		code         = "code"
+		details      = "details"
+		photographer = "photographer"
+		rating       = 60
+		url          = "url"
+		date, _      = models.ParseDate("2003-02-01")
+		ocounter     = 5
+		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 	)
 
 	tests := []struct {
@@ -414,8 +435,11 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 			"full",
 			imageIDs[imageIdx1WithGallery],
 			models.ImagePartial{
-				Title:  models.NewOptionalString(title),
-				Rating: models.NewOptionalInt(rating),
+				Title:        models.NewOptionalString(title),
+				Code:         models.NewOptionalString(code),
+				Details:      models.NewOptionalString(details),
+				Photographer: models.NewOptionalString(photographer),
+				Rating:       models.NewOptionalInt(rating),
 				URLs: &models.UpdateStrings{
 					Values: []string{url},
 					Mode:   models.RelationshipUpdateModeSet,
@@ -440,14 +464,17 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 				},
 			},
 			models.Image{
-				ID:        imageIDs[imageIdx1WithGallery],
-				Title:     title,
-				Rating:    &rating,
-				URLs:      models.NewRelatedStrings([]string{url}),
-				Date:      &date,
-				Organized: true,
-				OCounter:  ocounter,
-				StudioID:  &studioIDs[studioIdxWithImage],
+				ID:           imageIDs[imageIdx1WithGallery],
+				Title:        title,
+				Code:         code,
+				Details:      details,
+				Photographer: photographer,
+				Rating:       &rating,
+				URLs:         models.NewRelatedStrings([]string{url}),
+				Date:         &date,
+				Organized:    true,
+				OCounter:     ocounter,
+				StudioID:     &studioIDs[studioIdxWithImage],
 				Files: models.NewRelatedFiles([]models.File{
 					makeImageFile(imageIdx1WithGallery),
 				}),

@@ -47,8 +47,11 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
   const schema = yup.object({
     title: yup.string().ensure(),
+    code: yup.string().optional().nullable(),
     urls: yupUniqueStringList("urls"),
     date: yupDateString(intl),
+    details: yup.string().ensure(),
+    photographer: yup.string().optional().nullable(),
     rating100: yup.number().nullable().defined(),
     studio_id: yup.string().required().nullable(),
     performer_ids: yup.array(yup.string().required()).defined(),
@@ -57,8 +60,11 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
   const initialValues = {
     title: image.title ?? "",
+    code: image.code ?? "",
     urls: image?.urls ?? [],
     date: image?.date ?? "",
+    details: image.details ?? "",
+    photographer: image.photographer ?? "",
     rating100: image.rating100 ?? null,
     studio_id: image.studio?.id ?? null,
     performer_ids: (image.performers ?? []).map((p) => p.id),
@@ -189,6 +195,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
         <div className="form-container row px-3">
           <div className="col-12 col-lg-6 col-xl-12">
             {renderTextField("title", intl.formatMessage({ id: "title" }))}
+            {renderTextField("code", intl.formatMessage({ id: "scene_code" }))}
             <Form.Group controlId="urls" as={Row}>
               <Col xs={3} className="pr-0 url-label">
                 <Form.Label className="col-form-label">
@@ -216,6 +223,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
                 />
               </Col>
             </Form.Group>
+            {renderTextField("photographer", intl.formatMessage({ id: "photographer" }))}
             <Form.Group controlId="rating" as={Row}>
               {FormUtils.renderLabel({
                 title: intl.formatMessage({ id: "rating" }),
@@ -287,6 +295,21 @@ export const ImageEditPanel: React.FC<IProps> = ({
                 />
               </Col>
             </Form.Group>
+            <div className="col-12 col-lg-6 col-xl-12">
+              <Form.Group controlId="details">
+                <Form.Label>
+                 <FormattedMessage id="details" />
+               </Form.Label>
+               <Form.Control
+                 as="textarea"
+                 className="gallery-description text-input"
+                 onChange={(e) =>
+                    formik.setFieldValue("details", e.currentTarget.value)
+                 }
+                  value={formik.values.details ?? ""}
+              />
+            </Form.Group>
+          </div>
           </div>
         </div>
       </Form>
