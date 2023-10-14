@@ -801,16 +801,35 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 		aggregateQuery.addColumn("COUNT(DISTINCT temp.id) as total")
 	}
 
-	// TODO - this doesn't work yet
-	// if options.Megapixels {
-	// 	query.addColumn("COALESCE(images.width, 0) * COALESCE(images.height, 0) / 1000000 as megapixels")
-	// 	aggregateQuery.addColumn("COALESCE(SUM(temp.megapixels), 0) as megapixels")
-	// }
+	if options.Megapixels {
+		query.addJoins(
+			join{
+				table:    imagesFilesTable,
+				onClause: "images_files.image_id = images.id",
+			},
+			join{
+				table:    imageFileTable,
+				onClause: "images_files.file_id = image_files.file_id",
+			},
+		)
+		query.addColumn("COALESCE(image_files.width, 0) * COALESCE(image_files.height, 0) / 1000000 as megapixels")
+		aggregateQuery.addColumn("COALESCE(SUM(temp.megapixels), 0) as megapixels")
+	}
 
-	// if options.TotalSize {
-	// 	query.addColumn("COALESCE(images.size, 0) as size")
-	// 	aggregateQuery.addColumn("COALESCE(SUM(temp.size), 0) as size")
-	// }
+	if options.TotalSize {
+		query.addJoins(
+			join{
+				table:    imagesFilesTable,
+				onClause: "images_files.image_id = images.id",
+			},
+			join{
+				table:    fileTable,
+				onClause: "images_files.file_id = files.id",
+			},
+		)
+		query.addColumn("COALESCE(files.size, 0) as size")
+		aggregateQuery.addColumn("SUM(temp.size) as size")
+	}
 
 	const includeSortPagination = false
 	aggregateQuery.from = fmt.Sprintf("(%s) as temp", query.toSQL(includeSortPagination))
