@@ -812,8 +812,8 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 				onClause: "images_files.file_id = image_files.file_id",
 			},
 		)
-		query.addColumn("COALESCE(image_files.width, 0) * COALESCE(image_files.height, 0) / 1000000 as megapixels")
-		aggregateQuery.addColumn("COALESCE(SUM(temp.megapixels), 0) as megapixels")
+		query.addColumn("COALESCE(image_files.width, 0) * COALESCE(image_files.height, 0) as megapixels")
+		aggregateQuery.addColumn("COALESCE(SUM(temp.megapixels), 0) / 1000000 as megapixels")
 	}
 
 	if options.TotalSize {
@@ -836,8 +836,8 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 
 	out := struct {
 		Total      int
-		Megapixels float64
-		Size       float64
+		Megapixels null.Float
+		Size       null.Float
 	}{}
 	if err := qb.repository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
 		return nil, err
@@ -845,8 +845,8 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 
 	ret := models.NewImageQueryResult(qb)
 	ret.Count = out.Total
-	ret.Megapixels = out.Megapixels
-	ret.TotalSize = out.Size
+	ret.Megapixels = out.Megapixels.Float64
+	ret.TotalSize = out.Size.Float64
 	return ret, nil
 }
 
