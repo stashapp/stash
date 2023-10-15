@@ -637,7 +637,7 @@ const SceneLoader: React.FC = () => {
     } else if (sceneQueue.sceneIDs) {
       getQueueScenes(sceneQueue.sceneIDs);
     }
-  }, [sceneQueue]);
+  }, [sceneQueue, prevQueueScenes]);
 
   useEffect(() => {
     if (
@@ -646,7 +646,7 @@ const SceneLoader: React.FC = () => {
     ) {
       loadNextScene(continuePlaylist);
     }
-  }, [queueScenes]);
+  });
 
   function loadNextScene(autoPlay?: boolean | undefined) {
     const nextQueueIndex = currentQueueIndex + 1;
