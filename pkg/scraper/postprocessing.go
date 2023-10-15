@@ -174,7 +174,7 @@ func (c Cache) postScrapeGallery(ctx context.Context, g ScrapedGallery) (Scraped
 	if g.URL != nil && len(g.URLs) == 0 {
 		g.URLs = []string{*g.URL}
 	}
-	
+
 	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
 		pqb := c.repository.PerformerFinder
 		tqb := c.repository.TagFinder
