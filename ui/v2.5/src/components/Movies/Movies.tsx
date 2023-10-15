@@ -1,26 +1,25 @@
 import React from "react";
 import { Route, Switch } from "react-router-dom";
-import { useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
-import { TITLE_SUFFIX } from "src/components/Shared/constants";
+import { useTitleProps } from "src/hooks/title";
 import Movie from "./MovieDetails/Movie";
 import MovieCreate from "./MovieDetails/MovieCreate";
 import { MovieList } from "./MovieList";
+import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 
 const Movies: React.FC = () => {
-  const intl = useIntl();
+  useScrollToTopOnMount();
 
-  const title_template = `${intl.formatMessage({
-    id: "movies",
-  })} ${TITLE_SUFFIX}`;
+  return <MovieList />;
+};
+
+const MovieRoutes: React.FC = () => {
+  const titleProps = useTitleProps({ id: "movies" });
   return (
     <>
-      <Helmet
-        defaultTitle={title_template}
-        titleTemplate={`%s | ${title_template}`}
-      />
+      <Helmet {...titleProps} />
       <Switch>
-        <Route exact path="/movies" component={MovieList} />
+        <Route exact path="/movies" component={Movies} />
         <Route exact path="/movies/new" component={MovieCreate} />
         <Route path="/movies/:id/:tab?" component={Movie} />
       </Switch>
@@ -28,4 +27,4 @@ const Movies: React.FC = () => {
   );
 };
 
-export default Movies;
+export default MovieRoutes;

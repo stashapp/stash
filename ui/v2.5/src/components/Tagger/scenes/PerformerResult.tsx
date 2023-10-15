@@ -1,14 +1,16 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
-import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "src/components/Shared/Icon";
 import { OperationButton } from "src/components/Shared/OperationButton";
-import { PerformerSelect, SelectObject } from "src/components/Shared/Select";
 import { OptionalField } from "../IncludeButton";
 import { faSave } from "@fortawesome/free-solid-svg-icons";
+import {
+  Performer,
+  PerformerSelect,
+} from "src/components/Performers/PerformerSelect";
 
 interface IPerformerResultProps {
   performer: GQL.ScrapedPerformer;
@@ -40,16 +42,32 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
       stashID.stash_id === performer.remote_site_id
   );
 
-  const handlePerformerSelect = (performers: SelectObject[]) => {
+  const [selectedPerformer, setSelectedPerformer] = useState<Performer>();
+
+  function selectPerformer(selected: Performer | undefined) {
+    setSelectedPerformer(selected);
+    setSelectedID(selected?.id);
+  }
+
+  useEffect(() => {
+    if (
+      performerData?.findPerformer &&
+      selectedID === performerData?.findPerformer?.id
+    ) {
+      setSelectedPerformer(performerData.findPerformer);
+    }
+  }, [performerData?.findPerformer, selectedID]);
+
+  const handleSelect = (performers: Performer[]) => {
     if (performers.length) {
-      setSelectedID(performers[0].id);
+      selectPerformer(performers[0]);
     } else {
-      setSelectedID(undefined);
+      selectPerformer(undefined);
     }
   };
 
-  const handlePerformerSkip = () => {
-    setSelectedID(undefined);
+  const handleSkip = () => {
+    selectPerformer(undefined);
   };
 
   if (stashLoading) return <div>Loading performer</div>;
@@ -65,7 +83,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
           <OptionalField
             exclude={selectedID === undefined}
             setExclude={(v) =>
-              v ? handlePerformerSkip() : setSelectedID(matchedPerformer.id)
+              v ? handleSkip() : setSelectedID(matchedPerformer.id)
             }
           >
             <div>
@@ -109,16 +127,14 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
         </Button>
         <Button
           variant={selectedSource === "skip" ? "primary" : "secondary"}
-          onClick={() => handlePerformerSkip()}
+          onClick={() => handleSkip()}
         >
           <FormattedMessage id="actions.skip" />
         </Button>
         <PerformerSelect
-          ids={selectedID ? [selectedID] : []}
-          onSelect={handlePerformerSelect}
-          className={cx("performer-select", {
-            "performer-select-active": selectedSource === "existing",
-          })}
+          values={selectedPerformer ? [selectedPerformer] : []}
+          onSelect={handleSelect}
+          active={selectedSource === "existing"}
           isClearable={false}
         />
         {maybeRenderLinkButton()}

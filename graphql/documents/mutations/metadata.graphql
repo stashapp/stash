@@ -45,3 +45,7 @@ mutation BackupDatabase($input: BackupDatabaseInput!) {
 mutation AnonymiseDatabase($input: AnonymiseDatabaseInput!) {
   anonymiseDatabase(input: $input)
 }
+
+mutation OptimiseDatabase {
+  optimiseDatabase
+}

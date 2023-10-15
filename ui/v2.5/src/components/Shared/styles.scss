@@ -46,11 +46,12 @@
     margin-right: 0.5rem;
     white-space: nowrap;
   }
+}
 
-  div:nth-last-child(2) {
-    flex: 1;
-    max-width: 100%;
-  }
+.col-md-8 .details-edit div:nth-last-child(2),
+.detail-header.edit .details-edit div:nth-last-child(2) {
+  flex: 1;
+  max-width: 100%;
 }
 
 .select-suggest {
@@ -104,18 +105,20 @@
   &-item {
     white-space: nowrap;
 
-    .btn-link {
+    .btn {
       border: none;
       color: white;
       font-weight: 400;
       padding: 0;
+      text-align: left;
+      width: 100%;
     }
 
-    &:last-child::before {
+    &:last-child .btn span::before {
       content: "└ \1F4C1";
     }
 
-    &::before {
+    .btn span::before {
       content: "├ \1F4C1";
       display: inline-block;
       padding-right: 1rem;
@@ -124,7 +127,7 @@
   }
 
   &-parent {
-    &::before {
+    .btn span::before {
       visibility: hidden;
     }
 
@@ -134,10 +137,40 @@
   }
 }
 
-.scrape-dialog .modal-content .dialog-container {
-  max-height: calc(100vh - 14rem);
-  overflow-y: auto;
-  padding-right: 15px;
+.scrape-dialog {
+  .modal-content .dialog-container {
+    max-height: calc(100vh - 14rem);
+    overflow-y: auto;
+    padding-right: 15px;
+  }
+
+  .image-selection-parent {
+    min-width: 100%;
+  }
+
+  .image-selection {
+    .select-buttons {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1rem;
+
+      .image-index {
+        flex-grow: 1;
+        text-align: center;
+      }
+    }
+
+    .loading {
+      opacity: 0.5;
+    }
+
+    .LoadingIndicator {
+      height: 100%;
+      position: absolute;
+      top: 0;
+    }
+  }
 }
 
 button.collapse-button.btn-primary:not(:disabled):not(.disabled):hover,
@@ -340,6 +373,7 @@ div.react-datepicker {
 
   .react-datepicker__day {
     color: $text-color;
+
     &.react-datepicker__day--disabled {
       color: $text-muted;
     }
@@ -409,6 +443,7 @@ div.react-datepicker {
     }
   }
 }
+
 /* stylelint-enable */
 
 #date-picker-portal .react-datepicker-popper {
@@ -440,4 +475,8 @@ div.react-datepicker {
   position: absolute;
   right: 0;
   z-index: 4;
+}
+
+.string-list-row .input-group {
+  flex-wrap: nowrap;
 }

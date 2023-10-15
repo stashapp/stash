@@ -41,12 +41,7 @@ func (s *Service) Destroy(ctx context.Context, i *models.Gallery, fileDeleter *i
 	return imgsDestroyed, nil
 }
 
-type ChapterDestroyer interface {
-	FindByGalleryID(ctx context.Context, galleryID int) ([]*models.GalleryChapter, error)
-	Destroy(ctx context.Context, id int) error
-}
-
-func DestroyChapter(ctx context.Context, galleryChapter *models.GalleryChapter, qb ChapterDestroyer) error {
+func DestroyChapter(ctx context.Context, galleryChapter *models.GalleryChapter, qb models.GalleryChapterDestroyer) error {
 	return qb.Destroy(ctx, galleryChapter.ID)
 }
 

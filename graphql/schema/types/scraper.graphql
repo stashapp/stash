@@ -1,9 +1,9 @@
 enum ScrapeType {
-  """From text query"""
+  "From text query"
   NAME
-  """From existing object"""
+  "From existing object"
   FRAGMENT
-  """From URL"""
+  "From URL"
   URL
 }
 
@@ -16,45 +16,46 @@ enum ScrapeContentType {
 }
 
 "Scraped Content is the forming union over the different scrapers"
-union ScrapedContent = ScrapedStudio
-                     | ScrapedTag
-                     | ScrapedScene
-                     | ScrapedGallery
-                     | ScrapedMovie
-                     | ScrapedPerformer
+union ScrapedContent =
+    ScrapedStudio
+  | ScrapedTag
+  | ScrapedScene
+  | ScrapedGallery
+  | ScrapedMovie
+  | ScrapedPerformer
 
 type ScraperSpec {
-    """URLs matching these can be scraped with"""
-    urls: [String!]
-    supported_scrapes: [ScrapeType!]!
+  "URLs matching these can be scraped with"
+  urls: [String!]
+  supported_scrapes: [ScrapeType!]!
 }
 
 type Scraper {
-    id: ID!
-    name: String!
-    """Details for performer scraper"""
-    performer: ScraperSpec
-    """Details for scene scraper"""
-    scene: ScraperSpec
-    """Details for gallery scraper"""
-    gallery: ScraperSpec
-    """Details for movie scraper"""
-    movie: ScraperSpec
+  id: ID!
+  name: String!
+  "Details for performer scraper"
+  performer: ScraperSpec
+  "Details for scene scraper"
+  scene: ScraperSpec
+  "Details for gallery scraper"
+  gallery: ScraperSpec
+  "Details for movie scraper"
+  movie: ScraperSpec
 }
 
-
 type ScrapedStudio {
-  """Set if studio matched"""
+  "Set if studio matched"
   stored_id: ID
   name: String!
   url: String
+  parent: ScrapedStudio
   image: String
 
   remote_site_id: String
 }
 
 type ScrapedTag {
-  """Set if tag matched"""
+  "Set if tag matched"
   stored_id: ID
   name: String!
 }
@@ -64,14 +65,14 @@ type ScrapedScene {
   code: String
   details: String
   director: String
-  url: String
+  url: String @deprecated(reason: "use urls")
+  urls: [String!]
   date: String
 
-  """This should be a base64 encoded data URL"""
+  "This should be a base64 encoded data URL"
   image: String
 
   file: SceneFileType # Resolver
-
   studio: ScrapedStudio
   tags: [ScrapedTag!]
   performers: [ScrapedPerformer!]
@@ -87,7 +88,8 @@ input ScrapedSceneInput {
   code: String
   details: String
   director: String
-  url: String
+  url: String @deprecated(reason: "use urls")
+  urls: [String!]
   date: String
 
   # no image, file, duration or relationships
@@ -98,7 +100,8 @@ input ScrapedSceneInput {
 type ScrapedGallery {
   title: String
   details: String
-  url: String
+  url: String @deprecated(reason: "use urls")
+  urls: [String!]
   date: String
 
   studio: ScrapedStudio
@@ -109,91 +112,99 @@ type ScrapedGallery {
 input ScrapedGalleryInput {
   title: String
   details: String
-  url: String
+  url: String @deprecated(reason: "use urls")
+  urls: [String!]
   date: String
 
   # no studio, tags or performers
 }
 
 input ScraperSourceInput {
-  """Index of the configured stash-box instance to use. Should be unset if scraper_id is set"""
+  "Index of the configured stash-box instance to use. Should be unset if scraper_id is set"
   stash_box_index: Int @deprecated(reason: "use stash_box_endpoint")
-  """Stash-box endpoint"""
+  "Stash-box endpoint"
   stash_box_endpoint: String
-  """Scraper ID to scrape with. Should be unset if stash_box_index is set"""
+  "Scraper ID to scrape with. Should be unset if stash_box_index is set"
   scraper_id: ID
 }
 
 type ScraperSource {
-  """Index of the configured stash-box instance to use. Should be unset if scraper_id is set"""
+  "Index of the configured stash-box instance to use. Should be unset if scraper_id is set"
   stash_box_index: Int @deprecated(reason: "use stash_box_endpoint")
-  """Stash-box endpoint"""
+  "Stash-box endpoint"
   stash_box_endpoint: String
-  """Scraper ID to scrape with. Should be unset if stash_box_index is set"""
+  "Scraper ID to scrape with. Should be unset if stash_box_index is set"
   scraper_id: ID
 }
 
 input ScrapeSingleSceneInput {
-  """Instructs to query by string"""
+  "Instructs to query by string"
   query: String
-  """Instructs to query by scene fingerprints"""
+  "Instructs to query by scene fingerprints"
   scene_id: ID
-  """Instructs to query by scene fragment"""
+  "Instructs to query by scene fragment"
   scene_input: ScrapedSceneInput
 }
 
 input ScrapeMultiScenesInput {
-  """Instructs to query by scene fingerprints"""
+  "Instructs to query by scene fingerprints"
   scene_ids: [ID!]
 }
 
-input ScrapeSinglePerformerInput {
-  """Instructs to query by string"""
+input ScrapeSingleStudioInput {
+  """
+  Query can be either a name or a Stash ID
+  """
   query: String
-  """Instructs to query by performer id"""
+}
+
+input ScrapeSinglePerformerInput {
+  "Instructs to query by string"
+  query: String
+  "Instructs to query by performer id"
   performer_id: ID
-  """Instructs to query by performer fragment"""
+  "Instructs to query by performer fragment"
   performer_input: ScrapedPerformerInput
 }
 
 input ScrapeMultiPerformersInput {
-  """Instructs to query by scene fingerprints"""
+  "Instructs to query by scene fingerprints"
   performer_ids: [ID!]
 }
 
 input ScrapeSingleGalleryInput {
-  """Instructs to query by string"""
+  "Instructs to query by string"
   query: String
-  """Instructs to query by gallery id"""
+  "Instructs to query by gallery id"
   gallery_id: ID
-  """Instructs to query by gallery fragment"""
+  "Instructs to query by gallery fragment"
   gallery_input: ScrapedGalleryInput
 }
 
 input ScrapeSingleMovieInput {
-  """Instructs to query by string"""
+  "Instructs to query by string"
   query: String
-  """Instructs to query by movie id"""
+  "Instructs to query by movie id"
   movie_id: ID
-  """Instructs to query by gallery fragment"""
+  "Instructs to query by gallery fragment"
   movie_input: ScrapedMovieInput
 }
 
 input StashBoxSceneQueryInput {
-  """Index of the configured stash-box instance to use"""
+  "Index of the configured stash-box instance to use"
   stash_box_index: Int!
-  """Instructs query by scene fingerprints"""
+  "Instructs query by scene fingerprints"
   scene_ids: [ID!]
-  """Query by query string"""
+  "Query by query string"
   q: String
 }
 
 input StashBoxPerformerQueryInput {
-  """Index of the configured stash-box instance to use"""
+  "Index of the configured stash-box instance to use"
   stash_box_index: Int!
-  """Instructs query by scene fingerprints"""
+  "Instructs query by scene fingerprints"
   performer_ids: [ID!]
-  """Query by query string"""
+  "Query by query string"
   q: String
 }
 
@@ -208,16 +219,22 @@ type StashBoxFingerprint {
   duration: Int!
 }
 
-"""If neither performer_ids nor performer_names are set, tag all performers"""
-input StashBoxBatchPerformerTagInput {
-  "Stash endpoint to use for the performer tagging"
+"If neither ids nor names are set, tag all items"
+input StashBoxBatchTagInput {
+  "Stash endpoint to use for the tagging"
   endpoint: Int!
-  "Fields to exclude when executing the performer tagging"
+  "Fields to exclude when executing the tagging"
   exclude_fields: [String!]
-  "Refresh performers already tagged by StashBox if true. Only tag performers with no StashBox tagging if false"
+  "Refresh items already tagged by StashBox if true. Only tag items with no StashBox tagging if false"
   refresh: Boolean!
+  "If batch adding studios, should their parent studios also be created?"
+  createParent: Boolean!
+  "If set, only tag these ids"
+  ids: [ID!]
+  "If set, only tag these names"
+  names: [String!]
   "If set, only tag these performer ids"
-  performer_ids: [ID!]
+  performer_ids: [ID!] @deprecated(reason: "use ids")
   "If set, only tag these performer names"
-  performer_names: [String!]
+  performer_names: [String!] @deprecated(reason: "use names")
 }

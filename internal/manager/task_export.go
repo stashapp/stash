@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/manager/config"
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
@@ -173,10 +172,6 @@ func (t *ExportTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 		t.ExportStudios(ctx, workerCount, r)
 		t.ExportTags(ctx, workerCount, r)
 
-		if t.full {
-			t.ExportScrapedItems(ctx, r)
-		}
-
 		return nil
 	})
 	if txnErr != nil {
@@ -296,13 +291,13 @@ func (t *ExportTask) populateMovieScenes(ctx context.Context, repo Repository) {
 	}
 
 	if err != nil {
-		logger.Errorf("[movies] failed to fetch movies: %s", err.Error())
+		logger.Errorf("[movies] failed to fetch movies: %v", err)
 	}
 
 	for _, m := range movies {
 		scenes, err := sceneReader.FindByMovieID(ctx, m.ID)
 		if err != nil {
-			logger.Errorf("[movies] <%s> failed to fetch scenes for movie: %s", m.Checksum, err.Error())
+			logger.Errorf("[movies] <%s> failed to fetch scenes for movie: %v", m.Name, err)
 			continue
 		}
 
@@ -390,7 +385,7 @@ func (t *ExportTask) ExportScenes(ctx context.Context, workers int, repo Reposit
 	logger.Infof("[scenes] export complete in %s. %d workers used.", time.Since(startTime), workers)
 }
 
-func exportFile(f file.File, t *ExportTask) {
+func exportFile(f models.File, t *ExportTask) {
 	newFileJSON := fileToJSON(f)
 
 	fn := newFileJSON.Filename()
@@ -400,7 +395,7 @@ func exportFile(f file.File, t *ExportTask) {
 	}
 }
 
-func fileToJSON(f file.File) jsonschema.DirEntry {
+func fileToJSON(f models.File) jsonschema.DirEntry {
 	bf := f.Base()
 
 	base := jsonschema.BaseFile{
@@ -426,7 +421,7 @@ func fileToJSON(f file.File) jsonschema.DirEntry {
 	}
 
 	switch ff := f.(type) {
-	case *file.VideoFile:
+	case *models.VideoFile:
 		base.Type = jsonschema.DirEntryTypeVideo
 		return jsonschema.VideoFile{
 			BaseFile:         &base,
@@ -441,7 +436,7 @@ func fileToJSON(f file.File) jsonschema.DirEntry {
 			Interactive:      ff.Interactive,
 			InteractiveSpeed: ff.InteractiveSpeed,
 		}
-	case *file.ImageFile:
+	case *models.ImageFile:
 		base.Type = jsonschema.DirEntryTypeImage
 		return jsonschema.ImageFile{
 			BaseFile: &base,
@@ -454,7 +449,7 @@ func fileToJSON(f file.File) jsonschema.DirEntry {
 	return &base
 }
 
-func exportFolder(f file.Folder, t *ExportTask) {
+func exportFolder(f models.Folder, t *ExportTask) {
 	newFileJSON := folderToJSON(f)
 
 	fn := newFileJSON.Filename()
@@ -464,7 +459,7 @@ func exportFolder(f file.Folder, t *ExportTask) {
 	}
 }
 
-func folderToJSON(f file.Folder) jsonschema.DirEntry {
+func folderToJSON(f models.Folder) jsonschema.DirEntry {
 	base := jsonschema.BaseDirEntry{
 		Type:      jsonschema.DirEntryTypeFolder,
 		ModTime:   json.JSONTime{Time: f.ModTime},
@@ -649,6 +644,11 @@ func exportImage(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 
 		if err := s.LoadFiles(ctx, repo.Image); err != nil {
 			logger.Errorf("[images] <%s> error getting image files: %s", imageHash, err.Error())
+			continue
+		}
+
+		if err := s.LoadURLs(ctx, repo.Image); err != nil {
+			logger.Errorf("[images] <%s> error getting image urls: %s", imageHash, err.Error())
 			continue
 		}
 
@@ -978,14 +978,14 @@ func (t *ExportTask) exportStudio(ctx context.Context, wg *sync.WaitGroup, jobCh
 		newStudioJSON, err := studio.ToJSON(ctx, studioReader, s)
 
 		if err != nil {
-			logger.Errorf("[studios] <%s> error getting studio JSON: %s", s.Checksum, err.Error())
+			logger.Errorf("[studios] <%s> error getting studio JSON: %v", s.Name, err)
 			continue
 		}
 
 		fn := newStudioJSON.Filename()
 
 		if err := t.json.saveStudio(fn, newStudioJSON); err != nil {
-			logger.Errorf("[studios] <%s> failed to save json: %s", s.Checksum, err.Error())
+			logger.Errorf("[studios] <%s> failed to save json: %v", s.Name, err)
 		}
 	}
 }
@@ -1101,7 +1101,7 @@ func (t *ExportTask) exportMovie(ctx context.Context, wg *sync.WaitGroup, jobCha
 		newMovieJSON, err := movie.ToJSON(ctx, movieReader, studioReader, m)
 
 		if err != nil {
-			logger.Errorf("[movies] <%s> error getting tag JSON: %s", m.Checksum, err.Error())
+			logger.Errorf("[movies] <%s> error getting tag JSON: %v", m.Name, err)
 			continue
 		}
 
@@ -1114,90 +1114,7 @@ func (t *ExportTask) exportMovie(ctx context.Context, wg *sync.WaitGroup, jobCha
 		fn := newMovieJSON.Filename()
 
 		if err := t.json.saveMovie(fn, newMovieJSON); err != nil {
-			logger.Errorf("[movies] <%s> failed to save json: %s", fn, err.Error())
+			logger.Errorf("[movies] <%s> failed to save json: %v", m.Name, err)
 		}
 	}
-}
-
-func (t *ExportTask) ExportScrapedItems(ctx context.Context, repo Repository) {
-	qb := repo.ScrapedItem
-	sqb := repo.Studio
-	scrapedItems, err := qb.All(ctx)
-	if err != nil {
-		logger.Errorf("[scraped sites] failed to fetch all items: %s", err.Error())
-	}
-
-	logger.Info("[scraped sites] exporting")
-
-	scraped := []jsonschema.ScrapedItem{}
-
-	for i, scrapedItem := range scrapedItems {
-		index := i + 1
-		logger.Progressf("[scraped sites] %d of %d", index, len(scrapedItems))
-
-		var studioName string
-		if scrapedItem.StudioID.Valid {
-			studio, _ := sqb.Find(ctx, int(scrapedItem.StudioID.Int64))
-			if studio != nil {
-				studioName = studio.Name
-			}
-		}
-
-		newScrapedItemJSON := jsonschema.ScrapedItem{}
-
-		if scrapedItem.Title.Valid {
-			newScrapedItemJSON.Title = scrapedItem.Title.String
-		}
-		if scrapedItem.Description.Valid {
-			newScrapedItemJSON.Description = scrapedItem.Description.String
-		}
-		if scrapedItem.URL.Valid {
-			newScrapedItemJSON.URL = scrapedItem.URL.String
-		}
-		if scrapedItem.Date != nil {
-			newScrapedItemJSON.Date = scrapedItem.Date.String()
-		}
-		if scrapedItem.Rating.Valid {
-			newScrapedItemJSON.Rating = scrapedItem.Rating.String
-		}
-		if scrapedItem.Tags.Valid {
-			newScrapedItemJSON.Tags = scrapedItem.Tags.String
-		}
-		if scrapedItem.Models.Valid {
-			newScrapedItemJSON.Models = scrapedItem.Models.String
-		}
-		if scrapedItem.Episode.Valid {
-			newScrapedItemJSON.Episode = int(scrapedItem.Episode.Int64)
-		}
-		if scrapedItem.GalleryFilename.Valid {
-			newScrapedItemJSON.GalleryFilename = scrapedItem.GalleryFilename.String
-		}
-		if scrapedItem.GalleryURL.Valid {
-			newScrapedItemJSON.GalleryURL = scrapedItem.GalleryURL.String
-		}
-		if scrapedItem.VideoFilename.Valid {
-			newScrapedItemJSON.VideoFilename = scrapedItem.VideoFilename.String
-		}
-		if scrapedItem.VideoURL.Valid {
-			newScrapedItemJSON.VideoURL = scrapedItem.VideoURL.String
-		}
-
-		newScrapedItemJSON.Studio = studioName
-		updatedAt := json.JSONTime{Time: scrapedItem.UpdatedAt} // TODO keeping ruby format
-		newScrapedItemJSON.UpdatedAt = updatedAt
-
-		scraped = append(scraped, newScrapedItemJSON)
-	}
-
-	scrapedJSON, err := t.json.getScraped()
-	if err != nil {
-		logger.Debugf("[scraped sites] error reading json: %s", err.Error())
-	}
-	if !jsonschema.CompareJSON(scrapedJSON, scraped) {
-		if err := t.json.saveScaped(scraped); err != nil {
-			logger.Errorf("[scraped sites] failed to save json: %s", err.Error())
-		}
-	}
-
-	logger.Infof("[scraped sites] export complete")
 }

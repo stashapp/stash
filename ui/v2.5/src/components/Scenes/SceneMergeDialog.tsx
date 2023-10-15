@@ -12,25 +12,30 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useToast } from "src/hooks/Toast";
 import { faExchangeAlt, faSignInAlt } from "@fortawesome/free-solid-svg-icons";
 import {
-  hasScrapedValues,
   ScrapeDialog,
   ScrapeDialogRow,
   ScrapedImageRow,
   ScrapedInputGroupRow,
+  ScrapedStringListRow,
   ScrapedTextAreaRow,
+} from "../Shared/ScrapeDialog/ScrapeDialog";
+import { clone, uniq } from "lodash-es";
+import { galleryTitle } from "src/core/galleries";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
+import { ModalComponent } from "../Shared/Modal";
+import { IHasStoredID, sortStoredIdObjects } from "src/utils/data";
+import {
+  ObjectListScrapeResult,
   ScrapeResult,
   ZeroableScrapeResult,
-} from "../Shared/ScrapeDialog";
-import { clone, uniq } from "lodash-es";
+  hasScrapedValues,
+} from "../Shared/ScrapeDialog/scrapeResult";
 import {
   ScrapedMoviesRow,
   ScrapedPerformersRow,
   ScrapedStudioRow,
   ScrapedTagsRow,
-} from "./SceneDetails/SceneScrapeDialog";
-import { galleryTitle } from "src/core/galleries";
-import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
-import { ModalComponent } from "../Shared/Modal";
+} from "../Shared/ScrapeDialog/ScrapedObjectsRow";
 
 interface IStashIDsField {
   values: GQL.StashId[];
@@ -61,8 +66,8 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
   const [code, setCode] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(dest.code)
   );
-  const [url, setURL] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(dest.url)
+  const [url, setURL] = useState<ScrapeResult<string[]>>(
+    new ScrapeResult<string[]>(dest.urls)
   );
   const [date, setDate] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(dest.date)
@@ -100,8 +105,25 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     return ret;
   }
 
-  const [performers, setPerformers] = useState<ScrapeResult<string[]>>(
-    new ScrapeResult<string[]>(sortIdList(dest.performers.map((p) => p.id)))
+  function idToStoredID(o: { id: string; name: string }) {
+    return {
+      stored_id: o.id,
+      name: o.name,
+    };
+  }
+
+  function uniqIDStoredIDs(objs: IHasStoredID[]) {
+    return objs.filter((o, i) => {
+      return objs.findIndex((oo) => oo.stored_id === o.stored_id) === i;
+    });
+  }
+
+  const [performers, setPerformers] = useState<
+    ObjectListScrapeResult<GQL.ScrapedPerformer>
+  >(
+    new ObjectListScrapeResult<GQL.ScrapedPerformer>(
+      sortStoredIdObjects(dest.performers.map(idToStoredID))
+    )
   );
 
   const [movies, setMovies] = useState<ScrapeResult<string[]>>(
@@ -164,7 +186,11 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       new ScrapeResult(dest.code, sources.find((s) => s.code)?.code, !dest.code)
     );
     setURL(
-      new ScrapeResult(dest.url, sources.find((s) => s.url)?.url, !dest.url)
+      new ScrapeResult(
+        dest.urls,
+        sources.find((s) => s.urls)?.urls,
+        !dest.urls?.length
+      )
     );
     setDate(
       new ScrapeResult(dest.date, sources.find((s) => s.date)?.date, !dest.date)
@@ -178,9 +204,9 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     );
 
     setPerformers(
-      new ScrapeResult(
-        dest.performers.map((p) => p.id),
-        uniq(all.map((s) => s.performers.map((p) => p.id)).flat())
+      new ObjectListScrapeResult<GQL.ScrapedPerformer>(
+        sortStoredIdObjects(dest.performers.map(idToStoredID)),
+        uniqIDStoredIDs(all.map((s) => s.performers.map(idToStoredID)).flat())
       )
     );
     setTags(
@@ -361,8 +387,8 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           result={code}
           onChange={(value) => setCode(value)}
         />
-        <ScrapedInputGroupRow
-          title={intl.formatMessage({ id: "url" })}
+        <ScrapedStringListRow
+          title={intl.formatMessage({ id: "urls" })}
           result={url}
           onChange={(value) => setURL(value)}
         />
@@ -546,7 +572,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       id: dest.id,
       title: title.getNewValue(),
       code: code.getNewValue(),
-      url: url.getNewValue(),
+      urls: url.getNewValue(),
       date: date.getNewValue(),
       rating100: rating.getNewValue(),
       o_counter: oCounter.getNewValue(),
@@ -554,7 +580,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       play_duration: playDuration.getNewValue(),
       gallery_ids: galleries.getNewValue(),
       studio_id: studio.getNewValue(),
-      performer_ids: performers.getNewValue(),
+      performer_ids: performers.getNewValue()?.map((p) => p.stored_id!),
       movies: movies.getNewValue()?.map((m) => {
         // find the equivalent movie in the original scenes
         const found = all

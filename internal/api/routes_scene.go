@@ -12,40 +12,43 @@ import (
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/ffmpeg"
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 type SceneFinder interface {
-	manager.SceneCoverGetter
+	models.SceneGetter
 
-	scene.IDFinder
 	FindByChecksum(ctx context.Context, checksum string) ([]*models.Scene, error)
 	FindByOSHash(ctx context.Context, oshash string) ([]*models.Scene, error)
+	GetCover(ctx context.Context, sceneID int) ([]byte, error)
 }
 
 type SceneMarkerFinder interface {
-	Find(ctx context.Context, id int) (*models.SceneMarker, error)
+	models.SceneMarkerGetter
 	FindBySceneID(ctx context.Context, sceneID int) ([]*models.SceneMarker, error)
 }
 
+type SceneMarkerTagFinder interface {
+	models.TagGetter
+	FindBySceneMarkerID(ctx context.Context, sceneMarkerID int) ([]*models.Tag, error)
+}
+
 type CaptionFinder interface {
-	GetCaptions(ctx context.Context, fileID file.ID) ([]*models.VideoCaption, error)
+	GetCaptions(ctx context.Context, fileID models.FileID) ([]*models.VideoCaption, error)
 }
 
 type sceneRoutes struct {
 	txnManager        txn.Manager
 	sceneFinder       SceneFinder
-	fileFinder        file.Finder
+	fileGetter        models.FileGetter
 	captionFinder     CaptionFinder
 	sceneMarkerFinder SceneMarkerFinder
-	tagFinder         scene.MarkerTagFinder
+	tagFinder         SceneMarkerTagFinder
 }
 
 func (rs sceneRoutes) Routes() chi.Router {
@@ -72,6 +75,7 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/vtt/thumbs", rs.VttThumbs)
 		r.Get("/vtt/sprite", rs.VttSprite)
 		r.Get("/funscript", rs.Funscript)
+		r.Get("/interactive_csv", rs.InteractiveCSV)
 		r.Get("/interactive_heatmap", rs.InteractiveHeatmap)
 		r.Get("/caption", rs.CaptionLang)
 
@@ -374,6 +378,20 @@ func (rs sceneRoutes) Funscript(w http.ResponseWriter, r *http.Request) {
 	utils.ServeStaticFile(w, r, filepath)
 }
 
+func (rs sceneRoutes) InteractiveCSV(w http.ResponseWriter, r *http.Request) {
+	s := r.Context().Value(sceneKey).(*models.Scene)
+	filepath := video.GetFunscriptPath(s.Path)
+
+	// TheHandy directly only accepts interactive CSVs
+	csvBytes, err := manager.ConvertFunscriptToCSV(filepath)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	utils.ServeStaticContent(w, r, csvBytes)
+}
+
 func (rs sceneRoutes) InteractiveHeatmap(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	sceneHash := scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
@@ -559,7 +577,7 @@ func (rs sceneRoutes) SceneCtx(next http.Handler) http.Handler {
 			scene, _ = qb.Find(ctx, sceneID)
 
 			if scene != nil {
-				if err := scene.LoadPrimaryFile(ctx, rs.fileFinder); err != nil {
+				if err := scene.LoadPrimaryFile(ctx, rs.fileGetter); err != nil {
 					if !errors.Is(err, context.Canceled) {
 						logger.Errorf("error loading primary file for scene %d: %v", sceneID, err)
 					}

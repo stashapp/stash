@@ -190,19 +190,24 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
       return;
     }
 
+    const localOptionsCopy = { ...localOptions };
+    if (localOptionsCopy.strategy === undefined && !allowSetDefault) {
+      localOptionsCopy.strategy = GQL.IdentifyFieldStrategy.Merge;
+    }
+
     // send null if strategy is undefined
-    if (localOptions.strategy === undefined) {
+    if (localOptionsCopy.strategy === undefined) {
       editOptions(null);
       resetOptions();
     } else {
-      let { createMissing } = localOptions;
+      let { createMissing } = localOptionsCopy;
       if (createMissing === undefined && !allowSetDefault) {
         createMissing = false;
       }
 
       editOptions({
-        ...localOptions,
-        strategy: localOptions.strategy,
+        ...localOptionsCopy,
+        strategy: localOptionsCopy.strategy,
         createMissing,
       });
     }
@@ -311,7 +316,7 @@ export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
   }
 
   return (
-    <Form.Group className="scraper-sources">
+    <Form.Group className="scraper-sources mt-3">
       <h5>
         <FormattedMessage id="config.tasks.identify.field_options" />
       </h5>

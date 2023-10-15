@@ -3,4 +3,6 @@ fragment SlimTagData on Tag {
   name
   aliases
   image_path
+  parent_count
+  child_count
 }

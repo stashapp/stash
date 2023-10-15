@@ -199,13 +199,13 @@ func (_m *SceneMarkerReaderWriter) GetMarkerStrings(ctx context.Context, q *stri
 	return r0, r1
 }
 
-// GetTagIDs provides a mock function with given fields: ctx, imageID
-func (_m *SceneMarkerReaderWriter) GetTagIDs(ctx context.Context, imageID int) ([]int, error) {
-	ret := _m.Called(ctx, imageID)
+// GetTagIDs provides a mock function with given fields: ctx, relatedID
+func (_m *SceneMarkerReaderWriter) GetTagIDs(ctx context.Context, relatedID int) ([]int, error) {
+	ret := _m.Called(ctx, relatedID)
 
 	var r0 []int
 	if rf, ok := ret.Get(0).(func(context.Context, int) []int); ok {
-		r0 = rf(ctx, imageID)
+		r0 = rf(ctx, relatedID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]int)
@@ -214,7 +214,7 @@ func (_m *SceneMarkerReaderWriter) GetTagIDs(ctx context.Context, imageID int) (
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, imageID)
+		r1 = rf(ctx, relatedID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -285,6 +285,29 @@ func (_m *SceneMarkerReaderWriter) Update(ctx context.Context, updatedSceneMarke
 	}
 
 	return r0
+}
+
+// UpdatePartial provides a mock function with given fields: ctx, id, updatedSceneMarker
+func (_m *SceneMarkerReaderWriter) UpdatePartial(ctx context.Context, id int, updatedSceneMarker models.SceneMarkerPartial) (*models.SceneMarker, error) {
+	ret := _m.Called(ctx, id, updatedSceneMarker)
+
+	var r0 *models.SceneMarker
+	if rf, ok := ret.Get(0).(func(context.Context, int, models.SceneMarkerPartial) *models.SceneMarker); ok {
+		r0 = rf(ctx, id, updatedSceneMarker)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.SceneMarker)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int, models.SceneMarkerPartial) error); ok {
+		r1 = rf(ctx, id, updatedSceneMarker)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // UpdateTags provides a mock function with given fields: ctx, markerID, tagIDs

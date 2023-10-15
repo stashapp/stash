@@ -151,12 +151,18 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 
 	for i := range matchingPaths {
 		sceneID := i + 1
-		mockSceneReader.On("UpdatePartial", mock.Anything, sceneID, models.ScenePartial{
-			TagIDs: &models.UpdateIDs{
-				IDs:  []int{tagID},
-				Mode: models.RelationshipUpdateModeAdd,
-			},
-		}).Return(nil, nil).Once()
+
+		matchPartial := mock.MatchedBy(func(got models.ScenePartial) bool {
+			expected := models.ScenePartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			}
+
+			return scenePartialsEqual(got, expected)
+		})
+		mockSceneReader.On("UpdatePartial", mock.Anything, sceneID, matchPartial).Return(nil, nil).Once()
 	}
 
 	tagger := Tagger{
@@ -253,12 +259,17 @@ func testTagImages(t *testing.T, tc testTagCase) {
 	for i := range matchingPaths {
 		imageID := i + 1
 
-		mockImageReader.On("UpdatePartial", mock.Anything, imageID, models.ImagePartial{
-			TagIDs: &models.UpdateIDs{
-				IDs:  []int{tagID},
-				Mode: models.RelationshipUpdateModeAdd,
-			},
-		}).Return(nil, nil).Once()
+		matchPartial := mock.MatchedBy(func(got models.ImagePartial) bool {
+			expected := models.ImagePartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			}
+
+			return imagePartialsEqual(got, expected)
+		})
+		mockImageReader.On("UpdatePartial", mock.Anything, imageID, matchPartial).Return(nil, nil).Once()
 	}
 
 	tagger := Tagger{
@@ -355,12 +366,17 @@ func testTagGalleries(t *testing.T, tc testTagCase) {
 	for i := range matchingPaths {
 		galleryID := i + 1
 
-		mockGalleryReader.On("UpdatePartial", mock.Anything, galleryID, models.GalleryPartial{
-			TagIDs: &models.UpdateIDs{
-				IDs:  []int{tagID},
-				Mode: models.RelationshipUpdateModeAdd,
-			},
-		}).Return(nil, nil).Once()
+		matchPartial := mock.MatchedBy(func(got models.GalleryPartial) bool {
+			expected := models.GalleryPartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			}
+
+			return galleryPartialsEqual(got, expected)
+		})
+		mockGalleryReader.On("UpdatePartial", mock.Anything, galleryID, matchPartial).Return(nil, nil).Once()
 
 	}
 

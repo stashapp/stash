@@ -3,21 +3,19 @@ package manager
 import (
 	"archive/zip"
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/movie"
@@ -25,7 +23,6 @@ import (
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type ImportTask struct {
@@ -38,7 +35,6 @@ type ImportTask struct {
 	DuplicateBehaviour  ImportDuplicateEnum
 	MissingRefBehaviour models.ImportMissingRefEnum
 
-	scraped             []jsonschema.ScrapedItem
 	fileNamingAlgorithm models.HashAlgorithm
 }
 
@@ -112,12 +108,6 @@ func (t *ImportTask) Start(ctx context.Context) {
 		t.MissingRefBehaviour = models.ImportMissingRefEnumFail
 	}
 
-	scraped, _ := t.json.getScraped()
-	if scraped == nil {
-		logger.Warn("missing scraped json")
-	}
-	t.scraped = scraped
-
 	if t.Reset {
 		err := t.txnManager.Reset()
 
@@ -134,7 +124,6 @@ func (t *ImportTask) Start(ctx context.Context) {
 	t.ImportFiles(ctx)
 	t.ImportGalleries(ctx)
 
-	t.ImportScrapedItems(ctx)
 	t.ImportScenes(ctx)
 	t.ImportImages(ctx)
 }
@@ -293,7 +282,7 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 	logger.Info("[studios] import complete")
 }
 
-func (t *ImportTask) ImportStudio(ctx context.Context, studioJSON *jsonschema.Studio, pendingParent map[string][]*jsonschema.Studio, readerWriter studio.NameFinderCreatorUpdater) error {
+func (t *ImportTask) ImportStudio(ctx context.Context, studioJSON *jsonschema.Studio, pendingParent map[string][]*jsonschema.Studio, readerWriter studio.ImporterReaderWriter) error {
 	importer := &studio.Importer{
 		ReaderWriter:        readerWriter,
 		Input:               *studioJSON,
@@ -397,7 +386,7 @@ func (t *ImportTask) ImportFiles(ctx context.Context) {
 		if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
 			return t.ImportFile(ctx, fileJSON, pendingParent)
 		}); err != nil {
-			if errors.Is(err, errZipFileNotExist) {
+			if errors.Is(err, file.ErrZipFileNotExist) {
 				// add to the pending parent list so that it is created after the parent
 				s := pendingParent[fileJSON.DirEntry().ZipFile]
 				s = append(s, fileJSON)
@@ -433,7 +422,7 @@ func (t *ImportTask) ImportFile(ctx context.Context, fileJSON jsonschema.DirEntr
 	r := t.txnManager
 	readerWriter := r.File
 
-	fileImporter := &fileFolderImporter{
+	fileImporter := &file.Importer{
 		ReaderWriter: readerWriter,
 		FolderStore:  r.Folder,
 		Input:        fileJSON,
@@ -581,7 +570,7 @@ func (t *ImportTask) ImportTags(ctx context.Context) {
 	logger.Info("[tags] import complete")
 }
 
-func (t *ImportTask) ImportTag(ctx context.Context, tagJSON *jsonschema.Tag, pendingParent map[string][]*jsonschema.Tag, fail bool, readerWriter tag.NameFinderCreatorUpdater) error {
+func (t *ImportTask) ImportTag(ctx context.Context, tagJSON *jsonschema.Tag, pendingParent map[string][]*jsonschema.Tag, fail bool, readerWriter tag.ImporterReaderWriter) error {
 	importer := &tag.Importer{
 		ReaderWriter:        readerWriter,
 		Input:               *tagJSON,
@@ -612,61 +601,6 @@ func (t *ImportTask) ImportTag(ctx context.Context, tagJSON *jsonschema.Tag, pen
 	delete(pendingParent, tagJSON.Name)
 
 	return nil
-}
-
-func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
-	if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
-		logger.Info("[scraped sites] importing")
-		r := t.txnManager
-		qb := r.ScrapedItem
-		sqb := r.Studio
-		currentTime := time.Now()
-
-		for i, mappingJSON := range t.scraped {
-			index := i + 1
-			logger.Progressf("[scraped sites] %d of %d", index, len(t.scraped))
-
-			newScrapedItem := models.ScrapedItem{
-				Title:           sql.NullString{String: mappingJSON.Title, Valid: true},
-				Description:     sql.NullString{String: mappingJSON.Description, Valid: true},
-				URL:             sql.NullString{String: mappingJSON.URL, Valid: true},
-				Rating:          sql.NullString{String: mappingJSON.Rating, Valid: true},
-				Tags:            sql.NullString{String: mappingJSON.Tags, Valid: true},
-				Models:          sql.NullString{String: mappingJSON.Models, Valid: true},
-				Episode:         sql.NullInt64{Int64: int64(mappingJSON.Episode), Valid: true},
-				GalleryFilename: sql.NullString{String: mappingJSON.GalleryFilename, Valid: true},
-				GalleryURL:      sql.NullString{String: mappingJSON.GalleryURL, Valid: true},
-				VideoFilename:   sql.NullString{String: mappingJSON.VideoFilename, Valid: true},
-				VideoURL:        sql.NullString{String: mappingJSON.VideoURL, Valid: true},
-				CreatedAt:       currentTime,
-				UpdatedAt:       t.getTimeFromJSONTime(mappingJSON.UpdatedAt),
-			}
-
-			time, err := utils.ParseDateStringAsTime(mappingJSON.Date)
-			if err == nil {
-				newScrapedItem.Date = &models.Date{Time: time}
-			}
-
-			studio, err := sqb.FindByName(ctx, mappingJSON.Studio, false)
-			if err != nil {
-				logger.Errorf("[scraped sites] failed to fetch studio: %s", err.Error())
-			}
-			if studio != nil {
-				newScrapedItem.StudioID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
-			}
-
-			_, err = qb.Create(ctx, newScrapedItem)
-			if err != nil {
-				logger.Errorf("[scraped sites] <%s> failed to create: %s", newScrapedItem.Title.String, err.Error())
-			}
-		}
-
-		return nil
-	}); err != nil {
-		logger.Errorf("[scraped sites] import failed to commit: %s", err.Error())
-	}
-
-	logger.Info("[scraped sites] import complete")
 }
 
 func (t *ImportTask) ImportScenes(ctx context.Context) {
@@ -798,22 +732,4 @@ func (t *ImportTask) ImportImages(ctx context.Context) {
 	}
 
 	logger.Info("[images] import complete")
-}
-
-var currentLocation = time.Now().Location()
-
-func (t *ImportTask) getTimeFromJSONTime(jsonTime json.JSONTime) time.Time {
-	if currentLocation != nil {
-		if jsonTime.IsZero() {
-			return time.Now().In(currentLocation)
-		} else {
-			return jsonTime.Time.In(currentLocation)
-		}
-	} else {
-		if jsonTime.IsZero() {
-			return time.Now()
-		} else {
-			return jsonTime.Time
-		}
-	}
 }

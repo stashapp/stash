@@ -32,13 +32,13 @@ const movieName = "testMovie"
 const movieAliases = "aliases"
 
 var (
-	date     = "2001-01-01"
-	dateObj  = models.NewDate(date)
-	rating   = 5
-	duration = 100
-	director = "director"
-	synopsis = "synopsis"
-	url      = "url"
+	date       = "2001-01-01"
+	dateObj, _ = models.ParseDate(date)
+	rating     = 5
+	duration   = 100
+	director   = "director"
+	synopsis   = "synopsis"
+	url        = "url"
 )
 
 const studioName = "studio"

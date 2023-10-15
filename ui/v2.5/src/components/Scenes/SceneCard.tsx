@@ -1,10 +1,15 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "../Shared/Icon";
-import { TagLink } from "../Shared/TagLink";
+import {
+  GalleryLink,
+  TagLink,
+  MovieLink,
+  SceneMarkerLink,
+} from "../Shared/TagLink";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { SweatDrops } from "../Shared/SweatDrops";
 import { TruncatedText } from "../Shared/TruncatedText";
@@ -25,12 +30,15 @@ import {
   faTag,
 } from "@fortawesome/free-solid-svg-icons";
 import { objectPath, objectTitle } from "src/core/files";
+import { PreviewScrubber } from "./PreviewScrubber";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
   image?: string;
   video?: string;
   soundActive: boolean;
+  vttPath?: string;
+  onScrubberClick?: (timestamp: number) => void;
 }
 
 export const ScenePreview: React.FC<IScenePreviewProps> = ({
@@ -38,6 +46,8 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
   video,
   isPortrait,
   soundActive,
+  vttPath,
+  onScrubberClick,
 }) => {
   const videoEl = useRef<HTMLVideoElement>(null);
 
@@ -72,6 +82,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
         ref={videoEl}
         src={video}
       />
+      <PreviewScrubber vttPath={vttPath} onClick={onScrubberClick} />
     </div>
   );
 };
@@ -90,6 +101,7 @@ interface ISceneCardProps {
 export const SceneCard: React.FC<ISceneCardProps> = (
   props: ISceneCardProps
 ) => {
+  const history = useHistory();
   const { configuration } = React.useContext(ConfigurationContext);
 
   const file = useMemo(
@@ -212,7 +224,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             src={sceneMovie.movie.front_image_path ?? ""}
           />
         </Link>
-        <TagLink
+        <MovieLink
           key={sceneMovie.movie.id}
           movie={sceneMovie.movie}
           className="d-block"
@@ -238,8 +250,8 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     if (props.scene.scene_markers.length <= 0) return;
 
     const popoverContent = props.scene.scene_markers.map((marker) => {
-      const markerPopover = { ...marker, scene: { id: props.scene.id } };
-      return <TagLink key={marker.id} marker={markerPopover} />;
+      const markerWithScene = { ...marker, scene: { id: props.scene.id } };
+      return <SceneMarkerLink key={marker.id} marker={markerWithScene} />;
     });
 
     return (
@@ -275,7 +287,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     if (props.scene.galleries.length <= 0) return;
 
     const popoverContent = props.scene.galleries.map((gallery) => (
-      <TagLink key={gallery.id} gallery={gallery} />
+      <GalleryLink key={gallery.id} gallery={gallery} />
     ));
 
     return (
@@ -383,6 +395,18 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       })
     : `/scenes/${props.scene.id}`;
 
+  function onScrubberClick(timestamp: number) {
+    const link = props.queue
+      ? props.queue.makeLink(props.scene.id, {
+          sceneIndex: props.index,
+          continue: cont,
+          start: timestamp,
+        })
+      : `/scenes/${props.scene.id}?t=${timestamp}`;
+
+    history.push(link);
+  }
+
   return (
     <GridCard
       className={`scene-card ${zoomIndex()} ${filelessClass()}`}
@@ -404,6 +428,8 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             video={props.scene.paths.preview ?? undefined}
             isPortrait={isPortrait()}
             soundActive={configuration?.interface?.soundOnPreview ?? false}
+            vttPath={props.scene.paths.vtt ?? undefined}
+            onScrubberClick={onScrubberClick}
           />
           <RatingBanner rating={props.scene.rating100} />
           {maybeRenderSceneSpecsOverlay()}

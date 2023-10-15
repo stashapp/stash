@@ -12,7 +12,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -292,8 +291,7 @@ func TestMovieUpdateFrontImage(t *testing.T) {
 		// create movie to test against
 		const name = "TestMovieUpdateMovieImages"
 		movie := models.Movie{
-			Name:     name,
-			Checksum: md5.FromString(name),
+			Name: name,
 		}
 		err := qb.Create(ctx, &movie)
 		if err != nil {
@@ -313,8 +311,7 @@ func TestMovieUpdateBackImage(t *testing.T) {
 		// create movie to test against
 		const name = "TestMovieUpdateMovieImages"
 		movie := models.Movie{
-			Name:     name,
-			Checksum: md5.FromString(name),
+			Name: name,
 		}
 		err := qb.Create(ctx, &movie)
 		if err != nil {

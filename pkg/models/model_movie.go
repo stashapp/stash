@@ -2,13 +2,10 @@ package models
 
 import (
 	"time"
-
-	"github.com/stashapp/stash/pkg/hash/md5"
 )
 
 type Movie struct {
 	ID       int    `json:"id"`
-	Checksum string `json:"checksum"`
 	Name     string `json:"name"`
 	Aliases  string `json:"aliases"`
 	Duration *int   `json:"duration"`
@@ -23,8 +20,15 @@ type Movie struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+func NewMovie() Movie {
+	currentTime := time.Now()
+	return Movie{
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
+	}
+}
+
 type MoviePartial struct {
-	Checksum OptionalString
 	Name     OptionalString
 	Aliases  OptionalString
 	Duration OptionalInt
@@ -39,31 +43,11 @@ type MoviePartial struct {
 	UpdatedAt OptionalTime
 }
 
-var DefaultMovieImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4wgVBQsJl1CMZAAAASJJREFUeNrt3N0JwyAYhlEj3cj9R3Cm5rbkqtAP+qrnGaCYHPwJpLlaa++mmLpbAERAgAgIEAEBIiBABERAgAgIEAEBIiBABERAgAgIEAHZuVflj40x4i94zhk9vqsVvEq6AsQqMP1EjORx20OACAgQRRx7T+zzcFBxcjNDfoB4ntQqTm5Awo7MlqywZxcgYQ+RlqywJ3ozJAQCSBiEJSsQA0gYBpDAgAARECACAkRAgAgIEAERECACAmSjUv6eAOSB8m8YIGGzBUjYbAESBgMkbBkDEjZbgITBAClcxiqQvEoatreYIWEBASIgJ4Gkf11ntXH3nS9uxfGWfJ5J9hAgAgJEQAQEiIAAERAgAgJEQAQEiIAAERAgAgJEQAQEiL7qBuc6RKLHxr0CAAAAAElFTkSuQmCC"
-
-func NewMovie(name string) *Movie {
-	currentTime := time.Now()
-	return &Movie{
-		Checksum:  md5.FromString(name),
-		Name:      name,
-		CreatedAt: currentTime,
-		UpdatedAt: currentTime,
-	}
-}
-
 func NewMoviePartial() MoviePartial {
-	updatedTime := time.Now()
+	currentTime := time.Now()
 	return MoviePartial{
-		UpdatedAt: NewOptionalTime(updatedTime),
+		UpdatedAt: NewOptionalTime(currentTime),
 	}
 }
 
-type Movies []*Movie
-
-func (m *Movies) Append(o interface{}) {
-	*m = append(*m, o.(*Movie))
-}
-
-func (m *Movies) New() interface{} {
-	return &Movie{}
-}
+var DefaultMovieImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH4wgVBQsJl1CMZAAAASJJREFUeNrt3N0JwyAYhlEj3cj9R3Cm5rbkqtAP+qrnGaCYHPwJpLlaa++mmLpbAERAgAgIEAEBIiBABERAgAgIEAEBIiBABERAgAgIEAHZuVflj40x4i94zhk9vqsVvEq6AsQqMP1EjORx20OACAgQRRx7T+zzcFBxcjNDfoB4ntQqTm5Awo7MlqywZxcgYQ+RlqywJ3ozJAQCSBiEJSsQA0gYBpDAgAARECACAkRAgAgIEAERECACAmSjUv6eAOSB8m8YIGGzBUjYbAESBgMkbBkDEjZbgITBAClcxiqQvEoatreYIWEBASIgJ4Gkf11ntXH3nS9uxfGWfJ5J9hAgAgJEQAQEiIAAERAgAgJEQAQEiIAAERAgAgJEQAQEiL7qBuc6RKLHxr0CAAAAAElFTkSuQmCC"

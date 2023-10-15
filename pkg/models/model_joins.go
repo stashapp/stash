@@ -11,8 +11,8 @@ type MoviesScenes struct {
 	SceneIndex *int `json:"scene_index"`
 }
 
-func (s MoviesScenes) SceneMovieInput() *SceneMovieInput {
-	return &SceneMovieInput{
+func (s MoviesScenes) SceneMovieInput() SceneMovieInput {
+	return SceneMovieInput{
 		MovieID:    strconv.Itoa(s.MovieID),
 		SceneIndex: s.SceneIndex,
 	}
@@ -28,12 +28,12 @@ type UpdateMovieIDs struct {
 	Mode   RelationshipUpdateMode `json:"mode"`
 }
 
-func (u *UpdateMovieIDs) SceneMovieInputs() []*SceneMovieInput {
+func (u *UpdateMovieIDs) SceneMovieInputs() []SceneMovieInput {
 	if u == nil {
 		return nil
 	}
 
-	ret := make([]*SceneMovieInput, len(u.Movies))
+	ret := make([]SceneMovieInput, len(u.Movies))
 	for _, id := range u.Movies {
 		ret = append(ret, id.SceneMovieInput())
 	}
@@ -51,21 +51,7 @@ func (u *UpdateMovieIDs) AddUnique(v MoviesScenes) {
 	u.Movies = append(u.Movies, v)
 }
 
-func UpdateMovieIDsFromInput(i []*SceneMovieInput) (*UpdateMovieIDs, error) {
-	ret := &UpdateMovieIDs{
-		Mode: RelationshipUpdateModeSet,
-	}
-
-	var err error
-	ret.Movies, err = MoviesScenesFromInput(i)
-	if err != nil {
-		return nil, err
-	}
-
-	return ret, nil
-}
-
-func MoviesScenesFromInput(input []*SceneMovieInput) ([]MoviesScenes, error) {
+func MoviesScenesFromInput(input []SceneMovieInput) ([]MoviesScenes, error) {
 	ret := make([]MoviesScenes, len(input))
 
 	for i, v := range input {

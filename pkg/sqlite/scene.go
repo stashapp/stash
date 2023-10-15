@@ -17,7 +17,6 @@ import (
 	"gopkg.in/guregu/null.v4"
 	"gopkg.in/guregu/null.v4/zero"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/utils"
@@ -31,6 +30,8 @@ const (
 	scenesTagsTable       = "scenes_tags"
 	scenesGalleriesTable  = "scenes_galleries"
 	moviesScenesTable     = "movies_scenes"
+	scenesURLsTable       = "scene_urls"
+	sceneURLColumn        = "url"
 
 	sceneCoverBlobColumn = "cover_blob"
 )
@@ -76,7 +77,6 @@ type sceneRow struct {
 	Code     zero.String `db:"code"`
 	Details  zero.String `db:"details"`
 	Director zero.String `db:"director"`
-	URL      zero.String `db:"url"`
 	Date     NullDate    `db:"date"`
 	// expressed as 1-100
 	Rating       null.Int      `db:"rating"`
@@ -100,7 +100,6 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.Code = zero.StringFrom(o.Code)
 	r.Details = zero.StringFrom(o.Details)
 	r.Director = zero.StringFrom(o.Director)
-	r.URL = zero.StringFrom(o.URL)
 	r.Date = NullDateFromDatePtr(o.Date)
 	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
@@ -130,7 +129,6 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		Code:      r.Code.String,
 		Details:   r.Details.String,
 		Director:  r.Director.String,
-		URL:       r.URL.String,
 		Date:      r.Date.DatePtr(),
 		Rating:    nullIntPtr(r.Rating),
 		Organized: r.Organized,
@@ -166,7 +164,6 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setNullString("code", o.Code)
 	r.setNullString("details", o.Details)
 	r.setNullString("director", o.Director)
-	r.setNullString("url", o.URL)
 	r.setNullDate("date", o.Date)
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
@@ -234,13 +231,13 @@ func (qb *SceneStore) selectDataset() *goqu.SelectDataset {
 		checksum,
 		goqu.On(
 			checksum.Col(fileIDColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn)),
-			checksum.Col("type").Eq(file.FingerprintTypeMD5),
+			checksum.Col("type").Eq(models.FingerprintTypeMD5),
 		),
 	).LeftJoin(
 		oshash,
 		goqu.On(
 			oshash.Col(fileIDColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn)),
-			oshash.Col("type").Eq(file.FingerprintTypeOshash),
+			oshash.Col("type").Eq(models.FingerprintTypeOshash),
 		),
 	).Select(
 		qb.table().All(),
@@ -252,7 +249,7 @@ func (qb *SceneStore) selectDataset() *goqu.SelectDataset {
 	)
 }
 
-func (qb *SceneStore) Create(ctx context.Context, newObject *models.Scene, fileIDs []file.ID) error {
+func (qb *SceneStore) Create(ctx context.Context, newObject *models.Scene, fileIDs []models.FileID) error {
 	var r sceneRow
 	r.fromScene(*newObject)
 
@@ -264,6 +261,13 @@ func (qb *SceneStore) Create(ctx context.Context, newObject *models.Scene, fileI
 	if len(fileIDs) > 0 {
 		const firstPrimary = true
 		if err := scenesFilesTableMgr.insertJoins(ctx, id, firstPrimary, fileIDs); err != nil {
+			return err
+		}
+	}
+
+	if newObject.URLs.Loaded() {
+		const startPos = 0
+		if err := scenesURLsTableMgr.insertJoins(ctx, id, startPos, newObject.URLs.List()); err != nil {
 			return err
 		}
 	}
@@ -322,6 +326,11 @@ func (qb *SceneStore) UpdatePartial(ctx context.Context, id int, partial models.
 		}
 	}
 
+	if partial.URLs != nil {
+		if err := scenesURLsTableMgr.modifyJoins(ctx, id, partial.URLs.Values, partial.URLs.Mode); err != nil {
+			return nil, err
+		}
+	}
 	if partial.PerformerIDs != nil {
 		if err := scenesPerformersTableMgr.modifyJoins(ctx, id, partial.PerformerIDs.IDs, partial.PerformerIDs.Mode); err != nil {
 			return nil, err
@@ -364,6 +373,12 @@ func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) e
 		return err
 	}
 
+	if updatedObject.URLs.Loaded() {
+		if err := scenesURLsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.URLs.List()); err != nil {
+			return err
+		}
+	}
+
 	if updatedObject.PerformerIDs.Loaded() {
 		if err := scenesPerformersTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.PerformerIDs.List()); err != nil {
 			return err
@@ -395,7 +410,7 @@ func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) e
 	}
 
 	if updatedObject.Files.Loaded() {
-		fileIDs := make([]file.ID, len(updatedObject.Files.List()))
+		fileIDs := make([]models.FileID, len(updatedObject.Files.List()))
 		for i, f := range updatedObject.Files.List() {
 			fileIDs[i] = f.ID
 		}
@@ -522,7 +537,7 @@ func (qb *SceneStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*mo
 	return ret, nil
 }
 
-func (qb *SceneStore) GetFiles(ctx context.Context, id int) ([]*file.VideoFile, error) {
+func (qb *SceneStore) GetFiles(ctx context.Context, id int) ([]*models.VideoFile, error) {
 	fileIDs, err := qb.filesRepository().get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -534,10 +549,10 @@ func (qb *SceneStore) GetFiles(ctx context.Context, id int) ([]*file.VideoFile, 
 		return nil, err
 	}
 
-	ret := make([]*file.VideoFile, len(files))
+	ret := make([]*models.VideoFile, len(files))
 	for i, f := range files {
 		var ok bool
-		ret[i], ok = f.(*file.VideoFile)
+		ret[i], ok = f.(*models.VideoFile)
 		if !ok {
 			return nil, fmt.Errorf("expected file to be *file.VideoFile not %T", f)
 		}
@@ -546,12 +561,12 @@ func (qb *SceneStore) GetFiles(ctx context.Context, id int) ([]*file.VideoFile, 
 	return ret, nil
 }
 
-func (qb *SceneStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error) {
+func (qb *SceneStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]models.FileID, error) {
 	const primaryOnly = false
 	return qb.filesRepository().getMany(ctx, ids, primaryOnly)
 }
 
-func (qb *SceneStore) FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Scene, error) {
+func (qb *SceneStore) FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Scene, error) {
 	sq := dialect.From(scenesFilesJoinTable).Select(scenesFilesJoinTable.Col(sceneIDColumn)).Where(
 		scenesFilesJoinTable.Col(fileIDColumn).Eq(fileID),
 	)
@@ -564,7 +579,7 @@ func (qb *SceneStore) FindByFileID(ctx context.Context, fileID file.ID) ([]*mode
 	return ret, nil
 }
 
-func (qb *SceneStore) FindByPrimaryFileID(ctx context.Context, fileID file.ID) ([]*models.Scene, error) {
+func (qb *SceneStore) FindByPrimaryFileID(ctx context.Context, fileID models.FileID) ([]*models.Scene, error) {
 	sq := dialect.From(scenesFilesJoinTable).Select(scenesFilesJoinTable.Col(sceneIDColumn)).Where(
 		scenesFilesJoinTable.Col(fileIDColumn).Eq(fileID),
 		scenesFilesJoinTable.Col("primary").Eq(1),
@@ -578,14 +593,14 @@ func (qb *SceneStore) FindByPrimaryFileID(ctx context.Context, fileID file.ID) (
 	return ret, nil
 }
 
-func (qb *SceneStore) CountByFileID(ctx context.Context, fileID file.ID) (int, error) {
+func (qb *SceneStore) CountByFileID(ctx context.Context, fileID models.FileID) (int, error) {
 	joinTable := scenesFilesJoinTable
 
 	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(fileIDColumn).Eq(fileID))
 	return count(ctx, q)
 }
 
-func (qb *SceneStore) FindByFingerprints(ctx context.Context, fp []file.Fingerprint) ([]*models.Scene, error) {
+func (qb *SceneStore) FindByFingerprints(ctx context.Context, fp []models.Fingerprint) ([]*models.Scene, error) {
 	fingerprintTable := fingerprintTableMgr.table
 
 	var ex []exp.Expression
@@ -613,18 +628,18 @@ func (qb *SceneStore) FindByFingerprints(ctx context.Context, fp []file.Fingerpr
 }
 
 func (qb *SceneStore) FindByChecksum(ctx context.Context, checksum string) ([]*models.Scene, error) {
-	return qb.FindByFingerprints(ctx, []file.Fingerprint{
+	return qb.FindByFingerprints(ctx, []models.Fingerprint{
 		{
-			Type:        file.FingerprintTypeMD5,
+			Type:        models.FingerprintTypeMD5,
 			Fingerprint: checksum,
 		},
 	})
 }
 
 func (qb *SceneStore) FindByOSHash(ctx context.Context, oshash string) ([]*models.Scene, error) {
-	return qb.FindByFingerprints(ctx, []file.Fingerprint{
+	return qb.FindByFingerprints(ctx, []models.Fingerprint{
 		{
-			Type:        file.FingerprintTypeOshash,
+			Type:        models.FingerprintTypeOshash,
 			Fingerprint: oshash,
 		},
 	})
@@ -705,6 +720,18 @@ func (qb *SceneStore) OCountByPerformerID(ctx context.Context, performerID int) 
 	return ret, nil
 }
 
+func (qb *SceneStore) OCount(ctx context.Context) (int, error) {
+	table := qb.table()
+
+	q := dialect.Select(goqu.COALESCE(goqu.SUM("o_counter"), 0)).From(table)
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
 func (qb *SceneStore) FindByMovieID(ctx context.Context, movieID int) ([]*models.Scene, error) {
 	sq := dialect.From(scenesMoviesJoinTable).Select(scenesMoviesJoinTable.Col(sceneIDColumn)).Where(
 		scenesMoviesJoinTable.Col(movieIDColumn).Eq(movieID),
@@ -727,6 +754,24 @@ func (qb *SceneStore) CountByMovieID(ctx context.Context, movieID int) (int, err
 
 func (qb *SceneStore) Count(ctx context.Context) (int, error) {
 	q := dialect.Select(goqu.COUNT("*")).From(qb.table())
+	return count(ctx, q)
+}
+
+func (qb *SceneStore) PlayCount(ctx context.Context) (int, error) {
+	q := dialect.Select(goqu.COALESCE(goqu.SUM("play_count"), 0)).From(qb.table())
+
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (qb *SceneStore) UniqueScenePlayCount(ctx context.Context) (int, error) {
+	table := qb.table()
+	q := dialect.Select(goqu.COUNT("*")).From(table).Where(table.Col("play_count").Gt(0))
+
 	return count(ctx, q)
 }
 
@@ -762,6 +807,19 @@ func (qb *SceneStore) Duration(ctx context.Context) (float64, error) {
 		videoFileTable,
 		goqu.On(videoFileTable.Col("file_id").Eq(scenesFilesJoinTable.Col("file_id"))),
 	)
+
+	var ret float64
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (qb *SceneStore) PlayDuration(ctx context.Context) (float64, error) {
+	table := qb.table()
+
+	q := dialect.Select(goqu.COALESCE(goqu.SUM("play_duration"), 0)).From(table)
 
 	var ret float64
 	if err := querySimple(ctx, q, &ret); err != nil {
@@ -926,9 +984,12 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 	query.handleCriterion(ctx, floatIntCriterionHandler(sceneFilter.Duration, "video_files.duration", qb.addVideoFilesTable))
 	query.handleCriterion(ctx, resolutionCriterionHandler(sceneFilter.Resolution, "video_files.height", "video_files.width", qb.addVideoFilesTable))
 
+	query.handleCriterion(ctx, codecCriterionHandler(sceneFilter.VideoCodec, "video_files.video_codec", qb.addVideoFilesTable))
+	query.handleCriterion(ctx, codecCriterionHandler(sceneFilter.AudioCodec, "video_files.audio_codec", qb.addVideoFilesTable))
+
 	query.handleCriterion(ctx, hasMarkersCriterionHandler(sceneFilter.HasMarkers))
 	query.handleCriterion(ctx, sceneIsMissingCriterionHandler(qb, sceneFilter.IsMissing))
-	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.URL, "scenes.url"))
+	query.handleCriterion(ctx, sceneURLsCriterionHandler(sceneFilter.URL))
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if sceneFilter.StashID != nil {
@@ -1201,6 +1262,18 @@ func resolutionCriterionHandler(resolution *models.ResolutionCriterionInput, hei
 	}
 }
 
+func codecCriterionHandler(codec *models.StringCriterionInput, codecColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if codec != nil {
+			if addJoinFn != nil {
+				addJoinFn(f)
+			}
+
+			stringCriterionHandler(codec, codecColumn)(ctx, f)
+		}
+	}
+}
+
 func hasMarkersCriterionHandler(hasMarkers *string) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if hasMarkers != nil {
@@ -1218,6 +1291,9 @@ func sceneIsMissingCriterionHandler(qb *SceneStore, isMissing *string) criterion
 	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
+			case "url":
+				scenesURLsTableMgr.join(f, "", "scenes.id")
+				f.addWhere("scene_urls.url IS NULL")
 			case "galleries":
 				qb.galleriesRepository().join(f, "galleries_join", "scenes.id")
 				f.addWhere("galleries_join.scene_id IS NULL")
@@ -1230,7 +1306,7 @@ func sceneIsMissingCriterionHandler(qb *SceneStore, isMissing *string) criterion
 				qb.performersRepository().join(f, "performers_join", "scenes.id")
 				f.addWhere("performers_join.scene_id IS NULL")
 			case "date":
-				f.addWhere(`scenes.date IS NULL OR scenes.date IS "" OR scenes.date IS "0001-01-01"`)
+				f.addWhere(`scenes.date IS NULL OR scenes.date IS ""`)
 			case "tags":
 				qb.tagsRepository().join(f, "tags_join", "scenes.id")
 				f.addWhere("tags_join.scene_id IS NULL")
@@ -1248,6 +1324,18 @@ func sceneIsMissingCriterionHandler(qb *SceneStore, isMissing *string) criterion
 			}
 		}
 	}
+}
+
+func sceneURLsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
+	h := stringListCriterionHandlerBuilder{
+		joinTable:    scenesURLsTable,
+		stringColumn: sceneURLColumn,
+		addJoinTable: func(f *filterBuilder) {
+			scenesURLsTableMgr.join(f, "", "scenes.id")
+		},
+	}
+
+	return h.handler(url)
 }
 
 func (qb *SceneStore) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
@@ -1355,7 +1443,6 @@ func scenePerformerAgeCriterionHandler(performerAge *models.IntCriterionInput) c
 
 			f.addWhere("scenes.date != '' AND performers.birthdate != ''")
 			f.addWhere("scenes.date IS NOT NULL AND performers.birthdate IS NOT NULL")
-			f.addWhere("scenes.date != '0001-01-01' AND performers.birthdate != '0001-01-01'")
 
 			ageCalc := "cast(strftime('%Y.%m%d', scenes.date) - strftime('%Y.%m%d', performers.birthdate) as int)"
 			whereClause, args := getIntWhereClause(ageCalc, performerAge.Modifier, performerAge.Value, performerAge.Value2)
@@ -1579,6 +1666,10 @@ func (qb *SceneStore) IncrementWatchCount(ctx context.Context, id int) (int, err
 	return qb.getPlayCount(ctx, id)
 }
 
+func (qb *SceneStore) GetURLs(ctx context.Context, sceneID int) ([]string, error) {
+	return scenesURLsTableMgr.get(ctx, sceneID)
+}
+
 func (qb *SceneStore) GetCover(ctx context.Context, sceneID int) ([]byte, error) {
 	return qb.GetImage(ctx, sceneID, sceneCoverBlobColumn)
 }
@@ -1595,7 +1686,7 @@ func (qb *SceneStore) destroyCover(ctx context.Context, sceneID int) error {
 	return qb.DestroyImage(ctx, sceneID, sceneCoverBlobColumn)
 }
 
-func (qb *SceneStore) AssignFiles(ctx context.Context, sceneID int, fileIDs []file.ID) error {
+func (qb *SceneStore) AssignFiles(ctx context.Context, sceneID int, fileIDs []models.FileID) error {
 	// assuming a file can only be assigned to a single scene
 	if err := scenesFilesTableMgr.destroyJoins(ctx, fileIDs); err != nil {
 		return err
@@ -1647,9 +1738,9 @@ func (qb *SceneStore) filesRepository() *filesRepository {
 	}
 }
 
-func (qb *SceneStore) AddFileID(ctx context.Context, id int, fileID file.ID) error {
+func (qb *SceneStore) AddFileID(ctx context.Context, id int, fileID models.FileID) error {
 	const firstPrimary = false
-	return scenesFilesTableMgr.insertJoins(ctx, id, firstPrimary, []file.ID{fileID})
+	return scenesFilesTableMgr.insertJoins(ctx, id, firstPrimary, []models.FileID{fileID})
 }
 
 func (qb *SceneStore) performersRepository() *joinRepository {

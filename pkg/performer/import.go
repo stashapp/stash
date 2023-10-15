@@ -10,19 +10,17 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type NameFinderCreatorUpdater interface {
-	NameFinderCreator
-	Update(ctx context.Context, updatedPerformer *models.Performer) error
-	UpdateImage(ctx context.Context, performerID int, image []byte) error
+type ImporterReaderWriter interface {
+	models.PerformerCreatorUpdater
+	models.PerformerQueryer
 }
 
 type Importer struct {
-	ReaderWriter        NameFinderCreatorUpdater
-	TagWriter           tag.NameFinderCreator
+	ReaderWriter        ImporterReaderWriter
+	TagWriter           models.TagFinderCreator
 	Input               jsonschema.Performer
 	MissingRefBehaviour models.ImportMissingRefEnum
 
@@ -65,7 +63,7 @@ func (i *Importer) populateTags(ctx context.Context) error {
 	return nil
 }
 
-func importTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []string, missingRefBehaviour models.ImportMissingRefEnum) ([]*models.Tag, error) {
+func importTags(ctx context.Context, tagWriter models.TagFinderCreator, names []string, missingRefBehaviour models.ImportMissingRefEnum) ([]*models.Tag, error) {
 	tags, err := tagWriter.FindByNames(ctx, names, false)
 	if err != nil {
 		return nil, err
@@ -100,17 +98,18 @@ func importTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []st
 	return tags, nil
 }
 
-func createTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []string) ([]*models.Tag, error) {
+func createTags(ctx context.Context, tagWriter models.TagFinderCreator, names []string) ([]*models.Tag, error) {
 	var ret []*models.Tag
 	for _, name := range names {
-		newTag := models.NewTag(name)
+		newTag := models.NewTag()
+		newTag.Name = name
 
-		err := tagWriter.Create(ctx, newTag)
+		err := tagWriter.Create(ctx, &newTag)
 		if err != nil {
 			return nil, err
 		}
 
-		ret = append(ret, newTag)
+		ret = append(ret, &newTag)
 	}
 
 	return ret, nil
@@ -223,22 +222,18 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 	}
 
 	if performerJSON.Birthdate != "" {
-		d, err := utils.ParseDateStringAsTime(performerJSON.Birthdate)
+		date, err := models.ParseDate(performerJSON.Birthdate)
 		if err == nil {
-			newPerformer.Birthdate = &models.Date{
-				Time: d,
-			}
+			newPerformer.Birthdate = &date
 		}
 	}
 	if performerJSON.Rating != 0 {
 		newPerformer.Rating = &performerJSON.Rating
 	}
 	if performerJSON.DeathDate != "" {
-		d, err := utils.ParseDateStringAsTime(performerJSON.DeathDate)
+		date, err := models.ParseDate(performerJSON.DeathDate)
 		if err == nil {
-			newPerformer.DeathDate = &models.Date{
-				Time: d,
-			}
+			newPerformer.DeathDate = &date
 		}
 	}
 

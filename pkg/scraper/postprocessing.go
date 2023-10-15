@@ -6,7 +6,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -106,6 +105,14 @@ func (c Cache) postScrapeScenePerformer(ctx context.Context, p models.ScrapedPer
 }
 
 func (c Cache) postScrapeScene(ctx context.Context, scene ScrapedScene) (ScrapedContent, error) {
+	// set the URL/URLs field
+	if scene.URL == nil && len(scene.URLs) > 0 {
+		scene.URL = &scene.URLs[0]
+	}
+	if scene.URL != nil && len(scene.URLs) == 0 {
+		scene.URLs = []string{*scene.URL}
+	}
+
 	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
 		pqb := c.repository.PerformerFinder
 		mqb := c.repository.MovieFinder
@@ -193,7 +200,7 @@ func (c Cache) postScrapeGallery(ctx context.Context, g ScrapedGallery) (Scraped
 	return g, nil
 }
 
-func postProcessTags(ctx context.Context, tqb tag.Queryer, scrapedTags []*models.ScrapedTag) ([]*models.ScrapedTag, error) {
+func postProcessTags(ctx context.Context, tqb models.TagQueryer, scrapedTags []*models.ScrapedTag) ([]*models.ScrapedTag, error) {
 	var ret []*models.ScrapedTag
 
 	for _, t := range scrapedTags {

@@ -1,7 +1,6 @@
 package models
 
 import (
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -14,8 +13,8 @@ type TxnManager interface {
 type Repository struct {
 	TxnManager
 
-	File           file.Store
-	Folder         file.FolderStore
+	File           FileReaderWriter
+	Folder         FolderReaderWriter
 	Gallery        GalleryReaderWriter
 	GalleryChapter GalleryChapterReaderWriter
 	Image          ImageReaderWriter
@@ -23,7 +22,6 @@ type Repository struct {
 	Performer      PerformerReaderWriter
 	Scene          SceneReaderWriter
 	SceneMarker    SceneMarkerReaderWriter
-	ScrapedItem    ScrapedItemReaderWriter
 	Studio         StudioReaderWriter
 	Tag            TagReaderWriter
 	SavedFilter    SavedFilterReaderWriter

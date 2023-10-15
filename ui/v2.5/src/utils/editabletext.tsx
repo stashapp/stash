@@ -79,29 +79,14 @@ const renderInputGroup = (options: {
 };
 
 const renderDurationInput = (options: {
-  value: string | undefined;
+  value: number | undefined;
   isEditing: boolean;
-  url?: string;
-  asString?: boolean;
-  onChange: (value: string | undefined) => void;
+  onChange: (value: number | undefined) => void;
 }) => {
-  let numericValue: number | undefined;
-  if (options.value) {
-    if (!options.asString) {
-      try {
-        numericValue = Number.parseInt(options.value, 10);
-      } catch {
-        // ignore
-      }
-    } else {
-      numericValue = DurationUtils.stringToSeconds(options.value);
-    }
-  }
-
   if (!options.isEditing) {
     let durationString;
-    if (numericValue !== undefined) {
-      durationString = DurationUtils.secondsToString(numericValue);
+    if (options.value !== undefined) {
+      durationString = DurationUtils.secondsToString(options.value);
     }
 
     return (
@@ -113,19 +98,11 @@ const renderDurationInput = (options: {
       />
     );
   }
+
   return (
     <DurationInput
-      disabled={!options.isEditing}
-      numericValue={numericValue}
-      onValueChange={(valueAsNumber: number, valueAsString?: string) => {
-        let value = valueAsString;
-        if (!options.asString) {
-          value =
-            valueAsNumber !== undefined ? valueAsNumber.toString() : undefined;
-        }
-
-        options.onChange(value);
-      }}
+      value={options.value}
+      setValue={(v) => options.onChange(v)}
     />
   );
 };

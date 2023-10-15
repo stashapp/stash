@@ -6,12 +6,18 @@ import (
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/gallery"
+	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/movie"
 	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/scene"
 )
+
+func (r *studioResolver) Checksum(ctx context.Context, obj *models.Studio) (string, error) {
+	// generate checksum from studio name
+	return md5.FromString(obj.Name), nil
+}
 
 func (r *studioResolver) ImagePath(ctx context.Context, obj *models.Studio) (*string, error) {
 	var hasImage bool
@@ -28,15 +34,16 @@ func (r *studioResolver) ImagePath(ctx context.Context, obj *models.Studio) (*st
 	return &imagePath, nil
 }
 
-func (r *studioResolver) Aliases(ctx context.Context, obj *models.Studio) (ret []string, err error) {
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Studio.GetAliases(ctx, obj.ID)
-		return err
-	}); err != nil {
-		return nil, err
+func (r *studioResolver) Aliases(ctx context.Context, obj *models.Studio) ([]string, error) {
+	if !obj.Aliases.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadAliases(ctx, r.repository.Studio)
+		}); err != nil {
+			return nil, err
+		}
 	}
 
-	return ret, err
+	return obj.Aliases.List(), nil
 }
 
 func (r *studioResolver) SceneCount(ctx context.Context, obj *models.Studio, depth *int) (ret int, err error) {
@@ -114,16 +121,15 @@ func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) (
 }
 
 func (r *studioResolver) StashIds(ctx context.Context, obj *models.Studio) ([]*models.StashID, error) {
-	var ret []models.StashID
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		var err error
-		ret, err = r.repository.Studio.GetStashIDs(ctx, obj.ID)
-		return err
-	}); err != nil {
-		return nil, err
+	if !obj.StashIDs.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadStashIDs(ctx, r.repository.Studio)
+		}); err != nil {
+			return nil, err
+		}
 	}
 
-	return stashIDsSliceToPtrSlice(ret), nil
+	return stashIDsSliceToPtrSlice(obj.StashIDs.List()), nil
 }
 
 func (r *studioResolver) Rating(ctx context.Context, obj *models.Studio) (*int, error) {

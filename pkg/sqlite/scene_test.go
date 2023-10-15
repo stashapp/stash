@@ -14,13 +14,18 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stretchr/testify/assert"
 )
 
 func loadSceneRelationships(ctx context.Context, expected models.Scene, actual *models.Scene) error {
+	if expected.URLs.Loaded() {
+		if err := actual.LoadURLs(ctx, db.Scene); err != nil {
+			return err
+		}
+	}
+
 	if expected.GalleryIDs.Loaded() {
 		if err := actual.LoadGalleryIDs(ctx, db.Scene); err != nil {
 			return err
@@ -91,7 +96,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 		stashID1     = "stashid1"
 		stashID2     = "stashid2"
 
-		date = models.NewDate("2003-02-01")
+		date, _ = models.ParseDate("2003-02-01")
 
 		videoFile = makeFileWithID(fileIdxStartVideoFiles)
 	)
@@ -108,7 +113,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				Code:         code,
 				Details:      details,
 				Director:     director,
-				URL:          url,
+				URLs:         models.NewRelatedStrings([]string{url}),
 				Date:         &date,
 				Rating:       &rating,
 				Organized:    true,
@@ -153,14 +158,14 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				Code:      code,
 				Details:   details,
 				Director:  director,
-				URL:       url,
+				URLs:      models.NewRelatedStrings([]string{url}),
 				Date:      &date,
 				Rating:    &rating,
 				Organized: true,
 				OCounter:  ocounter,
 				StudioID:  &studioIDs[studioIdxWithScene],
-				Files: models.NewRelatedVideoFiles([]*file.VideoFile{
-					videoFile.(*file.VideoFile),
+				Files: models.NewRelatedVideoFiles([]*models.VideoFile{
+					videoFile.(*models.VideoFile),
 				}),
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
@@ -242,7 +247,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			var fileIDs []file.ID
+			var fileIDs []models.FileID
 			if tt.newObject.Files.Loaded() {
 				for _, f := range tt.newObject.Files.List() {
 					fileIDs = append(fileIDs, f.ID)
@@ -302,7 +307,7 @@ func clearSceneFileIDs(scene *models.Scene) {
 	}
 }
 
-func makeSceneFileWithID(i int) *file.VideoFile {
+func makeSceneFileWithID(i int) *models.VideoFile {
 	ret := makeSceneFile(i)
 	ret.ID = sceneFileIDs[i]
 	return ret
@@ -330,7 +335,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 		stashID1     = "stashid1"
 		stashID2     = "stashid2"
 
-		date = models.NewDate("2003-02-01")
+		date, _ = models.ParseDate("2003-02-01")
 	)
 
 	tests := []struct {
@@ -346,7 +351,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				Code:         code,
 				Details:      details,
 				Director:     director,
-				URL:          url,
+				URLs:         models.NewRelatedStrings([]string{url}),
 				Date:         &date,
 				Rating:       &rating,
 				Organized:    true,
@@ -513,7 +518,7 @@ func clearScenePartial() models.ScenePartial {
 		Code:         models.OptionalString{Set: true, Null: true},
 		Details:      models.OptionalString{Set: true, Null: true},
 		Director:     models.OptionalString{Set: true, Null: true},
-		URL:          models.OptionalString{Set: true, Null: true},
+		URLs:         &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
 		Date:         models.OptionalDate{Set: true, Null: true},
 		Rating:       models.OptionalInt{Set: true, Null: true},
 		StudioID:     models.OptionalInt{Set: true, Null: true},
@@ -546,7 +551,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 		stashID1     = "stashid1"
 		stashID2     = "stashid2"
 
-		date = models.NewDate("2003-02-01")
+		date, _ = models.ParseDate("2003-02-01")
 	)
 
 	tests := []struct {
@@ -560,11 +565,14 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 			"full",
 			sceneIDs[sceneIdxWithSpacedName],
 			models.ScenePartial{
-				Title:     models.NewOptionalString(title),
-				Code:      models.NewOptionalString(code),
-				Details:   models.NewOptionalString(details),
-				Director:  models.NewOptionalString(director),
-				URL:       models.NewOptionalString(url),
+				Title:    models.NewOptionalString(title),
+				Code:     models.NewOptionalString(code),
+				Details:  models.NewOptionalString(details),
+				Director: models.NewOptionalString(director),
+				URLs: &models.UpdateStrings{
+					Values: []string{url},
+					Mode:   models.RelationshipUpdateModeSet,
+				},
 				Date:      models.NewOptionalDate(date),
 				Rating:    models.NewOptionalInt(rating),
 				Organized: models.NewOptionalBool(true),
@@ -617,14 +625,14 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 			},
 			models.Scene{
 				ID: sceneIDs[sceneIdxWithSpacedName],
-				Files: models.NewRelatedVideoFiles([]*file.VideoFile{
+				Files: models.NewRelatedVideoFiles([]*models.VideoFile{
 					makeSceneFile(sceneIdxWithSpacedName),
 				}),
 				Title:        title,
 				Code:         code,
 				Details:      details,
 				Director:     director,
-				URL:          url,
+				URLs:         models.NewRelatedStrings([]string{url}),
 				Date:         &date,
 				Rating:       &rating,
 				Organized:    true,
@@ -669,7 +677,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 			models.Scene{
 				ID:       sceneIDs[sceneIdxWithSpacedName],
 				OCounter: getOCounter(sceneIdxWithSpacedName),
-				Files: models.NewRelatedVideoFiles([]*file.VideoFile{
+				Files: models.NewRelatedVideoFiles([]*models.VideoFile{
 					makeSceneFile(sceneIdxWithSpacedName),
 				}),
 				GalleryIDs:   models.NewRelatedIDs([]int{}),
@@ -1451,11 +1459,7 @@ func makeSceneWithID(index int) *models.Scene {
 	ret := makeScene(index)
 	ret.ID = sceneIDs[index]
 
-	if ret.Date != nil && ret.Date.IsZero() {
-		ret.Date = nil
-	}
-
-	ret.Files = models.NewRelatedVideoFiles([]*file.VideoFile{makeSceneFile(index)})
+	ret.Files = models.NewRelatedVideoFiles([]*models.VideoFile{makeSceneFile(index)})
 
 	return ret
 }
@@ -1886,7 +1890,7 @@ func scenesToIDs(i []*models.Scene) []int {
 func Test_sceneStore_FindByFileID(t *testing.T) {
 	tests := []struct {
 		name    string
-		fileID  file.ID
+		fileID  models.FileID
 		include []int
 		exclude []int
 	}{
@@ -1935,7 +1939,7 @@ func Test_sceneStore_FindByFileID(t *testing.T) {
 func Test_sceneStore_CountByFileID(t *testing.T) {
 	tests := []struct {
 		name   string
-		fileID file.ID
+		fileID models.FileID
 		want   int
 	}{
 		{
@@ -2400,7 +2404,14 @@ func TestSceneQueryURL(t *testing.T) {
 
 	verifyFn := func(s *models.Scene) {
 		t.Helper()
-		verifyString(t, s.URL, urlCriterion)
+
+		urls := s.URLs.List()
+		var url string
+		if len(urls) > 0 {
+			url = urls[0]
+		}
+
+		verifyString(t, url, urlCriterion)
 	}
 
 	verifySceneQuery(t, filter, verifyFn)
@@ -2575,6 +2586,12 @@ func verifySceneQuery(t *testing.T, filter models.SceneFilterType, verifyFn func
 		sqb := db.Scene
 
 		scenes := queryScene(ctx, t, sqb, &filter, nil)
+
+		for _, scene := range scenes {
+			if err := scene.LoadRelationships(ctx, sqb); err != nil {
+				t.Errorf("Error loading scene relationships: %v", err)
+			}
+		}
 
 		// assume it should find at least one
 		assert.Greater(t, len(scenes), 0)
@@ -3035,8 +3052,8 @@ func queryScenes(ctx context.Context, t *testing.T, queryBuilder models.SceneRea
 func createScene(ctx context.Context, width int, height int) (*models.Scene, error) {
 	name := fmt.Sprintf("TestSceneQueryResolutionModifiers %d %d", width, height)
 
-	sceneFile := &file.VideoFile{
-		BaseFile: &file.BaseFile{
+	sceneFile := &models.VideoFile{
+		BaseFile: &models.BaseFile{
 			Basename:       name,
 			ParentFolderID: folderIDs[folderIdxWithSceneFiles],
 		},
@@ -3050,7 +3067,7 @@ func createScene(ctx context.Context, width int, height int) (*models.Scene, err
 
 	scene := &models.Scene{}
 
-	if err := db.Scene.Create(ctx, scene, []file.ID{sceneFile.ID}); err != nil {
+	if err := db.Scene.Create(ctx, scene, []models.FileID{sceneFile.ID}); err != nil {
 		return nil, err
 	}
 
@@ -3221,12 +3238,12 @@ func TestSceneQueryIsMissingDate(t *testing.T) {
 
 		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
-		// three in four scenes have no date
-		assert.Len(t, scenes, int(math.Ceil(float64(totalScenes)/4*3)))
+		// one in four scenes have no date
+		assert.Len(t, scenes, int(math.Ceil(float64(totalScenes)/4)))
 
-		// ensure date is null, empty or "0001-01-01"
+		// ensure date is null
 		for _, scene := range scenes {
-			assert.True(t, scene.Date == nil || scene.Date.Time == time.Time{})
+			assert.Nil(t, scene.Date)
 		}
 
 		return nil
@@ -3271,7 +3288,7 @@ func TestSceneQueryIsMissingRating(t *testing.T) {
 
 		assert.True(t, len(scenes) > 0)
 
-		// ensure date is null, empty or "0001-01-01"
+		// ensure rating is null
 		for _, scene := range scenes {
 			assert.Nil(t, scene.Rating)
 		}
@@ -4541,7 +4558,7 @@ func TestSceneStore_AssignFiles(t *testing.T) {
 	tests := []struct {
 		name    string
 		sceneID int
-		fileID  file.ID
+		fileID  models.FileID
 		wantErr bool
 	}{
 		{
@@ -4569,7 +4586,7 @@ func TestSceneStore_AssignFiles(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			withRollbackTxn(func(ctx context.Context) error {
-				if err := qb.AssignFiles(ctx, tt.sceneID, []file.ID{tt.fileID}); (err != nil) != tt.wantErr {
+				if err := qb.AssignFiles(ctx, tt.sceneID, []models.FileID{tt.fileID}); (err != nil) != tt.wantErr {
 					t.Errorf("SceneStore.AssignFiles() error = %v, wantErr %v", err, tt.wantErr)
 				}
 

@@ -3,10 +3,10 @@ import {
   createMandatoryNumberCriterionOption,
   createMandatoryStringCriterionOption,
   createStringCriterionOption,
-  NullNumberCriterionOption,
   createMandatoryTimestampCriterionOption,
 } from "./criteria/criterion";
 import { StudioIsMissingCriterionOption } from "./criteria/is-missing";
+import { RatingCriterionOption } from "./criteria/rating";
 import { StashIDCriterionOption } from "./criteria/stash-ids";
 import { ParentStudiosCriterionOption } from "./criteria/studios";
 import { ListFilterOptions } from "./filter-options";
@@ -30,13 +30,13 @@ const sortByOptions = ["name", "random", "rating"]
     },
   ]);
 
-const displayModeOptions = [DisplayMode.Grid];
+const displayModeOptions = [DisplayMode.Grid, DisplayMode.Tagger];
 const criterionOptions = [
   createMandatoryStringCriterionOption("name"),
   createStringCriterionOption("details"),
   ParentStudiosCriterionOption,
   StudioIsMissingCriterionOption,
-  new NullNumberCriterionOption("rating", "rating100"),
+  RatingCriterionOption,
   createBooleanCriterionOption("ignore_auto_tag"),
   createMandatoryNumberCriterionOption("scene_count"),
   createMandatoryNumberCriterionOption("image_count"),

@@ -124,3 +124,26 @@ func (_m *GalleryChapterReaderWriter) Update(ctx context.Context, updatedGallery
 
 	return r0
 }
+
+// UpdatePartial provides a mock function with given fields: ctx, id, updatedGalleryChapter
+func (_m *GalleryChapterReaderWriter) UpdatePartial(ctx context.Context, id int, updatedGalleryChapter models.GalleryChapterPartial) (*models.GalleryChapter, error) {
+	ret := _m.Called(ctx, id, updatedGalleryChapter)
+
+	var r0 *models.GalleryChapter
+	if rf, ok := ret.Get(0).(func(context.Context, int, models.GalleryChapterPartial) *models.GalleryChapter); ok {
+		r0 = rf(ctx, id, updatedGalleryChapter)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.GalleryChapter)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int, models.GalleryChapterPartial) error); ok {
+		r1 = rf(ctx, id, updatedGalleryChapter)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}

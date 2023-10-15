@@ -4,9 +4,34 @@ import {
 } from "src/core/generated-graphql";
 import { stringToResolution, resolutionStrings } from "src/utils/resolution";
 import { CriterionType } from "../types";
-import { CriterionOption, StringCriterion } from "./criterion";
+import {
+  Criterion,
+  CriterionOption,
+  CriterionValue,
+  StringCriterion,
+} from "./criterion";
 
-abstract class AbstractResolutionCriterion extends StringCriterion {
+class BaseResolutionCriterionOption extends CriterionOption {
+  constructor(
+    value: CriterionType,
+    makeCriterion: () => Criterion<CriterionValue>
+  ) {
+    super({
+      messageID: value,
+      type: value,
+      modifierOptions: [
+        CriterionModifier.Equals,
+        CriterionModifier.NotEquals,
+        CriterionModifier.GreaterThan,
+        CriterionModifier.LessThan,
+      ],
+      options: resolutionStrings,
+      makeCriterion,
+    });
+  }
+}
+
+class BaseResolutionCriterion extends StringCriterion {
   protected toCriterionInput(): ResolutionCriterionInput | undefined {
     const value = stringToResolution(this.value);
 
@@ -19,36 +44,24 @@ abstract class AbstractResolutionCriterion extends StringCriterion {
   }
 }
 
-class ResolutionCriterionOptionType extends CriterionOption {
-  constructor(value: CriterionType) {
-    super({
-      messageID: value,
-      type: value,
-      parameterName: value,
-      modifierOptions: [
-        CriterionModifier.Equals,
-        CriterionModifier.NotEquals,
-        CriterionModifier.GreaterThan,
-        CriterionModifier.LessThan,
-      ],
-      options: resolutionStrings,
-    });
-  }
-}
-
-export const ResolutionCriterionOption = new ResolutionCriterionOptionType(
-  "resolution"
+export const ResolutionCriterionOption = new BaseResolutionCriterionOption(
+  "resolution",
+  () => new ResolutionCriterion()
 );
-export class ResolutionCriterion extends AbstractResolutionCriterion {
+
+export class ResolutionCriterion extends BaseResolutionCriterion {
   constructor() {
     super(ResolutionCriterionOption);
   }
 }
 
 export const AverageResolutionCriterionOption =
-  new ResolutionCriterionOptionType("average_resolution");
+  new BaseResolutionCriterionOption(
+    "average_resolution",
+    () => new AverageResolutionCriterion()
+  );
 
-export class AverageResolutionCriterion extends AbstractResolutionCriterion {
+export class AverageResolutionCriterion extends BaseResolutionCriterion {
   constructor() {
     super(AverageResolutionCriterionOption);
   }

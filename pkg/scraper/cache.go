@@ -15,8 +15,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -52,28 +50,34 @@ func isCDPPathWS(c GlobalConfig) bool {
 	return strings.HasPrefix(c.GetScraperCDPPath(), "ws://")
 }
 
+type SceneFinder interface {
+	models.SceneGetter
+	models.URLLoader
+}
+
 type PerformerFinder interface {
-	match.PerformerAutoTagQueryer
+	models.PerformerAutoTagQueryer
 	match.PerformerFinder
 }
 
 type StudioFinder interface {
-	match.StudioAutoTagQueryer
-	match.StudioFinder
+	models.StudioAutoTagQueryer
+	FindByStashID(ctx context.Context, stashID models.StashID) ([]*models.Studio, error)
 }
 
 type TagFinder interface {
-	match.TagAutoTagQueryer
-	tag.Queryer
+	models.TagGetter
+	models.TagAutoTagQueryer
 }
 
 type GalleryFinder interface {
-	Find(ctx context.Context, id int) (*models.Gallery, error)
+	models.GalleryGetter
 	models.FileLoader
+	models.URLLoader
 }
 
 type Repository struct {
-	SceneFinder     scene.IDFinder
+	SceneFinder     SceneFinder
 	GalleryFinder   GalleryFinder
 	TagFinder       TagFinder
 	PerformerFinder PerformerFinder
@@ -240,11 +244,26 @@ func (c Cache) ScrapeName(ctx context.Context, id, query string, ty ScrapeConten
 		return nil, fmt.Errorf("%w: cannot use scraper %s to scrape by name", ErrNotSupported, id)
 	}
 
-	return ns.viaName(ctx, c.client, query, ty)
+	content, err := ns.viaName(ctx, c.client, query, ty)
+	if err != nil {
+		return nil, fmt.Errorf("error while name scraping with scraper %s: %w", id, err)
+	}
+
+	for i, cc := range content {
+		content[i], err = c.postScrape(ctx, cc)
+		if err != nil {
+			return nil, fmt.Errorf("error while post-scraping with scraper %s: %w", id, err)
+		}
+	}
+
+	return content, nil
 }
 
 // ScrapeFragment uses the given fragment input to scrape
 func (c Cache) ScrapeFragment(ctx context.Context, id string, input Input) (ScrapedContent, error) {
+	// set the deprecated URL field if it's not set
+	input.populateURL()
+
 	s := c.findScraper(id)
 	if s == nil {
 		return nil, fmt.Errorf("%w: id %s", ErrNotFound, id)
@@ -361,7 +380,7 @@ func (c Cache) getScene(ctx context.Context, sceneID int) (*models.Scene, error)
 			return fmt.Errorf("scene with id %d not found", sceneID)
 		}
 
-		return nil
+		return ret.LoadURLs(ctx, c.repository.SceneFinder)
 	}); err != nil {
 		return nil, err
 	}
@@ -381,7 +400,12 @@ func (c Cache) getGallery(ctx context.Context, galleryID int) (*models.Gallery, 
 			return fmt.Errorf("gallery with id %d not found", galleryID)
 		}
 
-		return ret.LoadFiles(ctx, c.repository.GalleryFinder)
+		err = ret.LoadFiles(ctx, c.repository.GalleryFinder)
+		if err != nil {
+			return err
+		}
+
+		return ret.LoadURLs(ctx, c.repository.GalleryFinder)
 	}); err != nil {
 		return nil, err
 	}

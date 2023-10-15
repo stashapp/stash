@@ -23,8 +23,6 @@ import (
 	"github.com/stashapp/stash/pkg/models/paths"
 )
 
-var officialBuild string
-
 const (
 	Stash               = "stash"
 	Cache               = "cache"
@@ -186,14 +184,17 @@ const (
 
 	UI = "ui"
 
-	defaultImageLightboxSlideshowDelay = 5000
+	defaultImageLightboxSlideshowDelay = 5
 
 	DisableDropdownCreatePerformer = "disable_dropdown_create.performer"
 	DisableDropdownCreateStudio    = "disable_dropdown_create.studio"
 	DisableDropdownCreateTag       = "disable_dropdown_create.tag"
+	DisableDropdownCreateMovie     = "disable_dropdown_create.movie"
 
-	HandyKey        = "handy_key"
-	FunscriptOffset = "funscript_offset"
+	HandyKey                       = "handy_key"
+	FunscriptOffset                = "funscript_offset"
+	UseStashHostedFunscript        = "use_stash_hosted_funscript"
+	useStashHostedFunscriptDefault = false
 
 	DrawFunscriptHeatmapRange        = "draw_funscript_heatmap_range"
 	drawFunscriptHeatmapRangeDefault = true
@@ -271,10 +272,6 @@ type StashBoxError struct {
 func (s *StashBoxError) Error() string {
 	// "Stash-box" is a proper noun and is therefore capitcalized
 	return "Stash-box: " + s.msg
-}
-
-func IsOfficialBuild() bool {
-	return officialBuild == "true"
 }
 
 type Instance struct {
@@ -1100,6 +1097,7 @@ func (i *Instance) GetDisableDropdownCreate() *ConfigDisableDropdownCreate {
 		Performer: i.getBool(DisableDropdownCreatePerformer),
 		Studio:    i.getBool(DisableDropdownCreateStudio),
 		Tag:       i.getBool(DisableDropdownCreateTag),
+		Movie:     i.getBool(DisableDropdownCreateMovie),
 	}
 }
 
@@ -1258,6 +1256,10 @@ func (i *Instance) GetHandyKey() string {
 
 func (i *Instance) GetFunscriptOffset() int {
 	return i.getInt(FunscriptOffset)
+}
+
+func (i *Instance) GetUseStashHostedFunscript() bool {
+	return i.getBoolDefault(UseStashHostedFunscript, useStashHostedFunscriptDefault)
 }
 
 func (i *Instance) GetDeleteFileDefault() bool {

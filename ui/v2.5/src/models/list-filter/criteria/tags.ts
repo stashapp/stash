@@ -1,7 +1,8 @@
 import { CriterionModifier } from "src/core/generated-graphql";
 import { CriterionOption, IHierarchicalLabeledIdCriterion } from "./criterion";
+import { CriterionType } from "../types";
 
-const modifierOptions = [
+const defaultModifierOptions = [
   CriterionModifier.IncludesAll,
   CriterionModifier.Includes,
   CriterionModifier.Equals,
@@ -17,41 +18,53 @@ const withoutEqualsModifierOptions = [
 ];
 
 const defaultModifier = CriterionModifier.IncludesAll;
+const inputType = "tags";
 
-export const TagsCriterionOption = new CriterionOption({
-  messageID: "tags",
-  type: "tags",
-  parameterName: "tags",
-  modifierOptions,
-  defaultModifier,
-});
-export const SceneTagsCriterionOption = new CriterionOption({
-  messageID: "sceneTags",
-  type: "sceneTags",
-  parameterName: "scene_tags",
-  modifierOptions,
-  defaultModifier,
-});
-export const PerformerTagsCriterionOption = new CriterionOption({
-  messageID: "performerTags",
-  type: "performerTags",
-  parameterName: "performer_tags",
-  modifierOptions: withoutEqualsModifierOptions,
-  defaultModifier,
-});
-export const ParentTagsCriterionOption = new CriterionOption({
-  messageID: "parent_tags",
-  type: "parentTags",
-  parameterName: "parents",
-  modifierOptions: withoutEqualsModifierOptions,
-  defaultModifier,
-});
-export const ChildTagsCriterionOption = new CriterionOption({
-  messageID: "sub_tags",
-  type: "childTags",
-  parameterName: "children",
-  modifierOptions: withoutEqualsModifierOptions,
-  defaultModifier,
-});
+class BaseTagsCriterionOption extends CriterionOption {
+  constructor(
+    messageID: string,
+    type: CriterionType,
+    modifierOptions: CriterionModifier[]
+  ) {
+    super({
+      messageID,
+      type,
+      modifierOptions,
+      defaultModifier,
+      inputType,
+      makeCriterion: () => new TagsCriterion(this),
+    });
+  }
+}
+
+export const TagsCriterionOption = new BaseTagsCriterionOption(
+  "tags",
+  "tags",
+  defaultModifierOptions
+);
+
+export const SceneTagsCriterionOption = new BaseTagsCriterionOption(
+  "scene_tags",
+  "scene_tags",
+  defaultModifierOptions
+);
+
+export const PerformerTagsCriterionOption = new BaseTagsCriterionOption(
+  "performer_tags",
+  "performer_tags",
+  withoutEqualsModifierOptions
+);
+
+export const ParentTagsCriterionOption = new BaseTagsCriterionOption(
+  "parent_tags",
+  "parents",
+  withoutEqualsModifierOptions
+);
+
+export const ChildTagsCriterionOption = new BaseTagsCriterionOption(
+  "sub_tags",
+  "children",
+  withoutEqualsModifierOptions
+);
 
 export class TagsCriterion extends IHierarchicalLabeledIdCriterion {}

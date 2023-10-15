@@ -40,7 +40,8 @@ type Scene {
   code: String
   details: String
   director: String
-  url: String
+  url: String @deprecated(reason: "Use urls")
+  urls: [String!]!
   date: String
   # rating expressed as 1-5
   rating: Int @deprecated(reason: "Use 1-100 range with rating100")
@@ -56,19 +57,18 @@ type Scene {
   created_at: Time!
   updated_at: Time!
   file_mod_time: Time
-  """The last time play count was updated"""
+  "The last time play count was updated"
   last_played_at: Time
-  """The time index a scene was left at"""
+  "The time index a scene was left at"
   resume_time: Float
-  """The total time a scene has spent playing"""
+  "The total time a scene has spent playing"
   play_duration: Float
-  """The number ot times a scene has been played"""
+  "The number ot times a scene has been played"
   play_count: Int
 
   file: SceneFileType! @deprecated(reason: "Use files")
   files: [VideoFile!]!
   paths: ScenePathsType! # Resolver
-
   scene_markers: [SceneMarker!]!
   galleries: [Gallery!]!
   studio: Studio
@@ -77,7 +77,7 @@ type Scene {
   performers: [Performer!]!
   stash_ids: [StashID!]!
 
-  """Return valid stream paths"""
+  "Return valid stream paths"
   sceneStreams: [SceneStreamEndpoint!]!
 }
 
@@ -91,7 +91,8 @@ input SceneCreateInput {
   code: String
   details: String
   director: String
-  url: String
+  url: String @deprecated(reason: "Use urls")
+  urls: [String!]
   date: String
   # rating expressed as 1-5
   rating: Int @deprecated(reason: "Use 1-100 range with rating100")
@@ -103,12 +104,15 @@ input SceneCreateInput {
   performer_ids: [ID!]
   movies: [SceneMovieInput!]
   tag_ids: [ID!]
-  """This should be a URL or a base64 encoded data URL"""
+  "This should be a URL or a base64 encoded data URL"
   cover_image: String
   stash_ids: [StashIDInput!]
 
-  """The first id will be assigned as primary. Files will be reassigned from
-  existing scenes if applicable. Files must not already be primary for another scene"""
+  """
+  The first id will be assigned as primary.
+  Files will be reassigned from existing scenes if applicable.
+  Files must not already be primary for another scene.
+  """
   file_ids: [ID!]
 }
 
@@ -119,7 +123,8 @@ input SceneUpdateInput {
   code: String
   details: String
   director: String
-  url: String
+  url: String @deprecated(reason: "Use urls")
+  urls: [String!]
   date: String
   # rating expressed as 1-5
   rating: Int @deprecated(reason: "Use 1-100 range with rating100")
@@ -132,15 +137,15 @@ input SceneUpdateInput {
   performer_ids: [ID!]
   movies: [SceneMovieInput!]
   tag_ids: [ID!]
-  """This should be a URL or a base64 encoded data URL"""
+  "This should be a URL or a base64 encoded data URL"
   cover_image: String
   stash_ids: [StashIDInput!]
 
-  """The time index a scene was left at"""
+  "The time index a scene was left at"
   resume_time: Float
-  """The total time a scene has spent playing"""
+  "The total time a scene has spent playing"
   play_duration: Float
-  """The number ot times a scene has been played"""
+  "The number ot times a scene has been played"
   play_count: Int
 
   primary_file_id: ID
@@ -164,7 +169,8 @@ input BulkSceneUpdateInput {
   code: String
   details: String
   director: String
-  url: String
+  url: String @deprecated(reason: "Use urls")
+  urls: BulkUpdateStrings
   date: String
   # rating expressed as 1-5
   rating: Int @deprecated(reason: "Use 1-100 range with rating100")
@@ -175,7 +181,7 @@ input BulkSceneUpdateInput {
   gallery_ids: BulkUpdateIds
   performer_ids: BulkUpdateIds
   tag_ids: BulkUpdateIds
-  movie_ids:  BulkUpdateIds
+  movie_ids: BulkUpdateIds
 }
 
 input SceneDestroyInput {
@@ -192,17 +198,17 @@ input ScenesDestroyInput {
 
 type FindScenesResultType {
   count: Int!
-  """Total duration in seconds"""
+  "Total duration in seconds"
   duration: Float!
-  """Total file size in bytes"""
+  "Total file size in bytes"
   filesize: Float!
   scenes: [Scene!]!
 }
 
 input SceneParserInput {
-  ignoreWords: [String!],
-  whitespaceCharacters: String,
-  capitalizeTitle: Boolean,
+  ignoreWords: [String!]
+  whitespaceCharacters: String
+  capitalizeTitle: Boolean
   ignoreOrganized: Boolean
 }
 
@@ -252,8 +258,10 @@ input AssignSceneFileInput {
 }
 
 input SceneMergeInput {
-  """If destination scene has no files, then the primary file of the
-  first source scene will be assigned as primary"""
+  """
+  If destination scene has no files, then the primary file of the
+  first source scene will be assigned as primary
+  """
   source: [ID!]!
   destination: ID!
   # values defined here will override values in the destination

@@ -39,9 +39,10 @@ html {
 
 body {
   color: $text-color;
-  -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
   margin: 0;
+  overflow-x: hidden;
   padding: 4rem 0 0 0;
 
   @include media-breakpoint-down(xs) {
@@ -49,6 +50,13 @@ body {
       padding: 1rem 0 5rem;
     }
   }
+}
+
+#movie-page,
+#performer-page,
+#studio-page,
+#tag-page {
+  margin-top: -0.5rem;
 }
 
 code,
@@ -59,6 +67,358 @@ code,
 
 dd {
   white-space: pre-line;
+}
+
+.sticky.detail-header {
+  display: block;
+  min-height: 50px;
+  padding: unset;
+  position: fixed;
+  top: 3.3rem;
+  z-index: 10;
+
+  @media (max-width: 576px) {
+    display: none;
+  }
+
+  .movie-name,
+  .performer-name,
+  .studio-name,
+  .tag-name {
+    font-weight: 800;
+  }
+
+  .sticky.detail-header-group {
+    padding: 1rem 2.5rem;
+
+    a.movie-name,
+    a.performer-name,
+    a.studio-name,
+    a.tag-name {
+      color: #f5f8fa;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    a,
+    span {
+      color: #d7d9db;
+      font-weight: 600;
+      padding-right: 0.5rem;
+    }
+
+    .detail-divider {
+      font-size: 1rem;
+      font-weight: 400;
+      opacity: 0.6;
+    }
+  }
+}
+
+.detail-expand-collapse {
+  .btn-primary:focus,
+  .btn-primary.focus,
+  .btn-primary:not(:disabled):not(.disabled):active,
+  .btn-primary:not(:disabled):not(.disabled).active,
+  .show > .btn-primary.dropdown-toggle,
+  .btn-primary:hover {
+    background: rgba(138, 155, 168, 0.15);
+    background-color: rgba(138, 155, 168, 0.15);
+    border-color: rgba(138, 155, 168, 0.15);
+    box-shadow: unset;
+    color: #f5f8fa;
+  }
+}
+
+.detail-header {
+  background-color: #192127;
+  min-height: 15rem;
+  overflow: hidden;
+  padding: 1rem;
+  position: relative;
+  transition: 0.3s;
+  width: 100%;
+  z-index: 11;
+
+  .detail-group,
+  .col {
+    transition: 0.2s;
+
+    @media (max-width: 576px) {
+      padding-top: 0.5rem;
+    }
+  }
+
+  .background-image-container {
+    bottom: -0.2rem;
+    left: 0;
+    opacity: 0.2;
+    position: absolute;
+    right: 0;
+    top: -0.2rem;
+    z-index: auto;
+
+    .background-image {
+      filter: blur(16px);
+      height: 100%;
+      object-fit: cover;
+      object-position: 50% 30%;
+      width: 100%;
+    }
+  }
+
+  .detail-container {
+    height: 100%;
+    position: relative;
+    z-index: 20;
+
+    .detail-item-value.age {
+      border-bottom: 1px dotted #f5f8fa;
+      margin-right: auto;
+    }
+
+    .performer-disambiguation {
+      letter-spacing: -0.04rem;
+      opacity: 0.65;
+    }
+  }
+
+  h2 {
+    margin-bottom: 0;
+  }
+
+  .country,
+  .performer-country {
+    .mr-2.fi {
+      margin-left: 0.5rem;
+    }
+  }
+
+  .alias-head {
+    color: #868791;
+  }
+
+  .detail-expand-collapse,
+  .name-icons {
+    margin-left: 10px;
+  }
+}
+
+.detail-header.edit {
+  background-color: unset;
+  overflow: visible;
+
+  form {
+    padding-top: 0.5rem;
+  }
+
+  .details-edit {
+    padding-top: 1rem;
+  }
+
+  .detail-header-image {
+    height: auto;
+  }
+
+  /* StashID alignment fix */
+  .form-group.row .row.no-gutters {
+    padding-top: calc(0.375rem + 1px);
+  }
+}
+
+.detail-header.collapsed {
+  .detail-header-image img {
+    max-width: 11rem;
+    transition: 0.5s;
+  }
+}
+
+.detail-body {
+  margin-left: 15px;
+  margin-right: 15px;
+  width: 100%;
+
+  nav {
+    align-content: center;
+    border-bottom: solid 2px #192127;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    padding: 5px 0;
+  }
+
+  .item-list-container {
+    padding-top: 15px;
+
+    @media (max-width: 576px) {
+      overflow-x: hidden;
+    }
+  }
+}
+
+.collapsed .detail-item-value {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.full-width {
+  .detail-header-image {
+    height: auto;
+
+    img {
+      max-width: 22rem;
+    }
+  }
+
+  .detail-item {
+    display: table;
+    padding-right: 0;
+    width: 100%;
+
+    .detail-item-title {
+      display: table-cell;
+      width: 130px;
+    }
+
+    .detail-item-value.age {
+      border-bottom: unset;
+      width: fit-content;
+    }
+  }
+
+  .detail-item-title.tags,
+  .detail-item-title.parent-tags,
+  .detail-item-title.sub-tags {
+    padding-top: 4px;
+  }
+}
+
+.detail-header-image {
+  display: flex;
+  float: left;
+  height: 100%;
+  justify-content: center;
+  padding: 0 1rem;
+
+  .movie-images {
+    height: 100%;
+  }
+
+  @media (max-width: 576px) {
+    float: unset;
+    height: auto;
+    padding: 0;
+
+    .movie-images {
+      .img {
+        max-width: 100%;
+      }
+    }
+  }
+
+  img {
+    margin: auto;
+    max-width: 14rem;
+    transition: 0.5s;
+  }
+
+  .movie-images img {
+    @media (max-width: 576px) {
+      max-width: 100%;
+    }
+  }
+}
+
+#movie-page .detail-header-image .movie-images img {
+  max-width: 13rem;
+}
+
+#movie-page .detail-header-image img,
+#performer-page .detail-header-image img,
+#tag-page .detail-header-image img {
+  border-radius: 0.5rem;
+}
+
+#tag-page {
+  .full-width .detail-header-image img {
+    max-width: 22rem;
+  }
+
+  .detail-header.collapsed .detail-header-image img {
+    max-width: 18rem;
+  }
+
+  .detail-header-image img {
+    max-width: 20rem;
+
+    @media (max-width: 576px) {
+      max-width: 100%;
+    }
+  }
+}
+
+.detail-item.tags .pl-0 {
+  margin-bottom: 0;
+}
+
+.detail-group {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  padding: 1rem 0;
+}
+
+.detail-item {
+  display: inline-flex;
+  flex-direction: column;
+  padding-bottom: 0.5rem;
+  padding-right: 4rem;
+
+  @media (max-width: 576px) {
+    padding-right: 2rem;
+  }
+}
+
+/* the .apple class denotes areas where rendering on some apple platforms has been inconsistent with other platforms
+   these rules aim to address those inconsistences */
+.apple {
+  @media (min-width: 576px) {
+    .detail-header {
+      .detail-container {
+        display: flex;
+      }
+    }
+
+    .detail-header.edit .row {
+      flex: 1;
+    }
+
+    .detail-header.full-width .detail-header-image,
+    .detail-header.edit .detail-header-image {
+      display: unset;
+    }
+  }
+}
+
+.detail-item-title {
+  color: #868791;
+  font-weight: 700;
+}
+
+.detail-item-value {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  white-space: pre-line;
+
+  .birthdate,
+  .height-imperial,
+  .penis-length-imperial,
+  .weight-imperial {
+    opacity: 0.65;
+  }
 }
 
 .input-control,
@@ -130,85 +490,90 @@ textarea.text-input {
   }
 }
 
-@media (min-width: 576px) {
-  .zoom-0 {
-    width: 240px;
+@media (max-width: 576px) {
+  .row.justify-content-center {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
 
-    .scene-card-preview {
-      height: 135px;
-    }
+.zoom-0 {
+  width: 240px;
 
-    .portrait {
-      height: 180px;
-    }
-
-    .gallery-card-image,
-    .tag-card-image {
-      max-height: 180px;
-    }
+  .scene-card-preview {
+    height: 135px;
   }
 
-  .zoom-1 {
-    width: 320px;
-
-    .scene-card-preview {
-      height: 180px;
-    }
-
-    .portrait {
-      height: 240px;
-    }
-
-    .gallery-card-image,
-    .tag-card-image {
-      max-height: 240px;
-    }
-
-    .image-card-preview {
-      height: 240px;
-    }
+  .portrait {
+    height: 180px;
   }
 
-  .zoom-2 {
-    width: 480px;
+  .gallery-card-image,
+  .tag-card-image {
+    max-height: 180px;
+  }
+}
 
-    .scene-card-preview {
-      height: 270px;
-    }
+.zoom-1 {
+  width: 320px;
 
-    .portrait {
-      height: 360px;
-    }
-
-    .gallery-card-image,
-    .tag-card-image {
-      max-height: 360px;
-    }
-
-    .image-card-preview {
-      height: 360px;
-    }
+  .scene-card-preview {
+    height: 180px;
   }
 
-  .zoom-3 {
-    width: 640px;
+  .portrait {
+    height: 240px;
+  }
 
-    .scene-card-preview {
-      height: 360px;
-    }
+  .gallery-card-image,
+  .tag-card-image {
+    max-height: 240px;
+  }
 
-    .portrait {
-      height: 480px;
-    }
+  .image-card-preview {
+    height: 240px;
+  }
+}
 
-    .tag-card-image,
-    .gallery-card-image {
-      max-height: 480px;
-    }
+.zoom-2 {
+  width: 480px;
 
-    .image-card-preview {
-      height: 480px;
-    }
+  .scene-card-preview {
+    height: 270px;
+  }
+
+  .portrait {
+    height: 360px;
+  }
+
+  .gallery-card-image,
+  .tag-card-image {
+    max-height: 360px;
+  }
+
+  .image-card-preview {
+    height: 360px;
+  }
+}
+
+.zoom-3 {
+  width: 640px;
+
+  .scene-card-preview {
+    height: 360px;
+  }
+
+  .portrait {
+    height: 480px;
+  }
+
+  .tag-card-image,
+  .gallery-card-image {
+    max-height: 480px;
+  }
+
+  .image-card-preview {
+    height: 480px;
   }
 }
 
@@ -375,8 +740,9 @@ div.dropdown-menu {
     color: $dark-text;
     font-size: 12px;
     line-height: 1rem;
+    margin-right: -0.5rem;
     opacity: 0.5;
-    padding: 0 0 0 0.5rem;
+    padding: 0 0.5rem;
     position: relative;
 
     &:active,
@@ -975,6 +1341,14 @@ dl.details-list {
 // middle align checkboxes
 .form-group .form-check .form-check-input {
   vertical-align: middle;
+}
+
+.invalid-feedback {
+  display: block;
+
+  &:empty {
+    display: none;
+  }
 }
 
 // Fix Safari styling on dropdowns

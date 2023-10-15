@@ -6,27 +6,22 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-type PartialUpdater interface {
-	UpdatePartial(ctx context.Context, id int, partial models.ImagePartial) (*models.Image, error)
-}
-
-func AddPerformer(ctx context.Context, qb PartialUpdater, i *models.Image, performerID int) error {
-	_, err := qb.UpdatePartial(ctx, i.ID, models.ImagePartial{
-		PerformerIDs: &models.UpdateIDs{
-			IDs:  []int{performerID},
-			Mode: models.RelationshipUpdateModeAdd,
-		},
-	})
-
+func AddPerformer(ctx context.Context, qb models.ImageUpdater, i *models.Image, performerID int) error {
+	imagePartial := models.NewImagePartial()
+	imagePartial.PerformerIDs = &models.UpdateIDs{
+		IDs:  []int{performerID},
+		Mode: models.RelationshipUpdateModeAdd,
+	}
+	_, err := qb.UpdatePartial(ctx, i.ID, imagePartial)
 	return err
 }
 
-func AddTag(ctx context.Context, qb PartialUpdater, i *models.Image, tagID int) error {
-	_, err := qb.UpdatePartial(ctx, i.ID, models.ImagePartial{
-		TagIDs: &models.UpdateIDs{
-			IDs:  []int{tagID},
-			Mode: models.RelationshipUpdateModeAdd,
-		},
-	})
+func AddTag(ctx context.Context, qb models.ImageUpdater, i *models.Image, tagID int) error {
+	imagePartial := models.NewImagePartial()
+	imagePartial.TagIDs = &models.UpdateIDs{
+		IDs:  []int{tagID},
+		Mode: models.RelationshipUpdateModeAdd,
+	}
+	_, err := qb.UpdatePartial(ctx, i.ID, imagePartial)
 	return err
 }

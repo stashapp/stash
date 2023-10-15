@@ -11,8 +11,6 @@ import (
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
-	"github.com/stashapp/stash/pkg/studio"
-	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -20,18 +18,10 @@ type CoverGetter interface {
 	GetCover(ctx context.Context, sceneID int) ([]byte, error)
 }
 
-type MarkerTagFinder interface {
-	tag.Finder
-	TagFinder
-	FindBySceneMarkerID(ctx context.Context, sceneMarkerID int) ([]*models.Tag, error)
-}
-
-type MarkerFinder interface {
-	FindBySceneID(ctx context.Context, sceneID int) ([]*models.SceneMarker, error)
-}
-
 type TagFinder interface {
+	models.TagGetter
 	FindBySceneID(ctx context.Context, sceneID int) ([]*models.Tag, error)
+	FindBySceneMarkerID(ctx context.Context, sceneMarkerID int) ([]*models.Tag, error)
 }
 
 // ToBasicJSON converts a scene object into its JSON object equivalent. It
@@ -41,7 +31,7 @@ func ToBasicJSON(ctx context.Context, reader CoverGetter, scene *models.Scene) (
 	newSceneJSON := jsonschema.Scene{
 		Title:     scene.Title,
 		Code:      scene.Code,
-		URL:       scene.URL,
+		URLs:      scene.URLs.List(),
 		Details:   scene.Details,
 		Director:  scene.Director,
 		CreatedAt: json.JSONTime{Time: scene.CreatedAt},
@@ -86,56 +76,9 @@ func ToBasicJSON(ctx context.Context, reader CoverGetter, scene *models.Scene) (
 	return &newSceneJSON, nil
 }
 
-// func getSceneFileJSON(scene *models.Scene) *jsonschema.SceneFile {
-// 	ret := &jsonschema.SceneFile{}
-
-// TODO
-// if scene.FileModTime != nil {
-// 	ret.ModTime = json.JSONTime{Time: *scene.FileModTime}
-// }
-
-// if scene.Size != nil {
-// 	ret.Size = *scene.Size
-// }
-
-// if scene.Duration != nil {
-// 	ret.Duration = getDecimalString(*scene.Duration)
-// }
-
-// if scene.VideoCodec != nil {
-// 	ret.VideoCodec = *scene.VideoCodec
-// }
-
-// if scene.AudioCodec != nil {
-// 	ret.AudioCodec = *scene.AudioCodec
-// }
-
-// if scene.Format != nil {
-// 	ret.Format = *scene.Format
-// }
-
-// if scene.Width != nil {
-// 	ret.Width = *scene.Width
-// }
-
-// if scene.Height != nil {
-// 	ret.Height = *scene.Height
-// }
-
-// if scene.Framerate != nil {
-// 	ret.Framerate = getDecimalString(*scene.Framerate)
-// }
-
-// if scene.Bitrate != nil {
-// 	ret.Bitrate = int(*scene.Bitrate)
-// }
-
-// 	return ret
-// }
-
 // GetStudioName returns the name of the provided scene's studio. It returns an
 // empty string if there is no studio assigned to the scene.
-func GetStudioName(ctx context.Context, reader studio.Finder, scene *models.Scene) (string, error) {
+func GetStudioName(ctx context.Context, reader models.StudioGetter, scene *models.Scene) (string, error) {
 	if scene.StudioID != nil {
 		studio, err := reader.Find(ctx, *scene.StudioID)
 		if err != nil {
@@ -173,7 +116,7 @@ func getTagNames(tags []*models.Tag) []string {
 }
 
 // GetDependentTagIDs returns a slice of unique tag IDs that this scene references.
-func GetDependentTagIDs(ctx context.Context, tags MarkerTagFinder, markerReader MarkerFinder, scene *models.Scene) ([]int, error) {
+func GetDependentTagIDs(ctx context.Context, tags TagFinder, markerReader models.SceneMarkerFinder, scene *models.Scene) ([]int, error) {
 	var ret []int
 
 	t, err := tags.FindBySceneID(ctx, scene.ID)
@@ -205,13 +148,9 @@ func GetDependentTagIDs(ctx context.Context, tags MarkerTagFinder, markerReader 
 	return ret, nil
 }
 
-type MovieFinder interface {
-	Find(ctx context.Context, id int) (*models.Movie, error)
-}
-
 // GetSceneMoviesJSON returns a slice of SceneMovie JSON representation objects
 // corresponding to the provided scene's scene movie relationships.
-func GetSceneMoviesJSON(ctx context.Context, movieReader MovieFinder, scene *models.Scene) ([]jsonschema.SceneMovie, error) {
+func GetSceneMoviesJSON(ctx context.Context, movieReader models.MovieGetter, scene *models.Scene) ([]jsonschema.SceneMovie, error) {
 	sceneMovies := scene.Movies.List()
 
 	var results []jsonschema.SceneMovie
@@ -249,7 +188,7 @@ func GetDependentMovieIDs(ctx context.Context, scene *models.Scene) ([]int, erro
 
 // GetSceneMarkersJSON returns a slice of SceneMarker JSON representation
 // objects corresponding to the provided scene's markers.
-func GetSceneMarkersJSON(ctx context.Context, markerReader MarkerFinder, tagReader MarkerTagFinder, scene *models.Scene) ([]jsonschema.SceneMarker, error) {
+func GetSceneMarkersJSON(ctx context.Context, markerReader models.SceneMarkerFinder, tagReader TagFinder, scene *models.Scene) ([]jsonschema.SceneMarker, error) {
 	sceneMarkers, err := markerReader.FindBySceneID(ctx, scene.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting scene markers: %v", err)

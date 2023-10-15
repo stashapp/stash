@@ -12,6 +12,9 @@ import {
   stashBoxPerformerQuery,
   useJobsSubscribe,
   mutateStashBoxBatchPerformerTag,
+  getClient,
+  evictQueries,
+  performerMutationImpactedQueries,
 } from "src/core/StashService";
 import { Manual } from "src/components/Help/Manual";
 import { ConfigurationContext } from "src/hooks/Config";
@@ -112,7 +115,7 @@ const PerformerBatchUpdateModal: React.FC<IPerformerBatchUpdateModal> = ({
           type="radio"
           name="performer-query"
           label={<FormattedMessage id="performer_tagger.current_page" />}
-          defaultChecked
+          checked={!queryAll}
           onChange={() => setQueryAll(false)}
         />
         <Form.Check
@@ -122,7 +125,7 @@ const PerformerBatchUpdateModal: React.FC<IPerformerBatchUpdateModal> = ({
           label={intl.formatMessage({
             id: "performer_tagger.query_all_performers_in_the_database",
           })}
-          defaultChecked={false}
+          checked={queryAll}
           onChange={() => setQueryAll(true)}
         />
       </Form.Group>
@@ -139,7 +142,7 @@ const PerformerBatchUpdateModal: React.FC<IPerformerBatchUpdateModal> = ({
           label={intl.formatMessage({
             id: "performer_tagger.untagged_performers",
           })}
-          defaultChecked
+          checked={!refresh}
           onChange={() => setRefresh(false)}
         />
         <Form.Text>
@@ -152,7 +155,7 @@ const PerformerBatchUpdateModal: React.FC<IPerformerBatchUpdateModal> = ({
           label={intl.formatMessage({
             id: "performer_tagger.refresh_tagged_performers",
           })}
-          defaultChecked={false}
+          checked={refresh}
           onChange={() => setRefresh(true)}
         />
         <Form.Text>
@@ -346,6 +349,24 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
 
   const updatePerformer = useUpdatePerformer();
 
+  function handleSaveError(performerID: string, name: string, message: string) {
+    setError({
+      ...error,
+      [performerID]: {
+        message: intl.formatMessage(
+          { id: "performer_tagger.failed_to_save_performer" },
+          { studio: modalPerformer?.name }
+        ),
+        details:
+          message === "UNIQUE constraint failed: performers.name"
+            ? intl.formatMessage({
+                id: "performer_tagger.name_already_exists",
+              })
+            : message,
+      },
+    });
+  }
+
   const handlePerformerUpdate = async (input: GQL.PerformerCreateInput) => {
     setModalPerformer(undefined);
     const performerID = modalPerformer?.stored_id;
@@ -357,22 +378,11 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
 
       const res = await updatePerformer(updateData);
       if (!res.data?.performerUpdate)
-        setError({
-          ...error,
-          [performerID]: {
-            message: intl.formatMessage(
-              { id: "performer_tagger.failed_to_save_performer" },
-              { performer: modalPerformer?.name }
-            ),
-            details:
-              res?.errors?.[0].message ===
-              "UNIQUE constraint failed: performers.checksum"
-                ? intl.formatMessage({
-                    id: "performer_tagger.name_already_exists",
-                  })
-                : res?.errors?.[0].message,
-          },
-        });
+        handleSaveError(
+          performerID,
+          modalPerformer?.name ?? "",
+          res?.errors?.[0]?.message ?? ""
+        );
     }
   };
 
@@ -631,6 +641,10 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
     } else {
       setBatchJob(undefined);
       setBatchJobID(undefined);
+
+      // Once the performer batch is complete, refresh all local performer data
+      const ac = getClient();
+      evictQueries(ac.cache, performerMutationImpactedQueries);
     }
   }, [jobsSubscribe, batchJobID]);
 
@@ -656,9 +670,10 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
 
       if (names.length > 0) {
         const ret = await mutateStashBoxBatchPerformerTag({
-          performer_names: names,
+          names: names,
           endpoint: selectedEndpointIndex,
           refresh: false,
+          createParent: false,
         });
 
         setBatchJobID(ret.data?.stashBoxBatchPerformerTag);
@@ -669,10 +684,11 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
   async function batchUpdate(ids: string[] | undefined, refresh: boolean) {
     if (config && selectedEndpoint) {
       const ret = await mutateStashBoxBatchPerformerTag({
-        performer_ids: ids,
+        ids: ids,
         endpoint: selectedEndpointIndex,
         refresh,
         exclude_fields: config.excludedPerformerFields ?? [],
+        createParent: false,
       });
 
       setBatchJobID(ret.data?.stashBoxBatchPerformerTag);
