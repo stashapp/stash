@@ -41,6 +41,8 @@ type SceneFilterType struct {
 	Duplicated *PHashDuplicationCriterionInput `json:"duplicated"`
 	// Filter by resolution
 	Resolution *ResolutionCriterionInput `json:"resolution"`
+	// Filter by framerate
+	Framerate *IntCriterionInput `json:"framerate"`
 	// Filter by video codec
 	VideoCodec *StringCriterionInput `json:"video_codec"`
 	// Filter by audio codec
