@@ -463,7 +463,8 @@ export const TaggerContext: React.FC = ({ children }) => {
         variables: {
           input: {
             ...sceneCreateInput,
-            organized: config?.markSceneAsOrganizedOnSave,
+            // only set organized if it is enabled in the config
+            organized: config?.markSceneAsOrganizedOnSave || undefined,
           },
         },
       });
