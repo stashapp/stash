@@ -21,7 +21,7 @@ func (e *NameExistsError) Error() string {
 
 // EnsureNameUnique returns an error if the performer name and disambiguation provided
 // is used by another performer
-func EnsureNameUnique(ctx context.Context, id int, name string, disambig string, qb models.PerformerReaderWriter) error {
+func EnsureNameUnique(ctx context.Context, name string, disambig string, qb models.PerformerReaderWriter) error {
 	performerFilter := models.PerformerFilterType{
 		Name: &models.StringCriterionInput{
 			Value:    name,
@@ -46,7 +46,7 @@ func EnsureNameUnique(ctx context.Context, id int, name string, disambig string,
 		return err
 	}
 
-	if len(existing) > 0 && existing[0].ID != id {
+	if len(existing) > 0 {
 		return &NameExistsError{
 			Name:           name,
 			Disambiguation: disambig,
@@ -54,4 +54,23 @@ func EnsureNameUnique(ctx context.Context, id int, name string, disambig string,
 	}
 
 	return nil
+}
+
+// EnsureUpdateNameUnique performs the same check as EnsureNameUnique, but is used when modifying an existing performer.
+func EnsureUpdateNameUnique(ctx context.Context, existing *models.Performer, name models.OptionalString, disambig models.OptionalString, qb models.PerformerReaderWriter) error {
+	newName := existing.Name
+	newDisambig := existing.Disambiguation
+
+	if name.Set {
+		newName = name.Value
+	}
+	if disambig.Set {
+		newDisambig = disambig.Value
+	}
+
+	if newName == existing.Name && newDisambig == existing.Disambiguation {
+		return nil
+	}
+
+	return EnsureNameUnique(ctx, newName, newDisambig, qb)
 }
