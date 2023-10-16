@@ -640,7 +640,6 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             setSelectedID={(id) => setStudioID(id)}
             onCreate={() => showStudioModal(scene.studio!)}
             endpoint={currentSource?.stashboxEndpoint}
-            stashBoxBaseURL={stashBoxBaseURL}
             onLink={async () => {
               await linkStudio(scene.studio!, studioID!);
             }}
