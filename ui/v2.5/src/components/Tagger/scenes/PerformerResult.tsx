@@ -11,6 +11,41 @@ import {
   Performer,
   PerformerSelect,
 } from "src/components/Performers/PerformerSelect";
+import { getStashboxBase } from "src/utils/stashbox";
+
+interface IPerformerName {
+  performer: GQL.ScrapedPerformer | Performer;
+  className?: string;
+  baseURL: string | undefined;
+  id: string | undefined | null;
+}
+
+const PerformerName: React.FC<IPerformerName> = ({
+  performer,
+  className,
+  baseURL,
+  id,
+}) => {
+  const name =
+    baseURL && id ? (
+      <a href={`${baseURL}${id}`} target="_blank" rel="noreferrer">
+        {performer.name}
+      </a>
+    ) : (
+      performer.name
+    );
+
+  return (
+    <span className={className}>
+      <span>{name}</span>
+      {performer.disambiguation && (
+        <span className="performer-disambiguation">
+          {` (${performer.disambiguation})`}
+        </span>
+      )}
+    </span>
+  );
+};
 
 interface IPerformerResultProps {
   performer: GQL.ScrapedPerformer;
@@ -19,7 +54,6 @@ interface IPerformerResultProps {
   onCreate: () => void;
   onLink?: () => Promise<void>;
   endpoint?: string;
-  stashBoxBaseURL?: string;
 }
 
 const PerformerResult: React.FC<IPerformerResultProps> = ({
@@ -29,7 +63,6 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
   onCreate,
   onLink,
   endpoint,
-  stashBoxBaseURL,
 }) => {
   const { data: performerData, loading: stashLoading } =
     GQL.useFindPerformerQuery({
@@ -45,6 +78,11 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
   );
 
   const [selectedPerformer, setSelectedPerformer] = useState<Performer>();
+
+  const stashboxPerformerPrefix = endpoint
+    ? `${getStashboxBase(endpoint)}performers/`
+    : undefined;
+  const performerURLPrefix = "/performers/";
 
   function selectPerformer(selected: Performer | undefined) {
     setSelectedPerformer(selected);
@@ -72,33 +110,6 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
     selectPerformer(undefined);
   };
 
-  function renderPerformerName(
-    p: GQL.ScrapedPerformer | Performer,
-    className: string,
-    url: string | undefined,
-    id: string | undefined | null
-  ) {
-    const name =
-      url && id ? (
-        <a href={url + "performers/" + id} target="_blank" rel="noreferrer">
-          {p.name}
-        </a>
-      ) : (
-        p.name
-      );
-
-    return (
-      <>
-        <b className={className}>{name}</b>
-        {p.disambiguation && (
-          <span className="performer-disambiguation">
-            {` (${p.disambiguation})`}
-          </span>
-        )}
-      </>
-    );
-  }
-
   if (stashLoading) return <div>Loading performer</div>;
 
   if (matchedPerformer && matchedStashID) {
@@ -106,12 +117,12 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
       <div className="row no-gutters my-2">
         <div className="entity-name">
           <FormattedMessage id="countables.performers" values={{ count: 1 }} />:
-          {renderPerformerName(
-            performer,
-            "ml-2",
-            stashBoxBaseURL,
-            performer.remote_site_id
-          )}
+          <PerformerName
+            performer={performer}
+            className="ml-2"
+            id={performer.remote_site_id}
+            baseURL={stashboxPerformerPrefix}
+          />
         </div>
         <span className="ml-auto">
           <OptionalField
@@ -124,12 +135,12 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
               <span className="mr-2">
                 <FormattedMessage id="component_tagger.verb_matched" />:
               </span>
-              {renderPerformerName(
-                matchedPerformer,
-                "ml-3 text-right",
-                "/",
-                matchedPerformer.id
-              )}
+              <PerformerName
+                performer={matchedPerformer}
+                className="ml-3 text-right"
+                id={matchedPerformer.id}
+                baseURL={performerURLPrefix}
+              />
             </div>
           </OptionalField>
         </span>
@@ -158,12 +169,12 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
     <div className="row no-gutters align-items-center mt-2">
       <div className="entity-name">
         <FormattedMessage id="countables.performers" values={{ count: 1 }} />:
-        {renderPerformerName(
-          performer,
-          "ml-2",
-          stashBoxBaseURL,
-          performer.remote_site_id
-        )}
+        <PerformerName
+          performer={performer}
+          className="ml-2"
+          id={performer.remote_site_id}
+          baseURL={stashboxPerformerPrefix}
+        />
       </div>
       <ButtonGroup>
         <Button variant="secondary" onClick={() => onCreate()}>

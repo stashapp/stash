@@ -23,6 +23,7 @@ import PerformerResult from "./PerformerResult";
 import StudioResult from "./StudioResult";
 import { useInitialState } from "src/hooks/state";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { getStashboxBase } from "src/utils/stashbox";
 
 const getDurationStatus = (
   scene: IScrapedScene,
@@ -302,7 +303,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   }, [isActive, loading, stashScene, index, resolveScene, scene]);
 
   const stashBoxBaseURL = currentSource?.stashboxEndpoint
-    ? currentSource.stashboxEndpoint.match(/https?:\/\/.*?\//)?.[0]
+    ? getStashboxBase(currentSource.stashboxEndpoint)
     : undefined;
   const stashBoxURL = useMemo(() => {
     if (stashBoxBaseURL) {
@@ -669,7 +670,6 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
                 await linkPerformer(performer, performerIDs[performerIndex]!);
               }}
               endpoint={currentSource?.stashboxEndpoint}
-              stashBoxBaseURL={stashBoxBaseURL}
               key={`${performer.name ?? performer.remote_site_id ?? ""}`}
             />
           ))}
