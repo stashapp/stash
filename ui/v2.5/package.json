@@ -111,7 +111,7 @@
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "extract-react-intl-messages": "^4.1.1",
-    "postcss": "^8.4.21",
+    "postcss": "^8.4.31",
     "postcss-scss": "^4.0.6",
     "prettier": "^2.8.4",
     "sass": "^1.58.1",
