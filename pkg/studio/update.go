@@ -109,8 +109,10 @@ func ValidateModify(ctx context.Context, s models.StudioPartial, qb ValidateModi
 		}
 	}
 
-	if err := EnsureStudioNameUnique(ctx, 0, s.Name.Value, qb); err != nil {
-		return err
+	if s.Name.Set && s.Name.Value != existing.Name {
+		if err := EnsureStudioNameUnique(ctx, 0, s.Name.Value, qb); err != nil {
+			return err
+		}
 	}
 
 	return nil
