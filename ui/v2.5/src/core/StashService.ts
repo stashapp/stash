@@ -2088,6 +2088,14 @@ export const mutateMigrate = (input: GQL.MigrateInput) =>
     },
   });
 
+type BoolMap = { [key: string]: boolean };
+
+export const mutateSetPluginsEnabled = (enabledMap: BoolMap) =>
+  client.mutate<GQL.SetPluginsEnabledMutation>({
+    mutation: GQL.SetPluginsEnabledDocument,
+    variables: { enabledMap },
+  });
+
 /// Tasks
 
 export const mutateMetadataScan = (input: GQL.ScanMetadataInput) =>

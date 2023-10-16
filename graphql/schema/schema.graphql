@@ -394,6 +394,12 @@ type Mutation {
   "Reload scrapers"
   reloadScrapers: Boolean!
 
+  """
+  Enable/disable plugins - enabledMap is a map of plugin IDs to enabled booleans.
+  Plugins not in the map are not affected.
+  """
+  setPluginsEnabled(enabledMap: BoolMap!): Boolean!
+
   "Run plugin task. Returns the job ID"
   runPluginTask(
     plugin_id: ID!
