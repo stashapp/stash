@@ -42,7 +42,7 @@ const StudioResult: React.FC<IStudioResultProps> = ({
   const stashboxStudioPrefix = endpoint
     ? `${getStashboxBase(endpoint)}studios/`
     : undefined;
-    const studioURLPrefix = "/studios/";
+  const studioURLPrefix = "/studios/";
 
   const handleSelect = (studios: SelectObject[]) => {
     if (studios.length) {
