@@ -108,6 +108,10 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Performer
 
+		if err := performer.EnsureNameUnique(ctx, newPerformer.Name, newPerformer.Disambiguation, qb); err != nil {
+			return err
+		}
+
 		err = qb.Create(ctx, &newPerformer)
 		if err != nil {
 			return err
@@ -224,6 +228,10 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 			return fmt.Errorf("performer with id %d not found", performerID)
 		}
 
+		if err := performer.EnsureUpdateNameUnique(ctx, existing, updatedPerformer.Name, updatedPerformer.Disambiguation, qb); err != nil {
+			return err
+		}
+
 		if err := performer.ValidateDeathDate(existing, input.Birthdate, input.DeathDate); err != nil {
 			return err
 		}
@@ -334,6 +342,10 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 
 			if existing == nil {
 				return fmt.Errorf("performer with id %d not found", performerID)
+			}
+
+			if err := performer.EnsureUpdateNameUnique(ctx, existing, updatedPerformer.Name, updatedPerformer.Disambiguation, qb); err != nil {
+				return err
 			}
 
 			err = performer.ValidateDeathDate(existing, input.Birthdate, input.DeathDate)
