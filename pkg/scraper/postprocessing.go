@@ -169,7 +169,15 @@ func (c Cache) postScrapeScene(ctx context.Context, scene ScrapedScene) (Scraped
 }
 
 func (c Cache) postScrapeGallery(ctx context.Context, g ScrapedGallery) (ScrapedContent, error) {
-	r := c.repository
+	// set the URL/URLs field
+	if g.URL == nil && len(g.URLs) > 0 {
+		g.URL = &g.URLs[0]
+	}
+	if g.URL != nil && len(g.URLs) == 0 {
+		g.URLs = []string{*g.URL}
+	}
+  
+  r := c.repository
 	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 		pqb := r.PerformerFinder
 		tqb := r.TagFinder
