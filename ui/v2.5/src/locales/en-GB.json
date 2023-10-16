@@ -890,7 +890,7 @@
       "sprites": "Scene Scrubber Sprites",
       "sprites_tooltip": "The set of images displayed below the video player for easy navigation.",
       "transcodes": "Transcodes",
-      "transcodes_tooltip": "MP4 conversions of unsupported video formats",
+      "transcodes_tooltip": "MP4 transcodes will be pre-generated for all content; useful for slow CPUs but requires much more disk space",
       "video_previews": "Previews",
       "video_previews_tooltip": "Video previews which play when hovering over a scene"
     },
