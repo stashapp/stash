@@ -316,7 +316,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 
 	if input.CustomPerformerImageLocation != nil {
 		c.Set(config.CustomPerformerImageLocation, *input.CustomPerformerImageLocation)
-		initialiseCustomImages()
+		initCustomPerformerImages(*input.CustomPerformerImageLocation)
 	}
 
 	if input.ScraperUserAgent != nil {

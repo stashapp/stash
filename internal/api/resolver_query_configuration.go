@@ -243,7 +243,9 @@ func makeConfigUIResult() map[string]interface{} {
 }
 
 func (r *queryResolver) ValidateStashBoxCredentials(ctx context.Context, input config.StashBoxInput) (*StashBoxValidationResult, error) {
-	client := stashbox.NewClient(models.StashBox{Endpoint: input.Endpoint, APIKey: input.APIKey}, r.txnManager, r.stashboxRepository())
+	box := models.StashBox{Endpoint: input.Endpoint, APIKey: input.APIKey}
+	client := stashbox.NewClient(box, r.stashboxRepository())
+
 	user, err := client.GetUser(ctx)
 
 	valid := user != nil && user.Me != nil
