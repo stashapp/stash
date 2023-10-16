@@ -177,7 +177,7 @@ func (c Cache) postScrapeGallery(ctx context.Context, g ScrapedGallery) (Scraped
 		g.URLs = []string{*g.URL}
 	}
   
-  r := c.repository
+	r := c.repository
 	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 		pqb := r.PerformerFinder
 		tqb := r.TagFinder
