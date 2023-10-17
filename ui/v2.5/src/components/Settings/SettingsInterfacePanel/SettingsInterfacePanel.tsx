@@ -269,6 +269,12 @@ export const SettingsInterfacePanel: React.FC = () => {
           checked={iface.showStudioAsText ?? undefined}
           onChange={(v) => saveInterface({ showStudioAsText: v })}
         />
+        <BooleanSetting
+          id="show-codec-links"
+          headingID="config.ui.scene_list.options.show_codec_links"
+          checked={iface.showCodecLinks ?? undefined}
+          onChange={(v) => saveInterface({ showCodecLinks: v })}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.ui.scene_player.heading">

@@ -674,7 +674,8 @@
       "scene_list": {
         "heading": "Scene List",
         "options": {
-          "show_studio_as_text": "Show Studios as text"
+          "show_studio_as_text": "Show Studios as text",
+          "show_codec_links": "Show codec links"
         }
       },
       "scene_player": {

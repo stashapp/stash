@@ -4,6 +4,7 @@ import { Link, useHistory } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "../Shared/Icon";
+import { CodecLink } from "../Shared/CodecLink";
 import {
   GalleryLink,
   TagLink,
@@ -23,6 +24,7 @@ import { RatingBanner } from "../Shared/RatingBanner";
 import { FormattedNumber } from "react-intl";
 import {
   faBox,
+  faCircleInfo,
   faCopy,
   faFilm,
   faImages,
@@ -316,6 +318,49 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     }
   }
 
+  const renderCodecInfo = configuration?.interface.showCodecLinks;
+
+  function maybeRenderCodec() {
+    if (!renderCodecInfo) {
+      return;
+    }
+
+    if (props.scene.files.length <= 0) return;
+
+    const popoverContentCodecs = props.scene.files.map((currentFile, index) => (
+      <>
+        <CodecLink
+          key={currentFile.audio_codec}
+          codec={currentFile.audio_codec}
+          codecType={"audio_codec"}
+          fileIndex={index}
+          filesLength={props.scene.files.length}
+        />
+
+        <CodecLink
+          key={currentFile.video_codec}
+          codec={currentFile.video_codec}
+          codecType={"video_codec"}
+          fileIndex={index}
+          filesLength={props.scene.files.length}
+        />
+      </>
+    ));
+
+    return (
+      <HoverPopover
+        className="codec-info"
+        placement="bottom"
+        content={popoverContentCodecs}
+      >
+        <Button className="minimal">
+          <Icon icon={faCircleInfo} />
+          <span>{props.scene.files.length}</span>
+        </Button>
+      </HoverPopover>
+    );
+  }
+
   function maybeRenderDupeCopies() {
     const phash = file
       ? file.fingerprints.find((fp) => fp.type === "phash")
@@ -344,7 +389,9 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         props.scene.scene_markers.length > 0 ||
         props.scene?.o_counter ||
         props.scene.galleries.length > 0 ||
-        props.scene.organized)
+        props.scene.organized ||
+        props.scene.files[0]?.audio_codec ||
+        props.scene.files[0]?.video_codec)
     ) {
       return (
         <>
@@ -357,6 +404,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             {maybeRenderOCounter()}
             {maybeRenderGallery()}
             {maybeRenderOrganized()}
+            {maybeRenderCodec()}
             {maybeRenderDupeCopies()}
           </ButtonGroup>
         </>

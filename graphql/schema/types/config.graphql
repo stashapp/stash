@@ -370,6 +370,8 @@ input ConfigInterfaceInput {
   "If true, next scene in playlist will be played at video end by default"
   continuePlaylistDefault: Boolean
 
+  "If true, codec information and filter links will be shown"
+  showCodecLinks: Boolean
   "If true, studio overlays will be shown as text instead of logo images"
   showStudioAsText: Boolean
 
@@ -443,6 +445,8 @@ type ConfigInterfaceResult {
   "If true, next scene in playlist will be played at video end by default"
   continuePlaylistDefault: Boolean
 
+  "If true, codec information and filter links will be shown"
+  showCodecLinks: Boolean
   "If true, studio overlays will be shown as text instead of logo images"
   showStudioAsText: Boolean
 

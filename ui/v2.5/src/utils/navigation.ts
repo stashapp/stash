@@ -21,7 +21,7 @@ import { GalleriesCriterion } from "src/models/list-filter/criteria/galleries";
 import { PhashCriterion } from "src/models/list-filter/criteria/phash";
 import { ILabeledId } from "src/models/list-filter/types";
 import { IntlShape } from "react-intl";
-
+import { CodecsCriterion } from "src/models/list-filter/criteria/codecs";
 function addExtraCriteria(
   dest: Criterion<CriterionValue>[],
   src?: Criterion<CriterionValue>[]
@@ -258,6 +258,18 @@ const makeChildTagsUrl = (tag: Partial<GQL.TagDataFragment>) => {
   return `/tags?${filter.makeQueryParameters()}`;
 };
 
+const makeCodecScenesUrl = (
+  codec: string,
+  type: "audio_codec" | "video_codec"
+) => {
+  if (!codec) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
+  const criterion = new CodecsCriterion(type);
+  criterion.value = JSON.stringify(codec);
+  filter.criteria.push(criterion);
+  return `/scenes?${filter.makeQueryParameters()}`;
+};
+
 const makeTagScenesUrl = (tag: Partial<GQL.TagDataFragment>) => {
   if (!tag.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
@@ -395,6 +407,7 @@ const NavUtils = {
   makeMovieScenesUrl,
   makeChildStudiosUrl,
   makeGalleryImagesUrl,
+  makeCodecScenesUrl,
 };
 
 export default NavUtils;
