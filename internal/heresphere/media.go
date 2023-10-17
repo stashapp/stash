@@ -17,7 +17,7 @@ import (
 /*
  * Returns the primary media source
  */
-func getPrimaryMediaSource(rs Routes, r *http.Request, scene *models.Scene) HeresphereVideoMediaSource {
+func getPrimaryMediaSource(rs routes, r *http.Request, scene *models.Scene) HeresphereVideoMediaSource {
 	mediaFile := scene.Files.Primary()
 	if mediaFile == nil {
 		return HeresphereVideoMediaSource{} // Return empty source if no primary file
@@ -38,7 +38,7 @@ func getPrimaryMediaSource(rs Routes, r *http.Request, scene *models.Scene) Here
 /*
  * This auxiliary function gathers a script if applicable
  */
-func getVideoScripts(rs Routes, r *http.Request, scene *models.Scene) []HeresphereVideoScript {
+func (rs routes) getVideoScripts(r *http.Request, scene *models.Scene) []HeresphereVideoScript {
 	processedScripts := []HeresphereVideoScript{}
 
 	primaryFile := scene.Files.Primary()
@@ -57,7 +57,7 @@ func getVideoScripts(rs Routes, r *http.Request, scene *models.Scene) []Heresphe
 /*
  * This auxiliary function gathers subtitles if applicable
  */
-func getVideoSubtitles(rs Routes, r *http.Request, scene *models.Scene) []HeresphereVideoSubtitle {
+func (rs routes) getVideoSubtitles(r *http.Request, scene *models.Scene) []HeresphereVideoSubtitle {
 	processedSubtitles := make([]HeresphereVideoSubtitle, 0)
 
 	primaryFile := scene.Files.Primary()
@@ -66,7 +66,7 @@ func getVideoSubtitles(rs Routes, r *http.Request, scene *models.Scene) []Heresp
 			var captions []*models.VideoCaption
 			var err error
 			err = txn.WithReadTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
-				captions, err = rs.Repository.File.GetCaptions(ctx, primaryFile.ID)
+				captions, err = rs.FileFinder.GetCaptions(ctx, primaryFile.ID)
 				return err
 			})
 			return captions, err
@@ -135,11 +135,11 @@ func getTranscodedMediaSources(sceneURL string, transcodeSize int, mediaFile *mo
 /*
  * Main function to gather media information and transcoding options
  */
-func getVideoMedia(rs Routes, r *http.Request, scene *models.Scene) []HeresphereVideoMedia {
+func (rs routes) getVideoMedia(r *http.Request, scene *models.Scene) []HeresphereVideoMedia {
 	processedMedia := []HeresphereVideoMedia{}
 
-	if err := txn.WithTxn(r.Context(), rs.Repository.TxnManager, func(ctx context.Context) error {
-		return scene.LoadPrimaryFile(ctx, rs.Repository.File)
+	if err := txn.WithTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
+		return scene.LoadPrimaryFile(ctx, rs.FileFinder)
 	}); err != nil {
 		logger.Errorf("Heresphere getVideoMedia error: %s\n", err.Error())
 		return processedMedia

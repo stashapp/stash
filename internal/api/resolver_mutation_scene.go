@@ -45,7 +45,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 	newScene.Code = translator.string(input.Code)
 	newScene.Details = translator.string(input.Details)
 	newScene.Director = translator.string(input.Director)
-	newScene.Rating = translator.ratingConversion(input.Rating, input.Rating100)
+	newScene.Rating = input.Rating100
 	newScene.Organized = translator.bool(input.Organized)
 	newScene.StashIDs = models.NewRelatedStashIDs(input.StashIds)
 
@@ -168,7 +168,7 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 	updatedScene.Code = translator.optionalString(input.Code, "code")
 	updatedScene.Details = translator.optionalString(input.Details, "details")
 	updatedScene.Director = translator.optionalString(input.Director, "director")
-	updatedScene.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedScene.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedScene.OCounter = translator.optionalInt(input.OCounter, "o_counter")
 	updatedScene.PlayCount = translator.optionalInt(input.PlayCount, "play_count")
 	updatedScene.PlayDuration = translator.optionalFloat64(input.PlayDuration, "play_duration")
@@ -321,7 +321,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 	updatedScene.Code = translator.optionalString(input.Code, "code")
 	updatedScene.Details = translator.optionalString(input.Details, "details")
 	updatedScene.Director = translator.optionalString(input.Director, "director")
-	updatedScene.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedScene.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedScene.Organized = translator.optionalBool(input.Organized, "organized")
 
 	updatedScene.Date, err = translator.optionalDate(input.Date, "date")
@@ -536,6 +536,8 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 	}
 
 	var values *models.ScenePartial
+	var coverImageData []byte
+
 	if input.Values != nil {
 		translator := changesetTranslator{
 			inputMap: getNamedUpdateInputMap(ctx, "input.values"),
@@ -545,18 +547,17 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 		if err != nil {
 			return nil, err
 		}
+
+		if input.Values.CoverImage != nil {
+			var err error
+			coverImageData, err = utils.ProcessImageInput(ctx, *input.Values.CoverImage)
+			if err != nil {
+				return nil, fmt.Errorf("processing cover image: %w", err)
+			}
+		}
 	} else {
 		v := models.NewScenePartial()
 		values = &v
-	}
-
-	var coverImageData []byte
-	if input.Values.CoverImage != nil {
-		var err error
-		coverImageData, err = utils.ProcessImageInput(ctx, *input.Values.CoverImage)
-		if err != nil {
-			return nil, fmt.Errorf("processing cover image: %w", err)
-		}
 	}
 
 	var ret *models.Scene

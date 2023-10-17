@@ -1,6 +1,7 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { DetailItem } from "src/components/Shared/DetailItem";
+import { StashIDPill } from "src/components/Shared/StashID";
 
 interface IStudioDetailsPanel {
   studio: GQL.StudioDataFragment;
@@ -21,21 +22,9 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
     return (
       <ul className="pl-0">
         {studio.stash_ids.map((stashID) => {
-          const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
-          const link = base ? (
-            <a
-              href={`${base}studios/${stashID.stash_id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {stashID.stash_id}
-            </a>
-          ) : (
-            stashID.stash_id
-          );
           return (
             <li key={stashID.stash_id} className="row no-gutters">
-              {link}
+              <StashIDPill stashID={stashID} linkType="studios" />
             </li>
           );
         })}

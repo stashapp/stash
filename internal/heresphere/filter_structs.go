@@ -209,7 +209,7 @@ func (fsf SceneFilterTypeStored) ToOriginal() *models.SceneFilterType {
 		model.FileCount = fsf.FileCount.ToOriginal()
 	}
 	if fsf.Rating100 != nil {
-		model.Rating = fsf.Rating100.ToOriginal()
+		model.Rating100 = fsf.Rating100.ToOriginal()
 	}
 	if fsf.Organized != nil {
 		b := fsf.Organized.Value == "true"

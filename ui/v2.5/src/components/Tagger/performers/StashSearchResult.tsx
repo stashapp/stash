@@ -5,6 +5,7 @@ import * as GQL from "src/core/generated-graphql";
 import { useUpdatePerformer } from "../queries";
 import PerformerModal from "../PerformerModal";
 import { faTags } from "@fortawesome/free-solid-svg-icons";
+import { mergeStashIDs } from "src/utils/stashbox";
 
 interface IStashSearchResultProps {
   performer: GQL.SlimPerformerDataFragment;
@@ -37,6 +38,10 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     setError({});
     setSaveState("Saving performer");
     setModalPerformer(undefined);
+
+    if (input.stash_ids?.length) {
+      input.stash_ids = mergeStashIDs(performer.stash_ids, input.stash_ids);
+    }
 
     const updateData: GQL.PerformerUpdateInput = {
       ...input,

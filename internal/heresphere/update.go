@@ -12,7 +12,7 @@ import (
 /*
  * Modifies the scene rating
  */
-func updateRating(user HeresphereAuthReq, ret *scene.UpdateSet) (bool, error) {
+func (rs routes) updateRating(user HeresphereAuthReq, ret *scene.UpdateSet) (bool, error) {
 	rating := models.Rating5To100F(*user.Rating)
 	ret.Partial.Rating.Value = rating
 	ret.Partial.Rating.Set = true
@@ -22,7 +22,7 @@ func updateRating(user HeresphereAuthReq, ret *scene.UpdateSet) (bool, error) {
 /*
  * Modifies the scene PlayCount
  */
-func updatePlayCount(ctx context.Context, scn *models.Scene, event HeresphereVideoEvent, txnManager txn.Manager, fqb models.SceneReaderWriter) (bool, error) {
+func (rs routes) updatePlayCount(ctx context.Context, scn *models.Scene, event HeresphereVideoEvent) (bool, error) {
 	if per, err := getMinPlayPercent(); err == nil {
 		newTime := event.Time / 1000
 		file := scn.Files.Primary()
@@ -35,8 +35,8 @@ func updatePlayCount(ctx context.Context, scn *models.Scene, event HeresphereVid
 			ret.Partial.PlayCount.Set = true
 			ret.Partial.PlayCount.Value = scn.PlayCount + 1
 
-			err := txn.WithTxn(ctx, txnManager, func(ctx context.Context) error {
-				_, err := ret.Update(ctx, fqb)
+			err := txn.WithTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
+				_, err := ret.Update(ctx, rs.SceneFinder)
 				return err
 			})
 			return err == nil, err
@@ -49,15 +49,15 @@ func updatePlayCount(ctx context.Context, scn *models.Scene, event HeresphereVid
 /*
  * Deletes the scene's primary file
  */
-func handleDeletePrimaryFile(ctx context.Context, txnManager txn.Manager, scn *models.Scene, fqb models.FileReaderWriter, fileDeleter *file.Deleter) (bool, error) {
-	err := txn.WithTxn(ctx, txnManager, func(ctx context.Context) error {
-		if err := scn.LoadPrimaryFile(ctx, fqb); err != nil {
+func (rs routes) handleDeletePrimaryFile(ctx context.Context, scn *models.Scene, fileDeleter *file.Deleter) (bool, error) {
+	err := txn.WithTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
+		if err := scn.LoadPrimaryFile(ctx, rs.FileFinder); err != nil {
 			return err
 		}
 
 		ff := scn.Files.Primary()
 		if ff != nil {
-			if err := file.Destroy(ctx, fqb, ff, fileDeleter, true); err != nil {
+			if err := file.Destroy(ctx, rs.FileFinder, ff, fileDeleter, true); err != nil {
 				return err
 			}
 		}

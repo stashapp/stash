@@ -17,7 +17,7 @@ func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) 
 		fileStore := r.repository.File
 		folderStore := r.repository.Folder
 		mover := file.NewMover(fileStore, folderStore)
-		mover.RegisterHooks(ctx, r.txnManager)
+		mover.RegisterHooks(ctx)
 
 		var (
 			folder   *models.Folder

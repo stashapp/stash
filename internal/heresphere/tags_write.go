@@ -16,7 +16,7 @@ import (
 /*
  * Processes tags and updates scene tags if applicable
  */
-func handleTags(ctx context.Context, scn *models.Scene, user *HeresphereAuthReq, rs Routes, ret *scene.UpdateSet) (bool, error) {
+func (rs routes) handleTags(ctx context.Context, scn *models.Scene, user *HeresphereAuthReq, ret *scene.UpdateSet) (bool, error) {
 	// Search input tags and add/create any new ones
 	var tagIDs []int
 	var perfIDs []int
@@ -29,36 +29,36 @@ func handleTags(ctx context.Context, scn *models.Scene, user *HeresphereAuthReq,
 
 		// FUTURE IMPROVEMENT: Switch to CutPrefix as it's nicer (1.20+)
 		// FUTURE IMPROVEMENT: Consider batching searches
-		if handleAddTag(ctx, rs, tagI, &tagIDs) {
+		if rs.handleAddTag(ctx, tagI, &tagIDs) {
 			continue
 		}
-		if handleAddPerformer(ctx, rs, tagI, &perfIDs) {
+		if rs.handleAddPerformer(ctx, tagI, &perfIDs) {
 			continue
 		}
-		if handleAddMarker(ctx, rs, tagI, scn) {
+		if rs.handleAddMarker(ctx, tagI, scn) {
 			continue
 		}
-		if handleAddStudio(ctx, rs, tagI, scn, ret) {
+		if rs.handleAddStudio(ctx, tagI, scn, ret) {
 			continue
 		}
-		if handleAddDirector(ctx, rs, tagI, scn, ret) {
+		if rs.handleAddDirector(ctx, tagI, scn, ret) {
 			continue
 		}
 
 		// Custom
-		if handleSetWatched(ctx, rs, tagI, scn, ret) {
+		if rs.handleSetWatched(ctx, tagI, scn, ret) {
 			continue
 		}
-		if handleSetOrganized(ctx, rs, tagI, scn, ret) {
+		if rs.handleSetOrganized(ctx, tagI, scn, ret) {
 			continue
 		}
-		if handleSetRated(ctx, rs, tagI, scn, ret) {
+		if rs.handleSetRated(ctx, tagI, scn, ret) {
 			continue
 		}
-		if handleSetPlayCount(ctx, rs, tagI, scn, ret) {
+		if rs.handleSetPlayCount(ctx, tagI, scn, ret) {
 			continue
 		}
-		if handleSetOCount(ctx, rs, tagI, scn, ret) {
+		if rs.handleSetOCount(ctx, tagI, scn, ret) {
 			continue
 		}
 	}
@@ -77,7 +77,7 @@ func handleTags(ctx context.Context, scn *models.Scene, user *HeresphereAuthReq,
 	return true, nil
 }
 
-func handleAddTag(ctx context.Context, rs Routes, tag HeresphereVideoTag, tagIDs *[]int) bool {
+func (rs routes) handleAddTag(ctx context.Context, tag HeresphereVideoTag, tagIDs *[]int) bool {
 	if !strings.HasPrefix(tag.Name, "Tag:") {
 		return false
 	}
@@ -87,7 +87,7 @@ func handleAddTag(ctx context.Context, rs Routes, tag HeresphereVideoTag, tagIDs
 	var tagMod *models.Tag
 	if err := txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
 		// Search for tag
-		tagMod, err = rs.Repository.Tag.FindByName(ctx, after, true)
+		tagMod, err = rs.TagFinder.FindByName(ctx, after, true)
 		return err
 	}); err != nil {
 		fmt.Printf("Heresphere handleTags Tag.FindByName error: %s\n", err.Error())
@@ -100,7 +100,7 @@ func handleAddTag(ctx context.Context, rs Routes, tag HeresphereVideoTag, tagIDs
 
 	return true
 }
-func handleAddPerformer(ctx context.Context, rs Routes, tag HeresphereVideoTag, perfIDs *[]int) bool {
+func (rs routes) handleAddPerformer(ctx context.Context, tag HeresphereVideoTag, perfIDs *[]int) bool {
 	if !strings.HasPrefix(tag.Name, "Performer:") {
 		return false
 	}
@@ -112,7 +112,7 @@ func handleAddPerformer(ctx context.Context, rs Routes, tag HeresphereVideoTag, 
 		var tagMods []*models.Performer
 
 		// Search for performer
-		if tagMods, err = rs.Repository.Performer.FindByNames(ctx, []string{after}, true); err == nil && len(tagMods) > 0 {
+		if tagMods, err = rs.PerformerFinder.FindByNames(ctx, []string{after}, true); err == nil && len(tagMods) > 0 {
 			tagMod = tagMods[0]
 		}
 
@@ -128,7 +128,7 @@ func handleAddPerformer(ctx context.Context, rs Routes, tag HeresphereVideoTag, 
 
 	return true
 }
-func handleAddMarker(ctx context.Context, rs Routes, tag HeresphereVideoTag, scene *models.Scene) bool {
+func (rs routes) handleAddMarker(ctx context.Context, tag HeresphereVideoTag, scene *models.Scene) bool {
 	if !strings.HasPrefix(tag.Name, "Marker:") {
 		return false
 	}
@@ -142,11 +142,11 @@ func handleAddMarker(ctx context.Context, rs Routes, tag HeresphereVideoTag, sce
 		searchType := "count"
 
 		// Search for marker
-		if markerResult, err = rs.Repository.SceneMarker.GetMarkerStrings(ctx, &after, &searchType); len(markerResult) > 0 {
+		if markerResult, err = rs.SceneMarkerFinder.GetMarkerStrings(ctx, &after, &searchType); len(markerResult) > 0 {
 			tagId = &markerResult[0].ID
 
 			// Search for tag
-			if markers, err := rs.Repository.SceneMarker.FindBySceneID(ctx, scene.ID); err == nil {
+			if markers, err := rs.SceneMarkerFinder.FindBySceneID(ctx, scene.ID); err == nil {
 				i, err := strconv.Atoi(*tagId)
 				if err == nil {
 					// Note: Currently we search if a marker exists.
@@ -179,7 +179,7 @@ func handleAddMarker(ctx context.Context, rs Routes, tag HeresphereVideoTag, sce
 			}
 
 			if err := txn.WithTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
-				return rs.Repository.SceneMarker.Create(ctx, &newMarker)
+				return rs.SceneMarkerFinder.Create(ctx, &newMarker)
 			}); err != nil {
 				logger.Errorf("Heresphere handleTags SceneMarker.Create error: %s\n", err.Error())
 			}
@@ -188,7 +188,7 @@ func handleAddMarker(ctx context.Context, rs Routes, tag HeresphereVideoTag, sce
 
 	return true
 }
-func handleAddStudio(ctx context.Context, rs Routes, tag HeresphereVideoTag, scene *models.Scene, ret *scene.UpdateSet) bool {
+func (rs routes) handleAddStudio(ctx context.Context, tag HeresphereVideoTag, scene *models.Scene, ret *scene.UpdateSet) bool {
 	if !strings.HasPrefix(tag.Name, "Studio:") {
 		return false
 	}
@@ -199,7 +199,7 @@ func handleAddStudio(ctx context.Context, rs Routes, tag HeresphereVideoTag, sce
 	var tagMod *models.Studio
 	if err := txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
 		// Search for performer
-		tagMod, err = rs.Repository.Studio.FindByName(ctx, after, true)
+		tagMod, err = rs.StudioFinder.FindByName(ctx, after, true)
 		return err
 	}); err == nil {
 		ret.Partial.StudioID.Set = true
@@ -208,7 +208,7 @@ func handleAddStudio(ctx context.Context, rs Routes, tag HeresphereVideoTag, sce
 
 	return true
 }
-func handleAddDirector(ctx context.Context, rs Routes, tag HeresphereVideoTag, scene *models.Scene, ret *scene.UpdateSet) bool {
+func (rs routes) handleAddDirector(ctx context.Context, tag HeresphereVideoTag, scene *models.Scene, ret *scene.UpdateSet) bool {
 	if !strings.HasPrefix(tag.Name, "Director:") {
 		return false
 	}
@@ -221,7 +221,7 @@ func handleAddDirector(ctx context.Context, rs Routes, tag HeresphereVideoTag, s
 }
 
 // Will be overwritten if PlayCount tag is updated
-func handleSetWatched(ctx context.Context, rs Routes, tag HeresphereVideoTag, scene *models.Scene, ret *scene.UpdateSet) bool {
+func (rs routes) handleSetWatched(ctx context.Context, tag HeresphereVideoTag, scene *models.Scene, ret *scene.UpdateSet) bool {
 	prefix := string(HeresphereCustomTagWatched) + ":"
 	if !strings.HasPrefix(tag.Name, prefix) {
 		return false
@@ -241,7 +241,7 @@ func handleSetWatched(ctx context.Context, rs Routes, tag HeresphereVideoTag, sc
 
 	return true
 }
-func handleSetOrganized(ctx context.Context, rs Routes, tag HeresphereVideoTag, scene *models.Scene, ret *scene.UpdateSet) bool {
+func (rs routes) handleSetOrganized(ctx context.Context, tag HeresphereVideoTag, scene *models.Scene, ret *scene.UpdateSet) bool {
 	prefix := string(HeresphereCustomTagOrganized) + ":"
 	if !strings.HasPrefix(tag.Name, prefix) {
 		return false
@@ -255,7 +255,7 @@ func handleSetOrganized(ctx context.Context, rs Routes, tag HeresphereVideoTag, 
 
 	return true
 }
-func handleSetRated(ctx context.Context, rs Routes, tag HeresphereVideoTag, scene *models.Scene, ret *scene.UpdateSet) bool {
+func (rs routes) handleSetRated(ctx context.Context, tag HeresphereVideoTag, scene *models.Scene, ret *scene.UpdateSet) bool {
 	prefix := string(HeresphereCustomTagRated) + ":"
 	if !strings.HasPrefix(tag.Name, prefix) {
 		return false
@@ -269,7 +269,7 @@ func handleSetRated(ctx context.Context, rs Routes, tag HeresphereVideoTag, scen
 
 	return true
 }
-func handleSetPlayCount(ctx context.Context, rs Routes, tag HeresphereVideoTag, scene *models.Scene, ret *scene.UpdateSet) bool {
+func (rs routes) handleSetPlayCount(ctx context.Context, tag HeresphereVideoTag, scene *models.Scene, ret *scene.UpdateSet) bool {
 	prefix := string(HeresphereCustomTagPlayCount) + ":"
 	if !strings.HasPrefix(tag.Name, prefix) {
 		return false
@@ -283,7 +283,7 @@ func handleSetPlayCount(ctx context.Context, rs Routes, tag HeresphereVideoTag, 
 
 	return true
 }
-func handleSetOCount(ctx context.Context, rs Routes, tag HeresphereVideoTag, scene *models.Scene, ret *scene.UpdateSet) bool {
+func (rs routes) handleSetOCount(ctx context.Context, tag HeresphereVideoTag, scene *models.Scene, ret *scene.UpdateSet) bool {
 	prefix := string(HeresphereCustomTagOCounter) + ":"
 	if !strings.HasPrefix(tag.Name, prefix) {
 		return false

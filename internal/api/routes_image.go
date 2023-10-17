@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"errors"
-	"io"
 	"io/fs"
 	"net/http"
 	"os/exec"
@@ -17,7 +16,6 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -27,9 +25,17 @@ type ImageFinder interface {
 }
 
 type imageRoutes struct {
-	txnManager  txn.Manager
+	models.TxnRoutes
 	imageFinder ImageFinder
 	fileGetter  models.FileGetter
+}
+
+func getImageRoutes(repo models.Repository) chi.Router {
+	return imageRoutes{
+		TxnRoutes:   models.TxnRoutes{TxnManager: repo.TxnManager},
+		imageFinder: repo.Image,
+		fileGetter:  repo.File,
+	}.Routes()
 }
 
 func (rs imageRoutes) Routes() chi.Router {
@@ -45,8 +51,6 @@ func (rs imageRoutes) Routes() chi.Router {
 
 	return r
 }
-
-// region Handlers
 
 func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 	img := r.Context().Value(imageKey).(*models.Image)
@@ -119,8 +123,6 @@ func (rs imageRoutes) Image(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rs imageRoutes) serveImage(w http.ResponseWriter, r *http.Request, i *models.Image, useDefault bool) {
-	const defaultImageImage = "image/image.svg"
-
 	if i.Files.Primary() != nil {
 		err := i.Files.Primary().Base().Serve(&file.OsFS{}, w, r)
 		if err == nil {
@@ -141,14 +143,10 @@ func (rs imageRoutes) serveImage(w http.ResponseWriter, r *http.Request, i *mode
 		return
 	}
 
-	// fall back to static image
-	f, _ := static.Image.Open(defaultImageImage)
-	defer f.Close()
-	image, _ := io.ReadAll(f)
+	// fallback to default image
+	image := static.ReadAll(static.DefaultImageImage)
 	utils.ServeImage(w, r, image)
 }
-
-// endregion
 
 func (rs imageRoutes) ImageCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -156,7 +154,7 @@ func (rs imageRoutes) ImageCtx(next http.Handler) http.Handler {
 		imageID, _ := strconv.Atoi(imageIdentifierQueryParam)
 
 		var image *models.Image
-		_ = txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		_ = rs.WithReadTxn(r, func(ctx context.Context) error {
 			qb := rs.imageFinder
 			if imageID == 0 {
 				images, _ := qb.FindByChecksum(ctx, imageIdentifierQueryParam)

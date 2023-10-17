@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
-import { TagLink } from "src/components/Shared/TagLink";
+import { GalleryLink, TagLink } from "src/components/Shared/TagLink";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
@@ -24,7 +24,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
   function renderTags() {
     if (props.image.tags.length === 0) return;
     const tags = props.image.tags.map((tag) => (
-      <TagLink key={tag.id} tag={tag} tagType="image" />
+      <TagLink key={tag.id} tag={tag} linkType="image" />
     ));
     return (
       <>
@@ -67,8 +67,8 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
 
   function renderGalleries() {
     if (props.image.galleries.length === 0) return;
-    const tags = props.image.galleries.map((gallery) => (
-      <TagLink key={gallery.id} gallery={gallery} />
+    const galleries = props.image.galleries.map((gallery) => (
+      <GalleryLink key={gallery.id} gallery={gallery} />
     ));
     return (
       <>
@@ -78,7 +78,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
             values={{ count: props.image.galleries.length }}
           />
         </h6>
-        {tags}
+        {galleries}
       </>
     );
   }

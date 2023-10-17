@@ -17,6 +17,11 @@ import (
 var invalidID = -1
 
 func loadGalleryRelationships(ctx context.Context, expected models.Gallery, actual *models.Gallery) error {
+	if expected.URLs.Loaded() {
+		if err := actual.LoadURLs(ctx, db.Gallery); err != nil {
+			return err
+		}
+	}
 	if expected.SceneIDs.Loaded() {
 		if err := actual.LoadSceneIDs(ctx, db.Gallery); err != nil {
 			return err
@@ -72,7 +77,7 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 			"full",
 			models.Gallery{
 				Title:        title,
-				URL:          url,
+				URLs:         models.NewRelatedStrings([]string{url}),
 				Date:         &date,
 				Details:      details,
 				Rating:       &rating,
@@ -90,7 +95,7 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 			"with file",
 			models.Gallery{
 				Title:     title,
-				URL:       url,
+				URLs:      models.NewRelatedStrings([]string{url}),
 				Date:      &date,
 				Details:   details,
 				Rating:    &rating,
@@ -222,7 +227,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 			&models.Gallery{
 				ID:        galleryIDs[galleryIdxWithScene],
 				Title:     title,
-				URL:       url,
+				URLs:      models.NewRelatedStrings([]string{url}),
 				Date:      &date,
 				Details:   details,
 				Rating:    &rating,
@@ -243,6 +248,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 			"clear nullables",
 			&models.Gallery{
 				ID:           galleryIDs[galleryIdxWithImage],
+				URLs:         models.NewRelatedStrings([]string{}),
 				SceneIDs:     models.NewRelatedIDs([]int{}),
 				TagIDs:       models.NewRelatedIDs([]int{}),
 				PerformerIDs: models.NewRelatedIDs([]int{}),
@@ -384,7 +390,7 @@ func clearGalleryPartial() models.GalleryPartial {
 	return models.GalleryPartial{
 		Title:        models.OptionalString{Set: true, Null: true},
 		Details:      models.OptionalString{Set: true, Null: true},
-		URL:          models.OptionalString{Set: true, Null: true},
+		URLs:         &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
 		Date:         models.OptionalDate{Set: true, Null: true},
 		Rating:       models.OptionalInt{Set: true, Null: true},
 		StudioID:     models.OptionalInt{Set: true, Null: true},
@@ -416,9 +422,12 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 			"full",
 			galleryIDs[galleryIdxWithImage],
 			models.GalleryPartial{
-				Title:     models.NewOptionalString(title),
-				Details:   models.NewOptionalString(details),
-				URL:       models.NewOptionalString(url),
+				Title:   models.NewOptionalString(title),
+				Details: models.NewOptionalString(details),
+				URLs: &models.UpdateStrings{
+					Values: []string{url},
+					Mode:   models.RelationshipUpdateModeSet,
+				},
 				Date:      models.NewOptionalDate(date),
 				Rating:    models.NewOptionalInt(rating),
 				Organized: models.NewOptionalBool(true),
@@ -443,7 +452,7 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 				ID:        galleryIDs[galleryIdxWithImage],
 				Title:     title,
 				Details:   details,
-				URL:       url,
+				URLs:      models.NewRelatedStrings([]string{url}),
 				Date:      &date,
 				Rating:    &rating,
 				Organized: true,
@@ -1653,7 +1662,13 @@ func TestGalleryQueryURL(t *testing.T) {
 
 	verifyFn := func(g *models.Gallery) {
 		t.Helper()
-		verifyString(t, g.URL, urlCriterion)
+		urls := g.URLs.List()
+		var url string
+		if len(urls) > 0 {
+			url = urls[0]
+		}
+
+		verifyString(t, url, urlCriterion)
 	}
 
 	verifyGalleryQuery(t, filter, verifyFn)
@@ -1683,59 +1698,17 @@ func verifyGalleryQuery(t *testing.T, filter models.GalleryFilterType, verifyFn 
 
 		galleries := queryGallery(ctx, t, sqb, &filter, nil)
 
+		for _, g := range galleries {
+			if err := g.LoadURLs(ctx, sqb); err != nil {
+				t.Errorf("Error loading gallery URLs: %v", err)
+			}
+		}
+
 		// assume it should find at least one
 		assert.Greater(t, len(galleries), 0)
 
 		for _, gallery := range galleries {
 			verifyFn(gallery)
-		}
-
-		return nil
-	})
-}
-
-func TestGalleryQueryLegacyRating(t *testing.T) {
-	const rating = 3
-	ratingCriterion := models.IntCriterionInput{
-		Value:    rating,
-		Modifier: models.CriterionModifierEquals,
-	}
-
-	verifyGalleriesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyGalleriesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyGalleriesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierLessThan
-	verifyGalleriesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierIsNull
-	verifyGalleriesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierNotNull
-	verifyGalleriesLegacyRating(t, ratingCriterion)
-}
-
-func verifyGalleriesLegacyRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
-		galleryFilter := models.GalleryFilterType{
-			Rating: &ratingCriterion,
-		}
-
-		galleries, _, err := sqb.Query(ctx, &galleryFilter, nil)
-		if err != nil {
-			t.Errorf("Error querying gallery: %s", err.Error())
-		}
-
-		// convert criterion value to the 100 value
-		ratingCriterion.Value = models.Rating5To100(ratingCriterion.Value)
-
-		for _, gallery := range galleries {
-			verifyIntPtr(t, gallery.Rating, ratingCriterion)
 		}
 
 		return nil

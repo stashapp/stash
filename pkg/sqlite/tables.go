@@ -19,6 +19,7 @@ var (
 	galleriesTagsJoinTable       = goqu.T(galleriesTagsTable)
 	performersGalleriesJoinTable = goqu.T(performersGalleriesTable)
 	galleriesScenesJoinTable     = goqu.T(galleriesScenesTable)
+	galleriesURLsJoinTable       = goqu.T(galleriesURLsTable)
 
 	scenesFilesJoinTable      = goqu.T(scenesFilesTable)
 	scenesTagsJoinTable       = goqu.T(scenesTagsTable)
@@ -121,6 +122,14 @@ var (
 	galleriesChaptersTableMgr = &table{
 		table:    goqu.T(galleriesChaptersTable),
 		idColumn: goqu.T(galleriesChaptersTable).Col(idColumn),
+	}
+
+	galleriesURLsTableMgr = &orderedValueTable[string]{
+		table: table{
+			table:    galleriesURLsJoinTable,
+			idColumn: galleriesURLsJoinTable.Col(galleryIDColumn),
+		},
+		valueColumn: galleriesURLsJoinTable.Col(galleriesURLColumn),
 	}
 )
 

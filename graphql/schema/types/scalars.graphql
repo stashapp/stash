@@ -8,6 +8,9 @@ scalar Timestamp
 # generic JSON object
 scalar Map
 
+# string, boolean map
+scalar BoolMap
+
 scalar Any
 
 scalar Int64

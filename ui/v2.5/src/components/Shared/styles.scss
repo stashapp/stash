@@ -144,6 +144,10 @@
     padding-right: 15px;
   }
 
+  .image-selection-parent {
+    min-width: 100%;
+  }
+
   .image-selection {
     .select-buttons {
       align-items: center;
@@ -369,6 +373,7 @@ div.react-datepicker {
 
   .react-datepicker__day {
     color: $text-color;
+
     &.react-datepicker__day--disabled {
       color: $text-muted;
     }
@@ -438,6 +443,7 @@ div.react-datepicker {
     }
   }
 }
+
 /* stylelint-enable */
 
 #date-picker-portal .react-datepicker-popper {
@@ -473,4 +479,33 @@ div.react-datepicker {
 
 .string-list-row .input-group {
   flex-wrap: nowrap;
+}
+
+.stash-id-pill {
+  display: inline-block;
+  font-size: 90%;
+  font-weight: 700;
+  line-height: 1;
+  padding-bottom: 0.25em;
+  padding-top: 0.25em;
+  text-align: center;
+  vertical-align: baseline;
+  white-space: nowrap;
+
+  span,
+  a {
+    display: inline-block;
+    padding: 0.25em 0.6em;
+  }
+
+  span {
+    background-color: $primary;
+    border-radius: 0.25rem 0 0 0.25rem;
+    min-width: 5em;
+  }
+
+  a {
+    background-color: $secondary;
+    border-radius: 0 0.25rem 0.25rem 0;
+  }
 }

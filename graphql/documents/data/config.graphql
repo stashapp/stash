@@ -42,9 +42,6 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   excludes
   imageExcludes
   customPerformerImageLocation
-  scraperUserAgent
-  scraperCertCheck
-  scraperCDPPath
   stashBoxes {
     name
     endpoint
@@ -148,8 +145,6 @@ fragment ScraperSourceData on ScraperSource {
 
 fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
   scan {
-    useFileMetadata
-    stripFileExtension
     scanGenerateCovers
     scanGeneratePreviews
     scanGenerateImagePreviews

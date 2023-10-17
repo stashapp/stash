@@ -16,7 +16,6 @@ import (
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -43,12 +42,23 @@ type CaptionFinder interface {
 }
 
 type sceneRoutes struct {
-	txnManager        txn.Manager
+	models.TxnRoutes
 	sceneFinder       SceneFinder
 	fileGetter        models.FileGetter
 	captionFinder     CaptionFinder
 	sceneMarkerFinder SceneMarkerFinder
 	tagFinder         SceneMarkerTagFinder
+}
+
+func getSceneRoutes(repo models.Repository) chi.Router {
+	return sceneRoutes{
+		TxnRoutes:         models.TxnRoutes{TxnManager: repo.TxnManager},
+		sceneFinder:       repo.Scene,
+		fileGetter:        repo.File,
+		captionFinder:     repo.File,
+		sceneMarkerFinder: repo.SceneMarker,
+		tagFinder:         repo.Tag,
+	}.Routes()
 }
 
 func (rs sceneRoutes) Routes() chi.Router {
@@ -89,12 +99,10 @@ func (rs sceneRoutes) Routes() chi.Router {
 	return r
 }
 
-// region Handlers
-
 func (rs sceneRoutes) StreamDirect(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	ss := manager.SceneServer{
-		TxnManager:       rs.txnManager,
+		TxnManager:       rs.TxnManager,
 		SceneCoverGetter: rs.sceneFinder,
 	}
 	ss.StreamSceneDirect(scene, w, r)
@@ -248,7 +256,7 @@ func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
 	ss := manager.SceneServer{
-		TxnManager:       rs.txnManager,
+		TxnManager:       rs.TxnManager,
 		SceneCoverGetter: rs.sceneFinder,
 	}
 	ss.ServeScreenshot(scene, w, r)
@@ -270,13 +278,13 @@ func (rs sceneRoutes) Webp(w http.ResponseWriter, r *http.Request) {
 	utils.ServeStaticFile(w, r, filepath)
 }
 
-func (rs sceneRoutes) getChapterVttTitle(ctx context.Context, marker *models.SceneMarker) (*string, error) {
+func (rs sceneRoutes) getChapterVttTitle(r *http.Request, marker *models.SceneMarker) (*string, error) {
 	if marker.Title != "" {
 		return &marker.Title, nil
 	}
 
 	var title string
-	if err := txn.WithReadTxn(ctx, rs.txnManager, func(ctx context.Context) error {
+	if err := rs.WithReadTxn(r, func(ctx context.Context) error {
 		qb := rs.tagFinder
 		primaryTag, err := qb.Find(ctx, marker.PrimaryTagID)
 		if err != nil {
@@ -305,7 +313,7 @@ func (rs sceneRoutes) getChapterVttTitle(ctx context.Context, marker *models.Sce
 func (rs sceneRoutes) VttChapter(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	var sceneMarkers []*models.SceneMarker
-	readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+	readTxnErr := rs.WithReadTxn(r, func(ctx context.Context) error {
 		var err error
 		sceneMarkers, err = rs.sceneMarkerFinder.FindBySceneID(ctx, scene.ID)
 		return err
@@ -325,7 +333,7 @@ func (rs sceneRoutes) VttChapter(w http.ResponseWriter, r *http.Request) {
 		time := utils.GetVTTTime(marker.Seconds)
 		vttLines = append(vttLines, time+" --> "+time)
 
-		vttTitle, err := rs.getChapterVttTitle(r.Context(), marker)
+		vttTitle, err := rs.getChapterVttTitle(r, marker)
 		if errors.Is(err, context.Canceled) {
 			return
 		}
@@ -404,7 +412,7 @@ func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang strin
 	s := r.Context().Value(sceneKey).(*models.Scene)
 
 	var captions []*models.VideoCaption
-	readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+	readTxnErr := rs.WithReadTxn(r, func(ctx context.Context) error {
 		var err error
 		primaryFile := s.Files.Primary()
 		if primaryFile == nil {
@@ -466,7 +474,7 @@ func (rs sceneRoutes) SceneMarkerStream(w http.ResponseWriter, r *http.Request) 
 	sceneHash := scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
 	var sceneMarker *models.SceneMarker
-	readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+	readTxnErr := rs.WithReadTxn(r, func(ctx context.Context) error {
 		var err error
 		sceneMarker, err = rs.sceneMarkerFinder.Find(ctx, sceneMarkerID)
 		return err
@@ -494,7 +502,7 @@ func (rs sceneRoutes) SceneMarkerPreview(w http.ResponseWriter, r *http.Request)
 	sceneHash := scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
 	var sceneMarker *models.SceneMarker
-	readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+	readTxnErr := rs.WithReadTxn(r, func(ctx context.Context) error {
 		var err error
 		sceneMarker, err = rs.sceneMarkerFinder.Find(ctx, sceneMarkerID)
 		return err
@@ -530,7 +538,7 @@ func (rs sceneRoutes) SceneMarkerScreenshot(w http.ResponseWriter, r *http.Reque
 	sceneHash := scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
 	var sceneMarker *models.SceneMarker
-	readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+	readTxnErr := rs.WithReadTxn(r, func(ctx context.Context) error {
 		var err error
 		sceneMarker, err = rs.sceneMarkerFinder.Find(ctx, sceneMarkerID)
 		return err
@@ -561,8 +569,6 @@ func (rs sceneRoutes) SceneMarkerScreenshot(w http.ResponseWriter, r *http.Reque
 	}
 }
 
-// endregion
-
 func (rs sceneRoutes) SceneCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sceneID, err := strconv.Atoi(chi.URLParam(r, "sceneId"))
@@ -572,7 +578,7 @@ func (rs sceneRoutes) SceneCtx(next http.Handler) http.Handler {
 		}
 
 		var scene *models.Scene
-		_ = txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		_ = rs.WithReadTxn(r, func(ctx context.Context) error {
 			qb := rs.sceneFinder
 			scene, _ = qb.Find(ctx, sceneID)
 

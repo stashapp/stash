@@ -112,7 +112,8 @@ func (s *Manager) Import(ctx context.Context) (int, error) {
 
 	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
 		task := ImportTask{
-			txnManager:          s.Repository,
+			repository:          s.Repository,
+			resetter:            s.Database,
 			BaseDir:             metadataPath,
 			Reset:               true,
 			DuplicateBehaviour:  ImportDuplicateEnumFail,
@@ -136,7 +137,7 @@ func (s *Manager) Export(ctx context.Context) (int, error) {
 		var wg sync.WaitGroup
 		wg.Add(1)
 		task := ExportTask{
-			txnManager:          s.Repository,
+			repository:          s.Repository,
 			full:                true,
 			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
 		}
@@ -167,7 +168,7 @@ func (s *Manager) Generate(ctx context.Context, input GenerateMetadataInput) (in
 	}
 
 	j := &GenerateJob{
-		txnManager: s.Repository,
+		repository: s.Repository,
 		input:      input,
 	}
 
@@ -212,7 +213,7 @@ func (s *Manager) generateScreenshot(ctx context.Context, sceneId string, at *fl
 		}
 
 		task := GenerateCoverTask{
-			txnManager:   s.Repository,
+			repository:   s.Repository,
 			Scene:        *scene,
 			ScreenshotAt: at,
 			Overwrite:    true,
@@ -239,7 +240,7 @@ type AutoTagMetadataInput struct {
 
 func (s *Manager) AutoTag(ctx context.Context, input AutoTagMetadataInput) int {
 	j := autoTagJob{
-		txnManager: s.Repository,
+		repository: s.Repository,
 		input:      input,
 	}
 
@@ -255,7 +256,7 @@ type CleanMetadataInput struct {
 func (s *Manager) Clean(ctx context.Context, input CleanMetadataInput) int {
 	j := cleanJob{
 		cleaner:      s.Cleaner,
-		txnManager:   s.Repository,
+		repository:   s.Repository,
 		sceneService: s.SceneService,
 		imageService: s.ImageService,
 		input:        input,
@@ -383,8 +384,8 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 							}
 
 							// Check if the user wants to refresh existing or new items
-							if (input.Refresh && len(performer.StashIDs.List()) > 0) ||
-								(!input.Refresh && len(performer.StashIDs.List()) == 0) {
+							hasStashID := performer.StashIDs.ForEndpoint(box.Endpoint) != nil
+							if (input.Refresh && hasStashID) || (!input.Refresh && !hasStashID) {
 								tasks = append(tasks, StashBoxBatchTagTask{
 									performer:      performer,
 									refresh:        input.Refresh,
@@ -516,8 +517,8 @@ func (s *Manager) StashBoxBatchStudioTag(ctx context.Context, input StashBoxBatc
 							}
 
 							// Check if the user wants to refresh existing or new items
-							if (input.Refresh && len(studio.StashIDs.List()) > 0) ||
-								(!input.Refresh && len(studio.StashIDs.List()) == 0) {
+							hasStashID := studio.StashIDs.ForEndpoint(box.Endpoint) != nil
+							if (input.Refresh && hasStashID) || (!input.Refresh && !hasStashID) {
 								tasks = append(tasks, StashBoxBatchTagTask{
 									studio:         studio,
 									refresh:        input.Refresh,

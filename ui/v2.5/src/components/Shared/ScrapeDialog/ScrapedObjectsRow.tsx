@@ -147,11 +147,12 @@ export const ScrapedPerformersRow: React.FC<
     return (
       <PerformerSelect
         isMulti
-        className="form-control react-select"
+        className="form-control"
         isDisabled={!isNew}
         onSelect={(items) => {
           if (onChangeFn) {
-            onChangeFn(items);
+            // map the id back to stored_id
+            onChangeFn(items.map((p) => ({ ...p, stored_id: p.id })));
           }
         }}
         values={selectValue}

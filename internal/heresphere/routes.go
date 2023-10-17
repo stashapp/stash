@@ -39,17 +39,38 @@ const (
 	HeresphereCustomTagRated HeresphereCustomTag = "Rated"
 )
 
-type Routes struct {
-	TxnManager  txn.Manager
-	SceneFinder sceneFinder
-	FileFinder  models.FileFinder
-	Repository  manager.Repository
+type routes struct {
+	models.TxnRoutes
+	SceneFinder       sceneFinder
+	SceneMarkerFinder sceneMarkerFinder
+	FileFinder        fileFinder
+	TagFinder         tagFinder
+	FilterFinder      savedfilterFinder
+	PerformerFinder   performerFinder
+	GalleryFinder     galleryFinder
+	MovieFinder       movieFinder
+	StudioFinder      studioFinder
+}
+
+func GetRoutes(repo models.Repository) chi.Router {
+	return routes{
+		TxnRoutes:         models.TxnRoutes{TxnManager: repo.TxnManager},
+		SceneFinder:       repo.Scene,
+		SceneMarkerFinder: repo.SceneMarker,
+		FileFinder:        repo.File,
+		TagFinder:         repo.Tag,
+		FilterFinder:      repo.SavedFilter,
+		PerformerFinder:   repo.Performer,
+		GalleryFinder:     repo.Gallery,
+		MovieFinder:       repo.Movie,
+		StudioFinder:      repo.Studio,
+	}.Routes()
 }
 
 /*
  * This function provides the possible routes for this api.
  */
-func (rs Routes) Routes() chi.Router {
+func (rs routes) Routes() chi.Router {
 	r := chi.NewRouter()
 
 	r.Route("/", func(r chi.Router) {
@@ -82,7 +103,7 @@ var (
  * Intended for server-sided script playback.
  * But since we dont need that, we just use it for timestamps.
  */
-func (rs Routes) heresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
+func (rs routes) heresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
 	// Get the scene from the request context
 	scn := r.Context().Value(sceneKey).(*models.Scene)
 
@@ -110,7 +131,7 @@ func (rs Routes) heresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
 	previousID := idMap[r.RemoteAddr]
 	if previousID != event.Id {
 		// Update play count and store the new event ID if needed
-		if b, err := updatePlayCount(r.Context(), scn, event, rs.TxnManager, rs.Repository.Scene); err != nil {
+		if b, err := rs.updatePlayCount(r.Context(), scn, event); err != nil {
 			// Handle updatePlayCount error
 			logger.Errorf("Heresphere HeresphereVideoEvent updatePlayCount error: %s\n", err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -122,7 +143,7 @@ func (rs Routes) heresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
 
 	// Update the scene activity with the new time and duration
 	if err := txn.WithTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
-		_, err := rs.Repository.Scene.SaveActivity(ctx, scn.ID, &newTime, &newDuration)
+		_, err := rs.SceneFinder.SaveActivity(ctx, scn.ID, &newTime, &newDuration)
 		return err
 	}); err != nil {
 		// Handle SaveActivity error
@@ -138,7 +159,7 @@ func (rs Routes) heresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
 /*
  * This endpoint is for letting the user update scene data
  */
-func (rs Routes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *http.Request) error {
+func (rs routes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *http.Request) error {
 	scn := r.Context().Value(sceneKey).(*models.Scene)
 	user := r.Context().Value(authKey).(HeresphereAuthReq)
 	fileDeleter := file.NewDeleter()
@@ -153,7 +174,7 @@ func (rs Routes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *http.Reques
 	var b bool
 	var err error
 	if user.Rating != nil && c.GetHSPWriteRatings() {
-		if b, err = updateRating(user, ret); err != nil {
+		if b, err = rs.updateRating(user, ret); err != nil {
 			fileDeleter.Rollback()
 			return err
 		}
@@ -161,7 +182,7 @@ func (rs Routes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *http.Reques
 	}
 
 	if user.DeleteFile != nil && *user.DeleteFile && c.GetHSPWriteDeletes() {
-		if b, err = handleDeletePrimaryFile(r.Context(), rs.TxnManager, scn, rs.Repository.File, fileDeleter); err != nil {
+		if b, err = rs.handleDeletePrimaryFile(r.Context(), scn, fileDeleter); err != nil {
 			fileDeleter.Rollback()
 			return err
 		}
@@ -169,14 +190,14 @@ func (rs Routes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *http.Reques
 	}
 
 	if user.IsFavorite != nil && c.GetHSPWriteFavorites() {
-		if b, err = handleFavoriteTag(r.Context(), rs, scn, &user, rs.TxnManager, ret); err != nil {
+		if b, err = rs.handleFavoriteTag(r.Context(), scn, &user, ret); err != nil {
 			return err
 		}
 		shouldUpdate = b || shouldUpdate
 	}
 
 	if user.Tags != nil && c.GetHSPWriteTags() {
-		if b, err = handleTags(r.Context(), scn, &user, rs, ret); err != nil {
+		if b, err = rs.handleTags(r.Context(), scn, &user, ret); err != nil {
 			return err
 		}
 		shouldUpdate = b || shouldUpdate
@@ -184,7 +205,7 @@ func (rs Routes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *http.Reques
 
 	if shouldUpdate {
 		if err := txn.WithTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
-			_, err := ret.Update(ctx, rs.Repository.Scene)
+			_, err := ret.Update(ctx, rs.SceneFinder)
 			return err
 		}); err != nil {
 			return err
@@ -199,7 +220,7 @@ func (rs Routes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *http.Reques
 /*
  * This endpoint provides the main libraries that are available to browse.
  */
-func (rs Routes) heresphereIndex(w http.ResponseWriter, r *http.Request) {
+func (rs routes) heresphereIndex(w http.ResponseWriter, r *http.Request) {
 	// Banner
 	banner := HeresphereBanner{
 		Image: fmt.Sprintf("%s%s", manager.GetBaseURL(r), "/apple-touch-icon.png"),
@@ -214,7 +235,7 @@ func (rs Routes) heresphereIndex(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Add filters
-	parsedFilters, err := getAllFilters(r.Context(), rs.Repository)
+	parsedFilters, err := rs.getAllFilters(r.Context())
 	if err == nil {
 		var keys []string
 		for key := range parsedFilters {
@@ -254,7 +275,7 @@ func (rs Routes) heresphereIndex(w http.ResponseWriter, r *http.Request) {
 /*
  * This endpoint provides a single scenes full information.
  */
-func (rs Routes) heresphereVideoData(w http.ResponseWriter, r *http.Request) {
+func (rs routes) heresphereVideoData(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value(authKey).(HeresphereAuthReq)
 	c := config.GetInstance()
 
@@ -271,7 +292,7 @@ func (rs Routes) heresphereVideoData(w http.ResponseWriter, r *http.Request) {
 	// Load relationships
 	processedScene := HeresphereVideoEntry{}
 	if err := txn.WithReadTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
-		return scene.LoadRelationships(ctx, rs.Repository.Scene)
+		return scene.LoadRelationships(ctx, rs.SceneFinder)
 	}); err != nil {
 		logger.Errorf("Heresphere HeresphereVideoData LoadRelationships error: %s\n", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -290,7 +311,7 @@ func (rs Routes) heresphereVideoData(w http.ResponseWriter, r *http.Request) {
 		Rating:         0,
 		Favorites:      0,
 		Comments:       scene.OCounter,
-		IsFavorite:     getVideoFavorite(rs, r, scene),
+		IsFavorite:     rs.getVideoFavorite(r, scene),
 		Projection:     HeresphereProjectionPerspective,
 		Stereo:         HeresphereStereoMono,
 		IsEyeSwapped:   false,
@@ -301,9 +322,9 @@ func (rs Routes) heresphereVideoData(w http.ResponseWriter, r *http.Request) {
 			manager.GetBaseURL(r),
 			scene.ID,
 		)),
-		Scripts:       getVideoScripts(rs, r, scene),
-		Subtitles:     getVideoSubtitles(rs, r, scene),
-		Tags:          getVideoTags(r.Context(), rs, scene),
+		Scripts:       rs.getVideoScripts(r, scene),
+		Subtitles:     rs.getVideoSubtitles(r, scene),
+		Tags:          rs.getVideoTags(r.Context(), scene),
 		Media:         []HeresphereVideoMedia{},
 		WriteFavorite: c.GetHSPWriteFavorites(),
 		WriteRating:   c.GetHSPWriteRatings(),
@@ -316,7 +337,7 @@ func (rs Routes) heresphereVideoData(w http.ResponseWriter, r *http.Request) {
 
 	// Additional info
 	if user.NeedsMediaSource != nil && *user.NeedsMediaSource {
-		processedScene.Media = getVideoMedia(rs, r, scene)
+		processedScene.Media = rs.getVideoMedia(r, scene)
 	}
 	if scene.Date != nil {
 		processedScene.DateReleased = scene.Date.Format("2006-01-02")
@@ -351,7 +372,7 @@ func (rs Routes) heresphereVideoData(w http.ResponseWriter, r *http.Request) {
 /*
  * This endpoint function allows the user to login and receive a token if successful.
  */
-func (rs Routes) heresphereLoginToken(w http.ResponseWriter, r *http.Request) {
+func (rs routes) heresphereLoginToken(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value(authKey).(HeresphereAuthReq)
 
 	// Try login
@@ -387,7 +408,7 @@ func (rs Routes) heresphereLoginToken(w http.ResponseWriter, r *http.Request) {
 /*
  * This context function finds the applicable scene from the request and stores it.
  */
-func (rs Routes) heresphereSceneCtx(next http.Handler) http.Handler {
+func (rs routes) heresphereSceneCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Get sceneId
 		sceneID, err := strconv.Atoi(chi.URLParam(r, "sceneId"))
@@ -428,7 +449,7 @@ func (rs Routes) heresphereSceneCtx(next http.Handler) http.Handler {
 /*
  * This context function finds if the authentication is correct, otherwise rejects the request.
  */
-func (rs Routes) heresphereCtx(next http.Handler) http.Handler {
+func (rs routes) heresphereCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Add JSON Header (using Add uses camel case and makes it invalid because "Json")
 		w.Header()["HereSphere-JSON-Version"] = []string{strconv.Itoa(HeresphereJsonVersion)}

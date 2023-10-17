@@ -94,7 +94,7 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
       })
     );
 
-    const scrapers = scraperData.listSceneScrapers;
+    const scrapers = scraperData.listScrapers;
 
     const fragmentScrapers = scrapers.filter((s) =>
       s.scene?.supported_scrapes.includes(GQL.ScrapeType.Fragment)

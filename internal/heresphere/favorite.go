@@ -16,14 +16,14 @@ import (
  * Searches for favorite tag if it exists, otherwise adds it.
  * This adds a tag, which means tags must also be enabled, or it will never be written.
  */
-func handleFavoriteTag(ctx context.Context, rs Routes, scn *models.Scene, user *HeresphereAuthReq, txnManager txn.Manager, ret *scene.UpdateSet) (bool, error) {
+func (rs routes) handleFavoriteTag(ctx context.Context, scn *models.Scene, user *HeresphereAuthReq, ret *scene.UpdateSet) (bool, error) {
 	tagID := config.GetInstance().GetHSPFavoriteTag()
 
 	favTag, err := func() (*models.Tag, error) {
 		var tag *models.Tag
 		var err error
-		err = txn.WithReadTxn(ctx, txnManager, func(ctx context.Context) error {
-			tag, err = rs.Repository.Tag.Find(ctx, tagID)
+		err = txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
+			tag, err = rs.TagFinder.Find(ctx, tagID)
 			return err
 		})
 		return tag, err
@@ -41,7 +41,7 @@ func handleFavoriteTag(ctx context.Context, rs Routes, scn *models.Scene, user *
 	favTagVal := HeresphereVideoTag{Name: fmt.Sprintf("Tag:%s", favTag.Name)}
 
 	if user.Tags == nil {
-		sceneTags := getVideoTags(ctx, rs, scn)
+		sceneTags := rs.getVideoTags(ctx, scn)
 		user.Tags = &sceneTags
 	}
 
@@ -62,12 +62,12 @@ func handleFavoriteTag(ctx context.Context, rs Routes, scn *models.Scene, user *
 /*
  * This auxiliary function searches for the "favorite" tag
  */
-func getVideoFavorite(rs Routes, r *http.Request, scene *models.Scene) bool {
+func (rs routes) getVideoFavorite(r *http.Request, scene *models.Scene) bool {
 	tagIDs, err := func() ([]*models.Tag, error) {
 		var tags []*models.Tag
 		var err error
 		err = txn.WithReadTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
-			tags, err = rs.Repository.Tag.FindBySceneID(ctx, scene.ID)
+			tags, err = rs.TagFinder.FindBySceneID(ctx, scene.ID)
 			return err
 		})
 		return tags, err

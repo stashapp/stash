@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/mitchellh/mapstructure"
-	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
@@ -32,13 +31,13 @@ func parseObjectFilter(sf *models.SavedFilter) (*models.SceneFilterType, error) 
 	return result.ToOriginal(), nil
 }
 
-func getAllFilters(ctx context.Context, repo manager.Repository) (scenesMap map[string][]int, err error) {
+func (rs routes) getAllFilters(ctx context.Context) (scenesMap map[string][]int, err error) {
 	scenesMap = make(map[string][]int) // Initialize scenesMap
 
 	savedfilters, err := func() ([]*models.SavedFilter, error) {
 		var filters []*models.SavedFilter
-		err = txn.WithReadTxn(ctx, repo.TxnManager, func(ctx context.Context) error {
-			filters, err = repo.SavedFilter.FindByMode(ctx, models.FilterModeScenes)
+		err = txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
+			filters, err = rs.FilterFinder.FindByMode(ctx, models.FilterModeScenes)
 			return err
 		})
 		return filters, err
@@ -79,9 +78,9 @@ func getAllFilters(ctx context.Context, repo manager.Repository) (scenesMap map[
 		}
 
 		var scenes *models.SceneQueryResult
-		err = txn.WithReadTxn(ctx, repo.TxnManager, func(ctx context.Context) error {
+		err = txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
 			var err error
-			scenes, err = repo.Scene.Query(ctx, models.SceneQueryOptions{
+			scenes, err = rs.SceneFinder.Query(ctx, models.SceneQueryOptions{
 				QueryOptions: models.QueryOptions{
 					FindFilter: queryFilter,
 					Count:      false,

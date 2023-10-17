@@ -6,7 +6,7 @@ Setting the language affects the formatting of numbers and dates.
 
 ## Scene/Marker Wall Preview Type
 
-The Scene Wall and Marker pages display scene preview videos by default. This can be changed to animated image (webp) or static image. 
+The Scene Wall and Marker pages display scene preview videos (mp4) by default. This can be changed to animated image (webp) or static image. 
 
 > **⚠️ Note:** scene/marker preview videos must be generated to see them in the applicable wall page if Video preview type is selected. Likewise, if Animated Image is selected, then Image Previews must be generated.
 

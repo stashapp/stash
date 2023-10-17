@@ -131,7 +131,8 @@ const (
 	PythonPath = "python_path"
 
 	// plugin options
-	PluginsPath = "plugins_path"
+	PluginsPath     = "plugins_path"
+	DisabledPlugins = "plugins.disabled"
 
 	// i18n
 	Language = "language"
@@ -184,7 +185,7 @@ const (
 
 	UI = "ui"
 
-	defaultImageLightboxSlideshowDelay = 5000
+	defaultImageLightboxSlideshowDelay = 5
 
 	DisableDropdownCreatePerformer = "disable_dropdown_create.performer"
 	DisableDropdownCreateStudio    = "disable_dropdown_create.studio"
@@ -728,6 +729,10 @@ func (i *Instance) GetDefaultPluginsPath() string {
 
 func (i *Instance) GetPluginsPath() string {
 	return i.getString(PluginsPath)
+}
+
+func (i *Instance) GetDisabledPlugins() []string {
+	return i.getStringSlice(DisabledPlugins)
 }
 
 func (i *Instance) GetPythonPath() string {

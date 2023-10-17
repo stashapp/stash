@@ -5,6 +5,8 @@ type Plugin {
   url: String
   version: String
 
+  enabled: Boolean!
+
   tasks: [PluginTask!]
   hooks: [PluginHook!]
 }

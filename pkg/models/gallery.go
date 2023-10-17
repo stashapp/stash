@@ -17,8 +17,6 @@ type GalleryFilterType struct {
 	IsMissing *string `json:"is_missing"`
 	// Filter to include/exclude galleries that were created from zip
 	IsZip *bool `json:"is_zip"`
-	// Filter by rating expressed as 1-5
-	Rating *IntCriterionInput `json:"rating"`
 	// Filter by rating expressed as 1-100
 	Rating100 *IntCriterionInput `json:"rating100"`
 	// Filter by organized
@@ -59,10 +57,9 @@ type GalleryUpdateInput struct {
 	ClientMutationID *string  `json:"clientMutationId"`
 	ID               string   `json:"id"`
 	Title            *string  `json:"title"`
-	URL              *string  `json:"url"`
+	Urls             []string `json:"urls"`
 	Date             *string  `json:"date"`
 	Details          *string  `json:"details"`
-	Rating           *int     `json:"rating"`
 	Rating100        *int     `json:"rating100"`
 	Organized        *bool    `json:"organized"`
 	SceneIds         []string `json:"scene_ids"`
@@ -70,6 +67,9 @@ type GalleryUpdateInput struct {
 	TagIds           []string `json:"tag_ids"`
 	PerformerIds     []string `json:"performer_ids"`
 	PrimaryFileID    *string  `json:"primary_file_id"`
+
+	// deprecated
+	URL *string `json:"url"`
 }
 
 type GalleryDestroyInput struct {
