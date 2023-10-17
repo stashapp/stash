@@ -109,14 +109,6 @@ type Query {
 
   "List available scrapers"
   listScrapers(types: [ScrapeContentType!]!): [Scraper!]!
-  listPerformerScrapers: [Scraper!]!
-    @deprecated(reason: "Use listScrapers(types: [PERFORMER])")
-  listSceneScrapers: [Scraper!]!
-    @deprecated(reason: "Use listScrapers(types: [SCENE])")
-  listGalleryScrapers: [Scraper!]!
-    @deprecated(reason: "Use listScrapers(types: [GALLERY])")
-  listMovieScrapers: [Scraper!]!
-    @deprecated(reason: "Use listScrapers(types: [MOVIE])")
 
   "Scrape for a single scene"
   scrapeSingleScene(
@@ -170,27 +162,6 @@ type Query {
   "Scrapes a complete movie record based on a URL"
   scrapeMovieURL(url: String!): ScrapedMovie
 
-  "Scrape a list of performers based on name"
-  scrapePerformerList(scraper_id: ID!, query: String!): [ScrapedPerformer!]!
-    @deprecated(reason: "use scrapeSinglePerformer")
-  "Scrapes a complete performer record based on a scrapePerformerList result"
-  scrapePerformer(
-    scraper_id: ID!
-    scraped_performer: ScrapedPerformerInput!
-  ): ScrapedPerformer @deprecated(reason: "use scrapeSinglePerformer")
-  "Scrapes a complete scene record based on an existing scene"
-  scrapeScene(scraper_id: ID!, scene: SceneUpdateInput!): ScrapedScene
-    @deprecated(reason: "use scrapeSingleScene")
-  "Scrapes a complete gallery record based on an existing gallery"
-  scrapeGallery(scraper_id: ID!, gallery: GalleryUpdateInput!): ScrapedGallery
-    @deprecated(reason: "use scrapeSingleGallery")
-
-  "Scrape a list of performers from a query"
-  scrapeFreeonesPerformerList(query: String!): [String!]!
-    @deprecated(
-      reason: "use scrapeSinglePerformer with scraper_id = builtin_freeones"
-    )
-
   # Plugins
   "List loaded plugins"
   plugins: [Plugin!]
@@ -228,8 +199,7 @@ type Query {
   allMovies: [Movie!]!
   allTags: [Tag!]!
 
-  # @deprecated
-  allPerformers: [Performer!]!
+  allPerformers: [Performer!]! @deprecated(reason: "Use findPerformers instead")
 
   # Get everything with minimal metadata
 

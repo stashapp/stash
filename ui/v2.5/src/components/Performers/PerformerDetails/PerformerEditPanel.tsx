@@ -492,10 +492,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   });
 
   useEffect(() => {
-    const newQueryableScrapers = (
-      Scrapers?.data?.listPerformerScrapers ?? []
-    ).filter((s) =>
-      s.performer?.supported_scrapes.includes(GQL.ScrapeType.Name)
+    const newQueryableScrapers = (Scrapers?.data?.listScrapers ?? []).filter(
+      (s) => s.performer?.supported_scrapes.includes(GQL.ScrapeType.Name)
     );
 
     setQueryableScrapers(newQueryableScrapers);
@@ -657,7 +655,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   function urlScrapable(scrapedUrl?: string) {
     return (
       !!scrapedUrl &&
-      (Scrapers?.data?.listPerformerScrapers ?? []).some((s) =>
+      (Scrapers?.data?.listScrapers ?? []).some((s) =>
         (s?.performer?.urls ?? []).some((u) => scrapedUrl.includes(u))
       )
     );

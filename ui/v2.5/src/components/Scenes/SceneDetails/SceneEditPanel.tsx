@@ -232,7 +232,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   });
 
   useEffect(() => {
-    const toFilter = Scrapers?.data?.listSceneScrapers ?? [];
+    const toFilter = Scrapers?.data?.listScrapers ?? [];
 
     const newFragmentScrapers = toFilter.filter((s) =>
       s.scene?.supported_scrapes.includes(GQL.ScrapeType.Fragment)
@@ -527,7 +527,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }
 
   function urlScrapable(scrapedUrl: string): boolean {
-    return (Scrapers?.data?.listSceneScrapers ?? []).some((s) =>
+    return (Scrapers?.data?.listScrapers ?? []).some((s) =>
       (s?.scene?.urls ?? []).some((u) => scrapedUrl.includes(u))
     );
   }

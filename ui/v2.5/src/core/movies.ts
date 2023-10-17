@@ -15,15 +15,15 @@ export const scrapedMovieToCreateInput = (toCreate: GQL.ScrapedMovie) => {
       ? DurationUtils.stringToSeconds(toCreate.duration)
       : undefined,
     studio_id: toCreate.studio?.stored_id,
-    rating: parseInt(toCreate.rating ?? "0", 10),
+    rating100: parseInt(toCreate.rating ?? "0", 10) * 20,
   };
 
   if (!input.duration) {
     input.duration = undefined;
   }
 
-  if (!input.rating || Number.isNaN(input.rating)) {
-    input.rating = undefined;
+  if (!input.rating100 || Number.isNaN(input.rating100)) {
+    input.rating100 = undefined;
   }
 
   return input;

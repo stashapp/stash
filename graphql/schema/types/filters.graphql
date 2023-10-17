@@ -98,8 +98,6 @@ input PerformerFilterType {
   country: StringCriterionInput
   "Filter by eye color"
   eye_color: StringCriterionInput
-  "Filter by height"
-  height: StringCriterionInput @deprecated(reason: "Use height_cm instead")
   "Filter by height in cm"
   height_cm: IntCriterionInput
   "Filter by measurements"
@@ -135,13 +133,7 @@ input PerformerFilterType {
   "Filter by o count"
   o_counter: IntCriterionInput
   "Filter by StashID"
-  stash_id: StringCriterionInput
-    @deprecated(reason: "Use stash_id_endpoint instead")
-  "Filter by StashID"
   stash_id_endpoint: StashIDCriterionInput
-  "Filter by rating"
-  rating: IntCriterionInput
-    @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: IntCriterionInput
   "Filter by url"
@@ -169,8 +161,6 @@ input PerformerFilterType {
 }
 
 input SceneMarkerFilterType {
-  "Filter to only include scene markers with this tag"
-  tag_id: ID @deprecated(reason: "use tags filter instead")
   "Filter to only include scene markers with these tags"
   tags: HierarchicalMultiCriterionInput
   "Filter to only include scene markers attached to a scene with these tags"
@@ -212,9 +202,6 @@ input SceneFilterType {
   path: StringCriterionInput
   "Filter by file count"
   file_count: IntCriterionInput
-  "Filter by rating"
-  rating: IntCriterionInput
-    @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: IntCriterionInput
   "Filter by organized"
@@ -256,9 +243,6 @@ input SceneFilterType {
   "Filter by performer count"
   performer_count: IntCriterionInput
   "Filter by StashID"
-  stash_id: StringCriterionInput
-    @deprecated(reason: "Use stash_id_endpoint instead")
-  "Filter by StashID"
   stash_id_endpoint: StashIDCriterionInput
   "Filter by url"
   url: StringCriterionInput
@@ -289,9 +273,6 @@ input MovieFilterType {
 
   "Filter by duration (in seconds)"
   duration: IntCriterionInput
-  "Filter by rating"
-  rating: IntCriterionInput
-    @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: IntCriterionInput
   "Filter to only include movies with this studio"
@@ -320,15 +301,9 @@ input StudioFilterType {
   "Filter to only include studios with this parent studio"
   parents: MultiCriterionInput
   "Filter by StashID"
-  stash_id: StringCriterionInput
-    @deprecated(reason: "Use stash_id_endpoint instead")
-  "Filter by StashID"
   stash_id_endpoint: StashIDCriterionInput
   "Filter to only include studios missing this property"
   is_missing: String
-  "Filter by rating"
-  rating: IntCriterionInput
-    @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: IntCriterionInput
   "Filter by scene count"
@@ -368,9 +343,6 @@ input GalleryFilterType {
   is_missing: String
   "Filter to include/exclude galleries that were created from zip"
   is_zip: Boolean
-  "Filter by rating"
-  rating: IntCriterionInput
-    @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: IntCriterionInput
   "Filter by organized"
@@ -476,9 +448,6 @@ input ImageFilterType {
   path: StringCriterionInput
   "Filter by file count"
   file_count: IntCriterionInput
-  "Filter by rating"
-  rating: IntCriterionInput
-    @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: IntCriterionInput
   "Filter by date"

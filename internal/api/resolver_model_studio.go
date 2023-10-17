@@ -6,18 +6,12 @@ import (
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/gallery"
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/movie"
 	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/scene"
 )
-
-func (r *studioResolver) Checksum(ctx context.Context, obj *models.Studio) (string, error) {
-	// generate checksum from studio name
-	return md5.FromString(obj.Name), nil
-}
 
 func (r *studioResolver) ImagePath(ctx context.Context, obj *models.Studio) (*string, error) {
 	var hasImage bool
@@ -130,14 +124,6 @@ func (r *studioResolver) StashIds(ctx context.Context, obj *models.Studio) ([]*m
 	}
 
 	return stashIDsSliceToPtrSlice(obj.StashIDs.List()), nil
-}
-
-func (r *studioResolver) Rating(ctx context.Context, obj *models.Studio) (*int, error) {
-	if obj.Rating != nil {
-		rating := models.Rating100To5(*obj.Rating)
-		return &rating, nil
-	}
-	return nil, nil
 }
 
 func (r *studioResolver) Rating100(ctx context.Context, obj *models.Studio) (*int, error) {

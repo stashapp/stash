@@ -207,7 +207,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
   function urlScrapable(scrapedUrl: string) {
     return (
       !!scrapedUrl &&
-      (Scrapers?.data?.listMovieScrapers ?? []).some((s) =>
+      (Scrapers?.data?.listScrapers ?? []).some((s) =>
         (s?.movie?.urls ?? []).some((u) => scrapedUrl.includes(u))
       )
     );
