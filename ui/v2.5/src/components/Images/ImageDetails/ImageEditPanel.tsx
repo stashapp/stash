@@ -295,6 +295,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
                 />
               </Col>
             </Form.Group>
+            </div>
             <div className="col-12 col-lg-6 col-xl-12">
               <Form.Group controlId="details">
                 <Form.Label>
@@ -309,7 +310,6 @@ export const ImageEditPanel: React.FC<IProps> = ({
                   value={formik.values.details ?? ""}
               />
             </Form.Group>
-          </div>
           </div>
         </div>
       </Form>
