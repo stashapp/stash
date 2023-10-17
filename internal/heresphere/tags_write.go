@@ -276,7 +276,7 @@ func handleSetPlayCount(ctx context.Context, rs Routes, tag HeresphereVideoTag, 
 	}
 
 	after := strings.TrimPrefix(tag.Name, prefix)
-	if numRes, err := strconv.Atoi(after); err != nil {
+	if numRes, err := strconv.Atoi(after); err == nil {
 		ret.Partial.PlayCount.Set = true
 		ret.Partial.PlayCount.Value = numRes
 	}
@@ -290,7 +290,7 @@ func handleSetOCount(ctx context.Context, rs Routes, tag HeresphereVideoTag, sce
 	}
 
 	after := strings.TrimPrefix(tag.Name, prefix)
-	if numRes, err := strconv.Atoi(after); err != nil {
+	if numRes, err := strconv.Atoi(after); err == nil {
 		ret.Partial.OCounter.Set = true
 		ret.Partial.OCounter.Value = numRes
 	}
