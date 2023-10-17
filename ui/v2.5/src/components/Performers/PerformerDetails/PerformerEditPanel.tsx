@@ -47,6 +47,7 @@ import {
 import { StringListInput } from "src/components/Shared/StringListInput";
 import isEqual from "lodash-es/isEqual";
 import { DateInput } from "src/components/Shared/DateInput";
+import { StashIDPill } from "src/components/Shared/StashID";
 
 const isScraper = (
   scraper: GQL.Scraper | GQL.StashBox
@@ -794,18 +795,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         <Col sm={fieldXS} xl={fieldXL}>
           <ul className="pl-0">
             {formik.values.stash_ids.map((stashID) => {
-              const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
-              const link = base ? (
-                <a
-                  href={`${base}performers/${stashID.stash_id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {stashID.stash_id}
-                </a>
-              ) : (
-                stashID.stash_id
-              );
               return (
                 <li key={stashID.stash_id} className="row no-gutters mb-1">
                   <Button
@@ -816,7 +805,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
                   >
                     <Icon icon={faTrashAlt} />
                   </Button>
-                  {link}
+                  <StashIDPill stashID={stashID} linkType="performers" />
                 </li>
               );
             })}
