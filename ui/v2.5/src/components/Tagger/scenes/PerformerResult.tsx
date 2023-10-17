@@ -15,16 +15,14 @@ import { getStashboxBase } from "src/utils/stashbox";
 
 interface IPerformerName {
   performer: GQL.ScrapedPerformer | Performer;
-  className?: string;
-  baseURL: string | undefined;
   id: string | undefined | null;
+  baseURL: string | undefined;
 }
 
 const PerformerName: React.FC<IPerformerName> = ({
   performer,
-  className,
-  baseURL,
   id,
+  baseURL,
 }) => {
   const name =
     baseURL && id ? (
@@ -36,14 +34,14 @@ const PerformerName: React.FC<IPerformerName> = ({
     );
 
   return (
-    <span className={className}>
+    <>
       <span>{name}</span>
       {performer.disambiguation && (
         <span className="performer-disambiguation">
           {` (${performer.disambiguation})`}
         </span>
       )}
-    </span>
+    </>
   );
 };
 
@@ -117,12 +115,13 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
       <div className="row no-gutters my-2">
         <div className="entity-name">
           <FormattedMessage id="countables.performers" values={{ count: 1 }} />:
-          <PerformerName
-            performer={performer}
-            className="ml-2"
-            id={performer.remote_site_id}
-            baseURL={stashboxPerformerPrefix}
-          />
+          <b className="ml-2">
+            <PerformerName
+              performer={performer}
+              id={performer.remote_site_id}
+              baseURL={stashboxPerformerPrefix}
+            />
+          </b>
         </div>
         <span className="ml-auto">
           <OptionalField
@@ -135,12 +134,13 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
               <span className="mr-2">
                 <FormattedMessage id="component_tagger.verb_matched" />:
               </span>
-              <PerformerName
-                performer={matchedPerformer}
-                className="ml-3 text-right"
-                id={matchedPerformer.id}
-                baseURL={performerURLPrefix}
-              />
+              <b className="col-3 text-right">
+                <PerformerName
+                  performer={matchedPerformer}
+                  id={matchedPerformer.id}
+                  baseURL={performerURLPrefix}
+                />
+              </b>
             </div>
           </OptionalField>
         </span>
@@ -169,12 +169,13 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
     <div className="row no-gutters align-items-center mt-2">
       <div className="entity-name">
         <FormattedMessage id="countables.performers" values={{ count: 1 }} />:
-        <PerformerName
-          performer={performer}
-          className="ml-2"
-          id={performer.remote_site_id}
-          baseURL={stashboxPerformerPrefix}
-        />
+        <b className="ml-2">
+          <PerformerName
+            performer={performer}
+            id={performer.remote_site_id}
+            baseURL={stashboxPerformerPrefix}
+          />
+        </b>
       </div>
       <ButtonGroup>
         <Button variant="secondary" onClick={() => onCreate()}>
