@@ -24,7 +24,7 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
     return (
       <>
         <h6>
-          <FormattedMessage id="details" />
+          <FormattedMessage id="details" />:{" "}
         </h6>
         <p className="pre">{gallery.details}</p>
       </>
