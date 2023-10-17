@@ -139,8 +139,6 @@ input ConfigGeneralInput {
   password: String
   "Maximum session cookie age"
   maxSessionAge: Int
-  "Comma separated list of proxies to allow traffic from"
-  trustedProxies: [String!] @deprecated(reason: "no longer supported")
   "Name of the log file"
   logFile: String
   "Whether to also output to stderr"
@@ -165,21 +163,6 @@ input ConfigGeneralInput {
   imageExcludes: [String!]
   "Custom Performer Image Location"
   customPerformerImageLocation: String
-  "Scraper user agent string"
-  scraperUserAgent: String
-    @deprecated(
-      reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead"
-    )
-  "Scraper CDP path. Path to chrome executable or remote address"
-  scraperCDPPath: String
-    @deprecated(
-      reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead"
-    )
-  "Whether the scraper should check for invalid certificates"
-  scraperCertCheck: Boolean
-    @deprecated(
-      reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead"
-    )
   "Stash-box instances used for tagging"
   stashBoxes: [StashBoxInput!]
   "Python path - resolved using path if unset"
@@ -269,8 +252,6 @@ type ConfigGeneralResult {
   password: String!
   "Maximum session cookie age"
   maxSessionAge: Int!
-  "Comma separated list of proxies to allow traffic from"
-  trustedProxies: [String!] @deprecated(reason: "no longer supported")
   "Name of the log file"
   logFile: String
   "Whether to also output to stderr"
@@ -295,15 +276,6 @@ type ConfigGeneralResult {
   imageExcludes: [String!]!
   "Custom Performer Image Location"
   customPerformerImageLocation: String
-  "Scraper user agent string"
-  scraperUserAgent: String
-    @deprecated(reason: "use ConfigResult.scraping instead")
-  "Scraper CDP path. Path to chrome executable or remote address"
-  scraperCDPPath: String
-    @deprecated(reason: "use ConfigResult.scraping instead")
-  "Whether the scraper should check for invalid certificates"
-  scraperCertCheck: Boolean!
-    @deprecated(reason: "use ConfigResult.scraping instead")
   "Stash-box instances used for tagging"
   stashBoxes: [StashBox!]!
   "Python path - resolved using path if unset"
@@ -390,9 +362,6 @@ input ConfigInterfaceInput {
   "Interface language"
   language: String
 
-  "Slideshow Delay"
-  slideshowDelay: Int @deprecated(reason: "Use imageLightbox.slideshowDelay")
-
   imageLightbox: ConfigImageLightboxInput
 
   "Set to true to disable creating new objects via the dropdown menus"
@@ -465,15 +434,10 @@ type ConfigInterfaceResult {
   "Interface language"
   language: String
 
-  "Slideshow Delay"
-  slideshowDelay: Int @deprecated(reason: "Use imageLightbox.slideshowDelay")
-
   imageLightbox: ConfigImageLightboxResult!
 
   "Fields are true if creating via dropdown menus are disabled"
   disableDropdownCreate: ConfigDisableDropdownCreate!
-  disabledDropdownCreate: ConfigDisableDropdownCreate!
-    @deprecated(reason: "Use disableDropdownCreate")
 
   "Handy Connection Key"
   handyKey: String

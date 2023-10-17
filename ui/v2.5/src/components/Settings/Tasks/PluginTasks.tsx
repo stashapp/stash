@@ -22,7 +22,7 @@ export const PluginTasks: React.FC = () => {
     }
 
     const taskPlugins = plugins.data.plugins.filter(
-      (p) => p.tasks && p.tasks.length > 0
+      (p) => p.enabled && p.tasks && p.tasks.length > 0
     );
 
     return (

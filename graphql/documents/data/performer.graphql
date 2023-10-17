@@ -1,6 +1,5 @@
 fragment PerformerData on Performer {
   id
-  checksum
   name
   disambiguation
   url

@@ -122,7 +122,14 @@ export const PerformerSelect: React.FC<
 
     thisOptionProps = {
       ...optionProps,
-      children: object.name,
+      children: (
+        <>
+          {object.name}
+          {object.disambiguation && (
+            <span className="performer-disambiguation">{` (${object.disambiguation})`}</span>
+          )}
+        </>
+      ),
     };
 
     return <reactSelectComponents.SingleValue {...thisOptionProps} />;
