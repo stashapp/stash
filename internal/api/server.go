@@ -50,7 +50,9 @@ var uiBox = ui.UIBox
 var loginUIBox = ui.LoginUIBox
 
 func Start() error {
-	initialiseImages()
+	c := config.GetInstance()
+
+	initCustomPerformerImages(c.GetCustomPerformerImageLocation())
 
 	r := chi.NewRouter()
 
@@ -62,7 +64,6 @@ func Start() error {
 
 	r.Use(middleware.Recoverer)
 
-	c := config.GetInstance()
 	if c.GetLogAccess() {
 		httpLogger := httplog.NewLogger("Stash", httplog.Options{
 			Concise: true,
@@ -82,11 +83,10 @@ func Start() error {
 		return errors.New(message)
 	}
 
-	txnManager := manager.GetInstance().Repository
+	repo := manager.GetInstance().Repository
 
 	dataloaders := loaders.Middleware{
-		DatabaseProvider: txnManager,
-		Repository:       txnManager,
+		Repository: repo,
 	}
 
 	r.Use(dataloaders.Middleware)
@@ -96,8 +96,7 @@ func Start() error {
 	imageService := manager.GetInstance().ImageService
 	galleryService := manager.GetInstance().GalleryService
 	resolver := &Resolver{
-		txnManager:     txnManager,
-		repository:     txnManager,
+		repository:     repo,
 		sceneService:   sceneService,
 		imageService:   imageService,
 		galleryService: galleryService,
@@ -144,36 +143,13 @@ func Start() error {
 		gqlPlayground.Handler("GraphQL playground", endpoint)(w, r)
 	})
 
-	r.Mount("/performer", performerRoutes{
-		txnManager:      txnManager,
-		performerFinder: txnManager.Performer,
-	}.Routes())
-	r.Mount("/scene", sceneRoutes{
-		txnManager:        txnManager,
-		sceneFinder:       txnManager.Scene,
-		fileGetter:        txnManager.File,
-		captionFinder:     txnManager.File,
-		sceneMarkerFinder: txnManager.SceneMarker,
-		tagFinder:         txnManager.Tag,
-	}.Routes())
-	r.Mount("/image", imageRoutes{
-		txnManager:  txnManager,
-		imageFinder: txnManager.Image,
-		fileGetter:  txnManager.File,
-	}.Routes())
-	r.Mount("/studio", studioRoutes{
-		txnManager:   txnManager,
-		studioFinder: txnManager.Studio,
-	}.Routes())
-	r.Mount("/movie", movieRoutes{
-		txnManager:  txnManager,
-		movieFinder: txnManager.Movie,
-	}.Routes())
-	r.Mount("/tag", tagRoutes{
-		txnManager: txnManager,
-		tagFinder:  txnManager.Tag,
-	}.Routes())
-	r.Mount("/downloads", downloadsRoutes{}.Routes())
+	r.Mount("/performer", getPerformerRoutes(repo))
+	r.Mount("/scene", getSceneRoutes(repo))
+	r.Mount("/image", getImageRoutes(repo))
+	r.Mount("/studio", getStudioRoutes(repo))
+	r.Mount("/movie", getMovieRoutes(repo))
+	r.Mount("/tag", getTagRoutes(repo))
+	r.Mount("/downloads", getDownloadsRoutes())
 
 	r.HandleFunc("/css", cssHandler(c, pluginCache))
 	r.HandleFunc("/javascript", javascriptHandler(c, pluginCache))
@@ -193,9 +169,7 @@ func Start() error {
 	// Serve static folders
 	customServedFolders := c.GetCustomServedFolders()
 	if customServedFolders != nil {
-		r.Mount("/custom", customRoutes{
-			servedFolders: customServedFolders,
-		}.Routes())
+		r.Mount("/custom", getCustomRoutes(customServedFolders))
 	}
 
 	customUILocation := c.GetCustomUILocation()
@@ -321,6 +295,10 @@ func cssHandler(c *config.Instance, pluginCache *plugin.Cache) func(w http.Respo
 		var paths []string
 
 		for _, p := range pluginCache.ListPlugins() {
+			if !p.Enabled {
+				continue
+			}
+
 			paths = append(paths, p.UI.CSS...)
 		}
 
@@ -344,6 +322,10 @@ func javascriptHandler(c *config.Instance, pluginCache *plugin.Cache) func(w htt
 		var paths []string
 
 		for _, p := range pluginCache.ListPlugins() {
+			if !p.Enabled {
+				continue
+			}
+
 			paths = append(paths, p.UI.Javascript...)
 		}
 

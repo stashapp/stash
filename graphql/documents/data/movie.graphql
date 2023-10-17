@@ -20,6 +20,5 @@ fragment MovieData on Movie {
   scenes {
     id
     title
-    path
   }
 }

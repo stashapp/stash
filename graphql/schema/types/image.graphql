@@ -1,10 +1,7 @@
 type Image {
   id: ID!
-  checksum: String @deprecated(reason: "Use files.fingerprints")
   title: String
   code: String
-  # rating expressed as 1-5
-  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: Int
   url: String @deprecated(reason: "Use urls")
@@ -14,13 +11,9 @@ type Image {
   photographer: String
   o_counter: Int
   organized: Boolean!
-  path: String! @deprecated(reason: "Use files.path")
   created_at: Time!
   updated_at: Time!
 
-  file_mod_time: Time @deprecated(reason: "Use files.mod_time")
-
-  file: ImageFileType! @deprecated(reason: "Use visual_files")
   files: [ImageFile!]! @deprecated(reason: "Use visual_files")
   visual_files: [VisualFile!]!
   paths: ImagePathsType! # Resolver
@@ -48,8 +41,6 @@ input ImageUpdateInput {
   id: ID!
   title: String
   code: String
-  # rating expressed as 1-5
-  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean
@@ -72,8 +63,6 @@ input BulkImageUpdateInput {
   ids: [ID!]
   title: String
   code: String
-  # rating expressed as 1-5
-  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean

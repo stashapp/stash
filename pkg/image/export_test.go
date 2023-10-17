@@ -130,19 +130,19 @@ var getStudioScenarios = []stringTestScenario{
 }
 
 func TestGetStudioName(t *testing.T) {
-	mockStudioReader := &mocks.StudioReaderWriter{}
+	db := mocks.NewDatabase()
 
 	studioErr := errors.New("error getting image")
 
-	mockStudioReader.On("Find", testCtx, studioID).Return(&models.Studio{
+	db.Studio.On("Find", testCtx, studioID).Return(&models.Studio{
 		Name: studioName,
 	}, nil).Once()
-	mockStudioReader.On("Find", testCtx, missingStudioID).Return(nil, nil).Once()
-	mockStudioReader.On("Find", testCtx, errStudioID).Return(nil, studioErr).Once()
+	db.Studio.On("Find", testCtx, missingStudioID).Return(nil, nil).Once()
+	db.Studio.On("Find", testCtx, errStudioID).Return(nil, studioErr).Once()
 
 	for i, s := range getStudioScenarios {
 		image := s.input
-		json, err := GetStudioName(testCtx, mockStudioReader, &image)
+		json, err := GetStudioName(testCtx, db.Studio, &image)
 
 		switch {
 		case !s.err && err != nil:
@@ -154,5 +154,5 @@ func TestGetStudioName(t *testing.T) {
 		}
 	}
 
-	mockStudioReader.AssertExpectations(t)
+	db.AssertExpectations(t)
 }

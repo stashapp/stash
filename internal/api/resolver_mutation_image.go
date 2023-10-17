@@ -110,7 +110,7 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 	updatedImage.Code = translator.optionalString(input.Code, "code")
 	updatedImage.Details = translator.optionalString(input.Details, "details")
 	updatedImage.Photographer = translator.optionalString(input.Photographer, "photographer")
-	updatedImage.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedImage.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
 
 	updatedImage.Date, err = translator.optionalDate(input.Date, "date")
@@ -209,7 +209,7 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 	updatedImage.Code = translator.optionalString(input.Code, "code")
 	updatedImage.Details = translator.optionalString(input.Details, "details")
 	updatedImage.Photographer = translator.optionalString(input.Photographer, "photographer")
-	updatedImage.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedImage.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
 
 	updatedImage.Date, err = translator.optionalDate(input.Date, "date")

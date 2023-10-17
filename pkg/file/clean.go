@@ -11,7 +11,6 @@ import (
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/txn"
 )
 
 // Cleaner scans through stored file and folder instances and removes those that are no longer present on disk.
@@ -112,14 +111,15 @@ func (j *cleanJob) execute(ctx context.Context) error {
 		folderCount int
 	)
 
-	if err := txn.WithReadTxn(ctx, j.Repository, func(ctx context.Context) error {
+	r := j.Repository
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 		var err error
-		fileCount, err = j.Repository.FileStore.CountAllInPaths(ctx, j.options.Paths)
+		fileCount, err = r.File.CountAllInPaths(ctx, j.options.Paths)
 		if err != nil {
 			return err
 		}
 
-		folderCount, err = j.Repository.FolderStore.CountAllInPaths(ctx, j.options.Paths)
+		folderCount, err = r.Folder.CountAllInPaths(ctx, j.options.Paths)
 		if err != nil {
 			return err
 		}
@@ -172,13 +172,14 @@ func (j *cleanJob) assessFiles(ctx context.Context, toDelete *deleteSet) error {
 	progress := j.progress
 
 	more := true
-	if err := txn.WithReadTxn(ctx, j.Repository, func(ctx context.Context) error {
+	r := j.Repository
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 		for more {
 			if job.IsCancelled(ctx) {
 				return nil
 			}
 
-			files, err := j.Repository.FileStore.FindAllInPaths(ctx, j.options.Paths, batchSize, offset)
+			files, err := r.File.FindAllInPaths(ctx, j.options.Paths, batchSize, offset)
 			if err != nil {
 				return fmt.Errorf("error querying for files: %w", err)
 			}
@@ -223,8 +224,9 @@ func (j *cleanJob) assessFiles(ctx context.Context, toDelete *deleteSet) error {
 
 // flagFolderForDelete adds folders to the toDelete set, with the leaf folders added first
 func (j *cleanJob) flagFileForDelete(ctx context.Context, toDelete *deleteSet, f models.File) error {
+	r := j.Repository
 	// add contained files first
-	containedFiles, err := j.Repository.FileStore.FindByZipFileID(ctx, f.Base().ID)
+	containedFiles, err := r.File.FindByZipFileID(ctx, f.Base().ID)
 	if err != nil {
 		return fmt.Errorf("error finding contained files for %q: %w", f.Base().Path, err)
 	}
@@ -235,7 +237,7 @@ func (j *cleanJob) flagFileForDelete(ctx context.Context, toDelete *deleteSet, f
 	}
 
 	// add contained folders as well
-	containedFolders, err := j.Repository.FolderStore.FindByZipFileID(ctx, f.Base().ID)
+	containedFolders, err := r.Folder.FindByZipFileID(ctx, f.Base().ID)
 	if err != nil {
 		return fmt.Errorf("error finding contained folders for %q: %w", f.Base().Path, err)
 	}
@@ -256,13 +258,14 @@ func (j *cleanJob) assessFolders(ctx context.Context, toDelete *deleteSet) error
 	progress := j.progress
 
 	more := true
-	if err := txn.WithReadTxn(ctx, j.Repository, func(ctx context.Context) error {
+	r := j.Repository
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 		for more {
 			if job.IsCancelled(ctx) {
 				return nil
 			}
 
-			folders, err := j.Repository.FolderStore.FindAllInPaths(ctx, j.options.Paths, batchSize, offset)
+			folders, err := r.Folder.FindAllInPaths(ctx, j.options.Paths, batchSize, offset)
 			if err != nil {
 				return fmt.Errorf("error querying for folders: %w", err)
 			}
@@ -380,14 +383,15 @@ func (j *cleanJob) shouldCleanFolder(ctx context.Context, f *models.Folder) bool
 func (j *cleanJob) deleteFile(ctx context.Context, fileID models.FileID, fn string) {
 	// delete associated objects
 	fileDeleter := NewDeleter()
-	if err := txn.WithTxn(ctx, j.Repository, func(ctx context.Context) error {
+	r := j.Repository
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		fileDeleter.RegisterHooks(ctx)
 
 		if err := j.fireHandlers(ctx, fileDeleter, fileID); err != nil {
 			return err
 		}
 
-		return j.Repository.FileStore.Destroy(ctx, fileID)
+		return r.File.Destroy(ctx, fileID)
 	}); err != nil {
 		logger.Errorf("Error deleting file %q from database: %s", fn, err.Error())
 		return
@@ -397,14 +401,15 @@ func (j *cleanJob) deleteFile(ctx context.Context, fileID models.FileID, fn stri
 func (j *cleanJob) deleteFolder(ctx context.Context, folderID models.FolderID, fn string) {
 	// delete associated objects
 	fileDeleter := NewDeleter()
-	if err := txn.WithTxn(ctx, j.Repository, func(ctx context.Context) error {
+	r := j.Repository
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		fileDeleter.RegisterHooks(ctx)
 
 		if err := j.fireFolderHandlers(ctx, fileDeleter, folderID); err != nil {
 			return err
 		}
 
-		return j.Repository.FolderStore.Destroy(ctx, folderID)
+		return r.Folder.Destroy(ctx, folderID)
 	}); err != nil {
 		logger.Errorf("Error deleting folder %q from database: %s", fn, err.Error())
 		return
