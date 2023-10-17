@@ -79,9 +79,6 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 
 	customPerformerImageLocation := config.GetCustomPerformerImageLocation()
 
-	scraperUserAgent := config.GetScraperUserAgent()
-	scraperCDPPath := config.GetScraperCDPPath()
-
 	return &ConfigGeneralResult{
 		Stashes:                       config.GetStashPaths(),
 		DatabasePath:                  config.GetDatabasePath(),
@@ -123,9 +120,6 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		Excludes:                      config.GetExcludes(),
 		ImageExcludes:                 config.GetImageExcludes(),
 		CustomPerformerImageLocation:  &customPerformerImageLocation,
-		ScraperUserAgent:              &scraperUserAgent,
-		ScraperCertCheck:              config.GetScraperCertCheck(),
-		ScraperCDPPath:                &scraperCDPPath,
 		StashBoxes:                    config.GetStashBoxes(),
 		PythonPath:                    config.GetPythonPath(),
 		TranscodeInputArgs:            config.GetTranscodeInputArgs(),
@@ -161,7 +155,6 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 	scriptOffset := config.GetFunscriptOffset()
 	useStashHostedFunscript := config.GetUseStashHostedFunscript()
 	imageLightboxOptions := config.GetImageLightboxOptions()
-	// FIXME - misnamed output field means we have redundant fields
 	disableDropdownCreate := config.GetDisableDropdownCreate()
 
 	return &ConfigInterfaceResult{
@@ -187,9 +180,7 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 
 		ImageLightbox: &imageLightboxOptions,
 
-		// FIXME - see above
-		DisabledDropdownCreate: disableDropdownCreate,
-		DisableDropdownCreate:  disableDropdownCreate,
+		DisableDropdownCreate: disableDropdownCreate,
 
 		HandyKey:                &handyKey,
 		FunscriptOffset:         &scriptOffset,
@@ -243,7 +234,9 @@ func makeConfigUIResult() map[string]interface{} {
 }
 
 func (r *queryResolver) ValidateStashBoxCredentials(ctx context.Context, input config.StashBoxInput) (*StashBoxValidationResult, error) {
-	client := stashbox.NewClient(models.StashBox{Endpoint: input.Endpoint, APIKey: input.APIKey}, r.txnManager, r.stashboxRepository())
+	box := models.StashBox{Endpoint: input.Endpoint, APIKey: input.APIKey}
+	client := stashbox.NewClient(box, r.stashboxRepository())
+
 	user, err := client.GetUser(ctx)
 
 	valid := user != nil && user.Me != nil

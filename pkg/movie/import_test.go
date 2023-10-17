@@ -69,10 +69,11 @@ func TestImporterPreImport(t *testing.T) {
 }
 
 func TestImporterPreImportWithStudio(t *testing.T) {
-	studioReaderWriter := &mocks.StudioReaderWriter{}
+	db := mocks.NewDatabase()
 
 	i := Importer{
-		StudioWriter: studioReaderWriter,
+		ReaderWriter: db.Movie,
+		StudioWriter: db.Studio,
 		Input: jsonschema.Movie{
 			Name:       movieName,
 			FrontImage: frontImage,
@@ -82,10 +83,10 @@ func TestImporterPreImportWithStudio(t *testing.T) {
 		},
 	}
 
-	studioReaderWriter.On("FindByName", testCtx, existingStudioName, false).Return(&models.Studio{
+	db.Studio.On("FindByName", testCtx, existingStudioName, false).Return(&models.Studio{
 		ID: existingStudioID,
 	}, nil).Once()
-	studioReaderWriter.On("FindByName", testCtx, existingStudioErr, false).Return(nil, errors.New("FindByName error")).Once()
+	db.Studio.On("FindByName", testCtx, existingStudioErr, false).Return(nil, errors.New("FindByName error")).Once()
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
@@ -95,14 +96,15 @@ func TestImporterPreImportWithStudio(t *testing.T) {
 	err = i.PreImport(testCtx)
 	assert.NotNil(t, err)
 
-	studioReaderWriter.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestImporterPreImportWithMissingStudio(t *testing.T) {
-	studioReaderWriter := &mocks.StudioReaderWriter{}
+	db := mocks.NewDatabase()
 
 	i := Importer{
-		StudioWriter: studioReaderWriter,
+		ReaderWriter: db.Movie,
+		StudioWriter: db.Studio,
 		Input: jsonschema.Movie{
 			Name:       movieName,
 			FrontImage: frontImage,
@@ -111,8 +113,8 @@ func TestImporterPreImportWithMissingStudio(t *testing.T) {
 		MissingRefBehaviour: models.ImportMissingRefEnumFail,
 	}
 
-	studioReaderWriter.On("FindByName", testCtx, missingStudioName, false).Return(nil, nil).Times(3)
-	studioReaderWriter.On("Create", testCtx, mock.AnythingOfType("*models.Studio")).Run(func(args mock.Arguments) {
+	db.Studio.On("FindByName", testCtx, missingStudioName, false).Return(nil, nil).Times(3)
+	db.Studio.On("Create", testCtx, mock.AnythingOfType("*models.Studio")).Run(func(args mock.Arguments) {
 		s := args.Get(1).(*models.Studio)
 		s.ID = existingStudioID
 	}).Return(nil)
@@ -129,14 +131,15 @@ func TestImporterPreImportWithMissingStudio(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, existingStudioID, *i.movie.StudioID)
 
-	studioReaderWriter.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestImporterPreImportWithMissingStudioCreateErr(t *testing.T) {
-	studioReaderWriter := &mocks.StudioReaderWriter{}
+	db := mocks.NewDatabase()
 
 	i := Importer{
-		StudioWriter: studioReaderWriter,
+		ReaderWriter: db.Movie,
+		StudioWriter: db.Studio,
 		Input: jsonschema.Movie{
 			Name:       movieName,
 			FrontImage: frontImage,
@@ -145,27 +148,30 @@ func TestImporterPreImportWithMissingStudioCreateErr(t *testing.T) {
 		MissingRefBehaviour: models.ImportMissingRefEnumCreate,
 	}
 
-	studioReaderWriter.On("FindByName", testCtx, missingStudioName, false).Return(nil, nil).Once()
-	studioReaderWriter.On("Create", testCtx, mock.AnythingOfType("*models.Studio")).Return(errors.New("Create error"))
+	db.Studio.On("FindByName", testCtx, missingStudioName, false).Return(nil, nil).Once()
+	db.Studio.On("Create", testCtx, mock.AnythingOfType("*models.Studio")).Return(errors.New("Create error"))
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
+
+	db.AssertExpectations(t)
 }
 
 func TestImporterPostImport(t *testing.T) {
-	readerWriter := &mocks.MovieReaderWriter{}
+	db := mocks.NewDatabase()
 
 	i := Importer{
-		ReaderWriter:   readerWriter,
+		ReaderWriter:   db.Movie,
+		StudioWriter:   db.Studio,
 		frontImageData: frontImageBytes,
 		backImageData:  backImageBytes,
 	}
 
 	updateMovieImageErr := errors.New("UpdateImages error")
 
-	readerWriter.On("UpdateFrontImage", testCtx, movieID, frontImageBytes).Return(nil).Once()
-	readerWriter.On("UpdateBackImage", testCtx, movieID, backImageBytes).Return(nil).Once()
-	readerWriter.On("UpdateFrontImage", testCtx, errImageID, frontImageBytes).Return(updateMovieImageErr).Once()
+	db.Movie.On("UpdateFrontImage", testCtx, movieID, frontImageBytes).Return(nil).Once()
+	db.Movie.On("UpdateBackImage", testCtx, movieID, backImageBytes).Return(nil).Once()
+	db.Movie.On("UpdateFrontImage", testCtx, errImageID, frontImageBytes).Return(updateMovieImageErr).Once()
 
 	err := i.PostImport(testCtx, movieID)
 	assert.Nil(t, err)
@@ -173,25 +179,26 @@ func TestImporterPostImport(t *testing.T) {
 	err = i.PostImport(testCtx, errImageID)
 	assert.NotNil(t, err)
 
-	readerWriter.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestImporterFindExistingID(t *testing.T) {
-	readerWriter := &mocks.MovieReaderWriter{}
+	db := mocks.NewDatabase()
 
 	i := Importer{
-		ReaderWriter: readerWriter,
+		ReaderWriter: db.Movie,
+		StudioWriter: db.Studio,
 		Input: jsonschema.Movie{
 			Name: movieName,
 		},
 	}
 
 	errFindByName := errors.New("FindByName error")
-	readerWriter.On("FindByName", testCtx, movieName, false).Return(nil, nil).Once()
-	readerWriter.On("FindByName", testCtx, existingMovieName, false).Return(&models.Movie{
+	db.Movie.On("FindByName", testCtx, movieName, false).Return(nil, nil).Once()
+	db.Movie.On("FindByName", testCtx, existingMovieName, false).Return(&models.Movie{
 		ID: existingMovieID,
 	}, nil).Once()
-	readerWriter.On("FindByName", testCtx, movieNameErr, false).Return(nil, errFindByName).Once()
+	db.Movie.On("FindByName", testCtx, movieNameErr, false).Return(nil, errFindByName).Once()
 
 	id, err := i.FindExistingID(testCtx)
 	assert.Nil(t, id)
@@ -207,11 +214,11 @@ func TestImporterFindExistingID(t *testing.T) {
 	assert.Nil(t, id)
 	assert.NotNil(t, err)
 
-	readerWriter.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestCreate(t *testing.T) {
-	readerWriter := &mocks.MovieReaderWriter{}
+	db := mocks.NewDatabase()
 
 	movie := models.Movie{
 		Name: movieName,
@@ -222,16 +229,17 @@ func TestCreate(t *testing.T) {
 	}
 
 	i := Importer{
-		ReaderWriter: readerWriter,
+		ReaderWriter: db.Movie,
+		StudioWriter: db.Studio,
 		movie:        movie,
 	}
 
 	errCreate := errors.New("Create error")
-	readerWriter.On("Create", testCtx, &movie).Run(func(args mock.Arguments) {
+	db.Movie.On("Create", testCtx, &movie).Run(func(args mock.Arguments) {
 		m := args.Get(1).(*models.Movie)
 		m.ID = movieID
 	}).Return(nil).Once()
-	readerWriter.On("Create", testCtx, &movieErr).Return(errCreate).Once()
+	db.Movie.On("Create", testCtx, &movieErr).Return(errCreate).Once()
 
 	id, err := i.Create(testCtx)
 	assert.Equal(t, movieID, *id)
@@ -242,11 +250,11 @@ func TestCreate(t *testing.T) {
 	assert.Nil(t, id)
 	assert.NotNil(t, err)
 
-	readerWriter.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestUpdate(t *testing.T) {
-	readerWriter := &mocks.MovieReaderWriter{}
+	db := mocks.NewDatabase()
 
 	movie := models.Movie{
 		Name: movieName,
@@ -257,7 +265,8 @@ func TestUpdate(t *testing.T) {
 	}
 
 	i := Importer{
-		ReaderWriter: readerWriter,
+		ReaderWriter: db.Movie,
+		StudioWriter: db.Studio,
 		movie:        movie,
 	}
 
@@ -265,7 +274,7 @@ func TestUpdate(t *testing.T) {
 
 	// id needs to be set for the mock input
 	movie.ID = movieID
-	readerWriter.On("Update", testCtx, &movie).Return(nil).Once()
+	db.Movie.On("Update", testCtx, &movie).Return(nil).Once()
 
 	err := i.Update(testCtx, movieID)
 	assert.Nil(t, err)
@@ -274,10 +283,10 @@ func TestUpdate(t *testing.T) {
 
 	// need to set id separately
 	movieErr.ID = errImageID
-	readerWriter.On("Update", testCtx, &movieErr).Return(errUpdate).Once()
+	db.Movie.On("Update", testCtx, &movieErr).Return(errUpdate).Once()
 
 	err = i.Update(testCtx, errImageID)
 	assert.NotNil(t, err)
 
-	readerWriter.AssertExpectations(t)
+	db.AssertExpectations(t)
 }

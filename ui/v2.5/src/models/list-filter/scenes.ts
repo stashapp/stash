@@ -72,6 +72,7 @@ const criterionOptions = [
   RatingCriterionOption,
   createMandatoryNumberCriterionOption("o_counter"),
   ResolutionCriterionOption,
+  createMandatoryNumberCriterionOption("framerate"),
   createStringCriterionOption("video_codec"),
   createStringCriterionOption("audio_codec"),
   createDurationCriterionOption("duration"),

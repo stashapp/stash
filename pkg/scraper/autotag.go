@@ -18,7 +18,6 @@ const (
 )
 
 type autotagScraper struct {
-	// repository   models.Repository
 	txnManager      txn.Manager
 	performerReader models.PerformerAutoTagQueryer
 	studioReader    models.StudioAutoTagQueryer
@@ -208,9 +207,9 @@ func (s autotagScraper) spec() Scraper {
 	}
 }
 
-func getAutoTagScraper(txnManager txn.Manager, repo Repository, globalConfig GlobalConfig) scraper {
+func getAutoTagScraper(repo Repository, globalConfig GlobalConfig) scraper {
 	base := autotagScraper{
-		txnManager:      txnManager,
+		txnManager:      repo.TxnManager,
 		performerReader: repo.PerformerFinder,
 		studioReader:    repo.StudioFinder,
 		tagReader:       repo.TagFinder,

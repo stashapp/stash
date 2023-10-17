@@ -151,7 +151,8 @@ export const ScrapedPerformersRow: React.FC<
         isDisabled={!isNew}
         onSelect={(items) => {
           if (onChangeFn) {
-            onChangeFn(items);
+            // map the id back to stored_id
+            onChangeFn(items.map((p) => ({ ...p, stored_id: p.id })));
           }
         }}
         values={selectValue}

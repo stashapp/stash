@@ -174,10 +174,8 @@ export const GalleryEditPanel: React.FC<IProps> = ({
   });
 
   useEffect(() => {
-    const newQueryableScrapers = (
-      Scrapers?.data?.listGalleryScrapers ?? []
-    ).filter((s) =>
-      s.gallery?.supported_scrapes.includes(GQL.ScrapeType.Fragment)
+    const newQueryableScrapers = (Scrapers?.data?.listScrapers ?? []).filter(
+      (s) => s.gallery?.supported_scrapes.includes(GQL.ScrapeType.Fragment)
     );
 
     setQueryableScrapers(newQueryableScrapers);
@@ -286,7 +284,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
   }
 
   function urlScrapable(scrapedUrl: string): boolean {
-    return (Scrapers?.data?.listGalleryScrapers ?? []).some((s) =>
+    return (Scrapers?.data?.listScrapers ?? []).some((s) =>
       (s?.gallery?.urls ?? []).some((u) => scrapedUrl.includes(u))
     );
   }

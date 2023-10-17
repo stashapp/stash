@@ -3,7 +3,6 @@ package manager
 import (
 	"context"
 	"errors"
-	"io"
 	"net/http"
 
 	"github.com/stashapp/stash/internal/manager/config"
@@ -58,8 +57,6 @@ func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWrit
 }
 
 func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter, r *http.Request) {
-	const defaultSceneImage = "scene/scene.svg"
-
 	var cover []byte
 	readTxnErr := txn.WithReadTxn(r.Context(), s.TxnManager, func(ctx context.Context) error {
 		cover, _ = s.SceneCoverGetter.GetCover(ctx, scene.ID)
@@ -92,10 +89,7 @@ func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter
 		}
 
 		// fallback to default cover if none found
-		// should always be there
-		f, _ := static.Scene.Open(defaultSceneImage)
-		defer f.Close()
-		cover, _ = io.ReadAll(f)
+		cover = static.ReadAll(static.DefaultSceneImage)
 	}
 
 	utils.ServeImage(w, r, cover)

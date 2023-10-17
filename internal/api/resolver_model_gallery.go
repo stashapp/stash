@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"time"
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/manager/config"
@@ -10,19 +9,6 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 )
-
-func (r *galleryResolver) getPrimaryFile(ctx context.Context, obj *models.Gallery) (models.File, error) {
-	if obj.PrimaryFileID != nil {
-		f, err := loaders.From(ctx).FileByID.Load(*obj.PrimaryFileID)
-		if err != nil {
-			return nil, err
-		}
-
-		return f, nil
-	}
-
-	return nil, nil
-}
 
 func (r *galleryResolver) getFiles(ctx context.Context, obj *models.Gallery) ([]models.File, error) {
 	fileIDs, err := loaders.From(ctx).GalleryFiles.Load(obj.ID)
@@ -78,38 +64,6 @@ func (r *galleryResolver) Folder(ctx context.Context, obj *models.Gallery) (*mod
 	return ret, nil
 }
 
-func (r *galleryResolver) FileModTime(ctx context.Context, obj *models.Gallery) (*time.Time, error) {
-	f, err := r.getPrimaryFile(ctx, obj)
-	if err != nil {
-		return nil, err
-	}
-	if f != nil {
-		return &f.Base().ModTime, nil
-	}
-
-	return nil, nil
-}
-
-// Images is deprecated, slow and shouldn't be used
-func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) (ret []*models.Image, err error) {
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		var err error
-
-		// #2376 - sort images by path
-		// doing this via Query is really slow, so stick with FindByGalleryID
-		ret, err = r.repository.Image.FindByGalleryID(ctx, obj.ID)
-		if err != nil {
-			return err
-		}
-
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
-	return ret, nil
-}
-
 func (r *galleryResolver) Cover(ctx context.Context, obj *models.Gallery) (ret *models.Image, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		// Find cover image first
@@ -126,26 +80,6 @@ func (r *galleryResolver) Date(ctx context.Context, obj *models.Gallery) (*strin
 	if obj.Date != nil {
 		result := obj.Date.String()
 		return &result, nil
-	}
-	return nil, nil
-}
-
-func (r *galleryResolver) Checksum(ctx context.Context, obj *models.Gallery) (string, error) {
-	if !obj.Files.PrimaryLoaded() {
-		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-			return obj.LoadPrimaryFile(ctx, r.repository.File)
-		}); err != nil {
-			return "", err
-		}
-	}
-
-	return obj.PrimaryChecksum(), nil
-}
-
-func (r *galleryResolver) Rating(ctx context.Context, obj *models.Gallery) (*int, error) {
-	if obj.Rating != nil {
-		rating := models.Rating100To5(*obj.Rating)
-		return &rating, nil
 	}
 	return nil, nil
 }

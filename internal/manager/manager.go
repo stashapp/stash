@@ -131,7 +131,7 @@ type Manager struct {
 	DLNAService *dlna.Service
 
 	Database   *sqlite.Database
-	Repository Repository
+	Repository models.Repository
 
 	SceneService   SceneService
 	ImageService   ImageService
@@ -174,6 +174,7 @@ func initialize() error {
 	initProfiling(cfg.GetCPUProfilePath())
 
 	db := sqlite.NewDatabase()
+	repo := db.Repository()
 
 	// start with empty paths
 	emptyPaths := paths.Paths{}
@@ -186,49 +187,43 @@ func initialize() error {
 		PluginCache:     plugin.NewCache(cfg),
 
 		Database:   db,
-		Repository: sqliteRepository(db),
+		Repository: repo,
 		Paths:      &emptyPaths,
 
 		scanSubs: &subscriptionManager{},
 	}
 
 	instance.SceneService = &scene.Service{
-		File:             db.File,
-		Repository:       db.Scene,
-		MarkerRepository: db.SceneMarker,
+		File:             repo.File,
+		Repository:       repo.Scene,
+		MarkerRepository: repo.SceneMarker,
 		PluginCache:      instance.PluginCache,
 		Paths:            instance.Paths,
 		Config:           cfg,
 	}
 
 	instance.ImageService = &image.Service{
-		File:       db.File,
-		Repository: db.Image,
+		File:       repo.File,
+		Repository: repo.Image,
 	}
 
 	instance.GalleryService = &gallery.Service{
-		Repository:   db.Gallery,
-		ImageFinder:  db.Image,
+		Repository:   repo.Gallery,
+		ImageFinder:  repo.Image,
 		ImageService: instance.ImageService,
-		File:         db.File,
-		Folder:       db.Folder,
+		File:         repo.File,
+		Folder:       repo.Folder,
 	}
 
 	instance.JobManager = initJobManager()
 
 	sceneServer := SceneServer{
-		TxnManager:       instance.Repository,
-		SceneCoverGetter: instance.Repository.Scene,
+		TxnManager:       repo.TxnManager,
+		SceneCoverGetter: repo.Scene,
 	}
 
-	instance.DLNAService = dlna.NewService(instance.Repository, dlna.Repository{
-		SceneFinder:     instance.Repository.Scene,
-		FileGetter:      instance.Repository.File,
-		StudioFinder:    instance.Repository.Studio,
-		TagFinder:       instance.Repository.Tag,
-		PerformerFinder: instance.Repository.Performer,
-		MovieFinder:     instance.Repository.Movie,
-	}, instance.Config, &sceneServer)
+	dlnaRepository := dlna.NewRepository(repo)
+	instance.DLNAService = dlna.NewService(dlnaRepository, cfg, &sceneServer)
 
 	if !cfg.IsNewSystem() {
 		logger.Infof("using config file: %s", cfg.GetConfigFile())
@@ -268,8 +263,8 @@ func initialize() error {
 		logger.Warnf("could not initialize FFMPEG subsystem: %v", err)
 	}
 
-	instance.Scanner = makeScanner(db, instance.PluginCache)
-	instance.Cleaner = makeCleaner(db, instance.PluginCache)
+	instance.Scanner = makeScanner(repo, instance.PluginCache)
+	instance.Cleaner = makeCleaner(repo, instance.PluginCache)
 
 	// if DLNA is enabled, start it now
 	if instance.Config.GetDLNADefaultEnabled() {
@@ -293,14 +288,9 @@ func galleryFileFilter(ctx context.Context, f models.File) bool {
 	return isZip(f.Base().Basename)
 }
 
-func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
+func makeScanner(repo models.Repository, pluginCache *plugin.Cache) *file.Scanner {
 	return &file.Scanner{
-		Repository: file.Repository{
-			Manager:          db,
-			DatabaseProvider: db,
-			FileStore:        db.File,
-			FolderStore:      db.Folder,
-		},
+		Repository: file.NewRepository(repo),
 		FileDecorators: []file.Decorator{
 			&file.FilteredDecorator{
 				Decorator: &video.Decorator{
@@ -320,15 +310,10 @@ func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
 	}
 }
 
-func makeCleaner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Cleaner {
+func makeCleaner(repo models.Repository, pluginCache *plugin.Cache) *file.Cleaner {
 	return &file.Cleaner{
-		FS: &file.OsFS{},
-		Repository: file.Repository{
-			Manager:          db,
-			DatabaseProvider: db,
-			FileStore:        db.File,
-			FolderStore:      db.Folder,
-		},
+		FS:         &file.OsFS{},
+		Repository: file.NewRepository(repo),
 		Handlers: []file.CleanHandler{
 			&cleanHandler{},
 		},
@@ -523,14 +508,8 @@ func writeStashIcon() {
 
 // initScraperCache initializes a new scraper cache and returns it.
 func (s *Manager) initScraperCache() *scraper.Cache {
-	ret, err := scraper.NewCache(config.GetInstance(), s.Repository, scraper.Repository{
-		SceneFinder:     s.Repository.Scene,
-		GalleryFinder:   s.Repository.Gallery,
-		TagFinder:       s.Repository.Tag,
-		PerformerFinder: s.Repository.Performer,
-		MovieFinder:     s.Repository.Movie,
-		StudioFinder:    s.Repository.Studio,
-	})
+	scraperRepository := scraper.NewRepository(s.Repository)
+	ret, err := scraper.NewCache(s.Config, scraperRepository)
 
 	if err != nil {
 		logger.Errorf("Error reading scraper configs: %s", err.Error())
@@ -697,7 +676,7 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 		return fmt.Errorf("error initializing FFMPEG subsystem: %v", err)
 	}
 
-	instance.Scanner = makeScanner(instance.Database, instance.PluginCache)
+	instance.Scanner = makeScanner(instance.Repository, instance.PluginCache)
 
 	return nil
 }

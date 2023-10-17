@@ -33,6 +33,8 @@ models:
     model: github.com/99designs/gqlgen/graphql.Int64
   Timestamp:
     model: github.com/stashapp/stash/internal/api.Timestamp
+  BoolMap:
+    model: github.com/stashapp/stash/internal/api.BoolMap
   # define to force resolvers
   Image:
     model: github.com/stashapp/stash/pkg/models.Image

@@ -86,6 +86,8 @@ export function sortPerformers<T extends IPerformerFragment>(performers: T[]) {
 export const scrapedPerformerToCreateInput = (
   toCreate: GQL.ScrapedPerformer
 ) => {
+  const aliases = toCreate.aliases?.split(",").map((a) => a.trim());
+
   const input: GQL.PerformerCreateInput = {
     name: toCreate.name ?? "",
     url: toCreate.url,
@@ -100,7 +102,7 @@ export const scrapedPerformerToCreateInput = (
     career_length: toCreate.career_length,
     tattoos: toCreate.tattoos,
     piercings: toCreate.piercings,
-    aliases: toCreate.aliases,
+    alias_list: aliases,
     twitter: toCreate.twitter,
     instagram: toCreate.instagram,
     tag_ids: filterData((toCreate.tags ?? []).map((t) => t.stored_id)),

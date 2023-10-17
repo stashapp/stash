@@ -131,7 +131,8 @@ const (
 	PythonPath = "python_path"
 
 	// plugin options
-	PluginsPath = "plugins_path"
+	PluginsPath     = "plugins_path"
+	DisabledPlugins = "plugins.disabled"
 
 	// i18n
 	Language = "language"
@@ -720,6 +721,10 @@ func (i *Instance) GetDefaultPluginsPath() string {
 
 func (i *Instance) GetPluginsPath() string {
 	return i.getString(PluginsPath)
+}
+
+func (i *Instance) GetDisabledPlugins() []string {
+	return i.getStringSlice(DisabledPlugins)
 }
 
 func (i *Instance) GetPythonPath() string {
