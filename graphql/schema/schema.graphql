@@ -320,6 +320,9 @@ type Mutation {
     input: ConfigDefaultSettingsInput!
   ): ConfigDefaultSettingsResult!
 
+  # overwrites the entire plugin configuration for the given plugin
+  configurePlugin(plugin_id: ID!, input: Map!): Map!
+
   # overwrites the entire UI configuration
   configureUI(input: Map!): Map!
   # sets a single UI key value

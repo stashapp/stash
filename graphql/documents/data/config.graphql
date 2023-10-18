@@ -219,4 +219,5 @@ fragment ConfigData on ConfigResult {
     ...ConfigDefaultSettingsData
   }
   ui
+  plugins
 }

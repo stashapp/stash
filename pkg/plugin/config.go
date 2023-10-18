@@ -59,6 +59,9 @@ type Config struct {
 
 	// Javascript files that will be injected into the stash UI.
 	UI UIConfig `yaml:"ui"`
+
+	// Settings that will be used to configure the plugin.
+	Settings map[string]SettingConfig `yaml:"settings"`
 }
 
 type UIConfig struct {
@@ -85,6 +88,14 @@ func (c UIConfig) getJavascriptFiles(parent Config) []string {
 	}
 
 	return ret
+}
+
+type SettingConfig struct {
+	// defaults to string
+	Type PluginSettingTypeEnum `yaml:"type"`
+	// defaults to key name
+	DisplayName string `yaml:"displayName"`
+	Description string `yaml:"description"`
 }
 
 func (c Config) getPluginTasks(includePlugin bool) []*PluginTask {
@@ -133,6 +144,28 @@ func convertHooks(hooks []HookTriggerEnum) []string {
 	return ret
 }
 
+func (c Config) getPluginSettings() []PluginSetting {
+	ret := []PluginSetting{}
+
+	for k, o := range c.Settings {
+		t := o.Type
+		if t == "" {
+			t = PluginSettingTypeEnumString
+		}
+
+		s := PluginSetting{
+			Name:        k,
+			DisplayName: o.DisplayName,
+			Description: o.Description,
+			Type:        t,
+		}
+
+		ret = append(ret, s)
+	}
+
+	return ret
+}
+
 func (c Config) getName() string {
 	if c.Name != "" {
 		return c.Name
@@ -154,6 +187,7 @@ func (c Config) toPlugin() *Plugin {
 			Javascript: c.UI.getJavascriptFiles(c),
 			CSS:        c.UI.getCSSFiles(c),
 		},
+		Settings: c.getPluginSettings(),
 	}
 }
 
@@ -209,6 +243,20 @@ func (c Config) getExecCommand(task *OperationConfig) []string {
 	}
 
 	return ret
+}
+
+func (c Config) valid() error {
+	if c.Interface != "" && !c.Interface.Valid() {
+		return fmt.Errorf("invalid interface type %s", c.Interface)
+	}
+
+	for k, o := range c.Settings {
+		if o.Type != "" && !o.Type.IsValid() {
+			return fmt.Errorf("invalid type %s for setting %s", k, o.Type)
+		}
+	}
+
+	return nil
 }
 
 type interfaceEnum string
@@ -292,8 +340,8 @@ func loadPluginFromYAML(reader io.Reader) (*Config, error) {
 		ret.Interface = InterfaceEnumRaw
 	}
 
-	if !ret.Interface.Valid() {
-		return nil, fmt.Errorf("invalid interface type %s", ret.Interface)
+	if err := ret.valid(); err != nil {
+		return nil, err
 	}
 
 	return ret, nil

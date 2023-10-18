@@ -194,6 +194,7 @@ export const ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
     id,
     className,
     headingID,
+    heading,
     tooltipID,
     subHeadingID,
     subHeading,
@@ -213,7 +214,11 @@ export const ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
     <div className={`setting ${className ?? ""} ${disabledClassName}`} id={id}>
       <div>
         <h3 title={tooltip}>
-          {headingID ? intl.formatMessage({ id: headingID }) : undefined}
+          {headingID
+            ? intl.formatMessage({ id: headingID })
+            : heading
+            ? heading
+            : undefined}
         </h3>
 
         <div className="value">
@@ -242,7 +247,7 @@ export const ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
 };
 
 export interface ISettingModal<T> {
-  heading?: string;
+  heading?: React.ReactNode;
   headingID?: string;
   subHeadingID?: string;
   subHeading?: React.ReactNode;
@@ -321,6 +326,7 @@ export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
     className,
     value,
     headingID,
+    heading,
     subHeadingID,
     subHeading,
     onChange,
@@ -340,6 +346,7 @@ export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
         <SettingModal<T>
           headingID={headingID}
           subHeadingID={subHeadingID}
+          heading={heading}
           subHeading={subHeading}
           value={value}
           renderField={renderField}
@@ -358,6 +365,7 @@ export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
         buttonText={buttonText}
         buttonTextID={buttonTextID}
         headingID={headingID}
+        heading={heading}
         tooltipID={tooltipID}
         subHeadingID={subHeadingID}
         subHeading={subHeading}

@@ -21,7 +21,7 @@ import {
   SelectSetting,
   Setting,
 } from "./Inputs";
-import { SettingStateContext } from "./context";
+import { useSettings } from "./context";
 import {
   videoSortOrderIntlMap,
   defaultVideoSort,
@@ -37,14 +37,7 @@ export const SettingsServicesPanel: React.FC = () => {
   const intl = useIntl();
   const Toast = useToast();
 
-  const {
-    dlna,
-    hsp,
-    loading: configLoading,
-    error,
-    saveDLNA,
-    saveHSP,
-  } = React.useContext(SettingStateContext);
+  const { dlna, hsp, loading: configLoading, error, saveDLNA, saveHSP } = useSettings();
 
   // undefined to hide dialog, true for enable, false for disable
   const [enableDisable, setEnableDisable] = useState<boolean>();
