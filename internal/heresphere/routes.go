@@ -39,7 +39,7 @@ const (
 )
 
 type routes struct {
-	Repository
+	repository
 	SceneFinder       sceneFinder
 	SceneMarkerFinder sceneMarkerFinder
 	FileFinder        fileFinder
@@ -53,7 +53,7 @@ type routes struct {
 
 func GetRoutes(repo models.Repository) chi.Router {
 	return routes{
-		Repository:        Repository{TxnManager: repo.TxnManager},
+		repository:        repository{TxnManager: repo.TxnManager},
 		SceneFinder:       repo.Scene,
 		SceneMarkerFinder: repo.SceneMarker,
 		FileFinder:        repo.File,

@@ -8,15 +8,15 @@ import (
 )
 
 // Repository provides access to storage methods for files and folders.
-type Repository struct {
+type repository struct {
 	TxnManager models.TxnManager
 }
 
-func (r *Repository) withTxn(ctx context.Context, fn txn.TxnFunc) error {
+func (r *repository) withTxn(ctx context.Context, fn txn.TxnFunc) error {
 	return txn.WithTxn(ctx, r.TxnManager, fn)
 }
 
-func (r *Repository) withReadTxn(ctx context.Context, fn txn.TxnFunc) error {
+func (r *repository) withReadTxn(ctx context.Context, fn txn.TxnFunc) error {
 	return txn.WithReadTxn(ctx, r.TxnManager, fn)
 }
 
