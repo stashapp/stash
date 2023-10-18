@@ -135,10 +135,7 @@ export const App: React.FC = () => {
         }
       );
 
-      const newMessages = flattenMessages(mergedMessages) as Record<
-        string,
-        string
-      >;
+      const newMessages = flattenMessages(mergedMessages);
 
       yup.setLocale({
         mixed: {

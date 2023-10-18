@@ -1719,50 +1719,6 @@ func testPerformerStashIDs(ctx context.Context, t *testing.T, s *models.Performe
 	assert.Len(t, s.StashIDs.List(), 0)
 }
 
-func TestPerformerQueryLegacyRating(t *testing.T) {
-	const rating = 3
-	ratingCriterion := models.IntCriterionInput{
-		Value:    rating,
-		Modifier: models.CriterionModifierEquals,
-	}
-
-	verifyPerformersLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyPerformersLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyPerformersLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierLessThan
-	verifyPerformersLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierIsNull
-	verifyPerformersLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierNotNull
-	verifyPerformersLegacyRating(t, ratingCriterion)
-}
-
-func verifyPerformersLegacyRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
-	withTxn(func(ctx context.Context) error {
-		performerFilter := models.PerformerFilterType{
-			Rating: &ratingCriterion,
-		}
-
-		performers := queryPerformers(ctx, t, &performerFilter, nil)
-
-		// convert criterion value to the 100 value
-		ratingCriterion.Value = models.Rating5To100(ratingCriterion.Value)
-
-		for _, performer := range performers {
-			verifyIntPtr(t, performer.Rating, ratingCriterion)
-		}
-
-		return nil
-	})
-}
-
 func TestPerformerQueryRating100(t *testing.T) {
 	const rating = 60
 	ratingCriterion := models.IntCriterionInput{

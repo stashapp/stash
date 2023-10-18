@@ -134,6 +134,7 @@ const (
 	PluginsPath          = "plugins_path"
 	PluginsSetting       = "plugins.settings"
 	PluginsSettingPrefix = PluginsSetting + "."
+	DisabledPlugins      = "plugins.disabled"
 
 	// i18n
 	Language = "language"
@@ -186,7 +187,7 @@ const (
 
 	UI = "ui"
 
-	defaultImageLightboxSlideshowDelay = 5000
+	defaultImageLightboxSlideshowDelay = 5
 
 	DisableDropdownCreatePerformer = "disable_dropdown_create.performer"
 	DisableDropdownCreateStudio    = "disable_dropdown_create.studio"
@@ -769,6 +770,10 @@ func (i *Instance) SetPluginConfiguration(pluginID string, v map[string]interfac
 	// HACK: viper changes map keys to case insensitive values, so the workaround is to
 	// convert map keys to snake case for storage
 	i.viper(key).Set(key, toSnakeCaseMap(v))
+}
+
+func (i *Instance) GetDisabledPlugins() []string {
+	return i.getStringSlice(DisabledPlugins)
 }
 
 func (i *Instance) GetPythonPath() string {

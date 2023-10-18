@@ -181,8 +181,7 @@ export const MainNavbar: React.FC = () => {
   }, [configuration]);
 
   // react-bootstrap typing bug
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const navbarRef = useRef<any>();
+  const navbarRef = useRef<HTMLElement | null>(null);
   const intl = useIntl();
 
   const maybeCollapse = useCallback(

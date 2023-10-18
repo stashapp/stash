@@ -1,4 +1,4 @@
-import { ComponentType, lazy } from "react";
+import { lazy } from "react";
 
 interface ILazyComponentError {
   __lazyComponentError?: true;
@@ -8,11 +8,10 @@ export const isLazyComponentError = (e: unknown) => {
   return !!(e as ILazyComponentError).__lazyComponentError;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const lazyComponent = <T extends ComponentType<any>>(
-  factory: Parameters<typeof lazy<T>>[0]
+export const lazyComponent = <Props extends object>(
+  factory: () => Promise<{ default: React.FC<Props> }>
 ) => {
-  return lazy<T>(async () => {
+  return lazy(async () => {
     try {
       return await factory();
     } catch (e) {

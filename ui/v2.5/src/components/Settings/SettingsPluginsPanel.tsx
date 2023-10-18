@@ -2,7 +2,11 @@ import React, { useMemo } from "react";
 import { Button } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
-import { mutateReloadPlugins, usePlugins } from "src/core/StashService";
+import {
+  mutateReloadPlugins,
+  mutateSetPluginsEnabled,
+  usePlugins,
+} from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import TextUtils from "src/utils/text";
 import { CollapseButton } from "../Shared/CollapseButton";
@@ -71,7 +75,11 @@ export const SettingsPluginsPanel: React.FC = () => {
   const intl = useIntl();
 
   const { loading: configLoading, plugins, savePluginSettings } = useSettings();
-  const { data, loading } = usePlugins();
+  const { data, loading, refetch } = usePlugins();
+
+  const [changedPluginID, setChangedPluginID] = React.useState<
+    string | undefined
+  >();
 
   async function onReloadPlugins() {
     await mutateReloadPlugins().catch((e) => Toast.error(e));
@@ -95,6 +103,39 @@ export const SettingsPluginsPanel: React.FC = () => {
       }
     }
 
+    function renderEnableButton(pluginID: string, enabled: boolean) {
+      async function onClick() {
+        await mutateSetPluginsEnabled({ [pluginID]: !enabled }).catch((e) =>
+          Toast.error(e)
+        );
+
+        setChangedPluginID(pluginID);
+        refetch();
+      }
+
+      return (
+        <Button size="sm" onClick={onClick}>
+          <FormattedMessage
+            id={enabled ? "actions.disable" : "actions.enable"}
+          />
+        </Button>
+      );
+    }
+
+    function onReloadUI() {
+      window.location.reload();
+    }
+
+    function maybeRenderReloadUI(pluginID: string) {
+      if (pluginID === changedPluginID) {
+        return (
+          <Button size="sm" onClick={() => onReloadUI()}>
+            Reload UI
+          </Button>
+        );
+      }
+    }
+
     function renderPlugins() {
       const elements = (data?.plugins ?? []).map((plugin) => (
         <SettingGroup
@@ -103,9 +144,16 @@ export const SettingsPluginsPanel: React.FC = () => {
             heading: `${plugin.name} ${
               plugin.version ? `(${plugin.version})` : undefined
             }`,
+            className: !plugin.enabled ? "disabled" : undefined,
             subHeading: plugin.description,
           }}
-          topLevel={renderLink(plugin.url ?? undefined)}
+          topLevel={
+            <>
+              {renderLink(plugin.url ?? undefined)}
+              {maybeRenderReloadUI(plugin.id)}
+              {renderEnableButton(plugin.id, plugin.enabled)}
+            </>
+          }
         >
           {renderPluginHooks(plugin.hooks ?? undefined)}
           {renderPluginSettings(plugin.id, plugin.settings ?? [])}
@@ -176,7 +224,15 @@ export const SettingsPluginsPanel: React.FC = () => {
     }
 
     return renderPlugins();
-  }, [data?.plugins, intl, plugins, savePluginSettings]);
+  }, [
+    data?.plugins,
+    intl,
+    Toast,
+    changedPluginID,
+    refetch,
+    plugins,
+    savePluginSettings,
+  ]);
 
   if (loading || configLoading) return <LoadingIndicator />;
 

@@ -33,6 +33,8 @@ type Plugin struct {
 	Hooks       []*PluginHook   `json:"hooks"`
 	UI          PluginUI        `json:"ui"`
 	Settings    []PluginSetting `json:"settings"`
+
+	Enabled bool `json:"enabled"`
 }
 
 type PluginUI struct {
@@ -58,6 +60,7 @@ type ServerConfig interface {
 	GetConfigPath() string
 	HasTLSConfig() bool
 	GetPluginsPath() string
+	GetDisabledPlugins() []string
 	GetPythonPath() string
 }
 
@@ -132,11 +135,39 @@ func loadPlugins(path string) ([]Config, error) {
 	return plugins, nil
 }
 
+func (c Cache) enabledPlugins() []Config {
+	disabledPlugins := c.config.GetDisabledPlugins()
+
+	var ret []Config
+	for _, p := range c.plugins {
+		disabled := stringslice.StrInclude(disabledPlugins, p.id)
+
+		if !disabled {
+			ret = append(ret, p)
+		}
+	}
+
+	return ret
+}
+
+func (c Cache) pluginDisabled(id string) bool {
+	disabledPlugins := c.config.GetDisabledPlugins()
+
+	return stringslice.StrInclude(disabledPlugins, id)
+}
+
 // ListPlugins returns plugin details for all of the loaded plugins.
 func (c Cache) ListPlugins() []*Plugin {
+	disabledPlugins := c.config.GetDisabledPlugins()
+
 	var ret []*Plugin
 	for _, s := range c.plugins {
-		ret = append(ret, s.toPlugin())
+		p := s.toPlugin()
+
+		disabled := stringslice.StrInclude(disabledPlugins, p.ID)
+		p.Enabled = !disabled
+
+		ret = append(ret, p)
 	}
 
 	return ret
@@ -145,7 +176,7 @@ func (c Cache) ListPlugins() []*Plugin {
 // ListPluginTasks returns all runnable plugin tasks in all loaded plugins.
 func (c Cache) ListPluginTasks() []*PluginTask {
 	var ret []*PluginTask
-	for _, s := range c.plugins {
+	for _, s := range c.enabledPlugins() {
 		ret = append(ret, s.getPluginTasks(true)...)
 	}
 
@@ -184,6 +215,10 @@ func (c Cache) makeServerConnection(ctx context.Context) common.StashServerConne
 // resolved.
 func (c Cache) CreateTask(ctx context.Context, pluginID string, operationName string, args []*PluginArgInput, progress chan float64) (Task, error) {
 	serverConnection := c.makeServerConnection(ctx)
+
+	if c.pluginDisabled(pluginID) {
+		return nil, fmt.Errorf("plugin %s is disabled", pluginID)
+	}
 
 	// find the plugin and operation
 	plugin := c.getPlugin(pluginID)
@@ -237,7 +272,7 @@ func (c Cache) ExecuteSceneUpdatePostHooks(ctx context.Context, input models.Sce
 func (c Cache) executePostHooks(ctx context.Context, hookType HookTriggerEnum, hookContext common.HookContext) error {
 	visitedPlugins := session.GetVisitedPlugins(ctx)
 
-	for _, p := range c.plugins {
+	for _, p := range c.enabledPlugins() {
 		hooks := p.getHooks(hookType)
 		// don't revisit a plugin we've already visited
 		// only log if there's hooks that we're skipping

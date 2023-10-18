@@ -143,7 +143,10 @@ export abstract class Criterion<V extends CriterionValue> {
   }
 
   public setFromEncodedCriterion(encodedCriterion: IEncodedCriterion<V>) {
-    if (encodedCriterion.value !== undefined) {
+    if (
+      encodedCriterion.value !== undefined &&
+      encodedCriterion.value !== null
+    ) {
       this.value = encodedCriterion.value;
     }
     this.modifier = encodedCriterion.modifier;

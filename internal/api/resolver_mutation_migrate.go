@@ -11,30 +11,30 @@ import (
 )
 
 func (r *mutationResolver) MigrateSceneScreenshots(ctx context.Context, input MigrateSceneScreenshotsInput) (string, error) {
-	db := manager.GetInstance().Database
+	mgr := manager.GetInstance()
 	t := &task.MigrateSceneScreenshotsJob{
 		ScreenshotsPath: manager.GetInstance().Paths.Generated.Screenshots,
 		Input: scene.MigrateSceneScreenshotsInput{
 			DeleteFiles:       utils.IsTrue(input.DeleteFiles),
 			OverwriteExisting: utils.IsTrue(input.OverwriteExisting),
 		},
-		SceneRepo:  db.Scene,
-		TxnManager: db,
+		SceneRepo:  mgr.Repository.Scene,
+		TxnManager: mgr.Repository.TxnManager,
 	}
-	jobID := manager.GetInstance().JobManager.Add(ctx, "Migrating scene screenshots to blobs...", t)
+	jobID := mgr.JobManager.Add(ctx, "Migrating scene screenshots to blobs...", t)
 
 	return strconv.Itoa(jobID), nil
 }
 
 func (r *mutationResolver) MigrateBlobs(ctx context.Context, input MigrateBlobsInput) (string, error) {
-	db := manager.GetInstance().Database
+	mgr := manager.GetInstance()
 	t := &task.MigrateBlobsJob{
-		TxnManager: db,
-		BlobStore:  db.Blobs,
-		Vacuumer:   db,
+		TxnManager: mgr.Database,
+		BlobStore:  mgr.Database.Blobs,
+		Vacuumer:   mgr.Database,
 		DeleteOld:  utils.IsTrue(input.DeleteOld),
 	}
-	jobID := manager.GetInstance().JobManager.Add(ctx, "Migrating blobs...", t)
+	jobID := mgr.JobManager.Add(ctx, "Migrating blobs...", t)
 
 	return strconv.Itoa(jobID), nil
 }

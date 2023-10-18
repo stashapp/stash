@@ -2,6 +2,7 @@ query Plugins {
   plugins {
     id
     name
+    enabled
     description
     url
     version
@@ -33,6 +34,7 @@ query PluginTasks {
     plugin {
       id
       name
+      enabled
     }
   }
 }
