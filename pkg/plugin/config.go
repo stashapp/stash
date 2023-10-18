@@ -157,7 +157,7 @@ func (c Config) getPluginSettings() []PluginSetting {
 			Name:        k,
 			DisplayName: o.DisplayName,
 			Description: o.Description,
-			Type:        o.Type,
+			Type:        t,
 		}
 
 		ret = append(ret, s)
