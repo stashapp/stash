@@ -152,4 +152,9 @@ models:
     model: github.com/stashapp/stash/pkg/scraper.Source
   SavedFindFilterType:
     model: github.com/stashapp/stash/pkg/models.FindFilterType
+  # force resolvers
+  ConfigResult:
+    fields:
+      plugins:
+        resolver: true
   

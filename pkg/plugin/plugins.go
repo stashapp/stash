@@ -24,14 +24,15 @@ import (
 )
 
 type Plugin struct {
-	ID          string        `json:"id"`
-	Name        string        `json:"name"`
-	Description *string       `json:"description"`
-	URL         *string       `json:"url"`
-	Version     *string       `json:"version"`
-	Tasks       []*PluginTask `json:"tasks"`
-	Hooks       []*PluginHook `json:"hooks"`
-	UI          PluginUI      `json:"ui"`
+	ID          string          `json:"id"`
+	Name        string          `json:"name"`
+	Description *string         `json:"description"`
+	URL         *string         `json:"url"`
+	Version     *string         `json:"version"`
+	Tasks       []*PluginTask   `json:"tasks"`
+	Hooks       []*PluginHook   `json:"hooks"`
+	UI          PluginUI        `json:"ui"`
+	Settings    []PluginSetting `json:"settings"`
 
 	Enabled bool `json:"enabled"`
 }
@@ -42,6 +43,15 @@ type PluginUI struct {
 
 	// CSS files that will be injected into the stash UI.
 	CSS []string `json:"css"`
+}
+
+type PluginSetting struct {
+	Name string `json:"name"`
+	// defaults to string
+	Type PluginSettingTypeEnum `json:"type"`
+	// defaults to key name
+	DisplayName string `json:"displayName"`
+	Description string `json:"description"`
 }
 
 type ServerConfig interface {
