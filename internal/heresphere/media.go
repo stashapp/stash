@@ -65,7 +65,7 @@ func (rs routes) getVideoSubtitles(r *http.Request, scene *models.Scene) []Heres
 		captions, err := func() ([]*models.VideoCaption, error) {
 			var captions []*models.VideoCaption
 			var err error
-			err = txn.WithReadTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
+			err = rs.withReadTxn(r.Context(), func(ctx context.Context) error {
 				captions, err = rs.FileFinder.GetCaptions(ctx, primaryFile.ID)
 				return err
 			})

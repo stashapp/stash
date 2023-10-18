@@ -18,13 +18,13 @@ type PerformerFinder interface {
 }
 
 type performerRoutes struct {
-	models.TxnRoutes
+	routes
 	performerFinder PerformerFinder
 }
 
 func getPerformerRoutes(repo models.Repository) chi.Router {
 	return performerRoutes{
-		TxnRoutes:       models.TxnRoutes{TxnManager: repo.TxnManager},
+		routes:          routes{txnManager: repo.TxnManager},
 		performerFinder: repo.Performer,
 	}.Routes()
 }
@@ -46,7 +46,7 @@ func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
 
 	var image []byte
 	if defaultParam != "true" {
-		readTxnErr := rs.WithReadTxn(r, func(ctx context.Context) error {
+		readTxnErr := rs.withReadTxn(r, func(ctx context.Context) error {
 			var err error
 			image, err = rs.performerFinder.GetImage(ctx, performer.ID)
 			return err
@@ -75,7 +75,7 @@ func (rs performerRoutes) PerformerCtx(next http.Handler) http.Handler {
 		}
 
 		var performer *models.Performer
-		_ = rs.WithReadTxn(r, func(ctx context.Context) error {
+		_ = rs.withReadTxn(r, func(ctx context.Context) error {
 			var err error
 			performer, err = rs.performerFinder.Find(ctx, performerID)
 			return err

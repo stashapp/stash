@@ -107,8 +107,6 @@ type SceneFilterTypeStored struct {
 	Path *models.StringCriterionInput `json:"path"`
 	// Filter by file count
 	FileCount *IntCriterionStored `json:"file_count"`
-	// Filter by rating expressed as 1-5
-	Rating *IntCriterionStored `json:"rating"`
 	// Filter by rating expressed as 1-100
 	Rating100 *IntCriterionStored `json:"rating100"`
 	// Filter by organized

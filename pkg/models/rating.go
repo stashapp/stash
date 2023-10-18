@@ -64,7 +64,7 @@ func Rating100To5(rating100 int) int {
 }
 func Rating100To5F(rating100 int) float64 {
 	val := math.Round((float64(rating100) / 20.0))
-	return float64(math.Max(minRating5, math.Min(maxRating5, val)))
+	return math.Max(minRating5, math.Min(maxRating5, val))
 }
 
 // Rating5To100 converts a 1-5 rating to a 1-100 rating

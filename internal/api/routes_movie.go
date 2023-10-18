@@ -21,13 +21,13 @@ type MovieFinder interface {
 }
 
 type movieRoutes struct {
-	models.TxnRoutes
+	routes
 	movieFinder MovieFinder
 }
 
 func getMovieRoutes(repo models.Repository) chi.Router {
 	return movieRoutes{
-		TxnRoutes:   models.TxnRoutes{TxnManager: repo.TxnManager},
+		routes:      routes{txnManager: repo.TxnManager},
 		movieFinder: repo.Movie,
 	}.Routes()
 }
@@ -49,7 +49,7 @@ func (rs movieRoutes) FrontImage(w http.ResponseWriter, r *http.Request) {
 	defaultParam := r.URL.Query().Get("default")
 	var image []byte
 	if defaultParam != "true" {
-		readTxnErr := rs.WithReadTxn(r, func(ctx context.Context) error {
+		readTxnErr := rs.withReadTxn(r, func(ctx context.Context) error {
 			var err error
 			image, err = rs.movieFinder.GetFrontImage(ctx, movie.ID)
 			return err
@@ -75,7 +75,7 @@ func (rs movieRoutes) BackImage(w http.ResponseWriter, r *http.Request) {
 	defaultParam := r.URL.Query().Get("default")
 	var image []byte
 	if defaultParam != "true" {
-		readTxnErr := rs.WithReadTxn(r, func(ctx context.Context) error {
+		readTxnErr := rs.withReadTxn(r, func(ctx context.Context) error {
 			var err error
 			image, err = rs.movieFinder.GetBackImage(ctx, movie.ID)
 			return err
@@ -105,7 +105,7 @@ func (rs movieRoutes) MovieCtx(next http.Handler) http.Handler {
 		}
 
 		var movie *models.Movie
-		_ = rs.WithReadTxn(r, func(ctx context.Context) error {
+		_ = rs.withReadTxn(r, func(ctx context.Context) error {
 			movie, _ = rs.movieFinder.Find(ctx, movieID)
 			return nil
 		})

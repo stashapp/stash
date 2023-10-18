@@ -20,7 +20,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/txn"
 )
 
 type HeresphereCustomTag string
@@ -40,7 +39,7 @@ const (
 )
 
 type routes struct {
-	models.TxnRoutes
+	Repository
 	SceneFinder       sceneFinder
 	SceneMarkerFinder sceneMarkerFinder
 	FileFinder        fileFinder
@@ -54,7 +53,7 @@ type routes struct {
 
 func GetRoutes(repo models.Repository) chi.Router {
 	return routes{
-		TxnRoutes:         models.TxnRoutes{TxnManager: repo.TxnManager},
+		Repository:        Repository{TxnManager: repo.TxnManager},
 		SceneFinder:       repo.Scene,
 		SceneMarkerFinder: repo.SceneMarker,
 		FileFinder:        repo.File,
@@ -142,7 +141,7 @@ func (rs routes) heresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Update the scene activity with the new time and duration
-	if err := txn.WithTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
+	if err := rs.withTxn(r.Context(), func(ctx context.Context) error {
 		_, err := rs.SceneFinder.SaveActivity(ctx, scn.ID, &newTime, &newDuration)
 		return err
 	}); err != nil {
@@ -159,7 +158,7 @@ func (rs routes) heresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
 /*
  * This endpoint is for letting the user update scene data
  */
-func (rs routes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *http.Request) error {
+func (rs routes) heresphereVideoDataUpdate(w http.ResponseWriter, r *http.Request) error {
 	scn := r.Context().Value(sceneKey).(*models.Scene)
 	user := r.Context().Value(authKey).(HeresphereAuthReq)
 	fileDeleter := file.NewDeleter()
@@ -204,7 +203,7 @@ func (rs routes) HeresphereVideoDataUpdate(w http.ResponseWriter, r *http.Reques
 	}
 
 	if shouldUpdate {
-		if err := txn.WithTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
+		if err := rs.withTxn(r.Context(), func(ctx context.Context) error {
 			_, err := ret.Update(ctx, rs.SceneFinder)
 			return err
 		}); err != nil {
@@ -280,7 +279,7 @@ func (rs routes) heresphereVideoData(w http.ResponseWriter, r *http.Request) {
 	c := config.GetInstance()
 
 	// Update request
-	if err := rs.HeresphereVideoDataUpdate(w, r); err != nil {
+	if err := rs.heresphereVideoDataUpdate(w, r); err != nil {
 		logger.Errorf("Heresphere HeresphereVideoData HeresphereVideoDataUpdate error: %s\n", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -291,7 +290,7 @@ func (rs routes) heresphereVideoData(w http.ResponseWriter, r *http.Request) {
 
 	// Load relationships
 	processedScene := HeresphereVideoEntry{}
-	if err := txn.WithReadTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
+	if err := rs.withReadTxn(r.Context(), func(ctx context.Context) error {
 		return scene.LoadRelationships(ctx, rs.SceneFinder)
 	}); err != nil {
 		logger.Errorf("Heresphere HeresphereVideoData LoadRelationships error: %s\n", err.Error())
@@ -307,7 +306,7 @@ func (rs routes) heresphereVideoData(w http.ResponseWriter, r *http.Request) {
 		ThumbnailImage: addApiKey(urlbuilders.NewSceneURLBuilder(manager.GetBaseURL(r), scene).GetScreenshotURL()),
 		ThumbnailVideo: addApiKey(urlbuilders.NewSceneURLBuilder(manager.GetBaseURL(r), scene).GetStreamPreviewURL()),
 		DateAdded:      scene.CreatedAt.Format("2006-01-02"),
-		Duration:       60000.0,
+		Duration:       0.0,
 		Rating:         0,
 		Favorites:      0,
 		Comments:       scene.OCounter,
@@ -419,7 +418,7 @@ func (rs routes) heresphereSceneCtx(next http.Handler) http.Handler {
 
 		// Resolve scene
 		var scene *models.Scene
-		_ = txn.WithReadTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
+		_ = rs.withReadTxn(r.Context(), func(ctx context.Context) error {
 			qb := rs.SceneFinder
 			scene, _ = qb.Find(ctx, sceneID)
 

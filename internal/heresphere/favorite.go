@@ -9,7 +9,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/txn"
 )
 
 /*
@@ -22,7 +21,7 @@ func (rs routes) handleFavoriteTag(ctx context.Context, scn *models.Scene, user 
 	favTag, err := func() (*models.Tag, error) {
 		var tag *models.Tag
 		var err error
-		err = txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
+		err = rs.withReadTxn(ctx, func(ctx context.Context) error {
 			tag, err = rs.TagFinder.Find(ctx, tagID)
 			return err
 		})
@@ -66,7 +65,7 @@ func (rs routes) getVideoFavorite(r *http.Request, scene *models.Scene) bool {
 	tagIDs, err := func() ([]*models.Tag, error) {
 		var tags []*models.Tag
 		var err error
-		err = txn.WithReadTxn(r.Context(), rs.TxnManager, func(ctx context.Context) error {
+		err = rs.withReadTxn(r.Context(), func(ctx context.Context) error {
 			tags, err = rs.TagFinder.FindBySceneID(ctx, scene.ID)
 			return err
 		})

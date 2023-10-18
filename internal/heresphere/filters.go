@@ -7,7 +7,6 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/txn"
 )
 
 func parseObjectFilter(sf *models.SavedFilter) (*models.SceneFilterType, error) {
@@ -21,11 +20,11 @@ func parseObjectFilter(sf *models.SavedFilter) (*models.SceneFilterType, error) 
 		WeaklyTypedInput: true,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Error creating decoder: %s", err)
+		return nil, fmt.Errorf("error creating decoder: %s", err)
 	}
 
 	if err := decoder.Decode(sf.ObjectFilter); err != nil {
-		return nil, fmt.Errorf("Error decoding map to struct: %s", err)
+		return nil, fmt.Errorf("error decoding map to struct: %s", err)
 	}
 
 	return result.ToOriginal(), nil
@@ -36,7 +35,7 @@ func (rs routes) getAllFilters(ctx context.Context) (scenesMap map[string][]int,
 
 	savedfilters, err := func() ([]*models.SavedFilter, error) {
 		var filters []*models.SavedFilter
-		err = txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
+		err = rs.withReadTxn(ctx, func(ctx context.Context) error {
 			filters, err = rs.FilterFinder.FindByMode(ctx, models.FilterModeScenes)
 			return err
 		})
@@ -78,7 +77,7 @@ func (rs routes) getAllFilters(ctx context.Context) (scenesMap map[string][]int,
 		}
 
 		var scenes *models.SceneQueryResult
-		err = txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
+		err = rs.withReadTxn(ctx, func(ctx context.Context) error {
 			var err error
 			scenes, err = rs.SceneFinder.Query(ctx, models.SceneQueryOptions{
 				QueryOptions: models.QueryOptions{

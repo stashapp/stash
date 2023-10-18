@@ -7,7 +7,6 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/txn"
 )
 
 /*
@@ -16,7 +15,7 @@ import (
 func (rs routes) getVideoTags(ctx context.Context, scene *models.Scene) []HeresphereVideoTag {
 	processedTags := []HeresphereVideoTag{}
 
-	if err := txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
+	if err := rs.withReadTxn(ctx, func(ctx context.Context) error {
 		err := scene.LoadRelationships(ctx, rs.SceneFinder)
 
 		processedTags = append(processedTags, rs.generateMarkerTags(ctx, scene)...)

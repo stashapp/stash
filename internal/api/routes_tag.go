@@ -19,13 +19,13 @@ type TagFinder interface {
 }
 
 type tagRoutes struct {
-	models.TxnRoutes
+	routes
 	tagFinder TagFinder
 }
 
 func getTagRoutes(repo models.Repository) chi.Router {
 	return tagRoutes{
-		TxnRoutes: models.TxnRoutes{TxnManager: repo.TxnManager},
+		routes:    routes{txnManager: repo.TxnManager},
 		tagFinder: repo.Tag,
 	}.Routes()
 }
@@ -47,7 +47,7 @@ func (rs tagRoutes) Image(w http.ResponseWriter, r *http.Request) {
 
 	var image []byte
 	if defaultParam != "true" {
-		readTxnErr := rs.WithReadTxn(r, func(ctx context.Context) error {
+		readTxnErr := rs.withReadTxn(r, func(ctx context.Context) error {
 			var err error
 			image, err = rs.tagFinder.GetImage(ctx, tag.ID)
 			return err
@@ -77,7 +77,7 @@ func (rs tagRoutes) TagCtx(next http.Handler) http.Handler {
 		}
 
 		var tag *models.Tag
-		_ = rs.WithReadTxn(r, func(ctx context.Context) error {
+		_ = rs.withReadTxn(r, func(ctx context.Context) error {
 			var err error
 			tag, err = rs.tagFinder.Find(ctx, tagID)
 			return err

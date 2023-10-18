@@ -25,14 +25,14 @@ type ImageFinder interface {
 }
 
 type imageRoutes struct {
-	models.TxnRoutes
+	routes
 	imageFinder ImageFinder
 	fileGetter  models.FileGetter
 }
 
 func getImageRoutes(repo models.Repository) chi.Router {
 	return imageRoutes{
-		TxnRoutes:   models.TxnRoutes{TxnManager: repo.TxnManager},
+		routes:      routes{txnManager: repo.TxnManager},
 		imageFinder: repo.Image,
 		fileGetter:  repo.File,
 	}.Routes()
@@ -154,7 +154,7 @@ func (rs imageRoutes) ImageCtx(next http.Handler) http.Handler {
 		imageID, _ := strconv.Atoi(imageIdentifierQueryParam)
 
 		var image *models.Image
-		_ = rs.WithReadTxn(r, func(ctx context.Context) error {
+		_ = rs.withReadTxn(r, func(ctx context.Context) error {
 			qb := rs.imageFinder
 			if imageID == 0 {
 				images, _ := qb.FindByChecksum(ctx, imageIdentifierQueryParam)

@@ -10,7 +10,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/txn"
 )
 
 /*
@@ -85,7 +84,7 @@ func (rs routes) handleAddTag(ctx context.Context, tag HeresphereVideoTag, tagID
 	after := strings.TrimPrefix(tag.Name, "Tag:")
 	var err error
 	var tagMod *models.Tag
-	if err := txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
+	if err := rs.withReadTxn(ctx, func(ctx context.Context) error {
 		// Search for tag
 		tagMod, err = rs.TagFinder.FindByName(ctx, after, true)
 		return err
@@ -108,7 +107,7 @@ func (rs routes) handleAddPerformer(ctx context.Context, tag HeresphereVideoTag,
 	after := strings.TrimPrefix(tag.Name, "Performer:")
 	var err error
 	var tagMod *models.Performer
-	if err := txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
+	if err := rs.withReadTxn(ctx, func(ctx context.Context) error {
 		var tagMods []*models.Performer
 
 		// Search for performer
@@ -136,7 +135,7 @@ func (rs routes) handleAddMarker(ctx context.Context, tag HeresphereVideoTag, sc
 	after := strings.TrimPrefix(tag.Name, "Marker:")
 	var tagId *string
 
-	if err := txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
+	if err := rs.withReadTxn(ctx, func(ctx context.Context) error {
 		var err error
 		var markerResult []*models.MarkerStringsResultType
 		searchType := "count"
@@ -178,7 +177,7 @@ func (rs routes) handleAddMarker(ctx context.Context, tag HeresphereVideoTag, sc
 				UpdatedAt:    currentTime,
 			}
 
-			if err := txn.WithTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
+			if err := rs.withTxn(ctx, func(ctx context.Context) error {
 				return rs.SceneMarkerFinder.Create(ctx, &newMarker)
 			}); err != nil {
 				logger.Errorf("Heresphere handleTags SceneMarker.Create error: %s\n", err.Error())
@@ -197,7 +196,7 @@ func (rs routes) handleAddStudio(ctx context.Context, tag HeresphereVideoTag, sc
 
 	var err error
 	var tagMod *models.Studio
-	if err := txn.WithReadTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
+	if err := rs.withReadTxn(ctx, func(ctx context.Context) error {
 		// Search for performer
 		tagMod, err = rs.StudioFinder.FindByName(ctx, after, true)
 		return err

@@ -6,7 +6,6 @@ import (
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/txn"
 )
 
 /*
@@ -35,7 +34,7 @@ func (rs routes) updatePlayCount(ctx context.Context, scn *models.Scene, event H
 			ret.Partial.PlayCount.Set = true
 			ret.Partial.PlayCount.Value = scn.PlayCount + 1
 
-			err := txn.WithTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
+			err := rs.withTxn(ctx, func(ctx context.Context) error {
 				_, err := ret.Update(ctx, rs.SceneFinder)
 				return err
 			})
@@ -50,7 +49,7 @@ func (rs routes) updatePlayCount(ctx context.Context, scn *models.Scene, event H
  * Deletes the scene's primary file
  */
 func (rs routes) handleDeletePrimaryFile(ctx context.Context, scn *models.Scene, fileDeleter *file.Deleter) (bool, error) {
-	err := txn.WithTxn(ctx, rs.TxnManager, func(ctx context.Context) error {
+	err := rs.withTxn(ctx, func(ctx context.Context) error {
 		if err := scn.LoadPrimaryFile(ctx, rs.FileFinder); err != nil {
 			return err
 		}
