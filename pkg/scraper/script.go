@@ -84,7 +84,7 @@ func (s *scriptScraper) runScraperScript(ctx context.Context, inString string, o
 
 	go handleScraperStderr(s.config.Name, stderr)
 
-	logger.Infof("Scraper script <%s> started", strings.Join(cmd.Args, " "))
+	logger.Debugf("Scraper script <%s> started", strings.Join(cmd.Args, " "))
 
 	// TODO - add a timeout here
 	// Make a copy of stdout here. This allows us to decode it twice.
@@ -112,7 +112,7 @@ func (s *scriptScraper) runScraperScript(ctx context.Context, inString string, o
 	}
 
 	err = cmd.Wait()
-	logger.Infof("Scraper script finished")
+	logger.Debugf("Scraper script finished")
 
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrScraperScript, err)

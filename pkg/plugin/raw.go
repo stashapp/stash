@@ -96,7 +96,7 @@ func (t *rawPluginTask) Start() error {
 	go t.handlePluginStderr(t.plugin.Name, stderr)
 	t.cmd = cmd
 
-	logger.Infof("Plugin %s started: %s", t.plugin.Name, strings.Join(cmd.Args, " "))
+	logger.Debugf("Plugin %s started: %s", t.plugin.Name, strings.Join(cmd.Args, " "))
 
 	// send the stdout to the plugin output
 	go func() {
@@ -112,7 +112,7 @@ func (t *rawPluginTask) Start() error {
 			errStr := err.Error()
 			output.Error = &errStr
 		}
-		logger.Infof("Plugin %s finished", t.plugin.Name)
+		logger.Debugf("Plugin %s finished", t.plugin.Name)
 
 		t.result = &output
 	}()
