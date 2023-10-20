@@ -1,11 +1,6 @@
 import React from "react";
 import { Route } from "react-router-dom";
 
-export enum PluginComponentLocation {
-  Main = "main",
-  Navbar = "navbar",
-}
-
 interface IPluginComponentsMap {
   [key: string]: React.FC[];
 }
@@ -14,34 +9,35 @@ interface IPluginPagesMap {
   [key: string]: React.FC;
 }
 
-export const pluginComponentsMap: IPluginComponentsMap = {};
-let pluginPagesMap: IPluginPagesMap = {};
+export const pluginComponents: IPluginComponentsMap = {};
+export let pluginPages: IPluginPagesMap = {};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-(window as any).addPluginComponent = (
+export function registerPluginPage(path: string, component: React.FC) {
+  pluginPages = {
+    ...pluginPages,
+    [path]: component,
+  };
+}
+
+export function addPluginComponent(
   location: PluginComponentLocation,
   component: React.FC
-) => {
-  if (!pluginComponentsMap[location]) {
-    pluginComponentsMap[location] = [];
+) {
+  if (!pluginComponents[location]) {
+    pluginComponents[location] = [];
   }
 
-  pluginComponentsMap[location].push(component);
-};
+  pluginComponents[location].push(component);
+}
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(window as any).registerPluginPage = (
-  path: string,
-  component: React.FC
-) => {
-  pluginPagesMap = {
-    ...pluginPagesMap,
-    [path]: component,
-  }
-};
+export enum PluginComponentLocation {
+  Main = "main",
+  Navbar = "navbar",
+}
 
 export const PluginRoutes: React.FC = () => {
-  const routes = Object.entries(pluginPagesMap).map((e) => {
+  const routes = Object.entries(pluginPages).map((e) => {
     const [path, component] = e;
     const prefixedPath = `/plugin/${path}`;
     return (
@@ -50,12 +46,12 @@ export const PluginRoutes: React.FC = () => {
   });
 
   return <>{routes}</>;
-}
+};
 
 export function renderPluginComponents(location: PluginComponentLocation) {
-  if (!pluginComponentsMap[location]) return null;
+  if (!pluginComponents[location]) return null;
 
-  return pluginComponentsMap[location].map((Component, index) => (
+  return pluginComponents[location].map((Component, index) => (
     <Component key={index} />
   ));
 }
@@ -68,5 +64,27 @@ export const PluginComponents: React.FC<IPluginComponents> = ({ location }) => {
   return <>{renderPluginComponents(location)}</>;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(window as any).React = React;
+interface ICardHooks {
+  Image?: React.FC;
+  Overlays?: React.FC;
+  Details?: React.FC;
+  Popovers?: React.FC;
+}
+
+interface IPluginComponentHooks {
+  SceneCard?: ICardHooks;
+}
+
+type PluginHookType = keyof IPluginComponentHooks;
+
+export let pluginComponentHooks: IPluginComponentHooks = {};
+
+export function registerCardComponentHooks(
+  location: PluginHookType,
+  component: ICardHooks
+) {
+  pluginComponentHooks = {
+    ...pluginComponentHooks,
+    [location]: component,
+  };
+}

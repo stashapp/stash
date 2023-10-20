@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useMemo, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import {
   Route,
   Switch,
@@ -40,7 +40,14 @@ import { releaseNotes } from "./docs/en/ReleaseNotes";
 import { getPlatformURL } from "./core/createClient";
 import { lazyComponent } from "./utils/lazyComponent";
 import { isPlatformUniquelyRenderedByApple } from "./utils/apple";
-import { PluginComponentLocation, PluginComponents, PluginRoutes } from "./plugins";
+import {
+  PluginComponentLocation,
+  PluginComponents,
+  PluginRoutes,
+} from "./plugins";
+
+// import plugin_api to run code
+import "./plugin_api";
 
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")

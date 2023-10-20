@@ -31,6 +31,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { objectPath, objectTitle } from "src/core/files";
 import { PreviewScrubber } from "./PreviewScrubber";
+import { pluginComponentHooks } from "src/plugins";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -106,6 +107,19 @@ interface ISceneCardProps {
 export const SceneCard: React.FC<ISceneCardProps> = (
   props: ISceneCardProps
 ) => {
+  const SceneCardHooks = useMemo(() => {
+    if (pluginComponentHooks.SceneCard) {
+      const { Overlays, Image, Details, Popovers } =
+        pluginComponentHooks.SceneCard;
+      return {
+        Overlays: Overlays as React.FC<ISceneCardProps>,
+        Image: Image as React.FC<ISceneCardProps>,
+        Details: Details as React.FC<ISceneCardProps>,
+        Popovers: Popovers as React.FC<ISceneCardProps>,
+      };
+    }
+  }, []);
+
   const history = useHistory();
   const { configuration } = React.useContext(ConfigurationContext);
 
@@ -432,35 +446,55 @@ export const SceneCard: React.FC<ISceneCardProps> = (
           : undefined
       }
       image={
-        <>
-          <ScenePreview
-            image={props.scene.paths.screenshot ?? undefined}
-            video={props.scene.paths.preview ?? undefined}
-            isPortrait={isPortrait()}
-            soundActive={configuration?.interface?.soundOnPreview ?? false}
-            vttPath={props.scene.paths.vtt ?? undefined}
-            onScrubberClick={onScrubberClick}
-          />
-          <RatingBanner rating={props.scene.rating100} />
-          {maybeRenderSceneSpecsOverlay()}
-          {maybeRenderInteractiveSpeedOverlay()}
-        </>
+        SceneCardHooks?.Image ? (
+          <SceneCardHooks.Image {...props} />
+        ) : (
+          <>
+            <ScenePreview
+              image={props.scene.paths.screenshot ?? undefined}
+              video={props.scene.paths.preview ?? undefined}
+              isPortrait={isPortrait()}
+              soundActive={configuration?.interface?.soundOnPreview ?? false}
+              vttPath={props.scene.paths.vtt ?? undefined}
+              onScrubberClick={onScrubberClick}
+            />
+            <RatingBanner rating={props.scene.rating100} />
+            {maybeRenderSceneSpecsOverlay()}
+            {maybeRenderInteractiveSpeedOverlay()}
+          </>
+        )
       }
-      overlays={maybeRenderSceneStudioOverlay()}
+      overlays={
+        SceneCardHooks?.Overlays ? (
+          <SceneCardHooks.Overlays {...props} />
+        ) : (
+          maybeRenderSceneStudioOverlay()
+        )
+      }
       details={
-        <div className="scene-card__details">
-          <span className="scene-card__date">{props.scene.date}</span>
-          <span className="file-path extra-scene-info">
-            {objectPath(props.scene)}
-          </span>
-          <TruncatedText
-            className="scene-card__description"
-            text={props.scene.details}
-            lineCount={3}
-          />
-        </div>
+        SceneCardHooks?.Details ? (
+          <SceneCardHooks.Details {...props} />
+        ) : (
+          <div className="scene-card__details">
+            <span className="scene-card__date">{props.scene.date}</span>
+            <span className="file-path extra-scene-info">
+              {objectPath(props.scene)}
+            </span>
+            <TruncatedText
+              className="scene-card__description"
+              text={props.scene.details}
+              lineCount={3}
+            />
+          </div>
+        )
       }
-      popovers={maybeRenderPopoverButtonGroup()}
+      popovers={
+        SceneCardHooks?.Popovers ? (
+          <SceneCardHooks.Popovers {...props} />
+        ) : (
+          maybeRenderPopoverButtonGroup()
+        )
+      }
       selected={props.selected}
       selecting={props.selecting}
       onSelectedChanged={props.onSelectedChanged}
