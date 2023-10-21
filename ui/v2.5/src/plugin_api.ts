@@ -1,21 +1,31 @@
 import React from "react";
-import { ScenePreview } from "./components/Scenes/SceneCard";
 import {
   addPluginComponent,
   registerCardComponentHooks,
   registerPluginPage,
 } from "./plugins";
+import { Link } from "react-router-dom";
+import NavUtils from "./utils/navigation";
+import { HoverPopover } from "./components/Shared/HoverPopover";
+import { TagLink } from "./components/Shared/TagLink";
 
 export const PluginApi = {
   React,
+  ReactReactorDOM: {
+    Link,
+  },
   register: {
     page: registerPluginPage,
     component: addPluginComponent,
     cardComponentHook: registerCardComponentHooks,
   },
   components: {
-    ScenePreview,
+    HoverPopover,
+    TagLink,
   },
+  utils: {
+    NavUtils: NavUtils,
+  }
 };
 
 export default PluginApi;

@@ -5,4 +5,7 @@ version: 1.0
 ui:
   javascript:
   - testReact.js
+  css:
+  - testReact.css
+
 
