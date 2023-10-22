@@ -84,7 +84,7 @@ func createDBConn(dbPath string, disableForeignKeys bool) (*sqlx.DB, error) {
 		url += "&_fk=true"
 	}
 
-	logger.Debug("Connecting to SQLite at '%s' (driver: CGo)", url)
+	logger.Debugf("Connecting to SQLite at '%s' (driver: CGo)", url)
 
 	return sqlx.Open(sqlite3Driver, url)
 }

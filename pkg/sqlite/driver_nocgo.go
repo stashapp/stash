@@ -106,7 +106,7 @@ func createDBConn(dbPath string, disableForeignKeys bool) (*sqlx.DB, error) {
 	}
 	url := "file:" + dbPath + "?" + qs.Encode()
 
-	logger.Debug("Connecting to SQLite at '%s' (driver: non-CGo)", url)
+	logger.Debugf("Connecting to SQLite at '%s' (driver: non-CGo)", url)
 
 	return sqlx.Open("sqlite", url)
 }
