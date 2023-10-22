@@ -145,7 +145,7 @@ func (db *Database) Open(dbPath string) error {
 	if databaseSchemaVersion == 0 {
 		// new database, just run the migrations
 		if err := db.RunMigrations(); err != nil {
-			return fmt.Errorf("error running initial schema migrations: %v", err)
+			return fmt.Errorf("error running initial schema migrations: %w", err)
 		}
 	} else {
 		if databaseSchemaVersion > appSchemaVersion {
@@ -220,12 +220,12 @@ func (db *Database) Close() error {
 
 func (db *Database) open(disableForeignKeys bool) (*sqlx.DB, error) {
 	conn, err := createDBConn(db.dbPath, disableForeignKeys)
-	conn.SetMaxOpenConns(dbConns)
-	conn.SetMaxIdleConns(dbConns)
-	conn.SetConnMaxIdleTime(dbConnTimeout * time.Second)
 	if err != nil {
 		return nil, fmt.Errorf("db.Open(): %w", err)
 	}
+	conn.SetMaxOpenConns(dbConns)
+	conn.SetMaxIdleConns(dbConns)
+	conn.SetConnMaxIdleTime(dbConnTimeout * time.Second)
 
 	return conn, nil
 }

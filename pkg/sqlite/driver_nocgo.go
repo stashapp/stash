@@ -94,14 +94,13 @@ func init() {
 func createDBConn(dbPath string, disableForeignKeys bool) (*sqlx.DB, error) {
 	// https://pkg.go.dev/modernc.org/sqlite#Driver.Open
 	qs := url.Values{}
-	qs.Set("_txlock", "immediate")
 	qs.Add("_pragma", "busy_timeout(100)")
 	qs.Add("_pragma", "journal_mode(WAL)")
 	qs.Add("_pragma", "synchronous(NORMAL)")
 	if !disableForeignKeys {
 		qs.Add("_pragma", "foreign_keys(true)")
 	}
-	url := "sqlite://file:" + dbPath + "?" + qs.Encode()
+	url := "file:" + dbPath + "?" + qs.Encode()
 
 	return sqlx.Open("sqlite", url)
 }

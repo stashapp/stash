@@ -77,7 +77,7 @@ func (c *CustomSQLiteConn) Close() error {
 
 func createDBConn(dbPath string, disableForeignKeys bool) (*sqlx.DB, error) {
 	// https://github.com/mattn/go-sqlite3
-	url := "file:" + dbPath + "?_journal=WAL&_sync=NORMAL&_busy_timeout=50"
+	url := "file:" + dbPath + "?_journal=WAL&_sync=NORMAL&_busy_timeout=100"
 	if !disableForeignKeys {
 		url += "&_fk=true"
 	}
