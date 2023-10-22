@@ -44,7 +44,11 @@ GO_BUILD_TAGS += sqlite_stat4
 # set STASH_SOURCEMAPS environment variable or uncomment to enable UI sourcemaps
 # STASH_SOURCEMAPS := true
 
-export CGO_ENABLED := 1
+# Enable CGo for all builds and tests
+export CGO_ENABLED ?= 1
+
+# Set the time zone to UTC by default for all tests
+export TZ ?= Etc/UTC
 
 .PHONY: release
 release: pre-ui generate ui build-release
@@ -309,7 +313,7 @@ lint:
 # runs unit tests - excluding integration tests
 .PHONY: test
 test:
-	TZ=UTC go test ./...
+	go test ./...
 
 # runs all tests - including integration tests
 .PHONY: it
