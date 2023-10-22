@@ -272,10 +272,9 @@ func (db *Database) Reset() error {
 
 // Backup the database. If db is nil, then uses the existing database
 // connection.
-func (db *Database) Backup(backupPath string) error {
+func (db *Database) Backup(backupPath string) (err error) {
 	thisDB := db.db
 	if thisDB == nil {
-		var err error
 		thisDB, err = sqlx.Connect(sqlite3Driver, "file:"+db.dbPath+"?_fk=true")
 		if err != nil {
 			return fmt.Errorf("open database %s failed: %w", db.dbPath, err)
@@ -284,7 +283,7 @@ func (db *Database) Backup(backupPath string) error {
 	}
 
 	logger.Infof("Backing up database into: %s", backupPath)
-	_, err := thisDB.Exec(`VACUUM INTO "` + backupPath + `"`)
+	_, err = thisDB.Exec(`VACUUM INTO "` + backupPath + `"`)
 	if err != nil {
 		return fmt.Errorf("vacuum failed: %w", err)
 	}
