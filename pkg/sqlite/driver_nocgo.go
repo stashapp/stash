@@ -97,8 +97,10 @@ func createDBConn(dbPath string, disableForeignKeys bool) (*sqlx.DB, error) {
 	qs.Add("_pragma", "busy_timeout(100)")
 	qs.Add("_pragma", "journal_mode(WAL)")
 	qs.Add("_pragma", "synchronous(NORMAL)")
-	if !disableForeignKeys {
-		qs.Add("_pragma", "foreign_keys(true)")
+	if disableForeignKeys {
+		qs.Add("_pragma", "foreign_keys(0)")
+	} else {
+		qs.Add("_pragma", "foreign_keys(1)")
 	}
 	url := "file:" + dbPath + "?" + qs.Encode()
 
@@ -116,7 +118,9 @@ func IsLockedError(err error) bool {
 func IsConstraintError(err error) bool {
 	var sqliteErr *sqlite.Error
 	if errors.As(err, &sqliteErr) {
-		return sqliteErr.Code() == sqlitelib.SQLITE_CONSTRAINT
+		// This driver uses extended errors, so we need to grab the last 8 bits only
+		// See: http://www.sqlite.org/c3ref/c_abort_rollback.html
+		return sqliteErr.Code()&0xFF == sqlitelib.SQLITE_CONSTRAINT
 	}
 	return false
 }
