@@ -309,7 +309,7 @@ lint:
 # runs unit tests - excluding integration tests
 .PHONY: test
 test:
-	go test ./...
+	TZ=UTC go test ./...
 
 # runs all tests - including integration tests
 .PHONY: it
