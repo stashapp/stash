@@ -55,6 +55,7 @@ import {
   Performer,
   PerformerSelect,
 } from "src/components/Performers/PerformerSelect";
+import { StashIDPill } from "src/components/Shared/StashID";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
@@ -232,7 +233,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   });
 
   useEffect(() => {
-    const toFilter = Scrapers?.data?.listSceneScrapers ?? [];
+    const toFilter = Scrapers?.data?.listScrapers ?? [];
 
     const newFragmentScrapers = toFilter.filter((s) =>
       s.scene?.supported_scrapes.includes(GQL.ScrapeType.Fragment)
@@ -527,7 +528,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }
 
   function urlScrapable(scrapedUrl: string): boolean {
-    return (Scrapers?.data?.listSceneScrapers ?? []).some((s) =>
+    return (Scrapers?.data?.listScrapers ?? []).some((s) =>
       (s?.scene?.urls ?? []).some((u) => scrapedUrl.includes(u))
     );
   }
@@ -904,19 +905,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 </Form.Label>
                 <ul className="pl-0">
                   {formik.values.stash_ids.map((stashID) => {
-                    const base =
-                      stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
-                    const link = base ? (
-                      <a
-                        href={`${base}scenes/${stashID.stash_id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {stashID.stash_id}
-                      </a>
-                    ) : (
-                      stashID.stash_id
-                    );
                     return (
                       <li key={stashID.stash_id} className="row no-gutters">
                         <Button
@@ -934,7 +922,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
                         >
                           <Icon icon={faTrashAlt} />
                         </Button>
-                        {link}
+                        <StashIDPill stashID={stashID} linkType="scenes" />
                       </li>
                     );
                   })}

@@ -767,12 +767,12 @@ export const TagSelect: React.FC<
       };
     }
 
-    const id = (optionProps.data as Option & { __isNew__: boolean }).__isNew__
-      ? ""
-      : optionProps.data.value;
+    const id = optionProps.data.value;
+    const hide = (optionProps.data as Option & { __isNew__: boolean })
+      .__isNew__;
 
     return (
-      <TagPopover id={id} placement={props.hoverPlacement}>
+      <TagPopover id={id} hide={hide} placement={props.hoverPlacement}>
         <reactSelectComponents.Option {...thisOptionProps} />
       </TagPopover>
     );

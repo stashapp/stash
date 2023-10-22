@@ -7,8 +7,7 @@ require (
 	github.com/WithoutPants/sortorder v0.0.0-20230616003020-921c9ef69552
 	github.com/Yamashou/gqlgenc v0.0.6
 	github.com/anacrolix/dms v1.2.2
-	github.com/antchfx/htmlquery v1.2.5-0.20211125074323-810ee8082758
-	github.com/asticode/go-astisub v0.20.0
+	github.com/antchfx/htmlquery v1.3.0
 	github.com/chromedp/cdproto v0.0.0-20210622022015-fe1827b46b84
 	github.com/chromedp/chromedp v0.7.3
 	github.com/corona10/goimagehash v1.1.0
@@ -43,6 +42,31 @@ require (
 	github.com/spf13/viper v1.10.1
 	github.com/stretchr/testify v1.7.1
 	github.com/tidwall/gjson v1.9.3
+	github.com/tidwall/pretty v1.2.0 // indirect
+	github.com/vektra/mockery/v2 v2.10.0
+	golang.org/x/crypto v0.14.0
+	golang.org/x/image v0.5.0
+	golang.org/x/net v0.17.0
+	golang.org/x/sys v0.13.0
+	golang.org/x/term v0.13.0
+	golang.org/x/text v0.13.0
+	golang.org/x/tools v0.6.0 // indirect
+	gopkg.in/sourcemap.v1 v1.0.5 // indirect
+	gopkg.in/yaml.v2 v2.4.0
+)
+
+require (
+	github.com/WithoutPants/sortorder v0.0.0-20230616003020-921c9ef69552
+	github.com/asticode/go-astisub v0.20.0
+	github.com/doug-martin/goqu/v9 v9.18.0
+	github.com/go-chi/cors v1.2.1
+	github.com/go-chi/httplog v0.2.1
+	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4
+	github.com/hashicorp/golang-lru v0.5.4
+	github.com/kermieisinthehouse/gosx-notifier v0.1.1
+	github.com/kermieisinthehouse/systray v1.2.4
+	github.com/lucasb-eyer/go-colorful v1.2.0
+	github.com/spf13/cast v1.4.1
 	github.com/vearutop/statigz v1.1.6
 	github.com/vektah/dataloaden v0.3.0
 	github.com/vektah/gqlparser/v2 v2.4.2
@@ -62,7 +86,7 @@ require (
 
 require (
 	github.com/agnivade/levenshtein v1.1.1 // indirect
-	github.com/antchfx/xpath v1.2.0 // indirect
+	github.com/antchfx/xpath v1.2.3 // indirect
 	github.com/asticode/go-astikit v0.20.0 // indirect
 	github.com/asticode/go-astits v1.8.0 // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect

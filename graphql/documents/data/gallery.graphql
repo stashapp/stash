@@ -4,7 +4,7 @@ fragment GalleryData on Gallery {
   updated_at
   title
   date
-  url
+  urls
   details
   rating100
   organized

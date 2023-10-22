@@ -3,10 +3,10 @@ import { useIntl } from "react-intl";
 import { TagLink } from "src/components/Shared/TagLink";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
-import { getStashboxBase } from "src/utils/stashbox";
 import { cmToImperial, cmToInches, kgToLbs } from "src/utils/units";
 import { DetailItem } from "src/components/Shared/DetailItem";
 import { CountryFlag } from "src/components/Shared/CountryFlag";
+import { StashIDPill } from "src/components/Shared/StashID";
 
 interface IPerformerDetails {
   performer: GQL.PerformerDataFragment;
@@ -29,7 +29,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     return (
       <ul className="pl-0">
         {(performer.tags ?? []).map((tag) => (
-          <TagLink key={tag.id} tagType="performer" tag={tag} />
+          <TagLink key={tag.id} linkType="performer" tag={tag} />
         ))}
       </ul>
     );
@@ -42,25 +42,11 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
 
     return (
       <ul className="pl-0">
-        {performer.stash_ids.map((stashID) => {
-          const base = getStashboxBase(stashID.endpoint);
-          const link = base ? (
-            <a
-              href={`${base}performers/${stashID.stash_id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {stashID.stash_id}
-            </a>
-          ) : (
-            stashID.stash_id
-          );
-          return (
-            <li key={stashID.stash_id} className="row no-gutters">
-              {link}
-            </li>
-          );
-        })}
+        {performer.stash_ids.map((stashID) => (
+          <li key={stashID.stash_id} className="row no-gutters">
+            <StashIDPill stashID={stashID} linkType="performers" />
+          </li>
+        ))}
       </ul>
     );
   }

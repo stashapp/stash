@@ -153,40 +153,6 @@ func (t changesetTranslator) intPtrFromString(value *string) (*int, error) {
 	return &vv, nil
 }
 
-func (t changesetTranslator) ratingConversion(legacyValue *int, rating100Value *int) *int {
-	const (
-		legacyField    = "rating"
-		rating100Field = "rating100"
-	)
-
-	legacyRating := t.optionalInt(legacyValue, legacyField)
-	if legacyRating.Set && !legacyRating.Null {
-		ret := models.Rating5To100(legacyRating.Value)
-		return &ret
-	}
-
-	o := t.optionalInt(rating100Value, rating100Field)
-	if o.Set && !o.Null {
-		return &o.Value
-	}
-
-	return nil
-}
-
-func (t changesetTranslator) optionalRatingConversion(legacyValue *int, rating100Value *int) models.OptionalInt {
-	const (
-		legacyField    = "rating"
-		rating100Field = "rating100"
-	)
-
-	legacyRating := t.optionalInt(legacyValue, legacyField)
-	if legacyRating.Set && !legacyRating.Null {
-		legacyRating.Value = models.Rating5To100(legacyRating.Value)
-		return legacyRating
-	}
-	return t.optionalInt(rating100Value, rating100Field)
-}
-
 func (t changesetTranslator) optionalInt(value *int, field string) models.OptionalInt {
 	if !t.hasField(field) {
 		return models.OptionalInt{}
@@ -415,9 +381,9 @@ func (t changesetTranslator) updateMovieIDsBulk(value *BulkUpdateIds, field stri
 		return nil, fmt.Errorf("converting ids [%v]: %w", value.Ids, err)
 	}
 
-	movies := make([]models.MoviesScenes, len(value.Ids))
-	for _, id := range ids {
-		movies = append(movies, models.MoviesScenes{MovieID: id})
+	movies := make([]models.MoviesScenes, len(ids))
+	for i, id := range ids {
+		movies[i] = models.MoviesScenes{MovieID: id}
 	}
 
 	return &models.UpdateMovieIDs{

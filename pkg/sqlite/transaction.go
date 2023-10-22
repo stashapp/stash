@@ -117,7 +117,7 @@ func (db *Database) IsLocked(err error) bool {
 	return IsLockedError(err)
 }
 
-func (db *Database) TxnRepository() models.Repository {
+func (db *Database) Repository() models.Repository {
 	return models.Repository{
 		TxnManager:     db,
 		File:           db.File,

@@ -575,25 +575,6 @@ func boolCriterionHandler(c *bool, column string, addJoinFn func(f *filterBuilde
 	}
 }
 
-func rating5CriterionHandler(c *models.IntCriterionInput, column string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if c != nil {
-			// make a copy so we can adjust it
-			cc := *c
-			if cc.Value != 0 {
-				cc.Value = models.Rating5To100(cc.Value)
-			}
-			if cc.Value2 != nil {
-				val := models.Rating5To100(*cc.Value2)
-				cc.Value2 = &val
-			}
-
-			clause, args := getIntCriterionWhereClause(column, cc)
-			f.addWhere(clause, args...)
-		}
-	}
-}
-
 func dateCriterionHandler(c *models.DateCriterionInput, column string) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {

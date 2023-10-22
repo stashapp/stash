@@ -1176,7 +1176,7 @@ func makeImage(i int) *models.Image {
 }
 
 func createImages(ctx context.Context, n int) error {
-	qb := db.TxnRepository().Image
+	qb := db.Image
 	fqb := db.File
 
 	for i := 0; i < n; i++ {
@@ -1213,7 +1213,16 @@ func getGalleryNullStringValue(index int, field string) sql.NullString {
 }
 
 func getGalleryNullStringPtr(index int, field string) *string {
-	return getStringPtr(getPrefixedStringValue("gallery", index, field))
+	return getStringPtrFromNullString(getPrefixedNullStringValue("gallery", index, field))
+}
+
+func getGalleryEmptyString(index int, field string) string {
+	v := getGalleryNullStringPtr(index, field)
+	if v == nil {
+		return ""
+	}
+
+	return *v
 }
 
 func getGalleryBasename(index int) string {
@@ -1245,8 +1254,10 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 	tids := indexesToIDs(tagIDs, galleryTags[i])
 
 	ret := &models.Gallery{
-		Title:        getGalleryStringValue(i, titleField),
-		URL:          getGalleryNullStringValue(i, urlField).String,
+		Title: getGalleryStringValue(i, titleField),
+		URLs: models.NewRelatedStrings([]string{
+			getGalleryEmptyString(i, urlField),
+		}),
 		Rating:       getIntPtr(getRating(i)),
 		Date:         getObjectDate(i),
 		StudioID:     studioID,
@@ -1262,7 +1273,7 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 }
 
 func createGalleries(ctx context.Context, n int) error {
-	gqb := db.TxnRepository().Gallery
+	gqb := db.Gallery
 	fqb := db.File
 
 	for i := 0; i < n; i++ {

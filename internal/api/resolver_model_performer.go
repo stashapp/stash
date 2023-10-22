@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"strconv"
-	"strings"
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
@@ -12,24 +11,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/performer"
 )
-
-// Checksum is deprecated
-func (r *performerResolver) Checksum(ctx context.Context, obj *models.Performer) (*string, error) {
-	return nil, nil
-}
-
-func (r *performerResolver) Aliases(ctx context.Context, obj *models.Performer) (*string, error) {
-	if !obj.Aliases.Loaded() {
-		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-			return obj.LoadAliases(ctx, r.repository.Performer)
-		}); err != nil {
-			return nil, err
-		}
-	}
-
-	ret := strings.Join(obj.Aliases.List(), ", ")
-	return &ret, nil
-}
 
 func (r *performerResolver) AliasList(ctx context.Context, obj *models.Performer) ([]string, error) {
 	if !obj.Aliases.Loaded() {
@@ -184,14 +165,6 @@ func (r *performerResolver) StashIds(ctx context.Context, obj *models.Performer)
 	}
 
 	return stashIDsSliceToPtrSlice(obj.StashIDs.List()), nil
-}
-
-func (r *performerResolver) Rating(ctx context.Context, obj *models.Performer) (*int, error) {
-	if obj.Rating != nil {
-		rating := models.Rating100To5(*obj.Rating)
-		return &rating, nil
-	}
-	return nil, nil
 }
 
 func (r *performerResolver) Rating100(ctx context.Context, obj *models.Performer) (*int, error) {

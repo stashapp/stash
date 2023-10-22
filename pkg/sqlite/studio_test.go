@@ -672,7 +672,7 @@ func TestStudioQueryURL(t *testing.T) {
 }
 
 func TestStudioQueryRating(t *testing.T) {
-	const rating = 3
+	const rating = 60
 	ratingCriterion := models.IntCriterionInput{
 		Value:    rating,
 		Modifier: models.CriterionModifierEquals,
@@ -718,7 +718,7 @@ func verifyStudiosRating(t *testing.T, ratingCriterion models.IntCriterionInput)
 	withTxn(func(ctx context.Context) error {
 		sqb := db.Studio
 		studioFilter := models.StudioFilterType{
-			Rating: &ratingCriterion,
+			Rating100: &ratingCriterion,
 		}
 
 		studios, _, err := sqb.Query(ctx, &studioFilter, nil)
@@ -959,7 +959,7 @@ func TestStudioQueryFast(t *testing.T) {
 		URL: &testStringCriterion,
 	}
 	ratingFilter := models.StudioFilterType{
-		Rating: &testIntCriterion,
+		Rating100: &testIntCriterion,
 	}
 	sceneCountFilter := models.StudioFilterType{
 		SceneCount: &testIntCriterion,

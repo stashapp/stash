@@ -636,8 +636,6 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Tattoos, tableName+".tattoos"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Piercings, tableName+".piercings"))
 	query.handleCriterion(ctx, intCriterionHandler(filter.Rating100, tableName+".rating", nil))
-	// legacy rating handler
-	query.handleCriterion(ctx, rating5CriterionHandler(filter.Rating, tableName+".rating", nil))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.HairColor, tableName+".hair_color"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.URL, tableName+".url"))
 	query.handleCriterion(ctx, intCriterionHandler(filter.Weight, tableName+".weight", nil))

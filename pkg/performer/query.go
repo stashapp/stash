@@ -41,3 +41,24 @@ func CountByAppearsWith(ctx context.Context, r models.PerformerQueryer, id int) 
 
 	return r.QueryCount(ctx, filter, nil)
 }
+
+func ByAlias(ctx context.Context, r models.PerformerQueryer, alias string) ([]*models.Performer, error) {
+	f := &models.PerformerFilterType{
+		Aliases: &models.StringCriterionInput{
+			Value:    alias,
+			Modifier: models.CriterionModifierEquals,
+		},
+	}
+
+	ret, count, err := r.Query(ctx, f, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if count > 0 {
+		return ret, nil
+	}
+
+	return nil, nil
+}

@@ -25,6 +25,7 @@ import StudioConfig from "./Config";
 import { LOCAL_FORAGE_KEY, ITaggerConfig, initialConfig } from "../constants";
 import StudioModal from "../scenes/StudioModal";
 import { useUpdateStudio } from "../queries";
+import { apolloError } from "src/utils";
 import { faStar, faTags } from "@fortawesome/free-solid-svg-icons";
 
 type JobFragment = Pick<
@@ -431,9 +432,8 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
             });
             input.parent_id = parentRes.data?.studioCreate?.id;
           }
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (e: any) {
-          handleSaveError(studioID, parentInput.name, e.message ?? "");
+        } catch (e) {
+          handleSaveError(studioID, parentInput.name, apolloError(e));
         }
       }
 

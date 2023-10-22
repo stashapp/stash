@@ -14,7 +14,7 @@ import (
 func ToBasicJSON(gallery *models.Gallery) (*jsonschema.Gallery, error) {
 	newGalleryJSON := jsonschema.Gallery{
 		Title:     gallery.Title,
-		URL:       gallery.URL,
+		URLs:      gallery.URLs.List(),
 		Details:   gallery.Details,
 		CreatedAt: json.JSONTime{Time: gallery.CreatedAt},
 		UpdatedAt: json.JSONTime{Time: gallery.UpdatedAt},

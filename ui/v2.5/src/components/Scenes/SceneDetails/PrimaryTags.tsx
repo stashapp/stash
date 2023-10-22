@@ -18,18 +18,19 @@ export const PrimaryTags: React.FC<IPrimaryTags> = ({
 }) => {
   if (!sceneMarkers?.length) return <div />;
 
-  const primaries: Record<string, GQL.SlimTagDataFragment> = {};
-  const primaryTags: Record<string, GQL.SceneMarkerDataFragment[]> = {};
+  const primaryTagNames: Record<string, string> = {};
+  const markersByTag: Record<string, GQL.SceneMarkerDataFragment[]> = {};
   sceneMarkers.forEach((m) => {
-    if (primaryTags[m.primary_tag.id]) primaryTags[m.primary_tag.id].push(m);
-    else {
-      primaryTags[m.primary_tag.id] = [m];
-      primaries[m.primary_tag.id] = m.primary_tag;
+    if (primaryTagNames[m.primary_tag.id]) {
+      markersByTag[m.primary_tag.id].push(m);
+    } else {
+      primaryTagNames[m.primary_tag.id] = m.primary_tag.name;
+      markersByTag[m.primary_tag.id] = [m];
     }
   });
 
-  const primaryCards = Object.keys(primaryTags).map((id) => {
-    const markers = primaryTags[id].map((marker) => {
+  const primaryCards = Object.keys(markersByTag).map((id) => {
+    const markers = markersByTag[id].map((marker) => {
       const tags = marker.tags.map((tag) => (
         <Badge key={tag.id} variant="secondary" className="tag-item">
           {tag.name}
@@ -59,7 +60,7 @@ export const PrimaryTags: React.FC<IPrimaryTags> = ({
 
     return (
       <Card className="primary-card col-12 col-sm-6 col-xl-6" key={id}>
-        <h3>{primaries[id].name}</h3>
+        <h3>{primaryTagNames[id]}</h3>
         <Card.Body className="primary-card-body">{markers}</Card.Body>
       </Card>
     );
