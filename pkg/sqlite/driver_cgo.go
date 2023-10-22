@@ -7,10 +7,13 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+	"sync/atomic"
 
 	"github.com/WithoutPants/sortorder/casefolded"
 	"github.com/jmoiron/sqlx"
 	sqlite3 "github.com/mattn/go-sqlite3"
+
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 const sqlite3Driver = "sqlite3ex"
@@ -75,7 +78,13 @@ func (c *CustomSQLiteConn) Close() error {
 	return conn.Close()
 }
 
+var driverLogShown atomic.Bool
+
 func createDBConn(dbPath string, disableForeignKeys bool) (*sqlx.DB, error) {
+	if driverLogShown.CompareAndSwap(false, true) {
+		logger.Debug("SQLite: using the CGo driver")
+	}
+
 	// https://github.com/mattn/go-sqlite3
 	url := "file:" + dbPath + "?_journal=WAL&_sync=NORMAL&_busy_timeout=100"
 	if !disableForeignKeys {

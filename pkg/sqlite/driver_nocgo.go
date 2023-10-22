@@ -7,11 +7,14 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"sync/atomic"
 
 	"github.com/WithoutPants/sortorder/casefolded"
 	"github.com/jmoiron/sqlx"
 	"modernc.org/sqlite"
 	sqlitelib "modernc.org/sqlite/lib"
+
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 const sqlite3Driver = "sqlite"
@@ -91,7 +94,13 @@ func init() {
 	})
 }
 
+var driverLogShown atomic.Bool
+
 func createDBConn(dbPath string, disableForeignKeys bool) (*sqlx.DB, error) {
+	if driverLogShown.CompareAndSwap(false, true) {
+		logger.Debug("SQLite: using the non-CGo driver")
+	}
+
 	// https://pkg.go.dev/modernc.org/sqlite#Driver.Open
 	qs := url.Values{}
 	qs.Add("_pragma", "busy_timeout(100)")
