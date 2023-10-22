@@ -316,21 +316,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 
 	if input.CustomPerformerImageLocation != nil {
 		c.Set(config.CustomPerformerImageLocation, *input.CustomPerformerImageLocation)
-		initialiseCustomImages()
-	}
-
-	if input.ScraperUserAgent != nil {
-		c.Set(config.ScraperUserAgent, input.ScraperUserAgent)
-		refreshScraperCache = true
-	}
-
-	if input.ScraperCDPPath != nil {
-		c.Set(config.ScraperCDPPath, input.ScraperCDPPath)
-		refreshScraperCache = true
-	}
-
-	if input.ScraperCertCheck != nil {
-		c.Set(config.ScraperCertCheck, input.ScraperCertCheck)
+		initCustomPerformerImages(*input.CustomPerformerImageLocation)
 	}
 
 	if input.StashBoxes != nil {
@@ -422,11 +408,6 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 
 	if input.Language != nil {
 		c.Set(config.Language, *input.Language)
-	}
-
-	// deprecated field
-	if input.SlideshowDelay != nil {
-		c.Set(config.ImageLightboxSlideshowDelay, *input.SlideshowDelay)
 	}
 
 	if input.ImageLightbox != nil {
@@ -647,4 +628,15 @@ func (r *mutationResolver) ConfigureUISetting(ctx context.Context, key string, v
 	cfg[key] = value
 
 	return r.ConfigureUI(ctx, cfg)
+}
+
+func (r *mutationResolver) ConfigurePlugin(ctx context.Context, pluginID string, input map[string]interface{}) (map[string]interface{}, error) {
+	c := config.GetInstance()
+	c.SetPluginConfiguration(pluginID, input)
+
+	if err := c.Write(); err != nil {
+		return c.GetPluginConfiguration(pluginID), err
+	}
+
+	return c.GetPluginConfiguration(pluginID), nil
 }

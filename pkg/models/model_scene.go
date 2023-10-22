@@ -221,12 +221,6 @@ func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 		StashIds:     stashIDs,
 	}
 
-	if s.Rating.Set && !s.Rating.Null {
-		// convert to 1-100 scale
-		rating := Rating100To5(s.Rating.Value)
-		ret.Rating = &rating
-	}
-
 	return ret
 }
 

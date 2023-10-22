@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"errors"
-	"io"
 	"net/http"
 	"strconv"
 
@@ -12,7 +11,6 @@ import (
 	"github.com/stashapp/stash/internal/static"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -22,8 +20,15 @@ type TagFinder interface {
 }
 
 type tagRoutes struct {
-	txnManager txn.Manager
-	tagFinder  TagFinder
+	routes
+	tagFinder TagFinder
+}
+
+func getTagRoutes(repo models.Repository) chi.Router {
+	return tagRoutes{
+		routes:    routes{txnManager: repo.TxnManager},
+		tagFinder: repo.Tag,
+	}.Routes()
 }
 
 func (rs tagRoutes) Routes() chi.Router {
@@ -43,7 +48,7 @@ func (rs tagRoutes) Image(w http.ResponseWriter, r *http.Request) {
 
 	var image []byte
 	if defaultParam != "true" {
-		readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		readTxnErr := rs.withReadTxn(r, func(ctx context.Context) error {
 			var err error
 			image, err = rs.tagFinder.GetImage(ctx, tag.ID)
 			return err
@@ -56,15 +61,9 @@ func (rs tagRoutes) Image(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// fallback to default image
 	if len(image) == 0 {
-		const defaultTagImage = "tag/tag.svg"
-
-		// fall back to static image
-		f, _ := static.Tag.Open(defaultTagImage)
-		defer f.Close()
-		stat, _ := f.Stat()
-		http.ServeContent(w, r, "tag.svg", stat.ModTime(), f.(io.ReadSeeker))
-		return
+		image = static.ReadAll(static.DefaultTagImage)
 	}
 
 	utils.ServeImage(w, r, image)
@@ -79,7 +78,7 @@ func (rs tagRoutes) TagCtx(next http.Handler) http.Handler {
 		}
 
 		var tag *models.Tag
-		_ = txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		_ = rs.withReadTxn(r, func(ctx context.Context) error {
 			var err error
 			tag, err = rs.tagFinder.Find(ctx, tagID)
 			return err

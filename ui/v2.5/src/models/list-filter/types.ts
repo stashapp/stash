@@ -120,6 +120,7 @@ export type CriterionType =
   | "o_counter"
   | "resolution"
   | "average_resolution"
+  | "framerate"
   | "video_codec"
   | "audio_codec"
   | "duration"

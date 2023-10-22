@@ -131,7 +131,10 @@ const (
 	PythonPath = "python_path"
 
 	// plugin options
-	PluginsPath = "plugins_path"
+	PluginsPath          = "plugins_path"
+	PluginsSetting       = "plugins.settings"
+	PluginsSettingPrefix = PluginsSetting + "."
+	DisabledPlugins      = "plugins.disabled"
 
 	// i18n
 	Language = "language"
@@ -184,7 +187,7 @@ const (
 
 	UI = "ui"
 
-	defaultImageLightboxSlideshowDelay = 5000
+	defaultImageLightboxSlideshowDelay = 5
 
 	DisableDropdownCreatePerformer = "disable_dropdown_create.performer"
 	DisableDropdownCreateStudio    = "disable_dropdown_create.studio"
@@ -720,6 +723,57 @@ func (i *Instance) GetDefaultPluginsPath() string {
 
 func (i *Instance) GetPluginsPath() string {
 	return i.getString(PluginsPath)
+}
+
+func (i *Instance) GetAllPluginConfiguration() map[string]interface{} {
+	i.RLock()
+	defer i.RUnlock()
+
+	ret := make(map[string]interface{})
+
+	sub := i.viper(PluginsSetting).GetStringMap(PluginsSetting)
+	if sub == nil {
+		return ret
+	}
+
+	for plugin := range sub {
+		// HACK: viper changes map keys to case insensitive values, so the workaround is to
+		// convert map keys to snake case for storage
+		name := fromSnakeCase(plugin)
+		ret[name] = fromSnakeCaseMap(i.viper(PluginsSetting).GetStringMap(PluginsSettingPrefix + plugin))
+	}
+
+	return ret
+}
+
+func (i *Instance) GetPluginConfiguration(pluginID string) map[string]interface{} {
+	i.RLock()
+	defer i.RUnlock()
+
+	key := PluginsSettingPrefix + toSnakeCase(pluginID)
+
+	// HACK: viper changes map keys to case insensitive values, so the workaround is to
+	// convert map keys to snake case for storage
+	v := i.viper(key).GetStringMap(key)
+
+	return fromSnakeCaseMap(v)
+}
+
+func (i *Instance) SetPluginConfiguration(pluginID string, v map[string]interface{}) {
+	i.RLock()
+	defer i.RUnlock()
+
+	pluginID = toSnakeCase(pluginID)
+
+	key := PluginsSettingPrefix + pluginID
+
+	// HACK: viper changes map keys to case insensitive values, so the workaround is to
+	// convert map keys to snake case for storage
+	i.viper(key).Set(key, toSnakeCaseMap(v))
+}
+
+func (i *Instance) GetDisabledPlugins() []string {
+	return i.getStringSlice(DisabledPlugins)
 }
 
 func (i *Instance) GetPythonPath() string {

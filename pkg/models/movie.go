@@ -6,8 +6,6 @@ type MovieFilterType struct {
 	Synopsis *StringCriterionInput `json:"synopsis"`
 	// Filter by duration (in seconds)
 	Duration *IntCriterionInput `json:"duration"`
-	// Filter by rating expressed as 1-5
-	Rating *IntCriterionInput `json:"rating"`
 	// Filter by rating expressed as 1-100
 	Rating100 *IntCriterionInput `json:"rating100"`
 	// Filter to only include movies with this studio

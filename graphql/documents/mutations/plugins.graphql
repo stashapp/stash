@@ -9,3 +9,11 @@ mutation RunPluginTask(
 ) {
   runPluginTask(plugin_id: $plugin_id, task_name: $task_name, args: $args)
 }
+
+mutation ConfigurePlugin($plugin_id: ID!, $input: Map!) {
+  configurePlugin(plugin_id: $plugin_id, input: $input)
+}
+
+mutation SetPluginsEnabled($enabledMap: BoolMap!) {
+  setPluginsEnabled(enabledMap: $enabledMap)
+}

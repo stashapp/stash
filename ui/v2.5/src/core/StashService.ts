@@ -838,8 +838,7 @@ export const useImagesDestroy = (input: GQL.ImagesDestroyInput) =>
 
 function updateImageIncrementO(id: string) {
   return (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    cache: ApolloCache<any>,
+    cache: ApolloCache<Record<string, StoreObject>>,
     result: FetchResult<GQL.ImageIncrementOMutation>
   ) => {
     const updatedOCount = result.data?.imageIncrementO;
@@ -893,8 +892,7 @@ export const mutateImageIncrementO = (id: string) =>
 
 function updateImageDecrementO(id: string) {
   return (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    cache: ApolloCache<any>,
+    cache: ApolloCache<Record<string, StoreObject>>,
     result: FetchResult<GQL.ImageDecrementOMutation>
   ) => {
     const updatedOCount = result.data?.imageDecrementO;
@@ -949,8 +947,7 @@ export const mutateImageDecrementO = (id: string) =>
 
 function updateImageResetO(id: string) {
   return (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    cache: ApolloCache<any>,
+    cache: ApolloCache<Record<string, StoreObject>>,
     result: FetchResult<GQL.ImageResetOMutation>
   ) => {
     const updatedOCount = result.data?.imageResetO;
@@ -2034,6 +2031,11 @@ export const useConfigureDLNA = () =>
     update: updateConfiguration,
   });
 
+export const useConfigurePlugin = () =>
+  GQL.useConfigurePluginMutation({
+    update: updateConfiguration,
+  });
+
 export const useEnableDLNA = () => GQL.useEnableDlnaMutation();
 
 export const useDisableDLNA = () => GQL.useDisableDlnaMutation();
@@ -2089,6 +2091,14 @@ export const mutateMigrate = (input: GQL.MigrateInput) =>
 
       evictQueries(cache, setupMutationImpactedQueries);
     },
+  });
+
+type BoolMap = { [key: string]: boolean };
+
+export const mutateSetPluginsEnabled = (enabledMap: BoolMap) =>
+  client.mutate<GQL.SetPluginsEnabledMutation>({
+    mutation: GQL.SetPluginsEnabledDocument,
+    variables: { enabledMap },
   });
 
 /// Tasks

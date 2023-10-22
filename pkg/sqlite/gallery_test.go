@@ -1715,54 +1715,6 @@ func verifyGalleryQuery(t *testing.T, filter models.GalleryFilterType, verifyFn 
 	})
 }
 
-func TestGalleryQueryLegacyRating(t *testing.T) {
-	const rating = 3
-	ratingCriterion := models.IntCriterionInput{
-		Value:    rating,
-		Modifier: models.CriterionModifierEquals,
-	}
-
-	verifyGalleriesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyGalleriesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyGalleriesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierLessThan
-	verifyGalleriesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierIsNull
-	verifyGalleriesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierNotNull
-	verifyGalleriesLegacyRating(t, ratingCriterion)
-}
-
-func verifyGalleriesLegacyRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
-		galleryFilter := models.GalleryFilterType{
-			Rating: &ratingCriterion,
-		}
-
-		galleries, _, err := sqb.Query(ctx, &galleryFilter, nil)
-		if err != nil {
-			t.Errorf("Error querying gallery: %s", err.Error())
-		}
-
-		// convert criterion value to the 100 value
-		ratingCriterion.Value = models.Rating5To100(ratingCriterion.Value)
-
-		for _, gallery := range galleries {
-			verifyIntPtr(t, gallery.Rating, ratingCriterion)
-		}
-
-		return nil
-	})
-}
-
 func TestGalleryQueryRating100(t *testing.T) {
 	const rating = 60
 	ratingCriterion := models.IntCriterionInput{

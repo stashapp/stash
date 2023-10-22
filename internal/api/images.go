@@ -1,12 +1,13 @@
 package api
 
 import (
+	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"os"
 	"strings"
 
-	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/internal/static"
 	"github.com/stashapp/stash/pkg/hash"
 	"github.com/stashapp/stash/pkg/logger"
@@ -18,7 +19,7 @@ type imageBox struct {
 	files []string
 }
 
-var imageExtensions = []string{
+var imageBoxExts = []string{
 	".jpg",
 	".jpeg",
 	".png",
@@ -42,7 +43,7 @@ func newImageBox(box fs.FS) (*imageBox, error) {
 		}
 
 		baseName := strings.ToLower(d.Name())
-		for _, ext := range imageExtensions {
+		for _, ext := range imageBoxExts {
 			if strings.HasSuffix(baseName, ext) {
 				ret.files = append(ret.files, path)
 				break
@@ -55,44 +56,59 @@ func newImageBox(box fs.FS) (*imageBox, error) {
 	return ret, err
 }
 
+func (box *imageBox) GetRandomImageByName(name string) ([]byte, error) {
+	files := box.files
+	if len(files) == 0 {
+		return nil, errors.New("box is empty")
+	}
+
+	index := hash.IntFromString(name) % uint64(len(files))
+	img, err := box.box.Open(files[index])
+	if err != nil {
+		return nil, err
+	}
+	defer img.Close()
+
+	return io.ReadAll(img)
+}
+
 var performerBox *imageBox
 var performerBoxMale *imageBox
 var performerBoxCustom *imageBox
 
-func initialiseImages() {
+func init() {
 	var err error
-	performerBox, err = newImageBox(&static.Performer)
+	performerBox, err = newImageBox(static.Sub(static.Performer))
 	if err != nil {
-		logger.Warnf("error loading performer images: %v", err)
+		panic(fmt.Sprintf("loading performer images: %v", err))
 	}
-	performerBoxMale, err = newImageBox(&static.PerformerMale)
+	performerBoxMale, err = newImageBox(static.Sub(static.PerformerMale))
 	if err != nil {
-		logger.Warnf("error loading male performer images: %v", err)
+		panic(fmt.Sprintf("loading male performer images: %v", err))
 	}
-	initialiseCustomImages()
 }
 
-func initialiseCustomImages() {
-	customPath := config.GetInstance().GetCustomPerformerImageLocation()
+func initCustomPerformerImages(customPath string) {
 	if customPath != "" {
 		logger.Debugf("Loading custom performer images from %s", customPath)
-		// We need to set performerBoxCustom at runtime, as this is a custom path, and store it in a pointer.
 		var err error
 		performerBoxCustom, err = newImageBox(os.DirFS(customPath))
 		if err != nil {
-			logger.Warnf("error loading custom performer from %s: %v", customPath, err)
+			logger.Warnf("error loading custom performer images from %s: %v", customPath, err)
 		}
 	} else {
 		performerBoxCustom = nil
 	}
 }
 
-func getRandomPerformerImageUsingName(name string, gender *models.GenderEnum, customPath string) ([]byte, error) {
-	var box *imageBox
-
-	// If we have a custom path, we should return a new box in the given path.
-	if performerBoxCustom != nil && len(performerBoxCustom.files) > 0 {
-		box = performerBoxCustom
+func getDefaultPerformerImage(name string, gender *models.GenderEnum) []byte {
+	// try the custom box first if we have one
+	if performerBoxCustom != nil {
+		ret, err := performerBoxCustom.GetRandomImageByName(name)
+		if err == nil {
+			return ret
+		}
+		logger.Warnf("error loading custom default performer image: %v", err)
 	}
 
 	var g models.GenderEnum
@@ -100,24 +116,19 @@ func getRandomPerformerImageUsingName(name string, gender *models.GenderEnum, cu
 		g = *gender
 	}
 
-	if box == nil {
-		switch g {
-		case models.GenderEnumFemale, models.GenderEnumTransgenderFemale:
-			box = performerBox
-		case models.GenderEnumMale, models.GenderEnumTransgenderMale:
-			box = performerBoxMale
-		default:
-			box = performerBox
-		}
+	var box *imageBox
+	switch g {
+	case models.GenderEnumFemale, models.GenderEnumTransgenderFemale:
+		box = performerBox
+	case models.GenderEnumMale, models.GenderEnumTransgenderMale:
+		box = performerBoxMale
+	default:
+		box = performerBox
 	}
 
-	imageFiles := box.files
-	index := hash.IntFromString(name) % uint64(len(imageFiles))
-	img, err := box.box.Open(imageFiles[index])
+	ret, err := box.GetRandomImageByName(name)
 	if err != nil {
-		return nil, err
+		logger.Warnf("error loading default performer image: %v", err)
 	}
-	defer img.Close()
-
-	return io.ReadAll(img)
+	return ret
 }

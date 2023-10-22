@@ -1,4 +1,4 @@
-//go:build linux || freebsd || !cgo
+//go:build (!windows && !darwin) || !cgo
 
 package desktop
 

@@ -49,9 +49,10 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	newPerformer.Twitter = translator.string(input.Twitter)
 	newPerformer.Instagram = translator.string(input.Instagram)
 	newPerformer.Favorite = translator.bool(input.Favorite)
-	newPerformer.Rating = translator.ratingConversion(input.Rating, input.Rating100)
+	newPerformer.Rating = input.Rating100
 	newPerformer.Details = translator.string(input.Details)
 	newPerformer.HairColor = translator.string(input.HairColor)
+	newPerformer.Height = input.HeightCm
 	newPerformer.Weight = input.Weight
 	newPerformer.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag)
 	newPerformer.StashIDs = models.NewRelatedStashIDs(input.StashIds)
@@ -67,21 +68,9 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		return nil, fmt.Errorf("converting death date: %w", err)
 	}
 
-	// prefer height_cm over height
-	if input.HeightCm != nil {
-		newPerformer.Height = input.HeightCm
-	} else {
-		newPerformer.Height, err = translator.intPtrFromString(input.Height)
-		if err != nil {
-			return nil, fmt.Errorf("converting height: %w", err)
-		}
-	}
-
 	// prefer alias_list over aliases
 	if input.AliasList != nil {
 		newPerformer.Aliases = models.NewRelatedStrings(input.AliasList)
-	} else if input.Aliases != nil {
-		newPerformer.Aliases = models.NewRelatedStrings(stringslice.FromString(*input.Aliases, ","))
 	}
 
 	newPerformer.TagIDs, err = translator.relatedIds(input.TagIds)
@@ -107,6 +96,10 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	// Start the transaction and save the performer
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Performer
+
+		if err := performer.EnsureNameUnique(ctx, newPerformer.Name, newPerformer.Disambiguation, qb); err != nil {
+			return err
+		}
 
 		err = qb.Create(ctx, &newPerformer)
 		if err != nil {
@@ -159,7 +152,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	updatedPerformer.Twitter = translator.optionalString(input.Twitter, "twitter")
 	updatedPerformer.Instagram = translator.optionalString(input.Instagram, "instagram")
 	updatedPerformer.Favorite = translator.optionalBool(input.Favorite, "favorite")
-	updatedPerformer.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedPerformer.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedPerformer.Details = translator.optionalString(input.Details, "details")
 	updatedPerformer.HairColor = translator.optionalString(input.HairColor, "hair_color")
 	updatedPerformer.Weight = translator.optionalInt(input.Weight, "weight")
@@ -178,22 +171,11 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	// prefer height_cm over height
 	if translator.hasField("height_cm") {
 		updatedPerformer.Height = translator.optionalInt(input.HeightCm, "height_cm")
-	} else if translator.hasField("height") {
-		updatedPerformer.Height, err = translator.optionalIntFromString(input.Height, "height")
-		if err != nil {
-			return nil, fmt.Errorf("converting height: %w", err)
-		}
 	}
 
 	// prefer alias_list over aliases
 	if translator.hasField("alias_list") {
 		updatedPerformer.Aliases = translator.updateStrings(input.AliasList, "alias_list")
-	} else if translator.hasField("aliases") {
-		var aliasList []string
-		if input.Aliases != nil {
-			aliasList = stringslice.FromString(*input.Aliases, ",")
-		}
-		updatedPerformer.Aliases = translator.updateStrings(aliasList, "aliases")
 	}
 
 	updatedPerformer.TagIDs, err = translator.updateIds(input.TagIds, "tag_ids")
@@ -222,6 +204,10 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 
 		if existing == nil {
 			return fmt.Errorf("performer with id %d not found", performerID)
+		}
+
+		if err := performer.EnsureUpdateNameUnique(ctx, existing, updatedPerformer.Name, updatedPerformer.Disambiguation, qb); err != nil {
+			return err
 		}
 
 		if err := performer.ValidateDeathDate(existing, input.Birthdate, input.DeathDate); err != nil {
@@ -278,7 +264,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	updatedPerformer.Twitter = translator.optionalString(input.Twitter, "twitter")
 	updatedPerformer.Instagram = translator.optionalString(input.Instagram, "instagram")
 	updatedPerformer.Favorite = translator.optionalBool(input.Favorite, "favorite")
-	updatedPerformer.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedPerformer.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedPerformer.Details = translator.optionalString(input.Details, "details")
 	updatedPerformer.HairColor = translator.optionalString(input.HairColor, "hair_color")
 	updatedPerformer.Weight = translator.optionalInt(input.Weight, "weight")
@@ -296,22 +282,11 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	// prefer height_cm over height
 	if translator.hasField("height_cm") {
 		updatedPerformer.Height = translator.optionalInt(input.HeightCm, "height_cm")
-	} else if translator.hasField("height") {
-		updatedPerformer.Height, err = translator.optionalIntFromString(input.Height, "height")
-		if err != nil {
-			return nil, fmt.Errorf("converting height: %w", err)
-		}
 	}
 
 	// prefer alias_list over aliases
 	if translator.hasField("alias_list") {
 		updatedPerformer.Aliases = translator.updateStringsBulk(input.AliasList, "alias_list")
-	} else if translator.hasField("aliases") {
-		var aliasList []string
-		if input.Aliases != nil {
-			aliasList = stringslice.FromString(*input.Aliases, ",")
-		}
-		updatedPerformer.Aliases = translator.updateStrings(aliasList, "aliases")
 	}
 
 	updatedPerformer.TagIDs, err = translator.updateIdsBulk(input.TagIds, "tag_ids")
@@ -334,6 +309,10 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 
 			if existing == nil {
 				return fmt.Errorf("performer with id %d not found", performerID)
+			}
+
+			if err := performer.EnsureUpdateNameUnique(ctx, existing, updatedPerformer.Name, updatedPerformer.Disambiguation, qb); err != nil {
+				return err
 			}
 
 			err = performer.ValidateDeathDate(existing, input.Birthdate, input.DeathDate)

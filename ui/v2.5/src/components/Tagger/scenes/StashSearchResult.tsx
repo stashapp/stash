@@ -23,6 +23,7 @@ import PerformerResult from "./PerformerResult";
 import StudioResult from "./StudioResult";
 import { useInitialState } from "src/hooks/state";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { getStashboxBase } from "src/utils/stashbox";
 
 const getDurationStatus = (
   scene: IScrapedScene,
@@ -301,13 +302,14 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     }
   }, [isActive, loading, stashScene, index, resolveScene, scene]);
 
+  const stashBoxBaseURL = currentSource?.stashboxEndpoint
+    ? getStashboxBase(currentSource.stashboxEndpoint)
+    : undefined;
   const stashBoxURL = useMemo(() => {
-    if (currentSource?.stashboxEndpoint && scene.remote_site_id) {
-      const endpoint = currentSource.stashboxEndpoint;
-      const endpointBase = endpoint.match(/https?:\/\/.*?\//)?.[0];
-      return `${endpointBase}scenes/${scene.remote_site_id}`;
+    if (stashBoxBaseURL) {
+      return `${stashBoxBaseURL}scenes/${scene.remote_site_id}`;
     }
-  }, [currentSource, scene]);
+  }, [scene, stashBoxBaseURL]);
 
   const setExcludedField = (name: string, value: boolean) =>
     setExcludedFields({

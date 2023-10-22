@@ -8,10 +8,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -21,8 +19,15 @@ type PerformerFinder interface {
 }
 
 type performerRoutes struct {
-	txnManager      txn.Manager
+	routes
 	performerFinder PerformerFinder
+}
+
+func getPerformerRoutes(repo models.Repository) chi.Router {
+	return performerRoutes{
+		routes:          routes{txnManager: repo.TxnManager},
+		performerFinder: repo.Performer,
+	}.Routes()
 }
 
 func (rs performerRoutes) Routes() chi.Router {
@@ -42,7 +47,7 @@ func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
 
 	var image []byte
 	if defaultParam != "true" {
-		readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		readTxnErr := rs.withReadTxn(r, func(ctx context.Context) error {
 			var err error
 			image, err = rs.performerFinder.GetImage(ctx, performer.ID)
 			return err
@@ -56,7 +61,7 @@ func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(image) == 0 {
-		image, _ = getRandomPerformerImageUsingName(performer.Name, performer.Gender, config.GetInstance().GetCustomPerformerImageLocation())
+		image = getDefaultPerformerImage(performer.Name, performer.Gender)
 	}
 
 	utils.ServeImage(w, r, image)
@@ -71,7 +76,7 @@ func (rs performerRoutes) PerformerCtx(next http.Handler) http.Handler {
 		}
 
 		var performer *models.Performer
-		_ = txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		_ = rs.withReadTxn(r, func(ctx context.Context) error {
 			var err error
 			performer, err = rs.performerFinder.Find(ctx, performerID)
 			return err

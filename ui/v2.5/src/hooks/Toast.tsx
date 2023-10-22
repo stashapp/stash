@@ -50,12 +50,12 @@ function createHookObject(toastFunc: (toast: IToast) => void) {
   return {
     success: toastFunc,
     error: (error: unknown) => {
-      /* eslint-disable @typescript-eslint/no-explicit-any, no-console */
+      /* eslint-disable no-console */
       let message: string;
       if (error instanceof Error) {
         message = error.message ?? error.toString();
-      } else if ((error as any).toString) {
-        message = (error as any).toString();
+      } else if (error instanceof String) {
+        message = error.toString();
       } else {
         console.error(error);
         toastFunc({
@@ -72,7 +72,7 @@ function createHookObject(toastFunc: (toast: IToast) => void) {
         header: "Error",
         content: message,
       });
-      /* eslint-enable @typescript-eslint/no-explicit-any, no-console */
+      /* eslint-enable no-console */
     },
   };
 }

@@ -1,7 +1,6 @@
 type Studio {
   id: ID!
   name: String!
-  checksum: String! @deprecated(reason: "MD5 hash of name, use name directly")
   url: String
   parent_studio: Studio
   child_studios: [Studio!]!
@@ -15,8 +14,6 @@ type Studio {
   performer_count(depth: Int): Int! # Resolver
   movie_count(depth: Int): Int! # Resolver
   stash_ids: [StashID!]!
-  # rating expressed as 1-5
-  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: Int
   details: String
@@ -32,8 +29,6 @@ input StudioCreateInput {
   "This should be a URL or a base64 encoded data URL"
   image: String
   stash_ids: [StashIDInput!]
-  # rating expressed as 1-5
-  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: Int
   details: String
@@ -49,8 +44,6 @@ input StudioUpdateInput {
   "This should be a URL or a base64 encoded data URL"
   image: String
   stash_ids: [StashIDInput!]
-  # rating expressed as 1-5
-  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: Int
   details: String

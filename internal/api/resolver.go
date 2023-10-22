@@ -13,7 +13,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scraper"
-	"github.com/stashapp/stash/pkg/txn"
+	"github.com/stashapp/stash/pkg/scraper/stashbox"
 )
 
 var (
@@ -33,8 +33,7 @@ type hookExecutor interface {
 }
 
 type Resolver struct {
-	txnManager     txn.Manager
-	repository     manager.Repository
+	repository     models.Repository
 	sceneService   manager.SceneService
 	imageService   manager.ImageService
 	galleryService manager.GalleryService
@@ -85,6 +84,9 @@ func (r *Resolver) Tag() TagResolver {
 func (r *Resolver) SavedFilter() SavedFilterResolver {
 	return &savedFilterResolver{r}
 }
+func (r *Resolver) ConfigResult() ConfigResultResolver {
+	return &configResultResolver{r}
+}
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
@@ -100,13 +102,18 @@ type studioResolver struct{ *Resolver }
 type movieResolver struct{ *Resolver }
 type tagResolver struct{ *Resolver }
 type savedFilterResolver struct{ *Resolver }
+type configResultResolver struct{ *Resolver }
 
 func (r *Resolver) withTxn(ctx context.Context, fn func(ctx context.Context) error) error {
-	return txn.WithTxn(ctx, r.txnManager, fn)
+	return r.repository.WithTxn(ctx, fn)
 }
 
 func (r *Resolver) withReadTxn(ctx context.Context, fn func(ctx context.Context) error) error {
-	return txn.WithReadTxn(ctx, r.txnManager, fn)
+	return r.repository.WithReadTxn(ctx, fn)
+}
+
+func (r *Resolver) stashboxRepository() stashbox.Repository {
+	return stashbox.NewRepository(r.repository)
 }
 
 func (r *queryResolver) MarkerWall(ctx context.Context, q *string) (ret []*models.SceneMarker, err error) {
