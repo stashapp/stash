@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/WithoutPants/sortorder/casefolded"
 	"github.com/jmoiron/sqlx"
 	"modernc.org/sqlite"
 	sqlitelib "modernc.org/sqlite/lib"
@@ -80,24 +81,21 @@ func init() {
 		return phashDistanceFn(phash1, phash2)
 	})
 
-	// TODO: Define NATURAL_CI collation
-	// Blocked by https://gitlab.com/cznic/sqlite/-/issues/163
-	/*
-		err := conn.RegisterCollation("NATURAL_CI", func(s string, s2 string) int {
-					if casefolded.NaturalLess(s, s2) {
-						return -1
-					} else {
-						return 1
-					}
-				})
-	*/
+	// Define NATURAL_CI collation
+	sqlite.MustRegisterCollationUtf8("NATURAL_CI", func(s1, s2 string) int {
+		if casefolded.NaturalLess(s1, s2) {
+			return -1
+		} else {
+			return 1
+		}
+	})
 }
 
 func createDBConn(dbPath string, disableForeignKeys bool) (*sqlx.DB, error) {
 	// https://pkg.go.dev/modernc.org/sqlite#Driver.Open
-	var qs url.Values
+	qs := url.Values{}
 	qs.Set("_txlock", "immediate")
-	qs.Add("_pragma", "busy_timeout(50)")
+	qs.Add("_pragma", "busy_timeout(100)")
 	qs.Add("_pragma", "journal_mode(WAL)")
 	qs.Add("_pragma", "synchronous(NORMAL)")
 	if !disableForeignKeys {
