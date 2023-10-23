@@ -270,10 +270,10 @@ export const SettingsInterfacePanel: React.FC = () => {
           onChange={(v) => saveInterface({ showStudioAsText: v })}
         />
         <BooleanSetting
-          id="show-codec-links"
-          headingID="config.ui.scene_list.options.show_codec_links"
-          checked={iface.showCodecLinks ?? undefined}
-          onChange={(v) => saveInterface({ showCodecLinks: v })}
+          id="show-performer-card-on-hover"
+          headingID="config.ui.scene_list.options.show_scene_info_card"
+          checked={ui.enableSceneInfoDetails ?? true}
+          onChange={(v) => saveUI({ enableSceneInfoDetails: v })}
         />
       </SettingSection>
 

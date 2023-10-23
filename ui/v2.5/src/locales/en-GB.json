@@ -677,7 +677,7 @@
         "heading": "Scene List",
         "options": {
           "show_studio_as_text": "Show Studios as text",
-          "show_codec_links": "Show codec links"
+          "show_scene_info_card": "Show additional scene info"
         }
       },
       "scene_player": {
@@ -987,6 +987,7 @@
   "folder": "Folder",
   "framerate": "Frame Rate",
   "frames_per_second": "{value} frames per second",
+  "frames_per_second_short": "{value}:FPS",
   "front_page": {
     "types": {
       "premade_filter": "Premade Filter",
@@ -1058,6 +1059,7 @@
     "video_codec": "Video Codec"
   },
   "megabits_per_second": "{value} megabits per second",
+  "megabits_per_second_short": "{value}:MBPS",
   "metadata": "Metadata",
   "movie": "Movie",
   "movie_scene_number": "Movie Scene Number",

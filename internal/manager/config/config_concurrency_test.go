@@ -81,7 +81,6 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.Set(WallPlayback, i.GetWallPlayback())
 				i.Set(MaximumLoopDuration, i.GetMaximumLoopDuration())
 				i.Set(AutostartVideo, i.GetAutostartVideo())
-				i.Set(ShowCodecLinks, i.GetShowCodecLinks())
 				i.Set(ShowStudioAsText, i.GetShowStudioAsText())
 				i.Set(legacyImageLightboxSlideshowDelay, *i.GetImageLightboxOptions().SlideshowDelay)
 				i.Set(ImageLightboxSlideshowDelay, *i.GetImageLightboxOptions().SlideshowDelay)

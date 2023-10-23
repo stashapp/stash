@@ -44,6 +44,8 @@ export interface IUIConfig {
   ratingSystemOptions?: RatingSystemOptions;
 
   // if true a background image will be display on header
+  enableSceneInfoDetails?: boolean;
+  // if true a background image will be display on header
   enableMovieBackgroundImage?: boolean;
   // if true a background image will be display on header
   enablePerformerBackgroundImage?: boolean;

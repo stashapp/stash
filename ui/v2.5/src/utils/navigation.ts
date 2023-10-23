@@ -22,6 +22,7 @@ import { PhashCriterion } from "src/models/list-filter/criteria/phash";
 import { ILabeledId } from "src/models/list-filter/types";
 import { IntlShape } from "react-intl";
 import { CodecsCriterion } from "src/models/list-filter/criteria/codecs";
+
 function addExtraCriteria(
   dest: Criterion<CriterionValue>[],
   src?: Criterion<CriterionValue>[]

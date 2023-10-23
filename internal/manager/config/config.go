@@ -163,7 +163,6 @@ const (
 	AutostartVideoOnPlaySelected        = "autostart_video_on_play_selected"
 	autostartVideoOnPlaySelectedDefault = true
 	ContinuePlaylistDefault             = "continue_playlist_default"
-	ShowCodecLinks                      = "show_codec_links"
 	ShowStudioAsText                    = "show_studio_as_text"
 	CSSEnabled                          = "cssEnabled"
 	JavascriptEnabled                   = "javascriptEnabled"
@@ -1041,10 +1040,6 @@ func (i *Instance) GetAutostartVideoOnPlaySelected() bool {
 
 func (i *Instance) GetContinuePlaylistDefault() bool {
 	return i.getBool(ContinuePlaylistDefault)
-}
-
-func (i *Instance) GetShowCodecLinks() bool {
-	return i.getBool(ShowCodecLinks)
 }
 
 func (i *Instance) GetShowStudioAsText() bool {

@@ -21,18 +21,148 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { GridCard } from "../Shared/GridCard";
 import { RatingBanner } from "../Shared/RatingBanner";
-import { FormattedNumber } from "react-intl";
+import { FormattedNumber, FormattedMessage, useIntl } from "react-intl";
 import {
   faBox,
-  faCircleInfo,
+  faInfo,
   faCopy,
+  faClipboard,
   faFilm,
   faImages,
   faMapMarkerAlt,
   faTag,
 } from "@fortawesome/free-solid-svg-icons";
-import { objectPath, objectTitle } from "src/core/files";
+import { objectPath, objectPathPreMapped, objectTitle } from "src/core/files";
 import { PreviewScrubber } from "./PreviewScrubber";
+import { IUIConfig } from "src/core/config";
+import { Options, PositioningStrategy, Placement } from '@popperjs/core'; 
+
+interface ISceneInfoCardProps {
+  props?: GQL.SlimSceneDataFragment;
+  files?: any[];
+  maybeRenderSceneSpecsOverlay: (file: any, flag: boolean) => void;
+  maybeRenderDupeCopies: (file: any) => void;
+}
+
+export const MaybeRenderSceneInfoDetails: React.FC<ISceneInfoCardProps> = (
+  props: ISceneInfoCardProps
+) => {
+  const { configuration: config } = React.useContext(ConfigurationContext);
+  const enableSceneInfoDetails =
+    (config?.ui as IUIConfig)?.enableSceneInfoDetails ?? true;
+
+  if (!enableSceneInfoDetails) {
+    return null;
+  }
+
+  const files = props?.files || [];
+  if (files.length === 0) return null;
+
+  const { maybeRenderSceneSpecsOverlay } = props;
+  const { maybeRenderDupeCopies } = props;
+
+  function CopyFilePathButton(filePath: string) {
+    const copyFilePathToClipboard = () => {
+      const pathSeparator = "/";
+      const pathParts = filePath.split(pathSeparator);
+      const directoryPath = pathParts.slice(0, -1).join(pathSeparator);
+  
+      try {
+        navigator.clipboard.writeText(directoryPath)
+      } catch (err) {
+        console.error("Failed to copy to clipboard:", err);
+      }
+    };
+  
+    return (
+      <div className="scene-info-overlay-file-path">
+        <div>
+          <Button onClick={copyFilePathToClipboard} className="minimal">
+            <Icon icon={faClipboard} />
+          </Button>
+        </div>
+        <div>{filePath}</div>
+      </div>
+    );
+  }
+
+  const popoverContent = files.map((prop, index) => (
+    <>
+      <div className="scene-info-popover" onClick={(e) => e.stopPropagation()}>
+        {CopyFilePathButton(objectPathPreMapped(prop) || "")}
+        <div className="scene-info-overlay-specs-root">
+          {maybeRenderSceneSpecsOverlay(prop, false)}
+          <span className={"scene-info-overlay-caps"}>
+            <span className="scene-info-overlay-divider">|</span>
+            <CodecLink
+              key={prop.video_codec}
+              codec={prop.video_codec}
+              codecType={"video_codec"}
+            />
+          </span>
+          <span className="scene-info-overlay-divider">:</span>
+          <span className={"scene-info-overlay-caps"}>
+            <CodecLink
+              key={prop.audio_codec}
+              codec={prop.audio_codec}
+              codecType={"audio_codec"}
+            />
+          </span>
+          {maybeRenderDupeCopies(prop)}
+        </div>
+        {index + 1 != files.length && <hr className="scene-info-overlay-hr" />}
+      </div>
+    </>
+  ));
+
+  const popperConfig: Options = {
+    strategy: 'fixed' as PositioningStrategy,
+    placement: "bottom" as Placement,
+    modifiers: [
+      {
+        name: "arrow",
+        options: {
+          x: 0,
+          y: 0,
+          centerOffset: 0,
+        },
+      },
+      {
+        name: "offset",
+        options: {
+          offset: ({
+            placement,
+            popper,
+          }: {
+            placement: Placement;
+            popper: any;
+          }) => {
+            if (placement === "bottom") {
+              return [popper.width / 4, 20];
+            } else {
+              return [];
+            }
+          },
+        },
+      },
+    ],
+  };
+
+  return (
+    <div
+      className="scene-specs-overlay-left"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <HoverPopover
+        placement="bottom"
+        content={popoverContent}
+        popperConfig={popperConfig}
+      >
+        <Icon icon={faInfo} />
+      </HoverPopover>
+    </div>
+  );
+};
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -105,44 +235,112 @@ export const SceneCard: React.FC<ISceneCardProps> = (
 ) => {
   const history = useHistory();
   const { configuration } = React.useContext(ConfigurationContext);
+  const intl = useIntl();
 
   const file = useMemo(
     () => (props.scene.files.length > 0 ? props.scene.files[0] : undefined),
     [props.scene]
   );
 
-  function maybeRenderSceneSpecsOverlay() {
+  function maybeRenderSceneSpecsOverlay(
+    props?: {
+      __typename?: "VideoFile" | undefined;
+      size: number;
+      width: number;
+      height: number;
+      duration: number;
+      frame_rate: number;
+      bit_rate: number;
+    },
+    renderDefault?: boolean
+  ) {
     let sizeObj = null;
-    if (file?.size) {
-      sizeObj = TextUtils.fileSize(file.size);
+
+    const rootClass = renderDefault
+      ? "scene-specs-overlay"
+      : "scene-info-overlay-specs-node";
+    const resolutionClass = renderDefault
+      ? "overlay-resolution"
+      : "scene-info-overlay-bold";
+    const spanClass = renderDefault
+      ? "overlay-filesize extra-scene-info"
+      : "null";
+    const boldClass = renderDefault
+      ? "overlay-bold"
+      : "scene-info-overlay-bold";
+
+    if (props?.size) {
+      sizeObj = TextUtils.fileSize(props.size);
     }
+
     return (
-      <div className="scene-specs-overlay">
-        {sizeObj != null ? (
-          <span className="overlay-filesize extra-scene-info">
-            <FormattedNumber
-              value={sizeObj.size}
-              maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
-                sizeObj.unit
-              )}
-            />
-            {TextUtils.formatFileSizeUnit(sizeObj.unit)}
+      <>
+        <div className={rootClass}>
+          {sizeObj != null ? (
+            <span className={spanClass}>
+              <FormattedNumber
+                value={sizeObj.size}
+                maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
+                  sizeObj.unit
+                )}
+              />
+              {TextUtils.formatFileSizeUnit(sizeObj.unit)}
+            </span>
+          ) : (
+            ""
+          )}
+          {!renderDefault && (
+            <span className="scene-info-overlay-divider">|</span>
+          )}
+          {props?.width && props?.height ? (
+            <span className={resolutionClass}>
+              {" "}
+              {TextUtils.resolution(props?.width, props?.height)}
+            </span>
+          ) : (
+            ""
+          )}
+          {!renderDefault && (
+            <span className="scene-info-overlay-divider">|</span>
+          )}
+          <span className="overlay-duration">
+            {(props?.duration ?? 0) >= 1
+              ? TextUtils.secondsToTimestamp(props?.duration ?? 0)
+              : ""}
           </span>
-        ) : (
-          ""
-        )}
-        {file?.width && file?.height ? (
-          <span className="overlay-resolution">
-            {" "}
-            {TextUtils.resolution(file?.width, file?.height)}
-          </span>
-        ) : (
-          ""
-        )}
-        {(file?.duration ?? 0) >= 1
-          ? TextUtils.secondsToTimestamp(file?.duration ?? 0)
-          : ""}
-      </div>
+          {!renderDefault && (
+            <span className="scene-info-overlay-divider"> | </span>
+          )}
+          {!renderDefault && (
+            <div>
+              <span className={boldClass}>
+                <FormattedMessage
+                  id="frames_per_second_short"
+                  values={{
+                    value: intl?.formatNumber(props?.frame_rate ?? 0, {
+                      maximumFractionDigits: 0,
+                    }),
+                  }}
+                />
+              </span>
+              <span className="scene-info-overlay-divider">|</span>
+              <span className={spanClass}>
+                <FormattedMessage
+                  id="megabits_per_second_short"
+                  values={{
+                    value: intl?.formatNumber(
+                      (props?.bit_rate ?? 0) / 1000000,
+                      {
+                        maximumFractionDigits: 2,
+                      }
+                    ),
+                  }}
+                />
+              </span>
+            </div>
+          )}
+        </div>
+      </>
     );
   }
 
@@ -318,57 +516,24 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     }
   }
 
-  const renderCodecInfo = configuration?.interface.showCodecLinks;
+  function maybeRenderDupeCopies(
+    props: {
+      __typename?: "VideoFile" | undefined;
+      fingerprints: any;
+    },
+    renderDefault?: boolean
+  ) {
+    const className = renderDefault
+      ? "other-copies extra-scene-info"
+      : "other-copies";
 
-  function maybeRenderCodec() {
-    if (!renderCodecInfo) {
-      return;
-    }
-
-    if (props.scene.files.length <= 0) return;
-
-    const popoverContentCodecs = props.scene.files.map((currentFile, index) => (
-      <>
-        <CodecLink
-          key={currentFile.audio_codec}
-          codec={currentFile.audio_codec}
-          codecType={"audio_codec"}
-          fileIndex={index}
-          filesLength={props.scene.files.length}
-        />
-
-        <CodecLink
-          key={currentFile.video_codec}
-          codec={currentFile.video_codec}
-          codecType={"video_codec"}
-          fileIndex={index}
-          filesLength={props.scene.files.length}
-        />
-      </>
-    ));
-
-    return (
-      <HoverPopover
-        className="codec-info"
-        placement="bottom"
-        content={popoverContentCodecs}
-      >
-        <Button className="minimal">
-          <Icon icon={faCircleInfo} />
-          <span>{props.scene.files.length}</span>
-        </Button>
-      </HoverPopover>
-    );
-  }
-
-  function maybeRenderDupeCopies() {
-    const phash = file
-      ? file.fingerprints.find((fp) => fp.type === "phash")
+    const phash = props
+      ? props.fingerprints.find((fp: { type: string }) => fp.type === "phash")
       : undefined;
 
     if (phash) {
       return (
-        <div className="other-copies extra-scene-info">
+        <div className={className}>
           <Button
             href={NavUtils.makeScenesPHashMatchUrl(phash.value)}
             className="minimal"
@@ -389,9 +554,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         props.scene.scene_markers.length > 0 ||
         props.scene?.o_counter ||
         props.scene.galleries.length > 0 ||
-        props.scene.organized ||
-        props.scene.files[0]?.audio_codec ||
-        props.scene.files[0]?.video_codec)
+        props.scene.organized)
     ) {
       return (
         <>
@@ -404,8 +567,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             {maybeRenderOCounter()}
             {maybeRenderGallery()}
             {maybeRenderOrganized()}
-            {maybeRenderCodec()}
-            {maybeRenderDupeCopies()}
+            {maybeRenderDupeCopies(props.scene.files[0], true)}
           </ButtonGroup>
         </>
       );
@@ -480,7 +642,13 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             onScrubberClick={onScrubberClick}
           />
           <RatingBanner rating={props.scene.rating100} />
-          {maybeRenderSceneSpecsOverlay()}
+          <MaybeRenderSceneInfoDetails
+            props={props.scene ?? undefined}
+            files={props.scene.files}
+            maybeRenderSceneSpecsOverlay={maybeRenderSceneSpecsOverlay}
+            maybeRenderDupeCopies={maybeRenderDupeCopies}
+          />
+          {maybeRenderSceneSpecsOverlay(props.scene.files[0], true)}
           {maybeRenderInteractiveSpeedOverlay()}
         </>
       }

@@ -1,11 +1,13 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Overlay, Popover, OverlayProps } from "react-bootstrap";
+import { Options as UsePopperOptions } from '@popperjs/core';
 
 interface IHoverPopover {
   enterDelay?: number;
   leaveDelay?: number;
   content: JSX.Element[] | JSX.Element | string;
   className?: string;
+  popperConfig?: Omit<UsePopperOptions, "placement">;
   placement?: OverlayProps["placement"];
   onOpen?: () => void;
   onClose?: () => void;
@@ -17,6 +19,7 @@ export const HoverPopover: React.FC<IHoverPopover> = ({
   content,
   children,
   className,
+  popperConfig,
   placement = "top",
   onOpen,
   onClose,
@@ -61,14 +64,14 @@ export const HoverPopover: React.FC<IHoverPopover> = ({
         {children}
       </div>
       {triggerRef.current && (
-        <Overlay show={show} placement={placement} target={triggerRef.current}>
+        <Overlay show={show} placement={placement} target={triggerRef.current} popperConfig={popperConfig} >
           <Popover
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             id="popover"
             className="hover-popover-content"
-          >
-            {content}
+          >          
+          {content}
           </Popover>
         </Overlay>
       )}

@@ -402,7 +402,6 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 	}
 
 	setBool(config.AutostartVideo, input.AutostartVideo)
-	setBool(config.ShowCodecLinks, input.ShowCodecLinks)
 	setBool(config.ShowStudioAsText, input.ShowStudioAsText)
 	setBool(config.AutostartVideoOnPlaySelected, input.AutostartVideoOnPlaySelected)
 	setBool(config.ContinuePlaylistDefault, input.ContinuePlaylistDefault)

@@ -29,3 +29,11 @@ export function objectPath(s: IObjectWithFiles) {
   }
   return "";
 }
+
+export function objectPathPreMapped(s: IFile) {
+  if (s) {
+    return s.path;
+  }
+  return "";
+}
+
