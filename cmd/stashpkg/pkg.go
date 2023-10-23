@@ -140,7 +140,7 @@ func install() {
 
 	// try each spec individually
 	for _, spec := range specs {
-		fmt.Printf("Installing %s %s\n", spec.Name, spec.PackageVersion.String())
+		fmt.Printf("Installing %s %s\n", spec.ID, spec.PackageVersion.String())
 
 		err := manager.Install(ctx, *spec)
 		if err != nil {
@@ -199,7 +199,7 @@ func upgrade() {
 
 		err := manager.Install(ctx, *toUpgrade.Remote)
 		if err != nil {
-			fmt.Printf("Error installing package %s: %v\n", toUpgrade.Remote.Name, err)
+			fmt.Printf("Error installing package %s: %v\n", toUpgrade.Remote.ID, err)
 		}
 	}
 }
@@ -215,7 +215,7 @@ func upgradable() {
 	filtered := u.Upgradable()
 
 	for _, v := range filtered {
-		fmt.Printf("%s %s -> %s\n", v.Local.Name, v.Local.PackageVersion.String(), v.Remote.PackageVersion.String())
+		fmt.Printf("%s - %s %s -> %s\n", v.Local.ID, v.Local.Name, v.Local.PackageVersion.String(), v.Remote.PackageVersion.String())
 	}
 }
 
@@ -232,6 +232,7 @@ func list() {
 		v := index[k]
 
 		var (
+			id          string
 			name        string
 			description string
 			status      pkg.PackageVersionStatus
@@ -239,10 +240,12 @@ func list() {
 		)
 
 		if v.Remote != nil {
+			id = v.Remote.ID
 			description = v.Remote.Description
 		}
 
 		if v.Local != nil {
+			id = v.Remote.ID
 			name = v.Local.Name
 			version = v.Local.PackageVersion.String()
 
@@ -258,7 +261,7 @@ func list() {
 			version = v.Remote.PackageVersion.String()
 		}
 
-		fmt.Printf("%s - %s [%s] %s\n", name, version, status, description)
+		fmt.Printf("%s - %s - %s [%s] %s\n", id, name, version, status, description)
 	}
 }
 
@@ -288,7 +291,7 @@ func installed() {
 	}
 
 	for _, v := range installed {
-		fmt.Printf("%s %s\n", v.Name, v.Version)
+		fmt.Printf("%s - %s %s\n", v.ID, v.Name, v.Version)
 	}
 }
 func search() {

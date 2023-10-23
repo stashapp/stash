@@ -57,6 +57,7 @@ type PackageLocation struct {
 }
 
 type RemotePackage struct {
+	ID              string           `yaml:"id"`
 	Name            string           `yaml:"name"`
 	Repository      RemoteRepository `yaml:"-"`
 	PackageMetadata `yaml:",inline"`
@@ -65,6 +66,7 @@ type RemotePackage struct {
 }
 
 type Manifest struct {
+	ID   string `yaml:"id"`
 	Name string `yaml:"name"`
 	PackageVersion
 }
@@ -96,13 +98,13 @@ func remotePackageIndexFromList(packages []RemotePackage) RemotePackageIndex {
 	index := make(RemotePackageIndex)
 	for _, pkg := range packages {
 		// if package already exists in map, choose the newest
-		if existing, found := index[pkg.Name]; found {
+		if existing, found := index[pkg.ID]; found {
 			if existing.Date.After(pkg.Date.Time) {
 				continue
 			}
 		}
 
-		index[pkg.Name] = pkg
+		index[pkg.ID] = pkg
 	}
 	return index
 }
@@ -113,7 +115,7 @@ type LocalPackageIndex map[string]Manifest
 func localPackageIndexFromList(packages []Manifest) LocalPackageIndex {
 	index := make(LocalPackageIndex)
 	for _, pkg := range packages {
-		index[pkg.Name] = pkg
+		index[pkg.ID] = pkg
 	}
 	return index
 }
@@ -138,22 +140,22 @@ func (s PackageStatus) Upgradable() bool {
 type PackageStatusIndex map[string]PackageStatus
 
 func (i PackageStatusIndex) populateLocal(installed LocalPackageIndex, remote RemotePackageIndex) {
-	for name, pkg := range installed {
+	for id, pkg := range installed {
 		s := PackageStatus{
 			Local: &pkg,
 		}
 
-		if remotePkg, found := remote[name]; found {
+		if remotePkg, found := remote[id]; found {
 			s.Remote = &remotePkg
 		}
 
-		i[name] = s
+		i[id] = s
 	}
 }
 
 func (i PackageStatusIndex) populateRemote(remote RemotePackageIndex) {
-	for name, pkg := range remote {
-		if _, found := i[name]; found {
+	for id, pkg := range remote {
+		if _, found := i[id]; found {
 			// already populated; ignore
 			continue
 		}
@@ -164,7 +166,7 @@ func (i PackageStatusIndex) populateRemote(remote RemotePackageIndex) {
 			Remote: &copy,
 		}
 
-		i[pkg.Name] = s
+		i[pkg.ID] = s
 	}
 }
 

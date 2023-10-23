@@ -46,12 +46,12 @@ func (r *Store) List(ctx context.Context) ([]Manifest, error) {
 	return ret, nil
 }
 
-func (r *Store) packageDir(name string) string {
-	return filepath.Join(r.BaseDir, name)
+func (r *Store) packageDir(id string) string {
+	return filepath.Join(r.BaseDir, id)
 }
 
-func (r *Store) manifestPath(name string) string {
-	return filepath.Join(r.packageDir(name), r.ManifestFile)
+func (r *Store) manifestPath(id string) string {
+	return filepath.Join(r.packageDir(id), r.ManifestFile)
 }
 
 func (r *Store) readManifest(e fs.DirEntry) (*Manifest, error) {
@@ -74,7 +74,7 @@ func (r *Store) InstallPackage(ctx context.Context, pkg RemotePackage, zr *zip.R
 	// assume zip contains the package file
 
 	// create the directory for the package
-	pkgDir := r.packageDir(pkg.Name)
+	pkgDir := r.packageDir(pkg.ID)
 	if err := os.MkdirAll(pkgDir, 0755); err != nil {
 		return fmt.Errorf("creating package directory %q: %w", pkgDir, err)
 	}
@@ -126,15 +126,15 @@ func unzipFile(dest string, zr *zip.Reader) error {
 	return nil
 }
 
-func (r *Store) DeletePackage(ctx context.Context, name string) error {
+func (r *Store) DeletePackage(ctx context.Context, id string) error {
 	// ensure the manifest file exists
-	if _, err := os.Stat(r.manifestPath(name)); err != nil {
+	if _, err := os.Stat(r.manifestPath(id)); err != nil {
 		if os.IsNotExist(err) {
-			return fmt.Errorf("package %q does not exist", name)
+			return fmt.Errorf("package %q does not exist", id)
 		}
 	}
 
-	pkgDir := r.packageDir(name)
+	pkgDir := r.packageDir(id)
 	return os.RemoveAll(pkgDir)
 }
 

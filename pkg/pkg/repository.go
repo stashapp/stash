@@ -33,7 +33,7 @@ type PackageInstaller interface {
 }
 
 type PackageDeleter interface {
-	DeletePackage(ctx context.Context, name string) error
+	DeletePackage(ctx context.Context, id string) error
 }
 
 type LocalPackageLister interface {

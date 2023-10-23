@@ -112,8 +112,8 @@ func (m *Manager) Install(ctx context.Context, pkg RemotePackage) error {
 }
 
 // Uninstall uninstalls the given package.
-func (m *Manager) Uninstall(ctx context.Context, name string) error {
-	if err := m.Local.DeletePackage(ctx, name); err != nil {
+func (m *Manager) Uninstall(ctx context.Context, id string) error {
+	if err := m.Local.DeletePackage(ctx, id); err != nil {
 		return fmt.Errorf("deleting local package: %w", err)
 	}
 
