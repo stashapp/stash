@@ -15,6 +15,7 @@ import {
   ICustomFilter,
   FrontPageContent,
   generatePremadeFrontPageContent,
+  getFrontPageContent,
 } from "src/core/config";
 
 interface IAddSavedFilterModalProps {
@@ -299,8 +300,9 @@ export const FrontPageConfig: React.FC<IFrontPageConfigProps> = ({
       return;
     }
 
-    if (ui?.frontPageContent) {
-      setCurrentContent(ui.frontPageContent);
+    const frontPageContent = getFrontPageContent(ui);
+    if (frontPageContent) {
+      setCurrentContent(frontPageContent);
     }
   }, [allFilters, ui]);
 
