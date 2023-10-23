@@ -10,7 +10,6 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
-	"github.com/mattn/go-sqlite3"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/logger"
@@ -289,11 +288,7 @@ func (qb *BlobStore) Delete(ctx context.Context, checksum string) error {
 }
 
 func (qb *BlobStore) isConstraintError(err error) bool {
-	var sqliteError sqlite3.Error
-	if errors.As(err, &sqliteError) {
-		return sqliteError.Code == sqlite3.ErrConstraint
-	}
-	return false
+	return IsConstraintError(err)
 }
 
 func (qb *BlobStore) delete(ctx context.Context, checksum string) error {

@@ -44,7 +44,8 @@ GO_BUILD_TAGS += sqlite_stat4
 # set STASH_SOURCEMAPS environment variable or uncomment to enable UI sourcemaps
 # STASH_SOURCEMAPS := true
 
-export CGO_ENABLED := 1
+# Enable CGo for all builds and tests by default
+export CGO_ENABLED ?= 1
 
 .PHONY: release
 release: pre-ui generate ui build-release

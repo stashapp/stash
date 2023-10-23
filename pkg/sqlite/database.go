@@ -219,19 +219,13 @@ func (db *Database) Close() error {
 }
 
 func (db *Database) open(disableForeignKeys bool) (*sqlx.DB, error) {
-	// https://github.com/mattn/go-sqlite3
-	url := "file:" + db.dbPath + "?_journal=WAL&_sync=NORMAL&_busy_timeout=50"
-	if !disableForeignKeys {
-		url += "&_fk=true"
-	}
-
-	conn, err := sqlx.Open(sqlite3Driver, url)
-	conn.SetMaxOpenConns(dbConns)
-	conn.SetMaxIdleConns(dbConns)
-	conn.SetConnMaxIdleTime(dbConnTimeout * time.Second)
+	conn, err := createDBConn(db.dbPath, disableForeignKeys)
 	if err != nil {
 		return nil, fmt.Errorf("db.Open(): %w", err)
 	}
+	conn.SetMaxOpenConns(dbConns)
+	conn.SetMaxIdleConns(dbConns)
+	conn.SetConnMaxIdleTime(dbConnTimeout * time.Second)
 
 	return conn, nil
 }
