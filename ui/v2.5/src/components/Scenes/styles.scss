@@ -112,56 +112,54 @@ textarea.scene-description {
 }
 
 .scene-info-popover{
+  align-items: center;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
   justify-content: center;
-  top:0.2rem;
+  letter-spacing: -0.03rem;
   margin: auto;
-  padding-top: 0.2rem;
+  padding-bottom: 0.2rem;
   padding-left: 0.2rem;
   padding-right: 0.2rem;
-  padding-bottom: 0.2rem;
-  letter-spacing: -0.03rem;
-
+  padding-top: 0.2rem;
+  top:0.2rem;
 }
 
 .scene-info-overlay-specs-root{
-  display: flex;
-  justify-content: center;
   align-items: center;
+  display: flex;
   flex: 3;
+  justify-content: center;
 }
 
 .scene-info-overlay-specs-node{
+  align-items: center;
   display: flex;
   justify-content: space-between;
-  align-items: center;
 }
 
 .scene-info-overlay-file-path{
-  display: flex;
   align-items: center;
+  display: flex;
   justify-content: flex-start;
-  width: 100%;
-  margin-top: 0.1rem;
   margin-left: 0.2rem;
   margin-right:0.2rem;
-
-
+  margin-top: 0.1rem;
+  width: 100%;
 }
 
 .scene-info-overlay-hr{
-  color: $text-color;
   background-color: $text-color;
+  color: $text-color;
   height: 0.01rem;
+  margin: 0.4rem auto;
   width: 90%;
 }
 
 .scene-info-overlay-bold{
   font-weight: 900;
-  text-transform: uppercase;
   text-shadow: 0 0 3px #000;
+  text-transform: uppercase;
 }
 
 .scene-info-overlay-caps{

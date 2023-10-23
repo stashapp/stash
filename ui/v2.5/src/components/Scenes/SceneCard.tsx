@@ -39,9 +39,31 @@ import { Options, PositioningStrategy, Placement } from '@popperjs/core';
 
 interface ISceneInfoCardProps {
   props?: GQL.SlimSceneDataFragment;
-  files?: any[];
-  maybeRenderSceneSpecsOverlay: (file: any, flag: boolean) => void;
-  maybeRenderDupeCopies: (file: any) => void;
+  files?: Array<{
+    path: string;
+    audio_codec: string;
+    video_codec: string;
+    size: number;
+    width: number;
+    height: number;
+    duration: number;
+    frame_rate: number;
+    bit_rate: number;
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    fingerprints: any;
+  }>;
+  maybeRenderSceneSpecsOverlay: (prop: {
+    size: number;
+    width: number;
+    height: number;
+    duration: number;
+    frame_rate: number;
+    bit_rate: number;
+  }, flag: boolean) => void;
+  maybeRenderDupeCopies: (prop: {
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    fingerprints: any;
+  }) => void;
 }
 
 export const MaybeRenderSceneInfoDetails: React.FC<ISceneInfoCardProps> = (
@@ -115,6 +137,9 @@ export const MaybeRenderSceneInfoDetails: React.FC<ISceneInfoCardProps> = (
     </>
   ));
 
+  interface IPopperType {
+    width: number;
+  }
   const popperConfig: Options = {
     strategy: 'fixed' as PositioningStrategy,
     placement: "bottom" as Placement,
@@ -135,7 +160,7 @@ export const MaybeRenderSceneInfoDetails: React.FC<ISceneInfoCardProps> = (
             popper,
           }: {
             placement: Placement;
-            popper: any;
+            popper: IPopperType;
           }) => {
             if (placement === "bottom") {
               return [popper.width / 4, 20];
@@ -243,7 +268,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   );
 
   function maybeRenderSceneSpecsOverlay(
-    props?: {
+    files?: {
       __typename?: "VideoFile" | undefined;
       size: number;
       width: number;
@@ -269,8 +294,8 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       ? "overlay-bold"
       : "scene-info-overlay-bold";
 
-    if (props?.size) {
-      sizeObj = TextUtils.fileSize(props.size);
+    if (files?.size) {
+      sizeObj = TextUtils.fileSize(files.size);
     }
 
     return (
@@ -292,10 +317,10 @@ export const SceneCard: React.FC<ISceneCardProps> = (
           {!renderDefault && (
             <span className="scene-info-overlay-divider">|</span>
           )}
-          {props?.width && props?.height ? (
+          {files?.width && files?.height ? (
             <span className={resolutionClass}>
               {" "}
-              {TextUtils.resolution(props?.width, props?.height)}
+              {TextUtils.resolution(files?.width, files?.height)}
             </span>
           ) : (
             ""
@@ -304,8 +329,8 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             <span className="scene-info-overlay-divider">|</span>
           )}
           <span className="overlay-duration">
-            {(props?.duration ?? 0) >= 1
-              ? TextUtils.secondsToTimestamp(props?.duration ?? 0)
+            {(files?.duration ?? 0) >= 1
+              ? TextUtils.secondsToTimestamp(files?.duration ?? 0)
               : ""}
           </span>
           {!renderDefault && (
@@ -317,7 +342,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
                 <FormattedMessage
                   id="frames_per_second_short"
                   values={{
-                    value: intl?.formatNumber(props?.frame_rate ?? 0, {
+                    value: intl?.formatNumber(files?.frame_rate ?? 0, {
                       maximumFractionDigits: 0,
                     }),
                   }}
@@ -329,7 +354,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
                   id="megabits_per_second_short"
                   values={{
                     value: intl?.formatNumber(
-                      (props?.bit_rate ?? 0) / 1000000,
+                      (files?.bit_rate ?? 0) / 1000000,
                       {
                         maximumFractionDigits: 2,
                       }
@@ -517,8 +542,9 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   }
 
   function maybeRenderDupeCopies(
-    props: {
+    files: {
       __typename?: "VideoFile" | undefined;
+      /* eslint-disable @typescript-eslint/no-explicit-any */
       fingerprints: any;
     },
     renderDefault?: boolean
@@ -527,8 +553,8 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       ? "other-copies extra-scene-info"
       : "other-copies";
 
-    const phash = props
-      ? props.fingerprints.find((fp: { type: string }) => fp.type === "phash")
+    const phash = files
+      ? files.fingerprints.find((fp: { type: string }) => fp.type === "phash")
       : undefined;
 
     if (phash) {
