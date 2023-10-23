@@ -291,7 +291,7 @@ func installed() {
 	}
 
 	for _, v := range installed {
-		fmt.Printf("%s - %s %s\n", v.ID, v.Name, v.Version)
+		fmt.Printf("%s - %s %s\n", v.ID, v.Name, v.PackageVersion.String())
 	}
 }
 func search() {

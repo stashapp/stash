@@ -66,9 +66,10 @@ type RemotePackage struct {
 }
 
 type Manifest struct {
-	ID   string `yaml:"id"`
-	Name string `yaml:"name"`
-	PackageVersion
+	ID              string `yaml:"id"`
+	Name            string `yaml:"name"`
+	PackageMetadata `yaml:",inline"`
+	PackageVersion  `yaml:",inline"`
 }
 
 type PackageVersionStatus string
