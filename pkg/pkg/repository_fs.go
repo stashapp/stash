@@ -6,21 +6,28 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"os"
+	"path/filepath"
 
 	"gopkg.in/yaml.v2"
 )
 
-// FSRepository is a HTTP based repository.
-// It is configured with a package list URL. Packages are located from the Path field of the package.
-//
-// The index is cached for the duration of CacheTTL. The first request after the cache expires will cause the index to be reloaded.
+// FSRepository is a file based repository.
+// It is configured with a package list path. Packages are located in the same directory as the package list.
 type FSRepository struct {
-	Root                fs.FS
-	PackageListFilename string
+	PackageListPath string
+}
+
+func (r *FSRepository) Path() string {
+	return r.PackageListPath
+}
+
+func (r *FSRepository) dir() string {
+	return filepath.Dir(r.PackageListPath)
 }
 
 func (r *FSRepository) List(ctx context.Context) ([]RemotePackage, error) {
-	f, err := r.getFile(ctx, r.PackageListFilename)
+	f, err := r.getFile(ctx, r.PackageListPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get package list: %w", err)
 	}
@@ -40,8 +47,27 @@ func (r *FSRepository) List(ctx context.Context) ([]RemotePackage, error) {
 	return index, nil
 }
 
-func (r *FSRepository) GetPackage(ctx context.Context, pkg RemotePackage) (io.ReadCloser, error) {
-	f, err := r.getFile(ctx, pkg.Path)
+func (r *FSRepository) getPackagePath(pkg RemotePackage) string {
+	return filepath.Join(r.dir(), pkg.Path)
+}
+
+func (r *FSRepository) PackageByID(ctx context.Context, id string) (*RemotePackage, error) {
+	list, err := r.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range list {
+		if list[i].ID == id {
+			return &list[i], nil
+		}
+	}
+
+	return nil, fmt.Errorf("package not found")
+}
+
+func (r *FSRepository) GetPackageZip(ctx context.Context, pkg RemotePackage) (io.ReadCloser, error) {
+	f, err := r.getFile(ctx, r.getPackagePath(pkg))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get package list file: %w", err)
 	}
@@ -50,7 +76,7 @@ func (r *FSRepository) GetPackage(ctx context.Context, pkg RemotePackage) (io.Re
 }
 
 func (r *FSRepository) getFile(ctx context.Context, path string) (fs.File, error) {
-	ret, err := r.Root.Open(path)
+	ret, err := os.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get file %q: %w", path, err)
 	}

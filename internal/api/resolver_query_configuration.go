@@ -127,6 +127,8 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		LiveTranscodeInputArgs:        config.GetLiveTranscodeInputArgs(),
 		LiveTranscodeOutputArgs:       config.GetLiveTranscodeOutputArgs(),
 		DrawFunscriptHeatmapRange:     config.GetDrawFunscriptHeatmapRange(),
+		ScraperPackageSources:         config.GetScraperPackageSources(),
+		PluginPackageSources:          config.GetPluginPackageSources(),
 	}
 }
 

@@ -136,6 +136,9 @@ const (
 	PluginsSettingPrefix = PluginsSetting + "."
 	DisabledPlugins      = "plugins.disabled"
 
+	PluginPackageSources  = "plugins.package_sources"
+	ScraperPackageSources = "scrapers.package_sources"
+
 	// i18n
 	Language = "language"
 
@@ -1517,6 +1520,23 @@ func (i *Instance) GetNoProxy() string {
 func (i *Instance) ActivatePublicAccessTripwire(requestIP string) error {
 	i.Set(SecurityTripwireAccessedFromPublicInternet, requestIP)
 	return i.Write()
+}
+
+func (i *Instance) getPackageSources(key string) []*models.PackageSource {
+	var sources []*models.PackageSource
+	if err := i.unmarshalKey(key, &sources); err != nil {
+		logger.Warnf("error in unmarshalkey: %v", err)
+	}
+
+	return sources
+}
+
+func (i *Instance) GetPluginPackageSources() []*models.PackageSource {
+	return i.getPackageSources(PluginPackageSources)
+}
+
+func (i *Instance) GetScraperPackageSources() []*models.PackageSource {
+	return i.getPackageSources(ScraperPackageSources)
 }
 
 func (i *Instance) Validate() error {

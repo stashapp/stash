@@ -127,11 +127,7 @@ type PackageStatus struct {
 }
 
 func (s PackageStatus) Upgradable() bool {
-	if s.Local == nil {
-		return false
-	}
-
-	if s.Remote == nil {
+	if s.Local == nil || s.Remote == nil {
 		return false
 	}
 

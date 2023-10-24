@@ -1,0 +1,35 @@
+enum PackageType {
+  Scraper
+  Plugin
+}
+
+type Package {
+  id: String!
+  name: String!
+  description: String
+  version: String
+  date: Timestamp
+  
+  "The available upgraded version of this package"
+  upgrade: RemotePackage
+}
+
+type RemotePackage {
+  sourceURL: String!
+  package: Package!
+}
+
+input PackageSpecInput {
+  id: String!
+  sourceURL: String!
+}
+
+type PackageSource {
+  name: String
+  url: String!
+}
+
+input PackageSourceInput {
+  name: String
+  url: String!
+}

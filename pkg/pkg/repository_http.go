@@ -12,10 +12,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const (
-	IndexPath    = "index.yml"
-	ManifestPath = "manifest.yml"
-)
+// DefaultCacheTTL is the default time to live for the index cache.
+const DefaultCacheTTL = 5 * time.Minute
 
 // HttpRepository is a HTTP based repository.
 // It is configured with a package list URL. Packages are located from the Path field of the package.
@@ -35,7 +33,7 @@ type HttpRepository struct {
 }
 
 // NewHttpRepository creates a new Repository. If client is nil then http.DefaultClient is used.
-func NewHttpRepository(packageListURL url.URL, client *http.Client) *HttpRepository {
+func NewHttpRepository(packageListURL url.URL, client *http.Client, cacheTTL time.Duration) *HttpRepository {
 	if client == nil {
 		client = http.DefaultClient
 	}
@@ -43,6 +41,10 @@ func NewHttpRepository(packageListURL url.URL, client *http.Client) *HttpReposit
 		PackageListURL: packageListURL,
 		Client:         client,
 	}
+}
+
+func (r *HttpRepository) Path() string {
+	return r.PackageListURL.String()
 }
 
 func (r *HttpRepository) List(ctx context.Context) ([]RemotePackage, error) {
@@ -77,7 +79,22 @@ func (r *HttpRepository) List(ctx context.Context) ([]RemotePackage, error) {
 	return index, nil
 }
 
-func (r *HttpRepository) GetPackage(ctx context.Context, pkg RemotePackage) (io.ReadCloser, error) {
+func (r *HttpRepository) PackageByID(ctx context.Context, id string) (*RemotePackage, error) {
+	list, err := r.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range list {
+		if list[i].ID == id {
+			return &list[i], nil
+		}
+	}
+
+	return nil, fmt.Errorf("package not found")
+}
+
+func (r *HttpRepository) GetPackageZip(ctx context.Context, pkg RemotePackage) (io.ReadCloser, error) {
 	path := pkg.Path
 
 	u := r.PackageListURL

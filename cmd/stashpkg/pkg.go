@@ -66,13 +66,10 @@ func initManager() {
 			os.Exit(1)
 		}
 
-		remote = pkg.NewHttpRepository(*u, nil)
+		remote = pkg.NewHttpRepository(*u, nil, pkg.DefaultCacheTTL)
 	} else {
-		root := filepath.Dir(cfg.RemotePath)
-		fn := filepath.Base(cfg.RemotePath)
 		remote = &pkg.FSRepository{
-			Root:                os.DirFS(root),
-			PackageListFilename: fn,
+			PackageListPath: cfg.RemotePath,
 		}
 	}
 
@@ -91,10 +88,10 @@ func initManager() {
 }
 
 func usage() {
-	fmt.Print(`Usage: pakman <command> [args...]
-Pakman is a package manager for the Pak package format.
+	fmt.Print(`Usage: stashpkg <command> [args...]
+stashpkg is a package manager for stash.
 
-Pakman will look for a configuration file "stashpkg.yml" in the current working directory. It will output an error if it cannot find the file.
+stashpkg will look for a configuration file "stashpkg.yml" in the current working directory. It will output an error if it cannot find the file.
 
 The format of stashpkg.yml is as follows:
 
@@ -142,7 +139,7 @@ func install() {
 	for _, spec := range specs {
 		fmt.Printf("Installing %s %s\n", spec.ID, spec.PackageVersion.String())
 
-		err := manager.Install(ctx, *spec)
+		err := manager.Install(ctx, manager.Remotes[0], spec.ID)
 		if err != nil {
 			fmt.Printf("Error installing package %s: %v\n", spec, err)
 		}
@@ -197,7 +194,7 @@ func upgrade() {
 			continue
 		}
 
-		err := manager.Install(ctx, *toUpgrade.Remote)
+		err := manager.Install(ctx, manager.Remotes[0], toUpgrade.Remote.ID)
 		if err != nil {
 			fmt.Printf("Error installing package %s: %v\n", toUpgrade.Remote.ID, err)
 		}
@@ -301,7 +298,7 @@ func search() {
 		os.Exit(1)
 	}
 
-	index, err := manager.ListRemote(ctx)
+	index, err := manager.ListRemote(ctx, nil)
 	if err != nil {
 		fmt.Printf("Error listing packages: %v\n", err)
 		os.Exit(1)

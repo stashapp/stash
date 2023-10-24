@@ -15,6 +15,16 @@ type Manager struct {
 	Remotes []RemoteRepository
 }
 
+func (m *Manager) FindRemote(path string) RemoteRepository {
+	for _, r := range m.Remotes {
+		if r.Path() == path {
+			return r
+		}
+	}
+
+	return nil
+}
+
 func (m *Manager) ListInstalled(ctx context.Context) (LocalPackageIndex, error) {
 	installedList, err := m.Local.List(ctx)
 	if err != nil {
@@ -24,10 +34,14 @@ func (m *Manager) ListInstalled(ctx context.Context) (LocalPackageIndex, error) 
 	return localPackageIndexFromList(installedList), nil
 }
 
-func (m *Manager) ListRemote(ctx context.Context) (RemotePackageIndex, error) {
+func (m *Manager) ListRemote(ctx context.Context, remotes []RemoteRepository) (RemotePackageIndex, error) {
 	var retList []RemotePackage
 
-	for _, r := range m.Remotes {
+	if len(remotes) == 0 {
+		remotes = m.Remotes
+	}
+
+	for _, r := range remotes {
 		list, err := r.List(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("listing remote packages: %w", err)
@@ -51,7 +65,7 @@ func (m *Manager) InstalledStatus(ctx context.Context) (PackageStatusIndex, erro
 		return nil, err
 	}
 
-	remoteList, err := m.ListRemote(ctx)
+	remoteList, err := m.ListRemote(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +83,7 @@ func (m *Manager) List(ctx context.Context) (PackageStatusIndex, error) {
 		return nil, err
 	}
 
-	remoteList, err := m.ListRemote(ctx)
+	remoteList, err := m.ListRemote(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -81,8 +95,13 @@ func (m *Manager) List(ctx context.Context) (PackageStatusIndex, error) {
 	return ret, nil
 }
 
-func (m *Manager) Install(ctx context.Context, pkg RemotePackage) error {
-	fromRemote, err := pkg.Repository.GetPackage(ctx, pkg)
+func (m *Manager) Install(ctx context.Context, remote RemoteRepository, id string) error {
+	pkg, err := remote.PackageByID(ctx, id)
+	if err != nil {
+		return fmt.Errorf("getting remote package: %w", err)
+	}
+
+	fromRemote, err := remote.GetPackageZip(ctx, *pkg)
 	if err != nil {
 		return fmt.Errorf("getting remote package: %w", err)
 	}
@@ -104,7 +123,7 @@ func (m *Manager) Install(ctx context.Context, pkg RemotePackage) error {
 		return fmt.Errorf("reading zip data: %w", err)
 	}
 
-	if err := m.Local.InstallPackage(ctx, pkg, zr); err != nil {
+	if err := m.Local.InstallPackage(ctx, *pkg, zr); err != nil {
 		return fmt.Errorf("installing package: %w", err)
 	}
 

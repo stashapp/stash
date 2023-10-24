@@ -12,6 +12,9 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// ManifestFile is the default filename for the package manifest.
+const ManifestFile = "manifest"
+
 // Store is a folder-based local repository.
 // Packages are installed in their own directory under BaseDir.
 // The package details are stored in a file named based on PackageFile.
