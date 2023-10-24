@@ -7,22 +7,55 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
+	"net/http"
+	"net/url"
+	"path/filepath"
+	"strings"
+	"time"
 )
 
 // Manager manages the installation of paks.
 type Manager struct {
-	Local   LocalRepository
-	Remotes []RemoteRepository
+	Local       LocalRepository
+	RemoteCache map[string]*remotePackageCache
+
+	Client *http.Client
+
+	// CacheTTL is the time to live for the index cache.
+	// The index is cached for this duration. The first request after the cache
+	// expires will cause the index to be reloaded.
+	// This applies only to http remote indexes.
+	CacheTTL time.Duration
 }
 
-func (m *Manager) FindRemote(path string) RemoteRepository {
-	for _, r := range m.Remotes {
-		if r.Path() == path {
-			return r
+func (m *Manager) remoteFromURL(path string) (RemoteRepository, error) {
+	if strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://") {
+		u, err := url.Parse(path)
+		if err != nil {
+			return nil, err
 		}
+		return NewHttpRepository(*u, m.Client), nil
+	} else {
+		return &FSRepository{
+			PackageListPath: path,
+		}, nil
+	}
+}
+
+func (m *Manager) checkCacheExpired(path string) {
+	if m.RemoteCache == nil {
+		m.RemoteCache = make(map[string]*remotePackageCache)
 	}
 
-	return nil
+	cache := m.RemoteCache[path]
+
+	if cache == nil {
+		return
+	}
+
+	if time.Since(cache.cacheTime) > m.CacheTTL {
+		m.RemoteCache[path] = nil
+	}
 }
 
 func (m *Manager) ListInstalled(ctx context.Context) (LocalPackageIndex, error) {
@@ -34,28 +67,40 @@ func (m *Manager) ListInstalled(ctx context.Context) (LocalPackageIndex, error) 
 	return localPackageIndexFromList(installedList), nil
 }
 
-func (m *Manager) ListRemote(ctx context.Context, remotes []RemoteRepository) (RemotePackageIndex, error) {
-	var retList []RemotePackage
+func (m *Manager) ListRemote(ctx context.Context, remoteURL string) (RemotePackageIndex, error) {
+	m.checkCacheExpired(remoteURL)
+	cache := m.RemoteCache[remoteURL]
 
-	if len(remotes) == 0 {
-		remotes = m.Remotes
+	if cache != nil {
+		return cache.cachedIndex, nil
 	}
 
-	for _, r := range remotes {
-		list, err := r.List(ctx)
-		if err != nil {
-			return nil, fmt.Errorf("listing remote packages: %w", err)
-		}
-
-		// add link to RemotePackage
-		for i := range list {
-			list[i].Repository = r
-		}
-
-		retList = append(retList, list...)
+	r, err := m.remoteFromURL(remoteURL)
+	if err != nil {
+		return nil, fmt.Errorf("creating remote repository: %w", err)
 	}
 
-	return remotePackageIndexFromList(retList), nil
+	list, err := r.List(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("listing remote packages: %w", err)
+	}
+
+	// add link to RemotePackage
+	for i := range list {
+		list[i].Repository = r
+	}
+
+	ret := remotePackageIndexFromList(list)
+
+	// only cache http results
+	if _, ok := r.(*HttpRepository); ok {
+		m.RemoteCache[remoteURL] = &remotePackageCache{
+			cachedIndex: ret,
+			cacheTime:   time.Now(),
+		}
+	}
+
+	return ret, nil
 }
 
 func (m *Manager) InstalledStatus(ctx context.Context) (PackageStatusIndex, error) {
@@ -65,38 +110,46 @@ func (m *Manager) InstalledStatus(ctx context.Context) (PackageStatusIndex, erro
 		return nil, err
 	}
 
-	remoteList, err := m.ListRemote(ctx, nil)
-	if err != nil {
-		return nil, err
+	// get remotes for all installed packages
+	allRemoteList := make(RemotePackageIndex)
+
+	remoteURLs := installed.remoteURLs()
+	for _, remoteURL := range remoteURLs {
+		remoteList, err := m.ListRemote(ctx, remoteURL)
+		if err != nil {
+			return nil, err
+		}
+
+		allRemoteList.merge(remoteList)
 	}
 
 	ret := make(PackageStatusIndex)
-	ret.populateLocal(installed, remoteList)
+	ret.populateLocal(installed, allRemoteList)
 
 	return ret, nil
 }
 
-func (m *Manager) List(ctx context.Context) (PackageStatusIndex, error) {
-	// get all installed packages
-	installed, err := m.ListInstalled(ctx)
+func (m *Manager) packageByID(ctx context.Context, remoteURL string, id string) (*RemotePackage, error) {
+	l, err := m.ListRemote(ctx, remoteURL)
 	if err != nil {
 		return nil, err
 	}
 
-	remoteList, err := m.ListRemote(ctx, nil)
-	if err != nil {
-		return nil, err
+	pkg, found := l[id]
+	if !found {
+		return nil, nil
 	}
 
-	ret := make(PackageStatusIndex)
-	ret.populateLocal(installed, remoteList)
-	ret.populateRemote(remoteList)
-
-	return ret, nil
+	return &pkg, nil
 }
 
-func (m *Manager) Install(ctx context.Context, remote RemoteRepository, id string) error {
-	pkg, err := remote.PackageByID(ctx, id)
+func (m *Manager) Install(ctx context.Context, remoteURL string, id string) error {
+	remote, err := m.remoteFromURL(remoteURL)
+	if err != nil {
+		return fmt.Errorf("creating remote repository: %w", err)
+	}
+
+	pkg, err := m.packageByID(ctx, remoteURL, id)
 	if err != nil {
 		return fmt.Errorf("getting remote package: %w", err)
 	}
@@ -123,8 +176,51 @@ func (m *Manager) Install(ctx context.Context, remote RemoteRepository, id strin
 		return fmt.Errorf("reading zip data: %w", err)
 	}
 
-	if err := m.Local.InstallPackage(ctx, *pkg, zr); err != nil {
+	// uninstall existing package if present
+	if _, err := m.Local.getManifest(ctx, pkg.ID); err == nil {
+		if err := m.deletePackageFiles(ctx, pkg.ID); err != nil {
+			return fmt.Errorf("uninstalling existing package: %w", err)
+		}
+	}
+
+	if err := m.installPackage(*pkg, zr); err != nil {
 		return fmt.Errorf("installing package: %w", err)
+	}
+
+	return nil
+}
+
+func (m *Manager) installPackage(pkg RemotePackage, zr *zip.Reader) error {
+	manifest := Manifest{
+		ID:              pkg.ID,
+		Name:            pkg.Name,
+		PackageMetadata: pkg.PackageMetadata,
+		PackageVersion:  pkg.PackageVersion,
+		RepositoryURL:   pkg.Repository.Path(),
+	}
+
+	for _, f := range zr.File {
+		if f.FileInfo().IsDir() {
+			continue
+		}
+
+		i, err := f.Open()
+		if err != nil {
+			return err
+		}
+
+		fn := filepath.Clean(f.Name)
+		if err := m.Local.writeFile(pkg.ID, fn, f.Mode(), i); err != nil {
+			i.Close()
+			return fmt.Errorf("writing file %q: %w", fn, err)
+		}
+
+		i.Close()
+		manifest.Files = append(manifest.Files, fn)
+	}
+
+	if err := m.Local.writeManifest(pkg.ID, manifest); err != nil {
+		return fmt.Errorf("writing manifest: %w", err)
 	}
 
 	return nil
@@ -132,8 +228,33 @@ func (m *Manager) Install(ctx context.Context, remote RemoteRepository, id strin
 
 // Uninstall uninstalls the given package.
 func (m *Manager) Uninstall(ctx context.Context, id string) error {
-	if err := m.Local.DeletePackage(ctx, id); err != nil {
+	if err := m.deletePackageFiles(ctx, id); err != nil {
 		return fmt.Errorf("deleting local package: %w", err)
+	}
+
+	// also delete the directory
+	if err := m.Local.deletePackageDir(id); err != nil {
+		return fmt.Errorf("deleting local package directory: %w", err)
+	}
+
+	return nil
+}
+
+func (m *Manager) deletePackageFiles(ctx context.Context, id string) error {
+	manifest, err := m.Local.getManifest(ctx, id)
+	if err != nil {
+		return fmt.Errorf("getting manifest: %w", err)
+	}
+
+	for _, f := range manifest.Files {
+		if err := m.Local.deleteFile(id, f); err != nil {
+			// ignore
+			continue
+		}
+	}
+
+	if err := m.Local.deleteManifest(id); err != nil {
+		return fmt.Errorf("deleting manifest: %w", err)
 	}
 
 	return nil

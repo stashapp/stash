@@ -1,13 +1,9 @@
 package pkg
 
 import (
-	"archive/zip"
 	"context"
 	"io"
-	"net/http"
-	"net/url"
-	"strings"
-	"time"
+	"io/fs"
 )
 
 // RemoteRepository is a repository that can be used to get paks from.
@@ -23,7 +19,6 @@ type RemotePackageLister interface {
 }
 
 type RemotePackageGetter interface {
-	PackageByID(ctx context.Context, id string) (*RemotePackage, error)
 	GetPackageZip(ctx context.Context, pkg RemotePackage) (io.ReadCloser, error)
 }
 
@@ -35,28 +30,18 @@ type LocalRepository interface {
 }
 
 type PackageInstaller interface {
-	InstallPackage(ctx context.Context, pkg RemotePackage, data *zip.Reader) error
+	writeFile(packageID string, name string, mode fs.FileMode, i io.Reader) error
+	writeManifest(packageID string, m Manifest) error
 }
 
 type PackageDeleter interface {
-	DeletePackage(ctx context.Context, id string) error
+	deleteFile(packageID string, name string) error
+	deleteManifest(packageID string) error
+	deletePackageDir(packageID string) error
 }
 
 type LocalPackageLister interface {
 	// List returns all specs in the repository.
 	List(ctx context.Context) ([]Manifest, error)
-}
-
-func NewRemoteRepository(path string, httpClient *http.Client, httpTTL time.Duration) (RemoteRepository, error) {
-	if strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://") {
-		u, err := url.Parse(path)
-		if err != nil {
-			return nil, err
-		}
-		return NewHttpRepository(*u, httpClient, httpTTL), nil
-	} else {
-		return &FSRepository{
-			PackageListPath: path,
-		}, nil
-	}
+	getManifest(ctx context.Context, id string) (*Manifest, error)
 }

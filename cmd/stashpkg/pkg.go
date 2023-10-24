@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
@@ -58,21 +57,6 @@ func main() {
 }
 
 func initManager() {
-	var remote pkg.RemoteRepository
-	if strings.HasPrefix(cfg.RemotePath, "http://") || strings.HasPrefix(cfg.RemotePath, "https://") {
-		u, err := url.Parse(cfg.RemotePath)
-		if err != nil {
-			fmt.Printf("Error parsing remote URL: %v\n", err)
-			os.Exit(1)
-		}
-
-		remote = pkg.NewHttpRepository(*u, nil, pkg.DefaultCacheTTL)
-	} else {
-		remote = &pkg.FSRepository{
-			PackageListPath: cfg.RemotePath,
-		}
-	}
-
 	manifestFn := cfg.ManifestFilename
 	if manifestFn == "" {
 		manifestFn = "manifest"
@@ -83,7 +67,7 @@ func initManager() {
 			BaseDir:      cfg.LocalPath,
 			ManifestFile: manifestFn,
 		},
-		Remotes: []pkg.RemoteRepository{remote},
+		CacheTTL: pkg.DefaultCacheTTL,
 	}
 }
 
@@ -120,11 +104,9 @@ func install() {
 		os.Exit(1)
 	}
 
-	var specs []*pkg.RemotePackage
+	var specs []pkg.RemotePackage
 
-	var pkgIndex pkg.PackageStatusIndex
-	var err error
-	pkgIndex, err = manager.List(ctx)
+	pkgIndex, err := manager.ListRemote(ctx, cfg.RemotePath)
 	if err != nil {
 		fmt.Printf("Error searching for packages: %v\n", err)
 		os.Exit(1)
@@ -139,18 +121,18 @@ func install() {
 	for _, spec := range specs {
 		fmt.Printf("Installing %s %s\n", spec.ID, spec.PackageVersion.String())
 
-		err := manager.Install(ctx, manager.Remotes[0], spec.ID)
+		err := manager.Install(ctx, cfg.RemotePath, spec.ID)
 		if err != nil {
 			fmt.Printf("Error installing package %s: %v\n", spec, err)
 		}
 	}
 }
 
-func filterList(index pkg.PackageStatusIndex, term string) []*pkg.RemotePackage {
-	var ret []*pkg.RemotePackage
+func filterList(index pkg.RemotePackageIndex, term string) []pkg.RemotePackage {
+	var ret []pkg.RemotePackage
 	for k, v := range index {
 		if matched, _ := filepath.Match(term, k); matched {
-			ret = append(ret, v.Remote)
+			ret = append(ret, v)
 		}
 	}
 
@@ -176,7 +158,7 @@ func uninstall() {
 }
 
 func upgrade() {
-	u, err := manager.List(ctx)
+	u, err := manager.InstalledStatus(ctx)
 
 	if err != nil {
 		fmt.Printf("Error listing upgradable packages: %v\n", err)
@@ -194,7 +176,7 @@ func upgrade() {
 			continue
 		}
 
-		err := manager.Install(ctx, manager.Remotes[0], toUpgrade.Remote.ID)
+		err := manager.Install(ctx, cfg.RemotePath, toUpgrade.Remote.ID)
 		if err != nil {
 			fmt.Printf("Error installing package %s: %v\n", toUpgrade.Remote.ID, err)
 		}
@@ -202,7 +184,7 @@ func upgrade() {
 }
 
 func upgradable() {
-	u, err := manager.List(ctx)
+	u, err := manager.InstalledStatus(ctx)
 
 	if err != nil {
 		fmt.Printf("Error listing upgradable packages: %v\n", err)
@@ -217,7 +199,13 @@ func upgradable() {
 }
 
 func list() {
-	index, err := manager.List(ctx)
+	installed, err := manager.ListInstalled(ctx)
+	if err != nil {
+		fmt.Printf("Error listing installed packages: %v\n", err)
+		os.Exit(1)
+	}
+
+	index, err := manager.ListRemote(ctx, cfg.RemotePath)
 	if err != nil {
 		fmt.Printf("Error listing packages: %v\n", err)
 		os.Exit(1)
@@ -229,36 +217,18 @@ func list() {
 		v := index[k]
 
 		var (
-			id          string
-			name        string
-			description string
-			status      pkg.PackageVersionStatus
-			version     string
+			status string
 		)
 
-		if v.Remote != nil {
-			id = v.Remote.ID
-			description = v.Remote.Description
-		}
-
-		if v.Local != nil {
-			id = v.Remote.ID
-			name = v.Local.Name
-			version = v.Local.PackageVersion.String()
-
-			if v.Remote != nil {
-				status = v.Local.VersionStatus(*v.Remote)
+		if local, found := installed[k]; found {
+			if local.PackageVersion.Upgradable(v.PackageVersion) {
+				status = "upgradable"
+			} else {
+				status = "installed"
 			}
 		}
 
-		if v.Remote != nil {
-			if v.Local == nil {
-				name = v.Remote.Name
-			}
-			version = v.Remote.PackageVersion.String()
-		}
-
-		fmt.Printf("%s - %s - %s [%s] %s\n", id, name, version, status, description)
+		fmt.Printf("%s - %s - %s [%s] %s\n", v.ID, v.Name, v.Version, status, v.Description)
 	}
 }
 
@@ -298,7 +268,7 @@ func search() {
 		os.Exit(1)
 	}
 
-	index, err := manager.ListRemote(ctx, nil)
+	index, err := manager.ListRemote(ctx, cfg.RemotePath)
 	if err != nil {
 		fmt.Printf("Error listing packages: %v\n", err)
 		os.Exit(1)

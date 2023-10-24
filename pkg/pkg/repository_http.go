@@ -22,18 +22,10 @@ const DefaultCacheTTL = 5 * time.Minute
 type HttpRepository struct {
 	PackageListURL url.URL
 	Client         *http.Client
-
-	// CacheTTL is the time to live for the index cache.
-	// The index is cached for this duration. The first request after the cache
-	// expires will cause the index to be reloaded.
-	CacheTTL time.Duration
-
-	cachedList []RemotePackage
-	cacheTime  time.Time
 }
 
 // NewHttpRepository creates a new Repository. If client is nil then http.DefaultClient is used.
-func NewHttpRepository(packageListURL url.URL, client *http.Client, cacheTTL time.Duration) *HttpRepository {
+func NewHttpRepository(packageListURL url.URL, client *http.Client) *HttpRepository {
 	if client == nil {
 		client = http.DefaultClient
 	}
@@ -48,12 +40,6 @@ func (r *HttpRepository) Path() string {
 }
 
 func (r *HttpRepository) List(ctx context.Context) ([]RemotePackage, error) {
-	r.checkCacheExpired()
-
-	if r.cachedList != nil {
-		return r.cachedList, nil
-	}
-
 	u := r.PackageListURL
 
 	f, err := r.getFile(ctx, u)
@@ -73,25 +59,7 @@ func (r *HttpRepository) List(ctx context.Context) ([]RemotePackage, error) {
 		return nil, fmt.Errorf("reading package list: %w", err)
 	}
 
-	r.cachedList = index
-	r.cacheTime = time.Now()
-
 	return index, nil
-}
-
-func (r *HttpRepository) PackageByID(ctx context.Context, id string) (*RemotePackage, error) {
-	list, err := r.List(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	for i := range list {
-		if list[i].ID == id {
-			return &list[i], nil
-		}
-	}
-
-	return nil, fmt.Errorf("package not found")
 }
 
 func (r *HttpRepository) GetPackageZip(ctx context.Context, pkg RemotePackage) (io.ReadCloser, error) {
@@ -106,16 +74,6 @@ func (r *HttpRepository) GetPackageZip(ctx context.Context, pkg RemotePackage) (
 	}
 
 	return f, nil
-}
-
-func (r *HttpRepository) checkCacheExpired() {
-	if r.cachedList == nil {
-		return
-	}
-
-	if time.Since(r.cacheTime) > r.CacheTTL {
-		r.cachedList = nil
-	}
 }
 
 func (r *HttpRepository) getFile(ctx context.Context, u url.URL) (io.ReadCloser, error) {

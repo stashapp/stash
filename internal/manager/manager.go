@@ -293,22 +293,13 @@ func initialisePackageManager(localPath string, sources []*models.PackageSource)
 		Timeout: timeout,
 	}
 
-	var remoteRepositories []pkg.RemoteRepository
-	for _, src := range sources {
-		remote, err := pkg.NewRemoteRepository(src.URL, httpClient, pkg.DefaultCacheTTL)
-		if err != nil {
-			logger.Errorf("error creating remote repository for path %q: %v", err)
-			continue
-		}
-		remoteRepositories = append(remoteRepositories, remote)
-	}
-
 	return &pkg.Manager{
 		Local: &pkg.Store{
 			BaseDir:      localPath,
 			ManifestFile: pkg.ManifestFile,
 		},
-		Remotes: remoteRepositories,
+		Client:   httpClient,
+		CacheTTL: pkg.DefaultCacheTTL,
 	}
 }
 

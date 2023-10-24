@@ -136,16 +136,7 @@ func (r *queryResolver) AvailablePackages(ctx context.Context, typeArg PackageTy
 		return nil, err
 	}
 
-	var sources []pkg.RemoteRepository
-	if len(source) > 0 {
-		s := pm.FindRemote(source)
-		if s == nil {
-			return nil, errors.New("source not found")
-		}
-		sources = []pkg.RemoteRepository{s}
-	}
-
-	available, err := pm.ListRemote(ctx, sources)
+	available, err := pm.ListRemote(ctx, source)
 	if err != nil {
 		return nil, err
 	}

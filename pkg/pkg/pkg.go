@@ -3,6 +3,8 @@ package pkg
 import (
 	"fmt"
 	"time"
+
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 const timeFormat = "2006-01-02 15:04:05 -0700"
@@ -35,6 +37,10 @@ type PackageMetadata struct {
 type PackageVersion struct {
 	Version string `yaml:"version"`
 	Date    Time   `yaml:"date"`
+}
+
+func (v PackageVersion) Upgradable(o PackageVersion) bool {
+	return o.Date.After(v.Date.Time)
 }
 
 func (v PackageVersion) String() string {
@@ -70,30 +76,25 @@ type Manifest struct {
 	Name            string `yaml:"name"`
 	PackageMetadata `yaml:",inline"`
 	PackageVersion  `yaml:",inline"`
-}
 
-type PackageVersionStatus string
-
-const (
-	PackageStatusUpToDate PackageVersionStatus = "up-to-date"
-	PackageStatusOutdated PackageVersionStatus = "outdated"
-	PackageStatusUnknown  PackageVersionStatus = "unknown"
-)
-
-func (p Manifest) VersionStatus(remote RemotePackage) PackageVersionStatus {
-	if remote.Date.After(remote.Date.Time) {
-		return PackageStatusOutdated
-	}
-
-	if p.Version == remote.Version {
-		return PackageStatusUpToDate
-	}
-
-	return PackageStatusOutdated
+	RepositoryURL string   `yaml:"source_repository"`
+	Files         []string `yaml:"files"`
 }
 
 // RemotePackageIndex is a map of package name to RemotePackage
 type RemotePackageIndex map[string]RemotePackage
+
+func (i RemotePackageIndex) merge(o RemotePackageIndex) {
+	for id, pkg := range o {
+		if existing, found := i[id]; found {
+			if existing.Date.After(pkg.Date.Time) {
+				continue
+			}
+		}
+
+		i[id] = pkg
+	}
+}
 
 func remotePackageIndexFromList(packages []RemotePackage) RemotePackageIndex {
 	index := make(RemotePackageIndex)
@@ -113,6 +114,16 @@ func remotePackageIndexFromList(packages []RemotePackage) RemotePackageIndex {
 // LocalPackageIndex is a map of package name to RemotePackage
 type LocalPackageIndex map[string]Manifest
 
+func (i LocalPackageIndex) remoteURLs() []string {
+	var ret []string
+
+	for _, pkg := range i {
+		ret = stringslice.StrAppendUnique(ret, pkg.RepositoryURL)
+	}
+
+	return ret
+}
+
 func localPackageIndexFromList(packages []Manifest) LocalPackageIndex {
 	index := make(LocalPackageIndex)
 	for _, pkg := range packages {
@@ -131,7 +142,7 @@ func (s PackageStatus) Upgradable() bool {
 		return false
 	}
 
-	return s.Remote.Date.After(s.Local.Date.Time)
+	return s.Local.Upgradable(s.Remote.PackageVersion)
 }
 
 type PackageStatusIndex map[string]PackageStatus
@@ -150,23 +161,6 @@ func (i PackageStatusIndex) populateLocal(installed LocalPackageIndex, remote Re
 	}
 }
 
-func (i PackageStatusIndex) populateRemote(remote RemotePackageIndex) {
-	for id, pkg := range remote {
-		if _, found := i[id]; found {
-			// already populated; ignore
-			continue
-		}
-
-		copy := pkg
-
-		s := PackageStatus{
-			Remote: &copy,
-		}
-
-		i[pkg.ID] = s
-	}
-}
-
 func (i PackageStatusIndex) Upgradable() []PackageStatus {
 	var ret []PackageStatus
 
@@ -177,4 +171,9 @@ func (i PackageStatusIndex) Upgradable() []PackageStatus {
 	}
 
 	return ret
+}
+
+type remotePackageCache struct {
+	cachedIndex RemotePackageIndex
+	cacheTime   time.Time
 }

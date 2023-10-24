@@ -2,7 +2,6 @@ package task
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/job"
@@ -18,12 +17,7 @@ type PackagesJob struct {
 func (j *PackagesJob) installPackage(ctx context.Context, p models.PackageSpecInput, progress *job.Progress) error {
 	defer progress.Increment()
 
-	source := j.PackageManager.FindRemote(p.SourceURL)
-	if source == nil {
-		return errors.New("source not found")
-	}
-
-	if err := j.PackageManager.Install(ctx, source, p.ID); err != nil {
+	if err := j.PackageManager.Install(ctx, p.SourceURL, p.ID); err != nil {
 		return fmt.Errorf("installing package: %w", err)
 	}
 

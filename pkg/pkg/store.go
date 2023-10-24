@@ -1,8 +1,8 @@
 package pkg
 
 import (
-	"archive/zip"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -38,8 +38,13 @@ func (r *Store) List(ctx context.Context) ([]Manifest, error) {
 			continue
 		}
 
-		pkg, err := r.readManifest(ee)
+		pkg, err := r.getManifest(ctx, ee.Name())
 		if err != nil {
+			// ignore if manifest does not exist
+			if errors.Is(err, os.ErrNotExist) {
+				continue
+			}
+
 			return nil, err
 		}
 
@@ -57,8 +62,9 @@ func (r *Store) manifestPath(id string) string {
 	return filepath.Join(r.packageDir(id), r.ManifestFile)
 }
 
-func (r *Store) readManifest(e fs.DirEntry) (*Manifest, error) {
-	pfp := r.manifestPath(e.Name())
+func (r *Store) getManifest(ctx context.Context, packageID string) (*Manifest, error) {
+	pfp := r.manifestPath(packageID)
+
 	data, err := os.ReadFile(pfp)
 	if err != nil {
 		return nil, fmt.Errorf("reading manifest file %q: %w", pfp, err)
@@ -72,61 +78,70 @@ func (r *Store) readManifest(e fs.DirEntry) (*Manifest, error) {
 	return &manifest, nil
 }
 
-func (r *Store) InstallPackage(ctx context.Context, pkg RemotePackage, zr *zip.Reader) error {
-	// assume data is zip encoded
-	// assume zip contains the package file
-
-	// create the directory for the package
-	pkgDir := r.packageDir(pkg.ID)
-	if err := os.MkdirAll(pkgDir, 0755); err != nil {
-		return fmt.Errorf("creating package directory %q: %w", pkgDir, err)
-	}
-
-	// copy the contents of the zip into the package directory, overwriting existing
-	if err := unzipFile(pkgDir, zr); err != nil {
-		return fmt.Errorf("unzipping package data: %w", err)
+func (r *Store) ensurePackageExists(packageID string) error {
+	// ensure the manifest file exists
+	if _, err := os.Stat(r.manifestPath(packageID)); err != nil {
+		if os.IsNotExist(err) {
+			return fmt.Errorf("package %q does not exist", packageID)
+		}
 	}
 
 	return nil
 }
 
-func unzipFile(dest string, zr *zip.Reader) error {
-	for _, f := range zr.File {
-		fn := filepath.Join(dest, f.Name)
+func (r *Store) writeFile(packageID string, name string, mode fs.FileMode, i io.Reader) error {
+	fn := filepath.Join(r.packageDir(packageID), name)
 
-		if f.FileInfo().IsDir() {
-			if err := os.MkdirAll(fn, os.ModePerm); err != nil {
-				return fmt.Errorf("creating directory %v: %w", fn, err)
-			}
-			continue
-		}
+	if err := os.MkdirAll(filepath.Dir(fn), os.ModePerm); err != nil {
+		return fmt.Errorf("creating directory %v: %w", fn, err)
+	}
 
-		if err := os.MkdirAll(filepath.Dir(fn), os.ModePerm); err != nil {
-			return fmt.Errorf("creating directory %v: %w", fn, err)
-		}
+	o, err := os.OpenFile(fn, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, mode)
+	if err != nil {
+		return err
+	}
 
-		o, err := os.OpenFile(fn, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
-		if err != nil {
-			return err
-		}
+	defer o.Close()
 
-		i, err := f.Open()
-		if err != nil {
-			o.Close()
-			return err
-		}
-
-		if _, err := io.Copy(o, i); err != nil {
-			o.Close()
-			i.Close()
-			return err
-		}
-
-		o.Close()
-		i.Close()
+	if _, err := io.Copy(o, i); err != nil {
+		return err
 	}
 
 	return nil
+}
+
+func (r *Store) writeManifest(packageID string, m Manifest) error {
+	pfp := r.manifestPath(packageID)
+	data, err := yaml.Marshal(m)
+	if err != nil {
+		return fmt.Errorf("marshaling manifest: %w", err)
+	}
+
+	if err := os.WriteFile(pfp, data, os.ModePerm); err != nil {
+		return fmt.Errorf("writing manifest file %q: %w", pfp, err)
+	}
+
+	return nil
+}
+
+func (r *Store) deleteFile(packageID string, name string) error {
+	// ensure the package exists
+	if err := r.ensurePackageExists(packageID); err != nil {
+		return err
+	}
+
+	pkgDir := r.packageDir(packageID)
+	fp := filepath.Join(pkgDir, name)
+
+	return os.Remove(fp)
+}
+
+func (r *Store) deleteManifest(packageID string) error {
+	return r.deleteFile(packageID, r.ManifestFile)
+}
+
+func (r *Store) deletePackageDir(packageID string) error {
+	return os.Remove(r.packageDir(packageID))
 }
 
 func (r *Store) DeletePackage(ctx context.Context, id string) error {
