@@ -1,22 +1,14 @@
 import { Button, Form, Table } from "react-bootstrap";
-import React, { useEffect, useState, useMemo, useContext } from "react";
-import { FormattedMessage } from "react-intl";
+import React, { useState, useMemo, useEffect } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
-import {
-  queryAvailableScraperPackages,
-  useInstallScraperPackages,
-  useInstalledScraperPackages,
-  useInstalledScraperPackagesStatus,
-  useUninstallScraperPackages,
-  useUpdateScraperPackages,
-} from "src/core/StashService";
-import { ConfigurationContext } from "src/hooks/Config";
 import { Icon } from "../Icon";
 import {
   faChevronDown,
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
-import { useMonitorJob } from "src/utils/job";
+
+type PackageSpec = GQL.PackageSpecInput & { name: string };
 
 function formatVersion(
   version: string | undefined | null,
@@ -40,13 +32,31 @@ function formatDate(date: string | undefined | null) {
   return new Date(date).toISOString();
 }
 
+interface IPackage {
+  id: string;
+  name: string;
+}
+
+function filterPackages<T extends IPackage>(packages: T[], filter: string) {
+  if (!filter) return packages;
+
+  return packages.filter((pkg) => {
+    return (
+      pkg.name.toLowerCase().includes(filter.toLowerCase()) ||
+      pkg.id.toLowerCase().includes(filter.toLowerCase())
+    );
+  });
+}
+
 const InstalledPackagesList: React.FC<{
+  filter: string;
   loading?: boolean;
   updatesLoaded: boolean;
   packages: GQL.Package[];
   checkedPackages: GQL.Package[];
   setCheckedPackages: React.Dispatch<React.SetStateAction<GQL.Package[]>>;
 }> = ({
+  filter,
   packages,
   checkedPackages,
   setCheckedPackages,
@@ -64,6 +74,10 @@ const InstalledPackagesList: React.FC<{
   const allChecked = useMemo(() => {
     return checkedPackages.length === packages.length;
   }, [checkedPackages, packages]);
+
+  const filteredPackages = useMemo(() => {
+    return filterPackages(packages, filter);
+  }, [filter, packages]);
 
   function toggleAllChecked() {
     setCheckedPackages(allChecked ? [] : packages.slice());
@@ -112,7 +126,7 @@ const InstalledPackagesList: React.FC<{
         </tr>
       </thead>
       <tbody>
-        {packages.map((pkg) => (
+        {filteredPackages.map((pkg) => (
           <tr key={pkg.id} className={rowClassname(pkg)}>
             <td>
               <Form.Check
@@ -146,6 +160,8 @@ const InstalledPackagesList: React.FC<{
 
 const InstalledPackagesToolbar: React.FC<{
   loading?: boolean;
+  filter: string;
+  setFilter: (s: string) => void;
   checkedPackages: GQL.Package[];
   onCheckForUpdates: () => void;
   onUpdatePackages: () => void;
@@ -156,32 +172,45 @@ const InstalledPackagesToolbar: React.FC<{
   onCheckForUpdates,
   onUpdatePackages,
   onUninstallPackages,
+  filter,
+  setFilter,
 }) => {
+  const intl = useIntl();
   // TODO - alert for uninstall
 
   return (
     <div className="package-manager-toolbar">
-      <Button
-        variant="primary"
-        onClick={() => onCheckForUpdates()}
-        disabled={loading}
-      >
-        <FormattedMessage id="package_manager.check_for_updates" />
-      </Button>
-      <Button
-        variant="primary"
-        disabled={!checkedPackages.length || loading}
-        onClick={() => onUpdatePackages()}
-      >
-        <FormattedMessage id="package_manager.update" />
-      </Button>
-      <Button
-        variant="danger"
-        disabled={!checkedPackages.length || loading}
-        onClick={() => onUninstallPackages()}
-      >
-        <FormattedMessage id="package_manager.uninstall" />
-      </Button>
+      <div>
+        <Form.Control
+          placeholder={`${intl.formatMessage({ id: "filter" })}...`}
+          className="text-input"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+        />
+      </div>
+      <div>
+        <Button
+          variant="primary"
+          onClick={() => onCheckForUpdates()}
+          disabled={loading}
+        >
+          <FormattedMessage id="package_manager.check_for_updates" />
+        </Button>
+        <Button
+          variant="primary"
+          disabled={!checkedPackages.length || loading}
+          onClick={() => onUpdatePackages()}
+        >
+          <FormattedMessage id="package_manager.update" />
+        </Button>
+        <Button
+          variant="danger"
+          disabled={!checkedPackages.length || loading}
+          onClick={() => onUninstallPackages()}
+        >
+          <FormattedMessage id="package_manager.uninstall" />
+        </Button>
+      </div>
     </div>
   );
 };
@@ -202,19 +231,41 @@ const InstalledPackages: React.FC<{
   loading,
 }) => {
   const [checkedPackages, setCheckedPackages] = useState<GQL.Package[]>([]);
+  const [filter, setFilter] = useState("");
+
+  const filteredPackages = useMemo(() => {
+    return filterPackages(checkedPackages, filter);
+  }, [checkedPackages, filter]);
+
+  useEffect(() => {
+    setCheckedPackages((prev) => {
+      const newVal = prev.filter((pkg) =>
+        packages.find((p) => p.id === pkg.id)
+      );
+      if (newVal.length !== prev.length) {
+        return newVal;
+      }
+
+      return prev;
+    });
+  }, [checkedPackages, packages]);
 
   return (
     <div className="installed-packages">
       <InstalledPackagesToolbar
+        filter={filter}
+        setFilter={(f) => setFilter(f)}
         loading={loading}
-        checkedPackages={checkedPackages}
+        checkedPackages={filteredPackages}
         onCheckForUpdates={onCheckForUpdates}
-        onUpdatePackages={() => onUpdatePackages(checkedPackages)}
-        onUninstallPackages={() => onUninstallPackages(checkedPackages)}
+        onUpdatePackages={() => onUpdatePackages(filteredPackages)}
+        onUninstallPackages={() => onUninstallPackages(filteredPackages)}
       />
       <InstalledPackagesList
+        filter={filter}
         loading={loading}
         packages={packages}
+        // use original checked packages so that check boxes are not affected by filter
         checkedPackages={checkedPackages}
         setCheckedPackages={setCheckedPackages}
         updatesLoaded={updatesLoaded}
@@ -224,32 +275,45 @@ const InstalledPackages: React.FC<{
 };
 
 const AvailablePackagesToolbar: React.FC<{
+  filter: string;
+  setFilter: (s: string) => void;
   loading?: boolean;
   checkedPackages: GQL.PackageSpecInput[];
   onInstallPackages: () => void;
-}> = ({ checkedPackages, onInstallPackages }) => {
+}> = ({ checkedPackages, onInstallPackages, loading, filter, setFilter }) => {
+  const intl = useIntl();
+
   return (
     <div className="package-manager-toolbar">
-      <Button
-        variant="primary"
-        disabled={!checkedPackages.length}
-        onClick={() => onInstallPackages()}
-      >
-        <FormattedMessage id="package_manager.install" />
-      </Button>
+      <div>
+        <Form.Control
+          placeholder={`${intl.formatMessage({ id: "filter" })}...`}
+          className="text-input"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+        />
+      </div>
+      <div>
+        <Button
+          variant="primary"
+          disabled={!checkedPackages.length || loading}
+          onClick={() => onInstallPackages()}
+        >
+          <FormattedMessage id="package_manager.install" />
+        </Button>
+      </div>
     </div>
   );
 };
 
 const AvailablePackagesList: React.FC<{
+  filter: string;
   loading?: boolean;
   sources: GQL.PackageSource[];
   packages: Record<string, GQL.Package[]>;
   loadSource: (source: string) => void;
-  checkedPackages: GQL.PackageSpecInput[];
-  setCheckedPackages: React.Dispatch<
-    React.SetStateAction<GQL.PackageSpecInput[]>
-  >;
+  checkedPackages: PackageSpec[];
+  setCheckedPackages: React.Dispatch<React.SetStateAction<PackageSpec[]>>;
 }> = ({
   sources,
   packages,
@@ -257,6 +321,7 @@ const AvailablePackagesList: React.FC<{
   checkedPackages,
   setCheckedPackages,
   loading,
+  filter,
 }) => {
   const [sourceOpen, setSourceOpen] = useState<Record<string, boolean>>({});
 
@@ -282,17 +347,27 @@ const AvailablePackagesList: React.FC<{
     return map;
   }, [checkedMap, packages]);
 
-  function togglePackage(sourceURL: string, id: string) {
+  const filteredPackages = useMemo(() => {
+    const map: Record<string, GQL.Package[]> = {};
+
+    Object.keys(packages).forEach((source) => {
+      map[source] = filterPackages(packages[source], filter);
+    });
+
+    return map;
+  }, [filter, packages]);
+
+  function togglePackage(sourceURL: string, pkg: GQL.Package) {
     if (loading) return;
     function isPackage(s: GQL.PackageSpecInput) {
-      return s.id === id && s.sourceURL === sourceURL;
+      return s.id === pkg.id && s.sourceURL === sourceURL;
     }
 
     setCheckedPackages((prev) => {
-      if (prev.find((s) => s.id === id && s.sourceURL === sourceURL)) {
+      if (prev.find((s) => s.id === pkg.id && s.sourceURL === sourceURL)) {
         return prev.filter((n) => !isPackage(n));
       } else {
-        return prev.concat({ id, sourceURL });
+        return prev.concat({ id: pkg.id, sourceURL, name: pkg.name });
       }
     });
   }
@@ -312,7 +387,11 @@ const AvailablePackagesList: React.FC<{
         return prev
           .filter((n) => n.sourceURL !== sourceURL)
           .concat(
-            packages[sourceURL]?.map((pkg) => ({ id: pkg.id, sourceURL })) ?? []
+            packages[sourceURL]?.map((pkg) => ({
+              id: pkg.id,
+              name: pkg.name,
+              sourceURL,
+            })) ?? []
           );
       });
     }
@@ -346,18 +425,18 @@ const AvailablePackagesList: React.FC<{
 
   function renderSource(source: GQL.PackageSource) {
     const children = sourceOpen[source.url]
-      ? packages[source.url]?.map((pkg) => (
+      ? filteredPackages[source.url]?.map((pkg) => (
           <tr key={pkg.id}>
             <td colSpan={2}>
               <Form.Check
                 checked={checkedMap[source.url]?.[pkg.id] ?? false}
-                onChange={() => togglePackage(source.url, pkg.id)}
+                onChange={() => togglePackage(source.url, pkg)}
                 disabled={loading}
               />
             </td>
             <td
               className="package-cell"
-              onClick={() => togglePackage(source.url, pkg.id)}
+              onClick={() => togglePackage(source.url, pkg)}
             >
               <span className="package-name">{pkg.name}</span>
               <span className="package-id">{pkg.id}</span>
@@ -428,18 +507,33 @@ const AvailablePackages: React.FC<{
   loadSource: (source: string) => void;
   onInstallPackages: (packages: GQL.PackageSpecInput[]) => void;
 }> = ({ sources, packages, loadSource, onInstallPackages, loading }) => {
-  const [checkedPackages, setCheckedPackages] = useState<
-    GQL.PackageSpecInput[]
-  >([]);
+  const [checkedPackages, setCheckedPackages] = useState<PackageSpec[]>([]);
+  const [filter, setFilter] = useState("");
+
+  const filteredPackages = useMemo(() => {
+    return filterPackages(checkedPackages, filter);
+  }, [checkedPackages, filter]);
+
+  function toPackageSpecInput(i: PackageSpec[]): GQL.PackageSpecInput[] {
+    return i.map((pkg) => ({
+      id: pkg.id,
+      sourceURL: pkg.sourceURL,
+    }));
+  }
 
   return (
     <div className="installed-packages">
       <AvailablePackagesToolbar
+        filter={filter}
+        setFilter={(f) => setFilter(f)}
         loading={loading}
-        checkedPackages={checkedPackages}
-        onInstallPackages={() => onInstallPackages(checkedPackages)}
+        checkedPackages={filteredPackages}
+        onInstallPackages={() =>
+          onInstallPackages(toPackageSpecInput(filteredPackages))
+        }
       />
       <AvailablePackagesList
+        filter={filter}
         loading={loading}
         sources={sources}
         loadSource={loadSource}
@@ -507,136 +601,5 @@ export const PackageManager: React.FC<IPackageManagerProps> = ({
         />
       </div>
     </div>
-  );
-};
-
-export const ScraperPackageManager: React.FC = () => {
-  const { configuration } = useContext(ConfigurationContext);
-  const [loadUpgrades, setLoadUpgrades] = useState(false);
-  const [sourcePackages, setSourcePackages] = useState<
-    Record<string, GQL.Package[]>
-  >({});
-  const [sources, setSources] = useState<GQL.PackageSource[]>();
-  const [sourcesLoaded, setSourcesLoaded] = useState<Record<string, boolean>>(
-    {}
-  );
-  const [jobID, setJobID] = useState<string>();
-  const { job } = useMonitorJob(jobID, () => refetchPackages());
-
-  const { data: installedScrapers, refetch: refetchPackages1 } =
-    useInstalledScraperPackages({
-      skip: loadUpgrades,
-    });
-
-  const {
-    data: withStatus,
-    refetch: refetchPackages2,
-    loading: statusLoading,
-  } = useInstalledScraperPackagesStatus({
-    skip: !loadUpgrades,
-  });
-
-  const [installPackages] = useInstallScraperPackages();
-  const [updatePackages] = useUpdateScraperPackages();
-  const [uninstallPackages] = useUninstallScraperPackages();
-
-  async function onInstallPackages(packages: GQL.PackageSpecInput[]) {
-    const r = await installPackages({
-      variables: {
-        packages,
-      },
-    });
-
-    setJobID(r.data?.installPackages);
-  }
-
-  async function onUpdatePackages(packages: GQL.PackageSpecInput[]) {
-    const r = await updatePackages({
-      variables: {
-        packages,
-      },
-    });
-
-    setJobID(r.data?.updatePackages);
-  }
-
-  async function onUninstallPackages(packages: string[]) {
-    const r = await uninstallPackages({
-      variables: {
-        packages,
-      },
-    });
-
-    setJobID(r.data?.uninstallPackages);
-  }
-
-  function refetchPackages() {
-    refetchPackages1();
-    refetchPackages2();
-  }
-
-  function onCheckForUpdates() {
-    if (!loadUpgrades) {
-      setLoadUpgrades(true);
-    } else {
-      refetchPackages();
-    }
-  }
-
-  useEffect(() => {
-    if (!sources && configuration?.general.scraperPackageSources) {
-      setSources(configuration.general.scraperPackageSources);
-    }
-  }, [sources, configuration?.general.scraperPackageSources]);
-
-  const installedPackages = useMemo(() => {
-    if (withStatus?.installedPackages) {
-      return withStatus.installedPackages;
-    }
-
-    return installedScrapers?.installedPackages ?? [];
-  }, [installedScrapers, withStatus]);
-
-  async function loadSource(source: string) {
-    if (sourcesLoaded[source]) {
-      return;
-    }
-
-    const { data } = await queryAvailableScraperPackages(source);
-
-    setSourcePackages((prev) => {
-      return {
-        ...prev,
-        [source]: data.availablePackages,
-      };
-    });
-
-    setSourcesLoaded((prev) => {
-      return {
-        ...prev,
-        [source]: true,
-      };
-    });
-  }
-
-  return (
-    <PackageManager
-      loading={!!job || statusLoading}
-      installedPackages={installedPackages}
-      updatesLoaded={loadUpgrades}
-      onCheckForUpdates={() => onCheckForUpdates()}
-      sources={sources ?? []}
-      sourcePackages={sourcePackages}
-      onLoadSource={(source) => loadSource(source)}
-      onInstallPackages={(packages) => onInstallPackages(packages)}
-      onUpdatePackages={(packages) =>
-        onUpdatePackages(
-          packages.map((p) => ({ id: p.id, sourceURL: p.upgrade!.sourceURL }))
-        )
-      }
-      onUninstallPackages={(packages) =>
-        onUninstallPackages(packages.map((p) => p.id))
-      }
-    />
   );
 };

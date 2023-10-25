@@ -12,6 +12,7 @@ import (
 
 type PackagesJob struct {
 	PackageManager *pkg.Manager
+	OnComplete     func()
 }
 
 func (j *PackagesJob) installPackage(ctx context.Context, p models.PackageSpecInput, progress *job.Progress) error {
@@ -45,6 +46,10 @@ func (j *InstallPackagesJob) Execute(ctx context.Context, progress *job.Progress
 				logger.Errorf("Error installing package %s from %s: %v", p.ID, p.SourceURL, err)
 			}
 		})
+	}
+
+	if j.OnComplete != nil {
+		j.OnComplete()
 	}
 
 	logger.Infof("Finished installing packages")
@@ -91,6 +96,10 @@ func (j *UpdatePackagesJob) Execute(ctx context.Context, progress *job.Progress)
 		})
 	}
 
+	if j.OnComplete != nil {
+		j.OnComplete()
+	}
+
 	logger.Infof("Finished updating packages")
 }
 
@@ -115,6 +124,10 @@ func (j *UninstallPackagesJob) Execute(ctx context.Context, progress *job.Progre
 				logger.Errorf("Error uninstalling package %s: %v", p, err)
 			}
 		})
+	}
+
+	if j.OnComplete != nil {
+		j.OnComplete()
 	}
 
 	logger.Infof("Finished uninstalling packages")

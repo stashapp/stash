@@ -6,8 +6,23 @@ import (
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/task"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
+
+func refreshPackageType(typeArg PackageType) {
+	mgr := manager.GetInstance()
+
+	if typeArg == PackageTypePlugin {
+		if err := mgr.PluginCache.LoadPlugins(); err != nil {
+			logger.Errorf("Error reading plugin configs: %v", err)
+		}
+	} else if typeArg == PackageTypeScraper {
+		if err := mgr.ScraperCache.ReloadScrapers(); err != nil {
+			logger.Errorf("Error reading scraper configs: %v", err)
+		}
+	}
+}
 
 func (r *mutationResolver) InstallPackages(ctx context.Context, typeArg PackageType, packages []*models.PackageSpecInput) (string, error) {
 	pm, err := getPackageManager(typeArg)
@@ -19,6 +34,7 @@ func (r *mutationResolver) InstallPackages(ctx context.Context, typeArg PackageT
 	t := &task.InstallPackagesJob{
 		PackagesJob: task.PackagesJob{
 			PackageManager: pm,
+			OnComplete:     func() { refreshPackageType(typeArg) },
 		},
 		Packages: packages,
 	}
@@ -37,6 +53,7 @@ func (r *mutationResolver) UpdatePackages(ctx context.Context, typeArg PackageTy
 	t := &task.UpdatePackagesJob{
 		PackagesJob: task.PackagesJob{
 			PackageManager: pm,
+			OnComplete:     func() { refreshPackageType(typeArg) },
 		},
 		Packages: packages,
 	}
@@ -55,6 +72,7 @@ func (r *mutationResolver) UninstallPackages(ctx context.Context, typeArg Packag
 	t := &task.UninstallPackagesJob{
 		PackagesJob: task.PackagesJob{
 			PackageManager: pm,
+			OnComplete:     func() { refreshPackageType(typeArg) },
 		},
 		Packages: packages,
 	}

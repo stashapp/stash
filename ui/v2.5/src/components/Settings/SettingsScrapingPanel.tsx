@@ -19,7 +19,7 @@ import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";
 import { useSettings } from "./context";
 import { StashBoxSetting } from "./StashBoxConfiguration";
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
-import { ScraperPackageManager } from "../Shared/PackageManager/PackageManager";
+import { ScraperPackageManager } from "./ScraperPackageManager";
 
 interface IURLList {
   urls: string[];
