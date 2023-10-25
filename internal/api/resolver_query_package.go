@@ -9,6 +9,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/pkg"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 var ErrInvalidPackageType = errors.New("invalid package type")
@@ -96,7 +97,7 @@ func (r *queryResolver) InstalledPackages(ctx context.Context, typeArg PackageTy
 
 	var ret []*Package
 
-	if len(graphql.CollectFieldsCtx(ctx, []string{"upgrade"})) > 0 {
+	if stringslice.StrInclude(graphql.CollectAllFields(ctx), "upgrade") {
 		installedStatus, err := pm.InstalledStatus(ctx)
 		if err != nil {
 			return nil, err
@@ -119,10 +120,10 @@ func (r *queryResolver) InstalledPackages(ctx context.Context, typeArg PackageTy
 			i++
 		}
 	} else {
-		ret := make([]*Package, len(installed))
+		ret = make([]*Package, len(installed))
 		i := 0
-		for _, p := range installed {
-			ret[i] = manifestToPackage(p)
+		for _, k := range sortedKeys(installed) {
+			ret[i] = manifestToPackage(installed[k])
 			i++
 		}
 	}

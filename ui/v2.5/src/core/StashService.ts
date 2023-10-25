@@ -1946,8 +1946,7 @@ export const queryScrapeGalleryURL = (url: string) =>
   });
 
 /// Packages
-export const useInstalledScraperPackages = () =>
-  GQL.useInstalledScraperPackagesQuery();
+export const useInstalledScraperPackages = GQL.useInstalledScraperPackagesQuery;
 export const useInstalledScraperPackagesStatus =
   GQL.useInstalledScraperPackagesStatusQuery;
 
@@ -1959,6 +1958,11 @@ export const queryAvailableScraperPackages = (source: string) =>
     },
     fetchPolicy: "network-only",
   });
+
+export const useInstallScraperPackages = GQL.useInstallScraperPackagesMutation;
+export const useUpdateScraperPackages = GQL.useUpdateScraperPackagesMutation;
+export const useUninstallScraperPackages =
+  GQL.useUninstallScraperPackagesMutation;
 
 /// Configuration
 

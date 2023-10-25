@@ -1076,6 +1076,7 @@
     "installed_version": "Installed Version",
     "latest_version": "Latest Version",
     "package": "Package",
+    "source": "Source",
     "uninstall": "Uninstall",
     "update": "Update",
     "version": "Version"

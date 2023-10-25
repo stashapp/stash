@@ -149,8 +149,9 @@ type PackageStatusIndex map[string]PackageStatus
 
 func (i PackageStatusIndex) populateLocal(installed LocalPackageIndex, remote RemotePackageIndex) {
 	for id, pkg := range installed {
+		pkgCopy := pkg
 		s := PackageStatus{
-			Local: &pkg,
+			Local: &pkgCopy,
 		}
 
 		if remotePkg, found := remote[id]; found {
