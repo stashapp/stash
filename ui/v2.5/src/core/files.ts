@@ -36,4 +36,3 @@ export function objectPathPreMapped(s: IFile) {
   }
   return "";
 }
-

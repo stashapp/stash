@@ -11,9 +11,7 @@ const CommonLinkComponent: React.FC<ICommonLinkProps> = ({
   link,
   children,
 }) => {
-  return (
-      <Link to={link}>{children}</Link>
-  );
+  return <Link to={link}>{children}</Link>;
 };
 
 interface ICodecLinkProps {

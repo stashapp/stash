@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from "react";
-import { Button, ButtonGroup } from "react-bootstrap";
+import { Button, ButtonGroup, OverlayProps } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
@@ -35,37 +35,20 @@ import {
 import { objectPath, objectPathPreMapped, objectTitle } from "src/core/files";
 import { PreviewScrubber } from "./PreviewScrubber";
 import { IUIConfig } from "src/core/config";
-import { Options, PositioningStrategy, Placement } from '@popperjs/core'; 
 
 interface ISceneInfoCardProps {
-  props?: GQL.SlimSceneDataFragment;
-  files?: Array<{
-    path: string;
-    audio_codec: string;
-    video_codec: string;
-    size: number;
-    width: number;
-    height: number;
-    duration: number;
-    frame_rate: number;
-    bit_rate: number;
+  scene: GQL.SlimSceneDataFragment;
+  maybeRenderSceneSpecsOverlay: (
     /* eslint-disable @typescript-eslint/no-explicit-any */
-    fingerprints: any;
-  }>;
-  maybeRenderSceneSpecsOverlay: (prop: {
-    size: number;
-    width: number;
-    height: number;
-    duration: number;
-    frame_rate: number;
-    bit_rate: number;
-  }, flag: boolean) => void;
-  maybeRenderDupeCopies: (prop: {
+    prop: any | number | string,
+    renderDefault: boolean
+  ) => void;
+  maybeRenderDupeCopies: (
     /* eslint-disable @typescript-eslint/no-explicit-any */
-    fingerprints: any;
-  }) => void;
+    files: any,
+    renderDefault: boolean
+  ) => void;
 }
-
 export const MaybeRenderSceneInfoDetails: React.FC<ISceneInfoCardProps> = (
   props: ISceneInfoCardProps
 ) => {
@@ -77,8 +60,7 @@ export const MaybeRenderSceneInfoDetails: React.FC<ISceneInfoCardProps> = (
     return null;
   }
 
-  const files = props?.files || [];
-  if (files.length === 0) return null;
+  if (props?.scene.files.length === 0) return null;
 
   const { maybeRenderSceneSpecsOverlay } = props;
   const { maybeRenderDupeCopies } = props;
@@ -88,14 +70,14 @@ export const MaybeRenderSceneInfoDetails: React.FC<ISceneInfoCardProps> = (
       const pathSeparator = "/";
       const pathParts = filePath.split(pathSeparator);
       const directoryPath = pathParts.slice(0, -1).join(pathSeparator);
-  
+
       try {
-        navigator.clipboard.writeText(directoryPath)
+        navigator.clipboard.writeText(directoryPath);
       } catch (err) {
         console.error("Failed to copy to clipboard:", err);
       }
     };
-  
+
     return (
       <div className="scene-info-overlay-file-path">
         <div>
@@ -108,66 +90,43 @@ export const MaybeRenderSceneInfoDetails: React.FC<ISceneInfoCardProps> = (
     );
   }
 
-  const popoverContent = files.map((prop, index) => (
-    <>
-      <div className="scene-info-popover" onClick={(e) => e.stopPropagation()}>
-        {CopyFilePathButton(objectPathPreMapped(prop) || "")}
-        <div className="scene-info-overlay-specs-root">
-          {maybeRenderSceneSpecsOverlay(prop, false)}
-          <span className={"scene-info-overlay-caps"}>
-            <span className="scene-info-overlay-divider">|</span>
-            <CodecLink
-              key={prop.video_codec}
-              codec={prop.video_codec}
-              codecType={"video_codec"}
-            />
-          </span>
-          <span className="scene-info-overlay-divider">:</span>
-          <span className={"scene-info-overlay-caps"}>
-            <CodecLink
-              key={prop.audio_codec}
-              codec={prop.audio_codec}
-              codecType={"audio_codec"}
-            />
-          </span>
-          {maybeRenderDupeCopies(prop)}
-        </div>
-        {index + 1 != files.length && <hr className="scene-info-overlay-hr" />}
+  const popoverContent = props?.scene.files.map((prop, index) => (
+    <div
+      className="scene-info-overlay"
+      key={prop.id}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {CopyFilePathButton(objectPathPreMapped(prop) || "")}
+      <div className="scene-info-overlay-specs-root">
+        {maybeRenderSceneSpecsOverlay(prop, false)}
+        <span className={"scene-info-overlay-caps"}>
+          <span className="scene-info-overlay-divider">|</span>
+          <CodecLink codec={prop.video_codec} codecType={"video_codec"} />
+        </span>
+        <span className="scene-info-overlay-divider">:</span>
+        <span className={"scene-info-overlay-caps"}>
+          <CodecLink codec={prop.audio_codec} codecType={"audio_codec"} />
+        </span>
+        {maybeRenderDupeCopies(prop, false)}
       </div>
-    </>
+      {index + 1 != props.scene.files.length && (
+        <hr className="scene-info-overlay-hr" />
+      )}
+    </div>
   ));
 
-  interface IPopperType {
-    width: number;
-  }
-  const popperConfig: Options = {
-    strategy: 'fixed' as PositioningStrategy,
-    placement: "bottom" as Placement,
+  const popperConfig: OverlayProps["popperConfig"] = {
     modifiers: [
-      {
-        name: "arrow",
-        options: {
-          x: 0,
-          y: 0,
-          centerOffset: 0,
-        },
-      },
       {
         name: "offset",
         options: {
-          offset: ({
-            placement,
-            popper,
-          }: {
-            placement: Placement;
-            popper: IPopperType;
-          }) => {
-            if (placement === "bottom") {
-              return [popper.width / 4, 20];
-            } else {
-              return [];
-            }
-          },
+          offset: [20, 20],
+        },
+      },
+      {
+        name: "flip",
+        options: {
+          fallbackPlacements: ["top"],
         },
       },
     ],
@@ -181,6 +140,7 @@ export const MaybeRenderSceneInfoDetails: React.FC<ISceneInfoCardProps> = (
       <HoverPopover
         placement="bottom"
         content={popoverContent}
+        className="scene-info-overlay"
         popperConfig={popperConfig}
       >
         <Icon icon={faInfo} />
@@ -269,7 +229,6 @@ export const SceneCard: React.FC<ISceneCardProps> = (
 
   function maybeRenderSceneSpecsOverlay(
     files?: {
-      __typename?: "VideoFile" | undefined;
       size: number;
       width: number;
       height: number;
@@ -543,7 +502,6 @@ export const SceneCard: React.FC<ISceneCardProps> = (
 
   function maybeRenderDupeCopies(
     files: {
-      __typename?: "VideoFile" | undefined;
       /* eslint-disable @typescript-eslint/no-explicit-any */
       fingerprints: any;
     },
@@ -669,8 +627,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
           />
           <RatingBanner rating={props.scene.rating100} />
           <MaybeRenderSceneInfoDetails
-            props={props.scene ?? undefined}
-            files={props.scene.files}
+            scene={props.scene ?? undefined}
             maybeRenderSceneSpecsOverlay={maybeRenderSceneSpecsOverlay}
             maybeRenderDupeCopies={maybeRenderDupeCopies}
           />

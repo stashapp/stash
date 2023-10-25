@@ -111,7 +111,7 @@ textarea.scene-description {
   }
 }
 
-.scene-info-popover{
+.scene-info-overlay {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
@@ -122,33 +122,33 @@ textarea.scene-description {
   padding-left: 0.2rem;
   padding-right: 0.2rem;
   padding-top: 0.2rem;
-  top:0.2rem;
+  top: 0.2rem;
 }
 
-.scene-info-overlay-specs-root{
+.scene-info-overlay-specs-root {
   align-items: center;
   display: flex;
   flex: 3;
   justify-content: center;
 }
 
-.scene-info-overlay-specs-node{
+.scene-info-overlay-specs-node {
   align-items: center;
   display: flex;
   justify-content: space-between;
 }
 
-.scene-info-overlay-file-path{
+.scene-info-overlay-file-path {
   align-items: center;
   display: flex;
   justify-content: flex-start;
   margin-left: 0.2rem;
-  margin-right:0.2rem;
+  margin-right: 0.2rem;
   margin-top: 0.1rem;
   width: 100%;
 }
 
-.scene-info-overlay-hr{
+.scene-info-overlay-hr {
   background-color: $text-color;
   color: $text-color;
   height: 0.01rem;
@@ -156,17 +156,17 @@ textarea.scene-description {
   width: 90%;
 }
 
-.scene-info-overlay-bold{
+.scene-info-overlay-bold {
   font-weight: 900;
   text-shadow: 0 0 3px #000;
   text-transform: uppercase;
 }
 
-.scene-info-overlay-caps{
+.scene-info-overlay-caps {
   text-transform: uppercase;
 }
 
-.scene-info-overlay-divider{
+.scene-info-overlay-divider {
   margin-left: 0.2rem;
   margin-right: 0.2rem;
 }
