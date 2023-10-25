@@ -1945,6 +1945,21 @@ export const queryScrapeGalleryURL = (url: string) =>
     fetchPolicy: "network-only",
   });
 
+/// Packages
+export const useInstalledScraperPackages = () =>
+  GQL.useInstalledScraperPackagesQuery();
+export const useInstalledScraperPackagesStatus =
+  GQL.useInstalledScraperPackagesStatusQuery;
+
+export const queryAvailableScraperPackages = (source: string) =>
+  client.query<GQL.AvailableScraperPackagesQuery>({
+    query: GQL.AvailableScraperPackagesDocument,
+    variables: {
+      source,
+    },
+    fetchPolicy: "network-only",
+  });
+
 /// Configuration
 
 export const useConfiguration = () => GQL.useConfigurationQuery();

@@ -19,6 +19,7 @@ import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";
 import { useSettings } from "./context";
 import { StashBoxSetting } from "./StashBoxConfiguration";
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
+import { ScraperPackageManager } from "../Shared/PackageManager/PackageManager";
 
 interface IURLList {
   urls: string[];
@@ -353,6 +354,8 @@ export const SettingsScrapingPanel: React.FC = () => {
             </span>
           </Button>
         </div>
+
+        <ScraperPackageManager />
 
         <div className="content">
           {renderSceneScrapers()}

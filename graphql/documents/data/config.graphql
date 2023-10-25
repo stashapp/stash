@@ -53,6 +53,15 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   liveTranscodeInputArgs
   liveTranscodeOutputArgs
   drawFunscriptHeatmapRange
+
+  scraperPackageSources {
+    name
+    url
+  }
+  pluginPackageSources {
+    name
+    url
+  }
 }
 
 fragment ConfigInterfaceData on ConfigInterfaceResult {

@@ -9,7 +9,7 @@ type Package {
   description: String
   version: String
   date: Timestamp
-  
+
   "The available upgraded version of this package"
   upgrade: RemotePackage
 }

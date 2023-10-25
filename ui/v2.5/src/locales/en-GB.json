@@ -390,10 +390,12 @@
       "triggers_on": "Triggers on"
     },
     "scraping": {
+      "available_scrapers": "Available Scrapers",
       "entity_metadata": "{entityType} Metadata",
       "entity_scrapers": "{entityType} scrapers",
       "excluded_tag_patterns_desc": "Regexps of tag names to exclude from scraping results",
       "excluded_tag_patterns_head": "Excluded Tag Patterns",
+      "installed_scrapers": "Installed Scrapers",
       "scraper": "Scraper",
       "scrapers": "Scrapers",
       "search_by_name": "Search by name",
@@ -1067,6 +1069,17 @@
   "o_counter": "O-Counter",
   "operations": "Operations",
   "organized": "Organised",
+  "package_manager": {
+    "check_for_updates": "Check for Updates",
+    "description": "Description",
+    "install": "Install",
+    "installed_version": "Installed Version",
+    "latest_version": "Latest Version",
+    "package": "Package",
+    "uninstall": "Uninstall",
+    "update": "Update",
+    "version": "Version"
+  },
   "pagination": {
     "first": "First",
     "last": "Last",

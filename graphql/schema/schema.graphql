@@ -388,7 +388,7 @@ type Mutation {
   reloadPlugins: Boolean!
 
   """
-  Installs the given packages. 
+  Installs the given packages.
   If a package is already installed, it will be updated if needed..
   If an error occurs when installing a package, the job will continue to install the remaining packages.
   Returns the job ID
@@ -404,7 +404,7 @@ type Mutation {
   """
   updatePackages(type: PackageType!, packages: [PackageSpecInput!]): ID!
   """
-  Uninstalls the given packages. 
+  Uninstalls the given packages.
   If an error occurs when uninstalling a package, the job will continue to uninstall the remaining packages.
   Returns the job ID
   """

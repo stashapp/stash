@@ -1,0 +1,55 @@
+.package-manager {
+  padding: 1em;
+
+  .package-source {
+    font-weight: bold;
+  }
+
+  .package-cell,
+  .package-source {
+    cursor: pointer;
+  }
+
+  .package-collapse-button {
+    color: $text-color;
+  }
+
+  table {
+    display: block;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  table thead {
+    background-color: $card-bg;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  table td {
+    vertical-align: middle;
+  }
+
+  .package-version,
+  .package-date,
+  .package-name,
+  .package-id {
+    display: block;
+  }
+
+  .package-date,
+  .package-id {
+    color: $muted-gray;
+    font-size: 0.8rem;
+  }
+
+  .package-manager-toolbar {
+    display: flex;
+    justify-content: end;
+
+    .btn {
+      margin-left: 0.5em;
+    }
+  }
+}

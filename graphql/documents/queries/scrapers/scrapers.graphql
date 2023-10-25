@@ -119,3 +119,27 @@ query ScrapeMovieURL($url: String!) {
     ...ScrapedMovieData
   }
 }
+
+query InstalledScraperPackages {
+  installedPackages(type: Scraper) {
+    ...PackageData
+  }
+}
+
+query InstalledScraperPackagesStatus {
+  installedPackages(type: Scraper) {
+    ...PackageData
+    upgrade {
+      sourceURL
+      package {
+        ...PackageData
+      }
+    }
+  }
+}
+
+query AvailableScraperPackages($source: String!) {
+  availablePackages(source: $source, type: Scraper) {
+    ...PackageData
+  }
+}
