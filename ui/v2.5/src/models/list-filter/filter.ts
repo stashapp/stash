@@ -451,7 +451,8 @@ export class ListFilterModel {
   }
 
   public makeSavedFindFilter() {
-    const output: Record<string, unknown> = {};
+    const output: Record<string, { value: CriterionValue; modifier: string }> =
+      {};
     this.criteria.forEach((criterion) => {
       criterion.toSavedFilter(output);
     });

@@ -25,6 +25,7 @@ import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { DefaultFilters, IUIConfig } from "src/core/config";
 import { ConfigurationContext } from "src/hooks/Config";
+import { IHierarchicalLabelValue } from "src/models/list-filter/types";
 
 interface ISavedFilterListProps {
   filter: ListFilterModel;
@@ -158,12 +159,32 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
         existingDefaultFilters = {};
       }
 
+      // Remove Subview Filter from default Filter
+      let urlComponents = window.location.href
+        .split("?")[0]
+        .split("/")
+        .reverse();
+      let subviewId = urlComponents[0];
+      let subviewType = urlComponents[1];
+      let objectFilter = filterCopy.makeSavedFindFilter();
+      if (
+        Object.keys(objectFilter).indexOf(subviewType) > -1 &&
+        objectFilter[subviewType].modifier === "INCLUDES_ALL"
+      ) {
+        let value = objectFilter[subviewType].value as IHierarchicalLabelValue;
+        value.items = value.items.filter((item) => item.id != subviewId);
+        objectFilter[subviewType].value = value;
+        if (value.items.length === 0 && value.excluded.length === 0) {
+          delete objectFilter[subviewType];
+        }
+      }
+
       const newDefaultFilters = JSON.stringify({
         ...existingDefaultFilters,
         [view.toString()]: {
           mode: filter.mode,
           find_filter: filter.makeFindFilter(),
-          object_filter: filterCopy.makeSavedFindFilter(),
+          object_filter: objectFilter,
           ui_options: filterCopy.makeUIOptions(),
         },
       });

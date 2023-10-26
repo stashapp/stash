@@ -163,7 +163,9 @@ export abstract class Criterion<V extends CriterionValue> {
     };
   }
 
-  public toSavedFilter(outputFilter: Record<string, unknown>) {
+  public toSavedFilter(
+    outputFilter: Record<string, { value: CriterionValue; modifier: string }>
+  ) {
     outputFilter[this.criterionOption.type] = {
       value: this.value,
       modifier: this.modifier,
