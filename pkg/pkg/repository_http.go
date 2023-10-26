@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"path"
 	"time"
 
 	"gopkg.in/yaml.v2"
@@ -63,10 +64,10 @@ func (r *HttpRepository) List(ctx context.Context) ([]RemotePackage, error) {
 }
 
 func (r *HttpRepository) GetPackageZip(ctx context.Context, pkg RemotePackage) (io.ReadCloser, error) {
-	path := pkg.Path
+	p := pkg.Path
 
 	u := r.PackageListURL
-	u.Path = path
+	u.Path = path.Join(path.Dir(u.Path), p)
 
 	f, err := r.getFile(ctx, u)
 	if err != nil {
