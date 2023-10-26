@@ -206,6 +206,13 @@ export const SettingsInterfacePanel: React.FC = () => {
           checked={ui.abbreviateCounters ?? undefined}
           onChange={(v) => saveUI({ abbreviateCounters: v })}
         />
+        <BooleanSetting
+          id="buttons-navigation"
+          headingID="config.ui.buttons_navigation.heading"
+          subHeadingID="config.ui.buttons_navigation.description"
+          checked={ui.additionalNavButtons ?? undefined}
+          onChange={(v) => saveUI({ additionalNavButtons: v })}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.ui.desktop_integration.desktop_integration">

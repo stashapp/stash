@@ -35,13 +35,13 @@ export const defaultMaxOptionsShown = 200;
 export interface IUIConfig {
   // unknown to prevent direct access - use getFrontPageContent
   frontPageContent?: unknown;
-
   showChildTagContent?: boolean;
   showChildStudioContent?: boolean;
   showTagCardOnHover?: boolean;
-
   abbreviateCounters?: boolean;
 
+  // if true a additional buttons will display on subnav bar
+  additionalNavButtons?: boolean;
   ratingSystemOptions?: RatingSystemOptions;
 
   // if true a background image will be display on header

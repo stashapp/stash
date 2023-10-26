@@ -32,13 +32,9 @@ import { ListViewOptions } from "./ListViewOptions";
 import { ListToggleConfigButtons } from "./ListToggleConfigButtons";
 import { ListOperationButtons } from "./ListOperationButtons";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
-import { ConfigMode } from "src/models/list-filter/types";
 import { DisplayMode } from "src/models/list-filter/types";
 import { ButtonToolbar } from "react-bootstrap";
-import {
-  useConfiguration,
-  useConfigureUI,
-} from "src/core/StashService";
+
 export enum PersistanceLevel {
   // do not load default query or persist display mode
   NONE,
@@ -96,7 +92,6 @@ interface IItemListProps<T extends QueryResult, E extends IDataItem> {
   selectable?: boolean;
   alterQuery?: boolean;
   defaultZoomIndex?: number;
-  configOperations?: IItemListOperation<T>[];
   otherOperations?: IItemListOperation<T>[];
   renderContent: (
     result: T,
@@ -148,7 +143,6 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     persistState,
     zoomable,
     selectable,
-    configOperations,
     otherOperations,
     renderContent,
     renderEditDialog,
@@ -170,6 +164,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
 
     const [arePaging, setArePaging] = useState(false);
     const hidePagination = !arePaging && result.loading;
+    const { configuration: config } = React.useContext(ConfigurationContext);
 
     // useLayoutEffect to set total count before paint, avoiding a 0 being displayed
     useLayoutEffect(() => {
@@ -369,9 +364,6 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       result.refetch();
     }
 
-    function refetch() {
-      result.refetch();
-    };
     function onDelete() {
       setIsDeleteDialogOpen(true);
     }
@@ -440,51 +432,6 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       );
     }
 
-    const activePage = location.pathname.match(/^\/([^/]+)(?:\/[^/]+)?/)![1];
-    const config = useConfiguration();
-    const configSettings = {
-      showChildStudioContent: config.data?.configuration.ui.showChildStudioContent,
-      showChildTagContent: config.data?.configuration.ui.showChildTagContent,
-      showTagCardOnHover: config.data?.configuration.ui.showTagCardOnHover,
-    };
-
-    const [childActive, setChildActive] = useState<boolean>(false);
-    const [saveUI] = useConfigureUI();
-
-    function onSetToggleChildren(mode: string) {
-      // Clone the config object to avoid mutating the original
-      const updatedConfig = { ...config.data?.configuration.ui };
-    
-      switch (mode) {
-        case "studios":
-          updatedConfig.showChildStudioContent = !childActive;
-          setChildActive(!childActive);
-          break;
-        case "tags":
-          updatedConfig.showChildTagContent = !childActive;
-          setChildActive(!childActive);
-          break;
-        default:
-          break;
-      }
-    
-      // Now, save the updated config object
-      saveUI({
-        variables: {
-          input: {
-            ...config.data?.configuration.ui,
-            ...updatedConfig,
-          },
-        },
-      });
-    }  
-    function onChangeConfigMode(configMode: ConfigMode) {
-      const newFilter = cloneDeep(filter);
-      //newFilter.configMode = configMode;
-     // updateFilter(newFilter);
-     // _onChangePage(1)
-    }
-
     function onChangeDisplayMode(displayMode: DisplayMode) {
       const newFilter = cloneDeep(filter);
       newFilter.displayMode = displayMode;
@@ -532,17 +479,11 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
             onSelectAll={selectable ? onSelectAll : undefined}
             onSelectNone={selectable ? onSelectNone : undefined}
             otherOperations={operations}
-            configOperations={operations}
             itemsSelected={selectedIds.size > 0}
             onEdit={renderEditDialog ? onEdit : undefined}
             onDelete={renderDeleteDialog ? onDelete : undefined}
           />
-         <ListToggleConfigButtons
-            activePage={location.pathname.match(/^\/([^/]+)(?:\/[^/]+)?/)[1]!}
-            configMode={ConfigMode}
-            settings={configSettings}
-            onSetConfigMode={onChangeConfigMode}
-          />
+          {config?.ui.additionalNavButtons && <ListToggleConfigButtons />}
           <ListViewOptions
             displayMode={filter.displayMode}
             displayModeOptions={filterOptions.displayModeOptions}

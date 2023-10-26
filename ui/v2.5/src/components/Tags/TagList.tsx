@@ -78,12 +78,6 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
       text: intl.formatMessage({ id: "actions.export_all" }),
       onClick: onExportAll,
     },
-    {
-      text: intl.formatMessage({ id: "actions.child_studios_scenes_include" }),
-    },
-    {
-      text: intl.formatMessage({ id: "actions.child_studios_scenes_exclude" }),
-    },
   ];
 
   function addKeybinds(

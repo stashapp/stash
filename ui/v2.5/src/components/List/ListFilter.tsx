@@ -56,7 +56,6 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   openFilterDialog,
   persistState,
 }) => {
-
   const [customPageSizeShowing, setCustomPageSizeShowing] = useState(false);
   const [queryRef, setQueryFocus] = useFocus();
   const [queryClearShowing, setQueryClearShowing] = useState(

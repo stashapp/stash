@@ -530,6 +530,10 @@
         "heading": "Abbreviate counters"
       },
       "basic_settings": "Basic Settings",
+      "buttons_navigation": {
+        "description": "Show addtional control buttons on secondary navbar",
+        "heading": "Sub navbar controls enabled"
+      },
       "custom_css": {
         "description": "Page must be reloaded for changes to take effect. There is no guarantee of compatibility between custom CSS and future releases of Stash.",
         "heading": "Custom CSS",
@@ -909,9 +913,14 @@
   "director": "Director",
   "disambiguation": "Disambiguation",
   "config_mode": {
-    "studios": "Toggle display of child studios",
-    "tags": "Toggle display of child tags",
-    "hover": "Show tag card on hover"
+    "audio-disabled": "Disable audio on Scene / Marker wall",
+    "audio-enabled": "Enable audio on Scene / Marker wall",
+    "studios-disabled": "Disable display of child studios items",
+    "studios-enabled": "Enable display of child studios items",
+    "tags-disabled": "Disable display of child tag items",
+    "tags-enabled": "Enable display of child tag items",
+    "tags-hover-disabled": "Disable tag card when hovering tag badges",
+    "tags-hover-enabled": "Enable tag card when hovering tag badges"
   },
   "display_mode": {
     "grid": "Grid",

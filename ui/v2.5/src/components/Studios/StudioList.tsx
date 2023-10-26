@@ -6,8 +6,6 @@ import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
   queryFindStudios,
-  useConfiguration,
-  useConfigureUI,
   useFindStudios,
   useStudiosDestroy,
 } from "src/core/StashService";
@@ -49,19 +47,6 @@ export const StudioList: React.FC<IStudioList> = ({
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
-  const config = useConfiguration();
-  const [saveUI] = useConfigureUI();
-
-  const configOperations = [
-    {
-      text: intl.formatMessage({ id: "actions.child_studios_scenes_include" }),
-      onClick: toggleChildStudios,
-    },
-    {
-      text: intl.formatMessage({ id: "actions.child_studios_scenes_exclude" }),
-      onClick: toggleChildStudios,
-    },
-  ];
 
   const otherOperations = [
     {
@@ -121,36 +106,6 @@ export const StudioList: React.FC<IStudioList> = ({
   async function onExportAll() {
     setIsExportAll(true);
     setIsExportDialogOpen(true);
-  }
-
-  async function toggleChildStudios(result: GQL.FindStudiosQueryResult,
-    filter: ListFilterModel
-  ) {
-    if (result.data?.findStudios) {
-alert("hello")
-    const currentConfig = config.data?.configuration.ui.showChildStudioContent;
-    const updateConfig = { ...config.data?.configuration.ui };
-
-    switch (currentConfig) {
-      case true:
-        updateConfig.showChildStudioContent = !currentConfig;
-        break;
-      case false:
-        updateConfig.showChildTagContent = !currentConfig;
-        break;
-      default:
-        break;
-    }
-
-    saveUI({
-      variables: {
-        input: {
-          ...config.data?.configuration.ui,
-          ...updateConfig,
-        },
-      },
-    });
-  }
   }
 
   function renderContent(
@@ -236,7 +191,6 @@ alert("hello")
       filterHook={filterHook}
       persistState={fromParent ? PersistanceLevel.NONE : PersistanceLevel.ALL}
       alterQuery={alterQuery}
-      configOperations={configOperations}
       otherOperations={otherOperations}
       addKeybinds={addKeybinds}
       renderContent={renderContent}
