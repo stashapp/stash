@@ -167,24 +167,40 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
         let subViewFilter = filterHook(
           new ListFilterModel(filterCopy.mode, undefined)
         );
-        let subViewCriterion = subViewFilter.criteria[0]
-          .value as IHierarchicalLabelValue;
-        let subViewType = subViewFilter.criteria[0].criterionOption.type;
-        if (
-          Object.keys(objectFilter).indexOf(subViewType) > -1 &&
-          objectFilter[subViewType].modifier ===
-            subViewFilter.criteria[0].modifier
-        ) {
-          let value = objectFilter[subViewType]
-            .value as IHierarchicalLabelValue;
-          value.items = value.items.filter(
-            (item) => item.id != subViewCriterion.items[0].id
-          );
-          objectFilter[subViewType].value = value;
-          if (value.items.length === 0 && value.excluded.length === 0) {
-            delete objectFilter[subViewType];
+        subViewFilter.criteria.forEach((criterion) => {
+          let subViewCriterionValue =
+            criterion.value as IHierarchicalLabelValue;
+          let subViewType = criterion.criterionOption.type;
+          if (
+            Object.keys(objectFilter).indexOf(subViewType) > -1 &&
+            objectFilter[subViewType].modifier === criterion.modifier
+          ) {
+            let value = objectFilter[subViewType]
+              .value as IHierarchicalLabelValue;
+            value.items = value.items.filter((item) => {
+              let ret = true;
+              subViewCriterionValue.items.forEach((subViewItem) => {
+                if (ret) {
+                  ret = item.id != subViewItem.id;
+                }
+              });
+              return ret;
+            });
+            value.excluded = value.excluded.filter((excluded) => {
+              let ret = true;
+              subViewCriterionValue.excluded.forEach((subViewExcluded) => {
+                if (ret) {
+                  ret = excluded.id != subViewExcluded.id;
+                }
+              });
+              return ret;
+            });
+            objectFilter[subViewType].value = value;
+            if (value.items.length === 0 && value.excluded.length === 0) {
+              delete objectFilter[subViewType];
+            }
           }
-        }
+        });
       }
 
       const newDefaultFilters = JSON.stringify({
