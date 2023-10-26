@@ -1073,6 +1073,7 @@
   "organized": "Organised",
   "package_manager": {
     "add_source": "Add Source",
+    "edit_source": "Edit Source",
     "check_for_updates": "Check for Updates",
     "confirm_delete_source": "Are you sure you want to delete source {name} ({url})?",
     "description": "Description",
