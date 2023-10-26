@@ -21,8 +21,8 @@ const DefaultCacheTTL = 5 * time.Minute
 //
 // The index is cached for the duration of CacheTTL. The first request after the cache expires will cause the index to be reloaded.
 type HttpRepository struct {
-	PackageListURL url.URL
-	Client         *http.Client
+	packageListURL url.URL
+	client         *http.Client
 }
 
 // NewHttpRepository creates a new Repository. If client is nil then http.DefaultClient is used.
@@ -31,17 +31,17 @@ func NewHttpRepository(packageListURL url.URL, client *http.Client) *HttpReposit
 		client = http.DefaultClient
 	}
 	return &HttpRepository{
-		PackageListURL: packageListURL,
-		Client:         client,
+		packageListURL: packageListURL,
+		client:         client,
 	}
 }
 
 func (r *HttpRepository) Path() string {
-	return r.PackageListURL.String()
+	return r.packageListURL.String()
 }
 
 func (r *HttpRepository) List(ctx context.Context) ([]RemotePackage, error) {
-	u := r.PackageListURL
+	u := r.packageListURL
 
 	f, err := r.getFile(ctx, u)
 	if err != nil {
@@ -66,7 +66,7 @@ func (r *HttpRepository) List(ctx context.Context) ([]RemotePackage, error) {
 func (r *HttpRepository) GetPackageZip(ctx context.Context, pkg RemotePackage) (io.ReadCloser, error) {
 	p := pkg.Path
 
-	u := r.PackageListURL
+	u := r.packageListURL
 	u.Path = path.Join(path.Dir(u.Path), p)
 
 	f, err := r.getFile(ctx, u)
@@ -84,7 +84,7 @@ func (r *HttpRepository) getFile(ctx context.Context, u url.URL) (io.ReadCloser,
 		return nil, err
 	}
 
-	resp, err := r.Client.Do(req)
+	resp, err := r.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get remote file: %w", err)
 	}
@@ -96,4 +96,4 @@ func (r *HttpRepository) getFile(ctx context.Context, u url.URL) (io.ReadCloser,
 	return resp.Body, nil
 }
 
-var _ = RemoteRepository(&HttpRepository{})
+var _ = remoteRepository(&HttpRepository{})

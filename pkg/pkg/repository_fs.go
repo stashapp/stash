@@ -84,4 +84,4 @@ func (r *FSRepository) getFile(ctx context.Context, path string) (fs.File, error
 	return ret, nil
 }
 
-var _ = RemoteRepository(&FSRepository{})
+var _ = remoteRepository(&FSRepository{})

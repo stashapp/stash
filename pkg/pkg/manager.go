@@ -17,7 +17,7 @@ import (
 // Manager manages the installation of paks.
 type Manager struct {
 	Local       LocalRepository
-	RemoteCache map[string]*remotePackageCache
+	remoteCache map[string]*remotePackageCache
 
 	Client *http.Client
 
@@ -28,7 +28,7 @@ type Manager struct {
 	CacheTTL time.Duration
 }
 
-func (m *Manager) remoteFromURL(path string) (RemoteRepository, error) {
+func (m *Manager) remoteFromURL(path string) (remoteRepository, error) {
 	if strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://") {
 		u, err := url.Parse(path)
 		if err != nil {
@@ -43,18 +43,18 @@ func (m *Manager) remoteFromURL(path string) (RemoteRepository, error) {
 }
 
 func (m *Manager) checkCacheExpired(path string) {
-	if m.RemoteCache == nil {
-		m.RemoteCache = make(map[string]*remotePackageCache)
+	if m.remoteCache == nil {
+		m.remoteCache = make(map[string]*remotePackageCache)
 	}
 
-	cache := m.RemoteCache[path]
+	cache := m.remoteCache[path]
 
 	if cache == nil {
 		return
 	}
 
 	if time.Since(cache.cacheTime) > m.CacheTTL {
-		m.RemoteCache[path] = nil
+		m.remoteCache[path] = nil
 	}
 }
 
@@ -69,7 +69,7 @@ func (m *Manager) ListInstalled(ctx context.Context) (LocalPackageIndex, error) 
 
 func (m *Manager) ListRemote(ctx context.Context, remoteURL string) (RemotePackageIndex, error) {
 	m.checkCacheExpired(remoteURL)
-	cache := m.RemoteCache[remoteURL]
+	cache := m.remoteCache[remoteURL]
 
 	if cache != nil {
 		return cache.cachedIndex, nil
@@ -94,7 +94,7 @@ func (m *Manager) ListRemote(ctx context.Context, remoteURL string) (RemotePacka
 
 	// only cache http results
 	if _, ok := r.(*HttpRepository); ok {
-		m.RemoteCache[remoteURL] = &remotePackageCache{
+		m.remoteCache[remoteURL] = &remotePackageCache{
 			cachedIndex: ret,
 			cacheTime:   time.Now(),
 		}
@@ -233,9 +233,8 @@ func (m *Manager) Uninstall(ctx context.Context, id string) error {
 	}
 
 	// also delete the directory
-	if err := m.Local.deletePackageDir(id); err != nil {
-		return fmt.Errorf("deleting local package directory: %w", err)
-	}
+	// ignore errors
+	_ = m.Local.deletePackageDir(id)
 
 	return nil
 }

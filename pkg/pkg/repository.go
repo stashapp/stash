@@ -6,8 +6,8 @@ import (
 	"io/fs"
 )
 
-// RemoteRepository is a repository that can be used to get paks from.
-type RemoteRepository interface {
+// remoteRepository is a repository that can be used to get paks from.
+type remoteRepository interface {
 	RemotePackageLister
 	RemotePackageGetter
 	Path() string

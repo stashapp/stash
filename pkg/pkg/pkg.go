@@ -65,7 +65,7 @@ type PackageLocation struct {
 type RemotePackage struct {
 	ID              string           `yaml:"id"`
 	Name            string           `yaml:"name"`
-	Repository      RemoteRepository `yaml:"-"`
+	Repository      remoteRepository `yaml:"-"`
 	PackageMetadata `yaml:",inline"`
 	PackageVersion  `yaml:",inline"`
 	PackageLocation `yaml:",inline"`

@@ -144,17 +144,5 @@ func (r *Store) deletePackageDir(packageID string) error {
 	return os.Remove(r.packageDir(packageID))
 }
 
-func (r *Store) DeletePackage(ctx context.Context, id string) error {
-	// ensure the manifest file exists
-	if _, err := os.Stat(r.manifestPath(id)); err != nil {
-		if os.IsNotExist(err) {
-			return fmt.Errorf("package %q does not exist", id)
-		}
-	}
-
-	pkgDir := r.packageDir(id)
-	return os.RemoveAll(pkgDir)
-}
-
 // ensure LocalRepository implements LocalRepository
 var _ = LocalRepository(&Store{})
