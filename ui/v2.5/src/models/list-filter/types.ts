@@ -197,3 +197,9 @@ export type CriterionType =
   | "code"
   | "disambiguation"
   | "has_chapters";
+
+  export enum ConfigMode {
+    Studios,
+    Tags,
+    Hover,
+  }

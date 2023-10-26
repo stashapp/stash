@@ -13,6 +13,8 @@
     "backup": "Backup",
     "browse_for_image": "Browse for image…",
     "cancel": "Cancel",
+    "child_studios_scenes_include": "Include child studios scenes",
+    "child_studios_scenes_exclude": "Exclude child studios scenes",
     "clean": "Clean",
     "clear": "Clear",
     "clear_back_image": "Clear back image",
@@ -906,6 +908,11 @@
   "dimensions": "Dimensions",
   "director": "Director",
   "disambiguation": "Disambiguation",
+  "config_mode": {
+    "studios": "Toggle display of child studios",
+    "tags": "Toggle display of child tags",
+    "hover": "Show tag card on hover"
+  },
   "display_mode": {
     "grid": "Grid",
     "list": "List",

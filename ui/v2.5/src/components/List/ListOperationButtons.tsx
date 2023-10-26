@@ -16,6 +16,7 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 
+
 interface IListFilterOperation {
   text: string;
   onClick: () => void;
@@ -31,6 +32,8 @@ interface IListOperationButtonsProps {
   onDelete?: () => void;
   itemsSelected?: boolean;
   otherOperations?: IListFilterOperation[];
+  configOperations?: IListFilterOperation[];
+
 }
 
 export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
@@ -43,6 +46,8 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
 }) => {
   const intl = useIntl();
 
+
+//alert(JSON.stringify(location.pathname));
   useEffect(() => {
     Mousetrap.bind("s a", () => onSelectAll?.());
     Mousetrap.bind("s n", () => onSelectNone?.());
@@ -68,6 +73,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
   });
 
   function maybeRenderButtons() {
+
     const buttons = (otherOperations ?? []).filter((o) => {
       if (!o.icon) {
         return false;

@@ -21,7 +21,6 @@ import {
   Popover,
   Overlay,
 } from "react-bootstrap";
-
 import { Icon } from "../Shared/Icon";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import useFocus from "src/utils/focus";
@@ -57,6 +56,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   openFilterDialog,
   persistState,
 }) => {
+
   const [customPageSizeShowing, setCustomPageSizeShowing] = useState(false);
   const [queryRef, setQueryFocus] = useFocus();
   const [queryClearShowing, setQueryClearShowing] = useState(
