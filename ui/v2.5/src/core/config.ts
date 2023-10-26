@@ -33,7 +33,8 @@ export type FrontPageContent = ISavedFilterRow | ICustomFilter;
 export const defaultMaxOptionsShown = 200;
 
 export interface IUIConfig {
-  frontPageContent?: FrontPageContent[];
+  // unknown to prevent direct access - use getFrontPageContent
+  frontPageContent?: unknown;
 
   showChildTagContent?: boolean;
   showChildStudioContent?: boolean;
@@ -79,6 +80,48 @@ export interface IUIConfig {
 
   vrTag?: string;
   pinnedFilters?: PinnedFilters;
+}
+
+interface ISavedFilterRowBroken extends ISavedFilterRow {
+  savedfilterid?: number;
+}
+
+interface ICustomFilterBroken extends ICustomFilter {
+  sortby?: string;
+}
+
+type FrontPageContentBroken = ISavedFilterRowBroken | ICustomFilterBroken;
+
+// #4128: deal with incorrectly insensitivised keys (sortBy and savedFilterId)
+export function getFrontPageContent(
+  ui: IUIConfig
+): FrontPageContent[] | undefined {
+  return (ui.frontPageContent as FrontPageContentBroken[] | undefined)?.map(
+    (content) => {
+      switch (content.__typename) {
+        case "SavedFilter":
+          if (content.savedfilterid) {
+            return {
+              ...content,
+              savedFilterId: content.savedFilterId ?? content.savedfilterid,
+              savedfilterid: undefined,
+            };
+          }
+          return content;
+        case "CustomFilter":
+          if (content.sortby) {
+            return {
+              ...content,
+              sortBy: content.sortBy ?? content.sortby,
+              sortby: undefined,
+            };
+          }
+          return content;
+        default:
+          return content;
+      }
+    }
+  );
 }
 
 function recentlyReleased(
