@@ -31,12 +31,14 @@ interface ISavedFilterListProps {
   filter: ListFilterModel;
   onSetFilter: (f: ListFilterModel) => void;
   view?: View;
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
 }
 
 export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   filter,
   onSetFilter,
   view,
+  filterHook,
 }) => {
   const Toast = useToast();
   const intl = useIntl();
@@ -159,23 +161,29 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
         existingDefaultFilters = {};
       }
 
-      // Remove Subview Filter from default Filter
-      let urlComponents = window.location.href
-        .split("?")[0]
-        .split("/")
-        .reverse();
-      let subviewId = urlComponents[0];
-      let subviewType = urlComponents[1];
       let objectFilter = filterCopy.makeSavedFindFilter();
-      if (
-        Object.keys(objectFilter).indexOf(subviewType) > -1 &&
-        objectFilter[subviewType].modifier === "INCLUDES_ALL"
-      ) {
-        let value = objectFilter[subviewType].value as IHierarchicalLabelValue;
-        value.items = value.items.filter((item) => item.id != subviewId);
-        objectFilter[subviewType].value = value;
-        if (value.items.length === 0 && value.excluded.length === 0) {
-          delete objectFilter[subviewType];
+      // Remove Subview Filter from default Filter
+      if (filterHook) {
+        let subViewFilter = filterHook(
+          new ListFilterModel(filterCopy.mode, undefined)
+        );
+        let subViewCriterion = subViewFilter.criteria[0]
+          .value as IHierarchicalLabelValue;
+        let subViewType = subViewFilter.criteria[0].criterionOption.type;
+        if (
+          Object.keys(objectFilter).indexOf(subViewType) > -1 &&
+          objectFilter[subViewType].modifier ===
+            subViewFilter.criteria[0].modifier
+        ) {
+          let value = objectFilter[subViewType]
+            .value as IHierarchicalLabelValue;
+          value.items = value.items.filter(
+            (item) => item.id != subViewCriterion.items[0].id
+          );
+          objectFilter[subViewType].value = value;
+          if (value.items.length === 0 && value.excluded.length === 0) {
+            delete objectFilter[subViewType];
+          }
         }
       }
 

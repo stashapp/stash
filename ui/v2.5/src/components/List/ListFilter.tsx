@@ -46,6 +46,7 @@ interface IListFilterProps {
   filterOptions: ListFilterOptions;
   view?: View;
   openFilterDialog: () => void;
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
 }
 
 const PAGE_SIZE_OPTIONS = ["20", "40", "60", "120", "250", "500", "1000"];
@@ -56,6 +57,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   filterOptions,
   openFilterDialog,
   view,
+  filterHook,
 }) => {
   const [customPageSizeShowing, setCustomPageSizeShowing] = useState(false);
   const [queryRef, setQueryFocus] = useFocus();
@@ -202,6 +204,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
           onFilterUpdate(f);
         }}
         view={view}
+        filterHook={filterHook}
       />
     </div>
   ));

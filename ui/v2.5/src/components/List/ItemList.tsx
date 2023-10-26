@@ -139,6 +139,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     renderEditDialog,
     renderDeleteDialog,
     addKeybinds,
+    filterHook,
   }) => {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -464,6 +465,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
             filterOptions={filterOptions}
             openFilterDialog={() => setShowEditFilter(true)}
             view={view}
+            filterHook={filterHook}
           />
           <ListOperationButtons
             onSelectAll={selectable ? onSelectAll : undefined}
