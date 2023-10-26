@@ -22,6 +22,10 @@ import {
 } from "./Inputs";
 import { faLink, faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { useSettings } from "./context";
+import {
+  AvailablePluginPackages,
+  InstalledPluginPackages,
+} from "./PluginPackageManager";
 
 interface IPluginSettingProps {
   pluginID: string;
@@ -238,6 +242,9 @@ export const SettingsPluginsPanel: React.FC = () => {
 
   return (
     <>
+      <InstalledPluginPackages />
+      <AvailablePluginPackages />
+
       <SettingSection headingID="config.categories.plugins">
         <Setting headingID="actions.reload_plugins">
           <Button onClick={() => onReloadPlugins()}>

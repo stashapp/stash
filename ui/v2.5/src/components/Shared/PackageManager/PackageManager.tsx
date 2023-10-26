@@ -14,22 +14,6 @@ import { AlertModal } from "../Alert";
 
 type PackageSpec = GQL.PackageSpecInput & { name: string };
 
-function formatVersion(
-  version: string | undefined | null,
-  date: string | undefined | null
-) {
-  let ret = version ?? "";
-  if (date) {
-    const parsedDate = new Date(date);
-    if (version) {
-      ret += "-";
-    }
-    ret += `${parsedDate.toISOString()}`;
-  }
-
-  return ret;
-}
-
 function formatDate(date: string | undefined | null) {
   if (!date) return;
 
@@ -150,10 +134,12 @@ const InstalledPackagesList: React.FC<{
               </td>
               {updatesLoaded ? (
                 <td>
-                  {formatVersion(
-                    pkg.upgrade?.package.version,
-                    pkg.upgrade?.package.date
-                  )}
+                  <span className="package-version">
+                    {pkg.upgrade?.package.version}
+                  </span>
+                  <span className="package-date">
+                    {formatDate(pkg.upgrade?.package.date)}
+                  </span>
                 </td>
               ) : undefined}
             </tr>
@@ -579,12 +565,6 @@ const AvailablePackagesList: React.FC<{
             <td>
               <span className="package-version">{pkg.version}</span>
               <span className="package-date">{formatDate(pkg.date)}</span>
-            </td>
-            <td>
-              {formatVersion(
-                pkg.upgrade?.package.version,
-                pkg.upgrade?.package.date
-              )}
             </td>
             <td>{pkg.description}</td>
           </tr>

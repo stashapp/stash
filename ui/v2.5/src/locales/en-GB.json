@@ -386,7 +386,9 @@
       "log_level": "Log Level"
     },
     "plugins": {
+      "available_plugins": "Available Plugins",
       "hooks": "Hooks",
+      "installed_plugins": "Installed Plugins",
       "triggers_on": "Triggers on"
     },
     "scraping": {
