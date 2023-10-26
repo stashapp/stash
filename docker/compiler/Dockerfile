@@ -16,7 +16,7 @@ RUN apt-get update && \
     apt-get install -y automake autogen cmake \
     libtool libxml2-dev uuid-dev libssl-dev bash \
     patch make tar xz-utils bzip2 gzip zlib1g-dev sed cpio \
-	gcc-10-multilib gcc-mingw-w64 g++-mingw-w64 clang llvm-dev \
+	gcc-12-multilib gcc-mingw-w64 g++-mingw-w64 clang llvm-dev \
 	gcc-arm-linux-gnueabi libc-dev-armel-cross linux-libc-dev-armel-cross \
     gcc-arm-linux-gnueabihf libc-dev-armhf-cross \
     gcc-aarch64-linux-gnu libc-dev-arm64-cross \
