@@ -90,12 +90,32 @@ export class ListFilterModel {
     return this.criteria.length;
   }
 
-  public configureFromDecodedParams(params: IDecodedParams) {
+  public configureFromDecodedParams(
+    params: IDecodedParams,
+    defaultFilter: ListFilterModel | undefined = undefined
+  ) {
     if (params.perPage !== undefined) {
       this.itemsPerPage = params.perPage;
+    } else if (
+      defaultFilter !== undefined &&
+      defaultFilter.itemsPerPage !== undefined
+    ) {
+      this.itemsPerPage = defaultFilter.itemsPerPage;
     }
     if (params.sortby !== undefined) {
       this.sortBy = params.sortby;
+
+      // parse the random seed if provided
+      const match = this.sortBy.match(/^random_(\d+)$/);
+      if (match) {
+        this.sortBy = "random";
+        this.randomSeed = Number.parseInt(match[1], 10);
+      }
+    } else if (
+      defaultFilter !== undefined &&
+      defaultFilter.sortBy !== undefined
+    ) {
+      this.sortBy = defaultFilter.sortBy;
 
       // parse the random seed if provided
       const match = this.sortBy.match(/^random_(\d+)$/);
@@ -109,6 +129,11 @@ export class ListFilterModel {
         params.sortdir === "desc"
           ? SortDirectionEnum.Desc
           : SortDirectionEnum.Asc;
+    } else if (
+      defaultFilter !== undefined &&
+      defaultFilter.sortDirection !== undefined
+    ) {
+      this.sortDirection = defaultFilter.sortDirection;
     } else {
       // #3193 - sortdir undefined means asc
       // #3559 - unless sortby is date, then desc
@@ -119,13 +144,28 @@ export class ListFilterModel {
     }
     if (params.disp !== undefined) {
       this.displayMode = params.disp;
+    } else if (
+      defaultFilter !== undefined &&
+      defaultFilter.displayMode !== undefined
+    ) {
+      this.displayMode = defaultFilter.displayMode;
     }
     if (params.q !== undefined) {
       this.searchTerm = params.q;
+    } else if (
+      defaultFilter !== undefined &&
+      defaultFilter.searchTerm !== undefined
+    ) {
+      this.searchTerm = defaultFilter.searchTerm;
     }
-    this.currentPage = params.p ?? 1;
+    this.currentPage = params.p ?? defaultFilter?.currentPage ?? 1;
     if (params.z !== undefined) {
       this.zoomIndex = params.z;
+    } else if (
+      defaultFilter !== undefined &&
+      defaultFilter.zoomIndex !== undefined
+    ) {
+      this.zoomIndex = defaultFilter.zoomIndex;
     }
 
     this.criteria = [];
@@ -140,6 +180,11 @@ export class ListFilterModel {
           // eslint-disable-next-line no-console
           console.error("Failed to parse encoded criterion:", err);
         }
+      }
+    }
+    if (defaultFilter !== undefined && defaultFilter.criteria !== undefined) {
+      for (const criterion of defaultFilter.criteria) {
+        this.criteria.push(criterion);
       }
     }
   }
@@ -235,7 +280,10 @@ export class ListFilterModel {
       .join("");
   }
 
-  public configureFromQueryString(queryString: string) {
+  public configureFromQueryString(
+    queryString: string,
+    defaultFilter: ListFilterModel | undefined = undefined
+  ) {
     const query = new URLSearchParams(queryString);
     const params = {
       perPage: query.get("perPage"),
@@ -248,7 +296,7 @@ export class ListFilterModel {
       c: query.getAll("c"),
     };
     const decoded = ListFilterModel.decodeParams(params);
-    this.configureFromDecodedParams(decoded);
+    this.configureFromDecodedParams(decoded, defaultFilter);
   }
 
   public configureFromSavedFilter(savedFilter: SavedFilterDataFragment) {

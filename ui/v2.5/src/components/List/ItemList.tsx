@@ -572,7 +572,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       let loadDefault = true;
       if (alterQuery && location.search) {
         loadDefault = false;
-        newFilter.configureFromQueryString(location.search);
+        newFilter.configureFromQueryString(location.search, defaultFilter);
       }
 
       if (view) {
