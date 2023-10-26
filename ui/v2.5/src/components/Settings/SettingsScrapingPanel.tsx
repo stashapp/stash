@@ -19,7 +19,10 @@ import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";
 import { useSettings } from "./context";
 import { StashBoxSetting } from "./StashBoxConfiguration";
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
-import { ScraperPackageManager } from "./ScraperPackageManager";
+import {
+  AvailableScraperPackages,
+  InstalledScraperPackages,
+} from "./ScraperPackageManager";
 
 interface IURLList {
   urls: string[];
@@ -343,9 +346,10 @@ export const SettingsScrapingPanel: React.FC = () => {
         />
       </SettingSection>
 
-      <SettingSection headingID="config.scraping.scrapers">
-        <ScraperPackageManager />
+      <InstalledScraperPackages />
+      <AvailableScraperPackages />
 
+      <SettingSection headingID="config.scraping.scrapers">
         <div className="content">
           <Button onClick={() => onReloadScrapers()}>
             <span className="fa-icon">

@@ -106,59 +106,61 @@ const InstalledPackagesList: React.FC<{
   }
 
   return (
-    <Table>
-      <thead>
-        <tr>
-          <th>
-            <Form.Check
-              checked={allChecked ?? false}
-              onChange={toggleAllChecked}
-              disabled={loading}
-            />
-          </th>
-          <th>
-            <FormattedMessage id="package_manager.package" />
-          </th>
-          <th>
-            <FormattedMessage id="package_manager.installed_version" />
-          </th>
-          {updatesLoaded ? (
-            <th>
-              <FormattedMessage id="package_manager.latest_version" />
-            </th>
-          ) : undefined}
-        </tr>
-      </thead>
-      <tbody>
-        {filteredPackages.map((pkg) => (
-          <tr key={pkg.id} className={rowClassname(pkg)}>
-            <td>
+    <div className="package-manager-table-container">
+      <Table>
+        <thead>
+          <tr>
+            <th className="button-cell">
               <Form.Check
-                checked={checkedMap[pkg.id] ?? false}
+                checked={allChecked ?? false}
+                onChange={toggleAllChecked}
                 disabled={loading}
-                onChange={() => togglePackage(pkg)}
               />
-            </td>
-            <td>
-              <span className="package-name">{pkg.name}</span>
-              <span className="package-id">{pkg.id}</span>
-            </td>
-            <td>
-              <span className="package-version">{pkg.version}</span>
-              <span className="package-date">{formatDate(pkg.date)}</span>
-            </td>
+            </th>
+            <th>
+              <FormattedMessage id="package_manager.package" />
+            </th>
+            <th>
+              <FormattedMessage id="package_manager.installed_version" />
+            </th>
             {updatesLoaded ? (
-              <td>
-                {formatVersion(
-                  pkg.upgrade?.package.version,
-                  pkg.upgrade?.package.date
-                )}
-              </td>
+              <th>
+                <FormattedMessage id="package_manager.latest_version" />
+              </th>
             ) : undefined}
           </tr>
-        ))}
-      </tbody>
-    </Table>
+        </thead>
+        <tbody>
+          {filteredPackages.map((pkg) => (
+            <tr key={pkg.id} className={rowClassname(pkg)}>
+              <td>
+                <Form.Check
+                  checked={checkedMap[pkg.id] ?? false}
+                  disabled={loading}
+                  onChange={() => togglePackage(pkg)}
+                />
+              </td>
+              <td>
+                <span className="package-name">{pkg.name}</span>
+                <span className="package-id">{pkg.id}</span>
+              </td>
+              <td>
+                <span className="package-version">{pkg.version}</span>
+                <span className="package-date">{formatDate(pkg.date)}</span>
+              </td>
+              {updatesLoaded ? (
+                <td>
+                  {formatVersion(
+                    pkg.upgrade?.package.version,
+                    pkg.upgrade?.package.date
+                  )}
+                </td>
+              ) : undefined}
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+    </div>
   );
 };
 
@@ -540,6 +542,7 @@ const AvailablePackagesList: React.FC<{
     return (
       <Button
         variant="minimal"
+        size="sm"
         className="package-collapse-button"
         onClick={() => toggleSourceOpen(source)}
       >
@@ -659,8 +662,8 @@ const AvailablePackagesList: React.FC<{
         <Table>
           <thead>
             <tr>
-              <th></th>
-              <th></th>
+              <th className="button-cell"></th>
+              <th className="button-cell"></th>
               <th>
                 <FormattedMessage id="package_manager.package" />
               </th>
@@ -723,7 +726,7 @@ export const AvailablePackages: React.FC<{
   }
 
   return (
-    <div className="installed-packages">
+    <div className="available-packages">
       <AvailablePackagesToolbar
         filter={filter}
         setFilter={(f) => setFilter(f)}

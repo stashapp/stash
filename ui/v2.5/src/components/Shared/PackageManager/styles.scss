@@ -30,6 +30,10 @@
     position: sticky;
     top: 0;
     z-index: 1;
+
+    .button-cell {
+      width: 40px;
+    }
   }
 
   table td {
