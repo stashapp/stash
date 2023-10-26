@@ -24,7 +24,7 @@ const SceneMarkers: React.FC = () => {
   return (
     <>
       <Helmet {...titleProps} />
-      <SceneMarkerList />
+      <SceneMarkerList view={View.SceneMarkers} />
     </>
   );
 };

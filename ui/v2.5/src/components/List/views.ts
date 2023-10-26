@@ -5,6 +5,8 @@ export enum View {
   Movies = "movies",
   Performers = "performers",
   Tags = "tags",
+  SceneMarkers = "scene_markers",
+  Studios = "studios",
 
   TagMarkers = "tag_markers",
   TagGalleries = "tag_galleries",
@@ -26,4 +28,7 @@ export enum View {
   StudioScenes = "studio_scenes",
   StudioMovies = "studio_movies",
   StudioPerformers = "studio_performers",
+  StudioChildren = "studio_children",
+
+  MovieScenes = "movie_scenes",
 }
