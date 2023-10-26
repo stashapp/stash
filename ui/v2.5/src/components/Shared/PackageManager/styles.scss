@@ -3,6 +3,12 @@
 
   .package-source {
     font-weight: bold;
+
+    .source-controls {
+      align-items: center;
+      display: flex;
+      justify-content: end;
+    }
   }
 
   .package-cell,
@@ -14,8 +20,7 @@
     color: $text-color;
   }
 
-  table {
-    display: block;
+  .package-manager-table-container {
     max-height: 300px;
     overflow-y: auto;
   }

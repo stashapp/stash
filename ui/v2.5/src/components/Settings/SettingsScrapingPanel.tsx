@@ -344,6 +344,8 @@ export const SettingsScrapingPanel: React.FC = () => {
       </SettingSection>
 
       <SettingSection headingID="config.scraping.scrapers">
+        <ScraperPackageManager />
+
         <div className="content">
           <Button onClick={() => onReloadScrapers()}>
             <span className="fa-icon">
@@ -354,8 +356,6 @@ export const SettingsScrapingPanel: React.FC = () => {
             </span>
           </Button>
         </div>
-
-        <ScraperPackageManager />
 
         <div className="content">
           {renderSceneScrapers()}

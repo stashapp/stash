@@ -7,6 +7,10 @@ import {
   faChevronDown,
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
+import { SettingModal } from "src/components/Settings/Inputs";
+import * as yup from "yup";
+import { FormikErrors, yupToFormErrors } from "formik";
+import { AlertModal } from "../Alert";
 
 type PackageSpec = GQL.PackageSpecInput & { name: string };
 
@@ -215,7 +219,7 @@ const InstalledPackagesToolbar: React.FC<{
   );
 };
 
-const InstalledPackages: React.FC<{
+export const InstalledPackages: React.FC<{
   loading?: boolean;
   packages: GQL.Package[];
   updatesLoaded: boolean;
@@ -306,6 +310,117 @@ const AvailablePackagesToolbar: React.FC<{
   );
 };
 
+const EditSourceModal: React.FC<{
+  sources: GQL.PackageSource[];
+  existing?: GQL.PackageSource;
+  onClose: (source?: GQL.PackageSource) => void;
+}> = ({ existing, sources, onClose }) => {
+  const intl = useIntl();
+
+  const schema = yup.object({
+    name: yup
+      .string()
+      .required()
+      .test({
+        name: "name",
+        test: (value) => {
+          if (!value) return true;
+          const found = sources.find((s) => s.name === value);
+          return !found || found === existing;
+        },
+        message: intl.formatMessage({ id: "validation.unique" }),
+      }),
+    url: yup
+      .string()
+      .required()
+      .test({
+        name: "url",
+        test: (value) => {
+          if (!value) return true;
+          const found = sources.find((s) => s.url === value);
+          return !found || found === existing;
+        },
+        message: intl.formatMessage({ id: "validation.unique" }),
+      }),
+  });
+
+  type InputValues = yup.InferType<typeof schema>;
+  function validate(
+    v: GQL.PackageSource | undefined
+  ): FormikErrors<InputValues> | undefined {
+    try {
+      schema.validateSync(v, { abortEarly: false });
+    } catch (e) {
+      return yupToFormErrors(e);
+    }
+  }
+
+  const headerID = !!existing
+    ? "package_manager.edit_source"
+    : "package_manager.add_source";
+
+  function renderField(
+    v: GQL.PackageSource | undefined,
+    setValue: (v: GQL.PackageSource | undefined) => void
+  ) {
+    const errors = validate(v);
+
+    return (
+      <>
+        <Form.Group id="package-source-name">
+          <h6>
+            <FormattedMessage id="package_manager.source.name" />
+          </h6>
+          <Form.Control
+            placeholder={intl.formatMessage({
+              id: "package_manager.source.name",
+            })}
+            className="text-input"
+            value={v?.name ?? ""}
+            isInvalid={!!errors?.name}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setValue({ ...v!, name: e.currentTarget.value })
+            }
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors?.name}
+          </Form.Control.Feedback>
+        </Form.Group>
+
+        <Form.Group id="package-source-url">
+          <h6>
+            <FormattedMessage id="package_manager.source.url" />
+          </h6>
+          <Form.Control
+            placeholder={intl.formatMessage({
+              id: "package_manager.source.url",
+            })}
+            className="text-input"
+            value={v?.url}
+            isInvalid={!!errors?.url}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setValue({ ...v!, url: e.currentTarget.value.trim() })
+            }
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors?.url}
+          </Form.Control.Feedback>
+        </Form.Group>
+      </>
+    );
+  }
+
+  return (
+    <SettingModal<GQL.PackageSource>
+      headingID={headerID}
+      value={existing ?? { url: "", name: "" }}
+      validate={(v) => validate(v) === undefined}
+      renderField={renderField}
+      close={onClose}
+    />
+  );
+};
+
 const AvailablePackagesList: React.FC<{
   filter: string;
   loading?: boolean;
@@ -314,6 +429,9 @@ const AvailablePackagesList: React.FC<{
   loadSource: (source: string) => void;
   checkedPackages: PackageSpec[];
   setCheckedPackages: React.Dispatch<React.SetStateAction<PackageSpec[]>>;
+  addSource: (src: GQL.PackageSource) => void;
+  editSource: (existing: GQL.PackageSource, changed: GQL.PackageSource) => void;
+  deleteSource: (source: GQL.PackageSource) => void;
 }> = ({
   sources,
   packages,
@@ -322,8 +440,15 @@ const AvailablePackagesList: React.FC<{
   setCheckedPackages,
   loading,
   filter,
+  addSource,
+  editSource,
+  deleteSource,
 }) => {
+  const intl = useIntl();
   const [sourceOpen, setSourceOpen] = useState<Record<string, boolean>>({});
+  const [deletingSource, setDeletingSource] = useState<GQL.PackageSource>();
+  const [editingSource, setEditingSource] = useState<GQL.PackageSource>();
+  const [addingSource, setAddingSource] = useState(false);
 
   const checkedMap = useMemo(() => {
     const map: Record<string, Record<string, boolean>> = {};
@@ -423,6 +548,13 @@ const AvailablePackagesList: React.FC<{
     );
   }
 
+  function onDeleteSource() {
+    if (!deletingSource) return;
+
+    deleteSource(deletingSource);
+    setDeletingSource(undefined);
+  }
+
   function renderSource(source: GQL.PackageSource) {
     const children = sourceOpen[source.url]
       ? filteredPackages[source.url]?.map((pkg) => (
@@ -468,10 +600,26 @@ const AvailablePackagesList: React.FC<{
           ) : undefined}
         </td>
         <td>{renderCollapseButton(source.url)}</td>
-        <td colSpan={4} onClick={() => toggleSourceOpen(source.url)}>
-          <FormattedMessage id="package_manager.source" />
-          {": "}
+        <td colSpan={2} onClick={() => toggleSourceOpen(source.url)}>
           <span>{source.name ?? source.url}</span>
+        </td>
+        <td className="source-controls">
+          <Button
+            size="sm"
+            variant="primary"
+            title={intl.formatMessage({ id: "actions.edit" })}
+            onClick={() => setEditingSource(source)}
+          >
+            <FormattedMessage id="actions.edit" />
+          </Button>
+          <Button
+            size="sm"
+            variant="danger"
+            title={intl.formatMessage({ id: "actions.delete" })}
+            onClick={() => setDeletingSource(source)}
+          >
+            <FormattedMessage id="actions.delete" />
+          </Button>
         </td>
       </tr>,
       ...children,
@@ -479,34 +627,87 @@ const AvailablePackagesList: React.FC<{
   }
 
   return (
-    <Table>
-      <thead>
-        <tr>
-          <th></th>
-          <th></th>
-          <th>
-            <FormattedMessage id="package_manager.package" />
-          </th>
-          <th>
-            <FormattedMessage id="package_manager.version" />
-          </th>
-          <th>
-            <FormattedMessage id="package_manager.description" />
-          </th>
-        </tr>
-      </thead>
-      <tbody>{sources.map((pkg) => renderSource(pkg))}</tbody>
-    </Table>
+    <>
+      <AlertModal
+        show={!!deletingSource}
+        text={
+          <FormattedMessage
+            id="package_manager.confirm_delete_source"
+            values={{ name: deletingSource?.name, url: deletingSource?.url }}
+          />
+        }
+        onConfirm={() => onDeleteSource()}
+        onCancel={() => setDeletingSource(undefined)}
+      />
+
+      {editingSource || addingSource ? (
+        <EditSourceModal
+          sources={sources}
+          existing={editingSource}
+          onClose={(v) => {
+            if (v) {
+              if (addingSource) addSource(v);
+              else if (editingSource) editSource(editingSource, v);
+            }
+            setEditingSource(undefined);
+            setAddingSource(false);
+          }}
+        />
+      ) : undefined}
+
+      <div className="package-manager-table-container">
+        <Table>
+          <thead>
+            <tr>
+              <th></th>
+              <th></th>
+              <th>
+                <FormattedMessage id="package_manager.package" />
+              </th>
+              <th>
+                <FormattedMessage id="package_manager.version" />
+              </th>
+              <th>
+                <FormattedMessage id="package_manager.description" />
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {sources.map((pkg) => renderSource(pkg))}
+            <tr className="package-source">
+              <td colSpan={2}></td>
+              <td colSpan={3} onClick={() => setAddingSource(true)}>
+                <Button size="sm" variant="success">
+                  <FormattedMessage id="package_manager.add_source" />
+                </Button>
+              </td>
+            </tr>
+          </tbody>
+        </Table>
+      </div>
+    </>
   );
 };
 
-const AvailablePackages: React.FC<{
+export const AvailablePackages: React.FC<{
   loading?: boolean;
   sources: GQL.PackageSource[];
   packages: Record<string, GQL.Package[]>;
   loadSource: (source: string) => void;
   onInstallPackages: (packages: GQL.PackageSpecInput[]) => void;
-}> = ({ sources, packages, loadSource, onInstallPackages, loading }) => {
+  addSource: (src: GQL.PackageSource) => void;
+  editSource: (existing: GQL.PackageSource, changed: GQL.PackageSource) => void;
+  deleteSource: (source: GQL.PackageSource) => void;
+}> = ({
+  sources,
+  packages,
+  loadSource,
+  onInstallPackages,
+  loading,
+  addSource,
+  editSource,
+  deleteSource,
+}) => {
   const [checkedPackages, setCheckedPackages] = useState<PackageSpec[]>([]);
   const [filter, setFilter] = useState("");
 
@@ -540,66 +741,10 @@ const AvailablePackages: React.FC<{
         packages={packages}
         checkedPackages={checkedPackages}
         setCheckedPackages={setCheckedPackages}
+        addSource={addSource}
+        editSource={editSource}
+        deleteSource={deleteSource}
       />
-    </div>
-  );
-};
-
-export interface IPackageManagerProps {
-  loading?: boolean;
-  installedPackages: GQL.Package[];
-  onCheckForUpdates: () => void;
-  updatesLoaded: boolean;
-
-  sources: GQL.PackageSource[];
-  sourcePackages: Record<string, GQL.Package[]>;
-  onLoadSource: (source: string) => void;
-
-  onInstallPackages: (packages: GQL.PackageSpecInput[]) => void;
-  onUpdatePackages: (packages: GQL.Package[]) => void;
-  onUninstallPackages: (packages: GQL.Package[]) => void;
-}
-
-export const PackageManager: React.FC<IPackageManagerProps> = ({
-  loading,
-  installedPackages,
-  updatesLoaded,
-  onCheckForUpdates,
-  sources,
-  sourcePackages,
-  onLoadSource,
-  onInstallPackages,
-  onUpdatePackages,
-  onUninstallPackages,
-}) => {
-  return (
-    <div className="package-manager">
-      <div>
-        <h3>
-          <FormattedMessage id={"config.scraping.installed_scrapers"} />
-        </h3>
-        <InstalledPackages
-          loading={loading}
-          packages={installedPackages}
-          onCheckForUpdates={onCheckForUpdates}
-          onUpdatePackages={onUpdatePackages}
-          onUninstallPackages={onUninstallPackages}
-          updatesLoaded={updatesLoaded}
-        />
-      </div>
-
-      <div>
-        <h3>
-          <FormattedMessage id={"config.scraping.available_scrapers"} />
-        </h3>
-        <AvailablePackages
-          loading={loading}
-          onInstallPackages={onInstallPackages}
-          loadSource={onLoadSource}
-          sources={sources}
-          packages={sourcePackages}
-        />
-      </div>
     </div>
   );
 };

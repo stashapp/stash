@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useContext } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import * as GQL from "src/core/generated-graphql";
 import {
   evictQueries,
@@ -10,12 +10,18 @@ import {
   useUninstallScraperPackages,
   useUpdateScraperPackages,
 } from "src/core/StashService";
-import { ConfigurationContext } from "src/hooks/Config";
 import { useMonitorJob } from "src/utils/job";
-import { PackageManager } from "../Shared/PackageManager/PackageManager";
+import {
+  AvailablePackages,
+  InstalledPackages,
+} from "../Shared/PackageManager/PackageManager";
+import { FormattedMessage } from "react-intl";
+import { useSettings } from "./context";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
 
 export const ScraperPackageManager: React.FC = () => {
-  const { configuration } = useContext(ConfigurationContext);
+  const { general, loading: configLoading, error, saveGeneral } = useSettings();
+
   const [loadUpgrades, setLoadUpgrades] = useState(false);
   const [sourcePackages, setSourcePackages] = useState<
     Record<string, GQL.Package[]>
@@ -102,10 +108,10 @@ export const ScraperPackageManager: React.FC = () => {
   }
 
   useEffect(() => {
-    if (!sources && configuration?.general.scraperPackageSources) {
-      setSources(configuration.general.scraperPackageSources);
+    if (!sources && !configLoading && general.scraperPackageSources) {
+      setSources(general.scraperPackageSources);
     }
-  }, [sources, configuration?.general.scraperPackageSources]);
+  }, [sources, configLoading, general.scraperPackageSources]);
 
   const installedPackages = useMemo(() => {
     if (withStatus?.installedPackages) {
@@ -137,24 +143,111 @@ export const ScraperPackageManager: React.FC = () => {
     });
   }
 
+  function addSource(source: GQL.PackageSource) {
+    saveGeneral({
+      scraperPackageSources: [...(general.scraperPackageSources ?? []), source],
+    });
+
+    setSources((prev) => {
+      return [...(prev ?? []), source];
+    });
+  }
+
+  function editSource(existing: GQL.PackageSource, changed: GQL.PackageSource) {
+    saveGeneral({
+      scraperPackageSources: general.scraperPackageSources?.map((s) =>
+        s.url === existing.url ? changed : s
+      ),
+    });
+
+    setSources((prev) => {
+      return prev?.map((s) => (s.url === existing.url ? changed : s));
+    });
+
+    if (existing.url !== changed.url) {
+      // wipe the cache for the old source
+      setSourcePackages((prev) => {
+        const next = { ...prev };
+        delete next[existing.url];
+        return next;
+      });
+      setSourcesLoaded((prev) => {
+        const next = { ...prev };
+        delete next[existing.url];
+        return next;
+      });
+    }
+  }
+
+  function deleteSource(source: GQL.PackageSource) {
+    saveGeneral({
+      scraperPackageSources: general.scraperPackageSources?.filter(
+        (s) => s.url !== source.url
+      ),
+    });
+
+    setSources((prev) => {
+      return prev?.filter((s) => s.url !== source.url);
+    });
+
+    // wipe the cache for the deleted source
+    setSourcePackages((prev) => {
+      const next = { ...prev };
+      delete next[source.url];
+      return next;
+    });
+    setSourcesLoaded((prev) => {
+      const next = { ...prev };
+      delete next[source.url];
+      return next;
+    });
+  }
+
+  if (error) return <h1>{error.message}</h1>;
+  if (configLoading) return <LoadingIndicator />;
+
+  const loading = !!job || statusLoading;
+
   return (
-    <PackageManager
-      loading={!!job || statusLoading}
-      installedPackages={installedPackages}
-      updatesLoaded={loadUpgrades}
-      onCheckForUpdates={() => onCheckForUpdates()}
-      sources={sources ?? []}
-      sourcePackages={sourcePackages}
-      onLoadSource={(source) => loadSource(source)}
-      onInstallPackages={(packages) => onInstallPackages(packages)}
-      onUpdatePackages={(packages) =>
-        onUpdatePackages(
-          packages.map((p) => ({ id: p.id, sourceURL: p.upgrade!.sourceURL }))
-        )
-      }
-      onUninstallPackages={(packages) =>
-        onUninstallPackages(packages.map((p) => p.id))
-      }
-    />
+    <div className="package-manager">
+      <div>
+        <h3>
+          <FormattedMessage id={"config.scraping.installed_scrapers"} />
+        </h3>
+        <InstalledPackages
+          loading={loading}
+          packages={installedPackages}
+          onCheckForUpdates={onCheckForUpdates}
+          onUpdatePackages={(packages) =>
+            onUpdatePackages(
+              packages.map((p) => ({
+                id: p.id,
+                sourceURL: p.upgrade!.sourceURL,
+              }))
+            )
+          }
+          onUninstallPackages={(packages) =>
+            onUninstallPackages(packages.map((p) => p.id))
+          }
+          updatesLoaded={loadUpgrades}
+        />
+      </div>
+
+      <div>
+        <h3>
+          <FormattedMessage id={"config.scraping.available_scrapers"} />
+        </h3>
+        <AvailablePackages
+          loading={loading}
+          onInstallPackages={onInstallPackages}
+          loadSource={(source) => loadSource(source)}
+          sources={sources ?? []}
+          packages={sourcePackages}
+          addSource={addSource}
+          editSource={editSource}
+          deleteSource={deleteSource}
+        />
+      </div>
+    </div>
   );
 };
