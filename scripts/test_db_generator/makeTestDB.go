@@ -15,6 +15,8 @@ import (
 	"strconv"
 	"time"
 
+	"gopkg.in/yaml.v2"
+
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/hash/md5"
@@ -22,7 +24,6 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
-	"gopkg.in/yaml.v2"
 )
 
 const batchSize = 50000

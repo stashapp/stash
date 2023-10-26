@@ -21,13 +21,13 @@ import (
 	gqlLru "github.com/99designs/gqlgen/graphql/handler/lru"
 	gqlTransport "github.com/99designs/gqlgen/graphql/handler/transport"
 	gqlPlayground "github.com/99designs/gqlgen/graphql/playground"
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
+	"github.com/go-chi/httplog"
 	"github.com/gorilla/websocket"
 	"github.com/vearutop/statigz"
 
-	"github.com/go-chi/cors"
-	"github.com/go-chi/httplog"
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/build"
 	"github.com/stashapp/stash/internal/manager"
@@ -71,7 +71,7 @@ func Start() error {
 		r.Use(httplog.RequestLogger(httpLogger))
 	}
 	r.Use(SecurityHeadersMiddleware)
-	r.Use(middleware.DefaultCompress)
+	r.Use(middleware.Compress(4))
 	r.Use(middleware.StripSlashes)
 	r.Use(BaseURLMiddleware)
 
