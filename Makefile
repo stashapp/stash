@@ -160,7 +160,6 @@ build-release-static-windows: stash-release-static-windows phasher-release-stati
 cross-compile-windows: export GOOS := windows
 cross-compile-windows: export GOARCH := amd64
 cross-compile-windows: export CC := x86_64-w64-mingw32-gcc
-cross-compile-windows: export CXX := x86_64-w64-mingw32-g++
 cross-compile-windows: STASH_OUTPUT := -o dist/stash-win.exe
 cross-compile-windows: PHASHER_OUTPUT := -o dist/phasher-win.exe
 cross-compile-windows: flags-release
@@ -171,7 +170,6 @@ cross-compile-windows: build
 cross-compile-macos-intel: export GOOS := darwin
 cross-compile-macos-intel: export GOARCH := amd64
 cross-compile-macos-intel: export CC := o64-clang
-cross-compile-macos-intel: export CXX := o64-clang++
 cross-compile-macos-intel: STASH_OUTPUT := -o dist/stash-macos-intel
 cross-compile-macos-intel: PHASHER_OUTPUT := -o dist/phasher-macos-intel
 cross-compile-macos-intel: flags-release
@@ -183,7 +181,6 @@ cross-compile-macos-intel: build
 cross-compile-macos-applesilicon: export GOOS := darwin
 cross-compile-macos-applesilicon: export GOARCH := arm64
 cross-compile-macos-applesilicon: export CC := oa64e-clang
-cross-compile-macos-applesilicon: export CXX := oa64e-clang++
 cross-compile-macos-applesilicon: STASH_OUTPUT := -o dist/stash-macos-applesilicon
 cross-compile-macos-applesilicon: PHASHER_OUTPUT := -o dist/phasher-macos-applesilicon
 cross-compile-macos-applesilicon: flags-release
