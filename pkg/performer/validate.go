@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -32,6 +33,14 @@ func (e *NameExistsError) Error() string {
 	return fmt.Sprintf("performer with name '%s' already exists", e.Name)
 }
 
+type DuplicateAliasError struct {
+	Alias string
+}
+
+func (e *DuplicateAliasError) Error() string {
+	return fmt.Sprintf("performer contains duplicate alias '%s'", e.Alias)
+}
+
 type DeathDateError struct {
 	Birthdate models.Date
 	DeathDate models.Date
@@ -43,6 +52,10 @@ func (e *DeathDateError) Error() string {
 
 func ValidateCreate(ctx context.Context, performer models.Performer, qb models.PerformerReader) error {
 	if err := ValidateName(ctx, performer.Name, performer.Disambiguation, qb); err != nil {
+		return err
+	}
+
+	if err := ValidateAliases(performer.Name, performer.Aliases); err != nil {
 		return err
 	}
 
@@ -63,13 +76,18 @@ func ValidateUpdate(ctx context.Context, id int, partial models.PerformerPartial
 		return &NotFoundError{id}
 	}
 
-	err = ValidateUpdateName(ctx, *existing, partial.Name, partial.Disambiguation, qb)
-	if err != nil {
+	if err := ValidateUpdateName(ctx, *existing, partial.Name, partial.Disambiguation, qb); err != nil {
 		return err
 	}
 
-	err = ValidateUpdateDeathDate(*existing, partial.Birthdate, partial.DeathDate)
-	if err != nil {
+	if err := existing.LoadAliases(ctx, qb); err != nil {
+		return err
+	}
+	if err := ValidateUpdateAliases(*existing, partial.Name, partial.Aliases); err != nil {
+		return err
+	}
+
+	if err := ValidateUpdateDeathDate(*existing, partial.Birthdate, partial.DeathDate); err != nil {
 		return err
 	}
 
@@ -170,6 +188,42 @@ func ValidateUpdateName(ctx context.Context, existing models.Performer, name mod
 	}
 
 	return validateName(ctx, newName, newDisambig, &existing.ID, qb)
+}
+
+func ValidateAliases(name string, aliases models.RelatedStrings) error {
+	if !aliases.Loaded() {
+		return nil
+	}
+
+	m := make(map[string]bool)
+	nameL := strings.ToLower(name)
+	m[nameL] = true
+
+	for _, alias := range aliases.List() {
+		aliasL := strings.ToLower(alias)
+		if m[aliasL] {
+			return &DuplicateAliasError{alias}
+		}
+		m[aliasL] = true
+	}
+
+	return nil
+}
+
+func ValidateUpdateAliases(existing models.Performer, name models.OptionalString, aliases *models.UpdateStrings) error {
+	// if neither name nor aliases is set, don't check anything
+	if !name.Set && aliases == nil {
+		return nil
+	}
+
+	newName := existing.Name
+	if name.Set {
+		newName = name.Value
+	}
+
+	newAliases := aliases.Apply(existing.Aliases.List())
+
+	return ValidateAliases(newName, models.NewRelatedStrings(newAliases))
 }
 
 // ValidateDeathDate returns an error if the birthdate is after the death date.

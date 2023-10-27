@@ -159,6 +159,88 @@ func TestValidateUpdateName(t *testing.T) {
 	}
 }
 
+func TestValidateAliases(t *testing.T) {
+	const (
+		name1  = "name 1"
+		name1U = "NAME 1"
+		name2  = "name 2"
+		name3  = "name 3"
+		name4  = "name 4"
+	)
+
+	tests := []struct {
+		tName   string
+		name    string
+		aliases []string
+		want    error
+	}{
+		{"no aliases", name1, nil, nil},
+		{"valid aliases", name2, []string{name3, name4}, nil},
+		{"duplicate alias", name1, []string{name2, name3, name2}, &DuplicateAliasError{name2}},
+		{"duplicate name", name4, []string{name4, name3}, &DuplicateAliasError{name4}},
+		{"duplicate alias caps", name2, []string{name1, name1U}, &DuplicateAliasError{name1U}},
+		{"duplicate name caps", name1U, []string{name1}, &DuplicateAliasError{name1}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.tName, func(t *testing.T) {
+			got := ValidateAliases(tt.name, models.NewRelatedStrings(tt.aliases))
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestValidateUpdateAliases(t *testing.T) {
+	const (
+		name1  = "name 1"
+		name1U = "NAME 1"
+		name2  = "name 2"
+		name3  = "name 3"
+		name4  = "name 4"
+	)
+
+	existing := models.Performer{
+		Name:    name1,
+		Aliases: models.NewRelatedStrings([]string{name2}),
+	}
+
+	osUnset := models.OptionalString{}
+	os1 := models.NewOptionalString(name1)
+	os2 := models.NewOptionalString(name2)
+	os3 := models.NewOptionalString(name3)
+	os4 := models.NewOptionalString(name4)
+
+	tests := []struct {
+		tName   string
+		name    models.OptionalString
+		aliases []string
+		want    error
+	}{
+		{"both unset", osUnset, nil, nil},
+		{"invalid name set", os2, nil, &DuplicateAliasError{name2}},
+		{"valid name set", os3, nil, nil},
+		{"valid aliases empty", os1, []string{}, nil},
+		{"invalid aliases set", osUnset, []string{name1U}, &DuplicateAliasError{name1U}},
+		{"valid aliases set", osUnset, []string{name3, name2}, nil},
+		{"invalid both set", os4, []string{name4}, &DuplicateAliasError{name4}},
+		{"valid both set", os2, []string{name1}, nil},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.tName, func(t *testing.T) {
+			var aliases *models.UpdateStrings
+			if tt.aliases != nil {
+				aliases = &models.UpdateStrings{
+					Values: tt.aliases,
+					Mode:   models.RelationshipUpdateModeSet,
+				}
+			}
+			got := ValidateUpdateAliases(existing, tt.name, aliases)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestValidateDeathDate(t *testing.T) {
 	date1, _ := models.ParseDate("2001-01-01")
 	date2, _ := models.ParseDate("2002-01-01")
