@@ -89,13 +89,13 @@ func (u *UpdateIDs) ImpactedIDs(existing []int) []int {
 	return nil
 }
 
-// GetEffectiveIDs returns the new IDs that will be effective after the update.
-func (u *UpdateIDs) EffectiveIDs(existing []int) []int {
+// Apply applies the update to a list of existing ids, returning the result.
+func (u *UpdateIDs) Apply(existing []int) []int {
 	if u == nil {
-		return nil
+		return existing
 	}
 
-	return effectiveValues(u.IDs, u.Mode, existing)
+	return applyUpdate(u.IDs, u.Mode, existing)
 }
 
 type UpdateStrings struct {
@@ -111,17 +111,17 @@ func (u *UpdateStrings) Strings() []string {
 	return u.Values
 }
 
-// GetEffectiveIDs returns the new IDs that will be effective after the update.
-func (u *UpdateStrings) EffectiveValues(existing []string) []string {
+// Apply applies the update to a list of existing strings, returning the result.
+func (u *UpdateStrings) Apply(existing []string) []string {
 	if u == nil {
-		return nil
+		return existing
 	}
 
-	return effectiveValues(u.Values, u.Mode, existing)
+	return applyUpdate(u.Values, u.Mode, existing)
 }
 
-// effectiveValues returns the new values that will be effective after the update.
-func effectiveValues[T comparable](values []T, mode RelationshipUpdateMode, existing []T) []T {
+// applyUpdate applies values to existing, using the update mode specified.
+func applyUpdate[T comparable](values []T, mode RelationshipUpdateMode, existing []T) []T {
 	switch mode {
 	case RelationshipUpdateModeAdd:
 		return sliceutil.AppendUniques(existing, values)

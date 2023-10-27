@@ -34,6 +34,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 
 	newPerformer.Name = input.Name
 	newPerformer.Disambiguation = translator.string(input.Disambiguation)
+	newPerformer.Aliases = models.NewRelatedStrings(input.AliasList)
 	newPerformer.URL = translator.string(input.URL)
 	newPerformer.Gender = input.Gender
 	newPerformer.Ethnicity = translator.string(input.Ethnicity)
@@ -66,11 +67,6 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	newPerformer.DeathDate, err = translator.datePtr(input.DeathDate)
 	if err != nil {
 		return nil, fmt.Errorf("converting death date: %w", err)
-	}
-
-	// prefer alias_list over aliases
-	if input.AliasList != nil {
-		newPerformer.Aliases = models.NewRelatedStrings(input.AliasList)
 	}
 
 	newPerformer.TagIDs, err = translator.relatedIds(input.TagIds)
