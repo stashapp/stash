@@ -18,7 +18,7 @@ import (
 	"gopkg.in/guregu/null.v4/zero"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -456,7 +456,7 @@ func (qb *SceneStore) FindMany(ctx context.Context, ids []int) ([]*models.Scene,
 		}
 
 		for _, s := range unsorted {
-			i := intslice.IntIndex(ids, s.ID)
+			i := sliceutil.Index(ids, s.ID)
 			scenes[i] = s
 		}
 
@@ -1819,7 +1819,7 @@ func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int, duration
 			var sceneIds []int
 			for _, strId := range strIds {
 				if intId, err := strconv.Atoi(strId); err == nil {
-					sceneIds = intslice.IntAppendUnique(sceneIds, intId)
+					sceneIds = sliceutil.AppendUnique(sceneIds, intId)
 				}
 			}
 			// filter out

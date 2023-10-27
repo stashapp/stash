@@ -11,7 +11,7 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 const (
@@ -162,7 +162,7 @@ func (qb *GalleryChapterStore) FindMany(ctx context.Context, ids []int) ([]*mode
 	}
 
 	for _, s := range unsorted {
-		i := intslice.IntIndex(ids, s.ID)
+		i := sliceutil.Index(ids, s.ID)
 		ret[i] = s
 	}
 
