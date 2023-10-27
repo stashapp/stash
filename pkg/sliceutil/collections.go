@@ -27,8 +27,8 @@ func AppendUnique[T comparable](vs []T, toAdd T) []T {
 }
 
 // AppendUniques appends a slice of values to the vs slice. It only
-// appends values that do not already exist in the slice. It returns the new or
-// unchanged slice.
+// appends values that do not already exist in the slice.
+// It returns the new or unchanged slice.
 func AppendUniques[T comparable](vs []T, toAdd []T) []T {
 	for _, v := range toAdd {
 		vs = AppendUnique(vs, v)
@@ -37,8 +37,8 @@ func AppendUniques[T comparable](vs []T, toAdd []T) []T {
 	return vs
 }
 
-// Exclude removes all instances of any value in toExclude from the vs
-// slice. It returns the new or unchanged slice.
+// Exclude returns a copy of the vs slice, excluding all values
+// that are also present in the toExclude slice.
 func Exclude[T comparable](vs []T, toExclude []T) []T {
 	var ret []T
 	for _, v := range vs {
@@ -47,6 +47,30 @@ func Exclude[T comparable](vs []T, toExclude []T) []T {
 		}
 	}
 
+	return ret
+}
+
+// Unique returns a copy of the vs slice, with non-unique values removed.
+func Unique[T comparable](vs []T) []T {
+	distinctValues := make(map[T]struct{})
+	var ret []T
+	for _, v := range vs {
+		if _, exists := distinctValues[v]; !exists {
+			distinctValues[v] = struct{}{}
+			ret = append(ret, v)
+		}
+	}
+	return ret
+}
+
+// Delete returns a copy of the vs slice with toDel values removed.
+func Delete[T comparable](vs []T, toDel T) []T {
+	var ret []T
+	for _, v := range vs {
+		if v != toDel {
+			ret = append(ret, v)
+		}
+	}
 	return ret
 }
 
@@ -107,4 +131,25 @@ func SliceSame[T comparable](a []T, b []T) bool {
 	}
 
 	return true
+}
+
+// Filter returns a slice containing the elements of the vs slice
+// that meet the condition specified by f.
+func Filter[T any](vs []T, f func(T) bool) []T {
+	var ret []T
+	for _, v := range vs {
+		if f(v) {
+			ret = append(ret, v)
+		}
+	}
+	return ret
+}
+
+// Filter returns the result of applying f to each element of the vs slice.
+func Map[T any, V any](vs []T, f func(T) V) []V {
+	ret := make([]V, len(vs))
+	for i, v := range vs {
+		ret[i] = f(v)
+	}
+	return ret
 }

@@ -14,7 +14,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 type table struct {
@@ -439,7 +438,7 @@ func (t *stringTable) addJoins(ctx context.Context, id int, v []string) error {
 	}
 
 	// only add values that are not already present
-	filtered := stringslice.StrExclude(v, existing)
+	filtered := sliceutil.Exclude(v, existing)
 	return t.insertJoins(ctx, id, filtered)
 }
 
