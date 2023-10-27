@@ -63,28 +63,3 @@ interface IPluginComponents {
 export const PluginComponents: React.FC<IPluginComponents> = ({ location }) => {
   return <>{renderPluginComponents(location)}</>;
 };
-
-interface ICardHooks {
-  Image?: React.FC;
-  Overlays?: React.FC;
-  Details?: React.FC;
-  Popovers?: React.FC;
-}
-
-interface IPluginComponentHooks {
-  SceneCard?: ICardHooks;
-}
-
-type PluginHookType = keyof IPluginComponentHooks;
-
-export let pluginComponentHooks: IPluginComponentHooks = {};
-
-export function registerCardComponentHooks(
-  location: PluginHookType,
-  component: ICardHooks
-) {
-  pluginComponentHooks = {
-    ...pluginComponentHooks,
-    [location]: component,
-  };
-}

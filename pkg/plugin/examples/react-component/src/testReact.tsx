@@ -3,12 +3,14 @@ interface IPluginApi {
   ReactReactorDOM: {
     Link: React.FC<any>;
   }
-  register: {
-    cardComponentHook: (cardType: string, component: any) => void;
-  };
   components: Record<string, React.FC<any>>;
   utils: {
     NavUtils: any;
+  },
+  patch: {
+    before: (target: string, fn: Function) => void;
+    instead: (target: string, fn: Function) => void;
+    after: (target: string, fn: Function) => void;
   }
 }
 
@@ -93,5 +95,7 @@ interface IPluginApi {
     );
   }
 
-  PluginApi.register.cardComponentHook("SceneCard", { Details: SceneDetails });
+  PluginApi.patch.instead("SceneCard.Details", function (props: any, _: any, original: any) {
+      return <SceneDetails {...props} />;
+  });
 })();
