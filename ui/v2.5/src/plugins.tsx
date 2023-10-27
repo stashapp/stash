@@ -1,65 +1,7 @@
 import React from "react";
-import { Route } from "react-router-dom";
+import { PatchFunction } from "./pluginApi";
 
-interface IPluginComponentsMap {
-  [key: string]: React.FC[];
-}
-
-interface IPluginPagesMap {
-  [key: string]: React.FC;
-}
-
-export const pluginComponents: IPluginComponentsMap = {};
-export let pluginPages: IPluginPagesMap = {};
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function registerPluginPage(path: string, component: React.FC) {
-  pluginPages = {
-    ...pluginPages,
-    [path]: component,
-  };
-}
-
-export function addPluginComponent(
-  location: PluginComponentLocation,
-  component: React.FC
-) {
-  if (!pluginComponents[location]) {
-    pluginComponents[location] = [];
-  }
-
-  pluginComponents[location].push(component);
-}
-
-export enum PluginComponentLocation {
-  Main = "main",
-  Navbar = "navbar",
-}
-
-export const PluginRoutes: React.FC = () => {
-  const routes = Object.entries(pluginPages).map((e) => {
-    const [path, component] = e;
-    const prefixedPath = `/plugin/${path}`;
-    return (
-      <Route key={prefixedPath} path={prefixedPath} component={component} />
-    );
-  });
-
-  return <>{routes}</>;
-};
-
-export function renderPluginComponents(location: PluginComponentLocation) {
-  if (!pluginComponents[location]) return null;
-
-  return pluginComponents[location].map((Component, index) => (
-    <Component key={index} />
-  ));
-}
-
-interface IPluginComponents {
-  location: PluginComponentLocation;
-}
-
-export const PluginComponents: React.FC<IPluginComponents> = ({ location }) => {
-  return <>{renderPluginComponents(location)}</>;
-};
+export const PluginRoutes: React.FC<React.PropsWithChildren<{}>> =
+  PatchFunction("PluginRoutes", (props: React.PropsWithChildren<{}>) => {
+    return <>{props.children}</>;
+  }) as React.FC;

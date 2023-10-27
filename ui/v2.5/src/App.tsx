@@ -40,11 +40,7 @@ import { releaseNotes } from "./docs/en/ReleaseNotes";
 import { getPlatformURL } from "./core/createClient";
 import { lazyComponent } from "./utils/lazyComponent";
 import { isPlatformUniquelyRenderedByApple } from "./utils/apple";
-import {
-  PluginComponentLocation,
-  PluginComponents,
-  PluginRoutes,
-} from "./plugins";
+import { PluginRoutes } from "./plugins";
 
 // import plugin_api to run code
 import "./pluginApi";
@@ -288,9 +284,6 @@ export const App: React.FC = () => {
                         }`}
                       >
                         {renderContent()}
-                        <PluginComponents
-                          location={PluginComponentLocation.Main}
-                        />
                       </div>
                     </InteractiveProvider>
                   </ManualProvider>

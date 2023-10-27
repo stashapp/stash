@@ -1,7 +1,8 @@
 interface IPluginApi {
   React: typeof React;
-  ReactReactorDOM: {
+  ReactRouterDOM: {
     Link: React.FC<any>;
+    Route: React.FC<any>;
   }
   components: Record<string, React.FC<any>>;
   utils: {
@@ -11,6 +12,9 @@ interface IPluginApi {
     before: (target: string, fn: Function) => void;
     instead: (target: string, fn: Function) => void;
     after: (target: string, fn: Function) => void;
+  },
+  register: {
+    route: (path: string, component: React.FC<any>) => void;
   }
 }
 
@@ -25,7 +29,7 @@ interface IPluginApi {
 
   const {
     Link,
-  } = PluginApi.ReactReactorDOM;
+  } = PluginApi.ReactRouterDOM;
 
   const {
     NavUtils
@@ -96,6 +100,15 @@ interface IPluginApi {
   }
 
   PluginApi.patch.instead("SceneCard.Details", function (props: any, _: any, original: any) {
-      return <SceneDetails {...props} />;
+    return <SceneDetails {...props} />;
   });
+
+  const TestPage: React.FC = () => {
+    return (
+      <div>This is a test page.</div>
+    );
+  };
+
+  PluginApi.register.route("/plugin/test-react", TestPage);
+  
 })();
