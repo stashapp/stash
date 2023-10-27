@@ -47,7 +47,7 @@ import {
 } from "./plugins";
 
 // import plugin_api to run code
-import "./plugin_api";
+import "./pluginApi";
 
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")

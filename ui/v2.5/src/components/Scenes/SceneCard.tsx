@@ -31,7 +31,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { objectPath, objectTitle } from "src/core/files";
 import { PreviewScrubber } from "./PreviewScrubber";
-import { PatchComponent } from "src/plugin_api";
+import { PatchComponent } from "src/pluginApi";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
