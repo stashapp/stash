@@ -4,15 +4,9 @@ import { FormattedMessage } from "react-intl";
 import { Link } from "react-router-dom";
 import { Setting } from "./Inputs";
 import { SettingSection } from "./SettingSection";
-import { PatchComponent } from "src/pluginApi";
+import { PatchContainerComponent } from "src/pluginApi";
 
-const SettingsToolsSection: React.FC<React.PropsWithChildren<{}>> =
-  PatchComponent(
-    "SettingsToolsSection",
-    (props: React.PropsWithChildren<{}>) => {
-      return <>{props.children}</>;
-    }
-  ) as React.FC<React.PropsWithChildren<{}>>;
+const SettingsToolsSection = PatchContainerComponent("SettingsToolsSection");
 
 export const SettingsToolsPanel: React.FC = () => {
   return (

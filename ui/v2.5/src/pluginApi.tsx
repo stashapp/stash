@@ -8,6 +8,8 @@ import * as StashService from "src/core/StashService";
 import * as Apollo from "@apollo/client";
 import * as Bootstrap from "react-bootstrap";
 import * as Intl from "react-intl";
+import * as FontAwesomeSolid from "@fortawesome/free-solid-svg-icons";
+import * as FontAwesomeRegular from "@fortawesome/free-regular-svg-icons";
 
 const components: Record<string, Function> = {
   HoverPopover,
@@ -72,6 +74,8 @@ export const PluginApi = {
     GQL,
     Apollo,
     Intl,
+    FontAwesomeRegular,
+    FontAwesomeSolid,
   },
   register: {
     // register a route to be added to the main router
@@ -123,11 +127,26 @@ export function PatchFunction(name: string, fn: Function) {
 }
 
 // patches a component and registers it in the pluginapi components object
-export function PatchComponent(component: string, fn: Function) {
-  // register with the plugin api
-  RegisterComponent(component, fn);
+export function PatchComponent<T>(
+  component: string,
+  fn: React.FC<T>
+): React.FC<T> {
+  const ret = PatchFunction(component, fn);
 
-  return PatchFunction(component, fn);
+  // register with the plugin api
+  RegisterComponent(component, ret);
+  return ret as React.FC<T>;
+}
+
+// patches a component and registers it in the pluginapi components object
+export function PatchContainerComponent(
+  component: string
+): React.FC<React.PropsWithChildren<{}>> {
+  const fn = (props: React.PropsWithChildren<{}>) => {
+    return <>{props.children}</>;
+  };
+
+  return PatchComponent(component, fn);
 }
 
 export default PluginApi;

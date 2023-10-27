@@ -4,9 +4,16 @@ interface IPluginApi {
     ReactRouterDOM: {
       Link: React.FC<any>;
       Route: React.FC<any>;
+      NavLink: React.FC<any>;
     },
     Bootstrap: {
       Button: React.FC<any>;
+      Nav: React.FC<any> & {
+        Link: React.FC<any>;
+      };
+    },
+    FontAwesomeSolid: {
+      faEthernet: any;
     },
     Intl: {
       FormattedMessage: React.FC<any>;
@@ -31,8 +38,10 @@ interface IPluginApi {
   const React = PluginApi.React;
 
   const { Button } = PluginApi.libraries.Bootstrap;
+  const { faEthernet } = PluginApi.libraries.FontAwesomeSolid;
   const {
     Link,
+    NavLink,
   } = PluginApi.libraries.ReactRouterDOM;
 
   const {
@@ -149,4 +158,32 @@ interface IPluginApi {
       },
     ];
   });
+
+  PluginApi.patch.before("MainNavBar.UtilityItems", function (props: any) {
+    const {
+      Icon,
+    } = PluginApi.components;
+
+    return [
+      {
+        children: (
+          <>
+            {props.children}
+            <NavLink
+              className="nav-utility"
+              exact
+              to="/plugin/test-react"
+            >
+              <Button
+                className="minimal d-flex align-items-center h-100"
+                title="Test page"
+              >
+                <Icon icon={faEthernet} />
+              </Button>
+            </NavLink>
+          </>
+        )
+      }
+    ]
+  })
 })();
