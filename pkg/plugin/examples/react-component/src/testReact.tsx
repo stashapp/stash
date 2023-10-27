@@ -1,9 +1,17 @@
 interface IPluginApi {
   React: typeof React;
-  ReactRouterDOM: {
-    Link: React.FC<any>;
-    Route: React.FC<any>;
-  }
+  libraries: {
+    ReactRouterDOM: {
+      Link: React.FC<any>;
+      Route: React.FC<any>;
+    },
+    Bootstrap: {
+      Button: React.FC<any>;
+    },
+    Intl: {
+      FormattedMessage: React.FC<any>;
+    }
+  },
   components: Record<string, React.FC<any>>;
   utils: {
     NavUtils: any;
@@ -22,14 +30,10 @@ interface IPluginApi {
   const PluginApi = (window as any).PluginApi as IPluginApi;
   const React = PluginApi.React;
 
-  const {
-    HoverPopover,
-    TagLink,
-  } = PluginApi.components;
-
+  const { Button } = PluginApi.libraries.Bootstrap;
   const {
     Link,
-  } = PluginApi.ReactRouterDOM;
+  } = PluginApi.libraries.ReactRouterDOM;
 
   const {
     NavUtils
@@ -38,6 +42,12 @@ interface IPluginApi {
   const ScenePerformer: React.FC<{
     performer: any;
   }> = ({ performer }) => {
+    // PluginApi.components may not be registered when the outside function is run
+    // need to initialise these inside the function component
+    const {
+      HoverPopover,
+    } = PluginApi.components;
+
     const popoverContent = React.useMemo(
       () => (
         <div className="scene-performer-popover">
@@ -66,6 +76,10 @@ interface IPluginApi {
   };
 
   function SceneDetails(props: any) {
+    const {
+      TagLink,
+    } = PluginApi.components;
+
     function maybeRenderPerformers() {
       if (props.scene.performers.length <= 0) return;
   
@@ -110,5 +124,29 @@ interface IPluginApi {
   };
 
   PluginApi.register.route("/plugin/test-react", TestPage);
-  
+
+  PluginApi.patch.before("SettingsToolsSection", function (props: any) {
+    const {
+      Setting,
+    } = PluginApi.components;
+
+    return [
+      {
+        children: (
+          <>
+            {props.children}
+            <Setting
+              heading={
+                <Link to="/plugin/test-react">
+                  <Button>
+                    Test page
+                  </Button>
+                </Link>
+              }
+            />
+          </>
+        ),
+      },
+    ];
+  });
 })();

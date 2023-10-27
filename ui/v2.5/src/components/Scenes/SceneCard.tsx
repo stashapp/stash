@@ -296,7 +296,7 @@ const SceneCardPopovers = PatchComponent(
 
     return <>{maybeRenderPopoverButtonGroup()}</>;
   }
-);
+) as React.FC<ISceneCardProps>;
 
 const SceneCardDetails = PatchComponent(
   "SceneCard.Details",
@@ -315,7 +315,7 @@ const SceneCardDetails = PatchComponent(
       </div>
     );
   }
-);
+) as React.FC<ISceneCardProps>;
 
 const SceneCardOverlays = PatchComponent(
   "SceneCard.Overlays",
@@ -359,9 +359,9 @@ const SceneCardOverlays = PatchComponent(
 
     return <>{maybeRenderSceneStudioOverlay()}</>;
   }
-);
+) as React.FC<ISceneCardProps>;
 
-const SceneCardImage = PatchComponent(
+const SceneCardImage: React.FC<ISceneCardProps> = PatchComponent(
   "SceneCard.Image",
   (props: ISceneCardProps) => {
     const history = useHistory();
@@ -450,7 +450,7 @@ const SceneCardImage = PatchComponent(
       </>
     );
   }
-);
+) as React.FC<ISceneCardProps>;
 
 export const SceneCard: React.FC<ISceneCardProps> = PatchComponent(
   "SceneCard",

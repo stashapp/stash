@@ -6,6 +6,8 @@ import { TagLink } from "./components/Shared/TagLink";
 import * as GQL from "src/core/generated-graphql";
 import * as StashService from "src/core/StashService";
 import * as Apollo from "@apollo/client";
+import * as Bootstrap from "react-bootstrap";
+import * as Intl from "react-intl";
 
 const components: Record<string, Function> = {
   HoverPopover,
@@ -64,9 +66,13 @@ export function RegisterComponent(component: string, fn: Function) {
 
 export const PluginApi = {
   React,
-  ReactRouterDOM,
-  GQL,
-  Apollo,
+  libraries: {
+    ReactRouterDOM,
+    Bootstrap,
+    GQL,
+    Apollo,
+    Intl,
+  },
   register: {
     // register a route to be added to the main router
     route: registerRoute,
@@ -119,7 +125,7 @@ export function PatchFunction(name: string, fn: Function) {
 // patches a component and registers it in the pluginapi components object
 export function PatchComponent(component: string, fn: Function) {
   // register with the plugin api
-  PluginApi.components[component] = fn;
+  RegisterComponent(component, fn);
 
   return PatchFunction(component, fn);
 }
