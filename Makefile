@@ -206,6 +206,7 @@ cross-compile-macos:
 .PHONY: cross-compile-freebsd
 cross-compile-freebsd: export GOOS := freebsd
 cross-compile-freebsd: export GOARCH := amd64
+cross-compile-freebsd: export CC := clang -target x86_64-unknown-freebsd12.0 --sysroot=/opt/cross-freebsd
 cross-compile-freebsd: STASH_OUTPUT := -o dist/stash-freebsd
 cross-compile-freebsd: PHASHER_OUTPUT := -o dist/phasher-freebsd
 cross-compile-freebsd: flags-release
@@ -262,6 +263,7 @@ cross-compile-all:
 	make cross-compile-linux-arm64v8
 	make cross-compile-linux-arm32v7
 	make cross-compile-linux-arm32v6
+	make cross-compile-freebsd
 
 .PHONY: touch-ui
 touch-ui:

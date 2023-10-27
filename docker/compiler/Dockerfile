@@ -24,6 +24,24 @@ RUN apt-get update && \
         gcc-aarch64-linux-gnu libc-dev-arm64-cross && \
     rm -rf /var/lib/apt/lists/*;
 
+# FreeBSD cross-compilation setup
+# https://github.com/smartmontools/docker-build/blob/6b8c92560d17d325310ba02d9f5a4b250cb0764a/Dockerfile#L66
+ENV FREEBSD_VERSION       12.4
+ENV FREEBSD_DOWNLOAD_URL  http://ftp.plusline.de/FreeBSD/releases/amd64/${FREEBSD_VERSION}-RELEASE/base.txz
+ENV FREEBSD_SHA           581c7edacfd2fca2bdf5791f667402d22fccd8a5e184635e0cac075564d57aa8
+
+RUN cd /tmp && \
+    curl -o base.txz $FREEBSD_DOWNLOAD_URL && \
+    echo "$FREEBSD_SHA base.txz" | sha256sum -c - && \
+    mkdir -p /opt/cross-freebsd && \
+    cd /opt/cross-freebsd && \
+    tar -xf /tmp/base.txz ./lib/ ./usr/lib/ ./usr/include/ && \
+    rm -f /tmp/base.txz && \
+    cd /opt/cross-freebsd/usr/lib && \
+    find . -xtype l | xargs ls -l | grep ' /lib/' | awk '{print "ln -sf /opt/cross-freebsd"$11 " " $9}' | /bin/sh && \
+    ln -s libc++.a libstdc++.a && \
+    ln -s libc++.so libstdc++.so
+
 # macOS cross-compilation setup
 ENV OSX_SDK_VERSION 	   11.3
 ENV OSX_SDK_DOWNLOAD_FILE  MacOSX${OSX_SDK_VERSION}.sdk.tar.xz
