@@ -184,7 +184,16 @@ export class ListFilterModel {
     }
     if (defaultFilter !== undefined && defaultFilter.criteria !== undefined) {
       for (const criterion of defaultFilter.criteria) {
-        this.criteria.push(criterion);
+        let addCriterion = true;
+        for (const existingCriterion of this.criteria) {
+          if (existingCriterion.criterionOption === criterion.criterionOption) {
+            addCriterion = false;
+            break;
+          }
+        }
+        if (addCriterion) {
+          this.criteria.push(criterion);
+        }
       }
     }
   }
@@ -294,9 +303,13 @@ export class ListFilterModel {
       p: query.get("p"),
       z: query.get("z"),
       c: query.getAll("c"),
+      defaultFilter: query.get("defaultFilter"),
     };
     const decoded = ListFilterModel.decodeParams(params);
-    this.configureFromDecodedParams(decoded, defaultFilter);
+    this.configureFromDecodedParams(
+      decoded,
+      params.defaultFilter ? defaultFilter : undefined
+    );
   }
 
   public configureFromSavedFilter(savedFilter: SavedFilterDataFragment) {
@@ -431,7 +444,7 @@ export class ListFilterModel {
     return JSON.stringify(result);
   }
 
-  public makeQueryParameters(): string {
+  public makeQueryParameters(defaultFilter: boolean = true): string {
     const query: string[] = [];
     const params = this.getEncodedParams();
 
@@ -461,6 +474,7 @@ export class ListFilterModel {
     if (params.p) {
       query.push(`p=${params.p}`);
     }
+    query.push(`defaultFilter=${defaultFilter}`);
 
     return query.join("&");
   }

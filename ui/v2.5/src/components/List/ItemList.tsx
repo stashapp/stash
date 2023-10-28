@@ -543,7 +543,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       (newFilter: ListFilterModel) => {
         if (!alterQuery) return;
 
-        const newParams = newFilter.makeQueryParameters();
+        const newParams = newFilter.makeQueryParameters(false);
         history.replace({ ...history.location, search: newParams });
       },
       [alterQuery, history]
