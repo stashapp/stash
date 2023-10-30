@@ -10,6 +10,7 @@ import * as Bootstrap from "react-bootstrap";
 import * as Intl from "react-intl";
 import * as FontAwesomeSolid from "@fortawesome/free-solid-svg-icons";
 import * as FontAwesomeRegular from "@fortawesome/free-regular-svg-icons";
+import { useSpriteInfo } from "./hooks/sprite";
 
 const components: Record<string, Function> = {
   HoverPopover,
@@ -65,13 +66,12 @@ export function RegisterComponent(component: string, fn: Function) {
 
   return fn;
 }
-
 export const PluginApi = {
   React,
+  GQL,
   libraries: {
     ReactRouterDOM,
     Bootstrap,
-    GQL,
     Apollo,
     Intl,
     FontAwesomeRegular,
@@ -87,6 +87,9 @@ export const PluginApi = {
   utils: {
     NavUtils,
     StashService,
+  },
+  hooks: {
+    useSpriteInfo,
   },
   patch: {
     // intercept the arguments of supported functions
