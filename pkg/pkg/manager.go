@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
-	"strings"
 	"time"
 )
 
@@ -28,18 +27,13 @@ type Manager struct {
 	CacheTTL time.Duration
 }
 
-func (m *Manager) remoteFromURL(path string) (remoteRepository, error) {
-	if strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://") {
-		u, err := url.Parse(path)
-		if err != nil {
-			return nil, err
-		}
-		return NewHttpRepository(*u, m.Client), nil
-	} else {
-		return &FSRepository{
-			PackageListPath: path,
-		}, nil
+func (m *Manager) remoteFromURL(path string) (*httpRepository, error) {
+	u, err := url.Parse(path)
+	if err != nil {
+		return nil, fmt.Errorf("parsing path: %w", err)
 	}
+
+	return newHttpRepository(*u, m.Client), nil
 }
 
 func (m *Manager) checkCacheExpired(path string) {
@@ -92,8 +86,8 @@ func (m *Manager) ListRemote(ctx context.Context, remoteURL string) (RemotePacka
 
 	ret := remotePackageIndexFromList(list)
 
-	// only cache http results
-	if _, ok := r.(*HttpRepository); ok {
+	// only cache remote http results
+	if r.packageListURL.Scheme != "file" {
 		m.remoteCache[remoteURL] = &remotePackageCache{
 			cachedIndex: ret,
 			cacheTime:   time.Now(),

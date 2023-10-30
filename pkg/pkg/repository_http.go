@@ -5,8 +5,10 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/fs"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"time"
 
@@ -16,34 +18,44 @@ import (
 // DefaultCacheTTL is the default time to live for the index cache.
 const DefaultCacheTTL = 5 * time.Minute
 
-// HttpRepository is a HTTP based repository.
+// httpRepository is a HTTP based repository.
 // It is configured with a package list URL. Packages are located from the Path field of the package.
 //
 // The index is cached for the duration of CacheTTL. The first request after the cache expires will cause the index to be reloaded.
-type HttpRepository struct {
+type httpRepository struct {
 	packageListURL url.URL
 	client         *http.Client
 }
 
-// NewHttpRepository creates a new Repository. If client is nil then http.DefaultClient is used.
-func NewHttpRepository(packageListURL url.URL, client *http.Client) *HttpRepository {
+// newHttpRepository creates a new Repository. If client is nil then http.DefaultClient is used.
+func newHttpRepository(packageListURL url.URL, client *http.Client) *httpRepository {
 	if client == nil {
 		client = http.DefaultClient
 	}
-	return &HttpRepository{
+	return &httpRepository{
 		packageListURL: packageListURL,
 		client:         client,
 	}
 }
 
-func (r *HttpRepository) Path() string {
+func (r *httpRepository) Path() string {
 	return r.packageListURL.String()
 }
 
-func (r *HttpRepository) List(ctx context.Context) ([]RemotePackage, error) {
+func (r *httpRepository) List(ctx context.Context) ([]RemotePackage, error) {
 	u := r.packageListURL
 
-	f, err := r.getFile(ctx, u)
+	// the package list URL may be file://, in which case we need to use the local file system
+	var (
+		f   io.ReadCloser
+		err error
+	)
+	if u.Scheme == "file" {
+		f, err = r.getLocalFile(ctx, u.Path)
+	} else {
+		f, err = r.getFile(ctx, u)
+	}
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to get package list: %w", err)
 	}
@@ -63,21 +75,62 @@ func (r *HttpRepository) List(ctx context.Context) ([]RemotePackage, error) {
 	return index, nil
 }
 
-func (r *HttpRepository) GetPackageZip(ctx context.Context, pkg RemotePackage) (io.ReadCloser, error) {
+func isURL(s string) bool {
+	u, err := url.Parse(s)
+	return err == nil && u.Scheme != "" && (u.Scheme == "file" || u.Host != "")
+}
+
+func (r *httpRepository) resolvePath(p string) url.URL {
+	// if the path can be resolved to a URL, then use that
+	if isURL(p) {
+		// isURL ensures URL is valid
+		u, _ := url.Parse(p)
+		return *u
+	}
+
+	// otherwise, determine if the path is relative or absolute
+	// if it's relative, then join it with the package list URL
+	u := r.packageListURL
+
+	if path.IsAbs(p) {
+		u.Path = p
+	} else {
+		u.Path = path.Join(path.Dir(u.Path), p)
+	}
+
+	return u
+}
+
+func (r *httpRepository) GetPackageZip(ctx context.Context, pkg RemotePackage) (io.ReadCloser, error) {
 	p := pkg.Path
 
-	u := r.packageListURL
-	u.Path = path.Join(path.Dir(u.Path), p)
+	u := r.resolvePath(p)
 
-	f, err := r.getFile(ctx, u)
+	var (
+		f   io.ReadCloser
+		err error
+	)
+
+	// the package list URL may be file://, in which case we need to use the local file system
+	// the package zip path may be a URL. A remotely hosted list may _not_ use local files.
+	if u.Scheme == "file" {
+		if r.packageListURL.Scheme != "file" {
+			return nil, fmt.Errorf("%s is invalid for a remotely hosted package list", u.String())
+		}
+
+		f, err = r.getLocalFile(ctx, u.Path)
+	} else {
+		f, err = r.getFile(ctx, u)
+	}
+
 	if err != nil {
-		return nil, fmt.Errorf("failed to get package list file: %w", err)
+		return nil, fmt.Errorf("failed to get package file: %w", err)
 	}
 
 	return f, nil
 }
 
-func (r *HttpRepository) getFile(ctx context.Context, u url.URL) (io.ReadCloser, error) {
+func (r *httpRepository) getFile(ctx context.Context, u url.URL) (io.ReadCloser, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
 	if err != nil {
 		// shouldn't happen
@@ -96,4 +149,13 @@ func (r *HttpRepository) getFile(ctx context.Context, u url.URL) (io.ReadCloser,
 	return resp.Body, nil
 }
 
-var _ = remoteRepository(&HttpRepository{})
+func (r *httpRepository) getLocalFile(ctx context.Context, path string) (fs.File, error) {
+	ret, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get file %q: %w", path, err)
+	}
+
+	return ret, nil
+}
+
+var _ = remoteRepository(&httpRepository{})

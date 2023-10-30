@@ -58,6 +58,8 @@ func (v PackageVersion) String() string {
 }
 
 type PackageLocation struct {
+	// Path is the path to the package zip file.
+	// This may be relative or absolute.
 	Path   string `yaml:"path"`
 	Sha256 string `yaml:"sha256"`
 }
