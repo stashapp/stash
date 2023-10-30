@@ -1,12 +1,15 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { FormEvent, useEffect, useRef, useState } from "react";
 import {
   Button,
   ButtonGroup,
   Dropdown,
+  Form,
   FormControl,
   InputGroup,
   Modal,
+  NavItem,
   OverlayTrigger,
+  Row,
   Tooltip,
 } from "react-bootstrap";
 import {
@@ -17,12 +20,12 @@ import {
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { SavedFilterDataFragment } from "src/core/generated-graphql";
+import { FilterMode, SavedFilterDataFragment } from "src/core/generated-graphql";
 import { PersistanceLevel } from "./ItemList";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
-import { faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faEllipsisV, faPenToSquare, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 interface ISavedFilterListProps {
   filter: ListFilterModel;
@@ -44,6 +47,9 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   const [filterName, setFilterName] = useState("");
   const [saving, setSaving] = useState(false);
   const [deletingFilter, setDeletingFilter] = useState<
+    SavedFilterDataFragment | undefined
+  >();
+  const [renamingFilter, setRenamingFilter] = useState<
     SavedFilterDataFragment | undefined
   >();
   const [overwritingFilter, setOverwritingFilter] = useState<
@@ -82,16 +88,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
         },
       });
 
-      Toast.success({
-        content: intl.formatMessage(
-          {
-            id: "toast.saved_entity",
-          },
-          {
-            entity: intl.formatMessage({ id: "filter" }).toLocaleLowerCase(),
-          }
-        ),
-      });
+      
       setFilterName("");
       setOverwritingFilter(undefined);
       refetch();
@@ -101,7 +98,41 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
       setSaving(false);
     }
   }
+  async function setDefaultFilterClicked(f: SavedFilterDataFragment) {
+    const newFilter = filter.clone();
 
+    newFilter.currentPage = 1;
+    // #1795 - reset search term if not present in saved filter
+    newFilter.searchTerm = "";
+    newFilter.configureFromSavedFilter(f);
+    // #1507 - reset random seed when loaded
+    newFilter.randomSeed = -1;
+
+    onSetFilter(newFilter);
+    try {
+      setSaving(true);
+      await setDefaultFilter({
+        variables: {
+          input: {
+            mode: filter.mode,
+            find_filter: newFilter.makeFindFilter(),
+            object_filter: newFilter.makeSavedFindFilter(),
+            ui_options: newFilter.makeUIOptions(),
+          },
+        },
+      });
+
+      Toast.success({
+        content: intl.formatMessage({
+          id: "toast.default_filter_set",
+        }),
+      });
+    } catch (err) {
+      Toast.error(err);
+    } finally {
+      setSaving(false);
+    }
+  }
   async function onDeleteFilter(f: SavedFilterDataFragment) {
     try {
       setSaving(true);
@@ -176,46 +207,102 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
 
     onSetFilter(newFilter);
   }
-
+  
   interface ISavedFilterItem {
     item: SavedFilterDataFragment;
   }
   const SavedFilterItem: React.FC<ISavedFilterItem> = ({ item }) => {
+    const renderOperations = () => (
+      <Dropdown>
+        <Dropdown.Toggle
+          variant="secondary"
+          id="operation-menu"
+          className="minimal"
+          title={intl.formatMessage({ id: "operations" })}
+        >
+          <Icon icon={faEllipsisV} />
+        </Dropdown.Toggle>
+        <Dropdown.Menu className="bg-secondary text-white" style={{
+          position: "absolute",
+          display: "flex",
+          flexDirection: "column",
+        }}>
+          <Dropdown.Item
+            key="Overwrite"
+            className="bg-secondary text-white"
+            onClick={() => setOverwritingFilter(item)}
+          >
+            Overwrite
+          </Dropdown.Item>
+          <Dropdown.Item
+            key="Rename"
+            className="bg-secondary text-white"
+            onClick={() => setRenamingFilter(item)}
+          >
+            Rename
+          </Dropdown.Item>
+          <Dropdown.Item
+            key="SetDefault"
+            className="bg-secondary text-white"
+            onClick={() => {
+              setDefaultFilterClicked(item);
+            }}
+          >
+            Set Default
+          </Dropdown.Item>
+            <Dropdown.Item
+              key="Delete"
+              className="bg-secondary text-white"
+              onClick={() => setDeletingFilter(item)}
+            >
+            Delete
+            </Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>
+    );
     return (
       <div className="dropdown-item-container">
         <Dropdown.Item onClick={() => filterClicked(item)} title={item.name}>
           <span>{item.name}</span>
         </Dropdown.Item>
         <ButtonGroup>
-          <Button
-            className="save-button"
-            variant="secondary"
-            size="sm"
-            title={intl.formatMessage({ id: "actions.overwrite" })}
-            onClick={(e) => {
-              setOverwritingFilter(item);
-              e.stopPropagation();
-            }}
-          >
-            <Icon icon={faSave} />
-          </Button>
-          <Button
-            className="delete-button"
-            variant="secondary"
-            size="sm"
-            title={intl.formatMessage({ id: "actions.delete" })}
-            onClick={(e) => {
-              setDeletingFilter(item);
-              e.stopPropagation();
-            }}
-          >
-            <Icon icon={faTimes} />
-          </Button>
+          {renderOperations()}
         </ButtonGroup>
       </div>
     );
   };
 
+  function maybeRenderRenameAlert() {
+    const NameRef = useRef<HTMLInputElement>(null)
+    if (!renamingFilter) {
+      return;
+    }
+    function handleSubmit(e: FormEvent) {
+      onSaveFilter(
+          NameRef.current!.value,
+          renamingFilter!.id
+      );
+  }
+    return <Form onChange={handleSubmit}>
+      <Modal show >
+        <Modal.Body style={{
+            borderRadius: 14
+          }}>
+          <h4>Rename</h4>
+          <Form.Group controlId="title">
+            <Form.Control defaultValue={renamingFilter.name} ref={NameRef}/>
+            <Row className="pr-3 pt-3 pl-3 pb-0 justify-content-end"
+            >
+            <Button type="submit" variant="primary" onClick={() => {
+              setRenamingFilter(undefined)
+            }}>Save</Button>
+            </Row>
+          </Form.Group>
+          
+        </Modal.Body>
+      </Modal>
+    </Form>
+  }
   function maybeRenderDeleteAlert() {
     if (!deletingFilter) {
       return;
@@ -326,6 +413,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   return (
     <div>
       {maybeRenderDeleteAlert()}
+      {maybeRenderRenameAlert()}
       {maybeRenderOverwriteAlert()}
       <InputGroup>
         <FormControl
