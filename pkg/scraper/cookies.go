@@ -135,7 +135,7 @@ func setCDPCookies(driverOptions scraperDriverOptions) chromedp.Tasks {
 // print cookies whose domain is included in the scraper  config
 func printCDPCookies(driverOptions scraperDriverOptions, msg string) chromedp.Action {
 	return chromedp.ActionFunc(func(ctx context.Context) error {
-		chromeCookies, err := network.GetAllCookies().Do(ctx)
+		chromeCookies, err := network.GetCookies().Do(ctx)
 		if err != nil {
 			return err
 		}

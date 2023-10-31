@@ -187,6 +187,7 @@ export const TagCard: React.FC<IProps> = ({
       linkClassName="tag-card-header"
       image={
         <img
+          loading="lazy"
           className="tag-card-image"
           alt={tag.name}
           src={tag.image_path ?? ""}

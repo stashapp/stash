@@ -266,6 +266,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       image={
         <>
           <img
+            loading="lazy"
             className="performer-card-image"
             alt={performer.name ?? ""}
             src={performer.image_path ?? ""}

@@ -14,15 +14,15 @@ const APIKeySubject = "APIKey"
 
 type APIKeyClaims struct {
 	UserID string `json:"uid"`
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
 func GenerateAPIKey(userID string) (string, error) {
 	claims := &APIKeyClaims{
 		UserID: userID,
-		StandardClaims: jwt.StandardClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:  APIKeySubject,
-			IssuedAt: time.Now().Unix(),
+			IssuedAt: jwt.NewNumericDate(time.Now()),
 		},
 	}
 

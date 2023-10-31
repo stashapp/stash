@@ -12,10 +12,11 @@ import (
 	"time"
 
 	"github.com/robertkrimen/otto"
+	"gopkg.in/yaml.v2"
+
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"gopkg.in/yaml.v2"
 )
 
 type mappedQuery interface {

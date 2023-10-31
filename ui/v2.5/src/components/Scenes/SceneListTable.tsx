@@ -87,6 +87,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
         <td>
           <Link to={sceneLink}>
             <img
+              loading="lazy"
               className="image-thumbnail"
               alt={title}
               src={scene.paths.screenshot ?? ""}

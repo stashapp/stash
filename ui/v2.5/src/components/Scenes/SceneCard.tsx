@@ -71,7 +71,12 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
 
   return (
     <div className={cx("scene-card-preview", { portrait: isPortrait })}>
-      <img className="scene-card-preview-image" src={image} alt="" />
+      <img
+        className="scene-card-preview-image"
+        loading="lazy"
+        src={image}
+        alt=""
+      />
       <video
         disableRemotePlayback
         playsInline
@@ -166,7 +171,12 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     }
 
     return (
-      <img className="image-thumbnail" alt={studioName} src={studioImage} />
+      <img
+        className="image-thumbnail"
+        loading="lazy"
+        alt={studioName}
+        src={studioImage}
+      />
     );
   }
 
