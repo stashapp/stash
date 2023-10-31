@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -61,4 +62,8 @@ type movieFinder interface {
 
 type studioFinder interface {
 	models.StudioFinder
+}
+
+type hookExecutor interface {
+	ExecutePostHooks(ctx context.Context, id int, hookType plugin.HookTriggerEnum, input interface{}, inputFields []string)
 }

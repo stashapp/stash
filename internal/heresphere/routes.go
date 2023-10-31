@@ -16,7 +16,6 @@ import (
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
@@ -41,6 +40,7 @@ const (
 type routes struct {
 	repository
 	SceneFinder       sceneFinder
+	SceneService      manager.SceneService
 	SceneMarkerFinder sceneMarkerFinder
 	FileFinder        fileFinder
 	TagFinder         tagFinder
@@ -49,12 +49,14 @@ type routes struct {
 	GalleryFinder     galleryFinder
 	MovieFinder       movieFinder
 	StudioFinder      studioFinder
+	HookExecutor      hookExecutor
 }
 
 func GetRoutes(repo models.Repository) chi.Router {
 	return routes{
 		repository:        repository{TxnManager: repo.TxnManager},
 		SceneFinder:       repo.Scene,
+		SceneService:      manager.GetInstance().SceneService,
 		SceneMarkerFinder: repo.SceneMarker,
 		FileFinder:        repo.File,
 		TagFinder:         repo.Tag,
@@ -63,6 +65,7 @@ func GetRoutes(repo models.Repository) chi.Router {
 		GalleryFinder:     repo.Gallery,
 		MovieFinder:       repo.Movie,
 		StudioFinder:      repo.Studio,
+		HookExecutor:      manager.GetInstance().PluginCache,
 	}.Routes()
 }
 
@@ -161,7 +164,6 @@ func (rs routes) heresphereVideoEvent(w http.ResponseWriter, r *http.Request) {
 func (rs routes) heresphereVideoDataUpdate(w http.ResponseWriter, r *http.Request) error {
 	scn := r.Context().Value(sceneKey).(*models.Scene)
 	user := r.Context().Value(authKey).(HeresphereAuthReq)
-	fileDeleter := file.NewDeleter()
 	c := config.GetInstance()
 	shouldUpdate := false
 
@@ -174,18 +176,16 @@ func (rs routes) heresphereVideoDataUpdate(w http.ResponseWriter, r *http.Reques
 	var err error
 	if user.Rating != nil && c.GetHSPWriteRatings() {
 		if b, err = rs.updateRating(user, ret); err != nil {
-			fileDeleter.Rollback()
 			return err
 		}
 		shouldUpdate = b || shouldUpdate
 	}
 
 	if user.DeleteFile != nil && *user.DeleteFile && c.GetHSPWriteDeletes() {
-		if b, err = rs.handleDeletePrimaryFile(r.Context(), scn, fileDeleter); err != nil {
-			fileDeleter.Rollback()
+		if b, err = rs.handleDeleteScene(r.Context(), scn); err != nil {
 			return err
 		}
-		shouldUpdate = b || shouldUpdate
+		return fmt.Errorf("file was deleted")
 	}
 
 	if user.IsFavorite != nil && c.GetHSPWriteFavorites() {
@@ -210,7 +210,6 @@ func (rs routes) heresphereVideoDataUpdate(w http.ResponseWriter, r *http.Reques
 			return err
 		}
 
-		fileDeleter.Commit()
 		return nil
 	}
 	return nil

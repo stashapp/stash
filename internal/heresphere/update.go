@@ -2,9 +2,12 @@ package heresphere
 
 import (
 	"context"
+	"strconv"
 
+	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
 )
 
@@ -48,18 +51,44 @@ func (rs routes) updatePlayCount(ctx context.Context, scn *models.Scene, event H
 /*
  * Deletes the scene's primary file
  */
-func (rs routes) handleDeletePrimaryFile(ctx context.Context, scn *models.Scene, fileDeleter *file.Deleter) (bool, error) {
+func (rs routes) handleDeleteScene(ctx context.Context, scn *models.Scene) (bool, error) {
 	err := rs.withTxn(ctx, func(ctx context.Context) error {
-		if err := scn.LoadPrimaryFile(ctx, rs.FileFinder); err != nil {
+		// Construct scene deletion
+		deleteFile := true
+		deleteGenerated := true
+		input := models.ScenesDestroyInput{
+			Ids:             []string{strconv.Itoa(scn.ID)},
+			DeleteFile:      &deleteFile,
+			DeleteGenerated: &deleteGenerated,
+		}
+
+		// Construct file deleter
+		fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
+		fileDeleter := &scene.FileDeleter{
+			Deleter:        file.NewDeleter(),
+			FileNamingAlgo: fileNamingAlgo,
+			Paths:          manager.GetInstance().Paths,
+		}
+
+		// Kill running streams
+		manager.KillRunningStreams(scn, fileNamingAlgo)
+
+		// Destroy scene
+		if err := rs.SceneService.Destroy(ctx, scn, fileDeleter, deleteGenerated, deleteFile); err != nil {
+			fileDeleter.Rollback()
 			return err
 		}
 
-		ff := scn.Files.Primary()
-		if ff != nil {
-			if err := file.Destroy(ctx, rs.FileFinder, ff, fileDeleter, true); err != nil {
-				return err
-			}
-		}
+		// Commit deletion
+		fileDeleter.Commit()
+
+		// Plugin callback
+		rs.HookExecutor.ExecutePostHooks(ctx, scn.ID, plugin.SceneDestroyPost, plugin.ScenesDestroyInput{
+			ScenesDestroyInput: input,
+			Checksum:           scn.Checksum,
+			OSHash:             scn.OSHash,
+			Path:               scn.Path,
+		}, nil)
 
 		return nil
 	})

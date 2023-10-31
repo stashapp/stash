@@ -261,11 +261,11 @@
       "write_favorites": "Write Favorites",
       "write_favorites_desc": "Whether to enable HSP to write the favorite tag to videos",
       "write_ratings": "Write Ratings",
-      "write_ratings_desc": "Wether to enable HSP to write ratings",
+      "write_ratings_desc": "Whether to enable HSP to write ratings",
       "write_tags": "Write Tags",
-      "write_tags_desc": "Wether to enable HSP to write tags",
-      "write_deletes": "Do deletes",
-      "write_deletes_desc": "Wether to allow file deletion via HSP API"
+      "write_tags_desc": "Whether to enable HSP to write tags",
+      "write_deletes": "Allow deletes",
+      "write_deletes_desc": "Whether to allow scene deletion via HSP API"
     },
     "general": {
       "auth": {
