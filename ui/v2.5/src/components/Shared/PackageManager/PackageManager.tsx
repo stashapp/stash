@@ -419,6 +419,59 @@ export type RemotePackage = Omit<GQL.Package, "requires"> & {
   requires: { id: string }[];
 };
 
+const AvailablePackageRow: React.FC<{
+  disabled?: boolean;
+  pkg: RemotePackage;
+  requiredBy: RemotePackage[];
+  selected: boolean;
+  togglePackage: () => void;
+  renderDescription?: (pkg: RemotePackage) => React.ReactNode;
+}> = ({
+  disabled,
+  pkg,
+  requiredBy,
+  selected,
+  togglePackage,
+  renderDescription = () => undefined,
+}) => {
+  function renderRequiredBy() {
+    if (!requiredBy.length) return;
+
+    return (
+      <div className="package-required-by">
+        <FormattedMessage
+          id="package_manager.required_by"
+          values={{ packages: requiredBy.map((p) => p.name).join(", ") }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <tr key={pkg.id}>
+      <td colSpan={2}>
+        <Form.Check
+          checked={selected ?? false}
+          onChange={() => togglePackage()}
+          disabled={disabled}
+        />
+      </td>
+      <td className="package-cell" onClick={() => togglePackage()}>
+        <span className="package-name">{pkg.name}</span>
+        <span className="package-id">{pkg.id}</span>
+      </td>
+      <td>
+        <span className="package-version">{pkg.version}</span>
+        <span className="package-date">{formatDate(pkg.date)}</span>
+      </td>
+      <td>
+        {renderRequiredBy()}
+        <div>{renderDescription(pkg)}</div>
+      </td>
+    </tr>
+  );
+};
+
 const SourcePackagesList: React.FC<{
   filter: string;
   disabled?: boolean;
@@ -436,7 +489,7 @@ const SourcePackagesList: React.FC<{
   setSelectedPackages,
   disabled,
   filter,
-  renderDescription = () => undefined,
+  renderDescription,
   editSource,
   deleteSource,
 }) => {
@@ -466,32 +519,6 @@ const SourcePackagesList: React.FC<{
 
     return ret;
   }, [filter, packages]);
-
-  function togglePackage(pkg: RemotePackage) {
-    if (disabled || !packages) return;
-
-    setSelectedPackages((prev) => {
-      const selected = prev.find((p) => p.id === pkg.id);
-
-      if (selected) {
-        return prev.filter((n) => n.id !== pkg.id);
-      } else {
-        // also include required packages
-        const toAdd = [pkg];
-        pkg.requires.forEach((r) => {
-          // find the required package
-          const requiredSelected = prev.find((p) => p.id === r.id);
-          const required = packages.find((p) => p.id === r.id);
-
-          if (!requiredSelected && required) {
-            toAdd.push(required);
-          }
-        });
-
-        return prev.concat(...toAdd);
-      }
-    });
-  }
 
   function toggleSource() {
     if (disabled || packages === undefined) return;
@@ -538,49 +565,55 @@ const SourcePackagesList: React.FC<{
     );
   }
 
-  function renderRequiredBy(pkg: RemotePackage) {
-    const requiredBy = selectedPackages.filter((p) => {
-      return p.requires.find((r) => r.id === pkg.id);
-    });
+  const children = useMemo(() => {
+    function togglePackage(pkg: RemotePackage) {
+      if (disabled || !packages) return;
 
-    if (!requiredBy.length) return;
+      setSelectedPackages((prev) => {
+        const selected = prev.find((p) => p.id === pkg.id);
 
-    return (
-      <div className="package-required-by">
-        <FormattedMessage
-          id="package_manager.required_by"
-          values={{ packages: requiredBy.map((p) => p.name).join(", ") }}
-        />
-      </div>
-    );
-  }
+        if (selected) {
+          return prev.filter((n) => n.id !== pkg.id);
+        } else {
+          // also include required packages
+          const toAdd = [pkg];
+          pkg.requires.forEach((r) => {
+            // find the required package
+            const requiredSelected = prev.find((p) => p.id === r.id);
+            const required = packages.find((p) => p.id === r.id);
 
-  const children =
-    sourceOpen && !loading
-      ? filteredPackages.map((pkg) => (
-          <tr key={pkg.id}>
-            <td colSpan={2}>
-              <Form.Check
-                checked={checkedMap[pkg.id] ?? false}
-                onChange={() => togglePackage(pkg)}
-                disabled={disabled}
-              />
-            </td>
-            <td className="package-cell" onClick={() => togglePackage(pkg)}>
-              <span className="package-name">{pkg.name}</span>
-              <span className="package-id">{pkg.id}</span>
-            </td>
-            <td>
-              <span className="package-version">{pkg.version}</span>
-              <span className="package-date">{formatDate(pkg.date)}</span>
-            </td>
-            <td>
-              {renderRequiredBy(pkg)}
-              <div>{renderDescription(pkg)}</div>
-            </td>
-          </tr>
-        )) ?? []
-      : [];
+            if (!requiredSelected && required) {
+              toAdd.push(required);
+            }
+          });
+
+          return prev.concat(...toAdd);
+        }
+      });
+    }
+
+    return filteredPackages.map((pkg) => (
+      <AvailablePackageRow
+        key={pkg.id}
+        disabled={disabled}
+        pkg={pkg}
+        requiredBy={selectedPackages.filter((p) => {
+          return p.requires.find((r) => r.id === pkg.id);
+        })}
+        selected={checkedMap[pkg.id] ?? false}
+        togglePackage={() => togglePackage(pkg)}
+        renderDescription={renderDescription}
+      />
+    ));
+  }, [
+    filteredPackages,
+    disabled,
+    checkedMap,
+    selectedPackages,
+    setSelectedPackages,
+    packages,
+    renderDescription,
+  ]);
 
   return (
     <>
@@ -642,7 +675,7 @@ const SourcePackagesList: React.FC<{
           </td>
         </tr>
       ) : undefined}
-      {...children}
+      {sourceOpen && !loading && children}
     </>
   );
 };
