@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/stashapp/stash/cmd/phasher/sandbox"
 	"os"
 
 	flag "github.com/spf13/pflag"
@@ -50,6 +51,7 @@ func main() {
 	flag.Usage = customUsage
 	quiet := flag.BoolP("quiet", "q", false, "print only the phash")
 	help := flag.BoolP("help", "h", false, "print this help output")
+	sbox := flag.BoolP("sandbox", "s", false, "sandbox while running")
 	flag.Parse()
 
 	if *help {
@@ -74,6 +76,10 @@ func main() {
 	encoder := ffmpeg.NewEncoder(ffmpegPath)
 	encoder.InitHWSupport(context.TODO())
 	ffprobe := ffmpeg.FFProbe(ffprobePath)
+
+	if *sbox {
+		sandbox.SandboxPHasher(ffmpegPath, ffprobePath, args)
+	}
 
 	for _, item := range args {
 		if err := printPhash(encoder, ffprobe, item, quiet); err != nil {
