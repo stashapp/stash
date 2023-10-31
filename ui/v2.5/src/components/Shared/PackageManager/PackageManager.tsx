@@ -278,22 +278,8 @@ const AvailablePackagesToolbar: React.FC<{
   loading?: boolean;
   installEnabled: boolean;
   onInstallPackages: () => void;
-  selectedOnly: boolean;
-  setSelectedOnly: (v: boolean) => void;
-}> = ({
-  installEnabled,
-  onInstallPackages,
-  loading,
-  filter,
-  setFilter,
-  selectedOnly,
-  setSelectedOnly,
-}) => {
+}> = ({ installEnabled, onInstallPackages, loading, filter, setFilter }) => {
   const intl = useIntl();
-
-  const selectedOnlyId = !selectedOnly
-    ? "package_manager.selected_only"
-    : "package_manager.show_all";
 
   return (
     <div className="package-manager-toolbar">
@@ -306,12 +292,6 @@ const AvailablePackagesToolbar: React.FC<{
         />
       </div>
       <div>
-        <Button
-          variant="secondary"
-          onClick={() => setSelectedOnly(!selectedOnly)}
-        >
-          <FormattedMessage id={selectedOnlyId} />
-        </Button>
         <Button
           variant="primary"
           disabled={!installEnabled || loading}
@@ -441,7 +421,6 @@ export type RemotePackage = Omit<GQL.Package, "requires"> & {
 
 const SourcePackagesList: React.FC<{
   filter: string;
-  selectedOnly: boolean;
   disabled?: boolean;
   source: GQL.PackageSource;
   loadSource: () => Promise<RemotePackage[]>;
@@ -456,7 +435,6 @@ const SourcePackagesList: React.FC<{
   setSelectedPackages,
   disabled,
   filter,
-  selectedOnly,
   editSource,
   deleteSource,
 }) => {
@@ -484,12 +462,8 @@ const SourcePackagesList: React.FC<{
 
     let ret = filterPackages(packages, filter);
 
-    if (selectedOnly) {
-      ret = ret.filter((pkg) => checkedMap[pkg.id]);
-    }
-
     return ret;
-  }, [filter, packages, selectedOnly, checkedMap]);
+  }, [filter, packages]);
 
   function togglePackage(pkg: RemotePackage) {
     if (disabled || !packages) return;
@@ -673,7 +647,6 @@ const SourcePackagesList: React.FC<{
 
 const AvailablePackagesList: React.FC<{
   filter: string;
-  selectedOnly: boolean;
   loading?: boolean;
   sources: GQL.PackageSource[];
   loadSource: (source: string) => Promise<RemotePackage[]>;
@@ -691,7 +664,6 @@ const AvailablePackagesList: React.FC<{
   setSelectedPackages,
   loading,
   filter,
-  selectedOnly,
   addSource,
   editSource,
   deleteSource,
@@ -773,7 +745,6 @@ const AvailablePackagesList: React.FC<{
               <SourcePackagesList
                 key={src.url}
                 filter={filter}
-                selectedOnly={selectedOnly}
                 disabled={loading}
                 source={src}
                 loadSource={() => loadSource(src.url)}
@@ -819,7 +790,6 @@ export const AvailablePackages: React.FC<{
     Record<string, RemotePackage[]>
   >({});
   const [filter, setFilter] = useState("");
-  const [selectedOnly, setSelectedOnly] = useState(false);
 
   const installEnabled = useMemo(() => {
     return Object.values(checkedPackages).some((s) => s.length > 0);
@@ -843,12 +813,9 @@ export const AvailablePackages: React.FC<{
         loading={loading}
         installEnabled={installEnabled}
         onInstallPackages={() => onInstallPackages(toPackageSpecInput())}
-        selectedOnly={selectedOnly}
-        setSelectedOnly={setSelectedOnly}
       />
       <AvailablePackagesList
         filter={filter}
-        selectedOnly={selectedOnly}
         loading={loading}
         sources={sources}
         loadSource={loadSource}
