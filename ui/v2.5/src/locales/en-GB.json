@@ -80,6 +80,7 @@
     "previous_action": "Back",
     "reassign": "Reassign",
     "refresh": "Refresh",
+    "reload": "Reload",
     "reload_plugins": "Reload plugins",
     "reload_scrapers": "Reload scrapers",
     "remove": "Remove",

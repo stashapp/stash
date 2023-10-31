@@ -73,4 +73,14 @@
     margin-left: 0.5em;
     margin-top: 0;
   }
+
+  .source-error {
+    & > .fa-icon {
+      color: $warning;
+    }
+
+    .btn {
+      margin-left: 0.5em;
+    }
+  }
 }

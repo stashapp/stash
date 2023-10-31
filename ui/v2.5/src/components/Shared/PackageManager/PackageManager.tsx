@@ -6,12 +6,15 @@ import { Icon } from "../Icon";
 import {
   faChevronDown,
   faChevronRight,
+  faRotate,
+  faWarning,
 } from "@fortawesome/free-solid-svg-icons";
 import { SettingModal } from "src/components/Settings/Inputs";
 import * as yup from "yup";
 import { FormikErrors, yupToFormErrors } from "formik";
 import { AlertModal } from "../Alert";
 import { LoadingIndicator } from "../LoadingIndicator";
+import { ApolloError } from "@apollo/client";
 
 function formatDate(date: string | undefined | null) {
   if (!date) return;
@@ -461,6 +464,7 @@ const SourcePackagesList: React.FC<{
   const [packages, setPackages] = useState<RemotePackage[]>();
   const [sourceOpen, setSourceOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string>();
 
   const checkedMap = useMemo(() => {
     const map: Record<string, boolean> = {};
@@ -523,22 +527,26 @@ const SourcePackagesList: React.FC<{
     }
   }
 
-  async function toggleSourceOpen() {
-    setSourceOpen((prev) => !prev);
-
-    if (packages === undefined) {
-      // need to load
-      setLoading(true);
-      try {
-        const loaded = await loadSource();
-        setPackages(loaded);
-      } catch (e) {
-        // TODO - handle
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
+  async function loadPackages() {
+    // need to load
+    setLoading(true);
+    setLoadError(undefined);
+    try {
+      const loaded = await loadSource();
+      setPackages(loaded);
+    } catch (e) {
+      setLoadError((e as ApolloError).message);
+    } finally {
+      setLoading(false);
     }
+  }
+
+  function toggleSourceOpen() {
+    if (packages === undefined) {
+      loadPackages();
+    }
+
+    setSourceOpen((prev) => !prev);
   }
 
   function renderCollapseButton() {
@@ -638,6 +646,23 @@ const SourcePackagesList: React.FC<{
           <td colSpan={2}></td>
           <td colSpan={3}>
             <LoadingIndicator inline small />
+          </td>
+        </tr>
+      ) : undefined}
+      {loadError ? (
+        <tr>
+          <td colSpan={2}></td>
+          <td colSpan={3} className="source-error">
+            <Icon icon={faWarning} />
+            <span>{loadError}</span>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => loadPackages()}
+              title={intl.formatMessage({ id: "actions.reload" })}
+            >
+              <Icon icon={faRotate} />
+            </Button>
           </td>
         </tr>
       ) : undefined}
