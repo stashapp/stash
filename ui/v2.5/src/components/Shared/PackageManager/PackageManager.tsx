@@ -12,8 +12,6 @@ import * as yup from "yup";
 import { FormikErrors, yupToFormErrors } from "formik";
 import { AlertModal } from "../Alert";
 
-type PackageSpec = GQL.PackageSpecInput & { name: string };
-
 function formatDate(date: string | undefined | null) {
   if (!date) return;
 
@@ -36,13 +34,15 @@ function filterPackages<T extends IPackage>(packages: T[], filter: string) {
   });
 }
 
+export type InstalledPackage = Omit<GQL.Package, "requires">;
+
 const InstalledPackagesList: React.FC<{
   filter: string;
   loading?: boolean;
   updatesLoaded: boolean;
-  packages: GQL.Package[];
-  checkedPackages: GQL.Package[];
-  setCheckedPackages: React.Dispatch<React.SetStateAction<GQL.Package[]>>;
+  packages: InstalledPackage[];
+  checkedPackages: InstalledPackage[];
+  setCheckedPackages: React.Dispatch<React.SetStateAction<InstalledPackage[]>>;
 }> = ({
   filter,
   packages,
@@ -71,7 +71,7 @@ const InstalledPackagesList: React.FC<{
     setCheckedPackages(allChecked ? [] : packages.slice());
   }
 
-  function togglePackage(pkg: GQL.Package) {
+  function togglePackage(pkg: InstalledPackage) {
     if (loading) return;
 
     setCheckedPackages((prev) => {
@@ -83,7 +83,7 @@ const InstalledPackagesList: React.FC<{
     });
   }
 
-  function rowClassname(pkg: GQL.Package) {
+  function rowClassname(pkg: InstalledPackage) {
     if (pkg.upgrade?.package.version) {
       return "package-update-available";
     }
@@ -154,7 +154,7 @@ const InstalledPackagesToolbar: React.FC<{
   loading?: boolean;
   filter: string;
   setFilter: (s: string) => void;
-  checkedPackages: GQL.Package[];
+  checkedPackages: InstalledPackage[];
   onCheckForUpdates: () => void;
   onUpdatePackages: () => void;
   onUninstallPackages: () => void;
@@ -209,11 +209,11 @@ const InstalledPackagesToolbar: React.FC<{
 
 export const InstalledPackages: React.FC<{
   loading?: boolean;
-  packages: GQL.Package[];
+  packages: InstalledPackage[];
   updatesLoaded: boolean;
   onCheckForUpdates: () => void;
-  onUpdatePackages: (packages: GQL.Package[]) => void;
-  onUninstallPackages: (packages: GQL.Package[]) => void;
+  onUpdatePackages: (packages: InstalledPackage[]) => void;
+  onUninstallPackages: (packages: InstalledPackage[]) => void;
 }> = ({
   packages,
   onCheckForUpdates,
@@ -222,7 +222,9 @@ export const InstalledPackages: React.FC<{
   onUninstallPackages,
   loading,
 }) => {
-  const [checkedPackages, setCheckedPackages] = useState<GQL.Package[]>([]);
+  const [checkedPackages, setCheckedPackages] = useState<InstalledPackage[]>(
+    []
+  );
   const [filter, setFilter] = useState("");
 
   const filteredPackages = useMemo(() => {
@@ -270,10 +272,24 @@ const AvailablePackagesToolbar: React.FC<{
   filter: string;
   setFilter: (s: string) => void;
   loading?: boolean;
-  checkedPackages: GQL.PackageSpecInput[];
+  installEnabled: boolean;
   onInstallPackages: () => void;
-}> = ({ checkedPackages, onInstallPackages, loading, filter, setFilter }) => {
+  selectedOnly: boolean;
+  setSelectedOnly: (v: boolean) => void;
+}> = ({
+  installEnabled,
+  onInstallPackages,
+  loading,
+  filter,
+  setFilter,
+  selectedOnly,
+  setSelectedOnly,
+}) => {
   const intl = useIntl();
+
+  const selectedOnlyId = !selectedOnly
+    ? "package_manager.selected_only"
+    : "package_manager.show_all";
 
   return (
     <div className="package-manager-toolbar">
@@ -287,8 +303,14 @@ const AvailablePackagesToolbar: React.FC<{
       </div>
       <div>
         <Button
+          variant="secondary"
+          onClick={() => setSelectedOnly(!selectedOnly)}
+        >
+          <FormattedMessage id={selectedOnlyId} />
+        </Button>
+        <Button
           variant="primary"
-          disabled={!checkedPackages.length || loading}
+          disabled={!installEnabled || loading}
           onClick={() => onInstallPackages()}
         >
           <FormattedMessage id="package_manager.install" />
@@ -409,133 +431,235 @@ const EditSourceModal: React.FC<{
   );
 };
 
-const AvailablePackagesList: React.FC<{
+export type RemotePackage = Omit<GQL.Package, "requires"> & {
+  requires: { id: string }[];
+};
+
+const SourcePackagesList: React.FC<{
   filter: string;
+  selectedOnly: boolean;
   loading?: boolean;
-  sources: GQL.PackageSource[];
-  packages: Record<string, GQL.Package[]>;
-  loadSource: (source: string) => void;
-  checkedPackages: PackageSpec[];
-  setCheckedPackages: React.Dispatch<React.SetStateAction<PackageSpec[]>>;
-  addSource: (src: GQL.PackageSource) => void;
-  editSource: (existing: GQL.PackageSource, changed: GQL.PackageSource) => void;
-  deleteSource: (source: GQL.PackageSource) => void;
+  source: GQL.PackageSource;
+  loadSource: () => Promise<RemotePackage[]>;
+  selectedPackages: RemotePackage[];
+  setSelectedPackages: React.Dispatch<React.SetStateAction<RemotePackage[]>>;
+  editSource: () => void;
+  deleteSource: () => void;
 }> = ({
-  sources,
-  packages,
+  source,
   loadSource,
-  checkedPackages,
-  setCheckedPackages,
+  selectedPackages,
+  setSelectedPackages,
   loading,
   filter,
-  addSource,
+  selectedOnly,
   editSource,
   deleteSource,
 }) => {
   const intl = useIntl();
-  const [sourceOpen, setSourceOpen] = useState<Record<string, boolean>>({});
-  const [deletingSource, setDeletingSource] = useState<GQL.PackageSource>();
-  const [editingSource, setEditingSource] = useState<GQL.PackageSource>();
-  const [addingSource, setAddingSource] = useState(false);
+  const [packages, setPackages] = useState<RemotePackage[]>();
+  const [sourceOpen, setSourceOpen] = useState(false);
 
   const checkedMap = useMemo(() => {
-    const map: Record<string, Record<string, boolean>> = {};
-    checkedPackages.forEach((pkg) => {
-      if (!map[pkg.sourceURL]) {
-        map[pkg.sourceURL] = {};
-      }
-      map[pkg.sourceURL][pkg.id] = true;
-    });
-    return map;
-  }, [checkedPackages]);
-
-  const sourceChecked = useMemo(() => {
     const map: Record<string, boolean> = {};
 
-    Object.keys(checkedMap).forEach((source) => {
-      map[source] =
-        Object.keys(checkedMap[source]).length === packages[source]?.length;
+    selectedPackages.forEach((pkg) => {
+      map[pkg.id] = true;
     });
-
     return map;
+  }, [selectedPackages]);
+
+  const sourceChecked = useMemo(() => {
+    return packages && Object.keys(checkedMap).length === packages.length;
   }, [checkedMap, packages]);
 
   const filteredPackages = useMemo(() => {
-    const map: Record<string, GQL.Package[]> = {};
+    if (!packages) return [];
 
-    Object.keys(packages).forEach((source) => {
-      map[source] = filterPackages(packages[source], filter);
-    });
+    let ret = filterPackages(packages, filter);
 
-    return map;
-  }, [filter, packages]);
-
-  function togglePackage(sourceURL: string, pkg: GQL.Package) {
-    if (loading) return;
-    function isPackage(s: GQL.PackageSpecInput) {
-      return s.id === pkg.id && s.sourceURL === sourceURL;
+    if (selectedOnly) {
+      ret = ret.filter((pkg) => checkedMap[pkg.id]);
     }
 
-    setCheckedPackages((prev) => {
-      if (prev.find((s) => s.id === pkg.id && s.sourceURL === sourceURL)) {
-        return prev.filter((n) => !isPackage(n));
+    return ret;
+  }, [filter, packages, selectedOnly, checkedMap]);
+
+  function togglePackage(pkg: RemotePackage) {
+    if (loading || !packages) return;
+
+    setSelectedPackages((prev) => {
+      const selected = prev.find((p) => p.id === pkg.id);
+
+      if (selected) {
+        return prev.filter((n) => n.id !== pkg.id);
       } else {
-        return prev.concat({ id: pkg.id, sourceURL, name: pkg.name });
+        // also include required packages
+        const toAdd = [pkg];
+        pkg.requires.forEach((r) => {
+          // find the required package
+          const requiredSelected = prev.find((p) => p.id === r.id);
+          const required = packages.find((p) => p.id === r.id);
+
+          if (!requiredSelected && required) {
+            toAdd.push(required);
+          }
+        });
+
+        return prev.concat(...toAdd);
       }
     });
   }
 
-  function toggleSource(sourceURL: string) {
-    if (loading) return;
-    if (sourceOpen[sourceURL] === undefined) {
-      return;
-    }
+  function toggleSource() {
+    if (loading || packages === undefined) return;
 
-    if (sourceChecked[sourceURL]) {
-      setCheckedPackages((prev) => {
-        return prev.filter((n) => n.sourceURL !== sourceURL);
-      });
+    if (sourceChecked) {
+      setSelectedPackages([]);
     } else {
-      setCheckedPackages((prev) => {
-        return prev
-          .filter((n) => n.sourceURL !== sourceURL)
-          .concat(
-            packages[sourceURL]?.map((pkg) => ({
-              id: pkg.id,
-              name: pkg.name,
-              sourceURL,
-            })) ?? []
-          );
-      });
+      setSelectedPackages(packages.slice());
     }
   }
 
-  function toggleSourceOpen(source: string) {
-    if (sourceOpen[source] === undefined) {
+  async function toggleSourceOpen() {
+    if (packages === undefined) {
       // need to load
-      loadSource(source);
+      try {
+        const loaded = await loadSource();
+        setPackages(loaded);
+      } catch (e) {
+        // TODO - handle
+        console.error(e);
+      }
     }
 
-    setSourceOpen((prev) => {
-      return {
-        ...prev,
-        [source]: !prev[source],
-      };
-    });
+    setSourceOpen((prev) => !prev);
   }
 
-  function renderCollapseButton(source: string) {
+  function renderCollapseButton() {
     return (
       <Button
         variant="minimal"
         size="sm"
         className="package-collapse-button"
-        onClick={() => toggleSourceOpen(source)}
+        onClick={() => toggleSourceOpen()}
       >
-        <Icon icon={sourceOpen[source] ? faChevronDown : faChevronRight} />
+        <Icon icon={sourceOpen ? faChevronDown : faChevronRight} />
       </Button>
     );
   }
+
+  function renderRequiredBy(pkg: RemotePackage) {
+    const requiredBy = selectedPackages.filter((p) => {
+      return p.requires.find((r) => r.id === pkg.id);
+    });
+
+    if (!requiredBy.length) return;
+
+    return (
+      <div className="package-required-by">
+        <FormattedMessage
+          id="package_manager.required_by"
+          values={{ packages: requiredBy.map((p) => p.name).join(", ") }}
+        />
+      </div>
+    );
+  }
+
+  const children = sourceOpen
+    ? filteredPackages.map((pkg) => (
+        <tr key={pkg.id}>
+          <td colSpan={2}>
+            <Form.Check
+              checked={checkedMap[pkg.id] ?? false}
+              onChange={() => togglePackage(pkg)}
+              disabled={loading}
+            />
+          </td>
+          <td className="package-cell" onClick={() => togglePackage(pkg)}>
+            <span className="package-name">{pkg.name}</span>
+            <span className="package-id">{pkg.id}</span>
+          </td>
+          <td>
+            <span className="package-version">{pkg.version}</span>
+            <span className="package-date">{formatDate(pkg.date)}</span>
+          </td>
+          <td>
+            {renderRequiredBy(pkg)}
+            <div>{pkg.description}</div>
+          </td>
+        </tr>
+      )) ?? []
+    : [];
+
+  return (
+    <>
+      <tr key={source.url} className="package-source">
+        <td>
+          {packages !== undefined ? (
+            <Form.Check
+              checked={sourceChecked ?? false}
+              onChange={() => toggleSource()}
+              disabled={loading}
+            />
+          ) : undefined}
+        </td>
+        <td>{renderCollapseButton()}</td>
+        <td colSpan={2} onClick={() => toggleSourceOpen()}>
+          <span>{source.name ?? source.url}</span>
+        </td>
+        <td className="source-controls">
+          <Button
+            size="sm"
+            variant="primary"
+            title={intl.formatMessage({ id: "actions.edit" })}
+            onClick={() => editSource()}
+          >
+            <FormattedMessage id="actions.edit" />
+          </Button>
+          <Button
+            size="sm"
+            variant="danger"
+            title={intl.formatMessage({ id: "actions.delete" })}
+            onClick={() => deleteSource()}
+          >
+            <FormattedMessage id="actions.delete" />
+          </Button>
+        </td>
+      </tr>
+      {...children}
+    </>
+  );
+};
+
+const AvailablePackagesList: React.FC<{
+  filter: string;
+  selectedOnly: boolean;
+  loading?: boolean;
+  sources: GQL.PackageSource[];
+  loadSource: (source: string) => Promise<RemotePackage[]>;
+  selectedPackages: Record<string, RemotePackage[]>; // map of source url to selected packages
+  setSelectedPackages: React.Dispatch<
+    React.SetStateAction<Record<string, RemotePackage[]>>
+  >;
+  addSource: (src: GQL.PackageSource) => void;
+  editSource: (existing: GQL.PackageSource, changed: GQL.PackageSource) => void;
+  deleteSource: (source: GQL.PackageSource) => void;
+}> = ({
+  sources,
+  loadSource,
+  selectedPackages,
+  setSelectedPackages,
+  loading,
+  filter,
+  selectedOnly,
+  addSource,
+  editSource,
+  deleteSource,
+}) => {
+  const [deletingSource, setDeletingSource] = useState<GQL.PackageSource>();
+  const [editingSource, setEditingSource] = useState<GQL.PackageSource>();
+  const [addingSource, setAddingSource] = useState(false);
 
   function onDeleteSource() {
     if (!deletingSource) return;
@@ -544,69 +668,19 @@ const AvailablePackagesList: React.FC<{
     setDeletingSource(undefined);
   }
 
-  function renderSource(source: GQL.PackageSource) {
-    const children = sourceOpen[source.url]
-      ? filteredPackages[source.url]?.map((pkg) => (
-          <tr key={pkg.id}>
-            <td colSpan={2}>
-              <Form.Check
-                checked={checkedMap[source.url]?.[pkg.id] ?? false}
-                onChange={() => togglePackage(source.url, pkg)}
-                disabled={loading}
-              />
-            </td>
-            <td
-              className="package-cell"
-              onClick={() => togglePackage(source.url, pkg)}
-            >
-              <span className="package-name">{pkg.name}</span>
-              <span className="package-id">{pkg.id}</span>
-            </td>
-            <td>
-              <span className="package-version">{pkg.version}</span>
-              <span className="package-date">{formatDate(pkg.date)}</span>
-            </td>
-            <td>{pkg.description}</td>
-          </tr>
-        )) ?? []
-      : [];
+  function setSelectedSourcePackages(
+    src: GQL.PackageSource,
+    v: RemotePackage[] | ((prevState: RemotePackage[]) => RemotePackage[])
+  ) {
+    setSelectedPackages((prev) => {
+      const existing = prev[src.url] ?? [];
+      const next = typeof v === "function" ? v(existing) : v;
 
-    return [
-      <tr key={source.url} className="package-source">
-        <td>
-          {sourceOpen[source.url] !== undefined ? (
-            <Form.Check
-              checked={sourceChecked[source.url] ?? false}
-              onChange={() => toggleSource(source.url)}
-              disabled={loading}
-            />
-          ) : undefined}
-        </td>
-        <td>{renderCollapseButton(source.url)}</td>
-        <td colSpan={2} onClick={() => toggleSourceOpen(source.url)}>
-          <span>{source.name ?? source.url}</span>
-        </td>
-        <td className="source-controls">
-          <Button
-            size="sm"
-            variant="primary"
-            title={intl.formatMessage({ id: "actions.edit" })}
-            onClick={() => setEditingSource(source)}
-          >
-            <FormattedMessage id="actions.edit" />
-          </Button>
-          <Button
-            size="sm"
-            variant="danger"
-            title={intl.formatMessage({ id: "actions.delete" })}
-            onClick={() => setDeletingSource(source)}
-          >
-            <FormattedMessage id="actions.delete" />
-          </Button>
-        </td>
-      </tr>,
-      ...children,
-    ];
+      return {
+        ...prev,
+        [src.url]: next,
+      };
+    });
   }
 
   return (
@@ -656,7 +730,20 @@ const AvailablePackagesList: React.FC<{
             </tr>
           </thead>
           <tbody>
-            {sources.map((pkg) => renderSource(pkg))}
+            {sources.map((src) => (
+              <SourcePackagesList
+                key={src.url}
+                filter={filter}
+                selectedOnly={selectedOnly}
+                loading={loading}
+                source={src}
+                loadSource={() => loadSource(src.url)}
+                selectedPackages={selectedPackages[src.url] ?? []}
+                setSelectedPackages={(v) => setSelectedSourcePackages(src, v)}
+                editSource={() => setEditingSource(src)}
+                deleteSource={() => setDeletingSource(src)}
+              />
+            ))}
             <tr className="package-source">
               <td colSpan={2}></td>
               <td colSpan={3} onClick={() => setAddingSource(true)}>
@@ -675,15 +762,13 @@ const AvailablePackagesList: React.FC<{
 export const AvailablePackages: React.FC<{
   loading?: boolean;
   sources: GQL.PackageSource[];
-  packages: Record<string, GQL.Package[]>;
-  loadSource: (source: string) => void;
+  loadSource: (source: string) => Promise<RemotePackage[]>;
   onInstallPackages: (packages: GQL.PackageSpecInput[]) => void;
   addSource: (src: GQL.PackageSource) => void;
   editSource: (existing: GQL.PackageSource, changed: GQL.PackageSource) => void;
   deleteSource: (source: GQL.PackageSource) => void;
 }> = ({
   sources,
-  packages,
   loadSource,
   onInstallPackages,
   loading,
@@ -691,18 +776,24 @@ export const AvailablePackages: React.FC<{
   editSource,
   deleteSource,
 }) => {
-  const [checkedPackages, setCheckedPackages] = useState<PackageSpec[]>([]);
+  const [checkedPackages, setCheckedPackages] = useState<
+    Record<string, RemotePackage[]>
+  >({});
   const [filter, setFilter] = useState("");
+  const [selectedOnly, setSelectedOnly] = useState(false);
 
-  const filteredPackages = useMemo(() => {
-    return filterPackages(checkedPackages, filter);
-  }, [checkedPackages, filter]);
+  const installEnabled = useMemo(() => {
+    return Object.values(checkedPackages).some((s) => s.length > 0);
+  }, [checkedPackages]);
 
-  function toPackageSpecInput(i: PackageSpec[]): GQL.PackageSpecInput[] {
-    return i.map((pkg) => ({
-      id: pkg.id,
-      sourceURL: pkg.sourceURL,
-    }));
+  function toPackageSpecInput(): GQL.PackageSpecInput[] {
+    const ret: GQL.PackageSpecInput[] = [];
+    Object.keys(checkedPackages).forEach((sourceURL) => {
+      checkedPackages[sourceURL].forEach((pkg) => {
+        ret.push({ id: pkg.id, sourceURL });
+      });
+    });
+    return ret;
   }
 
   return (
@@ -711,19 +802,19 @@ export const AvailablePackages: React.FC<{
         filter={filter}
         setFilter={(f) => setFilter(f)}
         loading={loading}
-        checkedPackages={filteredPackages}
-        onInstallPackages={() =>
-          onInstallPackages(toPackageSpecInput(filteredPackages))
-        }
+        installEnabled={installEnabled}
+        onInstallPackages={() => onInstallPackages(toPackageSpecInput())}
+        selectedOnly={selectedOnly}
+        setSelectedOnly={setSelectedOnly}
       />
       <AvailablePackagesList
         filter={filter}
+        selectedOnly={selectedOnly}
         loading={loading}
         sources={sources}
         loadSource={loadSource}
-        packages={packages}
-        checkedPackages={checkedPackages}
-        setCheckedPackages={setCheckedPackages}
+        selectedPackages={checkedPackages}
+        setSelectedPackages={setCheckedPackages}
         addSource={addSource}
         editSource={editSource}
         deleteSource={deleteSource}

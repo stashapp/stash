@@ -1080,11 +1080,14 @@
     "install": "Install",
     "installed_version": "Installed Version",
     "latest_version": "Latest Version",
+    "required_by": "Required by {packages}",
     "source": {
       "name": "Name",
       "url": "Index URL"
     },
     "package": "Package",
+    "selected_only": "Selected only",
+    "show_all": "Show all",
     "uninstall": "Uninstall",
     "update": "Update",
     "version": "Version"

@@ -61,4 +61,9 @@
       margin-left: 0.5em;
     }
   }
+
+  .package-required-by {
+    color: $warning;
+    font-size: 0.8rem;
+  }
 }

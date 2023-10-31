@@ -14,6 +14,7 @@ import { useMonitorJob } from "src/utils/job";
 import {
   AvailablePackages,
   InstalledPackages,
+  RemotePackage,
 } from "../Shared/PackageManager/PackageManager";
 import { useSettings } from "./context";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
@@ -128,13 +129,7 @@ export const InstalledPluginPackages: React.FC = () => {
 export const AvailablePluginPackages: React.FC = () => {
   const { general, loading: configLoading, error, saveGeneral } = useSettings();
 
-  const [sourcePackages, setSourcePackages] = useState<
-    Record<string, GQL.Package[]>
-  >({});
   const [sources, setSources] = useState<GQL.PackageSource[]>();
-  const [sourcesLoaded, setSourcesLoaded] = useState<Record<string, boolean>>(
-    {}
-  );
   const [jobID, setJobID] = useState<string>();
   const { job } = useMonitorJob(jobID, () => onPackageChanges());
 
@@ -162,26 +157,9 @@ export const AvailablePluginPackages: React.FC = () => {
     }
   }, [sources, configLoading, general.pluginPackageSources]);
 
-  async function loadSource(source: string) {
-    if (sourcesLoaded[source]) {
-      return;
-    }
-
+  async function loadSource(source: string): Promise<RemotePackage[]> {
     const { data } = await queryAvailablePluginPackages(source);
-
-    setSourcePackages((prev) => {
-      return {
-        ...prev,
-        [source]: data.availablePackages,
-      };
-    });
-
-    setSourcesLoaded((prev) => {
-      return {
-        ...prev,
-        [source]: true,
-      };
-    });
+    return data.availablePackages;
   }
 
   function addSource(source: GQL.PackageSource) {
@@ -204,20 +182,6 @@ export const AvailablePluginPackages: React.FC = () => {
     setSources((prev) => {
       return prev?.map((s) => (s.url === existing.url ? changed : s));
     });
-
-    if (existing.url !== changed.url) {
-      // wipe the cache for the old source
-      setSourcePackages((prev) => {
-        const next = { ...prev };
-        delete next[existing.url];
-        return next;
-      });
-      setSourcesLoaded((prev) => {
-        const next = { ...prev };
-        delete next[existing.url];
-        return next;
-      });
-    }
   }
 
   function deleteSource(source: GQL.PackageSource) {
@@ -229,18 +193,6 @@ export const AvailablePluginPackages: React.FC = () => {
 
     setSources((prev) => {
       return prev?.filter((s) => s.url !== source.url);
-    });
-
-    // wipe the cache for the deleted source
-    setSourcePackages((prev) => {
-      const next = { ...prev };
-      delete next[source.url];
-      return next;
-    });
-    setSourcesLoaded((prev) => {
-      const next = { ...prev };
-      delete next[source.url];
-      return next;
     });
   }
 
@@ -257,7 +209,6 @@ export const AvailablePluginPackages: React.FC = () => {
           onInstallPackages={onInstallPackages}
           loadSource={(source) => loadSource(source)}
           sources={sources ?? []}
-          packages={sourcePackages}
           addSource={addSource}
           editSource={editSource}
           deleteSource={deleteSource}
