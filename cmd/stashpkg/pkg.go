@@ -228,7 +228,7 @@ func list() {
 			}
 		}
 
-		fmt.Printf("%s - %s - %s [%s] %s\n", v.ID, v.Name, v.Version, status, v.Description)
+		fmt.Printf("%s - %s - %s [%s]\n", v.ID, v.Name, v.Version, status)
 	}
 }
 
@@ -278,7 +278,7 @@ func search() {
 	for _, k := range keys {
 		if strings.Contains(strings.ToLower(k), strings.ToLower(os.Args[2])) {
 			v := index[k]
-			fmt.Printf("%s %s %s\n", v.Name, v.PackageVersion.String(), v.Description)
+			fmt.Printf("%s %s\n", v.Name, v.PackageVersion.String())
 		}
 	}
 }

@@ -34,14 +34,16 @@ func manifestToPackage(p pkg.Manifest) *Package {
 		Name: p.Name,
 	}
 
-	if len(p.Description) > 0 {
-		ret.Description = &p.Description
-	}
 	if len(p.Version) > 0 {
 		ret.Version = &p.Version
 	}
 	if !p.Date.IsZero() {
 		ret.Date = &p.Date.Time
+	}
+
+	ret.Metadata = p.Metadata
+	if ret.Metadata == nil {
+		ret.Metadata = make(map[string]interface{})
 	}
 
 	return ret
@@ -53,14 +55,16 @@ func remotePackageToPackage(p pkg.RemotePackage, index pkg.RemotePackageIndex) *
 		Name: p.Name,
 	}
 
-	if len(p.Description) > 0 {
-		ret.Description = &p.Description
-	}
 	if len(p.Version) > 0 {
 		ret.Version = &p.Version
 	}
 	if !p.Date.IsZero() {
 		ret.Date = &p.Date.Time
+	}
+
+	ret.Metadata = p.Metadata
+	if ret.Metadata == nil {
+		ret.Metadata = make(map[string]interface{})
 	}
 
 	for _, r := range p.Requires {

@@ -1,7 +1,7 @@
 fragment PackageData on Package {
   id
   name
-  description
   version
   date
+  metadata
 }

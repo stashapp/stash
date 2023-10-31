@@ -426,6 +426,7 @@ const SourcePackagesList: React.FC<{
   loadSource: () => Promise<RemotePackage[]>;
   selectedPackages: RemotePackage[];
   setSelectedPackages: React.Dispatch<React.SetStateAction<RemotePackage[]>>;
+  renderDescription?: (pkg: RemotePackage) => React.ReactNode;
   editSource: () => void;
   deleteSource: () => void;
 }> = ({
@@ -435,6 +436,7 @@ const SourcePackagesList: React.FC<{
   setSelectedPackages,
   disabled,
   filter,
+  renderDescription = () => undefined,
   editSource,
   deleteSource,
 }) => {
@@ -574,7 +576,7 @@ const SourcePackagesList: React.FC<{
             </td>
             <td>
               {renderRequiredBy(pkg)}
-              <div>{pkg.description}</div>
+              <div>{renderDescription(pkg)}</div>
             </td>
           </tr>
         )) ?? []
@@ -649,6 +651,7 @@ const AvailablePackagesList: React.FC<{
   filter: string;
   loading?: boolean;
   sources: GQL.PackageSource[];
+  renderDescription?: (pkg: RemotePackage) => React.ReactNode;
   loadSource: (source: string) => Promise<RemotePackage[]>;
   selectedPackages: Record<string, RemotePackage[]>; // map of source url to selected packages
   setSelectedPackages: React.Dispatch<
@@ -664,6 +667,7 @@ const AvailablePackagesList: React.FC<{
   setSelectedPackages,
   loading,
   filter,
+  renderDescription,
   addSource,
   editSource,
   deleteSource,
@@ -747,6 +751,7 @@ const AvailablePackagesList: React.FC<{
                 filter={filter}
                 disabled={loading}
                 source={src}
+                renderDescription={renderDescription}
                 loadSource={() => loadSource(src.url)}
                 selectedPackages={selectedPackages[src.url] ?? []}
                 setSelectedPackages={(v) => setSelectedSourcePackages(src, v)}
@@ -772,6 +777,7 @@ const AvailablePackagesList: React.FC<{
 export const AvailablePackages: React.FC<{
   loading?: boolean;
   sources: GQL.PackageSource[];
+  renderDescription?: (pkg: RemotePackage) => React.ReactNode;
   loadSource: (source: string) => Promise<RemotePackage[]>;
   onInstallPackages: (packages: GQL.PackageSpecInput[]) => void;
   addSource: (src: GQL.PackageSource) => void;
@@ -782,6 +788,7 @@ export const AvailablePackages: React.FC<{
   loadSource,
   onInstallPackages,
   loading,
+  renderDescription,
   addSource,
   editSource,
   deleteSource,
@@ -818,6 +825,7 @@ export const AvailablePackages: React.FC<{
         filter={filter}
         loading={loading}
         sources={sources}
+        renderDescription={renderDescription}
         loadSource={loadSource}
         selectedPackages={checkedPackages}
         setSelectedPackages={setCheckedPackages}

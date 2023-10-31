@@ -196,6 +196,12 @@ export const AvailablePluginPackages: React.FC = () => {
     });
   }
 
+  function renderDescription(pkg: RemotePackage) {
+    if (pkg.metadata.description) {
+      return pkg.metadata.description;
+    }
+  }
+
   if (error) return <h1>{error.message}</h1>;
   if (configLoading) return <LoadingIndicator />;
 
@@ -207,6 +213,7 @@ export const AvailablePluginPackages: React.FC = () => {
         <AvailablePackages
           loading={loading}
           onInstallPackages={onInstallPackages}
+          renderDescription={renderDescription}
           loadSource={(source) => loadSource(source)}
           sources={sources ?? []}
           addSource={addSource}

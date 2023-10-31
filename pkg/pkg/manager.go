@@ -195,11 +195,11 @@ func (m *Manager) Install(ctx context.Context, remoteURL string, id string) erro
 
 func (m *Manager) installPackage(pkg RemotePackage, zr *zip.Reader) error {
 	manifest := Manifest{
-		ID:              pkg.ID,
-		Name:            pkg.Name,
-		PackageMetadata: pkg.PackageMetadata,
-		PackageVersion:  pkg.PackageVersion,
-		RepositoryURL:   pkg.Repository.Path(),
+		ID:             pkg.ID,
+		Name:           pkg.Name,
+		Metadata:       pkg.Metadata,
+		PackageVersion: pkg.PackageVersion,
+		RepositoryURL:  pkg.Repository.Path(),
 	}
 
 	for _, f := range zr.File {

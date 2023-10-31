@@ -30,9 +30,7 @@ func (t Time) MarshalYAML() (interface{}, error) {
 	return t.Format(timeFormat), nil
 }
 
-type PackageMetadata struct {
-	Description string `yaml:"description"`
-}
+type PackageMetadata map[string]interface{}
 
 type PackageVersion struct {
 	Version string `yaml:"version"`
@@ -69,17 +67,17 @@ type RemotePackage struct {
 	Name            string           `yaml:"name"`
 	Repository      remoteRepository `yaml:"-"`
 	Requires        []string         `yaml:"requires"`
-	PackageMetadata `yaml:",inline"`
+	Metadata        PackageMetadata  `yaml:"metadata"`
 	PackageVersion  `yaml:",inline"`
 	PackageLocation `yaml:",inline"`
 }
 
 type Manifest struct {
-	ID              string `yaml:"id"`
-	Name            string `yaml:"name"`
-	PackageMetadata `yaml:",inline"`
-	PackageVersion  `yaml:",inline"`
-	Requires        []string `yaml:"requires"`
+	ID             string          `yaml:"id"`
+	Name           string          `yaml:"name"`
+	Metadata       PackageMetadata `yaml:"metadata"`
+	PackageVersion `yaml:",inline"`
+	Requires       []string `yaml:"requires"`
 
 	RepositoryURL string   `yaml:"source_repository"`
 	Files         []string `yaml:"files"`

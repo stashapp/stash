@@ -6,13 +6,14 @@ enum PackageType {
 type Package {
   id: String!
   name: String!
-  description: String
   version: String
   date: Timestamp
   requires: [Package!]!
 
   "The available upgraded version of this package"
   upgrade: RemotePackage
+
+  metadata: Map!
 }
 
 type RemotePackage {
