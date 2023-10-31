@@ -182,7 +182,7 @@ func (rs routes) heresphereVideoDataUpdate(w http.ResponseWriter, r *http.Reques
 	}
 
 	if user.DeleteFile != nil && *user.DeleteFile && c.GetHSPWriteDeletes() {
-		if b, err = rs.handleDeleteScene(r.Context(), scn); err != nil {
+		if _, err = rs.handleDeleteScene(r.Context(), scn); err != nil {
 			return err
 		}
 		return fmt.Errorf("file was deleted")
