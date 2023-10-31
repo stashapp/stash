@@ -66,4 +66,11 @@
     color: $warning;
     font-size: 0.8rem;
   }
+
+  .LoadingIndicator-message {
+    display: inline-block;
+    font-size: 1rem;
+    margin-left: 0.5em;
+    margin-top: 0;
+  }
 }

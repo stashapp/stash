@@ -11,6 +11,7 @@ import { SettingModal } from "src/components/Settings/Inputs";
 import * as yup from "yup";
 import { FormikErrors, yupToFormErrors } from "formik";
 import { AlertModal } from "../Alert";
+import { LoadingIndicator } from "../LoadingIndicator";
 
 function formatDate(date: string | undefined | null) {
   if (!date) return;
@@ -438,7 +439,7 @@ export type RemotePackage = Omit<GQL.Package, "requires"> & {
 const SourcePackagesList: React.FC<{
   filter: string;
   selectedOnly: boolean;
-  loading?: boolean;
+  disabled?: boolean;
   source: GQL.PackageSource;
   loadSource: () => Promise<RemotePackage[]>;
   selectedPackages: RemotePackage[];
@@ -450,7 +451,7 @@ const SourcePackagesList: React.FC<{
   loadSource,
   selectedPackages,
   setSelectedPackages,
-  loading,
+  disabled,
   filter,
   selectedOnly,
   editSource,
@@ -459,6 +460,7 @@ const SourcePackagesList: React.FC<{
   const intl = useIntl();
   const [packages, setPackages] = useState<RemotePackage[]>();
   const [sourceOpen, setSourceOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const checkedMap = useMemo(() => {
     const map: Record<string, boolean> = {};
@@ -486,7 +488,7 @@ const SourcePackagesList: React.FC<{
   }, [filter, packages, selectedOnly, checkedMap]);
 
   function togglePackage(pkg: RemotePackage) {
-    if (loading || !packages) return;
+    if (disabled || !packages) return;
 
     setSelectedPackages((prev) => {
       const selected = prev.find((p) => p.id === pkg.id);
@@ -512,7 +514,7 @@ const SourcePackagesList: React.FC<{
   }
 
   function toggleSource() {
-    if (loading || packages === undefined) return;
+    if (disabled || packages === undefined) return;
 
     if (sourceChecked) {
       setSelectedPackages([]);
@@ -522,18 +524,21 @@ const SourcePackagesList: React.FC<{
   }
 
   async function toggleSourceOpen() {
+    setSourceOpen((prev) => !prev);
+
     if (packages === undefined) {
       // need to load
+      setLoading(true);
       try {
         const loaded = await loadSource();
         setPackages(loaded);
       } catch (e) {
         // TODO - handle
         console.error(e);
+      } finally {
+        setLoading(false);
       }
     }
-
-    setSourceOpen((prev) => !prev);
   }
 
   function renderCollapseButton() {
@@ -566,31 +571,32 @@ const SourcePackagesList: React.FC<{
     );
   }
 
-  const children = sourceOpen
-    ? filteredPackages.map((pkg) => (
-        <tr key={pkg.id}>
-          <td colSpan={2}>
-            <Form.Check
-              checked={checkedMap[pkg.id] ?? false}
-              onChange={() => togglePackage(pkg)}
-              disabled={loading}
-            />
-          </td>
-          <td className="package-cell" onClick={() => togglePackage(pkg)}>
-            <span className="package-name">{pkg.name}</span>
-            <span className="package-id">{pkg.id}</span>
-          </td>
-          <td>
-            <span className="package-version">{pkg.version}</span>
-            <span className="package-date">{formatDate(pkg.date)}</span>
-          </td>
-          <td>
-            {renderRequiredBy(pkg)}
-            <div>{pkg.description}</div>
-          </td>
-        </tr>
-      )) ?? []
-    : [];
+  const children =
+    sourceOpen && !loading
+      ? filteredPackages.map((pkg) => (
+          <tr key={pkg.id}>
+            <td colSpan={2}>
+              <Form.Check
+                checked={checkedMap[pkg.id] ?? false}
+                onChange={() => togglePackage(pkg)}
+                disabled={disabled}
+              />
+            </td>
+            <td className="package-cell" onClick={() => togglePackage(pkg)}>
+              <span className="package-name">{pkg.name}</span>
+              <span className="package-id">{pkg.id}</span>
+            </td>
+            <td>
+              <span className="package-version">{pkg.version}</span>
+              <span className="package-date">{formatDate(pkg.date)}</span>
+            </td>
+            <td>
+              {renderRequiredBy(pkg)}
+              <div>{pkg.description}</div>
+            </td>
+          </tr>
+        )) ?? []
+      : [];
 
   return (
     <>
@@ -600,7 +606,7 @@ const SourcePackagesList: React.FC<{
             <Form.Check
               checked={sourceChecked ?? false}
               onChange={() => toggleSource()}
-              disabled={loading}
+              disabled={disabled}
             />
           ) : undefined}
         </td>
@@ -627,6 +633,14 @@ const SourcePackagesList: React.FC<{
           </Button>
         </td>
       </tr>
+      {loading ? (
+        <tr>
+          <td colSpan={2}></td>
+          <td colSpan={3}>
+            <LoadingIndicator inline small />
+          </td>
+        </tr>
+      ) : undefined}
       {...children}
     </>
   );
@@ -735,7 +749,7 @@ const AvailablePackagesList: React.FC<{
                 key={src.url}
                 filter={filter}
                 selectedOnly={selectedOnly}
-                loading={loading}
+                disabled={loading}
                 source={src}
                 loadSource={() => loadSource(src.url)}
                 selectedPackages={selectedPackages[src.url] ?? []}
