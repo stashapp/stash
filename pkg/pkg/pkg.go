@@ -68,6 +68,7 @@ type RemotePackage struct {
 	ID              string           `yaml:"id"`
 	Name            string           `yaml:"name"`
 	Repository      remoteRepository `yaml:"-"`
+	Requires        []string         `yaml:"requires"`
 	PackageMetadata `yaml:",inline"`
 	PackageVersion  `yaml:",inline"`
 	PackageLocation `yaml:",inline"`
@@ -78,6 +79,7 @@ type Manifest struct {
 	Name            string `yaml:"name"`
 	PackageMetadata `yaml:",inline"`
 	PackageVersion  `yaml:",inline"`
+	Requires        []string `yaml:"requires"`
 
 	RepositoryURL string   `yaml:"source_repository"`
 	Files         []string `yaml:"files"`
@@ -149,7 +151,9 @@ func (s PackageStatus) Upgradable() bool {
 
 type PackageStatusIndex map[string]PackageStatus
 
-func (i PackageStatusIndex) populateLocal(installed LocalPackageIndex, remote RemotePackageIndex) {
+func MakePackageStatusIndex(installed LocalPackageIndex, remote RemotePackageIndex) PackageStatusIndex {
+	i := make(PackageStatusIndex)
+
 	for id, pkg := range installed {
 		pkgCopy := pkg
 		s := PackageStatus{
@@ -162,6 +166,8 @@ func (i PackageStatusIndex) populateLocal(installed LocalPackageIndex, remote Re
 
 		i[id] = s
 	}
+
+	return i
 }
 
 func (i PackageStatusIndex) Upgradable() []PackageStatus {

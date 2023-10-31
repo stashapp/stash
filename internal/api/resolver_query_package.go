@@ -47,7 +47,7 @@ func manifestToPackage(p pkg.Manifest) *Package {
 	return ret
 }
 
-func remotePackageToPackage(p pkg.RemotePackage) *Package {
+func remotePackageToPackage(p pkg.RemotePackage, index pkg.RemotePackageIndex) *Package {
 	ret := &Package{
 		ID:   p.ID,
 		Name: p.Name,
@@ -61,6 +61,16 @@ func remotePackageToPackage(p pkg.RemotePackage) *Package {
 	}
 	if !p.Date.IsZero() {
 		ret.Date = &p.Date.Time
+	}
+
+	for _, r := range p.Requires {
+		req, found := index[r]
+		if !found {
+			// shouldn't happen, but we'll ignore it
+			continue
+		}
+
+		ret.Requires = append(ret.Requires, remotePackageToPackage(req, index))
 	}
 
 	return ret
@@ -84,6 +94,41 @@ func sortedKeys[V any](m map[string]V) []string {
 	return keys
 }
 
+func (r *queryResolver) getInstalledPackagesWithUpgrades(ctx context.Context, pm *pkg.Manager) ([]*Package, error) {
+	// get all installed packages
+	installed, err := pm.ListInstalled(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// get remotes for all installed packages
+	allRemoteList, err := pm.ListInstalledRemotes(ctx, installed)
+	if err != nil {
+		return nil, err
+	}
+
+	packageStatusIndex := pkg.MakePackageStatusIndex(installed, allRemoteList)
+
+	ret := make([]*Package, len(packageStatusIndex))
+	i := 0
+
+	for _, k := range sortedKeys(packageStatusIndex) {
+		v := packageStatusIndex[k]
+		p := manifestToPackage(*v.Local)
+		if v.Upgradable() {
+			pp := remotePackageToPackage(*v.Remote, allRemoteList)
+			p.Upgrade = &RemotePackage{
+				SourceURL: v.Remote.Repository.Path(),
+				Package:   pp,
+			}
+		}
+		ret[i] = p
+		i++
+	}
+
+	return ret, nil
+}
+
 func (r *queryResolver) InstalledPackages(ctx context.Context, typeArg PackageType) ([]*Package, error) {
 	pm, err := getPackageManager(typeArg)
 	if err != nil {
@@ -98,26 +143,9 @@ func (r *queryResolver) InstalledPackages(ctx context.Context, typeArg PackageTy
 	var ret []*Package
 
 	if stringslice.StrInclude(graphql.CollectAllFields(ctx), "upgrade") {
-		installedStatus, err := pm.InstalledStatus(ctx)
+		ret, err = r.getInstalledPackagesWithUpgrades(ctx, pm)
 		if err != nil {
 			return nil, err
-		}
-
-		ret = make([]*Package, len(installedStatus))
-		i := 0
-
-		for _, k := range sortedKeys(installedStatus) {
-			v := installedStatus[k]
-			p := manifestToPackage(*v.Local)
-			if v.Upgradable() {
-				pp := remotePackageToPackage(*v.Remote)
-				p.Upgrade = &RemotePackage{
-					SourceURL: v.Remote.Repository.Path(),
-					Package:   pp,
-				}
-			}
-			ret[i] = p
-			i++
 		}
 	} else {
 		ret = make([]*Package, len(installed))
@@ -146,20 +174,7 @@ func (r *queryResolver) AvailablePackages(ctx context.Context, typeArg PackageTy
 	i := 0
 	for _, k := range sortedKeys(available) {
 		p := available[k]
-		ret[i] = &Package{
-			ID:   p.ID,
-			Name: p.Name,
-		}
-
-		if len(p.Description) > 0 {
-			ret[i].Description = &p.Description
-		}
-		if len(p.Version) > 0 {
-			ret[i].Version = &p.Version
-		}
-		if !p.Date.IsZero() {
-			ret[i].Date = &p.Date.Time
-		}
+		ret[i] = remotePackageToPackage(p, available)
 
 		i++
 	}

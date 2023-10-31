@@ -97,13 +97,7 @@ func (m *Manager) ListRemote(ctx context.Context, remoteURL string) (RemotePacka
 	return ret, nil
 }
 
-func (m *Manager) InstalledStatus(ctx context.Context) (PackageStatusIndex, error) {
-	// get all installed packages
-	installed, err := m.ListInstalled(ctx)
-	if err != nil {
-		return nil, err
-	}
-
+func (m *Manager) ListInstalledRemotes(ctx context.Context, installed LocalPackageIndex) (RemotePackageIndex, error) {
 	// get remotes for all installed packages
 	allRemoteList := make(RemotePackageIndex)
 
@@ -117,8 +111,23 @@ func (m *Manager) InstalledStatus(ctx context.Context) (PackageStatusIndex, erro
 		allRemoteList.merge(remoteList)
 	}
 
-	ret := make(PackageStatusIndex)
-	ret.populateLocal(installed, allRemoteList)
+	return allRemoteList, nil
+}
+
+func (m *Manager) InstalledStatus(ctx context.Context) (PackageStatusIndex, error) {
+	// get all installed packages
+	installed, err := m.ListInstalled(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// get remotes for all installed packages
+	allRemoteList, err := m.ListInstalledRemotes(ctx, installed)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := MakePackageStatusIndex(installed, allRemoteList)
 
 	return ret, nil
 }

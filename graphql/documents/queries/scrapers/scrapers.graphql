@@ -141,5 +141,8 @@ query InstalledScraperPackagesStatus {
 query AvailableScraperPackages($source: String!) {
   availablePackages(source: $source, type: Scraper) {
     ...PackageData
+    requires {
+      id
+    }
   }
 }
