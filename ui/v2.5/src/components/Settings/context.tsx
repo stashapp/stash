@@ -130,10 +130,13 @@ export const SettingsContext: React.FC = ({ children }) => {
     resetSuccess();
   }, [resetSuccess]);
 
-  const onError = useCallback((err) => {
-    Toast.error(err);
-    setUpdateSuccess(false);
-  }, [Toast])
+  const onError = useCallback(
+    (err) => {
+      Toast.error(err);
+      setUpdateSuccess(false);
+    },
+    [Toast]
+  );
 
   // saves the configuration if no further changes are made after a half second
   const saveGeneralConfig = useDebounce(

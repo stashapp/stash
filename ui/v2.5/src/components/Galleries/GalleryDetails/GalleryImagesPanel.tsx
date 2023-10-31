@@ -71,16 +71,16 @@ export const GalleryImagesPanel: React.FC<IGalleryDetailsProps> = ({
         image_ids: Array.from(selectedIds.values()),
       });
 
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "toast.removed_entity" },
           {
             count: selectedIds.size,
             singularEntity: intl.formatMessage({ id: "image" }),
             pluralEntity: intl.formatMessage({ id: "images" }),
           }
-        ),
-      });
+        )
+      );
     } catch (e) {
       Toast.error(e);
     }

@@ -58,12 +58,12 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
     await updateImage({
       variables: { input },
     });
-    Toast.success({
-      content: intl.formatMessage(
+    Toast.success(
+      intl.formatMessage(
         { id: "toast.updated_entity" },
         { entity: intl.formatMessage({ id: "image" }).toLocaleLowerCase() }
-      ),
-    });
+      )
+    );
   }
 
   async function onRescan() {
@@ -75,15 +75,15 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
       paths: [objectPath(image)],
     });
 
-    Toast.success({
-      content: intl.formatMessage(
+    Toast.success(
+      intl.formatMessage(
         { id: "toast.rescanning_entity" },
         {
           count: 1,
           singularEntity: intl.formatMessage({ id: "image" }),
         }
-      ),
-    });
+      )
+    );
   }
 
   const onOrganizedClick = async () => {

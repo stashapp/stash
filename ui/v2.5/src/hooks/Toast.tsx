@@ -60,8 +60,13 @@ export const useToast = () => {
 
   return useMemo(
     () => ({
-      success: addToast,
-      error: (error: unknown) => {
+      toast: addToast,
+      success(message: React.ReactNode | string) {
+        addToast({
+          content: message,
+        });
+      },
+      error(error: unknown) {
         let message;
         if (error instanceof Error) {
           // eslint-disable-next-line prefer-destructuring

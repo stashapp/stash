@@ -70,12 +70,12 @@ export const PluginTasks: React.FC = () => {
 
   async function onPluginTaskClicked(plugin: Plugin, operation: PluginTask) {
     await mutateRunPluginTask(plugin.id, operation.name);
-    Toast.success({
-      content: intl.formatMessage(
+    Toast.success(
+      intl.formatMessage(
         { id: "config.tasks.added_job_to_queue" },
         { operation_name: operation.name }
-      ),
-    });
+      )
+    );
   }
 
   return <Form.Group>{renderPlugins()}</Form.Group>;

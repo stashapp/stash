@@ -88,12 +88,12 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
           input: getImageInput(),
         },
       });
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "toast.updated_entity" },
           { entity: intl.formatMessage({ id: "images" }).toLocaleLowerCase() }
-        ),
-      });
+        )
+      );
       props.onClose(true);
     } catch (e) {
       Toast.error(e);

@@ -303,13 +303,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
       setNewTags(newTagsClone);
 
-      Toast.success({
-        content: (
-          <span>
-            Created tag: <b>{toCreate.name}</b>
-          </span>
-        ),
-      });
+      Toast.success(
+        <span>
+          Created tag: <b>{toCreate.name}</b>
+        </span>
+      );
     } catch (e) {
       Toast.error(e);
     }

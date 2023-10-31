@@ -311,13 +311,11 @@ const FilterSelectComponent = <T extends boolean>(
         newItem,
       ]);
       setLoading(false);
-      Toast.success({
-        content: (
-          <span>
-            {message}: <b>{name}</b>
-          </span>
-        ),
-      });
+      Toast.success(
+        <span>
+          {message}: <b>{name}</b>
+        </span>
+      );
     } catch (e) {
       Toast.error(e);
     }

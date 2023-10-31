@@ -40,12 +40,12 @@ const TagCreate: React.FC = () => {
         children: created.children,
       });
       history.push(`/tags/${created.id}`);
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "toast.created_entity" },
           { entity: intl.formatMessage({ id: "tag" }).toLocaleLowerCase() }
-        ),
-      });
+        )
+      );
     }
   }
 
