@@ -15,6 +15,7 @@ import { FormikErrors, yupToFormErrors } from "formik";
 import { AlertModal } from "../Alert";
 import { LoadingIndicator } from "../LoadingIndicator";
 import { ApolloError } from "@apollo/client";
+import { ClearableInput } from "../ClearableInput";
 
 function formatDate(date: string | undefined | null) {
   if (!date) return;
@@ -177,11 +178,10 @@ const InstalledPackagesToolbar: React.FC<{
   return (
     <div className="package-manager-toolbar">
       <div>
-        <Form.Control
+        <ClearableInput
           placeholder={`${intl.formatMessage({ id: "filter" })}...`}
-          className="text-input"
           value={filter}
-          onChange={(e) => setFilter(e.target.value)}
+          setValue={(v) => setFilter(v)}
         />
       </div>
       <div>
@@ -284,11 +284,10 @@ const AvailablePackagesToolbar: React.FC<{
   return (
     <div className="package-manager-toolbar">
       <div>
-        <Form.Control
+        <ClearableInput
           placeholder={`${intl.formatMessage({ id: "filter" })}...`}
-          className="text-input"
           value={filter}
-          onChange={(e) => setFilter(e.target.value)}
+          setValue={(v) => setFilter(v)}
         />
       </div>
       <div>
