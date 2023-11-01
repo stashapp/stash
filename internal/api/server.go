@@ -34,6 +34,7 @@ import (
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/utils"
 	"github.com/stashapp/stash/ui"
 )
@@ -137,7 +138,7 @@ func Start() error {
 
 	r.HandleFunc(gqlEndpoint, gqlHandlerFunc)
 	r.HandleFunc(playgroundEndpoint, func(w http.ResponseWriter, r *http.Request) {
-		setPageSecurityHeaders(w, r)
+		setPageSecurityHeaders(w, r, pluginCache.ListPlugins())
 		endpoint := getProxyPrefix(r) + gqlEndpoint
 		gqlPlayground.Handler("GraphQL playground", endpoint)(w, r)
 	})
@@ -201,7 +202,7 @@ func Start() error {
 			indexHtml = strings.Replace(indexHtml, `<base href="/"`, fmt.Sprintf(`<base href="%s/"`, prefix), 1)
 
 			w.Header().Set("Content-Type", "text/html")
-			setPageSecurityHeaders(w, r)
+			setPageSecurityHeaders(w, r, pluginCache.ListPlugins())
 
 			utils.ServeStaticContent(w, r, []byte(indexHtml))
 		} else {
@@ -390,30 +391,70 @@ func makeTLSConfig(c *config.Instance) (*tls.Config, error) {
 	return tlsConfig, nil
 }
 
-func setPageSecurityHeaders(w http.ResponseWriter, r *http.Request) {
+func isURL(s string) bool {
+	return strings.HasPrefix(s, "http://") || strings.HasPrefix(s, "https://")
+}
+
+func setPageSecurityHeaders(w http.ResponseWriter, r *http.Request, plugins []*plugin.Plugin) {
 	c := config.GetInstance()
 
 	defaultSrc := "data: 'self' 'unsafe-inline'"
-	connectSrc := "data: 'self'"
+	connectSrcSlice := []string{
+		"data:",
+		"'self'",
+	}
 	imageSrc := "data: *"
-	scriptSrc := "'self' http://www.gstatic.com https://www.gstatic.com 'unsafe-inline' 'unsafe-eval'"
-	styleSrc := "'self' 'unsafe-inline'"
+	scriptSrcSlice := []string{
+		"'self'",
+		"http://www.gstatic.com",
+		"https://www.gstatic.com",
+		"'unsafe-inline'",
+		"'unsafe-eval'",
+	}
+	styleSrcSlice := []string{
+		"'self'",
+		"'unsafe-inline'",
+	}
 	mediaSrc := "blob: 'self'"
 
 	// Workaround Safari bug https://bugs.webkit.org/show_bug.cgi?id=201591
 	// Allows websocket requests to any origin
-	connectSrc += " ws: wss:"
+	connectSrcSlice = append(connectSrcSlice, "ws:", "wss:")
 
 	// The graphql playground pulls its frontend from a cdn
 	if r.URL.Path == playgroundEndpoint {
-		connectSrc += " https://cdn.jsdelivr.net"
-		scriptSrc += " https://cdn.jsdelivr.net"
-		styleSrc += " https://cdn.jsdelivr.net"
+		connectSrcSlice = append(connectSrcSlice, "https://cdn.jsdelivr.net")
+		scriptSrcSlice = append(scriptSrcSlice, "https://cdn.jsdelivr.net")
+		styleSrcSlice = append(styleSrcSlice, "https://cdn.jsdelivr.net")
 	}
 
 	if !c.IsNewSystem() && c.GetHandyKey() != "" {
-		connectSrc += " https://www.handyfeeling.com"
+		connectSrcSlice = append(connectSrcSlice, "https://www.handyfeeling.com")
 	}
+
+	for _, plugin := range plugins {
+		ui := plugin.UI
+
+		for _, url := range ui.ExternalScript {
+			if isURL(url) {
+				scriptSrcSlice = append(scriptSrcSlice, url)
+			}
+		}
+
+		for _, url := range ui.ExternalCSS {
+			if isURL(url) {
+				styleSrcSlice = append(styleSrcSlice, url)
+			}
+		}
+
+		connectSrcSlice = append(connectSrcSlice, ui.CSP.ConnectSrc...)
+		scriptSrcSlice = append(scriptSrcSlice, ui.CSP.ScriptSrc...)
+		styleSrcSlice = append(styleSrcSlice, ui.CSP.StyleSrc...)
+	}
+
+	connectSrc := strings.Join(connectSrcSlice, " ")
+	scriptSrc := strings.Join(scriptSrcSlice, " ")
+	styleSrc := strings.Join(styleSrcSlice, " ")
 
 	cspDirectives := fmt.Sprintf("default-src %s; connect-src %s; img-src %s; script-src %s; style-src %s; media-src %s;", defaultSrc, connectSrc, imageSrc, scriptSrc, styleSrc, mediaSrc)
 	cspDirectives += " worker-src blob:; child-src 'none'; object-src 'none'; form-action 'self';"

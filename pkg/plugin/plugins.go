@@ -41,6 +41,9 @@ type Plugin struct {
 }
 
 type PluginUI struct {
+	// Content Security Policy configuration for the plugin.
+	CSP PluginCSP `json:"csp"`
+
 	// External Javascript files that will be injected into the stash UI.
 	ExternalScript []string `json:"external_script"`
 

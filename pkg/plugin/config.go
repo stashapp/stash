@@ -64,7 +64,15 @@ type Config struct {
 	Settings map[string]SettingConfig `yaml:"settings"`
 }
 
+type PluginCSP struct {
+	ScriptSrc  []string `json:"script-src" yaml:"script-src"`
+	StyleSrc   []string `json:"style-src" yaml:"style-src"`
+	ConnectSrc []string `json:"connect-src" yaml:"connect-src"`
+}
+
 type UIConfig struct {
+	CSP PluginCSP `yaml:"csp"`
+
 	// Javascript files that will be injected into the stash UI.
 	// These may be URLs or paths to files relative to the plugin configuration file.
 	Javascript []string `yaml:"javascript"`
