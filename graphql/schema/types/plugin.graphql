@@ -1,8 +1,8 @@
 type PluginPaths {
-  # path to javascript file - null if no javascript
-  javascript: String
-  # path to css file - null if no css
-  css: String
+  # path to javascript files
+  javascript: [String!]
+  # path to css files
+  css: [String!]
 }
 
 type Plugin {

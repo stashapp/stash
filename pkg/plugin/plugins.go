@@ -41,6 +41,12 @@ type Plugin struct {
 }
 
 type PluginUI struct {
+	// External Javascript files that will be injected into the stash UI.
+	ExternalScript []string `json:"external_script"`
+
+	// External CSS files that will be injected into the stash UI.
+	ExternalCSS []string `json:"external_css"`
+
 	// Javascript files that will be injected into the stash UI.
 	Javascript []string `json:"javascript"`
 

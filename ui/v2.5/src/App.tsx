@@ -43,6 +43,7 @@ import { lazyComponent } from "./utils/lazyComponent";
 import { isPlatformUniquelyRenderedByApple } from "./utils/apple";
 import useScript, { useCSS } from "./hooks/useScript";
 import { useMemoOnce } from "./hooks/state";
+import { uniq } from "lodash-es";
 
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")
@@ -160,18 +161,18 @@ export const App: React.FC = () => {
 
   const pluginJavascripts = useMemoOnce(() => {
     return [
-      plugins?.plugins
+      uniq(plugins?.plugins
         ?.filter((plugin) => plugin.enabled && plugin.paths.javascript)
-        .map((plugin) => plugin.paths.javascript!) ?? [],
+        .map((plugin) => plugin.paths.javascript!).flat() ?? []),
       !pluginsLoading && !pluginsError,
     ];
   }, [plugins?.plugins, pluginsLoading, pluginsError]);
 
   const pluginCSS = useMemoOnce(() => {
     return [
-      plugins?.plugins
+      uniq(plugins?.plugins
         ?.filter((plugin) => plugin.enabled && plugin.paths.css)
-        .map((plugin) => plugin.paths.css!) ?? [],
+        .map((plugin) => plugin.paths.css!).flat() ?? []),
       !pluginsLoading && !pluginsError,
     ];
   }, [plugins, pluginsLoading, pluginsError]);

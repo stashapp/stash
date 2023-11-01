@@ -11,22 +11,31 @@ type pluginURLBuilder struct {
 	Plugin  *plugin.Plugin
 }
 
-func (b pluginURLBuilder) javascript() *string {
-	if len(b.Plugin.UI.Javascript) == 0 {
+func (b pluginURLBuilder) javascript() []string {
+	ui := b.Plugin.UI
+	if len(ui.Javascript) == 0 && len(ui.ExternalScript) == 0 {
 		return nil
 	}
 
-	ret := b.BaseURL + "/plugin/" + b.Plugin.ID + "/javascript"
-	return &ret
+	var ret []string
+
+	ret = append(ret, ui.ExternalScript...)
+	ret = append(ret, b.BaseURL+"/plugin/"+b.Plugin.ID+"/javascript")
+
+	return ret
 }
 
-func (b pluginURLBuilder) css() *string {
-	if len(b.Plugin.UI.CSS) == 0 {
+func (b pluginURLBuilder) css() []string {
+	ui := b.Plugin.UI
+	if len(ui.CSS) == 0 && len(ui.ExternalCSS) == 0 {
 		return nil
 	}
 
-	ret := b.BaseURL + "/plugin/" + b.Plugin.ID + "/css"
-	return &ret
+	var ret []string
+
+	ret = append(ret, b.Plugin.UI.ExternalCSS...)
+	ret = append(ret, b.BaseURL+"/plugin/"+b.Plugin.ID+"/css")
+	return ret
 }
 
 func (b *pluginURLBuilder) paths() *PluginPaths {

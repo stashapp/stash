@@ -66,9 +66,11 @@ type Config struct {
 
 type UIConfig struct {
 	// Javascript files that will be injected into the stash UI.
+	// These may be URLs or paths to files relative to the plugin configuration file.
 	Javascript []string `yaml:"javascript"`
 
 	// CSS files that will be injected into the stash UI.
+	// These may be URLs or paths to files relative to the plugin configuration file.
 	CSS []string `yaml:"css"`
 
 	// Assets are files that will be served by stash at the /plugin/<pluginID>/assets/ path.
@@ -77,19 +79,49 @@ type UIConfig struct {
 	Assets []string `yaml:"assets"`
 }
 
+func isURL(s string) bool {
+	return strings.HasPrefix(s, "http://") || strings.HasPrefix(s, "https://")
+}
+
 func (c UIConfig) getCSSFiles(parent Config) []string {
-	ret := make([]string, len(c.CSS))
-	for i, v := range c.CSS {
-		ret[i] = filepath.Join(parent.getConfigPath(), v)
+	var ret []string
+	for _, v := range c.CSS {
+		if !isURL(v) {
+			ret = append(ret, filepath.Join(parent.getConfigPath(), v))
+		}
+	}
+
+	return ret
+}
+
+func (c UIConfig) getExternalCSS() []string {
+	var ret []string
+	for _, v := range c.CSS {
+		if isURL(v) {
+			ret = append(ret, v)
+		}
 	}
 
 	return ret
 }
 
 func (c UIConfig) getJavascriptFiles(parent Config) []string {
-	ret := make([]string, len(c.Javascript))
-	for i, v := range c.Javascript {
-		ret[i] = filepath.Join(parent.getConfigPath(), v)
+	var ret []string
+	for _, v := range c.Javascript {
+		if !isURL(v) {
+			ret = append(ret, filepath.Join(parent.getConfigPath(), v))
+		}
+	}
+
+	return ret
+}
+
+func (c UIConfig) getExternalScripts() []string {
+	var ret []string
+	for _, v := range c.Javascript {
+		if isURL(v) {
+			ret = append(ret, v)
+		}
 	}
 
 	return ret
@@ -189,9 +221,11 @@ func (c Config) toPlugin() *Plugin {
 		Tasks:       c.getPluginTasks(false),
 		Hooks:       c.getPluginHooks(false),
 		UI: PluginUI{
-			Javascript: c.UI.getJavascriptFiles(c),
-			CSS:        c.UI.getCSSFiles(c),
-			Assets:     c.UI.Assets,
+			ExternalScript: c.UI.getExternalScripts(),
+			ExternalCSS:    c.UI.getExternalCSS(),
+			Javascript:     c.UI.getJavascriptFiles(c),
+			CSS:            c.UI.getCSSFiles(c),
+			Assets:         c.UI.Assets,
 		},
 		Settings:   c.getPluginSettings(),
 		ConfigPath: c.path,
