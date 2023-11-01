@@ -184,9 +184,14 @@ func (c Cache) ListPlugins() []*Plugin {
 // GetPlugin returns the plugin with the given ID.
 // Returns nil if the plugin is not found.
 func (c Cache) GetPlugin(id string) *Plugin {
+	disabledPlugins := c.config.GetDisabledPlugins()
 	plugin := c.getPlugin(id)
 	if plugin != nil {
-		return plugin.toPlugin()
+		p := plugin.toPlugin()
+
+		disabled := stringslice.StrInclude(disabledPlugins, p.ID)
+		p.Enabled = !disabled
+		return p
 	}
 
 	return nil

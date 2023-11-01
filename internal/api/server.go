@@ -34,7 +34,6 @@ import (
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/utils"
 	"github.com/stashapp/stash/ui"
 )
@@ -152,8 +151,8 @@ func Start() error {
 	r.Mount("/downloads", getDownloadsRoutes())
 	r.Mount("/plugin", getPluginRoutes(pluginCache))
 
-	r.HandleFunc("/css", cssHandler(c, pluginCache))
-	r.HandleFunc("/javascript", javascriptHandler(c, pluginCache))
+	r.HandleFunc("/css", cssHandler(c))
+	r.HandleFunc("/javascript", javascriptHandler(c))
 	r.HandleFunc("/customlocales", customLocalesHandler(c))
 
 	staticLoginUI := statigz.FileServer(loginUIBox.(fs.ReadDirFS))
@@ -290,18 +289,9 @@ func serveFiles(w http.ResponseWriter, r *http.Request, paths []string) {
 	utils.ServeStaticContent(w, r, buffer.Bytes())
 }
 
-func cssHandler(c *config.Instance, pluginCache *plugin.Cache) func(w http.ResponseWriter, r *http.Request) {
+func cssHandler(c *config.Instance) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// add plugin css files first
 		var paths []string
-
-		for _, p := range pluginCache.ListPlugins() {
-			if !p.Enabled {
-				continue
-			}
-
-			paths = append(paths, p.UI.CSS...)
-		}
 
 		if c.GetCSSEnabled() {
 			// search for custom.css in current directory, then $HOME/.stash
@@ -317,18 +307,9 @@ func cssHandler(c *config.Instance, pluginCache *plugin.Cache) func(w http.Respo
 	}
 }
 
-func javascriptHandler(c *config.Instance, pluginCache *plugin.Cache) func(w http.ResponseWriter, r *http.Request) {
+func javascriptHandler(c *config.Instance) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// add plugin javascript files first
 		var paths []string
-
-		for _, p := range pluginCache.ListPlugins() {
-			if !p.Enabled {
-				continue
-			}
-
-			paths = append(paths, p.UI.Javascript...)
-		}
 
 		if c.GetJavascriptEnabled() {
 			// search for custom.js in current directory, then $HOME/.stash

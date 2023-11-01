@@ -27,6 +27,8 @@ func (rs pluginRoutes) Routes() chi.Router {
 	r.Route("/{pluginId}", func(r chi.Router) {
 		r.Use(rs.PluginCtx)
 		r.Get("/assets/*", rs.Assets)
+		r.Get("/javascript", rs.Javascript)
+		r.Get("/css", rs.CSS)
 	})
 
 	return r
@@ -34,6 +36,11 @@ func (rs pluginRoutes) Routes() chi.Router {
 
 func (rs pluginRoutes) Assets(w http.ResponseWriter, r *http.Request) {
 	p := r.Context().Value(pluginKey).(*plugin.Plugin)
+
+	if !p.Enabled {
+		http.Error(w, "plugin disabled", http.StatusBadRequest)
+		return
+	}
 
 	prefix := "/plugin/" + chi.URLParam(r, "pluginId") + "/assets"
 
@@ -52,6 +59,30 @@ func (rs pluginRoutes) Assets(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.FileServer(http.Dir(dir)).ServeHTTP(w, r)
+}
+
+func (rs pluginRoutes) Javascript(w http.ResponseWriter, r *http.Request) {
+	p := r.Context().Value(pluginKey).(*plugin.Plugin)
+
+	if !p.Enabled {
+		http.Error(w, "plugin disabled", http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/javascript")
+	serveFiles(w, r, p.UI.Javascript)
+}
+
+func (rs pluginRoutes) CSS(w http.ResponseWriter, r *http.Request) {
+	p := r.Context().Value(pluginKey).(*plugin.Plugin)
+
+	if !p.Enabled {
+		http.Error(w, "plugin disabled", http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/css")
+	serveFiles(w, r, p.UI.CSS)
 }
 
 func (rs pluginRoutes) canServe(plugin *plugin.Plugin, path string) bool {

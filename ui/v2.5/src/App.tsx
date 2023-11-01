@@ -18,6 +18,7 @@ import locales, { registerCountry } from "src/locales";
 import {
   useConfiguration,
   useConfigureUI,
+  usePlugins,
   useSystemStatus,
 } from "src/core/StashService";
 import flattenMessages from "./utils/flattenMessages";
@@ -40,6 +41,8 @@ import { releaseNotes } from "./docs/en/ReleaseNotes";
 import { getPlatformURL } from "./core/createClient";
 import { lazyComponent } from "./utils/lazyComponent";
 import { isPlatformUniquelyRenderedByApple } from "./utils/apple";
+import useScript, { useCSS } from "./hooks/useScript";
+import { useMemoOnce } from "./hooks/state";
 
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")
@@ -148,6 +151,33 @@ export const App: React.FC = () => {
 
     setLocale();
   }, [customMessages, language]);
+
+  const {
+    data: plugins,
+    loading: pluginsLoading,
+    error: pluginsError,
+  } = usePlugins();
+
+  const pluginJavascripts = useMemoOnce(() => {
+    return [
+      plugins?.plugins
+        ?.filter((plugin) => plugin.enabled && plugin.paths.javascript)
+        .map((plugin) => plugin.paths.javascript!) ?? [],
+      !pluginsLoading && !pluginsError,
+    ];
+  }, [plugins?.plugins, pluginsLoading, pluginsError]);
+
+  const pluginCSS = useMemoOnce(() => {
+    return [
+      plugins?.plugins
+        ?.filter((plugin) => plugin.enabled && plugin.paths.css)
+        .map((plugin) => plugin.paths.css!) ?? [],
+      !pluginsLoading && !pluginsError,
+    ];
+  }, [plugins, pluginsLoading, pluginsError]);
+
+  useScript(pluginJavascripts ?? [], !pluginsLoading && !pluginsError);
+  useCSS(pluginCSS ?? [], !pluginsLoading && !pluginsError);
 
   const location = useLocation();
   const history = useHistory();
