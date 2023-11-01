@@ -72,6 +72,7 @@ type PluginCSP struct {
 }
 
 type UIConfig struct {
+	// Content Security Policy configuration for the plugin.
 	CSP PluginCSP `yaml:"csp"`
 
 	// Javascript files that will be injected into the stash UI.
