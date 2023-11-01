@@ -78,12 +78,12 @@ func (u *UpdateIDs) ImpactedIDs(existing []int) []int {
 
 	switch u.Mode {
 	case RelationshipUpdateModeAdd:
-		return intslice.IntExclude(u.IDs, existing)
+		return sliceutil.Exclude(u.IDs, existing)
 	case RelationshipUpdateModeRemove:
-		return intslice.IntIntercect(existing, u.IDs)
+		return sliceutil.Intersect(existing, u.IDs)
 	case RelationshipUpdateModeSet:
 		// get the difference between the two lists
-		return intslice.IntNotIntersect(existing, u.IDs)
+		return sliceutil.NotIntersect(existing, u.IDs)
 	}
 
 	return nil

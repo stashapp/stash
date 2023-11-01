@@ -19,7 +19,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/common"
 	"github.com/stashapp/stash/pkg/session"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -140,7 +140,7 @@ func (c Cache) enabledPlugins() []Config {
 
 	var ret []Config
 	for _, p := range c.plugins {
-		disabled := stringslice.StrInclude(disabledPlugins, p.id)
+		disabled := sliceutil.Contains(disabledPlugins, p.id)
 
 		if !disabled {
 			ret = append(ret, p)
@@ -153,7 +153,7 @@ func (c Cache) enabledPlugins() []Config {
 func (c Cache) pluginDisabled(id string) bool {
 	disabledPlugins := c.config.GetDisabledPlugins()
 
-	return stringslice.StrInclude(disabledPlugins, id)
+	return sliceutil.Contains(disabledPlugins, id)
 }
 
 // ListPlugins returns plugin details for all of the loaded plugins.
@@ -164,7 +164,7 @@ func (c Cache) ListPlugins() []*Plugin {
 	for _, s := range c.plugins {
 		p := s.toPlugin()
 
-		disabled := stringslice.StrInclude(disabledPlugins, p.ID)
+		disabled := sliceutil.Contains(disabledPlugins, p.ID)
 		p.Enabled = !disabled
 
 		ret = append(ret, p)
@@ -276,7 +276,7 @@ func (c Cache) executePostHooks(ctx context.Context, hookType HookTriggerEnum, h
 		hooks := p.getHooks(hookType)
 		// don't revisit a plugin we've already visited
 		// only log if there's hooks that we're skipping
-		if len(hooks) > 0 && stringslice.StrInclude(visitedPlugins, p.id) {
+		if len(hooks) > 0 && sliceutil.Contains(visitedPlugins, p.id) {
 			logger.Debugf("plugin ID '%s' already triggered, not re-triggering", p.id)
 			continue
 		}

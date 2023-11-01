@@ -8,7 +8,7 @@ import (
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -63,7 +63,7 @@ func (tagger *Tagger) PerformerScenes(ctx context.Context, p *models.Performer, 
 			}
 			existing := o.PerformerIDs.List()
 
-			if intslice.IntInclude(existing, p.ID) {
+			if sliceutil.Contains(existing, p.ID) {
 				return false, nil
 			}
 
@@ -92,7 +92,7 @@ func (tagger *Tagger) PerformerImages(ctx context.Context, p *models.Performer, 
 			}
 			existing := o.PerformerIDs.List()
 
-			if intslice.IntInclude(existing, p.ID) {
+			if sliceutil.Contains(existing, p.ID) {
 				return false, nil
 			}
 
@@ -121,7 +121,7 @@ func (tagger *Tagger) PerformerGalleries(ctx context.Context, p *models.Performe
 			}
 			existing := o.PerformerIDs.List()
 
-			if intslice.IntInclude(existing, p.ID) {
+			if sliceutil.Contains(existing, p.ID) {
 				return false, nil
 			}
 

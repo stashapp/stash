@@ -9,7 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -74,8 +74,8 @@ func importTags(ctx context.Context, tagWriter models.TagFinderCreator, names []
 		pluckedNames = append(pluckedNames, tag.Name)
 	}
 
-	missingTags := stringslice.StrFilter(names, func(name string) bool {
-		return !stringslice.StrInclude(pluckedNames, name)
+	missingTags := sliceutil.Filter(names, func(name string) bool {
+		return !sliceutil.Contains(pluckedNames, name)
 	})
 
 	if len(missingTags) > 0 {

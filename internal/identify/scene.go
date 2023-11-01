@@ -11,7 +11,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -111,7 +110,7 @@ func (g sceneRelationships) performers(ctx context.Context, ignoreMale bool) ([]
 		}
 
 		if performerID != nil {
-			performerIDs = intslice.IntAppendUnique(performerIDs, *performerID)
+			performerIDs = sliceutil.AppendUnique(performerIDs, *performerID)
 		}
 	}
 
@@ -161,7 +160,7 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 				return nil, fmt.Errorf("error converting tag ID %s: %w", *t.StoredID, err)
 			}
 
-			tagIDs = intslice.IntAppendUnique(tagIDs, int(tagID))
+			tagIDs = sliceutil.AppendUnique(tagIDs, int(tagID))
 		} else if createMissing {
 			newTag := models.NewTag()
 			newTag.Name = t.Name
