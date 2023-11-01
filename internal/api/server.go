@@ -433,6 +433,10 @@ func setPageSecurityHeaders(w http.ResponseWriter, r *http.Request, plugins []*p
 	}
 
 	for _, plugin := range plugins {
+		if !plugin.Enabled {
+			continue
+		}
+
 		ui := plugin.UI
 
 		for _, url := range ui.ExternalScript {
