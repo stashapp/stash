@@ -49,12 +49,20 @@ func (rs pluginRoutes) Assets(w http.ResponseWriter, r *http.Request) {
 	// http.FileServer redirects to / if the path ends with index.html
 	r.URL.Path = strings.TrimSuffix(r.URL.Path, "/index.html")
 
-	// map the path to the applicable filesystem location
-	dir := filepath.Dir(p.ConfigPath)
+	pluginDir := filepath.Dir(p.ConfigPath)
 
-	// ensure that the path is allowed to be served
-	if !rs.canServe(p, r.URL.Path) {
-		http.Error(w, http.StatusText(404), 404)
+	// map the path to the applicable filesystem location
+	var dir string
+	r.URL.Path, dir = p.UI.Assets.GetFilesystemLocation(r.URL.Path)
+	if dir == "" {
+		http.NotFound(w, r)
+	}
+
+	dir = filepath.Join(pluginDir, filepath.FromSlash(dir))
+
+	// ensure directory is still within the plugin directory
+	if !strings.HasPrefix(dir, pluginDir) {
+		http.NotFound(w, r)
 		return
 	}
 
@@ -83,22 +91,6 @@ func (rs pluginRoutes) CSS(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/css")
 	serveFiles(w, r, p.UI.CSS)
-}
-
-func (rs pluginRoutes) canServe(plugin *plugin.Plugin, path string) bool {
-	if path == "" {
-		path = "index.html"
-	}
-
-	path = strings.TrimPrefix(path, "/")
-
-	for _, p := range plugin.UI.Assets {
-		// ignore errors
-		if matched, _ := filepath.Match(p, filepath.FromSlash(path)); matched {
-			return true
-		}
-	}
-	return false
 }
 
 func (rs pluginRoutes) PluginCtx(next http.Handler) http.Handler {

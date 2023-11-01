@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/utils"
 	"gopkg.in/yaml.v2"
 )
 
@@ -81,10 +82,18 @@ type UIConfig struct {
 	// These may be URLs or paths to files relative to the plugin configuration file.
 	CSS []string `yaml:"css"`
 
-	// Assets are files that will be served by stash at the /plugin/<pluginID>/assets/ path.
-	// This may be directories, files and/or wildcards.
-	// Paths are relative to the plugin configuration file.
-	Assets []string `yaml:"assets"`
+	// Assets is a map of URL prefixes to hosted directories.
+	// This allows plugins to serve static assets from a URL path.
+	// Plugin assets are exposed via the /plugin/{pluginId}/assets path.
+	// For example, if the plugin configuration file contains:
+	// /foo: bar
+	// /bar: baz
+	// /: root
+	// Then the following requests will be mapped to the following files:
+	// /plugin/{pluginId}/assets/foo/file.txt -> {pluginDir}/foo/file.txt
+	// /plugin/{pluginId}/assets/bar/file.txt -> {pluginDir}/baz/file.txt
+	// /plugin/{pluginId}/assets/file.txt -> {pluginDir}/root/file.txt
+	Assets utils.URLMap `yaml:"assets"`
 }
 
 func isURL(s string) bool {
