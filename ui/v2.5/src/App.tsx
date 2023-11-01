@@ -161,18 +161,24 @@ export const App: React.FC = () => {
 
   const pluginJavascripts = useMemoOnce(() => {
     return [
-      uniq(plugins?.plugins
-        ?.filter((plugin) => plugin.enabled && plugin.paths.javascript)
-        .map((plugin) => plugin.paths.javascript!).flat() ?? []),
+      uniq(
+        plugins?.plugins
+          ?.filter((plugin) => plugin.enabled && plugin.paths.javascript)
+          .map((plugin) => plugin.paths.javascript!)
+          .flat() ?? []
+      ),
       !pluginsLoading && !pluginsError,
     ];
   }, [plugins?.plugins, pluginsLoading, pluginsError]);
 
   const pluginCSS = useMemoOnce(() => {
     return [
-      uniq(plugins?.plugins
-        ?.filter((plugin) => plugin.enabled && plugin.paths.css)
-        .map((plugin) => plugin.paths.css!).flat() ?? []),
+      uniq(
+        plugins?.plugins
+          ?.filter((plugin) => plugin.enabled && plugin.paths.css)
+          .map((plugin) => plugin.paths.css!)
+          .flat() ?? []
+      ),
       !pluginsLoading && !pluginsError,
     ];
   }, [plugins, pluginsLoading, pluginsError]);
