@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stretchr/testify/assert"
 )
@@ -112,7 +112,7 @@ func verifyIDs(t *testing.T, modifier models.CriterionModifier, values []int, re
 	case models.CriterionModifierNotEquals:
 		foundAll := true
 		for _, v := range values {
-			if !intslice.IntInclude(results, v) {
+			if !sliceutil.Contains(results, v) {
 				foundAll = false
 				break
 			}
