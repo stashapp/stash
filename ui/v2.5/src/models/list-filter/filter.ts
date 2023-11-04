@@ -308,7 +308,7 @@ export class ListFilterModel {
     const decoded = ListFilterModel.decodeParams(params);
     this.configureFromDecodedParams(
       decoded,
-      params.defaultFilter ? defaultFilter : undefined
+      params.defaultFilter?.toLowerCase() == "true" ? defaultFilter : undefined
     );
   }
 
