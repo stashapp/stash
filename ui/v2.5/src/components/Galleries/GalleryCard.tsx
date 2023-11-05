@@ -1,4 +1,4 @@
-import { Button, ButtonGroup } from "react-bootstrap";
+import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
 import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
@@ -112,11 +112,18 @@ export const GalleryCard: React.FC<IProps> = (props) => {
   function maybeRenderOrganized() {
     if (props.gallery.organized) {
       return (
-        <div className="organized">
-          <Button className="minimal">
-            <Icon icon={faBox} />
-          </Button>
-        </div>
+        <>
+          <OverlayTrigger
+            overlay={<Tooltip id="organised-tooltip">{"Organized"}</Tooltip>}
+            placement="bottom"
+          >
+            <div className="organized">
+              <Button className="minimal">
+                <Icon icon={faBox} />
+              </Button>
+            </div>
+          </OverlayTrigger>
+        </>
       );
     }
   }
