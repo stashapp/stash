@@ -106,7 +106,7 @@ const CleanDialog: React.FC<ICleanDialog> = ({
           {pathSelection ? (
             <FolderSelect
               currentDirectory={currentDirectory}
-              setCurrentDirectory={(v) => setCurrentDirectory(v)}
+              onChangeDirectory={setCurrentDirectory}
               defaultDirectories={libraryPaths}
               appendButton={
                 <Button

@@ -410,6 +410,19 @@ const abbreviateCounter = (counter: number = 0) => {
   };
 };
 
+/*
+ * Trims quotes if the text has leading/trailing quotes
+ */
+const stripQuotes = (text: string) => {
+  if (text.startsWith('"') && text.endsWith('"')) return text.slice(1, -1);
+  return text;
+};
+
+/*
+ * Wraps string in quotes
+ */
+const addQuotes = (text: string) => `"${text}"`;
+
 const TextUtils = {
   fileSize,
   formatFileSizeUnit,
@@ -432,6 +445,8 @@ const TextUtils = {
   formatDateTime,
   secondsAsTimeString,
   abbreviateCounter,
+  stripQuotes,
+  addQuotes,
 };
 
 export default TextUtils;
