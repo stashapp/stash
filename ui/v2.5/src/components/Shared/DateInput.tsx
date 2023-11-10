@@ -1,5 +1,5 @@
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
-import React, { useMemo } from "react";
+import React, { forwardRef, useMemo } from "react";
 import { Button, InputGroup, Form } from "react-bootstrap";
 import ReactDatePicker from "react-datepicker";
 import TextUtils from "src/utils/text";
@@ -16,6 +16,17 @@ interface IProps {
   placeholder?: string;
   error?: string;
 }
+
+const ShowPickerButton = forwardRef<
+  HTMLButtonElement,
+  {
+    onClick: (event: React.MouseEvent) => void;
+  }
+>(({ onClick }, ref) => (
+  <Button variant="secondary" onClick={onClick} ref={ref}>
+    <Icon icon={faCalendar} />
+  </Button>
+));
 
 export const DateInput: React.FC<IProps> = (props: IProps) => {
   const intl = useIntl();
@@ -36,18 +47,6 @@ export const DateInput: React.FC<IProps> = (props: IProps) => {
 
   function maybeRenderButton() {
     if (!props.disabled) {
-      const ShowPickerButton = ({
-        onClick,
-      }: {
-        onClick: (
-          event: React.MouseEvent<HTMLButtonElement, MouseEvent>
-        ) => void;
-      }) => (
-        <Button variant="secondary" onClick={onClick}>
-          <Icon icon={faCalendar} />
-        </Button>
-      );
-
       const dateToString = props.isTime
         ? TextUtils.dateTimeToString
         : TextUtils.dateToString;
