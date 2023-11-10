@@ -11,6 +11,7 @@ import {
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import isEqual from "lodash-es/isEqual";
+import { formikUtils } from "src/utils/form";
 
 interface IGalleryChapterForm {
   galleryID: string;
@@ -93,43 +94,25 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
     }
   }
 
+  const splitProps = {
+    labelProps: {
+      column: true,
+      sm: 3,
+    },
+    fieldProps: {
+      sm: 9,
+    },
+  };
+  const { renderInputField } = formikUtils(intl, formik, splitProps);
+
   return (
     <Form noValidate onSubmit={formik.handleSubmit}>
-      <div>
-        <Form.Group>
-          <Form.Label>
-            <FormattedMessage id="title" />
-          </Form.Label>
-
-          <Form.Control
-            className="text-input"
-            placeholder={intl.formatMessage({ id: "title" })}
-            isInvalid={!!formik.errors.title}
-            {...formik.getFieldProps("title")}
-          />
-          <Form.Control.Feedback type="invalid">
-            {formik.errors.title}
-          </Form.Control.Feedback>
-        </Form.Group>
-
-        <Form.Group>
-          <Form.Label>
-            <FormattedMessage id="image_index" />
-          </Form.Label>
-
-          <Form.Control
-            className="text-input"
-            placeholder={intl.formatMessage({ id: "image_index" })}
-            isInvalid={!!formik.errors.image_index}
-            {...formik.getFieldProps("image_index")}
-          />
-          <Form.Control.Feedback type="invalid">
-            {formik.errors.image_index}
-          </Form.Control.Feedback>
-        </Form.Group>
+      <div className="form-container px-3">
+        {renderInputField("title")}
+        {renderInputField("image_index", "number")}
       </div>
-      <div className="buttons-container row">
-        <div className="col d-flex">
+      <div className="buttons-container px-3">
+        <div className="d-flex">
           <Button
             variant="primary"
             disabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}

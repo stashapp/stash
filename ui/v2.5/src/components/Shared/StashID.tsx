@@ -3,7 +3,7 @@ import { StashId } from "src/core/generated-graphql";
 import { ConfigurationContext } from "src/hooks/Config";
 import { getStashboxBase } from "src/utils/stashbox";
 
-type LinkType = "performers" | "scenes" | "studios";
+export type LinkType = "performers" | "scenes" | "studios";
 
 export const StashIDPill: React.FC<{
   stashID: StashId;

@@ -33,7 +33,6 @@
     "delete_file": "Delete file",
     "delete_file_and_funscript": "Delete file (and funscript)",
     "delete_generated_supporting_files": "Delete generated supporting files",
-    "delete_stashid": "Delete StashID",
     "disable": "Disable",
     "disallow": "Disallow",
     "download": "Download",
@@ -1130,6 +1129,7 @@
   "play_count": "Play Count",
   "play_duration": "Play Duration",
   "primary_file": "Primary file",
+  "primary_tag": "Primary Tag",
   "queue": "Queue",
   "random": "Random",
   "rating": "Rating",
@@ -1327,6 +1327,7 @@
   "tag_sub_tag_tooltip": "Has sub-tags",
   "tags": "Tags",
   "tattoos": "Tattoos",
+  "time": "Time",
   "title": "Title",
   "toast": {
     "added_entity": "Added {count, plural, one {{singularEntity}} other {{pluralEntity}}}",

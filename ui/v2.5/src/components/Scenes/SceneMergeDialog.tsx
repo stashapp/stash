@@ -4,7 +4,7 @@ import * as GQL from "src/core/generated-graphql";
 import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { StringListSelect, GallerySelect, SceneSelect } from "../Shared/Select";
-import FormUtils from "src/utils/form";
+import * as FormUtils from "src/utils/form";
 import ImageUtils from "src/utils/image";
 import TextUtils from "src/utils/text";
 import { mutateSceneMerge, queryFindScenesByID } from "src/core/StashService";

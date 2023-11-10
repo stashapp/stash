@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { TagSelect } from "src/components/Shared/Select";
-import FormUtils from "src/utils/form";
+import * as FormUtils from "src/utils/form";
 import { useTagsMerge } from "src/core/StashService";
 import { useIntl } from "react-intl";
 import { useToast } from "src/hooks/Toast";

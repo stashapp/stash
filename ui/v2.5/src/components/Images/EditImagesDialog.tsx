@@ -7,7 +7,7 @@ import * as GQL from "src/core/generated-graphql";
 import { StudioSelect } from "src/components/Shared/Select";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { useToast } from "src/hooks/Toast";
-import FormUtils from "src/utils/form";
+import * as FormUtils from "src/utils/form";
 import { MultiSet } from "../Shared/MultiSet";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {

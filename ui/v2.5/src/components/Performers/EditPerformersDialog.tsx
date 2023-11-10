@@ -25,7 +25,7 @@ import {
 import { IndeterminateCheckbox } from "../Shared/IndeterminateCheckbox";
 import { BulkUpdateTextInput } from "../Shared/BulkUpdateTextInput";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
-import FormUtils from "src/utils/form";
+import * as FormUtils from "src/utils/form";
 
 interface IListOperationProps {
   selected: GQL.SlimPerformerDataFragment[];

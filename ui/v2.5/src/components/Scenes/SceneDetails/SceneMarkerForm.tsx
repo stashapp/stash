@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Button, Form } from "react-bootstrap";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import * as GQL from "src/core/generated-graphql";
@@ -17,6 +17,8 @@ import {
 } from "src/components/Shared/Select";
 import { getPlayerPosition } from "src/components/ScenePlayer/util";
 import { useToast } from "src/hooks/Toast";
+import isEqual from "lodash-es/isEqual";
+import { formikUtils } from "src/utils/form";
 
 interface ISceneMarkerForm {
   sceneID: string;
@@ -29,6 +31,8 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
   marker,
   onClose,
 }) => {
+  const intl = useIntl();
+
   const [sceneMarkerCreate] = useSceneMarkerCreate();
   const [sceneMarkerUpdate] = useSceneMarkerUpdate();
   const [sceneMarkerDestroy] = useSceneMarkerDestroy();
@@ -105,84 +109,112 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
     await formik.setFieldTouched("primary_tag_id", true);
   }
 
-  const primaryTagId = formik.values.primary_tag_id;
+  const splitProps = {
+    labelProps: {
+      column: true,
+      sm: 3,
+    },
+    fieldProps: {
+      sm: 9,
+    },
+  };
+  const fullWidthProps = {
+    labelProps: {
+      column: true,
+      sm: 3,
+      xl: 12,
+    },
+    fieldProps: {
+      sm: 9,
+      xl: 12,
+    },
+  };
+  const { renderField } = formikUtils(intl, formik, splitProps);
+
+  function renderTitleField() {
+    const title = intl.formatMessage({ id: "title" });
+    const control = (
+      <MarkerTitleSuggest
+        initialMarkerTitle={formik.values.title}
+        onChange={(v) => formik.setFieldValue("title", v)}
+      />
+    );
+
+    return renderField("title", title, control);
+  }
+
+  function renderPrimaryTagField() {
+    const primaryTagId = formik.values.primary_tag_id;
+
+    const title = intl.formatMessage({ id: "primary_tag" });
+    const control = (
+      <>
+        <TagSelect
+          onSelect={onSetPrimaryTagID}
+          ids={primaryTagId ? [primaryTagId] : []}
+          hoverPlacement="right"
+        />
+        {formik.touched.primary_tag_id && (
+          <Form.Control.Feedback type="invalid">
+            {formik.errors.primary_tag_id}
+          </Form.Control.Feedback>
+        )}
+      </>
+    );
+
+    return renderField("primary_tag_id", title, control);
+  }
+
+  function renderTimeField() {
+    const { error } = formik.getFieldMeta("seconds");
+
+    const title = intl.formatMessage({ id: "time" });
+    const control = (
+      <DurationInput
+        value={formik.values.seconds}
+        setValue={(v) => formik.setFieldValue("seconds", v)}
+        onReset={() =>
+          formik.setFieldValue("seconds", Math.round(getPlayerPosition() ?? 0))
+        }
+        error={error}
+      />
+    );
+
+    return renderField("seconds", title, control);
+  }
+
+  function renderTagsField() {
+    const title = intl.formatMessage({ id: "tags" });
+    const control = (
+      <TagSelect
+        isMulti
+        onSelect={(items) =>
+          formik.setFieldValue(
+            "tag_ids",
+            items.map((item) => item.id)
+          )
+        }
+        ids={formik.values.tag_ids}
+        hoverPlacement="right"
+      />
+    );
+
+    return renderField("tag_ids", title, control, fullWidthProps);
+  }
 
   return (
     <Form noValidate onSubmit={formik.handleSubmit}>
-      <div>
-        <Form.Group className="row">
-          <Form.Label className="col-sm-3 col-md-2 col-xl-12 col-form-label">
-            Marker Title
-          </Form.Label>
-          <div className="col-sm-9 col-md-10 col-xl-12">
-            <MarkerTitleSuggest
-              initialMarkerTitle={formik.values.title}
-              onChange={(query: string) => formik.setFieldValue("title", query)}
-            />
-          </div>
-        </Form.Group>
-        <Form.Group className="row">
-          <Form.Label className="col-sm-3 col-md-2 col-xl-12 col-form-label">
-            Primary Tag
-          </Form.Label>
-          <div className="col-sm-4 col-md-6 col-xl-12 mb-3 mb-sm-0 mb-xl-3">
-            <TagSelect
-              onSelect={onSetPrimaryTagID}
-              ids={primaryTagId ? [primaryTagId] : []}
-              noSelectionString="Select/create tag..."
-              hoverPlacement="right"
-            />
-            {formik.touched.primary_tag_id && (
-              <Form.Control.Feedback type="invalid">
-                {formik.errors.primary_tag_id}
-              </Form.Control.Feedback>
-            )}
-          </div>
-          <div className="col-sm-5 col-md-4 col-xl-12">
-            <div className="row">
-              <Form.Label className="col-sm-4 col-md-4 col-xl-12 col-form-label text-sm-right text-xl-left">
-                Time
-              </Form.Label>
-              <div className="col-sm-8 col-xl-12">
-                <DurationInput
-                  value={formik.values.seconds ?? 0}
-                  setValue={(v) => formik.setFieldValue("seconds", v)}
-                  onReset={() =>
-                    formik.setFieldValue(
-                      "seconds",
-                      Math.round(getPlayerPosition() ?? 0)
-                    )
-                  }
-                />
-              </div>
-            </div>
-          </div>
-        </Form.Group>
-        <Form.Group className="row">
-          <Form.Label className="col-sm-3 col-md-2 col-xl-12 col-form-label">
-            Tags
-          </Form.Label>
-          <div className="col-sm-9 col-md-10 col-xl-12">
-            <TagSelect
-              isMulti
-              onSelect={(tags) =>
-                formik.setFieldValue(
-                  "tag_ids",
-                  tags.map((tag) => tag.id)
-                )
-              }
-              ids={formik.values.tag_ids}
-              noSelectionString="Select/create tags..."
-              hoverPlacement="right"
-            />
-          </div>
-        </Form.Group>
+      <div className="form-container px-3">
+        {renderTitleField()}
+        {renderPrimaryTagField()}
+        {renderTimeField()}
+        {renderTagsField()}
       </div>
-      <div className="buttons-container row">
-        <div className="col d-flex">
+      <div className="buttons-container px-3">
+        <div className="d-flex">
           <Button
             variant="primary"
-            disabled={!isNew && !formik.dirty}
+            disabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}
             onClick={() => formik.submitForm()}
           >
             <FormattedMessage id="actions.save" />
