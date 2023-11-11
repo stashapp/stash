@@ -825,6 +825,10 @@ func (c Client) FindStashBoxPerformerByID(ctx context.Context, id string) (*mode
 		return nil, err
 	}
 
+	if performer.FindPerformer == nil {
+		return nil, nil
+	}
+
 	ret := performerFragmentToScrapedPerformer(*performer.FindPerformer)
 
 	r := c.repository
