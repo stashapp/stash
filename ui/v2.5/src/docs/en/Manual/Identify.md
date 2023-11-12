@@ -1,10 +1,12 @@
 # Identify
 
-This task iterates through your Scenes and attempts to identify the scene using a selection of scraping sources.
+This task iterates through your Scenes and attempts to identify the scene using a selection of scraping sources. It will skip scenes marked as organized.
 
 This task accepts one or more scraper sources. Valid scraper sources for the Identify task are stash-box instances, and scene scrapers which support scraping via Scene Fragment. The order of the sources may be rearranged.
 
 For each Scene, the Identify task iterates through the scraper sources, in the order provided, and tries to identify the scene using each source. If a result is found in a source, then the Scene is updated, and no further sources are checked for that scene.
+
+Some incorrect matches can be expected and they cannot be undone. It may also be hard to figure out which ones they are.
 
 ## Options
 

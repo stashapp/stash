@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { ImageInput } from "./ImageInput";
 import cx from "classnames";
+import { Icon } from "./Icon";
+import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 
 interface IProps {
   objectName?: string;
@@ -28,6 +30,7 @@ interface IProps {
 export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
   const intl = useIntl();
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+  const [isAutoTagAlertOpen, setIsAutoTagAlertOpen] = useState<boolean>(false);
 
   function renderEditButton() {
     if (props.isNew) return;
@@ -89,22 +92,58 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
   function renderAutoTagButton() {
     if (props.isNew || props.isEditing) return;
 
-    if (props.onAutoTag) {
-      return (
-        <div>
+    return (
+      <div>
+        <Button variant="secondary" onClick={() => setIsAutoTagAlertOpen(true)}>
+          <FormattedMessage id="actions.auto_tag" />
+        </Button>
+      </div>
+    );
+  }
+
+  function renderAutoTagAlert() {
+    return (
+      <Modal show={isAutoTagAlertOpen}>
+        <Modal.Header>
+          <Icon icon={faTriangleExclamation} />
+          <span>
+            <FormattedMessage id="actions.auto_tag" />
+          </span>
+        </Modal.Header>
+        <Modal.Body>
+          <p>
+            <FormattedMessage id="config.tasks.auto_tag_based_on_filenames" />
+          </p>
+          <p>
+            <Icon icon={faTriangleExclamation} size="xl" />
+            <FormattedMessage id="config.tasks.auto_tag_warning" />
+          </p>
+          <FormattedMessage id="config.tasks.auto_tag.matching" />
+          <ul>
+            <li>{props.objectName}</li>
+          </ul>
+        </Modal.Body>
+        <Modal.Footer>
           <Button
-            variant="secondary"
+            variant="danger"
             onClick={() => {
               if (props.onAutoTag) {
                 props.onAutoTag();
               }
+              setIsAutoTagAlertOpen(false);
             }}
           >
-            <FormattedMessage id="actions.auto_tag" />
+            <FormattedMessage id="actions.continue" />
           </Button>
-        </div>
-      );
-    }
+          <Button
+            variant="secondary"
+            onClick={() => setIsAutoTagAlertOpen(false)}
+          >
+            <FormattedMessage id="actions.cancel" />
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    );
   }
 
   function renderDeleteAlert() {
@@ -171,6 +210,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
         </div>
       ) : null}
       {renderAutoTagButton()}
+      {renderAutoTagAlert()}
       {props.customButtons}
       {renderSaveButton()}
       {renderDeleteButton()}

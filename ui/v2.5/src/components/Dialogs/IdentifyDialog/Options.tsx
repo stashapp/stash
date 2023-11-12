@@ -170,6 +170,9 @@ export const OptionsEditor: React.FC<IOptionsEditor> = ({
             id: "config.tasks.identify.set_organized",
           })}
           defaultValue={defaultOptions?.setOrganized ?? undefined}
+          tooltip={intl.formatMessage({
+            id: "config.tasks.identify.organized",
+          })}
           {...checkboxProps}
         />
       </Form.Group>

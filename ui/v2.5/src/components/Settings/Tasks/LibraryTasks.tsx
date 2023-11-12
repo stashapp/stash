@@ -19,7 +19,10 @@ import { SettingSection } from "../SettingSection";
 import { BooleanSetting, Setting, SettingGroup } from "../Inputs";
 import { ManualLink } from "src/components/Help/context";
 import { Icon } from "src/components/Shared/Icon";
-import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
+import {
+  faQuestionCircle,
+  faTriangleExclamation,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface IAutoTagOptions {
   options: GQL.AutoTagMetadataInput;
@@ -74,17 +77,19 @@ export const LibraryTasks: React.FC = () => {
   const [configureDefaults] = useConfigureDefaults();
 
   const [dialogOpen, setDialogOpenState] = useState({
-    clean: false,
     scan: false,
     autoTag: false,
+    autoTagAlert: false,
     identify: false,
   });
 
   const [scanOptions, setScanOptions] = useState<GQL.ScanMetadataInput>({});
   const [autoTagOptions, setAutoTagOptions] =
     useState<GQL.AutoTagMetadataInput>({
-      performers: ["*"],
-      studios: ["*"],
+      // Updated per issue #3909 so that new users don't accidentally
+      // auto tag their entire library with performers and studios.
+      performers: [],
+      studios: [],
       tags: ["*"],
     });
 
@@ -210,19 +215,44 @@ export const LibraryTasks: React.FC = () => {
   }
 
   function renderAutoTagDialog() {
-    if (!dialogOpen.autoTag) {
-      return;
+    if (dialogOpen.autoTagAlert || dialogOpen.autoTag) {
+      return (
+        <DirectorySelectionDialog
+          allowPathSelection={dialogOpen.autoTag}
+          message={
+            <>
+              <p>
+                {intl.formatMessage({
+                  id: "config.tasks.auto_tag_based_on_filenames",
+                })}
+              </p>
+              <Icon icon={faTriangleExclamation} size="xl" />
+              {intl.formatMessage({ id: "config.tasks.auto_tag_warning" })}
+            </>
+          }
+          header={intl.formatMessage({ id: "actions.auto_tag" })}
+          icon={faTriangleExclamation}
+          acceptButtonText={intl.formatMessage({ id: "actions.continue" })}
+          acceptButtonVariant="danger"
+          onClose={(p) => {
+            // undefined means cancelled
+            if (p !== undefined) {
+              if (dialogOpen.autoTagAlert) {
+                // don't provide paths
+                runAutoTag();
+              } else {
+                runAutoTag(p);
+              }
+            }
+
+            setDialogOpen({
+              autoTag: false,
+              autoTagAlert: false,
+            });
+          }}
+        />
+      );
     }
-
-    return <DirectorySelectionDialog onClose={onAutoTagDialogClosed} />;
-  }
-
-  function onAutoTagDialogClosed(paths?: string[]) {
-    if (paths) {
-      runAutoTag(paths);
-    }
-
-    setDialogOpen({ autoTag: false });
   }
 
   async function runAutoTag(paths?: string[]) {
@@ -337,7 +367,14 @@ export const LibraryTasks: React.FC = () => {
               </ManualLink>
             </>
           }
-          subHeadingID="config.tasks.identify.description"
+          subHeading={
+            <>
+              {intl.formatMessage({ id: "config.tasks.identify.description" })}
+              <br />
+              <Icon icon={faTriangleExclamation} />
+              {intl.formatMessage({ id: "config.tasks.identify.warning" })}
+            </>
+          }
         >
           <Button
             variant="secondary"
@@ -360,7 +397,16 @@ export const LibraryTasks: React.FC = () => {
                 </ManualLink>
               </>
             ),
-            subHeadingID: "config.tasks.auto_tag_based_on_filenames",
+            subHeading: (
+              <>
+                {intl.formatMessage({
+                  id: "config.tasks.auto_tag_based_on_filenames",
+                })}
+                <br />
+                <Icon icon={faTriangleExclamation} />
+                {intl.formatMessage({ id: "config.tasks.auto_tag_warning" })}
+              </>
+            ),
           }}
           topLevel={
             <>
@@ -368,7 +414,7 @@ export const LibraryTasks: React.FC = () => {
                 variant="secondary"
                 type="submit"
                 className="mr-2"
-                onClick={() => runAutoTag()}
+                onClick={() => setDialogOpen({ autoTagAlert: true })}
               >
                 <FormattedMessage id="actions.auto_tag" />
               </Button>

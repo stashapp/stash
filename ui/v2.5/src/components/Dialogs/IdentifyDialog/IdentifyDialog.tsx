@@ -26,9 +26,8 @@ import {
   faCogs,
   faFolderOpen,
   faQuestionCircle,
+  faTriangleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
-
-const autoTagScraperID = "builtin_autotag";
 
 interface IIdentifyDialogProps {
   selectedIds?: string[];
@@ -228,26 +227,9 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
       // default to first stash-box instance only
       const stashBox = allSources.find((s) => s.stash_box_endpoint);
 
-      // add auto-tag as well
-      const autoTag = allSources.find(
-        (s) => s.id === `${SCRAPER_PREFIX}${autoTagScraperID}`
-      );
-
       const newSources: IScraperSource[] = [];
       if (stashBox) {
         newSources.push(stashBox);
-      }
-
-      // sanity check - this should always be true
-      if (autoTag) {
-        // don't set organised by default
-        const autoTagCopy = { ...autoTag };
-        autoTagCopy.options = {
-          setOrganized: false,
-          skipMultipleMatches: true,
-          skipSingleNamePerformers: true,
-        };
-        newSources.push(autoTagCopy);
       }
 
       setSources(newSources);
@@ -445,6 +427,12 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
         </Button>
       }
     >
+      <div>
+        <p>
+          <Icon icon={faTriangleExclamation} size="xl" />
+          <FormattedMessage id="config.tasks.identify.warning" />
+        </p>
+      </div>
       <Form>
         {selectionStatus}
         <SourcesList
