@@ -203,6 +203,7 @@ cross-compile-macos:
 	rm dist/phasher-macos-intel dist/phasher-macos-applesilicon
 
 	# Place into bundle and zip up
+	rm -rf dist/Stash.app
 	cp -R scripts/macos-bundle dist/Stash.app
 	mkdir dist/Stash.app/Contents/MacOS
 	cp dist/stash-macos dist/Stash.app/Contents/MacOS/stash

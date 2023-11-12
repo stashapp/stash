@@ -54,12 +54,32 @@ export const Setup: React.FC = () => {
   const [showBlobsDialog, setShowBlobsDialog] = useState(false);
 
   const { data: systemStatus, loading: statusLoading } = useSystemStatus();
+  const status = systemStatus?.systemStatus;
+
+  const windows = status?.os === "windows";
+  const pathSep = windows ? "\\" : "/";
+  const homeDir = windows ? "%USERPROFILE%" : "$HOME";
+  const pwd = windows ? "%CD%" : "$PWD";
+
+  function pathJoin(...paths: string[]) {
+    return paths.join(pathSep);
+  }
+
+  const workingDir = status?.workingDir ?? ".";
+
+  // When running Stash.app, the working directory is (usually) set to /.
+  // Assume that the user doesn't want to set up in / (it's usually mounted read-only anyway),
+  // so in this situation disallow setting up in the working directory.
+  const macApp = status?.os === "darwin" && workingDir === "/";
+
+  const fallbackStashDir = pathJoin(homeDir, ".stash");
+  const fallbackConfigPath = pathJoin(fallbackStashDir, "config.yml");
 
   useEffect(() => {
-    if (systemStatus?.systemStatus.configPath) {
-      setConfigLocation(systemStatus.systemStatus.configPath);
+    if (status?.configPath) {
+      setConfigLocation(status.configPath);
     }
-  }, [systemStatus]);
+  }, [status?.configPath]);
 
   useEffect(() => {
     if (configuration) {
@@ -181,6 +201,8 @@ export const Setup: React.FC = () => {
   }
 
   function renderWelcome() {
+    const homeDirPath = pathJoin(status?.homeDir ?? homeDir, ".stash");
+
     return (
       <>
         <section>
@@ -195,6 +217,7 @@ export const Setup: React.FC = () => {
               id="setup.welcome.config_path_logic_explained"
               values={{
                 code: (chunks: string) => <code>{chunks}</code>,
+                fallback_path: fallbackConfigPath,
               }}
             />
           </p>
@@ -225,14 +248,50 @@ export const Setup: React.FC = () => {
                 id="setup.welcome.in_current_stash_directory"
                 values={{
                   code: (chunks: string) => <code>{chunks}</code>,
+                  path: fallbackStashDir,
                 }}
               />
+              <br />
+              <code>{homeDirPath}</code>
             </Button>
             <Button
               variant="secondary mx-2 p-5"
               onClick={() => onConfigLocationChosen("config.yml")}
+              disabled={macApp}
             >
-              <FormattedMessage id="setup.welcome.in_the_current_working_directory" />
+              {macApp ? (
+                <>
+                  <FormattedMessage
+                    id="setup.welcome.in_the_current_working_directory_disabled"
+                    values={{
+                      code: (chunks: string) => <code>{chunks}</code>,
+                      path: pwd,
+                    }}
+                  />
+                  <br />
+                  <b>
+                    <FormattedMessage
+                      id="setup.welcome.in_the_current_working_directory_disabled_macos"
+                      values={{
+                        code: (chunks: string) => <code>{chunks}</code>,
+                        br: () => <br />,
+                      }}
+                    />
+                  </b>
+                </>
+              ) : (
+                <>
+                  <FormattedMessage
+                    id="setup.welcome.in_the_current_working_directory"
+                    values={{
+                      code: (chunks: string) => <code>{chunks}</code>,
+                      path: pwd,
+                    }}
+                  />
+                  <br />
+                  <code>{workingDir}</code>
+                </>
+              )}
             </Button>
           </div>
         </section>
@@ -511,18 +570,6 @@ export const Setup: React.FC = () => {
     );
   }
 
-  function renderConfigLocation() {
-    if (configLocation === "config.yml") {
-      return <code>&lt;current working directory&gt;/config.yml</code>;
-    }
-
-    if (configLocation === "") {
-      return <code>$HOME/.stash/config.yml</code>;
-    }
-
-    return <code>{configLocation}</code>;
-  }
-
   function maybeRenderExclusions(s: GQL.StashConfig) {
     if (!s.excludeImage && !s.excludeVideo) {
       return;
@@ -537,19 +584,6 @@ export const Setup: React.FC = () => {
     }
 
     return `(excludes ${excludes.join(" and ")})`;
-  }
-
-  function renderStashLibraries() {
-    return (
-      <ul>
-        {stashes.map((s) => (
-          <li key={s.path}>
-            <code>{s.path} </code>
-            {maybeRenderExclusions(s)}
-          </li>
-        ))}
-      </ul>
-    );
   }
 
   async function onSave() {
@@ -582,6 +616,42 @@ export const Setup: React.FC = () => {
   }
 
   function renderConfirm() {
+    let cfgPath = "";
+    let config = configLocation;
+    if (configLocation === "config.yml") {
+      cfgPath = pwd;
+      config = pathJoin(cfgPath, "config.yml");
+    } else if (configLocation === "") {
+      cfgPath = fallbackStashDir;
+      config = pathJoin(cfgPath, "config.yml");
+    }
+
+    let database = databaseFile;
+    if (database === "") {
+      database = pathJoin(cfgPath, "stash-go.sqlite");
+    }
+
+    let generated = generatedLocation;
+    if (generated === "") {
+      generated = pathJoin(cfgPath, "generated");
+    }
+
+    let cache = cacheLocation;
+    if (cache === "") {
+      cache = pathJoin(cfgPath, "cache");
+    }
+
+    let blobs;
+    if (storeBlobsInDatabase) {
+      blobs = intl.formatMessage({
+        id: "setup.confirm.blobs_use_database",
+      });
+    } else if (blobsLocation !== "") {
+      blobs = blobsLocation;
+    } else {
+      blobs = pathJoin(cfgPath, "blobs");
+    }
+
     return (
       <>
         <section>
@@ -595,26 +665,31 @@ export const Setup: React.FC = () => {
             <dt>
               <FormattedMessage id="setup.confirm.configuration_file_location" />
             </dt>
-            <dd>{renderConfigLocation()}</dd>
+            <dd>
+              <code>{config}</code>
+            </dd>
           </dl>
           <dl>
             <dt>
               <FormattedMessage id="setup.confirm.stash_library_directories" />
             </dt>
-            <dd>{renderStashLibraries()}</dd>
+            <dd>
+              <ul>
+                {stashes.map((s) => (
+                  <li key={s.path}>
+                    <code>{s.path} </code>
+                    {maybeRenderExclusions(s)}
+                  </li>
+                ))}
+              </ul>
+            </dd>
           </dl>
           <dl>
             <dt>
               <FormattedMessage id="setup.confirm.database_file_path" />
             </dt>
             <dd>
-              <code>
-                {databaseFile !== ""
-                  ? databaseFile
-                  : intl.formatMessage({
-                      id: "setup.confirm.default_db_location",
-                    })}
-              </code>
+              <code>{database}</code>
             </dd>
           </dl>
           <dl>
@@ -622,13 +697,7 @@ export const Setup: React.FC = () => {
               <FormattedMessage id="setup.confirm.generated_directory" />
             </dt>
             <dd>
-              <code>
-                {generatedLocation !== ""
-                  ? generatedLocation
-                  : intl.formatMessage({
-                      id: "setup.confirm.default_generated_content_location",
-                    })}
-              </code>
+              <code>{generated}</code>
             </dd>
           </dl>
           <dl>
@@ -636,29 +705,15 @@ export const Setup: React.FC = () => {
               <FormattedMessage id="setup.confirm.cache_directory" />
             </dt>
             <dd>
-              <code>
-                {cacheLocation !== ""
-                  ? cacheLocation
-                  : intl.formatMessage({
-                      id: "setup.confirm.default_cache_location",
-                    })}
-              </code>
+              <code>{cache}</code>
             </dd>
+          </dl>
+          <dl>
             <dt>
               <FormattedMessage id="setup.confirm.blobs_directory" />
             </dt>
             <dd>
-              <code>
-                {storeBlobsInDatabase
-                  ? intl.formatMessage({
-                      id: "setup.confirm.blobs_use_database",
-                    })
-                  : blobsLocation !== ""
-                  ? blobsLocation
-                  : intl.formatMessage({
-                      id: "setup.confirm.default_blobs_location",
-                    })}
-              </code>
+              <code>{blobs}</code>
             </dd>
           </dl>
         </section>
@@ -803,18 +858,14 @@ export const Setup: React.FC = () => {
     return <LoadingIndicator />;
   }
 
-  if (
-    step === 0 &&
-    systemStatus &&
-    systemStatus.systemStatus.status !== GQL.SystemStatusEnum.Setup
-  ) {
+  if (step === 0 && status && status.status !== GQL.SystemStatusEnum.Setup) {
     // redirect to main page
     history.push("/");
     return <LoadingIndicator />;
   }
 
   const welcomeStep =
-    systemStatus && systemStatus.systemStatus.configPath !== ""
+    status && status.configPath !== ""
       ? renderWelcomeSpecificConfig
       : renderWelcome;
   const steps = [welcomeStep, renderSetPaths, renderConfirm, renderFinish];
