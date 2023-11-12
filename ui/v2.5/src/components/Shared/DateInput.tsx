@@ -10,7 +10,7 @@ import { useIntl } from "react-intl";
 
 interface IProps {
   disabled?: boolean;
-  value: string | undefined;
+  value: string;
   isTime?: boolean;
   onValueChange(value: string): void;
   placeholder?: string;
@@ -37,11 +37,9 @@ export const DateInput: React.FC<IProps> = (props: IProps) => {
       : TextUtils.stringToFuzzyDate;
     if (props.value) {
       const ret = toDate(props.value);
-      if (!ret || isNaN(ret.getTime())) {
-        return undefined;
+      if (ret && !Number.isNaN(ret.getTime())) {
+        return ret;
       }
-
-      return ret;
     }
   }, [props.value, props.isTime]);
 
@@ -82,9 +80,7 @@ export const DateInput: React.FC<IProps> = (props: IProps) => {
           className="date-input text-input"
           disabled={props.disabled}
           value={props.value}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            props.onValueChange(e.currentTarget.value)
-          }
+          onChange={(e) => props.onValueChange(e.currentTarget.value)}
           placeholder={
             !props.disabled
               ? props.placeholder
