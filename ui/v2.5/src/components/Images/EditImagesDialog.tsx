@@ -247,7 +247,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
             <Col xs={9}>
               <RatingSystem
                 value={rating100}
-                onSetRating={(value) => setRating(value)}
+                onSetRating={(value) => setRating(value ?? undefined)}
                 disabled={isUpdating}
               />
             </Col>

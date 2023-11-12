@@ -423,8 +423,8 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
               </h2>
               {maybeRenderAliases()}
               <RatingSystem
-                value={movie.rating100 ?? undefined}
-                onSetRating={(value) => setRating(value ?? null)}
+                value={movie.rating100}
+                onSetRating={(value) => setRating(value)}
               />
               {maybeRenderDetails()}
               {maybeRenderEditPanel()}

@@ -222,10 +222,8 @@ export const ImageEditPanel: React.FC<IProps> = ({
               })}
               <Col xs={9}>
                 <RatingSystem
-                  value={formik.values.rating100 ?? undefined}
-                  onSetRating={(value) =>
-                    formik.setFieldValue("rating100", value ?? null)
-                  }
+                  value={formik.values.rating100}
+                  onSetRating={(v) => formik.setFieldValue("rating100", v)}
                 />
               </Col>
             </Form.Group>

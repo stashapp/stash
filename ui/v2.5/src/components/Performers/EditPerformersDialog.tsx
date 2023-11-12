@@ -245,8 +245,10 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           })}
           <Col xs={9}>
             <RatingSystem
-              value={updateInput.rating100 ?? undefined}
-              onSetRating={(value) => setUpdateField({ rating100: value })}
+              value={updateInput.rating100}
+              onSetRating={(value) =>
+                setUpdateField({ rating100: value ?? undefined })
+              }
               disabled={isUpdating}
             />
           </Col>
