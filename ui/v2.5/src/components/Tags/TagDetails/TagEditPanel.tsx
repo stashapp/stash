@@ -14,6 +14,7 @@ import isEqual from "lodash-es/isEqual";
 import { useToast } from "src/hooks/Toast";
 import { handleUnsavedChanges } from "src/utils/navigation";
 import { formikUtils } from "src/utils/form";
+import { yupFormikValidate, yupUniqueAliases } from "src/utils/yup";
 
 interface ITagEditPanel {
   tag: Partial<GQL.TagDataFragment>;
@@ -42,26 +43,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
   const schema = yup.object({
     name: yup.string().required(),
-    aliases: yup
-      .array(yup.string().required())
-      .defined()
-      .test({
-        name: "unique",
-        test: (value, context) => {
-          const aliases = [context.parent.name, ...value];
-          const dupes = aliases
-            .map((e, i, a) => {
-              if (a.indexOf(e) !== i) {
-                return String(i - 1);
-              } else {
-                return null;
-              }
-            })
-            .filter((e) => e !== null) as string[];
-          if (dupes.length === 0) return true;
-          return new yup.ValidationError(dupes.join(" "), value, "aliases");
-        },
-      }),
+    aliases: yupUniqueAliases("aliases", "name"),
     description: yup.string().ensure(),
     parent_ids: yup.array(yup.string().required()).defined(),
     child_ids: yup.array(yup.string().required()).defined(),
@@ -82,9 +64,9 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
   const formik = useFormik<InputValues>({
     initialValues,
-    validationSchema: schema,
     enableReinitialize: true,
-    onSubmit: (values) => onSave(values),
+    validate: yupFormikValidate(schema),
+    onSubmit: (values) => onSave(schema.cast(values)),
   });
 
   // set up hotkeys

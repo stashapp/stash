@@ -12,6 +12,7 @@ import {
 import { useToast } from "src/hooks/Toast";
 import isEqual from "lodash-es/isEqual";
 import { formikUtils } from "src/utils/form";
+import { yupFormikValidate, yupInputNumber } from "src/utils/yup";
 
 interface IGalleryChapterForm {
   galleryID: string;
@@ -35,11 +36,10 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
 
   const schema = yup.object({
     title: yup.string().ensure(),
-    image_index: yup
-      .number()
+    image_index: yupInputNumber()
       .integer()
-      .required()
       .moreThan(0)
+      .required()
       .label(intl.formatMessage({ id: "image_index" })),
   });
 
@@ -52,9 +52,9 @@ export const GalleryChapterForm: React.FC<IGalleryChapterForm> = ({
 
   const formik = useFormik<InputValues>({
     initialValues,
-    validationSchema: schema,
     enableReinitialize: true,
-    onSubmit: (values) => onSave(values),
+    validate: yupFormikValidate(schema),
+    onSubmit: (values) => onSave(schema.cast(values)),
   });
 
   async function onSave(input: InputValues) {

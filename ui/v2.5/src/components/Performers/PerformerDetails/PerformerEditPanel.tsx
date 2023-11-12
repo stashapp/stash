@@ -42,6 +42,13 @@ import cx from "classnames";
 import { faPlus, faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import isEqual from "lodash-es/isEqual";
 import { formikUtils } from "src/utils/form";
+import {
+  yupFormikValidate,
+  yupInputNumber,
+  yupInputEnum,
+  yupDateString,
+  yupUniqueAliases,
+} from "src/utils/yup";
 
 const isScraper = (
   scraper: GQL.Scraper | GQL.StashBox
@@ -89,63 +96,20 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const schema = yup.object({
     name: yup.string().required(),
     disambiguation: yup.string().ensure(),
-    alias_list: yup
-      .array(yup.string().required())
-      .defined()
-      .test({
-        name: "unique",
-        test: (value, context) => {
-          const aliases = [context.parent.name.toLowerCase()];
-          const dupes: number[] = [];
-          for (let i = 0; i < value.length; i++) {
-            const a = value[i].toLowerCase();
-            if (aliases.includes(a)) {
-              dupes.push(i);
-            } else {
-              aliases.push(a);
-            }
-          }
-          if (dupes.length === 0) return true;
-          return new yup.ValidationError(dupes.join(" "), value, "alias_list");
-        },
-      }),
-    gender: yup.string<GQL.GenderEnum | "">().ensure(),
-    birthdate: yup
-      .string()
-      .ensure()
-      .test({
-        name: "date",
-        test: (value) => {
-          if (!value) return true;
-          if (!value.match(/^\d{4}-\d{2}-\d{2}$/)) return false;
-          if (Number.isNaN(Date.parse(value))) return false;
-          return true;
-        },
-        message: intl.formatMessage({ id: "validation.date_invalid_form" }),
-      }),
-    death_date: yup
-      .string()
-      .ensure()
-      .test({
-        name: "date",
-        test: (value) => {
-          if (!value) return true;
-          if (!value.match(/^\d{4}-\d{2}-\d{2}$/)) return false;
-          if (Number.isNaN(Date.parse(value))) return false;
-          return true;
-        },
-        message: intl.formatMessage({ id: "validation.date_invalid_form" }),
-      }),
+    alias_list: yupUniqueAliases("alias_list", "name"),
+    gender: yupInputEnum(GQL.GenderEnum).nullable().defined(),
+    birthdate: yupDateString(intl),
+    death_date: yupDateString(intl),
     country: yup.string().ensure(),
     ethnicity: yup.string().ensure(),
     hair_color: yup.string().ensure(),
     eye_color: yup.string().ensure(),
-    height_cm: yup.number().nullable().defined().default(null),
-    weight: yup.number().nullable().defined().default(null),
+    height_cm: yupInputNumber().positive().truncate().nullable().defined(),
+    weight: yupInputNumber().positive().truncate().nullable().defined(),
     measurements: yup.string().ensure(),
     fake_tits: yup.string().ensure(),
-    penis_length: yup.number().nullable().defined().default(null),
-    circumcised: yup.string<GQL.CircumisedEnum | "">().ensure(),
+    penis_length: yupInputNumber().positive().truncate().nullable().defined(),
+    circumcised: yupInputEnum(GQL.CircumisedEnum).nullable().defined(),
     tattoos: yup.string().ensure(),
     piercings: yup.string().ensure(),
     career_length: yup.string().ensure(),
@@ -163,7 +127,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     name: performer.name ?? "",
     disambiguation: performer.disambiguation ?? "",
     alias_list: performer.alias_list ?? [],
-    gender: (performer.gender as GQL.GenderEnum) ?? "",
+    gender: performer.gender ?? null,
     birthdate: performer.birthdate ?? "",
     death_date: performer.death_date ?? "",
     country: performer.country ?? "",
@@ -175,7 +139,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     measurements: performer.measurements ?? "",
     fake_tits: performer.fake_tits ?? "",
     penis_length: performer.penis_length ?? null,
-    circumcised: (performer.circumcised as GQL.CircumisedEnum) ?? "",
+    circumcised: performer.circumcised ?? null,
     tattoos: performer.tattoos ?? "",
     piercings: performer.piercings ?? "",
     career_length: performer.career_length ?? "",
@@ -193,8 +157,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const formik = useFormik<InputValues>({
     initialValues,
     enableReinitialize: true,
-    validationSchema: schema,
-    onSubmit: (values) => onSave(values),
+    validate: yupFormikValidate(schema),
+    onSubmit: (values) => onSave(schema.cast(values)),
   });
 
   function translateScrapedGender(scrapedGender?: string) {
@@ -404,21 +368,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
-  function valuesToInput(input: InputValues): GQL.PerformerCreateInput {
-    return {
-      ...input,
-      gender: input.gender || null,
-      height_cm: input.height_cm || null,
-      weight: input.weight || null,
-      penis_length: input.penis_length || null,
-      circumcised: input.circumcised || null,
-    };
-  }
-
   async function onSave(input: InputValues) {
     setIsLoading(true);
     try {
-      await onSubmit(valuesToInput(input));
+      await onSubmit(input);
       formik.resetForm();
     } catch (e) {
       Toast.error(e);
@@ -621,7 +574,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
 
     const currentPerformer = {
-      ...valuesToInput(formik.values),
+      ...formik.values,
       image: formik.values.image ?? performer.image_path,
     };
 

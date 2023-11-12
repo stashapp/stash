@@ -15,6 +15,7 @@ import isEqual from "lodash-es/isEqual";
 import { useToast } from "src/hooks/Toast";
 import { handleUnsavedChanges } from "src/utils/navigation";
 import { formikUtils } from "src/utils/form";
+import { yupFormikValidate, yupUniqueAliases } from "src/utils/yup";
 
 interface IStudioEditPanel {
   studio: Partial<GQL.StudioDataFragment>;
@@ -46,26 +47,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     url: yup.string().ensure(),
     details: yup.string().ensure(),
     parent_id: yup.string().required().nullable(),
-    aliases: yup
-      .array(yup.string().required())
-      .defined()
-      .test({
-        name: "unique",
-        test: (value, context) => {
-          const aliases = [context.parent.name, ...value];
-          const dupes = aliases
-            .map((e, i, a) => {
-              if (a.indexOf(e) !== i) {
-                return String(i - 1);
-              } else {
-                return null;
-              }
-            })
-            .filter((e) => e !== null) as string[];
-          if (dupes.length === 0) return true;
-          return new yup.ValidationError(dupes.join(" "), value, "aliases");
-        },
-      }),
+    aliases: yupUniqueAliases("aliases", "name"),
     ignore_auto_tag: yup.boolean().defined(),
     stash_ids: yup.mixed<GQL.StashIdInput[]>().defined(),
     image: yup.string().nullable().optional(),
@@ -87,8 +69,8 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
   const formik = useFormik<InputValues>({
     initialValues,
     enableReinitialize: true,
-    validationSchema: schema,
-    onSubmit: (values) => onSave(values),
+    validate: yupFormikValidate(schema),
+    onSubmit: (values) => onSave(schema.cast(values)),
   });
 
   const encodingImage = ImageUtils.usePasteImage((imageData) =>

@@ -21,6 +21,7 @@ import { MovieScrapeDialog } from "./MovieScrapeDialog";
 import isEqual from "lodash-es/isEqual";
 import { handleUnsavedChanges } from "src/utils/navigation";
 import { formikUtils } from "src/utils/form";
+import { yupDateString, yupFormikValidate } from "src/utils/yup";
 
 interface IMovieEditPanel {
   movie: Partial<GQL.MovieDataFragment>;
@@ -57,20 +58,8 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
   const schema = yup.object({
     name: yup.string().required(),
     aliases: yup.string().ensure(),
-    duration: yup.number().nullable().defined(),
-    date: yup
-      .string()
-      .ensure()
-      .test({
-        name: "date",
-        test: (value) => {
-          if (!value) return true;
-          if (!value.match(/^\d{4}-\d{2}-\d{2}$/)) return false;
-          if (Number.isNaN(Date.parse(value))) return false;
-          return true;
-        },
-        message: intl.formatMessage({ id: "validation.date_invalid_form" }),
-      }),
+    duration: yup.number().integer().min(0).nullable().defined(),
+    date: yupDateString(intl),
     studio_id: yup.string().required().nullable(),
     director: yup.string().ensure(),
     url: yup.string().ensure(),
@@ -95,8 +84,8 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
   const formik = useFormik<InputValues>({
     initialValues,
     enableReinitialize: true,
-    validationSchema: schema,
-    onSubmit: (values) => onSave(values),
+    validate: yupFormikValidate(schema),
+    onSubmit: (values) => onSave(schema.cast(values)),
   });
 
   // set up hotkeys

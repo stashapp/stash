@@ -19,6 +19,7 @@ import { getPlayerPosition } from "src/components/ScenePlayer/util";
 import { useToast } from "src/hooks/Toast";
 import isEqual from "lodash-es/isEqual";
 import { formikUtils } from "src/utils/form";
+import { yupFormikValidate } from "src/utils/yup";
 
 interface ISceneMarkerForm {
   sceneID: string;
@@ -42,7 +43,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
 
   const schema = yup.object({
     title: yup.string().ensure(),
-    seconds: yup.number().required(),
+    seconds: yup.number().min(0).required(),
     primary_tag_id: yup.string().required(),
     tag_ids: yup.array(yup.string().required()).defined(),
   });
@@ -62,9 +63,9 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
 
   const formik = useFormik<InputValues>({
     initialValues,
-    validationSchema: schema,
     enableReinitialize: true,
-    onSubmit: (values) => onSave(values),
+    validate: yupFormikValidate(schema),
+    onSubmit: (values) => onSave(schema.cast(values)),
   });
 
   async function onSave(input: InputValues) {

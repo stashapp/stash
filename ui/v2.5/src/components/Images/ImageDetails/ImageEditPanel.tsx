@@ -12,7 +12,11 @@ import { Prompt } from "react-router-dom";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { ConfigurationContext } from "src/hooks/Config";
 import isEqual from "lodash-es/isEqual";
-import { yupDateString, yupUniqueStringList } from "src/utils/yup";
+import {
+  yupDateString,
+  yupFormikValidate,
+  yupUniqueStringList,
+} from "src/utils/yup";
 import {
   Performer,
   PerformerSelect,
@@ -46,7 +50,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
     title: yup.string().ensure(),
     urls: yupUniqueStringList("urls"),
     date: yupDateString(intl),
-    rating100: yup.number().nullable().defined(),
+    rating100: yup.number().integer().nullable().defined(),
     studio_id: yup.string().required().nullable(),
     performer_ids: yup.array(yup.string().required()).defined(),
     tag_ids: yup.array(yup.string().required()).defined(),
@@ -67,8 +71,8 @@ export const ImageEditPanel: React.FC<IProps> = ({
   const formik = useFormik<InputValues>({
     initialValues,
     enableReinitialize: true,
-    validationSchema: schema,
-    onSubmit: (values) => onSave(values),
+    validate: yupFormikValidate(schema),
+    onSubmit: (values) => onSave(schema.cast(values)),
   });
 
   function setRating(v: number) {

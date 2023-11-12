@@ -42,7 +42,11 @@ import { galleryTitle } from "src/core/galleries";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { lazyComponent } from "src/utils/lazyComponent";
 import isEqual from "lodash-es/isEqual";
-import { yupDateString, yupUniqueStringList } from "src/utils/yup";
+import {
+  yupDateString,
+  yupFormikValidate,
+  yupUniqueStringList,
+} from "src/utils/yup";
 import {
   Performer,
   PerformerSelect,
@@ -111,7 +115,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     urls: yupUniqueStringList("urls"),
     date: yupDateString(intl),
     director: yup.string().ensure(),
-    rating100: yup.number().nullable().defined(),
+    rating100: yup.number().integer().nullable().defined(),
     gallery_ids: yup.array(yup.string().required()).defined(),
     studio_id: yup.string().required().nullable(),
     performer_ids: yup.array(yup.string().required()).defined(),
@@ -119,7 +123,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       .array(
         yup.object({
           movie_id: yup.string().required(),
-          scene_index: yup.number().nullable().defined(),
+          scene_index: yup.number().integer().nullable().defined(),
         })
       )
       .defined(),
@@ -156,8 +160,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const formik = useFormik<InputValues>({
     initialValues,
     enableReinitialize: true,
-    validationSchema: schema,
-    onSubmit: (values) => onSave(values),
+    validate: yupFormikValidate(schema),
+    onSubmit: (values) => onSave(schema.cast(values)),
   });
 
   const coverImagePreview = useMemo(() => {

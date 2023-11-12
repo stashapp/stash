@@ -38,7 +38,11 @@ import {
   Performer,
   PerformerSelect,
 } from "src/components/Performers/PerformerSelect";
-import { yupDateString, yupUniqueStringList } from "src/utils/yup";
+import {
+  yupDateString,
+  yupFormikValidate,
+  yupUniqueStringList,
+} from "src/utils/yup";
 import { formikUtils } from "src/utils/form";
 
 interface IProps {
@@ -84,7 +88,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     title: titleRequired ? yup.string().required() : yup.string().ensure(),
     urls: yupUniqueStringList("urls"),
     date: yupDateString(intl),
-    rating100: yup.number().nullable().defined(),
+    rating100: yup.number().integer().nullable().defined(),
     studio_id: yup.string().required().nullable(),
     performer_ids: yup.array(yup.string().required()).defined(),
     tag_ids: yup.array(yup.string().required()).defined(),
@@ -109,8 +113,8 @@ export const GalleryEditPanel: React.FC<IProps> = ({
   const formik = useFormik<InputValues>({
     initialValues,
     enableReinitialize: true,
-    validationSchema: schema,
-    onSubmit: (values) => onSave(values),
+    validate: yupFormikValidate(schema),
+    onSubmit: (values) => onSave(schema.cast(values)),
   });
 
   function setRating(v: number) {
