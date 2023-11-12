@@ -573,7 +573,7 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
           <div className="detail-header-image">
             {encodingImage ? (
               <LoadingIndicator
-                message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+                message={intl.formatMessage({ id: "actions.encoding_image" })}
               />
             ) : (
               renderImage()

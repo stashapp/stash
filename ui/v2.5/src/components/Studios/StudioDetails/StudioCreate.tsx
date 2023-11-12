@@ -59,7 +59,7 @@ const StudioCreate: React.FC = () => {
         <div className="text-center">
           {encodingImage ? (
             <LoadingIndicator
-              message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+              message={intl.formatMessage({ id: "actions.encoding_image" })}
             />
           ) : (
             renderImage()

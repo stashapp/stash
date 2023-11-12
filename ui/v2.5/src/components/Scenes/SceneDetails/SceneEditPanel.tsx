@@ -681,7 +681,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     if (encodingImage) {
       return (
         <LoadingIndicator
-          message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+          message={intl.formatMessage({ id: "actions.encoding_image" })}
         />
       );
     }
