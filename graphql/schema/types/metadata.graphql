@@ -303,6 +303,9 @@ type SystemStatus {
   configPath: String
   appSchema: Int!
   status: SystemStatusEnum!
+  os: String!
+  workingDir: String!
+  homeDir: String!
 }
 
 input MigrateInput {
