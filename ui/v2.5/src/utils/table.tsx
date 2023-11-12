@@ -43,7 +43,7 @@ const renderDurationInput = (options: {
   placeholder?: string;
   value: number | undefined;
   isEditing: boolean;
-  onChange: (value: number | undefined) => void;
+  onChange: (value: number | null) => void;
 }) => {
   return (
     <tr>

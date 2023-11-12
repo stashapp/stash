@@ -14,7 +14,7 @@ import { DurationInput } from "src/components/Shared/DurationInput";
 import { URLField } from "src/components/Shared/URLField";
 import { useToast } from "src/hooks/Toast";
 import { Modal as BSModal, Form, Button, Col, Row } from "react-bootstrap";
-import DurationUtils from "src/utils/duration";
+import TextUtils from "src/utils/text";
 import ImageUtils from "src/utils/image";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
@@ -135,8 +135,8 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     }
 
     if (state.duration) {
-      const seconds = DurationUtils.stringToSeconds(state.duration);
-      if (seconds !== undefined) {
+      const seconds = TextUtils.timestampToSeconds(state.duration);
+      if (seconds) {
         formik.setFieldValue("duration", seconds);
       }
     }

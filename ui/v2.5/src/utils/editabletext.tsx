@@ -2,7 +2,7 @@ import React from "react";
 import { Form } from "react-bootstrap";
 import { DurationInput } from "src/components/Shared/DurationInput";
 import { FilterSelect } from "src/components/Shared/Select";
-import DurationUtils from "./duration";
+import TextUtils from "./text";
 
 const renderTextArea = (options: {
   value: string | undefined;
@@ -81,12 +81,12 @@ const renderInputGroup = (options: {
 const renderDurationInput = (options: {
   value: number | undefined;
   isEditing: boolean;
-  onChange: (value: number | undefined) => void;
+  onChange: (value: number | null) => void;
 }) => {
   if (!options.isEditing) {
     let durationString;
     if (options.value !== undefined) {
-      durationString = DurationUtils.secondsToString(options.value);
+      durationString = TextUtils.secondsToTimestamp(options.value);
     }
 
     return (
