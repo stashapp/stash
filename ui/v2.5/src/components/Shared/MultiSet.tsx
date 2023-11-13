@@ -6,7 +6,7 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import { FilterSelect, SelectObject } from "./Select";
 
 interface IMultiSetProps {
-  type: "performers" | "studios" | "tags" | "movies";
+  type: "galleries" | "performers" | "studios" | "tags" | "movies";
   existingIds?: string[];
   ids?: string[];
   mode: GQL.BulkUpdateIdMode;

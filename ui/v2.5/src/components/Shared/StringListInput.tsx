@@ -50,7 +50,7 @@ export const StringInput: React.FC<IListInputComponentProps> = ({
 export const StringListInput: React.FC<IStringListInputProps> = (props) => {
   const Input = props.inputComponent ?? StringInput;
   const AppendComponent = props.appendComponent;
-  const values = props.value.concat("");
+  const values = (props.value || []).concat("");
 
   function valueChanged(idx: number, value: string) {
     const newValues = values

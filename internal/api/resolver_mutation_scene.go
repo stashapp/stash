@@ -353,6 +353,15 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 		return nil, fmt.Errorf("converting movie ids: %w", err)
 	}
 
+	var coverImageData []byte
+	if input.CoverImage != nil {
+		var err error
+		coverImageData, err = utils.ProcessImageInput(ctx, *input.CoverImage)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	ret := []*models.Scene{}
 
 	// Start the transaction and save the scenes
@@ -362,6 +371,10 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 		for _, sceneID := range sceneIDs {
 			scene, err := qb.UpdatePartial(ctx, sceneID, updatedScene)
 			if err != nil {
+				return err
+			}
+
+			if err := r.sceneUpdateCoverImage(ctx, scene, coverImageData); err != nil {
 				return err
 			}
 

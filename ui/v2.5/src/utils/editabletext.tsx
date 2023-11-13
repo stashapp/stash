@@ -145,7 +145,7 @@ const renderHtmlSelect = (options: {
 
 // TODO: isediting
 const renderFilterSelect = (options: {
-  type: "performers" | "studios" | "tags";
+  type: "galleries" | "performers" | "studios" | "tags";
   initialId: string | undefined;
   onChange: (id: string | undefined) => void;
 }) => (
@@ -158,7 +158,7 @@ const renderFilterSelect = (options: {
 
 // TODO: isediting
 const renderMultiSelect = (options: {
-  type: "performers" | "studios" | "tags";
+  type: "galleries" | "performers" | "studios" | "tags";
   initialIds: string[] | undefined;
   onChange: (ids: string[]) => void;
 }) => (

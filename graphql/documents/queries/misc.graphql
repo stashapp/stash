@@ -6,6 +6,22 @@ query MarkerStrings($q: String, $sort: String) {
   }
 }
 
+query AllGalleriesForFilter {
+  allGalleries {
+    id
+    title
+  }
+}
+
+query AllPerformersForFilter {
+  allPerformers {
+    id
+    name
+    disambiguation
+    alias_list
+  }
+}
+
 query AllStudiosForFilter {
   allStudios {
     id

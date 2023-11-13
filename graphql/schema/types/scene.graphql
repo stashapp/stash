@@ -167,6 +167,9 @@ input BulkSceneUpdateInput {
   performer_ids: BulkUpdateIds
   tag_ids: BulkUpdateIds
   movie_ids: BulkUpdateIds
+  "This should be a URL or a base64 encoded data URL"
+  cover_image: String
+  stash_ids: [StashIDInput!]
 }
 
 input SceneDestroyInput {

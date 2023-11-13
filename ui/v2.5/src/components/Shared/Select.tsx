@@ -13,6 +13,7 @@ import CreatableSelect from "react-select/creatable";
 
 import * as GQL from "src/core/generated-graphql";
 import {
+  useAllGalleriesForFilter,
   useAllTagsForFilter,
   useAllMoviesForFilter,
   useAllStudiosForFilter,
@@ -42,6 +43,7 @@ type Option = { value: string; label: string };
 
 interface ITypeProps {
   type?:
+    | "galleries"
     | "performers"
     | "studios"
     | "tags"
@@ -714,6 +716,78 @@ export const MovieSelect: React.FC<IFilterProps> = (props) => {
   );
 };
 
+export const GalleryMultiSelect: React.FC<
+  IFilterProps & { excludeIds?: string[]; hoverPlacement?: Placement }
+> = (props) => {
+  const { data, loading } = useAllGalleriesForFilter();
+  const intl = useIntl();
+  const placeholder =
+    props.noSelectionString ??
+    intl.formatMessage(
+      { id: "actions.select_entity" },
+      { entityType: intl.formatMessage({ id: "galleries" }) }
+    );
+
+  const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
+  const galleries = useMemo(
+    () =>
+      (data?.allGalleries ?? []).filter(
+        (gallery) => !exclude.includes(gallery.id)
+      ),
+    [data?.allGalleries, exclude]
+  );
+
+  const GalleryOption: React.FC<OptionProps<Option, boolean>> = (
+    optionProps
+  ) => {
+    const { inputValue } = optionProps.selectProps;
+
+    let thisOptionProps = optionProps;
+    if (
+      inputValue &&
+      !optionProps.label.toLowerCase().includes(inputValue.toLowerCase())
+    ) {
+      // must be alias
+      const newLabel = `${optionProps.data.label} (alias)`;
+      thisOptionProps = {
+        ...optionProps,
+        children: newLabel,
+      };
+    }
+
+    return <reactSelectComponents.Option {...thisOptionProps} />;
+  };
+
+  const filterOption = (option: Option, rawInput: string): boolean => {
+    if (!rawInput) {
+      return true;
+    }
+
+    const input = rawInput.toLowerCase();
+    const optionVal = option.label.toLowerCase();
+
+    if (optionVal.includes(input)) {
+      return true;
+    }
+
+    return false;
+  };
+
+  return (
+    <FilterSelectComponent
+      {...props}
+      components={{ Option: GalleryOption }}
+      filterOption={filterOption}
+      isMulti={props.isMulti ?? false}
+      items={galleries}
+      type="galleries"
+      placeholder={placeholder}
+      isLoading={loading}
+      closeMenuOnSelect={!props.isMulti}
+    />
+  );
+};
+
 export const TagSelect: React.FC<
   IFilterProps & { excludeIds?: string[]; hoverPlacement?: Placement }
 > = (props) => {
@@ -866,8 +940,10 @@ export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) => {
     return <StudioSelect {...props} creatable={false} />;
   } else if (props.type === "movies") {
     return <MovieSelect {...props} creatable={false} />;
-  } else {
+  } else if (props.type === "tags") {
     return <TagSelect {...props} creatable={false} />;
+  } else {
+    return <GalleryMultiSelect {...props} creatable={false} />;
   }
 };
 
