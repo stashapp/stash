@@ -81,6 +81,15 @@ func (r *Resolver) Subscription() SubscriptionResolver {
 func (r *Resolver) Tag() TagResolver {
 	return &tagResolver{r}
 }
+func (r *Resolver) GalleryFile() GalleryFileResolver {
+	return &galleryFileResolver{r}
+}
+func (r *Resolver) VideoFile() VideoFileResolver {
+	return &videoFileResolver{r}
+}
+func (r *Resolver) ImageFile() ImageFileResolver {
+	return &imageFileResolver{r}
+}
 func (r *Resolver) SavedFilter() SavedFilterResolver {
 	return &savedFilterResolver{r}
 }
@@ -101,6 +110,9 @@ type imageResolver struct{ *Resolver }
 type studioResolver struct{ *Resolver }
 type movieResolver struct{ *Resolver }
 type tagResolver struct{ *Resolver }
+type galleryFileResolver struct{ *Resolver }
+type videoFileResolver struct{ *Resolver }
+type imageFileResolver struct{ *Resolver }
 type savedFilterResolver struct{ *Resolver }
 type configResultResolver struct{ *Resolver }
 
