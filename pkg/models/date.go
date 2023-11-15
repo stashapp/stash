@@ -17,6 +17,10 @@ func (d Date) String() string {
 	return d.Format(dateFormat)
 }
 
+func (d Date) After(o Date) bool {
+	return d.Time.After(o.Time)
+}
+
 // ParseDate uses utils.ParseDateStringAsTime to parse a string into a date.
 func ParseDate(s string) (Date, error) {
 	ret, err := utils.ParseDateStringAsTime(s)

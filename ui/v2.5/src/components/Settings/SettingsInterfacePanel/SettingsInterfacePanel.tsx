@@ -13,7 +13,7 @@ import {
   SelectSetting,
   StringSetting,
 } from "../Inputs";
-import { SettingStateContext } from "../context";
+import { useSettings } from "../context";
 import DurationUtils from "src/utils/duration";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -65,7 +65,7 @@ export const SettingsInterfacePanel: React.FC = () => {
     saveUI,
     loading,
     error,
-  } = React.useContext(SettingStateContext);
+  } = useSettings();
 
   const {
     interactive,

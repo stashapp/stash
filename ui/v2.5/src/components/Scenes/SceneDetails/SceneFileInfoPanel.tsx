@@ -15,8 +15,8 @@ import { mutateSceneSetPrimaryFile } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
-import { getStashboxBase } from "src/utils/stashbox";
 import { TextField, URLField, URLsField } from "src/utils/field";
+import { StashIDPill } from "src/components/Shared/StashID";
 
 interface IFileInfoPanelProps {
   sceneID: string;
@@ -197,21 +197,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
         <dd>
           <dl>
             {props.scene.stash_ids.map((stashID) => {
-              const base = getStashboxBase(stashID.endpoint);
-              const link = base ? (
-                <a
-                  href={`${base}scenes/${stashID.stash_id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {stashID.stash_id}
-                </a>
-              ) : (
-                stashID.stash_id
-              );
               return (
                 <dd key={stashID.stash_id} className="row no-gutters">
-                  {link}
+                  <StashIDPill stashID={stashID} linkType="scenes" />
                 </dd>
               );
             })}

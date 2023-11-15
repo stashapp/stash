@@ -208,10 +208,7 @@
 
 .performer-disambiguation {
   color: $text-muted;
-  /* stylelint-disable */
   font-size: 0.875em;
-  /* stylelint-enable */
-  padding-right: 0.5rem;
 }
 
 .performer-result .performer-details > span {
@@ -224,6 +221,14 @@
   }
 }
 
-.performer-select .alias {
-  font-weight: bold;
+.performer-select {
+  .alias {
+    font-weight: bold;
+  }
+
+  .performer-select-image {
+    margin-right: 0.5em;
+    max-height: 50px;
+    max-width: 50px;
+  }
 }

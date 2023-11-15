@@ -24,7 +24,7 @@ import (
 	"github.com/stashapp/stash/pkg/movie"
 	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
@@ -301,7 +301,7 @@ func (t *ExportTask) populateMovieScenes(ctx context.Context) {
 		}
 
 		for _, s := range scenes {
-			t.scenes.IDs = intslice.IntAppendUnique(t.scenes.IDs, s.ID)
+			t.scenes.IDs = sliceutil.AppendUnique(t.scenes.IDs, s.ID)
 		}
 	}
 }
@@ -337,7 +337,7 @@ func (t *ExportTask) populateGalleryImages(ctx context.Context) {
 		}
 
 		for _, i := range images {
-			t.images.IDs = intslice.IntAppendUnique(t.images.IDs, i.ID)
+			t.images.IDs = sliceutil.AppendUnique(t.images.IDs, i.ID)
 		}
 	}
 }
@@ -558,26 +558,26 @@ func (t *ExportTask) exportScene(ctx context.Context, wg *sync.WaitGroup, jobCha
 
 		if t.includeDependencies {
 			if s.StudioID != nil {
-				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, *s.StudioID)
+				t.studios.IDs = sliceutil.AppendUnique(t.studios.IDs, *s.StudioID)
 			}
 
-			t.galleries.IDs = intslice.IntAppendUniques(t.galleries.IDs, gallery.GetIDs(galleries))
+			t.galleries.IDs = sliceutil.AppendUniques(t.galleries.IDs, gallery.GetIDs(galleries))
 
 			tagIDs, err := scene.GetDependentTagIDs(ctx, tagReader, sceneMarkerReader, s)
 			if err != nil {
 				logger.Errorf("[scenes] <%s> error getting scene tags: %s", sceneHash, err.Error())
 				continue
 			}
-			t.tags.IDs = intslice.IntAppendUniques(t.tags.IDs, tagIDs)
+			t.tags.IDs = sliceutil.AppendUniques(t.tags.IDs, tagIDs)
 
 			movieIDs, err := scene.GetDependentMovieIDs(ctx, s)
 			if err != nil {
 				logger.Errorf("[scenes] <%s> error getting scene movies: %s", sceneHash, err.Error())
 				continue
 			}
-			t.movies.IDs = intslice.IntAppendUniques(t.movies.IDs, movieIDs)
+			t.movies.IDs = sliceutil.AppendUniques(t.movies.IDs, movieIDs)
 
-			t.performers.IDs = intslice.IntAppendUniques(t.performers.IDs, performer.GetIDs(performers))
+			t.performers.IDs = sliceutil.AppendUniques(t.performers.IDs, performer.GetIDs(performers))
 		}
 
 		basename := filepath.Base(s.Path)
@@ -704,12 +704,12 @@ func (t *ExportTask) exportImage(ctx context.Context, wg *sync.WaitGroup, jobCha
 
 		if t.includeDependencies {
 			if s.StudioID != nil {
-				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, *s.StudioID)
+				t.studios.IDs = sliceutil.AppendUnique(t.studios.IDs, *s.StudioID)
 			}
 
-			t.galleries.IDs = intslice.IntAppendUniques(t.galleries.IDs, gallery.GetIDs(imageGalleries))
-			t.tags.IDs = intslice.IntAppendUniques(t.tags.IDs, tag.GetIDs(tags))
-			t.performers.IDs = intslice.IntAppendUniques(t.performers.IDs, performer.GetIDs(performers))
+			t.galleries.IDs = sliceutil.AppendUniques(t.galleries.IDs, gallery.GetIDs(imageGalleries))
+			t.tags.IDs = sliceutil.AppendUniques(t.tags.IDs, tag.GetIDs(tags))
+			t.performers.IDs = sliceutil.AppendUniques(t.performers.IDs, performer.GetIDs(performers))
 		}
 
 		fn := newImageJSON.Filename(filepath.Base(s.Path), s.Checksum)
@@ -838,11 +838,11 @@ func (t *ExportTask) exportGallery(ctx context.Context, wg *sync.WaitGroup, jobC
 
 		if t.includeDependencies {
 			if g.StudioID != nil {
-				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, *g.StudioID)
+				t.studios.IDs = sliceutil.AppendUnique(t.studios.IDs, *g.StudioID)
 			}
 
-			t.tags.IDs = intslice.IntAppendUniques(t.tags.IDs, tag.GetIDs(tags))
-			t.performers.IDs = intslice.IntAppendUniques(t.performers.IDs, performer.GetIDs(performers))
+			t.tags.IDs = sliceutil.AppendUniques(t.tags.IDs, tag.GetIDs(tags))
+			t.performers.IDs = sliceutil.AppendUniques(t.performers.IDs, performer.GetIDs(performers))
 		}
 
 		basename := ""
@@ -926,7 +926,7 @@ func (t *ExportTask) exportPerformer(ctx context.Context, wg *sync.WaitGroup, jo
 		newPerformerJSON.Tags = tag.GetNames(tags)
 
 		if t.includeDependencies {
-			t.tags.IDs = intslice.IntAppendUniques(t.tags.IDs, tag.GetIDs(tags))
+			t.tags.IDs = sliceutil.AppendUniques(t.tags.IDs, tag.GetIDs(tags))
 		}
 
 		fn := newPerformerJSON.Filename()
@@ -1116,7 +1116,7 @@ func (t *ExportTask) exportMovie(ctx context.Context, wg *sync.WaitGroup, jobCha
 
 		if t.includeDependencies {
 			if m.StudioID != nil {
-				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, *m.StudioID)
+				t.studios.IDs = sliceutil.AppendUnique(t.studios.IDs, *m.StudioID)
 			}
 		}
 

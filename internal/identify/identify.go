@@ -329,7 +329,7 @@ func (t *SceneIdentifier) addTagToScene(ctx context.Context, s *models.Scene, ta
 		}
 		existing := s.TagIDs.List()
 
-		if sliceutil.Include(existing, tagID) {
+		if sliceutil.Contains(existing, tagID) {
 			// skip if the scene was already tagged
 			return nil
 		}

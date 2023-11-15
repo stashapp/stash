@@ -11,7 +11,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -355,7 +355,7 @@ func (h *ScanHandler) getGalleryToAssociate(ctx context.Context, newImage *model
 		return nil, err
 	}
 
-	if g != nil && !intslice.IntInclude(newImage.GalleryIDs.List(), g.ID) {
+	if g != nil && !sliceutil.Contains(newImage.GalleryIDs.List(), g.ID) {
 		return g, nil
 	}
 

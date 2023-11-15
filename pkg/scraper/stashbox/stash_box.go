@@ -14,11 +14,11 @@ import (
 	"strings"
 
 	"github.com/Yamashou/gqlgenc/client"
+	"github.com/Yamashou/gqlgenc/graphqljson"
+	"github.com/gofrs/uuid/v5"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
-	"github.com/Yamashou/gqlgenc/graphqljson"
-	"github.com/gofrs/uuid"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
@@ -823,6 +823,10 @@ func (c Client) FindStashBoxPerformerByID(ctx context.Context, id string) (*mode
 	performer, err := c.client.FindPerformerByID(ctx, id)
 	if err != nil {
 		return nil, err
+	}
+
+	if performer.FindPerformer == nil {
+		return nil, nil
 	}
 
 	ret := performerFragmentToScrapedPerformer(*performer.FindPerformer)

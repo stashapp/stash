@@ -611,7 +611,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
             <div></div>
             <div>
               <Card className="studio-card">
-                <img src={studio.image_path ?? ""} alt="" />
+                <img loading="lazy" src={studio.image_path ?? ""} alt="" />
               </Card>
             </div>
             <div className={`${CLASSNAME}-details-text`}>

@@ -99,6 +99,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
           ) : (
             <img
               className="image-thumbnail"
+              loading="lazy"
               alt={props.gallery.studio.name}
               src={props.gallery.studio.image_path ?? ""}
             />
@@ -153,6 +154,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
         <>
           {props.gallery.cover ? (
             <img
+              loading="lazy"
               className="gallery-card-image"
               alt={props.gallery.title ?? ""}
               src={`${props.gallery.cover.paths.thumbnail}`}

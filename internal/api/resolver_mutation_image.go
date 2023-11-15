@@ -10,7 +10,7 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -256,7 +256,7 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 				}
 
 				thisUpdatedGalleryIDs := updatedImage.GalleryIDs.ImpactedIDs(i.GalleryIDs.List())
-				updatedGalleryIDs = intslice.IntAppendUniques(updatedGalleryIDs, thisUpdatedGalleryIDs)
+				updatedGalleryIDs = sliceutil.AppendUniques(updatedGalleryIDs, thisUpdatedGalleryIDs)
 			}
 
 			image, err := qb.UpdatePartial(ctx, imageID, updatedImage)
