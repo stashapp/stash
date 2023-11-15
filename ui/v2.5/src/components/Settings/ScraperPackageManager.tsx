@@ -59,7 +59,7 @@ export const InstalledScraperPackages: React.FC = () => {
     setJobID(r.data?.updatePackages);
   }
 
-  async function onUninstallPackages(packages: string[]) {
+  async function onUninstallPackages(packages: GQL.PackageSpecInput[]) {
     const r = await uninstallPackages({
       variables: {
         packages,
@@ -108,13 +108,18 @@ export const InstalledScraperPackages: React.FC = () => {
           onUpdatePackages={(packages) =>
             onUpdatePackages(
               packages.map((p) => ({
-                id: p.id,
+                id: p.package_id,
                 sourceURL: p.upgrade!.sourceURL,
               }))
             )
           }
           onUninstallPackages={(packages) =>
-            onUninstallPackages(packages.map((p) => p.id))
+            onUninstallPackages(
+              packages.map((p) => ({
+                id: p.package_id,
+                sourceURL: p.sourceURL,
+              }))
+            )
           }
           updatesLoaded={loadUpgrades}
         />

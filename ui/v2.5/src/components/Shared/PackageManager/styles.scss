@@ -84,3 +84,13 @@
     }
   }
 }
+
+.package-manager-no-results {
+  color: $text-muted;
+  padding: 1em;
+  text-align: center;
+
+  .btn {
+    margin-top: 0.5em;
+  }
+}

@@ -18,7 +18,7 @@ type PackagesJob struct {
 func (j *PackagesJob) installPackage(ctx context.Context, p models.PackageSpecInput, progress *job.Progress) error {
 	defer progress.Increment()
 
-	if err := j.PackageManager.Install(ctx, p.SourceURL, p.ID); err != nil {
+	if err := j.PackageManager.Install(ctx, p); err != nil {
 		return fmt.Errorf("installing package: %w", err)
 	}
 
@@ -105,7 +105,7 @@ func (j *UpdatePackagesJob) Execute(ctx context.Context, progress *job.Progress)
 
 type UninstallPackagesJob struct {
 	PackagesJob
-	Packages []string
+	Packages []*models.PackageSpecInput
 }
 
 func (j *UninstallPackagesJob) Execute(ctx context.Context, progress *job.Progress) {
@@ -117,11 +117,11 @@ func (j *UninstallPackagesJob) Execute(ctx context.Context, progress *job.Progre
 			return
 		}
 
-		logger.Infof("Uninstalling package %s", p)
-		taskDesc := fmt.Sprintf("Uninstalling %s", p)
+		logger.Infof("Uninstalling package %s", p.ID)
+		taskDesc := fmt.Sprintf("Uninstalling %s", p.ID)
 		progress.ExecuteTask(taskDesc, func() {
-			if err := j.PackageManager.Uninstall(ctx, p); err != nil {
-				logger.Errorf("Error uninstalling package %s: %v", p, err)
+			if err := j.PackageManager.Uninstall(ctx, *p); err != nil {
+				logger.Errorf("Error uninstalling package %s: %v", p.ID, err)
 			}
 		})
 	}

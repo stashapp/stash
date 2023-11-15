@@ -58,7 +58,7 @@ export const InstalledPluginPackages: React.FC = () => {
     setJobID(r.data?.updatePackages);
   }
 
-  async function onUninstallPackages(packages: string[]) {
+  async function onUninstallPackages(packages: GQL.PackageSpecInput[]) {
     const r = await uninstallPackages({
       variables: {
         packages,
@@ -97,10 +97,6 @@ export const InstalledPluginPackages: React.FC = () => {
 
   const loading = !!job || statusLoading;
 
-  if (installedPackages.length === 0) {
-    return <></>;
-  }
-
   return (
     <SettingSection headingID="config.plugins.installed_plugins">
       <div className="package-manager">
@@ -111,13 +107,18 @@ export const InstalledPluginPackages: React.FC = () => {
           onUpdatePackages={(packages) =>
             onUpdatePackages(
               packages.map((p) => ({
-                id: p.id,
+                id: p.package_id,
                 sourceURL: p.upgrade!.sourceURL,
               }))
             )
           }
           onUninstallPackages={(packages) =>
-            onUninstallPackages(packages.map((p) => p.id))
+            onUninstallPackages(
+              packages.map((p) => ({
+                id: p.package_id,
+                sourceURL: p.sourceURL,
+              }))
+            )
           }
           updatesLoaded={loadUpgrades}
         />

@@ -49,10 +49,7 @@ query InstalledPluginPackagesStatus {
   installedPackages(type: Plugin) {
     ...PackageData
     upgrade {
-      sourceURL
-      package {
-        ...PackageData
-      }
+      ...PackageData
     }
   }
 }
@@ -61,7 +58,7 @@ query AvailablePluginPackages($source: String!) {
   availablePackages(source: $source, type: Plugin) {
     ...PackageData
     requires {
-      id
+      package_id
     }
   }
 }

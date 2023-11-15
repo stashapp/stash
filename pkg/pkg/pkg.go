@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
@@ -72,6 +73,13 @@ type RemotePackage struct {
 	PackageLocation `yaml:",inline"`
 }
 
+func (p RemotePackage) PackageSpecInput() models.PackageSpecInput {
+	return models.PackageSpecInput{
+		ID:        p.ID,
+		SourceURL: p.Repository.Path(),
+	}
+}
+
 type Manifest struct {
 	ID             string          `yaml:"id"`
 	Name           string          `yaml:"name"`
@@ -83,8 +91,15 @@ type Manifest struct {
 	Files         []string `yaml:"files"`
 }
 
+func (m Manifest) PackageSpecInput() models.PackageSpecInput {
+	return models.PackageSpecInput{
+		ID:        m.ID,
+		SourceURL: m.RepositoryURL,
+	}
+}
+
 // RemotePackageIndex is a map of package name to RemotePackage
-type RemotePackageIndex map[string]RemotePackage
+type RemotePackageIndex map[models.PackageSpecInput]RemotePackage
 
 func (i RemotePackageIndex) merge(o RemotePackageIndex) {
 	for id, pkg := range o {
@@ -101,20 +116,22 @@ func (i RemotePackageIndex) merge(o RemotePackageIndex) {
 func remotePackageIndexFromList(packages []RemotePackage) RemotePackageIndex {
 	index := make(RemotePackageIndex)
 	for _, pkg := range packages {
+		specInput := pkg.PackageSpecInput()
+
 		// if package already exists in map, choose the newest
-		if existing, found := index[pkg.ID]; found {
+		if existing, found := index[specInput]; found {
 			if existing.Date.After(pkg.Date.Time) {
 				continue
 			}
 		}
 
-		index[pkg.ID] = pkg
+		index[specInput] = pkg
 	}
 	return index
 }
 
 // LocalPackageIndex is a map of package name to RemotePackage
-type LocalPackageIndex map[string]Manifest
+type LocalPackageIndex map[models.PackageSpecInput]Manifest
 
 func (i LocalPackageIndex) remoteURLs() []string {
 	var ret []string
@@ -129,7 +146,7 @@ func (i LocalPackageIndex) remoteURLs() []string {
 func localPackageIndexFromList(packages []Manifest) LocalPackageIndex {
 	index := make(LocalPackageIndex)
 	for _, pkg := range packages {
-		index[pkg.ID] = pkg
+		index[pkg.PackageSpecInput()] = pkg
 	}
 	return index
 }
@@ -147,22 +164,22 @@ func (s PackageStatus) Upgradable() bool {
 	return s.Local.Upgradable(s.Remote.PackageVersion)
 }
 
-type PackageStatusIndex map[string]PackageStatus
+type PackageStatusIndex map[models.PackageSpecInput]PackageStatus
 
 func MakePackageStatusIndex(installed LocalPackageIndex, remote RemotePackageIndex) PackageStatusIndex {
 	i := make(PackageStatusIndex)
 
-	for id, pkg := range installed {
+	for spec, pkg := range installed {
 		pkgCopy := pkg
 		s := PackageStatus{
 			Local: &pkgCopy,
 		}
 
-		if remotePkg, found := remote[id]; found {
+		if remotePkg, found := remote[spec]; found {
 			s.Remote = &remotePkg
 		}
 
-		i[id] = s
+		i[spec] = s
 	}
 
 	return i

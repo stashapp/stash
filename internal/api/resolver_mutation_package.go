@@ -62,7 +62,7 @@ func (r *mutationResolver) UpdatePackages(ctx context.Context, typeArg PackageTy
 	return strconv.Itoa(jobID), nil
 }
 
-func (r *mutationResolver) UninstallPackages(ctx context.Context, typeArg PackageType, packages []string) (string, error) {
+func (r *mutationResolver) UninstallPackages(ctx context.Context, typeArg PackageType, packages []*models.PackageSpecInput) (string, error) {
 	pm, err := getPackageManager(typeArg)
 	if err != nil {
 		return "", err

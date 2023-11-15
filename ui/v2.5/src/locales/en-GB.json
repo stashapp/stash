@@ -1081,10 +1081,16 @@
     "install": "Install",
     "installed_version": "Installed Version",
     "latest_version": "Latest Version",
+    "no_sources": "No sources configured",
+    "no_packages": "No packages found",
     "required_by": "Required by {packages}",
     "source": {
       "name": "Name",
-      "url": "Index URL"
+      "url": "Index URL",
+      "local_path": {
+        "heading": "Local Path",
+        "description": "Relative path to store packages for this source. Note that changing this requires the packages to be moved manually."
+      }
     },
     "package": "Package",
     "selected_only": "Selected only",

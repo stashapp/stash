@@ -4,21 +4,18 @@ enum PackageType {
 }
 
 type Package {
-  id: String!
+  package_id: String!
   name: String!
   version: String
   date: Timestamp
   requires: [Package!]!
 
+  sourceURL: String!
+
   "The available upgraded version of this package"
-  upgrade: RemotePackage
+  upgrade: Package
 
   metadata: Map!
-}
-
-type RemotePackage {
-  sourceURL: String!
-  package: Package!
 }
 
 input PackageSpecInput {
@@ -29,9 +26,11 @@ input PackageSpecInput {
 type PackageSource {
   name: String
   url: String!
+  local_path: String
 }
 
 input PackageSourceInput {
   name: String
   url: String!
+  local_path: String
 }

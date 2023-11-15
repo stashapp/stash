@@ -408,7 +408,7 @@ type Mutation {
   If an error occurs when uninstalling a package, the job will continue to uninstall the remaining packages.
   Returns the job ID
   """
-  uninstallPackages(type: PackageType!, packages: [String!]!): ID!
+  uninstallPackages(type: PackageType!, packages: [PackageSpecInput!]!): ID!
 
   stopJob(job_id: ID!): Boolean!
   stopAllJobs: Boolean!

@@ -24,10 +24,23 @@ type Store struct {
 	ManifestFile string
 }
 
+// sub returns a new Store with the given path appended to the BaseDir.
+func (r *Store) sub(path string) *Store {
+	if path == "" || path == "." {
+		return r
+	}
+
+	return &Store{
+		BaseDir:      filepath.Join(r.BaseDir, path),
+		ManifestFile: r.ManifestFile,
+	}
+}
+
 func (r *Store) List(ctx context.Context) ([]Manifest, error) {
 	e, err := os.ReadDir(r.BaseDir)
+	// ignore if directory cannot be read
 	if err != nil {
-		return nil, fmt.Errorf("listing directory %q: %w", r.BaseDir, err)
+		return nil, nil
 	}
 
 	var ret []Manifest
@@ -143,6 +156,3 @@ func (r *Store) deleteManifest(packageID string) error {
 func (r *Store) deletePackageDir(packageID string) error {
 	return os.Remove(r.packageDir(packageID))
 }
-
-// ensure LocalRepository implements LocalRepository
-var _ = LocalRepository(&Store{})

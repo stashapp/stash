@@ -6,6 +6,7 @@ type PackageSpecInput struct {
 }
 
 type PackageSource struct {
-	Name *string `json:"name"`
-	URL  string  `json:"url"`
+	Name      *string `json:"name"`
+	LocalPath string  `json:"localPath"`
+	URL       string  `json:"url"`
 }

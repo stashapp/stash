@@ -130,10 +130,7 @@ query InstalledScraperPackagesStatus {
   installedPackages(type: Scraper) {
     ...PackageData
     upgrade {
-      sourceURL
-      package {
-        ...PackageData
-      }
+      ...PackageData
     }
   }
 }
@@ -142,7 +139,7 @@ query AvailableScraperPackages($source: String!) {
   availablePackages(source: $source, type: Scraper) {
     ...PackageData
     requires {
-      id
+      package_id
     }
   }
 }

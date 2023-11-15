@@ -11,11 +11,24 @@ import (
 	"net/url"
 	"path/filepath"
 	"time"
+
+	"github.com/stashapp/stash/pkg/models"
 )
+
+// SourcePathGetter gets the source path for a given package URL.
+type SourcePathGetter interface {
+	// GetAllSourcePaths gets all source paths.
+	GetAllSourcePaths() []string
+
+	// GetSourcePath gets the source path for the given package URL.
+	GetSourcePath(srcURL string) string
+}
 
 // Manager manages the installation of paks.
 type Manager struct {
-	Local       LocalRepository
+	Local             *Store
+	PackagePathGetter SourcePathGetter
+
 	remoteCache map[string]*remotePackageCache
 
 	Client *http.Client
@@ -53,9 +66,19 @@ func (m *Manager) checkCacheExpired(path string) {
 }
 
 func (m *Manager) ListInstalled(ctx context.Context) (LocalPackageIndex, error) {
-	installedList, err := m.Local.List(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("listing local packages: %w", err)
+	paths := m.PackagePathGetter.GetAllSourcePaths()
+
+	var installedList []Manifest
+
+	for _, p := range paths {
+		store := m.Local.sub(p)
+
+		srcList, err := store.List(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("listing local packages: %w", err)
+		}
+
+		installedList = append(installedList, srcList...)
 	}
 
 	return localPackageIndexFromList(installedList), nil
@@ -132,13 +155,13 @@ func (m *Manager) InstalledStatus(ctx context.Context) (PackageStatusIndex, erro
 	return ret, nil
 }
 
-func (m *Manager) packageByID(ctx context.Context, remoteURL string, id string) (*RemotePackage, error) {
-	l, err := m.ListRemote(ctx, remoteURL)
+func (m *Manager) packageByID(ctx context.Context, spec models.PackageSpecInput) (*RemotePackage, error) {
+	l, err := m.ListRemote(ctx, spec.SourceURL)
 	if err != nil {
 		return nil, err
 	}
 
-	pkg, found := l[id]
+	pkg, found := l[spec]
 	if !found {
 		return nil, nil
 	}
@@ -146,13 +169,20 @@ func (m *Manager) packageByID(ctx context.Context, remoteURL string, id string) 
 	return &pkg, nil
 }
 
-func (m *Manager) Install(ctx context.Context, remoteURL string, id string) error {
-	remote, err := m.remoteFromURL(remoteURL)
+func (m *Manager) getStore(remoteURL string) *Store {
+	srcPath := m.PackagePathGetter.GetSourcePath(remoteURL)
+	store := m.Local.sub(srcPath)
+
+	return store
+}
+
+func (m *Manager) Install(ctx context.Context, spec models.PackageSpecInput) error {
+	remote, err := m.remoteFromURL(spec.SourceURL)
 	if err != nil {
 		return fmt.Errorf("creating remote repository: %w", err)
 	}
 
-	pkg, err := m.packageByID(ctx, remoteURL, id)
+	pkg, err := m.packageByID(ctx, spec)
 	if err != nil {
 		return fmt.Errorf("getting remote package: %w", err)
 	}
@@ -179,21 +209,23 @@ func (m *Manager) Install(ctx context.Context, remoteURL string, id string) erro
 		return fmt.Errorf("reading zip data: %w", err)
 	}
 
+	store := m.getStore(spec.SourceURL)
+
 	// uninstall existing package if present
-	if _, err := m.Local.getManifest(ctx, pkg.ID); err == nil {
-		if err := m.deletePackageFiles(ctx, pkg.ID); err != nil {
+	if _, err := store.getManifest(ctx, pkg.ID); err == nil {
+		if err := m.deletePackageFiles(ctx, store, pkg.ID); err != nil {
 			return fmt.Errorf("uninstalling existing package: %w", err)
 		}
 	}
 
-	if err := m.installPackage(*pkg, zr); err != nil {
+	if err := m.installPackage(*pkg, store, zr); err != nil {
 		return fmt.Errorf("installing package: %w", err)
 	}
 
 	return nil
 }
 
-func (m *Manager) installPackage(pkg RemotePackage, zr *zip.Reader) error {
+func (m *Manager) installPackage(pkg RemotePackage, store *Store, zr *zip.Reader) error {
 	manifest := Manifest{
 		ID:             pkg.ID,
 		Name:           pkg.Name,
@@ -213,7 +245,7 @@ func (m *Manager) installPackage(pkg RemotePackage, zr *zip.Reader) error {
 		}
 
 		fn := filepath.Clean(f.Name)
-		if err := m.Local.writeFile(pkg.ID, fn, f.Mode(), i); err != nil {
+		if err := store.writeFile(pkg.ID, fn, f.Mode(), i); err != nil {
 			i.Close()
 			return fmt.Errorf("writing file %q: %w", fn, err)
 		}
@@ -222,7 +254,7 @@ func (m *Manager) installPackage(pkg RemotePackage, zr *zip.Reader) error {
 		manifest.Files = append(manifest.Files, fn)
 	}
 
-	if err := m.Local.writeManifest(pkg.ID, manifest); err != nil {
+	if err := store.writeManifest(pkg.ID, manifest); err != nil {
 		return fmt.Errorf("writing manifest: %w", err)
 	}
 
@@ -230,32 +262,34 @@ func (m *Manager) installPackage(pkg RemotePackage, zr *zip.Reader) error {
 }
 
 // Uninstall uninstalls the given package.
-func (m *Manager) Uninstall(ctx context.Context, id string) error {
-	if err := m.deletePackageFiles(ctx, id); err != nil {
+func (m *Manager) Uninstall(ctx context.Context, spec models.PackageSpecInput) error {
+	store := m.getStore(spec.SourceURL)
+
+	if err := m.deletePackageFiles(ctx, store, spec.ID); err != nil {
 		return fmt.Errorf("deleting local package: %w", err)
 	}
 
 	// also delete the directory
 	// ignore errors
-	_ = m.Local.deletePackageDir(id)
+	_ = store.deletePackageDir(spec.ID)
 
 	return nil
 }
 
-func (m *Manager) deletePackageFiles(ctx context.Context, id string) error {
-	manifest, err := m.Local.getManifest(ctx, id)
+func (m *Manager) deletePackageFiles(ctx context.Context, store *Store, id string) error {
+	manifest, err := store.getManifest(ctx, id)
 	if err != nil {
 		return fmt.Errorf("getting manifest: %w", err)
 	}
 
 	for _, f := range manifest.Files {
-		if err := m.Local.deleteFile(id, f); err != nil {
+		if err := store.deleteFile(id, f); err != nil {
 			// ignore
 			continue
 		}
 	}
 
-	if err := m.Local.deleteManifest(id); err != nil {
+	if err := store.deleteManifest(id); err != nil {
 		return fmt.Errorf("deleting manifest: %w", err)
 	}
 

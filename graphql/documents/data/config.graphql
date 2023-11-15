@@ -57,10 +57,12 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   scraperPackageSources {
     name
     url
+    local_path
   }
   pluginPackageSources {
     name
     url
+    local_path
   }
 }
 

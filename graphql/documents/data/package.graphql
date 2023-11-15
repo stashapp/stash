@@ -1,7 +1,8 @@
 fragment PackageData on Package {
-  id
+  package_id
   name
   version
   date
   metadata
+  sourceURL
 }

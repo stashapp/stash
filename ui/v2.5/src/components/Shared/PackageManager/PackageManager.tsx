@@ -24,7 +24,7 @@ function formatDate(date: string | undefined | null) {
 }
 
 interface IPackage {
-  id: string;
+  package_id: string;
   name: string;
 }
 
@@ -34,12 +34,52 @@ function filterPackages<T extends IPackage>(packages: T[], filter: string) {
   return packages.filter((pkg) => {
     return (
       pkg.name.toLowerCase().includes(filter.toLowerCase()) ||
-      pkg.id.toLowerCase().includes(filter.toLowerCase())
+      pkg.package_id.toLowerCase().includes(filter.toLowerCase())
     );
   });
 }
 
 export type InstalledPackage = Omit<GQL.Package, "requires">;
+
+const InstalledPackageRow: React.FC<{
+  loading?: boolean;
+  pkg: InstalledPackage;
+  selected: boolean;
+  togglePackage: () => void;
+  updatesLoaded: boolean;
+}> = ({ loading, pkg, selected, togglePackage, updatesLoaded }) => {
+  function rowClassname() {
+    if (pkg.upgrade?.version) {
+      return "package-update-available";
+    }
+  }
+
+  return (
+    <tr className={rowClassname()}>
+      <td>
+        <Form.Check
+          checked={selected}
+          disabled={loading}
+          onChange={() => togglePackage()}
+        />
+      </td>
+      <td>
+        <span className="package-name">{pkg.name}</span>
+        <span className="package-id">{pkg.package_id}</span>
+      </td>
+      <td>
+        <span className="package-version">{pkg.version}</span>
+        <span className="package-date">{formatDate(pkg.date)}</span>
+      </td>
+      {updatesLoaded ? (
+        <td>
+          <span className="package-version">{pkg.upgrade?.version}</span>
+          <span className="package-date">{formatDate(pkg.upgrade?.date)}</span>
+        </td>
+      ) : undefined}
+    </tr>
+  );
+};
 
 const InstalledPackagesList: React.FC<{
   filter: string;
@@ -59,13 +99,13 @@ const InstalledPackagesList: React.FC<{
   const checkedMap = useMemo(() => {
     const map: Record<string, boolean> = {};
     checkedPackages.forEach((pkg) => {
-      map[pkg.id] = true;
+      map[`${pkg.sourceURL}-${pkg.package_id}`] = true;
     });
     return map;
   }, [checkedPackages]);
 
   const allChecked = useMemo(() => {
-    return checkedPackages.length === packages.length;
+    return packages.length > 0 && checkedPackages.length === packages.length;
   }, [checkedPackages, packages]);
 
   const filteredPackages = useMemo(() => {
@@ -81,17 +121,11 @@ const InstalledPackagesList: React.FC<{
 
     setCheckedPackages((prev) => {
       if (prev.includes(pkg)) {
-        return prev.filter((n) => n.id !== pkg.id);
+        return prev.filter((n) => n.package_id !== pkg.package_id);
       } else {
         return prev.concat(pkg);
       }
     });
-  }
-
-  function rowClassname(pkg: InstalledPackage) {
-    if (pkg.upgrade?.package.version) {
-      return "package-update-available";
-    }
   }
 
   return (
@@ -103,7 +137,7 @@ const InstalledPackagesList: React.FC<{
               <Form.Check
                 checked={allChecked ?? false}
                 onChange={toggleAllChecked}
-                disabled={loading}
+                disabled={loading && packages.length > 0}
               />
             </th>
             <th>
@@ -120,35 +154,26 @@ const InstalledPackagesList: React.FC<{
           </tr>
         </thead>
         <tbody>
-          {filteredPackages.map((pkg) => (
-            <tr key={pkg.id} className={rowClassname(pkg)}>
-              <td>
-                <Form.Check
-                  checked={checkedMap[pkg.id] ?? false}
-                  disabled={loading}
-                  onChange={() => togglePackage(pkg)}
-                />
+          {filteredPackages.length === 0 ? (
+            <tr className="package-manager-no-results">
+              <td colSpan={updatesLoaded ? 4 : 3}>
+                <FormattedMessage id="package_manager.no_packages" />
               </td>
-              <td>
-                <span className="package-name">{pkg.name}</span>
-                <span className="package-id">{pkg.id}</span>
-              </td>
-              <td>
-                <span className="package-version">{pkg.version}</span>
-                <span className="package-date">{formatDate(pkg.date)}</span>
-              </td>
-              {updatesLoaded ? (
-                <td>
-                  <span className="package-version">
-                    {pkg.upgrade?.package.version}
-                  </span>
-                  <span className="package-date">
-                    {formatDate(pkg.upgrade?.package.date)}
-                  </span>
-                </td>
-              ) : undefined}
             </tr>
-          ))}
+          ) : (
+            filteredPackages.map((pkg) => (
+              <InstalledPackageRow
+                key={`${pkg.sourceURL}-${pkg.package_id}`}
+                loading={loading}
+                pkg={pkg}
+                selected={
+                  checkedMap[`${pkg.sourceURL}-${pkg.package_id}`] ?? false
+                }
+                togglePackage={() => togglePackage(pkg)}
+                updatesLoaded={updatesLoaded}
+              />
+            ))
+          )}
         </tbody>
       </Table>
     </div>
@@ -238,7 +263,7 @@ export const InstalledPackages: React.FC<{
   useEffect(() => {
     setCheckedPackages((prev) => {
       const newVal = prev.filter((pkg) =>
-        packages.find((p) => p.id === pkg.id)
+        packages.find((p) => p.package_id === pkg.package_id)
       );
       if (newVal.length !== prev.length) {
         return newVal;
@@ -335,6 +360,7 @@ const EditSourceModal: React.FC<{
         },
         message: intl.formatMessage({ id: "validation.unique" }),
       }),
+    local_path: yup.string().nullable(),
   });
 
   type InputValues = yup.InferType<typeof schema>;
@@ -399,6 +425,29 @@ const EditSourceModal: React.FC<{
             {errors?.url}
           </Form.Control.Feedback>
         </Form.Group>
+
+        <Form.Group id="package-source-name">
+          <h6>
+            <FormattedMessage id="package_manager.source.local_path.heading" />
+          </h6>
+          <Form.Control
+            placeholder={intl.formatMessage({
+              id: "package_manager.source.local_path.heading",
+            })}
+            className="text-input"
+            value={v?.local_path ?? ""}
+            isInvalid={!!errors?.local_path}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setValue({ ...v!, local_path: e.currentTarget.value })
+            }
+          />
+          <div className="sub-heading">
+            <FormattedMessage id="package_manager.source.local_path.description" />
+          </div>
+          <Form.Control.Feedback type="invalid">
+            {errors?.local_path}
+          </Form.Control.Feedback>
+        </Form.Group>
       </>
     );
   }
@@ -415,7 +464,7 @@ const EditSourceModal: React.FC<{
 };
 
 export type RemotePackage = Omit<GQL.Package, "requires"> & {
-  requires: { id: string }[];
+  requires: { package_id: string }[];
 };
 
 const AvailablePackageRow: React.FC<{
@@ -447,7 +496,7 @@ const AvailablePackageRow: React.FC<{
   }
 
   return (
-    <tr key={pkg.id}>
+    <tr key={pkg.package_id}>
       <td colSpan={2}>
         <Form.Check
           checked={selected ?? false}
@@ -457,7 +506,7 @@ const AvailablePackageRow: React.FC<{
       </td>
       <td className="package-cell" onClick={() => togglePackage()}>
         <span className="package-name">{pkg.name}</span>
-        <span className="package-id">{pkg.id}</span>
+        <span className="package-id">{pkg.package_id}</span>
       </td>
       <td>
         <span className="package-version">{pkg.version}</span>
@@ -502,7 +551,7 @@ const SourcePackagesList: React.FC<{
     const map: Record<string, boolean> = {};
 
     selectedPackages.forEach((pkg) => {
-      map[pkg.id] = true;
+      map[pkg.package_id] = true;
     });
     return map;
   }, [selectedPackages]);
@@ -569,17 +618,21 @@ const SourcePackagesList: React.FC<{
       if (disabled || !packages) return;
 
       setSelectedPackages((prev) => {
-        const selected = prev.find((p) => p.id === pkg.id);
+        const selected = prev.find((p) => p.package_id === pkg.package_id);
 
         if (selected) {
-          return prev.filter((n) => n.id !== pkg.id);
+          return prev.filter((n) => n.package_id !== pkg.package_id);
         } else {
           // also include required packages
           const toAdd = [pkg];
           pkg.requires.forEach((r) => {
             // find the required package
-            const requiredSelected = prev.find((p) => p.id === r.id);
-            const required = packages.find((p) => p.id === r.id);
+            const requiredSelected = prev.find(
+              (p) => p.package_id === r.package_id
+            );
+            const required = packages.find(
+              (p) => p.package_id === r.package_id
+            );
 
             if (!requiredSelected && required) {
               toAdd.push(required);
@@ -593,13 +646,13 @@ const SourcePackagesList: React.FC<{
 
     return filteredPackages.map((pkg) => (
       <AvailablePackageRow
-        key={pkg.id}
+        key={pkg.package_id}
         disabled={disabled}
         pkg={pkg}
         requiredBy={selectedPackages.filter((p) => {
-          return p.requires.find((r) => r.id === pkg.id);
+          return p.requires.find((r) => r.package_id === pkg.package_id);
         })}
-        selected={checkedMap[pkg.id] ?? false}
+        selected={checkedMap[pkg.package_id] ?? false}
         togglePackage={() => togglePackage(pkg)}
         renderDescription={renderDescription}
       />
@@ -777,28 +830,46 @@ const AvailablePackagesList: React.FC<{
             </tr>
           </thead>
           <tbody>
-            {sources.map((src) => (
-              <SourcePackagesList
-                key={src.url}
-                filter={filter}
-                disabled={loading}
-                source={src}
-                renderDescription={renderDescription}
-                loadSource={() => loadSource(src.url)}
-                selectedPackages={selectedPackages[src.url] ?? []}
-                setSelectedPackages={(v) => setSelectedSourcePackages(src, v)}
-                editSource={() => setEditingSource(src)}
-                deleteSource={() => setDeletingSource(src)}
-              />
-            ))}
-            <tr className="package-source">
-              <td colSpan={2}></td>
-              <td colSpan={3} onClick={() => setAddingSource(true)}>
-                <Button size="sm" variant="success">
-                  <FormattedMessage id="package_manager.add_source" />
-                </Button>
-              </td>
-            </tr>
+            {sources.length === 0 ? (
+              <tr className="package-manager-no-results">
+                <td colSpan={5}>
+                  <FormattedMessage id="package_manager.no_sources" />
+                  <br />
+                  <Button
+                    size="sm"
+                    variant="success"
+                    onClick={() => setAddingSource(true)}
+                  >
+                    <FormattedMessage id="package_manager.add_source" />
+                  </Button>
+                </td>
+              </tr>
+            ) : (
+              sources.map((src) => (
+                <SourcePackagesList
+                  key={src.url}
+                  filter={filter}
+                  disabled={loading}
+                  source={src}
+                  renderDescription={renderDescription}
+                  loadSource={() => loadSource(src.url)}
+                  selectedPackages={selectedPackages[src.url] ?? []}
+                  setSelectedPackages={(v) => setSelectedSourcePackages(src, v)}
+                  editSource={() => setEditingSource(src)}
+                  deleteSource={() => setDeletingSource(src)}
+                />
+              ))
+            )}
+            {sources.length > 0 ? (
+              <tr className="package-source">
+                <td colSpan={2}></td>
+                <td colSpan={3} onClick={() => setAddingSource(true)}>
+                  <Button size="sm" variant="success">
+                    <FormattedMessage id="package_manager.add_source" />
+                  </Button>
+                </td>
+              </tr>
+            ) : undefined}
           </tbody>
         </Table>
       </div>
@@ -838,7 +909,7 @@ export const AvailablePackages: React.FC<{
     const ret: GQL.PackageSpecInput[] = [];
     Object.keys(checkedPackages).forEach((sourceURL) => {
       checkedPackages[sourceURL].forEach((pkg) => {
-        ret.push({ id: pkg.id, sourceURL });
+        ret.push({ id: pkg.package_id, sourceURL });
       });
     });
     return ret;

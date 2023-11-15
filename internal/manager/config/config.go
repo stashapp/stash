@@ -21,6 +21,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 const (
@@ -1537,6 +1538,44 @@ func (i *Instance) GetPluginPackageSources() []*models.PackageSource {
 
 func (i *Instance) GetScraperPackageSources() []*models.PackageSource {
 	return i.getPackageSources(ScraperPackageSources)
+}
+
+type packagePathGetter struct {
+	getterFn func() []*models.PackageSource
+}
+
+func (g packagePathGetter) GetAllSourcePaths() []string {
+	p := g.getterFn()
+	var ret []string
+	for _, v := range p {
+		ret = sliceutil.AppendUnique(ret, v.LocalPath)
+	}
+
+	return ret
+}
+
+func (g packagePathGetter) GetSourcePath(srcURL string) string {
+	p := g.getterFn()
+
+	for _, v := range p {
+		if v.URL == srcURL {
+			return v.LocalPath
+		}
+	}
+
+	return ""
+}
+
+func (i *Instance) GetPluginPackagePathGetter() packagePathGetter {
+	return packagePathGetter{
+		getterFn: i.GetPluginPackageSources,
+	}
+}
+
+func (i *Instance) GetScraperPackagePathGetter() packagePathGetter {
+	return packagePathGetter{
+		getterFn: i.GetScraperPackageSources,
+	}
 }
 
 func (i *Instance) Validate() error {

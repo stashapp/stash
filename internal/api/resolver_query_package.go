@@ -8,6 +8,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/stashapp/stash/internal/manager"
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/pkg"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
@@ -30,8 +31,9 @@ func getPackageManager(typeArg PackageType) (*pkg.Manager, error) {
 
 func manifestToPackage(p pkg.Manifest) *Package {
 	ret := &Package{
-		ID:   p.ID,
-		Name: p.Name,
+		PackageID: p.ID,
+		Name:      p.Name,
+		SourceURL: p.RepositoryURL,
 	}
 
 	if len(p.Version) > 0 {
@@ -51,8 +53,8 @@ func manifestToPackage(p pkg.Manifest) *Package {
 
 func remotePackageToPackage(p pkg.RemotePackage, index pkg.RemotePackageIndex) *Package {
 	ret := &Package{
-		ID:   p.ID,
-		Name: p.Name,
+		PackageID: p.ID,
+		Name:      p.Name,
 	}
 
 	if len(p.Version) > 0 {
@@ -67,8 +69,16 @@ func remotePackageToPackage(p pkg.RemotePackage, index pkg.RemotePackageIndex) *
 		ret.Metadata = make(map[string]interface{})
 	}
 
+	ret.SourceURL = p.Repository.Path()
+
 	for _, r := range p.Requires {
-		req, found := index[r]
+		// required packages must come from the same source
+		spec := models.PackageSpecInput{
+			ID:        r,
+			SourceURL: p.Repository.Path(),
+		}
+
+		req, found := index[spec]
 		if !found {
 			// shouldn't happen, but we'll ignore it
 			continue
@@ -80,19 +90,19 @@ func remotePackageToPackage(p pkg.RemotePackage, index pkg.RemotePackageIndex) *
 	return ret
 }
 
-func sortedKeys[V any](m map[string]V) []string {
+func sortedPackageSpecKeys[V any](m map[models.PackageSpecInput]V) []models.PackageSpecInput {
 	// sort keys
-	var keys []string
+	var keys []models.PackageSpecInput
 	for k := range m {
 		keys = append(keys, k)
 	}
 
 	sort.Slice(keys, func(i, j int) bool {
-		if strings.EqualFold(keys[i], keys[j]) {
-			return keys[i] < keys[j]
+		if strings.EqualFold(keys[i].ID, keys[j].ID) {
+			return keys[i].ID < keys[j].ID
 		}
 
-		return strings.ToLower(keys[i]) < strings.ToLower(keys[j])
+		return strings.ToLower(keys[i].ID) < strings.ToLower(keys[j].ID)
 	})
 
 	return keys
@@ -116,15 +126,12 @@ func (r *queryResolver) getInstalledPackagesWithUpgrades(ctx context.Context, pm
 	ret := make([]*Package, len(packageStatusIndex))
 	i := 0
 
-	for _, k := range sortedKeys(packageStatusIndex) {
+	for _, k := range sortedPackageSpecKeys(packageStatusIndex) {
 		v := packageStatusIndex[k]
 		p := manifestToPackage(*v.Local)
 		if v.Upgradable() {
 			pp := remotePackageToPackage(*v.Remote, allRemoteList)
-			p.Upgrade = &RemotePackage{
-				SourceURL: v.Remote.Repository.Path(),
-				Package:   pp,
-			}
+			p.Upgrade = pp
 		}
 		ret[i] = p
 		i++
@@ -154,7 +161,7 @@ func (r *queryResolver) InstalledPackages(ctx context.Context, typeArg PackageTy
 	} else {
 		ret = make([]*Package, len(installed))
 		i := 0
-		for _, k := range sortedKeys(installed) {
+		for _, k := range sortedPackageSpecKeys(installed) {
 			ret[i] = manifestToPackage(installed[k])
 			i++
 		}
@@ -176,7 +183,7 @@ func (r *queryResolver) AvailablePackages(ctx context.Context, typeArg PackageTy
 
 	ret := make([]*Package, len(available))
 	i := 0
-	for _, k := range sortedKeys(available) {
+	for _, k := range sortedPackageSpecKeys(available) {
 		p := available[k]
 		ret[i] = remotePackageToPackage(p, available)
 

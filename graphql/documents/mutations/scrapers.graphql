@@ -10,6 +10,6 @@ mutation UpdateScraperPackages($packages: [PackageSpecInput!]!) {
   updatePackages(type: Scraper, packages: $packages)
 }
 
-mutation UninstallScraperPackages($packages: [String!]!) {
+mutation UninstallScraperPackages($packages: [PackageSpecInput!]!) {
   uninstallPackages(type: Scraper, packages: $packages)
 }
