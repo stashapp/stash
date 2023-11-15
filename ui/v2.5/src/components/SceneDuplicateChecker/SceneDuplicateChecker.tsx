@@ -180,7 +180,10 @@ export const SceneDuplicateChecker: React.FC = () => {
   const findLargestResolutionScene = (group: GQL.SlimSceneDataFragment[]) => {
     // Get resolution of a scene
     const sceneResolution = (scene: GQL.SlimSceneDataFragment) => {
-      return scene.files.reduce((sum: number, f) => sum + (f.height * f.width|| 0), 0);
+      return scene.files.reduce(
+        (sum: number, f) => sum + (f.height * f.width || 0),
+        0
+      );
     };
     // Find scene object with maximum resolution
     return group.reduce((largest, scene) => {
@@ -189,7 +192,6 @@ export const SceneDuplicateChecker: React.FC = () => {
       return currentSize > largestSize ? scene : largest;
     });
   };
-
 
   // Helper to get file date
 
@@ -231,7 +233,9 @@ export const SceneDuplicateChecker: React.FC = () => {
   }
 
   function checkSameResolution(dataGroup: GQL.SlimSceneDataFragment[]) {
-    const resolutions = dataGroup.map((s) => s.files[0]?.width * s.files[0]?.height);
+    const resolutions = dataGroup.map(
+      (s) => s.files[0]?.width * s.files[0]?.height
+    );
     return new Set(resolutions).size === 1;
   }
 
@@ -254,7 +258,6 @@ export const SceneDuplicateChecker: React.FC = () => {
 
     setCheckedScenes(checkedArray);
   };
-
 
   const onSelectLargestResolutionClick = () => {
     setSelectedScenes([]);
@@ -759,7 +762,9 @@ export const SceneDuplicateChecker: React.FC = () => {
                       {intl.formatMessage({ id: "dupe_check.select_none" })}
                     </Dropdown.Item>
 
-                    <Dropdown.Item onClick={() => onSelectLargestResolutionClick()}>
+                    <Dropdown.Item
+                      onClick={() => onSelectLargestResolutionClick()}
+                    >
                       {intl.formatMessage({
                         id: "dupe_check.select_all_but_largest_resolution",
                       })}
