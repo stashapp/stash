@@ -465,7 +465,10 @@ export const GalleryEditPanel: React.FC<IProps> = ({
                 />
               </Col>
             </Form.Group>
-            {renderTextField("photographer", intl.formatMessage({ id: "photographer" }))}
+            {renderTextField(
+              "photographer",
+              intl.formatMessage({ id: "photographer" })
+            )}
             <Form.Group controlId="rating" as={Row}>
               {FormUtils.renderLabel({
                 title: intl.formatMessage({ id: "rating" }),

@@ -163,9 +163,17 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
 
   // don't show the dialog if nothing was scraped
   if (
-    [title, code, urls, date, photographer, studio, performers, tags, details].every(
-      (r) => !r.scraped
-    ) &&
+    [
+      title,
+      code,
+      urls,
+      date,
+      photographer,
+      studio,
+      performers,
+      tags,
+      details,
+    ].every((r) => !r.scraped) &&
     !newStudio &&
     newPerformers.length === 0 &&
     newTags.length === 0

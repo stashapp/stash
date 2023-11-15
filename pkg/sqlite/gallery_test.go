@@ -239,7 +239,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 				URLs:         models.NewRelatedStrings([]string{url}),
 				Date:         &date,
 				Details:      details,
-				photographer: photographer,
+				Photographer: photographer,
 				Rating:       &rating,
 				Organized:    true,
 				StudioID:     &studioIDs[studioIdxWithScene],
