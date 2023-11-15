@@ -223,7 +223,10 @@ export const ImageEditPanel: React.FC<IProps> = ({
                 />
               </Col>
             </Form.Group>
-            {renderTextField("photographer", intl.formatMessage({ id: "photographer" }))}
+            {renderTextField(
+              "photographer",
+              intl.formatMessage({ id: "photographer" })
+            )}
             <Form.Group controlId="rating" as={Row}>
               {FormUtils.renderLabel({
                 title: intl.formatMessage({ id: "rating" }),
@@ -295,19 +298,19 @@ export const ImageEditPanel: React.FC<IProps> = ({
                 />
               </Col>
             </Form.Group>
-            </div>
-            <div className="col-12 col-lg-6 col-xl-12">
-              <Form.Group controlId="details">
-                <Form.Label>
-                 <FormattedMessage id="details" />
-               </Form.Label>
-               <Form.Control
-                 as="textarea"
-                 className="gallery-description text-input"
-                 onChange={(e) =>
-                    formik.setFieldValue("details", e.currentTarget.value)
-                 }
-                  value={formik.values.details ?? ""}
+          </div>
+          <div className="col-12 col-lg-6 col-xl-12">
+            <Form.Group controlId="details">
+              <Form.Label>
+                <FormattedMessage id="details" />
+              </Form.Label>
+              <Form.Control
+                as="textarea"
+                className="gallery-description text-input"
+                onChange={(e) =>
+                  formik.setFieldValue("details", e.currentTarget.value)
+                }
+                value={formik.values.details ?? ""}
               />
             </Form.Group>
           </div>

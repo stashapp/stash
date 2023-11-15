@@ -250,7 +250,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 				URLs:         models.NewRelatedStrings([]string{url}),
 				Date:         &date,
 				Details:      details,
-				photographer: photographer,
+				Photographer: photographer,
 				Organized:    true,
 				OCounter:     ocounter,
 				StudioID:     &studioIDs[studioIdxWithImage],
