@@ -17,6 +17,13 @@ query Plugins {
       description
       hooks
     }
+
+    settings {
+      name
+      display_name
+      description
+      type
+    }
   }
 }
 

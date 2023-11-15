@@ -102,7 +102,7 @@ export const App: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(getPlatformURL() + "customlocales");
+        const res = await fetch(getPlatformURL("customlocales"));
         if (res.ok) {
           setCustomMessages(await res.json());
         }

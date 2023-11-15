@@ -102,7 +102,12 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       key={p.remote_site_id}
       onClick={() => setModalStudio(p)}
     >
-      <img src={(p.image ?? [])[0]} alt="" className="StudioTagger-thumb" />
+      <img
+        loading="lazy"
+        src={(p.image ?? [])[0]}
+        alt=""
+        className="StudioTagger-thumb"
+      />
       <span>{p.name}</span>
     </Button>
   ));

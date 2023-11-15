@@ -49,6 +49,7 @@ const TaggerSceneDetails: React.FC<ITaggerSceneDetails> = ({ scene }) => {
                     className="performer-tag col m-auto zoom-2"
                   >
                     <img
+                      loading="lazy"
                       className="image-thumbnail"
                       alt={performer.name ?? ""}
                       src={performer.image_path ?? ""}

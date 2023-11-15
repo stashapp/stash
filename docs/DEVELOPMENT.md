@@ -36,6 +36,23 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MinGW. For examp
 2. Enable corepack in Node.js: `corepack enable`
 3. Install yarn: `corepack prepare yarn@stable --activate`
 
+### OpenBSD
+
+1. Install dependencies `doas pkg_add gmake go git yarn node cmake`
+2. Compile a custom ffmpeg from ports. The default ffmpeg in OpenBSD's packages is not compiled with WebP support, which is required by Stash.
+   - If you've already installed ffmpeg, uninstall it: `doas pkg_delete ffmpeg`
+   - If you haven't already, [fetch the ports tree and verify](https://www.openbsd.org/faq/ports/ports.html#PortsFetch).
+   - Find the ffmpeg port in `/usr/ports/graphics/ffmpeg`, and patch the Makefile to include libwebp
+     - Add `webp` to `WANTLIB`
+     - Add `graphics/libwebp` to the list in `LIB_DEPENDS`
+     - Add `-lwebp -lwebpdecoder -lwebpdemux -lwebpmux` to `LIBavcodec_EXTRALIBS`
+     - Add `--enable-libweb` to the list in `CONFIGURE_ARGS`
+     - If you've already built ffmpeg from ports before, you may need to also increment `REVISION`
+     - Run `doas make install`
+   - Follow the instructions below to build a release, but replace the final step `make build-release` with `gmake flags-release stash`, to [avoid the PIE buildmode](https://github.com/golang/go/issues/59866). 
+
+NOTE: The `make` command in OpenBSD will be `gmake`. For example, `make pre-ui` will be `gmake pre-ui`.
+
 ## Commands
 
 * `make pre-ui` - Installs the UI dependencies. This only needs to be run once after cloning the repository, or if the dependencies are updated.
@@ -57,7 +74,7 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MinGW. For examp
 * `make fmt-ui` - Formats the UI source code
 * `make server-start` - Runs a development stash server in the `.local` directory
 * `make server-clean` - Removes the `.local` directory and all of its contents
-* `make ui-start` - Runs the UI in development mode. Requires a running Stash server to connect to. The server port can be changed from the default of `9999` using the environment variable `VITE_APP_PLATFORM_PORT`. The UI runs on port `3000` or the next available port.
+* `make ui-start` - Runs the UI in development mode. Requires a running Stash server to connect to - the server URL can be changed from the default of `http://localhost:9999` using the environment variable `VITE_APP_PLATFORM_URL`, but keep in mind that authentication cannot be used since the session authorization cookie cannot be sent cross-origin. The UI runs on port `3000` or the next available port.
 
 ## Local development quickstart
 

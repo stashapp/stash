@@ -17,6 +17,7 @@ import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import isEqual from "lodash-es/isEqual";
 import { useToast } from "src/hooks/Toast";
 import { handleUnsavedChanges } from "src/utils/navigation";
+import { StashIDPill } from "src/components/Shared/StashID";
 
 interface IStudioEditPanel {
   studio: Partial<GQL.StudioDataFragment>;
@@ -165,18 +166,6 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         <Col xs={fieldXS} xl={fieldXL}>
           <ul className="pl-0">
             {formik.values.stash_ids.map((stashID) => {
-              const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
-              const link = base ? (
-                <a
-                  href={`${base}studios/${stashID.stash_id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {stashID.stash_id}
-                </a>
-              ) : (
-                stashID.stash_id
-              );
               return (
                 <li key={stashID.stash_id} className="row no-gutters">
                   <Button
@@ -190,7 +179,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
                   >
                     <Icon icon={faTrashAlt} />
                   </Button>
-                  {link}
+                  <StashIDPill stashID={stashID} linkType="studios" />
                 </li>
               );
             })}

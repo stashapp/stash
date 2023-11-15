@@ -76,6 +76,7 @@ export const MovieCard: React.FC<IProps> = (props: IProps) => {
       image={
         <>
           <img
+            loading="lazy"
             className="movie-card-image"
             alt={props.movie.name ?? ""}
             src={props.movie.front_image_path ?? ""}

@@ -1,32 +1,21 @@
 package sliceutil
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 func TestSliceSame(t *testing.T) {
-	objs := []struct {
-		a string
-		b int
-	}{
-		{"1", 2},
-		{"1", 2},
-		{"2", 1},
-	}
-
 	tests := []struct {
 		name string
-		a    interface{}
-		b    interface{}
+		a    []int
+		b    []int
 		want bool
 	}{
 		{"nil values", nil, nil, true},
 		{"empty", []int{}, []int{}, true},
 		{"nil and empty", nil, []int{}, true},
-		{
-			"different type",
-			[]string{"1"},
-			[]int{1},
-			false,
-		},
 		{
 			"different length",
 			[]int{1, 2, 3},
@@ -69,24 +58,11 @@ func TestSliceSame(t *testing.T) {
 			[]int{1, 1, 2, 2, 3},
 			false,
 		},
-		{
-			"structs equal",
-			objs[0:1],
-			objs[0:1],
-			true,
-		},
-		{
-			"structs not equal",
-			objs[0:2],
-			objs[1:3],
-			false,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := SliceSame(tt.a, tt.b); got != tt.want {
-				t.Errorf("SliceSame() = %v, want %v", got, tt.want)
-			}
+			got := SliceSame(tt.a, tt.b)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

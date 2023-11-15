@@ -56,6 +56,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
       <td>
         <Link to={`/performers/${performer.id}`}>
           <img
+            loading="lazy"
             className="image-thumbnail"
             alt={performer.name ?? ""}
             src={performer.image_path ?? ""}
