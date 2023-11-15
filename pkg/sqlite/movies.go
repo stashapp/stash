@@ -13,7 +13,7 @@ import (
 	"gopkg.in/guregu/null.v4/zero"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 const (
@@ -204,7 +204,7 @@ func (qb *MovieStore) FindMany(ctx context.Context, ids []int) ([]*models.Movie,
 		}
 
 		for _, s := range unsorted {
-			i := intslice.IntIndex(ids, s.ID)
+			i := sliceutil.Index(ids, s.ID)
 			ret[i] = s
 		}
 

@@ -16,7 +16,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 type mappedQuery interface {
@@ -730,8 +730,8 @@ func (c mappedScraperAttrConfig) concatenateResults(nodes []string) string {
 }
 
 func (c mappedScraperAttrConfig) cleanResults(nodes []string) []string {
-	cleaned := stringslice.StrUnique(nodes)      // remove duplicate values
-	cleaned = stringslice.StrDelete(cleaned, "") // remove empty values
+	cleaned := sliceutil.Unique(nodes)      // remove duplicate values
+	cleaned = sliceutil.Delete(cleaned, "") // remove empty values
 	return cleaned
 }
 

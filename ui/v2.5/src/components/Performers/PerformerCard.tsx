@@ -271,7 +271,10 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
             alt={performer.name ?? ""}
             src={performer.image_path ?? ""}
           />
-
+        </>
+      }
+      overlays={
+        <>
           {renderFavoriteIcon()}
           {maybeRenderRatingBanner()}
           {maybeRenderFlag()}

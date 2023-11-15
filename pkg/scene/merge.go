@@ -9,16 +9,16 @@ import (
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
 func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int, scenePartial models.ScenePartial) error {
 	// ensure source ids are unique
-	sourceIDs = intslice.IntAppendUniques(nil, sourceIDs)
+	sourceIDs = sliceutil.AppendUniques(nil, sourceIDs)
 
 	// ensure destination is not in source list
-	if intslice.IntInclude(sourceIDs, destinationID) {
+	if sliceutil.Contains(sourceIDs, destinationID) {
 		return errors.New("destination scene cannot be in source list")
 	}
 
