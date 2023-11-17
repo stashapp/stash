@@ -69,7 +69,6 @@ export const useToast = () => {
       error(error: unknown) {
         let message;
         if (error instanceof Error) {
-          // eslint-disable-next-line prefer-destructuring
           message = error.message;
         }
         if (!message) {
