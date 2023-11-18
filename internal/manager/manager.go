@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"runtime/pprof"
 	"strconv"
 	"strings"
@@ -46,6 +47,9 @@ type SystemStatus struct {
 	ConfigPath     *string          `json:"configPath"`
 	AppSchema      int              `json:"appSchema"`
 	Status         SystemStatusEnum `json:"status"`
+	Os             string           `json:"os"`
+	WorkingDir     string           `json:"working_dir"`
+	HomeDir        string           `json:"home_dir"`
 }
 
 type SystemStatusEnum string
@@ -740,20 +744,27 @@ func (s *Manager) Migrate(ctx context.Context, input MigrateInput) error {
 }
 
 func (s *Manager) GetSystemStatus() *SystemStatus {
+	workingDir := fsutil.GetWorkingDirectory()
+	homeDir := fsutil.GetHomeDirectory()
+
 	database := s.Database
-	status := SystemStatusEnumOk
 	dbSchema := int(database.Version())
 	dbPath := database.DatabasePath()
 	appSchema := int(database.AppSchemaVersion())
-	configFile := s.Config.GetConfigFile()
 
+	status := SystemStatusEnumOk
 	if s.Config.IsNewSystem() {
 		status = SystemStatusEnumSetup
 	} else if dbSchema < appSchema {
 		status = SystemStatusEnumNeedsMigration
 	}
 
+	configFile := s.Config.GetConfigFile()
+
 	return &SystemStatus{
+		Os:             runtime.GOOS,
+		WorkingDir:     workingDir,
+		HomeDir:        homeDir,
 		DatabaseSchema: &dbSchema,
 		DatabasePath:   &dbPath,
 		AppSchema:      appSchema,

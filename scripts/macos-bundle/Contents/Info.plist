@@ -9,7 +9,7 @@
 	<key>CFBundleTypeIconFile</key>
 	<string>icon.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.stashapp.stash</string>
+	<string>cc.stashapp.stash</string>
 	<key>NSHighResolutionCapable</key>
 	<string>True</string>
 	<key>LSUIElement</key>
