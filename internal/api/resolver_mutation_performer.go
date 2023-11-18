@@ -34,6 +34,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 
 	newPerformer.Name = input.Name
 	newPerformer.Disambiguation = translator.string(input.Disambiguation)
+	newPerformer.Aliases = models.NewRelatedStrings(input.AliasList)
 	newPerformer.URL = translator.string(input.URL)
 	newPerformer.Gender = input.Gender
 	newPerformer.Ethnicity = translator.string(input.Ethnicity)
@@ -68,20 +69,9 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		return nil, fmt.Errorf("converting death date: %w", err)
 	}
 
-	// prefer alias_list over aliases
-	if input.AliasList != nil {
-		newPerformer.Aliases = models.NewRelatedStrings(input.AliasList)
-	}
-
 	newPerformer.TagIDs, err = translator.relatedIds(input.TagIds)
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
-	}
-
-	if err := performer.ValidateDeathDate(nil, input.Birthdate, input.DeathDate); err != nil {
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	// Process the base 64 encoded image string
@@ -97,7 +87,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Performer
 
-		if err := performer.EnsureNameUnique(ctx, newPerformer.Name, newPerformer.Disambiguation, qb); err != nil {
+		if err := performer.ValidateCreate(ctx, newPerformer, qb); err != nil {
 			return err
 		}
 
@@ -196,21 +186,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Performer
 
-		// need to get existing performer
-		existing, err := qb.Find(ctx, performerID)
-		if err != nil {
-			return err
-		}
-
-		if existing == nil {
-			return fmt.Errorf("performer with id %d not found", performerID)
-		}
-
-		if err := performer.EnsureUpdateNameUnique(ctx, existing, updatedPerformer.Name, updatedPerformer.Disambiguation, qb); err != nil {
-			return err
-		}
-
-		if err := performer.ValidateDeathDate(existing, input.Birthdate, input.DeathDate); err != nil {
+		if err := performer.ValidateUpdate(ctx, performerID, updatedPerformer, qb); err != nil {
 			return err
 		}
 
@@ -301,22 +277,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 		qb := r.repository.Performer
 
 		for _, performerID := range performerIDs {
-			// need to get existing performer
-			existing, err := qb.Find(ctx, performerID)
-			if err != nil {
-				return err
-			}
-
-			if existing == nil {
-				return fmt.Errorf("performer with id %d not found", performerID)
-			}
-
-			if err := performer.EnsureUpdateNameUnique(ctx, existing, updatedPerformer.Name, updatedPerformer.Disambiguation, qb); err != nil {
-				return err
-			}
-
-			err = performer.ValidateDeathDate(existing, input.Birthdate, input.DeathDate)
-			if err != nil {
+			if err := performer.ValidateUpdate(ctx, performerID, updatedPerformer, qb); err != nil {
 				return err
 			}
 

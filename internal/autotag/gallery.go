@@ -6,7 +6,7 @@ import (
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 type GalleryFinderUpdater interface {
@@ -53,7 +53,7 @@ func GalleryPerformers(ctx context.Context, s *models.Gallery, rw GalleryPerform
 		}
 		existing := s.PerformerIDs.List()
 
-		if intslice.IntInclude(existing, otherID) {
+		if sliceutil.Contains(existing, otherID) {
 			return false, nil
 		}
 
@@ -91,7 +91,7 @@ func GalleryTags(ctx context.Context, s *models.Gallery, rw GalleryTagUpdater, t
 		}
 		existing := s.TagIDs.List()
 
-		if intslice.IntInclude(existing, otherID) {
+		if sliceutil.Contains(existing, otherID) {
 			return false, nil
 		}
 

@@ -36,7 +36,7 @@ GO_BUILD_FLAGS := $(GO_BUILD_FLAGS)
 
 # set GO_BUILD_TAGS environment variable to any extra build tags required
 GO_BUILD_TAGS := $(GO_BUILD_TAGS)
-GO_BUILD_TAGS += sqlite_stat4
+GO_BUILD_TAGS += sqlite_stat4 sqlite_math_functions
 
 # set STASH_NOLEGACY environment variable or uncomment to disable legacy browser support
 # STASH_NOLEGACY := true

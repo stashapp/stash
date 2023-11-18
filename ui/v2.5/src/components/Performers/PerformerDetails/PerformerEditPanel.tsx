@@ -106,16 +106,16 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       .test({
         name: "unique",
         test: (value, context) => {
-          const aliases = [context.parent.name, ...value];
-          const dupes = aliases
-            .map((e, i, a) => {
-              if (a.indexOf(e) !== i) {
-                return String(i - 1);
-              } else {
-                return null;
-              }
-            })
-            .filter((e) => e !== null) as string[];
+          const aliases = [context.parent.name.toLowerCase()];
+          const dupes: number[] = [];
+          for (let i = 0; i < value.length; i++) {
+            const a = value[i].toLowerCase();
+            if (aliases.includes(a)) {
+              dupes.push(i);
+            } else {
+              aliases.push(a);
+            }
+          }
           if (dupes.length === 0) return true;
           return new yup.ValidationError(dupes.join(" "), value, "alias_list");
         },
