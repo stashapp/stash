@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 const timeFormat = "2006-01-02 15:04:05 -0700"
@@ -137,7 +137,7 @@ func (i LocalPackageIndex) remoteURLs() []string {
 	var ret []string
 
 	for _, pkg := range i {
-		ret = stringslice.StrAppendUnique(ret, pkg.RepositoryURL)
+		ret = sliceutil.AppendUnique(ret, pkg.RepositoryURL)
 	}
 
 	return ret

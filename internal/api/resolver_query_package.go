@@ -10,7 +10,7 @@ import (
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/pkg"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 var ErrInvalidPackageType = errors.New("invalid package type")
@@ -153,7 +153,7 @@ func (r *queryResolver) InstalledPackages(ctx context.Context, typeArg PackageTy
 
 	var ret []*Package
 
-	if stringslice.StrInclude(graphql.CollectAllFields(ctx), "upgrade") {
+	if sliceutil.Contains(graphql.CollectAllFields(ctx), "upgrade") {
 		ret, err = r.getInstalledPackagesWithUpgrades(ctx, pm)
 		if err != nil {
 			return nil, err
