@@ -12,6 +12,7 @@ import (
 	"path"
 	"time"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"gopkg.in/yaml.v2"
 )
 
@@ -25,16 +26,19 @@ const DefaultCacheTTL = 5 * time.Minute
 type httpRepository struct {
 	packageListURL url.URL
 	client         *http.Client
+
+	cache *repositoryCache
 }
 
 // newHttpRepository creates a new Repository. If client is nil then http.DefaultClient is used.
-func newHttpRepository(packageListURL url.URL, client *http.Client) *httpRepository {
+func newHttpRepository(packageListURL url.URL, client *http.Client, cache *repositoryCache) *httpRepository {
 	if client == nil {
 		client = http.DefaultClient
 	}
 	return &httpRepository{
 		packageListURL: packageListURL,
 		client:         client,
+		cache:          cache,
 	}
 }
 
@@ -53,7 +57,7 @@ func (r *httpRepository) List(ctx context.Context) ([]RemotePackage, error) {
 	if u.Scheme == "file" {
 		f, err = r.getLocalFile(ctx, u.Path)
 	} else {
-		f, err = r.getFile(ctx, u)
+		f, err = r.getFileCached(ctx, u)
 	}
 
 	if err != nil {
@@ -130,7 +134,47 @@ func (r *httpRepository) GetPackageZip(ctx context.Context, pkg RemotePackage) (
 	return f, nil
 }
 
+// getFileCached tries to get the list from the local cache.
+// If it is not found or is stale, then it gets it normally.
+func (r *httpRepository) getFileCached(ctx context.Context, u url.URL) (io.ReadCloser, error) {
+	// check if the file is in the cache first
+	localModTime := r.cache.lastModified(u.String())
+
+	if localModTime != nil {
+		// get the update time of the file
+		req, err := http.NewRequestWithContext(ctx, http.MethodHead, u.String(), nil)
+		if err != nil {
+			// shouldn't happen
+			return nil, err
+		}
+
+		resp, err := r.client.Do(req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get remote file: %w", err)
+		}
+
+		if resp.StatusCode >= 400 {
+			return nil, fmt.Errorf("failed to get remote file: %s", resp.Status)
+		}
+
+		lastModified := resp.Header.Get("Last-Modified")
+		if lastModified != "" {
+			remoteModTime, _ := time.Parse(http.TimeFormat, lastModified)
+
+			if !remoteModTime.After(*localModTime) {
+				logger.Debugf("cached version of %s is equal or newer than remote", u.String())
+				return r.cache.getPackageList(u.String())
+			}
+		}
+
+		logger.Debugf("cached version of %s is older than remote", u.String())
+	}
+
+	return r.getFile(ctx, u)
+}
+
 func (r *httpRepository) getFile(ctx context.Context, u url.URL) (io.ReadCloser, error) {
+	logger.Debugf("fetching %s", u.String())
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
 	if err != nil {
 		// shouldn't happen
@@ -146,7 +190,7 @@ func (r *httpRepository) getFile(ctx context.Context, u url.URL) (io.ReadCloser,
 		return nil, fmt.Errorf("failed to get remote file: %s", resp.Status)
 	}
 
-	return resp.Body, nil
+	return r.cache.cacheFile(u.String(), resp.Body)
 }
 
 func (r *httpRepository) getLocalFile(ctx context.Context, path string) (fs.File, error) {

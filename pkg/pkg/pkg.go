@@ -196,8 +196,3 @@ func (i PackageStatusIndex) Upgradable() []PackageStatus {
 
 	return ret
 }
-
-type remotePackageCache struct {
-	cachedIndex RemotePackageIndex
-	cacheTime   time.Time
-}

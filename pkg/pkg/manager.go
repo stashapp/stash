@@ -10,10 +10,13 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
-	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 )
+
+type CachePathGetter interface {
+	GetCachePath() string
+}
 
 // SourcePathGetter gets the source path for a given package URL.
 type SourcePathGetter interface {
@@ -28,16 +31,9 @@ type SourcePathGetter interface {
 type Manager struct {
 	Local             *Store
 	PackagePathGetter SourcePathGetter
-
-	remoteCache map[string]*remotePackageCache
+	CachePathGetter   CachePathGetter
 
 	Client *http.Client
-
-	// CacheTTL is the time to live for the index cache.
-	// The index is cached for this duration. The first request after the cache
-	// expires will cause the index to be reloaded.
-	// This applies only to http remote indexes.
-	CacheTTL time.Duration
 }
 
 func (m *Manager) remoteFromURL(path string) (*httpRepository, error) {
@@ -46,23 +42,13 @@ func (m *Manager) remoteFromURL(path string) (*httpRepository, error) {
 		return nil, fmt.Errorf("parsing path: %w", err)
 	}
 
-	return newHttpRepository(*u, m.Client), nil
-}
-
-func (m *Manager) checkCacheExpired(path string) {
-	if m.remoteCache == nil {
-		m.remoteCache = make(map[string]*remotePackageCache)
+	cachePath := m.CachePathGetter.GetCachePath()
+	var cache *repositoryCache
+	if cachePath != "" {
+		cache = &repositoryCache{cachePath: cachePath}
 	}
 
-	cache := m.remoteCache[path]
-
-	if cache == nil {
-		return
-	}
-
-	if time.Since(cache.cacheTime) > m.CacheTTL {
-		m.remoteCache[path] = nil
-	}
+	return newHttpRepository(*u, m.Client, cache), nil
 }
 
 func (m *Manager) ListInstalled(ctx context.Context) (LocalPackageIndex, error) {
@@ -85,13 +71,6 @@ func (m *Manager) ListInstalled(ctx context.Context) (LocalPackageIndex, error) 
 }
 
 func (m *Manager) ListRemote(ctx context.Context, remoteURL string) (RemotePackageIndex, error) {
-	m.checkCacheExpired(remoteURL)
-	cache := m.remoteCache[remoteURL]
-
-	if cache != nil {
-		return cache.cachedIndex, nil
-	}
-
 	r, err := m.remoteFromURL(remoteURL)
 	if err != nil {
 		return nil, fmt.Errorf("creating remote repository: %w", err)
@@ -108,14 +87,6 @@ func (m *Manager) ListRemote(ctx context.Context, remoteURL string) (RemotePacka
 	}
 
 	ret := remotePackageIndexFromList(list)
-
-	// only cache remote http results
-	if r.packageListURL.Scheme != "file" {
-		m.remoteCache[remoteURL] = &remotePackageCache{
-			cachedIndex: ret,
-			cacheTime:   time.Now(),
-		}
-	}
 
 	return ret, nil
 }
