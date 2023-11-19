@@ -90,7 +90,11 @@ export const SettingsScrapingPanel: React.FC = () => {
     useSettings();
 
   async function onReloadScrapers() {
-    await mutateReloadScrapers().catch((e) => Toast.error(e));
+    try {
+      await mutateReloadScrapers();
+    } catch (e) {
+      Toast.error(e);
+    }
   }
 
   function renderPerformerScrapeTypes(types: ScrapeType[]) {

@@ -212,9 +212,6 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     setIsLoading(true);
     try {
       await mutateReloadScrapers();
-
-      // reload the performer scrapers
-      await Scrapers.refetch();
     } catch (e) {
       Toast.error(e);
     } finally {
