@@ -117,7 +117,7 @@ type Manager struct {
 
 	Paths *paths.Paths
 
-	FFMPEG        *ffmpeg.FFMpeg
+	FFMpeg        *ffmpeg.FFMpeg
 	FFProbe       ffmpeg.FFProbe
 	StreamManager *ffmpeg.StreamManager
 
@@ -263,8 +263,8 @@ func initialize() error {
 		logger.Warnf("config file %snot found. Assuming new system...", cfgFile)
 	}
 
-	if err = initFFMPEG(ctx); err != nil {
-		logger.Warnf("could not initialize FFMPEG subsystem: %v", err)
+	if err = initFFmpeg(ctx); err != nil {
+		logger.Warnf("could not initialize FFmpeg subsystem: %v", err)
 	}
 
 	instance.Scanner = makeScanner(repo, instance.PluginCache)
@@ -382,7 +382,7 @@ func initProfiling(cpuProfilePath string) {
 	}
 }
 
-func initFFMPEG(ctx context.Context) error {
+func initFFmpeg(ctx context.Context) error {
 	// only do this if we have a config file set
 	if instance.Config.GetConfigFile() != "" {
 		// use same directory as config path
@@ -394,12 +394,12 @@ func initFFMPEG(ctx context.Context) error {
 		ffmpegPath, ffprobePath := ffmpeg.GetPaths(paths)
 
 		if ffmpegPath == "" || ffprobePath == "" {
-			logger.Infof("couldn't find FFMPEG, attempting to download it")
+			logger.Infof("couldn't find FFmpeg, attempting to download it")
 			if err := ffmpeg.Download(ctx, configDirectory); err != nil {
-				msg := `Unable to locate / automatically download FFMPEG
+				msg := `Unable to locate / automatically download FFmpeg
 
 	Check the readme for download links.
-	The FFMPEG and FFProbe binaries should be placed in %s
+	The ffmpeg and ffprobe binaries should be placed in %s
 
 	The error was: %s
 	`
@@ -411,10 +411,10 @@ func initFFMPEG(ctx context.Context) error {
 			}
 		}
 
-		instance.FFMPEG = ffmpeg.NewEncoder(ffmpegPath)
+		instance.FFMpeg = ffmpeg.NewEncoder(ffmpegPath)
 		instance.FFProbe = ffmpeg.FFProbe(ffprobePath)
 
-		instance.FFMPEG.InitHWSupport(ctx)
+		instance.FFMpeg.InitHWSupport(ctx)
 		instance.RefreshStreamManager()
 	}
 
@@ -563,7 +563,7 @@ func (s *Manager) RefreshStreamManager() {
 	}
 
 	cacheDir := s.Config.GetCachePath()
-	s.StreamManager = ffmpeg.NewStreamManager(cacheDir, s.FFMPEG, s.FFProbe, s.Config, s.ReadLockManager)
+	s.StreamManager = ffmpeg.NewStreamManager(cacheDir, s.FFMpeg, s.FFProbe, s.Config, s.ReadLockManager)
 }
 
 func setSetupDefaults(input *SetupInput) {
@@ -676,8 +676,8 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 
 	s.Config.FinalizeSetup()
 
-	if err := initFFMPEG(ctx); err != nil {
-		return fmt.Errorf("error initializing FFMPEG subsystem: %v", err)
+	if err := initFFmpeg(ctx); err != nil {
+		return fmt.Errorf("error initializing FFmpeg subsystem: %v", err)
 	}
 
 	instance.Scanner = makeScanner(instance.Repository, instance.PluginCache)
@@ -685,8 +685,8 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 	return nil
 }
 
-func (s *Manager) validateFFMPEG() error {
-	if s.FFMPEG == nil || s.FFProbe == "" {
+func (s *Manager) validateFFmpeg() error {
+	if s.FFMpeg == nil || s.FFProbe == "" {
 		return errors.New("missing ffmpeg and/or ffprobe")
 	}
 

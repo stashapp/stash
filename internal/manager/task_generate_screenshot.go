@@ -56,7 +56,7 @@ func (t *GenerateCoverTask) Start(ctx context.Context) {
 	logger.Debugf("Creating screenshot for %s", scenePath)
 
 	g := generate.Generator{
-		Encoder:      instance.FFMPEG,
+		Encoder:      instance.FFMpeg,
 		FFMpegConfig: instance.Config,
 		LockManager:  instance.ReadLockManager,
 		ScenePaths:   instance.Paths.Scene,

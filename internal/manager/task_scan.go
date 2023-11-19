@@ -464,7 +464,7 @@ func (g *imageGenerators) generateThumbnail(ctx context.Context, i *models.Image
 		Preset:     c.GetPreviewPreset().String(),
 	}
 
-	encoder := image.NewThumbnailEncoder(mgr.FFMPEG, mgr.FFProbe, clipPreviewOptions)
+	encoder := image.NewThumbnailEncoder(mgr.FFMpeg, mgr.FFProbe, clipPreviewOptions)
 	data, err := encoder.GetThumbnail(f, models.DefaultGthumbWidth)
 
 	if err != nil {
@@ -547,7 +547,7 @@ func (g *sceneGenerators) Generate(ctx context.Context, s *models.Scene, f *mode
 			options := getGeneratePreviewOptions(GeneratePreviewOptionsInput{})
 
 			generator := &generate.Generator{
-				Encoder:      mgr.FFMPEG,
+				Encoder:      mgr.FFMpeg,
 				FFMpegConfig: mgr.Config,
 				LockManager:  mgr.ReadLockManager,
 				MarkerPaths:  g.paths.SceneMarkers,

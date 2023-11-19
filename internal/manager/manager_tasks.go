@@ -90,7 +90,7 @@ type ScanMetaDataFilterInput struct {
 }
 
 func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error) {
-	if err := s.validateFFMPEG(); err != nil {
+	if err := s.validateFFmpeg(); err != nil {
 		return 0, err
 	}
 
@@ -160,7 +160,7 @@ func (s *Manager) RunSingleTask(ctx context.Context, t Task) int {
 }
 
 func (s *Manager) Generate(ctx context.Context, input GenerateMetadataInput) (int, error) {
-	if err := s.validateFFMPEG(); err != nil {
+	if err := s.validateFFmpeg(); err != nil {
 		return 0, err
 	}
 	if err := instance.Paths.Generated.EnsureTmpDir(); err != nil {
