@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/utils"
 	"gopkg.in/yaml.v2"
 )
 
@@ -64,27 +65,81 @@ type Config struct {
 	Settings map[string]SettingConfig `yaml:"settings"`
 }
 
+type PluginCSP struct {
+	ScriptSrc  []string `json:"script-src" yaml:"script-src"`
+	StyleSrc   []string `json:"style-src" yaml:"style-src"`
+	ConnectSrc []string `json:"connect-src" yaml:"connect-src"`
+}
+
 type UIConfig struct {
+	// Content Security Policy configuration for the plugin.
+	CSP PluginCSP `yaml:"csp"`
+
 	// Javascript files that will be injected into the stash UI.
+	// These may be URLs or paths to files relative to the plugin configuration file.
 	Javascript []string `yaml:"javascript"`
 
 	// CSS files that will be injected into the stash UI.
+	// These may be URLs or paths to files relative to the plugin configuration file.
 	CSS []string `yaml:"css"`
+
+	// Assets is a map of URL prefixes to hosted directories.
+	// This allows plugins to serve static assets from a URL path.
+	// Plugin assets are exposed via the /plugin/{pluginId}/assets path.
+	// For example, if the plugin configuration file contains:
+	// /foo: bar
+	// /bar: baz
+	// /: root
+	// Then the following requests will be mapped to the following files:
+	// /plugin/{pluginId}/assets/foo/file.txt -> {pluginDir}/foo/file.txt
+	// /plugin/{pluginId}/assets/bar/file.txt -> {pluginDir}/baz/file.txt
+	// /plugin/{pluginId}/assets/file.txt -> {pluginDir}/root/file.txt
+	Assets utils.URLMap `yaml:"assets"`
+}
+
+func isURL(s string) bool {
+	return strings.HasPrefix(s, "http://") || strings.HasPrefix(s, "https://")
 }
 
 func (c UIConfig) getCSSFiles(parent Config) []string {
-	ret := make([]string, len(c.CSS))
-	for i, v := range c.CSS {
-		ret[i] = filepath.Join(parent.getConfigPath(), v)
+	var ret []string
+	for _, v := range c.CSS {
+		if !isURL(v) {
+			ret = append(ret, filepath.Join(parent.getConfigPath(), v))
+		}
+	}
+
+	return ret
+}
+
+func (c UIConfig) getExternalCSS() []string {
+	var ret []string
+	for _, v := range c.CSS {
+		if isURL(v) {
+			ret = append(ret, v)
+		}
 	}
 
 	return ret
 }
 
 func (c UIConfig) getJavascriptFiles(parent Config) []string {
-	ret := make([]string, len(c.Javascript))
-	for i, v := range c.Javascript {
-		ret[i] = filepath.Join(parent.getConfigPath(), v)
+	var ret []string
+	for _, v := range c.Javascript {
+		if !isURL(v) {
+			ret = append(ret, filepath.Join(parent.getConfigPath(), v))
+		}
+	}
+
+	return ret
+}
+
+func (c UIConfig) getExternalScripts() []string {
+	var ret []string
+	for _, v := range c.Javascript {
+		if isURL(v) {
+			ret = append(ret, v)
+		}
 	}
 
 	return ret
@@ -184,10 +239,14 @@ func (c Config) toPlugin() *Plugin {
 		Tasks:       c.getPluginTasks(false),
 		Hooks:       c.getPluginHooks(false),
 		UI: PluginUI{
-			Javascript: c.UI.getJavascriptFiles(c),
-			CSS:        c.UI.getCSSFiles(c),
+			ExternalScript: c.UI.getExternalScripts(),
+			ExternalCSS:    c.UI.getExternalCSS(),
+			Javascript:     c.UI.getJavascriptFiles(c),
+			CSS:            c.UI.getCSSFiles(c),
+			Assets:         c.UI.Assets,
 		},
-		Settings: c.getPluginSettings(),
+		Settings:   c.getPluginSettings(),
+		ConfigPath: c.path,
 	}
 }
 

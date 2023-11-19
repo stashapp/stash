@@ -22,6 +22,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/sliceutil"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 const (
@@ -1023,7 +1024,7 @@ func (i *Instance) GetMaxSessionAge() int {
 
 // GetCustomServedFolders gets the map of custom paths to their applicable
 // filesystem locations
-func (i *Instance) GetCustomServedFolders() URLMap {
+func (i *Instance) GetCustomServedFolders() utils.URLMap {
 	return i.getStringMapString(CustomServedFolders)
 }
 

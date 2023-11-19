@@ -21,6 +21,7 @@ import (
 	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/txn"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type Plugin struct {
@@ -35,14 +36,39 @@ type Plugin struct {
 	Settings    []PluginSetting `json:"settings"`
 
 	Enabled bool `json:"enabled"`
+
+	// ConfigPath is the path to the plugin's configuration file.
+	ConfigPath string `json:"-"`
 }
 
 type PluginUI struct {
+	// Content Security Policy configuration for the plugin.
+	CSP PluginCSP `json:"csp"`
+
+	// External Javascript files that will be injected into the stash UI.
+	ExternalScript []string `json:"external_script"`
+
+	// External CSS files that will be injected into the stash UI.
+	ExternalCSS []string `json:"external_css"`
+
 	// Javascript files that will be injected into the stash UI.
 	Javascript []string `json:"javascript"`
 
 	// CSS files that will be injected into the stash UI.
 	CSS []string `json:"css"`
+
+	// Assets is a map of URL prefixes to hosted directories.
+	// This allows plugins to serve static assets from a URL path.
+	// Plugin assets are exposed via the /plugin/{pluginId}/assets path.
+	// For example, if the plugin configuration file contains:
+	// /foo: bar
+	// /bar: baz
+	// /: root
+	// Then the following requests will be mapped to the following files:
+	// /plugin/{pluginId}/assets/foo/file.txt -> {pluginDir}/foo/file.txt
+	// /plugin/{pluginId}/assets/bar/file.txt -> {pluginDir}/baz/file.txt
+	// /plugin/{pluginId}/assets/file.txt -> {pluginDir}/root/file.txt
+	Assets utils.URLMap `json:"assets"`
 }
 
 type PluginSetting struct {
@@ -171,6 +197,22 @@ func (c Cache) ListPlugins() []*Plugin {
 	}
 
 	return ret
+}
+
+// GetPlugin returns the plugin with the given ID.
+// Returns nil if the plugin is not found.
+func (c Cache) GetPlugin(id string) *Plugin {
+	disabledPlugins := c.config.GetDisabledPlugins()
+	plugin := c.getPlugin(id)
+	if plugin != nil {
+		p := plugin.toPlugin()
+
+		disabled := sliceutil.Contains(disabledPlugins, p.ID)
+		p.Enabled = !disabled
+		return p
+	}
+
+	return nil
 }
 
 // ListPluginTasks returns all runnable plugin tasks in all loaded plugins.
