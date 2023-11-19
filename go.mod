@@ -30,6 +30,7 @@ require (
 	github.com/json-iterator/go v1.1.12
 	github.com/kermieisinthehouse/gosx-notifier v0.1.2
 	github.com/kermieisinthehouse/systray v1.2.4
+	github.com/landlock-lsm/go-landlock v0.0.0-20230607164353-b03374193cb2
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/natefinch/pie v0.0.0-20170715172608-9a0d72014007
@@ -109,4 +110,5 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	kernel.org/pub/linux/libs/security/libcap/psx v1.2.66 // indirect
 )
