@@ -2,7 +2,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
 
@@ -66,13 +65,13 @@ func main() {
 	}
 
 	if len(args) > 1 {
-		fmt.Fprintln(os.Stderr, "Files will be processed sequentially! Consier using GNU Parallel.")
+		fmt.Fprintln(os.Stderr, "Files will be processed sequentially! If required, use e.g. GNU Parallel to run concurrently.")
 		fmt.Fprintf(os.Stderr, "Example: parallel %v ::: *.mp4\n", os.Args[0])
 	}
 
 	ffmpegPath, ffprobePath := ffmpeg.GetPaths(nil)
 	encoder := ffmpeg.NewEncoder(ffmpegPath)
-	encoder.InitHWSupport(context.TODO())
+	// don't need to InitHWSupport, phashing doesn't use hw acceleration
 	ffprobe := ffmpeg.FFProbe(ffprobePath)
 
 	for _, item := range args {
