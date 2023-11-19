@@ -29,9 +29,9 @@ type flagStruct struct {
 	versionFlag    bool
 }
 
-func GetInstance() *Instance {
+func GetInstance() *Config {
 	instanceOnce.Do(func() {
-		instance = &Instance{
+		instance = &Config{
 			main:      viper.New(),
 			overrides: viper.New(),
 		}
@@ -39,7 +39,7 @@ func GetInstance() *Instance {
 	return instance
 }
 
-func Initialize() (*Instance, error) {
+func Initialize() (*Config, error) {
 	var err error
 	initOnce.Do(func() {
 		flags := initFlags()
@@ -82,7 +82,7 @@ func Initialize() (*Instance, error) {
 	return instance, err
 }
 
-func initConfig(instance *Instance, flags flagStruct) error {
+func initConfig(instance *Config, flags flagStruct) error {
 	v := instance.main
 
 	// The config file is called config.  Leave off the file extension.

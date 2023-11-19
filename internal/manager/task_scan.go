@@ -90,7 +90,7 @@ type extensionConfig struct {
 	zipExt []string
 }
 
-func newExtensionConfig(c *config.Instance) extensionConfig {
+func newExtensionConfig(c *config.Config) extensionConfig {
 	return extensionConfig{
 		vidExt: c.GetVideoExtensions(),
 		imgExt: c.GetImageExtensions(),
@@ -126,7 +126,7 @@ type handlerRequiredFilter struct {
 	videoFileNamingAlgorithm models.HashAlgorithm
 }
 
-func newHandlerRequiredFilter(c *config.Instance, repo models.Repository) *handlerRequiredFilter {
+func newHandlerRequiredFilter(c *config.Config, repo models.Repository) *handlerRequiredFilter {
 	processes := c.GetParallelTasksWithAutoDetection()
 
 	return &handlerRequiredFilter{
@@ -239,7 +239,7 @@ type scanFilter struct {
 	minModTime        time.Time
 }
 
-func newScanFilter(c *config.Instance, repo models.Repository, minModTime time.Time) *scanFilter {
+func newScanFilter(c *config.Config, repo models.Repository, minModTime time.Time) *scanFilter {
 	return &scanFilter{
 		extensionConfig:   newExtensionConfig(c),
 		txnManager:        repo.TxnManager,

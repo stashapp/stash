@@ -112,7 +112,7 @@ type SetupInput struct {
 }
 
 type Manager struct {
-	Config *config.Instance
+	Config *config.Config
 	Logger *log.Logger
 
 	Paths *paths.Paths
@@ -358,7 +358,7 @@ func formatDuration(t time.Duration) string {
 	return fmt.Sprintf("%02.f:%02.f:%02.f", t.Hours(), t.Minutes(), t.Seconds())
 }
 
-func initSecurity(cfg *config.Instance) {
+func initSecurity(cfg *config.Config) {
 	if err := session.CheckExternalAccessTripwire(cfg); err != nil {
 		session.LogExternalAccessError(*err)
 	}
