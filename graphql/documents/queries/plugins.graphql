@@ -24,6 +24,11 @@ query Plugins {
       description
       type
     }
+
+    paths {
+      css
+      javascript
+    }
   }
 }
 

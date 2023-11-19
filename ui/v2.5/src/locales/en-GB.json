@@ -1162,14 +1162,10 @@
     "confirm": {
       "almost_ready": "We're almost ready to complete the configuration. Please confirm the following settings. You can click back to change anything incorrect. If everything looks good, click Confirm to create your system.",
       "blobs_directory": "Binary data directory",
-      "blobs_use_database": "<use database>",
+      "blobs_use_database": "<using database>",
       "cache_directory": "Cache directory",
       "configuration_file_location": "Configuration file location:",
       "database_file_path": "Database file path",
-      "default_blobs_location": "<path containing configuration file>/blobs",
-      "default_cache_location": "<path containing configuration file>/cache",
-      "default_db_location": "<path containing configuration file>/stash-go.sqlite",
-      "default_generated_content_location": "<path containing configuration file>/generated",
       "generated_directory": "Generated directory",
       "nearly_there": "Nearly there!",
       "stash_library_directories": "Stash library directories"
@@ -1237,10 +1233,12 @@
       "your_system_has_been_created": "Success! Your system has been created!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash tries to find its configuration file (<code>config.yml</code>) from the current working directory first, and if it does not find it there, it falls back to <code>$HOME/.stash/config.yml</code> (on Windows, this will be <code>%USERPROFILE%\\.stash\\config.yml</code>). You can also make Stash read from a specific configuration file by running it with the <code>-c '<path to config file>'</code> or <code>--config '<path to config file>'</code> options.",
-      "in_current_stash_directory": "In the <code>$HOME/.stash</code> directory",
-      "in_the_current_working_directory": "In the current working directory",
-      "next_step": "With all of that out of the way, if you're ready to proceed with setting up a new system, choose where you'd like to store your configuration file and click Next.",
+      "config_path_logic_explained": "Stash tries to find its configuration file (<code>config.yml</code>) from the current working directory first, and if it does not find it there, it falls back to <code>{fallback_path}</code>. You can also make Stash read from a specific configuration file by running it with the <code>-c '<path to config file>'</code> or <code>--config '<path to config file>'</code> options.",
+      "in_current_stash_directory": "In the <code>{path}</code> directory:",
+      "in_the_current_working_directory": "In <code>{path}</code>, the working directory, currently:",
+      "in_the_current_working_directory_disabled": "In <code>{path}</code>, the working directory:",
+      "in_the_current_working_directory_disabled_macos": "Unsupported when running <code>Stash.app</code>,<br></br>run <code>stash-macos</code> to set up in the working directory",
+      "next_step": "With all of that out of the way, if you're ready to proceed with setting up a new system, please choose where you'd like to store your configuration file.",
       "store_stash_config": "Where do you want to store your Stash configuration?",
       "unable_to_locate_config": "If you're reading this, then Stash couldn't find an existing configuration. This wizard will guide you through the process of setting up a new configuration.",
       "unexpected_explained": "If you're getting this screen unexpectedly, please try restarting Stash in the correct working directory or with the <code>-c</code> flag."

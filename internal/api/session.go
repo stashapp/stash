@@ -50,7 +50,9 @@ func serveLoginPage(loginUIBox fs.FS, w http.ResponseWriter, r *http.Request, re
 	}
 
 	w.Header().Set("Content-Type", "text/html")
-	setPageSecurityHeaders(w, r)
+
+	// we shouldn't need to set plugin exceptions here
+	setPageSecurityHeaders(w, r, nil)
 
 	utils.ServeStaticContent(w, r, buffer.Bytes())
 }
