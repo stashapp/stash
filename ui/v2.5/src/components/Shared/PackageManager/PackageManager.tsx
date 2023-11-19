@@ -614,6 +614,18 @@ const SourcePackagesList: React.FC<{
   }
 
   const children = useMemo(() => {
+    function getRequiredPackages(pkg: RemotePackage) {
+      const ret: RemotePackage[] = [];
+      pkg.requires.forEach((r) => {
+        const found = packages?.find((p) => p.package_id === r.package_id);
+        if (found && !ret.includes(found)) {
+          ret.push(found);
+          ret.push(...getRequiredPackages(found));
+        }
+      });
+      return ret;
+    }
+
     function togglePackage(pkg: RemotePackage) {
       if (disabled || !packages) return;
 
@@ -625,19 +637,7 @@ const SourcePackagesList: React.FC<{
         } else {
           // also include required packages
           const toAdd = [pkg];
-          pkg.requires.forEach((r) => {
-            // find the required package
-            const requiredSelected = prev.find(
-              (p) => p.package_id === r.package_id
-            );
-            const required = packages.find(
-              (p) => p.package_id === r.package_id
-            );
-
-            if (!requiredSelected && required) {
-              toAdd.push(required);
-            }
-          });
+          toAdd.push(...getRequiredPackages(pkg));
 
           return prev.concat(...toAdd);
         }
