@@ -79,5 +79,5 @@ RUN git config --global safe.directory '*'
 # make ui
 # cd docker/compiler
 # make build
-# docker run --rm -v /PATH_TO_STASH:/stash -w /stash -i -t stashapp/compiler:latest make cross-compile-all
+# docker run --rm -v /PATH_TO_STASH:/stash -w /stash -i -t stashapp/compiler:latest make build-cc-all
 # # binaries will show up in /dist
