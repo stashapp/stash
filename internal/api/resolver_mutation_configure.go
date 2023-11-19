@@ -487,19 +487,10 @@ func (r *mutationResolver) ConfigureDlna(ctx context.Context, input ConfigDLNAIn
 		c.Set(config.DLNAVideoSortOrder, input.VideoSortOrder)
 	}
 
-	currentDLNAEnabled := c.GetDLNADefaultEnabled()
-	if input.Enabled != nil && *input.Enabled != currentDLNAEnabled {
+	refresh := false
+	if input.Enabled != nil {
 		c.Set(config.DLNADefaultEnabled, *input.Enabled)
-
-		// start/stop the DLNA service as needed
-		dlnaService := manager.GetInstance().DLNAService
-		if !*input.Enabled && dlnaService.IsRunning() {
-			dlnaService.Stop(nil)
-		} else if *input.Enabled && !dlnaService.IsRunning() {
-			if err := dlnaService.Start(nil); err != nil {
-				logger.Warnf("error starting DLNA service: %v", err)
-			}
-		}
+		refresh = true
 	}
 
 	if input.Interfaces != nil {
@@ -508,6 +499,10 @@ func (r *mutationResolver) ConfigureDlna(ctx context.Context, input ConfigDLNAIn
 
 	if err := c.Write(); err != nil {
 		return makeConfigDLNAResult(), err
+	}
+
+	if refresh {
+		manager.GetInstance().RefreshDLNA()
 	}
 
 	return makeConfigDLNAResult(), nil

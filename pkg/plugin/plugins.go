@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/common"
@@ -119,46 +120,31 @@ func (c *Cache) RegisterSessionStore(sessionStore *session.Store) {
 	c.sessionStore = sessionStore
 }
 
-// LoadPlugins clears the plugin cache and loads from the plugin path.
-// In the event of an error during loading, the cache will be left empty.
-func (c *Cache) LoadPlugins() error {
-	c.plugins = nil
-	plugins, err := loadPlugins(c.config.GetPluginsPath())
-	if err != nil {
-		return err
-	}
-
-	c.plugins = plugins
-	return nil
-}
-
-func loadPlugins(path string) ([]Config, error) {
+// ReloadPlugins clears the plugin cache and loads from the plugin path.
+// If a plugin cannot be loaded, an error is logged and the plugin is skipped.
+func (c *Cache) ReloadPlugins() {
+	path := c.config.GetPluginsPath()
 	plugins := make([]Config, 0)
 
 	logger.Debugf("Reading plugin configs from %s", path)
-	pluginFiles := []string{}
-	err := filepath.Walk(path, func(fp string, f os.FileInfo, err error) error {
+
+	err := fsutil.SymWalk(path, func(fp string, f os.FileInfo, err error) error {
 		if filepath.Ext(fp) == ".yml" {
-			pluginFiles = append(pluginFiles, fp)
+			plugin, err := loadPluginFromYAMLFile(fp)
+			if err != nil {
+				logger.Errorf("Error loading plugin %s: %v", fp, err)
+			} else {
+				plugins = append(plugins, *plugin)
+			}
 		}
 		return nil
 	})
 
 	if err != nil {
-
-		return nil, err
+		logger.Errorf("Error reading plugin configs: %v", err)
 	}
 
-	for _, file := range pluginFiles {
-		plugin, err := loadPluginFromYAMLFile(file)
-		if err != nil {
-			logger.Errorf("Error loading plugin %s: %s", file, err.Error())
-		} else {
-			plugins = append(plugins, *plugin)
-		}
-	}
-
-	return plugins, nil
+	c.plugins = plugins
 }
 
 func (c Cache) enabledPlugins() []Config {

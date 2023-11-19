@@ -286,8 +286,7 @@ type Config struct {
 	// not written to config file
 	overrides *viper.Viper
 
-	cpuProfilePath string
-	isNewSystem    bool
+	isNewSystem bool
 	// configUpdates  chan int
 	certFile string
 	keyFile  string
@@ -296,6 +295,13 @@ type Config struct {
 }
 
 var instance *Config
+
+func GetInstance() *Config {
+	if instance == nil {
+		panic("config not initialized")
+	}
+	return instance
+}
 
 func (i *Config) IsNewSystem() bool {
 	return i.isNewSystem
@@ -325,13 +331,6 @@ func (i *Config) GetTLSFiles() (certFile, keyFile string) {
 func (i *Config) HasTLSConfig() bool {
 	certFile, keyFile := i.GetTLSFiles()
 	return certFile != "" && keyFile != ""
-}
-
-// GetCPUProfilePath returns the path to the CPU profile file to output
-// profiling info to. This is set only via a commandline flag. Returns an
-// empty string if not set.
-func (i *Config) GetCPUProfilePath() string {
-	return i.cpuProfilePath
 }
 
 func (i *Config) GetNoBrowser() bool {
@@ -1551,7 +1550,7 @@ func (i *Config) Validate() error {
 	return nil
 }
 
-func (i *Config) setDefaultValues(write bool) error {
+func (i *Config) setDefaultValues() {
 	// read data before write lock scope
 	defaultDatabaseFilePath := i.GetDefaultDatabaseFilePath()
 	defaultScrapersPath := i.GetDefaultScrapersPath()
@@ -1600,54 +1599,30 @@ func (i *Config) setDefaultValues(write bool) error {
 
 	// Set NoProxy default
 	i.main.SetDefault(NoProxy, noProxyDefault)
-
-	if write {
-		return i.main.WriteConfig()
-	}
-
-	return nil
 }
 
 // setExistingSystemDefaults sets config options that are new and unset in an existing install,
 // but should have a separate default than for brand-new systems, to maintain behavior.
-func (i *Config) setExistingSystemDefaults() error {
+// The config file will not be written.
+func (i *Config) setExistingSystemDefaults() {
 	i.Lock()
 	defer i.Unlock()
 	if !i.isNewSystem {
-		configDirtied := false
-
 		// Existing systems as of the introduction of auto-browser open should retain existing
 		// behavior and not start the browser automatically.
 		if !i.main.InConfig(NoBrowser) {
-			configDirtied = true
 			i.main.Set(NoBrowser, true)
 		}
 
 		// Existing systems as of the introduction of the taskbar should inform users.
 		if !i.main.InConfig(ShowOneTimeMovedNotification) {
-			configDirtied = true
 			i.main.Set(ShowOneTimeMovedNotification, true)
 		}
-
-		if configDirtied {
-			return i.main.WriteConfig()
-		}
 	}
-
-	return nil
 }
 
-// SetInitialConfig fills in missing required config fields
+// SetInitialConfig fills in missing required config fields. The config file will not be written.
 func (i *Config) SetInitialConfig() error {
-	return i.setInitialConfig(true)
-}
-
-// SetInitialMemoryConfig fills in missing required config fields without writing the configuration
-func (i *Config) SetInitialMemoryConfig() error {
-	return i.setInitialConfig(false)
-}
-
-func (i *Config) setInitialConfig(write bool) error {
 	// generate some api keys
 	const apiKeyLength = 32
 
@@ -1667,7 +1642,9 @@ func (i *Config) setInitialConfig(write bool) error {
 		i.Set(SessionStoreKey, sessionStoreKey)
 	}
 
-	return i.setDefaultValues(write)
+	i.setDefaultValues()
+
+	return nil
 }
 
 func (i *Config) FinalizeSetup() {

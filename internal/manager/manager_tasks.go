@@ -9,6 +9,9 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/file"
+	file_image "github.com/stashapp/stash/pkg/file/image"
+	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
@@ -94,8 +97,28 @@ func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error
 		return 0, err
 	}
 
+	scanner := &file.Scanner{
+		Repository: file.NewRepository(s.Repository),
+		FileDecorators: []file.Decorator{
+			&file.FilteredDecorator{
+				Decorator: &video.Decorator{
+					FFProbe: s.FFProbe,
+				},
+				Filter: file.FilterFunc(videoFileFilter),
+			},
+			&file.FilteredDecorator{
+				Decorator: &file_image.Decorator{
+					FFProbe: s.FFProbe,
+				},
+				Filter: file.FilterFunc(imageFileFilter),
+			},
+		},
+		FingerprintCalculator: &fingerprintCalculator{s.Config},
+		FS:                    &file.OsFS{},
+	}
+
 	scanJob := ScanJob{
-		scanner:       s.Scanner,
+		scanner:       scanner,
 		input:         input,
 		subscriptions: s.scanSubs,
 	}
@@ -254,8 +277,16 @@ type CleanMetadataInput struct {
 }
 
 func (s *Manager) Clean(ctx context.Context, input CleanMetadataInput) int {
+	cleaner := &file.Cleaner{
+		FS:         &file.OsFS{},
+		Repository: file.NewRepository(s.Repository),
+		Handlers: []file.CleanHandler{
+			&cleanHandler{},
+		},
+	}
+
 	j := cleanJob{
-		cleaner:      s.Cleaner,
+		cleaner:      cleaner,
 		repository:   s.Repository,
 		sceneService: s.SceneService,
 		imageService: s.ImageService,

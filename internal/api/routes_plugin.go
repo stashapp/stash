@@ -15,12 +15,6 @@ type pluginRoutes struct {
 	pluginCache *plugin.Cache
 }
 
-func getPluginRoutes(pluginCache *plugin.Cache) chi.Router {
-	return pluginRoutes{
-		pluginCache: pluginCache,
-	}.Routes()
-}
-
 func (rs pluginRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
 

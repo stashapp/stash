@@ -31,14 +31,6 @@ type imageRoutes struct {
 	fileGetter  models.FileGetter
 }
 
-func getImageRoutes(repo models.Repository) chi.Router {
-	return imageRoutes{
-		routes:      routes{txnManager: repo.TxnManager},
-		imageFinder: repo.Image,
-		fileGetter:  repo.File,
-	}.Routes()
-}
-
 func (rs imageRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
 
