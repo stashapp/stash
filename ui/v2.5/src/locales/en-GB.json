@@ -1077,6 +1077,7 @@
     "edit_source": "Edit Source",
     "check_for_updates": "Check for Updates",
     "confirm_delete_source": "Are you sure you want to delete source {name} ({url})?",
+    "confirm_uninstall": "Are you sure you want to uninstall {number} packages?",
     "description": "Description",
     "hide_unselected": "Hide unselected",
     "install": "Install",

@@ -198,8 +198,6 @@ const InstalledPackagesToolbar: React.FC<{
   setFilter,
 }) => {
   const intl = useIntl();
-  // TODO - alert for uninstall
-
   return (
     <div className="package-manager-toolbar">
       <div>
@@ -255,6 +253,7 @@ export const InstalledPackages: React.FC<{
     []
   );
   const [filter, setFilter] = useState("");
+  const [uninstalling, setUninstalling] = useState(false);
 
   const filteredPackages = useMemo(() => {
     return filterPackages(checkedPackages, filter);
@@ -273,27 +272,45 @@ export const InstalledPackages: React.FC<{
     });
   }, [checkedPackages, packages]);
 
+  function confirmUninstall() {
+    onUninstallPackages(filteredPackages);
+    setUninstalling(false);
+  }
+
   return (
-    <div className="installed-packages">
-      <InstalledPackagesToolbar
-        filter={filter}
-        setFilter={(f) => setFilter(f)}
-        loading={loading}
-        checkedPackages={filteredPackages}
-        onCheckForUpdates={onCheckForUpdates}
-        onUpdatePackages={() => onUpdatePackages(filteredPackages)}
-        onUninstallPackages={() => onUninstallPackages(filteredPackages)}
+    <>
+      <AlertModal
+        show={!!uninstalling}
+        text={
+          <FormattedMessage
+            id="package_manager.confirm_uninstall"
+            values={{ number: filteredPackages.length }}
+          />
+        }
+        onConfirm={() => confirmUninstall()}
+        onCancel={() => setUninstalling(false)}
       />
-      <InstalledPackagesList
-        filter={filter}
-        loading={loading}
-        packages={packages}
-        // use original checked packages so that check boxes are not affected by filter
-        checkedPackages={checkedPackages}
-        setCheckedPackages={setCheckedPackages}
-        updatesLoaded={updatesLoaded}
-      />
-    </div>
+      <div className="installed-packages">
+        <InstalledPackagesToolbar
+          filter={filter}
+          setFilter={(f) => setFilter(f)}
+          loading={loading}
+          checkedPackages={filteredPackages}
+          onCheckForUpdates={onCheckForUpdates}
+          onUpdatePackages={() => onUpdatePackages(filteredPackages)}
+          onUninstallPackages={() => setUninstalling(true)}
+        />
+        <InstalledPackagesList
+          filter={filter}
+          loading={loading}
+          packages={packages}
+          // use original checked packages so that check boxes are not affected by filter
+          checkedPackages={checkedPackages}
+          setCheckedPackages={setCheckedPackages}
+          updatesLoaded={updatesLoaded}
+        />
+      </div>
+    </>
   );
 };
 
