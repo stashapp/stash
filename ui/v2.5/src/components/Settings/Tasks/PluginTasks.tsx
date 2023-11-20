@@ -16,46 +16,10 @@ export const PluginTasks: React.FC = () => {
 
   const plugins = usePlugins();
 
-  function renderPlugins() {
-    if (!plugins.data || !plugins.data.plugins) {
-      return;
-    }
-
-    const taskPlugins = plugins.data.plugins.filter(
-      (p) => p.enabled && p.tasks && p.tasks.length > 0
-    );
-
-    return (
-      <SettingSection headingID="config.tasks.plugin_tasks">
-        {taskPlugins.map((o) => {
-          return (
-            <SettingGroup
-              key={`${o.id}`}
-              settingProps={{
-                heading: o.name,
-              }}
-              collapsible
-            >
-              {renderPluginTasks(o, o.tasks ?? [])}
-            </SettingGroup>
-          );
-        })}
-      </SettingSection>
-    );
-  }
-
   function renderPluginTasks(plugin: Plugin, pluginTasks: PluginTask[]) {
-    if (!pluginTasks) {
-      return;
-    }
-
     return pluginTasks.map((o) => {
       return (
-        <Setting
-          heading={o.name}
-          subHeading={o.description ?? undefined}
-          key={o.name}
-        >
+        <Setting heading={o.name} subHeading={o.description} key={o.name}>
           <Button
             onClick={() => onPluginTaskClicked(plugin, o)}
             variant="secondary"
@@ -78,5 +42,35 @@ export const PluginTasks: React.FC = () => {
     );
   }
 
-  return <Form.Group>{renderPlugins()}</Form.Group>;
+  if (!plugins.data?.plugins) {
+    return null;
+  }
+
+  const taskPlugins = plugins.data.plugins.filter(
+    (p) => p.enabled && p.tasks && p.tasks.length > 0
+  );
+
+  if (!taskPlugins.length) {
+    return null;
+  }
+
+  return (
+    <Form.Group>
+      <SettingSection headingID="config.tasks.plugin_tasks">
+        {taskPlugins.map((o) => {
+          return (
+            <SettingGroup
+              key={o.id}
+              settingProps={{
+                heading: o.name,
+              }}
+              collapsible
+            >
+              {renderPluginTasks(o, o.tasks!)}
+            </SettingGroup>
+          );
+        })}
+      </SettingSection>
+    </Form.Group>
+  );
 };
