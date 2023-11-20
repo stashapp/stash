@@ -25,7 +25,7 @@ import {
 import { IndeterminateCheckbox } from "../Shared/IndeterminateCheckbox";
 import { BulkUpdateTextInput } from "../Shared/BulkUpdateTextInput";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
-import FormUtils from "src/utils/form";
+import * as FormUtils from "src/utils/form";
 
 interface IListOperationProps {
   selected: GQL.SlimPerformerDataFragment[];
@@ -245,8 +245,10 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           })}
           <Col xs={9}>
             <RatingSystem
-              value={updateInput.rating100 ?? undefined}
-              onSetRating={(value) => setUpdateField({ rating100: value })}
+              value={updateInput.rating100}
+              onSetRating={(value) =>
+                setUpdateField({ rating100: value ?? undefined })
+              }
               disabled={isUpdating}
             />
           </Col>

@@ -573,7 +573,7 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
           <div className="detail-header-image">
             {encodingImage ? (
               <LoadingIndicator
-                message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+                message={intl.formatMessage({ id: "actions.encoding_image" })}
               />
             ) : (
               renderImage()
@@ -593,8 +593,8 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
               </h2>
               {maybeRenderAliases()}
               <RatingSystem
-                value={performer.rating100 ?? undefined}
-                onSetRating={(value) => setRating(value ?? null)}
+                value={performer.rating100}
+                onSetRating={(value) => setRating(value)}
               />
               {maybeRenderDetails()}
               {maybeRenderEditPanel()}

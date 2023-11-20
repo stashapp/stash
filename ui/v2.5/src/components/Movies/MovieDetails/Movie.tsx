@@ -404,7 +404,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
             <div className="logo w-100">
               {encodingImage ? (
                 <LoadingIndicator
-                  message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+                  message={intl.formatMessage({ id: "actions.encoding_image" })}
                 />
               ) : (
                 <div className="movie-images">
@@ -423,8 +423,8 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
               </h2>
               {maybeRenderAliases()}
               <RatingSystem
-                value={movie.rating100 ?? undefined}
-                onSetRating={(value) => setRating(value ?? null)}
+                value={movie.rating100}
+                onSetRating={(value) => setRating(value)}
               />
               {maybeRenderDetails()}
               {maybeRenderEditPanel()}

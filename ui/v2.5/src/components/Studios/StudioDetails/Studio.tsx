@@ -526,7 +526,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
           <div className="detail-header-image">
             {encodingImage ? (
               <LoadingIndicator
-                message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+                message={intl.formatMessage({ id: "actions.encoding_image" })}
               />
             ) : (
               renderImage()
@@ -541,8 +541,8 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
               </h2>
               {maybeRenderAliases()}
               <RatingSystem
-                value={studio.rating100 ?? undefined}
-                onSetRating={(value) => setRating(value ?? null)}
+                value={studio.rating100}
+                onSetRating={(value) => setRating(value)}
               />
               {maybeRenderDetails()}
               {maybeRenderEditPanel()}

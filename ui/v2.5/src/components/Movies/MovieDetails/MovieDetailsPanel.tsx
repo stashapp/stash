@@ -1,7 +1,6 @@
 import React from "react";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
-import DurationUtils from "src/utils/duration";
 import TextUtils from "src/utils/text";
 import { DetailItem } from "src/components/Shared/DetailItem";
 
@@ -22,7 +21,7 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({
       <DetailItem
         id="duration"
         value={
-          movie.duration ? DurationUtils.secondsToString(movie.duration) : ""
+          movie.duration ? TextUtils.secondsToTimestamp(movie.duration) : ""
         }
         fullWidth={fullWidth}
       />

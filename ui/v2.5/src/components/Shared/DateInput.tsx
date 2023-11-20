@@ -1,5 +1,5 @@
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
-import React, { useMemo } from "react";
+import React, { forwardRef, useMemo } from "react";
 import { Button, InputGroup, Form } from "react-bootstrap";
 import ReactDatePicker from "react-datepicker";
 import TextUtils from "src/utils/text";
@@ -10,12 +10,23 @@ import { useIntl } from "react-intl";
 
 interface IProps {
   disabled?: boolean;
-  value: string | undefined;
+  value: string;
   isTime?: boolean;
   onValueChange(value: string): void;
   placeholder?: string;
   error?: string;
 }
+
+const ShowPickerButton = forwardRef<
+  HTMLButtonElement,
+  {
+    onClick: (event: React.MouseEvent) => void;
+  }
+>(({ onClick }, ref) => (
+  <Button variant="secondary" onClick={onClick} ref={ref}>
+    <Icon icon={faCalendar} />
+  </Button>
+));
 
 export const DateInput: React.FC<IProps> = (props: IProps) => {
   const intl = useIntl();
@@ -26,28 +37,14 @@ export const DateInput: React.FC<IProps> = (props: IProps) => {
       : TextUtils.stringToFuzzyDate;
     if (props.value) {
       const ret = toDate(props.value);
-      if (!ret || isNaN(ret.getTime())) {
-        return undefined;
+      if (ret && !Number.isNaN(ret.getTime())) {
+        return ret;
       }
-
-      return ret;
     }
   }, [props.value, props.isTime]);
 
   function maybeRenderButton() {
     if (!props.disabled) {
-      const ShowPickerButton = ({
-        onClick,
-      }: {
-        onClick: (
-          event: React.MouseEvent<HTMLButtonElement, MouseEvent>
-        ) => void;
-      }) => (
-        <Button variant="secondary" onClick={onClick}>
-          <Icon icon={faCalendar} />
-        </Button>
-      );
-
       const dateToString = props.isTime
         ? TextUtils.dateTimeToString
         : TextUtils.dateToString;
@@ -83,9 +80,7 @@ export const DateInput: React.FC<IProps> = (props: IProps) => {
           className="date-input text-input"
           disabled={props.disabled}
           value={props.value}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            props.onValueChange(e.currentTarget.value)
-          }
+          onChange={(e) => props.onValueChange(e.currentTarget.value)}
           placeholder={
             !props.disabled
               ? props.placeholder
