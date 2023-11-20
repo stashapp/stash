@@ -145,7 +145,6 @@ stash-macapp: flags-release flags-pie stash
 build-cc-windows: export GOOS := windows
 build-cc-windows: export GOARCH := amd64
 build-cc-windows: export CC := x86_64-w64-mingw32-gcc
-build-cc-windows: export CXX := x86_64-w64-mingw32-g++
 build-cc-windows: STASH_OUTPUT := -o dist/stash-win.exe
 build-cc-windows: PHASHER_OUTPUT :=-o dist/phasher-win.exe
 build-cc-windows: flags-release
@@ -156,7 +155,6 @@ build-cc-windows: build
 build-cc-macos-intel: export GOOS := darwin
 build-cc-macos-intel: export GOARCH := amd64
 build-cc-macos-intel: export CC := o64-clang
-build-cc-macos-intel: export CXX := o64-clang++
 build-cc-macos-intel: STASH_OUTPUT := -o dist/stash-macos-intel
 build-cc-macos-intel: PHASHER_OUTPUT := -o dist/phasher-macos-intel
 build-cc-macos-intel: flags-release
@@ -168,7 +166,6 @@ build-cc-macos-intel: build
 build-cc-macos-arm: export GOOS := darwin
 build-cc-macos-arm: export GOARCH := arm64
 build-cc-macos-arm: export CC := oa64e-clang
-build-cc-macos-arm: export CXX := oa64e-clang++
 build-cc-macos-arm: STASH_OUTPUT := -o dist/stash-macos-arm
 build-cc-macos-arm: PHASHER_OUTPUT := -o dist/phasher-macos-arm
 build-cc-macos-arm: flags-release
@@ -198,6 +195,7 @@ build-cc-macos:
 .PHONY: build-cc-freebsd
 build-cc-freebsd: export GOOS := freebsd
 build-cc-freebsd: export GOARCH := amd64
+build-cc-freebsd: export CC := clang -target x86_64-unknown-freebsd12.0 --sysroot=/opt/cross-freebsd
 build-cc-freebsd: STASH_OUTPUT := -o dist/stash-freebsd
 build-cc-freebsd: PHASHER_OUTPUT := -o dist/phasher-freebsd
 build-cc-freebsd: flags-release
@@ -253,6 +251,7 @@ build-cc-all:
 	make build-cc-linux-arm64v8
 	make build-cc-linux-arm32v7
 	make build-cc-linux-arm32v6
+	make build-cc-freebsd
 
 .PHONY: touch-ui
 touch-ui:
