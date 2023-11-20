@@ -32,9 +32,7 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MinGW. For examp
 
 #### Ubuntu
 
-1. Install dependencies: `sudo apt-get install golang git gcc nodejs ffmpeg -y`
-2. Enable corepack in Node.js: `corepack enable`
-3. Install yarn: `corepack prepare yarn@stable --activate`
+1. Install dependencies: `sudo apt-get install golang git yarnpkg gcc nodejs ffmpeg -y`
 
 ### OpenBSD
 
