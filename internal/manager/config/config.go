@@ -760,8 +760,8 @@ func (i *Config) GetPluginConfiguration(pluginID string) map[string]interface{} 
 }
 
 func (i *Config) SetPluginConfiguration(pluginID string, v map[string]interface{}) {
-	i.RLock()
-	defer i.RUnlock()
+	i.Lock()
+	defer i.Unlock()
 
 	pluginID = toSnakeCase(pluginID)
 
@@ -1167,8 +1167,8 @@ func (i *Config) GetUIConfiguration() map[string]interface{} {
 }
 
 func (i *Config) SetUIConfiguration(v map[string]interface{}) {
-	i.RLock()
-	defer i.RUnlock()
+	i.Lock()
+	defer i.Unlock()
 
 	// HACK: viper changes map keys to case insensitive values, so the workaround is to
 	// convert map keys to snake case for storage
