@@ -14,6 +14,7 @@ resolver:
 struct_tag: gqlgen
 
 autobind:
+  - github.com/stashapp/stash/internal/api
   - github.com/stashapp/stash/pkg/models
   - github.com/stashapp/stash/pkg/plugin
   - github.com/stashapp/stash/pkg/scraper
@@ -41,30 +42,13 @@ models:
     fields:
       title:
         resolver: true
-  # override models, from internal/api/models.go
-  BaseFile:
-    model: github.com/stashapp/stash/internal/api.BaseFile
-  GalleryFile:
-    model: github.com/stashapp/stash/internal/api.GalleryFile
-    fields:
-      # override fingerprint field
-      fingerprints:
-        fieldName: FingerprintSlice
   VideoFile:
     fields:
-      # override fingerprint field
-      fingerprints:
-        fieldName: FingerprintSlice
       # override float fields - #1572
       duration:
         fieldName: DurationFinite
       frame_rate:
         fieldName: FrameRateFinite
-  ImageFile:
-    fields:
-      # override fingerprint field
-      fingerprints:
-        fieldName: FingerprintSlice
   # autobind on config causes generation issues
   BlobsStorageType:
     model: github.com/stashapp/stash/internal/manager/config.BlobsStorageType

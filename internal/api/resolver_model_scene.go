@@ -73,13 +73,21 @@ func (r *sceneResolver) Date(ctx context.Context, obj *models.Scene) (*string, e
 	return nil, nil
 }
 
-func (r *sceneResolver) Files(ctx context.Context, obj *models.Scene) ([]*models.VideoFile, error) {
+func (r *sceneResolver) Files(ctx context.Context, obj *models.Scene) ([]*VideoFile, error) {
 	files, err := r.getFiles(ctx, obj)
 	if err != nil {
 		return nil, err
 	}
 
-	return files, nil
+	ret := make([]*VideoFile, len(files))
+
+	for i, f := range files {
+		ret[i] = &VideoFile{
+			VideoFile: f,
+		}
+	}
+
+	return ret, nil
 }
 
 func (r *sceneResolver) Rating(ctx context.Context, obj *models.Scene) (*int, error) {
