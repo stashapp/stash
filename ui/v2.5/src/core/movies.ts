@@ -1,5 +1,5 @@
 import * as GQL from "src/core/generated-graphql";
-import DurationUtils from "src/utils/duration";
+import TextUtils from "src/utils/text";
 
 export const scrapedMovieToCreateInput = (toCreate: GQL.ScrapedMovie) => {
   const input: GQL.MovieCreateInput = {
@@ -11,9 +11,7 @@ export const scrapedMovieToCreateInput = (toCreate: GQL.ScrapedMovie) => {
     synopsis: toCreate.synopsis,
     date: toCreate.date,
     // #788 - convert duration and rating to the correct type
-    duration: toCreate.duration
-      ? DurationUtils.stringToSeconds(toCreate.duration)
-      : undefined,
+    duration: TextUtils.timestampToSeconds(toCreate.duration),
     studio_id: toCreate.studio?.stored_id,
     rating100: parseInt(toCreate.rating ?? "0", 10) * 20,
   };

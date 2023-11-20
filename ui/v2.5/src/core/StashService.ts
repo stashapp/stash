@@ -2084,17 +2084,43 @@ export const useRemoveTempDLNAIP = () => GQL.useRemoveTempDlnaipMutation();
 export const mutateReloadScrapers = () =>
   client.mutate<GQL.ReloadScrapersMutation>({
     mutation: GQL.ReloadScrapersDocument,
-    refetchQueries: [
-      GQL.refetchListMovieScrapersQuery(),
-      GQL.refetchListPerformerScrapersQuery(),
-      GQL.refetchListSceneScrapersQuery(),
-    ],
+    update(cache, result) {
+      if (!result.data?.reloadScrapers) return;
+
+      evictQueries(cache, [
+        GQL.ListMovieScrapersDocument,
+        GQL.ListPerformerScrapersDocument,
+        GQL.ListSceneScrapersDocument,
+      ]);
+    },
   });
+
+const pluginMutationImpactedQueries = [
+  GQL.PluginsDocument,
+  GQL.PluginTasksDocument,
+];
 
 export const mutateReloadPlugins = () =>
   client.mutate<GQL.ReloadPluginsMutation>({
     mutation: GQL.ReloadPluginsDocument,
-    refetchQueries: [GQL.refetchPluginsQuery(), GQL.refetchPluginTasksQuery()],
+    update(cache, result) {
+      if (!result.data?.reloadPlugins) return;
+
+      evictQueries(cache, pluginMutationImpactedQueries);
+    },
+  });
+
+type BoolMap = { [key: string]: boolean };
+
+export const mutateSetPluginsEnabled = (enabledMap: BoolMap) =>
+  client.mutate<GQL.SetPluginsEnabledMutation>({
+    mutation: GQL.SetPluginsEnabledDocument,
+    variables: { enabledMap },
+    update(cache, result) {
+      if (!result.data?.setPluginsEnabled) return;
+
+      evictQueries(cache, pluginMutationImpactedQueries);
+    },
   });
 
 export const mutateStopJob = (jobID: string) =>
@@ -2128,14 +2154,6 @@ export const mutateMigrate = (input: GQL.MigrateInput) =>
 
       evictQueries(cache, setupMutationImpactedQueries);
     },
-  });
-
-type BoolMap = { [key: string]: boolean };
-
-export const mutateSetPluginsEnabled = (enabledMap: BoolMap) =>
-  client.mutate<GQL.SetPluginsEnabledMutation>({
-    mutation: GQL.SetPluginsEnabledDocument,
-    variables: { enabledMap },
   });
 
 /// Tasks

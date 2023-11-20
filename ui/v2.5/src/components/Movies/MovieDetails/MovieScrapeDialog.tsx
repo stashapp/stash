@@ -9,7 +9,7 @@ import {
   ScrapedTextAreaRow,
 } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import { StudioSelect } from "src/components/Shared/Select";
-import DurationUtils from "src/utils/duration";
+import TextUtils from "src/utils/text";
 import { useStudioCreate } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import { ScrapeResult } from "src/components/Shared/ScrapeDialog/scrapeResult";
@@ -83,10 +83,10 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
   );
   const [duration, setDuration] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(
-      DurationUtils.secondsToString(props.movie.duration || 0),
+      TextUtils.secondsToTimestamp(props.movie.duration || 0),
       // convert seconds to string if it's a number
       props.scraped.duration && !isNaN(+props.scraped.duration)
-        ? DurationUtils.secondsToString(parseInt(props.scraped.duration, 10))
+        ? TextUtils.secondsToTimestamp(parseInt(props.scraped.duration, 10))
         : props.scraped.duration
     )
   );
@@ -140,13 +140,11 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
       setStudio(studio.cloneWithValue(result.data!.studioCreate!.id));
       setNewStudio(undefined);
 
-      Toast.success({
-        content: (
-          <span>
-            Created studio: <b>{toCreate.name}</b>
-          </span>
-        ),
-      });
+      Toast.success(
+        <span>
+          Created studio: <b>{toCreate.name}</b>
+        </span>
+      );
     } catch (e) {
       Toast.error(e);
     }

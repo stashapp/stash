@@ -212,7 +212,11 @@ export const PerformerSelect: React.FC<
         props.noSelectionString ??
         intl.formatMessage(
           { id: "actions.select_entity" },
-          { entityType: intl.formatMessage({ id: "performer" }) }
+          {
+            entityType: intl.formatMessage({
+              id: props.isMulti ? "performers" : "performer",
+            }),
+          }
         )
       }
     />

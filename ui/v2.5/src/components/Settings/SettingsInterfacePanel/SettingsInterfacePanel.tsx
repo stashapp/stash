@@ -14,7 +14,7 @@ import {
   StringSetting,
 } from "../Inputs";
 import { useSettings } from "../context";
-import DurationUtils from "src/utils/duration";
+import TextUtils from "src/utils/text";
 import * as GQL from "src/core/generated-graphql";
 import {
   imageLightboxDisplayModeIntlMap,
@@ -361,7 +361,7 @@ export const SettingsInterfacePanel: React.FC = () => {
             />
           )}
           renderValue={(v) => {
-            return <span>{DurationUtils.secondsToString(v ?? 0)}</span>;
+            return <span>{TextUtils.secondsToTimestamp(v ?? 0)}</span>;
           }}
         />
 

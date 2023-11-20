@@ -7,7 +7,7 @@ import * as GQL from "src/core/generated-graphql";
 import { StudioSelect } from "src/components/Shared/Select";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { useToast } from "src/hooks/Toast";
-import FormUtils from "src/utils/form";
+import * as FormUtils from "src/utils/form";
 import { MultiSet } from "../Shared/MultiSet";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
@@ -88,12 +88,12 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
           input: getImageInput(),
         },
       });
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "toast.updated_entity" },
           { entity: intl.formatMessage({ id: "images" }).toLocaleLowerCase() }
-        ),
-      });
+        )
+      );
       props.onClose(true);
     } catch (e) {
       Toast.error(e);
@@ -247,7 +247,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
             <Col xs={9}>
               <RatingSystem
                 value={rating100}
-                onSetRating={(value) => setRating(value)}
+                onSetRating={(value) => setRating(value ?? undefined)}
                 disabled={isUpdating}
               />
             </Col>

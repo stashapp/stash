@@ -77,7 +77,6 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
               onClick={(
                 event: React.MouseEvent<HTMLInputElement, MouseEvent>
               ) => {
-                // eslint-disable-next-line prefer-destructuring
                 shiftKey = event.shiftKey;
                 event.stopPropagation();
               }}

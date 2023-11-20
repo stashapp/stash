@@ -189,12 +189,12 @@ const ScenePage: React.FC<IProps> = ({
         },
       },
     });
-    Toast.success({
-      content: intl.formatMessage(
+    Toast.success(
+      intl.formatMessage(
         { id: "toast.updated_entity" },
         { entity: intl.formatMessage({ id: "scene" }).toLocaleLowerCase() }
-      ),
-    });
+      )
+    );
   }
 
   const onOrganizedClick = async () => {
@@ -232,8 +232,8 @@ const ScenePage: React.FC<IProps> = ({
       paths: [objectPath(scene)],
     });
 
-    Toast.success({
-      content: intl.formatMessage(
+    Toast.success(
+      intl.formatMessage(
         { id: "toast.rescanning_entity" },
         {
           count: 1,
@@ -241,8 +241,8 @@ const ScenePage: React.FC<IProps> = ({
             .formatMessage({ id: "scene" })
             .toLocaleLowerCase(),
         }
-      ),
-    });
+      )
+    );
   }
 
   async function onGenerateScreenshot(at?: number) {
@@ -252,9 +252,7 @@ const ScenePage: React.FC<IProps> = ({
         at,
       },
     });
-    Toast.success({
-      content: intl.formatMessage({ id: "toast.generating_screenshot" }),
-    });
+    Toast.success(intl.formatMessage({ id: "toast.generating_screenshot" }));
   }
 
   function onDeleteDialogClosed(deleted: boolean) {

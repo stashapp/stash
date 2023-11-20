@@ -1,8 +1,8 @@
 import React, { useRef } from "react";
 
 export interface IRatingNumberProps {
-  value?: number;
-  onSetRating?: (value?: number) => void;
+  value: number | null;
+  onSetRating?: (value: number | null) => void;
   disabled?: boolean;
 }
 
@@ -42,7 +42,7 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
     if (!useValidation.current) {
       e.target.value = Number(val).toFixed(1);
       const tempVal = Number(val) * 10;
-      props.onSetRating(tempVal != 0 ? tempVal : undefined);
+      props.onSetRating(tempVal || null);
       useValidation.current = true;
       return;
     }
@@ -70,7 +70,7 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
       }
       e.target.value = Number(value).toFixed(1);
       let tempVal = Number(value) * 10;
-      props.onSetRating(tempVal != 0 ? tempVal : undefined);
+      props.onSetRating(tempVal || null);
 
       let cursorPosition = 0;
       if (match[2] && !match[4]) {

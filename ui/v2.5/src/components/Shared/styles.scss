@@ -80,10 +80,9 @@
   }
 }
 
-.folder-list {
-  margin-top: 0.5rem 0 0 0;
-  max-height: 30vw;
-  overflow-x: auto;
+// z-index gets set on button groups for some reason
+.multi-set .btn-group > button.btn {
+  z-index: auto;
 }
 
 .folder-item {
@@ -92,14 +91,12 @@
   }
 }
 
-// z-index gets set on button groups for some reason
-.multi-set .btn-group > button.btn {
-  z-index: auto;
-}
-
 .folder-list {
   list-style-type: none;
   margin: 0;
+  max-height: 30vw;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
   padding-top: 1rem;
 
   &-item {
