@@ -43,7 +43,7 @@ export const Setup: React.FC = () => {
   const [storeBlobsInDatabase, setStoreBlobsInDatabase] = useState(false);
   const [blobsLocation, setBlobsLocation] = useState("");
   const [loading, setLoading] = useState(false);
-  const [setupError, setSetupError] = useState("");
+  const [setupError, setSetupError] = useState<string>();
 
   const intl = useIntl();
   const history = useHistory();
@@ -608,7 +608,11 @@ export const Setup: React.FC = () => {
         },
       });
     } catch (e) {
-      if (e instanceof Error) setSetupError(e.message ?? e.toString());
+      if (e instanceof Error && e.message) {
+        setSetupError(e.message);
+      } else {
+        setSetupError(String(e));
+      }
     } finally {
       setLoading(false);
       next();
@@ -732,6 +736,11 @@ export const Setup: React.FC = () => {
   }
 
   function renderError() {
+    function onBackClick() {
+      setSetupError(undefined);
+      goBack(2);
+    }
+
     return (
       <>
         <section>
@@ -753,7 +762,7 @@ export const Setup: React.FC = () => {
         </section>
         <section className="mt-5">
           <div className="d-flex justify-content-center">
-            <Button variant="secondary mx-2 p-5" onClick={() => goBack(2)}>
+            <Button variant="secondary mx-2 p-5" onClick={onBackClick}>
               <FormattedMessage id="actions.previous_action" />
             </Button>
           </div>
@@ -846,7 +855,7 @@ export const Setup: React.FC = () => {
   }
 
   function renderFinish() {
-    if (setupError) {
+    if (setupError !== undefined) {
       return renderError();
     }
 
