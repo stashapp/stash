@@ -220,14 +220,20 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = ({
     (event: MouseEvent) => {
       if (!mouseDown.current) return;
 
+      // negative dragging right (past), positive left (future)
+      const delta = event.clientX - lastMouseEvent.current!.clientX;
+
       if (lastMouseEvent.current === startMouseEvent.current) {
+        // this is the first mousemove event after mousedown
+
+        // #4295: a mousemove with delta 0 can be sent when just clicking
+        // ignore such an event to prevent pausing the player
+        if (delta === 0) return;
+
         onScroll();
       }
 
       contentEl.current!.classList.add("dragging");
-
-      // negative dragging right (past), positive left (future)
-      const delta = event.clientX - lastMouseEvent.current!.clientX;
 
       const movement = event.movementX;
       velocity.current = movement;
