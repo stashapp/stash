@@ -95,14 +95,14 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
           input: getGalleryInput(),
         },
       });
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "toast.updated_entity" },
           {
             entity: intl.formatMessage({ id: "galleries" }).toLocaleLowerCase(),
           }
-        ),
-      });
+        )
+      );
       props.onClose(true);
     } catch (e) {
       Toast.error(e);

@@ -140,13 +140,11 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
       setStudio(studio.cloneWithValue(result.data!.studioCreate!.id));
       setNewStudio(undefined);
 
-      Toast.success({
-        content: (
-          <span>
-            Created studio: <b>{toCreate.name}</b>
-          </span>
-        ),
-      });
+      Toast.success(
+        <span>
+          Created studio: <b>{toCreate.name}</b>
+        </span>
+      );
     } catch (e) {
       Toast.error(e);
     }

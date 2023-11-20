@@ -297,9 +297,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     try {
       const result = await queryScrapeScene(s, scene.id!);
       if (!result.data || !result.data.scrapeSingleScene?.length) {
-        Toast.success({
-          content: "No scenes found",
-        });
+        Toast.success("No scenes found");
         return;
       }
       // assume one returned scene
@@ -330,9 +328,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
       const result = await queryScrapeSceneQueryFragment(s, input);
       if (!result.data || !result.data.scrapeSingleScene?.length) {
-        Toast.success({
-          content: "No scenes found",
-        });
+        Toast.success("No scenes found");
         return;
       }
       // assume one returned scene

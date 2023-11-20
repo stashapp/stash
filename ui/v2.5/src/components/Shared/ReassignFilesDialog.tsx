@@ -50,7 +50,7 @@ export const ReassignFilesDialog: React.FC<IReassignFilesDialogProps> = (
     setReassigning(true);
     try {
       await mutateSceneAssignFile(scenes[0].id, props.selected.id);
-      Toast.success({ content: toastMessage });
+      Toast.success(toastMessage);
       props.onClose();
     } catch (e) {
       Toast.error(e);

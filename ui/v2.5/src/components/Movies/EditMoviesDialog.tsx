@@ -53,14 +53,14 @@ export const EditMoviesDialog: React.FC<IListOperationProps> = (
     setIsUpdating(true);
     try {
       await updateMovies();
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "toast.updated_entity" },
           {
             entity: intl.formatMessage({ id: "movies" }).toLocaleLowerCase(),
           }
-        ),
-      });
+        )
+      );
       props.onClose(true);
     } catch (e) {
       Toast.error(e);

@@ -143,12 +143,12 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
       },
     });
     toggleEditing(false);
-    Toast.success({
-      content: intl.formatMessage(
+    Toast.success(
+      intl.formatMessage(
         { id: "toast.updated_entity" },
         { entity: intl.formatMessage({ id: "movie" }).toLocaleLowerCase() }
-      ),
-    });
+      )
+    );
   }
 
   async function onDelete() {

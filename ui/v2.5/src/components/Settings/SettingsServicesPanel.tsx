@@ -68,18 +68,18 @@ export const SettingsServicesPanel: React.FC = () => {
     try {
       if (enableDisable) {
         await enableDLNA(input);
-        Toast.success({
-          content: intl.formatMessage({
+        Toast.success(
+          intl.formatMessage({
             id: "config.dlna.enabled_dlna_temporarily",
-          }),
-        });
+          })
+        );
       } else {
         await disableDLNA(input);
-        Toast.success({
-          content: intl.formatMessage({
+        Toast.success(
+          intl.formatMessage({
             id: "config.dlna.disabled_dlna_temporarily",
-          }),
-        });
+          })
+        );
       }
     } catch (e) {
       Toast.error(e);
@@ -105,11 +105,11 @@ export const SettingsServicesPanel: React.FC = () => {
 
     try {
       await addTempDLANIP(input);
-      Toast.success({
-        content: intl.formatMessage({
+      Toast.success(
+        intl.formatMessage({
           id: "config.dlna.allowed_ip_temporarily",
-        }),
-      });
+        })
+      );
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -129,9 +129,7 @@ export const SettingsServicesPanel: React.FC = () => {
 
     try {
       await removeTempDLNAIP(input);
-      Toast.success({
-        content: intl.formatMessage({ id: "config.dlna.disallowed_ip" }),
-      });
+      Toast.success(intl.formatMessage({ id: "config.dlna.disallowed_ip" }));
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -209,11 +207,11 @@ export const SettingsServicesPanel: React.FC = () => {
       } else {
         await disableDLNA(input);
       }
-      Toast.success({
-        content: intl.formatMessage({
+      Toast.success(
+        intl.formatMessage({
           id: "config.dlna.successfully_cancelled_temporary_behaviour",
-        }),
-      });
+        })
+      );
     } catch (e) {
       Toast.error(e);
     } finally {

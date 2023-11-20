@@ -151,9 +151,7 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
   async function onAutoTag() {
     try {
       await mutateMetadataAutoTag({ performers: [performer.id] });
-      Toast.success({
-        content: intl.formatMessage({ id: "toast.started_auto_tagging" }),
-      });
+      Toast.success(intl.formatMessage({ id: "toast.started_auto_tagging" }));
     } catch (e) {
       Toast.error(e);
     }
@@ -194,12 +192,12 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
       },
     });
     toggleEditing(false);
-    Toast.success({
-      content: intl.formatMessage(
+    Toast.success(
+      intl.formatMessage(
         { id: "toast.updated_entity" },
         { entity: intl.formatMessage({ id: "performer" }).toLocaleLowerCase() }
-      ),
-    });
+      )
+    );
   }
 
   async function onDelete() {

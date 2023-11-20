@@ -692,9 +692,7 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
         values
       );
       if (result.data?.sceneMerge) {
-        Toast.success({
-          content: intl.formatMessage({ id: "toast.merged_scenes" }),
-        });
+        Toast.success(intl.formatMessage({ id: "toast.merged_scenes" }));
         // refetch the scene
         await queryFindScenesByID([parseInt(destScene[0].id)]);
         onClose(destScene[0].id);
