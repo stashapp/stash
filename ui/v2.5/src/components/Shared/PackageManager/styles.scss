@@ -57,6 +57,10 @@
     display: flex;
     justify-content: space-between;
 
+    div {
+      display: flex;
+    }
+
     .btn {
       margin-left: 0.5em;
     }

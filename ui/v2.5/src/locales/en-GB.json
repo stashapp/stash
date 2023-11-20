@@ -1078,6 +1078,7 @@
     "check_for_updates": "Check for Updates",
     "confirm_delete_source": "Are you sure you want to delete source {name} ({url})?",
     "description": "Description",
+    "hide_unselected": "Hide unselected",
     "install": "Install",
     "installed_version": "Installed Version",
     "latest_version": "Latest Version",
