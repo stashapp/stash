@@ -317,18 +317,16 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   function maybeRenderOrganized() {
     if (props.scene.organized) {
       return (
-        <>
-          <OverlayTrigger
-            overlay={<Tooltip id="organised-tooltip">{"Organized"}</Tooltip>}
-            placement="bottom"
-          >
-            <div className="organized">
-              <Button className="minimal">
-                <Icon icon={faBox} />
-              </Button>
-            </div>
-          </OverlayTrigger>
-        </>
+        <OverlayTrigger
+          overlay={<Tooltip id="organised-tooltip">{"Organized"}</Tooltip>}
+          placement="bottom"
+        >
+          <div className="organized">
+            <Button className="minimal">
+              <Icon icon={faBox} />
+            </Button>
+          </div>
+        </OverlayTrigger>
       );
     }
   }
