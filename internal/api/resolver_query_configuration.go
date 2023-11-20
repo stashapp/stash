@@ -50,7 +50,7 @@ func getDir(path string) string {
 }
 
 func getParent(path string) *string {
-	isRoot := path[len(path)-1:] == "/"
+	isRoot := path == "/"
 	if isRoot {
 		return nil
 	} else {
