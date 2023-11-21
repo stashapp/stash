@@ -4,9 +4,10 @@ import {
   faImages,
   faPlayCircle,
   faUser,
+  faMapMarkerAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import React, { useMemo } from "react";
-import { Button } from "react-bootstrap";
+import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { FormattedNumber, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import { IUIConfig } from "src/core/config";
@@ -14,7 +15,13 @@ import { ConfigurationContext } from "src/hooks/Config";
 import TextUtils from "src/utils/text";
 import { Icon } from "./Icon";
 
-type PopoverLinkType = "scene" | "image" | "gallery" | "movie" | "performer";
+type PopoverLinkType =
+  | "scene"
+  | "image"
+  | "gallery"
+  | "marker"
+  | "movie"
+  | "performer";
 
 interface IProps {
   className?: string;
@@ -43,6 +50,8 @@ export const PopoverCountButton: React.FC<IProps> = ({
         return faImage;
       case "gallery":
         return faImages;
+      case "marker":
+        return faMapMarkerAlt;
       case "movie":
         return faFilm;
       case "performer":
@@ -66,6 +75,11 @@ export const PopoverCountButton: React.FC<IProps> = ({
         return {
           one: "gallery",
           other: "galleries",
+        };
+      case "marker":
+        return {
+          one: "marker",
+          other: "markers",
         };
       case "movie":
         return {
@@ -105,11 +119,18 @@ export const PopoverCountButton: React.FC<IProps> = ({
   }, [count, abbreviateCounter]);
 
   return (
-    <Link className={className} to={url} title={getTitle()}>
-      <Button className="minimal">
-        <Icon icon={getIcon()} />
-        <span>{countEl}</span>
-      </Button>
-    </Link>
+    <>
+      <OverlayTrigger
+        overlay={<Tooltip id={`${type}-count-tooltip`}>{getTitle()}</Tooltip>}
+        placement="bottom"
+      >
+        <Link className={className} to={url}>
+          <Button className="minimal">
+            <Icon icon={getIcon()} />
+            <span>{countEl}</span>
+          </Button>
+        </Link>
+      </OverlayTrigger>
+    </>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from "react";
-import { Button, ButtonGroup } from "react-bootstrap";
+import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
@@ -317,11 +317,16 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   function maybeRenderOrganized() {
     if (props.scene.organized) {
       return (
-        <div className="organized">
-          <Button className="minimal">
-            <Icon icon={faBox} />
-          </Button>
-        </div>
+        <OverlayTrigger
+          overlay={<Tooltip id="organised-tooltip">{"Organized"}</Tooltip>}
+          placement="bottom"
+        >
+          <div className="organized">
+            <Button className="minimal">
+              <Icon icon={faBox} />
+            </Button>
+          </div>
+        </OverlayTrigger>
       );
     }
   }
