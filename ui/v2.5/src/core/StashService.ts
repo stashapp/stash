@@ -1945,6 +1945,43 @@ export const queryScrapeGalleryURL = (url: string) =>
     fetchPolicy: "network-only",
   });
 
+/// Packages
+export const useInstalledScraperPackages = GQL.useInstalledScraperPackagesQuery;
+export const useInstalledScraperPackagesStatus =
+  GQL.useInstalledScraperPackagesStatusQuery;
+
+export const queryAvailableScraperPackages = (source: string) =>
+  client.query<GQL.AvailableScraperPackagesQuery>({
+    query: GQL.AvailableScraperPackagesDocument,
+    variables: {
+      source,
+    },
+    fetchPolicy: "network-only",
+  });
+
+export const useInstallScraperPackages = GQL.useInstallScraperPackagesMutation;
+export const useUpdateScraperPackages = GQL.useUpdateScraperPackagesMutation;
+export const useUninstallScraperPackages =
+  GQL.useUninstallScraperPackagesMutation;
+
+export const useInstalledPluginPackages = GQL.useInstalledPluginPackagesQuery;
+export const useInstalledPluginPackagesStatus =
+  GQL.useInstalledPluginPackagesStatusQuery;
+
+export const queryAvailablePluginPackages = (source: string) =>
+  client.query<GQL.AvailablePluginPackagesQuery>({
+    query: GQL.AvailablePluginPackagesDocument,
+    variables: {
+      source,
+    },
+    fetchPolicy: "network-only",
+  });
+
+export const useInstallPluginPackages = GQL.useInstallPluginPackagesMutation;
+export const useUpdatePluginPackages = GQL.useUpdatePluginPackagesMutation;
+export const useUninstallPluginPackages =
+  GQL.useUninstallPluginPackagesMutation;
+
 /// Configuration
 
 export const useConfiguration = () => GQL.useConfigurationQuery();

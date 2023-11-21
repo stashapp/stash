@@ -43,3 +43,27 @@ query PluginTasks {
     }
   }
 }
+
+query InstalledPluginPackages {
+  installedPackages(type: Plugin) {
+    ...PackageData
+  }
+}
+
+query InstalledPluginPackagesStatus {
+  installedPackages(type: Plugin) {
+    ...PackageData
+    upgrade {
+      ...PackageData
+    }
+  }
+}
+
+query AvailablePluginPackages($source: String!) {
+  availablePackages(source: $source, type: Plugin) {
+    ...PackageData
+    requires {
+      package_id
+    }
+  }
+}

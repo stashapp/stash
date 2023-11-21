@@ -8,7 +8,7 @@
     "build": "vite build",
     "build-ci": "yarn run validate && yarn run build",
     "validate": "yarn run lint && yarn run check && yarn run format-check",
-    "lint": "yarn run lint:css && yarn run lint:js",
+    "lint": "yarn run lint:js && yarn run lint:css",
     "lint:css": "stylelint --cache \"src/**/*.scss\"",
     "lint:js": "eslint --cache src/",
     "check": "tsc --noEmit",

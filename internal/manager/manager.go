@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -29,6 +30,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
+	"github.com/stashapp/stash/pkg/pkg"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/scraper"
@@ -130,6 +132,9 @@ type Manager struct {
 	PluginCache  *plugin.Cache
 	ScraperCache *scraper.Cache
 
+	PluginPackageManager  *pkg.Manager
+	ScraperPackageManager *pkg.Manager
+
 	DownloadStore *DownloadStore
 
 	DLNAService *dlna.Service
@@ -229,6 +234,9 @@ func initialize() error {
 	dlnaRepository := dlna.NewRepository(repo)
 	instance.DLNAService = dlna.NewService(dlnaRepository, cfg, &sceneServer)
 
+	instance.RefreshPluginSourceManager()
+	instance.RefreshScraperSourceManager()
+
 	if !cfg.IsNewSystem() {
 		logger.Infof("using config file: %s", cfg.GetConfigFile())
 
@@ -278,6 +286,26 @@ func initialize() error {
 	}
 
 	return nil
+}
+
+func initialisePackageManager(localPath string, srcPathGetter pkg.SourcePathGetter, cachePathGetter pkg.CachePathGetter) *pkg.Manager {
+	const timeout = 10 * time.Second
+	httpClient := &http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+		},
+		Timeout: timeout,
+	}
+
+	return &pkg.Manager{
+		Local: &pkg.Store{
+			BaseDir:      localPath,
+			ManifestFile: pkg.ManifestFile,
+		},
+		PackagePathGetter: srcPathGetter,
+		Client:            httpClient,
+		CachePathGetter:   cachePathGetter,
+	}
 }
 
 func videoFileFilter(ctx context.Context, f models.File) bool {
@@ -564,6 +592,14 @@ func (s *Manager) RefreshStreamManager() {
 
 	cacheDir := s.Config.GetCachePath()
 	s.StreamManager = ffmpeg.NewStreamManager(cacheDir, s.FFMPEG, s.FFProbe, s.Config, s.ReadLockManager)
+}
+
+func (s *Manager) RefreshScraperSourceManager() {
+	s.ScraperPackageManager = initialisePackageManager(s.Config.GetScrapersPath(), s.Config.GetScraperPackagePathGetter(), s.Config)
+}
+
+func (s *Manager) RefreshPluginSourceManager() {
+	s.PluginPackageManager = initialisePackageManager(s.Config.GetPluginsPath(), s.Config.GetPluginPackagePathGetter(), s.Config)
 }
 
 func setSetupDefaults(input *SetupInput) {

@@ -21,6 +21,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -136,6 +137,9 @@ const (
 	PluginsSetting       = "plugins.settings"
 	PluginsSettingPrefix = PluginsSetting + "."
 	DisabledPlugins      = "plugins.disabled"
+
+	PluginPackageSources  = "plugins.package_sources"
+	ScraperPackageSources = "scrapers.package_sources"
 
 	// i18n
 	Language = "language"
@@ -1518,6 +1522,61 @@ func (i *Instance) GetNoProxy() string {
 func (i *Instance) ActivatePublicAccessTripwire(requestIP string) error {
 	i.Set(SecurityTripwireAccessedFromPublicInternet, requestIP)
 	return i.Write()
+}
+
+func (i *Instance) getPackageSources(key string) []*models.PackageSource {
+	var sources []*models.PackageSource
+	if err := i.unmarshalKey(key, &sources); err != nil {
+		logger.Warnf("error in unmarshalkey: %v", err)
+	}
+
+	return sources
+}
+
+func (i *Instance) GetPluginPackageSources() []*models.PackageSource {
+	return i.getPackageSources(PluginPackageSources)
+}
+
+func (i *Instance) GetScraperPackageSources() []*models.PackageSource {
+	return i.getPackageSources(ScraperPackageSources)
+}
+
+type packagePathGetter struct {
+	getterFn func() []*models.PackageSource
+}
+
+func (g packagePathGetter) GetAllSourcePaths() []string {
+	p := g.getterFn()
+	var ret []string
+	for _, v := range p {
+		ret = sliceutil.AppendUnique(ret, v.LocalPath)
+	}
+
+	return ret
+}
+
+func (g packagePathGetter) GetSourcePath(srcURL string) string {
+	p := g.getterFn()
+
+	for _, v := range p {
+		if v.URL == srcURL {
+			return v.LocalPath
+		}
+	}
+
+	return ""
+}
+
+func (i *Instance) GetPluginPackagePathGetter() packagePathGetter {
+	return packagePathGetter{
+		getterFn: i.GetPluginPackageSources,
+	}
+}
+
+func (i *Instance) GetScraperPackagePathGetter() packagePathGetter {
+	return packagePathGetter{
+		getterFn: i.GetScraperPackageSources,
+	}
 }
 
 func (i *Instance) Validate() error {

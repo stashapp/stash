@@ -22,11 +22,6 @@ vendor
 internal/api/generated_*.go
 
 ####
-# Jetbrains
-####
-
-
-####
 # Visual Studio
 ####
 /.vs
@@ -51,9 +46,6 @@ internal/api/generated_*.go
 .idea/**/dynamic.xml
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
-
-# Goland Junk
-pkg/pkg
 
 ####
 # Random
