@@ -42,6 +42,10 @@ type Plugin struct {
 }
 
 type PluginUI struct {
+	// Requires is a list of plugin IDs that this plugin depends on.
+	// These plugins will be loaded before this plugin.
+	Requires []string `json:"requires"`
+
 	// Content Security Policy configuration for the plugin.
 	CSP PluginCSP `json:"csp"`
 
