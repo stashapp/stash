@@ -50,8 +50,8 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
         role="button"
         tabIndex={0}
       >
-        <RatingSystem value={gallery.rating100 ?? undefined} disabled />
-        <img src={cover} alt="" className={CLASSNAME_IMG} />
+        <RatingSystem value={gallery.rating100} disabled />
+        <img loading="lazy" src={cover} alt="" className={CLASSNAME_IMG} />
         <footer className={CLASSNAME_FOOTER}>
           <Link
             to={`/galleries/${gallery.id}`}

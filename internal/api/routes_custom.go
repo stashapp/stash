@@ -4,15 +4,15 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-chi/chi"
-	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/go-chi/chi/v5"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type customRoutes struct {
-	servedFolders config.URLMap
+	servedFolders utils.URLMap
 }
 
-func getCustomRoutes(servedFolders config.URLMap) chi.Router {
+func getCustomRoutes(servedFolders utils.URLMap) chi.Router {
 	return customRoutes{servedFolders: servedFolders}.Routes()
 }
 

@@ -14,6 +14,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
@@ -80,7 +81,7 @@ func filterSceneTags(scenes []*scraper.ScrapedScene) {
 			for _, reg := range excludeRegexps {
 				if reg.MatchString(strings.ToLower(t.Name)) {
 					ignore = true
-					ignoredTags = stringslice.StrAppendUnique(ignoredTags, t.Name)
+					ignoredTags = sliceutil.AppendUnique(ignoredTags, t.Name)
 					break
 				}
 			}

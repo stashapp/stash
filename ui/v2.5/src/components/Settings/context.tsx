@@ -110,20 +110,6 @@ export const SettingsContext: React.FC = ({ children }) => {
 
   const [apiKey, setApiKey] = useState("");
 
-  // cannot use Toast.error directly with the debounce functions
-  // since they are refreshed every time the Toast context is updated.
-  const [saveError, setSaveError] = useState<unknown>();
-
-  useEffect(() => {
-    if (!saveError) {
-      return;
-    }
-
-    Toast.error(saveError);
-    setSaveError(undefined);
-    setUpdateSuccess(false);
-  }, [saveError, Toast]);
-
   useEffect(() => {
     if (!data?.configuration || error) return;
 
@@ -152,6 +138,14 @@ export const SettingsContext: React.FC = ({ children }) => {
     resetSuccess();
   }, [resetSuccess]);
 
+  const onError = useCallback(
+    (err) => {
+      Toast.error(err);
+      setUpdateSuccess(false);
+    },
+    [Toast]
+  );
+
   // saves the configuration if no further changes are made after a half second
   const saveGeneralConfig = useDebounce(
     async (input: GQL.ConfigGeneralInput) => {
@@ -166,7 +160,7 @@ export const SettingsContext: React.FC = ({ children }) => {
         setPendingGeneral(undefined);
         onSuccess();
       } catch (e) {
-        setSaveError(e);
+        onError(e);
       }
     },
     500
@@ -215,7 +209,7 @@ export const SettingsContext: React.FC = ({ children }) => {
         setPendingInterface(undefined);
         onSuccess();
       } catch (e) {
-        setSaveError(e);
+        onError(e);
       }
     },
     500
@@ -264,7 +258,7 @@ export const SettingsContext: React.FC = ({ children }) => {
         setPendingDefaults(undefined);
         onSuccess();
       } catch (e) {
-        setSaveError(e);
+        onError(e);
       }
     },
     500
@@ -313,7 +307,7 @@ export const SettingsContext: React.FC = ({ children }) => {
         setPendingScraping(undefined);
         onSuccess();
       } catch (e) {
-        setSaveError(e);
+        onError(e);
       }
     },
     500
@@ -361,7 +355,7 @@ export const SettingsContext: React.FC = ({ children }) => {
       setPendingDLNA(undefined);
       onSuccess();
     } catch (e) {
-      setSaveError(e);
+      onError(e);
     }
   }, 500);
 
@@ -453,7 +447,7 @@ export const SettingsContext: React.FC = ({ children }) => {
       setPendingUI(undefined);
       onSuccess();
     } catch (e) {
-      setSaveError(e);
+      onError(e);
     }
   }, 500);
 
@@ -507,7 +501,7 @@ export const SettingsContext: React.FC = ({ children }) => {
       setPendingPlugins(undefined);
       onSuccess();
     } catch (e) {
-      setSaveError(e);
+      onError(e);
     }
   }, 500);
 

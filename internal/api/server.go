@@ -21,13 +21,13 @@ import (
 	gqlLru "github.com/99designs/gqlgen/graphql/handler/lru"
 	gqlTransport "github.com/99designs/gqlgen/graphql/handler/transport"
 	gqlPlayground "github.com/99designs/gqlgen/graphql/playground"
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
+	"github.com/go-chi/httplog"
 	"github.com/gorilla/websocket"
 	"github.com/vearutop/statigz"
 
-	"github.com/go-chi/cors"
-	"github.com/go-chi/httplog"
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/build"
 	"github.com/stashapp/stash/internal/heresphere"
@@ -72,7 +72,7 @@ func Start() error {
 		r.Use(httplog.RequestLogger(httpLogger))
 	}
 	r.Use(SecurityHeadersMiddleware)
-	r.Use(middleware.DefaultCompress)
+	r.Use(middleware.Compress(4))
 	r.Use(middleware.StripSlashes)
 	r.Use(BaseURLMiddleware)
 
@@ -139,7 +139,7 @@ func Start() error {
 
 	r.HandleFunc(gqlEndpoint, gqlHandlerFunc)
 	r.HandleFunc(playgroundEndpoint, func(w http.ResponseWriter, r *http.Request) {
-		setPageSecurityHeaders(w, r)
+		setPageSecurityHeaders(w, r, pluginCache.ListPlugins())
 		endpoint := manager.GetProxyPrefix(r) + gqlEndpoint
 		gqlPlayground.Handler("GraphQL playground", endpoint)(w, r)
 	})
@@ -151,10 +151,11 @@ func Start() error {
 	r.Mount("/movie", getMovieRoutes(repo))
 	r.Mount("/tag", getTagRoutes(repo))
 	r.Mount("/downloads", getDownloadsRoutes())
+	r.Mount("/plugin", getPluginRoutes(pluginCache))
 	r.Mount("/heresphere", heresphere.GetRoutes(repo))
 
-	r.HandleFunc("/css", cssHandler(c, pluginCache))
-	r.HandleFunc("/javascript", javascriptHandler(c, pluginCache))
+	r.HandleFunc("/css", cssHandler(c))
+	r.HandleFunc("/javascript", javascriptHandler(c))
 	r.HandleFunc("/customlocales", customLocalesHandler(c))
 
 	staticLoginUI := statigz.FileServer(loginUIBox.(fs.ReadDirFS))
@@ -203,7 +204,7 @@ func Start() error {
 			indexHtml = strings.Replace(indexHtml, `<base href="/"`, fmt.Sprintf(`<base href="%s/"`, prefix), 1)
 
 			w.Header().Set("Content-Type", "text/html")
-			setPageSecurityHeaders(w, r)
+			setPageSecurityHeaders(w, r, pluginCache.ListPlugins())
 
 			utils.ServeStaticContent(w, r, []byte(indexHtml))
 		} else {
@@ -291,18 +292,9 @@ func serveFiles(w http.ResponseWriter, r *http.Request, paths []string) {
 	utils.ServeStaticContent(w, r, buffer.Bytes())
 }
 
-func cssHandler(c *config.Instance, pluginCache *plugin.Cache) func(w http.ResponseWriter, r *http.Request) {
+func cssHandler(c *config.Instance) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// add plugin css files first
 		var paths []string
-
-		for _, p := range pluginCache.ListPlugins() {
-			if !p.Enabled {
-				continue
-			}
-
-			paths = append(paths, p.UI.CSS...)
-		}
 
 		if c.GetCSSEnabled() {
 			// search for custom.css in current directory, then $HOME/.stash
@@ -318,18 +310,9 @@ func cssHandler(c *config.Instance, pluginCache *plugin.Cache) func(w http.Respo
 	}
 }
 
-func javascriptHandler(c *config.Instance, pluginCache *plugin.Cache) func(w http.ResponseWriter, r *http.Request) {
+func javascriptHandler(c *config.Instance) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// add plugin javascript files first
 		var paths []string
-
-		for _, p := range pluginCache.ListPlugins() {
-			if !p.Enabled {
-				continue
-			}
-
-			paths = append(paths, p.UI.Javascript...)
-		}
 
 		if c.GetJavascriptEnabled() {
 			// search for custom.js in current directory, then $HOME/.stash
@@ -410,30 +393,74 @@ func makeTLSConfig(c *config.Instance) (*tls.Config, error) {
 	return tlsConfig, nil
 }
 
-func setPageSecurityHeaders(w http.ResponseWriter, r *http.Request) {
+func isURL(s string) bool {
+	return strings.HasPrefix(s, "http://") || strings.HasPrefix(s, "https://")
+}
+
+func setPageSecurityHeaders(w http.ResponseWriter, r *http.Request, plugins []*plugin.Plugin) {
 	c := config.GetInstance()
 
 	defaultSrc := "data: 'self' 'unsafe-inline'"
-	connectSrc := "data: 'self'"
+	connectSrcSlice := []string{
+		"data:",
+		"'self'",
+	}
 	imageSrc := "data: *"
-	scriptSrc := "'self' http://www.gstatic.com https://www.gstatic.com 'unsafe-inline' 'unsafe-eval'"
-	styleSrc := "'self' 'unsafe-inline'"
+	scriptSrcSlice := []string{
+		"'self'",
+		"http://www.gstatic.com",
+		"https://www.gstatic.com",
+		"'unsafe-inline'",
+		"'unsafe-eval'",
+	}
+	styleSrcSlice := []string{
+		"'self'",
+		"'unsafe-inline'",
+	}
 	mediaSrc := "blob: 'self'"
 
 	// Workaround Safari bug https://bugs.webkit.org/show_bug.cgi?id=201591
 	// Allows websocket requests to any origin
-	connectSrc += " ws: wss:"
+	connectSrcSlice = append(connectSrcSlice, "ws:", "wss:")
 
 	// The graphql playground pulls its frontend from a cdn
 	if r.URL.Path == playgroundEndpoint {
-		connectSrc += " https://cdn.jsdelivr.net"
-		scriptSrc += " https://cdn.jsdelivr.net"
-		styleSrc += " https://cdn.jsdelivr.net"
+		connectSrcSlice = append(connectSrcSlice, "https://cdn.jsdelivr.net")
+		scriptSrcSlice = append(scriptSrcSlice, "https://cdn.jsdelivr.net")
+		styleSrcSlice = append(styleSrcSlice, "https://cdn.jsdelivr.net")
 	}
 
 	if !c.IsNewSystem() && c.GetHandyKey() != "" {
-		connectSrc += " https://www.handyfeeling.com"
+		connectSrcSlice = append(connectSrcSlice, "https://www.handyfeeling.com")
 	}
+
+	for _, plugin := range plugins {
+		if !plugin.Enabled {
+			continue
+		}
+
+		ui := plugin.UI
+
+		for _, url := range ui.ExternalScript {
+			if isURL(url) {
+				scriptSrcSlice = append(scriptSrcSlice, url)
+			}
+		}
+
+		for _, url := range ui.ExternalCSS {
+			if isURL(url) {
+				styleSrcSlice = append(styleSrcSlice, url)
+			}
+		}
+
+		connectSrcSlice = append(connectSrcSlice, ui.CSP.ConnectSrc...)
+		scriptSrcSlice = append(scriptSrcSlice, ui.CSP.ScriptSrc...)
+		styleSrcSlice = append(styleSrcSlice, ui.CSP.StyleSrc...)
+	}
+
+	connectSrc := strings.Join(connectSrcSlice, " ")
+	scriptSrc := strings.Join(scriptSrcSlice, " ")
+	styleSrc := strings.Join(styleSrcSlice, " ")
 
 	cspDirectives := fmt.Sprintf("default-src %s; connect-src %s; img-src %s; script-src %s; style-src %s; media-src %s;", defaultSrc, connectSrc, imageSrc, scriptSrc, styleSrc, mediaSrc)
 	cspDirectives += " worker-src blob:; child-src 'none'; object-src 'none'; form-action 'self';"

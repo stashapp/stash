@@ -167,6 +167,11 @@ input ConfigGeneralInput {
   stashBoxes: [StashBoxInput!]
   "Python path - resolved using path if unset"
   pythonPath: String
+
+  "Source of scraper packages"
+  scraperPackageSources: [PackageSourceInput!]
+  "Source of plugin packages"
+  pluginPackageSources: [PackageSourceInput!]
 }
 
 type ConfigGeneralResult {
@@ -280,6 +285,11 @@ type ConfigGeneralResult {
   stashBoxes: [StashBox!]!
   "Python path - resolved using path if unset"
   pythonPath: String!
+
+  "Source of scraper packages"
+  scraperPackageSources: [PackageSource!]!
+  "Source of plugin packages"
+  pluginPackageSources: [PackageSource!]!
 }
 
 input ConfigDisableDropdownCreateInput {

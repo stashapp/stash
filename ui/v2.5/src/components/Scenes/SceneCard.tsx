@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from "react";
-import { Button, ButtonGroup } from "react-bootstrap";
+import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
@@ -71,7 +71,12 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
 
   return (
     <div className={cx("scene-card-preview", { portrait: isPortrait })}>
-      <img className="scene-card-preview-image" src={image} alt="" />
+      <img
+        className="scene-card-preview-image"
+        loading="lazy"
+        src={image}
+        alt=""
+      />
       <video
         disableRemotePlayback
         playsInline
@@ -166,7 +171,12 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     }
 
     return (
-      <img className="image-thumbnail" alt={studioName} src={studioImage} />
+      <img
+        className="image-thumbnail"
+        loading="lazy"
+        alt={studioName}
+        src={studioImage}
+      />
     );
   }
 
@@ -307,11 +317,16 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   function maybeRenderOrganized() {
     if (props.scene.organized) {
       return (
-        <div className="organized">
-          <Button className="minimal">
-            <Icon icon={faBox} />
-          </Button>
-        </div>
+        <OverlayTrigger
+          overlay={<Tooltip id="organised-tooltip">{"Organized"}</Tooltip>}
+          placement="bottom"
+        >
+          <div className="organized">
+            <Button className="minimal">
+              <Icon icon={faBox} />
+            </Button>
+          </div>
+        </OverlayTrigger>
       );
     }
   }

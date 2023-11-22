@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"runtime/pprof"
 	"strconv"
 	"strings"
@@ -28,6 +30,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
+	"github.com/stashapp/stash/pkg/pkg"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/scraper"
@@ -46,6 +49,9 @@ type SystemStatus struct {
 	ConfigPath     *string          `json:"configPath"`
 	AppSchema      int              `json:"appSchema"`
 	Status         SystemStatusEnum `json:"status"`
+	Os             string           `json:"os"`
+	WorkingDir     string           `json:"working_dir"`
+	HomeDir        string           `json:"home_dir"`
 }
 
 type SystemStatusEnum string
@@ -125,6 +131,9 @@ type Manager struct {
 
 	PluginCache  *plugin.Cache
 	ScraperCache *scraper.Cache
+
+	PluginPackageManager  *pkg.Manager
+	ScraperPackageManager *pkg.Manager
 
 	DownloadStore *DownloadStore
 
@@ -225,6 +234,9 @@ func initialize() error {
 	dlnaRepository := dlna.NewRepository(repo)
 	instance.DLNAService = dlna.NewService(dlnaRepository, cfg, &sceneServer)
 
+	instance.RefreshPluginSourceManager()
+	instance.RefreshScraperSourceManager()
+
 	if !cfg.IsNewSystem() {
 		logger.Infof("using config file: %s", cfg.GetConfigFile())
 
@@ -274,6 +286,26 @@ func initialize() error {
 	}
 
 	return nil
+}
+
+func initialisePackageManager(localPath string, srcPathGetter pkg.SourcePathGetter, cachePathGetter pkg.CachePathGetter) *pkg.Manager {
+	const timeout = 10 * time.Second
+	httpClient := &http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+		},
+		Timeout: timeout,
+	}
+
+	return &pkg.Manager{
+		Local: &pkg.Store{
+			BaseDir:      localPath,
+			ManifestFile: pkg.ManifestFile,
+		},
+		PackagePathGetter: srcPathGetter,
+		Client:            httpClient,
+		CachePathGetter:   cachePathGetter,
+	}
 }
 
 func videoFileFilter(ctx context.Context, f models.File) bool {
@@ -562,6 +594,14 @@ func (s *Manager) RefreshStreamManager() {
 	s.StreamManager = ffmpeg.NewStreamManager(cacheDir, s.FFMPEG, s.FFProbe, s.Config, s.ReadLockManager)
 }
 
+func (s *Manager) RefreshScraperSourceManager() {
+	s.ScraperPackageManager = initialisePackageManager(s.Config.GetScrapersPath(), s.Config.GetScraperPackagePathGetter(), s.Config)
+}
+
+func (s *Manager) RefreshPluginSourceManager() {
+	s.PluginPackageManager = initialisePackageManager(s.Config.GetPluginsPath(), s.Config.GetPluginPackagePathGetter(), s.Config)
+}
+
 func setSetupDefaults(input *SetupInput) {
 	if input.ConfigLocation == "" {
 		input.ConfigLocation = filepath.Join(fsutil.GetHomeDirectory(), ".stash", "config.yml")
@@ -740,20 +780,27 @@ func (s *Manager) Migrate(ctx context.Context, input MigrateInput) error {
 }
 
 func (s *Manager) GetSystemStatus() *SystemStatus {
+	workingDir := fsutil.GetWorkingDirectory()
+	homeDir := fsutil.GetHomeDirectory()
+
 	database := s.Database
-	status := SystemStatusEnumOk
 	dbSchema := int(database.Version())
 	dbPath := database.DatabasePath()
 	appSchema := int(database.AppSchemaVersion())
-	configFile := s.Config.GetConfigFile()
 
+	status := SystemStatusEnumOk
 	if s.Config.IsNewSystem() {
 		status = SystemStatusEnumSetup
 	} else if dbSchema < appSchema {
 		status = SystemStatusEnumNeedsMigration
 	}
 
+	configFile := s.Config.GetConfigFile()
+
 	return &SystemStatus{
+		Os:             runtime.GOOS,
+		WorkingDir:     workingDir,
+		HomeDir:        homeDir,
 		DatabaseSchema: &dbSchema,
 		DatabasePath:   &dbPath,
 		AppSchema:      appSchema,

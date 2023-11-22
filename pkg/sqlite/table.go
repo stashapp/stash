@@ -14,8 +14,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 type table struct {
@@ -202,7 +200,7 @@ func (t *joinTable) insertJoins(ctx context.Context, id int, foreignIDs []int) e
 	defer stmt.Close()
 
 	// eliminate duplicates
-	foreignIDs = intslice.IntAppendUniques(nil, foreignIDs)
+	foreignIDs = sliceutil.AppendUniques(nil, foreignIDs)
 
 	for _, fk := range foreignIDs {
 		if _, err := tx.ExecStmt(ctx, stmt, id, fk); err != nil {
@@ -229,7 +227,7 @@ func (t *joinTable) addJoins(ctx context.Context, id int, foreignIDs []int) erro
 	}
 
 	// only add foreign keys that are not already present
-	foreignIDs = intslice.IntExclude(foreignIDs, fks)
+	foreignIDs = sliceutil.Exclude(foreignIDs, fks)
 	return t.insertJoins(ctx, id, foreignIDs)
 }
 
@@ -440,7 +438,7 @@ func (t *stringTable) addJoins(ctx context.Context, id int, v []string) error {
 	}
 
 	// only add values that are not already present
-	filtered := stringslice.StrExclude(v, existing)
+	filtered := sliceutil.Exclude(v, existing)
 	return t.insertJoins(ctx, id, filtered)
 }
 

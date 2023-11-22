@@ -33,7 +33,6 @@
     "delete_file": "Delete file",
     "delete_file_and_funscript": "Delete file (and funscript)",
     "delete_generated_supporting_files": "Delete generated supporting files",
-    "delete_stashid": "Delete StashID",
     "disable": "Disable",
     "disallow": "Disallow",
     "download": "Download",
@@ -42,7 +41,7 @@
     "edit": "Edit",
     "edit_entity": "Edit {entityType}",
     "enable": "Enable",
-    "encoding_image": "Encoding image",
+    "encoding_image": "Encoding image…",
     "export": "Export",
     "export_all": "Export all…",
     "find": "Find",
@@ -80,6 +79,7 @@
     "previous_action": "Back",
     "reassign": "Reassign",
     "refresh": "Refresh",
+    "reload": "Reload",
     "reload_plugins": "Reload plugins",
     "reload_scrapers": "Reload scrapers",
     "remove": "Remove",
@@ -401,14 +401,18 @@
       "log_level": "Log Level"
     },
     "plugins": {
+      "available_plugins": "Available Plugins",
       "hooks": "Hooks",
+      "installed_plugins": "Installed Plugins",
       "triggers_on": "Triggers on"
     },
     "scraping": {
+      "available_scrapers": "Available Scrapers",
       "entity_metadata": "{entityType} Metadata",
       "entity_scrapers": "{entityType} scrapers",
       "excluded_tag_patterns_desc": "Regexps of tag names to exclude from scraping results",
       "excluded_tag_patterns_head": "Excluded Tag Patterns",
+      "installed_scrapers": "Installed Scrapers",
       "scraper": "Scraper",
       "scrapers": "Scrapers",
       "search_by_name": "Search by name",
@@ -947,6 +951,7 @@
     "search_accuracy_label": "Search Accuracy",
     "select_options": "Select Options…",
     "select_all_but_largest_file": "Select every file in each duplicated group, except the largest file",
+    "select_all_but_largest_resolution": "Select every file in each duplicated group, except the file with highest resolution",
     "select_none": "Select None",
     "select_oldest": "Select the oldest file in the duplicate group",
     "select_youngest": "Select the youngest file in the duplicate group",
@@ -1082,6 +1087,35 @@
   "o_counter": "O-Counter",
   "operations": "Operations",
   "organized": "Organised",
+  "package_manager": {
+    "add_source": "Add Source",
+    "edit_source": "Edit Source",
+    "check_for_updates": "Check for Updates",
+    "confirm_delete_source": "Are you sure you want to delete source {name} ({url})?",
+    "confirm_uninstall": "Are you sure you want to uninstall {number} packages?",
+    "description": "Description",
+    "hide_unselected": "Hide unselected",
+    "install": "Install",
+    "installed_version": "Installed Version",
+    "latest_version": "Latest Version",
+    "no_sources": "No sources configured",
+    "no_packages": "No packages found",
+    "required_by": "Required by {packages}",
+    "source": {
+      "name": "Name",
+      "url": "Index URL",
+      "local_path": {
+        "heading": "Local Path",
+        "description": "Relative path to store packages for this source. Note that changing this requires the packages to be moved manually."
+      }
+    },
+    "package": "Package",
+    "selected_only": "Selected only",
+    "show_all": "Show all",
+    "uninstall": "Uninstall",
+    "update": "Update",
+    "version": "Version"
+  },
   "pagination": {
     "first": "First",
     "last": "Last",
@@ -1145,6 +1179,7 @@
   "play_count": "Play Count",
   "play_duration": "Play Duration",
   "primary_file": "Primary file",
+  "primary_tag": "Primary Tag",
   "queue": "Queue",
   "random": "Random",
   "rating": "Rating",
@@ -1177,14 +1212,10 @@
     "confirm": {
       "almost_ready": "We're almost ready to complete the configuration. Please confirm the following settings. You can click back to change anything incorrect. If everything looks good, click Confirm to create your system.",
       "blobs_directory": "Binary data directory",
-      "blobs_use_database": "<use database>",
+      "blobs_use_database": "<using database>",
       "cache_directory": "Cache directory",
       "configuration_file_location": "Configuration file location:",
       "database_file_path": "Database file path",
-      "default_blobs_location": "<path containing configuration file>/blobs",
-      "default_cache_location": "<path containing configuration file>/cache",
-      "default_db_location": "<path containing configuration file>/stash-go.sqlite",
-      "default_generated_content_location": "<path containing configuration file>/generated",
       "generated_directory": "Generated directory",
       "nearly_there": "Nearly there!",
       "stash_library_directories": "Stash library directories"
@@ -1252,10 +1283,12 @@
       "your_system_has_been_created": "Success! Your system has been created!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash tries to find its configuration file (<code>config.yml</code>) from the current working directory first, and if it does not find it there, it falls back to <code>$HOME/.stash/config.yml</code> (on Windows, this will be <code>%USERPROFILE%\\.stash\\config.yml</code>). You can also make Stash read from a specific configuration file by running it with the <code>-c '<path to config file>'</code> or <code>--config '<path to config file>'</code> options.",
-      "in_current_stash_directory": "In the <code>$HOME/.stash</code> directory",
-      "in_the_current_working_directory": "In the current working directory",
-      "next_step": "With all of that out of the way, if you're ready to proceed with setting up a new system, choose where you'd like to store your configuration file and click Next.",
+      "config_path_logic_explained": "Stash tries to find its configuration file (<code>config.yml</code>) from the current working directory first, and if it does not find it there, it falls back to <code>{fallback_path}</code>. You can also make Stash read from a specific configuration file by running it with the <code>-c '<path to config file>'</code> or <code>--config '<path to config file>'</code> options.",
+      "in_current_stash_directory": "In the <code>{path}</code> directory:",
+      "in_the_current_working_directory": "In <code>{path}</code>, the working directory, currently:",
+      "in_the_current_working_directory_disabled": "In <code>{path}</code>, the working directory:",
+      "in_the_current_working_directory_disabled_macos": "Unsupported when running <code>Stash.app</code>,<br></br>run <code>stash-macos</code> to set up in the working directory",
+      "next_step": "With all of that out of the way, if you're ready to proceed with setting up a new system, please choose where you'd like to store your configuration file.",
       "store_stash_config": "Where do you want to store your Stash configuration?",
       "unable_to_locate_config": "If you're reading this, then Stash couldn't find an existing configuration. This wizard will guide you through the process of setting up a new configuration.",
       "unexpected_explained": "If you're getting this screen unexpectedly, please try restarting Stash in the correct working directory or with the <code>-c</code> flag."
@@ -1342,6 +1375,7 @@
   "tag_sub_tag_tooltip": "Has sub-tags",
   "tags": "Tags",
   "tattoos": "Tattoos",
+  "time": "Time",
   "title": "Title",
   "toast": {
     "added_entity": "Added {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
@@ -1373,6 +1407,7 @@
     "aliases_must_be_unique": "aliases must be unique",
     "date_invalid_form": "${path} must be in YYYY-MM-DD form",
     "required": "${path} is a required field",
+    "unique": "${path} must be unique",
     "urls_must_be_unique": "URLs must be unique"
   },
   "videos": "Videos",

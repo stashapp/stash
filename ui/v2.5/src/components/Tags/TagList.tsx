@@ -128,9 +128,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
     if (!tag) return;
     try {
       await mutateMetadataAutoTag({ tags: [tag.id] });
-      Toast.success({
-        content: intl.formatMessage({ id: "toast.started_auto_tagging" }),
-      });
+      Toast.success(intl.formatMessage({ id: "toast.started_auto_tagging" }));
     } catch (e) {
       Toast.error(e);
     }
@@ -147,16 +145,16 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
         parents: [],
         children: [],
       });
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "toast.delete_past_tense" },
           {
             count: 1,
             singularEntity: intl.formatMessage({ id: "tag" }),
             pluralEntity: intl.formatMessage({ id: "tags" }),
           }
-        ),
-      });
+        )
+      );
       setDeletingTag(null);
     } catch (e) {
       Toast.error(e);

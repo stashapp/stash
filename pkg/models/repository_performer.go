@@ -23,7 +23,7 @@ type PerformerFinder interface {
 // PerformerQueryer provides methods to query performers.
 type PerformerQueryer interface {
 	Query(ctx context.Context, performerFilter *PerformerFilterType, findFilter *FindFilterType) ([]*Performer, int, error)
-	QueryCount(ctx context.Context, galleryFilter *PerformerFilterType, findFilter *FindFilterType) (int, error)
+	QueryCount(ctx context.Context, performerFilter *PerformerFilterType, findFilter *FindFilterType) (int, error)
 }
 
 type PerformerAutoTagQueryer interface {

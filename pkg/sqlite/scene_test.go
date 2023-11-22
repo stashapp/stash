@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -2376,12 +2376,12 @@ func TestSceneQueryPath(t *testing.T) {
 			mustInclude := indexesToIDs(sceneIDs, tt.mustInclude)
 			mustExclude := indexesToIDs(sceneIDs, tt.mustExclude)
 
-			missing := intslice.IntExclude(mustInclude, got.IDs)
+			missing := sliceutil.Exclude(mustInclude, got.IDs)
 			if len(missing) > 0 {
 				t.Errorf("SceneStore.TestSceneQueryPath() missing expected IDs: %v", missing)
 			}
 
-			notExcluded := intslice.IntIntercect(mustExclude, got.IDs)
+			notExcluded := sliceutil.Intersect(mustExclude, got.IDs)
 			if len(notExcluded) > 0 {
 				t.Errorf("SceneStore.TestSceneQueryPath() expected IDs to be excluded: %v", notExcluded)
 			}

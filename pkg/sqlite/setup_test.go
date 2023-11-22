@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
 
@@ -600,10 +600,10 @@ func runTests(m *testing.M) int {
 	err = populateDB()
 	if err != nil {
 		panic(fmt.Sprintf("Could not populate database: %s", err.Error()))
-	} else {
-		// run the tests
-		return m.Run()
 	}
+
+	// run the tests
+	return m.Run()
 }
 
 func populateDB() error {
@@ -1506,7 +1506,7 @@ func getTagMarkerCount(id int) int {
 	count := 0
 	idx := indexFromID(tagIDs, id)
 	for _, s := range markerSpecs {
-		if s.primaryTagIdx == idx || intslice.IntInclude(s.tagIdxs, idx) {
+		if s.primaryTagIdx == idx || sliceutil.Contains(s.tagIdxs, idx) {
 			count++
 		}
 	}

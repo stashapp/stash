@@ -13,7 +13,7 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 const (
@@ -67,7 +67,7 @@ func getPathWords(path string, trimExt bool) []string {
 			// just use the first two characters
 			// #2293 - need to convert to unicode runes for the substring, otherwise
 			// the resulting string is corrupted.
-			ret = stringslice.StrAppendUnique(ret, string([]rune(w)[0:2]))
+			ret = sliceutil.AppendUnique(ret, string([]rune(w)[0:2]))
 		}
 	}
 
