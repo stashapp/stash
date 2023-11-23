@@ -288,7 +288,7 @@ func initialize() error {
 	return nil
 }
 
-func initialisePackageManager(localPath string, srcPathGetter pkg.SourcePathGetter, cachePathGetter pkg.CachePathGetter) *pkg.Manager {
+func initialisePackageManager(localPath string, srcPathGetter pkg.SourcePathGetter) *pkg.Manager {
 	const timeout = 10 * time.Second
 	httpClient := &http.Client{
 		Transport: &http.Transport{
@@ -304,7 +304,6 @@ func initialisePackageManager(localPath string, srcPathGetter pkg.SourcePathGett
 		},
 		PackagePathGetter: srcPathGetter,
 		Client:            httpClient,
-		CachePathGetter:   cachePathGetter,
 	}
 }
 
@@ -595,11 +594,11 @@ func (s *Manager) RefreshStreamManager() {
 }
 
 func (s *Manager) RefreshScraperSourceManager() {
-	s.ScraperPackageManager = initialisePackageManager(s.Config.GetScrapersPath(), s.Config.GetScraperPackagePathGetter(), s.Config)
+	s.ScraperPackageManager = initialisePackageManager(s.Config.GetScrapersPath(), s.Config.GetScraperPackagePathGetter())
 }
 
 func (s *Manager) RefreshPluginSourceManager() {
-	s.PluginPackageManager = initialisePackageManager(s.Config.GetPluginsPath(), s.Config.GetPluginPackagePathGetter(), s.Config)
+	s.PluginPackageManager = initialisePackageManager(s.Config.GetPluginsPath(), s.Config.GetPluginPackagePathGetter())
 }
 
 func setSetupDefaults(input *SetupInput) {

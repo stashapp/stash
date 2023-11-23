@@ -14,10 +14,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-type CachePathGetter interface {
-	GetCachePath() string
-}
-
 // SourcePathGetter gets the source path for a given package URL.
 type SourcePathGetter interface {
 	// GetAllSourcePaths gets all source paths.
@@ -31,9 +27,18 @@ type SourcePathGetter interface {
 type Manager struct {
 	Local             *Store
 	PackagePathGetter SourcePathGetter
-	CachePathGetter   CachePathGetter
 
 	Client *http.Client
+
+	cache *repositoryCache
+}
+
+func (m *Manager) getCache() *repositoryCache {
+	if m.cache == nil {
+		m.cache = &repositoryCache{}
+	}
+
+	return m.cache
 }
 
 func (m *Manager) remoteFromURL(path string) (*httpRepository, error) {
@@ -42,13 +47,7 @@ func (m *Manager) remoteFromURL(path string) (*httpRepository, error) {
 		return nil, fmt.Errorf("parsing path: %w", err)
 	}
 
-	cachePath := m.CachePathGetter.GetCachePath()
-	var cache *repositoryCache
-	if cachePath != "" {
-		cache = &repositoryCache{cachePath: cachePath}
-	}
-
-	return newHttpRepository(*u, m.Client, cache), nil
+	return newHttpRepository(*u, m.Client, m.getCache()), nil
 }
 
 func (m *Manager) ListInstalled(ctx context.Context) (LocalPackageIndex, error) {
