@@ -401,7 +401,7 @@ export const SettingsContext: React.FC = ({ children }) => {
       setPendingHSP(undefined);
       onSuccess();
     } catch (e) {
-      setSaveError(e);
+      onError(e);
     }
   }, 500);
 
