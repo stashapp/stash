@@ -3,7 +3,7 @@ package models
 import (
 	"context"
 
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 type SceneIDLoader interface {
@@ -90,14 +90,14 @@ func (r RelatedIDs) List() []int {
 func (r *RelatedIDs) Add(ids ...int) {
 	r.mustLoaded()
 
-	r.list = intslice.IntAppendUniques(r.list, ids)
+	r.list = sliceutil.AppendUniques(r.list, ids)
 }
 
 // Remove removes the provided ids to the list. Panics if the relationship has not been loaded.
 func (r *RelatedIDs) Remove(ids ...int) {
 	r.mustLoaded()
 
-	r.list = intslice.IntExclude(r.list, ids)
+	r.list = sliceutil.Exclude(r.list, ids)
 }
 
 func (r *RelatedIDs) load(fn func() ([]int, error)) error {
