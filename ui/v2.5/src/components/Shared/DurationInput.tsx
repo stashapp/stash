@@ -6,15 +6,17 @@ import {
 import React, { useState } from "react";
 import { Button, ButtonGroup, InputGroup, Form } from "react-bootstrap";
 import { Icon } from "./Icon";
-import DurationUtils from "src/utils/duration";
+import TextUtils from "src/utils/text";
 
 interface IProps {
   disabled?: boolean;
-  value: number | undefined;
-  setValue(value: number | undefined): void;
+  value: number | null | undefined;
+  setValue(value: number | null): void;
   onReset?(): void;
   className?: string;
   placeholder?: string;
+  error?: string;
+  allowNegative?: boolean;
 }
 
 export const DurationInput: React.FC<IProps> = ({
@@ -24,6 +26,8 @@ export const DurationInput: React.FC<IProps> = ({
   onReset,
   className,
   placeholder,
+  error,
+  allowNegative = false,
 }) => {
   const [tmpValue, setTmpValue] = useState<string>();
 
@@ -33,19 +37,30 @@ export const DurationInput: React.FC<IProps> = ({
 
   function onBlur() {
     if (tmpValue !== undefined) {
-      setValue(DurationUtils.stringToSeconds(tmpValue));
+      updateValue(TextUtils.timestampToSeconds(tmpValue));
       setTmpValue(undefined);
     }
   }
 
+  function updateValue(v: number | null) {
+    if (v !== null && !allowNegative && v < 0) {
+      v = null;
+    }
+    setValue(v);
+  }
+
   function increment() {
     setTmpValue(undefined);
-    setValue((value ?? 0) + 1);
+    updateValue((value ?? 0) + 1);
   }
 
   function decrement() {
     setTmpValue(undefined);
-    setValue((value ?? 0) - 1);
+    if (allowNegative) {
+      updateValue((value ?? 0) - 1);
+    } else {
+      updateValue(value ? value - 1 : 0);
+    }
   }
 
   function renderButtons() {
@@ -84,8 +99,14 @@ export const DurationInput: React.FC<IProps> = ({
   let inputValue = "";
   if (tmpValue !== undefined) {
     inputValue = tmpValue;
-  } else if (value !== undefined) {
-    inputValue = DurationUtils.secondsToString(value);
+  } else if (value !== null && value !== undefined) {
+    inputValue = TextUtils.secondsToTimestamp(value);
+  }
+
+  if (placeholder) {
+    placeholder = `${placeholder} (hh:mm:ss)`;
+  } else {
+    placeholder = "hh:mm:ss";
   }
 
   return (
@@ -97,12 +118,13 @@ export const DurationInput: React.FC<IProps> = ({
           value={inputValue}
           onChange={onChange}
           onBlur={onBlur}
-          placeholder={placeholder ? `${placeholder} (hh:mm:ss)` : "hh:mm:ss"}
+          placeholder={placeholder}
         />
         <InputGroup.Append>
           {maybeRenderReset()}
           {renderButtons()}
         </InputGroup.Append>
+        <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
       </InputGroup>
     </div>
   );

@@ -31,12 +31,12 @@ const MovieCreate: React.FC = () => {
     });
     if (result.data?.movieCreate?.id) {
       history.push(`/movies/${result.data.movieCreate.id}`);
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "toast.created_entity" },
           { entity: intl.formatMessage({ id: "gallery" }).toLocaleLowerCase() }
-        ),
-      });
+        )
+      );
     }
   }
 
@@ -67,7 +67,7 @@ const MovieCreate: React.FC = () => {
         <div className="logo w-100">
           {encodingImage ? (
             <LoadingIndicator
-              message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+              message={intl.formatMessage({ id: "actions.encoding_image" })}
             />
           ) : (
             <div className="movie-images">

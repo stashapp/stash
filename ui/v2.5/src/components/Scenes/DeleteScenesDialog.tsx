@@ -61,7 +61,7 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
     setIsDeleting(true);
     try {
       await deleteScene();
-      Toast.success({ content: toastMessage });
+      Toast.success(toastMessage);
       props.onClose(true);
     } catch (e) {
       Toast.error(e);
