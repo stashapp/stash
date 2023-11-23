@@ -198,12 +198,12 @@ export const LibraryTasks: React.FC = () => {
         paths,
       });
 
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
           { operation_name: intl.formatMessage({ id: "actions.scan" }) }
-        ),
-      });
+        )
+      );
     } catch (e) {
       Toast.error(e);
     }
@@ -240,12 +240,12 @@ export const LibraryTasks: React.FC = () => {
         paths,
       });
 
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
           { operation_name: intl.formatMessage({ id: "actions.auto_tag" }) }
-        ),
-      });
+        )
+      );
     } catch (e) {
       Toast.error(e);
     }
@@ -270,12 +270,12 @@ export const LibraryTasks: React.FC = () => {
       });
 
       await mutateMetadataGenerate(generateOptions);
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
           { operation_name: intl.formatMessage({ id: "actions.generate" }) }
-        ),
-      });
+        )
+      );
     } catch (e) {
       Toast.error(e);
     }

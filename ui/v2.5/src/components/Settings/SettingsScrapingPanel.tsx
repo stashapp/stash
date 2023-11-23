@@ -19,6 +19,10 @@ import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";
 import { useSettings } from "./context";
 import { StashBoxSetting } from "./StashBoxConfiguration";
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
+import {
+  AvailableScraperPackages,
+  InstalledScraperPackages,
+} from "./ScraperPackageManager";
 
 interface IURLList {
   urls: string[];
@@ -90,7 +94,11 @@ export const SettingsScrapingPanel: React.FC = () => {
     useSettings();
 
   async function onReloadScrapers() {
-    await mutateReloadScrapers().catch((e) => Toast.error(e));
+    try {
+      await mutateReloadScrapers();
+    } catch (e) {
+      Toast.error(e);
+    }
   }
 
   function renderPerformerScrapeTypes(types: ScrapeType[]) {
@@ -341,6 +349,9 @@ export const SettingsScrapingPanel: React.FC = () => {
           onChange={(v) => saveScraping({ excludeTagPatterns: v })}
         />
       </SettingSection>
+
+      <InstalledScraperPackages />
+      <AvailableScraperPackages />
 
       <SettingSection headingID="config.scraping.scrapers">
         <div className="content">

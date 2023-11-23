@@ -28,7 +28,7 @@ COPY --from=frontend /stash /stash/
 RUN make generate-backend
 ARG GITHASH
 ARG STASH_VERSION
-RUN make stash-release
+RUN make flags-release flags-pie stash
 
 # Final Runnable Image
 FROM alpine:latest

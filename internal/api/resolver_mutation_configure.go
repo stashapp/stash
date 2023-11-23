@@ -347,6 +347,18 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.DrawFunscriptHeatmapRange, input.DrawFunscriptHeatmapRange)
 	}
 
+	refreshScraperSource := false
+	if input.ScraperPackageSources != nil {
+		c.Set(config.ScraperPackageSources, input.ScraperPackageSources)
+		refreshScraperSource = true
+	}
+
+	refreshPluginSource := false
+	if input.PluginPackageSources != nil {
+		c.Set(config.PluginPackageSources, input.PluginPackageSources)
+		refreshPluginSource = true
+	}
+
 	if err := c.Write(); err != nil {
 		return makeConfigGeneralResult(), err
 	}
@@ -360,6 +372,12 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	}
 	if refreshBlobStorage {
 		manager.GetInstance().SetBlobStoreOptions()
+	}
+	if refreshScraperSource {
+		manager.GetInstance().RefreshScraperSourceManager()
+	}
+	if refreshPluginSource {
+		manager.GetInstance().RefreshPluginSourceManager()
 	}
 
 	return makeConfigGeneralResult(), nil
