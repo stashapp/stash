@@ -779,6 +779,11 @@ func (t *ExportTask) exportGallery(ctx context.Context, wg *sync.WaitGroup, jobC
 			continue
 		}
 
+		if err := g.LoadURLs(ctx, r.Gallery); err != nil {
+			logger.Errorf("[galleries] <%s> error getting gallery urls: %v", g.DisplayName(), err)
+			continue
+		}
+
 		galleryHash := g.PrimaryChecksum()
 
 		newGalleryJSON, err := gallery.ToBasicJSON(g)
