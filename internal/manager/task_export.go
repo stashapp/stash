@@ -332,7 +332,7 @@ func (t *ExportTask) populateGalleryImages(ctx context.Context) {
 
 		images, err := imageReader.FindByGalleryID(ctx, g.ID)
 		if err != nil {
-			logger.Errorf("[galleries] <%s> failed to fetch images for gallery: %v", g.PrimaryChecksum(), err)
+			logger.Errorf("[galleries] <%s> failed to fetch images for gallery: %v", g.DisplayName(), err)
 			continue
 		}
 
@@ -784,11 +784,9 @@ func (t *ExportTask) exportGallery(ctx context.Context, wg *sync.WaitGroup, jobC
 			continue
 		}
 
-		galleryHash := g.PrimaryChecksum()
-
 		newGalleryJSON, err := gallery.ToBasicJSON(g)
 		if err != nil {
-			logger.Errorf("[galleries] <%s> error getting gallery JSON: %v", galleryHash, err)
+			logger.Errorf("[galleries] <%s> error getting gallery JSON: %v", g.DisplayName(), err)
 			continue
 		}
 
@@ -801,12 +799,12 @@ func (t *ExportTask) exportGallery(ctx context.Context, wg *sync.WaitGroup, jobC
 		if g.FolderID != nil {
 			folder, err := r.Folder.Find(ctx, *g.FolderID)
 			if err != nil {
-				logger.Errorf("[galleries] <%s> error getting gallery folder: %v", galleryHash, err)
+				logger.Errorf("[galleries] <%s> error getting gallery folder: %v", g.DisplayName(), err)
 				continue
 			}
 
 			if folder == nil {
-				logger.Errorf("[galleries] <%s> unable to find gallery folder", galleryHash)
+				logger.Errorf("[galleries] <%s> unable to find gallery folder", g.DisplayName())
 				continue
 			}
 
@@ -815,13 +813,13 @@ func (t *ExportTask) exportGallery(ctx context.Context, wg *sync.WaitGroup, jobC
 
 		newGalleryJSON.Studio, err = gallery.GetStudioName(ctx, studioReader, g)
 		if err != nil {
-			logger.Errorf("[galleries] <%s> error getting gallery studio name: %v", galleryHash, err)
+			logger.Errorf("[galleries] <%s> error getting gallery studio name: %v", g.DisplayName(), err)
 			continue
 		}
 
 		performers, err := performerReader.FindByGalleryID(ctx, g.ID)
 		if err != nil {
-			logger.Errorf("[galleries] <%s> error getting gallery performer names: %v", galleryHash, err)
+			logger.Errorf("[galleries] <%s> error getting gallery performer names: %v", g.DisplayName(), err)
 			continue
 		}
 
@@ -829,13 +827,13 @@ func (t *ExportTask) exportGallery(ctx context.Context, wg *sync.WaitGroup, jobC
 
 		tags, err := tagReader.FindByGalleryID(ctx, g.ID)
 		if err != nil {
-			logger.Errorf("[galleries] <%s> error getting gallery tag names: %v", galleryHash, err)
+			logger.Errorf("[galleries] <%s> error getting gallery tag names: %v", g.DisplayName(), err)
 			continue
 		}
 
 		newGalleryJSON.Chapters, err = gallery.GetGalleryChaptersJSON(ctx, galleryChapterReader, g)
 		if err != nil {
-			logger.Errorf("[galleries] <%s> error getting gallery chapters JSON: %v", galleryHash, err)
+			logger.Errorf("[galleries] <%s> error getting gallery chapters JSON: %v", g.DisplayName(), err)
 			continue
 		}
 
@@ -864,7 +862,7 @@ func (t *ExportTask) exportGallery(ctx context.Context, wg *sync.WaitGroup, jobC
 		fn := newGalleryJSON.Filename(basename, hash)
 
 		if err := t.json.saveGallery(fn, newGalleryJSON); err != nil {
-			logger.Errorf("[galleries] <%s> failed to save json: %v", galleryHash, err)
+			logger.Errorf("[galleries] <%s> failed to save json: %v", g.DisplayName(), err)
 		}
 	}
 }
