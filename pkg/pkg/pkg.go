@@ -8,8 +8,16 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
-const timeFormat = "2006-01-02 15:04:05 -0700"
+const (
+	// TimeFormat is the format used for marshalling/unmarshalling time.Time.
+	// Times are stored in UTC.
+	TimeFormat = "2006-01-02 15:04:05"
 
+	// timeFormatLegacy is the old format that may exist in some manifests.
+	timeFormatLegacy = "2006-01-02 15:04:05 -0700"
+)
+
+// Time is a wrapper around time.Time that allows for custom YAML marshalling/unmarshalling using TimeFormat.
 type Time struct {
 	time.Time
 }
@@ -19,16 +27,25 @@ func (t *Time) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	if err := unmarshal(&s); err != nil {
 		return err
 	}
-	parsed, err := time.Parse(timeFormat, s)
+
+	// times are stored in UTC
+	parsed, err := time.Parse(TimeFormat, s)
 	if err != nil {
-		return err
+		// try to parse using the legacy format
+		var legacyErr error
+		parsed, legacyErr = time.Parse(timeFormatLegacy, s)
+
+		if legacyErr != nil {
+			// if we can't parse using the legacy format, return the original error
+			return err
+		}
 	}
 	t.Time = parsed
 	return nil
 }
 
 func (t Time) MarshalYAML() (interface{}, error) {
-	return t.Format(timeFormat), nil
+	return t.Format(TimeFormat), nil
 }
 
 type PackageMetadata map[string]interface{}
