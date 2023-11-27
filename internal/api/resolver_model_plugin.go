@@ -55,3 +55,7 @@ func (r *pluginResolver) Paths(ctx context.Context, obj *plugin.Plugin) (*Plugin
 
 	return b.paths(), nil
 }
+
+func (r *pluginResolver) Requires(ctx context.Context, obj *plugin.Plugin) ([]string, error) {
+	return obj.UI.Requires, nil
+}
