@@ -43,6 +43,10 @@ ui:
   javascript:
     - <path to javascript file>
 
+  # optional list of plugin IDs to load prior to this plugin
+  requires:
+    - <plugin ID>
+
   # optional list of assets 
   assets:
     urlPrefix: fsLocation
@@ -76,6 +80,9 @@ The `exec`, `interface`, `errLog` and `tasks` fields are used only for plugins w
 
 The `css` and `javascript` field values may be relative paths to the plugin configuration file, or
 may be full external URLs.
+
+The `requires` field is a list of plugin IDs which must have their javascript/css files loaded
+before this plugins javascript/css files.
 
 The `assets` field is a map of URL prefixes to filesystem paths relative to the plugin configuration file.
 Assets are mounted to the `/plugin/{pluginID}/assets` path. 
