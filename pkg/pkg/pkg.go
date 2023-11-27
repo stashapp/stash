@@ -39,6 +39,9 @@ func (t *Time) UnmarshalYAML(unmarshal func(interface{}) error) error {
 			// if we can't parse using the legacy format, return the original error
 			return err
 		}
+
+		// convert timezoned time to UTC
+		parsed = parsed.UTC()
 	}
 	t.Time = parsed
 	return nil
