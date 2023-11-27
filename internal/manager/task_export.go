@@ -24,7 +24,7 @@ import (
 	"github.com/stashapp/stash/pkg/movie"
 	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
@@ -124,14 +124,14 @@ func (t *ExportTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 		var err error
 		t.baseDir, err = instance.Paths.Generated.TempDir("export")
 		if err != nil {
-			logger.Errorf("error creating temporary directory for export: %s", err.Error())
+			logger.Errorf("error creating temporary directory for export: %v", err)
 			return
 		}
 
 		defer func() {
 			err := fsutil.RemoveDir(t.baseDir)
 			if err != nil {
-				logger.Errorf("error removing directory %s: %s", t.baseDir, err.Error())
+				logger.Errorf("error removing directory %s: %v", t.baseDir, err)
 			}
 		}()
 	}
@@ -179,7 +179,7 @@ func (t *ExportTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 	if !t.full {
 		err := t.generateDownload()
 		if err != nil {
-			logger.Errorf("error generating download link: %s", err.Error())
+			logger.Errorf("error generating download link: %v", err)
 			return
 		}
 	}
@@ -258,18 +258,18 @@ func (t *ExportTask) zipFile(fn, outDir string, z *zip.Writer) error {
 
 	f, err := z.Create(p)
 	if err != nil {
-		return fmt.Errorf("error creating zip entry for %s: %s", fn, err.Error())
+		return fmt.Errorf("error creating zip entry for %s: %v", fn, err)
 	}
 
 	i, err := os.Open(fn)
 	if err != nil {
-		return fmt.Errorf("error opening %s: %s", fn, err.Error())
+		return fmt.Errorf("error opening %s: %v", fn, err)
 	}
 
 	defer i.Close()
 
 	if _, err := io.Copy(f, i); err != nil {
-		return fmt.Errorf("error writing %s to zip: %s", fn, err.Error())
+		return fmt.Errorf("error writing %s to zip: %v", fn, err)
 	}
 
 	return nil
@@ -301,7 +301,7 @@ func (t *ExportTask) populateMovieScenes(ctx context.Context) {
 		}
 
 		for _, s := range scenes {
-			t.scenes.IDs = intslice.IntAppendUnique(t.scenes.IDs, s.ID)
+			t.scenes.IDs = sliceutil.AppendUnique(t.scenes.IDs, s.ID)
 		}
 	}
 }
@@ -321,23 +321,23 @@ func (t *ExportTask) populateGalleryImages(ctx context.Context) {
 	}
 
 	if err != nil {
-		logger.Errorf("[galleries] failed to fetch galleries: %s", err.Error())
+		logger.Errorf("[galleries] failed to fetch galleries: %v", err)
 	}
 
 	for _, g := range galleries {
 		if err := g.LoadFiles(ctx, reader); err != nil {
-			logger.Errorf("[galleries] <%s> failed to fetch files for gallery: %s", g.DisplayName(), err.Error())
+			logger.Errorf("[galleries] <%s> failed to fetch files for gallery: %v", g.DisplayName(), err)
 			continue
 		}
 
 		images, err := imageReader.FindByGalleryID(ctx, g.ID)
 		if err != nil {
-			logger.Errorf("[galleries] <%s> failed to fetch images for gallery: %s", g.PrimaryChecksum(), err.Error())
+			logger.Errorf("[galleries] <%s> failed to fetch images for gallery: %v", g.DisplayName(), err)
 			continue
 		}
 
 		for _, i := range images {
-			t.images.IDs = intslice.IntAppendUnique(t.images.IDs, i.ID)
+			t.images.IDs = sliceutil.AppendUnique(t.images.IDs, i.ID)
 		}
 	}
 }
@@ -357,7 +357,7 @@ func (t *ExportTask) ExportScenes(ctx context.Context, workers int) {
 	}
 
 	if err != nil {
-		logger.Errorf("[scenes] failed to fetch scenes: %s", err.Error())
+		logger.Errorf("[scenes] failed to fetch scenes: %v", err)
 	}
 
 	jobCh := make(chan *models.Scene, workers*2) // make a buffered channel to feed workers
@@ -391,7 +391,7 @@ func (t *ExportTask) exportFile(f models.File) {
 	fn := newFileJSON.Filename()
 
 	if err := t.json.saveFile(fn, newFileJSON); err != nil {
-		logger.Errorf("[files] <%s> failed to save json: %s", fn, err.Error())
+		logger.Errorf("[files] <%s> failed to save json: %v", fn, err)
 	}
 }
 
@@ -455,7 +455,7 @@ func (t *ExportTask) exportFolder(f models.Folder) {
 	fn := newFileJSON.Filename()
 
 	if err := t.json.saveFile(fn, newFileJSON); err != nil {
-		logger.Errorf("[files] <%s> failed to save json: %s", fn, err.Error())
+		logger.Errorf("[files] <%s> failed to save json: %v", fn, err)
 	}
 }
 
@@ -496,7 +496,7 @@ func (t *ExportTask) exportScene(ctx context.Context, wg *sync.WaitGroup, jobCha
 
 		newSceneJSON, err := scene.ToBasicJSON(ctx, sceneReader, s)
 		if err != nil {
-			logger.Errorf("[scenes] <%s> error getting scene JSON: %s", sceneHash, err.Error())
+			logger.Errorf("[scenes] <%s> error getting scene JSON: %v", sceneHash, err)
 			continue
 		}
 
@@ -507,19 +507,19 @@ func (t *ExportTask) exportScene(ctx context.Context, wg *sync.WaitGroup, jobCha
 
 		newSceneJSON.Studio, err = scene.GetStudioName(ctx, studioReader, s)
 		if err != nil {
-			logger.Errorf("[scenes] <%s> error getting scene studio name: %s", sceneHash, err.Error())
+			logger.Errorf("[scenes] <%s> error getting scene studio name: %v", sceneHash, err)
 			continue
 		}
 
 		galleries, err := galleryReader.FindBySceneID(ctx, s.ID)
 		if err != nil {
-			logger.Errorf("[scenes] <%s> error getting scene gallery checksums: %s", sceneHash, err.Error())
+			logger.Errorf("[scenes] <%s> error getting scene gallery checksums: %v", sceneHash, err)
 			continue
 		}
 
 		for _, g := range galleries {
 			if err := g.LoadFiles(ctx, galleryReader); err != nil {
-				logger.Errorf("[scenes] <%s> error getting scene gallery files: %s", sceneHash, err.Error())
+				logger.Errorf("[scenes] <%s> error getting scene gallery files: %v", sceneHash, err)
 				continue
 			}
 		}
@@ -532,7 +532,7 @@ func (t *ExportTask) exportScene(ctx context.Context, wg *sync.WaitGroup, jobCha
 
 		performers, err := performerReader.FindBySceneID(ctx, s.ID)
 		if err != nil {
-			logger.Errorf("[scenes] <%s> error getting scene performer names: %s", sceneHash, err.Error())
+			logger.Errorf("[scenes] <%s> error getting scene performer names: %v", sceneHash, err)
 			continue
 		}
 
@@ -540,44 +540,44 @@ func (t *ExportTask) exportScene(ctx context.Context, wg *sync.WaitGroup, jobCha
 
 		newSceneJSON.Tags, err = scene.GetTagNames(ctx, tagReader, s)
 		if err != nil {
-			logger.Errorf("[scenes] <%s> error getting scene tag names: %s", sceneHash, err.Error())
+			logger.Errorf("[scenes] <%s> error getting scene tag names: %v", sceneHash, err)
 			continue
 		}
 
 		newSceneJSON.Markers, err = scene.GetSceneMarkersJSON(ctx, sceneMarkerReader, tagReader, s)
 		if err != nil {
-			logger.Errorf("[scenes] <%s> error getting scene markers JSON: %s", sceneHash, err.Error())
+			logger.Errorf("[scenes] <%s> error getting scene markers JSON: %v", sceneHash, err)
 			continue
 		}
 
 		newSceneJSON.Movies, err = scene.GetSceneMoviesJSON(ctx, movieReader, s)
 		if err != nil {
-			logger.Errorf("[scenes] <%s> error getting scene movies JSON: %s", sceneHash, err.Error())
+			logger.Errorf("[scenes] <%s> error getting scene movies JSON: %v", sceneHash, err)
 			continue
 		}
 
 		if t.includeDependencies {
 			if s.StudioID != nil {
-				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, *s.StudioID)
+				t.studios.IDs = sliceutil.AppendUnique(t.studios.IDs, *s.StudioID)
 			}
 
-			t.galleries.IDs = intslice.IntAppendUniques(t.galleries.IDs, gallery.GetIDs(galleries))
+			t.galleries.IDs = sliceutil.AppendUniques(t.galleries.IDs, gallery.GetIDs(galleries))
 
 			tagIDs, err := scene.GetDependentTagIDs(ctx, tagReader, sceneMarkerReader, s)
 			if err != nil {
-				logger.Errorf("[scenes] <%s> error getting scene tags: %s", sceneHash, err.Error())
+				logger.Errorf("[scenes] <%s> error getting scene tags: %v", sceneHash, err)
 				continue
 			}
-			t.tags.IDs = intslice.IntAppendUniques(t.tags.IDs, tagIDs)
+			t.tags.IDs = sliceutil.AppendUniques(t.tags.IDs, tagIDs)
 
 			movieIDs, err := scene.GetDependentMovieIDs(ctx, s)
 			if err != nil {
-				logger.Errorf("[scenes] <%s> error getting scene movies: %s", sceneHash, err.Error())
+				logger.Errorf("[scenes] <%s> error getting scene movies: %v", sceneHash, err)
 				continue
 			}
-			t.movies.IDs = intslice.IntAppendUniques(t.movies.IDs, movieIDs)
+			t.movies.IDs = sliceutil.AppendUniques(t.movies.IDs, movieIDs)
 
-			t.performers.IDs = intslice.IntAppendUniques(t.performers.IDs, performer.GetIDs(performers))
+			t.performers.IDs = sliceutil.AppendUniques(t.performers.IDs, performer.GetIDs(performers))
 		}
 
 		basename := filepath.Base(s.Path)
@@ -586,7 +586,7 @@ func (t *ExportTask) exportScene(ctx context.Context, wg *sync.WaitGroup, jobCha
 		fn := newSceneJSON.Filename(s.ID, basename, hash)
 
 		if err := t.json.saveScene(fn, newSceneJSON); err != nil {
-			logger.Errorf("[scenes] <%s> failed to save json: %s", sceneHash, err.Error())
+			logger.Errorf("[scenes] <%s> failed to save json: %v", sceneHash, err)
 		}
 	}
 }
@@ -607,7 +607,7 @@ func (t *ExportTask) ExportImages(ctx context.Context, workers int) {
 	}
 
 	if err != nil {
-		logger.Errorf("[images] failed to fetch images: %s", err.Error())
+		logger.Errorf("[images] failed to fetch images: %v", err)
 	}
 
 	jobCh := make(chan *models.Image, workers*2) // make a buffered channel to feed workers
@@ -648,12 +648,12 @@ func (t *ExportTask) exportImage(ctx context.Context, wg *sync.WaitGroup, jobCha
 		imageHash := s.Checksum
 
 		if err := s.LoadFiles(ctx, r.Image); err != nil {
-			logger.Errorf("[images] <%s> error getting image files: %s", imageHash, err.Error())
+			logger.Errorf("[images] <%s> error getting image files: %v", imageHash, err)
 			continue
 		}
 
 		if err := s.LoadURLs(ctx, r.Image); err != nil {
-			logger.Errorf("[images] <%s> error getting image urls: %s", imageHash, err.Error())
+			logger.Errorf("[images] <%s> error getting image urls: %v", imageHash, err)
 			continue
 		}
 
@@ -667,19 +667,19 @@ func (t *ExportTask) exportImage(ctx context.Context, wg *sync.WaitGroup, jobCha
 		var err error
 		newImageJSON.Studio, err = image.GetStudioName(ctx, studioReader, s)
 		if err != nil {
-			logger.Errorf("[images] <%s> error getting image studio name: %s", imageHash, err.Error())
+			logger.Errorf("[images] <%s> error getting image studio name: %v", imageHash, err)
 			continue
 		}
 
 		imageGalleries, err := galleryReader.FindByImageID(ctx, s.ID)
 		if err != nil {
-			logger.Errorf("[images] <%s> error getting image galleries: %s", imageHash, err.Error())
+			logger.Errorf("[images] <%s> error getting image galleries: %v", imageHash, err)
 			continue
 		}
 
 		for _, g := range imageGalleries {
 			if err := g.LoadFiles(ctx, galleryReader); err != nil {
-				logger.Errorf("[images] <%s> error getting image gallery files: %s", imageHash, err.Error())
+				logger.Errorf("[images] <%s> error getting image gallery files: %v", imageHash, err)
 				continue
 			}
 		}
@@ -688,7 +688,7 @@ func (t *ExportTask) exportImage(ctx context.Context, wg *sync.WaitGroup, jobCha
 
 		performers, err := performerReader.FindByImageID(ctx, s.ID)
 		if err != nil {
-			logger.Errorf("[images] <%s> error getting image performer names: %s", imageHash, err.Error())
+			logger.Errorf("[images] <%s> error getting image performer names: %v", imageHash, err)
 			continue
 		}
 
@@ -696,7 +696,7 @@ func (t *ExportTask) exportImage(ctx context.Context, wg *sync.WaitGroup, jobCha
 
 		tags, err := tagReader.FindByImageID(ctx, s.ID)
 		if err != nil {
-			logger.Errorf("[images] <%s> error getting image tag names: %s", imageHash, err.Error())
+			logger.Errorf("[images] <%s> error getting image tag names: %v", imageHash, err)
 			continue
 		}
 
@@ -704,18 +704,18 @@ func (t *ExportTask) exportImage(ctx context.Context, wg *sync.WaitGroup, jobCha
 
 		if t.includeDependencies {
 			if s.StudioID != nil {
-				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, *s.StudioID)
+				t.studios.IDs = sliceutil.AppendUnique(t.studios.IDs, *s.StudioID)
 			}
 
-			t.galleries.IDs = intslice.IntAppendUniques(t.galleries.IDs, gallery.GetIDs(imageGalleries))
-			t.tags.IDs = intslice.IntAppendUniques(t.tags.IDs, tag.GetIDs(tags))
-			t.performers.IDs = intslice.IntAppendUniques(t.performers.IDs, performer.GetIDs(performers))
+			t.galleries.IDs = sliceutil.AppendUniques(t.galleries.IDs, gallery.GetIDs(imageGalleries))
+			t.tags.IDs = sliceutil.AppendUniques(t.tags.IDs, tag.GetIDs(tags))
+			t.performers.IDs = sliceutil.AppendUniques(t.performers.IDs, performer.GetIDs(performers))
 		}
 
 		fn := newImageJSON.Filename(filepath.Base(s.Path), s.Checksum)
 
 		if err := t.json.saveImage(fn, newImageJSON); err != nil {
-			logger.Errorf("[images] <%s> failed to save json: %s", imageHash, err.Error())
+			logger.Errorf("[images] <%s> failed to save json: %v", imageHash, err)
 		}
 	}
 }
@@ -735,7 +735,7 @@ func (t *ExportTask) ExportGalleries(ctx context.Context, workers int) {
 	}
 
 	if err != nil {
-		logger.Errorf("[galleries] failed to fetch galleries: %s", err.Error())
+		logger.Errorf("[galleries] failed to fetch galleries: %v", err)
 	}
 
 	jobCh := make(chan *models.Gallery, workers*2) // make a buffered channel to feed workers
@@ -775,15 +775,18 @@ func (t *ExportTask) exportGallery(ctx context.Context, wg *sync.WaitGroup, jobC
 
 	for g := range jobChan {
 		if err := g.LoadFiles(ctx, r.Gallery); err != nil {
-			logger.Errorf("[galleries] <%s> failed to fetch files for gallery: %s", g.DisplayName(), err.Error())
+			logger.Errorf("[galleries] <%s> error getting gallery files: %v", g.DisplayName(), err)
 			continue
 		}
 
-		galleryHash := g.PrimaryChecksum()
+		if err := g.LoadURLs(ctx, r.Gallery); err != nil {
+			logger.Errorf("[galleries] <%s> error getting gallery urls: %v", g.DisplayName(), err)
+			continue
+		}
 
 		newGalleryJSON, err := gallery.ToBasicJSON(g)
 		if err != nil {
-			logger.Errorf("[galleries] <%s> error getting gallery JSON: %s", galleryHash, err.Error())
+			logger.Errorf("[galleries] <%s> error getting gallery JSON: %v", g.DisplayName(), err)
 			continue
 		}
 
@@ -796,12 +799,12 @@ func (t *ExportTask) exportGallery(ctx context.Context, wg *sync.WaitGroup, jobC
 		if g.FolderID != nil {
 			folder, err := r.Folder.Find(ctx, *g.FolderID)
 			if err != nil {
-				logger.Errorf("[galleries] <%s> error getting gallery folder: %v", galleryHash, err)
+				logger.Errorf("[galleries] <%s> error getting gallery folder: %v", g.DisplayName(), err)
 				continue
 			}
 
 			if folder == nil {
-				logger.Errorf("[galleries] <%s> unable to find gallery folder", galleryHash)
+				logger.Errorf("[galleries] <%s> unable to find gallery folder", g.DisplayName())
 				continue
 			}
 
@@ -810,13 +813,13 @@ func (t *ExportTask) exportGallery(ctx context.Context, wg *sync.WaitGroup, jobC
 
 		newGalleryJSON.Studio, err = gallery.GetStudioName(ctx, studioReader, g)
 		if err != nil {
-			logger.Errorf("[galleries] <%s> error getting gallery studio name: %s", galleryHash, err.Error())
+			logger.Errorf("[galleries] <%s> error getting gallery studio name: %v", g.DisplayName(), err)
 			continue
 		}
 
 		performers, err := performerReader.FindByGalleryID(ctx, g.ID)
 		if err != nil {
-			logger.Errorf("[galleries] <%s> error getting gallery performer names: %s", galleryHash, err.Error())
+			logger.Errorf("[galleries] <%s> error getting gallery performer names: %v", g.DisplayName(), err)
 			continue
 		}
 
@@ -824,13 +827,13 @@ func (t *ExportTask) exportGallery(ctx context.Context, wg *sync.WaitGroup, jobC
 
 		tags, err := tagReader.FindByGalleryID(ctx, g.ID)
 		if err != nil {
-			logger.Errorf("[galleries] <%s> error getting gallery tag names: %s", galleryHash, err.Error())
+			logger.Errorf("[galleries] <%s> error getting gallery tag names: %v", g.DisplayName(), err)
 			continue
 		}
 
 		newGalleryJSON.Chapters, err = gallery.GetGalleryChaptersJSON(ctx, galleryChapterReader, g)
 		if err != nil {
-			logger.Errorf("[galleries] <%s> error getting gallery chapters JSON: %s", galleryHash, err.Error())
+			logger.Errorf("[galleries] <%s> error getting gallery chapters JSON: %v", g.DisplayName(), err)
 			continue
 		}
 
@@ -838,11 +841,11 @@ func (t *ExportTask) exportGallery(ctx context.Context, wg *sync.WaitGroup, jobC
 
 		if t.includeDependencies {
 			if g.StudioID != nil {
-				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, *g.StudioID)
+				t.studios.IDs = sliceutil.AppendUnique(t.studios.IDs, *g.StudioID)
 			}
 
-			t.tags.IDs = intslice.IntAppendUniques(t.tags.IDs, tag.GetIDs(tags))
-			t.performers.IDs = intslice.IntAppendUniques(t.performers.IDs, performer.GetIDs(performers))
+			t.tags.IDs = sliceutil.AppendUniques(t.tags.IDs, tag.GetIDs(tags))
+			t.performers.IDs = sliceutil.AppendUniques(t.performers.IDs, performer.GetIDs(performers))
 		}
 
 		basename := ""
@@ -859,7 +862,7 @@ func (t *ExportTask) exportGallery(ctx context.Context, wg *sync.WaitGroup, jobC
 		fn := newGalleryJSON.Filename(basename, hash)
 
 		if err := t.json.saveGallery(fn, newGalleryJSON); err != nil {
-			logger.Errorf("[galleries] <%s> failed to save json: %s", galleryHash, err.Error())
+			logger.Errorf("[galleries] <%s> failed to save json: %v", g.DisplayName(), err)
 		}
 	}
 }
@@ -878,7 +881,7 @@ func (t *ExportTask) ExportPerformers(ctx context.Context, workers int) {
 	}
 
 	if err != nil {
-		logger.Errorf("[performers] failed to fetch performers: %s", err.Error())
+		logger.Errorf("[performers] failed to fetch performers: %v", err)
 	}
 	jobCh := make(chan *models.Performer, workers*2) // make a buffered channel to feed workers
 
@@ -913,26 +916,26 @@ func (t *ExportTask) exportPerformer(ctx context.Context, wg *sync.WaitGroup, jo
 		newPerformerJSON, err := performer.ToJSON(ctx, performerReader, p)
 
 		if err != nil {
-			logger.Errorf("[performers] <%s> error getting performer JSON: %s", p.Name, err.Error())
+			logger.Errorf("[performers] <%s> error getting performer JSON: %v", p.Name, err)
 			continue
 		}
 
 		tags, err := r.Tag.FindByPerformerID(ctx, p.ID)
 		if err != nil {
-			logger.Errorf("[performers] <%s> error getting performer tags: %s", p.Name, err.Error())
+			logger.Errorf("[performers] <%s> error getting performer tags: %v", p.Name, err)
 			continue
 		}
 
 		newPerformerJSON.Tags = tag.GetNames(tags)
 
 		if t.includeDependencies {
-			t.tags.IDs = intslice.IntAppendUniques(t.tags.IDs, tag.GetIDs(tags))
+			t.tags.IDs = sliceutil.AppendUniques(t.tags.IDs, tag.GetIDs(tags))
 		}
 
 		fn := newPerformerJSON.Filename()
 
 		if err := t.json.savePerformer(fn, newPerformerJSON); err != nil {
-			logger.Errorf("[performers] <%s> failed to save json: %s", p.Name, err.Error())
+			logger.Errorf("[performers] <%s> failed to save json: %v", p.Name, err)
 		}
 	}
 }
@@ -951,7 +954,7 @@ func (t *ExportTask) ExportStudios(ctx context.Context, workers int) {
 	}
 
 	if err != nil {
-		logger.Errorf("[studios] failed to fetch studios: %s", err.Error())
+		logger.Errorf("[studios] failed to fetch studios: %v", err)
 	}
 
 	logger.Info("[studios] exporting")
@@ -1012,7 +1015,7 @@ func (t *ExportTask) ExportTags(ctx context.Context, workers int) {
 	}
 
 	if err != nil {
-		logger.Errorf("[tags] failed to fetch tags: %s", err.Error())
+		logger.Errorf("[tags] failed to fetch tags: %v", err)
 	}
 
 	logger.Info("[tags] exporting")
@@ -1047,14 +1050,14 @@ func (t *ExportTask) exportTag(ctx context.Context, wg *sync.WaitGroup, jobChan 
 		newTagJSON, err := tag.ToJSON(ctx, tagReader, thisTag)
 
 		if err != nil {
-			logger.Errorf("[tags] <%s> error getting tag JSON: %s", thisTag.Name, err.Error())
+			logger.Errorf("[tags] <%s> error getting tag JSON: %v", thisTag.Name, err)
 			continue
 		}
 
 		fn := newTagJSON.Filename()
 
 		if err := t.json.saveTag(fn, newTagJSON); err != nil {
-			logger.Errorf("[tags] <%s> failed to save json: %s", fn, err.Error())
+			logger.Errorf("[tags] <%s> failed to save json: %v", fn, err)
 		}
 	}
 }
@@ -1073,7 +1076,7 @@ func (t *ExportTask) ExportMovies(ctx context.Context, workers int) {
 	}
 
 	if err != nil {
-		logger.Errorf("[movies] failed to fetch movies: %s", err.Error())
+		logger.Errorf("[movies] failed to fetch movies: %v", err)
 	}
 
 	logger.Info("[movies] exporting")
@@ -1116,7 +1119,7 @@ func (t *ExportTask) exportMovie(ctx context.Context, wg *sync.WaitGroup, jobCha
 
 		if t.includeDependencies {
 			if m.StudioID != nil {
-				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, *m.StudioID)
+				t.studios.IDs = sliceutil.AppendUnique(t.studios.IDs, *m.StudioID)
 			}
 		}
 

@@ -13,7 +13,7 @@ interface IButton {
 interface IModal {
   show: boolean;
   onHide?: () => void;
-  header?: string;
+  header?: JSX.Element | string;
   icon?: IconDefinition;
   cancel?: IButton;
   accept?: IButton;
@@ -59,24 +59,6 @@ export const ModalComponent: React.FC<IModal> = ({
       <div>{leftFooterButtons}</div>
       <div>
         {footerButtons}
-        {cancel ? (
-          <Button
-            disabled={isRunning}
-            variant={cancel.variant ?? "primary"}
-            onClick={cancel.onClick}
-            className="ml-2"
-          >
-            {cancel.text ?? (
-              <FormattedMessage
-                id="actions.cancel"
-                defaultMessage="Cancel"
-                description="Cancels the current action and dismisses the modal."
-              />
-            )}
-          </Button>
-        ) : (
-          ""
-        )}
         <Button
           disabled={isRunning || disabled}
           variant={accept?.variant ?? "primary"}
@@ -95,6 +77,24 @@ export const ModalComponent: React.FC<IModal> = ({
             )
           )}
         </Button>
+        {cancel ? (
+          <Button
+            disabled={isRunning}
+            variant={cancel.variant ?? "primary"}
+            onClick={cancel.onClick}
+            className="ml-2"
+          >
+            {cancel.text ?? (
+              <FormattedMessage
+                id="actions.cancel"
+                defaultMessage="Cancel"
+                description="Cancels the current action and dismisses the modal."
+              />
+            )}
+          </Button>
+        ) : (
+          ""
+        )}
       </div>
     </Modal.Footer>
   </Modal>

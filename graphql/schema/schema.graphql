@@ -168,6 +168,12 @@ type Query {
   "List available plugin operations"
   pluginTasks: [PluginTask!]
 
+  # Packages
+  "List installed packages"
+  installedPackages(type: PackageType!): [Package!]!
+  "List available packages"
+  availablePackages(type: PackageType!, source: String!): [Package!]!
+
   # Config
   "Returns the current, complete configuration"
   configuration: ConfigResult!
@@ -380,6 +386,29 @@ type Mutation {
     args: [PluginArgInput!]
   ): ID!
   reloadPlugins: Boolean!
+
+  """
+  Installs the given packages.
+  If a package is already installed, it will be updated if needed..
+  If an error occurs when installing a package, the job will continue to install the remaining packages.
+  Returns the job ID
+  """
+  installPackages(type: PackageType!, packages: [PackageSpecInput!]!): ID!
+  """
+  Updates the given packages.
+  If a package is not installed, it will not be installed.
+  If a package does not need to be updated, it will not be updated.
+  If no packages are provided, all packages of the given type will be updated.
+  If an error occurs when updating a package, the job will continue to update the remaining packages.
+  Returns the job ID.
+  """
+  updatePackages(type: PackageType!, packages: [PackageSpecInput!]): ID!
+  """
+  Uninstalls the given packages.
+  If an error occurs when uninstalling a package, the job will continue to uninstall the remaining packages.
+  Returns the job ID
+  """
+  uninstallPackages(type: PackageType!, packages: [PackageSpecInput!]!): ID!
 
   stopJob(job_id: ID!): Boolean!
   stopAllJobs: Boolean!

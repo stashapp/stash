@@ -1,3 +1,10 @@
+type PluginPaths {
+  # path to javascript files
+  javascript: [String!]
+  # path to css files
+  css: [String!]
+}
+
 type Plugin {
   id: ID!
   name: String!
@@ -10,6 +17,14 @@ type Plugin {
   tasks: [PluginTask!]
   hooks: [PluginHook!]
   settings: [PluginSetting!]
+
+  """
+  Plugin IDs of plugins that this plugin depends on.
+  Applies only for UI plugins to indicate css/javascript load order.
+  """
+  requires: [ID!]
+
+  paths: PluginPaths!
 }
 
 type PluginTask {

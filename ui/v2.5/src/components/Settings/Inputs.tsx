@@ -261,6 +261,7 @@ export interface ISettingModal<T> {
   close: (v?: T) => void;
   renderField: (value: T | undefined, setValue: (v?: T) => void) => JSX.Element;
   modalProps?: ModalProps;
+  validate?: (v: T) => boolean | undefined;
 }
 
 export const SettingModal = <T extends {}>(props: ISettingModal<T>) => {
@@ -273,6 +274,7 @@ export const SettingModal = <T extends {}>(props: ISettingModal<T>) => {
     close,
     renderField,
     modalProps,
+    validate,
   } = props;
 
   const intl = useIntl();
@@ -307,6 +309,7 @@ export const SettingModal = <T extends {}>(props: ISettingModal<T>) => {
             type="submit"
             variant="primary"
             onClick={() => close(currentValue)}
+            disabled={!currentValue || (validate && !validate(currentValue))}
           >
             <FormattedMessage id="actions.confirm" />
           </Button>

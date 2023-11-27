@@ -5,7 +5,7 @@ import { useToast } from "src/hooks/Toast";
 import { useIntl } from "react-intl";
 import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { Col, Form, Row } from "react-bootstrap";
-import FormUtils from "src/utils/form";
+import * as FormUtils from "src/utils/form";
 import { mutateSceneAssignFile } from "src/core/StashService";
 
 interface IFile {
@@ -50,7 +50,7 @@ export const ReassignFilesDialog: React.FC<IReassignFilesDialogProps> = (
     setReassigning(true);
     try {
       await mutateSceneAssignFile(scenes[0].id, props.selected.id);
-      Toast.success({ content: toastMessage });
+      Toast.success(toastMessage);
       props.onClose();
     } catch (e) {
       Toast.error(e);

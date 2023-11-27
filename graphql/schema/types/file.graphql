@@ -27,6 +27,7 @@ interface BaseFile {
   mod_time: Time!
   size: Int64!
 
+  fingerprint(type: String!): String
   fingerprints: [Fingerprint!]!
 
   created_at: Time!
@@ -44,6 +45,7 @@ type VideoFile implements BaseFile {
   mod_time: Time!
   size: Int64!
 
+  fingerprint(type: String!): String
   fingerprints: [Fingerprint!]!
 
   format: String!
@@ -70,6 +72,7 @@ type ImageFile implements BaseFile {
   mod_time: Time!
   size: Int64!
 
+  fingerprint(type: String!): String
   fingerprints: [Fingerprint!]!
 
   width: Int!
@@ -92,6 +95,7 @@ type GalleryFile implements BaseFile {
   mod_time: Time!
   size: Int64!
 
+  fingerprint(type: String!): String
   fingerprints: [Fingerprint!]!
 
   created_at: Time!

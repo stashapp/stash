@@ -235,17 +235,15 @@ export const TagLink: React.FC<ITagLinkProps> = ({
   return (
     <CommonLinkComponent link={link} className={className}>
       <TagPopover id={tag.id ?? ""} placement={hoverPlacement}>
-        <Link to={link}>
-          {title}
-          {showHierarchyIcon && (
-            <OverlayTrigger placement="top" overlay={tooltip}>
-              <span className="icon-wrapper">
-                <span className="vertical-line">|</span>
-                <Icon icon={faFolderTree} className="tag-icon" />
-              </span>
-            </OverlayTrigger>
-          )}
-        </Link>
+        {title}
+        {showHierarchyIcon && (
+          <OverlayTrigger placement="top" overlay={tooltip}>
+            <span className="icon-wrapper">
+              <span className="vertical-line">|</span>
+              <Icon icon={faFolderTree} className="tag-icon" />
+            </span>
+          </OverlayTrigger>
+        )}
       </TagPopover>
     </CommonLinkComponent>
   );

@@ -38,21 +38,17 @@ func (s *scriptScraper) runScraperScript(ctx context.Context, inString string, o
 	var cmd *exec.Cmd
 	if python.IsPythonCommand(command[0]) {
 		pythonPath := s.globalConfig.GetPythonPath()
-		var p *python.Python
-		if pythonPath != "" {
-			p = python.New(pythonPath)
+		p, err := python.Resolve(pythonPath)
+
+		if err != nil {
+			logger.Warnf("%s", err)
 		} else {
-			p, _ = python.Resolve()
+			cmd = p.Command(context.TODO(), command[1:])
 		}
-
-		if p != nil {
-			cmd = p.Command(ctx, command[1:])
-		}
-
-		// if could not find python, just use the command args as-is
 	}
 
 	if cmd == nil {
+		// if could not find python, just use the command args as-is
 		cmd = stashExec.Command(command[0], command[1:]...)
 	}
 

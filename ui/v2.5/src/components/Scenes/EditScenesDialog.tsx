@@ -8,7 +8,7 @@ import { StudioSelect } from "../Shared/Select";
 import { ModalComponent } from "../Shared/Modal";
 import { MultiSet } from "../Shared/MultiSet";
 import { useToast } from "src/hooks/Toast";
-import FormUtils from "src/utils/form";
+import * as FormUtils from "src/utils/form";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
   getAggregateInputIDs,
@@ -96,12 +96,12 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     setIsUpdating(true);
     try {
       await updateScenes();
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "toast.updated_entity" },
           { entity: intl.formatMessage({ id: "scenes" }).toLocaleLowerCase() }
-        ),
-      });
+        )
+      );
       props.onClose(true);
     } catch (e) {
       Toast.error(e);
@@ -272,7 +272,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
             <Col xs={9}>
               <RatingSystem
                 value={rating100}
-                onSetRating={(value) => setRating(value)}
+                onSetRating={(value) => setRating(value ?? undefined)}
                 disabled={isUpdating}
               />
             </Col>

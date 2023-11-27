@@ -237,6 +237,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
           <CountryFlag
             className="performer-card__country-flag"
             country={performer.country}
+            includeOverlay
           />
           <span className="performer-card__country-string">
             {performer.country}
@@ -271,7 +272,10 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
             alt={performer.name ?? ""}
             src={performer.image_path ?? ""}
           />
-
+        </>
+      }
+      overlays={
+        <>
           {renderFavoriteIcon()}
           {maybeRenderRatingBanner()}
           {maybeRenderFlag()}

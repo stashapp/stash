@@ -1,20 +1,7 @@
 package sliceutil
 
-import "reflect"
-
-// Exclude removes all instances of any value in toExclude from the vs
-// slice. It returns the new or unchanged slice.
-func Exclude[T comparable](vs []T, toExclude []T) []T {
-	var ret []T
-	for _, v := range vs {
-		if !Include(toExclude, v) {
-			ret = append(ret, v)
-		}
-	}
-
-	return ret
-}
-
+// Index returns the first index of the provided value in the provided
+// slice. It returns -1 if it is not found.
 func Index[T comparable](vs []T, t T) int {
 	for i, v := range vs {
 		if v == t {
@@ -24,23 +11,24 @@ func Index[T comparable](vs []T, t T) int {
 	return -1
 }
 
-func Include[T comparable](vs []T, t T) bool {
+// Contains returns whether the vs slice contains t.
+func Contains[T comparable](vs []T, t T) bool {
 	return Index(vs, t) >= 0
 }
 
-// IntAppendUnique appends toAdd to the vs int slice if toAdd does not already
-// exist in the slice. It returns the new or unchanged int slice.
+// AppendUnique appends toAdd to the vs slice if toAdd does not already
+// exist in the slice. It returns the new or unchanged slice.
 func AppendUnique[T comparable](vs []T, toAdd T) []T {
-	if Include(vs, toAdd) {
+	if Contains(vs, toAdd) {
 		return vs
 	}
 
 	return append(vs, toAdd)
 }
 
-// IntAppendUniques appends a slice of values to the vs slice. It only
-// appends values that do not already exist in the slice. It returns the new or
-// unchanged slice.
+// AppendUniques appends a slice of values to the vs slice. It only
+// appends values that do not already exist in the slice.
+// It returns the new or unchanged slice.
 func AppendUniques[T comparable](vs []T, toAdd []T) []T {
 	for _, v := range toAdd {
 		vs = AppendUnique(vs, v)
@@ -49,51 +37,90 @@ func AppendUniques[T comparable](vs []T, toAdd []T) []T {
 	return vs
 }
 
-// SliceSame returns true if the two provided lists have the same elements,
-// regardless of order. Panics if either parameter is not a slice.
-func SliceSame(a, b interface{}) bool {
-	v1 := reflect.ValueOf(a)
-	v2 := reflect.ValueOf(b)
-
-	if (v1.IsValid() && v1.Kind() != reflect.Slice) || (v2.IsValid() && v2.Kind() != reflect.Slice) {
-		panic("not a slice")
+// Exclude returns a copy of the vs slice, excluding all values
+// that are also present in the toExclude slice.
+func Exclude[T comparable](vs []T, toExclude []T) []T {
+	var ret []T
+	for _, v := range vs {
+		if !Contains(toExclude, v) {
+			ret = append(ret, v)
+		}
 	}
 
-	v1Len := 0
-	v2Len := 0
+	return ret
+}
 
-	v1Valid := v1.IsValid()
-	v2Valid := v2.IsValid()
-
-	if v1Valid {
-		v1Len = v1.Len()
+// Unique returns a copy of the vs slice, with non-unique values removed.
+func Unique[T comparable](vs []T) []T {
+	distinctValues := make(map[T]struct{})
+	var ret []T
+	for _, v := range vs {
+		if _, exists := distinctValues[v]; !exists {
+			distinctValues[v] = struct{}{}
+			ret = append(ret, v)
+		}
 	}
-	if v2Valid {
-		v2Len = v2.Len()
+	return ret
+}
+
+// Delete returns a copy of the vs slice with toDel values removed.
+func Delete[T comparable](vs []T, toDel T) []T {
+	var ret []T
+	for _, v := range vs {
+		if v != toDel {
+			ret = append(ret, v)
+		}
+	}
+	return ret
+}
+
+// Intersect returns a slice containing values that exist in both provided slices.
+func Intersect[T comparable](a []T, b []T) []T {
+	var ret []T
+	for _, v := range a {
+		if Contains(b, v) {
+			ret = append(ret, v)
+		}
 	}
 
-	if !v1Valid || !v2Valid {
-		return v1Len == v2Len
+	return ret
+}
+
+// NotIntersect returns a slice containing values that do not exist in both provided slices.
+func NotIntersect[T comparable](a []T, b []T) []T {
+	var ret []T
+	for _, v := range a {
+		if !Contains(b, v) {
+			ret = append(ret, v)
+		}
 	}
 
-	if v1Len != v2Len {
+	for _, v := range b {
+		if !Contains(a, v) {
+			ret = append(ret, v)
+		}
+	}
+
+	return ret
+}
+
+// SliceSame returns true if the two provided slices have equal elements,
+// regardless of order.
+func SliceSame[T comparable](a []T, b []T) bool {
+	if len(a) != len(b) {
 		return false
 	}
 
-	if v1.Type() != v2.Type() {
-		return false
-	}
-
-	visited := make(map[int]bool)
-	for i := 0; i < v1.Len(); i++ {
+	visited := make(map[int]struct{})
+	for i := range a {
 		found := false
-		for j := 0; j < v2.Len(); j++ {
-			if visited[j] {
+		for j := range b {
+			if _, exists := visited[j]; exists {
 				continue
 			}
-			if reflect.DeepEqual(v1.Index(i).Interface(), v2.Index(j).Interface()) {
+			if a[i] == b[j] {
 				found = true
-				visited[j] = true
+				visited[j] = struct{}{}
 				break
 			}
 		}
@@ -104,4 +131,25 @@ func SliceSame(a, b interface{}) bool {
 	}
 
 	return true
+}
+
+// Filter returns a slice containing the elements of the vs slice
+// that meet the condition specified by f.
+func Filter[T any](vs []T, f func(T) bool) []T {
+	var ret []T
+	for _, v := range vs {
+		if f(v) {
+			ret = append(ret, v)
+		}
+	}
+	return ret
+}
+
+// Filter returns the result of applying f to each element of the vs slice.
+func Map[T any, V any](vs []T, f func(T) V) []V {
+	ret := make([]V, len(vs))
+	for i, v := range vs {
+		ret[i] = f(v)
+	}
+	return ret
 }

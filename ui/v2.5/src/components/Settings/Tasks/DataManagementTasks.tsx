@@ -106,7 +106,7 @@ const CleanDialog: React.FC<ICleanDialog> = ({
           {pathSelection ? (
             <FolderSelect
               currentDirectory={currentDirectory}
-              setCurrentDirectory={(v) => setCurrentDirectory(v)}
+              onChangeDirectory={setCurrentDirectory}
               defaultDirectories={libraryPaths}
               appendButton={
                 <Button
@@ -196,12 +196,12 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
     setDialogOpen({ importAlert: false });
     try {
       await mutateMetadataImport();
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
           { operation_name: intl.formatMessage({ id: "actions.import" }) }
-        ),
-      });
+        )
+      );
     } catch (e) {
       Toast.error(e);
     }
@@ -239,12 +239,12 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
         paths,
       });
 
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
           { operation_name: intl.formatMessage({ id: "actions.clean" }) }
-        ),
-      });
+        )
+      );
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -255,16 +255,16 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
   async function onMigrateHashNaming() {
     try {
       await mutateMigrateHashNaming();
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
           {
             operation_name: intl.formatMessage({
               id: "actions.hash_migration",
             }),
           }
-        ),
-      });
+        )
+      );
     } catch (err) {
       Toast.error(err);
     }
@@ -273,16 +273,16 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
   async function onMigrateSceneScreenshots() {
     try {
       await mutateMigrateSceneScreenshots(migrateSceneScreenshotsOptions);
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
           {
             operation_name: intl.formatMessage({
               id: "actions.migrate_scene_screenshots",
             }),
           }
-        ),
-      });
+        )
+      );
     } catch (err) {
       Toast.error(err);
     }
@@ -291,16 +291,16 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
   async function onMigrateBlobs() {
     try {
       await mutateMigrateBlobs(migrateBlobsOptions);
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
           {
             operation_name: intl.formatMessage({
               id: "actions.migrate_blobs",
             }),
           }
-        ),
-      });
+        )
+      );
     } catch (err) {
       Toast.error(err);
     }
@@ -309,12 +309,12 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
   async function onExport() {
     try {
       await mutateMetadataExport();
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
           { operation_name: intl.formatMessage({ id: "actions.export" }) }
-        ),
-      });
+        )
+      );
     } catch (err) {
       Toast.error(err);
     }
@@ -342,16 +342,16 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
   async function onOptimiseDatabase() {
     try {
       await mutateOptimiseDatabase();
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
           {
             operation_name: intl.formatMessage({
               id: "actions.optimise_database",
             }),
           }
-        ),
-      });
+        )
+      );
     } catch (e) {
       Toast.error(e);
     }

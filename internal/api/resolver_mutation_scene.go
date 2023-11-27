@@ -11,7 +11,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -627,7 +627,7 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input SceneMar
 
 		// Save the marker tags
 		// If this tag is the primary tag, then let's not add it.
-		tagIDs = intslice.IntExclude(tagIDs, []int{newMarker.PrimaryTagID})
+		tagIDs = sliceutil.Exclude(tagIDs, []int{newMarker.PrimaryTagID})
 		return qb.UpdateTags(ctx, newMarker.ID, tagIDs)
 	}); err != nil {
 		return nil, err
@@ -716,7 +716,7 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 		if tagIdsIncluded {
 			// Save the marker tags
 			// If this tag is the primary tag, then let's not add it.
-			tagIDs = intslice.IntExclude(tagIDs, []int{newMarker.PrimaryTagID})
+			tagIDs = sliceutil.Exclude(tagIDs, []int{newMarker.PrimaryTagID})
 			if err := qb.UpdateTags(ctx, markerID, tagIDs); err != nil {
 				return err
 			}

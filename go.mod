@@ -28,7 +28,7 @@ require (
 	github.com/jinzhu/copier v0.4.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/json-iterator/go v1.1.12
-	github.com/kermieisinthehouse/gosx-notifier v0.1.1
+	github.com/kermieisinthehouse/gosx-notifier v0.1.2
 	github.com/kermieisinthehouse/systray v1.2.4
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/mattn/go-sqlite3 v1.14.17
