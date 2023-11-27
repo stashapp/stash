@@ -3,6 +3,7 @@ import * as ReactRouterDOM from "react-router-dom";
 import NavUtils from "./utils/navigation";
 import { HoverPopover } from "./components/Shared/HoverPopover";
 import { TagLink } from "./components/Shared/TagLink";
+import { LoadingIndicator } from "./components/Shared/LoadingIndicator";
 import * as GQL from "src/core/generated-graphql";
 import * as StashService from "src/core/StashService";
 import * as Apollo from "@apollo/client";
@@ -12,9 +13,37 @@ import * as FontAwesomeSolid from "@fortawesome/free-solid-svg-icons";
 import * as FontAwesomeRegular from "@fortawesome/free-regular-svg-icons";
 import { useSpriteInfo } from "./hooks/sprite";
 
+// due to code splitting, some components may not have been loaded when a plugin
+// page is loaded. This function will load all components passed to it.
+// The components need to be imported here. Any required imports will be added
+// to the loadableComponents object in the plugin api.
+async function loadComponents(c: (() => Promise<unknown>)[]) {
+  await Promise.all(c.map((fn) => fn()));
+}
+
+// useLoadComponents is a hook that loads all components passed to it.
+// It returns a boolean indicating whether the components are still loading.
+function useLoadComponents(components: (() => Promise<unknown>)[]) {
+  const [loading, setLoading] = React.useState(true);
+  const [componentList] = React.useState(components);
+
+  async function load(c: (() => Promise<unknown>)[]) {
+    await loadComponents(c);
+    setLoading(false);
+  }
+
+  React.useEffect(() => {
+    setLoading(true);
+    load(componentList);
+  }, [componentList]);
+
+  return loading;
+}
+
 const components: Record<string, Function> = {
   HoverPopover,
   TagLink,
+  LoadingIndicator,
 };
 
 const beforeFns: Record<string, Function[]> = {};
@@ -83,12 +112,18 @@ export const PluginApi = {
     // register a component to be added to the components object
     component: RegisterComponent,
   },
+  loadableComponents: {
+    // add components as needed for plugins that provide pages
+    SceneCard: () => import("./components/Scenes/SceneCard"),
+  },
   components,
   utils: {
     NavUtils,
     StashService,
+    loadComponents,
   },
   hooks: {
+    useLoadComponents,
     useSpriteInfo,
   },
   patch: {

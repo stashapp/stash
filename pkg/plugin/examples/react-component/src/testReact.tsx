@@ -1,5 +1,6 @@
 interface IPluginApi {
   React: typeof React;
+  GQL: any;
   libraries: {
     ReactRouterDOM: {
       Link: React.FC<any>;
@@ -19,10 +20,13 @@ interface IPluginApi {
       FormattedMessage: React.FC<any>;
     }
   },
+  loadableComponents: any;
   components: Record<string, React.FC<any>>;
   utils: {
     NavUtils: any;
+    loadComponents: any;
   },
+  hooks: any;
   patch: {
     before: (target: string, fn: Function) => void;
     instead: (target: string, fn: Function) => void;
@@ -36,6 +40,7 @@ interface IPluginApi {
 (function () {
   const PluginApi = (window as any).PluginApi as IPluginApi;
   const React = PluginApi.React;
+  const GQL = PluginApi.GQL;
 
   const { Button } = PluginApi.libraries.Bootstrap;
   const { faEthernet } = PluginApi.libraries.FontAwesomeSolid;
@@ -127,8 +132,34 @@ interface IPluginApi {
   });
 
   const TestPage: React.FC = () => {
+    const componentsLoading = PluginApi.hooks.useLoadComponents([PluginApi.loadableComponents.SceneCard]);
+    
+    const {
+      SceneCard,
+      LoadingIndicator,
+    } = PluginApi.components;
+
+    // read a random scene and show a scene card for it
+    const { data } = GQL.useFindScenesQuery({
+      variables: {
+        filter: {
+          per_page: 1,
+          sort: "random",
+        },
+      },
+    });
+
+    const scene = data?.findScenes.scenes[0];
+
+    if (componentsLoading) return (
+      <LoadingIndicator />
+    );
+    
     return (
-      <div>This is a test page.</div>
+      <div>
+        <div>This is a test page.</div>
+        {!!scene && <SceneCard scene={data.findScenes.scenes[0]} />}
+      </div>
     );
   };
 
