@@ -72,6 +72,10 @@ type PluginCSP struct {
 }
 
 type UIConfig struct {
+	// Requires is a list of plugin IDs that this plugin depends on.
+	// These plugins will be loaded before this plugin.
+	Requires []string `yaml:"requires"`
+
 	// Content Security Policy configuration for the plugin.
 	CSP PluginCSP `yaml:"csp"`
 
@@ -239,6 +243,7 @@ func (c Config) toPlugin() *Plugin {
 		Tasks:       c.getPluginTasks(false),
 		Hooks:       c.getPluginHooks(false),
 		UI: PluginUI{
+			Requires:       c.UI.Requires,
 			ExternalScript: c.UI.getExternalScripts(),
 			ExternalCSS:    c.UI.getExternalCSS(),
 			Javascript:     c.UI.getJavascriptFiles(c),

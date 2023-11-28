@@ -4,6 +4,7 @@ import { Button, Collapse, Form, Modal, ModalProps } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "../Shared/Icon";
 import { StringListInput } from "../Shared/StringListInput";
+import { PatchComponent } from "src/pluginApi";
 
 interface ISetting {
   id?: string;
@@ -18,58 +19,65 @@ interface ISetting {
   disabled?: boolean;
 }
 
-export const Setting: React.FC<PropsWithChildren<ISetting>> = ({
-  id,
-  className,
-  subElementId,
-  heading,
-  headingID,
-  subHeadingID,
-  subHeading,
-  children,
-  tooltipID,
-  onClick,
-  disabled,
-}) => {
-  const intl = useIntl();
+export const Setting: React.FC<PropsWithChildren<ISetting>> = PatchComponent(
+  "Setting",
+  (props: PropsWithChildren<ISetting>) => {
+    const {
+      id,
+      className,
+      subElementId,
+      heading,
+      headingID,
+      subHeadingID,
+      subHeading,
+      children,
+      tooltipID,
+      onClick,
+      disabled,
+    } = props;
 
-  function renderHeading() {
-    if (headingID) {
-      return intl.formatMessage({ id: headingID });
+    const intl = useIntl();
+
+    function renderHeading() {
+      if (headingID) {
+        return intl.formatMessage({ id: headingID });
+      }
+      return heading;
     }
-    return heading;
-  }
 
-  function renderSubHeading() {
-    if (subHeadingID) {
-      return (
-        <div className="sub-heading">
-          {intl.formatMessage({ id: subHeadingID })}
+    function renderSubHeading() {
+      if (subHeadingID) {
+        return (
+          <div className="sub-heading">
+            {intl.formatMessage({ id: subHeadingID })}
+          </div>
+        );
+      }
+      if (subHeading) {
+        return <div className="sub-heading">{subHeading}</div>;
+      }
+    }
+
+    const tooltip = tooltipID
+      ? intl.formatMessage({ id: tooltipID })
+      : undefined;
+    const disabledClassName = disabled ? "disabled" : "";
+
+    return (
+      <div
+        className={`setting ${className ?? ""} ${disabledClassName}`}
+        id={id}
+        onClick={onClick}
+      >
+        <div>
+          <h3 title={tooltip}>{renderHeading()}</h3>
+          {renderSubHeading()}
         </div>
-      );
-    }
-    if (subHeading) {
-      return <div className="sub-heading">{subHeading}</div>;
-    }
-  }
-
-  const tooltip = tooltipID ? intl.formatMessage({ id: tooltipID }) : undefined;
-  const disabledClassName = disabled ? "disabled" : "";
-
-  return (
-    <div
-      className={`setting ${className ?? ""} ${disabledClassName}`}
-      id={id}
-      onClick={onClick}
-    >
-      <div>
-        <h3 title={tooltip}>{renderHeading()}</h3>
-        {renderSubHeading()}
+        <div id={subElementId}>{children}</div>
       </div>
-      <div id={`${subElementId}`}>{children}</div>
-    </div>
-  );
-};
+    );
+  }
+) as React.FC<PropsWithChildren<ISetting>>;
 
 interface ISettingGroup {
   settingProps?: ISetting;

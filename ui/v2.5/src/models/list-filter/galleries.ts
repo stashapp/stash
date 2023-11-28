@@ -43,7 +43,9 @@ const displayModeOptions = [
 
 const criterionOptions = [
   createStringCriterionOption("title"),
+  createStringCriterionOption("code", "scene_code"),
   createStringCriterionOption("details"),
+  createStringCriterionOption("photographer"),
   PathCriterionOption,
   createStringCriterionOption("checksum", "media_info.checksum"),
   RatingCriterionOption,

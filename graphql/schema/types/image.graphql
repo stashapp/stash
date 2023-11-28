@@ -1,11 +1,14 @@
 type Image {
   id: ID!
   title: String
+  code: String
   # rating expressed as 1-100
   rating100: Int
   url: String @deprecated(reason: "Use urls")
   urls: [String!]!
   date: String
+  details: String
+  photographer: String
   o_counter: Int
   organized: Boolean!
   created_at: Time!
@@ -37,12 +40,15 @@ input ImageUpdateInput {
   clientMutationId: String
   id: ID!
   title: String
+  code: String
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean
   url: String @deprecated(reason: "Use urls")
   urls: [String!]
   date: String
+  details: String
+  photographer: String
 
   studio_id: ID
   performer_ids: [ID!]
@@ -56,12 +62,15 @@ input BulkImageUpdateInput {
   clientMutationId: String
   ids: [ID!]
   title: String
+  code: String
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean
   url: String @deprecated(reason: "Use urls")
   urls: BulkUpdateStrings
   date: String
+  details: String
+  photographer: String
 
   studio_id: ID
   performer_ids: BulkUpdateIds

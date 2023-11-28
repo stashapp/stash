@@ -184,8 +184,10 @@ fragment ScrapedSceneData on ScrapedScene {
 
 fragment ScrapedGalleryData on ScrapedGallery {
   title
+  code
   details
   urls
+  photographer
   date
 
   studio {

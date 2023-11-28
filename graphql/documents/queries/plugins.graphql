@@ -25,6 +25,8 @@ query Plugins {
       type
     }
 
+    requires
+
     paths {
       css
       javascript

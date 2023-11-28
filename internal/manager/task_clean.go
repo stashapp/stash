@@ -144,7 +144,7 @@ type cleanFilter struct {
 	scanFilter
 }
 
-func newCleanFilter(c *config.Instance) *cleanFilter {
+func newCleanFilter(c *config.Config) *cleanFilter {
 	return &cleanFilter{
 		scanFilter: scanFilter{
 			extensionConfig:   newExtensionConfig(c),

@@ -13,10 +13,13 @@ import (
 // of cover image.
 func ToBasicJSON(image *models.Image) *jsonschema.Image {
 	newImageJSON := jsonschema.Image{
-		Title:     image.Title,
-		URLs:      image.URLs.List(),
-		CreatedAt: json.JSONTime{Time: image.CreatedAt},
-		UpdatedAt: json.JSONTime{Time: image.UpdatedAt},
+		Title:        image.Title,
+		Code:         image.Code,
+		URLs:         image.URLs.List(),
+		Details:      image.Details,
+		Photographer: image.Photographer,
+		CreatedAt:    json.JSONTime{Time: image.CreatedAt},
+		UpdatedAt:    json.JSONTime{Time: image.UpdatedAt},
 	}
 
 	if image.Rating != nil {

@@ -3,8 +3,6 @@ package api
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 	"strconv"
 	"sync"
 	"time"
@@ -12,7 +10,6 @@ import (
 	"github.com/stashapp/stash/internal/identify"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
-	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 )
 
@@ -110,31 +107,10 @@ func (r *mutationResolver) BackupDatabase(ctx context.Context, input BackupDatab
 	// if download is true, then backup to temporary file and return a link
 	download := input.Download != nil && *input.Download
 	mgr := manager.GetInstance()
-	database := mgr.Database
-	var backupPath string
-	if download {
-		if err := fsutil.EnsureDir(mgr.Paths.Generated.Downloads); err != nil {
-			return nil, fmt.Errorf("could not create backup directory %v: %w", mgr.Paths.Generated.Downloads, err)
-		}
-		f, err := os.CreateTemp(mgr.Paths.Generated.Downloads, "backup*.sqlite")
-		if err != nil {
-			return nil, err
-		}
 
-		backupPath = f.Name()
-		f.Close()
-	} else {
-		backupDirectoryPath := mgr.Config.GetBackupDirectoryPathOrDefault()
-		if backupDirectoryPath != "" {
-			if err := fsutil.EnsureDir(backupDirectoryPath); err != nil {
-				return nil, fmt.Errorf("could not create backup directory %v: %w", backupDirectoryPath, err)
-			}
-		}
-		backupPath = database.DatabaseBackupPath(backupDirectoryPath)
-	}
-
-	err := database.Backup(backupPath)
+	backupPath, backupName, err := mgr.BackupDatabase(download)
 	if err != nil {
+		logger.Errorf("Error backing up database: %v", err)
 		return nil, err
 	}
 
@@ -147,8 +123,7 @@ func (r *mutationResolver) BackupDatabase(ctx context.Context, input BackupDatab
 
 		baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 
-		fn := filepath.Base(database.DatabaseBackupPath(""))
-		ret := baseURL + "/downloads/" + downloadHash + "/" + fn
+		ret := baseURL + "/downloads/" + downloadHash + "/" + backupName
 		return &ret, nil
 	} else {
 		logger.Infof("Successfully backed up database to: %s", backupPath)
@@ -158,33 +133,11 @@ func (r *mutationResolver) BackupDatabase(ctx context.Context, input BackupDatab
 }
 
 func (r *mutationResolver) AnonymiseDatabase(ctx context.Context, input AnonymiseDatabaseInput) (*string, error) {
-	// if download is true, then backup to temporary file and return a link
+	// if download is true, then save to temporary file and return a link
 	download := input.Download != nil && *input.Download
 	mgr := manager.GetInstance()
-	database := mgr.Database
-	var outPath string
-	if download {
-		if err := fsutil.EnsureDir(mgr.Paths.Generated.Downloads); err != nil {
-			return nil, fmt.Errorf("could not create backup directory %v: %w", mgr.Paths.Generated.Downloads, err)
-		}
-		f, err := os.CreateTemp(mgr.Paths.Generated.Downloads, "anonymous*.sqlite")
-		if err != nil {
-			return nil, err
-		}
 
-		outPath = f.Name()
-		f.Close()
-	} else {
-		backupDirectoryPath := mgr.Config.GetBackupDirectoryPathOrDefault()
-		if backupDirectoryPath != "" {
-			if err := fsutil.EnsureDir(backupDirectoryPath); err != nil {
-				return nil, fmt.Errorf("could not create backup directory %v: %w", backupDirectoryPath, err)
-			}
-		}
-		outPath = database.AnonymousDatabasePath(backupDirectoryPath)
-	}
-
-	err := database.Anonymise(outPath)
+	outPath, outName, err := mgr.AnonymiseDatabase(download)
 	if err != nil {
 		logger.Errorf("Error anonymising database: %v", err)
 		return nil, err
@@ -199,8 +152,7 @@ func (r *mutationResolver) AnonymiseDatabase(ctx context.Context, input Anonymis
 
 		baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 
-		fn := filepath.Base(database.DatabaseBackupPath(""))
-		ret := baseURL + "/downloads/" + downloadHash + "/" + fn
+		ret := baseURL + "/downloads/" + downloadHash + "/" + outName
 		return &ret, nil
 	} else {
 		logger.Infof("Successfully anonymised database to: %s", outPath)

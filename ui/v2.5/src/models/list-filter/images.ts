@@ -33,6 +33,9 @@ const sortByOptions = [
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
 const criterionOptions = [
   createStringCriterionOption("title"),
+  createStringCriterionOption("code", "scene_code"),
+  createStringCriterionOption("details"),
+  createStringCriterionOption("photographer"),
   createMandatoryStringCriterionOption("checksum", "media_info.checksum"),
   PathCriterionOption,
   OrganizedCriterionOption,

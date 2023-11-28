@@ -1,27 +1,23 @@
 package pkg
 
 import (
-	"fmt"
-	"io"
-	"os"
-	"path/filepath"
 	"time"
-
-	"github.com/stashapp/stash/pkg/hash/md5"
-	"github.com/stashapp/stash/pkg/logger"
 )
 
-const cacheSubDir = "package_lists"
-
-type repositoryCache struct {
-	cachePath string
+type cacheEntry struct {
+	lastModified time.Time
+	data         []RemotePackage
 }
 
-func (c *repositoryCache) path(url string) string {
-	// convert the url to md5
-	hash := md5.FromString(url)
+type repositoryCache struct {
+	// cache maps the URL to the last modified time and the data
+	cache map[string]cacheEntry
+}
 
-	return filepath.Join(c.cachePath, cacheSubDir, hash)
+func (c *repositoryCache) ensureCache() {
+	if c.cache == nil {
+		c.cache = make(map[string]cacheEntry)
+	}
 }
 
 func (c *repositoryCache) lastModified(url string) *time.Time {
@@ -29,54 +25,35 @@ func (c *repositoryCache) lastModified(url string) *time.Time {
 		return nil
 	}
 
-	path := c.path(url)
-	s, err := os.Stat(path)
-	if err != nil {
-		// ignore
-		logger.Debugf("error getting cached file %s: %v", path, err)
+	c.ensureCache()
+	e, found := c.cache[url]
+
+	if !found {
 		return nil
 	}
 
-	ret := s.ModTime()
-	return &ret
+	return &e.lastModified
 }
 
-func (c *repositoryCache) getPackageList(url string) (io.ReadCloser, error) {
-	path := c.path(url)
-	ret, err := os.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get file %q: %w", path, err)
+func (c *repositoryCache) getPackageList(url string) []RemotePackage {
+	c.ensureCache()
+	e, found := c.cache[url]
+
+	if !found {
+		return nil
 	}
 
-	return ret, nil
+	return e.data
 }
 
-func (c *repositoryCache) cacheFile(url string, data io.ReadCloser) (io.ReadCloser, error) {
+func (c *repositoryCache) cacheList(url string, lastModified time.Time, data []RemotePackage) {
 	if c == nil {
-		return data, nil
+		return
 	}
 
-	path := c.path(url)
-
-	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
-		// ignore, just return the original file
-		logger.Debugf("error creating cache path %s: %v", filepath.Dir(path), err)
-		return data, nil
+	c.ensureCache()
+	c.cache[url] = cacheEntry{
+		lastModified: lastModified,
+		data:         data,
 	}
-
-	f, err := os.Create(path)
-	if err != nil {
-		// ignore, just return the original file
-		logger.Debugf("error creating cached file %s: %v", path, err)
-		return data, nil
-	}
-
-	defer data.Close()
-	if _, err := io.Copy(f, data); err != nil {
-		_ = f.Close()
-		return nil, fmt.Errorf("writing to cache file %s - %w", path, err)
-	}
-
-	_ = f.Close()
-	return c.getPackageList(url)
 }

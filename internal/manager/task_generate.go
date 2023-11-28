@@ -104,7 +104,7 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 		}
 
 		g := &generate.Generator{
-			Encoder:      instance.FFMPEG,
+			Encoder:      instance.FFMpeg,
 			FFMpegConfig: instance.Config,
 			LockManager:  instance.ReadLockManager,
 			MarkerPaths:  instance.Paths.SceneMarkers,

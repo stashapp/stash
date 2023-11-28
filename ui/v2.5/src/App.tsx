@@ -45,6 +45,11 @@ import useScript, { useCSS } from "./hooks/useScript";
 import { useMemoOnce } from "./hooks/state";
 import { uniq } from "lodash-es";
 
+import { PluginRoutes } from "./plugins";
+
+// import plugin_api to run code
+import "./pluginApi";
+
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")
 );
@@ -88,6 +93,54 @@ const defaultLocale = "en-GB";
 
 function languageMessageString(language: string) {
   return language.replace(/-/, "");
+}
+
+type PluginList = NonNullable<Required<GQL.PluginsQuery["plugins"]>>;
+
+// sort plugins by their dependencies
+function sortPlugins(plugins: PluginList) {
+  type Node = { id: string; afters: string[] };
+
+  let nodes: Record<string, Node> = {};
+  let sorted: PluginList = [];
+  let visited: Record<string, boolean> = {};
+
+  plugins.forEach((v) => {
+    let from = v.id;
+
+    if (!nodes[from]) nodes[from] = { id: from, afters: [] };
+
+    v.requires?.forEach((to) => {
+      if (!nodes[to]) nodes[to] = { id: to, afters: [] };
+      if (!nodes[to].afters.includes(from)) nodes[to].afters.push(from);
+    });
+  });
+
+  function visit(idstr: string, ancestors: string[] = []) {
+    let node = nodes[idstr];
+    const { id } = node;
+
+    if (visited[idstr]) return;
+
+    ancestors.push(id);
+    visited[idstr] = true;
+    node.afters.forEach(function (afterID) {
+      if (ancestors.indexOf(afterID) >= 0)
+        throw new Error("closed chain : " + afterID + " is in " + id);
+      visit(afterID.toString(), ancestors.slice());
+    });
+
+    const plugin = plugins.find((v) => v.id === id);
+    if (plugin) {
+      sorted.unshift(plugin);
+    }
+  }
+
+  Object.keys(nodes).forEach((n) => {
+    visit(n);
+  });
+
+  return sorted;
 }
 
 export const App: React.FC = () => {
@@ -159,29 +212,36 @@ export const App: React.FC = () => {
     error: pluginsError,
   } = usePlugins();
 
-  const pluginJavascripts = useMemoOnce(() => {
+  const sortedPlugins = useMemoOnce(() => {
     return [
-      uniq(
-        plugins?.plugins
-          ?.filter((plugin) => plugin.enabled && plugin.paths.javascript)
-          .map((plugin) => plugin.paths.javascript!)
-          .flat() ?? []
-      ),
+      sortPlugins(plugins?.plugins ?? []),
       !pluginsLoading && !pluginsError,
     ];
   }, [plugins?.plugins, pluginsLoading, pluginsError]);
 
+  const pluginJavascripts = useMemoOnce(() => {
+    return [
+      uniq(
+        sortedPlugins
+          ?.filter((plugin) => plugin.enabled && plugin.paths.javascript)
+          .map((plugin) => plugin.paths.javascript!)
+          .flat() ?? []
+      ),
+      !!sortedPlugins && !pluginsLoading && !pluginsError,
+    ];
+  }, [sortedPlugins, pluginsLoading, pluginsError]);
+
   const pluginCSS = useMemoOnce(() => {
     return [
       uniq(
-        plugins?.plugins
+        sortedPlugins
           ?.filter((plugin) => plugin.enabled && plugin.paths.css)
           .map((plugin) => plugin.paths.css!)
           .flat() ?? []
       ),
-      !pluginsLoading && !pluginsError,
+      !!sortedPlugins && !pluginsLoading && !pluginsError,
     ];
-  }, [plugins, pluginsLoading, pluginsError]);
+  }, [sortedPlugins, pluginsLoading, pluginsError]);
 
   useScript(pluginJavascripts ?? [], !pluginsLoading && !pluginsError);
   useCSS(pluginCSS ?? [], !pluginsLoading && !pluginsError);
@@ -251,6 +311,7 @@ export const App: React.FC = () => {
             />
             <Route path="/setup" component={Setup} />
             <Route path="/migrate" component={Migrate} />
+            <PluginRoutes />
             <Route component={PageNotFound} />
           </Switch>
         </Suspense>

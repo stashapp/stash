@@ -495,7 +495,7 @@ export const SettingsServicesPanel: React.FC = () => {
           >
             <TagSelect
               onSelect={(items) =>
-                saveHSP({ favoriteTagId: parseInt(items[0].id) })
+                saveHSP({ favoriteTagId: parseInt(items[0]?.id) })
               }
               ids={
                 hsp.favoriteTagId !== undefined && hsp.favoriteTagId !== null

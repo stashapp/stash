@@ -23,13 +23,6 @@ type performerRoutes struct {
 	performerFinder PerformerFinder
 }
 
-func getPerformerRoutes(repo models.Repository) chi.Router {
-	return performerRoutes{
-		routes:          routes{txnManager: repo.TxnManager},
-		performerFinder: repo.Performer,
-	}.Routes()
-}
-
 func (rs performerRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
 
