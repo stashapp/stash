@@ -86,8 +86,10 @@ export const GalleryEditPanel: React.FC<IProps> = ({
 
   const schema = yup.object({
     title: titleRequired ? yup.string().required() : yup.string().ensure(),
+    code: yup.string().ensure(),
     urls: yupUniqueStringList("urls"),
     date: yupDateString(intl),
+    photographer: yup.string().ensure(),
     rating100: yup.number().integer().nullable().defined(),
     studio_id: yup.string().required().nullable(),
     performer_ids: yup.array(yup.string().required()).defined(),
@@ -98,8 +100,10 @@ export const GalleryEditPanel: React.FC<IProps> = ({
 
   const initialValues = {
     title: gallery?.title ?? "",
+    code: gallery?.code ?? "",
     urls: gallery?.urls ?? [],
     date: gallery?.date ?? "",
+    photographer: gallery?.photographer ?? "",
     rating100: gallery?.rating100 ?? null,
     studio_id: gallery?.studio?.id ?? null,
     performer_ids: (gallery?.performers ?? []).map((p) => p.id),
@@ -288,8 +292,16 @@ export const GalleryEditPanel: React.FC<IProps> = ({
       formik.setFieldValue("title", galleryData.title);
     }
 
+    if (galleryData.code) {
+      formik.setFieldValue("code", galleryData.code);
+    }
+
     if (galleryData.details) {
       formik.setFieldValue("details", galleryData.details);
+    }
+
+    if (galleryData.photographer) {
+      formik.setFieldValue("photographer", galleryData.photographer);
     }
 
     if (galleryData.date) {
@@ -490,6 +502,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
         <Row className="form-container px-3">
           <Col lg={7} xl={12}>
             {renderInputField("title")}
+            {renderInputField("code", "text", "scene_code")}
 
             {renderURLListField(
               "urls",
@@ -499,6 +512,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
             )}
 
             {renderDateField("date")}
+            {renderInputField("photographer")}
             {renderRatingField("rating100", "rating")}
 
             {renderScenesField()}

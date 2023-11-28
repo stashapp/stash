@@ -13,11 +13,13 @@ import (
 // does not convert the relationships to other objects.
 func ToBasicJSON(gallery *models.Gallery) (*jsonschema.Gallery, error) {
 	newGalleryJSON := jsonschema.Gallery{
-		Title:     gallery.Title,
-		URLs:      gallery.URLs.List(),
-		Details:   gallery.Details,
-		CreatedAt: json.JSONTime{Time: gallery.CreatedAt},
-		UpdatedAt: json.JSONTime{Time: gallery.UpdatedAt},
+		Title:        gallery.Title,
+		Code:         gallery.Code,
+		URLs:         gallery.URLs.List(),
+		Details:      gallery.Details,
+		Photographer: gallery.Photographer,
+		CreatedAt:    json.JSONTime{Time: gallery.CreatedAt},
+		UpdatedAt:    json.JSONTime{Time: gallery.UpdatedAt},
 	}
 
 	if gallery.FolderID != nil {

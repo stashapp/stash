@@ -62,8 +62,14 @@ func (i *Importer) galleryJSONToGallery(galleryJSON jsonschema.Gallery) models.G
 	if galleryJSON.Title != "" {
 		newGallery.Title = galleryJSON.Title
 	}
+	if galleryJSON.Code != "" {
+		newGallery.Code = galleryJSON.Code
+	}
 	if galleryJSON.Details != "" {
 		newGallery.Details = galleryJSON.Details
+	}
+	if galleryJSON.Photographer != "" {
+		newGallery.Photographer = galleryJSON.Photographer
 	}
 	if len(galleryJSON.URLs) > 0 {
 		newGallery.URLs = models.NewRelatedStrings(galleryJSON.URLs)
