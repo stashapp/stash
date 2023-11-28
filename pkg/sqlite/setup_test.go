@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sqlite"
@@ -535,6 +536,10 @@ func indexFromID(ids []int, id int) int {
 var db *sqlite.Database
 
 func TestMain(m *testing.M) {
+	// initialise empty config - needed by some migrations
+	_ = config.InitializeEmpty()
+
+
 	ret := runTests(m)
 	os.Exit(ret)
 }

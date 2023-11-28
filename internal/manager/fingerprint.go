@@ -14,7 +14,7 @@ import (
 )
 
 type fingerprintCalculator struct {
-	Config *config.Instance
+	Config *config.Config
 }
 
 func (c *fingerprintCalculator) calculateOshash(f *models.BaseFile, o file.Opener) (*models.Fingerprint, error) {

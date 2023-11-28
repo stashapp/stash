@@ -51,17 +51,6 @@ type sceneRoutes struct {
 	tagFinder         SceneMarkerTagFinder
 }
 
-func getSceneRoutes(repo models.Repository) chi.Router {
-	return sceneRoutes{
-		routes:            routes{txnManager: repo.TxnManager},
-		sceneFinder:       repo.Scene,
-		fileGetter:        repo.File,
-		captionFinder:     repo.File,
-		sceneMarkerFinder: repo.SceneMarker,
-		tagFinder:         repo.Tag,
-	}.Routes()
-}
-
 func (rs sceneRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
 

@@ -24,13 +24,6 @@ type studioRoutes struct {
 	studioFinder StudioFinder
 }
 
-func getStudioRoutes(repo models.Repository) chi.Router {
-	return studioRoutes{
-		routes:       routes{txnManager: repo.TxnManager},
-		studioFinder: repo.Studio,
-	}.Routes()
-}
-
 func (rs studioRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
 

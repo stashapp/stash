@@ -133,32 +133,27 @@ func newClient(gc GlobalConfig) *http.Client {
 	return client
 }
 
-// NewCache returns a new Cache loading scraper configurations from the
-// scraper path provided in the global config object. It returns a new
-// instance and an error if the scraper directory could not be loaded.
+// NewCache returns a new Cache.
 //
-// Scraper configurations are loaded from yml files in the provided scrapers
-// directory and any subdirectories.
-func NewCache(globalConfig GlobalConfig, repo Repository) (*Cache, error) {
+// Scraper configurations are loaded from yml files in the scrapers
+// directory in the config and any subdirectories.
+//
+// Does not load scrapers. Scrapers will need to be
+// loaded explicitly using ReloadScrapers.
+func NewCache(globalConfig GlobalConfig, repo Repository) *Cache {
 	// HTTP Client setup
 	client := newClient(globalConfig)
 
-	ret := &Cache{
+	return &Cache{
 		client:       client,
 		globalConfig: globalConfig,
 		repository:   repo,
 	}
-
-	var err error
-	ret.scrapers, err = ret.loadScrapers()
-	if err != nil {
-		return nil, err
-	}
-
-	return ret, nil
 }
 
-func (c *Cache) loadScrapers() (map[string]scraper, error) {
+// ReloadScrapers clears the scraper cache and reloads from the scraper path.
+// If a scraper cannot be loaded, an error is logged and the scraper is skipped.
+func (c *Cache) ReloadScrapers() {
 	path := c.globalConfig.GetScrapersPath()
 	scrapers := make(map[string]scraper)
 
@@ -185,23 +180,9 @@ func (c *Cache) loadScrapers() (map[string]scraper, error) {
 
 	if err != nil {
 		logger.Errorf("Error reading scraper configs: %v", err)
-		return nil, err
-	}
-
-	return scrapers, nil
-}
-
-// ReloadScrapers clears the scraper cache and reloads from the scraper path.
-// In the event of an error during loading, the cache will be left empty.
-func (c *Cache) ReloadScrapers() error {
-	c.scrapers = nil
-	scrapers, err := c.loadScrapers()
-	if err != nil {
-		return err
 	}
 
 	c.scrapers = scrapers
-	return nil
 }
 
 // ListScrapers lists scrapers matching one of the given types.

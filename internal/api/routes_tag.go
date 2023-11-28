@@ -24,13 +24,6 @@ type tagRoutes struct {
 	tagFinder TagFinder
 }
 
-func getTagRoutes(repo models.Repository) chi.Router {
-	return tagRoutes{
-		routes:    routes{txnManager: repo.TxnManager},
-		tagFinder: repo.Tag,
-	}.Routes()
-}
-
 func (rs tagRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
 
