@@ -16,6 +16,7 @@ import {
   faTag,
 } from "@fortawesome/free-solid-svg-icons";
 import { objectTitle } from "src/core/files";
+import { TruncatedText } from "../Shared/TruncatedText";
 
 interface IImageCardProps {
   image: GQL.SlimImageDataFragment;
@@ -174,6 +175,16 @@ export const ImageCard: React.FC<IImageCardProps> = (
           </div>
           <RatingBanner rating={props.image.rating100} />
         </>
+      }
+      details={
+        <div className="image-card__details">
+          <span className="image-card__date">{props.image.date}</span>
+          <TruncatedText
+            className="image-card__description"
+            text={props.image.details}
+            lineCount={3}
+          />
+        </div>
       }
       popovers={maybeRenderPopoverButtonGroup()}
       selected={props.selected}

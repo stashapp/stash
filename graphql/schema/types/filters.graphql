@@ -443,6 +443,7 @@ input ImageFilterType {
   NOT: ImageFilterType
 
   title: StringCriterionInput
+  details: StringCriterionInput
 
   " Filter by image id"
   id: IntCriterionInput
@@ -486,6 +487,10 @@ input ImageFilterType {
   created_at: TimestampCriterionInput
   "Filter by last update time"
   updated_at: TimestampCriterionInput
+  "Filter by studio code"
+  code: StringCriterionInput
+  "Filter by photographer"
+  photographer: StringCriterionInput
 }
 
 enum CriterionModifier {

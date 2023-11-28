@@ -11,7 +11,10 @@ import (
 type Image struct {
 	ID int `json:"id"`
 
-	Title string `json:"title"`
+	Title        string `json:"title"`
+	Code         string `json:"code"`
+	Details      string `json:"details"`
+	Photographer string `json:"photographer"`
 	// Rating expressed in 1-100 scale
 	Rating    *int           `json:"rating"`
 	Organized bool           `json:"organized"`
@@ -46,15 +49,18 @@ func NewImage() Image {
 
 type ImagePartial struct {
 	Title OptionalString
+	Code  OptionalString
 	// Rating expressed in 1-100 scale
-	Rating    OptionalInt
-	URLs      *UpdateStrings
-	Date      OptionalDate
-	Organized OptionalBool
-	OCounter  OptionalInt
-	StudioID  OptionalInt
-	CreatedAt OptionalTime
-	UpdatedAt OptionalTime
+	Rating       OptionalInt
+	URLs         *UpdateStrings
+	Date         OptionalDate
+	Details      OptionalString
+	Photographer OptionalString
+	Organized    OptionalBool
+	OCounter     OptionalInt
+	StudioID     OptionalInt
+	CreatedAt    OptionalTime
+	UpdatedAt    OptionalTime
 
 	GalleryIDs    *UpdateIDs
 	TagIDs        *UpdateIDs

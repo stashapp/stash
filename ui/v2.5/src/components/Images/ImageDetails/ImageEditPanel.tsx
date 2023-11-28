@@ -48,8 +48,11 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
   const schema = yup.object({
     title: yup.string().ensure(),
+    code: yup.string().ensure(),
     urls: yupUniqueStringList("urls"),
     date: yupDateString(intl),
+    details: yup.string().ensure(),
+    photographer: yup.string().ensure(),
     rating100: yup.number().integer().nullable().defined(),
     studio_id: yup.string().required().nullable(),
     performer_ids: yup.array(yup.string().required()).defined(),
@@ -58,8 +61,11 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
   const initialValues = {
     title: image.title ?? "",
+    code: image.code ?? "",
     urls: image?.urls ?? [],
     date: image?.date ?? "",
+    details: image.details ?? "",
+    photographer: image.photographer ?? "",
     rating100: image.rating100 ?? null,
     studio_id: image.studio?.id ?? null,
     performer_ids: (image.performers ?? []).map((p) => p.id),
@@ -204,6 +210,22 @@ export const ImageEditPanel: React.FC<IProps> = ({
     return renderField("tag_ids", title, control, fullWidthProps);
   }
 
+  function renderDetailsField() {
+    const props = {
+      labelProps: {
+        column: true,
+        sm: 3,
+        lg: 12,
+      },
+      fieldProps: {
+        sm: 9,
+        lg: 12,
+      },
+    };
+
+    return renderInputField("details", "textarea", "details", props);
+  }
+
   return (
     <div id="image-edit-details">
       <Prompt
@@ -234,15 +256,20 @@ export const ImageEditPanel: React.FC<IProps> = ({
         <Row className="form-container px-3">
           <Col lg={7} xl={12}>
             {renderInputField("title")}
+            {renderInputField("code", "text", "scene_code")}
 
             {renderURLListField("urls", "validation.urls_must_be_unique")}
 
             {renderDateField("date")}
+            {renderInputField("photographer")}
             {renderRatingField("rating100", "rating")}
 
             {renderStudioField()}
             {renderPerformersField()}
             {renderTagsField()}
+          </Col>
+          <Col lg={5} xl={12}>
+            {renderDetailsField()}
           </Col>
         </Row>
       </Form>
