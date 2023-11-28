@@ -52,6 +52,7 @@
 .gallery-tabs {
   max-height: calc(100vh - 4rem);
 
+  overflow: auto;
   overflow-wrap: break-word;
   word-wrap: break-word;
 }
@@ -62,7 +63,6 @@ $galleryTabWidth: 450px;
   .gallery-tabs {
     flex: 0 0 $galleryTabWidth;
     max-width: $galleryTabWidth;
-    overflow: auto;
 
     &.collapsed {
       display: none;
