@@ -195,5 +195,6 @@ export type CriterionType =
   | "scene_updated_at"
   | "description"
   | "code"
+  | "photographer"
   | "disambiguation"
   | "has_chapters";

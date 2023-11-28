@@ -1160,6 +1160,7 @@
     "updating_untagged_performers_description": "Updating untagged performers will try to match any performers that lack a stashid and update the metadata."
   },
   "performers": "Performers",
+  "photographer": "Photographer",
   "piercings": "Piercings",
   "play_count": "Play Count",
   "play_duration": "Play Duration",

@@ -2,10 +2,12 @@
 type Gallery {
   id: ID!
   title: String
+  code: String
   url: String @deprecated(reason: "Use urls")
   urls: [String!]!
   date: String
   details: String
+  photographer: String
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean!
@@ -27,10 +29,12 @@ type Gallery {
 
 input GalleryCreateInput {
   title: String!
+  code: String
   url: String @deprecated(reason: "Use urls")
   urls: [String!]
   date: String
   details: String
+  photographer: String
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean
@@ -44,10 +48,12 @@ input GalleryUpdateInput {
   clientMutationId: String
   id: ID!
   title: String
+  code: String
   url: String @deprecated(reason: "Use urls")
   urls: [String!]
   date: String
   details: String
+  photographer: String
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean
@@ -62,10 +68,12 @@ input GalleryUpdateInput {
 input BulkGalleryUpdateInput {
   clientMutationId: String
   ids: [ID!]
+  code: String
   url: String @deprecated(reason: "Use urls")
   urls: BulkUpdateStrings
   date: String
   details: String
+  photographer: String
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean
