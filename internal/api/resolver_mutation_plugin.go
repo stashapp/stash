@@ -5,7 +5,6 @@ import (
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/sliceutil"
 )
@@ -17,11 +16,7 @@ func (r *mutationResolver) RunPluginTask(ctx context.Context, pluginID string, t
 }
 
 func (r *mutationResolver) ReloadPlugins(ctx context.Context) (bool, error) {
-	err := manager.GetInstance().PluginCache.LoadPlugins()
-	if err != nil {
-		logger.Errorf("Error reading plugin configs: %v", err)
-	}
-
+	manager.GetInstance().RefreshPluginCache()
 	return true, nil
 }
 

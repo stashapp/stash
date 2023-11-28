@@ -6,7 +6,6 @@ import (
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/task"
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -14,13 +13,9 @@ func refreshPackageType(typeArg PackageType) {
 	mgr := manager.GetInstance()
 
 	if typeArg == PackageTypePlugin {
-		if err := mgr.PluginCache.LoadPlugins(); err != nil {
-			logger.Errorf("Error reading plugin configs: %v", err)
-		}
+		mgr.RefreshPluginCache()
 	} else if typeArg == PackageTypeScraper {
-		if err := mgr.ScraperCache.ReloadScrapers(); err != nil {
-			logger.Errorf("Error reading scraper configs: %v", err)
-		}
+		mgr.RefreshScraperCache()
 	}
 }
 
