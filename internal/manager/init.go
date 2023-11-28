@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,6 +21,7 @@ import (
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models/paths"
+	"github.com/stashapp/stash/pkg/pkg"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/scraper"
@@ -100,6 +102,9 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 		scanSubs: &subscriptionManager{},
 	}
 
+	mgr.RefreshPluginSourceManager()
+	mgr.RefreshScraperSourceManager()
+
 	if !cfg.IsNewSystem() {
 		logger.Infof("using config file: %s", cfg.GetConfigFile())
 
@@ -128,6 +133,25 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 
 	instance = mgr
 	return mgr, nil
+}
+
+func initialisePackageManager(localPath string, srcPathGetter pkg.SourcePathGetter) *pkg.Manager {
+	const timeout = 10 * time.Second
+	httpClient := &http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+		},
+		Timeout: timeout,
+	}
+
+	return &pkg.Manager{
+		Local: &pkg.Store{
+			BaseDir:      localPath,
+			ManifestFile: pkg.ManifestFile,
+		},
+		PackagePathGetter: srcPathGetter,
+		Client:            httpClient,
+	}
 }
 
 func formatDuration(t time.Duration) string {

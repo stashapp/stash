@@ -33,6 +33,7 @@ import {
   faVideo,
 } from "@fortawesome/free-solid-svg-icons";
 import { baseURL } from "src/core/createClient";
+import { PatchComponent } from "src/pluginApi";
 
 interface IMenuItem {
   name: string;
@@ -157,6 +158,20 @@ const allMenuItems: IMenuItem[] = [
 const newPathsList = allMenuItems
   .filter((item) => item.userCreatable)
   .map((item) => item.href);
+
+const MainNavbarMenuItems = PatchComponent(
+  "MainNavBar.MenuItems",
+  (props: React.PropsWithChildren<{}>) => {
+    return <Nav>{props.children}</Nav>;
+  }
+);
+
+const MainNavbarUtilityItems = PatchComponent(
+  "MainNavBar.UtilityItems",
+  (props: React.PropsWithChildren<{}>) => {
+    return <Nav>{props.children}</Nav>;
+  }
+);
 
 export const MainNavbar: React.FC = () => {
   const history = useHistory();
@@ -335,7 +350,7 @@ export const MainNavbar: React.FC = () => {
         <Navbar.Collapse className="bg-dark order-sm-1">
           <Fade in={!loading}>
             <>
-              <Nav>
+              <MainNavbarMenuItems>
                 {menuItems.map(({ href, icon, message }) => (
                   <Nav.Link
                     eventKey={href}
@@ -354,8 +369,10 @@ export const MainNavbar: React.FC = () => {
                     </LinkContainer>
                   </Nav.Link>
                 ))}
-              </Nav>
-              <Nav>{renderUtilityButtons()}</Nav>
+              </MainNavbarMenuItems>
+              <MainNavbarUtilityItems>
+                {renderUtilityButtons()}
+              </MainNavbarUtilityItems>
             </>
           </Fade>
         </Navbar.Collapse>
@@ -376,7 +393,9 @@ export const MainNavbar: React.FC = () => {
               </Link>
             </div>
           )}
-          {renderUtilityButtons()}
+          <MainNavbarUtilityItems>
+            {renderUtilityButtons()}
+          </MainNavbarUtilityItems>
           <Navbar.Toggle className="nav-menu-toggle ml-sm-2">
             <Icon icon={expanded ? faTimes : faBars} />
           </Navbar.Toggle>

@@ -29,14 +29,14 @@ const PerformerCreate: React.FC = () => {
     });
     if (result.data?.performerCreate) {
       history.push(`/performers/${result.data.performerCreate.id}`);
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "toast.created_entity" },
           {
             entity: intl.formatMessage({ id: "performer" }).toLocaleLowerCase(),
           }
-        ),
-      });
+        )
+      );
     }
   }
 
@@ -44,7 +44,7 @@ const PerformerCreate: React.FC = () => {
     if (encodingImage) {
       return (
         <LoadingIndicator
-          message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+          message={intl.formatMessage({ id: "actions.encoding_image" })}
         />
       );
     }

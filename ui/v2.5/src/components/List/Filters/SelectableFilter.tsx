@@ -102,6 +102,7 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
   onSelect,
   onUnselect,
 }) => {
+  const intl = useIntl();
   const objects = useMemo(() => {
     return queryResults.filter(
       (p) =>
@@ -124,6 +125,7 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
         focus={inputFocus}
         value={query}
         setValue={(v) => onQueryChange(v)}
+        placeholder={`${intl.formatMessage({ id: "actions.search" })}…`}
       />
       <ul>
         {selected.map((p) => (

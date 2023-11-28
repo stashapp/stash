@@ -60,7 +60,7 @@ export const DeleteImagesDialog: React.FC<IDeleteImageDialogProps> = (
     setIsDeleting(true);
     try {
       await deleteImage();
-      Toast.success({ content: toastMessage });
+      Toast.success(toastMessage);
     } catch (e) {
       Toast.error(e);
     }

@@ -18,6 +18,12 @@ type Plugin {
   hooks: [PluginHook!]
   settings: [PluginSetting!]
 
+  """
+  Plugin IDs of plugins that this plugin depends on.
+  Applies only for UI plugins to indicate css/javascript load order.
+  """
+  requires: [ID!]
+
   paths: PluginPaths!
 }
 

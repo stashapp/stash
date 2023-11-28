@@ -174,21 +174,19 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
       },
     });
     toggleEditing(false);
-    Toast.success({
-      content: intl.formatMessage(
+    Toast.success(
+      intl.formatMessage(
         { id: "toast.updated_entity" },
         { entity: intl.formatMessage({ id: "studio" }).toLocaleLowerCase() }
-      ),
-    });
+      )
+    );
   }
 
   async function onAutoTag() {
     if (!studio.id) return;
     try {
       await mutateMetadataAutoTag({ studios: [studio.id] });
-      Toast.success({
-        content: intl.formatMessage({ id: "toast.started_auto_tagging" }),
-      });
+      Toast.success(intl.formatMessage({ id: "toast.started_auto_tagging" }));
     } catch (e) {
       Toast.error(e);
     }
@@ -526,7 +524,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
           <div className="detail-header-image">
             {encodingImage ? (
               <LoadingIndicator
-                message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+                message={intl.formatMessage({ id: "actions.encoding_image" })}
               />
             ) : (
               renderImage()
@@ -541,8 +539,8 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
               </h2>
               {maybeRenderAliases()}
               <RatingSystem
-                value={studio.rating100 ?? undefined}
-                onSetRating={(value) => setRating(value ?? null)}
+                value={studio.rating100}
+                onSetRating={(value) => setRating(value)}
               />
               {maybeRenderDetails()}
               {maybeRenderEditPanel()}

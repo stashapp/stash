@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
+	"strings"
 	"sync"
 
 	stashExec "github.com/stashapp/stash/pkg/exec"
@@ -45,21 +46,17 @@ func (t *rawPluginTask) Start() error {
 	var cmd *exec.Cmd
 	if python.IsPythonCommand(command[0]) {
 		pythonPath := t.serverConfig.GetPythonPath()
-		var p *python.Python
-		if pythonPath != "" {
-			p = python.New(pythonPath)
-		} else {
-			p, _ = python.Resolve()
-		}
+		p, err := python.Resolve(pythonPath)
 
-		if p != nil {
+		if err != nil {
+			logger.Warnf("%s", err)
+		} else {
 			cmd = p.Command(context.TODO(), command[1:])
 		}
-
-		// if could not find python, just use the command args as-is
 	}
 
 	if cmd == nil {
+		// if could not find python, just use the command args as-is
 		cmd = stashExec.Command(command[0], command[1:]...)
 	}
 
@@ -99,6 +96,8 @@ func (t *rawPluginTask) Start() error {
 	go t.handlePluginStderr(t.plugin.Name, stderr)
 	t.cmd = cmd
 
+	logger.Debugf("Plugin %s started: %s", t.plugin.Name, strings.Join(cmd.Args, " "))
+
 	// send the stdout to the plugin output
 	go func() {
 		defer t.waitGroup.Done()
@@ -113,6 +112,7 @@ func (t *rawPluginTask) Start() error {
 			errStr := err.Error()
 			output.Error = &errStr
 		}
+		logger.Debugf("Plugin %s finished", t.plugin.Name)
 
 		t.result = &output
 	}()

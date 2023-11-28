@@ -14,7 +14,7 @@ import { SuccessIcon } from "src/components/Shared/SuccessIcon";
 import { TagSelect } from "src/components/Shared/Select";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { OperationButton } from "src/components/Shared/OperationButton";
-import FormUtils from "src/utils/form";
+import * as FormUtils from "src/utils/form";
 import { stringToGender } from "src/utils/gender";
 import { IScrapedScene, TaggerStateContext } from "../context";
 import { OptionalField } from "../IncludeButton";

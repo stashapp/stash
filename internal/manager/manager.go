@@ -17,6 +17,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
+	"github.com/stashapp/stash/pkg/pkg"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/session"
@@ -44,6 +45,9 @@ type Manager struct {
 
 	PluginCache  *plugin.Cache
 	ScraperCache *scraper.Cache
+
+	PluginPackageManager  *pkg.Manager
+	ScraperPackageManager *pkg.Manager
 
 	DLNAService *dlna.Service
 
@@ -139,6 +143,14 @@ func (s *Manager) RefreshDLNA() {
 			logger.Warnf("error starting DLNA service: %v", err)
 		}
 	}
+}
+
+func (s *Manager) RefreshScraperSourceManager() {
+	s.ScraperPackageManager = initialisePackageManager(s.Config.GetScrapersPath(), s.Config.GetScraperPackagePathGetter())
+}
+
+func (s *Manager) RefreshPluginSourceManager() {
+	s.PluginPackageManager = initialisePackageManager(s.Config.GetPluginsPath(), s.Config.GetPluginPackagePathGetter())
 }
 
 func setSetupDefaults(input *SetupInput) {

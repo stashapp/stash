@@ -68,16 +68,16 @@ export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({
         image_ids: Array.from(selectedIds.values()),
       });
       const imageCount = selectedIds.size;
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "toast.added_entity" },
           {
             count: imageCount,
             singularEntity: intl.formatMessage({ id: "image" }),
             pluralEntity: intl.formatMessage({ id: "images" }),
           }
-        ),
-      });
+        )
+      );
     } catch (e) {
       Toast.error(e);
     }

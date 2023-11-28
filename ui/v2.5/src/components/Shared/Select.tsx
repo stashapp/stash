@@ -311,13 +311,11 @@ const FilterSelectComponent = <T extends boolean>(
         newItem,
       ]);
       setLoading(false);
-      Toast.success({
-        content: (
-          <span>
-            {message}: <b>{name}</b>
-          </span>
-        ),
-      });
+      Toast.success(
+        <span>
+          {message}: <b>{name}</b>
+        </span>
+      );
     } catch (e) {
       Toast.error(e);
     }
@@ -662,7 +660,11 @@ export const StudioSelect: React.FC<
         props.noSelectionString ??
         intl.formatMessage(
           { id: "actions.select_entity" },
-          { entityType: intl.formatMessage({ id: "studio" }) }
+          {
+            entityType: intl.formatMessage({
+              id: props.isMulti ? "studios" : "studio",
+            }),
+          }
         )
       }
       creatable={props.creatable ?? defaultCreatable}
@@ -705,7 +707,11 @@ export const MovieSelect: React.FC<IFilterProps> = (props) => {
         props.noSelectionString ??
         intl.formatMessage(
           { id: "actions.select_entity" },
-          { entityType: intl.formatMessage({ id: "movie" }) }
+          {
+            entityType: intl.formatMessage({
+              id: props.isMulti ? "movies" : "movie",
+            }),
+          }
         )
       }
       creatable={props.creatable ?? defaultCreatable}
@@ -726,7 +732,7 @@ export const TagSelect: React.FC<
     props.noSelectionString ??
     intl.formatMessage(
       { id: "actions.select_entity" },
-      { entityType: intl.formatMessage({ id: "tags" }) }
+      { entityType: intl.formatMessage({ id: props.isMulti ? "tags" : "tag" }) }
     );
 
   const { configuration } = React.useContext(ConfigurationContext);
