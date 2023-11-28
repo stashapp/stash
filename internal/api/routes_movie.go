@@ -25,13 +25,6 @@ type movieRoutes struct {
 	movieFinder MovieFinder
 }
 
-func getMovieRoutes(repo models.Repository) chi.Router {
-	return movieRoutes{
-		routes:      routes{txnManager: repo.TxnManager},
-		movieFinder: repo.Movie,
-	}.Routes()
-}
-
 func (rs movieRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
 

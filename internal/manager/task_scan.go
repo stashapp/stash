@@ -90,7 +90,7 @@ type extensionConfig struct {
 	zipExt []string
 }
 
-func newExtensionConfig(c *config.Instance) extensionConfig {
+func newExtensionConfig(c *config.Config) extensionConfig {
 	return extensionConfig{
 		vidExt: c.GetVideoExtensions(),
 		imgExt: c.GetImageExtensions(),
@@ -126,7 +126,7 @@ type handlerRequiredFilter struct {
 	videoFileNamingAlgorithm models.HashAlgorithm
 }
 
-func newHandlerRequiredFilter(c *config.Instance, repo models.Repository) *handlerRequiredFilter {
+func newHandlerRequiredFilter(c *config.Config, repo models.Repository) *handlerRequiredFilter {
 	processes := c.GetParallelTasksWithAutoDetection()
 
 	return &handlerRequiredFilter{
@@ -239,7 +239,7 @@ type scanFilter struct {
 	minModTime        time.Time
 }
 
-func newScanFilter(c *config.Instance, repo models.Repository, minModTime time.Time) *scanFilter {
+func newScanFilter(c *config.Config, repo models.Repository, minModTime time.Time) *scanFilter {
 	return &scanFilter{
 		extensionConfig:   newExtensionConfig(c),
 		txnManager:        repo.TxnManager,
@@ -323,6 +323,18 @@ type scanConfig struct {
 
 func (c *scanConfig) GetCreateGalleriesFromFolders() bool {
 	return c.createGalleriesFromFolders
+}
+
+func videoFileFilter(ctx context.Context, f models.File) bool {
+	return useAsVideo(f.Base().Path)
+}
+
+func imageFileFilter(ctx context.Context, f models.File) bool {
+	return useAsImage(f.Base().Path)
+}
+
+func galleryFileFilter(ctx context.Context, f models.File) bool {
+	return isZip(f.Base().Basename)
 }
 
 func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progress *job.Progress) []file.Handler {
@@ -464,7 +476,7 @@ func (g *imageGenerators) generateThumbnail(ctx context.Context, i *models.Image
 		Preset:     c.GetPreviewPreset().String(),
 	}
 
-	encoder := image.NewThumbnailEncoder(mgr.FFMPEG, mgr.FFProbe, clipPreviewOptions)
+	encoder := image.NewThumbnailEncoder(mgr.FFMpeg, mgr.FFProbe, clipPreviewOptions)
 	data, err := encoder.GetThumbnail(f, models.DefaultGthumbWidth)
 
 	if err != nil {
@@ -547,7 +559,7 @@ func (g *sceneGenerators) Generate(ctx context.Context, s *models.Scene, f *mode
 			options := getGeneratePreviewOptions(GeneratePreviewOptionsInput{})
 
 			generator := &generate.Generator{
-				Encoder:      mgr.FFMPEG,
+				Encoder:      mgr.FFMpeg,
 				FFMpegConfig: mgr.Config,
 				LockManager:  mgr.ReadLockManager,
 				MarkerPaths:  g.paths.SceneMarkers,

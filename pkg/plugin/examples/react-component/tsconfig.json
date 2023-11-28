@@ -1,0 +1,28 @@
+{
+    "compilerOptions": {
+      "target": "es2019",
+      "outDir": "dist",
+    //   "lib": ["dom", "dom.iterable", "esnext"],
+      "skipLibCheck": true,
+      "esModuleInterop": true,
+      "allowSyntheticDefaultImports": true,
+      "strict": true,
+      "forceConsistentCasingInFileNames": true,
+      // "module": "es2020",
+      "module": "None",
+      "moduleResolution": "node",
+    //   "resolveJsonModule": true,
+    //   "noEmit": true,
+      "jsx": "react",
+      "experimentalDecorators": true,
+      "baseUrl": ".",
+      "sourceMap": true,
+      "allowJs": true,
+      "isolatedModules": true,
+      "noFallthroughCasesInSwitch": true,
+      "useDefineForClassFields": true,
+      // "types": ["React"]
+    },
+    "include": ["src"]
+  }
+  

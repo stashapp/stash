@@ -31,14 +31,6 @@ type imageRoutes struct {
 	fileGetter  models.FileGetter
 }
 
-func getImageRoutes(repo models.Repository) chi.Router {
-	return imageRoutes{
-		routes:      routes{txnManager: repo.TxnManager},
-		imageFinder: repo.Image,
-		fileGetter:  repo.File,
-	}.Routes()
-}
-
 func (rs imageRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
 
@@ -76,7 +68,7 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 			Preset:     manager.GetInstance().Config.GetPreviewPreset().String(),
 		}
 
-		encoder := image.NewThumbnailEncoder(manager.GetInstance().FFMPEG, manager.GetInstance().FFProbe, clipPreviewOptions)
+		encoder := image.NewThumbnailEncoder(manager.GetInstance().FFMpeg, manager.GetInstance().FFProbe, clipPreviewOptions)
 		data, err := encoder.GetThumbnail(f, models.DefaultGthumbWidth)
 		if err != nil {
 			// don't log for unsupported image format

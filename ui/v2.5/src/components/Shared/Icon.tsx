@@ -1,6 +1,7 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconDefinition, SizeProp } from "@fortawesome/fontawesome-svg-core";
+import { PatchComponent } from "src/pluginApi";
 
 interface IIcon {
   icon: IconDefinition;
@@ -9,11 +10,14 @@ interface IIcon {
   size?: SizeProp;
 }
 
-export const Icon: React.FC<IIcon> = ({ icon, className, color, size }) => (
-  <FontAwesomeIcon
-    icon={icon}
-    className={`fa-icon ${className ?? ""}`}
-    color={color}
-    size={size}
-  />
+export const Icon: React.FC<IIcon> = PatchComponent(
+  "Icon",
+  ({ icon, className, color, size }) => (
+    <FontAwesomeIcon
+      icon={icon}
+      className={`fa-icon ${className ?? ""}`}
+      color={color}
+      size={size}
+    />
+  )
 );

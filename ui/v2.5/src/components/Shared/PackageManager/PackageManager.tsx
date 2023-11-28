@@ -1,6 +1,6 @@
 import { Button, Form, Table } from "react-bootstrap";
 import React, { useState, useMemo, useEffect } from "react";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage, IntlShape, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "../Icon";
 import {
@@ -17,10 +17,19 @@ import { LoadingIndicator } from "../LoadingIndicator";
 import { ApolloError } from "@apollo/client";
 import { ClearableInput } from "../ClearableInput";
 
-function formatDate(date: string | undefined | null) {
+function formatDate(intl: IntlShape, date: string | undefined | null) {
   if (!date) return;
 
-  return new Date(date).toISOString();
+  const d = new Date(date);
+
+  return `${intl.formatDate(d, {
+    timeZone: "utc",
+  })} ${intl.formatTime(d, {
+    timeZone: "utc",
+    hour: "numeric",
+    minute: "numeric",
+    second: "numeric",
+  })}`;
 }
 
 interface IPackage {
@@ -48,6 +57,8 @@ const InstalledPackageRow: React.FC<{
   togglePackage: () => void;
   updatesLoaded: boolean;
 }> = ({ loading, pkg, selected, togglePackage, updatesLoaded }) => {
+  const intl = useIntl();
+
   function rowClassname() {
     if (pkg.upgrade?.version) {
       return "package-update-available";
@@ -69,12 +80,14 @@ const InstalledPackageRow: React.FC<{
       </td>
       <td>
         <span className="package-version">{pkg.version}</span>
-        <span className="package-date">{formatDate(pkg.date)}</span>
+        <span className="package-date">{formatDate(intl, pkg.date)}</span>
       </td>
       {updatesLoaded ? (
         <td>
           <span className="package-version">{pkg.upgrade?.version}</span>
-          <span className="package-date">{formatDate(pkg.upgrade?.date)}</span>
+          <span className="package-date">
+            {formatDate(intl, pkg.upgrade?.date)}
+          </span>
         </td>
       ) : undefined}
     </tr>
@@ -523,6 +536,8 @@ const AvailablePackageRow: React.FC<{
   togglePackage,
   renderDescription = () => undefined,
 }) => {
+  const intl = useIntl();
+
   function renderRequiredBy() {
     if (!requiredBy.length) return;
 
@@ -551,7 +566,7 @@ const AvailablePackageRow: React.FC<{
       </td>
       <td>
         <span className="package-version">{pkg.version}</span>
-        <span className="package-date">{formatDate(pkg.date)}</span>
+        <span className="package-date">{formatDate(intl, pkg.date)}</span>
       </td>
       <td>
         {renderRequiredBy()}

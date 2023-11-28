@@ -9,9 +9,11 @@ endif
 ifdef IS_WIN_SHELL
   RM := del /s /q
   RMDIR := rmdir /s /q
+  NOOP := @@
 else
   RM := rm -f
   RMDIR := rm -rf
+  NOOP := @:
 endif
 
 # set LDFLAGS environment variable to any extra ldflags required
@@ -54,38 +56,36 @@ release: pre-ui generate ui build-release
 # for a static-pie release build: `make flags-static-pie flags-release stash`
 # for a static windows debug build: `make flags-static-windows stash`
 
-# shell noop: prevents "nothing to be done" warnings
-.PHONY: flags
-flags:
-ifdef IS_WIN_SHELL
-	@@
-else
-	@:
-endif
+# $(NOOP) prevents "nothing to be done" warnings
 
 .PHONY: flags-release
-flags-release: flags
+flags-release:
+	$(NOOP)
 	$(eval LDFLAGS += -s -w)
 	$(eval GO_BUILD_FLAGS += -trimpath)
 
 .PHONY: flags-pie
-flags-pie: flags
+flags-pie:
+	$(NOOP)
 	$(eval GO_BUILD_FLAGS += -buildmode=pie)
 
 .PHONY: flags-static
-flags-static: flags
+flags-static:
+	$(NOOP)
 	$(eval LDFLAGS += -extldflags=-static)
 	$(eval GO_BUILD_TAGS += sqlite_omit_load_extension osusergo netgo)
 
 .PHONY: flags-static-pie
-flags-static-pie: flags
+flags-static-pie:
+	$(NOOP)
 	$(eval LDFLAGS += -extldflags=-static-pie)
 	$(eval GO_BUILD_FLAGS += -buildmode=pie)
 	$(eval GO_BUILD_TAGS += sqlite_omit_load_extension osusergo netgo)
 
 # identical to flags-static-pie, but excluding netgo, which is not needed on windows
 .PHONY: flags-static-windows
-flags-static-windows: flags
+flags-static-windows:
+	$(NOOP)
 	$(eval LDFLAGS += -extldflags=-static-pie)
 	$(eval GO_BUILD_FLAGS += -buildmode=pie)
 	$(eval GO_BUILD_TAGS += sqlite_omit_load_extension osusergo)
