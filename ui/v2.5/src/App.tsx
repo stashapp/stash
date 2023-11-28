@@ -45,6 +45,11 @@ import useScript, { useCSS } from "./hooks/useScript";
 import { useMemoOnce } from "./hooks/state";
 import { uniq } from "lodash-es";
 
+import { PluginRoutes } from "./plugins";
+
+// import plugin_api to run code
+import "./pluginApi";
+
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")
 );
@@ -306,6 +311,7 @@ export const App: React.FC = () => {
             />
             <Route path="/setup" component={Setup} />
             <Route path="/migrate" component={Migrate} />
+            <PluginRoutes />
             <Route component={PageNotFound} />
           </Switch>
         </Suspense>
