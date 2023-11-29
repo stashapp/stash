@@ -790,7 +790,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   }
 
   function onSceneClicked(sceneID: string) {
-    loadScene(sceneID, undefined, getScenePage(sceneID));
+    loadScene(sceneID, true, getScenePage(sceneID));
   }
 
   if (!scene) {
