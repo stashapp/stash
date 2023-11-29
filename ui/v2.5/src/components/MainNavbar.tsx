@@ -169,7 +169,7 @@ const MainNavbarMenuItems = PatchComponent(
 const MainNavbarUtilityItems = PatchComponent(
   "MainNavBar.UtilityItems",
   (props: React.PropsWithChildren<{}>) => {
-    return <Nav>{props.children}</Nav>;
+    return <>{props.children}</>;
   }
 );
 
@@ -370,9 +370,11 @@ export const MainNavbar: React.FC = () => {
                   </Nav.Link>
                 ))}
               </MainNavbarMenuItems>
-              <MainNavbarUtilityItems>
-                {renderUtilityButtons()}
-              </MainNavbarUtilityItems>
+              <Nav>
+                <MainNavbarUtilityItems>
+                  {renderUtilityButtons()}
+                </MainNavbarUtilityItems>
+              </Nav>
             </>
           </Fade>
         </Navbar.Collapse>
